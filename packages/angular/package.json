@@ -1,0 +1,35 @@
+{
+  "name": "@simplism/angular",
+  "description": "Simplism Angular Package",
+  "repository": "github:kslhunter/simplism",
+  "license": "MIT",
+  "author": "kslhunter",
+  "engines": {
+    "node": ">= 8.0.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "style": "./dist/simgular.css",
+  "version": "3.2.4",
+  "dependencies": {
+    "core-js": "^2.5.4",
+    "jsbarcode": "^3.8.0"
+  },
+  "peerDependencies": {
+    "@angular/common": "^5.2.9",
+    "@angular/compiler": "^5.2.9",
+    "@angular/core": "^5.2.9",
+    "@angular/platform-browser": "^5.2.9",
+    "@angular/platform-browser-dynamic": "^5.2.9",
+    "@angular/router": "^5.2.9",
+    "@fortawesome/fontawesome-free-webfonts": "^1.0.5",
+    "@simplism/core": "^3.2.3",
+    "@simplism/excel": "^3.2.3",
+    "@simplism/socket-client": "^3.2.3",
+    "@simplism/socket-common": "^3.2.3",
+    "@types/jquery": "^3.3.1",
+    "jquery": "^3.3.1",
+    "rxjs": "^5.5.8",
+    "zone.js": "^0.8.23"
+  }
+}

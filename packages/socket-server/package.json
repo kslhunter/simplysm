@@ -1,0 +1,21 @@
+{
+  "name": "@simplism/socket-server",
+  "description": "Simplism Socket Package (Server)",
+  "repository": "github:kslhunter/simplism",
+  "license": "MIT",
+  "author": "kslhunter",
+  "engines": {
+    "node": ">= 8.0.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "version": "3.2.4",
+  "dependencies": {
+    "mime": "^2.2.2",
+    "socket.io": "^2.1.0"
+  },
+  "peerDependencies": {
+    "@simplism/core": "^3.2.3",
+    "@simplism/socket-common": "^3.2.3"
+  }
+}

@@ -1,0 +1,25 @@
+sd-chart-donut {
+  display: block;
+
+  > svg {
+    width: 100%;
+    height: 100%;
+
+    > g {
+      > circle {
+        @include transform(rotate(-90deg));
+        @include transform-origin(center);
+        stroke: grey(lighter);
+
+        @each $key, $color in $theme-colors {
+          &._theme-#{$key} {
+            stroke: theme-color($key);
+          }
+        }
+        &._theme-none {
+          stroke: transparent;
+        }
+      }
+    }
+  }
+}

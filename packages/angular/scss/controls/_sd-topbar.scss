@@ -1,0 +1,153 @@
+sd-topbar-container {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding-top: $topbar-height;
+
+  @media screen and (max-width: $m-screen) {
+    padding-top: $m-topbar-height;
+  }
+
+  > sd-topbar {
+    display: block;
+    position: absolute;
+    z-index: $z-topbar;
+    top: 0;
+    left: 0;
+    width: 100%;
+
+    background: $topbar-background;
+    color: #fff;
+
+    line-height: $topbar-height;
+    @media screen and (max-width: $m-screen) {
+      line-height: $m-topbar-height;
+    }
+
+    > h1, > h2, > h3, > h4, > h5, > h6 {
+      line-height: $topbar-height;
+      @media screen and (max-width: $m-screen) {
+        line-height: $m-topbar-height;
+      }
+    }
+
+    > * {
+      display: inline-block;
+      vertical-align: top;
+      @include padding(0, 0, 0, default);
+    }
+
+    > ._sidebar-toggle-button {
+      border: none;
+      background: transparent;
+      padding-left: 0;
+
+      height: $topbar-height;
+      @media screen and (max-width: $m-screen) {
+        height: $m-topbar-height;
+      }
+
+      padding: ($topbar-height - 9px)/2;
+      @media screen and (max-width: $m-screen) {
+        padding: ($m-topbar-height - 9px)/2;
+      }
+
+      cursor: pointer;
+
+      > span {
+        display: block;
+        background: text-white(default);
+        height: 1px;
+        width: 14px;
+        margin-bottom: 3px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      @media screen and (min-width: $m-screen) {
+        &:hover {
+          background: rgba(0, 0, 0, .2);
+        }
+      }
+
+      &:active {
+        background: rgba(0, 0, 0, .3);
+      }
+    }
+
+    > ._close-button {
+      border: none;
+      background: transparent;
+      padding-left: 0;
+      cursor: pointer;
+      color: white;
+      text-align: center;
+
+      height: $topbar-height;
+      width: $topbar-height;
+      @media screen and (max-width: $m-screen) {
+        height: $m-topbar-height;
+        width: $m-topbar-height;
+      }
+
+      @media screen and (min-width: $m-screen) {
+        &:hover {
+          background: rgba(0, 0, 0, .2);
+        }
+      }
+
+      &:active {
+        background: rgba(0, 0, 0, .3);
+      }
+    }
+
+    > ._button-group {
+      background: $topbar-background;
+
+      @media screen and (max-width: $m-screen) {
+        position: absolute;
+        top: 0;
+        right: 0;
+      }
+
+      > sd-topbar-button > a,
+      > sd-topbar-file-button > label {
+        display: inline-block;
+        cursor: pointer;
+        text-align: center;
+        border: none;
+        background: transparent;
+        color: #fff;
+        padding: 0 padding(default);
+        @include user-select(none);
+
+        line-height: $topbar-height;
+        min-width: $topbar-height;
+        @media screen and (max-width: $m-screen) {
+          line-height: $m-topbar-height;
+          min-width: $m-topbar-height;
+        }
+
+        @media screen and (min-width: $m-screen) {
+          &:hover {
+            background: rgba(0, 0, 0, .2);
+          }
+        }
+        &:active {
+          background: rgba(0, 0, 0, .3);
+        }
+      }
+    }
+  }
+
+  > sd-topbar._not-main {
+    background: $topbar-not-main-background;
+
+    > ._button-group {
+      background: $topbar-not-main-background;
+    }
+  }
+}

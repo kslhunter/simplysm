@@ -1,0 +1,176 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:all"
+  ],
+  "rules": {
+    "linebreak-style": false,
+    "whitespace": false,
+    "no-any": false,
+    "no-parameter-properties": false,
+    "member-access": [
+      true,
+      "no-public"
+    ],
+    "eofline": false,
+    "interface-name": false,
+    "max-line-length": [
+      false
+    ],
+    "member-ordering": false,
+    "adjacent-overload-signatures": false,
+    "unified-signatures": false,
+    "no-redundant-jsdoc": false,
+    "only-arrow-functions": false,
+    "space-before-function-paren": [
+      true,
+      {
+        "anonymous": "always",
+        "asyncArrow": "always",
+        "constructor": "never",
+        "method": "never",
+        "named": "never"
+      }
+    ],
+    "newline-before-return": false,
+    "typedef": [
+      true,
+      "call-signature",
+      "parameter",
+      "property-declaration"
+    ],
+    "arrow-parens": false,
+    "one-line": [
+      true,
+      "check-open-brace",
+      "check-whitespace"
+    ],
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "never",
+        "singleline": "never"
+      }
+    ],
+    "newline-per-chained-call": false,
+    "no-magic-numbers": false,
+    "prefer-template": false,
+    "array-type": [
+      true,
+      "array"
+    ],
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-leading-underscore"
+    ],
+    "comment-format": false,
+    "prefer-switch": false,
+    "no-consecutive-blank-lines": [
+      false
+    ],
+    "no-bitwise": false,
+    "ordered-imports": false,
+    "no-unnecessary-class": false,
+    "object-literal-sort-keys": false,
+    "quotemark": [
+      true,
+      "double",
+      "avoid-escape"
+    ],
+    "no-console": false,
+    "no-require-imports": false,
+    "no-implicit-dependencies": false,
+    "align": [
+      true,
+      "statements",
+      "members"
+    ],
+    "no-import-side-effect": false,
+    "no-non-null-assertion": false,
+    "no-return-await": false,
+    "no-shadowed-variable": false,
+    "no-string-literal": false,
+    "max-classes-per-file": [
+      false
+    ],
+    "cyclomatic-complexity": false,
+    "no-dynamic-delete": false,
+    "prefer-function-over-method": false,
+    "no-this-assignment": false,
+    "max-file-line-count": [
+      false
+    ],
+    "ban-types": [
+      [
+        "Object",
+        "Avoid using the `Object` type. Did you mean `object`?"
+      ],
+      [
+        "Boolean",
+        "Avoid using the `Boolean` type. Did you mean `boolean`?"
+      ],
+      [
+        "Number",
+        "Avoid using the `Number` type. Did you mean `number`?"
+      ],
+      [
+        "String",
+        "Avoid using the `String` type. Did you mean `string`?"
+      ],
+      [
+        "Symbol",
+        "Avoid using the `Symbol` type. Did you mean `symbol`?"
+      ]
+    ],
+    "completed-docs": false,
+    "no-unsafe-any": false,
+    "strict-boolean-expressions": false,
+    "no-var-requires": false,
+    "no-inferred-empty-object-type": false,
+    "prefer-for-of": false,
+    "prefer-conditional-expression": false,
+    "no-trailing-whitespace": [
+      true,
+      "ignore-blank-lines"
+    ],
+    "restrict-plus-operands": false,
+    "no-void-expression": false,
+    "no-use-before-declare": false,
+    "object-literal-key-quotes": false,
+    "arrow-return-shorthand": false,
+    "no-parameter-reassignment": false,
+    "no-unused-expression": false,
+    "no-empty": false,
+    "no-floating-promises": false,
+    "curly": [
+      true,
+      "ignore-same-line"
+    ],
+    "no-object-literal-type-assertion": false,
+    "no-empty-interface": false,
+    "binary-expression-operand-order": false,
+    "no-unnecessary-callback-wrapper": false,
+    "no-submodule-imports": false,
+    "radix": false,
+    "no-inferrable-types": false,
+    "object-literal-shorthand": false,
+    //-- TypeCheck 가 필요해서 뺀 것들 (빌드속도문제)
+    "await-promise": false,
+    "no-for-in-array": false,
+    "no-unused-variable": false,
+    "strict-type-predicates": false,
+    "deprecation": false,
+    "match-default-export-name": false,
+    "no-boolean-literal-compare": false,
+    "no-unnecessary-qualifier": false,
+    "return-undefined": false,
+    "use-default-type-parameter": false,
+    "prefer-method-signature": false,
+    "prefer-readonly": false,
+    "promise-function-async": false,
+    "no-unbound-method": false,
+    "no-unnecessary-type-assertion": false
+  }
+}

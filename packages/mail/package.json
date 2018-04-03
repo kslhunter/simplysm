@@ -1,0 +1,19 @@
+{
+  "name": "@simplism/mail",
+  "description": "Simplism Mail Package",
+  "repository": "github:kslhunter/simplism",
+  "license": "MIT",
+  "author": "kslhunter",
+  "engines": {
+    "node": ">= 8.0.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "version": "3.2.4",
+  "dependencies": {
+    "nodemailer": "^4.6.4"
+  },
+  "peerDependencies": {
+    "@simplism/core": "^3.2.3"
+  }
+}

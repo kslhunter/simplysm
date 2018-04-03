@@ -1,0 +1,73 @@
+@mixin _sd-select-size-padding($key1, $key2) {
+  padding: padding($key1)-1 padding($key2) padding($key1) padding($key2) - 4px;
+  @media screen and (max-width: $m-screen) {
+    padding: m-padding($key1)-1 m-padding($key2) m-padding($key1) m-padding($key2) - 4px;
+  }
+}
+
+sd-select {
+  > select {
+    display: block;
+    width: 100%;
+    font-size: inherit;
+    font-family: inherit;
+    line-height: inherit;
+    color: inherit;
+    border: 1px solid border-color();
+    background: #fff;
+    cursor: pointer;
+
+    padding: padding(sm) - 1 padding(default) padding(sm) padding(default) - 4px;
+    @media screen and (max-width: $m-screen) {
+      padding: m-padding(sm) - 1 m-padding(default) m-padding(sm) m-padding(default) - 4px;
+    }
+
+    &._error {
+      border-left-color: theme-color(danger);
+    }
+
+    &:focus {
+      border-color: theme-color(primary);
+    }
+
+    &:disabled {
+      color: text-color(lighter);
+      background: grey(lightest);
+      cursor: default;
+    }
+
+    &._inline {
+      display: inline-block;
+      width: auto;
+    }
+
+    &._size-xxs {
+      @include _sd-select-size-padding(0, xxs);
+      @include font-size(sm);
+    }
+    &._size-xs {
+      @include _sd-select-size-padding(xxs, xs);
+      @include font-size(sm);
+    }
+    &._size-sm {
+      @include _sd-select-size-padding(xs, sm);
+      @include font-size();
+    }
+    &._size-default {
+      @include _sd-select-size-padding(sm, default);
+      @include font-size();
+    }
+    &._size-lg {
+      @include _sd-select-size-padding(default, lg);
+      @include font-size();
+    }
+    &._size-xl {
+      @include _sd-select-size-padding(lg, xl);
+      @include font-size(lg);
+    }
+    &._size-xxl {
+      @include _sd-select-size-padding(xl, xxl);
+      @include font-size(lg);
+    }
+  }
+}

@@ -1,0 +1,7 @@
+sd-card {
+  display: block;
+  background: $card-background;
+  /*@include padding(sm, 0);*/
+  @include margin(0, auto, default);
+  border: 1px solid border-color();
+}

@@ -1,0 +1,28 @@
+sd-combobox {
+  position: relative;
+  display: block;
+  width: 100%;
+
+  > sd-text-field > input {
+    padding-right: (padding(sm) * 2) + font-size() * (18 / 14);
+  }
+
+  > ._icon {
+    position: absolute;
+    display: block;
+    top: 0;
+    right: 0;
+    @include padding(sm);
+    pointer-events: none;
+  }
+
+  &._size-sm {
+    > sd-text-field > input {
+      padding-right: (padding(xs) * 2) + font-size() * (18 / 14);
+    }
+
+    > ._icon {
+      @include padding(xs);
+    }
+  }
+}

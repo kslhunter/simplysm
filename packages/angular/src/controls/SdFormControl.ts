@@ -1,0 +1,130 @@
+import {
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Injector,
+    Input,
+    OnDestroy,
+    Output
+} from "@angular/core";
+import {Exception} from "@simplism/core";
+import {SdToastProvider} from "../providers/SdToastProvider";
+
+@Component({
+    selector: "sd-form",
+    template: `
+        <iframe id="remember"
+                name="remember"
+                src="about:blank"
+                hidden></iframe>
+
+        <form target="remember"
+              method="post"
+              action="about:blank"
+              (submit)="onSubmit($event)">
+            <ng-content></ng-content>
+            <button type="submit"
+                    hidden></button>
+        </form>`,
+    host: {
+        "[class._inline]": "inline",
+        "[class._table]": "table"
+    },
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class SdFormControl implements AfterViewInit, OnDestroy {
+    @Output() submit = new EventEmitter<any>();
+    @Input() inline = false;
+    @Input() table = false;
+    @Input() useSaveShortcut = false;
+
+    constructor(private _elementRef: ElementRef,
+                private _toast: SdToastProvider) {
+    }
+
+    ngAfterViewInit(): void {
+        const $this = $(this._elementRef.nativeElement);
+        if (
+            ($this.attr("class") || "").includes("sd-padding-") ||
+            ($this.attr("style") || "").includes("padding")
+        ) {
+            throw new Exception("'sd-form' 컨트롤에는 'padding' 옵션을 줄 수 없습니다.");
+        }
+
+        $(document).on("keydown.sd.form", (e: any) => {
+            if (e.which === 83 && e.ctrlKey) {
+                e.preventDefault();
+                this.requestSubmit();
+            }
+        });
+    }
+
+    ngOnDestroy(): void {
+        $(document).off("keydown.sd.form");
+    }
+
+    requestSubmit(param?: any): void {
+        const $this = $(this._elementRef.nativeElement);
+
+        const $invalids = $this.find("form").find("*:invalid, *._error");
+        if ($invalids.length > 0) {
+            const $formItems = $invalids.parents("sd-form-item");
+            if ($formItems.length > 0) {
+                const labels = $formItems.toArray().map(item => $(item).children("label").text().trim()).reverse().join(", ");
+                this._toast.danger("입력정보가 잘못되었습니다:\n  - " + labels);
+            }
+            else {
+                this._toast.danger("입력정보가 잘못되었습니다.");
+            }
+
+            $invalids.eq(0).trigger("focus");
+        }
+        else {
+            this.submit.emit(param);
+        }
+    }
+
+    onSubmit(e: Event): void {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+}
+
+@Component({
+    selector: "sd-form-item",
+    template: `
+        <label *ngIf="isTableRow || label">{{label}}</label>
+        <div>
+            <ng-content></ng-content>
+        </div>`,
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class SdFormItemControl {
+    @Input()
+    set label(value: string) {
+        if (!(typeof value === "string")) {
+            throw new Exception(`'sd-form.label'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
+        }
+
+        this._label = value;
+    }
+
+    get label(): string {
+        return this._label;
+    }
+
+    private _label = "";
+
+    get isTableRow(): boolean {
+        //tslint:disable-next-line:no-null-keyword
+        const formControl = this._injector.get(SdFormControl, null);
+        if (!formControl) return false;
+
+        return formControl.table;
+    }
+
+    constructor(private _injector: Injector) {
+    }
+}

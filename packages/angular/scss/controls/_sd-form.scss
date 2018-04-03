@@ -1,0 +1,84 @@
+sd-form {
+  > form {
+    display: inline;
+    width: 100%;
+  }
+
+  sd-form-item {
+    display: block;
+    @include padding(0, 0, sm, 0);
+    min-width: 160px;
+
+    > label {
+      display: block;
+      font-weight: bold;
+      @include font-size(sm);
+      color: text-color(light);
+      @include padding(xs, 0);
+    }
+
+    > div {
+      display: block;
+    }
+  }
+
+  &._inline > form {
+    display: block;
+
+    margin-bottom: -1 * padding(sm);
+    @media screen and (max-width: $m-screen) {
+      margin-bottom: -1 * m-padding(sm);
+    }
+
+    sd-form-item {
+      display: inline-block;
+      @include padding(0, sm, sm, 0);
+      min-width: auto;
+
+      > label {
+        padding-right: padding(xs);
+        @include font-size();
+      }
+
+      > label,
+      > div {
+        display: inline-block;
+        vertical-align: middle;
+      }
+    }
+  }
+
+  &._table > form {
+    display: table;
+    margin-top: -1 * padding(xs);
+    margin-bottom: -1 * padding(xs);
+    @media screen and (max-width: $m-screen) {
+      margin-top: -1 * m-padding(xs);
+      margin-bottom: -1 * m-padding(xs);
+    }
+
+    > sd-form-item {
+      display: table-row;
+      min-width: auto;
+
+      > label {
+        @include padding(default, xs, default, 0);
+        @include font-size();
+      }
+
+      > div {
+        @include padding(xs, 0);
+      }
+
+      > label,
+      > div {
+        display: table-cell;
+        vertical-align: top;
+      }
+    }
+
+    > div {
+      width: 100%;
+    }
+  }
+}

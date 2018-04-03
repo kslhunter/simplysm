@@ -1,0 +1,20 @@
+{
+  "name": "@simplism/socket-client",
+  "description": "Simplism Socket Package (Client)",
+  "repository": "github:kslhunter/simplism",
+  "license": "MIT",
+  "author": "kslhunter",
+  "engines": {
+    "node": ">= 8.0.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "version": "3.2.4",
+  "dependencies": {
+    "socket.io-client": "^2.1.0"
+  },
+  "peerDependencies": {
+    "@simplism/core": "^3.2.3",
+    "@simplism/socket-common": "^3.2.3"
+  }
+}
