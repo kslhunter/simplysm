@@ -215,7 +215,7 @@ export class ClientWebpackConfig {
 
             plugins: [
                 new webpack.ContextReplacementPlugin(
-                    /angular(\\|\/)core(\\|\/)(@angular|esm5)/,
+                    /angular[\\/]core[\\/](@angular|esm5)/,
                     path.resolve(process.cwd(), "./src"),
                     {}
                 ),
