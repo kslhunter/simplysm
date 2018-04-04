@@ -9,11 +9,11 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "version": "3.2.9",
+  "version": "3.2.10",
   "dependencies": {
     "nodemailer": "^4.6.4"
   },
   "peerDependencies": {
-    "@simplism/core": "^3.2.8"
+    "@simplism/core": "^3.2.9"
   }
 }
