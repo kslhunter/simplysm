@@ -7,13 +7,21 @@ import * as webpackMerge from "webpack-merge";
 import * as fs from "fs-extra";
 import * as ExtractTextPlugin from "extract-text-webpack-plugin";
 import {Uuid} from "@simplism/core";
+import * as UglifyJsPlugin from "uglifyjs-webpack-plugin";
 
 export class ClientWebpackConfig {
     static getForBuild(config: ISimpackClientConfig, serverConfig: ISimpackServerConfig | undefined, env: string | undefined, clientDistPath: string): webpack.Configuration {
         return webpackMerge(this._getCommon(config, serverConfig), {
             mode: "production",
             optimization: {
-                noEmitOnErrors: true
+                noEmitOnErrors: true,
+                minimizer: [
+                    new UglifyJsPlugin({
+                        uglifyOptions: {
+                            keep_fnames: true
+                        }
+                    })
+                ]
             },
 
             output: {
@@ -25,10 +33,6 @@ export class ClientWebpackConfig {
 
             plugins: [
                 new ExtractTextPlugin("[name].[hash].css"),
-
-                new webpack.optimize.UglifyJsPlugin({
-                    mangle: {keep_fnames: true}
-                }),
 
                 new webpack.LoaderOptionsPlugin({
                     htmlLoader: {minimize: false}
@@ -132,6 +136,12 @@ export class ClientWebpackConfig {
                         vendor: {
                             test: /[\\/]node_modules[\\/](?!@simplism)/,
                             name: "vendor",
+                            chunks: "initial",
+                            enforce: true
+                        },
+                        simplism: {
+                            test: /[\\/]node_modules[\\/]@simplism[\\/](?!pack)/,
+                            name: "simplism",
                             chunks: "initial",
                             enforce: true
                         }

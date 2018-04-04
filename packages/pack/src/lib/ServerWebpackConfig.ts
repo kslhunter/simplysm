@@ -4,13 +4,21 @@ import {ISimpackConfig} from "./ISimpackConfig";
 import * as webpackMerge from "webpack-merge";
 import * as fs from "fs-extra";
 import {Safe} from "@simplism/core";
+import * as UglifyJsPlugin from "uglifyjs-webpack-plugin";
 
 export class ServerWebpackConfig {
     static getForBuild(config: ISimpackConfig, env: string | undefined): webpack.Configuration {
         return webpackMerge(this._getCommon(config), {
             mode: "production",
             optimization: {
-                noEmitOnErrors: true
+                noEmitOnErrors: true,
+                minimizer: [
+                    new UglifyJsPlugin({
+                        uglifyOptions: {
+                            keep_fnames: true
+                        }
+                    })
+                ]
             },
 
             plugins: [

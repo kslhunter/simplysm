@@ -6,7 +6,6 @@ import {
     EventEmitter,
     Injector,
     Input,
-    OnDestroy,
     Output
 } from "@angular/core";
 import {Exception} from "@simplism/core";
@@ -34,11 +33,10 @@ import {SdToastProvider} from "../providers/SdToastProvider";
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SdFormControl implements AfterViewInit, OnDestroy {
+export class SdFormControl implements AfterViewInit {
     @Output() submit = new EventEmitter<any>();
     @Input() inline = false;
     @Input() table = false;
-    @Input() useSaveShortcut = false;
 
     constructor(private _elementRef: ElementRef,
                 private _toast: SdToastProvider) {
@@ -52,17 +50,6 @@ export class SdFormControl implements AfterViewInit, OnDestroy {
         ) {
             throw new Exception("'sd-form' 컨트롤에는 'padding' 옵션을 줄 수 없습니다.");
         }
-
-        $(document).on("keydown.sd.form", (e: any) => {
-            if (e.which === 83 && e.ctrlKey) {
-                e.preventDefault();
-                this.requestSubmit();
-            }
-        });
-    }
-
-    ngOnDestroy(): void {
-        $(document).off("keydown.sd.form");
     }
 
     requestSubmit(param?: any): void {
@@ -104,7 +91,7 @@ export class SdFormControl implements AfterViewInit, OnDestroy {
 export class SdFormItemControl {
     @Input()
     set label(value: string) {
-        if (!(typeof value === "string")) {
+        if (value !== undefined && !(typeof value === "string")) {
             throw new Exception(`'sd-form.label'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
         }
 

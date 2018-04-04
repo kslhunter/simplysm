@@ -2,7 +2,7 @@ import {Exception} from "../exceptions/Exception";
 
 export class LambdaParser {
     static parse(predicate: (...args: any[]) => any): { params: string[]; returnContent: string } {
-        const matches = predicate.toString().match(/function\s?\(([^)]*)\)[^{]*{((?!return)(.|\r|\n))*return\s+((.|\r|\n)*);?\s?}$/);
+        const matches = predicate.toString().match(/function\s?\(([^)]*)\)[^{]*{((?!return)(.|\r|\n))*return\s?((.|\r|\n)*);?\s?}$/);
         if (!matches) {
             throw new Exception("Lambda 파싱 실패:\n" + predicate.toString() + "\n)");
         }

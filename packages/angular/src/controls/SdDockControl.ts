@@ -36,6 +36,8 @@ export class SdDockContainerControl implements AfterViewInit {
                 }
 
                 this.resizing();
+            }, {
+                childList: false
             });
         });
     }
@@ -132,6 +134,8 @@ export class SdDockControl implements AfterViewInit {
         this._zone.runOutsideAngular(() => {
             SimgularHelpers.detectElementChange(this._elementRef.nativeElement, () => {
                 this._container.resizing();
+            }, {
+                childList: false
             });
         });
     }

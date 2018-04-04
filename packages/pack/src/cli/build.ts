@@ -6,9 +6,12 @@ import {ServerBuilder} from "../lib/ServerBuilder";
 import {ClientBuilder} from "../lib/ClientBuilder";
 import {spawnSync} from "child_process";
 import {DatabaseFileGenerator} from "../lib/DatabaseFileGenerator";
+import * as semver from "semver";
 
 export async function build(argv: { config: string; env: string | undefined }): Promise<void> {
-    spawnSync("yarn", ["version", "--no-git-tag-version"], {
+    const packageConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
+    const newVersion = semver.inc(packageConfig.version, "patch")!;
+    spawnSync("yarn", ["version", "--new-version", newVersion], {
         shell: true,
         stdio: "inherit"
     });
