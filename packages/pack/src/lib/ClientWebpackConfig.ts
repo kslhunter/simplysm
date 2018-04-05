@@ -134,7 +134,7 @@ export class ClientWebpackConfig {
                 splitChunks: {
                     cacheGroups: {
                         vendor: {
-                            test: /[\\/]node_modules[\\/](?!@simplism)/,
+                            test: /[\\/]node_modules[\\/](?!@simplism|@angular)/,
                             name: "vendor",
                             chunks: "initial",
                             enforce: true
@@ -142,6 +142,12 @@ export class ClientWebpackConfig {
                         simplism: {
                             test: /[\\/]node_modules[\\/]@simplism[\\/](?!pack)/,
                             name: "simplism",
+                            chunks: "initial",
+                            enforce: true
+                        },
+                        angular: {
+                            test: /[\\/]node_modules[\\/]@angular/,
+                            name: "angular",
                             chunks: "initial",
                             enforce: true
                         }

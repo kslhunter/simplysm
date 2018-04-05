@@ -76,9 +76,14 @@ export class SdTableControl implements AfterViewInit {
             const $this = $(this._elementRef.nativeElement);
             $this.on("scroll.sd-table", this.repositioning.bind(this));
 
+            this.redraw();
+            this.redrawSelection(false);
+
             SimgularHelpers.detectElementChange($this.get(0), () => {
                 this.redraw();
                 this.redrawSelection(false);
+            }, {
+                resize: false
             });
 
             const setSelectedCellIndexByEvent = (event: Event) => {

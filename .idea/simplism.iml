@@ -3,6 +3,16 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/angular/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/core/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/database/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/excel/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/mail/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/pack/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/socket-client/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/socket-common/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/socket-server/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/storage/dist" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
     </content>
