@@ -1,3 +1,5 @@
+//tslint:disable:no-null-keyword
+
 import {
     AfterViewInit,
     ChangeDetectionStrategy,
@@ -11,8 +13,7 @@ import {
     ViewChild
 } from "@angular/core";
 import {SimgularHelpers} from "../helpers/SimgularHelpers";
-import {DateOnly, Wait} from "@simplism/core";
-import {SdFocusProvider} from "../providers/SdFocusProvider";
+import {DateOnly} from "@simplism/core";
 
 @Component({
     selector: "sd-table",
@@ -73,194 +74,246 @@ export class SdTableControl implements AfterViewInit {
 
     ngAfterViewInit(): void {
         this._zone.runOutsideAngular(() => {
-            const $this = $(this._elementRef.nativeElement);
-            $this.on("scroll.sd-table", this.repositioning.bind(this));
+            const thisElem = this._elementRef.nativeElement as HTMLElement;
+            thisElem.addEventListener("scroll", this.repositioning.bind(this));
 
             this.redraw();
             this.redrawSelection(false);
 
-            SimgularHelpers.detectElementChange($this.get(0), () => {
+            SimgularHelpers.detectElementChange(thisElem, () => {
                 this.redraw();
                 this.redrawSelection(false);
             }, {
                 resize: false
             });
 
+            SimgularHelpers.detectElementChange(thisElem, () => {
+                this.refocusing();
+            }, {
+                childList: false
+            });
+
             const setSelectedCellIndexByEvent = (event: Event) => {
-                const $target = $(event.target!);
-                const $tableRows = $this.find("> table > tbody");
-                const $selectedRow = $target.parents("tbody");
-                const row = $tableRows.toArray().indexOf($selectedRow.get(0));
+                const targetElem = event.target as HTMLElement;
 
-                const $selectedRowCellList = $selectedRow.find("> tr > *:not(th)");
-                let $selectedCell = $target.parents("tr > *:not(th)");
-                $selectedCell = $selectedCell.length > 0 ? $selectedCell : $target;
+                const rowElemList = Array.from(thisElem.querySelectorAll(":scope > table > tbody"));
 
-                const col = $selectedRowCellList.toArray().indexOf($selectedCell.get(0));
+                const selectedRowElem = this.getTargetRowElem(targetElem);
+                if (selectedRowElem === null) return;
+                const rowIndex = rowElemList.indexOf(selectedRowElem);
 
-                if (row > -1 && col > -1) {
-                    if (this._selectedCellIndex[0] !== row) {
-                        this._zone.run(() => {
-                            this.selectedRowChange.emit(row);
-                        });
-                    }
-                    this._selectedCellIndex = [row, col];
-                    this.redrawSelection(false);
+                const selectedCellElem = this.getTargetCellElem(targetElem);
+                if (selectedCellElem === null) return;
+
+                const selectedRowCellElemList = Array.from(selectedRowElem.querySelectorAll(":scope > tr > *:not(th)"));
+                const colIndex = selectedRowCellElemList.indexOf(selectedCellElem);
+
+                if (this._selectedCellIndex[0] !== rowIndex) {
+                    this._zone.run(() => {
+                        this.selectedRowChange.emit(rowIndex);
+                    });
                 }
+                this._selectedCellIndex = [rowIndex, colIndex];
+                this.redrawSelection(false);
             };
 
-            $this.get(0).addEventListener("mousedown", (event) => {
+            thisElem.addEventListener("mousedown", event => {
                 setSelectedCellIndexByEvent(event);
             }, true);
 
-            $this.get(0).addEventListener("focus", () => {
+            thisElem.addEventListener("focus", () => {
                 this.refocusing();
             }, true);
         });
     }
 
+    getTargetRowElem(targetElem: HTMLElement): HTMLElement | null {
+        let selectedRowElem: HTMLElement | null = targetElem;
+        while (!(selectedRowElem === null || selectedRowElem!.tagName.toLowerCase() === "tbody")) {
+            selectedRowElem = selectedRowElem.parentElement;
+        }
+        return selectedRowElem;
+    }
+
+    getTargetCellElem(targetElem: HTMLElement): HTMLElement | null {
+        let selectedCellElem: HTMLElement | null = targetElem;
+        while (!(selectedCellElem === null || selectedCellElem!.tagName.toLowerCase() === "td" || selectedCellElem!.tagName.toLowerCase().startsWith("sd-cell"))) {
+            selectedCellElem = selectedCellElem.parentElement;
+        }
+        return selectedCellElem;
+    }
+
+    getCellElem(rowIndex: number, colIndex: number): HTMLElement | null {
+        const thisElem = this._elementRef.nativeElement as HTMLElement;
+        const rowElem = thisElem.querySelectorAll(":scope > table > tbody")[rowIndex] as HTMLElement;
+        return rowElem ? rowElem.querySelectorAll(":scope > tr > *:not(th)")[colIndex] as HTMLElement : null;
+    }
+
     repositioning(): void {
-        const $this = $(this._elementRef.nativeElement);
-        $this.find("> table > thead > tr > *").css("marginTop", $this.scrollTop() || 0);
-        $this.find("> table > * > tr > *._fixed").css("marginLeft", $this.scrollLeft() || 0);
+        const thisElem = this._elementRef.nativeElement as HTMLElement;
+
+        const headerCellList = Array.from(thisElem.querySelectorAll(":scope > table > thead > tr > *")) as HTMLElement[];
+        for (const item of headerCellList) {
+            item.style.marginTop = (thisElem.scrollTop || 0) + "px";
+        }
+
+        const fixedCellList = Array.from(thisElem.querySelectorAll(":scope > table > * > tr > *._fixed")) as HTMLElement[];
+        for (const item of fixedCellList) {
+            item.style.marginLeft = (thisElem.scrollLeft || 0) + "px";
+        }
     }
 
     refocusing(): void {
-        const $this = $(this._elementRef.nativeElement);
+        const thisElem = this._elementRef.nativeElement as HTMLElement;
+        const targetElem = document.activeElement as HTMLElement;
+        if (!targetElem) return;
 
-        const $target = $(document.activeElement);
-        if ($target.length < 1) return;
+        const scrollLeft = thisElem.scrollLeft;
+        const scrollTop = thisElem.scrollTop;
 
-        const scrollLeft = $this.get(0).scrollLeft;
-        const scrollTop = $this.get(0).scrollTop;
+        const fixedColumnElemList = Array.from(thisElem.querySelectorAll(":scope > table > *:first-child > tr:first-child > *._fixed")) as HTMLElement[];
+        const fixedWidth = fixedColumnElemList.sum(item => item.offsetWidth);
+        const fixedRowElemList = Array.from(thisElem.querySelectorAll(":scope > table > thead > tr > *:first-child")) as HTMLElement[];
+        const fixedHeight = fixedRowElemList.sum(item => item.offsetHeight);
 
-        const $fixedColumns = $this.find("*:first-child > *:first-child > *._fixed");
-        const fixedWidth = $fixedColumns.toArray().sum(item => item.offsetWidth);
-        const $fixedRows = $this.find("thead > * > *:first-child");
-        const fixedHeight = $fixedRows.toArray().sum(item => item.offsetHeight);
+        const selectedCellElem = this.getTargetCellElem(targetElem);
+        if (selectedCellElem === null) return;
 
-        const $selectedCell = $target.parent().get(0).tagName === "TR" ? $target : $target.parents("tr > *:not(th)");
-        if ($selectedCell.length < 1) return;
-
-        const offsetLeft = $selectedCell.get(0).offsetLeft;
-        const offsetTop = $selectedCell.get(0).offsetTop;
+        const offsetLeft = selectedCellElem.offsetLeft;
+        const offsetTop = selectedCellElem.offsetTop;
 
         if (scrollLeft > offsetLeft - fixedWidth) {
-            $this.get(0).scrollLeft = offsetLeft - fixedWidth;
-        }
-        if (scrollTop > offsetTop - fixedHeight) {
-            $this.get(0).scrollTop = offsetTop - fixedHeight;
+            thisElem.scrollLeft = offsetLeft - fixedWidth;
         }
 
-        if (scrollLeft + $this.outerWidth()! < offsetLeft + $selectedCell.outerWidth()!) {
-            const scrollbarWidth = $this.get(0).offsetWidth - $this.get(0).clientWidth;
-            $this.get(0).scrollLeft = offsetLeft + $selectedCell.outerWidth()! - $this.outerWidth()! + scrollbarWidth;
+        if (scrollTop > offsetTop - fixedHeight) {
+            thisElem.scrollTop = offsetTop - fixedHeight;
         }
-        if (scrollTop + $this.outerHeight()! < offsetTop + $selectedCell.outerHeight()!) {
-            const scrollbarHeight = $this.get(0).offsetHeight - $this.get(0).clientHeight;
-            $this.get(0).scrollTop = offsetTop + $selectedCell.outerHeight()! - $this.outerHeight()! + scrollbarHeight;
+
+        if (scrollLeft + thisElem.offsetWidth < offsetLeft + selectedCellElem.offsetWidth) {
+            const scrollbarWidth = thisElem.offsetWidth - thisElem.clientWidth;
+            thisElem.scrollLeft = offsetLeft + selectedCellElem.offsetWidth - thisElem.offsetWidth + scrollbarWidth;
+        }
+
+        if (scrollTop + thisElem.offsetHeight < offsetTop + selectedCellElem.offsetHeight) {
+            const scrollbarHeight = thisElem.offsetHeight - thisElem.clientHeight;
+            thisElem.scrollTop = offsetTop + selectedCellElem.offsetHeight - thisElem.offsetHeight + scrollbarHeight;
         }
     }
 
     redraw(): void {
-        const $this = $(this._elementRef.nativeElement);
-        const $table = $this.find("> table");
-        const $cells = $this.find("> table > * > tr > *");
+        const thisElem = this._elementRef.nativeElement as HTMLElement;
+        const tableElem = thisElem.querySelector(":scope > table") as HTMLTableElement;
+        const cellElemList = Array.from(tableElem.querySelectorAll(":scope > * > tr > *")) as HTMLElement[];
 
         //-- 초기화
-        $this.css("width", "1000000px");
+        thisElem.style.width = "10000px";
 
-        $table.css({
-            display: "",
-            width: "",
-            height: ""
-        });
+        tableElem.style.display = null;
+        tableElem.style.width = null;
+        tableElem.style.height = null;
 
-        $cells.css({
-            position: "",
-            display: "",
-            top: "",
-            left: "",
-            width: "",
-            height: "",
-            "border-right": "",
-            "border-bottom-color": ""
-        });
-        $cells.removeClass("_fixed");
-        $cells.filter("*:not(th,sd-column-selector)").attr("tabindex", this.sheet ? "0" : "");
+        for (const cellElem of cellElemList) {
+            cellElem.style.position = null;
+            cellElem.style.display = null;
+            cellElem.style.top = null;
+            cellElem.style.left = null;
+            cellElem.style.width = null;
+            cellElem.style.height = null;
+            cellElem.style.borderRight = null;
+            cellElem.style.borderBottom = null;
+            cellElem.style.zIndex = null;
+            cellElem.classList.remove("_fixed");
+            if (!["th", "sd-column-selector"].includes(cellElem.tagName.toLowerCase())) {
+                if (this.sheet) {
+                    cellElem.setAttribute("tabindex", "0");
+                } else {
+                    cellElem.removeAttribute("tabindex");
+                }
+            }
+        }
 
         //-- fixed 셀 설정
         if (this.fixedColumns) {
-            const cellMap = this._getCellMap();
+            const cellMap = this._getCellElemMap();
             for (const row of cellMap) {
-                for (let colIndex = 0; colIndex < row.length; colIndex++) {
-                    const $cell = row[colIndex];
-                    if (colIndex < this.fixedColumns) {
-                        $cell.addClass("_fixed");
-                    }
+                for (const cellElem of row.filter((item, i) => i < this.fixedColumns)) {
+                    cellElem.classList.add("_fixed");
                 }
             }
         }
 
         //-- 테이블 크기 가져오기
         const tableStat = {
-            width: $table.width() || 0,
-            height: $table.height() || 0
+            width: tableElem.offsetWidth || 0,
+            height: tableElem.offsetHeight || 0
         };
 
         //-- 각 셀 위치/크기 가져오기
-        const cellStats = $cells.toArray()
-            .map((cell, index) => {
-                const result = {
-                    $cell: $(cell),
-                    top: $(cell).get(0).offsetTop,
-                    left: $(cell).get(0).offsetLeft,
-                    width: $(cell).outerWidth()!/* + 1*/,
-                    height: $(cell).outerHeight()! + 1
-                };
+        const cellStats = cellElemList.map((item, i) => {
+            const result: {
+                elem: HTMLElement;
+                top: number;
+                left: number;
+                width: number;
+                height: number;
+                zIndex: number;
+                borderRight: string | null;
+                borderBottom: string | null;
+            } = {
+                elem: item,
+                top: item.offsetTop,
+                left: item.offsetLeft,
+                width: item.offsetWidth,
+                height: item.offsetHeight + 1,
+                zIndex: cellElemList.length - i,
+                borderRight: null,
+                borderBottom: null
+            };
 
-                result["z-index"] = $cells.length - index;
-                if (/*$(cell).is("._fixed") &&*/ $(cell).parent().children("._fixed").last().get(0) === cell) {
-                    result["border-right"] = "1px solid #9E9E9E";
-                    result["z-index"] = $cells.length + index;
+            if (item.classList.contains("_fixed")) {
+                result.zIndex = cellElemList.length + i;
+
+                if (Array.from(item.parentElement!.querySelectorAll(":scope > ._fixed")).last() === item) {
+                    result.borderRight = "1px solid #9E9E9E";
                 }
-                if ($(cell).closest("thead,tbody").get(0).tagName.toLowerCase() === "thead") {
-                    result["border-bottom-color"] = "#9E9E9E";
-                    result["z-index"] = ($cells.length * 2) + index;
+            }
 
-                    if ($(cell).is("._fixed")) {
-                        result["z-index"] = ($cells.length * 3) + index;
-                    }
+            if (item.parentElement!.parentElement!.tagName.toLowerCase() === "thead") {
+                result.borderBottom = "1px solid #9E9E9E";
+
+                if (item.classList.contains("_fixed")) {
+                    result.zIndex = (cellElemList.length * 3) + i;
+                } else {
+                    result.zIndex = (cellElemList.length * 2) + i;
                 }
+            }
 
-                return result;
-            });
+            return result;
+        });
+
 
         //-- 테이블 크기 지정
-        $table.css({
-            display: "block",
-            width: tableStat.width,
-            height: tableStat.height
-        });
+        tableElem.style.display = "block";
+        tableElem.style.width = tableStat.width + "px";
+        tableElem.style.height = tableStat.height + "px";
 
         //-- 각 셀 위치/크기 지정
         for (const stat of cellStats) {
-            stat.$cell.css({
-                position: "absolute",
-                display: "block",
-                "z-index": stat["z-index"],
-                top: stat.top,
-                left: stat.left,
-                width: stat.width,
-                height: stat.height,
-                "border-right": stat["border-right"],
-                "border-bottom-color": stat["border-bottom-color"]
-            });
+            stat.elem.style.position = "absolute";
+            stat.elem.style.display = "block";
+            stat.elem.style.top = stat.top + "px";
+            stat.elem.style.left = stat.left + "px";
+            stat.elem.style.width = stat.width + "px";
+            stat.elem.style.height = stat.height + "px";
+            stat.elem.style.borderRight = stat.borderRight;
+            stat.elem.style.borderBottom = stat.borderBottom;
+            stat.elem.style.zIndex = stat.zIndex.toString();
         }
 
         this.repositioning();
 
-        $this.css("width", "");
+        thisElem.style.width = null;
 
         this.refocusing();
     }
@@ -268,16 +321,21 @@ export class SdTableControl implements AfterViewInit {
     redrawSelection(focusing: boolean = true): void {
         if (!this.sheet) return;
 
-        const $this = $(this._elementRef.nativeElement);
-        $this.find("> table > tbody").removeClass("sd-background-primary-state");
+        const thisElem = this._elementRef.nativeElement as HTMLElement;
+        const rowElemList = Array.from(thisElem.querySelectorAll(":scope > table > tbody"));
+        for (const rowElem of rowElemList) {
+            rowElem.classList.remove("sd-background-primary-state");
+        }
 
         if (this._selectedCellIndex[0] === undefined || this._selectedCellIndex[1] === undefined) {
-            $this.find("*").trigger("blur");
+            const targetElem = thisElem.querySelector(":focus") as HTMLElement;
+            if (targetElem) targetElem.blur();
+            this._selectedCellIndex[1] = undefined;
             return;
         }
 
-        const $selectedRow = $this.find("> table > tbody").eq(this._selectedCellIndex[0]!);
-        if ($selectedRow.length < 1) {
+        const selectedRowElem = thisElem.querySelectorAll(":scope > table > tbody").item(this._selectedCellIndex[0]!) as HTMLElement;
+        if (!selectedRowElem) {
             this._zone.run(() => {
                 this._selectedCellIndex = [undefined, undefined];
                 this.selectedRowChange.emit(undefined);
@@ -285,48 +343,58 @@ export class SdTableControl implements AfterViewInit {
             return;
         }
 
-        const $selectedCell = $selectedRow.find("> tr > *:not(th)").eq(this._selectedCellIndex[1]!);
+        const selectedCellElem = selectedRowElem.querySelectorAll(":scope > tr > *:not(th)").item(this._selectedCellIndex[1]!) as HTMLElement;
+        if (!selectedCellElem) {
+            this._zone.run(() => {
+                this._selectedCellIndex = [undefined, undefined];
+                this.selectedRowChange.emit(undefined);
+            });
+            return;
+        }
+
         if (this.selectable) {
-            $selectedRow.addClass("sd-background-primary-state");
+            selectedRowElem.classList.add("sd-background-primary-state");
         }
 
         if (focusing) {
-            $selectedCell.trigger("focus");
+            if (!Array.from(selectedCellElem.querySelectorAll(":scope *")).includes(document.activeElement)) {
+                selectedCellElem.focus();
+            }
         }
     }
 
-    private _getCellMap(): JQuery[][] {
-        const $this = $(this._elementRef.nativeElement);
+    private _getCellElemMap(): HTMLElement[][] {
+        const thisElem = this._elementRef.nativeElement as HTMLElement;
+        const tableElem = thisElem.querySelector(":scope > table") as HTMLTableElement;
+        const rowElemList = Array.from(tableElem.querySelectorAll(":scope > * > tr")) as HTMLElement[];
 
-        const result: JQuery[][] = [];
-        $this.find("> table > * > tr").each((rowIndex, row) => {
-            if (!result[rowIndex]) {
-                result[rowIndex] = [];
-            }
+        const result: HTMLElement[][] = [];
+        for (let rowIndex = 0; rowIndex < rowElemList.length; rowIndex++) {
+            if (!result[rowIndex]) result[rowIndex] = [];
 
+            const cellElemList = Array.from(rowElemList[rowIndex].querySelectorAll(":scope > *")) as HTMLTableCellElement[];
             let colIndex = 0;
-            $(row).children("*").each((i, cell) => {
+            for (const cellElem of cellElemList) {
                 while (result[rowIndex][colIndex]) {
                     colIndex++;
                 }
-                const rowspan = Number($(cell).attr("rowspan")) || 1;
-                const colspan = Number($(cell).attr("colspan")) || 1;
+
+                const rowspan = cellElem.rowSpan || 1;
+                const colspan = cellElem.colSpan || 1;
                 for (let r = 0; r < rowspan; r++) {
                     for (let c = 0; c < colspan; c++) {
-                        if (!result[rowIndex + r]) {
-                            result[rowIndex + r] = [];
-                        }
-                        result[rowIndex + r][colIndex + c] = $(cell);
+                        if (!result[rowIndex + r]) result[rowIndex + r] = [];
+                        result[rowIndex + r][colIndex + c] = cellElem;
                     }
                 }
-            });
-        });
+            }
+        }
 
         return result;
     }
 
     onKeydown(event: KeyboardEvent): void {
-        const $this = $(this._elementRef.nativeElement);
+        const thisElem = this._elementRef.nativeElement as HTMLElement;
 
         if (event.key === "ArrowLeft") {
             if (document.activeElement.tagName.toLowerCase() === "input") {
@@ -347,9 +415,8 @@ export class SdTableControl implements AfterViewInit {
 
             event.preventDefault();
 
-            const $selectedRow = $this.find("> table > tbody").eq(this._selectedCellIndex[0]!);
-            const nextCellElement = $selectedRow.find("> tr > *:not(th)").get(this._selectedCellIndex[1]! + 1);
-            if (nextCellElement) {
+            const nextCellElem = this.getCellElem(this._selectedCellIndex[0]!, this._selectedCellIndex[1]! + 1);
+            if (nextCellElem) {
                 this._selectedCellIndex[1]!++;
                 this.redrawSelection();
             }
@@ -374,9 +441,8 @@ export class SdTableControl implements AfterViewInit {
                         break;
                     }
 
-                    const $selectedRow = $this.find("> table > tbody").eq(rowIndex);
-                    const nextCellElement = $selectedRow.find("> tr > *:not(th)").get(this._selectedCellIndex[1]!);
-                    if (nextCellElement) {
+                    const nextCellElem = this.getCellElem(rowIndex, this._selectedCellIndex[1]!);
+                    if (nextCellElem) {
                         break;
                     }
                 }
@@ -400,14 +466,13 @@ export class SdTableControl implements AfterViewInit {
             let rowIndex = this._selectedCellIndex[0]!;
             while (true) {
                 rowIndex++;
-                if (rowIndex >= $this.find("> table > tbody").length) {
+                if (rowIndex >= thisElem.querySelectorAll(":scope > table > tbody").length) {
                     rowIndex = this._selectedCellIndex[0]!;
                     break;
                 }
 
-                const $selectedRow = $this.find("> table > tbody").eq(rowIndex);
-                const nextCellElement = $selectedRow.find("> tr > *:not(th)").get(this._selectedCellIndex[1]!);
-                if (nextCellElement) {
+                const nextCellElem = this.getCellElem(rowIndex, this._selectedCellIndex[1]!);
+                if (nextCellElem) {
                     break;
                 }
             }
@@ -420,11 +485,9 @@ export class SdTableControl implements AfterViewInit {
         else if (event.key === "Tab") {
             event.preventDefault();
 
-            const $selectedRow = $this.find("> table > tbody").eq(this._selectedCellIndex[0]!);
-
             if (!event.shiftKey) {
-                let nextCellElement = $selectedRow.find("> tr > *:not(th)").get(this._selectedCellIndex[1]! + 1);
-                if (nextCellElement) {
+                const nextCellElem = this.getCellElem(this._selectedCellIndex[0]!, this._selectedCellIndex[1]! + 1);
+                if (nextCellElem) {
                     this._selectedCellIndex[1]!++;
 
                     if (
@@ -432,15 +495,16 @@ export class SdTableControl implements AfterViewInit {
                         !document.activeElement.tagName.toLowerCase().startsWith("sd-cell")
                     ) {
                         this.redrawSelection();
-                        $(nextCellElement).find("input, select, button").trigger("focus");
+                        const nextCellControlElem = nextCellElem.querySelector(":scope input, :scope select, :scope button") as HTMLElement;
+                        if (nextCellControlElem) nextCellControlElem.focus();
                     }
                     else {
                         this.redrawSelection();
                     }
                 }
                 else {
-                    nextCellElement = $selectedRow.next().find("> tr > *:not(th)").get(0);
-                    if (nextCellElement) {
+                    const nextCellElem = this.getCellElem(this._selectedCellIndex[0]! + 1, 0);
+                    if (nextCellElem) {
                         this._selectedCellIndex[0]!++;
                         this.selectedRowChange.emit(this._selectedCellIndex[0]);
 
@@ -451,7 +515,8 @@ export class SdTableControl implements AfterViewInit {
                             !document.activeElement.tagName.toLowerCase().startsWith("sd-cell")
                         ) {
                             this.redrawSelection();
-                            $(nextCellElement).find("input, select, button").trigger("focus");
+                            const nextCellControlElem = nextCellElem.querySelector(":scope input, :scope select, :scope button") as HTMLElement;
+                            if (nextCellControlElem) nextCellControlElem.focus();
                         }
                         else {
                             this.redrawSelection();
@@ -463,34 +528,43 @@ export class SdTableControl implements AfterViewInit {
                 if (this._selectedCellIndex[1]! > 0) {
                     this._selectedCellIndex[1]!--;
 
-                    const nextCellElement = $selectedRow.find("> tr > *:not(th)").get(this._selectedCellIndex[1]!);
-                    if (
-                        document.activeElement.tagName.toLowerCase() !== "td" &&
-                        !document.activeElement.tagName.toLowerCase().startsWith("sd-cell")
-                    ) {
-                        this.redrawSelection();
-                        $(nextCellElement).find("input, select, button").trigger("focus");
-                    }
-                    else {
-                        this.redrawSelection();
+                    const nextCellElem = this.getCellElem(this._selectedCellIndex[0]!, this._selectedCellIndex[1]!);
+                    if (nextCellElem) {
+                        if (
+                            document.activeElement.tagName.toLowerCase() !== "td" &&
+                            !document.activeElement.tagName.toLowerCase().startsWith("sd-cell")
+                        ) {
+                            this.redrawSelection();
+                            const nextCellControlElem = nextCellElem.querySelector(":scope input, :scope select, :scope button") as HTMLElement;
+                            if (nextCellControlElem) nextCellControlElem.focus();
+                        }
+                        else {
+                            this.redrawSelection();
+                        }
                     }
                 }
                 else if (this._selectedCellIndex[0]! > 0) {
                     this._selectedCellIndex[0]!--;
                     this.selectedRowChange.emit(this._selectedCellIndex[0]);
 
-                    this._selectedCellIndex[1] = $selectedRow.find("> tr > *:not(th)").length - 1;
+                    const nextCellElem = this.getCellElem(this._selectedCellIndex[0]!, 0);
+                    if (nextCellElem) {
+                        const selectedRowElem = thisElem.querySelectorAll(":scope > table > tbody")[this._selectedCellIndex[0]!] as HTMLElement;
+                        if (selectedRowElem) {
+                            this._selectedCellIndex[1] = selectedRowElem.querySelectorAll(":scope > tr > *:not(th)").length - 1;
 
-                    const nextCellElement = $selectedRow.prev().find("> tr > *:not(th)").get(0);
-                    if (
-                        document.activeElement.tagName.toLowerCase() !== "td" &&
-                        !document.activeElement.tagName.toLowerCase().startsWith("sd-cell")
-                    ) {
-                        this.redrawSelection();
-                        $(nextCellElement).find("input, select, button").trigger("focus");
-                    }
-                    else {
-                        this.redrawSelection();
+                            if (
+                                document.activeElement.tagName.toLowerCase() !== "td" &&
+                                !document.activeElement.tagName.toLowerCase().startsWith("sd-cell")
+                            ) {
+                                this.redrawSelection();
+                                const nextCellControlElem = nextCellElem.querySelector(":scope input, :scope select, :scope button") as HTMLElement;
+                                if (nextCellControlElem) nextCellControlElem.focus();
+                            }
+                            else {
+                                this.redrawSelection();
+                            }
+                        }
                     }
                 }
             }
@@ -498,22 +572,26 @@ export class SdTableControl implements AfterViewInit {
 
         else if (event.key === "F2") {
             event.preventDefault();
-            const $selectedRow = $this.find("> table > tbody").eq(this._selectedCellIndex[0]!);
-            const $selectedCell = $selectedRow.find("> tr > *:not(th)").eq(this._selectedCellIndex[1]!);
-            $selectedCell.find("input, select, button").eq(0).trigger("focus");
+            const selectedCellElem = this.getCellElem(this._selectedCellIndex[0]!, this._selectedCellIndex[1]!);
+            if (selectedCellElem) {
+                const selectedCellControlElem = selectedCellElem.querySelector(":scope input, :scope select, :scope button") as HTMLElement;
+                if (selectedCellControlElem) selectedCellControlElem.focus();
+            }
         }
 
         else if (event.key === "Escape") {
             event.preventDefault();
-            this.redrawSelection();
+            const selectedCellElem = this.getCellElem(this._selectedCellIndex[0]!, this._selectedCellIndex[1]!);
+            if (selectedCellElem) {
+                selectedCellElem.focus();
+            }
         }
 
         else if (event.key === "Enter") {
             event.preventDefault();
 
-            const $selectedRow = $this.find("> table > tbody").eq(this._selectedCellIndex[0]!);
-            const nextCellElement = $selectedRow.next().find("> tr > *:not(th)").get(this._selectedCellIndex[1]!);
-            if (nextCellElement) {
+            const nextCellElem = this.getCellElem(this._selectedCellIndex[0]! + 1, this._selectedCellIndex[1]!);
+            if (nextCellElem) {
                 this._selectedCellIndex[0]!++;
                 this.selectedRowChange.emit(this._selectedCellIndex[0]);
 
@@ -522,7 +600,8 @@ export class SdTableControl implements AfterViewInit {
                     !document.activeElement.tagName.toLowerCase().startsWith("sd-cell")
                 ) {
                     this.redrawSelection();
-                    $(nextCellElement).find("input, select, button").trigger("focus");
+                    const nextCellControlElem = nextCellElem.querySelector(":scope input, :scope select, :scope button") as HTMLElement;
+                    if (nextCellControlElem) nextCellControlElem.focus();
                 }
                 else {
                     this.redrawSelection();
@@ -540,32 +619,19 @@ export class SdTableControl implements AfterViewInit {
 
             event.preventDefault();
 
-            const $selectedRow = $this.find("> table > tbody").eq(this._selectedCellIndex[0]!);
-            const $selectedCell = $selectedRow.find("> tr > *:not(th)").eq(this._selectedCellIndex[1]!);
+            const selectedCellElem = this.getCellElem(this._selectedCellIndex[0]!, this._selectedCellIndex[1]!);
+            if (selectedCellElem) {
+                const inputElem = selectedCellElem.querySelector(":scope input, :scope select") as HTMLElement;
+                if (inputElem) {
+                    inputElem.focus();
+                    return;
+                }
 
-            if ($selectedCell.has("sd-text-field").length) {
-                $selectedCell.find("sd-text-field > input").eq(0).trigger("focus");
-                return;
-            }
-
-            if ($selectedCell.has("button").length) {
-                $selectedCell.find("button").eq(0).trigger("click");
-                return;
-            }
-
-            if ($selectedCell.has("a").length) {
-                $selectedCell.find("a").get(0).click();
-                return;
-            }
-
-            if ($selectedCell.has("sd-checkbox").length) {
-                $selectedCell.find("sd-checkbox > label").eq(0).trigger("click");
-                return;
-            }
-
-            if ($selectedCell.has("select").length) {
-                $selectedCell.find("select").eq(0).trigger("focus");
-                return;
+                const buttonElem = selectedCellElem.querySelector(":scope button, :scope a, :scope sd-checkbox > label") as HTMLElement;
+                if (buttonElem) {
+                    buttonElem.click();
+                    return;
+                }
             }
         }
     }
@@ -747,14 +813,13 @@ export class SdColumnSelectorControl implements AfterViewInit {
 
     isDropdownOpen = false;
 
-    constructor(private _focus: SdFocusProvider,
-                private _cdr: ChangeDetectorRef) {
+    constructor(private _cdr: ChangeDetectorRef) {
     }
 
     ngAfterViewInit(): void {
-        const $dropdown = $(this.dropdownElementRef!.nativeElement);
-        $dropdown.get(0).addEventListener("blur", (e) => {
-            if ($dropdown.has(e.relatedTarget as any).length < 1) {
+        const dropdownElem = this.dropdownElementRef!.nativeElement as HTMLElement;
+        dropdownElem.addEventListener("blur", (e) => {
+            if (!Array.from(dropdownElem.querySelectorAll(":scope *")).includes(e.relatedTarget as Element)) {
                 this.isDropdownOpen = false;
                 this._cdr.markForCheck();
             }
@@ -763,9 +828,10 @@ export class SdColumnSelectorControl implements AfterViewInit {
 
     async openDropdown(): Promise<void> {
         this.isDropdownOpen = true;
-        const $dropdown = $(this.dropdownElementRef!.nativeElement);
-        await Wait.true(() => $dropdown.css("display") === "block");
-        this._focus.next($dropdown);
+
+        /*const dropdownElem = this.dropdownElementRef!.nativeElement as HTMLElement;
+        await Wait.true(() => getComputedStyle(dropdownElem).display === "block");
+        this._focus.next(dropdownElem);*/
     }
 
     onCheckChange(column: string, value: boolean): void {

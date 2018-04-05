@@ -12,7 +12,7 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "version": "3.2.10",
+  "version": "3.2.11",
   "dependencies": {
     "angular2-template-loader": "^0.6.2",
     "awesome-typescript-loader": "^5.0.0-1",
@@ -42,8 +42,8 @@
     "yargs": "^11.1.0"
   },
   "peerDependencies": {
-    "@simplism/core": "^3.2.9",
-    "@simplism/storage": "^3.2.9",
+    "@simplism/core": "^3.2.10",
+    "@simplism/storage": "^3.2.10",
     "ts-node": "^5.0.1",
     "tslint": "^5.9.1",
     "typescript": "^2.8.1"

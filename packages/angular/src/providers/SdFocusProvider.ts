@@ -2,8 +2,8 @@ import {Injectable} from "@angular/core";
 
 @Injectable()
 export class SdFocusProvider {
-    next($parent: JQuery = $("body")): boolean {
-        const $focusableList = $(this.getFocusableElementList($parent.get(0)));
+    next($parent: JQuery | Element = $("body")): boolean {
+        const $focusableList = $(this.getFocusableElementList(typeof $parent["get"] === "function" ? $parent["get"](0) : $parent));
         const currIndex = $focusableList.index(document.activeElement);
         if (currIndex < $focusableList.length - 1) {
             $focusableList[currIndex + 1].focus();
