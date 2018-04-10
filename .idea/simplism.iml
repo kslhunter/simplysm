@@ -9,6 +9,10 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/excel/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/mail/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/pack/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/pack/entry" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/pack/loaders" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/pack/public" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/pack/replacements" />
       <excludeFolder url="file://$MODULE_DIR$/packages/socket-client/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/socket-common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/socket-server/dist" />

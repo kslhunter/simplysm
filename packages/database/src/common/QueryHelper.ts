@@ -30,7 +30,7 @@ export class QueryHelper {
         if (type === DataType.NVARCHAR || type.includes("CHAR") || type === "TEXT") {
             return String;
         }
-        else if (type === DataType.INT || type.startsWith("INT") || type.startsWith("DECIMAL")) {
+        else if (type === DataType.INT || type.startsWith("INT") || type.startsWith("DECIMAL") || type.startsWith("NUMERIC")) {
             return Number;
         }
         else if (type === DataType.BIT || type.startsWith("BIT")) {

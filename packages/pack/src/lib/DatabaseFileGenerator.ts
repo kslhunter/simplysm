@@ -575,6 +575,9 @@ export class ${item.name} {
             case "void":
                 return undefined;
             default:
+                if (/["|]/.test(type)) {
+                    return "NVARCHAR";
+                }
                 throw new NotImplementedException(type);
         }
     }

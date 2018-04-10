@@ -13,7 +13,8 @@ import {
     ViewChild
 } from "@angular/core";
 import {SimgularHelpers} from "../helpers/SimgularHelpers";
-import {DateOnly} from "@simplism/core";
+import {DateOnly, Wait} from "@simplism/core";
+import {SdFocusProvider} from "../providers/SdFocusProvider";
 
 @Component({
     selector: "sd-table",
@@ -813,7 +814,8 @@ export class SdColumnSelectorControl implements AfterViewInit {
 
     isDropdownOpen = false;
 
-    constructor(private _cdr: ChangeDetectorRef) {
+    constructor(private _cdr: ChangeDetectorRef,
+                private _focus: SdFocusProvider) {
     }
 
     ngAfterViewInit(): void {
@@ -829,9 +831,9 @@ export class SdColumnSelectorControl implements AfterViewInit {
     async openDropdown(): Promise<void> {
         this.isDropdownOpen = true;
 
-        /*const dropdownElem = this.dropdownElementRef!.nativeElement as HTMLElement;
+        const dropdownElem = this.dropdownElementRef!.nativeElement as HTMLElement;
         await Wait.true(() => getComputedStyle(dropdownElem).display === "block");
-        this._focus.next(dropdownElem);*/
+        this._focus.next(dropdownElem);
     }
 
     onCheckChange(column: string, value: boolean): void {
