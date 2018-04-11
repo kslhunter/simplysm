@@ -249,7 +249,7 @@ Array.prototype.distinct = function (predicate?: (item: any, index: number) => b
 };
 
 Array.prototype.orderBy = function (predicate?: any): any[] {
-    return this.sort((p: any, n: any) => {
+    return this.concat().sort((p: any, n: any) => {
         if (predicate && typeof predicate === "function") {
             const pn = predicate(n);
             const pp = predicate(p);
@@ -267,7 +267,7 @@ Array.prototype.orderBy = function (predicate?: any): any[] {
 };
 
 Array.prototype.orderByDesc = function (predicate?: (item: any) => any): any[] {
-    return this.sort((p: any, n: any) => {
+    return this.concat().sort((p: any, n: any) => {
         const pn = predicate ? predicate(n) : n;
         const pp = predicate ? predicate(p) : p;
         return pn > pp ? 1 : pn < pp ? -1 : 0;
