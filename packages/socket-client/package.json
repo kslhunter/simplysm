@@ -9,12 +9,12 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "version": "3.2.11",
+  "version": "5.5.8",
   "dependencies": {
     "socket.io-client": "^2.1.0"
   },
   "peerDependencies": {
-    "@simplism/core": "^3.2.10",
-    "@simplism/socket-common": "^3.2.10"
+    "@simplism/core": "^5.5.7",
+    "@simplism/socket-common": "^5.5.7"
   }
 }

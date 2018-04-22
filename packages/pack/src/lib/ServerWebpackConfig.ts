@@ -3,22 +3,19 @@ import * as webpack from "webpack";
 import {ISimpackConfig} from "./ISimpackConfig";
 import * as webpackMerge from "webpack-merge";
 import * as fs from "fs-extra";
-import {Safe} from "@simplism/core";
-import * as UglifyJsPlugin from "uglifyjs-webpack-plugin";
+import {Logger, Safe} from "@simplism/core";
+
+// tslint:disable-next-line:variable-name
+const HappyPack = require("happypack");
+// tslint:disable-next-line:variable-name
+const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 
 export class ServerWebpackConfig {
     static getForBuild(config: ISimpackConfig, env: string | undefined): webpack.Configuration {
         return webpackMerge(this._getCommon(config), {
             mode: "production",
             optimization: {
-                noEmitOnErrors: true,
-                minimizer: [
-                    new UglifyJsPlugin({
-                        uglifyOptions: {
-                            keep_fnames: true
-                        }
-                    })
-                ]
+                noEmitOnErrors: true
             },
 
             plugins: [
@@ -84,25 +81,8 @@ export class ServerWebpackConfig {
                     },
                     {
                         test: /\.ts$/,
-                        enforce: "pre",
-                        loader: "tslint-loader",
-                        exclude: /node_modules/,
-                        options: {
-                            emitErrors: true,
-                            formatter: "prose"
-                        }
-                    },
-                    {
-                        test: /\.ts$/,
-                        use: [
-                            {
-                                loader: "awesome-typescript-loader",
-                                options: {
-                                    configFileName: path.resolve(process.cwd(), "packages", config.server.package, "tsconfig.json"),
-                                    silent: true
-                                }
-                            }
-                        ]
+                        loader: "happypack/loader?id=ts",
+                        exclude: /node_modules/
                     },
                     {
                         test: /\.node$/,
@@ -124,7 +104,34 @@ export class ServerWebpackConfig {
                 new webpack.NormalModuleReplacementPlugin(
                     /^bindings$/,
                     require.resolve(path.resolve(process.cwd(), "node_modules/@simplism/pack/replacements/bindings.js"))
-                )
+                ),
+
+                new HappyPack({
+                    id: "ts",
+                    verbose: false,
+                    loaders: [
+                        {
+                            loader: "ts-loader",
+                            options: {silent: true, happyPackMode: true}
+                        },
+                        "angular2-template-loader"
+                    ]
+                }),
+
+                new ForkTsCheckerWebpackPlugin({
+                    checkSyntacticErrors: true,
+                    tsconfig: path.resolve(process.cwd(), `packages/${config.server.package}/tsconfig.json`),
+                    tslint: true,
+                    /*formatter: "codeframe",*/
+                    logger: (() => {
+                        const logger = new Logger(config.server.package);
+                        return {
+                            error: logger.error.bind(logger),
+                            warn: logger.warn.bind(logger),
+                            info: logger.log.bind(logger)
+                        };
+                    })()
+                })
             ],
 
             externals: ["uws"]

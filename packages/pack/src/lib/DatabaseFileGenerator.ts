@@ -16,7 +16,7 @@ export class DatabaseFileGenerator {
     }
 
     static async generateModelFirst(config: ISimpackDatabaseConfig): Promise<void> {
-        const logger = Logger.getLogger(config.name);
+        const logger = new Logger(config.name);
         logger.info("Model First 시작");
 
         let modelFileContent = "";

@@ -2,7 +2,7 @@ import * as nodemailer from "nodemailer";
 import {Logger} from "@simplism/core";
 
 export class SmtpMailer {
-    private _logger = Logger.getLogger(this);
+    private _logger = new Logger("SmtpMailer");
 
     constructor(private _from: {
         host: string;

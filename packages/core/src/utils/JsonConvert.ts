@@ -50,7 +50,13 @@ export class JsonConvert {
         }
 
         const replacedObj = replacer(undefined, obj);
-        return JSON.stringify(replacedObj, replacer, Safe.obj(option).space);
+        try {
+            return JSON.stringify(replacedObj, replacer, Safe.obj(option).space);
+        }
+        catch (e) {
+            console.error(obj);
+            throw e;
+        }
     }
 
     static parse(str: string | undefined): any {

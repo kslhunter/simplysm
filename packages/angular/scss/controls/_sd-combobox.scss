@@ -3,7 +3,7 @@ sd-combobox {
   display: block;
   width: 100%;
 
-  > sd-text-field > input {
+  > sd-textfield > input {
     padding-right: (padding(sm) * 2) + font-size() * (18 / 14);
   }
 
@@ -17,7 +17,7 @@ sd-combobox {
   }
 
   &._size-sm {
-    > sd-text-field > input {
+    > sd-textfield > input {
       padding-right: (padding(xs) * 2) + font-size() * (18 / 14);
     }
 

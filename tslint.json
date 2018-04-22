@@ -1,7 +1,8 @@
 {
   "defaultSeverity": "error",
   "extends": [
-    "tslint:all"
+    "tslint:all"/*,
+    "codelyzer"*/
   ],
   "rules": {
     "linebreak-style": false,
@@ -63,7 +64,8 @@
       true,
       "ban-keywords",
       "check-format",
-      "allow-leading-underscore"
+      "allow-leading-underscore",
+      "allow-pascal-case"
     ],
     "comment-format": false,
     "prefer-switch": false,
@@ -156,6 +158,10 @@
     "radix": false,
     "no-inferrable-types": false,
     "object-literal-shorthand": false,
+    "triple-equals": [
+      true,
+      "allow-undefined-check"
+    ],
     //-- TypeCheck 가 필요해서 뺀 것들 (빌드속도문제)
     "await-promise": false,
     "no-for-in-array": false,
@@ -172,5 +178,57 @@
     "promise-function-async": false,
     "no-unbound-method": false,
     "no-unnecessary-type-assertion": false
+    //-- Codelyzer
+    /*"angular-whitespace": [
+      true,
+      "check-interpolation",
+      "check-semicolon"
+    ],
+    "banana-in-box": true,
+    "templates-no-negated-async": true,
+    "directive-selector": [
+      true,
+      "attribute",
+      "sd",
+      "camelCase"
+    ],
+    "component-selector": [
+      true,
+      "element",
+      "sd",
+      "kebab-case"
+    ],
+    "use-input-property-decorator": true,
+    "use-output-property-decorator": true,
+    "use-host-property-decorator": true,
+    "use-view-encapsulation": true,
+    "no-attribute-parameter-decorator": true,
+    "no-output-named-after-standard-event": true,
+    "no-input-rename": true,
+    "no-output-rename": true,
+    "no-output-on-prefix": true,
+    "no-forward-ref": true,
+    "no-unused-css": true,
+    "use-life-cycle-interface": true,
+    "contextual-life-cycle": true,
+    "trackBy-function": true,
+    "use-pipe-transform-interface": true,
+    "component-class-suffix": [
+      true,
+      "Control",
+      "Page",
+      "Component"
+    ],
+    "directive-class-suffix": true,
+    "pipe-impure": true,
+    "i18n": false,
+    "template-cyclomatic-complexity": [
+      true,
+      5
+    ],
+    "template-conditional-complexity": [
+      true,
+      4
+    ]*/
   }
 }

@@ -5,16 +5,11 @@ import {Exception} from "@simplism/core";
     selector: "sd-stars",
     template: `
         <div [ngClass]="styleClass">
-            <i class="fa-fw fa-star" [ngClass]="[value > 0 ? 'fas' : 'far']"
-               (click)="setValue(1)"></i>
-            <i class="fa-fw fa-star" [ngClass]="[value > 1 ? 'fas' : 'far']"
-               (click)="setValue(2)"></i>
-            <i class="fa-fw fa-star" [ngClass]="[value > 2 ? 'fas' : 'far']"
-               (click)="setValue(3)"></i>
-            <i class="fa-fw fa-star" [ngClass]="[value > 3 ? 'fas' : 'far']"
-               (click)="setValue(4)"></i>
-            <i class="fa-fw fa-star" [ngClass]="[value > 4 ? 'fas' : 'far']"
-               (click)="setValue(5)"></i>
+            <sd-icon *ngFor="let i of [0,1,2,3,4]"
+                     [fixedWidth]="true"
+                     [icon]="'star'"
+                     [type]="value > i ? 'solid' : 'regular'"
+                     (click)="setValue(i+1)"></sd-icon>
         </div>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

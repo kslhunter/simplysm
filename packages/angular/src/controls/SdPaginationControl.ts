@@ -4,13 +4,13 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@
     selector: "sd-pagination",
     template: `
         <a *ngIf="hasPrev" (click)="goPrev()">
-            <i class="fas fa-fw fa-angle-double-left"></i>
+            <sd-icon [icon]="'angle-double-left'" [fixedWidth]="true"></sd-icon>
         </a>
         <a *ngFor="let page of cursorPages" (click)="valueChange.emit(page)" [class._selected]="page === value">
             {{page + 1}}
         </a>
         <a *ngIf="hasNext" (click)="goNext()">
-            <i class="fas fa-fw fa-angle-double-right"></i>
+            <sd-icon [icon]="'angle-double-right'" [fixedWidth]="true"></sd-icon>
         </a>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush

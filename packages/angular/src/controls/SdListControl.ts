@@ -39,9 +39,9 @@ export class SdListControl {
                  (keydown.enter)="onTitleClick()"
                  (keydown)="onTitleKeydown($event)">
                 <ng-content></ng-content>
-                
+
                 <div class="_icon">
-                    <i class="fas fa-fw fa-angle-down"></i>
+                    <sd-icon [icon]="'angle-down'" [fixedWidth]="true"></sd-icon>
                 </div>
             </div>
             <div class="_child">

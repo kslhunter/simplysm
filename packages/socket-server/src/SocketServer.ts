@@ -20,7 +20,7 @@ export interface ISocketServerOption {
 }
 
 export class SocketServer {
-    private _logger = Logger.getLogger(this);
+    private _logger = new Logger("SocketServer");
     private _app?: net.Server;
     private _interval: any;
     private _preparedFileResults = new Map<string, SocketFileResult>();

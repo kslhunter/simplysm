@@ -10,7 +10,7 @@ import {FileWatcher} from "./FileWatcher";
 
 export class ServerBuilder {
     static async watch(config: ISimpackConfig, env: string | undefined): Promise<void> {
-        const logger = Logger.getLogger(config.server.package);
+        const logger = new Logger(config.server.package);
         await new Promise<void>((resolve, reject) => {
             logger.info("감지시작");
 
@@ -91,14 +91,32 @@ export class ServerBuilder {
 
                 resolve();
             });
-            compiler.hooks.watchRun.tap(config.server.package, () => {
-                logger.info("변경감지");
+
+            let prevTimestamps: { [key: string]: number };
+            compiler.hooks.watchRun.tap(config.server.package, (compilation) => {
+                const fileTimestamps = compilation["fileTimestamps"] as Map<string, number>;
+
+                const changeLogs = [];
+                if (prevTimestamps) {
+                    const changes = Array.from(fileTimestamps.keys())
+                        .filter(fileName => prevTimestamps[fileName] < fileTimestamps.get(fileName)!);
+                    for (const change of changes) {
+                        changeLogs.push(`${change}: ${prevTimestamps[change]} => ${fileTimestamps.get(change)}`);
+                    }
+                }
+
+                prevTimestamps = prevTimestamps || {};
+                for (const fileName of Array.from(fileTimestamps.keys())) {
+                    prevTimestamps[fileName] = fileTimestamps.get(fileName)!;
+                }
+
+                logger.info("변경감지:", changeLogs);
             });
         });
     }
 
     static async build(config: ISimpackConfig, env: string | undefined): Promise<void> {
-        const logger = Logger.getLogger(config.server.package);
+        const logger = new Logger(config.server.package);
         logger.info(`빌드 시작`);
         this._generateAppServiceFile(config.server.package);
 

@@ -60,9 +60,21 @@ import {SdBusyControl} from "./controls/SdBusyControl";
 import {SimgularHelpers} from "./helpers/SimgularHelpers";
 import {SdDropdownControl} from "./controls/SdDropdownControl";
 import {SdComboboxControl} from "./controls/SdComboboxControl";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {library} from "@fortawesome/fontawesome-svg-core";
+import {fas} from "@fortawesome/free-solid-svg-icons";
+import {far} from "@fortawesome/free-regular-svg-icons";
+import {SdIconControl} from "./controls/SdIcon";
+import {SdSheetColumnControl, SdSheetControl} from "./controls2/SdSheetControl";
+import {SdSheetColumnConfigModal} from "./modals/SdSheetColumnConfigModal";
+import {SdButton2Control} from "./controls2/SdButton2Control";
+import {SdTextfieldControl} from "./controls2/SdTextfieldControl";
+
+library.add(fas, far);
 
 const modules: Type<any>[] = [
-    BrowserModule
+    BrowserModule,
+    FontAwesomeModule
 ];
 
 const controls: Type<any>[] = [
@@ -95,8 +107,13 @@ const controls: Type<any>[] = [
     SdBusyControl,
     SdDropdownControl,
     SdComboboxControl,
+    SdIconControl,
+    SdSheetControl, SdSheetColumnControl,
 
-    CircleControl, OptionControl
+    CircleControl, OptionControl,
+
+    SdButton2Control,
+    SdTextfieldControl
 ];
 
 const providers: Type<any>[] = [
@@ -114,11 +131,11 @@ const providers: Type<any>[] = [
 ];
 
 const entryControls: Type<any>[] = [
-    SdModalControl
+    SdModalControl,
+    SdSheetColumnConfigModal
 ];
 
 const directives: Type<any>[] = [];
-
 
 const pipes: Type<any>[] = [];
 

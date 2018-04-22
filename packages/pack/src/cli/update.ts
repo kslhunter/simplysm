@@ -4,7 +4,7 @@ import {FileWatcher} from "../lib/FileWatcher";
 import {Logger} from "@simplism/core";
 
 export async function update(argv: { path: string; watch: boolean }): Promise<void> {
-    const logger = Logger.getLogger("simpack.update");
+    const logger = new Logger("simpack.update");
 
     const packageConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
     const dependencies = {

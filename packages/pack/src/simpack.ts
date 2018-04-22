@@ -13,7 +13,7 @@ import {keygen} from "./cli/keygen";
 
 require("source-map-support").install();
 
-const logger = Logger.getLogger("simpack");
+const logger = new Logger("simpack");
 
 yargs
     .help(

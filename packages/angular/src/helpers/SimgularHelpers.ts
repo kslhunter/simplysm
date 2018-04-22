@@ -1,6 +1,7 @@
-import {Logger, Wait} from "@simplism/core";
+import {ArgumentsException, Logger, Wait} from "@simplism/core";
 import {Routes} from "@angular/router";
-import {Type} from "@angular/core";
+import {SimpleChanges, Type} from "@angular/core";
+import {TypeValidateTypes} from "./types";
 
 export class SimgularHelpers {
     private static _isDetectElementChangeEnable = true;
@@ -14,7 +15,7 @@ export class SimgularHelpers {
         resize?: boolean;
         childList?: boolean;
     }): void {
-        const logger = Logger.getLogger("SimgularHelpers");
+        const logger = new Logger("SimgularHelpers");
 
         options = {
             resize: true,
@@ -38,7 +39,8 @@ export class SimgularHelpers {
         elementTagName = elementTagName || element.tagName.toLowerCase();
 
         if (options.childList) {
-            new MutationObserver(() => {
+            new MutationObserver((mutations) => {
+                if (mutations.every(item => item.target.nodeName === "#comment")) return;
                 logger.log("detect: mutate: " + elementTagName);
                 runCallback();
             }).observe(element, {
@@ -87,5 +89,66 @@ export class SimgularHelpers {
             }
         }
         return result;
+    }
+
+    static typeValidate(changes: SimpleChanges, checkers: {
+        [key: string]: TypeValidateTypes | TypeValidateTypes[] | {
+            type?: TypeValidateTypes | TypeValidateTypes[];
+            validator?: (value: any) => boolean;
+            required?: boolean;
+        };
+    }): void {
+        for (const prop of Object.keys(checkers)) {
+            if (!changes[prop]) continue;
+
+            const check = (value: any, opts: { type?: TypeValidateTypes[]; validator?: (value: any) => boolean; required?: boolean }) => {
+                if (value == undefined) {
+                    if (opts.required) {
+                        throw new ArgumentsException({value, required: opts.required});
+                    }
+                    return;
+                }
+
+                if (opts.type) {
+                    if (
+                        !opts.type.some(type =>
+                            type === value.constructor ||
+                            (type === "ThemeStrings" && ["primary", "warning", "danger", "info", "success"].includes(value)) ||
+                            (type === "SizeStrings" && ["xxs", "xs", "sm", "lg", "xl", "xxl"].includes(value))
+                        )
+                    ) {
+                        throw new ArgumentsException({prop, value, type: opts.type});
+                    }
+                }
+
+                if (opts.validator) {
+                    if (!opts.validator(value)) {
+                        throw new ArgumentsException({prop, value, validator: opts.validator});
+                    }
+                }
+            };
+
+            const value = changes[prop].currentValue;
+
+            if (checkers[prop] instanceof Array) {
+                check(value, {
+                    type: checkers[prop]
+                } as any);
+            }
+            else if (checkers[prop] instanceof Type || checkers[prop] === "ThemeStrings" || checkers[prop] === "SizeStrings") {
+                check(value, {
+                    type: [checkers[prop]]
+                } as any);
+            }
+            else if (!((checkers[prop] as any).type instanceof Array)) {
+                check(value, {
+                    ...(checkers[prop] as any),
+                    type: [(checkers[prop] as any).type]
+                } as any);
+            }
+            else {
+                check(value, checkers[prop] as any);
+            }
+        }
     }
 }

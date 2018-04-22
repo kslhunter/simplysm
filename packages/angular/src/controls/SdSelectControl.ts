@@ -10,6 +10,7 @@ import {SdButtonGroupControl} from "./SdButtonGroupControl";
                 [disabled]="disabled"
                 [ngStyle]="getStyle()"
                 [value]="valueJson"
+                [required]="required"
                 (change)="onChange($event)">
             <ng-content></ng-content>
         </select>`,
@@ -72,8 +73,7 @@ export class SdSelectControl {
         const parentButtonGroup = this._injector.get(SdButtonGroupControl, null);
         return [
             this._inline ? "_inline" : "",
-            this._size ? "_size-" + this._size : (parentButtonGroup && parentButtonGroup.size ? "_size-" + parentButtonGroup.size : ""),
-            this.required && !this._value ? "_error" : ""
+            this._size ? "_size-" + this._size : (parentButtonGroup && parentButtonGroup.size ? "_size-" + parentButtonGroup.size : "")
         ].filter(item => item);
     }
 

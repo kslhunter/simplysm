@@ -5,12 +5,14 @@ import {
     ElementRef,
     EventEmitter,
     Injector,
-    Input,
-    Output
+    Input, OnChanges,
+    Output,
+    SimpleChanges
 } from "@angular/core";
 import {Exception} from "@simplism/core";
 import {SdButtonGroupControl} from "./SdButtonGroupControl";
 import {SimgularHelpers} from "../helpers/SimgularHelpers";
+import {SizeStrings, ThemeStrings} from "../helpers/types";
 
 
 @Component({
@@ -23,11 +25,11 @@ import {SimgularHelpers} from "../helpers/SimgularHelpers";
                 [attr.required]="required">
             <div class="fa-pull-right"
                  *ngIf="type === 'search'">
-                <i class="fas fa-fw fa-search"></i>
+                <sd-icon [icon]="search" [fixedWidth]="true"></sd-icon>
             </div>
             <div class="fa-pull-right"
                  *ngIf="type === 'barcode'">
-                <i class="fas fa-fw fa-barcode"></i>
+                <sd-icon [icon]="'barcode'" [fixedWidth]="true"></sd-icon>
             </div>
             <div class="_sd-button-content">
                 <ng-content></ng-content>
@@ -35,7 +37,7 @@ import {SimgularHelpers} from "../helpers/SimgularHelpers";
         </button>
         <div *ngIf="!required && !disabled && type === 'search'">
             <a (click)="onDeselectClick($event)">
-                <i class="fas fa-fw fa-times"></i>
+                <sd-icon [icon]="'times'" [fixedWidth]="true"></sd-icon>
             </a>
         </div>`,
     host: {
@@ -44,29 +46,17 @@ import {SimgularHelpers} from "../helpers/SimgularHelpers";
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SdButtonControl implements AfterViewInit {
+export class SdButtonControl implements AfterViewInit, OnChanges {
+    @Input() size?: SizeStrings;
+    @Input() theme?: ThemeStrings;
     @Output() deselect = new EventEmitter<void>();
 
-    @Input()
-    set size(value: string) {
-        if (!["xxs", "xs", "sm", "default", "lg", "xl", "xxl"].includes(value)) {
-            throw new Exception(`'sd-button.size'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
-        }
-        this._size = value;
+    ngOnChanges(changes: SimpleChanges): void {
+        SimgularHelpers.typeValidate(changes, {
+            size: "SizeStrings",
+            theme: "ThemeStrings"
+        });
     }
-
-    private _size?: string = undefined;
-
-    @Input()
-    set theme(value: string) {
-        if (!["default", "primary", "warning", "danger", "info", "success"].includes(value)) {
-            throw new Exception(`'sd-button.theme'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
-        }
-        this._theme = value;
-    }
-
-    private _theme = "default";
-
 
     @Input()
     set focusable(value: boolean) {
@@ -166,8 +156,8 @@ export class SdButtonControl implements AfterViewInit {
         const parentButtonGroup = this._injector.get(SdButtonGroupControl, null);
         return [
             this._inline ? "_inline" : "",
-            this._theme ? "_theme-" + this._theme : "",
-            this._size ? "_size-" + this._size : (parentButtonGroup && parentButtonGroup.size ? "_size-" + parentButtonGroup.size : ""),
+            this.theme ? `_theme-${this.theme}` : "",
+            this.size ? `_size-${this.size}` : (parentButtonGroup && parentButtonGroup.size ? "_size-" + parentButtonGroup.size : ""),
             this._selected ? "_selected" : "",
             this.type === "search" ? "_type-search" : "",
             this.type === "barcode" ? "_type-barcode" : ""

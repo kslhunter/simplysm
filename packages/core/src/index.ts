@@ -5,6 +5,7 @@ import "./extensions/StringConstructorExtensions";
 import "./extensions/ObjectConstructorExtensions";
 import "./extensions/ConstructorExtensions";
 
+export * from "./exceptions/ArgumentsException";
 export * from "./exceptions/Exception";
 export * from "./exceptions/CodeException";
 export * from "./exceptions/NotImplementedException";

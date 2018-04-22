@@ -6,22 +6,23 @@ import * as CopyWebpackPlugin from "copy-webpack-plugin";
 import * as webpackMerge from "webpack-merge";
 import * as fs from "fs-extra";
 import * as ExtractTextPlugin from "extract-text-webpack-plugin";
-import {Uuid} from "@simplism/core";
-import * as UglifyJsPlugin from "uglifyjs-webpack-plugin";
+import {Logger, Uuid} from "@simplism/core";
+
+// tslint:disable-next-line:variable-name
+const HappyPack = require("happypack");
+// tslint:disable-next-line:variable-name
+const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 
 export class ClientWebpackConfig {
     static getForBuild(config: ISimpackClientConfig, serverConfig: ISimpackServerConfig | undefined, env: string | undefined, clientDistPath: string): webpack.Configuration {
         return webpackMerge(this._getCommon(config, serverConfig), {
             mode: "production",
             optimization: {
-                noEmitOnErrors: true,
-                minimizer: [
-                    new UglifyJsPlugin({
-                        uglifyOptions: {
-                            keep_fnames: true
-                        }
-                    })
-                ]
+                noEmitOnErrors: true
+            },
+
+            entry: {
+                "app": path.resolve(process.cwd(), "node_modules", "@simplism", "pack", "entry", "main.ts")
             },
 
             output: {
@@ -29,6 +30,22 @@ export class ClientWebpackConfig {
                 publicPath: config.cordova ? "/android_asset/www/" : undefined,
                 filename: "[name].[hash].js",
                 chunkFilename: "[id].[hash].js"
+            },
+
+            module: {
+                rules: [
+                    {
+                        test: /\.scss$/,
+                        exclude: /[\\\/]src[\\\/]/,
+                        use: ExtractTextPlugin.extract({
+                            fallback: "style-loader",
+                            use: [
+                                "css-loader?sourceMap",
+                                "sass-loader?sourceMap"
+                            ]
+                        })
+                    }
+                ]
             },
 
             plugins: [
@@ -62,9 +79,17 @@ export class ClientWebpackConfig {
         });
     }
 
-    static getForStart(config: ISimpackClientConfig, serverConfig: ISimpackServerConfig | undefined, env: string | undefined, clientDistPath: string): webpack.Configuration {
+    static getForStart(config: ISimpackClientConfig, serverConfig: ISimpackServerConfig, env: string | undefined, clientDistPath: string): webpack.Configuration {
         const webpackConfig: webpack.Configuration = webpackMerge(this._getCommon(config, serverConfig), {
             mode: "development",
+
+            entry: {
+                "app": [
+                    `webpack-dev-server/client?http://${serverConfig.host}:${serverConfig.port + 1}/`,
+                    `webpack/hot/dev-server`,
+                    path.resolve(process.cwd(), "node_modules", "@simplism", "pack", "entry", "main.ts")
+                ]
+            },
 
             output: {
                 path: clientDistPath,
@@ -72,9 +97,21 @@ export class ClientWebpackConfig {
                 chunkFilename: "[id].chunk.js"
             },
 
-            plugins: [
-                new ExtractTextPlugin("[name].css"),
+            module: {
+                rules: [
+                    {
+                        test: /\.scss$/,
+                        exclude: /[\\\/]src[\\\/]/,
+                        use: [
+                            "style-loader",
+                            "css-loader?sourceMap",
+                            "sass-loader?sourceMap"
+                        ]
+                    }
+                ]
+            },
 
+            plugins: [
                 /*new WebpackWatchTimefixPlugin(),*/
 
                 new HtmlWebpackPlugin({
@@ -96,7 +133,9 @@ export class ClientWebpackConfig {
                         SERVER_PORT: serverConfig && serverConfig.port,
                         ...config.env
                     })
-                })
+                }),
+
+                new webpack.HotModuleReplacementPlugin()
             ]
         });
 
@@ -126,15 +165,11 @@ export class ClientWebpackConfig {
             devtool: "source-map",
             target: config.electron ? "electron-renderer" : undefined,
 
-            entry: {
-                "app": path.resolve(process.cwd(), "node_modules", "@simplism", "pack", "entry", "main.ts")
-            },
-
             optimization: {
                 splitChunks: {
                     cacheGroups: {
                         vendor: {
-                            test: /[\\/]node_modules[\\/](?!@simplism|@angular)/,
+                            test: /[\\/]node_modules[\\/](?!@simplism)/,
                             name: "vendor",
                             chunks: "initial",
                             enforce: true
@@ -142,12 +177,6 @@ export class ClientWebpackConfig {
                         simplism: {
                             test: /[\\/]node_modules[\\/]@simplism[\\/](?!pack)/,
                             name: "simplism",
-                            chunks: "initial",
-                            enforce: true
-                        },
-                        angular: {
-                            test: /[\\/]node_modules[\\/]@angular/,
-                            name: "angular",
                             chunks: "initial",
                             enforce: true
                         }
@@ -174,7 +203,7 @@ export class ClientWebpackConfig {
                         test: /\.js$/,
                         use: ["source-map-loader"],
                         enforce: "pre"
-                    },
+                    }, /*
                     {
                         test: /\.ts$/,
                         enforce: "pre",
@@ -193,24 +222,41 @@ export class ClientWebpackConfig {
                                 configFileName: path.resolve(process.cwd(), "packages", config.package, "tsconfig.json"),
                                 silent: true
                             }
-                        }, "angular2-template-loader"]
-                    },
+                        }, "angular2-template-loader"],
+                        exclude: /node_modules/
+                    },*/
                     {
-                        test: /\.html$/,
-                        use: "html-loader"
-                    },
-                    {
-                        test: /\.scss$/,
-                        exclude: /[\\\/]src[\\\/]/,
-                        use: ExtractTextPlugin.extract({
-                            fallback: "style-loader",
-                            use: ["css-loader?sourceMap", "sass-loader?sourceMap"]
-                        })
+                        test: /\.ts$/,
+                        loader: "happypack/loader?id=ts",
+                        exclude: /node_modules/
                     },
                     {
                         test: /\.scss$/,
                         include: /[\\\/]src[\\\/]/,
                         use: ["raw-loader", "sass-loader?sourceMap"]
+                    },
+                    {
+                        test: /\.pcss$/,
+                        use: [
+                            "style-loader",
+                            {
+                                loader: "css-loader",
+                                options: {importLoaders: 1}
+                            },
+                            {
+                                loader: "postcss-loader",
+                                options: {
+                                    plugins: (loader: any) => [
+                                        require("postcss-import")({root: loader.resourcePath}),
+                                        require("postcss-cssnext")()
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        test: /\.html$/,
+                        use: "html-loader"
                     },
                     {
                         test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf)$/,
@@ -235,7 +281,38 @@ export class ClientWebpackConfig {
                 new webpack.NormalModuleReplacementPlugin(
                     /^APP_MODULE_PATH$/,
                     require.resolve(path.resolve(process.cwd(), "packages", config.package, "src", "AppModule.ts"))
-                )
+                ),
+
+                new HappyPack({
+                    id: "ts",
+                    verbose: false,
+                    loaders: [
+                        {
+                            loader: "ts-loader",
+                            options: {silent: true, happyPackMode: true}
+                        },
+                        "angular2-template-loader"
+                    ]
+                }),
+
+                new ForkTsCheckerWebpackPlugin({
+                    checkSyntacticErrors: true,
+                    tsconfig: path.resolve(process.cwd(), `packages/${config.package}/tsconfig.json`),
+                    tslint: true,
+                    /*formatter: "codeframe",*/
+                    logger: (() => {
+                        const logger = new Logger(config.package);
+                        return {
+                            error: logger.error.bind(logger),
+                            warn: logger.warn.bind(logger),
+                            info: logger.log.bind(logger)
+                        };
+                    })()
+                }),
+
+                new CopyWebpackPlugin([
+                    {from: path.resolve(process.cwd(), `node_modules/@simplism/pack/assets/public`)}
+                ])
             ],
 
 

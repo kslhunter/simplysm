@@ -780,7 +780,7 @@ export class SdCellCheckboxControl {
     selector: "sd-column-selector",
     template: `
         <a (click)="openDropdown()">
-            <i class="fas fa-fw fa-columns"></i>
+            <sd-icon [icon]="'columns'" [fixedWidth]="true"></sd-icon>
         </a>
         <sd-dropdown #dropdown
                      [open]="isDropdownOpen">

@@ -4,8 +4,8 @@ import {SdCanDeactivatePage} from "../bases/SdCanDeactivatePage";
 
 @Injectable()
 export class SdCanDeactivateGuardProvider implements CanDeactivate<SdCanDeactivatePage> {
-    async canDeactivate(component: SdCanDeactivatePage): Promise<boolean> {
-        return component.canDeactivate
+    async canDeactivate(component?: SdCanDeactivatePage): Promise<boolean> {
+        return component && component.canDeactivate
             ? await component.canDeactivate()
             : true;
     }

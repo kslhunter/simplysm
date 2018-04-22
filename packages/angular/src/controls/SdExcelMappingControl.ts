@@ -13,7 +13,7 @@ import {DateOnly} from "@simplism/core";
                 <h4>엑셀 업로드</h4>
                 <sd-topbar-button (click)="submitExcelFile()"
                                   *ngIf="excelItemList.length > 0">
-                    <i class="fas fa-fw fa-check"></i>
+                    <sd-icon [icon]="'check'" [fixedWidth]="true"></sd-icon>
                     등록
                 </sd-topbar-button>
             </sd-topbar>
@@ -27,33 +27,22 @@ import {DateOnly} from "@simplism/core";
 
                 <sd-pane>
                     <sd-busy [value]="busy">
-                        <sd-table *ngIf="excelItemList.length > 0">
-                            <thead>
-                            <tr>
-                                <th *ngFor="let header of excelHeaderList">
-                                    {{header}}
-                                </th>
-                            </tr>
-                            </thead>
-                            <thead class="sd-background-info-state">
-                            <tr>
-                                <sd-cell-select *ngFor="let header of excelHeaderList"
-                                                [(value)]="excelHeaderMap[header]">
-                                    <option *ngFor="let field of fields"
-                                            [value]="field">
-                                        {{field}}
-                                    </option>
-                                </sd-cell-select>
-                            </tr>
-                            </thead>
-                            <tbody *ngFor="let item of displayExcelItemList">
-                            <tr>
-                                <td *ngFor="let header of excelHeaderList">
-                                    {{item[header]}}
-                                </td>
-                            </tr>
-                            </tbody>
-                        </sd-table>
+                        <sd-sheet [items]="excelItemList" *ngIf="excelItemList.length > 0">
+                            <sd-sheet-column *ngFor="let title of excelTitleList; trackBy: titleTrackByFn"
+                                             [title]="title">
+                                <ng-template #header>
+                                    <sd-select [(value)]="excelTitleMap[title]">
+                                        <option *ngFor="let field of fields" [value]="field">
+                                            {{ field }}
+                                        </option>
+                                    </sd-select>
+                                </ng-template>
+
+                                <ng-template #item let-item="item">
+                                    {{ item[title] }}
+                                </ng-template>
+                            </sd-sheet-column>
+                        </sd-sheet>
                     </sd-busy>
                 </sd-pane>
             </sd-dock-container>
@@ -62,7 +51,7 @@ import {DateOnly} from "@simplism/core";
 export class SdExcelMappingControl {
     busy = false;
     excelItemList: { [key: string]: any }[] = [];
-    excelHeaderMap: { [key: string]: string | undefined } = {};
+    excelTitleMap: { [key: string]: string | undefined } = {};
     displayExcelItemList: { [key: string]: any }[] = [];
 
     pagination = {
@@ -70,9 +59,11 @@ export class SdExcelMappingControl {
         length: 0
     };
 
-    get excelHeaderList(): string[] {
+    get excelTitleList(): string[] {
         return this.excelItemList.length > 0 ? Object.keys(this.excelItemList[0]) : [];
     }
+
+    titleTrackByFn = (index: number, value: string) => value;
 
     @Input() fields: string[] = [];
     @Output() submit = new EventEmitter<{ [key: string]: string | undefined }[]>();
@@ -94,8 +85,8 @@ export class SdExcelMappingControl {
                                 return;
                             }
 
-                            for (const header of this.excelHeaderList) {
-                                this.excelHeaderMap[header] = this.fields.includes(header) ? header : undefined;
+                            for (const title of this.excelTitleList) {
+                                this.excelTitleMap[title] = this.fields.includes(title) ? title : undefined;
                             }
 
                             this.pagination.length = Math.ceil(this.excelItemList.length / 30);
@@ -125,20 +116,20 @@ export class SdExcelMappingControl {
 
     closeExcelFile(): void {
         this.excelItemList = [];
-        this.excelHeaderMap = {};
+        this.excelTitleMap = {};
         this.valueChange.emit(undefined);
     }
 
 
     async submitExcelFile(): Promise<void> {
-        const dupKeys = Object.values(this.excelHeaderMap).groupBy(item => item).toPairedArray().filter(item => item[0] && item[1].length > 1).map(item => item[0]).distinct();
+        const dupKeys = Object.values(this.excelTitleMap).groupBy(item => item).toPairedArray().filter(item => item[0] && item[1].length > 1).map(item => item[0]).distinct();
         if (dupKeys.length > 0) {
             await this._toast.danger("매핑이 중복되었습니다.\n- " + dupKeys.join(", "));
             return;
         }
 
         const getValue = (item: any, colName: string): string | undefined => {
-            const fieldName = Object.keys(this.excelHeaderMap).singleOr(undefined, key => this.excelHeaderMap[key] === colName);
+            const fieldName = Object.keys(this.excelTitleMap).singleOr(undefined, key => this.excelTitleMap[key] === colName);
             const val = fieldName ? item[fieldName] : undefined;
             return val ? (
                 val instanceof Date ? val.toFormatString("yyyy-MM-dd HH:mm:ss")

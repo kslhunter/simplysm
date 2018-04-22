@@ -4,7 +4,7 @@ import {ISocketEvent, ISocketRequest, ISocketResponse} from "@simplism/socket-co
 import Socket = SocketIOClient.Socket;
 
 export class SocketClient {
-    private _logger = Logger.getLogger(this);
+    private _logger = new Logger("SocketClient");
     private _socket?: Socket;
     private _url?: string;
     private _reloadId?: Uuid;

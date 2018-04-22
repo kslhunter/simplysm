@@ -12,5 +12,5 @@ module.exports = exports = function (str) {
         return result;
     }
 
-    Logger.getLogger("bindings").warn("미지정:", str);
+    new Logger("bindings").warn("미지정:", str);
 };

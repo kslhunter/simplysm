@@ -7,7 +7,7 @@ import {CodeException, Logger} from "@simplism/core";
 const JSFtp = require("jsftp");
 
 export class FtpStorage implements IStorage {
-    private _logger = Logger.getLogger(this);
+    private _logger = new Logger("FtpStorage");
     private _ftp: any;
 
     async connect(connectionConfig: IFtpConnectionConfig): Promise<void> {

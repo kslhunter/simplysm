@@ -15,7 +15,7 @@ import * as fs from "fs-extra";
 export abstract class Database {
     private _conn?: ConnectionPool;
     private _trans?: Transaction;
-    logger = Logger.getLogger(this);
+    logger = new Logger("Database");
 
     private _preparedQueries: string[] = [];
 

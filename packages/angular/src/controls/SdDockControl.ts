@@ -6,7 +6,9 @@ import {
     forwardRef,
     Inject,
     Input,
-    NgZone
+    NgZone,
+    OnChanges,
+    SimpleChanges
 } from "@angular/core";
 import {Exception} from "@simplism/core";
 import {SimgularHelpers} from "../helpers/SimgularHelpers";
@@ -104,21 +106,20 @@ export class SdDockContainerControl implements AfterViewInit {
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SdDockControl implements AfterViewInit {
-    private _position = "top";
-    get position(): string {
-        return this._position;
-    }
+export class SdDockControl implements AfterViewInit, OnChanges {
+    @Input() position: "top" | "bottom" | "left" | "right" = "top";
+    @Input() resizable?: boolean;
 
-    @Input()
-    set position(value: string) {
-        if (!["top", "bottom", "left", "right"].includes(value)) {
-            throw new Exception(`'sd-dock.position'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
-        }
-        this._position = value;
+    ngOnChanges(changes: SimpleChanges): void {
+        SimgularHelpers.typeValidate(changes, {
+            position: {
+                type: String,
+                validator: value => ["top", "bottom", "left", "right"].includes(value),
+                required: true
+            },
+            resizable: Boolean
+        });
     }
-
-    @Input() resizable = false;
 
     constructor(private _elementRef: ElementRef,
                 @Inject(forwardRef(() => SdDockContainerControl)) private _container: SdDockContainerControl,

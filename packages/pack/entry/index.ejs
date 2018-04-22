@@ -10,7 +10,7 @@
     <meta http-equiv="Content-Type"
           content="text/html; charset=utf-8">
 
-    <base href="<%= htmlWebpackPlugin.options.CORDOVA && htmlWebpackPlugin.options.NODE_ENV === "production" ? "/android_asset/www/" : "/" + htmlWebpackPlugin.options.PACKAGE_NAME + "/" %>">
+    <base href="<%= htmlWebpackPlugin.options.NODE_ENV === "production" ? (htmlWebpackPlugin.options.CORDOVA ? "/android_asset/www/" : "/" + htmlWebpackPlugin.options.PACKAGE_NAME + "/") : "/" %>">
     <title><%= htmlWebpackPlugin.options.NAME %></title>
     <style>
         html, body {
@@ -120,6 +120,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" type="text/css" href="./notosanskr.css">
 </head>
 <body>
 <my-app>

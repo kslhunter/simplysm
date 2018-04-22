@@ -23,7 +23,7 @@ export class SdTopbarContainerControl {
         <a class="_close-button"
            *ngIf="closable"
            (click)="onCloseButtonClick()">
-            <i class="fas fa-fw fa-times"></i>
+            <sd-icon icon="times" [fixedWidth]="true"></sd-icon>
         </a>
         <ng-content></ng-content>
         <div class="_button-group">

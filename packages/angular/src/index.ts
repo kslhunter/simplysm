@@ -1,3 +1,4 @@
+import "./helpers/ElementExtensions";
 //-------------------------------------------------
 export * from "./bases/SdModalControlBase";
 export * from "./bases/SdPrintControlTemplateBase";
@@ -49,3 +50,4 @@ export * from "./providers/SdCanDeactivateGuardProvider";
 export * from "./entry-controls/SdModalControl";
 //-------------------------------------------------
 export * from "./helpers/SimgularHelpers";
+export * from "./helpers/types";

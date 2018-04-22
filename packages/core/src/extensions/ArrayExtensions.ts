@@ -1,4 +1,5 @@
 import {JsonConvert} from "../utils/JsonConvert";
+import {Type} from "../types/Type";
 
 declare global {
     interface ArrayConstructor {
@@ -67,6 +68,14 @@ declare global {
         mapAsync<R>(predicate: (item: T, index: number) => Promise<R>): Promise<R[]>;
 
         diff(target: T[]): T[];
+
+        differenceWith<K extends keyof T>(target: T[], keyProps?: K[]): { source?: T; target?: T }[];
+
+        filterExists(): NonNullable<T>[];
+
+        ofType<N>(type: Type<N>): N[];
+
+        merge<K extends keyof T>(target: Partial<T>[], keyProps?: K[]): void;
     }
 }
 
@@ -372,4 +381,86 @@ Array.prototype.diff = function (target: any[]): any[] {
     }
 
     return result;
+};
+
+Array.prototype.differenceWith = function (target: any[], keyProps?: string[]): { source?: any; target?: any }[] {
+    if (target.length < 1) {
+        return this.map(item => ({source: item}));
+    }
+
+    const result = [];
+
+    for (const item of this) {
+        const targetItem = target.singleOr(undefined, targetItem => {
+            if (keyProps) {
+                return keyProps.every(keyProp => targetItem[keyProp] === item[keyProp]);
+            }
+            else {
+                return Object.equal(targetItem, item);
+            }
+        });
+
+        // 추가됨
+        if (!targetItem) {
+            result.push({source: item});
+            continue;
+        }
+
+        if (keyProps) {
+            // 수정됨
+            if (!Object.equal(item, targetItem)) {
+                result.push({source: item, target: targetItem});
+            }
+        }
+    }
+
+    for (const targetItem of target) {
+        const item = this.find(item => {
+            if (keyProps) {
+                return keyProps.every(keyProp => item[keyProp] === targetItem[keyProp]);
+            }
+            else {
+                return Object.equal(item, targetItem);
+            }
+        });
+
+        // 삭제됨
+        if (!item) {
+            result.push({target: targetItem});
+        }
+    }
+
+    return result;
+};
+
+Array.prototype.filterExists = function (): any[] {
+    return this.filter(item => item);
+};
+
+Array.prototype.ofType = function <N>(type: Type<N>): N[] {
+    return this.filter(item => item instanceof type);
+};
+
+Array.prototype.merge = function (target: any[], keyProps?: string[]): void {
+    if (!keyProps) {
+        this.forEach((item, i) => {
+            if (item[i]) {
+                Object.assign(item[i], target[i]);
+            }
+            else {
+                this.push(target[i]);
+            }
+        });
+    }
+    else {
+        for (const targetItem of target) {
+            const item = this.singleOr(undefined, item => keyProps.every(keyProp => item[keyProp] === targetItem[keyProp]));
+            if (item) {
+                Object.assign(item, targetItem);
+            }
+            else {
+                this.push(targetItem);
+            }
+        }
+    }
 };

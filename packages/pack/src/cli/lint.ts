@@ -28,7 +28,7 @@ export async function lint(argv: { config: string; fix: boolean }): Promise<void
     }
 
     for (const projectPath of packagePathList) {
-        Logger.getLogger("lint").log(projectPath);
+        new Logger("lint").log(projectPath);
         await TsLinter.lint(projectPath, argv.fix);
     }
 }

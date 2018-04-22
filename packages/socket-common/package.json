@@ -9,9 +9,9 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "version": "3.2.11",
+  "version": "5.5.8",
   "dependencies": {},
   "peerDependencies": {
-    "@simplism/core": "^3.2.10"
+    "@simplism/core": "^5.5.7"
   }
 }

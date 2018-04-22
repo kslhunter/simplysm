@@ -10,7 +10,7 @@ import {SimgularHelpers} from "../helpers/SimgularHelpers";
                 <a class="_close-button"
                    (click)="onCloseButtonClick()"
                    *ngIf="!hideCloseButton">
-                    <i class="fas fa-fw fa-times"></i>
+                    <sd-icon [icon]="'times'" [fixedWidth]="true"></sd-icon>
                 </a>
             </div>
             <div class="_content">

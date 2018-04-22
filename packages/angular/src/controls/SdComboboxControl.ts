@@ -15,16 +15,16 @@ import {SdFocusProvider} from "../providers/SdFocusProvider";
 @Component({
     selector: "sd-combobox",
     template: `
-        <sd-text-field #textField
-                       [type]="'text'"
-                       [value]="text"
-                       (valueChange)="textChange.emit($event)"
-                       [size]="size"
-                       [required]="required"
-                       [disabled]="disabled"
-                       [placeholder]="placeholder"></sd-text-field>
+        <sd-textfield #textField
+                      type="text"
+                      [size]="size"
+                      [value]="text"
+                      (valueChange)="textChange.emit($event)"
+                      [required]="required"
+                      [disabled]="disabled"
+                      [placeholder]="placeholder"></sd-textfield>
         <div class="_icon">
-            <i class="fas fa-fw fa-angle-down"></i>
+            <sd-icon [icon]="'angle-down'" [fixedWidth]="true"></sd-icon>
         </div>
         <sd-dropdown #dropdown
                      [open]="isDropdownOpen">
@@ -42,7 +42,7 @@ export class SdComboboxControl implements AfterViewInit {
 
     @Input() text: any;
     @Output() textChange = new EventEmitter<any>();
-    @Input() size = "default";
+    @Input() size?: string;
     @Input() required = false;
     @Input() disabled = false;
     @Input() placeholder = "";

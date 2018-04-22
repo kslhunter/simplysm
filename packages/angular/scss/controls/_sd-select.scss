@@ -6,6 +6,8 @@
 }
 
 sd-select {
+  display: block;
+
   > select {
     display: block;
     width: 100%;
@@ -22,12 +24,13 @@ sd-select {
       padding: m-padding(sm) - 1 m-padding(default) m-padding(sm) m-padding(default) - 4px;
     }
 
-    &._error {
-      border-left-color: theme-color(danger);
+    &:invalid {
+      border-left: 2px solid theme-color(danger);
     }
 
     &:focus {
-      border-color: theme-color(primary);
+      outline: solid 1px theme-color(primary);
+      outline-offset: -1px;
     }
 
     &:disabled {

@@ -7,10 +7,11 @@ import {ClientWebpackConfig} from "./ClientWebpackConfig";
 import * as childProcess from "child_process";
 import {FileWatcher} from "./FileWatcher";
 import * as glob from "glob";
+import * as WebpackDevServer from "webpack-dev-server";
 
 export class ClientBuilder {
     static async watch(config: ISimpackClientConfig, serverConfig: ISimpackServerConfig, env: string | undefined, distPath: string): Promise<void> {
-        const logger = Logger.getLogger(config.package);
+        const logger = new Logger(config.package);
 
         if (config.cordova) {
             this._initCordova(config);
@@ -22,25 +23,26 @@ export class ClientBuilder {
             const clientDistPath = path.resolve(distPath, "www", config.package);
             fs.removeSync(clientDistPath);
 
-            FileWatcher.watch(path.resolve(process.cwd(), "packages", config.package, "src", "(controls|modals|print-templates|providers|routes)", "**", "*.ts"), {}, async (events) => {
+            FileWatcher.watch(path.resolve(process.cwd(), "packages", config.package, "src", "*", "**", "*.ts"), {}, async (events) => {
                 if (!events.some(item => item.type === "ready" || item.type === "add" || item.type === "unlink")) {
                     return;
                 }
 
                 this._generateAppModuleDefinitionFile(config.package, config.defaultRoute);
+                logger.info(`AppModuleDefinition.ts 재구성`);
             });
 
             const webpackConfig = ClientWebpackConfig.getForStart(config, serverConfig, env, clientDistPath);
             const compiler = webpack(webpackConfig);
-            compiler.watch({
-                aggregateTimeout: 300,
-                poll: 1000
-            }, (err, stats) => {
-                if (err) {
-                    reject();
-                    return;
-                }
+            const server = new WebpackDevServer(compiler, {hot: true, inline: true, quiet: true});
+            server.listen(serverConfig.port + 1, serverConfig.host as string);
 
+            compiler.hooks.failed.tap(config.package, (error) => {
+                logger.error(error);
+                reject();
+            });
+
+            compiler.hooks.done.tap(config.package, (stats) => {
                 const info = stats.toJson();
 
                 if (stats.hasErrors()) {
@@ -63,17 +65,35 @@ export class ClientBuilder {
                     }
                 }
 
-                logger.info(`빌드완료: http://${serverConfig.host}:${serverConfig.port}/${config.package}`);
+                logger.info(`빌드완료: http://${serverConfig.host}:${serverConfig.port + 1}`);
                 resolve();
             });
-            compiler.hooks.watchRun.tap(config.package, () => {
-                logger.info("변경감지");
+
+            let prevTimestamps: { [key: string]: number };
+            compiler.hooks.watchRun.tap(config.package, (compilation) => {
+                const fileTimestamps = compilation["fileTimestamps"] as Map<string, number>;
+
+                const changeLogs = [];
+                if (prevTimestamps) {
+                    const changes = Array.from(fileTimestamps.keys())
+                        .filter(fileName => prevTimestamps[fileName] < fileTimestamps.get(fileName)!);
+                    for (const change of changes) {
+                        changeLogs.push(`${change}: ${prevTimestamps[change]} => ${fileTimestamps.get(change)}`);
+                    }
+                }
+
+                prevTimestamps = prevTimestamps || {};
+                for (const fileName of Array.from(fileTimestamps.keys())) {
+                    prevTimestamps[fileName] = fileTimestamps.get(fileName)!;
+                }
+
+                logger.info("변경감지:", changeLogs);
             });
         });
     }
 
     static async build(config: ISimpackClientConfig, serverConfig: ISimpackServerConfig | undefined, env: string | undefined, distPath: string): Promise<void> {
-        const logger = Logger.getLogger(config.package);
+        const logger = new Logger(config.package);
 
         if (config.cordova) {
             this._initCordova(config);
@@ -169,7 +189,7 @@ export class ClientBuilder {
     }
 
     private static _initCordova(config: ISimpackClientConfig): void {
-        const logger = Logger.getLogger(config.name);
+        const logger = new Logger(config.name);
 
         const cordovaBinPath = path.resolve(process.cwd(), "node_modules", ".bin", "cordova.cmd");
         if (!fs.existsSync(path.resolve(process.cwd(), ".cordova"))) {
