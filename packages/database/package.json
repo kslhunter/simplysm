@@ -9,12 +9,12 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "version": "5.5.8",
+  "version": "5.5.9",
   "dependencies": {
     "reflect-metadata": "^0.1.12"
   },
   "peerDependencies": {
-    "@simplism/core": "^5.5.7",
+    "@simplism/core": "^5.5.8",
     "@types/mssql": "^4.0.7",
     "mssql": "^4.1.0"
   }
