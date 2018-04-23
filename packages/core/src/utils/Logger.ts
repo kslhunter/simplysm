@@ -1,6 +1,5 @@
 import * as path from "path";
 import * as fs from "fs-extra";
-import {JsonConvert} from "./JsonConvert";
 import {DateOnly} from "../types/DateOnly";
 
 export type LoggerTypeString = "log" | "info" | "warn" | "error";
@@ -77,9 +76,9 @@ export class Logger {
             }
 
             //-- 객체는 JSON으로 stringify
-            else if (typeof log === "object") {
+            /*else if (typeof log === "object") {
                 return JsonConvert.stringify(log, {space: 2});
-            }
+            }*/
 
             return log;
         });
@@ -107,8 +106,10 @@ export class Logger {
                     `\x1b[0m`,
                     `\x1b[${colors.warn}m`,
                     `\x1b[0m`,
-                    `\x1b[${colors[type]}m`
-                ].concat([logStrings.join("\n")]).concat(["\x1b[0m"]));
+                    `\x1b[${colors[type]}m`,
+                    logStrings[0],
+                    "\x1b[0m"
+                ].concat(logStrings.slice(1)));
             }
 
             //-- Browser
@@ -129,8 +130,10 @@ export class Logger {
                     `color: black;`,
                     `\x1b[${colors.warn}m`,
                     `\x1b[0m`,
-                    `color: ${colors[type]};`
-                ].concat([logStrings.join("\n")]).concat(["color: black;"]));
+                    `color: ${colors[type]};`,
+                    logStrings[0],
+                    "color: black;"
+                ].concat(logStrings.slice(1)));
             }
         }
 

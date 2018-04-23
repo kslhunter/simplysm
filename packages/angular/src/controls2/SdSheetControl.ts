@@ -51,7 +51,7 @@ import {SdSheetColumnConfigModal} from "../modals/SdSheetColumnConfigModal";
             <tbody *ngFor="let item of displayItems; trackBy: itemsTrackByFn; let index = index">
             <tr>
                 <td (click)="onFirstCellClick($event)">
-                    <ng-container *ngIf="seqProp && !disabled">
+                    <ng-container *ngIf="seqProp">
                         <a (click)="onSeqUpButtonClick(item)">
                             <sd-icon icon="angle-up" [fixedWidth]="true"></sd-icon>
                         </a>
@@ -59,7 +59,7 @@ import {SdSheetColumnConfigModal} from "../modals/SdSheetColumnConfigModal";
                             <sd-icon icon="angle-down" [fixedWidth]="true"></sd-icon>
                         </a>
                     </ng-container>
-                    <ng-container *ngIf="keyProp && !item[keyProp] && !disabled">
+                    <ng-container *ngIf="this.keyProp && !item[this.keyProp] && !this.disabled">
                         <a (click)="onItemRemoveButtonClick(item)">
                             <sd-icon icon="times" [fixedWidth]="true"></sd-icon>
                         </a>
@@ -69,7 +69,8 @@ import {SdSheetColumnConfigModal} from "../modals/SdSheetColumnConfigModal";
                     [class]="'sd-sheet-column' + (column.class ? ' ' + column.class : '')"
                     [style]="column.style"
                     tabindex="0"
-                    [attr.title]="column.title">
+                    [attr.title]="column.title"
+                    [attr.sd-fill]="column.fill">
                     <ng-template [ngTemplateOutlet]="column.itemTemplateRef"
                                  [ngTemplateOutletContext]="{item: item}"></ng-template>
                     <div class="outline"></div>
@@ -110,7 +111,7 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
         }
     }
 
-    itemsTrackByFn = (index: number, item: any) => {
+    itemsTrackByFn(index: number, item: any): any {
         if (this.keyProp && (item[this.keyProp] != undefined)) {
             return item[this.keyProp];
         }
@@ -128,6 +129,7 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
             isVisible: true,
             class: item.class,
             style: item.style,
+            fill: item.fill,
             itemTemplateRef: item.itemTemplateRef,
             headerTemplateRef: item.headerTemplateRef
         }));
@@ -558,6 +560,7 @@ export class SdSheetColumnControl implements OnChanges {
     @Input() title: string = "";
     @Input() class?: string;
     @Input() style?: string;
+    @Input() fill?: boolean;
 
     ngOnChanges(changes: SimpleChanges): void {
         SimgularHelpers.typeValidate(changes, {
@@ -566,7 +569,8 @@ export class SdSheetColumnControl implements OnChanges {
                 required: true
             },
             class: String,
-            style: String
+            style: String,
+            fill: Boolean
         });
     }
 
@@ -580,6 +584,7 @@ export interface ISdSheetColumnDef {
     isVisible: boolean;
     class?: string;
     style?: string;
+    fill?: boolean;
     itemTemplateRef?: TemplateRef<any>;
     headerTemplateRef?: TemplateRef<any>;
 }

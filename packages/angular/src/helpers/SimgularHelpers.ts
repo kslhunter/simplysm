@@ -34,14 +34,10 @@ export class SimgularHelpers {
             callback();
         };
 
-        let elementTagName = element.tagName.toLowerCase().startsWith("sd-") ? element.tagName.toLowerCase() : undefined;
-        elementTagName = elementTagName ? elementTagName : $(element).parents().toArray().firstOr({tagName: ""}, item => item.tagName.toLowerCase().startsWith("sd-")).tagName.toLowerCase();
-        elementTagName = elementTagName || element.tagName.toLowerCase();
-
         if (options.childList) {
             new MutationObserver((mutations) => {
                 if (mutations.every(item => item.target.nodeName === "#comment")) return;
-                logger.log("detect: mutate: " + elementTagName);
+                logger.log("detect: mutate: ", element);
                 runCallback();
             }).observe(element, {
                 childList: true,
@@ -55,13 +51,13 @@ export class SimgularHelpers {
             if (chromeVersion! < 64) {
                 logger.warn("64버전 이하의 크롬 브라우저에서는 컨트롤의 위치가 깨질 수 있습니다. [현재버전:" + chromeVersion + "]");
                 $(window).on("resize", () => {
-                    logger.log("detect: resize: " + elementTagName);
+                    logger.log("detect: resize: ", element);
                     runCallback();
                 });
             }
             else {
                 new window["ResizeObserver"](() => {
-                    logger.log("detect: resize: " + elementTagName);
+                    logger.log("detect: resize: ", element);
                     runCallback();
                 }).observe(element);
             }

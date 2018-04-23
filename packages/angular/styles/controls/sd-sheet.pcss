@@ -20,6 +20,16 @@ sd-sheet {
       position: relative;
       padding: var(--padding-sm) var(--padding-default);
 
+      &[sd-fill=true] {
+        padding: 0;
+
+        & input,
+        & select {
+          border: none;
+          background: var(--theme-info-lightest);
+        }
+      }
+
       &:focus > .outline {
         position: absolute;
         top: 0;
@@ -28,12 +38,6 @@ sd-sheet {
         height: 100%;
         outline: 2px solid var(--theme-primary-default);
         outline-offset: 0;
-      }
-
-      & input,
-      & select {
-        border: none;
-        background: var(--theme-info-lightest);
       }
     }
   }

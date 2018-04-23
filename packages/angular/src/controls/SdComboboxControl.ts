@@ -11,6 +11,7 @@ import {
     ViewChild
 } from "@angular/core";
 import {SdFocusProvider} from "../providers/SdFocusProvider";
+import {SizeStrings} from "..";
 
 @Component({
     selector: "sd-combobox",
@@ -42,7 +43,7 @@ export class SdComboboxControl implements AfterViewInit {
 
     @Input() text: any;
     @Output() textChange = new EventEmitter<any>();
-    @Input() size?: string;
+    @Input() size?: SizeStrings;
     @Input() required = false;
     @Input() disabled = false;
     @Input() placeholder = "";

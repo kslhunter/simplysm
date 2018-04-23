@@ -34,8 +34,8 @@ sd-select {
     }
 
     &:disabled {
-      color: text-color(lighter);
-      background: grey(lightest);
+      color: text-color(lighter) !important;
+      background: grey(lightest) !important;
       cursor: default;
     }
 
