@@ -59,7 +59,7 @@ export class SdTextfieldControl implements OnChanges {
                 this.valueChange.emit(undefined);
             }
             else {
-                this.valueChange.emit(targetEl.value);
+                this.valueChange.emit(num);
             }
         }
         else if (this.type === "date" || this.type === "month" || this.type === "year") {

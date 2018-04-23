@@ -15,6 +15,7 @@ import {
 import {SimgularHelpers} from "../helpers/SimgularHelpers";
 import {DateOnly, Wait} from "@simplism/core";
 import {SdFocusProvider} from "../providers/SdFocusProvider";
+import {ThemeStrings} from "..";
 
 @Component({
     selector: "sd-table",
@@ -698,7 +699,7 @@ export class SdCellTextFieldControl {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdCellButtonControl {
-    @Input() theme = "default";
+    @Input() theme?: ThemeStrings;
     @Input() focusable = true;
     @Input() disabled = false;
     @Input() selected = false;

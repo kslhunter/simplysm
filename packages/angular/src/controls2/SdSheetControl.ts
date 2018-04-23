@@ -11,7 +11,6 @@ import {
     EventEmitter,
     forwardRef,
     Input,
-    IterableDiffers,
     NgZone,
     OnChanges,
     Output,
@@ -21,7 +20,6 @@ import {
 } from "@angular/core";
 import {SimgularHelpers} from "../helpers/SimgularHelpers";
 import {Logger} from "@simplism/core";
-import {IterableDiffer} from "@angular/core/src/change_detection/differs/iterable_differs";
 import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
 import {SdModalProvider} from "../providers/SdModalProvider";
 import {SdSheetColumnConfigModal} from "../modals/SdSheetColumnConfigModal";
@@ -94,7 +92,8 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
     @Output() selectedItemChange = new EventEmitter<any | undefined>();
     @Output() remove = new EventEmitter<any>();
 
-    _itemsDiffer?: IterableDiffer<any>;
+    /*_itemsDiffer?: IterableDiffer<any>;*/
+    private _itemBeforeCheck?: any[];
 
     ngOnChanges(changes: SimpleChanges): void {
         SimgularHelpers.typeValidate(changes, {
@@ -106,8 +105,8 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
             disabled: Boolean
         });
 
-        if (!this._itemsDiffer && changes["items"].currentValue) {
-            this._itemsDiffer = this._differs.find(changes["items"].currentValue).create(this.itemsTrackByFn);
+        if (!this._itemBeforeCheck && Object.keys(changes).includes("items") && changes["items"].currentValue) {
+            this._itemBeforeCheck = Object.clone(changes["items"].currentValue);
         }
     }
 
@@ -158,7 +157,6 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
     columnsTrackByFn = (item: ISdSheetColumnDef) => item.title ? item.title : item;
 
     constructor(private _elementRef: ElementRef,
-                private _differs: IterableDiffers,
                 private _cdr: ChangeDetectorRef,
                 private _localStorage: SdLocalStorageProvider,
                 private _modal: SdModalProvider,
@@ -166,13 +164,20 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
     }
 
     ngDoCheck(): void {
-        if (this._itemsDiffer) {
-            const changes = this._itemsDiffer.diff(this.items!);
-            if (changes) {
+        if (!this._itemBeforeCheck && this.items ||
+            this._itemBeforeCheck && !this.items) {
+            this._cdr.markForCheck();
+        }
+        else if (this._itemBeforeCheck && this.items) {
+            const diffs = this._itemBeforeCheck.differenceWith(this.items, this.keyProp ? [this.keyProp] : undefined);
+            if (diffs.length > 0) {
+                console.log(diffs);
                 this._logger.log("itemsChanged");
                 this._cdr.markForCheck();
             }
         }
+
+        this._itemBeforeCheck = Object.clone(this.items);
     }
 
     ngAfterViewInit(): void {
@@ -181,6 +186,11 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
 
         this._zone.runOutsideAngular(() => {
             SimgularHelpers.detectElementChange(thisEl.find("> table")!, () => {
+                if (this.selectedItem && (!this.items || !this.items.some((item, i) => this.itemsTrackByFn(i, item) === this.itemsTrackByFn(i, this.selectedItem)))) {
+                    this._zone.run(() => {
+                        this.selectedItemChange.emit();
+                    });
+                }
                 this.redraw();
             }, {resize: false});
             thisEl.on("scroll", () => this.repositioning());
@@ -533,8 +543,9 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
         const cellLength = thisEl.findAll("> table > * > tr > *").length;
 
         const selectorEl = thisEl.find("> .selector")!;
-        if (this.items && this.selectedItem != undefined && this.items.includes(this.selectedItem)) {
-            const selectedRow = this.items.indexOf(this.selectedItem);
+        if (this.items && this.selectedItem != undefined && this.items.some((item, i) => this.itemsTrackByFn(i, item) === this.itemsTrackByFn(i, this.selectedItem))) {
+            const item = this.items.single((item, i) => this.itemsTrackByFn(i, item) === this.itemsTrackByFn(i, this.selectedItem));
+            const selectedRow = this.items.indexOf(item);
             const row = thisEl.find(`> table > tbody:nth-child(${selectedRow + 2}) > tr`);
             if (row) {
                 selectorEl.style.top = row.offsetTop + Number(thisEl.style.paddingTop!.slice(0, -2)) + "px";

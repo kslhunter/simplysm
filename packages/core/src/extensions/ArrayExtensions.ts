@@ -444,13 +444,11 @@ Array.prototype.ofType = function <N>(type: Type<N>): N[] {
 Array.prototype.merge = function (target: any[], keyProps?: string[]): void {
     if (!keyProps) {
         this.forEach((item, i) => {
-            if (item[i]) {
-                Object.assign(item[i], target[i]);
-            }
-            else {
-                this.push(target[i]);
-            }
+            Object.assign(item, target[i]);
         });
+        if (target.length > this.length) {
+            this.pushRange(target.splice(this.length));
+        }
     }
     else {
         for (const targetItem of target) {
