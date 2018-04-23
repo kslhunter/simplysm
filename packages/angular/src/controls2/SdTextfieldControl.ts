@@ -2,6 +2,7 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Outp
 import {SimgularHelpers} from "../helpers/SimgularHelpers";
 import {SizeStrings} from "../helpers/types";
 import {DateOnly} from "@simplism/core";
+import {ThemeStrings} from "..";
 
 @Component({
     selector: "sd-textfield",
@@ -16,7 +17,8 @@ import {DateOnly} from "@simplism/core";
                (input)="onInput($event)"/>`,
     host: {
         "[attr.sd-inline]": "inline",
-        "[attr.sd-size]": "size"
+        "[attr.sd-size]": "size",
+        "[attr.sd-theme]": "theme"
     },
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -31,6 +33,7 @@ export class SdTextfieldControl implements OnChanges {
     @Input() min?: number;
     @Input() inline?: boolean;
     @Input() size?: SizeStrings;
+    @Input() theme?: ThemeStrings;
     @Output() valueChange = new EventEmitter<string | number | DateOnly | undefined>();
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -47,7 +50,8 @@ export class SdTextfieldControl implements OnChanges {
             step: Number,
             min: Number,
             inline: Boolean,
-            size: "SizeStrings"
+            size: "SizeStrings",
+            theme: "ThemeStrings"
         });
     }
 

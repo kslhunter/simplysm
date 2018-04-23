@@ -211,20 +211,25 @@ export class SdTableControl implements AfterViewInit {
         //-- 초기화
         thisElem.style.width = "10000px";
 
-        tableElem.style.display = null;
-        tableElem.style.width = null;
-        tableElem.style.height = null;
+        Object.assign(tableElem.style, {
+            display: null,
+            width: null,
+            height: null
+        });
 
         for (const cellElem of cellElemList) {
-            cellElem.style.position = null;
-            cellElem.style.display = null;
-            cellElem.style.top = null;
-            cellElem.style.left = null;
-            cellElem.style.width = null;
-            cellElem.style.height = null;
-            cellElem.style.borderRight = null;
-            cellElem.style.borderBottom = null;
-            cellElem.style.zIndex = null;
+            Object.assign(cellElem.style, {
+                position: null,
+                display: null,
+                top: null,
+                left: null,
+                width: null,
+                height: null,
+                borderRight: null,
+                borderBottom: null,
+                zIndex: null
+            });
+
             cellElem.classList.remove("_fixed");
             if (!["th", "sd-column-selector"].includes(cellElem.tagName.toLowerCase())) {
                 if (this.sheet) {
@@ -296,21 +301,25 @@ export class SdTableControl implements AfterViewInit {
 
 
         //-- 테이블 크기 지정
-        tableElem.style.display = "block";
-        tableElem.style.width = tableStat.width + "px";
-        tableElem.style.height = tableStat.height + "px";
+        Object.assign(tableElem.style, {
+            display: "block",
+            width: tableStat.width + "px",
+            height: tableStat.height + "px"
+        });
 
         //-- 각 셀 위치/크기 지정
         for (const stat of cellStats) {
-            stat.elem.style.position = "absolute";
-            stat.elem.style.display = "block";
-            stat.elem.style.top = stat.top + "px";
-            stat.elem.style.left = stat.left + "px";
-            stat.elem.style.width = stat.width + "px";
-            stat.elem.style.height = stat.height + "px";
-            stat.elem.style.borderRight = stat.borderRight;
-            stat.elem.style.borderBottom = stat.borderBottom;
-            stat.elem.style.zIndex = stat.zIndex.toString();
+            Object.assign(stat.elem.style, {
+                position: "absolute",
+                display: "block",
+                top: stat.top + "px",
+                left: stat.left + "px",
+                width: stat.width + "px",
+                height: stat.height + "px",
+                borderRight: stat.borderRight,
+                borderBottom: stat.borderBottom,
+                zIndex: stat.zIndex.toString()
+            });
         }
 
         this.repositioning();

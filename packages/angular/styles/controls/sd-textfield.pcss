@@ -108,4 +108,20 @@ sd-textfield {
       padding: calc(var(--padding-xl) - 1) var(--padding-xxl);
     }
   }
+
+  &[sd-theme=primary] > input {
+    background: var(--theme-primary-lightest) !important;
+  }
+  &[sd-theme=success] > input {
+    background: var(--theme-success-lightest) !important;
+  }
+  &[sd-theme=info] > input {
+    background: var(--theme-info-lightest) !important;
+  }
+  &[sd-theme=warning] > input {
+    background: var(--theme-warning-lightest) !important;
+  }
+  &[sd-theme=danger] > input {
+    background: var(--theme-danger-lightest) !important;
+  }
 }

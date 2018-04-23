@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Injector, Input, Output} from "@angular/core";
 import {Exception, JsonConvert} from "@simplism/core";
 import {SdButtonGroupControl} from "./SdButtonGroupControl";
+import {ThemeStrings} from "..";
 
 
 @Component({
@@ -73,7 +74,8 @@ export class SdSelectControl {
         const parentButtonGroup = this._injector.get(SdButtonGroupControl, null);
         return [
             this._inline ? "_inline" : "",
-            this._size ? "_size-" + this._size : (parentButtonGroup && parentButtonGroup.size ? "_size-" + parentButtonGroup.size : "")
+            this._size ? "_size-" + this._size : (parentButtonGroup && parentButtonGroup.size ? "_size-" + parentButtonGroup.size : ""),
+            this.theme ? "_theme-" + this.theme : ""
         ].filter(item => item);
     }
 
@@ -128,6 +130,8 @@ export class SdSelectControl {
     @Output() valueChange = new EventEmitter<any>();
 
     @Input() keyField: string | undefined;
+
+    @Input() theme?: ThemeStrings;
 
     constructor(private _elementRef: ElementRef,
                 private _injector: Injector) {

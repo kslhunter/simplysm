@@ -12,8 +12,6 @@ export * from "./controls/SdFormControl";
 export * from "./controls/SdTextFieldControl";
 export * from "./controls/SdSidebarControl";
 export * from "./controls/SdTopbarControl";
-export * from "./controls/SdDockControl";
-export * from "./controls/SdDockControl";
 export * from "./controls/SdListControl";
 export * from "./controls/SdPaneControl";
 export * from "./controls/SdCardControl";

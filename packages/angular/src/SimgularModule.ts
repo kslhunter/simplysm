@@ -14,7 +14,6 @@ import {
     SdTopbarControl,
     SdTopbarFileButtonControl
 } from "./controls/SdTopbarControl";
-import {SdDockContainerControl, SdDockControl} from "./controls/SdDockControl";
 import {SdListControl, SdListItemControl} from "./controls/SdListControl";
 import {SdPaneControl} from "./controls/SdPaneControl";
 import {SdCardControl} from "./controls/SdCardControl";
@@ -69,6 +68,7 @@ import {SdSheetColumnControl, SdSheetControl} from "./controls2/SdSheetControl";
 import {SdSheetColumnConfigModal} from "./modals/SdSheetColumnConfigModal";
 import {SdButton2Control} from "./controls2/SdButton2Control";
 import {SdTextfieldControl} from "./controls2/SdTextfieldControl";
+import {SdDockContainerControl, SdDockControl} from "./controls2/SdDockControl";
 
 library.add(fas, far);
 
@@ -84,7 +84,6 @@ const controls: Type<any>[] = [
     SdTextAreaControl,
     SdSidebarContainerControl, SdSidebarControl,
     SdTopbarContainerControl, SdTopbarControl, SdTopbarButtonControl, SdTopbarFileButtonControl,
-    SdDockContainerControl, SdDockControl,
     SdListControl, SdListItemControl,
     SdPaneControl,
     SdCardControl,
@@ -108,11 +107,12 @@ const controls: Type<any>[] = [
     SdDropdownControl,
     SdComboboxControl,
     SdIconControl,
-    SdSheetControl, SdSheetColumnControl,
 
     CircleControl, OptionControl,
 
     SdButton2Control,
+    SdDockContainerControl, SdDockControl,
+    SdSheetControl, SdSheetColumnControl,
     SdTextfieldControl
 ];
 

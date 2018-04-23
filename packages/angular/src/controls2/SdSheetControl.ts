@@ -171,7 +171,6 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
         else if (this._itemBeforeCheck && this.items) {
             const diffs = this._itemBeforeCheck.differenceWith(this.items, this.keyProp ? [this.keyProp] : undefined);
             if (diffs.length > 0) {
-                console.log(diffs);
                 this._logger.log("itemsChanged");
                 this._cdr.markForCheck();
             }
@@ -396,29 +395,35 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
         //-- 초기화
         thisEl.style.width = "10000px";
 
-        thisEl.style.paddingTop = null;
-        thisEl.style.paddingLeft = null;
+        Object.assign(thisEl.style, {
+            width: "10000px",
+            paddingTop: null,
+            paddingLeft: null
+        });
 
         for (const cellElem of cellEls) {
-            cellElem.style.top = null;
-            cellElem.style.left = null;
-            cellElem.style.minWidth = null;
-            cellElem.style.minHeight = null;
-            cellElem.style.position = null;
-            cellElem.style.zIndex = null;
-            cellElem.style.marginTop = null;
-            cellElem.style.marginLeft = null;
+            Object.assign(cellElem.style, {
+                top: null,
+                left: null,
+                minWidth: null,
+                minHeight: null,
+                position: null,
+                zIndex: null,
+                marginTop: null,
+                marginLeft: null
+            });
         }
 
-        thisEl.offsetHeight;
-
         //-- 셀 스타일 변경사항들 가져오기
-        const cellStyles: [HTMLElement, string, string][] = [];
+        const cellStyleMap = new Map<HTMLElement, Partial<CSSStyleDeclaration>>();
+        /*const cellStyles: [HTMLElement, string, string][] = [];*/
 
         // 각 셀 크기 고정
         for (const cellEl of cellEls) {
-            cellStyles.push([cellEl, "min-width", cellEl.offsetWidth + "px"]);
-            cellStyles.push([cellEl, "min-height", cellEl.offsetHeight + "px"]);
+            cellStyleMap.set(cellEl, {
+                minWidth: cellEl.offsetWidth + "px",
+                minHeight: cellEl.offsetHeight + "px"
+            });
         }
 
         // title 셀 설정
@@ -427,36 +432,42 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
         const titleCellEls = tableEl.findAll(`> thead > tr > *`);
         for (let i = 0; i < titleCellEls.length; i++) {
             const titleCellEl = titleCellEls[i];
-            cellStyles.push([titleCellEl, "min-width", titleCellEl.offsetWidth + "px"]);
-            cellStyles.push([titleCellEl, "min-height", titleCellEl.offsetHeight + "px"]);
-            cellStyles.push([titleCellEl, "top", titleCellEl.offsetTop + "px"]);
-            cellStyles.push([titleCellEl, "left", titleCellEl.offsetLeft + "px"]);
-            cellStyles.push([titleCellEl, "position", "absolute"]);
-            cellStyles.push([titleCellEl, "z-index", (currIndex--).toString()]);
+            Object.assign(cellStyleMap.get(titleCellEl), {
+                minWidth: titleCellEl.offsetWidth + "px",
+                minHeight: titleCellEl.offsetHeight + "px",
+                top: titleCellEl.offsetTop + "px",
+                left: titleCellEl.offsetLeft + "px",
+                position: "absolute",
+                zIndex: (currIndex--).toString()
+            });
         }
 
         // fixed 셀 설정
         if (this.fixedColumnLength) {
             const fixedCellEls = tableEl.findAll(`> tbody > tr > *:nth-child(-n+${this.fixedColumnLength})`);
             for (const fixedCellEl of fixedCellEls) {
-                cellStyles.push([fixedCellEl, "min-width", fixedCellEl.offsetWidth + "px"]);
-                cellStyles.push([fixedCellEl, "min-height", fixedCellEl.offsetHeight + "px"]);
-                cellStyles.push([fixedCellEl, "top", fixedCellEl.offsetTop + "px"]);
-                cellStyles.push([fixedCellEl, "left", fixedCellEl.offsetLeft + "px"]);
-                cellStyles.push([fixedCellEl, "position", "absolute"]);
-                cellStyles.push([fixedCellEl, "z-index", (currIndex--).toString()]);
+                Object.assign(cellStyleMap.get(fixedCellEl), {
+                    minWidth: fixedCellEl.offsetWidth + "px",
+                    minHeight: fixedCellEl.offsetHeight + "px",
+                    top: fixedCellEl.offsetTop + "px",
+                    left: fixedCellEl.offsetLeft + "px",
+                    position: "absolute",
+                    zIndex: (currIndex--).toString()
+                });
             }
         }
 
         // 포커싱된 셀 z-index 수정
         const focusedCellElem = thisEl.find("*[sd-prev-z-index]");
         if (focusedCellElem) {
-            cellStyles.push([focusedCellElem, "z-index", (cellLength + 2).toString()]);
+            Object.assign(cellStyleMap.get(focusedCellElem), {
+                zIndex: (cellLength + 2).toString()
+            });
         }
 
         //-- 실제 스타일 변경
-        for (const cellStyle of cellStyles) {
-            cellStyle[0].style[cellStyle[1]] = cellStyle[2];
+        for (const cellEl of Array.from(cellStyleMap.keys())) {
+            Object.assign(cellEl.style, cellStyleMap.get(cellEl));
         }
 
         // thead만큼 상단 띄우기

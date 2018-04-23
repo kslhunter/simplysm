@@ -72,5 +72,22 @@ sd-select {
       @include _sd-select-size-padding(xl, xxl);
       @include font-size(lg);
     }
+
+    &._theme-primary {
+      background: map_get($theme-primary-default, 50) !important;
+    }
+
+    &._theme-info {
+      background: map_get($yellows, 50) !important;
+    }
+    &._theme-success {
+      background: map_get($greens, 50) !important;
+    }
+    &._theme-warning {
+      background: map_get($oranges, 50) !important;
+    }
+    &._theme-danger {
+      background: map_get($reds, 50) !important;
+    }
   }
 }
