@@ -390,8 +390,9 @@ Array.prototype.differenceWith = function (target: any[], keyProps?: string[]): 
 
     const result = [];
 
+    target = ([] as any[]).concat(target);
     for (const item of this) {
-        const targetItem = target.singleOr(undefined, targetItem => {
+        const targetItem = target.find(targetItem => {
             if (keyProps) {
                 return keyProps.every(keyProp => targetItem[keyProp] === item[keyProp]);
             }
@@ -403,18 +404,21 @@ Array.prototype.differenceWith = function (target: any[], keyProps?: string[]): 
         // 추가됨
         if (!targetItem) {
             result.push({source: item});
-            continue;
         }
-
-        if (keyProps) {
+        else {
             // 수정됨
-            if (!Object.equal(item, targetItem)) {
+            if (keyProps && !Object.equal(item, targetItem)) {
                 result.push({source: item, target: targetItem});
             }
+            target.remove(targetItem);
         }
     }
 
-    for (const targetItem of target) {
+    for (const remainedTargetItem of target) {
+        result.push({target: remainedTargetItem});
+    }
+
+    /*for (const targetItem of target) {
         const item = this.find(item => {
             if (keyProps) {
                 return keyProps.every(keyProp => item[keyProp] === targetItem[keyProp]);
@@ -428,7 +432,7 @@ Array.prototype.differenceWith = function (target: any[], keyProps?: string[]): 
         if (!item) {
             result.push({target: targetItem});
         }
-    }
+    }*/
 
     return result;
 };

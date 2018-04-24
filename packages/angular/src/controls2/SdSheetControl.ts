@@ -57,11 +57,8 @@ import {SdSheetColumnConfigModal} from "../modals/SdSheetColumnConfigModal";
                             <sd-icon icon="angle-down" [fixedWidth]="true"></sd-icon>
                         </a>
                     </ng-container>
-                    <ng-container *ngIf="this.keyProp && !item[this.keyProp] && !this.disabled">
-                        <a (click)="onItemRemoveButtonClick(item)">
-                            <sd-icon icon="times" [fixedWidth]="true"></sd-icon>
-                        </a>
-                    </ng-container>
+                    <ng-template [ngTemplateOutlet]="columnHead?.templateRef"
+                                 [ngTemplateOutletContext]="{item: item}"></ng-template>
                 </td>
                 <td *ngFor="let column of displayColumns; trackBy: columnsTrackByFn"
                     [class]="'sd-sheet-column' + (column.class ? ' ' + column.class : '')"
@@ -87,12 +84,10 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
     @Input() keyProp?: string;
     @Input() seqProp?: string;
     @Input() fixedColumnLength?: number;
-    @Input() disabled?: boolean;
     @Input() selectedItem?: any;
     @Output() selectedItemChange = new EventEmitter<any | undefined>();
     @Output() remove = new EventEmitter<any>();
 
-    /*_itemsDiffer?: IterableDiffer<any>;*/
     private _itemBeforeCheck?: any[];
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -101,8 +96,7 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
             items: Array,
             keyProp: String,
             seqProp: String,
-            fixedColumnLength: Number,
-            disabled: Boolean
+            fixedColumnLength: Number
         });
 
         if (!this._itemBeforeCheck && Object.keys(changes).includes("items") && changes["items"].currentValue) {
@@ -120,6 +114,7 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
     }
 
     @ContentChildren(forwardRef(() => SdSheetColumnControl)) columnControlList!: QueryList<SdSheetColumnControl>;
+    @ContentChild(forwardRef(() => SdSheetColumnHeadControl)) columnHead?: SdSheetColumnHeadControl;
 
     get columns(): ISdSheetColumnDef[] {
         const currColumns = this.columnControlList.toArray().map((item, i) => ({
@@ -357,12 +352,6 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
         item[this.seqProp!] = nextSeq;
     }
 
-    onItemRemoveButtonClick(item: any): void {
-        const itemIndex = this.items!.indexOf(item);
-        this.items!.splice(itemIndex, 1);
-        this.remove.emit(item);
-    }
-
     async onConfigButtonClick(): Promise<void> {
         const result = await this._modal.show("표시설정", SdSheetColumnConfigModal, {columns: this.columns});
         if (result) {
@@ -378,8 +367,9 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
         if (!row) return;
 
         const rowEls = thisEl.findAll(`> table > tbody > tr`);
+        this.selectedItem = this.items![rowEls.indexOf(row)];
         this._zone.run(() => {
-            this.selectedItemChange.emit(this.items![rowEls.indexOf(row)]);
+            this.selectedItemChange.emit(this.selectedItem);
         });
         this.redrawSelectedRowOverlay();
     }
@@ -416,7 +406,6 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
 
         //-- 셀 스타일 변경사항들 가져오기
         const cellStyleMap = new Map<HTMLElement, Partial<CSSStyleDeclaration>>();
-        /*const cellStyles: [HTMLElement, string, string][] = [];*/
 
         // 각 셀 크기 고정
         for (const cellEl of cellEls) {
@@ -609,4 +598,13 @@ export interface ISdSheetColumnDef {
     fill?: boolean;
     itemTemplateRef?: TemplateRef<any>;
     headerTemplateRef?: TemplateRef<any>;
+}
+
+@Component({
+    selector: `sd-sheet-column-head`,
+    template: ``,
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class SdSheetColumnHeadControl {
+    @ContentChild(TemplateRef) templateRef?: TemplateRef<any>;
 }

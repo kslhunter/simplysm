@@ -64,7 +64,7 @@ import {library} from "@fortawesome/fontawesome-svg-core";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {far} from "@fortawesome/free-regular-svg-icons";
 import {SdIconControl} from "./controls/SdIcon";
-import {SdSheetColumnControl, SdSheetControl} from "./controls2/SdSheetControl";
+import {SdSheetColumnControl, SdSheetColumnHeadControl, SdSheetControl} from "./controls2/SdSheetControl";
 import {SdSheetColumnConfigModal} from "./modals/SdSheetColumnConfigModal";
 import {SdButton2Control} from "./controls2/SdButton2Control";
 import {SdTextfieldControl} from "./controls2/SdTextfieldControl";
@@ -112,7 +112,7 @@ const controls: Type<any>[] = [
 
     SdButton2Control,
     SdDockContainerControl, SdDockControl,
-    SdSheetControl, SdSheetColumnControl,
+    SdSheetControl, SdSheetColumnControl, SdSheetColumnHeadControl,
     SdTextfieldControl
 ];
 
@@ -144,7 +144,7 @@ class SimgularErrorHandler implements ErrorHandler {
     constructor(private _toast: SdToastProvider) {
     }
 
-    async handleError(error: any): Promise<void> {
+    handleError(error: any): void {
         let err: Error;
         if (error.rejection) {
             err = error.rejection;
