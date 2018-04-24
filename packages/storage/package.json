@@ -9,11 +9,11 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "version": "5.5.10",
+  "version": "5.5.11",
   "dependencies": {
     "jsftp": "^2.1.3"
   },
   "peerDependencies": {
-    "@simplism/core": "^5.5.9"
+    "@simplism/core": "^5.5.10"
   }
 }
