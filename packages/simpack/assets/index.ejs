@@ -1,139 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!--<meta http-equiv="Content-Security-Policy" content="default-src 'unsafe-inline' 'self' 'unsafe-eval' ws: data: gap:  *;">-->
-    <%= htmlWebpackPlugin.options.CORDOVA ? `<meta name="format-detection" content="telephone=no">` : `` %>
-    <%= htmlWebpackPlugin.options.CORDOVA ? `<meta name="msapplication-tap-highlight" content="no">` : `` %>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-    <meta name="viewport"
-          content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
-    <meta http-equiv="Content-Type"
-          content="text/html; charset=utf-8">
-
-    <base href="<%= htmlWebpackPlugin.options.NODE_ENV === "production" ? (htmlWebpackPlugin.options.CORDOVA ? "/android_asset/www/" : "/" + htmlWebpackPlugin.options.PACKAGE_NAME + "/") : "/" %>">
-    <title><%= htmlWebpackPlugin.options.NAME %></title>
-    <style>
-        html, body {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
-        .sk-folding-cube {
-            margin: 20px auto;
-            width: 40px;
-            height: 40px;
-            position: relative;
-            -webkit-transform: rotateZ(45deg);
-            transform: rotateZ(45deg);
-        }
-
-        .sk-folding-cube .sk-cube {
-            float: left;
-            width: 50%;
-            height: 50%;
-            position: relative;
-            -webkit-transform: scale(1.1);
-            -ms-transform: scale(1.1);
-            transform: scale(1.1);
-        }
-
-        .sk-folding-cube .sk-cube:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #fff;
-            -webkit-animation: sk-foldCubeAngle 2.4s infinite linear both;
-            animation: sk-foldCubeAngle 2.4s infinite linear both;
-            -webkit-transform-origin: 100% 100%;
-            -ms-transform-origin: 100% 100%;
-            transform-origin: 100% 100%;
-        }
-
-        .sk-folding-cube .sk-cube2 {
-            -webkit-transform: scale(1.1) rotateZ(90deg);
-            transform: scale(1.1) rotateZ(90deg);
-        }
-
-        .sk-folding-cube .sk-cube3 {
-            -webkit-transform: scale(1.1) rotateZ(180deg);
-            transform: scale(1.1) rotateZ(180deg);
-        }
-
-        .sk-folding-cube .sk-cube4 {
-            -webkit-transform: scale(1.1) rotateZ(270deg);
-            transform: scale(1.1) rotateZ(270deg);
-        }
-
-        .sk-folding-cube .sk-cube2:before {
-            -webkit-animation-delay: 0.3s;
-            animation-delay: 0.3s;
-        }
-
-        .sk-folding-cube .sk-cube3:before {
-            -webkit-animation-delay: 0.6s;
-            animation-delay: 0.6s;
-        }
-
-        .sk-folding-cube .sk-cube4:before {
-            -webkit-animation-delay: 0.9s;
-            animation-delay: 0.9s;
-        }
-
-        @-webkit-keyframes sk-foldCubeAngle {
-            0%, 10% {
-                -webkit-transform: perspective(140px) rotateX(-180deg);
-                transform: perspective(140px) rotateX(-180deg);
-                opacity: 0;
-            }
-            25%, 75% {
-                -webkit-transform: perspective(140px) rotateX(0deg);
-                transform: perspective(140px) rotateX(0deg);
-                opacity: 1;
-            }
-            90%, 100% {
-                -webkit-transform: perspective(140px) rotateY(180deg);
-                transform: perspective(140px) rotateY(180deg);
-                opacity: 0;
-            }
-        }
-
-        @keyframes sk-foldCubeAngle {
-            0%, 10% {
-                -webkit-transform: perspective(140px) rotateX(-180deg);
-                transform: perspective(140px) rotateX(-180deg);
-                opacity: 0;
-            }
-            25%, 75% {
-                -webkit-transform: perspective(140px) rotateX(0deg);
-                transform: perspective(140px) rotateX(0deg);
-                opacity: 1;
-            }
-            90%, 100% {
-                -webkit-transform: perspective(140px) rotateY(180deg);
-                transform: perspective(140px) rotateY(180deg);
-                opacity: 0;
-            }
-        }
-    </style>
+    <base href="<%= htmlWebpackPlugin.options.NODE_ENV === "production" ? `/${htmlWebpackPlugin.options.PACKAGE_NAME}/` : "/" %>">
+    <title><%= htmlWebpackPlugin.options.TITLE %></title>
     <link rel="stylesheet" type="text/css" href="./notosanskr.css">
 </head>
 <body>
-<my-app>
-    <div style="width: 100%; height: 100%; background: #263238; padding-top: 100px;">
-        <div class="sk-folding-cube">
-            <div class="sk-cube1 sk-cube"></div>
-            <div class="sk-cube2 sk-cube"></div>
-            <div class="sk-cube4 sk-cube"></div>
-            <div class="sk-cube3 sk-cube"></div>
-        </div>
-    </div>
-</my-app>
-
-<%= htmlWebpackPlugin.options.CORDOVA ? "<script src=\"cordova.js\"></script>" : "" %>
+<app-root>Loading...</app-root>
 </body>
 </html>
