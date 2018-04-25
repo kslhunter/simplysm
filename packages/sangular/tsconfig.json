@@ -1,10 +1,6 @@
 {
-  "extends": "../../commons/tsconfig.json",
+  "extends": "../../ts-configs/tsconfig.dom.json",
   "compilerOptions": {
-    "lib": [
-      "es2017",
-      "dom"
-    ],
     "outDir": "./dist"
   },
   "files": [

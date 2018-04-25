@@ -1,3 +1,6 @@
 {
-  "extends": "../../commons/tslint.json"
+  "extends": "../../ts-configs/tslint.common.json",
+  "rules": {
+    "no-eval": false
+  }
 }

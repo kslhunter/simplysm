@@ -1,10 +1,12 @@
+import * as CopyWebpackPlugin from "copy-webpack-plugin";
 import * as fs from "fs-extra";
+import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import * as path from "path";
 import * as webpack from "webpack";
+import * as WebpackDevServer from "webpack-dev-server";
 import "../../../core/src/extensions/ArrayExtensions";
 import {Logger} from "../../../core/src/utils/Logger";
-
-const HardSourceWebpackPlugin = require("hard-source-webpack-plugin"); // tslint:disable-line:variable-name
+import {ISimpackConfig} from "../commons/ISimpackConfig";
 
 export class LibraryBuilder {
     private _logger = new Logger("simpack", `LibraryBuilder :: ${this._packageName}`);
@@ -16,89 +18,178 @@ export class LibraryBuilder {
     public constructor(private _packageName: string) {
     }
 
-    public async runAsync(watch?: boolean): Promise<void> {
-        return await new Promise<void>((resolve, reject) => {
-            this._logger.log("빌드 시작");
+    public async runAsync(watch: boolean): Promise<void> {
+        await new Promise<void>((resolve, reject) => {
+            this._logger.log(`빌드 시작`);
 
-            const nodeModules = fs.readdirSync(path.resolve(process.cwd(), "node_modules"))
-                .filter((dir) => dir !== ".bin")
-                .mapMany((dir) => dir.startsWith("@")
-                    ? fs.readdirSync(path.resolve(process.cwd(), `node_modules/${dir}`))
-                        .map((subDir) => path.join(dir, subDir).replace(/\\/g, "/"))
-                    : [dir]
-                );
+            let config: ISimpackConfig | undefined;
+            if (fs.existsSync(this._root("simpack.config.ts"))) {
+                eval(`require("ts-node/register")`);
+                const configFilePath = this._root("simpack.config.ts");
+                if (!configFilePath) throw new Error();
+                config = eval(`require(configFilePath)`);
+            }
 
-            const packageJson = fs.readJsonSync(this._root("package.json"));
+            let packageJson;
+            if (fs.existsSync(this._root("package.json"))) {
+                packageJson = fs.readJsonSync(this._root("package.json"));
+            }
+
+            const isForLibrary = !!packageJson;
+            const isForAngular = (config && config.type === "client") || (packageJson && packageJson.peerDependencies && Object.keys(packageJson.peerDependencies).some((dep) => dep.startsWith("@angular")));
+
+            const nodeModules = isForLibrary
+                ? fs.readdirSync(path.resolve(process.cwd(), "node_modules"))
+                    .filter((dir) => dir !== ".bin")
+                    .mapMany((dir) => dir.startsWith("@")
+                        ? fs.readdirSync(path.resolve(process.cwd(), `node_modules/${dir}`))
+                            .map((subDir) => path.join(dir, subDir).replace(/\\/g, "/"))
+                        : [dir]
+                    )
+                : [];
 
             const entry = (() => {
-                const result: { [key: string]: string } = {};
+                if (isForLibrary) {
+                    const result: { [key: string]: string } = {};
 
-                if (packageJson.main) {
-                    const basename = path.basename(packageJson.main, path.extname(packageJson.main));
-                    const sourcePath = packageJson.main.replace("dist", "src").replace(".js", ".ts");
-                    result[basename] = this._root(sourcePath);
-                }
-
-                if (packageJson.bin) {
-                    for (const basename of Object.keys(packageJson.bin)) {
-                        const sourcePath = packageJson.bin[basename].replace("dist", "src").replace(".js", ".ts");
+                    if (packageJson.main) {
+                        const basename = path.basename(packageJson.main, path.extname(packageJson.main));
+                        const sourcePath = packageJson.main.replace("dist", "src").replace(".js", ".ts");
                         result[basename] = this._root(sourcePath);
                     }
-                }
 
-                return result;
+                    if (packageJson.bin) {
+                        for (const basename of Object.keys(packageJson.bin)) {
+                            const sourcePath = packageJson.bin[basename].replace("dist", "src").replace(".js", ".ts");
+                            result[basename] = this._root(sourcePath);
+                        }
+                    }
+
+                    return result;
+                }
+                else if (config!.type === "client") {
+                    return {
+                        main: [
+                            ...watch
+                                ? [
+                                    `webpack-dev-server/client?http://${config!["host"]}:${config!["port"]}/`,
+                                    `webpack/hot/only-dev-server`
+                                ]
+                                : [],
+                            path.resolve(process.cwd(), "node_modules/@simplism/simpack/assets/main.ts")
+                        ]
+                    };
+                }
+                else if (config!.type === "server") {
+                    return {
+                        app: this._root("src/app.ts")
+                    };
+                }
             })();
 
             const webpackConfig: webpack.Configuration = {
-                target: packageJson.peerDependencies && Object.keys(packageJson.peerDependencies).some((dep) => dep.startsWith("@angular")) ? undefined : "node",
+                context: this._root(),
+                target: isForAngular ? undefined : "node",
                 devtool: "source-map",
-                mode: watch ? "development" : "production",
-                ...watch ? {
+                mode: eval(`process.env.NODE_ENV`) === "production" ? "production" : "development",
+                ...eval(`process.env.NODE_ENV`) === "production" ? {
                     optimization: {
                         noEmitOnErrors: true
                     }
                 } : {},
                 entry,
                 output: {
-                    path: this._root(`dist`),
-                    libraryTarget: "umd"
+                    path: isForLibrary
+                        ? this._root(`dist`)
+                        : isForAngular
+                            ? path.resolve(process.cwd(), `dist/www/${this._packageName}`)
+                            : path.resolve(process.cwd(), `dist`),
+                    libraryTarget: isForLibrary ? "umd" : undefined
                 },
+
+                ...!isForLibrary
+                    ? {
+                        optimization: {
+                            splitChunks: {
+                                cacheGroups: {
+                                    vendor: {
+                                        test: /[\\/]node_modules[\\/](?!@simplism)/,
+                                        name: "vendor",
+                                        chunks: "initial",
+                                        enforce: true
+                                    },
+                                    simplism: {
+                                        test: /[\\/]node_modules[\\/]@simplism[\\/](?!pack)/,
+                                        name: "simplism",
+                                        chunks: "initial",
+                                        enforce: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    : {},
+
                 resolve: {
-                    extensions: [".ts"]
+                    extensions: [
+                        ".ts", ".js", ".json",
+                        ...(config && config.type === "server") ? [".node"] : []
+                    ]
                 },
                 module: {
                     rules: [
-                        {
-                            enforce: "pre",
-                            test: /\.ts$/,
-                            exclude: /node_modules/,
-                            loader: "tslint-loader",
-                            options: {
-                                formatter: "prose"
-                            }
-                        },
-                        {
-                            test: /\.ts$/,
-                            exclude: /node_modules/,
-                            use: [
+                        ...(!isForLibrary && isForAngular)
+                            ? [
                                 {
-                                    loader: "awesome-typescript-loader",
+                                    test: /.js$/,
+                                    parser: {
+                                        system: true
+                                    }
+                                } as any
+                            ]
+                            : [],
+
+                        ...!isForLibrary
+                            ? [
+
+                                {
+                                    test: /\.ts$/,
+                                    loader: "happypack/loader?id=ts",
+                                    exclude: /node_modules/
+                                }
+                            ]
+                            : [
+                                {
+                                    enforce: "pre",
+                                    test: /\.ts$/,
+                                    exclude: /node_modules/,
+                                    loader: "tslint-loader",
                                     options: {
-                                        configFileName: this._root("tsconfig.json"),
-                                        silent: true,
-                                        useCache: true,
-                                        forceIsolatedModules: true
+                                        formatter: "prose"
                                     }
                                 },
+                                {
+                                    test: /\.ts$/,
+                                    exclude: /node_modules/,
+                                    use: [
+                                        {
+                                            loader: "ts-loader",
+                                            options: {
+                                                configFile: this._root("tsconfig.json"),
+                                                silent: true
+                                            }
+                                        },
+                                        ...isForAngular ? ["angular2-template-loader"] : []
+                                    ]
+                                }
+                            ],
 
-                                ...packageJson.peerDependencies && Object.keys(packageJson.peerDependencies).some((dep) => dep.startsWith("@angular"))
-                                    ? ["angular2-template-loader"]
-                                    : []
-                            ]
-                        },
-
-                        ...packageJson.peerDependencies && Object.keys(packageJson.peerDependencies).some((dep) => dep.startsWith("@angular"))
+                        ...isForAngular
                             ? [
+                                {
+                                    test: /\.html$/,
+                                    use: "html-loader"
+                                },
                                 {
                                     test: /\.pcss$/,
                                     use: [
@@ -123,9 +214,37 @@ export class LibraryBuilder {
                     ]
                 },
                 plugins: [
-                    new HardSourceWebpackPlugin(),
+                    ...!isForLibrary ? [
+                        new (require("hard-source-webpack-plugin"))(),
 
-                    ...packageJson.bin
+                        new (require("happypack"))({
+                            id: "ts",
+                            verbose: false,
+                            loaders: [
+                                {
+                                    loader: "ts-loader",
+                                    options: {silent: true, happyPackMode: true}
+                                },
+                                ...isForAngular ? ["angular2-template-loader"] : []
+                            ]
+                        }),
+
+                        new (require("fork-ts-checker-webpack-plugin"))({
+                            checkSyntacticErrors: true,
+                            tsconfig: this._root("tsconfig.json"),
+                            tslint: this._root("tslint.json"),
+                            /*formatter: "codeframe",*/
+                            logger: (() => {
+                                return {
+                                    error: this._logger.error.bind(this._logger),
+                                    warn: this._logger.warn.bind(this._logger),
+                                    info: this._logger.log.bind(this._logger)
+                                };
+                            })()
+                        })
+                    ] : [],
+
+                    ...(isForLibrary && packageJson.bin)
                         ? [
                             new webpack.BannerPlugin({
                                 banner: `#!/usr/bin/env node`,
@@ -134,76 +253,145 @@ export class LibraryBuilder {
                                 include: Object.keys(packageJson.bin).map((binName) => `${binName}.js`)
                             })
                         ]
+                        : [],
+
+                    ...(!isForLibrary && isForAngular)
+                        ? [
+                            new webpack.ContextReplacementPlugin(
+                                /angular[\\/]core[\\/](@angular|esm5|fesm5)/,
+                                this._root("src"),
+                                {}
+                            ),
+
+                            new webpack.NormalModuleReplacementPlugin(
+                                /^APP_MODULE_PATH$/,
+                                this._root("src/AppModule.ts")
+                            ),
+
+                            new HtmlWebpackPlugin({
+                                template: path.resolve(process.cwd(), "node_modules/@simplism/simpack/assets/index.ejs"),
+                                NODE_ENV: eval(`process.env.NODE_ENV`),
+                                PACKAGE_NAME: this._packageName,
+                                TITLE: config!["title"]
+                            }),
+
+                            new CopyWebpackPlugin([
+                                {from: path.resolve(process.cwd(), "node_modules/@simplism/simpack/assets/public")}
+                            ])
+                        ]
+                        : [],
+
+                    ...(!isForLibrary && isForAngular && watch)
+                        ? [new webpack.HotModuleReplacementPlugin()]
                         : []
                 ],
-                externals: (context, request, callback) => {
-                    if (nodeModules.includes(request)) {
-                        callback(undefined, `commonjs ${request}`);
-                        return;
-                    }
+                externals: [
+                    (context, request, callback) => {
+                        if (isForLibrary) {
+                            if (nodeModules.some((item) => request.startsWith(item))) {
+                                callback(undefined, `commonjs ${request}`);
+                                return;
+                            }
 
-                    if (
-                        !path.resolve(context, request).startsWith(this._root()) &&
-                        path.resolve(context, request).startsWith(this._root(".."))
-                    ) {
-                        const targetPackageName = path.relative(this._root(".."), path.resolve(context, request)).split(/[\\/]/)[0];
-                        callback(undefined, `commonjs @simplism/${targetPackageName}`);
-                        return;
-                    }
+                            if (
+                                !path.resolve(context, request).startsWith(this._root()) &&
+                                path.resolve(context, request).startsWith(this._root(".."))
+                            ) {
+                                const targetPackageName = path.relative(this._root(".."), path.resolve(context, request)).split(/[\\/]/)[0];
+                                callback(undefined, `commonjs @simplism/${targetPackageName}`);
+                                return;
+                            }
+                        }
+                        else {
+                            if (
+                                !path.resolve(context, request).startsWith(this._root()) &&
+                                path.resolve(context, request).startsWith(this._root(".."))
+                            ) {
+                                const className = path.basename(request, path.extname(request));
+                                return callback(undefined, `{${className}: {name: '${className}'}}`);
+                            }
 
-                    callback(undefined, undefined);
-                }
+                            if (isForAngular && ["fs", "fs-extra", "path"].includes(request)) {
+                                return callback(undefined, `"${request}"`);
+                            }
+                        }
+
+                        callback(undefined, undefined);
+                    }
+                ]
             };
 
             const compiler: webpack.Compiler = webpack(webpackConfig);
-            const onCompileComplete: webpack.Compiler.Handler = (err, stats) => {
+            const onCompileComplete = (err?: Error, stats?: webpack.Stats) => {
                 if (err) {
                     reject(err);
                     return;
                 }
 
-                const info = stats.toJson();
+                const info = stats!.toJson();
 
-                if (stats.hasWarnings()) {
+                if (stats!.hasWarnings()) {
                     for (const warning of info.warnings) {
-                        this._logger.warn(
-                            warning.replace(/\[at-loader] (.*):([0-9]*):([0-9]*)(\s|\n)*/g, (...matches: string[]) => {
+                        this._logger.warn(warning);
+                        /*this._logger.warn(
+                            warning.replace(/\[at-loader] (.*):([0-9]*):([0-9]*)(\s|\n)*!/g, (...matches: string[]) => {
                                 return `${matches[1]}\nWARNING: ${path.resolve(process.cwd(), matches[1])}[${matches[2]}, ${matches[3]}]: `;
                             })
-                        );
+                        );*/
                     }
                 }
 
-                if (stats.hasErrors()) {
+                if (stats!.hasErrors()) {
                     for (const error of info.errors) {
-                        this._logger.error(
-                            error.replace(/\[at-loader] (.*):([0-9]*):([0-9]*)(\s|\n)*/g, (...matches: string[]) => {
+                        this._logger.error(error);
+                        /*this._logger.error(
+                            error.replace(/\[at-loader] (.*):([0-9]*):([0-9]*)(\s|\n)*!/g, (...matches: string[]) => {
                                 return `${matches[1]}\nERROR: ${path.resolve(process.cwd(), matches[1])}[${matches[2]}, ${matches[3]}]: `;
                             })
-                        );
+                        );*/
                     }
                 }
 
-                this._logger.info("빌드 완료");
+                if (!isForLibrary && isForAngular && watch) {
+                    this._logger.info(`빌드 완료: http://${config!["host"]}:${config!["port"]}`);
+                }
+                else {
+                    this._logger.info("빌드 완료");
+                }
                 resolve();
             };
 
             if (watch) {
-                compiler.watch({}, onCompileComplete);
-                compiler.hooks.watchRun.tap("LibraryBuilder", () => {
-                    this._logger.log(`변경 감지`);
-                });
+                if (!isForLibrary && isForAngular) {
+                    const server = new WebpackDevServer(compiler, {
+                        hot: true,
+                        /*inline: true,*/
+                        quiet: true
+                    });
+                    server.listen(config!["port"], config!["host"]);
+                    compiler.hooks.failed.tap(this._packageName, (error) => onCompileComplete(error, undefined));
+                    compiler.hooks.done.tap(this._packageName, (stats) => onCompileComplete(undefined, stats));
+                }
+                else {
+                    compiler.watch({}, onCompileComplete.bind(this));
+                    compiler.hooks.watchRun.tap("LibraryBuilder", () => {
+                        this._logger.log(`변경 감지`);
+                    });
+                }
             }
             else {
-                compiler.run(onCompileComplete);
+                compiler.run(onCompileComplete.bind(this));
             }
 
             compiler.hooks.afterEmit.tap("LibraryBuilder", () => {
-                if (fs.existsSync(this._root(`dist/${this._packageName}/src`))) {
-                    fs.moveSync(this._root(`dist/${this._packageName}/src`), this._root(`dist/__${this._packageName}/src`));
-                    fs.removeSync(this._root(`dist/${this._packageName}`));
-                    fs.moveSync(this._root(`dist/__${this._packageName}/src`), this._root("dist"));
-                    fs.removeSync(this._root(`dist/__${this._packageName}`));
+                if (fs.existsSync(this._root("dist/packages"))) {
+                    if (fs.existsSync(this._root(`dist/packages/${this._packageName}/dist/${this._packageName}/src`))) {
+                        fs.copySync(this._root(`dist/packages/${this._packageName}/dist/${this._packageName}/src`), this._root(`dist`));
+                    }
+                    else {
+                        fs.copySync(this._root(`dist/packages/${this._packageName}/dist`), this._root(`dist`));
+                    }
+                    fs.removeSync(this._root(`dist/packages`));
                 }
             });
         });

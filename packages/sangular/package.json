@@ -1,14 +1,15 @@
 {
   "name": "@simplism/sangular",
-  "version": "6.0.4",
+  "version": "6.0.46",
   "description": "Simplism Angular Package",
-  "repository": "github:kslhunter/simplism",
+  "repository": "github:kslhunter/simplism6",
   "author": "kslhunter",
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/core": "^6.0.3"
+    "@simplism/core": "^6.0.46",
+    "core-js": "^2.5.5"
   },
   "peerDependencies": {
     "@angular/common": "^6.0.0-rc.5",

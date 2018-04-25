@@ -109,18 +109,15 @@
       }
     ],
     "interface-name": false,
-    "no-import-side-effect": [
-      true,
-      {
-        "ignore-module": "\\/extensions\\/ArrayExtensions$"
-      }
-    ],
+    "no-import-side-effect": false,
     "no-dynamic-delete": false,
     "no-unnecessary-callback-wrapper": false,
     "comment-format": false,
     "triple-equals": [
       true,
       "allow-undefined-check"
-    ]
+    ],
+    "no-submodule-imports": false,
+    "cyclomatic-complexity": false
   }
 }

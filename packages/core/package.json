@@ -1,8 +1,8 @@
 {
   "name": "@simplism/core",
-  "version": "6.0.3",
+  "version": "6.0.46",
   "description": "Simplism Core Package",
-  "repository": "github:kslhunter/simplism",
+  "repository": "github:kslhunter/simplism6",
   "author": "kslhunter",
   "license": "MIT",
   "main": "./dist/index.js",

@@ -6,4 +6,8 @@ if (process.env.NODE_ENV === "production") {
     enableProdMode();
 }
 
+if (module["hot"]) {
+    module["hot"].accept();
+}
+
 (async () => await platformBrowserDynamic().bootstrapModule(require("APP_MODULE_PATH").AppModule))();

@@ -1,7 +1,7 @@
 import {spawn} from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
-import {Exception} from "../../../core/src";
+import {Exception} from "../../../core/src/index";
 import {Logger} from "../../../core/src/utils/Logger";
 
 export class LibraryPublisher {

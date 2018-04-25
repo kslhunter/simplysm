@@ -1,7 +1,10 @@
 import {NgModule, Type} from "@angular/core";
+import {BrowserModule} from "@angular/platform-browser";
 import {SdButtonControl} from "./controls/SdButtonControl";
 
-const modules: Type<any>[] = [];
+const modules: Type<any>[] = [
+    BrowserModule
+];
 
 const controls: Type<any>[] = [
     SdButtonControl

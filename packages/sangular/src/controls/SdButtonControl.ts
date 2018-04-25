@@ -1,12 +1,12 @@
 import {Component, HostBinding, Input} from "@angular/core";
-import {SizeStrings, ThemeStrings} from "../commons/types";
+import {SizeString, ThemeString} from "../commons/types";
 import {Validate} from "../decorators/Validate";
 
 @Component({
     selector: "sd-button",
     template: `
         <button [type]="type"
-                [disbled]="disabled">
+                [disabled]="disabled">
             <ng-content></ng-content>
         </button>`
 })
@@ -23,14 +23,14 @@ export class SdButtonControl {
     public type?: "button" | "submit";
 
     @Input()
-    @Validate("SizeStrings")
+    @Validate("SizeString")
     @HostBinding("attr.sd-size")
-    public size?: SizeStrings;
+    public size?: SizeString;
 
     @Input()
-    @Validate("ThemeStrings")
+    @Validate("ThemeString")
     @HostBinding("attr.sd-theme")
-    public theme?: ThemeStrings;
+    public theme?: ThemeString;
 
     @Input()
     @Validate(Boolean)

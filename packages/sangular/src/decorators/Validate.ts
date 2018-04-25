@@ -15,7 +15,7 @@ export const Validate = (params?: PropertyCheckerTypes | PropertyCheckerTypes[] 
         if (params instanceof Array) {
             config = {type: params};
         }
-        else if (params instanceof Type || params === "ThemeStrings" || params === "SizeStrings") {
+        else if (params instanceof Type || params === "ThemeString" || params === "SizeString") {
             config = {type: [params]};
         }
         else if (!((params as any).type instanceof Array)) {
@@ -40,8 +40,8 @@ export const Validate = (params?: PropertyCheckerTypes | PropertyCheckerTypes[] 
             if (
                 !config.type.some((type: any) =>
                     type === value.constructor ||
-                    (type === "ThemeStrings" && ["primary", "warning", "danger", "info", "success"].includes(value)) ||
-                    (type === "SizeStrings" && ["xxs", "xs", "sm", "lg", "xl", "xxl"].includes(value))
+                    (type === "ThemeString" && ["primary", "warning", "danger", "info", "success"].includes(value)) ||
+                    (type === "SizeString" && ["xxs", "xs", "sm", "lg", "xl", "xxl"].includes(value))
                 )
             ) {
                 throw new ArgumentsException({propertyKey, value, type: config.type});
@@ -69,4 +69,4 @@ export const Validate = (params?: PropertyCheckerTypes | PropertyCheckerTypes[] 
     }
 };
 
-export type PropertyCheckerTypes = Type<any> | "ThemeStrings" | "SizeStrings";
+export type PropertyCheckerTypes = Type<any> | "ThemeString" | "SizeString";
