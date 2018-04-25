@@ -1,8 +1,8 @@
 {
   "name": "simplism",
-  "version": "6.0.0",
+  "version": "6.0.8",
   "description": "Simplism Packages Source Code",
-  "repository": "github:kslhunter/simplism",
+  "repository": "github:kslhunter/simplism6",
   "author": "kslhunter",
   "license": "MIT",
   "scripts": {
