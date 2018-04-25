@@ -1,6 +1,6 @@
 {
   "name": "simplism",
-  "version": "6.0.35",
+  "version": "6.0.36",
   "description": "Simplism Packages Source Code",
   "repository": "github:kslhunter/simplism6",
   "author": "kslhunter",
@@ -26,6 +26,7 @@
     "@types/webpack": "^4.1.4",
     "@types/yargs": "^11.0.0",
     "angular2-template-loader": "^0.6.2",
+    "awesome-typescript-loader": "^5.0.0",
     "caniuse-lite": "^1.0.30000830",
     "chokidar": "^2.0.3",
     "codelyzer": "^4.3.0",
@@ -38,7 +39,6 @@
     "rxjs": "^6.0.0",
     "semver": "^5.5.0",
     "style-loader": "^0.21.0",
-    "ts-loader": "^4.2.0",
     "ts-node": "^6.0.0",
     "tslint": "^5.9.1",
     "tslint-loader": "^3.6.0",
