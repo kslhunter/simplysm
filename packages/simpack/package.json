@@ -1,6 +1,6 @@
 {
   "name": "@simplism/simpack",
-  "version": "6.0.46",
+  "version": "6.0.47",
   "description": "Simplism Builder Package",
   "repository": "github:kslhunter/simplism6",
   "author": "kslhunter",
@@ -11,7 +11,7 @@
     "simpack": "./dist/simpack.js"
   },
   "dependencies": {
-    "@simplism/core": "^6.0.46",
+    "@simplism/core": "^6.0.47",
     "angular2-template-loader": "^0.6.2",
     "caniuse-lite": "^1.0.30000830",
     "copy-webpack-plugin": "^4.5.1",

@@ -88,7 +88,6 @@ export class LibraryBuilder {
             })();
 
             const webpackConfig: webpack.Configuration = {
-                context: this._root(),
                 target: isForAngular ? undefined : "node",
                 devtool: "source-map",
                 mode: eval(`process.env.NODE_ENV`) === "production" ? "production" : "development",
