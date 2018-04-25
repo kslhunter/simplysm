@@ -1,0 +1,23 @@
+{
+  "name": "@simplism/sangular",
+  "version": "6.0.4",
+  "description": "Simplism Angular Package",
+  "repository": "github:kslhunter/simplism",
+  "author": "kslhunter",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@simplism/core": "^6.0.3"
+  },
+  "peerDependencies": {
+    "@angular/common": "^6.0.0-rc.5",
+    "@angular/compiler": "^6.0.0-rc.5",
+    "@angular/core": "^6.0.0-rc.5",
+    "@angular/platform-browser": "^6.0.0-rc.5",
+    "@angular/platform-browser-dynamic": "^6.0.0-rc.5",
+    "@angular/router": "^6.0.0-rc.5",
+    "rxjs": "^6.0.0",
+    "zone.js": "^0.8.26"
+  }
+}

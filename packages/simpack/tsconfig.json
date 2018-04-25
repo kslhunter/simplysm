@@ -1,0 +1,10 @@
+{
+  "extends": "../../commons/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "files": [
+    "./src/index.ts",
+    "./src/simpack.ts"
+  ]
+}
