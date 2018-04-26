@@ -4,7 +4,7 @@ import {ArgumentsException} from "../../../core/src";
 // tslint:disable-next-line:variable-name
 export const Validate = (params?: PropertyCheckerTypes | PropertyCheckerTypes[] | {
     type?: PropertyCheckerTypes | PropertyCheckerTypes[];
-    required?: boolean;
+    nullable?: boolean;
 
     validator?(value: any): boolean;
 }) => (target: any, propertyKey: string) => {
@@ -29,8 +29,8 @@ export const Validate = (params?: PropertyCheckerTypes | PropertyCheckerTypes[] 
         }
 
         if (value == undefined) {
-            if (config.required) {
-                throw new ArgumentsException({value, required: config.required});
+            if (config.nullable) {
+                throw new ArgumentsException({value, nullable: config.nullable});
             }
             _val = value;
             return;
