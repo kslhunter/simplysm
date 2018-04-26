@@ -2,7 +2,7 @@ import {spawnSync} from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as semver from "semver";
-import {LibraryPublisher} from "../builders/LibraryPublisher";
+import {SimpackPublisher} from "../builders/SimpackPublisher";
 
 export async function publish(): Promise<void> {
     const packageConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
@@ -14,7 +14,7 @@ export async function publish(): Promise<void> {
 
     const promiseList: Promise<void>[] = [];
     for (const packageName of fs.readdirSync(path.resolve(process.cwd(), `packages`))) {
-        promiseList.push(new LibraryPublisher(packageName).runAsync());
+        promiseList.push(new SimpackPublisher(packageName).runAsync());
     }
     await Promise.all(promiseList);
 }

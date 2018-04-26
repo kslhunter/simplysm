@@ -33,7 +33,7 @@
     "use-host-property-decorator": true,
     "use-view-encapsulation": true,
     "no-attribute-parameter-decorator": true,
-    "no-output-named-after-standard-event": true,
+    "no-output-named-after-standard-event": false,
     "no-input-rename": true,
     "no-output-rename": true,
     "no-output-on-prefix": true,

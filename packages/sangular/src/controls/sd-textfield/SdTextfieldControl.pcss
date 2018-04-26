@@ -1,0 +1,95 @@
+@import "../../../styles/presets.pcss";
+
+:host {
+  display: block;
+  position: relative;
+
+  & > input {
+    display: block;
+    width: 100%;
+    padding: var(--padding-sm) var(--padding-default);
+    border: 1px solid var(--trans-color-default);
+    background: var(--color-bluegrey-darkest);
+
+    &[type=number] {
+      text-align: right;
+    }
+
+    &[type=date],
+    &[type=number] {
+      &::-webkit-inner-spin-button,
+      &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    }
+
+    &:disabled {
+      background: transparent;
+      color: var(--text-color-light);
+    }
+
+    &:focus {
+      outline: solid 1px var(--theme-primary-default);
+      outline-offset: 0;
+    }
+  }
+
+  & > input:invalid + .invalid-indicator {
+    position: absolute;
+    display: block;
+    top: 6px;
+    left: 4px;
+    height: 4px;
+    width: 4px;
+    border-radius: 100%;
+    background: var(--theme-danger-default);
+  }
+
+  &[sd-size=xxs] > input {
+    padding: 0 var(--padding-xxs);
+    font-size: var(--font-size-sm);
+  }
+  &[sd-size=xs] > input {
+    padding: var(--padding-xxs) var(--padding-xs);
+    font-size: var(--font-size-sm);
+  }
+  &[sd-size=sm] > input {
+    padding: var(--padding-xs) var(--padding-sm);
+  }
+  &[sd-size=lg] > input {
+    padding: var(--padding-default) var(--padding-lg);
+  }
+  &[sd-size=xl] > input {
+    padding: var(--padding-lg) var(--padding-xl);
+    font-size: var(--font-size-lg);
+  }
+  &[sd-size=xxl] > input {
+    padding: var(--padding-xl) var(--padding-xxl);
+    font-size: var(--font-size-lg);
+  }
+
+  &[sd-theme=primary] > input {
+    background: var(--theme-primary-darkest);
+  }
+  &[sd-theme=success] > input {
+    background: var(--theme-success-darkest);
+  }
+  &[sd-theme=info] > input {
+    background: var(--theme-info-darkest);
+  }
+  &[sd-theme=warning] > input {
+    background: var(--theme-warning-darkest);
+  }
+  &[sd-theme=danger] > input {
+    background: var(--theme-danger-darkest);
+  }
+
+  &[sd-inline=true] {
+    display: inline-block;
+
+    > input {
+      width: auto;
+    }
+  }
+}

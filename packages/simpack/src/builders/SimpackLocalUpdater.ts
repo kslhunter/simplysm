@@ -3,7 +3,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import {Logger} from "../../../core/src/utils/Logger";
 
-export class LocalUpdater {
+export class SimpackLocalUpdater {
     private _logger = new Logger("simpack", `LocalUpdater :: @simplism/${this._packageName}`);
 
     private _sourcePath(...args: string[]): string {
@@ -26,25 +26,40 @@ export class LocalUpdater {
 
                         watcher
                             .on("add", (filePath) => {
-                                this._logger.log(`변경감지: add    => ${filePath}`);
+                                try {
+                                    this._logger.log(`변경감지: add    => ${filePath}`);
 
-                                const relativeSourcePath = path.relative(this._sourcePath(), filePath);
-                                const targetPath = this._targetPath(relativeSourcePath);
-                                fs.copySync(filePath, targetPath);
+                                    const relativeSourcePath = path.relative(this._sourcePath(), filePath);
+                                    const targetPath = this._targetPath(relativeSourcePath);
+                                    fs.copySync(filePath, targetPath);
+                                }
+                                catch (err) {
+                                    this._logger.error(err);
+                                }
                             })
                             .on("change", (filePath) => {
-                                this._logger.log(`변경감지: change => ${filePath}`);
+                                try {
+                                    this._logger.log(`변경감지: change => ${filePath}`);
 
-                                const relativeSourcePath = path.relative(this._sourcePath(), filePath);
-                                const targetPath = this._targetPath(relativeSourcePath);
-                                fs.copySync(filePath, targetPath);
+                                    const relativeSourcePath = path.relative(this._sourcePath(), filePath);
+                                    const targetPath = this._targetPath(relativeSourcePath);
+                                    fs.copySync(filePath, targetPath);
+                                }
+                                catch (err) {
+                                    this._logger.error(err);
+                                }
                             })
                             .on("unlink", (filePath) => {
-                                this._logger.log(`변경감지: unlink => ${filePath}`);
+                                try {
+                                    this._logger.log(`변경감지: unlink => ${filePath}`);
 
-                                const relativeSourcePath = path.relative(this._sourcePath(), filePath);
-                                const targetPath = this._targetPath(relativeSourcePath);
-                                fs.removeSync(targetPath);
+                                    const relativeSourcePath = path.relative(this._sourcePath(), filePath);
+                                    const targetPath = this._targetPath(relativeSourcePath);
+                                    fs.removeSync(targetPath);
+                                }
+                                catch (err) {
+                                    this._logger.error(err);
+                                }
                             });
 
                         resolve();

@@ -1,2 +1,2 @@
 export * from "./SangularModule";
-export * from "./decorators/Validate";
+export * from "./decorators/SdValidate";

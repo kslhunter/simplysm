@@ -4,7 +4,7 @@ import * as path from "path";
 import {Exception} from "../../../core/src/index";
 import {Logger} from "../../../core/src/utils/Logger";
 
-export class LibraryPublisher {
+export class SimpackPublisher {
     private _logger = new Logger("simpack", `LibraryPublisher :: ${this._packageName}`);
 
     private _root(...args: string[]): string {

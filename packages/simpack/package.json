@@ -1,6 +1,6 @@
 {
   "name": "@simplism/simpack",
-  "version": "6.0.47",
+  "version": "6.0.51",
   "description": "Simplism Builder Package",
   "repository": "github:kslhunter/simplism6",
   "author": "kslhunter",
@@ -11,11 +11,12 @@
     "simpack": "./dist/simpack.js"
   },
   "dependencies": {
-    "@simplism/core": "^6.0.47",
+    "@simplism/core": "^6.0.51",
     "angular2-template-loader": "^0.6.2",
     "caniuse-lite": "^1.0.30000830",
     "copy-webpack-plugin": "^4.5.1",
     "css-loader": "^0.28.11",
+    "file-loader": "^1.1.11",
     "fork-ts-checker-webpack-plugin": "^0.4.1",
     "fs-extra": "^5.0.0",
     "happypack": "^5.0.0",
@@ -26,7 +27,9 @@
     "postcss-import": "^11.1.0",
     "postcss-loader": "^2.1.4",
     "semver": "^5.5.0",
+    "source-map-loader": "^0.2.3",
     "style-loader": "^0.21.0",
+    "to-string-loader": "^1.1.5",
     "ts-loader": "^4.2.0",
     "ts-node": "^6.0.0",
     "tslint": "^5.9.1",

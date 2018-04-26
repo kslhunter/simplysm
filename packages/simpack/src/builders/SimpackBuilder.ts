@@ -8,7 +8,7 @@ import "../../../core/src/extensions/ArrayExtensions";
 import {Logger} from "../../../core/src/utils/Logger";
 import {ISimpackConfig} from "../commons/ISimpackConfig";
 
-export class LibraryBuilder {
+export class SimpackBuilder {
     private _logger = new Logger("simpack", `LibraryBuilder :: ${this._packageName}`);
 
     private _root(...args: string[]): string {
@@ -200,6 +200,27 @@ export class LibraryBuilder {
                                 },
                                 {
                                     test: /\.pcss$/,
+                                    include: /[\\\/]src[\\\/]/,
+                                    use: [
+                                        "to-string-loader",
+                                        {
+                                            loader: "css-loader",
+                                            options: {importLoaders: 1}
+                                        },
+                                        {
+                                            loader: "postcss-loader",
+                                            options: {
+                                                plugins: [
+                                                    require("postcss-import")(),
+                                                    require("postcss-cssnext")()
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    test: /\.pcss$/,
+                                    exclude: /[\\\/]src[\\\/]/,
                                     use: [
                                         "style-loader",
                                         {
@@ -295,6 +316,8 @@ export class LibraryBuilder {
                 ],
                 externals: [
                     (context, request, callback) => {
+                        request = request.split("!").last();
+
                         if (isLibrary) {
                             if (nodeModules.some((item) => request.startsWith(item))) {
                                 callback(undefined, `commonjs ${request}`);

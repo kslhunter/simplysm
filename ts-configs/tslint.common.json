@@ -118,6 +118,7 @@
       "allow-undefined-check"
     ],
     "no-submodule-imports": false,
-    "cyclomatic-complexity": false
+    "cyclomatic-complexity": false,
+    "prefer-conditional-expression": false
   }
 }

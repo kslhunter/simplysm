@@ -2,20 +2,24 @@ import {Type} from "@angular/core";
 import {ArgumentsException} from "../../../core/src";
 
 // tslint:disable-next-line:variable-name
-export const Validate = (params?: PropertyCheckerTypes | PropertyCheckerTypes[] | {
+export const SdValidate = (params?: PropertyCheckerTypes | PropertyCheckerTypes[] | {
     type?: PropertyCheckerTypes | PropertyCheckerTypes[];
-    nullable?: boolean;
+    notnull?: boolean;
 
     validator?(value: any): boolean;
 }) => (target: any, propertyKey: string) => {
-    let _val = target[propertyKey];
-    const getter = () => _val;
-    const setter = (value: any) => {
+    const getter = function (this: any): any {
+        if (!this) return;
+        return this[`__sd_${propertyKey}__`];
+    };
+    const setter = function (this: any, value: any): void {
+        if (!this) return;
+
         let config;
         if (params instanceof Array) {
             config = {type: params};
         }
-        else if (params instanceof Type || params === "ThemeString" || params === "SizeString") {
+        else if (params instanceof Type || params === "SdThemeString" || params === "SdSizeString") {
             config = {type: [params]};
         }
         else if (!((params as any).type instanceof Array)) {
@@ -29,10 +33,10 @@ export const Validate = (params?: PropertyCheckerTypes | PropertyCheckerTypes[] 
         }
 
         if (value == undefined) {
-            if (config.nullable) {
-                throw new ArgumentsException({value, nullable: config.nullable});
+            if (config.notnull) {
+                throw new ArgumentsException({propertyKey, value, notnull: config.notnull});
             }
-            _val = value;
+            this[`__sd_${propertyKey}__`] = value;
             return;
         }
 
@@ -40,8 +44,8 @@ export const Validate = (params?: PropertyCheckerTypes | PropertyCheckerTypes[] 
             if (
                 !config.type.some((type: any) =>
                     type === value.constructor ||
-                    (type === "ThemeString" && ["primary", "warning", "danger", "info", "success"].includes(value)) ||
-                    (type === "SizeString" && ["xxs", "xs", "sm", "lg", "xl", "xxl"].includes(value))
+                    (type === "SdThemeString" && ["primary", "warning", "danger", "info", "success"].includes(value)) ||
+                    (type === "SdSizeString" && ["xxs", "xs", "sm", "lg", "xl", "xxl"].includes(value))
                 )
             ) {
                 throw new ArgumentsException({propertyKey, value, type: config.type});
@@ -54,7 +58,7 @@ export const Validate = (params?: PropertyCheckerTypes | PropertyCheckerTypes[] 
             }
         }
 
-        _val = value;
+        this[`__sd_${propertyKey}__`] = value;
     };
 
     setter(target[propertyKey]);
@@ -69,4 +73,4 @@ export const Validate = (params?: PropertyCheckerTypes | PropertyCheckerTypes[] 
     }
 };
 
-export type PropertyCheckerTypes = Type<any> | "ThemeString" | "SizeString";
+export type PropertyCheckerTypes = Type<any> | "SdThemeString" | "SdSizeString";

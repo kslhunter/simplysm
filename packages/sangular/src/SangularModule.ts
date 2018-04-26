@@ -1,18 +1,26 @@
 import {NgModule, Type} from "@angular/core";
 import {BrowserModule} from "@angular/platform-browser";
-import {SdButtonControl} from "./controls/SdButtonControl";
+import {SdButtonControl} from "./controls/sd-button/SdButtonControl";
+import {SdFormControl} from "./controls/sd-form/SdFormControl";
+import {SdFormItemControl} from "./controls/sd-form/SdFormItemControl";
+import {SdTextfieldControl} from "./controls/sd-textfield/SdTextfieldControl";
+import {SdPaddingDirective} from "./directives/SdPaddingDirective";
 
 const modules: Type<any>[] = [
     BrowserModule
 ];
 
 const controls: Type<any>[] = [
-    SdButtonControl
+    SdButtonControl,
+    SdTextfieldControl,
+    SdFormControl, SdFormItemControl
 ];
 
 const providers: Type<any>[] = [];
 
-const directives: Type<any>[] = [];
+const directives: Type<any>[] = [
+    SdPaddingDirective
+];
 
 const pipes: Type<any>[] = [];
 

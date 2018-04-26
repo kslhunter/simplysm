@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import {LocalUpdater} from "../builders/LocalUpdater";
+import {SimpackLocalUpdater} from "../builders/SimpackLocalUpdater";
 
 export async function localUpdate(argv: { watch: boolean }): Promise<void> {
     const promiseList: Promise<void>[] = [];
@@ -15,7 +15,7 @@ export async function localUpdate(argv: { watch: boolean }): Promise<void> {
         ].filter((item) => item.startsWith("@simplism")).map((item) => item.slice(10));
 
         for (const dependencySimplismPackageName of dependencySimplismPackageNameList) {
-            promiseList.push(new LocalUpdater(dependencySimplismPackageName).runAsync(argv.watch));
+            promiseList.push(new SimpackLocalUpdater(dependencySimplismPackageName).runAsync(argv.watch));
         }
     }
 

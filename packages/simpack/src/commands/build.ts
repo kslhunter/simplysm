@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import {LibraryBuilder} from "../builders/LibraryBuilder";
-import {LocalUpdater} from "../builders/LocalUpdater";
+import {SimpackBuilder} from "../builders/SimpackBuilder";
+import {SimpackLocalUpdater} from "../builders/SimpackLocalUpdater";
 
 export async function build(argv: { watch: boolean }): Promise<void> {
     const promiseList: Promise<void>[] = [];
@@ -17,12 +17,12 @@ export async function build(argv: { watch: boolean }): Promise<void> {
         ].filter((item) => item.startsWith("@simplism")).map((item) => item.slice(10));
 
         for (const dependencySimplismPackageName of dependencySimplismPackageNameList) {
-            promiseList.push(new LocalUpdater(dependencySimplismPackageName).runAsync(true));
+            promiseList.push(new SimpackLocalUpdater(dependencySimplismPackageName).runAsync(true));
         }
     }
 
     for (const packageName of fs.readdirSync(path.resolve(process.cwd(), `packages`))) {
-        promiseList.push(new LibraryBuilder(packageName).runAsync(argv.watch));
+        promiseList.push(new SimpackBuilder(packageName).runAsync(argv.watch));
     }
     await Promise.all(promiseList);
 }

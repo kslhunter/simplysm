@@ -1,0 +1,120 @@
+@import "../../../styles/presets.pcss";
+
+:host {
+  & > button {
+    display: block;
+    width: 100%;
+    border: 1px solid white;
+    padding: var(--padding-sm) var(--padding-default);
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--theme-primary-default);
+    }
+
+    &:active {
+      background: var(--trans-color-default);
+    }
+
+    &:disabled {
+      background: var(--trans-color-default);
+      border-color: transparent;
+      color: var(--text-color-lighter);
+      cursor: default;
+    }
+  }
+
+  &[sd-size=xxs] > button {
+    padding: 0 var(--padding-xxs);
+    font-size: var(--font-size-sm);
+  }
+  &[sd-size=xs] > button {
+    padding: var(--padding-xxs) var(--padding-xs);
+    font-size: var(--font-size-sm);
+  }
+  &[sd-size=sm] > button {
+    padding: var(--padding-xs) var(--padding-sm);
+  }
+  &[sd-size=lg] > button {
+    padding: var(--padding-default) var(--padding-lg);
+  }
+  &[sd-size=xl] > button {
+    padding: var(--padding-lg) var(--padding-xl);
+    font-size: var(--font-size-lg);
+  }
+  &[sd-size=xxl] > button {
+    padding: var(--padding-xl) var(--padding-xxl);
+    font-size: var(--font-size-lg);
+  }
+
+  &[sd-theme=primary] > button {
+    border-color: var(--theme-primary-default);
+
+    &:hover {
+      background: var(--theme-primary-default);
+      color: black;
+    }
+
+    &:active {
+      background: var(--theme-primary-dark);
+    }
+  }
+  &[sd-theme=success] > button {
+    border-color: var(--theme-success-default);
+
+    &:hover {
+      background: var(--theme-success-default);
+      color: black;
+    }
+
+    &:active {
+      background: var(--theme-success-dark);
+    }
+  }
+  &[sd-theme=info] > button {
+    border-color: var(--theme-info-default);
+
+    &:hover {
+      background: var(--theme-info-default);
+      color: black;
+    }
+
+    &:active {
+      background: var(--theme-info-dark);
+    }
+  }
+  &[sd-theme=warning] > button {
+    border-color: var(--theme-warning-default);
+
+    &:hover {
+      background: var(--theme-warning-default);
+      color: black;
+    }
+
+    &:active {
+      background: var(--theme-warning-dark);
+    }
+  }
+  &[sd-theme=danger] > button {
+    border-color: var(--theme-danger-default);
+
+    &:hover {
+      background: var(--theme-danger-default);
+      color: black;
+    }
+
+    &:active {
+      background: var(--theme-danger-dark);
+    }
+  }
+
+  &[sd-inline=true] {
+    display: inline-block;
+
+    > button {
+      width: auto;
+    }
+  }
+}

@@ -1,4 +1,4 @@
 export * from "./commons/ISimpackConfig";
-export * from "./builders/LibraryBuilder";
-export * from "./builders/LocalUpdater";
-export * from "./builders/LibraryPublisher";
+export * from "./builders/SimpackBuilder";
+export * from "./builders/SimpackLocalUpdater";
+export * from "./builders/SimpackPublisher";
