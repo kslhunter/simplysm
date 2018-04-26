@@ -35,10 +35,10 @@ export class LibraryBuilder {
                 packageJson = fs.readJsonSync(this._root("package.json"));
             }
 
-            const isForLibrary = !!packageJson;
-            const isForAngular = (config && config.type === "client") || (packageJson && packageJson.peerDependencies && Object.keys(packageJson.peerDependencies).some((dep) => dep.startsWith("@angular")));
+            const isLibrary = !!packageJson;
+            const isAngular = (config && config.type === "client") || (packageJson && packageJson.peerDependencies && Object.keys(packageJson.peerDependencies).some((dep) => dep.startsWith("@angular")));
 
-            const nodeModules = isForLibrary
+            const nodeModules = isLibrary
                 ? fs.readdirSync(path.resolve(process.cwd(), "node_modules"))
                     .filter((dir) => dir !== ".bin")
                     .mapMany((dir) => dir.startsWith("@")
@@ -49,7 +49,7 @@ export class LibraryBuilder {
                 : [];
 
             const entry = (() => {
-                if (isForLibrary) {
+                if (isLibrary) {
                     const result: { [key: string]: string } = {};
 
                     if (packageJson.main) {
@@ -88,7 +88,7 @@ export class LibraryBuilder {
             })();
 
             const webpackConfig: webpack.Configuration = {
-                target: isForAngular ? undefined : "node",
+                target: isAngular ? undefined : "node",
                 devtool: "source-map",
                 mode: eval(`process.env.NODE_ENV`) === "production" ? "production" : "development",
                 ...eval(`process.env.NODE_ENV`) === "production" ? {
@@ -98,15 +98,15 @@ export class LibraryBuilder {
                 } : {},
                 entry,
                 output: {
-                    path: isForLibrary
+                    path: isLibrary
                         ? this._root(`dist`)
-                        : isForAngular
+                        : isAngular
                             ? path.resolve(process.cwd(), `dist/www/${this._packageName}`)
                             : path.resolve(process.cwd(), `dist`),
-                    libraryTarget: isForLibrary ? "umd" : undefined
+                    libraryTarget: isLibrary ? "umd" : undefined
                 },
 
-                ...!isForLibrary
+                ...!isLibrary
                     ? {
                         optimization: {
                             splitChunks: {
@@ -137,7 +137,7 @@ export class LibraryBuilder {
                 },
                 module: {
                     rules: [
-                        ...(!isForLibrary && isForAngular)
+                        ...(!isLibrary && isAngular)
                             ? [
                                 {
                                     test: /.js$/,
@@ -148,13 +148,22 @@ export class LibraryBuilder {
                             ]
                             : [],
 
-                        ...!isForLibrary
+                        ...!isLibrary
                             ? [
-
+                                {
+                                    test: /\.js$/,
+                                    use: ["source-map-loader"],
+                                    exclude: /node_modules[\\/](?!@simplism)/,
+                                    enforce: "pre"
+                                },
                                 {
                                     test: /\.ts$/,
                                     loader: "happypack/loader?id=ts",
                                     exclude: /node_modules/
+                                },
+                                {
+                                    test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf)$/,
+                                    use: "file-loader?name=assets/[name].[hash].[ext]"
                                 }
                             ]
                             : [
@@ -178,12 +187,12 @@ export class LibraryBuilder {
                                                 silent: true
                                             }
                                         },
-                                        ...isForAngular ? ["angular2-template-loader"] : []
+                                        ...isAngular ? ["angular2-template-loader"] : []
                                     ]
                                 }
                             ],
 
-                        ...isForAngular
+                        ...isAngular
                             ? [
                                 {
                                     test: /\.html$/,
@@ -213,7 +222,7 @@ export class LibraryBuilder {
                     ]
                 },
                 plugins: [
-                    ...!isForLibrary ? [
+                    ...!isLibrary ? [
                         new (require("hard-source-webpack-plugin"))(),
 
                         new (require("happypack"))({
@@ -224,7 +233,7 @@ export class LibraryBuilder {
                                     loader: "ts-loader",
                                     options: {silent: true, happyPackMode: true}
                                 },
-                                ...isForAngular ? ["angular2-template-loader"] : []
+                                ...isAngular ? ["angular2-template-loader"] : []
                             ]
                         }),
 
@@ -243,7 +252,7 @@ export class LibraryBuilder {
                         })
                     ] : [],
 
-                    ...(isForLibrary && packageJson.bin)
+                    ...(isLibrary && packageJson.bin)
                         ? [
                             new webpack.BannerPlugin({
                                 banner: `#!/usr/bin/env node`,
@@ -254,7 +263,7 @@ export class LibraryBuilder {
                         ]
                         : [],
 
-                    ...(!isForLibrary && isForAngular)
+                    ...(!isLibrary && isAngular)
                         ? [
                             new webpack.ContextReplacementPlugin(
                                 /angular[\\/]core[\\/](@angular|esm5|fesm5)/,
@@ -280,13 +289,13 @@ export class LibraryBuilder {
                         ]
                         : [],
 
-                    ...(!isForLibrary && isForAngular && watch)
+                    ...(!isLibrary && isAngular && watch)
                         ? [new webpack.HotModuleReplacementPlugin()]
                         : []
                 ],
                 externals: [
                     (context, request, callback) => {
-                        if (isForLibrary) {
+                        if (isLibrary) {
                             if (nodeModules.some((item) => request.startsWith(item))) {
                                 callback(undefined, `commonjs ${request}`);
                                 return;
@@ -310,7 +319,7 @@ export class LibraryBuilder {
                                 return callback(undefined, `{${className}: {name: '${className}'}}`);
                             }
 
-                            if (isForAngular && ["fs", "fs-extra", "path"].includes(request)) {
+                            if (isAngular && ["fs", "fs-extra", "path"].includes(request)) {
                                 return callback(undefined, `"${request}"`);
                             }
                         }
@@ -351,7 +360,7 @@ export class LibraryBuilder {
                     }
                 }
 
-                if (!isForLibrary && isForAngular && watch) {
+                if (!isLibrary && isAngular && watch) {
                     this._logger.info(`빌드 완료: http://${config!["host"]}:${config!["port"]}`);
                 }
                 else {
@@ -361,7 +370,7 @@ export class LibraryBuilder {
             };
 
             if (watch) {
-                if (!isForLibrary && isForAngular) {
+                if (!isLibrary && isAngular) {
                     const server = new WebpackDevServer(compiler, {
                         hot: true,
                         /*inline: true,*/
