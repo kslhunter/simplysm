@@ -1,0 +1,11 @@
+{
+  "name": "@simplism/sd-core",
+  "version": "1.0.0",
+  "description": "Simplism Core Package",
+  "repository": "github:kslhunter/simplism",
+  "author": "kslhunter",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {}
+}

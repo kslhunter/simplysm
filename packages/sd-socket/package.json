@@ -1,0 +1,17 @@
+{
+  "name": "@simplism/sd-socket",
+  "version": "1.0.0",
+  "description": "Simplism Socket Package",
+  "repository": "github:kslhunter/simplism",
+  "author": "kslhunter",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "mime": "^2.2.2",
+    "socket.io": "^2.1.0"
+  },
+  "peerDependencies": {
+    "@simplism/core": "^5.5.11"
+  }
+}

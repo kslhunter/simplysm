@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <base href="<%= htmlWebpackPlugin.options.NODE_ENV === "production" ? `/${htmlWebpackPlugin.options.PACKAGE_NAME}/` : "/" %>">
+    <title><%= htmlWebpackPlugin.options.TITLE %></title>
+    <link rel="stylesheet" type="text/css" href="./notosanskr.css">
+</head>
+<body>
+<app-root>Loading...</app-root>
+</body>
+</html>

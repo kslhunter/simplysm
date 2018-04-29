@@ -1,0 +1,16 @@
+{
+  "name": "@simplism/sd-storage",
+  "version": "1.0.0",
+  "description": "Simplism Storage Package",
+  "repository": "github:kslhunter/simplism",
+  "author": "kslhunter",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "jsftp": "^2.1.3"
+  },
+  "peerDependencies": {
+    "@simplism/core": "^5.5.11"
+  }
+}
