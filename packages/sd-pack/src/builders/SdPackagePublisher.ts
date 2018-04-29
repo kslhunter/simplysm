@@ -32,8 +32,8 @@ export class SimpackPublisher {
                     if (depName.startsWith("@simplism")) {
                         packageJson[depTypeName][depName] = `^${rootPackageJson.version}`;
                     }
-                    else if (rootPackageJson.devDependencies[depName]) {
-                        packageJson[depTypeName][depName] = rootPackageJson.devDependencies[depName];
+                    else if (rootPackageJson.dependencies[depName]) {
+                        packageJson[depTypeName][depName] = rootPackageJson.dependencies[depName];
                     }
                     else {
                         throw new Exception(`'${this._packageName}'패키지의 의존성 패키지 정보가 루트 패키지에 없습니다.`);
