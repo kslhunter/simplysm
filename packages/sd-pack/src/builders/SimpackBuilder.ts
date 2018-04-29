@@ -7,6 +7,7 @@ import * as WebpackDevServer from "webpack-dev-server";
 import "../../../sd-core/src/extensions/ArrayExtensions";
 import {Logger} from "../../../sd-core/src/utils/Logger";
 import {ISimpackConfig} from "../commons/ISimpackConfig";
+import {SdTypescriptDtsPlugin} from "../plugins/SdTypescriptDtsPlugin";
 
 export class SimpackBuilder {
     private _logger = new Logger("@simplism/sd-pack", `LibraryBuilder :: ${this._packageName}`);
@@ -38,6 +39,10 @@ export class SimpackBuilder {
             const isLibrary = !!packageJson;
             const isAngular = (config && config.type === "client") || (packageJson && packageJson.peerDependencies && Object.keys(packageJson.peerDependencies).some((dep) => dep.startsWith("@angular")));
 
+            if (isLibrary) {
+                fs.removeSync(this._root("dist"));
+            }
+
             const nodeModules = isLibrary
                 ? fs.readdirSync(path.resolve(process.cwd(), "node_modules"))
                     .filter((dir) => dir !== ".bin")
@@ -51,8 +56,13 @@ export class SimpackBuilder {
             const entry = (() => {
                 if (isLibrary) {
                     const result: { [key: string]: string } = {};
+                    const tsConfigJson = fs.readJsonSync(this._root("tsconfig.json"));
+                    for (const fileName of tsConfigJson.files) {
+                        const basename = path.basename(fileName, path.extname(fileName));
+                        result[basename] = this._root(fileName);
+                    }
 
-                    if (packageJson.main) {
+                    /*if (packageJson.main) {
                         const basename = path.basename(packageJson.main, path.extname(packageJson.main));
                         const sourcePath = packageJson.main.replace("dist", "src").replace(".js", ".ts");
                         result[basename] = this._root(sourcePath);
@@ -63,7 +73,7 @@ export class SimpackBuilder {
                             const sourcePath = packageJson.bin[basename].replace("dist", "src").replace(".js", ".ts");
                             result[basename] = this._root(sourcePath);
                         }
-                    }
+                    }*/
 
                     return result;
                 }
@@ -148,6 +158,12 @@ export class SimpackBuilder {
                             ]
                             : [],
 
+                        {
+                            test: /\.ts$/,
+                            loader: "happypack/loader?id=ts",
+                            exclude: /node_modules/
+                        },
+
                         ...!isLibrary
                             ? [
                                 {
@@ -157,40 +173,11 @@ export class SimpackBuilder {
                                     enforce: "pre"
                                 },
                                 {
-                                    test: /\.ts$/,
-                                    loader: "happypack/loader?id=ts",
-                                    exclude: /node_modules/
-                                },
-                                {
                                     test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf)$/,
                                     use: "file-loader?name=assets/[name].[hash].[ext]"
                                 }
                             ]
-                            : [
-                                {
-                                    enforce: "pre",
-                                    test: /\.ts$/,
-                                    exclude: /node_modules/,
-                                    loader: "tslint-loader",
-                                    options: {
-                                        formatter: "prose"
-                                    }
-                                },
-                                {
-                                    test: /\.ts$/,
-                                    exclude: /node_modules/,
-                                    use: [
-                                        {
-                                            loader: "ts-loader",
-                                            options: {
-                                                configFile: this._root("tsconfig.json"),
-                                                silent: true
-                                            }
-                                        },
-                                        ...isAngular ? ["angular2-template-loader"] : []
-                                    ]
-                                }
-                            ],
+                            : [],
 
                         ...isAngular
                             ? [
@@ -243,35 +230,37 @@ export class SimpackBuilder {
                     ]
                 },
                 plugins: [
+                    new (require("happypack"))({
+                        id: "ts",
+                        verbose: false,
+                        loaders: [
+                            {
+                                loader: "ts-loader",
+                                options: {silent: true, happyPackMode: true}
+                            },
+                            ...isAngular ? ["angular2-template-loader"] : []
+                        ]
+                    }),
+
+                    /*new (require("fork-ts-checker-webpack-plugin"))({
+                        checkSyntacticErrors: true,
+                        tsconfig: this._root("tsconfig.json"),
+                        tslint: this._root("tslint.json"),
+                        /!*formatter: "codeframe",*!/
+                        logger: (() => {
+                            return {
+                                error: this._logger.error.bind(this._logger),
+                                warn: this._logger.warn.bind(this._logger),
+                                info: this._logger.log.bind(this._logger)
+                            };
+                        })()
+                    }),*/
+
                     ...!isLibrary ? [
-                        new (require("hard-source-webpack-plugin"))(),
-
-                        new (require("happypack"))({
-                            id: "ts",
-                            verbose: false,
-                            loaders: [
-                                {
-                                    loader: "ts-loader",
-                                    options: {silent: true, happyPackMode: true}
-                                },
-                                ...isAngular ? ["angular2-template-loader"] : []
-                            ]
-                        }),
-
-                        new (require("fork-ts-checker-webpack-plugin"))({
-                            checkSyntacticErrors: true,
-                            tsconfig: this._root("tsconfig.json"),
-                            tslint: this._root("tslint.json"),
-                            /*formatter: "codeframe",*/
-                            logger: (() => {
-                                return {
-                                    error: this._logger.error.bind(this._logger),
-                                    warn: this._logger.warn.bind(this._logger),
-                                    info: this._logger.log.bind(this._logger)
-                                };
-                            })()
-                        })
-                    ] : [],
+                        new (require("hard-source-webpack-plugin"))()
+                    ] : [
+                        new SdTypescriptDtsPlugin({context: this._root(), logger: this._logger})
+                    ],
 
                     ...(isLibrary && packageJson.bin)
                         ? [
@@ -312,7 +301,7 @@ export class SimpackBuilder {
 
                     ...(!isLibrary && isAngular && watch)
                         ? [new webpack.HotModuleReplacementPlugin()]
-                        : []
+                        : [],
                 ],
                 externals: [
                     (context, request, callback) => {

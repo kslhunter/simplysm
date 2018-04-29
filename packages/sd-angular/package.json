@@ -6,7 +6,7 @@
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "version": "5.5.12",
+  "version": "6.1.2",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.0-11",
     "@fortawesome/free-regular-svg-icons": "^5.1.0-8",
@@ -15,19 +15,19 @@
     "jsbarcode": "^3.8.0"
   },
   "peerDependencies": {
-    "@angular/common": "^5.2.9",
-    "@angular/compiler": "^5.2.9",
-    "@angular/core": "^5.2.9",
-    "@angular/platform-browser": "^5.2.9",
-    "@angular/platform-browser-dynamic": "^5.2.9",
-    "@angular/router": "^5.2.9",
-    "@simplism/core": "^5.5.11",
-    "@simplism/excel": "^5.5.11",
-    "@simplism/socket-client": "^5.5.11",
-    "@simplism/socket-common": "^5.5.11",
+    "@angular/common": "^6.0.0-rc.6",
+    "@angular/compiler": "^6.0.0-rc.6",
+    "@angular/core": "^6.0.0-rc.6",
+    "@angular/platform-browser": "^6.0.0-rc.6",
+    "@angular/platform-browser-dynamic": "^6.0.0-rc.6",
+    "@angular/router": "^6.0.0-rc.6",
+    "@simplism/core": "^6.1.2",
+    "@simplism/excel": "^6.1.2",
+    "@simplism/socket-client": "^6.1.2",
+    "@simplism/socket-common": "^6.1.2",
     "@types/jquery": "^3.3.1",
     "jquery": "^3.3.1",
-    "rxjs": "^5.5.8",
+    "rxjs": "^6.0.0",
     "zone.js": "^0.8.23"
   }
 }

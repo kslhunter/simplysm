@@ -45,8 +45,8 @@ export class TsLinter {
         }, program);
 
         const errorMessages: string[] = [];
-        const filePaths = Linter.getFileNames(program);
-        for (const filePath of filePaths) {
+            const filePaths = Linter.getFileNames(program);
+            for (const filePath of filePaths) {
             const configPath = path.resolve(process.cwd(), "tslint.json");
             linter.lint(filePath, program.getSourceFile(filePath)!.getFullText(), Configuration.findConfiguration(configPath, filePath).results);
             const result = linter.getResult();

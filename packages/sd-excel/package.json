@@ -1,6 +1,6 @@
 {
   "name": "@simplism/sd-excel",
-  "version": "1.0.0",
+  "version": "6.1.2",
   "description": "Simplism Excel Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -12,6 +12,6 @@
     "xml2js": "^0.4.19"
   },
   "peerDependencies": {
-    "@simplism/core": "^5.5.11"
+    "@simplism/core": "^6.1.2"
   }
 }

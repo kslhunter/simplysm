@@ -57,5 +57,4 @@ fabric.properties
 # ------------------------------------------------------
 dist
 node_modules
-tsconfig-build.json
 yarn-error.log

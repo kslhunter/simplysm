@@ -1,5 +1,5 @@
-import {DataType, IndexType, OrderByRule} from "./Enums";
 import {Type} from "../../../sd-core/src";
+import {DataType, IndexType, OrderByRule} from "./Enums";
 
 export interface ITableDefinition {
     name: string;

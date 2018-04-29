@@ -1,6 +1,6 @@
 {
   "name": "@simplism/simporm",
-  "version": "1.0.0",
+  "version": "6.1.2",
   "description": "Simplism ORM Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -11,7 +11,7 @@
     "reflect-metadata": "^0.1.12"
   },
   "peerDependencies": {
-    "@simplism/core": "^5.5.11",
+    "@simplism/core": "^6.1.2",
     "@types/mssql": "^4.0.7",
     "mssql": "^4.1.0"
   }
