@@ -21,7 +21,9 @@ export class SdServiceProvider {
     }
 
     public async connect(url: string): Promise<void> {
-        await this._client.connect(url);
+        if (!this._client.connected) {
+            await this._client.connect(url);
+        }
     }
 
     public setGlobalHeaderItem(key: string, value: any): void {

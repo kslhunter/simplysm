@@ -2,6 +2,7 @@ import {DateOnly} from "../types/DateOnly";
 import {Time} from "../types/Time";
 import {Uuid} from "../types/Uuid";
 import {Safe} from "./Safe";
+import {Exception} from "..";
 
 export interface JsonConvertStringifyOption {
     space?: string | number;
@@ -79,22 +80,7 @@ export class JsonConvert {
                 return DateOnly.parse(value);
             }
             if (typeof value === "object" && Object.keys(value).includes("stack") && Object.keys(value).includes("message")) {
-                const err = new Error();
-                Object.setPrototypeOf(err, value);
-                /*
-                if (value.name === "Exception") {
-                    err = new Exception(value.message);
-                }
-                else if (value.name === "CodeException") {
-                    err = new CodeException(value.code, value.message);
-                }
-                else if (value.name === "NotImplementedException") {
-                    err = new NotImplementedException(value.message);
-                } else {
-                    err = new Error(value.message);
-                }
-                err.stack = value.stack;*/
-                return err;
+                return new Exception(value.message, value);
             }
             if (typeof value === "object" && value.type === "Buffer") {
                 return new Buffer(value.data);

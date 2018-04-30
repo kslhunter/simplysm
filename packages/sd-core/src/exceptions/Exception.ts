@@ -11,7 +11,7 @@ export class Exception extends Error {
         Error.captureStackTrace(this, constructorOpt || new.target);
 
         if (assignObj) {
-            Object.assign(assignObj);
+            Object.assign(this, assignObj);
         }
     }
 }

@@ -144,10 +144,15 @@ export class SdPackageBuilder {
                                         enforce: true
                                     }
                                 }
-                            }
+                            },
+                            minimize: false
                         }
                     }
-                    : {},
+                    : {
+                        optimization: {
+                            minimize: false
+                        }
+                    },
 
                 resolve: {
                     extensions: [

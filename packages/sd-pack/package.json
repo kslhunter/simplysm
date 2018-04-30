@@ -1,6 +1,6 @@
 {
   "name": "@simplism/sd-pack",
-  "version": "6.1.12",
+  "version": "6.1.13",
   "description": "Simplism Builder Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -11,7 +11,8 @@
     "sd": "./dist/sd.js"
   },
   "dependencies": {
-    "@simplism/sd-core": "^6.1.12",
+    "@simplism/sd-core": "^6.1.13",
+    "@simplism/sd-storage": "^6.1.13",
     "angular2-template-loader": "^0.6.2",
     "bufferutil": "^3.0.3",
     "caniuse-lite": "^1.0.30000832",

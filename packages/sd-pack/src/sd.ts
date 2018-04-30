@@ -29,13 +29,18 @@ yargs
                     describe: "빌드할 패키지를 설정합니다."
                 }
             }),
-        (argv) => {
-            return build(argv as any);
-        }
+        (argv) => build(argv as any)
     )
     .command("publish", "배포합니다.",
-        (cmd) => cmd.version(false),
-        () => publish())
+        (cmd) => cmd.version(false)
+            .options({
+                env: {
+                    describe: "환경변수를 등록합니다.",
+                    default: {}
+                }
+            }),
+        (argv) => publish(argv as any)
+    )
     .command("local-update", "로컬에 있는 simplism 패키지로 의존성 모듈을 덮어씁니다. (고급)",
         (cmd) => cmd.version(false)
             .options({
@@ -45,5 +50,6 @@ yargs
                     default: false
                 }
             }),
-        (argv) => localUpdate(argv as any))
+        (argv) => localUpdate(argv as any)
+    )
     .argv;

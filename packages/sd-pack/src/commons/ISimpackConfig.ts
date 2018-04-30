@@ -10,6 +10,13 @@ export interface ISimpackClientConfig {
         host: string;
         port: number;
     };
+    publish: {
+        host: string;
+        port: number;
+        userName: string;
+        password: string;
+        root: string;
+    };
     env: { [key: string]: string };
 }
 
@@ -18,6 +25,13 @@ export interface ISimpackServerConfig {
     host: string;
     port: number;
     clients: string[];
+    publish: {
+        host: string;
+        port: number;
+        userName: string;
+        password: string;
+        root: string;
+    };
     env: { [key: string]: string };
 }
 

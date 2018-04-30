@@ -1,4 +1,4 @@
-import {BigInt, Decimal, NChar, Table} from "mssql";
+import {BigInt, Decimal, NChar, Numeric, Table} from "mssql";
 import {DateOnly, Exception, LambdaParser, NotImplementedException, Safe, Type, Uuid} from "../../../sd-core/src";
 import {IForeignKeyDefinition, IForeignKeyTargetDefinition, ITableDefinition} from "../common/Definitions";
 import {DataType, OrderByRule} from "../common/Enums";
@@ -323,6 +323,12 @@ END`;
                         const length1 = Number(match![1]);
                         const length2 = Number(match![2]);
                         colType = Decimal(length1, length2);
+                    }
+                    else if (colDef.dataType.startsWith("NUMERIC")) {
+                        const match = colDef.dataType.match(/NUMERIC\(([0-9]*),\s?([0-9]*)\)/);
+                        const length1 = Number(match![1]);
+                        const length2 = Number(match![2]);
+                        colType = Numeric(length1, length2);
                     }
                     else if (colDef.dataType.startsWith("NCHAR")) {
                         const match = colDef.dataType.match(/NCHAR\(([0-9]*)\)/);
