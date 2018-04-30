@@ -10,7 +10,7 @@ import {
     Output,
     ViewChild
 } from "@angular/core";
-import {SizeStrings} from "..";
+import {SdSizeString} from "..";
 import {SdFocusProvider} from "../providers/SdFocusProvider";
 
 @Component({
@@ -43,7 +43,7 @@ export class SdComboboxControl implements AfterViewInit {
 
     @Input() public text: any;
     @Output() public readonly textChange = new EventEmitter<any>();
-    @Input() public size?: SizeStrings;
+    @Input() public size?: SdSizeString;
     @Input() public required = false;
     @Input() public disabled = false;
     @Input() public placeholder = "";

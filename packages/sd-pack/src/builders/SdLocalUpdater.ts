@@ -3,8 +3,8 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import {Logger} from "../../../sd-core/src/utils/Logger";
 
-export class SimpackLocalUpdater {
-    private _logger = new Logger("@simplism/sd-pack", `LocalUpdater :: @simplism/${this._packageName}`);
+export class SdLocalUpdater {
+    private _logger = new Logger("@simplism/sd-pack", `SdLocalUpdater :: @simplism/${this._packageName}`);
 
     private _sourcePath(...args: string[]): string {
         return path.resolve.apply(path, [process.cwd(), `../simplism/packages/${this._packageName}`].concat(args));

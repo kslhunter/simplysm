@@ -1,77 +1,148 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from "@angular/core";
-import {ThemeStrings} from "..";
-import {DateOnly} from "../../../sd-core/src";
-import {SimgularHelpers} from "../helpers/SimgularHelpers";
-import {SizeStrings} from "../helpers/types";
+import {
+    ChangeDetectionStrategy,
+    Component,
+    EventEmitter,
+    HostBinding,
+    Input,
+    OnChanges,
+    Output,
+    SimpleChanges
+} from "@angular/core";
+import {SdSizeString, SdThemeString} from "../helpers/types";
+import {SdValidate} from "../decorators/SdValidate";
 
 @Component({
     selector: "sd-textfield",
     template: `
-        <input [type]="type"
-               [required]="required"
-               [disabled]="disabled"
-               [attr.step]="step"
-               [attr.min]="min"
-               [attr.placeholder]="placeholder"
-               [value]="value == undefined ? null : value"
-               (input)="onInput($event)"/>`,
-    host: {
-        "[attr.sd-inline]": "inline",
-        "[attr.sd-size]": "size",
-        "[attr.sd-theme]": "theme"
-    },
+        <sd-dock-container>
+            <sd-pane>
+                <input [type]="type === 'number' ? 'text' : type"
+                       [required]="required"
+                       [disabled]="disabled"
+                       [attr.step]="step"
+                       [attr.min]="min"
+                       [attr.placeholder]="placeholder"
+                       [value]="displayText"
+                       (input)="onInput($event)"
+                       (focus)="onFocus($event)"
+                       (blur)="onBlur($event)"/>
+                <div class="invalid-indicator"></div>
+            </sd-pane>
+            <sd-dock position="right">
+                <ng-content></ng-content>
+            </sd-dock>
+        </sd-dock-container>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdTextfieldControl implements OnChanges {
-    //-- Input/Output
-    @Input() public type: "text" | "password" | "number" | "date" | "month" | "year" = "text";
-    @Input() public placeholder?: string;
-    @Input() public value?: string | number | DateOnly;
-    @Input() public required?: boolean;
-    @Input() public disabled?: boolean;
-    @Input() public step?: number;
-    @Input() public min?: number;
-    @Input() public inline?: boolean;
-    @Input() public size?: SizeStrings;
-    @Input() public theme?: ThemeStrings;
-    @Output() public readonly valueChange = new EventEmitter<string | number | DateOnly | undefined>();
+    // ----------------------------------------------
+    // Inputs
+    // ----------------------------------------------
+
+    @Input()
+    @SdValidate({
+        type: String,
+        validator: (value) => ["text", "password", "number", "date", "month", "year"].includes(value),
+        notnull: true
+    })
+    public type: "text" | "password" | "number" | "date" | "month" | "year" = "text";
+
+    @Input()
+    @SdValidate(Boolean)
+    public required?: boolean;
+
+    @Input()
+    @SdValidate(Boolean)
+    public disabled?: boolean;
+
+    @Input()
+    @SdValidate(Number)
+    public step?: number;
+
+    @Input()
+    @SdValidate(Number)
+    public min?: number;
+
+    @Input()
+    @SdValidate(String)
+    public placeholder?: string;
+
+    @Input()
+    public value?: any;
+
+    @Input()
+    @SdValidate("SdSizeString")
+    @HostBinding("attr.sd-size")
+    public size?: SdSizeString;
+
+    @Input()
+    @SdValidate("SdThemeString")
+    @HostBinding("attr.sd-theme")
+    public theme?: SdThemeString;
+
+    @Input()
+    @SdValidate(Boolean)
+    @HostBinding("attr.sd-inline")
+    public inline?: boolean;
+
+    // ----------------------------------------------
+    // Outputs
+    // ----------------------------------------------
+
+    @Output()
+    public readonly valueChange = new EventEmitter<any>();
+
+    // ----------------------------------------------
+    // Properties
+    // ----------------------------------------------
+
+    public displayText = "";
+    public focused = false;
+
+    // ----------------------------------------------
+    // Events
+    // ----------------------------------------------
 
     public ngOnChanges(changes: SimpleChanges): void {
-        SimgularHelpers.typeValidate(changes, {
-            type: {
-                type: String,
-                validator: (value) => ["text", "password", "number", "date", "month", "year"].includes(value),
-                required: true
-            },
-            placeholder: String,
-            value: [String, Number, DateOnly],
-            required: Boolean,
-            disabled: Boolean,
-            step: Number,
-            min: Number,
-            inline: Boolean,
-            size: "SizeStrings",
-            theme: "ThemeStrings"
-        });
+        if (Object.keys(changes).some((key) => ["value", "type"].includes(key))) {
+            this._reloadDisplayText();
+        }
+    }
+
+    public onFocus(event: Event): void {
+        this.focused = true;
+    }
+
+    public onBlur(event: Event): void {
+        this.focused = false;
+        this._reloadDisplayText();
     }
 
     public onInput(event: Event): void {
         const targetEl = event.target as HTMLInputElement;
+        const value = targetEl.value;
         if (this.type === "number") {
-            const num = Number(targetEl.value);
-            if (Number.isNaN(num)) {
-                this.valueChange.emit(undefined);
-            }
-            else {
-                this.valueChange.emit(num);
-            }
-        }
-        else if (this.type === "date" || this.type === "month" || this.type === "year") {
-            const date = DateOnly.parse(targetEl.value);
-            this.valueChange.emit(date);
+            const num = Number(value.replace(",", ""));
+            this.value = Number.isNaN(num) ? 0 : num;
         }
         else {
-            this.valueChange.emit(targetEl.value);
+            this.value = value;
+        }
+
+        this.valueChange.emit(this.value);
+    }
+
+    // ----------------------------------------------
+    // Helpers
+    // ----------------------------------------------
+
+    private _reloadDisplayText(): void {
+        if (this.type === "number" && !this.focused) {
+            this.displayText = this.value.toLocaleString();
+            return;
+        }
+        else {
+            this.displayText = this.value || "";
         }
     }
 }

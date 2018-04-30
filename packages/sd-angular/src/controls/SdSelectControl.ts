@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Injector, Input, Output} from "@angular/core";
-import {ThemeStrings} from "..";
+import {SdThemeString} from "..";
 import {Exception, JsonConvert} from "../../../sd-core/src";
 import {SdButtonGroupControl} from "./SdButtonGroupControl";
 
@@ -130,7 +130,7 @@ export class SdSelectControl {
 
     @Input() public keyField: string | undefined;
 
-    @Input() public theme?: ThemeStrings;
+    @Input() public theme?: SdThemeString;
 
     public constructor(private _elementRef: ElementRef,
                        private _injector: Injector) {

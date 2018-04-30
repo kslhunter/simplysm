@@ -10,21 +10,20 @@ import {Exception, JsonConvert, Logger, Type, Uuid} from "../../../sd-core/src";
 import {ISocketEvent} from "../common/ISocketEvent";
 import {ISocketRequest} from "../common/ISocketRequest";
 import {ISocketResponse} from "../common/ISocketResponse";
-import {ISocketServiceBase} from "./ISocketServiceBase";
+import {AbstractSocketServiceBase} from "./AbstractSocketServiceBase";
 import {SocketFileResult} from "./SocketFileResult";
 import Socket = sio.Socket;
 import Server = sio.Server;
 
 export interface ISocketServerOption {
-    port?: number;
-    services: Type<ISocketServiceBase>[];
-    clientNames?: string[];
+    services: Type<AbstractSocketServiceBase>[];
+    clients?: string[];
 }
 
 export class SocketServer {
     private _logger = new Logger("@simplism/sd-socket", "SocketServer");
     private _app?: net.Server;
-    private _interval: any;
+    private readonly _interval: any;
     private _preparedFileResults = new Map<string, SocketFileResult>();
     private _server?: Server;
     private _listeners: {
@@ -54,7 +53,7 @@ export class SocketServer {
         });
     }
 
-    public async start(): Promise<void> {
+    public async start(port?: number, host?: string): Promise<void> {
         return await new Promise<void>((resolve) => {
             if (this._app && this._app.listening) {
                 return;
@@ -76,8 +75,8 @@ export class SocketServer {
             });
 
             //-- 서버 시작
-            this._app.listen(this._option.port || process.env.SOCKET_SERVER_PORT || 80, () => {
-                this._logger.info(`시작되었습니다. [PORT: ${this._option.port || process.env.SOCKET_SERVER_PORT || 80}]`);
+            this._app.listen(port || 80, host || "localhost", () => {
+                this._logger.info(`시작되었습니다. http://${host || "localhost"}:${port || 80}`);
                 resolve();
             });
         });
@@ -136,9 +135,9 @@ export class SocketServer {
         const urlPath = decodeURI(urlObj.pathname!.slice(1));
 
         //-- 클라이언트 설정없이 요청했다면, 첫번째 클라이언트로 REDIRECT
-        if (!urlPath && this._option.clientNames) {
+        if (!urlPath && this._option.clients) {
             res.writeHead(302, {
-                Location: this._option.clientNames[0]
+                Location: this._option.clients[0]
             });
             res.end();
         }
@@ -163,7 +162,7 @@ export class SocketServer {
         }
 
         //-- 클라이언트 파일 전송
-        else if (this._option.clientNames) {
+        else if (this._option.clients) {
             let filePath: string;
             // 직접파일을 선택한 것이 아니라면, ANGULAR 용 클라이언트 index.html 파일 사용
             if (!(urlPath.split("/").last() || "").includes(".")) {

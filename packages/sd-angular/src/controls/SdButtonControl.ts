@@ -12,7 +12,7 @@ import {
 } from "@angular/core";
 import {Exception} from "../../../sd-core/src";
 import {SimgularHelpers} from "../helpers/SimgularHelpers";
-import {SizeStrings, ThemeStrings} from "../helpers/types";
+import {SdSizeString, SdThemeString} from "../helpers/types";
 import {SdButtonGroupControl} from "./SdButtonGroupControl";
 
 @Component({
@@ -47,14 +47,14 @@ import {SdButtonGroupControl} from "./SdButtonGroupControl";
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdButtonControl implements AfterViewInit, OnChanges {
-    @Input() public size?: SizeStrings;
-    @Input() public theme?: ThemeStrings;
+    @Input() public size?: SdSizeString;
+    @Input() public theme?: SdThemeString;
     @Output() public readonly deselect = new EventEmitter<void>();
 
     public ngOnChanges(changes: SimpleChanges): void {
         SimgularHelpers.typeValidate(changes, {
-            size: "SizeStrings",
-            theme: "ThemeStrings"
+            size: "SdSizeString",
+            theme: "SdThemeString"
         });
     }
 

@@ -1,4 +1,4 @@
-const Logger = require("@simplism/core").Logger;
+const Logger = require("@simplism/sd-core").Logger;
 
 module.exports = exports = function (str) {
     if (str.startsWith("bufferutil")) {

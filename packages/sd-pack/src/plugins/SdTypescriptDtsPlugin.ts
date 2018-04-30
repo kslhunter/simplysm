@@ -1,7 +1,6 @@
 import * as child_process from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
-import * as ts from "typescript";
 import * as webpack from "webpack";
 import {Wait} from "../../../sd-core/src";
 
@@ -14,9 +13,7 @@ export class SdTypescriptDtsPlugin implements webpack.Plugin {
     }
 
     public apply(compiler: webpack.Compiler): void {
-        let prevTimestamps: { [key: string]: number };
-
-        const buildModulePath = fs.existsSync(path.resolve(__dirname, "ts-build-worker.js")) ? path.resolve(__dirname, "ts-build-worker.js") : path.resolve(__dirname, "../ts-build-worker.ts");
+        const buildModulePath = fs.existsSync(path.resolve(__dirname, "../ts-build-worker.ts")) ? path.resolve(__dirname, "../ts-build-worker.ts") : path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/dist/ts-build-worker.js");
         const buildWorker = child_process
             .fork(buildModulePath, [
                 this._options.context,
@@ -36,7 +33,7 @@ export class SdTypescriptDtsPlugin implements webpack.Plugin {
                 }
             });
 
-        const lintModulePath = fs.existsSync(path.resolve(__dirname, "ts-lint-worker.js")) ? path.resolve(__dirname, "ts-lint-worker.js") : path.resolve(__dirname, "../ts-lint-worker.ts");
+        const lintModulePath = fs.existsSync(path.resolve(__dirname, "../ts-lint-worker.ts")) ? path.resolve(__dirname, "../ts-lint-worker.ts") : path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/dist/ts-lint-worker.js");
         const lintWorker = child_process
             .fork(lintModulePath, [
                 this._options.context
@@ -58,14 +55,11 @@ export class SdTypescriptDtsPlugin implements webpack.Plugin {
         compiler.hooks.watchRun.tap(this.constructor.name, () => this._isWatching = true);
         compiler.hooks.run.tap(this.constructor.name, () => this._isWatching = false);
 
+        let prevTimestamps: { [key: string]: number };
         compiler.hooks.make.tapAsync(this.constructor.name, async (compilation, callback) => {
             this._buildCompleted = false;
             this._lintCompleted = false;
             callback();
-
-            const tsconfig = fs.readJsonSync(path.resolve(this._options.context, `tsconfig.json`));
-            const parsed = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._options.context);
-            if (!parsed.options.declaration) return;
 
             const fileTimestamps = compilation["fileTimestamps"] as Map<string, number>;
             let changedTsFiles: string[] | undefined;
@@ -78,6 +72,12 @@ export class SdTypescriptDtsPlugin implements webpack.Plugin {
             prevTimestamps = prevTimestamps || {};
             for (const fileName of Array.from(fileTimestamps.keys())) {
                 prevTimestamps[fileName] = fileTimestamps.get(fileName)!;
+            }
+
+            if (changedTsFiles && changedTsFiles.length === 0) {
+                this._buildCompleted = true;
+                this._lintCompleted = true;
+                return;
             }
 
             buildWorker.send({

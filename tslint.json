@@ -22,10 +22,7 @@
     "no-unnecessary-qualifier": false,
     "no-unnecessary-type-assertion": false,
     "return-undefined": false,
-    "linebreak-style": [
-      true,
-      "CRLF"
-    ],
+    "linebreak-style": false,
     "whitespace": [
       true,
       "check-branch",
@@ -129,6 +126,8 @@
     "max-file-line-count": [
       false
     ],
-    "binary-expression-operand-order": false
+    "binary-expression-operand-order": false,
+    "ordered-imports": false,
+    "prefer-template": false
   }
 }

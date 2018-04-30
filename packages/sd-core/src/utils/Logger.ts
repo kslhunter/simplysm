@@ -4,14 +4,30 @@ import * as path from "path";
 export class Logger {
     public static history: ILoggerHistory[] = [];
 
-    public static setGroupConfig(groupName: string, config?: Partial<ILoggerConfig>): void {
-        this._groupMap.set(groupName, {
-            consoleLogTypes: ["log", "info", "warn", "error"],
-            fileLogTypes: [],
-            outputPath: undefined,
-            historySize: 30,
-            ...config
-        });
+    public static setGroupConfig(groupName?: string, config?: Partial<ILoggerConfig>): void {
+        if (groupName) {
+            if (this._groupMap.has(groupName)) {
+                const prev = this._groupMap.get(groupName);
+                this._groupMap.set(groupName, {
+                    ...prev!,
+                    ...config
+                });
+            }
+            else {
+                this._groupMap.set(groupName, {
+                    consoleLogTypes: ["log", "info", "warn", "error"],
+                    fileLogTypes: [],
+                    outputPath: undefined,
+                    historySize: 30,
+                    ...config
+                });
+            }
+        }
+        else {
+            for (const key of Array.from(this._groupMap.keys())) {
+                this.setGroupConfig(key, config);
+            }
+        }
     }
 
     private static _groupMap = new Map<string, ILoggerConfig>();

@@ -1,6 +1,6 @@
 {
-  "name": "@simplism/simporm",
-  "version": "6.1.2",
+  "name": "@simplism/sd-orm",
+  "version": "6.1.12",
   "description": "Simplism ORM Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,11 +8,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
+    "@simplism/sd-core": "^6.1.12",
+    "mssql": "^4.1.0",
     "reflect-metadata": "^0.1.12"
-  },
-  "peerDependencies": {
-    "@simplism/core": "^6.1.2",
-    "@types/mssql": "^4.0.7",
-    "mssql": "^4.1.0"
   }
 }

@@ -1,6 +1,4 @@
-import * as path from "path";
 import {SocketServer} from "@simplism/sd-socket";
-import {JsonConvert} from "@simplism/sd-core";
 import {services} from "./definitions";
 
 (async () => {

@@ -5,8 +5,8 @@ import {SdModalControl} from "../entry-controls/SdModalControl";
 @Injectable()
 export class SdModalProvider {
     public constructor(private _compFactoryResolver: ComponentFactoryResolver,
-                private _appRef: ApplicationRef,
-                private _injector: Injector) {
+                       private _appRef: ApplicationRef,
+                       private _injector: Injector) {
     }
 
     public get hasOpenModal(): boolean {
@@ -14,11 +14,9 @@ export class SdModalProvider {
     }
 
     public async show<T extends SdModalControlBase<I, O>, I, O>(title: string,
-                                                         modalType: Type<SdModalControlBase<I, O>>,
-                                                         param: T["param"],
-                                                         options?: {
-                                                             hideCloseButton?: boolean;
-                                                         }): Promise<O> {
+                                                                modalType: Type<SdModalControlBase<I, O>>,
+                                                                param: T["param"],
+                                                                options?: { hideCloseButton?: boolean }): Promise<O> {
         return await new Promise<O>(async (resolve) => {
             const compRef = this._compFactoryResolver.resolveComponentFactory(modalType).create(this._injector);
             const modalRef = this._compFactoryResolver.resolveComponentFactory(SdModalControl).create(

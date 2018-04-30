@@ -4,8 +4,8 @@ import * as path from "path";
 import {Exception} from "../../../sd-core/src/index";
 import {Logger} from "../../../sd-core/src/utils/Logger";
 
-export class SimpackPublisher {
-    private _logger = new Logger("@simplism/sd-pack", `LibraryPublisher :: ${this._packageName}`);
+export class SdPackagePublisher {
+    private _logger = new Logger("@simplism/sd-pack", `SdPackagePublisher :: ${this._packageName}`);
 
     private _root(...args: string[]): string {
         return path.resolve.apply(path, [process.cwd(), `packages/${this._packageName}`].concat(args));

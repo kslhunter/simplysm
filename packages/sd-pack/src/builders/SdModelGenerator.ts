@@ -1,39 +1,69 @@
 // tslint:disable:prefer-template
 
+import * as chokidar from "chokidar";
 import * as fs from "fs-extra";
 import * as glob from "glob";
 import * as path from "path";
-import {Logger, NotImplementedException} from "../../../sd-core/src";
+import {NotImplementedException} from "../../../sd-core/src";
+import {ISimpackModelConfig} from "../commons/ISimpackConfig";
+import {Logger} from "../../../sd-core/src/utils/Logger";
 
-export class DatabaseFileGenerator {
-    public static async watchModelFirst(config: ISimpackDatabaseConfig): Promise<void> {
-        return new Promise<void>((resolve) => {
-            FileWatcher.watch(path.resolve(config.modelRoot, "**", "*.puml"), {}, async () => {
-                await this.generateModelFirst(config);
-                resolve();
+export class SdModelGenerator {
+    private _logger = new Logger("@simplism/sd-pack", `SdModelGenerator :: ${this._packageName}`);
+
+    private _root(...args: string[]): string {
+        return path.resolve.apply(path, [process.cwd(), `packages/${this._packageName}`].concat(args));
+    }
+
+    public constructor(private _packageName: string) {
+    }
+
+    public async runAsync(config: ISimpackModelConfig, watch: boolean): Promise<void> {
+        if (watch) {
+            return await new Promise<void>((resolve) => {
+                chokidar.watch(this._root("**", "*.puml").replace(/\\/g, "/"))
+                    .on("ready", async () => {
+                        await this._generateModelFirst(config!.dist, config.useCamelCase);
+                        resolve();
+                    })
+                    .on("add", () => this._generateModelFirst(config!.dist, config.useCamelCase))
+                    .on("change", () => this._generateModelFirst(config!.dist, config.useCamelCase))
+                    .on("unlink", () => this._generateModelFirst(config!.dist, config.useCamelCase));
             });
+        }
+        else {
+            await this._generateModelFirst(config!.dist, config.useCamelCase);
+        }
+    }
+
+    private _timeout?: NodeJS.Timer;
+
+    private async _generateModelFirst(dist: string, useCamelCase?: boolean): Promise<void> {
+        return new Promise<void>((resolve) => {
+            clearTimeout(this._timeout!);
+            this._timeout = setTimeout(async () => {
+                this._logger.log(`생성 시작`);
+
+                const className = path.basename(dist, path.extname(dist));
+
+                let modelFileContent = "";
+                const modelFilePaths = glob.sync(this._root("**", "*.puml"));
+                for (const modelFilePath of modelFilePaths) {
+                    const currModelFileContent = fs.readFileSync(modelFilePath, "utf-8");
+                    modelFileContent += `${currModelFileContent}\n`;
+                }
+
+                const databaseFileContent = await this._modelFileContentToDatabaseFileContent(className, modelFileContent, useCamelCase);
+                fs.mkdirsSync(path.dirname(dist));
+                fs.writeFileSync(dist, databaseFileContent);
+
+                this._logger.info(`생성 완료: ${dist}`);
+                resolve();
+            }, 200);
         });
     }
 
-    public static async generateModelFirst(config: ISimpackDatabaseConfig): Promise<void> {
-        const logger = new Logger("@simplism/pack", config.name);
-        logger.info("Model First 시작");
-
-        let modelFileContent = "";
-        const modelFilePaths = glob.sync(path.resolve(config.modelRoot, "**", "*.puml"));
-        for (const modelFilePath of modelFilePaths) {
-            const currModelFileContent = fs.readFileSync(modelFilePath, "utf-8");
-            modelFileContent += `${currModelFileContent}\n`;
-        }
-
-        const databaseFileContent = await this._modelFileContentToDatabaseFileContent(config, modelFileContent);
-        fs.mkdirsSync(config.dist);
-        fs.writeFileSync(path.resolve(config.dist, `${config.name}.ts`), databaseFileContent);
-
-        logger.info(`Model First 완료 : ${path.resolve(config.dist, config.name + ".ts")}`);
-    }
-
-    private static async _modelFileContentToDatabaseFileContent(config: ISimpackDatabaseConfig, modelFileContent: string): Promise<string> {
+    private async _modelFileContentToDatabaseFileContent(className: string, modelFileContent: string, useCamelCase?: boolean): Promise<string> {
         //----------------------------------
         // 파일 읽기 및 각 부분별 텍스트 정리
         //----------------------------------
@@ -315,19 +345,19 @@ export class DatabaseFileGenerator {
 
         //-- Database 만들기
         resultString += `
-export abstract class ${config.name} extends Database {
-    constructor(config: IConnectionConfig, migrations: string[]) {
+export abstract class ${className} extends Database {
+    protected constructor(config: IConnectionConfig, migrations: string[]) {
         super(config, migrations);
     }
 
-    ${tableList.map((item) => `${config.useCamelCase ? this._castToCamelCase(item.name) : item.name} = new Queryable(this, ${item.name});`).join("\r\n    ")}
+    ${tableList.map((item) => `public ${useCamelCase ? this._castToCamelCase(item.name) : item.name} = new Queryable(this, ${item.name});`).join("\r\n    ")}
     
-    ${functionList.map((item) => `${config.useCamelCase ? this._castToCamelCase(item.name) : item.name} = new QueryableFunction(this, ${item.name});`).join("\r\n    ")}
+    ${functionList.map((item) => `public ${useCamelCase ? this._castToCamelCase(item.name) : item.name} = new QueryableFunction(this, ${item.name});`).join("\r\n    ")}
     
-    ${procedureList.map((item) => `${config.useCamelCase ? this._castToCamelCase(item.name) : item.name} = new QueryableStoredProcedure(this, ${item.name});`).join("\r\n    ")}
+    ${procedureList.map((item) => `public ${useCamelCase ? this._castToCamelCase(item.name) : item.name} = new QueryableStoredProcedure(this, ${item.name});`).join("\r\n    ")}
     
-}`.trim();
-        resultString += "\r\n\r\n";
+`.trim() + "\r\n}";
+        resultString += "\r\n";
 
         //-- enum들
         for (const item of enumList) {
@@ -360,11 +390,12 @@ export enum ${item.name} {
                     : (field.comment ? "/**\r\n * " + field.comment + "\r\n */\r\n" : "")
                     + (field.hasIndex ? `@Index()\r\n` : "")
                     + (field.isPrimaryKey ? `@PrimaryKey()\r\n` : "")
-                    + (field.isForeignKey ? `@ForeignKey(${item.name}, () => ${field.type}, m => [${field.foreignKeys!.map((item1) => `m.${item1}`).join(", ")}])\r\n` : "")
-                    + (field.isForeignKeyTarget ? `@ForeignKeyTarget(() => ${field.type.replace(/\[]$/g, "")}, m => m.${field.foreignKeys![0]})\r\n` : "")
+                    + (field.isForeignKey ? `@ForeignKey(${item.name}, () => ${field.type}, (m) => [${field.foreignKeys!.map((item1) => `m.${item1}`).join(", ")}])\r\n` : "")
+                    + (field.isForeignKeyTarget ? `@ForeignKeyTarget(() => ${field.type.replace(/\[]$/g, "")}, (m) => m.${field.foreignKeys![0]})\r\n` : "")
                     + (!field.isForeignKey && !field.isForeignKeyTarget ? `@Column(${getColumnOption(field)})\r\n` : "")
+                    + "public "
                     + field.name + (field.isForeignKey || field.isForeignKeyTarget || field.isAutoIncrement || field.defaultValue ? "?" : "!")
-                    + ": " + field.type + (field.isNullable ? " | undefined" : "")
+                    + ": " + field.type.replace(/\|/g, " | ") + (field.isNullable ? " | undefined" : "")
                     + (field.defaultValue ? " = " + field.defaultValue : "")
                     + ";\r\n";
             };
@@ -460,7 +491,7 @@ export class ${item.name} {
         resultString += "\r\n";
 
         //-- import들
-        //import "@simplism/database" 지정
+        //import "@simplism/sd-orm" 지정
         let importString = "";
         if (resultString.includes("mssql.")) {
             importString += "import * as mssql from \"mssql\";\r\n";
@@ -514,9 +545,9 @@ export class ${item.name} {
         if (tableList.some((item) => item.fields.some((item1) => item1 !== "sep" && item1.isForeignKeyTarget))) {
             importString += ", ForeignKeyTarget";
         }
-        importString += "} from \"@simplism/database\";\r\n";
+        importString += "} from \"@simplism/sd-orm\";\r\n";
 
-        //import "@simplism/core" 지정
+        //import "@simplism/sd-core" 지정
         if (
             resultString.includes(": DateOnly") ||
             resultString.includes(": Uuid") ||
@@ -532,23 +563,23 @@ export class ${item.name} {
             if (resultString.includes(": Time")) {
                 importString += "Time, ";
             }
-            importString = importString.slice(0, -2) + "} from \"@simplism/core\";";
+            importString = importString.slice(0, -2) + "} from \"@simplism/sd-core\";";
         }
 
         resultString = importString + "\r\n\r\n" + resultString;
 
-        if (!config.useCamelCase) {
+        if (!useCamelCase) {
             resultString = "//tslint:disable:class-name\r\n\r\n" + resultString;
         }
 
         return resultString.trim() + "\r\n";
     }
 
-    private static _castToCamelCase(str: string): string {
+    private _castToCamelCase(str: string): string {
         return str[0].toLowerCase() + str.slice(1);
     }
 
-    private static _convertToDbTypeString(type: string): string | undefined {
+    private _convertToDbTypeString(type: string): string | undefined {
         switch (type) {
             case "number":
                 return "INT";

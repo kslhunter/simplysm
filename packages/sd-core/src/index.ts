@@ -4,6 +4,7 @@ import "./extensions/ObjectConstructorExtensions";
 
 export * from "./exceptions/ArgumentsException";
 export * from "./exceptions/Exception";
+export * from "./exceptions/ImposibleException";
 export * from "./exceptions/NotImplementedException";
 
 export * from "./types/DateOnly";

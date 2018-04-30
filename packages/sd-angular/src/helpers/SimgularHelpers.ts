@@ -108,8 +108,8 @@ export class SimgularHelpers {
                     if (
                         !opts.type.some((type) =>
                             type === value1.constructor ||
-                            (type === "ThemeStrings" && ["primary", "warning", "danger", "info", "success"].includes(value1)) ||
-                            (type === "SizeStrings" && ["xxs", "xs", "sm", "lg", "xl", "xxl"].includes(value1))
+                            (type === "SdThemeString" && ["primary", "warning", "danger", "info", "success"].includes(value1)) ||
+                            (type === "SdSizeString" && ["xxs", "xs", "sm", "lg", "xl", "xxl"].includes(value1))
                         )
                     ) {
                         throw new ArgumentsException({prop, value: value1, type: opts.type});
@@ -130,7 +130,7 @@ export class SimgularHelpers {
                     type: checkers[prop]
                 } as any);
             }
-            else if (checkers[prop] instanceof Type || checkers[prop] === "ThemeStrings" || checkers[prop] === "SizeStrings") {
+            else if (checkers[prop] instanceof Type || checkers[prop] === "SdThemeString" || checkers[prop] === "SdSizeString") {
                 check(value, {
                     type: [checkers[prop]]
                 } as any);

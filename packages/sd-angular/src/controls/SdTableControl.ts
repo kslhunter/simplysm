@@ -10,7 +10,7 @@ import {
     Output,
     ViewChild
 } from "@angular/core";
-import {ThemeStrings} from "..";
+import {SdThemeString} from "..";
 import {DateOnly, Wait} from "../../../sd-core/src";
 import {SimgularHelpers} from "../helpers/SimgularHelpers";
 import {SdFocusProvider} from "../providers/SdFocusProvider";
@@ -706,7 +706,7 @@ export class SdCellTextFieldControl {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdCellButtonControl {
-    @Input() public theme?: ThemeStrings;
+    @Input() public theme?: SdThemeString;
     @Input() public focusable = true;
     @Input() public disabled = false;
     @Input() public selected = false;

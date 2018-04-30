@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from "@angular/core";
 import {DateOnly} from "../../../sd-core/src";
 import {SimgularHelpers} from "../helpers/SimgularHelpers";
-import {SizeStrings} from "../helpers/types";
+import {SdSizeString} from "../helpers/types";
 
 @Component({
     selector: "sd-date-picker",
@@ -20,7 +20,7 @@ export class SdDatePickerControl implements OnChanges {
     @Input() public value?: DateOnly;
     @Input() public required = false;
     @Input() public disabled = false;
-    @Input() public size?: SizeStrings;
+    @Input() public size?: SdSizeString;
     @Output() public readonly valueChange = new EventEmitter<DateOnly | undefined>();
 
     public ngOnChanges(changes: SimpleChanges): void {
@@ -33,7 +33,7 @@ export class SdDatePickerControl implements OnChanges {
             value: DateOnly,
             required: Boolean,
             disabled: Boolean,
-            size: "SizeStrings"
+            size: "SdSizeString"
         });
     }
 

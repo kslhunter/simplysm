@@ -1,7 +1,8 @@
 sd-textfield {
   display: block;
+  position: relative;
 
-  & > input {
+  & input {
     display: block;
     width: 100%;
     border: 1px solid var(--border-color-default);
@@ -38,10 +39,6 @@ sd-textfield {
       }
     }
 
-    &:invalid {
-      border-left: 2px solid var(--theme-danger-default) !important;
-    }
-
     &:focus {
       outline: solid 1px var(--theme-primary-default);
       outline-offset: -1px;
@@ -53,11 +50,22 @@ sd-textfield {
     }
   }
 
+  & input:invalid + .invalid-indicator {
+    position: absolute;
+    display: block;
+    top: 6px;
+    left: 4px;
+    height: 4px;
+    width: 4px;
+    border-radius: 100%;
+    background: var(--theme-danger-default);
+  }
+
   &[sd-inline=true] {
     display: inline-block;
   }
 
-  &[sd-size=sm] > input {
+  &[sd-size=sm] input {
     padding: var(--padding-xs) var(--padding-sm);
 
     &[type=date] {
@@ -65,7 +73,7 @@ sd-textfield {
     }
   }
 
-  &[sd-size=xxs] > button {
+  &[sd-size=xxs] input {
     padding: 0 var(--padding-xxs);
     font-size: var(--font-size-sm);
 
@@ -74,7 +82,7 @@ sd-textfield {
     }
   }
 
-  &[sd-size=xs] > button {
+  &[sd-size=xs] input {
     padding: var(--padding-xxs) var(--padding-xs);
     font-size: var(--font-size-sm);
 
@@ -83,7 +91,7 @@ sd-textfield {
     }
   }
 
-  &[sd-size=lg] > input {
+  &[sd-size=lg] input {
     padding: var(--padding-default) var(--padding-lg);
 
     &[type=date] {
@@ -91,7 +99,7 @@ sd-textfield {
     }
   }
 
-  &[sd-size=xl] > input {
+  &[sd-size=xl] input {
     padding: var(--padding-lg) var(--padding-xl);
     font-size: var(--font-size-lg);
 
@@ -100,7 +108,7 @@ sd-textfield {
     }
   }
 
-  &[sd-size=xxl] > input {
+  &[sd-size=xxl] input {
     padding: var(--padding-xl) var(--padding-xxl);
     font-size: var(--font-size-lg);
 
@@ -109,19 +117,19 @@ sd-textfield {
     }
   }
 
-  &[sd-theme=primary] > input {
+  &[sd-theme=primary] input {
     background: var(--theme-primary-lightest) !important;
   }
-  &[sd-theme=success] > input {
+  &[sd-theme=success] input {
     background: var(--theme-success-lightest) !important;
   }
-  &[sd-theme=info] > input {
+  &[sd-theme=info] input {
     background: var(--theme-info-lightest) !important;
   }
-  &[sd-theme=warning] > input {
+  &[sd-theme=warning] input {
     background: var(--theme-warning-lightest) !important;
   }
-  &[sd-theme=danger] > input {
+  &[sd-theme=danger] input {
     background: var(--theme-danger-lightest) !important;
   }
 }

@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {IconName} from "@fortawesome/fontawesome-common-types";
+import {IconName} from "@fortawesome/fontawesome-svg-core";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {SimgularHelpers} from "../helpers/SimgularHelpers";
 

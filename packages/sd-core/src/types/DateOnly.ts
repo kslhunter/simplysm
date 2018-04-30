@@ -12,7 +12,7 @@ export class DateOnly {
             this._tick = new Date(yearOrTick, month, date).getTime();
         }
         else {
-            throw new Error("@simplism/core :: DateOnly :: 입력값이 잘못되었습니다.");
+            throw new Error("@simplism/sd-core :: DateOnly :: 입력값이 잘못되었습니다.");
         }
     }
 

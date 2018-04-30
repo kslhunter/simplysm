@@ -7,11 +7,7 @@ if (process.env.NODE_ENV === "production") {
     enableProdMode();
 }
 
-/*
-if (module["hot"]) {
-    module["hot"].accept();
-}
-*/
+if (module["hot"]) module["hot"].accept();
 
 const AppModule = require("./AppModule").AppModule;
 platformBrowserDynamic().bootstrapModule(AppModule);

@@ -1,7 +1,8 @@
-import {Type} from "@angular/core";
-import {ArgumentsException} from "../../../core/src";
+// tslint:disable:variable-name
 
-// tslint:disable-next-line:variable-name
+import {Type} from "@angular/core";
+import {ArgumentsException} from "../../../sd-core/src";
+
 export const SdValidate = (params?: PropertyCheckerTypes | PropertyCheckerTypes[] | {
     type?: PropertyCheckerTypes | PropertyCheckerTypes[];
     notnull?: boolean;

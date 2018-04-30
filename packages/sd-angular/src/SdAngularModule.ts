@@ -67,11 +67,13 @@ import {SdModalProvider} from "./providers/SdModalProvider";
 import {SdPrintProvider} from "./providers/SdPrintProvider";
 import {SdServiceProvider} from "./providers/SdServiceProvider";
 import {SdToastProvider} from "./providers/SdToastProvider";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 
 library.add(fas, far);
 
 const modules: Type<any>[] = [
-    BrowserModule
+    BrowserModule,
+    FontAwesomeModule
 ];
 
 const controls: Type<any>[] = [
@@ -183,9 +185,11 @@ providers.push({provide: ErrorHandler, useClass: SimgularErrorHandler} as any);
 })
 export class SdAngularModule {
     public constructor() {
-        window.addEventListener("popstate", () => {
-            location.reload(true);
-        });
+        if (process.env.NODE_ENV === "production") {
+            window.addEventListener("popstate", () => {
+                location.reload(true);
+            });
+        }
 
         let timeout: number;
         window.addEventListener("resize", () => {

@@ -1,36 +1,31 @@
-import * as fs from "fs-extra";
+import "../../sd-core/src/extensions/ArrayExtensions";
 import * as path from "path";
 import * as tslint from "tslint";
 import * as ts from "typescript";
 
 const context = process.argv[2];
 
-const tsconfig = fs.readJsonSync(path.resolve(context, `tsconfig.json`));
-const parsed = ts.parseJsonConfigFileContent(tsconfig, ts.sys, context);
+const tsconfigPath = path.resolve(context, `tsconfig.json`);
 
-const tsProgram = ts.createProgram(
-    parsed.fileNames,
-    parsed.options
-) as ts.Program;
+process.on("message", async (msg: { sourceFilePaths: string[] | undefined }) => {
+    const tsLinterProgram = tslint.Linter.createProgram(tsconfigPath, context);
+    const tsLinter = new tslint.Linter({
+        formatter: "json",
+        fix: false
+    }, tsLinterProgram);
 
-const tsLintWorker = new tslint.Linter({
-    formatter: "prose",
-    fix: false
-}, tsProgram);
-
-process.on("message", async (sourceFilePaths) => {
     /*const startTime = new Date().getTime();*/
 
     const promiseList = [];
-    if (!sourceFilePaths) {
-        const filePaths = tslint.Linter.getFileNames(tsProgram);
+    if (!msg.sourceFilePaths) {
+        const filePaths = tslint.Linter.getFileNames(tsLinterProgram);
         for (const filePath of filePaths) {
-            promiseList.push(lintAsync(tsLintWorker, filePath));
+            promiseList.push(lintAsync(tsLinterProgram, tsLinter, filePath));
         }
     }
     else {
-        for (const sourceFilePath of sourceFilePaths) {
-            promiseList.push(lintAsync(tsLintWorker, sourceFilePath));
+        for (const sourceFilePath of msg.sourceFilePaths) {
+            promiseList.push(lintAsync(tsLinterProgram, tsLinter, sourceFilePath));
         }
     }
     await Promise.all(promiseList);
@@ -43,15 +38,31 @@ process.on("message", async (sourceFilePaths) => {
     process.send!("finish");
 });
 
-function lintAsync(linter: tslint.Linter, filePath: string): Promise<void> {
+function lintAsync(program: ts.Program, linter: tslint.Linter, filePath: string): Promise<void> {
     return new Promise<void>((resolve) => {
-        linter.lint(filePath, filePath, tslint.Configuration.findConfiguration(path.resolve(context, `tslint.json`), filePath).results);
-        const lintResult = linter.getResult();
-        if (lintResult.output.trim()) {
-            process.send!({
-                type: "warn",
-                message: lintResult.output.trim()
-            });
+        if (program.getSourceFile(filePath)) {
+            const config = tslint.Configuration.findConfiguration(path.resolve(context, `tslint.json`), filePath);
+            linter.lint(filePath, program.getSourceFile(filePath)!.getFullText(), config.results);
+            const lintResult = linter.getResult();
+
+            const errorMessages: string[] = lintResult.failures.map((failure) => {
+                if (failure.getFileName() !== filePath) return;
+
+                const severity = failure.getRuleSeverity().toUpperCase();
+                const message = `${failure.getFailure()}`;
+                const rule = `(${failure.getRuleName()})`;
+                const fileName = failure.getFileName();
+                const lineNumber = failure.getStartPosition().getLineAndCharacter().line + 1;
+                const charNumber = failure.getStartPosition().getLineAndCharacter().character + 1;
+                return `${severity}: ${fileName}[${lineNumber}, ${charNumber}]: ${message} ${rule}`;
+            }).filterExists();
+
+            if (errorMessages.length > 0) {
+                process.send!({
+                    type: "warn",
+                    message: `${filePath}\n${errorMessages.join("\n")}`
+                });
+            }
         }
         resolve();
     });
