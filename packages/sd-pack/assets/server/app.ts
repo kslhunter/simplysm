@@ -1,14 +1,15 @@
 import * as path from "path";
 import {SocketServer} from "@simplism/sd-socket";
-import {services} from "./AppModuleDefinitions";
+import {JsonConvert} from "@simplism/sd-core";
+import {services} from "./definitions";
 
 (async () => {
-    const server = new SocketServer({
-        services,
-        clients: JsonConvert.parse(process.env.SD_PACK_CLIENTS)
-    });
-    await server.start(process.env.SD_PACK_PORT, process.env.SD_PACK_HOST);
-
     const appEntry = new (require("APP_ENTRY_PATH").AppEntry)();
     await appEntry.startAsync();
+
+    const server = new SocketServer({
+        services,
+        clients: process.env.SD_PACK_CLIENTS.split("|");
+    });
+    await server.start(Number(process.env.SD_PACK_PORT), process.env.SD_PACK_HOST);
 })();
