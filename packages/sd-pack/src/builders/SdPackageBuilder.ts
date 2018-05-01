@@ -406,6 +406,7 @@ export class SdPackageBuilder {
             };
 
             const compiler: webpack.Compiler = webpack(webpackConfig);
+
             const onCompileComplete = (err?: Error, stats?: webpack.Stats) => {
                 if (err) {
                     reject(err);
@@ -480,17 +481,19 @@ export class SdPackageBuilder {
                 });
             }
 
-            compiler.hooks.afterEmit.tap(this.constructor.name, () => {
-                if (fs.existsSync(this._root("dist/packages"))) {
-                    if (fs.existsSync(this._root(`dist/packages/${this._packageName}/dist/${this._packageName}/src`))) {
-                        fs.copySync(this._root(`dist/packages/${this._packageName}/dist/${this._packageName}/src`), this._root(`dist`));
+            /*if (isLibrary) {
+                compiler.hooks.afterEmit.tap(this.constructor.name, () => {
+                    if (fs.existsSync(this._root("dist/packages"))) {
+                        if (fs.existsSync(this._root(`dist/packages/${this._packageName}/dist/${this._packageName}/src`))) {
+                            fs.copySync(this._root(`dist/packages/${this._packageName}/dist/${this._packageName}/src`), this._root(`dist`));
+                        }
+                        else {
+                            fs.copySync(this._root(`dist/packages/${this._packageName}/dist`), this._root(`dist`));
+                        }
+                        fs.removeSync(this._root(`dist/packages`));
                     }
-                    else {
-                        fs.copySync(this._root(`dist/packages/${this._packageName}/dist`), this._root(`dist`));
-                    }
-                    fs.removeSync(this._root(`dist/packages`));
-                }
-            });
+                });
+            }*/
 
             if (watch) {
                 if (!isLibrary && isAngular) {

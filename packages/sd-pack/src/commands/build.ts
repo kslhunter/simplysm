@@ -42,6 +42,9 @@ export async function build(argv: { watch: boolean; env: { [key: string]: any };
         if (config && config.type === "model") {
             promiseList.push(new SdModelGenerator(packageName).runAsync(config, argv.watch));
         }
+        /*else if (config && config.type === "client" && argv.watch) {
+            promiseList.push(new SdClientWatcher(packageName).runAsync(config));
+        }*/
         else {
             promiseList.push(new SdPackageBuilder(packageName).runAsync(config, argv.watch));
         }
