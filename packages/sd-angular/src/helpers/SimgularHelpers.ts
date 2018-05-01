@@ -26,12 +26,12 @@ export class SimgularHelpers {
         let nowWait = false;
         const runCallback = async () => {
             if (nowWait) return;
-
             nowWait = true;
+
             await Wait.true(() => this._isDetectElementChangeEnable);
-            nowWait = false;
 
             callback();
+            nowWait = false;
         };
 
         if (options.childList) {

@@ -166,7 +166,6 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
         else if (this._itemBeforeCheck && this.items) {
             const diffs = this._itemBeforeCheck.differenceWith(this.items, this.keyProp ? [this.keyProp] : undefined);
             if (diffs.length > 0) {
-                this._logger.log("itemsChanged");
                 this._cdr.markForCheck();
             }
         }
