@@ -8,6 +8,8 @@ export class SdTypescriptDtsPlugin implements webpack.Plugin {
     private _buildCompleted = false;
     private _lintCompleted = false;
     private _isWatching = false;
+    private _startTime = Date.now();
+    private _prevTimestamps = new Map<string, number>();
 
     public constructor(private _options: { context: string; logger: any }) {
     }
@@ -52,54 +54,58 @@ export class SdTypescriptDtsPlugin implements webpack.Plugin {
                 }
             });
 
-        compiler.hooks.watchRun.tap(this.constructor.name, () => this._isWatching = true);
-        compiler.hooks.run.tap(this.constructor.name, () => this._isWatching = false);
-
-        let prevTimestamps: { [key: string]: number };
-        compiler.hooks.make.tapAsync(this.constructor.name, async (compilation, callback) => {
+        compiler.hooks.watchRun.tap(this.constructor.name, (comp) => {
+            this._isWatching = true;
             this._buildCompleted = false;
             this._lintCompleted = false;
-            callback();
 
-            const fileTimestamps = compilation["fileTimestamps"] as Map<string, number>;
-            let changedTsFiles: string[] | undefined;
-            if (prevTimestamps) {
-                changedTsFiles = Array.from(fileTimestamps.keys())
-                    .filter((fileName) => prevTimestamps[fileName] < fileTimestamps.get(fileName)!)
-                    .filter((fileName) => path.extname(fileName) === ".ts");
-            }
+            const fileTimestamps = comp["fileTimestamps"] as Map<string, number>;
+            const changedTsFiles = Array.from(fileTimestamps.entries())
+                .filter((watchFileArr) => {
+                    return path.extname(watchFileArr[0]) === ".ts" &&
+                        !path.relative(this._options.context, watchFileArr[0]).includes("..") &&
+                        (this._prevTimestamps.get(watchFileArr[0]) || this._startTime) < (watchFileArr[1] || Infinity);
+                })
+                .map((item) => item[0].replace(/\\/g, "/"));
 
-            prevTimestamps = prevTimestamps || {};
-            for (const fileName of Array.from(fileTimestamps.keys())) {
-                prevTimestamps[fileName] = fileTimestamps.get(fileName)!;
-            }
+            this._prevTimestamps = fileTimestamps;
 
-            if (changedTsFiles && changedTsFiles.length === 0) {
-                this._buildCompleted = true;
-                this._lintCompleted = true;
-                return;
-            }
-
-            buildWorker.send({
-                sourceFilePaths: changedTsFiles
-            }, (err) => {
+            buildWorker.send(changedTsFiles, (err) => {
                 if (err) {
                     this._options.logger.error(err);
                 }
             });
 
-            lintWorker.send({
-                sourceFilePaths: changedTsFiles
-            }, (err) => {
+            lintWorker.send(changedTsFiles, (err) => {
                 if (err) {
                     this._options.logger.error(err);
                 }
+            });
+
+            Wait.true(() => this._buildCompleted && this._lintCompleted).then(() => {
+                this._options.logger.log("체킹 완료");
             });
         });
+        compiler.hooks.run.tap(this.constructor.name, () => {
+            this._isWatching = false;
+            this._buildCompleted = false;
+            this._lintCompleted = false;
 
-        compiler.hooks.afterEmit.tapAsync(this.constructor.name, async (compilation, callback) => {
-            await Wait.true(() => this._buildCompleted && this._lintCompleted);
-            callback();
+            buildWorker.send([], (err) => {
+                if (err) {
+                    this._options.logger.error(err);
+                }
+            });
+
+            lintWorker.send([], (err) => {
+                if (err) {
+                    this._options.logger.error(err);
+                }
+            });
+
+            Wait.true(() => this._buildCompleted && this._lintCompleted).then(() => {
+                this._options.logger.log("체킹 완료");
+            });
         });
     }
 }

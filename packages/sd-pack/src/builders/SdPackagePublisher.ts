@@ -1,11 +1,10 @@
 import * as child_process from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
-import {Exception} from "../../../sd-core/src/index";
-import {Logger} from "../../../sd-core/src/utils/Logger";
 import {ISimpackConfig} from "../commons/ISimpackConfig";
-import {FtpStorage} from "../../../sd-storage/src";
 import * as glob from "glob";
+import {Exception, Logger} from "../../../sd-core/src";
+import {FtpStorage} from "../../../sd-storage/src";
 
 export class SdPackagePublisher {
     private _logger = new Logger("@simplism/sd-pack", `SdPackagePublisher :: ${this._packageName}`);

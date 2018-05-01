@@ -30,6 +30,20 @@ export class Logger {
         }
     }
 
+    public static setDefaultConfig(config: Partial<ILoggerConfig>): void {
+        this._defaultConfig = {
+            ...this._defaultConfig,
+            ...config
+        };
+    }
+
+    private static _defaultConfig: ILoggerConfig = {
+        consoleLogTypes: ["log", "info", "warn", "error"],
+        fileLogTypes: [],
+        outputPath: undefined,
+        historySize: 30
+    };
+
     private static _groupMap = new Map<string, ILoggerConfig>();
     private static _lastId = 0;
 
@@ -65,12 +79,7 @@ export class Logger {
         const now = new Date();
 
         // 설정 가져오기
-        const config = (this._groupName && Logger._groupMap.get(this._groupName)) || {
-            consoleLogTypes: ["log", "info", "warn", "error"],
-            fileLogTypes: [],
-            outputPath: undefined,
-            historySize: 30
-        } as ILoggerConfig;
+        const config = (this._groupName && Logger._groupMap.get(this._groupName)) || Logger._defaultConfig;
 
         // 로그이력 등록
         Logger.history.push({

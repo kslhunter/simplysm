@@ -31,7 +31,7 @@ if (parsed.options.declaration) {
     };
 }
 
-process.on("message", async (msg: { sourceFilePaths: string[] | undefined }) => {
+process.on("message", (changedTsFiles: string[]) => {
     /*const startTime = new Date().getTime();*/
 
     const tsProgram = ts.createProgram(
@@ -45,58 +45,34 @@ process.on("message", async (msg: { sourceFilePaths: string[] | undefined }) => 
         tsHost
     ) as ts.Program;
 
-    const promiseList = [];
-    if (!msg.sourceFilePaths) {
-        promiseList.push(buildAsync(tsProgram));
-    }
-    else {
-        for (const sourceFilePath of msg.sourceFilePaths) {
-            promiseList.push(buildAsync(tsProgram, sourceFilePath));
-        }
-    }
+    let diagnostics = parsed.options.declaration
+        ? ts.getPreEmitDiagnostics(tsProgram)
+        : tsProgram.getSemanticDiagnostics();
 
-    await Promise.all(promiseList);
-
-    /*process.send!({
-        type: "log",
-        message: `build duration: ${new Time(new Date().getTime() - startTime).toFormatString("ss.fff")}`
-    });*/
-
-    process.send!("finish", (err: Error) => {
-        if (err) {
-            console.error(err);
-        }
-    });
-});
-
-function buildAsync(program: ts.Program, filePath?: string): Promise<void> {
-    return new Promise<void>((resolve) => {
-        const diagnostics = parsed.options.declaration
-            ? [
-                ...program.emit(filePath ? program.getSourceFile(filePath) : undefined, undefined, undefined, true).diagnostics,
-                ...ts.getPreEmitDiagnostics(program)
-            ]
-            : program.getSemanticDiagnostics(filePath ? program.getSourceFile(filePath) : undefined);
-
-        for (const diagnostic of diagnostics) {
-            if (diagnostic.file) {
-                if (diagnostic.file.fileName.startsWith(context.replace(/\\/g, "/"))) {
-                    const position = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
-                    const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-                    process.send!({
-                        type: "error",
-                        message: `${diagnostic.file.fileName}\nERROR: ${diagnostic.file.fileName}[${position.line + 1}, ${position.character + 1}]: ${message}`
-                    }, (err: Error) => {
-                        if (err) {
-                            console.error(err);
-                        }
-                    });
-                }
+    if (parsed.options.declaration) {
+        if (changedTsFiles.length > 0) {
+            for (const filePath of changedTsFiles) {
+                const sourceFile = tsProgram.getSourceFile(filePath);
+                diagnostics = diagnostics.concat(
+                    tsProgram.emit(sourceFile, undefined, undefined, true).diagnostics
+                );
             }
-            else {
+        }
+        else {
+            diagnostics = diagnostics.concat(
+                tsProgram.emit(undefined, undefined, undefined, true).diagnostics
+            );
+        }
+    }
+
+    for (const diagnostic of diagnostics) {
+        if (diagnostic.file) {
+            if (diagnostic.file.fileName.startsWith(context.replace(/\\/g, "/"))) {
+                const position = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+                const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
                 process.send!({
                     type: "error",
-                    message: `${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`
+                    message: `${diagnostic.file.fileName}\nERROR: ${diagnostic.file.fileName}[${position.line + 1}, ${position.character + 1}]: ${message}`
                 }, (err: Error) => {
                     if (err) {
                         console.error(err);
@@ -104,6 +80,30 @@ function buildAsync(program: ts.Program, filePath?: string): Promise<void> {
                 });
             }
         }
-        resolve();
+        else {
+            process.send!({
+                type: "error",
+                message: `${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`
+            }, (err: Error) => {
+                if (err) {
+                    console.error(err);
+                }
+            });
+        }
+    }
+
+    /*const finishTime = new Date().getTime();
+    process.send!({
+        type: "log",
+        message: `build: ${finishTime - startTime}`
+    }, (err: Error) => {
+        if (err) {
+            console.error(err);
+        }
+    });*/
+    process.send!("finish", (err: Error) => {
+        if (err) {
+            console.error(err);
+        }
     });
-}
+});

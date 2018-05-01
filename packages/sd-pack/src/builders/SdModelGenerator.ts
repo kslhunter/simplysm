@@ -4,9 +4,8 @@ import * as chokidar from "chokidar";
 import * as fs from "fs-extra";
 import * as glob from "glob";
 import * as path from "path";
-import {NotImplementedException} from "../../../sd-core/src";
 import {ISimpackModelConfig} from "../commons/ISimpackConfig";
-import {Logger} from "../../../sd-core/src/utils/Logger";
+import {Logger, NotImplementedException} from "../../../sd-core/src";
 
 export class SdModelGenerator {
     private _logger = new Logger("@simplism/sd-pack", `SdModelGenerator :: ${this._packageName}`);

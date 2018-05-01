@@ -4,13 +4,12 @@ import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import * as path from "path";
 import * as webpack from "webpack";
 import * as WebpackDevServer from "webpack-dev-server";
-import "../../../sd-core/src/extensions/ArrayExtensions";
-import {Logger} from "../../../sd-core/src/utils/Logger";
-import {ISimpackClientConfig, ISimpackConfig, ISimpackServerConfig} from "../commons/ISimpackConfig";
-import {SdTypescriptDtsPlugin} from "../plugins/SdTypescriptDtsPlugin";
 import * as glob from "glob";
 import * as child_process from "child_process";
 import * as chokidar from "chokidar";
+import {ISimpackClientConfig, ISimpackConfig, ISimpackServerConfig} from "../commons/ISimpackConfig";
+import {SdTypescriptDtsPlugin} from "../plugins/SdTypescriptDtsPlugin";
+import {Logger} from "../../../sd-core/src";
 
 export class SdPackageBuilder {
     private _logger = new Logger("@simplism/sd-pack", `SdPackageBuilder :: ${this._packageName}`);
@@ -601,6 +600,17 @@ export {services};`);
             importString += `import {${typeName}} from "${relativePath.replace(/\\/g, "/").slice(0, -3)}";\r\n`;
         }
 
+        const components: string[] = [];
+        const componentFilePaths = glob.sync(this._root("src", "**", "*Component.ts"))
+            .orderBy((item) => item.split(/[\\\/]/g).length);
+        for (const componentFilePath of componentFilePaths) {
+            const relativePath = path.relative(path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/client"), componentFilePath);
+
+            const typeName = relativePath.split(/[\\\/]/g).last()!.slice(0, -3);
+            components.push(typeName);
+            importString += `import {${typeName}} from "${relativePath.replace(/\\/g, "/").slice(0, -3)}";\r\n`;
+        }
+
         const modals: string[] = [];
         const modalFilePaths = glob.sync(this._root("src/**/*Modal.ts"))
             .orderBy((item) => item.split(/[\\\/]/g).length);
@@ -641,13 +651,15 @@ const routeDeclarations: any[] = SimgularHelpers.getRouteDeclarations(routes);
 
 const controls: any[] = ${JSON.stringify(controls, undefined, 4).replace(/"/g, "")};
 
+const components: any[] = ${JSON.stringify(components, undefined, 4).replace(/"/g, "")};
+
 const modals: any[] = ${JSON.stringify(modals, undefined, 4).replace(/"/g, "")};
 
 const printTemplates: any[] = ${JSON.stringify(printTemplates, undefined, 4).replace(/"/g, "")};
 
 const providers: any[] = ${JSON.stringify(providers, undefined, 4).replace(/"/g, "")};
 
-export {routes, routeDeclarations, controls, modals, printTemplates, providers};`);
+export {routes, routeDeclarations, controls, components, modals, printTemplates, providers};`);
 
         /*const dt = new Date().addSeconds(-1);
         fs.utimesSync(path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/client/definitions.ts"), dt, dt);*/

@@ -1,6 +1,6 @@
 {
   "name": "@simplism/sd-socket",
-  "version": "6.1.15",
+  "version": "6.1.16",
   "description": "Simplism Socket Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,7 +8,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/sd-core": "^6.1.15",
+    "@simplism/sd-core": "^6.1.16",
     "mime": "^2.2.2",
     "socket.io": "^2.1.0"
   }
