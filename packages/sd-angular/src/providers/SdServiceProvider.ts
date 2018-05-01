@@ -20,7 +20,7 @@ export class SdServiceProvider {
                        private _localStorage: SdLocalStorageProvider) {
     }
 
-    public async connect(url: string): Promise<void> {
+    public async connect(url?: string): Promise<void> {
         if (!this._client.connected) {
             await this._client.connect(url);
         }
@@ -81,13 +81,16 @@ export class SdServiceProvider {
             return result;
         }
         catch (e) {
-            this._toast.danger(e.message);
-            if (options.showBusy) this._busy.hide();
-            for (const callback of this._errorListeners) {
-                const reload = await callback(e);
-                if (reload) {
-                    return await this.sendCommand.apply(this, [options, cmd].concat(args));
+            if (e.code) {
+                this._toast.danger(e.message);
+                if (options.showBusy) this._busy.hide();
+                for (const callback of this._errorListeners) {
+                    const reload = await callback(e);
+                    if (reload) {
+                        return await this.sendCommand.apply(this, [options, cmd].concat(args));
+                    }
                 }
+                e.handled = true;
             }
             throw e;
         }

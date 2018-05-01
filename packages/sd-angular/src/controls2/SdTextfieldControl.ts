@@ -137,7 +137,7 @@ export class SdTextfieldControl implements OnChanges {
     // ----------------------------------------------
 
     private _reloadDisplayText(): void {
-        if (this.type === "number" && !this.focused) {
+        if (this.value != undefined && this.type === "number" && !this.focused) {
             this.displayText = this.value.toLocaleString();
             return;
         }

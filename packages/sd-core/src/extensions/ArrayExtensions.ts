@@ -55,7 +55,7 @@ declare global {
 
         ofType<N>(type: Type<N>): N[];
 
-        merge<K extends keyof T>(target: Partial<T>[], keyProps?: K[]): void;
+        merge<K extends keyof T>(target: Partial<T>[], keyProps?: K[], includeUndefined?: boolean): void;
     }
 }
 
@@ -291,9 +291,15 @@ Array.prototype.ofType = function <N>(type: Type<N>): N[] {
     return this.filter((item) => item instanceof type);
 };
 
-Array.prototype.merge = function (target: any[], keyProps?: string[]): void {
+Array.prototype.merge = function (target: any[], keyProps?: string[], includeUndefined?: boolean): void {
     if (!keyProps) {
         this.forEach((item, i) => {
+            if (includeUndefined) {
+                for (const key of Object.keys(item)) {
+                    delete item[key];
+                }
+            }
+
             Object.assign(item, target[i]);
         });
         if (target.length > this.length) {
@@ -304,6 +310,12 @@ Array.prototype.merge = function (target: any[], keyProps?: string[]): void {
         for (const targetItem of target) {
             const item = this.single((sourceItem) => keyProps.every((keyProp) => sourceItem[keyProp] === targetItem[keyProp]));
             if (item) {
+                if (includeUndefined) {
+                    for (const key of Object.keys(item)) {
+                        delete item[key];
+                    }
+                }
+
                 Object.assign(item, targetItem);
             }
             else {

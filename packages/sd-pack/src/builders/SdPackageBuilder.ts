@@ -3,7 +3,6 @@ import * as fs from "fs-extra";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import * as path from "path";
 import * as webpack from "webpack";
-import * as WebpackDevServer from "webpack-dev-server";
 import * as glob from "glob";
 import * as child_process from "child_process";
 import * as chokidar from "chokidar";
@@ -89,12 +88,12 @@ export class SdPackageBuilder {
                 else if (config!.type === "client") {
                     return {
                         app: [
-                            ...watch
+                            /*...watch
                                 ? [
                                     `webpack-dev-server/client?http://${(config as ISimpackClientConfig).host}:${(config as ISimpackClientConfig).port}/`,
                                     `webpack/hot/only-dev-server`
                                 ]
-                                : [],
+                                : [],*/
                             path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/client/app.ts")
                         ]
                     };
@@ -324,8 +323,6 @@ export class SdPackageBuilder {
                             new webpack.DefinePlugin({
                                 "process.env": this._stringifyEnv({
                                     SD_PACK_TITLE: (config as ISimpackClientConfig).title,
-                                    SD_PACK_SERVER_HOST: (config as ISimpackClientConfig).server.host,
-                                    SD_PACK_SERVER_PORT: (config as ISimpackClientConfig).server.port.toString(),
                                     SD_PACK_VERSION: fs.readJsonSync(path.resolve(process.cwd(), "package.json")).version,
                                     ...(config as ISimpackClientConfig).env
                                 })
@@ -333,9 +330,9 @@ export class SdPackageBuilder {
                         ]
                         : [],
 
-                    ...(!isLibrary && isAngular && watch)
+                    /*...(!isLibrary && isAngular && watch)
                         ? [new webpack.HotModuleReplacementPlugin()]
-                        : [],
+                        : [],*/
 
                     ...(!isLibrary && !isAngular)
                         ? [
@@ -436,12 +433,7 @@ export class SdPackageBuilder {
                     }
                 }
 
-                if (!isLibrary && isAngular && watch) {
-                    this._logger.info(`빌드 완료: http://${(config as ISimpackClientConfig).host}:${(config as ISimpackClientConfig).port}`);
-                }
-                else {
-                    this._logger.info("빌드 완료");
-                }
+                this._logger.info(`빌드 완료`);
                 resolve();
             };
 
@@ -495,7 +487,7 @@ export class SdPackageBuilder {
             }*/
 
             if (watch) {
-                if (!isLibrary && isAngular) {
+                /*if (!isLibrary && isAngular) {
                     const server = new WebpackDevServer(compiler, {
                         hot: true,
                         inline: true,
@@ -507,7 +499,8 @@ export class SdPackageBuilder {
                 }
                 else {
                     compiler.watch({}, onCompileComplete.bind(this));
-                }
+                }*/
+                compiler.watch({}, onCompileComplete.bind(this));
                 compiler.hooks.watchRun.tap(this.constructor.name, () => {
                     this._logger.log(`변경 감지`);
                 });

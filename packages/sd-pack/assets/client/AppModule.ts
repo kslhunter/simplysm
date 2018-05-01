@@ -25,7 +25,7 @@ export class AppModule {
     public constructor(private _localStorage: SdLocalStorageProvider,
                        private _service: SdServiceProvider) {
         this._localStorage.prefix = process.env.SD_PACK_TITLE;
-        this._service.connect(`ws://${process.env.SD_PACK_SERVER_HOST}:${process.env.SD_PACK_SERVER_PORT}`);
+        this._service.connect();
 
         if (process.env.NODE_ENV === "production") {
             Logger.setGroupConfig(undefined, {

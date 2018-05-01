@@ -15,15 +15,16 @@ export class SocketClient {
         return !!(this._socket && this._socket.connected);
     }
 
-    public async connect(url: string): Promise<void> {
+    public async connect(url?: string): Promise<void> {
         return await new Promise<void>((resolve, reject) => {
             this._logger.log("연결요청");
-            this._socket = sio(url, {
+
+            this._socket = sio(`ws://${url || location.host}`, {
                 rejectUnauthorized: process.env.NODE_ENV === "production"
             });
             this._socket.on("connect", async () => {
                 this._logger.info(`연결      : ${this._socket!.id}`);
-                this._url = url;
+                this._url = url || location.host;
                 resolve();
             });
             this._socket.on("connect_error", (err: Error) => {
@@ -90,7 +91,7 @@ export class SocketClient {
 
                 if (response.header.success) {
                     if (response.header.fileToken) {
-                        const downloadUrl = `${this._url}/_download/${response.header.fileToken}`;
+                        const downloadUrl = `http://${this._url}/_download/${response.header.fileToken}`;
                         if (!document) {
                             reject(new NotImplementedException());
                             return;

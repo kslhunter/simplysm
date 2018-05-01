@@ -93,9 +93,9 @@ export class ExcelXmlSheet {
                 //-- sheetData
                 const rowsXml = parsed.worksheet.sheetData[0].row || [];
                 for (let rowIndex = 0; rowIndex < rowsXml.length; rowIndex++) {
-                    const columnsXml = rowsXml[rowIndex].c;
+                    const columnsXml: any[] = rowsXml[rowIndex].c;
                     for (let colIndex = 0; colIndex < colsLength; colIndex++) {
-                        const colXml = columnsXml.singleOr({$: {}}, (item: any) => item.$.r === this._getAddress(rowIndex, colIndex));
+                        const colXml = columnsXml.single((item: any) => item.$.r === this._getAddress(rowIndex, colIndex)) || {$: {}};
 
                         const t = colXml.$.t;
                         const s = Number.parseInt(colXml.$.s);

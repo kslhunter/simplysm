@@ -32,6 +32,7 @@ interface IEventListener {
 const eventMap = new Map<Element, IEventListener[]>();
 
 Element.prototype.on = function <T extends Event>(eventKey: string, callback: (evt: T) => void, includeChildren?: boolean): void {
+    this.off(eventKey);
     const listeners: IEventListener[] = eventMap.get(this) || [];
     listeners.push({eventKey, callback, includeChildren});
     eventMap.set(this, listeners);

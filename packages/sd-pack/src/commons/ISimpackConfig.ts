@@ -3,13 +3,7 @@ export type ISimpackConfig = ISimpackClientConfig | ISimpackServerConfig | ISimp
 export interface ISimpackClientConfig {
     type: "client";
     title: string;
-    host: string;
-    port: number;
     defaultRoute: string;
-    server: {
-        host: string;
-        port: number;
-    };
     publish: {
         host: string;
         port: number;

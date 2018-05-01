@@ -151,14 +151,16 @@ class SimgularErrorHandler implements ErrorHandler {
             err = error;
         }
 
-        if (process.env.NODE_ENV === "production") {
-            alert(`처리되지 않은 오류가 발생하였습니다.\n\n${err.message}`);
-            location.reload();
-            return;
-        }
-        else {
-            this._toast.danger(`처리되지 않은 오류가 발생하였습니다.\n\n${err.message}`);
-            throw err;
+        if (!err["handled"]) {
+            if (process.env.NODE_ENV === "production") {
+                alert(`처리되지 않은 오류가 발생하였습니다.\n\n${err.message}`);
+                location.reload();
+                return;
+            }
+            else {
+                this._toast.danger(`처리되지 않은 오류가 발생하였습니다.\n\n${err.message}`);
+                throw err;
+            }
         }
     }
 }

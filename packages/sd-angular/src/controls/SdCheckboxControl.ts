@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output} from "@angular/core";
 
 @Component({
     selector: "sd-checkbox",
@@ -30,5 +30,13 @@ export class SdCheckboxControl {
         const element = event.target as HTMLInputElement;
         this.value = element.checked;
         this.valueChange.emit(element.checked);
+    }
+
+    @HostListener("keydown", ["$event"])
+    public onKeydown(event: KeyboardEvent): void {
+        if (event.key === " ") {
+            this.value = !this.value;
+            this.valueChange.emit(this.value);
+        }
     }
 }

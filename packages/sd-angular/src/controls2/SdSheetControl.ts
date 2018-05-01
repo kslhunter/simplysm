@@ -41,7 +41,7 @@ import {SdModalProvider} from "../providers/SdModalProvider";
             </tr>
             <tr *ngIf="hasHeaderTemplate">
                 <th></th>
-                <th *ngFor="let column of displayColumns; trackBy: columnsTrackByFn">
+                <th *ngFor="let column of displayColumns; trackBy: columnsTrackByFn" [attr.sd-fill]="column.fill">
                     <ng-template [ngTemplateOutlet]="column.headerTemplateRef"></ng-template>
                 </th>
             </tr>

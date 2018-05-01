@@ -11,14 +11,13 @@ import {DateOnly, Exception} from "../../../sd-core/src";
             <sd-date-picker [value]="value[1]"
                             (valueChange)="onValueChange(1, $event)"></sd-date-picker>
         </div>
-        <div class="_helpers"
-             *ngIf="helpers && helpers.length > 0">
-            :
+        <div class="_helpers" *ngIf="helpers && helpers.length > 0">
+            &nbsp;:
             <ng-container *ngFor="let helper of helpers; trackBy: helperTrackByFn">
-                <sd-button [inline]="true"
-                           (click)="onHelperClick(helper)">
+                <sd-button2 [inline]="true" (click)="onHelperClick(helper)">
                     {{ helper }}
-                </sd-button>
+                </sd-button2>
+                &nbsp;
             </ng-container>
         </div>
     `,

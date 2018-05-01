@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, NgZone, Output} from "@angular/core";
+import {Component, ElementRef, EventEmitter, Input, NgZone, Output} from "@angular/core";
 import {DateOnly} from "../../../sd-core/src";
 import {ExcelWorkbook} from "../../../sd-excel/src";
 import {SdToastProvider} from "../providers/SdToastProvider";
@@ -29,9 +29,10 @@ import {SdToastProvider} from "../providers/SdToastProvider";
                     <sd-busy [value]="busy">
                         <sd-sheet [items]="excelItemList" *ngIf="excelItemList.length > 0">
                             <sd-sheet-column *ngFor="let title of excelTitleList; trackBy: titleTrackByFn"
-                                             [title]="title">
+                                             [title]="title" [fill]="true">
                                 <ng-template #header>
                                     <sd-select [(value)]="excelTitleMap[title]">
+                                        <option value="undefined">미지정</option>
                                         <option *ngFor="let field of fields; trackBy: fieldTrackByFn" [value]="field">
                                             {{ field }}
                                         </option>
@@ -39,7 +40,10 @@ import {SdToastProvider} from "../providers/SdToastProvider";
                                 </ng-template>
 
                                 <ng-template #item let-item="item">
-                                    {{ item[title] }}
+                                    <div class="sd-padding-sm-default"
+                                         [class.invalid]="validatorFn ? !validatorFn(excelTitleMap[title], item[title]) : false">
+                                        {{ item[title] }}
+                                    </div>
                                 </ng-template>
                             </sd-sheet-column>
                         </sd-sheet>
@@ -66,6 +70,7 @@ export class SdExcelMappingControl {
     public titleTrackByFn = (index: number, value: string) => value;
 
     @Input() public fields: string[] = [];
+    @Input() public validatorFn?: (header: string, value: any) => boolean;
     @Output() public readonly submit = new EventEmitter<{ [key: string]: string | undefined }[]>();
     @Output() public readonly valueChange = new EventEmitter<File | undefined>();
 
@@ -114,7 +119,8 @@ export class SdExcelMappingControl {
     }
 
     public constructor(private _toast: SdToastProvider,
-                       private _zone: NgZone) {
+                       private _zone: NgZone,
+                       private _elementRef: ElementRef<HTMLElement>) {
 
     }
 
@@ -125,6 +131,19 @@ export class SdExcelMappingControl {
     }
 
     public async submitExcelFile(): Promise<void> {
+        const invalidEls = this._elementRef.nativeElement.validate();
+        if (invalidEls.length > 0) {
+            this._toast.danger(`입력값이 잘못되었습니다\n- ${invalidEls
+                .map((el) => {
+                    const parentEl = el.findParent("*[title]");
+                    if (parentEl) return parentEl.title;
+                    return undefined;
+                }).filterExists().distinct().join(", ")}`
+            );
+            invalidEls[0].findParent("td")!.focus();
+            return;
+        }
+
         const dupKeys = Object.values(this.excelTitleMap).groupBy((item) => item).filter((item) => item.key && item.values.length > 1).map((item) => item.key).distinct();
         if (dupKeys.length > 0) {
             await this._toast.danger(`매핑이 중복되었습니다.\n- ${dupKeys.join(", ")}`);
