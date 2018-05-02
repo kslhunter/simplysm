@@ -30,7 +30,8 @@ export class SdServerPackageBuilder {
     const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(env), {
       mode: "production",
       optimization: {
-        noEmitOnErrors: true
+        noEmitOnErrors: true,
+        minimize: false
       }
     });
 

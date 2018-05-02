@@ -28,7 +28,8 @@ export class SdClientPackageBuilder {
     const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(env), {
       mode: "production",
       optimization: {
-        noEmitOnErrors: true
+        noEmitOnErrors: true,
+        minimize: false
       },
       entry: this._packagePath("src/main.ts")
     });

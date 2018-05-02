@@ -22,7 +22,8 @@ export class SdLibraryPackageBuilder {
     const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(), {
       mode: "production",
       optimization: {
-        noEmitOnErrors: true
+        noEmitOnErrors: true,
+        minimize: false
       }
     });
 
