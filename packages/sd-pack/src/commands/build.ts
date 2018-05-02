@@ -1,63 +1,60 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import {SdLocalUpdater} from "../builders/SdLocalUpdater";
-import {SdPackageBuilder} from "../builders/SdPackageBuilder";
-import {ISimpackConfig} from "../commons/ISimpackConfig";
-import {SdModelGenerator} from "../builders/SdModelGenerator";
+import {SdLibraryPackageBuilder} from "../builders/SdLibraryPackageBuilder";
+import {SdClientPackageBuilder} from "../builders/SdClientPackageBuilder";
+import {SdServerPackageBuilder} from "../builders/SdServerPackageBuilder";
 
-export async function build(argv: { watch: boolean; env: { [key: string]: any }; production: boolean; package: string }): Promise<void> {
-    Object.assign(process.env, argv.env);
-    eval(`process.env.NODE_ENV = argv.production ? "production" : "development"`);
+export async function build(argv: { watch: boolean; env: { [key: string]: any }; package: string }): Promise<void> {
+  const promiseList: Promise<void>[] = [];
+  if (
+    argv.watch &&
+    path.basename(process.cwd()) !== "simplism" &&
+    fs.existsSync(path.resolve(process.cwd(), "../simplism"))
+  ) {
+    const rootPackageJson = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
+    const dependencySimplismPackageNameList = [
+      ...rootPackageJson.dependencies ? Object.keys(rootPackageJson.dependencies) : [],
+      ...rootPackageJson.devDependencies ? Object.keys(rootPackageJson.devDependencies) : []
+    ].filter((item) => item.startsWith("@simplism")).map((item) => item.slice(10));
 
-    const promiseList: Promise<void>[] = [];
-    if (
-        argv.watch &&
-        path.basename(process.cwd()) !== "simplism" &&
-        fs.existsSync(path.resolve(process.cwd(), "../simplism"))
-    ) {
-        const rootPackageJson = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
-        const dependencySimplismPackageNameList = [
-            ...rootPackageJson.dependencies ? Object.keys(rootPackageJson.dependencies) : [],
-            ...rootPackageJson.devDependencies ? Object.keys(rootPackageJson.devDependencies) : []
-        ].filter((item) => item.startsWith("@simplism")).map((item) => item.slice(10));
-
-        for (const dependencySimplismPackageName of dependencySimplismPackageNameList) {
-            promiseList.push(new SdLocalUpdater(dependencySimplismPackageName).runAsync(true));
-        }
+    for (const dependencySimplismPackageName of dependencySimplismPackageNameList) {
+      promiseList.push(new SdLocalUpdater(dependencySimplismPackageName).runAsync(true));
     }
+  }
 
-    const runBuildAsync = (packageName: string) => {
-        const configFilePath = path.resolve(process.cwd(), "packages", packageName, "sd.config.ts");
-        let config: ISimpackConfig | undefined;
-        if (fs.existsSync(configFilePath)) {
-            eval(`require("ts-node/register")`);
-            if (!configFilePath) throw new Error();
-            config = eval(`require(configFilePath)`);
-            config!["env"] = {
-                ...config!["env"] || {},
-                ...argv.env
-            };
-        }
-
-        if (config && config.type === "model") {
-            promiseList.push(new SdModelGenerator(packageName).runAsync(config, argv.watch));
-        }
-        /*else if (config && config.type === "client" && argv.watch) {
-            promiseList.push(new SdClientWatcher(packageName).runAsync(config));
-        }*/
-        else {
-            promiseList.push(new SdPackageBuilder(packageName).runAsync(config, argv.watch));
-        }
-    };
-
-    if (!argv.package) {
-        for (const packageName of fs.readdirSync(path.resolve(process.cwd(), `packages`))) {
-            await runBuildAsync(packageName);
-        }
+  const runBuildAsync = (packageName: string) => {
+    if (!argv.watch) {
+      if (packageName.startsWith("client")) {
+        promiseList.push(new SdClientPackageBuilder(packageName).buildAsync(argv.env));
+      }
+      else if (packageName.startsWith("server")) {
+        promiseList.push(new SdServerPackageBuilder(packageName).buildAsync(argv.env));
+      }
+      else {
+        promiseList.push(new SdLibraryPackageBuilder(packageName).buildAsync());
+      }
     }
     else {
-        await runBuildAsync(argv.package);
+      if (packageName.startsWith("client")) {
+        promiseList.push(new SdClientPackageBuilder(packageName).watchAsync(argv.env));
+      }
+      else if (packageName.startsWith("server")) {
+        promiseList.push(new SdServerPackageBuilder(packageName).watchAsync(argv.env));
+      }
+      else {
+        promiseList.push(new SdLibraryPackageBuilder(packageName).watchAsync());
+      }
     }
-    await Promise.all(promiseList);
+  };
 
+  if (!argv.package) {
+    for (const packageName of fs.readdirSync(path.resolve(process.cwd(), `packages`))) {
+      await runBuildAsync(packageName);
+    }
+  }
+  else {
+    await runBuildAsync(argv.package);
+  }
+  await Promise.all(promiseList);
 }

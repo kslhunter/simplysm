@@ -1,35 +1,45 @@
-import {spawnSync} from "child_process";
+import * as child_process from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as semver from "semver";
-import {SdPackagePublisher} from "../builders/SdPackagePublisher";
-import {ISimpackConfig} from "../commons/ISimpackConfig";
+import {Logger} from "../../../sd-core/src";
+import {SdServerPackageBuilder} from "../builders/SdServerPackageBuilder";
+import {SdClientPackageBuilder, SdLibraryPackageBuilder} from "..";
 
-export async function publish(argv: { env: { [key: string]: any } }): Promise<void> {
-    Object.assign(process.env, argv.env);
+export async function publish(argv: { host: string; port: number; user: string; pass: string; root: string }): Promise<void> {
+  const logger = new Logger("@simplism/sd-pack", `publish`);
 
-    const packageConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
-    const newVersion = semver.inc(packageConfig.version, "patch")!;
-    spawnSync("yarn", ["version", "--new-version", newVersion], {
-        shell: true,
-        stdio: "inherit"
-    });
+  const spawn1 = child_process.spawnSync("git", ["diff"], {
+    shell: true
+  });
+  if (spawn1.output.filter((item: any) => item && item.toString().trim()).length > 0) {
+    logger.error("커밋 되지 않은 정보가 있습니다.");
+    return;
+  }
 
-    const promiseList: Promise<void>[] = [];
-    for (const packageName of fs.readdirSync(path.resolve(process.cwd(), `packages`))) {
-        const configFilePath = path.resolve(process.cwd(), "packages", packageName, "sd.config.ts");
-        let config: ISimpackConfig | undefined;
-        if (fs.existsSync(configFilePath)) {
-            eval(`require("ts-node/register")`);
-            if (!configFilePath) throw new Error();
-            config = eval(`require(configFilePath)`);
-            config!["env"] = {
-                ...config!["env"] || {},
-                ...argv.env
-            };
-        }
+  const packageConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
+  const newVersion = semver.inc(packageConfig.version, "patch")!;
+  child_process.spawnSync("yarn", ["version", "--new-version", newVersion], {
+    shell: true,
+    stdio: "inherit"
+  });
 
-        promiseList.push(new SdPackagePublisher(packageName).runAsync(config));
+  const promiseList: Promise<void>[] = [];
+  for (const packageName of fs.readdirSync(path.resolve(process.cwd(), `packages`))) {
+    if (packageName.startsWith("server")) {
+      promiseList.push(new SdServerPackageBuilder(packageName).publishAsync(argv));
     }
-    await Promise.all(promiseList);
+    else if (packageName.startsWith("client")) {
+      promiseList.push(new SdClientPackageBuilder(packageName).publishAsync(argv));
+    }
+    else {
+      promiseList.push(new SdLibraryPackageBuilder(packageName).publishAsync());
+    }
+  }
+  await Promise.all(promiseList);
+
+  //-- git push
+  child_process.spawnSync("git", ["push"], {
+    shell: true
+  });
 }

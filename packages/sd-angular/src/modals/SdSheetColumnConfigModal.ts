@@ -3,7 +3,7 @@ import {SdModalControlBase} from "../bases/SdModalControlBase";
 import {ISdSheetColumnDef} from "../controls2/SdSheetControl";
 
 @Component({
-    template: `
+  template: `
         <sd-dock-container class="sd-sheet-column-config">
             <sd-dock position="bottom" class="sd-padding-sm-default sd-text-align-right">
                 <sd-button2 (click)="onSubmitButtonClick()" [inline]="true" theme="primary">
@@ -30,19 +30,19 @@ import {ISdSheetColumnDef} from "../controls2/SdSheetControl";
         </sd-dock-container>`
 })
 export class SdSheetColumnConfigModal extends SdModalControlBase<{ columns: ISdSheetColumnDef[] }, { columns: ISdSheetColumnDef[] }> {
-    public columns: ISdSheetColumnDef[] = [];
+  public columns: ISdSheetColumnDef[] = [];
 
-    public sdBeforeOpen(): void {
-        this.columns = Object.clone(this.param.columns, {
-            excludes: ["itemTemplateRef", "headerTemplateRef"]
-        });
-    }
+  public sdBeforeOpen(): void {
+    this.columns = Object.clone(this.param.columns, {
+      excludes: ["itemTemplateRef", "headerTemplateRef"]
+    });
+  }
 
-    public onSubmitButtonClick(): void {
-        this.close({columns: this.columns});
-    }
+  public onSubmitButtonClick(): void {
+    this.close({columns: this.columns});
+  }
 
-    public onCloseButtonClick(): void {
-        this.close();
-    }
+  public onCloseButtonClick(): void {
+    this.close();
+  }
 }

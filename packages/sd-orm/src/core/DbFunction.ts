@@ -1,3 +1,3 @@
 export abstract class DbFunction {
-    public abstract returnType?: any;
+  public abstract returnType?: any;
 }

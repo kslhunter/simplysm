@@ -23,27 +23,9 @@
     "no-unnecessary-type-assertion": false,
     "return-undefined": false,
     "linebreak-style": false,
-    "whitespace": [
-      true,
-      "check-branch",
-      "check-decl",
-      "check-operator",
-      "check-separator",
-      "check-rest-spread",
-      "check-type",
-      "check-typecast",
-      "check-type-operator",
-      "check-preblock"
-    ],
+    "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-separator", "check-rest-spread", "check-type", "check-typecast", "check-type-operator", "check-preblock"],
     "no-unused-expression": false,
-    "typedef": [
-      true,
-      "call-signature",
-      "parameter",
-      "property-declaration",
-      "object-destructuring",
-      "array-destructuring"
-    ],
+    "typedef": [true, "call-signature", "parameter", "property-declaration", "object-destructuring", "array-destructuring"],
     "align": false,
     "only-arrow-functions": false,
     "prefer-function-over-method": false,
@@ -53,11 +35,7 @@
     "object-literal-sort-keys": false,
     "no-empty-interface": false,
     "eofline": false,
-    "quotemark": [
-      true,
-      "double",
-      "avoid-escape"
-    ],
+    "quotemark": [true, "double", "avoid-escape"],
     "no-empty": false,
     "newline-per-chained-call": false,
     "trailing-comma": false,
@@ -65,22 +43,12 @@
     "no-require-imports": false,
     "no-implicit-dependencies": false,
     "no-parameter-properties": false,
-    "max-line-length": [
-      false
-    ],
+    "max-line-length": [false],
     "no-any": false,
-    "array-type": [
-      true,
-      "array"
-    ],
+    "array-type": [true, "array"],
     "no-return-await": false,
     "await-promise": false,
-    "variable-name": [
-      true,
-      "check-format",
-      "allow-leading-underscore",
-      "ban-keywords"
-    ],
+    "variable-name": [true, "check-format", "allow-leading-underscore", "ban-keywords"],
     "unified-signatures": false,
     "no-magic-numbers": false,
     "member-ordering": false,
@@ -88,10 +56,7 @@
     "no-object-literal-type-assertion": false,
     "no-string-literal": false,
     "arrow-return-shorthand": false,
-    "curly": [
-      true,
-      "ignore-same-line"
-    ],
+    "curly": [true, "ignore-same-line"],
     "prefer-switch": false,
     "no-non-null-assertion": false,
     "no-parameter-reassignment": false,
@@ -115,17 +80,10 @@
     "prefer-conditional-expression": false,
     "no-bitwise": false,
     "no-unnecessary-class": false,
-    "triple-equals": [
-      true,
-      "allow-undefined-check"
-    ],
+    "triple-equals": [true, "allow-undefined-check"],
     "no-this-assignment": false,
-    "max-classes-per-file": [
-      false
-    ],
-    "max-file-line-count": [
-      false
-    ],
+    "max-classes-per-file": [false],
+    "max-file-line-count": [false],
     "binary-expression-operand-order": false,
     "ordered-imports": false,
     "prefer-template": false

@@ -147,7 +147,6 @@ sd-table {
       display: table-cell;
       vertical-align: top;
       white-space: nowrap;
-
       padding: padding(xs)-1 padding(xs);
       @media screen and (max-width: $m-screen) {
         padding: m-padding(xs)-1 m-padding(xs);

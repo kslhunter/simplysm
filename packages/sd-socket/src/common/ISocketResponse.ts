@@ -1,7 +1,7 @@
 export interface ISocketResponse {
-    header: {
-        success: boolean;
-        fileToken?: string;
-    };
-    body?: any;
+  header: {
+    success: boolean;
+    fileToken?: string;
+  };
+  body?: any;
 }

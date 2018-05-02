@@ -4,14 +4,11 @@
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
   @include user-select(text);
 }
 
-*:focus {
-  outline: none;
-}
+*:focus { outline: none; }
 
 //-- Layout Tags
 html, body, main {
@@ -39,7 +36,6 @@ pre {
   font-family: inherit;
   line-height: inherit;
   font-weight: inherit;
-
   margin: 0;
   white-space: pre-line;
 }

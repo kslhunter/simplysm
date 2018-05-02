@@ -2,7 +2,7 @@ import {AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input,
 import {SimgularHelpers} from "../helpers/SimgularHelpers";
 
 @Component({
-    template: `
+  template: `
         <div class="_backdrop"></div>
         <div class="_dialog">
             <div class="_header">
@@ -18,80 +18,80 @@ import {SimgularHelpers} from "../helpers/SimgularHelpers";
             </div>
         </div>
     `,
-    host: {
-        class: "_sd-modal",
-        tabindex: "0"
-    }
+  host: {
+    class: "_sd-modal",
+    tabindex: "0"
+  }
 })
 export class SdModalControl implements AfterViewInit {
-    @Input() public title = "창";
-    @Input() public hideCloseButton = false;
+  @Input() public title = "창";
+  @Input() public hideCloseButton = false;
 
-    public close = new EventEmitter<any>();
+  public close = new EventEmitter<any>();
 
-    public constructor(private _elementRef: ElementRef,
-                       private _zone: NgZone) {
-    }
+  public constructor(private _elementRef: ElementRef,
+                     private _zone: NgZone) {
+  }
 
-    public ngAfterViewInit(): void {
-        this._zone.runOutsideAngular(() => {
-            setTimeout(() => {
-                const $this = $(this._elementRef.nativeElement);
-                $this.addClass("_open");
-                $this.one("transitionend", () => {
-                    this.resizing();
-                });
-
-                $this.trigger("focus");
-            });
-
-            SimgularHelpers.detectElementChange(this._elementRef.nativeElement, () => {
-                this.resizing();
-            });
-        });
-    }
-
-    public resizing(): void {
-        const $modal = $(this._elementRef.nativeElement);
-        const $dialog = $modal.children("._dialog");
-
-        let newHeight = "0";
-
-        //-- 모바일
-        if ($(window).innerWidth()! < 640) {
-            newHeight = $dialog.outerHeight()! >= $(window).innerHeight()! ? "100%" : "";
-            /*newHeight = "100%";*/
-        }
-        //-- 일반
-        else {
-            newHeight = $dialog.outerHeight()! > $(window).innerHeight()! - 100 ? "calc(100% - 50px)" : "";
-        }
-        $dialog.css("height", newHeight);
-    }
-
-    public onCloseButtonClick(): void {
-        this.close.emit();
-    }
-
-    @HostListener("document:backbutton", ["$event"])
-    public onBackButtonClick(e: Event): void {
-        e.preventDefault();
-
-        if (this.hideCloseButton) return;
-
+  public ngAfterViewInit(): void {
+    this._zone.runOutsideAngular(() => {
+      setTimeout(() => {
         const $this = $(this._elementRef.nativeElement);
-        const $lastModal = $("body").find("._sd-modal._open").last();
-        if ($this.get(0) === $lastModal.get(0)) {
-            this.close.emit();
-        }
-    }
+        $this.addClass("_open");
+        $this.one("transitionend", () => {
+          this.resizing();
+        });
 
-    @HostListener("keydown", ["$event"])
-    public onKeydown(event: KeyboardEvent): void {
-        if (this.hideCloseButton) return;
+        $this.trigger("focus");
+      });
 
-        if (event.key === "Escape") {
-            this.close.emit();
-        }
+      SimgularHelpers.detectElementChange(this._elementRef.nativeElement, () => {
+        this.resizing();
+      });
+    });
+  }
+
+  public resizing(): void {
+    const $modal = $(this._elementRef.nativeElement);
+    const $dialog = $modal.children("._dialog");
+
+    let newHeight = "0";
+
+    //-- 모바일
+    if ($(window).innerWidth()! < 640) {
+      newHeight = $dialog.outerHeight()! >= $(window).innerHeight()! ? "100%" : "";
+      /*newHeight = "100%";*/
     }
+    //-- 일반
+    else {
+      newHeight = $dialog.outerHeight()! > $(window).innerHeight()! - 100 ? "calc(100% - 50px)" : "";
+    }
+    $dialog.css("height", newHeight);
+  }
+
+  public onCloseButtonClick(): void {
+    this.close.emit();
+  }
+
+  @HostListener("document:backbutton", ["$event"])
+  public onBackButtonClick(e: Event): void {
+    e.preventDefault();
+
+    if (this.hideCloseButton) return;
+
+    const $this = $(this._elementRef.nativeElement);
+    const $lastModal = $("body").find("._sd-modal._open").last();
+    if ($this.get(0) === $lastModal.get(0)) {
+      this.close.emit();
+    }
+  }
+
+  @HostListener("keydown", ["$event"])
+  public onKeydown(event: KeyboardEvent): void {
+    if (this.hideCloseButton) return;
+
+    if (event.key === "Escape") {
+      this.close.emit();
+    }
+  }
 }

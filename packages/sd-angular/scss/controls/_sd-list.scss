@@ -17,7 +17,7 @@ sd-list {
         }
       }
 
-      > ._icon{
+      > ._icon {
         display: none;
       }
     }
@@ -37,7 +37,6 @@ sd-list {
         text-rendering: auto;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-
         @include transform(rotate(90deg));
         content: "\f107";
         float: right;

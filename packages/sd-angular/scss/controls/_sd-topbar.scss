@@ -16,10 +16,8 @@ sd-topbar-container {
     top: 0;
     left: 0;
     width: 100%;
-
     background: $topbar-background;
     color: #fff;
-
     line-height: $topbar-height;
     @media screen and (max-width: $m-screen) {
       line-height: $m-topbar-height;
@@ -42,7 +40,6 @@ sd-topbar-container {
       border: none;
       background: transparent;
       padding-left: 0;
-
       height: $topbar-height;
       @media screen and (max-width: $m-screen) {
         height: $m-topbar-height;
@@ -85,7 +82,6 @@ sd-topbar-container {
       cursor: pointer;
       color: white;
       text-align: center;
-
       height: $topbar-height;
       width: $topbar-height;
       @media screen and (max-width: $m-screen) {
@@ -123,7 +119,6 @@ sd-topbar-container {
         color: #fff;
         padding: 0 padding(default);
         @include user-select(none);
-
         line-height: $topbar-height;
         min-width: $topbar-height;
         @media screen and (max-width: $m-screen) {

@@ -1,44 +1,44 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, Output} from "@angular/core";
 
 @Component({
-    selector: "sd-tab",
-    template: `
+  selector: "sd-tab",
+  template: `
         <ng-content></ng-content>`,
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdTabControl {
-    @Input() public value = "";
-    @Output() public readonly valueChange = new EventEmitter();
+  @Input() public value = "";
+  @Output() public readonly valueChange = new EventEmitter();
 }
 
 @Component({
-    selector: "sd-tab-item",
-    template: `
+  selector: "sd-tab-item",
+  template: `
         <ng-content></ng-content>`,
-    host: {
-        "[class]": "styleClass",
-        "(click)": "onClick()"
-    },
-    changeDetection: ChangeDetectionStrategy.OnPush
+  host: {
+    "[class]": "styleClass",
+    "(click)": "onClick()"
+  },
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdTabItemControl {
-    @Input() public value = "";
+  @Input() public value = "";
 
-    public constructor(private _injector: Injector) {
-    }
+  public constructor(private _injector: Injector) {
+  }
 
-    public get styleClass(): string {
-        //tslint:disable-next-line:no-null-keyword
-        const tabControl = this._injector.get(SdTabControl, null);
+  public get styleClass(): string {
+    //tslint:disable-next-line:no-null-keyword
+    const tabControl = this._injector.get(SdTabControl, null);
 
-        return [
-            this.value === tabControl.value ? "_selected" : ""
-        ].filter((item) => item).join(" ");
-    }
+    return [
+      this.value === tabControl.value ? "_selected" : ""
+    ].filter((item) => item).join(" ");
+  }
 
-    public onClick(): void {
-        //tslint:disable-next-line:no-null-keyword
-        const tabControl = this._injector.get(SdTabControl, null);
-        tabControl.valueChange.emit(this.value);
-    }
+  public onClick(): void {
+    //tslint:disable-next-line:no-null-keyword
+    const tabControl = this._injector.get(SdTabControl, null);
+    tabControl.valueChange.emit(this.value);
+  }
 }

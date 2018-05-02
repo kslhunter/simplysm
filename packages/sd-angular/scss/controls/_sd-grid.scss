@@ -1,7 +1,6 @@
 sd-grid {
   display: block;
   @include clearfix();
-
   margin: padding() / -2;
   @media screen and (max-width: $m-screen) {
     margin: m-padding() / -2;
@@ -10,7 +9,6 @@ sd-grid {
   > sd-grid-item {
     display: block;
     float: left;
-
     padding: padding() / 2;
     @media screen and (max-width: $m-screen) {
       padding: m-padding() / 2;

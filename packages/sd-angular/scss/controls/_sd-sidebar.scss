@@ -3,7 +3,6 @@ sd-sidebar-container {
   position: relative;
   width: 100%;
   height: 100%;
-
   padding-left: $sidebar-width;
   @media screen and (max-width: $m-screen) {
     padding-left: 0;
@@ -40,7 +39,6 @@ sd-sidebar-container {
     @media screen and (max-width: $m-screen) {
       border-right: none;
     }
-
 
     @include transform(none);
     @media screen and (max-width: $m-screen) {

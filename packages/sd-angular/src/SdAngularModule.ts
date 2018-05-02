@@ -31,22 +31,22 @@ import {SdSidebarContainerControl, SdSidebarControl} from "./controls/SdSidebarC
 import {SdStarsControl} from "./controls/SdStarsControl";
 import {SdTabControl, SdTabItemControl} from "./controls/SdTabControl";
 import {
-    SdCellButtonControl,
-    SdCellCheckboxControl,
-    SdCellControl,
-    SdCellDatePickerControl,
-    SdCellSelectControl,
-    SdCellTextFieldControl,
-    SdColumnSelectorControl,
-    SdTableControl
+  SdCellButtonControl,
+  SdCellCheckboxControl,
+  SdCellControl,
+  SdCellDatePickerControl,
+  SdCellSelectControl,
+  SdCellTextFieldControl,
+  SdColumnSelectorControl,
+  SdTableControl
 } from "./controls/SdTableControl";
 import {SdTextAreaControl} from "./controls/SdTextAreaControl";
 import {SdTextFieldControl} from "./controls/SdTextFieldControl";
 import {
-    SdTopbarButtonControl,
-    SdTopbarContainerControl,
-    SdTopbarControl,
-    SdTopbarFileButtonControl
+  SdTopbarButtonControl,
+  SdTopbarContainerControl,
+  SdTopbarControl,
+  SdTopbarFileButtonControl
 } from "./controls/SdTopbarControl";
 import {SdViewerControl, SdViewerItemControl} from "./controls/SdViewerControl";
 import {SdButton2Control} from "./controls2/SdButton2Control";
@@ -72,66 +72,66 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 library.add(fas, far);
 
 const modules: Type<any>[] = [
-    BrowserModule,
-    FontAwesomeModule
+  BrowserModule,
+  FontAwesomeModule
 ];
 
 const controls: Type<any>[] = [
-    SdButtonControl, SdButtonGroupControl,
-    SdFormControl, SdFormItemControl,
-    SdTextFieldControl,
-    SdTextAreaControl,
-    SdSidebarContainerControl, SdSidebarControl,
-    SdTopbarContainerControl, SdTopbarControl, SdTopbarButtonControl, SdTopbarFileButtonControl,
-    SdListControl, SdListItemControl,
-    SdPaneControl,
-    SdCardControl,
-    SdDatePickerControl, SdDateRangePickerControl,
-    SdStarsControl,
-    SdDrawingControl,
-    SdNoteControl,
-    SdGridControl, SdGridItemControl,
-    SdTableControl, SdCellControl, SdCellTextFieldControl, SdCellButtonControl, SdCellDatePickerControl, SdCellSelectControl, SdCellCheckboxControl, SdColumnSelectorControl,
-    SdPaginationControl,
-    SdSelectControl,
-    SdCheckboxControl,
-    SdTabControl, SdTabItemControl,
-    SdViewerControl, SdViewerItemControl,
-    SdBarcodeControl,
-    SdEnumControl, SdEnumItemControl,
-    SdProgressControl, SdProgressItemControl,
-    SdChartDonutControl, SdChartDonutItemControl,
-    SdExcelMappingControl,
-    SdBusyControl,
-    SdDropdownControl,
-    SdComboboxControl,
-    SdIconControl,
+  SdButtonControl, SdButtonGroupControl,
+  SdFormControl, SdFormItemControl,
+  SdTextFieldControl,
+  SdTextAreaControl,
+  SdSidebarContainerControl, SdSidebarControl,
+  SdTopbarContainerControl, SdTopbarControl, SdTopbarButtonControl, SdTopbarFileButtonControl,
+  SdListControl, SdListItemControl,
+  SdPaneControl,
+  SdCardControl,
+  SdDatePickerControl, SdDateRangePickerControl,
+  SdStarsControl,
+  SdDrawingControl,
+  SdNoteControl,
+  SdGridControl, SdGridItemControl,
+  SdTableControl, SdCellControl, SdCellTextFieldControl, SdCellButtonControl, SdCellDatePickerControl, SdCellSelectControl, SdCellCheckboxControl, SdColumnSelectorControl,
+  SdPaginationControl,
+  SdSelectControl,
+  SdCheckboxControl,
+  SdTabControl, SdTabItemControl,
+  SdViewerControl, SdViewerItemControl,
+  SdBarcodeControl,
+  SdEnumControl, SdEnumItemControl,
+  SdProgressControl, SdProgressItemControl,
+  SdChartDonutControl, SdChartDonutItemControl,
+  SdExcelMappingControl,
+  SdBusyControl,
+  SdDropdownControl,
+  SdComboboxControl,
+  SdIconControl,
 
-    CircleControl, OptionControl,
+  CircleControl, OptionControl,
 
-    SdButton2Control,
-    SdDockContainerControl, SdDockControl,
-    SdSheetControl, SdSheetColumnControl, SdSheetColumnHeadControl,
-    SdTextfieldControl
+  SdButton2Control,
+  SdDockContainerControl, SdDockControl,
+  SdSheetControl, SdSheetColumnControl, SdSheetColumnHeadControl,
+  SdTextfieldControl
 ];
 
 const providers: Type<any>[] = [
-    SdModalProvider,
-    SdBusyProvider,
-    SdServiceProvider,
-    SdToastProvider,
-    SdLocalStorageProvider,
-    SdFocusProvider,
-    SdPrintProvider,
-    SdHidBarcodeScannerProvider,
-    SdCameraBarcodeScannerProvider,
-    SdKeyboardPanelProvider,
-    SdCanDeactivateGuardProvider
+  SdModalProvider,
+  SdBusyProvider,
+  SdServiceProvider,
+  SdToastProvider,
+  SdLocalStorageProvider,
+  SdFocusProvider,
+  SdPrintProvider,
+  SdHidBarcodeScannerProvider,
+  SdCameraBarcodeScannerProvider,
+  SdKeyboardPanelProvider,
+  SdCanDeactivateGuardProvider
 ];
 
 const entryControls: Type<any>[] = [
-    SdModalControl,
-    SdSheetColumnConfigModal
+  SdModalControl,
+  SdSheetColumnConfigModal
 ];
 
 const directives: Type<any>[] = [];
@@ -140,67 +140,67 @@ const pipes: Type<any>[] = [];
 
 @Injectable()
 class SimgularErrorHandler implements ErrorHandler {
-    public constructor(private _toast: SdToastProvider) {
+  public constructor(private _toast: SdToastProvider) {
+  }
+
+  public handleError(error: any): void {
+    let err: Error;
+    if (error.rejection) {
+      err = error.rejection;
+    } else {
+      err = error;
     }
 
-    public handleError(error: any): void {
-        let err: Error;
-        if (error.rejection) {
-            err = error.rejection;
-        } else {
-            err = error;
-        }
-
-        if (!err["handled"]) {
-            if (process.env.NODE_ENV === "production") {
-                alert(`처리되지 않은 오류가 발생하였습니다.\n\n${err.message}`);
-                location.reload();
-                return;
-            }
-            else {
-                this._toast.danger(`처리되지 않은 오류가 발생하였습니다.\n\n${err.message}`);
-                throw err;
-            }
-        }
+    if (!err["handled"]) {
+      if (process.env.NODE_ENV === "production") {
+        alert(`처리되지 않은 오류가 발생하였습니다.\n\n${err.message}`);
+        location.reload();
+        return;
+      }
+      else {
+        this._toast.danger(`처리되지 않은 오류가 발생하였습니다.\n\n${err.message}`);
+        throw err;
+      }
     }
+  }
 }
 
 providers.push({provide: ErrorHandler, useClass: SimgularErrorHandler} as any);
 
 @NgModule({
-    imports: ([] as any[])
-        .concat(modules),
-    entryComponents: entryControls,
-    declarations: ([] as any[])
-        .concat(controls)
-        .concat(entryControls)
-        .concat(directives)
-        .concat(pipes),
-    exports: ([] as any[])
-        .concat(modules)
-        .concat(controls)
-        .concat(entryControls)
-        .concat(directives)
-        .concat(pipes),
-    providers: ([] as any[])
-        .concat(providers)
+  imports: ([] as any[])
+    .concat(modules),
+  entryComponents: entryControls,
+  declarations: ([] as any[])
+    .concat(controls)
+    .concat(entryControls)
+    .concat(directives)
+    .concat(pipes),
+  exports: ([] as any[])
+    .concat(modules)
+    .concat(controls)
+    .concat(entryControls)
+    .concat(directives)
+    .concat(pipes),
+  providers: ([] as any[])
+    .concat(providers)
 })
 export class SdAngularModule {
-    public constructor() {
-        if (process.env.NODE_ENV === "production") {
-            window.addEventListener("popstate", () => {
-                location.reload(true);
-            });
-        }
-
-        let timeout: number;
-        window.addEventListener("resize", () => {
-            SimgularHelpers.stopDetectElementChanges();
-
-            window.clearTimeout(timeout);
-            timeout = window.setTimeout(() => {
-                SimgularHelpers.rerunDetectElementChanges();
-            }, 200);
-        });
+  public constructor() {
+    if (process.env.NODE_ENV === "production") {
+      window.addEventListener("popstate", () => {
+        location.reload(true);
+      });
     }
+
+    let timeout: number;
+    window.addEventListener("resize", () => {
+      SimgularHelpers.stopDetectElementChanges();
+
+      window.clearTimeout(timeout);
+      timeout = window.setTimeout(() => {
+        SimgularHelpers.rerunDetectElementChanges();
+      }, 200);
+    });
+  }
 }

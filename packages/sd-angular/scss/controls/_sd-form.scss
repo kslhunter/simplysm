@@ -24,7 +24,6 @@ sd-form {
 
   &._inline > form {
     display: block;
-
     margin-bottom: -1 * padding(sm);
     @media screen and (max-width: $m-screen) {
       margin-bottom: -1 * m-padding(sm);

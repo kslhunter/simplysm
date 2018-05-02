@@ -4,8 +4,8 @@ import {SimgularHelpers} from "../helpers/SimgularHelpers";
 import {SdSizeString} from "../helpers/types";
 
 @Component({
-    selector: "sd-date-picker",
-    template: `
+  selector: "sd-date-picker",
+  template: `
         <sd-textfield [type]="type"
                       [value]="value"
                       [disabled]="disabled"
@@ -13,31 +13,31 @@ import {SdSizeString} from "../helpers/types";
                       [required]="required"
                       (valueChange)="onValueChange($event)">
         </sd-textfield>`,
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdDatePickerControl implements OnChanges {
-    @Input() public type: "date" | "month" | "year" = "date";
-    @Input() public value?: DateOnly;
-    @Input() public required = false;
-    @Input() public disabled = false;
-    @Input() public size?: SdSizeString;
-    @Output() public readonly valueChange = new EventEmitter<DateOnly | undefined>();
+  @Input() public type: "date" | "month" | "year" = "date";
+  @Input() public value?: DateOnly;
+  @Input() public required = false;
+  @Input() public disabled = false;
+  @Input() public size?: SdSizeString;
+  @Output() public readonly valueChange = new EventEmitter<DateOnly | undefined>();
 
-    public ngOnChanges(changes: SimpleChanges): void {
-        SimgularHelpers.typeValidate(changes, {
-            type: {
-                type: String,
-                validator: (value) => ["date", "month", "year"].includes(value),
-                required: true
-            },
-            value: DateOnly,
-            required: Boolean,
-            disabled: Boolean,
-            size: "SdSizeString"
-        });
-    }
+  public ngOnChanges(changes: SimpleChanges): void {
+    SimgularHelpers.typeValidate(changes, {
+      type: {
+        type: String,
+        validator: (value) => ["date", "month", "year"].includes(value),
+        required: true
+      },
+      value: DateOnly,
+      required: Boolean,
+      disabled: Boolean,
+      size: "SdSizeString"
+    });
+  }
 
-    public onValueChange(value: any): void {
-        this.valueChange.emit(DateOnly.parse(value));
-    }
+  public onValueChange(value: any): void {
+    this.valueChange.emit(DateOnly.parse(value));
+  }
 }

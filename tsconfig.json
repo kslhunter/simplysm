@@ -6,9 +6,7 @@
     "sourceMap": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "lib": [
-      "es2017"
-    ],
+    "lib": ["es2017"],
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
     "removeComments": true,

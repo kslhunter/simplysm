@@ -18,7 +18,6 @@ sd-select {
     border: 1px solid border-color();
     background: #fff;
     cursor: pointer;
-
     padding: padding(sm) - 1 padding(default) padding(sm) padding(default) - 4px;
     @media screen and (max-width: $m-screen) {
       padding: m-padding(sm) - 1 m-padding(default) m-padding(sm) m-padding(default) - 4px;

@@ -8,7 +8,6 @@
   height: 100%;
   text-align: center;
   @include border-radius(2px);
-
   padding-top: 25px;
   @media screen and (max-width: $m-screen) {
     padding-top: 0;
@@ -31,7 +30,6 @@
     background: #fff;
     overflow: hidden;
     max-width: 100%;
-
     min-width: 240px;
     @media screen and (max-width: $m-screen) {
       min-width: 100%;
@@ -60,7 +58,6 @@
       > ._title {
         display: inline-block;
         @include padding(0, default);
-
         line-height: $topbar-height;
         @media screen and (max-width: $m-screen) {
           line-height: $m-topbar-height;
@@ -72,7 +69,6 @@
         cursor: pointer;
         text-align: center;
         color: text-white();
-
         height: $topbar-height;
         line-height: $topbar-height;
         min-width: $topbar-height;

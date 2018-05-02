@@ -1,4 +1,4 @@
-export * from "./commons/ISimpackConfig";
-export * from "./builders/SdPackageBuilder";
+export * from "./builders/SdClientPackageBuilder";
+export * from "./builders/SdLibraryPackageBuilder";
 export * from "./builders/SdLocalUpdater";
-export * from "./builders/SdPackagePublisher";
+export * from "./builders/SdServerPackageBuilder";

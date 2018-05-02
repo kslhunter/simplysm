@@ -1,21 +1,21 @@
 import {
-    AfterViewInit,
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    ElementRef,
-    EventEmitter,
-    Input,
-    NgZone,
-    Output,
-    ViewChild
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  NgZone,
+  Output,
+  ViewChild
 } from "@angular/core";
 import {SdSizeString} from "..";
 import {SdFocusProvider} from "../providers/SdFocusProvider";
 
 @Component({
-    selector: "sd-combobox",
-    template: `
+  selector: "sd-combobox",
+  template: `
         <sd-textfield #textField
                       type="text"
                       [size]="size"
@@ -31,75 +31,75 @@ import {SdFocusProvider} from "../providers/SdFocusProvider";
                      [open]="isDropdownOpen">
             <ng-content></ng-content>
         </sd-dropdown>`,
-    host: {
-        "[class._size-sm]": "size === 'sm'"
-    },
-    changeDetection: ChangeDetectionStrategy.OnPush
+  host: {
+    "[class._size-sm]": "size === 'sm'"
+  },
+  changeDetection: ChangeDetectionStrategy.OnPush
 
 })
 export class SdComboboxControl implements AfterViewInit {
-    @ViewChild("dropdown", {read: ElementRef}) public dropdownElementRef?: ElementRef;
-    @ViewChild("textField", {read: ElementRef}) public textFieldElementRef?: ElementRef;
+  @ViewChild("dropdown", {read: ElementRef}) public dropdownElementRef?: ElementRef;
+  @ViewChild("textField", {read: ElementRef}) public textFieldElementRef?: ElementRef;
 
-    @Input() public text: any;
-    @Output() public readonly textChange = new EventEmitter<any>();
-    @Input() public size?: SdSizeString;
-    @Input() public required = false;
-    @Input() public disabled = false;
-    @Input() public placeholder = "";
-    @Output() public readonly blur = new EventEmitter<FocusEvent>();
+  @Input() public text: any;
+  @Output() public readonly textChange = new EventEmitter<any>();
+  @Input() public size?: SdSizeString;
+  @Input() public required = false;
+  @Input() public disabled = false;
+  @Input() public placeholder = "";
+  @Output() public readonly blur = new EventEmitter<FocusEvent>();
 
-    public isDropdownOpen = false;
+  public isDropdownOpen = false;
 
-    public constructor(private _zone: NgZone,
-                private _focus: SdFocusProvider,
-                private _cdr: ChangeDetectorRef) {
-    }
+  public constructor(private _zone: NgZone,
+                     private _focus: SdFocusProvider,
+                     private _cdr: ChangeDetectorRef) {
+  }
 
-    public ngAfterViewInit(): void {
-        const $textfield = $(this.textFieldElementRef!.nativeElement);
-        const $dropdown = $(this.dropdownElementRef!.nativeElement);
+  public ngAfterViewInit(): void {
+    const $textfield = $(this.textFieldElementRef!.nativeElement);
+    const $dropdown = $(this.dropdownElementRef!.nativeElement);
 
-        $textfield.get(0).addEventListener("focus", (e) => {
-            this.isDropdownOpen = true;
-            this._cdr.markForCheck();
-        }, true);
+    $textfield.get(0).addEventListener("focus", (e) => {
+      this.isDropdownOpen = true;
+      this._cdr.markForCheck();
+    }, true);
 
-        $textfield.get(0).addEventListener("blur", (e) => {
-            if ($dropdown.has(e.relatedTarget as any).length < 1 && $textfield.has(e.relatedTarget as any).length < 1) {
-                this.isDropdownOpen = false;
-                this.blur.emit(e);
-            }
-        }, true);
+    $textfield.get(0).addEventListener("blur", (e) => {
+      if ($dropdown.has(e.relatedTarget as any).length < 1 && $textfield.has(e.relatedTarget as any).length < 1) {
+        this.isDropdownOpen = false;
+        this.blur.emit(e);
+      }
+    }, true);
 
-        $dropdown.get(0).addEventListener("blur", (e) => {
-            if ($dropdown.has(e.relatedTarget as any).length < 1 && $textfield.has(e.relatedTarget as any).length < 1) {
-                this.isDropdownOpen = false;
-                this.blur.emit(e);
-            }
-        }, true);
+    $dropdown.get(0).addEventListener("blur", (e) => {
+      if ($dropdown.has(e.relatedTarget as any).length < 1 && $textfield.has(e.relatedTarget as any).length < 1) {
+        this.isDropdownOpen = false;
+        this.blur.emit(e);
+      }
+    }, true);
 
-        this._zone.runOutsideAngular(() => {
-            $textfield.on("keydown", (e) => {
-                if (e.which === 40) { // DOWN
-                    e.preventDefault();
-                    e.stopPropagation();
+    this._zone.runOutsideAngular(() => {
+      $textfield.on("keydown", (e) => {
+        if (e.which === 40) { // DOWN
+          e.preventDefault();
+          e.stopPropagation();
 
-                    const $firstFocusable = $(this._focus.getFocusableElementList($dropdown.get(0))[0]);
-                    $firstFocusable.trigger("focus");
-                }
-            });
+          const $firstFocusable = $(this._focus.getFocusableElementList($dropdown.get(0))[0]);
+          $firstFocusable.trigger("focus");
+        }
+      });
 
-            $dropdown.on("keydown", (e) => {
-                if (e.which === 38) { // UP
-                    const $firstFocusable = $(this._focus.getFocusableElementList($dropdown.get(0))[0]);
-                    if (document.activeElement === $firstFocusable.get(0)) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        $textfield.find("input").trigger("focus");
-                    }
-                }
-            });
-        });
-    }
+      $dropdown.on("keydown", (e) => {
+        if (e.which === 38) { // UP
+          const $firstFocusable = $(this._focus.getFocusableElementList($dropdown.get(0))[0]);
+          if (document.activeElement === $firstFocusable.get(0)) {
+            e.preventDefault();
+            e.stopPropagation();
+            $textfield.find("input").trigger("focus");
+          }
+        }
+      });
+    });
+  }
 }
