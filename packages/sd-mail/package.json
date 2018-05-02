@@ -1,6 +1,6 @@
 {
   "name": "@simplism/sd-mail",
-  "version": "6.1.17",
+  "version": "6.1.18",
   "description": "Simplism Mail Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,7 +8,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/sd-core": "^6.1.17",
+    "@simplism/sd-core": "^6.1.18",
     "nodemailer": "^4.6.4"
   }
 }

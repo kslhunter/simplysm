@@ -17,7 +17,7 @@ export class SdClientPackageBuilder {
   private readonly _logger: Logger;
 
   public constructor(private _packageName: string) {
-    this._logger = new Logger("@simplism/sd-pack", `${this.constructor.name} :: ${this._packageName}`);
+    this._logger = new Logger("@simplism/sd-pack", `${new.target.name} :: ${this._packageName}`);
   }
 
   public async buildAsync(env: { [key: string]: string }): Promise<void> {

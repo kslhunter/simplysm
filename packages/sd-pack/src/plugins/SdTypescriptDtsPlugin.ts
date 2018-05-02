@@ -54,7 +54,7 @@ export class SdTypescriptDtsPlugin implements webpack.Plugin {
         }
       });
 
-    compiler.hooks.watchRun.tap(this.constructor.name, (comp) => {
+    compiler.hooks.watchRun.tap("SdTypescriptDtsPlugin", (comp) => {
       this._isWatching = true;
       this._buildCompleted = false;
       this._lintCompleted = false;
@@ -88,7 +88,7 @@ export class SdTypescriptDtsPlugin implements webpack.Plugin {
         this._options.logger.info("check complete");
       });
     });
-    compiler.hooks.run.tap(this.constructor.name, () => {
+    compiler.hooks.run.tap("SdTypescriptDtsPlugin", () => {
       this._isWatching = false;
       this._buildCompleted = false;
       this._lintCompleted = false;
