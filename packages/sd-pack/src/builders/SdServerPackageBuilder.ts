@@ -199,7 +199,7 @@ export class SdServerPackageBuilder {
           verbose: false,
           loaders: [
             {
-              loader: path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/loaders/node-loader.js")
+              loader: path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/node-loader.js")
             }
           ]
         }),
@@ -218,12 +218,12 @@ export class SdServerPackageBuilder {
 
         new webpack.NormalModuleReplacementPlugin(
           /^socket.io$/,
-          path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/replacements/socket.io.js")
+          path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/socket.io.js")
         ),
 
         new webpack.NormalModuleReplacementPlugin(
           /^bindings$/,
-          path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/replacements/bindings.js")
+          path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/bindings.js")
         )
       ],
       externals: ["uws"]
