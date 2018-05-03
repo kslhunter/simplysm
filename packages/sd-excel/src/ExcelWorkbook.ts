@@ -1,16 +1,16 @@
 import * as fs from "fs";
 import * as JSZip from "jszip";
 import * as stream from "stream";
-import {DateOnly} from "../../sd-core/src";
-import {ExcelNumberFormat} from "./ExcelEnums";
-import {ExcelWorksheet} from "./ExcelWorksheet";
-import {ExcelXmlContentType} from "./XmlFile/ExcelXmlContentType";
-import {ExcelXmlGlobalRels} from "./XmlFile/ExcelXmlGlobalRels";
-import {ExcelXmlSharedStrings} from "./XmlFile/ExcelXmlSharedStrings";
-import {ExcelXmlSheet} from "./XmlFile/ExcelXmlSheet";
-import {ExcelXmlStyles} from "./XmlFile/ExcelXmlStyles";
-import {ExcelXmlWorkbook} from "./XmlFile/ExcelXmlWorkbook";
-import {ExcelXmlWorkbookRels} from "./XmlFile/ExcelXmlWorkbookRels";
+import { DateOnly } from "../../sd-core/src";
+import { ExcelNumberFormat } from "./ExcelEnums";
+import { ExcelWorksheet } from "./ExcelWorksheet";
+import { ExcelXmlContentType } from "./XmlFile/ExcelXmlContentType";
+import { ExcelXmlGlobalRels } from "./XmlFile/ExcelXmlGlobalRels";
+import { ExcelXmlSharedStrings } from "./XmlFile/ExcelXmlSharedStrings";
+import { ExcelXmlSheet } from "./XmlFile/ExcelXmlSheet";
+import { ExcelXmlStyles } from "./XmlFile/ExcelXmlStyles";
+import { ExcelXmlWorkbook } from "./XmlFile/ExcelXmlWorkbook";
+import { ExcelXmlWorkbookRels } from "./XmlFile/ExcelXmlWorkbookRels";
 
 export class ExcelWorkbook {
   public worksheets: ExcelWorksheet[];
@@ -50,7 +50,7 @@ export class ExcelWorkbook {
       zip.file(`xl/worksheets/sheet${i + 1}.xml`, new ExcelXmlSheet(this.worksheets[i], preset.sharedStrings, preset.styles).toString());
     }
 
-    return new Buffer(await zip.generateAsync({type: "uint8array"}));
+    return new Buffer(await zip.generateAsync({ type: "uint8array" }));
   }
 
   public async getStreamAsync(): Promise<stream.PassThrough> {
@@ -81,7 +81,7 @@ export class ExcelWorkbook {
     else {
       buffer = await new Promise<Buffer>((resolve) => {
         const fileReader = new FileReader();
-        fileReader.onload = function (): void {
+        fileReader.onload = function(): void {
           resolve(new Buffer(this.result));
         };
         fileReader.readAsArrayBuffer(pathOrBufferOrFile);

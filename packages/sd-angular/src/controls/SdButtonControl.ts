@@ -10,10 +10,10 @@ import {
   Output,
   SimpleChanges
 } from "@angular/core";
-import {Exception} from "../../../sd-core/src";
-import {SimgularHelpers} from "../helpers/SimgularHelpers";
-import {SdSizeString, SdThemeString} from "../helpers/types";
-import {SdButtonGroupControl} from "./SdButtonGroupControl";
+import { Exception } from "../../../sd-core/src";
+import { SimgularHelpers } from "../helpers/SimgularHelpers";
+import { SdSizeString, SdThemeString } from "../helpers/types";
+import { SdButtonGroupControl } from "./SdButtonGroupControl";
 
 @Component({
   selector: "sd-button",
@@ -173,7 +173,7 @@ export class SdButtonControl implements AfterViewInit, OnChanges {
     const $content = $button.children("._sd-button-content");
     SimgularHelpers.detectElementChange($content.get(0), () => {
       this._reloadError();
-    }, {resize: false});
+    }, { resize: false });
     this._reloadError();
   }
 

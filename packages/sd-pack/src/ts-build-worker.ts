@@ -39,7 +39,7 @@ process.on("message", (changedTsFiles: string[]) => {
     {
       ...parsed.options,
       ...parsed.options.declaration
-        ? {emitDeclarationOnly: true}
+        ? { emitDeclarationOnly: true }
         : {}
     },
     tsHost

@@ -1,6 +1,6 @@
 const Logger = require("@simplism/sd-core").Logger;
 
-module.exports = exports = function (str) {
+module.exports = exports = function(str) {
   if (str.startsWith("bufferutil")) {
     const result = require("bufferutil/build/Release/bufferutil.node");
     result.path = "bufferutil/build/Release/bufferutil.node";

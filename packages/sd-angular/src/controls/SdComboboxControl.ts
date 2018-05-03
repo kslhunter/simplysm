@@ -10,8 +10,8 @@ import {
   Output,
   ViewChild
 } from "@angular/core";
-import {SdSizeString} from "..";
-import {SdFocusProvider} from "../providers/SdFocusProvider";
+import { SdSizeString } from "..";
+import { SdFocusProvider } from "../providers/SdFocusProvider";
 
 @Component({
   selector: "sd-combobox",
@@ -38,8 +38,8 @@ import {SdFocusProvider} from "../providers/SdFocusProvider";
 
 })
 export class SdComboboxControl implements AfterViewInit {
-  @ViewChild("dropdown", {read: ElementRef}) public dropdownElementRef?: ElementRef;
-  @ViewChild("textField", {read: ElementRef}) public textFieldElementRef?: ElementRef;
+  @ViewChild("dropdown", { read: ElementRef }) public dropdownElementRef?: ElementRef;
+  @ViewChild("textField", { read: ElementRef }) public textFieldElementRef?: ElementRef;
 
   @Input() public text: any;
   @Output() public readonly textChange = new EventEmitter<any>();

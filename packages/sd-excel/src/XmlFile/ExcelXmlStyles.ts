@@ -1,6 +1,6 @@
 import * as XML from "xml2js";
-import {ExcelCellStyle} from "../ExcelCellStyle";
-import {ExcelCellStyleFontWeight} from "../ExcelEnums";
+import { ExcelCellStyle } from "../ExcelCellStyle";
+import { ExcelCellStyleFontWeight } from "../ExcelEnums";
 
 export class ExcelXmlStyles {
   public constructor(public styles: ExcelCellStyle[]) {
@@ -46,7 +46,7 @@ export class ExcelXmlStyles {
           : 0;
         const fillId = item.background ? backgrounds.indexOf(item.background) + 2 : 0;
         const alignmentElement = (item.textAlign || item.verticalAlign || item.wrapText)
-          ? `<alignment${item.wrapText ? ' wrapText="1"' : ""}${item.textAlign ? ` horizontal="${item.textAlign}"` : ""}${item.verticalAlign ? ` vertical="${item.verticalAlign }"` : ""}/>`
+          ? `<alignment${item.wrapText ? " wrapText=\"1\"" : ""}${item.textAlign ? ` horizontal="${item.textAlign}"` : ""}${item.verticalAlign ? ` vertical="${item.verticalAlign }"` : ""}/>`
           : "";
         const borderId = item.borderColor ? borders.indexOf(item.borderColor) + 1 : 0;
 

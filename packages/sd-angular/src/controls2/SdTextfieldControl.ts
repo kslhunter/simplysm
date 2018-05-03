@@ -8,8 +8,8 @@ import {
   Output,
   SimpleChanges
 } from "@angular/core";
-import {SdSizeString, SdThemeString} from "../helpers/types";
-import {SdValidate} from "../decorators/SdValidate";
+import { SdSizeString, SdThemeString } from "../helpers/types";
+import { SdValidate } from "../decorators/SdValidate";
 
 @Component({
   selector: "sd-textfield",

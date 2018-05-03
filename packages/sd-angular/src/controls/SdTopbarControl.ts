@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, Output} from "@angular/core";
-import {SdSidebarContainerControl} from "./SdSidebarControl";
+import { ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, Output } from "@angular/core";
+import { SdSidebarContainerControl } from "./SdSidebarControl";
 
 @Component({
   selector: "sd-topbar-container",

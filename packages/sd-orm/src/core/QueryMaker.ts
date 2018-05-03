@@ -1,7 +1,7 @@
-import {DateOnly, Safe, Type, Uuid} from "../../../sd-core/src";
-import {OrderByRule} from "../common/Enums";
-import {QueryHelper} from "../common/QueryHelper";
-import {QueriedBoolean, Queryable, QueryUnit} from "./Queryable";
+import { DateOnly, Safe, Type, Uuid } from "../../../sd-core/src";
+import { OrderByRule } from "../common/Enums";
+import { QueryHelper } from "../common/QueryHelper";
+import { QueriedBoolean, Queryable, QueryUnit } from "./Queryable";
 
 export class QueryMaker<T> {
   public constructor(public entity: T) {

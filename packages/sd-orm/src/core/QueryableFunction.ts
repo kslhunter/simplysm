@@ -1,10 +1,10 @@
-import {Type} from "../../../sd-core/src";
-import {IFunctionDefinition} from "../common/Definitions";
-import {functionMetadataSymbol} from "../common/FunctionDecorators";
-import {QueryHelper} from "../common/QueryHelper";
-import {Database} from "./Database";
-import {DbFunction} from "./DbFunction";
-import {QueryUnit} from "./Queryable";
+import { Type } from "../../../sd-core/src";
+import { IFunctionDefinition } from "../common/Definitions";
+import { functionMetadataSymbol } from "../common/FunctionDecorators";
+import { QueryHelper } from "../common/QueryHelper";
+import { Database } from "./Database";
+import { DbFunction } from "./DbFunction";
+import { QueryUnit } from "./Queryable";
 
 export class QueryableFunction<T extends DbFunction> {
   public constructor(public db: Database, public targetType: Type<T>) {

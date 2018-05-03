@@ -6,7 +6,10 @@
   "author": "kslhunter",
   "license": "MIT",
   "scripts": {
+    "watch": "yarn sd build --watch",
     "build": "yarn sd build --production",
+    "publish": "yarn sd publish",
+    "--": "",
     "build :: sd-core": "yarn build --package sd-core",
     "build :: sd-excel": "yarn build --package sd-excel",
     "build :: sd-mail": "yarn build --package sd-mail",
@@ -15,9 +18,7 @@
     "build :: sd-socket": "yarn build --package sd-socket",
     "build :: sd-storage": "yarn build --package sd-storage",
     "build :: sd-angular": "yarn build --package sd-angular",
-    "watch": "yarn sd build --watch",
-    "publish": "yarn sd publish",
-    "--": "",
+    "-- ": "",
     "sd": "ts-node --project packages/sd-pack/tsconfig.json packages/sd-pack/src/sd.ts"
   },
   "dependencies": {
@@ -116,6 +117,7 @@
     "zone.js": "^0.8.23"
   },
   "devDependencies": {
-    "@angular/language-service": "^6.0.0-rc.6"
+    "@angular/language-service": "^6.0.0-rc.6",
+    "prettier": "^1.12.1"
   }
 }

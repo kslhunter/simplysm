@@ -1,4 +1,4 @@
-import {Exception, Safe} from "../../../sd-core/src";
+import { Exception, Safe } from "../../../sd-core/src";
 import {
   IColumnDefinition,
   IFunctionDefinition,
@@ -6,8 +6,8 @@ import {
   IPrimaryKeyColumnDefinition,
   IStoredProcedureDefinition
 } from "../common/Definitions";
-import {DataType, IndexType, OrderByRule} from "../common/Enums";
-import {QueryHelper} from "../common/QueryHelper";
+import { DataType, IndexType, OrderByRule } from "../common/Enums";
+import { QueryHelper } from "../common/QueryHelper";
 
 export class QueryBuilder {
   public static clearDatabase(): string {

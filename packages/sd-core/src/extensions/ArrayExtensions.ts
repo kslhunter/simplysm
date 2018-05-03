@@ -1,5 +1,5 @@
-import {Type} from "../types/Type";
-import {JsonConvert} from "../utils/JsonConvert";
+import { Type } from "../types/Type";
+import { JsonConvert } from "../utils/JsonConvert";
 
 declare global {
   interface Array<T> {
@@ -59,7 +59,7 @@ declare global {
   }
 }
 
-Array.prototype.groupBy = function (keyPredicate: string[] | ((item: any, index: number) => any), valuePredicate?: (item: any, index: number) => any): { key: any; values: any[] }[] {
+Array.prototype.groupBy = function(keyPredicate: string[] | ((item: any, index: number) => any), valuePredicate?: (item: any, index: number) => any): { key: any; values: any[] }[] {
   const result: { key: any; values: any[] }[] = [];
 
   for (let i = 0; i < this.length; i++) {
@@ -82,13 +82,13 @@ Array.prototype.groupBy = function (keyPredicate: string[] | ((item: any, index:
       existsRecord.values.push(value);
     }
     else {
-      result.push({key, values: [value]});
+      result.push({ key, values: [value] });
     }
   }
   return result;
 };
 
-Array.prototype.toMap = function (keyPredicate: (item: any, index: number) => any, valuePredicate?: (item: any, index: number) => any): Map<any, any> {
+Array.prototype.toMap = function(keyPredicate: (item: any, index: number) => any, valuePredicate?: (item: any, index: number) => any): Map<any, any> {
   const result = new Map<string, any>();
 
   for (let i = 0; i < this.length; i++) {
@@ -105,11 +105,11 @@ Array.prototype.toMap = function (keyPredicate: (item: any, index: number) => an
   return result;
 };
 
-Array.prototype.mapMany = function (predicate: (item: any, index: number) => any[]): any[] {
+Array.prototype.mapMany = function(predicate: (item: any, index: number) => any[]): any[] {
   return this.length > 0 ? this.map(predicate).reduce((p: any, n: any) => p.concat(n)) : [];
 };
 
-Array.prototype.single = function (predicate?: (item: any, index: number) => boolean): any {
+Array.prototype.single = function(predicate?: (item: any, index: number) => boolean): any {
   let result: any;
 
   for (let i = 0; i < this.length; i++) {
@@ -126,7 +126,7 @@ Array.prototype.single = function (predicate?: (item: any, index: number) => boo
   return result;
 };
 
-Array.prototype.last = function (predicate?: (item: any, index: number) => boolean): any {
+Array.prototype.last = function(predicate?: (item: any, index: number) => boolean): any {
   if (predicate) {
     for (let i = this.length - 1; i >= 0; i--) {
       if (predicate(this[i], i)) {
@@ -139,7 +139,7 @@ Array.prototype.last = function (predicate?: (item: any, index: number) => boole
   }
 };
 
-Array.prototype.sum = function (predicate?: (item: any) => any): any {
+Array.prototype.sum = function(predicate?: (item: any) => any): any {
   let result;
   for (let item of this) {
     item = predicate ? predicate(item) : item;
@@ -152,7 +152,7 @@ Array.prototype.sum = function (predicate?: (item: any) => any): any {
   return result;
 };
 
-Array.prototype.max = function (predicate?: (item: any) => any): any {
+Array.prototype.max = function(predicate?: (item: any) => any): any {
   let result;
   for (let item of this) {
     item = predicate ? predicate(item) : item;
@@ -163,7 +163,7 @@ Array.prototype.max = function (predicate?: (item: any) => any): any {
   return result;
 };
 
-Array.prototype.min = function (predicate?: (item: any) => any): any {
+Array.prototype.min = function(predicate?: (item: any) => any): any {
   let result;
   for (let item of this) {
     item = predicate ? predicate(item) : item;
@@ -174,7 +174,7 @@ Array.prototype.min = function (predicate?: (item: any) => any): any {
   return result;
 };
 
-Array.prototype.distinct = function (predicate?: (item: any, index: number) => boolean): any[] {
+Array.prototype.distinct = function(predicate?: (item: any, index: number) => boolean): any[] {
   const result: any[] = [];
   for (let i = 0; i < this.length; i++) {
     const item = predicate ? predicate(this[i], i) : this[i];
@@ -185,7 +185,7 @@ Array.prototype.distinct = function (predicate?: (item: any, index: number) => b
   return result;
 };
 
-Array.prototype.orderBy = function (predicate?: any, desc?: boolean): any[] {
+Array.prototype.orderBy = function(predicate?: any, desc?: boolean): any[] {
   return this.concat().sort((p: any, n: any) => {
     const pn = (predicate && typeof predicate === "function")
       ? predicate(n)
@@ -208,17 +208,17 @@ Array.prototype.orderBy = function (predicate?: any, desc?: boolean): any[] {
   });
 };
 
-Array.prototype.pushRange = function (items: any[]): void {
+Array.prototype.pushRange = function(items: any[]): void {
   for (const item of items) {
     this.push(item);
   }
 };
 
-Array.prototype.insert = function (index: number, item: any): void {
+Array.prototype.insert = function(index: number, item: any): void {
   this.splice(index, 0, item);
 };
 
-Array.prototype.remove = function (predicate: ((item: any, index: number) => boolean) | any): void {
+Array.prototype.remove = function(predicate: ((item: any, index: number) => boolean) | any): void {
   const item = typeof predicate === "function" ? this.single(predicate) : predicate;
   if (!item) return;
 
@@ -228,7 +228,7 @@ Array.prototype.remove = function (predicate: ((item: any, index: number) => boo
   }
 };
 
-Array.prototype.removeRange = function (predicate: any[] | ((item: any, index: number) => boolean)): void {
+Array.prototype.removeRange = function(predicate: any[] | ((item: any, index: number) => boolean)): void {
   const itemList = typeof predicate === "function" ? this.filter(predicate) : predicate;
 
   for (const item of itemList) {
@@ -236,7 +236,7 @@ Array.prototype.removeRange = function (predicate: any[] | ((item: any, index: n
   }
 };
 
-Array.prototype.mapAsync = async function (predicate: (item: any, index: number) => Promise<any>): Promise<any[]> {
+Array.prototype.mapAsync = async function(predicate: (item: any, index: number) => Promise<any>): Promise<any[]> {
   const result: any[] = [];
   for (let i = 0; i < this.length; i++) {
     result.push(await predicate(this[i], i));
@@ -244,9 +244,9 @@ Array.prototype.mapAsync = async function (predicate: (item: any, index: number)
   return result;
 };
 
-Array.prototype.differenceWith = function (target: any[], keyProps?: string[]): { source?: any; target?: any }[] {
+Array.prototype.differenceWith = function(target: any[], keyProps?: string[]): { source?: any; target?: any }[] {
   if (target.length < 1) {
-    return this.map((item) => ({source: item}));
+    return this.map((item) => ({ source: item }));
   }
 
   const result = [];
@@ -264,12 +264,12 @@ Array.prototype.differenceWith = function (target: any[], keyProps?: string[]): 
 
     // 추가됨
     if (!existsTargetItem) {
-      result.push({source: item});
+      result.push({ source: item });
     }
     else {
       // 수정됨
       if (keyProps && !Object.equal(item, existsTargetItem)) {
-        result.push({source: item, target: existsTargetItem});
+        result.push({ source: item, target: existsTargetItem });
       }
       target.remove(existsTargetItem);
     }
@@ -277,13 +277,13 @@ Array.prototype.differenceWith = function (target: any[], keyProps?: string[]): 
 
   for (const remainedTargetItem of target) {
     // 삭제됨
-    result.push({target: remainedTargetItem});
+    result.push({ target: remainedTargetItem });
   }
 
   return result;
 };
 
-Array.prototype.filterExists = function (): any[] {
+Array.prototype.filterExists = function(): any[] {
   return this.filter((item) => item);
 };
 
@@ -291,7 +291,7 @@ Array.prototype.ofType = function <N>(type: Type<N>): N[] {
   return this.filter((item) => item instanceof type);
 };
 
-Array.prototype.merge = function (target: any[], keyProps?: string[], includeUndefined?: boolean): void {
+Array.prototype.merge = function(target: any[], keyProps?: string[], includeUndefined?: boolean): void {
   if (!keyProps) {
     this.forEach((item, i) => {
       if (includeUndefined) {

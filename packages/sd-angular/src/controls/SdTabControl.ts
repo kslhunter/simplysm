@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, Output} from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, Output } from "@angular/core";
 
 @Component({
   selector: "sd-tab",

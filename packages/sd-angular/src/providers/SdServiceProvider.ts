@@ -1,10 +1,10 @@
-import {Injectable, Type} from "@angular/core";
-import {JsonConvert, Uuid} from "../../../sd-core/src";
-import {SocketClient} from "../../../sd-socket/src";
-import {ISocketEvent} from "../../../sd-socket/src/common/ISocketEvent";
-import {SdBusyProvider} from "./SdBusyProvider";
-import {SdLocalStorageProvider} from "./SdLocalStorageProvider";
-import {SdToastProvider} from "./SdToastProvider";
+import { Injectable, Type } from "@angular/core";
+import { JsonConvert, Uuid } from "../../../sd-core/src";
+import { SocketClient } from "../../../sd-socket/src";
+import { ISocketEvent } from "../../../sd-socket/src/common/ISocketEvent";
+import { SdBusyProvider } from "./SdBusyProvider";
+import { SdLocalStorageProvider } from "./SdLocalStorageProvider";
+import { SdToastProvider } from "./SdToastProvider";
 
 @Injectable()
 export class SdServiceProvider {
@@ -62,7 +62,7 @@ export class SdServiceProvider {
     this._errorListeners.push(cb);
   }
 
-  public async send<S, R>(serviceType: Type<S>, methodFunc: (service: S) => Promise<R>, options: { showBusy: boolean } = {showBusy: true}): Promise<R> {
+  public async send<S, R>(serviceType: Type<S>, methodFunc: (service: S) => Promise<R>, options: { showBusy: boolean } = { showBusy: true }): Promise<R> {
     const serviceName = serviceType.name;
 
     const matches = methodFunc
@@ -110,7 +110,7 @@ export class SdServiceProvider {
     return await this._client.off(id);
   }
 
-  public async downloadApk(packageName: string, options: { showBusy: boolean } = {showBusy: true}): Promise<void> {
+  public async downloadApk(packageName: string, options: { showBusy: boolean } = { showBusy: true }): Promise<void> {
     await this.sendCommand(options, "downloadApk", packageName);
   }
 }

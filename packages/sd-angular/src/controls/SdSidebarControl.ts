@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, Injector} from "@angular/core";
-import {NavigationStart, Router} from "@angular/router";
+import { ChangeDetectionStrategy, Component, Injector } from "@angular/core";
+import { NavigationStart, Router } from "@angular/router";
 
 @Component({
   selector: "sd-sidebar-container",
@@ -45,7 +45,7 @@ export class SdSidebarContainerControl {
 })
 export class SdSidebarControl {
   public get toggled(): boolean {
-    return this._injector.get(SdSidebarContainerControl, {toggled: false}).toggled;
+    return this._injector.get(SdSidebarContainerControl, { toggled: false }).toggled;
   }
 
   public constructor(private _injector: Injector) {

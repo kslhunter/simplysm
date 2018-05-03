@@ -2,9 +2,9 @@ import * as child_process from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as semver from "semver";
-import {Logger} from "../../../sd-core/src";
-import {SdServerPackageBuilder} from "../builders/SdServerPackageBuilder";
-import {SdClientPackageBuilder, SdLibraryPackageBuilder} from "..";
+import { Logger } from "../../../sd-core/src";
+import { SdServerPackageBuilder } from "../builders/SdServerPackageBuilder";
+import { SdClientPackageBuilder, SdLibraryPackageBuilder } from "..";
 
 export async function publish(argv: { host: string; port: number; user: string; pass: string; root: string }): Promise<void> {
   const logger = new Logger("@simplism/sd-pack", `publish`);

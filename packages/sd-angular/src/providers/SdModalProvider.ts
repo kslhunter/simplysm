@@ -1,6 +1,6 @@
-import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
-import {SdModalControlBase} from "../bases/SdModalControlBase";
-import {SdModalControl} from "../entry-controls/SdModalControl";
+import { ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
+import { SdModalControlBase } from "../bases/SdModalControlBase";
+import { SdModalControl } from "../entry-controls/SdModalControl";
 
 @Injectable()
 export class SdModalProvider {

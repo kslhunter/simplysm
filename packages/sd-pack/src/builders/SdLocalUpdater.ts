@@ -1,7 +1,7 @@
 import * as chokidar from "chokidar";
 import * as fs from "fs-extra";
 import * as path from "path";
-import {Logger} from "../../../sd-core/src";
+import { Logger } from "../../../sd-core/src";
 
 export class SdLocalUpdater {
   private _logger = new Logger("@simplism/sd-pack", `SdLocalUpdater :: @simplism/${this._packageName}`);

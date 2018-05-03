@@ -1,4 +1,12 @@
-import {ApplicationRef, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit} from "@angular/core";
+import {
+  ApplicationRef,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  OnInit
+} from "@angular/core";
 
 @Component({
   selector: "sd-dropdown",

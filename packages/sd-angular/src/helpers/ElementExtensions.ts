@@ -34,13 +34,13 @@ const eventMap = new Map<Element, IEventListener[]>();
 Element.prototype.on = function <T extends Event>(eventKey: string, callback: (evt: T) => void, includeChildren?: boolean): void {
   this.off(eventKey);
   const listeners: IEventListener[] = eventMap.get(this) || [];
-  listeners.push({eventKey, callback, includeChildren});
+  listeners.push({ eventKey, callback, includeChildren });
   eventMap.set(this, listeners);
 
   this.addEventListener(eventKey.split(".")[0], callback as any, includeChildren);
 };
 
-Element.prototype.off = function (eventKey: string): void {
+Element.prototype.off = function(eventKey: string): void {
   const listeners: IEventListener[] = eventMap.get(this) || [];
 
   for (const listener of listeners.filter((item) => item.eventKey === eventKey)) {
@@ -50,7 +50,7 @@ Element.prototype.off = function (eventKey: string): void {
   eventMap.set(this, listeners);
 };
 
-Element.prototype.findParent = function (predicate: string | HTMLElement | ((el: HTMLElement) => boolean)): HTMLElement | undefined {
+Element.prototype.findParent = function(predicate: string | HTMLElement | ((el: HTMLElement) => boolean)): HTMLElement | undefined {
   let cursor = this.parentElement;
   while (cursor) {
     if (
@@ -67,7 +67,7 @@ Element.prototype.findParent = function (predicate: string | HTMLElement | ((el:
   return cursor || undefined;
 };
 
-Element.prototype.find = function (predicate: string | HTMLElement | ((el: HTMLElement) => boolean)): HTMLElement | undefined {
+Element.prototype.find = function(predicate: string | HTMLElement | ((el: HTMLElement) => boolean)): HTMLElement | undefined {
   if (typeof predicate === "string") {
     return (this.querySelector(`:scope ${predicate}`) || undefined) as HTMLElement | undefined;
   }
@@ -90,7 +90,7 @@ Element.prototype.find = function (predicate: string | HTMLElement | ((el: HTMLE
   }
 };
 
-Element.prototype.findAll = function (predicate: string | HTMLElement | ((el: HTMLElement) => boolean)): HTMLElement[] {
+Element.prototype.findAll = function(predicate: string | HTMLElement | ((el: HTMLElement) => boolean)): HTMLElement[] {
   if (typeof predicate === "string") {
     return Array.from(this.querySelectorAll(predicate.split(",").map((item) => `:scope ${item}`).join(","))).ofType(HTMLElement);
   }
@@ -131,19 +131,19 @@ const focusableSelectorList = [
   "*[contenteditable]"
 ];
 
-Element.prototype.findFocusable = function (): HTMLElement | undefined {
+Element.prototype.findFocusable = function(): HTMLElement | undefined {
   return (this.querySelector(focusableSelectorList.map((item) => `:scope ${item}`).join(", ")) || undefined) as HTMLElement | undefined;
 };
 
-Element.prototype.findFocusableAll = function (): HTMLElement[] {
+Element.prototype.findFocusableAll = function(): HTMLElement[] {
   return Array.from(this.querySelectorAll(focusableSelectorList.map((item) => `:scope ${item}`).join(", "))).ofType(HTMLElement);
 };
 
-Element.prototype.prependChild = function (child: HTMLElement): void {
+Element.prototype.prependChild = function(child: HTMLElement): void {
   this.insertBefore(child, this.children.item(0));
 };
 
-Element.prototype.validate = function (): HTMLElement[] {
+Element.prototype.validate = function(): HTMLElement[] {
   const invalidEls = this.findAll("*:invalid, *.invalid");
   if (invalidEls.length > 0) {
     invalidEls[0].focus();

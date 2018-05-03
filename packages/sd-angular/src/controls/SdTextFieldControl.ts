@@ -9,8 +9,8 @@ import {
   Output,
   ViewChild
 } from "@angular/core";
-import {Exception, Safe} from "../../../sd-core/src";
-import {SimgularHelpers} from "../helpers/SimgularHelpers";
+import { Exception, Safe } from "../../../sd-core/src";
+import { SimgularHelpers } from "../helpers/SimgularHelpers";
 
 @Component({
   selector: "sd-text-field",
@@ -176,7 +176,7 @@ export class SdTextFieldControl implements AfterViewInit {
           throw new Error(`"sd-text-field"안에는, "sd-button"외의 엘리먼트를 사용할 수 없습니다.`);
         }
         this._resizingButtonGroup();
-      }, {resize: false});
+      }, { resize: false });
     });
   }
 

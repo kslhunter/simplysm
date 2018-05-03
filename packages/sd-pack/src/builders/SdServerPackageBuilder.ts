@@ -1,12 +1,12 @@
-import {Logger} from "../../../sd-core/src";
+import { Logger } from "../../../sd-core/src";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as webpack from "webpack";
 import * as webpackMerge from "webpack-merge";
 import * as child_process from "child_process";
 import * as glob from "glob";
-import {helpers} from "../commons/helpers";
-import {FtpStorage} from "../../../sd-storage/src";
+import { helpers } from "../commons/helpers";
+import { FtpStorage } from "../../../sd-storage/src";
 
 const HappyPack = require("happypack"); // tslint:disable-line:variable-name
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin"); // tslint:disable-line:variable-name
@@ -105,7 +105,7 @@ export class SdServerPackageBuilder {
     await storage.mkdir(argv.root);
 
     //-- 로컬 파일 전송
-    const filePaths = glob.sync(this._distPath("**/*"), {ignore: ["www"]});
+    const filePaths = glob.sync(this._distPath("**/*"), { ignore: ["www"] });
     for (const filePath of filePaths) {
       const ftpFilePath = argv.root + "/" + path.relative(this._distPath(), filePath).replace(/\\/g, "/");
       if (fs.lstatSync(filePath).isDirectory()) {
@@ -159,7 +159,7 @@ export class SdServerPackageBuilder {
             enforce: "pre",
             test: /\.js$/,
             use: ["source-map-loader"],
-            exclude: /node_modules[\\/](?!@simplism)/,
+            exclude: /node_modules[\\/](?!@simplism)/
           },
           {
             test: /\.ts$/,
@@ -208,7 +208,10 @@ export class SdServerPackageBuilder {
           checkSyntacticErrors: true,
           tsconfig: this._packagePath("tsconfig.json"),
           tslint: this._packagePath("tslint.json"),
-          silent: true
+          logger: {
+            error: this._logger.error.bind(this._logger),
+            warn: this._logger.warn.bind(this._logger)
+          }
         }),
         new webpack.DefinePlugin({
           "process.env": helpers.stringifyEnv({

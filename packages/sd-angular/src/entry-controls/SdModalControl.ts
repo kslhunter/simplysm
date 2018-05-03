@@ -1,5 +1,5 @@
-import {AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, NgZone} from "@angular/core";
-import {SimgularHelpers} from "../helpers/SimgularHelpers";
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, NgZone } from "@angular/core";
+import { SimgularHelpers } from "../helpers/SimgularHelpers";
 
 @Component({
   template: `

@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import {SdLocalUpdater} from "../builders/SdLocalUpdater";
+import { SdLocalUpdater } from "../builders/SdLocalUpdater";
 
 export async function localUpdate(argv: { watch: boolean }): Promise<void> {
   const promiseList: Promise<void>[] = [];

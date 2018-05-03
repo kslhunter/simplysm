@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Injector, Input, Output} from "@angular/core";
-import {SdThemeString} from "..";
-import {Exception, JsonConvert} from "../../../sd-core/src";
-import {SdButtonGroupControl} from "./SdButtonGroupControl";
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Injector, Input, Output } from "@angular/core";
+import { SdThemeString } from "..";
+import { Exception, JsonConvert } from "../../../sd-core/src";
+import { SdButtonGroupControl } from "./SdButtonGroupControl";
 
 @Component({
   selector: "sd-select",

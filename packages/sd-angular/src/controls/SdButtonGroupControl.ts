@@ -1,6 +1,6 @@
-import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input} from "@angular/core";
-import {Exception} from "../../../sd-core/src";
-import {SimgularHelpers} from "../helpers/SimgularHelpers";
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input } from "@angular/core";
+import { Exception } from "../../../sd-core/src";
+import { SimgularHelpers } from "../helpers/SimgularHelpers";
 
 @Component({
   selector: "sd-button-group",

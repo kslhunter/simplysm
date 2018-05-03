@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
-import {Exception} from "../../../sd-core/src";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
+import { Exception } from "../../../sd-core/src";
 
 @Component({
   selector: "sd-stars",

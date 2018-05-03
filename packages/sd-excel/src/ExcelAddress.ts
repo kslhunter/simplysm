@@ -1,4 +1,4 @@
-import {Exception} from "../../sd-core/src";
+import { Exception } from "../../sd-core/src";
 
 export class ExcelAddress {
   public static parse(str: string): number[] {

@@ -1,4 +1,4 @@
-import {Uuid} from "../../../sd-core/src";
+import { Uuid } from "../../../sd-core/src";
 
 export interface ISocketRequest {
   header: {

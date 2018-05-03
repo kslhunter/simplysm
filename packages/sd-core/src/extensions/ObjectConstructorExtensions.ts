@@ -1,5 +1,5 @@
-import {DateOnly} from "../types/DateOnly";
-import {Time} from "../types/Time";
+import { DateOnly } from "../types/DateOnly";
+import { Time } from "../types/Time";
 
 declare global {
   interface ObjectConstructor {
@@ -9,7 +9,7 @@ declare global {
   }
 }
 
-Object.equal = function (source: any, target: any): boolean {
+Object.equal = function(source: any, target: any): boolean {
   if (source instanceof Date || source instanceof DateOnly) {
     if (!(target instanceof Date || target instanceof DateOnly)) {
       return false;
@@ -53,7 +53,7 @@ Object.equal = function (source: any, target: any): boolean {
   }
 };
 
-Object.clone = function (source: any, opts?: IObjectCloneOptions): any {
+Object.clone = function(source: any, opts?: IObjectCloneOptions): any {
   if (source instanceof Array) {
     const result = [];
     for (const sourceItem of source) {

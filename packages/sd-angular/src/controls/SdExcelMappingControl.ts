@@ -1,7 +1,7 @@
-import {Component, ElementRef, EventEmitter, Input, NgZone, Output} from "@angular/core";
-import {DateOnly} from "../../../sd-core/src";
-import {ExcelWorkbook} from "../../../sd-excel/src";
-import {SdToastProvider} from "../providers/SdToastProvider";
+import { Component, ElementRef, EventEmitter, Input, NgZone, Output } from "@angular/core";
+import { DateOnly } from "../../../sd-core/src";
+import { ExcelWorkbook } from "../../../sd-excel/src";
+import { SdToastProvider } from "../providers/SdToastProvider";
 
 @Component({
   selector: "sd-excel-mapping",

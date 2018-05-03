@@ -1,4 +1,4 @@
-import {Type} from "../types/Type";
+import { Type } from "../types/Type";
 
 export class Exception extends Error {
   [key: string]: any;

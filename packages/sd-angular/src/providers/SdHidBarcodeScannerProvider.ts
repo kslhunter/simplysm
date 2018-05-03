@@ -1,6 +1,6 @@
-import {Injectable} from "@angular/core";
-import {Safe, Uuid} from "../../../sd-core/src";
-import {SdKeyboardPanelProvider} from "./SdKeyboardPanelProvider";
+import { Injectable } from "@angular/core";
+import { Safe, Uuid } from "../../../sd-core/src";
+import { SdKeyboardPanelProvider } from "./SdKeyboardPanelProvider";
 
 @Injectable()
 export class SdHidBarcodeScannerProvider {

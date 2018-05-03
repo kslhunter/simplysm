@@ -1,11 +1,11 @@
-import {BigInt, Decimal, NChar, Numeric, Table} from "mssql";
-import {DateOnly, Exception, LambdaParser, NotImplementedException, Safe, Type, Uuid} from "../../../sd-core/src";
-import {IForeignKeyDefinition, IForeignKeyTargetDefinition, ITableDefinition} from "../common/Definitions";
-import {DataType, OrderByRule} from "../common/Enums";
-import {QueryHelper} from "../common/QueryHelper";
-import {tableMetadataSymbol} from "../common/TableDecorators";
-import {Database} from "./Database";
-import {QueryMaker} from "./QueryMaker";
+import { BigInt, Decimal, NChar, Numeric, Table } from "mssql";
+import { DateOnly, Exception, LambdaParser, NotImplementedException, Safe, Type, Uuid } from "../../../sd-core/src";
+import { IForeignKeyDefinition, IForeignKeyTargetDefinition, ITableDefinition } from "../common/Definitions";
+import { DataType, OrderByRule } from "../common/Enums";
+import { QueryHelper } from "../common/QueryHelper";
+import { tableMetadataSymbol } from "../common/TableDecorators";
+import { Database } from "./Database";
+import { QueryMaker } from "./QueryMaker";
 
 export class QueriedBoolean extends Boolean {
 }
@@ -761,7 +761,7 @@ END`;
     const selectObj: any = selectorFn(queryMaker);
 
     result._groupBy.pushRange(Object.values(groupByObj));
-    result._select = {...groupByObj, ...selectObj};
+    result._select = { ...groupByObj, ...selectObj };
     result._hasCustomSelect = true;
     return result as any;
   }
@@ -1140,7 +1140,7 @@ END`;
     for (const joinName of joinNames) {
       result = result
         .groupBy((item) => {
-          const result1 = {...item};
+          const result1 = { ...item };
           for (const key of Object.keys(item).filter((item1) => item1.startsWith(`${joinName}.`))) {
             delete result1[key];
           }
@@ -1202,7 +1202,7 @@ END`;
     const clone = new Queryable(this.db, this.tableType, this._from, this._as);
     clone._top = this._top;
     clone._distinct = this._distinct;
-    clone._select = {...this._select};
+    clone._select = { ...this._select };
     clone._hasCustomSelect = this._hasCustomSelect;
     clone._join = [...this._join];
     clone._where = [...this._where];

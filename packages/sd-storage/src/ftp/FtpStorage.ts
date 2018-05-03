@@ -1,7 +1,7 @@
 import * as fs from "fs";
-import {Exception, Logger} from "../../../sd-core/src";
-import {IStorage} from "../common/IStorage";
-import {IFtpConnectionConfig} from "./IFtpConnectionConfig";
+import { Exception, Logger } from "../../../sd-core/src";
+import { IStorage } from "../common/IStorage";
+import { IFtpConnectionConfig } from "./IFtpConnectionConfig";
 
 //tslint:disable-next-line:variable-name
 const JSFtp = require("jsftp");

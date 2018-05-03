@@ -1,8 +1,8 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as webpack from "webpack";
-import {SdTypescriptDtsPlugin} from "../plugins/SdTypescriptDtsPlugin";
-import {Exception, Logger} from "../../../sd-core/src";
+import { SdTypescriptDtsPlugin } from "../plugins/SdTypescriptDtsPlugin";
+import { Exception, Logger } from "../../../sd-core/src";
 import * as child_process from "child_process";
 import webpackMerge = require("webpack-merge");
 
@@ -98,7 +98,7 @@ export class SdLibraryPackageBuilder {
       }
 
       // package.json 파일 다시쓰기
-      fs.writeJsonSync(this._packagePath("package.json"), packageJson, {spaces: 2});
+      fs.writeJsonSync(this._packagePath("package.json"), packageJson, { spaces: 2 });
 
       // 새 버전으로 배포
       const shell = child_process.spawn("yarn", ["publish", "--new-version", rootPackageJson.version, "--access", "public", "--no-git-tag-version"], {
@@ -189,7 +189,7 @@ export class SdLibraryPackageBuilder {
           ]
         }),
 
-        new SdTypescriptDtsPlugin({context: this._packagePath(), logger: this._logger}),
+        new SdTypescriptDtsPlugin({ context: this._packagePath(), logger: this._logger }),
 
         ...(packageJson.bin)
           ? [

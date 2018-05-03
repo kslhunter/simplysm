@@ -1,5 +1,5 @@
-import {ExcelCell} from "./ExcelCell";
-import {ExcelColumn} from "./ExcelColumn";
+import { ExcelCell } from "./ExcelCell";
+import { ExcelColumn } from "./ExcelColumn";
 
 export class ExcelWorksheet {
   private _cells: ExcelCell[][] = [];
@@ -56,10 +56,10 @@ export class ExcelWorksheet {
   }
 
   public freezePane(row: number, col?: number): void {
-    this.freeze = {row, col};
+    this.freeze = { row, col };
   }
 
   public merge(fromRow: number, fromCol: number, toRow: number, toCol: number): void {
-    this.merges.push({fromRow, fromCol, toRow, toCol});
+    this.merges.push({ fromRow, fromCol, toRow, toCol });
   }
 }

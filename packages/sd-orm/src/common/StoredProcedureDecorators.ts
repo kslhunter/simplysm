@@ -1,8 +1,8 @@
 import "reflect-metadata";
-import {Safe, Type} from "../../../sd-core/src";
-import {IStoredProcedureDefinition} from "./Definitions";
-import {DataType} from "./Enums";
-import {QueryHelper} from "./QueryHelper";
+import { Safe, Type } from "../../../sd-core/src";
+import { IStoredProcedureDefinition } from "./Definitions";
+import { DataType } from "./Enums";
+import { QueryHelper } from "./QueryHelper";
 
 export const storedProcedureMetadataSymbol = "sd-database.stored-procedure";
 

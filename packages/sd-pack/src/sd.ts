@@ -1,7 +1,7 @@
 import * as yargs from "yargs";
-import {build} from "./commands/build";
-import {localUpdate} from "./commands/localUpdate";
-import {publish} from "./commands/publish";
+import { build } from "./commands/build";
+import { localUpdate } from "./commands/localUpdate";
+import { publish } from "./commands/publish";
 
 yargs
   .version(false)
@@ -29,11 +29,11 @@ yargs
   .command("publish", "배포합니다.",
     (cmd) => cmd.version(false)
       .options({
-        host: {type: "string"},
-        port: {type: "number"},
-        user: {type: "string"},
-        pass: {type: "string"},
-        root: {type: "string"}
+        host: { type: "string" },
+        port: { type: "number" },
+        user: { type: "string" },
+        pass: { type: "string" },
+        root: { type: "string" }
       }),
     (argv) => publish(argv as any)
   )

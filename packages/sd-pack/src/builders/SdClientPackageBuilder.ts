@@ -4,11 +4,11 @@ import * as webpack from "webpack";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
 import * as webpackMerge from "webpack-merge";
-import {helpers} from "../commons/helpers";
-import {Logger} from "../../../sd-core/src";
+import { helpers } from "../commons/helpers";
+import { Logger } from "../../../sd-core/src";
 import * as WebpackDevServer from "webpack-dev-server";
 import * as glob from "glob";
-import {FtpStorage} from "../../../sd-storage/src";
+import { FtpStorage } from "../../../sd-storage/src";
 
 const HappyPack = require("happypack"); // tslint:disable-line:variable-name
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin"); // tslint:disable-line:variable-name
@@ -161,7 +161,7 @@ export class SdClientPackageBuilder {
             enforce: "pre",
             test: /\.js$/,
             use: ["source-map-loader"],
-            exclude: /node_modules[\\/](?!@simplism)/,
+            exclude: /node_modules[\\/](?!@simplism)/
           },
           {
             test: /.js$/,
@@ -222,25 +222,28 @@ export class SdClientPackageBuilder {
           verbose: false,
           loaders: [
             /*"to-string-loader",*/
-            {loader: "style-loader", options: {sourceMap: true}},
-            {loader: "css-loader", options: {importLoaders: 1, sourceMap: true}},
-            {loader: "postcss-loader", options: {sourceMap: true}}
+            { loader: "style-loader", options: { sourceMap: true } },
+            { loader: "css-loader", options: { importLoaders: 1, sourceMap: true } },
+            { loader: "postcss-loader", options: { sourceMap: true } }
           ]
         }),
         new HappyPack({
           id: "scss",
           verbose: false,
           loaders: [
-            {loader: "style-loader", options: {sourceMap: true}},
-            {loader: "css-loader", options: {sourceMap: true}},
-            {loader: "sass-loader", options: {sourceMap: true}}
+            { loader: "style-loader", options: { sourceMap: true } },
+            { loader: "css-loader", options: { sourceMap: true } },
+            { loader: "sass-loader", options: { sourceMap: true } }
           ]
         }),
         new ForkTsCheckerWebpackPlugin({
           checkSyntacticErrors: true,
           tsconfig: this._packagePath("tsconfig.json"),
           tslint: this._packagePath("tslint.json"),
-          silent: true
+          logger: {
+            error: this._logger.error.bind(this._logger),
+            warn: this._logger.warn.bind(this._logger)
+          }
         }),
         new webpack.ContextReplacementPlugin(
           /angular[\\/]core[\\/](@angular|esm5|fesm5)/,
@@ -251,7 +254,7 @@ export class SdClientPackageBuilder {
           template: this._packagePath("src/index.html")
         }),
         new CopyWebpackPlugin([
-          {from: this._packagePath("public")}
+          { from: this._packagePath("public") }
         ]),
         new webpack.ProvidePlugin({
           $: "jquery",

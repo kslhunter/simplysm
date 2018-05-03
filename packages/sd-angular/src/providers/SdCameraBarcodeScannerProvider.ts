@@ -1,6 +1,6 @@
-import {Injectable} from "@angular/core";
-import {Exception, Safe} from "../../../sd-core/src";
-import {SdBusyProvider} from "./SdBusyProvider";
+import { Injectable } from "@angular/core";
+import { Exception, Safe } from "../../../sd-core/src";
+import { SdBusyProvider } from "./SdBusyProvider";
 
 @Injectable()
 export class SdCameraBarcodeScannerProvider {

@@ -1,8 +1,8 @@
 import "reflect-metadata";
-import {Exception, LambdaParser, Safe, Type, Uuid} from "../../../sd-core/src";
-import {ITableDefinition} from "./Definitions";
-import {DataType, IndexType, OrderByRule} from "./Enums";
-import {QueryHelper} from "./QueryHelper";
+import { Exception, LambdaParser, Safe, Type, Uuid } from "../../../sd-core/src";
+import { ITableDefinition } from "./Definitions";
+import { DataType, IndexType, OrderByRule } from "./Enums";
+import { QueryHelper } from "./QueryHelper";
 
 export const tableMetadataSymbol = "sd-database.table";
 

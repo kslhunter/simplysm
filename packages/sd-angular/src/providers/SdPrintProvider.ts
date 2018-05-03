@@ -1,5 +1,5 @@
-import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
-import {SdPrintControlTemplateBase} from "../bases/SdPrintControlTemplateBase";
+import { ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
+import { SdPrintControlTemplateBase } from "../bases/SdPrintControlTemplateBase";
 
 @Injectable()
 export class SdPrintProvider {

@@ -8,8 +8,8 @@ import {
   Input,
   Output
 } from "@angular/core";
-import {Exception} from "../../../sd-core/src";
-import {SdToastProvider} from "../providers/SdToastProvider";
+import { Exception } from "../../../sd-core/src";
+import { SdToastProvider } from "../providers/SdToastProvider";
 
 @Component({
   selector: "sd-form",

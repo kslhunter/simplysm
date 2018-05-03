@@ -1,7 +1,15 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from "@angular/core";
-import {DateOnly} from "../../../sd-core/src";
-import {SimgularHelpers} from "../helpers/SimgularHelpers";
-import {SdSizeString} from "../helpers/types";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges
+} from "@angular/core";
+import { DateOnly } from "../../../sd-core/src";
+import { SimgularHelpers } from "../helpers/SimgularHelpers";
+import { SdSizeString } from "../helpers/types";
 
 @Component({
   selector: "sd-date-picker",

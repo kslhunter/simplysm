@@ -1,7 +1,7 @@
-import {SimpleChanges, Type} from "@angular/core";
-import {Routes} from "@angular/router";
-import {ArgumentsException, Logger, Wait} from "../../../sd-core/src";
-import {TypeValidateTypes} from "./types";
+import { SimpleChanges, Type } from "@angular/core";
+import { Routes } from "@angular/router";
+import { ArgumentsException, Logger, Wait } from "../../../sd-core/src";
+import { TypeValidateTypes } from "./types";
 
 export class SimgularHelpers {
   private static _isDetectElementChangeEnable = true;
@@ -99,7 +99,7 @@ export class SimgularHelpers {
       const check = (value1: any, opts: { type?: TypeValidateTypes[]; validator?(value: any): boolean; required?: boolean }) => {
         if (value1 == undefined) {
           if (opts.required) {
-            throw new ArgumentsException({value: value1, required: opts.required});
+            throw new ArgumentsException({ value: value1, required: opts.required });
           }
           return;
         }
@@ -112,13 +112,13 @@ export class SimgularHelpers {
               (type === "SdSizeString" && ["xxs", "xs", "sm", "lg", "xl", "xxl"].includes(value1))
             )
           ) {
-            throw new ArgumentsException({prop, value: value1, type: opts.type});
+            throw new ArgumentsException({ prop, value: value1, type: opts.type });
           }
         }
 
         if (opts.validator) {
           if (!opts.validator(value1)) {
-            throw new ArgumentsException({prop, value: value1, validator: opts.validator});
+            throw new ArgumentsException({ prop, value: value1, validator: opts.validator });
           }
         }
       };

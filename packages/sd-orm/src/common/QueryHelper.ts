@@ -1,6 +1,6 @@
 import * as mssql from "mssql";
-import {DateOnly, Time, Type, Uuid} from "../../../sd-core/src";
-import {DataType} from "./Enums";
+import { DateOnly, Time, Type, Uuid } from "../../../sd-core/src";
+import { DataType } from "./Enums";
 
 export class QueryHelper {
   public static convertToDataType(type: Type<any>): DataType {

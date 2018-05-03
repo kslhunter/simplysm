@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
-import {Exception} from "../../../sd-core/src";
+import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+import { Exception } from "../../../sd-core/src";
 
 @Component({
   selector: "sd-enum",

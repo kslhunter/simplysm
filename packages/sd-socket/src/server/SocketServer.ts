@@ -6,12 +6,12 @@ import * as path from "path";
 import * as semver from "semver";
 import * as sio from "socket.io";
 import * as url from "url";
-import {Exception, JsonConvert, Logger, Type, Uuid} from "../../../sd-core/src";
-import {ISocketEvent} from "../common/ISocketEvent";
-import {ISocketRequest} from "../common/ISocketRequest";
-import {ISocketResponse} from "../common/ISocketResponse";
-import {AbstractSocketServiceBase} from "./AbstractSocketServiceBase";
-import {SocketFileResult} from "./SocketFileResult";
+import { Exception, JsonConvert, Logger, Type, Uuid } from "../../../sd-core/src";
+import { ISocketEvent } from "../common/ISocketEvent";
+import { ISocketRequest } from "../common/ISocketRequest";
+import { ISocketResponse } from "../common/ISocketResponse";
+import { AbstractSocketServiceBase } from "./AbstractSocketServiceBase";
+import { SocketFileResult } from "./SocketFileResult";
 import Socket = sio.Socket;
 import Server = sio.Server;
 
@@ -220,7 +220,7 @@ export class SocketServer {
             id: listenerId
           });
           response = {
-            header: {success: true},
+            header: { success: true },
             body: listenerId
           };
         }
@@ -233,7 +233,7 @@ export class SocketServer {
             this._listeners.remove(listener);
           }
           response = {
-            header: {success: true}
+            header: { success: true }
           };
         }
 
@@ -257,7 +257,7 @@ export class SocketServer {
 
           const fileToken = Uuid.newUuid().toString();
           this._preparedFileResults.set(fileToken.toString(), result);
-          response = {header: {success: true, fileToken}};
+          response = { header: { success: true, fileToken } };
         }
 
         //-- 일반적인 명령인 경우
@@ -268,7 +268,7 @@ export class SocketServer {
       catch (err) {
         this._logger.error(err);
         response = {
-          header: {success: false},
+          header: { success: false },
           body: err
         };
       }
@@ -318,7 +318,7 @@ export class SocketServer {
     }
     else {
       return {
-        header: {success: true},
+        header: { success: true },
         body: result
       };
     }

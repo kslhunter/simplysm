@@ -1,4 +1,4 @@
-import {Exception} from "../exceptions/Exception";
+import { Exception } from "../exceptions/Exception";
 
 export class LambdaParser {
   public static parse(predicate: (...args: any[]) => any): { params: string[]; returnContent: string } {

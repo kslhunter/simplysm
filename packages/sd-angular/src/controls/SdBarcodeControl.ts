@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, ElementRef, Input} from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, Input } from "@angular/core";
 
 require("jsbarcode");
 

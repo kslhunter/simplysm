@@ -1,6 +1,6 @@
-import {Component} from "@angular/core";
-import {SdModalControlBase} from "../bases/SdModalControlBase";
-import {ISdSheetColumnDef} from "../controls2/SdSheetControl";
+import { Component } from "@angular/core";
+import { SdModalControlBase } from "../bases/SdModalControlBase";
+import { ISdSheetColumnDef } from "../controls2/SdSheetControl";
 
 @Component({
   template: `
@@ -39,7 +39,7 @@ export class SdSheetColumnConfigModal extends SdModalControlBase<{ columns: ISdS
   }
 
   public onSubmitButtonClick(): void {
-    this.close({columns: this.columns});
+    this.close({ columns: this.columns });
   }
 
   public onCloseButtonClick(): void {

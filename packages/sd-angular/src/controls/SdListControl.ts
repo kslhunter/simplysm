@@ -8,8 +8,8 @@ import {
   Input,
   Output
 } from "@angular/core";
-import {Exception} from "../../../sd-core/src";
-import {SdFocusProvider} from "../providers/SdFocusProvider";
+import { Exception } from "../../../sd-core/src";
+import { SdFocusProvider } from "../providers/SdFocusProvider";
 
 @Component({
   selector: "sd-list",

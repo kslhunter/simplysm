@@ -1,4 +1,4 @@
-import {ExcelCellStyle} from "./ExcelCellStyle";
+import { ExcelCellStyle } from "./ExcelCellStyle";
 
 export class ExcelCell {
   public value: any;

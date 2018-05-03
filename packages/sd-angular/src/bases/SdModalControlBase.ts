@@ -1,4 +1,4 @@
-import {Exception} from "../../../sd-core/src";
+import { Exception } from "../../../sd-core/src";
 
 export abstract class SdModalControlBase<I, O> {
   public param!: I;

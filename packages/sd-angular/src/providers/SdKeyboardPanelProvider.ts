@@ -1,5 +1,5 @@
-import {Injectable} from "@angular/core";
-import {Exception, Safe} from "../../../sd-core/src";
+import { Injectable } from "@angular/core";
+import { Exception, Safe } from "../../../sd-core/src";
 
 @Injectable()
 export class SdKeyboardPanelProvider {

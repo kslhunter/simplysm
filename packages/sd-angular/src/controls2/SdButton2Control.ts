@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {SimgularHelpers} from "../helpers/SimgularHelpers";
-import {SdSizeString, SdThemeString} from "../helpers/types";
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from "@angular/core";
+import { SimgularHelpers } from "../helpers/SimgularHelpers";
+import { SdSizeString, SdThemeString } from "../helpers/types";
 
 @Component({
   selector: "sd-button2",

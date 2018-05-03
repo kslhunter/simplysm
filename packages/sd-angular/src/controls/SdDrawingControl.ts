@@ -8,7 +8,7 @@ import {
   NgZone,
   Output
 } from "@angular/core";
-import {Exception, NotImplementedException} from "../../../sd-core/src";
+import { Exception, NotImplementedException } from "../../../sd-core/src";
 
 @Component({
   selector: "sd-drawing",
@@ -48,7 +48,7 @@ export class SdDrawingControl implements AfterContentInit {
       return;
     }
 
-    const blob = new Blob([value], {type: "image/png"});
+    const blob = new Blob([value], { type: "image/png" });
     const url = URL.createObjectURL(blob);
     const img = new Image();
     img.onload = (e) => {

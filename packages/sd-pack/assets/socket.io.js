@@ -2,19 +2,19 @@
  * Module dependencies.
  */
 
-var http = require('http');
-var read = require('fs').readFileSync;
-var path = require('path');
-var exists = require('fs').existsSync;
-var engine = require('engine.io');
-var clientVersion = require('socket.io-client/package.json').version;
-var Client = require('socket.io/lib/client');
-var Emitter = require('events').EventEmitter;
-var Namespace = require('socket.io/lib/namespace');
-var Adapter = require('socket.io-adapter');
-var parser = require('socket.io-parser');
-var debug = require('debug')('socket.io:server');
-var url = require('url');
+var http = require("http");
+var read = require("fs").readFileSync;
+var path = require("path");
+var exists = require("fs").existsSync;
+var engine = require("engine.io");
+var clientVersion = require("socket.io-client/package.json").version;
+var Client = require("socket.io/lib/client");
+var Emitter = require("events").EventEmitter;
+var Namespace = require("socket.io/lib/namespace");
+var Adapter = require("socket.io-adapter");
+var parser = require("socket.io-parser");
+var debug = require("debug")("socket.io:server");
+var url = require("url");
 
 /**
  * Module exports.
@@ -39,19 +39,19 @@ var clientSourceMap = undefined;
 
 function Server(srv, opts) {
   if (!(this instanceof Server)) return new Server(srv, opts);
-  if ('object' == typeof srv && srv instanceof Object && !srv.listen) {
+  if ("object" == typeof srv && srv instanceof Object && !srv.listen) {
     opts = srv;
     srv = null;
   }
   opts = opts || {};
   this.nsps = {};
-  this.path(opts.path || '/socket.io');
+  this.path(opts.path || "/socket.io");
   this.serveClient(false !== opts.serveClient);
   this.parser = opts.parser || parser;
   this.encoder = new this.parser.Encoder();
   this.adapter(opts.adapter || Adapter);
-  this.origins(opts.origins || '*:*');
-  this.sockets = this.of('/');
+  this.origins(opts.origins || "*:*");
+  this.sockets = this.of("/");
   if (srv) this.attach(srv, opts);
 }
 
@@ -62,25 +62,25 @@ function Server(srv, opts) {
  * @param {Function} fn callback to be called with the result: `fn(err, success)`
  */
 
-Server.prototype.checkRequest = function (req, fn) {
+Server.prototype.checkRequest = function(req, fn) {
   var origin = req.headers.origin || req.headers.referer;
 
   // file:// URLs produce a null Origin which can't be authorized via echo-back
-  if ('null' == origin || null == origin) origin = '*';
+  if ("null" == origin || null == origin) origin = "*";
 
-  if (!!origin && typeof(this._origins) == 'function') return this._origins(origin, fn);
-  if (this._origins.indexOf('*:*') !== -1) return fn(null, true);
+  if (!!origin && typeof(this._origins) == "function") return this._origins(origin, fn);
+  if (this._origins.indexOf("*:*") !== -1) return fn(null, true);
   if (origin) {
     try {
       var parts = url.parse(origin);
-      var defaultPort = 'https:' == parts.protocol ? 443 : 80;
+      var defaultPort = "https:" == parts.protocol ? 443 : 80;
       parts.port = parts.port != null
         ? parts.port
         : defaultPort;
       var ok =
-        ~this._origins.indexOf(parts.hostname + ':' + parts.port) ||
-        ~this._origins.indexOf(parts.hostname + ':*') ||
-        ~this._origins.indexOf('*:' + parts.port);
+        ~this._origins.indexOf(parts.hostname + ":" + parts.port) ||
+        ~this._origins.indexOf(parts.hostname + ":*") ||
+        ~this._origins.indexOf("*:" + parts.port);
       return fn(null, !!ok);
     } catch (ex) {
     }
@@ -96,11 +96,11 @@ Server.prototype.checkRequest = function (req, fn) {
  * @api public
  */
 
-Server.prototype.serveClient = function (v) {
+Server.prototype.serveClient = function(v) {
   if (!arguments.length) return this._serveClient;
   this._serveClient = v;
   if (v && !clientSource) {
-    clientSource = read(require.resolve('socket.io-client/dist/socket.io.js'), 'utf-8');
+    clientSource = read(require.resolve("socket.io-client/dist/socket.io.js"), "utf-8");
     /*try {
         clientSourceMap = read(require.resolve( 'socket.io-client/dist/socket.io.js.map'), 'utf-8');
     } catch(err) {
@@ -127,23 +127,23 @@ var oldSettings = {
  * @api public
  */
 
-Server.prototype.set = function (key, val) {
-  if ('authorization' == key && val) {
-    this.use(function (socket, next) {
-      val(socket.request, function (err, authorized) {
+Server.prototype.set = function(key, val) {
+  if ("authorization" == key && val) {
+    this.use(function(socket, next) {
+      val(socket.request, function(err, authorized) {
         if (err) return next(new Error(err));
-        if (!authorized) return next(new Error('Not authorized'));
+        if (!authorized) return next(new Error("Not authorized"));
         next();
       });
     });
-  } else if ('origins' == key && val) {
+  } else if ("origins" == key && val) {
     this.origins(val);
-  } else if ('resource' == key) {
+  } else if ("resource" == key) {
     this.path(val);
   } else if (oldSettings[key] && this.eio[oldSettings[key]]) {
     this.eio[oldSettings[key]] = val;
   } else {
-    console.error('Option %s is not valid. Please refer to the README.', key);
+    console.error("Option %s is not valid. Please refer to the README.", key);
   }
 
   return this;
@@ -157,9 +157,9 @@ Server.prototype.set = function (key, val) {
  * @api public
  */
 
-Server.prototype.path = function (v) {
+Server.prototype.path = function(v) {
   if (!arguments.length) return this._path;
-  this._path = v.replace(/\/$/, '');
+  this._path = v.replace(/\/$/, "");
   return this;
 };
 
@@ -171,7 +171,7 @@ Server.prototype.path = function (v) {
  * @api public
  */
 
-Server.prototype.adapter = function (v) {
+Server.prototype.adapter = function(v) {
   if (!arguments.length) return this._adapter;
   this._adapter = v;
   for (var i in this.nsps) {
@@ -190,7 +190,7 @@ Server.prototype.adapter = function (v) {
  * @api public
  */
 
-Server.prototype.origins = function (v) {
+Server.prototype.origins = function(v) {
   if (!arguments.length) return this._origins;
 
   this._origins = v;
@@ -207,10 +207,10 @@ Server.prototype.origins = function (v) {
  */
 
 Server.prototype.listen =
-  Server.prototype.attach = function (srv, opts) {
-    if ('function' == typeof srv) {
-      var msg = 'You are trying to attach socket.io to an express ' +
-        'request handler function. Please pass a http.Server instance.';
+  Server.prototype.attach = function(srv, opts) {
+    if ("function" == typeof srv) {
+      var msg = "You are trying to attach socket.io to an express " +
+        "request handler function. Please pass a http.Server instance.";
       throw new Error(msg);
     }
 
@@ -219,10 +219,10 @@ Server.prototype.listen =
       srv = Number(srv);
     }
 
-    if ('number' == typeof srv) {
-      debug('creating http server and binding to %d', srv);
+    if ("number" == typeof srv) {
+      debug("creating http server and binding to %d", srv);
       var port = srv;
-      srv = http.Server(function (req, res) {
+      srv = http.Server(function(req, res) {
         res.writeHead(404);
         res.end();
       });
@@ -242,8 +242,8 @@ Server.prototype.listen =
     }
 
     var self = this;
-    var connectPacket = {type: parser.CONNECT, nsp: '/'};
-    this.encoder.encode(connectPacket, function (encodedPacket) {
+    var connectPacket = { type: parser.CONNECT, nsp: "/" };
+    this.encoder.encode(connectPacket, function(encodedPacket) {
       // the CONNECT packet will be merged with Engine.IO handshake,
       // to reduce the number of round trips
       opts.initialPacket = encodedPacket;
@@ -260,9 +260,9 @@ Server.prototype.listen =
  * @api private
  */
 
-Server.prototype.initEngine = function (srv, opts) {
+Server.prototype.initEngine = function(srv, opts) {
   // initialize engine
-  debug('creating engine.io instance with opts %j', opts);
+  debug("creating engine.io instance with opts %j", opts);
   this.eio = engine.attach(srv, opts);
 
   // attach static file serving
@@ -282,14 +282,14 @@ Server.prototype.initEngine = function (srv, opts) {
  * @api private
  */
 
-Server.prototype.attachServe = function (srv) {
-  debug('attaching client serving req handler');
-  var url = this._path + '/socket.io.js';
+Server.prototype.attachServe = function(srv) {
+  debug("attaching client serving req handler");
+  var url = this._path + "/socket.io.js";
   /*var urlMap = this._path + '/socket.io.js.map';*/
-  var evs = srv.listeners('request').slice(0);
+  var evs = srv.listeners("request").slice(0);
   var self = this;
-  srv.removeAllListeners('request');
-  srv.on('request', function (req, res) {
+  srv.removeAllListeners("request");
+  srv.on("request", function(req, res) {
     /*if (0 === req.url.indexOf(urlMap)) {
         self.serveMap(req, res);
     } else*/
@@ -311,24 +311,24 @@ Server.prototype.attachServe = function (srv) {
  * @api private
  */
 
-Server.prototype.serve = function (req, res) {
+Server.prototype.serve = function(req, res) {
   // Per the standard, ETags must be quoted:
   // https://tools.ietf.org/html/rfc7232#section-2.3
-  var expectedEtag = '"' + clientVersion + '"';
+  var expectedEtag = "\"" + clientVersion + "\"";
 
-  var etag = req.headers['if-none-match'];
+  var etag = req.headers["if-none-match"];
   if (etag) {
     if (expectedEtag == etag) {
-      debug('serve client 304');
+      debug("serve client 304");
       res.writeHead(304);
       res.end();
       return;
     }
   }
 
-  debug('serve client source');
-  res.setHeader('Content-Type', 'application/javascript');
-  res.setHeader('ETag', expectedEtag);
+  debug("serve client source");
+  res.setHeader("Content-Type", "application/javascript");
+  res.setHeader("ETag", expectedEtag);
   res.writeHead(200);
   res.end(clientSource);
 };
@@ -371,9 +371,9 @@ Server.prototype.serveMap = function (req, res) {
  * @api public
  */
 
-Server.prototype.bind = function (engine) {
+Server.prototype.bind = function(engine) {
   this.engine = engine;
-  this.engine.on('connection', this.onconnection.bind(this));
+  this.engine.on("connection", this.onconnection.bind(this));
   return this;
 };
 
@@ -385,10 +385,10 @@ Server.prototype.bind = function (engine) {
  * @api public
  */
 
-Server.prototype.onconnection = function (conn) {
-  debug('incoming connection with id %s', conn.id);
+Server.prototype.onconnection = function(conn) {
+  debug("incoming connection with id %s", conn.id);
   var client = new Client(this, conn);
-  client.connect('/');
+  client.connect("/");
   return this;
 };
 
@@ -400,16 +400,16 @@ Server.prototype.onconnection = function (conn) {
  * @api public
  */
 
-Server.prototype.of = function (name, fn) {
-  if (String(name)[0] !== '/') name = '/' + name;
+Server.prototype.of = function(name, fn) {
+  if (String(name)[0] !== "/") name = "/" + name;
 
   var nsp = this.nsps[name];
   if (!nsp) {
-    debug('initializing namespace %s', name);
+    debug("initializing namespace %s", name);
     nsp = new Namespace(this, name);
     this.nsps[name] = nsp;
   }
-  if (fn) nsp.on('connect', fn);
+  if (fn) nsp.on("connect", fn);
   return nsp;
 };
 
@@ -420,10 +420,10 @@ Server.prototype.of = function (name, fn) {
  * @api public
  */
 
-Server.prototype.close = function (fn) {
-  for (var id in this.nsps['/'].sockets) {
-    if (this.nsps['/'].sockets.hasOwnProperty(id)) {
-      this.nsps['/'].sockets[id].onclose();
+Server.prototype.close = function(fn) {
+  for (var id in this.nsps["/"].sockets) {
+    if (this.nsps["/"].sockets.hasOwnProperty(id)) {
+      this.nsps["/"].sockets[id].onclose();
     }
   }
 
@@ -440,19 +440,19 @@ Server.prototype.close = function (fn) {
  * Expose main namespace (/).
  */
 
-var emitterMethods = Object.keys(Emitter.prototype).filter(function (key) {
-  return typeof Emitter.prototype[key] === 'function';
+var emitterMethods = Object.keys(Emitter.prototype).filter(function(key) {
+  return typeof Emitter.prototype[key] === "function";
 });
 
-emitterMethods.concat(['to', 'in', 'use', 'send', 'write', 'clients', 'compress']).forEach(function (fn) {
-  Server.prototype[fn] = function () {
+emitterMethods.concat(["to", "in", "use", "send", "write", "clients", "compress"]).forEach(function(fn) {
+  Server.prototype[fn] = function() {
     return this.sockets[fn].apply(this.sockets, arguments);
   };
 });
 
-Namespace.flags.forEach(function (flag) {
+Namespace.flags.forEach(function(flag) {
   Object.defineProperty(Server.prototype, flag, {
-    get: function () {
+    get: function() {
       this.sockets.flags = this.sockets.flags || {};
       this.sockets.flags[flag] = true;
       return this;

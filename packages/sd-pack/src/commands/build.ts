@@ -1,9 +1,9 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import {SdLocalUpdater} from "../builders/SdLocalUpdater";
-import {SdLibraryPackageBuilder} from "../builders/SdLibraryPackageBuilder";
-import {SdClientPackageBuilder} from "../builders/SdClientPackageBuilder";
-import {SdServerPackageBuilder} from "../builders/SdServerPackageBuilder";
+import { SdLocalUpdater } from "../builders/SdLocalUpdater";
+import { SdLibraryPackageBuilder } from "../builders/SdLibraryPackageBuilder";
+import { SdClientPackageBuilder } from "../builders/SdClientPackageBuilder";
+import { SdServerPackageBuilder } from "../builders/SdServerPackageBuilder";
 
 export async function build(argv: { watch: boolean; env: { [key: string]: any }; package: string }): Promise<void> {
   const promiseList: Promise<void>[] = [];

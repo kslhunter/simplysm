@@ -1,4 +1,4 @@
-import {Injectable} from "@angular/core";
+import { Injectable } from "@angular/core";
 
 @Injectable()
 export class SdToastProvider {
@@ -48,7 +48,7 @@ export class SdToastProvider {
       $toast.addClass(`_theme-${theme}`);
     }
     $toast.html(`<div>${message.replace(/\n/g, "<br/>")}</div>`);
-    $toast.data({theme, message});
+    $toast.data({ theme, message });
     this._$container.prepend($toast);
 
     $toast.data("timeoutId", window.setTimeout(() => {

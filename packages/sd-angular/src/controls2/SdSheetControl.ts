@@ -17,12 +17,12 @@ import {
   SimpleChanges,
   TemplateRef
 } from "@angular/core";
-import {Logger} from "../../../sd-core/src";
+import { Logger } from "../../../sd-core/src";
 import "../helpers/ElementExtensions";
-import {SimgularHelpers} from "../helpers/SimgularHelpers";
-import {SdSheetColumnConfigModal} from "../modals/SdSheetColumnConfigModal";
-import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
-import {SdModalProvider} from "../providers/SdModalProvider";
+import { SimgularHelpers } from "../helpers/SimgularHelpers";
+import { SdSheetColumnConfigModal } from "../modals/SdSheetColumnConfigModal";
+import { SdLocalStorageProvider } from "../providers/SdLocalStorageProvider";
+import { SdModalProvider } from "../providers/SdModalProvider";
 
 @Component({
   selector: "sd-sheet",
@@ -185,7 +185,7 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
           });
         }
         this.redraw();
-      }, {resize: false});
+      }, { resize: false });
       thisEl.on("scroll", () => this.repositioning());
       thisEl.on("keydown", (event: KeyboardEvent) => this.onDocumentKeydown(event), true);
       thisEl.on("focus", (event: FocusEvent) => this.onFocus(event), true);
@@ -352,7 +352,7 @@ export class SdSheetControl implements OnChanges, AfterViewInit, DoCheck {
   }
 
   public async onConfigButtonClick(): Promise<void> {
-    const result = await this._modal.show("표시설정", SdSheetColumnConfigModal, {columns: this.columns});
+    const result = await this._modal.show("표시설정", SdSheetColumnConfigModal, { columns: this.columns });
     if (result) {
       this._localStorage.set(`simgular.sd-sheet.columns.${this.id}`, result.columns);
       this._cdr.detectChanges();

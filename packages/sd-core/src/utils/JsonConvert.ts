@@ -1,8 +1,8 @@
-import {DateOnly} from "../types/DateOnly";
-import {Time} from "../types/Time";
-import {Uuid} from "../types/Uuid";
-import {Safe} from "./Safe";
-import {Exception} from "..";
+import { DateOnly } from "../types/DateOnly";
+import { Time } from "../types/Time";
+import { Uuid } from "../types/Uuid";
+import { Safe } from "./Safe";
+import { Exception } from "..";
 
 export interface JsonConvertStringifyOption {
   space?: string | number;

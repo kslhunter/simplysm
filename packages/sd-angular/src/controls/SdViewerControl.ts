@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Injector, Input} from "@angular/core";
+import { ChangeDetectionStrategy, Component, Injector, Input } from "@angular/core";
 
 @Component({
   selector: "sd-viewer",

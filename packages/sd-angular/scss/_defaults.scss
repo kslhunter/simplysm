@@ -8,7 +8,9 @@
   @include user-select(text);
 }
 
-*:focus { outline: none; }
+*:focus {
+  outline: none;
+}
 
 //-- Layout Tags
 html, body, main {

@@ -1,4 +1,4 @@
-import {Component, ElementRef, Input} from "@angular/core";
+import { Component, ElementRef, Input } from "@angular/core";
 
 @Component({
   selector: "sd-busy",

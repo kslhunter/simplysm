@@ -1,5 +1,5 @@
-import {Component, ElementRef, forwardRef, Inject, Input, NgZone, OnChanges, SimpleChanges} from "@angular/core";
-import {SimgularHelpers} from "..";
+import { Component, ElementRef, forwardRef, Inject, Input, NgZone, OnChanges, SimpleChanges } from "@angular/core";
+import { SimgularHelpers } from "..";
 
 @Component({
   selector: "sd-dock-container",
@@ -99,7 +99,7 @@ export class SdDockControl implements OnChanges {
     this._zone.runOutsideAngular(() => {
       SimgularHelpers.detectElementChange(this._elementRef.nativeElement, () => {
         this._container.redraw();
-      }, {childList: false});
+      }, { childList: false });
     });
   }
 

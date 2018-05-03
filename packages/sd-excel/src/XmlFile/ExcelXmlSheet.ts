@@ -1,9 +1,9 @@
 import * as XML from "xml2js";
-import {DateOnly, Exception} from "../../../sd-core/src";
-import {ExcelAddress} from "../ExcelAddress";
-import {ExcelCellStyle} from "../ExcelCellStyle";
-import {ExcelNumberFormat} from "../ExcelEnums";
-import {ExcelWorksheet} from "../ExcelWorksheet";
+import { DateOnly, Exception } from "../../../sd-core/src";
+import { ExcelAddress } from "../ExcelAddress";
+import { ExcelCellStyle } from "../ExcelCellStyle";
+import { ExcelNumberFormat } from "../ExcelEnums";
+import { ExcelWorksheet } from "../ExcelWorksheet";
 
 export class ExcelXmlSheet {
   public constructor(public sheet: ExcelWorksheet,
@@ -95,7 +95,7 @@ export class ExcelXmlSheet {
         for (let rowIndex = 0; rowIndex < rowsXml.length; rowIndex++) {
           const columnsXml: any[] = rowsXml[rowIndex].c;
           for (let colIndex = 0; colIndex < colsLength; colIndex++) {
-            const colXml = columnsXml.single((item: any) => item.$.r === this._getAddress(rowIndex, colIndex)) || {$: {}};
+            const colXml = columnsXml.single((item: any) => item.$.r === this._getAddress(rowIndex, colIndex)) || { $: {} };
 
             const t = colXml.$.t;
             const s = Number.parseInt(colXml.$.s);

@@ -2,7 +2,7 @@ import * as child_process from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as webpack from "webpack";
-import {Wait} from "../../../sd-core/src";
+import { Wait } from "../../../sd-core/src";
 
 export class SdTypescriptDtsPlugin implements webpack.Plugin {
   private _buildCompleted = false;

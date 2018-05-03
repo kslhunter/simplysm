@@ -10,10 +10,10 @@ import {
   Output,
   ViewChild
 } from "@angular/core";
-import {SdThemeString} from "..";
-import {DateOnly, Wait} from "../../../sd-core/src";
-import {SimgularHelpers} from "../helpers/SimgularHelpers";
-import {SdFocusProvider} from "../providers/SdFocusProvider";
+import { SdThemeString } from "..";
+import { DateOnly, Wait } from "../../../sd-core/src";
+import { SimgularHelpers } from "../helpers/SimgularHelpers";
+import { SdFocusProvider } from "../providers/SdFocusProvider";
 
 @Component({
   selector: "sd-table",
@@ -804,7 +804,7 @@ export class SdCellCheckboxControl {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdColumnSelectorControl implements AfterViewInit {
-  @ViewChild("dropdown", {read: ElementRef}) public dropdownElementRef?: ElementRef;
+  @ViewChild("dropdown", { read: ElementRef }) public dropdownElementRef?: ElementRef;
 
   @Input()
   public set value(value: string[]) {

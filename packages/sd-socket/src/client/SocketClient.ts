@@ -1,8 +1,8 @@
 import * as sio from "socket.io-client";
-import {Exception, JsonConvert, Logger, NotImplementedException, Type, Uuid} from "../../../sd-core/src";
-import {ISocketEvent} from "../common/ISocketEvent";
-import {ISocketRequest} from "../common/ISocketRequest";
-import {ISocketResponse} from "../common/ISocketResponse";
+import { Exception, JsonConvert, Logger, NotImplementedException, Type, Uuid } from "../../../sd-core/src";
+import { ISocketEvent } from "../common/ISocketEvent";
+import { ISocketRequest } from "../common/ISocketRequest";
+import { ISocketResponse } from "../common/ISocketResponse";
 import Socket = SocketIOClient.Socket;
 
 export class SocketClient {
