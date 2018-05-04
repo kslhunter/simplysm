@@ -1,20 +1,19 @@
-import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
 
 @Component({
   selector: "sd-note",
   template: `
-        <ng-content></ng-content>`,
-  host: {
-    "[class._size-sm]": "size === 'sm'",
-    "[class._theme-primary]": "theme === 'primary'",
-    "[class._theme-success]": "theme === 'success'",
-    "[class._theme-info]": "theme === 'info'",
-    "[class._theme-warning]": "theme === 'warning'",
-    "[class._theme-danger]": "theme === 'danger'"
-  },
+    <ng-content></ng-content>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdNoteControl {
   @Input() public size = "default";
   @Input() public theme = "default";
+
+  @HostBinding("class._size-sm") public sizeSm = () => this.size === "sm";
+  @HostBinding("class._theme-primary") public themePrimary = () => this.theme === "primary";
+  @HostBinding("class._theme-success") public themeSuccess = () => this.theme === "success";
+  @HostBinding("class._theme-info") public themeInfo = () => this.theme === "info";
+  @HostBinding("class._theme-warning") public themeWarning = () => this.theme === "warning";
+  @HostBinding("class._theme-danger") public themeDanger = () => this.theme === "danger";
 }

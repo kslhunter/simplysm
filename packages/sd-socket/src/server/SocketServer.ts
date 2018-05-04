@@ -6,12 +6,16 @@ import * as path from "path";
 import * as semver from "semver";
 import * as sio from "socket.io";
 import * as url from "url";
-import { Exception, JsonConvert, Logger, Type, Uuid } from "../../../sd-core/src";
-import { ISocketEvent } from "../common/ISocketEvent";
-import { ISocketRequest } from "../common/ISocketRequest";
-import { ISocketResponse } from "../common/ISocketResponse";
-import { AbstractSocketServiceBase } from "./AbstractSocketServiceBase";
-import { SocketFileResult } from "./SocketFileResult";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Uuid} from "../../../sd-core/src/types/Uuid";
+import {JsonConvert} from "../../../sd-core/src/utils/JsonConvert";
+import {Logger} from "../../../sd-core/src/utils/Logger";
+import {ISocketEvent} from "../common/ISocketEvent";
+import {ISocketRequest} from "../common/ISocketRequest";
+import {ISocketResponse} from "../common/ISocketResponse";
+import {AbstractSocketServiceBase} from "./AbstractSocketServiceBase";
+import {SocketFileResult} from "./SocketFileResult";
 import Socket = sio.Socket;
 import Server = sio.Server;
 
@@ -21,22 +25,22 @@ export interface ISocketServerOption {
 }
 
 export class SocketServer {
-  private _logger = new Logger("@simplism/sd-socket", "SocketServer");
+  private readonly _logger = new Logger("@simplism/sd-socket", "SocketServer");
   private _app?: net.Server;
   private readonly _interval: any;
-  private _preparedFileResults = new Map<string, SocketFileResult>();
+  private readonly _preparedFileResults = new Map<string, SocketFileResult>();
   private _server?: Server;
-  private _listeners: {
+  private readonly _listeners: {
     socket: Socket;
     event: string;
     info: any;
     id: Uuid;
   }[] = [];
 
-  public constructor(private _option: ISocketServerOption) {
+  public constructor(private readonly _option: ISocketServerOption) {
     this._interval = setInterval(() => {
       const keys = Array.from(this._preparedFileResults.keys())
-        .filter((key) => {
+        .filter(key => {
           const fileResult = this._preparedFileResults.get(key);
           return fileResult!.createdDateTime < new Date().addHours(-1);
         });
@@ -54,27 +58,27 @@ export class SocketServer {
   }
 
   public async start(port?: number, host?: string): Promise<void> {
-    return await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       if (this._app && this._app.listening) {
         return;
       }
 
-      //-- STATIC(ANGULAR) 서버
+      // STATIC(ANGULAR) 서버
       this._app = http.createServer((req, res) => {
         this._webRequestHandler(req, res);
       });
 
-      //-- SOCKET 서버
+      // SOCKET 서버
       this._server = sio(this._app, {
         serveClient: false,
         wsEngine: "ws"
       } as any);
 
-      this._server.on("connection", (socket) => {
+      this._server.on("connection", socket => {
         this._socketConnectionHandler(socket);
       });
 
-      //-- 서버 시작
+      // 서버 시작
       this._app.listen(port || 80, host || "localhost", () => {
         this._logger.info(`start: http://${host || "localhost"}:${port || 80}`);
         resolve();
@@ -83,7 +87,7 @@ export class SocketServer {
   }
 
   public async close(): Promise<void> {
-    return await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       this._logger.log("close");
       clearInterval(this._interval);
 
@@ -110,7 +114,7 @@ export class SocketServer {
 
   public async emit<T extends ISocketEvent<any, any>>(eventType: Type<T>, listenerSelector: (info: T["info"]) => boolean, sender: () => (T["data"] | Promise<T["data"]>)): Promise<void> {
     const items = this._listeners
-      .filter((item) => item.event === eventType.name && listenerSelector(item.info));
+      .filter(item => item.event === eventType.name && listenerSelector(item.info));
 
     if (items.length > 0) {
       const data = await sender();
@@ -134,15 +138,13 @@ export class SocketServer {
     const urlObj = url.parse(req.url!, true, false);
     const urlPath = decodeURI(urlObj.pathname!.slice(1));
 
-    //-- 클라이언트 설정없이 요청했다면, 첫번째 클라이언트로 REDIRECT
+    // 클라이언트 설정없이 요청했다면, 첫번째 클라이언트로 REDIRECT
     if (!urlPath && this._option.clients) {
       res.writeHead(302, {
         Location: this._option.clients[0]
       });
       res.end();
     }
-
-    //-- 다운로드 요청시
     else if (urlPath.startsWith("_download")) {
       const token = urlPath.split("/")[1];
       const fileResult = this._preparedFileResults.get(token);
@@ -160,8 +162,6 @@ export class SocketServer {
       res.writeHead(200);
       fileResult.stream.pipe(res);
     }
-
-    //-- 클라이언트 파일 전송
     else if (this._option.clients) {
       let filePath: string;
       // 직접파일을 선택한 것이 아니라면, ANGULAR 용 클라이언트 index.html 파일 사용
@@ -169,8 +169,6 @@ export class SocketServer {
         const clientName = urlPath.split("/")[0];
         filePath = path.resolve("www", clientName, "index.html");
       }
-
-      // 직접 파일을 선택했다면 선택된 파일 사용
       else {
         filePath = path.resolve("www", urlPath);
       }
@@ -189,7 +187,6 @@ export class SocketServer {
       res.writeHead(200);
       fileStream.pipe(res);
     }
-    //-- 나머지 경우 요청오류
     else {
       res.writeHead(400);
       res.end("요청이 잘못되었습니다.");
@@ -200,17 +197,17 @@ export class SocketServer {
     this._logger.log(`connect: ${socket.id}`);
 
     socket.on("request", async (requestJson: string) => {
-      //-- Request 파싱
+      // Request 파싱
       const request: ISocketRequest = JsonConvert.parse(requestJson);
       this._logger.log("request received", JsonConvert.stringify(request, {
         space: 2,
         hideBuffer: true
       }));
 
-      //-- 요청처리
+      // 요청처리
       let response: ISocketResponse;
       try {
-        //-- 이벤트 리스너 등록 명령 처리
+        // 이벤트 리스너 등록 명령 처리
         if (request.header.cmd === "addListener") {
           const listenerId = Uuid.newUuid();
           this._listeners.push({
@@ -220,30 +217,26 @@ export class SocketServer {
             id: listenerId
           });
           response = {
-            header: { success: true },
+            header: {success: true},
             body: listenerId
           };
         }
-
-        //-- 이벤트 리스너 제거 명령 처리
         else if (request.header.cmd === "removeListener") {
           const listenerId: Uuid = request.body![0];
-          const listener = this._listeners.single((item) => item.id.toString() === listenerId.toString());
+          const listener = this._listeners.single(item => item.id.toString() === listenerId.toString());
           if (listener) {
             this._listeners.remove(listener);
           }
           response = {
-            header: { success: true }
+            header: {success: true}
           };
         }
-
-        //-- APK 다운로드
         else if (request.header.cmd === "downloadApk") {
           const packageName: string = request.body![0];
           const fileNames = fs.readdirSync(path.resolve(process.cwd(), "www", "files", packageName));
-          const versions = fileNames.map((item) => item.match(/v([0-9.]*)\.apk$/)![1]);
+          const versions = fileNames.map(item => item.match(/v([0-9.]*)\.apk$/)![1]);
           const maxVersion = semver.maxSatisfying(versions, "*");
-          const fileName = fileNames.single((item) => item.includes(maxVersion))!;
+          const fileName = fileNames.single(item => item.includes(maxVersion))!;
           const filePath = path.resolve(process.cwd(), "www", "files", packageName, fileName);
           const size = fs.lstatSync(filePath).size;
           const pt = fs.createReadStream(filePath) as any;
@@ -257,23 +250,20 @@ export class SocketServer {
 
           const fileToken = Uuid.newUuid().toString();
           this._preparedFileResults.set(fileToken.toString(), result);
-          response = { header: { success: true, fileToken } };
+          response = {header: {success: true, fileToken}};
         }
-
-        //-- 일반적인 명령인 경우
         else {
           response = await this._socketRequestHandler(request);
         }
-      }
-      catch (err) {
+      } catch (err) {
         this._logger.error(err);
         response = {
-          header: { success: false },
+          header: {success: false},
           body: err
         };
       }
 
-      //-- 결과 전송
+      // 결과 전송
       this._logger.log("send response", JsonConvert.stringify(response, {
         space: 2,
         hideBuffer: true
@@ -284,13 +274,13 @@ export class SocketServer {
   }
 
   private async _socketRequestHandler(request: ISocketRequest): Promise<ISocketResponse> {
-    //-- COMMAND 분할
+    // COMMAND 분할
     const cmdSplit = request.header.cmd.split(".");
     const serviceName = cmdSplit[0];
     const methodName = cmdSplit[1];
 
-    //-- 서비스 가져오기
-    const serviceClass = this._option.services.single((item) => item.name === serviceName);
+    // 서비스 가져오기
+    const serviceClass = this._option.services.single(item => item.name === serviceName);
     if (!serviceClass) {
       throw new Exception(`서비스[${serviceName}]를 찾을 수 없습니다.`);
     }
@@ -298,13 +288,13 @@ export class SocketServer {
     service.request = request;
     service.server = this;
 
-    //-- 메소드 가져오기
+    // 메소드 가져오기
     const method = service[methodName];
     if (!method) {
       throw new Exception(`메소드[${serviceName}.${methodName}]를 찾을 수 없습니다.`);
     }
 
-    //-- 실행
+    // 실행
     const result = await method.apply(service, request.body);
     if (result instanceof SocketFileResult) {
       const fileToken = Uuid.newUuid().toString();
@@ -318,7 +308,7 @@ export class SocketServer {
     }
     else {
       return {
-        header: { success: true },
+        header: {success: true},
         body: result
       };
     }

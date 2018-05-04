@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Input } from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, Input} from "@angular/core";
 
 require("jsbarcode");
 
 @Component({
   selector: "sd-barcode",
   template: `
-        <canvas></canvas>`,
+    <canvas></canvas>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdBarcodeControl {
@@ -17,6 +17,7 @@ export class SdBarcodeControl {
   public set value(value: string) {
     if (value) {
       const $canvas = $(this._elementRef.nativeElement).find("canvas");
+
       $canvas["JsBarcode"](
         value,
         {
@@ -30,6 +31,6 @@ export class SdBarcodeControl {
     }
   }
 
-  public constructor(private _elementRef: ElementRef) {
+  public constructor(private readonly _elementRef: ElementRef) {
   }
 }

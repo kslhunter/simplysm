@@ -1,17 +1,17 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output } from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output} from "@angular/core";
 
 @Component({
   selector: "sd-checkbox",
   template: `
-        <label [ngClass]="styleClass"
-               tabindex="0">
-            <input type="checkbox"
-                   [checked]="value"
-                   [disabled]="disabled"
-                   (change)="onChange($event)"/>
-            <ng-container *ngIf="contentWrapper.innerHTML.trim()">&nbsp;</ng-container>
-            <span #contentWrapper><ng-content></ng-content></span>
-        </label>`,
+    <label [ngClass]="styleClass"
+           tabindex="0">
+      <input type="checkbox"
+             [checked]="value"
+             [disabled]="disabled"
+             (change)="onChange($event)"/>
+      <ng-container *ngIf="contentWrapper.innerHTML.trim()">&nbsp;</ng-container>
+      <span #contentWrapper><ng-content></ng-content></span>
+    </label>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdCheckboxControl {
@@ -23,7 +23,7 @@ export class SdCheckboxControl {
     return [
       this.value ? "_checked" : "",
       this.disabled ? "_disabled" : ""
-    ].filter((item) => item);
+    ].filter(item => item);
   }
 
   public onChange(event: Event): void {

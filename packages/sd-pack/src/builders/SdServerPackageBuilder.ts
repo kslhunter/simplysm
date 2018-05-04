@@ -1,20 +1,25 @@
-import { Logger } from "../../../sd-core/src";
-import * as path from "path";
+import * as child_process from "child_process";
 import * as fs from "fs-extra";
+import * as glob from "glob";
+import * as path from "path";
 import * as webpack from "webpack";
 import * as webpackMerge from "webpack-merge";
-import * as child_process from "child_process";
-import * as glob from "glob";
-import { helpers } from "../commons/helpers";
-import { FtpStorage } from "../../../sd-storage/src";
+import {Logger} from "../../../sd-core/src/utils/Logger";
+import {FtpStorage} from "../../../sd-storage/src/ftp/FtpStorage";
+import {helpers} from "../commons/helpers";
+import {SdTypescriptDtsPlugin} from "../plugins/SdTypescriptDtsPlugin";
 
-const HappyPack = require("happypack"); // tslint:disable-line:variable-name
-const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin"); // tslint:disable-line:variable-name
+// tslint:disable:variable-name
+
+const HappyPack = require("happypack");
+// const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
+
+// tslint:enable:variable-name
 
 export class SdServerPackageBuilder {
   private readonly _logger: Logger;
 
-  public constructor(private _packageName: string) {
+  public constructor(private readonly _packageName: string) {
     this._logger = new Logger("@simplism/sd-pack", `${new.target.name} :: ${this._packageName}`);
   }
 
@@ -35,7 +40,7 @@ export class SdServerPackageBuilder {
       }
     });
 
-    return await new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       webpack(webpackConfig, (err, stats) => {
         if (err) {
           reject(err);
@@ -62,7 +67,7 @@ export class SdServerPackageBuilder {
     const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(env), {
       mode: "development"
     });
-    return await new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const compiler = webpack(webpackConfig);
 
       let worker: child_process.ChildProcess;
@@ -74,7 +79,9 @@ export class SdServerPackageBuilder {
 
         this._writeStatsToConsole(stats);
 
-        if (worker) worker.kill();
+        if (worker) {
+          worker.kill();
+        }
         worker = child_process.fork(this._distPath("app.js"), [], {
           cwd: this._distPath()
         });
@@ -90,9 +97,9 @@ export class SdServerPackageBuilder {
   }
 
   public async publishAsync(argv: { host: string; port: number; user: string; pass: string; root: string }): Promise<void> {
-    this._logger.log(`publishing...`);
+    this._logger.log("publishing...");
 
-    //-- 배포
+    // 배포
     const storage = new FtpStorage();
     await storage.connect({
       host: argv.host,
@@ -101,13 +108,13 @@ export class SdServerPackageBuilder {
       password: argv.pass
     });
 
-    //-- 루트 디렉토리 생성
+    // 루트 디렉토리 생성
     await storage.mkdir(argv.root);
 
-    //-- 로컬 파일 전송
-    const filePaths = glob.sync(this._distPath("**/*"), { ignore: ["www"] });
+    // 로컬 파일 전송
+    const filePaths = glob.sync(this._distPath("**/*"), {ignore: ["www"]});
     for (const filePath of filePaths) {
-      const ftpFilePath = argv.root + "/" + path.relative(this._distPath(), filePath).replace(/\\/g, "/");
+      const ftpFilePath = `${argv.root}/${path.relative(this._distPath(), filePath).replace(/\\/g, "/")}`;
       if (fs.lstatSync(filePath).isDirectory()) {
         await storage.mkdir(ftpFilePath);
       }
@@ -117,7 +124,7 @@ export class SdServerPackageBuilder {
       }
     }
 
-    //-- pm2.json 전송
+    // pm2.json 전송
     await storage.put(
       Buffer.from(
         JSON.stringify({
@@ -136,7 +143,7 @@ export class SdServerPackageBuilder {
 
     await storage.close();
 
-    //-- 완료
+    // 완료
     const rootPackageJson = fs.readJsonSync(this._rootPath("package.json"));
     this._logger.log(`publish complete: v${rootPackageJson.version}`);
   }
@@ -204,15 +211,27 @@ export class SdServerPackageBuilder {
             }
           ]
         }),
-        new ForkTsCheckerWebpackPlugin({
+        /*new ForkTsCheckerWebpackPlugin({
           checkSyntacticErrors: true,
           tsconfig: this._packagePath("tsconfig.json"),
           tslint: this._packagePath("tslint.json"),
+          formatter: (message: {
+            type: "diagnostic" | "lint";
+            code: string | number;
+            severity: "error" | "warning";
+            content: string;
+            file: string;
+            line: number;
+            character: number;
+          }) => `${message.type.toUpperCase()}: ${message.file}\n${message.file}(${message.line},${message.character}): ${message.severity}: ${message.content}`,
           logger: {
             error: this._logger.error.bind(this._logger),
-            warn: this._logger.warn.bind(this._logger)
+            warn: this._logger.warn.bind(this._logger),
+            info: () => {
+            }
           }
-        }),
+        }),*/
+        new SdTypescriptDtsPlugin({context: this._packagePath(), logger: this._logger}),
         new webpack.DefinePlugin({
           "process.env": helpers.stringifyEnv({
             SD_PACK_VERSION: fs.readJsonSync(path.resolve(process.cwd(), "package.json")).version,
@@ -220,6 +239,7 @@ export class SdServerPackageBuilder {
           })
         }),
 
+        // tslint:disable:deprecation
         new webpack.NormalModuleReplacementPlugin(
           /^socket.io$/,
           path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/socket.io.js")
@@ -229,21 +249,22 @@ export class SdServerPackageBuilder {
           /^bindings$/,
           path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/bindings.js")
         )
+        // tslint:enable:deprecation
       ],
       externals: ["uws"]
     };
   }
 
   private _writeStatsToConsole(stats: webpack.Stats): void {
-    const info = stats!.toJson();
+    const info = stats.toJson();
 
-    if (stats!.hasWarnings()) {
+    if (stats.hasWarnings()) {
       for (const warning of info.warnings) {
         this._logger.warn(warning);
       }
     }
 
-    if (stats!.hasErrors()) {
+    if (stats.hasErrors()) {
       for (const error of info.errors) {
         this._logger.error(error);
       }
@@ -259,6 +280,6 @@ export class SdServerPackageBuilder {
   }
 
   private _distPath(...args: string[]): string {
-    return path.resolve(process.cwd(), `dist`, ...args);
+    return path.resolve(process.cwd(), "dist", ...args);
   }
 }

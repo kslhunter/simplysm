@@ -1,7 +1,11 @@
-import { DateOnly, Safe, Type, Uuid } from "../../../sd-core/src";
-import { OrderByRule } from "../common/Enums";
-import { QueryHelper } from "../common/QueryHelper";
-import { QueriedBoolean, Queryable, QueryUnit } from "./Queryable";
+import {DateOnly} from "../../../sd-core/src/types/DateOnly";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Uuid} from "../../../sd-core/src/types/Uuid";
+import {Safe} from "../../../sd-core/src/utils/Safe";
+import {OrderByRule} from "../common/Enums";
+import {QueryHelper} from "../common/QueryHelper";
+import {CaseQueryMaker} from "./CaseQueryMaker";
+import {QueriedBoolean, Queryable, QueryUnit} from "./Queryable";
 
 export class QueryMaker<T> {
   public constructor(public entity: T) {
@@ -12,17 +16,17 @@ export class QueryMaker<T> {
   // "Boolean"은 "1, 0"을 반환하는 상태
   //
 
-  //----- and/or
+  // ----- and/or
 
   public and(...args: (QueryUnit<Boolean> | QueryUnit<QueriedBoolean> | Boolean | QueriedBoolean | boolean)[]): boolean {
-    return new QueryUnit(QueriedBoolean, `(${args.map((item) => this._getQuery(item, false)).join(" AND ")})`) as any;
+    return new QueryUnit(QueriedBoolean, `(${args.map(item => this._getQuery(item, false)).join(" AND ")})`) as any;
   }
 
   public or(...args: (QueryUnit<Boolean> | QueryUnit<QueriedBoolean> | Boolean | QueriedBoolean | boolean)[]): boolean {
-    return new QueryUnit(QueriedBoolean, `(${args.map((item) => this._getQuery(item, false)).join(" OR ")})`) as any;
+    return new QueryUnit(QueriedBoolean, `(${args.map(item => this._getQuery(item, false)).join(" OR ")})`) as any;
   }
 
-  //----- Boolean
+  // ----- Boolean
 
   public in<P>(src: QueryUnit<P> | P, target: (QueryUnit<P> | P)[]): boolean {
     if (target.length < 1) {
@@ -145,7 +149,7 @@ export class QueryMaker<T> {
     );
   }
 
-  //----- Function
+  // ----- Function
 
   public ifNull<P>(src: QueryUnit<P> | P | undefined, replacement: QueryUnit<P> | P): P {
     const type = this._getType(replacement);
@@ -202,11 +206,10 @@ export class QueryMaker<T> {
     const queryable2 = queryFn(queryable);
 
     let query = queryable2
-      .select((q) => ({
+      .select(q => ({
         result: q.concat(separator, select(q.entity))
       }))
-      .orderBy(
-        (item) => [item.result, OrderByRule.ASC]
+      .orderBy(item => [item.result, OrderByRule.ASC]
       )
       .query;
 
@@ -228,10 +231,10 @@ export class QueryMaker<T> {
 
   public case<R>(when: boolean | QueryUnit<Boolean> | QueryUnit<QueriedBoolean>, then: QueryUnit<R> | R): CaseQueryMaker<R> {
     const type = this._getType(then);
-    return new CaseQueryMaker(type).case(when, then);
+    return new CaseQueryMaker<R>(type).case(when, then);
   }
 
-  //----- Grouped
+  // ----- Grouped
 
   public sum(src: QueryUnit<number> | QueryUnit<number> | number | undefined): number | undefined {
     return new QueryUnit(Number, `SUM(${this._getQuery(src)})`) as any;
@@ -251,13 +254,13 @@ export class QueryMaker<T> {
     return new QueryUnit(Number, `ISNULL(COUNT(${src ? this._getQuery(src) : "*"}), 0)`) as any;
   }
 
-  //----- Math
+  // ----- Math
 
   public floor(arg: number): number {
     return new QueryUnit(Number, `FLOOR(${this._getQuery(arg)})`) as any;
   }
 
-  //----- Helper
+  // ----- Helper
   /*
       map<T extends { [key: string]: any }, R extends { [key: string]: any }>(arg: (T[] | T | undefined), fn: (entity: T) => R): R | undefined {
           if (arg instanceof Array) {
@@ -271,7 +274,7 @@ export class QueryMaker<T> {
           }
       }*/
 
-  //----- Private
+  // ----- Private
 
   private _getQuery<P>(param: QueryUnit<P> | P | undefined, shouldCastQueriedBoolean: boolean = true): string {
     return param !== undefined
@@ -304,41 +307,5 @@ export class QueryMaker<T> {
           )
       )
       : undefined;
-  }
-}
-
-export class CaseQueryMaker<T> {
-  private _query = "CASE ";
-
-  public constructor(private _type: Type<T> | undefined) {
-  }
-
-  public case(when: boolean | QueryUnit<Boolean> | QueryUnit<QueriedBoolean>, then: QueryUnit<T> | T | undefined): CaseQueryMaker<T> {
-    this._query += `WHEN ${this._getQuery(when, false)} THEN ${this._getQuery(then)} `;
-    return this as any;
-  }
-
-  public else(elseResult: QueryUnit<T> | T | undefined): T {
-    this._query += `ELSE ${this._getQuery(elseResult)} END`;
-    return new QueryUnit(this._type, this._query) as any;
-  }
-
-  private _getQuery<P>(param: QueryUnit<P> | P | undefined, shouldCastQueriedBoolean: boolean = true): string {
-    return param !== undefined
-      ? param instanceof QueryUnit
-        ? (shouldCastQueriedBoolean && param.type && (param.type.name === "QueriedBoolean"))
-          ? `CASE WHEN (${param.query}) THEN 1 ELSE 0 END`
-          : param.query
-        : this._value(param)
-      : "NULL";
-  }
-
-  private _value(value: any): string {
-    if (value instanceof QueryUnit) {
-      return value.query;
-    }
-    else {
-      return QueryHelper.escape(value);
-    }
   }
 }

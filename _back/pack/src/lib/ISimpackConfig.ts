@@ -20,7 +20,7 @@ export interface ISimpackClientConfig {
     defaultRoute: string;
     cordova?: {
         appId: string;
-        platform: "browser" | "android";
+        platform: 'browser' | 'android';
         plugins?: string[];
         sign?: string;
         icon?: string;

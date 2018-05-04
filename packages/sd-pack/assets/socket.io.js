@@ -62,10 +62,10 @@ function Server(srv, opts) {
  * @param {Function} fn callback to be called with the result: `fn(err, success)`
  */
 
-Server.prototype.checkRequest = function(req, fn) {
+Server.prototype.checkRequest = function (req, fn) {
   var origin = req.headers.origin || req.headers.referer;
 
-  // file:// URLs produce a null Origin which can't be authorized via echo-back
+  // file://URLs produce a null Origin which can't be authorized via echo-back
   if ("null" == origin || null == origin) origin = "*";
 
   if (!!origin && typeof(this._origins) == "function") return this._origins(origin, fn);
@@ -96,7 +96,7 @@ Server.prototype.checkRequest = function(req, fn) {
  * @api public
  */
 
-Server.prototype.serveClient = function(v) {
+Server.prototype.serveClient = function (v) {
   if (!arguments.length) return this._serveClient;
   this._serveClient = v;
   if (v && !clientSource) {
@@ -127,22 +127,26 @@ var oldSettings = {
  * @api public
  */
 
-Server.prototype.set = function(key, val) {
+Server.prototype.set = function (key, val) {
   if ("authorization" == key && val) {
-    this.use(function(socket, next) {
-      val(socket.request, function(err, authorized) {
+    this.use(function (socket, next) {
+      val(socket.request, function (err, authorized) {
         if (err) return next(new Error(err));
         if (!authorized) return next(new Error("Not authorized"));
         next();
       });
     });
-  } else if ("origins" == key && val) {
+  }
+  else if ("origins" == key && val) {
     this.origins(val);
-  } else if ("resource" == key) {
+  }
+  else if ("resource" == key) {
     this.path(val);
-  } else if (oldSettings[key] && this.eio[oldSettings[key]]) {
+  }
+  else if (oldSettings[key] && this.eio[oldSettings[key]]) {
     this.eio[oldSettings[key]] = val;
-  } else {
+  }
+  else {
     console.error("Option %s is not valid. Please refer to the README.", key);
   }
 
@@ -157,7 +161,7 @@ Server.prototype.set = function(key, val) {
  * @api public
  */
 
-Server.prototype.path = function(v) {
+Server.prototype.path = function (v) {
   if (!arguments.length) return this._path;
   this._path = v.replace(/\/$/, "");
   return this;
@@ -171,7 +175,7 @@ Server.prototype.path = function(v) {
  * @api public
  */
 
-Server.prototype.adapter = function(v) {
+Server.prototype.adapter = function (v) {
   if (!arguments.length) return this._adapter;
   this._adapter = v;
   for (var i in this.nsps) {
@@ -190,7 +194,7 @@ Server.prototype.adapter = function(v) {
  * @api public
  */
 
-Server.prototype.origins = function(v) {
+Server.prototype.origins = function (v) {
   if (!arguments.length) return this._origins;
 
   this._origins = v;
@@ -207,7 +211,7 @@ Server.prototype.origins = function(v) {
  */
 
 Server.prototype.listen =
-  Server.prototype.attach = function(srv, opts) {
+  Server.prototype.attach = function (srv, opts) {
     if ("function" == typeof srv) {
       var msg = "You are trying to attach socket.io to an express " +
         "request handler function. Please pass a http.Server instance.";
@@ -222,7 +226,7 @@ Server.prototype.listen =
     if ("number" == typeof srv) {
       debug("creating http server and binding to %d", srv);
       var port = srv;
-      srv = http.Server(function(req, res) {
+      srv = http.Server(function (req, res) {
         res.writeHead(404);
         res.end();
       });
@@ -242,8 +246,8 @@ Server.prototype.listen =
     }
 
     var self = this;
-    var connectPacket = { type: parser.CONNECT, nsp: "/" };
-    this.encoder.encode(connectPacket, function(encodedPacket) {
+    var connectPacket = {type: parser.CONNECT, nsp: "/"};
+    this.encoder.encode(connectPacket, function (encodedPacket) {
       // the CONNECT packet will be merged with Engine.IO handshake,
       // to reduce the number of round trips
       opts.initialPacket = encodedPacket;
@@ -260,7 +264,7 @@ Server.prototype.listen =
  * @api private
  */
 
-Server.prototype.initEngine = function(srv, opts) {
+Server.prototype.initEngine = function (srv, opts) {
   // initialize engine
   debug("creating engine.io instance with opts %j", opts);
   this.eio = engine.attach(srv, opts);
@@ -282,20 +286,22 @@ Server.prototype.initEngine = function(srv, opts) {
  * @api private
  */
 
-Server.prototype.attachServe = function(srv) {
+Server.prototype.attachServe = function (srv) {
   debug("attaching client serving req handler");
   var url = this._path + "/socket.io.js";
   /*var urlMap = this._path + '/socket.io.js.map';*/
   var evs = srv.listeners("request").slice(0);
   var self = this;
   srv.removeAllListeners("request");
-  srv.on("request", function(req, res) {
+  srv.on("request", function (req, res) {
     /*if (0 === req.url.indexOf(urlMap)) {
         self.serveMap(req, res);
-    } else*/
+    }
+    else*/
     if (0 === req.url.indexOf(url)) {
       self.serve(req, res);
-    } else {
+    }
+    else {
       for (var i = 0; i < evs.length; i++) {
         evs[i].call(srv, req, res);
       }
@@ -311,7 +317,7 @@ Server.prototype.attachServe = function(srv) {
  * @api private
  */
 
-Server.prototype.serve = function(req, res) {
+Server.prototype.serve = function (req, res) {
   // Per the standard, ETags must be quoted:
   // https://tools.ietf.org/html/rfc7232#section-2.3
   var expectedEtag = "\"" + clientVersion + "\"";
@@ -371,7 +377,7 @@ Server.prototype.serveMap = function (req, res) {
  * @api public
  */
 
-Server.prototype.bind = function(engine) {
+Server.prototype.bind = function (engine) {
   this.engine = engine;
   this.engine.on("connection", this.onconnection.bind(this));
   return this;
@@ -385,7 +391,7 @@ Server.prototype.bind = function(engine) {
  * @api public
  */
 
-Server.prototype.onconnection = function(conn) {
+Server.prototype.onconnection = function (conn) {
   debug("incoming connection with id %s", conn.id);
   var client = new Client(this, conn);
   client.connect("/");
@@ -400,7 +406,7 @@ Server.prototype.onconnection = function(conn) {
  * @api public
  */
 
-Server.prototype.of = function(name, fn) {
+Server.prototype.of = function (name, fn) {
   if (String(name)[0] !== "/") name = "/" + name;
 
   var nsp = this.nsps[name];
@@ -420,7 +426,7 @@ Server.prototype.of = function(name, fn) {
  * @api public
  */
 
-Server.prototype.close = function(fn) {
+Server.prototype.close = function (fn) {
   for (var id in this.nsps["/"].sockets) {
     if (this.nsps["/"].sockets.hasOwnProperty(id)) {
       this.nsps["/"].sockets[id].onclose();
@@ -431,7 +437,8 @@ Server.prototype.close = function(fn) {
 
   if (this.httpServer) {
     this.httpServer.close(fn);
-  } else {
+  }
+  else {
     fn && fn();
   }
 };
@@ -440,19 +447,19 @@ Server.prototype.close = function(fn) {
  * Expose main namespace (/).
  */
 
-var emitterMethods = Object.keys(Emitter.prototype).filter(function(key) {
+var emitterMethods = Object.keys(Emitter.prototype).filter(function (key) {
   return typeof Emitter.prototype[key] === "function";
 });
 
-emitterMethods.concat(["to", "in", "use", "send", "write", "clients", "compress"]).forEach(function(fn) {
-  Server.prototype[fn] = function() {
+emitterMethods.concat(["to", "in", "use", "send", "write", "clients", "compress"]).forEach(function (fn) {
+  Server.prototype[fn] = function () {
     return this.sockets[fn].apply(this.sockets, arguments);
   };
 });
 
-Namespace.flags.forEach(function(flag) {
+Namespace.flags.forEach(function (flag) {
   Object.defineProperty(Server.prototype, flag, {
-    get: function() {
+    get: function () {
       this.sockets.flags = this.sockets.flags || {};
       this.sockets.flags[flag] = true;
       return this;

@@ -1,9 +1,9 @@
-import { Type } from "../../../sd-core/src";
-import { IStoredProcedureDefinition } from "../common/Definitions";
-import { QueryHelper } from "../common/QueryHelper";
-import { storedProcedureMetadataSymbol } from "../common/StoredProcedureDecorators";
-import { Database } from "./Database";
-import { DbStoredProcedure } from "./DbStoredProcedure";
+import {Type} from "../../../sd-core/src/types/Type";
+import {IStoredProcedureDefinition} from "../common/Definitions";
+import {QueryHelper} from "../common/QueryHelper";
+import {storedProcedureMetadataSymbol} from "../common/StoredProcedureDecorators";
+import {Database} from "./Database";
+import {DbStoredProcedure} from "./DbStoredProcedure";
 
 export class QueryableStoredProcedure<T extends DbStoredProcedure> {
   public constructor(public db: Database, public targetType: Type<T>) {

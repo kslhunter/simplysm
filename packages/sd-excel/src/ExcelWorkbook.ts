@@ -1,77 +1,25 @@
 import * as fs from "fs";
 import * as JSZip from "jszip";
 import * as stream from "stream";
-import { DateOnly } from "../../sd-core/src";
-import { ExcelNumberFormat } from "./ExcelEnums";
-import { ExcelWorksheet } from "./ExcelWorksheet";
-import { ExcelXmlContentType } from "./XmlFile/ExcelXmlContentType";
-import { ExcelXmlGlobalRels } from "./XmlFile/ExcelXmlGlobalRels";
-import { ExcelXmlSharedStrings } from "./XmlFile/ExcelXmlSharedStrings";
-import { ExcelXmlSheet } from "./XmlFile/ExcelXmlSheet";
-import { ExcelXmlStyles } from "./XmlFile/ExcelXmlStyles";
-import { ExcelXmlWorkbook } from "./XmlFile/ExcelXmlWorkbook";
-import { ExcelXmlWorkbookRels } from "./XmlFile/ExcelXmlWorkbookRels";
+
+import {DateOnly} from "../../sd-core/src/types/DateOnly";
+import {ExcelCellStyle} from "./ExcelCellStyle";
+import {ExcelNumberFormat} from "./ExcelEnums";
+import {ExcelWorksheet} from "./ExcelWorksheet";
+import {ExcelXmlContentType} from "./XmlFile/ExcelXmlContentType";
+import {ExcelXmlGlobalRels} from "./XmlFile/ExcelXmlGlobalRels";
+import {ExcelXmlSharedStrings} from "./XmlFile/ExcelXmlSharedStrings";
+import {ExcelXmlSheet} from "./XmlFile/ExcelXmlSheet";
+import {ExcelXmlStyles} from "./XmlFile/ExcelXmlStyles";
+import {ExcelXmlWorkbook} from "./XmlFile/ExcelXmlWorkbook";
+import {ExcelXmlWorkbookRels} from "./XmlFile/ExcelXmlWorkbookRels";
 
 export class ExcelWorkbook {
-  public worksheets: ExcelWorksheet[];
-
-  public constructor() {
-    this.worksheets = [];
-  }
-
-  public createWorksheet(name: string): ExcelWorksheet {
-    const sheet = new ExcelWorksheet(name);
-    this.worksheets.push(sheet);
-    return sheet;
-  }
-
-  public async getBufferAsync(): Promise<Buffer> {
-    const preset = {
-      sheetNames: this.worksheets.map((item) => item.name),
-      styles: this.worksheets
-        .mapMany((sheet) => sheet.cells.mapMany((row) => row.map((cell) => cell.style)))
-        .filter((item) => item.hasStyle)
-        .distinct(),
-      sharedStrings: this.worksheets
-        .mapMany((sheet) => sheet.cells.mapMany((row) => row.filter((item) => !item.formula).map((cell) => cell.value)))
-        .filter((item) => typeof item === "string")
-        .distinct()
-    };
-
-    const zip = new JSZip();
-    zip.file("[Content_Types].xml", new ExcelXmlContentType(preset.sheetNames.length).toString());
-    zip.file("_rels/.rels", new ExcelXmlGlobalRels().toString());
-    zip.file("xl/workbook.xml", new ExcelXmlWorkbook(preset.sheetNames).toString());
-    zip.file("xl/_rels/workbook.xml.rels", new ExcelXmlWorkbookRels(preset.sheetNames.length).toString());
-    zip.file("xl/styles.xml", new ExcelXmlStyles(preset.styles).toString());
-    zip.file(`xl/sharedStrings.xml`, new ExcelXmlSharedStrings(preset.sharedStrings).toString());
-
-    for (let i = 0; i < this.worksheets.length; i++) {
-      zip.file(`xl/worksheets/sheet${i + 1}.xml`, new ExcelXmlSheet(this.worksheets[i], preset.sharedStrings, preset.styles).toString());
-    }
-
-    return new Buffer(await zip.generateAsync({ type: "uint8array" }));
-  }
-
-  public async getStreamAsync(): Promise<stream.PassThrough> {
-    const buffer = await this.getBufferAsync();
-    const bufferStream = new stream.PassThrough();
-    bufferStream.end(buffer);
-    return bufferStream;
-  }
-
-  public async saveAsAsync(path: string): Promise<void> {
-    const buffer = await this.getBufferAsync();
-    const fd = fs.openSync(path, "w");
-    fs.writeSync(fd, buffer, 0, buffer.length);
-    fs.closeSync(fd);
-  }
-
   public static async loadAsync(pathOrBufferOrFile: any): Promise<ExcelWorkbook> {
     let buffer: Buffer;
-    if (typeof(pathOrBufferOrFile) === "string") {
+    if (typeof pathOrBufferOrFile === "string") {
       const fd = fs.openSync(pathOrBufferOrFile, "r");
-      buffer = new Buffer(fs.fstatSync(fd).size);
+      buffer = Buffer.alloc(fs.fstatSync(fd).size);
       fs.readSync(fd, buffer, 0, buffer.length, 0);
       fs.closeSync(fd);
     }
@@ -79,10 +27,10 @@ export class ExcelWorkbook {
       buffer = pathOrBufferOrFile;
     }
     else {
-      buffer = await new Promise<Buffer>((resolve) => {
+      buffer = await new Promise<Buffer>(resolve => {
         const fileReader = new FileReader();
-        fileReader.onload = function(): void {
-          resolve(new Buffer(this.result));
+        fileReader.onload = function (): void {
+          resolve(Buffer.from(this.result));
         };
         fileReader.readAsArrayBuffer(pathOrBufferOrFile);
       });
@@ -106,6 +54,8 @@ export class ExcelWorkbook {
     }
     return result;
   }
+
+  public worksheets: ExcelWorksheet[];
 
   public get json(): { [sheet: string]: { [column: string]: any }[] } {
     const result: { [sheet: string]: { [column: string]: any }[] } = {};
@@ -156,5 +106,61 @@ export class ExcelWorkbook {
         ws.cell(0, i).value = headers[i];
       }
     }
+  }
+
+  public constructor() {
+    this.worksheets = [];
+  }
+
+  public createWorksheet(name: string): ExcelWorksheet {
+    const sheet = new ExcelWorksheet(name);
+    this.worksheets.push(sheet);
+    return sheet;
+  }
+
+  public async getBufferAsync(): Promise<Buffer> {
+    const preset: {
+      sheetNames: string[];
+      styles: ExcelCellStyle[];
+      sharedStrings: string[];
+    } = {
+      sheetNames: this.worksheets.map(item => item.name),
+      styles: this.worksheets
+        .mapMany(sheet => sheet.cells.mapMany(row => row.map(cell => cell.style)))
+        .filter(item => item.hasStyle)
+        .distinct(),
+      sharedStrings: this.worksheets
+        .mapMany(sheet => sheet.cells.mapMany(row => row.filter(item => !item.formula).map(cell => cell.value)))
+        .filter(item => typeof item === "string")
+        .distinct()
+    };
+
+    const zip = new JSZip();
+    zip.file("[Content_Types].xml", new ExcelXmlContentType(preset.sheetNames.length).toString());
+    zip.file("_rels/.rels", new ExcelXmlGlobalRels().toString());
+    zip.file("xl/workbook.xml", new ExcelXmlWorkbook(preset.sheetNames).toString());
+    zip.file("xl/_rels/workbook.xml.rels", new ExcelXmlWorkbookRels(preset.sheetNames.length).toString());
+    zip.file("xl/styles.xml", new ExcelXmlStyles(preset.styles).toString());
+    zip.file("xl/sharedStrings.xml", new ExcelXmlSharedStrings(preset.sharedStrings).toString());
+
+    for (let i = 0; i < this.worksheets.length; i++) {
+      zip.file(`xl/worksheets/sheet${i + 1}.xml`, new ExcelXmlSheet(this.worksheets[i], preset.sharedStrings, preset.styles).toString());
+    }
+
+    return Buffer.from(Array.from(await zip.generateAsync({type: "uint8array"})));
+  }
+
+  public async getStreamAsync(): Promise<stream.PassThrough> {
+    const buffer = await this.getBufferAsync();
+    const bufferStream = new stream.PassThrough();
+    bufferStream.end(buffer);
+    return bufferStream;
+  }
+
+  public async saveAsAsync(path: string): Promise<void> {
+    const buffer = await this.getBufferAsync();
+    const fd = fs.openSync(path, "w");
+    fs.writeSync(fd, buffer, 0, buffer.length);
+    fs.closeSync(fd);
   }
 }

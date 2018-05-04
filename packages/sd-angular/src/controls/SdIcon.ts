@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from "@angular/core";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
-import { fas } from "@fortawesome/free-solid-svg-icons";
-import { SimgularHelpers } from "../helpers/SimgularHelpers";
+import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from "@angular/core";
+import {IconName} from "@fortawesome/fontawesome-svg-core";
+import {fas} from "@fortawesome/free-solid-svg-icons";
+import {SimgularHelpers} from "../helpers/SimgularHelpers";
 
 @Component({
   selector: "sd-icon",
@@ -23,11 +23,11 @@ export class SdIconControl implements OnChanges {
     SimgularHelpers.typeValidate(changes, {
       icon: {
         type: String,
-        validator: (value) => Object.values(fas).map((item) => item.iconName).includes(value)
+        validator: value => Object.values(fas).map(item => item.iconName).includes(value)
       },
       prefix: {
         type: String,
-        validator: (value) => ["solid", "regular"].includes(value)
+        validator: value => ["solid", "regular"].includes(value)
       },
       fixedWidth: {
         type: Boolean

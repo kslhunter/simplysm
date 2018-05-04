@@ -178,7 +178,7 @@ sd-button {
     }
   }
   //
-  //@each $key, $color in $theme-colors {
+  // @each $key, $color in $theme-colors {
   //  &.sd-button-theme-#{$key} {
   //    > button {
   //      background: theme-color($key);
@@ -204,40 +204,40 @@ sd-button {
   //      }
   //    }
   //  }
-  //}
+  // }
   //
-  //&.sd-button-size-xxs > button {
+  // &.sd-button-size-xxs > button {
   //  @include padding(0, xxs);
   //  @include font-size(sm);
-  //}
-  //&.sd-button-size-xs > button {
+  // }
+  // &.sd-button-size-xs > button {
   //  @include padding(xxs, xs);
   //  @include font-size(sm);
-  //}
-  //&.sd-button-size-sm > button {
+  // }
+  // &.sd-button-size-sm > button {
   //  @include padding(xs, sm);
   //  @include font-size();
-  //}
-  //&.sd-button-size-default > button {
+  // }
+  // &.sd-button-size-default > button {
   //  @include padding(sm, default);
   //  @include font-size();
-  //}
-  //&.sd-button-size-lg > button {
+  // }
+  // &.sd-button-size-lg > button {
   //  @include padding(default, lg);
   //  @include font-size();
-  //}
-  //&.sd-button-size-xl > button {
+  // }
+  // &.sd-button-size-xl > button {
   //  @include padding(lg, xl);
   //  @include font-size(lg);
-  //}
-  //&.sd-button-size-xxl > button {
+  // }
+  // &.sd-button-size-xxl > button {
   //  @include padding(xl, xxl);
   //  @include font-size(lg);
-  //}
+  // }
   //
-  //&.sd-button-selected > button {
+  // &.sd-button-selected > button {
   //  background: theme-color(primary);
   //  border-color: theme-color(primary);
   //  color: text-white();
-  //}
+  // }
 }

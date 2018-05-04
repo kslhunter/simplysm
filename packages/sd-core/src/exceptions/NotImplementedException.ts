@@ -1,4 +1,4 @@
-import { Exception } from "./Exception";
+import {Exception} from "./Exception";
 
 export class NotImplementedException extends Exception {
   public constructor(message?: string) {

@@ -3,51 +3,55 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  forwardRef,
+  HostBinding,
   Inject,
   Input,
   Output
 } from "@angular/core";
-import { Exception } from "../../../sd-core/src";
-import { SdFocusProvider } from "../providers/SdFocusProvider";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {SdFocusProvider} from "../providers/SdFocusProvider";
 
 @Component({
   selector: "sd-list",
   template: "<ng-content></ng-content>",
-  host: {
-    "[class._size-sm]": "size === 'sm'",
-    "[class._size-lg]": "size === 'lg'",
-    "[class._clickable]": "clickable"
-  },
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdListControl {
-  @Input()
-  public size?: "sm" | "lg";
+  @Input() public size?: "sm" | "lg";
 
-  @Input()
-  public clickable = false;
+  @HostBinding("class._clickable")
+  @Input() public clickable = false;
+
+  @HostBinding("class._size-sm")
+  public get sizeSm(): boolean {
+    return this.size === "sm";
+  }
+
+  @HostBinding("class._size-lg")
+  public get sizeLg(): boolean {
+    return this.size === "lg";
+  }
 }
 
 @Component({
   selector: "sd-list-item",
   template: `
-        <div [class]="styleClass">
-            <div (click)="onTitleClick()"
-                 [class]="titleStyleClass"
-                 [attr.tabindex]="realClickable ? '1' : undefined"
-                 (keydown.enter)="onTitleClick()"
-                 (keydown)="onTitleKeydown($event)">
-                <ng-content></ng-content>
+    <div [class]="styleClass">
+      <div (click)="onTitleClick()"
+           [class]="titleStyleClass"
+           [attr.tabindex]="realClickable ? '1' : undefined"
+           (keydown.enter)="onTitleClick()"
+           (keydown)="onTitleKeydown($event)">
+        <ng-content></ng-content>
 
-                <div class="_icon">
-                    <sd-icon [icon]="'angle-down'" [fixedWidth]="true"></sd-icon>
-                </div>
-            </div>
-            <div class="_child">
-                <ng-content select="sd-list"></ng-content>
-            </div>
-        </div>`,
+        <div class="_icon">
+          <sd-icon [icon]="'angle-down'" [fixedWidth]="true"></sd-icon>
+        </div>
+      </div>
+      <div class="_child">
+        <ng-content select="sd-list"></ng-content>
+      </div>
+    </div>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdListItemControl {
@@ -56,8 +60,10 @@ export class SdListItemControl {
   @Input() public header = false;
   @Input() public size?: "sm" | "lg";
   @Input() public class: string | undefined;
-  @Output("title.click") public readonly titleClick = new EventEmitter<void>();
+  @Output("title.click") public readonly titleClick = new EventEmitter<void>(); // tslint:disable-line:no-output-rename
   @Input() public clickable: boolean | undefined;
+
+  private _selected = false;
 
   @Input()
   public set selected(value: boolean) {
@@ -67,21 +73,8 @@ export class SdListItemControl {
     this._selected = value;
   }
 
-  private _selected = false;
-
   public get realClickable(): boolean {
     return this.clickable === undefined ? this._parent.clickable : this.clickable;
-  }
-
-  public constructor(private _elementRef: ElementRef,
-                     @Inject(forwardRef(() => SdListControl))
-                     private _parent: SdListControl,
-                     private _focus: SdFocusProvider) {
-  }
-
-  public onTitleClick(): void {
-    this.open = !this.open;
-    this.titleClick.emit();
   }
 
   public get styleClass(): string {
@@ -89,7 +82,7 @@ export class SdListItemControl {
     const hasChild = childDiv.children.length > 0 &&
       childDiv.children[0].children.length > 0 &&
       Array.from(childDiv.children[0].children)
-        .map((item) => item as HTMLElement)
+        .map(item => item as HTMLElement)
         .some((item: HTMLElement) => item.tagName.toLowerCase() === "sd-list-item");
 
     return Array.from(this._elementRef.nativeElement.classList).concat([
@@ -98,13 +91,24 @@ export class SdListItemControl {
       this.open ? "_open" : "",
       this.size ? `_size-${this.size}` : this._parent.size ? `_size-${this._parent.size}` : "",
       this._selected ? "_selected" : ""
-    ]).filter((item) => item).join(" ");
+    ]).filter(item => item).join(" ");
   }
 
   public get titleStyleClass(): string {
     return (this.class || "").split(" ")
-      .filter((item) => item.startsWith("sd-padding"))
+      .filter(item => item.startsWith("sd-padding"))
       .concat(["_title"]).join(" ");
+  }
+
+  public constructor(private readonly _elementRef: ElementRef,
+                     @Inject(SdListControl)
+                     private readonly _parent: SdListControl,
+                     private readonly _focus: SdFocusProvider) {
+  }
+
+  public onTitleClick(): void {
+    this.open = !this.open;
+    this.titleClick.emit();
   }
 
   public onTitleKeydown(event: KeyboardEvent): void {

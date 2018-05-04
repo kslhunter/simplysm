@@ -1,9 +1,14 @@
 import * as mssql from "mssql";
-import { DateOnly, Time, Type, Uuid } from "../../../sd-core/src";
-import { DataType } from "./Enums";
 
-export class QueryHelper {
-  public static convertToDataType(type: Type<any>): DataType {
+import {DateOnly} from "../../../sd-core/src/types/DateOnly";
+import {Time} from "../../../sd-core/src/types/Time";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Uuid} from "../../../sd-core/src/types/Uuid";
+import {DataType} from "./Enums";
+
+// tslint:disable-next-line:variable-name
+export const QueryHelper = {
+  convertToDataType(type: Type<any>): DataType {
     switch (type) {
       case String:
         return DataType.NVARCHAR;
@@ -24,9 +29,9 @@ export class QueryHelper {
       default:
         throw new TypeError(type ? type.name : "undefined");
     }
-  }
+  },
 
-  public static convertFromDataType(type: DataType | string): Type<any> {
+  convertFromDataType(type: DataType | string): Type<any> {
     if (type === DataType.NVARCHAR || type.includes("CHAR") || type === "TEXT") {
       return String;
     }
@@ -54,9 +59,9 @@ export class QueryHelper {
     else {
       throw new TypeError(type);
     }
-  }
+  },
 
-  public static convertToSqlType(type: DataType): mssql.ISqlTypeFactory {
+  convertToSqlType(type: DataType): mssql.ISqlTypeFactory {
     switch (type) {
       case DataType.NVARCHAR:
         return mssql.NVarChar;
@@ -77,13 +82,13 @@ export class QueryHelper {
       default:
         throw new TypeError(type);
     }
-  }
+  },
 
-  public static escapeKey(...keys: string[]): string {
-    return `[${keys.filter((item) => item).join("].[")}]`;
-  }
+  escapeKey(...keys: string[]): string {
+    return `[${keys.filter(item => item).join("].[")}]`;
+  },
 
-  public static escape(value: any): string {
+  escape(value: any): string {
     if (value === undefined) {
       return "NULL";
     }
@@ -103,7 +108,7 @@ export class QueryHelper {
       return `0x${value.toString("hex")}`;
     }
     else if (value instanceof Array) {
-      return value.map((item) => this.escape(item)).join(", ");
+      return value.map(item => this.escape(item)).join(", ");
     }
     else if (typeof value === "string") {
       return `'${value.replace(/'/g, "''")}'`;
@@ -113,4 +118,4 @@ export class QueryHelper {
     }
     return value;
   }
-}
+};

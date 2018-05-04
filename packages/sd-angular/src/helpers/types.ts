@@ -1,4 +1,4 @@
-import { Type } from "@angular/core";
+import {Type} from "@angular/core";
 
 export type TypeValidateTypes = Type<any> | "SdThemeString" | "SdSizeString";
 export type SdSizeString = "xxs" | "xs" | "sm" | "lg" | "xl" | "xxl";

@@ -1,16 +1,15 @@
-import { ExcelCell } from "./ExcelCell";
-import { ExcelColumn } from "./ExcelColumn";
+import {ExcelCell} from "./ExcelCell";
+import {ExcelColumn} from "./ExcelColumn";
 
 export class ExcelWorksheet {
-  private _cells: ExcelCell[][] = [];
+  public freeze: { row: number; col: number | undefined } | undefined;
+  public merges: { fromRow: number; fromCol: number; toRow: number; toCol: number }[] = [];
+  private readonly _columns: ExcelColumn[] = [];
+  private readonly _cells: ExcelCell[][] = [];
 
   public get cells(): ExcelCell[][] {
     return this._cells;
   }
-
-  private _columns: ExcelColumn[] = [];
-  public freeze: { row: number; col: number | undefined } | undefined;
-  public merges: { fromRow: number; fromCol: number; toRow: number; toCol: number }[] = [];
 
   public get rowCount(): number {
     return this._cells.length;
@@ -21,7 +20,12 @@ export class ExcelWorksheet {
     for (const row of this._cells) {
       max = Math.max(max, row.length);
     }
+
     return max;
+  }
+
+  public get cols(): ExcelColumn[] {
+    return this._columns;
   }
 
   public constructor(public name: string) {
@@ -37,6 +41,7 @@ export class ExcelWorksheet {
     while (this._columns.length < col + 1) {
       this._columns.push(new ExcelColumn());
     }
+
     return this._cells[row][col];
   }
 
@@ -48,18 +53,15 @@ export class ExcelWorksheet {
     while (this._columns.length < col + 1) {
       this._columns.push(new ExcelColumn());
     }
+
     return this._columns[col];
   }
 
-  public get cols(): ExcelColumn[] {
-    return this._columns;
-  }
-
   public freezePane(row: number, col?: number): void {
-    this.freeze = { row, col };
+    this.freeze = {row, col};
   }
 
   public merge(fromRow: number, fromCol: number, toRow: number, toCol: number): void {
-    this.merges.push({ fromRow, fromCol, toRow, toCol });
+    this.merges.push({fromRow, fromCol, toRow, toCol});
   }
 }

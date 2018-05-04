@@ -1,10 +1,13 @@
-import { Injectable } from "@angular/core";
-import { Exception, Safe } from "../../../sd-core/src";
+import {Injectable} from "@angular/core";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {Safe} from "../../../sd-core/src/utils/Safe";
 
 @Injectable()
 export class SdKeyboardPanelProvider {
-  private _platform: string = Safe.obj(window["cordova"]).platformId;
-  private _plugin: any = Safe.obj(window["Keyboard"]);
+  private readonly _platform: string = Safe.obj(window["cordova"]).platformId;
+  private readonly _plugin: any = Safe.obj(window["Keyboard"]);
+
+  private _isVisible = false;
 
   public get isVisible(): boolean {
     if (this._platform === "browser") {
@@ -14,8 +17,6 @@ export class SdKeyboardPanelProvider {
 
     return this._plugin.isVisible;
   }
-
-  private _isVisible = false;
 
   public show(): void {
     if (this._platform === "browser") {

@@ -1,17 +1,19 @@
+import * as child_process from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as webpack from "webpack";
-import { SdTypescriptDtsPlugin } from "../plugins/SdTypescriptDtsPlugin";
-import { Exception, Logger } from "../../../sd-core/src";
-import * as child_process from "child_process";
-import webpackMerge = require("webpack-merge");
+import * as webpackMerge from "webpack-merge";
+
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {Logger} from "../../../sd-core/src/utils/Logger";
+import {SdTypescriptDtsPlugin} from "../plugins/SdTypescriptDtsPlugin";
 
 const HappyPack = require("happypack"); // tslint:disable-line:variable-name
 
 export class SdLibraryPackageBuilder {
-  private _logger = new Logger("@simplism/sd-pack", `SdPackageBuilder :: ${this._packageName}`);
+  private readonly _logger = new Logger("@simplism/sd-pack", `SdPackageBuilder :: ${this._packageName}`);
 
-  public constructor(private _packageName: string) {
+  public constructor(private readonly _packageName: string) {
   }
 
   public async buildAsync(): Promise<void> {
@@ -27,7 +29,7 @@ export class SdLibraryPackageBuilder {
       }
     });
 
-    return await new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       webpack(webpackConfig, (err, stats) => {
         if (err) {
           reject(err);
@@ -50,7 +52,7 @@ export class SdLibraryPackageBuilder {
     const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(), {
       mode: "development"
     });
-    return await new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const compiler = webpack(webpackConfig);
 
       compiler.watch({}, (err, stats) => {
@@ -73,7 +75,7 @@ export class SdLibraryPackageBuilder {
 
   public async publishAsync(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
-      this._logger.log(`publishing...`);
+      this._logger.log("publishing...");
 
       // 최상위 package.json 설정 가져오기
       const rootPackageJson = fs.readJsonSync(this._rootPath("package.json"));
@@ -98,7 +100,7 @@ export class SdLibraryPackageBuilder {
       }
 
       // package.json 파일 다시쓰기
-      fs.writeJsonSync(this._packagePath("package.json"), packageJson, { spaces: 2 });
+      fs.writeJsonSync(this._packagePath("package.json"), packageJson, {spaces: 2});
 
       // 새 버전으로 배포
       const shell = child_process.spawn("yarn", ["publish", "--new-version", rootPackageJson.version, "--access", "public", "--no-git-tag-version"], {
@@ -107,7 +109,7 @@ export class SdLibraryPackageBuilder {
         cwd: this._packagePath()
       });
 
-      shell.stderr.on("data", (chunk) => {
+      shell.stderr.on("data", chunk => {
         const message = chunk.toString()
           .replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "")
           .trim();
@@ -134,10 +136,10 @@ export class SdLibraryPackageBuilder {
     fs.removeSync(this._packagePath("dist"));
 
     const nodeModules = fs.readdirSync(path.resolve(process.cwd(), "node_modules"))
-      .filter((dir) => dir !== ".bin")
-      .mapMany((dir) => dir.startsWith("@")
+      .filter(dir => dir !== ".bin")
+      .mapMany(dir => dir.startsWith("@")
         ? fs.readdirSync(path.resolve(process.cwd(), `node_modules/${dir}`))
-          .map((subDir) => path.join(dir, subDir).replace(/\\/g, "/"))
+          .map(subDir => path.join(dir, subDir).replace(/\\/g, "/"))
         : [dir]
       );
 
@@ -157,7 +159,7 @@ export class SdLibraryPackageBuilder {
       devtool: "inline-source-map",
       entry,
       output: {
-        path: this._packagePath(`dist`),
+        path: this._packagePath("dist"),
         libraryTarget: "umd"
       },
       resolve: {
@@ -189,33 +191,33 @@ export class SdLibraryPackageBuilder {
           ]
         }),
 
-        new SdTypescriptDtsPlugin({ context: this._packagePath(), logger: this._logger }),
+        new SdTypescriptDtsPlugin({context: this._packagePath(), logger: this._logger}),
 
         ...(packageJson.bin)
           ? [
             new webpack.BannerPlugin({
-              banner: `#!/usr/bin/env node`,
+              banner: "#!/usr/bin/env node",
               raw: true,
               entryOnly: true,
-              include: Object.keys(packageJson.bin).map((binName) => `${binName}.js`)
+              include: Object.keys(packageJson.bin).map(binName => `${binName}.js`)
             })
           ]
           : []
       ],
       externals: [
         (context, request, callback) => {
-          request = request.split("!").last();
+          const currRequest = request.split("!").last();
 
-          if (nodeModules.some((item) => request.startsWith(item))) {
-            callback(undefined, `commonjs ${request}`);
+          if (nodeModules.some(item => currRequest.startsWith(item))) {
+            callback(undefined, `commonjs ${currRequest}`);
             return;
           }
 
           if (
-            !path.resolve(context, request).startsWith(this._packagePath()) &&
-            path.resolve(context, request).startsWith(this._packagePath(".."))
+            !path.resolve(context, currRequest).startsWith(this._packagePath()) &&
+            path.resolve(context, currRequest).startsWith(this._packagePath(".."))
           ) {
-            const targetPackageName = path.relative(this._packagePath(".."), path.resolve(context, request)).split(/[\\/]/)[0];
+            const targetPackageName = path.relative(this._packagePath(".."), path.resolve(context, currRequest)).split(/[\\/]/)[0];
             callback(undefined, `commonjs @simplism/${targetPackageName}`);
             return;
           }
@@ -227,15 +229,15 @@ export class SdLibraryPackageBuilder {
   }
 
   private _writeStatsToConsole(stats: webpack.Stats): void {
-    const info = stats!.toJson();
+    const info = stats.toJson();
 
-    if (stats!.hasWarnings()) {
+    if (stats.hasWarnings()) {
       for (const warning of info.warnings) {
         this._logger.warn(warning);
       }
     }
 
-    if (stats!.hasErrors()) {
+    if (stats.hasErrors()) {
       for (const error of info.errors) {
         this._logger.error(error);
       }

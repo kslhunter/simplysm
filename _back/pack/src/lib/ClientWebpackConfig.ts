@@ -1,33 +1,33 @@
-import * as path from "path";
-import * as webpack from "webpack";
-import {ISimpackClientConfig, ISimpackServerConfig} from "./ISimpackConfig";
-import * as HtmlWebpackPlugin from "html-webpack-plugin";
-import * as CopyWebpackPlugin from "copy-webpack-plugin";
-import * as webpackMerge from "webpack-merge";
-import * as fs from "fs-extra";
-import * as ExtractTextPlugin from "extract-text-webpack-plugin";
-import {Logger, Uuid} from "@simplism/core";
+import * as path from 'path';
+import * as webpack from 'webpack';
+import {ISimpackClientConfig, ISimpackServerConfig} from './ISimpackConfig';
+import * as HtmlWebpackPlugin from 'html-webpack-plugin';
+import * as CopyWebpackPlugin from 'copy-webpack-plugin';
+import * as webpackMerge from 'webpack-merge';
+import * as fs from 'fs-extra';
+import * as ExtractTextPlugin from 'extract-text-webpack-plugin';
+import {Logger, Uuid} from '@simplism/core';
 
-const HappyPack = require("happypack"); // tslint:disable-line:variable-name
-const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin"); // tslint:disable-line:variable-name
+const HappyPack = require('happypack'); // tslint:disable-line:variable-name
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin'); // tslint:disable-line:variable-name
 
 export class ClientWebpackConfig {
     static getForBuild(config: ISimpackClientConfig, serverConfig: ISimpackServerConfig | undefined, env: string | undefined, clientDistPath: string): webpack.Configuration {
         return webpackMerge(this._getCommon(config, serverConfig), {
-            mode: "production",
+            mode: 'production',
             optimization: {
                 noEmitOnErrors: true
             },
 
             entry: {
-                "app": path.resolve(process.cwd(), "node_modules", "@simplism", "pack", "entry", "main.ts")
+                'app': path.resolve(process.cwd(), 'node_modules', '@simplism', 'pack', 'entry', 'main.ts')
             },
 
             output: {
                 path: clientDistPath,
-                publicPath: config.cordova ? "/android_asset/www/" : undefined,
-                filename: "[name].[hash].js",
-                chunkFilename: "[id].[hash].js"
+                publicPath: config.cordova ? '/android_asset/www/' : undefined,
+                filename: '[name].[hash].js',
+                chunkFilename: '[id].[hash].js'
             },
 
             module: {
@@ -36,10 +36,10 @@ export class ClientWebpackConfig {
                         test: /\.scss$/,
                         exclude: /[\\\/]src[\\\/]/,
                         use: ExtractTextPlugin.extract({
-                            fallback: "style-loader",
+                            fallback: 'style-loader',
                             use: [
-                                "css-loader?sourceMap",
-                                "sass-loader?sourceMap"
+                                'css-loader?sourceMap',
+                                'sass-loader?sourceMap'
                             ]
                         })
                     }
@@ -47,15 +47,15 @@ export class ClientWebpackConfig {
             },
 
             plugins: [
-                new ExtractTextPlugin("[name].[hash].css"),
+                new ExtractTextPlugin('[name].[hash].css'),
 
                 new webpack.LoaderOptionsPlugin({
                     htmlLoader: {minimize: false}
                 }),
 
                 new HtmlWebpackPlugin({
-                    template: path.resolve(process.cwd(), "node_modules", "@simplism", "pack", "entry", "index.ejs"),
-                    NODE_ENV: "production",
+                    template: path.resolve(process.cwd(), 'node_modules', '@simplism', 'pack', 'entry', 'index.ejs'),
+                    NODE_ENV: 'production',
                     PACKAGE_NAME: config.package,
                     NAME: config.name,
                     CORDOVA: !!config.cordova,
@@ -63,11 +63,11 @@ export class ClientWebpackConfig {
                 }),
 
                 new webpack.DefinePlugin({
-                    "process.env": this._stringifyEnv({
-                        NODE_ENV: "production",
+                    'process.env': this._stringifyEnv({
+                        NODE_ENV: 'production',
                         SD_ENV: env,
-                        PLATFORM: config.electron ? "desktop" : config.cordova ? config.cordova.platform : "web",
-                        VERSION: fs.readJsonSync(path.resolve(process.cwd(), "package.json")).version,
+                        PLATFORM: config.electron ? 'desktop' : config.cordova ? config.cordova.platform : 'web',
+                        VERSION: fs.readJsonSync(path.resolve(process.cwd(), 'package.json')).version,
                         SERVER_HOST: serverConfig && serverConfig.host,
                         SERVER_PORT: serverConfig && serverConfig.port,
                         ...config.env
@@ -79,20 +79,20 @@ export class ClientWebpackConfig {
 
     static getForStart(config: ISimpackClientConfig, serverConfig: ISimpackServerConfig, env: string | undefined, clientDistPath: string): webpack.Configuration {
         const webpackConfig: webpack.Configuration = webpackMerge(this._getCommon(config, serverConfig), {
-            mode: "development",
+            mode: 'development',
 
             entry: {
-                "app": [
+                'app': [
                     `webpack-dev-server/client?http://${serverConfig.host}:${serverConfig.port + 1}/`,
                     `webpack/hot/dev-server`,
-                    path.resolve(process.cwd(), "node_modules", "@simplism", "pack", "entry", "main.ts")
+                    path.resolve(process.cwd(), 'node_modules', '@simplism', 'pack', 'entry', 'main.ts')
                 ]
             },
 
             output: {
                 path: clientDistPath,
-                filename: "[name].js",
-                chunkFilename: "[id].chunk.js"
+                filename: '[name].js',
+                chunkFilename: '[id].chunk.js'
             },
 
             module: {
@@ -101,9 +101,9 @@ export class ClientWebpackConfig {
                         test: /\.scss$/,
                         exclude: /[\\\/]src[\\\/]/,
                         use: [
-                            "style-loader",
-                            "css-loader?sourceMap",
-                            "sass-loader?sourceMap"
+                            'style-loader',
+                            'css-loader?sourceMap',
+                            'sass-loader?sourceMap'
                         ]
                     }
                 ]
@@ -113,8 +113,8 @@ export class ClientWebpackConfig {
                 /*new WebpackWatchTimefixPlugin(),*/
 
                 new HtmlWebpackPlugin({
-                    template: path.resolve(process.cwd(), "node_modules", "@simplism", "pack", "entry", "index.ejs"),
-                    NODE_ENV: "development",
+                    template: path.resolve(process.cwd(), 'node_modules', '@simplism', 'pack', 'entry', 'index.ejs'),
+                    NODE_ENV: 'development',
                     PACKAGE_NAME: config.package,
                     NAME: config.name,
                     CORDOVA: !!config.cordova,
@@ -122,11 +122,11 @@ export class ClientWebpackConfig {
                 }),
 
                 new webpack.DefinePlugin({
-                    "process.env": this._stringifyEnv({
-                        NODE_ENV: "development",
+                    'process.env': this._stringifyEnv({
+                        NODE_ENV: 'development',
                         SD_ENV: env,
-                        PLATFORM: config.electron ? "desktop" : config.cordova ? config.cordova.platform : "web",
-                        VERSION: fs.readJsonSync(path.resolve(process.cwd(), "package.json")).version,
+                        PLATFORM: config.electron ? 'desktop' : config.cordova ? config.cordova.platform : 'web',
+                        VERSION: fs.readJsonSync(path.resolve(process.cwd(), 'package.json')).version,
                         SERVER_HOST: serverConfig && serverConfig.host,
                         SERVER_PORT: serverConfig && serverConfig.port,
                         ...config.env
@@ -141,8 +141,8 @@ export class ClientWebpackConfig {
         if (config.cordova) {
             webpackConfig.plugins!.push(
                 new CopyWebpackPlugin([{
-                    context: path.resolve(process.cwd(), ".cordova/platforms/" + config.cordova.platform + "/platform_www"),
-                    from: "**/*"
+                    context: path.resolve(process.cwd(), '.cordova/platforms/' + config.cordova.platform + '/platform_www'),
+                    from: '**/*'
                 }])
             );
         }
@@ -153,29 +153,29 @@ export class ClientWebpackConfig {
     private static _stringifyEnv(param: { [key: string]: any }): { [key: string]: string } {
         const result: { [key: string]: string } = {};
         for (const key of Object.keys(param)) {
-            result[key] = param[key] ? JSON.stringify(param[key]) : "undefined";
+            result[key] = param[key] ? JSON.stringify(param[key]) : 'undefined';
         }
         return result;
     }
 
     private static _getCommon(config: ISimpackClientConfig, serverConfig: ISimpackServerConfig | undefined): webpack.Configuration {
         return {
-            devtool: "source-map",
-            target: config.electron ? "electron-renderer" : undefined,
+            devtool: 'source-map',
+            target: config.electron ? 'electron-renderer' : undefined,
 
             optimization: {
                 splitChunks: {
                     cacheGroups: {
                         vendor: {
                             test: /[\\/]node_modules[\\/](?!@simplism)/,
-                            name: "vendor",
-                            chunks: "initial",
+                            name: 'vendor',
+                            chunks: 'initial',
                             enforce: true
                         },
                         simplism: {
                             test: /[\\/]node_modules[\\/]@simplism[\\/](?!pack)/,
-                            name: "simplism",
-                            chunks: "initial",
+                            name: 'simplism',
+                            chunks: 'initial',
                             enforce: true
                         }
                     }
@@ -183,9 +183,9 @@ export class ClientWebpackConfig {
             },
 
             resolve: {
-                extensions: [".ts", ".js"],
+                extensions: ['.ts', '.js'],
                 alias: {
-                    "@simplism": path.resolve(process.cwd(), "node_modules", "@simplism")
+                    '@simplism': path.resolve(process.cwd(), 'node_modules', '@simplism')
                 }
             },
 
@@ -199,8 +199,8 @@ export class ClientWebpackConfig {
                     } as any,
                     {
                         test: /\.js$/,
-                        use: ["source-map-loader"],
-                        enforce: "pre"
+                        use: ['source-map-loader'],
+                        enforce: 'pre'
                     }, /*
                     {
                         test: /\.ts$/,
@@ -225,28 +225,28 @@ export class ClientWebpackConfig {
                     },*/
                     {
                         test: /\.ts$/,
-                        loader: "happypack/loader?id=ts",
+                        loader: 'happypack/loader?id=ts',
                         exclude: /node_modules/
                     },
                     {
                         test: /\.scss$/,
                         include: /[\\\/]src[\\\/]/,
-                        use: ["raw-loader", "sass-loader?sourceMap"]
+                        use: ['raw-loader', 'sass-loader?sourceMap']
                     },
                     {
                         test: /\.pcss$/,
                         use: [
-                            "style-loader",
+                            'style-loader',
                             {
-                                loader: "css-loader",
+                                loader: 'css-loader',
                                 options: {importLoaders: 1}
                             },
                             {
-                                loader: "postcss-loader",
+                                loader: 'postcss-loader',
                                 options: {
                                     plugins: (loader: any) => [
-                                        require("postcss-import")({root: loader.resourcePath}),
-                                        require("postcss-cssnext")()
+                                        require('postcss-import')({root: loader.resourcePath}),
+                                        require('postcss-cssnext')()
                                     ]
                                 }
                             }
@@ -254,11 +254,11 @@ export class ClientWebpackConfig {
                     },
                     {
                         test: /\.html$/,
-                        use: "html-loader"
+                        use: 'html-loader'
                     },
                     {
                         test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf)$/,
-                        use: "file-loader?name=assets/[name].[hash].[ext]"
+                        use: 'file-loader?name=assets/[name].[hash].[ext]'
                     }
                 ]
             },
@@ -266,30 +266,30 @@ export class ClientWebpackConfig {
             plugins: [
                 new webpack.ContextReplacementPlugin(
                     /angular[\\/]core[\\/](@angular|esm5)/,
-                    path.resolve(process.cwd(), "./src"),
+                    path.resolve(process.cwd(), './src'),
                     {}
                 ),
 
                 new webpack.ProvidePlugin({
-                    $: "jquery",
-                    jQuery: "jquery",
-                    JQuery: "jquery"
+                    $: 'jquery',
+                    jQuery: 'jquery',
+                    JQuery: 'jquery'
                 }),
 
                 new webpack.NormalModuleReplacementPlugin(
                     /^APP_MODULE_PATH$/,
-                    require.resolve(path.resolve(process.cwd(), "packages", config.package, "src", "AppModule.ts"))
+                    require.resolve(path.resolve(process.cwd(), 'packages', config.package, 'src', 'AppModule.ts'))
                 ),
 
                 new HappyPack({
-                    id: "ts",
+                    id: 'ts',
                     verbose: false,
                     loaders: [
                         {
-                            loader: "ts-loader",
+                            loader: 'ts-loader',
                             options: {silent: true, happyPackMode: true}
                         },
-                        "angular2-template-loader"
+                        'angular2-template-loader'
                     ]
                 }),
 
@@ -316,12 +316,11 @@ export class ClientWebpackConfig {
 
             externals: [
                 (context, request, callback) => {
-                    if (serverConfig && new RegExp(serverConfig.package + "[\\\\\\/]src").test(request)) {
+                    if (serverConfig && new RegExp(serverConfig.package + '[\\\\\\/]src').test(request)) {
                         const classFileName = path.basename(request);
                         const className = classFileName[0].toUpperCase() + classFileName.slice(1).replace(/\.[a-z]/g, matched => matched[1].toUpperCase());
                         return callback(undefined, `{${className}: {name: '${className}'}} /*${Uuid.newUuid()}*/`);
-                    }
-                    else if (["fs", "fs-extra", "path"].includes(request)) {
+                    } else if (['fs', 'fs-extra', 'path'].includes(request)) {
                         return callback(undefined, `"${request}"`);
                     }
                     callback(undefined, undefined);

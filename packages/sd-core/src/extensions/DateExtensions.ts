@@ -1,7 +1,8 @@
-import { DateOnly } from "../types/DateOnly";
-import { Time } from "../types/Time";
+import {DateOnly} from "../types/DateOnly";
+import {Time} from "../types/Time";
 
 declare global {
+  // tslint:disable-next-line:interface-name
   interface Date {
     addSeconds(seconds: number): Date;
 
@@ -23,7 +24,7 @@ declare global {
   }
 }
 
-Date.prototype.addSeconds = function(seconds: number): any {
+Date.prototype.addSeconds = function (seconds: number): any {
   if (!seconds) {
     return this;
   }
@@ -33,7 +34,7 @@ Date.prototype.addSeconds = function(seconds: number): any {
   return date;
 };
 
-Date.prototype.addMinutes = function(minutes: number): any {
+Date.prototype.addMinutes = function (minutes: number): any {
   if (!minutes) {
     return this;
   }
@@ -43,7 +44,7 @@ Date.prototype.addMinutes = function(minutes: number): any {
   return date;
 };
 
-Date.prototype.addHours = function(hours: number): any {
+Date.prototype.addHours = function (hours: number): any {
   if (!hours) {
     return this;
   }
@@ -53,7 +54,7 @@ Date.prototype.addHours = function(hours: number): any {
   return date;
 };
 
-Date.prototype.addDates = function(days: number): any {
+Date.prototype.addDates = function (days: number): any {
   if (!days) {
     return this;
   }
@@ -63,7 +64,7 @@ Date.prototype.addDates = function(days: number): any {
   return date;
 };
 
-Date.prototype.addMonths = function(months: number): any {
+Date.prototype.addMonths = function (months: number): any {
   if (!months) {
     return this;
   }
@@ -73,7 +74,7 @@ Date.prototype.addMonths = function(months: number): any {
   return date;
 };
 
-Date.prototype.addYears = function(years: number): any {
+Date.prototype.addYears = function (years: number): any {
   if (!years) {
     return this;
   }
@@ -83,15 +84,15 @@ Date.prototype.addYears = function(years: number): any {
   return date;
 };
 
-Date.prototype.toDateOnly = function(): any {
+Date.prototype.toDateOnly = function (): any {
   return new DateOnly(this.getFullYear(), this.getMonth(), this.getDate());
 };
 
-Date.prototype.toTime = function(): any {
+Date.prototype.toTime = function (): any {
   return new Time(this.getHours(), this.getMinutes(), this.getSeconds(), this.getMilliseconds());
 };
 
-Date.prototype.toFormatString = function(format: string): string {
+Date.prototype.toFormatString = function (format: string): string {
   const year = this.getFullYear();
   const month = this.getMonth() + 1;
   const day = this.getDate();

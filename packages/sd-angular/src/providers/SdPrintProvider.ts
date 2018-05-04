@@ -1,17 +1,17 @@
-import { ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
-import { SdPrintControlTemplateBase } from "../bases/SdPrintControlTemplateBase";
+import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
+import {SdPrintControlTemplateBase} from "../bases/SdPrintControlTemplateBase";
 
 @Injectable()
 export class SdPrintProvider {
-  public constructor(private _compFactoryResolver: ComponentFactoryResolver,
-                     private _appRef: ApplicationRef,
-                     private _injector: Injector) {
+  public constructor(private readonly _compFactoryResolver: ComponentFactoryResolver,
+                     private readonly _appRef: ApplicationRef,
+                     private readonly _injector: Injector) {
   }
 
   public async print<T extends SdPrintControlTemplateBase<I>, I>(printType: Type<SdPrintControlTemplateBase<I>>,
                                                                  param: T["param"],
                                                                  options?: { margin?: string; size?: string }): Promise<void> {
-    return await new Promise<void>(async (resolve) => {
+    await new Promise<void>(async resolve => {
       const compRef = this._compFactoryResolver.resolveComponentFactory(printType).create(this._injector);
       const $comp = $(compRef.location.nativeElement);
       $comp.addClass("_sd-print-template");
@@ -31,14 +31,13 @@ export class SdPrintProvider {
       try {
         compRef.instance.param = param;
         await compRef.instance.sdBeforeOpen();
-      }
-      catch (e) {
+      } catch (e) {
         throw e;
       }
 
       this._appRef.attachView(compRef.hostView);
       setTimeout(async () => {
-        window["print"]();
+        window.print();
         $comp.remove();
         $style.remove();
         resolve();

@@ -8,30 +8,30 @@ import {
   Output,
   SimpleChanges
 } from "@angular/core";
-import { SdSizeString, SdThemeString } from "../helpers/types";
-import { SdValidate } from "../decorators/SdValidate";
+import {SdValidate} from "../decorators/SdValidate";
+import {SdSizeString, SdThemeString} from "../helpers/types";
 
 @Component({
   selector: "sd-textfield",
   template: `
-        <sd-dock-container>
-            <sd-pane>
-                <input [type]="type === 'number' ? 'text' : type"
-                       [required]="required"
-                       [disabled]="disabled"
-                       [attr.step]="step"
-                       [attr.min]="min"
-                       [attr.placeholder]="placeholder"
-                       [value]="displayText"
-                       (input)="onInput($event)"
-                       (focus)="onFocus($event)"
-                       (blur)="onBlur($event)"/>
-                <div class="invalid-indicator"></div>
-            </sd-pane>
-            <sd-dock position="right">
-                <ng-content></ng-content>
-            </sd-dock>
-        </sd-dock-container>`,
+    <sd-dock-container>
+      <sd-pane>
+        <input [type]="type === 'number' ? 'text' : type"
+               [required]="required"
+               [disabled]="disabled"
+               [attr.step]="step"
+               [attr.min]="min"
+               [attr.placeholder]="placeholder"
+               [value]="displayText"
+               (input)="onInput($event)"
+               (focus)="onFocus($event)"
+               (blur)="onBlur($event)"/>
+        <div class="invalid-indicator"></div>
+      </sd-pane>
+      <sd-dock position="right">
+        <ng-content></ng-content>
+      </sd-dock>
+    </sd-dock-container>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdTextfieldControl implements OnChanges {
@@ -42,7 +42,7 @@ export class SdTextfieldControl implements OnChanges {
   @Input()
   @SdValidate({
     type: String,
-    validator: (value) => ["text", "password", "number", "date", "month", "year"].includes(value),
+    validator: value => ["text", "password", "number", "date", "month", "year"].includes(value),
     notnull: true
   })
   public type: "text" | "password" | "number" | "date" | "month" | "year" = "text";
@@ -104,7 +104,7 @@ export class SdTextfieldControl implements OnChanges {
   // ----------------------------------------------
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (Object.keys(changes).some((key) => ["value", "type"].includes(key))) {
+    if (Object.keys(changes).some(key => ["value", "type"].includes(key))) {
       this._reloadDisplayText();
     }
   }

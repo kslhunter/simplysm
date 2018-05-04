@@ -1,23 +1,23 @@
-import { ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
-import { SdModalControlBase } from "../bases/SdModalControlBase";
-import { SdModalControl } from "../entry-controls/SdModalControl";
+import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
+import {SdModalControlBase} from "../bases/SdModalControlBase";
+import {SdModalControl} from "../entry-controls/SdModalControl";
 
 @Injectable()
 export class SdModalProvider {
-  public constructor(private _compFactoryResolver: ComponentFactoryResolver,
-                     private _appRef: ApplicationRef,
-                     private _injector: Injector) {
-  }
-
   public get hasOpenModal(): boolean {
     return $("._sd-modal").length > 0;
+  }
+
+  public constructor(private readonly _compFactoryResolver: ComponentFactoryResolver,
+                     private readonly _appRef: ApplicationRef,
+                     private readonly _injector: Injector) {
   }
 
   public async show<T extends SdModalControlBase<I, O>, I, O>(title: string,
                                                               modalType: Type<SdModalControlBase<I, O>>,
                                                               param: T["param"],
                                                               options?: { hideCloseButton?: boolean }): Promise<O> {
-    return await new Promise<O>(async (resolve) => {
+    return await new Promise<O>(async resolve => {
       const compRef = this._compFactoryResolver.resolveComponentFactory(modalType).create(this._injector);
       const modalRef = this._compFactoryResolver.resolveComponentFactory(SdModalControl).create(
         this._injector,
@@ -51,8 +51,7 @@ export class SdModalProvider {
       try {
         compRef.instance.param = param;
         await compRef.instance.sdBeforeOpen();
-      }
-      catch (e) {
+      } catch (e) {
         await close();
         throw e;
       }

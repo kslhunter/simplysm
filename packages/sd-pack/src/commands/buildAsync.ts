@@ -1,11 +1,11 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import { SdLocalUpdater } from "../builders/SdLocalUpdater";
-import { SdLibraryPackageBuilder } from "../builders/SdLibraryPackageBuilder";
-import { SdClientPackageBuilder } from "../builders/SdClientPackageBuilder";
-import { SdServerPackageBuilder } from "../builders/SdServerPackageBuilder";
+import {SdClientPackageBuilder} from "../builders/SdClientPackageBuilder";
+import {SdLibraryPackageBuilder} from "../builders/SdLibraryPackageBuilder";
+import {SdLocalUpdater} from "../builders/SdLocalUpdater";
+import {SdServerPackageBuilder} from "../builders/SdServerPackageBuilder";
 
-export async function build(argv: { watch: boolean; env: { [key: string]: any }; package: string }): Promise<void> {
+export async function buildAsync(argv: { watch: boolean; env: { [key: string]: any }; package: string }): Promise<void> {
   const promiseList: Promise<void>[] = [];
   if (
     argv.watch &&
@@ -16,14 +16,14 @@ export async function build(argv: { watch: boolean; env: { [key: string]: any };
     const dependencySimplismPackageNameList = [
       ...rootPackageJson.dependencies ? Object.keys(rootPackageJson.dependencies) : [],
       ...rootPackageJson.devDependencies ? Object.keys(rootPackageJson.devDependencies) : []
-    ].filter((item) => item.startsWith("@simplism")).map((item) => item.slice(10));
+    ].filter(item => item.startsWith("@simplism")).map(item => item.slice(10));
 
     for (const dependencySimplismPackageName of dependencySimplismPackageNameList) {
       promiseList.push(new SdLocalUpdater(dependencySimplismPackageName).runAsync(true));
     }
   }
 
-  const runBuildAsync = (packageName: string) => {
+  const runBuild = (packageName: string) => {
     if (!argv.watch) {
       if (packageName.startsWith("client")) {
         promiseList.push(new SdClientPackageBuilder(packageName).buildAsync(argv.env));
@@ -49,12 +49,12 @@ export async function build(argv: { watch: boolean; env: { [key: string]: any };
   };
 
   if (!argv.package) {
-    for (const packageName of fs.readdirSync(path.resolve(process.cwd(), `packages`))) {
-      await runBuildAsync(packageName);
+    for (const packageName of fs.readdirSync(path.resolve(process.cwd(), "packages"))) {
+      runBuild(packageName);
     }
   }
   else {
-    await runBuildAsync(argv.package);
+    runBuild(argv.package);
   }
   await Promise.all(promiseList);
 }

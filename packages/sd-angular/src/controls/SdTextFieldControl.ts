@@ -1,3 +1,5 @@
+// tslint:disable:use-host-property-decorator
+
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -9,64 +11,41 @@ import {
   Output,
   ViewChild
 } from "@angular/core";
-import { Exception, Safe } from "../../../sd-core/src";
-import { SimgularHelpers } from "../helpers/SimgularHelpers";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {Safe} from "../../../sd-core/src/utils/Safe";
+import {SimgularHelpers} from "../helpers/SimgularHelpers";
 
 @Component({
   selector: "sd-text-field",
   template: `
-        <input [placeholder]="placeholder"
-               [value]="displayValue === undefined ? null : displayValue"
-               (input)="onInput($event)"
-               [type]="type === 'number' ? 'text' : type"
-               [ngClass]="styleClass"
-               [disabled]="disabled"
-               [maxLength]="maxLength || 524288"
-               [ngStyle]="getStyle()"
-               [required]="required"
-               (touchend)="onTouchend()"
-               (blur)="onBlur()"
-               [name]="autoComplete"
-               [autocomplete]="autoComplete ? 'on' : 'off'"
-               #input/>
-        <div class="_sd-text-field-button-group">
-            <ng-content></ng-content>
-        </div>`,
+    <input [placeholder]="placeholder"
+           [value]="displayValue === undefined ? null : displayValue"
+           (input)="onInput($event)"
+           [type]="type === 'number' ? 'text' : type"
+           [ngClass]="styleClass"
+           [disabled]="disabled"
+           [maxLength]="maxLength || 524288"
+           [ngStyle]="getStyle()"
+           [required]="required"
+           (touchend)="onTouchend()"
+           (blur)="onBlur()"
+           [name]="autoComplete"
+           [autocomplete]="autoComplete ? 'on' : 'off'"
+           #input/>
+    <div class="_sd-text-field-button-group">
+      <ng-content></ng-content>
+    </div>`,
   host: {
     "[class._inline]": "inline"
   },
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdTextFieldControl implements AfterViewInit {
-  private _size = "default";
-  private _style: { [key: string]: any } = {};
   public displayValue: any;
 
   @Input() public validator?: (value: any | undefined) => boolean;
   @Input() public autoComplete?: string;
   @Output() public readonly valueChange = new EventEmitter<any>();
-
-  @Input()
-  public set value(value: any) {
-    this._value = value;
-    this.reloadDisplayValue();
-  }
-
-  private _value: any;
-
-  @Input()
-  public set step(value: number | undefined) {
-    if (value === null || value === undefined) {
-      value = 1;
-    }
-    if (typeof value !== "number") {
-      throw new Exception(`'sd-text-field.step'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
-    }
-    this._step = value;
-  }
-
-  private _step = 1;
-
   @Input() public placeholder = "";
   @Input() public inline = false;
   @Input() public disabled = false;
@@ -74,8 +53,9 @@ export class SdTextFieldControl implements AfterViewInit {
   @Input() public maxLength: number | undefined = undefined;
   @Input() public min: number | undefined = undefined;
   @Input() public max: number | undefined = undefined;
-
   @ViewChild("input") public inputElementRef?: ElementRef;
+  private _inputTimeout?: number;
+  private readonly _style: { [key: string]: any } = {};
 
   @Input()
   public set style(value: string) {
@@ -88,6 +68,33 @@ export class SdTextFieldControl implements AfterViewInit {
     }
   }
 
+  private _value: any;
+
+  @Input()
+  public set value(value: any) {
+    this._value = value;
+    this.reloadDisplayValue();
+  }
+
+  private _step = 1;
+
+  @Input()
+  public set step(value: number | undefined) {
+    const currValue = value === null || value === undefined
+      ? 1 : value;
+
+    if (typeof currValue !== "number") {
+      throw new Exception(`'sd-text-field.step'에 잘못된값 '${JSON.stringify(currValue)}'가 입력되었습니다.`);
+    }
+    this._step = currValue;
+  }
+
+  private _type = "text";
+
+  public get type(): string {
+    return this._type;
+  }
+
   @Input()
   public set type(value: string) {
     if (!["text", "password", "number", "date", "month", "year"].includes(value)) {
@@ -95,20 +102,6 @@ export class SdTextFieldControl implements AfterViewInit {
     }
     this._type = value;
     this.reloadDisplayValue();
-  }
-
-  public get type(): string {
-    return this._type;
-  }
-
-  private _type = "text";
-
-  @Input()
-  public set size(value: string) {
-    if (!["default", "sm"].includes(value)) {
-      throw new Exception(`'sd-text-field.size'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
-    }
-    this._size = value;
   }
 
   public get styleClass(): string[] {
@@ -151,15 +144,25 @@ export class SdTextFieldControl implements AfterViewInit {
       this.disabled ? "_disabled" : "",
       `_type-${this.type}`,
       hasError ? "_error" : ""
-    ].filter((item) => item);
+    ].filter(item => item);
+  }
+
+  private _size = "default";
+
+  @Input()
+  public set size(value: string) {
+    if (!["default", "sm"].includes(value)) {
+      throw new Exception(`'sd-text-field.size'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
+    }
+    this._size = value;
+  }
+
+  public constructor(private readonly _elementRef: ElementRef,
+                     private readonly _zone: NgZone) {
   }
 
   public getStyle(): { [key: string]: any } {
     return this._style;
-  }
-
-  public constructor(private _elementRef: ElementRef,
-                     private _zone: NgZone) {
   }
 
   public ngAfterViewInit(): void {
@@ -171,27 +174,14 @@ export class SdTextFieldControl implements AfterViewInit {
             .children("._sd-text-field-button-group")
             .children()
             .toArray()
-            .some((item) => !["sd-button"].includes(item.tagName.toLowerCase()))
+            .some(item => !["sd-button"].includes(item.tagName.toLowerCase()))
         ) {
-          throw new Error(`"sd-text-field"안에는, "sd-button"외의 엘리먼트를 사용할 수 없습니다.`);
+          throw new Error('"sd-text-field"안에는, "sd-button"외의 엘리먼트를 사용할 수 없습니다.');
         }
         this._resizingButtonGroup();
-      }, { resize: false });
+      }, {resize: false});
     });
   }
-
-  private _resizingButtonGroup(): void {
-    const $input = $(this._elementRef.nativeElement).children("input");
-    const $buttonGroup = $(this._elementRef.nativeElement).children("._sd-text-field-button-group");
-
-    $input.css("padding-right", $buttonGroup.outerWidth() || "");
-    $buttonGroup.css({
-      top: `${getComputedStyle($input.get(0)).borderTopWidth}px`,
-      right: `${getComputedStyle($input.get(0)).borderRightWidth}px`
-    });
-  }
-
-  private _inputTimeout?: number;
 
   public onInput(e: Event): void {
     window.clearTimeout(this._inputTimeout!);
@@ -219,8 +209,7 @@ export class SdTextFieldControl implements AfterViewInit {
 
   public reloadDisplayValue(): void {
     if (this._value === undefined) {
-      //tslint:disable-next-line:no-null-keyword
-      this.displayValue = null;
+      this.displayValue = "";
     }
     else if (this.type === "number") {
       this.displayValue = this._value.toLocaleString();
@@ -243,5 +232,16 @@ export class SdTextFieldControl implements AfterViewInit {
     else {
       this._value = this.displayValue;
     }
+  }
+
+  private _resizingButtonGroup(): void {
+    const $input = $(this._elementRef.nativeElement).children("input");
+    const $buttonGroup = $(this._elementRef.nativeElement).children("._sd-text-field-button-group");
+
+    $input.css("padding-right", $buttonGroup.outerWidth() || "");
+    $buttonGroup.css({
+      top: `${getComputedStyle($input.get(0)).borderTopWidth}px`,
+      right: `${getComputedStyle($input.get(0)).borderRightWidth}px`
+    });
   }
 }

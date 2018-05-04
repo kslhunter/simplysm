@@ -1,22 +1,27 @@
 import * as sio from "socket.io-client";
-import { Exception, JsonConvert, Logger, NotImplementedException, Type, Uuid } from "../../../sd-core/src";
-import { ISocketEvent } from "../common/ISocketEvent";
-import { ISocketRequest } from "../common/ISocketRequest";
-import { ISocketResponse } from "../common/ISocketResponse";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {NotImplementedException} from "../../../sd-core/src/exceptions/NotImplementedException";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Uuid} from "../../../sd-core/src/types/Uuid";
+import {JsonConvert} from "../../../sd-core/src/utils/JsonConvert";
+import {Logger} from "../../../sd-core/src/utils/Logger";
+import {ISocketEvent} from "../common/ISocketEvent";
+import {ISocketRequest} from "../common/ISocketRequest";
+import {ISocketResponse} from "../common/ISocketResponse";
 import Socket = SocketIOClient.Socket;
 
 export class SocketClient {
-  private _logger = new Logger("@simplism/sd-socket", "SocketClient");
+  private readonly _logger = new Logger("@simplism/sd-socket", "SocketClient");
   private _socket?: Socket;
   private _url?: string;
-  private _reloadId?: Uuid;
+  private readonly _reloadId?: Uuid;
 
   public get connected(): boolean {
     return (this._socket && this._socket.connected) || false;
   }
 
   public async connect(url?: string): Promise<void> {
-    return await new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       this._url = `ws://${url || location.host}`;
 
       const prevSocket = sio.managers[this._url] && sio.managers[this._url].connecting[0];
@@ -70,10 +75,10 @@ export class SocketClient {
   }
 
   public async send(cmd: string, args: any[], header?: { [key: string]: any }): Promise<any> {
-    //-- 연결되지 않은 경우 500ms를 기다린 후 다시 연결여부를 확인해 본다.
+    // 연결되지 않은 경우 500ms를 기다린 후 다시 연결여부를 확인해 본다.
     // (연결되기 전에 명령을 보내는 경우, 문제가 발생하는 현상 수정)
     if (!this.connected) {
-      await new Promise<void>((resolve) => {
+      await new Promise<void>(resolve => {
         setTimeout(() => {
           resolve();
         }, 500);
@@ -83,7 +88,7 @@ export class SocketClient {
       }
     }
 
-    //-- 전송
+    // 전송
     return await this._send(cmd, args, header);
   }
 
@@ -91,7 +96,7 @@ export class SocketClient {
     return new Promise<any>((resolve, reject) => {
       const requestId = Uuid.newUuid();
 
-      //-- 결과받기 이벤트
+      // 결과받기 이벤트
       this._socket!.once(`response(${requestId})`, (responseJson: string) => {
         const response: ISocketResponse = JsonConvert.parse(responseJson);
         this._logger.log("response received", JsonConvert.stringify(response, {
@@ -120,12 +125,12 @@ export class SocketClient {
         }
       });
 
-      //-- 요청 전송
+      // 요청 전송
       const request: ISocketRequest = {
         header: {
           id: requestId,
           cmd,
-          origin: !location ? "" : `${location.protocol}//${location.host}`,
+          origin: !location ? "" : `${location.protocol}// ${location.host}`,
           ...header
         },
         body: args

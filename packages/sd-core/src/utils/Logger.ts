@@ -1,8 +1,20 @@
+// tslint:disable:no-console
+
 import * as fs from "fs-extra";
 import * as path from "path";
 
 export class Logger {
   public static history: ILoggerHistory[] = [];
+
+  private static _defaultConfig: ILoggerConfig = {
+    consoleLogTypes: ["log", "info", "warn", "error"],
+    fileLogTypes: [],
+    outputPath: undefined,
+    historySize: 30
+  };
+
+  private static readonly _groupMap = new Map<string, ILoggerConfig>();
+  private static _lastId = 0;
 
   public static setGroupConfig(groupName?: string, config?: Partial<ILoggerConfig>): void {
     if (groupName) {
@@ -36,16 +48,6 @@ export class Logger {
       ...config
     };
   }
-
-  private static _defaultConfig: ILoggerConfig = {
-    consoleLogTypes: ["log", "info", "warn", "error"],
-    fileLogTypes: [],
-    outputPath: undefined,
-    historySize: 30
-  };
-
-  private static _groupMap = new Map<string, ILoggerConfig>();
-  private static _lastId = 0;
 
   private readonly _groupName: string;
   private readonly _name: string;
@@ -93,13 +95,11 @@ export class Logger {
     Logger.history = Logger.history.slice(0, config.historySize);
 
     // 로그 변환
-    const convertedLogs = logs.map((log) => {
+    const convertedLogs = logs.map(log => {
       // 색상있으면 색상 빼기
       if (typeof log === "string") {
         return log.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
       }
-
-      // 에러는 스택만 추출
       else if (log instanceof Error) {
         return log.stack;
       }
@@ -116,32 +116,30 @@ export class Logger {
 
       // Node.js
       if (process.versions.node) {
-        const colors = {
-          log: 0,
-          info: 36,
-          warn: 33,
-          error: 31
+        const colors: ILogColors = {
+          log: "0",
+          info: "36",
+          warn: "33",
+          error: "31"
         };
 
         console.log.apply(console, [
           text.replace(/%c/g, "%s"),
-          `\x1b[90m`,
-          `\x1b[0m`,
-          `\x1b[90m`,
-          `\x1b[0m`,
-          `\x1b[0m`,
-          `\x1b[0m`,
+          "\x1b[90m",
+          "\x1b[0m",
+          "\x1b[90m",
+          "\x1b[0m",
+          "\x1b[0m",
+          "\x1b[0m",
           `\x1b[${colors.warn}m`,
-          `\x1b[0m`,
+          "\x1b[0m",
           `\x1b[${colors[type]}m`,
           convertedLogs[0],
           "\x1b[0m"
         ].concat(convertedLogs.slice(1)));
       }
-
-      // Browser
       else {
-        const colors = {
+        const colors: ILogColors = {
           log: "black",
           info: "#2196F3",
           warn: "#FF9800",
@@ -150,14 +148,14 @@ export class Logger {
 
         console.log.apply(console, [
           text,
-          `color: grey;`,
-          `color: black;`,
-          `color: grey;`,
-          `color: black;`,
-          `color: black;`,
-          `color: black;`,
+          "color: grey;",
+          "color: black;",
+          "color: grey;",
+          "color: black;",
+          "color: black;",
+          "color: black;",
           `\x1b[${colors.warn}m`,
-          `\x1b[0m`,
+          "\x1b[0m",
           `color: ${colors[type]};`,
           convertedLogs[0],
           "color: black;"
@@ -213,6 +211,13 @@ export interface ILoggerHistory {
   logType: LoggerTypeString;
   logs: any[];
   loggedAtDateTime: Date;
+}
+
+export interface ILogColors {
+  log: string;
+  info: string;
+  warn: string;
+  error: string;
 }
 
 export type LoggerTypeString = "log" | "info" | "warn" | "error";

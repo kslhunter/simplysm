@@ -1,165 +1,165 @@
 $grey-colors: (
-        lightest: map_get($greys, 200),
-        lighter: map_get($greys, 300),
-        light: map_get($greys, 400),
-        default: map_get($greys, 500),
-        dark: map_get($greys, 600),
-        darker: map_get($greys, 700),
-        darkest: map_get($greys, 800)
+  lightest: map_get($greys, 200),
+  lighter: map_get($greys, 300),
+  light: map_get($greys, 400),
+  default: map_get($greys, 500),
+  dark: map_get($greys, 600),
+  darker: map_get($greys, 700),
+  darkest: map_get($greys, 800)
 ) !default;
 
 $bluegrey-colors: (
-        lightest: map_get($bluegreys, 200),
-        lighter: map_get($bluegreys, 300),
-        light: map_get($bluegreys, 400),
-        default: map_get($bluegreys, 500),
-        dark: map_get($bluegreys, 600),
-        darker: map_get($bluegreys, 800),
-        darkest: map_get($bluegreys, 900)
+  lightest: map_get($bluegreys, 200),
+  lighter: map_get($bluegreys, 300),
+  light: map_get($bluegreys, 400),
+  default: map_get($bluegreys, 500),
+  dark: map_get($bluegreys, 600),
+  darker: map_get($bluegreys, 800),
+  darkest: map_get($bluegreys, 900)
 ) !default;
 
 $theme-primary-default: $indigos !default;
 
 $theme-lights: (
-        info: map_get($blues, 200),
-        success: map_get($greens, 200),
-        warning: map_get($oranges, 200),
-        danger: map_get($reds, 200),
-        primary: map_get($theme-primary-default, 200)
+  info: map_get($blues, 200),
+  success: map_get($greens, 200),
+  warning: map_get($oranges, 200),
+  danger: map_get($reds, 200),
+  primary: map_get($theme-primary-default, 200)
 ) !default;
 
 $theme-colors: (
-        info: map_get($blues, 500),
-        success: map_get($greens, 500),
-        warning: map_get($oranges, 500),
-        danger: map_get($reds, 500),
-        primary: map_get($theme-primary-default, 500)
+  info: map_get($blues, 500),
+  success: map_get($greens, 500),
+  warning: map_get($oranges, 500),
+  danger: map_get($reds, 500),
+  primary: map_get($theme-primary-default, 500)
 ) !default;
 
 $theme-darks: (
-        info: map_get($blues, 700),
-        success: map_get($greens, 700),
-        warning: map_get($oranges, 700),
-        danger: map_get($reds, 700),
-        primary: map_get($theme-primary-default, 700)
+  info: map_get($blues, 700),
+  success: map_get($greens, 700),
+  warning: map_get($oranges, 700),
+  danger: map_get($reds, 700),
+  primary: map_get($theme-primary-default, 700)
 ) !default;
 
 $theme-darkers: (
-        info: map_get($blues, 800),
-        success: map_get($greens, 800),
-        warning: map_get($oranges, 800),
-        danger: map_get($reds, 800),
-        primary: map_get($theme-primary-default, 800)
+  info: map_get($blues, 800),
+  success: map_get($greens, 800),
+  warning: map_get($oranges, 800),
+  danger: map_get($reds, 800),
+  primary: map_get($theme-primary-default, 800)
 ) !default;
 
 $state-colors: (
-        info: map_get($blues, 50),
-        success: map_get($greens, 50),
-        warning: map_get($oranges, 50),
-        danger: map_get($reds, 50),
-        primary: map_get($theme-primary-default, 50)
+  info: map_get($blues, 50),
+  success: map_get($greens, 50),
+  warning: map_get($oranges, 50),
+  danger: map_get($reds, 50),
+  primary: map_get($theme-primary-default, 50)
 ) !default;
 
 $border-colors: (
-        default: rgba(#000, .12),
-        dark: rgba(#000, .18),
-        darker: rgba(#000, .24),
-        info: map_get($blues, 500),
-        success: map_get($greens, 500),
-        warning: map_get($oranges, 500),
-        danger: map_get($reds, 500),
-        primary: map_get($theme-primary-default, 500),
-        white: #fff,
-        grey: grey(darkest)
+  default: rgba(#000, .12),
+  dark: rgba(#000, .18),
+  darker: rgba(#000, .24),
+  info: map_get($blues, 500),
+  success: map_get($greens, 500),
+  warning: map_get($oranges, 500),
+  danger: map_get($reds, 500),
+  primary: map_get($theme-primary-default, 500),
+  white: #fff,
+  grey: grey(darkest)
 ) !default;
 
 $border-whites: (
-        default: rgba(#fff, .1),
-        dark: rgba(#fff, .2),
-        darker: rgba(#fff, .3)
+  default: rgba(#fff, .1),
+  dark: rgba(#fff, .2),
+  darker: rgba(#fff, .3)
 ) !default;
 
 $text-colors: (
-        default: rgba(#000, .87),
-        light: rgba(#000, .54),
-        lighter: rgba(#000, .38)
+  default: rgba(#000, .87),
+  light: rgba(#000, .54),
+  lighter: rgba(#000, .38)
 ) !default;
 
 $text-whites: (
-        default: #fff,
-        light: rgba(#fff, .70),
-        lighter: rgba(#fff, .50)
+  default: #fff,
+  light: rgba(#fff, .70),
+  lighter: rgba(#fff, .50)
 ) !default;
 
 $font-sizes: (
-        xxl: 24px,
-        xl: 18px,
-        lg: 14px,
-        default: 12px,
-        sm: 11px,
-        h1: 32px,
-        h2: 24px,
-        h3: 18px,
-        h4: 14px,
-        h5: 12px,
-        h6: 11px
+  xxl: 24px,
+  xl: 18px,
+  lg: 14px,
+  default: 12px,
+  sm: 11px,
+  h1: 32px,
+  h2: 24px,
+  h3: 18px,
+  h4: 14px,
+  h5: 12px,
+  h6: 11px
 ) !default;
 
 $m-font-sizes: (
-        xxl: 33px,
-        xl: 25px,
-        lg: 19px,
-        default: 17px,
-        sm: 15px,
-        h1: 49px,
-        h2: 33px,
-        h3: 25px,
-        h4: 19px,
-        h5: 17px,
-        h6: 15px
+  xxl: 33px,
+  xl: 25px,
+  lg: 19px,
+  default: 17px,
+  sm: 15px,
+  h1: 49px,
+  h2: 33px,
+  h3: 25px,
+  h4: 19px,
+  h5: 17px,
+  h6: 15px
 ) !default;
 
 $font-family: "Noto Sans KR", "맑은 고딕", "Malgun Gothic", "AppleGothicNeoSD", "Apple SD 산돌고딕 Neo", "Microsoft NeoGothic", "Droid Sans", "sans-serif" !default;
 $line-height: 1.4em !default;
 
-//-- sizing
+// sizing
 $paddings: (
-        0: 0,
-        xxs: 2px,
-        xs: 4px,
-        sm: 8px,
-        default: 12px,
-        lg: 16px,
-        xl: 20px,
-        xxl: 22px
+  0: 0,
+  xxs: 2px,
+  xs: 4px,
+  sm: 8px,
+  default: 12px,
+  lg: 16px,
+  xl: 20px,
+  xxl: 22px
 ) !default;
 
 $m-paddings: (
-        0: 0,
-        xxs: 4px,
-        xs: 8px,
-        sm: 12px,
-        default: 16px,
-        lg: 20px,
-        xl: 24px,
-        xxl: 28px
+  0: 0,
+  xxs: 4px,
+  xs: 8px,
+  sm: 12px,
+  default: 16px,
+  lg: 20px,
+  xl: 24px,
+  xxl: 28px
 ) !default;
 
 $durations: (
-        fast: 200ms,
-        default: 300ms,
-        slow: 400ms
+  fast: 200ms,
+  default: 300ms,
+  slow: 400ms
 ) !default;
 
 $m-durations: (
-        fast: 200ms,
-        default: 300ms,
-        slow: 400ms
+  fast: 200ms,
+  default: 300ms,
+  slow: 400ms
 ) !default;
 
 $m-screen: 640px !default;
 
-//-- controls
+// controls
 $background: grey(lightest) !default;
 
 $sidebar-width: 280px !default;
@@ -176,7 +176,7 @@ $topbar-not-main-background: theme-dark(primary) !default;
 
 $card-background: #fff !default;
 
-//-- z-index
+// z-index
 $z-toast: 8000 !default;
 $z-busy: 7000 !default;
 $z-dropdown: 4000 !default;

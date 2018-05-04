@@ -1,14 +1,20 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input } from "@angular/core";
-import { Exception } from "../../../sd-core/src";
-import { SimgularHelpers } from "../helpers/SimgularHelpers";
+import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input} from "@angular/core";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {SimgularHelpers} from "../helpers/SimgularHelpers";
 
 @Component({
   selector: "sd-button-group",
   template: `
-        <ng-content></ng-content>`,
+    <ng-content></ng-content>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdButtonGroupControl implements AfterViewInit {
+  private _size = "default";
+
+  public get size(): string {
+    return this._size;
+  }
+
   @Input()
   public set size(value: string) {
     if (!["xxs", "xs", "sm", "default", "lg", "xl", "xxl"].includes(value)) {
@@ -17,20 +23,14 @@ export class SdButtonGroupControl implements AfterViewInit {
     this._size = value;
   }
 
-  public get size(): string {
-    return this._size;
-  }
-
-  private _size = "default";
-
-  public constructor(private _elementRef: ElementRef) {
+  public constructor(private readonly _elementRef: ElementRef) {
   }
 
   public ngAfterViewInit(): void {
     SimgularHelpers.detectElementChange(this._elementRef.nativeElement, () => {
       const thisElement: HTMLElement = this._elementRef.nativeElement;
       const childrenButtons = Array.from(thisElement.children)
-        .map((item) => item as HTMLElement)
+        .map(item => item as HTMLElement)
         .filter((item: HTMLElement) => item.tagName.toLowerCase() === "sd-button");
 
       for (const btn of childrenButtons) {

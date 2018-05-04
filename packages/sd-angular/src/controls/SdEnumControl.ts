@@ -1,25 +1,29 @@
-import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
-import { Exception } from "../../../sd-core/src";
+import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
 
 @Component({
   selector: "sd-enum",
   template: `
-        <ng-content></ng-content>`,
+    <ng-content></ng-content>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdEnumControl {
-  public constructor() {
-  }
 }
 
 @Component({
   selector: "sd-enum-item",
   template: `
-        <label *ngIf="label">{{ label }}</label>
-        <span><ng-content></ng-content></span>`,
+    <label *ngIf="label">{{ label }}</label>
+    <span><ng-content></ng-content></span>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdEnumItemControl {
+  private _label = "";
+
+  public get label(): string {
+    return this._label;
+  }
+
   @Input()
   public set label(value: string) {
     if (!(typeof value === "string")) {
@@ -28,10 +32,4 @@ export class SdEnumItemControl {
 
     this._label = value;
   }
-
-  public get label(): string {
-    return this._label;
-  }
-
-  private _label = "";
 }

@@ -1,3 +1,7 @@
+import "../../sd-core/src/extensions/ArrayExtensions";
+import "../../sd-core/src/extensions/DateExtensions";
+import "../../sd-core/src/extensions/ObjectConstructorExtensions";
+
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as ts from "typescript";
@@ -5,7 +9,7 @@ import * as ts from "typescript";
 const context = process.argv[2];
 const outputPath = process.argv[3];
 
-const tsconfig = fs.readJsonSync(path.resolve(context, `tsconfig.json`));
+const tsconfig = fs.readJsonSync(path.resolve(context, "tsconfig.json"));
 const parsed = ts.parseJsonConfigFileContent(tsconfig, ts.sys, context);
 
 let tsHost: ts.CompilerHost | undefined;
@@ -19,15 +23,14 @@ if (parsed.options.declaration) {
       return;
     }
 
-    if (fileName.includes("src") && fileName.startsWith(path.resolve(distPath, packageName, "src").replace(/\\/g, "/"))) {
-      fileName = fileName.replace(`${packageName}/src/`, "");
-    }
+    const currFileName = fileName.includes("src") && fileName.startsWith(path.resolve(distPath, packageName, "src").replace(/\\/g, "/"))
+      ? fileName.replace(`${packageName}/src/`, "")
+      : fileName;
 
-    content = content.replace(/from ".*(sd-[^/]*)[^;]*/g, (match, ...args) => {
-      return `from "@simplism/${args[0]}"`;
-    });
+    const currContent = content.replace(/(from|import) ".*(sd-[^/]*)[^;]*/g, (match, ...args) =>
+      `${args[0]} "@simplism/${args[1]}"`);
 
-    ts.sys.writeFile(fileName, content);
+    ts.sys.writeFile(currFileName, currContent);
   };
 }
 
@@ -39,11 +42,11 @@ process.on("message", (changedTsFiles: string[]) => {
     {
       ...parsed.options,
       ...parsed.options.declaration
-        ? { emitDeclarationOnly: true }
+        ? {emitDeclarationOnly: true}
         : {}
     },
     tsHost
-  ) as ts.Program;
+  );
 
   let diagnostics = parsed.options.declaration
     ? ts.getPreEmitDiagnostics(tsProgram)
@@ -64,6 +67,21 @@ process.on("message", (changedTsFiles: string[]) => {
       );
     }
   }
+  else {
+    if (changedTsFiles.length > 0) {
+      for (const filePath of changedTsFiles) {
+        const sourceFile = tsProgram.getSourceFile(filePath);
+        diagnostics = diagnostics.concat(
+          tsProgram.getSyntacticDiagnostics(sourceFile)
+        );
+      }
+    }
+    else {
+      diagnostics = diagnostics.concat(
+        tsProgram.getSyntacticDiagnostics()
+      );
+    }
+  }
 
   for (const diagnostic of diagnostics) {
     if (diagnostic.file) {
@@ -72,10 +90,10 @@ process.on("message", (changedTsFiles: string[]) => {
         const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
         process.send!({
           type: "error",
-          message: `${diagnostic.file.fileName}\nERROR: ${diagnostic.file.fileName}[${position.line + 1}, ${position.character + 1}]: ${message}`
+          message: `${diagnostic.file.fileName}\n${diagnostic.file.fileName}(${position.line + 1},${position.character + 1}): error: ${message}`
         }, (err: Error) => {
           if (err) {
-            console.error(err);
+            throw err;
           }
         });
       }
@@ -83,10 +101,10 @@ process.on("message", (changedTsFiles: string[]) => {
     else {
       process.send!({
         type: "error",
-        message: `${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`
+        message: `error: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`
       }, (err: Error) => {
         if (err) {
-          console.error(err);
+          throw err;
         }
       });
     }
@@ -103,7 +121,7 @@ process.on("message", (changedTsFiles: string[]) => {
   });*/
   process.send!("finish", (err: Error) => {
     if (err) {
-      console.error(err);
+      throw err;
     }
   });
 });

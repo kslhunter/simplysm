@@ -12,7 +12,7 @@ export class SocketFileResult {
   }) {
     this.name = param.name;
     this.stream = param.stream;
-    this.size = param.stream["_readableState"]["length"];
+    this.size = param.stream["_readableState"].length;
     this.createdDateTime = new Date();
   }
 }

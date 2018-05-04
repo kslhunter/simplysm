@@ -1,6 +1,4 @@
 {
   "extends": "../../tslint.json",
-  "rules": {
-    "no-eval": false
-  }
+  "defaultSeverity": "warning"
 }

@@ -1,13 +1,13 @@
 import * as fs from "fs";
-import { Exception, Logger } from "../../../sd-core/src";
-import { IStorage } from "../common/IStorage";
-import { IFtpConnectionConfig } from "./IFtpConnectionConfig";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {Logger} from "../../../sd-core/src/utils/Logger";
+import {IStorage} from "../common/IStorage";
+import {IFtpConnectionConfig} from "./IFtpConnectionConfig";
 
-//tslint:disable-next-line:variable-name
 const JSFtp = require("jsftp");
 
 export class FtpStorage implements IStorage {
-  private _logger = new Logger("@simplism/sd-storage", "FtpStorage");
+  private readonly _logger = new Logger("@simplism/sd-storage", "FtpStorage");
   private _ftp: any;
 
   public async connect(connectionConfig: IFtpConnectionConfig): Promise<void> {
@@ -18,10 +18,10 @@ export class FtpStorage implements IStorage {
       pass: connectionConfig.password
     });
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       this._ftp.raw("OPTS UTF8 ON", (err: Error) => {
         if (err) {
-          reject(new Exception(`[${err["code"]}] ${err.message}`));
+          reject(new Exception(`${err.message}`, {code: err["code"]}));
           return;
         }
         resolve();
@@ -30,7 +30,7 @@ export class FtpStorage implements IStorage {
   }
 
   public async mkdir(storageDirPath: string): Promise<void> {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       this._ftp.raw("MKD", storageDirPath, (err: Error) => {
         if (err && err["code"] !== 550) {
           reject(new Exception(`[${err["code"]}] ${err.message}`));
@@ -42,20 +42,17 @@ export class FtpStorage implements IStorage {
   }
 
   public async put(localPathOrBuffer: string | Buffer, storageFilePath: string): Promise<void> {
-    let buffer: Buffer;
-    if (typeof localPathOrBuffer === "string") {
-      buffer = fs.readFileSync(localPathOrBuffer);
-    }
-    else {
-      buffer = localPathOrBuffer;
-    }
+    const buffer = typeof localPathOrBuffer === "string"
+      ? fs.readFileSync(localPathOrBuffer)
+      : localPathOrBuffer;
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       this._ftp.put(buffer, storageFilePath, (err: Error) => {
         if (err) {
           if (err["code"] === 550) {
             this._logger.warn(`${storageFilePath}: ${err.message}`);
-          } else {
+          }
+          else {
             reject(new Exception(`[${err["code"]}] ${err.message}`));
             return;
           }
@@ -66,7 +63,7 @@ export class FtpStorage implements IStorage {
   }
 
   public async close(): Promise<void> {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       this._ftp.raw("quit", (err: Error) => {
         if (err) {
           reject(new Exception(`[${err["code"]}] ${err.message}`));

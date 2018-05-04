@@ -1,31 +1,99 @@
 export class Time {
+  public static parse(value: string): Time {
+    let tick: number | undefined;
+
+    // 03, 3
+    if (value.length <= 2 && Number(value)) {
+      const hour = Number(value);
+      tick = hour * 60 * 60 * 1000;
+    }
+    else if (value.length === 3 && Number(value)) {
+      const hour = Math.floor(Number(value) / 100);
+      const minute = Number(value) % 100;
+      tick = hour * 60 * 60 * 1000
+        + minute * 60 * 1000;
+    }
+    else if (value.length === 4 && Number(value)) {
+      const hour = Math.floor(Number(value) / 100);
+      const minute = Number(value) % 100;
+      tick = hour * 60 * 60 * 1000
+        + minute * 60 * 1000;
+    }
+    else if (value.split(":").length === 2) {
+      const hour = Number(value.split(":")[0]);
+      const minute = Number(value.split(":")[1]);
+      tick = hour * 60 * 60 * 1000
+        + minute * 60 * 1000;
+    }
+    else if (value.length === 6 && Number(value)) {
+      const hour = Math.floor(Number(value) / 10000);
+      const minute = Math.floor((Number(value) % 10000) / 100);
+      const second = (Number(value) % 10000) % 100;
+      tick = hour * 60 * 60 * 1000
+        + minute * 60 * 1000
+        + second * 1000;
+    }
+    else if (value.split(".").length === 2 && value.split(":").length === 3) {
+      const day = Number(value.split(".")[0]);
+      const hour = Number(value.split(".")[1].split(":")[0]);
+      const minute = Number(value.split(".")[1].split(":")[1]);
+      const second = Number(value.split(".")[1].split(":")[2]);
+      tick = day * 24 * 60 * 60 * 1000
+        + hour * 60 * 60 * 1000
+        + minute * 60 * 1000
+        + second * 1000;
+    }
+    else if (value.split(".").length === 3 && value.split(":").length === 3) {
+      const day = Number(value.split(".")[0]);
+      const hour = Number(value.split(".")[1].split(":")[0]);
+      const minute = Number(value.split(".")[1].split(":")[1]);
+      const second = Number(value.split(".")[1].split(":")[2]);
+      const milliSecond = Number(value.split(".")[2]);
+      tick = day * 24 * 60 * 60 * 1000
+        + hour * 60 * 60 * 1000
+        + minute * 60 * 1000
+        + second * 1000
+        + milliSecond;
+    }
+    else if (value.split(":").length === 3) {
+      const hour = Number(value.split(":")[0]);
+      const minute = Number(value.split(":")[1]);
+      const second = Number(value.split(":")[2]);
+      tick = hour * 60 * 60 * 1000
+        + minute * 60 * 1000
+        + second * 1000;
+    }
+
+    if (tick === undefined) {
+      throw new Error("시간 포맷이 잘못되었습니다.");
+    }
+
+    return new Time(tick);
+  }
+
   private readonly _tick: number;
 
   public constructor(...args: number[]) {
-    //hour, minute, second, millisecond
+    // hour, minute, second, millisecond
     if (args.length === 4) {
-      this._tick = args[3] //ms
-        + args[2] * 1000 //s
-        + args[1] * 60 * 1000 //m
-        + args[0] * 60 * 60 * 1000; //h
+      this._tick = args[3]          // ms
+        + args[2] * 1000            // s
+        + args[1] * 60 * 1000       // m
+        + args[0] * 60 * 60 * 1000; // h
     }
-    //hour, minute, second
     else if (args.length === 3) {
-      this._tick = args[2] * 1000 //s
-        + args[1] * 60 * 1000 //m
-        + args[0] * 60 * 60 * 1000; //h
+      this._tick = args[2] * 1000   // s
+        + args[1] * 60 * 1000       // m
+        + args[0] * 60 * 60 * 1000; // h
     }
-    //hour, minute
     else if (args.length === 2) {
-      this._tick = args[1] * 60 * 1000 //m
-        + args[0] * 60 * 60 * 1000; //h
+      this._tick = args[1] * 60 * 1000  // m
+        + args[0] * 60 * 60 * 1000;     // h
     }
-    //tick
     else if (args.length === 1) {
       this._tick = args[0];
     }
-    //none
-    else if (args.length === 0) { //
+    else if (args.length === 0) {
       const curr = new Date();
       this._tick = curr.getMilliseconds()
         + curr.getSeconds() * 1000
@@ -91,85 +159,6 @@ export class Time {
 
   public addMilliSeconds(value: number): Time {
     return new Time(this._tick + value);
-  }
-
-  public static parse(value: string): Time {
-    let tick: number | undefined;
-
-    //03, 3
-    if (value.length <= 2 && Number(value)) {
-      const hour = Number(value);
-      tick = hour * 60 * 60 * 1000;
-    }
-    //330
-    else if (value.length === 3 && Number(value)) {
-      const hour = Math.floor(Number(value) / 100);
-      const minute = Number(value) % 100;
-      tick = hour * 60 * 60 * 1000
-        + minute * 60 * 1000;
-    }
-    //0330
-    else if (value.length === 4 && Number(value)) {
-      const hour = Math.floor(Number(value) / 100);
-      const minute = Number(value) % 100;
-      tick = hour * 60 * 60 * 1000
-        + minute * 60 * 1000;
-    }
-    //3:30, 03:30
-    else if (value.split(":").length === 2) {
-      const hour = Number(value.split(":")[0]);
-      const minute = Number(value.split(":")[1]);
-      tick = hour * 60 * 60 * 1000
-        + minute * 60 * 1000;
-    }
-    //033059
-    else if (value.length === 6 && Number(value)) {
-      const hour = Math.floor(Number(value) / 10000);
-      const minute = Math.floor((Number(value) % 10000) / 100);
-      const second = (Number(value) % 10000) % 100;
-      tick = hour * 60 * 60 * 1000
-        + minute * 60 * 1000
-        + second * 1000;
-    }
-    //3.03:30:59
-    else if (value.split(".").length === 2 && value.split(":").length === 3) {
-      const day = Number(value.split(".")[0]);
-      const hour = Number(value.split(".")[1].split(":")[0]);
-      const minute = Number(value.split(".")[1].split(":")[1]);
-      const second = Number(value.split(".")[1].split(":")[2]);
-      tick = day * 24 * 60 * 60 * 1000
-        + hour * 60 * 60 * 1000
-        + minute * 60 * 1000
-        + second * 1000;
-    }
-    //3.03:30:59.104
-    else if (value.split(".").length === 3 && value.split(":").length === 3) {
-      const day = Number(value.split(".")[0]);
-      const hour = Number(value.split(".")[1].split(":")[0]);
-      const minute = Number(value.split(".")[1].split(":")[1]);
-      const second = Number(value.split(".")[1].split(":")[2]);
-      const milliSecond = Number(value.split(".")[2]);
-      tick = day * 24 * 60 * 60 * 1000
-        + hour * 60 * 60 * 1000
-        + minute * 60 * 1000
-        + second * 1000
-        + milliSecond;
-    }
-    // 03:30:59, 3:30:59
-    else if (value.split(":").length === 3) {
-      const hour = Number(value.split(":")[0]);
-      const minute = Number(value.split(":")[1]);
-      const second = Number(value.split(":")[2]);
-      tick = hour * 60 * 60 * 1000
-        + minute * 60 * 1000
-        + second * 1000;
-    }
-
-    if (tick === undefined) {
-      throw new Error("시간 포맷이 잘못되었습니다.");
-    }
-
-    return new Time(tick);
   }
 
   public toFormatString(format: string): string {

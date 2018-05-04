@@ -1,6 +1,21 @@
 {
   "extends": "../../tslint.json",
   "rules": {
-    "ban-types": false
-  }
+    "ban-types": [
+      [
+        "Object",
+        "Avoid using the `Object` type. Did you mean `object`?"
+      ],
+      [
+        "Function",
+        "Avoid using the `Function` type. Prefer a specific function type, like `() => void`."
+      ],
+      [
+        "Symbol",
+        "Avoid using the `Symbol` type. Did you mean `symbol`?"
+      ]
+    ],
+    "cyclomatic-complexity": false
+  },
+  "defaultSeverity": "warning"
 }

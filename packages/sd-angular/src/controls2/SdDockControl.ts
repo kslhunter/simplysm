@@ -1,13 +1,13 @@
-import { Component, ElementRef, forwardRef, Inject, Input, NgZone, OnChanges, SimpleChanges } from "@angular/core";
-import { SimgularHelpers } from "..";
+import {Component, ElementRef, HostBinding, Inject, Input, NgZone, OnChanges, SimpleChanges} from "@angular/core";
+import {SimgularHelpers} from "../helpers/SimgularHelpers";
 
 @Component({
   selector: "sd-dock-container",
   template: `
-        <ng-content></ng-content>`
+    <ng-content></ng-content>`
 })
 export class SdDockContainerControl {
-  public constructor(private _elementRef: ElementRef) {
+  public constructor(private readonly _elementRef: ElementRef) {
   }
 
   public redraw(): void {
@@ -23,7 +23,7 @@ export class SdDockContainerControl {
       if (position === "top") {
         Object.assign(dockEl.style, {
           top: `${top}px`,
-          bottom: null,
+          bottom: "",
           left: `${left}px`,
           right: `${right}px`
         });
@@ -31,7 +31,7 @@ export class SdDockContainerControl {
       }
       else if (position === "bottom") {
         Object.assign(dockEl.style, {
-          top: null,
+          top: "",
           bottom: `${bottom}px`,
           left: `${left}px`,
           right: `${right}px`
@@ -43,7 +43,7 @@ export class SdDockContainerControl {
           top: `${top}px`,
           bottom: `${bottom}px`,
           left: `${left}px`,
-          right: null
+          right: ""
         });
         left += dockEl.offsetWidth;
       }
@@ -51,7 +51,7 @@ export class SdDockContainerControl {
         Object.assign(dockEl.style, {
           top: `${top}px`,
           bottom: `${bottom}px`,
-          left: null,
+          left: "",
           right: `${right}px`
         });
         right += dockEl.offsetWidth;
@@ -70,36 +70,35 @@ export class SdDockContainerControl {
 @Component({
   selector: "sd-dock",
   template: `
-        <hr (mousedown)="onResizerMousedown($event)"/>
-        <ng-content></ng-content>`,
-  host: {
-    "[attr.sd-position]": "position",
-    "[attr.sd-resizable]": "resizable"
-  }
+    <hr (mousedown)="onResizerMousedown($event)"/>
+    <ng-content></ng-content>`
 })
 export class SdDockControl implements OnChanges {
+  @HostBinding("attr.sd-position")
   @Input() public position: "top" | "bottom" | "left" | "right" = "top";
+
+  @HostBinding("attr.sd-resizable")
   @Input() public resizable?: boolean;
+
+  public constructor(private readonly _elementRef: ElementRef,
+                     private readonly _zone: NgZone,
+                     @Inject(SdDockContainerControl)
+                     private readonly _container: SdDockContainerControl) {
+    this._zone.runOutsideAngular(() => {
+      SimgularHelpers.detectElementChange(this._elementRef.nativeElement, () => {
+        this._container.redraw();
+      }, {childList: false});
+    });
+  }
 
   public ngOnChanges(changes: SimpleChanges): void {
     SimgularHelpers.typeValidate(changes, {
       position: {
         type: String,
-        validator: (value) => ["top", "bottom", "left", "right"].includes(value),
+        validator: value => ["top", "bottom", "left", "right"].includes(value),
         required: true
       },
       resizable: Boolean
-    });
-  }
-
-  public constructor(private _elementRef: ElementRef,
-                     private _zone: NgZone,
-                     @Inject(forwardRef(() => SdDockContainerControl))
-                     private _container: SdDockContainerControl) {
-    this._zone.runOutsideAngular(() => {
-      SimgularHelpers.detectElementChange(this._elementRef.nativeElement, () => {
-        this._container.redraw();
-      }, { childList: false });
     });
   }
 

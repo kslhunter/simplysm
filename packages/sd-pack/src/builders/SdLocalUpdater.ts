@@ -1,63 +1,52 @@
 import * as chokidar from "chokidar";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { Logger } from "../../../sd-core/src";
+import {Logger} from "../../../sd-core/src/utils/Logger";
 
 export class SdLocalUpdater {
-  private _logger = new Logger("@simplism/sd-pack", `SdLocalUpdater :: @simplism/${this._packageName}`);
+  private readonly _logger = new Logger("@simplism/sd-pack", `SdLocalUpdater :: @simplism/${this._packageName}`);
 
-  private _sourcePath(...args: string[]): string {
-    return path.resolve.apply(path, [process.cwd(), `../simplism/packages/${this._packageName}`].concat(args));
-  }
-
-  private _targetPath(...args: string[]): string {
-    return path.resolve.apply(path, [process.cwd(), `node_modules/@simplism/${this._packageName}`].concat(args));
-  }
-
-  public constructor(private _packageName: string) {
+  public constructor(private readonly _packageName: string) {
   }
 
   public async runAsync(watch?: boolean): Promise<void> {
-    await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       if (watch) {
         const watcher = chokidar.watch(this._sourcePath("**/*").replace(/\\/g, "/"))
           .on("ready", () => {
-            this._logger.log(`watching...`);
+            this._logger.log("watching...");
 
             watcher
-              .on("add", (filePath) => {
+              .on("add", filePath => {
                 try {
                   this._logger.log(`changed: add    => ${filePath}`);
 
                   const relativeSourcePath = path.relative(this._sourcePath(), filePath);
                   const targetPath = this._targetPath(relativeSourcePath);
                   fs.copySync(filePath, targetPath);
-                }
-                catch (err) {
+                } catch (err) {
                   this._logger.error(err);
                 }
               })
-              .on("change", (filePath) => {
+              .on("change", filePath => {
                 try {
                   this._logger.log(`changed: change => ${filePath}`);
 
                   const relativeSourcePath = path.relative(this._sourcePath(), filePath);
                   const targetPath = this._targetPath(relativeSourcePath);
                   fs.copySync(filePath, targetPath);
-                }
-                catch (err) {
+                } catch (err) {
                   this._logger.error(err);
                 }
               })
-              .on("unlink", (filePath) => {
+              .on("unlink", filePath => {
                 try {
                   this._logger.log(`changed: unlink => ${filePath}`);
 
                   const relativeSourcePath = path.relative(this._sourcePath(), filePath);
                   const targetPath = this._targetPath(relativeSourcePath);
                   fs.removeSync(targetPath);
-                }
-                catch (err) {
+                } catch (err) {
                   this._logger.error(err);
                 }
               });
@@ -67,9 +56,17 @@ export class SdLocalUpdater {
       }
       else {
         fs.copySync(this._sourcePath(), this._targetPath());
-        this._logger.log(`updated`);
+        this._logger.log("updated");
         resolve();
       }
     });
+  }
+
+  private _sourcePath(...args: string[]): string {
+    return path.resolve.apply(path, [process.cwd(), `../simplism/packages/${this._packageName}`].concat(args));
+  }
+
+  private _targetPath(...args: string[]): string {
+    return path.resolve.apply(path, [process.cwd(), `node_modules/@simplism/${this._packageName}`].concat(args));
   }
 }

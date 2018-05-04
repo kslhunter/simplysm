@@ -1,65 +1,86 @@
 {
   "extends": "tslint:all",
   "rules": {
-    "prefer-readonly": false,
-    "promise-function-async": false,
-    "no-floating-promises": false,
-    "no-for-in-array": false,
-    "no-inferred-empty-object-type": false,
-    "no-unbound-method": false,
-    "no-unsafe-any": false,
-    "no-unused-variable": false,
-    "no-use-before-declare": false,
-    "no-void-expression": false,
-    "restrict-plus-operands": false,
+    "no-trailing-whitespace": [
+      true,
+      "ignore-template-strings",
+      "ignore-blank-lines"
+    ],
+    "member-ordering": [
+      true,
+      {
+        "alphabetize": false,
+        "order": [
+          "public-static-field",
+          "protected-static-field",
+          "private-static-field",
+          "public-static-method",
+          "protected-static-method",
+          "private-static-method",
+          "public-instance-field",
+          "protected-instance-field",
+          "private-instance-field",
+          "public-constructor",
+          "protected-constructor",
+          "private-constructor",
+          "public-instance-method",
+          "protected-instance-method",
+          "private-instance-method"
+        ]
+      }
+    ],
+    "variable-name": [
+      true,
+      "allow-leading-underscore"
+    ],
+    "newline-per-chained-call": false,
     "strict-boolean-expressions": false,
     "strict-type-predicates": false,
-    "use-default-type-parameter": false,
     "completed-docs": false,
-    "deprecation": false,
-    "match-default-export-name": false,
-    "no-boolean-literal-compare": false,
-    "no-unnecessary-qualifier": false,
-    "no-unnecessary-type-assertion": false,
-    "return-undefined": false,
-    "linebreak-style": false,
-    "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-separator", "check-rest-spread", "check-type", "check-typecast", "check-type-operator", "check-preblock"],
-    "no-unused-expression": false,
-    "typedef": [true, "call-signature", "parameter", "property-declaration", "object-destructuring", "array-destructuring"],
-    "align": false,
-    "only-arrow-functions": false,
-    "prefer-function-over-method": false,
-    "no-console": false,
-    "newline-before-return": false,
-    "no-trailing-whitespace": false,
-    "object-literal-sort-keys": false,
-    "no-empty-interface": false,
-    "eofline": false,
-    "quotemark": [true, "double", "avoid-escape"],
-    "no-empty": false,
-    "newline-per-chained-call": false,
-    "trailing-comma": false,
-    "no-var-requires": false,
-    "no-require-imports": false,
-    "no-implicit-dependencies": false,
-    "no-parameter-properties": false,
-    "max-line-length": [false],
-    "no-any": false,
-    "array-type": [true, "array"],
-    "no-return-await": false,
-    "await-promise": false,
-    "variable-name": [true, "check-format", "allow-leading-underscore", "ban-keywords"],
-    "unified-signatures": false,
     "no-magic-numbers": false,
-    "member-ordering": false,
-    "one-line": false,
-    "no-object-literal-type-assertion": false,
-    "no-string-literal": false,
-    "arrow-return-shorthand": false,
-    "curly": [true, "ignore-same-line"],
+    "one-line": [
+      true,
+      "check-open-brace",
+      "check-whitespace"
+    ],
+    "typedef": [
+      true,
+      "call-signature",
+      "parameter",
+      "property-declaration"
+    ],
+    "comment-format": [
+      true,
+      "check-space"
+    ],
     "prefer-switch": false,
-    "no-non-null-assertion": false,
-    "no-parameter-reassignment": false,
+    "arrow-parens": [
+      true,
+      "ban-single-arg-parens"
+    ],
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "never",
+        "singleline": "never"
+      }
+    ],
+    "only-arrow-functions": false,
+    "max-line-length": false,
+    "no-unsafe-any": false,
+    "no-dynamic-delete": false,
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-separator",
+      "check-type",
+      "check-typecast",
+      "check-preblock",
+      "check-type-operator",
+      "check-rest-spread"
+    ],
     "space-before-function-paren": [
       true,
       {
@@ -70,22 +91,52 @@
         "named": "never"
       }
     ],
-    "interface-name": false,
-    "no-import-side-effect": false,
-    "no-dynamic-delete": false,
-    "no-unnecessary-callback-wrapper": false,
-    "comment-format": false,
-    "no-submodule-imports": false,
-    "cyclomatic-complexity": false,
-    "prefer-conditional-expression": false,
-    "no-bitwise": false,
-    "no-unnecessary-class": false,
-    "triple-equals": [true, "allow-undefined-check"],
+    "object-literal-sort-keys": false,
+    "no-non-null-assertion": false,
+    "align": [
+      true,
+      "parameters",
+      "statements",
+      "elements",
+      "members"
+    ],
+    "await-promise": false,
+    "no-parameter-properties": false,
+    "prefer-function-over-method": false,
+    "newline-before-return": false,
+    "linebreak-style": false,
     "no-this-assignment": false,
-    "max-classes-per-file": [false],
-    "max-file-line-count": [false],
-    "binary-expression-operand-order": false,
-    "ordered-imports": false,
-    "prefer-template": false
+    "max-file-line-count": false,
+    "no-return-await": false,
+    "no-unnecessary-type-assertion": false,
+    "restrict-plus-operands": false,
+    "array-type": [
+      true,
+      "array"
+    ],
+    "no-unnecessary-class": false,
+    "no-any": false,
+    "prefer-readonly": false,
+    "triple-equals": [
+      true,
+      "allow-undefined-check"
+    ],
+    "no-string-literal": false,
+    "no-bitwise": false,
+    "no-var-requires": false,
+    "no-require-imports": false,
+    "no-empty": false,
+    "no-empty-interface": false,
+    "no-import-side-effect": false,
+    "max-classes-per-file": false,
+    "cyclomatic-complexity": false,
+    "prefer-template": false,
+    "promise-function-async": [
+      true,
+      "check-function-declaration",
+      "check-function-expression",
+      "check-method-declaration"
+    ],
+    "no-submodule-imports": false
   }
 }

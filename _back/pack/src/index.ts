@@ -1,1 +1,1 @@
-export * from "./lib/ISimpackConfig";
+export * from './lib/ISimpackConfig';

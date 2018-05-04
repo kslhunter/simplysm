@@ -1,8 +1,8 @@
-import * as chokidar from "chokidar";
-import {Logger} from "@simplism/core";
+import * as chokidar from 'chokidar';
+import {Logger} from '@simplism/core';
 
 export class FileWatcher {
-    private static _logger: Logger = new Logger("FileWatcher");
+    private static _logger: Logger = new Logger('FileWatcher');
 
     static watch(glob: string | string[], opts: chokidar.WatchOptions, cb: (events: { type: string; filePath?: string }[]) => Promise<void>): void {
         let events: { type: string; filePath?: string }[] = [];
@@ -30,20 +30,19 @@ export class FileWatcher {
             }, 1000);
         };
 
-        if (typeof glob === "string") {
-            glob = glob.replace(/\\/g, "/");
-        }
-        else {
-            glob = glob.map(item => item.replace(/\\/g, "/"));
+        if (typeof glob === 'string') {
+            glob = glob.replace(/\\/g, '/');
+        } else {
+            glob = glob.map(item => item.replace(/\\/g, '/'));
         }
 
         const watcher = chokidar
             .watch(glob, opts)
-            .on("ready", async () => {
-                await onChange("ready");
-                watcher.on("add", async fp => await onChange("add", fp));
-                watcher.on("change", async fp => await onChange("change", fp));
-                watcher.on("unlink", async fp => await onChange("unlink", fp));
+            .on('ready', async () => {
+                await onChange('ready');
+                watcher.on('add', async fp => await onChange('add', fp));
+                watcher.on('change', async fp => await onChange('change', fp));
+                watcher.on('unlink', async fp => await onChange('unlink', fp));
             });
     }
 }

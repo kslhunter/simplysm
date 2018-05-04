@@ -1,3 +1,3 @@
-export interface SdCanDeactivatePage {
+export interface ISdCanDeactivatePage {
   canDeactivate(): boolean | Promise<boolean>;
 }

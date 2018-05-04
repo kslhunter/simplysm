@@ -10,12 +10,12 @@
   > ._sd-toast {
     opacity: .9;
     display: block;
-    //text-align: right;
+    // text-align: right;
     @include padding(lg, xxl, 0);
 
     > div {
       display: inline-block;
-      //text-align: left;
+      // text-align: left;
       background: #fff;
       @include elevation(16px);
       @include border-radius(2px);

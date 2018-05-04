@@ -1,43 +1,45 @@
-import { DateOnly } from "../types/DateOnly";
-import { Time } from "../types/Time";
-import { Uuid } from "../types/Uuid";
-import { Safe } from "./Safe";
-import { Exception } from "..";
+import {Exception} from "../exceptions/Exception";
+import {DateOnly} from "../types/DateOnly";
+import {Time} from "../types/Time";
+import {Uuid} from "../types/Uuid";
+import {Logger} from "../utils/Logger";
+import {Safe} from "./Safe";
 
-export interface JsonConvertStringifyOption {
+export interface IJsonConvertStringifyOption {
   space?: string | number;
   hideBuffer?: boolean;
 
   replacer?(key: any, value: any): any;
 }
 
-export class JsonConvert {
-  public static stringify(obj: any, option?: JsonConvertStringifyOption): string /* | undefined*/ {
+// tslint:disable-next-line:variable-name
+export const JsonConvert = {
+  stringify(obj: any, option?: IJsonConvertStringifyOption): string {
     if (obj === undefined) {
       return "undefined";
     }
 
     function replacer(key: any, value: any): any {
-      if (option && option.replacer) {
-        value = option.replacer(key, value);
-      }
+      const currValue = option && option.replacer
+        ? option.replacer(key, value)
+        : value;
 
-      if (value instanceof Uuid) {
-        return value.toString();
+      if (currValue instanceof Uuid) {
+        return currValue.toString();
       }
-      if (value instanceof Time) {
-        return value.toFormatString("d.HH:mm:ss.fff");
+      if (currValue instanceof Time) {
+        return currValue.toFormatString("d.HH:mm:ss.fff");
       }
-      if (value instanceof Date) {
-        return value.toISOString();
+      if (currValue instanceof Date) {
+        return currValue.toISOString();
       }
-      if (value instanceof DateOnly) {
-        return value.toFormatString("yyyy-MM-dd");
+      if (currValue instanceof DateOnly) {
+        return currValue.toFormatString("yyyy-MM-dd");
       }
-      if (value instanceof Error) {
+      if (currValue instanceof Error) {
         const error = {};
-        for (const valueKey of Object.getOwnPropertyNames(value)) {
-          error[valueKey] = value[valueKey];
+        for (const currKey of Object.getOwnPropertyNames(currValue)) {
+          error[currKey] = currValue[currKey];
         }
 
         return error;
@@ -45,20 +47,20 @@ export class JsonConvert {
       if (option && option.hideBuffer && value && typeof value === "object" && value.type === "Buffer") {
         return "__buffer__";
       }
+
       return value;
     }
 
     const replacedObj = replacer(undefined, obj);
     try {
       return JSON.stringify(replacedObj, replacer, Safe.obj(option).space);
-    }
-    catch (e) {
-      console.error(obj);
+    } catch (e) {
+      new Logger("@simplism/core", "JsonConvert.stringify").error(obj);
       throw e;
     }
-  }
+  },
 
-  public static parse(str: string | undefined): any {
+  parse(str: string | undefined): any {
     if (str === undefined || str === "undefined") {
       return;
     }
@@ -83,9 +85,10 @@ export class JsonConvert {
         return new Exception(value.message, value);
       }
       if (typeof value === "object" && value.type === "Buffer") {
-        return new Buffer(value.data);
+        return Buffer.from(value.data);
       }
+
       return value;
     });
   }
-}
+};

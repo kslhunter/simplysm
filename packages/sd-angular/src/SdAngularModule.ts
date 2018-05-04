@@ -1,35 +1,36 @@
-import { ErrorHandler, Injectable, NgModule, Type } from "@angular/core";
-import { BrowserModule } from "@angular/platform-browser";
-import { library } from "@fortawesome/fontawesome-svg-core";
-import { far } from "@fortawesome/free-regular-svg-icons";
-import { fas } from "@fortawesome/free-solid-svg-icons";
+import {ErrorHandler, Injectable, NgModule, Type} from "@angular/core";
+import {BrowserModule} from "@angular/platform-browser";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {library} from "@fortawesome/fontawesome-svg-core";
+import {far} from "@fortawesome/free-regular-svg-icons";
+import {fas} from "@fortawesome/free-solid-svg-icons";
 import "jquery";
-import { SdBarcodeControl } from "./controls/SdBarcodeControl";
-import { SdBusyControl } from "./controls/SdBusyControl";
-import { SdButtonControl } from "./controls/SdButtonControl";
-import { SdButtonGroupControl } from "./controls/SdButtonGroupControl";
-import { SdCardControl } from "./controls/SdCardControl";
-import { CircleControl, SdChartDonutControl, SdChartDonutItemControl } from "./controls/SdChartDonutControl";
-import { SdCheckboxControl } from "./controls/SdCheckboxControl";
-import { SdComboboxControl } from "./controls/SdComboboxControl";
-import { SdDatePickerControl } from "./controls/SdDatePickerControl";
-import { SdDateRangePickerControl } from "./controls/SdDateRangePickerControl";
-import { SdDrawingControl } from "./controls/SdDrawingControl";
-import { SdDropdownControl } from "./controls/SdDropdownControl";
-import { SdEnumControl, SdEnumItemControl } from "./controls/SdEnumControl";
-import { SdExcelMappingControl } from "./controls/SdExcelMappingControl";
-import { SdFormControl, SdFormItemControl } from "./controls/SdFormControl";
-import { SdGridControl, SdGridItemControl } from "./controls/SdGridControl";
-import { SdIconControl } from "./controls/SdIcon";
-import { SdListControl, SdListItemControl } from "./controls/SdListControl";
-import { SdNoteControl } from "./controls/SdNoteControl";
-import { SdPaginationControl } from "./controls/SdPaginationControl";
-import { SdPaneControl } from "./controls/SdPaneControl";
-import { SdProgressControl, SdProgressItemControl } from "./controls/SdProgressControl";
-import { OptionControl, SdSelectControl } from "./controls/SdSelectControl";
-import { SdSidebarContainerControl, SdSidebarControl } from "./controls/SdSidebarControl";
-import { SdStarsControl } from "./controls/SdStarsControl";
-import { SdTabControl, SdTabItemControl } from "./controls/SdTabControl";
+import {SdBarcodeControl} from "./controls/SdBarcodeControl";
+import {SdBusyControl} from "./controls/SdBusyControl";
+import {SdButtonControl} from "./controls/SdButtonControl";
+import {SdButtonGroupControl} from "./controls/SdButtonGroupControl";
+import {SdCardControl} from "./controls/SdCardControl";
+import {CircleControl, SdChartDonutControl, SdChartDonutItemControl} from "./controls/SdChartDonutControl";
+import {SdCheckboxControl} from "./controls/SdCheckboxControl";
+import {SdComboboxControl} from "./controls/SdComboboxControl";
+import {SdDatePickerControl} from "./controls/SdDatePickerControl";
+import {SdDateRangePickerControl} from "./controls/SdDateRangePickerControl";
+import {SdDrawingControl} from "./controls/SdDrawingControl";
+import {SdDropdownControl} from "./controls/SdDropdownControl";
+import {SdEnumControl, SdEnumItemControl} from "./controls/SdEnumControl";
+import {SdExcelMappingControl} from "./controls/SdExcelMappingControl";
+import {SdFormControl, SdFormItemControl} from "./controls/SdFormControl";
+import {SdGridControl, SdGridItemControl} from "./controls/SdGridControl";
+import {SdIconControl} from "./controls/SdIcon";
+import {SdListControl, SdListItemControl} from "./controls/SdListControl";
+import {SdNoteControl} from "./controls/SdNoteControl";
+import {SdPaginationControl} from "./controls/SdPaginationControl";
+import {SdPaneControl} from "./controls/SdPaneControl";
+import {SdProgressControl, SdProgressItemControl} from "./controls/SdProgressControl";
+import {OptionControl, SdSelectControl} from "./controls/SdSelectControl";
+import {SdSidebarContainerControl, SdSidebarControl} from "./controls/SdSidebarControl";
+import {SdStarsControl} from "./controls/SdStarsControl";
+import {SdTabControl, SdTabItemControl} from "./controls/SdTabControl";
 import {
   SdCellButtonControl,
   SdCellCheckboxControl,
@@ -40,34 +41,33 @@ import {
   SdColumnSelectorControl,
   SdTableControl
 } from "./controls/SdTableControl";
-import { SdTextAreaControl } from "./controls/SdTextAreaControl";
-import { SdTextFieldControl } from "./controls/SdTextFieldControl";
+import {SdTextAreaControl} from "./controls/SdTextAreaControl";
+import {SdTextFieldControl} from "./controls/SdTextFieldControl";
 import {
   SdTopbarButtonControl,
   SdTopbarContainerControl,
   SdTopbarControl,
   SdTopbarFileButtonControl
 } from "./controls/SdTopbarControl";
-import { SdViewerControl, SdViewerItemControl } from "./controls/SdViewerControl";
-import { SdButton2Control } from "./controls2/SdButton2Control";
-import { SdDockContainerControl, SdDockControl } from "./controls2/SdDockControl";
-import { SdSheetColumnControl, SdSheetColumnHeadControl, SdSheetControl } from "./controls2/SdSheetControl";
-import { SdTextfieldControl } from "./controls2/SdTextfieldControl";
-import { SdModalControl } from "./entry-controls/SdModalControl";
-import { SimgularHelpers } from "./helpers/SimgularHelpers";
-import { SdSheetColumnConfigModal } from "./modals/SdSheetColumnConfigModal";
-import { SdBusyProvider } from "./providers/SdBusyProvider";
-import { SdCameraBarcodeScannerProvider } from "./providers/SdCameraBarcodeScannerProvider";
-import { SdCanDeactivateGuardProvider } from "./providers/SdCanDeactivateGuardProvider";
-import { SdFocusProvider } from "./providers/SdFocusProvider";
-import { SdHidBarcodeScannerProvider } from "./providers/SdHidBarcodeScannerProvider";
-import { SdKeyboardPanelProvider } from "./providers/SdKeyboardPanelProvider";
-import { SdLocalStorageProvider } from "./providers/SdLocalStorageProvider";
-import { SdModalProvider } from "./providers/SdModalProvider";
-import { SdPrintProvider } from "./providers/SdPrintProvider";
-import { SdServiceProvider } from "./providers/SdServiceProvider";
-import { SdToastProvider } from "./providers/SdToastProvider";
-import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
+import {SdViewerControl, SdViewerItemControl} from "./controls/SdViewerControl";
+import {SdButton2Control} from "./controls2/SdButton2Control";
+import {SdDockContainerControl, SdDockControl} from "./controls2/SdDockControl";
+import {SdSheetColumnControl, SdSheetColumnHeadControl, SdSheetControl} from "./controls2/SdSheetControl";
+import {SdTextfieldControl} from "./controls2/SdTextfieldControl";
+import {SdModalControl} from "./entry-controls/SdModalControl";
+import {SimgularHelpers} from "./helpers/SimgularHelpers";
+import {SdSheetColumnConfigModal} from "./modals/SdSheetColumnConfigModal";
+import {SdBusyProvider} from "./providers/SdBusyProvider";
+import {SdCameraBarcodeScannerProvider} from "./providers/SdCameraBarcodeScannerProvider";
+import {SdCanDeactivateGuardProvider} from "./providers/SdCanDeactivateGuardProvider";
+import {SdFocusProvider} from "./providers/SdFocusProvider";
+import {SdHidBarcodeScannerProvider} from "./providers/SdHidBarcodeScannerProvider";
+import {SdKeyboardPanelProvider} from "./providers/SdKeyboardPanelProvider";
+import {SdLocalStorageProvider} from "./providers/SdLocalStorageProvider";
+import {SdModalProvider} from "./providers/SdModalProvider";
+import {SdPrintProvider} from "./providers/SdPrintProvider";
+import {SdServiceProvider} from "./providers/SdServiceProvider";
+import {SdToastProvider} from "./providers/SdToastProvider";
 
 library.add(fas, far);
 
@@ -140,24 +140,19 @@ const pipes: Type<any>[] = [];
 
 @Injectable()
 class SimgularErrorHandler implements ErrorHandler {
-  public constructor(private _toast: SdToastProvider) {
+  public constructor(private readonly _toast: SdToastProvider) {
   }
 
   public handleError(error: any): void {
-    let err: Error;
-    if (error.rejection) {
-      err = error.rejection;
-    } else {
-      err = error;
-    }
+    const err = error.rejection ? error.rejection : error;
 
-    if (!err["handled"]) {
+    if (!err.handled) {
       if (process.env.NODE_ENV === "production") {
         alert(`처리되지 않은 오류가 발생하였습니다.\n\n${err.message}`);
         location.reload();
         return;
       }
-      else {
+      {
         this._toast.danger(`처리되지 않은 오류가 발생하였습니다.\n\n${err.message}`);
         throw err;
       }
@@ -165,7 +160,7 @@ class SimgularErrorHandler implements ErrorHandler {
   }
 }
 
-providers.push({ provide: ErrorHandler, useClass: SimgularErrorHandler } as any);
+providers.push({provide: ErrorHandler, useClass: SimgularErrorHandler} as any);
 
 @NgModule({
   imports: ([] as any[])

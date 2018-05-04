@@ -1,26 +1,18 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  Output,
-  SimpleChanges
-} from "@angular/core";
-import { DateOnly } from "../../../sd-core/src";
-import { SimgularHelpers } from "../helpers/SimgularHelpers";
-import { SdSizeString } from "../helpers/types";
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from "@angular/core";
+import {DateOnly} from "../../../sd-core/src/types/DateOnly";
+import {SimgularHelpers} from "../helpers/SimgularHelpers";
+import {SdSizeString} from "../helpers/types";
 
 @Component({
   selector: "sd-date-picker",
   template: `
-        <sd-textfield [type]="type"
-                      [value]="value"
-                      [disabled]="disabled"
-                      [size]="size"
-                      [required]="required"
-                      (valueChange)="onValueChange($event)">
-        </sd-textfield>`,
+    <sd-textfield [type]="type"
+                  [value]="value"
+                  [disabled]="disabled"
+                  [size]="size"
+                  [required]="required"
+                  (valueChange)="onValueChange($event)">
+    </sd-textfield>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdDatePickerControl implements OnChanges {
@@ -35,7 +27,7 @@ export class SdDatePickerControl implements OnChanges {
     SimgularHelpers.typeValidate(changes, {
       type: {
         type: String,
-        validator: (value) => ["date", "month", "year"].includes(value),
+        validator: value => ["date", "month", "year"].includes(value),
         required: true
       },
       value: DateOnly,

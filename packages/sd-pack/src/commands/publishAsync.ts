@@ -2,12 +2,13 @@ import * as child_process from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as semver from "semver";
-import { Logger } from "../../../sd-core/src";
-import { SdServerPackageBuilder } from "../builders/SdServerPackageBuilder";
-import { SdClientPackageBuilder, SdLibraryPackageBuilder } from "..";
+import {Logger} from "../../../sd-core/src/utils/Logger";
+import {SdClientPackageBuilder} from "../builders/SdClientPackageBuilder";
+import {SdLibraryPackageBuilder} from "../builders/SdLibraryPackageBuilder";
+import {SdServerPackageBuilder} from "../builders/SdServerPackageBuilder";
 
-export async function publish(argv: { host: string; port: number; user: string; pass: string; root: string }): Promise<void> {
-  const logger = new Logger("@simplism/sd-pack", `publish`);
+export async function publishAsync(argv: { host: string; port: number; user: string; pass: string; root: string }): Promise<void> {
+  const logger = new Logger("@simplism/sd-pack", "publish");
 
   const spawn1 = child_process.spawnSync("git", ["diff"], {
     shell: true
@@ -25,7 +26,7 @@ export async function publish(argv: { host: string; port: number; user: string; 
   });
 
   const promiseList: Promise<void>[] = [];
-  for (const packageName of fs.readdirSync(path.resolve(process.cwd(), `packages`))) {
+  for (const packageName of fs.readdirSync(path.resolve(process.cwd(), "packages"))) {
     if (packageName.startsWith("server")) {
       promiseList.push(new SdServerPackageBuilder(packageName).publishAsync(argv));
     }
@@ -38,7 +39,7 @@ export async function publish(argv: { host: string; port: number; user: string; 
   }
   await Promise.all(promiseList);
 
-  //-- git push
+  // git push
   child_process.spawnSync("git", ["push"], {
     shell: true
   });

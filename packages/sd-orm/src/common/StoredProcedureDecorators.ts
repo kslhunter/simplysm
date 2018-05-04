@@ -1,12 +1,12 @@
-import "reflect-metadata";
-import { Safe, Type } from "../../../sd-core/src";
-import { IStoredProcedureDefinition } from "./Definitions";
-import { DataType } from "./Enums";
-import { QueryHelper } from "./QueryHelper";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Safe} from "../../../sd-core/src/utils/Safe";
+import {IStoredProcedureDefinition} from "./Definitions";
+import {DataType} from "./Enums";
+import {QueryHelper} from "./QueryHelper";
 
 export const storedProcedureMetadataSymbol = "sd-database.stored-procedure";
 
-//tslint:disable-next-line:variable-name
+// tslint:disable-next-line:variable-name
 export const StoredProcedure = <T>(query: string) => (classType: Type<T>) => {
   const def: IStoredProcedureDefinition = Reflect.getMetadata(storedProcedureMetadataSymbol, classType) || {};
   def.name = classType.name;
@@ -15,7 +15,7 @@ export const StoredProcedure = <T>(query: string) => (classType: Type<T>) => {
   Reflect.defineMetadata(storedProcedureMetadataSymbol, def, classType);
 };
 
-//tslint:disable-next-line:variable-name
+// tslint:disable-next-line:variable-name
 export const StoredProcedureParam = <T>(param?: {
   dataType?: DataType;
   length?: number;
@@ -34,7 +34,7 @@ export const StoredProcedureParam = <T>(param?: {
   Reflect.defineMetadata(storedProcedureMetadataSymbol, def, classType);
 };
 
-//tslint:disable-next-line:variable-name
+// tslint:disable-next-line:variable-name
 export const StoredProcedureReturn = <T>(param?: {
   dataType?: DataType;
   length?: number;
@@ -51,7 +51,7 @@ export const StoredProcedureReturn = <T>(param?: {
   Reflect.defineMetadata(storedProcedureMetadataSymbol, def, classType);
 };
 
-//tslint:disable-next-line:variable-name
+// tslint:disable-next-line:variable-name
 export const StoredProcedureOutput = <T>(params?: {
   name: string;
   dataType: DataType;
@@ -64,7 +64,7 @@ export const StoredProcedureOutput = <T>(params?: {
   Reflect.defineMetadata(storedProcedureMetadataSymbol, def, classType);
 };
 
-//tslint:disable-next-line:variable-name
+// tslint:disable-next-line:variable-name
 export const StoredProcedureResultRecord = <T>(param?: {
   dataType: DataType;
   length?: number;

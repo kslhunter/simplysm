@@ -1,13 +1,14 @@
-import { Injectable } from "@angular/core";
-import { Safe, Uuid } from "../../../sd-core/src";
-import { SdKeyboardPanelProvider } from "./SdKeyboardPanelProvider";
+import {Injectable} from "@angular/core";
+import {Uuid} from "../../../sd-core/src/types/Uuid";
+import {Safe} from "../../../sd-core/src/utils/Safe";
+import {SdKeyboardPanelProvider} from "./SdKeyboardPanelProvider";
 
 @Injectable()
 export class SdHidBarcodeScannerProvider {
-  private _platform: string = Safe.obj(window["cordova"]).platformId;
+  private readonly _platform: string = Safe.obj(window["cordova"]).platformId;
 
-  private _keys: Uuid[] = [];
-  private _keyboardMap = {
+  private readonly _keys: Uuid[] = [];
+  private readonly _keyboardMap = {
     9: "\t",
     32: " ",
     48: "0",
@@ -74,7 +75,7 @@ export class SdHidBarcodeScannerProvider {
     222: "'"
   };
 
-  private _shifyKeyboardMap = {
+  private readonly _shifyKeyboardMap = {
     ...this._keyboardMap,
     48: ")",
     49: "!",
@@ -122,10 +123,10 @@ export class SdHidBarcodeScannerProvider {
     219: "{",
     220: "|",
     221: "}",
-    222: "\""
+    222: '"'
   };
 
-  public constructor(private _keyboardPanel: SdKeyboardPanelProvider) {
+  public constructor(private readonly _keyboardPanel: SdKeyboardPanelProvider) {
 
   }
 
@@ -134,7 +135,7 @@ export class SdHidBarcodeScannerProvider {
 
     let timeout: number;
     let result = "";
-    $(document).on(`keydown.${key.toString()}`, async (event) => {
+    $(document).on(`keydown.${key.toString()}`, async event => {
       if (this._platform === "android" && this._keyboardPanel.isVisible) {
         return;
       }

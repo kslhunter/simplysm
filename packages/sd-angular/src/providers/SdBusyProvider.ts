@@ -1,14 +1,13 @@
-import { Injectable } from "@angular/core";
+import {Injectable} from "@angular/core";
 
 @Injectable()
 export class SdBusyProvider {
-  private _$busy: JQuery;
+  private readonly _$busy: JQuery;
   private _count = 0;
   private _$prevActivate: JQuery | undefined;
 
   public constructor() {
     this._$busy = $("<div class='_sd-busy'><div><div></div><div></div></div></div>").appendTo($("body"));
-    this._$busy.get(0).offsetHeight;
   }
 
   public async show(): Promise<void> {
@@ -19,7 +18,7 @@ export class SdBusyProvider {
       if (this._$prevActivate) {
         this._$prevActivate.trigger("blur");
       }
-      await new Promise((resolve) => {
+      await new Promise<void>(resolve => {
         this._$busy.addClass("_open");
         resolve();
       });

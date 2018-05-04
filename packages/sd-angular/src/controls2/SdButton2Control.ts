@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from "@angular/core";
-import { SimgularHelpers } from "../helpers/SimgularHelpers";
-import { SdSizeString, SdThemeString } from "../helpers/types";
+import {ChangeDetectionStrategy, Component, HostBinding, Input, OnChanges, SimpleChanges} from "@angular/core";
+import {SimgularHelpers} from "../helpers/SimgularHelpers";
+import {SdSizeString, SdThemeString} from "../helpers/types";
 
 @Component({
   selector: "sd-button2",
@@ -10,28 +10,30 @@ import { SdSizeString, SdThemeString } from "../helpers/types";
             [disabled]="disabled">
       <ng-content></ng-content>
     </button>`,
-  host: {
-    "[attr.sd-size]": "size",
-    "[attr.sd-theme]": "theme",
-    "[attr.sd-inline]": "inline",
-    "[attr.sd-inset]": "inset"
-  },
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdButton2Control implements OnChanges {
-  //-- Input/Output
+  // Input/Output
   @Input() public type?: "button" | "submit";
-  @Input() public size?: SdSizeString;
-  @Input() public theme?: SdThemeString;
-  @Input() public inline?: boolean;
   @Input() public disabled?: boolean;
+
+  @HostBinding("attr.sd-size")
+  @Input() public size?: SdSizeString;
+
+  @HostBinding("attr.sd-theme")
+  @Input() public theme?: SdThemeString;
+
+  @HostBinding("attr.sd-inline")
+  @Input() public inline?: boolean;
+
+  @HostBinding("attr.sd-inset")
   @Input() public inset?: boolean;
 
   public ngOnChanges(changes: SimpleChanges): void {
     SimgularHelpers.typeValidate(changes, {
       type: {
         type: String,
-        validator: (value) => ["button", "submit"].includes(value)
+        validator: value => ["button", "submit"].includes(value)
       },
       size: "SdSizeString",
       theme: "SdThemeString",

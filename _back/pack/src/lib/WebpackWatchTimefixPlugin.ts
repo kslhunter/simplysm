@@ -1,5 +1,5 @@
-import "@simplism/core";
-import * as webpack from "webpack";
+import '@simplism/core';
+import * as webpack from 'webpack';
 
 /**
  * @deprecated
@@ -10,16 +10,16 @@ export class WebpackWatchTimefixPlugin {
         let isTimefixed = false;
 
         const timefix = 20000;
-        compiler.hooks.watchRun.tap("WatchTimefix", (watching) => {
+        compiler.hooks.watchRun.tap('WatchTimefix', (watching) => {
             if (isFirst) {
-                watching["startTime"] += timefix;
+                watching['startTime'] += timefix;
                 isFirst = false;
                 isTimefixed = true;
             }
         });
-        compiler.hooks.done.tap("WatchTimefix", (stats) => {
+        compiler.hooks.done.tap('WatchTimefix', (stats) => {
             if (isTimefixed) {
-                stats["startTime"] -= timefix;
+                stats['startTime'] -= timefix;
                 isTimefixed = false;
             }
         });

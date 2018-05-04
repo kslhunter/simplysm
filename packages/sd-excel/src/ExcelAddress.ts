@@ -1,4 +1,4 @@
-import { Exception } from "../../sd-core/src";
+import {Exception} from "../../sd-core/src/exceptions/Exception";
 
 export class ExcelAddress {
   public static parse(str: string): number[] {
@@ -13,7 +13,8 @@ export class ExcelAddress {
       const toCol = this._parseColAddress(matches[3]);
       const toRow = Number.parseInt(matches[4]) - 1;
       return [fromRow, fromCol, toRow, toCol];
-    } else {
+    }
+    else {
       const matches = str.match(/([A-Z]*)([0-9]*)/);
       if (!matches) {
         throw new Exception("파싱 오류");
@@ -32,7 +33,8 @@ export class ExcelAddress {
       const toRow = (arr[2] + 1).toString();
       const toCol = this._getColAddress(arr[3]);
       return `${fromCol + fromRow}:${toCol}${toRow}`;
-    } else {
+    }
+    else {
       const col = this._getColAddress(arr[1]);
       const row = (arr[0] + 1).toString();
       return col + row;

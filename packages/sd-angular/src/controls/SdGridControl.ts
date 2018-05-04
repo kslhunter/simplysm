@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
-import { Exception } from "../../../sd-core/src";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
 
 @Component({
   selector: "sd-grid",
   template: `
-        <ng-content></ng-content>`,
+    <ng-content></ng-content>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdGridControl {
@@ -13,13 +13,16 @@ export class SdGridControl {
 @Component({
   selector: "sd-grid-item",
   template: `
-        <ng-content></ng-content>`,
-  host: {
-    "[style.width]": "width"
-  },
+    <ng-content></ng-content>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdGridItemControl {
+  private _colspan = 12;
+
+  public get colspan(): number {
+    return this._colspan;
+  }
+
   @Input()
   public set colspan(value: number) {
     if (!(typeof value === "number" && value > 0 && value <= 12)) {
@@ -28,12 +31,7 @@ export class SdGridItemControl {
     this._colspan = value;
   }
 
-  public get colspan(): number {
-    return this._colspan;
-  }
-
-  private _colspan = 12;
-
+  @HostBinding("style.width")
   public get width(): string {
     return `${(100 / 12) * this._colspan}%`;
   }

@@ -1,13 +1,14 @@
-import { Injectable } from "@angular/core";
-import { Exception, Safe } from "../../../sd-core/src";
-import { SdBusyProvider } from "./SdBusyProvider";
+import {Injectable} from "@angular/core";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {Safe} from "../../../sd-core/src/utils/Safe";
+import {SdBusyProvider} from "./SdBusyProvider";
 
 @Injectable()
 export class SdCameraBarcodeScannerProvider {
-  private _platform: string = Safe.obj(window["cordova"]).platformId;
-  private _plugin: any = Safe.obj(Safe.obj(window["cordova"])["plugins"])["barcodeScanner"];
+  private readonly _platform: string = Safe.obj(window["cordova"]).platformId;
+  private readonly _plugin: any = Safe.obj(Safe.obj(window["cordova"]).plugins).barcodeScanner;
 
-  public constructor(private _busy: SdBusyProvider) {
+  public constructor(private readonly _busy: SdBusyProvider) {
   }
 
   public async scan(): Promise<string | undefined> {

@@ -1,11 +1,17 @@
-import { BigInt, Decimal, NChar, Numeric, Table } from "mssql";
-import { DateOnly, Exception, LambdaParser, NotImplementedException, Safe, Type, Uuid } from "../../../sd-core/src";
-import { IForeignKeyDefinition, IForeignKeyTargetDefinition, ITableDefinition } from "../common/Definitions";
-import { DataType, OrderByRule } from "../common/Enums";
-import { QueryHelper } from "../common/QueryHelper";
-import { tableMetadataSymbol } from "../common/TableDecorators";
-import { Database } from "./Database";
-import { QueryMaker } from "./QueryMaker";
+import {BigInt, Decimal, NChar, Numeric, Table} from "mssql";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {NotImplementedException} from "../../../sd-core/src/exceptions/NotImplementedException";
+import {DateOnly} from "../../../sd-core/src/types/DateOnly";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Uuid} from "../../../sd-core/src/types/Uuid";
+import {LambdaParser} from "../../../sd-core/src/utils/LambdaParser";
+import {Safe} from "../../../sd-core/src/utils/Safe";
+import {IForeignKeyDefinition, IForeignKeyTargetDefinition, ITableDefinition} from "../common/Definitions";
+import {DataType, OrderByRule} from "../common/Enums";
+import {QueryHelper} from "../common/QueryHelper";
+import {tableMetadataSymbol} from "../common/TableDecorators";
+import {Database} from "./Database";
+import {QueryMaker} from "./QueryMaker";
 
 export class QueriedBoolean extends Boolean {
 }
@@ -17,7 +23,8 @@ export interface IJoinDefinition {
 }
 
 export class QueryUnit<T> {
-  public constructor(public type: Type<T> | undefined, public query: string) {
+  public constructor(public type: Type<T> | undefined,
+                     public query: string) {
   }
 }
 
@@ -37,7 +44,7 @@ export class Queryable<T> {
   public get query(): string {
     let query = "\nSELECT";
     if (this._distinct) {
-      query += ` DISTINCT`;
+      query += " DISTINCT";
     }
 
     if (this._top) {
@@ -63,7 +70,7 @@ export class Queryable<T> {
     query = query.slice(0, -2);
 
     query += "\n";
-    query += `FROM `;
+    query += "FROM ";
     if (typeof this._from === "string") {
       query += this._key(this._from);
     }
@@ -101,7 +108,7 @@ export class Queryable<T> {
 
         query += ` ${this._key(join.queryable._from as string)}`;
         query += ` as ${this._key(join.queryable._as)}`;
-        query += ` ON (${join.queryable._where.map((item) => item.query).join(") AND (")})\n`;
+        query += ` ON (${join.queryable._where.map(item => item.query).join(") AND (")})\n`;
       }
       else {
         query += !join.inner ? "OUTER APPLY" : "CROSS APPLY";
@@ -113,21 +120,21 @@ export class Queryable<T> {
 
     if (this._where.length > 0) {
       query += "WHERE ";
-      query += `(${this._where.map((item) => item.query).join(")\nAND (")})\n`;
+      query += `(${this._where.map(item => item.query).join(")\nAND (")})\n`;
     }
 
     if (this._groupBy.length > 0) {
       query += "GROUP BY ";
-      query += `${this._groupBy.map((item) => item.query).join(", ")}\n`;
+      query += `${this._groupBy.map(item => item.query).join(", ")}\n`;
     }
 
     if (this._having.length > 0) {
       query += "HAVING ";
-      query += `${this._having.map((item) => item.query).join("\nAND ")}\n`;
+      query += `${this._having.map(item => item.query).join("\nAND ")}\n`;
     }
 
     if (this._orderBy.length > 0) {
-      query += `ORDER BY ${this._orderBy.map((item) => `${item.queryUnit.query} ${item.orderBy}`).join(", ")}\n`;
+      query += `ORDER BY ${this._orderBy.map(item => `${item.queryUnit.query} ${item.orderBy}`).join(", ")}\n`;
     }
 
     return query;
@@ -137,8 +144,8 @@ export class Queryable<T> {
     const result: T = {} as any;
     for (const columnName of Object.keys(this._select)) {
       if (columnName.includes(".")) {
-        //a.b.c
-        const columnNameChain = columnName.split("."); //['a', 'b', 'c']
+        // a.b.c
+        const columnNameChain = columnName.split("."); // ['a', 'b', 'c']
         let curr: { [key: string]: any } | { [key: string]: any }[] = result;
         for (let i = 0; i < columnNameChain.length - 1; i++) {
           const currColumnChain = columnNameChain.slice(0, i + 1); // ['a'] => ['a', 'b']
@@ -176,7 +183,7 @@ export class Queryable<T> {
         if (type === QueriedBoolean) {
           type = Boolean;
         }
-        this._select[key] = new QueryUnit(type, this._key(this._as, key));
+        this._select[key] = new QueryUnit<any>(type, this._key(this._as, key));
       }
     }
     else if (this._from instanceof Array) {
@@ -185,7 +192,7 @@ export class Queryable<T> {
         if (type === QueriedBoolean) {
           type = Boolean;
         }
-        this._select[key] = new QueryUnit(type, this._key(this._as, key));
+        this._select[key] = new QueryUnit<any>(type, this._key(this._as, key));
       }
     }
     else if (this.tableType) {
@@ -239,7 +246,7 @@ export class Queryable<T> {
 
     const result = await this.db.execute<T>(query);
     return result.recordsets
-      ? result.recordsets.map((item) => item ? Object.values(this._parseResult(item)[0])[0] : undefined)
+      ? result.recordsets.map(item => item ? Object.values(this._parseResult(item)[0])[0] : undefined)
       : [];
   }
 
@@ -254,44 +261,6 @@ export class Queryable<T> {
       query += "\n";
     }
     this.db.prepare(query);
-  }
-
-  private _getInsertQuery(record: any): string {
-    if (!this.tableType) {
-      throw new Exception("UNION시에는 사용할 수 없는 기능입니다.");
-    }
-
-    const tableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, this.tableType);
-    const tableName = this._key(tableDef.name);
-    const obj = Object.assign(new this.tableType(), record);
-    const columns = Object.keys(obj).map((key) => this._key(key));
-    const values = Object.values(obj).map((val) => this._value(val));
-
-    let query = `INSERT INTO ${tableName} (${columns.join(", ")})`;
-    if (tableDef.primaryKeyColumns.length === 1) {
-      const pkName = this._key(tableDef.primaryKeyColumns[0].name);
-      query += ` OUTPUT INSERTED.${pkName}`;
-    }
-    query += "\n";
-    query += `VALUES (${values.join(", ")});`;
-
-    const pkNames = tableDef.primaryKeyColumns.map((item) => item.name);
-    if (pkNames.some((pkName) => Object.keys(obj).includes(pkName))) {
-      query = `
-IF EXISTS (SELECT ${this._key("NAME")} FROM SYS.IDENTITY_COLUMNS WHERE OBJECT_NAME(OBJECT_ID) = ${this._value(tableDef.name)})
-BEGIN
-    SET IDENTITY_INSERT ${this._key(tableDef.name)} ON;
-END
-
-${query}
-
-IF EXISTS (SELECT ${this._key("NAME")} FROM SYS.IDENTITY_COLUMNS WHERE OBJECT_NAME(OBJECT_ID) = ${this._value(tableDef.name)})
-BEGIN
-    SET IDENTITY_INSERT ${this._key(tableDef.name)} OFF;
-END`;
-    }
-
-    return query;
   }
 
   public async bulkInsertAsync(objs: T[]): Promise<void> {
@@ -315,8 +284,7 @@ END`;
         if (length) {
           colType = colType(length);
         }
-      }
-      catch (e) {
+      } catch (e) {
         if (e instanceof TypeError) {
           if (colDef.dataType.startsWith("DECIMAL")) {
             const match = colDef.dataType.match(/DECIMAL\(([0-9]*),\s?([0-9]*)\)/);
@@ -349,11 +317,11 @@ END`;
 
       table.columns.add(colDef.name, colType, {
         nullable: colDef.nullable,
-        primary: tableDef.primaryKeyColumns.some((pk) => pk.name === colDef.name)
+        primary: tableDef.primaryKeyColumns.some(pk => pk.name === colDef.name)
       });
     }
     for (const obj of objs) {
-      table.rows.add.apply(table.rows, tableDef.columns.map((col) => {
+      table.rows.add.apply(table.rows, tableDef.columns.map(col => {
         if (obj[col.name] instanceof DateOnly) {
           return new Date(obj[col.name].getTime());
         }
@@ -390,7 +358,7 @@ END`;
     }
 
     const query = records
-      .map((obj) => {
+      .map(obj => {
         const initObj: T = new this.tableType!();
         Object.assign(initObj, obj);
         return this._getUpsertQuery(initObj, keys);
@@ -398,12 +366,11 @@ END`;
       .join("\n");
 
     const result = await this.db.execute(query);
-    return records.map((record: any, index) => {
-      return {
+    return records.map((record: any, index) =>
+      ({
         ...record,
         ...result.recordsets[index][0]
-      };
-    });
+      }));
   }
 
   public upsertRangePrepare(records: T[], keys?: (keyof T)[]): void {
@@ -412,7 +379,7 @@ END`;
     }
 
     const query = records
-      .map((obj) => {
+      .map(obj => {
         const initObj: T = new this.tableType!();
         Object.assign(initObj, obj);
         return this._getUpsertQuery(initObj, keys);
@@ -422,54 +389,13 @@ END`;
     this.db.prepare(query);
   }
 
-  private _getUpsertQuery(record: any, keys?: string[]): string {
-    if (!this.tableType) {
-      throw new Exception("UNION시에는 사용할 수 없는 기능입니다.");
-    }
-
-    const r = Object.assign(new this.tableType(), record);
-
-    const tableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, this.tableType);
-    const primaryKeys = tableDef.primaryKeyColumns.map((item) => item.name);
-    keys = keys || primaryKeys;
-
-    let query = `
-MERGE ${this._key(tableDef.name)}
-USING (SELECT ${keys.map((key) => `${this._value(r[key])} as ${this._key(key)}`).join(", ")}) as ${this._key("match")}
-ON ${keys.map((key1) => `${this._key(tableDef.name, key1)} = ${this._key("match", key1)}`).join(" AND ")}
-WHEN MATCHED THEN
-    UPDATE SET ${Object.keys(r).map((key) => keys!.includes(key) ? "" : `${this._key(tableDef.name, key)} = ${this._value(r[key])}`).filter((item) => item).join(", ")}
-WHEN NOT MATCHED THEN
-	INSERT (${Object.keys(r).map((key) => this._key(key)).join(", ")})
-	VALUES (${Object.keys(r).map((key) => this._value(r[key])).join(", ")})
-	OUTPUT INSERTED.${this._key(keys[0])};
-`.trim();
-
-    if (primaryKeys.some((pkName) => Object.keys(record).includes(pkName)) && keys!.orderBy().join("_") === primaryKeys.orderBy().join("_")) {
-      query = `
-IF EXISTS (SELECT ${this._key("NAME")} FROM SYS.IDENTITY_COLUMNS WHERE OBJECT_NAME(OBJECT_ID) = ${this._value(tableDef.name)})
-BEGIN
-    SET IDENTITY_INSERT ${this._key(tableDef.name)} ON;
-END
-
-${query}
-
-IF EXISTS (SELECT ${this._key("NAME")} FROM SYS.IDENTITY_COLUMNS WHERE OBJECT_NAME(OBJECT_ID) = ${this._value(tableDef.name)})
-BEGIN
-    SET IDENTITY_INSERT ${this._key(tableDef.name)} OFF;
-END`;
-    }
-
-    return query;
-  }
-
   public async insertToAsync<G extends { [key: string]: any }>(to: Queryable<G>, predicate: (q: QueryMaker<T>) => G): Promise<number[]> {
-    const originQueryable = this.select((q) => predicate(q) as any);
+    const originQueryable = this.select(q => predicate(q) as any);
     const targetTableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, to.tableType!);
     const targetName = targetTableDef.name;
 
     let query = `INSERT INTO ${this._key(targetName)}(\n`;
-    query += `\t${Object.keys(originQueryable._select).map((item) => this._key(item)).join(",\n    ").trim()}\n`;
+    query += `\t${Object.keys(originQueryable._select).map(item => this._key(item)).join(",\n    ").trim()}\n`;
     query += ")\n";
     if (targetTableDef.primaryKeyColumns.length === 1) {
       const pkName = this._key(targetTableDef.primaryKeyColumns[0].name);
@@ -479,7 +405,7 @@ END`;
     query += originQueryable.query.trim();
 
     const results = (await this.db.execute(query)).recordsets;
-    return results.map((item) => item && item.length > 0
+    return results.map(item => item && item.length > 0
       ? Object.values(this._parseResult(item)[0])[0]
       : undefined);
   }
@@ -501,7 +427,7 @@ END`;
           continue;
         }
 
-        if (this._join.some((item) => item.queryable._as === (parentNameChain ? parentNameChain.concat(columnName).join(".") : columnName))) {
+        if (this._join.some(item => item.queryable._as === (parentNameChain ? parentNameChain.concat(columnName).join(".") : columnName))) {
           fieldQuery1 += getUpdateFieldQuery(realObj[columnName], (parentNameChain ? parentNameChain.concat([columnName]) : [columnName]));
         }
         else {
@@ -518,7 +444,7 @@ END`;
           else {
             fieldQuery1 += this._value(queryValue);
           }
-          fieldQuery1 += `,\n`;
+          fieldQuery1 += ",\n";
         }
       }
       return fieldQuery1;
@@ -529,7 +455,7 @@ END`;
 
     let query = `UPDATE ${this._key("TBL")} SET\n`;
     query += fieldQuery;
-    query += `FROM (\n`;
+    query += "FROM (\n";
     query += `\t${selectQuery.trim()}\n`;
     query += ") [TBL]";
     return (await this.db.execute(query)).rowsAffected[0];
@@ -552,7 +478,7 @@ END`;
           continue;
         }
 
-        if (this._join.some((item) => item.queryable._as === (parentNameChain ? parentNameChain.concat(columnName).join(".") : columnName))) {
+        if (this._join.some(item => item.queryable._as === (parentNameChain ? parentNameChain.concat(columnName).join(".") : columnName))) {
           fieldQuery1 += getUpdateFieldQuery(realObj[columnName], (parentNameChain ? parentNameChain.concat([columnName]) : [columnName]));
         }
         else {
@@ -569,7 +495,7 @@ END`;
           else {
             fieldQuery1 += this._value(queryValue);
           }
-          fieldQuery1 += `,\n`;
+          fieldQuery1 += ",\n";
         }
       }
       return fieldQuery1;
@@ -580,7 +506,7 @@ END`;
 
     let query = `UPDATE ${this._key("TBL")} SET\n`;
     query += fieldQuery;
-    query += `FROM (\n`;
+    query += "FROM (\n";
     query += `\t${selectQuery.trim()}\n`;
     query += ") [TBL]";
     this.db.prepare(query);
@@ -592,19 +518,19 @@ END`;
     }
 
     const tableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, this.tableType);
-    const pkColumns = tableDef.primaryKeyColumns.map((item) => item.name);
+    const pkColumns = tableDef.primaryKeyColumns.map(item => item.name);
 
     const pkConcatString = pkColumns.length > 1
-      ? pkColumns.map((pkCol) => this._key("TBL", pkCol)).join(" + ")
+      ? pkColumns.map(pkCol => this._key("TBL", pkCol)).join(" + ")
       : this._key("TBL", pkColumns[0]);
 
     const tableName = this._key(tableDef.name);
     const pkConcatString2 = pkColumns.length > 1
-      ? pkColumns.map((pkCol) => this._key(pkCol)).join(" + ")
+      ? pkColumns.map(pkCol => this._key(pkCol)).join(" + ")
       : this._key(pkColumns[0]);
 
     const selectQuery = this
-      .select((entity) => ({
+      .select(entity => ({
         PKS: new QueryUnit(String, pkConcatString)
       }))
       .query
@@ -620,19 +546,19 @@ END`;
     }
 
     const tableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, this.tableType);
-    const pkColumns = tableDef.primaryKeyColumns.map((item) => item.name);
+    const pkColumns = tableDef.primaryKeyColumns.map(item => item.name);
 
     const pkConcatString = pkColumns.length > 1
-      ? pkColumns.map((pkCol) => this._key("TBL", pkCol)).join(" + ")
+      ? pkColumns.map(pkCol => this._key("TBL", pkCol)).join(" + ")
       : this._key("TBL", pkColumns[0]);
 
     const tableName = this._key(tableDef.name);
     const pkConcatString2 = pkColumns.length > 1
-      ? pkColumns.map((pkCol) => this._key(pkCol)).join(" + ")
+      ? pkColumns.map(pkCol => this._key(pkCol)).join(" + ")
       : this._key(pkColumns[0]);
 
     const selectQuery = this
-      .select((entity) => ({
+      .select(entity => ({
         PKS: new QueryUnit(String, pkConcatString)
       }))
       .query
@@ -664,7 +590,7 @@ END`;
 
   public between<P>(targetFwd: ((q: QueryMaker<T>) => QueryUnit<P> | P) | QueryUnit<P> | P,
                     rangeFwd: ((q: QueryMaker<T>) => (QueryUnit<P> | P)[] | undefined) | (QueryUnit<P> | P)[] | undefined): Queryable<T> {
-    return this.where((q) => [
+    return this.where(q => [
       q.between(
         typeof targetFwd === "function" ? targetFwd(q) : targetFwd,
         typeof rangeFwd === "function" ? rangeFwd(q) : rangeFwd
@@ -673,7 +599,7 @@ END`;
   }
 
   public equal<P>(srcFwd: ((q: QueryMaker<T>) => QueryUnit<P> | P) | QueryUnit<P> | P, targetFwd: ((q: QueryMaker<T>) => QueryUnit<P> | P) | QueryUnit<P> | P): Queryable<T> {
-    return this.where((q) => [
+    return this.where(q => [
       q.equal(
         typeof srcFwd === "function" ? srcFwd(q) : srcFwd,
         typeof targetFwd === "function" ? targetFwd(q) : targetFwd
@@ -682,15 +608,15 @@ END`;
   }
 
   public find(filter: { [P in keyof T]?: (QueryUnit<T[P]> | T[P]) }, nonStrict: boolean = false): Queryable<T> {
-    return this.where((q) => {
+    return this.where(q => {
       const queries: QueryUnit<QueriedBoolean>[] = [];
       for (const key of Object.keys(filter)) {
         if (!nonStrict) {
           queries.push(
             filter[key] === undefined ?
-              q.null(new QueryUnit(undefined, this._key2(key))) :
+              q.null(new QueryUnit<any>(undefined, this._key2(key))) :
               q.equal(
-                new QueryUnit(undefined, this._key2(key)),
+                new QueryUnit<any>(undefined, this._key2(key)),
                 filter[key]
               ) as any
           );
@@ -700,7 +626,7 @@ END`;
             q.or(
               q.null(filter[key]),
               q.equal(
-                new QueryUnit(undefined, this._key2(key)),
+                new QueryUnit<any>(undefined, this._key2(key)),
                 filter[key]
               )
             ) as any
@@ -715,12 +641,12 @@ END`;
     if (!searchText) {
       return this;
     }
-    const searchWords = searchText.split(" ").filter((item) => item);
+    const searchWords = searchText.split(" ").filter(item => item);
     if (searchWords.length < 1) {
       return this;
     }
 
-    return this.where((q) => {
+    return this.where(q => {
       const fields = fieldsPredicate(q.entity) as QueryUnit<any>[];
       const or: boolean[] = [];
       for (const field of fields) {
@@ -737,7 +663,7 @@ END`;
   public orderBy(...fns: ((entity: T) => [any, OrderByRule])[]): Queryable<T> {
     const result = this._hasCustomSelect ? this._wrap() : this._clone();
     result._orderBy.pushRange(fns
-      .map((fn) => {
+      .map(fn => {
         const ob = fn(result._entity);
         return {
           queryUnit: ob[0],
@@ -761,7 +687,7 @@ END`;
     const selectObj: any = selectorFn(queryMaker);
 
     result._groupBy.pushRange(Object.values(groupByObj));
-    result._select = { ...groupByObj, ...selectObj };
+    result._select = {...groupByObj, ...selectObj};
     result._hasCustomSelect = true;
     return result as any;
   }
@@ -783,7 +709,7 @@ END`;
 
     const top = take + skip;
     const orderByQueries = [orderBy].concat(thenBys)
-      .map((fn) => {
+      .map(fn => {
         const item = fn(result._entity);
         const column = item[0] as QueryUnit<any>;
         const rule = item[1];
@@ -794,10 +720,10 @@ END`;
 
     /*let result = this._clone();*/
     result._top = top;
-    result._select["__rownum__"] = rowNumberQuery;
+    result._select.__rownum__ = rowNumberQuery;
     result = result._wrap();
-    delete result._select["__rownum__"];
-    result = result.where((q) => [
+    delete result._select.__rownum__;
+    result = result.where(q => [
       q.greaterThen(
         new QueryUnit(
           Number,
@@ -809,49 +735,6 @@ END`;
         skip)
     ]);
     return result;
-  }
-
-  private _joinFn<J, A extends string, R>(queryableOrTableType: Queryable<J> | Type<J>,
-                                          as: A,
-                                          joinQueryFn: (q: Queryable<J>, entity: T) => Queryable<R>,
-                                          inner: boolean,
-                                          isMulti: boolean): Queryable<T & { [P in A]: (R[] | R | undefined) }> {
-    if (this._hasCustomSelect) {
-      return this._wrap()._joinFn(queryableOrTableType, as, joinQueryFn, inner, isMulti);
-    }
-
-    const prevItem = this._join.single((item) => item.queryable._as === as);
-    const result = prevItem ? this._wrap() : this._clone();
-
-    const newQueryable = queryableOrTableType instanceof Queryable
-      ? new Queryable(this.db, queryableOrTableType.tableType, queryableOrTableType, as)
-      : new Queryable(this.db, queryableOrTableType, undefined, as);
-    const newJoinQueryable = joinQueryFn(newQueryable, result._entity);
-
-    if (prevItem && prevItem.inner === inner && prevItem.queryable.query === newJoinQueryable.query) {
-      return result as any;
-    }
-
-    result._join.push({
-      inner,
-      queryable: newJoinQueryable,
-      isMulti
-    });
-
-    const newSelect = {};
-    for (const key of Object.keys(newJoinQueryable._select)) {
-      newSelect[`${as}.${key}`] = new QueryUnit(
-        newJoinQueryable._select[key].type === QueriedBoolean
-          ? Boolean
-          : newJoinQueryable._select[key].type,
-        this._key(as, key)
-      );
-    }
-    result._select = {
-      ...result._select,
-      ...newSelect
-    };
-    return result as any;
   }
 
   public join<J, A extends string, R>(queryableOrTableType: Queryable<J> | Type<J>,
@@ -890,14 +773,14 @@ END`;
     let joinTableType: Type<any>;
     let isMulti: boolean;
 
-    //-- FK
+    // FK
     if (fkOrFktDef["columnNames"]) {
       const fkDef = fkOrFktDef as IForeignKeyDefinition;
       const targetTableType = fkDef.targetTableTypeForwarder();
 
       const targetTableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, targetTableType);
       if (targetTableDef.primaryKeyColumns.length !== fkDef.columnNames.length) {
-        throw new Exception(`기준테이블의 @ForeignKey 와 목표테이블의 @PrimaryKey 의 길이가 다릅니다.`);
+        throw new Exception("기준테이블의 @ForeignKey 와 목표테이블의 @PrimaryKey 의 길이가 다릅니다.");
       }
 
       for (let i = 0; i < targetTableDef.primaryKeyColumns.length; i++) {
@@ -909,13 +792,11 @@ END`;
       joinTableType = targetTableType;
       isMulti = false;
     }
-
-    //-- FKT
     else {
       const fktDef = fkOrFktDef as IForeignKeyTargetDefinition;
       const sourceTableType = fktDef.sourceTableTypeForwarder();
       const sourceTableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, sourceTableType);
-      const targetFkDef = sourceTableDef.foreignKeys.single((item) => item.name === fktDef.sourceForeignKeyName)!;
+      const targetFkDef = sourceTableDef.foreignKeys.single(item => item.name === fktDef.sourceForeignKeyName)!;
       const targetTableType = targetFkDef.targetTableTypeForwarder();
 
       const targetTableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, targetTableType);
@@ -977,16 +858,138 @@ END`;
 
   public async countAsync(fieldSelector?: (en: T) => any): Promise<number> {
     const result = await this
-      .select((q) => ({
+      .select(q => ({
         cnt: fieldSelector ? q.count(fieldSelector(q.entity)) : q.count()
       }))
       .resultAsync();
-    return result.sum((item) => item.cnt)!;
+    return result.sum(item => item.cnt)!;
   }
 
   public async existsAsync(): Promise<boolean> {
     const cnt = await this.countAsync();
     return cnt > 0;
+  }
+
+  private _getInsertQuery(record: any): string {
+    if (!this.tableType) {
+      throw new Exception("UNION시에는 사용할 수 없는 기능입니다.");
+    }
+
+    const tableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, this.tableType);
+    const tableName = this._key(tableDef.name);
+    const obj = Object.assign(new this.tableType(), record);
+    const columns = Object.keys(obj).map(key => this._key(key));
+    const values = Object.values(obj).map(val => this._value(val));
+
+    let query = `INSERT INTO ${tableName} (${columns.join(", ")})`;
+    if (tableDef.primaryKeyColumns.length === 1) {
+      const pkName = this._key(tableDef.primaryKeyColumns[0].name);
+      query += ` OUTPUT INSERTED.${pkName}`;
+    }
+    query += "\n";
+    query += `VALUES (${values.join(", ")});`;
+
+    const pkNames = tableDef.primaryKeyColumns.map(item => item.name);
+    if (pkNames.some(pkName => Object.keys(obj).includes(pkName))) {
+      query = `
+IF EXISTS (SELECT ${this._key("NAME")} FROM SYS.IDENTITY_COLUMNS WHERE OBJECT_NAME(OBJECT_ID) = ${this._value(tableDef.name)})
+BEGIN
+    SET IDENTITY_INSERT ${this._key(tableDef.name)} ON;
+END
+
+${query}
+
+IF EXISTS (SELECT ${this._key("NAME")} FROM SYS.IDENTITY_COLUMNS WHERE OBJECT_NAME(OBJECT_ID) = ${this._value(tableDef.name)})
+BEGIN
+    SET IDENTITY_INSERT ${this._key(tableDef.name)} OFF;
+END`;
+    }
+
+    return query;
+  }
+
+  private _getUpsertQuery(record: any, keys?: string[]): string {
+    if (!this.tableType) {
+      throw new Exception("UNION시에는 사용할 수 없는 기능입니다.");
+    }
+
+    const r = Object.assign(new this.tableType(), record);
+
+    const tableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, this.tableType);
+    const primaryKeys = tableDef.primaryKeyColumns.map(item => item.name);
+    const currKeys = keys || primaryKeys;
+
+    let query = `
+MERGE ${this._key(tableDef.name)}
+USING (SELECT ${currKeys.map(key => `${this._value(r[key])} as ${this._key(key)}`).join(", ")}) as ${this._key("match")}
+ON ${currKeys.map(key1 => `${this._key(tableDef.name, key1)} = ${this._key("match", key1)}`).join(" AND ")}
+WHEN MATCHED THEN
+    UPDATE SET ${Object.keys(r).map(key => currKeys.includes(key) ? "" : `${this._key(tableDef.name, key)} = ${this._value(r[key])}`).filter(item => item).join(", ")}
+WHEN NOT MATCHED THEN
+	INSERT (${Object.keys(r).map(key => this._key(key)).join(", ")})
+	VALUES (${Object.keys(r).map(key => this._value(r[key])).join(", ")})
+	OUTPUT INSERTED.${this._key(currKeys[0])};
+`.trim();
+
+    if (primaryKeys.some(pkName => Object.keys(record).includes(pkName)) && currKeys.orderBy().join("_") === primaryKeys.orderBy().join("_")) {
+      query = `
+IF EXISTS (SELECT ${this._key("NAME")} FROM SYS.IDENTITY_COLUMNS WHERE OBJECT_NAME(OBJECT_ID) = ${this._value(tableDef.name)})
+BEGIN
+    SET IDENTITY_INSERT ${this._key(tableDef.name)} ON;
+END
+
+${query}
+
+IF EXISTS (SELECT ${this._key("NAME")} FROM SYS.IDENTITY_COLUMNS WHERE OBJECT_NAME(OBJECT_ID) = ${this._value(tableDef.name)})
+BEGIN
+    SET IDENTITY_INSERT ${this._key(tableDef.name)} OFF;
+END`;
+    }
+
+    return query;
+  }
+
+  private _joinFn<J, A extends string, R>(queryableOrTableType: Queryable<J> | Type<J>,
+                                          as: A,
+                                          joinQueryFn: (q: Queryable<J>, entity: T) => Queryable<R>,
+                                          inner: boolean,
+                                          isMulti: boolean): Queryable<T & { [P in A]: (R[] | R | undefined) }> {
+    if (this._hasCustomSelect) {
+      return this._wrap()._joinFn(queryableOrTableType, as, joinQueryFn, inner, isMulti);
+    }
+
+    const prevItem = this._join.single(item => item.queryable._as === as);
+    const result = prevItem ? this._wrap() : this._clone();
+
+    const newQueryable = queryableOrTableType instanceof Queryable
+      ? new Queryable(this.db, queryableOrTableType.tableType, queryableOrTableType, as)
+      : new Queryable(this.db, queryableOrTableType, undefined, as);
+    const newJoinQueryable = joinQueryFn(newQueryable, result._entity);
+
+    if (prevItem && prevItem.inner === inner && prevItem.queryable.query === newJoinQueryable.query) {
+      return result as any;
+    }
+
+    result._join.push({
+      inner,
+      queryable: newJoinQueryable,
+      isMulti
+    });
+
+    const newSelect = {};
+    for (const key of Object.keys(newJoinQueryable._select)) {
+      newSelect[`${as}.${key}`] = new QueryUnit<any>(
+        newJoinQueryable._select[key].type === QueriedBoolean
+          ? Boolean
+          : newJoinQueryable._select[key].type,
+        this._key(as, key)
+      );
+    }
+    result._select = {
+      ...result._select,
+      ...newSelect
+    };
+    return result as any;
   }
 
   private _key(...keys: string[]): string {
@@ -1015,8 +1018,7 @@ END`;
     try {
       const def = this._getChainedForeignKeyDef(as);
       return !def["columnNames"];
-    }
-    catch (err) {
+    } catch (err) {
       return this._getJoinDef(as).isMulti;
       /*const join = this._join.singleOr(undefined, item => item.queryable._as === as);
       if (join) {
@@ -1034,22 +1036,19 @@ END`;
     let tableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, this.tableType);
     const asSplit = as.split(".");
     for (let i = 0; i < asSplit.length - 1; i++) {
-      const fk1 = tableDef.foreignKeys.single((item) => item.name === asSplit[i]);
-      const fkt1 = tableDef.foreignKeyTargets.single((item) => item.name === asSplit[i]);
+      const fk1 = tableDef.foreignKeys.single(item => item.name === asSplit[i]);
+      const fkt1 = tableDef.foreignKeyTargets.single(item => item.name === asSplit[i]);
       const join = this._getJoinDef(asSplit.slice(0, i + 1).join("."));
 
-      //-- FK 인 경우
+      // FK 인 경우
       if (fk1) {
         const targetTableType = fk1.targetTableTypeForwarder();
         tableDef = Reflect.getMetadata(tableMetadataSymbol, targetTableType);
       }
-
-      //-- FKT 인 경우
       else if (fkt1) {
         const targetTableType = fkt1.sourceTableTypeForwarder();
         tableDef = Reflect.getMetadata(tableMetadataSymbol, targetTableType);
       }
-
       else if (join) {
         const targetTableType = join.queryable.tableType || Safe.obj(join.queryable._from as Queryable<any>).tableType;
         if (targetTableType) {
@@ -1059,15 +1058,13 @@ END`;
           throw new Exception(`JOIN 테이블 정의를 찾을 수 없습니다. [${as}, ${i}]`);
         }
       }
-
-      //-- FK 나 FKT 나 JOIN 없이
       else {
         throw new Exception(`FK, FKT, JOIN 정보를 찾을 수 없습니다. [${as}, ${i}]`);
       }
     }
 
-    const fk = tableDef.foreignKeys.single((item) => item.name === asSplit.last());
-    const fkt = tableDef.foreignKeyTargets.single((item) => item.name === asSplit.last());
+    const fk = tableDef.foreignKeys.single(item => item.name === asSplit.last());
+    const fkt = tableDef.foreignKeyTargets.single(item => item.name === asSplit.last());
 
     const result = fk || fkt;
     if (!result) {
@@ -1084,7 +1081,7 @@ END`;
       joinList.pushRange(curr._join);
     }
 
-    let joinDef = joinList.last((item) => as === item.queryable._as || as.startsWith(`${item.queryable._as}.`));
+    let joinDef = joinList.last(item => as === item.queryable._as || as.startsWith(`${item.queryable._as}.`));
     const asSplit = as.split(".");
     for (let i = (joinDef ? joinDef.queryable._as.split(".").length : 0); i < asSplit.length; i++) {
       let curr2: Queryable<any> = joinDef ? joinDef.queryable : this;
@@ -1094,7 +1091,7 @@ END`;
         joinList2.pushRange(curr2._join);
       }
 
-      joinDef = joinList2.last((item) => asSplit.slice(i).join(".").startsWith(item.queryable._as))!;
+      joinDef = joinList2.last(item => asSplit.slice(i).join(".").startsWith(item.queryable._as))!;
       i += joinDef.queryable._as.length - 1;
     }
     return joinDef!;
@@ -1130,27 +1127,27 @@ END`;
 
       joinNames.pushRange(
         Object.keys(record)
-          .filter((item) => item.includes("."))
-          .map((item) => item.split(".").slice(0, -1).join("."))
+          .filter(item => item.includes("."))
+          .map(item => item.split(".").slice(0, -1).join("."))
       );
     }
-    joinNames = joinNames.distinct().orderBy((item) => item.split(".").length, true);
+    joinNames = joinNames.distinct().orderBy(item => item.split(".").length, true);
 
     let result = recordset;
     for (const joinName of joinNames) {
       result = result
-        .groupBy((item) => {
-          const result1 = { ...item };
-          for (const key of Object.keys(item).filter((item1) => item1.startsWith(`${joinName}.`))) {
+        .groupBy(item => {
+          const result1 = {...item};
+          for (const key of Object.keys(item).filter(item1 => item1.startsWith(`${joinName}.`))) {
             delete result1[key];
           }
           return result1;
         })
-        .map((g) => {
+        .map(g => {
           const result1 = g.key;
-          result1[joinName] = g.values.map((item) => {
+          result1[joinName] = g.values.map(item => {
             const mapResult = {};
-            for (const key of Object.keys(item).filter((item1) => item1.startsWith(`${joinName}.`))) {
+            for (const key of Object.keys(item).filter(item1 => item1.startsWith(`${joinName}.`))) {
               if (item[key] === undefined) {
                 continue;
               }
@@ -1160,7 +1157,7 @@ END`;
               return undefined;
             }
             return mapResult;
-          }).filter((item) => item);
+          }).filter(item => item);
           return result1;
         });
 
@@ -1184,8 +1181,8 @@ END`;
 
   private _getEntryByChain(chain: string[]): any {
     let curr: any = this._entity;
-    for (let i = 0; i < chain.filter((item) => item).length; i++) {
-      const chainItem = chain.filter((item) => item)[i];
+    for (let i = 0; i < chain.filter(item => item).length; i++) {
+      const chainItem = chain.filter(item => item)[i];
 
       curr = curr instanceof Array
         ? curr[0][chainItem]
@@ -1202,7 +1199,7 @@ END`;
     const clone = new Queryable(this.db, this.tableType, this._from, this._as);
     clone._top = this._top;
     clone._distinct = this._distinct;
-    clone._select = { ...this._select };
+    clone._select = {...this._select};
     clone._hasCustomSelect = this._hasCustomSelect;
     clone._join = [...this._join];
     clone._where = [...this._where];

@@ -1,12 +1,12 @@
-import "reflect-metadata";
-import { Safe, Type } from "../../../sd-core/src";
-import { IFunctionDefinition } from "./Definitions";
-import { DataType } from "./Enums";
-import { QueryHelper } from "./QueryHelper";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Safe} from "../../../sd-core/src/utils/Safe";
+import {IFunctionDefinition} from "./Definitions";
+import {DataType} from "./Enums";
+import {QueryHelper} from "./QueryHelper";
 
 export const functionMetadataSymbol = "sd-database.function";
 
-//tslint:disable-next-line:variable-name
+// tslint:disable-next-line:variable-name
 export const Function = <T>(query: string) => (classType: Type<T>) => {
   const def: IFunctionDefinition = Reflect.getMetadata(functionMetadataSymbol, classType) || {};
   def.name = classType.name;
@@ -15,7 +15,7 @@ export const Function = <T>(query: string) => (classType: Type<T>) => {
   Reflect.defineMetadata(functionMetadataSymbol, def, classType);
 };
 
-//tslint:disable-next-line:variable-name
+// tslint:disable-next-line:variable-name
 export const FunctionParam = <T>(param?: {
   dataType?: DataType;
   length?: number;
@@ -34,7 +34,7 @@ export const FunctionParam = <T>(param?: {
   Reflect.defineMetadata(functionMetadataSymbol, def, classType);
 };
 
-//tslint:disable-next-line:variable-name
+// tslint:disable-next-line:variable-name
 export const FunctionReturn = <T>(param?: {
   dataType?: DataType;
   length?: number;

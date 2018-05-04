@@ -1,13 +1,13 @@
-import {ISimpackClientConfig, ISimpackServerConfig} from "./ISimpackConfig";
-import {Logger} from "@simplism/core";
-import * as path from "path";
-import * as fs from "fs-extra";
-import * as webpack from "webpack";
-import {ClientWebpackConfig} from "./ClientWebpackConfig";
-import * as childProcess from "child_process";
-import {FileWatcher} from "./FileWatcher";
-import * as glob from "glob";
-import * as WebpackDevServer from "webpack-dev-server";
+import {ISimpackClientConfig, ISimpackServerConfig} from './ISimpackConfig';
+import {Logger} from '@simplism/core';
+import * as path from 'path';
+import * as fs from 'fs-extra';
+import * as webpack from 'webpack';
+import {ClientWebpackConfig} from './ClientWebpackConfig';
+import * as childProcess from 'child_process';
+import {FileWatcher} from './FileWatcher';
+import * as glob from 'glob';
+import * as WebpackDevServer from 'webpack-dev-server';
 
 export class ClientBuilder {
     static async watch(config: ISimpackClientConfig, serverConfig: ISimpackServerConfig, env: string | undefined, distPath: string): Promise<void> {
@@ -18,13 +18,13 @@ export class ClientBuilder {
         }
 
         return await new Promise<void>((resolve, reject) => {
-            logger.info("감지시작");
+            logger.info('감지시작');
 
-            const clientDistPath = path.resolve(distPath, "www", config.package);
+            const clientDistPath = path.resolve(distPath, 'www', config.package);
             fs.removeSync(clientDistPath);
 
-            FileWatcher.watch(path.resolve(process.cwd(), "packages", config.package, "src", "*", "**", "*.ts"), {}, async (events) => {
-                if (!events.some(item => item.type === "ready" || item.type === "add" || item.type === "unlink")) {
+            FileWatcher.watch(path.resolve(process.cwd(), 'packages', config.package, 'src', '*', '**', '*.ts'), {}, async (events) => {
+                if (!events.some(item => item.type === 'ready' || item.type === 'add' || item.type === 'unlink')) {
                     return;
                 }
 
@@ -71,7 +71,7 @@ export class ClientBuilder {
 
             let prevTimestamps: { [key: string]: number };
             compiler.hooks.watchRun.tap(config.package, (compilation) => {
-                const fileTimestamps = compilation["fileTimestamps"] as Map<string, number>;
+                const fileTimestamps = compilation['fileTimestamps'] as Map<string, number>;
 
                 const changeLogs = [];
                 if (prevTimestamps) {
@@ -87,7 +87,7 @@ export class ClientBuilder {
                     prevTimestamps[fileName] = fileTimestamps.get(fileName)!;
                 }
 
-                logger.info("변경감지:", changeLogs);
+                logger.info('변경감지:', changeLogs);
             });
         });
     }
@@ -99,7 +99,7 @@ export class ClientBuilder {
             this._initCordova(config);
         }
 
-        const clientDistPath = config.cordova ? path.resolve(process.cwd(), ".cordova", "www") : path.resolve(distPath, "www", config.package);
+        const clientDistPath = config.cordova ? path.resolve(process.cwd(), '.cordova', 'www') : path.resolve(distPath, 'www', config.package);
         fs.removeSync(clientDistPath);
 
 
@@ -146,43 +146,43 @@ export class ClientBuilder {
         if (config.cordova) {
             logger.log(`CORDOVA  : 빌드`);
 
-            if (config.cordova.platform === "android" && config.cordova.sign) {
-                fs.copySync(config.cordova.sign, path.resolve(process.cwd(), ".cordova", "platforms", "android"));
+            if (config.cordova.platform === 'android' && config.cordova.sign) {
+                fs.copySync(config.cordova.sign, path.resolve(process.cwd(), '.cordova', 'platforms', 'android'));
             }
 
             if (config.cordova.icon) {
-                fs.copySync(config.cordova.icon, path.resolve(process.cwd(), ".cordova", "res", "icon", "icon.png"));
+                fs.copySync(config.cordova.icon, path.resolve(process.cwd(), '.cordova', 'res', 'icon', 'icon.png'));
             }
 
-            const version = fs.readJsonSync(path.resolve(process.cwd(), "package.json")).version;
-            let configFileContent = fs.readFileSync(path.resolve(process.cwd(), ".cordova", "config.xml"), "utf-8");
-            configFileContent = configFileContent.replace(/<allow-navigation href="[^"]"\s?\/>/g, "");
+            const version = fs.readJsonSync(path.resolve(process.cwd(), 'package.json')).version;
+            let configFileContent = fs.readFileSync(path.resolve(process.cwd(), '.cordova', 'config.xml'), 'utf-8');
+            configFileContent = configFileContent.replace(/<allow-navigation href="[^"]"\s?\/>/g, '');
             configFileContent = configFileContent.replace(/version="[^"]*"/g, `version="${version}"`);
-            if (config.cordova.icon && !configFileContent.includes("<icon")) {
-                configFileContent = configFileContent.replace("</widget>", "    <icon src=\"res/icon/icon.png\" />\r\n</widget>");
+            if (config.cordova.icon && !configFileContent.includes('<icon')) {
+                configFileContent = configFileContent.replace('</widget>', '    <icon src="res/icon/icon.png" />\r\n</widget>');
             }
-            fs.writeFileSync(path.resolve(process.cwd(), ".cordova", "config.xml"), configFileContent, "utf-8");
+            fs.writeFileSync(path.resolve(process.cwd(), '.cordova', 'config.xml'), configFileContent, 'utf-8');
 
-            const cordovaBinPath = path.resolve(process.cwd(), "node_modules", ".bin", "cordova.cmd");
+            const cordovaBinPath = path.resolve(process.cwd(), 'node_modules', '.bin', 'cordova.cmd');
             childProcess.spawnSync(cordovaBinPath, [
-                "build",
+                'build',
                 config.cordova.platform,
-                "--release"
+                '--release'
             ], {
                 shell: true,
-                stdio: "inherit",
-                cwd: path.resolve(process.cwd(), ".cordova")
+                stdio: 'inherit',
+                cwd: path.resolve(process.cwd(), '.cordova')
             });
 
-            if (config.cordova.platform === "android") {
-                fs.mkdirsSync(path.resolve(distPath, "www", "files", config.package));
+            if (config.cordova.platform === 'android') {
+                fs.mkdirsSync(path.resolve(distPath, 'www', 'files', config.package));
 
-                const packageVersion = fs.readJsonSync(path.resolve(process.cwd(), "package.json")).version;
-                const apkFileName = config.cordova.sign ? "app-release.apk" : "app-release-unsigned.apk";
-                const distApkFileName = `${config.name.replace(/ /g, "_")}${config.cordova.sign ? "" : "-unsigned"}-v${packageVersion}.apk`;
+                const packageVersion = fs.readJsonSync(path.resolve(process.cwd(), 'package.json')).version;
+                const apkFileName = config.cordova.sign ? 'app-release.apk' : 'app-release-unsigned.apk';
+                const distApkFileName = `${config.name.replace(/ /g, '_')}${config.cordova.sign ? '' : '-unsigned'}-v${packageVersion}.apk`;
                 fs.copyFileSync(
-                    path.resolve(process.cwd(), ".cordova", "platforms", "android", "app", "build", "outputs", "apk", "release", apkFileName),
-                    path.resolve(distPath, "www", "files", config.package, distApkFileName)
+                    path.resolve(process.cwd(), '.cordova', 'platforms', 'android', 'app', 'build', 'outputs', 'apk', 'release', apkFileName),
+                    path.resolve(distPath, 'www', 'files', config.package, distApkFileName)
                 );
             }
         }
@@ -191,48 +191,48 @@ export class ClientBuilder {
     private static _initCordova(config: ISimpackClientConfig): void {
         const logger = new Logger(config.name);
 
-        const cordovaBinPath = path.resolve(process.cwd(), "node_modules", ".bin", "cordova.cmd");
-        if (!fs.existsSync(path.resolve(process.cwd(), ".cordova"))) {
+        const cordovaBinPath = path.resolve(process.cwd(), 'node_modules', '.bin', 'cordova.cmd');
+        if (!fs.existsSync(path.resolve(process.cwd(), '.cordova'))) {
             logger.log(`CORDOVA  : 프로젝트 생성`);
             childProcess.spawnSync(cordovaBinPath, [
-                "create",
-                ".cordova",
+                'create',
+                '.cordova',
                 config.cordova!.appId,
                 `"${config.name}"`
             ], {
                 shell: true,
-                stdio: "inherit"
+                stdio: 'inherit'
             });
         }
 
-        fs.mkdirsSync(path.resolve(process.cwd(), ".cordova", "www"));
+        fs.mkdirsSync(path.resolve(process.cwd(), '.cordova', 'www'));
 
-        if (!fs.existsSync(path.resolve(process.cwd(), ".cordova", "platforms", config.cordova!.platform))) {
+        if (!fs.existsSync(path.resolve(process.cwd(), '.cordova', 'platforms', config.cordova!.platform))) {
             logger.log(`CORDOVA  : 플랫폼 생성    : ${config.cordova!.platform}`);
             childProcess.spawnSync(cordovaBinPath, [
-                "platform",
-                "add",
+                'platform',
+                'add',
                 config.cordova!.platform
             ], {
                 shell: true,
-                stdio: "inherit",
-                cwd: path.resolve(process.cwd(), ".cordova")
+                stdio: 'inherit',
+                cwd: path.resolve(process.cwd(), '.cordova')
             });
         }
 
-        const prevPlugins = Object.values(fs.readJsonSync(path.resolve(process.cwd(), ".cordova", "plugins", "fetch.json"))).map(item => item["source"].id ? item["source"].id.replace(/@.*$/, "") : item["source"].url);
+        const prevPlugins = Object.values(fs.readJsonSync(path.resolve(process.cwd(), '.cordova', 'plugins', 'fetch.json'))).map(item => item['source'].id ? item['source'].id.replace(/@.*$/, '') : item['source'].url);
 
         // 에러 수정을 위한 플러그인 설치
-        if (!prevPlugins.includes("cordova-android-support-gradle-release")) {
+        if (!prevPlugins.includes('cordova-android-support-gradle-release')) {
             logger.log(`CORDOVA  : 플러그인 설치  : cordova-android-support-gradle-release`);
             childProcess.spawnSync(cordovaBinPath, [
-                "plugin",
-                "add",
-                "cordova-android-support-gradle-release"
+                'plugin',
+                'add',
+                'cordova-android-support-gradle-release'
             ], {
                 shell: true,
-                stdio: "inherit",
-                cwd: path.resolve(process.cwd(), ".cordova")
+                stdio: 'inherit',
+                cwd: path.resolve(process.cwd(), '.cordova')
             });
         }
 
@@ -241,13 +241,13 @@ export class ClientBuilder {
                 if (!prevPlugins.includes(plugin)) {
                     logger.log(`CORDOVA  : 플러그인 설치  : ${plugin}`);
                     childProcess.spawnSync(cordovaBinPath, [
-                        "plugin",
-                        "add",
+                        'plugin',
+                        'add',
                         plugin
                     ], {
                         shell: true,
-                        stdio: "inherit",
-                        cwd: path.resolve(process.cwd(), ".cordova")
+                        stdio: 'inherit',
+                        cwd: path.resolve(process.cwd(), '.cordova')
                     });
                 }
             }
@@ -257,14 +257,14 @@ export class ClientBuilder {
     private static _generateAppModuleDefinitionFile(packageName: string, defaultRoute: string): void {
         let importString = `import {SimgularHelpers, SdCanDeactivateGuardProvider} from "@simplism/angular";\r\n`;
         const routes: any[] = [
-            {path: "", redirectTo: defaultRoute, pathMatch: "full"}
+            {path: '', redirectTo: defaultRoute, pathMatch: 'full'}
         ];
 
-        const routeFilePaths = glob.sync(path.resolve(process.cwd(), "packages", packageName, "src", "routes", "**", "*Page.ts"))
+        const routeFilePaths = glob.sync(path.resolve(process.cwd(), 'packages', packageName, 'src', 'routes', '**', '*Page.ts'))
             .orderBy(item => item.split(/[\\\/]/g).length);
 
         for (const routeFilePath of routeFilePaths) {
-            const relativePath = path.relative(path.resolve(process.cwd(), "packages", packageName, "src", "routes"), routeFilePath);
+            const relativePath = path.relative(path.resolve(process.cwd(), 'packages', packageName, 'src', 'routes'), routeFilePath);
 
             const splitList = relativePath.split(/[\\\/]/g);
             let parentChildren = routes;
@@ -282,15 +282,14 @@ export class ClientBuilder {
                         parent.children = [];
                     }
                     parentChildren = parent.children;
-                }
-                else {
+                } else {
                     const typeName = splitItem.slice(0, -3);
                     parentChildren.push({
-                        path: typeName[0].toLowerCase() + typeName.slice(1, -4).replace(/[A-Z]/g, c => "-" + c.toLowerCase()),
+                        path: typeName[0].toLowerCase() + typeName.slice(1, -4).replace(/[A-Z]/g, c => '-' + c.toLowerCase()),
                         component: typeName,
-                        canDeactivate: "[SdCanDeactivateGuardProvider]"
+                        canDeactivate: '[SdCanDeactivateGuardProvider]'
                     });
-                    importString += `import {${typeName}} from "./routes/${relativePath.replace(/\\/g, "/").slice(0, -3)}";\r\n`;
+                    importString += `import {${typeName}} from "./routes/${relativePath.replace(/\\/g, '/').slice(0, -3)}";\r\n`;
                 }
             }
         }
@@ -301,61 +300,61 @@ export class ClientBuilder {
 
 
         const controls: string[] = [];
-        const controlFilePaths = glob.sync(path.resolve(process.cwd(), "packages", packageName, "src", "**", "*Control.ts"))
+        const controlFilePaths = glob.sync(path.resolve(process.cwd(), 'packages', packageName, 'src', '**', '*Control.ts'))
             .orderBy(item => item.split(/[\\\/]/g).length);
         for (const controlFilePath of controlFilePaths) {
-            const relativePath = path.relative(path.resolve(process.cwd(), "packages", packageName, "src"), controlFilePath);
+            const relativePath = path.relative(path.resolve(process.cwd(), 'packages', packageName, 'src'), controlFilePath);
 
             const typeName = relativePath.split(/[\\\/]/g).last().slice(0, -3);
             controls.push(typeName);
-            importString += `import {${typeName}} from "./${relativePath.replace(/\\/g, "/").slice(0, -3)}";\r\n`;
+            importString += `import {${typeName}} from "./${relativePath.replace(/\\/g, '/').slice(0, -3)}";\r\n`;
         }
 
         const modals: string[] = [];
-        const modalFilePaths = glob.sync(path.resolve(process.cwd(), "packages", packageName, "src", "**", "*Modal.ts"))
+        const modalFilePaths = glob.sync(path.resolve(process.cwd(), 'packages', packageName, 'src', '**', '*Modal.ts'))
             .orderBy(item => item.split(/[\\\/]/g).length);
         for (const modalFilePath of modalFilePaths) {
-            const relativePath = path.relative(path.resolve(process.cwd(), "packages", packageName, "src"), modalFilePath);
+            const relativePath = path.relative(path.resolve(process.cwd(), 'packages', packageName, 'src'), modalFilePath);
 
             const typeName = relativePath.split(/[\\\/]/g).last().slice(0, -3);
             modals.push(typeName);
-            importString += `import {${typeName}} from "./${relativePath.replace(/\\/g, "/").slice(0, -3)}";\r\n`;
+            importString += `import {${typeName}} from "./${relativePath.replace(/\\/g, '/').slice(0, -3)}";\r\n`;
         }
 
         const printTemplates: string[] = [];
-        const printTemplateFilePaths = glob.sync(path.resolve(process.cwd(), "packages", packageName, "src", "**", "*PrintTemplate.ts"))
+        const printTemplateFilePaths = glob.sync(path.resolve(process.cwd(), 'packages', packageName, 'src', '**', '*PrintTemplate.ts'))
             .orderBy(item => item.split(/[\\\/]/g).length);
         for (const printTemplateFilePath of printTemplateFilePaths) {
-            const relativePath = path.relative(path.resolve(process.cwd(), "packages", packageName, "src"), printTemplateFilePath);
+            const relativePath = path.relative(path.resolve(process.cwd(), 'packages', packageName, 'src'), printTemplateFilePath);
 
             const typeName = relativePath.split(/[\\\/]/g).last().slice(0, -3);
             printTemplates.push(typeName);
-            importString += `import {${typeName}} from "./${relativePath.replace(/\\/g, "/").slice(0, -3)}";\r\n`;
+            importString += `import {${typeName}} from "./${relativePath.replace(/\\/g, '/').slice(0, -3)}";\r\n`;
         }
 
         const providers: string[] = [];
-        const providerFilePaths = glob.sync(path.resolve(process.cwd(), "packages", packageName, "src", "**", "*Provider.ts"))
+        const providerFilePaths = glob.sync(path.resolve(process.cwd(), 'packages', packageName, 'src', '**', '*Provider.ts'))
             .orderBy(item => item.split(/[\\\/]/g).length);
         for (const providerFilePath of providerFilePaths) {
-            const relativePath = path.relative(path.resolve(process.cwd(), "packages", packageName, "src"), providerFilePath);
+            const relativePath = path.relative(path.resolve(process.cwd(), 'packages', packageName, 'src'), providerFilePath);
 
             const typeName = relativePath.split(/[\\\/]/g).last().slice(0, -3);
             providers.push(typeName);
-            importString += `import {${typeName}} from "./${relativePath.replace(/\\/g, "/").slice(0, -3)}";\r\n`;
+            importString += `import {${typeName}} from "./${relativePath.replace(/\\/g, '/').slice(0, -3)}";\r\n`;
         }
 
-        fs.writeFileSync(path.resolve(process.cwd(), "packages", packageName, "src", "AppModuleDefinitions.ts"), `${importString}
+        fs.writeFileSync(path.resolve(process.cwd(), 'packages', packageName, 'src', 'AppModuleDefinitions.ts'), `${importString}
 const routes: any[] = ${routeString};
 
 const routeDeclarations: any[] = SimgularHelpers.getRouteDeclarations(routes);
 
-const controls: any[] = ${JSON.stringify(controls, undefined, 4).replace(/"/g, "")};
+const controls: any[] = ${JSON.stringify(controls, undefined, 4).replace(/"/g, '')};
 
-const modals: any[] = ${JSON.stringify(modals, undefined, 4).replace(/"/g, "")};
+const modals: any[] = ${JSON.stringify(modals, undefined, 4).replace(/"/g, '')};
 
-const printTemplates: any[] = ${JSON.stringify(printTemplates, undefined, 4).replace(/"/g, "")};
+const printTemplates: any[] = ${JSON.stringify(printTemplates, undefined, 4).replace(/"/g, '')};
 
-const providers: any[] = ${JSON.stringify(providers, undefined, 4).replace(/"/g, "")};
+const providers: any[] = ${JSON.stringify(providers, undefined, 4).replace(/"/g, '')};
 
 export {routes, routeDeclarations, controls, modals, printTemplates, providers};`);
     }

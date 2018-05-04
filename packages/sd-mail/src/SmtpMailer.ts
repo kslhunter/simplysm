@@ -1,11 +1,11 @@
 import * as nodemailer from "nodemailer";
-import { Logger } from "../../sd-core/src";
+import {Logger} from "../../sd-core/src/utils/Logger";
 
 export class SmtpMailer {
-  private _logger = new Logger("@simplism/sd-mail", "SmtpMailer");
+  private readonly _logger = new Logger("@simplism/sd-mail", "SmtpMailer");
 
   public constructor(
-    private _from: {
+    private readonly _from: {
       host: string;
       senderName?: string;
       senderAddress: string;

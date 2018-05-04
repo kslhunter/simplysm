@@ -1,12 +1,14 @@
-import { ChangeDetectionStrategy, Component, Injector } from "@angular/core";
-import { NavigationStart, Router } from "@angular/router";
+// tslint:disable:use-host-property-decorator
+
+import {ChangeDetectionStrategy, Component, Injector} from "@angular/core";
+import {NavigationStart, Router} from "@angular/router";
 
 @Component({
   selector: "sd-sidebar-container",
   template: `
-        <div class="_backdrop"
-             (click)="toggled = false"></div>
-        <ng-content></ng-content>`,
+    <div class="_backdrop"
+         (click)="toggled = false"></div>
+    <ng-content></ng-content>`,
   host: {
     "[class._toggled]": "toggled"
   },
@@ -15,18 +17,18 @@ import { NavigationStart, Router } from "@angular/router";
 export class SdSidebarContainerControl {
   private _toggled = false;
 
+  public get toggled(): boolean {
+    return this._toggled;
+  }
+
   public set toggled(value: boolean) {
     if (this._toggled !== value) {
       this._toggled = value;
     }
   }
 
-  public get toggled(): boolean {
-    return this._toggled;
-  }
-
-  public constructor(private _router: Router) {
-    this._router.events.subscribe((value) => {
+  public constructor(private readonly _router: Router) {
+    this._router.events.subscribe(value => {
       if (value instanceof NavigationStart) {
         this.toggled = false;
       }
@@ -37,7 +39,7 @@ export class SdSidebarContainerControl {
 @Component({
   selector: "sd-sidebar",
   template: `
-        <ng-content></ng-content>`,
+    <ng-content></ng-content>`,
   host: {
     "[class._toggled]": "toggled"
   },
@@ -45,9 +47,10 @@ export class SdSidebarContainerControl {
 })
 export class SdSidebarControl {
   public get toggled(): boolean {
-    return this._injector.get(SdSidebarContainerControl, { toggled: false }).toggled;
+    // tslint:disable-next-line:no-null-keyword
+    return (this._injector.get(SdSidebarContainerControl, null as any, undefined) || {toggled: false}).toggled;
   }
 
-  public constructor(private _injector: Injector) {
+  public constructor(private readonly _injector: Injector) {
   }
 }

@@ -1,30 +1,38 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
-import { DateOnly, Exception } from "../../../sd-core/src";
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {DateOnly} from "../../../sd-core/src/types/DateOnly";
 
 @Component({
   selector: "sd-date-range-picker",
   template: `
-        <div class="_control">
-            <sd-date-picker [value]="value[0]"
-                            (valueChange)="onValueChange(0, $event)"></sd-date-picker>
-            <span>~</span>
-            <sd-date-picker [value]="value[1]"
-                            (valueChange)="onValueChange(1, $event)"></sd-date-picker>
-        </div>
-        <div class="_helpers" *ngIf="helpers && helpers.length > 0">
-            &nbsp;:
-            <ng-container *ngFor="let helper of helpers; trackBy: helperTrackByFn">
-                <sd-button2 [inline]="true" (click)="onHelperClick(helper)">
-                    {{ helper }}
-                </sd-button2>
-                &nbsp;
-            </ng-container>
-        </div>
-    `,
+    <div class="_control">
+      <sd-date-picker [value]="value[0]"
+                      (valueChange)="onValueChange(0, $event)"></sd-date-picker>
+      <span>~</span>
+      <sd-date-picker [value]="value[1]"
+                      (valueChange)="onValueChange(1, $event)"></sd-date-picker>
+    </div>
+    <div class="_helpers" *ngIf="helpers && helpers.length > 0">
+      &nbsp;:
+      <ng-container *ngFor="let helper of helpers; trackBy: helperTrackByFn">
+        <sd-button2 [inline]="true" (click)="onHelperClick(helper)">
+          {{ helper }}
+        </sd-button2>
+        &nbsp;
+      </ng-container>
+    </div>
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdDateRangePickerControl {
+  @Input() public helpers?: string[];
+  @Output() public readonly valueChange = new EventEmitter<(DateOnly | undefined)[]>();
+
   private _value: (DateOnly | undefined)[] = [];
+
+  public get value(): (DateOnly | undefined)[] {
+    return this._value || [];
+  }
 
   @Input()
   public set value(value: (DateOnly | undefined)[]) {
@@ -34,15 +42,7 @@ export class SdDateRangePickerControl {
     this._value = value;
   }
 
-  public get value(): (DateOnly | undefined)[] {
-    return this._value || [];
-  }
-
-  @Output() public readonly valueChange = new EventEmitter<(DateOnly | undefined)[]>();
-
-  @Input() public helpers?: string[];
-
-  public helperTrackByFn(value: string): string {
+  public helperTrackByFn(index: number, value: string): string {
     return value;
   }
 

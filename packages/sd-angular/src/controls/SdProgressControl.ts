@@ -1,12 +1,14 @@
-import { ChangeDetectionStrategy, Component, forwardRef, Inject, Input } from "@angular/core";
+// tslint:disable:use-host-property-decorator
+
+import {ChangeDetectionStrategy, Component, Inject, Input} from "@angular/core";
 
 @Component({
   selector: "sd-progress",
   template: `
-        <div class="_sd-progress-content">
-            {{ label || "&nbsp;" }}
-        </div>
-        <ng-content></ng-content>`,
+    <div class="_sd-progress-content">
+      {{ label || "&nbsp;" }}
+    </div>
+    <ng-content></ng-content>`,
   host: {
     "[class._size-lg]": "size === 'lg'"
   },
@@ -21,7 +23,7 @@ export class SdProgressControl {
 @Component({
   selector: "sd-progress-item",
   template: `
-        <div>{{ label || "&nbsp;" }}</div>`,
+    <div>{{ label || "&nbsp;" }}</div>`,
   host: {
     "[class._theme-primary]": "theme === 'primary'",
     "[class._theme-success]": "theme === 'success'",
@@ -36,9 +38,6 @@ export class SdProgressItemControl {
   @Input() public value = 0;
   @Input() public theme = "primary";
 
-  public constructor(@Inject(forwardRef(() => SdProgressControl)) private _parent: SdProgressControl) {
-  }
-
   public get label(): string {
     return this._parent ? this._parent.label : "";
   }
@@ -49,5 +48,8 @@ export class SdProgressItemControl {
 
   public get width(): string {
     return `${Math.min(this.value / this.maxValue, 1) * 100}%`;
+  }
+
+  public constructor(@Inject(SdProgressControl) private readonly _parent: SdProgressControl) {
   }
 }

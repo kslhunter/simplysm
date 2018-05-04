@@ -1,22 +1,26 @@
 // tslint:disable:variable-name
 
-import { Type } from "@angular/core";
-import { ArgumentsException } from "../../../sd-core/src";
+import {Type} from "@angular/core";
+import {ArgumentsException} from "../../../sd-core/src/exceptions/ArgumentsException";
 
 export const SdValidate = (params?: PropertyValidator) => (target: any, propertyKey: string) => {
-  const getter = function(this: any): any {
-    if (!this) return;
+  const getter = function (this: any): any {
+    if (!this) {
+      return;
+    }
     return this[`__sd_${propertyKey}__`];
   };
-  const setter = function(this: any, value: any): void {
-    if (!this) return;
+  const setter = function (this: any, value: any): void {
+    if (!this) {
+      return;
+    }
 
     let config;
     if (params instanceof Array) {
-      config = { type: params };
+      config = {type: params};
     }
     else if (params instanceof Type || params === "SdThemeString" || params === "SdSizeString") {
-      config = { type: [params] };
+      config = {type: [params]};
     }
     else if (!((params as any).type instanceof Array)) {
       config = {
@@ -30,7 +34,7 @@ export const SdValidate = (params?: PropertyValidator) => (target: any, property
 
     if (value == undefined) {
       if (config.notnull) {
-        throw new ArgumentsException({ propertyKey, value, notnull: config.notnull });
+        throw new ArgumentsException({propertyKey, value, notnull: config.notnull});
       }
       this[`__sd_${propertyKey}__`] = value;
       return;
@@ -44,13 +48,13 @@ export const SdValidate = (params?: PropertyValidator) => (target: any, property
           (type === "SdSizeString" && ["xxs", "xs", "sm", "lg", "xl", "xxl"].includes(value))
         )
       ) {
-        throw new ArgumentsException({ propertyKey, value, type: config.type });
+        throw new ArgumentsException({propertyKey, value, type: config.type});
       }
     }
 
     if (config.validator) {
       if (!config.validator(value)) {
-        throw new ArgumentsException({ propertyKey, value, validator: config.validator });
+        throw new ArgumentsException({propertyKey, value, validator: config.validator});
       }
     }
 
@@ -72,10 +76,10 @@ export const SdValidate = (params?: PropertyValidator) => (target: any, property
 export const sdTypeValidate = (value: any, validator: PropertyValidator) => {
   let config;
   if (validator instanceof Array) {
-    config = { type: validator };
+    config = {type: validator};
   }
   else if (validator instanceof Type || validator === "SdThemeString" || validator === "SdSizeString") {
-    config = { type: [validator] };
+    config = {type: [validator]};
   }
   else if (!((validator as any).type instanceof Array)) {
     config = {
@@ -89,7 +93,7 @@ export const sdTypeValidate = (value: any, validator: PropertyValidator) => {
 
   if (value == undefined) {
     if (config.notnull) {
-      throw new ArgumentsException({ value, notnull: config.notnull });
+      throw new ArgumentsException({value, notnull: config.notnull});
     }
     return;
   }
@@ -102,13 +106,13 @@ export const sdTypeValidate = (value: any, validator: PropertyValidator) => {
         (type === "SdSizeString" && ["xxs", "xs", "sm", "lg", "xl", "xxl"].includes(value))
       )
     ) {
-      throw new ArgumentsException({ value, type: config.type });
+      throw new ArgumentsException({value, type: config.type});
     }
   }
 
   if (config.validator) {
     if (!config.validator(value)) {
-      throw new ArgumentsException({ value, validator: config.validator });
+      throw new ArgumentsException({value, validator: config.validator});
     }
   }
 };

@@ -16,8 +16,8 @@ sd-table {
       white-space: nowrap;
       background: #fff;
       border: none;
-      border-top: 1px solid grey(lighter); //border-color()는 background에 따라 변화해서 안됨
-      border-bottom: 1px solid grey(lighter); //border-color()는 background에 따라 변화해서 안됨
+      border-top: 1px solid grey(lighter); // border-color()는 background에 따라 변화해서 안됨
+      border-bottom: 1px solid grey(lighter); // border-color()는 background에 따라 변화해서 안됨
       /*border-right: 1px solid grey(lighter);*/
 
       &:focus {

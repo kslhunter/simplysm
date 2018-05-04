@@ -12,7 +12,7 @@
   outline: none;
 }
 
-//-- Layout Tags
+// Layout Tags
 html, body, main {
   display: block;
   width: 100%;
@@ -33,7 +33,7 @@ main {
   overflow: auto;
 }
 
-//-- Element Tags
+// Element Tags
 pre {
   font-family: inherit;
   line-height: inherit;
@@ -57,7 +57,7 @@ a {
   cursor: pointer;
 }
 
-//-- Header Tags
+// Header Tags
 @each $key in (h1, h2, h3, h4, h5, h6) {
   #{$key} {
     padding: 0;
@@ -70,7 +70,7 @@ a {
   @include clearfix();
 }
 
-//-- Scrollbar
+// Scrollbar
 @media screen and (min-width: $m-screen) {
 
   ::-webkit-scrollbar-track {
@@ -89,7 +89,7 @@ a {
   }
 }
 
-//-- Style Classes
+// Style Classes
 @each $key, $v in $paddings {
   @each $position in top, right, bottom, left {
     .sd-padding-#{$position}-#{$key} {

@@ -1,21 +1,21 @@
-import * as path from "path";
-import {ISimpackConfig} from "./ISimpackConfig";
-import {Logger} from "@simplism/core";
-import {ServerWebpackConfig} from "./ServerWebpackConfig";
-import * as webpack from "webpack";
-import {ChildProcess, spawn, spawnSync} from "child_process";
-import * as glob from "glob";
-import * as fs from "fs-extra";
-import {FileWatcher} from "./FileWatcher";
+import * as path from 'path';
+import {ISimpackConfig} from './ISimpackConfig';
+import {Logger} from '@simplism/core';
+import {ServerWebpackConfig} from './ServerWebpackConfig';
+import * as webpack from 'webpack';
+import {ChildProcess, spawn, spawnSync} from 'child_process';
+import * as glob from 'glob';
+import * as fs from 'fs-extra';
+import {FileWatcher} from './FileWatcher';
 
 export class ServerBuilder {
     static async watch(config: ISimpackConfig, env: string | undefined): Promise<void> {
         const logger = new Logger(config.server.package);
         await new Promise<void>((resolve, reject) => {
-            logger.info("감지시작");
+            logger.info('감지시작');
 
-            FileWatcher.watch(path.resolve(process.cwd(), "packages", config.server.package, "src", "services", "**", "*.ts"), {}, async (events) => {
-                if (!events.some(item => item.type === "ready" || item.type === "add" || item.type === "unlink")) {
+            FileWatcher.watch(path.resolve(process.cwd(), 'packages', config.server.package, 'src', 'services', '**', '*.ts'), {}, async (events) => {
+                if (!events.some(item => item.type === 'ready' || item.type === 'add' || item.type === 'unlink')) {
                     return;
                 }
 
@@ -58,8 +58,8 @@ export class ServerBuilder {
 
                 //-- 서버 재시작
                 if (spawnProcess) {
-                    spawnSync("taskkill", ["/F", "/T", "/PID", spawnProcess.pid.toString()], {
-                        stdio: "pipe",
+                    spawnSync('taskkill', ['/F', '/T', '/PID', spawnProcess.pid.toString()], {
+                        stdio: 'pipe',
                         shell: true
                     });
                     spawnProcess = undefined;
@@ -67,24 +67,23 @@ export class ServerBuilder {
 
                 if (!stats.hasErrors()) {
                     try {
-                        spawnProcess = spawn("node", ["-r", "source-map-support/register", "app.js"], {
-                            stdio: "pipe",
+                        spawnProcess = spawn('node', ['-r', 'source-map-support/register', 'app.js'], {
+                            stdio: 'pipe',
                             shell: true,
                             cwd: path.resolve(config.dist)
                         });
-                        spawnProcess.stdout.on("data", data => {
+                        spawnProcess.stdout.on('data', data => {
                             if (data.toString().trim()) {
                                 console.log(data.toString());
                             }
                         });
-                        spawnProcess.stderr.on("data", data => {
-                            const errorMessage = data.toString().replace(/[^\n]* tedious deprecated The [^\n]*/g, "").trim();
+                        spawnProcess.stderr.on('data', data => {
+                            const errorMessage = data.toString().replace(/[^\n]* tedious deprecated The [^\n]*/g, '').trim();
                             if (errorMessage) {
                                 console.error(errorMessage);
                             }
                         });
-                    }
-                    catch (e) {
+                    } catch (e) {
                         logger.error(e, e.stack);
                     }
                 }
@@ -94,7 +93,7 @@ export class ServerBuilder {
 
             let prevTimestamps: { [key: string]: number };
             compiler.hooks.watchRun.tap(config.server.package, (compilation) => {
-                const fileTimestamps = compilation["fileTimestamps"] as Map<string, number>;
+                const fileTimestamps = compilation['fileTimestamps'] as Map<string, number>;
 
                 const changeLogs = [];
                 if (prevTimestamps) {
@@ -110,7 +109,7 @@ export class ServerBuilder {
                     prevTimestamps[fileName] = fileTimestamps.get(fileName)!;
                 }
 
-                logger.info("변경감지:", changeLogs);
+                logger.info('변경감지:', changeLogs);
             });
         });
     }
@@ -163,18 +162,18 @@ export class ServerBuilder {
         let importString = ``;
 
         const services: string[] = [];
-        const serviceFilePaths = glob.sync(path.resolve(process.cwd(), "packages", packageName, "src", "**", "*Service.ts"))
+        const serviceFilePaths = glob.sync(path.resolve(process.cwd(), 'packages', packageName, 'src', '**', '*Service.ts'))
             .orderBy(item => item.split(/[\\\/]/g).length);
         for (const serviceFilePath of serviceFilePaths) {
-            const relativePath = path.relative(path.resolve(process.cwd(), "packages", packageName, "src"), serviceFilePath);
+            const relativePath = path.relative(path.resolve(process.cwd(), 'packages', packageName, 'src'), serviceFilePath);
 
             const typeName = relativePath.split(/[\\\/]/g).last().slice(0, -3);
             services.push(typeName);
-            importString += `import {${typeName}} from "./${relativePath.replace(/\\/g, "/").slice(0, -3)}";\r\n`;
+            importString += `import {${typeName}} from "./${relativePath.replace(/\\/g, '/').slice(0, -3)}";\r\n`;
         }
 
-        fs.writeFileSync(path.resolve(process.cwd(), "packages", packageName, "src", "AppModuleDefinitions.ts"), `${importString}
-const services: any[] = ${JSON.stringify(services, undefined, 4).replace(/"/g, "")};
+        fs.writeFileSync(path.resolve(process.cwd(), 'packages', packageName, 'src', 'AppModuleDefinitions.ts'), `${importString}
+const services: any[] = ${JSON.stringify(services, undefined, 4).replace(/"/g, '')};
 export {services};`);
     }
 }

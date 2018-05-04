@@ -1,12 +1,15 @@
-import "../../sd-core/src";
+import "../../sd-core/src/extensions/ArrayExtensions";
+import "../../sd-core/src/extensions/DateExtensions";
+import "../../sd-core/src/extensions/ObjectConstructorExtensions";
+
+import * as fs from "fs-extra";
 import * as path from "path";
 import * as tslint from "tslint";
-import * as fs from "fs-extra";
 import * as ts from "typescript";
 
 const context = process.argv[2];
 
-const tsconfigPath = path.resolve(context, `tsconfig.json`);
+const tsconfigPath = path.resolve(context, "tsconfig.json");
 const tsconfig = fs.readJsonSync(tsconfigPath);
 const parsed = ts.parseJsonConfigFileContent(tsconfig, ts.sys, context);
 
@@ -22,23 +25,27 @@ process.on("message", (changedTsFiles: string[]) => {
   const checkFiles = changedTsFiles.length > 0 ? changedTsFiles : parsed.fileNames;
   for (const filePath of checkFiles) {
     const sourceFile = tsLinterProgram.getSourceFile(filePath);
-    if (!sourceFile) continue;
+    if (!sourceFile) {
+      continue;
+    }
 
-    const config = tslint.Configuration.findConfiguration(path.resolve(context, `tslint.json`), filePath);
+    const config = tslint.Configuration.findConfiguration(path.resolve(context, "tslint.json"), filePath);
     tsLinter.lint(filePath, sourceFile.getFullText(), config.results);
 
     const lintResult = tsLinter.getResult();
 
-    const errorMessages: string[] = lintResult.failures.map((failure) => {
-      if (failure.getFileName() !== filePath) return;
+    const errorMessages: string[] = lintResult.failures.map(failure => {
+      if (failure.getFileName() !== filePath) {
+        return undefined;
+      }
 
-      const severity = failure.getRuleSeverity().toUpperCase();
+      const severity = failure.getRuleSeverity();
       const message = `${failure.getFailure()}`;
       const rule = `(${failure.getRuleName()})`;
       const fileName = failure.getFileName();
       const lineNumber = failure.getStartPosition().getLineAndCharacter().line + 1;
       const charNumber = failure.getStartPosition().getLineAndCharacter().character + 1;
-      return `${severity}: ${fileName}[${lineNumber}, ${charNumber}]: ${message} ${rule}`;
+      return `${fileName}(${lineNumber},${charNumber}): ${severity}: ${message} ${rule}`;
     }).filterExists();
 
     if (errorMessages.length > 0) {
@@ -47,7 +54,7 @@ process.on("message", (changedTsFiles: string[]) => {
         message: `${filePath}\n${errorMessages.join("\n")}`
       }, (err: Error) => {
         if (err) {
-          console.error(err);
+          throw err;
         }
       });
     }
@@ -64,7 +71,7 @@ process.on("message", (changedTsFiles: string[]) => {
   });*/
   process.send!("finish", (err: Error) => {
     if (err) {
-      console.error(err);
+      throw err;
     }
   });
 });

@@ -8,30 +8,52 @@ import {
   NgZone,
   Output
 } from "@angular/core";
-import { Exception, NotImplementedException } from "../../../sd-core/src";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {NotImplementedException} from "../../../sd-core/src/exceptions/NotImplementedException";
 
 @Component({
   selector: "sd-drawing",
   template: `
-        <svg [attr.viewBox]="'0 0 200 200'" xmlns="http://www.w3.org/2000/svg">
-            <text #text
-                  x="100"
-                  y="105"
-                  text-anchor="middle"
-                  alignment-baseline="middle"
-                  font-size="100px"
-                  fill="black"
-                  opacity="0.1">
-                {{ watermark }}
-            </text>
-        </svg>
+    <svg [attr.viewBox]="'0 0 200 200'" xmlns="http://www.w3.org/2000/svg">
+      <text #text
+            x="100"
+            y="105"
+            text-anchor="middle"
+            alignment-baseline="middle"
+            font-size="100px"
+            fill="black"
+            opacity="0.1">
+        {{ watermark }}
+      </text>
+    </svg>
 
-        <canvas></canvas>
-    `,
+    <canvas></canvas>
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdDrawingControl implements AfterContentInit {
+  @Output() public readonly valueChange = new EventEmitter<Buffer | undefined>();
+  private _offsetTop = 0;
+  private _offsetLeft = 0;
+  private _scrollTop = 0;
+  private _scrollLeft = 0;
   private _isDrawing = false;
+
+  private _watermark: string | undefined;
+
+  public get watermark(): string | undefined {
+    return this._watermark;
+  }
+
+  @Input()
+  public set watermark(value: string | undefined) {
+    if (!(typeof value === "string" || typeof value === "undefined")) {
+      throw new Exception(`'sd-drawing.watermark'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
+    }
+    this._watermark = value;
+  }
+
+  private _value: Buffer | undefined;
 
   @Input()
   public set value(value: Buffer | undefined) {
@@ -48,33 +70,17 @@ export class SdDrawingControl implements AfterContentInit {
       return;
     }
 
-    const blob = new Blob([value], { type: "image/png" });
+    const blob = new Blob([value], {type: "image/png"});
     const url = URL.createObjectURL(blob);
     const img = new Image();
-    img.onload = (e) => {
+    img.onload = e => {
       context.drawImage(e.target as HTMLImageElement, 0, 0);
       URL.revokeObjectURL(url);
     };
     img.src = url;
   }
 
-  private _value: Buffer | undefined;
-
-  @Output() public readonly valueChange = new EventEmitter<Buffer | undefined>();
-
-  @Input()
-  public set watermark(value: string | undefined) {
-    if (!(typeof value === "string" || typeof value === "undefined")) {
-      throw new Exception(`'sd-drawing.watermark'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
-    }
-    this._watermark = value;
-  }
-
-  public get watermark(): string | undefined {
-    return this._watermark;
-  }
-
-  private _watermark: string | undefined;
+  private _readonly = false;
 
   @Input()
   public set readonly(value: boolean) {
@@ -85,10 +91,8 @@ export class SdDrawingControl implements AfterContentInit {
     this._readonly = value;
   }
 
-  private _readonly = false;
-
-  public constructor(private _elementRef: ElementRef,
-                     private _zone: NgZone) {
+  public constructor(private readonly _elementRef: ElementRef,
+                     private readonly _zone: NgZone) {
   }
 
   public ngAfterContentInit(): void {
@@ -101,16 +105,11 @@ export class SdDrawingControl implements AfterContentInit {
     context.imageSmoothingEnabled = true;
 
     this._zone.runOutsideAngular(() => {
-      $(canvasElement).on("mousedown mousemove mouseup touchstart touchmove touchend", (evt) => {
+      $(canvasElement).on("mousedown mousemove mouseup touchstart touchmove touchend", evt => {
         this.onDrawing(evt as any);
       });
     });
   }
-
-  private _offsetTop = 0;
-  private _offsetLeft = 0;
-  private _scrollTop = 0;
-  private _scrollLeft = 0;
 
   public onDrawing(e: MouseEvent | TouchEvent): any {
     if (this._readonly) {
@@ -177,12 +176,12 @@ export class SdDrawingControl implements AfterContentInit {
 
       const thisElement = this._elementRef.nativeElement as HTMLElement;
       const canvasElement = thisElement.getElementsByTagName("canvas").item(0);
-      canvasElement.toBlob((blob) => {
+      canvasElement.toBlob(blob => {
         const fileReader = new FileReader();
         fileReader.onload = (evt: Event) => {
           const arrayBuffer = (evt.target as any).result;
           const uint8Array = new Uint8Array(arrayBuffer);
-          const buffer = new Buffer(uint8Array.byteLength);
+          const buffer = Buffer.alloc(uint8Array.byteLength);
           for (let i = 0; i < buffer.length; i++) {
             buffer[i] = uint8Array[i];
           }

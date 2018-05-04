@@ -1,170 +1,28 @@
 import * as fs from "fs-extra";
-import {
-  ConnectionPool,
-  IProcedureResult,
-  IResult,
-  ISOLATION_LEVEL,
-  ISqlType,
-  Request,
-  Table,
-  Transaction
-} from "mssql";
-import { Exception, Logger, Type } from "../../../sd-core/src";
-import { IFunctionDefinition, IStoredProcedureDefinition, ITableDefinition } from "../common/Definitions";
-import { OrderByRule } from "../common/Enums";
-import { functionMetadataSymbol } from "../common/FunctionDecorators";
-import { IConnectionConfig } from "../common/IConnectionConfig";
-import { storedProcedureMetadataSymbol } from "../common/StoredProcedureDecorators";
-import { tableMetadataSymbol } from "../common/TableDecorators";
-import { Queryable } from "./Queryable";
-import { QueryableFunction } from "./QueryableFunction";
-import { QueryableStoredProcedure } from "./QueryableStoredProcedure";
-import { QueryBuilder } from "./QueryBuilder";
+import {ConnectionPool, IProcedureResult, IResult, ISOLATION_LEVEL, ISqlType, Request, Table, Transaction} from "mssql";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Logger} from "../../../sd-core/src/utils/Logger";
+import {IFunctionDefinition, IStoredProcedureDefinition, ITableDefinition} from "../common/Definitions";
+import {OrderByRule} from "../common/Enums";
+import {functionMetadataSymbol} from "../common/FunctionDecorators";
+import {IConnectionConfig} from "../common/IConnectionConfig";
+import {storedProcedureMetadataSymbol} from "../common/StoredProcedureDecorators";
+import {tableMetadataSymbol} from "../common/TableDecorators";
+import {Queryable} from "./Queryable";
+import {QueryableFunction} from "./QueryableFunction";
+import {QueryableStoredProcedure} from "./QueryableStoredProcedure";
+import {QueryBuilder} from "./QueryBuilder";
 
 export abstract class Database {
-  private _conn?: ConnectionPool;
-  private _trans?: Transaction;
-  public logger = new Logger("@simplism/sd-orm", "Database");
-
-  private _preparedQueries: string[] = [];
-
-  protected constructor(public config: IConnectionConfig,
-                        public migrations: string[]) {
-  }
-
-  public unionAll<T>(args: Queryable<T>[]): Queryable<T> {
-    return new Queryable<T>(this, undefined, args);
-  }
-
-  public get hasTransaction(): boolean {
-    return !!this._trans;
-  }
-
-  public async execute<T>(query: string): Promise<IResult<T>> {
-    if (this.logger) {
-      this.logger.log("EXECUTE QUERY:", query);
-    }
-
-    return await new Promise<IResult<any>>((resolve, reject) => {
-      try {
-        const req = this._trans ? new Request(this._trans) : new Request(this._conn);
-        req.query<T>(query, (err, result) => {
-          if (err) {
-            try {
-              let errorMessage = `ERROR: ${err.message}\n`;
-              if (err["precedingErrors"]) {
-                for (const precedingError of err["precedingErrors"]) {
-                  errorMessage += ` - ${precedingError.message}\n`;
-                }
-              }
-
-              if (this.logger) {
-                this.logger.error(errorMessage, query);
-              }
-              const exception = new Exception(errorMessage);
-              exception["innerError"] = err;
-              reject(exception);
-            }
-            catch (err) {
-              reject(err);
-              return;
-            }
-            return;
-          }
-          resolve(result);
-        });
-      }
-      catch (err) {
-        reject(err);
-      }
-    });
-  }
-
-  public async executeBulkInsert(table: Table): Promise<void> {
-    return await new Promise<void>((resolve, reject) => {
-      try {
-        const req = this._trans ? new Request(this._trans) : new Request(this._conn);
-        req.bulk(table, (err) => {
-          if (err) {
-            try {
-              let errorMessage = `ERROR: ${err.message}\n`;
-              if (err["precedingErrors"]) {
-                for (const precedingError of err["precedingErrors"]) {
-                  errorMessage += ` - ${precedingError.message}\n`;
-                }
-              }
-
-              if (this.logger) {
-                this.logger.error(errorMessage);
-              }
-              const exception = new Exception(errorMessage);
-              exception["innerError"] = err;
-              reject(exception);
-            }
-            catch (err) {
-              reject(err);
-              return;
-            }
-            return;
-          }
-          resolve();
-        });
-      }
-      catch (err) {
-        reject(err);
-      }
-    });
-  }
-
-  public prepare(query: string): void {
-    this._preparedQueries.push(query);
-  }
-
-  public async executePrepared<T>(): Promise<IResult<T>> {
-    const result = await this.execute<T>(this._preparedQueries.join("\r\n\r\n"));
-    this._preparedQueries = [];
-    return result;
-  }
-
-  public async call(name: string, params: { [key: string]: any }, outputs: { [key: string]: ISqlType }): Promise<IProcedureResult<any>> {
-    if (this.logger) {
-      this.logger.log(`CALL: ${name}(${JSON.stringify(params)}, ${JSON.stringify(outputs)})`);
-    }
-
-    return await new Promise<IProcedureResult<any>>((resolve, reject) => {
-      try {
-        let req = this._trans ? new Request(this._trans) : new Request(this._conn);
-        for (const key of Object.keys(params)) {
-          req = req.input(key, params[key]);
-        }
-        for (const key of Object.keys(outputs)) {
-          req = req.output(key, outputs[key]);
-        }
-        req.execute(name, (err, result) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          resolve(result);
-        });
-      }
-      catch (err) {
-        reject(err);
-      }
-    });
-  }
-
   public static async connect<T extends Database, R>(dbContextType: Type<T>, fn: (dbContext: T) => Promise<R>): Promise<R> {
-    return await this._connectFn(dbContextType, async (dbContext) => {
-      return await dbContext._transFn(async () => {
-        return await fn(dbContext);
-      });
-    });
+    return this._connectFn(dbContextType, async dbContext =>
+      dbContext._transFn(async () =>
+        fn(dbContext)));
   }
 
   private static async _connectFn<T extends Database, R>(dbContextType: Type<T>, fn: (dbContext: T) => Promise<R>): Promise<R> {
-    return await new Promise<R>((resolve, reject) => {
+    return new Promise<R>((resolve, reject) => {
       try {
         const dbContext = new dbContextType();
 
@@ -186,15 +44,15 @@ export abstract class Database {
           }
         });
 
-        dbContext._conn.connect((err) => {
+        dbContext._conn.connect(err => {
           if (err) {
             reject(err);
             return;
           }
 
           fn(dbContext)
-            .then((result) => {
-              dbContext._conn!.close((error) => {
+            .then(result => {
+              dbContext._conn!.close(error => {
                 if (error) {
                   reject(error);
                   return;
@@ -202,56 +60,148 @@ export abstract class Database {
                 resolve(result);
               });
             })
-            .catch((error) => {
+            .catch(error => {
               try {
                 dbContext._conn!.close(() => {
                   reject(error);
                 });
-              }
-              catch (err) {
+              } catch (err) {
                 reject(err);
               }
             });
         });
-      }
-      catch (err) {
+      } catch (err) {
         reject(err);
       }
     });
   }
 
-  private async _transFn<R>(fn: () => Promise<R>): Promise<R> {
-    return await new Promise<R>((resolve, reject) => {
-      try {
-        this._trans = new Transaction(this._conn);
+  public logger = new Logger("@simplism/sd-orm", "Database");
 
-        this._trans.begin(ISOLATION_LEVEL.READ_COMMITTED, async (err) => {
+  private _conn?: ConnectionPool;
+  private _trans?: Transaction;
+
+  private _preparedQueries: string[] = [];
+
+  public get hasTransaction(): boolean {
+    return !!this._trans;
+  }
+
+  protected constructor(public config: IConnectionConfig,
+                        public migrations: string[]) {
+  }
+
+  public unionAll<T>(args: Queryable<T>[]): Queryable<T> {
+    return new Queryable<T>(this, undefined, args);
+  }
+
+  public async execute<T>(query: string): Promise<IResult<T>> {
+    if (this.logger) {
+      this.logger.log("EXECUTE QUERY:", query);
+    }
+
+    return new Promise<IResult<any>>((resolve, reject) => {
+      try {
+        const req = this._trans ? new Request(this._trans) : new Request(this._conn);
+        req.query<T>(query, (err, result) => {
+          if (err) {
+            try {
+              let errorMessage = `ERROR: ${err.message}\n`;
+
+              if (err["precedingErrors"]) {
+                for (const precedingError of err["precedingErrors"]) {
+                  errorMessage += ` - ${precedingError.message}\n`;
+                }
+              }
+
+              if (this.logger) {
+                this.logger.error(errorMessage, query);
+              }
+              const exception = new Exception(errorMessage);
+              exception.innerError = err;
+              reject(exception);
+            } catch (err) {
+              reject(err);
+              return;
+            }
+            return;
+          }
+          resolve(result);
+        });
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  public async executeBulkInsert(table: Table): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        const req = this._trans ? new Request(this._trans) : new Request(this._conn);
+        req.bulk(table, err => {
+          if (err) {
+            try {
+              let errorMessage = `ERROR: ${err.message}\n`;
+
+              if (err["precedingErrors"]) {
+                for (const precedingError of err["precedingErrors"]) {
+                  errorMessage += ` - ${precedingError.message}\n`;
+                }
+              }
+
+              if (this.logger) {
+                this.logger.error(errorMessage);
+              }
+              const exception = new Exception(errorMessage);
+              exception.innerError = err;
+              reject(exception);
+            } catch (err) {
+              reject(err);
+              return;
+            }
+            return;
+          }
+          resolve();
+        });
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  public prepare(query: string): void {
+    this._preparedQueries.push(query);
+  }
+
+  public async executePrepared<T>(): Promise<IResult<T>> {
+    const result = await this.execute<T>(this._preparedQueries.join("\r\n\r\n"));
+    this._preparedQueries = [];
+    return result;
+  }
+
+  public async call(name: string, params: { [key: string]: any }, outputs: { [key: string]: ISqlType }): Promise<IProcedureResult<any>> {
+    if (this.logger) {
+      this.logger.log(`CALL: ${name}(${JSON.stringify(params)}, ${JSON.stringify(outputs)})`);
+    }
+
+    return new Promise<IProcedureResult<any>>((resolve, reject) => {
+      try {
+        let req = this._trans ? new Request(this._trans) : new Request(this._conn);
+        for (const key of Object.keys(params)) {
+          req = req.input(key, params[key]);
+        }
+        for (const key of Object.keys(outputs)) {
+          req = req.output(key, outputs[key]);
+        }
+        req.execute(name, (err, result) => {
           if (err) {
             reject(err);
             return;
           }
 
-          fn()
-            .then((result) => {
-              this._trans!.commit((error) => {
-                if (error) {
-                  reject(error);
-                  return;
-                }
-
-                delete this._trans;
-                resolve(result);
-              });
-            })
-            .catch((error) => {
-              this._trans!.rollback(() => {
-                delete this._trans;
-                reject(error);
-              });
-            });
+          resolve(result);
         });
-      }
-      catch (err) {
+      } catch (err) {
         reject(err);
       }
     });
@@ -264,8 +214,8 @@ export abstract class Database {
       await this.execute(QueryBuilder.clearDatabase());
 
       const tableNameAndTypes = Object.keys(this)
-        .filter((key) => this[key] instanceof Queryable)
-        .map((key) => [key, this[key].tableType]);
+        .filter(key => this[key] instanceof Queryable)
+        .map(key => [key, this[key].tableType]);
 
       for (const tableNameAndType of tableNameAndTypes) {
         if (!tableNameAndType[1]) {
@@ -278,7 +228,7 @@ export abstract class Database {
           throw new Exception(`${tableType.name}의 @Table()이 누락되었습니다.`);
         }
 
-        //-- 테이블 생성
+        // 테이블 생성
         if (tableDef.columns.length > 0) {
           await this.execute(QueryBuilder.createTable(
             tableDef.name,
@@ -286,7 +236,7 @@ export abstract class Database {
           ));
         }
 
-        //-- 기본키 생성
+        // 기본키 생성
         if (tableDef.primaryKeyColumns.length > 0) {
           await this.execute(QueryBuilder.createPrimaryKey(
             tableDef.name,
@@ -294,7 +244,7 @@ export abstract class Database {
           ));
         }
 
-        //-- 인덱스 생성
+        // 인덱스 생성
         for (const dbIndex of tableDef.indexes) {
           await this.execute(QueryBuilder.createIndex(
             tableDef.name,
@@ -303,14 +253,14 @@ export abstract class Database {
         }
       }
 
-      //-- 외래키 생성
+      // 외래키 생성
       for (const tableNameAndType of tableNameAndTypes) {
         const tableType = tableNameAndType[1];
         const tableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, tableType);
         for (const foreignKey of tableDef.foreignKeys) {
           const targetType = foreignKey.targetTableTypeForwarder();
           const targetTableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, targetType);
-          const targetTablePrimaryKeyColumnNames = targetTableDef.primaryKeyColumns.map((item) => item.name);
+          const targetTablePrimaryKeyColumnNames = targetTableDef.primaryKeyColumns.map(item => item.name);
 
           await this.execute(QueryBuilder.createForeignKey(
             tableDef.name,
@@ -324,10 +274,10 @@ export abstract class Database {
         }
       }
 
-      //-- 함수 생성
+      // 함수 생성
       const functionNameAndTypes = Object.keys(this)
-        .filter((key) => this[key] instanceof QueryableFunction)
-        .map((key) => [key, this[key].targetType]);
+        .filter(key => this[key] instanceof QueryableFunction)
+        .map(key => [key, this[key].targetType]);
 
       for (const functionNameAndType of functionNameAndTypes) {
         if (!functionNameAndType[1]) {
@@ -343,10 +293,10 @@ export abstract class Database {
         await this.execute(QueryBuilder.createFunction(functionDef));
       }
 
-      //-- 프록시저 생성
+      // 프록시저 생성
       const procedureNameAndTypes = Object.keys(this)
-        .filter((key) => this[key] instanceof QueryableStoredProcedure)
-        .map((key) => [key, this[key].targetType]);
+        .filter(key => this[key] instanceof QueryableStoredProcedure)
+        .map(key => [key, this[key].targetType]);
 
       for (const procedureNameAndType of procedureNameAndTypes) {
         if (!procedureNameAndType[1]) {
@@ -376,17 +326,53 @@ export abstract class Database {
             name: "code",
             orderBy: OrderByRule.ASC
           }
-        ])}\r\n${this.migrations.map((item) => `INSERT INTO [_migration](code) VALUES ('${item}');`).join("\r\n")}`
+        ])}\r\n${this.migrations.map(item => `INSERT INTO [_migration](code) VALUES ('${item}');`).join("\r\n")}`
       );
     }
     else {
       const lastMigration = await this.execute("SELECT MAX(code) as code FROM [_migration]");
       const lastMigrationCode = lastMigration.recordset[0] ? lastMigration.recordset[0]["code"] : "";
-      for (const migration of this.migrations.filter((item) => item > lastMigrationCode).orderBy()) {
+      for (const migration of this.migrations.filter(item => item > lastMigrationCode).orderBy()) {
         const query = fs.readFileSync(migration, "utf-8");
         await this.execute(query);
         await this.execute(`INSERT INTO [_migration](code) VALUES ('${migration}')`);
       }
     }
+  }
+
+  private async _transFn<R>(fn: () => Promise<R>): Promise<R> {
+    return new Promise<R>((resolve, reject) => {
+      try {
+        this._trans = new Transaction(this._conn);
+
+        this._trans.begin(ISOLATION_LEVEL.READ_COMMITTED, async err => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          fn()
+            .then(result => {
+              this._trans!.commit(error => {
+                if (error) {
+                  reject(error);
+                  return;
+                }
+
+                delete this._trans;
+                resolve(result);
+              });
+            })
+            .catch(error => {
+              this._trans!.rollback(() => {
+                delete this._trans;
+                reject(error);
+              });
+            });
+        });
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 }

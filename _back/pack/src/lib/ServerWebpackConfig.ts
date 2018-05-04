@@ -1,29 +1,29 @@
-import * as path from "path";
-import * as webpack from "webpack";
-import {ISimpackConfig} from "./ISimpackConfig";
-import * as webpackMerge from "webpack-merge";
-import * as fs from "fs-extra";
-import {Logger, Safe} from "@simplism/core";
+import * as path from 'path';
+import * as webpack from 'webpack';
+import {ISimpackConfig} from './ISimpackConfig';
+import * as webpackMerge from 'webpack-merge';
+import * as fs from 'fs-extra';
+import {Logger, Safe} from '@simplism/core';
 
 // tslint:disable-next-line:variable-name
-const HappyPack = require("happypack");
+const HappyPack = require('happypack');
 // tslint:disable-next-line:variable-name
-const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 export class ServerWebpackConfig {
     static getForBuild(config: ISimpackConfig, env: string | undefined): webpack.Configuration {
         return webpackMerge(this._getCommon(config), {
-            mode: "production",
+            mode: 'production',
             optimization: {
                 noEmitOnErrors: true
             },
 
             plugins: [
                 new webpack.DefinePlugin({
-                    "process.env": {
-                        SD_ENV: env ? JSON.stringify(env) : "undefined",
-                        NODE_ENV: JSON.stringify("production"),
-                        VERSION: JSON.stringify(fs.readJsonSync(path.resolve(process.cwd(), "package.json")).version),
+                    'process.env': {
+                        SD_ENV: env ? JSON.stringify(env) : 'undefined',
+                        NODE_ENV: JSON.stringify('production'),
+                        VERSION: JSON.stringify(fs.readJsonSync(path.resolve(process.cwd(), 'package.json')).version),
                         SOCKET_SERVER_PORT: JSON.stringify(config.server.port),
                         CLIENTS: JSON.stringify(Safe.arr(config.clients).filter(item => !item.cordova).map(item => item.name))
                     }
@@ -34,16 +34,16 @@ export class ServerWebpackConfig {
 
     static getForStart(config: ISimpackConfig, env: string | undefined): webpack.Configuration {
         return webpackMerge(this._getCommon(config), {
-            mode: "development",
+            mode: 'development',
 
             plugins: [
                 /*new WebpackWatchTimefixPlugin(),*/
 
                 new webpack.DefinePlugin({
-                    "process.env": {
-                        SD_ENV: env ? JSON.stringify(env) : "undefined",
-                        NODE_ENV: JSON.stringify("development"),
-                        VERSION: JSON.stringify(fs.readJsonSync(path.resolve(process.cwd(), "package.json")).version),
+                    'process.env': {
+                        SD_ENV: env ? JSON.stringify(env) : 'undefined',
+                        NODE_ENV: JSON.stringify('development'),
+                        VERSION: JSON.stringify(fs.readJsonSync(path.resolve(process.cwd(), 'package.json')).version),
                         SOCKET_SERVER_PORT: JSON.stringify(config.server.port),
                         CLIENTS: JSON.stringify(Safe.arr(config.clients).filter(item => !item.cordova).map(item => item.name))
                     }
@@ -54,43 +54,43 @@ export class ServerWebpackConfig {
 
     private static _getCommon(config: ISimpackConfig): webpack.Configuration {
         return {
-            target: "node",
-            devtool: "source-map",
+            target: 'node',
+            devtool: 'source-map',
 
             entry: {
-                app: path.resolve(process.cwd(), "packages", config.server.package, "src", "App.ts")
+                app: path.resolve(process.cwd(), 'packages', config.server.package, 'src', 'App.ts')
             },
 
             output: {
                 path: config.dist,
-                filename: "[name].js",
-                chunkFilename: "[id].chunk.js"
+                filename: '[name].js',
+                chunkFilename: '[id].chunk.js'
             },
 
             resolve: {
-                extensions: [".ts", ".js", ".json", ".node"]
+                extensions: ['.ts', '.js', '.json', '.node']
             },
 
             module: {
                 rules: [
                     {
                         test: /\.js$/,
-                        use: ["source-map-loader"],
+                        use: ['source-map-loader'],
                         exclude: /reflect-metadata/,
-                        enforce: "pre"
+                        enforce: 'pre'
                     },
                     {
                         test: /\.ts$/,
-                        loader: "happypack/loader?id=ts",
+                        loader: 'happypack/loader?id=ts',
                         exclude: /node_modules/
                     },
                     {
                         test: /\.node$/,
-                        use: require.resolve(path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders/node-loader.js"))
+                        use: require.resolve(path.resolve(process.cwd(), 'node_modules/@simplism/pack/loaders/node-loader.js'))
                     },
                     {
                         test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx|docx|pptx|pdf|apk|txt|hwp|sql)$/,
-                        use: "file-loader?name=assets/[name].[hash].[ext]"
+                        use: 'file-loader?name=assets/[name].[hash].[ext]'
                     }
                 ]
             },
@@ -98,23 +98,23 @@ export class ServerWebpackConfig {
             plugins: [
                 new webpack.NormalModuleReplacementPlugin(
                     /^socket.io$/,
-                    require.resolve(path.resolve(process.cwd(), "node_modules/@simplism/pack/replacements/socket.io.js"))
+                    require.resolve(path.resolve(process.cwd(), 'node_modules/@simplism/pack/replacements/socket.io.js'))
                 ),
 
                 new webpack.NormalModuleReplacementPlugin(
                     /^bindings$/,
-                    require.resolve(path.resolve(process.cwd(), "node_modules/@simplism/pack/replacements/bindings.js"))
+                    require.resolve(path.resolve(process.cwd(), 'node_modules/@simplism/pack/replacements/bindings.js'))
                 ),
 
                 new HappyPack({
-                    id: "ts",
+                    id: 'ts',
                     verbose: false,
                     loaders: [
                         {
-                            loader: "ts-loader",
+                            loader: 'ts-loader',
                             options: {silent: true, happyPackMode: true}
                         },
-                        "angular2-template-loader"
+                        'angular2-template-loader'
                     ]
                 }),
 
@@ -134,7 +134,7 @@ export class ServerWebpackConfig {
                 })
             ],
 
-            externals: ["uws"]
+            externals: ['uws']
         };
     }
 }

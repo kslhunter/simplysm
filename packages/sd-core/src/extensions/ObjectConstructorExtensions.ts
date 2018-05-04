@@ -1,7 +1,8 @@
-import { DateOnly } from "../types/DateOnly";
-import { Time } from "../types/Time";
+import {DateOnly} from "../types/DateOnly";
+import {Time} from "../types/Time";
 
 declare global {
+  // tslint:disable-next-line:interface-name
   interface ObjectConstructor {
     equal<T>(source: T, taget: T): boolean;
 
@@ -9,7 +10,7 @@ declare global {
   }
 }
 
-Object.equal = function(source: any, target: any): boolean {
+Object.equal = function (source: any, target: any): boolean {
   if (source instanceof Date || source instanceof DateOnly) {
     if (!(target instanceof Date || target instanceof DateOnly)) {
       return false;
@@ -22,6 +23,7 @@ Object.equal = function(source: any, target: any): boolean {
       return false;
 
     }
+
     return source.getTotalMilliSeconds() === target.getTotalMilliSeconds();
   }
   else if (source instanceof Array) {
@@ -53,12 +55,13 @@ Object.equal = function(source: any, target: any): boolean {
   }
 };
 
-Object.clone = function(source: any, opts?: IObjectCloneOptions): any {
+Object.clone = function (source: any, opts?: IObjectCloneOptions): any {
   if (source instanceof Array) {
     const result = [];
     for (const sourceItem of source) {
       result.push(Object.clone(sourceItem, opts));
     }
+
     return result;
   }
   else if (source instanceof Date) {
@@ -67,9 +70,10 @@ Object.clone = function(source: any, opts?: IObjectCloneOptions): any {
   else if (source instanceof Object) {
     const result = {};
     Object.setPrototypeOf(result, source.constructor.prototype);
-    for (const key of Object.keys(source).filter((sourceKey) => opts ? !opts.excludes.includes(sourceKey) : true)) {
+    for (const key of Object.keys(source).filter(sourceKey => opts ? !opts.excludes.includes(sourceKey) : true)) {
       result[key] = Object.clone(source[key], opts);
     }
+
     return result;
   }
   else {

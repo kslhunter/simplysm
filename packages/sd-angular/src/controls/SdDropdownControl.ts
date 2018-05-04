@@ -1,32 +1,24 @@
-import {
-  ApplicationRef,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  Input,
-  OnDestroy,
-  OnInit
-} from "@angular/core";
+import {ApplicationRef, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit} from "@angular/core";
 
 @Component({
   selector: "sd-dropdown",
   template: `
-        <ng-content></ng-content>`,
+    <ng-content></ng-content>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SdDropdownControl implements OnInit, OnDestroy {
+  public $parent: JQuery | undefined;
+
+  private _open = false;
+
   @Input()
   public set open(value: boolean) {
     this._open = value;
     this.redraw();
   }
 
-  private _open = false;
-
-  public $parent: JQuery | undefined;
-
-  public constructor(private _elementRef: ElementRef,
-                     private _appRef: ApplicationRef) {
+  public constructor(private readonly _elementRef: ElementRef,
+                     private readonly _appRef: ApplicationRef) {
   }
 
   public ngOnInit(): void {
@@ -42,7 +34,9 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   }
 
   public redraw(): void {
-    if (!this.$parent) return;
+    if (!this.$parent) {
+      return;
+    }
 
     const $this = $(this._elementRef!.nativeElement);
     if (this._open) {

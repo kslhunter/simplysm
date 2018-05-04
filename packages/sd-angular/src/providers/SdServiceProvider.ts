@@ -1,23 +1,24 @@
-import { Injectable, Type } from "@angular/core";
-import { JsonConvert, Uuid } from "../../../sd-core/src";
-import { SocketClient } from "../../../sd-socket/src";
-import { ISocketEvent } from "../../../sd-socket/src/common/ISocketEvent";
-import { SdBusyProvider } from "./SdBusyProvider";
-import { SdLocalStorageProvider } from "./SdLocalStorageProvider";
-import { SdToastProvider } from "./SdToastProvider";
+import {Injectable, Type} from "@angular/core";
+import {Uuid} from "../../../sd-core/src/types/Uuid";
+import {JsonConvert} from "../../../sd-core/src/utils/JsonConvert";
+import {SocketClient} from "../../../sd-socket/src/client/SocketClient";
+import {ISocketEvent} from "../../../sd-socket/src/common/ISocketEvent";
+import {SdBusyProvider} from "./SdBusyProvider";
+import {SdLocalStorageProvider} from "./SdLocalStorageProvider";
+import {SdToastProvider} from "./SdToastProvider";
 
 @Injectable()
 export class SdServiceProvider {
-  private _errorListeners: ((err: Error) => Promise<boolean>)[] = [];
-  private _client: SocketClient = new SocketClient();
+  private readonly _errorListeners: ((err: Error) => Promise<boolean>)[] = [];
+  private readonly _client: SocketClient = new SocketClient();
 
   public get connected(): boolean {
     return this._client.connected;
   }
 
-  public constructor(private _busy: SdBusyProvider,
-                     private _toast: SdToastProvider,
-                     private _localStorage: SdLocalStorageProvider) {
+  public constructor(private readonly _busy: SdBusyProvider,
+                     private readonly _toast: SdToastProvider,
+                     private readonly _localStorage: SdLocalStorageProvider) {
   }
 
   public async connect(url?: string): Promise<void> {
@@ -62,7 +63,7 @@ export class SdServiceProvider {
     this._errorListeners.push(cb);
   }
 
-  public async send<S, R>(serviceType: Type<S>, methodFunc: (service: S) => Promise<R>, options: { showBusy: boolean } = { showBusy: true }): Promise<R> {
+  public async send<S, R>(serviceType: Type<S>, methodFunc: (service: S) => Promise<R>, options: { showBusy: boolean } = {showBusy: true}): Promise<R> {
     const serviceName = serviceType.name;
 
     const matches = methodFunc
@@ -73,23 +74,27 @@ export class SdServiceProvider {
     const methodName = method.replace(`${fieldName}.`, "");
 
     const serviceObj: S = {} as any;
-    serviceObj[methodName] = async (...args: any[]) => {
-      return await this.sendCommand.apply(this, [options, `${serviceName}.${methodName}`].concat(args));
-    };
+    serviceObj[methodName] = async (...args: any[]) =>
+      await this.sendCommand.apply(this, [options, `${serviceName}.${methodName}`].concat(args));
     return await methodFunc(serviceObj);
   }
 
   public async sendCommand(options: { showBusy: boolean }, cmd: string, ...args: any[]): Promise<any> {
     try {
-      if (options.showBusy) await this._busy.show();
+      if (options.showBusy) {
+        await this._busy.show();
+      }
       const result = await this._client.send(cmd, args, this.getGlobalHeader());
-      if (options.showBusy) this._busy.hide();
+      if (options.showBusy) {
+        this._busy.hide();
+      }
       return result;
-    }
-    catch (e) {
+    } catch (e) {
       if (e.code) {
         this._toast.danger(e.message);
-        if (options.showBusy) this._busy.hide();
+        if (options.showBusy) {
+          this._busy.hide();
+        }
         for (const callback of this._errorListeners) {
           const reload = await callback(e);
           if (reload) {
@@ -107,10 +112,10 @@ export class SdServiceProvider {
   }
 
   public async off(id: Uuid): Promise<void> {
-    return await this._client.off(id);
+    await this._client.off(id);
   }
 
-  public async downloadApk(packageName: string, options: { showBusy: boolean } = { showBusy: true }): Promise<void> {
+  public async downloadApk(packageName: string, options: { showBusy: boolean } = {showBusy: true}): Promise<void> {
     await this.sendCommand(options, "downloadApk", packageName);
   }
 }

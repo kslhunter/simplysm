@@ -1,5 +1,5 @@
 export class ExcelXmlWorkbookRels {
-  public constructor(private _sheetLength: number) {
+  public constructor(private readonly _sheetLength: number) {
   }
 
   public toString(): string {

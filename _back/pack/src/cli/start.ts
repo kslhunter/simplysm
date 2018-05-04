@@ -1,16 +1,16 @@
-import * as path from "path";
-import {ISimpackConfig} from "../lib/ISimpackConfig";
-import {ServerBuilder} from "../lib/ServerBuilder";
-import {ClientBuilder} from "../lib/ClientBuilder";
-import {host} from "../lib/helpers";
-import {DatabaseFileGenerator} from "../lib/DatabaseFileGenerator";
-import * as fs from "fs-extra";
+import * as path from 'path';
+import {ISimpackConfig} from '../lib/ISimpackConfig';
+import {ServerBuilder} from '../lib/ServerBuilder';
+import {ClientBuilder} from '../lib/ClientBuilder';
+import {host} from '../lib/helpers';
+import {DatabaseFileGenerator} from '../lib/DatabaseFileGenerator';
+import * as fs from 'fs-extra';
 
 export async function start(argv: { config: string; env: string | undefined; client: string | undefined; serverOnly: boolean | undefined; databaseOnly: boolean | undefined }): Promise<void> {
-    process.env.NODE_ENV = "development";
+    process.env.NODE_ENV = 'development';
     process.env.SD_ENV = argv.env;
 
-    require("ts-node/register");
+    require('ts-node/register');
     const configPath = path.resolve(process.cwd(), argv.config);
     const config: ISimpackConfig = require(configPath);
     if (config.server) {
