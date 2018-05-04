@@ -162,13 +162,6 @@ export class SdSheetControl implements AfterViewInit, DoCheck {
   private readonly _logger = new Logger("@simplism/sd-angular", "SdSheet");
   private _itemBeforeCheck?: any[];
 
-  public constructor(private readonly _elementRef: ElementRef,
-                     private readonly _cdr: ChangeDetectorRef,
-                     private readonly _localStorage: SdLocalStorageProvider,
-                     private readonly _modal: SdModalProvider,
-                     private readonly _zone: NgZone) {
-  }
-
   public get columns(): ISdSheetColumnDef[] {
     const currColumns = this.columnControlList.toArray().map((item, i) => ({
       title: item.title,
@@ -200,6 +193,13 @@ export class SdSheetControl implements AfterViewInit, DoCheck {
 
   public get displayItems(): any[] | undefined {
     return this.items && this.seqProp ? this.items.orderBy(item => item[this.seqProp!]) : this.items;
+  }
+
+  public constructor(private readonly _elementRef: ElementRef,
+                     private readonly _cdr: ChangeDetectorRef,
+                     private readonly _localStorage: SdLocalStorageProvider,
+                     private readonly _modal: SdModalProvider,
+                     private readonly _zone: NgZone) {
   }
 
   public columnsTrackByFn(index: number, item: ISdSheetColumnDef): string | ISdSheetColumnDef {

@@ -1,6 +1,9 @@
 import * as XML from "xml2js";
 
 export class ExcelXmlSharedStrings {
+  public constructor(public strings: string[]) {
+  }
+
   public static async parseAsync(xmlString: string): Promise<ExcelXmlSharedStrings> {
     return new Promise<any>((resolve, reject) => {
       XML.parseString(xmlString, (err: any, parsed: any) => {
@@ -24,9 +27,6 @@ export class ExcelXmlSharedStrings {
         }
       });
     });
-  }
-
-  public constructor(public strings: string[]) {
   }
 
   public toString(): string {

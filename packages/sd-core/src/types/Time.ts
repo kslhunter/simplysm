@@ -1,4 +1,38 @@
 export class Time {
+  private readonly _tick: number;
+
+  public constructor(...args: number[]) {
+    // hour, minute, second, millisecond
+    if (args.length === 4) {
+      this._tick = args[3]          // ms
+        + args[2] * 1000            // s
+        + args[1] * 60 * 1000       // m
+        + args[0] * 60 * 60 * 1000; // h
+    }
+    else if (args.length === 3) {
+      this._tick = args[2] * 1000   // s
+        + args[1] * 60 * 1000       // m
+        + args[0] * 60 * 60 * 1000; // h
+    }
+    else if (args.length === 2) {
+      this._tick = args[1] * 60 * 1000  // m
+        + args[0] * 60 * 60 * 1000;     // h
+    }
+    else if (args.length === 1) {
+      this._tick = args[0];
+    }
+    else if (args.length === 0) {
+      const curr = new Date();
+      this._tick = curr.getMilliseconds()
+        + curr.getSeconds() * 1000
+        + curr.getMinutes() * 60 * 1000
+        + curr.getHours() * 60 * 60 * 1000;
+    }
+    else {
+      throw new Error("입력값이 잘못 되었습니다.");
+    }
+  }
+
   public static parse(value: string): Time {
     let tick: number | undefined;
 
@@ -69,40 +103,6 @@ export class Time {
     }
 
     return new Time(tick);
-  }
-
-  private readonly _tick: number;
-
-  public constructor(...args: number[]) {
-    // hour, minute, second, millisecond
-    if (args.length === 4) {
-      this._tick = args[3]          // ms
-        + args[2] * 1000            // s
-        + args[1] * 60 * 1000       // m
-        + args[0] * 60 * 60 * 1000; // h
-    }
-    else if (args.length === 3) {
-      this._tick = args[2] * 1000   // s
-        + args[1] * 60 * 1000       // m
-        + args[0] * 60 * 60 * 1000; // h
-    }
-    else if (args.length === 2) {
-      this._tick = args[1] * 60 * 1000  // m
-        + args[0] * 60 * 60 * 1000;     // h
-    }
-    else if (args.length === 1) {
-      this._tick = args[0];
-    }
-    else if (args.length === 0) {
-      const curr = new Date();
-      this._tick = curr.getMilliseconds()
-        + curr.getSeconds() * 1000
-        + curr.getMinutes() * 60 * 1000
-        + curr.getHours() * 60 * 60 * 1000;
-    }
-    else {
-      throw new Error("입력값이 잘못 되었습니다.");
-    }
   }
 
   public getDays(): number {

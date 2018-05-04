@@ -15,46 +15,6 @@ import {ExcelXmlWorkbook} from "./XmlFile/ExcelXmlWorkbook";
 import {ExcelXmlWorkbookRels} from "./XmlFile/ExcelXmlWorkbookRels";
 
 export class ExcelWorkbook {
-  public static async loadAsync(pathOrBufferOrFile: any): Promise<ExcelWorkbook> {
-    let buffer: Buffer;
-    if (typeof pathOrBufferOrFile === "string") {
-      const fd = fs.openSync(pathOrBufferOrFile, "r");
-      buffer = Buffer.alloc(fs.fstatSync(fd).size);
-      fs.readSync(fd, buffer, 0, buffer.length, 0);
-      fs.closeSync(fd);
-    }
-    else if (pathOrBufferOrFile instanceof Buffer) {
-      buffer = pathOrBufferOrFile;
-    }
-    else {
-      buffer = await new Promise<Buffer>(resolve => {
-        const fileReader = new FileReader();
-        fileReader.onload = function (): void {
-          resolve(Buffer.from(this.result));
-        };
-        fileReader.readAsArrayBuffer(pathOrBufferOrFile);
-      });
-    }
-
-    const zip = await new JSZip().loadAsync(buffer);
-    const sheetNames = (await ExcelXmlWorkbook.parseAsync(await zip.file("xl/workbook.xml").async("text"))).sheetNames;
-    const sharedStrings = (await ExcelXmlSharedStrings.parseAsync(await zip.file("xl/sharedStrings.xml").async("text"))).strings;
-    const styles = (await ExcelXmlStyles.parseAsync(await zip.file("xl/styles.xml").async("text"))).styles;
-
-    const result = new ExcelWorkbook();
-    for (let i = 0; i < sheetNames.length; i++) {
-      result.worksheets.push((
-        await ExcelXmlSheet.parseAsync(
-          sheetNames[i],
-          await zip.file(`xl/worksheets/sheet${i + 1}.xml`).async("text"),
-          sharedStrings,
-          styles
-        )
-      ).sheet);
-    }
-    return result;
-  }
-
   public worksheets: ExcelWorksheet[];
 
   public get json(): { [sheet: string]: { [column: string]: any }[] } {
@@ -110,6 +70,46 @@ export class ExcelWorkbook {
 
   public constructor() {
     this.worksheets = [];
+  }
+
+  public static async loadAsync(pathOrBufferOrFile: any): Promise<ExcelWorkbook> {
+    let buffer: Buffer;
+    if (typeof pathOrBufferOrFile === "string") {
+      const fd = fs.openSync(pathOrBufferOrFile, "r");
+      buffer = Buffer.alloc(fs.fstatSync(fd).size);
+      fs.readSync(fd, buffer, 0, buffer.length, 0);
+      fs.closeSync(fd);
+    }
+    else if (pathOrBufferOrFile instanceof Buffer) {
+      buffer = pathOrBufferOrFile;
+    }
+    else {
+      buffer = await new Promise<Buffer>(resolve => {
+        const fileReader = new FileReader();
+        fileReader.onload = function (): void {
+          resolve(Buffer.from(this.result));
+        };
+        fileReader.readAsArrayBuffer(pathOrBufferOrFile);
+      });
+    }
+
+    const zip = await new JSZip().loadAsync(buffer);
+    const sheetNames = (await ExcelXmlWorkbook.parseAsync(await zip.file("xl/workbook.xml").async("text"))).sheetNames;
+    const sharedStrings = (await ExcelXmlSharedStrings.parseAsync(await zip.file("xl/sharedStrings.xml").async("text"))).strings;
+    const styles = (await ExcelXmlStyles.parseAsync(await zip.file("xl/styles.xml").async("text"))).styles;
+
+    const result = new ExcelWorkbook();
+    for (let i = 0; i < sheetNames.length; i++) {
+      result.worksheets.push((
+        await ExcelXmlSheet.parseAsync(
+          sheetNames[i],
+          await zip.file(`xl/worksheets/sheet${i + 1}.xml`).async("text"),
+          sharedStrings,
+          styles
+        )
+      ).sheet);
+    }
+    return result;
   }
 
   public createWorksheet(name: string): ExcelWorksheet {

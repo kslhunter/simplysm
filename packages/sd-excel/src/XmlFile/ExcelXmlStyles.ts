@@ -3,6 +3,9 @@ import {ExcelCellStyle} from "../ExcelCellStyle";
 import {ExcelCellStyleFontWeight} from "../ExcelEnums";
 
 export class ExcelXmlStyles {
+  public constructor(public styles: ExcelCellStyle[]) {
+  }
+
   public static async parseAsync(xmlString: string): Promise<ExcelXmlStyles> {
     return new Promise<any>((resolve, reject) => {
       XML.parseString(xmlString, (err, parsed) => {
@@ -57,9 +60,6 @@ export class ExcelXmlStyles {
         resolve(new ExcelXmlStyles(styles));
       });
     });
-  }
-
-  public constructor(public styles: ExcelCellStyle[]) {
   }
 
   public toString(): string {

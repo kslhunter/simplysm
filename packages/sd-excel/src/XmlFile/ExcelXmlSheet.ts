@@ -7,6 +7,11 @@ import {ExcelNumberFormat} from "../ExcelEnums";
 import {ExcelWorksheet} from "../ExcelWorksheet";
 
 export class ExcelXmlSheet {
+  public constructor(public sheet: ExcelWorksheet,
+                     private readonly _sharedStrings: string[],
+                     private readonly _styles: ExcelCellStyle[]) {
+  }
+
   public static async parseAsync(sheetName: string, xmlString: string, sharedStrings: string[], styles: ExcelCellStyle[]): Promise<ExcelXmlSheet> {
     return new Promise<any>((resolve, reject) => {
       XML.parseString(xmlString, (err, parsed) => {
@@ -106,11 +111,6 @@ export class ExcelXmlSheet {
       colAddress = colAddress.replace(new RegExp(i.toString(26), "g"), String.fromCharCode(i + 64));
     }
     return colAddress + (rowIndex + 1).toString();
-  }
-
-  public constructor(public sheet: ExcelWorksheet,
-                     private readonly _sharedStrings: string[],
-                     private readonly _styles: ExcelCellStyle[]) {
   }
 
   public toString(): string {

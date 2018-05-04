@@ -1,14 +1,4 @@
 export class DateOnly {
-  public static parse(value: string | undefined): DateOnly | undefined {
-    if (value == undefined) {
-      return undefined;
-    }
-    else if (Date.parse(value)) {
-      return new Date(Date.parse(value)).toDateOnly();
-    }
-    throw new Error("일자 형식이 잘못되었습니다.");
-  }
-
   private readonly _tick: number;
 
   public constructor(yearOrTick?: number, month?: number, date?: number) {
@@ -24,6 +14,16 @@ export class DateOnly {
     else {
       throw new Error("@simplism/sd-core :: DateOnly :: 입력값이 잘못되었습니다.");
     }
+  }
+
+  public static parse(value: string | undefined): DateOnly | undefined {
+    if (value == undefined) {
+      return undefined;
+    }
+    else if (Date.parse(value)) {
+      return new Date(Date.parse(value)).toDateOnly();
+    }
+    throw new Error("일자 형식이 잘못되었습니다.");
   }
 
   public getFullYear(): number {

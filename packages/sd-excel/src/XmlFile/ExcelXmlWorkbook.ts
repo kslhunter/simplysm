@@ -1,6 +1,9 @@
 import * as XML from "xml2js";
 
 export class ExcelXmlWorkbook {
+  public constructor(public sheetNames: string[]) {
+  }
+
   public static async parseAsync(xmlString: string): Promise<ExcelXmlWorkbook> {
     return new Promise<any>((resolve, reject) => {
       XML.parseString(xmlString, (err, parsed) => {
@@ -12,9 +15,6 @@ export class ExcelXmlWorkbook {
         resolve(new ExcelXmlWorkbook(sheetNames));
       });
     });
-  }
-
-  public constructor(public sheetNames: string[]) {
   }
 
   public toString(): string {

@@ -15,6 +15,19 @@ import {QueryableStoredProcedure} from "./QueryableStoredProcedure";
 import {QueryBuilder} from "./QueryBuilder";
 
 export abstract class Database {
+  public logger = new Logger("@simplism/sd-orm", "Database");
+  private _conn?: ConnectionPool;
+  private _trans?: Transaction;
+  private _preparedQueries: string[] = [];
+
+  public get hasTransaction(): boolean {
+    return !!this._trans;
+  }
+
+  protected constructor(public config: IConnectionConfig,
+                        public migrations: string[]) {
+  }
+
   public static async connect<T extends Database, R>(dbContextType: Type<T>, fn: (dbContext: T) => Promise<R>): Promise<R> {
     return this._connectFn(dbContextType, async dbContext =>
       dbContext._transFn(async () =>
@@ -74,21 +87,6 @@ export abstract class Database {
         reject(err);
       }
     });
-  }
-
-  public logger = new Logger("@simplism/sd-orm", "Database");
-
-  private _conn?: ConnectionPool;
-  private _trans?: Transaction;
-
-  private _preparedQueries: string[] = [];
-
-  public get hasTransaction(): boolean {
-    return !!this._trans;
-  }
-
-  protected constructor(public config: IConnectionConfig,
-                        public migrations: string[]) {
   }
 
   public unionAll<T>(args: Queryable<T>[]): Queryable<T> {

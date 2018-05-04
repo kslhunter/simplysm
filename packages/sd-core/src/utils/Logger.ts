@@ -15,6 +15,17 @@ export class Logger {
 
   private static readonly _groupMap = new Map<string, ILoggerConfig>();
   private static _lastId = 0;
+  private readonly _groupName: string;
+  private readonly _name: string;
+  private readonly _id: number;
+
+  public constructor(groupName: string, name: string | object) {
+    this._groupName = groupName;
+    this._name = typeof name === "string" ? name : name.constructor.name;
+
+    Logger._lastId++;
+    this._id = Logger._lastId;
+  }
 
   public static setGroupConfig(groupName?: string, config?: Partial<ILoggerConfig>): void {
     if (groupName) {
@@ -47,18 +58,6 @@ export class Logger {
       ...this._defaultConfig,
       ...config
     };
-  }
-
-  private readonly _groupName: string;
-  private readonly _name: string;
-  private readonly _id: number;
-
-  public constructor(groupName: string, name: string | object) {
-    this._groupName = groupName;
-    this._name = typeof name === "string" ? name : name.constructor.name;
-
-    Logger._lastId++;
-    this._id = Logger._lastId;
   }
 
   public log(...logs: any[]): void {

@@ -1,4 +1,10 @@
 export class Uuid {
+  private readonly _uuid: string;
+
+  public constructor(uuid: string) {
+    this._uuid = uuid;
+  }
+
   public static newUuid(): Uuid {
     const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
       const r = Math.random() * 16 | 0;
@@ -8,12 +14,6 @@ export class Uuid {
     });
 
     return new Uuid(uuid);
-  }
-
-  private readonly _uuid: string;
-
-  public constructor(uuid: string) {
-    this._uuid = uuid;
   }
 
   public toString(): string {
