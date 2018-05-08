@@ -2,13 +2,12 @@ import {Injectable} from "@angular/core";
 
 @Injectable()
 export class SdToastProvider {
-  private readonly _$container: JQuery;
-
-  // private _containerElement: HTMLDivElement;
+  private readonly _containerEl: HTMLElement;
 
   public constructor() {
-    this._$container = $("<div class='_sd-toast-container'></div>");
-    $("body").append(this._$container);
+    this._containerEl = document.createElement("div");
+    this._containerEl.classList.add("_sd-toast-container");
+    document.body.appendChild(this._containerEl);
   }
 
   public show(message: string): void {
@@ -36,34 +35,25 @@ export class SdToastProvider {
   }
 
   private _show(theme: string | undefined, message: string): void {
-    const existsToastElement = this._$container.children().toArray()
-      .single(item => $(item).data("theme") === theme && $(item).data("message") === message);
-    if (existsToastElement) {
-      clearTimeout($(existsToastElement).data("timeoutId"));
-      $(existsToastElement).remove();
+    const existsToastEl = this._containerEl.find(item => item.getAttribute("sd-theme") === theme && item.getAttribute("sd-message") === message);
+    if (existsToastEl) {
+      clearTimeout(Number(existsToastEl.getAttribute("sd-timeout")));
+      existsToastEl.remove();
     }
 
-    const $toast = $("<div class='_sd-toast'></div>");
+    const toastEl = document.createElement("div");
+    toastEl.classList.add("_sd-toast");
+
     if (theme) {
-      $toast.addClass(`_theme-${theme}`);
+      toastEl.setAttribute("sd-theme", theme);
     }
-    $toast.html(`<div>${message.replace(/\n/g, "<br/>")}</div>`);
-    $toast.data({theme, message});
-    this._$container.prepend($toast);
+    toastEl.setAttribute("sd-message", message);
+    toastEl.innerHTML = `<div>${message.replace(/\n/g, "<br/>")}</div>`;
+    this._containerEl.prependChild(toastEl);
 
-    $toast.data("timeoutId", window.setTimeout(
-      () => {
-        $toast.data("timeoutId", window.setTimeout(
-          () => {
-            $toast.remove();
-          },
-          500
-        ));
-        $toast.removeClass("_open");
-      },
+    toastEl.setAttribute("sd-timeout", window.setTimeout(
+      () => toastEl.remove(),
       5000
-    ));
-
-    $toast.addClass("_open");
+    ).toString());
   }
 }

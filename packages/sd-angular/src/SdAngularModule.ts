@@ -135,8 +135,10 @@ providers.push({provide: ErrorHandler, useClass: SimgularErrorHandler} as any);
 export class SdAngularModule {
   public constructor() {
     if (process.env.NODE_ENV === "production") {
-      window.addEventListener("popstate", () => {
-        location.reload(true);
+      window.addEventListener("popstate", event => {
+        /*location.reload(true);*/
+        event.preventDefault();
+        event.stopPropagation();
       });
     }
   }
