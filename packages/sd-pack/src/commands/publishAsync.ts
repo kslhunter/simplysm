@@ -43,6 +43,9 @@ export async function publishAsync(argv: { config: string }): Promise<void> {
   await Promise.all(promises);
 
   // git push
+  child_process.spawnSync("git", ["commit", "-m", "publish"], {
+    shell: true
+  });
   child_process.spawnSync("git", ["push"], {
     shell: true
   });

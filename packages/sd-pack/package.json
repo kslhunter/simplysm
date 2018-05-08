@@ -1,6 +1,6 @@
 {
   "name": "@simplism/sd-pack",
-  "version": "6.1.26",
+  "version": "6.1.27",
   "description": "Simplism Builder Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -11,8 +11,8 @@
     "sd-pack": "./dist/bin.js"
   },
   "dependencies": {
-    "@simplism/sd-core": "^6.1.26",
-    "@simplism/sd-storage": "^6.1.26",
+    "@simplism/sd-core": "^6.1.27",
+    "@simplism/sd-storage": "^6.1.27",
     "angular2-template-loader": "^0.6.2",
     "chokidar": "^2.0.3",
     "copy-webpack-plugin": "^4.5.1",

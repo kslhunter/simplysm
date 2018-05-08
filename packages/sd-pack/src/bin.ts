@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import {Logger} from "@simplism/sd-core";
 import * as yargs from "yargs";
 import {buildAsync} from "./commands/buildAsync";
