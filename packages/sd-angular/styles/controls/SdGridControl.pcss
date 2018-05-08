@@ -1,0 +1,11 @@
+sd-grid {
+  display: block;
+  @apply --clear-fix;
+  margin: calc(var(--padding-default) / -2);
+
+  & > sd-grid-item {
+    display: block;
+    float: left;
+    padding: calc(var(--padding-default) / 2);
+  }
+}

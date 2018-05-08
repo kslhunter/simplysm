@@ -1,56 +1,34 @@
-// tslint:disable:use-host-property-decorator
-
-import {ChangeDetectionStrategy, Component, Injector} from "@angular/core";
-import {NavigationStart, Router} from "@angular/router";
-
-@Component({
-  selector: "sd-sidebar-container",
-  template: `
-    <div class="_backdrop"
-         (click)="toggled = false"></div>
-    <ng-content></ng-content>`,
-  host: {
-    "[class._toggled]": "toggled"
-  },
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class SdSidebarContainerControl {
-  private _toggled = false;
-
-  public get toggled(): boolean {
-    return this._toggled;
-  }
-
-  public set toggled(value: boolean) {
-    if (this._toggled !== value) {
-      this._toggled = value;
-    }
-  }
-
-  public constructor(private readonly _router: Router) {
-    this._router.events.subscribe(value => {
-      if (value instanceof NavigationStart) {
-        this.toggled = false;
-      }
-    });
-  }
-}
+import {ChangeDetectionStrategy, Component, HostBinding} from "@angular/core";
+import {SdDockContainerControl, SdDockControl} from "./SdDockControl";
 
 @Component({
   selector: "sd-sidebar",
   template: `
     <ng-content></ng-content>`,
-  host: {
-    "[class._toggled]": "toggled"
-  },
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{provide: SdDockControl, useExisting: SdSidebarControl}]
 })
-export class SdSidebarControl {
-  public get toggled(): boolean {
-    // tslint:disable-next-line:no-null-keyword
-    return (this._injector.get(SdSidebarContainerControl, null as any, undefined) || {toggled: false}).toggled;
+export class SdSidebarControl extends SdDockControl {
+  public constructor() {
+    super();
+    this.position = "left";
+    this.width = 280;
   }
+}
 
-  public constructor(private readonly _injector: Injector) {
+@Component({
+  selector: "sd-sidebar-container",
+  template: `
+    <ng-content></ng-content>`,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{provide: SdDockContainerControl, useExisting: SdSidebarContainerControl}]
+})
+export class SdSidebarContainerControl extends SdDockContainerControl {
+  @HostBinding("attr.sd-toggled")
+  public toggled?: boolean;
+
+  @HostBinding("ngIf")
+  public get ngIf(): boolean {
+    return !this.toggled;
   }
 }

@@ -1,5 +1,4 @@
-import {Exception} from "../../../sd-core/src/exceptions/Exception";
-import {Safe} from "../../../sd-core/src/utils/Safe";
+import {Exception, Safe} from "@simplism/sd-core";
 import {
   IColumnDefinition,
   IFunctionDefinition,
@@ -152,7 +151,7 @@ END`;
   },
 
   _dataLength(col: { dataType: DataType | string; length?: number }): string {
-    if (typeof col.dataType === "string" && col.dataType.includes("(")) {
+    if (typeof col.dataType === "string" && col.dataType.includes("(")) { // tslint:disable-line:strict-type-predicates
       return "";
     }
     else {

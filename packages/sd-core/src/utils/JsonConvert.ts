@@ -12,9 +12,8 @@ export interface IJsonConvertStringifyOption {
   replacer?(key: any, value: any): any;
 }
 
-// tslint:disable-next-line:variable-name
-export const JsonConvert = {
-  stringify(obj: any, option?: IJsonConvertStringifyOption): string {
+export class JsonConvert {
+  public static stringify(obj: any, option?: IJsonConvertStringifyOption): string {
     if (obj === undefined) {
       return "undefined";
     }
@@ -58,9 +57,9 @@ export const JsonConvert = {
       new Logger("@simplism/core", "JsonConvert.stringify").error(obj);
       throw e;
     }
-  },
+  }
 
-  parse(str: string | undefined): any {
+  public static parse(str: string | undefined): any {
     if (str === undefined || str === "undefined") {
       return;
     }
@@ -91,4 +90,4 @@ export const JsonConvert = {
       return value;
     });
   }
-};
+}

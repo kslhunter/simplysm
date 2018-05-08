@@ -7,6 +7,9 @@ export class ExcelWorksheet {
   private readonly _columns: ExcelColumn[] = [];
   private readonly _cells: ExcelCell[][] = [];
 
+  public constructor(public name: string) {
+  }
+
   public get cells(): ExcelCell[][] {
     return this._cells;
   }
@@ -26,9 +29,6 @@ export class ExcelWorksheet {
 
   public get cols(): ExcelColumn[] {
     return this._columns;
-  }
-
-  public constructor(public name: string) {
   }
 
   public cell(row: number, col: number): ExcelCell {

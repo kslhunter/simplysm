@@ -1,10 +1,8 @@
 import * as fs from "fs";
-import {Exception} from "../../../sd-core/src/exceptions/Exception";
-import {Logger} from "../../../sd-core/src/utils/Logger";
+import {Exception, Logger} from "@simplism/sd-core";
 import {IStorage} from "../common/IStorage";
 import {IFtpConnectionConfig} from "./IFtpConnectionConfig";
-
-const JSFtp = require("jsftp");
+import * as JSFtp from "jsftp";
 
 export class FtpStorage implements IStorage {
   private readonly _logger = new Logger("@simplism/sd-storage", "FtpStorage");

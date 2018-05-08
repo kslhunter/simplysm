@@ -1,0 +1,30 @@
+sd-date-range-picker {
+  & > div:first-child {
+    display: inline-block;
+    @include clearfix();
+
+    & > span {
+      float: left;
+      padding: var(--padding-sm) 0;
+      width: 8%;
+      text-align: center;
+    }
+
+    & > sd-date-picker {
+      float: left;
+      width: 46%;
+    }
+  }
+
+  & > div:last-child {
+    display: inline-block;
+
+    & > div {
+      vertical-align: top;
+
+      + div {
+        margin-left: var(--padding-sm);
+      }
+    }
+  }
+}

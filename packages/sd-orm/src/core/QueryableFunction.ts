@@ -1,4 +1,4 @@
-import {Type} from "../../../sd-core/src/types/Type";
+import {Type} from "@simplism/sd-core";
 import {IFunctionDefinition} from "../common/Definitions";
 import {functionMetadataSymbol} from "../common/FunctionDecorators";
 import {QueryHelper} from "../common/QueryHelper";

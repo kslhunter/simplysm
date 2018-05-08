@@ -1,32 +1,43 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  HostBinding,
+  HostListener,
+  Input,
+  Output
+} from "@angular/core";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {SdComponentBase} from "../bases/SdComponentBase";
 
 @Component({
   selector: "sd-checkbox",
   template: `
-    <label [ngClass]="styleClass"
-           tabindex="0">
+    <label tabindex="0">
       <input type="checkbox"
              [checked]="value"
              [disabled]="disabled"
-             (change)="onChange($event)"/>
-      <ng-container *ngIf="contentWrapper.innerHTML.trim()">&nbsp;</ng-container>
-      <span #contentWrapper><ng-content></ng-content></span>
+             (change)="onInputChange($event)"/>
+      <ng-content></ng-content>
     </label>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{provide: SdComponentBase, useExisting: SdCheckboxControl}]
 })
-export class SdCheckboxControl {
-  @Input() public value = false;
-  @Output() public readonly valueChange: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Input() public disabled = false;
+export class SdCheckboxControl extends SdComponentBase {
+  @Input()
+  @SdTypeValidate({type: Boolean, notnull: true})
+  @HostBinding("attr.sd-checked")
+  public value = false;
 
-  public get styleClass(): string[] {
-    return [
-      this.value ? "_checked" : "",
-      this.disabled ? "_disabled" : ""
-    ].filter(item => item);
-  }
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-disabled")
+  public disabled?: boolean;
 
-  public onChange(event: Event): void {
+  @Output()
+  public readonly valueChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+
+  public onInputChange(event: Event): void {
     const element = event.target as HTMLInputElement;
     this.value = element.checked;
     this.valueChange.emit(element.checked);

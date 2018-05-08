@@ -1,17 +1,17 @@
-// tslint:disable-next-line:variable-name
-export const Safe = {
-  obj<T>(value: T | undefined): Partial<T> {
-    if (value == undefined) {
+export class Safe {
+  public static obj<T>(value: T | undefined): Partial<T> {
+    if (value === undefined) {
       return {};
     }
 
     return value;
-  },
-  arr<T>(value: T[] | undefined): T[] {
-    if (value == undefined) {
+  }
+
+  public static arr<T>(value: T[] | undefined): T[] {
+    if (value === undefined) {
       return [];
     }
 
     return value;
   }
-};
+}

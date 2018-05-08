@@ -1,0 +1,53 @@
+sd-form {
+  & > form {
+    display: block;
+    margin: calc(var(--padding-default) / -2);
+
+    & > sd-form-item {
+      display: block;
+      padding: calc(var(--padding-default) / 2);
+
+      & > label {
+        display: block;
+        margin-bottom: calc(var(--padding-default) / 2);
+      }
+    }
+  }
+
+  &[sd-layout=inline] > form {
+    & > sd-form-item {
+      display: inline-block;
+
+      & > label {
+        display: inline-block;
+        vertical-align: middle;
+        margin-bottom: 0;
+      }
+
+      & > div {
+        display: inline-block;
+        vertical-align: middle;
+      }
+    }
+  }
+
+  &[sd-layout=table] > form {
+    display: table;
+
+    & > sd-form-item {
+      display: table-row;
+
+      & > label {
+        display: table-cell;
+        vertical-align: middle;
+        margin-bottom: 0;
+      }
+
+      & > div {
+        display: table-cell;
+        vertical-align: middle;
+        width: 100%;
+      }
+    }
+  }
+}

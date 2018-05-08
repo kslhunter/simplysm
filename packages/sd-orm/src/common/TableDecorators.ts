@@ -1,8 +1,4 @@
-import {Exception} from "../../../sd-core/src/exceptions/Exception";
-import {Type} from "../../../sd-core/src/types/Type";
-import {Uuid} from "../../../sd-core/src/types/Uuid";
-import {LambdaParser} from "../../../sd-core/src/utils/LambdaParser";
-import {Safe} from "../../../sd-core/src/utils/Safe";
+import {Exception, LambdaParser, Safe, Type, Uuid} from "@simplism/sd-core";
 import {ITableDefinition} from "./Definitions";
 import {DataType, IndexType, OrderByRule} from "./Enums";
 import {QueryHelper} from "./QueryHelper";

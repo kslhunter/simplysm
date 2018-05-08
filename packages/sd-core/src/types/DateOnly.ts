@@ -16,7 +16,7 @@ export class DateOnly {
     }
   }
 
-  public static parse(value: string | undefined): DateOnly | undefined {
+  public static parse(value: string | undefined | null): DateOnly | undefined {
     if (value == undefined) {
       return undefined;
     }

@@ -4,70 +4,39 @@ import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {library} from "@fortawesome/fontawesome-svg-core";
 import {far} from "@fortawesome/free-regular-svg-icons";
 import {fas} from "@fortawesome/free-solid-svg-icons";
-import "jquery";
-import {SdBarcodeControl} from "./controls/SdBarcodeControl";
-import {SdBusyControl} from "./controls/SdBusyControl";
 import {SdButtonControl} from "./controls/SdButtonControl";
-import {SdButtonGroupControl} from "./controls/SdButtonGroupControl";
-import {SdCardControl} from "./controls/SdCardControl";
-import {CircleControl, SdChartDonutControl, SdChartDonutItemControl} from "./controls/SdChartDonutControl";
-import {SdCheckboxControl} from "./controls/SdCheckboxControl";
-import {SdComboboxControl} from "./controls/SdComboboxControl";
+import {SdFormControl, SdFormItemControl} from "./controls/SdFormControl";
+import {SdTextfieldControl} from "./SdTextfieldControl";
+import {SdTextareaControl} from "./controls/SdTextareaControl";
+import {SdSidebarContainerControl, SdSidebarControl} from "./controls/SdSidebarControl";
+import {SdTopbarContainerControl, SdTopbarControl} from "./controls/SdTopbarControl";
+import {SdListControl, SdListItemControl} from "./controls/SdListControl";
+import {SdPaneControl} from "./controls/SdPaneControl";
 import {SdDatePickerControl} from "./controls/SdDatePickerControl";
 import {SdDateRangePickerControl} from "./controls/SdDateRangePickerControl";
-import {SdDrawingControl} from "./controls/SdDrawingControl";
-import {SdDropdownControl} from "./controls/SdDropdownControl";
-import {SdEnumControl, SdEnumItemControl} from "./controls/SdEnumControl";
-import {SdExcelMappingControl} from "./controls/SdExcelMappingControl";
-import {SdFormControl, SdFormItemControl} from "./controls/SdFormControl";
-import {SdGridControl, SdGridItemControl} from "./controls/SdGridControl";
-import {SdIconControl} from "./controls/SdIcon";
-import {SdListControl, SdListItemControl} from "./controls/SdListControl";
 import {SdNoteControl} from "./controls/SdNoteControl";
+import {SdGridControl, SdGridItemControl} from "./controls/SdGridControl";
 import {SdPaginationControl} from "./controls/SdPaginationControl";
-import {SdPaneControl} from "./controls/SdPaneControl";
-import {SdProgressControl, SdProgressItemControl} from "./controls/SdProgressControl";
 import {OptionControl, SdSelectControl} from "./controls/SdSelectControl";
-import {SdSidebarContainerControl, SdSidebarControl} from "./controls/SdSidebarControl";
-import {SdStarsControl} from "./controls/SdStarsControl";
+import {SdCheckboxControl} from "./controls/SdCheckboxControl";
 import {SdTabControl, SdTabItemControl} from "./controls/SdTabControl";
-import {
-  SdCellButtonControl,
-  SdCellCheckboxControl,
-  SdCellControl,
-  SdCellDatePickerControl,
-  SdCellSelectControl,
-  SdCellTextFieldControl,
-  SdColumnSelectorControl,
-  SdTableControl
-} from "./controls/SdTableControl";
-import {SdTextAreaControl} from "./controls/SdTextAreaControl";
-import {SdTextFieldControl} from "./controls/SdTextFieldControl";
-import {
-  SdTopbarButtonControl,
-  SdTopbarContainerControl,
-  SdTopbarControl,
-  SdTopbarFileButtonControl
-} from "./controls/SdTopbarControl";
 import {SdViewerControl, SdViewerItemControl} from "./controls/SdViewerControl";
-import {SdButton2Control} from "./controls2/SdButton2Control";
-import {SdDockContainerControl, SdDockControl} from "./controls2/SdDockControl";
-import {SdSheetColumnControl, SdSheetColumnHeadControl, SdSheetControl} from "./controls2/SdSheetControl";
-import {SdTextfieldControl} from "./controls2/SdTextfieldControl";
-import {SdModalControl} from "./entry-controls/SdModalControl";
-import {SimgularHelpers} from "./helpers/SimgularHelpers";
-import {SdSheetColumnConfigModal} from "./modals/SdSheetColumnConfigModal";
-import {SdBusyProvider} from "./providers/SdBusyProvider";
-import {SdCameraBarcodeScannerProvider} from "./providers/SdCameraBarcodeScannerProvider";
-import {SdCanDeactivateGuardProvider} from "./providers/SdCanDeactivateGuardProvider";
-import {SdFocusProvider} from "./providers/SdFocusProvider";
-import {SdHidBarcodeScannerProvider} from "./providers/SdHidBarcodeScannerProvider";
-import {SdKeyboardPanelProvider} from "./providers/SdKeyboardPanelProvider";
-import {SdLocalStorageProvider} from "./providers/SdLocalStorageProvider";
+import {SdBarcodeControl} from "./controls/SdBarcodeControl";
+import {SdEnumControl, SdEnumItemControl} from "./controls/SdEnumControl";
+import {SdChartDonutControl, SdChartDonutItemControl} from "./controls/SdChartDonutControl";
+import {SdBusyContainerControl} from "./controls/SdBusyContainerControl";
+import {SdDropdownControl} from "./controls/SdDropdownControl";
+import {SdComboboxControl} from "./controls/SdComboboxControl";
+import {SdIconControl} from "./controls/SdIconControl";
+import {SdDockContainerControl, SdDockControl} from "./controls/SdDockControl";
 import {SdModalProvider} from "./providers/SdModalProvider";
-import {SdPrintProvider} from "./providers/SdPrintProvider";
+import {SdBusyProvider} from "./providers/SdBusyProvider";
 import {SdServiceProvider} from "./providers/SdServiceProvider";
 import {SdToastProvider} from "./providers/SdToastProvider";
+import {SdLocalStorageProvider} from "./providers/SdLocalStorageProvider";
+import {SdPrintProvider} from "./providers/SdPrintProvider";
+import {SdCanDeactivateGuardProvider} from "./providers/SdCanDeactivateGuardProvider";
+import {SdModalControl} from "./controls/SdModalControl";
 
 library.add(fas, far);
 
@@ -77,42 +46,30 @@ const modules: Type<any>[] = [
 ];
 
 const controls: Type<any>[] = [
-  SdButtonControl, SdButtonGroupControl,
+  SdButtonControl,
   SdFormControl, SdFormItemControl,
-  SdTextFieldControl,
-  SdTextAreaControl,
+  SdTextfieldControl,
+  SdTextareaControl,
   SdSidebarContainerControl, SdSidebarControl,
-  SdTopbarContainerControl, SdTopbarControl, SdTopbarButtonControl, SdTopbarFileButtonControl,
+  SdTopbarContainerControl, SdTopbarControl,
   SdListControl, SdListItemControl,
   SdPaneControl,
-  SdCardControl,
   SdDatePickerControl, SdDateRangePickerControl,
-  SdStarsControl,
-  SdDrawingControl,
   SdNoteControl,
   SdGridControl, SdGridItemControl,
-  SdTableControl, SdCellControl, SdCellTextFieldControl, SdCellButtonControl, SdCellDatePickerControl, SdCellSelectControl, SdCellCheckboxControl, SdColumnSelectorControl,
   SdPaginationControl,
-  SdSelectControl,
+  SdSelectControl, OptionControl,
   SdCheckboxControl,
   SdTabControl, SdTabItemControl,
   SdViewerControl, SdViewerItemControl,
   SdBarcodeControl,
   SdEnumControl, SdEnumItemControl,
-  SdProgressControl, SdProgressItemControl,
   SdChartDonutControl, SdChartDonutItemControl,
-  SdExcelMappingControl,
-  SdBusyControl,
+  SdBusyContainerControl,
   SdDropdownControl,
-  SdComboboxControl,
-  SdIconControl,
-
-  CircleControl, OptionControl,
-
-  SdButton2Control,
   SdDockContainerControl, SdDockControl,
-  SdSheetControl, SdSheetColumnControl, SdSheetColumnHeadControl,
-  SdTextfieldControl
+  SdComboboxControl,
+  SdIconControl
 ];
 
 const providers: Type<any>[] = [
@@ -121,17 +78,12 @@ const providers: Type<any>[] = [
   SdServiceProvider,
   SdToastProvider,
   SdLocalStorageProvider,
-  SdFocusProvider,
   SdPrintProvider,
-  SdHidBarcodeScannerProvider,
-  SdCameraBarcodeScannerProvider,
-  SdKeyboardPanelProvider,
   SdCanDeactivateGuardProvider
 ];
 
 const entryControls: Type<any>[] = [
-  SdModalControl,
-  SdSheetColumnConfigModal
+  SdModalControl
 ];
 
 const directives: Type<any>[] = [];
@@ -187,15 +139,5 @@ export class SdAngularModule {
         location.reload(true);
       });
     }
-
-    let timeout: number;
-    window.addEventListener("resize", () => {
-      SimgularHelpers.stopDetectElementChanges();
-
-      window.clearTimeout(timeout);
-      timeout = window.setTimeout(() => {
-        SimgularHelpers.rerunDetectElementChanges();
-      }, 200);
-    });
   }
 }

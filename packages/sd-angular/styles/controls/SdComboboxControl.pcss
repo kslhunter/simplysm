@@ -1,0 +1,78 @@
+sd-combobox {
+  position: relative;
+  display: block;
+  width: 100%;
+
+  & > sd-textfield input {
+    padding-right: calc(var(--padding-sm) * 2 + var(--font-size-default) * (18 / 14));
+  }
+
+  & > div {
+    position: absolute;
+    display: block;
+    top: 0;
+    right: 0;
+    padding: var(--padding-sm);
+    pointer-events: none;
+  }
+
+  &[sd-size=xxs] {
+    & > sd-textfield > input {
+      padding-right: calc(var(--font-size-sm) * (18 / 14));
+    }
+
+    & > div {
+      padding: 0;
+    }
+  }
+
+  &[sd-size=xs] {
+    & > sd-textfield > input {
+      padding-right: calc(var(--padding-xxs) * 2 + var(--font-size-sm) * (18 / 14));
+    }
+
+    & > div {
+      padding: var(--padding-xxs);
+    }
+  }
+
+  &[sd-size=sm] {
+    & > sd-textfield > input {
+      padding-right: calc(var(--padding-xs) * 2 + var(--font-size-default) * (18 / 14));
+    }
+
+    & > div {
+      padding: var(--padding-xs);
+    }
+  }
+
+  &[sd-size=lg] {
+    & > sd-textfield > input {
+      padding-right: calc(var(--padding-default) * 2 + var(--font-size-default) * (18 / 14));
+    }
+
+    & > div {
+      padding: var(--padding-default);
+    }
+  }
+
+  &[sd-size=xl] {
+    & > sd-textfield > input {
+      padding-right: calc(var(--padding-lg) * 2 + var(--font-size-lg) * (18 / 14));
+    }
+
+    & > div {
+      padding: var(--padding-lg);
+    }
+  }
+
+  &[sd-size=xxl] {
+    & > sd-textfield > input {
+      padding-right: calc(var(--padding-xl) * 2 + var(--font-size-lg) * (18 / 14));
+    }
+
+    & > div {
+      padding: var(--padding-xl);
+    }
+  }
+}

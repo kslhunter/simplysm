@@ -1,60 +1,60 @@
+import {ImposibleException} from "@simplism/sd-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import {SdClientPackageBuilder} from "../builders/SdClientPackageBuilder";
 import {SdLibraryPackageBuilder} from "../builders/SdLibraryPackageBuilder";
 import {SdLocalUpdater} from "../builders/SdLocalUpdater";
 import {SdServerPackageBuilder} from "../builders/SdServerPackageBuilder";
+import {ISdPackageBuilder} from "../commons/ISdPackageBuilder";
+import {SdPackConfigType} from "../commons/configs";
 
-export async function buildAsync(argv: { watch: boolean; env: { [key: string]: any }; package: string }): Promise<void> {
-  const promiseList: Promise<void>[] = [];
-  if (
-    argv.watch &&
-    path.basename(process.cwd()) !== "simplism" &&
-    fs.existsSync(path.resolve(process.cwd(), "../simplism"))
-  ) {
-    const rootPackageJson = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
-    const dependencySimplismPackageNameList = [
-      ...rootPackageJson.dependencies ? Object.keys(rootPackageJson.dependencies) : [],
-      ...rootPackageJson.devDependencies ? Object.keys(rootPackageJson.devDependencies) : []
-    ].filter(item => item.startsWith("@simplism")).map(item => item.slice(10));
+export interface IBuildArguments {
+  watch: boolean;
+  config: string;
+  package?: string;
+  localUpdateProject?: string;
+}
 
-    for (const dependencySimplismPackageName of dependencySimplismPackageNameList) {
-      promiseList.push(new SdLocalUpdater(dependencySimplismPackageName).runAsync(true));
+export async function buildAsync(argv: IBuildArguments): Promise<void> {
+  const promises: Promise<void>[] = [];
+
+  if (argv.localUpdateProject) {
+    const localUpdateProjectJson = fs.readJsonSync(path.resolve(process.cwd(), `../${argv.localUpdateProject}/package.json`));
+    const localUpdateProjectName: string = localUpdateProjectJson.name;
+
+    const projectJson = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
+    const depLocalUpdatePackageNames = [
+      ...projectJson.dependencies ? Object.keys(projectJson.dependencies) : [],
+      ...projectJson.devDependencies ? Object.keys(projectJson.devDependencies) : []
+    ].filter(item => item.startsWith("@" + localUpdateProjectName)).map(item => item.slice(localUpdateProjectName.length + 2));
+
+    for (const depLocalUpdatePackageName of depLocalUpdatePackageNames) {
+      promises.push(new SdLocalUpdater(depLocalUpdatePackageName).runAsync(true));
     }
   }
 
-  const runBuild = (packageName: string) => {
-    if (!argv.watch) {
-      if (packageName.startsWith("client")) {
-        promiseList.push(new SdClientPackageBuilder(packageName).buildAsync(argv.env));
-      }
-      else if (packageName.startsWith("server")) {
-        promiseList.push(new SdServerPackageBuilder(packageName).buildAsync(argv.env));
-      }
-      else {
-        promiseList.push(new SdLibraryPackageBuilder(packageName).buildAsync());
-      }
+  const configs: SdPackConfigType[] = require(path.resolve(process.cwd(), argv.config));
+  for (const config of configs) {
+    if (argv.package && !argv.package.split(",").includes(config.name)) {
+      continue;
+    }
+
+    let builder: ISdPackageBuilder;
+    if (config.type === "library") {
+      builder = new SdLibraryPackageBuilder(config);
+    }
+    else if (config.type === "client") {
+      builder = new SdClientPackageBuilder(config);
+    }
+    else if (config.type === "server") {
+      builder = new SdServerPackageBuilder(config);
     }
     else {
-      if (packageName.startsWith("client")) {
-        promiseList.push(new SdClientPackageBuilder(packageName).watchAsync(argv.env));
-      }
-      else if (packageName.startsWith("server")) {
-        promiseList.push(new SdServerPackageBuilder(packageName).watchAsync(argv.env));
-      }
-      else {
-        promiseList.push(new SdLibraryPackageBuilder(packageName).watchAsync());
-      }
+      throw new ImposibleException();
     }
-  };
 
-  if (!argv.package) {
-    for (const packageName of fs.readdirSync(path.resolve(process.cwd(), "packages"))) {
-      runBuild(packageName);
-    }
+    promises.push(argv.watch ? builder.watchAsync() : builder.buildAsync());
   }
-  else {
-    runBuild(argv.package);
-  }
-  await Promise.all(promiseList);
+
+  await Promise.all(promises);
 }

@@ -1,0 +1,189 @@
+sd-button {
+  display: block;
+
+  & > button {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--trans-color-default);
+    padding: var(--padding-sm) var(--padding-default);
+    text-align: center;
+    background: white;
+    user-select: none;
+    font-weight: bold;
+    cursor: pointer;
+
+    &:active {
+      background: var(--color-grey-lighter);
+      border-color: var(--trans-color-dark);
+    }
+
+    &:hover,
+    &:focus {
+      outline: 1px solid var(--theme-primary-darker);
+      outline-offset: -1px;
+    }
+
+    &:disabled {
+      color: var(--text-color-lighter);
+      background: var(--color-grey-lightest);
+      cursor: default;
+      outline: none;
+    }
+  }
+
+  &[sd-inline=true] {
+    display: inline-block;
+  }
+
+  &[sd-inset=true] button {
+    border: none;
+  }
+
+  &[sd-theme=primary] > button {
+    background: var(--theme-primary-default);
+    border-color: var(--theme-primary-default);
+    color: white;
+
+    &:active {
+      background: var(--theme-primary-darker);
+      border-color: var(--theme-primary-darker);
+    }
+
+    &:hover,
+    &:focus {
+      outline: 1px solid var(--theme-primary-darker);
+      outline-offset: -1px;
+    }
+
+    &:disabled {
+      background: var(--theme-primary-light);
+      border-color: var(--theme-primary-light);
+      color: var(--text-color-white-lighter);
+      outline: none;
+    }
+  }
+
+  &[sd-theme=info] > button {
+    background: var(--theme-info-default);
+    border-color: var(--theme-info-default);
+    color: white;
+
+    &:active {
+      background: var(--theme-info-darker);
+      border-color: var(--theme-info-darker);
+    }
+
+    &:hover,
+    &:focus {
+      outline: 1px solid var(--theme-info-darker);
+      outline-offset: -1px;
+    }
+
+    &:disabled {
+      background: var(--theme-info-light);
+      border-color: var(--theme-info-light);
+      color: var(--text-color-white-lighter);
+      outline: none;
+    }
+  }
+
+  &[sd-theme=success] > button {
+    background: var(--theme-success-default);
+    border-color: var(--theme-success-default);
+    color: white;
+
+    &:active {
+      background: var(--theme-success-darker);
+      border-color: var(--theme-success-darker);
+    }
+
+    &:hover,
+    &:focus {
+      outline: 1px solid var(--theme-success-darker);
+      outline-offset: -1px;
+    }
+
+    &:disabled {
+      background: var(--theme-success-light);
+      border-color: var(--theme-success-light);
+      color: var(--text-color-white-lighter);
+      outline: none;
+    }
+  }
+
+  &[sd-theme=warning] > button {
+    background: var(--theme-warning-default);
+    border-color: var(--theme-warning-default);
+    color: white;
+
+    &:active {
+      background: var(--theme-warning-darker);
+      border-color: var(--theme-warning-darker);
+    }
+
+    &:hover,
+    &:focus {
+      outline: 1px solid var(--theme-warning-darker);
+      outline-offset: -1px;
+    }
+
+    &:disabled {
+      background: var(--theme-warning-light);
+      border-color: var(--theme-warning-light);
+      color: var(--text-color-white-lighter);
+      outline: none;
+    }
+  }
+
+  &[sd-theme=danger] > button {
+    background: var(--theme-danger-default);
+    border-color: var(--theme-danger-default);
+    color: white;
+
+    &:active {
+      background: var(--theme-danger-darker);
+      border-color: var(--theme-danger-darker);
+    }
+
+    &:hover,
+    &:focus {
+      outline: 1px solid var(--theme-danger-darker);
+      outline-offset: -1px;
+    }
+
+    &:disabled {
+      background: var(--theme-danger-light);
+      border-color: var(--theme-danger-light);
+      color: var(--text-color-white-lighter);
+      outline: none;
+    }
+  }
+
+  &[sd-size=xxs] > button {
+    padding: 0 var(--padding-xxs);
+    font-size: var(--font-size-sm);
+  }
+
+  &[sd-size=xs] > button {
+    padding: var(--padding-xxs) var(--padding-xs);
+    font-size: var(--font-size-sm);
+  }
+
+  &[sd-size=sm] > button {
+    padding: var(--padding-xs) var(--padding-sm);
+  }
+
+  &[sd-size=lg] > button {
+    padding: var(--padding-default) var(--padding-lg);
+  }
+
+  &[sd-size=xl] > button {
+    padding: var(--padding-lg) var(--padding-xl);
+    font-size: var(--font-size-lg);
+  }
+
+  &[sd-size=xxl] > button {
+    padding: var(--padding-xl) var(--padding-xxl);
+    font-size: var(--font-size-lg);
+  }
+}

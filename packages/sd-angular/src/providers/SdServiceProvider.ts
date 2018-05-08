@@ -1,24 +1,23 @@
 import {Injectable, Type} from "@angular/core";
-import {Uuid} from "../../../sd-core/src/types/Uuid";
-import {JsonConvert} from "../../../sd-core/src/utils/JsonConvert";
-import {SocketClient} from "../../../sd-socket/src/client/SocketClient";
-import {ISocketEvent} from "../../../sd-socket/src/common/ISocketEvent";
+import {JsonConvert, Uuid} from "@simplism/sd-core";
+import {SocketClient} from "@simplism/sd-socket-client";
 import {SdBusyProvider} from "./SdBusyProvider";
 import {SdLocalStorageProvider} from "./SdLocalStorageProvider";
 import {SdToastProvider} from "./SdToastProvider";
+import {ISocketEvent} from "@simplism/sd-socket-common";
 
 @Injectable()
 export class SdServiceProvider {
   private readonly _errorListeners: ((err: Error) => Promise<boolean>)[] = [];
   private readonly _client: SocketClient = new SocketClient();
 
-  public get connected(): boolean {
-    return this._client.connected;
-  }
-
   public constructor(private readonly _busy: SdBusyProvider,
                      private readonly _toast: SdToastProvider,
                      private readonly _localStorage: SdLocalStorageProvider) {
+  }
+
+  public get connected(): boolean {
+    return this._client.connected;
   }
 
   public async connect(url?: string): Promise<void> {

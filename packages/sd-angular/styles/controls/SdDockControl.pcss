@@ -1,0 +1,77 @@
+:root {
+  --sd-dock-container: {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+  };
+
+  --sd-dock: {
+    display: block;
+    position: absolute;
+
+    & > hr {
+      display: block;
+      position: absolute;
+      background: var(--trans-color-dark);
+      border: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    &[sd-resizable=true] {
+      &[sd-position=bottom] {
+        padding-top: 4px;
+
+        & > hr {
+          top: 0;
+          left: 0;
+          height: 4px;
+          width: 100%;
+          cursor: ns-resize;
+        }
+      }
+      &[sd-position=right] {
+        padding-left: 4px;
+
+        & > hr {
+          top: 0;
+          left: 0;
+          height: 100%;
+          width: 4px;
+          cursor: ew-resize;
+        }
+      }
+      &[sd-position=top] {
+        padding-bottom: 4px;
+
+        & > hr {
+          bottom: 0;
+          left: 0;
+          height: 4px;
+          width: 100%;
+          cursor: ns-resize;
+        }
+      }
+      &[sd-position=left] {
+        padding-right: 4px;
+
+        & > hr {
+          top: 0;
+          right: 0;
+          height: 100%;
+          width: 4px;
+          cursor: ew-resize;
+        }
+      }
+    }
+  };
+}
+
+sd-dock-container {
+  @apply --sd-dock-container;
+
+  & > sd-dock {
+    @apply --sd-dock;
+  }
+}

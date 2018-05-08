@@ -1,35 +1,39 @@
-// tslint:disable:use-host-property-decorator
-
-import {ChangeDetectionStrategy, Component, Injector, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, Inject, Input} from "@angular/core";
+import {SdComponentBase} from "../bases/SdComponentBase";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-viewer",
   template: `
     <ng-content></ng-content>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{provide: SdComponentBase, useExisting: SdViewerControl}]
 })
-export class SdViewerControl {
-  @Input() public value = "";
+export class SdViewerControl extends SdComponentBase {
+  @Input()
+  @SdTypeValidate(String)
+  public value?: string;
 }
 
 @Component({
   selector: "sd-viewer-item",
   template: `
     <ng-content></ng-content>`,
-  host: {
-    "[class._selected]": "isSelected"
-  },
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{provide: SdComponentBase, useExisting: SdViewerItemControl}]
 })
-export class SdViewerItemControl {
-  @Input() public value = "";
+export class SdViewerItemControl extends SdComponentBase {
+  @Input()
+  @SdTypeValidate(String)
+  public value?: string;
 
-  public get isSelected(): boolean {
-    // tslint:disable-next-line:no-null-keyword
-    const viewerControl = this._injector.get(SdViewerControl, null as any, undefined);
-    return this.value === viewerControl.value;
+  public constructor(@Inject(SdViewerControl)
+                     private readonly _parentViewerControl: SdViewerControl) {
+    super();
   }
 
-  public constructor(private readonly _injector: Injector) {
+  @HostBinding("ngIf")
+  public get ngIf(): boolean {
+    return this.value === this._parentViewerControl.value;
   }
 }

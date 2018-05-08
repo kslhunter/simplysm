@@ -51,12 +51,18 @@ export class SdToastProvider {
     $toast.data({theme, message});
     this._$container.prepend($toast);
 
-    $toast.data("timeoutId", window.setTimeout(() => {
-      $toast.data("timeoutId", window.setTimeout(() => {
-        $toast.remove();
-      }, 500));
-      $toast.removeClass("_open");
-    }, 5000));
+    $toast.data("timeoutId", window.setTimeout(
+      () => {
+        $toast.data("timeoutId", window.setTimeout(
+          () => {
+            $toast.remove();
+          },
+          500
+        ));
+        $toast.removeClass("_open");
+      },
+      5000
+    ));
 
     $toast.addClass("_open");
   }

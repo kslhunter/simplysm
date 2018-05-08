@@ -1,13 +1,15 @@
 import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
-import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {SdComponentBase} from "../bases/SdComponentBase";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-enum",
   template: `
     <ng-content></ng-content>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{provide: SdComponentBase, useExisting: SdEnumControl}]
 })
-export class SdEnumControl {
+export class SdEnumControl extends SdComponentBase {
 }
 
 @Component({
@@ -15,21 +17,11 @@ export class SdEnumControl {
   template: `
     <label *ngIf="label">{{ label }}</label>
     <span><ng-content></ng-content></span>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{provide: SdComponentBase, useExisting: SdEnumItemControl}]
 })
-export class SdEnumItemControl {
-  private _label = "";
-
-  public get label(): string {
-    return this._label;
-  }
-
+export class SdEnumItemControl extends SdComponentBase {
   @Input()
-  public set label(value: string) {
-    if (!(typeof value === "string")) {
-      throw new Exception(`'sd-enum.label'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
-    }
-
-    this._label = value;
-  }
+  @SdTypeValidate(String)
+  public label?: string;
 }
