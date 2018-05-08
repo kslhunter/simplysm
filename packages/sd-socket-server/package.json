@@ -1,19 +1,19 @@
 {
-  "name": "@simplism/sd-socket",
-  "version": "6.1.23",
-  "description": "Simplism Socket Package",
+  "name": "@simplism/sd-socket-server",
+  "version": "6.1.26",
+  "description": "Simplism Socket Server Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/sd-core": "^6.1.23",
-    "@simplism/sd-socket-common": "^6.1.23",
-    "mime": "^2.2.2",
+    "@simplism/sd-core": "^6.1.26",
+    "@simplism/sd-socket-common": "^6.1.26",
+    "bufferutil": "^3.0.5",
+    "mime": "^2.3.1",
     "semver": "^5.5.0",
     "socket.io": "^2.1.0",
-    "bufferutil": "^3.0.3",
-    "utf-8-validate": "^4.0.0"
+    "utf-8-validate": "^4.0.2"
   }
 }
