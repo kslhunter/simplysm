@@ -8,9 +8,9 @@ import {
   Output,
   SimpleChanges
 } from "@angular/core";
-import {SdSizeString, SdThemeString} from "./commons/types";
-import {SdTypeValidate} from "./commons/SdTypeValidate";
-import {SdComponentBase} from "./bases/SdComponentBase";
+import {SdSizeString, SdThemeString} from "../commons/types";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {SdComponentBase} from "../bases/SdComponentBase";
 
 @Component({
   selector: "sd-textfield",

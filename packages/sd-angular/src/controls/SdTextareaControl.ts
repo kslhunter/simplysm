@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
-import {SdTypeValidate} from "./commons/SdTypeValidate";
-import {SdComponentBase} from "./bases/SdComponentBase";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {SdComponentBase} from "../bases/SdComponentBase";
 import {SdTextfieldControl} from "./SdTextfieldControl";
 
 @Component({
