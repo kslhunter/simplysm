@@ -44,8 +44,8 @@ export class SdLibraryPackageBuilder implements ISdPackageBuilder {
           if (depName.startsWith("@simplism")) {
             packageJson[depTypeName][depName] = `^${projectPackageJson.version}`;
           }
-          else if (projectPackageJson.dependencies[depName]) {
-            packageJson[depTypeName][depName] = projectPackageJson.dependencies[depName];
+          else if (projectPackageJson.devDependencies[depName]) {
+            packageJson[depTypeName][depName] = projectPackageJson.devDependencies[depName];
           }
           else {
             throw new Error(`'${this._config.name}'패키지의 의존성 패키지 정보가 프로젝트 패키지에 없습니다.`);
