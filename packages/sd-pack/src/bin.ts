@@ -88,4 +88,4 @@ const argv = yargs
   else {
     throw new Error("명령이 잘못되었습니다.");
   }
-})().catch(err => new Logger("@simplism/sd-pack", "bin").error(err));
+})().catch(err => new Logger("@simplism/sd-pack", "sd-pack").error(err));

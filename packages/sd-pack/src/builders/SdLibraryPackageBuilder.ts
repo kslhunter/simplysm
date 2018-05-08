@@ -35,7 +35,7 @@ export class SdLibraryPackageBuilder implements ISdPackageBuilder {
       this._logger.log("publishing...");
 
       const projectPackageJson = fs.readJsonSync(this._projectPath("package.json"));
-      const packageJson = fs.readJsonSync(this._projectPath("package.json"));
+      const packageJson = fs.readJsonSync(this._contextPath("package.json"));
 
       // 의존성 버전 재구성
       const depTypeNames = ["dependencies", "peerDependencies", "optionalDependencies"];
