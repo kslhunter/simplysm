@@ -1,9 +1,8 @@
 import "@simplism/sd-core"; // tslint:disable-line:no-import-side-effect
-import * as fs from "fs";
 import * as path from "path";
 import * as tslint from "tslint";
-import * as ts from "typescript";
 import * as yargs from "yargs";
+import {helpers} from "../commons/helpers";
 
 const argv = yargs
   .options({
@@ -17,14 +16,12 @@ const argv = yargs
 const packageName = argv.package;
 const getContextPath = (...args: string[]) => path.resolve(process.cwd(), `packages/${packageName}`, ...args);
 
-const tsconfigPath = getContextPath("tsconfig.json");
-const tsconfigJson = JSON.parse(fs.readFileSync(tsconfigPath, "utf-8"));
-const tsconfig = ts.parseJsonConfigFileContent(tsconfigJson, ts.sys, getContextPath());
+const tsconfig = helpers.getTsconfig(getContextPath());
 
 const tslintConfig = tslint.Configuration.findConfiguration(getContextPath("tslint.json"));
 
 process.on("message", (filePaths: string[]) => {
-  const tslintProgram = tslint.Linter.createProgram(tsconfigPath, getContextPath());
+  const tslintProgram = tslint.Linter.createProgram(getContextPath("tsconfig.json"), getContextPath());
   const tslintLinter = new tslint.Linter({formatter: "json", fix: false}, tslintProgram);
 
   const lintFilePaths = filePaths.length > 0 ? filePaths : tsconfig.fileNames;

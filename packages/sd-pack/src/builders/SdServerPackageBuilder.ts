@@ -22,9 +22,7 @@ export class SdServerPackageBuilder implements ISdPackageBuilder {
   }
 
   private get _tsconfig(): ts.ParsedCommandLine {
-    const tsconfigPath = this._contextPath("tsconfig.json");
-    const tsconfigJson = fs.readJsonSync(tsconfigPath);
-    return ts.parseJsonConfigFileContent(tsconfigJson, ts.sys, this._contextPath());
+    return helpers.getTsconfig(this._contextPath());
   }
 
   public async buildAsync(): Promise<void> {
@@ -184,7 +182,7 @@ export class SdServerPackageBuilder implements ISdPackageBuilder {
       },
       entry: this._contextPath("src/main.ts"),
       output: {
-        path: tsconfig.options.outDir,
+        path: path.resolve(tsconfig.options.outDir!),
         filename: "[name].js",
         chunkFilename: "[name].chunk.js"
       },

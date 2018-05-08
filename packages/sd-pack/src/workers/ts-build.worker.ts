@@ -1,7 +1,7 @@
-import * as fs from "fs";
 import * as path from "path";
 import * as ts from "typescript";
 import * as yargs from "yargs";
+import {helpers} from "../commons/helpers";
 
 const argv = yargs
   .options({
@@ -20,11 +20,9 @@ const packageName: string = argv.package;
 const getContextPath = (...args: string[]): string => path.resolve(process.cwd(), `packages/${packageName}`, ...args);
 const noEmit: boolean = argv.noEmit;
 
-const tsconfigPath = getContextPath("tsconfig.json");
-const tsconfigJson = JSON.parse(fs.readFileSync(tsconfigPath, "utf-8"));
-const tsconfig = ts.parseJsonConfigFileContent(tsconfigJson, ts.sys, getContextPath());
+const tsconfig = helpers.getTsconfig(getContextPath());
 
-let tsHost: ts.CompilerHost | undefined;
+/*let tsHost: ts.CompilerHost | undefined;
 if (!noEmit) {
   tsHost = ts.createCompilerHost(tsconfig.options);
   tsHost.writeFile = (fileName: string, content: string) => {
@@ -45,13 +43,13 @@ if (!noEmit) {
     }
     ts.sys.writeFile(targetPath, content);
   };
-}
+}*/
 
 process.on("message", (filePaths: string[]) => {
   const tsProgram = ts.createProgram(
     tsconfig.fileNames,
-    tsconfig.options,
-    tsHost
+    tsconfig.options/*,
+    tsHost*/
   );
 
   let diagnostics!: ts.Diagnostic[];

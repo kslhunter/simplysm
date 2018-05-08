@@ -6,6 +6,7 @@ import * as path from "path";
 import * as ts from "typescript";
 import {ISdPackLibraryConfig} from "../commons/configs";
 import {ISdPackageBuilder} from "../commons/ISdPackageBuilder";
+import {helpers} from "../commons/helpers";
 
 export class SdLibraryPackageBuilder implements ISdPackageBuilder {
   private readonly _logger: Logger;
@@ -15,9 +16,7 @@ export class SdLibraryPackageBuilder implements ISdPackageBuilder {
   }
 
   private get _tsconfig(): ts.ParsedCommandLine {
-    const tsconfigPath = this._contextPath("tsconfig.json");
-    const tsconfigJson = fs.readJsonSync(tsconfigPath);
-    return ts.parseJsonConfigFileContent(tsconfigJson, ts.sys, this._contextPath());
+    return helpers.getTsconfig(this._contextPath());
   }
 
   public async buildAsync(): Promise<void> {

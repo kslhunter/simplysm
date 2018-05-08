@@ -2,8 +2,8 @@ import {Logger, Wait} from "@simplism/sd-core";
 import * as child_process from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
-import * as ts from "typescript";
 import * as webpack from "webpack";
+import {helpers} from "../commons/helpers";
 
 export class SdAsyncTypeCheckPlugin implements webpack.Plugin {
   public constructor(private readonly _options: { packageName: string; logger: Logger }) {
@@ -12,9 +12,7 @@ export class SdAsyncTypeCheckPlugin implements webpack.Plugin {
   public async apply(compiler: webpack.Compiler): Promise<void> {
     const contextPath = path.resolve(process.cwd(), `packages/${this._options.packageName}`);
 
-    const tsconfigPath = path.resolve(contextPath, "tsconfig.json");
-    const tsconfigJson = JSON.parse(fs.readFileSync(tsconfigPath, "utf-8"));
-    const tsconfig = ts.parseJsonConfigFileContent(tsconfigJson, ts.sys, contextPath);
+    const tsconfig = helpers.getTsconfig(contextPath);
     if (tsconfig.options.outDir) {
       fs.removeSync(tsconfig.options.outDir);
     }
