@@ -1,19 +1,23 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {SdSizeString, SdThemeString} from "../commons/types";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {SdComponentBase} from "../bases/SdComponentBase";
 
 @Component({
   selector: "sd-note",
   template: `
     <ng-content></ng-content>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{provide: SdComponentBase, useExisting: SdNoteControl}]
 })
-export class SdNoteControl {
-  @Input() public size = "default";
-  @Input() public theme = "default";
+export class SdNoteControl extends SdComponentBase {
+  @Input()
+  @SdTypeValidate("SdSizeString")
+  @HostBinding("attr.sd-size")
+  public size?: SdSizeString;
 
-  @HostBinding("class._size-sm") public sizeSm = () => this.size === "sm";
-  @HostBinding("class._theme-primary") public themePrimary = () => this.theme === "primary";
-  @HostBinding("class._theme-success") public themeSuccess = () => this.theme === "success";
-  @HostBinding("class._theme-info") public themeInfo = () => this.theme === "info";
-  @HostBinding("class._theme-warning") public themeWarning = () => this.theme === "warning";
-  @HostBinding("class._theme-danger") public themeDanger = () => this.theme === "danger";
+  @Input()
+  @SdTypeValidate("SdThemeString")
+  @HostBinding("attr.sd-theme")
+  public theme?: SdThemeString;
 }

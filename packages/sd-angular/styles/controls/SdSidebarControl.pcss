@@ -1,0 +1,17 @@
+sd-sidebar-container {
+  @apply --sd-dock-container;
+
+  & > sd-sidebar {
+    @apply --sd-dock;
+    z-index: var(--z-index-sidebar);
+    background: var(--color-bluegrey-darkest);
+    color: white;
+
+    a {
+      color: var(--text-color-white-light);
+      &:hover {
+        color: var(--text-color-white-default);
+      }
+    }
+  }
+}

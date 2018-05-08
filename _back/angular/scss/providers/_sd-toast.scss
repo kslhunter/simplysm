@@ -1,0 +1,42 @@
+._sd-toast-container {
+  display: block;
+  position: fixed;
+  z-index: $z-toast;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+
+  > ._sd-toast {
+    opacity: .9;
+    display: block;
+    // text-align: right;
+    @include padding(lg, xxl, 0);
+
+    > div {
+      display: inline-block;
+      // text-align: left;
+      background: #fff;
+      @include elevation(16px);
+      @include border-radius(2px);
+      @include padding(sm, default);
+    }
+
+    @each $key, $colors in $theme-colors {
+      &._theme-#{$key} > div {
+        background: theme-color($key);
+        color: text-white();
+      }
+    }
+
+    @include transform(translateX(-100%));
+    @include transition-duration(default);
+    @include transition-property(transform);
+    @include transition-timing-function(ease-in);
+
+    &._open {
+      @include transform(none);
+      @include transition-timing-function(ease-out);
+    }
+  }
+}

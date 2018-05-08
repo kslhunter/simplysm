@@ -1,0 +1,17 @@
+sd-note {
+  display: block;
+  background: state-color(primary);
+  border-left: 5px solid theme-light(primary);
+  @include padding(sm, default);
+
+  &._size-sm {
+    @include padding(xs, sm);
+  }
+
+  @each $key, $color in $theme-colors {
+    &._theme-#{$key} {
+      background: state-color($key);
+      border-color: theme-light($key);
+    }
+  }
+}

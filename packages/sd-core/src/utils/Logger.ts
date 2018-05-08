@@ -1,5 +1,3 @@
-// tslint:disable:no-console
-
 import * as fs from "fs-extra";
 import * as path from "path";
 
@@ -60,6 +58,10 @@ export class Logger {
     };
   }
 
+  public getFlatString(str: string): string {
+    return str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
+  }
+
   public log(...logs: any[]): void {
     this._write("log", logs);
   }
@@ -97,7 +99,7 @@ export class Logger {
     const convertedLogs = logs.map(log => {
       // 색상있으면 색상 빼기
       if (typeof log === "string") {
-        return log.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
+        return this.getFlatString(log);
       }
       else if (log instanceof Error) {
         return log.stack;
@@ -122,7 +124,7 @@ export class Logger {
           error: "31"
         };
 
-        console.log.apply(console, [
+        console.log(...[
           text.replace(/%c/g, "%s"),
           "\x1b[90m",
           "\x1b[0m",
@@ -134,8 +136,9 @@ export class Logger {
           "\x1b[0m",
           `\x1b[${colors[type]}m`,
           convertedLogs[0],
-          "\x1b[0m"
-        ].concat(convertedLogs.slice(1)));
+          "\x1b[0m",
+          ...convertedLogs.slice(1)
+        ]);
       }
       else {
         const colors: ILogColors = {
@@ -145,7 +148,7 @@ export class Logger {
           error: "#F44336"
         };
 
-        console.log.apply(console, [
+        console.log(...[
           text,
           "color: grey;",
           "color: black;",
@@ -157,8 +160,9 @@ export class Logger {
           "\x1b[0m",
           `color: ${colors[type]};`,
           convertedLogs[0],
-          "color: black;"
-        ].concat(convertedLogs.slice(1)));
+          "color: black;",
+          ...convertedLogs.slice(1)
+        ]);
       }
     }
 

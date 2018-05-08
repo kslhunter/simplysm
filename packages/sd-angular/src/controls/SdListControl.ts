@@ -4,127 +4,112 @@ import {
   ElementRef,
   EventEmitter,
   HostBinding,
-  Inject,
+  HostListener,
   Input,
-  Output
+  Output,
+  ViewChild
 } from "@angular/core";
-import {Exception} from "../../../sd-core/src/exceptions/Exception";
-import {SdFocusProvider} from "../providers/SdFocusProvider";
+import {SdComponentBase} from "../bases/SdComponentBase";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {SdSizeString} from "../commons/types";
 
 @Component({
   selector: "sd-list",
   template: "<ng-content></ng-content>",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{provide: SdComponentBase, useExisting: SdListControl}]
 })
-export class SdListControl {
-  @Input() public size?: "sm" | "lg";
-
-  @HostBinding("class._clickable")
-  @Input() public clickable = false;
-
-  @HostBinding("class._size-sm")
-  public get sizeSm(): boolean {
-    return this.size === "sm";
-  }
-
-  @HostBinding("class._size-lg")
-  public get sizeLg(): boolean {
-    return this.size === "lg";
-  }
+export class SdListControl extends SdComponentBase {
+  @Input()
+  @SdTypeValidate("SdSizeString")
+  @HostBinding("attr.sd-size")
+  public size?: SdSizeString;
 }
 
 @Component({
   selector: "sd-list-item",
   template: `
-    <div [class]="styleClass">
-      <div (click)="onTitleClick()"
-           [class]="titleStyleClass"
-           [attr.tabindex]="realClickable ? '1' : undefined"
-           (keydown.enter)="onTitleClick()"
-           (keydown)="onTitleKeydown($event)">
-        <ng-content></ng-content>
-
-        <div class="_icon">
-          <sd-icon [icon]="'angle-down'" [fixedWidth]="true"></sd-icon>
-        </div>
+    <div (click)="onTitleClick()"
+         tabindex="1"
+         (keydown.enter)="onTitleClick()"
+         (keydown.ArrowUp)="onTitleArrowUpKeydown($event)"
+         (keydown.ArrowDown)="onTitleArrowDownKeydown($event)">
+      <ng-content></ng-content>
+      <div *ngIf="hasChild">
+        <sd-icon icon="angle-down" [fixedWidth]="true"></sd-icon>
       </div>
-      <div class="_child">
-        <ng-content select="sd-list"></ng-content>
-      </div>
+    </div>
+    <div #child>
+      <ng-content select="sd-list"></ng-content>
     </div>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{provide: SdComponentBase, useExisting: SdListItemControl}]
 })
-export class SdListItemControl {
-  public open = false;
-
-  @Input() public header = false;
-  @Input() public size?: "sm" | "lg";
-  @Input() public class: string | undefined;
-  @Output("title.click") public readonly titleClick = new EventEmitter<void>(); // tslint:disable-line:no-output-rename
-  @Input() public clickable: boolean | undefined;
-
-  private _selected = false;
+export class SdListItemControl extends SdComponentBase {
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-header")
+  public header?: boolean;
 
   @Input()
-  public set selected(value: boolean) {
-    if (typeof value !== "boolean") {
-      throw new Exception(`'sd-list-item.selected'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
-    }
-    this._selected = value;
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-selected")
+  public selected?: boolean;
+
+  @Output()
+  public readonly click = new EventEmitter<void>();
+
+  @ViewChild("child")
+  public readonly child?: ElementRef<HTMLDivElement>;
+
+  @HostBinding("attr.sd-open")
+  public open = false;
+
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+    super();
   }
 
-  public get realClickable(): boolean {
-    return this.clickable === undefined ? this._parent.clickable : this.clickable;
-  }
-
-  public get styleClass(): string {
-    const childDiv: HTMLDivElement = this._elementRef.nativeElement.children[0].children[1];
-    const hasChild = childDiv.children.length > 0 &&
-      childDiv.children[0].children.length > 0 &&
-      Array.from(childDiv.children[0].children)
-        .map(item => item as HTMLElement)
-        .some((item: HTMLElement) => item.tagName.toLowerCase() === "sd-list-item");
-
-    return Array.from(this._elementRef.nativeElement.classList).concat([
-      this.header ? "_header" : "",
-      hasChild ? "_has-child" : "",
-      this.open ? "_open" : "",
-      this.size ? `_size-${this.size}` : this._parent.size ? `_size-${this._parent.size}` : "",
-      this._selected ? "_selected" : ""
-    ]).filter(item => item).join(" ");
-  }
-
-  public get titleStyleClass(): string {
-    return (this.class || "").split(" ")
-      .filter(item => item.startsWith("sd-padding"))
-      .concat(["_title"]).join(" ");
-  }
-
-  public constructor(private readonly _elementRef: ElementRef,
-                     @Inject(SdListControl)
-                     private readonly _parent: SdListControl,
-                     private readonly _focus: SdFocusProvider) {
+  public get hasChild(): boolean | undefined {
+    return this.child && this.child.nativeElement.children.length > 0;
   }
 
   public onTitleClick(): void {
     this.open = !this.open;
-    this.titleClick.emit();
+    this.click.emit();
   }
 
-  public onTitleKeydown(event: KeyboardEvent): void {
-    if (event.key === "ArrowUp") {
-      const $parent = $(this._elementRef.nativeElement).parent("sd-list");
-      if (this._focus.prev($parent)) {
+  public onTitleArrowUpKeydown(event: KeyboardEvent): void {
+    const thisEl = this._elRef.nativeElement;
+    if (thisEl.previousSibling && typeof thisEl.previousSibling["focus"] === "function") {
+      const prevEl = thisEl.previousSibling as HTMLElement;
+      if (prevEl.isFocusable()) {
         event.preventDefault();
         event.stopPropagation();
+
+        prevEl.focus();
       }
     }
-    else if (event.key === "ArrowDown") {
-      const $parent = $(this._elementRef.nativeElement).parent("sd-list");
-      if (this._focus.next($parent)) {
+  }
+
+  public onTitleArrowDownKeydown(event: KeyboardEvent): void {
+    const thisEl = this._elRef.nativeElement;
+    if (thisEl.nextSibling && typeof thisEl.nextSibling["focus"] === "function") {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const nextEl = thisEl.nextSibling as HTMLElement;
+      if (nextEl.isFocusable()) {
         event.preventDefault();
         event.stopPropagation();
+
+        nextEl.focus();
       }
     }
+  }
+
+  @HostListener("click", ["$event"])
+  public onClick(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
   }
 }

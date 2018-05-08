@@ -1,6 +1,6 @@
-import "./extensions/ArrayExtensions";
-import "./extensions/DateExtensions";
-import "./extensions/ObjectConstructorExtensions";
+import "./extensions/ArrayExtensions"; // tslint:disable-line:no-import-side-effect
+import "./extensions/DateExtensions"; // tslint:disable-line:no-import-side-effect
+import "./extensions/ObjectConstructorExtensions"; // tslint:disable-line:no-import-side-effect
 
 export * from "./exceptions/ArgumentsException";
 export * from "./exceptions/Exception";

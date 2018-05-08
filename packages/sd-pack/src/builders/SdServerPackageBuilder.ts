@@ -1,38 +1,42 @@
+import {JsonConvert, Logger} from "@simplism/sd-core";
 import * as child_process from "child_process";
 import * as fs from "fs-extra";
 import * as glob from "glob";
+import * as HappyPack from "happypack";
 import * as path from "path";
+import * as TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
+import * as ts from "typescript";
 import * as webpack from "webpack";
 import * as webpackMerge from "webpack-merge";
-import {Logger} from "../../../sd-core/src/utils/Logger";
-import {FtpStorage} from "../../../sd-storage/src/ftp/FtpStorage";
+import {FtpStorage} from "@simplism/sd-storage";
+import {ISdPackServerConfig} from "../commons/configs";
 import {helpers} from "../commons/helpers";
-import {SdTypescriptDtsPlugin} from "../plugins/SdTypescriptDtsPlugin";
+import {ISdPackageBuilder} from "../commons/ISdPackageBuilder";
+import {SdAsyncTypeCheckPlugin} from "../plugins/SdAsyncTypeCheckPlugin";
 
-// tslint:disable:variable-name
-
-const HappyPack = require("happypack");
-// const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
-
-// tslint:enable:variable-name
-
-export class SdServerPackageBuilder {
+export class SdServerPackageBuilder implements ISdPackageBuilder {
   private readonly _logger: Logger;
 
-  public constructor(private readonly _packageName: string) {
-    this._logger = new Logger("@simplism/sd-pack", `${new.target.name} :: ${this._packageName}`);
+  public constructor(private readonly _config: ISdPackServerConfig) {
+    this._logger = new Logger("@simplism/sd-pack", this._config.name);
   }
 
-  public async buildAsync(env: { [key: string]: string }): Promise<void> {
+  private get _tsconfig(): ts.ParsedCommandLine {
+    const tsconfigPath = this._contextPath("tsconfig.json");
+    const tsconfigJson = fs.readJsonSync(tsconfigPath);
+    return ts.parseJsonConfigFileContent(tsconfigJson, ts.sys, this._contextPath());
+  }
+
+  public async buildAsync(): Promise<void> {
     this._logger.log("building...");
 
-    for (const dir of fs.readdirSync(this._distPath())) {
-      if (dir !== "www") {
-        fs.removeSync(this._distPath(dir));
-      }
+    const tsconfig = this._tsconfig;
+    if (!tsconfig.options.outDir) {
+      throw new Error("'tsconfig.json' 에 'outDir'이 반드시 설정되어야 합니다.");
     }
+    fs.removeSync(tsconfig.options.outDir);
 
-    const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(env), {
+    const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(), {
       mode: "production",
       optimization: {
         noEmitOnErrors: true,
@@ -49,25 +53,26 @@ export class SdServerPackageBuilder {
 
         this._writeStatsToConsole(stats);
 
-        this._logger.info("build completed");
+        this._logger.info("build complete");
         resolve();
       });
     });
   }
 
-  public async watchAsync(env: { [key: string]: string }): Promise<void> {
-    this._logger.log("building...");
+  public async watchAsync(): Promise<void> {
+    this._logger.log("watching...");
 
-    for (const dir of fs.readdirSync(this._distPath())) {
-      if (dir !== "www") {
-        fs.removeSync(this._distPath(dir));
-      }
+    const tsconfig = this._tsconfig;
+    if (!tsconfig.options.outDir) {
+      throw new Error("'tsconfig.json' 에 'outDir'이 반드시 설정되어야 합니다.");
     }
+    fs.removeSync(tsconfig.options.outDir);
 
-    const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(env), {
-      mode: "development"
-    });
-    return new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
+      const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(), {
+        mode: "development"
+      });
+
       const compiler = webpack(webpackConfig);
 
       let worker: child_process.ChildProcess;
@@ -82,39 +87,48 @@ export class SdServerPackageBuilder {
         if (worker) {
           worker.kill();
         }
-        worker = child_process.fork(this._distPath("app.js"), [], {
-          cwd: this._distPath()
+        worker = child_process.fork(this._contextPath("app.js"), [], {
+          cwd: this._contextPath()
         });
 
-        this._logger.info("build completed");
+        this._logger.info("build complete");
         resolve();
       });
 
-      compiler.hooks.watchRun.tap(this._packageName, () => {
+      compiler.hooks.watchRun.tap(this._config.name, () => {
         this._logger.log("building...");
       });
     });
   }
 
-  public async publishAsync(argv: { host: string; port: number; user: string; pass: string; root: string }): Promise<void> {
+  public async publishAsync(): Promise<void> {
     this._logger.log("publishing...");
+
+    if (!this._config.publish) {
+      throw new Error("설정파일에 'publish'옵션이 설정되어야 합니다.");
+    }
+
+    const distPath = this._tsconfig.options.outDir;
+    if (!distPath) {
+      throw new Error("'tsconfig.json' 에 'outDir'이 반드시 설정되어야 합니다.");
+    }
 
     // 배포
     const storage = new FtpStorage();
     await storage.connect({
-      host: argv.host,
-      port: argv.port,
-      user: argv.user,
-      password: argv.pass
+      host: this._config.publish.host,
+      port: this._config.publish.port,
+      user: this._config.publish.user,
+      password: this._config.publish.pass
     });
 
     // 루트 디렉토리 생성
-    await storage.mkdir(argv.root);
+    await storage.mkdir(this._config.publish.root);
 
     // 로컬 파일 전송
-    const filePaths = glob.sync(this._distPath("**/*"), {ignore: ["www"]});
+    const filePaths = glob.sync(path.resolve(distPath, "**/*"));
     for (const filePath of filePaths) {
-      const ftpFilePath = `${argv.root}/${path.relative(this._distPath(), filePath).replace(/\\/g, "/")}`;
+      const ftpFilePath = `${this._config.publish.root}/${path.relative(distPath, filePath).replace(/\\/g, "/")}`;
       if (fs.lstatSync(filePath).isDirectory()) {
         await storage.mkdir(ftpFilePath);
       }
@@ -127,38 +141,58 @@ export class SdServerPackageBuilder {
     // pm2.json 전송
     await storage.put(
       Buffer.from(
-        JSON.stringify({
-          apps: [{
-            name: argv.root,
-            script: "./app.js",
-            watch: [
-              "app.js",
-              "pm2.json"
-            ]
-          }]
-        }, undefined, 2)
+        JsonConvert.stringify(
+          {
+            apps: [{
+              name: this._config.publish.root,
+              script: "./app.js",
+              watch: [
+                "app.js",
+                "pm2.json"
+              ]
+            }]
+          },
+          {space: 2}
+        )
       ),
-      `/${argv.root}/pm2.json`
+      `/${this._config.publish.root}/pm2.json`
     );
 
     await storage.close();
 
     // 완료
-    const rootPackageJson = fs.readJsonSync(this._rootPath("package.json"));
+    const rootPackageJson = fs.readJsonSync(this._projectPath("package.json"));
     this._logger.log(`publish complete: v${rootPackageJson.version}`);
   }
 
-  private _getCommonConfig(env: { [key: string]: string }): webpack.Configuration {
+  private _getCommonConfig(): webpack.Configuration {
+    const tsconfig = this._tsconfig;
+
     return {
       target: "node",
       devtool: "inline-source-map",
-      entry: this._packagePath("src/main.ts"),
+      optimization: {
+        splitChunks: {
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: "vendor",
+              chunks: "all"
+            }
+          }
+        }
+      },
+      entry: this._contextPath("src/main.ts"),
       output: {
-        path: this._distPath(),
-        filename: "app.js"
+        path: tsconfig.options.outDir,
+        filename: "[name].js",
+        chunkFilename: "[name].chunk.js"
       },
       resolve: {
-        extensions: [".ts", ".js", ".json", ".node"]
+        extensions: [".ts", ".js", ".json", ".node"],
+        plugins: [
+          new TsconfigPathsPlugin({configFile: this._contextPath("tsconfig.json")})
+        ]
       },
       module: {
         rules: [
@@ -197,59 +231,35 @@ export class SdServerPackageBuilder {
               options: {
                 silent: true,
                 happyPackMode: true,
-                configFile: this._packagePath("tsconfig.json")
+                configFile: this._contextPath("tsconfig.json")
               }
             }
           ]
         }),
+        new SdAsyncTypeCheckPlugin({packageName: this._config.name, logger: this._logger}),
         new HappyPack({
           id: "node",
           verbose: false,
           loaders: [
-            {
-              loader: path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/node-loader.js")
-            }
+            {loader: path.resolve(__dirname, "../../assets/node-loader.js")}
           ]
         }),
-        /*new ForkTsCheckerWebpackPlugin({
-          checkSyntacticErrors: true,
-          tsconfig: this._packagePath("tsconfig.json"),
-          tslint: this._packagePath("tslint.json"),
-          formatter: (message: {
-            type: "diagnostic" | "lint";
-            code: string | number;
-            severity: "error" | "warning";
-            content: string;
-            file: string;
-            line: number;
-            character: number;
-          }) => `${message.type.toUpperCase()}: ${message.file}\n${message.file}(${message.line},${message.character}): ${message.severity}: ${message.content}`,
-          logger: {
-            error: this._logger.error.bind(this._logger),
-            warn: this._logger.warn.bind(this._logger),
-            info: () => {
-            }
-          }
-        }),*/
-        new SdTypescriptDtsPlugin({context: this._packagePath(), logger: this._logger}),
         new webpack.DefinePlugin({
           "process.env": helpers.stringifyEnv({
             SD_PACK_VERSION: fs.readJsonSync(path.resolve(process.cwd(), "package.json")).version,
-            ...env
+            ...this._config.env
           })
         }),
 
-        // tslint:disable:deprecation
-        new webpack.NormalModuleReplacementPlugin(
+        new webpack.NormalModuleReplacementPlugin(// tslint:disable-line:deprecation
           /^socket.io$/,
           path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/socket.io.js")
         ),
 
-        new webpack.NormalModuleReplacementPlugin(
+        new webpack.NormalModuleReplacementPlugin(// tslint:disable-line:deprecation
           /^bindings$/,
           path.resolve(process.cwd(), "node_modules/@simplism/sd-pack/assets/bindings.js")
         )
-        // tslint:enable:deprecation
       ],
       externals: ["uws"]
     };
@@ -271,15 +281,11 @@ export class SdServerPackageBuilder {
     }
   }
 
-  private _rootPath(...args: string[]): string {
+  private _contextPath(...args: string[]): string {
+    return path.resolve(process.cwd(), "packages", this._config.name, ...args);
+  }
+
+  private _projectPath(...args: string[]): string {
     return path.resolve(process.cwd(), ...args);
-  }
-
-  private _packagePath(...args: string[]): string {
-    return path.resolve(process.cwd(), `packages/${this._packageName}`, ...args);
-  }
-
-  private _distPath(...args: string[]): string {
-    return path.resolve(process.cwd(), "dist", ...args);
   }
 }

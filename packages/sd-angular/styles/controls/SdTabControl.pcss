@@ -1,0 +1,23 @@
+sd-tab {
+  @apply --clear-fix;
+
+  display: block;
+  padding: 0 var(--padding-sm);
+  background: var(--color-grey-lightest);
+
+  & > sd-tab-item {
+    display: block;
+    float: left;
+    cursor: pointer;
+    padding: var(--padding-sm) var(--padding-default);
+
+    &:hover {
+      background: var(--color-grey-lighter);
+    }
+
+    &[sd-seleted=true] {
+      cursor: default;
+      background: white;
+    }
+  }
+}

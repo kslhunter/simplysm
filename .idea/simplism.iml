@@ -16,6 +16,9 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-mail/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-pack/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-socket-client/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-socket-common/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-socket-server/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-socket/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-storage/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/socket-client" />
@@ -29,5 +32,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="tsconfig$roots" level="project" />
   </component>
 </module>

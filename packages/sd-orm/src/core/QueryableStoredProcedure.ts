@@ -1,4 +1,4 @@
-import {Type} from "../../../sd-core/src/types/Type";
+import {Type} from "@simplism/sd-core";
 import {IStoredProcedureDefinition} from "../common/Definitions";
 import {QueryHelper} from "../common/QueryHelper";
 import {storedProcedureMetadataSymbol} from "../common/StoredProcedureDecorators";

@@ -1,6 +1,5 @@
 export declare const Type: FunctionConstructor;
 
-// tslint:disable-next-line:interface-name
-export interface Type<T> extends Function {
+export interface Type<T> extends Function { // tslint:disable-line:interface-name
   new(...args: any[]): T;
 }

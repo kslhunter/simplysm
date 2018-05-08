@@ -7,7 +7,7 @@ import {fas} from "@fortawesome/free-solid-svg-icons";
 import {SdButtonControl} from "./controls/SdButtonControl";
 import {SdFormControl, SdFormItemControl} from "./controls/SdFormControl";
 import {SdTextfieldControl} from "./SdTextfieldControl";
-import {SdTextareaControl} from "./controls/SdTextareaControl";
+import {SdTextareaControl} from "./SdTextareaControl";
 import {SdSidebarContainerControl, SdSidebarControl} from "./controls/SdSidebarControl";
 import {SdTopbarContainerControl, SdTopbarControl} from "./controls/SdTopbarControl";
 import {SdListControl, SdListItemControl} from "./controls/SdListControl";

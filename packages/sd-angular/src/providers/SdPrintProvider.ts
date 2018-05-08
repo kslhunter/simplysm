@@ -1,5 +1,5 @@
 import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
-import {SdPrintControlTemplateBase} from "../bases/SdPrintControlTemplateBase";
+import {SdPrintTemplateBase} from "../bases/SdPrintTemplateBase";
 
 @Injectable()
 export class SdPrintProvider {
@@ -8,40 +8,46 @@ export class SdPrintProvider {
                      private readonly _injector: Injector) {
   }
 
-  public async print<T extends SdPrintControlTemplateBase<I>, I>(printType: Type<SdPrintControlTemplateBase<I>>,
-                                                                 param: T["param"],
-                                                                 options?: { margin?: string; size?: string }): Promise<void> {
-    await new Promise<void>(async resolve => {
+  public async print<T extends SdPrintTemplateBase<I>, I>(printType: Type<SdPrintTemplateBase<I>>,
+                                                          params: T["params"],
+                                                          options?: { margin?: string; size?: string }): Promise<void> {
+    await new Promise<void>(async (resolve, reject) => {
       const compRef = this._compFactoryResolver.resolveComponentFactory(printType).create(this._injector);
-      const $comp = $(compRef.location.nativeElement);
-      $comp.addClass("_sd-print-template");
-      $comp.appendTo($("body"));
+      const compEl = compRef.location.nativeElement as HTMLElement;
+      compEl.classList.add("_sd-print-template");
+      document.body.appendChild(compEl);
 
-      const $style = $("<style></style>");
-      $style.text(`
+      const styleEl = document.createElement("style");
+      styleEl.innerText = `
 @page { size: ${options ? options.size : "auto"}; margin: ${options ? options.margin : "0"}; }
 @media print
 {
     html, body { -webkit-print-color-adjust: exact; }
     body > * { display: none !important; }
     body > ._sd-print-template { display: block !important; }
-}`);
-      $style.appendTo($("head"));
+}`;
+      document.head.appendChild(styleEl);
 
       try {
-        compRef.instance.param = param;
+        compRef.instance.params = params;
         await compRef.instance.sdBeforeOpen();
-      } catch (e) {
-        throw e;
+      }
+      catch (e) {
+        compEl.remove();
+        styleEl.remove();
+        reject(e);
       }
 
-      this._appRef.attachView(compRef.hostView);
-      setTimeout(async () => {
+      const prevInitFn = compRef.instance["ngAfterContentInit"];
+      compRef.instance["ngAfterContentInit"] = async () => {
         window.print();
-        $comp.remove();
-        $style.remove();
+        compEl.remove();
+        styleEl.remove();
+        if (prevInitFn) await prevInitFn();
         resolve();
-      });
+      };
+
+      this._appRef.attachView(compRef.hostView);
     });
   }
 }

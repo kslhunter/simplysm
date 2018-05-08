@@ -1,10 +1,10 @@
 import {Injectable} from "@angular/core";
 import {CanDeactivate} from "@angular/router";
-import {ISdCanDeactivatePage} from "../bases/ISdCanDeactivatePage";
+import {ISdCanDeactivatePageBase} from "../bases/ISdCanDeactivatePageBase";
 
 @Injectable()
-export class SdCanDeactivateGuardProvider implements CanDeactivate<ISdCanDeactivatePage> {
-  public async canDeactivate(component?: ISdCanDeactivatePage): Promise<boolean> {
+export class SdCanDeactivateGuardProvider implements CanDeactivate<ISdCanDeactivatePageBase> {
+  public async canDeactivate(component?: ISdCanDeactivatePageBase): Promise<boolean> {
     return component && component.canDeactivate
       ? await component.canDeactivate()
       : true;

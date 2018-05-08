@@ -1,5 +1,6 @@
 {
   "extends": "tslint:all",
+  "defaultSeverity": "warning",
   "rules": {
     "no-trailing-whitespace": [
       true,
@@ -14,15 +15,15 @@
           "public-static-field",
           "protected-static-field",
           "private-static-field",
-          "public-static-method",
-          "protected-static-method",
-          "private-static-method",
           "public-instance-field",
           "protected-instance-field",
           "private-instance-field",
           "public-constructor",
           "protected-constructor",
           "private-constructor",
+          "public-static-method",
+          "protected-static-method",
+          "private-static-method",
           "public-instance-method",
           "protected-instance-method",
           "private-instance-method"
@@ -34,8 +35,6 @@
       "allow-leading-underscore"
     ],
     "newline-per-chained-call": false,
-    "strict-boolean-expressions": false,
-    "strict-type-predicates": false,
     "completed-docs": false,
     "no-magic-numbers": false,
     "one-line": [
@@ -58,16 +57,9 @@
       true,
       "ban-single-arg-parens"
     ],
-    "trailing-comma": [
-      true,
-      {
-        "multiline": "never",
-        "singleline": "never"
-      }
-    ],
+    "trailing-comma": false,
     "only-arrow-functions": false,
     "max-line-length": false,
-    "no-unsafe-any": false,
     "no-dynamic-delete": false,
     "whitespace": [
       true,
@@ -96,6 +88,7 @@
     "align": [
       true,
       "parameters",
+      "arguments",
       "statements",
       "elements",
       "members"
@@ -106,30 +99,20 @@
     "newline-before-return": false,
     "linebreak-style": false,
     "no-this-assignment": false,
-    "max-file-line-count": false,
     "no-return-await": false,
-    "no-unnecessary-type-assertion": false,
-    "restrict-plus-operands": false,
     "array-type": [
       true,
       "array"
     ],
     "no-unnecessary-class": false,
     "no-any": false,
-    "prefer-readonly": false,
     "triple-equals": [
       true,
       "allow-undefined-check"
     ],
-    "no-string-literal": false,
     "no-bitwise": false,
-    "no-var-requires": false,
-    "no-require-imports": false,
     "no-empty": false,
     "no-empty-interface": false,
-    "no-import-side-effect": false,
-    "max-classes-per-file": false,
-    "cyclomatic-complexity": false,
     "prefer-template": false,
     "promise-function-async": [
       true,
@@ -137,6 +120,27 @@
       "check-function-expression",
       "check-method-declaration"
     ],
-    "no-submodule-imports": false
+    "curly": [
+      true,
+      "ignore-same-line"
+    ],
+    "eofline": false,
+    "no-console": false,
+    "no-void-expression": [
+      true,
+      "ignore-arrow-function-shorthand"
+    ],
+    "quotemark": [
+      true,
+      "double",
+      "avoid-escape"
+    ],
+    "no-unnecessary-callback-wrapper": false,
+    "arrow-return-shorthand": false,
+    "no-unsafe-any": false,
+    "strict-boolean-expressions": false,
+    "no-string-literal": false,
+    "ordered-imports": false,
+    "restrict-plus-operands": false
   }
 }
