@@ -1,17 +1,18 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
   HostBinding,
-  HostListener,
   Input,
+  NgZone,
   Output,
   ViewChild
 } from "@angular/core";
-import {SdSizeString} from "../commons/types";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
-import {SdComponentBase} from "../bases/SdComponentBase";
+import {SdSizeString} from "../helpers/types";
+import {SdFocusProvider} from "../providers/SdFocusProvider";
 
 @Component({
   selector: "sd-combobox",
@@ -20,98 +21,88 @@ import {SdComponentBase} from "../bases/SdComponentBase";
                   type="text"
                   [size]="size"
                   [value]="text"
-                  (valueChange)="onTextChange($event)"
+                  (valueChange)="textChange.emit($event)"
                   [required]="required"
                   [disabled]="disabled"
-                  [placeholder]="placeholder"
-                  (keydown.ArrowDown)="onTextfieldArrowDownKeydown($event)"></sd-textfield>
-    <div>
-      <sd-icon icon="angle-down" [fixedWidth]="true"></sd-icon>
+                  [placeholder]="placeholder"></sd-textfield>
+    <div class="_icon">
+      <sd-icon [icon]="'angle-down'" [fixedWidth]="true"></sd-icon>
     </div>
-    <sd-dropdown #dropdown [open]="open"
-                 (keydown.ArrowUp)="onDropdownArrowUpKeydown($event)">
+    <sd-dropdown #dropdown
+                 [open]="isDropdownOpen">
       <ng-content></ng-content>
     </sd-dropdown>`,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{provide: SdComponentBase, useExisting: SdComboboxControl}]
+  changeDetection: ChangeDetectionStrategy.OnPush
+
 })
-export class SdComboboxControl extends SdComponentBase {
-  @Input()
-  @SdTypeValidate(String)
-  public text?: string;
+export class SdComboboxControl implements AfterViewInit {
+  @ViewChild("dropdown", {read: ElementRef}) public dropdownElementRef?: ElementRef;
+  @ViewChild("textField", {read: ElementRef}) public textFieldElementRef?: ElementRef;
 
-  @Input()
-  @SdTypeValidate("SdSizeString")
-  @HostBinding("attr.sd-size")
-  public size?: SdSizeString;
+  @Input() public text: any;
+  @Output() public readonly textChange = new EventEmitter<any>();
+  @Input() public size?: SdSizeString;
+  @Input() public required = false;
+  @Input() public disabled = false;
+  @Input() public placeholder = "";
+  @Output() public readonly blur = new EventEmitter<FocusEvent>(); // tslint:disable-line:no-output-named-after-standard-event
 
-  @Input()
-  @SdTypeValidate(Boolean)
-  public required?: boolean;
+  public isDropdownOpen = false;
 
-  @Input()
-  @SdTypeValidate(Boolean)
-  public disabled?: boolean;
-
-  @Input()
-  @SdTypeValidate(String)
-  public placeholder?: string;
-
-  @Output()
-  public readonly textChange = new EventEmitter<string | undefined>();
-
-  @Output()
-  public readonly blur = new EventEmitter<void>();
-
-  @ViewChild("dropdown", {read: ElementRef})
-  public dropdownElRef?: ElementRef<HTMLElement>;
-
-  @ViewChild("textField", {read: ElementRef})
-  public textFieldElRef?: ElementRef<HTMLElement>;
-
-  public open = false;
-
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
-    super();
+  @HostBinding("class._size-sm")
+  public get sizeSm(): boolean {
+    return this.size === "sm";
   }
 
-  @HostListener("focus")
-  public onFocus(): void {
-    this.open = true;
+  public constructor(private readonly _zone: NgZone,
+                     private readonly _focus: SdFocusProvider,
+                     private readonly _cdr: ChangeDetectorRef) {
   }
 
-  @HostListener("blur", ["$event"])
-  public onBlur(event: FocusEvent): void {
-    const thisEl = this._elRef.nativeElement;
-    const relatedTargetEl = event.relatedTarget as HTMLElement;
+  public ngAfterViewInit(): void {
+    const $textfield = $(this.textFieldElementRef!.nativeElement);
+    const $dropdown = $(this.dropdownElementRef!.nativeElement);
 
-    if (!thisEl.has(relatedTargetEl)) {
-      this.open = false;
-      this.blur.emit();
-    }
-  }
+    $textfield.get(0).addEventListener("focus", e => {
+      this.isDropdownOpen = true;
+      this._cdr.markForCheck();
+    }, true);
 
-  public onTextChange(text?: string): void {
-    this.text = text;
-    this.textChange.emit(text);
-  }
+    $textfield.get(0).addEventListener("blur", e => {
+      if ($dropdown.has(e.relatedTarget as any).length < 1 && $textfield.has(e.relatedTarget as any).length < 1) {
+        this.isDropdownOpen = false;
+        this.blur.emit(e);
+      }
+    }, true);
 
-  public onTextfieldArrowDownKeydown(event: KeyboardEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
+    $dropdown.get(0).addEventListener("blur", e => {
+      if ($dropdown.has(e.relatedTarget as any).length < 1 && $textfield.has(e.relatedTarget as any).length < 1) {
+        this.isDropdownOpen = false;
+        this.blur.emit(e);
+      }
+    }, true);
 
-    const focusableEl = this.dropdownElRef!.nativeElement.findFocusable();
-    if (focusableEl) {
-      focusableEl.focus();
-    }
-  }
+    this._zone.runOutsideAngular(() => {
+      $textfield.on("keydown", e => {
+        if (e.which === 40) { // DOWN
+          e.preventDefault();
+          e.stopPropagation();
 
-  public onDropdownArrowUpKeydown(event: KeyboardEvent): void {
-    const firstFocusableEl = this.dropdownElRef!.nativeElement.findFocusable();
-    if (document.activeElement === firstFocusableEl) {
-      event.preventDefault();
-      event.stopPropagation();
-      this.textFieldElRef!.nativeElement.find("input")!.focus();
-    }
+          const $firstFocusable = $(this._focus.getFocusableElementList($dropdown.get(0))[0]);
+          $firstFocusable.trigger("focus");
+        }
+      });
+
+      $dropdown.on("keydown", e => {
+        if (e.which === 38) { // UP
+          const $firstFocusable = $(this._focus.getFocusableElementList($dropdown.get(0))[0]);
+          if (document.activeElement === $firstFocusable.get(0)) {
+            e.preventDefault();
+            e.stopPropagation();
+            $textfield.find("input").trigger("focus");
+          }
+        }
+      });
+    });
   }
 }

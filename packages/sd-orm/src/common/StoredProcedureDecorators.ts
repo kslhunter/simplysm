@@ -1,4 +1,5 @@
-import {Safe, Type} from "@simplism/sd-core";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Safe} from "../../../sd-core/src/utils/Safe";
 import {IStoredProcedureDefinition} from "./Definitions";
 import {DataType} from "./Enums";
 import {QueryHelper} from "./QueryHelper";

@@ -1,57 +1,46 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  HostBinding,
-  HostListener,
-  Inject,
-  Input,
-  Output
-} from "@angular/core";
-import {SdComponentBase} from "../bases/SdComponentBase";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
+// tslint:disable:use-host-property-decorator
+
+import {ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, Output} from "@angular/core";
 
 @Component({
   selector: "sd-tab",
   template: `
     <ng-content></ng-content>`,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{provide: SdComponentBase, useExisting: SdTabControl}]
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SdTabControl extends SdComponentBase {
-  @Input()
-  @SdTypeValidate(String)
-  public value?: string;
-
-  @Output()
-  public readonly valueChange = new EventEmitter<string | undefined>();
+export class SdTabControl {
+  @Input() public value = "";
+  @Output() public readonly valueChange = new EventEmitter<string | undefined>();
 }
 
 @Component({
   selector: "sd-tab-item",
   template: `
     <ng-content></ng-content>`,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{provide: SdComponentBase, useExisting: SdTabItemControl}]
+  host: {
+    "[class]": "styleClass",
+    "(click)": "onClick()"
+  },
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SdTabItemControl extends SdComponentBase {
-  @Input()
-  @SdTypeValidate(String)
-  public value?: string;
+export class SdTabItemControl {
+  @Input() public value = "";
 
-  public constructor(@Inject(SdTabControl)
-                     private readonly _parentTabControl: SdTabControl) {
-    super();
+  public get styleClass(): string {
+    // tslint:disable-next-line:no-null-keyword
+    const tabControl = this._injector.get(SdTabControl, null as any, undefined);
+
+    return [
+      this.value === tabControl.value ? "_selected" : ""
+    ].filter(item => item).join(" ");
   }
 
-  @HostBinding("attr.sd-selected")
-  public get selected(): boolean {
-    return this._parentTabControl.value === this.value;
+  public constructor(private readonly _injector: Injector) {
   }
 
-  @HostListener("click")
   public onClick(): void {
-    this._parentTabControl.value = this.value;
-    this._parentTabControl.valueChange.emit(this.value);
+    // tslint:disable-next-line:no-null-keyword
+    const tabControl = this._injector.get(SdTabControl, null as any, undefined);
+    tabControl.valueChange.emit(this.value);
   }
 }

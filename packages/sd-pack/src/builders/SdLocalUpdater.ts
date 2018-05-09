@@ -1,13 +1,12 @@
-import {Logger} from "@simplism/sd-core";
 import * as chokidar from "chokidar";
 import * as fs from "fs-extra";
 import * as path from "path";
+import {Logger} from "../../../sd-core/src/utils/Logger";
 
 export class SdLocalUpdater {
-  private readonly _logger: Logger;
+  private readonly _logger = new Logger("@simplism/sd-pack", `SdLocalUpdater :: @simplism/${this._packageName}`);
 
   public constructor(private readonly _packageName: string) {
-    this._logger = new Logger("@simplism/sd-pack", `local-update :: @simplism/${this._packageName}`);
   }
 
   public async runAsync(watch?: boolean): Promise<void> {

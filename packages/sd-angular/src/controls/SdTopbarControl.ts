@@ -1,65 +1,90 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Inject, Input, Optional, Output} from "@angular/core";
+// tslint:disable:use-host-property-decorator
+
+import {ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, Output} from "@angular/core";
 import {SdSidebarContainerControl} from "./SdSidebarControl";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
-import {SdDockContainerControl, SdDockControl} from "./SdDockControl";
 
 @Component({
   selector: "sd-topbar-container",
   template: `
     <ng-content></ng-content>`,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{provide: SdDockContainerControl, useExisting: SdTopbarContainerControl}]
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SdTopbarContainerControl extends SdDockContainerControl {
+export class SdTopbarContainerControl {
 }
 
 @Component({
   selector: "sd-topbar",
   template: `
     <a class="_sidebar-toggle-button"
-       *ngIf="showSidebarToggleButton"
-       (click)="onClickToggleButton()">
-      <sd-icon icon="bars"></sd-icon>
+       *ngIf="main"
+       (click)="toggleSidebar()">
+      <span></span>
+      <span></span>
+      <span></span>
     </a>
     <a class="_close-button"
-       *ngIf="showCloseButton"
+       *ngIf="closable"
        (click)="onCloseButtonClick()">
-      <sd-icon icon="times"></sd-icon>
+      <sd-icon icon="times" [fixedWidth]="true"></sd-icon>
     </a>
-    <div>
-      <ng-content></ng-content>
-    </div>
-    <div>
-      <ng-content select="sd-list"></ng-content>
+    <ng-content></ng-content>
+    <div class="_button-group">
+      <ng-content select="sd-topbar-button,sd-topbar-file-button"></ng-content>
     </div>`,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{provide: SdDockControl, useExisting: SdTopbarControl}]
+  host: {
+    "[class._not-main]": "!main"
+  },
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SdTopbarControl extends SdDockControl {
-  @Input()
-  @SdTypeValidate(Boolean)
-  public showSidebarToggleButton?: boolean;
+export class SdTopbarControl {
+  @Input() public main = true;
+  @Input() public closable = false;
+  @Output("close.click") public readonly closeClick = new EventEmitter<void>(); // tslint:disable-line:no-output-rename
 
-  @Input()
-  @SdTypeValidate(Boolean)
-  public showCloseButton?: boolean;
-
-  @Output()
-  public readonly close = new EventEmitter<void>();
-
-  public constructor(@Inject(SdSidebarContainerControl)
-                     @Optional()
-                     private readonly _parentSidebarContainerControl?: SdSidebarContainerControl) {
-    super();
-    this.top = 48;
+  public constructor(private readonly _injector: Injector) {
   }
 
-  public onClickToggleButton(): void {
-    if (!this._parentSidebarContainerControl) return;
-    this._parentSidebarContainerControl.toggled = !this._parentSidebarContainerControl.toggled;
+  public toggleSidebar(): void {
+    // tslint:disable-next-line:no-null-keyword
+    const sidebarContainer = this._injector.get(SdSidebarContainerControl, null as any, undefined);
+    sidebarContainer.toggled = !sidebarContainer.toggled;
   }
 
   public onCloseButtonClick(): void {
-    this.close.emit();
+    this.closeClick.emit();
+  }
+}
+
+@Component({
+  selector: "sd-topbar-button",
+  template: `
+    <a>
+      <ng-content></ng-content>
+    </a>`,
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class SdTopbarButtonControl {
+}
+
+@Component({
+  selector: "sd-topbar-file-button",
+  template: `
+    <label>
+      <input type="file"
+             hidden
+             (change)="onChange($event)"/>
+      <ng-content></ng-content>
+    </label>`,
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class SdTopbarFileButtonControl {
+  @Output("file.change") public readonly fileChange = new EventEmitter<File>(); // tslint:disable-line:no-output-rename
+
+  public onChange(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.fileChange.emit(event.target!["files"][0]);
+    $(event.target!).val("");
   }
 }

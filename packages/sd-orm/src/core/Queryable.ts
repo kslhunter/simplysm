@@ -1,9 +1,11 @@
-// tslint:disable: cyclomatic-complexity
-// tslint:disable: max-classes-per-file
-// tslint:disable: max-file-line-count
-
 import {BigInt, Decimal, NChar, Numeric, Table} from "mssql";
-import {DateOnly, Exception, LambdaParser, NotImplementedException, Safe, Type, Uuid} from "@simplism/sd-core";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {NotImplementedException} from "../../../sd-core/src/exceptions/NotImplementedException";
+import {DateOnly} from "../../../sd-core/src/types/DateOnly";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Uuid} from "../../../sd-core/src/types/Uuid";
+import {LambdaParser} from "../../../sd-core/src/utils/LambdaParser";
+import {Safe} from "../../../sd-core/src/utils/Safe";
 import {IForeignKeyDefinition, IForeignKeyTargetDefinition, ITableDefinition} from "../common/Definitions";
 import {DataType, OrderByRule} from "../common/Enums";
 import {QueryHelper} from "../common/QueryHelper";
@@ -38,48 +40,6 @@ export class Queryable<T> {
   private _groupBy: QueryUnit<any>[] = [];
   private _having: QueryUnit<QueriedBoolean>[] = [];
   private _orderBy: { queryUnit: QueryUnit<any>; orderBy: OrderByRule }[] = [];
-
-  public constructor(public db: Database, public tableType: Type<T> | undefined, from?: string | Queryable<T> | Queryable<any>[], as?: string) {
-    if (!this.tableType && !from) {
-      throw new Exception("UNION을 제외한 모든 경우에, 루트 테이블타입이 꼭 설정되어야 합니다.");
-    }
-
-    this._from = from || tableType!.name;
-    this._as = as || "TBL";
-
-    if (this._from instanceof Queryable) {
-      for (const key of Object.keys(this._from._select)) {
-        let type = this._from._select[key] ? (this._from._select[key] instanceof QueryUnit ? this._from._select[key].type : this._from._select[key].constructor) : undefined;
-        if (type === QueriedBoolean) {
-          type = Boolean;
-        }
-        this._select[key] = new QueryUnit<any>(type, this._key(this._as, key));
-      }
-    }
-    else if (this._from instanceof Array) {
-      for (const key of Object.keys(this._from[0]._select)) {
-        let type = this._from[0]._select[key] ? (this._from[0]._select[key] instanceof QueryUnit ? this._from[0]._select[key].type : this._from[0]._select.constructor) : undefined;
-        if (type === QueriedBoolean) {
-          type = Boolean;
-        }
-        this._select[key] = new QueryUnit<any>(type, this._key(this._as, key));
-      }
-    }
-    else if (this.tableType) {
-      const tableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, this.tableType);
-      if (!tableDef) {
-        throw new Exception(`테이블 정의를 찾을 수 없습니다. (${this.tableType.name})`);
-      }
-
-      for (const colDef of tableDef.columns) {
-        const selectColumnName = /*(as ? as + "." : "") +*/ colDef.name;
-        this._select[selectColumnName] = new QueryUnit(
-          QueryHelper.convertFromDataType(colDef.dataType),
-          this._key(this._as, colDef.name)
-        );
-      }
-    }
-  }
 
   public get query(): string {
     let query = "\nSELECT";
@@ -207,6 +167,48 @@ export class Queryable<T> {
       }
     }
     return result;
+  }
+
+  public constructor(public db: Database, public tableType: Type<T> | undefined, from?: string | Queryable<T> | Queryable<any>[], as?: string) {
+    if (!this.tableType && !from) {
+      throw new Exception("UNION을 제외한 모든 경우에, 루트 테이블타입이 꼭 설정되어야 합니다.");
+    }
+
+    this._from = from || tableType!.name;
+    this._as = as || "TBL";
+
+    if (this._from instanceof Queryable) {
+      for (const key of Object.keys(this._from._select)) {
+        let type = this._from._select[key] ? (this._from._select[key] instanceof QueryUnit ? this._from._select[key].type : this._from._select[key].constructor) : undefined;
+        if (type === QueriedBoolean) {
+          type = Boolean;
+        }
+        this._select[key] = new QueryUnit<any>(type, this._key(this._as, key));
+      }
+    }
+    else if (this._from instanceof Array) {
+      for (const key of Object.keys(this._from[0]._select)) {
+        let type = this._from[0]._select[key] ? (this._from[0]._select[key] instanceof QueryUnit ? this._from[0]._select[key].type : this._from[0]._select.constructor) : undefined;
+        if (type === QueriedBoolean) {
+          type = Boolean;
+        }
+        this._select[key] = new QueryUnit<any>(type, this._key(this._as, key));
+      }
+    }
+    else if (this.tableType) {
+      const tableDef: ITableDefinition = Reflect.getMetadata(tableMetadataSymbol, this.tableType);
+      if (!tableDef) {
+        throw new Exception(`테이블 정의를 찾을 수 없습니다. (${this.tableType.name})`);
+      }
+
+      for (const colDef of tableDef.columns) {
+        const selectColumnName = /*(as ? as + "." : "") +*/ colDef.name;
+        this._select[selectColumnName] = new QueryUnit(
+          QueryHelper.convertFromDataType(colDef.dataType),
+          this._key(this._as, colDef.name)
+        );
+      }
+    }
   }
 
   public async insertAsync(record: T): Promise<any> {

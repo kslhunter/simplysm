@@ -1,4 +1,4 @@
-import {Type} from "@simplism/sd-core";
+import {Type} from "../../../sd-core/src/types/Type";
 import {QueryHelper} from "../common/QueryHelper";
 import {QueriedBoolean, QueryUnit} from "./Queryable";
 
@@ -8,7 +8,7 @@ export class CaseQueryMaker<T> {
   public constructor(private readonly _type: Type<T> | undefined) {
   }
 
-  public case(when: boolean | QueryUnit<boolean> | QueryUnit<QueriedBoolean>, then: QueryUnit<T> | T | undefined): CaseQueryMaker<T> {
+  public case(when: boolean | QueryUnit<Boolean> | QueryUnit<QueriedBoolean>, then: QueryUnit<T> | T | undefined): CaseQueryMaker<T> {
     this._query += `WHEN ${this._getQuery(when, false)} THEN ${this._getQuery(then)} `;
     return this as any;
   }

@@ -1,5 +1,5 @@
 import * as nodemailer from "nodemailer";
-import {Logger} from "@simplism/sd-core";
+import {Logger} from "../../sd-core/src/utils/Logger";
 
 export class SmtpMailer {
   private readonly _logger = new Logger("@simplism/sd-mail", "SmtpMailer");

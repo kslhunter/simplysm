@@ -1,35 +1,38 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
-import {SdComponentBase} from "../bases/SdComponentBase";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
 
 @Component({
   selector: "sd-grid",
   template: `
     <ng-content></ng-content>`,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{provide: SdComponentBase, useExisting: SdGridControl}]
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SdGridControl extends SdComponentBase {
+export class SdGridControl {
 }
 
 @Component({
   selector: "sd-grid-item",
   template: `
     <ng-content></ng-content>`,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{provide: SdComponentBase, useExisting: SdGridItemControl}]
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SdGridItemControl extends SdComponentBase {
+export class SdGridItemControl {
+  private _colspan = 12;
+
+  public get colspan(): number {
+    return this._colspan;
+  }
+
   @Input()
-  @SdTypeValidate({
-    type: Number,
-    validator: value => value < 12,
-    notnull: true
-  })
-  public colspan = 12;
+  public set colspan(value: number) {
+    if (!(typeof value === "number" && value > 0 && value <= 12)) {
+      throw new Exception(`'sd-grid-item.colspan'에 잘못된값 '${JSON.stringify(value)}'가 입력되었습니다.`);
+    }
+    this._colspan = value;
+  }
 
   @HostBinding("style.width")
   public get width(): string {
-    return `${(100 / 12) * this.colspan}%`;
+    return `${(100 / 12) * this._colspan}%`;
   }
 }

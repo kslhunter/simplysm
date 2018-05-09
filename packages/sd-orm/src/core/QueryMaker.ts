@@ -1,4 +1,7 @@
-import {DateOnly, Safe, Type, Uuid} from "@simplism/sd-core";
+import {DateOnly} from "../../../sd-core/src/types/DateOnly";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Uuid} from "../../../sd-core/src/types/Uuid";
+import {Safe} from "../../../sd-core/src/utils/Safe";
 import {OrderByRule} from "../common/Enums";
 import {QueryHelper} from "../common/QueryHelper";
 import {CaseQueryMaker} from "./CaseQueryMaker";
@@ -15,11 +18,11 @@ export class QueryMaker<T> {
 
   // ----- and/or
 
-  public and(...args: (QueryUnit<boolean> | QueryUnit<QueriedBoolean> | boolean | QueriedBoolean | boolean)[]): boolean {
+  public and(...args: (QueryUnit<Boolean> | QueryUnit<QueriedBoolean> | Boolean | QueriedBoolean | boolean)[]): boolean {
     return new QueryUnit(QueriedBoolean, `(${args.map(item => this._getQuery(item, false)).join(" AND ")})`) as any;
   }
 
-  public or(...args: (QueryUnit<boolean> | QueryUnit<QueriedBoolean> | boolean | QueriedBoolean | boolean)[]): boolean {
+  public or(...args: (QueryUnit<Boolean> | QueryUnit<QueriedBoolean> | Boolean | QueriedBoolean | boolean)[]): boolean {
     return new QueryUnit(QueriedBoolean, `(${args.map(item => this._getQuery(item, false)).join(" OR ")})`) as any;
   }
 
@@ -99,19 +102,19 @@ export class QueryMaker<T> {
     return new QueryUnit(QueriedBoolean, `${this._getQuery(src)} IS NOT NULL AND ${this._getQuery(src)} != ''`) as any;
   }
 
-  public startsWith<P extends string>(src: QueryUnit<P> | P, target: QueryUnit<P> | P): boolean {
+  public startsWith<P extends String>(src: QueryUnit<P> | P, target: QueryUnit<P> | P): boolean {
     return new QueryUnit(QueriedBoolean, `${this._getQuery(src)} LIKE ${this._getQuery(target)} + '%'`) as any;
   }
 
-  public endsWith<P extends string>(src: QueryUnit<P> | P, target: QueryUnit<P> | P): boolean {
+  public endsWith<P extends String>(src: QueryUnit<P> | P, target: QueryUnit<P> | P): boolean {
     return new QueryUnit(QueriedBoolean, `${this._getQuery(src)} LIKE '%' + ${this._getQuery(target)}`) as any;
   }
 
-  public includes<P extends string>(src: QueryUnit<P> | P, target: QueryUnit<P> | P): boolean {
+  public includes<P extends String>(src: QueryUnit<P> | P, target: QueryUnit<P> | P): boolean {
     return new QueryUnit(QueriedBoolean, `${this._getQuery(src)} LIKE '%' + ${this._getQuery(target)} + '%'`) as any;
   }
 
-  public notIncludes<P extends string>(src: QueryUnit<P> | P, target: QueryUnit<P> | P): boolean {
+  public notIncludes<P extends String>(src: QueryUnit<P> | P, target: QueryUnit<P> | P): boolean {
     return new QueryUnit(QueriedBoolean, `${this._getQuery(src)} NOT LIKE '%' + ${this._getQuery(target)} + '%'`) as any;
   }
 
@@ -186,8 +189,8 @@ export class QueryMaker<T> {
     return new QueryUnit(String, `RTRIM(SUBSTRING(${this._getQuery(str)}, ${start + 1}, ${length}))`) as any;
   }
 
-  public concat(...args: string[]): string {
-    const data: string[] = [];
+  public concat(...args: (String | string)[]): string {
+    const data: String[] = [];
     for (const arg of args) {
       data.push(arg);
       data.push(" + ");
@@ -226,7 +229,7 @@ export class QueryMaker<T> {
     return new QueryUnit(Number, `ROUND(${this._getQuery(src)}, ${this._getQuery(len)})`) as any;
   }
 
-  public case<R>(when: boolean | QueryUnit<boolean> | QueryUnit<QueriedBoolean>, then: QueryUnit<R> | R): CaseQueryMaker<R> {
+  public case<R>(when: boolean | QueryUnit<Boolean> | QueryUnit<QueriedBoolean>, then: QueryUnit<R> | R): CaseQueryMaker<R> {
     const type = this._getType(then);
     return new CaseQueryMaker<R>(type).case(when, then);
   }

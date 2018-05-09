@@ -1,22 +1,29 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strict": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "removeComments": true,
+    "noUnusedLocals": true,
     "declaration": true,
+    "skipLibCheck": true,
+    "typeRoots": [
+      "../../node_modules/@types"
+    ],
     "lib": [
       "es2017"
     ],
-    "outDir": "./dist",
-    "baseUrl": ".",
-    "paths": {
-      "tslint": [
-        "../../node_modules/tslint"
-      ],
-      "@simplism/sd-core": [
-        "../sd-core/src/index.ts"
-      ],
-      "@simplism/sd-storage": [
-        "../sd-storage/src/index.ts"
-      ]
-    }
-  }
+    "outDir": "./dist"
+  },
+  "files": [
+    "./src/index.ts",
+    "./src/sd.ts",
+    "./src/ts-build-worker.ts",
+    "./src/ts-lint-worker.ts"
+  ]
 }

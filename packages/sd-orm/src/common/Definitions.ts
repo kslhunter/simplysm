@@ -1,4 +1,4 @@
-import {Type} from "@simplism/sd-core";
+import {Type} from "../../../sd-core/src/types/Type";
 import {DataType, IndexType, OrderByRule} from "./Enums";
 
 export interface ITableDefinition {

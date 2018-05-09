@@ -1,68 +1,54 @@
-import {
-  ApplicationRef,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  HostBinding,
-  Input,
-  OnDestroy,
-  OnInit
-} from "@angular/core";
-import {SdComponentBase} from "../bases/SdComponentBase";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {ApplicationRef, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit} from "@angular/core";
 
 @Component({
   selector: "sd-dropdown",
   template: `
     <ng-content></ng-content>`,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{provide: SdComponentBase, useExisting: SdDropdownControl}]
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SdDropdownControl extends SdComponentBase implements OnInit, OnDestroy {
+export class SdDropdownControl implements OnInit, OnDestroy {
+  public $parent: JQuery | undefined;
+
+  private _open = false;
+
   @Input()
-  @SdTypeValidate(Boolean)
-  public open?: boolean;
+  public set open(value: boolean) {
+    this._open = value;
+    this.redraw();
+  }
 
-  public parentEl?: HTMLElement;
-
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>,
+  public constructor(private readonly _elementRef: ElementRef,
                      private readonly _appRef: ApplicationRef) {
-    super();
-  }
-
-  @HostBinding("style.display")
-  public get display(): string {
-    return this.open ? "block" : "none";
-  }
-
-  @HostBinding("style.top.px")
-  public get top(): number | undefined {
-    return (this.parentEl && this.open)
-      ? this.parentEl.offsetTop + this.parentEl.offsetHeight
-      : undefined;
-  }
-
-  @HostBinding("style.left.px")
-  public get left(): number | undefined {
-    return (this.parentEl && this.open)
-      ? this.parentEl.offsetLeft
-      : undefined;
-  }
-
-  @HostBinding("style.min-width.px")
-  public get minWidth(): number | undefined {
-    return (this.parentEl && this.open)
-      ? this.parentEl.offsetWidth
-      : undefined;
   }
 
   public ngOnInit(): void {
-    this.parentEl = this._elRef.nativeElement.parentElement as HTMLElement;
-    const rootEl = this._appRef.components[0].location.nativeElement as HTMLElement;
-    rootEl.appendChild(this._elRef.nativeElement);
+    const $this = $(this._elementRef!.nativeElement);
+    this.$parent = $this.parent();
+    const rootComp = this._appRef.components[0];
+    const $rootComp = $(rootComp.location.nativeElement);
+    $rootComp.append($this);
   }
 
   public ngOnDestroy(): void {
-    this._elRef.nativeElement.remove();
+    $(this._elementRef!.nativeElement).remove();
+  }
+
+  public redraw(): void {
+    if (!this.$parent) {
+      return;
+    }
+
+    const $this = $(this._elementRef!.nativeElement);
+    if (this._open) {
+      $this.css({
+        "display": "block",
+        "top": this.$parent.offset()!.top + this.$parent.outerHeight()!,
+        "left": this.$parent.offset()!.left,
+        "min-width": this.$parent.outerWidth()!
+      });
+    }
+    else {
+      $this.css("display", "none");
+    }
   }
 }

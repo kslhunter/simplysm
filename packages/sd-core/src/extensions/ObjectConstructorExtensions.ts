@@ -2,7 +2,8 @@ import {DateOnly} from "../types/DateOnly";
 import {Time} from "../types/Time";
 
 declare global {
-  interface ObjectConstructor { // tslint:disable-line:interface-name
+  // tslint:disable-next-line:interface-name
+  interface ObjectConstructor {
     equal<T>(source: T, taget: T): boolean;
 
     clone<T>(source: T, opts?: IObjectCloneOptions): T;

@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as JSZip from "jszip";
 import * as stream from "stream";
 
-import {DateOnly} from "@simplism/sd-core";
+import {DateOnly} from "../../sd-core/src/types/DateOnly";
 import {ExcelCellStyle} from "./ExcelCellStyle";
 import {ExcelNumberFormat} from "./ExcelEnums";
 import {ExcelWorksheet} from "./ExcelWorksheet";
@@ -16,10 +16,6 @@ import {ExcelXmlWorkbookRels} from "./XmlFile/ExcelXmlWorkbookRels";
 
 export class ExcelWorkbook {
   public worksheets: ExcelWorksheet[];
-
-  public constructor() {
-    this.worksheets = [];
-  }
 
   public get json(): { [sheet: string]: { [column: string]: any }[] } {
     const result: { [sheet: string]: { [column: string]: any }[] } = {};
@@ -70,6 +66,10 @@ export class ExcelWorkbook {
         ws.cell(0, i).value = headers[i];
       }
     }
+  }
+
+  public constructor() {
+    this.worksheets = [];
   }
 
   public static async loadAsync(pathOrBufferOrFile: any): Promise<ExcelWorkbook> {

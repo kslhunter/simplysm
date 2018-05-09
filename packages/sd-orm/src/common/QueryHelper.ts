@@ -1,6 +1,9 @@
 import * as mssql from "mssql";
 
-import {DateOnly, Time, Type, Uuid} from "@simplism/sd-core";
+import {DateOnly} from "../../../sd-core/src/types/DateOnly";
+import {Time} from "../../../sd-core/src/types/Time";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Uuid} from "../../../sd-core/src/types/Uuid";
 import {DataType} from "./Enums";
 
 // tslint:disable-next-line:variable-name

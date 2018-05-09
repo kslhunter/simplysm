@@ -2,7 +2,8 @@ import {DateOnly} from "../types/DateOnly";
 import {Time} from "../types/Time";
 
 declare global {
-  interface Date { // tslint:disable-line:interface-name
+  // tslint:disable-next-line:interface-name
+  interface Date {
     addSeconds(seconds: number): Date;
 
     addMinutes(minutes: number): Date;

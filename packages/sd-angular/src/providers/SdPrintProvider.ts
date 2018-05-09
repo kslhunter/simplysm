@@ -1,5 +1,5 @@
 import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
-import {SdPrintTemplateBase} from "../bases/SdPrintTemplateBase";
+import {SdPrintControlTemplateBase} from "../bases/SdPrintControlTemplateBase";
 
 @Injectable()
 export class SdPrintProvider {
@@ -8,46 +8,40 @@ export class SdPrintProvider {
                      private readonly _injector: Injector) {
   }
 
-  public async print<T extends SdPrintTemplateBase<I>, I>(printType: Type<SdPrintTemplateBase<I>>,
-                                                          params: T["params"],
-                                                          options?: { margin?: string; size?: string }): Promise<void> {
-    await new Promise<void>(async (resolve, reject) => {
+  public async print<T extends SdPrintControlTemplateBase<I>, I>(printType: Type<SdPrintControlTemplateBase<I>>,
+                                                                 param: T["param"],
+                                                                 options?: { margin?: string; size?: string }): Promise<void> {
+    await new Promise<void>(async resolve => {
       const compRef = this._compFactoryResolver.resolveComponentFactory(printType).create(this._injector);
-      const compEl = compRef.location.nativeElement as HTMLElement;
-      compEl.classList.add("_sd-print-template");
-      document.body.appendChild(compEl);
+      const $comp = $(compRef.location.nativeElement);
+      $comp.addClass("_sd-print-template");
+      $comp.appendTo($("body"));
 
-      const styleEl = document.createElement("style");
-      styleEl.innerText = `
+      const $style = $("<style></style>");
+      $style.text(`
 @page { size: ${options ? options.size : "auto"}; margin: ${options ? options.margin : "0"}; }
 @media print
 {
     html, body { -webkit-print-color-adjust: exact; }
     body > * { display: none !important; }
     body > ._sd-print-template { display: block !important; }
-}`;
-      document.head.appendChild(styleEl);
+}`);
+      $style.appendTo($("head"));
 
       try {
-        compRef.instance.params = params;
+        compRef.instance.param = param;
         await compRef.instance.sdBeforeOpen();
+      } catch (e) {
+        throw e;
       }
-      catch (e) {
-        compEl.remove();
-        styleEl.remove();
-        reject(e);
-      }
-
-      const prevInitFn = compRef.instance["ngAfterContentInit"];
-      compRef.instance["ngAfterContentInit"] = async () => {
-        window.print();
-        compEl.remove();
-        styleEl.remove();
-        if (prevInitFn) await prevInitFn();
-        resolve();
-      };
 
       this._appRef.attachView(compRef.hostView);
+      setTimeout(async () => {
+        window.print();
+        $comp.remove();
+        $style.remove();
+        resolve();
+      });
     });
   }
 }

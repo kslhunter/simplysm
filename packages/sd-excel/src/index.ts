@@ -1,4 +1,6 @@
-import "@simplism/sd-core"; // tslint:disable-line:no-import-side-effect
+import "../../sd-core/src/extensions/ArrayExtensions";
+import "../../sd-core/src/extensions/DateExtensions";
+import "../../sd-core/src/extensions/ObjectConstructorExtensions";
 
 export * from "./ExcelEnums";
 export * from "./ExcelWorkbook";

@@ -2,25 +2,25 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import {SdLocalUpdater} from "../builders/SdLocalUpdater";
 
-export async function localUpdateAsync(argv: { project: string; watch: boolean }): Promise<void> {
-  const promises: Promise<void>[] = [];
+export async function localUpdateAsync(argv: { watch: boolean }): Promise<void> {
+  const promiseList: Promise<void>[] = [];
+  if (
+    path.basename(process.cwd()) !== "simplism" &&
+    fs.existsSync(path.resolve(process.cwd(), "../simplism"))
+  ) {
+    const rootPackageJson = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
+    const dependencySimplismPackageNameList = [
+      ...rootPackageJson.dependencies ? Object.keys(rootPackageJson.dependencies) : [],
+      ...rootPackageJson.devDependencies ? Object.keys(rootPackageJson.devDependencies) : []
+    ].filter(item => item.startsWith("@simplism")).map(item => item.slice(10));
 
-  const localUpdateProjectJson = fs.readJsonSync(path.resolve(process.cwd(), `../${argv.project}/package.json`));
-  const localUpdateProjectName: string = localUpdateProjectJson.name;
-
-  const projectJson = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
-  const depLocalUpdatePackageNames = [
-    ...projectJson.dependencies ? Object.keys(projectJson.dependencies) : [],
-    ...projectJson.devDependencies ? Object.keys(projectJson.devDependencies) : []
-  ].filter(item => item.startsWith("@" + localUpdateProjectName)).map(item => item.slice(localUpdateProjectName.length + 2));
-
-  for (const depLocalUpdatePackageName of depLocalUpdatePackageNames) {
-    promises.push(new SdLocalUpdater(depLocalUpdatePackageName).runAsync());
-
-    if (argv.watch) {
-      promises.push(new SdLocalUpdater(depLocalUpdatePackageName).runAsync(true));
+    for (const dependencySimplismPackageName of dependencySimplismPackageNameList) {
+      if (argv.watch) {
+        promiseList.push(new SdLocalUpdater(dependencySimplismPackageName).runAsync());
+      }
+      promiseList.push(new SdLocalUpdater(dependencySimplismPackageName).runAsync(argv.watch));
     }
   }
 
-  await Promise.all(promises);
+  await Promise.all(promiseList);
 }

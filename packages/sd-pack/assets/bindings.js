@@ -1,3 +1,5 @@
+const Logger = require("@simplism/sd-core").Logger;
+
 module.exports = exports = function (str) {
   if (str.startsWith("bufferutil")) {
     const result = require("bufferutil/build/Release/bufferutil.node");
@@ -10,5 +12,5 @@ module.exports = exports = function (str) {
     return result;
   }
 
-  throw new Error("미지정: " + str);
+  new Logger("bindings").warn("미지정:", str);
 };

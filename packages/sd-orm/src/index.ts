@@ -1,5 +1,7 @@
-import "@simplism/sd-core"; // tslint:disable-line:no-import-side-effect
-import "reflect-metadata"; // tslint:disable-line:no-import-side-effect
+import "reflect-metadata";
+import "../../sd-core/src/extensions/ArrayExtensions";
+import "../../sd-core/src/extensions/DateExtensions";
+import "../../sd-core/src/extensions/ObjectConstructorExtensions";
 
 export * from "./common/Definitions";
 export * from "./common/Enums";

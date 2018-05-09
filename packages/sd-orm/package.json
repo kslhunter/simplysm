@@ -1,6 +1,6 @@
 {
   "name": "@simplism/sd-orm",
-  "version": "6.1.29",
+  "version": "6.1.22",
   "description": "Simplism ORM Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,9 +8,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/sd-core": "^6.1.29",
-    "@types/mssql": "^4.0.7",
+    "@simplism/sd-core": "^6.1.22",
     "mssql": "^4.1.0",
-    "reflect-metadata": "^0.1.12"
+    "reflect-metadata": "^0.1.12",
+    "fs-extra": "^6.0.0"
   }
 }

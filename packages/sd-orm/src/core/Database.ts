@@ -1,8 +1,8 @@
-// tslint:disable:cyclomatic-complexity
-
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import {ConnectionPool, IProcedureResult, IResult, ISOLATION_LEVEL, ISqlType, Request, Table, Transaction} from "mssql";
-import {Exception, Logger, Type} from "@simplism/sd-core";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {Type} from "../../../sd-core/src/types/Type";
+import {Logger} from "../../../sd-core/src/utils/Logger";
 import {IFunctionDefinition, IStoredProcedureDefinition, ITableDefinition} from "../common/Definitions";
 import {OrderByRule} from "../common/Enums";
 import {functionMetadataSymbol} from "../common/FunctionDecorators";
@@ -16,16 +16,16 @@ import {QueryBuilder} from "./QueryBuilder";
 
 export abstract class Database {
   public logger = new Logger("@simplism/sd-orm", "Database");
-  private _conn?: ConnectionPool; // tslint:disable-line:prefer-readonly
+  private _conn?: ConnectionPool;
   private _trans?: Transaction;
   private _preparedQueries: string[] = [];
 
-  protected constructor(public config: IConnectionConfig,
-                        public migrations: string[]) {
-  }
-
   public get hasTransaction(): boolean {
     return !!this._trans;
+  }
+
+  protected constructor(public config: IConnectionConfig,
+                        public migrations: string[]) {
   }
 
   public static async connect<T extends Database, R>(dbContextType: Type<T>, fn: (dbContext: T) => Promise<R>): Promise<R> {

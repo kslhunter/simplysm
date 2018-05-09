@@ -1,12 +1,10 @@
 import {ChangeDetectionStrategy, Component} from "@angular/core";
-import {SdComponentBase} from "../bases/SdComponentBase";
 
 @Component({
   selector: "sd-card",
   template: `
-    <ng-content></ng-content>`,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{provide: SdComponentBase, useExisting: SdCardControl}]
+        <ng-content></ng-content>`,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SdCardControl extends SdComponentBase {
+export class SdCardControl {
 }

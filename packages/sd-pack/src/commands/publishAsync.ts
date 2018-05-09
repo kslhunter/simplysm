@@ -1,21 +1,21 @@
-import {ImposibleException} from "@simplism/sd-core";
 import * as child_process from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as semver from "semver";
+import {Logger} from "../../../sd-core/src/utils/Logger";
 import {SdClientPackageBuilder} from "../builders/SdClientPackageBuilder";
 import {SdLibraryPackageBuilder} from "../builders/SdLibraryPackageBuilder";
-import {SdPackConfigType} from "../commons/configs";
 import {SdServerPackageBuilder} from "../builders/SdServerPackageBuilder";
 
-export async function publishAsync(argv: { config: string }): Promise<void> {
-  const promises: Promise<void>[] = [];
+export async function publishAsync(argv: { host: string; port: number; user: string; pass: string; root: string }): Promise<void> {
+  const logger = new Logger("@simplism/sd-pack", "publish");
 
   const spawn1 = child_process.spawnSync("git", ["diff"], {
     shell: true
   });
   if (spawn1.output.filter((item: any) => item && item.toString().trim()).length > 0) {
-    throw Error("커밋 되지 않은 정보가 있습니다.");
+    logger.error("커밋 되지 않은 정보가 있습니다.");
+    return;
   }
 
   const packageConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
@@ -25,27 +25,21 @@ export async function publishAsync(argv: { config: string }): Promise<void> {
     stdio: "inherit"
   });
 
-  const configs: SdPackConfigType[] = require(path.resolve(process.cwd(), argv.config));
-  for (const config of configs) {
-    if (config.type === "library") {
-      promises.push(new SdLibraryPackageBuilder(config).publishAsync());
+  const promiseList: Promise<void>[] = [];
+  for (const packageName of fs.readdirSync(path.resolve(process.cwd(), "packages"))) {
+    if (packageName.startsWith("server")) {
+      promiseList.push(new SdServerPackageBuilder(packageName).publishAsync(argv));
     }
-    else if (config.type === "client") {
-      promises.push(new SdClientPackageBuilder(config).publishAsync());
-    }
-    else if (config.type === "server") {
-      promises.push(new SdServerPackageBuilder(config).publishAsync());
+    else if (packageName.startsWith("client")) {
+      promiseList.push(new SdClientPackageBuilder(packageName).publishAsync(argv));
     }
     else {
-      throw new ImposibleException();
+      promiseList.push(new SdLibraryPackageBuilder(packageName).publishAsync());
     }
   }
-  await Promise.all(promises);
+  await Promise.all(promiseList);
 
   // git push
-  child_process.spawnSync("git", ["commit", "-m", "publish"], {
-    shell: true
-  });
   child_process.spawnSync("git", ["push"], {
     shell: true
   });

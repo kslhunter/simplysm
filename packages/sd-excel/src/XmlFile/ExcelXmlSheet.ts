@@ -1,7 +1,6 @@
-// tslint:disable: cyclomatic-complexity
-
 import * as XML from "xml2js";
-import {DateOnly, Exception} from "@simplism/sd-core";
+import {Exception} from "../../../sd-core/src/exceptions/Exception";
+import {DateOnly} from "../../../sd-core/src/types/DateOnly";
 import {ExcelAddress} from "../ExcelAddress";
 import {ExcelCellStyle} from "../ExcelCellStyle";
 import {ExcelNumberFormat} from "../ExcelEnums";

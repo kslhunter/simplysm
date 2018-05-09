@@ -1,8 +1,11 @@
+// tslint:disable:unified-signatures
+
 import {Type} from "../types/Type";
 import {JsonConvert} from "../utils/JsonConvert";
 
 declare global {
-  interface Array<T> { // tslint:disable-line:interface-name
+  // tslint:disable-next-line:interface-name
+  interface Array<T> {
     groupBy<K extends keyof T>(keyPredicate: K[]): { key: Pick<T, K>; values: T[] }[];
 
     groupBy<K>(keyPredicate: (item: T, index: number) => K): { key: K; values: T[] }[];
@@ -41,11 +44,11 @@ declare global {
 
     remove(item: T): void;
 
-    remove(predicate: (item: T, index: number) => boolean): void; // tslint:disable-line:unified-signatures
+    remove(predicate: (item: T, index: number) => boolean): void;
 
     removeRange(items: T[]): void;
 
-    removeRange(predicate: (item: T, index: number) => boolean): void; // tslint:disable-line:unified-signatures
+    removeRange(predicate: (item: T, index: number) => boolean): void;
 
     mapAsync<R>(predicate: (item: T, index: number) => Promise<R>): Promise<R[]>;
 

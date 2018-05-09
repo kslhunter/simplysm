@@ -2,7 +2,6 @@
   "extends": "../../tslint.json",
   "rulesDirectory": "../../node_modules/codelyzer",
   "rules": {
-    "max-classes-per-file": false,
     "angular-whitespace": [
       true,
       "check-interpolation",
@@ -32,7 +31,7 @@
     "use-host-property-decorator": true,
     "use-view-encapsulation": true,
     "no-attribute-parameter-decorator": true,
-    "no-output-named-after-standard-event": false,
+    "no-output-named-after-standard-event": true,
     "no-input-rename": true,
     "no-output-rename": true,
     "no-output-on-prefix": true,
@@ -52,5 +51,6 @@
     "i18n": false,
     "template-cyclomatic-complexity": false,
     "template-conditional-complexity": false
-  }
+  },
+  "defaultSeverity": "warning"
 }

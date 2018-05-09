@@ -1,25 +1,32 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "declaration": true,
-    "experimentalDecorators": true,
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
     "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strict": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "removeComments": true,
+    "noUnusedLocals": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "typeRoots": [
+      "../../node_modules/@types"
+    ],
     "lib": [
       "es2017",
       "dom"
     ],
-    "outDir": "./dist",
-    "baseUrl": ".",
-    "paths": {
-      "@simplism/sd-core": [
-        "../sd-core/src/index.ts"
-      ],
-      "@simplism/sd-socket-common": [
-        "../sd-socket-common/src/index.ts"
-      ],
-      "@simplism/sd-socket-client": [
-        "../sd-socket-client/src/index.ts"
-      ]
-    }
-  }
+    "plugins": [
+      {
+        "name": "@angular/language-service"
+      }
+    ],
+    "outDir": "./dist"
+  },
+  "files": [
+    "./src/index.ts"
+  ]
 }
