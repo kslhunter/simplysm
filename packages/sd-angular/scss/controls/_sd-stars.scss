@@ -1,0 +1,9 @@
+sd-stars > div {
+  > .fa {
+    color: gold;
+  }
+
+  &._size-lg {
+    @include font-size(lg);
+  }
+}

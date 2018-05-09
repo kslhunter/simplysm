@@ -1,0 +1,243 @@
+sd-button {
+  position: relative;
+  display: block;
+  width: 100%;
+
+  &._deselectable {
+    padding-right: (18em / 14);
+
+    > div {
+      position: absolute;
+      top: 0;
+      right: 0;
+      border-top: 1px solid transparent;
+      border-bottom: 1px solid transparent;
+      @include padding(sm, 0);
+    }
+  }
+
+  &._inline {
+    display: inline-block;
+    width: auto;
+  }
+
+  > button {
+    display: block;
+    width: 100%;
+    font-size: inherit;
+    font-family: inherit;
+    line-height: inherit;
+    color: inherit;
+    border: 1px solid border-color();
+    @include padding(sm, default);
+    background: #fff;
+    text-align: center;
+    @include user-select(none);
+    font-weight: bold;
+    cursor: pointer;
+
+    * {
+      pointer-events: none;
+    }
+
+    @media screen and (min-width: $m-screen) {
+      &:hover {
+        background: grey(lightest);
+      }
+    }
+
+    &._error {
+      border-left-color: theme-color(danger);
+    }
+
+    &:active {
+      background: grey(lighter);
+      border-color: border-color(dark);
+    }
+
+    &:focus {
+      outline: 1px solid theme-darker(primary);
+      outline-offset: -1px;
+    }
+
+    &:disabled {
+      color: text-color(lighter);
+      background: grey(lightest);
+      cursor: default;
+    }
+
+    &._inline {
+      display: inline-block;
+      width: auto;
+    }
+
+    @each $key, $color in $theme-colors {
+      &._theme-#{$key} {
+        background: theme-color($key);
+        border-color: theme-color($key);
+        color: #fff;
+
+        @media screen and (min-width: $m-screen) {
+          &:hover {
+            background: theme-dark($key);
+            border-color: theme-dark($key);
+          }
+        }
+
+        &:active {
+          background: theme-darker($key);
+          border-color: theme-darker($key);
+        }
+
+        &:focus {
+          outline: 1px solid theme-darker($key);
+          outline-offset: -1px;
+        }
+
+        &:disabled {
+          background: theme-light($key);
+          border-color: theme-light($key);
+          color: text-white(lighter);
+        }
+      }
+    }
+
+    &._size-xxs {
+      @include padding(0, xxs);
+      @include font-size(sm);
+
+      + div {
+        @include padding(0, 0);
+      }
+    }
+    &._size-xs {
+      @include padding(xxs, xs);
+      @include font-size(sm);
+      + div {
+        @include padding(xxs, 0);
+      }
+    }
+    &._size-sm {
+      @include padding(xs, sm);
+      @include font-size();
+      + div {
+        @include padding(xs, 0);
+      }
+    }
+    &._size-default {
+      @include padding(sm, default);
+      @include font-size();
+      + div {
+        @include padding(sm, 0);
+      }
+    }
+    &._size-lg {
+      @include padding(default, lg);
+      @include font-size();
+      + div {
+        @include padding(default, 0);
+      }
+    }
+    &._size-xl {
+      @include padding(lg, xl);
+      @include font-size(lg);
+      + div {
+        @include padding(lg, 0);
+      }
+    }
+    &._size-xxl {
+      @include padding(xl, xxl);
+      @include font-size(lg);
+      + div {
+        @include padding(xl, 0);
+      }
+    }
+
+    &._selected {
+      background: theme-color(primary);
+      border-color: theme-color(primary);
+      color: text-white();
+
+      &:disabled {
+        background: theme-light(primary);
+        border-color: theme-light(primary);
+        color: text-white(lighter);
+      }
+    }
+
+    &._type-search,
+    &._type-barcode {
+      text-align: left;
+      font-weight: normal;
+      min-width: 120px;
+      @include user-select(auto);
+
+      > ._sd-button-content {
+        padding-right: 1.25em;
+      }
+    }
+  }
+  //
+  // @each $key, $color in $theme-colors {
+  //  &.sd-button-theme-#{$key} {
+  //    > button {
+  //      background: theme-color($key);
+  //      border-color: theme-color($key);
+  //      color: #fff;
+  //
+  //      @media screen and (min-width: $m-screen) {
+  //        &:hover {
+  //          background: theme-dark($key);
+  //          border-color: theme-dark($key);
+  //        }
+  //      }
+  //
+  //      &:active {
+  //        background: theme-darker($key);
+  //        border-color: theme-darker($key);
+  //      }
+  //
+  //      &:disabled {
+  //        background: theme-light($key);
+  //        border-color: theme-light($key);
+  //        color: text-white(lighter);
+  //      }
+  //    }
+  //  }
+  // }
+  //
+  // &.sd-button-size-xxs > button {
+  //  @include padding(0, xxs);
+  //  @include font-size(sm);
+  // }
+  // &.sd-button-size-xs > button {
+  //  @include padding(xxs, xs);
+  //  @include font-size(sm);
+  // }
+  // &.sd-button-size-sm > button {
+  //  @include padding(xs, sm);
+  //  @include font-size();
+  // }
+  // &.sd-button-size-default > button {
+  //  @include padding(sm, default);
+  //  @include font-size();
+  // }
+  // &.sd-button-size-lg > button {
+  //  @include padding(default, lg);
+  //  @include font-size();
+  // }
+  // &.sd-button-size-xl > button {
+  //  @include padding(lg, xl);
+  //  @include font-size(lg);
+  // }
+  // &.sd-button-size-xxl > button {
+  //  @include padding(xl, xxl);
+  //  @include font-size(lg);
+  // }
+  //
+  // &.sd-button-selected > button {
+  //  background: theme-color(primary);
+  //  border-color: theme-color(primary);
+  //  color: text-white();
+  // }
+}

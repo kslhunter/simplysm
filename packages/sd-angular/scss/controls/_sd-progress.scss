@@ -1,0 +1,38 @@
+sd-progress {
+  position: relative;
+  display: block;
+  white-space: nowrap;
+  width: 100%;
+  background: grey(lighter);
+  overflow: hidden;
+
+  > ._sd-progress-content {
+    @include padding(sm, default);
+  }
+
+  > sd-progress-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: inline-block;
+    overflow: hidden;
+    > div {
+      @include padding(sm, default);
+    }
+
+    @each $key, $color in $theme-colors {
+      &._theme-#{$key} {
+        background: theme-color($key);
+        color: #fff;
+      }
+    }
+  }
+
+  &._size-lg {
+    > ._sd-progress-content,
+    > sd-progress-item > div {
+      @include padding(default, lg);
+      @include font-size(lg);
+    }
+  }
+}

@@ -1,0 +1,21 @@
+sd-tab {
+  display: block;
+  @include clearfix();
+  padding: 0 padding(sm);
+  background: grey(lightest);
+
+  > sd-tab-item {
+    display: block;
+    float: left;
+    cursor: pointer;
+    padding: padding(sm) padding();
+
+    &:hover {
+      background: grey(lighter);
+    }
+    &._selected {
+      cursor: default;
+      background: white;
+    }
+  }
+}

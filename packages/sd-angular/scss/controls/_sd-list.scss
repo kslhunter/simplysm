@@ -1,0 +1,119 @@
+sd-list {
+  display: block;
+  // background: #fff;
+
+  > sd-list-item > div {
+    display: block;
+
+    > ._title {
+      display: block;
+      @include padding(sm, default);
+      @include user-select(none);
+
+      @media screen and (min-width: $m-screen) {
+        &:hover,
+        &:focus {
+          background: rgba(0, 0, 0, .1);
+        }
+      }
+
+      > ._icon {
+        display: none;
+      }
+    }
+
+    > ._child {
+      display: none;
+
+      > sd-list {
+        padding-top: 0;
+      }
+    }
+
+    &._has-child {
+      > ._title > ._icon {
+        display: inline-block;
+        font-family: "FontAwesome";
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        @include transform(rotate(90deg));
+        content: "\f107";
+        float: right;
+        line-height: $line-height;
+      }
+    }
+
+    &._open {
+      > ._title > ._icon {
+        @include transform(rotate(0deg));
+      }
+
+      > ._child {
+        display: block;
+      }
+    }
+
+    &._size-sm {
+      > ._title {
+        @include padding(xs, sm);
+      }
+    }
+    &._size-lg {
+      > ._title {
+        @include padding(default, lg);
+      }
+    }
+
+    &._header {
+      > ._title {
+        @include padding(xs, default);
+        /*@include font-size(sm);*/
+        font-weight: bold;
+        background: transparent;
+        cursor: default;
+        opacity: .6;
+
+        > ._icon {
+          display: none;
+        }
+      }
+
+      > ._child {
+        display: block;
+      }
+
+      &._size-sm {
+        > ._title {
+          @include padding(xxs, sm);
+        }
+      }
+      &._size-lg {
+        > ._title {
+          @include padding(sm, lg);
+        }
+      }
+    }
+
+    &._selected > ._title {
+      background: theme-color(primary);
+      color: white;
+    }
+  }
+
+  &._clickable {
+    > sd-list-item > div {
+      > ._title {
+        cursor: pointer;
+
+        &:active {
+          background: rgba(0, 0, 0, .2);
+        }
+      }
+
+      &._header > ._title:active {
+        background: transparent;
+      }
+    }
+  }
+}

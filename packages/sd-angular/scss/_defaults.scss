@@ -1,0 +1,283 @@
+*,
+*:after,
+*:before {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+  @include user-select(text);
+}
+
+*:focus {
+  outline: none;
+}
+
+// Layout Tags
+html, body, main {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: $background;
+  font-family: $font-family;
+  @include font-size();
+  color: text-color();
+  overflow: hidden;
+}
+
+main {
+  overflow: auto;
+}
+
+// Element Tags
+pre {
+  font-family: inherit;
+  line-height: inherit;
+  font-weight: inherit;
+  margin: 0;
+  white-space: pre-line;
+}
+
+hr {
+  display: block;
+  border: none;
+  height: 1px;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background: border-color();
+}
+
+a {
+  color: theme-color(primary);
+  cursor: pointer;
+}
+
+// Header Tags
+@each $key in (h1, h2, h3, h4, h5, h6) {
+  #{$key} {
+    padding: 0;
+    margin: 0;
+    @include font-size($key);
+  }
+}
+
+.clearfix {
+  @include clearfix();
+}
+
+// Scrollbar
+@media screen and (min-width: $m-screen) {
+
+  ::-webkit-scrollbar-track {
+    background-color: rgba(127, 127, 127, .2);
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+    background-color: rgba(0, 0, 0, 0);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    /*border-radius: 12px;*/
+    background-color: rgba(127, 127, 127, .4);
+  }
+}
+
+// Style Classes
+@each $key, $v in $paddings {
+  @each $position in top, right, bottom, left {
+    .sd-padding-#{$position}-#{$key} {
+      padding-#{$position}: padding($key) !important;
+
+      @media screen and (max-width: $m-screen) {
+        padding-#{$position}: m-padding($key) !important;
+      }
+    }
+
+    .sd-padding-#{$position}--#{$key} {
+      padding-#{$position}: padding($key) * -1 !important;
+
+      @media screen and (max-width: $m-screen) {
+        padding-#{$position}: m-padding($key) * -1 !important;
+      }
+    }
+  }
+}
+
+@each $key, $v in $paddings {
+  .sd-padding-v-#{$key} {
+    padding-top: padding($key) !important;
+    padding-bottom: padding($key) !important;
+
+    @media screen and (max-width: $m-screen) {
+      padding-top: m-padding($key) !important;
+      padding-bottom: m-padding($key) !important;
+    }
+  }
+
+  .sd-padding-h-#{$key} {
+    padding-left: padding($key) !important;
+    padding-right: padding($key) !important;
+
+    @media screen and (max-width: $m-screen) {
+      padding-left: m-padding($key) !important;
+      padding-right: m-padding($key) !important;
+    }
+  }
+}
+
+@each $key, $v in $paddings {
+  .sd-padding-#{$key} {
+    @include padding($key);
+  }
+}
+
+@each $keyV, $v in $paddings {
+  @each $keyH, $v in $paddings {
+    .sd-padding-#{$keyV}-#{$keyH} {
+      @include padding($keyV, $keyH);
+    }
+  }
+}
+
+@each $key, $v in $paddings {
+  @each $position in top, right, bottom, left {
+    .sd-margin-#{$position}-#{$key} {
+      margin-#{$position}: padding($key);
+
+      @media screen and (max-width: $m-screen) {
+        margin-#{$position}: m-padding($key);
+      }
+    }
+
+    .sd-margin-#{$position}--#{$key} {
+      margin-#{$position}: padding($key) * -1;
+
+      @media screen and (max-width: $m-screen) {
+        margin-#{$position}: m-padding($key) * -1;
+      }
+    }
+  }
+}
+
+@each $key, $color in $theme-colors {
+  .sd-text-color-#{$key} {
+    color: theme-color($key) !important;
+  }
+}
+
+@each $key, $color in $text-colors {
+  .sd-text-color-#{$key} {
+    color: text-color($key) !important;
+  }
+}
+
+.sd-text-color-white {
+  color: #fff !important;
+}
+
+.sd-text-type-cancel {
+  text-decoration: line-through !important;
+}
+
+@each $key, $color in $font-sizes {
+  .sd-text-size-#{$key} {
+    @include font-size($key);
+  }
+}
+
+@each $key, $color in $theme-colors {
+  .sd-background-#{$key} {
+    background: theme-color($key) !important;
+  }
+}
+
+.sd-background-grey {
+  background: grey(darkest) !important;
+}
+
+.sd-background-white {
+  background: #fff !important;
+}
+
+@each $key, $color in $theme-colors {
+  .sd-background-#{$key}-state {
+    background: state-color($key) !important;
+  }
+}
+
+.sd-background-grey-state {
+  background: grey(lightest) !important;
+}
+
+@each $key, $color in $theme-colors {
+  .sd-background-#{$key}-trans {
+    background: rgba(theme-color($key), .1) !important;
+  }
+}
+
+.sd-background-grey-trans {
+  background: rgba(#000, .2) !important;
+}
+
+.sd-background-white-trans {
+  background: rgba(#fff, .1) !important;
+}
+
+@each $key, $color in $border-colors {
+  .sd-border-#{$key} {
+    border: 1px solid border-color($key) !important;
+  }
+}
+
+.sd-border-none {
+  border: none !important;
+}
+
+@each $key, $color in $border-colors {
+  @each $position in top, right, bottom, left {
+    .sd-border-#{$position}-#{$key} {
+      border-#{$position}: 1px solid border-color($key) !important;
+    }
+  }
+}
+
+@each $position in top, right, bottom, left {
+  .sd-border-#{$position}-none {
+    border-#{$position}: none !important;
+  }
+}
+
+@each $key, $color in $border-colors {
+  @each $position in top, right, bottom, left {
+    .sd-border-color-#{$position}-#{$key} {
+      border-#{$position}-color: border-color($key) !important;
+    }
+
+    .sd-border-color-#{$position}-trans {
+      border-#{$position}-color: transparent !important;
+    }
+  }
+}
+
+.sd-text-align-left {
+  text-align: left !important;
+}
+
+.sd-text-align-center {
+  text-align: center !important;
+}
+
+.sd-text-align-right {
+  text-align: right !important;
+}
+
+.sd-float-right {
+  float: right !important;
+}

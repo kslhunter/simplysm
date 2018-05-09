@@ -1,0 +1,17 @@
+sd-enum {
+  > sd-enum-item {
+    > label {
+      color: text-color(lighter);
+      &:after {
+        content: ":";
+      }
+    }
+
+    > span {
+    }
+
+    + sd-enum-item:before {
+      content: "/";
+    }
+  }
+}
