@@ -141,7 +141,7 @@ export class SdLibraryPackageBuilder {
           if (depName.startsWith("@" + rootPackageJson.name)) {
             packageJson[depTypeName][depName] = `^${rootPackageJson.version}`;
           }
-          else if (rootPackageJson.dependencies[depName]) {
+          else if (rootPackageJson.devDependencies[depName]) {
             packageJson[depTypeName][depName] = rootPackageJson.dependencies[depName];
           }
           else {
