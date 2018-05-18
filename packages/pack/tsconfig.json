@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": true,
+    "lib": [
+      "es2017"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@simplism/core": [
+        "../core/src/index.ts"
+      ]
+    }
+  },
+  "files": [
+    "src/bin.ts",
+    "src/workers/ts-build.ts",
+    "src/index.ts"
+  ]
+}

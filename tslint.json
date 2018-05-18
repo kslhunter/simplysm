@@ -1,0 +1,150 @@
+{
+  "extends": "tslint:all",
+  "defaultSeverity": "warning",
+  "rules": {
+    "no-trailing-whitespace": [
+      true,
+      "ignore-template-strings",
+      "ignore-blank-lines"
+    ],
+    "member-ordering": false,
+    "variable-name": [
+      true,
+      "allow-leading-underscore"
+    ],
+    "newline-per-chained-call": false,
+    "completed-docs": false,
+    "no-magic-numbers": false,
+    "one-line": [
+      true,
+      "check-open-brace",
+      "check-whitespace"
+    ],
+    "typedef": [
+      true,
+      "call-signature",
+      "parameter",
+      "property-declaration"
+    ],
+    "comment-format": false,
+    "prefer-switch": false,
+    "arrow-parens": [
+      true,
+      "ban-single-arg-parens"
+    ],
+    "trailing-comma": false,
+    "only-arrow-functions": false,
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-separator",
+      "check-rest-spread",
+      "check-type",
+      "check-typecast",
+      "check-type-operator",
+      "check-preblock"
+    ],
+    "space-before-function-paren": [
+      true,
+      {
+        "anonymous": "always",
+        "asyncArrow": "always",
+        "constructor": "never",
+        "method": "never",
+        "named": "never"
+      }
+    ],
+    "object-literal-sort-keys": false,
+    "no-non-null-assertion": false,
+    "align": [
+      true,
+      "parameters",
+      "arguments",
+      "statements",
+      "members"
+    ],
+    "await-promise": false,
+    "no-parameter-properties": false,
+    "prefer-function-over-method": false,
+    "newline-before-return": false,
+    "linebreak-style": false,
+    "no-this-assignment": false,
+    "no-return-await": false,
+    "array-type": [
+      true,
+      "array"
+    ],
+    "no-unnecessary-class": false,
+    "no-any": false,
+    "triple-equals": [
+      true,
+      "allow-undefined-check"
+    ],
+    "no-bitwise": false,
+    "no-empty": false,
+    "no-empty-interface": false,
+    "prefer-template": false,
+    "promise-function-async": [
+      true,
+      "check-function-declaration",
+      "check-function-expression",
+      "check-method-declaration"
+    ],
+    "curly": [
+      true,
+      "ignore-same-line"
+    ],
+    "eofline": false,
+    "no-void-expression": [
+      true,
+      "ignore-arrow-function-shorthand"
+    ],
+    "quotemark": [
+      true,
+      "double",
+      "avoid-escape"
+    ],
+    "no-unnecessary-callback-wrapper": false,
+    "arrow-return-shorthand": false,
+    "restrict-plus-operands": false,
+    "no-submodule-imports": [
+      true,
+      "core-js",
+      "zone.js",
+      "@angular/platform-browser"
+    ],
+    "no-import-side-effect": [
+      true,
+      {
+        "ignore-module": "(Extensions$|^core-js|^zone\\.js|^reflect-metadata$)"
+      }
+    ],
+    "no-unsafe-any": false,
+    "no-dynamic-delete": false,
+    "no-unbound-method": false,
+    "strict-boolean-expressions": false,
+    "max-line-length": false,
+    "no-console": false,
+    "ban-types": [
+      true,
+      [
+        "Object",
+        "Avoid using the `Object` type. Did you mean `object`?"
+      ],
+      [
+        "Function",
+        "Avoid using the `Function` type. Prefer a specific function type, like `() => void`."
+      ],
+      [
+        "Symbol",
+        "Avoid using the `Symbol` type. Did you mean `symbol`?"
+      ]
+    ],
+    "ordered-imports": false,
+    "no-string-literal": false,
+    "no-inferred-empty-object-type": false,
+    "unified-signatures": false
+  }
+}

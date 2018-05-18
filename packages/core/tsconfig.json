@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": true,
+    "lib": [
+      "es2017"
+    ],
+    "outDir": "dist"
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

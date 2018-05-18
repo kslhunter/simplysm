@@ -1,0 +1,21 @@
+{
+  "name": "@simplism/pack",
+  "version": "7.0.0",
+  "description": "Simplism Package Builder CLI",
+  "repository": "github:kslhunter/simplism",
+  "author": "kslhunter",
+  "license": "MIT",
+  "bin": {
+    "sd-pack": "dist/bin.js"
+  },
+  "dependencies": {
+    "yargs": "^11.0.0",
+    "fs-extra": "^6.0.1",
+    "ts-node": "^6.0.3",
+    "typescript": "^2.8.3",
+    "chokidar": "^2.0.3",
+    "@simplism/core": "^7.0.0",
+    "tslint": "^5.10.0",
+    "semver": "^5.5.0"
+  }
+}
