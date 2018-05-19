@@ -6,5 +6,13 @@
   "author": "kslhunter",
   "license": "MIT",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts"
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@simplism/core": "^7.0.3",
+    "@simplism/websocket-client": "^7.0.3",
+    "ws": "^5.1.1",
+    "utf-8-validate": "^4.0.2",
+    "bufferutil": "^3.0.5",
+    "mime": "^2.3.1"
+  }
 }

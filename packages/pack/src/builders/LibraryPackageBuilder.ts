@@ -5,8 +5,8 @@ import {Exception, Logger} from "@simplism/core";
 import * as child_process from "child_process";
 import * as chokidar from "chokidar";
 
-export class SdLibraryPackageBuilder {
-  private readonly _logger = new Logger("@simplism/sd-pack", `SdLibraryPackageBuilder`);
+export class LibraryPackageBuilder {
+  private readonly _logger = new Logger("@simplism/pack", `LibraryPackageBuilder`);
 
   public constructor(private readonly _config: ILibraryPackageConfig) {
   }
@@ -35,7 +35,7 @@ export class SdLibraryPackageBuilder {
       new Promise<void>(resolve => {
         tsBuildWorker.once("message", result => {
           if (result.length > 0) {
-            this._logger.error("build error occurred", result.join("\r\n"));
+            this._logger.error(`${this._config.name} build error occurred`, result.join("\r\n"));
           }
           resolve();
         }).send("run");
@@ -43,7 +43,7 @@ export class SdLibraryPackageBuilder {
       new Promise<void>(resolve => {
         tsLintWorker.once("message", result => {
           if (result.length > 0) {
-            this._logger.error("lint error occurred", result.join("\r\n"));
+            this._logger.warn(`${this._config.name} lint error occurred`, result.join("\r\n"));
           }
           resolve();
         }).send("run");
@@ -86,7 +86,7 @@ export class SdLibraryPackageBuilder {
               new Promise<void>(resolve1 => {
                 tsBuildWorker.once("message", result => {
                   if (result.length > 0) {
-                    this._logger.error("build error occurred", result.join("\r\n"));
+                    this._logger.error(`${this._config.name} build error occurred`, result.join("\r\n"));
                   }
                   resolve1();
                 }).send("run");
@@ -94,7 +94,7 @@ export class SdLibraryPackageBuilder {
               new Promise<void>(resolve1 => {
                 tsLintWorker.once("message", result => {
                   if (result.length > 0) {
-                    this._logger.error("lint error occurred", result.join("\r\n"));
+                    this._logger.warn(`${this._config.name} lint error occurred`, result.join("\r\n"));
                   }
                   resolve1();
                 }).send("run");
@@ -126,10 +126,10 @@ export class SdLibraryPackageBuilder {
 
   public async publishAsync(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
-      this._logger.log("publishing...");
+      this._logger.log(`${this._config.name} publishing...`);
 
       // 최상위 package.json 설정 가져오기
-      const rootPackageJson = fs.readJsonSync(this._rootPath("package.json"));
+      const rootPackageJson = fs.readJsonSync(this._projectPath("package.json"));
 
       // package.json 설정 가져오기
       const packageJson = fs.readJsonSync(this._packagePath("package.json"));
@@ -142,7 +142,7 @@ export class SdLibraryPackageBuilder {
             packageJson[depTypeName][depName] = `^${rootPackageJson.version}`;
           }
           else if (rootPackageJson.devDependencies[depName]) {
-            packageJson[depTypeName][depName] = rootPackageJson.dependencies[depName];
+            packageJson[depTypeName][depName] = rootPackageJson.devDependencies[depName];
           }
           else {
             throw new Exception(`'${this._config.name}'패키지의 의존성 패키지 정보가 루트 패키지에 없습니다.`);
@@ -167,18 +167,18 @@ export class SdLibraryPackageBuilder {
 
       shell.on("exit", () => {
         if (errorMessage.trim()) {
-          this._logger.error("error occurred", errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
+          this._logger.error(`${this._config.name} error occurred`, errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
           reject();
           return;
         }
 
-        this._logger.info(`publish complete: v${rootPackageJson.version}`);
+        this._logger.info(`${this._config.name} publish complete: v${rootPackageJson.version}`);
         resolve();
       });
     });
   }
 
-  private _rootPath(...args: string[]): string {
+  private _projectPath(...args: string[]): string {
     return path.resolve(process.cwd(), ...args);
   }
 

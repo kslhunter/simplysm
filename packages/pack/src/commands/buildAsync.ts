@@ -7,9 +7,11 @@ import {
   IProjectConfig,
   IServerPackageConfig
 } from "../commons/IProjectConfig";
-import {SdLocalUpdater} from "../builders/SdLocalUpdater";
-import {SdLibraryPackageBuilder} from "../builders/SdLibraryPackageBuilder";
+import {LocalUpdater} from "../builders/LocalUpdater";
+import {LibraryPackageBuilder} from "../builders/LibraryPackageBuilder";
 import {Wait} from "@simplism/core";
+import {ServerPackageBuilder} from "../builders/ServerPackageBuilder";
+import {ClientPackageBuilder} from "../builders/ClientPackageBuilder";
 
 export async function buildAsync(argv: { watch: boolean; package: string; config: string }): Promise<void> {
   const configJsContent = ts.transpile(fs.readFileSync(path.resolve(process.cwd(), argv.config), "utf-8"));
@@ -21,7 +23,7 @@ export async function buildAsync(argv: { watch: boolean; package: string; config
       const packagePath = projectConfig.localDependencies[packageName];
 
       if (fs.existsSync(packagePath)) {
-        await new SdLocalUpdater(packageName, packagePath).runAsync(true);
+        promiseList.push(new LocalUpdater(packageName, packagePath).runAsync(true));
       }
     }
   }
@@ -29,24 +31,24 @@ export async function buildAsync(argv: { watch: boolean; package: string; config
   const runAsync = async (config: ILibraryPackageConfig | IClientPackageConfig | IServerPackageConfig) => {
     if (!argv.watch) {
       if (config.type === "client") {
-        /*await new SdClientPackageBuilder(config).buildAsync();*/
+        await new ClientPackageBuilder(config).buildAsync();
       }
       else if (config.type === "server") {
-        /*await new SdServerPackageBuilder(config).buildAsync();*/
+        await new ServerPackageBuilder(config).buildAsync();
       }
       else {
-        await new SdLibraryPackageBuilder(config).buildAsync();
+        await new LibraryPackageBuilder(config).buildAsync();
       }
     }
     else {
       if (config.type === "client") {
-        /*await new SdClientPackageBuilder(config).watchAsync();*/
+        await new ClientPackageBuilder(config).watchAsync();
       }
       else if (config.type === "server") {
-        /*await new SdServerPackageBuilder(config).watchAsync();*/
+        await new ServerPackageBuilder(config).watchAsync();
       }
       else {
-        await new SdLibraryPackageBuilder(config).watchAsync();
+        await new LibraryPackageBuilder(config).watchAsync();
       }
     }
   };

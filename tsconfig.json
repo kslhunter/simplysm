@@ -6,6 +6,12 @@
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
     "removeComments": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "declaration": true,
+    "typeRoots": [
+      "node_modules/@types",
+      "types"
+    ]
   }
 }

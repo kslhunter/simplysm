@@ -110,10 +110,7 @@ export class Logger {
       severity: severity.toUpperCase()
     };
 
-    let text = `${colors.grey}[${log.id}] ${log.now} - ${log.group} - ${log.name} - ${colors[severity]}${log.severity}: ${convertedLogs[0]}${colors.log}`;
-    if (convertedLogs.length > 1) {
-      text += "\r\n" + convertedLogs.slice(1).join("\r\n");
-    }
+    const text = `${colors.grey}[${log.id}] ${log.now} - ${log.group} - ${log.name} - ${colors[severity]}${log.severity}: ${convertedLogs.join("\r\n")}${colors.log}`;
 
     // 콘솔 출력
     if (this._config.consoleLogSeverities.includes(severity)) {

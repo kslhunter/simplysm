@@ -3,8 +3,8 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import {Logger} from "@simplism/core";
 
-export class SdLocalUpdater {
-  private readonly _logger = new Logger("@simplism/pack", `SdLocalUpdater`);
+export class LocalUpdater {
+  private readonly _logger = new Logger("@simplism/pack", `LocalUpdater`);
 
   public constructor(private readonly _packageName: string,
                      private readonly _packagePath: string) {

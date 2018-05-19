@@ -118,7 +118,7 @@
     "no-import-side-effect": [
       true,
       {
-        "ignore-module": "(Extensions$|^core-js|^zone\\.js|^reflect-metadata$)"
+        "ignore-module": "(Extensions$|^core-js|^zone\\.js|^reflect-metadata$|^@simplism)"
       }
     ],
     "no-unsafe-any": false,
@@ -145,6 +145,7 @@
     "ordered-imports": false,
     "no-string-literal": false,
     "no-inferred-empty-object-type": false,
-    "unified-signatures": false
+    "unified-signatures": false,
+    "prefer-conditional-expression": false
   }
 }

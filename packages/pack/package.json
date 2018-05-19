@@ -1,6 +1,6 @@
 {
   "name": "@simplism/pack",
-  "version": "7.0.0",
+  "version": "7.0.3",
   "description": "Simplism Package Builder CLI",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -9,13 +9,31 @@
     "sd-pack": "dist/bin.js"
   },
   "dependencies": {
-    "yargs": "^11.0.0",
-    "fs-extra": "^6.0.1",
-    "ts-node": "^6.0.3",
-    "typescript": "^2.8.3",
+    "@simplism/core": "^7.0.3",
+    "@simplism/storage": "^7.0.3",
     "chokidar": "^2.0.3",
-    "@simplism/core": "^7.0.0",
+    "fs-extra": "^6.0.1",
+    "semver": "^5.5.0",
+    "ts-node": "^6.0.3",
     "tslint": "^5.10.0",
-    "semver": "^5.5.0"
+    "typescript": "^2.8.3",
+    "yargs": "^11.0.0",
+    "glob": "^7.1.2",
+    "webpack": "^4.8.3",
+    "source-map-loader": "^0.2.3",
+    "file-loader": "^1.1.11",
+    "fork-ts-checker-webpack-plugin": "^0.4.1",
+    "@ngtools/webpack": "^6.0.3",
+    "html-loader": "^0.5.5",
+    "style-loader": "^0.21.0",
+    "raw-loader": "^0.5.1",
+    "sass-loader": "^7.0.1",
+    "node-sass": "^4.9.0",
+    "@angular/compiler-cli": "^6.0.2",
+    "webpack-dev-server": "^3.1.4",
+    "webpack-merge": "^4.1.2",
+    "copy-webpack-plugin": "^4.5.1",
+    "@types/copy-webpack-plugin": "^4.4.1",
+    "html-webpack-plugin": "^3.2.0"
   }
 }

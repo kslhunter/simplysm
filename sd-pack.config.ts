@@ -7,7 +7,27 @@ const config: IProjectConfig = {
       type: "library",
     },
     {
+      name: "excel",
+      type: "library",
+    },
+    {
+      name: "mailer",
+      type: "library",
+    },
+    {
       name: "pack",
+      type: "library"
+    },
+    {
+      name: "storage",
+      type: "library"
+    },
+    {
+      name: "websocket-client",
+      type: "library"
+    },
+    {
+      name: "websocket-server",
       type: "library"
     }
   ]

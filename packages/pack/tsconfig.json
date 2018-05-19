@@ -1,8 +1,6 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "sourceMap": true,
-    "declaration": true,
     "lib": [
       "es2017"
     ],
@@ -10,6 +8,9 @@
     "paths": {
       "@simplism/core": [
         "../core/src/index.ts"
+      ],
+      "@simplism/storage": [
+        "../storage/src/index.ts"
       ]
     }
   },

@@ -3,6 +3,7 @@
 import * as yargs from "yargs";
 import {buildAsync} from "./commands/buildAsync";
 import {publishAsync} from "./commands/publishAsync";
+import {localUpdateAsync} from "./commands/localUpdateAsync";
 
 // tslint:disable-next-line:no-unused-expression
 yargs
@@ -43,5 +44,23 @@ yargs
         }
       }),
     argv => publishAsync(argv as any)
+  )
+  .command(
+    "local-update",
+    "로컬에 있는 simplism 패키지로 의존성 모듈을 덮어씁니다. (고급)",
+    cmd => cmd.version(false)
+      .options({
+        watch: {
+          type: "boolean",
+          describe: "변경을 감지하여 자동으로 업데이트합니다.",
+          default: false
+        },
+        config: {
+          type: "string",
+          describe: "설정파일",
+          default: "sd-pack.config.ts"
+        }
+      }),
+    argv => localUpdateAsync(argv as any)
   )
   .argv;
