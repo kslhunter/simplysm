@@ -1,0 +1,22 @@
+@import "../styles/presets";
+
+:host {
+  &[sd-inline=true] > form {
+    /deep/ > sd-form-item {
+      display: inline-block;
+      margin-bottom: 0;
+      margin-right: gap(sm);
+      &:last-child {
+        margin-right: 0;
+      }
+
+      > label {
+        display: inline-block;
+        margin-right: gap(sm);
+      }
+      > div {
+        display: inline-block;
+      }
+    }
+  }
+}

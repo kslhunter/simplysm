@@ -1,0 +1,111 @@
+$theme-color: (
+  grey: (
+    lightest: map_get($color-grey, 200),
+    lighter: map_get($color-grey, 300),
+    light: map_get($color-grey, 400),
+    default: map_get($color-grey, 500),
+    dark: map_get($color-grey, 600),
+    darker: map_get($color-grey, 700),
+    darkest: map_get($color-grey, 800)
+  ),
+  bluegrey: (
+    lightest: map_get($color-bluegrey, 200),
+    lighter: map_get($color-bluegrey, 300),
+    light: map_get($color-bluegrey, 400),
+    default: map_get($color-bluegrey, 500),
+    dark: map_get($color-bluegrey, 600),
+    darker: map_get($color-bluegrey, 800),
+    darkest: map_get($color-bluegrey, 900)
+  ),
+  primary: (
+    lightest: map_get($color-yellow, 50),
+    lighter: map_get($color-yellow, 100),
+    light: map_get($color-yellow, 300),
+    default: map_get($color-yellow, A200),
+    dark: map_get($color-yellow, A400),
+    darker: map_get($color-yellow, A700),
+    darkest: map_get($color-yellow, 900)
+  ),
+  info: (
+    lightest: map_get($color-blue, 50),
+    lighter: map_get($color-blue, 100),
+    light: map_get($color-blue, 200),
+    default: map_get($color-blue, 500),
+    dark: map_get($color-blue, A700),
+    darker: map_get($color-blue, 800),
+    darkest: map_get($color-blue, 900)
+  ),
+  success: (
+    lightest: map_get($color-green, 50),
+    lighter: map_get($color-green, 100),
+    light: map_get($color-green, 300),
+    default: map_get($color-green, 500),
+    dark: map_get($color-green, A700),
+    darker: map_get($color-green, 800),
+    darkest: map_get($color-green, 900)
+  ),
+  warning: (
+    lightest: map_get($color-orange, 50),
+    lighter: map_get($color-orange, 100),
+    light: map_get($color-orange, 200),
+    default: map_get($color-orange, 500),
+    dark: map_get($color-orange, A700),
+    darker: map_get($color-orange, 800),
+    darkest: map_get($color-orange, 900)
+  ),
+  danger: (
+    lightest: map_get($color-red, 50),
+    lighter: map_get($color-red, 100),
+    light: map_get($color-red, 200),
+    default: map_get($color-red, 500),
+    dark: map_get($color-red, 700),
+    darker: map_get($color-red, 800),
+    darkest: map_get($color-red, 900)
+  )
+) !default;
+
+$trans-color: (
+  darker: rgba(0, 0, 0, .24),
+  dark: rgba(0, 0, 0, .18),
+  default: rgba(255, 255, 255, .1),
+  light: rgba(255, 255, 255, .2),
+  lighter: rgba(255, 255, 255, .3)
+) !default;
+
+$text-color: (
+  default: white,
+  dark: rgba(255, 255, 255, .7),
+  darker: rgba(255, 255, 255, .5),
+  reverse: (
+    default: black,
+    light: rgba(0, 0, 0, .87)
+  )
+) !default;
+
+$gap: (
+  xxs: 2px,
+  xs: 4px,
+  sm: 6px,
+  default: 8px,
+  lg: 12px,
+  xl: 16px,
+  xxl: 20px
+) !default;
+
+$font-size: (
+  lg: 14px,
+  default: 12px,
+  sm: 10px,
+  h1: 24px,
+  h2: 18px,
+  h3: 16px,
+  h4: 14px,
+  h5: 12px,
+  h6: 11px
+) !default;
+
+$font-family: 'Noto Sans KR', '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif;
+$line-height: 1.25em;
+
+$z-index-toast: 9999;
+$z-index-busy: 9998;

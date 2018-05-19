@@ -1,0 +1,19 @@
+@import "../styles/presets";
+
+:host {
+  display: block;
+  padding: 0 gap(default);
+  cursor: pointer;
+  transition: background .1s linear;
+  user-select: none;
+  color: theme-color(primary, default);
+
+  &:hover {
+    background: trans-color(dark);
+  }
+
+  &:active {
+    transition: none;
+    background: trans-color(darker);
+  }
+}

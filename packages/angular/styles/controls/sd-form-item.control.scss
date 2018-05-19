@@ -1,0 +1,14 @@
+@import "../styles/presets";
+
+:host {
+  display: block;
+  margin-bottom: gap(sm);
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  & > label {
+    display: block;
+    margin-bottom: gap(xs);
+  }
+}

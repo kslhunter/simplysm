@@ -1,0 +1,35 @@
+@each $key, $val in $theme-color {
+  @each $key1, $val1 in $val {
+    .sd-background-#{$key}-#{$key1} {
+      background: $val1;
+    }
+  }
+}
+
+@each $key, $val in $gap {
+  .sd-margin-#{$key} {
+    margin: $val;
+  }
+
+  @each $direction in top, right, bottom, left {
+    .sd-margin-#{$direction}-#{$key} {
+      margin-#{$direction}: $val;
+    }
+  }
+}
+
+@each $key in join(0, map_keys($gap)) {
+  .sd-padding-#{$key} {
+    padding: if(gap($key), gap($key), 0) ;
+  }
+}
+
+@each $key-v in join(0, map_keys($gap)) {
+  @each $key-h in join(0, map_keys($gap)) {
+    @if $key-v != $key-h {
+      .sd-padding-#{$key-v}-#{$key-h} {
+        padding: if(gap($key-v), gap($key-v), 0) if(gap($key-h), gap($key-h), 0);
+      }
+    }
+  }
+}

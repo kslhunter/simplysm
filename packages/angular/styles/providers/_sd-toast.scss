@@ -1,0 +1,39 @@
+._sd-toast-container {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  pointer-events: none;
+  padding: gap(lg);
+
+  > ._sd-toast {
+    display: block;
+    margin-bottom: gap(sm);
+    animation: _sd-toast-show .1s ease-out forwards;
+    transform: translateX(-100%);
+
+    > ._sd-toast-message {
+      display: inline-block;
+      padding: gap(sm) gap(default);
+      opacity: .9;
+      border-radius: 2px;
+    }
+
+    @each $key, $val in $theme-color {
+      &._sd-toast-#{$key} > ._sd-toast-message {
+        background: theme-color($key, default);
+      }
+    }
+  }
+}
+
+@keyframes _sd-toast-show {
+  from {
+    $left-calc: calc(gap(lg) - 100%);
+    transform: translateX($left-calc);
+  }
+  to {
+    transform: none;
+  }
+}

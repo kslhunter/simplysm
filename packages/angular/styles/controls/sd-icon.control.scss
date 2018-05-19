@@ -1,0 +1,7 @@
+:host {
+  display: inline-block;
+
+  &[sd-fixed-width=true] {
+    width: 1.25em;
+  }
+}

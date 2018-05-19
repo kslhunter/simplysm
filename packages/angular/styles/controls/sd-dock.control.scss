@@ -1,0 +1,7 @@
+@import "../styles/presets";
+
+:host {
+  display: block;
+  position: absolute;
+  background: theme-color(bluegrey, darkest);
+}

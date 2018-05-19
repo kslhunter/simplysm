@@ -1,0 +1,41 @@
+*,
+*:after,
+*:before {
+  box-sizing: border-box;
+}
+
+*:focus {
+  outline-color: theme-color(primary, default);
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: black;
+  color: text-color(default);
+  font-family: $font-family;
+  font-size: font-size(default);
+  line-height: $line-height;
+}
+
+@each $tag in h1, h2, h3, h4, h5, h6 {
+  #{$tag} {
+    font-size: font-size($tag);
+    line-height: $line-height;
+    margin: 0;
+  }
+}
+
+a {
+  cursor: pointer;
+  color: theme-color(primary, default);
+
+  &:hover {
+    color: theme-color(primary, default);
+  }
+}
