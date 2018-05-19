@@ -1,6 +1,6 @@
 {
   "name": "simplism",
-  "version": "7.0.14",
+  "version": "7.0.15",
   "description": "Simplism Packages Source Code",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -9,6 +9,8 @@
     "watch": "yarn sd-pack build --watch",
     "build": "yarn sd-pack build",
     "publish": "yarn sd-pack publish",
+    "-- ": "",
+    "build angular": "yarn sd-pack build --package angular",
     "--": "",
     "sd-pack": "ts-node --project packages/pack/tsconfig.json --require tsconfig-paths/register packages/pack/src/bin.ts"
   },
@@ -60,6 +62,7 @@
     "nodemailer": "^4.6.4",
     "rxjs": "^6.1.0",
     "sass-loader": "^7.0.1",
+    "sass.js": "^0.10.9",
     "semver": "^5.5.0",
     "source-map-loader": "^0.2.3",
     "style-loader": "^0.21.0",
