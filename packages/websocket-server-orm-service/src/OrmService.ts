@@ -1,18 +1,15 @@
-import {DbQueryable} from "./DbQueryable";
-import {ITableDef, modelDefMetadataKey} from "./decorators";
-import {Type} from "../../core/src";
-import {helpers} from "./helpers";
 import * as tedious from "tedious";
-import {Logger} from "@simplism/core";
+import {WebSocketServiceBase} from "../../websocket-server/src/WebSocketServiceBase";
+import {Logger} from "../../core/src";
 
-export abstract class DbConnection {
+export abstract class DatabaseService extends WebSocketServiceBase {
   private readonly _logger = new Logger("@simplism/orm", "DbConnection");
   private readonly _preparedQueries: string[] = [];
   private _conn?: tedious.Connection;
 
   protected abstract get _configs(): { server: string; userName: string; password: string };
 
-  public static async connectAsync<D extends DbConnection, R>(connType: Type<D>, callback: (conn: D) => Promise<R>): Promise<R> {
+  public static async connect<D extends Database, R>(connType: Type<D>, callback: (conn: D) => Promise<R>): Promise<R> {
     const conn = new connType();
     await conn._connectAsync();
     await conn._beginTransactionAsync();
@@ -34,7 +31,7 @@ export abstract class DbConnection {
   public async initializeAsync(databases: string[]): Promise<void> {
     if (process.env.NODE_ENV !== "production") {
       const tableDefs = Object.keys(this)
-        .filter(key => this[key] instanceof DbQueryable)
+        .filter(key => this[key] instanceof Queryable)
         .map(key => core.Reflect.getMetadata(modelDefMetadataKey, this[key].tableType) as ITableDef)
         .filter(def => databases.includes(def.database));
 

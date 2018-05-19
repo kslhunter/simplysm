@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@simplism/core": [
+        "../core/src/index.ts"
+      ],
+      "@simplism/websocket-client": [
+        "../websocket-client/src/index.ts"
+      ]
+    }
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

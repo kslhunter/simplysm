@@ -1,4 +1,4 @@
-import {Type} from "../../core/src";
+import {Type} from "@angular/core";
 
 export class DbQueryUnit<T> {
   private readonly _generic!: T; // tslint:disable-line:no-unused-variable

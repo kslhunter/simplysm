@@ -7,14 +7,14 @@ module.exports = function (source, sourcemap) {
 
   const options = loaderUtil.getOptions(this) || {};
 
-  const scssRegex = /\/\* *language=SCSS *\*\/ *`([^`]*)`/;
+  const scssRegex = /\/\* *language=SCSS *\*\/ *[`"']([^`"']*)[`"']/;
 
   const matches = source.match(new RegExp(scssRegex, "gi"));
   if (matches) {
     const results = matches.map(match => {
       return sass.renderSync({
         file: this.resourcePath,
-        data: match.match(scssRegex)[1],
+        data: JSON.parse(`"${match.match(scssRegex)[1]}"`),
         sourceMapEmbed: options.sourceMap
       });
     });
@@ -26,6 +26,10 @@ module.exports = function (source, sourcemap) {
 
     let i = 0;
     source = source.replace(new RegExp(scssRegex, "gi"), () => "`" + results[i++].css + "`");
+  }
+
+  if (source.includes("sd-button")) {
+    console.log(source);
   }
 
   this.callback(null, source, sourcemap);

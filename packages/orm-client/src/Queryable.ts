@@ -1,9 +1,8 @@
+import {Type} from "@angular/core";
 import {DbConnection} from "./DbConnection";
 import {DbQueryUnit} from "./DbQueryUnit";
 import {ITableDef, modelDefMetadataKey} from "./decorators";
-import {helpers} from "./helpers";
-import {Type} from "@simplism/core";
-import {sorm} from "./sorm";
+import {Sorm} from "./Sorm";
 
 export class DbQueryable<TTable> {
   private _queryObj: {
@@ -36,13 +35,13 @@ export class DbQueryable<TTable> {
     }
     q = q.slice(0, -1) + "\r\n";
 
-    q += Object.keys(this._queryObj.select).map(key => `  ${helpers.query(this._queryObj.select[key])} as [${key}]`).join(",\r\n") + "\r\n";
+    q += Object.keys(this._queryObj.select).map(key => `  ${Sorm.query(this._queryObj.select[key])} as [${key}]`).join(",\r\n") + "\r\n";
 
-    q += `FROM ${helpers.tableKey(tableDef)} as ${helpers.key("TBL")}\r\n`;
+    q += `FROM ${Sorm.tableKey(tableDef)} as ${Sorm.key("TBL")}\r\n`;
 
     for (const join of this._queryObj.join) {
       const targetTableDef = core.Reflect.getMetadata(modelDefMetadataKey, join.queryable.tableType);
-      q += `LEFT OUTER JOIN ${helpers.tableKey(targetTableDef)} as [${join.as}] ON ` + join.queryable._queryObj.where.map(item => `(${item})`).join(" AND ") + "\r\n";
+      q += `LEFT OUTER JOIN ${Sorm.tableKey(targetTableDef)} as [${join.as}] ON ` + join.queryable._queryObj.where.map(item => `(${item})`).join(" AND ") + "\r\n";
     }
 
     if (this._queryObj.where.length > 0) {
@@ -55,7 +54,7 @@ export class DbQueryable<TTable> {
           throw new Error(tableDef.name + "의 컬럼 설정이 잘못되었습니다.");
         }
 
-        q += "ORDER BY " + tableDef.columns.filter(item => item.primaryKey).orderBy(item => item.primaryKey).map(item => helpers.key("TBL." + item.name) + " ASC").join(", ") + "\r\n";
+        q += "ORDER BY " + tableDef.columns.filter(item => item.primaryKey).orderBy(item => item.primaryKey).map(item => Sorm.key("TBL." + item.name) + " ASC").join(", ") + "\r\n";
       }
       q += `OFFSET ${this._queryObj.limit[0]} ROWS FETCH NEXT ${this._queryObj.limit[1]} ROWS ONLY\r\n`;
     }
@@ -87,7 +86,7 @@ export class DbQueryable<TTable> {
     }
 
     for (const colDef of tableDef.columns) {
-      this._queryObj.select[colDef.name] = new DbQueryUnit(colDef.typeFwd(), helpers.key("TBL." + colDef.name));
+      this._queryObj.select[colDef.name] = new DbQueryUnit(colDef.typeFwd(), Sorm.key("TBL." + colDef.name));
     }
   }
 
@@ -100,7 +99,7 @@ export class DbQueryable<TTable> {
         const joinSelect = queryable._queryObj.select[joinSelectKey];
         const joinSelectType = joinSelect instanceof DbQueryUnit ? joinSelect.type : joinSelect.constructor;
 
-        result._queryObj.select[as + "." + joinSelectKey] = new DbQueryUnit<any>(joinSelectType, helpers.key(helpers.query(joinSelect).replace(/\[?TBL]?/, as)));
+        result._queryObj.select[as + "." + joinSelectKey] = new DbQueryUnit<any>(joinSelectType, Sorm.key(Sorm.query(joinSelect).replace(/\[?TBL]?/, as)));
       }
 
       return result as DbQueryable<TTable & { [K in A]: M }>;
@@ -145,7 +144,7 @@ export class DbQueryable<TTable> {
 
       wheres.push(new DbQueryUnit(
         Boolean,
-        `${helpers.key([chains.length > 1 ? prevTableDef.name : ""].filter(item => item).concat(chains).concat(targetTablePrimaryKeyColumnName).join("."))} = ${helpers.key([chains.length > 1 ? prevTableDef.name : "TBL"].concat(chains.slice(0, -1)).concat([prevTableFkColumnName]).join("."))}`
+        `${Sorm.key([chains.length > 1 ? prevTableDef.name : ""].filter(item => item).concat(chains).concat(targetTablePrimaryKeyColumnName).join("."))} = ${Sorm.key([chains.length > 1 ? prevTableDef.name : "TBL"].concat(chains.slice(0, -1)).concat([prevTableFkColumnName]).join("."))}`
       ));
     }
 
@@ -159,7 +158,7 @@ export class DbQueryable<TTable> {
   }
 
   public equal<T>(columnPredicate: (item: TTable) => T, target: T): DbQueryable<TTable> {
-    return this.where(item => [sorm.equal(columnPredicate(item), target)]);
+    return this.where(item => [Sorm.equal(columnPredicate(item), target)]);
   }
 
   public search(columnsPredicate: (item: TTable) => string[], searchText: string): DbQueryable<TTable> {
@@ -177,11 +176,11 @@ export class DbQueryable<TTable> {
       for (const column of columns) {
         const andArr: DbQueryUnit<Boolean>[] = [];
         for (const searchWord of searchWords) {
-          andArr.push(sorm.includes(column, searchWord));
+          andArr.push(Sorm.includes(column, searchWord));
         }
-        orArr.push(sorm.and(andArr));
+        orArr.push(Sorm.and(andArr));
       }
-      return [sorm.or(orArr)];
+      return [Sorm.or(orArr)];
     });
   }
 
@@ -234,13 +233,13 @@ export class DbQueryable<TTable> {
       throw new Error(tableDef.name + "의 컬럼 설정이 잘못되었습니다.");
     }
 
-    let query = `INSERT INTO ${helpers.tableKey(tableDef)} (${tableDef.columns.map(colDef => `[${colDef.name}]`).join(", ")})\r\n`;
+    let query = `INSERT INTO ${Sorm.tableKey(tableDef)} (${tableDef.columns.map(colDef => `[${colDef.name}]`).join(", ")})\r\n`;
     query += "OUTPUT INSERTED.*\r\n";
-    query += `VALUES (${tableDef.columns.map(colDef => helpers.query(item[colDef.name])).join(", ")});\r\n`;
+    query += `VALUES (${tableDef.columns.map(colDef => Sorm.query(item[colDef.name])).join(", ")});\r\n`;
 
     const aiColNames = tableDef.columns.filter(colDef => colDef.autoIncrement).map(colDef => colDef.name);
     if (aiColNames.every(key => Object.keys(item).includes(key))) {
-      query = `SET IDENTITY_INSERT ${helpers.tableKey(tableDef)} ON;\r\n${query}SET IDENTITY_INSERT ${helpers.tableKey(tableDef)} OFF;\r\n`;
+      query = `SET IDENTITY_INSERT ${Sorm.tableKey(tableDef)} ON;\r\n${query}SET IDENTITY_INSERT ${Sorm.tableKey(tableDef)} OFF;\r\n`;
     }
 
     const results = await this._dbConnection.executeAsync(query);
@@ -270,20 +269,20 @@ export class DbQueryable<TTable> {
     const itemUpdateKeys = itemKeys.filter(key => !pkColNames.includes(key));
     const itemInsertKeys = itemKeys.filter(key => !(item[key] instanceof DbQueryUnit));
 
-    let query = `MERGE ${helpers.tableKey(tableDef)}\r\n`;
-    query += `USING (SELECT ${keys.map(key => `${helpers.query(item[key])} as [${key}]`).join(", ")}) as [match]\r\n`;
-    query += `ON ${keys.map(key => `${helpers.tableKey(tableDef)}.[${key}] = [match].${key}`).join(" AND ")}\r\n`;
+    let query = `MERGE ${Sorm.tableKey(tableDef)}\r\n`;
+    query += `USING (SELECT ${keys.map(key => `${Sorm.query(item[key])} as [${key}]`).join(", ")}) as [match]\r\n`;
+    query += `ON ${keys.map(key => `${Sorm.tableKey(tableDef)}.[${key}] = [match].${key}`).join(" AND ")}\r\n`;
     query += "WHEN MATCHED THEN\r\n";
     query += `  UPDATE SET\r\n`;
-    query += itemUpdateKeys.map(key => `    [${key}] = ${helpers.query(item[key]).replace(/\[?TBL]?\./, "")}`).join(",\r\n") + "\r\n";
+    query += itemUpdateKeys.map(key => `    [${key}] = ${Sorm.query(item[key]).replace(/\[?TBL]?\./, "")}`).join(",\r\n") + "\r\n";
     query += "WHEN NOT MATCHED THEN\r\n";
     query += `  INSERT (${itemInsertKeys.map(key => `[${key}]`).join(", ")})\r\n`;
-    query += `  VALUES (${itemInsertKeys.map(key => helpers.query(item[key]))})\r\n`;
+    query += `  VALUES (${itemInsertKeys.map(key => Sorm.query(item[key]))})\r\n`;
     query += "OUTPUT INSERTED.*;\r\n";
 
     const aiColNames = tableDef.columns.filter(colDef => colDef.autoIncrement).map(colDef => colDef.name);
     if (aiColNames.every(key => itemInsertKeys.includes(key))) {
-      query = `SET IDENTITY_INSERT ${helpers.tableKey(tableDef)} ON;\r\n${query}SET IDENTITY_INSERT ${helpers.tableKey(tableDef)} OFF;\r\n`;
+      query = `SET IDENTITY_INSERT ${Sorm.tableKey(tableDef)} ON;\r\n${query}SET IDENTITY_INSERT ${Sorm.tableKey(tableDef)} OFF;\r\n`;
     }
 
     return query;
@@ -291,7 +290,7 @@ export class DbQueryable<TTable> {
 
   private _clone(): DbQueryable<TTable> {
     const result = new DbQueryable<TTable>(this._dbConnection, this.tableType);
-    result._queryObj = Object.clone(this._queryObj, {excludeProps: ["join"]});
+    result._queryObj = Object.clone(this._queryObj, ["join"]);
     result._queryObj.join = [...this._queryObj.join];
     return result;
   }

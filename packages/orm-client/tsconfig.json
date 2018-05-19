@@ -5,6 +5,15 @@
     "emitDecoratorMetadata": true,
     "lib": [
       "es2017"
-    ]
-  }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@simplism/core": [
+        "../core/src/index.ts"
+      ]
+    }
+  },
+  "files": [
+    "src/index.ts"
+  ]
 }
