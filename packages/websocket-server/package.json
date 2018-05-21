@@ -1,6 +1,6 @@
 {
   "name": "@simplism/websocket-server",
-  "version": "7.0.18",
+  "version": "7.0.19",
   "description": "Simplism WebSocket Server Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -14,7 +14,7 @@
     "ws": "^5.1.1"
   },
   "peerDependencies": {
-    "@simplism/core": "^7.0.18",
-    "@simplism/websocket-client": "^7.0.18"
+    "@simplism/core": "^7.0.19",
+    "@simplism/websocket-client": "^7.0.19"
   }
 }
