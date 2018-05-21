@@ -1,4 +1,4 @@
-import {TypeValidator} from "../../../common/extensions/ObjectConstructorExtensions";
+import {TypeValidator} from "@simplism/core";
 
 const symbol = `sd-type-validate`;
 

@@ -1,7 +1,7 @@
 {
   "extends": "../../tslint.json",
   "rulesDirectory": [
-    "node_modules/codelyzer"
+    "../../node_modules/codelyzer"
   ],
   "rules": {
     "angular-whitespace": [
@@ -54,7 +54,7 @@
     "directive-class-suffix": true,
     "pipe-impure": true,
     "i18n": false,
-    "template-cyclomatic-complexity": true,
-    "template-conditional-complexity": true
+    "template-cyclomatic-complexity": false,
+    "template-conditional-complexity": false
   }
 }

@@ -4,10 +4,13 @@ import {
   Component,
   ContentChildren,
   DoCheck,
+  EventEmitter,
+  HostBinding,
   HostListener,
   Input,
   IterableDiffer,
   IterableDiffers,
+  Output,
   QueryList
 } from "@angular/core";
 import {SdSheetColumnControl} from "./sd-sheet-column.control";
@@ -23,13 +26,13 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         <div class="_col _first-col"></div>
         <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
              [style.width.px]="columnControl.width">
-          {{ columnControl.headerText }}
+          {{ columnControl.header }}
         </div>
       </div>
       <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
         <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
              [style.width.px]="columnControl.width">
-          {{ columnControl.headerText }}
+          {{ columnControl.header }}
         </div>
       </div>
     </div>
@@ -37,7 +40,10 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
     <div class="_content _body">
       <div class="_row" *ngFor="let item of items; trackBy: trackByItemFn" [@rowState]="'in'">
         <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
-          <div class="_col _first-col"></div>
+          <div class="_col _first-col" (click)="onFirstColClick($event)">
+            <sd-icon [icon]="'arrow-right'" *ngIf="selectedItem === item"
+                     class="sd-text-color-primary-default"></sd-icon>
+          </div>
           <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
                [style.width.px]="columnControl.width" tabindex="0">
             <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
@@ -65,6 +71,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
       height: 100%;
       overflow: auto;
       padding-top: 24px;
+      background: black;
 
       ._content {
         white-space: nowrap;
@@ -116,11 +123,14 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         }
       }
 
-      ._first-col {
-        background: theme-color(bluegrey, darkest);
+      ._head ._col._first-col,
+      ._body ._col._first-col {
         width: 24px;
         text-align: center;
         padding: gap(xs);
+        background: theme-color(bluegrey, darkest);
+        border-right: 1px solid theme-color(bluegrey, darker);
+        border-bottom: 1px solid theme-color(bluegrey, darker);
       }
 
       ._fixed-col-group {
@@ -132,6 +142,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
 
       ._row {
         position: relative;
+        overflow: hidden;
       }
 
       ._col > ._col-indicator {
@@ -149,6 +160,10 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
 
       ._col:focus > ._col-indicator {
         outline-color: theme-color(primary, default);
+      }
+
+      &[sd-selectable=true] ._body ._first-col {
+        cursor: pointer;
       }
     }
   `],
@@ -175,6 +190,17 @@ export class SdSheetControl implements DoCheck {
   public headTop = 0;
   public fixedLeft = 0;
 
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-selectable")
+  public selectable?: boolean;
+
+  @Input()
+  public selectedItem: any;
+
+  @Output()
+  public readonly selectedItemChange = new EventEmitter<any>();
+
   public get fixedColumnControls(): SdSheetColumnControl[] {
     return this.columnControls ? this.columnControls.filter(item => !!item.fixed) : [];
   }
@@ -184,7 +210,12 @@ export class SdSheetControl implements DoCheck {
   }
 
   public get fixedColumnWidth(): number {
-    return this.fixedColumnControls.map(item => item.width).reduce((a, b) => a + b) + 24;
+    if (this.fixedColumnControls.length > 0) {
+      return this.fixedColumnControls.map(item => item.width).reduce((a, b) => a + b) + 24;
+    }
+    else {
+      return 24;
+    }
   }
 
   public trackByColumnControlFn(index: number, item: SdSheetColumnControl): any {
@@ -213,9 +244,23 @@ export class SdSheetControl implements DoCheck {
     }
   }
 
+  public onFirstColClick(event: MouseEvent): void {
+    if (!this.selectable) return;
+
+    const targetEl = event.target as Element;
+    const rowEl = targetEl.findParent("._row")!;
+    const bodyEl = rowEl.parentElement as Element;
+    const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+    const selectedItem = this.items![rowIndex];
+    if (this.selectedItem !== selectedItem) {
+      this.selectedItem = this.items![rowIndex];
+      this.selectedItemChange.emit(this.selectedItem);
+    }
+  }
+
   @HostListener("scroll", ["$event"])
   public onScroll(event: Event): void {
-    const el = event.target as HTMLElement;
+    const el = event.target as Element;
     this.headTop = el.scrollTop;
     this.fixedLeft = el.scrollLeft;
   }

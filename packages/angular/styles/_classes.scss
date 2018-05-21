@@ -6,6 +6,22 @@
   }
 }
 
+@each $key, $val in $theme-color {
+  @each $key1, $val1 in $val {
+    .sd-text-color-#{$key}-#{$key1} {
+      color: $val1;
+    }
+  }
+}
+
+@each $key, $value in $trans-color {
+  @each $direction in top, right, bottom, left {
+    .sd-border-#{$direction}-#{$key} {
+      border-#{$direction}: 1px solid trans-color($key);
+    }
+  }
+}
+
 @each $key, $val in $gap {
   .sd-margin-#{$key} {
     margin: $val;
@@ -20,7 +36,7 @@
 
 @each $key in join(0, map_keys($gap)) {
   .sd-padding-#{$key} {
-    padding: if(gap($key), gap($key), 0) ;
+    padding: if(gap($key), gap($key), 0);
   }
 }
 

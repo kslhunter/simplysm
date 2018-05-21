@@ -1,6 +1,6 @@
-import {Type} from "@angular/core";
+import {Type} from "@simplism/core";
 
-export class DbQueryUnit<T> {
+export class QueryUnit<T> {
   private readonly _generic!: T; // tslint:disable-line:no-unused-variable
 
   public get query(): string {

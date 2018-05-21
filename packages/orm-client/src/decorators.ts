@@ -1,7 +1,6 @@
 // tslint:disable:variable-name
 
-import {Type} from "@angular/core";
-import {Sorm} from "./Sorm";
+import {Type} from "@simplism/core";
 
 export interface ITableDef {
   database: string;
@@ -9,6 +8,7 @@ export interface ITableDef {
   name: string;
   columns?: IColumnDef[];
   foreignKeys?: IForeignKeyDef[];
+  foreignKeyTargets?: IForeignKeyTargetDef[];
 }
 
 export interface IColumnDef {
@@ -28,9 +28,16 @@ export interface IForeignKeyDef {
   targetTypeFwd(): Type<any>;
 }
 
+export interface IForeignKeyTargetDef {
+  name: string;
+  foreignKeyName: string;
+
+  sourceTypeFwd(): Type<any>;
+}
+
 export const modelDefMetadataKey = "model-def";
 
-export function Table<T extends object>(database: string, scheme?: string, name?: string): any {
+export function Table<T>(database: string, scheme?: string, name?: string): (classType: Type<T>) => void {
   return (classType: Type<T>) => {
     const def: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, classType) || {};
     def.database = database;
@@ -41,15 +48,15 @@ export function Table<T extends object>(database: string, scheme?: string, name?
   };
 }
 
-export function Column<T extends object>(defs?: {
+export function Column<T>(defs?: {
   dataType?: string;
   nullable?: boolean;
   autoIncrement?: boolean;
   primaryKey?: number;
-}): any {
+}): (object: T, propertyKey: string) => void {
   return (object: T, propertyKey: string) => {
     const classType = object.constructor;
-    const propertyType = core.Reflect.getMetadata("design:type", object, propertyKey);
+    /*const propertyType = core.Reflect.getMetadata("design:type", object, propertyKey);*/
 
     const def: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, classType) || {};
 
@@ -60,7 +67,7 @@ export function Column<T extends object>(defs?: {
 
     def.columns.push({
       name: propertyKey,
-      dataType: (defs && defs.dataType) || Sorm.getDataTypeFromType(propertyType),
+      dataType: (defs && defs.dataType)/* || helpers.getDataTypeFromType(propertyType)*/,
       nullable: defs && defs.nullable,
       autoIncrement: defs && defs.autoIncrement,
       primaryKey: defs && defs.primaryKey,
@@ -71,8 +78,8 @@ export function Column<T extends object>(defs?: {
   };
 }
 
-export function ForeignKey<T extends object>(columnNames: (keyof T) | ((keyof T)[])): any {
-  return (object: T, propertyKey: string) => {
+export function ForeignKey<T>(columnNames: (keyof T) | ((keyof T)[]), targetTypeFwd: () => Type<any>): (object: Partial<T>, propertyKey: string) => void {
+  return (object: Partial<T>, propertyKey: string) => {
     const classType = object.constructor;
 
     const def: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, classType) || {};
@@ -85,7 +92,21 @@ export function ForeignKey<T extends object>(columnNames: (keyof T) | ((keyof T)
     def.foreignKeys.push({
       name: propertyKey,
       columnNames: columnNames instanceof Array ? columnNames : [columnNames],
-      targetTypeFwd: () => core.Reflect.getMetadata("design:type", object, propertyKey)
+      targetTypeFwd
+    });
+  };
+}
+
+export function ForeignKeyTarget<T, P>(sourceTypeFwd: () => Type<P>, foreignKeyName: keyof P): (object: T, propertyKey: string) => void {
+  return (object: T, propertyKey: string) => {
+    const classType = object.constructor;
+
+    const def: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, classType) || {};
+    def.foreignKeyTargets = def.foreignKeyTargets || [];
+    def.foreignKeyTargets.push({
+      name: propertyKey,
+      sourceTypeFwd,
+      foreignKeyName
     });
   };
 }

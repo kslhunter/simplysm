@@ -5,7 +5,7 @@ import * as JSFtp from "jsftp";
 import {Logger} from "@simplism/core";
 
 export class FtpStorage implements IStorage {
-  private readonly _logger = new Logger("@simplism/sd-storage", "FtpStorage");
+  private readonly _logger = new Logger("@simplism/storage", "FtpStorage");
   private _ftp: any;
 
   public async connectAsync(connectionConfig: IFtpConnectionConfig): Promise<void> {

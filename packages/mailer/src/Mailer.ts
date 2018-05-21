@@ -1,15 +1,15 @@
 import * as nodemailer from "nodemailer";
 
 export class Mailer {
-  public static async send(from: {
-                             host: string;
-                             senderName?: string;
-                             senderAddress: string;
-                             password: string;
-                           },
-                           to: string[],
-                           subject: string,
-                           html: string): Promise<void> {
+  public static async sendAsync(from: {
+                                  host: string;
+                                  senderName?: string;
+                                  senderAddress: string;
+                                  password: string;
+                                },
+                                to: string[],
+                                subject: string,
+                                html: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const transporter = nodemailer.createTransport({
         host: from.host,

@@ -1,5 +1,5 @@
 import * as webpack from "webpack";
-import {NormalizedMessage, NormalizedMessageJson} from "fork-ts-checker-webpack-plugin";
+import {NormalizedMessage} from "fork-ts-checker-webpack-plugin";
 
 export class TsFriendlyLoggerPlugin implements webpack.Plugin {
   public constructor(private readonly _logger: {
@@ -30,17 +30,18 @@ export class TsFriendlyLoggerPlugin implements webpack.Plugin {
         }
       }
 
-      this._logger.log("build complete");
+      this._logger.info("build complete");
     });
 
-    compiler.hooks["forkTsCheckerReceive"].tap("TsFriendlyLoggerPlugin", (diagnostics: NormalizedMessageJson[], lints: NormalizedMessageJson[]) => {
-      const messages = diagnostics.concat(lints).map(item => new NormalizedMessage(item));
-      if (messages.length > 0) {
-        for (const message of messages) {
-          process.stderr.write(`${message.getFile()}(${message.getLine()},${message.getCharacter()}): ${message.getSeverity()}: ${message.getContent()} (${message.getFormattedCode()})\r\n`);
+    if (compiler.hooks["forkTsCheckerReceive"]) {
+      compiler.hooks["forkTsCheckerReceive"].tap("TsFriendlyLoggerPlugin", (diagnostics: NormalizedMessage[], lints: NormalizedMessage[]) => {
+        if (lints.length > 0) {
+          for (const lint of lints) {
+            this._logger.warn(`lint error occurred (checker)\r\n${lint.getFile()}(${lint.getLine()},${lint.getCharacter()}): ${lint.getSeverity()}: ${lint.getContent()} (${lint.getFormattedCode()})\r\n`);
+          }
         }
-      }
-      process.stdout.write("check complete");
-    });
+        this._logger.info("check complete");
+      });
+    }
   }
 }

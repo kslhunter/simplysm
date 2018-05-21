@@ -17,43 +17,48 @@ export class LocalUpdater {
           .on("ready", () => {
             this._logger.log(`${this._packageName} watching...`);
 
+            let preservedFileChanges: { type: string; filePath: string }[] = [];
+            let timeout: NodeJS.Timer;
+
+            const onWatched = (type: string, filePath: string) => {
+              preservedFileChanges.push({type, filePath});
+
+              clearTimeout(timeout);
+              timeout = setTimeout(
+                () => {
+                  try {
+                    if (preservedFileChanges.every(item => path.extname(item.filePath) === ".ts")) {
+                      return;
+                    }
+
+                    const fileChanges = preservedFileChanges;
+                    preservedFileChanges = [];
+
+                    for (const fileChange of fileChanges) {
+                      this._logger.log(`changed: ${fileChange.type}    => ${fileChange.filePath}`);
+
+                      const relativeSourcePath = path.relative(this._sourcePath(), fileChange.filePath);
+                      const targetPath = this._targetPath(relativeSourcePath);
+                      if (type === "remove") {
+                        fs.removeSync(targetPath);
+                      }
+                      else {
+                        fs.copySync(fileChange.filePath, targetPath);
+                      }
+                    }
+                  }
+                  catch (err) {
+                    this._logger.error(err);
+                  }
+                },
+                0
+              );
+            };
+
             watcher
-              .on("add", filePath => {
-                try {
-                  this._logger.log(`changed: add    => ${filePath}`);
-
-                  const relativeSourcePath = path.relative(this._sourcePath(), filePath);
-                  const targetPath = this._targetPath(relativeSourcePath);
-                  fs.copySync(filePath, targetPath);
-                }
-                catch (err) {
-                  this._logger.error(err);
-                }
-              })
-              .on("change", filePath => {
-                try {
-                  this._logger.log(`changed: change => ${filePath}`);
-
-                  const relativeSourcePath = path.relative(this._sourcePath(), filePath);
-                  const targetPath = this._targetPath(relativeSourcePath);
-                  fs.copySync(filePath, targetPath);
-                }
-                catch (err) {
-                  this._logger.error(err);
-                }
-              })
-              .on("unlink", filePath => {
-                try {
-                  this._logger.log(`changed: unlink => ${filePath}`);
-
-                  const relativeSourcePath = path.relative(this._sourcePath(), filePath);
-                  const targetPath = this._targetPath(relativeSourcePath);
-                  fs.removeSync(targetPath);
-                }
-                catch (err) {
-                  this._logger.error(err);
-                }
-              });
+              .on("add", filePath => onWatched("add", filePath))
+              .on("change", filePath => onWatched("change", filePath))
+              .on("unlink", filePath => onWatched("remove", filePath));
 
             resolve();
           });

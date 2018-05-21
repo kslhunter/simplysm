@@ -9,7 +9,7 @@ import {SdListControl} from "./sd-list.control";
   template: `
     <label (click)="onLabelClick()">
       <ng-content></ng-content>
-      <sd-icon [icon]="'angle-left'" *ngIf="hasChildren" [@angleState]="open ? 'open' : 'close'"></sd-icon>
+      <sd-icon [icon]="'angle-left'" *ngIf="hasChildren"></sd-icon>
     </label>
     <div [@childrenState]="open ? 'open' : 'close'">
       <ng-content select="sd-list"></ng-content>
@@ -25,8 +25,9 @@ import {SdListControl} from "./sd-list.control";
 
         > sd-icon {
           float: right;
+          transition: transform .1s ease-in;
         }
-        
+
         &:hover {
           background: trans-color(dark);
         }
@@ -42,18 +43,19 @@ import {SdListControl} from "./sd-list.control";
       > div {
         overflow: hidden;
       }
+
+      &[sd-open=true] {
+        > label > sd-icon {
+          transform: rotate(-90deg);
+          transition: transform .1s ease-out;
+        }
+      }
     }
   `],
   animations: [
     trigger("childrenState", [
       state("close", style({height: "0"})),
       state("open", style({height: "*"})),
-      transition("close => open", animate(".1s ease-out")),
-      transition("open => close", animate(".1s ease-in"))
-    ]),
-    trigger("angleState", [
-      state("close", style({transform: "rotate(0deg)"})),
-      state("open", style({transform: "rotate(-90deg)"})),
       transition("close => open", animate(".1s ease-out")),
       transition("open => close", animate(".1s ease-in"))
     ])
@@ -65,6 +67,7 @@ export class SdListItemControl {
   @HostBinding("attr.sd-header")
   public header?: boolean;
 
+  @HostBinding("attr.sd-open")
   public open?: boolean;
 
   @ContentChildren(SdListControl)

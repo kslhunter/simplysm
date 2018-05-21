@@ -1,118 +1,83 @@
+import {WebSocketServiceBase} from "@simplism/websocket-server";
+import {DateOnly, DateTime, Logger} from "@simplism/core";
 import * as tedious from "tedious";
-import {WebSocketServiceBase} from "../../websocket-server/src/WebSocketServiceBase";
-import {Logger} from "../../core/src";
 
-export abstract class DatabaseService extends WebSocketServiceBase {
-  private readonly _logger = new Logger("@simplism/orm", "DbConnection");
-  private readonly _preparedQueries: string[] = [];
-  private _conn?: tedious.Connection;
+export class OrmService extends WebSocketServiceBase {
+  private static readonly _connMap = new Map<number, tedious.Connection>();
+  private static _lastConnId = 0;
 
-  protected abstract get _configs(): { server: string; userName: string; password: string };
+  private readonly _logger = new Logger("@simplism/websocket-server-orm-service", "OrmService");
 
-  public static async connect<D extends Database, R>(connType: Type<D>, callback: (conn: D) => Promise<R>): Promise<R> {
-    const conn = new connType();
-    await conn._connectAsync();
-    await conn._beginTransactionAsync();
+  public async connect(configs: { server: string; userName: string; password: string }): Promise<number> {
+    const conn = new tedious.Connection({
+      server: configs.server,
+      userName: configs.userName,
+      password: configs.password,
+      options: {
+        rowCollectionOnDone: true,
+        useUTC: false,
+        encrypt: false
+      }
+    });
 
-    let result: R;
-    try {
-      result = await callback(conn);
-      await conn._commitTransactionAsync();
-    }
-    catch (err) {
-      await conn._rollbackTransactionAsync();
-      await conn._closeAsync();
-      throw err;
-    }
-    await conn._closeAsync();
-    return result;
+    conn.on("infoMessage", async info => {
+      this._logger.log(info.message);
+    });
+
+    conn.on("errorMessage", async error => {
+      this._logger.error(error.message);
+    });
+
+    conn.on("error", async error => {
+      this._logger.error(error.message);
+    });
+
+    return await new Promise<number>((resolve, reject) => {
+      conn.on("connect", err => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        const connId = OrmService._lastConnId++;
+        OrmService._connMap.set(connId, conn);
+        resolve(connId);
+      });
+    });
   }
 
-  public async initializeAsync(databases: string[]): Promise<void> {
-    if (process.env.NODE_ENV !== "production") {
-      const tableDefs = Object.keys(this)
-        .filter(key => this[key] instanceof Queryable)
-        .map(key => core.Reflect.getMetadata(modelDefMetadataKey, this[key].tableType) as ITableDef)
-        .filter(def => databases.includes(def.database));
+  public async close(connId: number): Promise<void> {
+    const conn = OrmService._connMap.get(connId);
+    if (!conn) throw new Error("디비 커넥션을 찾을 수 없습니다.");
 
-      let query = "";
-
-      // DB 재생성
-      for (const db of databases) {
-        query += `DROP DATABASE IF EXISTS [${db}];\r\n`;
-        query += `CREATE DATABASE [${db}];\r\n`;
-      }
-      query += "GO;\r\n\n";
-
-      // 테이블 생성
-      for (const tableDef of tableDefs) {
-        if (!databases.includes(tableDef.database)) {
-          continue;
+    await new Promise<void>((resolve, reject) => {
+      conn.on("end", async err => {
+        if (err) {
+          reject(err);
+          return;
         }
 
-        if (!tableDef.columns) {
-          throw new Error(`${tableDef.name}의 컬럼 설정이 잘못되었습니다.`);
-        }
+        OrmService._connMap.delete(connId);
+        resolve();
+      });
 
-        query += `CREATE TABLE ${helpers.tableKey(tableDef)} (\r\n`;
-        query += tableDef.columns
-          .map(colDef => `\t[${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : " "}${colDef.nullable ? "NULL" : "NOT NULL"}`)
-          .join(",\r\n") + "\r\n";
-        query += ");\r\n";
-
-        const pkColDefs = tableDef.columns.filter(item => item.primaryKey !== undefined).orderBy(item => item.primaryKey);
-        if (pkColDefs.length > 0) {
-          query += `ALTER TABLE ${helpers.tableKey(tableDef)} ADD PRIMARY KEY (${pkColDefs.map(item => `[${item.name}] ASC`).join(", ")});\r\n`;
-        }
-
-        query += "\r\n";
-      }
-
-      // FK 연결
-      for (const tableDef of tableDefs.filter(item => item.foreignKeys)) {
-        for (const fkDef of tableDef.foreignKeys!) {
-          const targetTableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, fkDef.targetTypeFwd());
-          if (!targetTableDef.columns) {
-            throw new Error(`${targetTableDef.name}의 컬럼 설정이 잘못되었습니다.`);
-          }
-          const targetPkColDefs = targetTableDef.columns.filter(item => item.primaryKey !== undefined).orderBy(item => item.primaryKey);
-
-          query += `ALTER TABLE ${helpers.tableKey(tableDef)} ADD CONSTRAINT [FK_${tableDef.database}_${tableDef.scheme}_${tableDef.name}_${fkDef.name}] FOREIGN KEY (${fkDef.columnNames.map(colName => `[${colName}]`).join(", ")})\r\n`;
-          query += `\tREFERENCES ${helpers.tableKey(targetTableDef)} (${targetPkColDefs.map(item => `[${item.name}]`).join(", ")})\r\n`;
-          query += "\tON DELETE NO ACTION\r\n";
-          query += "\tON UPDATE NO ACTION;\r\n";
-        }
-
-        query += "\r\n";
-      }
-
-      await this.executeAsync(query);
-    }
-    else {
-      throw new Error("미구현");
-    }
+      conn.close();
+    });
   }
 
-  public prepare(query: string): void {
-    this._preparedQueries.push(query);
-  }
-
-  public async executeAsync(query: string): Promise<any[][]> {
-    if (!this._conn) {
-      throw new Error("DB에 연결되어있지 않습니다.");
-    }
+  public async execute(connId: number, query: string): Promise<any[][]> {
+    const conn = OrmService._connMap.get(connId);
+    if (!conn) throw new Error("디비 커넥션을 찾을 수 없습니다.");
 
     const results: any[][] = [];
     const queries = query.split("GO;");
 
-    for (const subQuery of queries) {
-      this._logger.log("쿼리를 수행합니다.\r\n" + subQuery);
+    for (const currQuery of queries) {
+      this._logger.log("쿼리를 수행합니다.", currQuery);
       await new Promise<void>((resolve, reject) => {
         const queryRequest = new tedious
-          .Request(subQuery, async err => {
-            if (err) {
-              reject(err);
-            }
+          .Request(currQuery, err => {
+            if (err) reject(err);
           })
           .on("done", (rowCount, more, rows) => {
             const result = rows.map((item: tedious.ColumnValue[]) => {
@@ -122,50 +87,36 @@ export abstract class DatabaseService extends WebSocketServiceBase {
               }
               return resultItem;
             });
-            if (result.length > 0) {
-              results.push(result);
-            }
 
-            if (!more) {
-              resolve();
-            }
+            results.push(result);
           })
-          .on("error", async err => {
-            this._logger.error(err.message + "\r\n" + subQuery);
-            reject(err);
+          .on("error", err => reject(err))
+          .on("requestCompleted", () => {
+            resolve();
           });
 
-        this._conn!.execSqlBatch(queryRequest);
+        conn.execSqlBatch(queryRequest);
       });
     }
 
     return results;
   }
 
-  public async executePreparedAsync(): Promise<any[][]> {
-    const query = this._preparedQueries.join("\r\n");
-    return await this.executeAsync(query);
-  }
-
-  public async bulkInsertAsync<T>(tableType: Type<T>, items: T[]): Promise<void> {
-    if (!this._conn) {
-      throw new Error("DB에 연결되어있지 않습니다.");
-    }
-
-    const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, tableType);
-    if (!tableDef.columns) {
-      throw new Error(`${tableDef.name}의 컬럼 설정이 잘못되었습니다.`);
-    }
-
-    const table = helpers.tableKey(tableDef);
-    const columns = tableDef.columns.map(item => ({
-      name: item.name,
-      dataType: item.dataType!,
-      nullable: item.nullable
-    }));
+  public async bulkInsert(connId: number,
+                          def: {
+                            table: string;
+                            columns: {
+                              name: string;
+                              dataType: string;
+                              nullable: boolean;
+                            }[];
+                          },
+                          items: any[]): Promise<void> {
+    const conn = OrmService._connMap.get(connId);
+    if (!conn) throw new Error("디비 커넥션을 찾을 수 없습니다.");
 
     await new Promise<void>((resolve, reject) => {
-      const bulkLoad = this._conn!.newBulkLoad(table, async err => {
+      const bulkLoad = conn.newBulkLoad(def.table, async err => {
         if (err) {
           reject(err);
           return;
@@ -174,114 +125,48 @@ export abstract class DatabaseService extends WebSocketServiceBase {
         resolve();
       });
 
-      for (const column of columns) {
-        const tediousType = helpers.getTediousTypeFromDataType(column.dataType);
-        bulkLoad.addColumn(column.name, tediousType.type, {
-          length: tediousType.length,
-          nullable: column.nullable || false
-        });
+      for (const column of def.columns) {
+        const tediousType = this._getTediousTypeFromDataType(column.dataType);
+        bulkLoad.addColumn(column.name, tediousType.type, {length: tediousType.length, nullable: column.nullable});
       }
 
-      for (const item of items) {
+      for (const item of Object.clone(items)) {
+        for (const key of Object.keys(item)) {
+          if (item[key] instanceof DateOnly || item[key] instanceof DateTime) {
+            item[key] = item[key]["_date"];
+          }
+        }
         bulkLoad.addRow(item);
       }
 
-      this._conn!.execBulkLoad(bulkLoad);
+      conn.execBulkLoad(bulkLoad);
     });
   }
 
-  private async _connectAsync(): Promise<void> {
-    this._conn = await new Promise<tedious.Connection>((resolve, reject) => {
-      const conn = new tedious.Connection({
-        server: this._configs.server,
-        userName: this._configs.userName,
-        password: this._configs.password,
-        options: {
-          rowCollectionOnDone: true,
-          useUTC: false
-        }
-      });
-
-      conn.on("connect", err => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(conn);
-      });
-    });
-  }
-
-  private async _beginTransactionAsync(): Promise<void> {
-    if (!this._conn) {
-      throw new Error("DB에 연결되어있지 않습니다.");
+  private _getTediousTypeFromDataType(dataType: string): { type: tedious.TediousType; length?: number } {
+    if (dataType.startsWith("NVARCHAR")) {
+      const lengthMatch = dataType.match(/\(([0-9]*)\)/) || undefined;
+      return {type: tedious.TYPES.NVarChar, length: lengthMatch && Number(lengthMatch[1])};
+    }
+    else if (dataType === "INT") {
+      return {type: tedious.TYPES.Int};
+    }
+    else if (dataType === "BIT") {
+      return {type: tedious.TYPES.Bit};
+    }
+    else if (dataType === "UNIQUEIDENTIFIER") {
+      return {type: tedious.TYPES.UniqueIdentifier};
+    }
+    else if (dataType === "VARBINARY") {
+      return {type: tedious.TYPES.VarBinary};
+    }
+    else if (dataType === "DATE") {
+      return {type: tedious.TYPES.Date};
+    }
+    else if (dataType === "DATETIME") {
+      return {type: tedious.TYPES.DateTime};
     }
 
-    await new Promise<void>((resolve, reject) => {
-      this._conn!.beginTransaction(
-        err => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve();
-        },
-        undefined,
-        tedious.ISOLATION_LEVEL.READ_COMMITTED
-      );
-    });
-  }
-
-  private async _commitTransactionAsync(): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-      if (!this._conn) {
-        throw new Error("DB에 연결되어있지 않습니다.");
-      }
-
-      this._conn.commitTransaction(
-        err => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve();
-        }
-      );
-    });
-  }
-
-  private async _rollbackTransactionAsync(): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-      if (!this._conn) {
-        throw new Error("DB에 연결되어있지 않습니다.");
-      }
-
-      this._conn.rollbackTransaction(
-        err => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve();
-        }
-      );
-    });
-  }
-
-  private async _closeAsync(): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-      if (!this._conn) {
-        throw new Error("DB에 연결되어있지 않습니다.");
-      }
-
-      this._conn.on("end", async err => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve();
-      });
-      this._conn.close();
-    });
+    throw new TypeError(dataType);
   }
 }

@@ -146,6 +146,12 @@
     "no-string-literal": false,
     "no-inferred-empty-object-type": false,
     "unified-signatures": false,
-    "prefer-conditional-expression": false
+    "prefer-conditional-expression": false,
+    "no-unnecessary-type-assertion": false,
+    "semicolon": [
+      true,
+      "always",
+      "ignore-bound-class-methods"
+    ]
   }
 }

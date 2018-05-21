@@ -31,8 +31,23 @@ export class WebSocketClient {
     });
   }
 
+  public async closeAsync(): Promise<void> {
+    if (!this.connected) {
+      this._ws = undefined;
+      return;
+    }
+
+    await new Promise<void>(resolve => {
+      this._ws!.onclose = () => {
+        this._ws = undefined;
+        resolve();
+      };
+      this._ws!.close();
+    });
+  }
+
   public async on(eventKey: string, info: any | undefined, callback: (result?: any) => void | Promise<void>): Promise<void> {
-    await this.sendAsync("__addListener__", undefined, eventKey, info);
+    await this.sendAsync("__addListener__", eventKey, info);
 
     // 이벤트에 대한 요청맵.콜백 등록
     this._requestMap.set(eventKey, response => {
@@ -56,11 +71,11 @@ export class WebSocketClient {
   }
 
   public async off(eventKey: string): Promise<void> {
-    await this.sendAsync("__removeListener__", undefined, eventKey);
+    await this.sendAsync("__removeListener__", eventKey);
     this._requestMap.delete(eventKey);
   }
 
-  public async sendAsync(command: string, headers?: object, ...params: any[]): Promise<any> {
+  public async sendAsync(command: string, ...params: any[]): Promise<any> {
     return await new Promise<any>(async (resolve, reject) => {
       if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
         await Wait.time(1000);
@@ -97,7 +112,6 @@ export class WebSocketClient {
       const request: IWebSocketRequest = {
         id: requestId,
         command,
-        headers,
         params
       };
       this._ws.send(JsonConvert.stringify(request));

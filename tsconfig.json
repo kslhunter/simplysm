@@ -5,7 +5,6 @@
     "moduleResolution": "node",
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
-    "removeComments": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "declaration": true,

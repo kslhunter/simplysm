@@ -43,6 +43,10 @@ export class Logger {
     }
   }
 
+  private get _config(): ILoggerConfig {
+    return (this._groupName && Logger._groupMap.get(this._groupName)) || Logger._defaultConfig;
+  }
+
   public log(...logs: any[]): void {
     this._write("log", logs);
   }
@@ -135,10 +139,6 @@ export class Logger {
         fs.writeFileSync(filePath, `${text}\r\n`, "utf8");
       }
     }
-  }
-
-  private get _config(): ILoggerConfig {
-    return (this._groupName && Logger._groupMap.get(this._groupName)) || Logger._defaultConfig;
   }
 }
 

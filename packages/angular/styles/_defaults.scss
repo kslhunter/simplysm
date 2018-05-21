@@ -35,7 +35,12 @@ a {
   cursor: pointer;
   color: theme-color(primary, default);
 
-  &:hover {
-    color: theme-color(primary, default);
+  &:focus {
+    outline: none;
+  }
+
+  &:hover,
+  &:focus {
+    color: theme-color(primary, darker);
   }
 }

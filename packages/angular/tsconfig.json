@@ -6,9 +6,24 @@
     "lib": [
       "es2017",
       "dom"
-    ]
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@simplism/core": [
+        "../core/src/index.ts"
+      ],
+      "@simplism/excel": [
+        "../excel/src/index.ts"
+      ],
+      "@simplism/websocket-client": [
+        "../websocket-client/src/index.ts"
+      ],
+      "@simplism/orm-client": [
+        "../orm-client/src/index.ts"
+      ]
+    }
   },
-  "angularCompilerOptions": {
-    "disableTypeScriptVersionCheck": true
-  }
+  "files": [
+    "./src/index.ts"
+  ]
 }

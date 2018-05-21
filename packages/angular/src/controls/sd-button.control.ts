@@ -31,7 +31,7 @@ import {SdTypeValidate} from "../decorators/SdTypeValidate";
       }
 
       @each $theme, $colors in $theme-color {
-        &[theme=#{$theme}] > button {
+        &[sd-theme=#{$theme}] > button {
           border-color: get($colors, default);
           color: text-color(default);
 
@@ -45,6 +45,14 @@ import {SdTypeValidate} from "../decorators/SdTypeValidate";
           }
         }
       }
+
+      &[sd-size=sm] > button {
+        padding: gap(xs) gap(sm);
+      }
+
+      &[sd-size=lg] > button {
+        padding: gap(default) gap(lg);
+      }
     }
   `]
 })
@@ -54,8 +62,16 @@ export class SdButtonControl {
     type: String,
     validator: value => ["primary", "info", "success", "warning", "danger"].includes(value)
   })
-  @HostBinding("attr.theme")
+  @HostBinding("attr.sd-theme")
   public theme?: "primary" | "info" | "success" | "warning" | "danger";
+
+  @Input()
+  @SdTypeValidate({
+    type: String,
+    validator: value => ["sm", "lg"].includes(value)
+  })
+  @HostBinding("attr.sd-size")
+  public size?: "sm" | "lg";
 
   @Input()
   @SdTypeValidate({

@@ -235,6 +235,6 @@ export class DateTime {
   }
 
   public toString(): string {
-    return this.toFormatString("yyyy-MM-ddTHH:mm:ss.fffZzzz");
+    return this.toFormatString("yyyy-MM-ddTHH:mm:ss.fffzzz");
   }
 }

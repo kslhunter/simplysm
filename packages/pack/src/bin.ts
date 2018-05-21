@@ -30,7 +30,7 @@ yargs
           default: "sd-pack.config.ts"
         }
       }),
-    argv => buildAsync(argv as any)
+    argv => buildAsync(argv as any).catch(err => console.error(err))
   )
   .command(
     "publish",
@@ -43,7 +43,7 @@ yargs
           default: "sd-pack.config.ts"
         }
       }),
-    argv => publishAsync(argv as any)
+    argv => publishAsync(argv as any).catch(err => console.error(err))
   )
   .command(
     "local-update",
@@ -61,6 +61,6 @@ yargs
           default: "sd-pack.config.ts"
         }
       }),
-    argv => localUpdateAsync(argv as any)
+    argv => localUpdateAsync(argv as any).catch(err => console.error(err))
   )
   .argv;

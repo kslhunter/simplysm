@@ -63,21 +63,28 @@ export async function buildAsync(argv: { watch: boolean; package: string; config
     const completedPackNames: string[] = [];
 
     for (const pack of projectConfig.packages) {
-      promiseList.push(new Promise<void>(async resolve => {
-        const thisPackageConfig = packageConfigs.single(item => item.name === pack.name)!;
-        if (thisPackageConfig.config.dependencies) {
-          const depPackNames = packageConfigs.filter(otherPackageConfig => Object.keys(thisPackageConfig.config.dependencies).some(depKey => otherPackageConfig.config.name === depKey)).map(item => item.name);
-          await Wait.true(() => depPackNames.every(depPackName => completedPackNames.includes(depPackName)));
-        }
+      promiseList.push(
+        new Promise<void>(async (resolve, reject) => {
+          try {
+            const thisPackageConfig = packageConfigs.single(item => item.name === pack.name)!;
+            if (thisPackageConfig.config.peerDependencies) {
+              const depPackNames = packageConfigs.filter(otherPackageConfig => Object.keys(thisPackageConfig.config.peerDependencies).some(depKey => otherPackageConfig.config.name === depKey)).map(item => item.name);
+              await Wait.true(() => depPackNames.every(depPackName => completedPackNames.includes(depPackName)));
+            }
 
-        await runAsync(pack);
-        completedPackNames.push(pack.name);
-        resolve();
-      }));
+            await runAsync(pack);
+            completedPackNames.push(pack.name);
+            resolve();
+          }
+          catch (err) {
+            reject(err);
+          }
+        })
+      );
     }
   }
   else {
-    promiseList.push(runAsync(projectConfig.packages[argv.package]));
+    promiseList.push(runAsync(projectConfig.packages.single(item => item.name === argv.package)!));
   }
 
   await Promise.all(promiseList);

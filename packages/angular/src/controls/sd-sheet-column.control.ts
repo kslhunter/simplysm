@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef} from "@angular/core";
-import {Uuid} from "../../../common/types/Uuid";
 import {SdTypeValidate} from "../decorators/SdTypeValidate";
+import {Uuid} from "@simplism/core";
 
 @Component({
   selector: "sd-sheet-column",
@@ -14,11 +14,11 @@ import {SdTypeValidate} from "../decorators/SdTypeValidate";
   `]
 })
 export class SdSheetColumnControl {
-  public guid = new Uuid().toString();
+  public guid = Uuid.newUuid().toString();
 
   @Input()
   @SdTypeValidate(String)
-  public headerText?: string;
+  public header?: string;
 
   @Input()
   @SdTypeValidate({

@@ -4,7 +4,7 @@ import * as ts from "typescript";
 
 const context = process.argv[2];
 
-process.on("message", () => {
+process.on("message", (filePaths: string[]) => {
   const tsconfig = fs.readJsonSync(path.resolve(context, "tsconfig.json"));
   tsconfig.compilerOptions.outDir = tsconfig.compilerOptions.outDir || "dist";
   if (tsconfig.compilerOptions.paths) {
@@ -22,10 +22,21 @@ process.on("message", () => {
     parsed.options
   );
 
-  let diagnostics = ts.getPreEmitDiagnostics(tsProgram);
+  let diagnostics: ts.Diagnostic[] = [];
 
-  const emitResult = tsProgram.emit();
-  diagnostics = diagnostics.concat(emitResult.diagnostics);
+  if (filePaths.length > 0) {
+    for (const filePath of filePaths) {
+      const sourceFile = tsProgram.getSourceFile(filePath);
+      if (!sourceFile) continue;
+
+      diagnostics = tsProgram.emit(sourceFile).diagnostics
+        .concat(ts.getPreEmitDiagnostics(tsProgram, sourceFile));
+    }
+  }
+  else {
+    diagnostics = tsProgram.emit().diagnostics
+      .concat(ts.getPreEmitDiagnostics(tsProgram));
+  }
 
   const result: string[] = [];
   for (const diagnostic of diagnostics) {

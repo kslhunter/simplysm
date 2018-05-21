@@ -26,7 +26,7 @@ export interface IWebSocketEventListener {
 }
 
 export class WebSocketServer {
-  private readonly _logger = new Logger("@simplism/sd-socket", "WebSocketServer");
+  private readonly _logger = new Logger("@simplism/socket", "WebSocketServer");
   private _app?: http.Server;
   private _server?: WebSocket.Server;
   private readonly _preparedFileResults = new Map<string, FileResult>();
@@ -35,7 +35,7 @@ export class WebSocketServer {
   public constructor(private readonly _option: IWebSocketServerOption) {
   }
 
-  public async start(port?: number, host?: string): Promise<void> {
+  public async startAsync(port?: number, host?: string): Promise<void> {
     await new Promise<void>(resolve => {
       if (this._app && this._app.listening) {
         return;
@@ -223,7 +223,7 @@ export class WebSocketServer {
     }
 
     // 실행
-    const result = await method(...request.params);
+    const result = await method.apply(service, request.params);
     if (result instanceof FileResult) {
       const fileToken = Uuid.newUuid().toString();
       this._preparedFileResults.set(fileToken.toString(), result);

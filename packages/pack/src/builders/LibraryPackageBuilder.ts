@@ -38,7 +38,7 @@ export class LibraryPackageBuilder {
             this._logger.error(`${this._config.name} build error occurred`, result.join("\r\n"));
           }
           resolve();
-        }).send("run");
+        }).send([]);
       }),
       new Promise<void>(resolve => {
         tsLintWorker.once("message", result => {
@@ -53,7 +53,7 @@ export class LibraryPackageBuilder {
     tsBuildWorker.kill();
     tsLintWorker.kill();
 
-    this._logger.log(`${this._config.name} build complete`);
+    this._logger.info(`${this._config.name} build complete`);
   }
 
   public async watchAsync(): Promise<void> {
@@ -74,12 +74,20 @@ export class LibraryPackageBuilder {
         {stdio: ["inherit", "inherit", "inherit", "ipc"]}
       );
 
+    let preserveFilePaths: string[] = [];
     let timeout: NodeJS.Timer;
-    const buildForWatchAsync = async () => {
+    const buildForWatchAsync = async (filePath?: string) => {
+      if (filePath) {
+        preserveFilePaths.push(filePath);
+      }
+
       await new Promise<void>(resolve => {
         clearTimeout(timeout);
         timeout = setTimeout(
           async () => {
+            const filePaths = preserveFilePaths;
+            preserveFilePaths = [];
+
             this._logger.log(`${this._config.name} building...`);
 
             await Promise.all([
@@ -89,7 +97,7 @@ export class LibraryPackageBuilder {
                     this._logger.error(`${this._config.name} build error occurred`, result.join("\r\n"));
                   }
                   resolve1();
-                }).send("run");
+                }).send(filePaths);
               }),
               new Promise<void>(resolve1 => {
                 tsLintWorker.once("message", result => {
@@ -101,11 +109,11 @@ export class LibraryPackageBuilder {
               })
             ]);
 
-            this._logger.log(`${this._config.name} build complete`);
+            this._logger.info(`${this._config.name} build complete`);
 
             resolve();
           },
-          300
+          0
         );
       });
     };
@@ -116,9 +124,9 @@ export class LibraryPackageBuilder {
       const watcher = chokidar.watch(this._packagePath("src/**/*").replace(/\\/g, "/"))
         .on("ready", () => {
           watcher
-            .on("add", () => buildForWatchAsync())
-            .on("change", () => buildForWatchAsync())
-            .on("unlink", () => buildForWatchAsync());
+            .on("add", filePath => buildForWatchAsync(filePath))
+            .on("change", filePath => buildForWatchAsync(filePath))
+            .on("unlink", filePath => buildForWatchAsync(filePath));
           resolve();
         });
     });

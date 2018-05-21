@@ -6,7 +6,7 @@ export class SdDomValidatorProvider {
   }
 
   public validate(element: HTMLElement): HTMLElement[] {
-    const invalidEls = element.findAll("*:invalid, *[sd-invalid=true]");
+    const invalidEls = element.findAll("*:invalid, *[sd-invalid=true]").ofType(HTMLElement);
 
     if (invalidEls.length > 0) {
       invalidEls[0].focus();

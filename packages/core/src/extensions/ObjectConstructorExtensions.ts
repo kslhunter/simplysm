@@ -9,7 +9,7 @@ declare global {
   interface ObjectConstructor {
     clone<T>(source: T, options?: { excludeProps?: (keyof T)[] }): T;
 
-    equal<T>(source: T, taget: T): boolean;
+    equal<T>(source: T, taget: T, options?: { excludeProps?: (keyof T)[] }): boolean;
 
     validate(value: any, validator: TypeValidator): IObjectValidateResult | undefined;
 
@@ -57,7 +57,7 @@ Object.clone = function (source: any, options?: { excludeProps?: string[] }): an
   else if (source instanceof Uuid) {
     return new Uuid(source.toString());
   }
-  else if (source instanceof Object) {
+  else if (typeof source === "object") {
     const result = {};
     Object.setPrototypeOf(result, source.constructor.prototype);
     for (const key of Object.keys(source).filter(sourceKey => !options || !options.excludeProps || !options.excludeProps.includes(sourceKey))) {
@@ -71,7 +71,7 @@ Object.clone = function (source: any, options?: { excludeProps?: string[] }): an
   }
 };
 
-Object.equal = function (source: any, target: any): boolean {
+Object.equal = function (source: any, target: any, options?: { excludeProps?: string[] }): boolean {
   if (source instanceof Date) {
     if (!(target instanceof Date)) {
       return false;
@@ -105,11 +105,14 @@ Object.equal = function (source: any, target: any): boolean {
       return false;
     }
 
-    if (Object.keys(source).length !== Object.keys(target).length) {
+    const sourceKeys = Object.keys(source).filter(sourceKey => !options || !options.excludeProps || !options.excludeProps.includes(sourceKey));
+    const targetKeys = Object.keys(target).filter(targetKey => !options || !options.excludeProps || !options.excludeProps.includes(targetKey));
+
+    if (sourceKeys.length !== targetKeys.length) {
       return false;
     }
 
-    for (const key of Object.keys(source)) {
+    for (const key of sourceKeys) {
       if (!Object.equal(source[key], target[key])) {
         return false;
       }
@@ -149,7 +152,7 @@ Object.validate = function (value: any, validator: TypeValidator): IObjectValida
 
   if (config.type) {
     if (!config.type.some((type: any) => type === value.constructor)) {
-      return {value, type: config.type};
+      return {value, type: config.type.map((item: Type<any>) => item.name)};
     }
   }
 

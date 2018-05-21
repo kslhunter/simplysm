@@ -1,13 +1,17 @@
-import {Injectable} from "@angular/core";
+import {Injectable, OnDestroy} from "@angular/core";
 
 @Injectable()
-export class SdToastProvider {
+export class SdToastProvider implements OnDestroy {
   private readonly _containerEl: HTMLDivElement;
 
   public constructor() {
     this._containerEl = document.createElement("div");
     this._containerEl.classList.add("_sd-toast-container");
     document.body.appendChild(this._containerEl);
+  }
+
+  public ngOnDestroy(): void {
+    this._containerEl.remove();
   }
 
   public info(message: string): void {

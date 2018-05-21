@@ -7,6 +7,5 @@ export interface IWebSocketResponse {
 export interface IWebSocketRequest {
   id: number;
   command: string;
-  headers?: object;
   params: any[];
 }

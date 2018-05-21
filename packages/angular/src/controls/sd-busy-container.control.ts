@@ -22,6 +22,8 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
       left: 0;
       width: 100%;
       height: 100%;
+      min-width: 70px;
+      min-height: 70px;
 
       > div:first-child {
         display: block;

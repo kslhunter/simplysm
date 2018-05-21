@@ -42,7 +42,10 @@ export class JsonConvert {
 
   public static parse(json: string): any {
     return JSON.parse(json, (key, value) => {
-      if (typeof value === "object" && value.type === "Date") {
+      if (value == undefined) {
+        return undefined;
+      }
+      else if (typeof value === "object" && value.type === "Date") {
         return new Date(Date.parse(value.data));
       }
       else if (typeof value === "object" && value.type === "DateTime") {

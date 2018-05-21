@@ -15,8 +15,8 @@
     }
   },
   "files": [
-    "src/bin.ts",
     "src/workers/ts-build.ts",
+    "src/bin.ts",
     "src/index.ts"
   ]
 }

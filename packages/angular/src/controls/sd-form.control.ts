@@ -13,6 +13,8 @@ import {SdTypeValidate} from "../decorators/SdTypeValidate";
 
     :host {
       &[sd-inline=true] > form {
+        display: inline-block;
+        
         /deep/ > sd-form-item {
           display: inline-block;
           margin-bottom: 0;

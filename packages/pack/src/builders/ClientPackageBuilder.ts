@@ -30,11 +30,7 @@ export class ClientPackageBuilder {
         const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(platform), {
           mode: "production",
           devtool: "source-map",
-          entry: {
-            polyfills: this._packagePath("src/polyfills.ts"),
-            styles: this._packagePath("src/styles.scss"),
-            app: this._packagePath("src/main.ts")
-          },
+          entry: this._packagePath("src/main.ts"),
           optimization: {
             noEmitOnErrors: true,
             minimize: false
@@ -62,20 +58,16 @@ export class ClientPackageBuilder {
     const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
     fs.removeSync(this._packagePath(tsconfig.compilerOptions.outDir || "dist"));
 
-    await Promise.all(this._config.platforms!.map(platform =>
+    await Promise.all((this._config.platforms || ["web"]).map(platform =>
       new Promise<void>((resolve, reject) => {
         const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(platform), {
           mode: "development",
           devtool: "cheap-module-source-map",
-          entry: {
-            polyfills: this._packagePath("src/polyfills.ts"),
-            styles: this._packagePath("src/styles.scss"),
-            app: [
-              `webpack-dev-server/client?http://${this._config.devServer!.host}:${this._config.devServer!.port}/`,
-              "webpack/hot/only-dev-server",
-              this._packagePath("src/main.ts")
-            ]
-          },
+          entry: [
+            `webpack-dev-server/client?http://${this._config.devServer!.host}:${this._config.devServer!.port}/`,
+            "webpack/hot/dev-server",
+            this._packagePath("src/main.ts")
+          ],
           plugins: [
             new webpack.HotModuleReplacementPlugin()
           ]
@@ -139,7 +131,7 @@ export class ClientPackageBuilder {
 
     // 완료
     const rootPackageJson = fs.readJsonSync(this._projectPath("package.json"));
-    this._logger.log(`${this._config.name} publish complete: v${rootPackageJson.version}`);
+    this._logger.info(`${this._config.name} publish complete: v${rootPackageJson.version}`);
   }
 
   private _getCommonConfig(platform: string): webpack.Configuration {
@@ -149,7 +141,7 @@ export class ClientPackageBuilder {
       output: {
         path: this._packagePath(tsconfig.compilerOptions.outDir || "dist"),
         publicPath: "/",
-        filename: "[name].js",
+        filename: "app.js",
         chunkFilename: "[name].chunk.js"
       },
       resolve: {
@@ -161,14 +153,19 @@ export class ClientPackageBuilder {
             enforce: "pre",
             test: /\.js$/,
             use: ["source-map-loader"],
-            include: /node_modules[\\/]@simplism/
+            include: /node_modules[\\/]@simplism/,
+            exclude: [/\.ngfactory\.js$/, /\.ngstyle\.js$/]
           },
           {
             test: /\.js$/,
             parser: {system: true}
           },
           {
-            test: /\.ts$/,
+            test: /\.(js|ts)$/,
+            loader: path.join(__dirname, "../../loaders/inline-sass-loader.js")
+          },
+          {
+            test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
             exclude: /node_modules/,
             loader: "@ngtools/webpack"
           },
@@ -180,7 +177,7 @@ export class ClientPackageBuilder {
             test: /\.scss$/,
             loaders: [
               "style-loader",
-              "raw-loader",
+              "css-loader",
               "sass-loader"
             ]
           },
@@ -196,6 +193,7 @@ export class ClientPackageBuilder {
       plugins: [
         new AngularCompilerPlugin({
           tsConfigPath: this._packagePath("tsconfig.json"),
+          skipCodeGeneration: true,
           sourceMap: true
         }),
         new ForkTsCheckerWebpackPlugin({
@@ -211,7 +209,7 @@ export class ClientPackageBuilder {
           log: message => this._logger.log(this._config.name + " " + message)
         }),
         new HtmlWebpackPlugin({
-          template: this._packagePath("src/index.html")
+          template: this._packagePath("src/index.ejs")
         }),
         new CopyWebpackPlugin([
           {from: this._packagePath("src/favicon.ico"), to: "favicon.ico"}
@@ -252,6 +250,11 @@ export class ClientPackageBuilder {
           if (requestRelativePath.split("..").length === 2) {
             const className = path.basename(currRequest, path.extname(currRequest));
             callback(undefined, `{${className}: {name: '${className}'}}`);
+            return;
+          }
+
+          if (["fs", "fs-extra", "path", "socket.io"].includes(currRequest)) {
+            callback(undefined, `"${currRequest}"`);
             return;
           }
 

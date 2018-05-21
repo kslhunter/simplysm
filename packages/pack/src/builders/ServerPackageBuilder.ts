@@ -40,7 +40,7 @@ export class ServerPackageBuilder {
             this._logger.error(`${this._config.name} build error occurred`, result.join("\r\n"));
           }
           resolve();
-        }).send("run");
+        }).send([]);
       }),
       new Promise<void>(resolve => {
         tsLintWorker.once("message", result => {
@@ -55,7 +55,7 @@ export class ServerPackageBuilder {
     tsBuildWorker.kill();
     tsLintWorker.kill();
 
-    this._logger.log(`${this._config.name} build complete`);
+    this._logger.info(`${this._config.name} build complete`);
   }
 
   public async watchAsync(): Promise<void> {
@@ -74,7 +74,8 @@ export class ServerPackageBuilder {
               env: {
                 TARGET: "node",
                 ...this._config.env
-              }
+              },
+              execArgv: ["--require", "ts-node/register"]
             });
 
             resolve();
@@ -86,8 +87,25 @@ export class ServerPackageBuilder {
 
     await buildForWatchAsync();
 
+    const deps = Object.keys(fs.readJsonSync(this._packagePath("package.json")).dependencies);
+    /*let i = 0;
+    let cursorDep = deps[i];
+    let cursorPackageJson = fs.readJsonSync(this._projectPath("node_modules", cursorDep, "package.json"));
+    let cursorDepDeps = Object.keys(cursorPackageJson.dependencies);
+    if (cursorDepDeps.length > 0) deps = deps.concat(cursorDepDeps);
+    while (deps[++i]) {
+      cursorDep = deps[i];
+      cursorPackageJson = fs.readJsonSync(this._projectPath("node_modules", cursorDep, "package.json"));
+      cursorDepDeps = Object.keys(cursorPackageJson.dependencies);
+      if (cursorDepDeps.length > 0) deps = deps.concat(cursorDepDeps).distinct();
+    }*/
+
     await new Promise<void>(resolve => {
-      const watcher = chokidar.watch(this._packagePath("src/**/*").replace(/\\/g, "/"))
+      const watcher = chokidar
+        .watch([
+          this._packagePath("src/**/*"),
+          ...deps.map(item => this._projectPath("node_modules", item, "**/*"))
+        ].map(item => item.replace(/\\/g, "/")))
         .on("ready", () => {
           watcher
             .on("add", () => buildForWatchAsync())
@@ -160,7 +178,7 @@ export class ServerPackageBuilder {
 
     // 완료
     const rootPackageJson = fs.readJsonSync(this._projectPath("package.json"));
-    this._logger.log(`${this._config.name} publish complete: v${rootPackageJson.version}`);
+    this._logger.info(`${this._config.name} publish complete: v${rootPackageJson.version}`);
   }
 
   private _projectPath(...args: string[]): string {

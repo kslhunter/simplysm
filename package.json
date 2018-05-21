@@ -10,6 +10,8 @@
     "build": "yarn sd-pack build",
     "publish": "yarn sd-pack publish",
     "-- ": "",
+    "watch core": "yarn sd-pack build --watch --package core",
+    "--- ": "",
     "build angular": "yarn sd-pack build --package angular",
     "--": "",
     "sd-pack": "ts-node --project packages/pack/tsconfig.json --require tsconfig-paths/register packages/pack/src/bin.ts"
@@ -70,6 +72,7 @@
     "source-map-loader": "^0.2.3",
     "style-loader": "^0.21.0",
     "tedious": "^2.6.1",
+    "ts-loader": "^4.3.0",
     "ts-node": "^6.0.3",
     "tsconfig-paths": "^3.3.2",
     "tslint": "^5.10.0",

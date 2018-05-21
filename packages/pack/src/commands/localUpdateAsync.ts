@@ -9,15 +9,15 @@ export async function localUpdateAsync(argv: { watch: boolean; config: string })
   const projectConfig: IProjectConfig = eval(configJsContent); // tslint:disable-line:no-eval
 
   const promiseList: Promise<void>[] = [];
-  if (argv.watch && projectConfig.localDependencies) {
+  if (projectConfig.localDependencies) {
     for (const packageName of Object.keys(projectConfig.localDependencies)) {
       const packagePath = projectConfig.localDependencies[packageName];
 
       if (fs.existsSync(packagePath)) {
+        promiseList.push(new LocalUpdater(packageName, packagePath).runAsync());
         if (argv.watch) {
           promiseList.push(new LocalUpdater(packageName, packagePath).runAsync(true));
         }
-        promiseList.push(new LocalUpdater(packageName, packagePath).runAsync());
       }
     }
   }
