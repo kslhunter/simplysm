@@ -102,7 +102,7 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
     if (this.type === "number") {
       this.value = Number(inputEl.value);
     }
-    else if (this.type === "date" && typeof inputEl.value === "string") {
+    else if (this.type === "date") {
       this.value = DateOnly.parse(inputEl.value);
     }
     else {
