@@ -8,12 +8,13 @@ export class OrmService extends WebSocketServiceBase {
 
   private readonly _logger = new Logger("@simplism/websocket-server-orm-service", "OrmService");
 
-  public async connect(configs: { server: string; userName: string; password: string }): Promise<number> {
+  public async connect(configs: { server: string; port: number; userName: string; password: string }): Promise<number> {
     const conn = new tedious.Connection({
       server: configs.server,
       userName: configs.userName,
       password: configs.password,
       options: {
+        port: configs.port,
         rowCollectionOnDone: true,
         useUTC: false,
         encrypt: false

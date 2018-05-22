@@ -4,7 +4,7 @@ import * as path from "path";
 import * as semver from "semver";
 import * as ts from "typescript";
 import {LibraryPackageBuilder} from "../builders/LibraryPackageBuilder";
-import {IProjectConfig} from "../commons/IProjectConfig";
+import {IClientPackageConfig, ILibraryPackageConfig, IProjectConfig} from "../commons/IProjectConfig";
 import {ServerPackageBuilder} from "../builders/ServerPackageBuilder";
 import {ClientPackageBuilder} from "../builders/ClientPackageBuilder";
 
@@ -20,21 +20,17 @@ export async function publishAsync(argv: { config: string }): Promise<void> {
   const projectConfig: IProjectConfig = eval(configJsContent); // tslint:disable-line:no-eval
 
   const promiseList: Promise<void>[] = [];
-  for (const config of projectConfig.packages) {
-    if (config.type === "server") {
-      promiseList.push(new ServerPackageBuilder(config).publishAsync());
-    }
-    else if (config.type === "client") {
-      promiseList.push(new ClientPackageBuilder(config).publishAsync());
-    }
-    else {
-      promiseList.push(new LibraryPackageBuilder(config).publishAsync());
-    }
+  for (const config of projectConfig.packages.filter(item => item.type === "library")) {
+    promiseList.push(new LibraryPackageBuilder(config as ILibraryPackageConfig).publishAsync());
   }
   await Promise.all(promiseList);
 
-  // git push
-  child_process.spawnSync("git", ["push"], {
-    shell: true
-  });
+  for (const config of projectConfig.packages.filter(item => item.type !== "library")) {
+    if (config.type === "server") {
+      await new ServerPackageBuilder(config).publishAsync();
+    }
+    else {
+      await new ClientPackageBuilder(config as IClientPackageConfig).publishAsync();
+    }
+  }
 }

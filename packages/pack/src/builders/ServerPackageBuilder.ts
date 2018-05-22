@@ -163,6 +163,7 @@ export class ServerPackageBuilder {
               watch: true,
               env: {
                 TARGET: "node",
+                NODE_ENV: "production",
                 ...this._config.env
               }
             }]

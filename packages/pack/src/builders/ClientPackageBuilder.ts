@@ -25,16 +25,28 @@ export class ClientPackageBuilder {
     const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
     fs.removeSync(this._packagePath(tsconfig.compilerOptions.outDir || "dist"));
 
-    await Promise.all(this._config.platforms!.map(platform =>
+    await Promise.all((this._config.platforms || ["web"]).map(platform =>
       new Promise<void>((resolve, reject) => {
         const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(platform), {
           mode: "production",
           devtool: "source-map",
           entry: this._packagePath("src/main.ts"),
+          output: {
+            path: this._packagePath(tsconfig.compilerOptions.outDir || "dist"),
+            publicPath: `/${this._config.name}/`,
+            filename: "app.js",
+            chunkFilename: "[name].chunk.js"
+          },
           optimization: {
             noEmitOnErrors: true,
             minimize: false
-          }
+          },
+          plugins: [
+            new HtmlWebpackPlugin({
+              template: this._packagePath("src/index.ejs"),
+              BASE_HREF: `/${this._config.name}/`
+            })
+          ]
         });
 
         webpack(webpackConfig, err => {
@@ -68,8 +80,18 @@ export class ClientPackageBuilder {
             "webpack/hot/dev-server",
             this._packagePath("src/main.ts")
           ],
+          output: {
+            path: this._packagePath(tsconfig.compilerOptions.outDir || "dist"),
+            publicPath: "/",
+            filename: "app.js",
+            chunkFilename: "[name].chunk.js"
+          },
           plugins: [
-            new webpack.HotModuleReplacementPlugin()
+            new webpack.HotModuleReplacementPlugin(),
+            new HtmlWebpackPlugin({
+              template: this._packagePath("src/index.ejs"),
+              BASE_HREF: "/"
+            })
           ]
         });
 
@@ -123,6 +145,14 @@ export class ClientPackageBuilder {
         await storage.mkdirAsync(ftpFilePath);
       }
       else {
+        if (/[\\/]/.test(ftpFilePath)) {
+          let cumDir = "";
+          for (const ftpDir of ftpFilePath.split(/[\\/]/).slice(0, -1)) {
+            cumDir += ftpDir + "/";
+            await storage.mkdirAsync(cumDir);
+          }
+        }
+
         await storage.putAsync(filePath, ftpFilePath);
       }
     }
@@ -135,15 +165,7 @@ export class ClientPackageBuilder {
   }
 
   private _getCommonConfig(platform: string): webpack.Configuration {
-    const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
-
     return {
-      output: {
-        path: this._packagePath(tsconfig.compilerOptions.outDir || "dist"),
-        publicPath: "/",
-        filename: "app.js",
-        chunkFilename: "[name].chunk.js"
-      },
       resolve: {
         extensions: [".ts", ".js"]
       },
@@ -207,9 +229,6 @@ export class ClientPackageBuilder {
           warn: message => this._logger.warn(this._config.name + " " + message),
           info: message => this._logger.info(this._config.name + " " + message),
           log: message => this._logger.log(this._config.name + " " + message)
-        }),
-        new HtmlWebpackPlugin({
-          template: this._packagePath("src/index.ejs")
         }),
         new CopyWebpackPlugin([
           {from: this._packagePath("src/favicon.ico"), to: "favicon.ico"}

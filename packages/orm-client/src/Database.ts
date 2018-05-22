@@ -9,7 +9,7 @@ export abstract class Database {
   private _preparedQueries: string[] = [];
   private _prepareResultIndexes: boolean[] = [];
 
-  protected abstract get _configs(): { server: string; userName: string; password: string };
+  protected abstract get _configs(): { server: string; port: number; userName: string; password: string };
 
   // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
   public constructor(private readonly _ws: WebSocketClient) {
