@@ -1,15 +1,12 @@
 {
-  "name": "@simplism/mailer",
-  "version": "7.0.33",
-  "description": "Simplism Mailer Package",
+  "name": "@simplism/assert",
+  "version": "7.0.34",
+  "description": "Simplism Assert Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "dependencies": {
-    "nodemailer": "^4.6.5"
-  },
   "peerDependencies": {
     "@simplism/core": "^7.0.34"
   }

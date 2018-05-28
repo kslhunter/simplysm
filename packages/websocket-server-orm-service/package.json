@@ -11,8 +11,8 @@
     "tedious": "^2.6.1"
   },
   "peerDependencies": {
-    "@simplism/core": "^7.0.33",
-    "@simplism/websocket-common": "^7.0.33",
-    "@simplism/websocket-server": "^7.0.33"
+    "@simplism/core": "^7.0.34",
+    "@simplism/websocket-common": "^7.0.34",
+    "@simplism/websocket-server": "^7.0.34"
   }
 }

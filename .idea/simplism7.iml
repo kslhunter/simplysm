@@ -22,5 +22,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="tsconfig$roots" level="project" />
+    <orderEntry type="library" name="tsconfig$roots" level="project" />
   </component>
 </module>

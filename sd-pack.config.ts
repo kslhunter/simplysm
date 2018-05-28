@@ -3,6 +3,7 @@ import {IProjectConfig} from "./packages/pack/src";
 const config: IProjectConfig = {
   packages: [
     {name: "angular", type: "library"},
+    {name: "assert", type: "library"},
     {name: "core", type: "library"},
     {name: "excel", type: "library"},
     {name: "mailer", type: "library"},
