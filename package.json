@@ -1,6 +1,6 @@
 {
   "name": "simplism",
-  "version": "7.0.27",
+  "version": "7.0.28",
   "description": "Simplism Packages Source Code",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -13,6 +13,7 @@
     "watch core": "yarn sd-pack build --watch --package core",
     "--- ": "",
     "build angular": "yarn sd-pack build --package angular",
+    "build pack": "yarn sd-pack build --package pack",
     "--": "",
     "sd-pack": "ts-node --project packages/pack/tsconfig.json --require tsconfig-paths/register packages/pack/src/bin.ts"
   },
