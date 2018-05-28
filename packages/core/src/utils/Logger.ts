@@ -90,7 +90,7 @@ export class Logger {
       return item;
     });
 
-    const colors: ILogColors = process.env.TARGET === "browser"
+    const colors: ILogColors = !process.versions.node
       ? {
         grey: "color: grey;",
         log: "color: black;",

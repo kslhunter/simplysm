@@ -235,7 +235,6 @@ export class ClientPackageBuilder {
         ]),
         new webpack.DefinePlugin({
           "process.env": this._envStringify({
-            TARGET: "browser",
             VERSION: fs.readJsonSync(this._projectPath("package.json")).version,
             PLATFORM: platform,
             ...this._config.env
