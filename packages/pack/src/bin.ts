@@ -4,12 +4,19 @@ import * as yargs from "yargs";
 import {buildAsync} from "./commands/buildAsync";
 import {publishAsync} from "./commands/publishAsync";
 import {localUpdateAsync} from "./commands/localUpdateAsync";
+import {testAsync} from "./commands/testAsync";
 
 // tslint:disable-next-line:no-unused-expression
 yargs
   .version(false)
   .help("help", "도움말")
   .alias("help", "h")
+  .command(
+    "test",
+    "테스트합니다.",
+    cmd => cmd.version(false),
+    argv => testAsync().catch(err => console.error(err))
+  )
   .command(
     "build",
     "프로젝트를 빌드합니다.",
