@@ -1,6 +1,6 @@
 {
   "name": "@simplism/excel",
-  "version": "7.0.34",
+  "version": "7.0.37",
   "description": "Simplism Excel Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -11,6 +11,6 @@
     "xlsx": "^0.12.13"
   },
   "peerDependencies": {
-    "@simplism/core": "^7.0.34"
+    "@simplism/core": "^7.0.37"
   }
 }
