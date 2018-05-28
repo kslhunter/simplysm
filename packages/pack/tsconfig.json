@@ -11,13 +11,14 @@
       ],
       "@simplism/storage": [
         "../storage/src/index.ts"
+      ],
+      "tslint": [
+        "../../node_modules/tslint"
       ]
     }
   },
   "files": [
-    "src/workers/ts-build.ts",
-    "src/workers/ts-lint.ts",
-    "src/bin.ts",
-    "src/index.ts"
+    "src/index.ts",
+    "src/bin.ts"
   ]
 }

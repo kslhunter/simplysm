@@ -2,15 +2,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "lib": [
-      "es2017",
-      "dom"
-    ],
-    "baseUrl": ".",
-    "paths": {
-      "@simplism/core": [
-        "../core/src/index.ts"
-      ]
-    }
+      "es2017"
+    ]
   },
   "files": [
     "src/index.ts"

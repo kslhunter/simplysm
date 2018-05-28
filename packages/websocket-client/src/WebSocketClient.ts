@@ -1,5 +1,5 @@
 import {JsonConvert, Wait} from "@simplism/core";
-import {IWebSocketRequest, IWebSocketResponse} from "./interfaces";
+import {IWebSocketRequest, IWebSocketResponse} from "@simplism/websocket-common";
 
 export class WebSocketClient {
   private static _lastRequestId = 0;

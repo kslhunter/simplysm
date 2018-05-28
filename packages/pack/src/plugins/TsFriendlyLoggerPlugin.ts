@@ -39,6 +39,9 @@ export class TsFriendlyLoggerPlugin implements webpack.Plugin {
           for (const lint of lints) {
             this._logger.warn(`lint error occurred (checker)\r\n${lint.getFile()}(${lint.getLine()},${lint.getCharacter()}): ${lint.getSeverity()}: ${lint.getContent()} (${lint.getFormattedCode()})\r\n`);
           }
+          for (const diagnostic of diagnostics) {
+            this._logger.warn(`type error occurred (checker)\r\n${diagnostic.getFile()}(${diagnostic.getLine()},${diagnostic.getCharacter()}): ${diagnostic.getSeverity()}: ${diagnostic.getContent()} (${diagnostic.getFormattedCode()})\r\n`);
+          }
         }
         this._logger.info("check complete");
       });

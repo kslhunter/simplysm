@@ -1,47 +1,70 @@
 import * as webpack from "webpack";
-import {NormalizedMessage} from "fork-ts-checker-webpack-plugin";
+import * as fs from "fs-extra";
+import * as ts from "typescript";
+import * as path from "path";
 
-export class TsFriendlyLoggerPlugin implements webpack.Plugin {
-  public constructor(private readonly _logger: {
-    error(message: string): void;
-    warn(message: string): void;
-    info(message: string): void;
-    log(message: string): void;
-  }) {
+export class TsDeclarationPlugin implements webpack.Plugin {
+  private readonly _startTime = Date.now();
+  private _prevTimestamps = new Map<string, number>();
+
+  public constructor(private readonly _options: { configFile: string }) {
   }
 
   public apply(compiler: webpack.Compiler): void {
-    compiler.hooks.watchRun.tap("TsFriendlyLoggerPlugin", () => {
-      this._logger.log("building...");
-    });
+    compiler.hooks.make.tapAsync("TsDeclarationPlugin", (compilation: webpack.compilation.Compilation, callback: () => void) => {
 
-    compiler.hooks.done.tap("TsFriendlyLoggerPlugin", stats => {
-      const info = stats.toJson();
-
-      if (stats.hasWarnings()) {
-        for (const warning of info.warnings) {
-          this._logger.warn(warning + "\r\n");
-        }
-      }
-
-      if (stats.hasErrors()) {
-        for (const error of info.errors) {
-          this._logger.error(error);
-        }
-      }
-
-      this._logger.info("build complete");
-    });
-
-    if (compiler.hooks["forkTsCheckerReceive"]) {
-      compiler.hooks["forkTsCheckerReceive"].tap("TsFriendlyLoggerPlugin", (diagnostics: NormalizedMessage[], lints: NormalizedMessage[]) => {
-        if (lints.length > 0) {
-          for (const lint of lints) {
-            this._logger.warn(`lint error occurred (checker)\r\n${lint.getFile()}(${lint.getLine()},${lint.getCharacter()}): ${lint.getSeverity()}: ${lint.getContent()} (${lint.getFormattedCode()})\r\n`);
+      const tsconfig = fs.readJsonSync(this._options.configFile);
+      tsconfig.compilerOptions.outDir = tsconfig.compilerOptions.outDir || "dist";
+      if (tsconfig.compilerOptions.paths) {
+        for (const key of Object.keys(tsconfig.compilerOptions.paths)) {
+          for (let i = 0; i < tsconfig.compilerOptions.paths[key].length; i++) {
+            tsconfig.compilerOptions.paths[key][i] = tsconfig.compilerOptions.paths[key][i].replace(/[\\/]src[\\/]([^\\/.]*)\.ts$/, "");
           }
         }
-        this._logger.info("check complete");
-      });
-    }
+      }
+
+      const parsed = ts.parseJsonConfigFileContent(tsconfig, ts.sys, path.dirname(this._options.configFile));
+
+      if (!parsed.options.declaration) {
+        callback();
+        return;
+      }
+
+      const tsProgram = ts.createProgram(
+        parsed.fileNames,
+        parsed.options
+      );
+
+      let diagnostics: ts.Diagnostic[] = [];
+
+      const fileTimestamps = compilation["fileTimestamps"] as Map<string, number>;
+      const changedFiles = Array.from(fileTimestamps.keys()).filter(watchFile => (this._prevTimestamps.get(watchFile) || this._startTime) < (fileTimestamps.get(watchFile) || Infinity));
+      this._prevTimestamps = fileTimestamps;
+      const sourceFiles = changedFiles.length > 0
+        ? changedFiles.map(file => tsProgram.getSourceFile(file)).filter(item => item).distinct()
+        : tsProgram.getSourceFiles();
+
+      for (const sourceFile of sourceFiles) {
+        diagnostics = diagnostics.concat(tsProgram.emit(sourceFile, undefined, undefined, true).diagnostics);
+      }
+
+      const result: string[] = [];
+      for (const diagnostic of diagnostics) {
+        if (diagnostic.file) {
+          const position = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+          const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+          result.push(`${diagnostic.file.fileName}(${position.line + 1},${position.character + 1}): error: ${message}`);
+        }
+        else {
+          result.push(`error: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`);
+        }
+      }
+
+      if (result.length > 0) {
+        throw new Error(result[0]);
+      }
+
+      callback();
+    });
   }
 }

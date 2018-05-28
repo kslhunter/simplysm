@@ -1,5 +1,5 @@
 import {Exception, JsonConvert, Logger, Type, Uuid} from "@simplism/core";
-import {IWebSocketRequest, IWebSocketResponse} from "@simplism/websocket-client";
+import {IWebSocketRequest, IWebSocketResponse} from "@simplism/websocket-common";
 import * as http from "http";
 import * as WebSocket from "ws";
 import * as url from "url";

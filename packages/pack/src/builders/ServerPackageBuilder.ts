@@ -67,8 +67,8 @@ export class ServerPackageBuilder {
         if (worker) {
           worker.kill();
         }
-        worker = child_process.fork(this._packagePath(tsconfig.options.outDir!, "app.js"), [], {
-          cwd: this._packagePath(tsconfig.options.outDir)
+        worker = child_process.fork(this._packagePath(tsconfig.compilerOptions.outDir || "dist", "app.js"), [], {
+          cwd: this._packagePath(tsconfig.compilerOptions.outDir || "dist")
         });
 
         resolve();
@@ -150,16 +150,15 @@ export class ServerPackageBuilder {
     return {
       target: "node",
       resolve: {
-        extensions: [".ts", ".js"],
+        extensions: [".ts", ".js", ".json"],
         alias: {
-          bindings: path.resolve(__dirname, "../../loaders/bindings.js", "node_modules/@simplism/sd-pack/assets/bindings.js")
+          bindings: this._loadersPath("bindings.js")
         }
       },
-      entry: this._packagePath("src/main.ts"),
+      entry: this._packagePath("src/app.ts"),
       output: {
-        path: path.resolve(tsconfig.options.outDir!),
-        filename: "app.js",
-        chunkFilename: "[name].chunk.js"
+        path: this._packagePath(tsconfig.compilerOptions.outDir || "dist"),
+        filename: "app.js"
       },
       module: {
         rules: [
@@ -176,7 +175,7 @@ export class ServerPackageBuilder {
           },
           {
             test: /\.node$/,
-            loader: path.join(__dirname, "../../loaders/node-loader.js")
+            loader: this._loadersPath("node-loader.js")
           },
           {
             test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf)$/,
@@ -220,25 +219,7 @@ export class ServerPackageBuilder {
             ...this._config.env
           })
         })
-      ],
-      optimization: {
-        splitChunks: {
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/](?!@simplism)/,
-              name: "vendor",
-              chunks: "initial",
-              enforce: true
-            },
-            simplism: {
-              test: /[\\/]node_modules[\\/]@simplism/,
-              name: "simplism",
-              chunks: "initial",
-              enforce: true
-            }
-          }
-        }
-      }
+      ]
     };
   }
 
@@ -248,6 +229,12 @@ export class ServerPackageBuilder {
       result[key] = param[key] === undefined ? "undefined" : JSON.stringify(param[key]);
     }
     return result;
+  }
+
+  private _loadersPath(...args: string[]): string {
+    return fs.existsSync(path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders"))
+      ? path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders", ...args)
+      : path.resolve(__dirname, "../../loaders", ...args);
   }
 
   private _projectPath(...args: string[]): string {

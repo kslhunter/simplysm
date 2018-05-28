@@ -9,6 +9,9 @@
     "paths": {
       "@simplism/core": [
         "../core/src/index.ts"
+      ],
+      "@simplism/websocket-common": [
+        "../websocket-common/src/index.ts"
       ]
     }
   },

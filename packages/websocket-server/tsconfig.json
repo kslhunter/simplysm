@@ -9,8 +9,8 @@
       "@simplism/core": [
         "../core/src/index.ts"
       ],
-      "@simplism/websocket-client": [
-        "../websocket-client/src/index.ts"
+      "@simplism/websocket-common": [
+        "../websocket-common/src/index.ts"
       ]
     }
   },

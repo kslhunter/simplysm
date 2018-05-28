@@ -8,6 +8,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "declaration": true,
+    "removeComments": true,
     "typeRoots": [
       "node_modules/@types",
       "types"

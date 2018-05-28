@@ -3,7 +3,13 @@ import * as path from "path";
 import {ILibraryPackageConfig} from "../commons/IProjectConfig";
 import {Exception, Logger} from "@simplism/core";
 import * as child_process from "child_process";
-import * as chokidar from "chokidar";
+import {TsFriendlyLoggerPlugin} from "../plugins/TsFriendlyLoggerPlugin";
+import * as webpack from "webpack";
+import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
+import * as webpackMerge from "webpack-merge";
+import * as nodeExternals from "webpack-node-externals";
+import * as HappyPack from "happypack";
+import {TsDeclarationPlugin} from "../plugins/TsDeclarationPlugin";
 
 export class LibraryPackageBuilder {
   private readonly _logger = new Logger("@simplism/pack", `LibraryPackageBuilder`);
@@ -17,118 +23,48 @@ export class LibraryPackageBuilder {
     const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
     fs.removeSync(this._packagePath(tsconfig.compilerOptions.outDir || "dist"));
 
-    const tsBuildWorker = child_process
-      .fork(
-        path.join(__dirname, "../workers/ts-build"),
-        [this._packagePath()],
-        {stdio: ["inherit", "inherit", "inherit", "ipc"]}
-      );
+    await new Promise<void>((resolve, reject) => {
+      const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(), {
+        mode: "production",
+        devtool: "source-map",
+        optimization: {
+          noEmitOnErrors: true,
+          minimize: false
+        }
+      });
 
-    const tsLintWorker = child_process
-      .fork(
-        path.join(__dirname, "../workers/ts-lint"),
-        [this._packagePath()],
-        {stdio: ["inherit", "inherit", "inherit", "ipc"]}
-      );
-
-    await Promise.all([
-      new Promise<void>(resolve => {
-        tsBuildWorker.once("message", result => {
-          if (result.length > 0) {
-            this._logger.error(`${this._config.name} build error occurred`, result.join("\r\n"));
-          }
-          resolve();
-        }).send([]);
-      }),
-      new Promise<void>(resolve => {
-        tsLintWorker.once("message", result => {
-          if (result.length > 0) {
-            this._logger.warn(`${this._config.name} lint error occurred`, result.join("\r\n"));
-          }
-          resolve();
-        }).send("run");
-      })
-    ]);
-
-    tsBuildWorker.kill();
-    tsLintWorker.kill();
-
-    this._logger.info(`${this._config.name} build complete`);
+      webpack(webpackConfig, err => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      });
+    });
   }
 
   public async watchAsync(): Promise<void> {
+    this._logger.log(`${this._config.name} watching...`);
+
     const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
     fs.removeSync(this._packagePath(tsconfig.compilerOptions.outDir || "dist"));
 
-    const tsBuildWorker = child_process
-      .fork(
-        path.join(__dirname, "../workers/ts-build"),
-        [this._packagePath()],
-        {stdio: ["inherit", "inherit", "inherit", "ipc"]}
-      );
-
-    const tsLintWorker = child_process
-      .fork(
-        path.join(__dirname, "../workers/ts-lint"),
-        [this._packagePath()],
-        {stdio: ["inherit", "inherit", "inherit", "ipc"]}
-      );
-
-    let preserveFilePaths: string[] = [];
-    let timeout: NodeJS.Timer;
-    const buildForWatchAsync = async (filePath?: string) => {
-      if (filePath) {
-        preserveFilePaths.push(filePath);
-      }
-
-      await new Promise<void>(resolve => {
-        clearTimeout(timeout);
-        timeout = setTimeout(
-          async () => {
-            const filePaths = preserveFilePaths;
-            preserveFilePaths = [];
-
-            this._logger.log(`${this._config.name} building...`);
-
-            await Promise.all([
-              new Promise<void>(resolve1 => {
-                tsBuildWorker.once("message", result => {
-                  if (result.length > 0) {
-                    this._logger.error(`${this._config.name} build error occurred`, result.join("\r\n"));
-                  }
-                  resolve1();
-                }).send(filePaths);
-              }),
-              new Promise<void>(resolve1 => {
-                tsLintWorker.once("message", result => {
-                  if (result.length > 0) {
-                    this._logger.warn(`${this._config.name} lint error occurred`, result.join("\r\n"));
-                  }
-                  resolve1();
-                }).send("run");
-              })
-            ]);
-
-            this._logger.info(`${this._config.name} build complete`);
-
-            resolve();
-          },
-          0
-        );
+    await new Promise<void>((resolve, reject) => {
+      const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(), {
+        mode: "development",
+        devtool: "cheap-module-source-map"
       });
-    };
 
-    await buildForWatchAsync();
+      const compiler = webpack(webpackConfig);
 
-    await new Promise<void>(resolve => {
-      const watcher = chokidar.watch(this._packagePath("src/**/*").replace(/\\/g, "/"))
-        .on("ready", () => {
-          watcher
-            .on("add", filePath => buildForWatchAsync(filePath))
-            .on("change", filePath => buildForWatchAsync(filePath))
-            .on("unlink", filePath => buildForWatchAsync(filePath));
-          resolve();
-        });
+      compiler.watch({}, err => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve();
+      });
     });
   }
 
@@ -184,6 +120,114 @@ export class LibraryPackageBuilder {
         resolve();
       });
     });
+  }
+
+  private _getCommonConfig(): webpack.Configuration {
+    const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
+    const alias = {};
+    if (tsconfig.compilerOptions.paths) {
+      for (const key of Object.keys(tsconfig.compilerOptions.paths)) {
+        alias[key] = this._packagePath(tsconfig.compilerOptions.paths[key][0].replace(/[\\/]src[\\/]([^\\/.]*)\.ts$/, ""));
+      }
+    }
+
+    const packageJson = fs.readJsonSync(this._packagePath("package.json"));
+
+    const entry: { [key: string]: string } = {};
+    for (const fileName of tsconfig.files) {
+      const basename = path.basename(fileName, path.extname(fileName));
+      entry[basename] = this._packagePath(fileName);
+    }
+
+    return {
+      target: "node",
+      resolve: {
+        extensions: [".ts", ".js", ".json"],
+        alias
+      },
+      entry,
+      output: {
+        path: this._packagePath(tsconfig.compilerOptions.outDir || "dist"),
+        filename: "[name].js",
+        libraryTarget: "umd"
+      },
+      module: {
+        rules: [
+          {
+            enforce: "pre",
+            test: /\.js$/,
+            use: ["source-map-loader"],
+            include: /node_modules[\\/]@simplism/
+          },
+          {
+            test: /\.ts$/,
+            exclude: /node_modules/,
+            loader: "happypack/loader?id=ts"
+          }
+        ]
+      },
+      plugins: [
+        new HappyPack({
+          id: "ts",
+          verbose: false,
+          threads: 2,
+          loaders: [
+            {
+              loader: "ts-loader",
+              options: {
+                silent: true,
+                happyPackMode: true,
+                configFile: this._packagePath("tsconfig.json")
+              }
+            },
+            this._loadersPath("inline-sass-loader.js"),
+            this._loadersPath("shebang-loader.js")
+          ]
+        }),
+        new TsDeclarationPlugin({
+          configFile: this._packagePath("tsconfig.json")
+        }),
+        new ForkTsCheckerWebpackPlugin({
+          tsconfig: this._packagePath("tsconfig.json"),
+          tslint: this._packagePath("tslint.json"),
+          silent: true,
+          checkSyntacticErrors: true
+        }),
+        new TsFriendlyLoggerPlugin({
+          error: message => this._logger.error(this._config.name + " " + message),
+          warn: message => this._logger.warn(this._config.name + " " + message),
+          info: message => this._logger.info(this._config.name + " " + message),
+          log: message => this._logger.log(this._config.name + " " + message)
+        }),
+        ...(packageJson.bin)
+          ? [
+            new webpack.BannerPlugin({
+              banner: "#!/usr/bin/env node",
+              raw: true,
+              entryOnly: true,
+              include: Object.keys(packageJson.bin).map(key => path.relative(this._packagePath(tsconfig.compilerOptions.outDir || "dist"), this._packagePath(packageJson.bin[key])))
+            })
+          ]
+          : []
+      ],
+      externals: [
+        (context, request, callback) => {
+          if (alias[request]) {
+            callback(undefined, `commonjs ${request}`);
+            return;
+          }
+
+          callback(undefined, undefined);
+        },
+        nodeExternals()
+      ]
+    };
+  }
+
+  private _loadersPath(...args: string[]): string {
+    return fs.existsSync(path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders"))
+      ? path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders", ...args)
+      : path.resolve(__dirname, "../../loaders", ...args);
   }
 
   private _projectPath(...args: string[]): string {

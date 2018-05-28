@@ -15,6 +15,9 @@
       "@simplism/excel": [
         "../excel/src/index.ts"
       ],
+      "@simplism/websocket-common": [
+        "../websocket-common/src/index.ts"
+      ],
       "@simplism/websocket-client": [
         "../websocket-client/src/index.ts"
       ],

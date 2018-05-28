@@ -9,7 +9,7 @@ module.exports = function (content, sourceMap) {
 
   const options = loaderUtils.getOptions(this) || {};
 
-  const scssRegex = /\/\* *language=SCSS *\*\/ *[`"'](((?![^\\]['"`])(.|\r|\n))*)[^\\]['"`]/;
+  const scssRegex = /\/\* *language=SCSS *\*\/ *[`"'](((?!['"`][\]\r\n,])(.|\r|\n))*)['"`]/;
 
   let newContent = content;
   const matches = content.match(new RegExp(scssRegex, "gi"));
@@ -18,12 +18,12 @@ module.exports = function (content, sourceMap) {
       try {
         return sass.renderSync({
           file: this.resourcePath,
-          data: JSON.parse(`"${match.match(scssRegex)[1]}"`),
+          data: match.match(scssRegex)[1],
           sourceMapEmbed: options.sourceMap
         });
       }
       catch (err) {
-        console.error(match);
+        console.error(err, match.match(scssRegex)[1]);
         throw err;
       }
     });

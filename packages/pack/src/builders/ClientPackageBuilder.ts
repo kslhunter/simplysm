@@ -167,7 +167,7 @@ export class ClientPackageBuilder {
   private _getCommonConfig(platform: string): webpack.Configuration {
     return {
       resolve: {
-        extensions: [".ts", ".js"]
+        extensions: [".ts", ".js", ".json"]
       },
       module: {
         rules: [
@@ -184,7 +184,7 @@ export class ClientPackageBuilder {
           },
           {
             test: /\.(js|ts)$/,
-            loader: path.join(__dirname, "../../loaders/inline-sass-loader.js")
+            loader: this._loadersPath("inline-sass-loader.js")
           },
           {
             test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
@@ -288,6 +288,12 @@ export class ClientPackageBuilder {
       result[key] = param[key] === undefined ? "undefined" : JSON.stringify(param[key]);
     }
     return result;
+  }
+
+  private _loadersPath(...args: string[]): string {
+    return fs.existsSync(path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders"))
+      ? path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders", ...args)
+      : path.resolve(__dirname, "../../loaders", ...args);
   }
 
   private _projectPath(...args: string[]): string {
