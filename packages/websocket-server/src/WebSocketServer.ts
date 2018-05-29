@@ -31,6 +31,7 @@ export class WebSocketServer {
   private _server?: WebSocket.Server;
   private readonly _preparedFileResults = new Map<string, FileResult>();
   private readonly _listeners: IWebSocketEventListener[] = [];
+  private _closeListeners: (() => void)[] = [];
 
   public constructor(private readonly _option: IWebSocketServerOption) {
   }
@@ -81,6 +82,10 @@ export class WebSocketServer {
         }
       }
     }
+  }
+
+  public onClose(listener: () => void): void {
+    this._closeListeners.push(listener);
   }
 
   private _webRequestHandler(req: http.IncomingMessage, res: http.ServerResponse): void {
@@ -196,7 +201,16 @@ export class WebSocketServer {
 
       // 결과 전송
       const responseJson = JsonConvert.stringify(response);
-      ws.send(responseJson);
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(responseJson);
+      }
+    });
+
+    ws.on("close", () => {
+      for (const closeListener of this._closeListeners) {
+        closeListener();
+      }
+      this._closeListeners = [];
     });
   }
 

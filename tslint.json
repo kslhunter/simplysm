@@ -118,7 +118,7 @@
     "no-import-side-effect": [
       true,
       {
-        "ignore-module": "(Extensions$|^core-js|^zone\\.js|^reflect-metadata$|^@simplism)"
+        "ignore-module": "(Extensions$|^core-js|^zone\\.js|^reflect-metadata$|^@simplism|^source-map-support$)"
       }
     ],
     "no-unsafe-any": false,

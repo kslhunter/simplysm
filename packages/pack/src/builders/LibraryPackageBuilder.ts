@@ -52,7 +52,7 @@ export class LibraryPackageBuilder {
     await new Promise<void>((resolve, reject) => {
       const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(), {
         mode: "development",
-        devtool: "cheap-module-source-map"
+        devtool: "source-map"
       });
 
       const compiler = webpack(webpackConfig);

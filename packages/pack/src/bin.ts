@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import "source-map-support";
 import * as yargs from "yargs";
 import {buildAsync} from "./commands/buildAsync";
 import {publishAsync} from "./commands/publishAsync";

@@ -5,7 +5,7 @@ import {SdTypeValidate} from "../decorators/SdTypeValidate";
   selector: "sd-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <button>
+    <button [type]="type">
       <ng-content></ng-content>
     </button>`,
   styles: [/* language=SCSS */ `

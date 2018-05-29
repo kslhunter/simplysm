@@ -33,6 +33,10 @@ export class OrmService extends WebSocketServiceBase {
       this._logger.error(error.message);
     });
 
+    this.server.onClose(() => {
+      conn.close();
+    });
+
     return await new Promise<number>((resolve, reject) => {
       conn.on("connect", err => {
         if (err) {

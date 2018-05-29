@@ -22,8 +22,8 @@ export class ClientPackageBuilder {
   public async buildAsync(): Promise<void> {
     this._logger.log(`${this._config.name} building...`);
 
-    const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
-    fs.removeSync(this._packagePath(tsconfig.compilerOptions.outDir || "dist"));
+    const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.app.json"));
+    fs.removeSync(this._packagePath((tsconfig.compilerOptions && tsconfig.compilerOptions.outDir) || "dist"));
 
     await Promise.all((this._config.platforms || ["web"]).map(platform =>
       new Promise<void>((resolve, reject) => {
@@ -32,7 +32,7 @@ export class ClientPackageBuilder {
           devtool: "source-map",
           entry: this._packagePath("src/main.ts"),
           output: {
-            path: this._packagePath(tsconfig.compilerOptions.outDir || "dist"),
+            path: this._packagePath((tsconfig.compilerOptions && tsconfig.compilerOptions.outDir) || "dist"),
             publicPath: `/${this._config.name}/`,
             filename: "app.js",
             chunkFilename: "[name].chunk.js"
@@ -67,8 +67,8 @@ export class ClientPackageBuilder {
       throw new Error("'--watch'옵션을 사용하려면 설정파일에 'devServer'가 설정되어야 합니다.");
     }
 
-    const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
-    fs.removeSync(this._packagePath(tsconfig.compilerOptions.outDir || "dist"));
+    const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.app.json"));
+    fs.removeSync(this._packagePath((tsconfig.compilerOptions && (tsconfig.compilerOptions && tsconfig.compilerOptions.outDir)) || "dist"));
 
     await Promise.all((this._config.platforms || ["web"]).map(platform =>
       new Promise<void>((resolve, reject) => {
@@ -81,7 +81,7 @@ export class ClientPackageBuilder {
             this._packagePath("src/main.ts")
           ],
           output: {
-            path: this._packagePath(tsconfig.compilerOptions.outDir || "dist"),
+            path: this._packagePath((tsconfig.compilerOptions && tsconfig.compilerOptions.outDir) || "dist"),
             publicPath: "/",
             filename: "app.js",
             chunkFilename: "[name].chunk.js"
@@ -122,8 +122,8 @@ export class ClientPackageBuilder {
       throw new Error("설정파일에 'publish'옵션이 설정되어야 합니다.");
     }
 
-    const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
-    const distPath = this._packagePath(tsconfig.compilerOptions.outDir || "dist");
+    const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.app.json"));
+    const distPath = this._packagePath((tsconfig.compilerOptions && tsconfig.compilerOptions.outDir) || "dist");
 
     // 배포
     const storage = new FtpStorage();
@@ -214,12 +214,12 @@ export class ClientPackageBuilder {
       },
       plugins: [
         new AngularCompilerPlugin({
-          tsConfigPath: this._packagePath("tsconfig.json"),
+          tsConfigPath: this._packagePath("tsconfig.app.json"),
           skipCodeGeneration: true,
           sourceMap: true
         }),
         new ForkTsCheckerWebpackPlugin({
-          tsconfig: this._packagePath("tsconfig.json"),
+          tsconfig: this._packagePath("tsconfig.app.json"),
           tslint: this._packagePath("tslint.json"),
           silent: true,
           checkSyntacticErrors: true
