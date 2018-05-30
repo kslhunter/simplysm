@@ -1,6 +1,6 @@
 {
   "name": "@simplism/pack",
-  "version": "7.1.3",
+  "version": "7.1.4",
   "description": "Simplism Package Builder CLI",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -42,7 +42,7 @@
     "yargs": "^11.0.0"
   },
   "peerDependencies": {
-    "@simplism/core": "^7.1.3",
-    "@simplism/storage": "^7.1.3"
+    "@simplism/core": "^7.1.4",
+    "@simplism/storage": "^7.1.4"
   }
 }
