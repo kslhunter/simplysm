@@ -5,11 +5,11 @@ import * as glob from "glob";
 import {IServerPackageConfig} from "../commons/IProjectConfig";
 import {Logger} from "@simplism/core";
 import {FtpStorage} from "@simplism/storage";
-import {TsFriendlyLoggerPlugin} from "../plugins/TsFriendlyLoggerPlugin";
+import {FriendlyLoggerPlugin} from "../plugins/FriendlyLoggerPlugin";
 import * as webpack from "webpack";
-import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
-import * as HappyPack from "happypack";
 import * as webpackMerge from "webpack-merge";
+import {TsLintPlugin} from "../plugins/TsLintPlugin";
+import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugin";
 
 export class ServerPackageBuilder {
   private readonly _logger = new Logger("@simplism/pack", `ServerPackageBuilder`);
@@ -171,7 +171,10 @@ export class ServerPackageBuilder {
           {
             test: /\.ts$/,
             exclude: /node_modules/,
-            loader: "happypack/loader?id=ts"
+            loader: this._loadersPath("ts-transpile-loader.js"),
+            options: {
+              logger: this._logger
+            }
           },
           {
             test: /\.node$/,
@@ -187,32 +190,17 @@ export class ServerPackageBuilder {
         ]
       },
       plugins: [
-        new HappyPack({
-          id: "ts",
-          verbose: false,
-          threads: 2,
-          loaders: [
-            {
-              loader: "ts-loader",
-              options: {
-                silent: true,
-                happyPackMode: true,
-                configFile: this._packagePath("tsconfig.json")
-              }
-            }
-          ]
+        new TsCheckAndDeclarationPlugin({
+          packageName: this._config.name,
+          logger: this._logger
         }),
-        new ForkTsCheckerWebpackPlugin({
-          tsconfig: this._packagePath("tsconfig.json"),
-          tslint: this._packagePath("tslint.json"),
-          silent: true,
-          checkSyntacticErrors: true
+        new TsLintPlugin({
+          packageName: this._config.name,
+          logger: this._logger
         }),
-        new TsFriendlyLoggerPlugin({
-          error: message => this._logger.error(this._config.name + " " + message),
-          warn: message => this._logger.warn(this._config.name + " " + message),
-          info: message => this._logger.info(this._config.name + " " + message),
-          log: message => this._logger.log(this._config.name + " " + message)
+        new FriendlyLoggerPlugin({
+          packageName: this._config.name,
+          logger: this._logger
         }),
         new webpack.DefinePlugin({
           "process.env": this._envStringify({

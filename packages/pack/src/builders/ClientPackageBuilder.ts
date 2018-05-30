@@ -4,14 +4,14 @@ import * as glob from "glob";
 import * as fs from "fs-extra";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
-import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import {Logger} from "@simplism/core";
 import {IClientPackageConfig} from "../commons/IProjectConfig";
 import {AngularCompilerPlugin} from "@ngtools/webpack";
-import {TsFriendlyLoggerPlugin} from "../plugins/TsFriendlyLoggerPlugin";
+import {FriendlyLoggerPlugin} from "../plugins/FriendlyLoggerPlugin";
 import {FtpStorage} from "@simplism/storage";
 import * as webpackMerge from "webpack-merge";
 import * as WebpackDevServer from "webpack-dev-server";
+import {TsLintPlugin} from "../plugins/TsLintPlugin";
 
 export class ClientPackageBuilder {
   private readonly _logger = new Logger("@simplism/pack", `ClientPackageBuilder`);
@@ -218,17 +218,13 @@ export class ClientPackageBuilder {
           skipCodeGeneration: true,
           sourceMap: true
         }),
-        new ForkTsCheckerWebpackPlugin({
-          tsconfig: this._packagePath("tsconfig.app.json"),
-          tslint: this._packagePath("tslint.json"),
-          silent: true,
-          checkSyntacticErrors: true
+        new TsLintPlugin({
+          packageName: this._config.name,
+          logger: this._logger
         }),
-        new TsFriendlyLoggerPlugin({
-          error: message => this._logger.error(this._config.name + " " + message),
-          warn: message => this._logger.warn(this._config.name + " " + message),
-          info: message => this._logger.info(this._config.name + " " + message),
-          log: message => this._logger.log(this._config.name + " " + message)
+        new FriendlyLoggerPlugin({
+          logger: this._logger,
+          packageName: this._config.name
         }),
         new CopyWebpackPlugin([
           {from: this._packagePath("src/favicon.ico"), to: "favicon.ico"}

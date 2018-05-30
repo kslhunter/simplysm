@@ -1,70 +1,58 @@
 import * as webpack from "webpack";
-import * as fs from "fs-extra";
-import * as ts from "typescript";
+import * as tslint from "tslint";
 import * as path from "path";
+import {Logger} from "@simplism/core";
 
-export class TsDeclarationPlugin implements webpack.Plugin {
+export class TsLintPlugin implements webpack.Plugin {
   private readonly _startTime = Date.now();
   private _prevTimestamps = new Map<string, number>();
 
-  public constructor(private readonly _options: { configFile: string }) {
+  public constructor(private readonly _options: { packageName: string; logger: Logger }) {
   }
 
   public apply(compiler: webpack.Compiler): void {
-    compiler.hooks.make.tapAsync("TsDeclarationPlugin", (compilation: webpack.compilation.Compilation, callback: () => void) => {
+    const tsconfigFile = path.resolve(process.cwd(), "packages", this._options.packageName, "tsconfig.json");
+    const configFile = path.resolve(process.cwd(), "packages", this._options.packageName, "tslint.json");
 
-      const tsconfig = fs.readJsonSync(this._options.configFile);
-      tsconfig.compilerOptions.outDir = tsconfig.compilerOptions.outDir || "dist";
-      if (tsconfig.compilerOptions.paths) {
-        for (const key of Object.keys(tsconfig.compilerOptions.paths)) {
-          for (let i = 0; i < tsconfig.compilerOptions.paths[key].length; i++) {
-            tsconfig.compilerOptions.paths[key][i] = tsconfig.compilerOptions.paths[key][i].replace(/[\\/]src[\\/]([^\\/.]*)\.ts$/, "");
-          }
-        }
-      }
-
-      const parsed = ts.parseJsonConfigFileContent(tsconfig, ts.sys, path.dirname(this._options.configFile));
-
-      if (!parsed.options.declaration) {
-        callback();
-        return;
-      }
-
-      const tsProgram = ts.createProgram(
-        parsed.fileNames,
-        parsed.options
-      );
-
-      let diagnostics: ts.Diagnostic[] = [];
+    compiler.hooks.make.tapAsync("TsLintPlugin", (compilation: webpack.compilation.Compilation, callback: () => void) => {
+      callback();
 
       const fileTimestamps = compilation["fileTimestamps"] as Map<string, number>;
-      const changedFiles = Array.from(fileTimestamps.keys()).filter(watchFile => (this._prevTimestamps.get(watchFile) || this._startTime) < (fileTimestamps.get(watchFile) || Infinity));
+      const changedFiles = Array.from(fileTimestamps.keys())
+        .filter(watchFile => (this._prevTimestamps.get(watchFile) || this._startTime) < (fileTimestamps.get(watchFile) || Infinity));
       this._prevTimestamps = fileTimestamps;
+
+      const program = tslint.Linter.createProgram(tsconfigFile, path.dirname(tsconfigFile));
+      const linter = new tslint.Linter({formatter: "json", fix: false}, program);
+
       const sourceFiles = changedFiles.length > 0
-        ? changedFiles.map(file => tsProgram.getSourceFile(file)).filter(item => item).distinct()
-        : tsProgram.getSourceFiles();
+        ? changedFiles.map(file => program.getSourceFile(file)).filterExists().distinct()
+        : program.getSourceFiles();
 
       for (const sourceFile of sourceFiles) {
-        diagnostics = diagnostics.concat(tsProgram.emit(sourceFile, undefined, undefined, true).diagnostics);
-      }
+        if (/\.d\.ts$/.test(sourceFile.fileName)) continue;
 
-      const result: string[] = [];
-      for (const diagnostic of diagnostics) {
-        if (diagnostic.file) {
-          const position = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
-          const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-          result.push(`${diagnostic.file.fileName}(${position.line + 1},${position.character + 1}): error: ${message}`);
+        const config = tslint.Configuration.findConfiguration(configFile, sourceFile.fileName);
+        linter.lint(sourceFile.fileName, sourceFile.getFullText(), config.results);
+
+        const result = linter.getResult();
+
+        for (const failure of result.failures) {
+          if (failure.getFileName() !== sourceFile.fileName) {
+            continue;
+          }
+
+          const severity = failure.getRuleSeverity();
+          const message = failure.getFailure();
+          const rule = failure.getRuleName();
+          const fileName = failure.getFileName();
+          const lineNumber = failure.getStartPosition().getLineAndCharacter().line + 1;
+          const charNumber = failure.getStartPosition().getLineAndCharacter().character + 1;
+
+          const resultMessage = `${fileName}(${lineNumber},${charNumber}): ${severity}: ${message} (${rule})`;
+          this._options.logger.warn(`${this._options.packageName} ${sourceFile.fileName} (lint)\r\n${resultMessage}`);
         }
-        else {
-          result.push(`error: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`);
-        }
       }
-
-      if (result.length > 0) {
-        throw new Error(result[0]);
-      }
-
-      callback();
     });
   }
 }

@@ -5,6 +5,9 @@ import * as yargs from "yargs";
 import {buildAsync} from "./commands/buildAsync";
 import {publishAsync} from "./commands/publishAsync";
 import {localUpdateAsync} from "./commands/localUpdateAsync";
+import {EventEmitter} from "events";
+
+EventEmitter.defaultMaxListeners = 20;
 
 // tslint:disable-next-line:no-unused-expression
 yargs
@@ -31,7 +34,7 @@ yargs
           default: "sd-pack.config.ts"
         }
       }),
-    argv => buildAsync(argv as any).catch(err => console.error(err))
+    argv => buildAsync(argv as any).catch(err => console.error("???", err))
   )
   .command(
     "publish",

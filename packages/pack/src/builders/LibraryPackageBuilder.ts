@@ -3,13 +3,12 @@ import * as path from "path";
 import {ILibraryPackageConfig} from "../commons/IProjectConfig";
 import {Exception, Logger} from "@simplism/core";
 import * as child_process from "child_process";
-import {TsFriendlyLoggerPlugin} from "../plugins/TsFriendlyLoggerPlugin";
 import * as webpack from "webpack";
-import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import * as webpackMerge from "webpack-merge";
 import * as nodeExternals from "webpack-node-externals";
-import * as HappyPack from "happypack";
-import {TsDeclarationPlugin} from "../plugins/TsDeclarationPlugin";
+import {FriendlyLoggerPlugin} from "../plugins/FriendlyLoggerPlugin";
+import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugin";
+import {TsLintPlugin} from "../plugins/TsLintPlugin";
 
 export class LibraryPackageBuilder {
   private readonly _logger = new Logger("@simplism/pack", `LibraryPackageBuilder`);
@@ -44,15 +43,13 @@ export class LibraryPackageBuilder {
   }
 
   public async watchAsync(): Promise<void> {
-    this._logger.log(`${this._config.name} watching...`);
-
     const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
     fs.removeSync(this._packagePath(tsconfig.compilerOptions.outDir || "dist"));
 
     await new Promise<void>((resolve, reject) => {
       const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(), {
         mode: "development",
-        devtool: "cheap-module-eval-source-map"
+        devtool: "source-map"
       });
 
       const compiler = webpack(webpackConfig);
@@ -162,42 +159,31 @@ export class LibraryPackageBuilder {
           {
             test: /\.ts$/,
             exclude: /node_modules/,
-            loader: "happypack/loader?id=ts"
+            loaders: [
+              {
+                loader: this._loadersPath("ts-transpile-loader.js"),
+                options: {
+                  logger: this._logger
+                }
+              },
+              this._loadersPath("inline-sass-loader.js"),
+              this._loadersPath("shebang-loader.js")
+            ]
           }
         ]
       },
       plugins: [
-        new HappyPack({
-          id: "ts",
-          verbose: false,
-          threads: 2,
-          loaders: [
-            {
-              loader: "ts-loader",
-              options: {
-                silent: true,
-                happyPackMode: true,
-                configFile: this._packagePath("tsconfig.json")
-              }
-            },
-            this._loadersPath("inline-sass-loader.js"),
-            this._loadersPath("shebang-loader.js")
-          ]
+        new TsCheckAndDeclarationPlugin({
+          packageName: this._config.name,
+          logger: this._logger
         }),
-        new TsDeclarationPlugin({
-          configFile: this._packagePath("tsconfig.json")
+        new TsLintPlugin({
+          packageName: this._config.name,
+          logger: this._logger
         }),
-        new ForkTsCheckerWebpackPlugin({
-          tsconfig: this._packagePath("tsconfig.json"),
-          tslint: this._packagePath("tslint.json"),
-          silent: true,
-          checkSyntacticErrors: true
-        }),
-        new TsFriendlyLoggerPlugin({
-          error: message => this._logger.error(this._config.name + " " + message),
-          warn: message => this._logger.warn(this._config.name + " " + message),
-          info: message => this._logger.info(this._config.name + " " + message),
-          log: message => this._logger.log(this._config.name + " " + message)
+        new FriendlyLoggerPlugin({
+          packageName: this._config.name,
+          logger: this._logger
         }),
         ...(packageJson.bin)
           ? [
