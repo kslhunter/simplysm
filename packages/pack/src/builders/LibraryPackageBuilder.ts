@@ -11,14 +11,13 @@ import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugi
 import {TsLintPlugin} from "../plugins/TsLintPlugin";
 
 export class LibraryPackageBuilder {
-  private readonly _logger = new Logger("@simplism/pack", `LibraryPackageBuilder`);
+  private readonly _logger: Logger;
 
   public constructor(private readonly _config: ILibraryPackageConfig) {
+    this._logger = new Logger("@simplism/pack", `LibraryPackageBuilder - ${this._config.name}`);
   }
 
   public async buildAsync(): Promise<void> {
-    this._logger.log(`${this._config.name} building...`);
-
     const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
     fs.removeSync(this._packagePath(tsconfig.compilerOptions.outDir || "dist"));
 
@@ -67,7 +66,7 @@ export class LibraryPackageBuilder {
 
   public async publishAsync(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
-      this._logger.log(`${this._config.name} publishing...`);
+      this._logger.log(`배포...`);
 
       // 최상위 package.json 설정 가져오기
       const rootPackageJson = fs.readJsonSync(this._projectPath("package.json"));
@@ -108,12 +107,12 @@ export class LibraryPackageBuilder {
 
       shell.on("exit", () => {
         if (errorMessage.trim()) {
-          this._logger.error(`${this._config.name} error occurred`, errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
+          this._logger.error(`에러발생`, errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
           reject();
           return;
         }
 
-        this._logger.info(`${this._config.name} publish complete: v${rootPackageJson.version}`);
+        this._logger.info(`배포 완료: v${rootPackageJson.version}`);
         resolve();
       });
     });

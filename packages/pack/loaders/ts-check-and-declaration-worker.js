@@ -1,5 +1,6 @@
 const fs = require("fs-extra");
 const ts = require("typescript");
+const path = require("path");
 
 const packageName = process.argv[2];
 const watch = !!process.argv[3];
@@ -9,7 +10,7 @@ const configPath = path.resolve(contextPath, "tsconfig.json").replace(/\\/g, "/"
 const parsedConfig = ts.parseJsonConfigFileContent(fs.readJsonSync(configPath), ts.sys, contextPath);
 const outDir = parsedConfig.options.outDir || path.resolve(contextPath, "dist");
 
-if (!watch) {
+if (watch) {
   const host = ts.createWatchCompilerHost(
     configPath,
     {
@@ -75,7 +76,7 @@ function writeFile(filePath, content) {
 
   let newFilePath = filePath.replace(/\\/g, "/");
   if (newFilePath.includes("src")) {
-    const prevOutDir = path.resolve(outDir, options.packageName, "src").replace(/\\/g, "/");
+    const prevOutDir = path.resolve(outDir, packageName, "src").replace(/\\/g, "/");
 
     if (!newFilePath.startsWith(prevOutDir)) {
       return;
@@ -94,11 +95,17 @@ function printDiagnostic(diagnostic) {
       const position = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
       const tsMessage = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
       const message = `${diagnostic.file.fileName}(${position.line + 1},${position.character + 1}): error: ${tsMessage}`;
-      options.logger.error(`${options.packageName} declaration:\r\n${message}`);
+      sendMessage(message);
     }
   }
   else {
     const message = `error: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`;
-    options.logger.error(`${options.packageName} declaration:\r\n${message}`);
+    sendMessage(message);
   }
+}
+
+function sendMessage(message) {
+  process.send(message, err => {
+    if (err) throw err;
+  });
 }

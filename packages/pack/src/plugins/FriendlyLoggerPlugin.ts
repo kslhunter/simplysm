@@ -9,8 +9,12 @@ export class FriendlyLoggerPlugin implements webpack.Plugin {
   }
 
   public apply(compiler: webpack.Compiler): void {
+    compiler.hooks.run.tap("FriendlyLoggerPlugin", () => {
+      this._options.logger.log(`빌드...`);
+    });
+
     compiler.hooks.watchRun.tap("FriendlyLoggerPlugin", () => {
-      this._options.logger.log(`${this._options.packageName} 빌드...`);
+      this._options.logger.log(`빌드...`);
     });
 
     compiler.hooks.done.tap("FriendlyLoggerPlugin", stats => {
@@ -18,17 +22,17 @@ export class FriendlyLoggerPlugin implements webpack.Plugin {
 
       if (stats.hasWarnings()) {
         for (const warning of info.warnings) {
-          this._options.logger.warn(`${this._options.packageName} ${warning}`);
+          this._options.logger.warn(`${warning}`);
         }
       }
 
       if (stats.hasErrors()) {
         for (const error of info.errors) {
-          this._options.logger.error(`${this._options.packageName} ${error}`);
+          this._options.logger.error(`${error}`);
         }
       }
 
-      this._options.logger.info(`${this._options.packageName} 빌드 완료`);
+      this._options.logger.info(`빌드 완료`);
     });
   }
 }

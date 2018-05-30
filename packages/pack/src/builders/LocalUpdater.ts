@@ -27,7 +27,7 @@ export class LocalUpdater {
               timeout = setTimeout(
                 () => {
                   try {
-                    if (preservedFileChanges.every(item => path.extname(item.filePath) === ".ts")) {
+                    if (preservedFileChanges.every(item => /[^d].ts/.test(item.filePath))) {
                       return;
                     }
 

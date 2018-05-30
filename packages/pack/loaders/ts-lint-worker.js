@@ -1,108 +1,55 @@
-const fs = require("fs-extra");
-const ts = require("typescript");
+const tslint = require("tslint");
 const path = require("path");
 
 const packageName = process.argv[2];
-const watch = !!process.argv[3];
+const watch = process.argv[3] === "watch";
+const tsConfigPath = process.argv[4];
 
-const contextPath = path.resolve(process.cwd(), "packages", packageName).replace(/\\/g, "/");
-const configPath = path.resolve(contextPath, "tsconfig.json").replace(/\\/g, "/");
-const parsedConfig = ts.parseJsonConfigFileContent(fs.readJsonSync(configPath), ts.sys, contextPath);
-const outDir = parsedConfig.options.outDir || path.resolve(contextPath, "dist");
+const tsconfigFile = tsConfigPath || path.resolve(process.cwd(), "packages", packageName, "tsconfig.json");
+const configFile = path.resolve(process.cwd(), "packages", packageName, "tslint.json");
 
-if (watch) {
-  const host = ts.createWatchCompilerHost(
-    configPath,
-    {
-      outDir,
-      sourceMap: false,
-      noEmit: !parsedConfig.options.declaration,
-      emitDeclarationOnly: parsedConfig.options.declaration
-    },
-    {
-      ...ts.sys,
-      writeFile: (filePath, content) => {
-        writeFile(filePath, content);
-      },
-      createDirectory: () => {
+process.on("message", (changedFiles) => {
+  const program = tslint.Linter.createProgram(tsconfigFile, path.dirname(tsconfigFile));
+  const linter = new tslint.Linter({formatter: "json", fix: false}, program);
+
+  const prepareSourceFiles = (
+    changedFiles.length > 0 ? changedFiles : program.getRootFileNames()
+  ).map(file => program.getSourceFile(file)).filter(item => item);
+
+  const sourceFiles = [];
+  for (const item of prepareSourceFiles) {
+    if (sourceFiles.every(item1 => item1.fileName !== item.fileName)) {
+      sourceFiles.push(item);
+    }
+  }
+
+  for (const sourceFile of sourceFiles) {
+    if (/\.d\.ts$/.test(sourceFile.fileName)) continue;
+
+    const config = tslint.Configuration.findConfiguration(configFile, sourceFile.fileName);
+    linter.lint(sourceFile.fileName, sourceFile.getFullText(), config.results);
+
+    const result = linter.getResult();
+
+    for (const failure of result.failures) {
+      if (failure.getFileName() !== sourceFile.fileName) {
+        continue;
       }
-    },
-    ts.createEmitAndSemanticDiagnosticsBuilderProgram,
-    diagnostic => {
-      printDiagnostic(diagnostic);
-    },
-    () => {
-    }
-  );
 
-  ts.createWatchProgram(host);
-}
-else {
-  const host = ts.createCompilerHost(parsedConfig.options);
-  host.writeFile = (filePath, content) => {
-    writeFile(filePath, content);
-  };
+      const severity = failure.getRuleSeverity();
+      const message = failure.getFailure();
+      const rule = failure.getRuleName();
+      const fileName = failure.getFileName();
+      const lineNumber = failure.getStartPosition().getLineAndCharacter().line + 1;
+      const charNumber = failure.getStartPosition().getLineAndCharacter().character + 1;
 
-  const program = ts.createProgram(
-    parsedConfig.fileNames,
-    {
-      ...parsedConfig.options,
-      outDir: outDir,
-      sourceMap: false,
-      noEmit: !parsedConfig.options.declaration,
-      emitDeclarationOnly: parsedConfig.options.declaration
-    },
-    host
-  );
-
-  let diagnostics = parsedConfig.options.declaration
-    ? ts.getPreEmitDiagnostics(program)
-    : program.getSemanticDiagnostics();
-
-  if (parsedConfig.options.declaration) {
-    diagnostics = diagnostics.concat(program.emit(undefined, undefined, undefined, true).diagnostics);
-  }
-  else {
-    diagnostics = diagnostics.concat(program.getSyntacticDiagnostics());
-  }
-
-  for (const diagnostic of diagnostics) {
-    printDiagnostic(diagnostic);
-  }
-}
-
-function writeFile(filePath, content) {
-  if (!parsedConfig.options.declaration) return;
-
-  let newFilePath = filePath.replace(/\\/g, "/");
-  if (newFilePath.includes("src")) {
-    const prevOutDir = path.resolve(outDir, packageName, "src").replace(/\\/g, "/");
-
-    if (!newFilePath.startsWith(prevOutDir)) {
-      return;
-    }
-
-    newFilePath = path.resolve(outDir, path.relative(prevOutDir, filePath));
-  }
-
-  fs.mkdirsSync(path.dirname(newFilePath));
-  fs.writeFileSync(newFilePath, content);
-}
-
-function printDiagnostic(diagnostic) {
-  if (diagnostic.file) {
-    if (diagnostic.file.fileName.startsWith(contextPath.replace(/\\/g, "/"))) {
-      const position = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-      const tsMessage = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-      const message = `${diagnostic.file.fileName}(${position.line + 1},${position.character + 1}): error: ${tsMessage}`;
-      sendMessage(message);
+      const resultMessage = `${fileName}(${lineNumber},${charNumber}): ${severity}: ${message} (${rule})`;
+      sendMessage(resultMessage);
     }
   }
-  else {
-    const message = `error: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`;
-    sendMessage(message);
-  }
-}
+
+  if (!watch) process.exit();
+});
 
 function sendMessage(message) {
   process.send(message, err => {

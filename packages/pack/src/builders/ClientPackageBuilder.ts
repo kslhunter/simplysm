@@ -164,6 +164,67 @@ export class ClientPackageBuilder {
     this._logger.info(`${this._config.name} publish complete: v${rootPackageJson.version}`);
   }
 
+  public getTestConfig(platform: string): webpack.Configuration {
+    return {
+      mode: "development",
+      devtool: "inline-source-map",
+      resolve: {
+        extensions: [".ts", ".js", ".json"]
+      },
+      module: {
+        rules: [
+          {
+            enforce: "pre",
+            test: /\.js$/,
+            use: ["source-map-loader"],
+            include: /node_modules[\\/]@simplism/,
+            exclude: [/\.ngfactory\.js$/, /\.ngstyle\.js$/]
+          },
+          {
+            test: /\.js$/,
+            parser: {system: true}
+          },
+          {
+            test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+            exclude: /node_modules/,
+            loader: "@ngtools/webpack"
+          },
+          {
+            test: /\.html$/,
+            loader: "html-loader"
+          },
+          {
+            test: /\.scss$/,
+            loader: "null-loader"
+          },
+          {
+            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf)$/,
+            loader: "null-loader"
+          }
+        ]
+      },
+      plugins: [
+        new AngularCompilerPlugin({
+          tsConfigPath: this._packagePath("tsconfig.spec.json"),
+          skipCodeGeneration: true,
+          sourceMap: true
+        }),
+        new FriendlyLoggerPlugin({
+          packageName: this._config.name,
+          logger: this._logger
+        }),
+        new webpack.DefinePlugin({
+          "process.env": this._envStringify({
+            VERSION: fs.readJsonSync(this._projectPath("package.json")).version,
+            PLATFORM: platform,
+            NODE_ENV: JSON.stringify("test"),
+            ...this._config.env
+          })
+        })
+      ]
+    };
+  }
+
   private _getCommonConfig(platform: string): webpack.Configuration {
     return {
       resolve: {
@@ -219,12 +280,13 @@ export class ClientPackageBuilder {
           sourceMap: true
         }),
         new TsLintPlugin({
+          tsConfigPath: this._packagePath("tsconfig.app.json"),
           packageName: this._config.name,
           logger: this._logger
         }),
         new FriendlyLoggerPlugin({
-          logger: this._logger,
-          packageName: this._config.name
+          packageName: this._config.name,
+          logger: this._logger
         }),
         new CopyWebpackPlugin([
           {from: this._packagePath("src/favicon.ico"), to: "favicon.ico"}
@@ -254,27 +316,7 @@ export class ClientPackageBuilder {
             }
           }
         }
-      },
-      externals: [
-        (context, request, callback) => {
-          const currRequest = request.split("!").last();
-          const requestPath = path.resolve(context, currRequest);
-          const requestRelativePath = path.relative(this._packagePath(), requestPath);
-
-          if (requestRelativePath.split("..").length === 2) {
-            const className = path.basename(currRequest, path.extname(currRequest));
-            callback(undefined, `{${className}: {name: '${className}'}}`);
-            return;
-          }
-
-          if (["fs", "fs-extra", "path", "socket.io"].includes(currRequest)) {
-            callback(undefined, `"${currRequest}"`);
-            return;
-          }
-
-          callback(undefined, undefined);
-        }
-      ]
+      }
     };
   }
 
@@ -287,16 +329,20 @@ export class ClientPackageBuilder {
   }
 
   private _loadersPath(...args: string[]): string {
-    return fs.existsSync(path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders"))
-      ? path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders", ...args)
+    return fs.existsSync(this._projectPath("node_modules/@simplism/pack/loaders"))
+      ? this._projectPath("node_modules/@simplism/pack/loaders", ...args)
       : path.resolve(__dirname, "../../loaders", ...args);
   }
 
   private _projectPath(...args: string[]): string {
+    const split = process.cwd().split(/[\\/]/);
+    if (split[split.length - 1] === this._config.name) {
+      return path.resolve(process.cwd(), "../..", ...args);
+    }
     return path.resolve(process.cwd(), ...args);
   }
 
   private _packagePath(...args: string[]): string {
-    return path.resolve(process.cwd(), `packages/${this._config.name}`, ...args);
+    return this._projectPath(`packages/${this._config.name}`, ...args);
   }
 }
