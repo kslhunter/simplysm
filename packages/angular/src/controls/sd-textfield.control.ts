@@ -11,6 +11,7 @@ import {DateOnly} from "@simplism/core";
            [required]="required"
            [value]="value == undefined ? '' : value"
            [placeholder]="placeholder || ''"
+           [min]="min"
            (input)="onInputInput($event)"
            (focus)="onFocus($event)"
            (blur)="onBlur($event)"
@@ -38,7 +39,7 @@ import {DateOnly} from "@simplism/core";
           -webkit-appearance: none;
           margin: 0;
         }
-        
+
         &::-webkit-calendar-picker-indicator {
           background: transparent;
           color: text-color(default);
@@ -93,6 +94,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate(Boolean)
   public disabled?: boolean;
+
+  @Input()
+  @SdTypeValidate(Number)
+  public min?: number;
 
   @ViewChild("input")
   public inputElRef?: ElementRef<HTMLInputElement>;

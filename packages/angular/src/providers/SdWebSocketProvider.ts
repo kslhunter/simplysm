@@ -24,9 +24,13 @@ export class SdWebSocketProvider implements OnDestroy {
     return await methodFunc(serviceObj);
   }
 
-  public async ngOnDestroy(): Promise<void> {
+  public async closeAsync(): Promise<void> {
     if (this.ws.connected) {
       await this.ws.closeAsync();
     }
+  }
+
+  public async ngOnDestroy(): Promise<void> {
+    await this.closeAsync();
   }
 }

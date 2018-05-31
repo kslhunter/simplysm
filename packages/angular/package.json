@@ -1,6 +1,6 @@
 {
   "name": "@simplism/angular",
-  "version": "7.1.8",
+  "version": "7.1.16",
   "description": "Simplism Angular Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -24,10 +24,10 @@
     "zone.js": "^0.8.26"
   },
   "peerDependencies": {
-    "@simplism/core": "^7.1.8",
-    "@simplism/excel": "^7.1.8",
-    "@simplism/orm-client": "^7.1.8",
-    "@simplism/websocket-client": "^7.1.8",
-    "@simplism/websocket-common": "^7.1.8"
+    "@simplism/core": "^7.1.16",
+    "@simplism/excel": "^7.1.16",
+    "@simplism/orm-client": "^7.1.16",
+    "@simplism/websocket-client": "^7.1.16",
+    "@simplism/websocket-common": "^7.1.16"
   }
 }

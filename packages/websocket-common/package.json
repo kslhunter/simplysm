@@ -1,6 +1,6 @@
 {
   "name": "@simplism/websocket-common",
-  "version": "7.1.8",
+  "version": "7.1.16",
   "description": "Simplism WebSocket Common Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",

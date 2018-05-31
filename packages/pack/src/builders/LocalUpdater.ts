@@ -4,7 +4,7 @@ import * as path from "path";
 import {Logger} from "@simplism/core";
 
 export class LocalUpdater {
-  private readonly _logger = new Logger("@simplism/pack", `LocalUpdater`);
+  private readonly _logger = new Logger("@simplism/pack", `LocalUpdater`, `${this._packageName}:`);
 
   public constructor(private readonly _packageName: string,
                      private readonly _packagePath: string) {
@@ -15,19 +15,30 @@ export class LocalUpdater {
       if (watch) {
         const watcher = chokidar.watch(this._sourcePath("**/*").replace(/\\/g, "/"))
           .on("ready", () => {
-            this._logger.log(`${this._packageName} watching...`);
+            this._logger.log(`로컬 업데이트 감지 시작...`);
 
-            let preservedFileChanges: { type: string; filePath: string }[] = [];
-            let timeout: NodeJS.Timer;
+            /*let preservedFileChanges: { type: string; filePath: string }[] = [];
+            let timeout: NodeJS.Timer;*/
 
             const onWatched = (type: string, filePath: string) => {
-              preservedFileChanges.push({type, filePath});
+              this._logger.log(`변경됨: ${type}    => ${filePath}`);
+
+              const relativeSourcePath = path.relative(this._sourcePath(), filePath);
+              const targetPath = this._targetPath(relativeSourcePath);
+              if (type === "remove") {
+                fs.removeSync(targetPath);
+              }
+              else {
+                fs.copyFileSync(filePath, targetPath);
+              }
+
+              /*preservedFileChanges.push({type, filePath});
 
               clearTimeout(timeout);
               timeout = setTimeout(
                 () => {
                   try {
-                    if (preservedFileChanges.every(item => /[^d].ts/.test(item.filePath))) {
+                    if (preservedFileChanges.every(item => /(?!\.d)\.ts$/.test(item.filePath))) {
                       return;
                     }
 
@@ -35,7 +46,7 @@ export class LocalUpdater {
                     preservedFileChanges = [];
 
                     for (const fileChange of fileChanges) {
-                      this._logger.log(`changed: ${fileChange.type}    => ${fileChange.filePath}`);
+                      this._logger.log(`변경됨: ${fileChange.type}    => ${fileChange.filePath}`);
 
                       const relativeSourcePath = path.relative(this._sourcePath(), fileChange.filePath);
                       const targetPath = this._targetPath(relativeSourcePath);
@@ -43,7 +54,7 @@ export class LocalUpdater {
                         fs.removeSync(targetPath);
                       }
                       else {
-                        fs.copySync(fileChange.filePath, targetPath);
+                        fs.copyFileSync(fileChange.filePath, targetPath);
                       }
                     }
                   }
@@ -51,8 +62,8 @@ export class LocalUpdater {
                     this._logger.error(err);
                   }
                 },
-                0
-              );
+                300
+              );*/
             };
 
             watcher
@@ -65,7 +76,7 @@ export class LocalUpdater {
       }
       else {
         fs.copySync(this._sourcePath(), this._targetPath());
-        this._logger.log(`${this._packageName} updated`);
+        this._logger.log(`로컬 업데이트 완료`);
         resolve();
       }
     });

@@ -78,7 +78,7 @@ export class OrmService extends WebSocketServiceBase {
     const queries = query.split("GO;");
 
     for (const currQuery of queries) {
-      this._logger.log("쿼리를 수행합니다.", currQuery);
+      this._logger.log("쿼리 실행:", currQuery);
       await new Promise<void>((resolve, reject) => {
         const queryRequest = new tedious
           .Request(currQuery, err => {

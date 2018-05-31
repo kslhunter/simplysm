@@ -14,7 +14,7 @@ export class LibraryPackageBuilder {
   private readonly _logger: Logger;
 
   public constructor(private readonly _config: ILibraryPackageConfig) {
-    this._logger = new Logger("@simplism/pack", `LibraryPackageBuilder - ${this._config.name}`);
+    this._logger = new Logger("@simplism/pack", `LibraryPackageBuilder`, `${this._config.name}:`);
   }
 
   public async buildAsync(): Promise<void> {
@@ -107,7 +107,7 @@ export class LibraryPackageBuilder {
 
       shell.on("exit", () => {
         if (errorMessage.trim()) {
-          this._logger.error(`에러발생`, errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
+          this._logger.error(`에러 발생`, errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
           reject();
           return;
         }
@@ -193,7 +193,12 @@ export class LibraryPackageBuilder {
               include: Object.keys(packageJson.bin).map(key => path.relative(this._packagePath(tsconfig.compilerOptions.outDir || "dist"), this._packagePath(packageJson.bin[key])))
             })
           ]
-          : []
+          : [],
+        new webpack.DefinePlugin({
+          "process.env": {
+            NODE_ENV: "process.env.NODE_ENV"
+          }
+        })
       ],
       externals: [
         (context, request, callback) => {

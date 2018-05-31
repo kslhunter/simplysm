@@ -23,7 +23,7 @@ export class TsCheckAndDeclarationPlugin implements webpack.Plugin {
           }
         );
         worker.on("message", message => {
-          this._options.logger.error(`타입 에러:\r\n${message}`);
+          this._options.logger.error(`타입 에러:`, message);
         });
       }
     });
@@ -39,7 +39,7 @@ export class TsCheckAndDeclarationPlugin implements webpack.Plugin {
         }
       );
       worker.on("message", message => {
-        this._options.logger.error(`타입 에러:\r\n${message}`);
+        this._options.logger.error(`타입 에러:`, message);
       });
     });
   }

@@ -5,6 +5,8 @@ import {JsonConvert} from "../utils/JsonConvert";
 declare global {
   // tslint:disable-next-line:interface-name
   interface Array<T> {
+    _generic: T; // tslint:disable-line:no-unused-variable
+
     groupBy<K>(keySelector: (item: T, index: number) => K): { key: K; values: T[] }[];
 
     groupBy<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): { key: K; values: V[] }[];

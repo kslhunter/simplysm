@@ -1,6 +1,7 @@
 import {InvalidArgumentsException, Type} from "@simplism/core";
 import {helpers} from "./helpers";
 import {QueryUnit} from "./QueryUnit";
+import {TypeOfGeneric} from "./Queryable";
 
 export const sorm = {
   equal<T>(source: T | QueryUnit<T>, target: T | QueryUnit<T>): QueryUnit<Boolean> {
@@ -13,6 +14,15 @@ export const sorm = {
 
   startsWith(source: string | QueryUnit<string>, target: string | QueryUnit<string>): QueryUnit<Boolean> {
     return new QueryUnit(Boolean, helpers.query(source) + " LIKE " + helpers.query(target) + " + '%'");
+  },
+
+  in<P>(src: QueryUnit<P> | P, target: (QueryUnit<P> | P)[]): QueryUnit<Boolean> {
+    if (target.length < 1) {
+      return new QueryUnit(Boolean, "1 = 0") as any;
+    }
+    else {
+      return new QueryUnit(Boolean, `${helpers.query(src)} IN (${target.map(item => helpers.query(item)).join(", ")})`) as any;
+    }
   },
 
   ifNull<T>(source: T | QueryUnit<T>, target: T | QueryUnit<T>): T {
@@ -38,6 +48,14 @@ export const sorm = {
     return new QueryUnit(unit.type, "MAX(" + helpers.query(unit) + ")");
   },
 
+  sum(unit: number | QueryUnit<number>): QueryUnit<number | undefined> {
+    if (!(unit instanceof QueryUnit)) {
+      throw new TypeError();
+    }
+
+    return new QueryUnit(unit.type, "SUM(" + helpers.query(unit) + ")");
+  },
+
   and(arr: QueryUnit<Boolean>[]): QueryUnit<Boolean> {
     return new QueryUnit(Boolean, arr.map(item => "(" + helpers.query(item) + ")").join(" AND "));
   },
@@ -59,5 +77,10 @@ export const sorm = {
     }
 
     throw new InvalidArgumentsException(args);
+  },
+
+  map<C extends { [key: string]: any }, T>(arr: C[] | undefined, selector: (item: C, index: number) => T): TypeOfGeneric<T>[] | undefined {
+    if (!arr) return undefined;
+    return arr.map((item, index) => selector(item, index)) as any;
   }
 };

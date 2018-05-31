@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@angular-devkit/core@0.6.7":
-  version "0.6.7"
-  resolved "https://registry.yarnpkg.com/@angular-devkit/core/-/core-0.6.7.tgz#421ed3de40c6f203bc6a30cf5a13b57483230df2"
+"@angular-devkit/core@0.7.0-beta.1":
+  version "0.7.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@angular-devkit/core/-/core-0.7.0-beta.1.tgz#e53f5e27ab5657523c491e289e0ff9c7f1c98c36"
   dependencies:
     ajv "~6.4.0"
     chokidar "^2.0.3"
@@ -84,11 +84,11 @@
   dependencies:
     "@fortawesome/fontawesome-common-types" "^0.2.0-6"
 
-"@ngtools/webpack@^6.0.7":
-  version "6.0.7"
-  resolved "https://registry.yarnpkg.com/@ngtools/webpack/-/webpack-6.0.7.tgz#e396330756c1d8999abc224aeb23d0011662f77b"
+"@ngtools/webpack@^6.1.0-beta.1":
+  version "6.1.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@ngtools/webpack/-/webpack-6.1.0-beta.1.tgz#5a81b5a995b0a57f874378f5e223eab64b8a6f32"
   dependencies:
-    "@angular-devkit/core" "0.6.7"
+    "@angular-devkit/core" "0.7.0-beta.1"
     tree-kill "^1.0.0"
     webpack-sources "^1.1.0"
 
@@ -5620,9 +5620,9 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-typescript@^2.8.3:
-  version "2.8.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.8.3.tgz#5d817f9b6f31bb871835f4edf0089f21abe6c170"
+typescript@^2.8.4:
+  version "2.8.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.8.4.tgz#0b1db68e6bdfb0b767fa2ab642136a35b059b199"
 
 uglify-es@^3.3.4:
   version "3.3.9"

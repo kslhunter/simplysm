@@ -39,7 +39,7 @@ export class TsLintPlugin implements webpack.Plugin {
           }
         );
         worker.on("message", message => {
-          this._options.logger.warn(`타입 경고:\r\n${message}`);
+          this._options.logger.warn(`린트 경고:`, message);
         });
       }
 

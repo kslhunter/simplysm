@@ -1,6 +1,6 @@
 {
   "name": "@simplism/mailer",
-  "version": "7.1.8",
+  "version": "7.1.16",
   "description": "Simplism Mailer Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -11,6 +11,6 @@
     "nodemailer": "^4.6.5"
   },
   "peerDependencies": {
-    "@simplism/core": "^7.1.8"
+    "@simplism/core": "^7.1.16"
   }
 }

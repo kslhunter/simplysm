@@ -56,7 +56,7 @@ export class WebSocketServer {
 
       // 서버 시작
       this._app.listen(port || 80, host || "localhost", () => {
-        this._logger.info(`started`);
+        this._logger.info(`웹소켓 서버 시작: http://${host || "localhost"}:${port || 80}`);
         resolve();
       });
     });
@@ -150,10 +150,10 @@ export class WebSocketServer {
   }
 
   private _socketConnectionHandler(ws: WebSocket, req: http.IncomingMessage): void {
-    this._logger.log("connected from " + req.connection.remoteAddress);
+    this._logger.log("연결: " + req.connection.remoteAddress);
 
     ws.on("message", async (message: string) => {
-      this._logger.log("message from " + req.headers.origin + ": " + message);
+      this._logger.log("요청 받음: " + req.headers.origin + ": " + message);
 
       // Request 파싱
       const request: IWebSocketRequest = JsonConvert.parse(message);

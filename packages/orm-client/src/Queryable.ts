@@ -5,6 +5,8 @@ import {helpers} from "./helpers";
 import {DateOnly, DateTime, JsonConvert, Time, Type, Uuid} from "@simplism/core";
 import {sorm} from "./sorm";
 
+export type TypeOfGeneric<C extends { [key: string]: any }> = {[K in keyof C]: C[K] extends QueryUnit<any>  ? C[K]["_generic"]  : C[K]};
+
 export class Queryable<TTable> {
   private _queryObj: {
     top: number | undefined;
@@ -124,7 +126,13 @@ export class Queryable<TTable> {
     const chains = parsed.returnContent.replace(/\[0]/g, "").split(".").slice(1);
 
     const prevTableType = this._getTableTypeByChains(chains.slice(0, -1));
-    const targetTableType = this._getTableTypeByChains(chains);
+    let targetTableType;
+    try {
+      targetTableType = this._getTableTypeByChains(chains);
+    }
+    catch (err) {
+      throw new Error(`"include"값이 잘못되었습니다: ${this.tableType.name}.${chains.join(".")}`);
+    }
 
     const prevTableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, prevTableType);
     const targetTableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, targetTableType);
@@ -236,7 +244,7 @@ export class Queryable<TTable> {
     return result;
   }
 
-  public select<C extends { [key: string]: any }>(cols: (item: TTable) => C): Queryable<{[K in keyof C]: C[K] extends QueryUnit<any> ? C[K]["_generic"] : C[K]}> {
+  public select<C extends { [key: string]: any }>(cols: (item: TTable) => C): Queryable<TypeOfGeneric<C>> {
     const result = this._clone();
 
     result._queryObj.select = {};
@@ -320,7 +328,7 @@ export class Queryable<TTable> {
   public async upsertAsync(itemFwd: (entity: TTable) => TTable, keys: (keyof TTable)[]): Promise<TTable> {
     const query = this._getUpsertQuery(itemFwd(this._entity), keys);
     const result = await this._dbConnection.executeAsync(query);
-    return result[0][0];
+    return result[query.includes("SET IDENTITY_INSERT") ? 1 : 0][0];
   }
 
   public upsertPrepare(itemOrFwd: (entity: TTable) => TTable, keys: (keyof TTable)[]): void {

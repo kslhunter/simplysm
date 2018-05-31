@@ -15,7 +15,7 @@ export function SdTypeValidate(params: TypeValidator): any {
     const setter = function (this: any, value: any): void {
       const error = Object.validate(value, params);
       if (error) {
-        throw new Error(`입력값이 잘못되었습니다.\n${JSON.stringify({propertyKey, ...error})}`);
+        throw new Error(`입력값이 잘못되었습니다: ${JSON.stringify({component: target.constructor.name, propertyKey, ...error})}`);
       }
 
       if (prevSetter) {

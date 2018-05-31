@@ -14,14 +14,12 @@ import * as WebpackDevServer from "webpack-dev-server";
 import {TsLintPlugin} from "../plugins/TsLintPlugin";
 
 export class ClientPackageBuilder {
-  private readonly _logger = new Logger("@simplism/pack", `ClientPackageBuilder`);
+  private readonly _logger = new Logger("@simplism/pack", `ClientPackageBuilder`, `${this._config.name}:`);
 
   public constructor(private readonly _config: IClientPackageConfig) {
   }
 
   public async buildAsync(): Promise<void> {
-    this._logger.log(`${this._config.name} building...`);
-
     const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.app.json"));
     fs.removeSync(this._packagePath((tsconfig.compilerOptions && tsconfig.compilerOptions.outDir) || "dist"));
 
@@ -61,8 +59,6 @@ export class ClientPackageBuilder {
   }
 
   public async watchAsync(): Promise<void> {
-    this._logger.log(`${this._config.name} watching...`);
-
     if (!this._config.devServer) {
       throw new Error("'--watch'옵션을 사용하려면 설정파일에 'devServer'가 설정되어야 합니다.");
     }
@@ -108,7 +104,7 @@ export class ClientPackageBuilder {
             return;
           }
 
-          this._logger.log(`${this._config.name} dev server: http://${this._config.devServer!.host}:${this._config.devServer!.port}/`);
+          this._logger.log(`개발 서버 시작됨: http://${this._config.devServer!.host}:${this._config.devServer!.port}/`);
           resolve();
         });
       })
@@ -116,7 +112,7 @@ export class ClientPackageBuilder {
   }
 
   public async publishAsync(): Promise<void> {
-    this._logger.log(`${this._config.name} publishing...`);
+    this._logger.log(`배포...`);
 
     if (!this._config.publish) {
       throw new Error("설정파일에 'publish'옵션이 설정되어야 합니다.");
@@ -161,7 +157,7 @@ export class ClientPackageBuilder {
 
     // 완료
     const rootPackageJson = fs.readJsonSync(this._projectPath("package.json"));
-    this._logger.info(`${this._config.name} publish complete: v${rootPackageJson.version}`);
+    this._logger.info(`배포 완료: v${rootPackageJson.version}`);
   }
 
   public getTestConfig(platform: string): webpack.Configuration {
@@ -184,6 +180,10 @@ export class ClientPackageBuilder {
             test: /\.js$/,
             parser: {system: true}
           },
+          /*{
+            test: /\.(js|ts)$/,
+            loader: this._loadersPath("inline-sass-loader.js")
+          },*/
           {
             test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
             exclude: /node_modules/,
@@ -217,7 +217,7 @@ export class ClientPackageBuilder {
           "process.env": this._envStringify({
             VERSION: fs.readJsonSync(this._projectPath("package.json")).version,
             PLATFORM: platform,
-            NODE_ENV: JSON.stringify("test"),
+            NODE_ENV: "test",
             ...this._config.env
           })
         })

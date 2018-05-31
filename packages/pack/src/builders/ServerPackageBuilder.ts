@@ -12,14 +12,12 @@ import {TsLintPlugin} from "../plugins/TsLintPlugin";
 import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugin";
 
 export class ServerPackageBuilder {
-  private readonly _logger = new Logger("@simplism/pack", `ServerPackageBuilder`);
+  private readonly _logger = new Logger("@simplism/pack", `ServerPackageBuilder`, `${this._config.name}:`);
 
   public constructor(private readonly _config: IServerPackageConfig) {
   }
 
   public async buildAsync(): Promise<void> {
-    this._logger.log(`${this._config.name} building...`);
-
     const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
     fs.removeSync(this._packagePath(tsconfig.compilerOptions.outDir || "dist"));
 
@@ -44,8 +42,6 @@ export class ServerPackageBuilder {
   }
 
   public async watchAsync(): Promise<void> {
-    this._logger.log(`${this._config.name} watching...`);
-
     const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
     fs.removeSync(this._packagePath(tsconfig.compilerOptions.outDir || "dist"));
 
@@ -77,7 +73,7 @@ export class ServerPackageBuilder {
   }
 
   public async publishAsync(): Promise<void> {
-    this._logger.log(`${this._config.name} publishing...`);
+    this._logger.log(`배포...`);
 
     if (!this._config.publish) {
       throw new Error("설정파일에 'publish'옵션이 설정되어야 합니다.");
@@ -141,7 +137,7 @@ export class ServerPackageBuilder {
 
     // 완료
     const rootPackageJson = fs.readJsonSync(this._projectPath("package.json"));
-    this._logger.info(`${this._config.name} publish complete: v${rootPackageJson.version}`);
+    this._logger.info(`배포 완료: v${rootPackageJson.version}`);
   }
 
   private _getCommonConfig(): webpack.Configuration {

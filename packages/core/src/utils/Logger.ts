@@ -15,7 +15,8 @@ export class Logger {
   private readonly _id: number;
 
   public constructor(private readonly _groupName: string,
-                     private readonly _name: string) {
+                     private readonly _name: string,
+                     private readonly _prefix?: string) {
     Logger._lastId++;
     this._id = Logger._lastId;
   }
@@ -72,6 +73,7 @@ export class Logger {
       loggerId: this._id,
       loggerName: this._name,
       severity,
+      prefix: this._prefix,
       messages: logs,
       loggedAtDateTime: now
     });
@@ -111,10 +113,11 @@ export class Logger {
       now: now.toFormatString("yyMMdd HH:mm:ss.fff"),
       group: this._groupName,
       name: this._name,
-      severity: severity.toUpperCase()
+      severity: severity.toUpperCase(),
+      prefix: this._prefix
     };
 
-    const text = `${colors.grey}[${log.id}] ${log.now} - ${log.group} - ${log.name} - ${colors[severity]}${log.severity}: ${convertedLogs.join("\r\n")}${colors.log}`;
+    const text = `${colors.grey}[${log.id.toString().padStart(3, "0")}] ${log.now} - ${log.group} - ${log.name} - ${colors[severity]}${log.severity}: ${log.prefix ? log.prefix + " " : ""}${convertedLogs.join("\r\n")}${colors.log}`;
 
     // 콘솔 출력
     if (this._config.consoleLogSeverities.includes(severity)) {
@@ -154,6 +157,7 @@ export interface ILoggerHistory {
   loggerId: number;
   loggerName: string | undefined;
   severity: LoggerSeverityString;
+  prefix: string | undefined;
   messages: any[];
   loggedAtDateTime: DateTime;
 }

@@ -22,13 +22,13 @@ export class FriendlyLoggerPlugin implements webpack.Plugin {
 
       if (stats.hasWarnings()) {
         for (const warning of info.warnings) {
-          this._options.logger.warn(`${warning}`);
+          this._options.logger.warn(warning);
         }
       }
 
       if (stats.hasErrors()) {
         for (const error of info.errors) {
-          this._options.logger.error(`${error}`);
+          this._options.logger.error(error);
         }
       }
 
