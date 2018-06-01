@@ -1,9 +1,14 @@
 <component name="ProjectDictionaryState">
   <dictionary name="kslhunter">
     <words>
+      <w>combobox</w>
       <w>devtool</w>
+      <w>dropdown</w>
+      <w>keydown</w>
       <w>linter</w>
       <w>simplism</w>
+      <w>textfield</w>
+      <w>topbar</w>
       <w>transpile</w>
       <w>tsconfig</w>
       <w>tslint</w>

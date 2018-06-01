@@ -1,6 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
 import {SdTypeValidate} from "../decorators/SdTypeValidate";
-import {animate, state, style, transition, trigger} from "@angular/animations";
 
 @Component({
   selector: "sd-checkbox",
@@ -8,9 +7,8 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
   template: `
     <label>
       <input [checked]="value" (change)="onValueChange($event)" type="checkbox" hidden>
-      <div class="_rect"></div>
-      <sd-icon class="_indicator" [icon]="'check'" [fixedWidth]="true"
-               [@iconState]="value ? 'check' : 'uncheck'"></sd-icon>
+      <div class="_indicator_rect"></div>
+      <sd-icon class="_indicator" [icon]="'check'" [fixedWidth]="true"></sd-icon>
       <div class="_content">
         <ng-content></ng-content>
       </div>
@@ -18,41 +16,46 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
   styles: [/* language=SCSS */ `
     @import "../../styles/presets";
 
-    :host > label {
-      @include form-control-base();
-      cursor: pointer;
-      position: relative;
+    :host {
+      > label {
+        @include form-control-base();
+        cursor: pointer;
+        position: relative;
 
-      > ._rect {
-        position: absolute;
-        display: block;
-        width: $line-height;
-        height: $line-height;
-        border: 1px solid trans-color(default);
-        background: trans-color(default);
+        > ._indicator_rect {
+          position: absolute;
+          display: block;
+          width: $line-height;
+          height: $line-height;
+          border: 1px solid trans-color(default);
+          background: trans-color(default);
+        }
+
+        > ._indicator {
+          opacity: 0;
+          transition: opacity .1s linear;
+        }
+
+        > ._content {
+          display: inline-block;
+          text-indent: gap(xs);
+        }
       }
 
-      > ._indicator {
-        opacity: 0;
-      }
-
-      > ._content {
-        display: inline-block;
-        text-indent: gap(xs);
+      &[sd-checked=true] {
+        > label {
+          > ._indicator {
+            opacity: 1;
+          }
+        }
       }
     }
-  `],
-  animations: [
-    trigger("iconState", [
-      state("uncheck", style({opacity: 0})),
-      state("check", style({opacity: 1})),
-      transition("check <=> uncheck", animate(".1s linear")),
-    ])
-  ]
+  `]
 })
 export class SdCheckboxControl {
   @Input()
   @SdTypeValidate({type: Boolean, notnull: true})
+  @HostBinding("attr.sd-checked")
   public value = false;
 
   @Output()

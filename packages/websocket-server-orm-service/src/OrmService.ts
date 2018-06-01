@@ -66,6 +66,7 @@ export class OrmService extends WebSocketServiceBase {
         resolve();
       });
 
+      conn.cancel();
       conn.close();
     });
   }

@@ -19,13 +19,15 @@ export class Queryable<TTable> {
     where: string[];
     limit: [number, number] | undefined;
     orderBy: [string, "ASC" | "DEC"][];
+    groupBy: string[];
   } = {
     top: undefined,
     select: {},
     join: [],
     where: [],
     limit: undefined,
-    orderBy: []
+    orderBy: [],
+    groupBy: []
   };
 
   public get query(): string {
@@ -49,6 +51,10 @@ export class Queryable<TTable> {
 
     if (this._queryObj.where.length > 0) {
       q += `WHERE ${this._queryObj.where.map(item => `(${item})`).join(" AND ")}\r\n`;
+    }
+
+    if (this._queryObj.groupBy.length > 0) {
+      q += `GROUP BY ${this._queryObj.groupBy.join(", ")}\r\n`;
     }
 
     if (this._queryObj.limit) {
@@ -189,7 +195,7 @@ export class Queryable<TTable> {
 
         wheres.push(new QueryUnit(
           Boolean,
-          `${helpers.key([chains.length > 1 ? targetTableDef.name : ""].filter(item => item).concat(chains).concat(sourceTableFkColumnName).join("."))} = ${helpers.key([chains.length > 1 ? targetTableDef.name : "TBL"].concat(chains.slice(0, -1)).concat([targetTablePrimaryKeyColumnName]).join("."))}`
+          `${helpers.key(chains.concat(sourceTableFkColumnName).join("."))} = ${helpers.key([chains.length > 1 ? "" : "TBL"].filter(item => item).concat(chains.slice(0, -1)).concat([targetTablePrimaryKeyColumnName]).join("."))}`
         ));
       }
 
@@ -222,11 +228,11 @@ export class Queryable<TTable> {
       const columns = columnsPredicate(item);
       const orArr: QueryUnit<Boolean>[] = [];
       for (const column of columns) {
-        const andArr: QueryUnit<Boolean>[] = [];
+        const orArr1: QueryUnit<Boolean>[] = [];
         for (const searchWord of searchWords) {
-          andArr.push(sorm.includes(column, searchWord));
+          orArr1.push(sorm.includes(column, searchWord));
         }
-        orArr.push(sorm.and(andArr));
+        orArr.push(sorm.or(orArr1));
       }
       return [sorm.or(orArr)];
     });
@@ -245,7 +251,7 @@ export class Queryable<TTable> {
   }
 
   public select<C extends { [key: string]: any }>(cols: (item: TTable) => C): Queryable<TypeOfGeneric<C>> {
-    const result = this._clone();
+    let result = this._clone();
 
     result._queryObj.select = {};
     const makeSelect = (prevKeys: string[], obj: any) => {
@@ -274,7 +280,27 @@ export class Queryable<TTable> {
     };
 
     makeSelect([], cols(this._entity));
+
+    const groupedKeys: string[] = [];
+    Object.keys(result._queryObj.select).filter(key => {
+      const item = result._queryObj.select[key];
+      if (item instanceof QueryUnit && (item.query.includes("SUM") || item.query.includes("MAX") || item.query.includes("MIN"))) {
+        groupedKeys.push(key);
+      }
+    });
+
+    if (groupedKeys.length > 0) {
+      const nonGroupedKeys = Object.keys(result._queryObj.select).filter(key => !groupedKeys.includes(key));
+      result = result._groupBy(nonGroupedKeys.map(key => helpers.query(result._queryObj.select[key])));
+    }
+
     return result as Queryable<any>;
+  }
+
+  private _groupBy(keys: string[]): Queryable<TTable> {
+    const result = this._clone();
+    result._queryObj.groupBy = keys;
+    return result;
   }
 
   public async existsAsync(): Promise<boolean> {

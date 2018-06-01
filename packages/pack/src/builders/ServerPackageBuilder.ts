@@ -48,7 +48,7 @@ export class ServerPackageBuilder {
     await new Promise<void>((resolve, reject) => {
       const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(), {
         mode: "development",
-        devtool: "cheap-module-source-map"
+        devtool: "source-map"
       });
 
       const compiler = webpack(webpackConfig);
@@ -64,7 +64,8 @@ export class ServerPackageBuilder {
           worker.kill();
         }
         worker = child_process.fork(this._packagePath(tsconfig.compilerOptions.outDir || "dist", "app.js"), [], {
-          cwd: this._packagePath(tsconfig.compilerOptions.outDir || "dist")
+          cwd: this._packagePath(tsconfig.compilerOptions.outDir || "dist"),
+          execArgv: ["--require", "source-map-support/register"]
         });
 
         resolve();

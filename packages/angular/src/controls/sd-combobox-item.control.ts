@@ -11,7 +11,7 @@ import {SdComboboxControl} from "./sd-combobox.control";
 
     :host {
       display: block;
-      padding: gap(xs) gap(sm);
+      padding: gap(xs) gap(sm) * 2 gap(xs) gap(sm);
       cursor: pointer;
       font-size: font-size(sm);
 

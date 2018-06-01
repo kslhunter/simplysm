@@ -113,6 +113,15 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         /deep/ sd-textfield > input {
           border: none;
           padding: gap(xs) gap(sm);
+
+          &[type=date] {
+            padding: gap(xs) - 2 gap(sm) gap(xs) - 1 gap(sm);
+          }
+        }
+
+        /deep/ sd-select > select {
+          border: none;
+          padding: gap(xs) - 3 gap(sm) gap(xs) gap(sm) - 4;
         }
 
         /deep/ sd-checkbox > label {

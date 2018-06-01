@@ -31,6 +31,7 @@ import {SdLocalStorageProvider} from "./providers/SdLocalStorageProvider";
 import {SdComboboxControl} from "./controls/sd-combobox.control";
 import {SdComboboxItemControl} from "./controls/sd-combobox-item.control";
 import {GlobalErrorHandler} from "./plugins/GlobalErrorHandler";
+import {SdSelectControl} from "./controls/sd-select.control";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -54,7 +55,8 @@ const controls: any[] = [
   SdTextfieldControl,
   SdTopbarControl,
   SdTopbarContainerControl,
-  SdTopbarMenuControl
+  SdTopbarMenuControl,
+  SdSelectControl
 ];
 
 const providers: any[] = [

@@ -1,14 +1,13 @@
-import {ChangeDetectionStrategy, Component, HostListener, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, HostListener, Input} from "@angular/core";
 import {SdTypeValidate} from "../decorators/SdTypeValidate";
-import {animate, state, style, transition, trigger} from "@angular/animations";
 
 @Component({
   selector: "sd-busy-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="_" *ngIf="busy">
-      <div [@indicatorState]="'on'">
-        <div></div>
+    <div class="_screen">
+      <div class="_rect">
+        <div class="_indicator"></div>
       </div>
     </div>
     <ng-content></ng-content>`,
@@ -25,8 +24,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
       min-width: 70px;
       min-height: 70px;
 
-      > div:first-child {
-        display: block;
+      > ._screen {
         position: absolute;
         top: 0;
         left: 0;
@@ -34,16 +32,38 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         height: 100%;
         background: rgba(0, 0, 0, .6);
         z-index: $z-index-busy;
+        visibility: hidden;
+        pointer-events: none;
 
-        > div > div {
-          top: 0;
-          width: 30px;
-          height: 30px;
-          margin: 20px auto 0 auto;
-          border: 6px solid rgba(255, 255, 255, .5);
-          border-radius: 100%;
-          border-bottom-color: theme-color(primary, default);
-          animation: _sd-busy-spin 1s linear infinite;
+        > ._rect {
+          transform: translateY(-100%);
+          opacity: 0;
+          transition: .1s ease-in;
+          transition-property: opacity, transform;
+
+          > ._indicator {
+            top: 0;
+            width: 30px;
+            height: 30px;
+            margin: 20px auto 0 auto;
+            border: 6px solid rgba(255, 255, 255, .5);
+            border-radius: 100%;
+            border-bottom-color: theme-color(primary, default);
+            animation: _sd-busy-spin 1s linear infinite;
+          }
+        }
+      }
+
+      &[sd-busy=true] {
+        > ._screen {
+          visibility: visible;
+          pointer-events: auto;
+
+          > ._rect {
+            transform: none;
+            opacity: 1;
+            transition: .1s ease-out;
+          }
         }
       }
     }
@@ -56,18 +76,12 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         transform: rotate(360deg);
       }
     }
-  `],
-  animations: [
-    trigger("indicatorState", [
-      state("void", style({transform: "translateY(-100%)", opacity: "0"})),
-      state("*", style({transform: "translateY(0)", opacity: "1"})),
-      transition("void => *", animate(".1s ease-out"))
-    ])
-  ]
+  `]
 })
 export class SdBusyContainerControl {
   @Input()
   @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-busy")
   public busy?: boolean;
 
   @HostListener("keydown", ["$event"])

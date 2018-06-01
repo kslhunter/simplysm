@@ -13,6 +13,7 @@ export * from "./controls/sd-list.control";
 export * from "./controls/sd-list-item.control";
 export * from "./controls/sd-pagination.control";
 export * from "./controls/sd-pane.control";
+export * from "./controls/sd-select.control";
 export * from "./controls/sd-sheet.control";
 export * from "./controls/sd-sheet-column.control";
 export * from "./controls/sd-sidebar.control";

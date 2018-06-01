@@ -11,7 +11,7 @@ import {
   QueryList,
   ViewChild
 } from "@angular/core";
-import {SdTypeValidate} from "..";
+import {SdTypeValidate} from "../decorators/SdTypeValidate";
 import {SdComboboxItemControl} from "./sd-combobox-item.control";
 
 @Component({
@@ -37,6 +37,7 @@ import {SdComboboxItemControl} from "./sd-combobox-item.control";
 
     /deep/ ._sd-combobox-dropdown {
       position: fixed;
+      z-index: $z-index-dropdown;
       opacity: 0;
       transform: translateY(-10px);
       transition: .1s linear;
@@ -122,13 +123,27 @@ export class SdComboboxControl implements OnInit, OnDestroy {
     const dropdownEl = this.dropdownElRef!.nativeElement;
 
     if (this._elRef.nativeElement.findParent(event.target as HTMLElement)) {
-      Object.assign(
-        dropdownEl.style,
-        {
-          top: (textfieldEl.windowOffset.top + textfieldEl.offsetHeight) + "px",
-          left: textfieldEl.windowOffset.left + "px"
-        }
-      );
+
+      if (window.innerHeight < textfieldEl.windowOffset.top * 2) {
+        Object.assign(
+          dropdownEl.style,
+          {
+            top: "",
+            bottom: (window.innerHeight - textfieldEl.windowOffset.top) + "px",
+            left: textfieldEl.windowOffset.left + "px"
+          }
+        );
+      }
+      else {
+        Object.assign(
+          dropdownEl.style,
+          {
+            top: (textfieldEl.windowOffset.top + textfieldEl.offsetHeight) + "px",
+            bottom: "",
+            left: textfieldEl.windowOffset.left + "px"
+          }
+        );
+      }
     }
   };
 
@@ -136,16 +151,33 @@ export class SdComboboxControl implements OnInit, OnDestroy {
     const textfieldEl = this.textfieldElRef!.nativeElement;
     const dropdownEl = this.dropdownElRef!.nativeElement;
 
-    Object.assign(
-      dropdownEl.style,
-      {
-        top: (textfieldEl.windowOffset.top + textfieldEl.offsetHeight) + "px",
-        left: textfieldEl.windowOffset.left + "px",
-        opacity: "1",
-        pointerEvents: "auto",
-        transform: "none"
-      }
-    );
+    if (window.innerHeight < textfieldEl.windowOffset.top * 2) {
+      Object.assign(
+        dropdownEl.style,
+        {
+          top: "",
+          bottom: (window.innerHeight - textfieldEl.windowOffset.top) + "px",
+          left: textfieldEl.windowOffset.left + "px",
+          opacity: "1",
+          pointerEvents: "auto",
+          transform: "none"
+        }
+      );
+    }
+    else {
+      Object.assign(
+        dropdownEl.style,
+        {
+          top: (textfieldEl.windowOffset.top + textfieldEl.offsetHeight) + "px",
+          bottom: "",
+          left: textfieldEl.windowOffset.left + "px",
+          opacity: "1",
+          pointerEvents: "auto",
+          transform: "none"
+        }
+      );
+    }
+
     document.addEventListener("scroll", this.scrollEventHandler, true);
   };
 

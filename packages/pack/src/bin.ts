@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 
-import "source-map-support";
 import * as yargs from "yargs";
 import {buildAsync} from "./commands/buildAsync";
 import {publishAsync} from "./commands/publishAsync";
 import {localUpdateAsync} from "./commands/localUpdateAsync";
 import {EventEmitter} from "events";
 
+// tslint:disable-next-line:no-var-requires no-require-imports
+require("source-map-support").install();
 EventEmitter.defaultMaxListeners = 20;
 
 // tslint:disable-next-line:no-unused-expression
