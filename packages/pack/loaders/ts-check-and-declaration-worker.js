@@ -3,10 +3,11 @@ const ts = require("typescript");
 const path = require("path");
 
 const packageName = process.argv[2];
-const watch = !!process.argv[3];
+const watch = process.argv[3] === "watch";
+const tsConfigPath = process.argv[4];
 
 const contextPath = path.resolve(process.cwd(), "packages", packageName).replace(/\\/g, "/");
-const configPath = path.resolve(contextPath, "tsconfig.json").replace(/\\/g, "/");
+const configPath = tsConfigPath || path.resolve(contextPath, "tsconfig.json").replace(/\\/g, "/");
 const parsedConfig = ts.parseJsonConfigFileContent(fs.readJsonSync(configPath), ts.sys, contextPath);
 const outDir = parsedConfig.options.outDir || path.resolve(contextPath, "dist");
 

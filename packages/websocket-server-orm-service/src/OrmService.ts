@@ -34,6 +34,7 @@ export class OrmService extends WebSocketServiceBase {
     });
 
     this.server.onClose(() => {
+      conn.cancel();
       conn.close();
     });
 

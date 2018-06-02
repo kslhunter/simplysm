@@ -5,7 +5,7 @@ import {Logger} from "@simplism/core";
 import * as child_process from "child_process";
 
 export class TsCheckAndDeclarationPlugin implements webpack.Plugin {
-  public constructor(private readonly _options: { packageName: string; logger: Logger }) {
+  public constructor(private readonly _options: { tsConfigPath?: string; packageName: string; logger: Logger }) {
   }
 
   public apply(compiler: webpack.Compiler): void {
@@ -16,8 +16,9 @@ export class TsCheckAndDeclarationPlugin implements webpack.Plugin {
           this._loadersPath("ts-check-and-declaration-worker.js"),
           [
             this._options.packageName,
-            "watch"
-          ],
+            "watch",
+            this._options.tsConfigPath
+          ].filterExists(),
           {
             stdio: ["inherit", "inherit", "inherit", "ipc"]
           }
@@ -32,8 +33,10 @@ export class TsCheckAndDeclarationPlugin implements webpack.Plugin {
       worker = child_process.fork(
         this._loadersPath("ts-check-and-declaration-worker.js"),
         [
-          this._options.packageName
-        ],
+          this._options.packageName,
+          "build",
+          this._options.tsConfigPath
+        ].filterExists(),
         {
           stdio: ["inherit", "inherit", "inherit", "ipc"]
         }

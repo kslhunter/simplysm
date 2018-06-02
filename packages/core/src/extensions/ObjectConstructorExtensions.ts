@@ -7,9 +7,9 @@ import {Uuid} from "../types/Uuid";
 declare global {
   // tslint:disable-next-line:interface-name
   interface ObjectConstructor {
-    clone<T>(source: T, options?: { excludeProps?: (keyof T)[] }): T;
+    clone<T extends { [key: string]: any }>(source: T, options?: { excludeProps?: (keyof T)[] }): T;
 
-    equal<T>(source: T, taget: T, options?: { excludeProps?: (keyof T)[] }): boolean;
+    equal<T extends { [key: string]: any }>(source: T, taget: T, options?: { excludeProps?: (keyof T)[] }): boolean;
 
     validate(value: any, validator: TypeValidator): IObjectValidateResult | undefined;
 

@@ -91,7 +91,7 @@ export function ForeignKey<T>(columnNames: (keyof T) | ((keyof T)[]), targetType
 
     def.foreignKeys.push({
       name: propertyKey,
-      columnNames: columnNames instanceof Array ? columnNames : [columnNames],
+      columnNames: (columnNames instanceof Array ? columnNames : [columnNames]) as string[],
       targetTypeFwd
     });
   };
@@ -106,7 +106,7 @@ export function ForeignKeyTarget<T, P>(sourceTypeFwd: () => Type<P>, foreignKeyN
     def.foreignKeyTargets.push({
       name: propertyKey,
       sourceTypeFwd,
-      foreignKeyName
+      foreignKeyName: foreignKeyName as string
     });
   };
 }

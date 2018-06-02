@@ -6,25 +6,7 @@
     "lib": [
       "es2017",
       "dom"
-    ],
-    "baseUrl": ".",
-    "paths": {
-      "@simplism/core": [
-        "../core/src/index.ts"
-      ],
-      "@simplism/excel": [
-        "../excel/src/index.ts"
-      ],
-      "@simplism/websocket-common": [
-        "../websocket-common/src/index.ts"
-      ],
-      "@simplism/websocket-client": [
-        "../websocket-client/src/index.ts"
-      ],
-      "@simplism/orm-client": [
-        "../orm-client/src/index.ts"
-      ]
-    }
+    ]
   },
   "files": [
     "./src/index.ts"

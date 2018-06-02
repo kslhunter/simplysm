@@ -6,12 +6,12 @@ import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
 import {Logger} from "@simplism/core";
 import {IClientPackageConfig} from "../commons/IProjectConfig";
-import {AngularCompilerPlugin} from "@ngtools/webpack";
 import {FriendlyLoggerPlugin} from "../plugins/FriendlyLoggerPlugin";
 import {FtpStorage} from "@simplism/storage";
 import * as webpackMerge from "webpack-merge";
 import * as WebpackDevServer from "webpack-dev-server";
 import {TsLintPlugin} from "../plugins/TsLintPlugin";
+import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugin";
 
 export class ClientPackageBuilder {
   private readonly _logger = new Logger("@simplism/pack", `ClientPackageBuilder`, `${this._config.name}:`);
@@ -180,14 +180,13 @@ export class ClientPackageBuilder {
             test: /\.js$/,
             parser: {system: true}
           },
-          /*{
-            test: /\.(js|ts)$/,
-            loader: this._loadersPath("inline-sass-loader.js")
-          },*/
           {
-            test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+            test: /\.ts$/,
             exclude: /node_modules/,
-            loader: "@ngtools/webpack"
+            loader: this._loadersPath("ts-transpile-loader.js"),
+            options: {
+              logger: this._logger
+            }
           },
           {
             test: /\.html$/,
@@ -204,11 +203,11 @@ export class ClientPackageBuilder {
         ]
       },
       plugins: [
-        new AngularCompilerPlugin({
-          tsConfigPath: this._packagePath("tsconfig.spec.json"),
-          skipCodeGeneration: true,
-          sourceMap: true
-        }),
+        new webpack.ContextReplacementPlugin(
+          /angular[\\/]core[\\/]fesm5/,
+          this._packagePath("src"),
+          {}
+        ),
         new FriendlyLoggerPlugin({
           packageName: this._config.name,
           logger: this._logger
@@ -244,13 +243,17 @@ export class ClientPackageBuilder {
             parser: {system: true}
           },
           {
-            test: /\.(js|ts)$/,
-            loader: this._loadersPath("inline-sass-loader.js")
-          },
-          {
-            test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+            test: /\.ts$/,
             exclude: /node_modules/,
-            loader: "@ngtools/webpack"
+            loaders: [
+              {
+                loader: this._loadersPath("ts-transpile-loader.js"),
+                options: {
+                  logger: this._logger
+                }
+              },
+              this._loadersPath("inline-sass-loader.js")
+            ]
           },
           {
             test: /\.html$/,
@@ -274,16 +277,21 @@ export class ClientPackageBuilder {
         ]
       },
       plugins: [
-        new AngularCompilerPlugin({
+        new TsCheckAndDeclarationPlugin({
           tsConfigPath: this._packagePath("tsconfig.app.json"),
-          skipCodeGeneration: true,
-          sourceMap: true
+          packageName: this._config.name,
+          logger: this._logger
         }),
         new TsLintPlugin({
           tsConfigPath: this._packagePath("tsconfig.app.json"),
           packageName: this._config.name,
           logger: this._logger
         }),
+        new webpack.ContextReplacementPlugin(
+          /angular[\\/]core[\\/]fesm5/,
+          this._packagePath("src"),
+          {}
+        ),
         new FriendlyLoggerPlugin({
           packageName: this._config.name,
           logger: this._logger
