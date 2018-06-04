@@ -173,8 +173,7 @@ export class ClientPackageBuilder {
             enforce: "pre",
             test: /\.js$/,
             use: ["source-map-loader"],
-            include: /node_modules[\\/]@simplism/,
-            exclude: [/\.ngfactory\.js$/, /\.ngstyle\.js$/]
+            exclude: /node_modules[\\/](?!@simplism)/
           },
           {
             test: /\.js$/,
@@ -235,8 +234,7 @@ export class ClientPackageBuilder {
             enforce: "pre",
             test: /\.js$/,
             use: ["source-map-loader"],
-            include: /node_modules[\\/]@simplism/,
-            exclude: [/\.ngfactory\.js$/, /\.ngstyle\.js$/]
+            exclude: /node_modules[\\/](?!@simplism)/,
           },
           {
             test: /\.js$/,

@@ -21,7 +21,7 @@ import {SdTypeValidate} from "../decorators/SdTypeValidate";
     :host {
       display: block;
       height: 15px;
-      
+
       > a {
         display: inline-block;
         padding: 0 gap(xs);
@@ -48,6 +48,13 @@ export class SdPaginationControl {
   })
   public length = 0;
 
+  @Input()
+  @SdTypeValidate({
+    type: Number,
+    notnull: true
+  })
+  public displayPageLength = 10;
+
   @Output()
   public readonly pageChange = new EventEmitter<number>();
 
@@ -57,8 +64,8 @@ export class SdPaginationControl {
       pages.push(i);
     }
 
-    const from = Math.floor(this.page / 10) * 10;
-    const to = Math.min(from + 10, this.length);
+    const from = Math.floor(this.page / this.displayPageLength) * this.displayPageLength;
+    const to = Math.min(from + this.displayPageLength, this.length);
     return pages.filter(item => item >= from && item < to);
   }
 

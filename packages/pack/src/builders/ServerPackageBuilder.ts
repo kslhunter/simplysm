@@ -48,7 +48,7 @@ export class ServerPackageBuilder {
     await new Promise<void>((resolve, reject) => {
       const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(), {
         mode: "development",
-        devtool: "source-map"
+        devtool: "inline-source-map"
       });
 
       const compiler = webpack(webpackConfig);
