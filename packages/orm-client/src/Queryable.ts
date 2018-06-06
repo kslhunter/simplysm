@@ -345,6 +345,13 @@ export class Queryable<TTable> {
     return results.mapMany(item => item[0]).filterExists() as any[];
   }
 
+  public insertRangePrepare(items: TTable[]): void {
+    const queries = items.map(item => this._getInsertQuery(item));
+    const query = queries.join("\r\n\r\n");
+    const resultIndexes = queries.mapMany(item => item.includes("SET IDENTITY_INSERT") ? [false, true, false] : [true]);
+    this._dbConnection.prepare(query, resultIndexes);
+  }
+
   public async updateAsync(itemFwd: (entity: TTable) => Partial<TTable>): Promise<TTable> {
     const query = this._getUpdateQuery(itemFwd(this._entity));
     const result = await this._dbConnection.executeAsync(query);

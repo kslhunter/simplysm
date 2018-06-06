@@ -25,7 +25,7 @@ export const sorm = {
     }
   },
 
-  ifNull<T>(source: T | QueryUnit<T>, target: T | QueryUnit<T>): T {
+  ifNull<T, R extends T>(source: T | QueryUnit<T>, target: R | QueryUnit<R>): R extends undefined ? R : NonNullable<R> {
     let type;
     if (source instanceof QueryUnit) {
       type = source.type;
