@@ -76,8 +76,8 @@ export abstract class Database {
     );
   }
 
-  public async initializeAsync(databases: string[]): Promise<void> {
-    if (process.env.NODE_ENV !== "production") {
+  public async initializeAsync(databases: string[], force: boolean = false): Promise<void> {
+    if (force) {
       const tableDefs = Object.keys(this)
         .filter(key => this[key] instanceof Queryable)
         .map(key => core.Reflect.getMetadata(modelDefMetadataKey, this[key].tableType) as ITableDef)
