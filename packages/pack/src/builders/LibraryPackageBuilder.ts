@@ -94,9 +94,6 @@ export class LibraryPackageBuilder {
         }
       }
 
-      // 버전 변경
-      packageJson.version = rootPackageJson.version;
-
       // package.json 파일 다시쓰기
       fs.writeJsonSync(this._packagePath("package.json"), packageJson, {spaces: 2});
 

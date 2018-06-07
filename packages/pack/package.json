@@ -1,6 +1,6 @@
 {
   "name": "@simplism/pack",
-  "version": "7.1.31",
+  "version": "7.1.33",
   "description": "Simplism Package Builder CLI",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -33,11 +33,10 @@
     "webpack-dev-server": "^3.1.4",
     "webpack-merge": "^4.1.2",
     "webpack-node-externals": "^1.7.2",
-    "yargs": "^11.0.0",
-    "yarn": "^1.7.0"
+    "yargs": "^11.1.0"
   },
   "peerDependencies": {
-    "@simplism/core": "^7.1.31",
-    "@simplism/storage": "^7.1.31"
+    "@simplism/core": "^7.1.33",
+    "@simplism/storage": "^7.1.33"
   }
 }
