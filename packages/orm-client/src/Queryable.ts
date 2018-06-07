@@ -505,127 +505,51 @@ export class Queryable<TTable> {
     }
 
     for (const joinDef of joinDefs) {
-      const groupKeys = Object.keys(this._queryObj.select)
-        .filter(key => !key.startsWith(joinDef.as));
+      const grouped: { key: any; values: any[] }[] = [];
+      for (const item of result) {
+        const keys = Object.keys(item)
+          .filter(key => !key.startsWith(joinDef.as + "."));
 
-      const groupValueKeys = Object.keys(this._queryObj.select)
-        .map(key => key.split(".").slice(0, joinDef.as.split(".").length + 1).join("."))
-        .filter(key => key.startsWith(joinDef.as))
-        .distinct();
+        const valueKeys = Object.keys(item)
+          .filter(valueKey => valueKey.startsWith(joinDef.as + "."))
+          .distinct();
 
-      const grouped = result.groupBy(groupKeys, item => {
-        const obj = {};
-        for (const key of groupValueKeys) {
-          obj[key.slice(joinDef.as.length + 1)] = item[key];
+        const keyObj = {};
+        for (const key of keys) {
+          keyObj[key] = item[key];
         }
-        return obj;
-      });
+
+        const valueObj = {};
+        for (const valueKey of valueKeys) {
+          valueObj[valueKey.slice(joinDef.as.length + 1)] = item[valueKey];
+        }
+
+        const exists = grouped.single(g => Object.equal(g.key, keyObj));
+        if (exists) {
+          exists.values.push(valueObj);
+        }
+        else {
+          grouped.push({
+            key: keyObj,
+            values: [valueObj]
+          });
+        }
+      }
+
       result = grouped.map(item => ({
         ...item.key,
         [joinDef.as]: item.values
       }));
+
+      if (!joinDef.isMulti) {
+        result = result.map(item => ({
+          ...item,
+          [joinDef.as]: item[joinDef.as][0]
+        }));
+      }
     }
 
     return result;
-
-    /*const resultJoinKeys = Object.keys(this._queryObj.select).filter(item => item.includes(".")).map(item2 => item2.split(".")[0]).distinct();
-
-    const result: any[] = [];
-    for (const item of arr) {
-      const prevItem = result.single(item1 => {
-        const cloneItem = Object.clone(item1, {excludeProps: resultJoinKeys});
-        for (const key of Object.keys(cloneItem)) {
-          if (!(cloneItem[key] === item[key] || JsonConvert.stringify(cloneItem[key]["_date"]) === JsonConvert.stringify(item[key]))) {
-            return false;
-          }
-        }
-        return true;
-      });
-
-      let resultItem;
-      if (prevItem) {
-        resultItem = prevItem;
-      }
-      else {
-        resultItem = {};
-        result.push(resultItem);
-      }
-
-      const startsChains: string[] = [];
-      for (const selectKey of Object.keys(this._queryObj.select)) {
-        if (item[selectKey] === undefined) continue;
-
-        const cumulatedChain: string[] = [];
-        let cursor = resultItem;
-        for (const chain  of selectKey.split(".").slice(0, -1)) {
-          cumulatedChain.push(chain);
-          const joinDef = this._queryObj.join.single(item1 => item1.as === cumulatedChain.join("."))!;
-          if (joinDef.isMulti) {
-            cursor[chain] = cursor[chain] || [];
-            if (!startsChains.includes(cumulatedChain.join(".")) || cursor[chain].length < 1) {
-              const newCursor = {};
-              cursor[chain].push(newCursor);
-              cursor = newCursor;
-              startsChains.push(cumulatedChain.join("."));
-            }
-            else {
-              cursor = cursor[chain].last();
-            }
-          }
-          else {
-            cursor[chain] = cursor[chain] || {};
-            cursor = cursor[chain];
-          }
-        }
-
-        const selectType = this._queryObj.select[selectKey] instanceof QueryUnit
-          ? (this._queryObj.select[selectKey] as QueryUnit<any>).type
-          : undefined;
-
-        cursor[selectKey.split(".").last()!] = (item[selectKey] && selectType === DateTime)
-          ? DateTime.parse(item[selectKey.toString()])
-          : (item[selectKey] && selectType === Time)
-            ? Time.parse(item[selectKey].toString())
-            : (item[selectKey] && selectType === DateOnly)
-              ? DateOnly.parse(item[selectKey].toString())
-              : item[selectKey];
-      }
-    }
-
-    const allDistinct = (obj: object) => {
-      const resultObj = {};
-      for (const key of Object.keys(obj)) {
-        if (obj[key] instanceof Array) {
-          resultObj[key] = obj[key].distinct();
-        }
-        else if (obj[key] instanceof DateOnly) {
-          resultObj[key] = obj[key];
-        }
-        else if (obj[key] instanceof DateTime) {
-          resultObj[key] = obj[key];
-        }
-        else if (obj[key] instanceof Time) {
-          resultObj[key] = obj[key];
-        }
-        else if (obj[key] instanceof Uuid) {
-          resultObj[key] = obj[key];
-        }
-        else if (obj[key] instanceof Object) {
-          resultObj[key] = allDistinct(obj[key]);
-        }
-        else {
-          resultObj[key] = obj[key];
-        }
-      }
-
-      return resultObj;
-    };
-
-    for (const key of Object.keys(result)) {
-      result[key] = allDistinct(result[key]);
-    }
-
-    return result;*/
   }
 
   private _clone(): Queryable<TTable> {
