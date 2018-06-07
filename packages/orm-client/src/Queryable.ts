@@ -2,7 +2,7 @@ import {Database} from "./Database";
 import {QueryUnit} from "./QueryUnit";
 import {ITableDef, modelDefMetadataKey} from "./decorators";
 import {helpers} from "./helpers";
-import {DateOnly, DateTime, JsonConvert, Time, Type, Uuid} from "@simplism/core";
+import {DateOnly, DateTime, Time, Type, Uuid} from "@simplism/core";
 import {sorm} from "./sorm";
 
 export type TypeOfGeneric<C extends { [key: string]: any }> = {[K in keyof C]: C[K] extends QueryUnit<any>  ? C[K]["_generic"]  : C[K]};
@@ -291,7 +291,7 @@ export class Queryable<TTable> {
 
     if (groupedKeys.length > 0) {
       const nonGroupedKeys = Object.keys(result._queryObj.select).filter(key => !groupedKeys.includes(key));
-      result = result._groupBy(nonGroupedKeys.map(key => helpers.query(result._queryObj.select[key])));
+      result = result._groupBy(nonGroupedKeys.map(key => result._queryObj.select[key] && helpers.query(result._queryObj.select[key])).filterExists());
     }
 
     return result as Queryable<any>;
@@ -473,7 +473,62 @@ export class Queryable<TTable> {
   }
 
   private _generateResult(arr: any[]): any[] {
-    const resultJoinKeys = Object.keys(this._queryObj.select).filter(item => item.includes(".")).map(item2 => item2.split(".")[0]).distinct();
+    const joinDefs = Object.keys(this._queryObj.select)
+      .orderBy(key => key.split(".").length, true)
+      .map(key => key.split(".").slice(0, -1).join("."))
+      .filter(key => key)
+      .distinct()
+      .filterExists()
+      .map(key => {
+        const joinDef = this._queryObj.join.single(item => item.as === key);
+        return {
+          as: joinDef!.as,
+          isMulti: joinDef!.isMulti
+        };
+      });
+
+    let result: any[] = arr;
+
+    for (const item of result) {
+      for (const key of Object.keys(item)) {
+        const dataType = this._queryObj.select[key] instanceof QueryUnit ? this._queryObj.select[key].type : undefined;
+        if (dataType === DateTime) {
+          item[key] = DateTime.parse(item[key]);
+        }
+        else if (dataType === DateOnly) {
+          item[key] = DateOnly.parse(item[key]);
+        }
+        else if (dataType === Time) {
+          item[key] = Time.parse(item[key]);
+        }
+      }
+    }
+
+    for (const joinDef of joinDefs) {
+      const groupKeys = Object.keys(this._queryObj.select)
+        .filter(key => !key.startsWith(joinDef.as));
+
+      const groupValueKeys = Object.keys(this._queryObj.select)
+        .map(key => key.split(".").slice(0, joinDef.as.split(".").length + 1).join("."))
+        .filter(key => key.startsWith(joinDef.as))
+        .distinct();
+
+      const grouped = result.groupBy(groupKeys, item => {
+        const obj = {};
+        for (const key of groupValueKeys) {
+          obj[key.slice(joinDef.as.length + 1)] = item[key];
+        }
+        return obj;
+      });
+      result = grouped.map(item => ({
+        ...item.key,
+        [joinDef.as]: item.values
+      }));
+    }
+
+    return result;
+
+    /*const resultJoinKeys = Object.keys(this._queryObj.select).filter(item => item.includes(".")).map(item2 => item2.split(".")[0]).distinct();
 
     const result: any[] = [];
     for (const item of arr) {
@@ -570,7 +625,7 @@ export class Queryable<TTable> {
       result[key] = allDistinct(result[key]);
     }
 
-    return result;
+    return result;*/
   }
 
   private _clone(): Queryable<TTable> {

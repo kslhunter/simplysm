@@ -32,6 +32,7 @@ import {SdComboboxControl} from "./controls/sd-combobox.control";
 import {SdComboboxItemControl} from "./controls/sd-combobox-item.control";
 import {GlobalErrorHandler} from "./plugins/GlobalErrorHandler";
 import {SdSelectControl} from "./controls/sd-select.control";
+import {OptionValueAttribute} from "./attributes/option-value.attribute";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -59,6 +60,10 @@ const controls: any[] = [
   SdSelectControl
 ];
 
+const attributes: any[] = [
+  OptionValueAttribute
+];
+
 const providers: any[] = [
   SdDomValidatorProvider,
   SdFileDialogProvider,
@@ -78,9 +83,13 @@ const providers: any[] = [
   exports: [
     BrowserModule,
     BrowserAnimationsModule,
-    ...controls
+    ...controls,
+    ...attributes
   ],
-  declarations: controls,
+  declarations: [
+    ...controls,
+    ...attributes
+  ],
   providers
 })
 export class SangularModule {

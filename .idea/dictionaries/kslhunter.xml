@@ -2,6 +2,7 @@
   <dictionary name="kslhunter">
     <words>
       <w>combobox</w>
+      <w>cumulated</w>
       <w>devtool</w>
       <w>dropdown</w>
       <w>keydown</w>
@@ -12,6 +13,7 @@
       <w>transpile</w>
       <w>tsconfig</w>
       <w>tslint</w>
+      <w>upsert</w>
       <w>websocket</w>
     </words>
   </dictionary>

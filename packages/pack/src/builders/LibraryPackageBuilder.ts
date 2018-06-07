@@ -27,7 +27,8 @@ export class LibraryPackageBuilder {
         devtool: "source-map",
         optimization: {
           noEmitOnErrors: true,
-          minimize: false
+          minimize: false,
+          nodeEnv: false
         }
       });
 
@@ -48,7 +49,10 @@ export class LibraryPackageBuilder {
     await new Promise<void>((resolve, reject) => {
       const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(), {
         mode: "development",
-        devtool: "source-map"
+        devtool: "source-map",
+        optimization: {
+          nodeEnv: false
+        }
       });
 
       const compiler = webpack(webpackConfig);
@@ -193,12 +197,7 @@ export class LibraryPackageBuilder {
               include: Object.keys(packageJson.bin).map(key => path.relative(this._packagePath(tsconfig.compilerOptions.outDir || "dist"), this._packagePath(packageJson.bin[key])))
             })
           ]
-          : [],
-        new webpack.DefinePlugin({
-          "process.env": {
-            NODE_ENV: "process.env.NODE_ENV"
-          }
-        })
+          : []
       ],
       externals: [
         (context, request, callback) => {

@@ -51,7 +51,10 @@
       true,
       "Control"
     ],
-    "directive-class-suffix": true,
+    "directive-class-suffix": [
+      true,
+      "Attribute"
+    ],
     "pipe-impure": true,
     "i18n": false,
     "template-cyclomatic-complexity": false,

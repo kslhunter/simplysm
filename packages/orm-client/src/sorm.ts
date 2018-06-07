@@ -4,6 +4,28 @@ import {QueryUnit} from "./QueryUnit";
 import {TypeOfGeneric} from "./Queryable";
 
 export const sorm = {
+  formula<T>(arg: T | QueryUnit<T>, ...args: (T | QueryUnit<T> | string)[]): QueryUnit<T> {
+    let type: any;
+    if (arg instanceof QueryUnit) {
+      type = arg.type;
+    }
+    else {
+      type = arg.constructor;
+    }
+    const query = ([arg] as any[]).concat(args)
+      .map((item, index) => {
+        if (index % 2 === 0) {
+          return helpers.query(item);
+        }
+        else {
+          return item;
+        }
+      })
+      .join(" ");
+
+    return new QueryUnit(type, query);
+  },
+
   equal<T>(source: T | QueryUnit<T>, target: T | QueryUnit<T>): QueryUnit<Boolean> {
     return new QueryUnit(Boolean, helpers.query(source) + " = " + helpers.query(target));
   },
@@ -38,6 +60,10 @@ export const sorm = {
     }
 
     return new QueryUnit(type, "ISNULL(" + helpers.query(source) + ", " + helpers.query(target) + ")") as any;
+  },
+
+  count<T>(arg?: T | QueryUnit<T>): QueryUnit<Number | undefined> {
+    return new QueryUnit(Number, "COUNT(" + (arg ? helpers.query(arg) : "*") + ")");
   },
 
   max<T>(unit: T | QueryUnit<T>): QueryUnit<T | undefined> {

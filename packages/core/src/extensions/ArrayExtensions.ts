@@ -7,9 +7,17 @@ declare global {
   interface Array<T> {
     _generic: T; // tslint:disable-line:no-unused-variable
 
+    groupBy<KK extends Extract<keyof T, string>, K extends {[P in KK]: T[P]}>(keys: KK[]): { key: K; values: T[] }[];
+
+    groupBy<KK extends Extract<keyof T, string>, K extends {[P in KK]: T[P]}, V>(keys: KK[], valueSelector: (item: T, index: number) => V): { key: K; values: V[] }[];
+
+    groupBy<KK extends Extract<keyof T, string>, K extends {[P in KK]: T[P]}, VK extends Extract<keyof T, string>, V extends {[P in VK]: T[P]}>(keys: KK[], valueKeys: VK[]): { key: K; values: V[] }[];
+
     groupBy<K>(keySelector: (item: T, index: number) => K): { key: K; values: T[] }[];
 
     groupBy<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): { key: K; values: V[] }[];
+
+    groupBy<K, VK extends Extract<keyof T, string>, V extends {[P in VK]: T[P]}>(keySelector: (item: T, index: number) => K, valueKeys: VK[]): { key: K; values: V[] }[];
 
     toMap<K>(keySelector: (item: T, index: number) => K): Map<K, T>;
 
@@ -57,20 +65,42 @@ declare global {
   }
 }
 
-Array.prototype.groupBy = function (keySelector: (item: any, index: number) => any, valueSelector?: (item: any, index: number) => any): { key: any; values: any[] }[] {
+Array.prototype.groupBy = function (keySelectorOrKeys: ((item: any, index: number) => any) | string[], valueSelectorOrValueKeys?: ((item: any, index: number) => any) | string[]): { key: any; values: any[] }[] {
   const result: { key: any; values: any[] }[] = [];
 
   for (let i = 0; i < this.length; i++) {
-    const key = keySelector(this[i], i);
-    const value = valueSelector ? valueSelector(this[i], i) : this[i];
-
-    const existsRecord = result.single(item => Object.equal(item.key, key));
-
-    if (existsRecord) {
-      existsRecord.values.push(value);
+    let keyObj: any;
+    if (typeof keySelectorOrKeys === "function") {
+      keyObj = keySelectorOrKeys(this[i], i);
     }
     else {
-      result.push({key, values: [value]});
+      keyObj = {};
+      for (const key of keySelectorOrKeys) {
+        keyObj[key] = this[i][key];
+      }
+    }
+
+    let valueObj: any;
+    if (typeof valueSelectorOrValueKeys === "function") {
+      valueObj = valueSelectorOrValueKeys(this[i], i);
+    }
+    else if (valueSelectorOrValueKeys instanceof Array) {
+      valueObj = {};
+      for (const valueKey of valueSelectorOrValueKeys) {
+        valueObj[valueKey] = this[i][valueKey];
+      }
+    }
+    else {
+      valueObj = this[i];
+    }
+
+    const existsRecord = result.single(item => Object.equal(item.key, keyObj));
+
+    if (existsRecord) {
+      existsRecord.values.push(valueObj);
+    }
+    else {
+      result.push({key: keyObj, values: [valueObj]});
     }
   }
 

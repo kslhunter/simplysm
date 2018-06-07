@@ -1,11 +1,12 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
 import {SdTypeValidate} from "../decorators/SdTypeValidate";
+import {JsonConvert} from "@simplism/core";
 
 @Component({
   selector: "sd-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <select [value]="value"
+    <select [value]="valueJson"
             [required]="required"
             (change)="onSelectChange($event)">
       <ng-content></ng-content>
@@ -52,8 +53,12 @@ export class SdSelectControl {
   @SdTypeValidate(Boolean)
   public required?: boolean;
 
+  public get valueJson(): string {
+    return JsonConvert.stringify(this.value);
+  }
+
   public onSelectChange(event: Event): void {
-    this.value = (event.target as HTMLInputElement).value;
+    this.value = JsonConvert.parse((event.target as HTMLInputElement).value);
     this.valueChange.emit(this.value);
   }
 }
