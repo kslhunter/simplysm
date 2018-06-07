@@ -1,6 +1,13 @@
 <component name="libraryTable">
   <library name="tsconfig$roots" type="javaScript">
-    <CLASSES />
+    <properties>
+      <sourceFilesUrls>
+        <item url="file://$PROJECT_DIR$/node_modules/tslint" />
+      </sourceFilesUrls>
+    </properties>
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/node_modules/tslint" />
+    </CLASSES>
     <SOURCES />
   </library>
 </component>
