@@ -1,23 +1,23 @@
 {
   "name": "simplism",
-  "version": "7.1.29",
+  "version": "7.1.31",
   "description": "Simplism Packages Source Code",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
   "license": "MIT",
   "scripts": {
-    "watch": "yarn sd-pack build --watch",
-    "build": "yarn sd-pack build",
-    "publish": "yarn sd-pack publish",
+    "watch": "npm run sd-pack build --watch",
+    "build": "npm run sd-pack build",
+    "publish": "npm run sd-pack publish",
     "-- ": "",
-    "watch angular": "yarn sd-pack build --watch --package angular",
-    "watch core": "yarn sd-pack build --watch --package core",
-    "watch websocket-common": "yarn sd-pack build --watch --package websocket-common",
-    "watch websocket-server": "yarn sd-pack build --watch --package websocket-server",
+    "watch angular": "npm run sd-pack build --watch --package angular",
+    "watch core": "npm run sd-pack build --watch --package core",
+    "watch websocket-common": "npm run sd-pack build --watch --package websocket-common",
+    "watch websocket-server": "npm run sd-pack build --watch --package websocket-server",
     "--- ": "",
-    "build core": "yarn sd-pack build --package core",
-    "build angular": "yarn sd-pack build --package angular",
-    "build pack": "yarn sd-pack build --package pack",
+    "build core": "npm run sd-pack build --package core",
+    "build angular": "npm run sd-pack build --package angular",
+    "build pack": "npm run sd-pack build --package pack",
     "--": "",
     "sd-pack": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/pack/tsconfig.json node --require ts-node/register --require tsconfig-paths/register --trace-warnings packages/pack/src/bin.ts"
   },
@@ -88,6 +88,7 @@
     "ws": "^5.2.0",
     "xlsx": "^0.13.0",
     "yargs": "^11.0.0",
+    "yarn": "^1.7.0",
     "zone.js": "^0.8.26"
   }
 }
