@@ -26,21 +26,15 @@ import {ResizeEvent} from "../plugins/ResizeEventPlugin";
       position: absolute;
       background: theme-color(bluegrey, darkest);
 
-      &[position=top] {
+      &[position=top],
+      &[position=bottom] {
         border-top: 1px solid get($trans-color, default);
         border-bottom: 1px solid get($trans-color, dark);
       }
-      &[position=left] {
+      &[position=left],
+      &[position=right] {
         border-right: 1px solid get($trans-color, dark);
         border-left: 1px solid get($trans-color, default);
-      }
-      &[position=right] {
-        border-right: 1px solid get($trans-color, default);
-        border-left: 1px solid get($trans-color, dark);
-      }
-      &[position=bottom] {
-        border-top: 1px solid get($trans-color, dark);
-        border-bottom: 1px solid get($trans-color, default);
       }
     }
   `]

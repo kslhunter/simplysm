@@ -1,6 +1,6 @@
 {
   "name": "@simplism/websocket-server-orm-service",
-  "version": "7.1.36",
+  "version": "7.1.37",
   "description": "Simplism WebSocket Server ORM Service Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -11,8 +11,8 @@
     "tedious": "^2.6.2"
   },
   "peerDependencies": {
-    "@simplism/core": "^7.1.36",
-    "@simplism/websocket-common": "^7.1.36",
-    "@simplism/websocket-server": "^7.1.36"
+    "@simplism/core": "^7.1.37",
+    "@simplism/websocket-common": "^7.1.37",
+    "@simplism/websocket-server": "^7.1.37"
   }
 }

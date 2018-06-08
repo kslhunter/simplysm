@@ -1,10 +1,10 @@
 export class Wait {
-  public static async true(forwarder: () => boolean | PromiseLike<boolean>): Promise<void> {
+  public static async true(forwarder: () => boolean | PromiseLike<boolean>, milliseconds: number = 100): Promise<void> {
     while (true) {
       if (await forwarder()) {
         break;
       }
-      await this.time(100);
+      await this.time(milliseconds);
     }
   }
 

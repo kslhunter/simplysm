@@ -85,8 +85,8 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         top: 0;
         left: 0;
         white-space: nowrap;
-        min-width: 100%;
-        border-bottom: 1px solid get($theme-color, bluegrey, darkest);
+        /*min-width: 100%;
+        border-bottom: 1px solid get($theme-color, bluegrey, darkest);*/
       }
 
       ._col-group {
@@ -106,7 +106,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         padding: gap(xs) gap(sm);
         border-right: 1px solid theme-color(bluegrey, darker);
         border-bottom: 1px solid theme-color(bluegrey, darker);
-        margin-bottom: -1px;
+        /*margin-bottom: -1px;*/
       }
 
       ._body ._col {
@@ -141,6 +141,9 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         width: 24px;
         text-align: center;
         padding: gap(xs);
+      }
+      
+      ._body ._col._first-col {
         border-right: 1px solid theme-color(bluegrey, darker);
         border-bottom: 1px solid theme-color(bluegrey, darker);
       }
@@ -158,7 +161,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
 
       ._row {
         position: relative;
-        overflow: hidden;
+        /*overflow: hidden;*/
       }
 
       ._col > ._col-indicator {
@@ -168,10 +171,14 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         width: 100%;
         height: 100%;
         outline: 1px solid transparent;
-        outline-offset: 0;
+        outline-offset: 3px;
         z-index: 3;
         pointer-events: none;
-        transition: .1s linear;
+        transition: outline .1s linear;
+      }
+
+      ._col:focus {
+        outline: none;
       }
 
       ._col:focus > ._col-indicator {

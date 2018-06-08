@@ -22,6 +22,7 @@ import {SdComboboxItemControl} from "./sd-combobox-item.control";
                   [value]="text"
                   (valueChange)="onTextChange($event)"
                   [required]="required"
+                  [disabled]="disabled"
                   (focusedChange)="textfieldFocusedChange.emit($event)">
     </sd-textfield>
     <div #dropdown class="_sd-combobox-dropdown" tabindex="0">
@@ -55,6 +56,10 @@ export class SdComboboxControl implements OnInit, OnDestroy {
   @Input()
   @SdTypeValidate(Boolean)
   public required?: boolean;
+
+  @Input()
+  @SdTypeValidate(Boolean)
+  public disabled?: boolean;
 
   @Output()
   public readonly valueChange = new EventEmitter<any | undefined>();

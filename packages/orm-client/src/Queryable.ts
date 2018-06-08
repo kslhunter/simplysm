@@ -20,6 +20,7 @@ export class Queryable<TTable> {
     limit: [number, number] | undefined;
     orderBy: [string, "ASC" | "DEC"][];
     groupBy: string[];
+    distinct: boolean;
   } = {
     top: undefined,
     select: {},
@@ -27,13 +28,18 @@ export class Queryable<TTable> {
     where: [],
     limit: undefined,
     orderBy: [],
-    groupBy: []
+    groupBy: [],
+    distinct: false
   };
 
   public get query(): string {
     const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType);
 
     let q = "SELECT ";
+
+    if (this._queryObj.distinct) {
+      q += "DISTINCT ";
+    }
 
     if (this._queryObj.top !== undefined) {
       q += `TOP ${this._queryObj.top} `;
