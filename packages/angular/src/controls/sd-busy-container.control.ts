@@ -34,12 +34,13 @@ import {SdTypeValidate} from "../decorators/SdTypeValidate";
         z-index: $z-index-busy;
         visibility: hidden;
         pointer-events: none;
+        opacity: 0;
+        transition: opacity .3s linear;
 
         > ._rect {
           transform: translateY(-100%);
-          opacity: 0;
           transition: .1s ease-in;
-          transition-property: opacity, transform;
+          transition-property: transform;
 
           > ._indicator {
             top: 0;
@@ -58,10 +59,10 @@ import {SdTypeValidate} from "../decorators/SdTypeValidate";
         > ._screen {
           visibility: visible;
           pointer-events: auto;
+          opacity: 1;
 
           > ._rect {
             transform: none;
-            opacity: 1;
             transition: .1s ease-out;
           }
         }

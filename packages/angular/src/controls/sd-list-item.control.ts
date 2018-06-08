@@ -30,6 +30,8 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorators/SdN
     @import "../../styles/presets";
 
     :host {
+      display: block;
+      
       > label {
         display: block;
         padding: gap(sm) gap(default);
@@ -57,6 +59,10 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorators/SdN
 
         > ._child-content {
           transition: margin-top .1s ease-out;
+
+          /deep/ > sd-list > sd-list-item {
+            border-bottom: none;
+          }
         }
       }
 

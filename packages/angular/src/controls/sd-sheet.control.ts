@@ -41,8 +41,8 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
       <div class="_row" *ngFor="let item of items; trackBy: trackByItemFn" [@rowState]="'in'">
         <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
           <div class="_col _first-col" (click)="onFirstColClick($event)">
-            <sd-icon [icon]="'arrow-right'" *ngIf="selectedItem === item"
-                     class="sd-text-color-primary-default"></sd-icon>
+            <sd-icon [icon]="'arrow-right'" *ngIf="selectable"
+                     [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-bluegrey-darker': selectedItem !== item}"></sd-icon>
           </div>
           <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
                [style.width.px]="columnControl.width" tabindex="0">
@@ -68,13 +68,14 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
       display: block;
       position: relative;
       width: 100%;
-      height: 100%;
+      max-height: 100%;
       overflow: auto;
       padding-top: 24px;
       background: black;
 
       ._content {
         white-space: nowrap;
+        width: fit-content;
       }
 
       ._head {
@@ -84,6 +85,8 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         top: 0;
         left: 0;
         white-space: nowrap;
+        min-width: 100%;
+        border-bottom: 1px solid get($theme-color, bluegrey, darkest);
       }
 
       ._col-group {
@@ -103,6 +106,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         padding: gap(xs) gap(sm);
         border-right: 1px solid theme-color(bluegrey, darker);
         border-bottom: 1px solid theme-color(bluegrey, darker);
+        margin-bottom: -1px;
       }
 
       ._body ._col {
@@ -137,9 +141,12 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         width: 24px;
         text-align: center;
         padding: gap(xs);
-        background: theme-color(bluegrey, darkest);
         border-right: 1px solid theme-color(bluegrey, darker);
         border-bottom: 1px solid theme-color(bluegrey, darker);
+      }
+
+      ._body ._col._first-col {
+        background: theme-color(bluegrey, darkest);
       }
 
       ._fixed-col-group {
@@ -180,7 +187,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
     trigger("rowState", [
       state("void", style({height: "0"})),
       state("*", style({height: "*"})),
-      transition("void <=> *", animate(".1s linear"))
+      transition("void <=> *", animate(".1s ease-out"))
     ])
   ]
 })

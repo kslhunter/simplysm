@@ -16,6 +16,8 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
       width: 200px;
       height: 100%;
       background: theme-color(bluegrey, darkest);
+      border-left: 1px solid get($trans-color, default);
+      border-right: 1px solid get($trans-color, dark);
     }
   `]
 })

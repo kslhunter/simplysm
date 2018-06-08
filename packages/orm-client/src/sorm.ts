@@ -47,6 +47,21 @@ export const sorm = {
     }
   },
 
+  if<T>(source: T | QueryUnit<T>, predicate: T | QueryUnit<T>, target: T | QueryUnit<T>): T {
+    let type;
+    if (source instanceof QueryUnit) {
+      type = source.type;
+    }
+    else if (target instanceof QueryUnit) {
+      type = target.type;
+    }
+    else {
+      throw new TypeError();
+    }
+
+    return new QueryUnit(type, "ISNULL(NULLIF(" + helpers.query(source) + ", " + helpers.query(predicate) + "), " + helpers.query(target) + ")") as any;
+  },
+
   ifNull<T, R extends T>(source: T | QueryUnit<T>, target: R | QueryUnit<R>): R extends undefined ? R : NonNullable<R> {
     let type;
     if (source instanceof QueryUnit) {

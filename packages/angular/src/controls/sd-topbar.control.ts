@@ -15,13 +15,15 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
       left: 0;
       width: 100%;
       height: 32px;
-      line-height: 32px;
+      line-height: 31px;
       background: theme-color(bluegrey, darkest);
-      padding: 0 gap(default);
+      padding: 0 gap(lg);
+      border-top: 1px solid get($trans-color, default);
+      border-bottom: 1px solid get($trans-color, dark);
 
       /deep/ > * {
         float: left;
-        line-height: 32px;
+        line-height: 31px;
       }
 
       /deep/ > h1,

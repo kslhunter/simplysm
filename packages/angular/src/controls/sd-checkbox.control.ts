@@ -5,7 +5,7 @@ import {SdTypeValidate} from "../decorators/SdTypeValidate";
   selector: "sd-checkbox",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <label>
+    <label tabindex="0">
       <input [checked]="value" (change)="onValueChange($event)" type="checkbox" hidden>
       <div class="_indicator_rect"></div>
       <sd-icon class="_indicator" [icon]="'check'" [fixedWidth]="true"></sd-icon>
