@@ -4,6 +4,7 @@ import {
   Component,
   ContentChildren,
   DoCheck,
+  ElementRef,
   EventEmitter,
   HostBinding,
   HostListener,
@@ -45,18 +46,18 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
                      [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-bluegrey-darker': selectedItem !== item}"></sd-icon>
           </div>
           <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
-               [style.width.px]="columnControl.width" tabindex="0">
+               [style.width.px]="columnControl.width" tabindex="0"
+               (focus)="onCellFocus($event)">
             <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
                          [ngTemplateOutletContext]="{item: item}"></ng-template>
-            <div class="_col-indicator"></div>
           </div>
         </div>
         <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
           <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
-               [style.width.px]="columnControl.width" tabindex="0">
+               [style.width.px]="columnControl.width" tabindex="0"
+               (focus)="onCellFocus($event)">
             <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
                          [ngTemplateOutletContext]="{item: item}"></ng-template>
-            <div class="_col-indicator"></div>
           </div>
         </div>
       </div>
@@ -98,14 +99,21 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         display: inline-block;
         height: 24px;
         vertical-align: top;
+
+        &:focus {
+          outline: none;
+        }
       }
 
       ._head ._col {
         background: theme-color(bluegrey, darkest);
         text-align: center;
         padding: gap(xs) gap(sm);
+        border-top: 1px solid get($trans-color, default);
+        border-bottom: 1px solid get($trans-color, dark);
         border-right: 1px solid theme-color(bluegrey, darker);
-        border-bottom: 1px solid theme-color(bluegrey, darker);
+        /*
+        border-bottom: 1px solid theme-color(bluegrey, darker);*/
         /*margin-bottom: -1px;*/
       }
 
@@ -142,7 +150,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         text-align: center;
         padding: gap(xs);
       }
-      
+
       ._body ._col._first-col {
         border-right: 1px solid theme-color(bluegrey, darker);
         border-bottom: 1px solid theme-color(bluegrey, darker);
@@ -164,14 +172,15 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         /*overflow: hidden;*/
       }
 
+      /*
       ._col > ._col-indicator {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        outline: 1px solid transparent;
-        outline-offset: 3px;
+        outline: 2px solid transparent;
+        outline-offset: -1px;
         z-index: 3;
         pointer-events: none;
         transition: outline .1s linear;
@@ -183,10 +192,21 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
 
       ._col:focus > ._col-indicator {
         outline-color: theme-color(primary, default);
-      }
+      }*/
 
       &[sd-selectable=true] ._body ._first-col {
         cursor: pointer;
+      }
+
+      /deep/ > ._cell-indicator {
+        position: fixed;
+        top: 0;
+        left: 0;
+        border: 2px solid theme-color(primary, default);
+        opacity: 0;
+        z-index: 3;
+        pointer-events: none;
+        transition: .1s linear;
       }
     }
   `],
@@ -257,7 +277,8 @@ export class SdSheetControl implements DoCheck {
   private readonly _iterableDiffer: IterableDiffer<any>;
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
-                     private readonly _cdr: ChangeDetectorRef) {
+                     private readonly _cdr: ChangeDetectorRef,
+                     private readonly _elRef: ElementRef<HTMLElement>) {
     this._iterableDiffer = this._iterableDiffers.find([]).create(this.trackByItemFn);
   }
 
@@ -286,5 +307,37 @@ export class SdSheetControl implements DoCheck {
     const el = event.target as Element;
     this.headTop = el.scrollTop;
     this.fixedLeft = el.scrollLeft;
+  }
+
+  public onCellFocus(event: FocusEvent): void {
+    const indicator = document.createElement("div");
+    indicator.classList.add("_cell-indicator");
+
+    const cell = event.target as HTMLDivElement;
+    Object.assign(
+      indicator.style,
+      {
+        top: (cell.windowOffset.top - 2) + "px",
+        left: (cell.windowOffset.left - 2) + "px",
+        width: (cell.offsetWidth + 4 - 1) + "px",
+        height: (cell.offsetHeight + 4 - 1) + "px"
+      }
+    );
+
+    this._elRef.nativeElement.appendChild(indicator);
+
+    // force a repaint
+    indicator.offsetWidth; //tslint:disable-line:no-unused-expression
+
+    indicator.style.opacity = "1";
+
+    const blurFn = () => {
+      cell.removeEventListener("blur", blurFn);
+      indicator.style.opacity = "0";
+      indicator.addEventListener("transitionend", () => {
+        indicator.remove();
+      });
+    };
+    cell.addEventListener("blur", blurFn);
   }
 }
