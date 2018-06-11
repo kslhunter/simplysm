@@ -12,10 +12,16 @@ const iconNames = Object.values(fas).map(item => item.iconName);
 @Component({
   selector: "sd-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: ``,
+  template: `
+    <div [innerHTML]="innerHTML"></div>`,
   styles: [/* language=SCSS */ `
     :host {
       display: inline-block;
+
+      > div {
+        display: inline-block;
+        pointer-events: none;
+      }
 
       &[sd-fixed-width=true] {
         width: 1.25em;
@@ -46,7 +52,6 @@ export class SdIconControl implements ISdNotifyPropertyChange, OnInit {
   @SdNotifyPropertyChange()
   public type = "solid";
 
-  @HostBinding("innerHTML")
   public innerHTML?: SafeHtml;
 
   public constructor(private readonly _sanitizer: DomSanitizer) {

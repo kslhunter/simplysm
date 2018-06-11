@@ -254,6 +254,14 @@ export class SdSheetControl implements DoCheck {
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _elRef: ElementRef<HTMLElement>) {
     this._iterableDiffer = this._iterableDiffers.find([]).create(this.trackByItemFn);
+
+    this._elRef.nativeElement.addEventListener(
+      "focus",
+      (event: Event) => {
+        this.selectRow(event.target as HTMLElement);
+      },
+      true
+    );
   }
 
   public ngDoCheck(): void {
@@ -262,17 +270,30 @@ export class SdSheetControl implements DoCheck {
     }
   }
 
-  public onFirstColClick(event: MouseEvent): void {
+  public selectRow(targetEl: Element): void {
     if (!this.selectable) return;
 
-    const targetEl = event.target as Element;
-    const rowEl = targetEl.findParent("._row")!;
-    const bodyEl = rowEl.parentElement as Element;
-    const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-    const selectedItem = this.items![rowIndex];
-    if (this.selectedItem !== selectedItem) {
-      this.selectedItem = this.items![rowIndex];
-      this.selectedItemChange.emit(this.selectedItem);
+    const rowEl = targetEl.findParent("._row");
+    if (rowEl) {
+      const bodyEl = rowEl.parentElement as Element;
+      const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+      const selectedItem = this.items![rowIndex];
+      if (this.selectedItem !== selectedItem) {
+        this.selectedItem = this.items![rowIndex];
+        this.selectedItemChange.emit(this.selectedItem);
+      }
+    }
+  }
+
+  public onFirstColClick(event: Event): void {
+    if (this.selectedItem) {
+      if (this.selectedItem !== undefined) {
+        this.selectedItem = undefined;
+        this.selectedItemChange.emit(undefined);
+      }
+    }
+    else {
+      this.selectRow(event.target as Element);
     }
   }
 

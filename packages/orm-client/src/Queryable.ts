@@ -290,6 +290,12 @@ export class Queryable<TTable> {
     return result;
   }
 
+  public distinct(): Queryable<TTable> {
+    const result = this._clone();
+    result._queryObj.distinct = true;
+    return result;
+  }
+
   public select<C extends { [key: string]: any }>(cols: (item: TTable) => C): Queryable<TypeOfGeneric<C>> {
     let result = this._clone();
 

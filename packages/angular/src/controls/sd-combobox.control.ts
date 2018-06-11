@@ -46,6 +46,10 @@ import {SdComboboxItemControl} from "./sd-combobox-item.control";
       pointer-events: none;
       background: theme-color(bluegrey, darkest);
       min-width: 120px;
+
+      &:focus {
+        outline: 1px solid theme-color(primary, default);
+      }
     }
   `]
 })
