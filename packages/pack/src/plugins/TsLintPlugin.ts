@@ -8,7 +8,12 @@ export class TsLintPlugin implements webpack.Plugin {
   private readonly _startTime = Date.now();
   private _prevTimestamps = new Map<string, number>();
 
-  public constructor(private readonly _options: { tsConfigPath?: string; packageName: string; logger: Logger }) {
+  public constructor(private readonly _options: {
+    tsConfigPath?: string;
+    packageName: string;
+    logger: Logger;
+    projectPath?: string;
+  }) {
   }
 
   public apply(compiler: webpack.Compiler): void {
@@ -50,8 +55,8 @@ export class TsLintPlugin implements webpack.Plugin {
   }
 
   private _loadersPath(...args: string[]): string {
-    return fs.existsSync(path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders"))
-      ? path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders", ...args)
+    return fs.existsSync(path.resolve(this._options.projectPath || process.cwd(), "node_modules/@simplism/pack/loaders"))
+      ? path.resolve(this._options.projectPath || process.cwd(), "node_modules/@simplism/pack/loaders", ...args)
       : path.resolve(__dirname, "../../loaders", ...args);
   }
 }

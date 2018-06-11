@@ -86,8 +86,6 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         top: 0;
         left: 0;
         white-space: nowrap;
-        /*min-width: 100%;
-        border-bottom: 1px solid get($theme-color, bluegrey, darkest);*/
       }
 
       ._col-group {
@@ -112,21 +110,20 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         border-top: 1px solid get($trans-color, default);
         border-bottom: 1px solid get($trans-color, dark);
         border-right: 1px solid theme-color(bluegrey, darker);
-        /*
-        border-bottom: 1px solid theme-color(bluegrey, darker);*/
-        /*margin-bottom: -1px;*/
       }
 
       ._body ._col {
         background: black;
-        border-right: 1px solid theme-color(bluegrey, darkest);
-        border-bottom: 1px solid theme-color(bluegrey, darkest);
+        border-right: 1px solid theme-color(bluegrey, darker);
+        border-bottom: 1px solid theme-color(bluegrey, darker);
 
         /deep/ sd-textfield > input {
           border: none;
           padding: gap(xs) gap(sm);
 
-          &[type=date] {
+          &[type=date],
+          &[type=datetime],
+          &[type="datetime-local"] {
             padding: gap(xs) - 2 gap(sm) gap(xs) - 1 gap(sm);
           }
         }
@@ -169,30 +166,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
 
       ._row {
         position: relative;
-        /*overflow: hidden;*/
       }
-
-      /*
-      ._col > ._col-indicator {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        outline: 2px solid transparent;
-        outline-offset: -1px;
-        z-index: 3;
-        pointer-events: none;
-        transition: outline .1s linear;
-      }
-
-      ._col:focus {
-        outline: none;
-      }
-
-      ._col:focus > ._col-indicator {
-        outline-color: theme-color(primary, default);
-      }*/
 
       &[sd-selectable=true] ._body ._first-col {
         cursor: pointer;

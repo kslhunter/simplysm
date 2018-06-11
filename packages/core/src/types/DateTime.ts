@@ -3,7 +3,7 @@ import {DateOnly} from "./DateOnly";
 import {Time} from "./Time";
 
 export class DateTime {
-  private readonly _date: Date;
+  public date: Date;
 
   public constructor();
   public constructor(tick: number);
@@ -11,16 +11,16 @@ export class DateTime {
   public constructor(date: Date);
   public constructor(args1?: number | Date, args2?: number, args3?: number, args4?: number, args5?: number, args6?: number, args7?: number) {
     if (args1 === undefined) {
-      this._date = new Date(new Date().getTime());
+      this.date = new Date(new Date().getTime());
     }
     else if (typeof args1 === "number" && args2 === undefined) {
-      this._date = new Date(args1);
+      this.date = new Date(args1);
     }
     else if (typeof args1 === "number" && args2 !== undefined) {
-      this._date = new Date(args1, args2 - 1, args3, args4, args5, args6, args7);
+      this.date = new Date(args1, args2 - 1, args3, args4, args5, args6, args7);
     }
     else if (args1 instanceof Date) {
-      this._date = new Date(args1.getTime());
+      this.date = new Date(args1.getTime());
     }
     else {
       throw new InvalidArgumentsException({args: [args1, args2, args3, args4, args5, args6, args7]});
@@ -32,79 +32,93 @@ export class DateTime {
     if (typeof parsedTick === "number") {
       return new DateTime(parsedTick);
     }
+
+    /*if (/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}\+[0-9]{2}:[0-9]{2}/.test(value)) {
+      const matches = value.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}\+[0-9]{2}:[0-9]{2}/);
+      return new DateTime(
+        Number(matches![1]),
+        Number(matches![2]),
+        Number(matches![3]),
+        Number(matches![4]) + Number(matches![8]),
+        Number(matches![5]) + Number(matches![9]),
+        Number(matches![6]),
+        Number(matches![7])
+      );
+    }*/
+
     throw new InvalidArgumentsException({value});
   }
 
   public get timezoneOffset(): number {
-    return this._date.getTimezoneOffset();
+    return this.date.getTimezoneOffset();
   }
 
   public get year(): number {
-    return this._date.getFullYear();
+    return this.date.getFullYear();
   }
 
   public set year(year: number) {
-    this._date.setFullYear(year);
+    this.date.setFullYear(year);
   }
 
   public get month(): number {
-    return this._date.getMonth() + 1;
+    return this.date.getMonth() + 1;
   }
 
   public set month(month: number) {
-    this._date.setMonth(month - 1);
+    this.date.setMonth(month - 1);
   }
 
   public get day(): number {
-    return this._date.getDate();
+    return this.date.getDate();
   }
 
   public set day(day: number) {
-    this._date.setMonth(day - 1);
+    this.date.setMonth(day - 1);
   }
 
   public get week(): number {
-    return this._date.getDay();
+    return this.date.getDay();
   }
 
   public get hour(): number {
-    return this._date.getHours();
+    return this.date.getHours();
   }
 
   public set hour(hour: number) {
-    this._date.setHours(hour);
+    this.date.setHours(hour);
   }
 
   public get minute(): number {
-    return this._date.getMinutes();
+    return this.date.getMinutes();
   }
 
   public set minute(minute: number) {
-    this._date.setMinutes(minute);
+    this.date.setMinutes(minute);
   }
 
   public get second(): number {
-    return this._date.getSeconds();
+    return this.date.getSeconds();
   }
 
   public set second(second: number) {
-    this._date.setSeconds(second);
+    this.date.setSeconds(second);
   }
 
   public get millisecond(): number {
-    return this._date.getMilliseconds();
+    return this.date.getMilliseconds();
   }
 
   public set millisecond(millisecond: number) {
-    this._date.setMilliseconds(millisecond);
+    this.date.setMilliseconds(millisecond);
   }
 
   public get tick(): number {
-    return this._date.getTime();
+    return this.date.getTime();
   }
 
   public set tick(tick: number) {
-    this._date.setTime(tick);
+    this.date.setTime(tick);
   }
 
   public setYear(year: number): DateTime {
@@ -164,11 +178,11 @@ export class DateTime {
   }
 
   public toDateOnly(): DateOnly {
-    return new DateOnly(this._date);
+    return new DateOnly(this.date);
   }
 
   public toTime(): Time {
-    return new Time(this._date);
+    return new Time(this.date);
   }
 
   public toFormatString(format: string): string {

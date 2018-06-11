@@ -1,3 +1,4 @@
+const loaderUtils = require("loader-utils");
 const ts = require("typescript");
 const path = require("path");
 const fs = require("fs-extra");
@@ -7,10 +8,12 @@ function loader(content) {
     this.cacheable();
   }
 
+  const options = loaderUtils.getOptions(this) || {};
+
   const resourcePath = this.resourcePath.replace(/\\/g, "/");
 
   const resourceDirPath = path.dirname(resourcePath);
-  const configPath = ts.findConfigFile(resourceDirPath, ts.sys.fileExists, "tsconfig.json");
+  const configPath = options.tsConfigPath || ts.findConfigFile(resourceDirPath, ts.sys.fileExists, "tsconfig.json");
   const contextPath = path.dirname(configPath).replace(/\\/g, "/");
 
   const parsedConfig = ts.parseJsonConfigFileContent(fs.readJsonSync(configPath), ts.sys, path.dirname(configPath));

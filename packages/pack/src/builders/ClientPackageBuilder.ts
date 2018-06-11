@@ -184,7 +184,8 @@ export class ClientPackageBuilder {
             exclude: /node_modules/,
             loader: this._loadersPath("ts-transpile-loader.js"),
             options: {
-              logger: this._logger
+              logger: this._logger,
+              tsConfigPath: this._packagePath("tsconfig.spec.json")
             }
           },
           {
@@ -202,6 +203,18 @@ export class ClientPackageBuilder {
         ]
       },
       plugins: [
+        new TsCheckAndDeclarationPlugin({
+          tsConfigPath: this._packagePath("tsconfig.spec.json"),
+          packageName: this._config.name,
+          logger: this._logger,
+          projectPath: this._projectPath()
+        }),
+        new TsLintPlugin({
+          tsConfigPath: this._packagePath("tsconfig.spec.json"),
+          packageName: this._config.name,
+          logger: this._logger,
+          projectPath: this._projectPath()
+        }),
         new webpack.ContextReplacementPlugin(
           /angular[\\/]core[\\/]fesm5/,
           this._packagePath("src"),

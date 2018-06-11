@@ -1,15 +1,15 @@
 import {Component, ElementRef, EventEmitter, Input, Output, ViewChild} from "@angular/core";
 import {SdTypeValidate} from "../decorators/SdTypeValidate";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorators/SdNotifyPropertyChange";
-import {DateOnly} from "@simplism/core";
+import {DateOnly, DateTime} from "@simplism/core";
 
 @Component({
   selector: "sd-textfield",
   template: `
     <input #input
-           [type]="type"
+           [type]="type === 'datetime' ? 'datetime-local' : type"
            [required]="required"
-           [value]="value == undefined ? '' : value"
+           [value]="controlValue"
            [placeholder]="placeholder || ''"
            [min]="min"
            (input)="onInputInput($event)"
@@ -63,10 +63,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate({
     type: String,
-    validator: value => ["number", "text", "password", "date"].includes(value),
+    validator: value => ["number", "text", "password", "date", "datetime"].includes(value),
     notnull: true
   })
-  public type: "number" | "text" | "password" | "date" = "text";
+  public type: "number" | "text" | "password" | "date" | "datetime" = "text";
 
   @Input()
   @SdTypeValidate(String)
@@ -77,11 +77,11 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   public required?: boolean;
 
   @Input()
-  @SdTypeValidate([Number, String, DateOnly])
-  public value?: number | string | DateOnly;
+  @SdTypeValidate([Number, String, DateOnly, DateTime])
+  public value?: number | string | DateOnly | DateTime;
 
   @Output()
-  public readonly valueChange = new EventEmitter<string | number | DateOnly | undefined>();
+  public readonly valueChange = new EventEmitter<string | number | DateOnly | DateTime | undefined>();
 
   @Input()
   @SdTypeValidate({type: Boolean, notnull: true})
@@ -102,6 +102,13 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @ViewChild("input")
   public inputElRef?: ElementRef<HTMLInputElement>;
 
+  public get controlValue(): number | string {
+    return this.value === undefined ? ""
+      : this.value instanceof DateTime ? this.value.toFormatString("yyyy-MM-ddTHH:mm")
+        : this.value instanceof DateOnly ? this.value.toString()
+          : this.value;
+  }
+
   public onInputInput(event: Event): void {
     const inputEl = event.target as HTMLInputElement;
     if (this.type === "number") {
@@ -109,6 +116,9 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
     }
     else if (this.type === "date") {
       this.value = DateOnly.parse(inputEl.value);
+    }
+    else if (this.type === "datetime") {
+      this.value = DateTime.parse(inputEl.value);
     }
     else {
       this.value = inputEl.value;

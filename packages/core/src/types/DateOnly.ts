@@ -1,7 +1,7 @@
 import {InvalidArgumentsException} from "../exceptions/InvalidArgumentsException";
 
 export class DateOnly {
-  private readonly _date: Date;
+  public date: Date;
 
   public constructor();
   public constructor(tick: number);
@@ -10,17 +10,17 @@ export class DateOnly {
   public constructor(args1?: number | Date, args2?: number, args3?: number) {
     if (args1 === undefined) {
       const now = new Date();
-      this._date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      this.date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     }
     else if (typeof args1 === "number" && args2 === undefined) {
       const date = new Date(args1);
-      this._date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      this.date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     }
     else if (typeof args1 === "number" && args2 !== undefined) {
-      this._date = new Date(args1, args2, args3);
+      this.date = new Date(args1, args2, args3);
     }
     else if (args1 instanceof Date) {
-      this._date = new Date(args1.getFullYear(), args1.getMonth(), args1.getDate());
+      this.date = new Date(args1.getFullYear(), args1.getMonth(), args1.getDate());
     }
     else {
       throw new InvalidArgumentsException({args: [args1, args2, args3]});
@@ -36,35 +36,35 @@ export class DateOnly {
   }
 
   public get year(): number {
-    return this._date.getFullYear();
+    return this.date.getFullYear();
   }
 
   public set year(year: number) {
-    this._date.setFullYear(year);
+    this.date.setFullYear(year);
   }
 
   public get month(): number {
-    return this._date.getMonth() + 1;
+    return this.date.getMonth() + 1;
   }
 
   public set month(month: number) {
-    this._date.setMonth(month - 1);
+    this.date.setMonth(month - 1);
   }
 
   public get day(): number {
-    return this._date.getDate();
+    return this.date.getDate();
   }
 
   public set day(day: number) {
-    this._date.setMonth(day - 1);
+    this.date.setMonth(day - 1);
   }
 
   public get week(): number {
-    return this._date.getDay();
+    return this.date.getDay();
   }
 
   public get tick(): number {
-    return this._date.getTime();
+    return this.date.getTime();
   }
 
   public setYear(year: number): DateOnly {

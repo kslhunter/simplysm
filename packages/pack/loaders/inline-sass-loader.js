@@ -9,7 +9,7 @@ module.exports = function (content, sourceMap) {
 
   const options = loaderUtils.getOptions(this) || {};
 
-  const scssRegex = /\/\* *language=SCSS *\*\/ *[`"'](((?!['"`][\]\r\n,])(.|\r|\n))*)['"`]/;
+  const scssRegex = /\/\* *language=SCSS *\*\/ *[`"'](((?!['"`][\],],?[\r\n\\])(.|\r|\n))*)['"`]/;
 
   let newContent = content;
   const matches = content.match(new RegExp(scssRegex, "gi"));

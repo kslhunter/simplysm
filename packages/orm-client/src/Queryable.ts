@@ -7,29 +7,35 @@ import {sorm} from "./sorm";
 
 export type TypeOfGeneric<C extends { [key: string]: any }> = {[K in keyof C]: C[K] extends QueryUnit<any>  ? C[K]["_generic"]  : C[K]};
 
+export interface IQueryObj {
+  top: number | undefined;
+  select: { [key: string]: any };
+  join: {
+    isMulti: boolean;
+    as: string;
+    queryable: Queryable<any>;
+  }[];
+  where: string[];
+  having: string[];
+  limit: [number, number] | undefined;
+  orderBy: [string, "ASC" | "DEC"][];
+  groupBy: string[];
+  distinct: boolean;
+  from: Queryable<any> | undefined;
+}
+
 export class Queryable<TTable> {
-  private _queryObj: {
-    top: number | undefined;
-    select: object;
-    join: {
-      isMulti: boolean;
-      as: string;
-      queryable: Queryable<any>;
-    }[];
-    where: string[];
-    limit: [number, number] | undefined;
-    orderBy: [string, "ASC" | "DEC"][];
-    groupBy: string[];
-    distinct: boolean;
-  } = {
+  private _queryObj: IQueryObj = {
     top: undefined,
     select: {},
     join: [],
     where: [],
+    having: [],
     limit: undefined,
     orderBy: [],
     groupBy: [],
-    distinct: false
+    distinct: false,
+    from: undefined
   };
 
   public get query(): string {
@@ -48,7 +54,14 @@ export class Queryable<TTable> {
 
     q += Object.keys(this._queryObj.select).map(key => `  ${helpers.query(this._queryObj.select[key])} as [${key}]`).join(",\r\n") + "\r\n";
 
-    q += `FROM ${helpers.tableKey(tableDef)} as ${helpers.key("TBL")}\r\n`;
+    if (this._queryObj.from) {
+      q += `FROM (\r\n`;
+      q += "  " + this._queryObj.from.query.replace(/\r\n/g, "  \r\n").trim() + "\r\n";
+      q += `) as ${helpers.key("TBL")}\r\n`;
+    }
+    else {
+      q += `FROM ${helpers.tableKey(tableDef)} as ${helpers.key("TBL")}\r\n`;
+    }
 
     for (const join of this._queryObj.join) {
       const targetTableDef = core.Reflect.getMetadata(modelDefMetadataKey, join.queryable.tableType);
@@ -61,6 +74,10 @@ export class Queryable<TTable> {
 
     if (this._queryObj.groupBy.length > 0) {
       q += `GROUP BY ${this._queryObj.groupBy.join(", ")}\r\n`;
+    }
+
+    if (this._queryObj.having.length > 0) {
+      q += `HAVING ${this._queryObj.having.map(item => `(${item})`).join(" AND ")}\r\n`;
     }
 
     if (this._queryObj.limit) {
@@ -211,9 +228,26 @@ export class Queryable<TTable> {
     throw new Error(prevTableDef.name + "의 FK/FKT 설정이 잘못되었습니다.");
   }
 
+  public groupBy(keys: ((item: TTable) => any[]) | (string[])): Queryable<TTable> {
+    const result = this._clone();
+    if (typeof keys === "function") {
+      result._queryObj.groupBy = keys(this._entity).map(item => helpers.query(item));
+    }
+    else {
+      result._queryObj.groupBy = keys;
+    }
+    return result;
+  }
+
   public where(predicate: (item: TTable) => QueryUnit<Boolean>[]): Queryable<TTable> {
     const result = this._clone();
     result._queryObj.where = result._queryObj.where.concat(predicate(this._entity).map(item => item.query));
+    return result;
+  }
+
+  public having(predicate: (item: TTable) => QueryUnit<Boolean>[]): Queryable<TTable> {
+    const result = this._clone();
+    result._queryObj.having = result._queryObj.having.concat(predicate(this._entity).map(item => item.query));
     return result;
   }
 
@@ -287,26 +321,22 @@ export class Queryable<TTable> {
 
     makeSelect([], cols(this._entity));
 
-    const groupedKeys: string[] = [];
-    Object.keys(result._queryObj.select).filter(key => {
-      const item = result._queryObj.select[key];
-      if (item instanceof QueryUnit && (item.query.includes("SUM") || item.query.includes("MAX") || item.query.includes("MIN"))) {
-        groupedKeys.push(key);
-      }
-    });
+    if (this._queryObj.groupBy.length < 1) {
+      const groupedKeys: string[] = [];
+      Object.keys(result._queryObj.select).filter(key => {
+        const item = result._queryObj.select[key];
+        if (item instanceof QueryUnit && (item.query.includes("SUM") || item.query.includes("MAX") || item.query.includes("MIN"))) {
+          groupedKeys.push(key);
+        }
+      });
 
-    if (groupedKeys.length > 0) {
-      const nonGroupedKeys = Object.keys(result._queryObj.select).filter(key => !groupedKeys.includes(key));
-      result = result._groupBy(nonGroupedKeys.map(key => result._queryObj.select[key] && helpers.query(result._queryObj.select[key])).filterExists());
+      if (groupedKeys.length > 0) {
+        const nonGroupedKeys = Object.keys(result._queryObj.select).filter(key => !groupedKeys.includes(key));
+        result = result.groupBy(nonGroupedKeys.map(key => result._queryObj.select[key] && helpers.query(result._queryObj.select[key])).filterExists());
+      }
     }
 
     return result as Queryable<any>;
-  }
-
-  private _groupBy(keys: string[]): Queryable<TTable> {
-    const result = this._clone();
-    result._queryObj.groupBy = keys;
-    return result;
   }
 
   public async existsAsync(): Promise<boolean> {
@@ -317,7 +347,9 @@ export class Queryable<TTable> {
 
   public async countAsync(): Promise<number> {
     return (await this
-      .select(() => ({cnt: new QueryUnit(Number, "COUNT(*)")}))
+      .select(() => ({cnt: new QueryUnit<number>(Number as any, "COUNT(*)")}))
+      .wrap()
+      .select(item => ({cnt: sorm.ifNull(sorm.sum(item.cnt), 0)}))
       .singleAsync())!.cnt as number;
   }
 
@@ -560,8 +592,21 @@ export class Queryable<TTable> {
 
   private _clone(): Queryable<TTable> {
     const result = new Queryable<TTable>(this._dbConnection, this.tableType);
-    result._queryObj = Object.clone(this._queryObj, {excludeProps: ["join"]});
+    result._queryObj = Object.clone(this._queryObj, {excludeProps: ["join", "from"]});
     result._queryObj.join = [...this._queryObj.join];
+    result._queryObj.from = this._queryObj.from;
+    return result;
+  }
+
+  private wrap(): Queryable<TTable> {
+    const result = new Queryable<TTable>(this._dbConnection, this.tableType);
+    result._queryObj.from = this._clone();
+
+    const newSelect = {};
+    for (const key of Object.keys(this._queryObj.select)) {
+      newSelect[key] = new QueryUnit(this._queryObj.select[key].type || this._queryObj.select[key].constructor, `[TBL].[${key}]`);
+      result._queryObj.select = newSelect;
+    }
     return result;
   }
 

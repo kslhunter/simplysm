@@ -30,6 +30,10 @@ export const sorm = {
     return new QueryUnit(Boolean, helpers.query(source) + " = " + helpers.query(target));
   },
 
+  lessThen(source: number | QueryUnit<number>, target: number | QueryUnit<number>): QueryUnit<Boolean> {
+    return new QueryUnit(Boolean, helpers.query(source) + " < " + helpers.query(target));
+  },
+
   includes(source: string | QueryUnit<string>, target: string | QueryUnit<string>): QueryUnit<Boolean> {
     return new QueryUnit(Boolean, helpers.query(source) + " LIKE '%' + " + helpers.query(target) + " + '%'");
   },

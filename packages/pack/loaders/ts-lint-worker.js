@@ -5,8 +5,17 @@ const packageName = process.argv[2];
 const watch = process.argv[3] === "watch";
 const tsConfigPath = process.argv[4];
 
-const tsconfigFile = tsConfigPath || path.resolve(process.cwd(), "packages", packageName, "tsconfig.json");
-const configFile = path.resolve(process.cwd(), "packages", packageName, "tslint.json");
+let projectPath = "";
+let split = process.cwd().split(/[\\/]/);
+if (split[split.length - 1] === packageName) {
+  projectPath = path.resolve(process.cwd(), "../..");
+}
+else {
+  projectPath = process.cwd()
+}
+
+const tsconfigFile = tsConfigPath || path.resolve(projectPath, "packages", packageName, "tsconfig.json");
+const configFile = path.resolve(projectPath, "packages", packageName, "tslint.json");
 
 process.on("message", (changedFiles) => {
   const program = tslint.Linter.createProgram(tsconfigFile, path.dirname(tsconfigFile));

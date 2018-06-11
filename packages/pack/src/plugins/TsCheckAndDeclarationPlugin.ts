@@ -5,7 +5,13 @@ import {Logger} from "@simplism/core";
 import * as child_process from "child_process";
 
 export class TsCheckAndDeclarationPlugin implements webpack.Plugin {
-  public constructor(private readonly _options: { tsConfigPath?: string; packageName: string; logger: Logger }) {
+  public constructor(private readonly _options: {
+    tsConfigPath?: string;
+    packageName: string;
+    logger: Logger;
+    projectPath?: string;
+  }) {
+
   }
 
   public apply(compiler: webpack.Compiler): void {
@@ -48,8 +54,8 @@ export class TsCheckAndDeclarationPlugin implements webpack.Plugin {
   }
 
   private _loadersPath(...args: string[]): string {
-    return fs.existsSync(path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders"))
-      ? path.resolve(process.cwd(), "node_modules/@simplism/pack/loaders", ...args)
+    return fs.existsSync(path.resolve(this._options.projectPath || process.cwd(), "node_modules/@simplism/pack/loaders"))
+      ? path.resolve(this._options.projectPath || process.cwd(), "node_modules/@simplism/pack/loaders", ...args)
       : path.resolve(__dirname, "../../loaders", ...args);
   }
 }
