@@ -8,7 +8,7 @@ import {IClientPackageConfig, ILibraryPackageConfig, IProjectConfig} from "../co
 import {ServerPackageBuilder} from "../builders/ServerPackageBuilder";
 import {ClientPackageBuilder} from "../builders/ClientPackageBuilder";
 
-export async function publishAsync(argv: { config: string }): Promise<void> {
+export async function publishAsync(argv: { config: string; package: string }): Promise<void> {
   const packageConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
   const newVersion = semver.inc(packageConfig.version, "patch")!;
   child_process.spawnSync("yarn", ["version", "--new-version", newVersion], {
@@ -21,16 +21,20 @@ export async function publishAsync(argv: { config: string }): Promise<void> {
 
   const promiseList: Promise<void>[] = [];
   for (const config of projectConfig.packages.filter(item => item.type === "library")) {
-    promiseList.push(new LibraryPackageBuilder(config as ILibraryPackageConfig).publishAsync());
+    if (!argv.package || argv.package.split(",").includes(config.name)) {
+      promiseList.push(new LibraryPackageBuilder(config as ILibraryPackageConfig).publishAsync());
+    }
   }
   await Promise.all(promiseList);
 
   for (const config of projectConfig.packages.filter(item => item.type !== "library")) {
-    if (config.type === "server") {
-      await new ServerPackageBuilder(config).publishAsync();
-    }
-    else {
-      await new ClientPackageBuilder(config as IClientPackageConfig).publishAsync();
+    if (!argv.package || argv.package.split(",").includes(config.name)) {
+      if (config.type === "server") {
+        await new ServerPackageBuilder(config).publishAsync();
+      }
+      else {
+        await new ClientPackageBuilder(config as IClientPackageConfig).publishAsync();
+      }
     }
   }
 }

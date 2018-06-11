@@ -16,6 +16,10 @@ import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugi
 export class ClientPackageBuilder {
   private readonly _logger = new Logger("@simplism/pack", `ClientPackageBuilder`, `${this._config.name}:`);
 
+  private get _packageName(): string {
+    return this._config.name.includes(":") ? this._config.name.slice(0, this._config.name.indexOf(":")) : this._config.name;
+  }
+
   public constructor(private readonly _config: IClientPackageConfig) {
   }
 
@@ -31,7 +35,7 @@ export class ClientPackageBuilder {
           entry: this._packagePath("src/main.ts"),
           output: {
             path: this._packagePath((tsconfig.compilerOptions && tsconfig.compilerOptions.outDir) || "dist"),
-            publicPath: `/${this._config.name}/`,
+            publicPath: `/${this._packageName}/`,
             filename: "app.js",
             chunkFilename: "[name].chunk.js"
           },
@@ -42,7 +46,7 @@ export class ClientPackageBuilder {
           plugins: [
             new HtmlWebpackPlugin({
               template: this._packagePath("src/index.ejs"),
-              BASE_HREF: `/${this._config.name}/`
+              BASE_HREF: `/${this._packageName}/`
             })
           ]
         });
@@ -205,13 +209,13 @@ export class ClientPackageBuilder {
       plugins: [
         new TsCheckAndDeclarationPlugin({
           tsConfigPath: this._packagePath("tsconfig.spec.json"),
-          packageName: this._config.name,
+          packageName: this._packageName,
           logger: this._logger,
           projectPath: this._projectPath()
         }),
         new TsLintPlugin({
           tsConfigPath: this._packagePath("tsconfig.spec.json"),
-          packageName: this._config.name,
+          packageName: this._packageName,
           logger: this._logger,
           projectPath: this._projectPath()
         }),
@@ -221,7 +225,7 @@ export class ClientPackageBuilder {
           {}
         ),
         new FriendlyLoggerPlugin({
-          packageName: this._config.name,
+          packageName: this._packageName,
           logger: this._logger
         }),
         new webpack.DefinePlugin({
@@ -290,12 +294,12 @@ export class ClientPackageBuilder {
       plugins: [
         new TsCheckAndDeclarationPlugin({
           tsConfigPath: this._packagePath("tsconfig.app.json"),
-          packageName: this._config.name,
+          packageName: this._packageName,
           logger: this._logger
         }),
         new TsLintPlugin({
           tsConfigPath: this._packagePath("tsconfig.app.json"),
-          packageName: this._config.name,
+          packageName: this._packageName,
           logger: this._logger
         }),
         new webpack.ContextReplacementPlugin(
@@ -304,7 +308,7 @@ export class ClientPackageBuilder {
           {}
         ),
         new FriendlyLoggerPlugin({
-          packageName: this._config.name,
+          packageName: this._packageName,
           logger: this._logger
         }),
         new CopyWebpackPlugin([
@@ -355,13 +359,13 @@ export class ClientPackageBuilder {
 
   private _projectPath(...args: string[]): string {
     const split = process.cwd().split(/[\\/]/);
-    if (split[split.length - 1] === this._config.name) {
+    if (split[split.length - 1] === this._packageName) {
       return path.resolve(process.cwd(), "../..", ...args);
     }
     return path.resolve(process.cwd(), ...args);
   }
 
   private _packagePath(...args: string[]): string {
-    return this._projectPath(`packages/${this._config.name}`, ...args);
+    return this._projectPath(`packages/${this._packageName}`, ...args);
   }
 }

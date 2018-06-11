@@ -14,6 +14,10 @@ import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugi
 export class ServerPackageBuilder {
   private readonly _logger = new Logger("@simplism/pack", `ServerPackageBuilder`, `${this._config.name}:`);
 
+  private get _packageName(): string {
+    return this._config.name.includes(":") ? this._config.name.slice(0, this._config.name.indexOf(":")) : this._config.name;
+  }
+
   public constructor(private readonly _config: IServerPackageConfig) {
   }
 
@@ -188,15 +192,15 @@ export class ServerPackageBuilder {
       },
       plugins: [
         new TsCheckAndDeclarationPlugin({
-          packageName: this._config.name,
+          packageName: this._packageName,
           logger: this._logger
         }),
         new TsLintPlugin({
-          packageName: this._config.name,
+          packageName: this._packageName,
           logger: this._logger
         }),
         new FriendlyLoggerPlugin({
-          packageName: this._config.name,
+          packageName: this._packageName,
           logger: this._logger
         }),
         new webpack.DefinePlugin({
@@ -227,6 +231,6 @@ export class ServerPackageBuilder {
   }
 
   private _packagePath(...args: string[]): string {
-    return path.resolve(process.cwd(), `packages/${this._config.name}`, ...args);
+    return path.resolve(process.cwd(), `packages/${this._packageName}`, ...args);
   }
 }

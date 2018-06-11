@@ -13,6 +13,10 @@ import {TsLintPlugin} from "../plugins/TsLintPlugin";
 export class LibraryPackageBuilder {
   private readonly _logger: Logger;
 
+  private get _packageName(): string {
+    return this._config.name.includes(":") ? this._config.name.slice(0, this._config.name.indexOf(":")) : this._config.name;
+  }
+
   public constructor(private readonly _config: ILibraryPackageConfig) {
     this._logger = new Logger("@simplism/pack", `LibraryPackageBuilder`, `${this._config.name}:`);
   }
@@ -177,15 +181,15 @@ export class LibraryPackageBuilder {
       },
       plugins: [
         new TsCheckAndDeclarationPlugin({
-          packageName: this._config.name,
+          packageName: this._packageName,
           logger: this._logger
         }),
         new TsLintPlugin({
-          packageName: this._config.name,
+          packageName: this._packageName,
           logger: this._logger
         }),
         new FriendlyLoggerPlugin({
-          packageName: this._config.name,
+          packageName: this._packageName,
           logger: this._logger
         }),
         ...(packageJson.bin)
@@ -224,6 +228,6 @@ export class LibraryPackageBuilder {
   }
 
   private _packagePath(...args: string[]): string {
-    return path.resolve(process.cwd(), `packages/${this._config.name}`, ...args);
+    return path.resolve(process.cwd(), `packages/${this._packageName}`, ...args);
   }
 }

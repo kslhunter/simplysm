@@ -46,6 +46,10 @@ yargs
           type: "string",
           describe: "설정파일",
           default: "sd-pack.config.ts"
+        },
+        package: {
+          type: "string",
+          describe: "배포할 패키지를 설정합니다."
         }
       }),
     argv => publishAsync(argv as any).catch(err => console.error(err))

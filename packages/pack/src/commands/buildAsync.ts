@@ -13,7 +13,7 @@ import {Wait} from "@simplism/core";
 import {ServerPackageBuilder} from "../builders/ServerPackageBuilder";
 import {ClientPackageBuilder} from "../builders/ClientPackageBuilder";
 
-export async function buildAsync(argv: { watch: boolean; package: string; config: string }): Promise<void> {
+export async function buildAsync(argv: { watch: boolean; package?: string; config: string }): Promise<void> {
   const configJsContent = ts.transpile(fs.readFileSync(path.resolve(process.cwd(), argv.config), "utf-8"));
   const projectConfig: IProjectConfig = eval(configJsContent); // tslint:disable-line:no-eval
 
@@ -84,7 +84,9 @@ export async function buildAsync(argv: { watch: boolean; package: string; config
     }
   }
   else {
-    promiseList.push(runAsync(projectConfig.packages.single(item => item.name === argv.package)!));
+    for (const pack of argv.package.split(",")) {
+      promiseList.push(runAsync(projectConfig.packages.single(item => item.name === pack)!));
+    }
   }
 
   await Promise.all(promiseList);
