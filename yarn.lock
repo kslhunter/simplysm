@@ -3514,9 +3514,9 @@ node-sass@^4.9.0:
     stdout-stream "^1.4.0"
     "true-case-path" "^1.0.2"
 
-nodemailer@^4.6.5:
-  version "4.6.5"
-  resolved "http://210.180.118.73:4873/nodemailer/-/nodemailer-4.6.5.tgz#306ce18c4543f3f06e5f76665d3cb6277f872f53"
+nodemailer@^4.6.6:
+  version "4.6.6"
+  resolved "http://210.180.118.73:4873/nodemailer/-/nodemailer-4.6.6.tgz#9ba4be51ffa5da2b2dbc392b87e30bff7166e139"
 
 noop-logger@^0.1.1:
   version "0.1.1"

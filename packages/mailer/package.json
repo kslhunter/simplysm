@@ -1,6 +1,6 @@
 {
   "name": "@simplism/mailer",
-  "version": "7.1.37",
+  "version": "7.1.38",
   "description": "Simplism Mailer Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,9 +8,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "nodemailer": "^4.6.5"
+    "nodemailer": "^4.6.6"
   },
   "peerDependencies": {
-    "@simplism/core": "^7.1.37"
+    "@simplism/core": "^7.1.38"
   }
 }
