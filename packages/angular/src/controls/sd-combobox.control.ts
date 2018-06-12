@@ -25,6 +25,9 @@ import {SdComboboxItemControl} from "./sd-combobox-item.control";
                   [disabled]="disabled"
                   (focusedChange)="textfieldFocusedChange.emit($event)">
     </sd-textfield>
+    <div class="_icon">
+      <sd-icon [fixedWidth]="true" [icon]="'angle-down'"></sd-icon>
+    </div>
     <div #dropdown class="_sd-combobox-dropdown" tabindex="0">
       <ng-content></ng-content>
     </div> `,
@@ -34,6 +37,21 @@ import {SdComboboxItemControl} from "./sd-combobox-item.control";
     :host {
       display: block;
       overflow: visible;
+      position: relative;
+
+      > ._icon {
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        padding: gap(sm) 0;
+        width: 30px;
+        text-align: center;
+        pointer-events: none;
+      }
+
+      > sd-textfield /deep/ > input {
+        padding-right: 30px !important;
+      }
     }
 
     /deep/ ._sd-combobox-dropdown {

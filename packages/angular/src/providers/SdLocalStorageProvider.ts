@@ -12,7 +12,7 @@ export class SdLocalStorageProvider {
   public get(key: string): any {
     const json = localStorage.getItem(`${this.prefix}.${key}`);
     if (json === null) return undefined;
-    JsonConvert.parse(json);
+    return JsonConvert.parse(json);
   }
 
   public remove(key: string): void {

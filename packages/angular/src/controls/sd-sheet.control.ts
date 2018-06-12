@@ -11,12 +11,14 @@ import {
   Input,
   IterableDiffer,
   IterableDiffers,
+  OnInit,
   Output,
   QueryList
 } from "@angular/core";
 import {SdSheetColumnControl} from "./sd-sheet-column.control";
 import {SdTypeValidate} from "../decorators/SdTypeValidate";
 import {animate, state, style, transition, trigger} from "@angular/animations";
+import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
 
 @Component({
   selector: "sd-sheet",
@@ -24,16 +26,22 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
   template: `
     <div class="_content _head" [style.top.px]="headTop">
       <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
-        <div class="_col _first-col"></div>
+        <div class="_col _first-col">
+          <div class="_border"></div>
+        </div>
         <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
-             [style.width.px]="columnControl.width">
+             [style.width.px]="getWidth(columnControl)" [attr.col-index]="getIndex(columnControl)">
           {{ columnControl.header }}
+          <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
+               (mousedown)="onHeadBorderMousedown($event)"></div>
         </div>
       </div>
       <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
         <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
-             [style.width.px]="columnControl.width">
+             [style.width.px]="getWidth(columnControl)" [attr.col-index]="getIndex(columnControl)">
           {{ columnControl.header }}
+          <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
+               (mousedown)="onHeadBorderMousedown($event)"></div>
         </div>
       </div>
     </div>
@@ -46,7 +54,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
                      [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-bluegrey-darker': selectedItem !== item}"></sd-icon>
           </div>
           <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
-               [style.width.px]="columnControl.width" tabindex="0"
+               [style.width.px]="getWidth(columnControl)" tabindex="0"
                (focus)="onCellFocus($event)">
             <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
                          [ngTemplateOutletContext]="{item: item}"></ng-template>
@@ -54,7 +62,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         </div>
         <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
           <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
-               [style.width.px]="columnControl.width" tabindex="0"
+               [style.width.px]="getWidth(columnControl)" tabindex="0"
                (focus)="onCellFocus($event)">
             <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
                          [ngTemplateOutletContext]="{item: item}"></ng-template>
@@ -109,7 +117,16 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         padding: gap(xs) gap(sm);
         border-top: 1px solid get($trans-color, default);
         border-bottom: 1px solid get($trans-color, dark);
-        border-right: 1px solid theme-color(bluegrey, darker);
+        user-select: none;
+
+        > ._border {
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          width: 4px;
+          border-right: 1px solid theme-color(bluegrey, darker);
+        }
       }
 
       ._body ._col {
@@ -125,6 +142,19 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
           &[type=datetime],
           &[type="datetime-local"] {
             padding: gap(xs) - 2 gap(sm) gap(xs) - 1 gap(sm);
+          }
+        }
+
+        /deep/ sd-combobox {
+          > ._icon {
+            top: 0;
+            right: 0;
+            width: 24px;
+            padding: gap(xs) 0;
+          }
+
+          > sd-textfield > input {
+            padding-right: 24px;
           }
         }
 
@@ -146,11 +176,6 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
         width: 24px;
         text-align: center;
         padding: gap(xs);
-      }
-
-      ._body ._col._first-col {
-        border-right: 1px solid theme-color(bluegrey, darker);
-        border-bottom: 1px solid theme-color(bluegrey, darker);
       }
 
       ._body ._col._first-col {
@@ -192,7 +217,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
     ])
   ]
 })
-export class SdSheetControl implements DoCheck {
+export class SdSheetControl implements DoCheck, OnInit {
   @ContentChildren(SdSheetColumnControl)
   public columnControls?: QueryList<SdSheetColumnControl>;
 
@@ -217,6 +242,10 @@ export class SdSheetControl implements DoCheck {
 
   @Output()
   public readonly selectedItemChange = new EventEmitter<any>();
+
+  @Input()
+  @SdTypeValidate(String)
+  public id?: string;
 
   public get fixedColumnControls(): SdSheetColumnControl[] {
     return this.columnControls ? this.columnControls.filter(item => !!item.fixed) : [];
@@ -249,10 +278,16 @@ export class SdSheetControl implements DoCheck {
   }
 
   private readonly _iterableDiffer: IterableDiffer<any>;
+  private _columnConfigs: {
+    header?: string;
+    index: number;
+    width: number;
+  }[] = [];
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
-                     private readonly _elRef: ElementRef<HTMLElement>) {
+                     private readonly _elRef: ElementRef<HTMLElement>,
+                     private readonly _localStorage: SdLocalStorageProvider) {
     this._iterableDiffer = this._iterableDiffers.find([]).create(this.trackByItemFn);
 
     this._elRef.nativeElement.addEventListener(
@@ -264,10 +299,24 @@ export class SdSheetControl implements DoCheck {
     );
   }
 
+  public ngOnInit(): void {
+    this._loadColumnConfigs();
+  }
+
   public ngDoCheck(): void {
     if (this.items && this._iterableDiffer.diff(this.items)) {
       this._cdr.markForCheck();
     }
+  }
+
+  public getIndex(columnControl: SdSheetColumnControl): number {
+    return this.columnControls!.toArray().indexOf(columnControl);
+  }
+
+  public getWidth(columnControl: SdSheetColumnControl): number {
+    const index = this.getIndex(columnControl);
+    const columnConfig = this._columnConfigs.single(item => item.header === columnControl.header && item.index === index);
+    return columnConfig ? columnConfig.width : columnControl.width;
   }
 
   public selectRow(targetEl: Element): void {
@@ -334,5 +383,54 @@ export class SdSheetControl implements DoCheck {
       });
     };
     cell.addEventListener("blur", blurFn);
+  }
+
+  public onHeadBorderMousedown(event: MouseEvent): void {
+    if (!this.id) return;
+
+    const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
+    const startX = event.clientX;
+    const startWidth = cellEl.clientWidth;
+
+    const doDrag = (e: MouseEvent) => {
+      cellEl.style.width = `${startWidth + e.clientX - startX}px`;
+    };
+
+    const stopDrag = () => {
+      document.documentElement.removeEventListener("mousemove", doDrag, false);
+      document.documentElement.removeEventListener("mouseup", stopDrag, false);
+
+      const index = Number(cellEl.getAttribute("col-index"));
+      const columnControl = this.columnControls!.toArray()[index];
+
+      const columnConfig = this._columnConfigs.single(item => item.header === columnControl.header && item.index === index);
+      if (columnConfig) {
+        columnConfig.width = cellEl.offsetWidth;
+      }
+      else {
+        this._columnConfigs.push({
+          header: columnControl.header,
+          width: cellEl.offsetWidth,
+          index
+        });
+      }
+      this._saveColumnConfigs();
+
+      this._cdr.markForCheck();
+    };
+    document.documentElement.addEventListener("mousemove", doDrag, false);
+    document.documentElement.addEventListener("mouseup", stopDrag, false);
+  }
+
+  public _loadColumnConfigs(): void {
+    this._columnConfigs = this._localStorage.get("sd-sheet." + this.id + ".column-config") || [];
+  }
+
+  public _saveColumnConfigs(): void {
+    const removedColumns = this._columnConfigs.filter(item => !this.columnControls!
+      .some((item1, index) => (item1.header || "") + index === ((item.header || "") + item.index))
+    );
+    this._columnConfigs.remove(removedColumns);
+    this._localStorage.set("sd-sheet." + this.id + ".column-config", this._columnConfigs);
   }
 }
