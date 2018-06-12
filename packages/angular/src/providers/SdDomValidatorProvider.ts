@@ -21,7 +21,7 @@ export class SdDomValidatorProvider {
         if (cell) {
           const index = cell.findParent("._row")!.findAll("._col").indexOf(cell);
           const headerCell = cell.findParent("sd-sheet")!.findAll("._head")[0].findAll("._col")[index];
-          return headerCell.innerHTML.trim();
+          return headerCell.textContent!.trim();
         }
 
         return "";
