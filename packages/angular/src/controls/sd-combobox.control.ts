@@ -25,7 +25,7 @@ import {SdComboboxItemControl} from "./sd-combobox-item.control";
                   [disabled]="disabled"
                   (focusedChange)="textfieldFocusedChange.emit($event)">
     </sd-textfield>
-    <div class="_icon">
+    <div class="_icon" *ngIf="!disabled">
       <sd-icon [fixedWidth]="true" [icon]="'angle-down'"></sd-icon>
     </div>
     <div #dropdown class="_sd-combobox-dropdown" tabindex="0">

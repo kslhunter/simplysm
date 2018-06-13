@@ -34,7 +34,7 @@ export const sorm = {
     return new QueryUnit(Boolean, helpers.query(source) + " < " + helpers.query(target));
   },
 
-  includes(source: string | QueryUnit<string>, target: string | QueryUnit<string>): QueryUnit<Boolean> {
+  includes(source: string | QueryUnit<String>, target: string | QueryUnit<String>): QueryUnit<Boolean> {
     return new QueryUnit(Boolean, helpers.query(source) + " LIKE '%' + " + helpers.query(target) + " + '%'");
   },
 

@@ -255,7 +255,7 @@ export class Queryable<TTable> {
     return this.where(item => [sorm.equal(columnPredicate(item), target)]);
   }
 
-  public search(columnsPredicate: (item: TTable) => string[], searchText: string): Queryable<TTable> {
+  public search(columnsPredicate: (item: TTable) => (string | QueryUnit<String>)[], searchText: string): Queryable<TTable> {
     if (!searchText) {
       return this;
     }
