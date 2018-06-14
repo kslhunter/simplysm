@@ -114,6 +114,10 @@ export class Queryable<TTable> {
       for (const chain  of selectKey.split(".").slice(0, -1)) {
         cumulatedChain.push(chain);
         const joinDef = this._queryObj.join.single(item => item.as === cumulatedChain.join("."))!;
+        if (!joinDef) {
+          throw new Error("'" + cumulatedChain.join(".") + "'에 대한 'JOIN'이 지정되어있지 않습니다.");
+        }
+
         if (joinDef.isMulti) {
           cursor[chain] = cursor[chain] || [{}];
           cursor = cursor[chain][0];

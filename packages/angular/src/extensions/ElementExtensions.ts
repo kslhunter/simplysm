@@ -7,6 +7,8 @@ declare interface Element {
   findParent(element: Element): Element | undefined;
 
   findParent(selector: string): Element | undefined;
+
+  findFocusableAll(): HTMLElement[];
 }
 
 Element.prototype.prependChild = function <T extends Node>(newChild: T): T {
@@ -31,4 +33,22 @@ Element.prototype.findParent = function (arg: string | Element): Element | undef
   }
 
   return cursor || undefined;
+};
+
+const focusableSelectorList = [
+  "a[href]",
+  "button:not([disabled])",
+  "area[href]",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "iframe",
+  "object",
+  "embed",
+  "*[tabindex]",
+  "*[contenteditable]"
+];
+
+Element.prototype.findFocusableAll = function (): HTMLElement[] {
+  return Array.from(this.querySelectorAll(focusableSelectorList.map(item => `:scope ${item}`).join(", "))).ofType(HTMLElement);
 };

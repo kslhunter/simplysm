@@ -23,7 +23,7 @@ export const sorm = {
       })
       .join(" ");
 
-    return new QueryUnit(type, query);
+    return new QueryUnit(type, "(" + query + ")");
   },
 
   equal<T>(source: T | QueryUnit<T>, target: T | QueryUnit<T>): QueryUnit<Boolean> {
@@ -66,19 +66,24 @@ export const sorm = {
     return new QueryUnit(type, "ISNULL(NULLIF(" + helpers.query(source) + ", " + helpers.query(predicate) + "), " + helpers.query(target) + ")") as any;
   },
 
-  ifNull<T, R extends T>(source: T | QueryUnit<T>, target: R | QueryUnit<R>): R extends undefined ? R : NonNullable<R> {
+  ifNull<T, R extends T>(source: T | QueryUnit<T>, ...targets: (R | QueryUnit<R>)[]): R extends undefined ? R : NonNullable<R> {
     let type;
     if (source instanceof QueryUnit) {
       type = source.type;
     }
-    else if (target instanceof QueryUnit) {
-      type = target.type;
+    else if (targets.ofType(QueryUnit).length > 0) {
+      type = targets.ofType(QueryUnit)[0].type;
     }
     else {
       throw new TypeError();
     }
 
-    return new QueryUnit(type, "ISNULL(" + helpers.query(source) + ", " + helpers.query(target) + ")") as any;
+    let cursorQuery = helpers.query(source);
+    for (const target of targets) {
+      cursorQuery = "ISNULL(" + cursorQuery + ", " + helpers.query(target) + ")";
+    }
+
+    return new QueryUnit(type, cursorQuery) as any;
   },
 
   count<T>(arg?: T | QueryUnit<T>): QueryUnit<Number | undefined> {

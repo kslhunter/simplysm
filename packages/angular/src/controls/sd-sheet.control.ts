@@ -55,6 +55,7 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
           </div>
           <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
                [style.width.px]="getWidth(columnControl)" tabindex="0"
+               (keydown)="onCellKeydown($event)"
                (focus)="onCellFocus($event)">
             <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
                          [ngTemplateOutletContext]="{item: item}"></ng-template>
@@ -63,6 +64,7 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
         <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
           <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
                [style.width.px]="getWidth(columnControl)" tabindex="0"
+               (keydown)="onCellKeydown($event)"
                (focus)="onCellFocus($event)">
             <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
                          [ngTemplateOutletContext]="{item: item}"></ng-template>
@@ -138,9 +140,11 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
           border: none;
           padding: gap(xs) gap(sm);
 
+          &[type=year],
+          &[type=month],
           &[type=date],
           &[type=datetime],
-          &[type="datetime-local"] {
+          &[type=datetime-local] {
             padding: gap(xs) - 2 gap(sm) gap(xs) - 1 gap(sm);
           }
         }
@@ -420,6 +424,88 @@ export class SdSheetControl implements DoCheck, OnInit {
     };
     document.documentElement.addEventListener("mousemove", doDrag, false);
     document.documentElement.addEventListener("mouseup", stopDrag, false);
+  }
+
+  public onCellKeydown(event: KeyboardEvent): void {
+    const targetEl = event.target as HTMLElement;
+    if (targetEl.classList.contains("_col")) {
+      if (event.key === "F2") {
+        const focusableEls = targetEl.findFocusableAll();
+        if (focusableEls.length > 0) {
+          focusableEls[0].focus();
+        }
+      }
+      else if (event.key === "ArrowDown") {
+        const rowEl = targetEl.findParent("._row") as HTMLElement;
+        const bodyEl = rowEl.parentElement as Element;
+
+        const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(targetEl);
+
+        const nextRowEl = bodyEl.children.item(rowIndex + 1);
+        if (nextRowEl) {
+          (nextRowEl.findAll("._col")[cellIndex] as HTMLElement).focus();
+        }
+      }
+      else if (event.key === "ArrowUp") {
+        const rowEl = targetEl.findParent("._row") as HTMLElement;
+        const bodyEl = rowEl.parentElement as Element;
+
+        const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(targetEl);
+
+        if (rowIndex - 1 >= 0) {
+          const nextRowEl = bodyEl.children.item(rowIndex - 1);
+          (nextRowEl.findAll("._col")[cellIndex] as HTMLElement).focus();
+        }
+      }
+      else if (event.key === "ArrowRight") {
+        const rowEl = targetEl.findParent("._row") as HTMLElement;
+        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(targetEl);
+
+        const nextCell = rowEl.findAll("._col")[cellIndex + 1] as HTMLElement;
+        if (nextCell) {
+          nextCell.focus();
+        }
+      }
+      else if (event.key === "ArrowLeft") {
+        const rowEl = targetEl.findParent("._row") as HTMLElement;
+        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(targetEl);
+
+        if (cellIndex - 1 >= 0) {
+          const nextCell = rowEl.findAll("._col")[cellIndex - 1] as HTMLElement;
+          nextCell.focus();
+        }
+      }
+    }
+    else {
+      if (event.key === "Escape") {
+        const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
+        cellEl.focus();
+      }
+      if (event.key === "Enter") {
+        const cellEl = targetEl.findParent("._col") as HTMLElement;
+        const rowEl = cellEl.findParent("._row") as HTMLElement;
+        const bodyEl = rowEl.parentElement as Element;
+
+        const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(cellEl);
+
+        const nextRowEl = bodyEl.children.item(rowIndex + 1);
+        if (nextRowEl) {
+          const nextRowCellEl = nextRowEl.findAll("._col")[cellIndex] as HTMLElement;
+          nextRowCellEl.focus();
+
+          /*const focusableEls = nextRowCellEl.findFocusableAll();
+          if (focusableEls.length > 0) {
+            focusableEls[0].focus();
+          }
+          else {
+            nextRowCellEl.focus();
+          }*/
+        }
+      }
+    }
   }
 
   public _loadColumnConfigs(): void {

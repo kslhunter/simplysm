@@ -63,10 +63,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate({
     type: String,
-    validator: value => ["number", "text", "password", "date", "datetime"].includes(value),
+    validator: value => ["number", "text", "password", "date", "datetime", "month"].includes(value),
     notnull: true
   })
-  public type: "number" | "text" | "password" | "date" | "datetime" = "text";
+  public type: "number" | "text" | "password" | "date" | "datetime" | "month" = "text";
 
   @Input()
   @SdTypeValidate(String)
@@ -105,7 +105,7 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   public get controlValue(): number | string {
     return this.value === undefined ? ""
       : this.value instanceof DateTime ? this.value.toFormatString("yyyy-MM-ddTHH:mm")
-        : this.value instanceof DateOnly ? this.value.toString()
+        : this.value instanceof DateOnly ? (this.type === "month" ? this.value.toFormatString("yyyy-MM") : this.value.toString())
           : this.value;
   }
 
@@ -114,7 +114,7 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
     if (this.type === "number") {
       this.value = Number(inputEl.value);
     }
-    else if (this.type === "date") {
+    else if (this.type === "date" || this.type === "month") {
       this.value = DateOnly.parse(inputEl.value);
     }
     else if (this.type === "datetime") {
