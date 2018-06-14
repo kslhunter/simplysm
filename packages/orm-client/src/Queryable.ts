@@ -390,7 +390,7 @@ export class Queryable<TTable> {
   public async insertAsync(item: TTable): Promise<TTable> {
     const query = this._getInsertQuery(item);
     const results = await this._dbConnection.executeAsync(query);
-    return results[0][0];
+    return this._generateResult(results[0])[0];
   }
 
   public insertPrepare(item: TTable): void {
@@ -531,7 +531,9 @@ export class Queryable<TTable> {
     return query;
   }
 
-  private _generateResult(arr: any[]): any[] {
+  private _generateResult(arr: any[] | undefined): any[] {
+    if (!arr) return [];
+
     const joinDefs = Object.keys(this._queryObj.select)
       .orderBy(key => key.split(".").length, true)
       .map(key => key.split(".").slice(0, -1).join("."))
@@ -608,7 +610,33 @@ export class Queryable<TTable> {
       }
     }
 
-    return result;
+    const clearEmpty = (item: any) => {
+      if (item instanceof DateTime || item instanceof DateOnly || item instanceof Time) {
+        return item;
+      }
+      if (item instanceof Array) {
+        for (let i = 0; i < item.length; i++) {
+          item[i] = clearEmpty(item[i]);
+        }
+
+        if (item.every(itemItem => itemItem === undefined)) {
+          return undefined;
+        }
+      }
+      else if (item instanceof Object) {
+        for (const key of Object.keys(item)) {
+          item[key] = clearEmpty(item[key]);
+        }
+
+        if (Object.keys(item).every(key => item[key] === undefined)) {
+          return undefined;
+        }
+      }
+
+      return item;
+    };
+
+    return clearEmpty(result) || [];
   }
 
   private _clone(): Queryable<TTable> {

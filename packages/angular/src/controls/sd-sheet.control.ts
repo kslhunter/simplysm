@@ -339,7 +339,16 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public onFirstColClick(event: Event): void {
-    if (this.selectedItem) {
+    if (!this.selectable) return;
+
+    const targetEl = event.target as Element;
+    const rowEl = targetEl.findParent("._row");
+    if (!rowEl) return;
+
+    const bodyEl = rowEl.parentElement as Element;
+    const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+
+    if (this.items!.indexOf(this.selectedItem) === rowIndex) {
       if (this.selectedItem !== undefined) {
         this.selectedItem = undefined;
         this.selectedItemChange.emit(undefined);

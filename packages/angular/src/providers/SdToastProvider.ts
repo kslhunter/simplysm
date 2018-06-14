@@ -34,14 +34,15 @@ export class SdToastProvider implements OnDestroy {
     const toastEl = document.createElement("div");
     toastEl.classList.add("_sd-toast");
     toastEl.classList.add("_sd-toast-" + type);
-    this._containerEl.prependChild(toastEl);
 
     const toastMessageEl = document.createElement("div");
     toastMessageEl.classList.add("_sd-toast-message");
     toastMessageEl.innerText = message;
     toastEl.appendChild(toastMessageEl);
 
-    setTimeout(
+    this._containerEl.prependChild(toastEl);
+
+    window.setTimeout(
       () => toastEl.remove(),
       3000
     );

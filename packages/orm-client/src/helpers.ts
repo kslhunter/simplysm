@@ -28,6 +28,9 @@ export const helpers = {
     else if (val instanceof Uuid) {
       return val.toString();
     }
+    else if (val instanceof Buffer) {
+      return `0x${val.toString("hex")}`;
+    }
     else if (val instanceof QueryUnit) {
       return val.query;
     }
@@ -68,7 +71,7 @@ export const helpers = {
       case Uuid:
         return "UNIQUEIDENTIFIER";
       case Buffer:
-        return "VARBINARY";
+        return "VARBINARY(MAX)";
       default:
         throw new TypeError(type ? type.name : "undefined");
     }
