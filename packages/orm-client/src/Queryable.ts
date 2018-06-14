@@ -5,7 +5,18 @@ import {helpers} from "./helpers";
 import {DateOnly, DateTime, Time, Type, Uuid} from "@simplism/core";
 import {sorm} from "./sorm";
 
-export type TypeOfGeneric<C extends { [key: string]: any }> = {[K in keyof C]: C[K] extends QueryUnit<any>  ? C[K]["_generic"]  : C[K]};
+export type TypeOfGeneric<T extends any> = T extends QueryUnit<Number> ? number
+  : T extends QueryUnit<Number | undefined> ? number | undefined
+  : T extends QueryUnit<String> ? string
+  : T extends QueryUnit<String | undefined> ? string | undefined
+  : T extends QueryUnit<Boolean> ? boolean
+  : T extends QueryUnit<Boolean | undefined> ? boolean | undefined
+  : T extends QueryUnit<any> ? T["_generic"]
+  : T;
+
+export type TypeOfGenericForObject<C extends { [key: string]: any }> = {
+  [K in keyof C]: TypeOfGeneric<C[K]>
+};
 
 export interface IQueryObj {
   top: number | undefined;
@@ -296,7 +307,7 @@ export class Queryable<TTable> {
     return result;
   }
 
-  public select<C extends { [key: string]: any }>(cols: (item: TTable) => C): Queryable<TypeOfGeneric<C>> {
+  public select<C extends { [key: string]: any }>(cols: (item: TTable) => C): Queryable<TypeOfGenericForObject<C>> {
     let result = this._clone();
 
     result._queryObj.select = {};

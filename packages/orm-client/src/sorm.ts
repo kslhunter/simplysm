@@ -1,10 +1,10 @@
 import {InvalidArgumentsException, Type} from "@simplism/core";
 import {helpers} from "./helpers";
 import {QueryUnit} from "./QueryUnit";
-import {TypeOfGeneric} from "./Queryable";
+import {TypeOfGenericForObject} from "./Queryable";
 
 export const sorm = {
-  formula<T>(arg: T | QueryUnit<T>, ...args: (T | QueryUnit<T> | string)[]): QueryUnit<T> {
+  formula<T>(arg: T | QueryUnit<T>, ...args: any[]): QueryUnit<T> {
     let type: any;
     if (arg instanceof QueryUnit) {
       type = arg.type;
@@ -93,7 +93,7 @@ export const sorm = {
     return new QueryUnit(unit.type, "MAX(" + helpers.query(unit) + ")");
   },
 
-  sum(unit: number | QueryUnit<number>): QueryUnit<number | undefined> {
+  sum<T extends number>(unit: T | QueryUnit<T>): QueryUnit<T | undefined> {
     if (!(unit instanceof QueryUnit)) {
       throw new TypeError();
     }
@@ -124,7 +124,7 @@ export const sorm = {
     throw new InvalidArgumentsException(args);
   },
 
-  map<C extends { [key: string]: any }, T>(arr: C[] | undefined, selector: (item: C, index: number) => T): TypeOfGeneric<T>[] | undefined {
+  map<C extends { [key: string]: any }, T>(arr: C[] | undefined, selector: (item: C, index: number) => T): TypeOfGenericForObject<T>[] | undefined {
     if (!arr) return undefined;
     return arr.map((item, index) => selector(item, index)) as any;
   }

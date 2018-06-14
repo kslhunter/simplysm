@@ -207,7 +207,7 @@ export class ClientPackageBuilder {
         ]
       },
       plugins: [
-        new TsCheckAndDeclarationPlugin({
+        /*new TsCheckAndDeclarationPlugin({
           tsConfigPath: this._packagePath("tsconfig.spec.json"),
           packageName: this._packageName,
           logger: this._logger,
@@ -218,7 +218,7 @@ export class ClientPackageBuilder {
           packageName: this._packageName,
           logger: this._logger,
           projectPath: this._projectPath()
-        }),
+        }),*/
         new webpack.ContextReplacementPlugin(
           /angular[\\/]core[\\/]fesm5/,
           this._packagePath("src"),
