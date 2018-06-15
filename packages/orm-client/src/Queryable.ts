@@ -11,12 +11,17 @@ export type TypeOfGeneric<T extends any> = T extends QueryUnit<Number> ? number
   : T extends QueryUnit<String | undefined> ? string | undefined
   : T extends QueryUnit<Boolean> ? boolean
   : T extends QueryUnit<Boolean | undefined> ? boolean | undefined
+  : T extends QueryUnit<QueriedBoolean> ? boolean
+  : T extends QueryUnit<QueriedBoolean | undefined> ? boolean | undefined
   : T extends QueryUnit<any> ? T["_generic"]
   : T;
 
 export type TypeOfGenericForObject<C extends { [key: string]: any }> = {
   [K in keyof C]: TypeOfGeneric<C[K]>
 };
+
+export class QueriedBoolean extends Boolean {
+}
 
 export interface IQueryObj {
   top: number | undefined;
@@ -195,14 +200,14 @@ export class Queryable<TTable> {
         .filter(item => typeof item.primaryKey === "number")
         .orderBy(item => item.primaryKey);
 
-      const wheres: QueryUnit<Boolean>[] = [];
+      const wheres: QueryUnit<Boolean | QueriedBoolean>[] = [];
 
       for (let i = 0; i < prevTableForeignKeyDef.columnNames.length; i++) {
         const prevTableFkColumnName = prevTableForeignKeyDef.columnNames[i];
         const targetTablePrimaryKeyColumnName = targetTablePrimaryKeyColumnDefs[i].name;
 
         wheres.push(new QueryUnit(
-          Boolean,
+          QueriedBoolean,
           `${helpers.key(chains.concat(targetTablePrimaryKeyColumnName).join("."))} = ${helpers.key([chains.length > 1 ? "" : "TBL"].filter(item => item).concat(chains.slice(0, -1)).concat([prevTableFkColumnName]).join("."))}`
         ));
       }
@@ -225,14 +230,14 @@ export class Queryable<TTable> {
         throw new Error(`${prevTableDef.name}의 ${prevTableForeignKeyTargetDef.name} FKT 설정이 잘못되었습니다.`);
       }
 
-      const wheres: QueryUnit<Boolean>[] = [];
+      const wheres: QueryUnit<Boolean | QueriedBoolean>[] = [];
 
       for (let i = 0; i < sourceTableForeignKeyDefs.columnNames.length; i++) {
         const sourceTableFkColumnName = sourceTableForeignKeyDefs.columnNames[i];
         const targetTablePrimaryKeyColumnName = targetTablePrimaryKeyColumnDefs[i].name;
 
         wheres.push(new QueryUnit(
-          Boolean,
+          QueriedBoolean,
           `${helpers.key(chains.concat(sourceTableFkColumnName).join("."))} = ${helpers.key([chains.length > 1 ? "" : "TBL"].filter(item => item).concat(chains.slice(0, -1)).concat([targetTablePrimaryKeyColumnName]).join("."))}`
         ));
       }
@@ -254,13 +259,13 @@ export class Queryable<TTable> {
     return result;
   }
 
-  public where(predicate: (item: TTable) => QueryUnit<Boolean>[]): Queryable<TTable> {
+  public where(predicate: (item: TTable) => QueryUnit<Boolean | QueriedBoolean>[]): Queryable<TTable> {
     const result = this._clone();
     result._queryObj.where = result._queryObj.where.concat(predicate(this._entity).map(item => item.query));
     return result;
   }
 
-  public having(predicate: (item: TTable) => QueryUnit<Boolean>[]): Queryable<TTable> {
+  public having(predicate: (item: TTable) => QueryUnit<Boolean | QueriedBoolean>[]): Queryable<TTable> {
     const result = this._clone();
     result._queryObj.having = result._queryObj.having.concat(predicate(this._entity).map(item => item.query));
     return result;
@@ -281,9 +286,9 @@ export class Queryable<TTable> {
 
     return this.where(item => {
       const columns = columnsPredicate(item);
-      const orArr: QueryUnit<Boolean>[] = [];
+      const orArr: QueryUnit<Boolean | QueriedBoolean>[] = [];
       for (const column of columns) {
-        const orArr1: QueryUnit<Boolean>[] = [];
+        const orArr1: QueryUnit<Boolean | QueriedBoolean>[] = [];
         for (const searchWord of searchWords) {
           orArr1.push(sorm.includes(column, searchWord));
         }
@@ -317,7 +322,10 @@ export class Queryable<TTable> {
     result._queryObj.select = {};
     const makeSelect = (prevKeys: string[], obj: any) => {
       for (const key of Object.keys(obj)) {
-        if (
+        if (obj[key] instanceof QueryUnit && obj[key].type === QueriedBoolean) {
+          result._queryObj.select[prevKeys.concat([key]).join(".")] = sorm.cast(sorm.case(obj[key], true).else(false), Boolean);
+        }
+        else if (
           obj[key] instanceof QueryUnit ||
           obj[key] instanceof DateTime ||
           obj[key] instanceof DateOnly ||
@@ -346,7 +354,7 @@ export class Queryable<TTable> {
       const groupedKeys: string[] = [];
       Object.keys(result._queryObj.select).filter(key => {
         const item = result._queryObj.select[key];
-        if (item instanceof QueryUnit && (item.query.includes("SUM") || item.query.includes("MAX") || item.query.includes("MIN"))) {
+        if (item instanceof QueryUnit && (item.query.includes("SUM") || item.query.includes("MAX") || item.query.includes("MIN") || item.query.includes("COUNT"))) {
           groupedKeys.push(key);
         }
       });

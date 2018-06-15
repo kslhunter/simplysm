@@ -21,6 +21,10 @@ export class SdSheetColumnControl {
   public header?: string;
 
   @Input()
+  @SdTypeValidate(String)
+  public help?: string;
+
+  @Input()
   @SdTypeValidate({
     type: Number,
     notnull: true

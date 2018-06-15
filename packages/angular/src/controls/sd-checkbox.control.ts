@@ -6,7 +6,7 @@ import {SdTypeValidate} from "../decorators/SdTypeValidate";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <label tabindex="0">
-      <input [checked]="value" (change)="onValueChange($event)" type="checkbox" hidden>
+      <input [checked]="value" (change)="onValueChange($event)" type="checkbox" hidden [disabled]="disabled">
       <div class="_indicator_rect"></div>
       <sd-icon class="_indicator" [icon]="'check'" [fixedWidth]="true"></sd-icon>
       <div class="_content">
@@ -40,6 +40,10 @@ import {SdTypeValidate} from "../decorators/SdTypeValidate";
           display: inline-block;
           text-indent: gap(xs);
         }
+
+        > input:disabled + ._indicator_rect {
+          background: transparent;
+        }
       }
 
       &[sd-checked=true] {
@@ -57,6 +61,10 @@ export class SdCheckboxControl {
   @SdTypeValidate({type: Boolean, notnull: true})
   @HostBinding("attr.sd-checked")
   public value = false;
+
+  @Input()
+  @SdTypeValidate(Boolean)
+  public disabled?: boolean;
 
   @Output()
   public readonly valueChange = new EventEmitter<boolean>();

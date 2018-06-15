@@ -152,6 +152,7 @@
       true,
       "always",
       "ignore-bound-class-methods"
-    ]
+    ],
+    "max-classes-per-file": false
   }
 }

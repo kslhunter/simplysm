@@ -30,7 +30,9 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
           <div class="_border"></div>
         </div>
         <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
-             [style.width.px]="getWidth(columnControl)" [attr.col-index]="getIndex(columnControl)">
+             [style.width.px]="getWidth(columnControl)"
+             [attr.col-index]="getIndex(columnControl)"
+             [title]="columnControl.help">
           {{ columnControl.header }}
           <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
                (mousedown)="onHeadBorderMousedown($event)"></div>
@@ -38,7 +40,9 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
       </div>
       <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
         <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
-             [style.width.px]="getWidth(columnControl)" [attr.col-index]="getIndex(columnControl)">
+             [style.width.px]="getWidth(columnControl)"
+             [attr.col-index]="getIndex(columnControl)"
+             [title]="columnControl.help">
           {{ columnControl.header }}
           <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
                (mousedown)="onHeadBorderMousedown($event)"></div>

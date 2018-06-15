@@ -1,7 +1,28 @@
 import {InvalidArgumentsException, Type} from "@simplism/core";
 import {helpers} from "./helpers";
 import {QueryUnit} from "./QueryUnit";
-import {TypeOfGenericForObject} from "./Queryable";
+import {QueriedBoolean, TypeOfGenericForObject} from "./Queryable";
+
+export class CaseQueryable<T> {
+  private readonly _cases: string[] = [];
+
+  public case(predicate: QueriedBoolean | QueryUnit<QueriedBoolean>, then: T | QueryUnit<T>): CaseQueryable<T> {
+    this._cases.push(`WHEN ${helpers.query(predicate)} THEN ${helpers.query(then)}`);
+    return this;
+  }
+
+  public else(then: T | QueryUnit<T>): QueryUnit<T> {
+    let type;
+    if (then instanceof QueryUnit) {
+      type = then.type;
+    }
+    else {
+      type = then.constructor;
+    }
+
+    return new QueryUnit<T>(type as any, `CASE ${this._cases.join(" ")} ELSE ${helpers.query(then)} END`);
+  }
+}
 
 export const sorm = {
   formula<T>(arg: T | QueryUnit<T>, ...args: any[]): QueryUnit<T> {
@@ -26,28 +47,32 @@ export const sorm = {
     return new QueryUnit(type, "(" + query + ")");
   },
 
-  equal<T>(source: T | QueryUnit<T>, target: T | QueryUnit<T>): QueryUnit<Boolean> {
-    return new QueryUnit(Boolean, helpers.query(source) + " = " + helpers.query(target));
+  equal<T>(source: T | QueryUnit<T>, target: T | QueryUnit<T>): QueryUnit<QueriedBoolean> {
+    return new QueryUnit(QueriedBoolean, helpers.query(source) + " = " + helpers.query(target));
   },
 
-  lessThen(source: number | QueryUnit<number>, target: number | QueryUnit<number>): QueryUnit<Boolean> {
-    return new QueryUnit(Boolean, helpers.query(source) + " < " + helpers.query(target));
+  lessThen(source: number | QueryUnit<number>, target: number | QueryUnit<number>): QueryUnit<QueriedBoolean> {
+    return new QueryUnit(QueriedBoolean, helpers.query(source) + " < " + helpers.query(target));
   },
 
-  includes(source: string | QueryUnit<String>, target: string | QueryUnit<String>): QueryUnit<Boolean> {
-    return new QueryUnit(Boolean, helpers.query(source) + " LIKE '%' + " + helpers.query(target) + " + '%'");
+  greaterThen(source: number | QueryUnit<Number>, target: number | QueryUnit<Number>): QueryUnit<QueriedBoolean> {
+    return new QueryUnit(QueriedBoolean, helpers.query(source) + " > " + helpers.query(target));
   },
 
-  startsWith(source: string | QueryUnit<string>, target: string | QueryUnit<string>): QueryUnit<Boolean> {
-    return new QueryUnit(Boolean, helpers.query(source) + " LIKE " + helpers.query(target) + " + '%'");
+  includes(source: string | QueryUnit<String>, target: string | QueryUnit<String>): QueryUnit<QueriedBoolean> {
+    return new QueryUnit(QueriedBoolean, helpers.query(source) + " LIKE '%' + " + helpers.query(target) + " + '%'");
   },
 
-  in<P>(src: QueryUnit<P> | P, target: (QueryUnit<P> | P)[]): QueryUnit<Boolean> {
+  startsWith(source: string | QueryUnit<string>, target: string | QueryUnit<string>): QueryUnit<QueriedBoolean> {
+    return new QueryUnit(QueriedBoolean, helpers.query(source) + " LIKE " + helpers.query(target) + " + '%'");
+  },
+
+  in<P>(src: QueryUnit<P> | P, target: (QueryUnit<P> | P)[]): QueryUnit<QueriedBoolean> {
     if (target.length < 1) {
-      return new QueryUnit(Boolean, "1 = 0") as any;
+      return new QueryUnit(QueriedBoolean, "1 = 0") as any;
     }
     else {
-      return new QueryUnit(Boolean, `${helpers.query(src)} IN (${target.map(item => helpers.query(item)).join(", ")})`) as any;
+      return new QueryUnit(QueriedBoolean, `${helpers.query(src)} IN (${target.map(item => helpers.query(item)).join(", ")})`) as any;
     }
   },
 
@@ -64,6 +89,11 @@ export const sorm = {
     }
 
     return new QueryUnit(type, "ISNULL(NULLIF(" + helpers.query(source) + ", " + helpers.query(predicate) + "), " + helpers.query(target) + ")") as any;
+  },
+
+  case<T>(predicate: QueriedBoolean | QueryUnit<QueriedBoolean>, then: T | QueryUnit<T>): CaseQueryable<T> {
+    const caseQueryable = new CaseQueryable<T>();
+    return caseQueryable.case(predicate, then);
   },
 
   ifNull<T, R extends T>(source: T | QueryUnit<T>, ...targets: (R | QueryUnit<R>)[]): R extends undefined ? R : NonNullable<R> {
@@ -106,12 +136,12 @@ export const sorm = {
     return new QueryUnit(unit.type, "SUM(" + helpers.query(unit) + ")");
   },
 
-  and(arr: QueryUnit<Boolean>[]): QueryUnit<Boolean> {
-    return new QueryUnit(Boolean, arr.map(item => "(" + helpers.query(item) + ")").join(" AND "));
+  and(arr: QueryUnit<Boolean | QueriedBoolean>[]): QueryUnit<QueriedBoolean> {
+    return new QueryUnit(QueriedBoolean, arr.map(item => "(" + helpers.query(item) + ")").join(" AND "));
   },
 
-  or(arr: QueryUnit<Boolean>[]): QueryUnit<Boolean> {
-    return new QueryUnit(Boolean, arr.map(item => "(" + helpers.query(item) + ")").join(" OR "));
+  or(arr: QueryUnit<Boolean | QueriedBoolean>[]): QueryUnit<QueriedBoolean> {
+    return new QueryUnit(QueriedBoolean, arr.map(item => "(" + helpers.query(item) + ")").join(" OR "));
   },
 
   cast<P>(src: any, targetType: Type<P>): QueryUnit<P> {

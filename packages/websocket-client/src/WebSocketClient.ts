@@ -4,6 +4,7 @@ import {IWebSocketRequest, IWebSocketResponse} from "@simplism/websocket-common"
 export class WebSocketClient {
   private static _lastRequestId = 0;
   private readonly _requestMap = new Map<number | string, (response: IWebSocketResponse) => void>();
+  private static readonly _wsMap = new Map<string, WebSocket>();
   private _ws?: WebSocket;
   private _url?: string;
 
@@ -14,9 +15,15 @@ export class WebSocketClient {
   public async connectAsync(url?: string): Promise<void> {
     this._url = url || location.host;
     await new Promise<void>(resolve => {
-      this._ws = new WebSocket(`ws://${this._url}`);
-
-      this._ws.onopen = () => resolve();
+      if (WebSocketClient._wsMap.has(this._url!)) {
+        this._ws = WebSocketClient._wsMap.get(this._url!)!;
+        resolve();
+      }
+      else {
+        this._ws = new WebSocket(`ws://${this._url}`);
+        WebSocketClient._wsMap.set(this._url!, this._ws);
+        this._ws.onopen = () => resolve();
+      }
 
       this._ws.onmessage = message => {
         const response: IWebSocketResponse = JsonConvert.parse(message.data);
@@ -32,6 +39,8 @@ export class WebSocketClient {
   }
 
   public async closeAsync(): Promise<void> {
+    WebSocketClient._wsMap.delete(this._url!);
+
     if (!this.connected) {
       this._ws = undefined;
       return;
