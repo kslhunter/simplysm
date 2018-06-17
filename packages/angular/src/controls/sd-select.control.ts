@@ -8,7 +8,8 @@ import {JsonConvert} from "@simplism/core";
   template: `
     <select [value]="valueJson"
             [required]="required"
-            (change)="onSelectChange($event)">
+            (change)="onSelectChange($event)"
+            [disabled]="disabled">
       <ng-content></ng-content>
     </select>`,
   styles: [/* language=SCSS */ `
@@ -52,6 +53,10 @@ export class SdSelectControl {
   @Input()
   @SdTypeValidate(Boolean)
   public required?: boolean;
+
+  @Input()
+  @SdTypeValidate(Boolean)
+  public disabled?: boolean;
 
   public get valueJson(): string {
     return JsonConvert.stringify(this.value);

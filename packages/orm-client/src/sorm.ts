@@ -59,6 +59,10 @@ export const sorm = {
     return new QueryUnit(QueriedBoolean, helpers.query(source) + " > " + helpers.query(target));
   },
 
+  greaterThenOrEqual(source: number | QueryUnit<Number>, target: number | QueryUnit<Number>): QueryUnit<QueriedBoolean> {
+    return new QueryUnit(QueriedBoolean, helpers.query(source) + " >= " + helpers.query(target));
+  },
+
   includes(source: string | QueryUnit<String>, target: string | QueryUnit<String>): QueryUnit<QueriedBoolean> {
     return new QueryUnit(QueriedBoolean, helpers.query(source) + " LIKE '%' + " + helpers.query(target) + " + '%'");
   },

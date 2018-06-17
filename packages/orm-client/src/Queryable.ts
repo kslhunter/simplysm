@@ -72,16 +72,24 @@ export class Queryable<TTable> {
 
     if (this._queryObj.from) {
       q += `FROM (\r\n`;
-      q += "  " + this._queryObj.from.query.replace(/\r\n/g, "  \r\n").trim() + "\r\n";
-      q += `) as ${helpers.key("TBL")}\r\n`;
+      q += "  " + this._queryObj.from.query.replace(/\r\n/g, "\r\n  ").trim() + "\r\n";
+      q += `) as ${helpers.key(this._as)}\r\n`;
     }
     else {
-      q += `FROM ${helpers.tableKey(tableDef)} as ${helpers.key("TBL")}\r\n`;
+      q += `FROM ${helpers.tableKey(tableDef)} as ${helpers.key(this._as)}\r\n`;
     }
 
     for (const join of this._queryObj.join) {
       const targetTableDef = core.Reflect.getMetadata(modelDefMetadataKey, join.queryable.tableType);
-      q += `LEFT OUTER JOIN ${helpers.tableKey(targetTableDef)} as [${join.as}] ON ` + join.queryable._queryObj.where.map(item => `(${item})`).join(" AND ") + "\r\n";
+
+      if (Object.keys(join.queryable._queryObj).every(key => key === "where" || key === "select" || !join.queryable._queryObj[key] || Object.keys(join.queryable._queryObj[key]).length === 0)) {
+        q += `LEFT OUTER JOIN ${helpers.tableKey(targetTableDef)} as [${join.as}] ON ` + join.queryable._queryObj.where.map(item => `(${item})`).join(" AND ") + "\r\n";
+      }
+      else {
+        q += `OUTER APPLY (\r\n`;
+        q += join.queryable.query.replace(/\r\n/g, "\r\n  ").trim() + "\r\n";
+        q += `) as [${join.as}]\r\n`;
+      }
     }
 
     if (this._queryObj.where.length > 0) {
@@ -102,7 +110,7 @@ export class Queryable<TTable> {
           throw new Error(tableDef.name + "의 컬럼 설정이 잘못되었습니다.");
         }
 
-        q += "ORDER BY " + tableDef.columns.filter(item => item.primaryKey).orderBy(item => item.primaryKey).map(item => helpers.key("TBL." + item.name) + " ASC").join(", ") + "\r\n";
+        q += "ORDER BY " + tableDef.columns.filter(item => item.primaryKey).orderBy(item => item.primaryKey).map(item => helpers.key(this._as + "." + item.name) + " ASC").join(", ") + "\r\n";
       }
       q += `OFFSET ${this._queryObj.limit[0]} ROWS FETCH NEXT ${this._queryObj.limit[1]} ROWS ONLY\r\n`;
     }
@@ -140,34 +148,32 @@ export class Queryable<TTable> {
   }
 
   public constructor(private readonly _dbConnection: Database,
-                     public readonly tableType: Type<TTable>) {
+                     public readonly tableType: Type<TTable>,
+                     private readonly _as: string = "TBL") {
     const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType);
     if (!tableDef.columns) {
       throw new Error(tableDef.name + "의 컬럼 설정이 잘못되었습니다.");
     }
 
     for (const colDef of tableDef.columns) {
-      this._queryObj.select[colDef.name] = new QueryUnit(colDef.typeFwd(), helpers.key("TBL." + colDef.name));
+      this._queryObj.select[colDef.name] = new QueryUnit(colDef.typeFwd(), helpers.key(this._as + "." + colDef.name));
     }
   }
 
-  public join<A extends string, M, P extends (object | undefined)>(as: A, queryable: Queryable<M>, isMulti: boolean): Queryable<TTable & { [K in A]: (M | M[]) }> {
+  public join<A extends string, D, M, P extends (object | undefined)>(as: A, tableType: Type<D>, isMulti: boolean, queryableFwd: (qr: Queryable<D>, item: TTable) => Queryable<M>): Queryable<TTable & { [K in A]: (M | M[]) }> {
+    const queryable = queryableFwd(new Queryable(this._dbConnection, tableType, as), this._entity);
     const result = this._clone();
-    if (Object.keys(queryable._queryObj).every(key => key === "where" || key === "select" || !queryable._queryObj[key] || Object.keys(queryable._queryObj[key]).length === 0)) {
-      result._queryObj.join.push({isMulti, as, queryable});
+    result._queryObj.join.push({isMulti, as, queryable});
 
-      for (const joinSelectKey of Object.keys(queryable._queryObj.select)) {
-        const joinSelect = queryable._queryObj.select[joinSelectKey];
-        const joinSelectType = joinSelect instanceof QueryUnit ? joinSelect.type : joinSelect.constructor;
+    for (const joinSelectKey of Object.keys(queryable._queryObj.select)) {
+      const joinSelect = queryable._queryObj.select[joinSelectKey];
+      const joinSelectType = joinSelect instanceof QueryUnit ? joinSelect.type : joinSelect.constructor;
 
-        result._queryObj.select[as + "." + joinSelectKey] = new QueryUnit<any>(joinSelectType, helpers.key(helpers.query(joinSelect).replace(/\[?TBL]?/, as)));
-      }
-
-      return result as any;
+      //result._queryObj.select[as + "." + joinSelectKey] = new QueryUnit<any>(joinSelectType, helpers.key(helpers.query(joinSelect).replace(new RegExp("\\[?" + this._as + "]?", "g"), as)));
+      result._queryObj.select[as + "." + joinSelectKey] = new QueryUnit<any>(joinSelectType, helpers.key(as + "." + joinSelectKey));
     }
-    else {
-      throw new Error("미구현");
-    }
+
+    return result as any;
   }
 
   public include(fn: (item: TTable) => any): Queryable<TTable> {
@@ -175,7 +181,7 @@ export class Queryable<TTable> {
     const chains = parsed.returnContent.replace(/\[0]/g, "").split(".").slice(1);
 
     const prevTableType = this._getTableTypeByChains(chains.slice(0, -1));
-    let targetTableType;
+    let targetTableType: Type<any>;
     try {
       targetTableType = this._getTableTypeByChains(chains);
     }
@@ -208,11 +214,11 @@ export class Queryable<TTable> {
 
         wheres.push(new QueryUnit(
           QueriedBoolean,
-          `${helpers.key(chains.concat(targetTablePrimaryKeyColumnName).join("."))} = ${helpers.key([chains.length > 1 ? "" : "TBL"].filter(item => item).concat(chains.slice(0, -1)).concat([prevTableFkColumnName]).join("."))}`
+          `${helpers.key(chains.concat(targetTablePrimaryKeyColumnName).join("."))} = ${helpers.key([chains.length > 1 ? "" : this._as].filter(item => item).concat(chains.slice(0, -1)).concat([prevTableFkColumnName]).join("."))}`
         ));
       }
 
-      return this.join(chains.join("."), new Queryable(this._dbConnection, targetTableType).where(() => wheres), false);
+      return this.join(chains.join("."), targetTableType, false, qr => qr.where(() => wheres));
     }
 
     const prevTableForeignKeyTargetDef = prevTableDef.foreignKeyTargets && prevTableDef.foreignKeyTargets.single(item => item.name === chains.last());
@@ -238,11 +244,11 @@ export class Queryable<TTable> {
 
         wheres.push(new QueryUnit(
           QueriedBoolean,
-          `${helpers.key(chains.concat(sourceTableFkColumnName).join("."))} = ${helpers.key([chains.length > 1 ? "" : "TBL"].filter(item => item).concat(chains.slice(0, -1)).concat([targetTablePrimaryKeyColumnName]).join("."))}`
+          `${helpers.key(chains.concat(sourceTableFkColumnName).join("."))} = ${helpers.key([chains.length > 1 ? "" : this._as].filter(item => item).concat(chains.slice(0, -1)).concat([targetTablePrimaryKeyColumnName]).join("."))}`
         ));
       }
 
-      return this.join(chains.join("."), new Queryable(this._dbConnection, targetTableType).where(() => wheres), true);
+      return this.join(chains.join("."), targetTableType, true, qr => qr.where(() => wheres));
     }
 
     throw new Error(prevTableDef.name + "의 FK/FKT 설정이 잘못되었습니다.");
@@ -504,7 +510,7 @@ export class Queryable<TTable> {
     query += `ON ${keys.map(key => `${helpers.tableKey(tableDef)}.[${key}] = [match].${key}`).join(" AND ")}\r\n`;
     query += "WHEN MATCHED THEN\r\n";
     query += `  UPDATE SET\r\n`;
-    query += itemUpdateKeys.map(key => `    [${key}] = ${helpers.query(item[key]).replace(/\[?TBL]?\./, "")}`).join(",\r\n") + "\r\n";
+    query += itemUpdateKeys.map(key => `    [${key}] = ${helpers.query(item[key]).replace(new RegExp("\\[?" + this._as + "]?\\.", "g"), "")}`).join(",\r\n") + "\r\n";
     query += "WHEN NOT MATCHED THEN\r\n";
     query += `  INSERT (${itemInsertKeys.map(key => `[${key}]`).join(", ")})\r\n`;
     query += `  VALUES (${itemInsertKeys.map(key => helpers.query(item[key]))})\r\n`;
@@ -648,7 +654,7 @@ export class Queryable<TTable> {
   }
 
   private _clone(): Queryable<TTable> {
-    const result = new Queryable<TTable>(this._dbConnection, this.tableType);
+    const result = new Queryable<TTable>(this._dbConnection, this.tableType, this._as);
     result._queryObj = Object.clone(this._queryObj, {excludeProps: ["join", "from"]});
     result._queryObj.join = [...this._queryObj.join];
     result._queryObj.from = this._queryObj.from;
@@ -661,7 +667,7 @@ export class Queryable<TTable> {
 
     const newSelect = {};
     for (const key of Object.keys(this._queryObj.select)) {
-      newSelect[key] = new QueryUnit(this._queryObj.select[key].type || this._queryObj.select[key].constructor, `[TBL].[${key}]`);
+      newSelect[key] = new QueryUnit(this._queryObj.select[key].type || this._queryObj.select[key].constructor, `[${this._as}].[${key}]`);
       result._queryObj.select = newSelect;
     }
     return result;
