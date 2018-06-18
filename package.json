@@ -1,6 +1,6 @@
 {
   "name": "simplism",
-  "version": "7.1.42",
+  "version": "7.1.43",
   "description": "Simplism Packages Source Code",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -52,6 +52,7 @@
     "@types/webpack-node-externals": "^1.6.3",
     "@types/ws": "^5.1.2",
     "@types/yargs": "^11.0.0",
+    "angular-router-loader": "^0.8.5",
     "bufferutil": "^3.0.5",
     "chokidar": "^2.0.3",
     "codelyzer": "^4.3.0",
