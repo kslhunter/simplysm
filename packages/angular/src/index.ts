@@ -31,6 +31,7 @@ export * from "./providers/SdFileDialogProvider";
 export * from "./providers/SdLocalStorageProvider";
 export * from "./providers/SdOrmProvider";
 export * from "./providers/SdToastProvider";
+export * from "./providers/SdModalProvider";
 export * from "./providers/SdWebSocketProvider";
 
 export * from "./SangularModule";

@@ -25,6 +25,7 @@ export class QueriedBoolean extends Boolean {
 
 export interface IQueryObj {
   top: number | undefined;
+  hasCustomSelect: boolean;
   select: { [key: string]: any };
   join: {
     isMulti: boolean;
@@ -34,7 +35,7 @@ export interface IQueryObj {
   where: string[];
   having: string[];
   limit: [number, number] | undefined;
-  orderBy: [string, "ASC" | "DEC"][];
+  orderBy: [string, "ASC" | "DESC"][];
   groupBy: string[];
   distinct: boolean;
   from: Queryable<any> | undefined;
@@ -43,6 +44,7 @@ export interface IQueryObj {
 export class Queryable<TTable> {
   private _queryObj: IQueryObj = {
     top: undefined,
+    hasCustomSelect: false,
     select: {},
     join: [],
     where: [],
@@ -87,7 +89,7 @@ export class Queryable<TTable> {
       }
       else {
         q += `OUTER APPLY (\r\n`;
-        q += join.queryable.query.replace(/\r\n/g, "\r\n  ").trim() + "\r\n";
+        q += `  ` + join.queryable.query.replace(/\r\n/g, "\r\n  ").trim() + "\r\n";
         q += `) as [${join.as}]\r\n`;
       }
     }
@@ -102,6 +104,10 @@ export class Queryable<TTable> {
 
     if (this._queryObj.having.length > 0) {
       q += `HAVING ${this._queryObj.having.map(item => `(${item})`).join(" AND ")}\r\n`;
+    }
+
+    if (this._queryObj.orderBy.length > 0) {
+      q += "ORDER BY " + this._queryObj.orderBy.map(item => helpers.key(item[0]) + " " + item[1]).join(", ") + "\r\n";
     }
 
     if (this._queryObj.limit) {
@@ -160,7 +166,7 @@ export class Queryable<TTable> {
     }
   }
 
-  public join<A extends string, D, M, P extends (object | undefined)>(as: A, tableType: Type<D>, isMulti: boolean, queryableFwd: (qr: Queryable<D>, item: TTable) => Queryable<M>): Queryable<TTable & { [K in A]: (M | M[]) }> {
+  public join<A extends string, D, M, P extends (object | undefined), IM extends boolean>(as: A, tableType: Type<D>, isMulti: IM, queryableFwd: (qr: Queryable<D>, item: TTable) => Queryable<M>): Queryable<TTable & { [K in A]: (IM extends true ? M[] : M) }> {
     const queryable = queryableFwd(new Queryable(this._dbConnection, tableType, as), this._entity);
     const result = this._clone();
     result._queryObj.join.push({isMulti, as, queryable});
@@ -316,6 +322,13 @@ export class Queryable<TTable> {
     return result;
   }
 
+  public orderBy(colFwd: (item: TTable) => (any | QueryUnit<any>), rule: "ASC" | "DESC" = "ASC"): Queryable<TTable> {
+    const result = this._clone();
+    const col = colFwd(result._entity);
+    result._queryObj.orderBy.push([col.query, rule]);
+    return result;
+  }
+
   public distinct(): Queryable<TTable> {
     const result = this._clone();
     result._queryObj.distinct = true;
@@ -325,6 +338,11 @@ export class Queryable<TTable> {
   public select<C extends { [key: string]: any }>(cols: (item: TTable) => C): Queryable<TypeOfGenericForObject<C>> {
     let result = this._clone();
 
+    if (result._queryObj.hasCustomSelect) {
+      result = result.wrap();
+    }
+
+    const entity = result._entity;
     result._queryObj.select = {};
     const makeSelect = (prevKeys: string[], obj: any) => {
       for (const key of Object.keys(obj)) {
@@ -354,9 +372,9 @@ export class Queryable<TTable> {
       }
     };
 
-    makeSelect([], cols(this._entity));
+    makeSelect([], cols(entity));
 
-    if (this._queryObj.groupBy.length < 1) {
+    if (result._queryObj.groupBy.length < 1) {
       const groupedKeys: string[] = [];
       Object.keys(result._queryObj.select).filter(key => {
         const item = result._queryObj.select[key];
@@ -371,6 +389,7 @@ export class Queryable<TTable> {
       }
     }
 
+    result._queryObj.hasCustomSelect = true;
     return result as Queryable<any>;
   }
 
@@ -662,7 +681,7 @@ export class Queryable<TTable> {
   }
 
   private wrap(): Queryable<TTable> {
-    const result = new Queryable<TTable>(this._dbConnection, this.tableType);
+    const result = new Queryable<TTable>(this._dbConnection, this.tableType, this._as);
     result._queryObj.from = this._clone();
 
     const newSelect = {};
@@ -670,6 +689,7 @@ export class Queryable<TTable> {
       newSelect[key] = new QueryUnit(this._queryObj.select[key].type || this._queryObj.select[key].constructor, `[${this._as}].[${key}]`);
       result._queryObj.select = newSelect;
     }
+
     return result;
   }
 

@@ -1,6 +1,5 @@
-import {ErrorHandler, NgModule} from "@angular/core";
-import {BrowserModule, EVENT_MANAGER_PLUGINS} from "@angular/platform-browser";
-import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
+import {ErrorHandler, ModuleWithProviders, NgModule} from "@angular/core";
+import {EVENT_MANAGER_PLUGINS} from "@angular/platform-browser";
 import {ResizeEventPlugin} from "./plugins/ResizeEventPlugin";
 import {SdToastProvider} from "./providers/SdToastProvider";
 import {SdFileDialogProvider} from "./providers/SdFileDialogProvider";
@@ -33,6 +32,8 @@ import {SdComboboxItemControl} from "./controls/sd-combobox-item.control";
 import {GlobalErrorHandler} from "./plugins/GlobalErrorHandler";
 import {SdSelectControl} from "./controls/sd-select.control";
 import {OptionValueAttribute} from "./attributes/option-value.attribute";
+import {CommonModule} from "@angular/common";
+import {SdModalProvider} from "./providers/SdModalProvider";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -70,6 +71,7 @@ const providers: any[] = [
   SdLocalStorageProvider,
   SdOrmProvider,
   SdToastProvider,
+  SdModalProvider,
   SdWebSocketProvider,
   {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
   {provide: ErrorHandler, useClass: GlobalErrorHandler}
@@ -77,20 +79,22 @@ const providers: any[] = [
 
 @NgModule({
   imports: [
-    BrowserModule,
-    BrowserAnimationsModule
+    CommonModule
   ],
   exports: [
-    BrowserModule,
-    BrowserAnimationsModule,
     ...controls,
     ...attributes
   ],
   declarations: [
     ...controls,
     ...attributes
-  ],
-  providers
+  ]
 })
 export class SangularModule {
+  public static forRoot(): ModuleWithProviders {
+    return {
+      ngModule: SangularModule,
+      providers
+    };
+  }
 }

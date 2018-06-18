@@ -186,11 +186,15 @@ export class ClientPackageBuilder {
           {
             test: /\.ts$/,
             exclude: /node_modules/,
-            loader: this._loadersPath("ts-transpile-loader.js"),
-            options: {
-              logger: this._logger,
-              tsConfigPath: this._packagePath("tsconfig.spec.json")
-            }
+            loaders: [
+              {
+                loader: this._loadersPath("ts-transpile-loader.js"),
+                options: {
+                  logger: this._logger
+                }
+              },
+              "angular-router-loader"
+            ]
           },
           {
             test: /\.html$/,
@@ -267,7 +271,8 @@ export class ClientPackageBuilder {
                   logger: this._logger
                 }
               },
-              this._loadersPath("inline-sass-loader.js")
+              this._loadersPath("inline-sass-loader.js"),
+              "angular-router-loader"
             ]
           },
           {

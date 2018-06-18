@@ -468,6 +468,12 @@ amdefine@>=0.0.4:
   version "1.0.1"
   resolved "http://210.180.118.73:4873/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
 
+angular-router-loader@^0.8.5:
+  version "0.8.5"
+  resolved "http://210.180.118.73:4873/angular-router-loader/-/angular-router-loader-0.8.5.tgz#42b378d0914c1ce412b851c1d92b80dbbe4f2fc5"
+  dependencies:
+    loader-utils "^1.0.2"
+
 ansi-html@0.0.7:
   version "0.0.7"
   resolved "http://210.180.118.73:4873/ansi-html/-/ansi-html-0.0.7.tgz#813584021962a9e9e6fd039f940d12f56ca7859e"
@@ -3528,9 +3534,9 @@ node-sass@^4.9.0:
     stdout-stream "^1.4.0"
     "true-case-path" "^1.0.2"
 
-nodemailer@^4.6.6:
-  version "4.6.6"
-  resolved "http://210.180.118.73:4873/nodemailer/-/nodemailer-4.6.6.tgz#9ba4be51ffa5da2b2dbc392b87e30bff7166e139"
+nodemailer@^4.6.7:
+  version "4.6.7"
+  resolved "http://210.180.118.73:4873/nodemailer/-/nodemailer-4.6.7.tgz#b68de7f36d65618bdeeeb76234e3547d51266373"
 
 noop-logger@^0.1.1:
   version "0.1.1"
