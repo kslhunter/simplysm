@@ -7,15 +7,16 @@ import {DateOnly, DateTime} from "@simplism/core";
   selector: "sd-textfield",
   template: `
     <input #input
-           [type]="type === 'datetime' ? 'datetime-local' : type"
+           [type]="type === 'number' ? 'text' : type === 'datetime' ? 'datetime-local' : type"
            [required]="required"
            [value]="controlValue"
            [placeholder]="placeholder || ''"
-           [min]="min"
+           [attr.sd-invalid]="min !== undefined && type === 'number' && value < min"
            (input)="onInputInput($event)"
            (focus)="onFocus($event)"
            (blur)="onBlur($event)"
-           [disabled]="disabled"/>`,
+           [disabled]="disabled"
+           [style.text-align]="type === 'number' ? 'right' : undefined"/>`,
   styles: [/* language=SCSS */ `
     @import "../../styles/presets";
 
@@ -54,7 +55,6 @@ import {DateOnly, DateTime} from "@simplism/core";
           background: black;
           color: text-color(light);
         }
-
       }
     }
   `]
@@ -106,13 +106,14 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
     return this.value === undefined ? ""
       : this.value instanceof DateTime ? this.value.toFormatString("yyyy-MM-ddTHH:mm")
         : this.value instanceof DateOnly ? (this.type === "month" ? this.value.toFormatString("yyyy-MM") : this.value.toString())
-          : this.value;
+          : this.type === "number" && typeof this.value === "number" ? this.value.toLocaleString()
+            : this.value;
   }
 
   public onInputInput(event: Event): void {
     const inputEl = event.target as HTMLInputElement;
     if (this.type === "number") {
-      this.value = Number(inputEl.value);
+      this.value = Number(inputEl.value.replace(/,/g, ""));
     }
     else if (this.type === "date" || this.type === "month") {
       this.value = DateOnly.parse(inputEl.value);

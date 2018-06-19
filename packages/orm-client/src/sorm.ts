@@ -1,4 +1,4 @@
-import {InvalidArgumentsException, Type} from "@simplism/core";
+import {DateOnly, DateTime, InvalidArgumentsException, Type} from "@simplism/core";
 import {helpers} from "./helpers";
 import {QueryUnit} from "./QueryUnit";
 import {QueriedBoolean, TypeOfGenericForObject} from "./Queryable";
@@ -48,10 +48,10 @@ export const sorm = {
   },
 
   equal<T>(source: T | QueryUnit<T>, target: T | QueryUnit<T>): QueryUnit<QueriedBoolean> {
-    return new QueryUnit(QueriedBoolean, helpers.query(source) + " = " + helpers.query(target));
+    return new QueryUnit(QueriedBoolean, helpers.query(source, true) + " = " + helpers.query(target, true));
   },
 
-  lessThen(source: number | QueryUnit<number>, target: number | QueryUnit<number>): QueryUnit<QueriedBoolean> {
+  lessThen(source: number | DateOnly | DateTime | QueryUnit<Number | DateOnly | DateTime>, target: number | DateOnly | DateTime | QueryUnit<Number | DateOnly | DateTime>): QueryUnit<QueriedBoolean> {
     return new QueryUnit(QueriedBoolean, helpers.query(source) + " < " + helpers.query(target));
   },
 
@@ -121,7 +121,12 @@ export const sorm = {
   },
 
   count<T>(arg?: T | QueryUnit<T>): QueryUnit<Number | undefined> {
-    return new QueryUnit(Number, "COUNT(" + (arg ? helpers.query(arg) : "*") + ")");
+    if (arg) {
+      return new QueryUnit(Number, "COUNT(DISTINCT(" + helpers.query(arg) + "))");
+    }
+    else {
+      return new QueryUnit(Number, "COUNT(*)");
+    }
   },
 
   max<T>(unit: T | QueryUnit<T>): QueryUnit<T | undefined> {

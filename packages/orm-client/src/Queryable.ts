@@ -35,7 +35,7 @@ export interface IQueryObj {
   where: string[];
   having: string[];
   limit: [number, number] | undefined;
-  orderBy: [string, "ASC" | "DESC"][];
+  orderBy: [string, boolean][];
   groupBy: string[];
   distinct: boolean;
   from: Queryable<any> | undefined;
@@ -107,7 +107,7 @@ export class Queryable<TTable> {
     }
 
     if (this._queryObj.orderBy.length > 0) {
-      q += "ORDER BY " + this._queryObj.orderBy.map(item => helpers.key(item[0]) + " " + item[1]).join(", ") + "\r\n";
+      q += "ORDER BY " + this._queryObj.orderBy.map(item => helpers.key(item[0]) + " " + (item[1] ? "DESC" : "ASC")).join(", ") + "\r\n";
     }
 
     if (this._queryObj.limit) {
@@ -132,9 +132,20 @@ export class Queryable<TTable> {
       let cursor = result;
       for (const chain  of selectKey.split(".").slice(0, -1)) {
         cumulatedChain.push(chain);
-        const joinDef = this._queryObj.join.single(item => item.as === cumulatedChain.join("."))!;
+        let joinDef = this._queryObj.join.single(item => item.as === cumulatedChain.join("."));
         if (!joinDef) {
-          throw new Error("'" + cumulatedChain.join(".") + "'에 대한 'JOIN'이 지정되어있지 않습니다.");
+          let currJoinDef = this._queryObj.join.single(item => item.as === cumulatedChain[0]);
+          for (const chainOfCumulated of cumulatedChain.slice(1)) {
+            if (!currJoinDef) {
+              throw new Error("'" + cumulatedChain.join(".") + "'에 대한 'JOIN'이 지정되어있지 않습니다.");
+            }
+            currJoinDef = currJoinDef.queryable._queryObj.join.single(item => item.as === chainOfCumulated);
+          }
+          if (!currJoinDef) {
+            throw new Error("'" + cumulatedChain.join(".") + "'에 대한 'JOIN'이 지정되어있지 않습니다.");
+          }
+
+          joinDef = currJoinDef;
         }
 
         if (joinDef.isMulti) {
@@ -322,10 +333,10 @@ export class Queryable<TTable> {
     return result;
   }
 
-  public orderBy(colFwd: (item: TTable) => (any | QueryUnit<any>), rule: "ASC" | "DESC" = "ASC"): Queryable<TTable> {
+  public orderBy(colFwd: (item: TTable) => (any | QueryUnit<any>), desc: boolean = false): Queryable<TTable> {
     const result = this._clone();
     const col = colFwd(result._entity);
-    result._queryObj.orderBy.push([col.query, rule]);
+    result._queryObj.orderBy.push([col.query, desc]);
     return result;
   }
 
@@ -408,7 +419,7 @@ export class Queryable<TTable> {
   }
 
   public async singleAsync(): Promise<TTable | undefined> {
-    const result = await this.top(2).resultAsync();
+    const result = await this.resultAsync();
     if (result.length > 1) {
       throw new Error("복수의 결과가 있습니다.");
     }
@@ -567,20 +578,6 @@ export class Queryable<TTable> {
   private _generateResult(arr: any[] | undefined): any[] {
     if (!arr) return [];
 
-    const joinDefs = Object.keys(this._queryObj.select)
-      .orderBy(key => key.split(".").length, true)
-      .map(key => key.split(".").slice(0, -1).join("."))
-      .filter(key => key)
-      .distinct()
-      .filterExists()
-      .map(key => {
-        const joinDef = this._queryObj.join.single(item => item.as === key);
-        return {
-          as: joinDef!.as,
-          isMulti: joinDef!.isMulti
-        };
-      });
-
     let result: any[] = arr;
 
     for (const item of result) {
@@ -598,14 +595,43 @@ export class Queryable<TTable> {
       }
     }
 
-    for (const joinDef of joinDefs) {
+    let colDefs: { as: string; isMulti: boolean }[];
+    if (!this._queryObj.hasCustomSelect) {
+      colDefs = Object.keys(this._queryObj.select)
+        .orderBy(key => key.split(".").length, true)
+        .map(key => key.split(".").slice(0, -1).join("."))
+        .filter(key => key)
+        .distinct()
+        .filterExists()
+        .map(key => {
+          const joinDef = this._queryObj.join.single(item => item.as === key);
+          return {
+            as: joinDef!.as,
+            isMulti: joinDef!.isMulti
+          };
+        });
+    }
+    else {
+      colDefs = Object.keys(this._queryObj.select)
+        .orderBy(key => key.split(".").length, true)
+        .map(key => key.split(".").slice(0, -1).join("."))
+        .filter(key => key)
+        .distinct()
+        .filterExists()
+        .map(key => ({
+          as: key,
+          isMulti: true
+        }));
+    }
+
+    for (const colDef of colDefs) {
       const grouped: { key: any; values: any[] }[] = [];
       for (const item of result) {
         const keys = Object.keys(item)
-          .filter(key => !key.startsWith(joinDef.as + "."));
+          .filter(key => !key.startsWith(colDef.as + "."));
 
         const valueKeys = Object.keys(item)
-          .filter(valueKey => valueKey.startsWith(joinDef.as + "."))
+          .filter(valueKey => valueKey.startsWith(colDef.as + "."))
           .distinct();
 
         const keyObj = {};
@@ -615,7 +641,7 @@ export class Queryable<TTable> {
 
         const valueObj = {};
         for (const valueKey of valueKeys) {
-          valueObj[valueKey.slice(joinDef.as.length + 1)] = item[valueKey];
+          valueObj[valueKey.slice(colDef.as.length + 1)] = item[valueKey];
         }
 
         const exists = grouped.single(g => Object.equal(g.key, keyObj));
@@ -632,13 +658,13 @@ export class Queryable<TTable> {
 
       result = grouped.map(item => ({
         ...item.key,
-        [joinDef.as]: item.values
+        [colDef.as]: item.values
       }));
 
-      if (!joinDef.isMulti) {
+      if (!colDef.isMulti) {
         result = result.map(item => ({
           ...item,
-          [joinDef.as]: item[joinDef.as][0]
+          [colDef.as]: item[colDef.as][0]
         }));
       }
     }

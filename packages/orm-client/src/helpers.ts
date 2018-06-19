@@ -1,9 +1,10 @@
 import {DateOnly, DateTime, Time, Type, Uuid} from "@simplism/core";
 import {ITableDef} from "./decorators";
 import {QueryUnit} from "./QueryUnit";
+import {QueriedBoolean} from "./Queryable";
 
 export const helpers = {
-  query(val: any): string {
+  query(val: any, replaceQueriedBooleanToBoolean?: boolean): string {
     if (val == undefined) {
       return "NULL";
     }
@@ -32,7 +33,12 @@ export const helpers = {
       return `0x${val.toString("hex")}`;
     }
     else if (val instanceof QueryUnit) {
-      return val.query;
+      if (val.type === QueriedBoolean && replaceQueriedBooleanToBoolean) {
+        return "CASE WHEN " + val.query + " THEN 1 ELSE 0 END";
+      }
+      else {
+        return val.query;
+      }
     }
     throw new TypeError(val);
   },

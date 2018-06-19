@@ -213,7 +213,7 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
         opacity: 0;
         z-index: 3;
         pointer-events: none;
-        transition: .1s linear;
+        transition: opacity .1s linear;
       }
     }
   `],
@@ -368,6 +368,23 @@ export class SdSheetControl implements DoCheck, OnInit {
     const el = event.target as Element;
     this.headTop = el.scrollTop;
     this.fixedLeft = el.scrollLeft;
+
+    if (document.activeElement.classList.contains("_col")) {
+      const cellEl = document.activeElement as HTMLDivElement;
+      const indicatorEl = this._elRef.nativeElement.findAll("._cell-indicator")[0] as (HTMLDivElement | undefined);
+
+      if (indicatorEl) {
+        Object.assign(
+          indicatorEl.style,
+          {
+            top: (cellEl.windowOffset.top - 2) + "px",
+            left: (cellEl.windowOffset.left - 2) + "px",
+            width: (cellEl.offsetWidth + 4 - 1) + "px",
+            height: (cellEl.offsetHeight + 4 - 1) + "px"
+          }
+        );
+      }
+    }
   }
 
   public onCellFocus(event: FocusEvent): void {
@@ -446,6 +463,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         const focusableEls = targetEl.findFocusableAll();
         if (focusableEls.length > 0) {
           focusableEls[0].focus();
+          event.preventDefault();
         }
       }
       else if (event.key === "ArrowDown") {
@@ -458,6 +476,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         const nextRowEl = bodyEl.children.item(rowIndex + 1);
         if (nextRowEl) {
           (nextRowEl.findAll("._col")[cellIndex] as HTMLElement).focus();
+          event.preventDefault();
         }
       }
       else if (event.key === "ArrowUp") {
@@ -470,6 +489,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         if (rowIndex - 1 >= 0) {
           const nextRowEl = bodyEl.children.item(rowIndex - 1);
           (nextRowEl.findAll("._col")[cellIndex] as HTMLElement).focus();
+          event.preventDefault();
         }
       }
       else if (event.key === "ArrowRight") {
@@ -479,6 +499,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         const nextCell = rowEl.findAll("._col")[cellIndex + 1] as HTMLElement;
         if (nextCell) {
           nextCell.focus();
+          event.preventDefault();
         }
       }
       else if (event.key === "ArrowLeft") {
@@ -488,6 +509,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         if (cellIndex - 1 >= 0) {
           const nextCell = rowEl.findAll("._col")[cellIndex - 1] as HTMLElement;
           nextCell.focus();
+          event.preventDefault();
         }
       }
     }
@@ -495,6 +517,7 @@ export class SdSheetControl implements DoCheck, OnInit {
       if (event.key === "Escape") {
         const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
         cellEl.focus();
+        event.preventDefault();
       }
       if (event.key === "Enter") {
         const cellEl = targetEl.findParent("._col") as HTMLElement;
@@ -516,6 +539,8 @@ export class SdSheetControl implements DoCheck, OnInit {
           else {
             nextRowCellEl.focus();
           }*/
+
+          event.preventDefault();
         }
       }
     }
