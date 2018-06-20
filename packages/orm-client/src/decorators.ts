@@ -37,12 +37,12 @@ export interface IForeignKeyTargetDef {
 
 export const modelDefMetadataKey = "model-def";
 
-export function Table<T>(database: string, scheme?: string, name?: string): (classType: Type<T>) => void {
+export function Table<T>(database: string, scheme?: string, table?: string): (classType: Type<T>) => void {
   return (classType: Type<T>) => {
     const def: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, classType) || {};
     def.database = database;
-    def.scheme = name || "dbo";
-    def.name = name || classType.name;
+    def.scheme = scheme || "dbo";
+    def.name = table || classType.name;
 
     core.Reflect.defineMetadata(modelDefMetadataKey, def, classType);
   };
