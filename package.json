@@ -1,0 +1,19 @@
+{
+  "name": "simplism",
+  "version": "8.0.0",
+  "description": "Simplism Packages Source Code",
+  "repository": "github:kslhunter/simplism8",
+  "author": "kslhunter",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/core-js": "^2.5.0",
+    "@types/mocha": "^5.2.2",
+    "@types/node": "^10.3.4",
+    "core-js": "^2.5.7",
+    "mocha": "^5.2.0",
+    "nyc": "^12.0.2",
+    "ts-node": "^6.1.1",
+    "tsconfig-paths": "^3.4.0",
+    "typescript": "^2.9.2"
+  }
+}

@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="QueryBuilder" type="mocha-javascript-test-runner" factoryName="Mocha" nameIsGenerated="true">
+    <node-interpreter>project</node-interpreter>
+    <node-options />
+    <working-directory>$PROJECT_DIR$/packages/orm-core</working-directory>
+    <pass-parent-env>true</pass-parent-env>
+    <ui>bdd</ui>
+    <extra-mocha-options>--require ts-node/register --require tsconfig-paths/register</extra-mocha-options>
+    <test-kind>SUITE</test-kind>
+    <test-file>$PROJECT_DIR$/packages/orm-core/test/QueryBuilder.spec.ts</test-file>
+    <test-names>
+      <name value="QueryBuilder" />
+    </test-names>
+    <method />
+  </configuration>
+</component>
