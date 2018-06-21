@@ -34,6 +34,7 @@ import {SdSelectControl} from "./controls/sd-select.control";
 import {OptionValueAttribute} from "./attributes/option-value.attribute";
 import {CommonModule} from "@angular/common";
 import {SdModalProvider} from "./providers/SdModalProvider";
+import {SdModalControl} from "./controls/sd-modal.control";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -61,6 +62,10 @@ const controls: any[] = [
   SdSelectControl
 ];
 
+const entryControls: any[] = [
+  SdModalControl
+];
+
 const attributes: any[] = [
   OptionValueAttribute
 ];
@@ -83,11 +88,16 @@ const providers: any[] = [
   ],
   exports: [
     ...controls,
+    ...entryControls,
     ...attributes
   ],
   declarations: [
     ...controls,
+    ...entryControls,
     ...attributes
+  ],
+  entryComponents: [
+    ...entryControls
   ]
 })
 export class SangularModule {

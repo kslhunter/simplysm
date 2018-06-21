@@ -1,6 +1,6 @@
 {
   "name": "@simplism/orm-client",
-  "version": "7.1.44",
+  "version": "7.1.46",
   "description": "Simplism ORM Client Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -11,8 +11,8 @@
     "core-js": "^2.5.7"
   },
   "peerDependencies": {
-    "@simplism/core": "^7.1.44",
-    "@simplism/websocket-client": "^7.1.44",
-    "@simplism/websocket-common": "^7.1.44"
+    "@simplism/core": "^7.1.46",
+    "@simplism/websocket-client": "^7.1.46",
+    "@simplism/websocket-common": "^7.1.46"
   }
 }

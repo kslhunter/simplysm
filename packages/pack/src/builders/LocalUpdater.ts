@@ -17,11 +17,11 @@ export class LocalUpdater {
           .on("ready", () => {
             this._logger.log(`로컬 업데이트 감지 시작...`);
 
-            /*let preservedFileChanges: { type: string; filePath: string }[] = [];
-            let timeout: NodeJS.Timer;*/
+            let preservedFileChanges: { type: string; filePath: string }[] = [];
+            let timeout: NodeJS.Timer;
 
             const onWatched = (type: string, filePath: string) => {
-              this._logger.log(`변경됨: ${type}    => ${filePath}`);
+              /*this._logger.log(`변경됨: ${type}    => ${filePath}`);
 
               const relativeSourcePath = path.relative(this._sourcePath(), filePath);
               const targetPath = this._targetPath(relativeSourcePath);
@@ -30,17 +30,17 @@ export class LocalUpdater {
               }
               else {
                 fs.copyFileSync(filePath, targetPath);
-              }
+              }*/
 
-              /*preservedFileChanges.push({type, filePath});
+              preservedFileChanges.push({type, filePath});
 
               clearTimeout(timeout);
               timeout = setTimeout(
                 () => {
                   try {
-                    if (preservedFileChanges.every(item => /(?!\.d)\.ts$/.test(item.filePath))) {
+                    /*if (preservedFileChanges.every(item => /(?!\.d)\.ts$/.test(item.filePath))) {
                       return;
-                    }
+                    }*/
 
                     const fileChanges = preservedFileChanges;
                     preservedFileChanges = [];
@@ -63,7 +63,7 @@ export class LocalUpdater {
                   }
                 },
                 300
-              );*/
+              );
             };
 
             watcher

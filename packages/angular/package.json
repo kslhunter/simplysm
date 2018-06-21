@@ -1,6 +1,6 @@
 {
   "name": "@simplism/angular",
-  "version": "7.1.44",
+  "version": "7.1.46",
   "description": "Simplism Angular Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,25 +8,25 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@angular/animations": "^6.0.5",
-    "@angular/common": "^6.0.5",
-    "@angular/compiler": "^6.0.5",
-    "@angular/core": "^6.0.5",
-    "@angular/platform-browser": "^6.0.5",
-    "@angular/platform-browser-dynamic": "^6.0.5",
-    "@angular/router": "^6.0.5",
-    "@fortawesome/fontawesome-svg-core": "^1.2.0-14",
-    "@fortawesome/free-regular-svg-icons": "^5.1.0-11",
-    "@fortawesome/free-solid-svg-icons": "^5.1.0-11",
+    "@angular/animations": "^6.0.6",
+    "@angular/common": "^6.0.6",
+    "@angular/compiler": "^6.0.6",
+    "@angular/core": "^6.0.6",
+    "@angular/platform-browser": "^6.0.6",
+    "@angular/platform-browser-dynamic": "^6.0.6",
+    "@angular/router": "^6.0.6",
+    "@fortawesome/fontawesome-svg-core": "^1.2.0",
+    "@fortawesome/free-regular-svg-icons": "^5.1.0",
+    "@fortawesome/free-solid-svg-icons": "^5.1.0",
     "core-js": "^2.5.7",
     "rxjs": "^6.2.1",
     "zone.js": "^0.8.26"
   },
   "peerDependencies": {
-    "@simplism/core": "^7.1.44",
-    "@simplism/excel": "^7.1.44",
-    "@simplism/orm-client": "^7.1.44",
-    "@simplism/websocket-client": "^7.1.44",
-    "@simplism/websocket-common": "^7.1.44"
+    "@simplism/core": "^7.1.46",
+    "@simplism/excel": "^7.1.46",
+    "@simplism/orm-client": "^7.1.46",
+    "@simplism/websocket-client": "^7.1.46",
+    "@simplism/websocket-common": "^7.1.46"
   }
 }

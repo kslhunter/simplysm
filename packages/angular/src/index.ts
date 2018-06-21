@@ -11,6 +11,7 @@ export * from "./controls/sd-form-item.control";
 export * from "./controls/sd-icon.control";
 export * from "./controls/sd-list.control";
 export * from "./controls/sd-list-item.control";
+export * from "./controls/sd-modal.control";
 export * from "./controls/sd-pagination.control";
 export * from "./controls/sd-pane.control";
 export * from "./controls/sd-select.control";

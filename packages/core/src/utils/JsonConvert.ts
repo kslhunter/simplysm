@@ -37,7 +37,23 @@ export class JsonConvert {
       return value;
     }
 
-    return JSON.stringify(obj, replacer, options && options.space);
+    function bufferReplacer(value: any): any {
+      if (value instanceof Buffer) {
+        return {type: "Buffer", data: value["data"]};
+      }
+      else if (!(value instanceof Array) && value instanceof Object && Object.keys(value).length > 0) {
+        const result = {};
+        for (const key of Object.keys(value)) {
+          result[key] = bufferReplacer(value[key]);
+        }
+        return result;
+      }
+      else {
+        return value;
+      }
+    }
+
+    return JSON.stringify(bufferReplacer(obj), replacer, options && options.space);
   }
 
   public static parse(json: string): any {
