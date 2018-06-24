@@ -1,0 +1,10 @@
+import {Column, Table} from "../../src/common/decorators";
+
+@Table("SD_ORM_QUERY")
+export class Company {
+  @Column({primaryKey: 1, autoIncrement: true})
+  public id?: number;
+
+  @Column()
+  public name!: string;
+}

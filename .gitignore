@@ -3,3 +3,5 @@ dist
 .nyc-output
 node_modules
 yarn-error.log
+logs
+_logs

@@ -1,14 +1,17 @@
 {
-  "name": "@simplism/core",
+  "name": "@simplism/orm-connector",
   "version": "8.0.0",
-  "description": "Simplism Core Package",
+  "description": "Simplism ORM Connector Package",
   "repository": "github:kslhunter/simplism8",
   "author": "kslhunter",
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@simplism/core": "^7.1.14",
+    "tedious": "^2.6.1"
+  },
   "devDependencies": {
-    "mocha": "^5.2.0",
-    "sinon": "^6.0.1"
+    "mocha": "^5.2.0"
   }
 }

@@ -8,6 +8,11 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "declaration": true,
-    "removeComments": true
+    "removeComments": true,
+    "plugins": [
+      {
+        "name": "tslint-language-service"
+      }
+    ]
   }
 }

@@ -4,9 +4,15 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.nyc_output" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/core/_logs" />
       <excludeFolder url="file://$MODULE_DIR$/packages/core/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/orm-core/.nyc_output" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/orm-core/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/core/logs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/orm-connector/.nyc_output" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/orm-connector/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/orm-query/.nyc_output" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/orm-query/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/socket-server/.nyc_output" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/socket-server/dist" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
     </content>

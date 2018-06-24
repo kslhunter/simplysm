@@ -1,8 +1,13 @@
 <component name="ProjectDictionaryState">
   <dictionary name="kslhunter">
     <words>
+      <w>eofline</w>
+      <w>inferrable</w>
+      <w>multiline</w>
       <w>nullable</w>
+      <w>parens</w>
       <w>queryables</w>
+      <w>singleline</w>
       <w>upsert</w>
     </words>
   </dictionary>

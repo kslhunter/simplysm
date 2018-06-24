@@ -5,15 +5,30 @@
   "repository": "github:kslhunter/simplism8",
   "author": "kslhunter",
   "license": "MIT",
+  "scripts": {
+    "lint": "yarn lint:core && yarn lint:orm-query && yarn lint:orm-connector",
+    "--": "",
+    "lint:core": "tslint -c packages/core/tslint.json -p packages/core/tsconfig.json",
+    "-- ": "",
+    "lint:orm-query": "tslint -c packages/orm-query/tslint.json -p packages/orm-query/tsconfig.json",
+    "--  ": "",
+    "lint:orm-connector": "tslint -c packages/orm-connector/tslint.json -p packages/orm-connector/tsconfig.json"
+  },
   "devDependencies": {
     "@types/core-js": "^2.5.0",
     "@types/mocha": "^5.2.2",
     "@types/node": "^10.3.4",
+    "@types/sinon": "^5.0.1",
+    "@types/tedious": "^1.8.33",
     "core-js": "^2.5.7",
     "mocha": "^5.2.0",
     "nyc": "^12.0.2",
+    "sinon": "^6.0.1",
+    "tedious": "^2.6.1",
     "ts-node": "^6.1.1",
     "tsconfig-paths": "^3.4.0",
+    "tslint": "^5.10.0",
+    "tslint-language-service": "^0.9.9",
     "typescript": "^2.9.2"
   }
 }
