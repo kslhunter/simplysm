@@ -1,6 +1,5 @@
 import "core-js/es7/reflect";
-import {Type} from "@simplism/core";
-import {optional} from "../../../core/src/util/optional";
+import {optional, Type} from "@simplism/core";
 
 export interface ITableDef {
   database: string;

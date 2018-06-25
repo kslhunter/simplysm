@@ -1,6 +1,6 @@
 import * as tedious from "tedious";
-import {IDbConnectionConfig} from "./common/IDbConnectionConfig";
-import {Logger} from "../../core/src/util/Logger";
+import {IDbConnectionConfig} from "./IDbConnectionConfig";
+import {Logger} from "@simplism/core";
 
 export class DbConnection {
   private readonly _logger = new Logger("@simplism/orm-connector", "DbConnection");

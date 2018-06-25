@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@simplism/core": [
+        "../core"
+      ],
+      "@simplism/socket-common": [
+        "../socket-common"
+      ]
+    }
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

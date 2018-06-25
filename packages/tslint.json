@@ -80,6 +80,26 @@
     "no-inferred-empty-object-type": false,
     "prefer-function-over-method": false,
     "binary-expression-operand-order": false,
-    "no-empty": false
+    "no-empty": false,
+    "triple-equals": [
+      true,
+      "allow-undefined-check"
+    ],
+    "no-bitwise": false,
+    "no-string-literal": false,
+    "no-return-await": false,
+    "space-before-function-paren": [
+      true,
+      {
+        "anonymous": "always",
+        "asyncArrow": "always",
+        "constructor": "never",
+        "method": "never",
+        "named": "never"
+      }
+    ],
+    "no-dynamic-delete": false,
+    "prefer-conditional-expression": false,
+    "no-unnecessary-type-assertion": false
   }
 }

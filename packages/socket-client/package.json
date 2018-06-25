@@ -1,7 +1,7 @@
 {
-  "name": "@simplism/core",
+  "name": "@simplism/socket-client",
   "version": "8.0.0",
-  "description": "Simplism ORM Query Package",
+  "description": "Simplism Socket Client Package",
   "repository": "github:kslhunter/simplism8",
   "author": "kslhunter",
   "license": "MIT",
@@ -9,9 +9,11 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplism/core": "^8.0.0",
-    "core-js": "^2.5.7"
+    "@simplism/socket-common": "^8.0.0"
   },
   "devDependencies": {
-    "mocha": "^5.2.0"
+    "@simplism/socket-server": "^8.0.0",
+    "mocha": "^5.2.0",
+    "jsdom": "^11.11.0"
   }
 }

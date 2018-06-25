@@ -1,6 +1,6 @@
 import {QueryUnit} from "../query-builder/QueryUnit";
 import {QueryType} from "./types";
-import {optional} from "../../../core/src/util/optional";
+import {optional} from "@simplism/core";
 
 export const queryHelpers = {
   getFieldQuery(arg: QueryType | QueryUnit<QueryType>): string {

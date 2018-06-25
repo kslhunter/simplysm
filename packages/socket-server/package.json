@@ -8,9 +8,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/core": "^7.1.14"
-  },
-  "devDependencies": {
-    "mocha": "^5.2.0"
+    "@simplism/core": "^8.0.0",
+    "@simplism/socket-common": "^8.0.0",
+    "ws": "^5.2.1",
+    "mime": "^2.3.1"
   }
 }

@@ -1,8 +1,6 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "lib": [
       "es2017"
     ],
@@ -11,6 +9,9 @@
     "paths": {
       "@simplism/core": [
         "../core/src/index.ts"
+      ],
+      "@simplism/socket-common": [
+        "../socket-common/src/index.ts"
       ]
     }
   }

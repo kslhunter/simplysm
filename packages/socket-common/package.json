@@ -1,17 +1,13 @@
 {
-  "name": "@simplism/core",
+  "name": "@simplism/socket-common",
   "version": "8.0.0",
-  "description": "Simplism ORM Query Package",
+  "description": "Simplism Socket Common Package",
   "repository": "github:kslhunter/simplism8",
   "author": "kslhunter",
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/core": "^8.0.0",
-    "core-js": "^2.5.7"
-  },
-  "devDependencies": {
-    "mocha": "^5.2.0"
+    "@simplism/core": "^8.0.0"
   }
 }

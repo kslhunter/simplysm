@@ -1,7 +1,8 @@
 .idea/**/workspace.xml
 dist
-.nyc-output
+.nyc_output
 node_modules
 yarn-error.log
 logs
 _logs
+coverage

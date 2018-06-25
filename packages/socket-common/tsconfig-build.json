@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@simplism/core": [
+        "../core"
+      ]
+    }
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}
