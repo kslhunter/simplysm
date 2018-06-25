@@ -38,7 +38,7 @@ export interface IQueryObj {
   orderBy: [string, boolean][];
   groupBy: string[];
   distinct: boolean;
-  from: Queryable<any> | undefined;
+  from: Queryable<any>[] | Queryable<any> | undefined;
 }
 
 export class Queryable<TTable> {
@@ -55,10 +55,11 @@ export class Queryable<TTable> {
     distinct: false,
     from: undefined
   };
+  private readonly _dbConnection: Database;
+  public readonly tableType?: Type<TTable>;
+  private readonly _as: string;
 
   public get query(): string {
-    const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType);
-
     let q = "SELECT ";
 
     if (this._queryObj.distinct) {
@@ -72,17 +73,23 @@ export class Queryable<TTable> {
 
     q += Object.keys(this._queryObj.select).map(key => `  ${helpers.query(this._queryObj.select[key])} as [${key}]`).join(",\r\n") + "\r\n";
 
-    if (this._queryObj.from) {
+    if (this._queryObj.from && this._queryObj.from instanceof Array) {
+      q += `FROM (\r\n`;
+      q += "  " + this._queryObj.from.map(item => item.query.replace(/\r\n/g, "\r\n  ").trim()).join("\r\n  UNION ALL\r\n").trim() + "\r\n";
+      q += `) as ${helpers.key(this._as)}\r\n`;
+    }
+    else if (this._queryObj.from) {
       q += `FROM (\r\n`;
       q += "  " + this._queryObj.from.query.replace(/\r\n/g, "\r\n  ").trim() + "\r\n";
       q += `) as ${helpers.key(this._as)}\r\n`;
     }
     else {
+      const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType!);
       q += `FROM ${helpers.tableKey(tableDef)} as ${helpers.key(this._as)}\r\n`;
     }
 
     for (const join of this._queryObj.join) {
-      const targetTableDef = core.Reflect.getMetadata(modelDefMetadataKey, join.queryable.tableType);
+      const targetTableDef = core.Reflect.getMetadata(modelDefMetadataKey, join.queryable.tableType!);
 
       if (Object.keys(join.queryable._queryObj).every(key => key === "where" || key === "select" || !join.queryable._queryObj[key] || Object.keys(join.queryable._queryObj[key]).length === 0)) {
         q += `LEFT OUTER JOIN ${helpers.tableKey(targetTableDef)} as [${join.as}] ON ` + join.queryable._queryObj.where.map(item => `(${item})`).join(" AND ") + "\r\n";
@@ -112,11 +119,17 @@ export class Queryable<TTable> {
 
     if (this._queryObj.limit) {
       if (this._queryObj.orderBy.length < 1) {
-        if (!tableDef.columns) {
-          throw new Error(tableDef.name + "의 컬럼 설정이 잘못되었습니다.");
-        }
+        if (this.tableType) {
+          const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType);
+          if (!tableDef.columns) {
+            throw new Error(tableDef.name + "의 컬럼 설정이 잘못되었습니다.");
+          }
 
-        q += "ORDER BY " + tableDef.columns.filter(item => item.primaryKey).orderBy(item => item.primaryKey).map(item => helpers.key(this._as + "." + item.name) + " ASC").join(", ") + "\r\n";
+          q += "ORDER BY " + tableDef.columns.filter(item => item.primaryKey).orderBy(item => item.primaryKey).map(item => helpers.key(this._as + "." + item.name) + " ASC").join(", ") + "\r\n";
+        }
+        else {
+          throw new Error("LIMIT을 사용하려면 ORDER BY를 먼저 설정해야 합니다.");
+        }
       }
       q += `OFFSET ${this._queryObj.limit[0]} ROWS FETCH NEXT ${this._queryObj.limit[1]} ROWS ONLY\r\n`;
     }
@@ -164,16 +177,32 @@ export class Queryable<TTable> {
     return result as TTable;
   }
 
-  public constructor(private readonly _dbConnection: Database,
-                     public readonly tableType: Type<TTable>,
-                     private readonly _as: string = "TBL") {
-    const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType);
-    if (!tableDef.columns) {
-      throw new Error(tableDef.name + "의 컬럼 설정이 잘못되었습니다.");
-    }
+  public constructor(dbConnection: Database, tableTypeOrUnionQueries: Type<TTable> | Queryable<TTable>[], as: string = "TBL") {
+    this._dbConnection = dbConnection;
+    this._as = as;
 
-    for (const colDef of tableDef.columns) {
-      this._queryObj.select[colDef.name] = new QueryUnit(colDef.typeFwd(), helpers.key(this._as + "." + colDef.name));
+    if (tableTypeOrUnionQueries instanceof Array) {
+      this._queryObj.from = tableTypeOrUnionQueries;
+
+      for (const key of Object.keys(tableTypeOrUnionQueries[0]._queryObj.select)) {
+        const selectObj = tableTypeOrUnionQueries.map(item => item._queryObj.select[key]).filterExists()[0];
+        this._queryObj.select[key] = new QueryUnit(
+          selectObj instanceof QueryUnit ? selectObj.type : selectObj.constructor,
+          helpers.key(this._as + "." + key)
+        );
+      }
+    }
+    else {
+      this.tableType = tableTypeOrUnionQueries;
+
+      const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType);
+      if (!tableDef.columns) {
+        throw new Error(tableDef.name + "의 컬럼 설정이 잘못되었습니다.");
+      }
+
+      for (const colDef of tableDef.columns) {
+        this._queryObj.select[colDef.name] = new QueryUnit(colDef.typeFwd(), helpers.key(this._as + "." + colDef.name));
+      }
     }
   }
 
@@ -203,7 +232,7 @@ export class Queryable<TTable> {
       targetTableType = this._getTableTypeByChains(chains);
     }
     catch (err) {
-      throw new Error(`"include"값이 잘못되었습니다: ${this.tableType.name}.${chains.join(".")}`);
+      throw new Error(`"include"값이 잘못되었습니다: ${this.tableType!.name}.${chains.join(".")}`);
     }
 
     const prevTableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, prevTableType);
@@ -483,11 +512,11 @@ export class Queryable<TTable> {
   }
 
   public async bulkInsertAsync(items: TTable[]): Promise<void> {
-    await this._dbConnection.bulkInsertAsync(this.tableType, items);
+    await this._dbConnection.bulkInsertAsync(this.tableType!, items);
   }
 
   private _getInsertQuery(item: TTable): string {
-    const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType);
+    const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType!);
     if (!tableDef.columns) {
       throw new Error(tableDef.name + "의 컬럼 설정이 잘못되었습니다.");
     }
@@ -508,7 +537,7 @@ export class Queryable<TTable> {
   }
 
   private _getUpdateQuery(item: Partial<TTable>): string {
-    const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType);
+    const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType!);
     if (!tableDef.columns) {
       throw new Error(tableDef.name + "의 컬럼 설정이 잘못되었습니다.");
     }
@@ -522,7 +551,7 @@ export class Queryable<TTable> {
   }
 
   private _getUpsertQuery(item: TTable, keys: (keyof TTable)[]): string {
-    const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType);
+    const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType!);
     if (!tableDef.columns) {
       throw new Error(tableDef.name + "의 컬럼 설정이 잘못되었습니다.");
     }
@@ -555,7 +584,7 @@ export class Queryable<TTable> {
   }
 
   private _getDeleteQuery(): string {
-    const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType);
+    const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, this.tableType!);
     if (!tableDef.columns) {
       throw new Error(tableDef.name + "의 컬럼 설정이 잘못되었습니다.");
     }
@@ -699,16 +728,16 @@ export class Queryable<TTable> {
   }
 
   private _clone(): Queryable<TTable> {
-    const result = new Queryable<TTable>(this._dbConnection, this.tableType, this._as);
+    const result = new Queryable<TTable>(this._dbConnection, (this.tableType || this._queryObj.from) as any, this._as);
     result._queryObj = Object.clone(this._queryObj, {excludeProps: ["join", "from"]});
     result._queryObj.join = [...this._queryObj.join];
     result._queryObj.from = this._queryObj.from;
     return result;
   }
 
-  private wrap(): Queryable<TTable> {
-    const result = new Queryable<TTable>(this._dbConnection, this.tableType, this._as);
-    result._queryObj.from = this._clone();
+  public wrap(): Queryable<TTable> {
+    return new Queryable<TTable>(this._dbConnection, [this._clone()], this._as);
+    /*result._queryObj.from = this._clone();
 
     const newSelect = {};
     for (const key of Object.keys(this._queryObj.select)) {
@@ -716,7 +745,7 @@ export class Queryable<TTable> {
       result._queryObj.select = newSelect;
     }
 
-    return result;
+    return result;*/
   }
 
   private _parseLambda(predicate: (...args: any[]) => any): { params: string[]; returnContent: string } {
@@ -741,7 +770,7 @@ export class Queryable<TTable> {
     let cursorTableType = this.tableType;
 
     for (const chain of chains) {
-      const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, cursorTableType);
+      const tableDef: ITableDef = core.Reflect.getMetadata(modelDefMetadataKey, cursorTableType!);
 
       if (!tableDef.foreignKeys && !tableDef.foreignKeyTargets) {
         throw new Error(tableDef.name + "의 FK 설정이 잘못되었습니다.");
@@ -762,6 +791,6 @@ export class Queryable<TTable> {
       throw new Error(tableDef.name + "의 FK 설정이 잘못되었습니다.");
     }
 
-    return cursorTableType;
+    return cursorTableType!;
   }
 }

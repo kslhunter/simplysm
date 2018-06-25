@@ -54,6 +54,11 @@ import {SdTypeValidate} from "../decorators/SdTypeValidate";
         max-width: 100%;
         min-width: 240px;
         max-height: calc(100% - 50px);
+        border: 1px solid get($trans-color, default);
+
+        &:focus {
+          outline: none;
+        }
 
         > sd-dock-container {
           > ._header {

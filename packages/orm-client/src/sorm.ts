@@ -51,6 +51,14 @@ export const sorm = {
     return new QueryUnit(QueriedBoolean, helpers.query(source, true) + " = " + helpers.query(target, true));
   },
 
+  notEqual<T>(source: T | QueryUnit<T>, target: T | QueryUnit<T>): QueryUnit<QueriedBoolean> {
+    return new QueryUnit(QueriedBoolean, helpers.query(source, true) + " != " + helpers.query(target, true));
+  },
+
+  notNull<T>(source: T | QueryUnit<T>): QueryUnit<QueriedBoolean> {
+    return new QueryUnit(QueriedBoolean, helpers.query(source, true) + " IS NOT NULL");
+  },
+
   lessThen(source: number | DateOnly | DateTime | QueryUnit<Number | DateOnly | DateTime>, target: number | DateOnly | DateTime | QueryUnit<Number | DateOnly | DateTime>): QueryUnit<QueriedBoolean> {
     return new QueryUnit(QueriedBoolean, helpers.query(source) + " < " + helpers.query(target));
   },

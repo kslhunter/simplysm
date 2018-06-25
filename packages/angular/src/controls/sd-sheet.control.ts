@@ -25,27 +25,48 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="_content _head" [style.top.px]="headTop">
-      <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
-        <div class="_col _first-col">
-          <div class="_border"></div>
+      <div class="_row" *ngIf="hasHeaderGroup">
+        <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
+          <div class="_col _first-col">
+            <div class="_border"></div>
+          </div>
+          <div class="_col" *ngFor="let headerGroup of fixedHeaderGroups; trackBy: trackByIndexFn"
+               [style.width.px]="headerGroup.width">
+            {{ headerGroup.header }}
+            <div class="_border"></div>
+          </div>
         </div>
-        <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
-             [style.width.px]="getWidth(columnControl)"
-             [attr.col-index]="getIndex(columnControl)"
-             [attr.title]="columnControl.help">
-          {{ columnControl.header }}
-          <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
-               (mousedown)="onHeadBorderMousedown($event)"></div>
+        <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
+          <div class="_col" *ngFor="let headerGroup of nonFixedHeaderGroups; trackBy: trackByIndexFn"
+               [style.width.px]="headerGroup.width">
+            {{ headerGroup.header }}
+            <div class="_border"></div>
+          </div>
         </div>
       </div>
-      <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
-        <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
-             [style.width.px]="getWidth(columnControl)"
-             [attr.col-index]="getIndex(columnControl)"
-             [attr.title]="columnControl.help">
-          {{ columnControl.header }}
-          <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
-               (mousedown)="onHeadBorderMousedown($event)"></div>
+      <div class="_row">
+        <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
+          <div class="_col _first-col">
+            <div class="_border"></div>
+          </div>
+          <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
+               [style.width.px]="getWidth(columnControl)"
+               [attr.col-index]="getIndex(columnControl)"
+               [attr.title]="columnControl.help">
+            {{ columnControl.header && columnControl.header.split(".").last() }}
+            <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
+                 (mousedown)="onHeadBorderMousedown($event)"></div>
+          </div>
+        </div>
+        <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
+          <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
+               [style.width.px]="getWidth(columnControl)"
+               [attr.col-index]="getIndex(columnControl)"
+               [attr.title]="columnControl.help">
+            {{ columnControl.header && columnControl.header.split(".").last() }}
+            <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
+                 (mousedown)="onHeadBorderMousedown($event)"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -85,7 +106,6 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
       width: 100%;
       max-height: 100%;
       overflow: auto;
-      padding-top: 24px;
       background: black;
 
       ._content {
@@ -109,8 +129,8 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
       ._col {
         position: relative;
         display: inline-block;
-        height: 24px;
         vertical-align: top;
+        height: 24px;
 
         &:focus {
           outline: none;
@@ -174,6 +194,11 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
         /deep/ sd-checkbox > label {
           display: inline-block;
           width: auto;
+          border: none;
+          padding: gap(xs) gap(sm);
+        }
+
+        /deep/ sd-button > button {
           border: none;
           padding: gap(xs) gap(sm);
         }
@@ -255,6 +280,51 @@ export class SdSheetControl implements DoCheck, OnInit {
   @SdTypeValidate(String)
   public id?: string;
 
+  @HostBinding("style.padding-top")
+  public get paddingTop(): string {
+    return this.hasHeaderGroup ? "48px" : "24px";
+  }
+
+  public get hasHeaderGroup(): boolean {
+    return this.columnControls ? this.columnControls.some(item => !!item.header && item.header.includes(".")) : false;
+  }
+
+  public get fixedHeaderGroups(): { header?: string; width: number }[] {
+    const result: { header?: string; width: number }[] = [];
+    for (const item of this.fixedColumnControls) {
+      const header = (item.header && item.header.split(".").length === 2) ? item.header.split(".")[0] : undefined;
+      if (result.last() && result.last()!.header === header) {
+        result.last()!.width += this.getWidth(item);
+      }
+      else {
+        result.push({
+          header,
+          width: this.getWidth(item)
+        });
+      }
+    }
+
+    return result;
+  }
+
+  public get nonFixedHeaderGroups(): { header?: string; width: number }[] {
+    const result: { header?: string; width: number }[] = [];
+    for (const item of this.nonFixedColumnControls) {
+      const header = (item.header && item.header.split(".").length === 2) ? item.header.split(".")[0] : undefined;
+      if (result.last() && result.last()!.header === header) {
+        result.last()!.width += this.getWidth(item);
+      }
+      else {
+        result.push({
+          header,
+          width: this.getWidth(item)
+        });
+      }
+    }
+
+    return result;
+  }
+
   public get fixedColumnControls(): SdSheetColumnControl[] {
     return this.columnControls ? this.columnControls.filter(item => !!item.fixed) : [];
   }
@@ -283,6 +353,10 @@ export class SdSheetControl implements DoCheck, OnInit {
     else {
       return item;
     }
+  }
+
+  public trackByIndexFn(index: number): any {
+    return index;
   }
 
   private readonly _iterableDiffer: IterableDiffer<any>;
