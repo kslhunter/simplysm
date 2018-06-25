@@ -5,6 +5,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.nyc_output" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/coverage" />
+      <excludeFolder url="file://$MODULE_DIR$/design" />
       <excludeFolder url="file://$MODULE_DIR$/packages/core/.nyc_output" />
       <excludeFolder url="file://$MODULE_DIR$/packages/core/_logs" />
       <excludeFolder url="file://$MODULE_DIR$/packages/core/coverage" />
