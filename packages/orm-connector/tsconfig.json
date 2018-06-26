@@ -9,6 +9,9 @@
     "paths": {
       "@simplism/core": [
         "../core/src/index.ts"
+      ],
+      "@simplism/orm-common": [
+        "../orm-common/src/index.ts"
       ]
     }
   }

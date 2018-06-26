@@ -1,6 +1,6 @@
 import * as tedious from "tedious";
-import {IDbConnectionConfig} from "./IDbConnectionConfig";
 import {Logger} from "@simplism/core";
+import {IDbConnectionConfig} from "@simplism/orm-common";
 
 export class DbConnection {
   private readonly _logger = new Logger("@simplism/orm-connector", "DbConnection");
@@ -13,7 +13,7 @@ export class DbConnection {
 
   public async connectAsync(): Promise<void> {
     const conn = new tedious.Connection({
-      server: this._config.server,
+      server: this._config.server || "localhost",
       userName: this._config.username,
       password: this._config.password,
       options: {
@@ -51,7 +51,7 @@ export class DbConnection {
     this._conn = conn;
   }
 
-  public async disconnectAsync(): Promise<void> {
+  public async closeAsync(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       if (this._conn && this.isConnected) {
         const conn = this._conn;
@@ -135,7 +135,7 @@ export class DbConnection {
     const conn = this._conn;
 
     const results: any[][] = [];
-    const queries = query.split("GO;");
+    const queries = query.split(/GO;?/);
 
     for (const currQuery of queries) {
       this._logger.log("쿼리 실행:", currQuery);

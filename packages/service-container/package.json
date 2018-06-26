@@ -1,0 +1,16 @@
+{
+  "name": "@simplism/service-container",
+  "version": "8.0.0",
+  "description": "Simplism Service Container Package",
+  "repository": "github:kslhunter/simplism8",
+  "author": "kslhunter",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@simplism/core": "^8.0.0",
+    "@simplism/socket-server": "^8.0.0",
+    "@simplism/orm-common": "^8.0.0",
+    "@simplism/orm-connector": "^8.0.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@simplism/orm-common",
+  "version": "8.0.0",
+  "description": "Simplism ORM Common Package",
+  "repository": "github:kslhunter/simplism8",
+  "author": "kslhunter",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@simplism/core": "^8.0.0"
+  }
+}

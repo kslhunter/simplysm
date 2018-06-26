@@ -1,0 +1,32 @@
+{
+  "extends": "../../packages/service-interface/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@simplism/core": [
+        "../../packages/core/src/index.ts"
+      ],
+      "@simplism/socket-client": [
+        "../../packages/socket-client/src/index.ts"
+      ],
+      "@simplism/socket-common": [
+        "../../packages/socket-common/src/index.ts"
+      ],
+      "@simplism/orm-common": [
+        "../../packages/orm-common/src/index.ts"
+      ],
+      "@simplism/socket-server": [
+        "../../packages/socket-server/src/index.ts"
+      ],
+      "@simplism/orm-connector": [
+        "../../packages/orm-connector/src/index.ts"
+      ],
+      "@simplism/service-container": [
+        "../../packages/service-container/src/index.ts"
+      ],
+      "@simplism/service-interface": [
+        "../../packages/service-interface/src/index.ts"
+      ]
+    }
+  }
+}

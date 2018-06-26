@@ -12,18 +12,29 @@ export class SocketServer {
   private readonly _logger = new Logger("@simplism/socket-server", "SocketServer");
   private _app?: http.Server;
   private _server?: WebSocket.Server;
+  private _isCustomServer = false;
 
   public constructor(private readonly _services: Type<SocketServiceBase>[]) {
   }
 
-  public async startAsync(port?: number, host?: string): Promise<void> {
+  public async startAsync(server?: http.Server): Promise<void>;
+  public async startAsync(port?: number, host?: string): Promise<void>;
+  public async startAsync(arg1?: number | http.Server, arg2?: string): Promise<void> {
+    this._isCustomServer = arg1 instanceof http.Server;
+
+    const server = arg1 instanceof http.Server ? arg1 : undefined;
+    const port = (arg1 instanceof http.Server ? undefined : arg1) || 80;
+    const host = arg2 || "localhost";
+
     await new Promise<void>(resolve => {
       if (this._app && this._app.listening) {
         return;
       }
 
       // STATIC(ANGULAR) 서버
-      this._app = http.createServer((req, res) => {
+      this._app = server || http.createServer();
+
+      this._app.on("request", (req, res) => {
         this._webRequestHandler(req, res);
       });
 
@@ -35,14 +46,31 @@ export class SocketServer {
       });
 
       // 서버 시작
-      this._app.listen(port || 80, host || "localhost", () => {
-        this._logger.info(`소켓서버 시작: ${host || "localhost"}:${port || 80}`);
+      if (arg1 instanceof http.Server) {
+        this._logger.info(`소켓서버 시작: ${host}:${port}`);
         resolve();
-      });
+      }
+      else {
+        this._app.listen(port, host, () => {
+          this._logger.info(`소켓서버 시작: ${host}:${port}`);
+          resolve();
+        });
+      }
     });
   }
 
   public async closeAsync(): Promise<void> {
+    await new Promise<void>(resolve => {
+      this._server!.close(() => {
+        resolve();
+      });
+    });
+
+    if (this._isCustomServer) {
+      this._logger.info("소켓서버 종료");
+      return;
+    }
+
     await new Promise<void>(resolve => {
       this._app!.close(() => {
         this._logger.info("소켓서버 종료");

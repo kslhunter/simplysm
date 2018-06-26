@@ -1,7 +1,7 @@
 import {Column, ForeignKey, Table} from "@simplism/orm-query";
 import {Company} from "./Company";
 
-@Table("SD_ORM_QUERY")
+@Table("SD_TEST_ORM_QUERY")
 export class Employee {
   @Column({primaryKey: 1, autoIncrement: true})
   public id?: number;

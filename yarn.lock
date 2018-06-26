@@ -109,17 +109,17 @@
   version "2.0.0"
   resolved "http://210.180.118.73:4873/@types%2fmime/-/mime-2.0.0.tgz#5a7306e367c539b9f6543499de8dd519fac37a8b"
 
-"@types/mocha@^5.2.2":
-  version "5.2.2"
-  resolved "http://210.180.118.73:4873/@types%2fmocha/-/mocha-5.2.2.tgz#202d2b8fe1364c5b617b439b26a54f0e75eac0a7"
+"@types/mocha@^5.2.3":
+  version "5.2.3"
+  resolved "http://210.180.118.73:4873/@types%2fmocha/-/mocha-5.2.3.tgz#11f3a5629d67cd444fa6c94536576244e6a52ea9"
 
 "@types/node@*":
   version "10.3.5"
   resolved "http://210.180.118.73:4873/@types%2fnode/-/node-10.3.5.tgz#8423cdf6e6fb83433e489900d7600d3b61c8260c"
 
-"@types/node@^10.3.4":
-  version "10.3.4"
-  resolved "http://210.180.118.73:4873/@types%2fnode/-/node-10.3.4.tgz#c74e8aec19e555df44609b8057311052a2c84d9e"
+"@types/node@^10.3.6":
+  version "10.3.6"
+  resolved "http://210.180.118.73:4873/@types%2fnode/-/node-10.3.6.tgz#ea8aab9439b59f40d19ec5f13b44642344872b11"
 
 "@types/sinon@^5.0.1":
   version "5.0.1"
@@ -380,7 +380,7 @@ buffer-fill@^1.0.0:
   version "1.0.0"
   resolved "http://210.180.118.73:4873/buffer-fill/-/buffer-fill-1.0.0.tgz#f8f78b76789888ef39f205cd637f68e702122b2c"
 
-buffer-from@^1.0.0:
+buffer-from@^1.0.0, buffer-from@^1.1.0:
   version "1.1.0"
   resolved "http://210.180.118.73:4873/buffer-from/-/buffer-from-1.1.0.tgz#87fcaa3a298358e0ade6e442cfce840740d1ad04"
 
@@ -2515,11 +2515,12 @@ trim-right@^1.0.1:
   version "1.0.1"
   resolved "http://210.180.118.73:4873/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
 
-ts-node@^6.1.1:
-  version "6.1.1"
-  resolved "http://210.180.118.73:4873/ts-node/-/ts-node-6.1.1.tgz#19607140acb06150441fcdb61be11f73f7b6657e"
+ts-node@^7.0.0:
+  version "7.0.0"
+  resolved "http://210.180.118.73:4873/ts-node/-/ts-node-7.0.0.tgz#a94a13c75e5e1aa6b82814b84c68deb339ba7bff"
   dependencies:
     arrify "^1.0.0"
+    buffer-from "^1.1.0"
     diff "^3.1.0"
     make-error "^1.1.1"
     minimist "^1.2.0"
@@ -2527,9 +2528,9 @@ ts-node@^6.1.1:
     source-map-support "^0.5.6"
     yn "^2.0.0"
 
-tsconfig-paths@^3.4.0:
-  version "3.4.0"
-  resolved "http://210.180.118.73:4873/tsconfig-paths/-/tsconfig-paths-3.4.0.tgz#d19fe80c5b245f99d17363471971eab54e65a8a7"
+tsconfig-paths@^3.4.1:
+  version "3.4.1"
+  resolved "http://210.180.118.73:4873/tsconfig-paths/-/tsconfig-paths-3.4.1.tgz#9e03c5833f09c23e2c330b785e875d6cfc92f43a"
   dependencies:
     deepmerge "^2.0.1"
     minimist "^1.2.0"

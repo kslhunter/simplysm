@@ -4,6 +4,9 @@
     "paths": {
       "@simplism/core": [
         "../core"
+      ],
+      "@simplism/orm-common": [
+        "../orm-common"
       ]
     }
   },

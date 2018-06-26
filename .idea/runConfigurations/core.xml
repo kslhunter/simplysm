@@ -2,12 +2,12 @@
   <configuration default="false" name="core" type="mocha-javascript-test-runner" factoryName="Mocha">
     <node-interpreter>project</node-interpreter>
     <node-options />
-    <working-directory>$PROJECT_DIR$/packages/core</working-directory>
+    <working-directory>$PROJECT_DIR$/tests/core</working-directory>
     <pass-parent-env>true</pass-parent-env>
     <ui>bdd</ui>
     <extra-mocha-options>--require ts-node/register --require tsconfig-paths/register</extra-mocha-options>
     <test-kind>PATTERN</test-kind>
-    <test-pattern>$PROJECT_DIR$/packages/core/test/**/*.spec.ts</test-pattern>
+    <test-pattern>$PROJECT_DIR$/tests/core/**/*.spec.ts</test-pattern>
     <method />
   </configuration>
 </component>

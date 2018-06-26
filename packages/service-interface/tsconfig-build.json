@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@simplism/core": [
+        "../core"
+      ],
+      "@simplism/socket-client": [
+        "../socket-client"
+      ],
+      "@simplism/orm-common": [
+        "../orm-common"
+      ]
+    }
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

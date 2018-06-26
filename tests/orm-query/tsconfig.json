@@ -8,6 +8,9 @@
       ],
       "@simplism/orm-query": [
         "../../packages/orm-query/src/index.ts"
+      ],
+      "@simplism/orm-common": [
+        "../../packages/orm-common/src/index.ts"
       ]
     }
   }

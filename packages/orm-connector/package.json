@@ -9,6 +9,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplism/core": "^8.0.0",
+    "@simplism/orm-common": "^8.0.0",
     "tedious": "^2.6.1"
   }
 }

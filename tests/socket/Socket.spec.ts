@@ -2,10 +2,10 @@ import {JSDOM} from "jsdom";
 import * as assert from "assert";
 import {after, afterEach, before, beforeEach, describe, it} from "mocha";
 import {SocketServer} from "@simplism/socket-server";
-import {TestService} from "./services/TestService";
+import {TestService} from "./service/TestService";
 import {SocketClient} from "@simplism/socket-client";
 
-describe("SocketClient", () => {
+describe("Socket", () => {
   let jsdom: JSDOM;
   let server: SocketServer;
 
@@ -26,7 +26,7 @@ describe("SocketClient", () => {
     server = new SocketServer([
       TestService
     ]);
-    await server.startAsync();
+    await server.startAsync(59080);
   });
 
   afterEach(async () => {
@@ -35,7 +35,7 @@ describe("SocketClient", () => {
 
   it("일반 명령 수행", async () => {
     const client = new SocketClient();
-    await client.connectAsync();
+    await client.connectAsync(59080);
 
     const result = await client.sendAsync("TestService.getValue", ["값"]);
     assert.strictEqual(result, "value: 값");
@@ -45,7 +45,7 @@ describe("SocketClient", () => {
 
   it("에러발생시, 에러응답을 받음", async () => {
     const client = new SocketClient();
-    await client.connectAsync();
+    await client.connectAsync(59080);
 
     try {
       await client.sendAsync("TestService.throwError", ["값"]);

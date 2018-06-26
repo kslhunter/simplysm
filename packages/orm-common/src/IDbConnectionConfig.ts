@@ -1,5 +1,5 @@
 export interface IDbConnectionConfig {
-  server: string;
+  server?: string;
   port?: number;
   username: string;
   password: string;

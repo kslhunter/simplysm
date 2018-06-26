@@ -4,7 +4,7 @@ import {QueryBuilder} from "./QueryBuilder";
 import {tableDefMetadataKey} from "../common/decorators";
 import {QueryUnit} from "./QueryUnit";
 import {QueryType} from "../common/types";
-import {queryHelpers} from "../common/queryHelpers";
+import {ormHelpers} from "../common/ormHelpers";
 
 export class QueryBuilderAdv<T> {
   private readonly _unionQueryables?: QueryBuilderAdv<T>[];
@@ -34,7 +34,7 @@ export class QueryBuilderAdv<T> {
         const subSelect = {};
         for (const selectAs of Object.keys(this._unionQueryables[i]._select)) {
           const selectOrg = this._unionQueryables[i]._select[selectAs]!;
-          subSelect[`[${selectAs}]`] = queryHelpers.getFieldQuery(selectOrg);
+          subSelect[`[${selectAs}]`] = ormHelpers.getFieldQuery(selectOrg);
         }
         unionQueryBuilders[i] = unionQueryBuilders[i].select(subSelect);
       }
@@ -56,7 +56,7 @@ export class QueryBuilderAdv<T> {
       const subSelect = {};
       for (const selectAs of Object.keys(this._subQueryable._select)) {
         const selectOrg = this._subQueryable._select[selectAs]!;
-        subSelect[`[${selectAs}]`] = queryHelpers.getFieldQuery(selectOrg);
+        subSelect[`[${selectAs}]`] = ormHelpers.getFieldQuery(selectOrg);
       }
       subQueryBuilder = subQueryBuilder.select(subSelect);
 
@@ -87,7 +87,7 @@ export class QueryBuilderAdv<T> {
 
     const select = {};
     for (const selectAs of Object.keys(this._select)) {
-      select[`[${selectAs}]`] = queryHelpers.getFieldQuery(this._select[selectAs]);
+      select[`[${selectAs}]`] = ormHelpers.getFieldQuery(this._select[selectAs]);
     }
     queryBuilder = queryBuilder.select(select);
 
@@ -106,7 +106,7 @@ export class QueryBuilderAdv<T> {
 
     const wheres = predicate(result.entity);
     for (const where of wheres) {
-      result._queryBuilder = result._queryBuilder.where(queryHelpers.getWhereQuery(where));
+      result._queryBuilder = result._queryBuilder.where(ormHelpers.getWhereQuery(where));
     }
     return result;
   }
@@ -126,7 +126,7 @@ export class QueryBuilderAdv<T> {
   public orderBy(fwd: (entity: T) => QueryType, desc?: boolean): QueryBuilderAdv<T> {
     const result = this._clone();
 
-    const colQuery = queryHelpers.getFieldQuery(fwd(result.entity));
+    const colQuery = ormHelpers.getFieldQuery(fwd(result.entity));
 
     result._queryBuilder = result._queryBuilder.orderBy(colQuery, desc ? "DESC" : "ASC");
     return result;
@@ -141,7 +141,7 @@ export class QueryBuilderAdv<T> {
   public groupBy(fwd: (entity: T) => QueryType[]): QueryBuilderAdv<T> {
     const result = this._clone();
 
-    const colQueries = fwd(result.entity).map(item => queryHelpers.getFieldQuery(item));
+    const colQueries = fwd(result.entity).map(item => ormHelpers.getFieldQuery(item));
 
     result._queryBuilder = result._queryBuilder.groupBy(colQueries);
     return result;
@@ -155,7 +155,7 @@ export class QueryBuilderAdv<T> {
     if (joinQueryable._useCustomSelect) {
       const joinSelect = {};
       for (const selectAs of Object.keys(joinQueryable._select)) {
-        joinSelect[`[${selectAs}]`] = queryHelpers.getFieldQuery(joinQueryable._select[selectAs]);
+        joinSelect[`[${selectAs}]`] = ormHelpers.getFieldQuery(joinQueryable._select[selectAs]);
       }
       joinQueryable._queryBuilder = joinQueryable._queryBuilder.select(joinSelect);
     }
@@ -183,7 +183,7 @@ export class QueryBuilderAdv<T> {
 
     const update = {};
     for (const updateKey of Object.keys(obj)) {
-      update[`[${updateKey}]`] = queryHelpers.getFieldQuery(obj[updateKey]);
+      update[`[${updateKey}]`] = ormHelpers.getFieldQuery(obj[updateKey]);
     }
 
     result._queryBuilder = result._queryBuilder
@@ -205,7 +205,7 @@ export class QueryBuilderAdv<T> {
 
     const insert = {};
     for (const insertKey of Object.keys(obj)) {
-      insert[`[${insertKey}]`] = queryHelpers.getFieldQuery(obj[insertKey]);
+      insert[`[${insertKey}]`] = ormHelpers.getFieldQuery(obj[insertKey]);
     }
 
     result._queryBuilder = result._queryBuilder
@@ -220,7 +220,7 @@ export class QueryBuilderAdv<T> {
 
     const upsert = {};
     for (const upsertKey of Object.keys(obj)) {
-      upsert[`[${upsertKey}]`] = queryHelpers.getFieldQuery(obj[upsertKey]);
+      upsert[`[${upsertKey}]`] = ormHelpers.getFieldQuery(obj[upsertKey]);
     }
 
     result._queryBuilder = result._queryBuilder

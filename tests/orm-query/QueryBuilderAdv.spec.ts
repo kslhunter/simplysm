@@ -1,8 +1,8 @@
 import * as assert from "assert";
 import {describe, it} from "mocha";
 import {QueryBuilderAdv, sorm} from "@simplism/orm-query";
-import {Employee} from "./models/Employee";
-import {Company} from "./models/Company";
+import {Employee} from "./model/Employee";
+import {Company} from "./model/Company";
 
 describe("QueryBuilderAdv", () => {
   it("[SELECT] 기본 쿼리", () => {
@@ -15,7 +15,7 @@ SELECT
   [TBL].[name] AS [name],
   [TBL].[encryptedPassword] AS [encryptedPassword],
   [TBL].[isDisabled] AS [isDisabled]
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]`.trim());
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]`.trim());
   });
 
   it("[SELECT] 컬럼을 설정할 수 있음", () => {
@@ -28,7 +28,7 @@ FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]`.trim());
     assert.strictEqual(query, `
 SELECT
   [TBL].[id] AS [id]
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]`.trim());
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]`.trim());
   });
 
   it("[SELECT] 복수의 'WHERE'를 설정하면 'AND'로 쿼리가 생성되야함", () => {
@@ -44,7 +44,7 @@ SELECT
   [TBL].[name] AS [name],
   [TBL].[encryptedPassword] AS [encryptedPassword],
   [TBL].[isDisabled] AS [isDisabled]
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 WHERE ([TBL].[id] = 1)
 AND   ([TBL].[name] = '관리자')`.trim());
   });
@@ -66,7 +66,7 @@ SELECT
   [TBL].[name] AS [name],
   [TBL].[encryptedPassword] AS [encryptedPassword],
   [TBL].[isDisabled] AS [isDisabled]
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 WHERE (([TBL].[id] = 1) OR ([TBL].[name] = '관리자'))`.trim());
   });
 
@@ -82,7 +82,7 @@ SELECT DISTINCT
   [TBL].[name] AS [name],
   [TBL].[encryptedPassword] AS [encryptedPassword],
   [TBL].[isDisabled] AS [isDisabled]
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]`.trim());
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]`.trim());
   });
 
   it("[SELECT] 'TOP'를 설정할 수 있음", () => {
@@ -97,7 +97,7 @@ SELECT TOP 10
   [TBL].[name] AS [name],
   [TBL].[encryptedPassword] AS [encryptedPassword],
   [TBL].[isDisabled] AS [isDisabled]
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]`.trim());
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]`.trim());
   });
 
   it("[SELECT] 'ORDER BY'를 설정할 수 있음", () => {
@@ -113,7 +113,7 @@ SELECT
   [TBL].[name] AS [name],
   [TBL].[encryptedPassword] AS [encryptedPassword],
   [TBL].[isDisabled] AS [isDisabled]
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 ORDER BY [TBL].[id] ASC, [TBL].[name] DESC`.trim());
   });
 
@@ -130,7 +130,7 @@ SELECT
   [TBL].[name] AS [name],
   [TBL].[encryptedPassword] AS [encryptedPassword],
   [TBL].[isDisabled] AS [isDisabled]
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 ORDER BY [TBL].[id] ASC
 OFFSET 10 ROWS FETCH NEXT 20 ROWS ONLY`.trim());
   });
@@ -150,7 +150,7 @@ OFFSET 10 ROWS FETCH NEXT 20 ROWS ONLY`.trim());
 SELECT
   [TBL].[id] AS [id],
   COUNT(*) AS [cnt]
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 GROUP BY [TBL].[id]`.trim());
   });
 
@@ -174,7 +174,7 @@ FROM (
     [TBL].[name] AS [name],
     [TBL].[encryptedPassword] AS [encryptedPassword],
     [TBL].[isDisabled] AS [isDisabled]
-  FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+  FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 ) AS [TBL]`.trim());
   });
 
@@ -194,8 +194,8 @@ SELECT
   [TBL].[isDisabled] AS [isDisabled],
   [cmp].[id] AS [cmp.id],
   [cmp].[name] AS [cmp.name]
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
-LEFT OUTER JOIN [SD_ORM_QUERY].[dbo].[Company] AS [cmp] ON ([cmp].[id] = [TBL].[companyId])`.trim());
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
+LEFT OUTER JOIN [SD_TEST_ORM_QUERY].[dbo].[Company] AS [cmp] ON ([cmp].[id] = [TBL].[companyId])`.trim());
   });
 
   it("[SELECT] 'LEFT OUTER JOIN' 한것을 'WHERE'문에 쓸 수 있음", () => {
@@ -213,8 +213,8 @@ SELECT
   [TBL].[isDisabled] AS [isDisabled],
   [cmp].[id] AS [cmp.id],
   [cmp].[name] AS [cmp.name]
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
-LEFT OUTER JOIN [SD_ORM_QUERY].[dbo].[Company] AS [cmp] ON ([cmp].[id] = [TBL].[companyId])
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
+LEFT OUTER JOIN [SD_TEST_ORM_QUERY].[dbo].[Company] AS [cmp] ON ([cmp].[id] = [TBL].[companyId])
 WHERE ([TBL].[companyId] = [cmp].[id])`.trim());
   });
 
@@ -234,11 +234,11 @@ SELECT
   [TBL].[encryptedPassword] AS [encryptedPassword],
   [TBL].[isDisabled] AS [isDisabled],
   [cmp].[id] AS [cmp.id]
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 OUTER APPLY (
   SELECT
     [cmp].[id] AS [id]
-  FROM [SD_ORM_QUERY].[dbo].[Company] AS [cmp]
+  FROM [SD_TEST_ORM_QUERY].[dbo].[Company] AS [cmp]
   WHERE ([cmp].[id] = [TBL].[companyId])
 ) AS [cmp]`.trim());
   });
@@ -269,14 +269,14 @@ FROM (
   SELECT
     [TBL].[id] AS [id],
     [TBL].[name] AS [name]
-  FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+  FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 
   UNION ALL
 
   SELECT
     [TBL].[id] AS [id],
     [TBL].[name] AS [name]
-  FROM [SD_ORM_QUERY].[dbo].[Company] AS [TBL]
+  FROM [SD_TEST_ORM_QUERY].[dbo].[Company] AS [TBL]
 
 ) AS [TBL]
 WHERE ([TBL].[id] = 1)`.trim());
@@ -291,10 +291,10 @@ WHERE ([TBL].[id] = 1)`.trim());
       .query;
 
     assert.strictEqual(query, `
-UPDATE [SD_ORM_QUERY].[dbo].[Employee] SET
+UPDATE [SD_TEST_ORM_QUERY].[dbo].[Employee] SET
   [name] = '관리자'
 OUTPUT INSERTED.*
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 WHERE ([TBL].[id] = 1)`.trim());
   });
 
@@ -308,10 +308,10 @@ WHERE ([TBL].[id] = 1)`.trim());
       .query;
 
     assert.strictEqual(query, `
-UPDATE TOP (10) [SD_ORM_QUERY].[dbo].[Employee] SET
+UPDATE TOP (10) [SD_TEST_ORM_QUERY].[dbo].[Employee] SET
   [name] = '관리자'
 OUTPUT INSERTED.*
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 WHERE ([TBL].[id] = 1)`.trim());
   });
 
@@ -327,11 +327,11 @@ WHERE ([TBL].[id] = 1)`.trim());
       .query;
 
     assert.strictEqual(query, `
-UPDATE [SD_ORM_QUERY].[dbo].[Employee] SET
+UPDATE [SD_TEST_ORM_QUERY].[dbo].[Employee] SET
   [name] = '관리자'
 OUTPUT INSERTED.*
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
-LEFT OUTER JOIN [SD_ORM_QUERY].[dbo].[Company] AS [cmp] ON ([cmp].[id] = [TBL].[companyId])
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
+LEFT OUTER JOIN [SD_TEST_ORM_QUERY].[dbo].[Company] AS [cmp] ON ([cmp].[id] = [TBL].[companyId])
 WHERE ([TBL].[id] = 1)`.trim());
   });
 
@@ -349,14 +349,14 @@ WHERE ([TBL].[id] = 1)`.trim());
       .query;
 
     assert.strictEqual(query, `
-UPDATE [SD_ORM_QUERY].[dbo].[Employee] SET
+UPDATE [SD_TEST_ORM_QUERY].[dbo].[Employee] SET
   [name] = '관리자'
 OUTPUT INSERTED.*
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 OUTER APPLY (
   SELECT
     [cmp].[id] AS [id]
-  FROM [SD_ORM_QUERY].[dbo].[Company] AS [cmp]
+  FROM [SD_TEST_ORM_QUERY].[dbo].[Company] AS [cmp]
   WHERE ([cmp].[id] = [TBL].[companyId])
 ) AS [cmp]
 WHERE ([TBL].[id] = 1)`.trim());
@@ -369,9 +369,9 @@ WHERE ([TBL].[id] = 1)`.trim());
       .query;
 
     assert.strictEqual(query, `
-DELETE FROM [SD_ORM_QUERY].[dbo].[Employee]
+DELETE FROM [SD_TEST_ORM_QUERY].[dbo].[Employee]
 OUTPUT DELETED.*
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 WHERE ([TBL].[id] = 1)`.trim());
   });
 
@@ -383,9 +383,9 @@ WHERE ([TBL].[id] = 1)`.trim());
       .query;
 
     assert.strictEqual(query, `
-DELETE TOP (10) FROM [SD_ORM_QUERY].[dbo].[Employee]
+DELETE TOP (10) FROM [SD_TEST_ORM_QUERY].[dbo].[Employee]
 OUTPUT DELETED.*
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 WHERE ([TBL].[id] = 1)`.trim());
   });
 
@@ -399,10 +399,10 @@ WHERE ([TBL].[id] = 1)`.trim());
       .query;
 
     assert.strictEqual(query, `
-DELETE FROM [SD_ORM_QUERY].[dbo].[Employee]
+DELETE FROM [SD_TEST_ORM_QUERY].[dbo].[Employee]
 OUTPUT DELETED.*
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
-LEFT OUTER JOIN [SD_ORM_QUERY].[dbo].[Company] AS [cmp] ON ([cmp].[id] = [TBL].[companyId])
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
+LEFT OUTER JOIN [SD_TEST_ORM_QUERY].[dbo].[Company] AS [cmp] ON ([cmp].[id] = [TBL].[companyId])
 WHERE ([TBL].[id] = 1)`.trim());
   });
 
@@ -418,13 +418,13 @@ WHERE ([TBL].[id] = 1)`.trim());
       .query;
 
     assert.strictEqual(query, `
-DELETE FROM [SD_ORM_QUERY].[dbo].[Employee]
+DELETE FROM [SD_TEST_ORM_QUERY].[dbo].[Employee]
 OUTPUT DELETED.*
-FROM [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+FROM [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 OUTER APPLY (
   SELECT
     [cmp].[id] AS [id]
-  FROM [SD_ORM_QUERY].[dbo].[Company] AS [cmp]
+  FROM [SD_TEST_ORM_QUERY].[dbo].[Company] AS [cmp]
   WHERE ([cmp].[id] = [TBL].[companyId])
 ) AS [cmp]
 WHERE ([TBL].[id] = 1)`.trim());
@@ -441,7 +441,7 @@ WHERE ([TBL].[id] = 1)`.trim());
       .query;
 
     assert.strictEqual(query, `
-INSERT INTO [SD_ORM_QUERY].[dbo].[Employee] ([companyId], [name], [encryptedPassword], [isDisabled])
+INSERT INTO [SD_TEST_ORM_QUERY].[dbo].[Employee] ([companyId], [name], [encryptedPassword], [isDisabled])
 OUTPUT INSERTED.*
 VALUES (1, '관리자', 'c3018f1e248c3182a5196f20cb2c64507e51f0241c734a21a3bba79d3ba5cd84', 0)`.trim());
   });
@@ -458,7 +458,7 @@ VALUES (1, '관리자', 'c3018f1e248c3182a5196f20cb2c64507e51f0241c734a21a3bba79
       .query;
 
     assert.strictEqual(query, `
-MERGE [SD_ORM_QUERY].[dbo].[Employee] AS [TBL]
+MERGE [SD_TEST_ORM_QUERY].[dbo].[Employee] AS [TBL]
 USING (SELECT 0 as _using) AS _using
 ON ([TBL].[name] = '관리자?')
 WHEN MATCHED THEN
