@@ -6,7 +6,7 @@
   "author": "kslhunter",
   "license": "MIT",
   "scripts": {
-    "test": "rimraf .nyc_output coverage && concurrently \"yarn test:core\" \"yarn test:orm-query\" \"yarn test:orm-connector\" \"yarn test:socket\"",
+    "test": "rimraf .nyc_output coverage && mkdir -p .nyc_output && mkdir -p coverage && concurrently \"yarn test:core\" \"yarn test:orm-query\" \"yarn test:orm-connector\" \"yarn test:socket\"",
     "build": "yarn build:core && concurrently \"yarn build:orm-query\" \"yarn build:orm-connector\" \"yarn build:socket-common\" && concurrently \"yarn build:socket-server\" \"yarn build:socket-client\"",
     "--": "",
     "test+build": "yarn test && yarn build",
