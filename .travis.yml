@@ -8,6 +8,6 @@ before_install:
   - export PATH=$HOME/.yarn/bin:$PATH
 install: yarn
 before_script:
-  - chmod -R u+x .
+  - sudo chmod -R u+x .
 script:
   - yarn test+build
