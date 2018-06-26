@@ -1,4 +1,4 @@
-sudo: false
+sudo: required
 language: node_js
 cache: yarn
 node_js:
@@ -8,4 +8,6 @@ before_install:
   - export PATH=$HOME/.yarn/bin:$PATH
 install: yarn
 script:
-  - yarn test+build
+  - yarn build
+after_success:
+  - yarn test
