@@ -1,4 +1,4 @@
-import {Column, ForeignKey, Table} from "../../src";
+import {Column, ForeignKey, Table} from "@simplism/orm-query";
 import {Company} from "./Company";
 
 @Table("SD_ORM_QUERY")

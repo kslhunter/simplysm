@@ -10,10 +10,5 @@
   "dependencies": {
     "@simplism/core": "^8.0.0",
     "@simplism/socket-common": "^8.0.0"
-  },
-  "devDependencies": {
-    "@simplism/socket-server": "^8.0.0",
-    "mocha": "^5.2.0",
-    "jsdom": "^11.11.0"
   }
 }

@@ -7,9 +7,6 @@
       ],
       "@simplism/socket-common": [
         "../socket-common"
-      ],
-      "@simplism/socket-server": [
-        "../socket-server"
       ]
     }
   },

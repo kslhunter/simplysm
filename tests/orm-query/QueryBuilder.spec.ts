@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import {describe, it} from "mocha";
-import {QueryBuilder} from "../src/query-builder/QueryBuilder";
+import {QueryBuilder} from "@simplism/orm-query";
 
 describe("QueryBuilder", () => {
   it("[SELECT] 기본 쿼리", () => {

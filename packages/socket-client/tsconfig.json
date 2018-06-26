@@ -13,9 +13,6 @@
       ],
       "@simplism/socket-common": [
         "../socket-common/src/index.ts"
-      ],
-      "@simplism/socket-server": [
-        "../socket-server/src/index.ts"
       ]
     }
   }

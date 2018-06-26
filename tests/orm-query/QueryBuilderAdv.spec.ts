@@ -1,8 +1,7 @@
 import * as assert from "assert";
 import {describe, it} from "mocha";
-import {QueryBuilderAdv} from "../src/query-builder/QueryBuilderAdv";
+import {QueryBuilderAdv, sorm} from "@simplism/orm-query";
 import {Employee} from "./models/Employee";
-import {sorm} from "../src/common/sorm";
 import {Company} from "./models/Company";
 
 describe("QueryBuilderAdv", () => {

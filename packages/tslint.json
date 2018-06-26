@@ -47,10 +47,6 @@
       true,
       2
     ],
-    "no-implicit-dependencies": [
-      true,
-      "dev"
-    ],
     "whitespace": [
       true,
       "check-branch",

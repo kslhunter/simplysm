@@ -1,8 +1,6 @@
 import * as assert from "assert";
 import {describe, it} from "mocha";
-import {DateTime} from "../../src/type/DateTime";
-import {DateOnly} from "../../src/type/DateOnly";
-import {Time} from "../../src/type/Time";
+import {DateOnly, DateTime, Time} from "@simplism/core";
 
 describe("DateTime", () => {
   it("일반 초기화시, 현재가 초기값으로 설정됨", () => {

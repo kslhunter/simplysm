@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import {describe, it} from "mocha";
-import {DateOnly} from "../../src/type/DateOnly";
+import {DateOnly} from "@simplism/core";
 
 describe("DateOnly", () => {
   it("일반 초기화시, 오늘이 초기값으로 설정됨", () => {

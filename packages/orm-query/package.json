@@ -10,8 +10,5 @@
   "dependencies": {
     "@simplism/core": "^8.0.0",
     "core-js": "^2.5.7"
-  },
-  "devDependencies": {
-    "mocha": "^5.2.0"
   }
 }

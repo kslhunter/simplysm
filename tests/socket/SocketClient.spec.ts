@@ -3,7 +3,7 @@ import * as assert from "assert";
 import {after, afterEach, before, beforeEach, describe, it} from "mocha";
 import {SocketServer} from "@simplism/socket-server";
 import {TestService} from "./services/TestService";
-import {SocketClient} from "../src/SocketClient";
+import {SocketClient} from "@simplism/socket-client";
 
 describe("SocketClient", () => {
   let jsdom: JSDOM;

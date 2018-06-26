@@ -2,8 +2,8 @@ import * as fs from "fs";
 import * as assert from "assert";
 import * as sinon from "sinon";
 import {afterEach, beforeEach, describe, it} from "mocha";
-import {Logger} from "../../src/util/Logger";
 import * as path from "path";
+import {Logger} from "@simplism/core";
 
 describe("Logger", () => {
   let consoleSpy: sinon.SinonSpy;

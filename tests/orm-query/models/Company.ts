@@ -1,4 +1,4 @@
-import {Column, Table} from "../../src/common/decorators";
+import {Column, Table} from "@simplism/orm-query";
 
 @Table("SD_ORM_QUERY")
 export class Company {

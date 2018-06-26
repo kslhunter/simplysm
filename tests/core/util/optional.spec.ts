@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import {describe, it} from "mocha";
-import {optional} from "../../src/util/optional";
+import {optional} from "@simplism/core";
 
 describe("Optional", () => {
   it("체인 중간에 'undefined'가 있어도 오류가 발생하지 않고, 결과값으로 'undefined'를 내보냄", () => {

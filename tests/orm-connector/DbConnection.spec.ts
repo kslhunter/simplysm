@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import {afterEach, beforeEach, describe, it} from "mocha";
-import {DbConnection} from "../src/DbConnection";
+import {DbConnection} from "@simplism/orm-connector";
 
 describe("DbConnection", () => {
   let conn: DbConnection;

@@ -1,0 +1,14 @@
+{
+  "extends": "../../packages/orm-query/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@simplism/core": [
+        "../../packages/core/src/index.ts"
+      ],
+      "@simplism/orm-query": [
+        "../../packages/orm-query/src/index.ts"
+      ]
+    }
+  }
+}

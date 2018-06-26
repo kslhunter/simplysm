@@ -10,8 +10,5 @@
   "dependencies": {
     "@simplism/core": "^8.0.0",
     "tedious": "^2.6.1"
-  },
-  "devDependencies": {
-    "mocha": "^5.2.0"
   }
 }

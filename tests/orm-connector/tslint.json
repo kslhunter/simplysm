@@ -1,0 +1,6 @@
+{
+  "extends": "../../packages/orm-connector/tslint.json",
+  "rules": {
+    "no-implicit-dependencies": false
+  }
+}
