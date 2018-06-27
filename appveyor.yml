@@ -1,22 +1,19 @@
-environment:
-  nodejs_version: "8"
+cache:
+  - node_modules
+  - '%LOCALAPPDATA%/Yarn'
 
 install:
-  - ps: Install-Product node $env:nodejs_version
+  - ps: Install-Product node 8
   - node --version
   - npm --version
   - yarn --version
-  - yarn
+  - yarn install
 
-test_script:
+before_build:
   - yarn test
 
 build_script:
   - yarn build
-
-cache:
-  - node_modules
-  - '%LOCALAPPDATA%/Yarn'
 
 services:
   - mssql2017
