@@ -10,7 +10,7 @@ install:
   - yarn install
 
 before_build:
-  - yarn test
+  - cmd: yarn test
 
 build_script:
   - yarn build
