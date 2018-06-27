@@ -96,6 +96,8 @@
     ],
     "no-dynamic-delete": false,
     "prefer-conditional-expression": false,
-    "no-unnecessary-type-assertion": false
+    "no-unnecessary-type-assertion": false,
+    "arrow-return-shorthand": false,
+    "max-classes-per-file": false
   }
 }

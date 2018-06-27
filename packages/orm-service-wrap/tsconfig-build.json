@@ -5,8 +5,8 @@
       "@simplism/core": [
         "../core"
       ],
-      "@simplism/socket-client": [
-        "../socket-client"
+      "@simplism/service-interface": [
+        "../service-interface"
       ],
       "@simplism/orm-common": [
         "../orm-common"

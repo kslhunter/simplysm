@@ -1,7 +1,6 @@
-import {DbContext} from "@simplism/service-interface";
-import {Queryable} from "../../../packages/service-interface/src/orm/Queryable";
 import {TestModel} from "./TestModel";
 import {IDbConnectionConfig} from "@simplism/orm-common";
+import {DbContext, Queryable} from "@simplism/orm-service-wrap";
 
 export class TestDbContext extends DbContext {
   public testModel = new Queryable(this, TestModel);

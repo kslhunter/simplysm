@@ -13,8 +13,8 @@
       "@simplism/core": [
         "../core/src/index.ts"
       ],
-      "@simplism/socket-client": [
-        "../socket-client/src/index.ts"
+      "@simplism/service-interface": [
+        "../service-interface/src/index.ts"
       ],
       "@simplism/orm-common": [
         "../orm-common/src/index.ts"

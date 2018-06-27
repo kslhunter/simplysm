@@ -11,7 +11,7 @@ describe("Socket", () => {
 
   before(() => {
     jsdom = new JSDOM("<!DOCTYPE html><html><head></head><body></body></html>", {
-      url: "http://localhost/"
+      url: "http://localhost:59080/"
     });
 
     global["location"] = jsdom.window.location;

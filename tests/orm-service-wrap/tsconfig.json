@@ -29,6 +29,9 @@
       ],
       "@simplism/service-interface": [
         "../../packages/service-interface/src/index.ts"
+      ],
+      "@simplism/orm-service-wrap": [
+        "../../packages/orm-service-wrap/src/index.ts"
       ]
     }
   }

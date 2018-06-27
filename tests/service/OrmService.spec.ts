@@ -12,7 +12,7 @@ describe("Service", () => {
 
   before(() => {
     jsdom = new JSDOM("<!DOCTYPE html><html><head></head><body></body></html>", {
-      url: "http://localhost/"
+      url: "http://localhost:59180/"
     });
 
     global["location"] = jsdom.window.location;
@@ -75,8 +75,6 @@ VALUES (1, '관리자');
   it("일반 쿼리 실행", async () => {
     const results = await client.orm.executeAsync(connId, "SELECT * FROM [SD_TEST_ORM_SERVICE].[dbo].[TEST_TABLE]");
 
-    assert.strictEqual(results.length, 1);
-    assert.strictEqual(results[0][0] !== undefined, true);
     assert.deepStrictEqual(results, [[{id: 1, name: "관리자"}]]);
   });
 

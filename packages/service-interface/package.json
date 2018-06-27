@@ -10,7 +10,6 @@
   "dependencies": {
     "@simplism/core": "^8.0.0",
     "@simplism/socket-client": "^8.0.0",
-    "@simplism/orm-common": "^8.0.0",
-    "@simplism/orm-query": "^8.0.0"
+    "@simplism/orm-common": "^8.0.0"
   }
 }

@@ -4,15 +4,17 @@ import {ServiceContainer} from "@simplism/service-container";
 import {ServiceInterface} from "@simplism/service-interface";
 import {TestDbContext} from "./orm/TestDbContext";
 import {JSDOM} from "jsdom";
+import {OrmConnector} from "@simplism/orm-service-wrap";
 
-describe("Service", () => {
+describe("OrmServiceWrap", () => {
   let jsdom: JSDOM;
   let server: ServiceContainer;
   let client: ServiceInterface;
+  let orm: OrmConnector;
 
   before(() => {
     jsdom = new JSDOM("<!DOCTYPE html><html><head></head><body></body></html>", {
-      url: "http://localhost/"
+      url: "http://localhost:59280/"
     });
 
     global["location"] = jsdom.window.location;
@@ -20,18 +22,19 @@ describe("Service", () => {
   });
 
   after(() => {
-    console.log("!!!!");
     jsdom.window.close();
   });
 
   beforeEach(async () => {
     server = new ServiceContainer();
-    await server.startAsync();
+    await server.startAsync(59280);
 
     client = new ServiceInterface();
-    await client.connectAsync();
+    await client.connectAsync(59280);
 
-    await client.orm.connectAsync(TestDbContext, async db => {
+    orm = new OrmConnector(client);
+
+    await orm.connectWithoutTransactionAsync(TestDbContext, async db => {
       await db.initializeAsync();
       await db.testModel
         .insertAsync({
@@ -42,7 +45,7 @@ describe("Service", () => {
 
   afterEach(async () => {
     try {
-      await client.orm.connectAsync(TestDbContext, async db => {
+      await orm.connectWithoutTransactionAsync(TestDbContext, async db => {
         await db.dropAllAsync();
       });
     }
@@ -57,7 +60,7 @@ describe("Service", () => {
   });
 
   it("일반 쿼리 실행", async () => {
-    await client.orm.connectAsync(TestDbContext, async db => {
+    await orm.connectAsync(TestDbContext, async db => {
       const result = await db.testModel.resultAsync();
       assert.deepStrictEqual(result, [{id: 1, name: "관리자"}]);
     });

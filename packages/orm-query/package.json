@@ -1,5 +1,5 @@
 {
-  "name": "@simplism/core",
+  "name": "@simplism/orm-query",
   "version": "8.0.0",
   "description": "Simplism ORM Query Package",
   "repository": "github:kslhunter/simplism8",

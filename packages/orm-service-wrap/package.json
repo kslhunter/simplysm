@@ -1,7 +1,7 @@
 {
-  "name": "@simplism/service-interface",
+  "name": "@simplism/orm-service-wrap",
   "version": "8.0.0",
-  "description": "Simplism Service Interface Package",
+  "description": "Simplism ORM Service Wrap Package",
   "repository": "github:kslhunter/simplism8",
   "author": "kslhunter",
   "license": "MIT",
@@ -9,7 +9,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplism/core": "^8.0.0",
-    "@simplism/socket-client": "^8.0.0",
+    "@simplism/service-interface": "^8.0.0",
     "@simplism/orm-common": "^8.0.0",
     "@simplism/orm-query": "^8.0.0"
   }
