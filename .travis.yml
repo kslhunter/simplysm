@@ -1,4 +1,4 @@
-sudo: required
+sudo: false
 language: node_js
 cache: yarn
 node_js:
@@ -8,6 +8,6 @@ before_install:
   - export PATH=$HOME/.yarn/bin:$PATH
 install: yarn
 before_script:
-  - sudo chmod -R a+rwx *
+  - chmod -R a+rwx *
 script:
   - yarn test+build
