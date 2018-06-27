@@ -1,11 +1,19 @@
 environment:
   nodejs_version: "8"
 
-cache:
-  - "%LOCALAPPDATA%\\Yarn"
+install:
+  - ps: Install-Product node $env:nodejs_version
+
+before_build:
+  - node --version
+  - npm --version
+  - yarn --version
 
 test_script:
   - yarn test
 
 build_script:
   - yarn build
+
+cache:
+  - "%LOCALAPPDATA%\\Yarn"
