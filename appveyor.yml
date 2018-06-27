@@ -7,5 +7,5 @@ cache:
 test_script:
   - yarn test
 
-build:
+build_script:
   - yarn build
