@@ -1,0 +1,11 @@
+environment:
+  nodejs_version: "8"
+
+cache:
+  - "%LOCALAPPDATA%\\Yarn"
+
+test_script:
+  - test
+
+build:
+  - yarn build
