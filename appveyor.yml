@@ -8,11 +8,15 @@ install:
   - yarn --version
   - yarn
 
+test_script:
+  - yarn test
+
 build_script:
-  - yarn test+build
+  - yarn build
 
 cache:
-  - "%LOCALAPPDATA%\\Yarn"
+  - node_modules
+  - '%LOCALAPPDATA%/Yarn'
 
 services:
   - mssql2017
