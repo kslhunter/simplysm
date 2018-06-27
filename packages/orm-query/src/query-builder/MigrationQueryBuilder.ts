@@ -1,6 +1,6 @@
 export class MigrationQueryBuilder {
   public createDatabase(dbName: string): string {
-    return `CREATE DATABASE [${dbName}]`;
+    return `CREATE DATABASE [${dbName}] COLLATE Korean_Wansung_CI_AS`;
   }
 
   public createTable(

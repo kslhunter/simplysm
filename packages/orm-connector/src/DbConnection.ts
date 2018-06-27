@@ -24,18 +24,6 @@ export class DbConnection {
       }
     });
 
-    await new Promise<void>((resolve, reject) => {
-      conn.on("connect", err => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        this.isConnected = true;
-        resolve();
-      });
-    });
-
     conn.on("infoMessage", async info => {
       this._logger.log(info.message);
     });
@@ -46,6 +34,18 @@ export class DbConnection {
 
     conn.on("error", async error => {
       this._logger.error(error.message);
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      conn.on("connect", err => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        this.isConnected = true;
+        resolve();
+      });
     });
 
     this._conn = conn;

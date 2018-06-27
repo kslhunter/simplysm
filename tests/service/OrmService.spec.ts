@@ -37,7 +37,7 @@ describe("Service", () => {
 
     await client.orm.executeAsync(connId, `
 DROP DATABASE IF EXISTS [SD_TEST_ORM_SERVICE];
-CREATE DATABASE [SD_TEST_ORM_SERVICE];
+CREATE DATABASE [SD_TEST_ORM_SERVICE] COLLATE Korean_Wansung_CI_AS;
 GO;
 
 CREATE TABLE [SD_TEST_ORM_SERVICE].[dbo].[TEST_TABLE] (
