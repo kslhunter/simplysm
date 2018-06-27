@@ -13,3 +13,6 @@ build_script:
 
 cache:
   - "%LOCALAPPDATA%\\Yarn"
+
+services:
+  - mssql2017

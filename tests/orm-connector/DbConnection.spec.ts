@@ -9,7 +9,7 @@ describe("DbConnection", () => {
     conn = new DbConnection({
       server: "localhost",
       username: "sa",
-      password: "1234"
+      password: "Password12!"
     });
     await conn.connectAsync();
     assert.strictEqual(conn.isConnected, true);

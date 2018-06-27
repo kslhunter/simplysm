@@ -8,7 +8,7 @@ export class TestDbContext extends DbContext {
   public get config(): IDbConnectionConfig {
     return {
       username: "sa",
-      password: "1234"
+      password: "Password12!"
     };
   }
 }

@@ -32,7 +32,7 @@ describe("Service", () => {
 
     connId = await client.orm.connectAsync({
       username: "sa",
-      password: "1234"
+      password: "Password12!"
     });
 
     await client.orm.executeAsync(connId, `
