@@ -5,7 +5,7 @@ cache:
   - "%LOCALAPPDATA%\\Yarn"
 
 test_script:
-  - test
+  - yarn test
 
 build:
   - yarn build
