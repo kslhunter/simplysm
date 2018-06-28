@@ -19,11 +19,6 @@ install:
   - ps: $env:package_name = (Get-Content -Raw -Path package.json | ConvertFrom-Json).name
   - ps: Update-AppveyorBuild -Version "$env:package_version-$env:APPVEYOR_BUILD_NUMBER"
 
-  - sqlcmd -S "(local)" -U "sa" -P "Password12!" -Q "SELECT * FROM sys.syslanguages"
-  - sqlcmd -S "(local)" -U "sa" -P "Password12!" -Q "SELECT * FROM sys.fn_helpcollations() WHERE name like '%Korean%'"
-  - sqlcmd -S "(local)" -U "sa" -P "Password12!" -Q "SET LANGUAGE Korean"
-  -
-
   # Install Node.js.
   - ps: Install-Product node 8
 
