@@ -40,3 +40,4 @@ before_build:
 
 build_script:
   - yarn build || SET EXITVAL=1
+  - EXIT /B %EXITVAL%
