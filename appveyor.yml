@@ -1,9 +1,9 @@
 init:
-  - tzutil /s "Korea Standard Time"
-  - ps: Set-WinSystemLocale ko-KR
+  - ps: Set-WinSystemLocale ja-JP
   - ps: Start-Sleep -s 5
   - ps: Restart-Computer
   - ps: Start-Sleep -s 5
+  - tzutil /s "Korea Standard Time"
 
 cache:
   - node_modules
