@@ -15,15 +15,15 @@ $ipall = $wmi.GetSmoObject("ManagedComputer[@Name='${env:computername}']/ServerI
 $port = $ipall.IPAddressProperties.Item("TcpDynamicPorts").Value;
 
 $config = @{
-	user = "sa";
-	password = "Password12!";
-	server = "localhost";
-	port = $port;
-	database = "master";
-	requestTimeout = 30000;
-	options = @{
-		abortTransactionOnError = $true
-	}
+  user = "sa";
+  password = "Password12!";
+  server = "localhost";
+  port = $port;
+  database = "master";
+  requestTimeout = 30000;
+  options = @{
+    abortTransactionOnError = $true
+  }
 } | ConvertTo-Json -Depth 3;
 
 [System.IO.File]::WriteAllLines("test\.mssql.json", $config);
