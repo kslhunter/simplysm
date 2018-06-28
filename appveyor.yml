@@ -1,9 +1,12 @@
 init:
   - ps: Set-WinSystemLocale ko-KR
+  - tzutil /s "Korea Standard Time"
   - ps: Start-Sleep -s 5
   - ps: Restart-Computer
   - ps: Start-Sleep -s 5
-  - tzutil /s "Korea Standard Time"
+
+services:
+  - mssql2008r2sp2
 
 cache:
   - node_modules
@@ -15,6 +18,11 @@ install:
   - ps: $env:package_version = (Get-Content -Raw -Path package.json | ConvertFrom-Json).version
   - ps: $env:package_name = (Get-Content -Raw -Path package.json | ConvertFrom-Json).name
   - ps: Update-AppveyorBuild -Version "$env:package_version-$env:APPVEYOR_BUILD_NUMBER"
+
+  - sqlcmd -S "(local)" -U "sa" -P "Password12!" -Q "SELECT * FROM sys.syslanguages"
+  - sqlcmd -S "(local)" -U "sa" -P "Password12!" -Q "SELECT * FROM sys.fn_helpcollations() WHERE name like '%Korean%'"
+  - sqlcmd -S "(local)" -U "sa" -P "Password12!" -Q "SET LANGUAGE Korean"
+  -
 
   # Install Node.js.
   - ps: Install-Product node 8
@@ -32,6 +40,3 @@ before_build:
 
 build_script:
   - yarn build
-
-services:
-  - mssql2017
