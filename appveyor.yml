@@ -1,7 +1,7 @@
 init:
   - tzutil /s "Korea Standard Time"
-  - chcp 949
-
+  - ps: Set-WinSystemLocale ko-KR
+  - ps: Restart-Computer
 cache:
   - node_modules
   - '%LOCALAPPDATA%/Yarn'
