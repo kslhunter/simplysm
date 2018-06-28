@@ -2,19 +2,31 @@ init:
   - tzutil /s "Korea Standard Time"
   - ps: Set-WinSystemLocale ko-KR
   - ps: Restart-Computer
+
 cache:
   - node_modules
+  - '%APPDATA%\npm-cache'
   - '%LOCALAPPDATA%/Yarn'
 
 install:
+  # Update build version depending on package.json version.
+  - ps: $env:package_version = (Get-Content -Raw -Path package.json | ConvertFrom-Json).version
+  - ps: $env:package_name = (Get-Content -Raw -Path package.json | ConvertFrom-Json).name
+  - ps: Update-AppveyorBuild -Version "$env:package_version-$env:APPVEYOR_BUILD_NUMBER"
+
+  # Install Node.js.
   - ps: Install-Product node 8
+
+  # Display versions.
   - node --version
   - npm --version
   - yarn --version
+
+  # Update dependencies.
   - yarn install
 
 before_build:
-  - cmd: yarn test
+  - yarn test
 
 build_script:
   - yarn build
