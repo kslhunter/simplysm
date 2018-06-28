@@ -22,6 +22,11 @@ install:
   # Install Node.js.
   - ps: Install-Product node 8
 
+  # Install Yarn
+  - ps: Write-Host "Installing Yarn!"
+  - ps: (New-Object Net.WebClient).DownloadFile("https://yarnpkg.com/latest.msi", "$env:temp\yarn.msi")
+  - ps: cmd /c start /wait msiexec.exe /i $env:temp\yarn.msi /quiet /qn /norestart
+
   # Display versions.
   - node --version
   - npm --version
