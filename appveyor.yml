@@ -39,7 +39,7 @@ test-script:
   - yarn --version
 
   - SET EXITVAL=0
-  - ps: %cd%\test\scripts\appveyor.ps1 SQL2008R2SP2
+  - powershell %cd%\test\scripts\appveyor.ps1 SQL2008R2SP2
   - yarn test || SET EXITVAL=1
   - net stop MSSQL$SQL2008R2SP2
   - EXIT /B %EXITVAL%
