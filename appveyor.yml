@@ -1,5 +1,5 @@
 init:
-  - ps: Set-WinSystemLocale ja-JP
+  - ps: Set-WinSystemLocale ko-KR
   - ps: Start-Sleep -s 5
   - ps: Restart-Computer
   - ps: Start-Sleep -s 5
