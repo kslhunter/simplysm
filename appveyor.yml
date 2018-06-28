@@ -1,3 +1,6 @@
+image:
+  - Visual Studio 2015
+
 services:
   - mssql2008r2sp2
 
