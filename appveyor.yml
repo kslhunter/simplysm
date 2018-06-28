@@ -1,3 +1,7 @@
+init:
+  - tzutil /s "Korea Standard Time"
+  - chcp 949
+
 cache:
   - node_modules
   - '%LOCALAPPDATA%/Yarn'
