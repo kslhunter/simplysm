@@ -74,6 +74,6 @@ export class MigrationQueryBuilder {
   }
 
   public dropDatabase(dbName: string): string {
-    return `DROP DATABASE IF EXISTS [${dbName}]`;
+    return `IF EXISTS(select * from sys.databases WHERE name='${dbName}') DROP DATABASE [${dbName}]`;
   }
 }

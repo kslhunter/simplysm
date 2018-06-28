@@ -36,7 +36,7 @@ describe("Service", () => {
     });
 
     await client.orm.executeAsync(connId, `
-DROP DATABASE IF EXISTS [SD_TEST_ORM_SERVICE];
+IF EXISTS(select * from sys.databases WHERE name='SD_TEST_ORM_SERVICE') DROP DATABASE [SD_TEST_ORM_SERVICE];
 CREATE DATABASE [SD_TEST_ORM_SERVICE];
 GO;
 
@@ -52,7 +52,7 @@ VALUES (1, '관리자');
 
   afterEach(async () => {
     try {
-      await client.orm.executeAsync(connId, "DROP DATABASE IF EXISTS [SD_TEST_ORM_SERVICE];");
+      await client.orm.executeAsync(connId, "IF EXISTS(select * from sys.databases WHERE name='SD_TEST_ORM_SERVICE') DROP DATABASE [SD_TEST_ORM_SERVICE];");
       await client.orm.closeAsync(connId);
     }
     catch (err) {

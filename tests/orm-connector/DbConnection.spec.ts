@@ -15,7 +15,7 @@ describe("DbConnection", () => {
     assert.strictEqual(conn.isConnected, true);
 
     await conn.executeAsync(`
-DROP DATABASE IF EXISTS [SD_TEST_ORM_CONNECTOR];
+IF EXISTS(select * from sys.databases WHERE name='SD_TEST_ORM_CONNECTOR') DROP DATABASE [SD_TEST_ORM_CONNECTOR];
 CREATE DATABASE [SD_TEST_ORM_CONNECTOR];
 GO;
 
@@ -30,7 +30,7 @@ VALUES (1, '관리자');
   });
 
   afterEach(async () => {
-    await conn.executeAsync("DROP DATABASE IF EXISTS [SD_TEST_ORM_CONNECTOR];");
+    await conn.executeAsync("IF EXISTS(select * from sys.databases WHERE name='SD_TEST_ORM_CONNECTOR') DROP DATABASE IF EXISTS [SD_TEST_ORM_CONNECTOR];");
     await conn.closeAsync();
     assert.strictEqual(conn.isConnected, false);
   });
