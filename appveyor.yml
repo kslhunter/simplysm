@@ -37,6 +37,7 @@ install:
 
 before_build:
   - yarn test || SET EXITVAL=1
+  - EXIT /B %EXITVAL%
 
 build_script:
   - yarn build || SET EXITVAL=1
