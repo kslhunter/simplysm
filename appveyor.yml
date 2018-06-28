@@ -1,3 +1,6 @@
+services:
+  - mssql2008r2sp2
+
 cache:
   - node_modules
   - '%APPDATA%\npm-cache'
@@ -35,8 +38,4 @@ test_script:
   - cmd: npm --version
   - cmd: yarn --version
 
-  - cmd: SET EXITVAL=0
-  - cmd: powershell %cd%\appveyor.ps1 SQL2008R2SP2
-  - cmd: yarn test || SET EXITVAL=1
-  - cmd: net stop MSSQL$SQL2008R2SP2
-  - cmd: EXIT /B %EXITVAL%
+  - cmd: yarn test
