@@ -49,6 +49,8 @@ export class DbConnection {
     });
 
     this._conn = conn;
+
+    await this.executeAsync("SET LANGUAGE Korean");
   }
 
   public async closeAsync(): Promise<void> {
