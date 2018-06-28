@@ -27,18 +27,19 @@ install:
   - ps: (New-Object Net.WebClient).DownloadFile("https://yarnpkg.com/latest.msi", "$env:temp\yarn.msi")
   - ps: cmd /c start /wait msiexec.exe /i $env:temp\yarn.msi /quiet /qn /norestart
 
+  # Update dependencies.
+  - yarn install
+
+build: off
+
+test-script:
   # Display versions.
   - node --version
   - npm --version
   - yarn --version
 
-  # Update dependencies.
-  - yarn install
-
-before_build:
+  - SET EXITVAL=0
+  - ps: %cd%\test\scripts\appveyor.ps1 SQL2008R2SP2
   - yarn test || SET EXITVAL=1
-  - EXIT /B %EXITVAL%
-
-build_script:
-  - yarn build || SET EXITVAL=1
+  - net stop MSSQL$SQL2008R2SP2
   - EXIT /B %EXITVAL%
