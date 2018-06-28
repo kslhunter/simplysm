@@ -32,7 +32,7 @@ install:
 
 build: off
 
-test-script:
+test_script:
   # Display versions.
   - node --version
   - npm --version
