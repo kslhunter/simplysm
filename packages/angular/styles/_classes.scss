@@ -1,0 +1,66 @@
+@each $key, $val in $theme-color {
+  @each $key1, $val1 in $val {
+    .sd-background-#{$key}-#{$key1} {
+      background: $val1 !important;
+
+      @if $key1 != lighter and $key1 != lightest {
+        color: white;
+
+        a {
+          color: text-color(reverse, dark);
+
+          &:hover,
+          &:focus {
+            color: text-color(reverse, default);
+          }
+        }
+      }
+    }
+  }
+}
+
+.sd-background-default {
+  background: $bg-color !important;
+}
+
+@each $key, $val in $theme-color {
+  @each $key1, $val1 in $val {
+    .sd-text-color-#{$key}-#{$key1} {
+      color: $val1 !important;
+    }
+  }
+}
+
+@each $key, $value in $trans-color {
+  @each $direction in top, right, bottom, left {
+    .sd-border-#{$direction}-#{$key} {
+      border-#{$direction}: 1px solid trans-color($key);
+    }
+  }
+}
+
+@each $key, $val in $gap {
+  .sd-margin-#{$key} {
+    margin: $val;
+  }
+
+  @each $direction in top, right, bottom, left {
+    .sd-margin-#{$direction}-#{$key} {
+      margin-#{$direction}: $val;
+    }
+  }
+}
+
+@each $key in join(0, map_keys($gap)) {
+  .sd-padding-#{$key} {
+    padding: if(gap($key), gap($key), 0);
+  }
+}
+
+@each $key-v in join(0, map_keys($gap)) {
+  @each $key-h in join(0, map_keys($gap)) {
+    .sd-padding-#{$key-v}-#{$key-h} {
+      padding: if(gap($key-v), gap($key-v), 0) if(gap($key-h), gap($key-h), 0);
+    }
+  }
+}

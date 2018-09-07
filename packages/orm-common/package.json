@@ -1,0 +1,10 @@
+{
+  "name": "@simplism/orm-common",
+  "version": "10.0.15",
+  "description": "Simplism ORM Common Package",
+  "repository": "github:kslhunter/simplism",
+  "author": "kslhunter",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts"
+}

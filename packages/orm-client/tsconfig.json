@@ -1,0 +1,30 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@simplism/core": [
+        "../core/src/index.ts"
+      ],
+      "@simplism/socket-client": [
+        "../socket-client/src/index.ts"
+      ],
+      "@simplism/orm-common": [
+        "../orm-common/src/index.ts"
+      ],
+      "@simplism/orm-query": [
+        "../orm-query/src/index.ts"
+      ]
+    }
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

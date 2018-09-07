@@ -1,0 +1,18 @@
+{
+  "name": "@simplism/socket-server",
+  "version": "10.0.15",
+  "description": "Simplism Socket Server Package",
+  "repository": "github:kslhunter/simplism",
+  "author": "kslhunter",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@simplism/core": "^10.0.13",
+    "@simplism/socket-common": "^10.0.13",
+    "bufferutil": "^4.0.0",
+    "mime": "^2.3.1",
+    "utf-8-validate": "^5.0.1",
+    "ws": "^6.0.0"
+  }
+}

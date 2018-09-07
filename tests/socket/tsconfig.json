@@ -1,0 +1,23 @@
+{
+  "extends": "../../packages/socket-client/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@simplism/core": [
+        "../../packages/core/src/index.ts"
+      ],
+      "@simplism/socket-common": [
+        "../../packages/socket-common/src/index.ts"
+      ],
+      "@simplism/socket-client": [
+        "../../packages/socket-client/src/index.ts"
+      ],
+      "@simplism/socket-server": [
+        "../../packages/socket-server/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "**/*.spec.ts"
+  ]
+}

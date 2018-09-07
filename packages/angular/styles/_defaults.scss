@@ -1,0 +1,77 @@
+*,
+*:after,
+*:before {
+  box-sizing: border-box;
+}
+
+*:focus {
+  outline-color: theme-color(primary, default);
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: $bg-color;
+  color: text-color(default);
+  font-family: $font-family;
+  font-size: font-size(default);
+  line-height: $line-height;
+}
+
+pre {
+  font-family: $font-family;
+  font-size: font-size(default);
+  line-height: $line-height;
+}
+
+@each $tag in h1, h2, h3, h4, h5, h6 {
+  #{$tag} {
+    font-size: font-size($tag);
+    line-height: $line-height;
+    margin: 0;
+  }
+}
+
+a {
+  display: inline-block;
+  cursor: pointer;
+  color: theme-color(primary, default);
+
+  &:focus {
+    outline: none;
+  }
+
+  &:hover,
+  &:focus {
+    color: theme-color(primary, dark);
+  }
+}
+
+::-webkit-scrollbar-track {
+  background-color: rgba(theme-color(bluegrey, default), .2);
+}
+
+::-webkit-scrollbar-corner {
+  background-color: rgba(theme-color(bluegrey, dark), .2);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0);
+
+  border-top: 1px solid get($trans-color, dark);
+  border-bottom: 1px solid get($trans-color, default);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(theme-color(bluegrey, default), .4);
+
+  border-top: 1px solid get($trans-color, default);
+  border-bottom: 1px solid get($trans-color, dark);
+}

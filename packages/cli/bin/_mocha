@@ -1,0 +1,67 @@
+const yargs = require("yargs");
+const childProcess = require("child_process");
+const fs = require("fs-extra");
+const path = require("path");
+
+const otherOptionKeys = Object.keys(yargs.argv).filter(item => !["_", "config", "package"].includes(item) && !item.startsWith("$"));
+const otherOptions = {};
+for (const key of otherOptionKeys) {
+  otherOptions[key] = yargs.argv[key];
+}
+
+const cmdOptions = yargs.argv["_"];
+
+const projectConfigPath = yargs.argv["config"] || "simplism.json";
+const projectConfig = fs.readJsonSync(projectConfigPath);
+
+const runAsync = async packageName => {
+  const testConfig = projectConfig.tests.find(item => item.name === packageName);
+  if (!testConfig) {
+    throw new Error(`테스트 패키지 ${packageName}에 대한 테스트 설정이 없습니다.`);
+  }
+
+  const shimRequireArg = testConfig.angular ? [`--require`, `"${path.resolve(__dirname, "../loaders/test-angular.shim.js")}"`] :
+    testConfig.jsdom ? [`--require`, `"${path.resolve(__dirname, "../loaders/test-jsdom.shim.js")}"`]
+      : [];
+
+  const requireOrWebpackConfig = testConfig.angular ? [
+      "--webpack-config", `"${path.resolve(__dirname, "../loaders/test-angular-webpack.config.js")}"`,
+      "--webpack-env.packageName", `"${packageName}"`
+    ]
+    : [
+      `--require`, `ts-node/register`,
+      `--require`, `tsconfig-paths/register`
+    ];
+
+  childProcess.spawnSync(
+    testConfig.angular ? path.normalize(`node_modules/.bin/mocha-webpack`) : path.normalize(`node_modules/.bin/mocha`),
+    [
+      ...requireOrWebpackConfig,
+      ...shimRequireArg,
+      `--timeout`, `10000`,
+      ...Object.keys(otherOptions).map(key => [`--${key}`, otherOptions[key]]).reduce((a, b) => a.concat(b)),
+      ...cmdOptions
+    ],
+    {
+      shell: true,
+      stdio: "inherit",
+      env: {
+        ...process.env,
+        TS_NODE_PROJECT: `tests/${packageName}/tsconfig.json`,
+        NODE_ENV: "test",
+        JSDOM_CONFIG: JSON.stringify(testConfig.jsdom || testConfig.angular)
+      }
+    }
+  )
+};
+
+if (!yargs.argv.package) {
+  for (const testConfig of projectConfig.tests) {
+    runAsync(testConfig.name);
+  }
+}
+else {
+  for (const pack of yargs.argv.package.split(",")) {
+    runAsync(pack.trim());
+  }
+}

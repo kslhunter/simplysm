@@ -1,0 +1,19 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@simplism/core": [
+        "../core/src/index.ts"
+      ]
+    }
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

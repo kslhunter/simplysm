@@ -1,0 +1,6 @@
+{
+  "extends": "../../packages/excel/tslint.json",
+  "rules": {
+    "no-implicit-dependencies": false
+  }
+}

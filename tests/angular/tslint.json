@@ -1,0 +1,10 @@
+{
+  "extends": "../../packages/angular/tslint.json",
+  "rules": {
+    "no-implicit-dependencies": false,
+    "no-submodule-imports": [
+      true,
+      "@angular"
+    ]
+  }
+}

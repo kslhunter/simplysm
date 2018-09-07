@@ -1,0 +1,17 @@
+{
+  "extends": "../../packages/excel/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@simplism/core": [
+        "../../packages/core/src/index.ts"
+      ],
+      "@simplism/excel": [
+        "../../packages/excel/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "**/*.spec.ts"
+  ]
+}

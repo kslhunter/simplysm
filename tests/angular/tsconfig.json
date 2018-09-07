@@ -1,0 +1,32 @@
+{
+  "extends": "../../packages/angular/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@simplism/core": [
+        "../../packages/core/src/index.ts"
+      ],
+      "@simplism/orm-client": [
+        "../../packages/orm-client/src/index.ts"
+      ],
+      "@simplism/orm-common": [
+        "../../packages/orm-common/src/index.ts"
+      ],
+      "@simplism/orm-query": [
+        "../../packages/orm-query/src/index.ts"
+      ],
+      "@simplism/socket-common": [
+        "../../packages/socket-common/src/index.ts"
+      ],
+      "@simplism/socket-client": [
+        "../../packages/socket-client/src/index.ts"
+      ],
+      "@simplism/angular": [
+        "../../packages/angular/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "**/*.spec.ts"
+  ]
+}

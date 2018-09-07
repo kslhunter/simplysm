@@ -1,0 +1,6 @@
+{
+  "extends": "../../packages/service-interface/tslint.json",
+  "rules": {
+    "no-implicit-dependencies": false
+  }
+}
