@@ -161,11 +161,6 @@ export class ClientPackageBuilder {
       await new Promise<void>((resolve, reject) => {
         const host = CliHelper.getCurrentIP([this._config.devServer!.host]);
 
-        console.log({
-          ...this._config.env,
-          ...this._config["env.development"]
-        });
-
         const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(platform), {
           mode: "development",
           devtool: "cheap-module-source-map",
