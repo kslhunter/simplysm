@@ -46,7 +46,8 @@ export async function runDeviceAsync(argv: { config: string; package: string; re
     );
   }
   else {
-    const devServerUrl = `http://${CliHelper.getCurrentIP([config.devServer.host])}:${config.devServer.port}`;
+    const host = CliHelper.getCurrentIP([config.devServer.host]);
+    const devServerUrl = `http://${host}:${config.devServer.port}`;
     const cordovaProjectPath = path.resolve(process.cwd(), "packages", argv.package, ".cordova");
     fs.removeSync(path.resolve(cordovaProjectPath, "www"));
     fs.mkdirsSync(path.resolve(cordovaProjectPath, "www"));

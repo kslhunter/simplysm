@@ -36,6 +36,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
         display: block;
         padding: gap(sm) gap(default);
         cursor: pointer;
+        transition: background .1s linear;
 
         > sd-icon {
           float: right;
@@ -43,7 +44,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
         }
 
         &:hover {
-          background: theme-color(primary, lightest);
+          background: trans-color(default);
         }
 
         &:focus {

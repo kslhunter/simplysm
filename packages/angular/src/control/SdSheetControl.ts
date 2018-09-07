@@ -234,6 +234,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
           width: 100%;
           height: 100%;
           outline: 2px solid theme-color(primary, default);
+          outline-offset: -2px;
           pointer-events: none;
           transition: opacity .1s linear;
         }

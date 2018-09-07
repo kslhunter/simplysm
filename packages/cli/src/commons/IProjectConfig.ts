@@ -2,6 +2,9 @@ export interface IProjectConfig {
   packages: (ILibraryPackageConfig | IClientPackageConfig | IServerPackageConfig)[];
   tests?: ITestPackageConfig[];
   localDependencies?: { [key: string]: string };
+  env?: { [key: string]: string };
+  "env.development"?: { [key: string]: string };
+  "env.production"?: { [key: string]: string };
 }
 
 export interface ILibraryPackageConfig {

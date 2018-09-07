@@ -32,7 +32,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
       overflow: auto;
       z-index: 1;
 
-      &[sd-position=top] {
+      /*&[sd-position=top] {
         border-bottom: 1px solid get($trans-color, default);
       }
 
@@ -44,7 +44,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
       }
       &[sd-position=right] {
         border-left: 1px solid get($trans-color, default);
-      }
+      }*/
 
       > hr {
         display: none;

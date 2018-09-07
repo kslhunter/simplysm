@@ -6,5 +6,6 @@ logs
 _logs
 coverage
 *.vpp.*
+~$*.xlsx
 .cordova
 yarn-error.log

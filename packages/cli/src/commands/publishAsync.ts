@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import {LibraryPackageBuilder} from "../builders/LibraryPackageBuilder";
-import {IClientPackageConfig, ILibraryPackageConfig, IProjectConfig} from "../commons/IProjectConfig";
+import {ILibraryPackageConfig, IProjectConfig} from "../commons/IProjectConfig";
 import {ServerPackageBuilder} from "../builders/ServerPackageBuilder";
 import {ClientPackageBuilder} from "../builders/ClientPackageBuilder";
 
@@ -27,13 +27,23 @@ export async function publishAsync(argv: { config: string; package: string }): P
   }
   await Promise.all(promiseList);
 
-  for (const config of projectConfig.packages.filter(item => item.type !== "library")) {
-    if (!argv.package || argv.package.split(",").includes(config.name)) {
+  for (const config of projectConfig.packages) {
+    if (config.type === "library") {
+    }
+    else if (!argv.package || argv.package.split(",").includes(config.name)) {
       if (config.type === "server") {
-        await new ServerPackageBuilder(config).publishAsync();
+        await new ServerPackageBuilder({
+          "env": projectConfig.env,
+          "env.production": projectConfig["env.production"],
+          ...config
+        }).publishAsync();
       }
       else {
-        await new ClientPackageBuilder(config as IClientPackageConfig).publishAsync();
+        await new ClientPackageBuilder({
+          "env": projectConfig.env,
+          "env.production": projectConfig["env.production"],
+          ...config
+        }).publishAsync();
       }
     }
   }

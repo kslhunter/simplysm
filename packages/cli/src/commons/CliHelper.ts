@@ -43,13 +43,15 @@ export class CliHelper {
     fs.writeJsonSync(packageJsonPath, packageJson, {spaces: 2, EOL: os.EOL});
   }
 
-  public static getCurrentIP(selectors: string[]): string {
+  public static getCurrentIP(selectors: (string | undefined)[]): string {
     for (const selector of selectors) {
-      if (!selector.includes(".")) {
+      if (selector && !selector.includes(".")) {
         return selector;
       }
 
-      const ipRegExpString = selector.replace(/\./g, "\\.").replace(/\*/g, "[0-9]*");
+      const ipRegExpString = selector
+        ? selector.replace(/\./g, "\\.").replace(/\*/g, "[0-9]*")
+        : ".*";
 
       const ifaces = os.networkInterfaces();
       const result = Object.keys(ifaces)

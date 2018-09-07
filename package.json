@@ -6,9 +6,9 @@
   "author": "김석래",
   "license": "MIT",
   "scripts": {
+    "dev": "yarn run simplism build --watch",
     "test": "yarn run simplism test",
     "build": "yarn run simplism build",
-    "watch": "yarn run simplism build --watch",
     "publish": "yarn run simplism publish",
     "--": "",
     "test+build": "yarn run test && yarn run build",

@@ -31,10 +31,18 @@ export async function buildAsync(argv: { watch: boolean; package?: string; confi
   const runAsync = async (config: ILibraryPackageConfig | IClientPackageConfig | IServerPackageConfig) => {
     if (!argv.watch) {
       if (config.type === "client") {
-        await new ClientPackageBuilder(config).buildAsync();
+        await new ClientPackageBuilder({
+          "env": projectConfig.env,
+          "env.production": projectConfig["env.production"],
+          ...config
+        }).buildAsync();
       }
       else if (config.type === "server") {
-        await new ServerPackageBuilder(config).buildAsync();
+        await new ServerPackageBuilder({
+          "env": projectConfig.env,
+          "env.production": projectConfig["env.production"],
+          ...config
+        }).buildAsync();
       }
       else {
         await new LibraryPackageBuilder(config).buildAsync();
@@ -42,10 +50,18 @@ export async function buildAsync(argv: { watch: boolean; package?: string; confi
     }
     else {
       if (config.type === "client") {
-        await new ClientPackageBuilder(config).watchAsync();
+        await new ClientPackageBuilder({
+          "env": projectConfig.env,
+          "env.development": projectConfig["env.development"],
+          ...config
+        }).watchAsync();
       }
       else if (config.type === "server") {
-        await new ServerPackageBuilder(config).watchAsync();
+        await new ServerPackageBuilder({
+          "env": projectConfig.env,
+          "env.development": projectConfig["env.development"],
+          ...config
+        }).watchAsync();
       }
       else {
         await new LibraryPackageBuilder(config).watchAsync();

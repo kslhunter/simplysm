@@ -18,13 +18,13 @@ $theme-color: (
     darkest: map_get($color-bluegrey, 900)
   ),
   primary: (
-    lightest: map_get($color-indigo, 50),
-    lighter: map_get($color-indigo, 100),
-    light: map_get($color-indigo, 200),
-    default: map_get($color-indigo, 500),
-    dark: map_get($color-indigo, A700),
-    darker: map_get($color-indigo, 800),
-    darkest: map_get($color-indigo, 900)
+    lightest: map_get($color-deep-purple, 50),
+    lighter: map_get($color-deep-purple, 100),
+    light: map_get($color-deep-purple, 200),
+    default: map_get($color-deep-purple, 500),
+    dark: map_get($color-deep-purple, 600),
+    darker: map_get($color-deep-purple, 700),
+    darkest: map_get($color-purple, 900)
   ),
   info: (
     lightest: map_get($color-blue, 50),

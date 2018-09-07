@@ -24,6 +24,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
         transition: .1s linear;
         color: theme-color(primary, default);
         border-color: get($trans-color, default);
+        border-radius: 2px;
 
         &:hover {
           background: trans-color(dark);

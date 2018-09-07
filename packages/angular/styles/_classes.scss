@@ -31,11 +31,15 @@
   }
 }
 
-@each $key, $value in $trans-color {
-  @each $direction in top, right, bottom, left {
+@each $direction in top, right, bottom, left {
+  @each $key, $value in $trans-color {
     .sd-border-#{$direction}-#{$key} {
       border-#{$direction}: 1px solid trans-color($key);
     }
+  }
+
+  .sd-border-#{$direction}-none {
+    border-#{$direction}: none !important;
   }
 }
 

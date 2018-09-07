@@ -54,12 +54,12 @@ export class SocketServer {
 
       // 서버 시작
       if (arg1 instanceof http.Server) {
-        this._logger.info(`소켓서버 시작: ${host || "*"}:${port}`);
+        this._logger.info(`소켓서버 시작: http://${host || "localhost"}:${port}`);
         resolve();
       }
       else {
         this._app.listen(port, host, () => {
-          this._logger.info(`소켓서버 시작: ${host || "*"}:${port}`);
+          this._logger.info(`소켓서버 시작: http://${host || "localhost"}:${port}`);
           resolve();
         });
       }

@@ -21,7 +21,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
       width: 100%;
       height: 32px;
       line-height: 31px;
-      background: theme-color(primary, default);
+      background: theme-color(primary, dark);
       color: text-color(reverse, default);
 
       /deep/ {

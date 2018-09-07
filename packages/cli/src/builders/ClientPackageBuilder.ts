@@ -159,11 +159,18 @@ export class ClientPackageBuilder {
       }
 
       await new Promise<void>((resolve, reject) => {
+        const host = CliHelper.getCurrentIP([this._config.devServer!.host]);
+
+        console.log({
+          ...this._config.env,
+          ...this._config["env.development"]
+        });
+
         const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(platform), {
           mode: "development",
           devtool: "cheap-module-source-map",
           entry: [
-            `webpack-dev-server/client?http://${CliHelper.getCurrentIP([this._config.devServer!.host])}:${this._config.devServer!.port}/`,
+            `webpack-dev-server/client?http://${host}:${this._config.devServer!.port}/`,
             "webpack/hot/dev-server",
             this._loadersPath("client-main.js")
           ],
@@ -208,15 +215,16 @@ export class ClientPackageBuilder {
         const server = new WebpackDevServer(compiler, {
           historyApiFallback: true,
           quiet: true,
-          hot: true
+          hot: true,
+          disableHostCheck: true
         });
-        server.listen(this._config.devServer!.port, CliHelper.getCurrentIP([this._config.devServer!.host]), err => {
+        server.listen(this._config.devServer!.port, err => {
           if (err) {
             reject(err);
             return;
           }
 
-          this._logger.log(`개발 서버 시작됨: http://${CliHelper.getCurrentIP([this._config.devServer!.host])}:${this._config.devServer!.port}/`);
+          this._logger.log(`개발 서버 시작됨: http://${host}:${this._config.devServer!.port}/`);
           resolve();
         });
       });
