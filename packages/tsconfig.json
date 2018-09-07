@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "declaration": true,
+    "removeComments": true,
+    "noUnusedLocals": true,
+    "typeRoots": [
+      "../node_modules/@types",
+      "../types"
+    ],
+    "plugins": [
+      {
+        "name": "tslint-language-service"
+      }
+    ]
+  }
+}

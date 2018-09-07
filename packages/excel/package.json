@@ -1,14 +1,14 @@
 {
-  "name": "@simplism/sd-mail",
-  "version": "6.1.22",
-  "description": "Simplism Mail Package",
+  "name": "@simplism/excel",
+  "version": "10.0.15",
+  "description": "Simplism Excel Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/sd-core": "^6.1.22",
-    "nodemailer": "^4.6.4"
+    "@simplism/core": "^10.0.13",
+    "xlsx": "^0.13.5"
   }
 }

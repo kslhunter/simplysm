@@ -1,13 +1,13 @@
 {
-  "name": "@simplism/sd-core",
-  "version": "6.1.22",
-  "description": "Simplism Core Package",
+  "name": "@simplism/socket-common",
+  "version": "10.0.15",
+  "description": "Simplism Socket Common Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "fs-extra": "^6.0.0"
+    "@simplism/core": "^10.0.13"
   }
 }

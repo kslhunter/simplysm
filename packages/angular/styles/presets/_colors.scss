@@ -1,5 +1,4 @@
-// colors
-$reds: (
+$color-red: (
   50: #FFEBEE,
   100: #FFCDD2,
   200: #EF9A9A,
@@ -16,7 +15,7 @@ $reds: (
   A700: #D50000
 ) !default;
 
-$pinks: (
+$color-pink: (
   50: #FCE4EC,
   100: #F8BBD0,
   200: #F48FB1,
@@ -33,7 +32,7 @@ $pinks: (
   A700: #C51162
 ) !default;
 
-$purples: (
+$color-purple: (
   50: #F3E5F5,
   100: #E1BEE7,
   200: #CE93D8,
@@ -50,7 +49,7 @@ $purples: (
   A700: #AA00FF
 ) !default;
 
-$deep-purples: (
+$color-deep-purple: (
   50: #EDE7F6,
   100: #D1C4E9,
   200: #B39DDB,
@@ -67,7 +66,7 @@ $deep-purples: (
   A700: #6200EA
 ) !default;
 
-$indigos: (
+$color-indigo: (
   50: #E8EAF6,
   100: #C5CAE9,
   200: #9FA8DA,
@@ -84,7 +83,7 @@ $indigos: (
   A700: #304FFE
 ) !default;
 
-$blues: (
+$color-blue: (
   50: #E3F2FD,
   100: #BBDEFB,
   200: #90CAF9,
@@ -101,7 +100,7 @@ $blues: (
   A700: #2962FF
 ) !default;
 
-$light-blues: (
+$color-light-blue: (
   50: #E1F5FE,
   100: #B3E5FC,
   200: #81D4FA,
@@ -118,7 +117,7 @@ $light-blues: (
   A700: #0091EA
 ) !default;
 
-$cyans: (
+$color-cyan: (
   50: #E0F7FA,
   100: #B2EBF2,
   200: #80DEEA,
@@ -135,7 +134,7 @@ $cyans: (
   A700: #00B8D4
 ) !default;
 
-$teals: (
+$color-teal: (
   50: #E0F2F1,
   100: #B2DFDB,
   200: #80CBC4,
@@ -152,7 +151,7 @@ $teals: (
   A700: #00BFA5
 ) !default;
 
-$greens: (
+$color-green: (
   50: #E8F5E9,
   100: #C8E6C9,
   200: #A5D6A7,
@@ -169,7 +168,7 @@ $greens: (
   A700: #00C853
 ) !default;
 
-$light-greens: (
+$color-light-green: (
   50: #F1F8E9,
   100: #DCEDC8,
   200: #C5E1A5,
@@ -186,7 +185,7 @@ $light-greens: (
   A700: #64DD17
 ) !default;
 
-$limes: (
+$color-lime: (
   50: #F9FBE7,
   100: #F0F4C3,
   200: #E6EE9C,
@@ -203,7 +202,7 @@ $limes: (
   A700: #AEEA00
 ) !default;
 
-$yellows: (
+$color-yellow: (
   50: #FFFDE7,
   100: #FFF9C4,
   200: #FFF59D,
@@ -220,7 +219,7 @@ $yellows: (
   A700: #FFD600
 ) !default;
 
-$ambers: (
+$color-amber: (
   50: #FFF8E1,
   100: #FFECB3,
   200: #FFE082,
@@ -237,7 +236,7 @@ $ambers: (
   A700: #FFAB00
 ) !default;
 
-$oranges: (
+$color-orange: (
   50: #FFF3E0,
   100: #FFE0B2,
   200: #FFCC80,
@@ -254,7 +253,7 @@ $oranges: (
   A700: #FF6D00
 ) !default;
 
-$deep-oranges: (
+$color-deep-orange: (
   50: #FBE9E7,
   100: #FFCCBC,
   200: #FFAB91,
@@ -271,7 +270,7 @@ $deep-oranges: (
   A700: #DD2C00
 ) !default;
 
-$browns: (
+$color-brown: (
   50: #EFEBE9,
   100: #D7CCC8,
   200: #BCAAA4,
@@ -284,7 +283,7 @@ $browns: (
   900: #3E2723
 ) !default;
 
-$greys: (
+$color-grey: (
   50: #FAFAFA,
   100: #F5F5F5,
   200: #EEEEEE,
@@ -297,7 +296,7 @@ $greys: (
   900: #212121
 ) !default;
 
-$bluegreys: (
+$color-bluegrey: (
   50: #ECEFF1,
   100: #CFD8DC,
   200: #B0BEC5,
