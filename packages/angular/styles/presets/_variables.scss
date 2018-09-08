@@ -24,34 +24,34 @@ $theme-color: (
     default: map_get($color-deep-purple, 500),
     dark: map_get($color-deep-purple, 600),
     darker: map_get($color-deep-purple, 700),
-    darkest: map_get($color-deep-purple, 900)
+    darkest: map_get($color-deep-purple, 800)
   ),
   info: (
     lightest: map_get($color-blue, 50),
     lighter: map_get($color-blue, 100),
     light: map_get($color-blue, 200),
     default: map_get($color-blue, 500),
-    dark: map_get($color-blue, A700),
-    darker: map_get($color-blue, 800),
-    darkest: map_get($color-blue, 900)
+    dark: map_get($color-blue, 600),
+    darker: map_get($color-blue, 700),
+    darkest: map_get($color-blue, 800)
   ),
   success: (
     lightest: map_get($color-green, 50),
     lighter: map_get($color-green, 100),
     light: map_get($color-green, 300),
     default: map_get($color-green, 500),
-    dark: map_get($color-green, A700),
-    darker: map_get($color-green, 800),
-    darkest: map_get($color-green, 900)
+    dark: map_get($color-green, 600),
+    darker: map_get($color-green, 700),
+    darkest: map_get($color-green, 800)
   ),
   warning: (
     lightest: map_get($color-orange, 50),
     lighter: map_get($color-orange, 100),
     light: map_get($color-orange, 200),
     default: map_get($color-orange, 500),
-    dark: map_get($color-orange, A700),
-    darker: map_get($color-orange, 800),
-    darkest: map_get($color-orange, 900)
+    dark: map_get($color-orange, 600),
+    darker: map_get($color-orange, 700),
+    darkest: map_get($color-orange, 800)
   ),
   danger: (
     lightest: map_get($color-red, 50),
