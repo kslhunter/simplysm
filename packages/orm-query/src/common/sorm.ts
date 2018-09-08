@@ -1,7 +1,8 @@
 import {QueryUnit} from "../query-builder/QueryUnit";
-import {QueriedBoolean, QueryType} from "./types";
+import {QueryType} from "./QueryType";
 import {ormHelpers} from "./ormHelpers";
 import {DateOnly, DateTime, StripTypeWrap, Type} from "@simplism/core";
+import {QueriedBoolean} from "./QueriedBoolean";
 
 
 export class CaseQueryable<T extends QueryType> {

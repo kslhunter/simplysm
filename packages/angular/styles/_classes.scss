@@ -14,9 +14,19 @@
             color: text-color(reverse, default);
           }
         }
+
+        sd-textfield > input {
+          background: trans-color(light) !important;
+          color: white !important;
+          border-color: trans-color(light) !important;
+        }
       }
     }
   }
+}
+
+.sd-background-white {
+  background: white !important;
 }
 
 .sd-background-default {
@@ -40,6 +50,12 @@
 
   .sd-border-#{$direction}-none {
     border-#{$direction}: none !important;
+  }
+}
+
+@each $key, $value in $trans-color {
+  .sd-border-#{$key} {
+    border: 1px solid trans-color($key);
   }
 }
 

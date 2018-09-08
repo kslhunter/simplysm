@@ -1,6 +1,6 @@
 {
   "name": "@simplism/cli",
-  "version": "10.0.17",
+  "version": "10.1.2",
   "description": "Simplism CLI Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -9,9 +9,9 @@
     "simplism": "./dist/bin.js"
   },
   "dependencies": {
-    "@simplism/angular-hmr": "^10.0.13",
-    "@simplism/core": "^10.0.13",
-    "@simplism/storage": "^10.0.13",
+    "@simplism/angular-hmr": "^10.1.0",
+    "@simplism/core": "^10.1.0",
+    "@simplism/storage": "^10.1.0",
     "angular-router-loader": "^0.8.5",
     "chokidar": "^2.0.4",
     "copy-webpack-plugin": "^4.5.2",
@@ -31,7 +31,7 @@
     "source-map-support": "^0.5.9",
     "style-loader": "^0.23.0",
     "tslint": "^5.11.0",
-    "typescript": "^3.0.3",
+    "typescript": "~2.9.2",
     "webpack": "^4.17.1",
     "webpack-dev-server": "^3.1.6",
     "webpack-merge": "^4.1.4",

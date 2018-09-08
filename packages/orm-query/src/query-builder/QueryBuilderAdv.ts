@@ -3,9 +3,10 @@ import {DateOnly, DateTime, LambdaParser, Time, Type} from "@simplism/core";
 import {QueryBuilder} from "./QueryBuilder";
 import {IForeignKeyDef, IForeignKeyTargetDef, ITableDef, tableDefMetadataKey} from "../common/decorators";
 import {QueryUnit} from "./QueryUnit";
-import {QueriedBoolean, QueryType} from "../common/types";
+import {QueryType} from "../common/QueryType";
 import {ormHelpers} from "../common/ormHelpers";
 import {sorm} from "../common/sorm";
+import {QueriedBoolean} from "../common/QueriedBoolean";
 
 export interface IJoinDef {
   as: string;

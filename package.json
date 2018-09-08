@@ -1,6 +1,6 @@
 {
   "name": "simplism",
-  "version": "10.0.13",
+  "version": "10.1.0",
   "description": "Simplism Packages Source Code",
   "repository": "github:kslhunter/simplism",
   "author": "김석래",
@@ -115,7 +115,7 @@
     "tsconfig-paths": "^3.5.0",
     "tslint": "^5.11.0",
     "tslint-language-service": "^0.9.9",
-    "typescript": "^3.0.3",
+    "typescript": "~2.9.2",
     "utf-8-validate": "^5.0.1",
     "webpack": "^4.17.1",
     "webpack-dev-server": "^3.1.6",

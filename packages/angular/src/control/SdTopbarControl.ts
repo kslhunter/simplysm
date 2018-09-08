@@ -19,19 +19,19 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
       top: 0;
       left: 0;
       width: 100%;
-      height: 32px;
-      line-height: 31px;
+      height: 36px;
+      line-height: 35px;
       background: theme-color(primary, dark);
       color: text-color(reverse, default);
 
       /deep/ {
         > * {
           float: left;
-          line-height: 31px;
+          line-height: 35px;
         }
 
         > a {
-          min-width: 32px;
+          min-width: 36px;
           text-align: center;
           margin-right: gap(sm);
           color: text-color(reverse, dark);

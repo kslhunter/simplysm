@@ -1,7 +1,6 @@
 import {Injectable, Type} from "@angular/core";
-import {DbContext} from "@simplism/orm-client";
+import {DbContext, IDbContextExecutor} from "@simplism/orm-client";
 import {SdSocketProvider} from "./SdSocketProvider";
-import {IDbContextExecutor} from "../../../orm-client/src/orm/IDbContextExecutor";
 
 export class DbContextSocketExecutor implements IDbContextExecutor {
   private _connId?: number;

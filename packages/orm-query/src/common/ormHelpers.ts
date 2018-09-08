@@ -1,5 +1,5 @@
 import {QueryUnit} from "../query-builder/QueryUnit";
-import {QueryType} from "./types";
+import {QueryType} from "./QueryType";
 import {DateOnly, DateTime, JsonConvert, optional, Time, Type, Uuid} from "@simplism/core";
 
 export const ormHelpers = {

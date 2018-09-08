@@ -1,11 +1,8 @@
 import {DateOnly, DateTime, Time} from "@simplism/core";
 
-export class QueriedBoolean extends Boolean {
-}
-
 export type QueryType =
   boolean
-  | QueriedBoolean
+  /*| QueriedBoolean*/
   | number
   | string
   | Number

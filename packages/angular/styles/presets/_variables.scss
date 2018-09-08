@@ -24,7 +24,7 @@ $theme-color: (
     default: map_get($color-deep-purple, 500),
     dark: map_get($color-deep-purple, 600),
     darker: map_get($color-deep-purple, 700),
-    darkest: map_get($color-purple, 900)
+    darkest: map_get($color-deep-purple, 900)
   ),
   info: (
     lightest: map_get($color-blue, 50),

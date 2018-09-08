@@ -1,8 +1,6 @@
-import {QueryBuilderAdv, QueryUnit} from "@simplism/orm-query";
+import {ITableDef, QueryBuilderAdv, QueryType, QueryUnit, tableDefMetadataKey} from "@simplism/orm-query";
 import {Type} from "@simplism/core";
 import {DbContext} from "./DbContext";
-import {QueryType} from "../../../orm-query/src/common/types";
-import {ITableDef, tableDefMetadataKey} from "../../../orm-query/src/common/decorators";
 
 export class Queryable<T extends object> {
   private readonly _db: DbContext;

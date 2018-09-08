@@ -1,5 +1,6 @@
 import {Type} from "@simplism/core";
-import {QueriedBoolean, QueryType} from "../common/types";
+import {QueryType} from "../common/QueryType";
+import {QueriedBoolean} from "../common/QueriedBoolean";
 
 export class QueryUnit<T extends QueryType> {
   public constructor(public readonly type: Type<T>, private readonly _query: string) {

@@ -1,6 +1,6 @@
 {
   "name": "@simplism/angular-hmr",
-  "version": "10.0.17",
+  "version": "10.1.2",
   "description": "Simplism Angular HMR Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",

@@ -5,4 +5,4 @@ export * from "./query-builder/QueryUnit";
 export * from "./query-builder/MigrationQueryBuilder";
 export * from "./common/ormHelpers";
 export * from "./common/sorm";
-export * from "./common/types";
+export * from "./common/QueryType";
