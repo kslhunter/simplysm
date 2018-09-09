@@ -80,7 +80,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
         <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
           <div class="_col _first-col" (click)="onFirstColClick($event)">
             <sd-icon [icon]="'arrow-right'" *ngIf="selectable"
-                     [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-bluegrey-darker': selectedItem !== item}"></sd-icon>
+                     [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-grey-default': selectedItem !== item}"></sd-icon>
           </div>
           <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
                [style.width.px]="getWidth(columnControl)" tabindex="0"
@@ -194,6 +194,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
         /deep/ sd-select > select {
           border: none;
           padding: gap(xs) - 3 gap(sm) gap(xs) gap(sm) - 4;
+          background: theme-color(primary, lightest);
 
           &:disabled {
             padding: gap(xs) gap(sm);

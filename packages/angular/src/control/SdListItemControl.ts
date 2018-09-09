@@ -64,7 +64,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
 
         > ._child-content {
           transition: margin-top .1s ease-out;
-          /*background: get($trans-color, default);*/
+          background: get($trans-color, default);
         }
       }
 

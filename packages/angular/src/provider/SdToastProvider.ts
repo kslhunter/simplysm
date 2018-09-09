@@ -35,15 +35,19 @@ export class SdToastProvider implements OnDestroy {
     toastEl.classList.add("_sd-toast");
     toastEl.classList.add("_sd-toast-" + theme);
 
+    const toastBlockEl = document.createElement("div");
+    toastBlockEl.classList.add("_sd-toast-block");
+    toastEl.appendChild(toastBlockEl);
+
     const toastMessageEl = document.createElement("div");
     toastMessageEl.classList.add("_sd-toast-message");
     toastMessageEl.innerText = message;
-    toastEl.appendChild(toastMessageEl);
+    toastBlockEl.appendChild(toastMessageEl);
 
     if (progress) {
       const toastProgressEl = document.createElement("div");
       toastProgressEl.classList.add("_sd-toast-progress");
-      toastEl.appendChild(toastProgressEl);
+      toastBlockEl.appendChild(toastProgressEl);
 
       const toastProgressBarEl = document.createElement("div");
       toastProgressBarEl.classList.add("_sd-toast-progress-bar");
