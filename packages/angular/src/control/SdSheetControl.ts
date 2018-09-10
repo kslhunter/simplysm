@@ -167,7 +167,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
         /deep/ sd-textfield > input {
           border: none;
           padding: gap(xs) gap(sm);
-          background: theme-color(primary, lightest);
+          background: theme-color(info, lightest);
 
           &[type=year],
           &[type=month],
@@ -194,7 +194,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
         /deep/ sd-select > select {
           border: none;
           padding: gap(xs) - 3 gap(sm) gap(xs) gap(sm) - 4;
-          background: theme-color(primary, lightest);
+          background: theme-color(info, lightest);
 
           &:disabled {
             padding: gap(xs) gap(sm);

@@ -48,10 +48,10 @@ $theme-color: (
     lightest: map_get($color-orange, 50),
     lighter: map_get($color-orange, 100),
     light: map_get($color-orange, 200),
-    default: map_get($color-orange, 500),
-    dark: map_get($color-orange, 600),
-    darker: map_get($color-orange, 700),
-    darkest: map_get($color-orange, 800)
+    default: map_get($color-orange, 600),
+    dark: map_get($color-orange, 700),
+    darker: map_get($color-orange, 800),
+    darkest: map_get($color-orange, 900)
   ),
   danger: (
     lightest: map_get($color-red, 50),

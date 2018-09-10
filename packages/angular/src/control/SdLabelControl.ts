@@ -11,7 +11,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
 
     :host {
       display: inline-block;
-      background: get($theme-color, grey, default);
+      background: get($theme-color, grey, darkest);
       color: text-color(reverse, default);
       padding: 0 gap(xs);
       border-radius: 2px;
@@ -37,6 +37,10 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
         background: get($theme-color, danger, default);
       }
 
+      &[sd-theme='grey'] {
+        background: get($theme-color, grey, default);
+      }
+
       &[sd-clickable=true] {
         cursor: pointer;
 
@@ -60,6 +64,10 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
           }
 
           &[sd-theme='danger'] {
+            background: get($theme-color, danger, dark);
+          }
+
+          &[sd-theme='grey'] {
             background: get($theme-color, danger, dark);
           }
         }

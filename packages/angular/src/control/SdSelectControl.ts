@@ -47,6 +47,7 @@ import {JsonConvert} from "@simplism/core";
         /deep/ > option {
           color: text-color(default);
           /*background: theme-color(bluegrey, darkest);*/
+          background: #fff;
         }
       }
 

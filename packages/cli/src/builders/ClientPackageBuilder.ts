@@ -26,8 +26,6 @@ export class ClientPackageBuilder {
   }
 
   public async buildAsync(): Promise<void> {
-    CliHelper.rewritePackageVersion(this._packageName, false);
-
     const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
     const distPath = this._packagePath((tsconfig.compilerOptions && tsconfig.compilerOptions.outDir) || "dist");
     fs.removeSync(distPath);

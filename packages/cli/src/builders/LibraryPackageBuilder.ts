@@ -9,7 +9,6 @@ import * as nodeExternals from "webpack-node-externals";
 import {FriendlyLoggerPlugin} from "../plugins/FriendlyLoggerPlugin";
 import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugin";
 import {TsLintPlugin} from "../plugins/TsLintPlugin";
-import {CliHelper} from "../commons/CliHelper";
 
 export class LibraryPackageBuilder {
   private readonly _logger: Logger;
@@ -23,8 +22,6 @@ export class LibraryPackageBuilder {
   }
 
   public async buildAsync(): Promise<void> {
-    CliHelper.rewritePackageVersion(this._packageName, true);
-
     const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
     fs.removeSync(this._packagePath(tsconfig.compilerOptions.outDir || "dist"));
 

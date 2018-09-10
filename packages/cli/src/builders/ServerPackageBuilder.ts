@@ -10,7 +10,6 @@ import * as webpack from "webpack";
 import * as webpackMerge from "webpack-merge";
 import {TsLintPlugin} from "../plugins/TsLintPlugin";
 import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugin";
-import {CliHelper} from "../commons/CliHelper";
 
 export class ServerPackageBuilder {
   private readonly _logger = new Logger("@simplism/cli", `${this._config.name}:`);
@@ -23,8 +22,6 @@ export class ServerPackageBuilder {
   }
 
   public async buildAsync(): Promise<void> {
-    CliHelper.rewritePackageVersion(this._packageName, false);
-
     const tsconfig = fs.readJsonSync(this._packagePath("tsconfig.json"));
     fs.removeSync(this._packagePath(tsconfig.compilerOptions.outDir || "dist"));
 

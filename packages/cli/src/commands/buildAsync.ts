@@ -11,6 +11,8 @@ import {LibraryPackageBuilder} from "../builders/LibraryPackageBuilder";
 import {Wait} from "@simplism/core";
 import {ServerPackageBuilder} from "../builders/ServerPackageBuilder";
 import {ClientPackageBuilder} from "../builders/ClientPackageBuilder";
+import * as semver from "semver";
+import * as os from "os";
 
 export async function buildAsync(argv: { watch: boolean; package?: string; config: string }): Promise<void> {
   const projectConfig = fs.readJsonSync(path.resolve(process.cwd(), argv.config)) as IProjectConfig;
@@ -68,6 +70,49 @@ export async function buildAsync(argv: { watch: boolean; package?: string; confi
       }
     }
   };
+
+  if (!argv.watch) {
+    // 최상위 package.json 설정 가져오기
+    const rootPackageJsonPath = path.resolve(process.cwd(), "package.json");
+    const rootPackageJson = fs.readJsonSync(rootPackageJsonPath);
+
+    // 프로젝트의 버전 업
+    rootPackageJson.version = semver.inc(rootPackageJson.version, "patch")!;
+
+    for (const pack of projectConfig.packages) {
+      // package.json 설정 가져오기
+      const packageJsonPath = path.resolve(process.cwd(), `packages/${pack.name}`, "package.json");
+      const packageJson = fs.readJsonSync(packageJsonPath);
+
+      // 최상위 package.json 에서 버전 복사
+      packageJson.version = rootPackageJson.version;
+
+      // 최상위 package.json 에서 Repository 복사
+      packageJson.repository = rootPackageJson.repository;
+
+      // 의존성 버전 재구성
+      const depTypeNames = ["dependencies", "peerDependencies", "optionalDependencies"];
+      for (const depTypeName of depTypeNames) {
+        for (const depName of Object.keys(packageJson[depTypeName] || {})) {
+          if (depName.startsWith("@" + rootPackageJson.name)) {
+            packageJson[depTypeName][depName] = `^${rootPackageJson.version}`;
+          }
+          else if ({...rootPackageJson.dependencies, ...rootPackageJson.devDependencies}[depName]) {
+            packageJson[depTypeName][depName] = {...rootPackageJson.dependencies, ...rootPackageJson.devDependencies}[depName];
+          }
+          else {
+            throw new Error(`'${pack.name}'패키지의 의존성 패키지인 "${depName}" 정보가 루트 패키지에 없습니다.`);
+          }
+        }
+      }
+
+      // 최상위 package.json 파일 다시쓰기
+      fs.writeJsonSync(rootPackageJsonPath, rootPackageJson, {spaces: 2, EOL: os.EOL});
+
+      // package.json 파일 다시쓰기
+      fs.writeJsonSync(packageJsonPath, packageJson, {spaces: 2, EOL: os.EOL});
+    }
+  }
 
   if (!argv.package) {
     const packageConfigs = projectConfig.packages
