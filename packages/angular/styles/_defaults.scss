@@ -65,13 +65,13 @@ a {
   height: 8px;
   background-color: rgba(0, 0, 0, 0);
 
-  border-top: 1px solid get($trans-color, dark);
-  border-bottom: 1px solid get($trans-color, default);
+  /*border-top: 1px solid get($trans-color, dark);
+  border-bottom: 1px solid get($trans-color, default);*/
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: rgba(theme-color(bluegrey, default), .4);
 
-  border-top: 1px solid get($trans-color, default);
-  border-bottom: 1px solid get($trans-color, dark);
+  /*border-top: 1px solid get($trans-color, default);
+  border-bottom: 1px solid get($trans-color, dark);*/
 }

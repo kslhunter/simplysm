@@ -25,10 +25,69 @@ import * as codemirror from "codemirror";
 
     :host {
       display: block;
-      border: 1px solid trans-color(light);
+      border: 1px solid trans-color(default);
 
       /deep/ {
         .editor-toolbar {
+          border: none;
+          padding: 0;
+          border-radius: 0;
+          opacity: 1;
+          border-bottom: 1px solid trans-color(default);
+
+          &:before,
+          &:after {
+            display: none;
+          }
+
+          > a {
+            color: text-color(default) !important;
+            padding: gap(sm) gap(default);
+            width: auto;
+            height: auto;
+            border: none;
+            border-radius: 0;
+
+            &:before {
+              line-height: $line-height;
+            }
+
+            &.active,
+            &:hover {
+              color: text-color(dark) !important;
+              background: trans-color(default);
+            }
+          }
+
+          &.disabled-for-preview {
+            > a:not(.no-disable) {
+              color: text-color(lighter) !important;
+              background: transparent;
+            }
+          }
+
+          &.fullscreen {
+            padding: 0;
+            height: auto;
+            z-index: $z-index-fullscreen;
+          }
+        }
+        
+        .CodeMirror {
+          border: none;
+          min-height: 150px;
+          height: calc(100% - 28px);
+          .CodeMirror-scroll {
+            min-height: 150px;
+          }
+
+          &.CodeMirror-fullscreen {
+            top: 27px;
+            z-index: $z-index-fullscreen;
+          }
+        }
+        
+        /*.editor-toolbar {
           border-top: none;
           border-left: none;
           border-right: none;
@@ -47,7 +106,7 @@ import * as codemirror from "codemirror";
           }
 
           > a {
-            color: text-color(dark) !important;
+            //color: text-color(dark) !important;
             padding: gap(sm) gap(default);
             width: auto;
             height: auto;
@@ -83,9 +142,9 @@ import * as codemirror from "codemirror";
             height: auto;
             z-index: $z-index-fullscreen;
           }
-        }
+        }*/
 
-        .CodeMirror {
+        /*.CodeMirror {
           background: trans-color(default);
           color: text-color(default);
           border: none;
@@ -147,7 +206,7 @@ import * as codemirror from "codemirror";
           color: text-color(darker) !important;
           padding: gap(sm) gap(default);
           border-top: 1px solid trans-color(light);
-        }
+        }*/
       }
 
       &[sd-disabled=true] {

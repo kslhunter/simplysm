@@ -218,6 +218,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
           border: none;
           padding: gap(xs) gap(sm);
           height: gap(xs) * 2 + strip-unit($line-height) * font-size(default);
+          background: theme-color(info, lightest);
 
           > ._icon {
             top: 0;
