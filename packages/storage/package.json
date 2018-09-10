@@ -1,6 +1,6 @@
 {
   "name": "@simplism/storage",
-  "version": "10.1.12",
+  "version": "10.1.13",
   "description": "Simplism Storage Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,7 +8,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/core": "^10.1.12",
+    "@simplism/core": "^10.1.13",
     "jsftp": "^2.1.3"
   }
 }
