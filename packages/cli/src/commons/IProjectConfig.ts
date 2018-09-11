@@ -10,6 +10,7 @@ export interface IProjectConfig {
 export interface ILibraryPackageConfig {
   name: string;
   type: "library";
+  publish?: boolean;
 }
 
 export interface IClientPackageConfig {

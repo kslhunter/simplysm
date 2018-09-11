@@ -20,14 +20,14 @@ export async function publishAsync(argv: { config: string; package: string }): P
   const projectConfig = fs.readJsonSync(path.resolve(process.cwd(), argv.config)) as IProjectConfig;
 
   const promiseList: Promise<void>[] = [];
-  for (const config of projectConfig.packages.filter(item => item.type === "library")) {
+  for (const config of projectConfig.packages.filter(item => item.type === "library" && item.publish !== false)) {
     if (!argv.package || argv.package.split(",").includes(config.name)) {
       promiseList.push(new LibraryPackageBuilder(config as ILibraryPackageConfig).publishAsync());
     }
   }
   await Promise.all(promiseList);
 
-  for (const config of projectConfig.packages) {
+  for (const config of projectConfig.packages.filter(item => item.type !== "library" && item.publish !== undefined)) {
     if (config.type === "library") {
     }
     else if (!argv.package || argv.package.split(",").includes(config.name)) {

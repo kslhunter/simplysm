@@ -44,7 +44,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
         }
 
         &:hover {
-          background: trans-color(default);
+          background: rgba(0, 0, 0, .1);
         }
 
         &:focus {
@@ -64,7 +64,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
 
         > ._child-content {
           transition: margin-top .1s ease-out;
-          background: get($trans-color, default);
+          background: rgba(0, 0, 0, .05);
         }
       }
 

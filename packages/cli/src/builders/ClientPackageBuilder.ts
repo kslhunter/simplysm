@@ -248,6 +248,28 @@ export class ClientPackageBuilder {
 
     // 로컬 파일 전송
     const filePaths = glob.sync(path.resolve(distPath, "**/*"));
+    /*await Promise.all(filePaths.map(async filePath => {
+      await new Promise<void>(async resolve => {
+        const ftpFilePath = `${this._config.publish!.path}/${path.relative(distPath, filePath).replace(/\\/g, "/")}`;
+        if (fs.lstatSync(filePath).isDirectory()) {
+          await storage.mkdirAsync(ftpFilePath);
+        }
+        else {
+          if (/[\\/]/.test(ftpFilePath)) {
+            let cumDir = "";
+            for (const ftpDir of ftpFilePath.split(/[\\/]/).slice(0, -1)) {
+              cumDir += ftpDir + "/";
+              await storage.mkdirAsync(cumDir);
+            }
+          }
+
+          await storage.putAsync(filePath, ftpFilePath);
+        }
+
+        resolve();
+      });
+    }));*/
+
     for (const filePath of filePaths) {
       const ftpFilePath = `${this._config.publish.path}/${path.relative(distPath, filePath).replace(/\\/g, "/")}`;
       if (fs.lstatSync(filePath).isDirectory()) {

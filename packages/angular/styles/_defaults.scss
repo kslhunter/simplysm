@@ -53,11 +53,11 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  background-color: rgba(theme-color(bluegrey, default), .2);
+  background-color: rgba(theme-color(grey, default), .1);
 }
 
 ::-webkit-scrollbar-corner {
-  background-color: rgba(theme-color(bluegrey, dark), .2);
+  background-color: rgba(theme-color(grey, light), .1);
 }
 
 ::-webkit-scrollbar {
@@ -70,7 +70,7 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(theme-color(bluegrey, default), .4);
+  background-color: rgba(theme-color(grey, default), .15);
 
   /*border-top: 1px solid get($trans-color, default);
   border-bottom: 1px solid get($trans-color, dark);*/

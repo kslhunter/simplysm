@@ -42,6 +42,14 @@
 }
 
 @each $direction in top, right, bottom, left {
+  @each $key, $val in $theme-color {
+    @each $key1, $val1 in $val {
+      .sd-border-#{$direction}-#{$key}-#{$key1} {
+        border-#{$direction}: 1px solid theme-color($key, $key1);
+      }
+    }
+  }
+
   @each $key, $value in $trans-color {
     .sd-border-#{$direction}-#{$key} {
       border-#{$direction}: 1px solid trans-color($key);

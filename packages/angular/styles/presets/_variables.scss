@@ -106,7 +106,7 @@ $font-size: (
 ) !default;
 
 $bg-color: map_get(map_get($theme-color, grey), lightest);
-$font-family: 'Noto Sans KR', '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif;
+$font-family: /*'Noto Sans KR', */'맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif;
 $line-height: 1.25em;
 
 $z-index-toast: 9999;

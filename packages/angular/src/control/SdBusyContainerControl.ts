@@ -47,7 +47,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
             width: 30px;
             height: 30px;
             margin: 20px auto 0 auto;
-            border: 6px solid rgba(255, 255, 255, .5);
+            border: 6px solid white;
             border-radius: 100%;
             border-bottom-color: theme-color(primary, default);
             animation: _sd-busy-spin 1s linear infinite;
