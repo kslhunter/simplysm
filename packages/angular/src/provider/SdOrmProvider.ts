@@ -1,6 +1,7 @@
 import {Injectable, Type} from "@angular/core";
-import {DbContext, IDbContextExecutor} from "@simplism/orm-client";
+import {DbContext, IDbContextExecutor, Queryable} from "@simplism/orm-client";
 import {SdSocketProvider} from "./SdSocketProvider";
+import {ITableDef, tableDefMetadataKey} from "@simplism/orm-query";
 
 export class DbContextSocketExecutor implements IDbContextExecutor {
   private _connId?: number;
@@ -91,5 +92,12 @@ export class SdOrmProvider {
       await db.forceCloseAsync();
     }
     this._dbContexts = [];
+  }
+
+  public getTableDefinitions<T extends DbContext>(dbType: Type<T>): ITableDef[] {
+    return Object.values(new dbType())
+      .ofType(Queryable)
+      .map(qr => core.Reflect.getMetadata(tableDefMetadataKey, qr.tableType!) as ITableDef)
+      .filterExists();
   }
 }

@@ -37,7 +37,7 @@ import {DateOnly, DateTime} from "@simplism/core";
         outline-offset: -1px;
 
         &::-webkit-input-placeholder {
-          color: text-color(darker);
+          color: text-color(lighter);
         }
 
         &::-webkit-outer-spin-button,

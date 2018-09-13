@@ -10,19 +10,19 @@ export abstract class DbContext {
 
   public abstract get migrations(): Type<IDbMigration>[];
 
-  public constructor(private readonly _executor: IDbContextExecutor) {
+  public constructor(private readonly _executor?: IDbContextExecutor) {
   }
 
   public async connectAsync<R>(fn: (db: this) => Promise<R>, withoutTransaction?: boolean): Promise<R> {
-    return await this._executor.connectAsync(this, fn, withoutTransaction);
+    return await this._executor!.connectAsync(this, fn, withoutTransaction);
   }
 
   public async forceCloseAsync(): Promise<void> {
-    await this._executor.forceCloseAsync();
+    await this._executor!.forceCloseAsync();
   }
 
   public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(query: string, colDefs?: C, joinDefs?: { as: string; isSingle: boolean }[]): Promise<undefined extends C ? any[][] : any[]> {
-    return await this._executor.executeAsync(query, colDefs, joinDefs);
+    return await this._executor!.executeAsync(query, colDefs, joinDefs);
   }
 
   public preparedQuery = "";

@@ -19,6 +19,7 @@
     "@fortawesome/free-regular-svg-icons": "^5.3.1",
     "@fortawesome/free-solid-svg-icons": "^5.3.1",
     "@simplism/core": "^10.1.14",
+    "@simplism/orm-query": "^10.1.14",
     "@simplism/orm-client": "^10.1.14",
     "@simplism/socket-client": "^10.1.14",
     "core-js": "^2.5.7",

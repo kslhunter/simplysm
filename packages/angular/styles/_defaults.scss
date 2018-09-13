@@ -27,6 +27,7 @@ pre {
   font-family: $font-family;
   font-size: font-size(default);
   line-height: $line-height;
+  margin: 0;
 }
 
 @each $tag in h1, h2, h3, h4, h5, h6 {
@@ -53,7 +54,7 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  background-color: rgba(theme-color(grey, default), .1);
+  background-color: rgba(theme-color(grey, darker), .1);
 }
 
 ::-webkit-scrollbar-corner {
@@ -70,7 +71,7 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(theme-color(grey, default), .15);
+  background-color: rgba(theme-color(grey, darker), .15);
 
   /*border-top: 1px solid get($trans-color, default);
   border-bottom: 1px solid get($trans-color, dark);*/
