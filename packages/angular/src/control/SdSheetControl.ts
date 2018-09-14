@@ -206,6 +206,10 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
           width: auto;
           border: none;
           padding: gap(xs) gap(sm);
+
+          > ._indicator_rect {
+            background: theme-color(info, lightest);
+          }
         }
 
         /deep/ sd-button > button {

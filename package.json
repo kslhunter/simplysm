@@ -1,6 +1,6 @@
 {
   "name": "simplism",
-  "version": "10.1.14",
+  "version": "10.1.15",
   "description": "Simplism Packages Source Code",
   "repository": "github:kslhunter/simplism",
   "author": "김석래",
@@ -39,8 +39,7 @@
     "build:angular-hmr": "yarn run simplism build --package angular-hmr",
     "build:angular": "yarn run simplism build --package angular",
     "--   ": "",
-    "simplism": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/cli/tsconfig.json node --require ts-node/register --require tsconfig-paths/register --trace-warnings packages/cli/src/bin.ts",
-    "reinstall": "(if exist \"node_modules\" rd /s /q \"node_modules\") && (if exist \"yarn.lock\" del /s /q \"yarn.lock\") && yarn install"
+    "simplism": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/cli/tsconfig.json node --require ts-node/register --require tsconfig-paths/register --trace-warnings packages/cli/src/bin.ts"
   },
   "dependencies": {
     "@angular/animations": "^6.1.4",
