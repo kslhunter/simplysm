@@ -176,6 +176,10 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
           &[type=datetime-local] {
             padding: gap(xs) - 2 gap(sm) gap(xs) - 1 gap(sm);
           }
+
+          &:disabled {
+            background: transparent;
+          }
         }
 
         /deep/ sd-combobox {
@@ -198,6 +202,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
 
           &:disabled {
             padding: gap(xs) gap(sm);
+            background: transparent;
           }
         }
 

@@ -16,7 +16,7 @@ import {SdComboboxControl} from "./SdComboboxControl";
       font-size: font-size(sm);
 
       &:hover {
-        background: trans-color(dark);
+        background: rgba(0, 0, 0, .1);
       }
     }
   `]

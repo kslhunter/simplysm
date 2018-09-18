@@ -62,7 +62,9 @@ import {SdComboboxItemControl} from "./SdComboboxItemControl";
       transition: .1s linear;
       transition-property: transform, opacity;
       pointer-events: none;
-      background: theme-color(bluegrey, darkest);
+      background: white;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+      border-radius: 2px;
       min-width: 120px;
 
       &:focus {
