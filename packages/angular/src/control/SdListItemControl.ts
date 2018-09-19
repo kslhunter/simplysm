@@ -52,13 +52,6 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
         }
       }
 
-      &[sd-header=true] > label {
-        cursor: default;
-        background: transparent;
-        padding: gap(xs) gap(default);
-        color: text-color(darker);
-      }
-
       > ._child {
         overflow: hidden;
 
@@ -76,6 +69,25 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
 
         > ._child > ._child-content {
           transition: margin-top .1s ease-in;
+        }
+      }
+
+      &[sd-header=true] {
+        > label {
+          cursor: default;
+          background: transparent;
+          padding: gap(xs) gap(default);
+          color: text-color(light);
+          font-size: font-size(sm);
+        }
+
+        > label > sd-icon {
+          display: none;
+        }
+
+        > ._child > ._child-content {
+          margin-top: 0 !important;
+          background: transparent !important;
         }
       }
     }
