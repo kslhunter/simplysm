@@ -3,8 +3,23 @@ import * as path from "path";
 import {LocalUpdater} from "../builders/LocalUpdater";
 import {IProjectConfig} from "../commons/IProjectConfig";
 
-export async function localUpdateAsync(argv: { watch: boolean; config: string }): Promise<void> {
-  const projectConfig = fs.readJsonSync(path.resolve(process.cwd(), argv.config)) as IProjectConfig;
+export async function localUpdateAsync(argv: { watch: boolean; config?: string }): Promise<void> {
+  process.env.NODE_ENV = "development";
+
+  let configFilePath = argv.config;
+  if (!configFilePath) {
+    configFilePath = fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
+      : fs.existsSync(path.resolve(process.cwd(), "simplism.js")) ? path.resolve(process.cwd(), "simplism.js")
+        : path.resolve(process.cwd(), "simplism.json");
+  }
+
+  if (path.extname(configFilePath) === ".ts") {
+    // tslint:disable-next-line
+    require("ts-node/register");
+  }
+
+  // tslint:disable-next-line:no-eval
+  const projectConfig = eval("require(configFilePath)") as IProjectConfig;
 
   const promiseList: Promise<void>[] = [];
   if (projectConfig.localDependencies) {

@@ -4,8 +4,25 @@ import * as childProcess from "child_process";
 import {IClientPackageConfig, IProjectConfig} from "../commons/IProjectConfig";
 import {CliHelper} from "../commons/CliHelper";
 
-export async function runDeviceAsync(argv: { config: string; package: string; release: boolean; debug: boolean }): Promise<void> {
-  const projectConfig = fs.readJsonSync(path.resolve(process.cwd(), argv.config)) as IProjectConfig;
+export async function runDeviceAsync(argv: { config?: string; package: string; release: boolean; debug: boolean }): Promise<void> {
+  process.env.NODE_ENV = "development";
+
+  let configFilePath = argv.config;
+  if (!configFilePath) {
+    configFilePath = fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
+      : fs.existsSync(path.resolve(process.cwd(), "simplism.js")) ? path.resolve(process.cwd(), "simplism.js")
+        : path.resolve(process.cwd(), "simplism.json");
+    console.log(configFilePath);
+  }
+
+  if (path.extname(configFilePath) === ".ts") {
+    // tslint:disable-next-line
+    require("ts-node/register");
+  }
+
+  // tslint:disable-next-line:no-eval
+  const projectConfig = eval("require(configFilePath)") as IProjectConfig;
+
   const config = projectConfig.packages.single(item => item.name === argv.package) as IClientPackageConfig | undefined;
   if (!config || !config.cordova || !config.platforms || !config.platforms.includes("android") || !config.devServer) {
     throw new Error("클라이언트 설정이 잘못되었습니다. [패키지: " + argv.package + "]");

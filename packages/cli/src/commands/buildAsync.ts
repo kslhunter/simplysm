@@ -14,8 +14,24 @@ import {ClientPackageBuilder} from "../builders/ClientPackageBuilder";
 import * as semver from "semver";
 import * as os from "os";
 
-export async function buildAsync(argv: { watch: boolean; package?: string; config: string }): Promise<void> {
-  const projectConfig = fs.readJsonSync(path.resolve(process.cwd(), argv.config)) as IProjectConfig;
+export async function buildAsync(argv: { watch: boolean; package?: string; config?: string }): Promise<void> {
+  process.env.NODE_ENV = argv.watch ? "development" : "production";
+
+  let configFilePath = argv.config;
+  if (!configFilePath) {
+    configFilePath = fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
+      : fs.existsSync(path.resolve(process.cwd(), "simplism.js")) ? path.resolve(process.cwd(), "simplism.js")
+        : path.resolve(process.cwd(), "simplism.json");
+    console.log(configFilePath);
+  }
+
+  if (path.extname(configFilePath) === ".ts") {
+    // tslint:disable-next-line
+    require("ts-node/register");
+  }
+
+  // tslint:disable-next-line:no-eval
+  const projectConfig = eval("require(configFilePath)") as IProjectConfig;
 
   let promiseList: Promise<void>[] = [];
   if (argv.watch && projectConfig.localDependencies) {

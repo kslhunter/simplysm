@@ -25,8 +25,7 @@ yargs
       .options({
         config: {
           type: "string",
-          describe: "설정파일",
-          default: "simplism.json"
+          describe: "설정파일"
         },
         package: {
           type: "string",
@@ -48,8 +47,7 @@ yargs
       .options({
         config: {
           type: "string",
-          describe: "설정파일",
-          default: "simplism.json"
+          describe: "설정파일"
         },
         watch: {
           type: "boolean",
@@ -76,8 +74,7 @@ yargs
       .options({
         config: {
           type: "string",
-          describe: "설정파일",
-          default: "simplism.json"
+          describe: "설정파일"
         },
         package: {
           type: "string",
@@ -104,8 +101,7 @@ yargs
         },
         config: {
           type: "string",
-          describe: "설정파일",
-          default: "simplism.json"
+          describe: "설정파일"
         }
       }),
     async argv => {
@@ -149,8 +145,7 @@ yargs
       .options({
         config: {
           type: "string",
-          describe: "설정파일",
-          default: "simplism.json"
+          describe: "설정파일"
         },
         package: {
           type: "string",

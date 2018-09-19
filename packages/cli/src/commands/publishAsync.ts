@@ -5,7 +5,9 @@ import {ILibraryPackageConfig, IProjectConfig} from "../commons/IProjectConfig";
 import {ServerPackageBuilder} from "../builders/ServerPackageBuilder";
 import {ClientPackageBuilder} from "../builders/ClientPackageBuilder";
 
-export async function publishAsync(argv: { config: string; package: string }): Promise<void> {
+export async function publishAsync(argv: { config?: string; package: string }): Promise<void> {
+  process.env.NODE_ENV = "production";
+
   /*const packageConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
   const newVersion = semver.inc(packageConfig.version, "patch")!;
   child_process.spawnSync("yarn", ["version", "--new-version", newVersion], {
@@ -17,7 +19,21 @@ export async function publishAsync(argv: { config: string; package: string }): P
     stdio: "inherit"
   });*/
 
-  const projectConfig = fs.readJsonSync(path.resolve(process.cwd(), argv.config)) as IProjectConfig;
+  let configFilePath = argv.config;
+  if (!configFilePath) {
+    configFilePath = fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
+      : fs.existsSync(path.resolve(process.cwd(), "simplism.js")) ? path.resolve(process.cwd(), "simplism.js")
+        : path.resolve(process.cwd(), "simplism.json");
+    console.log(configFilePath);
+  }
+
+  if (path.extname(configFilePath) === ".ts") {
+    // tslint:disable-next-line
+    require("ts-node/register");
+  }
+
+  // tslint:disable-next-line:no-eval
+  const projectConfig = eval("require(configFilePath)") as IProjectConfig;
 
   const promiseList: Promise<void>[] = [];
   for (const config of projectConfig.packages.filter(item => item.type === "library" && item.publish !== false)) {

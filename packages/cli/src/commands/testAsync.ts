@@ -3,8 +3,25 @@ import {spawnAsync} from "../commons/spawnAsync";
 import * as path from "path";
 import {IProjectConfig} from "../commons/IProjectConfig";
 
-export async function testAsync(argv: { config: string; package?: string }): Promise<void> {
-  const projectConfig = fs.readJsonSync(path.resolve(process.cwd(), argv.config)) as IProjectConfig;
+export async function testAsync(argv: { config?: string; package?: string }): Promise<void> {
+  process.env.NODE_ENV = "development";
+
+  let configFilePath = argv.config;
+  if (!configFilePath) {
+    configFilePath = fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
+      : fs.existsSync(path.resolve(process.cwd(), "simplism.js")) ? path.resolve(process.cwd(), "simplism.js")
+        : path.resolve(process.cwd(), "simplism.json");
+    console.log(configFilePath);
+  }
+
+  if (path.extname(configFilePath) === ".ts") {
+    // tslint:disable-next-line
+    require("ts-node/register");
+  }
+
+  // tslint:disable-next-line:no-eval
+  const projectConfig = eval("require(configFilePath)") as IProjectConfig;
+
   if (!projectConfig.tests) {
     throw new Error(`${argv.config}에 테스트 설정이 없습니다.`);
   }
