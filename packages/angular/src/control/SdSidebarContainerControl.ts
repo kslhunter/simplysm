@@ -38,7 +38,7 @@ import {NavigationStart, Router} from "@angular/router";
 
       @media #{$screen-mobile} {
         padding-left: 0;
-        transition: padding-left .1s ease-in;
+        transition: none;
 
         /deep/ > sd-sidebar {
           transform: translateX(-100%);
@@ -46,8 +46,6 @@ import {NavigationStart, Router} from "@angular/router";
         }
 
         &[sd-toggle=true] {
-          transition: padding-left .1s ease-out;
-
           /deep/ > sd-sidebar {
             transform: none;
             transition: transform .1s ease-out;

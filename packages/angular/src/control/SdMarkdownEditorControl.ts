@@ -86,6 +86,18 @@ import * as codemirror from "codemirror";
             z-index: $z-index-fullscreen;
           }
         }
+
+        .editor-preview,
+        .editor-preview-side {
+          pre {
+            padding: gap(xs) gap(sm);
+            border-radius: 2px;
+          }
+
+          ol {
+            padding-left: 20px;
+          }
+        }
         
         /*.editor-toolbar {
           border-top: none;

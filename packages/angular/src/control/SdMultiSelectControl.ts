@@ -43,7 +43,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
         display: block;
         overflow: visible;
         padding-right: 30px !important;
-        height: gap(sm) * 2 + strip-unit($line-height) * font-size(default);
+        height: gap(sm) * 2 + strip-unit($line-height) * font-size(default) + 2;
 
         background: white;
         border-color: trans-color(default);
@@ -91,6 +91,10 @@ export class SdMultiSelectControl implements DoCheck {
   @HostBinding("attr.sd-disabled")
   public disabled?: boolean;
 
+  @Input()
+  @SdTypeValidate(String)
+  public keyProp?: string;
+
   @ContentChildren(SdMultiSelectItemControl, {descendants: true})
   public itemControls?: QueryList<SdMultiSelectItemControl>;
 
@@ -108,6 +112,15 @@ export class SdMultiSelectControl implements DoCheck {
     }
   }
 
+  public getIsItemSelected(item: SdMultiSelectItemControl): boolean {
+    if (!this.keyProp) {
+      return this.value ? this.value.includes(item.value) : false;
+    }
+    else {
+      return this.value ? this.value.map(item1 => item1[this.keyProp!]).includes(item.value[this.keyProp!]) : false;
+    }
+  }
+
   public getContentHtml(): SafeHtml {
     if (!this.itemControls || !this.value) {
       return "";
@@ -115,7 +128,7 @@ export class SdMultiSelectControl implements DoCheck {
 
     return this._sanitizer.bypassSecurityTrustHtml(
       this.itemControls.toArray()
-        .filter(item => this.value!.includes(item.value))
+        .filter(item => this.getIsItemSelected(item))
         .map(item => item.elRef.nativeElement.findAll("> sd-checkbox > label > ._content")[0].innerHTML).join(",\n")
     );
   }

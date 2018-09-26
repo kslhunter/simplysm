@@ -32,9 +32,9 @@ describe("FtpStorage", () => {
 
     assert.deepStrictEqual(excelItems, [
       {
-        "정수": "1",
+        "정수": 1,
         "문자열": "관리자",
-        "여/부": "TRUE"
+        "여/부": true
       }
     ]);
   });

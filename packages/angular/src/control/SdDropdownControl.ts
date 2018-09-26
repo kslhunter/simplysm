@@ -44,7 +44,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   @ContentChild(SdDropdownPopupControl, {read: ElementRef})
   public dropdownElRef?: ElementRef<HTMLElement>;
 
-  public focused = false;
+  /*public focused = false;*/
 
   public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
   }

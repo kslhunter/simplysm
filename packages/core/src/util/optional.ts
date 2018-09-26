@@ -5,7 +5,7 @@ export function optional<T, R>(obj: T, fn: (o: ChainedRequired<NonNullable<T>>) 
     return fn(obj as any);
   }
   catch (err) {
-    if (err.message.includes("123")) {
+    if (err instanceof TypeError && err.message.includes("Cannot read property") && err.message.includes("of undefined")) {
       return undefined;
     }
     throw err;

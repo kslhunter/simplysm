@@ -50,12 +50,13 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
         display: inline-block;
         text-align: left;
         margin: 0 auto;
-        background: get($theme-color, bluegrey, darkest);
+        //background: get($theme-color, bluegrey, darkest);
+        background: white;
         overflow: hidden;
         max-width: 100%;
         min-width: 240px;
         max-height: calc(100% - 50px);
-        border: 1px solid get($trans-color, default);
+        //border: 1px solid get($trans-color, default);
 
         &:focus {
           outline: none;
@@ -63,6 +64,8 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
 
         > sd-dock-container {
           > ._header {
+            border-bottom: 1px solid get($trans-color, default);
+            
             > ._title {
               display: inline-block;
               padding: gap(sm) gap(default);
@@ -104,7 +107,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
 
       @media #{$screen-mobile} {
         padding-top: 0;
-        
+
         > ._dialog {
           width: 100%;
           height: 100%;

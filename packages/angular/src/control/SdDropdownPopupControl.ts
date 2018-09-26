@@ -26,13 +26,13 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
         outline: 1px solid theme-color(primary, default);
       }
 
-
-      @media #{$screen-mobile} {
+      /*@media #{$screen-mobile} {
         top: 0 !important;
         left: 0 !important;
         width: 100% !important;
         border-radius: 0;
-      }
+        box-shadow: none;
+      }*/
     }
   `]
 })

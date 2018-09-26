@@ -158,6 +158,13 @@ export const sorm = {
 
     return new QueryUnit(unit.type, "MAX(" + ormHelpers.getFieldQuery(unit) + ")") as any;
   },
+  min<T extends number | string | DateOnly | DateTime | undefined>(unit: T | QueryUnit<T>): T | undefined {
+    if (!(unit instanceof QueryUnit)) {
+      throw new TypeError();
+    }
+
+    return new QueryUnit(unit.type, "MIN(" + ormHelpers.getFieldQuery(unit) + ")") as any;
+  },
 
   if<T extends QueryType, R extends T>(source: T | QueryUnit<T>, predicate: T | QueryUnit<T>, target: R | QueryUnit<R>): R extends undefined ? R : NonNullable<R> {
     let type;
