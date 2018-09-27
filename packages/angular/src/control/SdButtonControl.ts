@@ -56,6 +56,12 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
           &:active {
             background: get($colors, dark);
           }
+
+          &:disabled {
+            background: get($theme-color, grey, default);
+            border-color: get($theme-color, grey, default);
+            cursor: default;
+          }
         }
       }
 
