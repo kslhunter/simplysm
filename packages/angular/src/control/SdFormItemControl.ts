@@ -16,13 +16,14 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
 
     :host {
       display: block;
-      margin-bottom: gap(sm);
+      margin-bottom: gap(default);
       &:last-child {
         margin-bottom: 0;
       }
 
       & > label {
         display: block;
+        font-weight: bold;
         margin-bottom: gap(xs);
       }
     }

@@ -61,6 +61,14 @@
   }
 }
 
+@each $key, $val in $theme-color {
+  @each $key1, $val1 in $val {
+    .sd-border-#{$key}-#{$key1} {
+      border: 1px solid theme-color($key, $key1);
+    }
+  }
+}
+
 @each $key, $value in $trans-color {
   .sd-border-#{$key} {
     border: 1px solid trans-color($key);

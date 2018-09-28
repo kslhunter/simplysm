@@ -32,6 +32,7 @@ export * from "./control/SdMarkdownEditorControl";
 export * from "./control/SdGridControl";
 export * from "./control/SdGridItemControl";
 export * from "./control/SdBarcodeControl";
+export * from "./control/SdCardControl";
 
 export * from "./decorator/SdNotifyPropertyChange";
 export * from "./decorator/SdTypeValidate";

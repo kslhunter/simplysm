@@ -45,6 +45,7 @@ import {SdGridControl} from "./control/SdGridControl";
 import {SdGridItemControl} from "./control/SdGridItemControl";
 import {SdBarcodeControl} from "./control/SdBarcodeControl";
 import {SdPrintProvider} from "./provider/SdPrintProvider";
+import {SdCardControl} from "./control/SdCardControl";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -78,7 +79,8 @@ const controls: any[] = [
   SdMarkdownEditorControl,
   SdGridControl,
   SdGridItemControl,
-  SdBarcodeControl
+  SdBarcodeControl,
+  SdCardControl
 ];
 
 const entryControls: any[] = [
