@@ -12,32 +12,38 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
     @import "../../styles/presets";
 
     :host {
-      &[sd-inline=true] > form {
+      &[sd-inline=true] {
         display: inline-block;
-        margin-bottom: - gap(sm);
+        overflow: hidden;
+        vertical-align: middle;
         
-        /deep/ > sd-form-item {
+        > form {
           display: inline-block;
-          margin-bottom: gap(sm);
-          margin-right: gap(default);
-          
-          &:last-child {
-            margin-right: 0;
-          }
+          margin-bottom: - gap(sm);
 
-          > label {
+          /deep/ > sd-form-item {
             display: inline-block;
-            vertical-align: middle;
-            margin-right: gap(sm);
-            margin-bottom: 0;
-          }
-          > div {
-            display: inline-block;
-            vertical-align: middle;
-            
-            > sd-checkbox > label {
+            margin-bottom: gap(sm);
+            margin-right: gap(default);
+
+            &:last-child {
+              margin-right: 0;
+            }
+
+            > label {
               display: inline-block;
-              width: auto;
+              vertical-align: middle;
+              margin-right: gap(sm);
+              margin-bottom: 0;
+            }
+            > div {
+              display: inline-block;
+              vertical-align: middle;
+
+              > sd-checkbox > label {
+                display: inline-block;
+                width: auto;
+              }
             }
           }
         }
