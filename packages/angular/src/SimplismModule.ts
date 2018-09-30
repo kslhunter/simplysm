@@ -76,7 +76,6 @@ const controls: any[] = [
   SdMultiSelectItemControl,
   SdDropdownControl,
   SdDropdownPopupControl,
-  /*SdMarkdownEditorControl,*/
   SdGridControl,
   SdGridItemControl,
   SdBarcodeControl,

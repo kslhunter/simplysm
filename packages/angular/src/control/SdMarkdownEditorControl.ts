@@ -21,7 +21,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
         <a (click)="preview = true" [class._selected]="preview === true">
           <sd-icon [icon]="'eye'"></sd-icon>
         </a>
-        <a (click)="preview = false" [class._selected]="preview === false">
+        <a (click)="preview = false" [class._selected]="preview !== true">
           <sd-icon [icon]="'pen'"></sd-icon>
         </a>
       </sd-dock>
