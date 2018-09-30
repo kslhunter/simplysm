@@ -28,11 +28,11 @@ export * from "./control/SdMultiSelectControl";
 export * from "./control/SdMultiSelectItemControl";
 export * from "./control/SdDropdownControl";
 export * from "./control/SdDropdownPopupControl";
-export * from "./control/SdMarkdownEditorControl";
 export * from "./control/SdGridControl";
 export * from "./control/SdGridItemControl";
 export * from "./control/SdBarcodeControl";
 export * from "./control/SdCardControl";
+export * from "./control/SdMarkdownEditorControl";
 
 export * from "./decorator/SdNotifyPropertyChange";
 export * from "./decorator/SdTypeValidate";

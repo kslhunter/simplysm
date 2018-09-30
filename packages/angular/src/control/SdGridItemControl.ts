@@ -9,9 +9,8 @@ import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/c
     @import "../../styles/presets";
 
     :host {
-      display: block;
-      float: left;
-      padding: gap(default) / 2;
+      display: inline-block;
+      vertical-align: top;
     }
   `]
 })

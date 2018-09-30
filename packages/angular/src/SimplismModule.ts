@@ -40,12 +40,12 @@ import {SdMultiSelectControl} from "./control/SdMultiSelectControl";
 import {SdMultiSelectItemControl} from "./control/SdMultiSelectItemControl";
 import {SdDropdownPopupControl} from "./control/SdDropdownPopupControl";
 import {SdDropdownControl} from "./control/SdDropdownControl";
-import {SdMarkdownEditorControl} from "./control/SdMarkdownEditorControl";
 import {SdGridControl} from "./control/SdGridControl";
 import {SdGridItemControl} from "./control/SdGridItemControl";
 import {SdBarcodeControl} from "./control/SdBarcodeControl";
 import {SdPrintProvider} from "./provider/SdPrintProvider";
 import {SdCardControl} from "./control/SdCardControl";
+import {SdMarkdownEditorControl} from "./control/SdMarkdownEditorControl";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -76,11 +76,12 @@ const controls: any[] = [
   SdMultiSelectItemControl,
   SdDropdownControl,
   SdDropdownPopupControl,
-  SdMarkdownEditorControl,
+  /*SdMarkdownEditorControl,*/
   SdGridControl,
   SdGridItemControl,
   SdBarcodeControl,
-  SdCardControl
+  SdCardControl,
+  SdMarkdownEditorControl
 ];
 
 const entryControls: any[] = [

@@ -1,25 +1,45 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
-  ElementRef,
   EventEmitter,
   HostBinding,
   Input,
-  NgZone,
-  Output,
-  ViewChild
+  Output
 } from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
-import * as SimpleMDE from "simplemde";
+import * as marked from "marked";
+import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNotifyPropertyChange";
-import * as codemirror from "codemirror";
 
 @Component({
   selector: "sd-markdown-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <textarea #textarea></textarea>`,
+    <sd-dock-container>
+      <sd-dock class="_toolbar" *ngIf="!disabled">
+        <a (click)="preview = true" [class._selected]="preview === true">
+          <sd-icon [icon]="'eye'"></sd-icon>
+        </a>
+        <a (click)="preview = false" [class._selected]="preview === false">
+          <sd-icon [icon]="'pen'"></sd-icon>
+        </a>
+      </sd-dock>
+
+      <div class="_editor"
+           *ngIf="!preview && !disabled">
+        <textarea [value]="value || ''"
+                  (input)="onTextareaInput($event)"
+                  (dragover)="onTextareaDragover($event)"
+                  (dragleave)="onTextareaDragLeave($event)"
+                  (drop)="onTextareaDrop($event)"
+                  (paste)="onTextareaPaste($event)"
+                  [style.resize]="resize"></textarea>
+        <div class="_dragover" *ngIf="!preview && !disabled">파일을 내려놓으세요.</div>
+      </div>
+      <div class="_preview" [innerHTML]="innerHTML" *ngIf="preview || disabled"></div>
+      <div class="_invalid-indicator"></div>
+    </sd-dock-container>`,
   styles: [/* language=SCSS */ `
     @import "../../styles/presets";
 
@@ -27,215 +47,123 @@ import * as codemirror from "codemirror";
       display: block;
       border: 1px solid trans-color(default);
 
-      /deep/ {
-        .editor-toolbar {
-          border: none;
-          padding: 0;
-          border-radius: 0;
-          opacity: 1;
-          border-bottom: 1px solid trans-color(default);
-
-          &:before,
-          &:after {
-            display: none;
-          }
-
+      > sd-dock-container {
+        > ._toolbar {
           > a {
-            color: text-color(default) !important;
-            padding: gap(sm) gap(default);
-            width: auto;
-            height: auto;
-            border: none;
-            border-radius: 0;
+            display: inline-block;
+            padding: gap(sm) 0;
+            text-align: center;
+            width: gap(sm) * 2 + strip-unit($line-height) * font-size(default);
 
-            &:before {
-              line-height: $line-height;
-            }
-
-            &.active,
             &:hover {
-              color: text-color(dark) !important;
-              background: trans-color(default);
+              background: rgba(0, 0, 0, .05);
+            }
+
+            &._selected {
+              background: theme-color(primary, default);
+              color: text-color(reverse, default);
+            }
+          }
+        }
+
+        > ._editor {
+          position: relative;
+          width: 100%;
+          height: 100%;
+
+          > textarea {
+            @include form-control-base();
+            height: 100%;
+            background: white;
+            border: none;
+            transition: outline-color .1s linear;
+            outline: 1px solid transparent;
+            outline-offset: -1px;
+
+            &::-webkit-input-placeholder {
+              color: text-color(lighter);
+            }
+
+            &:focus {
+              outline-color: theme-color(primary, default);
+            }
+
+            > ._invalid-indicator {
+              display: none;
+            }
+
+            > input[sd-invalid=true] + ._invalid-indicator,
+            > input:invalid + ._invalid-indicator {
+              display: block;
+              position: absolute;
+              top: 2px;
+              left: 2px;
+              border-radius: 100%;
+              width: 4px;
+              height: 4px;
+              background: get($theme-color, danger, default);
             }
           }
 
-          &.disabled-for-preview {
-            > a:not(.no-disable) {
-              color: text-color(lighter) !important;
-              background: transparent;
-            }
-          }
-
-          &.fullscreen {
-            padding: 0;
-            height: auto;
-            z-index: $z-index-fullscreen;
-          }
-        }
-        
-        .CodeMirror {
-          border: none;
-          min-height: 150px;
-          height: calc(100% - 28px);
-          .CodeMirror-scroll {
-            min-height: 150px;
-          }
-
-          &.CodeMirror-fullscreen {
-            top: 27px;
-            z-index: $z-index-fullscreen;
-          }
-        }
-
-        .editor-preview,
-        .editor-preview-side {
-          pre {
-            padding: gap(xs) gap(sm);
-            border-radius: 2px;
-          }
-
-          ol {
-            padding-left: 20px;
-          }
-        }
-        
-        /*.editor-toolbar {
-          border-top: none;
-          border-left: none;
-          border-right: none;
-          border-bottom: 1px solid trans-color(light);
-          padding: 0;
-          border-radius: 0;
-          opacity: 1;
-
-          &:hover {
-            opacity: 1;
-          }
-
-          &:before,
-          &:after {
+          > ._dragover {
             display: none;
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, .05);
+            font-size: font-size(h1);
+            color: rgba(0, 0, 0, .3);
+            text-align: center;
+            padding-top: 20px;
           }
+        }
 
-          > a {
-            //color: text-color(dark) !important;
-            padding: gap(sm) gap(default);
-            width: auto;
-            height: auto;
-            border: none;
-            border-radius: 0;
+        > ._preview {
+          /*border: 1px solid trans-color(default);*/
+          padding: gap(sm);
+          height: 100%;
+          overflow: auto;
+          background: theme-color(grey, lightest);
 
-            &:before {
-              line-height: $line-height;
+          /deep/ {
+            ol {
+              padding-left: 20px;
             }
 
-            &.active,
-            &:hover {
-              color: text-color(default) !important;
-              background: trans-color(default);
-            }
-          }
-
-          > .separator {
-            border-left-color: text-color(darkest);
-            border-right-color: text-color(darker);
-          }
-
-          &.disabled-for-preview {
-            > a:not(.no-disable) {
-              color: text-color(darkest) !important;
-              background: transparent;
-            }
-          }
-
-          &.fullscreen {
-            background: theme-color(bluegrey, darkest);
-            padding: 0;
-            height: auto;
-            z-index: $z-index-fullscreen;
-          }
-        }*/
-
-        /*.CodeMirror {
-          background: trans-color(default);
-          color: text-color(default);
-          border: none;
-          border-radius: 0;
-          background: $bg-color;
-          min-height: 150px;
-          height: calc(100% - 28px);
-          .CodeMirror-scroll {
-            min-height: 150px;
-          }
-
-          .CodeMirror-cursor {
-            border-color: text-color(default);
-          }
-
-          .CodeMirror-selected {
-            background: #0967d6;
-          }
-
-          .CodeMirror-code {
             pre {
-              .cm-comment {
-                background: transparent;
-              }
+              background: rgba(0, 0, 0, .05);
+              padding: gap(sm) gap(default);
+              border-radius: 2px;
+            }
+
+            p {
+              margin-top: gap(sm);
+              margin-bottom: gap(sm);
             }
           }
-
-          &.CodeMirror-fullscreen {
-            top: 27px;
-            z-index: $z-index-fullscreen;
-          }
         }
-
-        .editor-preview,
-        .editor-preview-side {
-          background: $bg-color;
-
-          pre {
-            background: trans-color(default);
-            padding: gap(xs) gap(sm);
-            border-radius: 2px;
-          }
-
-          ol {
-            padding-left: 20px;
-          }
-        }
-
-        .editor-preview-side {
-          top: 27px;
-          border-top: none;
-          border-right: none;
-          border-bottom: none;
-          border-left-color: trans-color(default);
-          z-index: $z-index-fullscreen;
-        }
-
-        .editor-statusbar {
-          color: text-color(darker) !important;
-          padding: gap(sm) gap(default);
-          border-top: 1px solid trans-color(light);
-        }*/
       }
 
       &[sd-disabled=true] {
-        /deep/ {
-          .editor-toolbar {
-            display: none;
+        > sd-dock-container {
+          > ._preview {
+            height: auto;
           }
+        }
+      }
 
-          .CodeMirror {
-            height: 100%;
-          }
+      &[sd-dragover=true] {
+        > sd-dock-container > ._editor > ._dragover {
+          display: block;
         }
       }
     }
   `]
 })
-export class SdMarkdownEditorControl implements AfterViewInit, ISdNotifyPropertyChange {
+export class SdMarkdownEditorControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate(String)
   @SdNotifyPropertyChange()
@@ -246,118 +174,99 @@ export class SdMarkdownEditorControl implements AfterViewInit, ISdNotifyProperty
 
   @Input()
   @SdTypeValidate(Boolean)
-  @HostBinding("attr.sd-preview")
+  @SdNotifyPropertyChange()
   public preview?: boolean;
 
   @Input()
   @SdTypeValidate(Boolean)
   @HostBinding("attr.sd-disabled")
+  @SdNotifyPropertyChange()
   public disabled?: boolean;
 
   @Input()
+  @SdNotifyPropertyChange()
   public previewRender?: (plainText: string) => string | Promise<string>;
 
   @Output()
   public readonly dropFiles = new EventEmitter<ISdMarkdownEditorDropFilesEvent>();
 
-  @ViewChild("textarea")
-  public textareaElRef!: ElementRef<HTMLTextAreaElement>;
+  public innerHTML?: SafeHtml;
 
-  private _mde!: SimpleMDE;
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-dragover")
+  public dragover?: boolean;
 
-  public constructor(private readonly _zone: NgZone) {
-  }
 
-  public ngAfterViewInit(): void {
-    const options: SimpleMDE.Options = {
-      element: this.textareaElRef.nativeElement,
-      spellChecker: false,
-      status: false,
-      initialValue: this.value
-    };
+  @Input()
+  @SdTypeValidate({
+    type: String,
+    notnull: true,
+    validator: value => ["both", "horizontal", "vertical", "none"].includes(value)
+  })
+  public resize = "vertical";
 
-    if (this.previewRender) {
-      options.previewRender = (plainText, preview) => {
-        const result = this.previewRender!(plainText);
-        if (result instanceof Promise) {
-          result
-            .then(r => {
-              preview!.innerHTML = SimpleMDE.prototype["markdown"](r);
-            })
-            .catch(err => {
-              console.error(err);
-              preview!.innerHTML = "Error! " + err.message;
-            });
-        }
-        else {
-          preview!.innerHTML = SimpleMDE.prototype["markdown"](result);
-        }
-        return "Loading...";
-      };
-    }
-
-    this._mde = new SimpleMDE(options);
-
-    if (this.preview) {
-      SimpleMDE.togglePreview(this._mde);
-    }
-
-    this._mde.codemirror.on("change", () => {
-      if (this.value === (this._mde.value() || undefined)) return;
-      this._zone.run(() => {
-        this.value = this._mde.value();
-        this.valueChange.emit(this.value);
-      });
-    });
-
-    this._mde.codemirror.dragDrop = true;
-    this._mde.codemirror.on("drop", async (cm: codemirror.Editor, e: DragEvent) => {
-      const files: File[] = Array.from(e.dataTransfer.files);
-      if (files.length > 0) {
-        e.stopPropagation();
-        e.preventDefault();
-
-        const position = cm.coordsChar({
-          left: e.x,
-          top: e.y
-        });
-
-        this.dropFiles.emit({position, files});
-      }
-    });
-
-    this._mde.codemirror.on("paste", async (cm: codemirror.Editor, e: ClipboardEvent) => {
-      if (e.clipboardData.items[0]) {
-        const file = e.clipboardData.items[0].getAsFile();
-        if (file) {
-          this.dropFiles.emit({position: cm.getDoc().getCursor(), files: [file]});
-        }
-      }
-    });
+  public constructor(private readonly _sanitizer: DomSanitizer,
+                     private readonly _cdr: ChangeDetectorRef) {
   }
 
   public async sdOnPropertyChange(propertyName: string, oldValue: any, newValue: any): Promise<void> {
-    if (propertyName === "value" && this._mde) {
-      if (newValue === (this._mde.value() || undefined)) return;
-
-      this._mde.value(newValue || "");
-      if (this._mde.isPreviewActive()) {
-        SimpleMDE.togglePreview(this._mde);
-        SimpleMDE.togglePreview(this._mde);
+    if (["value", "previewRender", "preview", "disabled"].includes(propertyName)) {
+      if (this.value && (this.preview || this.disabled)) {
+        const value = this.previewRender ? await this.previewRender(this.value) : this.value;
+        const html = marked(value);
+        this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);
+        if (this.previewRender) {
+          this._cdr.markForCheck();
+        }
+      }
+      else {
+        this.innerHTML = "";
       }
     }
-    else if (propertyName === "preview" && this._mde) {
-      if (
-        (newValue && !this._mde.isPreviewActive()) ||
-        (!newValue && this._mde.isPreviewActive())
-      ) {
-        SimpleMDE.togglePreview(this._mde);
-      }
+  }
+
+  public onTextareaInput(event: Event): void {
+    const textareaEl = event.target as HTMLTextAreaElement;
+    this.value = textareaEl.value;
+    this.valueChange.emit(textareaEl.value);
+  }
+
+  public onTextareaDragover(event: DragEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.dragover = true;
+  }
+
+  public onTextareaDragLeave(event: DragEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.dragover = false;
+  }
+
+  public onTextareaDrop(event: DragEvent): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    const files = Array.from(event.dataTransfer.files);
+    const position = (event.target as HTMLTextAreaElement).selectionEnd;
+    this.dropFiles.emit({position, files});
+    this.dragover = false;
+  }
+
+  public async onTextareaPaste(event: ClipboardEvent): Promise<void> {
+    const files = Array.from(event.clipboardData.items)
+      .filter(item => item.kind === "file")
+      .map(item => item.getAsFile())
+      .filterExists();
+
+    if (files.length > 0) {
+      const position = (event.target as HTMLTextAreaElement).selectionEnd;
+      this.dropFiles.emit({position, files});
     }
   }
 }
 
 export interface ISdMarkdownEditorDropFilesEvent {
-  position: { line: number; ch: number };
+  position: number;
   files: File[];
 }

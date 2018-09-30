@@ -10,8 +10,8 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
 
     :host {
       display: block;
-      @include clear-fix();
-      margin: gap(default) / -2;
+      width: 100%;
+      height: 100%;
     }
   `]
 })
