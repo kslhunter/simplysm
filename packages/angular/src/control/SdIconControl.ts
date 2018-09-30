@@ -3,10 +3,11 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 import {counter, icon, IconLookup, IconName, library} from "@fortawesome/fontawesome-svg-core";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {far} from "@fortawesome/free-regular-svg-icons";
+import {fab} from "@fortawesome/free-brands-svg-icons";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNotifyPropertyChange";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 
-library.add(fas, far);
+library.add(fas, far, fab);
 const iconNames = Object.values(fas).map(item => item.iconName);
 
 @Component({
@@ -16,7 +17,7 @@ const iconNames = Object.values(fas).map(item => item.iconName);
     <div [innerHTML]="innerHTML"></div>`,
   styles: [/* language=SCSS */ `
     @import "../../styles/presets";
-    
+
     :host {
       display: inline-block;
 
@@ -56,7 +57,7 @@ export class SdIconControl implements ISdNotifyPropertyChange, OnInit {
   @Input()
   @SdTypeValidate({
     type: String,
-    validator: value => ["solid", "regular"].includes(value),
+    validator: value => ["solid", "regular", "brands"].includes(value),
     notnull: true
   })
   @SdNotifyPropertyChange()
@@ -89,7 +90,7 @@ export class SdIconControl implements ISdNotifyPropertyChange, OnInit {
   public render(): void {
     if (this.icon) {
       const iconSpec: IconLookup = {
-        prefix: this.type === "regular" ? "far" : "fas",
+        prefix: this.type === "brands" ? "fab" : this.type === "regular" ? "far" : "fas",
         iconName: this.icon
       };
 
