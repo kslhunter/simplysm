@@ -163,7 +163,7 @@ export class Queryable<T extends object> {
   public async upsertAsync(obj: T): Promise<T>;
   public async upsertAsync(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T>;
   public async upsertAsync(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T> {
-    const obj: object = typeof arg === "function" ? arg(this._qba.entity) : arg;
+    const obj: object = typeof arg === "function" ? (arg as any)(this._qba.entity) : arg;
 
     if (this._hasAutoIncrementValue({...obj, ...(additionalInsertObj as object)})) {
       const query = `${this._getIdentityInsertQuery(true)}\n${this._qba.upsert(arg, additionalInsertObj).query}\n${this._getIdentityInsertQuery(false)}`;

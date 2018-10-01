@@ -518,8 +518,8 @@ export class SdSheetControl implements DoCheck, OnInit {
     };
 
     const stopDrag = () => {
-      document.documentElement.removeEventListener("mousemove", doDrag, false);
-      document.documentElement.removeEventListener("mouseup", stopDrag, false);
+      document.documentElement!.removeEventListener("mousemove", doDrag, false);
+      document.documentElement!.removeEventListener("mouseup", stopDrag, false);
 
       const index = Number(cellEl.getAttribute("col-index"));
       const columnControl = this.columnControls!.toArray()[index];
@@ -539,8 +539,8 @@ export class SdSheetControl implements DoCheck, OnInit {
 
       this._cdr.markForCheck();
     };
-    document.documentElement.addEventListener("mousemove", doDrag, false);
-    document.documentElement.addEventListener("mouseup", stopDrag, false);
+    document.documentElement!.addEventListener("mousemove", doDrag, false);
+    document.documentElement!.addEventListener("mouseup", stopDrag, false);
   }
 
   public onCellKeydown(event: KeyboardEvent): void {
@@ -575,7 +575,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
         if (rowIndex - 1 >= 0) {
           const nextRowEl = bodyEl.children.item(rowIndex - 1);
-          (nextRowEl.findAll("._col")[cellIndex] as HTMLElement).focus();
+          (nextRowEl!.findAll("._col")[cellIndex] as HTMLElement).focus();
           event.preventDefault();
         }
       }

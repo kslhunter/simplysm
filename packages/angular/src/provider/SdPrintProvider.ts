@@ -30,7 +30,7 @@ export class SdPrintProvider {
       body > * { display: none !important; }
       body > ._sd-print-template { display: block !important; }
   }`;
-      document.head.appendChild(styleEl);
+      document.head!.appendChild(styleEl);
 
       try {
         await compRef.instance.sdOnOpen(param);

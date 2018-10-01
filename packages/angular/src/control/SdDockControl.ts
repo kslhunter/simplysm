@@ -205,8 +205,8 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
 
       this._isOnDragging = false;
 
-      document.documentElement.removeEventListener("mousemove", doDrag, false);
-      document.documentElement.removeEventListener("mouseup", stopDrag, false);
+      document.documentElement!.removeEventListener("mousemove", doDrag, false);
+      document.documentElement!.removeEventListener("mouseup", stopDrag, false);
 
       if (this.resizable) {
         if (this.position === "right" || this.position === "left") {
@@ -225,8 +225,8 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
 
       this._containerControl.redraw();
     };
-    document.documentElement.addEventListener("mousemove", doDrag, false);
-    document.documentElement.addEventListener("mouseup", stopDrag, false);
+    document.documentElement!.addEventListener("mousemove", doDrag, false);
+    document.documentElement!.addEventListener("mouseup", stopDrag, false);
   }
 
   public sdOnPropertyChange(propertyName: string, oldValue: any, newValue: any): void {

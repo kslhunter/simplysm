@@ -253,7 +253,7 @@ export class SdMarkdownEditorControl implements ISdNotifyPropertyChange {
     event.stopPropagation();
     event.preventDefault();
 
-    const files = Array.from(event.dataTransfer.files);
+    const files = Array.from(event.dataTransfer!.files);
     const position = (event.target as HTMLTextAreaElement).selectionEnd;
     this.dropFiles.emit({position, files});
     this.dragover = false;
