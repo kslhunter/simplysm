@@ -4,7 +4,7 @@ import * as xlsx from "xlsx";
 export class ExcelWorkbook {
   private readonly _wb: xlsx.WorkBook;
 
-  public get json(): { [sheetName: string]: { [key: string]: string | undefined }[] } {
+  public get json(): { [sheetName: string]: { [key: string]: any }[] } {
     const result = {};
     for (const sheetName of this._wb.SheetNames) {
       result[sheetName] = xlsx.utils.sheet_to_json(this._wb.Sheets[sheetName]);

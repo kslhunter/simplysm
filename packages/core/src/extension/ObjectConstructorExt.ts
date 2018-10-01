@@ -16,7 +16,8 @@ declare global {
 
     validates(source: any, defs: { [key: string]: ValidateDef }): IValidateResult[];
 
-    validatesArray<T, K extends keyof T>(arr: T[], displayName: string, def: ((item: T) => { [P in K]: IArrayValidateDef }) | { [P in K]: IArrayValidateDef }): void;
+    validatesArray<T, K extends keyof T>(arr: T[], displayName: string, def: ((item: T) => { [P in K]: IArrayValidateDef })): void;
+    validatesArray<T, K extends keyof T>(arr: T[], displayName: string, def: { [P in K]: IArrayValidateDef }): void;
   }
 }
 
