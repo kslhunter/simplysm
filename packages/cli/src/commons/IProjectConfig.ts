@@ -58,6 +58,7 @@ export interface ITestPackageConfig {
 
 export interface ICordovaConfig {
   appId: string;
+  name?: string;
   plugins?: string[];
   sign?: string;
   icon?: string;

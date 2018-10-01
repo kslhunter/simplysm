@@ -16,7 +16,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
         display: inline-block;
         overflow: hidden;
         vertical-align: middle;
-        
+
         > form {
           display: inline-block;
           margin-bottom: - gap(sm);

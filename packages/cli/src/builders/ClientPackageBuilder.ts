@@ -407,7 +407,7 @@ export class ClientPackageBuilder {
           "create",
           `.cordova`,
           this._config.cordova.appId,
-          `"${this._config.name}"`
+          `"${this._config.cordova.name || this._config.name}"`
         ],
         {
           shell: true,

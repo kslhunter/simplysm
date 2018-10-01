@@ -26,6 +26,37 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
         font-weight: bold;
         margin-bottom: gap(xs);
       }
+
+      @media #{$screen-mobile} {
+        width: 100%;
+        margin: 0;
+        overflow-x: hidden;
+
+        > label {
+          padding: gap(xs) gap(sm);
+          font-size: font-size(sm);
+          background: rgba(0, 0, 0, .1);
+          margin: 0;
+        }
+
+        > div /deep/ {
+          > sd-textfield > input {
+            border: none;
+          }
+
+          > sd-markdown-editor {
+            border: none;
+          }
+
+          > sd-select > select {
+            border: none;
+          }
+
+          > sd-multi-select > sd-dropdown > div {
+            border: none;
+          }
+        }
+      }
     }
   `]
 })

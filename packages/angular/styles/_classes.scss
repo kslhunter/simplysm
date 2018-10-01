@@ -20,6 +20,10 @@
           color: white !important;
           border-color: trans-color(light) !important;
         }
+
+        sd-list-item[sd-header=true] > label {
+          color: text-color(reverse, dark) !important;
+        }
       }
     }
   }

@@ -29,6 +29,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
       <div class="_editor"
            *ngIf="!preview && !disabled">
         <textarea [value]="value || ''"
+                  [rows]="rows"
                   (input)="onTextareaInput($event)"
                   (dragover)="onTextareaDragover($event)"
                   (dragleave)="onTextareaDragLeave($event)"
@@ -137,6 +138,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
               background: rgba(0, 0, 0, .05);
               padding: gap(sm) gap(default);
               border-radius: 2px;
+              white-space: normal;
             }
 
             p {
@@ -204,6 +206,10 @@ export class SdMarkdownEditorControl implements ISdNotifyPropertyChange {
     validator: value => ["both", "horizontal", "vertical", "none"].includes(value)
   })
   public resize = "vertical";
+
+  @Input()
+  @SdTypeValidate({type: Number, notnull: true})
+  public rows = 3;
 
   public constructor(private readonly _sanitizer: DomSanitizer,
                      private readonly _cdr: ChangeDetectorRef) {

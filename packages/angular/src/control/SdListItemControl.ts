@@ -79,6 +79,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
           padding: gap(xs) gap(default);
           color: text-color(light);
           font-size: font-size(sm);
+          margin-top: gap(sm);
         }
 
         > label > sd-icon {
