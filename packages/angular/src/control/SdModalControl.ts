@@ -65,7 +65,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
         > sd-dock-container {
           > ._header {
             /*border-bottom: 1px solid get($trans-color, default);*/
-            
+
             > ._title {
               display: inline-block;
               padding: gap(sm) gap(default);
@@ -155,5 +155,17 @@ export class SdModalControl {
     if (event.key === "Escape") {
       this.onCloseButtonClick();
     }
+  }
+
+  @HostListener("document:backbutton", ["$event"])
+  public onAndroidBackButtonTouch(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.hideCloseButton) {
+      return;
+    }
+
+    this.onCloseButtonClick();
   }
 }

@@ -14,4 +14,11 @@ if (process.env.NODE_ENV === "production") {
   enableProdMode();
 }
 
-hmrBootstrap(module, AppModule);
+if (process.env.PLATFORM === "android") {
+  document.addEventListener("deviceready", () => {
+    hmrBootstrap(module, AppModule);
+  }, false);
+}
+else {
+  hmrBootstrap(module, AppModule);
+}

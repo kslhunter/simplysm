@@ -59,7 +59,7 @@ export class ClientPackageBuilder {
           plugins: [
             new HtmlWebpackPlugin({
               template: this._loadersPath("index.ejs"),
-              BASE_HREF: platform === "android" ? "/android_assets/www/" : `/${this._packageName}/`,
+              BASE_HREF: platform === "android" ? "/android_asset/www/" : `/${this._packageName}/`,
               PLATFORM: platform,
               HAS_FAVICON: fs.existsSync(this._packagePath("src/favicon.ico"))
             }),
