@@ -53,6 +53,13 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
         > input:disabled + ._indicator_rect {
           background: $bg-color;
         }
+
+        &:focus {
+          outline: none;
+          > ._indicator_rect {
+            border-color: theme-color(primary, default);
+          }
+        }
       }
 
       &[sd-checked=true] {

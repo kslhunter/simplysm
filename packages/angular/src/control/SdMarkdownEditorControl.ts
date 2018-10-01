@@ -24,6 +24,15 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
         <a (click)="preview = false" [class._selected]="preview !== true">
           <sd-icon [icon]="'pen'"></sd-icon>
         </a>
+        <ng-container *ngIf="rowsButton && preview !== true">
+          |
+          <a (click)="rows = rows + 1">
+            <sd-icon [icon]="'plus'"></sd-icon>
+          </a>
+          <a (click)="rows = rows - 1" *ngIf="rows > 1">
+            <sd-icon [icon]="'minus'"></sd-icon>
+          </a>
+        </ng-container>
       </sd-dock>
 
       <div class="_editor"
@@ -50,6 +59,8 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
 
       > sd-dock-container {
         > ._toolbar {
+          user-select: none;
+
           > a {
             display: inline-block;
             padding: gap(sm) 0;
@@ -210,6 +221,11 @@ export class SdMarkdownEditorControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate({type: Number, notnull: true})
   public rows = 3;
+
+
+  @Input()
+  @SdTypeValidate({type: Boolean, notnull: true})
+  public rowsButton = true;
 
   public constructor(private readonly _sanitizer: DomSanitizer,
                      private readonly _cdr: ChangeDetectorRef) {

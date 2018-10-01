@@ -39,6 +39,11 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
           cursor: default;
           color: text-color(default);
         }
+
+        &:focus {
+          outline: none;
+          border: 1px solid theme-color(primary, darkest) !important;
+        }
       }
 
       @each $theme, $colors in $theme-color {
