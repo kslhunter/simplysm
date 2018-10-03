@@ -46,6 +46,7 @@ import {SdBarcodeControl} from "./control/SdBarcodeControl";
 import {SdPrintProvider} from "./provider/SdPrintProvider";
 import {SdCardControl} from "./control/SdCardControl";
 import {SdMarkdownEditorControl} from "./control/SdMarkdownEditorControl";
+import {SdSmtpClientProvider} from "./provider/SdSmtpClientProvider";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -100,6 +101,7 @@ const providers: any[] = [
   SdModalProvider,
   SdSocketProvider,
   SdPrintProvider,
+  SdSmtpClientProvider,
   {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
   {provide: ErrorHandler, useClass: GlobalErrorHandler}
 ];

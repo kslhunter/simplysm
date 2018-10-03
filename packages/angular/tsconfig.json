@@ -25,6 +25,9 @@
       "@simplism/socket-client": [
         "../socket-client/src/index.ts"
       ],
+      "@simplism/smtp-client-common": [
+        "../smtp-client-common/src/index.ts"
+      ],
       "@simplism/orm-query": [
         "../orm-query/src/index.ts"
       ]

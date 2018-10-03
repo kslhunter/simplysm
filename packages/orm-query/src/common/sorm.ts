@@ -28,7 +28,7 @@ export class CaseQueryable<T extends QueryType> {
     return this;
   }
 
-  public else(then: T | QueryUnit<T>): QueryUnit<T> {
+  public else(then: T | QueryUnit<T>): T {
     if (!this._type) {
       if (then instanceof QueryUnit) {
         this._type = then.type;
@@ -41,7 +41,7 @@ export class CaseQueryable<T extends QueryType> {
       }
     }
 
-    return new QueryUnit<T>(this._type as any, `CASE ${this._cases.join(" ")} ELSE ${ormHelpers.getFieldQuery(then)} END`);
+    return new QueryUnit<T>(this._type as any, `CASE ${this._cases.join(" ")} ELSE ${ormHelpers.getFieldQuery(then)} END`) as any;
   }
 }
 

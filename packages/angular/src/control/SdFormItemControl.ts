@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef} from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 
 @Component({
@@ -6,7 +6,11 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <label [style.display]="label ? 'display' : 'none'">
-      {{ label }}
+      <ng-container *ngIf="!labelTemplateRef">{{ label }}</ng-container>
+      <ng-container *ngIf="labelTemplateRef">
+        <ng-template [ngTemplateOutlet]="labelTemplateRef"
+                     [ngTemplateOutletContext]="{label: label}"></ng-template>
+      </ng-container>
     </label>
     <div>
       <ng-content></ng-content>
@@ -64,4 +68,7 @@ export class SdFormItemControl {
   @Input()
   @SdTypeValidate(String)
   public label?: string;
+
+  @ContentChild("label")
+  public labelTemplateRef?: TemplateRef<any>;
 }

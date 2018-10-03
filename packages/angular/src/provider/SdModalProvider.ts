@@ -68,9 +68,9 @@ export class SdModalProvider {
           if (activeElement) {
             activeElement.blur();
           }
-          this._appRef.tick();
           modalRef.instance.open = true;
           await compRef.instance.sdOnOpen(param);
+          this._appRef.tick();
         }
         catch (e) {
           await close();

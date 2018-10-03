@@ -45,5 +45,6 @@ export * from "./provider/SdToastProvider";
 export * from "./provider/SdModalProvider";
 export * from "./provider/SdSocketProvider";
 export * from "./provider/SdPrintProvider";
+export * from "./provider/SdSmtpClientProvider";
 
 export * from "./SimplismModule";

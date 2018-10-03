@@ -1,7 +1,7 @@
 {
-  "name": "@simplism/orm-connector",
+  "name": "@simplism/smtp-client-service",
   "version": "10.1.47",
-  "description": "Simplism ORM Connector Package",
+  "description": "Simplism SMTP Client Service Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
   "license": "MIT",
@@ -9,7 +9,8 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplism/core": "^10.1.47",
-    "@simplism/orm-common": "^10.1.47",
-    "tedious": "^2.6.4"
+    "@simplism/socket-server": "^10.1.47",
+    "@simplism/smtp-client-common": "^10.1.47",
+    "nodemailer": "^4.6.8"
   }
 }

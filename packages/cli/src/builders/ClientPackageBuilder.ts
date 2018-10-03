@@ -388,7 +388,17 @@ export class ClientPackageBuilder {
             }
           }
         }
-      }
+      },
+      externals: [
+        (context, request, callback) => {
+          if (request === "net" || request === "fs" || request === "tls") {
+            callback(undefined, `""`);
+            return;
+          }
+
+          callback(undefined, undefined);
+        }
+      ]
     };
   }
 

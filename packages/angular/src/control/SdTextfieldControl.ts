@@ -88,10 +88,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate({
     type: String,
-    validator: value => ["number", "text", "password", "date", "datetime", "month", "color"].includes(value),
+    validator: value => ["number", "text", "password", "date", "datetime", "month", "color", "email"].includes(value),
     notnull: true
   })
-  public type: "number" | "text" | "password" | "date" | "datetime" | "month" | "color" = "text";
+  public type: "number" | "text" | "password" | "date" | "datetime" | "month" | "color" | "email" = "text";
 
   @Input()
   @SdTypeValidate(String)
@@ -151,20 +151,24 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
 
   public onInputInput(event: Event): void {
     const inputEl = event.target as HTMLInputElement;
+    let value;
     if (this.type === "number") {
-      this.value = !inputEl.value ? inputEl.value : Number(inputEl.value.replace(/,/g, ""));
+      value = !inputEl.value ? inputEl.value : Number(inputEl.value.replace(/,/g, ""));
     }
     else if (this.type === "date" || this.type === "month") {
-      this.value = !inputEl.value ? undefined : DateOnly.parse(inputEl.value);
+      value = !inputEl.value ? undefined : DateOnly.parse(inputEl.value);
     }
     else if (this.type === "datetime") {
-      this.value = !inputEl.value ? undefined : DateTime.parse(inputEl.value);
+      value = !inputEl.value ? undefined : DateTime.parse(inputEl.value);
     }
     else {
-      this.value = inputEl.value;
+      value = inputEl.value;
     }
 
-    this.valueChange.emit(this.value);
+    if (this.value !== value) {
+      this.value = value;
+      this.valueChange.emit(this.value);
+    }
   }
 
   public onFocus(event: Event): void {

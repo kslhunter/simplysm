@@ -41,6 +41,14 @@
       "type": "library"
     },
     {
+      "name": "smtp-client-common",
+      "type": "library"
+    },
+    {
+      "name": "smtp-client-service",
+      "type": "library"
+    },
+    {
       "name": "storage",
       "type": "library"
     },

@@ -1,7 +1,7 @@
 {
-  "name": "@simplism/core",
+  "name": "@simplism/smtp-client-common",
   "version": "10.1.47",
-  "description": "Simplism Core Package",
+  "description": "Simplism SMTP Client Common Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
   "license": "MIT",

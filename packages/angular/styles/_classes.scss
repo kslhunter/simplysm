@@ -24,6 +24,29 @@
         sd-list-item[sd-header=true] > label {
           color: text-color(reverse, dark) !important;
         }
+
+        sd-checkbox {
+          > label {
+            color: text-color(reverse, default) !important;
+
+            > ._indicator_rect {
+              background: trans-color(light) !important;
+              border-color: trans-color(light) !important;
+            }
+
+            > ._indicator {
+              color: text-color(reverse, default) !important;
+            }
+          }
+
+          &[sd-radio=true] {
+            > label {
+              > ._indicator > div {
+                background: text-color(reverse, default) !important;
+              }
+            }
+          }
+        }
       }
     }
   }

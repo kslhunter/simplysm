@@ -15,6 +15,7 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/orm-connector/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/orm-query/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/orm-service/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/smtp-client/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/socket-client/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/socket-common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/socket-server/dist" />

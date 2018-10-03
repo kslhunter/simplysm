@@ -145,11 +145,20 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
               padding-left: 20px;
             }
 
+            code {
+              background: rgba(0, 0, 0, .05);
+              border-radius: 2px;
+            }
+
             pre {
               background: rgba(0, 0, 0, .05);
               padding: gap(sm) gap(default);
               border-radius: 2px;
-              white-space: normal;
+              white-space: pre-wrap;
+
+              > code {
+                background: transparent;
+              }
             }
 
             p {

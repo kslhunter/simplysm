@@ -74,6 +74,11 @@ export class SdIconControl implements ISdNotifyPropertyChange, OnInit {
   @HostBinding("attr.sd-dot")
   public dot?: number;
 
+  @Input()
+  @SdTypeValidate(Boolean)
+  @SdNotifyPropertyChange()
+  public spin?: boolean;
+
   public innerHTML?: SafeHtml;
 
   public constructor(private readonly _sanitizer: DomSanitizer) {
@@ -94,10 +99,12 @@ export class SdIconControl implements ISdNotifyPropertyChange, OnInit {
         iconName: this.icon
       };
 
-      const iconObj = icon(
-        iconSpec,
-        this.fixedWidth ? {classes: ["fa-fw"]} : undefined
-      );
+      const classes = [
+        this.fixedWidth ? "fa-fw" : undefined,
+        this.spin ? "fa-spin" : undefined
+      ].filterExists();
+
+      const iconObj = icon(iconSpec, {classes});
 
       if (iconObj) {
         let html = iconObj.html.join("\n");
