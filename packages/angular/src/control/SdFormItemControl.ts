@@ -31,7 +31,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
         margin-bottom: gap(xs);
       }
 
-      @media #{$screen-mobile} {
+      /*@media #{$screen-mobile} {
         width: 100%;
         margin: 0;
         overflow-x: hidden;
@@ -60,7 +60,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
             border: none;
           }
         }
-      }
+      }*/
     }
   `]
 })
