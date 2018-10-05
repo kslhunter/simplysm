@@ -31,7 +31,6 @@ import {SdComboboxControl} from "./control/SdComboboxControl";
 import {SdComboboxItemControl} from "./control/SdComboboxItemControl";
 import {GlobalErrorHandler} from "./plugin/GlobalErrorHandler";
 import {SdSelectControl} from "./control/SdSelectControl";
-import {OptionValueAttribute} from "./attribute/OptionValueAttribute";
 import {CommonModule} from "@angular/common";
 import {SdModalProvider} from "./provider/SdModalProvider";
 import {SdModalControl} from "./control/SdModalControl";
@@ -47,6 +46,11 @@ import {SdPrintProvider} from "./provider/SdPrintProvider";
 import {SdCardControl} from "./control/SdCardControl";
 import {SdMarkdownEditorControl} from "./control/SdMarkdownEditorControl";
 import {SdSmtpClientProvider} from "./provider/SdSmtpClientProvider";
+import {SdSelectItemControl} from "./control/SdSelectItemControl";
+import {SdCheckboxGroupItemControl} from "./control/SdCheckboxGroupItemControl";
+import {SdCheckboxGroupControl} from "./control/SdCheckboxGroupControl";
+import {SdCasePipe} from "./pipe/SdCasePipe";
+import {SdNavigateAttribute} from "./attribute/SdNavigateAttribute";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -73,6 +77,7 @@ const controls: any[] = [
   SdTopbarContainerControl,
   SdTopbarMenuControl,
   SdSelectControl,
+  SdSelectItemControl,
   SdMultiSelectControl,
   SdMultiSelectItemControl,
   SdDropdownControl,
@@ -81,7 +86,9 @@ const controls: any[] = [
   SdGridItemControl,
   SdBarcodeControl,
   SdCardControl,
-  SdMarkdownEditorControl
+  SdMarkdownEditorControl,
+  SdCheckboxGroupControl,
+  SdCheckboxGroupItemControl
 ];
 
 const entryControls: any[] = [
@@ -89,7 +96,11 @@ const entryControls: any[] = [
 ];
 
 const attributes: any[] = [
-  OptionValueAttribute
+  SdNavigateAttribute
+];
+
+const pipes: any[] = [
+  SdCasePipe
 ];
 
 const providers: any[] = [
@@ -113,12 +124,14 @@ const providers: any[] = [
   exports: [
     ...controls,
     ...entryControls,
-    ...attributes
+    ...attributes,
+    ...pipes
   ],
   declarations: [
     ...controls,
     ...entryControls,
-    ...attributes
+    ...attributes,
+    ...pipes
   ],
   entryComponents: [
     ...entryControls

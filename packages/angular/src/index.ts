@@ -16,6 +16,7 @@ export * from "./control/SdModalControl";
 export * from "./control/SdPaginationControl";
 export * from "./control/SdPaneControl";
 export * from "./control/SdSelectControl";
+export * from "./control/SdSelectItemControl";
 export * from "./control/SdSheetControl";
 export * from "./control/SdSheetColumnControl";
 export * from "./control/SdSidebarControl";
@@ -33,6 +34,8 @@ export * from "./control/SdGridItemControl";
 export * from "./control/SdBarcodeControl";
 export * from "./control/SdCardControl";
 export * from "./control/SdMarkdownEditorControl";
+export * from "./control/SdCheckboxGroupControl";
+export * from "./control/SdCheckboxGroupItemControl";
 
 export * from "./decorator/SdNotifyPropertyChange";
 export * from "./decorator/SdTypeValidate";

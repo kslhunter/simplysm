@@ -24,6 +24,8 @@ declare global {
 
     single(predicate?: (item: T, index: number) => boolean): T | undefined;
 
+    single(key: keyof T, checkValue: T): T | undefined;
+
     last(predicate?: (item: T, index: number) => boolean): T | undefined;
 
     sum(): T | undefined;
@@ -130,12 +132,21 @@ Array.prototype.mapMany = function (selector?: (item: any, index: number) => any
   return (selector ? this.map(selector) : this).reduce((p: any, n: any) => p.concat(n));
 };
 
-Array.prototype.single = function (predicate?: (item: any, index: number) => boolean): any {
-  const filtered = predicate ? this.filter(predicate.bind(this)) : this;
-  if (filtered.length > 1) {
-    throw new Error("복수의 결과물이 있습니다.");
+Array.prototype.single = function (...args: any[]): any {
+  if (args.length === 1) {
+    const predicate: ((item: any, index: number) => boolean) = args[0];
+
+    const filtered = predicate ? this.filter(predicate.bind(this)) : this;
+    if (filtered.length > 1) {
+      throw new Error("복수의 결과물이 있습니다.");
+    }
+    return filtered[0];
   }
-  return filtered[0];
+  else {
+    const key = args[0];
+    const checkValue = args[1];
+    return this.single(item => item[key] === checkValue);
+  }
 };
 
 Array.prototype.last = function (predicate?: (item: any, index: number) => boolean): any {

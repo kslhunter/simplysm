@@ -195,17 +195,6 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
           }
         }
 
-        /deep/ sd-select > select {
-          border: none;
-          padding: gap(xs) - 3 gap(sm) gap(xs) gap(sm) - 4;
-          background: theme-color(info, lightest);
-
-          &:disabled {
-            padding: gap(xs) gap(sm);
-            background: transparent;
-          }
-        }
-
         /deep/ sd-checkbox > label {
           display: inline-block;
           width: auto;
@@ -223,17 +212,29 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
           text-align: left;
         }
 
-        /deep/ sd-dropdown > div {
-          border: none;
-          padding: gap(xs) gap(sm);
-          height: gap(xs) * 2 + strip-unit($line-height) * font-size(default);
-          background: theme-color(info, lightest);
+        /deep/ sd-select,
+        /deep/ sd-multi-select {
+          > sd-dropdown > div {
+            border: none;
+            padding: gap(xs) gap(sm);
+            height: gap(xs) * 2 + strip-unit($line-height) * font-size(default);
+            background: theme-color(info, lightest);
 
-          > ._icon {
-            top: 0;
-            right: 0;
-            width: 24px;
-            padding: gap(xs) 0;
+            > ._icon {
+              top: 0;
+              right: 0;
+              width: 24px;
+              padding: gap(xs) 0;
+            }
+          }
+
+          &[sd-disabled=true] /deep/ > sd-dropdown > div {
+            background: transparent;
+            color: text-color(default);
+
+            > ._icon {
+              display: none;
+            }
           }
         }
 

@@ -41,6 +41,10 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
         background: get($theme-color, grey, default);
       }
 
+      &[sd-theme='bluegrey'] {
+        background: get($theme-color, bluegrey, default);
+      }
+
       &[sd-clickable=true] {
         cursor: pointer;
 
@@ -68,7 +72,11 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
           }
 
           &[sd-theme='grey'] {
-            background: get($theme-color, danger, dark);
+            background: get($theme-color, grey, dark);
+          }
+
+          &[sd-theme='bluegrey'] {
+            background: get($theme-color, bluegrey, dark);
           }
         }
       }
@@ -79,10 +87,10 @@ export class SdLabelControl {
   @Input()
   @SdTypeValidate({
     type: String,
-    validator: value => ["primary", "info", "success", "warning", "danger", "grey"].includes(value)
+    validator: value => ["primary", "info", "success", "warning", "danger", "grey", "bluegrey"].includes(value)
   })
   @HostBinding("attr.sd-theme")
-  public theme?: "primary" | "info" | "success" | "warning" | "danger" | "grey";
+  public theme?: "primary" | "info" | "success" | "warning" | "danger" | "grey" | "bluegrey";
 
   @Input()
   @SdTypeValidate({

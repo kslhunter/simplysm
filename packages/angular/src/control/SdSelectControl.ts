@@ -1,61 +1,80 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ContentChildren,
+  EventEmitter,
+  HostBinding,
+  Input,
+  Output,
+  QueryList
+} from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
-import {JsonConvert} from "@simplism/core";
+import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
+import {SdSelectItemControl} from "./SdSelectItemControl";
+import {optional} from "@simplism/core";
 
 @Component({
   selector: "sd-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <select [value]="valueJson"
-            [required]="required"
-            (change)="onSelectChange($event)"
-            [disabled]="disabled">
-      <ng-content></ng-content>
-    </select>
-    <div class="_invalid-indicator"></div>`,
+    <sd-dropdown [disabled]="disabled">
+      <div class="_sd-select-content" [innerHTML]="getContentHtml()"></div>
+      <div class="_invalid-indicator"></div>
+      <div class="_icon">
+        <sd-icon [fixedWidth]="true" [icon]="'angle-down'"></sd-icon>
+      </div>
+
+      <sd-dropdown-popup>
+        <ng-content></ng-content>
+      </sd-dropdown-popup>
+    </sd-dropdown>`,
   styles: [/* language=SCSS */ `
     @import "../../styles/presets";
 
     :host {
       display: block;
-      color: text-color(default);
-      position: relative;
+      width: 100%;
 
-      > select {
+      /deep/ > sd-dropdown > div {
         @include form-control-base();
-        color: inherit;
 
-        padding: gap(sm) - 3 gap(default) gap(sm) gap(default) - 4;
+        display: block;
+        overflow: visible;
+        padding-right: 30px !important;
+        height: gap(sm) * 2 + strip-unit($line-height) * font-size(default) + 2;
+
         background: white;
         border-color: trans-color(default);
         transition: outline-color .1s linear;
         outline: 1px solid transparent;
         outline-offset: -1px;
 
-        &:focus {
-          outline-color: theme-color(primary, default);
+        > div:first-child {
+          overflow: hidden;
+          white-space: nowrap;
         }
 
-        &:disabled {
-          -webkit-appearance: none;
-          background: $bg-color;
-          color: text-color(light);
-          padding: gap(sm) gap(default);
+        > ._icon {
+          position: absolute;
+          top: -1px;
+          right: -1px;
+          padding: gap(sm) 0;
+          width: 30px;
+          text-align: center;
           pointer-events: none;
         }
 
-        /deep/ > option {
-          color: text-color(default);
-          /*background: theme-color(bluegrey, darkest);*/
-          background: #fff;
+        &:focus {
+          outline-color: theme-color(primary, default);
         }
       }
 
-      > ._invalid-indicator {
-        display: none;
+      &[sd-disabled=true] /deep/ > sd-dropdown > div {
+        background: $bg-color;
+        color: text-color(light);
       }
-      
-      &[sd-invalid=true] > ._invalid-indicator {
+
+      &[sd-invalid=true] /deep/ > sd-dropdown > div > ._invalid-indicator {
         display: block;
         position: absolute;
         top: 2px;
@@ -81,20 +100,47 @@ export class SdSelectControl {
 
   @Input()
   @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-disabled")
   public disabled?: boolean;
+
+  @Input()
+  @SdTypeValidate(String)
+  public keyProp?: string;
 
   @HostBinding("attr.sd-invalid")
   public get isInvalid(): boolean {
-    return !!this.required && this.value == undefined;
+    return !!this.required && !this.value;
   }
 
-  public get valueJson(): string | undefined {
-    return JsonConvert.stringify(this.value) || "null";
+  @ContentChildren(SdSelectItemControl, {descendants: true})
+  public itemControls?: QueryList<SdSelectItemControl>;
+
+  public constructor(private readonly _sanitizer: DomSanitizer) {
   }
 
-  public onSelectChange(event: Event): void {
-    this.value = JsonConvert.parse((event.target as HTMLInputElement).value) == undefined ? undefined
-      : JsonConvert.parse((event.target as HTMLInputElement).value);
-    this.valueChange.emit(this.value);
+  public getIsItemSelected(item: SdSelectItemControl): boolean {
+    const thisKeyValue = this.keyProp && this.value ? this.value[this.keyProp] : this.value;
+    const itemKeyValue = this.keyProp && item.value ? item.value[this.keyProp] : item.value;
+    return thisKeyValue === itemKeyValue;
+  }
+
+  public getContentHtml(): SafeHtml {
+    if (!this.itemControls) {
+      return "";
+    }
+
+    return this._sanitizer.bypassSecurityTrustHtml(
+      optional(
+        this.itemControls.toArray().single(item => this.getIsItemSelected(item)),
+        o => o.content
+      ) || ""
+    );
+  }
+
+  public setValue(value: any): void {
+    if (this.value !== value) {
+      this.value = value;
+      this.valueChange.emit(this.value);
+    }
   }
 }

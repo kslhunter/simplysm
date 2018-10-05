@@ -1,5 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input, OnInit} from "@angular/core";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
+import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input, OnInit, ViewChild} from "@angular/core";
 import {counter, icon, IconLookup, IconName, library} from "@fortawesome/fontawesome-svg-core";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {far} from "@fortawesome/free-regular-svg-icons";
@@ -14,7 +13,7 @@ const iconNames = Object.values(fas).map(item => item.iconName);
   selector: "sd-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div [innerHTML]="innerHTML"></div>`,
+    <div #content></div>`,
   styles: [/* language=SCSS */ `
     @import "../../styles/presets";
 
@@ -79,9 +78,10 @@ export class SdIconControl implements ISdNotifyPropertyChange, OnInit {
   @SdNotifyPropertyChange()
   public spin?: boolean;
 
-  public innerHTML?: SafeHtml;
+  @ViewChild("content")
+  public readonly contentElRef?: ElementRef<HTMLDivElement>;
 
-  public constructor(private readonly _sanitizer: DomSanitizer) {
+  public constructor() {
   }
 
   public ngOnInit(): void {
@@ -93,6 +93,8 @@ export class SdIconControl implements ISdNotifyPropertyChange, OnInit {
   }
 
   public render(): void {
+    if (!this.contentElRef) return;
+
     if (this.icon) {
       const iconSpec: IconLookup = {
         prefix: this.type === "brands" ? "fab" : this.type === "regular" ? "far" : "fas",
@@ -124,14 +126,14 @@ export class SdIconControl implements ISdNotifyPropertyChange, OnInit {
           html = `<span class='fa-layers${this.fixedWidth ? " fa-fw" : ""}'>` + html + dotObj.html.join("\n") + "</span>";
         }
 
-        this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);
+        this.contentElRef.nativeElement.innerHTML = html;
       }
       else {
-        this.innerHTML = "";
+        this.contentElRef.nativeElement.innerHTML = "";
       }
     }
     else {
-      this.innerHTML = "";
+      this.contentElRef.nativeElement.innerHTML = "";
     }
   }
 }
