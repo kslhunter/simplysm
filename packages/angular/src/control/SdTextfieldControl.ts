@@ -1,4 +1,13 @@
-import {ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, ViewChild} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  Input,
+  Output,
+  ViewChild
+} from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNotifyPropertyChange";
 import {DateOnly, DateTime} from "@simplism/core";
@@ -81,6 +90,13 @@ import {DateOnly, DateTime} from "@simplism/core";
         height: 4px;
         background: get($theme-color, danger, default);
       }
+
+      &[sd-inset=true] {
+        > input {
+          border: none;
+          background: theme-color(info, lightest);
+        }
+      }
     }
   `]
 })
@@ -134,6 +150,11 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
 
   @ViewChild("input")
   public inputElRef?: ElementRef<HTMLInputElement>;
+
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-inset")
+  public inset?: boolean;
 
   public getIsInvalid(): boolean {
     const hasMinError = this.min !== undefined && this.value !== undefined && this.type === "number" && this.value < this.min;

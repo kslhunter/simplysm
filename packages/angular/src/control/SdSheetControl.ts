@@ -179,6 +179,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
 
           &:disabled {
             background: transparent;
+            color: text-color(default);
           }
         }
 

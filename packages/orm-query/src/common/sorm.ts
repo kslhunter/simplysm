@@ -145,7 +145,7 @@ export const sorm = {
     }
   },
   exists<T extends QueryType>(arg: T): boolean {
-    return sorm.lessThenOrEqual(sorm.ifNull(sorm.count(arg), 0), 0);
+    return sorm.greaterThen(sorm.ifNull(sorm.count(arg), 0), 0);
   },
   sum<T extends number | undefined>(unit: T | QueryUnit<T>): T | undefined {
     if (!(unit instanceof QueryUnit)) {

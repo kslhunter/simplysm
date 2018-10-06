@@ -22,7 +22,7 @@ import {SdSelectControl} from "./SdSelectControl";
       display: block;
       padding: gap(xs) gap(sm);
       cursor: pointer;
-      font-size: font-size(sm);
+      //font-size: font-size(sm);
 
       &:hover {
         background: trans-color(dark);

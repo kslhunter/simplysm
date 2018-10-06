@@ -3,10 +3,12 @@ import {
   Component,
   ContentChild,
   ElementRef,
+  EventEmitter,
   HostBinding,
   Input,
   OnDestroy,
   OnInit,
+  Output,
   ViewChild
 } from "@angular/core";
 import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
@@ -44,7 +46,13 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   @ContentChild(SdDropdownPopupControl, {read: ElementRef})
   public dropdownElRef?: ElementRef<HTMLElement>;
 
-  /*public focused = false;*/
+  @Output()
+  public readonly open = new EventEmitter();
+
+  @Output()
+  public readonly close = new EventEmitter();
+
+  private _isOpen = false;
 
   public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
   }
@@ -53,6 +61,9 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     const controlEl = this.controlElRef!.nativeElement;
     controlEl.addEventListener("focus", this.focusEventHandler, true);
     controlEl.addEventListener("blur", this.blurEventHandler, true);
+
+    const dropdownEl = this.dropdownElRef!.nativeElement;
+    document.body.appendChild(dropdownEl);
   }
 
   public ngOnDestroy(): void {
@@ -91,7 +102,6 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     const controlEl = this.controlElRef!.nativeElement;
 
     const dropdownEl = this.dropdownElRef!.nativeElement;
-    document.body.appendChild(dropdownEl);
     dropdownEl.addEventListener("blur", this.blurEventHandler, true);
 
     if (window.innerHeight < controlEl.windowOffset.top * 2) {
@@ -122,6 +132,11 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     }
 
     document.addEventListener("scroll", this.scrollEventHandler, true);
+
+    if (!this._isOpen) {
+      this.open.emit();
+      this._isOpen = true;
+    }
   };
 
   public blurEventHandler = (event: FocusEvent) => {
@@ -151,5 +166,10 @@ export class SdDropdownControl implements OnInit, OnDestroy {
         transform: "translateY(-10px)"
       }
     );
+
+    if (this._isOpen) {
+      this.close.emit();
+      this._isOpen = false;
+    }
   };
 }
