@@ -1,6 +1,6 @@
 {
   "name": "@simplism/orm-client",
-  "version": "10.2.2",
+  "version": "10.2.4",
   "description": "Simplism ORM Client Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,9 +8,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/core": "^10.2.2",
-    "@simplism/orm-common": "^10.2.2",
-    "@simplism/orm-query": "^10.2.2",
-    "@simplism/socket-client": "^10.2.2"
+    "@simplism/core": "^10.2.4",
+    "@simplism/orm-common": "^10.2.4",
+    "@simplism/orm-query": "^10.2.4",
+    "@simplism/socket-client": "^10.2.4"
   }
 }
