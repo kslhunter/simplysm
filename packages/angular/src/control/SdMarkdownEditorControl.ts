@@ -86,7 +86,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
           > textarea {
             @include form-control-base();
             height: 100%;
-            background: white;
+            background: theme-color(info, lightest);
             border: none;
             transition: outline-color .1s linear;
             outline: 1px solid transparent;
@@ -138,8 +138,9 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
           padding: gap(sm);
           height: 100%;
           overflow: auto;
-          background: theme-color(grey, lightest);
-
+          //background: theme-color(grey, lightest);
+          background: white;
+          
           /deep/ {
             ol {
               padding-left: 20px;

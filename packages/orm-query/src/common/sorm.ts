@@ -111,6 +111,23 @@ export const sorm = {
       return new QueryUnit(QueriedBoolean, query) as any;
     }
   },
+  notIn<P extends QueryType>(src: P, target: P[]): boolean {
+    if (target.length < 1) {
+      return new QueryUnit(QueriedBoolean, "1 = 1") as any;
+    }
+    else {
+      let query = "";
+      if (!target.every(item => item === undefined)) {
+        query = `${ormHelpers.getFieldQuery(src)} NOT IN (${target.filterExists().map(item => ormHelpers.getFieldQuery(item)).join(", ")})`;
+      }
+
+      // @ts-ignore
+      if (target.includes(undefined)) {
+        query = `${query ? query + " AND " : ""}${ormHelpers.getFieldQuery(src)} IS NOT NULL`;
+      }
+      return new QueryUnit(QueriedBoolean, query) as any;
+    }
+  },
   and(arg: boolean[]): boolean {
     return new QueryUnit(QueriedBoolean, "(" + arg.map(item => ormHelpers.getWhereQuery(item)).join(") AND (") + ")") as any;
   },
@@ -121,6 +138,7 @@ export const sorm = {
     if (!searchText) {
       return new QueryUnit(QueriedBoolean, "1 = 1") as any;
     }
+
     const searchWords = searchText.split(" ").filter(item => item);
     if (searchWords.length < 1) {
       return new QueryUnit(QueriedBoolean, "1 = 1") as any;

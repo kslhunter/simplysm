@@ -95,6 +95,9 @@ export class SdComboboxControl implements OnInit, OnDestroy {
   @Output()
   public readonly textChange = new EventEmitter<string | undefined>();
 
+  @Output()
+  public readonly textChangeByInput = new EventEmitter<string | undefined>();
+
   @ContentChildren(SdComboboxItemControl, {descendants: true})
   public itemControls?: QueryList<SdComboboxItemControl>;
 
@@ -128,6 +131,7 @@ export class SdComboboxControl implements OnInit, OnDestroy {
   public onTextChange(text: string): void {
     this.text = text;
     this.textChange.emit(this.text);
+    this.textChangeByInput.emit(this.text);
 
     if (this.value !== undefined) {
       this.value = undefined;
