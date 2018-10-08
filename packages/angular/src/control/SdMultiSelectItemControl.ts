@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ContentChild,
   DoCheck,
   ElementRef,
   forwardRef,
@@ -9,7 +10,8 @@ import {
   Inject,
   Input,
   IterableDiffer,
-  IterableDiffers
+  IterableDiffers,
+  TemplateRef
 } from "@angular/core";
 import {SdMultiSelectControl} from "./SdMultiSelectControl";
 
@@ -18,7 +20,12 @@ import {SdMultiSelectControl} from "./SdMultiSelectControl";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-checkbox [value]="getIsSelected()" (valueChange)="setIsSelected($event)">
-      <ng-content></ng-content>
+      <span class="_label">
+        <ng-content></ng-content>
+      </span>
+      <span class="_labelTemplate" hidden *ngIf="labelTemplateRef">
+        <ng-template [ngTemplateOutlet]="labelTemplateRef"></ng-template>
+      </span>
     </sd-checkbox>`,
   styles: [/* language=SCSS */ `
     @import "../../styles/presets";
@@ -45,6 +52,9 @@ export class SdMultiSelectItemControl implements DoCheck {
 
   @Input()
   public value?: any;
+
+  @ContentChild("label")
+  public labelTemplateRef?: TemplateRef<any>;
 
   private readonly _iterableDiffer: IterableDiffer<any>;
 

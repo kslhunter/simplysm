@@ -18,13 +18,16 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
   template: `
     <sd-dock-container>
       <sd-dock class="_toolbar" *ngIf="!disabled">
-        <a (click)="preview = true" [class._selected]="preview === true">
+        <a (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
           <sd-icon [icon]="'eye'"></sd-icon>
         </a>
-        <a (click)="preview = false" [class._selected]="preview !== true">
+        <a (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
           <sd-icon [icon]="'pen'"></sd-icon>
         </a>
-        <ng-container *ngIf="rowsButton && preview !== true">
+        <a (click)="viewState = 'help'" [class._selected]="viewState === 'help'">
+          <sd-icon [icon]="'question'"></sd-icon>
+        </a>
+        <ng-container *ngIf="rowsButton && viewState === 'edit'">
           |
           <a (click)="rows = rows + 1">
             <sd-icon [icon]="'plus'"></sd-icon>
@@ -35,8 +38,9 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
         </ng-container>
       </sd-dock>
 
-      <div class="_editor"
-           *ngIf="!preview && !disabled">
+      <sd-pane>
+        <div class="_editor"
+             *ngIf="viewState === 'edit' && !disabled">
         <textarea [value]="value || ''"
                   [rows]="rows"
                   (input)="onTextareaInput($event)"
@@ -45,10 +49,96 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
                   (drop)="onTextareaDrop($event)"
                   (paste)="onTextareaPaste($event)"
                   [style.resize]="resize"></textarea>
-        <div class="_dragover" *ngIf="!preview && !disabled">파일을 내려놓으세요.</div>
-      </div>
-      <div class="_preview" [innerHTML]="innerHTML" *ngIf="preview || disabled"></div>
-      <div class="_invalid-indicator"></div>
+          <div class="_dragover" *ngIf="viewState === 'edit' && !disabled">파일을 내려놓으세요.</div>
+        </div>
+        <div class="_preview" [innerHTML]="innerHTML" *ngIf="viewState === 'preview' || disabled"></div>
+        <div *ngIf="viewState === 'help'" class="_help sd-padding-default">
+          <div class="sd-margin-bottom-default">
+            <h4 class="sd-margin-bottom-xs">강조</h4>
+            <div class="sd-padding-default sd-background-grey-lightest"
+                 style="border-radius: 2px;">
+              <div style="font-weight: bold">**굵게**</div>
+              <div style="font-style: italic;">*기울임*</div>
+              <div style="text-decoration: line-through;">~~취소선~~</div>
+            </div>
+          </div>
+
+          <div class="sd-margin-bottom-default">
+            <h4 class="sd-margin-bottom-xs">헤더</h4>
+            <div class="sd-padding-default sd-background-grey-lightest"
+                 style="border-radius: 2px;">
+              <h1># 헤더 1</h1>
+              <h2>## 헤더 2</h2>
+              <h3>### 헤더 3</h3>
+              <h4>#### 헤더 4</h4>
+            </div>
+          </div>
+
+          <div class="sd-margin-bottom-default">
+            <h4 class="sd-margin-bottom-xs">목록</h4>
+            <div class="sd-padding-default sd-background-grey-lightest"
+                 style="border-radius: 2px;">
+              <div>* 일반목록 항목</div>
+              <div>* 일반목록 항목</div>
+              <br/>
+              <div>1. 순번목록 항목</div>
+              <div>2. 순번목록 항목</div>
+            </div>
+          </div>
+
+          <div class="sd-margin-bottom-default">
+            <h4 class="sd-margin-bottom-xs">링크</h4>
+            <div class="sd-padding-default sd-background-grey-lightest"
+                 style="border-radius: 2px;">
+              [보여줄텍스트](http://www.example.com)
+            </div>
+          </div>
+
+          <div class="sd-margin-bottom-default">
+            <h4 class="sd-margin-bottom-xs">참조</h4>
+            <div class="sd-padding-default sd-background-grey-lightest"
+                 style="border-radius: 2px;">
+              > 참조입니다.<br/>
+              > 여러줄을 적을 수 있습니다.
+            </div>
+          </div>
+
+          <div class="sd-margin-bottom-default">
+            <h4 class="sd-margin-bottom-xs">이미지</h4>
+            <div class="sd-padding-default sd-background-grey-lightest"
+                 style="border-radius: 2px;">
+              ![이미지타이틀](http://www.example.com/image.jpg)
+            </div>
+          </div>
+
+          <div class="sd-margin-bottom-default">
+            <h4 class="sd-margin-bottom-xs">표</h4>
+            <div class="sd-padding-default sd-background-grey-lightest"
+                 style="border-radius: 2px;">
+              | 컬럼 1 | 컬럼 2 | 컬럼 3 |<br/>
+              | - | - | - |<br/>
+              | 홍 | 길동 | 남성 |<br/>
+              | 김 | 영희 | 여성 |
+            </div>
+          </div>
+
+          <div class="sd-margin-bottom-default">
+            <h4 class="sd-margin-bottom-xs">코드</h4>
+            <div class="sd-padding-default sd-background-grey-lightest"
+                 style="border-radius: 2px;">
+              \`var example = "hello!";\`<br/>
+              <br/>
+              여러줄일 경우, 아래와 같이...<br/>
+              <br/>
+              \`\`\`<br/>
+              var example = "hello!";<br/>
+              alert(example);<br/>
+              \`\`\`
+            </div>
+          </div>
+        </div>
+        <div class="_invalid-indicator"></div>
+      </sd-pane>
     </sd-dock-container>`,
   styles: [/* language=SCSS */ `
     @import "../../styles/presets";
@@ -78,7 +168,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
           }
         }
 
-        > ._editor {
+        > sd-pane > ._editor {
           position: relative;
           width: 100%;
           height: 100%;
@@ -133,14 +223,14 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
           }
         }
 
-        > ._preview {
+        > sd-pane > ._preview {
           /*border: 1px solid trans-color(default);*/
           padding: gap(sm);
           height: 100%;
           overflow: auto;
           //background: theme-color(grey, lightest);
           background: white;
-          
+
           /deep/ {
             ol {
               padding-left: 20px;
@@ -172,14 +262,14 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
 
       &[sd-disabled=true] {
         > sd-dock-container {
-          > ._preview {
+          > sd-pane > ._preview {
             height: auto;
           }
         }
       }
 
       &[sd-dragover=true] {
-        > sd-dock-container > ._editor > ._dragover {
+        > sd-dock-container > sd-pane > ._editor > ._dragover {
           display: block;
         }
       }
@@ -196,9 +286,9 @@ export class SdMarkdownEditorControl implements ISdNotifyPropertyChange {
   public readonly valueChange = new EventEmitter<string>();
 
   @Input()
-  @SdTypeValidate(Boolean)
+  @SdTypeValidate({type: String, validator: value => ["preview", "edit", "help"].includes(value)})
   @SdNotifyPropertyChange()
-  public preview?: boolean;
+  public viewState: "preview" | "edit" | "help" = "edit";
 
   @Input()
   @SdTypeValidate(Boolean)
@@ -242,8 +332,8 @@ export class SdMarkdownEditorControl implements ISdNotifyPropertyChange {
   }
 
   public async sdOnPropertyChange(propertyName: string, oldValue: any, newValue: any): Promise<void> {
-    if (["value", "previewRender", "preview", "disabled"].includes(propertyName)) {
-      if (this.value && (this.preview || this.disabled)) {
+    if (["value", "previewRender", "viewState", "disabled"].includes(propertyName)) {
+      if (this.value && (this.viewState === "preview" || this.disabled)) {
         const value = this.previewRender ? await this.previewRender(this.value) : this.value;
         const html = marked(value);
         this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);

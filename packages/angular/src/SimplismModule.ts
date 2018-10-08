@@ -51,6 +51,12 @@ import {SdCheckboxGroupItemControl} from "./control/SdCheckboxGroupItemControl";
 import {SdCheckboxGroupControl} from "./control/SdCheckboxGroupControl";
 import {SdCasePipe} from "./pipe/SdCasePipe";
 import {SdNavigateAttribute} from "./attribute/SdNavigateAttribute";
+import {SdTabviewControl} from "./control/SdTabviewControl";
+import {SdTabviewItemControl} from "./control/SdTabviewItemControl";
+import {SdTabControl} from "./control/SdTabControl";
+import {SdTabItemControl} from "./control/SdTabItemControl";
+import {SdViewControl} from "./control/SdViewControl";
+import {SdViewItemControl} from "./control/SdViewItemControl";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -88,7 +94,13 @@ const controls: any[] = [
   SdCardControl,
   SdMarkdownEditorControl,
   SdCheckboxGroupControl,
-  SdCheckboxGroupItemControl
+  SdCheckboxGroupItemControl,
+  SdTabviewControl,
+  SdTabviewItemControl,
+  SdTabControl,
+  SdTabItemControl,
+  SdViewControl,
+  SdViewItemControl
 ];
 
 const entryControls: any[] = [

@@ -35,16 +35,11 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
       > label {
         display: block;
         padding: gap(sm) gap(default);
-        cursor: pointer;
         transition: background .1s linear;
 
         > sd-icon {
           float: right;
           transition: transform .1s ease-in;
-        }
-
-        &:hover {
-          background: rgba(0, 0, 0, .1);
         }
 
         &:focus {
@@ -58,6 +53,16 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
         > ._child-content {
           transition: margin-top .1s ease-out;
           background: rgba(0, 0, 0, .05);
+        }
+      }
+
+      &[sd-clickable=true] {
+        > label {
+          cursor: pointer;
+
+          &:hover {
+            background: rgba(0, 0, 0, .1);
+          }
         }
       }
 
@@ -104,6 +109,11 @@ export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit
   @SdNotifyPropertyChange()
   @HostBinding("attr.sd-open")
   public open?: boolean;
+
+  @Input()
+  @SdTypeValidate({type: Boolean, notnull: true})
+  @HostBinding("attr.sd-clickable")
+  public clickable = true;
 
   @ContentChildren(SdListControl)
   public listControls?: QueryList<SdListControl>;

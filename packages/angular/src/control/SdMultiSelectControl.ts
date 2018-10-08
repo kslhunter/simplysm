@@ -143,9 +143,19 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
   private _render(): void {
     if (!this.itemControls || !this.value || !this.contentElRef) return;
 
-    this.contentElRef.nativeElement.innerHTML =
-      this.itemControls.toArray()
-        .filter(item => this.getIsItemSelected(item))
-        .map(item => item.elRef.nativeElement.findAll("> sd-checkbox > label > ._content")[0].innerHTML).join(",\n");
+    let content = "";
+    const selectedItemControls = this.itemControls.toArray().filter(item => this.getIsItemSelected(item));
+    for (const selectedItemControl of selectedItemControls) {
+      if (selectedItemControl.labelTemplateRef) {
+        /*const embeddedView = selectedItemControl.labelTemplateRef.createEmbeddedView({});*/
+        content += selectedItemControl.elRef.nativeElement.findAll("> sd-checkbox > label > ._content > ._labelTemplate")[0].innerHTML + ",\n";
+      }
+      else {
+        content += selectedItemControl.elRef.nativeElement.findAll("> sd-checkbox > label > ._content > ._label")[0].innerHTML + ",\n";
+      }
+    }
+    content = content.slice(0, -2);
+
+    this.contentElRef.nativeElement.innerHTML = content;
   }
 }

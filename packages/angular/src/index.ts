@@ -36,6 +36,12 @@ export * from "./control/SdCardControl";
 export * from "./control/SdMarkdownEditorControl";
 export * from "./control/SdCheckboxGroupControl";
 export * from "./control/SdCheckboxGroupItemControl";
+export * from "./control/SdTabviewControl";
+export * from "./control/SdTabviewItemControl";
+export * from "./control/SdTabControl";
+export * from "./control/SdTabItemControl";
+export * from "./control/SdViewControl";
+export * from "./control/SdViewItemControl";
 
 export * from "./decorator/SdNotifyPropertyChange";
 export * from "./decorator/SdTypeValidate";
