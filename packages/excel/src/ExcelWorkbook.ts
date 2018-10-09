@@ -35,6 +35,7 @@ export class ExcelWorkbook {
   }
 
   public download(filename: string): void {
+    console.log(this._wb.Sheets);
     xlsx.writeFile(this._wb, filename);
   }
 }

@@ -1,5 +1,6 @@
 import * as xlsx from "xlsx";
 import {DateOnly, DateTime} from "@simplism/core";
+import {ExcelCell} from "./ExcelCell";
 
 export class ExcelWorksheet {
   public ws = xlsx.utils.json_to_sheet([]);
@@ -14,5 +15,9 @@ export class ExcelWorksheet {
       }
       return realItem;
     }));
+  }
+
+  public cell(row: number, col: number): ExcelCell {
+    return new ExcelCell(this, row, col);
   }
 }

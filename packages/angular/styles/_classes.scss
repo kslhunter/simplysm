@@ -68,6 +68,10 @@
   }
 }
 
+.sd-text-color-reverse-dark {
+  color: text-color(reverse, dark) !important;
+}
+
 @each $direction in top, right, bottom, left {
   @each $key, $val in $theme-color {
     @each $key1, $val1 in $val {
