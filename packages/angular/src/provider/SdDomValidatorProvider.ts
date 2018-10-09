@@ -10,7 +10,8 @@ export class SdDomValidatorProvider {
     const invalidEls = element.findAll("*:invalid, *[sd-invalid=true]").ofType(HTMLElement);
 
     if (invalidEls.length > 0) {
-      invalidEls[0].focus();
+      invalidEls[0].findFocusableAllIncludeMe()[0].focus();
+      /*invalidEls[0].focus();*/
 
       const invalidLabelsText = invalidEls.map(item => {
         const formItem = item.findParent("sd-form-item");

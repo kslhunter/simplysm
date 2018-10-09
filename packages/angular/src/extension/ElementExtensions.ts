@@ -12,6 +12,8 @@ declare global {
     findParent(selector: string): Element | undefined;
 
     findFocusableAll(): HTMLElement[];
+
+    findFocusableAllIncludeMe(): HTMLElement[];
   }
 }
 
@@ -57,4 +59,14 @@ const focusableSelectorList = [
 Element.prototype.findFocusableAll = function (): HTMLElement[] {
   // TODO "JSDOM"에서 "scope"가 동작하지 않음, JSDOM 업데이트시 다시 테스트해볼것
   return Array.from(this.querySelectorAll(focusableSelectorList.map(item => `${process.env.NODE_ENV !== "test" ? ":scope " : ""}${item}`).join(", "))).ofType(HTMLElement);
+};
+
+Element.prototype.findFocusableAllIncludeMe = function (): HTMLElement[] {
+  const result: HTMLElement[] = [];
+  if (this.matches(focusableSelectorList.join(", "))) {
+    result.push(this as HTMLElement);
+  }
+
+  result.pushRange(this.findFocusableAll());
+  return result;
 };

@@ -18,7 +18,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
   selector: "sd-dropdown",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div #control [attr.tabindex]="disabled ? undefined : '0'">
+    <div class="_sd-dropdown-control" #control [attr.tabindex]="disabled ? undefined : '0'">
       <ng-content></ng-content>
     </div>
     <div *ngIf="false">
