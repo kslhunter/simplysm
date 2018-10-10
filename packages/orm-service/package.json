@@ -1,6 +1,6 @@
 {
   "name": "@simplism/orm-service",
-  "version": "10.2.4",
+  "version": "10.2.11",
   "description": "Simplism ORM Service Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,9 +8,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/core": "^10.2.4",
-    "@simplism/orm-common": "^10.2.4",
-    "@simplism/orm-connector": "^10.2.4",
-    "@simplism/socket-server": "^10.2.4"
+    "@simplism/core": "^10.2.11",
+    "@simplism/orm-common": "^10.2.11",
+    "@simplism/orm-connector": "^10.2.11",
+    "@simplism/socket-server": "^10.2.11"
   }
 }

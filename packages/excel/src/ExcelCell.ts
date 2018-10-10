@@ -1,33 +1,55 @@
 import {ExcelWorksheet} from "./ExcelWorksheet";
-import {ExcelCellStyle} from "./ExcelCellStyle";
-import * as xlsx from "xlsx";
+import {ExcelUtils} from "./utils/ExcelUtils";
 
 export class ExcelCell {
-  public readonly style: ExcelCellStyle;
-  public readonly cell: xlsx.CellObject;
+  public cellData: any;
 
-  public constructor(public readonly ews: ExcelWorksheet,
-                     public readonly row: number,
-                     public readonly col: number) {
-    const range = xlsx.utils.decode_range(this.ews.ws["!ref"]!);
-    if (range.s.c > col) range.s.c = col;
-    if (range.s.r > row) range.s.r = row;
-    if (range.e.c < col) range.e.c = col;
-    if (range.e.r < row) range.e.r = row;
-    this.ews.ws["!ref"] = xlsx.utils.encode_range(range);
+  public set value(value: any) {
+    if (typeof value === "string") {
+      this.cellData.$.t = "str";
+      this.cellData.v = [value];
+    }
+    else {
+      throw new Error("미구현");
+    }
+  }
 
-    const address = xlsx.utils.encode_cell({r: this.row, c: this.col});
-    this.ews.ws[address] = this.ews.ws[address] || {};
-    this.cell = this.ews.ws[address];
+  public get value(): any {
+    if (this.cellData.$.t === "str") {
+      return this.cellData.v[0];
+    }
+    else {
+      throw new Error("미구현");
+    }
+  }
 
-    this.style = new ExcelCellStyle(this);
+  public constructor(private readonly _ews: ExcelWorksheet,
+                     private readonly _row: number,
+                     private readonly _col: number) {
+    this._ews.sheetData.worksheet.sheetData[0].row = this._ews.sheetData.worksheet.sheetData[0].row || [];
+    let currRow = this._ews.sheetData.worksheet.sheetData[0].row.single((item: any) => Number(item.$.r) === 1);
+    if (!currRow) {
+      currRow = {$: {r: 1}};
+      this._ews.sheetData.worksheet.sheetData[0].row.push(currRow);
+    }
+
+    currRow.c = currRow.c || [];
+    let currCell = currRow.c.single((item: any) => item.$.r === ExcelUtils.getAddress(this._row, this._col));
+    if (!currCell) {
+      currCell = {$: {r: ExcelUtils.getAddress(this._row, this._col)}};
+      currRow.c.push(currCell);
+    }
+
+    this.cellData = currCell;
   }
 
   public merge(row: number, col: number): void {
-    this.ews.ws["!merges"] = this.ews.ws["!merges"] || [];
-    this.ews.ws["!merges"].push({
-      s: {r: this.row, c: this.col},
-      e: {r: row, c: col}
+    this._ews.sheetData.worksheet.mergeCells = this._ews.sheetData.worksheet.mergeCells || [{}];
+    this._ews.sheetData.worksheet.mergeCells[0].mergeCell = this._ews.sheetData.worksheet.mergeCells[0].mergeCell || [];
+    this._ews.sheetData.worksheet.mergeCells[0].mergeCell.push({
+      $: {
+        ref: ExcelUtils.getRangeAddress(this._row, this._col, row, col)
+      }
     });
   }
 }
