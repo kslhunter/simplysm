@@ -1,42 +1,72 @@
 import {ExcelWorksheet} from "./ExcelWorksheet";
 import {ExcelUtils} from "./utils/ExcelUtils";
+import {ExcelCellStyle} from "./ExcelCellStyle";
 
 export class ExcelCell {
   public cellData: any;
 
+  public get style(): ExcelCellStyle {
+    return new ExcelCellStyle(this);
+  }
+
   public set value(value: any) {
-    if (typeof value === "string") {
+    if (value === undefined) {
+      delete this.cellData.$.t;
+      delete this.cellData.v;
+    }
+    else if (typeof value === "string") {
       this.cellData.$.t = "str";
-      this.cellData.v = [value];
+      this.cellData.v = this.cellData.v || {};
+      this.cellData.v._ = value;
+    }
+    else if (typeof value === "boolean") {
+      this.cellData.$.t = "b";
+      this.cellData.v = this.cellData.v || {};
+      this.cellData.v._ = value === true ? "1" : value === false ? "0" : undefined;
+    }
+    else if (typeof value === "number") {
+      delete this.cellData.$.t;
+      this.cellData.v = this.cellData.v || {};
+      this.cellData.v._ = value;
     }
     else {
-      throw new Error("미구현");
+      throw new Error("지원되지 않는 타입입니다.");
     }
   }
 
   public get value(): any {
-    if (this.cellData.$.t === "str") {
-      return this.cellData.v[0];
+    if (!this.cellData.v) {
+      return undefined;
+    }
+    else if (this.cellData.$.t === "str") {
+      return this.cellData.v[0]._ || this.cellData.v[0];
+    }
+    else if (this.cellData.$.t === undefined) {
+      return Number(this.cellData.v[0]._ || this.cellData.v[0]);
+    }
+    else if (this.cellData.$.t === "s") {
+      const sstIndex = Number(this.cellData.v[0]._ || this.cellData.v[0]);
+      return this.ews.workbook.sstData.sst.si[sstIndex].t[0]._ || this.ews.workbook.sstData.sst.si[sstIndex].t[0];
     }
     else {
-      throw new Error("미구현");
+      throw new Error("지원되지 않는 타입입니다.");
     }
   }
 
-  public constructor(private readonly _ews: ExcelWorksheet,
-                     private readonly _row: number,
-                     private readonly _col: number) {
-    this._ews.sheetData.worksheet.sheetData[0].row = this._ews.sheetData.worksheet.sheetData[0].row || [];
-    let currRow = this._ews.sheetData.worksheet.sheetData[0].row.single((item: any) => Number(item.$.r) === 1);
+  public constructor(public readonly ews: ExcelWorksheet,
+                     public readonly row: number,
+                     public readonly col: number) {
+    this.ews.sheetData.worksheet.sheetData[0].row = this.ews.sheetData.worksheet.sheetData[0].row || [];
+    let currRow = this.ews.sheetData.worksheet.sheetData[0].row.single((item: any) => Number(item.$.r) === row + 1);
     if (!currRow) {
-      currRow = {$: {r: 1}};
-      this._ews.sheetData.worksheet.sheetData[0].row.push(currRow);
+      currRow = {$: {r: row + 1}};
+      this.ews.sheetData.worksheet.sheetData[0].row.push(currRow);
     }
 
     currRow.c = currRow.c || [];
-    let currCell = currRow.c.single((item: any) => item.$.r === ExcelUtils.getAddress(this._row, this._col));
+    let currCell = currRow.c.single((item: any) => item.$.r === ExcelUtils.getAddress(this.row, this.col));
     if (!currCell) {
-      currCell = {$: {r: ExcelUtils.getAddress(this._row, this._col)}};
+      currCell = {$: {r: ExcelUtils.getAddress(this.row, this.col)}};
       currRow.c.push(currCell);
     }
 
@@ -44,11 +74,11 @@ export class ExcelCell {
   }
 
   public merge(row: number, col: number): void {
-    this._ews.sheetData.worksheet.mergeCells = this._ews.sheetData.worksheet.mergeCells || [{}];
-    this._ews.sheetData.worksheet.mergeCells[0].mergeCell = this._ews.sheetData.worksheet.mergeCells[0].mergeCell || [];
-    this._ews.sheetData.worksheet.mergeCells[0].mergeCell.push({
+    this.ews.sheetData.worksheet.mergeCells = this.ews.sheetData.worksheet.mergeCells || [{}];
+    this.ews.sheetData.worksheet.mergeCells[0].mergeCell = this.ews.sheetData.worksheet.mergeCells[0].mergeCell || [];
+    this.ews.sheetData.worksheet.mergeCells[0].mergeCell.push({
       $: {
-        ref: ExcelUtils.getRangeAddress(this._row, this._col, row, col)
+        ref: ExcelUtils.getRangeAddress(this.row, this.col, row, col)
       }
     });
   }

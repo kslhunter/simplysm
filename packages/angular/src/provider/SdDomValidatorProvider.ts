@@ -19,10 +19,10 @@ export class SdDomValidatorProvider {
           return formItem.getAttribute("sd-label");
         }
 
-        const cell = item.findParent("._col");
+        const cell = item.findParent(".col");
         if (cell) {
-          const index = cell.findParent("._row")!.findAll("._col").indexOf(cell);
-          const headerCell = cell.findParent("sd-sheet")!.findAll("._head ._row").last()!.findAll("._col")[index];
+          const index = cell.findParent(".row")!.findAll(".col").indexOf(cell);
+          const headerCell = cell.findParent("sd-sheet")!.findAll("._head .row").last()!.findAll(".col")[index];
           return headerCell.getAttribute("sd-header") || headerCell.textContent!.trim();
         }
 

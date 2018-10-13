@@ -428,7 +428,7 @@ export class SdSheetControl implements DoCheck, OnInit {
           this.selectRow(event.target as HTMLElement);
         }
         else if (this.selectable === "manual" && this.selectedItem) {
-          const rowEl = (event.target as HTMLElement).findParent("._row");
+          const rowEl = (event.target as HTMLElement).findParent(".row");
 
           if (rowEl) {
             const bodyEl = rowEl.parentElement as Element;
@@ -468,7 +468,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public selectRow(targetEl: Element): void {
     if (!this.selectable) return;
 
-    const rowEl = targetEl.findParent("._row");
+    const rowEl = targetEl.findParent(".row");
     if (rowEl) {
       const bodyEl = rowEl.parentElement as Element;
       const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
@@ -484,7 +484,7 @@ export class SdSheetControl implements DoCheck, OnInit {
     if (!this.selectable) return;
 
     const targetEl = event.target as Element;
-    const rowEl = targetEl.findParent("._row");
+    const rowEl = targetEl.findParent(".row");
     if (!rowEl) return;
 
     const bodyEl = rowEl.parentElement as Element;
@@ -511,7 +511,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public onHeadBorderMousedown(event: MouseEvent): void {
     if (!this.id) return;
 
-    const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
+    const cellEl = (event.target as HTMLElement).findParent(".col") as HTMLElement;
     const startX = event.clientX;
     const startWidth = cellEl.clientWidth;
 
@@ -547,7 +547,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public onCellKeydown(event: KeyboardEvent): void {
     const targetEl = event.target as HTMLElement;
-    if (targetEl.classList.contains("_col")) {
+    if (targetEl.classList.contains("col")) {
       if (event.key === "F2") {
         const focusableEls = targetEl.findFocusableAll();
         if (focusableEls.length > 0) {
@@ -556,47 +556,47 @@ export class SdSheetControl implements DoCheck, OnInit {
         }
       }
       else if (event.key === "ArrowDown") {
-        const rowEl = targetEl.findParent("._row") as HTMLElement;
+        const rowEl = targetEl.findParent(".row") as HTMLElement;
         const bodyEl = rowEl.parentElement as Element;
 
         const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(targetEl);
+        const cellIndex = Array.from(rowEl.findAll(".col")).indexOf(targetEl);
 
         const nextRowEl = bodyEl.children.item(rowIndex + 1);
         if (nextRowEl) {
-          (nextRowEl.findAll("._col")[cellIndex] as HTMLElement).focus();
+          (nextRowEl.findAll(".col")[cellIndex] as HTMLElement).focus();
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowUp") {
-        const rowEl = targetEl.findParent("._row") as HTMLElement;
+        const rowEl = targetEl.findParent(".row") as HTMLElement;
         const bodyEl = rowEl.parentElement as Element;
 
         const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(targetEl);
+        const cellIndex = Array.from(rowEl.findAll(".col")).indexOf(targetEl);
 
         if (rowIndex - 1 >= 0) {
           const nextRowEl = bodyEl.children.item(rowIndex - 1);
-          (nextRowEl!.findAll("._col")[cellIndex] as HTMLElement).focus();
+          (nextRowEl!.findAll(".col")[cellIndex] as HTMLElement).focus();
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowRight") {
-        const rowEl = targetEl.findParent("._row") as HTMLElement;
-        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(targetEl);
+        const rowEl = targetEl.findParent(".row") as HTMLElement;
+        const cellIndex = Array.from(rowEl.findAll(".col")).indexOf(targetEl);
 
-        const nextCell = rowEl.findAll("._col")[cellIndex + 1] as HTMLElement;
+        const nextCell = rowEl.findAll(".col")[cellIndex + 1] as HTMLElement;
         if (nextCell) {
           nextCell.focus();
           event.preventDefault();
         }
       }
       else if (event.key === "ArrowLeft") {
-        const rowEl = targetEl.findParent("._row") as HTMLElement;
-        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(targetEl);
+        const rowEl = targetEl.findParent(".row") as HTMLElement;
+        const cellIndex = Array.from(rowEl.findAll(".col")).indexOf(targetEl);
 
         if (cellIndex - 1 >= 0) {
-          const nextCell = rowEl.findAll("._col")[cellIndex - 1] as HTMLElement;
+          const nextCell = rowEl.findAll(".col")[cellIndex - 1] as HTMLElement;
           nextCell.focus();
           event.preventDefault();
         }
@@ -604,21 +604,21 @@ export class SdSheetControl implements DoCheck, OnInit {
     }
     else {
       if (event.key === "Escape") {
-        const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
+        const cellEl = (event.target as HTMLElement).findParent(".col") as HTMLElement;
         cellEl.focus();
         event.preventDefault();
       }
       if (event.key === "Enter") {
-        const cellEl = targetEl.findParent("._col") as HTMLElement;
-        const rowEl = cellEl.findParent("._row") as HTMLElement;
+        const cellEl = targetEl.findParent(".col") as HTMLElement;
+        const rowEl = cellEl.findParent(".row") as HTMLElement;
         const bodyEl = rowEl.parentElement as Element;
 
         const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(cellEl);
+        const cellIndex = Array.from(rowEl.findAll(".col")).indexOf(cellEl);
 
         const nextRowEl = bodyEl.children.item(rowIndex + 1);
         if (nextRowEl) {
-          const nextRowCellEl = nextRowEl.findAll("._col")[cellIndex] as HTMLElement;
+          const nextRowCellEl = nextRowEl.findAll(".col")[cellIndex] as HTMLElement;
           nextRowCellEl.focus();
 
           /*const focusableEls = nextRowCellEl.findFocusableAll();
