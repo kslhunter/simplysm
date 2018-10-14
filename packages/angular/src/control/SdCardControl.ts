@@ -12,6 +12,7 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
       display: block;
       width: 100%;
       background: white;
+      border: 1px solid trans-color(default);
     }
   `]
 })

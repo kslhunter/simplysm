@@ -14,7 +14,7 @@ import {ClientPackageBuilder} from "../builders/ClientPackageBuilder";
 import * as semver from "semver";
 import * as os from "os";
 
-export async function buildAsync(argv: { watch: boolean; package?: string; config?: string }): Promise<void> {
+export async function buildAsync(argv: { watch: boolean; package?: string; config?: string; env?: any }): Promise<void> {
   process.env.NODE_ENV = argv.watch ? "development" : "production";
 
   let configFilePath = argv.config;
@@ -50,16 +50,16 @@ export async function buildAsync(argv: { watch: boolean; package?: string; confi
     if (!argv.watch) {
       if (config.type === "client") {
         await new ClientPackageBuilder({
-          "env": projectConfig.env,
-          "env.production": projectConfig["env.production"],
-          ...config
+          ...config,
+          "env": {...projectConfig.env, ...config.env, ...argv.env},
+          "env.production": {...projectConfig["env.production"], ...config["env.production"]}
         }).buildAsync();
       }
       else if (config.type === "server") {
         await new ServerPackageBuilder({
-          "env": projectConfig.env,
-          "env.production": projectConfig["env.production"],
-          ...config
+          ...config,
+          "env": {...projectConfig.env, ...config.env, ...argv.env},
+          "env.production": {...projectConfig["env.production"], ...config["env.production"]}
         }).buildAsync();
       }
       else {
@@ -69,16 +69,16 @@ export async function buildAsync(argv: { watch: boolean; package?: string; confi
     else {
       if (config.type === "client") {
         await new ClientPackageBuilder({
-          "env": projectConfig.env,
-          "env.development": projectConfig["env.development"],
-          ...config
+          ...config,
+          "env": {...projectConfig.env, ...config.env, ...argv.env},
+          "env.development": {...projectConfig["env.development"], ...config["env.development"]}
         }).watchAsync();
       }
       else if (config.type === "server") {
         await new ServerPackageBuilder({
-          "env": projectConfig.env,
-          "env.development": projectConfig["env.development"],
-          ...config
+          ...config,
+          "env": {...projectConfig.env, ...config.env, ...argv.env},
+          "env.development": {...projectConfig["env.development"], ...config["env.development"]}
         }).watchAsync();
       }
       else {

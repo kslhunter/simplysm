@@ -57,6 +57,9 @@ yargs
         package: {
           type: "string",
           describe: "빌드할 패키지를 설정합니다."
+        },
+        env: {
+          describe: "환경변수를 설정합니다"
         }
       }),
     async argv => {
