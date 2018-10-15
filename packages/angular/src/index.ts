@@ -42,6 +42,7 @@ export * from "./control/SdTabControl";
 export * from "./control/SdTabItemControl";
 export * from "./control/SdViewControl";
 export * from "./control/SdViewItemControl";
+export * from "./control/SdHtmlEditorControl";
 
 export * from "./decorator/SdNotifyPropertyChange";
 export * from "./decorator/SdTypeValidate";

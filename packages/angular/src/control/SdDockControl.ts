@@ -48,6 +48,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
 
       > hr {
         display: none;
+        user-select: none;
       }
 
       &[sd-resizable=true] {

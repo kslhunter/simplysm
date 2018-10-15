@@ -57,6 +57,7 @@ import {SdTabControl} from "./control/SdTabControl";
 import {SdTabItemControl} from "./control/SdTabItemControl";
 import {SdViewControl} from "./control/SdViewControl";
 import {SdViewItemControl} from "./control/SdViewItemControl";
+import {SdHtmlEditorControl} from "./control/SdHtmlEditorControl";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -100,7 +101,8 @@ const controls: any[] = [
   SdTabControl,
   SdTabItemControl,
   SdViewControl,
-  SdViewItemControl
+  SdViewItemControl,
+  SdHtmlEditorControl
 ];
 
 const entryControls: any[] = [

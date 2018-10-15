@@ -17,7 +17,8 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <label (click)="onLabelClick()" [attr.tabindex]="header ? undefined : '0'">
+    <label (click)="onLabelClick()"
+           [attr.tabindex]="(header || !clickable) ? undefined : '0'">
       <ng-content></ng-content>
       <sd-icon [icon]="'angle-left'" *ngIf="hasChildren"></sd-icon>
     </label>
@@ -126,7 +127,9 @@ export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit
   }
 
   public onLabelClick(): void {
-    this.open = !this.open;
+    if (this.clickable) {
+      this.open = !this.open;
+    }
   }
 
   public ngAfterViewInit(): void {
