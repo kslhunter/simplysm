@@ -262,7 +262,10 @@ export class QueryBuilderAdv<T> {
       joinQueryBuilderAdv.qb = joinQueryBuilderAdv.qb.select(joinSelect);
     }
 
-    result.qb = result.qb.join(joinQueryBuilderAdv.qb);
+    const qb = result.qb.join(joinQueryBuilderAdv.qb);
+    if (!qb) return result as any;
+
+    result.qb = qb;
 
     for (const selectAs of Object.keys(joinQueryBuilderAdv.selectObj)) {
       const selectOrg = joinQueryBuilderAdv.selectObj[selectAs]!;

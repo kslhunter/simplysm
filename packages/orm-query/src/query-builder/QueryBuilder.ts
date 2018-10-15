@@ -96,23 +96,28 @@ export class QueryBuilder {
     return result;
   }
 
-  public join(qb: QueryBuilder): QueryBuilder {
+  public join(qb: QueryBuilder): QueryBuilder | undefined {
     const result: QueryBuilder = this.clone();
     result.def.join = result.def.join || [];
 
+    let joinQuery: string;
     if (Object.keys(qb.def).some(key => key !== "type" && key !== "where" && key !== "from" && key !== "as" && qb.def[key])) {
-      let joinQuery = "OUTER APPLY (\n";
+      joinQuery = "OUTER APPLY (\n";
       joinQuery += "  " + qb.query.replace(/\n/g, "\n  ") + "\n";
       joinQuery += ") AS " + qb.def.as;
-      result.def.join.push(joinQuery);
     }
     else {
-      let joinQuery: string = "LEFT OUTER JOIN " + qb.def.from + " AS " + qb.def.as;
+      joinQuery = "LEFT OUTER JOIN " + qb.def.from + " AS " + qb.def.as;
       if (qb.def.where) {
         joinQuery += " ON (" + qb.def.where.join(") AND (") + ")";
       }
-      result.def.join.push(joinQuery);
     }
+
+    if (result.def.join.includes(joinQuery)) {
+      return undefined;
+    }
+
+    result.def.join.push(joinQuery);
 
     return result;
   }
