@@ -428,7 +428,7 @@ export class SdSheetControl implements DoCheck, OnInit {
           this.selectRow(event.target as HTMLElement);
         }
         else if (this.selectable === "manual" && this.selectedItem) {
-          const rowEl = (event.target as HTMLElement).findParent(".row");
+          const rowEl = (event.target as HTMLElement).findParent("._row");
 
           if (rowEl) {
             const bodyEl = rowEl.parentElement as Element;
@@ -468,7 +468,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public selectRow(targetEl: Element): void {
     if (!this.selectable) return;
 
-    const rowEl = targetEl.findParent(".row");
+    const rowEl = targetEl.findParent("._row");
     if (rowEl) {
       const bodyEl = rowEl.parentElement as Element;
       const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
@@ -484,7 +484,7 @@ export class SdSheetControl implements DoCheck, OnInit {
     if (!this.selectable) return;
 
     const targetEl = event.target as Element;
-    const rowEl = targetEl.findParent(".row");
+    const rowEl = targetEl.findParent("._row");
     if (!rowEl) return;
 
     const bodyEl = rowEl.parentElement as Element;
@@ -556,7 +556,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         }
       }
       else if (event.key === "ArrowDown") {
-        const rowEl = targetEl.findParent(".row") as HTMLElement;
+        const rowEl = targetEl.findParent("._row") as HTMLElement;
         const bodyEl = rowEl.parentElement as Element;
 
         const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
@@ -569,7 +569,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         }
       }
       else if (event.key === "ArrowUp") {
-        const rowEl = targetEl.findParent(".row") as HTMLElement;
+        const rowEl = targetEl.findParent("._row") as HTMLElement;
         const bodyEl = rowEl.parentElement as Element;
 
         const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
@@ -582,7 +582,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         }
       }
       else if (event.key === "ArrowRight") {
-        const rowEl = targetEl.findParent(".row") as HTMLElement;
+        const rowEl = targetEl.findParent("._row") as HTMLElement;
         const cellIndex = Array.from(rowEl.findAll(".col")).indexOf(targetEl);
 
         const nextCell = rowEl.findAll(".col")[cellIndex + 1] as HTMLElement;
@@ -592,7 +592,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         }
       }
       else if (event.key === "ArrowLeft") {
-        const rowEl = targetEl.findParent(".row") as HTMLElement;
+        const rowEl = targetEl.findParent("._row") as HTMLElement;
         const cellIndex = Array.from(rowEl.findAll(".col")).indexOf(targetEl);
 
         if (cellIndex - 1 >= 0) {
@@ -610,7 +610,7 @@ export class SdSheetControl implements DoCheck, OnInit {
       }
       if (event.key === "Enter") {
         const cellEl = targetEl.findParent(".col") as HTMLElement;
-        const rowEl = cellEl.findParent(".row") as HTMLElement;
+        const rowEl = cellEl.findParent("._row") as HTMLElement;
         const bodyEl = rowEl.parentElement as Element;
 
         const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
