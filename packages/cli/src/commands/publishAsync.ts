@@ -5,7 +5,7 @@ import {ILibraryPackageConfig, IProjectConfig} from "../commons/IProjectConfig";
 import {ServerPackageBuilder} from "../builders/ServerPackageBuilder";
 import {ClientPackageBuilder} from "../builders/ClientPackageBuilder";
 
-export async function publishAsync(argv: { config?: string; package: string }): Promise<void> {
+export async function publishAsync(argv: { config?: string; package: string; env?: any }): Promise<void> {
   process.env.NODE_ENV = "production";
 
   /*const packageConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
@@ -20,16 +20,15 @@ export async function publishAsync(argv: { config?: string; package: string }): 
   });*/
 
   let configFilePath = argv.config;
-  if (!configFilePath) {
-    configFilePath = fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
+  configFilePath = configFilePath ? path.resolve(process.cwd(), configFilePath)
+    : fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
       : fs.existsSync(path.resolve(process.cwd(), "simplism.js")) ? path.resolve(process.cwd(), "simplism.js")
         : path.resolve(process.cwd(), "simplism.json");
-    console.log(configFilePath);
-  }
 
   if (path.extname(configFilePath) === ".ts") {
     // tslint:disable-next-line
     require("ts-node/register");
+    Object.assign(process.env, argv.env);
   }
 
   // tslint:disable-next-line:no-eval
@@ -49,16 +48,16 @@ export async function publishAsync(argv: { config?: string; package: string }): 
     else if (!argv.package || argv.package.split(",").includes(config.name)) {
       if (config.type === "server") {
         await new ServerPackageBuilder({
-          "env": projectConfig.env,
-          "env.production": projectConfig["env.production"],
-          ...config
+          ...config,
+          "env": {...projectConfig.env, ...config.env, ...argv.env},
+          "env.production": {...projectConfig["env.production"], ...config["env.production"]}
         }).publishAsync();
       }
       else {
         await new ClientPackageBuilder({
-          "env": projectConfig.env,
-          "env.production": projectConfig["env.production"],
-          ...config
+          ...config,
+          "env": {...projectConfig.env, ...config.env, ...argv.env},
+          "env.production": {...projectConfig["env.production"], ...config["env.production"]}
         }).publishAsync();
       }
     }

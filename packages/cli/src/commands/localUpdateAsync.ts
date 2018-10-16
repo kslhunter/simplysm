@@ -7,11 +7,10 @@ export async function localUpdateAsync(argv: { watch: boolean; config?: string }
   process.env.NODE_ENV = "development";
 
   let configFilePath = argv.config;
-  if (!configFilePath) {
-    configFilePath = fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
+  configFilePath = configFilePath ? path.resolve(process.cwd(), configFilePath)
+    : fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
       : fs.existsSync(path.resolve(process.cwd(), "simplism.js")) ? path.resolve(process.cwd(), "simplism.js")
         : path.resolve(process.cwd(), "simplism.json");
-  }
 
   if (path.extname(configFilePath) === ".ts") {
     // tslint:disable-next-line

@@ -8,12 +8,10 @@ export async function runDeviceAsync(argv: { config?: string; package: string; r
   process.env.NODE_ENV = "development";
 
   let configFilePath = argv.config;
-  if (!configFilePath) {
-    configFilePath = fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
+  configFilePath = configFilePath ? path.resolve(process.cwd(), configFilePath)
+    : fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
       : fs.existsSync(path.resolve(process.cwd(), "simplism.js")) ? path.resolve(process.cwd(), "simplism.js")
         : path.resolve(process.cwd(), "simplism.json");
-    console.log(configFilePath);
-  }
 
   if (path.extname(configFilePath) === ".ts") {
     // tslint:disable-next-line

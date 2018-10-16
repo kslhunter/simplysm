@@ -225,7 +225,7 @@ export abstract class DbContext {
     return result;
   }
 
-  public async dropAllAsync(): Promise<void> {
+  /*public async dropAllAsync(): Promise<void> {
     const tableDefs = Object.values(this)
       .ofType(Queryable)
       .map(qr => core.Reflect.getMetadata(tableDefMetadataKey, qr.tableType!) as ITableDef)
@@ -242,7 +242,7 @@ export abstract class DbContext {
     }
 
     await this.executeAsync(query.trim());
-  }
+  }*/
 
   public async createTableAsync(
     tableDef: { database?: string; scheme?: string; name: string },
@@ -399,4 +399,72 @@ export abstract class DbContext {
     );
     await this.executeAsync(query);
   }
+
+  /*private async _getClearDatabaseIfExistsQueryAsync(dbName: string): Promise<string> {
+    let query = "";
+
+    const cnt = (await this.executeAsync("select COUNT(*) as cnt from sys.databases WHERE name='ALIYO'"))[0][0].cnt;
+    if (cnt < 1) return query;
+
+    // 프록시저 초기화
+    const procs = (await this.executeAsync(`
+SELECT
+  SCHEMA_NAME(schema_id) as [schema],
+  o.name as [name]
+FROM [${dbName}].sys.sql_modules m
+INNER JOIN [${dbName}].sys.objects o ON m.object_id=o.object_id
+WHERE type_desc like '%PROCEDURE%'`.trim()))[0];
+
+    for (const proc of procs) {
+      query += `DROP PROCEDURE [${dbName}].[${proc.schema}].[${proc.name}];\n`;
+    }
+
+    // 함수 초기화
+    const funcs = (await this.executeAsync(`
+SELECT
+  SCHEMA_NAME(schema_id) as [schema],
+  o.name as name
+FROM [${dbName}].sys.sql_modules m
+INNER JOIN [${dbName}].sys.objects o ON m.object_id=o.object_id
+WHERE type_desc like '%function%'`.trim()))[0];
+
+    for (const func of funcs) {
+      query += `DROP FUNCTION [${dbName}].[${func.schema}].[${func.name}];\n`;
+    }
+
+    // 뷰 초기화
+    const views = (await this.executeAsync(`
+SELECT
+  SCHEMA_NAME(schema_id) as [schema],
+  v.name as name
+FROM [${dbName}].sys.views v`.trim()))[0];
+
+    for (const view of views) {
+      query += `DROP VIEW [${dbName}].[${view.schema}].[${view.name}];\n`;
+    }
+
+    // 테이블 FK 끊기 초기화
+    const fks = (await this.executeAsync(`
+SELECT
+  [tbl].[name] as tableName,
+  [obj].[name] as name
+FROM [${dbName}].sys.tables [tbl]
+INNER JOIN [${dbName}].sys.objects AS [obj] ON [obj].[parent_object_id] = [tbl].[object_id] AND [obj].[type] = 'F'`.trim()))[0];
+
+    for (const fk of fks) {
+      query += `ALTER TABLE [${dbName}].[dbo].[${fk.tableName}] DROP CONSTRAINT [${fk.name}];\n`;
+    }
+
+    // 테이블 삭제
+    const tables = (await this.executeAsync(`
+SELECT [tbl].[name] as name
+FROM [${dbName}].sys.tables [tbl]
+WHERE [type]= 'U'`.trim()))[0];
+
+    for (const table of tables) {
+      query += `DROP TABLE [${dbName}].[dbo].[${table.name}];\n`;
+    }
+
+    return query.trim();
+  }*/
 }

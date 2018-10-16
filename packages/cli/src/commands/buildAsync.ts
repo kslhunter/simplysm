@@ -18,16 +18,15 @@ export async function buildAsync(argv: { watch: boolean; package?: string; confi
   process.env.NODE_ENV = argv.watch ? "development" : "production";
 
   let configFilePath = argv.config;
-  if (!configFilePath) {
-    configFilePath = fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
+  configFilePath = configFilePath ? path.resolve(process.cwd(), configFilePath)
+    : fs.existsSync(path.resolve(process.cwd(), "simplism.ts")) ? path.resolve(process.cwd(), "simplism.ts")
       : fs.existsSync(path.resolve(process.cwd(), "simplism.js")) ? path.resolve(process.cwd(), "simplism.js")
         : path.resolve(process.cwd(), "simplism.json");
-    console.log(configFilePath);
-  }
 
   if (path.extname(configFilePath) === ".ts") {
     // tslint:disable-next-line
     require("ts-node/register");
+    Object.assign(process.env, argv.env);
   }
 
   // tslint:disable-next-line:no-eval

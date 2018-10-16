@@ -82,6 +82,9 @@ yargs
         package: {
           type: "string",
           describe: "배포할 패키지를 설정합니다."
+        },
+        env: {
+          describe: "환경변수를 설정합니다"
         }
       }),
     async argv => {
