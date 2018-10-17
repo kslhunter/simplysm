@@ -78,11 +78,13 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
     <div class="_content _body">
       <div class="_row" *ngFor="let item of items; trackBy: trackByItemFn" [@rowState]="'in'">
         <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
-          <div class="_col _first-col" (click)="onFirstColClick($event)">
+          <div [class]="'_col _first-col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')" 
+               (click)="onFirstColClick($event)">
             <sd-icon [icon]="'arrow-right'" *ngIf="selectable"
                      [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-grey-default': selectedItem !== item}"></sd-icon>
           </div>
-          <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
+          <div [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
+               *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
                [style.width.px]="getWidth(columnControl)" tabindex="0"
                (keydown)="onCellKeydown($event)">
             <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
@@ -91,7 +93,8 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
           </div>
         </div>
         <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
-          <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
+          <div [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
+               *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
                [style.width.px]="getWidth(columnControl)" tabindex="0"
                (keydown)="onCellKeydown($event)">
             <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
@@ -328,6 +331,10 @@ export class SdSheetControl implements DoCheck, OnInit {
   @Input()
   @SdTypeValidate(String)
   public id?: string;
+
+  @Input()
+  @SdTypeValidate(Function)
+  public itemThemeFn?: (item: any) => undefined | "primary" | "info" | "success" | "warning" | "danger";
 
   @HostBinding("style.padding-top")
   public get paddingTop(): string {

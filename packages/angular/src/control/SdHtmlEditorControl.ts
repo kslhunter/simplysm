@@ -29,11 +29,11 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
       </sd-dock>
 
       <sd-pane>
-        <div *ngIf="viewState !== 'code'"
-             [attr.contenteditable]="viewState === 'edit'"
+        <div *ngIf="viewState !== 'code' || disabled"
+             [attr.contenteditable]="viewState === 'edit' && !disabled"
              [innerHTML]="content"
              (input)="onContentInput($event)"></div>
-        <textarea *ngIf="viewState === 'code'"
+        <textarea *ngIf="viewState === 'code' && !disabled"
                   [value]="value || ''"
                   [rows]="inset ? undefined : rows"
                   [style.resize]="inset ? 'none' : resize"
@@ -141,6 +141,11 @@ export class SdHtmlEditorControl {
   @SdTypeValidate(Boolean)
   @HostBinding("attr.sd-inset")
   public inset?: boolean;
+
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-disabled")
+  public disabled?: boolean;
 
   @Input()
   @SdTypeValidate({

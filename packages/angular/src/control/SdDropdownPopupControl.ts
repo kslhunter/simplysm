@@ -18,9 +18,9 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
       pointer-events: none;
       background: white;
       min-width: 120px;
-      /*border: 1px solid get($trans-color, dark);*/
-      box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
-      border-radius: 2px;
+      border: 1px solid get($trans-color, dark);
+      /*box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+      border-radius: 2px;*/
 
       &:focus {
         outline: 1px solid theme-color(primary, default);
