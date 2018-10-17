@@ -78,7 +78,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
     <div class="_content _body">
       <div class="_row" *ngFor="let item of items; trackBy: trackByItemFn" [@rowState]="'in'">
         <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
-          <div [class]="'_col _first-col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')" 
+          <div class="_col _first-col" 
                (click)="onFirstColClick($event)">
             <sd-icon [icon]="'arrow-right'" *ngIf="selectable"
                      [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-grey-default': selectedItem !== item}"></sd-icon>
