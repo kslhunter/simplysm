@@ -1,3 +1,5 @@
+import {DateOnly, DateTime} from "@simplism/core";
+
 export class ExcelUtils {
   public static getRangeAddress(fromRow: number, fromCol: number, toRow: number, toCol: number): string {
     return `${this.getAddress(fromRow, fromCol)}:${this.getAddress(toRow, toCol)}`;
@@ -7,6 +9,15 @@ export class ExcelUtils {
     const rowStr = (row + 1).toString();
     const colStr = this._getColAddress(col);
     return `${colStr}${rowStr}`;
+  }
+
+  public static getTimeNumber(date: DateTime | DateOnly): number {
+    const currDate = date.date;
+    currDate.setMinutes(currDate.getMinutes() - currDate.getTimezoneOffset());
+
+    const excelBaseDateNumberUtc = Date.UTC(1899, 11, 31);
+    const inputExcelDateNumberUtc = currDate.getTime() - excelBaseDateNumberUtc;
+    return inputExcelDateNumberUtc / (24 * 60 * 60 * 1000) + 1;
   }
 
   private static _getColAddress(index: number): string {

@@ -79,6 +79,17 @@ export class ExcelCellStyle {
     this._ec.cellData.$.s = newIndex;
   }
 
+  public set numberFormat(value: "DateOnly" | undefined) {
+    const newStyle = this._createNewStyle();
+    newStyle.$ = newStyle.$ || {};
+    newStyle.$.applyFont = 1;
+    newStyle.$.numFmtId = value === "DateOnly" ? 14 : undefined;
+    const newIndex = this._setStyleData(newStyle);
+
+    this._ec.cellData.$ = this._ec.cellData.$ || {};
+    this._ec.cellData.$.s = newIndex;
+  }
+
   public set borderLeftWidth(value: "thin" | "medium") {
     this._setBorderWidth("left", value);
   }
