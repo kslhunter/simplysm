@@ -81,10 +81,10 @@ export class ExcelCellStyle {
 
   public get numberFormat(): "DateOnly" | "number" {
     const styleData = this._getStyleData();
-    if (!styleData.$.numFmtId) {
+    if (!styleData.$ || !styleData.$.numFmtId) {
       return "number";
     }
-    else if (styleData.$.numFmtId === 14) {
+    else if (styleData.$.numFmtId === "14") {
       return "DateOnly";
     }
     else {
