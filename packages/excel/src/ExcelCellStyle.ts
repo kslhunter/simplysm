@@ -81,10 +81,10 @@ export class ExcelCellStyle {
 
   public get numberFormat(): "DateOnly" | "number" {
     const styleData = this._getStyleData();
-    if (!styleData.$.numFmtId) {
+    if (!styleData || !styleData.$ || !styleData.$.numFmtId) {
       return "number";
     }
-    else if (styleData.$.numFmtId === 14) {
+    else if (styleData.$.numFmtId === "14") {
       return "DateOnly";
     }
     else {
@@ -160,7 +160,7 @@ export class ExcelCellStyle {
 
   private _createNewFill(): any {
     const styleData = this._getStyleData();
-    const fillId = styleData ? Number(styleData.$.fillId) : undefined;
+    const fillId = (styleData && styleData.$) ? Number(styleData.$.fillId) : undefined;
     if (fillId) {
       return Object.clone(this._ec.ews.workbook.stylesData.styleSheet.fills[0].fill[fillId]);
     }
@@ -171,12 +171,12 @@ export class ExcelCellStyle {
 
   private _createNewStyle(): any {
     const styleData = this._getStyleData();
-    return styleData ? Object.clone(styleData) : {};
+    return (styleData && styleData.$) ? Object.clone(styleData) : {};
   }
 
   private _createNewFont(): any {
     const styleData = this._getStyleData();
-    const fontId = styleData ? Number(styleData.$.fontId) : undefined;
+    const fontId = (styleData && styleData.$) ? Number(styleData.$.fontId) : undefined;
 
     if (fontId) {
       return Object.clone(this._ec.ews.workbook.stylesData.styleSheet.fonts[0].font[fontId]);
@@ -188,7 +188,7 @@ export class ExcelCellStyle {
 
   private _createNewBorder(): any {
     const styleData = this._getStyleData();
-    const borderId = styleData ? Number(styleData.$.borderId) : undefined;
+    const borderId = (styleData && styleData.$) ? Number(styleData.$.borderId) : undefined;
 
     if (borderId) {
       return Object.clone(this._ec.ews.workbook.stylesData.styleSheet.borders[0].border[borderId]);

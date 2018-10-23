@@ -110,7 +110,7 @@ export async function buildAsync(argv: { watch: boolean; package?: string; confi
       for (const depTypeName of depTypeNames) {
         for (const depName of Object.keys(packageJson[depTypeName] || {})) {
           if (depName.startsWith("@" + rootPackageJson.name)) {
-            packageJson[depTypeName][depName] = `^${rootPackageJson.version}`;
+            packageJson[depTypeName][depName] = `~${rootPackageJson.version}`;
           }
           else if ({...rootPackageJson.dependencies, ...rootPackageJson.devDependencies}[depName]) {
             packageJson[depTypeName][depName] = {...rootPackageJson.dependencies, ...rootPackageJson.devDependencies}[depName];
