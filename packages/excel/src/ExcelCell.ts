@@ -27,6 +27,7 @@ export class ExcelCell {
     }
     else if (typeof value === "number") {
       delete this.cellData.$.t;
+      this.style.numberFormat = "number";
       this.cellData.v = this.cellData.v || {};
       this.cellData.v._ = value;
     }
@@ -48,8 +49,11 @@ export class ExcelCell {
     else if (this.cellData.$.t === "str") {
       return this.cellData.v[0]._ || this.cellData.v[0];
     }
-    else if (this.cellData.$.t === undefined) {
+    else if (this.cellData.$.t === undefined && this.style.numberFormat === "number") {
       return Number(this.cellData.v[0]._ || this.cellData.v[0]);
+    }
+    else if (this.cellData.$.t === undefined && this.style.numberFormat === "DateOnly") {
+      return ExcelUtils.getDateOnly(Number(this.cellData.v[0]._ || this.cellData.v[0]));
     }
     else if (this.cellData.$.t === "s") {
       const sstIndex = Number(this.cellData.v[0]._ || this.cellData.v[0]);

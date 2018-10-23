@@ -79,11 +79,33 @@ export class ExcelCellStyle {
     this._ec.cellData.$.s = newIndex;
   }
 
-  public set numberFormat(value: "DateOnly" | undefined) {
+  public get numberFormat(): "DateOnly" | "number" {
+    const styleData = this._getStyleData();
+    if (!styleData.$.numFmtId) {
+      return "number";
+    }
+    else if (styleData.$.numFmtId === 14) {
+      return "DateOnly";
+    }
+    else {
+      throw new Error("지원되지 않는 숫자포맷 입니다.");
+    }
+  }
+
+  public set numberFormat(value: "DateOnly" | "number") {
     const newStyle = this._createNewStyle();
     newStyle.$ = newStyle.$ || {};
     newStyle.$.applyFont = 1;
-    newStyle.$.numFmtId = value === "DateOnly" ? 14 : undefined;
+    if (value === "number") {
+      delete newStyle.$.numFmtId;
+    }
+    else if (value === "DateOnly") {
+      newStyle.$.numFmtId = 14;
+    }
+    else {
+      throw new Error("지원되지 않는 숫자포맷 입니다.");
+    }
+
     const newIndex = this._setStyleData(newStyle);
 
     this._ec.cellData.$ = this._ec.cellData.$ || {};
@@ -137,9 +159,8 @@ export class ExcelCellStyle {
   }
 
   private _createNewFill(): any {
-    const fillId = (this._ec.cellData.$ && this._ec.cellData.$.s)
-      ? Number(this._ec.ews.workbook.stylesData.styleSheet.cellXfs[0].xf[Number(this._ec.cellData.$.s)].$.fillId)
-      : undefined;
+    const styleData = this._getStyleData();
+    const fillId = styleData ? Number(styleData.$.fillId) : undefined;
     if (fillId) {
       return Object.clone(this._ec.ews.workbook.stylesData.styleSheet.fills[0].fill[fillId]);
     }
@@ -149,15 +170,13 @@ export class ExcelCellStyle {
   }
 
   private _createNewStyle(): any {
-    return (this._ec.cellData.$ && this._ec.cellData.$.s)
-      ? Object.clone(this._ec.ews.workbook.stylesData.styleSheet.cellXfs[0].xf[Number(this._ec.cellData.$.s)])
-      : {};
+    const styleData = this._getStyleData();
+    return styleData ? Object.clone(styleData) : {};
   }
 
   private _createNewFont(): any {
-    const fontId = (this._ec.cellData.$ && this._ec.cellData.$.s)
-      ? Number(this._ec.ews.workbook.stylesData.styleSheet.cellXfs[0].xf[Number(this._ec.cellData.$.s)].$.fontId)
-      : undefined;
+    const styleData = this._getStyleData();
+    const fontId = styleData ? Number(styleData.$.fontId) : undefined;
 
     if (fontId) {
       return Object.clone(this._ec.ews.workbook.stylesData.styleSheet.fonts[0].font[fontId]);
@@ -168,9 +187,8 @@ export class ExcelCellStyle {
   }
 
   private _createNewBorder(): any {
-    const borderId = (this._ec.cellData.$ && this._ec.cellData.$.s)
-      ? Number(this._ec.ews.workbook.stylesData.styleSheet.cellXfs[0].xf[Number(this._ec.cellData.$.s)].$.borderId)
-      : undefined;
+    const styleData = this._getStyleData();
+    const borderId = styleData ? Number(styleData.$.borderId) : undefined;
 
     if (borderId) {
       return Object.clone(this._ec.ews.workbook.stylesData.styleSheet.borders[0].border[borderId]);
@@ -235,6 +253,12 @@ export class ExcelCellStyle {
     const index = this._ec.ews.workbook.stylesData.styleSheet.cellXfs[0].xf.findIndex((item: any) => Object.equal(item, data));
     if (index >= 0) return index;
     return this._ec.ews.workbook.stylesData.styleSheet.cellXfs[0].xf.push(data) - 1;
+  }
+
+  private _getStyleData(): any {
+    return (this._ec.cellData.$ && this._ec.cellData.$.s)
+      ? this._ec.ews.workbook.stylesData.styleSheet.cellXfs[0].xf[Number(this._ec.cellData.$.s)]
+      : undefined;
   }
 
   private _setBorderData(data: any): number {
