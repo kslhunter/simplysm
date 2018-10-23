@@ -98,9 +98,16 @@ export class LibraryPackageBuilder {
 
       shell.on("exit", code => {
         if (code !== 0) {
-          this._logger.error(`에러 발생`, errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
-          reject();
-          return;
+          if (errorMessage.includes("You cannot publish over the previously published versions")) {
+            this._logger.warn(`경고 발생`, errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
+            resolve();
+            return;
+          }
+          else {
+            this._logger.error(`에러 발생`, errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
+            reject();
+            return;
+          }
         }
 
         this._logger.info(`배포 완료: v${packageJson.version}`);
