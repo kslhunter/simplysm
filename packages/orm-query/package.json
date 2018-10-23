@@ -1,6 +1,6 @@
 {
   "name": "@simplism/orm-query",
-  "version": "10.3.6",
+  "version": "10.3.7",
   "description": "Simplism ORM Query Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,7 +8,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/core": "^10.3.6",
+    "@simplism/core": "~10.3.7",
     "core-js": "^2.5.7"
   }
 }
