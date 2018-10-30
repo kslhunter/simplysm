@@ -92,7 +92,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
             border-radius: 100%;
           }
           > ._indicator {
-            padding: 3px;
+            padding: 4px;
           }
           > ._indicator > div {
             border-radius: 100%;

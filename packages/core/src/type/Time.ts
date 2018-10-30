@@ -43,9 +43,12 @@ export class Time {
     }
   }
 
-  public static parse(value: string): Time {
+  public static parse(value: string | Date): Time {
+    if (value instanceof Date) {
+      return new Time(value);
+    }
     // 3, 03 => 3시간
-    if (/^[0-9]{1,2}$/.test(value)) {
+    else if (/^[0-9]{1,2}$/.test(value)) {
       const hour = Number(value);
 
       return new Time(

@@ -25,6 +25,9 @@ export const ormHelpers = {
     else if (arg instanceof DateOnly) {
       return "'" + arg.toFormatString("yyyy-MM-dd") + "'";
     }
+    else if (arg instanceof Time) {
+      return "'" + arg.toFormatString("HH:mm:ss") + "'";
+    }
     else if (arg instanceof Buffer) {
       return `0x${arg.toString("hex")}`;
     }

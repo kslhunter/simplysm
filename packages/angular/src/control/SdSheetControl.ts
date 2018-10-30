@@ -176,6 +176,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
           &[type=month],
           &[type=date],
           &[type=datetime],
+          &[type=time],
           &[type=datetime-local] {
             padding: gap(xs) - 2 gap(sm) gap(xs) - 1 gap(sm);
           }
@@ -558,7 +559,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public onCellKeydown(event: KeyboardEvent): void {
     const targetEl = event.target as HTMLElement;
-    if (targetEl.classList.contains("col")) {
+    if (targetEl.classList.contains("_col")) {
       if (event.key === "F2") {
         const focusableEls = targetEl.findFocusableAll();
         if (focusableEls.length > 0) {

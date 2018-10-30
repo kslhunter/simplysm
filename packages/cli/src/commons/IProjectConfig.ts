@@ -16,6 +16,7 @@ export interface ILibraryPackageConfig {
 export interface IClientPackageConfig {
   name: string;
   type: "client";
+  favicon?: string;
   platforms?: ("web" | "desktop" | "android")[];
   devServer?: {
     host: string;

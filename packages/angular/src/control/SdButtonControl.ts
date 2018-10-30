@@ -95,6 +95,12 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
         height: 4px;
         background: get($theme-color, danger, default);
       }
+
+      &[sd-inset=true] {
+        > button {
+          border: none !important;
+        }
+      }
     }
   `]
 })
@@ -135,6 +141,11 @@ export class SdButtonControl implements AfterContentChecked {
   @Input()
   @SdTypeValidate(Boolean)
   public disabled?: boolean;
+
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-inset")
+  public inset?: boolean;
 
   @HostBinding("attr.sd-invalid")
   public isInvalid = false;

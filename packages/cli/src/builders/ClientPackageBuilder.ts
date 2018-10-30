@@ -61,7 +61,7 @@ export class ClientPackageBuilder {
               template: this._loadersPath("index.ejs"),
               BASE_HREF: platform === "android" ? "/android_asset/www/" : `/${this._packageName}/`,
               PLATFORM: platform,
-              HAS_FAVICON: fs.existsSync(this._packagePath("src/favicon.ico"))
+              HAS_FAVICON: !!this._config.favicon || fs.existsSync(this._packagePath("src/favicon.ico"))
             }),
             new webpack.DefinePlugin({
               "process.env": this._envStringify({
@@ -179,7 +179,7 @@ export class ClientPackageBuilder {
               template: this._loadersPath("index.ejs"),
               BASE_HREF: "/",
               PLATFORM: platform,
-              HAS_FAVICON: fs.existsSync(this._packagePath("src/favicon.ico"))
+              HAS_FAVICON: !!this._config.favicon || fs.existsSync(this._packagePath("src/favicon.ico"))
             }),
             new webpack.DefinePlugin({
               "process.env": this._envStringify({
@@ -365,9 +365,12 @@ export class ClientPackageBuilder {
           packageName: this._packageName,
           logger: this._logger
         }),
-        fs.existsSync(this._packagePath("src/favicon.ico"))
+        !!this._config.favicon || fs.existsSync(this._packagePath("src/favicon.ico"))
           ? new CopyWebpackPlugin([
-            {from: this._packagePath("src/favicon.ico"), to: "favicon.ico"}
+            {
+              from: this._config.favicon ? this._projectPath(this._config.favicon) : this._packagePath("src/favicon.ico"),
+              to: "favicon.ico"
+            }
           ])
           : undefined
       ].filterExists(),

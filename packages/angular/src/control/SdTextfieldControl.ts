@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNotifyPropertyChange";
-import {DateOnly, DateTime} from "@simplism/core";
+import {DateOnly, DateTime, Time} from "@simplism/core";
 
 @Component({
   selector: "sd-textfield",
@@ -27,7 +27,20 @@ import {DateOnly, DateTime} from "@simplism/core";
            (focus)="onFocus($event)"
            (blur)="onBlur($event)"
            [disabled]="disabled"
-           [style.text-align]="type === 'number' ? 'right' : undefined"/>
+           [style.text-align]="type === 'number' ? 'right' : undefined"
+           *ngIf="!multiline"/>
+    <textarea #input
+              [required]="required"
+              [value]="controlValue"
+              [placeholder]="placeholder || ''"
+              [attr.pattern]="pattern"
+              [attr.sd-invalid]="getIsInvalid()"
+              (input)="onInputInput($event)"
+              (focus)="onFocus($event)"
+              (blur)="onBlur($event)"
+              [disabled]="disabled"
+              [style.text-align]="type === 'number' ? 'right' : undefined"
+              *ngIf="multiline"></textarea>
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
     @import "../../styles/presets";
@@ -36,7 +49,8 @@ import {DateOnly, DateTime} from "@simplism/core";
       display: block;
       position: relative;
 
-      & > input {
+      > input,
+      > textarea {
         @include form-control-base();
 
         background: white;
@@ -92,9 +106,18 @@ import {DateOnly, DateTime} from "@simplism/core";
       }
 
       &[sd-inset=true] {
-        > input {
+        height: 100%;
+
+        > input,
+        > textarea {
+          display: block;
           border: none;
           background: theme-color(info, lightest);
+        }
+
+        > textarea {
+          height: 100%;
+          resize: none;
         }
       }
     }
@@ -104,10 +127,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate({
     type: String,
-    validator: value => ["number", "text", "password", "date", "datetime", "month", "color", "email"].includes(value),
+    validator: value => ["number", "text", "password", "date", "datetime", "time", "month", "color", "email"].includes(value),
     notnull: true
   })
-  public type: "number" | "text" | "password" | "date" | "datetime" | "month" | "color" | "email" = "text";
+  public type: "number" | "text" | "password" | "date" | "datetime" | "time" | "month" | "color" | "email" = "text";
 
   @Input()
   @SdTypeValidate(String)
@@ -118,11 +141,11 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   public required?: boolean;
 
   @Input()
-  @SdTypeValidate([Number, String, DateOnly, DateTime])
-  public value?: number | string | DateOnly | DateTime;
+  @SdTypeValidate([Number, String, DateOnly, DateTime, Time])
+  public value?: number | string | DateOnly | DateTime | Time;
 
   @Output()
-  public readonly valueChange = new EventEmitter<string | number | DateOnly | DateTime | undefined>();
+  public readonly valueChange = new EventEmitter<string | number | DateOnly | DateTime | Time | undefined>();
 
   @Input()
   @SdTypeValidate({type: Boolean, notnull: true})
@@ -149,12 +172,16 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   public pattern?: string;
 
   @ViewChild("input")
-  public inputElRef?: ElementRef<HTMLInputElement>;
+  public inputElRef?: ElementRef<HTMLInputElement | HTMLTextAreaElement>;
 
   @Input()
   @SdTypeValidate(Boolean)
   @HostBinding("attr.sd-inset")
   public inset?: boolean;
+
+  @Input()
+  @SdTypeValidate(Boolean)
+  public multiline?: boolean;
 
   public getIsInvalid(): boolean {
     const hasMinError = this.min !== undefined && this.value !== undefined && this.type === "number" && this.value < this.min;
@@ -166,12 +193,13 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
     return this.value === undefined ? ""
       : this.value instanceof DateTime ? this.value.toFormatString("yyyy-MM-ddTHH:mm")
         : this.value instanceof DateOnly ? (this.type === "month" ? this.value.toFormatString("yyyy-MM") : this.value.toString())
-          : this.type === "number" && typeof this.value === "number" ? this.value.toLocaleString()
-            : this.value;
+          : this.value instanceof Time ? this.value.toFormatString("HH:mm")
+            : this.type === "number" && typeof this.value === "number" ? this.value.toLocaleString()
+              : this.value;
   }
 
   public onInputInput(event: Event): void {
-    const inputEl = event.target as HTMLInputElement;
+    const inputEl = event.target as (HTMLInputElement | HTMLTextAreaElement);
     let value;
     if (this.type === "number") {
       value = !inputEl.value ? inputEl.value : Number(inputEl.value.replace(/,/g, ""));
@@ -181,6 +209,9 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
     }
     else if (this.type === "datetime") {
       value = !inputEl.value ? undefined : DateTime.parse(inputEl.value);
+    }
+    else if (this.type === "time") {
+      value = !inputEl.value ? undefined : Time.parse(inputEl.value);
     }
     else {
       value = inputEl.value;
