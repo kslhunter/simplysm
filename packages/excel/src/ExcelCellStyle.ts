@@ -84,6 +84,9 @@ export class ExcelCellStyle {
     if (!styleData || !styleData.$ || !styleData.$.numFmtId) {
       return "number";
     }
+    else if (styleData.$.numFmtId === "176") {
+      return "number";
+    }
     else if (styleData.$.numFmtId === "14") {
       return "DateOnly";
     }
