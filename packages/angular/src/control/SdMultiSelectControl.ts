@@ -43,6 +43,7 @@ import {SdMultiSelectItemControl} from "./SdMultiSelectItemControl";
       /deep/ > sd-dropdown > div {
         @include form-control-base();
 
+        text-align: left;
         display: block;
         overflow: visible;
         padding-right: 30px !important;
