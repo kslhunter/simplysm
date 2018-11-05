@@ -207,10 +207,11 @@ export class ExcelWorkbook {
   }
 
   public getWorksheet(name: string): ExcelWorksheet {
-    if (!this._worksheets[name]) {
+    const ws = this._worksheets.single(item => item.name === name);
+    if (!ws) {
       throw new Error(`시트[${name}]가 존재하지 않습니다.`);
     }
-    return this._worksheets[name];
+    return ws;
   }
 
   public createWorksheet(name: string): ExcelWorksheet {
