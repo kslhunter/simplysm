@@ -57,7 +57,13 @@ export class ExcelCell {
     }
     else if (this.cellData.$.t === "s") {
       const sstIndex = Number(this.cellData.v[0]._ || this.cellData.v[0]);
-      return this.ews.workbook.sstData.sst.si[sstIndex].t[0]._ || this.ews.workbook.sstData.sst.si[sstIndex].t[0];
+
+      if (this.ews.workbook.sstData.sst.si[sstIndex].t) {
+        return this.ews.workbook.sstData.sst.si[sstIndex].t[0]._ || this.ews.workbook.sstData.sst.si[sstIndex].t[0];
+      }
+      else {
+        return this.ews.workbook.sstData.sst.si[sstIndex].r.map((item: any) => item.t[0]).join("");
+      }
     }
     else {
       throw new Error("지원되지 않는 타입입니다: " + this.cellData.$.t);
