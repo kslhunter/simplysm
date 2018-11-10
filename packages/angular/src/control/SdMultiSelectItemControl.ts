@@ -43,6 +43,10 @@ import {SdMultiSelectControl} from "./SdMultiSelectControl";
       /deep/ > sd-checkbox > label {
         padding: 0 !important;
       }
+
+      &[hidden] {
+        display: none;
+      }
     }
   `]
 })
