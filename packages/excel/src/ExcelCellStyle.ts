@@ -84,15 +84,18 @@ export class ExcelCellStyle {
     if (!styleData || !styleData.$ || !styleData.$.numFmtId) {
       return "number";
     }
-    else if (styleData.$.numFmtId === "176" || styleData.$.numFmtId === "3") {
+    /*else if (styleData.$.numFmtId === "176" || styleData.$.numFmtId === "3") {
       return "number";
-    }
+    }*/
     else if (styleData.$.numFmtId === "14") {
       return "DateOnly";
     }
     else {
-      throw new Error("지원되지 않는 숫자포맷 입니다.");
+      return "number";
     }
+    /*else {
+      throw new Error("지원되지 않는 숫자포맷 입니다.");
+    }*/
   }
 
   public set numberFormat(value: "DateOnly" | "number") {
