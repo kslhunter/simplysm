@@ -124,6 +124,14 @@
   }
 }
 
+@each $direction in top, right, bottom, left {
+  @each $key in join(0, map_keys($gap)) {
+    .sd-padding-#{$direction}-#{$key} {
+      padding-#{$direction}: if(gap($key), gap($key), 0);
+    }
+  }
+}
+
 @each $key-v in join(0, map_keys($gap)) {
   @each $key-h in join(0, map_keys($gap)) {
     .sd-padding-#{$key-v}-#{$key-h} {
