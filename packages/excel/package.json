@@ -1,6 +1,6 @@
 {
   "name": "@simplism/excel",
-  "version": "10.2.37",
+  "version": "10.2.38",
   "description": "Simplism Excel Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,7 +8,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/core": "~10.2.37",
+    "@simplism/core": "~10.2.38",
     "jszip": "^3.1.5",
     "xml2js": "^0.4.19"
   }

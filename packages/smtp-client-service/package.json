@@ -1,6 +1,6 @@
 {
   "name": "@simplism/smtp-client-service",
-  "version": "10.2.37",
+  "version": "10.2.38",
   "description": "Simplism SMTP Client Service Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,9 +8,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/core": "~10.2.37",
-    "@simplism/socket-server": "~10.2.37",
-    "@simplism/smtp-client-common": "~10.2.37",
+    "@simplism/core": "~10.2.38",
+    "@simplism/socket-server": "~10.2.38",
+    "@simplism/smtp-client-common": "~10.2.38",
     "nodemailer": "^4.6.8"
   }
 }
