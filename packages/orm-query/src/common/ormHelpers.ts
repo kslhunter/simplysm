@@ -56,9 +56,9 @@ export const ormHelpers = {
       case Boolean:
         return "BIT";
       case Date:
-        return "DATETIME";
+        return "DATETIME2";
       case DateTime:
-        return "DATETIME";
+        return "DATETIME2";
       case DateOnly:
         return "DATE";
       case Time:
