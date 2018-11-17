@@ -143,11 +143,77 @@ export class SdComboboxControl implements OnInit, OnDestroy {
     if (this.value !== value) {
       this.value = value;
       this.valueChange.emit(this.value);
+      this.closePopup();
     }
 
     if (this.text !== itemControl.content) {
       this.text = itemControl.content;
       this.textChange.emit(this.text);
+    }
+  }
+
+  public openPopup(): void {
+    const textfieldEl = this.textfieldElRef!.nativeElement;
+    const dropdownEl = this.dropdownElRef!.nativeElement;
+
+    if (window.innerHeight < textfieldEl.windowOffset.top * 2) {
+      Object.assign(
+        dropdownEl.style,
+        {
+          top: "",
+          bottom: (window.innerHeight - textfieldEl.windowOffset.top) + "px",
+          left: textfieldEl.windowOffset.left + "px",
+          opacity: "1",
+          pointerEvents: "auto",
+          transform: "none"
+        }
+      );
+    }
+    else {
+      Object.assign(
+        dropdownEl.style,
+        {
+          top: (textfieldEl.windowOffset.top + textfieldEl.offsetHeight) + "px",
+          bottom: "",
+          left: textfieldEl.windowOffset.left + "px",
+          opacity: "1",
+          pointerEvents: "auto",
+          transform: "none"
+        }
+      );
+    }
+
+    document.addEventListener("scroll", this.scrollEventHandler, true);
+  }
+
+  public closePopup(): void {
+    const dropdownEl = this.dropdownElRef!.nativeElement;
+
+    Object.assign(
+      dropdownEl.style,
+      {
+        opacity: "0",
+        pointerEvents: "none",
+        transform: "translateY(-10px)"
+      }
+    );
+
+    if (!this.value && this.text) {
+      this.text = undefined;
+      this.textChange.emit(this.text);
+      return;
+    }
+
+    if (this.value) {
+      const selectedItemControl = this.itemControls!.find(item => item.value === this.value);
+
+      if (selectedItemControl) {
+        const text = selectedItemControl.content;
+        if (text !== this.text) {
+          this.text = text || "";
+          this.textChange.emit(this.text);
+        }
+      }
     }
   }
 
@@ -181,37 +247,7 @@ export class SdComboboxControl implements OnInit, OnDestroy {
   };
 
   public focusEventHandler = (event: FocusEvent) => {
-    const textfieldEl = this.textfieldElRef!.nativeElement;
-    const dropdownEl = this.dropdownElRef!.nativeElement;
-
-    if (window.innerHeight < textfieldEl.windowOffset.top * 2) {
-      Object.assign(
-        dropdownEl.style,
-        {
-          top: "",
-          bottom: (window.innerHeight - textfieldEl.windowOffset.top) + "px",
-          left: textfieldEl.windowOffset.left + "px",
-          opacity: "1",
-          pointerEvents: "auto",
-          transform: "none"
-        }
-      );
-    }
-    else {
-      Object.assign(
-        dropdownEl.style,
-        {
-          top: (textfieldEl.windowOffset.top + textfieldEl.offsetHeight) + "px",
-          bottom: "",
-          left: textfieldEl.windowOffset.left + "px",
-          opacity: "1",
-          pointerEvents: "auto",
-          transform: "none"
-        }
-      );
-    }
-
-    document.addEventListener("scroll", this.scrollEventHandler, true);
+    this.openPopup();
   };
 
   public blurEventHandler = (event: FocusEvent) => {
@@ -233,31 +269,6 @@ export class SdComboboxControl implements OnInit, OnDestroy {
       return;
     }
 
-    Object.assign(
-      dropdownEl.style,
-      {
-        opacity: "0",
-        pointerEvents: "none",
-        transform: "translateY(-10px)"
-      }
-    );
-
-    if (!this.value && this.text) {
-      this.text = undefined;
-      this.textChange.emit(this.text);
-      return;
-    }
-
-    if (this.value) {
-      const selectedItemControl = this.itemControls!.find(item => item.value === this.value);
-
-      if (selectedItemControl) {
-        const text = selectedItemControl.content;
-        if (text !== this.text) {
-          this.text = text || "";
-          this.textChange.emit(this.text);
-        }
-      }
-    }
+    this.closePopup();
   };
 }

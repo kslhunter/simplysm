@@ -70,35 +70,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     this.dropdownElRef!.nativeElement.remove();
   }
 
-  public scrollEventHandler = (event: UIEvent) => {
-    const controlEl = this.controlElRef!.nativeElement;
-    const dropdownEl = this.dropdownElRef!.nativeElement;
-
-    if (this._elRef.nativeElement.findParent(event.target as HTMLElement)) {
-      if (window.innerHeight < controlEl.windowOffset.top * 2) {
-        Object.assign(
-          dropdownEl.style,
-          {
-            top: "",
-            bottom: (window.innerHeight - controlEl.windowOffset.top) + "px",
-            left: controlEl.windowOffset.left + "px"
-          }
-        );
-      }
-      else {
-        Object.assign(
-          dropdownEl.style,
-          {
-            top: (controlEl.windowOffset.top + controlEl.offsetHeight) + "px",
-            bottom: "",
-            left: controlEl.windowOffset.left + "px"
-          }
-        );
-      }
-    }
-  };
-
-  public focusEventHandler = (event: FocusEvent) => {
+  public openPopup(): void {
     const controlEl = this.controlElRef!.nativeElement;
 
     const dropdownEl = this.dropdownElRef!.nativeElement;
@@ -137,6 +109,55 @@ export class SdDropdownControl implements OnInit, OnDestroy {
       this.open.emit();
       this._isOpen = true;
     }
+  }
+
+  public closePopup(): void {
+    const dropdownEl = this.dropdownElRef!.nativeElement;
+    Object.assign(
+      dropdownEl.style,
+      {
+        opacity: "0",
+        pointerEvents: "none",
+        transform: "translateY(-10px)"
+      }
+    );
+
+    if (this._isOpen) {
+      this.close.emit();
+      this._isOpen = false;
+    }
+  }
+
+  public scrollEventHandler = (event: UIEvent) => {
+    const controlEl = this.controlElRef!.nativeElement;
+    const dropdownEl = this.dropdownElRef!.nativeElement;
+
+    if (this._elRef.nativeElement.findParent(event.target as HTMLElement)) {
+      if (window.innerHeight < controlEl.windowOffset.top * 2) {
+        Object.assign(
+          dropdownEl.style,
+          {
+            top: "",
+            bottom: (window.innerHeight - controlEl.windowOffset.top) + "px",
+            left: controlEl.windowOffset.left + "px"
+          }
+        );
+      }
+      else {
+        Object.assign(
+          dropdownEl.style,
+          {
+            top: (controlEl.windowOffset.top + controlEl.offsetHeight) + "px",
+            bottom: "",
+            left: controlEl.windowOffset.left + "px"
+          }
+        );
+      }
+    }
+  };
+
+  public focusEventHandler = (event: FocusEvent) => {
+    this.openPopup();
   };
 
   public blurEventHandler = (event: FocusEvent) => {
@@ -157,19 +178,6 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     ) {
       return;
     }
-
-    Object.assign(
-      dropdownEl.style,
-      {
-        opacity: "0",
-        pointerEvents: "none",
-        transform: "translateY(-10px)"
-      }
-    );
-
-    if (this._isOpen) {
-      this.close.emit();
-      this._isOpen = false;
-    }
+    this.closePopup();
   };
 }
