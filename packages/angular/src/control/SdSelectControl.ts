@@ -6,18 +6,19 @@ import {
   HostBinding,
   Input,
   Output,
-  QueryList
+  QueryList, ViewChild
 } from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 import {SdSelectItemControl} from "./SdSelectItemControl";
 import {optional} from "@simplism/core";
+import {SdDropdownControl} from "./SdDropdownControl";
 
 @Component({
   selector: "sd-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-dropdown [disabled]="disabled">
+    <sd-dropdown #dropdown [disabled]="disabled">
       <div class="_sd-select-content" [innerHTML]="getContentHtml()"></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">
@@ -115,6 +116,9 @@ export class SdSelectControl {
   @ContentChildren(SdSelectItemControl, {descendants: true})
   public itemControls?: QueryList<SdSelectItemControl>;
 
+  @ViewChild("dropdown")
+  public dropdownControl?: SdDropdownControl;
+
   public constructor(private readonly _sanitizer: DomSanitizer) {
   }
 
@@ -141,6 +145,9 @@ export class SdSelectControl {
     if (this.value !== value) {
       this.value = value;
       this.valueChange.emit(this.value);
+      if (this.dropdownControl) {
+        this.dropdownControl.closePopup();
+      }
     }
   }
 }
