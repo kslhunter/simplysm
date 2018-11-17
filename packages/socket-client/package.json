@@ -1,6 +1,6 @@
 {
   "name": "@simplism/socket-client",
-  "version": "10.3.11",
+  "version": "10.3.14",
   "description": "Simplism Socket Client Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,7 +8,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/core": "~10.3.11",
-    "@simplism/socket-common": "~10.3.11"
+    "@simplism/core": "~10.3.14",
+    "@simplism/socket-common": "~10.3.14"
   }
 }
