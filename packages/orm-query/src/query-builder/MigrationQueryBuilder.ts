@@ -134,6 +134,19 @@ export class MigrationQueryBuilder {
     return `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ALTER COLUMN [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}${colDef.nullable ? "NULL" : "NOT NULL"}`;
   }
 
+  public renameColumn(
+    tableDef: { database: string; scheme: string; name: string },
+    colName: string,
+    newColName: string
+  ): string {
+    return `
+USE [${tableDef.database}]
+GO
+EXECUTE sp_rename N'${tableDef.scheme}.${tableDef.name}.[${colName}]', N'${newColName}', 'COLUMN'
+GO
+USE [master]`;
+  }
+
   /*public dropDatabase(dbName: string): string {
     return `IF EXISTS(select * from sys.databases WHERE name='${dbName}') DROP DATABASE [${dbName}]`;
   }*/

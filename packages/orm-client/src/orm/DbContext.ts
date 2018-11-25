@@ -6,6 +6,8 @@ import {IDbMigration} from "./IDbMigration";
 import {IDbContextExecutor} from "./IDbContextExecutor";
 
 export abstract class DbContext {
+  private _withoutTransaction?: boolean;
+
   public abstract get config(): IDbConnectionConfig;
 
   public abstract get migrations(): Type<IDbMigration>[];
@@ -14,6 +16,7 @@ export abstract class DbContext {
   }
 
   public async connectAsync<R>(fn: (db: this) => Promise<R>, withoutTransaction?: boolean): Promise<R> {
+    this._withoutTransaction = withoutTransaction;
     return await this._executor!.connectAsync(this, fn, withoutTransaction);
   }
 
@@ -29,6 +32,10 @@ export abstract class DbContext {
   private _preparedResultIndexed: boolean[] = [];
 
   public async initializeAsync(dbNames: string[], force?: boolean): Promise<boolean> {
+    if (force && !this._withoutTransaction) {
+      throw new Error("DB 초기화 함수 (initializeAsync)는 트랜젝션을 사용할 수 없습니다.");
+    }
+
     if (!force) {
       const isDbExists = (
         await this.executeAsync(`SELECT COUNT(*) as [cnt] FROM [master].[dbo].[sysdatabases] WHERE [name] = '${this.config.database}'`)
@@ -47,16 +54,18 @@ export abstract class DbContext {
             )
           )[0].map(item => item.code);
 
-          for (const migration of this.migrations.filter(item => !dbMigrations.includes(item.name)).orderBy(item => item.name)) {
-            await new migration().up(this);
+          await this._executor!.transAsync(async () => {
+            for (const migration of this.migrations.filter(item => !dbMigrations.includes(item.name)).orderBy(item => item.name)) {
+              await new migration().up(this);
 
-            await this.executeAsync(
-              new QueryBuilder()
-                .from(`[${this.config.database}].[dbo].[_migration]`)
-                .insert({code: `'${migration.name}'`})
-                .query
-            );
-          }
+              await this.executeAsync(
+                new QueryBuilder()
+                  .from(`[${this.config.database}].[dbo].[_migration]`)
+                  .insert({code: `'${migration.name}'`})
+                  .query
+              );
+            }
+          });
 
           return false;
         }
@@ -396,6 +405,23 @@ export abstract class DbContext {
         name: tableDef.name
       },
       colDef
+    );
+    await this.executeAsync(query);
+  }
+
+  public async renameColumnAsync(
+    tableDef: { database?: string; scheme?: string; name: string },
+    colName: string,
+    newColName: string
+  ): Promise<void> {
+    const query = new MigrationQueryBuilder().renameColumn(
+      {
+        database: tableDef.database || this.config.database,
+        scheme: tableDef.scheme || "dbo",
+        name: tableDef.name
+      },
+      colName,
+      newColName
     );
     await this.executeAsync(query);
   }

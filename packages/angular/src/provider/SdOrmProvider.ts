@@ -24,14 +24,12 @@ export class DbContextSocketExecutor implements IDbContextExecutor {
       if (!withoutTransaction) {
         await this._socket.sendAsync("OrmService.commitTransactionAsync", [connId]);
       }
-    }
-    catch (err) {
+    } catch (err) {
       try {
         if (!withoutTransaction) {
           await this._socket.sendAsync("OrmService.rollbackTransactionAsync", [connId]);
         }
-      }
-      catch (err2) {
+      } catch (err2) {
         await this._socket.sendAsync("OrmService.closeAsync", [connId]);
         throw err2;
       }
@@ -41,6 +39,26 @@ export class DbContextSocketExecutor implements IDbContextExecutor {
     }
 
     await this._socket.sendAsync("OrmService.closeAsync", [connId]);
+
+    return result;
+  }
+
+  public async transAsync<R>(fn: () => Promise<R>): Promise<R> {
+    await this._socket.sendAsync("OrmService.beginTransactionAsync", [this._connId]);
+
+    let result: R;
+    try {
+      result = await fn();
+      await this._socket.sendAsync("OrmService.commitTransactionAsync", [this._connId]);
+    } catch (err) {
+      try {
+        await this._socket.sendAsync("OrmService.rollbackTransactionAsync", [this._connId]);
+      } catch (err2) {
+        throw err2;
+      }
+
+      throw err;
+    }
 
     return result;
   }
@@ -80,8 +98,7 @@ export class SdOrmProvider {
       const result = await db.connectAsync(callback, withoutTransaction);
       this._dbContexts.remove(db);
       return result;
-    }
-    catch (err) {
+    } catch (err) {
       this._dbContexts.remove(db);
       throw err;
     }
