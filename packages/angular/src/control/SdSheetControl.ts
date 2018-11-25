@@ -78,25 +78,29 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
     <div class="_content _body">
       <div class="_row" *ngFor="let item of items; trackBy: trackByItemFn" [@rowState]="'in'">
         <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
-          <div class="_col _first-col" 
+          <div class="_col _first-col"
                (click)="onFirstColClick($event)">
-            <sd-icon [icon]="'arrow-right'" *ngIf="selectable"
-                     [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-grey-default': selectedItem !== item}"></sd-icon>
+            <sd-icon [icon]="'arrow-right'" *ngIf="selectable !== 'multi'"
+                     [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-grey-default': !selectedItem !== item}"></sd-icon>
+            <sd-icon [icon]="'arrow-right'" *ngIf="selectable === 'multi'"
+                     [ngClass]="{'sd-text-color-primary-default': selectedItems.includes(item), 'sd-text-color-grey-default': !selectedItems.includes(item)}"></sd-icon>
           </div>
-          <div [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
-               *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
-               [style.width.px]="getWidth(columnControl)" tabindex="0"
-               (keydown)="onCellKeydown($event)">
+          <div
+            [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
+            *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
+            [style.width.px]="getWidth(columnControl)" tabindex="0"
+            (keydown)="onCellKeydown($event)">
             <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
                          [ngTemplateOutletContext]="{item: item}"></ng-template>
             <div class="_focus-indicator"></div>
           </div>
         </div>
         <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
-          <div [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
-               *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
-               [style.width.px]="getWidth(columnControl)" tabindex="0"
-               (keydown)="onCellKeydown($event)">
+          <div
+            [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
+            *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
+            [style.width.px]="getWidth(columnControl)" tabindex="0"
+            (keydown)="onCellKeydown($event)">
             <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
                          [ngTemplateOutletContext]="{item: item}"></ng-template>
             <div class="_focus-indicator"></div>
@@ -176,6 +180,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
           &[type=month],
           &[type=date],
           &[type=datetime],
+          &[type=time],
           &[type=datetime-local] {
             padding: gap(xs) - 2 gap(sm) gap(xs) - 1 gap(sm);
           }
@@ -262,6 +267,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
         &:focus {
           z-index: 3;
         }
+
         &:focus > ._focus-indicator {
           opacity: 1;
         }
@@ -321,16 +327,22 @@ export class SdSheetControl implements DoCheck, OnInit {
   @Input()
   @SdTypeValidate({
     type: [Boolean, String],
-    validator: item => typeof item === "boolean" || item === "manual"
+    validator: item => typeof item === "boolean" || item === "manual" || item === "multi"
   })
   @HostBinding("attr.sd-selectable")
-  public selectable?: boolean | "manual";
+  public selectable?: boolean | "manual" | "multi";
 
   @Input()
   public selectedItem: any;
 
   @Output()
   public readonly selectedItemChange = new EventEmitter<any>();
+
+  @Input()
+  public selectedItems: any[] = [];
+
+  @Output()
+  public readonly selectedItemsChange = new EventEmitter<any[]>();
 
   @Input()
   @SdTypeValidate(String)
@@ -355,8 +367,7 @@ export class SdSheetControl implements DoCheck, OnInit {
       const header = (item.header && item.header.split(".").length === 2) ? item.header.split(".")[0] : undefined;
       if (result.last() && result.last()!.header === header) {
         result.last()!.width += this.getWidth(item);
-      }
-      else {
+      } else {
         result.push({
           header,
           width: this.getWidth(item)
@@ -373,8 +384,7 @@ export class SdSheetControl implements DoCheck, OnInit {
       const header = (item.header && item.header.split(".").length === 2) ? item.header.split(".")[0] : undefined;
       if (result.last() && result.last()!.header === header) {
         result.last()!.width += this.getWidth(item);
-      }
-      else {
+      } else {
         result.push({
           header,
           width: this.getWidth(item)
@@ -396,8 +406,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public get fixedColumnWidth(): number {
     if (this.fixedColumnControls.length > 0) {
       return this.fixedHeaderGroups.map(item => item.width).reduce((a, b) => a + b) + 24;
-    }
-    else {
+    } else {
       return 24;
     }
   }
@@ -409,8 +418,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public trackByItemFn(index: number, item: any): any {
     if (this.trackBy) {
       return this.trackBy(index, item);
-    }
-    else {
+    } else {
       return item;
     }
   }
@@ -435,10 +443,7 @@ export class SdSheetControl implements DoCheck, OnInit {
     this._elRef.nativeElement.addEventListener(
       "focus",
       (event: Event) => {
-        if (this.selectable === true) {
-          this.selectRow(event.target as HTMLElement);
-        }
-        else if (this.selectable === "manual" && this.selectedItem) {
+        if (this.selectable === "manual" && this.selectedItem) {
           const rowEl = (event.target as HTMLElement).findParent("._row");
 
           if (rowEl) {
@@ -450,6 +455,8 @@ export class SdSheetControl implements DoCheck, OnInit {
               this.selectedItemChange.emit(undefined);
             }
           }
+        } else if (this.selectable === true) {
+          this.selectRow(event.target as HTMLElement);
         }
       },
       true
@@ -484,9 +491,17 @@ export class SdSheetControl implements DoCheck, OnInit {
       const bodyEl = rowEl.parentElement as Element;
       const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
       const selectedItem = this.items![rowIndex];
-      if (this.selectedItem !== selectedItem) {
-        this.selectedItem = this.items![rowIndex];
-        this.selectedItemChange.emit(this.selectedItem);
+
+      if (this.selectable === "multi") {
+        if (!this.selectedItems.includes(selectedItem)) {
+          this.selectedItems.push(this.items![rowIndex]);
+          this.selectedItemsChange.emit(this.selectedItems);
+        }
+      } else {
+        if (this.selectedItem !== selectedItem) {
+          this.selectedItem = this.items![rowIndex];
+          this.selectedItemChange.emit(this.selectedItem);
+        }
       }
     }
   }
@@ -500,15 +515,22 @@ export class SdSheetControl implements DoCheck, OnInit {
 
     const bodyEl = rowEl.parentElement as Element;
     const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+    const selectedItem = this.items![rowIndex];
 
-    if (this.items!.indexOf(this.selectedItem) === rowIndex) {
-      if (this.selectedItem !== undefined) {
+    if (this.selectable === "multi") {
+      if (this.selectedItems.includes(selectedItem)) {
+        this.selectedItems.remove(selectedItem);
+        this.selectedItemsChange.emit(this.selectedItems);
+      } else {
+        this.selectRow(event.target as Element);
+      }
+    } else {
+      if (this.selectedItem === selectedItem) {
         this.selectedItem = undefined;
         this.selectedItemChange.emit(undefined);
+      } else {
+        this.selectRow(event.target as Element);
       }
-    }
-    else {
-      this.selectRow(event.target as Element);
     }
   }
 
@@ -540,8 +562,7 @@ export class SdSheetControl implements DoCheck, OnInit {
       const columnConfig = this._columnConfigs.single(item => item.header === columnControl.header && item.index === index);
       if (columnConfig) {
         columnConfig.width = cellEl.offsetWidth;
-      }
-      else {
+      } else {
         this._columnConfigs.push({
           header: columnControl.header,
           width: cellEl.offsetWidth,
@@ -558,15 +579,14 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public onCellKeydown(event: KeyboardEvent): void {
     const targetEl = event.target as HTMLElement;
-    if (targetEl.classList.contains("col")) {
+    if (targetEl.classList.contains("_col")) {
       if (event.key === "F2") {
         const focusableEls = targetEl.findFocusableAll();
         if (focusableEls.length > 0) {
           focusableEls[0].focus();
           event.preventDefault();
         }
-      }
-      else if (event.key === "ArrowDown") {
+      } else if (event.key === "ArrowDown") {
         const rowEl = targetEl.findParent("._row") as HTMLElement;
         const bodyEl = rowEl.parentElement as Element;
 
@@ -578,8 +598,7 @@ export class SdSheetControl implements DoCheck, OnInit {
           (nextRowEl.findAll("._col")[cellIndex] as HTMLElement).focus();
           event.preventDefault();
         }
-      }
-      else if (event.key === "ArrowUp") {
+      } else if (event.key === "ArrowUp") {
         const rowEl = targetEl.findParent("._row") as HTMLElement;
         const bodyEl = rowEl.parentElement as Element;
 
@@ -591,8 +610,7 @@ export class SdSheetControl implements DoCheck, OnInit {
           (nextRowEl!.findAll("._col")[cellIndex] as HTMLElement).focus();
           event.preventDefault();
         }
-      }
-      else if (event.key === "ArrowRight") {
+      } else if (event.key === "ArrowRight") {
         const rowEl = targetEl.findParent("._row") as HTMLElement;
         const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(targetEl);
 
@@ -601,8 +619,7 @@ export class SdSheetControl implements DoCheck, OnInit {
           nextCell.focus();
           event.preventDefault();
         }
-      }
-      else if (event.key === "ArrowLeft") {
+      } else if (event.key === "ArrowLeft") {
         const rowEl = targetEl.findParent("._row") as HTMLElement;
         const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(targetEl);
 
@@ -612,8 +629,7 @@ export class SdSheetControl implements DoCheck, OnInit {
           event.preventDefault();
         }
       }
-    }
-    else {
+    } else {
       if (event.key === "Escape") {
         const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
         cellEl.focus();
