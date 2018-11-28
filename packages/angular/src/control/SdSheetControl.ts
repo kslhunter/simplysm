@@ -80,7 +80,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
         <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
           <div class="_col _first-col"
                (click)="onFirstColClick($event)">
-            <sd-icon [icon]="'arrow-right'" *ngIf="selectable !== 'multi'"
+            <sd-icon [icon]="'arrow-right'" *ngIf="selectable === true"
                      [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-grey-default': !selectedItem !== item}"></sd-icon>
             <sd-icon [icon]="'arrow-right'" *ngIf="selectable === 'multi'"
                      [ngClass]="{'sd-text-color-primary-default': selectedItems.includes(item), 'sd-text-color-grey-default': !selectedItems.includes(item)}"></sd-icon>
