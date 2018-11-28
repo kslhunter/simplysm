@@ -136,6 +136,13 @@
     ],
     "no-empty-interface": false,
     "cyclomatic-complexity": false,
-    "no-boolean-literal-compare": false
+    "no-boolean-literal-compare": false,
+    "align": [
+      true,
+      "parameters",
+      "statements",
+      "elements",
+      "members"
+    ]
   }
 }

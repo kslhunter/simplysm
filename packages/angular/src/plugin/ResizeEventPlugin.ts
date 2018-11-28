@@ -9,28 +9,54 @@ export class ResizeEventPlugin {
     let prevWidth = element.offsetWidth;
     let prevHeight = element.offsetHeight;
 
-    const observer = new window["ResizeObserver"](() => {
-      const dimensions = [];
-      if (prevWidth !== element.offsetWidth) {
-        dimensions.push("width");
-        prevWidth = element.offsetWidth;
-      }
-      if (prevHeight !== element.offsetHeight) {
-        dimensions.push("height");
-        prevHeight = element.offsetHeight;
-      }
+    const dimensions: string[] = [];
+    if (window["ResizeObserver"]) {
+      const observer = new window["ResizeObserver"](() => {
+        if (prevWidth !== element.offsetWidth) {
+          dimensions.push("width");
+          prevWidth = element.offsetWidth;
+        }
+        if (prevHeight !== element.offsetHeight) {
+          dimensions.push("height");
+          prevHeight = element.offsetHeight;
+        }
 
-      if (dimensions.length > 0) {
-        const event = new CustomEvent("resize");
-        event["dimensions"] = dimensions;
-        this.manager.getZone().run(() => {
-          handler(event as any);
-        });
-      }
-    });
-    observer.observe(element);
+        if (dimensions.length > 0) {
+          const event = new CustomEvent("resize");
+          event["dimensions"] = dimensions;
+          this.manager.getZone().run(() => {
+            handler(event as any);
+          });
+        }
+      });
+      observer.observe(element);
 
-    return () => observer.disconnect();
+      return () => observer.disconnect();
+    }
+    else {
+      const timeout = window.setInterval(() => {
+        if (prevWidth !== element.offsetWidth) {
+          dimensions.push("width");
+          prevWidth = element.offsetWidth;
+        }
+        if (prevHeight !== element.offsetHeight) {
+          dimensions.push("height");
+          prevHeight = element.offsetHeight;
+        }
+
+        if (dimensions.length > 0) {
+          const event = new CustomEvent("resize");
+          event["dimensions"] = dimensions;
+          this.manager.getZone().run(() => {
+            handler(event as any);
+          });
+        }
+      }, 100);
+
+      return () => {
+        window.clearTimeout(timeout);
+      };
+    }
   }
 
   public supports(eventName: string): boolean {
