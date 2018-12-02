@@ -6,21 +6,7 @@ import {SdTabviewControl} from "./SdTabviewControl";
   selector: "sd-tabview-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: none;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-
-      &[sd-selected=true] {
-        display: block;
-      }
-    }
-  `]
+    <ng-content></ng-content>`
 })
 export class SdTabviewItemControl {
   @Input()

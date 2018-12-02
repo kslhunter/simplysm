@@ -12,27 +12,7 @@ const iconNames = Object.values(fas).map(item => item.iconName);
 @Component({
   selector: "sd-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: ``,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: inline-block;
-      pointer-events: none;
-
-      &[sd-fixed-width=true] {
-        width: 1.25em;
-      }
-
-      /deep/ .fa-layers-counter {
-        transform: scale(0.4);
-      }
-
-      &[sd-dot=true] /deep/ svg:nth-child(2) {
-        color: get($theme-color, danger, default);
-      }
-    }
-  `]
+  template: ``
 })
 export class SdIconControl implements ISdNotifyPropertyChange, OnInit {
   @Input()

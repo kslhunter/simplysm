@@ -54,18 +54,22 @@ export abstract class DbContext {
             )
           )[0].map(item => item.code);
 
-          await this._executor!.transAsync(async () => {
-            for (const migration of this.migrations.filter(item => !dbMigrations.includes(item.name)).orderBy(item => item.name)) {
-              await new migration().up(this);
 
-              await this.executeAsync(
-                new QueryBuilder()
-                  .from(`[${this.config.database}].[dbo].[_migration]`)
-                  .insert({code: `'${migration.name}'`})
-                  .query
-              );
-            }
-          });
+          const migrations = this.migrations.filter(item => !dbMigrations.includes(item.name)).orderBy(item => item.name);
+          if (migrations.length > 0) {
+            await this._executor!.transAsync(async () => {
+              for (const migration of migrations) {
+                await new migration().up(this);
+
+                await this.executeAsync(
+                  new QueryBuilder()
+                    .from(`[${this.config.database}].[dbo].[_migration]`)
+                    .insert({code: `'${migration.name}'`})
+                    .query
+                );
+              }
+            });
+          }
 
           return false;
         }

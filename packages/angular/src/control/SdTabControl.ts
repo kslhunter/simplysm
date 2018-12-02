@@ -4,14 +4,7 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@
   selector: "sd-tab",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: block;
-    }
-  `]
+    <ng-content></ng-content>`
 })
 export class SdTabControl {
   @Input()

@@ -5,21 +5,7 @@ import {SdComboboxControl} from "./SdComboboxControl";
   selector: "sd-combobox-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: block;
-      padding: gap(xs) gap(sm) * 2 gap(xs) gap(sm);
-      cursor: pointer;
-      font-size: font-size(sm);
-
-      &:hover {
-        background: rgba(0, 0, 0, .1);
-      }
-    }
-  `]
+    <ng-content></ng-content>`
 })
 export class SdComboboxItemControl {
   @Input()

@@ -8,51 +8,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
     <a (click)="toggleSidebar()">
       <sd-icon [icon]="'bars'" [fixedWidth]="true"></sd-icon>
     </a>
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: block;
-      position: absolute;
-      z-index: $z-index-topbar;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 36px;
-      line-height: 35px;
-      background: theme-color(primary, default);
-      color: text-color(reverse, default);
-
-      /deep/ {
-        > * {
-          float: left;
-          line-height: 35px;
-        }
-
-        > a {
-          min-width: 36px;
-          text-align: center;
-          margin-right: gap(sm);
-          color: text-color(reverse, dark);
-
-          &:hover,
-          &:focus {
-            color: text-color(reverse, default);
-          }
-        }
-
-        > h1,
-        > h2,
-        > h3,
-        > h4,
-        > h5,
-        > h6 {
-          padding-right: gap(default);
-        }
-      }
-    }
-  `]
+    <ng-content></ng-content>`
 })
 export class SdTopbarControl {
   public constructor(private readonly _injector: Injector) {

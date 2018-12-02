@@ -5,25 +5,7 @@ import {SdTabControl} from "./SdTabControl";
   selector: "sd-tab-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: inline-block;
-      padding: gap(sm) gap(default);
-      cursor: pointer;
-
-      &:hover {
-        background: rgba(0, 0, 0, .05);
-      }
-
-      &[sd-selected=true] {
-        background: theme-color(primary, default);
-        color: text-color(reverse, default);
-      }
-    }
-  `]
+    <ng-content></ng-content>`
 })
 export class SdTabItemControl {
   @Input()

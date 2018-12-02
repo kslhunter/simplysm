@@ -18,10 +18,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
   selector: "sd-checkbox-group",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-  `]
+    <ng-content></ng-content>`
 })
 export class SdCheckboxGroupControl implements DoCheck {
   @Input()

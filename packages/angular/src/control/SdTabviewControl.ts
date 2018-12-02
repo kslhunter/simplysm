@@ -26,13 +26,7 @@ import {SdTabviewItemControl} from "./SdTabviewItemControl";
       <sd-pane>
         <ng-content></ng-content>
       </sd-pane>
-    </sd-dock-container>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-    }
-  `]
+    </sd-dock-container>`
 })
 export class SdTabviewControl {
   @Input()

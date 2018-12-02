@@ -1,3 +1,5 @@
+$primary-theme-color: $color-deep-purple !default;
+
 $theme-color: (
   grey: (
     lightest: map_get($color-grey, 200),
@@ -18,13 +20,13 @@ $theme-color: (
     darkest: map_get($color-bluegrey, 900)
   ),
   primary: (
-    lightest: map_get($color-deep-purple, 50),
-    lighter: map_get($color-deep-purple, 100),
-    light: map_get($color-deep-purple, 200),
-    default: map_get($color-deep-purple, 500),
-    dark: map_get($color-deep-purple, 600),
-    darker: map_get($color-deep-purple, 700),
-    darkest: map_get($color-deep-purple, 800)
+    lightest: map_get($primary-theme-color, 50),
+    lighter: map_get($primary-theme-color, 100),
+    light: map_get($primary-theme-color, 200),
+    default: map_get($primary-theme-color, 500),
+    dark: map_get($primary-theme-color, 600),
+    darker: map_get($primary-theme-color, 700),
+    darkest: map_get($primary-theme-color, 800)
   ),
   info: (
     lightest: map_get($color-blue, 50),

@@ -4,15 +4,7 @@ import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
   selector: "sd-view",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: block;
-      background: white;
-    }
-  `]
+    <ng-content></ng-content>`
 })
 export class SdViewControl {
   @Input()

@@ -9,13 +9,7 @@ require("jsbarcode");
   selector: "sd-barcode",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <canvas></canvas>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-    }
-  `]
+    <canvas></canvas>`
 })
 export class SdBarcodeControl implements ISdNotifyPropertyChange {
   @Input()

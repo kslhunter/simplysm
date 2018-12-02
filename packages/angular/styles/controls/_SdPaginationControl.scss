@@ -1,0 +1,13 @@
+sd-pagination {
+  display: block;
+  height: 15px;
+
+  > a {
+    display: inline-block;
+    padding: 0 gap(xs);
+
+    &[sd-selected=true] {
+      text-decoration: underline;
+    }
+  }
+}

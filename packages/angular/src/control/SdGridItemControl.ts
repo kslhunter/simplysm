@@ -4,15 +4,7 @@ import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/c
   selector: "sd-grid-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: inline-block;
-      vertical-align: top;
-    }
-  `]
+    <ng-content></ng-content>`
 })
 export class SdGridItemControl {
   @Input()

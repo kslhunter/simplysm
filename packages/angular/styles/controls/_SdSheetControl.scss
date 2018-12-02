@@ -1,0 +1,189 @@
+sd-sheet {
+  display: block;
+  position: relative;
+  width: 100%;
+  max-height: 100%;
+  overflow: auto;
+  background: $bg-color;
+  z-index: 0;
+
+  ._content {
+    white-space: nowrap;
+    width: fit-content;
+  }
+
+  ._head {
+    display: block;
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    white-space: nowrap;
+  }
+
+  ._col-group {
+    display: inline-block;
+  }
+
+  ._col {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    height: 24px;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  ._head ._col {
+    background: theme-color(grey, lighter);
+    text-align: center;
+    padding: gap(xs) gap(sm);
+    border-bottom: 1px solid theme-color(grey, light);
+    user-select: none;
+
+    > ._border {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 4px;
+      border-right: 1px solid theme-color(grey, light);
+    }
+  }
+
+  ._body ._col {
+    background: white;
+    border-right: 1px solid theme-color(grey, light);
+    border-bottom: 1px solid theme-color(grey, light);
+
+    sd-textfield > input {
+      border: none;
+      padding: gap(xs) gap(sm);
+      background: theme-color(info, lightest);
+
+      &[type=year],
+      &[type=month],
+      &[type=date],
+      &[type=datetime],
+      &[type=time],
+      &[type=datetime-local] {
+        padding: gap(xs) - 2 gap(sm) gap(xs) - 1 gap(sm);
+      }
+
+      &:disabled {
+        background: transparent;
+        color: text-color(default);
+      }
+    }
+
+    sd-combobox {
+      > ._icon {
+        top: 0;
+        right: 0;
+        width: 24px;
+        padding: gap(xs) 0;
+      }
+
+      > sd-textfield > input {
+        padding-right: 24px;
+      }
+    }
+
+    sd-checkbox > label {
+      display: inline-block;
+      width: auto;
+      border: none;
+      padding: gap(xs) gap(sm);
+
+      > ._indicator_rect {
+        background: theme-color(info, lightest);
+      }
+
+      > input:disabled + ._indicator_rect {
+        background: transparent;
+      }
+    }
+
+    sd-button > button {
+      border: none;
+      padding: gap(xs) gap(sm);
+      text-align: left;
+    }
+
+    sd-select,
+    sd-multi-select {
+      > sd-dropdown > div {
+        border: none;
+        padding: gap(xs) gap(sm);
+        height: gap(xs) * 2 + strip-unit($line-height) * font-size(default);
+        background: theme-color(info, lightest);
+
+        > ._icon {
+          top: 0;
+          right: 0;
+          width: 24px;
+          padding: gap(xs) 0;
+        }
+      }
+
+      &[sd-disabled=true] > sd-dropdown > div {
+        background: transparent;
+        color: text-color(default);
+
+        > ._icon {
+          display: none;
+        }
+      }
+    }
+
+    > ._focus-indicator {
+      position: absolute;
+      opacity: 0;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      outline: 2px solid theme-color(primary, default);
+      outline-offset: -2px;
+      pointer-events: none;
+      transition: opacity .1s linear;
+    }
+
+    &:focus {
+      z-index: 3;
+    }
+
+    &:focus > ._focus-indicator {
+      opacity: 1;
+    }
+  }
+
+  ._head ._col._first-col,
+  ._body ._col._first-col {
+    width: 24px;
+    text-align: center;
+    padding: gap(xs);
+    /*border-left: 1px solid theme-color(grey, light);*/
+  }
+
+  ._body ._col._first-col {
+    background: theme-color(grey, lighter);
+  }
+
+  ._fixed-col-group {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+  }
+
+  ._row {
+    position: relative;
+  }
+
+  &[sd-selectable=true] ._body ._first-col {
+    cursor: pointer;
+  }
+}

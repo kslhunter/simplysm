@@ -1,0 +1,76 @@
+sd-textfield {
+  display: block;
+  position: relative;
+
+  > input,
+  > textarea {
+    @include form-control-base();
+
+    background: white;
+    border-color: trans-color(default);
+    transition: outline-color .1s linear;
+    outline: 1px solid transparent;
+    outline-offset: -1px;
+
+    &::-webkit-input-placeholder {
+      color: text-color(lighter);
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    &::-webkit-calendar-picker-indicator {
+      background: white;
+      color: text-color(default);
+      cursor: pointer;
+    }
+
+    &:focus {
+      outline-color: theme-color(primary, default);
+    }
+
+    &:disabled {
+      background: $bg-color;
+      color: text-color(light);
+    }
+
+    &[type='color'] {
+      padding: 0 gap(xs) !important;
+    }
+  }
+
+  > ._invalid-indicator {
+    display: none;
+  }
+
+  > input[sd-invalid=true] + ._invalid-indicator,
+  > input:invalid + ._invalid-indicator {
+    display: block;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    border-radius: 100%;
+    width: 4px;
+    height: 4px;
+    background: get($theme-color, danger, default);
+  }
+
+  &[sd-inset=true] {
+    height: 100%;
+
+    > input,
+    > textarea {
+      display: block;
+      border: none;
+      background: theme-color(info, lightest);
+    }
+
+    > textarea {
+      height: 100%;
+      resize: none;
+    }
+  }
+}

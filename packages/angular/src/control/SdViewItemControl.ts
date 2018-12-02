@@ -5,18 +5,7 @@ import {SdViewControl} from "./SdViewControl";
   selector: "sd-view-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: none;
-
-      &[sd-selected=true] {
-        display: block;
-      }
-    }
-  `]
+    <ng-content></ng-content>`
 })
 export class SdViewItemControl {
   @Input()

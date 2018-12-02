@@ -32,55 +32,7 @@ import {SdMultiSelectItemControl} from "./SdMultiSelectItemControl";
       <sd-dropdown-popup>
         <ng-content></ng-content>
       </sd-dropdown-popup>
-    </sd-dropdown>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: block;
-      width: 100%;
-
-      /deep/ > sd-dropdown > div {
-        @include form-control-base();
-
-        text-align: left;
-        display: block;
-        overflow: visible;
-        padding-right: 30px !important;
-        height: gap(sm) * 2 + strip-unit($line-height) * font-size(default) + 2;
-
-        background: white;
-        border-color: trans-color(default);
-        transition: outline-color .1s linear;
-        outline: 1px solid transparent;
-        outline-offset: -1px;
-
-        > div:first-child {
-          overflow: hidden;
-          white-space: nowrap;
-        }
-
-        > ._icon {
-          position: absolute;
-          top: -1px;
-          right: -1px;
-          padding: gap(sm) 0;
-          width: 30px;
-          text-align: center;
-          pointer-events: none;
-        }
-
-        &:focus {
-          outline-color: theme-color(primary, default);
-        }
-      }
-
-      &[sd-disabled=true] /deep/ > sd-dropdown > div {
-        background: $bg-color;
-        color: text-color(light);
-      }
-    }
-  `]
+    </sd-dropdown>`
 })
 export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecked {
   @Input()

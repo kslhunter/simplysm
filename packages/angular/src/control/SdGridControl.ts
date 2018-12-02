@@ -4,16 +4,7 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
   selector: "sd-grid",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-  `]
+    <ng-content></ng-content>`
 })
 export class SdGridControl {
 }

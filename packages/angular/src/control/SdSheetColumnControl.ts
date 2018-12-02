@@ -5,13 +5,7 @@ import {Uuid} from "@simplism/core";
 @Component({
   selector: "sd-sheet-column",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: ``,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-    }
-  `]
+  template: ``
 })
 export class SdSheetColumnControl {
   public guid = Uuid.newUuid().toString();

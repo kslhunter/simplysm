@@ -30,48 +30,7 @@ import {SdComboboxItemControl} from "./SdComboboxItemControl";
     </div>
     <div #dropdown class="_sd-combobox-dropdown" tabindex="0">
       <ng-content></ng-content>
-    </div>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: block;
-      overflow: visible;
-      position: relative;
-
-      > ._icon {
-        position: absolute;
-        top: 1px;
-        right: 1px;
-        padding: gap(sm) 0;
-        width: 30px;
-        text-align: center;
-        pointer-events: none;
-      }
-
-      > sd-textfield /deep/ > input {
-        padding-right: 30px !important;
-      }
-    }
-
-    /deep/ ._sd-combobox-dropdown {
-      position: fixed;
-      z-index: $z-index-dropdown;
-      opacity: 0;
-      transform: translateY(-10px);
-      transition: .1s linear;
-      transition-property: transform, opacity;
-      pointer-events: none;
-      background: white;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
-      border-radius: 2px;
-      min-width: 120px;
-
-      &:focus {
-        outline: 1px solid theme-color(primary, default);
-      }
-    }
-  `]
+    </div>`
 })
 export class SdComboboxControl implements OnInit, OnDestroy {
   @Input()

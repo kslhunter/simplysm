@@ -13,18 +13,7 @@ import {SdDockControl} from "./SdDockControl";
   selector: "sd-dock-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: block;
-      position: relative;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-    }
-  `]
+    <ng-content></ng-content>`
 })
 export class SdDockContainerControl implements AfterContentInit {
   @ContentChildren(forwardRef(() => SdDockControl))

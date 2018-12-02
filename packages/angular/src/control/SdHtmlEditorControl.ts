@@ -39,72 +39,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
                   [style.resize]="inset ? 'none' : resize"
                   (input)="onTextareaInput($event)"></textarea>
       </sd-pane>
-    </sd-dock-container>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: block;
-      border: 1px solid trans-color(default);
-
-      > sd-dock-container {
-        > ._toolbar {
-          user-select: none;
-
-          > a {
-            display: inline-block;
-            padding: gap(sm) 0;
-            text-align: center;
-            width: gap(sm) * 2 + strip-unit($line-height) * font-size(default);
-
-            &:hover {
-              background: rgba(0, 0, 0, .05);
-            }
-
-            &._selected {
-              background: theme-color(primary, default);
-              color: text-color(reverse, default);
-            }
-          }
-        }
-
-        > sd-pane {
-          > div {
-            @include form-control-base();
-            height: 100%;
-
-            &[contenteditable=true] {
-              cursor: text;
-              background: theme-color(info, lightest);
-            }
-          }
-
-          > textarea {
-            @include form-control-base();
-            height: 100%;
-            background: theme-color(info, lightest);
-            border: none;
-            transition: outline-color .1s linear;
-            outline: 1px solid transparent;
-            outline-offset: -1px;
-
-            &::-webkit-input-placeholder {
-              color: text-color(lighter);
-            }
-
-            &:focus {
-              outline-color: theme-color(primary, default);
-            }
-          }
-        }
-      }
-
-      &[sd-inset=true] {
-        height: 100%;
-        border: none;
-      }
-    }
-  `]
+    </sd-dock-container>`
 })
 export class SdHtmlEditorControl {
   @Input()

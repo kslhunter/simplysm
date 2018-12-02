@@ -1,0 +1,18 @@
+sd-tab {
+  display: block;
+}
+
+sd-tab-item {
+  display: inline-block;
+  padding: gap(sm) gap(default);
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(0, 0, 0, .05);
+  }
+
+  &[sd-selected=true] {
+    background: theme-color(primary, default);
+    color: text-color(reverse, default);
+  }
+}

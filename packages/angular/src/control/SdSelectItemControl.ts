@@ -14,21 +14,7 @@ import {SdSelectControl} from "./SdSelectControl";
   selector: "sd-select-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: block;
-      padding: gap(xs) gap(sm);
-      cursor: pointer;
-      //font-size: font-size(sm);
-
-      &:hover {
-        background: trans-color(dark);
-      }
-    }
-  `]
+    <ng-content></ng-content>`
 })
 export class SdSelectItemControl {
   @HostBinding("attr.tabindex")

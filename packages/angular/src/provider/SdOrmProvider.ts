@@ -30,8 +30,10 @@ export class DbContextSocketExecutor implements IDbContextExecutor {
           await this._socket.sendAsync("OrmService.rollbackTransactionAsync", [connId]);
         }
       } catch (err2) {
-        await this._socket.sendAsync("OrmService.closeAsync", [connId]);
-        throw err2;
+        if (!err2.message.includes("ROLLBACK") || !err2.message.includes("BEGIN")) {
+          await this._socket.sendAsync("OrmService.closeAsync", [connId]);
+          throw err2;
+        }
       }
 
       await this._socket.sendAsync("OrmService.closeAsync", [connId]);
@@ -54,7 +56,9 @@ export class DbContextSocketExecutor implements IDbContextExecutor {
       try {
         await this._socket.sendAsync("OrmService.rollbackTransactionAsync", [this._connId]);
       } catch (err2) {
-        throw err2;
+        if (!err2.message.includes("ROLLBACK") || !err2.message.includes("BEGIN")) {
+          throw err2;
+        }
       }
 
       throw err;

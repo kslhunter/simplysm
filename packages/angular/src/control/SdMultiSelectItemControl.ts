@@ -26,29 +26,7 @@ import {SdMultiSelectControl} from "./SdMultiSelectControl";
       <span class="_labelTemplate" hidden *ngIf="labelTemplateRef">
         <ng-template [ngTemplateOutlet]="labelTemplateRef"></ng-template>
       </span>
-    </sd-checkbox>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: block;
-      padding: gap(xs) gap(sm);
-      cursor: pointer;
-      /*font-size: font-size(sm);*/
-
-      &:hover {
-        background: trans-color(dark);
-      }
-
-      /deep/ > sd-checkbox > label {
-        padding: 0 !important;
-      }
-
-      &[hidden] {
-        display: none;
-      }
-    }
-  `]
+    </sd-checkbox>`
 })
 export class SdMultiSelectItemControl implements DoCheck {
   @HostBinding("attr.tabindex")

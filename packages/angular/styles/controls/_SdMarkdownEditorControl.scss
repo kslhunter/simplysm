@@ -1,0 +1,129 @@
+sd-markdown-editor {
+  display: block;
+  border: 1px solid trans-color(default);
+
+  > sd-dock-container {
+    > ._toolbar {
+      user-select: none;
+
+      > a {
+        display: inline-block;
+        padding: gap(sm) 0;
+        text-align: center;
+        width: gap(sm) * 2 + strip-unit($line-height) * font-size(default);
+
+        &:hover {
+          background: rgba(0, 0, 0, .05);
+        }
+
+        &._selected {
+          background: theme-color(primary, default);
+          color: text-color(reverse, default);
+        }
+      }
+    }
+
+    > sd-pane > ._editor {
+      position: relative;
+      width: 100%;
+      height: 100%;
+
+      > textarea {
+        @include form-control-base();
+        height: 100%;
+        background: theme-color(info, lightest);
+        border: none;
+        transition: outline-color .1s linear;
+        outline: 1px solid transparent;
+        outline-offset: -1px;
+
+        &::-webkit-input-placeholder {
+          color: text-color(lighter);
+        }
+
+        &:focus {
+          outline-color: theme-color(primary, default);
+        }
+
+        > ._invalid-indicator {
+          display: none;
+        }
+
+        > input[sd-invalid=true] + ._invalid-indicator,
+        > input:invalid + ._invalid-indicator {
+          display: block;
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          border-radius: 100%;
+          width: 4px;
+          height: 4px;
+          background: get($theme-color, danger, default);
+        }
+      }
+
+      > ._dragover {
+        display: none;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, .05);
+        font-size: font-size(h1);
+        color: rgba(0, 0, 0, .3);
+        text-align: center;
+        padding-top: 20px;
+      }
+    }
+
+    > sd-pane > ._preview {
+      /*border: 1px solid trans-color(default);*/
+      padding: gap(sm);
+      height: 100%;
+      overflow: auto;
+      //background: theme-color(grey, lightest);
+      background: white;
+
+      ol {
+        padding-left: 20px;
+      }
+
+      code {
+        background: rgba(0, 0, 0, .05);
+        border-radius: 2px;
+      }
+
+      pre {
+        background: rgba(0, 0, 0, .05);
+        padding: gap(sm) gap(default);
+        border-radius: 2px;
+        white-space: pre-wrap;
+
+        > code {
+          background: transparent;
+        }
+      }
+
+      p {
+        margin-top: gap(sm);
+        margin-bottom: gap(sm);
+      }
+    }
+  }
+
+  &[sd-disabled=true] {
+    > sd-dock-container {
+      > sd-pane > ._preview {
+        height: auto;
+      }
+    }
+  }
+
+  &[sd-dragover=true] {
+    > sd-dock-container > sd-pane > ._editor > ._dragover {
+      display: block;
+    }
+  }
+}

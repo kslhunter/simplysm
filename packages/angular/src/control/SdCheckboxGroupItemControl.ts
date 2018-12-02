@@ -7,10 +7,7 @@ import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
   template: `
     <sd-checkbox [value]="isSelected" (valueChange)="onValueChange($event)" [inline]="true">
       <ng-content></ng-content>
-    </sd-checkbox>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-  `]
+    </sd-checkbox>`
 })
 export class SdCheckboxGroupItemControl {
   @Input()

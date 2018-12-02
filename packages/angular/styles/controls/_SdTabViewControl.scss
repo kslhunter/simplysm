@@ -1,0 +1,7 @@
+sd-tabview-item {
+  display: none;
+
+  &[sd-selected=true] {
+    display: block;
+  }
+}

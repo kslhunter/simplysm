@@ -23,16 +23,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
     </div>
     <div *ngIf="false">
       <ng-content select="sd-dropdown-popup"></ng-content>
-    </div>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      > div {
-        position: relative;
-      }
-    }
-  `]
+    </div>`
 })
 export class SdDropdownControl implements OnInit, OnDestroy {
   @Input()

@@ -14,24 +14,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
     </a>
     <a *ngIf="hasNext" (click)="onNextClick()">
       <sd-icon [icon]="'angle-double-right'" [fixedWidth]="true"></sd-icon>
-    </a>`,
-  styles: [/* language=SCSS */ `
-    @import "../../styles/presets";
-
-    :host {
-      display: block;
-      height: 15px;
-
-      > a {
-        display: inline-block;
-        padding: 0 gap(xs);
-
-        &[sd-selected=true] {
-          text-decoration: underline;
-        }
-      }
-    }
-  `]
+    </a>`
 })
 export class SdPaginationControl {
   @Input()
