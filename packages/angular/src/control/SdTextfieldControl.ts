@@ -208,7 +208,7 @@ export class SdTextfieldControl extends SdControlBase implements ISdNotifyProper
     const inputEl = event.target as (HTMLInputElement | HTMLTextAreaElement);
     let value;
     if (this.type === "number") {
-      value = !inputEl.value ? inputEl.value : Number(inputEl.value.replace(/,/g, ""));
+      value = !inputEl.value ? undefined : Number(inputEl.value.replace(/,/g, ""));
     } else if (this.type === "date" || this.type === "month") {
       value = !inputEl.value ? undefined : DateOnly.parse(inputEl.value);
     } else if (this.type === "datetime") {
