@@ -1,5 +1,14 @@
-import {AfterContentChecked, ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input} from "@angular/core";
+import {
+  AfterContentChecked,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostBinding,
+  Injector,
+  Input
+} from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
+import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 
 @Component({
   selector: "sd-button",
@@ -10,7 +19,108 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
     </button>
     <div class="_invalid-indicator"></div>`
 })
-export class SdButtonControl implements AfterContentChecked {
+export class SdButtonControl extends SdControlBase implements AfterContentChecked {
+  public sdInitStyle(vars: SdStyleProvider): string {
+    return /* language=LESS */ `
+    :host {
+      display: block;
+      position: relative;
+
+      & > button {
+        display: block;
+        width: 100%;
+        font-size: ${vars.fontSize.default};
+        font-family: ${vars.fontFamily};
+        line-height: ${vars.lineHeight};
+        color: ${vars.textColor.default};
+        padding: ${vars.gap.small} ${vars.gap.default};
+
+        border: 1px solid ${vars.transColor.default};
+        user-select: none;
+
+        background: white;
+        cursor: pointer;
+        transition: .1s linear;
+        color: ${vars.textColor.default};
+
+        &:hover {
+          background: ${vars.transColor.dark};
+        }
+
+        &:active {
+          transition: none;
+          background: ${vars.transColor.darker};
+        }
+
+        &:disabled {
+          background: transparent;
+          cursor: default;
+          color: ${vars.textColor.default};
+        }
+
+        &:focus {
+          outline-color: transparent;
+          border: 1px solid ${vars.themeColor.primary.darkest} !important;
+        }
+      }` +
+
+      Object.keys(vars.themeColor).map(key => `
+            &[sd-theme=${key}] > button {
+              background: ${vars.themeColor[key].default};
+              border-color: ${vars.themeColor[key].default};
+              color: ${vars.textReverseColor.default};
+
+              &:hover {
+                background: ${vars.themeColor[key].dark};
+                border-color: ${vars.themeColor[key].dark};
+              }
+
+              &:active {
+                background: ${vars.themeColor[key].dark};
+              }
+
+              &:disabled {
+                background: ${vars.themeColor.grey.default};
+                border-color: ${vars.themeColor.grey.default};
+                cursor: default;
+              }
+            }`).join("\n")
+      + `
+      &[sd-size=sm] > button {
+        padding: ${vars.gap.smaller} ${vars.gap.small};
+      }
+
+      &[sd-size=lg] > button {
+        padding: ${vars.gap.default} ${vars.gap.large};
+      }
+
+      &[sd-inline=true] {
+        display: inline-block;
+
+        > button {
+          width: auto;
+        }
+      }
+
+      &[sd-invalid=true] > ._invalid-indicator {
+        display: block;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        border-radius: 100%;
+        width: 4px;
+        height: 4px;
+        background: ${vars.themeColor.danger.default};
+      }
+
+      &[sd-inset=true] {
+        > button {
+          border: none !important;
+        }
+      }
+    }`;
+  }
+
   @Input()
   @SdTypeValidate({
     type: String,
@@ -56,7 +166,9 @@ export class SdButtonControl implements AfterContentChecked {
   @HostBinding("attr.sd-invalid")
   public isInvalid = false;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  public constructor(injector: Injector,
+                     private readonly _elRef: ElementRef<HTMLElement>) {
+    super(injector);
   }
 
   public ngAfterContentChecked(): void {

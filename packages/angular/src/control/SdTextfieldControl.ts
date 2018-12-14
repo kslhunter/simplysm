@@ -4,6 +4,7 @@ import {
   ElementRef,
   EventEmitter,
   HostBinding,
+  Injector,
   Input,
   Output,
   ViewChild
@@ -11,6 +12,7 @@ import {
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNotifyPropertyChange";
 import {DateOnly, DateTime, Time} from "@simplism/core";
+import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 
 @Component({
   selector: "sd-textfield",
@@ -43,7 +45,87 @@ import {DateOnly, DateTime, Time} from "@simplism/core";
               *ngIf="multiline"></textarea>
     <div class="_invalid-indicator"></div>`
 })
-export class SdTextfieldControl implements ISdNotifyPropertyChange {
+export class SdTextfieldControl extends SdControlBase implements ISdNotifyPropertyChange {
+  public sdInitStyle(vars: SdStyleProvider): string {
+    return /* language=LESS */ `
+:host {
+  display: block;
+  position: relative;
+
+  > input,
+  > textarea {
+    ${vars.formControlBase};
+
+    background: white;
+    border-color: ${vars.transColor.default};
+    transition: outline-color .1s linear;
+    outline: 1px solid transparent;
+    outline-offset: -1px;
+
+    &::-webkit-input-placeholder {
+      color: ${vars.textColor.lighter};
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    &::-webkit-calendar-picker-indicator {
+      background: white;
+      color: ${vars.textColor.default};
+      cursor: pointer;
+    }
+
+    &:focus {
+      outline-color: ${vars.themeColor.primary.default};
+    }
+
+    &:disabled {
+      background: ${vars.bgColor};
+      color: ${vars.textColor.light};
+    }
+
+    &[type='color'] {
+      padding: 0 ${vars.gap.smaller} !important;
+    }
+  }
+
+  > ._invalid-indicator {
+    display: none;
+  }
+
+  > input[sd-invalid=true] + ._invalid-indicator,
+  > input:invalid + ._invalid-indicator {
+    display: block;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    border-radius: 100%;
+    width: 4px;
+    height: 4px;
+    background: ${vars.themeColor.danger.default};
+  }
+
+  &[sd-inset=true] {
+    height: 100%;
+
+    > input,
+    > textarea {
+      display: block;
+      border: none;
+      background: ${vars.themeColor.info.lightest};
+    }
+
+    > textarea {
+      height: 100%;
+      resize: none;
+    }
+  }
+}`;
+  }
+
   @Input()
   @SdTypeValidate({
     type: String,
@@ -103,6 +185,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @SdTypeValidate(Boolean)
   public multiline?: boolean;
 
+  public constructor(injector: Injector) {
+    super(injector);
+  }
+
   public getIsInvalid(): boolean {
     const hasMinError = this.min !== undefined && this.value !== undefined && this.type === "number" && this.value < this.min;
     const hasStepError = this.step !== undefined && this.value !== undefined && this.type === "number" && Math.abs(Number(this.value) % this.step) >= 1;
@@ -123,17 +209,13 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
     let value;
     if (this.type === "number") {
       value = !inputEl.value ? inputEl.value : Number(inputEl.value.replace(/,/g, ""));
-    }
-    else if (this.type === "date" || this.type === "month") {
+    } else if (this.type === "date" || this.type === "month") {
       value = !inputEl.value ? undefined : DateOnly.parse(inputEl.value);
-    }
-    else if (this.type === "datetime") {
+    } else if (this.type === "datetime") {
       value = !inputEl.value ? undefined : DateTime.parse(inputEl.value);
-    }
-    else if (this.type === "time") {
+    } else if (this.type === "time") {
       value = !inputEl.value ? undefined : Time.parse(inputEl.value);
-    }
-    else {
+    } else {
       value = inputEl.value;
     }
 
@@ -165,8 +247,7 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
         if (document.activeElement !== this.inputElRef.nativeElement) {
           this.inputElRef.nativeElement.focus();
         }
-      }
-      else {
+      } else {
         if (document.activeElement === this.inputElRef.nativeElement) {
           this.inputElRef.nativeElement.blur();
         }

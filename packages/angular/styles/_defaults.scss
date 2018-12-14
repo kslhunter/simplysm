@@ -44,7 +44,7 @@ a {
   color: theme-color(primary, default);
 
   &:focus {
-    outline: none;
+    outline-color: transparent;
   }
 
   &:hover,

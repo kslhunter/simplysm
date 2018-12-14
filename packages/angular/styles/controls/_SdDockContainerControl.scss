@@ -13,7 +13,7 @@ sd-dock {
   overflow: auto;
   z-index: 1;
 
-  &[sd-position=top] {
+  /*&[sd-position=top] {
     border-bottom: 1px solid get($trans-color, default);
   }
 
@@ -27,7 +27,7 @@ sd-dock {
 
   &[sd-position=right] {
     border-left: 1px solid get($trans-color, default);
-  }
+  }*/
 
   > hr {
     display: none;

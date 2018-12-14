@@ -17,7 +17,7 @@ sd-list-item {
     }
 
     &:focus {
-      outline: none;
+      outline-color: transparent;
     }
   }
 
@@ -59,6 +59,10 @@ sd-list-item {
       color: text-color(light);
       font-size: font-size(sm);
       margin-top: gap(sm);
+
+      &:hover{
+        background: transparent;
+      }
     }
 
     > label > sd-icon {

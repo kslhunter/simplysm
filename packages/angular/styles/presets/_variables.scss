@@ -107,18 +107,18 @@ $font-size: (
   h6: 11px
 ) !default;
 
-$bg-color: map_get(map_get($theme-color, grey), lightest);
+$bg-color: map_get(map_get($theme-color, grey), lightest) !default;
 $font-family: /*'Noto Sans KR', */
-  '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif;
-$line-height: 1.25em;
+  '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;
+$line-height: 1.25em !default;
 
-$z-index-toast: 9999;
-$z-index-busy: 9998;
-$z-index-dropdown: 5000;
-$z-index-modal: 4000;
-$z-index-fullscreen: 3000;
-$z-index-sidebar: 2100;
-$z-index-topbar: 2000;
+$z-index-toast: 9999 !default;
+$z-index-busy: 9998 !default;
+$z-index-dropdown: 5000 !default;
+$z-index-modal: 4000 !default;
+$z-index-fullscreen: 3000 !default;
+$z-index-sidebar: 2100 !default;
+$z-index-topbar: 2000 !default;
 
 //-- media
-$screen-mobile: "screen and (max-width : 520px)";
+$screen-mobile: "screen and (max-width : 520px)" !default;

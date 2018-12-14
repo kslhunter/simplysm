@@ -143,6 +143,7 @@
       "statements",
       "elements",
       "members"
-    ]
+    ],
+    "object-literal-key-quotes": [true, "consistent"]
   }
 }

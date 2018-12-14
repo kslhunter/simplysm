@@ -32,7 +32,7 @@ sd-modal {
     //border: 1px solid get($trans-color, default);
 
     &:focus {
-      outline: none;
+      outline-color: transparent;
     }
 
     > sd-dock-container {

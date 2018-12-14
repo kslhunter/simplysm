@@ -15,6 +15,7 @@ sd-checkbox {
       border: 1px solid trans-color(default);
       background: white;
       vertical-align: top;
+      transition: border-color .1s linear;
     }
 
     > ._indicator {
@@ -43,7 +44,7 @@ sd-checkbox {
     }
 
     &:focus {
-      outline: none;
+      outline-color: transparent;
       > ._indicator_rect {
         border-color: theme-color(primary, default);
       }
