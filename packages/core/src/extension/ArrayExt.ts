@@ -107,7 +107,7 @@ Array.prototype.groupBy = function (keySelectorOrKeys: ((item: any, index: numbe
 };
 
 Array.prototype.toMap = function (keySelector: (item: any, index: number) => any, valueSelector?: (item: any, index: number) => any): Map<any, any> {
-  const result = new Map<string>();
+  const result = new Map<any, any>();
 
   for (let i = 0; i < this.length; i++) {
     const item = this[i];
