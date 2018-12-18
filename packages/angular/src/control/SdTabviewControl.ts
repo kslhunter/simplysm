@@ -3,13 +3,12 @@ import {
   Component,
   ContentChildren,
   EventEmitter,
-  Injector,
   Input,
   Output,
   QueryList
 } from "@angular/core";
 import {SdTabviewItemControl} from "./SdTabviewItemControl";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+
 
 @Component({
   selector: "sd-tabview",
@@ -30,10 +29,8 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
       </sd-pane>
     </sd-dock-container>`
 })
-export class SdTabviewControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ ``;
-  }
+export class SdTabviewControl {
+
 
   @Input()
   public value?: any;
@@ -46,7 +43,5 @@ export class SdTabviewControl extends SdControlBase {
 
   public trackByValueFn = (i: number, item: any) => item.value || item;
 
-  public constructor(injector: Injector) {
-    super(injector);
-  }
+
 }

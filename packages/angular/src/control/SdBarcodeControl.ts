@@ -1,7 +1,6 @@
-import {ChangeDetectionStrategy, Component, ElementRef, Injector, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, Input} from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNotifyPropertyChange";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 
 // tslint:disable-next-line:no-var-requires no-require-imports
 require("jsbarcode");
@@ -12,11 +11,7 @@ require("jsbarcode");
   template: `
     <canvas></canvas>`
 })
-export class SdBarcodeControl extends SdControlBase implements ISdNotifyPropertyChange {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return "";
-  }
-
+export class SdBarcodeControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate(String)
   @SdNotifyPropertyChange()
@@ -37,9 +32,7 @@ export class SdBarcodeControl extends SdControlBase implements ISdNotifyProperty
   @SdNotifyPropertyChange()
   public height = 58;
 
-  public constructor(injector: Injector,
-                     private readonly _elRef: ElementRef<HTMLElement>) {
-    super(injector);
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
   }
 
   public sdOnPropertyChange(propertyName: string, oldValue: any, newValue: any): void {

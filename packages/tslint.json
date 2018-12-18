@@ -144,6 +144,8 @@
       "elements",
       "members"
     ],
-    "object-literal-key-quotes": [true, "consistent"]
+    "object-literal-key-quotes": [true, "consistent"],
+    "increment-decrement": false,
+    "ban-ts-ignore": false
   }
 }

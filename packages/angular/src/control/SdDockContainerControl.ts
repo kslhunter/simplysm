@@ -5,11 +5,10 @@ import {
   ContentChildren,
   ElementRef,
   forwardRef,
-  Injector,
   QueryList
 } from "@angular/core";
 import {SdDockControl} from "./SdDockControl";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+
 
 @Component({
   selector: "sd-dock-container",
@@ -17,24 +16,11 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
   template: `
     <ng-content></ng-content>`
 })
-export class SdDockContainerControl extends SdControlBase implements AfterContentInit {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-      :host {
-        display: block;
-        position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-      }`;
-  }
-
+export class SdDockContainerControl implements AfterContentInit {
   @ContentChildren(forwardRef(() => SdDockControl))
   public dockControls?: QueryList<SdDockControl>;
 
-  public constructor(injector: Injector,
-                     private readonly _elRef: ElementRef<HTMLElement>) {
-    super(injector);
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
   }
 
   public ngAfterContentInit(): void {

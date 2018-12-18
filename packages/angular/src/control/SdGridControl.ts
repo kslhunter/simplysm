@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, Injector} from "@angular/core";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+import {ChangeDetectionStrategy, Component} from "@angular/core";
+
 
 @Component({
   selector: "sd-grid",
@@ -7,17 +7,5 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
   template: `
     <ng-content></ng-content>`
 })
-export class SdGridControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-      :host {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }`;
-  }
-
-  public constructor(injector: Injector) {
-    super(injector);
-  }
+export class SdGridControl {
 }

@@ -1,6 +1,6 @@
 {
   "name": "@simplism/orm-connector",
-  "version": "10.3.17",
+  "version": "10.3.19",
   "description": "Simplism ORM Connector Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -8,8 +8,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplism/core": "~10.3.17",
-    "@simplism/orm-common": "~10.3.17",
+    "@simplism/core": "~10.3.19",
+    "@simplism/orm-common": "~10.3.19",
     "tedious": "^3.0.1"
   }
 }

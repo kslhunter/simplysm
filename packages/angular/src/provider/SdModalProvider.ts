@@ -58,7 +58,7 @@ export class SdModalProvider {
         await close();
       });
 
-      compRef.instance.close = close.bind(this);
+      compRef.instance.close = close.bind(this); //tslint:disable-line:unnecessary-bind
 
       setTimeout(async () => {
         this._appRef.attachView(compRef.hostView);
@@ -71,8 +71,7 @@ export class SdModalProvider {
           modalRef.instance.open = true;
           await compRef.instance.sdOnOpen(param);
           this._appRef.tick();
-        }
-        catch (e) {
+        } catch (e) {
           await close();
           throw e;
         }

@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, Output} from "@angular/core";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
+
 
 @Component({
   selector: "sd-tab",
@@ -7,13 +7,8 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
   template: `
     <ng-content></ng-content>`
 })
-export class SdTabControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-      :host {
-        display: block;
-      }`;
-  }
+export class SdTabControl {
+
 
   @Input()
   public value?: any;
@@ -26,7 +21,5 @@ export class SdTabControl extends SdControlBase {
     this.valueChange.emit(value);
   }
 
-  public constructor(injector: Injector) {
-    super(injector);
-  }
+
 }

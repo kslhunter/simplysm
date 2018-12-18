@@ -8,14 +8,13 @@ import {
   forwardRef,
   HostBinding,
   Inject,
-  Injector,
   Input,
   IterableDiffer,
   IterableDiffers,
   TemplateRef
 } from "@angular/core";
 import {SdMultiSelectControl} from "./SdMultiSelectControl";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+
 
 @Component({
   selector: "sd-multi-select-item",
@@ -30,28 +29,8 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
       </span>
     </sd-checkbox>`
 })
-export class SdMultiSelectItemControl extends SdControlBase implements DoCheck {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-      :host {
-        display: block;
-        padding: ${vars.gap.xs} ${vars.gap.sm};
-        cursor: pointer;
-        /*font-size: font-size(sm);*/
+export class SdMultiSelectItemControl implements DoCheck {
 
-        &:hover {
-          background: ${vars.transColor.dark};
-        }
-
-        > sd-checkbox > label {
-          padding: 0 !important;
-        }
-
-        &[hidden] {
-          display: none;
-        }
-      }`;
-  }
 
   @HostBinding("attr.tabindex")
   public tabIndex = 0;
@@ -64,13 +43,11 @@ export class SdMultiSelectItemControl extends SdControlBase implements DoCheck {
 
   private readonly _iterableDiffer: IterableDiffer<any>;
 
-  public constructor(injector: Injector,
-                     private readonly _iterableDiffers: IterableDiffers,
+  public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
                      public readonly elRef: ElementRef<HTMLElement>,
                      @Inject(forwardRef(() => SdMultiSelectControl))
                      private readonly _parentControl: SdMultiSelectControl) {
-    super(injector);
     this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => item);
   }
 

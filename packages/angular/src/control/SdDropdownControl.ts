@@ -5,7 +5,6 @@ import {
   ElementRef,
   EventEmitter,
   HostBinding,
-  Injector,
   Input,
   OnDestroy,
   OnInit,
@@ -14,7 +13,7 @@ import {
 } from "@angular/core";
 import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+
 
 @Component({
   selector: "sd-dropdown",
@@ -27,16 +26,7 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
       <ng-content select="sd-dropdown-popup"></ng-content>
     </div>`
 })
-export class SdDropdownControl extends SdControlBase implements OnInit, OnDestroy {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-      :host {
-        > div {
-          position: relative;
-        }
-      }`;
-  }
-
+export class SdDropdownControl implements OnInit, OnDestroy {
   @Input()
   @SdTypeValidate(Boolean)
   @HostBinding("attr.sd-disabled")
@@ -56,9 +46,7 @@ export class SdDropdownControl extends SdControlBase implements OnInit, OnDestro
 
   private _isOpen = false;
 
-  public constructor(injector: Injector,
-                     private readonly _elRef: ElementRef<HTMLElement>) {
-    super(injector);
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
   }
 
   public ngOnInit(): void {
@@ -67,7 +55,7 @@ export class SdDropdownControl extends SdControlBase implements OnInit, OnDestro
     controlEl.addEventListener("blur", this.blurEventHandler, true);
 
     const dropdownEl = this.dropdownElRef!.nativeElement;
-    document.body.appendChild(dropdownEl);
+    dropdownEl.remove();
   }
 
   public ngOnDestroy(): void {
@@ -78,6 +66,7 @@ export class SdDropdownControl extends SdControlBase implements OnInit, OnDestro
     const controlEl = this.controlElRef!.nativeElement;
 
     const dropdownEl = this.dropdownElRef!.nativeElement;
+    document.body.appendChild(dropdownEl);
     dropdownEl.addEventListener("blur", this.blurEventHandler, true);
 
     if (window.innerHeight < controlEl.windowOffset.top * 2) {
@@ -128,6 +117,7 @@ export class SdDropdownControl extends SdControlBase implements OnInit, OnDestro
     if (this._isOpen) {
       this.close.emit();
       this._isOpen = false;
+      dropdownEl.remove();
     }
   }
 

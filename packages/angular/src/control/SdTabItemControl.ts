@@ -1,15 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  forwardRef,
-  HostBinding,
-  HostListener,
-  Inject,
-  Injector,
-  Input
-} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, HostListener, Inject, Input} from "@angular/core";
 import {SdTabControl} from "./SdTabControl";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+
 
 @Component({
   selector: "sd-tab-item",
@@ -17,24 +8,8 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
   template: `
     <ng-content></ng-content>`
 })
-export class SdTabItemControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-      :host {
-        display: inline-block;
-        padding: ${vars.gap.sm} ${vars.gap.default};
-        cursor: pointer;
+export class SdTabItemControl {
 
-        &:hover {
-          background: rgba(0, 0, 0, .05);
-        }
-
-        &[sd-selected=true] {
-          background: ${vars.themeColor.primary.default};
-          color: ${vars.textReverseColor.default};
-        }
-      }`;
-  }
 
   @Input()
   public value?: any;
@@ -44,10 +19,8 @@ export class SdTabItemControl extends SdControlBase {
     return this._parentControl.value === this.value;
   }
 
-  public constructor(injector: Injector,
-                     @Inject(forwardRef(() => SdTabControl))
+  public constructor(@Inject(forwardRef(() => SdTabControl))
                      private readonly _parentControl: SdTabControl) {
-    super(injector);
   }
 
   @HostListener("click")

@@ -1,5 +1,4 @@
-import {ChangeDetectionStrategy, Component, Injector} from "@angular/core";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+import {ChangeDetectionStrategy, Component} from "@angular/core";
 
 @Component({
   selector: "sd-card",
@@ -7,18 +6,5 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
   template: `
     <ng-content></ng-content>`
 })
-export class SdCardControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-:host {
- display: block;
- width: 100%;
- background: white;
- border: 1px solid ${vars.transColor.default};
-}`;
-  }
-
-  public constructor(injector: Injector) {
-    super(injector);
-  }
+export class SdCardControl {
 }

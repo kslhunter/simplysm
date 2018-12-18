@@ -1,9 +1,10 @@
-import {ElementRef, Injectable, Injector, OnDestroy} from "@angular/core";
-import {Uuid} from "../../../core/src";
+import {Injectable} from "@angular/core";
 import * as less from "less";
 import {sdColors} from "../common/sdColors";
 import {stylesDefaults} from "../styles/stylesDefault";
 import {stylesClasses} from "../styles/stylesClasses";
+import {stylesToast} from "../styles/stylesToast";
+import {stylesControls} from "../styles/stylesControls";
 
 @Injectable()
 export class SdStyleProvider {
@@ -206,7 +207,10 @@ user-select: none`;
       styleEl.setAttribute("id", "SdStyleProvider");
 
       less.render(
-        stylesDefaults(this) + stylesClasses(this),
+        stylesDefaults(this) +
+        stylesClasses(this) +
+        stylesControls(this) +
+        stylesToast(this),
         (err, out) => {
           if (err) {
             reject(err);
@@ -222,6 +226,7 @@ user-select: none`;
   }
 }
 
+/*
 export abstract class SdControlBase implements OnDestroy {
   private readonly _$elRef: ElementRef<HTMLElement>;
 
@@ -250,4 +255,4 @@ export abstract class SdControlBase implements OnDestroy {
     const uuid = this._$elRef.nativeElement.getAttribute("sd-uuid")!;
     document.getElementById(uuid)!.remove();
   }
-}
+}*/

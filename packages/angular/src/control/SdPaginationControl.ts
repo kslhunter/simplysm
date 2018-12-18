@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Injector, Input, Output} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+
 
 @Component({
   selector: "sd-pagination",
@@ -17,23 +17,8 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
       <sd-icon [icon]="'angle-double-right'" [fixedWidth]="true"></sd-icon>
     </a>`
 })
-export class SdPaginationControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-      :host {
-        display: block;
-        height: 15px;
+export class SdPaginationControl {
 
-        > a {
-          display: inline-block;
-          padding: 0 ${vars.gap.xs};
-
-          &[sd-selected=true] {
-            text-decoration: underline;
-          }
-        }
-      }`;
-  }
 
   @Input()
   @SdTypeValidate({
@@ -58,10 +43,6 @@ export class SdPaginationControl extends SdControlBase {
 
   @Output()
   public readonly pageChange = new EventEmitter<number>();
-
-  public constructor(injector: Injector) {
-    super(injector);
-  }
 
   public get displayPages(): number[] {
     const pages = [];

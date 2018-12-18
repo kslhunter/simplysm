@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Injector, Input} from "@angular/core";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+
 
 @Component({
   selector: "sd-grid-item",
@@ -7,20 +7,8 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
   template: `
     <ng-content></ng-content>`
 })
-export class SdGridItemControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-      :host {
-        display: inline-block;
-        vertical-align: top;
-      }`;
-  }
-
+export class SdGridItemControl {
   @Input()
   @HostBinding("style.width")
   public width = "100%";
-
-  public constructor(injector: Injector) {
-    super(injector);
-  }
 }

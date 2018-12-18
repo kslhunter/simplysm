@@ -1,17 +1,15 @@
-import {ChangeDetectionStrategy, Component, ContentChild, Injector, Input, TemplateRef} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef} from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {Uuid} from "@simplism/core";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+
 
 @Component({
   selector: "sd-sheet-column",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ``
 })
-export class SdSheetColumnControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ ``;
-  }
+export class SdSheetColumnControl {
+
 
   public guid = Uuid.newUuid().toString();
 
@@ -38,7 +36,4 @@ export class SdSheetColumnControl extends SdControlBase {
   public itemTemplateRef?: TemplateRef<any>;
 
 
-  public constructor(injector: Injector) {
-    super(injector);
-  }
 }

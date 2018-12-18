@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, Injector} from "@angular/core";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+import {ChangeDetectionStrategy, Component} from "@angular/core";
+
 
 @Component({
   selector: "sd-topbar-menu",
@@ -7,37 +7,7 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
   template: `
     <ng-content></ng-content>`
 })
-export class SdTopbarMenuControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-:host {
-  display: block;
-  padding: 0 ${vars.gap.default};
-  cursor: pointer;
-  transition: .1s linear;
-  transition-property: background, color;
-  user-select: none;
-  color: ${vars.topbarLinkColor};
-  float: left;
+export class SdTopbarMenuControl {
 
-  &:hover {
-    background: ${vars.transColor.dark};
-    color: ${vars.topbarLinkHoverColor};
-  }
 
-  &:active {
-    transition: none;
-    background: ${vars.transColor.dark};
-    color: ${vars.topbarLinkHoverColor};
-  }
-
-  @media ${vars.media.mobile} {
-    float: right;
-  }
-}`;
-  }
-
-  public constructor(injector: Injector) {
-    super(injector);
-  }
 }

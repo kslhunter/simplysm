@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Injector, Input, Output} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+
 
 @Component({
   selector: "sd-html-editor",
@@ -42,72 +42,7 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
       </sd-pane>
     </sd-dock-container>`
 })
-export class SdHtmlEditorControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-      :host {
-        display: block;
-        border: 1px solid ${vars.transColor.default};
-
-        > sd-dock-container {
-          > ._toolbar {
-            user-select: none;
-
-            > a {
-              display: inline-block;
-              padding: ${vars.gap.sm} 0;
-              text-align: center;
-              width: ${vars.stripUnit(vars.gap.sm) * 2 + vars.stripUnit(vars.lineHeight) * vars.stripUnit(vars.fontSize.default)}px;
-
-              &:hover {
-                background: rgba(0, 0, 0, .05);
-              }
-
-              &._selected {
-                background: ${vars.themeColor.primary.default};
-                color: ${vars.textReverseColor.default};
-              }
-            }
-          }
-
-          > sd-pane {
-            > div {
-              ${vars.formControlBase};
-              height: 100%;
-
-              &[contenteditable=true] {
-                cursor: text;
-                background: ${vars.themeColor.info.lightest};
-              }
-            }
-
-            > textarea {
-              ${vars.formControlBase};
-              height: 100%;
-              background: ${vars.themeColor.info.lightest};
-              border: none;
-              transition: outline-color .1s linear;
-              outline: 1px solid transparent;
-              outline-offset: -1px;
-
-              &::-webkit-input-placeholder {
-                color: ${vars.textColor.lighter};
-              }
-
-              &:focus {
-                outline-color: ${vars.themeColor.primary.default};
-              }
-            }
-          }
-        }
-
-        &[sd-inset=true] {
-          height: 100%;
-          border: none;
-        }
-      }`;
-  }
-
+export class SdHtmlEditorControl {
   @Input()
   @SdTypeValidate(String)
   public get value(): string | undefined {
@@ -158,9 +93,7 @@ export class SdHtmlEditorControl extends SdControlBase {
 
   public content: SafeHtml = "";
 
-  public constructor(injector: Injector,
-                     private readonly _sanitizer: DomSanitizer) {
-    super(injector);
+  public constructor(private readonly _sanitizer: DomSanitizer) {
   }
 
   public onTextareaInput(event: Event): void {

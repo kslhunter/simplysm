@@ -7,6 +7,8 @@
       <w>smtp</w>
       <w>tabview</w>
       <w>textarea</w>
+      <w>textfield</w>
+      <w>topbar</w>
       <w>tslint</w>
     </words>
   </dictionary>

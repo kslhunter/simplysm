@@ -4,7 +4,6 @@ import {
   ContentChildren,
   ElementRef,
   EventEmitter,
-  Injector,
   Input,
   OnDestroy,
   OnInit,
@@ -14,7 +13,7 @@ import {
 } from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {SdComboboxItemControl} from "./SdComboboxItemControl";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+
 
 @Component({
   selector: "sd-combobox",
@@ -34,48 +33,7 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
       <ng-content></ng-content>
     </div>`
 })
-export class SdComboboxControl extends SdControlBase implements OnInit, OnDestroy {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-:host {
-  display: block;
-  overflow: visible;
-  position: relative;
-
-  > ._icon {
-    position: absolute;
-    top: 1px;
-    right: 1px;
-    padding: ${vars.gap.sm} 0;
-    width: 30px;
-    text-align: center;
-    pointer-events: none;
-  }
-
-  > sd-textfield > input {
-    padding-right: 30px !important;
-  }
-}
-
-._sd-combobox-dropdown {
-  position: fixed;
-  z-index: ${vars.zIndex.dropdown};
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: .1s linear;
-  transition-property: transform, opacity;
-  pointer-events: none;
-  background: white;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
-  border-radius: 2px;
-  min-width: 120px;
-
-  &:focus {
-    outline: 1px solid ${vars.themeColor.primary.default};
-  }
-}`;
-  }
-
+export class SdComboboxControl implements OnInit, OnDestroy {
   @Input()
   public value?: any;
 
@@ -112,16 +70,14 @@ export class SdComboboxControl extends SdControlBase implements OnInit, OnDestro
   @Output()
   public readonly textfieldFocusedChange = new EventEmitter<boolean>();
 
-  public constructor(injector: Injector,
-                     private readonly _elRef: ElementRef<HTMLElement>) {
-    super(injector);
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
   }
 
   public ngOnInit(): void {
     const textfieldEl = this.textfieldElRef!.nativeElement;
     const dropdownEl = this.dropdownElRef!.nativeElement;
 
-    document.body.appendChild(dropdownEl);
+    dropdownEl.remove();
 
     textfieldEl.addEventListener("focus", this.focusEventHandler, true);
     textfieldEl.addEventListener("blur", this.blurEventHandler, true);
@@ -159,6 +115,7 @@ export class SdComboboxControl extends SdControlBase implements OnInit, OnDestro
   public openPopup(): void {
     const textfieldEl = this.textfieldElRef!.nativeElement;
     const dropdownEl = this.dropdownElRef!.nativeElement;
+    document.body.appendChild(dropdownEl);
 
     if (window.innerHeight < textfieldEl.windowOffset.top * 2) {
       Object.assign(
@@ -191,6 +148,7 @@ export class SdComboboxControl extends SdControlBase implements OnInit, OnDestro
 
   public closePopup(): void {
     const dropdownEl = this.dropdownElRef!.nativeElement;
+    dropdownEl.remove();
 
     Object.assign(
       dropdownEl.style,

@@ -1,11 +1,11 @@
-import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, Injector, Input, OnInit} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input, OnInit} from "@angular/core";
 import {counter, icon, IconLookup, IconName, library} from "@fortawesome/fontawesome-svg-core";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {far} from "@fortawesome/free-regular-svg-icons";
 import {fab} from "@fortawesome/free-brands-svg-icons";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNotifyPropertyChange";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+
 
 library.add(fas, far, fab);
 const iconNames = Object.values(fas).map(item => item.iconName);
@@ -15,26 +15,8 @@ const iconNames = Object.values(fas).map(item => item.iconName);
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ``
 })
-export class SdIconControl extends SdControlBase implements ISdNotifyPropertyChange, OnInit {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-      :host {
-        display: inline-block;
-        pointer-events: none;
+export class SdIconControl implements ISdNotifyPropertyChange, OnInit {
 
-        &[sd-fixed-width=true] {
-          width: 1.25em;
-        }
-
-        .fa-layers-counter {
-          transform: scale(0.4);
-        }
-
-        &[sd-dot=true] svg:nth-child(2) {
-          color: ${vars.themeColor.danger.default};
-        }
-      }`;
-  }
 
   @Input()
   @SdTypeValidate({
@@ -74,9 +56,7 @@ export class SdIconControl extends SdControlBase implements ISdNotifyPropertyCha
   @SdNotifyPropertyChange()
   public spin?: boolean;
 
-  public constructor(injector: Injector,
-                     private readonly _elRef: ElementRef<HTMLElement>) {
-    super(injector);
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
   }
 
   public ngOnInit(): void {

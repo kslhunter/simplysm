@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, Injector} from "@angular/core";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+import {ChangeDetectionStrategy, Component} from "@angular/core";
+
 
 @Component({
   selector: "sd-list",
@@ -7,16 +7,5 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
   template: `
     <ng-content></ng-content>`
 })
-export class SdListControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-      :host {
-        display: block;
-        user-select: none;
-      }`;
-  }
-
-  public constructor(injector: Injector) {
-    super(injector);
-  }
+export class SdListControl {
 }

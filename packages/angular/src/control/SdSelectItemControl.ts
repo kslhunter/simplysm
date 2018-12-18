@@ -6,11 +6,10 @@ import {
   HostBinding,
   HostListener,
   Inject,
-  Injector,
   Input
 } from "@angular/core";
 import {SdSelectControl} from "./SdSelectControl";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+
 
 @Component({
   selector: "sd-select-item",
@@ -18,21 +17,8 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
   template: `
     <ng-content></ng-content>`
 })
-export class SdSelectItemControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-      :host {
-        display: block;
-        // padding: ${vars.gap.xs} ${vars.gap.sm};
-        padding: ${vars.gap.sm} ${vars.gap.default};
-        cursor: pointer;
-        // font-size: font-size(sm);
+export class SdSelectItemControl {
 
-        &:hover {
-          background: ${vars.transColor.default};
-        }
-      }`;
-  }
 
   @HostBinding("attr.tabindex")
   public tabIndex = 0;
@@ -44,11 +30,9 @@ export class SdSelectItemControl extends SdControlBase {
     return this._elRef.nativeElement.innerHTML.trim();
   }
 
-  public constructor(injector: Injector,
-                     @Inject(forwardRef(() => SdSelectControl))
+  public constructor(@Inject(forwardRef(() => SdSelectControl))
                      private readonly _selectControl: SdSelectControl,
                      private readonly _elRef: ElementRef<HTMLElement>) {
-    super(injector);
   }
 
   @HostListener("click", ["$event"])

@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, ContentChild, Injector, Input, TemplateRef} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef} from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
-import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
+
 
 @Component({
   selector: "sd-form-item",
@@ -17,64 +17,11 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
       <ng-content></ng-content>
     </div>`
 })
-export class SdFormItemControl extends SdControlBase {
-  public sdInitStyle(vars: SdStyleProvider): string {
-    return /* language=LESS */ `
-:host {
-  display: block;
-  margin-bottom: ${vars.gap.default};
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  & > label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: ${vars.gap.xs};
-  }
-
-  /*@media ${vars.media.mobile} {
-    width: 100%;
-    margin: 0;
-    overflow-x: hidden;
-
-    > label {
-      padding: ${vars.gap.xs} ${vars.gap.sm};
-      font-size: ${vars.fontSize.sm};
-      background: rgba(0, 0, 0, .1);
-      margin: 0;
-    }
-
-    > div {
-      > sd-textfield > input {
-        border: none;
-      }
-
-      > sd-markdown-editor {
-        border: none;
-      }
-
-      > sd-select > select {
-        border: none;
-      }
-
-      > sd-multi-select > sd-dropdown > div {
-        border: none;
-      }
-    }
-  }*/
-}`;
-  }
-
+export class SdFormItemControl {
   @Input()
   @SdTypeValidate(String)
   public label?: string;
 
   @ContentChild("label")
   public labelTemplateRef?: TemplateRef<any>;
-
-  public constructor(injector: Injector) {
-    super(injector);
-  }
 }
