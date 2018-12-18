@@ -4,6 +4,7 @@ import {
   ContentChildren,
   ElementRef,
   EventEmitter,
+  Injector,
   Input,
   OnDestroy,
   OnInit,
@@ -13,6 +14,7 @@ import {
 } from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {SdComboboxItemControl} from "./SdComboboxItemControl";
+import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 
 @Component({
   selector: "sd-combobox",
@@ -32,7 +34,48 @@ import {SdComboboxItemControl} from "./SdComboboxItemControl";
       <ng-content></ng-content>
     </div>`
 })
-export class SdComboboxControl implements OnInit, OnDestroy {
+export class SdComboboxControl extends SdControlBase implements OnInit, OnDestroy {
+  public sdInitStyle(vars: SdStyleProvider): string {
+    return /* language=LESS */ `
+:host {
+  display: block;
+  overflow: visible;
+  position: relative;
+
+  > ._icon {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    padding: ${vars.gap.sm} 0;
+    width: 30px;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  > sd-textfield > input {
+    padding-right: 30px !important;
+  }
+}
+
+._sd-combobox-dropdown {
+  position: fixed;
+  z-index: ${vars.zIndex.dropdown};
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: .1s linear;
+  transition-property: transform, opacity;
+  pointer-events: none;
+  background: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+  border-radius: 2px;
+  min-width: 120px;
+
+  &:focus {
+    outline: 1px solid ${vars.themeColor.primary.default};
+  }
+}`;
+  }
+
   @Input()
   public value?: any;
 
@@ -69,7 +112,9 @@ export class SdComboboxControl implements OnInit, OnDestroy {
   @Output()
   public readonly textfieldFocusedChange = new EventEmitter<boolean>();
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  public constructor(injector: Injector,
+                     private readonly _elRef: ElementRef<HTMLElement>) {
+    super(injector);
   }
 
   public ngOnInit(): void {
@@ -127,8 +172,7 @@ export class SdComboboxControl implements OnInit, OnDestroy {
           transform: "none"
         }
       );
-    }
-    else {
+    } else {
       Object.assign(
         dropdownEl.style,
         {
@@ -191,8 +235,7 @@ export class SdComboboxControl implements OnInit, OnDestroy {
             left: textfieldEl.windowOffset.left + "px"
           }
         );
-      }
-      else {
+      } else {
         Object.assign(
           dropdownEl.style,
           {

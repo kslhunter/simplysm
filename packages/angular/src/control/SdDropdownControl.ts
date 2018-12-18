@@ -5,6 +5,7 @@ import {
   ElementRef,
   EventEmitter,
   HostBinding,
+  Injector,
   Input,
   OnDestroy,
   OnInit,
@@ -13,6 +14,7 @@ import {
 } from "@angular/core";
 import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
+import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 
 @Component({
   selector: "sd-dropdown",
@@ -25,7 +27,16 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
       <ng-content select="sd-dropdown-popup"></ng-content>
     </div>`
 })
-export class SdDropdownControl implements OnInit, OnDestroy {
+export class SdDropdownControl extends SdControlBase implements OnInit, OnDestroy {
+  public sdInitStyle(vars: SdStyleProvider): string {
+    return /* language=LESS */ `
+      :host {
+        > div {
+          position: relative;
+        }
+      }`;
+  }
+
   @Input()
   @SdTypeValidate(Boolean)
   @HostBinding("attr.sd-disabled")
@@ -45,7 +56,9 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
   private _isOpen = false;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  public constructor(injector: Injector,
+                     private readonly _elRef: ElementRef<HTMLElement>) {
+    super(injector);
   }
 
   public ngOnInit(): void {
@@ -79,8 +92,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
           transform: "none"
         }
       );
-    }
-    else {
+    } else {
       Object.assign(
         dropdownEl.style,
         {
@@ -133,8 +145,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
             left: controlEl.windowOffset.left + "px"
           }
         );
-      }
-      else {
+      } else {
         Object.assign(
           dropdownEl.style,
           {

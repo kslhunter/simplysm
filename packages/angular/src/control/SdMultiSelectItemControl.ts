@@ -8,12 +8,14 @@ import {
   forwardRef,
   HostBinding,
   Inject,
+  Injector,
   Input,
   IterableDiffer,
   IterableDiffers,
   TemplateRef
 } from "@angular/core";
 import {SdMultiSelectControl} from "./SdMultiSelectControl";
+import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 
 @Component({
   selector: "sd-multi-select-item",
@@ -28,7 +30,29 @@ import {SdMultiSelectControl} from "./SdMultiSelectControl";
       </span>
     </sd-checkbox>`
 })
-export class SdMultiSelectItemControl implements DoCheck {
+export class SdMultiSelectItemControl extends SdControlBase implements DoCheck {
+  public sdInitStyle(vars: SdStyleProvider): string {
+    return /* language=LESS */ `
+      :host {
+        display: block;
+        padding: ${vars.gap.xs} ${vars.gap.sm};
+        cursor: pointer;
+        /*font-size: font-size(sm);*/
+
+        &:hover {
+          background: ${vars.transColor.dark};
+        }
+
+        > sd-checkbox > label {
+          padding: 0 !important;
+        }
+
+        &[hidden] {
+          display: none;
+        }
+      }`;
+  }
+
   @HostBinding("attr.tabindex")
   public tabIndex = 0;
 
@@ -40,11 +64,13 @@ export class SdMultiSelectItemControl implements DoCheck {
 
   private readonly _iterableDiffer: IterableDiffer<any>;
 
-  public constructor(private readonly _iterableDiffers: IterableDiffers,
+  public constructor(injector: Injector,
+                     private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
                      public readonly elRef: ElementRef<HTMLElement>,
                      @Inject(forwardRef(() => SdMultiSelectControl))
                      private readonly _parentControl: SdMultiSelectControl) {
+    super(injector);
     this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => item);
   }
 
@@ -65,13 +91,11 @@ export class SdMultiSelectItemControl implements DoCheck {
         this._parentControl.value!.push(this.value);
         this._parentControl.valueChange.emit(this._parentControl.value);
       }
-    }
-    else {
+    } else {
       if (this.getIsSelected()) {
         if (this._parentControl.keyProp) {
           this._parentControl.value!.remove((item: any) => item[this._parentControl.keyProp!] === this.value[this._parentControl.keyProp!]);
-        }
-        else {
+        } else {
           this._parentControl.value!.remove(this.value);
         }
         this._parentControl.valueChange.emit(this._parentControl.value);

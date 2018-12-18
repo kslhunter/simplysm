@@ -6,6 +6,7 @@ import {
   HostBinding,
   HostListener,
   Inject,
+  Injector,
   Input,
   OnDestroy,
   OnInit
@@ -15,6 +16,7 @@ import {SdDockContainerControl} from "./SdDockContainerControl";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNotifyPropertyChange";
 import {ResizeEvent} from "../plugin/ResizeEventPlugin";
 import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
+import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 
 @Component({
   selector: "sd-dock",
@@ -23,7 +25,97 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
     <hr *ngIf="!!id" (mousedown)="onResizerMousedown($event)"/>
     <ng-content></ng-content>`
 })
-export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit {
+export class SdDockControl extends SdControlBase implements ISdNotifyPropertyChange, OnDestroy, OnInit {
+  public sdInitStyle(vars: SdStyleProvider): string {
+    return /* language=LESS */ `
+:host {
+  display: block;
+  position: absolute;
+  background: white;
+  overflow: auto;
+  z-index: 1;
+
+  &[sd-position=top] {
+    border-bottom: 1px solid ${vars.transColor.default};
+  }
+
+  &[sd-position=bottom] {
+    border-top: 1px solid ${vars.transColor.default};
+  }
+
+  &[sd-position=left] {
+    border-right: 1px solid${vars.transColor.default};
+  }
+
+  &[sd-position=right] {
+    border-left: 1px solid ${vars.transColor.default};
+  }
+
+  > hr {
+    display: none;
+    user-select: none;
+  }
+
+  &[sd-resizable=true] {
+    > hr {
+      display: block;
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: ${vars.transColor.default};
+      margin: 0;
+      padding: 0;
+      border: none;
+      z-index: 1;
+    }
+
+    &[sd-position=top] {
+      padding-bottom: 4px;
+
+      > hr {
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        cursor: ns-resize;
+      }
+    }
+
+    &[sd-position=bottom] {
+      padding-top: 4px;
+
+      > hr {
+        top: 0;
+        left: 0;
+        width: 100%;
+        cursor: ns-resize;
+      }
+    }
+
+    &[sd-position=left] {
+      padding-right: 4px;
+
+      > hr {
+        top: 0;
+        right: 0;
+        height: 100%;
+        cursor: ew-resize;
+      }
+    }
+
+    &[sd-position=right] {
+      padding-left: 4px;
+
+      > hr {
+        top: 0;
+        left: 0;
+        height: 100%;
+        cursor: ew-resize;
+      }
+    }
+  }
+}`;
+  }
+
   @Input()
   @SdTypeValidate(String)
   public id?: string;
@@ -47,10 +139,12 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
   private _sizeConfig: { width?: number; height?: number } | undefined;
   private _isOnDragging = false;
 
-  public constructor(public readonly elRef: ElementRef<HTMLElement>,
+  public constructor(injector: Injector,
+                     public readonly elRef: ElementRef<HTMLElement>,
                      @Inject(forwardRef(() => SdDockContainerControl))
                      private readonly _containerControl: SdDockContainerControl,
                      private readonly _localStorage: SdLocalStorageProvider) {
+    super(injector);
   }
 
   public ngOnInit(): void {
@@ -61,8 +155,7 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
         const el = this.elRef.nativeElement;
         if (this._sizeConfig.width && (this.position === "right" || this.position === "left")) {
           el.style.width = this._sizeConfig.width + "px";
-        }
-        else if (this._sizeConfig.height && (this.position === "top" || this.position === "bottom")) {
+        } else if (this._sizeConfig.height && (this.position === "top" || this.position === "bottom")) {
           el.style.height = this._sizeConfig.height + "px";
         }
       }
@@ -81,8 +174,7 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
 
     if (event.dimensions.includes("height") && ["top", "bottom"].includes(this.position)) {
       this._containerControl.redraw();
-    }
-    else if (event.dimensions.includes("width") && ["left", "right"].includes(this.position)) {
+    } else if (event.dimensions.includes("width") && ["left", "right"].includes(this.position)) {
       this._containerControl.redraw();
     }
   }
@@ -102,14 +194,11 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
 
       if (this.position === "bottom") {
         el.style.height = `${startHeight - e.clientY + startY}px`;
-      }
-      else if (this.position === "right") {
+      } else if (this.position === "right") {
         el.style.width = `${startWidth - e.clientX + startX}px`;
-      }
-      else if (this.position === "top") {
+      } else if (this.position === "top") {
         el.style.height = `${startHeight + e.clientY - startY}px`;
-      }
-      else if (this.position === "left") {
+      } else if (this.position === "left") {
         el.style.width = `${startWidth + e.clientX - startX}px`;
       }
     };
@@ -129,8 +218,7 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
           this._sizeConfig = this._sizeConfig || {};
           this._sizeConfig.width = currWidth;
           this._saveSizeConfig();
-        }
-        else {
+        } else {
           const currHeight = el.style.height ? Number(el.style.height.replace("px", "")) : undefined;
           this._sizeConfig = this._sizeConfig || {};
           this._sizeConfig.height = currHeight;

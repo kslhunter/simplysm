@@ -88,7 +88,7 @@ export class SdTextfieldControl extends SdControlBase implements ISdNotifyProper
     }
 
     &[type='color'] {
-      padding: 0 ${vars.gap.smaller} !important;
+      padding: 0 ${vars.gap.xs} !important;
     }
   }
 

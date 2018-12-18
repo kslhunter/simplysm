@@ -1,5 +1,6 @@
-import {ChangeDetectionStrategy, Component, forwardRef, Inject, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, Inject, Injector, Input} from "@angular/core";
 import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
+import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 
 @Component({
   selector: "sd-checkbox-group-item",
@@ -9,7 +10,11 @@ import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
       <ng-content></ng-content>
     </sd-checkbox>`
 })
-export class SdCheckboxGroupItemControl {
+export class SdCheckboxGroupItemControl extends SdControlBase {
+  public sdInitStyle(vars: SdStyleProvider): string {
+    return /* language=LESS */ ``;
+  }
+
   @Input()
   public value?: any;
 
@@ -17,8 +22,10 @@ export class SdCheckboxGroupItemControl {
     return this._parentControl.getIsItemSelected(this.value);
   }
 
-  public constructor(@Inject(forwardRef(() => SdCheckboxGroupControl))
+  public constructor(injector: Injector,
+                     @Inject(forwardRef(() => SdCheckboxGroupControl))
                      private readonly _parentControl: SdCheckboxGroupControl) {
+    super(injector);
   }
 
   public onValueChange(): void {

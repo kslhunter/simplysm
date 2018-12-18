@@ -4,15 +4,18 @@ import {
   ContentChildren,
   EventEmitter,
   HostBinding,
+  Injector,
   Input,
   Output,
-  QueryList, ViewChild
+  QueryList,
+  ViewChild
 } from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 import {SdSelectItemControl} from "./SdSelectItemControl";
 import {optional} from "@simplism/core";
 import {SdDropdownControl} from "./SdDropdownControl";
+import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 
 @Component({
   selector: "sd-select",
@@ -30,7 +33,66 @@ import {SdDropdownControl} from "./SdDropdownControl";
       </sd-dropdown-popup>
     </sd-dropdown>`
 })
-export class SdSelectControl {
+export class SdSelectControl extends SdControlBase {
+  public sdInitStyle(vars: SdStyleProvider): string {
+    return /* language=LESS */ `
+      :host {
+        display: block;
+        width: 100%;
+
+        > sd-dropdown > div {
+          ${vars.formControlBase};
+          border-radius: 3px;
+
+          display: block;
+          overflow: visible;
+          padding-right: 30px !important;
+          height: ${vars.stripUnit(vars.gap.sm) * 2 + vars.stripUnit(vars.lineHeight) * vars.stripUnit(vars.fontSize.default) + 2}px;
+
+          background: white;
+          border-color: ${vars.transColor.default};
+          transition: outline-color .1s linear;
+          outline: 1px solid transparent;
+          outline-offset: -1px;
+
+          > div:first-child {
+            overflow: hidden;
+            white-space: nowrap;
+          }
+
+          > ._icon {
+            position: absolute;
+            top: -1px;
+            right: -1px;
+            padding: ${vars.gap.sm} 0;
+            width: 30px;
+            text-align: center;
+            pointer-events: none;
+          }
+
+          &:focus {
+            outline-color: ${vars.themeColor.primary.default};
+          }
+        }
+
+        &[sd-disabled=true] > sd-dropdown > div {
+          background: ${vars.bgColor};
+          color: ${vars.textColor.light};
+        }
+
+        &[sd-invalid=true] > sd-dropdown > div > ._invalid-indicator {
+          display: block;
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          border-radius: 100%;
+          width: 4px;
+          height: 4px;
+          background: ${vars.themeColor.danger.default};
+        }
+      }`;
+  }
+
   @Input()
   public value?: any;
 
@@ -61,7 +123,9 @@ export class SdSelectControl {
   @ViewChild("dropdown")
   public dropdownControl?: SdDropdownControl;
 
-  public constructor(private readonly _sanitizer: DomSanitizer) {
+  public constructor(injector: Injector,
+                     private readonly _sanitizer: DomSanitizer) {
+    super(injector);
   }
 
   public getIsItemSelected(item: SdSelectItemControl): boolean {

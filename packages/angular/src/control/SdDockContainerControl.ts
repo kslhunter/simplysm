@@ -5,9 +5,11 @@ import {
   ContentChildren,
   ElementRef,
   forwardRef,
+  Injector,
   QueryList
 } from "@angular/core";
 import {SdDockControl} from "./SdDockControl";
+import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 
 @Component({
   selector: "sd-dock-container",
@@ -15,11 +17,24 @@ import {SdDockControl} from "./SdDockControl";
   template: `
     <ng-content></ng-content>`
 })
-export class SdDockContainerControl implements AfterContentInit {
+export class SdDockContainerControl extends SdControlBase implements AfterContentInit {
+  public sdInitStyle(vars: SdStyleProvider): string {
+    return /* language=LESS */ `
+      :host {
+        display: block;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+      }`;
+  }
+
   @ContentChildren(forwardRef(() => SdDockControl))
   public dockControls?: QueryList<SdDockControl>;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  public constructor(injector: Injector,
+                     private readonly _elRef: ElementRef<HTMLElement>) {
+    super(injector);
   }
 
   public ngAfterContentInit(): void {
@@ -48,8 +63,7 @@ export class SdDockContainerControl implements AfterContentInit {
           }
         );
         top += dockEl.offsetHeight;
-      }
-      else if (position === "bottom") {
+      } else if (position === "bottom") {
         Object.assign(
           dockEl.style,
           {
@@ -60,8 +74,7 @@ export class SdDockContainerControl implements AfterContentInit {
           }
         );
         bottom += dockEl.offsetHeight;
-      }
-      else if (position === "left") {
+      } else if (position === "left") {
         Object.assign(
           dockEl.style,
           {
@@ -72,8 +85,7 @@ export class SdDockContainerControl implements AfterContentInit {
           }
         );
         left += dockEl.offsetWidth;
-      }
-      else if (position === "right") {
+      } else if (position === "right") {
         Object.assign(
           dockEl.style,
           {

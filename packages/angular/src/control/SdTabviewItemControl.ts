@@ -1,6 +1,7 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Injector, Input} from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {SdTabviewControl} from "./SdTabviewControl";
+import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 
 @Component({
   selector: "sd-tabview-item",
@@ -8,7 +9,18 @@ import {SdTabviewControl} from "./SdTabviewControl";
   template: `
     <ng-content></ng-content>`
 })
-export class SdTabviewItemControl {
+export class SdTabviewItemControl extends SdControlBase {
+  public sdInitStyle(vars: SdStyleProvider): string {
+    return /* language=LESS */ `
+      :host {
+        display: none;
+
+        &[sd-selected=true] {
+          display: block;
+        }
+      }`;
+  }
+
   @Input()
   public value?: any;
 
@@ -21,7 +33,9 @@ export class SdTabviewItemControl {
     return this._parentControl.value === this.value;
   }
 
-  public constructor(@Inject(forwardRef(() => SdTabviewControl))
+  public constructor(injector: Injector,
+                     @Inject(forwardRef(() => SdTabviewControl))
                      private readonly _parentControl: SdTabviewControl) {
+    super(injector);
   }
 }

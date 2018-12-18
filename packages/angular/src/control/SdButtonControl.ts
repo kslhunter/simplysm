@@ -22,103 +22,100 @@ import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 export class SdButtonControl extends SdControlBase implements AfterContentChecked {
   public sdInitStyle(vars: SdStyleProvider): string {
     return /* language=LESS */ `
-    :host {
-      display: block;
-      position: relative;
-
-      & > button {
+      :host {
         display: block;
-        width: 100%;
-        font-size: ${vars.fontSize.default};
-        font-family: ${vars.fontFamily};
-        line-height: ${vars.lineHeight};
-        color: ${vars.textColor.default};
-        padding: ${vars.gap.small} ${vars.gap.default};
-
-        border: 1px solid ${vars.transColor.default};
-        user-select: none;
-
-        background: white;
-        cursor: pointer;
-        transition: .1s linear;
-        color: ${vars.textColor.default};
-
-        &:hover {
-          background: ${vars.transColor.dark};
-        }
-
-        &:active {
-          transition: none;
-          background: ${vars.transColor.darker};
-        }
-
-        &:disabled {
-          background: transparent;
-          cursor: default;
+        position: relative;
+  
+        & > button {
+          ${vars.formControlBase};
+          border: 1px solid ${vars.transColor.default};
+          border-radius: 3px;
+  
+          background: white;
+          cursor: pointer;
+          //transition: .1s linear;
           color: ${vars.textColor.default};
-        }
-
-        &:focus {
-          outline-color: transparent;
-          border: 1px solid ${vars.themeColor.primary.darkest} !important;
-        }
-      }` +
+  
+          &:hover {
+            background: ${vars.transColor.dark};
+          }
+  
+          &:active {
+            transition: none;
+            background: ${vars.transColor.darker};
+          }
+  
+          &:disabled {
+            background: transparent;
+            cursor: default;
+            color: ${vars.textColor.default};
+          }
+  
+          &:focus {
+            outline-color: transparent;
+            border: 1px solid ${vars.themeColor.primary.darkest} !important;
+          }
+        }` +
 
       Object.keys(vars.themeColor).map(key => `
-            &[sd-theme=${key}] > button {
-              background: ${vars.themeColor[key].default};
-              border-color: ${vars.themeColor[key].default};
+          &[sd-theme=${key}] > button {
+            background: ${vars.themeColor[key].default};
+            border-color: ${vars.themeColor[key].default};
+            color: ${vars.textReverseColor.default};
+            //color: ${vars.themeColor[key].default};
+    
+            &:hover {
+              background: ${vars.themeColor[key].dark};
+              border-color: ${vars.themeColor[key].dark};
               color: ${vars.textReverseColor.default};
-
-              &:hover {
-                background: ${vars.themeColor[key].dark};
-                border-color: ${vars.themeColor[key].dark};
-              }
-
-              &:active {
-                background: ${vars.themeColor[key].dark};
-              }
-
-              &:disabled {
-                background: ${vars.themeColor.grey.default};
-                border-color: ${vars.themeColor.grey.default};
-                cursor: default;
-              }
-            }`).join("\n")
-      + `
-      &[sd-size=sm] > button {
-        padding: ${vars.gap.smaller} ${vars.gap.small};
-      }
-
-      &[sd-size=lg] > button {
-        padding: ${vars.gap.default} ${vars.gap.large};
-      }
-
-      &[sd-inline=true] {
-        display: inline-block;
-
-        > button {
-          width: auto;
+            }
+    
+            &:active {
+              background: ${vars.themeColor[key].darker};
+              color: ${vars.textReverseColor.default};
+            }
+    
+            &:disabled {
+              background: ${vars.themeColor.grey.default};
+              border-color: ${vars.themeColor.grey.default};
+              cursor: default;
+            }
+          }`
+      ).join("\n") + `
+        
+        &[sd-size=sm] > button {
+          padding: ${vars.gap.xs} ${vars.gap.sm};
         }
-      }
-
-      &[sd-invalid=true] > ._invalid-indicator {
-        display: block;
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        border-radius: 100%;
-        width: 4px;
-        height: 4px;
-        background: ${vars.themeColor.danger.default};
-      }
-
-      &[sd-inset=true] {
-        > button {
-          border: none !important;
+  
+        &[sd-size=lg] > button {
+          padding: ${vars.gap.default} ${vars.gap.lg};
         }
-      }
-    }`;
+    
+        &[sd-inline=true] {
+          display: inline-block;
+  
+          > button {
+            width: auto;
+          }
+        }
+  
+        &[sd-invalid=true] > ._invalid-indicator {
+          display: block;
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          border-radius: 100%;
+          width: 4px;
+          height: 4px;
+          background: ${vars.themeColor.danger.default};
+        }
+  
+        &[sd-inset=true] {
+          > button {
+            border: none !important;
+          }
+        }
+      }`;
   }
 
   @Input()

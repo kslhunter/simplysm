@@ -2,6 +2,8 @@ import {ElementRef, Injectable, Injector, OnDestroy} from "@angular/core";
 import {Uuid} from "../../../core/src";
 import * as less from "less";
 import {sdColors} from "../common/sdColors";
+import {stylesDefaults} from "../styles/stylesDefault";
+import {stylesClasses} from "../styles/stylesClasses";
 
 @Injectable()
 export class SdStyleProvider {
@@ -101,19 +103,19 @@ export class SdStyleProvider {
   };
 
   public gap = {
-    smallest: "2px",
-    smaller: "4px",
-    small: "6px",
+    xxs: "2px",
+    xs: "4px",
+    sm: "6px",
     default: "8px",
-    large: "12px",
-    larger: "16px",
-    largest: "20px"
+    lg: "12px",
+    xl: "16px",
+    xxl: "20px"
   };
 
   public fontSize = {
-    large: "14px",
+    lg: "14px",
     default: "12px",
-    small: "11px",
+    sm: "11px",
     h1: "24px",
     h2: "18px",
     h3: "16px",
@@ -183,10 +185,40 @@ font-size: ${this.fontSize.default};
 font-family: ${this.fontFamily};
 line-height: ${this.lineHeight};
 color: ${this.textColor.default};
-padding: ${this.gap.small} ${this.gap.default};
+padding: ${this.gap.sm} ${this.gap.default};
 
 border: 1px solid transparent;
 user-select: none`;
+  }
+
+  public stripUnit(str: string): number {
+    return Number(str.replace(/[^0-9.]/g, ""));
+  }
+
+  public async applyAsync(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const prevStyle = document.getElementById("SdStyleProvider");
+      if (prevStyle) {
+        prevStyle.remove();
+      }
+
+      const styleEl = document.createElement("style");
+      styleEl.setAttribute("id", "SdStyleProvider");
+
+      less.render(
+        stylesDefaults(this) + stylesClasses(this),
+        (err, out) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          styleEl.innerHTML = out.css.replace(/[\r\n]/g, "").replace(/\s\s/g, " ");
+          document.head!.append(styleEl);
+          resolve();
+        }
+      );
+    });
   }
 }
 
@@ -205,6 +237,9 @@ export abstract class SdControlBase implements OnDestroy {
     less.render(
       this.sdInitStyle(style).replace(/:host/g, "[sd-uuid=" + uuid + "]"),
       (err, out) => {
+        if (err) {
+          throw err;
+        }
         styleEl.innerHTML = out.css.replace(/[\r\n]/g, "").replace(/\s\s/g, " ");
         document.head!.append(styleEl);
       }

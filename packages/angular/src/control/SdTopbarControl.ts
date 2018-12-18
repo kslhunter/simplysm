@@ -34,7 +34,7 @@ export class SdTopbarControl extends SdControlBase {
   > a {
     min-width: 36px;
     text-align: center;
-    margin-right: ${vars.gap.small};
+    margin-right: ${vars.gap.sm};
     color: ${vars.textReverseColor.dark};
 
     &:hover,

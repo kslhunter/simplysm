@@ -5,7 +5,7 @@ import {
   ContentChildren,
   DoCheck,
   EventEmitter,
-  HostBinding,
+  HostBinding, Injector,
   Input,
   IterableDiffer,
   IterableDiffers,
@@ -13,6 +13,7 @@ import {
   QueryList
 } from "@angular/core";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
+import {SdControlBase, SdStyleProvider} from "../provider/SdStyleProvider";
 
 @Component({
   selector: "sd-checkbox-group",
@@ -20,7 +21,11 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
   template: `
     <ng-content></ng-content>`
 })
-export class SdCheckboxGroupControl implements DoCheck {
+export class SdCheckboxGroupControl extends SdControlBase implements DoCheck {
+  public sdInitStyle(vars: SdStyleProvider): string {
+    return /* language=LESS */ ``;
+  }
+
   @Input()
   @SdTypeValidate(Array)
   public value?: any[];
@@ -42,8 +47,10 @@ export class SdCheckboxGroupControl implements DoCheck {
 
   private readonly _iterableDiffer: IterableDiffer<any>;
 
-  public constructor(private readonly _iterableDiffers: IterableDiffers,
+  public constructor(injector: Injector,
+                     private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef) {
+    super(injector);
     this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => item);
   }
 
@@ -65,8 +72,7 @@ export class SdCheckboxGroupControl implements DoCheck {
     const isSelected = this.getIsItemSelected(item);
     if (isSelected) {
       this.value.remove(item);
-    }
-    else {
+    } else {
       this.value.push(item);
     }
     this.valueChange.emit(this.value);
