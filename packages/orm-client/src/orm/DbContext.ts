@@ -60,6 +60,7 @@ export abstract class DbContext {
               new QueryBuilder().from(`[${this.config.database}].[dbo].[_migration]`).def
             ])
           )[0].map(item => item.code);
+          console.log(dbMigrations);
 
 
           const migrations = this.migrations.filter(item => !dbMigrations.includes(item.name)).orderBy(item => item.name);
@@ -71,7 +72,7 @@ export abstract class DbContext {
                 await this.executeAsync([
                   new QueryBuilder()
                     .from(`[${this.config.database}].[dbo].[_migration]`)
-                    .insert({code: `'${migration.name}'`})
+                    .insert({code: migration.name})
                     .def
                 ]);
               }
@@ -213,7 +214,7 @@ export abstract class DbContext {
       for (const migration of this.migrations.orderBy(item => item.name)) {
         query += new QueryBuilder()
           .from(`[${this.config.database}].[dbo].[_migration]`)
-          .insert({code: `'${migration.name}'`})
+          .insert({code: migration.name})
           .query + "\n";
       }
 

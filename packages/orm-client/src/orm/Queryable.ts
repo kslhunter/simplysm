@@ -1,8 +1,10 @@
 import {ITableDef, QueryBuilderAdv, QueryType, QueryUnit, tableDefMetadataKey} from "@simplism/orm-query";
-import {Type} from "@simplism/core";
+import {JsonConvert, Type, Wait} from "@simplism/core";
 import {DbContext} from "./DbContext";
 
 export class Queryable<T extends object> {
+  private static readonly _selectQueryHistory = new Map<string, any[] | undefined>();
+
   private readonly _db: DbContext;
   private _qba: QueryBuilderAdv<T>;
 
@@ -94,6 +96,8 @@ export class Queryable<T extends object> {
   }
 
   public async insertAsync(obj: T): Promise<T> {
+    Queryable._selectQueryHistory.clear();
+
     const queryDef = this._qba.insert(obj).queryDef;
     if (this._hasAutoIncrementValue(obj)) {
       const result = await this._db.executeAsync([
@@ -111,6 +115,8 @@ export class Queryable<T extends object> {
   }
 
   public async insertRangeAsync(arr: T[]): Promise<T[]> {
+    Queryable._selectQueryHistory.clear();
+
     const preparedQueries = this._db.preparedQueries;
     this._db.preparedQueries = [];
     for (const obj of arr) {
@@ -156,6 +162,8 @@ export class Queryable<T extends object> {
   }
 
   public async updateAsync(fwd: (entity: T) => Partial<T>): Promise<T> {
+    Queryable._selectQueryHistory.clear();
+
     const queryDef = this._qba.update(fwd).queryDef;
     const result = await this._db.executeAsync([queryDef]);
     return result[0][0];
@@ -172,6 +180,8 @@ export class Queryable<T extends object> {
   public async upsertAsync(obj: T): Promise<T>;
   public async upsertAsync(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T>;
   public async upsertAsync(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T> {
+    Queryable._selectQueryHistory.clear();
+
     const obj: object = typeof arg === "function" ? (arg as any)(this._qba.entity) : arg;
 
     const queryDef = this._qba.upsert(arg, additionalInsertObj).queryDef;
@@ -199,6 +209,8 @@ export class Queryable<T extends object> {
   }
 
   public async deleteAsync(): Promise<T> {
+    Queryable._selectQueryHistory.clear();
+
     const queryDef = this._qba.delete().queryDef;
     const result = await this._db.executeAsync([queryDef]);
     return result[0][0];
@@ -206,6 +218,15 @@ export class Queryable<T extends object> {
 
   public async resultAsync(): Promise<T[]> {
     const queryDef = this._qba.queryDef;
+    const queryDefJson = JsonConvert.stringify(queryDef);
+
+    if (queryDefJson) {
+      if (Queryable._selectQueryHistory.has(queryDefJson)) {
+        await Wait.true(() => Queryable._selectQueryHistory.get(queryDefJson) !== undefined);
+        return Queryable._selectQueryHistory.get(queryDefJson) as T[];
+      }
+      Queryable._selectQueryHistory.set(queryDefJson, undefined);
+    }
 
     const colDefs = Object.keys(this._qba.selectObj)
       .map(key => {
@@ -234,7 +255,16 @@ export class Queryable<T extends object> {
         };
       });
 
-    return await this._db.executeAsync([queryDef], colDefs, joinDefs);
+    const result = await this._db.executeAsync([queryDef], colDefs, joinDefs);
+
+    if (queryDefJson && Queryable._selectQueryHistory.has(queryDefJson)) {
+      Queryable._selectQueryHistory.set(queryDefJson, result || []);
+      setTimeout(() => {
+        Queryable._selectQueryHistory.delete(queryDefJson);
+      }, 500);
+    }
+
+    return result;
   }
 
   public async singleAsync(): Promise<T | undefined> {
