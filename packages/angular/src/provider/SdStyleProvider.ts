@@ -196,21 +196,41 @@ user-select: none`;
     return Number(str.replace(/[^0-9.]/g, ""));
   }
 
+  private readonly _styleFns = {
+    defaults: stylesDefaults,
+    classes: stylesClasses,
+    controls: stylesControls,
+    toast: stylesToast
+  };
+
   public async applyAsync(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      const prevStyle = document.getElementById("SdStyleProvider");
+    await Promise.all(Object.keys(this._styleFns).map(async key => {
+      await this._applyOneAsync(key);
+    }));
+  }
+
+  public async applyNewAsync(key: string, fn: (vars: SdStyleProvider) => string, reload?: boolean): Promise<void> {
+    if (!reload && Object.keys(this._styleFns).includes(key)) {
+      return;
+    }
+
+    this._styleFns[key] = fn;
+    await this._applyOneAsync(key);
+  }
+
+  private async _applyOneAsync(key: string): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      const prevStyle = document.getElementById("SdStyleProvider_" + key);
       if (prevStyle) {
         prevStyle.remove();
       }
 
       const styleEl = document.createElement("style");
-      styleEl.setAttribute("id", "SdStyleProvider");
+      styleEl.setAttribute("id", "SdStyleProvider_" + key);
+      document.head!.append(styleEl);
 
       less.render(
-        stylesDefaults(this) +
-        stylesClasses(this) +
-        stylesControls(this) +
-        stylesToast(this),
+        this._styleFns[key](this),
         (err, out) => {
           if (err) {
             reject(err);
@@ -218,7 +238,6 @@ user-select: none`;
           }
 
           styleEl.innerHTML = out.css.replace(/[\r\n]/g, "").replace(/\s\s/g, " ");
-          document.head!.append(styleEl);
           resolve();
         }
       );

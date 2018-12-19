@@ -43,8 +43,7 @@ export class Logger {
         ...prevConfig,
         ...config
       });
-    }
-    else {
+    } else {
       this._groupMap.set(groupName, {
         ...Logger._defaultConfig,
         ...config
@@ -55,8 +54,7 @@ export class Logger {
   public static restoreGroupConfig(groupName?: string): void {
     if (groupName) {
       this._groupMap.delete(groupName);
-    }
-    else {
+    } else {
       this._groupMap.clear();
     }
   }
@@ -102,8 +100,7 @@ export class Logger {
       // 색상있으면 색상 빼기
       if (typeof item === "string") {
         return item.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
-      }
-      else if (item instanceof Error) {
+      } else if (item instanceof Error) {
         return item.stack;
       }
 
@@ -147,8 +144,7 @@ export class Logger {
       const filePath = path.resolve(outputPath, `${now.toFormatString("yyyyMMdd-HH")}.log`);
       if (fs.existsSync(filePath)) {
         fs.appendFileSync(filePath, `${text}\r\n`, "utf8");
-      }
-      else {
+      } else {
         fs.writeFileSync(filePath, `${text}\r\n`, "utf8");
       }
     }
