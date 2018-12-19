@@ -2,6 +2,7 @@ import {SocketServiceBase} from "@simplism/socket-server";
 import {IDbConnectionConfig} from "@simplism/orm-common";
 import {DbConnection} from "@simplism/orm-connector";
 import {DateOnly, DateTime, Logger, Time} from "@simplism/core";
+import {IQueryDef} from "@simplism/orm-query";
 
 export class OrmService extends SocketServiceBase {
   private readonly _logger = new Logger("@simplism/orm-service");
@@ -24,8 +25,7 @@ export class OrmService extends SocketServiceBase {
         this.server.removeCloseListener("orm." + newId);
         this._logger.warn("서버가 종료되어, DB 연결이 끊었습니다.");
       });
-    }
-    else {
+    } else {
       await conn.closeAsync();
       this._logger.warn("서버가 종료되어, DB 연결이 끊었습니다.");
     }
@@ -72,13 +72,13 @@ export class OrmService extends SocketServiceBase {
     await conn.rollbackTransactionAsync();
   }
 
-  public async executeAsync(connId: number, query: string, colDefs?: { name: string; dataType: string | undefined }[], joinDefs?: { as: string; isSingle: boolean }[]): Promise<any[][]> {
+  public async executeAsync(connId: number, queries: (string | IQueryDef)[], colDefs?: { name: string; dataType: string | undefined }[], joinDefs?: { as: string; isSingle: boolean }[]): Promise<any[][]> {
     const conn = OrmService._connections.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    const result = await conn.executeAsync(query);
+    const result = await conn.executeAsync(queries);
     return (colDefs && joinDefs) ? this._generateResult(result[0], colDefs, joinDefs) : result;
   }
 
@@ -92,11 +92,9 @@ export class OrmService extends SocketServiceBase {
         const colDef = colDefs.single(item1 => item1.name === key)!;
         if (item[key] && colDef.dataType === "DateTime") {
           item[key] = DateTime.parse(item[key]);
-        }
-        else if (item[key] && colDef.dataType === "DateOnly") {
+        } else if (item[key] && colDef.dataType === "DateOnly") {
           item[key] = DateOnly.parse(item[key]);
-        }
-        else if (item[key] && colDef.dataType === "Time") {
+        } else if (item[key] && colDef.dataType === "Time") {
           item[key] = Time.parse(item[key]);
         }
       }
@@ -125,8 +123,7 @@ export class OrmService extends SocketServiceBase {
         const exists = grouped.single(g => Object.equal(g.key, keyObj));
         if (exists) {
           exists.values.push(valueObj);
-        }
-        else {
+        } else {
           grouped.push({
             key: keyObj,
             values: [valueObj]
@@ -159,8 +156,7 @@ export class OrmService extends SocketServiceBase {
         if (item.every(itemItem => itemItem == undefined)) {
           return undefined;
         }
-      }
-      else if (item instanceof Object) {
+      } else if (item instanceof Object) {
         for (const key of Object.keys(item)) {
           item[key] = clearEmpty(item[key]);
         }

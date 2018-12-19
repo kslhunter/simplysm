@@ -20,13 +20,11 @@ export class Queryable<T extends object> {
     if (arg instanceof Function) {
       this._qba = new QueryBuilderAdv(arg, this._db.config.database);
       this.tableType = arg;
-    }
-    else if (arg instanceof Queryable) {
+    } else if (arg instanceof Queryable) {
       this._qba = new QueryBuilderAdv(arg._qba, this._db.config.database, undefined, tableType);
       this.subQueryable = arg;
       this.tableType = tableType;
-    }
-    else {
+    } else {
       this._qba = new QueryBuilderAdv(arg.map(item => item._qba), this._db.config.database, undefined, tableType);
       this.subQueryables = arg;
       this.tableType = tableType;
@@ -96,47 +94,58 @@ export class Queryable<T extends object> {
   }
 
   public async insertAsync(obj: T): Promise<T> {
+    const queryDef = this._qba.insert(obj).queryDef;
     if (this._hasAutoIncrementValue(obj)) {
-      const query = `${this._getIdentityInsertQuery(true)}\n${this._qba.insert(obj).query}\n${this._getIdentityInsertQuery(false)}`;
-      const result = await this._db.executeAsync(query);
+      const result = await this._db.executeAsync([
+        this._getIdentityInsertQuery(true),
+        queryDef,
+        this._getIdentityInsertQuery(false)
+      ]);
       return result[1][0];
-    }
-    else {
-      const query = this._qba.insert(obj).query;
-      const result = await this._db.executeAsync(query);
+    } else {
+      const result = await this._db.executeAsync([
+        queryDef
+      ]);
       return result[0][0];
     }
   }
 
   public async insertRangeAsync(arr: T[]): Promise<T[]> {
-    const preparedQuery = this._db.preparedQuery;
-    this._db.preparedQuery = "";
+    const preparedQueries = this._db.preparedQueries;
+    this._db.preparedQueries = [];
     for (const obj of arr) {
+      const queryDef = this._qba.insert(obj).queryDef;
+
       if (this._hasAutoIncrementValue(obj)) {
-        const query = `${this._getIdentityInsertQuery(true)}\n${this._qba.insert(obj).query}\n${this._getIdentityInsertQuery(false)}`;
-        this._db.prepare(query, [false, true, false]);
-      }
-      else {
-        const query = this._qba.insert(obj).query;
-        this._db.prepare(query, [true]);
+        this._db.prepare([
+          this._getIdentityInsertQuery(true),
+          queryDef,
+          this._getIdentityInsertQuery(false)
+        ], [false, true, false]);
+      } else {
+        this._db.prepare([queryDef], [true]);
       }
     }
 
     const result = await this._db.executePreparedAsync();
 
-    this._db.preparedQuery = preparedQuery;
+    this._db.preparedQueries = preparedQueries;
 
     return result.map(item => item[0]);
   }
 
   public insertPrepare(obj: T): void {
+    const queryDef = this._qba.insert(obj).queryDef;
     if (this._hasAutoIncrementValue(obj)) {
-      const query = `${this._getIdentityInsertQuery(true)}\n${this._qba.insert(obj).query}\n${this._getIdentityInsertQuery(false)}`;
-      this._db.prepare(query, [false, true, false]);
-    }
-    else {
-      const query = this._qba.insert(obj).query;
-      this._db.prepare(query, [true]);
+      this._db.prepare([
+        this._getIdentityInsertQuery(true),
+        queryDef,
+        this._getIdentityInsertQuery(false)
+      ], [false, true, false]);
+    } else {
+      this._db.prepare([
+        queryDef
+      ], [true]);
     }
   }
 
@@ -147,14 +156,14 @@ export class Queryable<T extends object> {
   }
 
   public async updateAsync(fwd: (entity: T) => Partial<T>): Promise<T> {
-    const query = this._qba.update(fwd).query;
-    const result = await this._db.executeAsync(query);
+    const queryDef = this._qba.update(fwd).queryDef;
+    const result = await this._db.executeAsync([queryDef]);
     return result[0][0];
   }
 
   public updatePrepare(fwd: (entity: T) => Partial<T>): void {
-    const query = this._qba.update(fwd).query;
-    this._db.prepare(query, [true]);
+    const queryDef = this._qba.update(fwd).queryDef;
+    this._db.prepare([queryDef], [true]);
   }
 
   public async upsertAsync(fwd: (item: T) => Partial<T>, additionalInsertObj: Partial<T>): Promise<T>;
@@ -165,14 +174,16 @@ export class Queryable<T extends object> {
   public async upsertAsync(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T> {
     const obj: object = typeof arg === "function" ? (arg as any)(this._qba.entity) : arg;
 
+    const queryDef = this._qba.upsert(arg, additionalInsertObj).queryDef;
     if (this._hasAutoIncrementValue({...obj, ...(additionalInsertObj as object)})) {
-      const query = `${this._getIdentityInsertQuery(true)}\n${this._qba.upsert(arg, additionalInsertObj).query}\n${this._getIdentityInsertQuery(false)}`;
-      const result = await this._db.executeAsync(query);
+      const result = await this._db.executeAsync([
+        this._getIdentityInsertQuery(true),
+        queryDef,
+        this._getIdentityInsertQuery(false)
+      ]);
       return result[1][0];
-    }
-    else {
-      const query = this._qba.upsert(arg, additionalInsertObj).query;
-      const result = await this._db.executeAsync(query);
+    } else {
+      const result = await this._db.executeAsync([queryDef]);
       return result[0][0];
     }
   }
@@ -183,18 +194,18 @@ export class Queryable<T extends object> {
   public upsertPrepare(obj: T): void;
   public upsertPrepare(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): void;
   public upsertPrepare(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): void {
-    const query = this._qba.upsert(arg, additionalInsertObj).query;
-    this._db.prepare(query, [true]);
+    const queryDef = this._qba.upsert(arg, additionalInsertObj).queryDef;
+    this._db.prepare([queryDef], [true]);
   }
 
   public async deleteAsync(): Promise<T> {
-    const query = this._qba.delete().query;
-    const result = await this._db.executeAsync(query);
+    const queryDef = this._qba.delete().queryDef;
+    const result = await this._db.executeAsync([queryDef]);
     return result[0][0];
   }
 
   public async resultAsync(): Promise<T[]> {
-    const query = this._qba.query;
+    const queryDef = this._qba.queryDef;
 
     const colDefs = Object.keys(this._qba.selectObj)
       .map(key => {
@@ -223,7 +234,7 @@ export class Queryable<T extends object> {
         };
       });
 
-    return await this._db.executeAsync(query, colDefs, joinDefs);
+    return await this._db.executeAsync([queryDef], colDefs, joinDefs);
   }
 
   public async singleAsync(): Promise<T | undefined> {

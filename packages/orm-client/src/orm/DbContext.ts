@@ -1,6 +1,13 @@
 import {Type} from "@simplism/core";
 import {IDbConnectionConfig} from "@simplism/orm-common";
-import {ITableDef, MigrationQueryBuilder, ormHelpers, QueryBuilder, tableDefMetadataKey} from "@simplism/orm-query";
+import {
+  IQueryDef,
+  ITableDef,
+  MigrationQueryBuilder,
+  ormHelpers,
+  QueryBuilder,
+  tableDefMetadataKey
+} from "@simplism/orm-query";
 import {Queryable} from "./Queryable";
 import {IDbMigration} from "./IDbMigration";
 import {IDbContextExecutor} from "./IDbContextExecutor";
@@ -24,11 +31,11 @@ export abstract class DbContext {
     await this._executor!.forceCloseAsync();
   }
 
-  public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(query: string, colDefs?: C, joinDefs?: { as: string; isSingle: boolean }[]): Promise<undefined extends C ? any[][] : any[]> {
-    return await this._executor!.executeAsync(query, colDefs, joinDefs);
+  public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(queries: (string | IQueryDef)[], colDefs?: C, joinDefs?: { as: string; isSingle: boolean }[]): Promise<undefined extends C ? any[][] : any[]> {
+    return await this._executor!.executeAsync(queries, colDefs, joinDefs);
   }
 
-  public preparedQuery = "";
+  public preparedQueries: (string | IQueryDef)[] = [];
   private _preparedResultIndexed: boolean[] = [];
 
   public async initializeAsync(dbNames: string[], force?: boolean): Promise<boolean> {
@@ -38,20 +45,20 @@ export abstract class DbContext {
 
     if (!force) {
       const isDbExists = (
-        await this.executeAsync(`SELECT COUNT(*) as [cnt] FROM [master].[dbo].[sysdatabases] WHERE [name] = '${this.config.database}'`)
+        await this.executeAsync([`SELECT COUNT(*) as [cnt] FROM [master].[dbo].[sysdatabases] WHERE [name] = '${this.config.database}'`])
       )[0][0].cnt > 0;
 
       if (isDbExists) {
         const isTableExists = (
-          await this.executeAsync(`SELECT COUNT(*) as [cnt] FROM [${this.config.database}].[INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = '_migration'`)
+          await this.executeAsync([`SELECT COUNT(*) as [cnt] FROM [${this.config.database}].[INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = '_migration'`])
         )[0][0].cnt > 0;
 
         if (isTableExists) {
           //-- Migration
           const dbMigrations = (
-            await this.executeAsync(
-              new QueryBuilder().from(`[${this.config.database}].[dbo].[_migration]`).query
-            )
+            await this.executeAsync([
+              new QueryBuilder().from(`[${this.config.database}].[dbo].[_migration]`).def
+            ])
           )[0].map(item => item.code);
 
 
@@ -61,12 +68,12 @@ export abstract class DbContext {
               for (const migration of migrations) {
                 await new migration().up(this);
 
-                await this.executeAsync(
+                await this.executeAsync([
                   new QueryBuilder()
                     .from(`[${this.config.database}].[dbo].[_migration]`)
                     .insert({code: `'${migration.name}'`})
-                    .query
-                );
+                    .def
+                ]);
               }
             });
           }
@@ -210,30 +217,30 @@ export abstract class DbContext {
           .query + "\n";
       }
 
-      await this.executeAsync(query.trim());
+      await this.executeAsync([query.trim()]);
     }
     return true;
   }
 
-  public prepare(query: string, preparedResultIndexed: boolean[]): void {
-    this.preparedQuery += "\n\n" + query.trim();
+  public prepare(query: (string | IQueryDef)[], preparedResultIndexed: boolean[]): void {
+    this.preparedQueries.pushRange(query);
     this._preparedResultIndexed = this._preparedResultIndexed.concat(preparedResultIndexed);
   }
 
   public async executePreparedAsync(): Promise<any[][]> {
-    if (!this.preparedQuery) {
+    if (this.preparedQueries.length < 1) {
       return [];
     }
 
     const result: any[][] = [];
-    const resultTmp: any[][] = await this.executeAsync(this.preparedQuery);
+    const resultTmp: any[][] = await this.executeAsync(this.preparedQueries);
     for (let i = 0; i < resultTmp.length; i++) {
       if (this._preparedResultIndexed[i]) {
         result.push(resultTmp[i]);
       }
     }
 
-    this.preparedQuery = "";
+    this.preparedQueries = [];
     this._preparedResultIndexed = [];
     return result;
   }
@@ -274,7 +281,7 @@ export abstract class DbContext {
       },
       colDefs
     );
-    await this.executeAsync(query);
+    await this.executeAsync([query]);
   }
 
   public async dropTableAsync(
@@ -287,7 +294,7 @@ export abstract class DbContext {
         name: tableDef.name
       }
     );
-    await this.executeAsync(query);
+    await this.executeAsync([query]);
   }
 
   public async addPrimaryKeyAsync(
@@ -305,7 +312,7 @@ export abstract class DbContext {
       },
       pkColDefs
     );
-    await this.executeAsync(query);
+    await this.executeAsync([query]);
   }
 
   public async addForeignKeyAsync(
@@ -338,7 +345,7 @@ export abstract class DbContext {
         targetColumnNames: fkDef.targetColumnNames
       }
     );
-    await this.executeAsync(query);
+    await this.executeAsync([query]);
   }
 
   public async removeForeignKeyAsync(
@@ -353,7 +360,7 @@ export abstract class DbContext {
       },
       fkName
     );
-    await this.executeAsync(query);
+    await this.executeAsync([query]);
   }
 
   public async addColumnAsync(
@@ -375,7 +382,7 @@ export abstract class DbContext {
       colDef,
       defaultValue
     );
-    await this.executeAsync(query);
+    await this.executeAsync([query]);
   }
 
   public async removeColumnAsync(
@@ -390,7 +397,7 @@ export abstract class DbContext {
       },
       colName
     );
-    await this.executeAsync(query);
+    await this.executeAsync([query]);
   }
 
   public async modifyColumnAsync(
@@ -410,7 +417,7 @@ export abstract class DbContext {
       },
       colDef
     );
-    await this.executeAsync(query);
+    await this.executeAsync([query]);
   }
 
   public async renameColumnAsync(
@@ -427,7 +434,7 @@ export abstract class DbContext {
       colName,
       newColName
     );
-    await this.executeAsync(query);
+    await this.executeAsync([query]);
   }
 
   /*private async _getClearDatabaseIfExistsQueryAsync(dbName: string): Promise<string> {

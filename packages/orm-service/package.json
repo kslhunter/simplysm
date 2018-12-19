@@ -11,6 +11,7 @@
     "@simplism/core": "~10.3.19",
     "@simplism/orm-common": "~10.3.19",
     "@simplism/orm-connector": "~10.3.19",
+    "@simplism/orm-query": "~10.3.19",
     "@simplism/socket-server": "~10.3.19"
   }
 }

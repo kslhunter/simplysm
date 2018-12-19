@@ -1,6 +1,8 @@
+import {ormHelpers} from "../common/ormHelpers";
+
 export interface IQueryDef {
   type: "select" | "insert" | "update" | "upsert" | "delete";
-  select?: { [key: string]: string };
+  select?: { [key: string]: any };
   from?: string;
   as?: string;
   where?: string[];
@@ -21,21 +23,22 @@ export class QueryBuilder {
     type: "select"
   };
 
+  public from(def: IQueryDef): QueryBuilder;
   public from(unions: QueryBuilder[], as?: string): QueryBuilder;
   public from(queryBuilder: QueryBuilder, as?: string): QueryBuilder;
   public from(table: string, as?: string): QueryBuilder;
-  public from(arg: string | QueryBuilder | QueryBuilder[], as?: string): QueryBuilder {
+  public from(arg: IQueryDef | string | QueryBuilder | QueryBuilder[], as?: string): QueryBuilder {
     const result: QueryBuilder = this.clone();
     if (arg instanceof Array) {
       result.def.from = "(\n\n  " + arg.map(item => item.query.replace(/\n/g, "\n  ")).join("\n\n  UNION ALL\n\n  ") + "\n\n)";
-    }
-    else if (arg instanceof QueryBuilder) {
+    } else if (arg instanceof QueryBuilder) {
       result.def.from = "(\n  " + arg.query.replace(/\n/g, "\n  ") + "\n)";
+    } else if (arg["type"]) {
+      result.def = arg as IQueryDef;
+    } else {
+      result.def.from = arg as string;
     }
-    else {
-      result.def.from = arg;
-    }
-    result.def.as = as;
+    result.def.as = as || result.def.as;
     return result;
   }
 
@@ -45,9 +48,13 @@ export class QueryBuilder {
     return result;
   }
 
-  public select(obj: { [key: string]: string }): QueryBuilder {
+  public select(obj: { [key: string]: any }): QueryBuilder {
     const result: QueryBuilder = this.clone();
-    result.def.select = obj;
+    const newObj = {};
+    for (const key of Object.keys(obj)) {
+      newObj[key] = ormHelpers.getFieldQuery(obj[key]);
+    }
+    result.def.select = newObj;
     return result;
   }
 
@@ -70,10 +77,10 @@ export class QueryBuilder {
     return result;
   }
 
-  public orderBy(col: string, rule: "DESC" | "ASC"): QueryBuilder {
+  public orderBy(col: any, rule: "DESC" | "ASC"): QueryBuilder {
     const result: QueryBuilder = this.clone();
     result.def.orderBy = result.def.orderBy || [];
-    result.def.orderBy.push(col + " " + rule);
+    result.def.orderBy.push(ormHelpers.getFieldQuery(col) + " " + rule);
     return result;
   }
 
@@ -83,9 +90,9 @@ export class QueryBuilder {
     return result;
   }
 
-  public groupBy(cols: string[]): QueryBuilder {
+  public groupBy(cols: any[]): QueryBuilder {
     const result: QueryBuilder = this.clone();
-    result.def.groupBy = cols;
+    result.def.groupBy = cols.map(item => ormHelpers.getFieldQuery(item));
     return result;
   }
 
@@ -105,8 +112,7 @@ export class QueryBuilder {
       joinQuery = "OUTER APPLY (\n";
       joinQuery += "  " + qb.query.replace(/\n/g, "\n  ") + "\n";
       joinQuery += ") AS " + qb.def.as;
-    }
-    else {
+    } else {
       joinQuery = "LEFT OUTER JOIN " + qb.def.from + " AS " + qb.def.as;
       if (qb.def.where) {
         joinQuery += " ON (" + qb.def.where.join(") AND (") + ")";
@@ -125,7 +131,12 @@ export class QueryBuilder {
   public update(obj: { [key: string]: string }): QueryBuilder {
     const result: QueryBuilder = this.clone();
     result.def.type = "update";
-    result.def.update = obj;
+
+    const newObj = {};
+    for (const key of Object.keys(obj)) {
+      newObj[key] = ormHelpers.getFieldQuery(obj[key]);
+    }
+    result.def.update = newObj;
     return result;
   }
 
@@ -138,17 +149,35 @@ export class QueryBuilder {
   public insert(obj: { [key: string]: string }): QueryBuilder {
     const result: QueryBuilder = this.clone();
     result.def.type = "insert";
-    result.def.insert = obj;
+
+    const newObj = {};
+    for (const key of Object.keys(obj)) {
+      newObj[key] = ormHelpers.getFieldQuery(obj[key]);
+    }
+    result.def.insert = newObj;
     return result;
   }
 
-  public upsert(obj: { [key: string]: string }, additionalInsertObj?: { [key: string]: string }): QueryBuilder {
+  public upsert(obj: { [key: string]: string }, additionalInsertObj?: { [key: string]: any }): QueryBuilder {
     const result: QueryBuilder = this.clone();
     result.def.type = "upsert";
-    result.def.update = obj;
+
+    const newObj = {};
+    for (const key of Object.keys(obj)) {
+      newObj[key] = ormHelpers.getFieldQuery(obj[key]);
+    }
+
+    const newAdObj = {};
+    if (additionalInsertObj) {
+      for (const key of Object.keys(additionalInsertObj)) {
+        newAdObj[key] = ormHelpers.getFieldQuery(obj[key]);
+      }
+    }
+
+    result.def.update = newObj;
     result.def.insert = {
-      ...obj,
-      ...additionalInsertObj
+      ...newObj,
+      ...newAdObj
     };
     return result;
   }
@@ -166,20 +195,15 @@ export class QueryBuilder {
 
     if (this.def.type === "select") {
       return this._getSelectQuery();
-    }
-    else if (this.def.type === "update") {
+    } else if (this.def.type === "update") {
       return this._getUpdateQuery();
-    }
-    else if (this.def.type === "delete") {
+    } else if (this.def.type === "delete") {
       return this._getDeleteQuery();
-    }
-    else if (this.def.type === "insert") {
+    } else if (this.def.type === "insert") {
       return this._getInsertQuery();
-    }
-    else if (this.def.type === "upsert") {
+    } else if (this.def.type === "upsert") {
       return this._getUpsertQuery();
-    }
-    else {
+    } else {
       throw new Error("'TYPE'이 잘못되었습니다. (" + this.def.type + ")");
     }
   }
@@ -191,8 +215,7 @@ export class QueryBuilder {
 
     if (this.def.select) {
       query += Object.keys(this.def.select).map(key => "  " + this.def.select![key] + " AS " + key).join(",\n") + "\n";
-    }
-    else {
+    } else {
       query += "  *\n";
     }
 

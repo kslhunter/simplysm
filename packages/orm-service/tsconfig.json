@@ -18,6 +18,9 @@
       ],
       "@simplism/orm-connector": [
         "../orm-connector/src/index.ts"
+      ],
+      "@simplism/orm-query": [
+        "../orm-query/src/index.ts"
       ]
     }
   },

@@ -1,7 +1,7 @@
 import {Injectable, Type} from "@angular/core";
 import {DbContext, IDbContextExecutor, Queryable} from "@simplism/orm-client";
 import {SdSocketProvider} from "./SdSocketProvider";
-import {ITableDef, tableDefMetadataKey} from "@simplism/orm-query";
+import {IQueryDef, ITableDef, tableDefMetadataKey} from "@simplism/orm-query";
 
 export class DbContextSocketExecutor implements IDbContextExecutor {
   private _connId?: number;
@@ -67,12 +67,12 @@ export class DbContextSocketExecutor implements IDbContextExecutor {
     return result;
   }
 
-  public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(query: string, colDefs?: C, joinDefs?: { as: string; isSingle: boolean }[]): Promise<undefined extends C ? any[][] : any[]> {
+  public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(queries: (string | IQueryDef)[], colDefs?: C, joinDefs?: { as: string; isSingle: boolean }[]): Promise<undefined extends C ? any[][] : any[]> {
     if (!this._socket.connected) {
       throw new Error("ORM 서비스에 연결되어있지 않습니다.");
     }
 
-    return await this._socket.sendAsync("OrmService.executeAsync", joinDefs ? [this._connId, query.trim(), colDefs, joinDefs] : [this._connId, query.trim()]);
+    return await this._socket.sendAsync("OrmService.executeAsync", joinDefs ? [this._connId, queries, colDefs, joinDefs] : [this._connId, queries]);
   }
 
   public async forceCloseAsync(): Promise<void> {

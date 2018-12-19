@@ -1,5 +1,6 @@
 import * as tedious from "tedious";
 import {Logger, Wait} from "@simplism/core";
+import {IQueryDef, QueryBuilder} from "../../orm-query/src";
 
 export class DbConnection {
   private readonly _logger = new Logger("@simplism/orm-connector");
@@ -71,8 +72,7 @@ export class DbConnection {
         conn.cancel();
         await Wait.true(() => this._requests.length < 1);
         conn.close();
-      }
-      else {
+      } else {
         reject(new Error("'Connection'이 연결되어있지 않습니다."));
       }
     });
@@ -130,7 +130,7 @@ export class DbConnection {
     });
   }
 
-  public async executeAsync(query: string): Promise<any[][]> {
+  public async executeAsync(queryList: (string | IQueryDef)[]): Promise<any[][]> {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
@@ -138,7 +138,12 @@ export class DbConnection {
     const conn = this._conn;
 
     const results: any[][] = [];
-    const queries = query.split("GO").map(item => item.trim()).filter(item => !!item);
+    const queries = (
+      queryList.map(query => query["type"]
+        ? new QueryBuilder().from(query as IQueryDef).query
+        : query as string
+      ).join("\n\n")
+    ).split("GO").map(item => item.trim()).filter((item: any) => !!item);
 
     for (const currQuery of queries) {
       this._logger.log("쿼리 실행:", currQuery);
@@ -152,8 +157,7 @@ export class DbConnection {
 
               if (err["code"] === "ECANCEL") {
                 reject(new Error("쿼리가 취소되었습니다."));
-              }
-              else {
+              } else {
                 reject(new Error(`[${err["code"]}] ${err.message}\n-- query\n${currQuery}\n--`));
               }
             }

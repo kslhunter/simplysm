@@ -1,6 +1,6 @@
 import "core-js/es7/reflect";
 import {DateOnly, DateTime, LambdaParser, Time, Type} from "@simplism/core";
-import {QueryBuilder} from "./QueryBuilder";
+import {IQueryDef, QueryBuilder} from "./QueryBuilder";
 import {IForeignKeyDef, IForeignKeyTargetDef, ITableDef, tableDefMetadataKey} from "../common/decorators";
 import {QueryUnit} from "./QueryUnit";
 import {QueryType} from "../common/QueryType";
@@ -25,7 +25,7 @@ export class QueryBuilderAdv<T> {
   public qb: QueryBuilder;
   public joinDefs: IJoinDef[] = [];
   public selectObj: { [key: string]: QueryUnit<QueryType> | QueryType } = {};
-  public orderByColNames: string[] = [];
+  public orderByColNames: any[] = [];
   public singleSelectAsNames: string[] = [];
   public hasCustomSelect = false;
 
@@ -50,14 +50,13 @@ export class QueryBuilderAdv<T> {
         const subSelect = {};
         for (const selectAs of Object.keys(this._unionQba[i].selectObj)) {
           const selectOrg = this._unionQba[i].selectObj[selectAs]!;
-          subSelect[`[${selectAs}]`] = ormHelpers.getFieldQuery(selectOrg);
+          subSelect[`[${selectAs}]`] = selectOrg;
         }
         unionQueryBuilders[i] = unionQueryBuilders[i].select(subSelect);
       }
 
       this.qb = new QueryBuilder().from(unionQueryBuilders, `[${as}]`);
-    }
-    else if (arg instanceof QueryBuilderAdv) {
+    } else if (arg instanceof QueryBuilderAdv) {
       this._subQba = arg;
       if (tableType) {
         this._tableType = tableType;
@@ -80,17 +79,16 @@ export class QueryBuilderAdv<T> {
         for (const selectAs of Object.keys(this._subQba.selectObj)) {
           if (
             tableDef.columns.map(item => item.name).includes(selectAs) ||
-            this._subQba.orderByColNames.map(item => item.replace(/[\[\]]/g, "")).includes(selectAs)
+            this._subQba.orderByColNames.includes(selectAs)
           ) {
             const selectOrg = this._subQba.selectObj[selectAs]!;
-            subSelect[`[${selectAs}]`] = ormHelpers.getFieldQuery(selectOrg);
+            subSelect[`[${selectAs}]`] = selectOrg;
           }
         }
         subQueryBuilder = subQueryBuilder.select(subSelect).distinct();
 
         this.qb = new QueryBuilder().from(subQueryBuilder, `[${as}]`);
-      }
-      else {
+      } else {
         for (const selectAs of Object.keys(this._subQba.selectObj)) {
           const selectOrg = this._subQba.selectObj[selectAs]!;
           const selectType = selectOrg instanceof QueryUnit ? selectOrg.type : selectOrg.constructor;
@@ -101,14 +99,13 @@ export class QueryBuilderAdv<T> {
         const subSelect = {};
         for (const selectAs of Object.keys(this._subQba.selectObj)) {
           const selectOrg = this._subQba.selectObj[selectAs]!;
-          subSelect[`[${selectAs}]`] = ormHelpers.getFieldQuery(selectOrg);
+          subSelect[`[${selectAs}]`] = selectOrg;
         }
         subQueryBuilder = subQueryBuilder.select(subSelect);
 
         this.qb = new QueryBuilder().from(subQueryBuilder, `[${as}]`);
       }
-    }
-    else {
+    } else {
       this._tableType = arg;
       const tableDef = core.Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
 
@@ -133,12 +130,23 @@ export class QueryBuilderAdv<T> {
     if (this.qb.def.type === "select") {
       const select = {};
       for (const selectAs of Object.keys(this.selectObj)) {
-        select[`[${selectAs}]`] = ormHelpers.getFieldQuery(this.selectObj[selectAs]);
+        select[`[${selectAs}]`] = this.selectObj[selectAs];
       }
       return this.qb.select(select).query;
-    }
-    else {
+    } else {
       return this.qb.query;
+    }
+  }
+
+  public get queryDef(): IQueryDef {
+    if (this.qb.def.type === "select") {
+      const select = {};
+      for (const selectAs of Object.keys(this.selectObj)) {
+        select[`[${selectAs}]`] = this.selectObj[selectAs];
+      }
+      return this.qb.select(select).def;
+    } else {
+      return this.qb.def;
     }
   }
 
@@ -166,13 +174,11 @@ export class QueryBuilderAdv<T> {
             for (const item of currObj[key]) {
               generate(item, (parentKey ? parentKey + "." : "") + key);
             }
-          }
-          else {
+          } else {
             generate(currObj[key], (parentKey ? parentKey + "." : "") + key);
             result.singleSelectAsNames.push((parentKey ? parentKey + "." : "") + key);
           }
-        }
-        else {
+        } else {
           result.selectObj[(parentKey ? parentKey + "." : "") + key] = currObj[key];
         }
       }
@@ -182,7 +188,7 @@ export class QueryBuilderAdv<T> {
 
     const select = {};
     for (const selectAs of Object.keys(result.selectObj)) {
-      select[`[${selectAs}]`] = ormHelpers.getFieldQuery(result.selectObj[selectAs]);
+      select[`[${selectAs}]`] = result.selectObj[selectAs];
     }
     result.qb = this.qb.select(select);
 
@@ -216,7 +222,7 @@ export class QueryBuilderAdv<T> {
   public orderBy(fwd: (entity: T) => QueryType, desc?: boolean): QueryBuilderAdv<T> {
     const result = this._clone();
 
-    const colQuery = ormHelpers.getFieldQuery(fwd(result.entity));
+    const colQuery = fwd(result.entity);
 
     result.qb = result.qb.orderBy(colQuery, desc ? "DESC" : "ASC");
 
@@ -233,7 +239,7 @@ export class QueryBuilderAdv<T> {
   public groupBy(fwd: (entity: T) => QueryType[]): QueryBuilderAdv<T> {
     const result = this._clone();
 
-    const colQueries = fwd(result.entity).map(item => ormHelpers.getFieldQuery(item));
+    const colQueries = fwd(result.entity);
 
     result.qb = result.qb.groupBy(colQueries);
     return result;
@@ -257,7 +263,7 @@ export class QueryBuilderAdv<T> {
     if (joinQueryBuilderAdv.hasCustomSelect) {
       const joinSelect = {};
       for (const selectAs of Object.keys(joinQueryBuilderAdv.selectObj)) {
-        joinSelect[`[${selectAs}]`] = ormHelpers.getFieldQuery(joinQueryBuilderAdv.selectObj[selectAs]);
+        joinSelect[`[${selectAs}]`] = joinQueryBuilderAdv.selectObj[selectAs];
       }
       joinQueryBuilderAdv.qb = joinQueryBuilderAdv.qb.select(joinSelect);
     }
@@ -396,7 +402,7 @@ export class QueryBuilderAdv<T> {
 
     const update = {};
     for (const updateKey of Object.keys(obj)) {
-      update[`[${updateKey}]`] = ormHelpers.getFieldQuery(obj[updateKey]);
+      update[`[${updateKey}]`] = obj[updateKey];
     }
 
     result.qb = result.qb
@@ -418,7 +424,7 @@ export class QueryBuilderAdv<T> {
 
     const insert = {};
     for (const insertKey of Object.keys(obj)) {
-      insert[`[${insertKey}]`] = ormHelpers.getFieldQuery(obj[insertKey]);
+      insert[`[${insertKey}]`] = obj[insertKey];
     }
 
     result.qb = result.qb
@@ -439,14 +445,14 @@ export class QueryBuilderAdv<T> {
     const obj = typeof arg === "function" ? arg(result.entity) : arg;
     const upsert = {};
     for (const upsertKey of Object.keys(obj)) {
-      upsert[`[${upsertKey}]`] = ormHelpers.getFieldQuery(obj[upsertKey]);
+      upsert[`[${upsertKey}]`] = obj[upsertKey];
     }
 
     let additionalInsert: { [key: string]: string } | undefined;
     if (additionalInsertObj) {
       additionalInsert = {};
       for (const additionalInsertKey of Object.keys(additionalInsertObj)) {
-        additionalInsert[`[${additionalInsertKey}]`] = ormHelpers.getFieldQuery(additionalInsertObj[additionalInsertKey]);
+        additionalInsert[`[${additionalInsertKey}]`] = additionalInsertObj[additionalInsertKey];
       }
     }
 
@@ -476,16 +482,14 @@ export class QueryBuilderAdv<T> {
           if (isCursorSingle) {
             cursorEntity[tblAsSplitItem] = cursorEntity[tblAsSplitItem] || {};
             cursorEntity = cursorEntity[tblAsSplitItem];
-          }
-          else {
+          } else {
             cursorEntity[tblAsSplitItem] = cursorEntity[tblAsSplitItem] || [{}];
             cursorEntity = cursorEntity[tblAsSplitItem][0];
           }
         }
 
         cursorEntity[colAs] = selectQueryUnit;
-      }
-      else {
+      } else {
         entity[selectAs] = selectQueryUnit;
       }
     }
@@ -503,8 +507,7 @@ export class QueryBuilderAdv<T> {
           for (const item1 of item[key]) {
             obj[key].push(generate(item1));
           }
-        }
-        else if (
+        } else if (
           item[key] instanceof Object
           && !(item[key] instanceof QueriedBoolean)
           && !(item[key] instanceof Number)
@@ -515,11 +518,9 @@ export class QueryBuilderAdv<T> {
           && !(item[key] instanceof Time)
           && !(item[key] instanceof QueryUnit)) {
           obj[key] = generate(item[key]);
-        }
-        else if (item[key] instanceof QueryUnit && item[key].type === QueriedBoolean) {
+        } else if (item[key] instanceof QueryUnit && item[key].type === QueriedBoolean) {
           obj[key] = new QueryUnit(Boolean, item[key].queryForWhere);
-        }
-        else {
+        } else {
           obj[key] = item[key];
         }
       }
@@ -565,7 +566,7 @@ export class QueryBuilderAdv<T> {
     const parentAs = chain.split(".").slice(0, -1).join(".");
     if (parentAs) {
       const joinDef = this.getAllJoinDef()[parentAs];
-      const joinTableDef = core.Reflect.getMetadata(tableDefMetadataKey, joinDef.targetTableType)  as ITableDef | undefined;
+      const joinTableDef = core.Reflect.getMetadata(tableDefMetadataKey, joinDef.targetTableType) as ITableDef | undefined;
       if (!joinTableDef) {
         throw new Error(`'${joinDef.targetTableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
       }
@@ -576,13 +577,12 @@ export class QueryBuilderAdv<T> {
       ];
 
       return fkOrFkts.single(item => item.name === chain.split(".").last());
-    }
-    else {
+    } else {
       if (!this._tableType) {
         throw new Error("테이블 타입을 알 수 없습니다.");
       }
 
-      const tableDef = core.Reflect.getMetadata(tableDefMetadataKey, this._tableType)  as ITableDef | undefined;
+      const tableDef = core.Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
       if (!tableDef) {
         throw new Error(`'${this._tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
       }
