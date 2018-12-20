@@ -11,6 +11,7 @@ export const stylesSdModal = (vars: SdStyleProvider) => /* language=LESS */ `
     height: 100%;
     text-align: center;
     padding-top: 25px;
+    overflow: auto;
 
     > ._backdrop {
       position: absolute;
@@ -31,7 +32,7 @@ export const stylesSdModal = (vars: SdStyleProvider) => /* language=LESS */ `
       overflow: hidden;
       max-width: 100%;
       min-width: 240px;
-      max-height: calc(100% - 50px);
+      /*max-height: calc(100% - 50px);*/
       //border: 1px solid get($trans-color, default);
 
       &:focus {
@@ -89,7 +90,7 @@ export const stylesSdModal = (vars: SdStyleProvider) => /* language=LESS */ `
       > ._dialog {
         width: 100%;
         height: 100%;
-        max-height: 100%;
+        /*max-height: 100%;*/
       }
     }
   }`;
