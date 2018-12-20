@@ -143,6 +143,8 @@
       "statements",
       "elements",
       "members"
-    ]
+    ],
+    "increment-decrement": false,
+    "ban-ts-ignore": false
   }
 }

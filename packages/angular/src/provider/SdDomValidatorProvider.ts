@@ -3,9 +3,6 @@ import {Injectable} from "@angular/core";
 
 @Injectable()
 export class SdDomValidatorProvider {
-  public constructor() {
-  }
-
   public validate(element: HTMLElement): void {
     const invalidEls = element.findAll("*:invalid, *[sd-invalid=true]").ofType(HTMLElement);
 

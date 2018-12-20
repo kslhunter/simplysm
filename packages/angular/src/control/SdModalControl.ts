@@ -35,9 +35,10 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
       height: 100%;
       text-align: center;
       padding-top: 25px;
+      overflow: auto;
 
       > ._backdrop {
-        position: absolute;
+        position: fixed;
         top: 0;
         left: 0;
         width: 100%;
@@ -52,10 +53,9 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
         margin: 0 auto;
         //background: get($theme-color, bluegrey, darkest);
         background: white;
-        overflow: hidden;
         max-width: 100%;
         min-width: 240px;
-        max-height: calc(100% - 50px);
+        //max-height: calc(100% - 50px);
         //border: 1px solid get($trans-color, default);
 
         &:focus {

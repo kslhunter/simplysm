@@ -12,9 +12,6 @@ export class ExcelWorkbook {
   public sstData: any;
   public stylesData: any;
 
-  private constructor() {
-  }
-
   public static create(): ExcelWorkbook {
     const wb = new ExcelWorkbook();
 
