@@ -16,7 +16,7 @@ export class Logger {
     "\x1b[36m",
     "\x1b[31m"
   ];
-  private static readonly _groupColorMap = new Map<string, string>();
+  private static readonly _prefixColorMap = new Map<string, string>();
 
   public static history: ILoggerHistory[] = [];
   private static readonly _groupMap = new Map<string, ILoggerConfig>();
@@ -127,8 +127,10 @@ export class Logger {
   }
 
   private _write(severity: LoggerSeverityString, logs: any[]): void {
-    if (!Logger._groupColorMap.has(this._groupName)) {
-      Logger._groupColorMap.set(this._groupName, Logger._palletColors[Logger._groupColorMap.size % Logger._palletColors.length]);
+    if (this._prefix && !Logger._prefixColorMap.has(this._prefix)) {
+      Logger._prefixColorMap.set(
+        this._prefix,
+        Logger._palletColors[Array.from(Logger._prefixColorMap.keys()).length % Logger._palletColors.length]);
     }
 
     const now = new DateTime();
@@ -177,7 +179,7 @@ export class Logger {
 
       console.log(text);*/
 
-      const text = `${Logger._groupColorMap.get(this._groupName)}${log.group}:\t${this.config.color[severity]}${log.severity.padEnd(5, " ")}\t${this.config.color.log} ${log.prefix ? log.prefix + " " : ""}${convertedLogs.join("\r\n")}`;
+      const text = `${this.config.color.grey}${log.group}:\t${this.config.color[severity]}${log.severity.padEnd(5, " ")}\t${log.prefix ? Logger._prefixColorMap.get(log.prefix) + log.prefix + " " : ""}${this.config.color.log}${convertedLogs.join("\r\n")}`;
 
       // 콘솔 출력
       if (this.config.consoleLogSeverities.includes(severity)) {

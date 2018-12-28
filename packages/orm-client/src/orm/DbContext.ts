@@ -60,8 +60,6 @@ export abstract class DbContext {
               new QueryBuilder().from(`[${this.config.database}].[dbo].[_migration]`).def
             ])
           )[0].map(item => item.code);
-          console.log(dbMigrations);
-
 
           const migrations = this.migrations.filter(item => !dbMigrations.includes(item.name)).orderBy(item => item.name);
           if (migrations.length > 0) {
