@@ -11,12 +11,11 @@
     "removeComments": true,
     "noUnusedLocals": true,
     "typeRoots": [
-      "../node_modules/@types",
-      "../types"
+      "../node_modules/@types"
     ],
     "plugins": [
       {
-        "name": "tslint-language-service"
+        "name": "typescript-tslint-plugin"
       }
     ]
   }

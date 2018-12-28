@@ -102,8 +102,7 @@ export class LibraryPackageBuilder {
             this._logger.warn(`경고 발생`, errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
             resolve();
             return;
-          }
-          else {
+          } else {
             this._logger.error(`에러 발생`, errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
             reject();
             return;
@@ -166,7 +165,6 @@ export class LibraryPackageBuilder {
                   logger: this._logger
                 }
               },
-              this._loadersPath("inline-sass-loader.js"),
               this._loadersPath("shebang-loader.js")
             ]
           }

@@ -252,8 +252,7 @@ export class ClientPackageBuilder {
       const ftpFilePath = `${this._config.publish.path}/${path.relative(distPath, filePath).replace(/\\/g, "/")}`;
       if (fs.lstatSync(filePath).isDirectory()) {
         await storage.mkdirAsync(ftpFilePath);
-      }
-      else {
+      } else {
         if (/[\\/]/.test(ftpFilePath)) {
           let cumDir = "";
           for (const ftpDir of ftpFilePath.split(/[\\/]/).slice(0, -1)) {
@@ -320,7 +319,6 @@ export class ClientPackageBuilder {
                   logger: this._logger
                 }
               },
-              this._loadersPath("inline-sass-loader.js"),
               "angular-router-loader"
             ]
           },

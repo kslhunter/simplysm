@@ -1,6 +1,23 @@
 import {DateTime} from "../type/DateTime";
 
 export class Logger {
+  private static readonly _palletColors = !process.versions.node ? [
+    "color: #827717;",
+    "color: #388E3C;",
+    "color: #1976D2;",
+    "color: #AB47BC;",
+    "color: #00838F;",
+    "color: #F44336;"
+  ] : [
+    "\x1b[33m",
+    "\x1b[32m",
+    "\x1b[34m",
+    "\x1b[35m",
+    "\x1b[36m",
+    "\x1b[31m"
+  ];
+  private static readonly _groupColorMap = new Map<string, string>();
+
   public static history: ILoggerHistory[] = [];
   private static readonly _groupMap = new Map<string, ILoggerConfig>();
   private static _lastId = 0;
@@ -9,7 +26,22 @@ export class Logger {
     consoleLogSeverities: ["log", "info", "warn", "error"],
     fileLogSeverities: [],
     outputPath: undefined,
-    historySize: 30
+    historySize: 30,
+    color: !process.versions.node
+      ? {
+        grey: "color: grey;",
+        log: "color: black;",
+        info: "color: #2196F3;",
+        warn: "color: #FF9800;",
+        error: "color: #F44336;"
+      }
+      : {
+        grey: "\x1b[90m",
+        log: "\x1b[0m",
+        info: "\x1b[36m",
+        warn: "\x1b[33m",
+        error: "\x1b[31m"
+      }
   };
 
   public readonly id: number;
@@ -32,7 +64,22 @@ export class Logger {
       consoleLogSeverities: ["log", "info", "warn", "error"],
       fileLogSeverities: [],
       outputPath: undefined,
-      historySize: 30
+      historySize: 30,
+      color: !process.versions.node
+        ? {
+          grey: "color: grey;",
+          log: "color: black;",
+          info: "color: #2196F3;",
+          warn: "color: #FF9800;",
+          error: "color: #F44336;"
+        }
+        : {
+          grey: "\x1b[90m",
+          log: "\x1b[0m",
+          info: "\x1b[36m",
+          warn: "\x1b[33m",
+          error: "\x1b[31m"
+        }
     };
   }
 
@@ -80,6 +127,10 @@ export class Logger {
   }
 
   private _write(severity: LoggerSeverityString, logs: any[]): void {
+    if (!Logger._groupColorMap.has(this._groupName)) {
+      Logger._groupColorMap.set(this._groupName, Logger._palletColors[Logger._groupColorMap.size % Logger._palletColors.length]);
+    }
+
     const now = new DateTime();
     const at = process.version ? new Error().stack!.match(/at .*/g)![2].trim() : undefined;
 
@@ -118,13 +169,20 @@ export class Logger {
 
     // 콘솔 출력
     if (this.config.consoleLogSeverities.includes(severity)) {
-      let text = `${log.now} - [${log.severity}] - from ${log.group}`;
+      /*let text = `${log.now} - [${log.severity}] - from ${log.group}`;
       if (process.env.NODE_ENV !== "production") {
         text += log.at ? " - " + log.at : "";
       }
       text += `\r\n${log.prefix ? log.prefix + " " : ""}${convertedLogs.join("\r\n")}\r\n`;
 
-      console.log(text);
+      console.log(text);*/
+
+      const text = `${Logger._groupColorMap.get(this._groupName)}${log.group}:\t${this.config.color[severity]}${log.severity.padEnd(5, " ")}\t${this.config.color.log} ${log.prefix ? log.prefix + " " : ""}${convertedLogs.join("\r\n")}`;
+
+      // 콘솔 출력
+      if (this.config.consoleLogSeverities.includes(severity)) {
+        console.log(text);
+      }
     }
 
     // 파일 출력
@@ -156,6 +214,7 @@ export interface ILoggerConfig {
   fileLogSeverities: LoggerSeverityString[];
   outputPath: string | undefined;
   historySize: number;
+  color: ILogColor;
 }
 
 export interface ILoggerHistory {
@@ -166,6 +225,14 @@ export interface ILoggerHistory {
   prefix: string | undefined;
   messages: any[];
   loggedAtDateTime: DateTime;
+}
+
+export interface ILogColor {
+  grey: string;
+  log: string;
+  info: string;
+  warn: string;
+  error: string;
 }
 
 export type LoggerSeverityString = "log" | "info" | "warn" | "error";

@@ -9,7 +9,7 @@ export class FtpStorage implements IStorage {
   private _ftp: any;
 
   public async connectAsync(connectionConfig: IFtpConnectionConfig): Promise<void> {
-    this._ftp = new JSFtp({
+    this._ftp = new JSFtp.default({
       host: connectionConfig.host,
       port: connectionConfig.port,
       user: connectionConfig.user,
@@ -49,8 +49,7 @@ export class FtpStorage implements IStorage {
         if (err) {
           if (err["code"] === 550) {
             this._logger.warn(`${storageFilePath}: ${err.message}`);
-          }
-          else {
+          } else {
             reject(err);
             return;
           }
