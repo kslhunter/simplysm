@@ -1,7 +1,7 @@
-import * as chokidar from "chokidar";
 import * as fs from "fs-extra";
 import * as path from "path";
 import {Logger} from "@simplism/core";
+import {FileWatcher} from "../utils/FileWatcher";
 
 export class LocalUpdater {
   private readonly _logger = new Logger("@simplism/cli", `${this._packageName}:`);
@@ -11,87 +11,38 @@ export class LocalUpdater {
   }
 
   public async runAsync(watch?: boolean): Promise<void> {
-    await new Promise<void>(resolve => {
-      if (watch) {
-        const watcher = chokidar.watch(this._sourcePath("**/*").replace(/\\/g, "/"))
-          .on("ready", () => {
-            this._logger.log(`로컬 업데이트 감지 시작...`);
+    if (watch) {
+      this._logger.log(`로컬 업데이트 감지 시작...`);
+      await FileWatcher.watch(this._sourcePath("**/*"), ["add", "change", "unlink"], files => {
+        try {
+          for (const file of files) {
+            if (file.filePath.endsWith("package.json")) continue;
 
-            let preservedFileChanges: { type: string; filePath: string }[] = [];
-            let timeout: NodeJS.Timer;
+            this._logger.log(`변경됨: ${file.type}    => ${file.filePath}`);
 
-            const onWatched = (type: string, filePath: string) => {
-              /*this._logger.log(`변경됨: ${type}    => ${filePath}`);
-
-              const relativeSourcePath = path.relative(this._sourcePath(), filePath);
-              const targetPath = this._targetPath(relativeSourcePath);
-              if (type === "remove") {
-                fs.removeSync(targetPath);
-              }
-              else {
-                fs.copyFileSync(filePath, targetPath);
-              }*/
-
-              preservedFileChanges.push({type, filePath});
-
-              clearTimeout(timeout);
-              timeout = setTimeout(
-                () => {
-                  try {
-                    /*if (preservedFileChanges.every(item => /(?!\.d)\.ts$/.test(item.filePath))) {
-                      return;
-                    }*/
-
-                    const fileChanges = Object.clone(preservedFileChanges);
-                    preservedFileChanges = [];
-
-                    for (const fileChange of fileChanges) {
-                      if (fileChange.filePath.endsWith("package.json")) continue;
-
-                      this._logger.log(`변경됨: ${fileChange.type}    => ${fileChange.filePath}`);
-
-                      const relativeSourcePath = path.relative(this._sourcePath(), fileChange.filePath);
-                      const targetPath = this._targetPath(relativeSourcePath);
-                      if (type === "remove") {
-                        fs.removeSync(targetPath);
-                      }
-                      else {
-                        fs.copyFileSync(fileChange.filePath, targetPath);
-                      }
-                    }
-                  }
-                  catch (err) {
-                    this._logger.error(err);
-                  }
-                },
-                300
-              );
-            };
-
-            watcher
-              .on("add", filePath => {
-                onWatched("add", filePath);
-              })
-              .on("change", filePath => {
-                onWatched("change", filePath);
-              })
-              .on("unlink", filePath => {
-                onWatched("remove", filePath);
-              });
-
-            resolve();
-          });
-      }
-      else {
-        for (const file of fs.readdirSync(this._sourcePath())) {
-          if (file === "package.json") continue;
-          fs.copySync(this._sourcePath(file), this._targetPath(file));
+            const relativeSourcePath = path.relative(this._sourcePath(), file.filePath);
+            const targetPath = this._targetPath(relativeSourcePath);
+            if (file.type === "unlink") {
+              fs.removeSync(targetPath);
+            }
+            else {
+              fs.copyFileSync(file.filePath, targetPath);
+            }
+          }
         }
-
-        this._logger.log(`로컬 업데이트 완료`);
-        resolve();
+        catch (err) {
+          this._logger.error(err);
+        }
+      });
+    }
+    else {
+      for (const file of fs.readdirSync(this._sourcePath())) {
+        if (file === "package.json") continue;
+        fs.copySync(this._sourcePath(file), this._targetPath(file));
       }
-    });
+
+      this._logger.log(`로컬 업데이트 완료`);
+    }
   }
 
   private _sourcePath(...args: string[]): string {

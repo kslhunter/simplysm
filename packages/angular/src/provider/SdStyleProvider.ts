@@ -104,25 +104,25 @@ export class SdStyleProvider {
   };
 
   public gap = {
-    xxs: "2px",
-    xs: "4px",
-    sm: "6px",
-    default: "8px",
-    lg: "12px",
-    xl: "16px",
-    xxl: "20px"
+    xxs: "4px",
+    xs: "6px",
+    sm: "8px",
+    default: "10px",
+    lg: "16px",
+    xl: "20px",
+    xxl: "24px"
   };
 
   public fontSize = {
-    lg: "14px",
-    default: "12px",
-    sm: "11px",
-    h1: "24px",
-    h2: "18px",
-    h3: "16px",
-    h4: "14px",
-    h5: "12px",
-    h6: "11px"
+    lg: "16px",
+    default: "14px",
+    sm: "12px",
+    h1: "26px",
+    h2: "20px",
+    h3: "18px",
+    h4: "16px",
+    h5: "14px",
+    h6: "12px"
   };
 
   private _bgColor?: string;
@@ -134,7 +134,8 @@ export class SdStyleProvider {
     this._bgColor = value;
   }
 
-  public fontFamily = "'맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif";
+  public fontFamily = "'Noto Sans KR', '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif";
+  public fontFamilyMonospace = "'Noto Sans KR1', monospace";
   public lineHeight = "1.25em";
 
   public zIndex = {
@@ -177,6 +178,13 @@ export class SdStyleProvider {
   public set topbarLinkHoverColor(variable: string) {
     this._topbarLinkHoverColor = variable;
   }
+
+  public topbarHeight = "42px";
+
+  public sidebarWidth = "240px";
+
+  public sheetPaddingV = this.gap.xs;
+  public sheetPaddingH = this.gap.sm;
 
   public get formControlBase(): string {
     return `
@@ -227,7 +235,7 @@ user-select: none`;
 
       const styleEl = document.createElement("style");
       styleEl.setAttribute("id", "SdStyleProvider_" + key);
-      document.head!.append(styleEl);
+      document.head!.appendChild(styleEl);
 
       less.render(
         this._styleFns[key](this),

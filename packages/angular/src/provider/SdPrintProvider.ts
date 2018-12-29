@@ -34,7 +34,8 @@ export class SdPrintProvider {
 
       try {
         await compRef.instance.sdOnOpen(param);
-      } catch (e) {
+      }
+      catch (e) {
         throw e;
       }
 

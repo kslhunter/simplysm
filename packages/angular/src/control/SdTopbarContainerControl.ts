@@ -8,6 +8,4 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
     <ng-content></ng-content>`
 })
 export class SdTopbarContainerControl {
-
-
 }

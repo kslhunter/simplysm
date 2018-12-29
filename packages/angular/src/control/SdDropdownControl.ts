@@ -81,7 +81,8 @@ export class SdDropdownControl implements OnInit, OnDestroy {
           transform: "none"
         }
       );
-    } else {
+    }
+    else {
       Object.assign(
         dropdownEl.style,
         {
@@ -135,7 +136,8 @@ export class SdDropdownControl implements OnInit, OnDestroy {
             left: controlEl.windowOffset.left + "px"
           }
         );
-      } else {
+      }
+      else {
         Object.assign(
           dropdownEl.style,
           {

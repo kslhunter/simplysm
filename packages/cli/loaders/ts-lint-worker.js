@@ -58,6 +58,10 @@ process.on("message", (changedFiles) => {
     }
   }
 
+  process.send("finish", err => {
+    if (err) throw err;
+  });
+
   if (!watch) process.exit();
 });
 

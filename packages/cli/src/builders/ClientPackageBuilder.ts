@@ -10,7 +10,7 @@ import {FriendlyLoggerPlugin} from "../plugins/FriendlyLoggerPlugin";
 import {FtpStorage} from "@simplism/storage";
 import * as webpackMerge from "webpack-merge";
 import * as WebpackDevServer from "webpack-dev-server";
-import {TsLintPlugin} from "../plugins/TsLintPlugin";
+//import {TsLintPlugin} from "../plugins/TsLintPlugin";
 import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugin";
 import {CliHelper} from "../commons/CliHelper";
 import * as childProcess from "child_process";
@@ -252,7 +252,8 @@ export class ClientPackageBuilder {
       const ftpFilePath = `${this._config.publish.path}/${path.relative(distPath, filePath).replace(/\\/g, "/")}`;
       if (fs.lstatSync(filePath).isDirectory()) {
         await storage.mkdirAsync(ftpFilePath);
-      } else {
+      }
+      else {
         if (/[\\/]/.test(ftpFilePath)) {
           let cumDir = "";
           for (const ftpDir of ftpFilePath.split(/[\\/]/).slice(0, -1)) {
@@ -335,6 +336,13 @@ export class ClientPackageBuilder {
             ]
           },
           {
+            test: /\.css$/,
+            loaders: [
+              "style-loader",
+              "css-loader"
+            ]
+          },
+          {
             test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx)$/,
             loader: "file-loader",
             options: {
@@ -349,11 +357,11 @@ export class ClientPackageBuilder {
           packageName: this._packageName,
           logger: this._logger
         }),
-        new TsLintPlugin({
+        /*new TsLintPlugin({
           tsConfigPath: this._packagePath("tsconfig.json"),
           packageName: this._packageName,
           logger: this._logger
-        }),
+        }),*/
         new webpack.ContextReplacementPlugin(
           /angular[\\/]core[\\/]fesm5/,
           this._packagePath("src"),

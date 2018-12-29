@@ -1,6 +1,6 @@
 {
   "name": "simplism",
-  "version": "10.3.22",
+  "version": "10.3.57",
   "description": "Simplism Packages Source Code",
   "repository": "github:kslhunter/simplism",
   "author": "김석래",
@@ -87,6 +87,7 @@
     "angular-router-loader": "^0.8.5",
     "bufferutil": "^4.0.1",
     "chokidar": "^2.0.4",
+    "classlist.js": "^1.1.20150312",
     "codelyzer": "^4.5.0",
     "codemirror": "^5.42.2",
     "copy-webpack-plugin": "^4.6.0",
@@ -127,6 +128,7 @@
     "typescript": "^3.1.6",
     "typescript-tslint-plugin": "^0.2.1",
     "utf-8-validate": "^5.0.2",
+    "web-animations-js": "^2.3.1",
     "webpack": "^4.28.2",
     "webpack-dev-server": "^3.1.14",
     "webpack-merge": "^4.1.4",

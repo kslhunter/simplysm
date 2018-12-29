@@ -8,7 +8,7 @@ import {FtpStorage} from "@simplism/storage";
 import {FriendlyLoggerPlugin} from "../plugins/FriendlyLoggerPlugin";
 import * as webpack from "webpack";
 import * as webpackMerge from "webpack-merge";
-import {TsLintPlugin} from "../plugins/TsLintPlugin";
+//import {TsLintPlugin} from "../plugins/TsLintPlugin";
 import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugin";
 
 export class ServerPackageBuilder {
@@ -229,10 +229,10 @@ export class ServerPackageBuilder {
           packageName: this._packageName,
           logger: this._logger
         }),
-        new TsLintPlugin({
+        /*new TsLintPlugin({
           packageName: this._packageName,
           logger: this._logger
-        }),
+        }),*/
         new FriendlyLoggerPlugin({
           packageName: this._packageName,
           logger: this._logger

@@ -39,9 +39,21 @@ export const stylesSdTextfield = (vars: SdStyleProvider) => /* language=LESS */ 
         background: ${vars.bgColor};
         color: ${vars.textColor.light};
       }
-  
+      
       &[type='color'] {
-        padding: 0 ${vars.gap.xs} !important;
+        padding: 1px ${vars.gap.default} !important;
+        height: ${vars.stripUnit(vars.gap.sm) * 2 + vars.stripUnit(vars.lineHeight) * vars.stripUnit(vars.fontSize.default) + 2}px;
+      }
+      /*@media screen and (-webkit-min-device-pixel-ratio:0) {
+      }*/
+      
+      &[type=year],
+      &[type=month],
+      &[type=date],
+      &[type=datetime],
+      &[type=time],
+      &[type=datetime-local] {
+        padding: ${vars.stripUnit(vars.gap.sm) - 2}px ${vars.gap.default};
       }
     }
   

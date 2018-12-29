@@ -26,11 +26,16 @@ export const stylesDefaults = (vars: SdStyleProvider) => /* language=LESS */ `
     line-height: ${vars.lineHeight};
   }
 
-  pre {
+  pre,
+  code {
     font-family: ${vars.fontFamily};
     font-size: ${vars.fontSize.default};
     line-height: ${vars.lineHeight};
     margin: 0;
+  }
+
+  code {
+    font-family: ${vars.fontFamilyMonospace};
   }` +
 
   [1, 2, 3, 4, 5, 6].map(num => `

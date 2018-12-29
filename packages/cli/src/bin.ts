@@ -8,10 +8,14 @@ import {EventEmitter} from "events";
 import {testAsync} from "./commands/testAsync";
 import {keygenAsync} from "./commands/keygenAsync";
 import {runDeviceAsync} from "./commands/runDeviceAsync";
+import {Logger} from "@simplism/core";
 
 // tslint:disable-next-line:no-var-requires no-require-imports
 require("source-map-support").install();
 EventEmitter.defaultMaxListeners = 20;
+
+const logger = new Logger("@simplism/cli", "$");
+logger.info("시작");
 
 // tslint:disable-next-line:no-unused-expression
 yargs
@@ -35,7 +39,7 @@ yargs
     async argv => {
       await testAsync(argv as any)
         .catch(err => {
-          console.error(err);
+          logger.error(err);
           process.exit(1);
         });
     }
@@ -178,3 +182,7 @@ yargs
     }
   )
   .argv;
+
+process.on("exit", () => {
+  logger.info("완료");
+});

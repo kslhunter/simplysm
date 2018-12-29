@@ -21,6 +21,7 @@ import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {animate, state, style, transition, trigger} from "@angular/animations";
 import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
+import {SdStyleProvider} from "../provider/SdStyleProvider";
 
 
 @Component({
@@ -164,7 +165,10 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   @HostBinding("style.padding-top")
   public get paddingTop(): string {
-    return this.hasHeaderGroup ? "48px" : "24px";
+    const size = Math.floor(this._style.stripUnit(this._style.sheetPaddingV) * 2
+      + this._style.stripUnit(this._style.lineHeight) * this._style.stripUnit(this._style.fontSize.default));
+
+    return (this.hasHeaderGroup ? (Math.floor(size * 2) + 2) : (Math.floor(size) + 1)) + "px";
   }
 
   public get hasHeaderGroup(): boolean {
@@ -177,7 +181,8 @@ export class SdSheetControl implements DoCheck, OnInit {
       const header = (item.header && item.header.split(".").length === 2) ? item.header.split(".")[0] : undefined;
       if (result.last() && result.last()!.header === header) {
         result.last()!.width += this.getWidth(item);
-      } else {
+      }
+      else {
         result.push({
           header,
           width: this.getWidth(item)
@@ -194,7 +199,8 @@ export class SdSheetControl implements DoCheck, OnInit {
       const header = (item.header && item.header.split(".").length === 2) ? item.header.split(".")[0] : undefined;
       if (result.last() && result.last()!.header === header) {
         result.last()!.width += this.getWidth(item);
-      } else {
+      }
+      else {
         result.push({
           header,
           width: this.getWidth(item)
@@ -214,10 +220,14 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public get fixedColumnWidth(): number {
+    const size = Math.floor(this._style.stripUnit(this._style.sheetPaddingV) * 2
+      + this._style.stripUnit(this._style.lineHeight) * this._style.stripUnit(this._style.fontSize.default));
+
     if (this.fixedColumnControls.length > 0) {
-      return this.fixedHeaderGroups.map(item => item.width).reduce((a, b) => a + b) + 24;
-    } else {
-      return 24;
+      return this.fixedHeaderGroups.map(item => item.width).reduce((a, b) => a + b) + size;
+    }
+    else {
+      return size;
     }
   }
 
@@ -228,7 +238,8 @@ export class SdSheetControl implements DoCheck, OnInit {
   public trackByItemFn(index: number, item: any): any {
     if (this.trackBy) {
       return this.trackBy(index, item);
-    } else {
+    }
+    else {
       return item;
     }
   }
@@ -247,7 +258,8 @@ export class SdSheetControl implements DoCheck, OnInit {
   public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _elRef: ElementRef<HTMLElement>,
-                     private readonly _localStorage: SdLocalStorageProvider) {
+                     private readonly _localStorage: SdLocalStorageProvider,
+                     private readonly _style: SdStyleProvider) {
     this._iterableDiffer = this._iterableDiffers.find([]).create(this.trackByItemFn);
 
     this._elRef.nativeElement.addEventListener(
@@ -265,7 +277,8 @@ export class SdSheetControl implements DoCheck, OnInit {
               this.selectedItemChange.emit(undefined);
             }
           }
-        } else if (this.selectable === true) {
+        }
+        else if (this.selectable === true) {
           this.selectRow(event.target as HTMLElement);
         }
       },
@@ -307,7 +320,8 @@ export class SdSheetControl implements DoCheck, OnInit {
           this.selectedItems.push(this.items![rowIndex]);
           this.selectedItemsChange.emit(this.selectedItems);
         }
-      } else {
+      }
+      else {
         if (this.selectedItem !== selectedItem) {
           this.selectedItem = this.items![rowIndex];
           this.selectedItemChange.emit(this.selectedItem);
@@ -331,14 +345,17 @@ export class SdSheetControl implements DoCheck, OnInit {
       if (this.selectedItems.includes(selectedItem)) {
         this.selectedItems.remove(selectedItem);
         this.selectedItemsChange.emit(this.selectedItems);
-      } else {
+      }
+      else {
         this.selectRow(event.target as Element);
       }
-    } else {
+    }
+    else {
       if (this.selectedItem === selectedItem) {
         this.selectedItem = undefined;
         this.selectedItemChange.emit(undefined);
-      } else {
+      }
+      else {
         this.selectRow(event.target as Element);
       }
     }
@@ -372,7 +389,8 @@ export class SdSheetControl implements DoCheck, OnInit {
       const columnConfig = this._columnConfigs.single(item => item.header === columnControl.header && item.index === index);
       if (columnConfig) {
         columnConfig.width = cellEl.offsetWidth;
-      } else {
+      }
+      else {
         this._columnConfigs.push({
           header: columnControl.header,
           width: cellEl.offsetWidth,
@@ -396,7 +414,8 @@ export class SdSheetControl implements DoCheck, OnInit {
           focusableEls[0].focus();
           event.preventDefault();
         }
-      } else if (event.key === "ArrowDown") {
+      }
+      else if (event.key === "ArrowDown") {
         const rowEl = targetEl.findParent("._row") as HTMLElement;
         const bodyEl = rowEl.parentElement as Element;
 
@@ -408,7 +427,8 @@ export class SdSheetControl implements DoCheck, OnInit {
           (nextRowEl.findAll("._col")[cellIndex] as HTMLElement).focus();
           event.preventDefault();
         }
-      } else if (event.key === "ArrowUp") {
+      }
+      else if (event.key === "ArrowUp") {
         const rowEl = targetEl.findParent("._row") as HTMLElement;
         const bodyEl = rowEl.parentElement as Element;
 
@@ -420,7 +440,8 @@ export class SdSheetControl implements DoCheck, OnInit {
           (nextRowEl!.findAll("._col")[cellIndex] as HTMLElement).focus();
           event.preventDefault();
         }
-      } else if (event.key === "ArrowRight") {
+      }
+      else if (event.key === "ArrowRight") {
         const rowEl = targetEl.findParent("._row") as HTMLElement;
         const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(targetEl);
 
@@ -429,7 +450,8 @@ export class SdSheetControl implements DoCheck, OnInit {
           nextCell.focus();
           event.preventDefault();
         }
-      } else if (event.key === "ArrowLeft") {
+      }
+      else if (event.key === "ArrowLeft") {
         const rowEl = targetEl.findParent("._row") as HTMLElement;
         const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(targetEl);
 
@@ -439,7 +461,8 @@ export class SdSheetControl implements DoCheck, OnInit {
           event.preventDefault();
         }
       }
-    } else {
+    }
+    else {
       if (event.key === "Escape") {
         const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
         cellEl.focus();

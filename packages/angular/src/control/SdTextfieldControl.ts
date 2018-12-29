@@ -18,7 +18,7 @@ import {DateOnly, DateTime, Time} from "@simplism/core";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <input #input
-           [type]="type === 'number' ? 'text' : type === 'datetime' ? 'datetime-local' : type"
+           [attr.type]="type === 'number' ? 'text' : type === 'datetime' ? 'datetime-local' : type"
            [required]="required"
            [value]="controlValue"
            [placeholder]="placeholder || ''"

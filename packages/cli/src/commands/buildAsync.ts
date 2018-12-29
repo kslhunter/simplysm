@@ -8,11 +8,13 @@ import {
 } from "../commons/IProjectConfig";
 import {LocalUpdater} from "../builders/LocalUpdater";
 import {LibraryPackageBuilder} from "../builders/LibraryPackageBuilder";
-import {Wait} from "@simplism/core";
+import {Logger, Wait} from "@simplism/core";
 import {ServerPackageBuilder} from "../builders/ServerPackageBuilder";
 import {ClientPackageBuilder} from "../builders/ClientPackageBuilder";
 import * as semver from "semver";
 import * as os from "os";
+import * as child_process from "child_process";
+import {FileWatcher} from "../utils/FileWatcher";
 
 export async function buildAsync(argv: { watch: boolean; package?: string; config?: string; env?: any }): Promise<void> {
   process.env.NODE_ENV = argv.watch ? "development" : "production";
@@ -86,6 +88,58 @@ export async function buildAsync(argv: { watch: boolean; package?: string; confi
     }
   };
 
+  const _loadersPath = (...args: string[]): string => {
+    return fs.existsSync(path.resolve(process.cwd(), "node_modules/@simplism/cli/loaders"))
+      ? path.resolve(process.cwd(), "node_modules/@simplism/cli/loaders", ...args)
+      : path.resolve(__dirname, "../../loaders", ...args);
+  };
+
+  const lintAsync = async (packName: string) => {
+    const logger = new Logger("@simplism/cli", `${packName}(LINT):`);
+
+    logger.log("코드검사...");
+    let worker: child_process.ChildProcess;
+    await new Promise<void>((resolve, reject) => {
+      worker = child_process.fork(
+        _loadersPath("ts-lint-worker.js"),
+        [
+          packName,
+          argv.watch ? "watch" : "build",
+          path.resolve(process.cwd(), "packages", packName, "tsconfig.json")
+        ].filterExists(),
+        {
+          stdio: [undefined, undefined, undefined, "ipc"]
+        }
+      );
+      worker.on("message", message => {
+        if (message === "finish") {
+          logger.info("코드검사 완료");
+          resolve();
+        }
+        else {
+          logger.warn("코드검사 경고 발생", message);
+        }
+      });
+
+      worker.send([], err => {
+        if (err) {
+          reject(err);
+        }
+      });
+    });
+
+    if (argv.watch) {
+      await FileWatcher.watch(path.resolve(process.cwd(), "packages", packName, "src/**/*.ts"), ["add", "change"], files => {
+        try {
+          worker.send(files.map(item => item.filePath));
+        }
+        catch (err) {
+          logger.error(err);
+        }
+      });
+    }
+  };
+
   if (!argv.watch) {
     // 최상위 package.json 설정 가져오기
     const rootPackageJsonPath = path.resolve(process.cwd(), "package.json");
@@ -130,15 +184,30 @@ export async function buildAsync(argv: { watch: boolean; package?: string; confi
   }
 
   if (!argv.package) {
-    const packageConfigs = projectConfig.packages
+    for (const pack of projectConfig.packages) {
+      promiseList.push(lintAsync(pack.name));
+    }
+  }
+  else {
+    for (const packName of argv.package.split(",")) {
+      promiseList.push(lintAsync(packName));
+    }
+  }
+
+  if (!argv.package) {
+    const packageConfigs = (
+      argv.package
+        ? projectConfig.packages.filter(item => argv.package!.split(",").includes(item.name))
+        : projectConfig.packages
+    )
       .map(pack => ({
-        name: pack.name,
+        ...pack,
         config: fs.readJsonSync(path.resolve(process.cwd(), "packages", pack.name, "package.json"))
       }));
 
     const completedPackNames: string[] = [];
 
-    for (const pack of projectConfig.packages) {
+    for (const pack of argv.package ? argv.package.split(",").map(item => packageConfigs.single(item1 => item1.name === item)!) : projectConfig.packages) {
       promiseList.push(
         new Promise<void>(async (resolve, reject) => {
           try {
@@ -148,7 +217,9 @@ export async function buildAsync(argv: { watch: boolean; package?: string; confi
               ...thisPackageConfig.config.dependencies
             };
             if (thisPackageDependencies) {
-              const depPackNames = packageConfigs.filter(otherPackageConfig => Object.keys(thisPackageDependencies).some(depKey => otherPackageConfig.config.name === depKey)).map(item => item.name);
+              const depPackNames = packageConfigs
+                .filter(otherPackageConfig => Object.keys(thisPackageDependencies).some(depKey => otherPackageConfig.config.name === depKey))
+                .map(item => item.name);
               await Wait.true(() => depPackNames.every(depPackName => completedPackNames.includes(depPackName)));
             }
 

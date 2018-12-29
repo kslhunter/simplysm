@@ -5,10 +5,9 @@ import {Logger} from "@simplism/core";
 import * as child_process from "child_process";
 import * as webpack from "webpack";
 import * as webpackMerge from "webpack-merge";
-import * as nodeExternals from "webpack-node-externals";
-import {FriendlyLoggerPlugin} from "../plugins/FriendlyLoggerPlugin";
 import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugin";
-import {TsLintPlugin} from "../plugins/TsLintPlugin";
+import {FriendlyLoggerPlugin} from "../plugins/FriendlyLoggerPlugin";
+import * as nodeExternals from "webpack-node-externals";
 
 export class LibraryPackageBuilder {
   private readonly _logger: Logger;
@@ -102,7 +101,8 @@ export class LibraryPackageBuilder {
             this._logger.warn(`경고 발생`, errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
             resolve();
             return;
-          } else {
+          }
+          else {
             this._logger.error(`에러 발생`, errorMessage.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
             reject();
             return;
@@ -175,10 +175,10 @@ export class LibraryPackageBuilder {
           packageName: this._packageName,
           logger: this._logger
         }),
-        new TsLintPlugin({
+        /*new TsLintPlugin({
           packageName: this._packageName,
           logger: this._logger
-        }),
+        }),*/
         new FriendlyLoggerPlugin({
           packageName: this._packageName,
           logger: this._logger

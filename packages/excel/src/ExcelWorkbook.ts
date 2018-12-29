@@ -315,7 +315,6 @@ export class ExcelWorkbook {
       result[sheet.name] = sheetData;
     }
 
-    console.log(result);
     return result;
   }
 

@@ -1,6 +1,6 @@
 import {Injectable, OnDestroy} from "@angular/core";
 import {SocketClient} from "@simplism/socket-client";
-import {Type} from "@simplism/core";
+import {Logger, Type} from "@simplism/core";
 import {SdToastProvider} from "./SdToastProvider";
 
 export class SocketEventBase<I, O> {
@@ -10,6 +10,7 @@ export class SocketEventBase<I, O> {
 
 @Injectable()
 export class SdSocketProvider implements OnDestroy {
+  private readonly _logger = new Logger("@simplism/angular", "socket:");
   public socket = new SocketClient();
 
   public constructor(private readonly _toast: SdToastProvider) {
@@ -29,12 +30,20 @@ export class SdSocketProvider implements OnDestroy {
 
   public on<T extends SocketEventBase<any, any>>(eventType: Type<T>, info: T["info"], cb: (data: T["data"]) => Promise<void> | void): void {
     // tslint:disable-next-line:no-floating-promises
-    this.socket.addEventListenerAsync(eventType.name, info, cb);
+    this.socket.addEventListenerAsync(eventType.name, info, cb)
+      .catch(err => {
+        this._logger.error(err);
+        throw err;
+      });
   }
 
   public emit<T extends SocketEventBase<any, any>>(eventType: Type<T>, infoSelector: (item: T["info"]) => boolean, data: T["data"]): void {
     // tslint:disable-next-line:no-floating-promises
-    this.socket.emitEventAsync(eventType.name, infoSelector, data);
+    this.socket.emitEventAsync(eventType.name, infoSelector, data)
+      .catch(err => {
+        this._logger.error(err);
+        throw err;
+      });
   }
 
   public async sendAsync(command: string, params: any[]): Promise<any> {

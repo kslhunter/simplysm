@@ -9,3 +9,4 @@ coverage
 ~$*.xlsx
 .cordova
 yarn-error.log
+tsconfig.build.json

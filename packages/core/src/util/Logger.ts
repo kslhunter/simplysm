@@ -90,7 +90,8 @@ export class Logger {
         ...prevConfig,
         ...config
       });
-    } else {
+    }
+    else {
       this._groupMap.set(groupName, {
         ...Logger._defaultConfig,
         ...config
@@ -101,7 +102,8 @@ export class Logger {
   public static restoreGroupConfig(groupName?: string): void {
     if (groupName) {
       this._groupMap.delete(groupName);
-    } else {
+    }
+    else {
       this._groupMap.clear();
     }
   }
@@ -149,11 +151,8 @@ export class Logger {
     Logger.history = Logger.history.slice(-this.config.historySize);
 
     // 로그 변환
-    const convertedLogs = logs.map(item => {
-      // 색상있으면 색상 빼기
-      if (typeof item === "string") {
-        return item.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
-      } else if (item instanceof Error) {
+    let convertedLogs = logs.map(item => {
+      if (item instanceof Error) {
         return item.stack;
       }
 
@@ -171,15 +170,7 @@ export class Logger {
 
     // 콘솔 출력
     if (this.config.consoleLogSeverities.includes(severity)) {
-      /*let text = `${log.now} - [${log.severity}] - from ${log.group}`;
-      if (process.env.NODE_ENV !== "production") {
-        text += log.at ? " - " + log.at : "";
-      }
-      text += `\r\n${log.prefix ? log.prefix + " " : ""}${convertedLogs.join("\r\n")}\r\n`;
-
-      console.log(text);*/
-
-      const text = `${this.config.color.grey}${log.group}:\t${this.config.color[severity]}${log.severity.padEnd(5, " ")}\t${log.prefix ? Logger._prefixColorMap.get(log.prefix) + log.prefix + " " : ""}${this.config.color.log}${convertedLogs.join("\r\n")}`;
+      const text = `${this.config.color.grey}[${log.now}] ${log.group}\t${this.config.color[severity]}${log.severity.padEnd(5, " ")}\t${log.prefix ? Logger._prefixColorMap.get(log.prefix) + log.prefix + " " : ""}${this.config.color.log}${convertedLogs.join("\r\n")}${this.config.color.log}`;
 
       // 콘솔 출력
       if (this.config.consoleLogSeverities.includes(severity)) {
@@ -189,6 +180,15 @@ export class Logger {
 
     // 파일 출력
     if (this.config.fileLogSeverities.includes(severity)) {
+      convertedLogs = logs.map(item => {
+        // 색상있으면 색상 빼기
+        if (typeof item === "string") {
+          return item.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
+        }
+
+        return item;
+      });
+
       let text = `${log.now} - [${log.severity}] - from ${log.group}`;
       text += log.at ? " - " + log.at : "";
       text += `\r\n${log.prefix ? log.prefix + " " : ""}${convertedLogs.join("\r\n")}\r\n`;
@@ -204,7 +204,8 @@ export class Logger {
       const filePath = path.resolve(outputPath, `${now.toFormatString("yyyyMMdd-HH")}.log`);
       if (fs.existsSync(filePath)) {
         fs.appendFileSync(filePath, `${text}\r\n`, "utf8");
-      } else {
+      }
+      else {
         fs.writeFileSync(filePath, `${text}\r\n`, "utf8");
       }
     }

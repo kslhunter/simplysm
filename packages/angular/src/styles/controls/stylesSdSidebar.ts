@@ -7,7 +7,7 @@ export const stylesSdSidebar = (vars: SdStyleProvider) => /* language=LESS */ `
     z-index: ${vars.zIndex.sidebar};
     top: 0;
     left: 0;
-    width: 200px;
+    width: ${vars.sidebarWidth};
     height: 100%;
     background: white;
   }`;

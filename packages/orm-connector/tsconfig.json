@@ -12,6 +12,9 @@
       ],
       "@simplism/orm-common": [
         "../orm-common/src/index.ts"
+      ],
+      "@simplism/orm-query": [
+        "../orm-query/src/index.ts"
       ]
     }
   },

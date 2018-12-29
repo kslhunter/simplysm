@@ -1,6 +1,6 @@
 import * as tedious from "tedious";
 import {Logger, Wait} from "@simplism/core";
-import {IQueryDef, QueryBuilder} from "../../orm-query/src";
+import {IQueryDef, QueryBuilder} from "@simplism/orm-query";
 
 export class DbConnection {
   private readonly _logger = new Logger("@simplism/orm-connector");

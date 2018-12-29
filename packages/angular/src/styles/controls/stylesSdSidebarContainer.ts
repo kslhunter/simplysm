@@ -6,7 +6,7 @@ export const stylesSdSidebarContainer = (vars: SdStyleProvider) => /* language=L
     position: relative;
     width: 100%;
     height: 100%;
-    padding-left: 200px;
+    padding-left:  ${vars.sidebarWidth};
     transition: padding-left .1s ease-out;
   
     > sd-sidebar {

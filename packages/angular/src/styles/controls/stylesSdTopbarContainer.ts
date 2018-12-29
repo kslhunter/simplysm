@@ -6,5 +6,5 @@ export const stylesSdTopbarContainer = (vars: SdStyleProvider) => /* language=LE
     position: relative;
     width: 100%;
     height: 100%;
-    padding-top: 36px;
+    padding-top: ${vars.topbarHeight};
   }`;

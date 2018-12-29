@@ -8,18 +8,18 @@ export const stylesSdTopbar = (vars: SdStyleProvider) => /* language=LESS */ `
     top: 0;
     left: 0;
     width: 100%;
-    height: 36px;
-    line-height: 35px;
+    height:  ${vars.topbarHeight};
+    line-height: ${vars.stripUnit(vars.topbarHeight) - 1}px;
     background: ${vars.topbarTheme};
     color: ${vars.textReverseColor.default};
   
     > * {
       float: left;
-      line-height: 35px;
+      line-height: ${vars.stripUnit(vars.topbarHeight) - 1}px;
     }
   
     > a {
-      min-width: 36px;
+      min-width:  ${vars.topbarHeight};
       text-align: center;
       margin-right: ${vars.gap.sm};
       color: ${vars.textReverseColor.dark};

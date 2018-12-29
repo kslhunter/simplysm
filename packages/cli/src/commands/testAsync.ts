@@ -2,6 +2,7 @@ import * as fs from "fs-extra";
 import {spawnAsync} from "../commons/spawnAsync";
 import * as path from "path";
 import {IProjectConfig} from "../commons/IProjectConfig";
+import {Logger} from "@simplism/core";
 
 export async function testAsync(argv: { config?: string; package?: string }): Promise<void> {
   process.env.NODE_ENV = "development";
@@ -31,6 +32,9 @@ export async function testAsync(argv: { config?: string; package?: string }): Pr
   };
 
   const runAsync = async (packageName: string) => {
+    const logger = new Logger("@simplism/cli", `TEST ${packageName}:`);
+    logger.log(`테스트`);
+
     const testConfig = projectConfig.tests!.single(item => item.name === packageName);
     if (!testConfig) {
       throw new Error(`테스트 패키지 ${packageName}에 대한 테스트 설정이 없습니다.`);
@@ -52,7 +56,7 @@ export async function testAsync(argv: { config?: string; package?: string }): Pr
       ];
 
     await spawnAsync(
-      `테스트:${packageName}`,
+      logger,
       [
         `nyc`,
         `--all`,
@@ -70,12 +74,16 @@ export async function testAsync(argv: { config?: string; package?: string }): Pr
         `tests/${packageName}/**/*.spec.ts`
       ],
       {
-        ...process.env,
-        TS_NODE_PROJECT: `tests/${packageName}/tsconfig.json`,
-        NODE_ENV: "test",
-        JSDOM_CONFIG: JSON.stringify(testConfig.jsdom || testConfig.angular)
+        cwd: process.cwd(),
+        env: {
+          ...process.env,
+          TS_NODE_PROJECT: `tests/${packageName}/tsconfig.json`,
+          NODE_ENV: "test",
+          JSDOM_CONFIG: JSON.stringify(testConfig.jsdom || testConfig.angular)
+        }
       }
     );
+    logger.log(`테스트 완료`);
   };
 
   if (!argv.package) {
