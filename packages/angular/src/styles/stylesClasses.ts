@@ -31,6 +31,17 @@ export const stylesClasses = (vars: SdStyleProvider) => {
           sd-list-item[sd-header=true] > label {
             color: ${vars.textReverseColor.dark} !important;
           }
+          
+          sd-list-item > ._child > ._child-content {
+            background: rgba(0, 0, 0, .2);
+            
+            sd-list-item > label {
+              opacity: .8;
+              &:hover {
+                opacity: 1;
+              }
+            }
+          }
 
           sd-checkbox {
             > label {
@@ -88,6 +99,15 @@ export const stylesClasses = (vars: SdStyleProvider) => {
   style += `.sd-background-default {background: ${vars.bgColor} !important;}`;
 
 
+  for (const key of Object.keys(vars.fontSize)) {
+    const val = vars.fontSize[key];
+
+    style += /*language=LESS*/ `
+      .sd-font-size-${key} {
+        font-size: ${val} !important;
+      }`;
+  }
+
   for (const key of Object.keys(vars.themeColor)) {
     for (const key1 of Object.keys(vars.themeColor[key])) {
       const val1 = vars.themeColor[key][key1];
@@ -99,6 +119,15 @@ export const stylesClasses = (vars: SdStyleProvider) => {
     }
   }
   style += `.sd-text-reverse-color-dark {color: ${vars.textReverseColor.dark} !important;}`;
+
+  for (const key of Object.keys(vars.textColor)) {
+    const val = vars.textColor[key];
+
+    style += /*language=LESS*/ `
+      .sd-text-color-${key} {
+        color: ${val} !important;
+      }`;
+  }
 
 
   for (const direction of ["top", "right", "bottom", "left"]) {

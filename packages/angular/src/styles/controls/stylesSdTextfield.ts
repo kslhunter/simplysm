@@ -53,7 +53,7 @@ export const stylesSdTextfield = (vars: SdStyleProvider) => /* language=LESS */ 
       &[type=datetime],
       &[type=time],
       &[type=datetime-local] {
-        padding: ${vars.stripUnit(vars.gap.sm) - 2}px ${vars.gap.default};
+        padding: ${vars.stripUnit(vars.gap.sm) - 1}px ${vars.gap.default};
       }
     }
   

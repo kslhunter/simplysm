@@ -78,7 +78,7 @@ export const stylesSdSheet = (vars: SdStyleProvider) => {
           &[type=datetime],
           &[type=time],
           &[type=datetime-local] {
-            padding: ${vars.stripUnit(paddingV) - 2}px ${paddingH};
+            padding: ${vars.stripUnit(paddingV) - 1}px ${paddingH};
           }
           
           &[type=color] {

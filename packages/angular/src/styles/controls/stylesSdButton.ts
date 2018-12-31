@@ -8,7 +8,7 @@ export const stylesSdButton = (vars: SdStyleProvider) => /* language=LESS */ `
     & > button {
       ${vars.formControlBase};
       border: 1px solid ${vars.transColor.default};
-      border-radius: 3px;
+      //border-radius: 4px;
   
       background: white;
       cursor: pointer;

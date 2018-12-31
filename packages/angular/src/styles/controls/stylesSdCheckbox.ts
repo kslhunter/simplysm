@@ -32,6 +32,7 @@ export const stylesSdCheckbox = (vars: SdStyleProvider) => /* language=LESS */ `
         width: ${vars.lineHeight};
         height: ${vars.lineHeight};
         vertical-align: top;
+        padding-left: 1px;
       }
   
       > ._content {

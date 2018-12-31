@@ -136,7 +136,7 @@ export class SdStyleProvider {
 
   public fontFamily = "'Noto Sans KR', '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif";
   public fontFamilyMonospace = "'Noto Sans KR1', monospace";
-  public lineHeight = "1.25em";
+  public lineHeight = "1.4em";
 
   public zIndex = {
     toast: 9999,

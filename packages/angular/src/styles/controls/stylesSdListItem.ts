@@ -9,7 +9,7 @@ export const stylesSdListItem = (vars: SdStyleProvider) => /* language=LESS */ `
       padding: ${vars.gap.sm} ${vars.gap.default};
       transition: background .1s linear;
 
-      > sd-icon {
+      > ._angle-icon {
         float: right;
         transition: transform .1s ease-in;
       }
@@ -39,7 +39,7 @@ export const stylesSdListItem = (vars: SdStyleProvider) => /* language=LESS */ `
     }
 
     &[sd-open=true] {
-      > label > sd-icon {
+      > label > ._angle-icon {
         transform: rotate(-90deg);
         transition: transform .1s ease-out;
       }
@@ -63,7 +63,7 @@ export const stylesSdListItem = (vars: SdStyleProvider) => /* language=LESS */ `
         }
       }
 
-      > label > sd-icon {
+      > label > ._angle-icon {
         display: none;
       }
 

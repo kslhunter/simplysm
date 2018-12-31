@@ -32,7 +32,7 @@ export const stylesSdCombobox = (vars: SdStyleProvider) => /* language=LESS */ `
     background: white;
     //border: 1px solid ${vars.transColor.dark};
     box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
-    border-radius: 2px;
+    //border-radius: 2px;
     min-width: 120px;
   
     &:focus {

@@ -7,7 +7,7 @@ export const stylesSdSelect = (vars: SdStyleProvider) => /* language=LESS */ `
 
     > sd-dropdown > div {
       ${vars.formControlBase};
-      border-radius: 3px;
+      //border-radius: 3px;
 
       display: block;
       overflow: visible;

@@ -21,7 +21,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNo
     <label (click)="onLabelClick()"
            [attr.tabindex]="(header || !clickable) ? undefined : '0'">
       <ng-content></ng-content>
-      <sd-icon [icon]="'angle-left'" *ngIf="hasChildren"></sd-icon>
+      <sd-icon class="_angle-icon" [icon]="'angle-left'" *ngIf="hasChildren"></sd-icon>
     </label>
     <div class="_child">
       <div #childContent class="_child-content">
