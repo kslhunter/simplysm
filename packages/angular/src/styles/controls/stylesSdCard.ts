@@ -5,5 +5,6 @@ export const stylesSdCard = (vars: SdStyleProvider) => /* language=LESS */ `
    display: block;
    width: 100%;
    background: white;
-   border: 1px solid ${vars.transColor.default};
+   //border: 1px solid ${vars.transColor.default};
+   ${vars.elevation(1)};
   }`;

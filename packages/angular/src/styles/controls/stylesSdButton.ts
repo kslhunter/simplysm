@@ -8,20 +8,22 @@ export const stylesSdButton = (vars: SdStyleProvider) => /* language=LESS */ `
     & > button {
       ${vars.formControlBase};
       border: 1px solid ${vars.transColor.default};
-      //border-radius: 4px;
+      ${vars.elevation(2)};
+      font-weight: bold;
   
       background: white;
       cursor: pointer;
-      //transition: .1s linear;
       color: ${vars.textColor.default};
   
       &:hover {
-        background: ${vars.transColor.dark};
+        ${vars.elevation(8)};
+        transition: box-shadow .1s linear;
       }
   
       &:active {
+        //background: ${vars.transColor.dark};
+        box-shadow: none;
         transition: none;
-        background: ${vars.transColor.darker};
       }
   
       &:disabled {
@@ -44,14 +46,14 @@ export const stylesSdButton = (vars: SdStyleProvider) => /* language=LESS */ `
         //color: ${vars.themeColor[key].default};
   
         &:hover {
-          background: ${vars.themeColor[key].dark};
-          border-color: ${vars.themeColor[key].dark};
-          color: ${vars.textReverseColor.default};
+          //background: ${vars.themeColor[key].dark};
+          //border-color: ${vars.themeColor[key].dark};
+          //color: ${vars.textReverseColor.default};
         }
   
         &:active {
-          background: ${vars.themeColor[key].darker};
-          color: ${vars.textReverseColor.default};
+          // background: ${vars.themeColor[key].darker};
+          //color: ${vars.textReverseColor.default};
         }
   
         &:disabled {

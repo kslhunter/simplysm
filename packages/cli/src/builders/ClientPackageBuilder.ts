@@ -12,7 +12,6 @@ import * as webpackMerge from "webpack-merge";
 import * as WebpackDevServer from "webpack-dev-server";
 //import {TsLintPlugin} from "../plugins/TsLintPlugin";
 import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugin";
-import {CliHelper} from "../commons/CliHelper";
 import * as childProcess from "child_process";
 
 export class ClientPackageBuilder {
@@ -157,13 +156,11 @@ export class ClientPackageBuilder {
       }
 
       await new Promise<void>((resolve, reject) => {
-        const host = CliHelper.getCurrentIP([this._config.devServer!.host]);
-
         const webpackConfig: webpack.Configuration = webpackMerge(this._getCommonConfig(platform), {
           mode: "development",
           devtool: "cheap-module-source-map",
           entry: [
-            `webpack-dev-server/client?http://${host}:${this._config.devServer!.port}/`,
+            `webpack-dev-server/client?http://0.0.0.0:${this._config.devServer!.port}/`,
             "webpack/hot/dev-server",
             this._loadersPath("client-main.js")
           ],
@@ -217,7 +214,7 @@ export class ClientPackageBuilder {
             return;
           }
 
-          this._logger.log(`개발 서버 시작됨: http://${host}:${this._config.devServer!.port}/`);
+          this._logger.log(`개발 서버 시작됨 [포트: ${this._config.devServer!.port}]`);
           resolve();
         });
       });

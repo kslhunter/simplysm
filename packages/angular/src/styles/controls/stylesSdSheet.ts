@@ -5,6 +5,7 @@ export const stylesSdSheet = (vars: SdStyleProvider) => {
   const paddingV = vars.sheetPaddingV;
   const paddingH = vars.sheetPaddingH;
   const rowHeight = Math.floor(vars.stripUnit(paddingV) * 2 + vars.stripUnit(vars.lineHeight) * vars.stripUnit(vars.fontSize.default)) + "px";
+  const editCellBackground = vars.themeColor.secondary;
 
   return /* language=LESS */ `
     sd-sheet {
@@ -70,7 +71,7 @@ export const stylesSdSheet = (vars: SdStyleProvider) => {
         sd-textfield > input {
           border: none;
           padding: ${paddingV} ${paddingH};
-          background: ${vars.themeColor.info.lightest};
+          background: ${editCellBackground.lightest};
   
           &[type=year],
           &[type=month],
@@ -111,7 +112,7 @@ export const stylesSdSheet = (vars: SdStyleProvider) => {
           padding: ${paddingV} ${paddingH};
   
           > ._indicator_rect {
-            background: ${vars.themeColor.info.lightest};
+            background: ${editCellBackground.lightest};
           }
   
           > input:disabled + ._indicator_rect {
@@ -131,7 +132,7 @@ export const stylesSdSheet = (vars: SdStyleProvider) => {
             border: none;
             padding: ${paddingV} ${paddingH};
             height: ${rowHeight};
-            background: ${vars.themeColor.info.lightest};
+            background: ${editCellBackground.lightest};
             border-radius: 0;
   
             > ._icon {

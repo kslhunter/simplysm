@@ -4,7 +4,7 @@ export const stylesSdForm = (vars: SdStyleProvider) => /* language=LESS */ `
   sd-form {
     &[sd-inline=true] {
       display: inline-block;
-      overflow: hidden;
+      //overflow: hidden;
       vertical-align: middle;
   
       > form {

@@ -19,7 +19,7 @@ export interface IClientPackageConfig {
   favicon?: string;
   platforms?: ("web" | "desktop" | "android")[];
   devServer?: {
-    host: string;
+    host?: string | string[];
     port: number;
   };
   cordova?: ICordovaConfig;

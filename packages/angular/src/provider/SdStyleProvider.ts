@@ -200,6 +200,10 @@ border: 1px solid transparent;
 user-select: none`;
   }
 
+  public elevation(depth: number): string {
+    return `box-shadow: 0 0 1px ${this.transColor.dark}, 0 ${depth}/2px ${depth}px ${this.transColor.darker}`;
+  }
+
   public stripUnit(str: string): number {
     return Number(str.replace(/[^0-9.]/g, ""));
   }

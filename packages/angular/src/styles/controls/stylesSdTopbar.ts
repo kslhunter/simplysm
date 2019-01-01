@@ -12,6 +12,7 @@ export const stylesSdTopbar = (vars: SdStyleProvider) => /* language=LESS */ `
     line-height: ${vars.stripUnit(vars.topbarHeight) - 1}px;
     background: ${vars.topbarTheme};
     color: ${vars.textReverseColor.default};
+    ${vars.elevation(4)};
   
     > * {
       float: left;

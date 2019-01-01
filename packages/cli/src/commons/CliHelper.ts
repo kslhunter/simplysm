@@ -2,7 +2,13 @@ import * as os from "os";
 import {Logger} from "@simplism/core";
 
 export class CliHelper {
-  public static getCurrentIP(selectors: (string | undefined)[]): string {
+  public static getCurrentIP(hostOrHosts: string | string[] | undefined): string {
+    const selectors = hostOrHosts
+      ? typeof hostOrHosts === "string"
+        ? [hostOrHosts] as string[]
+        : hostOrHosts as string[]
+      : [undefined];
+
     for (const selector of selectors) {
       if (selector && !selector.includes(".")) {
         return selector;

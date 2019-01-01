@@ -19,6 +19,7 @@ export const stylesSdSelect = (vars: SdStyleProvider) => /* language=LESS */ `
       transition: outline-color .1s linear;
       outline: 1px solid transparent;
       outline-offset: -1px;
+      cursor: pointer;
 
       > div:first-child {
         overflow: hidden;

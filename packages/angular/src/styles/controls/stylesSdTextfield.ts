@@ -14,6 +14,7 @@ export const stylesSdTextfield = (vars: SdStyleProvider) => /* language=LESS */ 
       transition: outline-color .1s linear;
       outline: 1px solid transparent;
       outline-offset: -1px;
+      //box-shadow: inset 0 1px ${vars.transColor.default};
   
       &::-webkit-input-placeholder {
         color: ${vars.textColor.lighter};
