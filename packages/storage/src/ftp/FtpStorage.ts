@@ -9,7 +9,8 @@ export class FtpStorage implements IStorage {
   private _ftp: any;
 
   public async connectAsync(connectionConfig: IFtpConnectionConfig): Promise<void> {
-    this._ftp = new JSFtp.default({
+    // @ts-ignore
+    this._ftp = new JSFtp({
       host: connectionConfig.host,
       port: connectionConfig.port,
       user: connectionConfig.user,

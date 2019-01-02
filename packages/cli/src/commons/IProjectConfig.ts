@@ -23,7 +23,7 @@ export interface IClientPackageConfig {
     port: number;
   };
   cordova?: ICordovaConfig;
-  publish?: IPublishConfig;
+  publish?: IPublishConfig | false;
   env?: { [key: string]: string };
   "env.development"?: { [key: string]: string };
   "env.production"?: { [key: string]: string };
@@ -32,7 +32,7 @@ export interface IClientPackageConfig {
 export interface IServerPackageConfig {
   name: string;
   type: "server";
-  publish?: IPublishConfig;
+  publish?: IPublishConfig | false;
   env?: { [key: string]: string };
   "env.development"?: { [key: string]: string };
   "env.production"?: { [key: string]: string };

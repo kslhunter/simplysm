@@ -69,7 +69,7 @@ yargs
     async argv => {
       await buildAsync(argv as any)
         .catch(err => {
-          console.error(err);
+          logger.error(err);
           process.exit(1);
         });
     }
@@ -94,7 +94,7 @@ yargs
     async argv => {
       await publishAsync(argv as any)
         .catch(err => {
-          console.error(err);
+          logger.error(err);
           process.exit(1);
         });
     }
@@ -117,7 +117,7 @@ yargs
     async argv => {
       await localUpdateAsync(argv as any)
         .catch(err => {
-          console.error(err);
+          logger.error(err);
           process.exit(1);
         });
     }
@@ -142,7 +142,7 @@ yargs
     async argv => {
       await keygenAsync(argv as any)
         .catch(err => {
-          console.error(err);
+          logger.error(err);
           process.exit(1);
         });
     }
@@ -176,7 +176,7 @@ yargs
     async argv => {
       await runDeviceAsync(argv as any)
         .catch(err => {
-          console.error(err);
+          logger.error(err);
           process.exit(1);
         });
     }

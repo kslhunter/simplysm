@@ -9,6 +9,8 @@ export class DbConnection {
   public isConnected = false;
   private readonly _requests: tedious.Request[] = [];
 
+  private readonly _timeout = 300000;
+
   public constructor(private readonly _config: {
     server?: string;
     port?: number;
@@ -27,7 +29,7 @@ export class DbConnection {
         rowCollectionOnDone: true,
         useUTC: false,
         encrypt: false,
-        requestTimeout: 30000
+        requestTimeout: this._timeout
       }
     });
 
@@ -50,6 +52,7 @@ export class DbConnection {
           return;
         }
 
+        this._startTimeout();
         this.isConnected = true;
         resolve();
       });
@@ -60,6 +63,8 @@ export class DbConnection {
 
   public async closeAsync(): Promise<void> {
     await new Promise<void>(async (resolve, reject) => {
+      this._stopTimeout();
+
       if (this._conn && this.isConnected) {
         const conn = this._conn;
 
@@ -72,7 +77,8 @@ export class DbConnection {
         conn.cancel();
         await Wait.true(() => this._requests.length < 1);
         conn.close();
-      } else {
+      }
+      else {
         reject(new Error("'Connection'이 연결되어있지 않습니다."));
       }
     });
@@ -82,6 +88,8 @@ export class DbConnection {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
+    this._startTimeout();
+
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
@@ -102,6 +110,8 @@ export class DbConnection {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
+    this._startTimeout();
+
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
@@ -118,6 +128,8 @@ export class DbConnection {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
+    this._startTimeout();
+
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
@@ -134,6 +146,7 @@ export class DbConnection {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
+    this._startTimeout();
 
     const conn = this._conn;
 
@@ -157,12 +170,15 @@ export class DbConnection {
 
               if (err["code"] === "ECANCEL") {
                 reject(new Error("쿼리가 취소되었습니다."));
-              } else {
+              }
+              else {
                 reject(new Error(`[${err["code"]}] ${err.message}\n-- query\n${currQuery}\n--`));
               }
             }
           })
           .on("done", (rowCount, more, rows) => {
+            this._startTimeout();
+
             if (rejected) {
               return;
             }
@@ -178,6 +194,8 @@ export class DbConnection {
             results.push(result);
           })
           .on("error", err => {
+            this._startTimeout();
+
             if (rejected) {
               return;
             }
@@ -187,6 +205,8 @@ export class DbConnection {
             reject(new Error(err.message));
           })
           .on("requestCompleted", () => {
+            this._startTimeout();
+
             if (rejected) {
               return;
             }
@@ -202,5 +222,25 @@ export class DbConnection {
     }
 
     return results;
+  }
+
+  private _connTimeout?: NodeJS.Timeout;
+
+  private _startTimeout(): void {
+    if (this._connTimeout) {
+      clearTimeout(this._connTimeout);
+    }
+    this._connTimeout = setTimeout(
+      async () => {
+        await this.closeAsync();
+      },
+      this._timeout * 2
+    );
+  }
+
+  private _stopTimeout(): void {
+    if (this._connTimeout) {
+      clearTimeout(this._connTimeout);
+    }
   }
 }

@@ -42,7 +42,7 @@ export async function publishAsync(argv: { config?: string; package: string; env
   }
   await Promise.all(promiseList);
 
-  for (const config of projectConfig.packages.filter(item => item.type !== "library" && item.publish !== undefined)) {
+  for (const config of projectConfig.packages.filter(item => item.type !== "library" && item.publish !== undefined && item.publish !== false)) {
     if (config.type === "library") {
     }
     else if (!argv.package || argv.package.split(",").includes(config.name)) {

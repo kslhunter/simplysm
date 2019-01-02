@@ -129,7 +129,8 @@ export class SdComboboxControl implements OnInit, OnDestroy {
           transform: "none"
         }
       );
-    } else {
+    }
+    else {
       Object.assign(
         dropdownEl.style,
         {
@@ -148,7 +149,14 @@ export class SdComboboxControl implements OnInit, OnDestroy {
 
   public closePopup(): void {
     const dropdownEl = this.dropdownElRef!.nativeElement;
-    dropdownEl.remove();
+    try {
+      dropdownEl.remove();
+    }
+    catch (err) {
+      if (!err.message.includes("no longer a child of this node")) {
+        throw err;
+      }
+    }
 
     Object.assign(
       dropdownEl.style,
@@ -193,7 +201,8 @@ export class SdComboboxControl implements OnInit, OnDestroy {
             left: textfieldEl.windowOffset.left + "px"
           }
         );
-      } else {
+      }
+      else {
         Object.assign(
           dropdownEl.style,
           {
