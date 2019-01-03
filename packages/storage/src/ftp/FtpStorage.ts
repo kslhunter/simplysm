@@ -1,23 +1,27 @@
 import * as fs from "fs";
 import {IStorage} from "../common/IStorage";
 import {IFtpConnectionConfig} from "./IFtpConnectionConfig";
-import * as JSFtp from "jsftp";
 import {Logger} from "@simplism/core";
+import * as JSFtp from "jsftp";
 
 export class FtpStorage implements IStorage {
   private readonly _logger = new Logger("@simplism/storage");
-  private _ftp: any;
+  private _ftp?: JSFtp;
 
   public async connectAsync(connectionConfig: IFtpConnectionConfig): Promise<void> {
-    // @ts-ignore
     this._ftp = new JSFtp({
       host: connectionConfig.host,
       port: connectionConfig.port,
       user: connectionConfig.user,
       pass: connectionConfig.password
     });
+    this._ftp.keepAlive(30000);
 
     await new Promise<void>((resolve, reject) => {
+      if (!this._ftp) {
+        throw new Error("FTP 서버에 연결되어있지 않습니다.");
+      }
+
       this._ftp.raw("OPTS UTF8 ON", (err: Error) => {
         if (err) {
           reject(err);
@@ -30,6 +34,10 @@ export class FtpStorage implements IStorage {
 
   public async mkdirAsync(storageDirPath: string): Promise<void> {
     await new Promise<void>((resolve, reject) => {
+      if (!this._ftp) {
+        throw new Error("FTP 서버에 연결되어있지 않습니다.");
+      }
+
       this._ftp.raw("MKD", storageDirPath, (err: Error) => {
         if (err && err["code"] !== 550) {
           reject(err);
@@ -46,11 +54,16 @@ export class FtpStorage implements IStorage {
       : localPathOrBuffer;
 
     await new Promise<void>((resolve, reject) => {
+      if (!this._ftp) {
+        throw new Error("FTP 서버에 연결되어있지 않습니다.");
+      }
+
       this._ftp.put(buffer, storageFilePath, (err: Error) => {
         if (err) {
           if (err["code"] === 550) {
             this._logger.warn(`${storageFilePath}: ${err.message}`);
-          } else {
+          }
+          else {
             reject(err);
             return;
           }
@@ -62,13 +75,21 @@ export class FtpStorage implements IStorage {
 
   public async closeAsync(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
-      this._ftp.raw("quit", (err: Error) => {
+      if (!this._ftp) {
+        throw new Error("FTP 서버에 연결되어있지 않습니다.");
+      }
+
+      this._ftp!.destroy();
+      resolve();
+
+      /*this._ftp.raw("quit", (err: Error) => {
         if (err) {
           reject(err);
           return;
         }
+
         resolve();
-      });
+      });*/
     });
   }
 }

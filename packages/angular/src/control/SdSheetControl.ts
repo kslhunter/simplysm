@@ -468,7 +468,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         cellEl.focus();
         event.preventDefault();
       }
-      if (event.key === "Enter") {
+      else if (event.key === "Enter" || (event.ctrlKey && event.key === "ArrowDown")) {
         const cellEl = targetEl.findParent("._col") as HTMLElement;
         const rowEl = cellEl.findParent("._row") as HTMLElement;
         const bodyEl = rowEl.parentElement as Element;
@@ -479,15 +479,120 @@ export class SdSheetControl implements DoCheck, OnInit {
         const nextRowEl = bodyEl.children.item(rowIndex + 1);
         if (nextRowEl) {
           const nextRowCellEl = nextRowEl.findAll("._col")[cellIndex] as HTMLElement;
-          nextRowCellEl.focus();
 
-          /*const focusableEls = nextRowCellEl.findFocusableAll();
+          const focusableEls = nextRowCellEl.findFocusableAll();
           if (focusableEls.length > 0) {
             focusableEls[0].focus();
           }
           else {
             nextRowCellEl.focus();
-          }*/
+          }
+
+          event.preventDefault();
+        }
+      }
+      else if (event.ctrlKey && event.key === "ArrowUp") {
+        const cellEl = targetEl.findParent("._col") as HTMLElement;
+        const rowEl = cellEl.findParent("._row") as HTMLElement;
+        const bodyEl = rowEl.parentElement as Element;
+
+        const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(cellEl);
+
+        if (rowIndex - 1 >= 0) {
+          const nextRowEl = bodyEl.children.item(rowIndex - 1);
+          const nextCell = (nextRowEl!.findAll("._col")[cellIndex] as HTMLElement);
+          const focusableEls = nextCell.findFocusableAll();
+          if (focusableEls.length > 0) {
+            focusableEls[0].focus();
+          }
+          else {
+            nextCell.focus();
+          }
+
+          event.preventDefault();
+        }
+      }
+      else if (event.key === "Tab" && !event.shiftKey) {
+        const cellEl = targetEl.findParent("._col") as HTMLElement;
+        const targetIndexOnCell = cellEl.findFocusableAll().indexOf(targetEl);
+        if (targetIndexOnCell + 1 < cellEl.findFocusableAll().length) {
+          return;
+        }
+
+        const rowEl = cellEl.findParent("._row") as HTMLElement;
+        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(cellEl);
+
+        const nextCell = rowEl.findAll("._col")[cellIndex + 1] as HTMLElement;
+        if (nextCell) {
+          const focusableEls = nextCell.findFocusableAll();
+          if (focusableEls.length > 0) {
+            focusableEls[0].focus();
+          }
+          else {
+            nextCell.focus();
+          }
+
+          event.preventDefault();
+        }
+      }
+      else if (event.key === "Tab" && event.shiftKey) {
+        const cellEl = targetEl.findParent("._col") as HTMLElement;
+        const targetIndexOnCell = cellEl.findFocusableAll().indexOf(targetEl);
+        if (targetIndexOnCell >= 1) {
+          return;
+        }
+
+        const rowEl = cellEl.findParent("._row") as HTMLElement;
+        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(cellEl);
+
+        if (cellIndex - 1 >= 0) {
+          const nextCell = rowEl.findAll("._col")[cellIndex - 1] as HTMLElement;
+
+          const focusableEls = nextCell.findFocusableAll();
+          if (focusableEls.length > 0) {
+            focusableEls[0].focus();
+          }
+          else {
+            nextCell.focus();
+          }
+
+          event.preventDefault();
+        }
+      }
+      else if (event.ctrlKey && event.key === "ArrowRight") {
+        const cellEl = targetEl.findParent("._col") as HTMLElement;
+        const rowEl = cellEl.findParent("._row") as HTMLElement;
+        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(cellEl);
+
+        const nextCell = rowEl.findAll("._col")[cellIndex + 1] as HTMLElement;
+        if (nextCell) {
+          const focusableEls = nextCell.findFocusableAll();
+          if (focusableEls.length > 0) {
+            focusableEls[0].focus();
+          }
+          else {
+            nextCell.focus();
+          }
+
+          event.preventDefault();
+        }
+      }
+      else if (event.ctrlKey && event.key === "ArrowLeft") {
+        const cellEl = targetEl.findParent("._col") as HTMLElement;
+        const rowEl = cellEl.findParent("._row") as HTMLElement;
+        const cellIndex = Array.from(rowEl.findAll("._col")).indexOf(cellEl);
+
+        if (cellIndex - 1 >= 0) {
+          const nextCell = rowEl.findAll("._col")[cellIndex - 1] as HTMLElement;
+
+          const focusableEls = nextCell.findFocusableAll();
+          if (focusableEls.length > 0) {
+            focusableEls[0].focus();
+          }
+          else {
+            nextCell.focus();
+          }
 
           event.preventDefault();
         }

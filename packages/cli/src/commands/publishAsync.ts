@@ -5,7 +5,7 @@ import {ILibraryPackageConfig, IProjectConfig} from "../commons/IProjectConfig";
 import {ServerPackageBuilder} from "../builders/ServerPackageBuilder";
 import {ClientPackageBuilder} from "../builders/ClientPackageBuilder";
 
-export async function publishAsync(argv: { config?: string; package: string; env?: any }): Promise<void> {
+export async function publishAsync(argv: { config?: string; package?: string; env?: any }): Promise<void> {
   process.env.NODE_ENV = "production";
 
   /*const packageConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));

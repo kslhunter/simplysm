@@ -154,7 +154,7 @@ export class SdStyleProvider {
 
   public _topbarTheme?: string;
   public get topbarTheme(): string {
-    return this._topbarTheme || this.themeColor.primary.default;
+    return this._topbarTheme || this.themeColor.bluegrey.darkest;
   }
 
   public set topbarTheme(variable: string) {
@@ -163,7 +163,7 @@ export class SdStyleProvider {
 
   public _topbarLinkColor?: string;
   public get topbarLinkColor(): string {
-    return this._topbarLinkColor || this.textReverseColor.dark;
+    return this._topbarLinkColor || this.themeColor.secondary.default;
   }
 
   public set topbarLinkColor(variable: string) {
@@ -172,7 +172,7 @@ export class SdStyleProvider {
 
   public _topbarLinkHoverColor?: string;
   public get topbarLinkHoverColor(): string {
-    return this._topbarLinkHoverColor || this.textReverseColor.default;
+    return this._topbarLinkHoverColor || this.topbarLinkColor;
   }
 
   public set topbarLinkHoverColor(variable: string) {

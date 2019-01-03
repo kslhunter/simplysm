@@ -10,5 +10,5 @@ export const stylesSdSidebar = (vars: SdStyleProvider) => /* language=LESS */ `
     width: ${vars.sidebarWidth};
     height: 100%;
     background: white;
-    ${vars.elevation(16)};
+    // ${vars.elevation(16)};
   }`;

@@ -43,17 +43,17 @@ Element.prototype.findParent = function (arg: string | Element): Element | undef
 };
 
 const focusableSelectorList = [
-  "a[href]",
-  "button:not([disabled])",
-  "area[href]",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  "iframe",
-  "object",
-  "embed",
-  "*[tabindex]",
-  "*[contenteditable]"
+  "a[href]:not([hidden])",
+  "button:not([disabled]):not([hidden])",
+  "area[href]:not([hidden])",
+  "input:not([disabled]):not([hidden])",
+  "select:not([disabled]):not([hidden])",
+  "textarea:not([disabled]):not([hidden])",
+  "iframe:not([hidden])",
+  "object:not([hidden])",
+  "embed:not([hidden])",
+  "*[tabindex]:not([hidden])",
+  "*[contenteditable]:not([hidden])"
 ];
 
 Element.prototype.findFocusableAll = function (): HTMLElement[] {

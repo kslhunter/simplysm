@@ -48,6 +48,14 @@ export const stylesSdListItem = (vars: SdStyleProvider) => /* language=LESS */ `
         transition: margin-top .1s ease-in;
       }
     }
+    
+    &[sd-size=sm] > label {
+      padding: ${vars.gap.xs} ${vars.gap.sm};
+    }
+    
+    &[sd-size=lg] > label {
+      padding: ${vars.gap.default} ${vars.gap.lg};
+    }
 
     &[sd-header=true] {
       > label {

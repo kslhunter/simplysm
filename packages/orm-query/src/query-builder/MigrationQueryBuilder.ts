@@ -93,7 +93,8 @@ export class MigrationQueryBuilder {
     },
     fkName: string
   ): string {
-    return `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] DROP CONSTRAINT [FK_${tableDef.database}_${tableDef.scheme}_${tableDef.name}_${fkName}]`;
+    const fkFullName = `FK_${tableDef.database}_${tableDef.scheme}_${tableDef.name}_${fkName}`;
+    return `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] DROP CONSTRAINT ${fkFullName}`;
   }
 
   public addColumn(

@@ -51,6 +51,13 @@ export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit
   @ViewChild("childContent")
   public childContentElRef?: ElementRef<HTMLDivElement>;
 
+  @Input()
+  @SdTypeValidate({
+    type: String,
+    validator: value => ["sm", "lg"].includes(value)
+  })
+  @HostBinding("attr.sd-size")
+  public size?: "sm" | "lg";
 
   public get hasChildren(): boolean {
     return !!this.listControls && this.listControls.length > 0;

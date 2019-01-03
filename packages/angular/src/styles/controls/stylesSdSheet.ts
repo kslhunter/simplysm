@@ -29,6 +29,7 @@ export const stylesSdSheet = (vars: SdStyleProvider) => {
         top: 0;
         left: 0;
         white-space: nowrap;
+        border-bottom: 1px solid ${vars.themeColor.grey.light};
       }
   
       ._col-group {
@@ -192,6 +193,7 @@ export const stylesSdSheet = (vars: SdStyleProvider) => {
         z-index: 1;
         top: 0;
         left: 0;
+        border-right: 1px solid ${vars.themeColor.grey.light};
       }
   
       ._row {

@@ -22,7 +22,7 @@ export const stylesToast = (vars: SdStyleProvider) => /* language=LESS */ `
         transform: translateX(-100%);
         border-radius: 2px;
         opacity: .9;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+        ${vars.elevation(6)};
 
         > ._sd-toast-message {
           padding: ${vars.gap.sm} ${vars.gap.default};

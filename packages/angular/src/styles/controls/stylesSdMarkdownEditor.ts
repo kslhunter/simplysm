@@ -34,7 +34,7 @@ export const stylesSdMarkdownEditor = (vars: SdStyleProvider) => /* language=LES
         > textarea {
           ${vars.formControlBase};
           height: 100%;
-          background: ${vars.themeColor.info.lightest};
+          background: ${vars.themeColor.secondary.lightest};
           border: none;
           transition: outline-color .1s linear;
           outline: 1px solid transparent;

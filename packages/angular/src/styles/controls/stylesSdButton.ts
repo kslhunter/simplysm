@@ -7,9 +7,10 @@ export const stylesSdButton = (vars: SdStyleProvider) => /* language=LESS */ `
   
     & > button {
       ${vars.formControlBase};
-      border: 1px solid ${vars.transColor.default};
+      border: 1px solid transparent/*${vars.transColor.default}*/;
       ${vars.elevation(2)};
       font-weight: bold;
+      transition: box-shadow .1s linear;
   
       background: white;
       cursor: pointer;
@@ -17,13 +18,11 @@ export const stylesSdButton = (vars: SdStyleProvider) => /* language=LESS */ `
   
       &:hover {
         ${vars.elevation(8)};
-        transition: box-shadow .1s linear;
       }
   
       &:active {
-        //background: ${vars.transColor.dark};
-        box-shadow: none;
-        transition: none;
+        background: ${vars.transColor.dark};
+        //box-shadow: none;
       }
   
       &:disabled {
@@ -34,7 +33,8 @@ export const stylesSdButton = (vars: SdStyleProvider) => /* language=LESS */ `
   
       &:focus {
         outline-color: transparent;
-        border: 1px solid ${vars.themeColor.primary.darkest} !important;
+        //border: 1px solid ${vars.themeColor.primary.darkest} !important;
+        ${vars.elevation(8)};
       }
     }` +
 
@@ -52,7 +52,7 @@ export const stylesSdButton = (vars: SdStyleProvider) => /* language=LESS */ `
         }
   
         &:active {
-          // background: ${vars.themeColor[key].darker};
+           background: ${vars.themeColor[key].darker};
           //color: ${vars.textReverseColor.default};
         }
   

@@ -33,14 +33,14 @@ export const stylesSdHtmlEditor = (vars: SdStyleProvider) => /* language=LESS */
 
           &[contenteditable=true] {
             cursor: text;
-            background: ${vars.themeColor.info.lightest};
+            background: ${vars.themeColor.secondary.lightest};
           }
         }
 
         > textarea {
           ${vars.formControlBase};
           height: 100%;
-          background: ${vars.themeColor.info.lightest};
+          background: ${vars.themeColor.secondary.lightest};
           border: none;
           transition: outline-color .1s linear;
           outline: 1px solid transparent;
