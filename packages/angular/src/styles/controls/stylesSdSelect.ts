@@ -44,6 +44,7 @@ export const stylesSdSelect = (vars: SdStyleProvider) => /* language=LESS */ `
     &[sd-disabled=true] > sd-dropdown > div {
       background: ${vars.bgColor};
       color: ${vars.textColor.light};
+      cursor: default;
     }
 
     &[sd-invalid=true] > sd-dropdown > div > ._invalid-indicator {

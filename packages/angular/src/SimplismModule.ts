@@ -59,6 +59,7 @@ import {SdViewControl} from "./control/SdViewControl";
 import {SdViewItemControl} from "./control/SdViewItemControl";
 import {SdHtmlEditorControl} from "./control/SdHtmlEditorControl";
 import {SdStyleProvider} from "./provider/SdStyleProvider";
+// import {SdKtCallManagerApiProvider} from "./provider/SdKtCallManagerApiProvider";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -128,6 +129,7 @@ const providers: any[] = [
   SdSocketProvider,
   SdPrintProvider,
   SdSmtpClientProvider,
+  // SdKtCallManagerApiProvider,
   {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
   {provide: ErrorHandler, useClass: GlobalErrorHandler},
   SdStyleProvider

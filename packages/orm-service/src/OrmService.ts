@@ -25,7 +25,8 @@ export class OrmService extends SocketServiceBase {
         this.server.removeCloseListener("orm." + newId);
         this._logger.warn("서버가 종료되어, DB 연결이 끊었습니다.");
       });
-    } else {
+    }
+    else {
       await conn.closeAsync();
       this._logger.warn("서버가 종료되어, DB 연결이 끊었습니다.");
     }
@@ -92,9 +93,11 @@ export class OrmService extends SocketServiceBase {
         const colDef = colDefs.single(item1 => item1.name === key)!;
         if (item[key] && colDef.dataType === "DateTime") {
           item[key] = DateTime.parse(item[key]);
-        } else if (item[key] && colDef.dataType === "DateOnly") {
+        }
+        else if (item[key] && colDef.dataType === "DateOnly") {
           item[key] = DateOnly.parse(item[key]);
-        } else if (item[key] && colDef.dataType === "Time") {
+        }
+        else if (item[key] && colDef.dataType === "Time") {
           item[key] = Time.parse(item[key]);
         }
       }
@@ -123,7 +126,8 @@ export class OrmService extends SocketServiceBase {
         const exists = grouped.single(g => Object.equal(g.key, keyObj));
         if (exists) {
           exists.values.push(valueObj);
-        } else {
+        }
+        else {
           grouped.push({
             key: keyObj,
             values: [valueObj]
@@ -156,7 +160,8 @@ export class OrmService extends SocketServiceBase {
         if (item.every(itemItem => itemItem == undefined)) {
           return undefined;
         }
-      } else if (item instanceof Object) {
+      }
+      else if (item instanceof Object) {
         for (const key of Object.keys(item)) {
           item[key] = clearEmpty(item[key]);
         }

@@ -104,6 +104,26 @@ export class SocketServer {
     });
   }
 
+  public emit(id: number, data: any): void {
+    const eventListener = this._eventListeners.single(item => item.id === id);
+    if (!eventListener) return;
+
+    try {
+      eventListener.socket.send(JsonConvert.stringify({
+        eventListenerId: eventListener.id,
+        data
+      }));
+    }
+    catch (err) {
+      if (err.message.includes("CLOSED")) {
+        this._eventListeners.remove(eventListener);
+      }
+      else {
+        throw err;
+      }
+    }
+  }
+
   private _socketConnectionHandler(socket: WebSocket, req: http.IncomingMessage): void {
     this._logger.log("연결: " + req.connection.remoteAddress);
 
@@ -190,7 +210,11 @@ export class SocketServer {
           const ids: number[] = request.params[0];
           const data = request.params[1];
 
-          const eventListeners = this._eventListeners.filter(item => ids.includes(item.id));
+          for (const id of ids) {
+            this.emit(id, data);
+          }
+
+          /*const eventListeners = this._eventListeners.filter(item => ids.includes(item.id));
 
           const closedEventListeners = [];
           for (const eventListener of eventListeners) {
@@ -209,7 +233,7 @@ export class SocketServer {
               }
             }
           }
-          this._eventListeners.remove(closedEventListeners);
+          this._eventListeners.remove(closedEventListeners);*/
 
           response = {
             requestId: request.id,

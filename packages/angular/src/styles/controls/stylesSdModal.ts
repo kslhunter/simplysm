@@ -34,6 +34,7 @@ export const stylesSdModal = (vars: SdStyleProvider) => /* language=LESS */ `
       min-width: 240px;
       /*max-height: calc(100% - 50px);*/
       //border: 1px solid get($trans-color, default);
+      ${vars.elevation(16)};
 
       &:focus {
         outline-color: transparent;
@@ -41,21 +42,25 @@ export const stylesSdModal = (vars: SdStyleProvider) => /* language=LESS */ `
 
       > sd-dock-container {
         > ._header {
+          background: ${vars.topbarTheme};
+          color: white;
           /*border-bottom: 1px solid get($trans-color, default);*/
 
           > ._title {
             display: inline-block;
-            padding: ${vars.gap.sm} ${vars.gap.default};
+            padding: ${vars.gap.default} ${vars.gap.lg};
           }
 
           > ._close-button {
             float: right;
             cursor: pointer;
             text-align: center;
-            padding: ${vars.gap.sm} ${vars.gap.default};
+            padding: ${vars.gap.default} ${vars.gap.lg};
+            color: ${vars.topbarLinkColor};
 
             &:hover {
               background: rgba(0, 0, 0, .1);
+              color: ${vars.topbarLinkHoverColor};
             }
 
             &:active {

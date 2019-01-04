@@ -14,22 +14,18 @@ declare global {
 
     validate(value: any, def: ValidateDef): IValidateResult | undefined;
 
-    validates(source: any, defs: { [key: string]: ValidateDef }): IValidateResult[];
+    validates(source: any, defs: ((item: any) => { [key: string]: IValidateDef }), throwNotUse?: boolean): IValidateResult[];
 
-    validatesArray<T, K extends keyof T>(arr: T[], displayName: string, def: ((item: T) => { [P in K]: IArrayValidateDef })): void;
-    validatesArray<T, K extends keyof T>(arr: T[], displayName: string, def: { [P in K]: IArrayValidateDef }): void;
+    validates(source: any, defs: { [key: string]: ValidateDef }, throwNotUse?: boolean): IValidateResult[];
+
+    validatesArray<T, K extends keyof T>(arr: T[], displayName: string, def: ((item: T) => { [P in K]: IValidateDef })): void;
+
+    validatesArray<T, K extends keyof T>(arr: T[], displayName: string, def: { [P in K]: IValidateDef }): void;
   }
 }
 
-export interface IArrayValidateDef {
-  displayName: string;
-  type?: Type<any> | Type<any>[];
-  notnull?: boolean;
-
-  validator?(value: any): boolean;
-}
-
 export interface IValidateDef {
+  displayName?: string;
   type?: Type<any> | Type<any>[];
   notnull?: boolean;
 
@@ -177,10 +173,11 @@ Object.validate = function (value: any, def: ValidateDef): IValidateResult | und
   }
 };
 
-Object.validates = function (source: any, defs: { [propertyKey: string]: ValidateDef }): IValidateResult[] {
+Object.validates = function (source: any, defs: { [propertyKey: string]: ValidateDef } | ((item: any) => { [propertyKey: string]: ValidateDef }), throwNotUse?: boolean): IValidateResult[] {
   const result: IValidateResult[] = [];
-  for (const propertyKey of Object.keys(defs)) {
-    const validateResult = this.validate(source[propertyKey], defs[propertyKey]);
+  const defsObj = typeof defs === "function" ? defs(source) : defs;
+  for (const propertyKey of Object.keys(defsObj)) {
+    const validateResult = this.validate(source[propertyKey], defsObj[propertyKey]);
     if (validateResult) {
       result.push({
         propertyKey,
@@ -189,15 +186,21 @@ Object.validates = function (source: any, defs: { [propertyKey: string]: Validat
     }
   }
 
+  if (result.length > 0 && !throwNotUse) {
+    const propertyDisplayNames = result.map(item1 => defsObj[item1.propertyKey!]["displayName"]);
+    throw new Error(`입력값이 잘못되었습니다.\r\n - ${propertyDisplayNames.join("', '")}'`);
+  }
+
   return result;
 };
 
-Object.validatesArray = function (arr: any[], displayName: string, def: { [propertyKey: string]: ValidateDef } | ((item: any) => { [propertyKey: string]: IArrayValidateDef })): void {
+Object.validatesArray = function (arr: any[], displayName: string, def: { [propertyKey: string]: ValidateDef } | ((item: any) => { [propertyKey: string]: ValidateDef })): void {
   const errorMessages = [];
   for (const item of arr) {
-    const result = Object.validates(item, typeof def === "function" ? def(item) : def);
+    const defObj = typeof def === "function" ? def(item) : def;
+    const result = Object.validates(item, defObj, true);
     if (result.length > 0) {
-      const propertyDisplayNames = result.map(item1 => def[item1.propertyKey!]["displayName"]);
+      const propertyDisplayNames = result.map(item1 => defObj[item1.propertyKey!]["displayName"]);
       errorMessages.push(`- '${displayName}'의 ${arr.indexOf(item) + 1}번째 항목중 '${propertyDisplayNames.join("', '")}'`);
     }
   }

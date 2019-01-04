@@ -9,7 +9,7 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
     <div class="_backdrop" (click)="onBackdropClick()"></div>
     <div class="_dialog" tabindex="0">
       <sd-dock-container>
-        <sd-dock class="_header sd-background-primary-default">
+        <sd-dock class="_header">
           <h5 class="_title">{{ title }}</h5>
           <a class="_close-button"
              (click)="onCloseButtonClick()"

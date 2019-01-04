@@ -10,6 +10,8 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/cli/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/core/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/excel/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/kt-call-manager-api-service" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/kt-call-manager-api-service/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/orm-client/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/orm-common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/orm-connector/dist" />

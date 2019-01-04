@@ -10,6 +10,7 @@ import * as webpack from "webpack";
 import * as webpackMerge from "webpack-merge";
 //import {TsLintPlugin} from "../plugins/TsLintPlugin";
 import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugin";
+import * as CopyWebpackPlugin from "copy-webpack-plugin";
 
 export class ServerPackageBuilder {
   private readonly _logger = new Logger("@simplism/cli", `${this._config.name}:`);
@@ -177,7 +178,7 @@ export class ServerPackageBuilder {
       }
     }
 
-    return {
+    const webpackConfig: webpack.Configuration = {
       target: "node",
       node: {
         // bufferutil때문에, 아래 부분을 수정해선 안됨.('bufferutil/index.js'에서 '__dirname'을 사용함)
@@ -239,6 +240,25 @@ export class ServerPackageBuilder {
         })
       ]
     };
+
+    const packageJson = fs.readJsonSync(this._packagePath("package.json"));
+    const depTypeNames = ["dependencies", "peerDependencies", "optionalDependencies"];
+    for (const depTypeName of depTypeNames) {
+      for (const depName of Object.keys(packageJson[depTypeName] || {})) {
+        if (depName.startsWith("@simplism")) {
+          if (fs.existsSync(this._projectPath(`node_modules/${depName}/assets`))) {
+            webpackConfig.plugins!.push(new CopyWebpackPlugin([
+              {
+                from: this._projectPath(`node_modules/${depName}/assets`),
+                to: `node_modules/${depName}/assets`
+              }
+            ]));
+          }
+        }
+      }
+    }
+
+    return webpackConfig;
   }
 
   private _envStringify(param: { [key: string]: string | undefined }): { [key: string]: string } {
@@ -255,9 +275,9 @@ export class ServerPackageBuilder {
       : path.resolve(__dirname, "../../loaders", ...args);
   }
 
-  /*private _projectPath(...args: string[]): string {
+  private _projectPath(...args: string[]): string {
     return path.resolve(process.cwd(), ...args);
-  }*/
+  }
 
   private _packagePath(...args: string[]): string {
     return path.resolve(process.cwd(), `packages/${this._packageName}`, ...args);

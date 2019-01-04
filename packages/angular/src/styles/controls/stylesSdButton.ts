@@ -94,6 +94,39 @@ export const stylesSdButton = (vars: SdStyleProvider) => /* language=LESS */ `
     &[sd-inset=true] {
       > button {
         border: none !important;
+        box-shadow: none !important;
+        
+        &:hover {
+          background: ${vars.transColor.default};
+        }
+    
+        &:active {
+          background: ${vars.transColor.dark};
+        }
+    
+        &:disabled {
+          background: transparent;
+        }
       }
+      
+        
+        ` +
+  Object.keys(vars.themeColor).map(key => `
+      &[sd-theme=${key}] > button {
+        background: ${vars.themeColor[key].default};
+        
+        &:hover {
+          background: ${vars.themeColor[key].dark};
+        }
+  
+        &:active {
+           background: ${vars.themeColor[key].darker};
+        }
+  
+        &:disabled {
+          background: ${vars.themeColor.grey.default};
+        }
+      }`
+  ).join("\n") + `
     }
   }`;

@@ -33,8 +33,6 @@ import {SdDropdownControl} from "./SdDropdownControl";
     </sd-dropdown>`
 })
 export class SdSelectControl {
-
-
   @Input()
   public value?: any;
 

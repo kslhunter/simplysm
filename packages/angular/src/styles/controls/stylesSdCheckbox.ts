@@ -81,7 +81,7 @@ export const stylesSdCheckbox = (vars: SdStyleProvider) => /* language=LESS */ `
         }
   
         > ._indicator {
-          padding: 4px;
+          padding: ${vars.gap.xs};
         }
   
         > ._indicator > div {
