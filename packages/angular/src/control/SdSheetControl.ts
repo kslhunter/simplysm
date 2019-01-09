@@ -119,8 +119,6 @@ import {SdStyleProvider} from "../provider/SdStyleProvider";
   ]
 })
 export class SdSheetControl implements DoCheck, OnInit {
-
-
   @ContentChildren(SdSheetColumnControl)
   public columnControls?: QueryList<SdSheetColumnControl>;
 
@@ -165,10 +163,10 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   @HostBinding("style.padding-top")
   public get paddingTop(): string {
-    const size = Math.floor(this._style.stripUnit(this._style.sheetPaddingV) * 2
-      + this._style.stripUnit(this._style.lineHeight) * this._style.stripUnit(this._style.fontSize.default));
+    const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
+      + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default));
 
-    return (this.hasHeaderGroup ? (Math.floor(size * 2) + 2) : (Math.floor(size) + 1)) + "px";
+    return ((this.hasHeaderGroup ? (Math.floor(size * 2) + 2) : (Math.floor(size) + 1)) + 1) + "px";
   }
 
   public get hasHeaderGroup(): boolean {
@@ -220,8 +218,8 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public get fixedColumnWidth(): number {
-    const size = Math.floor(this._style.stripUnit(this._style.sheetPaddingV) * 2
-      + this._style.stripUnit(this._style.lineHeight) * this._style.stripUnit(this._style.fontSize.default));
+    const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
+      + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default)) + 1;
 
     if (this.fixedColumnControls.length > 0) {
       return this.fixedHeaderGroups.map(item => item.width).reduce((a, b) => a + b) + size;

@@ -1,7 +1,11 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdGridItem = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-grid-item {
-    display: inline-block;
-    vertical-align: top;
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdGridItem = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-grid-item"], o => o
+    .style({
+      "display": "inline-block",
+      "vertical-align": "top"
+    })
+  );

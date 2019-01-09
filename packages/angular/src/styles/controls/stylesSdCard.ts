@@ -1,10 +1,14 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdCard = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-card {
-   display: block;
-   width: 100%;
-   background: white;
-   //border: 1px solid ${vars.transColor.default};
-   ${vars.elevation(1)};
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdCard = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-card"], o => o
+    .style({
+      "display": "block",
+      "width": "100%",
+      "background": "white",
+      ...s.mixins.elevation(1),
+      "border-radius": "4px"
+    })
+  );

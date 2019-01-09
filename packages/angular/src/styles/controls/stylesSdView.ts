@@ -1,7 +1,11 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdView = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-view {
-    display: block;
-    background: white;
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdView = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-view"], o => o
+    .style({
+      "display": `block`,
+      "background": `white`
+    })
+  );

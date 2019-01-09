@@ -1,19 +1,26 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdIcon = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-icon {
-    display: inline-block;
-    pointer-events: none;
-
-    &[sd-fixed-width=true] {
-      width: 1.25em;
-    }
-
-    .fa-layers-counter {
-      transform: scale(0.4);
-    }
-
-    &[sd-dot=true] svg:nth-child(2) {
-      color: ${vars.themeColor.danger.default};
-    }
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdIcon = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-icon"], o => o
+    .style({
+      "display": "inline-block",
+      "pointer-events": "none"
+    })
+    .select(["&[sd-fixed-width=true]"], o => o
+      .style({
+        "width": "1.25em"
+      })
+    )
+    .select([".fa-layers-counter"], o => o
+      .style({
+        "transform": "scale(0.4)"
+      })
+    )
+    .select(["&[sd-dot=true] svg:nth-child(2)"], o => o
+      .style({
+        "color": s.vars.themeColor.danger.default
+      })
+    )
+  );

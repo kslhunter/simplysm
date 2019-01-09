@@ -1,28 +1,35 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdTopbarMenu = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-topbar-menu {
-    display: block;
-    padding: 0 ${vars.gap.default};
-    cursor: pointer;
-    transition: .1s linear;
-    transition-property: background, color;
-    user-select: none;
-    color: ${vars.topbarLinkColor};
-    float: left;
-  
-    &:hover {
-      background: ${vars.transColor.dark};
-      color: ${vars.topbarLinkHoverColor};
-    }
-  
-    &:active {
-      transition: none;
-      background: ${vars.transColor.dark};
-      color: ${vars.topbarLinkHoverColor};
-    }
-  
-    @media ${vars.media.mobile} {
-      float: right;
-    }
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdTopbarMenu = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-topbar-menu"], o => o
+    .style({
+      "display": `block`,
+      "padding": `0 ${s.vars.gap.default}`,
+      "cursor": `pointer`,
+      "transition": `.1s linear`,
+      "transition-property": `background, color`,
+      "user-select": `none`,
+      "color": `${s.vars.topbarLinkColor}`,
+      "float": `left`
+    })
+    .select(["&:hover"], o => o
+      .style({
+        "background": `${s.vars.transColor.dark}`,
+        "color": `${s.vars.topbarLinkHoverColor}`
+      })
+    )
+    .select(["&:active"], o => o
+      .style({
+        "transition": `none`,
+        "background": `${s.vars.transColor.dark}`,
+        "color": `${s.vars.topbarLinkHoverColor}`
+      })
+    )
+    .select([`@media ${s.vars.media.mobile}`], o => o
+      .style({
+        "float": `right`
+      })
+    )
+  );

@@ -1,31 +1,39 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdLabel = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-label {
-    display: inline-block;
-    background: ${vars.themeColor.grey.darkest};
-    color: ${vars.textReverseColor.default};
-    padding: 0 ${vars.gap.xs};
-    border-radius: 2px;
-    text-indent: 0;` +
-
-  Object.keys(vars.themeColor).map(key => `
-    &[sd-theme='${key}'] {
-      background:${vars.themeColor[key].default};
-    }`
-  ).join("\n") + `
-
-    &[sd-clickable=true] {
-      cursor: pointer;
-
-      &:hover {
-        background: ${vars.themeColor.grey.dark};` +
-
-  Object.keys(vars.themeColor).map(key => `
-        &[sd-theme='${key}'] {
-          background:${vars.themeColor[key].dark};
-        }`
-  ).join("\n") + `
-      }
-    }
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdLabel = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-label"], o => o
+    .style({
+      "display": "inline-block",
+      "background": s.vars.themeColor.grey.darkest,
+      "color": s.vars.textReverseColor.default,
+      "padding": `0 ${s.vars.gap.xs}`,
+      "border-radius": "2px",
+      "text-indent": "0"
+    })
+    .forEach(Object.keys(s.vars.themeColor), (o, key) => o
+      .select([`&[sd-theme='${key}']`], o => o
+        .style({
+          "background": s.vars.themeColor[key].default
+        })
+      )
+    )
+    .select(["&[sd-clickable=true]"], o => o
+      .style({
+        "cursor": "pointer"
+      })
+      .select(["&:hover"], o => o
+        .style({
+          "background": s.vars.themeColor.grey.dark
+        })
+        .forEach(Object.keys(s.vars.themeColor), (o, key) => o
+          .select([`&[sd-theme='${key}']`], o => o
+            .style({
+              "background": s.vars.themeColor[key].dark
+            })
+          )
+        )
+      )
+    )
+  );

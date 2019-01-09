@@ -1,14 +1,17 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdSelectItem = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-select-item {
-    display: block;
-    // padding: ${vars.gap.xs} ${vars.gap.sm};
-    padding: ${vars.gap.sm} ${vars.gap.default};
-    cursor: pointer;
-    // font-size: font-size(sm);
-
-    &:hover {
-      background: ${vars.transColor.default};
-    }
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdSelectItem = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-select-item"], o => o
+    .style({
+      "display": `block`,
+      "padding": `${s.vars.gap.sm} ${s.vars.gap.default}`,
+      "cursor": `pointer`
+    })
+    .select(["&:hover"], o => o
+      .style({
+        "background": `${s.vars.transColor.default}`
+      })
+    )
+  );

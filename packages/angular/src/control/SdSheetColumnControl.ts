@@ -9,8 +9,6 @@ import {Uuid} from "@simplism/core";
   template: ``
 })
 export class SdSheetColumnControl {
-
-
   public guid = Uuid.newUuid().toString();
 
   @Input()
@@ -26,7 +24,7 @@ export class SdSheetColumnControl {
     type: Number,
     notnull: true
   })
-  public width = 120;
+  public width = 140;
 
   @Input()
   @SdTypeValidate(Boolean)

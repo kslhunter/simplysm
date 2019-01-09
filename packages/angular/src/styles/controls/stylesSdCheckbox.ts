@@ -1,95 +1,108 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdCheckbox = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-checkbox {
-    color: text-color(default);
-  
-    > label {
-      ${vars.formControlBase};
-      user-select: none;
-    
-      color: inherit;
-      cursor: pointer;
-      position: relative;
-  
-      > ._indicator_rect {
-        position: absolute;
-        display: block;
-        width: ${vars.lineHeight};
-        height: ${vars.lineHeight};
-        border: 1px solid ${vars.transColor.default};
-        background: white;
-        vertical-align: top;
-        transition: border-color .1s linear;
-      }
-  
-      > ._indicator {
-        display: inline-block;
-        position: relative;
-        opacity: 0;
-        transition: opacity .1s linear;
-        color:  ${vars.textColor.default};
-        width: ${vars.lineHeight};
-        height: ${vars.lineHeight};
-        vertical-align: top;
-        padding-left: 1px;
-      }
-  
-      > ._content {
-        display: inline-block;
-        vertical-align: top;
-        text-indent: ${vars.gap.xs};
-  
-        > * {
-          text-indent: 0;
-        }
-      }
-  
-      > input:disabled + ._indicator_rect {
-        background: ${vars.bgColor};
-      }
-  
-      &:focus {
-        outline-color: transparent;
-  
-        > ._indicator_rect {
-          border-color: ${vars.themeColor.primary.default};
-        }
-      }
-    }
-  
-    &[sd-checked=true] {
-      > label {
-        > ._indicator {
-          opacity: 1;
-        }
-      }
-    }
-  
-    &[sd-inline=true] {
-      display: inline-block;
-  
-      > label {
-        padding-left: 0;
-      }
-    }
-  
-    &[sd-radio=true] {
-      > label {
-        > ._indicator_rect {
-          border-radius: 100%;
-        }
-  
-        > ._indicator {
-          padding: ${vars.gap.xs};
-        }
-  
-        > ._indicator > div {
-          border-radius: 100%;
-          background: ${vars.textColor.default};
-          width: 100%;
-          height: 100%;
-        }
-      }
-    }
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdCheckbox = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-checkbox"], o => o
+    .style({
+      "color": s.vars.textColor.default
+    })
+    .select(["> label"], o => o
+      .style({
+        ...s.mixins.formControlBase(),
+        "user-select": "none",
+        "color": "inherit",
+        "cursor": "pointer",
+        "position": "relative"
+      })
+      .select(["> ._indicator_rect"], o => o
+        .style({
+          "position": "absolute",
+          "display": "block",
+          "width": s.vars.lineHeight,
+          "height": s.vars.lineHeight,
+          "border": `1px solid ${s.vars.transColor.default}`,
+          "background": "white",
+          "vertical-align": "top",
+          "transition": "border-color .1s linear"
+        })
+      )
+      .select(["> ._indicator"], o => o
+        .style({
+          "display": "inline-block",
+          "position": "relative",
+          "opacity": "0",
+          "transition": "opacity .1s linear",
+          "color": s.vars.textColor.default,
+          "width": s.vars.lineHeight,
+          "height": s.vars.lineHeight,
+          "vertical-align": "top",
+          "padding-left": "1px"
+        })
+      )
+      .select(["> ._content"], o => o
+        .style({
+          "display": "inline-block",
+          "vertical-align": "top",
+          "text-indent": s.vars.gap.xs
+        })
+        .select(["> *"], o => o
+          .style({
+            "text-indent": "0"
+          })
+        )
+      )
+      .select(["> input:disabled + ._indicator_rect"], o => o
+        .style({
+          "background": s.vars.bgColor
+        })
+      )
+      .select(["&:focus"], o => o
+        .style({
+          "outline-color": "transparent"
+        })
+        .select(["> ._indicator_rect"], o => o
+          .style({
+            "border-color": s.vars.themeColor.primary.default
+          })
+        )
+      )
+    )
+    .select(["&[sd-checked=true] > label > ._indicator"], o => o
+      .style({
+        "opacity": "1"
+      })
+    )
+    .select(["&[sd-inline=true]"], o => o
+      .style({
+        "display": "inline-block"
+      })
+      .select(["> label"], o => o
+        .style({
+          "padding-left": "0"
+        })
+      )
+    )
+    .select(["&[sd-radio=true]"], o => o
+      .select(["> label"], o => o
+        .select(["> ._indicator_rect"], o => o
+          .style({
+            "border-radius": "100%"
+          })
+        )
+        .select(["> ._indicator"], o => o
+          .style({
+            "padding": s.vars.gap.xs
+          })
+        )
+        .select(["> ._indicator > div"], o => o
+          .style({
+            "border-radius": "100%",
+            "background": s.vars.textColor.default,
+            "width": "100%",
+            "height": "100%"
+          })
+        )
+      )
+    )
+  );

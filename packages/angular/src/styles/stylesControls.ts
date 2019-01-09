@@ -1,4 +1,3 @@
-import {SdStyleProvider} from "../provider/SdStyleProvider";
 import {stylesSdBarcode} from "./controls/stylesSdBarcode";
 import {stylesSdBusyContainer} from "./controls/stylesSdBusyContainer";
 import {stylesSdButton} from "./controls/stylesSdButton";
@@ -43,50 +42,54 @@ import {stylesSdTopbar} from "./controls/stylesSdTopbar";
 import {stylesSdTopbarMenu} from "./controls/stylesSdTopbarMenu";
 import {stylesSdView} from "./controls/stylesSdView";
 import {stylesSdViewItem} from "./controls/stylesSdViewItem";
+import {SdStylePresets} from "../style/SdStylePresets";
+import {SdStyleBuilder} from "../style/SdStyleBuilder";
 
-export const stylesControls = (vars: SdStyleProvider): string => {
-  return stylesSdBarcode(vars) +
-    stylesSdBusyContainer(vars) +
-    stylesSdButton(vars) +
-    stylesSdCard(vars) +
-    stylesSdCheckbox(vars) +
-    stylesSdCheckboxGroup(vars) +
-    stylesSdCheckboxGroupItem(vars) +
-    stylesSdCombobox(vars) +
-    stylesSdComboboxItem(vars) +
-    stylesSdDockContainer(vars) +
-    stylesSdDock(vars) +
-    stylesSdDropdown(vars) +
-    stylesSdDropdownPopup(vars) +
-    stylesSdForm(vars) +
-    stylesSdFormItem(vars) +
-    stylesSdGrid(vars) +
-    stylesSdGridItem(vars) +
-    stylesSdHtmlEditor(vars) +
-    stylesSdIcon(vars) +
-    stylesSdLabel(vars) +
-    stylesSdList(vars) +
-    stylesSdListItem(vars) +
-    stylesSdMarkdownEditor(vars) +
-    stylesSdModal(vars) +
-    stylesSdMultiSelect(vars) +
-    stylesSdMultiSelectItem(vars) +
-    stylesSdPagination(vars) +
-    stylesSdPane(vars) +
-    stylesSdSelect(vars) +
-    stylesSdSelectItem(vars) +
-    stylesSdSheetColumn(vars) +
-    stylesSdSheet(vars) +
-    stylesSdSidebarContainer(vars) +
-    stylesSdSidebar(vars) +
-    stylesSdTab(vars) +
-    stylesSdTabItem(vars) +
-    stylesSdTabview(vars) +
-    stylesSdTabviewItem(vars) +
-    stylesSdTextfield(vars) +
-    stylesSdTopbarContainer(vars) +
-    stylesSdTopbar(vars) +
-    stylesSdTopbarMenu(vars) +
-    stylesSdView(vars) +
-    stylesSdViewItem(vars);
+//tslint:disable:no-shadowed-variable
+export const stylesControls = (s: SdStylePresets) => {
+  return new SdStyleBuilder()
+    .join(stylesSdBarcode(s))
+    .join(stylesSdBusyContainer(s))
+    .join(stylesSdButton(s))
+    .join(stylesSdCard(s))
+    .join(stylesSdCheckbox(s))
+    .join(stylesSdCheckboxGroup(s))
+    .join(stylesSdCheckboxGroupItem(s))
+    .join(stylesSdCombobox(s))
+    .join(stylesSdComboboxItem(s))
+    .join(stylesSdDockContainer(s))
+    .join(stylesSdDock(s))
+    .join(stylesSdDropdown(s))
+    .join(stylesSdDropdownPopup(s))
+    .join(stylesSdForm(s))
+    .join(stylesSdFormItem(s))
+    .join(stylesSdGrid(s))
+    .join(stylesSdGridItem(s))
+    .join(stylesSdHtmlEditor(s))
+    .join(stylesSdIcon(s))
+    .join(stylesSdLabel(s))
+    .join(stylesSdList(s))
+    .join(stylesSdListItem(s))
+    .join(stylesSdMarkdownEditor(s))
+    .join(stylesSdModal(s))
+    .join(stylesSdMultiSelect(s))
+    .join(stylesSdMultiSelectItem(s))
+    .join(stylesSdPagination(s))
+    .join(stylesSdPane(s))
+    .join(stylesSdSelect(s))
+    .join(stylesSdSelectItem(s))
+    .join(stylesSdSheetColumn(s))
+    .join(stylesSdSheet(s))
+    .join(stylesSdSidebarContainer(s))
+    .join(stylesSdSidebar(s))
+    .join(stylesSdTab(s))
+    .join(stylesSdTabItem(s))
+    .join(stylesSdTabview(s))
+    .join(stylesSdTabviewItem(s))
+    .join(stylesSdTextfield(s))
+    .join(stylesSdTopbarContainer(s))
+    .join(stylesSdTopbar(s))
+    .join(stylesSdTopbarMenu(s))
+    .join(stylesSdView(s))
+    .join(stylesSdViewItem(s));
 };

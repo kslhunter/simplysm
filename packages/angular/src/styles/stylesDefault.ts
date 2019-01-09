@@ -1,86 +1,93 @@
-import {SdStyleProvider} from "../provider/SdStyleProvider";
+import {SdStylePresets} from "../style/SdStylePresets";
+import {SdStyleBuilder} from "../style/SdStyleBuilder";
 
-export const stylesDefaults = (vars: SdStyleProvider) => /* language=LESS */ `
-  *,
-  *:after,
-  *:before {
-    box-sizing: border-box;
-  }
-
-  *:focus {
-    outline-color: ${vars.themeColor.primary.default};
-  }
-
-  html, body {
-    height: 100%;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-  }
-
-  body {
-    background: ${vars.bgColor};
-    color: ${vars.textColor.default};
-    font-family: ${vars.fontFamily};
-    font-size: ${vars.fontSize.default};
-    line-height: ${vars.lineHeight};
-  }
-
-  pre,
-  code {
-    font-family: ${vars.fontFamily};
-    font-size: ${vars.fontSize.default};
-    line-height: ${vars.lineHeight};
-    margin: 0;
-  }
-
-  code {
-    font-family: ${vars.fontFamilyMonospace};
-  }` +
-
-  [1, 2, 3, 4, 5, 6].map(num => `
-    h${num} {
-      font-size: ${vars.fontSize["h" + num]};
-      line-height: ${vars.lineHeight};
-      margin: 0;
-    }`
-  ).join("\n") + `
-  
-  a {
-    display: inline-block;
-    cursor: pointer;
-    color: ${vars.themeColor.primary.default};
-
-    &:focus {
-      outline-color: transparent;
-    }
-
-    &:hover,
-    &:focus {
-      color: ${vars.themeColor.primary.dark};
-    }
-  }
-
-  ::-webkit-scrollbar-track {
-    background-color: rgba(${vars.themeColor.grey.darker}, .1);
-  }
-
-  ::-webkit-scrollbar-corner {
-    background-color: rgba(${vars.themeColor.grey.light}, .1);
-  }
-
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-    background-color: rgba(0, 0, 0, 0);
-
-    /*border-top: 1px solid get($trans-color, dark);
-    border-bottom: 1px solid get($trans-color, default);*/
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: rgba(${vars.themeColor.grey.darker}, .15);
-
-    /*border-top: 1px solid get($trans-color, default);
-    border-bottom: 1px solid get($trans-color, dark);*/
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesDefaults = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["*", "*:after", "*.before"], o => o
+    .style({
+      "box-sizing": "border-box"
+    })
+  )
+  .select(["*:focus"], o => o
+    .style({
+      "outline-color": s.vars.themeColor.primary.default
+    })
+  )
+  .select(["html", "body"], o => o
+    .style({
+      "height": "100%",
+      "width": "100%",
+      "padding": "0",
+      "margin": "0"
+    })
+  )
+  .select(["body"], o => o
+    .style({
+      "background": s.vars.bgColor,
+      "color": s.vars.textColor.default,
+      "font-family": s.vars.fontFamily,
+      "font-size": s.vars.fontSize.default,
+      "line-height": s.vars.lineHeight
+    })
+  )
+  .select(["pre", "code"], o => o
+    .style({
+      "font-family": s.vars.fontFamily,
+      "font-size": s.vars.fontSize.default,
+      "line-height": s.vars.lineHeight,
+      "margin": "0"
+    })
+  )
+  .select(["code"], o => o
+    .style({
+      "font-family": s.vars.fontFamilyMonospace
+    })
+  )
+  .forEach([1, 2, 3, 4, 5, 6], (o, num) => o
+    .select([`h${num}`], o => o
+      .style({
+        "font-size": s.vars.fontSize["h" + num],
+        "line-height": s.vars.lineHeight,
+        "margin": "0"
+      })
+    )
+  )
+  .select(["a"], o => o
+    .style({
+      "display": "inline-block",
+      "cursor": "pointer",
+      "color": s.vars.themeColor.primary.default
+    })
+    .select(["&:focus"], o => o
+      .style({
+        "outline-color": "transparent"
+      })
+    )
+    .select(["&:hover", "&:focus"], o => o
+      .style({
+        "color": s.vars.themeColor.primary.dark
+      })
+    )
+  )
+  .select(["::-webkit-scrollbar-track"], o => o
+    .style({
+      "background-color": `rgba(${s.vars.themeColor.grey.darker}, .1)`
+    })
+  )
+  .select(["::-webkit-scrollbar-corner"], o => o
+    .style({
+      "background-color": `rgba(${s.vars.themeColor.grey.light}, .1)`
+    })
+  )
+  .select(["::-webkit-scrollbar"], o => o
+    .style({
+      "width": "8px",
+      "height": "8px",
+      "background-color": "rgba(0, 0, 0, 0)"
+    })
+  )
+  .select(["::-webkit-scrollbar-thumb"], o => o
+    .style({
+      "background-color": `rgba(${s.vars.themeColor.grey.darker}, .15)`
+    })
+  );

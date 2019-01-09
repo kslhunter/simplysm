@@ -1,3 +1,8 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdCheckboxGroup = (vars: SdStyleProvider) => /* language=LESS */ ``;
+//tslint:disable:no-shadowed-variable
+export const stylesSdCheckboxGroup = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-checkbox-group"], o => o
+    .style({})
+  );

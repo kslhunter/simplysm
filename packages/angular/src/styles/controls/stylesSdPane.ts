@@ -1,9 +1,13 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdPane = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-pane {
-    display: block;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdPane = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-pane"], o => o
+    .style({
+      "display": `block`,
+      "width": `100%`,
+      "height": `100%`,
+      "overflow": `auto`
+    })
+  );

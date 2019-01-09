@@ -1,10 +1,14 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdDockContainer = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-dock-container {
-    display: block;
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdDockContainer = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-dock-container"], o => o
+    .style({
+      "display": "block",
+      "position": "relative",
+      "width": "100%",
+      "height": "100%",
+      "overflow": "auto"
+    })
+  );

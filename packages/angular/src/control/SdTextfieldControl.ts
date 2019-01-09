@@ -12,7 +12,6 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNotifyPropertyChange";
 import {DateOnly, DateTime, Time} from "@simplism/core";
 
-
 @Component({
   selector: "sd-textfield",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,8 +44,6 @@ import {DateOnly, DateTime, Time} from "@simplism/core";
     <div class="_invalid-indicator"></div>`
 })
 export class SdTextfieldControl implements ISdNotifyPropertyChange {
-
-
   @Input()
   @SdTypeValidate({
     type: String,
@@ -127,13 +124,17 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
     let value;
     if (this.type === "number") {
       value = !inputEl.value ? undefined : Number(inputEl.value.replace(/,/g, ""));
-    } else if (this.type === "date" || this.type === "month") {
+    }
+    else if (this.type === "date" || this.type === "month") {
       value = !inputEl.value ? undefined : DateOnly.parse(inputEl.value);
-    } else if (this.type === "datetime") {
+    }
+    else if (this.type === "datetime") {
       value = !inputEl.value ? undefined : DateTime.parse(inputEl.value);
-    } else if (this.type === "time") {
+    }
+    else if (this.type === "time") {
       value = !inputEl.value ? undefined : Time.parse(inputEl.value);
-    } else {
+    }
+    else {
       value = inputEl.value;
     }
 
@@ -165,7 +166,8 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
         if (document.activeElement !== this.inputElRef.nativeElement) {
           this.inputElRef.nativeElement.focus();
         }
-      } else {
+      }
+      else {
         if (document.activeElement === this.inputElRef.nativeElement) {
           this.inputElRef.nativeElement.blur();
         }

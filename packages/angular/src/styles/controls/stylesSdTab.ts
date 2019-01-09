@@ -1,6 +1,10 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdTab = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-tab {
-    display: block;
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdTab = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-tab"], o => o
+    .style({
+      "display": `block`
+    })
+  );

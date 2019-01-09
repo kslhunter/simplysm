@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, Component, HostBinding} from "@angular/core";
 import {NavigationStart, Router} from "@angular/router";
 
-
 @Component({
   selector: "sd-sidebar-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -10,8 +9,6 @@ import {NavigationStart, Router} from "@angular/router";
     <div class="_backdrop" (click)="toggle = false"></div>`
 })
 export class SdSidebarContainerControl {
-
-
   @HostBinding("attr.sd-toggle")
   public toggle = false;
 

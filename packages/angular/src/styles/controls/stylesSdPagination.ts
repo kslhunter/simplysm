@@ -1,17 +1,21 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdPagination = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-pagination {
-    display: block;
-    /*height: 15px;*/
-
-    > a {
-      display: inline-block;
-      // padding: ${vars.gap.xs} ${vars.gap.sm};
-      padding: 0 ${vars.gap.xs};
-
-      &[sd-selected=true] {
-        text-decoration: underline;
-      }
-    }
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdPagination = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-pagination"], o => o
+    .style({
+      "display": `block`
+    })
+    .select(["> a"], o => o
+      .style({
+        "display": `inline-block`,
+        "padding": `0 ${s.vars.gap.xs}`
+      })
+      .select(["&[sd-selected=true]"], o => o
+        .style({
+          "text-decoration": `underline`
+        })
+      )
+    )
+  );

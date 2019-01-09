@@ -1,64 +1,78 @@
-import {SdStyleProvider} from "../../provider/SdStyleProvider";
+import {SdStyleBuilder} from "../../style/SdStyleBuilder";
+import {SdStylePresets} from "../../style/SdStylePresets";
 
-export const stylesSdHtmlEditor = (vars: SdStyleProvider) => /* language=LESS */ `
-  sd-html-editor {
-    display: block;
-    border: 1px solid ${vars.transColor.default};
-
-    > sd-dock-container {
-      > ._toolbar {
-        user-select: none;
-
-        > a {
-          display: inline-block;
-          padding: ${vars.gap.sm} 0;
-          text-align: center;
-          width: ${vars.stripUnit(vars.gap.sm) * 2 + vars.stripUnit(vars.lineHeight) * vars.stripUnit(vars.fontSize.default)}px;
-
-          &:hover {
-            background: rgba(0, 0, 0, .05);
-          }
-
-          &._selected {
-            background: ${vars.themeColor.primary.default};
-            color: ${vars.textReverseColor.default};
-          }
-        }
-      }
-
-      > sd-pane {
-        > div {
-          ${vars.formControlBase};
-          height: 100%;
-
-          &[contenteditable=true] {
-            cursor: text;
-            background: ${vars.themeColor.secondary.lightest};
-          }
-        }
-
-        > textarea {
-          ${vars.formControlBase};
-          height: 100%;
-          background: ${vars.themeColor.secondary.lightest};
-          border: none;
-          transition: outline-color .1s linear;
-          outline: 1px solid transparent;
-          outline-offset: -1px;
-
-          &::-webkit-input-placeholder {
-            color: ${vars.textColor.lighter};
-          }
-
-          &:focus {
-            outline-color: ${vars.themeColor.primary.default};
-          }
-        }
-      }
-    }
-
-    &[sd-inset=true] {
-      height: 100%;
-      border: none;
-    }
-  }`;
+//tslint:disable:no-shadowed-variable
+export const stylesSdHtmlEditor = (s: SdStylePresets) => new SdStyleBuilder()
+  .select(["sd-html-editor"], o => o
+    .style({
+      "display": "block",
+      "border": `1px solid ${s.vars.transColor.default}`
+    })
+    .select(["> sd-dock-container"], o => o
+      .select(["> ._topbar"], o => o
+        .style({
+          "user-select": "none"
+        })
+        .select(["a"], o => o
+          .style({
+            "display": "inline-block",
+            "padding": `${s.vars.gap.sm} 0`,
+            "text-align": "center",
+            "width": `${s.fns.stripUnit(s.vars.gap.sm) * 2 + s.fns.stripUnit(s.vars.lineHeight) * s.fns.stripUnit(s.vars.fontSize.default)}px`
+          })
+          .select(["&:hover"], o => o
+            .style({
+              "background": "rgba(0, 0, 0, .05)"
+            })
+          )
+          .select(["&._selected"], o => o
+            .style({
+              "background": s.vars.themeColor.primary.default,
+              "color": s.vars.textReverseColor.default
+            })
+          )
+        )
+      )
+      .select(["> sd-pane"], o => o
+        .select(["> div"], o => o
+          .style({
+            ...s.mixins.formControlBase(),
+            "height": "100%"
+          })
+          .select(["&[contenteditable=true]"], o => o
+            .style({
+              "cursor": "text",
+              "background": s.vars.themeColor.secondary.lightest
+            })
+          )
+        )
+        .select(["> textarea"], o => o
+          .style({
+            ...s.mixins.formControlBase(),
+            "height": "100%",
+            "background": s.vars.themeColor.secondary.lightest,
+            "border": "none",
+            "transition": "outline-color .1s linear",
+            "outline": "1px solid transparent",
+            "outline-offset": "-1px"
+          })
+          .select(["&::-webkit-input-placeholder"], o => o
+            .style({
+              "color": s.vars.textColor.lighter
+            })
+          )
+          .select(["&:focus"], o => o
+            .style({
+              "outline-color": s.vars.themeColor.primary.default
+            })
+          )
+        )
+      )
+    )
+    .select(["&[sd-inset=true]"], o =>
+      o.style({
+        "height": "100%",
+        "border": "none"
+      })
+    )
+  );

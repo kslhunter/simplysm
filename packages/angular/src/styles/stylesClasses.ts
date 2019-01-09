@@ -1,211 +1,191 @@
-import {SdStyleProvider} from "../provider/SdStyleProvider";
+import {SdStylePresets} from "../style/SdStylePresets";
+import {SdStyleBuilder} from "../style/SdStyleBuilder";
 
-export const stylesClasses = (vars: SdStyleProvider) => {
-  let style = "";
-
-  for (const key of Object.keys(vars.themeColor)) {
-    for (const key1 of Object.keys(vars.themeColor[key])) {
-      const val1 = vars.themeColor[key][key1];
-
-      style += `.sd-background-${key}-${key1} {`;
-      style += `background: ${val1} !important;`;
-
-      if (key1 !== "lighter" && key1 !== "lightest") {
-        style += "color: white;";
-        style += /*language=LESS*/ `
-          a {
-            color: ${vars.textReverseColor.dark};
-
-            &:hover,
-            &:focus {
-              color: ${vars.textReverseColor.default};
-            }
-          }
-
-          sd-textfield > input {
-            background: ${vars.transColor.light} !important;
-            color: white !important;
-            border-color: ${vars.transColor.light} !important;
-          }
-
-          sd-list-item[sd-header=true] > label {
-            color: ${vars.textReverseColor.dark} !important;
-          }
-          
-          sd-list-item > ._child > ._child-content {
-            background: rgba(0, 0, 0, .2);
-            
-            sd-list-item > label {
-              opacity: .8;
-              &:hover {
-                opacity: 1;
-              }
-            }
-          }
-
-          sd-checkbox {
-            > label {
-              color: ${vars.textReverseColor.default} !important;
-
-              > ._indicator_rect {
-                background: ${vars.transColor.light} !important;
-                border-color: ${vars.transColor.light} !important;
-              }
-
-              > ._indicator {
-                color: ${vars.textReverseColor.default} !important;
-              }
-            }
-
-            &[sd-radio=true] {
-              > label {
-                > ._indicator > div {
-                  background: ${vars.textReverseColor.default} !important;
-                }
-              }
-            }
-          }`;
-
-        /*style += Object.keys(vars.themeColor).map(key2 => `
-          sd-button[sd-theme=${key2}] > button {
-            background: ${vars.themeColor[key2].default};
-            border-color: ${vars.themeColor[key2].default};
-            color: ${vars.textReverseColor.default};
-    
-            &:hover {
-              background: ${vars.themeColor[key2].dark};
-              border-color: ${vars.themeColor[key2].dark};
-              color: ${vars.textReverseColor.default};
-            }
-    
-            &:active {
-              background: ${vars.themeColor[key2].darker};
-              color: ${vars.textReverseColor.default};
-            }
-    
-            &:disabled {
-              background: ${vars.themeColor.grey.default};
-              border-color: ${vars.themeColor.grey.default};
-              cursor: default;
-            }
-          }`
-        ).join("\n");*/
-      }
-
-      style += "}";
-    }
-  }
-  style += `.sd-background-white {background: white !important;}`;
-  style += `.sd-background-default {background: ${vars.bgColor} !important;}`;
-
-
-  for (const key of Object.keys(vars.fontSize)) {
-    const val = vars.fontSize[key];
-
-    style += /*language=LESS*/ `
-      .sd-font-size-${key} {
-        font-size: ${val} !important;
-      }`;
-  }
-
-  for (const key of Object.keys(vars.themeColor)) {
-    for (const key1 of Object.keys(vars.themeColor[key])) {
-      const val1 = vars.themeColor[key][key1];
-
-      style += /*language=LESS*/ `
-        .sd-text-color-${key}-${key1} {
-          color: ${val1} !important;
-        }`;
-    }
-  }
-  style += `.sd-text-reverse-color-dark {color: ${vars.textReverseColor.dark} !important;}`;
-
-  for (const key of Object.keys(vars.textColor)) {
-    const val = vars.textColor[key];
-
-    style += /*language=LESS*/ `
-      .sd-text-color-${key} {
-        color: ${val} !important;
-      }`;
-  }
-
-
-  for (const direction of ["top", "right", "bottom", "left"]) {
-    for (const key of Object.keys(vars.themeColor)) {
-      for (const key1 of Object.keys(vars.themeColor[key])) {
-        style += /*language=LESS*/ `
-          .sd-border-${direction}-${key}-${key1} {
-            border-${direction}: 1px solid ${vars.themeColor[key][key1]};
-          }`;
-      }
-    }
-
-    for (const key of Object.keys(vars.transColor)) {
-      style += /*language=LESS*/ `
-        .sd-border-${direction}-${key} {
-          border-${direction}: 1px solid ${vars.transColor[key]};
-        }`;
-    }
-
-
-    style += /*language=LESS*/ `
-      .sd-border-${direction}-none {
-        border-${direction}: none !important;
-      }`;
-  }
-
-
-  for (const key of Object.keys(vars.themeColor)) {
-    for (const key1 of Object.keys(vars.themeColor[key])) {
-      style += /*language=LESS*/ `
-        .sd-border-${key}-${key1} {
-          border: 1px solid ${vars.themeColor[key][key1]};
-        }`;
-    }
-  }
-
-  for (const key of Object.keys(vars.transColor)) {
-    style += /*language=LESS*/ `
-      .sd-border-${key} {
-        border: 1px solid ${vars.transColor[key]};
-      }`;
-  }
-
-  for (const key of Object.keys(vars.gap)) {
-    style += /*language=LESS*/ `
-      .sd-padding-${key} {
-        padding: ${vars.gap[key]};
-      }`;
-
-    for (const direction of ["top", "right", "bottom", "left"]) {
-      style += /*language=LESS*/ `
-        .sd-padding-${direction}-${key} {
-          padding-${direction}: ${vars.gap[key]};
-        }`;
-    }
-
-    for (const key1 of Object.keys(vars.gap)) {
-      style += /*language=LESS*/ `
-        .sd-padding-${key}-${key1} {
-          padding: ${vars.gap[key]} ${vars.gap[key1]};
-        }`;
-    }
-  }
-
-  for (const key of Object.keys(vars.gap)) {
-    style += /*language=LESS*/ `
-      .sd-margin-${key} {
-        margin: ${vars.gap[key]};
-      }`;
-
-    for (const direction of ["top", "right", "bottom", "left"]) {
-      style += /*language=LESS*/ `
-        .sd-margin-${direction}-${key} {
-          margin-${direction}: ${vars.gap[key]};
-        }`;
-    }
-  }
-
-
-  return style;
-};
+//tslint:disable:no-shadowed-variable
+export const stylesClasses = (s: SdStylePresets) => new SdStyleBuilder()
+  .forEach(Object.keys(s.vars.themeColor), (o, key) => o
+    .forEach(Object.keys(s.vars.themeColor[key]), (o, key1) => o
+      .select([`.sd-background-${key}-${key1}`], o => o
+        .style({
+          "background": `${s.vars.themeColor[key][key1]} !important`
+        })
+        .if(key1 !== "lighter" && key1 !== "lightest", o => o
+          .style({
+            "color": s.vars.textReverseColor.default
+          })
+          .select(["a"], o => o
+            .style({
+              "color": s.vars.textReverseColor.dark
+            })
+            .select(["&:hover", "&:focus"], o => o
+              .style({
+                "color": s.vars.textReverseColor.default
+              })
+            )
+          )
+          .select(["sd-textfield > input"], o => o
+            .style({
+              "background": `${s.vars.transColor.light} !important`,
+              "color": "white !important",
+              "border-color": `${s.vars.transColor.light} !important`
+            })
+          )
+          .select(["sd-list-item[sd-header=true] > label"], o => o
+            .style({
+              "color": `${s.vars.textReverseColor.dark} !important`
+            })
+          )
+          .select(["sd-list-item > ._child > ._child-content"], o => o
+            .style({
+              "background": "rgba(0, 0, 0, .2)"
+            })
+            .select(["sd-list-item > label"], o => o
+              .style({
+                "opacity": ".8"
+              })
+              .select(["&:hover"], o => o
+                .style({
+                  "opacity": "1"
+                })
+              )
+            )
+          )
+          .select(["sd-checkbox"], o => o
+            .select(["> label"], o => o
+              .style({
+                "color": `${s.vars.textReverseColor.default} !important`
+              })
+              .select(["> ._indicator_rect"], o => o
+                .style({
+                  "background": `${s.vars.transColor.light} !important`,
+                  "border-color": `${s.vars.transColor.light} !important`
+                })
+              )
+              .select(["> ._indicator"], o => o
+                .style({
+                  "color": `${s.vars.textReverseColor.default} !important`
+                })
+              )
+              .select(["&[sd-radio=true] > label > ._indicator > div"], o => o
+                .style({
+                  "background": `${s.vars.textReverseColor.default} !important`
+                })
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+  .select([".sd-background-white"], o => o
+    .style({
+      "background": "white !important"
+    })
+  )
+  .select([".sd-background-default"], o => o
+    .style({
+      "background": `${s.vars.bgColor} !important`
+    })
+  )
+  .forEach(Object.keys(s.vars.fontSize), (o, key) => o
+    .select([`.sd-font-size-${key}`], o => o
+      .style({
+        "font-size": `${s.vars.fontSize[key]} !important`
+      })
+    )
+  )
+  .forEach(Object.keys(s.vars.themeColor), (o, key) => o
+    .forEach(Object.keys(s.vars.themeColor[key]), (o, key1) => o
+      .select([`.sd-text-color-${key}-${key1}`], o => o
+        .style({
+          "color": `${s.vars.themeColor[key][key1]} !important`
+        })
+      )
+    )
+  )
+  .select([".sd-text-reverse-color-dark"], o => o
+    .style({
+      "color": `${s.vars.textReverseColor.dark} !important`
+    })
+  )
+  .forEach(Object.keys(s.vars.textColor), (o, key) => o
+    .select([`sd-text-color-${key}`], o => o
+      .style({
+        "color": `${s.vars.textColor[key]} !important`
+      })
+    )
+  )
+  .forEach(["top", "right", "bottom", "left"], (o, direction) => o
+    .forEach(Object.keys(s.vars.themeColor), (o, key) => o
+      .forEach(Object.keys(s.vars.themeColor[key]), (o, key1) => o
+        .select([`sd-border-${direction}-${key}-${key1}`], o => {
+          const obj: any = {};
+          obj[`border-${direction}`] = `1px solid ${s.vars.themeColor[key][key1]}`;
+          return o.style(obj);
+        })
+      )
+    )
+    .forEach(Object.keys(s.vars.transColor), (o, key) => o
+      .select([`.sd-border-${direction}-${key}`], o => {
+        const obj: any = {};
+        obj[`border-${direction}`] = `1px solid ${s.vars.transColor[key]}`;
+        return o.style(obj);
+      })
+    )
+    .select([`.sd-border-${direction}-none`], o => {
+      const obj: any = {};
+      obj[`border-${direction}`] = `none !important`;
+      return o.style(obj);
+    })
+  )
+  .forEach(Object.keys(s.vars.themeColor), (o, key) => o
+    .forEach(Object.keys(s.vars.themeColor[key]), (o, key1) => o
+      .select([`.sd-border-${key}-${key1}`], o => o
+        .style({
+          "border": `1px solid ${s.vars.themeColor[key][key1]}`
+        })
+      )
+    )
+  )
+  .forEach(Object.keys(s.vars.transColor), (o, key) => o
+    .select([`.sd-border-${key}`], o => o
+      .style({
+        "border": `1px solid ${s.vars.transColor[key]}`
+      })
+    )
+  )
+  .forEach(Object.keys(s.vars.gap), (o, key) => o
+    .select([`.sd-padding-${key}`], o => o
+      .style({
+        "padding": s.vars.gap[key]
+      })
+    )
+    .forEach(Object.keys(s.vars.gap), (o, key1) => o
+      .select([`.sd-padding-${key}-${key1}`], o => o
+        .style({
+          "padding": `${s.vars.gap[key]} ${s.vars.gap[key1]}`
+        })
+      )
+    )
+    .forEach(["top", "right", "bottom", "left"], (o, direction) => o
+      .select([`.sd-padding-${direction}-${key}`], o => {
+        const obj: any = {};
+        obj[`padding-${direction}`] = s.vars.gap[key];
+        return o.style(obj);
+      })
+    )
+  )
+  .forEach(Object.keys(s.vars.gap), (o, key) => o
+    .select([`.sd-margin-${key}`], o => o
+      .style({
+        "margin": s.vars.gap[key]
+      })
+    )
+    .forEach(["top", "right", "bottom", "left"], (o, direction) => o
+      .select([`.sd-margin-${direction}-${key}`], o => {
+        const obj: any = {};
+        obj[`margin-${direction}`] = s.vars.gap[key];
+        return o.style(obj);
+      })
+    )
+  );
