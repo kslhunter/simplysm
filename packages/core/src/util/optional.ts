@@ -1,6 +1,6 @@
-export type ChainedRequired<T> = { [P in keyof T]-?: ChainedRequired<T[P]> };
+/*export type ChainedRequired<T> = { [P in keyof T]-?: ChainedRequired<T[P]> };*/
 
-export function optional<T, R>(obj: T, fn: (o: ChainedRequired<NonNullable<T>>) => R): R | undefined {
+export function optional<T, R>(obj: T, fn: (o: NonNullable<T>/*ChainedRequired<NonNullable<T>>*/) => R): R | undefined {
   try {
     return fn(obj as any);
   }

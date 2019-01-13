@@ -1,5 +1,5 @@
 export enum SdColors {
-  Red50 = "#FFEEBEE",
+  Red50 = "#FFEBEE",
   Red100 = "#FFCDD2",
   Red200 = "#EF9A9A",
   Red300 = "#E57373",

@@ -71,6 +71,26 @@ export const stylesSdListItem = (s: SdStylePresets) => new SdStyleBuilder()
         "padding": `${s.vars.gap.default} ${s.vars.gap.lg}`
       })
     )
+    .select(["&[sd-selected=true] > label"], o => o
+      .style({
+        /*"background": s.vars.themeColor.primary.default,
+        "color": s.vars.textReverseColor.default*/
+        "color": s.vars.themeColor.primary.default,
+        "font-weight": "bold"
+      })
+    )
+    .select(["&[sd-disabled=true]"], o => o
+      .style({
+        "pointer-events": "none"
+      })
+      .select(["> label"], o => o
+        .style({
+          // "background": s.vars.transColor.default,
+          "color": s.vars.textColor.lighter,
+          "cursor": "default"
+        })
+      )
+    )
     .select(["&[sd-header=true] > label"], o => o
       .select(["> label"], o => o
         .style({

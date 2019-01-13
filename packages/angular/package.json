@@ -1,6 +1,6 @@
 {
   "name": "@simplism/angular",
-  "version": "10.3.63",
+  "version": "10.3.68",
   "description": "Simplism Angular Package",
   "repository": "github:kslhunter/simplism",
   "author": "kslhunter",
@@ -19,11 +19,11 @@
     "@fortawesome/free-regular-svg-icons": "^5.6.3",
     "@fortawesome/free-solid-svg-icons": "^5.6.3",
     "@fortawesome/free-brands-svg-icons": "^5.6.3",
-    "@simplism/core": "~10.3.63",
-    "@simplism/orm-query": "~10.3.63",
-    "@simplism/orm-client": "~10.3.63",
-    "@simplism/socket-client": "~10.3.63",
-    "@simplism/smtp-client-common": "~10.3.63",
+    "@simplism/core": "~10.3.68",
+    "@simplism/orm-query": "~10.3.68",
+    "@simplism/orm-client": "~10.3.68",
+    "@simplism/socket-client": "~10.3.68",
+    "@simplism/smtp-client-common": "~10.3.68",
     "core-js": "^2.6.1",
     "rxjs": "^6.3.3",
     "zone.js": "^0.8.26",
@@ -32,6 +32,7 @@
     "marked": "^0.6.0",
     "less": "^3.9.0",
     "classlist.js": "^1.1.20150312",
-    "web-animations-js": "^2.3.1"
+    "web-animations-js": "^2.3.1",
+    "soap": "^0.25.0"
   }
 }

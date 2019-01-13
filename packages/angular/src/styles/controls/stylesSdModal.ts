@@ -36,7 +36,10 @@ export const stylesSdModal = (s: SdStylePresets) => new SdStyleBuilder()
         "overflow": `hidden`,
         "max-width": `100%`,
         "min-width": `240px`,
-        ...s.mixins.elevation(16)
+        ...s.mixins.elevation(16),
+        "border-bottom-left-radius": "4px",
+        "border-bottom-right-radius": "4px",
+        "border": `1px solid ${s.vars.topbarTheme}`
       })
       .select(["&:focus"], o => o
         .style({

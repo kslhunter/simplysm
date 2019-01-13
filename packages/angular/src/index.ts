@@ -49,6 +49,9 @@ export * from "./control/SdTabItemControl";
 export * from "./control/SdViewControl";
 export * from "./control/SdViewItemControl";
 export * from "./control/SdHtmlEditorControl";
+export * from "./control/SdNoteControl";
+
+export * from "./modal/SdAddressSearchModal";
 
 export * from "./decorator/SdNotifyPropertyChange";
 export * from "./decorator/SdTypeValidate";
@@ -62,6 +65,7 @@ export * from "./provider/SdModalProvider";
 export * from "./provider/SdSocketProvider";
 export * from "./provider/SdPrintProvider";
 export * from "./provider/SdSmtpClientProvider";
+export * from "./provider/SdSoapClientProvider";
 // export * from "./provider/SdKtCallManagerApiProvider";
 export * from "./provider/SdStyleProvider";
 

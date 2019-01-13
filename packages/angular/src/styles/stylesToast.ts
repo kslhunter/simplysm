@@ -48,17 +48,17 @@ export const stylesToast = (s: SdStylePresets) => new SdStyleBuilder()
           )
         )
       )
-    )
-    .forEach(Object.keys(s.vars.themeColor), (o, key) => o
-      .select([`&._sd-toast-${key}`], o => o
-        .select(["> ._sd-toast-block"], o => o
-          .style({
-            "background": s.vars.themeColor[key].default
-          })
-          .select(["> ._sd-toast-progress > ._sd-toast-progress-bar"], o => o
+      .forEach(Object.keys(s.vars.themeColor), (o, key) => o
+        .select([`&._sd-toast-${key}`], o => o
+          .select(["> ._sd-toast-block"], o => o
             .style({
               "background": s.vars.themeColor[key].default
             })
+            .select(["> ._sd-toast-progress > ._sd-toast-progress-bar"], o => o
+              .style({
+                "background": s.vars.themeColor[key].default
+              })
+            )
           )
         )
       )

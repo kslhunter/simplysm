@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input} from "@angular/core";
 import {SdViewControl} from "./SdViewControl";
 
 
@@ -9,8 +9,7 @@ import {SdViewControl} from "./SdViewControl";
     <ng-content></ng-content>`
 })
 export class SdViewItemControl {
-
-
+  @Input()
   public value?: any;
 
   @HostBinding("attr.sd-selected")

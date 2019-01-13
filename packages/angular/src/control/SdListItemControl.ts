@@ -59,6 +59,16 @@ export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit
   @HostBinding("attr.sd-size")
   public size?: "sm" | "lg";
 
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-selected")
+  public selected?: boolean;
+
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-disabled")
+  public disabled?: boolean;
+
   public get hasChildren(): boolean {
     return !!this.listControls && this.listControls.length > 0;
   }
@@ -94,7 +104,8 @@ export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit
             transition: "margin-top .1s ease-out"
           }
         );
-      } else {
+      }
+      else {
         Object.assign(
           childContentEl.style,
           {

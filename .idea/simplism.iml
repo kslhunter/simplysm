@@ -20,6 +20,8 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/smtp-client-common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/smtp-client-service/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/smtp-client/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/soap-client-common/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/soap-client-service/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/socket-client/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/socket-common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/socket-server/dist" />

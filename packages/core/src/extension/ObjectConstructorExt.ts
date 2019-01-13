@@ -188,7 +188,7 @@ Object.validates = function (source: any, defs: { [propertyKey: string]: Validat
 
   if (result.length > 0 && !throwNotUse) {
     const propertyDisplayNames = result.map(item1 => defsObj[item1.propertyKey!]["displayName"]);
-    throw new Error(`입력값이 잘못되었습니다.\r\n - ${propertyDisplayNames.join("', '")}'`);
+    throw new Error(`입력값이 잘못되었습니다.\n - '${propertyDisplayNames.join("', '")}'`);
   }
 
   return result;
@@ -205,6 +205,6 @@ Object.validatesArray = function (arr: any[], displayName: string, def: { [prope
     }
   }
   if (errorMessages.length > 0) {
-    throw new Error("입력값이 잘못되었습니다.\r\n" + errorMessages.join("\r\n"));
+    throw new Error("입력값이 잘못되었습니다.\n" + errorMessages.join("\n"));
   }
 };

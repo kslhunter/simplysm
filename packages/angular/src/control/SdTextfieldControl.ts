@@ -101,13 +101,27 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
 
   @Input()
   @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-inline")
+  public inline?: boolean;
+
+  @Input()
+  @SdTypeValidate({
+    type: String,
+    validator: value => ["sm", "lg"].includes(value)
+  })
+  @HostBinding("attr.sd-size")
+  public size?: "sm" | "lg";
+
+  @Input()
+  @SdTypeValidate(Boolean)
   public multiline?: boolean;
 
 
   public getIsInvalid(): boolean {
     const hasMinError = this.min !== undefined && this.value !== undefined && this.type === "number" && this.value < this.min;
     const hasStepError = this.step !== undefined && this.value !== undefined && this.type === "number" && Math.abs(Number(this.value) % this.step) >= 1;
-    return hasMinError || hasStepError;
+    const hasRequiredError = this.required && (this.value === "" || this.value === undefined);
+    return hasMinError || hasStepError || !!hasRequiredError;
   }
 
   public get controlValue(): number | string {

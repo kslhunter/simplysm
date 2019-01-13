@@ -55,7 +55,8 @@
     "use-pipe-transform-interface": true,
     "component-class-suffix": [
       true,
-      "Control"
+      "Control",
+      "Modal"
     ],
     "directive-class-suffix": [
       true,

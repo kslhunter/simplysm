@@ -293,7 +293,10 @@ export class ClientPackageBuilder {
     return {
       resolve: {
         extensions: [".ts", ".js", ".json"],
-        alias
+        alias: {
+          "soap": this._loadersPath("soap.js"),
+          ...alias
+        }
       },
       module: {
         rules: [

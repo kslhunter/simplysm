@@ -8,10 +8,6 @@ import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
     <ng-content></ng-content>`
 })
 export class SdViewControl {
-
-
   @Input()
   public value?: any;
-
-
 }

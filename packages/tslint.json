@@ -2,6 +2,7 @@
   "extends": "tslint:all",
   "defaultSeverity": "warning",
   "rules": {
+    "no-submodule-imports": false,
     "file-name-casing": false,
     "no-unused-variable": false,
     "variable-name": [
@@ -144,7 +145,10 @@
       "elements",
       "members"
     ],
-    "object-literal-key-quotes": [true, "consistent"],
+    "object-literal-key-quotes": [
+      true,
+      "consistent"
+    ],
     "increment-decrement": false,
     "ban-ts-ignore": false
   }

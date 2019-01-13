@@ -81,7 +81,7 @@ export const stylesSdButton = (s: SdStylePresets) => new SdStyleBuilder()
       })
       .select(["> button"], o => o
         .style({
-          "width": "auto"
+          "width": "100%"
         })
       )
     )
@@ -101,7 +101,8 @@ export const stylesSdButton = (s: SdStylePresets) => new SdStyleBuilder()
       .select(["> button"], o => o
         .style({
           "border": `none !important`,
-          "box-shadow": `none !important`
+          "box-shadow": `none !important`,
+          "border-radius": "0"
         })
         .select(["&:hover"], o => o
           .style({

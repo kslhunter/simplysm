@@ -93,6 +93,21 @@ export const stylesSdTextfield = (s: SdStylePresets) => new SdStyleBuilder()
               "resize": "none"
             })
           )
+        )
+        .select(["&[sd-inline=true]"], o => o
+          .style({
+            "display": "inline-block"
+          })
+        )
+        .select(["&[sd-size=sm] > input", "&[sd-size=sm] > textarea"], o => o
+          .style({
+            "padding": `${s.vars.gap.xs} ${s.vars.gap.sm}`
+          })
+        )
+        .select(["&[sd-size=lg] > button", "&[sd-size=lg] > textarea"], o => o
+          .style({
+            "padding": `${s.vars.gap.default} ${s.vars.gap.lg}`
+          })
         );
 
       for (const key of Object.keys(s.vars.themeColor)) {

@@ -44,6 +44,7 @@ import {stylesSdView} from "./controls/stylesSdView";
 import {stylesSdViewItem} from "./controls/stylesSdViewItem";
 import {SdStylePresets} from "../style/SdStylePresets";
 import {SdStyleBuilder} from "../style/SdStyleBuilder";
+import {stylesSdNote} from "./controls/stylesSdNote";
 
 //tslint:disable:no-shadowed-variable
 export const stylesControls = (s: SdStylePresets) => {
@@ -91,5 +92,6 @@ export const stylesControls = (s: SdStylePresets) => {
     .join(stylesSdTopbar(s))
     .join(stylesSdTopbarMenu(s))
     .join(stylesSdView(s))
-    .join(stylesSdViewItem(s));
+    .join(stylesSdViewItem(s))
+    .join(stylesSdNote(s));
 };
