@@ -110,6 +110,17 @@ export class SdPackageBuilder {
     await this._readConfig("production");
 
     const logger = new Logger("@simplysm/cli");
+    await new Promise<void>(async (resolve, reject) => {
+      await spawnAsync(["git", "status"], {
+        onMessage: async (errMsg, logMsg) => {
+          if (logMsg && logMsg.includes("no changes added to commit")) {
+            reject(new Error("커밋되지 않은 정보가 있습니다."));
+          }
+        }
+      });
+      resolve();
+    });
+
     await spawnAsync(["yarn", "version", "--patch", "--no-commit-hooks"], {logger});
 
     const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
