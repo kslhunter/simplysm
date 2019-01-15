@@ -125,28 +125,36 @@ export class SdPackageBuilder {
 
     const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
 
-    await this._parallelPackagesByDep(async packageKey => {
-      const packageLogger = new Logger("@simplysm/cli", packageKey);
+    const promiseList: Promise<void>[] = [];
+    for (const packageKey of Object.keys(this.config.packages)) {
+      promiseList.push(new Promise<void>(async (resolve, reject) => {
+        const packageLogger = new Logger("@simplysm/cli", packageKey);
 
-      await spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
-        logger,
-        cwd: SdPackageUtil.getPackagesPath(packageKey)
-      });
+        await spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
+          logger,
+          cwd: SdPackageUtil.getPackagesPath(packageKey)
+        });
 
-      const packageConfig = this.config.packages[packageKey];
+        const packageConfig = this.config.packages[packageKey];
 
-      if (packageConfig.publish) {
-        if (packageConfig.publish === "npm") {
-          await spawnAsync(["yarn", "publish", "--access", "public"], {
-            cwd: SdPackageUtil.getPackagesPath(packageKey),
-            logger: packageLogger
-          });
+        if (packageConfig.publish) {
+          if (packageConfig.publish === "npm") {
+            await spawnAsync(["yarn", "publish", "--access", "public"], {
+              cwd: SdPackageUtil.getPackagesPath(packageKey),
+              logger: packageLogger
+            });
+          }
+          else {
+            reject(new Error("미구현"));
+            return;
+          }
         }
-        else {
-          throw new Error("미구현");
-        }
-      }
-    });
+
+        resolve();
+      }));
+    }
+
+    await Promise.all(promiseList);
 
     await spawnAsync(["git", "add", "."], {logger});
     await spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});
