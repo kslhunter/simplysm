@@ -1,9 +1,4 @@
-export class SdServer {
-  private constructor() {
-
-  }
-
-  public static createServer(): SdServer {
-    return new SdServer();
+export class SdSocketServer {
+  public async startAsync(): Promise<void> {
   }
 }

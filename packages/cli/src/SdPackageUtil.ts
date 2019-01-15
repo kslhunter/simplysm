@@ -70,21 +70,21 @@ export class SdPackageUtil {
 
     if (publishConfig && publishConfig.packages) {
       for (const publishPackageKey of Object.keys(publishConfig.packages)) {
-        const publishTargetName = publishConfig.packages[publishPackageKey];
-        if (publishTargetName === "npm") {
-          if (result.packages[publishPackageKey]) {
+        if (result.packages[publishPackageKey]) {
+          const publishTargetName = publishConfig.packages[publishPackageKey];
+          if (publishTargetName === "npm") {
             result.packages[publishPackageKey].publish = "npm";
           }
-        }
-        else if (publishConfig.targets) {
-          const publishTarget = publishConfig.targets[publishTargetName];
-          if (!publishTarget) {
+          else if (publishConfig.targets) {
+            const publishTarget = publishConfig.targets[publishTargetName];
+            if (!publishTarget) {
+              throw new Error(`배포 타겟 "${publishTargetName}"를 찾을 수 없습니다.`);
+            }
+            result.packages[publishPackageKey].publish = publishTarget;
+          }
+          else {
             throw new Error(`배포 타겟 "${publishTargetName}"를 찾을 수 없습니다.`);
           }
-          result.packages[publishPackageKey].publish = publishTarget;
-        }
-        else {
-          throw new Error(`배포 타겟 "${publishTargetName}"를 찾을 수 없습니다.`);
         }
       }
     }
