@@ -137,12 +137,16 @@ export class SdPackageBuilder {
 
         const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
         const npmConfig = await SdPackageUtil.readNpmConfigAsync(packageKey);
-        const deps = Object.merge(npmConfig.dependencies, npmConfig.devDependencies) || {};
-        for (const depKey of Object.keys(deps)) {
-          if (allBuildPackageNpmNames.includes(depKey)) {
-            deps[depKey] = projectNpmConfig.version;
+        for (const deps of [npmConfig.dependencies, npmConfig.devDependencies, npmConfig.peerDependencies]) {
+          if (deps) {
+            for (const depKey of Object.keys(deps)) {
+              if (allBuildPackageNpmNames.includes(depKey)) {
+                deps[depKey] = projectNpmConfig.version;
+              }
+            }
           }
         }
+        await SdPackageUtil.writeNpmConfig(packageKey, npmConfig);
 
         const packageConfig = this.config.packages[packageKey];
 
