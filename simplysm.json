@@ -13,7 +13,8 @@
       "common": "npm",
       "core": "npm",
       "cli": "npm",
-      "angular": "npm"
+      "angular": "npm",
+      "server": "npm"
     }
   }
 }

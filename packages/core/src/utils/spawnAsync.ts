@@ -35,7 +35,7 @@ export async function spawnAsync(cmds: string[], opts?: { env?: ProcessEnv; cwd?
         const newMessages = errorMessage.split("\n").map(item => `${item.replace(/\r/g, "")}`).slice(0, -1).filter(item => !!item);
         for (const newMessage of newMessages) {
           if (opts && opts.logger) {
-            opts.logger!.error(newMessage);
+            opts.logger!.log(newMessage);
           }
           if (opts && opts.onMessage && await opts.onMessage(undefined, newMessage)) {
             resolve();
