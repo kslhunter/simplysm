@@ -1,4 +1,4 @@
-import {ArgumentError} from "../error/ArgumentError";
+import {ArgumentError} from "../errors/ArgumentError";
 
 export class Time {
   private _tick: number;

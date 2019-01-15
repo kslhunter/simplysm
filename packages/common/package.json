@@ -1,7 +1,7 @@
 {
   "name": "@simplysm/common",
-  "version": "1.0.0-alpha.0",
-  "description": "심플리즘 패키지 (공통)",
+  "version": "1.0.0",
+  "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
   "license": "MIT",

@@ -1,84 +1,174 @@
-import {objectMerge} from "./utils/objectMerge";
 import * as fs from "fs-extra";
 import * as path from "path";
-import {Wait} from "@simplysm/common";
-import {spawnAsync} from "./utils/spawnAsync";
+import {Logger, Wait} from "@simplysm/common";
 import * as webpack from "webpack";
 import {ISdConfigFileJson, ISdPackageBuilderConfig} from "./commons";
 import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
-import {FileWatcher} from "./utils/FileWatcher";
 import * as webpackMerge from "webpack-merge";
 import * as WebpackDevServer from "webpack-dev-server";
 import * as http from "http";
 import * as url from "url";
+import {FileWatcher, spawnAsync} from "@simplysm/core";
+import {SdPackageUtil} from "./SdPackageUtil";
+import {SdWebpackLoggerPlugin} from "./SdWebpackLoggerPlugin";
 
 export class SdPackageBuilder {
-  private readonly config: ISdPackageBuilderConfig = {packages: {}};
+  private config: ISdPackageBuilderConfig = {packages: {}};
+
+  public async bootstrapAsync(): Promise<void> {
+    await this._readConfig("production");
+
+    for (const packageKey of Object.keys(this.config.packages)) {
+      const tsconfig = await SdPackageUtil.readTsConfigAsync(packageKey);
+      tsconfig.extends = "../../tsconfig.json";
+      tsconfig.compilerOptions = tsconfig.compilerOptions || {};
+
+      const tsOptions = tsconfig.compilerOptions;
+
+      tsOptions.rootDir = "src";
+      tsOptions.outDir = "dist";
+
+      tsOptions.lib = tsOptions.lib || ["es2017"];
+
+      const packageConfig = this.config.packages[packageKey];
+      if (packageConfig.type !== "node") {
+        tsOptions.lib.push("dom");
+      }
+
+      const npmConfig = await fs.readJson(path.resolve(process.cwd(), "packages", packageKey, "package.json"));
+      tsOptions.declaration = !!npmConfig.types;
+
+      tsOptions.baseUrl = ".";
+      tsOptions.paths = tsOptions.paths || {};
+
+      const deps = Object.merge(npmConfig.dependencies, npmConfig.devDependencies);
+      if (deps) {
+        const projectNpmConfig = await fs.readJson(path.resolve(process.cwd(), "package.json"));
+        for (const depKey of Object.keys(deps).filter(item => item.startsWith(`@${projectNpmConfig.name}/`))) {
+          if (!Object.keys(tsOptions.paths).includes(depKey)) {
+            tsOptions.paths[depKey] = [
+              `../${depKey.substr(`@${projectNpmConfig.name}/`.length)}/src/index.ts`
+            ];
+          }
+        }
+      }
+
+      await SdPackageUtil.writeTsConfigAsync(packageKey, tsconfig);
+
+      const logger = new Logger("@simplysm/cli", packageKey);
+      await spawnAsync(["git", "add", SdPackageUtil.getTsConfigPath(packageKey)], {
+        logger,
+        onMessage: async (errMsg, logMsg) => {
+          return logMsg !== undefined && logMsg.includes("Watching for file changes.");
+        }
+      });
+    }
+  }
 
   public async buildAsync(): Promise<void> {
-    await this._readConfigAsync("production");
+    await this._readConfig("production");
     await this._parallelPackagesByDep(async packageKey => {
+      await SdPackageBuilder._createTsConfigForBuild(packageKey);
       await this._buildPackageAsync(packageKey);
     });
   }
 
-  public async startAsync(): Promise<void> {
-    await this._readConfigAsync("development");
+  public async watchAsync(): Promise<void> {
+    await this._readConfig("development");
 
-    const server = http.createServer();
+    const server = Object.values(this.config.packages).some(item => item.type !== "dom" && item.type !== "node")
+      ? http.createServer()
+      : undefined;
+
     await this._parallelPackagesByDep(async packageKey => {
-      await this._watchPackageAsync(packageKey, server);
+      await SdPackageBuilder._createTsConfigForBuild(packageKey);
+      if (server && this.config.packages[packageKey].type !== "dom" && this.config.packages[packageKey].type !== "node") {
+        await this._watchPackageAsync(packageKey, server);
+      }
+      else {
+        await this._watchPackageAsync(packageKey);
+      }
     });
 
-    await new Promise<void>((resolve, reject) => {
-      server.listen(this.config.port || 80, (err: Error) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+    if (server) {
+      await new Promise<void>((resolve, reject) => {
+        server.listen(this.config.port || 80, (err: Error) => {
+          if (err) {
+            reject(err);
+            return;
+          }
 
-        console.log(`개발 서버 시작됨 [포트: ${this.config.port || 80}]`);
-        resolve();
+          new Logger("@simplysm/cli").log(`개발 서버 시작됨 [포트: ${this.config.port || 80}]`);
+          resolve();
+        });
       });
-    });
+    }
   }
 
-  private async _readConfigAsync(env: "production" | "development"): Promise<void> {
-    const orgConfig: ISdConfigFileJson = await fs.readJson(path.resolve(process.cwd(), "simplysm.json"));
-    if (orgConfig[env]) {
-      this.config.packages = objectMerge(orgConfig.common.packages, orgConfig[env].packages);
-      this.config.port = orgConfig[env].port || orgConfig.common.port;
-      this.config.virtualHosts = objectMerge(orgConfig.common.virtualHosts, orgConfig[env].virtualHosts);
-      this.config.options = objectMerge(orgConfig.common.options, orgConfig[env].options);
+  public async publishAsync(): Promise<void> {
+    const logger = new Logger("@simplysm/cli");
+    await spawnAsync(["npm", "version", "patch"], {logger});
+
+    /*const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
+
+    await this._parallelPackagesByDep(async packageKey => {
+      const packageLogger = new Logger("@simplysm/cli", packageKey);
+
+      const packageNpmConfig = await SdPackageUtil.readNpmConfig(packageKey);
+      packageNpmConfig.version = projectNpmConfig.version;
+      await SdPackageUtil.writeNpmConfig(packageKey, packageNpmConfig);
+
+      await spawnAsync(["yarn", "publish", "--access", "public"], {
+        cwd: SdPackageUtil.getPackagesPath(packageKey),
+        logger: packageLogger
+      });
+    });*/
+  }
+
+  private static async _createTsConfigForBuild(packageKey: string): Promise<void> {
+    const tsconfig = await SdPackageUtil.readTsConfigAsync(packageKey);
+    const tsOptions = tsconfig.compilerOptions;
+
+    if (tsOptions && tsOptions.paths) {
+      for (const tsPathKey of Object.keys(tsOptions.paths)) {
+        const result = [];
+        for (const tsPathValue of tsOptions.paths[tsPathKey]) {
+          result.push(tsPathValue.replace(/\/src\/index\.ts$/, ""));
+        }
+        tsOptions.paths[tsPathKey] = result;
+      }
     }
-    else {
-      this.config.packages = orgConfig.common.packages!;
-      this.config.port = orgConfig.common.port;
-      this.config.virtualHosts = orgConfig.common.virtualHosts;
-      this.config.options = orgConfig.common.options;
-    }
+
+    await SdPackageUtil.writeTsConfigAsync(packageKey, tsconfig, true);
+  }
+
+  private async _readConfig(env: "production" | "development"): Promise<void> {
+    const orgConfig: ISdConfigFileJson = await SdPackageUtil.readConfigAsync();
+    this.config = SdPackageUtil.createBuilderConfig(orgConfig.common, orgConfig[env], orgConfig.publish);
   }
 
   private async _parallelPackagesByDep(cb: (packageKey: string) => Promise<void>): Promise<void> {
     const promises: Promise<void>[] = [];
 
-    const allPackageNames: string[] = [];
+    const allBuildPackageNpmNames: string[] = [];
     for (const packageKey of Object.keys(this.config.packages)) {
-      const packageConfig = await fs.readJson(path.resolve(process.cwd(), "packages", packageKey, "package.json"));
-      allPackageNames.push(packageConfig.name);
+      const npmConfig = await SdPackageUtil.readNpmConfig(packageKey);
+      allBuildPackageNpmNames.push(npmConfig.name);
     }
 
     const completedPackageNpmNames: string[] = [];
     for (const packageKey of Object.keys(this.config.packages)) {
       promises.push(new Promise<void>(async (resolve, reject) => {
         try {
-          const packageNpmConfig = await fs.readJson(path.resolve(process.cwd(), "packages", packageKey, "package.json"));
+          const packageNpmConfig = await SdPackageUtil.readNpmConfig(packageKey);
           const packageNpmName = packageNpmConfig.name;
-          const packageDeps = objectMerge(packageNpmConfig.dependencies, packageNpmConfig.devDependencies);
-          for (const packageDepKey of Object.keys(packageDeps)) {
-            if (allPackageNames.includes(packageDepKey)) {
-              await Wait.true(() => completedPackageNpmNames.includes(packageDepKey));
+          const packageNpmDeps = Object.merge(packageNpmConfig.dependencies, packageNpmConfig.devDependencies);
+          if (packageNpmDeps) {
+            for (const packageNpmDepName of Object.keys(packageNpmDeps)) {
+              if (allBuildPackageNpmNames.includes(packageNpmDepName)) {
+                await Wait.true(() => completedPackageNpmNames.includes(packageNpmDepName));
+              }
             }
           }
 
@@ -96,48 +186,16 @@ export class SdPackageBuilder {
     await Promise.all(promises);
   }
 
-  private async _watchPackageAsync(packageKey: string, server: http.Server): Promise<void> {
-    const packagePath = path.resolve(process.cwd(), "packages", packageKey);
-    const packageConfig = this.config.packages[packageKey];
-
-    if (packageConfig.platform === "library") {
-      await Promise.all([
-        spawnAsync(["tslint", "--project", "tsconfig.json"], {cwd: packagePath}),
-        FileWatcher.watch(path.resolve(packagePath, "src/**/*.ts"), ["add", "change"], async files => {
-          for (const filePath of files.map(item => item.filePath)) {
-            await spawnAsync(["tslint", "--project", "tsconfig.json", filePath], {cwd: packagePath});
-          }
-        }),
-        spawnAsync(["tsc", "--watch"], {cwd: packagePath}, log => log.includes("Watching for file changes."))
-      ]);
-    }
-    else {
-      const webpackConfig: webpack.Configuration = await this._getWebpackConfigAsync(packageKey, "development");
-
-      const compiler = webpack(webpackConfig);
-
-      const wds = new WebpackDevServer(compiler, {});
-      server.on("request", (req, res) => {
-        const urlObj = url.parse(req.url!, true, false);
-        const urlPath = decodeURI(urlObj.pathname!);
-
-        console.log(req.method, urlPath, webpackConfig.output!.publicPath!.slice(0, -1));
-        if (req.method === "GET" && urlPath.startsWith(webpackConfig.output!.publicPath!.slice(0, -1))) {
-          req.url = req.url.replace(webpackConfig.output!.publicPath!.slice(1, -1), "");
-          wds["app"](req, res);
-        }
-      });
-    }
-  }
-
   private async _buildPackageAsync(packageKey: string): Promise<void> {
-    const packagePath = path.resolve(process.cwd(), "packages", packageKey);
+    const logger = new Logger("@simplysm/cli", packageKey);
+    logger.log("빌드를 시작합니다...");
+
     const packageConfig = this.config.packages[packageKey];
 
-    if (packageConfig.platform === "library") {
+    if (packageConfig.type === "node" || packageConfig.type === "dom") {
       await Promise.all([
-        spawnAsync(["tslint", "--project", "tsconfig.json"], {cwd: packagePath}),
-        spawnAsync(["tsc"], {cwd: packagePath})
+        this._runTslintAsync(packageKey),
+        this._runTscAsync(packageKey, false)
       ]);
     }
     else {
@@ -153,33 +211,139 @@ export class SdPackageBuilder {
         });
       });
     }
+
+    logger.log("빌드가 완료되었습니다.");
+  }
+
+  private async _watchPackageAsync(packageKey: string, server?: http.Server): Promise<void> {
+    const logger = new Logger("@simplysm/cli", packageKey);
+    const packageConfig = this.config.packages[packageKey];
+
+    if (packageConfig.type === "node" || packageConfig.type === "dom") {
+      logger.log(`코드검사를 시작합니다...`);
+
+      await Promise.all([
+        this._runTslintAsync(packageKey),
+        FileWatcher.watch(SdPackageUtil.getPackagesPath(packageKey, "src/**/*.ts"), ["add", "change"], async files => {
+          for (const filePath of files.map(item => item.filePath)) {
+            logger.log(`변경이 감지되었습니다. 코드검사를 시작합니다...`);
+            await this._runTslintAsync(packageKey, filePath);
+          }
+        }),
+        this._runTscAsync(packageKey, true)
+      ]);
+    }
+    else if (server) {
+      const webpackConfig: webpack.Configuration = await this._getWebpackConfigAsync(packageKey, "development");
+
+      const compiler = webpack(webpackConfig);
+
+      const wds = new WebpackDevServer(compiler, {});
+      server.on("request", (req, res) => {
+        const urlObj = url.parse(req.url!, true, false);
+        const urlPath = decodeURI(urlObj.pathname!);
+
+        if (req.method === "GET" && urlPath.startsWith(webpackConfig.output!.publicPath!.slice(0, -1))) {
+          req.url = (req.url as string).replace(webpackConfig.output!.publicPath!.slice(1, -1), "");
+          wds["app"](req, res);
+        }
+      });
+    }
+  }
+
+  private async _runTslintAsync(packageKey: string, filePath?: string): Promise<void> {
+    const logger = new Logger("@simplysm/cli", packageKey);
+    await spawnAsync([
+      "tslint",
+      "--project", SdPackageUtil.getTsConfigPath(packageKey, true),
+      "-t", "msbuild",
+      ...(filePath ? [filePath] : [])
+    ], {
+      onMessage: async (errMsg, logMsg) => {
+        if (logMsg) {
+          const isWarning = /: warning/.test(logMsg);
+          if (isWarning) {
+            logger.warn(`코드검사중 경고가 발생했습니다.`, logMsg);
+            return false;
+          }
+
+          logger.log(logMsg);
+        }
+        else if (errMsg) {
+          logger.error(errMsg);
+        }
+      }
+    });
+
+    logger.log(`코드검사가 완료되었습니다.`);
+  }
+
+  private async _runTscAsync(packageKey: string, watch: boolean): Promise<void> {
+    const logger = new Logger("@simplysm/cli", packageKey);
+
+    await spawnAsync([
+      "tsc",
+      "-p", SdPackageUtil.getTsConfigPath(packageKey, true),
+      ...(watch ? ["--watch"] : [])
+    ], {
+      onMessage: async (errMsg, logMsg) => {
+        if (logMsg) {
+          const isWatchStarted = logMsg.trim().endsWith("Starting compilation in watch mode...");
+          if (isWatchStarted) {
+            logger.log("빌드를 시작합니다...");
+            return false;
+          }
+
+          const isWatched = logMsg.trim().endsWith("Starting incremental compilation...");
+          if (isWatched) {
+            logger.log(`변경이 감지되었습니다. 빌드를 시작합니다...`);
+            return false;
+          }
+
+          const isError = /: error TS[0-9]*:/.test(logMsg);
+          if (isError) {
+            logger.error(`빌드중 에러가 발생했습니다.`, logMsg);
+            return false;
+          }
+
+          const isWatchCompleted = logMsg.trim().endsWith("Watching for file changes.");
+          if (isWatchCompleted) {
+            logger.log("빌드가 완료되었습니다.");
+            return true;
+          }
+
+          logger.log(logMsg);
+        }
+        else if (errMsg) {
+          logger.error(errMsg);
+        }
+      }
+    });
   }
 
   private async _getWebpackConfigAsync(packageKey: string, mode: "production" | "development"): Promise<webpack.Configuration> {
-    const packagePath = path.resolve(process.cwd(), "packages", packageKey);
     const packageConfig = this.config.packages[packageKey];
 
-    if (packageConfig.platform.startsWith("cordova.") || packageConfig.platform.startsWith("electron.")) {
+    if (packageConfig.type.startsWith("cordova.") || packageConfig.type.startsWith("electron.")) {
       throw new Error("미구현");
     }
 
-    const rootNpmConfig = await fs.readJson(path.resolve(process.cwd(), "package.json"));
-    const npmConfig = await fs.readJson(path.resolve(packagePath, "package.json"));
+    const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
 
-    const distPath = path.resolve(packagePath, "dist");
+    const distPath = SdPackageUtil.getPackagesPath(packageKey, "dist");
 
     let webpackConfig: webpack.Configuration = {
       entry: path.resolve(__dirname, "../lib/main.js"),
       output: {
         path: distPath,
-        publicPath: `/${rootNpmConfig.name}/${packageConfig.name}/`,
+        publicPath: `/${projectNpmConfig.name}/${packageConfig.name}/`,
         filename: "app.js",
         chunkFilename: "[name].chunk.js"
       },
       resolve: {
         extensions: [".ts", ".js", ".json"],
         alias: {
-          SIMPLYSM_CLIENT_APP_MODULE: path.resolve(packagePath, "src", "AppModule")
+          SIMPLYSM_CLIENT_APP_MODULE: SdPackageUtil.getPackagesPath(packageKey, "src", "AppModule")
         }
       },
       module: {
@@ -200,6 +364,7 @@ export class SdPackageBuilder {
               {
                 loader: "ts-loader",
                 options: {
+                  configFile: SdPackageUtil.getTsConfigPath(packageKey, true),
                   transpileOnly: true
                 }
               },
@@ -218,19 +383,21 @@ export class SdPackageBuilder {
       plugins: [
         new webpack.ContextReplacementPlugin(
           /angular[\\/]core[\\/]fesm5/,
-          path.resolve(packagePath, "src"),
+          SdPackageUtil.getPackagesPath(packageKey, "src"),
           {}
         ),
+        new SdWebpackLoggerPlugin({logger: new Logger("@simplysm/cli", packageKey)}),
         new ForkTsCheckerWebpackPlugin({
-          tslint: true
+          tsconfig: SdPackageUtil.getTsConfigPath(packageKey, true),
+          tslint: SdPackageUtil.getTsLintPath(packageKey)
         }),
         new HtmlWebpackPlugin({
           template: path.resolve(__dirname, "../lib/index.ejs"),
-          BASE_HREF: `/${rootNpmConfig.name}/${packageConfig.name}/`
+          BASE_HREF: `/${projectNpmConfig.name}/${packageConfig.name}/`
         }),
         new webpack.DefinePlugin({
           "process.env": SdPackageBuilder._envStringify({
-            VERSION: npmConfig.version
+            VERSION: projectNpmConfig.version
           })
         })
       ]

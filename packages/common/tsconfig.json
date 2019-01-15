@@ -7,9 +7,12 @@
       "es2017",
       "dom",
       "dom",
+      "dom",
+      "dom",
+      "dom",
       "dom"
     ],
-    "declaration": true,
+    "declaration": false,
     "baseUrl": ".",
     "paths": {}
   }

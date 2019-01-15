@@ -1,5 +1,5 @@
-import {Type} from "../type/Type";
-import {JsonConvert} from "../util/JsonConvert";
+import {Type} from "../types/Type";
+import {JsonConvert} from "../utils/JsonConvert";
 
 declare global {
   // tslint:disable-next-line:interface-name

@@ -1,18 +1,19 @@
 {
   "common": {
     "packages": {
-      "angular": {
-        "platform": "library"
-      },
-      "cli": {
-        "platform": "library"
-      },
-      "common": {
-        "platform": "library"
-      },
-      "server": {
-        "platform": "library"
-      }
+      "common": "dom",
+      "core": "node",
+      "cli": "node",
+      "angular": "dom",
+      "server": "node"
+    }
+  },
+  "publish": {
+    "packages": {
+      "common": "npm",
+      "core": "npm",
+      "cli": "npm",
+      "angular": "npm"
     }
   }
 }

@@ -1,23 +1,18 @@
 import * as webpack from "webpack";
-import {Logger} from "@simplism/core";
+import {Logger} from "@simplysm/common";
 
-export class FriendlyLoggerPlugin implements webpack.Plugin {
+export class SdWebpackLoggerPlugin implements webpack.Plugin {
   public constructor(private readonly _options: {
     logger: Logger;
-    packageName: string;
   }) {
   }
 
   public apply(compiler: webpack.Compiler): void {
-    compiler.hooks.run.tap("FriendlyLoggerPlugin", () => {
-      this._options.logger.log(`빌드...`);
+    compiler.hooks.watchRun.tap("SdWebpackLoggerPlugin", () => {
+      this._options.logger.log(`변경이 감지되었습니다. 빌드를 시작합니다...`);
     });
 
-    compiler.hooks.watchRun.tap("FriendlyLoggerPlugin", () => {
-      this._options.logger.log(`빌드...`);
-    });
-
-    compiler.hooks.done.tap("FriendlyLoggerPlugin", stats => {
+    compiler.hooks.done.tap("SdWebpackLoggerPlugin", stats => {
       const info = stats.toJson();
 
       if (stats.hasWarnings()) {
@@ -31,8 +26,6 @@ export class FriendlyLoggerPlugin implements webpack.Plugin {
           this._options.logger.error(error);
         }
       }
-
-      this._options.logger.info(`빌드 완료`);
     });
   }
 }

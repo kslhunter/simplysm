@@ -1,23 +1,26 @@
 import * as childProcess from "child_process";
+import {Logger, optional} from "@simplysm/common";
 import ProcessEnv = NodeJS.ProcessEnv;
 
-export async function spawnAsync(cmds: string[], opts?: { env?: ProcessEnv; cwd?: string }, resolvePredict?: (log: string) => boolean): Promise<void> {
+export async function spawnAsync(cmds: string[], opts?: { env?: ProcessEnv; cwd?: string; logger?: Logger; onMessage?(errMsg: string | undefined, logMsg: string | undefined): Promise<boolean | void> }): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const worker = childProcess.spawn(cmds[0], cmds.slice(1), {
       shell: true,
       stdio: "pipe",
-      env: opts ? opts.env : undefined,
-      cwd: opts ? opts.cwd : process.cwd()
+      env: optional(opts, o => o.env),
+      cwd: optional(opts, o => o.cwd) || process.cwd()
     });
 
     let resultMessage = "";
-    worker.stdout.on("data", data => {
+    worker.stdout.on("data", async data => {
       resultMessage += data.toString();
       if (resultMessage.includes("\n")) {
         const newMessages = resultMessage.split("\n").map(item => `${item.replace(/\r/g, "")}`).slice(0, -1).filter(item => !!item);
         for (const newMessage of newMessages) {
-          console.log(newMessage);
-          if (resolvePredict && resolvePredict(newMessage)) {
+          if (opts && opts.logger) {
+            opts.logger!.log(newMessage);
+          }
+          if (opts && opts.onMessage && await opts.onMessage(undefined, newMessage)) {
             resolve();
           }
         }
@@ -26,13 +29,15 @@ export async function spawnAsync(cmds: string[], opts?: { env?: ProcessEnv; cwd?
     });
 
     let errorMessage = "";
-    worker.stderr.on("data", data => {
+    worker.stderr.on("data", async data => {
       errorMessage += data.toString();
       if (errorMessage.includes("\n")) {
         const newMessages = errorMessage.split("\n").map(item => `${item.replace(/\r/g, "")}`).slice(0, -1).filter(item => !!item);
         for (const newMessage of newMessages) {
-          console.log(newMessage);
-          if (resolvePredict && resolvePredict(newMessage)) {
+          if (opts && opts.logger) {
+            opts.logger!.error(newMessage);
+          }
+          if (opts && opts.onMessage && await opts.onMessage(undefined, newMessage)) {
             resolve();
           }
         }
@@ -40,12 +45,20 @@ export async function spawnAsync(cmds: string[], opts?: { env?: ProcessEnv; cwd?
       }
     });
 
-    worker.on("close", code => {
-      if (errorMessage.replace(/\r/g, "")) {
-        console.error(errorMessage);
+    worker.on("close", async code => {
+      if (opts && opts.logger) {
+        if (errorMessage.replace(/\r/g, "")) {
+          opts.logger!.error(errorMessage);
+        }
+        if (resultMessage.replace(/\r/g, "")) {
+          opts.logger!.log(resultMessage);
+        }
       }
-      if (resultMessage.replace(/\r/g, "")) {
-        console.log(resultMessage);
+      if (opts && opts.onMessage && (errorMessage.replace(/\r/g, "") || resultMessage.replace(/\r/g, ""))) {
+        await opts.onMessage(
+          errorMessage.replace(/\r/g, "") ? errorMessage : undefined,
+          resultMessage.replace(/\r/g, "") ? resultMessage : undefined
+        );
       }
 
       if (code === 0) {

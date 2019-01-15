@@ -1,4 +1,4 @@
-import {DateTime} from "../type/DateTime";
+import {DateTime} from "../types/DateTime";
 
 export class Logger {
   private static readonly _palletColors = !process.versions.node ? [
@@ -154,6 +154,11 @@ export class Logger {
     let convertedLogs = logs.map(item => {
       if (item instanceof Error) {
         return item.stack;
+      }
+
+      // 색상있으면 색상 빼기
+      if (typeof item === "string") {
+        return item.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
       }
 
       return item;

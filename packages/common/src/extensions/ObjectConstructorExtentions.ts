@@ -10,6 +10,8 @@ declare global {
   interface ObjectConstructor {
     clone<T extends { [key: string]: any }>(source: T, options?: { excludeProps?: (keyof T)[] }): T;
 
+    merge<T extends { [key: string]: any } | undefined, O extends { [key: string]: any } | undefined>(source: T, obj: O): T & O;
+
     equal<T extends { [key: string]: any }>(source: T, taget: T, options?: { excludeProps?: (keyof T)[] }): boolean;
 
     validate(value: any, def: ValidateDef): IValidateResult | undefined;
@@ -133,6 +135,37 @@ Object.equal = function (source: any, target: any, options?: { excludeProps?: st
   else {
     return source === target;
   }
+};
+
+Object.merge = function (source: any, obj: any): any {
+  const sourceClone = Object.clone(source);
+
+  if (source === undefined) {
+    return obj;
+  }
+
+  if (obj === undefined) {
+    return sourceClone;
+  }
+
+  if (typeof source !== typeof obj) {
+    throw new Error("머지하려고 하는 타입이 서로 다릅니다.");
+  }
+
+  if (typeof source !== "object") {
+    return obj;
+  }
+
+  for (const key of Object.keys(obj)) {
+    if (typeof obj[key] === "object") {
+      sourceClone[key] = Object.clone(source[key], obj[key]);
+    }
+    else {
+      sourceClone[key] = obj[key];
+    }
+  }
+
+  return sourceClone;
 };
 
 Object.validate = function (value: any, def: ValidateDef): IValidateResult | undefined {

@@ -1,18 +1,17 @@
-import "./extension/ArrayExt";
-import "./extension/ObjectConstructorExt";
+import "./extensions/ArrayExtentions";
+import "./extensions/ObjectConstructorExtentions";
 
-export * from "./extension/ObjectConstructorExt";
+export * from "./extensions/ObjectConstructorExtentions";
 
-export * from "./types";
-
-export * from "./error/ArgumentError";
-export * from "./type/DateOnly";
-export * from "./type/DateTime";
-export * from "./type/Time";
-export * from "./type/Type";
-export * from "./type/Uuid";
-export * from "./util/JsonConvert";
-export * from "./util/LambdaParser";
-export * from "./util/Logger";
-export * from "./util/optional";
-export * from "./util/Wait";
+export * from "./errors/ArgumentError";
+export * from "./types/DateOnly";
+export * from "./types/DateTime";
+export * from "./types/Time";
+export * from "./types/Type";
+export * from "./types/Uuid";
+export * from "./utils/JsonConvert";
+export * from "./utils/LambdaParser";
+export * from "./utils/Logger";
+export * from "./utils/optional";
+export * from "./utils/Wait";
+export * from "./types/StripTypeWrap";

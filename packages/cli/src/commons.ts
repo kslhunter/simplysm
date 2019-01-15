@@ -1,4 +1,6 @@
-export type TPlatform = "library" | "web" | "cordova.android" | "cordova.browser" | "electron.windows";
+import {CompilerOptions} from "typescript";
+
+export type SdPackageType = "node" | "dom" | "web" | "cordova.android" | "cordova.browser" | "electron.windows";
 
 export interface ISdConfigFileJson {
   common: ISdConfigFileJsonBuildConfig;
@@ -8,14 +10,29 @@ export interface ISdConfigFileJson {
 }
 
 export interface ISdConfigFileJsonBuildConfig {
-  packages?: { [key: string]: ISdClientPackageConfig };
+  packages?: { [key: string]: ISdConfigFileJsonClientPackageConfig | SdPackageType };
   port?: number;
   virtualHosts?: { [key: string]: string };
   options?: { [key: string]: any };
 }
 
+export interface ISdConfigFileJsonClientPackageConfig {
+  name?: string;
+  type: SdPackageType;
+}
+
 export interface ISdConfigFileJsonPublishConfig {
   packages?: { [key: string]: string };
+  targets?: { [key: string]: ISdClientPackagePublishConfig };
+}
+
+export interface ISdClientPackagePublishConfig {
+  protocol: "WebDAV" | "ftp";
+  host: string;
+  port?: number;
+  username: string;
+  password: string;
+  path: string;
 }
 
 export interface ISdPackageBuilderConfig {
@@ -27,5 +44,20 @@ export interface ISdPackageBuilderConfig {
 
 export interface ISdClientPackageConfig {
   name?: string;
-  platform: TPlatform;
+  type: SdPackageType;
+  publish?: ISdClientPackagePublishConfig | "npm";
+}
+
+export interface ITsConfig {
+  extends?: string;
+  compilerOptions?: CompilerOptions & { paths?: { [key: string]: string[] } };
+  files?: string[];
+}
+
+export interface INpmConfig {
+  name: string;
+  version: string;
+  dependencies?: { [key: string]: string }[];
+  devDependencies?: { [key: string]: string }[];
+  peerDependencies?: { [key: string]: string }[];
 }

@@ -1,6 +1,6 @@
 import {DateOnly} from "./DateOnly";
 import {Time} from "./Time";
-import {ArgumentError} from "../error/ArgumentError";
+import {ArgumentError} from "../errors/ArgumentError";
 
 export class DateTime {
   public date: Date;

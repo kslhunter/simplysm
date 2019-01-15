@@ -1,4 +1,4 @@
-import {ArgumentError} from "../error/ArgumentError";
+import {ArgumentError} from "../errors/ArgumentError";
 
 export class DateOnly {
   public date: Date;

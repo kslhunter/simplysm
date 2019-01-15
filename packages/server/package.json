@@ -4,7 +4,8 @@
   "description": "심플리즘 패키지 (서버)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
-  "license": "MIT",
+  "license": "UNLICENSED",
+  "private": true,
   "bin": {
     "sd-serv": "./dist/bin.js"
   },

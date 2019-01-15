@@ -1,7 +1,7 @@
-import {DateTime} from "../type/DateTime";
-import {DateOnly} from "../type/DateOnly";
-import {Time} from "../type/Time";
-import {Uuid} from "../type/Uuid";
+import {DateTime} from "../types/DateTime";
+import {DateOnly} from "../types/DateOnly";
+import {Time} from "../types/Time";
+import {Uuid} from "../types/Uuid";
 
 export class JsonConvert {
   public static stringify(obj: any, options?: IJsonConvertStringifyOption): string | undefined {

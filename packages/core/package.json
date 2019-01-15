@@ -1,10 +1,14 @@
 {
-  "name": "@simplysm/common",
+  "name": "@simplysm/core",
   "version": "1.0.0-alpha.0",
-  "description": "심플리즘 패키지 (공통)",
+  "description": "심플리즘 패키지 (코어)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
   "license": "MIT",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts"
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@simplysm/common": "1.0.0-alpha.0",
+    "chokidar": "^2.0.4"
+  }
 }
