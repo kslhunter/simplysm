@@ -135,7 +135,7 @@ export class SdPackageBuilder {
           cwd: SdPackageUtil.getPackagesPath(packageKey)
         });
 
-        const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
+        /*const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
         const npmConfig = await SdPackageUtil.readNpmConfigAsync(packageKey);
         for (const deps of [npmConfig.dependencies, npmConfig.devDependencies, npmConfig.peerDependencies]) {
           if (deps) {
@@ -146,7 +146,7 @@ export class SdPackageBuilder {
             }
           }
         }
-        await SdPackageUtil.writeNpmConfig(packageKey, npmConfig);
+        await SdPackageUtil.writeNpmConfig(packageKey, npmConfig);*/
 
         const packageConfig = this.config.packages[packageKey];
 
