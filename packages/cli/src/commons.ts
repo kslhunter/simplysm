@@ -3,10 +3,11 @@ import {CompilerOptions} from "typescript";
 export type SdPackageType = "node" | "dom" | "web" | "cordova.android" | "cordova.browser" | "electron.windows";
 
 export interface ISdConfigFileJson {
-  common: ISdConfigFileJsonBuildConfig;
-  development: ISdConfigFileJsonBuildConfig;
-  production: ISdConfigFileJsonBuildConfig;
-  publish: ISdConfigFileJsonPublishConfig;
+  common?: ISdConfigFileJsonBuildConfig;
+  development?: ISdConfigFileJsonBuildConfig;
+  production?: ISdConfigFileJsonBuildConfig;
+  publish?: ISdConfigFileJsonPublishConfig;
+  autoUpdates?: { [key: string]: string };
 }
 
 export interface ISdConfigFileJsonBuildConfig {
@@ -40,6 +41,7 @@ export interface ISdPackageBuilderConfig {
   port?: number;
   virtualHosts?: { [key: string]: string };
   options?: { [key: string]: any };
+  autoUpdates?: { [key: string]: string };
 }
 
 export interface ISdClientPackageConfig {

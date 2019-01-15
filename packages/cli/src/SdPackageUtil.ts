@@ -5,8 +5,6 @@ import {
   INpmConfig,
   ISdClientPackageConfig,
   ISdConfigFileJson,
-  ISdConfigFileJsonBuildConfig,
-  ISdConfigFileJsonPublishConfig,
   ISdPackageBuilderConfig,
   ITsConfig,
   SdPackageType
@@ -45,7 +43,11 @@ export class SdPackageUtil {
     return await fs.readJson(configPath);
   }
 
-  public static createBuilderConfig(commonConfig: ISdConfigFileJsonBuildConfig | undefined, envConfig: ISdConfigFileJsonBuildConfig | undefined, publishConfig: ISdConfigFileJsonPublishConfig | undefined): ISdPackageBuilderConfig {
+  public static createBuilderConfig(orgConfig: ISdConfigFileJson, env: "development" | "production"): ISdPackageBuilderConfig {
+    const commonConfig = orgConfig.common;
+    const envConfig = orgConfig[env];
+    const publishConfig = orgConfig.publish;
+
     const result: ISdPackageBuilderConfig = {packages: {}};
 
     const commonConfigTemp = optional(commonConfig, o => o.packages) || {};
@@ -66,7 +68,7 @@ export class SdPackageUtil {
     result.port = optional(envConfig, o => o.port) || optional(commonConfig, o => o.port);
     result.virtualHosts = Object.merge(optional(commonConfig, o => o.virtualHosts), optional(envConfig, o => o.virtualHosts));
     result.options = Object.merge(optional(commonConfig, o => o.options), optional(envConfig, o => o.options));
-
+    result.autoUpdates = orgConfig.autoUpdates;
 
     if (publishConfig && publishConfig.packages) {
       for (const publishPackageKey of Object.keys(publishConfig.packages)) {
@@ -101,7 +103,7 @@ export class SdPackageUtil {
     return await fs.readJson(configPath);
   }
 
-  public static async writeNpmConfig(packageKey: string, npmConfig: INpmConfig): Promise<void> {
+  public static async writeNpmConfigAsync(packageKey: string, npmConfig: INpmConfig): Promise<void> {
     const configPath = SdPackageUtil.getNpmConfigPath(packageKey);
     await fs.writeJson(configPath, npmConfig, {spaces: 2, EOL: os.EOL});
   }

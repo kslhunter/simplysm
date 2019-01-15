@@ -121,10 +121,9 @@ export class SdPackageBuilder {
       resolve();
     });
 
-    await spawnAsync(["yarn", "version", "--patch", "--no-commit-hooks"], {logger});
+    await spawnAsync(["npm", "version", "patch", "--git-tag-version", "false"], {logger});
 
     const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
-
 
     await this._parallelPackages(!!optional(argv, o => o.build), async packageKey => {
       const packageLogger = new Logger("@simplysm/cli", packageKey);
@@ -148,7 +147,7 @@ export class SdPackageBuilder {
           }
         }
       }
-      await SdPackageUtil.writeNpmConfig(packageKey, npmConfig);
+      await SdPackageUtil.writeNpmConfigAsync(packageKey, npmConfig);
 
       const packageConfig = this.config.packages[packageKey];
 
@@ -173,6 +172,7 @@ export class SdPackageBuilder {
 
     await spawnAsync(["git", "add", "."], {logger});
     await spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});
+    await spawnAsync(["git", "add", "-a", `"v${projectNpmConfig.version}"`, "-m", `"v${projectNpmConfig.version}"`], {logger});
     // await spawnAsync(["git", "push", "origin", "--tags"], {logger});
   }
 
@@ -195,7 +195,7 @@ export class SdPackageBuilder {
 
   private async _readConfig(env: "production" | "development"): Promise<void> {
     const orgConfig: ISdConfigFileJson = await SdPackageUtil.readConfigAsync();
-    this.config = SdPackageUtil.createBuilderConfig(orgConfig.common, orgConfig[env], orgConfig.publish);
+    this.config = SdPackageUtil.createBuilderConfig(orgConfig, env);
   }
 
   private async _parallelPackages(byDep: boolean, cb: (packageKey: string) => Promise<void>): Promise<void> {
@@ -311,6 +311,36 @@ export class SdPackageBuilder {
         }
       });
     }
+
+    /* 버전 자동변경?
+    let timeout: NodeJS.Timeout;
+    await FileWatcher.watch(SdPackageUtil.getPackagesPath(packageKey, "**!/!*"), ["add", "change", "unlink"], async files => {
+      if (files.length === 1 && files[0].filePath.endsWith("package.json")) {
+        return;
+      }
+
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+
+      timeout = setTimeout(async () => {
+        await spawnAsync(["npm", "version", "prerelease", "--git-tag-version", "false"], {logger});
+        const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
+        for (const allPackagesItemKey of Object.keys(this.config.packages)) {
+          const npmConfig = await SdPackageUtil.readNpmConfigAsync(allPackagesItemKey);
+          npmConfig.version = projectNpmConfig.version;
+          await SdPackageUtil.writeNpmConfigAsync(allPackagesItemKey, npmConfig);
+
+          const deps = Object.merge(npmConfig.dependencies, npmConfig.devDependencies);
+          if (deps) {
+            for (const depKey of Object.keys(deps).filter(item => item.startsWith(`@${projectNpmConfig.name}/`))) {
+              deps[depKey] = npmConfig.version;
+            }
+          }
+        }
+      }, 1000);
+    });
+    */
   }
 
   private async _runTslintAsync(packageKey: string, filePath?: string): Promise<void> {
