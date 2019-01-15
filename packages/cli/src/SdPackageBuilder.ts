@@ -107,6 +107,8 @@ export class SdPackageBuilder {
   }
 
   public async publishAsync(): Promise<void> {
+    await this._readConfig("production");
+
     const logger = new Logger("@simplysm/cli");
     await spawnAsync(["npm", "version", "patch"], {logger});
 
