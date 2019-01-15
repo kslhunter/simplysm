@@ -137,7 +137,8 @@ export class SdPackageBuilder {
       }
     });*/
 
-    await spawnAsync(["git", "tag", projectNpmConfig.version]);
+    // await spawnAsync(["git", "commit", "-m", `v${projectNpmConfig.version}`]);
+    await spawnAsync(["git", "tag", "-a", projectNpmConfig.version, "-m", `v${projectNpmConfig.version}`]);
   }
 
   private static async _createTsConfigForBuild(packageKey: string): Promise<void> {
