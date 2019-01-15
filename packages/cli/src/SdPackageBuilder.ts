@@ -110,11 +110,11 @@ export class SdPackageBuilder {
     await this._readConfig("production");
 
     const logger = new Logger("@simplysm/cli");
-    await spawnAsync(["yarn", "version", "--patch", "--no-git-tag-version"], {logger});
+    await spawnAsync(["yarn", "version", "--patch", "--no-commit-hooks"], {logger});
 
     const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
 
-    /*await this._parallelPackagesByDep(async packageKey => {
+    await this._parallelPackagesByDep(async packageKey => {
       const packageLogger = new Logger("@simplysm/cli", packageKey);
 
       await spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
@@ -135,10 +135,10 @@ export class SdPackageBuilder {
           throw new Error("미구현");
         }
       }
-    });*/
+    });
 
-    // await spawnAsync(["git", "commit", "-m", `v${projectNpmConfig.version}`]);
-    await spawnAsync(["git", "tag", "-a", projectNpmConfig.version, "-m", `v${projectNpmConfig.version}`]);
+    await spawnAsync(["git", "add", "."], {logger});
+    await spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});
   }
 
   private static async _createTsConfigForBuild(packageKey: string): Promise<void> {
