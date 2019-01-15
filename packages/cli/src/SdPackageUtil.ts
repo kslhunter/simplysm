@@ -96,7 +96,7 @@ export class SdPackageUtil {
     return SdPackageUtil.getPackagesPath(packageKey, "package.json");
   }
 
-  public static async readNpmConfig(packageKey: string): Promise<INpmConfig> {
+  public static async readNpmConfigAsync(packageKey: string): Promise<INpmConfig> {
     const configPath = SdPackageUtil.getNpmConfigPath(packageKey);
     return await fs.readJson(configPath);
   }

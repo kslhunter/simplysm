@@ -135,6 +135,15 @@ export class SdPackageBuilder {
           cwd: SdPackageUtil.getPackagesPath(packageKey)
         });
 
+        const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
+        const npmConfig = await SdPackageUtil.readNpmConfigAsync(packageKey);
+        const deps = Object.merge(npmConfig.dependencies, npmConfig.devDependencies) || {};
+        for (const depKey of Object.keys(deps)) {
+          if (allBuildPackageNpmNames.includes(depKey)) {
+            deps[depKey] = projectNpmConfig.version;
+          }
+        }
+
         const packageConfig = this.config.packages[packageKey];
 
         if (packageConfig.publish) {
@@ -185,17 +194,13 @@ export class SdPackageBuilder {
   private async _parallelPackagesByDep(cb: (packageKey: string) => Promise<void>): Promise<void> {
     const promises: Promise<void>[] = [];
 
-    const allBuildPackageNpmNames: string[] = [];
-    for (const packageKey of Object.keys(this.config.packages)) {
-      const npmConfig = await SdPackageUtil.readNpmConfig(packageKey);
-      allBuildPackageNpmNames.push(npmConfig.name);
-    }
+    const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
 
     const completedPackageNpmNames: string[] = [];
     for (const packageKey of Object.keys(this.config.packages)) {
       promises.push(new Promise<void>(async (resolve, reject) => {
         try {
-          const packageNpmConfig = await SdPackageUtil.readNpmConfig(packageKey);
+          const packageNpmConfig = await SdPackageUtil.readNpmConfigAsync(packageKey);
           const packageNpmName = packageNpmConfig.name;
           const packageNpmDeps = Object.merge(packageNpmConfig.dependencies, packageNpmConfig.devDependencies);
           if (packageNpmDeps) {
@@ -218,6 +223,15 @@ export class SdPackageBuilder {
     }
 
     await Promise.all(promises);
+  }
+
+  private async _getAllBuildPackageNpmNamesAsync(): Promise<string[]> {
+    const result: string[] = [];
+    for (const packageKey of Object.keys(this.config.packages)) {
+      const npmConfig = await SdPackageUtil.readNpmConfigAsync(packageKey);
+      result.push(npmConfig.name);
+    }
+    return result;
   }
 
   private async _buildPackageAsync(packageKey: string): Promise<void> {
