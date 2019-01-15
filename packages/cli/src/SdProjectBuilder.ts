@@ -10,17 +10,18 @@ import * as WebpackDevServer from "webpack-dev-server";
 import * as http from "http";
 import * as url from "url";
 import {FileWatcher, spawnAsync} from "@simplysm/core";
-import {SdPackageUtil} from "./SdPackageUtil";
+import {SdProjectBuilderUtil} from "./SdProjectBuilderUtil";
 import {SdWebpackLoggerPlugin} from "./SdWebpackLoggerPlugin";
 
-export class SdPackageBuilder {
+// TODO: 정리 필요 (클래스 나누기, Config를 Class로 놓고 Util안쓰기 등)
+export class SdProjectBuilder {
   private config: ISdPackageBuilderConfig = {packages: {}};
 
   public async bootstrapAsync(): Promise<void> {
     await this._readConfig("production");
 
     for (const packageKey of Object.keys(this.config.packages)) {
-      const tsconfig = await SdPackageUtil.readTsConfigAsync(packageKey);
+      const tsconfig = await SdProjectBuilderUtil.readTsConfigAsync(packageKey);
       tsconfig.extends = "../../tsconfig.json";
       tsconfig.compilerOptions = tsconfig.compilerOptions || {};
 
@@ -54,10 +55,10 @@ export class SdPackageBuilder {
         }
       }
 
-      await SdPackageUtil.writeTsConfigAsync(packageKey, tsconfig);
+      await SdProjectBuilderUtil.writeTsConfigAsync(packageKey, tsconfig);
 
       const logger = new Logger("@simplysm/cli", packageKey);
-      await spawnAsync(["git", "add", SdPackageUtil.getTsConfigPath(packageKey)], {
+      await spawnAsync(["git", "add", SdProjectBuilderUtil.getTsConfigPath(packageKey)], {
         logger,
         onMessage: async (errMsg, logMsg) => {
           return logMsg !== undefined && logMsg.includes("Watching for file changes.");
@@ -66,12 +67,9 @@ export class SdPackageBuilder {
     }
   }
 
-  public async buildAsync(): Promise<void> {
-    await this._readConfig("production");
-    await this._parallelPackages(true, async packageKey => {
-      await SdPackageBuilder._createTsConfigForBuild(packageKey);
-      await this._buildPackageAsync(packageKey);
-    });
+  public async autoUpdateAsync(): Promise<void> {
+    await this._readConfig("development");
+    throw new Error("미구현 (auto-update)");
   }
 
   public async watchAsync(): Promise<void> {
@@ -82,7 +80,7 @@ export class SdPackageBuilder {
       : undefined;
 
     await this._parallelPackages(true, async packageKey => {
-      await SdPackageBuilder._createTsConfigForBuild(packageKey);
+      await SdProjectBuilder._createTsConfigForBuild(packageKey);
       if (server && this.config.packages[packageKey].type !== "dom" && this.config.packages[packageKey].type !== "node") {
         await this._watchPackageAsync(packageKey, server);
       }
@@ -104,6 +102,18 @@ export class SdPackageBuilder {
         });
       });
     }
+
+    if (this.config.autoUpdates) {
+      throw new Error("미구현 (auto-update)");
+    }
+  }
+
+  public async buildAsync(): Promise<void> {
+    await this._readConfig("production");
+    await this._parallelPackages(true, async packageKey => {
+      await SdProjectBuilder._createTsConfigForBuild(packageKey);
+      await this._buildPackageAsync(packageKey);
+    });
   }
 
   public async publishAsync(argv?: { build?: boolean }): Promise<void> {
@@ -123,21 +133,21 @@ export class SdPackageBuilder {
 
     await spawnAsync(["npm", "version", "patch", "--git-tag-version", "false"], {logger});
 
-    const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
+    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
 
     await this._parallelPackages(!!optional(argv, o => o.build), async packageKey => {
       const packageLogger = new Logger("@simplysm/cli", packageKey);
 
-      await SdPackageBuilder._createTsConfigForBuild(packageKey);
+      await SdProjectBuilder._createTsConfigForBuild(packageKey);
       await this._buildPackageAsync(packageKey);
 
       await spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
         logger,
-        cwd: SdPackageUtil.getPackagesPath(packageKey)
+        cwd: SdProjectBuilderUtil.getPackagesPath(packageKey)
       });
 
       const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
-      const npmConfig = await SdPackageUtil.readNpmConfigAsync(packageKey);
+      const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
       for (const deps of [npmConfig.dependencies, npmConfig.devDependencies, npmConfig.peerDependencies]) {
         if (deps) {
           for (const depKey of Object.keys(deps)) {
@@ -147,14 +157,14 @@ export class SdPackageBuilder {
           }
         }
       }
-      await SdPackageUtil.writeNpmConfigAsync(packageKey, npmConfig);
+      await SdProjectBuilderUtil.writeNpmConfigAsync(packageKey, npmConfig);
 
       const packageConfig = this.config.packages[packageKey];
 
       if (packageConfig.publish) {
         if (packageConfig.publish === "npm") {
           await spawnAsync(["yarn", "publish", "--access", "public"], {
-            cwd: SdPackageUtil.getPackagesPath(packageKey),
+            cwd: SdProjectBuilderUtil.getPackagesPath(packageKey),
             logger: packageLogger
           });
         }
@@ -177,7 +187,7 @@ export class SdPackageBuilder {
   }
 
   private static async _createTsConfigForBuild(packageKey: string): Promise<void> {
-    const tsconfig = await SdPackageUtil.readTsConfigAsync(packageKey);
+    const tsconfig = await SdProjectBuilderUtil.readTsConfigAsync(packageKey);
     const tsOptions = tsconfig.compilerOptions;
 
     if (tsOptions && tsOptions.paths) {
@@ -190,12 +200,12 @@ export class SdPackageBuilder {
       }
     }
 
-    await SdPackageUtil.writeTsConfigAsync(packageKey, tsconfig, true);
+    await SdProjectBuilderUtil.writeTsConfigAsync(packageKey, tsconfig, true);
   }
 
   private async _readConfig(env: "production" | "development"): Promise<void> {
-    const orgConfig: ISdConfigFileJson = await SdPackageUtil.readConfigAsync();
-    this.config = SdPackageUtil.createBuilderConfig(orgConfig, env);
+    const orgConfig: ISdConfigFileJson = await SdProjectBuilderUtil.readConfigAsync();
+    this.config = SdProjectBuilderUtil.createBuilderConfig(orgConfig, env);
   }
 
   private async _parallelPackages(byDep: boolean, cb: (packageKey: string) => Promise<void>): Promise<void> {
@@ -208,7 +218,7 @@ export class SdPackageBuilder {
       for (const packageKey of Object.keys(this.config.packages)) {
         promises.push(new Promise<void>(async (resolve, reject) => {
           try {
-            const packageNpmConfig = await SdPackageUtil.readNpmConfigAsync(packageKey);
+            const packageNpmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
             const packageNpmName = packageNpmConfig.name;
             const packageNpmDeps = Object.merge(packageNpmConfig.dependencies, packageNpmConfig.devDependencies);
             if (packageNpmDeps) {
@@ -242,7 +252,7 @@ export class SdPackageBuilder {
   private async _getAllBuildPackageNpmNamesAsync(): Promise<string[]> {
     const result: string[] = [];
     for (const packageKey of Object.keys(this.config.packages)) {
-      const npmConfig = await SdPackageUtil.readNpmConfigAsync(packageKey);
+      const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
       result.push(npmConfig.name);
     }
     return result;
@@ -286,7 +296,7 @@ export class SdPackageBuilder {
 
       await Promise.all([
         this._runTslintAsync(packageKey),
-        FileWatcher.watch(SdPackageUtil.getPackagesPath(packageKey, "src/**/*.ts"), ["add", "change"], async files => {
+        FileWatcher.watch(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/**/*.ts"), ["add", "change"], async files => {
           for (const filePath of files.map(item => item.filePath)) {
             logger.log(`변경이 감지되었습니다. 코드검사를 시작합니다...`);
             await this._runTslintAsync(packageKey, filePath);
@@ -312,42 +322,40 @@ export class SdPackageBuilder {
       });
     }
 
-    /* 버전 자동변경?
-    let timeout: NodeJS.Timeout;
-    await FileWatcher.watch(SdPackageUtil.getPackagesPath(packageKey, "**!/!*"), ["add", "change", "unlink"], async files => {
-      if (files.length === 1 && files[0].filePath.endsWith("package.json")) {
-        return;
-      }
-
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-
-      timeout = setTimeout(async () => {
-        await spawnAsync(["npm", "version", "prerelease", "--git-tag-version", "false"], {logger});
-        const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
-        for (const allPackagesItemKey of Object.keys(this.config.packages)) {
-          const npmConfig = await SdPackageUtil.readNpmConfigAsync(allPackagesItemKey);
-          npmConfig.version = projectNpmConfig.version;
-          await SdPackageUtil.writeNpmConfigAsync(allPackagesItemKey, npmConfig);
-
-          const deps = Object.merge(npmConfig.dependencies, npmConfig.devDependencies);
-          if (deps) {
-            for (const depKey of Object.keys(deps).filter(item => item.startsWith(`@${projectNpmConfig.name}/`))) {
-              deps[depKey] = npmConfig.version;
-            }
-          }
-        }
-      }, 1000);
-    });
-    */
+    // let timeout: NodeJS.Timeout;
+    // await FileWatcher.watch(SdProjectBuilderUtil.getPackagesPath(packageKey, "**/*"), ["add", "change", "unlink"], async files => {
+    //   if (files.length === 1 && files[0].filePath.endsWith("package.json")) {
+    //     return;
+    //   }
+    //
+    //   if (timeout) {
+    //     clearTimeout(timeout);
+    //   }
+    //
+    //   timeout = setTimeout(async () => {
+    //     await spawnAsync(["npm", "version", "prerelease", "--git-tag-version", "false"], {logger});
+    //     const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
+    //     for (const allPackagesItemKey of Object.keys(this.config.packages)) {
+    //       const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(allPackagesItemKey);
+    //       npmConfig.version = projectNpmConfig.version;
+    //       await SdProjectBuilderUtil.writeNpmConfigAsync(allPackagesItemKey, npmConfig);
+    //
+    //       const deps = Object.merge(npmConfig.dependencies, npmConfig.devDependencies);
+    //       if (deps) {
+    //         for (const depKey of Object.keys(deps).filter(item => item.startsWith(`@${projectNpmConfig.name}/`))) {
+    //           deps[depKey] = npmConfig.version;
+    //         }
+    //       }
+    //     }
+    //   }, 1000);
+    // });
   }
 
   private async _runTslintAsync(packageKey: string, filePath?: string): Promise<void> {
     const logger = new Logger("@simplysm/cli", packageKey);
     await spawnAsync([
       "tslint",
-      "--project", SdPackageUtil.getTsConfigPath(packageKey, true),
+      "--project", SdProjectBuilderUtil.getTsConfigPath(packageKey, true),
       "-t", "msbuild",
       ...(filePath ? [filePath] : [])
     ], {
@@ -375,7 +383,7 @@ export class SdPackageBuilder {
 
     await spawnAsync([
       "tsc",
-      "-p", SdPackageUtil.getTsConfigPath(packageKey, true),
+      "-p", SdProjectBuilderUtil.getTsConfigPath(packageKey, true),
       ...(watch ? ["--watch"] : [])
     ], {
       onMessage: async (errMsg, logMsg) => {
@@ -420,9 +428,9 @@ export class SdPackageBuilder {
       throw new Error("미구현");
     }
 
-    const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
+    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
 
-    const distPath = SdPackageUtil.getPackagesPath(packageKey, "dist");
+    const distPath = SdProjectBuilderUtil.getPackagesPath(packageKey, "dist");
 
     let webpackConfig: webpack.Configuration = {
       entry: path.resolve(__dirname, "../lib/main.js"),
@@ -435,7 +443,7 @@ export class SdPackageBuilder {
       resolve: {
         extensions: [".ts", ".js", ".json"],
         alias: {
-          SIMPLYSM_CLIENT_APP_MODULE: SdPackageUtil.getPackagesPath(packageKey, "src", "AppModule")
+          SIMPLYSM_CLIENT_APP_MODULE: SdProjectBuilderUtil.getPackagesPath(packageKey, "src", "AppModule")
         }
       },
       module: {
@@ -456,7 +464,7 @@ export class SdPackageBuilder {
               {
                 loader: "ts-loader",
                 options: {
-                  configFile: SdPackageUtil.getTsConfigPath(packageKey, true),
+                  configFile: SdProjectBuilderUtil.getTsConfigPath(packageKey, true),
                   transpileOnly: true
                 }
               },
@@ -475,20 +483,20 @@ export class SdPackageBuilder {
       plugins: [
         new webpack.ContextReplacementPlugin(
           /angular[\\/]core[\\/]fesm5/,
-          SdPackageUtil.getPackagesPath(packageKey, "src"),
+          SdProjectBuilderUtil.getPackagesPath(packageKey, "src"),
           {}
         ),
         new SdWebpackLoggerPlugin({logger: new Logger("@simplysm/cli", packageKey)}),
         new ForkTsCheckerWebpackPlugin({
-          tsconfig: SdPackageUtil.getTsConfigPath(packageKey, true),
-          tslint: SdPackageUtil.getTsLintPath(packageKey)
+          tsconfig: SdProjectBuilderUtil.getTsConfigPath(packageKey, true),
+          tslint: SdProjectBuilderUtil.getTsLintPath(packageKey)
         }),
         new HtmlWebpackPlugin({
           template: path.resolve(__dirname, "../lib/index.ejs"),
           BASE_HREF: `/${projectNpmConfig.name}/${packageConfig.name}/`
         }),
         new webpack.DefinePlugin({
-          "process.env": SdPackageBuilder._envStringify({
+          "process.env": SdProjectBuilder._envStringify({
             VERSION: projectNpmConfig.version
           })
         })

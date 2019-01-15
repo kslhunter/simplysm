@@ -11,35 +11,35 @@ import {
 } from "./commons";
 import {optional} from "@simplysm/common";
 
-export class SdPackageUtil {
+export class SdProjectBuilderUtil {
   public static getProjectPath(...args: string[]): string {
     return path.resolve(process.cwd(), ...args);
   }
 
   public static getPackagesPath(...args: string[]): string {
-    return SdPackageUtil.getProjectPath("packages", ...args);
+    return SdProjectBuilderUtil.getProjectPath("packages", ...args);
   }
 
   public static getTsConfigPath(packageKey: string, isForBuild: boolean = false): string {
-    return SdPackageUtil.getPackagesPath(packageKey, `tsconfig${isForBuild ? ".build" : ""}.json`);
+    return SdProjectBuilderUtil.getPackagesPath(packageKey, `tsconfig${isForBuild ? ".build" : ""}.json`);
   }
 
   public static async readTsConfigAsync(packageKey: string, isForBuild: boolean = false): Promise<ITsConfig> {
-    const tsconfigPath = SdPackageUtil.getTsConfigPath(packageKey, isForBuild);
+    const tsconfigPath = SdProjectBuilderUtil.getTsConfigPath(packageKey, isForBuild);
     return await fs.pathExists(tsconfigPath) ? await fs.readJson(tsconfigPath) : {};
   }
 
   public static async writeTsConfigAsync(packageKey: string, tsconfig: ITsConfig, isForBuild: boolean = false): Promise<void> {
-    const tsconfigPath = SdPackageUtil.getTsConfigPath(packageKey, isForBuild);
+    const tsconfigPath = SdProjectBuilderUtil.getTsConfigPath(packageKey, isForBuild);
     await fs.writeJson(tsconfigPath, tsconfig, {spaces: 2, EOL: os.EOL});
   }
 
   public static getConfigPath(): string {
-    return SdPackageUtil.getProjectPath("simplysm.json");
+    return SdProjectBuilderUtil.getProjectPath("simplysm.json");
   }
 
   public static async readConfigAsync(): Promise<ISdConfigFileJson> {
-    const configPath = SdPackageUtil.getConfigPath();
+    const configPath = SdProjectBuilderUtil.getConfigPath();
     return await fs.readJson(configPath);
   }
 
@@ -95,29 +95,29 @@ export class SdPackageUtil {
   }
 
   public static getNpmConfigPath(packageKey: string): string {
-    return SdPackageUtil.getPackagesPath(packageKey, "package.json");
+    return SdProjectBuilderUtil.getPackagesPath(packageKey, "package.json");
   }
 
   public static async readNpmConfigAsync(packageKey: string): Promise<INpmConfig> {
-    const configPath = SdPackageUtil.getNpmConfigPath(packageKey);
+    const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
     return await fs.readJson(configPath);
   }
 
   public static async writeNpmConfigAsync(packageKey: string, npmConfig: INpmConfig): Promise<void> {
-    const configPath = SdPackageUtil.getNpmConfigPath(packageKey);
+    const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
     await fs.writeJson(configPath, npmConfig, {spaces: 2, EOL: os.EOL});
   }
 
   public static getProjectNpmConfigPath(): string {
-    return SdPackageUtil.getProjectPath("package.json");
+    return SdProjectBuilderUtil.getProjectPath("package.json");
   }
 
   public static async readProjectNpmConfig(): Promise<INpmConfig> {
-    const configPath = SdPackageUtil.getProjectNpmConfigPath();
+    const configPath = SdProjectBuilderUtil.getProjectNpmConfigPath();
     return await fs.readJson(configPath);
   }
 
   public static getTsLintPath(packageKey: string): string {
-    return SdPackageUtil.getPackagesPath(packageKey, "tslint.json");
+    return SdProjectBuilderUtil.getPackagesPath(packageKey, "tslint.json");
   }
 }

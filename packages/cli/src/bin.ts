@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import * as yargs from "yargs";
-import {SdPackageBuilder} from "./SdPackageBuilder";
+import {SdProjectBuilder} from "./SdProjectBuilder";
 import * as sourceMapSupport from "source-map-support";
 import {Logger} from "@simplysm/common";
 
@@ -14,6 +14,11 @@ const argv = yargs
   .command(
     "bootstrap",
     "프로젝트의 각 패키지 세팅을 다시 합니다.",
+    cmd => cmd.version(false)
+  )
+  .command(
+    "auto-update",
+    "프로젝트의 의존성 패키지에, 외부 디렉토리에 있는 패키지 파일을 덮어씁니다.",
     cmd => cmd.version(false)
   )
   .command(
@@ -42,16 +47,19 @@ const argv = yargs
 
 (async () => {
   if (argv._[0] === "bootstrap") {
-    await new SdPackageBuilder().bootstrapAsync();
+    await new SdProjectBuilder().bootstrapAsync();
+  }
+  else if (argv._[0] === "autoUpdate") {
+    await new SdProjectBuilder().autoUpdateAsync();
   }
   else if (argv._[0] === "watch") {
-    await new SdPackageBuilder().watchAsync();
+    await new SdProjectBuilder().watchAsync();
   }
   else if (argv._[0] === "build") {
-    await new SdPackageBuilder().buildAsync();
+    await new SdProjectBuilder().buildAsync();
   }
   else if (argv._[0] === "publish") {
-    await new SdPackageBuilder().publishAsync(argv as any);
+    await new SdProjectBuilder().publishAsync(argv as any);
   }
   else {
     throw new Error("명령어가 잘못 되었습니다.");
