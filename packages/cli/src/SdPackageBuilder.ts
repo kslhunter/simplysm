@@ -172,7 +172,7 @@ export class SdPackageBuilder {
 
     await spawnAsync(["git", "add", "."], {logger});
     await spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});
-    await spawnAsync(["git", "add", "-a", `"v${projectNpmConfig.version}"`, "-m", `"v${projectNpmConfig.version}"`], {logger});
+    await spawnAsync(["git", "tag", "-a", `"v${projectNpmConfig.version}"`, "-m", `"v${projectNpmConfig.version}"`], {logger});
     // await spawnAsync(["git", "push", "origin", "--tags"], {logger});
   }
 
