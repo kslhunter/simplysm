@@ -1,0 +1,18 @@
+{
+  "common": {
+    "packages": {
+      "angular": {
+        "platform": "library"
+      },
+      "cli": {
+        "platform": "library"
+      },
+      "common": {
+        "platform": "library"
+      },
+      "server": {
+        "platform": "library"
+      }
+    }
+  }
+}

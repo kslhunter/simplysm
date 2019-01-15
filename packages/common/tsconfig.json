@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "lib": [
+      "es2017",
+      "dom",
+      "dom",
+      "dom"
+    ],
+    "declaration": true,
+    "baseUrl": ".",
+    "paths": {}
+  }
+}
