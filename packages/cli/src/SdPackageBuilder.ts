@@ -115,7 +115,7 @@ export class SdPackageBuilder {
     const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
 
     await this._parallelPackagesByDep(async packageKey => {
-      // const packageLogger = new Logger("@simplysm/cli", packageKey);
+      const packageLogger = new Logger("@simplysm/cli", packageKey);
 
       const packageNpmConfig = await SdPackageUtil.readNpmConfig(packageKey);
       packageNpmConfig.version = projectNpmConfig.version;
@@ -123,8 +123,7 @@ export class SdPackageBuilder {
 
       const packageConfig = this.config.packages[packageKey];
 
-      console.log(packageConfig);
-      /*if (packageConfig.publish) {
+      if (packageConfig.publish) {
         if (packageConfig.publish === "npm") {
           await spawnAsync(["yarn", "publish", "--access", "public"], {
             cwd: SdPackageUtil.getPackagesPath(packageKey),
@@ -134,7 +133,7 @@ export class SdPackageBuilder {
         else {
           throw new Error("미구현");
         }
-      }*/
+      }
     });
   }
 
