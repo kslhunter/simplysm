@@ -110,16 +110,17 @@ export class SdPackageBuilder {
     await this._readConfig("production");
 
     const logger = new Logger("@simplysm/cli");
-    await spawnAsync(["npm", "version", "patch"], {logger});
+    await spawnAsync(["yarn", "version", "--patch"], {logger});
 
     const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
 
     await this._parallelPackagesByDep(async packageKey => {
       const packageLogger = new Logger("@simplysm/cli", packageKey);
 
-      const packageNpmConfig = await SdPackageUtil.readNpmConfig(packageKey);
-      packageNpmConfig.version = projectNpmConfig.version;
-      await SdPackageUtil.writeNpmConfig(packageKey, packageNpmConfig);
+      await spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
+        logger,
+        cwd: SdPackageUtil.getPackagesPath(packageKey)
+      });
 
       const packageConfig = this.config.packages[packageKey];
 

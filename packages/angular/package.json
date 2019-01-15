@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/angular",
-  "version": "1.0.4",
+  "version": "1.0.8",
   "description": "심플리즘 패키지 (Angular)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,13 +8,13 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/common": "1.0.0-alpha.0",
     "@angular/common": "^7.2.0",
     "@angular/compiler": "^7.2.0",
     "@angular/core": "^7.2.0",
     "@angular/platform-browser": "^7.2.0",
     "@angular/platform-browser-dynamic": "^7.2.0",
     "@angular/router": "^7.2.0",
+    "@simplysm/common": "1.0.0-alpha.0",
     "core-js": "^2.6.1",
     "rxjs": "^6.3.3",
     "zone.js": "^0.8.26"
