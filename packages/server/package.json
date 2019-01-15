@@ -1,11 +1,10 @@
 {
   "name": "@simplysm/server",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "description": "심플리즘 패키지 (서버)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
-  "license": "UNLICENSED",
-  "private": true,
+  "license": "MIT",
   "bin": {
     "sd-serv": "./dist/bin.js"
   },
