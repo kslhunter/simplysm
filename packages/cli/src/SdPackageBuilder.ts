@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import {Logger, Wait} from "@simplysm/common";
+import {Logger, optional, Wait} from "@simplysm/common";
 import * as webpack from "webpack";
 import {ISdConfigFileJson, ISdPackageBuilderConfig} from "./commons";
 import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
@@ -68,7 +68,7 @@ export class SdPackageBuilder {
 
   public async buildAsync(): Promise<void> {
     await this._readConfig("production");
-    await this._parallelPackagesByDep(async packageKey => {
+    await this._parallelPackages(true, async packageKey => {
       await SdPackageBuilder._createTsConfigForBuild(packageKey);
       await this._buildPackageAsync(packageKey);
     });
@@ -81,7 +81,7 @@ export class SdPackageBuilder {
       ? http.createServer()
       : undefined;
 
-    await this._parallelPackagesByDep(async packageKey => {
+    await this._parallelPackages(true, async packageKey => {
       await SdPackageBuilder._createTsConfigForBuild(packageKey);
       if (server && this.config.packages[packageKey].type !== "dom" && this.config.packages[packageKey].type !== "node") {
         await this._watchPackageAsync(packageKey, server);
@@ -106,7 +106,7 @@ export class SdPackageBuilder {
     }
   }
 
-  public async publishAsync(): Promise<void> {
+  public async publishAsync(argv?: { build?: boolean }): Promise<void> {
     await this._readConfig("production");
 
     const logger = new Logger("@simplysm/cli");
@@ -125,55 +125,51 @@ export class SdPackageBuilder {
 
     const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
 
-    const promiseList: Promise<void>[] = [];
-    for (const packageKey of Object.keys(this.config.packages)) {
-      promiseList.push(new Promise<void>(async (resolve, reject) => {
-        const packageLogger = new Logger("@simplysm/cli", packageKey);
 
-        await spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
-          logger,
-          cwd: SdPackageUtil.getPackagesPath(packageKey)
-        });
+    await this._parallelPackages(!!optional(argv, o => o.build), async packageKey => {
+      const packageLogger = new Logger("@simplysm/cli", packageKey);
 
-        const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
-        const npmConfig = await SdPackageUtil.readNpmConfigAsync(packageKey);
-        for (const deps of [npmConfig.dependencies, npmConfig.devDependencies, npmConfig.peerDependencies]) {
-          if (deps) {
-            for (const depKey of Object.keys(deps)) {
-              if (allBuildPackageNpmNames.includes(depKey)) {
-                deps[depKey] = projectNpmConfig.version;
-              }
+      await SdPackageBuilder._createTsConfigForBuild(packageKey);
+      await this._buildPackageAsync(packageKey);
+
+      await spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
+        logger,
+        cwd: SdPackageUtil.getPackagesPath(packageKey)
+      });
+
+      const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
+      const npmConfig = await SdPackageUtil.readNpmConfigAsync(packageKey);
+      for (const deps of [npmConfig.dependencies, npmConfig.devDependencies, npmConfig.peerDependencies]) {
+        if (deps) {
+          for (const depKey of Object.keys(deps)) {
+            if (allBuildPackageNpmNames.includes(depKey)) {
+              deps[depKey] = projectNpmConfig.version;
             }
           }
         }
-        await SdPackageUtil.writeNpmConfig(packageKey, npmConfig);
+      }
+      await SdPackageUtil.writeNpmConfig(packageKey, npmConfig);
 
-        const packageConfig = this.config.packages[packageKey];
+      const packageConfig = this.config.packages[packageKey];
 
-        if (packageConfig.publish) {
-          if (packageConfig.publish === "npm") {
-            await spawnAsync(["yarn", "publish", "--access", "public"], {
-              cwd: SdPackageUtil.getPackagesPath(packageKey),
-              logger: packageLogger
-            });
-          }
-          else {
-            // 결과 파일 업로드
-
-            // 프로젝트 설정파일 업로드
-
-            // 가상호스트 파일 재설정/업로드
-
-            reject(new Error("미구현"));
-            return;
-          }
+      if (packageConfig.publish) {
+        if (packageConfig.publish === "npm") {
+          await spawnAsync(["yarn", "publish", "--access", "public"], {
+            cwd: SdPackageUtil.getPackagesPath(packageKey),
+            logger: packageLogger
+          });
         }
+        else {
+          // 결과 파일 업로드
 
-        resolve();
-      }));
-    }
+          // 프로젝트 설정파일 업로드
 
-    await Promise.all(promiseList);
+          // 가상호스트 파일 재설정/업로드
+
+          throw new Error("미구현");
+        }
+      }
+    });
 
     await spawnAsync(["git", "add", "."], {logger});
     await spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});
@@ -202,38 +198,45 @@ export class SdPackageBuilder {
     this.config = SdPackageUtil.createBuilderConfig(orgConfig.common, orgConfig[env], orgConfig.publish);
   }
 
-  private async _parallelPackagesByDep(cb: (packageKey: string) => Promise<void>): Promise<void> {
+  private async _parallelPackages(byDep: boolean, cb: (packageKey: string) => Promise<void>): Promise<void> {
     const promises: Promise<void>[] = [];
 
-    const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
+    if (byDep) {
+      const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
 
-    const completedPackageNpmNames: string[] = [];
-    for (const packageKey of Object.keys(this.config.packages)) {
-      promises.push(new Promise<void>(async (resolve, reject) => {
-        try {
-          const packageNpmConfig = await SdPackageUtil.readNpmConfigAsync(packageKey);
-          const packageNpmName = packageNpmConfig.name;
-          const packageNpmDeps = Object.merge(packageNpmConfig.dependencies, packageNpmConfig.devDependencies);
-          if (packageNpmDeps) {
-            for (const packageNpmDepName of Object.keys(packageNpmDeps)) {
-              if (allBuildPackageNpmNames.includes(packageNpmDepName)) {
-                await Wait.true(() => completedPackageNpmNames.includes(packageNpmDepName));
+      const completedPackageNpmNames: string[] = [];
+      for (const packageKey of Object.keys(this.config.packages)) {
+        promises.push(new Promise<void>(async (resolve, reject) => {
+          try {
+            const packageNpmConfig = await SdPackageUtil.readNpmConfigAsync(packageKey);
+            const packageNpmName = packageNpmConfig.name;
+            const packageNpmDeps = Object.merge(packageNpmConfig.dependencies, packageNpmConfig.devDependencies);
+            if (packageNpmDeps) {
+              for (const packageNpmDepName of Object.keys(packageNpmDeps)) {
+                if (allBuildPackageNpmNames.includes(packageNpmDepName)) {
+                  await Wait.true(() => completedPackageNpmNames.includes(packageNpmDepName));
+                }
               }
             }
+
+            await cb(packageKey);
+
+            completedPackageNpmNames.push(packageNpmName);
+            resolve();
           }
+          catch (err) {
+            reject(err);
+          }
+        }));
+      }
 
-          await cb(packageKey);
-
-          completedPackageNpmNames.push(packageNpmName);
-          resolve();
-        }
-        catch (err) {
-          reject(err);
-        }
-      }));
+      await Promise.all(promises);
     }
-
-    await Promise.all(promises);
+    else {
+      for (const packageKey of Object.keys(this.config.packages)) {
+        promises.push(cb(packageKey));
+      }
+    }
   }
 
   private async _getAllBuildPackageNpmNamesAsync(): Promise<string[]> {

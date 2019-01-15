@@ -30,6 +30,13 @@ const argv = yargs
     "publish",
     "프로젝트의 각 패키지를 배포합니다.",
     cmd => cmd.version(false)
+      .options({
+        build: {
+          type: "boolean",
+          describe: "빌드후에 배포합니다.",
+          default: false
+        }
+      })
   )
   .argv;
 
@@ -44,7 +51,7 @@ const argv = yargs
     await new SdPackageBuilder().buildAsync();
   }
   else if (argv._[0] === "publish") {
-    await new SdPackageBuilder().publishAsync();
+    await new SdPackageBuilder().publishAsync(argv as any);
   }
   else {
     throw new Error("명령어가 잘못 되었습니다.");
