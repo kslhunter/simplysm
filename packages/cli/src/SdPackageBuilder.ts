@@ -110,7 +110,7 @@ export class SdPackageBuilder {
     const logger = new Logger("@simplysm/cli");
     await spawnAsync(["npm", "version", "patch"], {logger});
 
-    /*const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
+    const projectNpmConfig = await SdPackageUtil.readProjectNpmConfig();
 
     await this._parallelPackagesByDep(async packageKey => {
       const packageLogger = new Logger("@simplysm/cli", packageKey);
@@ -119,11 +119,20 @@ export class SdPackageBuilder {
       packageNpmConfig.version = projectNpmConfig.version;
       await SdPackageUtil.writeNpmConfig(packageKey, packageNpmConfig);
 
-      await spawnAsync(["yarn", "publish", "--access", "public"], {
-        cwd: SdPackageUtil.getPackagesPath(packageKey),
-        logger: packageLogger
-      });
-    });*/
+      const packageConfig = this.config.packages[packageKey];
+
+      if (packageConfig.publish) {
+        if (packageConfig.publish === "npm") {
+          await spawnAsync(["yarn", "publish", "--access", "public"], {
+            cwd: SdPackageUtil.getPackagesPath(packageKey),
+            logger: packageLogger
+          });
+        }
+        else {
+          throw new Error("미구현");
+        }
+      }
+    });
   }
 
   private static async _createTsConfigForBuild(packageKey: string): Promise<void> {
