@@ -83,6 +83,37 @@ Object.clone = function (source: any, options?: { excludeProps?: string[] }): an
   }
 };
 
+Object.merge = function (source: any, obj: any): any {
+  const sourceClone = Object.clone(source);
+
+  if (source === undefined) {
+    return obj;
+  }
+
+  if (obj === undefined) {
+    return sourceClone;
+  }
+
+  if (typeof source !== typeof obj) {
+    throw new Error("머지하려고 하는 타입이 서로 다릅니다.");
+  }
+
+  if (typeof source !== "object") {
+    return obj;
+  }
+
+  for (const key of Object.keys(obj)) {
+    if (typeof obj[key] === "object") {
+      sourceClone[key] = Object.merge(source[key], obj[key]);
+    }
+    else {
+      sourceClone[key] = obj[key];
+    }
+  }
+
+  return sourceClone;
+};
+
 Object.equal = function (source: any, target: any, options?: { excludeProps?: string[] }): boolean {
   if (source instanceof Date) {
     if (!(target instanceof Date)) {
@@ -135,37 +166,6 @@ Object.equal = function (source: any, target: any, options?: { excludeProps?: st
   else {
     return source === target;
   }
-};
-
-Object.merge = function (source: any, obj: any): any {
-  const sourceClone = Object.clone(source);
-
-  if (source === undefined) {
-    return obj;
-  }
-
-  if (obj === undefined) {
-    return sourceClone;
-  }
-
-  if (typeof source !== typeof obj) {
-    throw new Error("머지하려고 하는 타입이 서로 다릅니다.");
-  }
-
-  if (typeof source !== "object") {
-    return obj;
-  }
-
-  for (const key of Object.keys(obj)) {
-    if (typeof obj[key] === "object") {
-      sourceClone[key] = Object.clone(source[key], obj[key]);
-    }
-    else {
-      sourceClone[key] = obj[key];
-    }
-  }
-
-  return sourceClone;
 };
 
 Object.validate = function (value: any, def: ValidateDef): IValidateResult | undefined {
