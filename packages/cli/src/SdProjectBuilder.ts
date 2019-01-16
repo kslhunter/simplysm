@@ -2,7 +2,6 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import {Logger, optional, Wait} from "@simplysm/common";
 import * as webpack from "webpack";
-import {ISdConfigFileJson, ISdPackageBuilderConfig} from "./commons";
 import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import * as webpackMerge from "webpack-merge";
@@ -12,15 +11,15 @@ import * as url from "url";
 import {FileWatcher, spawnAsync} from "@simplysm/core";
 import {SdProjectBuilderUtil} from "./SdProjectBuilderUtil";
 import {SdWebpackLoggerPlugin} from "./SdWebpackLoggerPlugin";
+import {SdPackageConfigTypes} from "./commons";
 
-// TODO: 정리 필요 (클래스 나누기, Config를 Class로 놓고 Util안쓰기 등)
 export class SdProjectBuilder {
-  private config: ISdPackageBuilderConfig = {packages: {}};
+  private configs: { [key: string]: SdPackageConfigTypes } = {packages: {}};
 
   public async bootstrapAsync(): Promise<void> {
     await this._readConfig("production");
 
-    for (const packageKey of Object.keys(this.config.packages)) {
+    for (const packageKey of Object.keys(this.configs)) {
       const tsconfig = await SdProjectBuilderUtil.readTsConfigAsync(packageKey);
       tsconfig.extends = "../../tsconfig.json";
       tsconfig.compilerOptions = tsconfig.compilerOptions || {};
@@ -32,7 +31,7 @@ export class SdProjectBuilder {
 
       tsOptions.lib = tsOptions.lib || ["es2017"];
 
-      const packageConfig = this.config.packages[packageKey];
+      const packageConfig = this.configs[packageKey];
       if (packageConfig.type !== "node") {
         tsOptions.lib.push("dom");
       }
@@ -75,13 +74,13 @@ export class SdProjectBuilder {
   public async watchAsync(): Promise<void> {
     await this._readConfig("development");
 
-    const server = Object.values(this.config.packages).some(item => item.type !== "dom" && item.type !== "node")
+    const server = Object.values(this.configs).some(item => item.type !== "dom" && item.type !== "node")
       ? http.createServer()
       : undefined;
 
     await this._parallelPackages(true, async packageKey => {
       await SdProjectBuilder._createTsConfigForBuild(packageKey);
-      if (server && this.config.packages[packageKey].type !== "dom" && this.config.packages[packageKey].type !== "node") {
+      if (server && this.configs[packageKey].type !== "dom" && this.configs[packageKey].type !== "node") {
         await this._watchPackageAsync(packageKey, server);
       }
       else {
@@ -91,19 +90,19 @@ export class SdProjectBuilder {
 
     if (server) {
       await new Promise<void>((resolve, reject) => {
-        server.listen(this.config.port || 80, (err: Error) => {
+        server.listen(this.configs.port || 80, (err: Error) => {
           if (err) {
             reject(err);
             return;
           }
 
-          new Logger("@simplysm/cli").log(`개발 서버 시작됨 [포트: ${this.config.port || 80}]`);
+          new Logger("@simplysm/cli").log(`개발 서버 시작됨 [포트: ${this.configs.port || 80}]`);
           resolve();
         });
       });
     }
 
-    if (this.config.autoUpdates) {
+    if (this.configs.autoUpdates) {
       throw new Error("미구현 (auto-update)");
     }
   }
@@ -159,7 +158,7 @@ export class SdProjectBuilder {
       }
       await SdProjectBuilderUtil.writeNpmConfigAsync(packageKey, npmConfig);
 
-      const packageConfig = this.config.packages[packageKey];
+      const packageConfig = this.configs[packageKey];
 
       if (packageConfig.publish) {
         if (packageConfig.publish === "npm") {
@@ -204,8 +203,7 @@ export class SdProjectBuilder {
   }
 
   private async _readConfig(env: "production" | "development"): Promise<void> {
-    const orgConfig: ISdConfigFileJson = await SdProjectBuilderUtil.readConfigAsync();
-    this.config = SdProjectBuilderUtil.createBuilderConfig(orgConfig, env);
+    this.configs = await SdProjectBuilderUtil.readConfigAsync(env);
   }
 
   private async _parallelPackages(byDep: boolean, cb: (packageKey: string) => Promise<void>): Promise<void> {
@@ -215,7 +213,7 @@ export class SdProjectBuilder {
       const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
 
       const completedPackageNpmNames: string[] = [];
-      for (const packageKey of Object.keys(this.config.packages)) {
+      for (const packageKey of Object.keys(this.configs)) {
         promises.push(new Promise<void>(async (resolve, reject) => {
           try {
             const packageNpmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
@@ -243,7 +241,7 @@ export class SdProjectBuilder {
       await Promise.all(promises);
     }
     else {
-      for (const packageKey of Object.keys(this.config.packages)) {
+      for (const packageKey of Object.keys(this.configs)) {
         promises.push(cb(packageKey));
       }
     }
@@ -251,7 +249,7 @@ export class SdProjectBuilder {
 
   private async _getAllBuildPackageNpmNamesAsync(): Promise<string[]> {
     const result: string[] = [];
-    for (const packageKey of Object.keys(this.config.packages)) {
+    for (const packageKey of Object.keys(this.configs)) {
       const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
       result.push(npmConfig.name);
     }
@@ -262,7 +260,7 @@ export class SdProjectBuilder {
     const logger = new Logger("@simplysm/cli", packageKey);
     logger.log("빌드를 시작합니다...");
 
-    const packageConfig = this.config.packages[packageKey];
+    const packageConfig = this.configs[packageKey];
 
     if (packageConfig.type === "node" || packageConfig.type === "dom") {
       await Promise.all([
@@ -289,7 +287,7 @@ export class SdProjectBuilder {
 
   private async _watchPackageAsync(packageKey: string, server?: http.Server): Promise<void> {
     const logger = new Logger("@simplysm/cli", packageKey);
-    const packageConfig = this.config.packages[packageKey];
+    const packageConfig = this.configs[packageKey];
 
     if (packageConfig.type === "node" || packageConfig.type === "dom") {
       logger.log(`코드검사를 시작합니다...`);
@@ -335,7 +333,7 @@ export class SdProjectBuilder {
     //   timeout = setTimeout(async () => {
     //     await spawnAsync(["npm", "version", "prerelease", "--git-tag-version", "false"], {logger});
     //     const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
-    //     for (const allPackagesItemKey of Object.keys(this.config.packages)) {
+    //     for (const allPackagesItemKey of Object.keys(this.config)) {
     //       const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(allPackagesItemKey);
     //       npmConfig.version = projectNpmConfig.version;
     //       await SdProjectBuilderUtil.writeNpmConfigAsync(allPackagesItemKey, npmConfig);
@@ -422,9 +420,9 @@ export class SdProjectBuilder {
   }
 
   private async _getWebpackConfigAsync(packageKey: string, mode: "production" | "development"): Promise<webpack.Configuration> {
-    const packageConfig = this.config.packages[packageKey];
+    const packageConfig = this.configs[packageKey];
 
-    if (packageConfig.type.startsWith("cordova.") || packageConfig.type.startsWith("electron.")) {
+    if (packageConfig.type!.startsWith("cordova.") || packageConfig.type!.startsWith("electron.")) {
       throw new Error("미구현");
     }
 
@@ -436,7 +434,7 @@ export class SdProjectBuilder {
       entry: path.resolve(__dirname, "../lib/main.js"),
       output: {
         path: distPath,
-        publicPath: `/${projectNpmConfig.name}/${packageConfig.name}/`,
+        publicPath: `/${projectNpmConfig.name}/${packageKey}/`,
         filename: "app.js",
         chunkFilename: "[name].chunk.js"
       },
@@ -493,7 +491,7 @@ export class SdProjectBuilder {
         }),
         new HtmlWebpackPlugin({
           template: path.resolve(__dirname, "../lib/index.ejs"),
-          BASE_HREF: `/${projectNpmConfig.name}/${packageConfig.name}/`
+          BASE_HREF: `/${projectNpmConfig.name}/${packageKey}/`
         }),
         new webpack.DefinePlugin({
           "process.env": SdProjectBuilder._envStringify({

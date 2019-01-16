@@ -10,9 +10,11 @@
       "dom",
       "dom",
       "dom",
+      "dom",
+      "dom",
       "dom"
     ],
-    "declaration": false,
+    "declaration": true,
     "baseUrl": ".",
     "paths": {}
   }

@@ -1,20 +1,34 @@
 {
-  "common": {
-    "packages": {
-      "common": "dom",
-      "core": "node",
-      "cli": "node",
-      "angular": "dom",
-      "server": "node"
-    }
-  },
-  "publish": {
-    "packages": {
-      "common": "npm",
-      "core": "npm",
-      "cli": "npm",
-      "angular": "npm",
-      "server": "npm"
+  "packages": {
+    "common": {
+      "type": "dom",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "core": {
+      "type": "node",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "cli": {
+      "type": "node",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "angular": {
+      "type": "dom",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "server": {
+      "type": "node",
+      "publish": {
+        "protocol": "npm"
+      }
     }
   }
 }

@@ -1,53 +1,71 @@
 import {CompilerOptions} from "typescript";
 
-export type SdPackageType = "node" | "dom" | "web" | "cordova.android" | "cordova.browser" | "electron.windows";
+type SdConfigFileJsonPackageConfigOfType<T> = T & {
+  extends?: string[];
+  development?: T;
+  production?: T;
+};
+export type SdConfigFileJsonPackageConfigTypes = SdConfigFileJsonPackageConfigOfType<SdPackageConfigTypes>;
+
+export type SdPackageConfigTypes =
+  ISdServerPackageConfig |
+  ISdLibraryPackageConfig |
+  ISdWebPackageConfigForEnv |
+  ISdCordovaAndroidPackageConfigForEnv |
+  ISdCordovaBrowserPackageConfigForEnv |
+  ISdElectronPackageConfigForEnv;
 
 export interface ISdConfigFileJson {
-  common?: ISdConfigFileJsonBuildConfig;
-  development?: ISdConfigFileJsonBuildConfig;
-  production?: ISdConfigFileJsonBuildConfig;
-  publish?: ISdConfigFileJsonPublishConfig;
-  autoUpdates?: { [key: string]: string };
+  packages: { [key: string]: SdConfigFileJsonPackageConfigTypes };
+  extends?: { [key: string]: SdConfigFileJsonPackageConfigTypes };
 }
 
-export interface ISdConfigFileJsonBuildConfig {
-  packages?: { [key: string]: ISdConfigFileJsonClientPackageConfig | SdPackageType };
+export interface ISdServerPackageConfig {
+  type?: "server";
+  publish?: ISdProtocolPublishConfig | ISdNpmPublishConfig;
+  env?: { [key: string]: any };
+}
+
+export interface ISdLibraryPackageConfig {
+  type?: "dom" | "node";
+  publish?: ISdNpmPublishConfig;
+}
+
+export interface ISdWebPackageConfigForEnv {
+  type?: "web";
+  publish?: ISdProtocolPublishConfig;
+  env?: { [key: string]: any };
+}
+
+export interface ISdCordovaAndroidPackageConfigForEnv {
+  type?: "cordova.android";
+  publish?: ISdProtocolPublishConfig;
+  env?: { [key: string]: any };
+}
+
+export interface ISdCordovaBrowserPackageConfigForEnv {
+  type?: "cordova.browser";
+  publish?: ISdProtocolPublishConfig;
+  env?: { [key: string]: any };
+}
+
+export interface ISdElectronPackageConfigForEnv {
+  type?: "electron.windows";
+  publish?: ISdProtocolPublishConfig;
+  env?: { [key: string]: any };
+}
+
+export interface ISdProtocolPublishConfig {
+  protocol?: "ftp" | "WebDAV";
+  host?: string;
   port?: number;
-  virtualHosts?: { [key: string]: string };
-  options?: { [key: string]: any };
+  username?: string;
+  password?: string;
+  rootPath?: string;
 }
 
-export interface ISdConfigFileJsonClientPackageConfig {
-  name?: string;
-  type: SdPackageType;
-}
-
-export interface ISdConfigFileJsonPublishConfig {
-  packages?: { [key: string]: string };
-  targets?: { [key: string]: ISdClientPackagePublishConfig };
-}
-
-export interface ISdClientPackagePublishConfig {
-  protocol: "WebDAV" | "ftp";
-  host: string;
-  port?: number;
-  username: string;
-  password: string;
-  path: string;
-}
-
-export interface ISdPackageBuilderConfig {
-  packages: { [key: string]: ISdClientPackageConfig };
-  port?: number;
-  virtualHosts?: { [key: string]: string };
-  options?: { [key: string]: any };
-  autoUpdates?: { [key: string]: string };
-}
-
-export interface ISdClientPackageConfig {
-  name?: string;
-  type: SdPackageType;
-  publish?: ISdClientPackagePublishConfig | "npm";
+export interface ISdNpmPublishConfig {
+  protocol?: "npm";
 }
 
 export interface ITsConfig {

@@ -1,14 +1,7 @@
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as os from "os";
-import {
-  INpmConfig,
-  ISdClientPackageConfig,
-  ISdConfigFileJson,
-  ISdPackageBuilderConfig,
-  ITsConfig,
-  SdPackageType
-} from "./commons";
+import {INpmConfig, ISdConfigFileJson, ITsConfig, SdPackageConfigTypes} from "./commons";
 import {optional} from "@simplysm/common";
 
 export class SdProjectBuilderUtil {
@@ -34,64 +27,48 @@ export class SdProjectBuilderUtil {
     await fs.writeJson(tsconfigPath, tsconfig, {spaces: 2, EOL: os.EOL});
   }
 
-  public static getConfigPath(): string {
-    return SdProjectBuilderUtil.getProjectPath("simplysm.json");
-  }
+  public static async readConfigAsync(env: "development" | "production"): Promise<{ [key: string]: SdPackageConfigTypes }> {
+    const orgConfig: ISdConfigFileJson = await fs.readJson(SdProjectBuilderUtil.getProjectPath("simplysm.json"));
 
-  public static async readConfigAsync(): Promise<ISdConfigFileJson> {
-    const configPath = SdProjectBuilderUtil.getConfigPath();
-    return await fs.readJson(configPath);
-  }
+    const result: { [key: string]: SdPackageConfigTypes } = {};
+    for (const packageKey of Object.keys(orgConfig.packages)) {
+      let currPackageConfig: SdPackageConfigTypes = {};
+      currPackageConfig = SdProjectBuilderUtil._mergePackageConfigExtends(currPackageConfig, orgConfig, orgConfig.packages[packageKey].extends);
 
-  public static createBuilderConfig(orgConfig: ISdConfigFileJson, env: "development" | "production"): ISdPackageBuilderConfig {
-    const commonConfig = orgConfig.common;
-    const envConfig = orgConfig[env];
-    const publishConfig = orgConfig.publish;
-
-    const result: ISdPackageBuilderConfig = {packages: {}};
-
-    const commonConfigTemp = optional(commonConfig, o => o.packages) || {};
-    for (const key of Object.keys(commonConfigTemp)) {
-      if (typeof commonConfigTemp[key] === "string") {
-        commonConfigTemp[key] = {type: commonConfigTemp[key] as SdPackageType};
+      if (orgConfig.packages[packageKey][env]) {
+        currPackageConfig = Object.merge(currPackageConfig, orgConfig.packages[packageKey][env]);
       }
-    }
 
-    const envConfigTemp = optional(envConfig, o => o.packages) || {};
-    for (const key of Object.keys(envConfigTemp)) {
-      if (typeof envConfigTemp[key] === "string") {
-        envConfigTemp[key] = {type: envConfigTemp[key] as SdPackageType};
+      const orgPackageConfig = Object.clone(orgConfig.packages[packageKey]);
+      delete orgPackageConfig.extends;
+      delete orgPackageConfig.development;
+      delete orgPackageConfig.production;
+      currPackageConfig = Object.merge(currPackageConfig, orgPackageConfig);
+
+      if (!currPackageConfig.type) {
+        throw new Error("타입이 지정되지 않은 패키지가 있습니다.");
       }
-    }
 
-    result.packages = Object.merge(commonConfigTemp, envConfigTemp) as { [key: string]: ISdClientPackageConfig };
-    result.port = optional(envConfig, o => o.port) || optional(commonConfig, o => o.port);
-    result.virtualHosts = Object.merge(optional(commonConfig, o => o.virtualHosts), optional(envConfig, o => o.virtualHosts));
-    result.options = Object.merge(optional(commonConfig, o => o.options), optional(envConfig, o => o.options));
-    result.autoUpdates = orgConfig.autoUpdates;
-
-    if (publishConfig && publishConfig.packages) {
-      for (const publishPackageKey of Object.keys(publishConfig.packages)) {
-        if (result.packages[publishPackageKey]) {
-          const publishTargetName = publishConfig.packages[publishPackageKey];
-          if (publishTargetName === "npm") {
-            result.packages[publishPackageKey].publish = "npm";
-          }
-          else if (publishConfig.targets) {
-            const publishTarget = publishConfig.targets[publishTargetName];
-            if (!publishTarget) {
-              throw new Error(`배포 타겟 "${publishTargetName}"를 찾을 수 없습니다.`);
-            }
-            result.packages[publishPackageKey].publish = publishTarget;
-          }
-          else {
-            throw new Error(`배포 타겟 "${publishTargetName}"를 찾을 수 없습니다.`);
-          }
-        }
-      }
+      result[packageKey] = currPackageConfig;
     }
 
     return result;
+  }
+
+  private static _mergePackageConfigExtends(curr: SdPackageConfigTypes, orgConfig: ISdConfigFileJson, extendNames?: string[]): SdPackageConfigTypes {
+    if (extendNames) {
+      let result = Object.clone(curr);
+      for (const extendName of extendNames) {
+        const extendConfig = optional(orgConfig, o => o.extends![extendName]);
+        if (!extendConfig) {
+          throw new Error(`설정에서 확장 "${extendName}"를 찾을 수 없습니다.`);
+        }
+        result = this._mergePackageConfigExtends(result, orgConfig, extendConfig.extends);
+        result = Object.merge(result, extendConfig);
+      }
+      return result;
+    }
+    return Object.clone(curr);
   }
 
   public static getNpmConfigPath(packageKey: string): string {
