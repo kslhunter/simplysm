@@ -201,7 +201,6 @@ export class SdProjectBuilder {
 
       const packageConfig = this.config.packages[packageKey];
 
-      console.log(packageConfig);
       if (packageConfig.publish) {
         if (packageConfig.publish.protocol === "npm") {
           await spawnAsync(["yarn", "publish", "--access", "public"], {
