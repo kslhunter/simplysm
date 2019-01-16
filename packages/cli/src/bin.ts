@@ -25,11 +25,23 @@ const argv = yargs
     "watch",
     "프로젝트의 각 패키지를 변경감지 모드로 시작합니다.",
     cmd => cmd.version(false)
+      .options({
+        packages: {
+          type: "string",
+          describe: "수행할 패키지를 선택합니다."
+        }
+      })
   )
   .command(
     "build",
     "프로젝트의 각 패키지를 빌드합니다.",
     cmd => cmd.version(false)
+      .options({
+        packages: {
+          type: "string",
+          describe: "수행할 패키지를 선택합니다."
+        }
+      })
   )
   .command(
     "publish",
@@ -40,6 +52,10 @@ const argv = yargs
           type: "boolean",
           describe: "빌드후에 배포합니다.",
           default: false
+        },
+        packages: {
+          type: "string",
+          describe: "수행할 패키지를 선택합니다."
         }
       })
   )
@@ -53,10 +69,10 @@ const argv = yargs
     await new SdProjectBuilder().localUpdateAsync();
   }
   else if (argv._[0] === "watch") {
-    await new SdProjectBuilder().watchAsync();
+    await new SdProjectBuilder().watchAsync(argv as any);
   }
   else if (argv._[0] === "build") {
-    await new SdProjectBuilder().buildAsync();
+    await new SdProjectBuilder().buildAsync(argv as any);
   }
   else if (argv._[0] === "publish") {
     await new SdProjectBuilder().publishAsync(argv as any);

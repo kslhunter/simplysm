@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as os from "os";
-import {INpmConfig, ISdProjectConfig, ISdConfigFileJson, ISdPackageConfig, ITsConfig} from "./commons";
+import {INpmConfig, ISdConfigFileJson, ISdPackageConfig, ISdProjectConfig, ITsConfig} from "./commons";
 import {optional} from "@simplysm/common";
 
 export class SdProjectBuilderUtil {
@@ -27,13 +27,20 @@ export class SdProjectBuilderUtil {
     await fs.writeJson(tsconfigPath, tsconfig, {spaces: 2, EOL: os.EOL});
   }
 
-  public static async readConfigAsync(env: "development" | "production"): Promise<ISdProjectConfig> {
+  public static async readConfigAsync(env: "development" | "production", packageKeys: string[] | undefined): Promise<ISdProjectConfig> {
     const orgConfig: ISdConfigFileJson = await fs.readJson(SdProjectBuilderUtil.getProjectPath("simplysm.json"));
 
     const result: ISdProjectConfig = {packages: {}};
-    for (const packageKey of Object.keys(orgConfig.packages)) {
+    for (const packageKey of packageKeys || Object.keys(orgConfig.packages)) {
+      if (!orgConfig.packages[packageKey]) {
+        throw new Error(`"${packageKey}"에 대한 패키지 설정이 없습니다.`);
+      }
+
       let currPackageConfig: ISdPackageConfig = {};
       currPackageConfig = SdProjectBuilderUtil._mergePackageConfigExtends(currPackageConfig, orgConfig, orgConfig.packages[packageKey].extends);
+      if (currPackageConfig[env]) {
+        currPackageConfig = Object.merge(currPackageConfig, currPackageConfig[env]);
+      }
 
       if (orgConfig.packages[packageKey][env]) {
         currPackageConfig = Object.merge(currPackageConfig, orgConfig.packages[packageKey][env]);
@@ -46,7 +53,7 @@ export class SdProjectBuilderUtil {
       currPackageConfig = Object.merge(currPackageConfig, orgPackageConfig);
 
       if (!currPackageConfig.type) {
-        throw new Error("타입이 지정되지 않은 패키지가 있습니다.");
+        throw new Error(`타입이 지정되지 않은 패키지가 있습니다. (${packageKey})`);
       }
 
       result.packages[packageKey] = currPackageConfig;

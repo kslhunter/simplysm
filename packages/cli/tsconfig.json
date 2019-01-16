@@ -17,6 +17,9 @@
       ],
       "@simplysm/server": [
         "../server/src/index.ts"
+      ],
+      "tslint": [
+        "../../node_modules/tslint"
       ]
     }
   }

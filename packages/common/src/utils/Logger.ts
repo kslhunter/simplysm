@@ -180,7 +180,7 @@ export class Logger {
       const logData = typeof convertedLogs[0] === "string" ? convertedLogs.slice(1) : convertedLogs;
 
       // const text = `${this.config.color.grey}[${log.now}] ${log.group}\t${this.config.color[severity]}${log.severity.padEnd(5, " ")}\t${log.prefix ? Logger._prefixColorMap.get(log.prefix) + log.prefix + " " : ""}${this.config.color.log}${convertedLogs.join("\r\n")}${this.config.color.log}`;
-      const text = `${c}[${log.now}] ${log.group}\t${c}${log.severity.padEnd(5, " ")}\t${log.prefix ? c + log.prefix + " " : ""}${c}${logText}${c}`;
+      const text = `${c}[${log.now}] ${log.group}\t${c}${log.severity.padEnd(5, " ")}\t${log.prefix ? c + log.prefix + "\t" : ""}${c}${logText}${c}`;
 
       // 콘솔 출력
       if (this.config.consoleLogSeverities.includes(severity)) {

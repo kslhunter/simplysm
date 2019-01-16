@@ -24,6 +24,10 @@ export interface ISdPackageConfig {
   publish?: ISdPublishConfig;
   env?: { [key: string]: any };
   vhost?: string;
+  server?: {
+    host?: string;
+    port?: number;
+  };
 }
 
 export interface ISdPublishConfig {
