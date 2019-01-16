@@ -17,7 +17,7 @@ const argv = yargs
     cmd => cmd.version(false)
   )
   .command(
-    "auto-update",
+    "local-update",
     "프로젝트의 의존성 패키지에, 외부 디렉토리에 있는 패키지 파일을 덮어씁니다.",
     cmd => cmd.version(false)
   )
@@ -49,8 +49,8 @@ const argv = yargs
   if (argv._[0] === "bootstrap") {
     await new SdProjectBuilder().bootstrapAsync();
   }
-  else if (argv._[0] === "autoUpdate") {
-    await new SdProjectBuilder().autoUpdateAsync();
+  else if (argv._[0] === "local-update") {
+    await new SdProjectBuilder().localUpdateAsync();
   }
   else if (argv._[0] === "watch") {
     await new SdProjectBuilder().watchAsync();

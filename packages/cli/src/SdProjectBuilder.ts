@@ -8,18 +8,19 @@ import * as webpackMerge from "webpack-merge";
 import * as WebpackDevServer from "webpack-dev-server";
 import * as http from "http";
 import * as url from "url";
+import * as glob from "glob";
 import {FileWatcher, spawnAsync} from "@simplysm/core";
 import {SdProjectBuilderUtil} from "./SdProjectBuilderUtil";
 import {SdWebpackLoggerPlugin} from "./SdWebpackLoggerPlugin";
-import {SdPackageConfigTypes} from "./commons";
+import {ISdProjectConfig} from "./commons";
 
 export class SdProjectBuilder {
-  private configs: { [key: string]: SdPackageConfigTypes } = {packages: {}};
+  private config: ISdProjectConfig = {packages: {}};
 
   public async bootstrapAsync(): Promise<void> {
     await this._readConfig("production");
 
-    for (const packageKey of Object.keys(this.configs)) {
+    for (const packageKey of Object.keys(this.config.packages)) {
       const tsconfig = await SdProjectBuilderUtil.readTsConfigAsync(packageKey);
       tsconfig.extends = "../../tsconfig.json";
       tsconfig.compilerOptions = tsconfig.compilerOptions || {};
@@ -29,9 +30,9 @@ export class SdProjectBuilder {
       tsOptions.rootDir = "src";
       tsOptions.outDir = "dist";
 
-      tsOptions.lib = tsOptions.lib || ["es2017"];
+      tsOptions.lib = ["es2017"];
 
-      const packageConfig = this.configs[packageKey];
+      const packageConfig = this.config.packages[packageKey];
       if (packageConfig.type !== "node") {
         tsOptions.lib.push("dom");
       }
@@ -66,21 +67,75 @@ export class SdProjectBuilder {
     }
   }
 
-  public async autoUpdateAsync(): Promise<void> {
+  public async localUpdateAsync(): Promise<void> {
     await this._readConfig("development");
-    throw new Error("미구현 (auto-update)");
+
+    if (!this.config.localUpdates) {
+      new Logger("@simplysm/cli").warn("로컬 업데이트 설정이 없습니다.");
+      return;
+    }
+
+    const promiseList: Promise<void>[] = [];
+    const promiseList2: Promise<void>[] = [];
+    for (const localUpdateKey of Object.keys(this.config.localUpdates)) {
+      promiseList.push(new Promise<void>(async (resolve, reject) => {
+        glob(SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey), async (err, depPackageDirPaths) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          for (const depPackageDirPath of depPackageDirPaths) {
+            const subPackageName = depPackageDirPath.match(new RegExp(
+              localUpdateKey.replace(/([\/.*])/g, item => item === "/" ? "\\/" : item === "." ? "\\." : item === "*" ? "(.*)" : item)
+            ))![1];
+
+            const sourceDirPath = SdProjectBuilderUtil.getProjectPath(this.config.localUpdates![localUpdateKey].replace(/\*/g, subPackageName));
+            const targetDirPath = SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey.replace(/\*/g, subPackageName));
+            if (!await fs.pathExists(sourceDirPath)) {
+              reject(new Error(`소스파일을 찾을 수 없습니다. ("${sourceDirPath}")`));
+              return;
+            }
+            promiseList2.push(fs.copy(sourceDirPath, targetDirPath, {
+              filter: src => !src.endsWith("package.json")
+            }));
+          }
+        });
+      }));
+    }
+
+    await Promise.all(promiseList);
+    await Promise.all(promiseList2);
+
+    new Logger("@simplysm/cli").log(`로컬 업데이트 완료`);
+    throw new Error("미구현 (local-update)");
   }
 
   public async watchAsync(): Promise<void> {
     await this._readConfig("development");
 
-    const server = Object.values(this.configs).some(item => item.type !== "dom" && item.type !== "node")
-      ? http.createServer()
-      : undefined;
+    // TODO: 설정된 서버 호스트및 포트로 여러개의 서버 구성
+    let server: http.Server;
+    if (Object.values(this.config.packages).some(pkg => pkg.type !== "none" && pkg.type !== "dom" && pkg.type !== "node")) {
+      server = http.createServer();
+
+      await new Promise<void>((resolve, reject) => {
+        const port = Object.values(this.config.packages).last(pkg => !!pkg.env)!.env!.SD_SERVER_PORT || 80;
+        server.listen(port, (err: Error) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          new Logger("@simplysm/cli").log(`개발 서버 시작됨 [포트: ${port}]`);
+          resolve();
+        });
+      });
+    }
 
     await this._parallelPackages(true, async packageKey => {
       await SdProjectBuilder._createTsConfigForBuild(packageKey);
-      if (server && this.configs[packageKey].type !== "dom" && this.configs[packageKey].type !== "node") {
+      if (server && this.config.packages[packageKey].type !== "dom" && this.config.packages[packageKey].type !== "node") {
         await this._watchPackageAsync(packageKey, server);
       }
       else {
@@ -88,22 +143,8 @@ export class SdProjectBuilder {
       }
     });
 
-    if (server) {
-      await new Promise<void>((resolve, reject) => {
-        server.listen(this.configs.port || 80, (err: Error) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          new Logger("@simplysm/cli").log(`개발 서버 시작됨 [포트: ${this.configs.port || 80}]`);
-          resolve();
-        });
-      });
-    }
-
-    if (this.configs.autoUpdates) {
-      throw new Error("미구현 (auto-update)");
+    if (this.config.localUpdates) {
+      throw new Error("미구현 (local-update)");
     }
   }
 
@@ -122,7 +163,7 @@ export class SdProjectBuilder {
     await new Promise<void>(async (resolve, reject) => {
       await spawnAsync(["git", "status"], {
         onMessage: async (errMsg, logMsg) => {
-          if (logMsg && logMsg.includes("no changes added to commit")) {
+          if (logMsg && logMsg.includes("Changes")) {
             reject(new Error("커밋되지 않은 정보가 있습니다."));
           }
         }
@@ -158,10 +199,10 @@ export class SdProjectBuilder {
       }
       await SdProjectBuilderUtil.writeNpmConfigAsync(packageKey, npmConfig);
 
-      const packageConfig = this.configs[packageKey];
+      const packageConfig = this.config.packages[packageKey];
 
       if (packageConfig.publish) {
-        if (packageConfig.publish === "npm") {
+        if (packageConfig.publish.protocol === "npm") {
           await spawnAsync(["yarn", "publish", "--access", "public"], {
             cwd: SdProjectBuilderUtil.getPackagesPath(packageKey),
             logger: packageLogger
@@ -174,7 +215,7 @@ export class SdProjectBuilder {
 
           // 가상호스트 파일 재설정/업로드
 
-          throw new Error("미구현");
+          throw new Error("미구현 (publish)");
         }
       }
     });
@@ -203,7 +244,7 @@ export class SdProjectBuilder {
   }
 
   private async _readConfig(env: "production" | "development"): Promise<void> {
-    this.configs = await SdProjectBuilderUtil.readConfigAsync(env);
+    this.config = await SdProjectBuilderUtil.readConfigAsync(env);
   }
 
   private async _parallelPackages(byDep: boolean, cb: (packageKey: string) => Promise<void>): Promise<void> {
@@ -213,7 +254,7 @@ export class SdProjectBuilder {
       const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
 
       const completedPackageNpmNames: string[] = [];
-      for (const packageKey of Object.keys(this.configs)) {
+      for (const packageKey of Object.keys(this.config.packages)) {
         promises.push(new Promise<void>(async (resolve, reject) => {
           try {
             const packageNpmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
@@ -241,7 +282,7 @@ export class SdProjectBuilder {
       await Promise.all(promises);
     }
     else {
-      for (const packageKey of Object.keys(this.configs)) {
+      for (const packageKey of Object.keys(this.config.packages)) {
         promises.push(cb(packageKey));
       }
     }
@@ -249,7 +290,7 @@ export class SdProjectBuilder {
 
   private async _getAllBuildPackageNpmNamesAsync(): Promise<string[]> {
     const result: string[] = [];
-    for (const packageKey of Object.keys(this.configs)) {
+    for (const packageKey of Object.keys(this.config.packages)) {
       const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
       result.push(npmConfig.name);
     }
@@ -260,7 +301,7 @@ export class SdProjectBuilder {
     const logger = new Logger("@simplysm/cli", packageKey);
     logger.log("빌드를 시작합니다...");
 
-    const packageConfig = this.configs[packageKey];
+    const packageConfig = this.config.packages[packageKey];
 
     if (packageConfig.type === "node" || packageConfig.type === "dom") {
       await Promise.all([
@@ -287,7 +328,7 @@ export class SdProjectBuilder {
 
   private async _watchPackageAsync(packageKey: string, server?: http.Server): Promise<void> {
     const logger = new Logger("@simplysm/cli", packageKey);
-    const packageConfig = this.configs[packageKey];
+    const packageConfig = this.config.packages[packageKey];
 
     if (packageConfig.type === "node" || packageConfig.type === "dom") {
       logger.log(`코드검사를 시작합니다...`);
@@ -333,7 +374,7 @@ export class SdProjectBuilder {
     //   timeout = setTimeout(async () => {
     //     await spawnAsync(["npm", "version", "prerelease", "--git-tag-version", "false"], {logger});
     //     const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
-    //     for (const allPackagesItemKey of Object.keys(this.config)) {
+    //     for (const allPackagesItemKey of Object.keys(this.config.packages)) {
     //       const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(allPackagesItemKey);
     //       npmConfig.version = projectNpmConfig.version;
     //       await SdProjectBuilderUtil.writeNpmConfigAsync(allPackagesItemKey, npmConfig);
@@ -420,10 +461,10 @@ export class SdProjectBuilder {
   }
 
   private async _getWebpackConfigAsync(packageKey: string, mode: "production" | "development"): Promise<webpack.Configuration> {
-    const packageConfig = this.configs[packageKey];
+    const packageConfig = this.config.packages[packageKey];
 
     if (packageConfig.type!.startsWith("cordova.") || packageConfig.type!.startsWith("electron.")) {
-      throw new Error("미구현");
+      throw new Error("미구현 (webpack-config)");
     }
 
     const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();

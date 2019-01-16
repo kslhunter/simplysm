@@ -5,58 +5,29 @@ type SdConfigFileJsonPackageConfigOfType<T> = T & {
   development?: T;
   production?: T;
 };
-export type SdConfigFileJsonPackageConfigTypes = SdConfigFileJsonPackageConfigOfType<SdPackageConfigTypes>;
+export type SdConfigFileJsonPackageConfigTypes = SdConfigFileJsonPackageConfigOfType<ISdPackageConfig>;
 
-export type SdPackageConfigTypes =
-  ISdServerPackageConfig |
-  ISdLibraryPackageConfig |
-  ISdWebPackageConfigForEnv |
-  ISdCordovaAndroidPackageConfigForEnv |
-  ISdCordovaBrowserPackageConfigForEnv |
-  ISdElectronPackageConfigForEnv;
 
 export interface ISdConfigFileJson {
   packages: { [key: string]: SdConfigFileJsonPackageConfigTypes };
   extends?: { [key: string]: SdConfigFileJsonPackageConfigTypes };
+  localUpdates?: { [key: string]: string };
 }
 
-export interface ISdServerPackageConfig {
-  type?: "server";
-  publish?: ISdProtocolPublishConfig | ISdNpmPublishConfig;
+export interface ISdProjectConfig {
+  packages: { [key: string]: ISdPackageConfig };
+  localUpdates?: { [key: string]: string };
+}
+
+export interface ISdPackageConfig {
+  type?: "none" | "dom" | "node" | "web" | "cordova.android" | "cordova.browser" | "electron.windows";
+  publish?: ISdPublishConfig;
   env?: { [key: string]: any };
+  vhost?: string;
 }
 
-export interface ISdLibraryPackageConfig {
-  type?: "dom" | "node";
-  publish?: ISdNpmPublishConfig;
-}
-
-export interface ISdWebPackageConfigForEnv {
-  type?: "web";
-  publish?: ISdProtocolPublishConfig;
-  env?: { [key: string]: any };
-}
-
-export interface ISdCordovaAndroidPackageConfigForEnv {
-  type?: "cordova.android";
-  publish?: ISdProtocolPublishConfig;
-  env?: { [key: string]: any };
-}
-
-export interface ISdCordovaBrowserPackageConfigForEnv {
-  type?: "cordova.browser";
-  publish?: ISdProtocolPublishConfig;
-  env?: { [key: string]: any };
-}
-
-export interface ISdElectronPackageConfigForEnv {
-  type?: "electron.windows";
-  publish?: ISdProtocolPublishConfig;
-  env?: { [key: string]: any };
-}
-
-export interface ISdProtocolPublishConfig {
-  protocol?: "ftp" | "WebDAV";
+export interface ISdPublishConfig {
+  protocol?: "npm" | "ftp" | "WebDAV";
   host?: string;
   port?: number;
   username?: string;
@@ -64,9 +35,6 @@ export interface ISdProtocolPublishConfig {
   rootPath?: string;
 }
 
-export interface ISdNpmPublishConfig {
-  protocol?: "npm";
-}
 
 export interface ITsConfig {
   extends?: string;

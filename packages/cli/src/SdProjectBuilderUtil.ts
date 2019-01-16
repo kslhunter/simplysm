@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as os from "os";
-import {INpmConfig, ISdConfigFileJson, ITsConfig, SdPackageConfigTypes} from "./commons";
+import {INpmConfig, ISdProjectConfig, ISdConfigFileJson, ISdPackageConfig, ITsConfig} from "./commons";
 import {optional} from "@simplysm/common";
 
 export class SdProjectBuilderUtil {
@@ -27,12 +27,12 @@ export class SdProjectBuilderUtil {
     await fs.writeJson(tsconfigPath, tsconfig, {spaces: 2, EOL: os.EOL});
   }
 
-  public static async readConfigAsync(env: "development" | "production"): Promise<{ [key: string]: SdPackageConfigTypes }> {
+  public static async readConfigAsync(env: "development" | "production"): Promise<ISdProjectConfig> {
     const orgConfig: ISdConfigFileJson = await fs.readJson(SdProjectBuilderUtil.getProjectPath("simplysm.json"));
 
-    const result: { [key: string]: SdPackageConfigTypes } = {};
+    const result: ISdProjectConfig = {packages: {}};
     for (const packageKey of Object.keys(orgConfig.packages)) {
-      let currPackageConfig: SdPackageConfigTypes = {};
+      let currPackageConfig: ISdPackageConfig = {};
       currPackageConfig = SdProjectBuilderUtil._mergePackageConfigExtends(currPackageConfig, orgConfig, orgConfig.packages[packageKey].extends);
 
       if (orgConfig.packages[packageKey][env]) {
@@ -49,13 +49,15 @@ export class SdProjectBuilderUtil {
         throw new Error("타입이 지정되지 않은 패키지가 있습니다.");
       }
 
-      result[packageKey] = currPackageConfig;
+      result.packages[packageKey] = currPackageConfig;
     }
+
+    result.localUpdates = orgConfig.localUpdates;
 
     return result;
   }
 
-  private static _mergePackageConfigExtends(curr: SdPackageConfigTypes, orgConfig: ISdConfigFileJson, extendNames?: string[]): SdPackageConfigTypes {
+  private static _mergePackageConfigExtends(curr: ISdPackageConfig, orgConfig: ISdConfigFileJson, extendNames?: string[]): ISdPackageConfig {
     if (extendNames) {
       let result = Object.clone(curr);
       for (const extendName of extendNames) {
