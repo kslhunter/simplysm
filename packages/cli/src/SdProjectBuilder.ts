@@ -425,7 +425,10 @@ export class SdProjectBuilder {
 
             const compiler = webpack(webpackConfig);
 
-            const wds = new WebpackDevServer(compiler, {quiet: true});
+            const wds = new WebpackDevServer(compiler, {
+              quiet: true,
+              hot: true
+            });
 
             compiler.hooks.done.tap("SdProjectBuilder", stats => {
               resolve((req, res) => {
@@ -581,7 +584,6 @@ export class SdProjectBuilder {
     const distPath = SdProjectBuilderUtil.getPackagesPath(packageKey, "dist");
 
     let webpackConfig: webpack.Configuration = {
-      entry: path.resolve(__dirname, "../lib/main.js"),
       output: {
         path: distPath,
         publicPath: `/${projectNpmConfig.name}/${packageKey}/`,
@@ -646,13 +648,24 @@ export class SdProjectBuilder {
     if (mode === "production") {
       webpackConfig = webpackMerge(webpackConfig, {
         mode: "production",
-        devtool: "source-map"
+        devtool: "source-map",
+        entry: path.resolve(__dirname, "../lib/main.js")
       });
     }
     else {
+      const host = optional(packageConfig.server, o => o.host);
+      const port = optional(packageConfig.server, o => o.port);
       webpackConfig = webpackMerge(webpackConfig, {
         mode: "development",
-        devtool: "cheap-module-source-map"
+        devtool: "cheap-module-source-map",
+        entry: [
+          `webpack-dev-server/client?http://${host || "0.0.0.0"}:${port || 80}/`,
+          "webpack/hot/dev-server",
+          path.resolve(__dirname, "../lib/main.js")
+        ],
+        plugins: [
+          new webpack.HotModuleReplacementPlugin()
+        ]
       });
     }
 
