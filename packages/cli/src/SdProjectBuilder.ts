@@ -232,7 +232,7 @@ export class SdProjectBuilder {
       await this._buildPackageAsync(packageKey);
 
       await spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
-        logger,
+        logger: packageLogger,
         cwd: SdProjectBuilderUtil.getPackagesPath(packageKey)
       });
 
@@ -252,11 +252,35 @@ export class SdProjectBuilder {
       const packageConfig = this.config.packages[packageKey];
 
       if (packageConfig.publish) {
+        packageLogger.log(`배포를 시작합니다. - v${projectNpmConfig.version}`);
+
         if (packageConfig.publish.protocol === "npm") {
-          await spawnAsync(["yarn", "publish", "--access", "public"], {
-            cwd: SdProjectBuilderUtil.getPackagesPath(packageKey),
-            logger: packageLogger
-          });
+          let message = "";
+          try {
+            await spawnAsync(["yarn", "publish", "--access", "public"], {
+              cwd: SdProjectBuilderUtil.getPackagesPath(packageKey),
+              onMessage: async (errMsg, logMsg) => {
+                if (errMsg) {
+                  message += errMsg + "\r\n";
+                }
+                if (logMsg) {
+                  message += logMsg + "\r\n";
+                }
+              }
+            });
+          }
+          catch (err) {
+            if (message.includes("You cannot publish over the previously published versions")) {
+              packageLogger.warn(`해당 버전 이 이미 배포되어있습니다. - v${projectNpmConfig.version}`);
+              return;
+            }
+            else if (message) {
+              packageLogger.error(`배포중 에러가 발생하였습니다.`, message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "").trim());
+            }
+            else {
+              packageLogger.error(`배포중 에러가 발생하였습니다.`, err);
+            }
+          }
         }
         else {
           // 결과 파일 업로드
@@ -267,6 +291,8 @@ export class SdProjectBuilder {
 
           throw new Error("미구현 (publish)");
         }
+
+        packageLogger.log(`배포가 완료되었습니다. - v${projectNpmConfig.version}`);
       }
     });
 
