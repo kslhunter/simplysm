@@ -9,13 +9,17 @@ export class SdStyleProvider {
   public preset: SdStylePreset = new SdStylePreset();
 
   public async initAsync(): Promise<void> {
-    for (const key of Object.keys(this._styleFns)) {
+    await Promise.all(Object.keys(this._styleFns).map(async key => {
       await this._loadAsync(key);
-    }
+    }));
+  }
+
+  public addStyles(key: string, fn: SdStyleFunction): void {
+    this._styleFns[key] = fn;
   }
 
   public async addStylesAsync(key: string, fn: SdStyleFunction, reload?: boolean): Promise<void> {
-    this._styleFns[key] = fn;
+    this.addStyles(key, fn);
     if (reload) {
       await this._loadAsync(key);
     }

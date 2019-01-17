@@ -37,9 +37,7 @@ const styles: { [key: string]: SdStyleFunction } = {
     ...attributes,
     ...pipes
   ],
-  entryComponents: [
-    ...entryControls
-  ]
+  entryComponents: entryControls
 })
 export class SdAngularModule {
   public constructor(style: SdStyleProvider) {
