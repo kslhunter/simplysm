@@ -12,8 +12,8 @@ import {SdWebpackLoggerPlugin} from "./SdWebpackLoggerPlugin";
 import {ISdProjectConfig} from "./commons";
 import * as child_process from "child_process";
 import {SdSocketServer} from "@simplysm/server";
-import WebpackDevMiddleware = require("webpack-dev-middleware");
-import WebpackHotMiddleware = require("webpack-hot-middleware");
+import * as WebpackDevMiddleware from "webpack-dev-middleware";
+import * as WebpackHotMiddleware from "webpack-hot-middleware";
 // import * as url from "url";
 // import EventEmitter = NodeJS.EventEmitter;
 
