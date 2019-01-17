@@ -228,31 +228,32 @@ export class SdProjectBuilder {
     await this._parallelPackages(!!optional(argv, o => o.build), async packageKey => {
       const packageLogger = new Logger("@simplysm/cli", packageKey);
 
-      await SdProjectBuilder._createTsConfigForBuild(packageKey);
-      await this._buildPackageAsync(packageKey);
-
-      await spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
-        logger: packageLogger,
-        cwd: SdProjectBuilderUtil.getPackagesPath(packageKey)
-      });
-
-      const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
-      const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
-      for (const deps of [npmConfig.dependencies, npmConfig.devDependencies, npmConfig.peerDependencies]) {
-        if (deps) {
-          for (const depKey of Object.keys(deps)) {
-            if (allBuildPackageNpmNames.includes(depKey)) {
-              deps[depKey] = projectNpmConfig.version;
-            }
-          }
-        }
-      }
-      await SdProjectBuilderUtil.writeNpmConfigAsync(packageKey, npmConfig);
-
       const packageConfig = this.config.packages[packageKey];
 
       if (packageConfig.publish) {
+        if (optional(argv, o => o.build)) {
+          await SdProjectBuilder._createTsConfigForBuild(packageKey);
+          await this._buildPackageAsync(packageKey);
+        }
+
         packageLogger.log(`배포를 시작합니다. - v${projectNpmConfig.version}`);
+
+        await spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
+          cwd: SdProjectBuilderUtil.getPackagesPath(packageKey)
+        });
+
+        const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
+        const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
+        for (const deps of [npmConfig.dependencies, npmConfig.devDependencies, npmConfig.peerDependencies]) {
+          if (deps) {
+            for (const depKey of Object.keys(deps)) {
+              if (allBuildPackageNpmNames.includes(depKey)) {
+                deps[depKey] = projectNpmConfig.version;
+              }
+            }
+          }
+        }
+        await SdProjectBuilderUtil.writeNpmConfigAsync(packageKey, npmConfig);
 
         if (packageConfig.publish.protocol === "npm") {
           let message = "";
