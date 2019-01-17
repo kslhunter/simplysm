@@ -19,6 +19,8 @@ process.on("message", async (changedFiles) => {
         const distFilePath = path.resolve(tsConfig.options.outDir, path.relative(path.resolve(packagePath, "src"), changedFile))
           .replace(/\.ts$/, ".js");
 
+        await fs.ensureDir(path.dirname(distFilePath));
+
         if (!fs.existsSync(changedFile)) {
           await Promise.all([
             fs.remove(distFilePath),
@@ -31,7 +33,8 @@ process.on("message", async (changedFiles) => {
 
         const result = ts.transpileModule(content, {
           compilerOptions: tsConfig.options,
-          reportDiagnostics: false
+          reportDiagnostics: false,
+          fileName: changedFile
         });
 
         await Promise.all([
@@ -65,34 +68,3 @@ function sendMessage(message) {
     if (err) throw err;
   });
 }
-
-
-function loader(content) {
-  if (this.cacheable) {
-    this.cacheable();
-  }
-
-  const resourcePath = this.resourcePath.replace(/\\/g, "/");
-
-  const resourceDirPath = path.dirname(resourcePath);
-  const configPath = ts.findConfigFile(resourceDirPath, ts.sys.fileExists, "tsconfig.json");
-  const contextPath = path.dirname(configPath).replace(/\\/g, "/");
-
-  const parsedConfig = ts.parseJsonConfigFileContent(fs.readJsonSync(configPath), ts.sys, path.dirname(configPath));
-  parsedConfig.options.outDir = parsedConfig.options.outDir || path.resolve(path.dirname(configPath), "dist");
-
-  const result = ts.transpileModule(content, {
-    compilerOptions: parsedConfig.options,
-    reportDiagnostics: false
-  });
-
-  const sourceMap = JSON.parse(result.sourceMapText);
-  const fileRelativePath = path.relative(contextPath, resourcePath);
-  sourceMap.sources = [fileRelativePath];
-  sourceMap.file = fileRelativePath;
-  sourceMap.sourcesContent = [content];
-
-  this.callback(undefined, result.outputText, sourceMap);
-}
-
-module.exports = loader;

@@ -3,7 +3,6 @@ require("zone.js/dist/zone");
 
 const AppModule = require("SIMPLYSM_CLIENT_APP_MODULE").AppModule;
 const platformBrowserDynamic = require("@angular/platform-browser-dynamic").platformBrowserDynamic;
-// const hmr = require("@angularclass/hmr");
 
 if (process.env.NODE_ENV !== "production") {
   require("zone.js/dist/long-stack-trace-zone");
@@ -15,13 +14,9 @@ if (process.env.NODE_ENV === "production") {
   enableProdMode();
 }
 
+if (module.hot) {
+  console.clear();
+  module.hot.accept();
+}
 
-// if (process.env.NODE_ENV === "production") {
 platformBrowserDynamic().bootstrapModule(AppModule);
-// }
-// else {
-//   hmr.bootloader(() => {
-//     return platformBrowserDynamic().bootstrapModule(AppModule)
-//       .then(ngModuleRef => hmr.hmrModule(ngModuleRef, module));
-//   });
-// }

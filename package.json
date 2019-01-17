@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "1.0.46",
+  "version": "1.0.47",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -9,7 +9,7 @@
   "scripts": {
     "bootstrap": "yarn install && yarn _sd-cli_ bootstrap",
     "watch": "yarn _sd-cli_ watch",
-    "build": "yarn _sd-cli_ build",
+    "build": "yarn _sd-cli_ build --packages common",
     "publish": "yarn _sd-cli_ publish",
     "build+publish": "yarn _sd-cli_ publish --build",
     "--": "",
@@ -22,7 +22,6 @@
     "@angular/platform-browser": "^7.2.0",
     "@angular/platform-browser-dynamic": "^7.2.0",
     "@angular/router": "^7.2.0",
-    "@angularclass/hmr": "^2.1.3",
     "@types/chokidar": "^1.7.5",
     "@types/express": "^4.16.0",
     "@types/fs-extra": "^5.0.4",
@@ -61,5 +60,9 @@
     "ws": "^6.1.2",
     "yargs": "^12.0.5",
     "zone.js": "^0.8.26"
+  },
+  "dependencies": {
+    "@types/less": "^3.0.0",
+    "less": "^3.9.0"
   }
 }

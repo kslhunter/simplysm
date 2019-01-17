@@ -4,7 +4,6 @@ import {Logger, optional, Wait} from "@simplysm/common";
 import * as webpack from "webpack";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import * as webpackMerge from "webpack-merge";
-// import * as WebpackDevServer from "webpack-dev-server";
 import * as glob from "glob";
 import {FileWatcher, spawnAsync} from "@simplysm/core";
 import {SdProjectBuilderUtil} from "./SdProjectBuilderUtil";
@@ -14,8 +13,6 @@ import * as child_process from "child_process";
 import {SdSocketServer} from "@simplysm/server";
 import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
-// import * as url from "url";
-// import EventEmitter = NodeJS.EventEmitter;
 
 export class SdProjectBuilder {
   private config: ISdProjectConfig = {packages: {}};
@@ -142,7 +139,7 @@ export class SdProjectBuilder {
         const currServer = serverMap.get(port);
         await this._watchPackageAsync(packageKey, currServer);
 
-        new Logger("@simplysm/cli", packageKey).info(`개발서버 서비스가 시작되었습니다: http://localhost:${port}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}`);
+        new Logger("@simplysm/cli", packageKey).info(`개발서버 서비스가 시작되었습니다: http://localhost:${port}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
       }
       else {
         await this._watchPackageAsync(packageKey);
@@ -175,7 +172,7 @@ export class SdProjectBuilder {
                       try {
                         const targetFilePath = path.resolve(targetDirPath, path.relative(sourceDirPath, change.filePath));
                         await fs.copy(change.filePath, targetFilePath);
-                        new Logger("@simplysm/cli").log(`로컬 외부소스 변경감지: ${change.filePath} => ${targetFilePath}`);
+                        // new Logger("@simplysm/cli").log(`로컬 외부소스 변경감지: ${change.filePath} => ${targetFilePath}`);
                         resolve1();
                       }
                       catch (err) {
@@ -376,6 +373,8 @@ export class SdProjectBuilder {
   }
 
   private async _buildPackageAsync(packageKey: string): Promise<void> {
+    await fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
+
     const packageConfig = this.config.packages[packageKey];
 
     if (packageConfig.type === "node" || packageConfig.type === "dom") {
@@ -405,6 +404,8 @@ export class SdProjectBuilder {
   }
 
   private async _watchPackageAsync(packageKey: string, server?: SdSocketServer): Promise<void> {
+    await fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
+
     const packageConfig = this.config.packages[packageKey];
 
     if (packageConfig.type === "none") {
@@ -426,39 +427,19 @@ export class SdProjectBuilder {
 
             const compiler = webpack(webpackConfig);
 
-            // const wds = new WebpackDevServer(compiler, {
-            //   quiet: true,
-            //   hot: true,
-            //   publicPath: webpackConfig.output!.publicPath
-            // });
+            server.app!.use(WebpackDevMiddleware(compiler, {
+              publicPath: webpackConfig.output!.publicPath!,
+              logLevel: "silent"
+            }));
 
-            server.app!.use(WebpackDevMiddleware(compiler));
-            server.app!.use(WebpackHotMiddleware(compiler));
+            server.app!.use(WebpackHotMiddleware(compiler, {
+              path: "/__webpack_hmr",
+              log: false
+            }));
 
             compiler.hooks.done.tap("SdProjectBuilder", () => {
               resolve();
             });
-
-            // compiler.hooks.done.tap("SdProjectBuilder", stats => {
-            //   resolve((req, res) => {
-            //     const urlObj = url.parse(req.url!, true, false);
-            //     const urlPath = decodeURI(urlObj.pathname!);
-            //
-            //     if (req.method === "GET" && urlPath.startsWith(webpackConfig.output!.publicPath!.slice(0, -1))) {
-            //       /*req.url = (req.url as string).replace(webpackConfig.output!.publicPath!.slice(0, -1), "");*/
-            //       wds["app"](req, res);
-            //       return true;
-            //     }
-            //
-            //     if (req.method === "GET" && urlPath.startsWith("/sockjs-node")) {
-            //       wds["app"](req, res);
-            //       return true;
-            //     }
-            //
-            //     wds["app"](req, res);
-            //     return false;
-            //   });
-            // });
           }
           catch (err) {
             reject(err);
@@ -671,13 +652,11 @@ export class SdProjectBuilder {
       });
     }
     else {
-      const port = optional(packageConfig.server, o => o.port);
       webpackConfig = webpackMerge(webpackConfig, {
         mode: "development",
         devtool: "cheap-module-source-map",
         entry: [
-          `webpack-dev-server/client?http://0.0.0.0:${port || 80}/`,
-          "webpack/hot/dev-server",
+          `webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000`,
           path.resolve(__dirname, "../lib/main.js")
         ],
         plugins: [
