@@ -1,0 +1,10 @@
+sd-link {
+  display: inline;
+  cursor: pointer;
+  color: get($theme-color, primary, default);
+  text-decoration: none;
+
+  &:hover {
+    color: get($theme-color, secondary, darkest);
+  }
+}

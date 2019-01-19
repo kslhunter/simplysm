@@ -1,0 +1,60 @@
+*, *:after, *:before {
+  box-sizing: border-box;
+}
+
+*:focus {
+  outline-color: get($theme-color, primary, default);
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: $bg-color;
+  color: get($text-color, default);
+  font-family: $font-family;
+  font-size: get($font-size, default);
+  line-height: $line-height;
+}
+
+pre, code {
+  color: get($text-color, default);
+  font-family: $font-family;
+  font-size: get($font-size, default);
+  line-height: $line-height;
+  margin: 0;
+}
+
+code {
+  font-family: $font-family-monospace;
+}
+
+@for $i from 1 through 6 {
+  h#{$i} {
+    font-size: get($font-size, h#{$i});
+    line-height: $line-height;
+    margin: 0;
+  }
+}
+
+::-webkit-scrollbar-track {
+  background-color: get($trans-color, default);
+}
+
+::-webkit-scrollbar-corner {
+  background-color: get($trans-color, default);
+}
+
+::-webkit-scrollbar {
+  width: get($gap, default);
+  height: get($gap, default);
+  opacity: 0;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: get($trans-color, default);
+}

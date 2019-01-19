@@ -1,9 +1,5 @@
 $bg-color: get($theme-color, grey, lightest) !default;
 
-$font-family: 'Noto Sans KR', '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;
-$font-family-monospace: 'D2 coding', monospace !default;
-$line-height: 1.4em !default;
-
 $z-index-toast: 9999 !default;
 $z-index-busy: 9998 !default;
 $z-index-dropdown: 5000 !default;

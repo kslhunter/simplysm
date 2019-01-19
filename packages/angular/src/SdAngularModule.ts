@@ -1,8 +1,11 @@
 import {CommonModule} from "@angular/common";
 import {ModuleWithProviders, NgModule, Provider} from "@angular/core";
 import {Type} from "@simplysm/common";
+import {SdLinkControl} from "./controls/SdLinkControl";
 
-const controls: Type<any>[] = [];
+const controls: Type<any>[] = [
+  SdLinkControl
+];
 
 const entryControls: Type<any>[] = [];
 

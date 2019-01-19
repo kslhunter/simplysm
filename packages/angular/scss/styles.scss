@@ -5,9 +5,5 @@
 @import "presets/variables3";
 @import "presets/variables4";
 @import "presets/mixins";
-
-//$theme-color-pallet: map-merge($theme-color-pallet, (primary: $color-blue));
-
-//@import "classes";
 @import "defaults";
-//@import "controls";
+@import "controls/sd-link";

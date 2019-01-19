@@ -616,11 +616,24 @@ export class SdProjectBuilder {
           },
           {
             test: /\.scss$/,
-            loaders: [
-              // "style-loader",
+            use: [
+              "style-loader",
               "css-loader",
               "resolve-url-loader",
-              "sass-loader"
+              {
+                loader: "sass-loader",
+                options: {
+                  sourceMap: true,
+                  sourceMapContents: false
+                }
+              }
+            ]
+          },
+          {
+            test: /\.css$/,
+            use: [
+              "style-loader",
+              "css-loader"
             ]
           },
           {
