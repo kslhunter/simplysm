@@ -1,0 +1,52 @@
+$theme-color-pallet: (
+  grey: $color-grey,
+  blue-grey: $color-blue-grey,
+  primary: $color-deep-purple,
+  secondary: $color-yellow,
+  info: $color-blue,
+  success: $color-green,
+  warning: $color-orange,
+  danger: $color-red
+) !default;
+
+$trans-color: (
+  darker: rgba(0, 0, 0, .3),
+  dark: rgba(0, 0, 0, .2),
+  default: rgba(0, 0, 0, .1),
+  light: rgba(255, 255, 255, .1),
+  lighter: rgba(255, 255, 255, .2)
+) !default;
+
+$text-color: (
+  dark: black,
+  default: rgba(0, 0, 0, .87),
+  light: rgba(0, 0, 0, .60),
+  lighter: rgba(0, 0, 0, .38)
+) !default;
+
+$text-reverse-color: (
+  default: white,
+  dark: rgba(255, 255, 255, .7)
+) !default;
+
+$gap: (
+  xxs: 4px,
+  xs: 6px,
+  sm: 8px,
+  default: 12px,
+  lg: 16px,
+  xl: 20px,
+  xxl: 24px
+) !default;
+
+$font-size: (
+  lg: 16px,
+  default: 14px,
+  sm: 12px,
+  h1: 26px,
+  h2: 20px,
+  h3: 18px,
+  h4: 16px,
+  h5: 14px,
+  h6: 12px
+) !default;

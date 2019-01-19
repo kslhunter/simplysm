@@ -1,0 +1,24 @@
+$bg-color: get($theme-color, grey, lightest) !default;
+
+$font-family: 'Noto Sans KR', '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;
+$font-family-monospace = 'D2 coding', monospace;
+$line-height: 1.4em !default;
+
+$z-index-toast: 9999 !default;
+$z-index-busy: 9998 !default;
+$z-index-dropdown: 5000 !default;
+$z-index-modal: 4000 !default;
+$z-index-fullscreen: 3000 !default;
+$z-index-sidebar: 2100 !default;
+$z-index-topbar: 2000 !default;
+
+$media-mobile: screen and (max-width : 520px) !default;
+
+$topbar-bg-color: get($theme-color, blue-grey, darkest) !default;
+$topbar-link-color: get($theme-color, secondary, default) !default;
+$topbar-height: 42px !default;
+
+$sidebar-width: 240px !default;
+
+$sheet-padding-v: get($gap, xs);
+$sheet-padding-h: get($gap, sm);
