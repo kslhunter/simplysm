@@ -1,5 +1,5 @@
 .idea/**/workspace.xml
-dist
 node_modules
-yarn-error.log
 tsconfig.build.json
+dist
+yarn-error.log

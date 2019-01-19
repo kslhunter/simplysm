@@ -102,7 +102,7 @@ export class SdProjectBuilder {
               reject(new Error(`소스파일을 찾을 수 없습니다. ("${sourceDirPath}")`));
               return;
             }
-            promiseList2.push(fs.copy(sourceDirPath, targetDirPath, {overwrite: true}));
+            promiseList2.push(fs.copy(sourceDirPath, targetDirPath));
           }
 
           resolve();
@@ -617,8 +617,9 @@ export class SdProjectBuilder {
           {
             test: /\.scss$/,
             loaders: [
-              "style-loader",
+              // "style-loader",
               "css-loader",
+              "resolve-url-loader",
               "sass-loader"
             ]
           },
