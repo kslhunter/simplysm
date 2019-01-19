@@ -615,6 +615,14 @@ export class SdProjectBuilder {
             ]
           },
           {
+            test: /\.scss$/,
+            loaders: [
+              "style-loader",
+              "css-loader",
+              "sass-loader"
+            ]
+          },
+          {
             test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf)$/,
             loader: "file-loader",
             options: {
