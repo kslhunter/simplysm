@@ -219,16 +219,16 @@ export class SdProjectBuilder {
       resolve();
     });
 
-    await spawnAsync(["npm", "version", "patch", "--git-tag-version", "false"], {logger});
-
-    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
-
     if (optional(argv, o => o.build)) {
       await this._parallelPackages(true, async packageKey => {
         await SdProjectBuilder._createTsConfigForBuild(packageKey);
         await this._buildPackageAsync(packageKey);
       });
     }
+
+    await spawnAsync(["npm", "version", "patch", "--git-tag-version", "false"], {logger});
+
+    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
 
     await this._parallelPackages(false, async packageKey => {
       const packageLogger = new Logger("@simplysm/cli", packageKey);
