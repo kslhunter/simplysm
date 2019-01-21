@@ -1,30 +1,57 @@
 sd-button {
-  > button {
-    @include form-control-base();
+  display: block;
+  position: relative;
 
-    display: block;
-    width: 100%;
-    padding: get($gap, sm) get($gap, md);
-    background: transparent;
-    border: 1px solid transparent;
+  & > button {
+    @include form-control-base();
     @include elevation(2);
-    cursor: pointer;
-    transition: box-shadow .1s linear;
+
     font-weight: bold;
+    transition: box-shadow .1s linear;
+    background: white;
+    cursor: pointer;
+    color: get($text-color, default);
+    border-radius: 4px;
 
     &:hover {
       @include elevation(8);
     }
 
     &:active {
-      @include elevation(0);
+      background: get($trans-color, dark);
+    }
+
+    &:disabled {
+      background: transparent;
+      cursor: default;
+      color: get($text-color, default);
+    }
+
+    &:focus {
+      outline-color: transparent;
+      @include elevation(8);
     }
   }
 
   @each $key, $val in $theme-color {
     &[sd-theme=#{$key}] > button {
       background: get($val, default);
+      border-color: get($val, default);
       color: get($text-reverse-color, default);
+
+      &:hover {
+        background: get($val, darker);
+      }
+
+      &:active {
+        background: get($val, dark);
+      }
+
+      &:disabled {
+        background: get($theme-color, grey, default);
+        border-color: get($theme-color, grey, default);
+        cursor: default;
+      }
     }
   }
 
@@ -33,6 +60,63 @@ sd-button {
   }
 
   &[sd-size=lg] > button {
-    padding: get($gap, md) get($gap, lg);
+    padding: get($gap, default) get($gap, lg);
+  }
+
+  &[sd-inline=true] {
+    display: inline-block;
+
+    > button {
+      width: 100%;
+    }
+  }
+
+  &[sd-invalid=true] > ._invalid-indicator {
+    display: block;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    border-radius: 100%;
+    width: 4px;
+    height: 4px;
+    background: get($theme-color, danger, default);
+  }
+
+  &[sd-inset=true] {
+    > button {
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0;
+
+      &:hover {
+        background: get($trans-color, default);
+      }
+
+      &:active {
+        background: get($trans-color, dark);
+      }
+
+      &:disabled {
+        background: transparent;
+      }
+    }
+
+    @each $key, $val in $theme-color {
+      &[sd-theme=#{$key}] > button {
+        background: get($val, default);
+
+        &:hover {
+          background: get($val, dark);
+        }
+
+        &:active {
+          background: get($val, darker);
+        }
+
+        &:disabled {
+          background: get($theme-color, grey, default);
+        }
+      }
+    }
   }
 }

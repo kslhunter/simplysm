@@ -1,8 +1,7 @@
 $theme-color-pallet: (
   grey: $color-grey,
-  blue-grey: $color-blue-grey,
+  bluegrey: $color-bluegrey,
   primary: $color-deep-purple,
-  secondary: $color-yellow,
   info: $color-blue,
   success: $color-green,
   warning: $color-orange,
@@ -33,17 +32,17 @@ $gap: (
   xxs: 4px,
   xs: 6px,
   sm: 8px,
-  md: 12px,
-  lg: 14px,
-  xl: 16px,
-  xxl: 20px
+  default: 10px,
+  lg: 16px,
+  xl: 20px,
+  xxl: 24px
 ) !default;
 
 $font-size: (
   lg: 17px,
-  md: 15px,
+  default: 15px,
   sm: 13px,
-  h1: 27px,
+  h1: 23px,
   h2: 21px,
   h3: 19px,
   h4: 17px,
@@ -51,6 +50,16 @@ $font-size: (
   h6: 13px
 ) !default;
 
-$font-family: 'Noto Sans KR', '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;
+$font-family: 'Noto Sans KR', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;
 $font-family-monospace: 'D2 coding', monospace !default;
-$line-height: 1.25em !default;
+$line-height: 1.4em !default;
+
+$z-index-toast: 9999 !default;
+$z-index-busy: 9998 !default;
+$z-index-dropdown: 5000 !default;
+$z-index-modal: 4000 !default;
+$z-index-fullscreen: 3000 !default;
+$z-index-sidebar: 2100 !default;
+$z-index-topbar: 2000 !default;
+
+$screen-mobile: "screen and (max-width : 520px)" !default;

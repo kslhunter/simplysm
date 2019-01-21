@@ -1,0 +1,99 @@
+sd-list {
+  display: block;
+  user-select: none;
+}
+
+sd-list-item {
+  display: block;
+
+  > label {
+    display: block;
+    padding: get($gap, sm) get($gap, default);
+    transition: background .1s linear;
+
+    > sd-icon {
+      float: right;
+      transition: transform .1s ease-in;
+    }
+
+    &:focus {
+      outline-color: transparent;
+    }
+  }
+
+  > ._child {
+    overflow: hidden;
+
+    > ._child-content {
+      transition: margin-top .1s ease-out;
+      background: rgba(0, 0, 0, .05);
+    }
+  }
+
+  &[sd-clickable=true] {
+    > label {
+      cursor: pointer;
+
+      &:hover {
+        background: rgba(0, 0, 0, .1);
+      }
+    }
+  }
+
+  &[sd-open=true] {
+    > label > sd-icon {
+      transform: rotate(-90deg);
+      transition: transform .1s ease-out;
+    }
+
+    > ._child > ._child-content {
+      transition: margin-top .1s ease-in;
+    }
+  }
+
+  &[sd-size=sm] > label {
+    padding: get($gap, xs) get($gap, sm);
+  }
+
+  &[sd-size=lg] > label {
+    padding: get($gap, default) get($gap, lg);
+  }
+
+  &[sd-selected=true] > label {
+    color: get($theme-color, primary, default);
+    font-weight: bold;
+  }
+
+  &[sd-disabled=true] {
+    pointer-events: none;
+
+    > label {
+      color: get($text-color, lighter);
+      cursor: default;
+    }
+  }
+
+  &[sd-header=true] {
+    > label {
+      cursor: default;
+      background: transparent;
+      padding: get($gap, xs) get($gap, default);
+      color: get($text-color, light);
+      font-size: get($font-size, sm);
+      margin-top: get($gap, sm);
+
+      &:hover {
+        background: transparent;
+      }
+
+      > ._angle-icon {
+        display: none;
+      }
+    }
+
+    > ._child > ._child-content {
+      margin-top: 0 !important;
+      background: transparent !important;
+    }
+  }
+}

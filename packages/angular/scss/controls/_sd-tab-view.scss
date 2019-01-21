@@ -1,0 +1,9 @@
+sd-tabview-item {
+  display: none;
+  width: 100%;
+  height: 100%;
+
+  &[sd-selected=true] {
+    display: block;
+  }
+}

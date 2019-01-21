@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
-import {SdTypeValidate} from "../common/SdTypeValidate";
+import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-form",
@@ -10,6 +10,11 @@ import {SdTypeValidate} from "../common/SdTypeValidate";
     </form>`
 })
 export class SdFormControl {
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-inline")
+  public inline?: boolean;
+
   @Output()
   public readonly submit = new EventEmitter<void>();
 
@@ -18,20 +23,4 @@ export class SdFormControl {
     event.stopPropagation();
     this.submit.emit();
   }
-}
-
-
-@Component({
-  selector: "sd-form-item",
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <label class="_label">{{ label }}</label>
-    <div class="_content">
-      <ng-content></ng-content>
-    </div>`
-})
-export class SdFormItemControl {
-  @Input()
-  @SdTypeValidate(String)
-  public label?: string;
 }

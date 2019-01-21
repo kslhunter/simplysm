@@ -1,10 +1,16 @@
 @mixin form-control-base() {
-  font-size: get($font-size, md);
+  display: block;
+  width: 100%;
+  font-size: get($font-size, default);
   font-family: $font-family;
   line-height: $line-height;
   color: get($text-color, default);
+  padding: get($gap, sm) get($gap, default);
+
+  border: 1px solid transparent;
+  user-select: none;
 }
 
 @mixin elevation($value) {
-  box-shadow: 0 0 #{$value/2}px get($trans-color, default), 0 #{$value/2}px #{$value}px get($trans-color, dark);
+  box-shadow: 0 #{$value}px #{$value + 1}px rgba(0, 0, 0, .1);
 }

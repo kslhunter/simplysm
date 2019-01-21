@@ -1,34 +1,53 @@
 sd-form {
-  display: block;
+  &[sd-inline=true] {
+    display: inline-block;
+    vertical-align: middle;
 
-  > form {
-    display: table;
-    width: 100%;
+    > form {
+      display: inline-block;
+      margin-bottom: - get($gap, sm);
 
-    > sd-form-item {
-      display: table-row;
+      > sd-form-item {
+        display: inline-block;
+        margin-bottom: get($gap, sm);
+        margin-right: get($gap, default);
 
-      > ._label {
-        display: table-cell;
-        text-align: right;
-        padding-right: get($gap, sm);
-        padding-bottom: get($gap, sm);
-      }
-
-      > ._content {
-        display: table-cell;
-        padding-bottom: get($gap, sm);
-      }
-
-      /*&:last-child {
-        > ._label {
-          padding-bottom: 0;
+        &:last-child {
+          margin-right: 0;
         }
 
-        > ._content {
-          padding-bottom: 0;
+        > label {
+          display: inline-block;
+          vertical-align: middle;
+          margin-right: get($gap, sm);
+          margin-bottom: 0;
         }
-      }*/
+
+        > div {
+          display: inline-block;
+          vertical-align: middle;
+
+          > sd-checkbox > label {
+            display: inline-block;
+            width: auto;
+          }
+        }
+      }
     }
+  }
+}
+
+sd-form-item {
+  display: block;
+  margin-bottom: get($gap, default);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  & > label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: get($gap, xs);
   }
 }
