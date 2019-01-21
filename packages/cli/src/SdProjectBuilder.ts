@@ -358,14 +358,14 @@ export class SdProjectBuilder {
           }
         }));
       }
-
-      await Promise.all(promises);
     }
     else {
       for (const packageKey of Object.keys(this.config.packages)) {
         promises.push(cb(packageKey));
       }
     }
+
+    await Promise.all(promises);
   }
 
   private async _getAllBuildPackageNpmNamesAsync(): Promise<string[]> {
