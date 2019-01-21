@@ -203,7 +203,7 @@ export class SdProjectBuilder {
     });
   }
 
-  public async publishAsync(argv?: { build?: boolean, packages?: string }): Promise<void> {
+  public async publishAsync(argv?: { build?: boolean; packages?: string }): Promise<void> {
     const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
     await this._readConfig("production", packageKeys);
 
@@ -222,7 +222,6 @@ export class SdProjectBuilder {
     await spawnAsync(["npm", "version", "patch", "--git-tag-version", "false"], {logger});
 
     const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
-
 
     if (optional(argv, o => o.build)) {
       await this._parallelPackages(true, async packageKey => {
