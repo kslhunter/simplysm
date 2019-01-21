@@ -1,0 +1,6 @@
+sd-card {
+  display: block;
+  background: white;
+  @include elevation(4);
+  padding: get($gap, lg);
+}

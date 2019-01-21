@@ -2,9 +2,24 @@ import {CommonModule} from "@angular/common";
 import {ModuleWithProviders, NgModule, Provider} from "@angular/core";
 import {Type} from "@simplysm/common";
 import {SdLinkControl} from "./controls/SdLinkControl";
+import {SdCardControl} from "./controls/SdCardControl";
+import {SdFormControl, SdFormItemControl} from "./controls/SdFormControl";
+import {SdTextfieldControl} from "./controls/SdTextfieldControl";
+import {SdButtonControl} from "./controls/SdButtonControl";
+import {SdSidebarContainerControl, SdSidebarControl, SdSidebarItemControl} from "./controls/SdSidebarControl";
+import {SdPaneControl} from "./controls/SdPaneControl";
 
 const controls: Type<any>[] = [
-  SdLinkControl
+  SdLinkControl,
+  SdCardControl,
+  SdFormControl,
+  SdFormItemControl,
+  SdTextfieldControl,
+  SdButtonControl,
+  SdSidebarContainerControl,
+  SdSidebarControl,
+  SdSidebarItemControl,
+  SdPaneControl
 ];
 
 const entryControls: Type<any>[] = [];

@@ -33,22 +33,22 @@ $gap: (
   xxs: 4px,
   xs: 6px,
   sm: 8px,
-  default: 12px,
-  lg: 16px,
-  xl: 20px,
-  xxl: 24px
+  md: 12px,
+  lg: 14px,
+  xl: 16px,
+  xxl: 20px
 ) !default;
 
 $font-size: (
-  lg: 16px,
-  default: 14px,
-  sm: 12px,
-  h1: 26px,
-  h2: 20px,
-  h3: 18px,
-  h4: 16px,
-  h5: 14px,
-  h6: 12px
+  lg: 17px,
+  md: 15px,
+  sm: 13px,
+  h1: 27px,
+  h2: 21px,
+  h3: 19px,
+  h4: 17px,
+  h5: 15px,
+  h6: 13px
 ) !default;
 
 $font-family: 'Noto Sans KR', '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;

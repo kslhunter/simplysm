@@ -1,0 +1,38 @@
+sd-button {
+  > button {
+    @include form-control-base();
+
+    display: block;
+    width: 100%;
+    padding: get($gap, sm) get($gap, md);
+    background: transparent;
+    border: 1px solid transparent;
+    @include elevation(2);
+    cursor: pointer;
+    transition: box-shadow .1s linear;
+    font-weight: bold;
+
+    &:hover {
+      @include elevation(8);
+    }
+
+    &:active {
+      @include elevation(0);
+    }
+  }
+
+  @each $key, $val in $theme-color {
+    &[sd-theme=#{$key}] > button {
+      background: get($val, default);
+      color: get($text-reverse-color, default);
+    }
+  }
+
+  &[sd-size=sm] > button {
+    padding: get($gap, xs) get($gap, sm);
+  }
+
+  &[sd-size=lg] > button {
+    padding: get($gap, md) get($gap, lg);
+  }
+}

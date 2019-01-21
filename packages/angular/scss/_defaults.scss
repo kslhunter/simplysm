@@ -17,14 +17,14 @@ body {
   background: $bg-color;
   color: get($text-color, default);
   font-family: $font-family;
-  font-size: get($font-size, default);
+  font-size: get($font-size, md);
   line-height: $line-height;
 }
 
 pre, code {
   color: get($text-color, default);
   font-family: $font-family;
-  font-size: get($font-size, default);
+  font-size: get($font-size, md);
   line-height: $line-height;
   margin: 0;
 }
@@ -50,8 +50,8 @@ code {
 }
 
 ::-webkit-scrollbar {
-  width: get($gap, default);
-  height: get($gap, default);
+  width: get($gap, md);
+  height: get($gap, md);
   opacity: 0;
 }
 
