@@ -31,6 +31,8 @@ export interface IValidateDef {
   type?: Type<any> | Type<any>[];
   notnull?: boolean;
 
+  includes?: any[];
+
   validator?(value: any): boolean;
 }
 
@@ -41,6 +43,8 @@ export interface IValidateResult {
   propertyKey?: string;
   type?: Type<any> | Type<any>[];
   notnull?: boolean;
+
+  includes?: any[];
 
   validator?(value: any): boolean;
 }
@@ -202,6 +206,12 @@ Object.validate = function (value: any, def: ValidateDef): IValidateResult | und
   if (config.validator) {
     if (!config.validator(value)) {
       return {value, validator: config.validator};
+    }
+  }
+
+  if (config.includes) {
+    if (!config.includes.includes(value)) {
+      return {value, includes: config.includes};
     }
   }
 };

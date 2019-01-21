@@ -4,9 +4,9 @@ import {IconName, library} from "@fortawesome/fontawesome-svg-core";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {far} from "@fortawesome/free-regular-svg-icons";
 import {fab} from "@fortawesome/free-brands-svg-icons";
+import {SdIconControl} from "./SdIconControl";
 
 library.add(fas, far, fab);
-const iconNames = Object.values(fas).map(item => item.iconName);
 
 @Component({
   selector: "sd-sidebar-container",
@@ -30,13 +30,19 @@ export class SdSidebarControl {
   selector: "sd-sidebar-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`
+    <label class="_label" [attr.title]="title">
+      <sd-icon [icon]="icon"></sd-icon>
+    </label>`
 })
 export class SdSidebarItemControl {
   @Input()
   @SdTypeValidate({
     type: String,
-    validator: value => iconNames.includes(value)
+    validator: value => SdIconControl.iconNames.includes(value)
   })
   public icon?: IconName;
+
+  @Input()
+  @SdTypeValidate(String)
+  public title?: string;
 }

@@ -8,6 +8,8 @@ import {SdTextfieldControl} from "./controls/SdTextfieldControl";
 import {SdButtonControl} from "./controls/SdButtonControl";
 import {SdSidebarContainerControl, SdSidebarControl, SdSidebarItemControl} from "./controls/SdSidebarControl";
 import {SdPaneControl} from "./controls/SdPaneControl";
+import {SdIconControl} from "./controls/SdIconControl";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 
 const controls: Type<any>[] = [
   SdLinkControl,
@@ -19,7 +21,8 @@ const controls: Type<any>[] = [
   SdSidebarContainerControl,
   SdSidebarControl,
   SdSidebarItemControl,
-  SdPaneControl
+  SdPaneControl,
+  SdIconControl
 ];
 
 const entryControls: Type<any>[] = [];
@@ -32,7 +35,8 @@ const providers: Provider[] = [];
 
 @NgModule({
   imports: [
-    CommonModule
+    CommonModule,
+    FontAwesomeModule
   ],
   exports: [
     ...controls,
