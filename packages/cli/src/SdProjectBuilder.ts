@@ -203,7 +203,7 @@ export class SdProjectBuilder {
     });
   }
 
-  public async publishAsync(argv?: { build?: boolean; packages?: string }): Promise<void> {
+  public async publishAsync(argv?: { build?: boolean, packages?: string }): Promise<void> {
     const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
     await this._readConfig("production", packageKeys);
 
@@ -223,17 +223,20 @@ export class SdProjectBuilder {
 
     const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
 
-    await this._parallelPackages(!!optional(argv, o => o.build), async packageKey => {
+
+    if (optional(argv, o => o.build)) {
+      await this._parallelPackages(true, async packageKey => {
+        await SdProjectBuilder._createTsConfigForBuild(packageKey);
+        await this._buildPackageAsync(packageKey);
+      });
+    }
+
+    await this._parallelPackages(false, async packageKey => {
       const packageLogger = new Logger("@simplysm/cli", packageKey);
 
       const packageConfig = this.config.packages[packageKey];
 
       if (packageConfig.publish) {
-        if (optional(argv, o => o.build)) {
-          await SdProjectBuilder._createTsConfigForBuild(packageKey);
-          await this._buildPackageAsync(packageKey);
-        }
-
         packageLogger.log(`배포를 시작합니다. - v${projectNpmConfig.version}`);
 
         await spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
@@ -294,6 +297,9 @@ export class SdProjectBuilder {
         packageLogger.log(`배포가 완료되었습니다. - v${projectNpmConfig.version}`);
       }
     });
+
+    /*await this._parallelPackages(!!optional(argv, o => o.build), async packageKey => {
+    });*/
 
     await spawnAsync(["git", "add", "."], {logger});
     await spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});

@@ -21,6 +21,7 @@
     "@simplysm/common": "1.0.54",
     "core-js": "^2.6.1",
     "rxjs": "^6.3.3",
-    "zone.js": "^0.8.26"
+    "zone.js": "^0.8.26",
+    "@fortawesome/angular-fontawesome": "^0.3.0"
   }
 }
