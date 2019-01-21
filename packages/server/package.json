@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/server",
-  "version": "1.0.57",
+  "version": "1.0.58",
   "description": "심플리즘 패키지 (서버)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -11,7 +11,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/common": "1.0.57",
+    "@simplysm/common": "1.0.58",
     "express": "^4.16.4",
     "fs-extra": "^7.0.1",
     "ws": "^6.1.2"
