@@ -1,6 +1,5 @@
 import {Injectable} from "@angular/core";
 import {EventManager} from "@angular/platform-browser";
-import {ResizeEvent} from "../commons/ResizeEvent";
 
 @Injectable()
 export class ResizeEventPlugin {
@@ -63,4 +62,9 @@ export class ResizeEventPlugin {
   public supports(eventName: string): boolean {
     return eventName === "resize";
   }
+}
+
+// tslint:disable-next-line:interface-name
+export interface ResizeEvent extends CustomEvent {
+  dimensions: ("width" | "height")[];
 }

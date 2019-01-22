@@ -11,11 +11,10 @@ import {
   OnInit
 } from "@angular/core";
 import {SdDockContainerControl} from "./SdDockContainerControl";
-import {SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
+import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
-import {ResizeEvent} from "../commons/ResizeEvent";
-import {ISdNotifyPropertyChange} from "../commons/ISdNotifyPropertyChange";
+import {ResizeEvent} from "../plugins/ResizeEventPlugin";
 
 @Component({
   selector: "sd-dock",

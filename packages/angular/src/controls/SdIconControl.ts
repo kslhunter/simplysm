@@ -3,9 +3,8 @@ import {counter, icon, IconLookup, IconName, library} from "@fortawesome/fontawe
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {far} from "@fortawesome/free-regular-svg-icons";
 import {fab} from "@fortawesome/free-brands-svg-icons";
-import {SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
+import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
-import {ISdNotifyPropertyChange} from "../commons/ISdNotifyPropertyChange";
 
 library.add(fas, far, fab);
 const iconNames = Object.values(fas).map(item => item.iconName);

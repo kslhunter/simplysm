@@ -9,9 +9,8 @@ import {
   ViewChild
 } from "@angular/core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
-import {SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
+import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
 import {DateOnly, DateTime, Time} from "@simplysm/common";
-import {ISdNotifyPropertyChange} from "../commons/ISdNotifyPropertyChange";
 
 @Component({
   selector: "sd-textfield",

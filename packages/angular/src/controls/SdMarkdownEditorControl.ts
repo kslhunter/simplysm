@@ -10,9 +10,7 @@ import {
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 import * as marked from "marked";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
-import {ISdMarkdownEditorDropFilesEvent} from "../commons/ISdMarkdownEditorDropFilesEvent";
-import {ISdNotifyPropertyChange} from "../commons/ISdNotifyPropertyChange";
+import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
 
 @Component({
   selector: "sd-markdown-editor",
@@ -251,4 +249,9 @@ export class SdMarkdownEditorControl implements ISdNotifyPropertyChange {
       this.dropFiles.emit({position, files});
     }
   }
+}
+
+export interface ISdMarkdownEditorDropFilesEvent {
+  position: number;
+  files: File[];
 }

@@ -6,7 +6,7 @@ import {
   ContentChildren,
   DoCheck,
   ElementRef,
-  EventEmitter,
+  EventEmitter, forwardRef,
   HostBinding,
   Input,
   IterableDiffer,
@@ -51,7 +51,7 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
   @SdTypeValidate(String)
   public keyProp?: string;
 
-  @ContentChildren(SdMultiSelectItemControl, {descendants: true})
+  @ContentChildren(forwardRef(() => SdMultiSelectItemControl), {descendants: true})
   public itemControls?: QueryList<SdMultiSelectItemControl>;
 
   private readonly _iterableDiffer: IterableDiffer<any>;
@@ -87,7 +87,8 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
   public getIsItemSelected(item: SdMultiSelectItemControl): boolean {
     if (!this.keyProp) {
       return this.value ? this.value.includes(item.value) : false;
-    } else {
+    }
+    else {
       return this.value ? this.value.map(item1 => item1[this.keyProp!]).includes(item.value[this.keyProp!]) : false;
     }
   }
@@ -101,7 +102,8 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
       if (selectedItemControl.labelTemplateRef) {
         /*const embeddedView = selectedItemControl.labelTemplateRef.createEmbeddedView({});*/
         content += selectedItemControl.elRef.nativeElement.findAll("> sd-checkbox > label > ._content > ._labelTemplate")[0].innerHTML + ",\n";
-      } else {
+      }
+      else {
         content += selectedItemControl.elRef.nativeElement.findAll("> sd-checkbox > label > ._content > ._label")[0].innerHTML + ",\n";
       }
     }

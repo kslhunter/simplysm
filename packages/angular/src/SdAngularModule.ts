@@ -59,6 +59,8 @@ import {GlobalErrorHandler} from "./plugins/GlobalErrorHandler";
 import {SdFormItemControl} from "./controls/SdFormItemControl";
 import {SdSidebarContainerControl} from "./controls/SdSidebarContainerControl";
 import {SdCheckboxGroupItemControl} from "./controls/SdCheckboxGroupItemControl";
+import {SdServiceProvider} from "./providers/SdServiceProvider";
+import {SdOrmProvider} from "./providers/SdOrmProvider";
 
 const controls: Type<any>[] = [
   SdBusyContainerControl,
@@ -124,10 +126,11 @@ const providers: Provider[] = [
   SdDomValidatorProvider,
   SdFileDialogProvider,
   SdLocalStorageProvider,
-  SdToastProvider,
   SdModalProvider,
   SdPrintProvider,
-  // SdKtCallManagerApiProvider,
+  SdServiceProvider,
+  SdToastProvider,
+  SdOrmProvider,
   {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
   {provide: ErrorHandler, useClass: GlobalErrorHandler}
 ];

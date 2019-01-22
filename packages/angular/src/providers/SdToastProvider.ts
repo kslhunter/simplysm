@@ -14,23 +14,23 @@ export class SdToastProvider implements OnDestroy {
     this._containerEl.remove();
   }
 
-  public info<T extends boolean>(message: string, progress?: T): (T extends true ? { progress(percent: number): void } : void) {
+  public info<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
     return this._show("info", message, progress) as any;
   }
 
-  public success<T extends boolean>(message: string, progress?: T): (T extends true ? { progress(percent: number): void } : void) {
+  public success<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
     return this._show("success", message, progress) as any;
   }
 
-  public warning<T extends boolean>(message: string, progress?: T): (T extends true ? { progress(percent: number): void } : void) {
+  public warning<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
     return this._show("warning", message, progress) as any;
   }
 
-  public danger<T extends boolean>(message: string, progress?: T): (T extends true ? { progress(percent: number): void } : void) {
+  public danger<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
     return this._show("danger", message, progress) as any;
   }
 
-  private _show<T extends boolean>(theme: "info" | "success" | "warning" | "danger", message: string, progress?: T): (T extends true ? { progress(percent: number): void; message(msg: string): void } : void) {
+  private _show<T extends boolean>(theme: "info" | "success" | "warning" | "danger", message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
     const toastEl = document.createElement("div");
     toastEl.classList.add("_sd-toast");
     toastEl.classList.add("_sd-toast-" + theme);
@@ -85,4 +85,10 @@ export class SdToastProvider implements OnDestroy {
 
     return undefined as any;
   }
+}
+
+export interface ISdProgressToast {
+  progress(percent: number): void;
+
+  message(msg: string): void;
 }

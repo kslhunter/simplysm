@@ -1,7 +1,9 @@
 import {SdSocketServer} from "./SdSocketServer";
-import {ISdServerRequest} from "@simplysm/common";
+import {ISdSocketRequest} from "@simplysm/common";
+import {SdSocketConnection} from "./SdSocketConnection";
 
 export abstract class SdServiceBase {
   public server!: SdSocketServer;
-  public request!: ISdServerRequest;
+  public request!: ISdSocketRequest;
+  public conn!: SdSocketConnection;
 }

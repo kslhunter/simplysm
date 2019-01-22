@@ -1,5 +1,4 @@
 import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
-import {SdPrintTemplateBase} from "../commons/SdPrintTemplateBase";
 
 @Injectable()
 export class SdPrintProvider {
@@ -44,4 +43,8 @@ export class SdPrintProvider {
       });
     });
   }
+}
+
+export abstract class SdPrintTemplateBase<I> {
+  public abstract sdOnOpen(param: I): Promise<void>;
 }

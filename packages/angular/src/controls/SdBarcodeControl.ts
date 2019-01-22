@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, Component, ElementRef, Input} from "@angular/core";
-import {SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
+import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
-import {ISdNotifyPropertyChange} from "../commons/ISdNotifyPropertyChange";
 
 // tslint:disable-next-line:no-var-requires no-require-imports
 require("jsbarcode");

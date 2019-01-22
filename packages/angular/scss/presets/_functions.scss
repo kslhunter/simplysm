@@ -1,5 +1,9 @@
 @function get($map, $keys...) {
   @each $key in $keys {
+    @if (map_has_key($map, $key) != true) {
+      @error "Map `#{$map}` has no key `#{$key}`";
+    }
+
     $map: map_get($map, $key);
   }
   @return $map;

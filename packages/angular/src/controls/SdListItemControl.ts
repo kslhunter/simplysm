@@ -11,8 +11,7 @@ import {
 } from "@angular/core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 import {SdListControl} from "./SdListControl";
-import {SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
-import {ISdNotifyPropertyChange} from "../commons/ISdNotifyPropertyChange";
+import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
 
 @Component({
   selector: "sd-list-item",

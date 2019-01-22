@@ -1,6 +1,3 @@
-// tslint:disable-next-line:variable-name
-import {ISdNotifyPropertyChange} from "./ISdNotifyPropertyChange";
-
 export function SdNotifyPropertyChange(): any {
   return (target: ISdNotifyPropertyChange, propertyKey: string) => {
     const descriptor = Object.getOwnPropertyDescriptor(target, propertyKey);
@@ -39,4 +36,8 @@ export function SdNotifyPropertyChange(): any {
       }
     }
   };
+}
+
+export interface ISdNotifyPropertyChange {
+  sdOnPropertyChange(propertyName: string, oldValue: any, newValue: any): void;
 }

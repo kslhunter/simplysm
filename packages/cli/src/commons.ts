@@ -25,7 +25,6 @@ export interface ISdPackageConfig {
   env?: { [key: string]: any };
   vhost?: string;
   server?: {
-    host?: string;
     port?: number;
   };
 }
