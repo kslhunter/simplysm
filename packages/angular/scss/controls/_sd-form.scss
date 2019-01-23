@@ -1,4 +1,6 @@
 sd-form {
+  display: block;
+
   &[sd-inline=true] {
     display: inline-block;
     vertical-align: middle;
