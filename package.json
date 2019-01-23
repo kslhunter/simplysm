@@ -60,6 +60,7 @@
     "jsbarcode": "^4.0.0-alpha.4",
     "marked": "^0.6.0",
     "node-sass": "^4.11.0",
+    "require-reload": "^0.2.2",
     "resolve-url-loader": "^3.0.0",
     "rimraf": "^2.6.3",
     "rxjs": "^6.3.3",

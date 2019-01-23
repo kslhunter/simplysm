@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import {SdSocketServer} from "./SdSocketServer";
+import {SdServer} from "./SdServer";
 import {Logger} from "@simplysm/common";
 
-new SdSocketServer().startAsync().catch(err => {
+new SdServer().listenAsync().catch(err => {
   new Logger("@simplysm/server").error(err);
 });

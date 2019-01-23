@@ -4226,6 +4226,11 @@ require-main-filename@^1.0.1:
   resolved "https://registry.yarnpkg.com/require-main-filename/-/require-main-filename-1.0.1.tgz#97f717b69d48784f5f526a6c5aa8ffdda055a4d1"
   integrity sha1-l/cXtp1IeE9fUmpsWqj/3aBVpNE=
 
+require-reload@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/require-reload/-/require-reload-0.2.2.tgz#29a7591846caf91b6e8a3cda991683f95f8d7d42"
+  integrity sha1-KadZGEbK+RtuijzamRaD+V+NfUI=
+
 resolve-url-loader@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/resolve-url-loader/-/resolve-url-loader-3.0.0.tgz#c47eeca1fc8d62b08dc2eef12b3af5af3e775c74"

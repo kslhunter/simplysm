@@ -10,7 +10,7 @@ import {SdProjectBuilderUtil} from "./SdProjectBuilderUtil";
 import {SdWebpackLoggerPlugin} from "./SdWebpackLoggerPlugin";
 import {ISdProjectConfig} from "./commons";
 import * as child_process from "child_process";
-import {SdSocketServer} from "@simplysm/server";
+import {SdServer} from "@simplysm/server";
 import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
 
@@ -120,8 +120,10 @@ export class SdProjectBuilder {
     const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
     await this._readConfig("development", packageKeys);
 
-    const serverMap = new Map<number, SdSocketServer>();
+    const serverMap = new Map<number, SdServer>();
     await this._parallelPackages(true, async packageKey => {
+      const logger = new Logger("@simplysm/cli", packageKey);
+
       const packageConfig = this.config.packages[packageKey];
       if (packageConfig.type === "none") {
         return;
@@ -131,15 +133,29 @@ export class SdProjectBuilder {
       if (packageConfig.type !== "dom" && packageConfig.type !== "node") {
         const port = optional(packageConfig.server, o => o.port) || 80;
         if (!serverMap.has(port)) {
-          const server = new SdSocketServer();
-          await server.startAsync(port);
+          let server = new SdServer();
+          await server.listenAsync(port);
           serverMap.set(port, server);
+
+          await FileWatcher.watch(
+            path.resolve(process.cwd(), "node_modules", "@simplysm", "server", "dist", "**/*.js"),
+            ["add", "change", "unlink"],
+            async () => {
+              logger.log(`개발서버를 다시 시작합니다.`);
+              await server.closeAsync();
+
+              const reload = require("require-reload")(require); //tslint:disable-line:no-require-imports
+              server = new reload("@simplysm/server").SdServer();
+              await server.listenAsync(port);
+              serverMap.set(port, server);
+              logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${port}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
+            });
         }
 
         const currServer = serverMap.get(port);
         await this._watchPackageAsync(packageKey, currServer);
 
-        new Logger("@simplysm/cli", packageKey).info(`개발서버 서비스가 시작되었습니다: http://localhost:${port}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
+        logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${port}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
       }
       else {
         await this._watchPackageAsync(packageKey);
@@ -408,7 +424,7 @@ export class SdProjectBuilder {
     }
   }
 
-  private async _watchPackageAsync(packageKey: string, server?: SdSocketServer): Promise<void> {
+  private async _watchPackageAsync(packageKey: string, server?: SdServer): Promise<void> {
     await fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
 
     const packageConfig = this.config.packages[packageKey];
@@ -432,12 +448,12 @@ export class SdProjectBuilder {
 
             const compiler = webpack(webpackConfig);
 
-            server.app!.use(WebpackDevMiddleware(compiler, {
+            server.expressServer!.use(WebpackDevMiddleware(compiler, {
               publicPath: webpackConfig.output!.publicPath!,
               logLevel: "silent"
             }));
 
-            server.app!.use(WebpackHotMiddleware(compiler, {
+            server.expressServer!.use(WebpackHotMiddleware(compiler, {
               path: "/__webpack_hmr",
               log: false
             }));
@@ -587,6 +603,18 @@ export class SdProjectBuilder {
 
     const distPath = SdProjectBuilderUtil.getPackagesPath(packageKey, "dist");
 
+    const tsconfig = await SdProjectBuilderUtil.readTsConfigAsync(packageKey, true);
+    const tsOptions = tsconfig.compilerOptions;
+    const alias = {};
+    if (tsOptions && tsOptions.paths) {
+      for (const tsPathKey of Object.keys(tsOptions.paths)) {
+        if (tsOptions.paths[tsPathKey].length !== 1) {
+          throw new Error("'tsconfig'의 'paths'옵션에서, 하나의 명칭에 반드시 하나의 목적지를 지정해야 합니다.");
+        }
+        alias[tsPathKey] = SdProjectBuilderUtil.getPackagesPath(packageKey, tsOptions.paths[tsPathKey][0]);
+      }
+    }
+
     let webpackConfig: webpack.Configuration = {
       output: {
         path: distPath,
@@ -597,7 +625,8 @@ export class SdProjectBuilder {
       resolve: {
         extensions: [".ts", ".js", ".json"],
         alias: {
-          SIMPLYSM_CLIENT_APP_MODULE: SdProjectBuilderUtil.getPackagesPath(packageKey, "src", "AppModule")
+          SIMPLYSM_CLIENT_APP_MODULE: SdProjectBuilderUtil.getPackagesPath(packageKey, "src", "AppModule"),
+          ...alias
         }
       },
       module: {

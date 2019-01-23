@@ -1,12 +1,15 @@
 import {SdServiceBase} from "../SdServiceBase";
-import {DateOnly, DateTime, ISdOrmConnectionConfig, ISdOrmQueryDef, Logger, Time} from "@simplysm/common";
+import {DateOnly, DateTime, ISdOrmQueryDef, Logger, Time} from "@simplysm/common";
 import {SdOrmConnection} from "../libs/orm/SdOrmConnection";
+import {SdServerHelper} from "../SdServerHelper";
 
 export class OrmService extends SdServiceBase {
   private readonly _logger = new Logger("@simplysm/server", "OrmService");
   private static readonly _connections = new Map<number, SdOrmConnection>();
+  private static readonly _wsConnectionCloseListenerMap = new Map<number, () => Promise<void>>();
 
-  public async connectAsync(config: ISdOrmConnectionConfig): Promise<number> {
+  public async connectAsync(configName: string): Promise<number> {
+    const config = await SdServerHelper.getConfigAsync(this.request.url)[configName];
     const conn = new SdOrmConnection(config);
 
     const lastConnId = Array.from(OrmService._connections.keys()).max() || 0;
@@ -14,21 +17,24 @@ export class OrmService extends SdServiceBase {
     OrmService._connections.set(connId, conn);
 
     await conn.connectAsync();
-    this.conn.addCloseListener("orm-service." + connId, async () => {
+
+    const closeEventListener = async () => {
       await conn.closeAsync();
       this._logger.warn("소켓연결이 끊어져, DB 연결이 중지되었습니다.");
-    });
+    };
+    OrmService._wsConnectionCloseListenerMap.set(connId, closeEventListener);
+    this.conn.on("close", closeEventListener);
 
-    conn.addCloseListener("orm-service." + connId, async () => {
+    conn.on("close", async () => {
       OrmService._connections.delete(connId);
+      OrmService._wsConnectionCloseListenerMap.delete(connId);
+      this.conn.off("close", closeEventListener);
     });
 
     return connId;
   }
 
   public async closeAsync(connId: number): Promise<void> {
-    this.conn.removeCloseListener("orm-service." + connId);
-
     const conn = OrmService._connections.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");

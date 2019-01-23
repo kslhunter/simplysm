@@ -1,12 +1,12 @@
 //tslint:disable:no-null-keyword
 
-import {ISdSocketRequest, ISdSocketResponse, JsonConvert, Logger, Type, Wait} from "@simplysm/common";
+import {ISdServerRequest, ISdServerResponse, JsonConvert, Logger, Type, Wait} from "@simplysm/common";
 
 export class SdSocketClient {
   private readonly _logger = new Logger("@simplysm/angular", "SdSocketClient");
   private _ws?: WebSocket;
   private readonly _eventListeners = new Map<number, (data: any) => (Promise<void> | void)>();
-  private readonly _reqMap = new Map<number, (response: ISdSocketResponse) => void>();
+  private readonly _reqMap = new Map<number, (response: ISdServerResponse) => void>();
 
   public constructor(private readonly _port?: number,
                      private readonly _host?: string,
@@ -26,7 +26,7 @@ export class SdSocketClient {
         this._eventListeners.get(obj.eventListenerId)!(obj.data);
       }
       else {
-        const response: ISdSocketResponse = obj;
+        const response: ISdServerResponse = obj;
         this._reqMap.get(response.requestId)!(response);
       }
     };
@@ -60,7 +60,7 @@ export class SdSocketClient {
       this._ws!.close();
     }).catch(err => {
       this._logger.warn(err);
-      this._ws = undefined;
+      delete this._ws;
     });
   }
 
@@ -84,8 +84,9 @@ export class SdSocketClient {
       }
 
       const requestId = (Array.from(this._reqMap.keys()).max() || 0) + 1;
-      const request: ISdSocketRequest = {
+      const request: ISdServerRequest = {
         id: requestId,
+        url: `${location.protocol}//${location.host}${location.pathname}`,
         command,
         params
       };

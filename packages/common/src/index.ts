@@ -18,5 +18,5 @@ export * from "./types/StripTypeWrap";
 
 export * from "./commons/ISdOrmConnectionConfig";
 export * from "./commons/ISdOrmQueryDef";
-export * from "./commons/ISdSocketResponse";
-export * from "./commons/ISdSocketRequest";
+export * from "./commons/ISdServerResponse";
+export * from "./commons/ISdServerRequest";

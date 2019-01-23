@@ -1,10 +1,10 @@
 import {SdSocketClient} from "../service/SdSocketClient";
 import {ITableDef} from "./definitions";
 import {Queryable} from "./Queryable";
-import {ISdOrmConnectionConfig} from "@simplysm/common";
 
 export abstract class DbContext {
-  protected constructor(private readonly _socket: SdSocketClient) {
+  // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
+  public constructor(private readonly _socket: SdSocketClient) {
   }
 
   public abstract get configName(): string;
@@ -14,8 +14,7 @@ export abstract class DbContext {
   }
 
   public async connectAsync<R>(fn: (db: this) => Promise<R>, trans: boolean = true): Promise<R> {
-    const config = await this._getConfigAsync();
-    const connId = await this._connectAsync(config);
+    const connId = await this._connectAsync();
 
     if (trans) {
       await this._beginTransactionAsync(connId);
@@ -50,12 +49,8 @@ export abstract class DbContext {
     return result;
   }
 
-  private async _connectAsync(config: ISdOrmConnectionConfig): Promise<number> {
-    return await this._socket.sendAsync("OrmService.connectAsync", [config]);
-  }
-
-  private async _getConfigAsync(): Promise<ISdOrmConnectionConfig> {
-    return await this._socket.sendAsync("OrmService.getConfigAsync", [this.configName]);
+  private async _connectAsync(): Promise<number> {
+    return await this._socket.sendAsync("OrmService.connectAsync", [this.configName]);
   }
 
   private async _beginTransactionAsync(connId: number): Promise<void> {

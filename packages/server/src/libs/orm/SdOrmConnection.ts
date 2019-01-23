@@ -1,21 +1,19 @@
 import * as tedious from "tedious";
 import {ISdOrmConnectionConfig, ISdOrmQueryDef, Logger, Wait} from "@simplysm/common";
 import {SdOrmQueryHelper} from "./SdOrmQueryHelper";
-import {SdSocketConnectionCloseListenerFunction} from "../../SdSocketConnection";
+import {EventEmitter} from "events";
 
-export type SdOrmConnectionCloseListenerFunction = () => (void | Promise<void>);
-
-export class SdOrmConnection {
+export class SdOrmConnection extends EventEmitter {
   private readonly _logger = new Logger("@simplysm/orm-connector");
 
   private _conn?: tedious.Connection;
   public isConnected = false;
   private _requests: tedious.Request[] = [];
-  private readonly _closeListenerMap = new Map<string, SdSocketConnectionCloseListenerFunction>();
 
   private readonly _timeout = 300000;
 
   public constructor(private readonly _config: ISdOrmConnectionConfig) {
+    super();
   }
 
   public async connectAsync(): Promise<void> {
@@ -63,24 +61,12 @@ export class SdOrmConnection {
 
     this._conn = conn;
 
-    conn.on("end", async () => {
-      for (const closeListener of Object.values(this._closeListenerMap)) {
-        await closeListener();
-      }
-
+    conn.on("end", () => {
+      this.emit("close");
       this._requests = [];
-      this._conn = undefined;
-      this._closeListenerMap.clear();
       this.isConnected = false;
+      delete this._conn;
     });
-  }
-
-  public addCloseListener(key: string, listener: SdOrmConnectionCloseListenerFunction): void {
-    this._closeListenerMap.set(key, listener);
-  }
-
-  public removeCloseListener(key: string): void {
-    this._closeListenerMap.delete(key);
   }
 
   public async closeAsync(): Promise<void> {
@@ -97,7 +83,7 @@ export class SdOrmConnection {
       });
 
       this._conn.cancel();
-      await Wait.true(() => this._requests.length < 1);
+      await Wait.true(() => this._requests.length < 1, undefined, 10000);
       this._conn.close();
     });
   }
@@ -111,16 +97,13 @@ export class SdOrmConnection {
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
-      conn.beginTransaction(
-        err => {
-          if (err) {
-            reject(new Error(err.message));
-          }
-          resolve();
-        },
-        "",
-        tedious.ISOLATION_LEVEL.READ_COMMITTED
-      );
+      conn.beginTransaction(err => {
+        if (err) {
+          reject(new Error(err.message));
+          return;
+        }
+        resolve();
+      }, "", tedious.ISOLATION_LEVEL.READ_COMMITTED);
     });
   }
 
@@ -136,6 +119,7 @@ export class SdOrmConnection {
       conn.commitTransaction(err => {
         if (err) {
           reject(new Error(err.message));
+          return;
         }
         resolve();
       });
@@ -154,6 +138,7 @@ export class SdOrmConnection {
       conn.rollbackTransaction(err => {
         if (err) {
           reject(new Error(err.message));
+          return;
         }
         resolve();
       });
