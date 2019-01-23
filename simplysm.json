@@ -24,6 +24,12 @@
         "protocol": "npm"
       }
     },
+    "excel": {
+      "type": "dom",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
     "orm": {
       "type": "dom",
       "publish": {
@@ -31,6 +37,18 @@
       }
     },
     "orm-common": {
+      "type": "node",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "smtp-client-common": {
+      "type": "node",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "storage": {
       "type": "node",
       "publish": {
         "protocol": "npm"

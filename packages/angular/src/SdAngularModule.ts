@@ -61,6 +61,7 @@ import {SdSidebarContainerControl} from "./controls/SdSidebarContainerControl";
 import {SdCheckboxGroupItemControl} from "./controls/SdCheckboxGroupItemControl";
 import {SdWebSocketProvider} from "./providers/SdWebSocketProvider";
 import {SdOrmProvider} from "./providers/SdOrmProvider";
+import {SdSmtpClientProvider} from "./providers/SdSmtpClientProvider";
 
 const controls: Type<any>[] = [
   SdBusyContainerControl,
@@ -131,6 +132,7 @@ const providers: Provider[] = [
   SdWebSocketProvider,
   SdToastProvider,
   SdOrmProvider,
+  SdSmtpClientProvider,
   {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
   {provide: ErrorHandler, useClass: GlobalErrorHandler}
 ];

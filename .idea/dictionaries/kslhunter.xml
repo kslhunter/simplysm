@@ -4,7 +4,9 @@
       <w>bluegrey</w>
       <w>codelyzer</w>
       <w>cordova</w>
+      <w>nodemailer</w>
       <w>simplysm</w>
+      <w>smtp</w>
       <w>textfield</w>
       <w>topbar</w>
       <w>unitless</w>

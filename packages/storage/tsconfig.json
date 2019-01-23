@@ -9,17 +9,8 @@
     "declaration": true,
     "baseUrl": ".",
     "paths": {
-      "tslint": [
-        "../../node_modules/tslint"
-      ],
       "@simplysm/common": [
         "../common/src/index.ts"
-      ],
-      "@simplysm/core": [
-        "../core/src/index.ts"
-      ],
-      "@simplysm/ws-server": [
-        "../ws-server/src/index.ts"
       ]
     }
   }

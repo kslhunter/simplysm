@@ -14,6 +14,10 @@
       {
         "name": "typescript-tslint-plugin"
       }
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./types"
     ]
   }
 }

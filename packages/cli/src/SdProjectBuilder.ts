@@ -8,7 +8,7 @@ import * as glob from "glob";
 import {FileWatcher, spawnAsync} from "@simplysm/core";
 import {SdProjectBuilderUtil} from "./SdProjectBuilderUtil";
 import {SdWebpackLoggerPlugin} from "./SdWebpackLoggerPlugin";
-import {ISdProjectConfig} from "./commons";
+import {ISdProjectConfig, ITsConfig} from "./commons";
 import * as child_process from "child_process";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import * as WebpackDevMiddleware from "webpack-dev-middleware";
@@ -24,10 +24,9 @@ export class SdProjectBuilder {
     await this._readConfig("production", undefined);
 
     for (const packageKey of Object.keys(this.config.packages)) {
-      const tsconfig = await SdProjectBuilderUtil.readTsConfigAsync(packageKey);
+      const tsconfig: ITsConfig = {}; //await SdProjectBuilderUtil.readTsConfigAsync(packageKey);
       tsconfig.extends = "../../tsconfig.json";
-      tsconfig.compilerOptions = tsconfig.compilerOptions || {};
-
+      tsconfig.compilerOptions = {};
       const tsOptions = tsconfig.compilerOptions;
 
       tsOptions.rootDir = "src";
@@ -44,7 +43,7 @@ export class SdProjectBuilder {
       tsOptions.declaration = !!npmConfig.types;
 
       tsOptions.baseUrl = ".";
-      tsOptions.paths = tsOptions.paths || {};
+      tsOptions.paths = {};
 
       const deps = Object.merge(npmConfig.dependencies, npmConfig.devDependencies);
       if (deps) {
@@ -444,15 +443,15 @@ export class SdProjectBuilder {
               this._serverMap.set(serverPort, server);
 
               await FileWatcher.watch(
-                path.resolve(process.cwd(), "node_modules", "@simplysm", "server", "dist", "**/*.js"),
+                path.resolve(process.cwd(), "node_modules", "@simplysm", "ws-server", "dist", "**/*.js"),
                 ["add", "change", "unlink"],
                 async () => {
                   logger.log(`개발서버를 다시 시작합니다.`);
                   await server.closeAsync();
 
                   require("decache")("@simplysm/ws-server"); //tslint:disable-line:no-require-imports
-                  const newSdServer = require("@simplysm/ws-server").SdServer; //tslint:disable-line:no-require-imports
-                  server = new newSdServer();
+                  const newSdWebSocketServer = require("@simplysm/ws-server").SdWebSocketServer; //tslint:disable-line:no-require-imports
+                  server = new newSdWebSocketServer();
                   await server.listenAsync(serverPort);
                   this._serverMap.set(serverPort, server);
                   server.expressServer!.use(this._expressServerMiddlewaresMap.get(serverPort)!);

@@ -15,6 +15,8 @@
     "@simplysm/orm": "1.0.66",
     "@simplysm/orm-common": "1.0.66",
     "@simplysm/ws-common": "1.0.66",
+    "@simplysm/smtp-client-common": "1.0.66",
+    "nodemailer": "^5.1.1",
     "express": "^4.16.4",
     "fs-extra": "^7.0.1",
     "ws": "^6.1.2"
