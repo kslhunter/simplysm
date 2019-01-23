@@ -10,11 +10,12 @@ import {SdProjectBuilderUtil} from "./SdProjectBuilderUtil";
 import {SdWebpackLoggerPlugin} from "./SdWebpackLoggerPlugin";
 import {ISdProjectConfig} from "./commons";
 import * as child_process from "child_process";
-import {SdServer} from "@simplysm/server";
-import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
+import * as WebpackDevMiddleware from "webpack-dev-middleware";
+import {SdServer} from "@simplysm/server";
 
 export class SdProjectBuilder {
+  private readonly _serverMap = new Map<number, SdServer>();
   private config: ISdProjectConfig = {packages: {}};
 
   public async bootstrapAsync(): Promise<void> {
@@ -120,10 +121,7 @@ export class SdProjectBuilder {
     const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
     await this._readConfig("development", packageKeys);
 
-    const serverMap = new Map<number, SdServer>();
     await this._parallelPackages(true, async packageKey => {
-      const logger = new Logger("@simplysm/cli", packageKey);
-
       const packageConfig = this.config.packages[packageKey];
       if (packageConfig.type === "none") {
         return;
@@ -132,30 +130,7 @@ export class SdProjectBuilder {
       await SdProjectBuilder._createTsConfigForBuild(packageKey);
       if (packageConfig.type !== "dom" && packageConfig.type !== "node") {
         const port = optional(packageConfig.server, o => o.port) || 80;
-        if (!serverMap.has(port)) {
-          let server = new SdServer();
-          await server.listenAsync(port);
-          serverMap.set(port, server);
-
-          await FileWatcher.watch(
-            path.resolve(process.cwd(), "node_modules", "@simplysm", "server", "dist", "**/*.js"),
-            ["add", "change", "unlink"],
-            async () => {
-              logger.log(`개발서버를 다시 시작합니다.`);
-              await server.closeAsync();
-
-              const reload = require("require-reload")(require); //tslint:disable-line:no-require-imports
-              server = new reload("@simplysm/server").SdServer();
-              await server.listenAsync(port);
-              serverMap.set(port, server);
-              logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${port}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
-            });
-        }
-
-        const currServer = serverMap.get(port);
-        await this._watchPackageAsync(packageKey, currServer);
-
-        logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${port}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
+        await this._watchPackageAsync(packageKey, port);
       }
       else {
         await this._watchPackageAsync(packageKey);
@@ -424,14 +399,14 @@ export class SdProjectBuilder {
     }
   }
 
-  private async _watchPackageAsync(packageKey: string, server?: SdServer): Promise<void> {
+  private async _watchPackageAsync(packageKey: string, serverPort?: number): Promise<void> {
     await fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
 
     const packageConfig = this.config.packages[packageKey];
 
     if (packageConfig.type === "none") {
     }
-    else if (!server) {
+    else if (!serverPort) {
       await Promise.all([
         this._runTsLintWorkerAsync(packageKey, true),
         this._runTsCheckAndDeclarationWorkerAsync(packageKey, true),
@@ -439,24 +414,52 @@ export class SdProjectBuilder {
       ]);
     }
     else {
+      const logger = new Logger("@simplysm/cli", packageKey);
+
       const result = await Promise.all([
         this._runTsLintWorkerAsync(packageKey, true),
         this._runTsCheckAndDeclarationWorkerAsync(packageKey, true),
         new Promise<void>(async (resolve, reject) => {
           try {
+            if (!this._serverMap.has(serverPort)) {
+              let server = new SdServer();
+              await server.listenAsync(serverPort);
+              this._serverMap.set(serverPort, server);
+
+              await FileWatcher.watch(
+                path.resolve(process.cwd(), "node_modules", "@simplysm", "server", "dist", "**/*.js"),
+                ["add", "change", "unlink"],
+                async () => {
+                  logger.log(`개발서버를 다시 시작합니다.`);
+                  await server.closeAsync();
+
+                  require("decache")("@simplysm/server"); //tslint:disable-line:no-require-imports
+                  const newSdServer = require("@simplysm/server").SdServer; //tslint:disable-line:no-require-imports
+                  server = new newSdServer();
+                  console.log(server);
+                  await server.listenAsync(serverPort);
+                  this._serverMap.set(serverPort, server);
+                  logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
+                });
+            }
+
             const webpackConfig: webpack.Configuration = await this._getWebpackConfigAsync(packageKey, "development");
 
             const compiler = webpack(webpackConfig);
 
-            server.expressServer!.use(WebpackDevMiddleware(compiler, {
+            const currServerWorker = this._serverMap.get(serverPort)!;
+
+            currServerWorker.expressServer!.use(WebpackDevMiddleware(compiler, {
               publicPath: webpackConfig.output!.publicPath!,
               logLevel: "silent"
             }));
 
-            server.expressServer!.use(WebpackHotMiddleware(compiler, {
+            currServerWorker.expressServer!.use(WebpackHotMiddleware(compiler, {
               path: "/__webpack_hmr",
               log: false
             }));
+
+            logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
 
             compiler.hooks.done.tap("SdProjectBuilder", () => {
               resolve();
