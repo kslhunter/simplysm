@@ -1,5 +1,17 @@
 {
   "packages": {
+    "angular": {
+      "type": "dom",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "cli": {
+      "type": "node",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
     "common": {
       "type": "dom",
       "publish": {
@@ -12,19 +24,25 @@
         "protocol": "npm"
       }
     },
-    "cli": {
-      "type": "node",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
-    "angular": {
+    "orm": {
       "type": "dom",
       "publish": {
         "protocol": "npm"
       }
     },
-    "server": {
+    "orm-common": {
+      "type": "node",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "ws-common": {
+      "type": "dom",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "ws-server": {
       "type": "node",
       "publish": {
         "protocol": "npm"

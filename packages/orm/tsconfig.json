@@ -4,7 +4,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "lib": [
-      "es2017"
+      "es2017",
+      "dom"
     ],
     "declaration": true,
     "baseUrl": ".",
@@ -12,14 +13,8 @@
       "@simplysm/common": [
         "../common/src/index.ts"
       ],
-      "@simplysm/core": [
-        "../core/src/index.ts"
-      ],
-      "@simplysm/ws-server": [
-        "../ws-server/src/index.ts"
-      ],
-      "tslint": [
-        "../../node_modules/tslint"
+      "@simplysm/orm-common": [
+        "../orm-common/src/index.ts"
       ]
     }
   }

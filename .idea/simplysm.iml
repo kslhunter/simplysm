@@ -7,7 +7,10 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/cli/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/core/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/orm-common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/server/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/ws-common/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/ws-server/dist" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
     </content>

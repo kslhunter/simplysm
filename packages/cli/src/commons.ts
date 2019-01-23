@@ -27,6 +27,7 @@ export interface ISdPackageConfig {
   server?: {
     port?: number;
   };
+  configs?: { [key: string]: { [key: string]: string } };
 }
 
 export interface ISdPublishConfig {

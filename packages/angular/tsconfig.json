@@ -12,6 +12,12 @@
     "paths": {
       "@simplysm/common": [
         "../common/src/index.ts"
+      ],
+      "@simplysm/orm-common": [
+        "../orm-common/src/index.ts"
+      ],
+      "@simplysm/ws-common": [
+        "../ws-common/src/index.ts"
       ]
     }
   }

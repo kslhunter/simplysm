@@ -13,7 +13,7 @@
   "dependencies": {
     "@simplysm/common": "1.0.61",
     "@simplysm/core": "1.0.61",
-    "@simplysm/server": "1.0.61",
+    "@simplysm/ws-server": "1.0.61",
     "angular-router-loader": "^0.8.5",
     "css-loader": "^2.1.0",
     "decache": "^4.5.1",
@@ -33,6 +33,7 @@
     "webpack-dev-middleware": "^3.5.0",
     "webpack-hot-middleware": "^2.24.3",
     "webpack-merge": "^4.2.1",
-    "yargs": "^12.0.5"
+    "yargs": "^12.0.5",
+    "express": "^4.16.4"
   }
 }

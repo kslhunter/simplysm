@@ -59,7 +59,7 @@ import {GlobalErrorHandler} from "./plugins/GlobalErrorHandler";
 import {SdFormItemControl} from "./controls/SdFormItemControl";
 import {SdSidebarContainerControl} from "./controls/SdSidebarContainerControl";
 import {SdCheckboxGroupItemControl} from "./controls/SdCheckboxGroupItemControl";
-import {SdServiceProvider} from "./providers/SdServiceProvider";
+import {SdWebSocketProvider} from "./providers/SdWebSocketProvider";
 import {SdOrmProvider} from "./providers/SdOrmProvider";
 
 const controls: Type<any>[] = [
@@ -128,7 +128,7 @@ const providers: Provider[] = [
   SdLocalStorageProvider,
   SdModalProvider,
   SdPrintProvider,
-  SdServiceProvider,
+  SdWebSocketProvider,
   SdToastProvider,
   SdOrmProvider,
   {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},

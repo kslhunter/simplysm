@@ -12,14 +12,14 @@
       "@simplysm/common": [
         "../common/src/index.ts"
       ],
-      "@simplysm/core": [
-        "../core/src/index.ts"
+      "@simplysm/ws-common": [
+        "../ws-common/src/index.ts"
       ],
-      "@simplysm/ws-server": [
-        "../ws-server/src/index.ts"
+      "@simplysm/orm-common": [
+        "../orm-common/src/index.ts"
       ],
-      "tslint": [
-        "../../node_modules/tslint"
+      "@simplysm/orm": [
+        "../orm/src/index.ts"
       ]
     }
   }

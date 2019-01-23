@@ -12,10 +12,12 @@ import {ISdProjectConfig} from "./commons";
 import * as child_process from "child_process";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import * as WebpackDevMiddleware from "webpack-dev-middleware";
-import {SdServer} from "@simplysm/server";
+import {RequestHandler} from "express";
+import {SdWebSocketServer} from "@simplysm/ws-server";
 
 export class SdProjectBuilder {
-  private readonly _serverMap = new Map<number, SdServer>();
+  private readonly _serverMap = new Map<number, SdWebSocketServer>();
+  private readonly _expressServerMiddlewaresMap = new Map<number, RequestHandler[]>();
   private config: ISdProjectConfig = {packages: {}};
 
   public async bootstrapAsync(): Promise<void> {
@@ -162,8 +164,14 @@ export class SdProjectBuilder {
                     await new Promise<void>(async (resolve1, reject1) => {
                       try {
                         const targetFilePath = path.resolve(targetDirPath, path.relative(sourceDirPath, change.filePath));
-                        await fs.copy(change.filePath, targetFilePath);
-                        // new Logger("@simplysm/cli").log(`로컬 외부소스 변경감지: ${change.filePath} => ${targetFilePath}`);
+                        if (change.type === "unlink") {
+                          await fs.remove(targetFilePath);
+                          // new Logger("@simplysm/cli").log(`로컬 외부소스 삭제감지: ${change.filePath}`);
+                        }
+                        else {
+                          await fs.copy(change.filePath, targetFilePath);
+                          // new Logger("@simplysm/cli").log(`로컬 외부소스 변경감지: ${change.filePath} => ${targetFilePath}`);
+                        }
                         resolve1();
                       }
                       catch (err) {
@@ -422,7 +430,7 @@ export class SdProjectBuilder {
         new Promise<void>(async (resolve, reject) => {
           try {
             if (!this._serverMap.has(serverPort)) {
-              let server = new SdServer();
+              let server = new SdWebSocketServer();
               await server.listenAsync(serverPort);
               this._serverMap.set(serverPort, server);
 
@@ -433,12 +441,12 @@ export class SdProjectBuilder {
                   logger.log(`개발서버를 다시 시작합니다.`);
                   await server.closeAsync();
 
-                  require("decache")("@simplysm/server"); //tslint:disable-line:no-require-imports
-                  const newSdServer = require("@simplysm/server").SdServer; //tslint:disable-line:no-require-imports
+                  require("decache")("@simplysm/ws-server"); //tslint:disable-line:no-require-imports
+                  const newSdServer = require("@simplysm/ws-server").SdServer; //tslint:disable-line:no-require-imports
                   server = new newSdServer();
-                  console.log(server);
                   await server.listenAsync(serverPort);
                   this._serverMap.set(serverPort, server);
+                  server.expressServer!.use(this._expressServerMiddlewaresMap.get(serverPort)!);
                   logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
                 });
             }
@@ -447,17 +455,26 @@ export class SdProjectBuilder {
 
             const compiler = webpack(webpackConfig);
 
-            const currServerWorker = this._serverMap.get(serverPort)!;
+            const currServer = this._serverMap.get(serverPort)!;
 
-            currServerWorker.expressServer!.use(WebpackDevMiddleware(compiler, {
-              publicPath: webpackConfig.output!.publicPath!,
-              logLevel: "silent"
-            }));
+            this._expressServerMiddlewaresMap.set(serverPort, [
+              WebpackDevMiddleware(compiler, {
+                publicPath: webpackConfig.output!.publicPath!,
+                logLevel: "silent"
+              }),
+              WebpackHotMiddleware(compiler, {
+                path: "/__webpack_hmr",
+                log: false
+              })
+            ]);
+            currServer.expressServer!.use(this._expressServerMiddlewaresMap.get(serverPort)!);
 
-            currServerWorker.expressServer!.use(WebpackHotMiddleware(compiler, {
-              path: "/__webpack_hmr",
-              log: false
-            }));
+            const serverDirPath = path.dirname(require.resolve("@simplysm/server"));
+
+            const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
+            const packageDistConfigsFilePath = path.resolve(serverDirPath, "www", projectNpmConfig.name, packageKey, "configs.json");
+            await fs.mkdirs(path.dirname(packageDistConfigsFilePath));
+            await fs.writeJson(packageDistConfigsFilePath, packageConfig.configs);
 
             logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
 
