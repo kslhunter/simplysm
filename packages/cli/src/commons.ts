@@ -49,6 +49,7 @@ export interface ITsConfig {
 export interface INpmConfig {
   name: string;
   version: string;
+  types?: any;
   dependencies?: { [key: string]: string };
   devDependencies?: { [key: string]: string };
   peerDependencies?: { [key: string]: string };

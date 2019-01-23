@@ -17,14 +17,14 @@ import {SdWebSocketServer} from "@simplysm/ws-server";
 
 export class SdProjectBuilder {
   private readonly _serverMap = new Map<number, SdWebSocketServer>();
-  private readonly _expressServerMiddlewaresMap = new Map<number, RequestHandler[]>();
+  private readonly _expressServerMiddlewareMap = new Map<number, RequestHandler[]>();
   private config: ISdProjectConfig = {packages: {}};
 
   public async bootstrapAsync(): Promise<void> {
     await this._readConfig("production", undefined);
 
     for (const packageKey of Object.keys(this.config.packages)) {
-      const tsconfig: ITsConfig = {}; //await SdProjectBuilderUtil.readTsConfigAsync(packageKey);
+      const tsconfig: ITsConfig = {}; //await SdProjectBuilderUtil.readTsConfig(packageKey);
       tsconfig.extends = "../../tsconfig.json";
       tsconfig.compilerOptions = {};
       const tsOptions = tsconfig.compilerOptions;
@@ -39,7 +39,7 @@ export class SdProjectBuilder {
         tsOptions.lib.push("dom");
       }
 
-      const npmConfig = await fs.readJson(path.resolve(process.cwd(), "packages", packageKey, "package.json"));
+      const npmConfig = SdProjectBuilderUtil.readNpmConfig(packageKey);
       tsOptions.declaration = !!npmConfig.types;
 
       tsOptions.baseUrl = ".";
@@ -53,7 +53,7 @@ export class SdProjectBuilder {
           ];
         }
 
-        const projectNpmConfig = await fs.readJson(path.resolve(process.cwd(), "package.json"));
+        const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
         for (const depKey of Object.keys(deps).filter(item => item.startsWith(`@${projectNpmConfig.name}/`))) {
           if (!Object.keys(tsOptions.paths).includes(depKey)) {
             tsOptions.paths[depKey] = [
@@ -63,7 +63,7 @@ export class SdProjectBuilder {
         }
       }
 
-      await SdProjectBuilderUtil.writeTsConfigAsync(packageKey, tsconfig);
+      SdProjectBuilderUtil.writeTsConfig(packageKey, tsconfig);
 
       const logger = new Logger("@simplysm/cli", packageKey);
       await spawnAsync(["git", "add", SdProjectBuilderUtil.getTsConfigPath(packageKey)], {
@@ -87,7 +87,7 @@ export class SdProjectBuilder {
     const promiseList2: Promise<void>[] = [];
     for (const localUpdateKey of Object.keys(this.config.localUpdates)) {
       promiseList.push(new Promise<void>(async (resolve, reject) => {
-        glob(SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey), async (err, depPackageDirPaths) => {
+        glob(SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey), (err, depPackageDirPaths) => {
           if (err) {
             reject(err);
             return;
@@ -100,7 +100,7 @@ export class SdProjectBuilder {
 
             const sourceDirPath = SdProjectBuilderUtil.getProjectPath(this.config.localUpdates![localUpdateKey].replace(/\*/g, subPackageName));
             const targetDirPath = SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey.replace(/\*/g, subPackageName));
-            if (!await fs.pathExists(sourceDirPath)) {
+            if (!fs.pathExistsSync(sourceDirPath)) {
               reject(new Error(`소스파일을 찾을 수 없습니다. ("${sourceDirPath}")`));
               return;
             }
@@ -158,26 +158,21 @@ export class SdProjectBuilder {
               const sourceDirPath = SdProjectBuilderUtil.getProjectPath(this.config.localUpdates![localUpdateKey].replace(/\*/g, subPackageName));
               const targetDirPath = SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey.replace(/\*/g, subPackageName));
               promiseList2.push(
-                FileWatcher.watch(path.resolve(sourceDirPath, "**", "*"), ["add", "change", "unlink"], async changes => {
-                  await Promise.all(changes.map(async change => {
-                    await new Promise<void>(async (resolve1, reject1) => {
-                      try {
-                        const targetFilePath = path.resolve(targetDirPath, path.relative(sourceDirPath, change.filePath));
-                        if (change.type === "unlink") {
-                          await fs.remove(targetFilePath);
-                          // new Logger("@simplysm/cli").log(`로컬 외부소스 삭제감지: ${change.filePath}`);
-                        }
-                        else {
-                          await fs.copy(change.filePath, targetFilePath);
-                          // new Logger("@simplysm/cli").log(`로컬 외부소스 변경감지: ${change.filePath} => ${targetFilePath}`);
-                        }
-                        resolve1();
+                FileWatcher.watch(path.resolve(sourceDirPath, "**", "*"), ["add", "change", "unlink"], changes => {
+                  for (const change of changes) {
+                    try {
+                      const targetFilePath = path.resolve(targetDirPath, path.relative(sourceDirPath, change.filePath));
+                      if (change.type === "unlink") {
+                        fs.removeSync(targetFilePath);
                       }
-                      catch (err) {
-                        reject1(err);
+                      else {
+                        fs.copySync(change.filePath, targetFilePath);
                       }
-                    });
-                  }));
+                    }
+                    catch (err) {
+                      throw new Error(err);
+                    }
+                  }
                 })
               );
             }
@@ -226,7 +221,7 @@ export class SdProjectBuilder {
 
     await spawnAsync(["npm", "version", "patch", "--git-tag-version", "false"], {logger});
 
-    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
+    const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
 
     await this._parallelPackages(false, async packageKey => {
       const packageLogger = new Logger("@simplysm/cli", packageKey);
@@ -248,7 +243,7 @@ export class SdProjectBuilder {
           ...projectNpmConfig.peerDependencies
         };
 
-        const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
+        const npmConfig = SdProjectBuilderUtil.readNpmConfig(packageKey);
         for (const deps of [npmConfig.dependencies, npmConfig.devDependencies, npmConfig.peerDependencies]) {
           if (deps) {
             for (const depKey of Object.keys(deps)) {
@@ -262,7 +257,7 @@ export class SdProjectBuilder {
             }
           }
         }
-        await SdProjectBuilderUtil.writeNpmConfigAsync(packageKey, npmConfig);
+        SdProjectBuilderUtil.writeNpmConfig(packageKey, npmConfig);
 
         if (packageConfig.publish.protocol === "npm") {
           let message = "";
@@ -314,7 +309,7 @@ export class SdProjectBuilder {
   }
 
   private static async _createTsConfigForBuild(packageKey: string): Promise<void> {
-    const tsconfig = await SdProjectBuilderUtil.readTsConfigAsync(packageKey);
+    const tsconfig = SdProjectBuilderUtil.readTsConfig(packageKey);
     const tsOptions = tsconfig.compilerOptions;
 
     if (tsOptions && tsOptions.paths) {
@@ -327,11 +322,11 @@ export class SdProjectBuilder {
       }
     }
 
-    await SdProjectBuilderUtil.writeTsConfigAsync(packageKey, tsconfig, true);
+    SdProjectBuilderUtil.writeTsConfig(packageKey, tsconfig, true);
   }
 
   private async _readConfig(env: "production" | "development", packageKeys: string[] | undefined): Promise<void> {
-    this.config = await SdProjectBuilderUtil.readConfigAsync(env, packageKeys);
+    this.config = SdProjectBuilderUtil.readConfig(env, packageKeys);
   }
 
   private async _parallelPackages(byDep: boolean, cb: (packageKey: string) => Promise<void>): Promise<void> {
@@ -344,7 +339,7 @@ export class SdProjectBuilder {
       for (const packageKey of Object.keys(this.config.packages)) {
         promises.push(new Promise<void>(async (resolve, reject) => {
           try {
-            const packageNpmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
+            const packageNpmConfig = SdProjectBuilderUtil.readNpmConfig(packageKey);
             const packageNpmName = packageNpmConfig.name;
             const packageNpmDeps = Object.merge(packageNpmConfig.dependencies, packageNpmConfig.devDependencies);
             if (packageNpmDeps) {
@@ -378,14 +373,14 @@ export class SdProjectBuilder {
   private async _getAllBuildPackageNpmNamesAsync(): Promise<string[]> {
     const result: string[] = [];
     for (const packageKey of Object.keys(this.config.packages)) {
-      const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
+      const npmConfig = SdProjectBuilderUtil.readNpmConfig(packageKey);
       result.push(npmConfig.name);
     }
     return result;
   }
 
   private async _buildPackageAsync(packageKey: string): Promise<void> {
-    await fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
+    fs.removeSync(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
 
     const packageConfig = this.config.packages[packageKey];
 
@@ -416,7 +411,7 @@ export class SdProjectBuilder {
   }
 
   private async _watchPackageAsync(packageKey: string, serverPort?: number): Promise<void> {
-    await fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
+    fs.removeSync(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
 
     const packageConfig = this.config.packages[packageKey];
 
@@ -454,8 +449,8 @@ export class SdProjectBuilder {
                   server = new newSdWebSocketServer();
                   await server.listenAsync(serverPort);
                   this._serverMap.set(serverPort, server);
-                  server.expressServer!.use(this._expressServerMiddlewaresMap.get(serverPort)!);
-                  logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(await SdProjectBuilderUtil.readProjectNpmConfigAsync()).name}/${packageKey}/`);
+                  server.expressServer!.use(this._expressServerMiddlewareMap.get(serverPort)!);
+                  logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
                 });
             }
 
@@ -465,7 +460,7 @@ export class SdProjectBuilder {
 
             const currServer = this._serverMap.get(serverPort)!;
 
-            this._expressServerMiddlewaresMap.set(serverPort, [
+            this._expressServerMiddlewareMap.set(serverPort, [
               WebpackDevMiddleware(compiler, {
                 publicPath: webpackConfig.output!.publicPath!,
                 logLevel: "silent"
@@ -475,16 +470,16 @@ export class SdProjectBuilder {
                 log: false
               })
             ]);
-            currServer.expressServer!.use(this._expressServerMiddlewaresMap.get(serverPort)!);
+            currServer.expressServer!.use(this._expressServerMiddlewareMap.get(serverPort)!);
 
             const serverDirPath = path.dirname(require.resolve("@simplysm/ws-server"));
 
-            const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
+            const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
             const packageDistConfigsFilePath = path.resolve(serverDirPath, "www", projectNpmConfig.name, packageKey, "configs.json");
-            await fs.mkdirs(path.dirname(packageDistConfigsFilePath));
-            await fs.writeJson(packageDistConfigsFilePath, packageConfig.configs);
+            fs.mkdirsSync(path.dirname(packageDistConfigsFilePath));
+            fs.writeJsonSync(packageDistConfigsFilePath, packageConfig.configs);
 
-            logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(await SdProjectBuilderUtil.readProjectNpmConfigAsync()).name}/${packageKey}/`);
+            logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
 
             compiler.hooks.done.tap("SdProjectBuilder", () => {
               resolve();
@@ -627,11 +622,11 @@ export class SdProjectBuilder {
       throw new Error("미구현 (webpack-config)");
     }
 
-    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
+    const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
 
     const distPath = SdProjectBuilderUtil.getPackagesPath(packageKey, "dist");
 
-    const tsconfig = await SdProjectBuilderUtil.readTsConfigAsync(packageKey, true);
+    const tsconfig = SdProjectBuilderUtil.readTsConfig(packageKey, true);
     const tsOptions = tsconfig.compilerOptions;
     const alias = {};
     if (tsOptions && tsOptions.paths) {
