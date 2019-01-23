@@ -242,12 +242,23 @@ export class SdProjectBuilder {
         });
 
         const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
+
+        const projectDeps = {
+          ...projectNpmConfig.dependencies,
+          ...projectNpmConfig.devDependencies,
+          ...projectNpmConfig.peerDependencies
+        };
+
         const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
         for (const deps of [npmConfig.dependencies, npmConfig.devDependencies, npmConfig.peerDependencies]) {
           if (deps) {
             for (const depKey of Object.keys(deps)) {
               if (allBuildPackageNpmNames.includes(depKey)) {
                 deps[depKey] = projectNpmConfig.version;
+              }
+
+              if (Object.keys(projectDeps).includes(depKey)) {
+                deps[depKey] = projectDeps[depKey];
               }
             }
           }
@@ -467,7 +478,7 @@ export class SdProjectBuilder {
             ]);
             currServer.expressServer!.use(this._expressServerMiddlewaresMap.get(serverPort)!);
 
-            const serverDirPath = path.dirname(require.resolve("@simplysm/server"));
+            const serverDirPath = path.dirname(require.resolve("@simplysm/ws-server"));
 
             const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
             const packageDistConfigsFilePath = path.resolve(serverDirPath, "www", projectNpmConfig.name, packageKey, "configs.json");

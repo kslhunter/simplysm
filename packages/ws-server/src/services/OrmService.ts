@@ -5,7 +5,7 @@ import {IQueryDef} from "@simplysm/orm-common";
 import {DbConnection} from "@simplysm/orm";
 
 export class OrmService extends SdWebSocketServiceBase {
-  private readonly _logger = new Logger("@simplysm/server", "OrmService");
+  private readonly _logger = new Logger("@simplysm/ws-server", "OrmService");
   private static readonly _connections = new Map<number, DbConnection>();
   private static readonly _wsConnectionCloseListenerMap = new Map<number, () => Promise<void>>();
 
