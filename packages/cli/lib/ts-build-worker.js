@@ -14,39 +14,29 @@ process.on("message", async (changedFiles) => {
   try {
     changedFiles = changedFiles.length > 0 ? changedFiles : tsConfig.fileNames;
 
-    await Promise.all(changedFiles.map(changedFile => new Promise(async (resolve, reject) => {
-      try {
-        const distFilePath = path.resolve(tsConfig.options.outDir, path.relative(path.resolve(packagePath, "src"), changedFile))
-          .replace(/\.ts$/, ".js");
+    for (const changedFile of changedFiles) {
+      const distFilePath = path.resolve(tsConfig.options.outDir, path.relative(path.resolve(packagePath, "src"), changedFile))
+        .replace(/\.ts$/, ".js");
 
-        await fs.ensureDir(path.dirname(distFilePath));
+      fs.ensureDirSync(path.dirname(distFilePath));
 
-        if (!fs.existsSync(changedFile)) {
-          await Promise.all([
-            fs.remove(distFilePath),
-            fs.remove(distFilePath + ".map")
-          ]);
-          return;
-        }
-
-        const content = await fs.readFile(changedFile, "utf8");
-
-        const result = ts.transpileModule(content, {
-          compilerOptions: tsConfig.options,
-          reportDiagnostics: false,
-          fileName: changedFile
-        });
-
-        await Promise.all([
-          fs.writeFile(distFilePath, result.outputText),
-          fs.writeFile(distFilePath + ".map", result.sourceMapText)
-        ]);
-        resolve();
+      if (!fs.existsSync(changedFile)) {
+        fs.removeSync(distFilePath);
+        fs.removeSync(distFilePath + ".map");
+        return;
       }
-      catch (err) {
-        reject(err);
-      }
-    })));
+
+      const content = fs.readFileSync(changedFile, "utf8");
+
+      const result = ts.transpileModule(content, {
+        compilerOptions: tsConfig.options,
+        reportDiagnostics: false,
+        fileName: changedFile
+      });
+
+      fs.writeFileSync(distFilePath, result.outputText);
+      fs.writeFileSync(distFilePath + ".map", result.sourceMapText);
+    }
   }
   catch (err) {
     sendMessage({

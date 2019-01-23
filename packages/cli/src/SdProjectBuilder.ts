@@ -83,10 +83,8 @@ export class SdProjectBuilder {
       return;
     }
 
-    const promiseList: Promise<void>[] = [];
-    const promiseList2: Promise<void>[] = [];
-    for (const localUpdateKey of Object.keys(this.config.localUpdates)) {
-      promiseList.push(new Promise<void>(async (resolve, reject) => {
+    await Promise.all(Object.keys(this.config.localUpdates).map(async localUpdateKey => {
+      await new Promise<void>(async (resolve, reject) => {
         glob(SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey), (err, depPackageDirPaths) => {
           if (err) {
             reject(err);
@@ -104,16 +102,13 @@ export class SdProjectBuilder {
               reject(new Error(`소스파일을 찾을 수 없습니다. ("${sourceDirPath}")`));
               return;
             }
-            promiseList2.push(fs.copy(sourceDirPath, targetDirPath));
+            fs.copySync(sourceDirPath, targetDirPath);
           }
 
           resolve();
         });
-      }));
-    }
-
-    await Promise.all(promiseList);
-    await Promise.all(promiseList2);
+      });
+    }));
 
     new Logger("@simplysm/cli").log(`로컬 업데이트 완료`);
   }
@@ -160,17 +155,12 @@ export class SdProjectBuilder {
               promiseList2.push(
                 FileWatcher.watch(path.resolve(sourceDirPath, "**", "*"), ["add", "change", "unlink"], changes => {
                   for (const change of changes) {
-                    try {
-                      const targetFilePath = path.resolve(targetDirPath, path.relative(sourceDirPath, change.filePath));
-                      if (change.type === "unlink") {
-                        fs.removeSync(targetFilePath);
-                      }
-                      else {
-                        fs.copySync(change.filePath, targetFilePath);
-                      }
+                    const targetFilePath = path.resolve(targetDirPath, path.relative(sourceDirPath, change.filePath));
+                    if (change.type === "unlink") {
+                      fs.removeSync(targetFilePath);
                     }
-                    catch (err) {
-                      throw new Error(err);
+                    else {
+                      fs.copySync(change.filePath, targetFilePath);
                     }
                   }
                 })
