@@ -227,7 +227,7 @@ export class SdProjectBuilder {
 
     await spawnAsync(["npm", "version", "patch", "--git-tag-version", "false"], {logger});
 
-    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
+    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
 
     await this._parallelPackages(false, async packageKey => {
       const packageLogger = new Logger("@simplysm/cli", packageKey);
@@ -296,8 +296,6 @@ export class SdProjectBuilder {
       }
     });
 
-    /*await this._parallelPackages(!!optional(argv, o => o.build), async packageKey => {
-    });*/
 
     await spawnAsync(["git", "add", "."], {logger});
     await spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});
@@ -447,7 +445,7 @@ export class SdProjectBuilder {
                   await server.listenAsync(serverPort);
                   this._serverMap.set(serverPort, server);
                   server.expressServer!.use(this._expressServerMiddlewaresMap.get(serverPort)!);
-                  logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
+                  logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(await SdProjectBuilderUtil.readProjectNpmConfigAsync()).name}/${packageKey}/`);
                 });
             }
 
@@ -471,12 +469,12 @@ export class SdProjectBuilder {
 
             const serverDirPath = path.dirname(require.resolve("@simplysm/server"));
 
-            const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
+            const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
             const packageDistConfigsFilePath = path.resolve(serverDirPath, "www", projectNpmConfig.name, packageKey, "configs.json");
             await fs.mkdirs(path.dirname(packageDistConfigsFilePath));
             await fs.writeJson(packageDistConfigsFilePath, packageConfig.configs);
 
-            logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(await SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
+            logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(await SdProjectBuilderUtil.readProjectNpmConfigAsync()).name}/${packageKey}/`);
 
             compiler.hooks.done.tap("SdProjectBuilder", () => {
               resolve();
@@ -619,7 +617,7 @@ export class SdProjectBuilder {
       throw new Error("미구현 (webpack-config)");
     }
 
-    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfig();
+    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
 
     const distPath = SdProjectBuilderUtil.getPackagesPath(packageKey, "dist");
 

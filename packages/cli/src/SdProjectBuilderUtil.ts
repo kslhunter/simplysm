@@ -98,7 +98,7 @@ export class SdProjectBuilderUtil {
     return SdProjectBuilderUtil.getProjectPath("package.json");
   }
 
-  public static async readProjectNpmConfig(): Promise<INpmConfig> {
+  public static async readProjectNpmConfigAsync(): Promise<INpmConfig> {
     const configPath = SdProjectBuilderUtil.getProjectNpmConfigPath();
     return await fs.readJson(configPath);
   }
