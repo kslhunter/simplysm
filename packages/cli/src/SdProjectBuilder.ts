@@ -523,8 +523,8 @@ export class SdProjectBuilder {
 
       const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
       for (const depKey of Object.keys(deps)) {
-        if (depKey.startsWith(`@${SdProjectBuilderUtil.readProjectNpmConfig().name}/`)) {
-          const depIndexFilePath = `../${depKey.substr(`@${projectNpmConfig.name}/`.length)}/src/index.ts`;
+        if (depKey.startsWith(`@${projectNpmConfig.name}/`)) {
+          const depIndexFilePath = SdProjectBuilderUtil.getPackagesPath(`${depKey.substr(`@${projectNpmConfig.name}/`.length)}`, "src/index.ts");
           const depIndexFileContent = fs.readFileSync(depIndexFilePath);
           if (depIndexFileContent.includes(`import "`)) {
             result += `import "${depKey}";` + os.EOL;
