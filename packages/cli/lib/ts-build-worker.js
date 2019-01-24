@@ -23,19 +23,19 @@ process.on("message", async (changedFiles) => {
       if (!fs.existsSync(changedFile)) {
         fs.removeSync(distFilePath);
         fs.removeSync(distFilePath + ".map");
-        return;
       }
+      else {
+        const content = fs.readFileSync(changedFile, "utf8");
 
-      const content = fs.readFileSync(changedFile, "utf8");
+        const result = ts.transpileModule(content, {
+          compilerOptions: tsConfig.options,
+          reportDiagnostics: false,
+          fileName: changedFile
+        });
 
-      const result = ts.transpileModule(content, {
-        compilerOptions: tsConfig.options,
-        reportDiagnostics: false,
-        fileName: changedFile
-      });
-
-      fs.writeFileSync(distFilePath, result.outputText);
-      fs.writeFileSync(distFilePath + ".map", result.sourceMapText);
+        fs.writeFileSync(distFilePath, result.outputText);
+        fs.writeFileSync(distFilePath + ".map", result.sourceMapText);
+      }
     }
   }
   catch (err) {

@@ -16,11 +16,11 @@
       "@simplysm/orm-common": [
         "../orm-common/src/index.ts"
       ],
-      "@simplysm/ws-common": [
-        "../ws-common/src/index.ts"
-      ],
       "@simplysm/smtp-client-common": [
         "../smtp-client-common/src/index.ts"
+      ],
+      "@simplysm/ws-common": [
+        "../ws-common/src/index.ts"
       ]
     }
   }

@@ -4,6 +4,7 @@ import {Uuid} from "../types/Uuid";
 import {Type} from "../types/Type";
 import {DateTime} from "../types/DateTime";
 import {Time} from "../types/Time";
+import {IValidateDef, IValidateResult, ValidateDef} from "./commons";
 
 declare global {
   // tslint:disable-next-line:interface-name
@@ -24,29 +25,6 @@ declare global {
 
     validatesArray<T, K extends keyof T>(arr: T[], displayName: string, def: { [P in K]: IValidateDef }): void;
   }
-}
-
-export interface IValidateDef {
-  displayName?: string;
-  type?: Type<any> | Type<any>[];
-  notnull?: boolean;
-
-  includes?: any[];
-
-  validator?(value: any): boolean;
-}
-
-export type ValidateDef = Type<any> | Type<any>[] | IValidateDef;
-
-export interface IValidateResult {
-  value: any;
-  propertyKey?: string;
-  type?: Type<any> | Type<any>[];
-  notnull?: boolean;
-
-  includes?: any[];
-
-  validator?(value: any): boolean;
 }
 
 Object.clone = function (source: any, options?: { excludeProps?: string[] }): any {

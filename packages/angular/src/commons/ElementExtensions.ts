@@ -1,5 +1,5 @@
 // tslint:disable-next-line:interface-name
-interface Element {
+declare interface Element {
   prependChild<T extends Node>(newChild: T): T;
 
   findAll(selector: string): Element[];

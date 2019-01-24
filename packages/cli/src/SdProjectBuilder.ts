@@ -14,6 +14,7 @@ import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import {RequestHandler} from "express";
 import {SdWebSocketServer} from "@simplysm/ws-server";
+import * as os from "os";
 
 export class SdProjectBuilder {
   private readonly _serverMap = new Map<number, SdWebSocketServer>();
@@ -45,7 +46,12 @@ export class SdProjectBuilder {
       tsOptions.baseUrl = ".";
       tsOptions.paths = {};
 
-      const deps = Object.merge(npmConfig.dependencies, npmConfig.devDependencies);
+      const deps = {
+        ...npmConfig.dependencies,
+        ...npmConfig.devDependencies,
+        ...npmConfig.peerDependencies
+      };
+
       if (deps) {
         if (Object.keys(deps).includes("tslint")) {
           tsOptions.paths["tslint"] = [
@@ -54,13 +60,26 @@ export class SdProjectBuilder {
         }
 
         const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
-        for (const depKey of Object.keys(deps).filter(item => item.startsWith(`@${projectNpmConfig.name}/`))) {
-          if (!Object.keys(tsOptions.paths).includes(depKey)) {
-            tsOptions.paths[depKey] = [
-              `../${depKey.substr(`@${projectNpmConfig.name}/`.length)}/src/index.ts`
-            ];
+
+        const generatePaths = (deps1: { [key: string]: string }) => {
+          for (const depKey of Object.keys(deps1).filter(item => item.startsWith(`@${projectNpmConfig.name}/`))) {
+            const depPackageKey = depKey.substr(`@${projectNpmConfig.name}/`.length);
+
+            if (!Object.keys(tsOptions.paths!).includes(depKey)) {
+              tsOptions.paths![depKey] = [
+                `../${depPackageKey}/src/index.ts`
+              ];
+            }
+
+            const depPackageNpmConfig = SdProjectBuilderUtil.readNpmConfig(depPackageKey);
+            generatePaths({
+              ...depPackageNpmConfig.dependencies,
+              ...depPackageNpmConfig.devDependencies,
+              ...depPackageNpmConfig.peerDependencies
+            });
           }
-        }
+        };
+        generatePaths(deps);
       }
 
       SdProjectBuilderUtil.writeTsConfig(packageKey, tsconfig);
@@ -114,25 +133,6 @@ export class SdProjectBuilder {
   }
 
   public async watchAsync(argv?: { packages?: string }): Promise<void> {
-    const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
-    await this._readConfig("development", packageKeys);
-
-    await this._parallelPackages(true, async packageKey => {
-      const packageConfig = this.config.packages[packageKey];
-      if (packageConfig.type === "none") {
-        return;
-      }
-
-      await SdProjectBuilder._createTsConfigForBuild(packageKey);
-      if (packageConfig.type !== "dom" && packageConfig.type !== "node") {
-        const port = optional(packageConfig.server, o => o.port) || 80;
-        await this._watchPackageAsync(packageKey, port);
-      }
-      else {
-        await this._watchPackageAsync(packageKey);
-      }
-    });
-
     if (this.config.localUpdates) {
       const promiseList: Promise<void>[] = [];
       const promiseList2: Promise<void>[] = [];
@@ -174,6 +174,25 @@ export class SdProjectBuilder {
       await Promise.all(promiseList);
       await Promise.all(promiseList2);
     }
+
+    const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
+    await this._readConfig("development", packageKeys);
+
+    await this._parallelPackages(true, async packageKey => {
+      const packageConfig = this.config.packages[packageKey];
+      if (packageConfig.type === "none") {
+        return;
+      }
+
+      await SdProjectBuilder._createTsConfigForBuild(packageKey);
+      if (packageConfig.type !== "dom" && packageConfig.type !== "node") {
+        const port = optional(packageConfig.server, o => o.port) || 80;
+        await this._watchPackageAsync(packageKey, port);
+      }
+      else {
+        await this._watchPackageAsync(packageKey);
+      }
+    });
   }
 
   public async buildAsync(argv?: { packages?: string }): Promise<void> {
@@ -370,6 +389,8 @@ export class SdProjectBuilder {
   }
 
   private async _buildPackageAsync(packageKey: string): Promise<void> {
+    await this._generatePackageIndexFileAsync(packageKey);
+
     fs.removeSync(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
 
     const packageConfig = this.config.packages[packageKey];
@@ -401,6 +422,8 @@ export class SdProjectBuilder {
   }
 
   private async _watchPackageAsync(packageKey: string, serverPort?: number): Promise<void> {
+    await this._generatePackageIndexFileAsync(packageKey, true);
+
     fs.removeSync(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
 
     const packageConfig = this.config.packages[packageKey];
@@ -482,6 +505,71 @@ export class SdProjectBuilder {
       ]);
 
       return result[2];
+    }
+  }
+
+  private async _generatePackageIndexFileAsync(packageKey: string, watch?: boolean): Promise<void> {
+    const write = () => {
+      let result = "";
+
+      const npmConfig = SdProjectBuilderUtil.readNpmConfig(packageKey);
+      if (!npmConfig.main) return;
+
+      const deps = {
+        ...npmConfig.dependencies,
+        ...npmConfig.devDependencies,
+        ...npmConfig.peerDependencies
+      };
+
+      const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
+      for (const depKey of Object.keys(deps)) {
+        if (depKey.startsWith(`@${SdProjectBuilderUtil.readProjectNpmConfig().name}/`)) {
+          const depIndexFilePath = `../${depKey.substr(`@${projectNpmConfig.name}/`.length)}/src/index.ts`;
+          const depIndexFileContent = fs.readFileSync(depIndexFilePath);
+          if (depIndexFileContent.includes(`import "`)) {
+            result += `import "${depKey}";` + os.EOL;
+          }
+        }
+        else {
+          const depIndexFilePath = SdProjectBuilderUtil.getProjectPath("node_modules", depKey, "src", "index.ts");
+          if (fs.pathExistsSync(depIndexFilePath)) {
+            const depIndexFileContent = fs.readFileSync(depIndexFilePath);
+            if (depIndexFileContent.includes(`import "`)) {
+              result += `import "${depKey}";` + os.EOL;
+            }
+          }
+        }
+      }
+
+      const matches = glob.sync(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/**/*.ts"));
+      for (const match of matches) {
+        const relativePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "src"), match).replace(/\\/g, "/");
+        if (relativePath === "index.ts" || relativePath === "bin.ts") {
+          continue;
+        }
+
+        if (relativePath.includes("Extension")) {
+          result += `import "./${relativePath.replace(/\.ts/g, "")}";` + os.EOL;
+        }
+        else {
+          result += `export * from "./${relativePath.replace(/\.ts/g, "")}";` + os.EOL;
+        }
+      }
+
+      fs.writeFileSync(SdProjectBuilderUtil.getPackagesPath(packageKey, "src", "index.ts"), result);
+    };
+
+    write();
+
+    if (watch) {
+      await FileWatcher.watch(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/**/*.ts"), ["add", "unlink"], async () => {
+        try {
+          write();
+        }
+        catch (err) {
+          new Logger("@simplysm/cli", packageKey).error(err);
+        }
+      });
     }
   }
 

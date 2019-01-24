@@ -8,6 +8,7 @@ export * from "./IDbMigration";
 export * from "./IJoinDef";
 export * from "./IQueryDef";
 export * from "./MigrationQueryBuilder";
+export * from "./Queryable";
 export * from "./QueryBuilder";
 export * from "./QueryBuilderAdv";
 export * from "./QueryHelper";
