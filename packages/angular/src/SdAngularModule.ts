@@ -62,6 +62,7 @@ import {SdCheckboxGroupItemControl} from "./controls/SdCheckboxGroupItemControl"
 import {SdWebSocketProvider} from "./providers/SdWebSocketProvider";
 import {SdOrmProvider} from "./providers/SdOrmProvider";
 import {SdSmtpClientProvider} from "./providers/SdSmtpClientProvider";
+import {SdCryptoProvider} from "./providers/SdCryptoProvider";
 
 const controls: Type<any>[] = [
   SdBusyContainerControl,
@@ -133,6 +134,7 @@ const providers: Provider[] = [
   SdToastProvider,
   SdOrmProvider,
   SdSmtpClientProvider,
+  SdCryptoProvider,
   {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
   {provide: ErrorHandler, useClass: GlobalErrorHandler}
 ];

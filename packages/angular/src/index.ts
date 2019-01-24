@@ -52,6 +52,7 @@ export * from "./modals/SdAddressSearchModal";
 export * from "./pipes/SdCasePipe";
 export * from "./plugins/GlobalErrorHandler";
 export * from "./plugins/ResizeEventPlugin";
+export * from "./providers/SdCryptoProvider";
 export * from "./providers/SdDomValidatorProvider";
 export * from "./providers/SdFileDialogProvider";
 export * from "./providers/SdLocalStorageProvider";

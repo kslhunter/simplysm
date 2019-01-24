@@ -3,6 +3,7 @@ require("zone.js/dist/zone");
 
 const AppModule = require("SIMPLYSM_CLIENT_APP_MODULE").AppModule;
 const platformBrowserDynamic = require("@angular/platform-browser-dynamic").platformBrowserDynamic;
+const ApplicationRef = require("@angular/core").ApplicationRef;
 
 if (process.env.NODE_ENV !== "production") {
   require("zone.js/dist/long-stack-trace-zone");
@@ -14,9 +15,21 @@ if (process.env.NODE_ENV === "production") {
   enableProdMode();
 }
 
-if (module.hot) {
-  console.clear();
-  module.hot.accept();
-}
+platformBrowserDynamic().bootstrapModule(AppModule)
+  .then(ngModuleRef => {
+    if (module.hot) {
+      const appRef = ngModuleRef.injector.get(ApplicationRef);
 
-platformBrowserDynamic().bootstrapModule(AppModule);
+      console.clear();
+      module.hot.accept();
+      module.hot.dispose(() => {
+        const prevEls = appRef.components.map(cmp => cmp.location.nativeElement);
+        for (const prevEl of prevEls) {
+          const newEl = document.createElement(prevEl.tagName);
+          const parentNode = prevEl.parentNode;
+          parentNode.replaceChild(newEl, prevEl);
+        }
+        ngModuleRef.destroy();
+      });
+    }
+  });

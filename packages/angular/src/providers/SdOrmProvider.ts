@@ -6,11 +6,11 @@ import {SdWebSocketDbContextExecutor} from "@simplysm/ws-common";
 
 @Injectable()
 export class SdOrmProvider {
-  public constructor(private readonly _service: SdWebSocketProvider) {
+  public constructor(private readonly _ws: SdWebSocketProvider) {
   }
 
-  public async connectAsync<T extends DbContext, R>(dbType: Type<T>, callback: (conn: T) => Promise<R>, withoutTransaction?: boolean): Promise<R> {
-    const db = new dbType(new SdWebSocketDbContextExecutor(this._service.socket));
-    return await db.connectAsync(callback, withoutTransaction);
+  public async connectAsync<T extends DbContext, R>(dbType: Type<T>, callback: (conn: T) => Promise<R>, trans: boolean = true): Promise<R> {
+    const db = new dbType(new SdWebSocketDbContextExecutor(this._ws.socket));
+    return await db.connectAsync(callback, trans);
   }
 }

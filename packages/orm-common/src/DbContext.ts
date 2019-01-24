@@ -30,6 +30,10 @@ export abstract class DbContext {
 
   public async connectAsync<R>(fn: (db: this) => Promise<R>, trans: boolean = true): Promise<R> {
     this.mainDb = await this._executor.getMainDbNameAsync(this.configName);
+    if (!this.mainDb) {
+      throw new Error("메인데이터베이스명을 알 수 없습니다.");
+    }
+
     await this._executor.connectAsync(this.configName);
 
     if (trans) {
@@ -127,7 +131,7 @@ export abstract class DbContext {
     return result;
   }
 
-  public async initializeAsync(dbNames: string[], force?: boolean): Promise<boolean> {
+  public async initializeAsync(dbs?: string[], force?: boolean): Promise<boolean> {
     if (force && this._trans) {
       throw new Error("DB 초기화 함수 (initializeAsync)는 트랜젝션을 사용할 수 없습니다.");
     }
@@ -170,6 +174,8 @@ export abstract class DbContext {
         }
       }
     }
+
+    const dbNames = dbs || [this.mainDb!];
 
     //-- Initialize
     const tableDefs = Object.values(this)

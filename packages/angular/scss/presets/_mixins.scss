@@ -12,5 +12,16 @@
 }
 
 @mixin elevation($value) {
-  box-shadow: 0 #{$value}px #{$value + 1}px rgba(0, 0, 0, .1);
+  box-shadow: 0 0 1px rgba(0, 0, 0, .1), 0 #{$value/2}px #{$value + 1}px rgba(0, 0, 0, .2);
+}
+
+@mixin invalid-indicator() {
+  display: block;
+  position: absolute;
+  top: get($gap, xxs);
+  left: get($gap, xxs);
+  border-radius: 100%;
+  width: 4px;
+  height: 4px;
+  background: get($theme-color, danger, default);
 }

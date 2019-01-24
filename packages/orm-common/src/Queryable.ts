@@ -9,7 +9,27 @@ export class Queryable<T extends object> {
   private static readonly _selectQueryHistory = new Map<string, any[] | undefined>();
 
   private readonly _db: DbContext;
-  private _qba: QueryBuilderAdv<T>;
+
+  private readonly _qbaFirstParam: Type<T> | Queryable<T> | Queryable<T>[];
+  private __qba?: QueryBuilderAdv<T>; //tslint:disable-line:variable-name
+  private get _qba(): QueryBuilderAdv<T> {
+    if (!this.__qba) {
+      if (this._qbaFirstParam instanceof Function) {
+        this.__qba = new QueryBuilderAdv(this._qbaFirstParam, this._db.mainDb);
+      }
+      else if (this._qbaFirstParam instanceof Queryable) {
+        this.__qba = new QueryBuilderAdv(this._qbaFirstParam._qba, this._db.mainDb, undefined, this.tableType);
+      }
+      else {
+        this.__qba = new QueryBuilderAdv(this._qbaFirstParam.map(item => item._qba), this._db.mainDb, undefined, this.tableType);
+      }
+    }
+    return this.__qba;
+  }
+
+  private set _qba(value: QueryBuilderAdv<T>) {
+    this.__qba = value;
+  }
 
   public readonly tableType?: Type<T>;
   public readonly subQueryable?: Queryable<T>;
@@ -27,19 +47,18 @@ export class Queryable<T extends object> {
     this._db = db;
 
     if (arg instanceof Function) {
-      this._qba = new QueryBuilderAdv(arg, this._db.mainDb);
       this.tableType = arg;
     }
     else if (arg instanceof Queryable) {
-      this._qba = new QueryBuilderAdv(arg._qba, this._db.mainDb, undefined, tableType);
       this.subQueryable = arg;
       this.tableType = tableType;
     }
     else {
-      this._qba = new QueryBuilderAdv(arg.map(item => item._qba), this._db.mainDb, undefined, tableType);
       this.subQueryableList = arg;
       this.tableType = tableType;
     }
+
+    this._qbaFirstParam = arg;
   }
 
   public select<R extends object>(fwd: (entity: T) => R): Queryable<R> {

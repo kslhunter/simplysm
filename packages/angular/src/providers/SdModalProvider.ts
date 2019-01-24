@@ -48,6 +48,7 @@ export class SdModalProvider {
       setTimeout(async () => {
         this._appRef.attachView(compRef.hostView);
         this._appRef.attachView(modalRef.hostView);
+        this._appRef.tick();
 
         try {
           if (activeElement) {

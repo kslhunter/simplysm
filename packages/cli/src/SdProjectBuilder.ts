@@ -133,7 +133,12 @@ export class SdProjectBuilder {
   }
 
   public async watchAsync(argv?: { packages?: string }): Promise<void> {
+    const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
+    await this._readConfig("development", packageKeys);
+
     if (this.config.localUpdates) {
+      const logger = new Logger("@simplysm/cli", "local-updates");
+
       const promiseList: Promise<void>[] = [];
       const promiseList2: Promise<void>[] = [];
 
@@ -152,10 +157,12 @@ export class SdProjectBuilder {
 
               const sourceDirPath = SdProjectBuilderUtil.getProjectPath(this.config.localUpdates![localUpdateKey].replace(/\*/g, subPackageName));
               const targetDirPath = SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey.replace(/\*/g, subPackageName));
+              logger.log(`"${localUpdateKey.replace("*", subPackageName)}"의 로컬업데이트 감지를 시작합니다.`);
               promiseList2.push(
                 FileWatcher.watch(path.resolve(sourceDirPath, "**", "*"), ["add", "change", "unlink"], changes => {
                   for (const change of changes) {
                     const targetFilePath = path.resolve(targetDirPath, path.relative(sourceDirPath, change.filePath));
+                    logger.log(`"${localUpdateKey.replace("*", subPackageName)}"의 파일이 변경되었습니다. : [${change.type}] ${change.filePath}`);
                     if (change.type === "unlink") {
                       fs.removeSync(targetFilePath);
                     }
@@ -174,9 +181,6 @@ export class SdProjectBuilder {
       await Promise.all(promiseList);
       await Promise.all(promiseList2);
     }
-
-    const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
-    await this._readConfig("development", packageKeys);
 
     await this._parallelPackages(true, async packageKey => {
       const packageConfig = this.config.packages[packageKey];
@@ -427,6 +431,7 @@ export class SdProjectBuilder {
     fs.removeSync(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
 
     const packageConfig = this.config.packages[packageKey];
+    const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
 
     if (packageConfig.type === "none") {
     }
@@ -463,7 +468,7 @@ export class SdProjectBuilder {
                   await server.listenAsync(serverPort);
                   this._serverMap.set(serverPort, server);
                   server.expressServer!.use(this._expressServerMiddlewareMap.get(serverPort)!);
-                  logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
+                  logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`);
                 });
             }
 
@@ -476,10 +481,13 @@ export class SdProjectBuilder {
             this._expressServerMiddlewareMap.set(serverPort, [
               WebpackDevMiddleware(compiler, {
                 publicPath: webpackConfig.output!.publicPath!,
-                logLevel: "silent"
+                logLevel: "silent",
+                watchOptions: {
+                  aggregateTimeout: 600
+                }
               }),
               WebpackHotMiddleware(compiler, {
-                path: "/__webpack_hmr",
+                path: `/${projectNpmConfig.name}/${packageKey}/__webpack_hmr`,
                 log: false
               })
             ]);
@@ -487,12 +495,11 @@ export class SdProjectBuilder {
 
             const serverDirPath = path.dirname(require.resolve("@simplysm/ws-server"));
 
-            const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
             const packageDistConfigsFilePath = path.resolve(serverDirPath, "www", projectNpmConfig.name, packageKey, "configs.json");
             fs.mkdirsSync(path.dirname(packageDistConfigsFilePath));
             fs.writeJsonSync(packageDistConfigsFilePath, packageConfig.configs);
 
-            logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${(SdProjectBuilderUtil.readProjectNpmConfig()).name}/${packageKey}/`);
+            logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`);
 
             compiler.hooks.done.tap("SdProjectBuilder", () => {
               resolve();
@@ -597,6 +604,7 @@ export class SdProjectBuilder {
         }
         else if (message.type === "error") {
           logger.error("코드검사중 에러가 발생하였습니다.", message.message);
+          reject(new Error(message.message));
         }
       });
 
@@ -648,6 +656,7 @@ export class SdProjectBuilder {
         }
         else if (message.type === "error") {
           logger.error("빌드중 에러가 발생하였습니다.", message.message);
+          reject(new Error(message.message));
         }
       });
 
@@ -672,24 +681,28 @@ export class SdProjectBuilder {
   }
 
   private async _runTsCheckAndDeclarationWorkerAsync(packageKey: string, watch?: boolean): Promise<void> {
-    const logger = new Logger("@simplysm/cli", packageKey);
+    await new Promise<void>((resolve, reject) => {
+      const logger = new Logger("@simplysm/cli", packageKey);
 
-    const worker = child_process.fork(
-      path.resolve(__dirname, "..", "lib", "ts-check-and-declaration-worker.js"),
-      [
-        packageKey,
-        watch ? "watch" : "build"
-      ],
-      {
-        stdio: [undefined, undefined, undefined, "ipc"]
-      }
-    );
-    worker.on("message", message => {
-      if (message.type === "finish") {
-      }
-      else if (message.type === "error") {
-        logger.error(`타입체크중 오류가 발생하였습니다.`, message.message);
-      }
+      const worker = child_process.fork(
+        path.resolve(__dirname, "..", "lib", "ts-check-and-declaration-worker.js"),
+        [
+          packageKey,
+          watch ? "watch" : "build"
+        ],
+        {
+          stdio: [undefined, undefined, undefined, "ipc"]
+        }
+      );
+      worker.on("message", message => {
+        if (message.type === "finish") {
+          resolve();
+        }
+        else if (message.type === "error") {
+          logger.error(`타입체크중 오류가 발생하였습니다.`, message.message);
+          reject(new Error(message.message));
+        }
+      });
     });
   }
 
@@ -813,7 +826,7 @@ export class SdProjectBuilder {
         mode: "development",
         devtool: "cheap-module-source-map",
         entry: [
-          `webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000`,
+          `webpack-hot-middleware/client?path=/${projectNpmConfig.name}/${packageKey}/__webpack_hmr&timeout=20000`,
           path.resolve(__dirname, "../lib/main.js")
         ],
         plugins: [

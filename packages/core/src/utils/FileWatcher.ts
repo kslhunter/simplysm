@@ -2,7 +2,7 @@ import * as chokidar from "chokidar";
 import {Logger} from "@simplysm/common";
 
 export class FileWatcher {
-  public static async watch(paths: string | string[], sits: ("add" | "change" | "unlink")[], callback: (changedFiles: { type: string; filePath: string }[]) => (void | Promise<void>)): Promise<void> {
+  public static async watch(paths: string | string[], sits: ("add" | "change" | "unlink")[], callback: (changedFiles: { type: string; filePath: string }[]) => (void | Promise<void>), millisecond?: number): Promise<void> {
     await new Promise<void>(resolve => {
       const watcher = chokidar.watch((typeof paths === "string" ? [paths] : paths).map(item => item.replace(/\\/g, "/")))
         .on("ready", () => {
@@ -25,7 +25,7 @@ export class FileWatcher {
                   new Logger("@simplysm/core", "FileWatcher").error(err.stack);
                 }
               },
-              300
+              millisecond || 300
             );
           };
 
