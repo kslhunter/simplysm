@@ -1,5 +1,5 @@
-export * from "./commons/ElementExtensions";
-export * from "./commons/HTMLElementExtensions";
+import "./commons/ElementExtensions";
+import "./commons/HTMLElementExtensions";
 export * from "./commons/SdNavigateAttribute";
 export * from "./commons/SdNotifyPropertyChange";
 export * from "./commons/SdTypeValidate";
