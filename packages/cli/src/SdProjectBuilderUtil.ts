@@ -85,8 +85,13 @@ export class SdProjectBuilderUtil {
   }
 
   public static async readNpmConfigAsync(packageKey: string): Promise<INpmConfig> {
-    const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
-    return await fs.readJson(configPath);
+    try {
+      const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
+      return await fs.readJson(configPath);
+    }
+    catch (err) {
+      throw new Error("여긴가");
+    }
   }
 
   public static async writeNpmConfigAsync(packageKey: string, npmConfig: INpmConfig): Promise<void> {
