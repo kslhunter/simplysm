@@ -15,6 +15,7 @@ import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import {RequestHandler} from "express";
 import {SdWebSocketServer} from "@simplysm/ws-server";
 import * as os from "os";
+import * as CopyWebpackPlugin from "copy-webpack-plugin";
 
 export class SdProjectBuilder {
   private readonly _serverMap = new Map<number, SdWebSocketServer>();
@@ -22,165 +23,32 @@ export class SdProjectBuilder {
   private config: ISdProjectConfig = {packages: {}};
 
   public async bootstrapAsync(): Promise<void> {
-    await this._readConfig("production", undefined);
+    await this._readConfigAsync("production", undefined);
 
     for (const packageKey of Object.keys(this.config.packages)) {
-      const tsconfig: ITsConfig = {}; //await SdProjectBuilderUtil.readTsConfig(packageKey);
-      tsconfig.extends = "../../tsconfig.json";
-      tsconfig.compilerOptions = {};
-      const tsOptions = tsconfig.compilerOptions;
-
-      tsOptions.rootDir = "src";
-      tsOptions.outDir = "dist";
-
-      tsOptions.lib = ["es2017"];
-
-      const packageConfig = this.config.packages[packageKey];
-      if (packageConfig.type !== "node") {
-        tsOptions.lib.push("dom");
-      }
-
-      const npmConfig = SdProjectBuilderUtil.readNpmConfig(packageKey);
-      tsOptions.declaration = !!npmConfig.types;
-
-      tsOptions.baseUrl = ".";
-      tsOptions.paths = {};
-
-      const deps = {
-        ...npmConfig.dependencies,
-        ...npmConfig.devDependencies,
-        ...npmConfig.peerDependencies
-      };
-
-      if (deps) {
-        if (Object.keys(deps).includes("tslint")) {
-          tsOptions.paths["tslint"] = [
-            "../../node_modules/tslint"
-          ];
-        }
-
-        const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
-
-        const generatePaths = (deps1: { [key: string]: string }) => {
-          for (const depKey of Object.keys(deps1).filter(item => item.startsWith(`@${projectNpmConfig.name}/`))) {
-            const depPackageKey = depKey.substr(`@${projectNpmConfig.name}/`.length);
-
-            if (!Object.keys(tsOptions.paths!).includes(depKey)) {
-              tsOptions.paths![depKey] = [
-                `../${depPackageKey}/src/index.ts`
-              ];
-            }
-
-            const depPackageNpmConfig = SdProjectBuilderUtil.readNpmConfig(depPackageKey);
-            generatePaths({
-              ...depPackageNpmConfig.dependencies,
-              ...depPackageNpmConfig.devDependencies,
-              ...depPackageNpmConfig.peerDependencies
-            });
-          }
-        };
-        generatePaths(deps);
-      }
-
-      SdProjectBuilderUtil.writeTsConfig(packageKey, tsconfig);
+      await this._createTsConfigFileAsync(packageKey);
 
       const logger = new Logger("@simplysm/cli", packageKey);
-      await spawnAsync(["git", "add", SdProjectBuilderUtil.getTsConfigPath(packageKey)], {
-        logger,
-        onMessage: async (errMsg, logMsg) => {
-          return logMsg !== undefined && logMsg.includes("Watching for file changes.");
-        }
-      });
+      await spawnAsync(["git", "add", SdProjectBuilderUtil.getTsConfigPath(packageKey)], {logger});
     }
   }
 
   public async localUpdateAsync(): Promise<void> {
-    await this._readConfig("development", undefined);
+    await this._readConfigAsync("development", undefined);
 
     if (!this.config.localUpdates) {
       new Logger("@simplysm/cli").warn("로컬 업데이트 설정이 없습니다.");
       return;
     }
 
-    await Promise.all(Object.keys(this.config.localUpdates).map(async localUpdateKey => {
-      await new Promise<void>(async (resolve, reject) => {
-        glob(SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey), (err, depPackageDirPaths) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          for (const depPackageDirPath of depPackageDirPaths) {
-            const subPackageName = depPackageDirPath.match(new RegExp(
-              localUpdateKey.replace(/([\/.*])/g, item => item === "/" ? "\\/" : item === "." ? "\\." : item === "*" ? "(.*)" : item)
-            ))![1];
-
-            const sourceDirPath = SdProjectBuilderUtil.getProjectPath(this.config.localUpdates![localUpdateKey].replace(/\*/g, subPackageName));
-            const targetDirPath = SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey.replace(/\*/g, subPackageName));
-            if (!fs.pathExistsSync(sourceDirPath)) {
-              reject(new Error(`소스파일을 찾을 수 없습니다. ("${sourceDirPath}")`));
-              return;
-            }
-            fs.copySync(sourceDirPath, targetDirPath);
-          }
-
-          resolve();
-        });
-      });
-    }));
-
-    new Logger("@simplysm/cli").log(`로컬 업데이트 완료`);
+    await this._localUpdateAsync();
   }
 
   public async watchAsync(argv?: { packages?: string }): Promise<void> {
     const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
-    await this._readConfig("development", packageKeys);
+    await this._readConfigAsync("development", packageKeys);
 
-    if (this.config.localUpdates) {
-      const logger = new Logger("@simplysm/cli", "local-updates");
-
-      const promiseList: Promise<void>[] = [];
-      const promiseList2: Promise<void>[] = [];
-
-      for (const localUpdateKey of Object.keys(this.config.localUpdates)) {
-        promiseList.push(new Promise<void>((resolve, reject) => {
-          glob(SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey), async (err, depPackageDirPaths) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-
-            for (const depPackageDirPath of depPackageDirPaths) {
-              const subPackageName = depPackageDirPath.match(new RegExp(
-                localUpdateKey.replace(/([\/.*])/g, item => item === "/" ? "\\/" : item === "." ? "\\." : item === "*" ? "(.*)" : item)
-              ))![1];
-
-              const sourceDirPath = SdProjectBuilderUtil.getProjectPath(this.config.localUpdates![localUpdateKey].replace(/\*/g, subPackageName));
-              const targetDirPath = SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey.replace(/\*/g, subPackageName));
-              logger.log(`"${localUpdateKey.replace("*", subPackageName)}"의 로컬업데이트 감지를 시작합니다.`);
-              promiseList2.push(
-                FileWatcher.watch(path.resolve(sourceDirPath, "**", "*"), ["add", "change", "unlink"], changes => {
-                  for (const change of changes) {
-                    const targetFilePath = path.resolve(targetDirPath, path.relative(sourceDirPath, change.filePath));
-                    logger.log(`"${localUpdateKey.replace("*", subPackageName)}"의 파일이 변경되었습니다. : [${change.type}] ${change.filePath}`);
-                    if (change.type === "unlink") {
-                      fs.removeSync(targetFilePath);
-                    }
-                    else {
-                      fs.copySync(change.filePath, targetFilePath);
-                    }
-                  }
-                })
-              );
-            }
-            resolve();
-          });
-        }));
-      }
-
-      await Promise.all(promiseList);
-      await Promise.all(promiseList2);
-    }
+    await this._localUpdateAsync(true);
 
     await this._parallelPackages(true, async packageKey => {
       const packageConfig = this.config.packages[packageKey];
@@ -188,7 +56,7 @@ export class SdProjectBuilder {
         return;
       }
 
-      await SdProjectBuilder._createTsConfigForBuild(packageKey);
+      await SdProjectBuilder._createTsConfigForBuildFileAsync(packageKey);
       if (packageConfig.type !== "dom" && packageConfig.type !== "node") {
         const port = optional(packageConfig.server, o => o.port) || 80;
         await this._watchPackageAsync(packageKey, port);
@@ -201,17 +69,17 @@ export class SdProjectBuilder {
 
   public async buildAsync(argv?: { packages?: string }): Promise<void> {
     const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
-    await this._readConfig("production", packageKeys);
+    await this._readConfigAsync("production", packageKeys);
 
     await this._parallelPackages(true, async packageKey => {
-      await SdProjectBuilder._createTsConfigForBuild(packageKey);
+      await SdProjectBuilder._createTsConfigForBuildFileAsync(packageKey);
       await this._buildPackageAsync(packageKey);
     });
   }
 
   public async publishAsync(argv?: { build?: boolean; packages?: string }): Promise<void> {
     const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
-    await this._readConfig("production", packageKeys);
+    await this._readConfigAsync("production", packageKeys);
 
     const logger = new Logger("@simplysm/cli");
     await new Promise<void>(async (resolve, reject) => {
@@ -227,14 +95,14 @@ export class SdProjectBuilder {
 
     if (optional(argv, o => o.build)) {
       await this._parallelPackages(true, async packageKey => {
-        await SdProjectBuilder._createTsConfigForBuild(packageKey);
+        await SdProjectBuilder._createTsConfigForBuildFileAsync(packageKey);
         await this._buildPackageAsync(packageKey);
       });
     }
 
     await spawnAsync(["npm", "version", "patch", "--git-tag-version", "false"], {logger});
 
-    const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
+    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
 
     await this._parallelPackages(false, async packageKey => {
       const packageLogger = new Logger("@simplysm/cli", packageKey);
@@ -256,7 +124,7 @@ export class SdProjectBuilder {
           ...projectNpmConfig.peerDependencies
         };
 
-        const npmConfig = SdProjectBuilderUtil.readNpmConfig(packageKey);
+        const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
         for (const deps of [npmConfig.dependencies, npmConfig.devDependencies, npmConfig.peerDependencies]) {
           if (deps) {
             for (const depKey of Object.keys(deps)) {
@@ -270,7 +138,7 @@ export class SdProjectBuilder {
             }
           }
         }
-        SdProjectBuilderUtil.writeNpmConfig(packageKey, npmConfig);
+        await SdProjectBuilderUtil.writeNpmConfigAsync(packageKey, npmConfig);
 
         if (packageConfig.publish.protocol === "npm") {
           let message = "";
@@ -321,8 +189,129 @@ export class SdProjectBuilder {
     // await spawnAsync(["git", "push", "origin", "--tags"], {logger});
   }
 
-  private static async _createTsConfigForBuild(packageKey: string): Promise<void> {
-    const tsconfig = SdProjectBuilderUtil.readTsConfig(packageKey);
+  public async _localUpdateAsync(watch?: boolean): Promise<void> {
+    if (!this.config.localUpdates) return;
+
+    await Promise.all(Object.keys(this.config.localUpdates).map(async localUpdateKey => {
+      const depPackageDirPaths = await new Promise<string[]>(async (resolve, reject) => {
+        glob(SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey), async (err, globResult) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          resolve(globResult);
+        });
+      });
+
+      for (const depPackageDirPath of depPackageDirPaths) {
+        const subPackageName = depPackageDirPath.match(new RegExp(
+          localUpdateKey.replace(/([\/.*])/g, item => item === "/" ? "\\/" : item === "." ? "\\." : item === "*" ? "(.*)" : item)
+        ))![1];
+
+        const sourceDirPath = SdProjectBuilderUtil.getProjectPath(this.config.localUpdates![localUpdateKey].replace(/\*/g, subPackageName));
+        const targetDirPath = SdProjectBuilderUtil.getProjectPath("node_modules", localUpdateKey.replace(/\*/g, subPackageName));
+
+        if (!await fs.pathExists(sourceDirPath)) {
+          throw new Error(`소스디렉토리를 찾을 수 없습니다. ("${sourceDirPath}")`);
+        }
+
+        if (!watch) {
+          await fs.copy(sourceDirPath, targetDirPath);
+        }
+        else {
+          const logger = new Logger("@simplysm/cli", "local-updates");
+
+          logger.log(`"${localUpdateKey.replace("*", subPackageName)}"의 로컬업데이트 감지를 시작합니다.`);
+          await FileWatcher.watch(path.resolve(sourceDirPath, "**", "*"), ["add", "change", "unlink"], async changes => {
+            try {
+              for (const change of changes) {
+                const targetFilePath = path.resolve(targetDirPath, path.relative(sourceDirPath, change.filePath));
+                logger.log(`"${localUpdateKey.replace("*", subPackageName)}"의 파일이 변경되었습니다. : [${change.type}] ${change.filePath}`);
+                if (change.type === "unlink") {
+                  await fs.remove(targetFilePath);
+                }
+                else {
+                  await fs.copy(change.filePath, targetFilePath);
+                }
+              }
+            }
+            catch (err) {
+              logger.error(err);
+            }
+          });
+        }
+      }
+    }));
+
+    if (!watch) {
+      new Logger("@simplysm/cli").log(`로컬 업데이트 완료`);
+    }
+  }
+
+  private async _createTsConfigFileAsync(packageKey: string): Promise<void> {
+    const tsconfig: ITsConfig = {};
+    tsconfig.extends = "../../tsconfig.json";
+    tsconfig.compilerOptions = {};
+    const tsOptions = tsconfig.compilerOptions;
+
+    tsOptions.rootDir = "src";
+    tsOptions.outDir = "dist";
+
+    tsOptions.lib = ["es2017"];
+
+    const packageConfig = this.config.packages[packageKey];
+    if (packageConfig.type !== "node") {
+      tsOptions.lib.push("dom");
+    }
+
+    const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
+    tsOptions.declaration = !!npmConfig.types;
+
+    tsOptions.baseUrl = ".";
+    tsOptions.paths = {};
+
+    const deps = {
+      ...npmConfig.dependencies,
+      ...npmConfig.devDependencies,
+      ...npmConfig.peerDependencies
+    };
+
+    if (deps) {
+      if (Object.keys(deps).includes("tslint")) {
+        tsOptions.paths["tslint"] = [
+          "../../node_modules/tslint"
+        ];
+      }
+
+      const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
+
+      const generatePathsAsync = async (deps1: { [key: string]: string }) => {
+        for (const depKey of Object.keys(deps1).filter(item => item.startsWith(`@${projectNpmConfig.name}/`))) {
+          const depPackageKey = depKey.substr(`@${projectNpmConfig.name}/`.length);
+
+          if (!Object.keys(tsOptions.paths!).includes(depKey)) {
+            tsOptions.paths![depKey] = [
+              `../${depPackageKey}/src/index.ts`
+            ];
+          }
+
+          const depPackageNpmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(depPackageKey);
+          await generatePathsAsync({
+            ...depPackageNpmConfig.dependencies,
+            ...depPackageNpmConfig.devDependencies,
+            ...depPackageNpmConfig.peerDependencies
+          });
+        }
+      };
+      await generatePathsAsync(deps);
+    }
+
+    await SdProjectBuilderUtil.writeTsConfigAsync(packageKey, tsconfig);
+  }
+
+  private static async _createTsConfigForBuildFileAsync(packageKey: string): Promise<void> {
+    const tsconfig = await SdProjectBuilderUtil.readTsConfigAsync(packageKey);
     const tsOptions = tsconfig.compilerOptions;
 
     if (tsOptions && tsOptions.paths) {
@@ -335,11 +324,11 @@ export class SdProjectBuilder {
       }
     }
 
-    SdProjectBuilderUtil.writeTsConfig(packageKey, tsconfig, true);
+    await SdProjectBuilderUtil.writeTsConfigAsync(packageKey, tsconfig, true);
   }
 
-  private async _readConfig(env: "production" | "development", packageKeys: string[] | undefined): Promise<void> {
-    this.config = SdProjectBuilderUtil.readConfig(env, packageKeys);
+  private async _readConfigAsync(env: "production" | "development", packageKeys: string[] | undefined): Promise<void> {
+    this.config = await SdProjectBuilderUtil.readConfigAsync(env, packageKeys);
   }
 
   private async _parallelPackages(byDep: boolean, cb: (packageKey: string) => Promise<void>): Promise<void> {
@@ -352,7 +341,7 @@ export class SdProjectBuilder {
       for (const packageKey of Object.keys(this.config.packages)) {
         promises.push(new Promise<void>(async (resolve, reject) => {
           try {
-            const packageNpmConfig = SdProjectBuilderUtil.readNpmConfig(packageKey);
+            const packageNpmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
             const packageNpmName = packageNpmConfig.name;
             const packageNpmDeps = Object.merge(packageNpmConfig.dependencies, packageNpmConfig.devDependencies);
             if (packageNpmDeps) {
@@ -386,7 +375,7 @@ export class SdProjectBuilder {
   private async _getAllBuildPackageNpmNamesAsync(): Promise<string[]> {
     const result: string[] = [];
     for (const packageKey of Object.keys(this.config.packages)) {
-      const npmConfig = SdProjectBuilderUtil.readNpmConfig(packageKey);
+      const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
       result.push(npmConfig.name);
     }
     return result;
@@ -395,7 +384,7 @@ export class SdProjectBuilder {
   private async _buildPackageAsync(packageKey: string): Promise<void> {
     await this._generatePackageIndexFileAsync(packageKey);
 
-    fs.removeSync(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
+    await fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
 
     const packageConfig = this.config.packages[packageKey];
 
@@ -428,10 +417,10 @@ export class SdProjectBuilder {
   private async _watchPackageAsync(packageKey: string, serverPort?: number): Promise<void> {
     await this._generatePackageIndexFileAsync(packageKey, true);
 
-    fs.removeSync(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
+    await fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
 
     const packageConfig = this.config.packages[packageKey];
-    const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
+    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
 
     if (packageConfig.type === "none") {
     }
@@ -478,7 +467,12 @@ export class SdProjectBuilder {
 
             const currServer = this._serverMap.get(serverPort)!;
 
-            this._expressServerMiddlewareMap.set(serverPort, [
+            if (!this._expressServerMiddlewareMap.get(serverPort)) {
+              this._expressServerMiddlewareMap.set(serverPort, []);
+            }
+
+            const expressServerMiddlewareList = this._expressServerMiddlewareMap.get(serverPort)!;
+            expressServerMiddlewareList.pushRange([
               WebpackDevMiddleware(compiler, {
                 publicPath: webpackConfig.output!.publicPath!,
                 logLevel: "silent",
@@ -491,13 +485,13 @@ export class SdProjectBuilder {
                 log: false
               })
             ]);
-            currServer.expressServer!.use(this._expressServerMiddlewareMap.get(serverPort)!);
+            currServer.expressServer!.use(expressServerMiddlewareList);
 
             const serverDirPath = path.dirname(require.resolve("@simplysm/ws-server"));
 
             const packageDistConfigsFilePath = path.resolve(serverDirPath, "www", projectNpmConfig.name, packageKey, "configs.json");
-            fs.mkdirsSync(path.dirname(packageDistConfigsFilePath));
-            fs.writeJsonSync(packageDistConfigsFilePath, packageConfig.configs);
+            await fs.mkdirs(path.dirname(packageDistConfigsFilePath));
+            await fs.writeJson(packageDistConfigsFilePath, packageConfig.configs);
 
             logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`);
 
@@ -516,10 +510,10 @@ export class SdProjectBuilder {
   }
 
   private async _generatePackageIndexFileAsync(packageKey: string, watch?: boolean): Promise<void> {
-    const write = () => {
+    const writeAsync = async () => {
       let result = "";
 
-      const npmConfig = SdProjectBuilderUtil.readNpmConfig(packageKey);
+      const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
       if (!npmConfig.main) return;
 
       const deps = {
@@ -528,19 +522,19 @@ export class SdProjectBuilder {
         ...npmConfig.peerDependencies
       };
 
-      const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
+      const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
       for (const depKey of Object.keys(deps)) {
         if (depKey.startsWith(`@${projectNpmConfig.name}/`)) {
           const depIndexFilePath = SdProjectBuilderUtil.getPackagesPath(`${depKey.substr(`@${projectNpmConfig.name}/`.length)}`, "src/index.ts");
-          const depIndexFileContent = fs.readFileSync(depIndexFilePath);
+          const depIndexFileContent = await fs.readFile(depIndexFilePath);
           if (depIndexFileContent.includes(`import "`)) {
             result += `import "${depKey}";` + os.EOL;
           }
         }
         else {
           const depIndexFilePath = SdProjectBuilderUtil.getProjectPath("node_modules", depKey, "src", "index.ts");
-          if (fs.pathExistsSync(depIndexFilePath)) {
-            const depIndexFileContent = fs.readFileSync(depIndexFilePath);
+          if (await fs.pathExists(depIndexFilePath)) {
+            const depIndexFileContent = await fs.readFile(depIndexFilePath);
             if (depIndexFileContent.includes(`import "`)) {
               result += `import "${depKey}";` + os.EOL;
             }
@@ -548,7 +542,16 @@ export class SdProjectBuilder {
         }
       }
 
-      const matches = glob.sync(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/**/*.ts"));
+      const matches: string[] = await new Promise<string[]>((resolve, reject) => {
+        glob(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/**/*.ts"), (err, globResult) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(globResult);
+        });
+      });
+
       for (const match of matches) {
         const relativePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "src"), match).replace(/\\/g, "/");
         if (relativePath === "index.ts" || relativePath === "bin.ts") {
@@ -563,15 +566,15 @@ export class SdProjectBuilder {
         }
       }
 
-      fs.writeFileSync(SdProjectBuilderUtil.getPackagesPath(packageKey, "src", "index.ts"), result);
+      await fs.writeFile(SdProjectBuilderUtil.getPackagesPath(packageKey, "src", "index.ts"), result);
     };
 
-    write();
+    await writeAsync();
 
     if (watch) {
       await FileWatcher.watch(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/**/*.ts"), ["add", "unlink"], async () => {
         try {
-          write();
+          await writeAsync();
         }
         catch (err) {
           new Logger("@simplysm/cli", packageKey).error(err);
@@ -713,11 +716,11 @@ export class SdProjectBuilder {
       throw new Error("미구현 (webpack-config)");
     }
 
-    const projectNpmConfig = SdProjectBuilderUtil.readProjectNpmConfig();
+    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
 
     const distPath = SdProjectBuilderUtil.getPackagesPath(packageKey, "dist");
 
-    const tsconfig = SdProjectBuilderUtil.readTsConfig(packageKey, true);
+    const tsconfig = await SdProjectBuilderUtil.readTsConfigAsync(packageKey, true);
     const tsOptions = tsconfig.compilerOptions;
     const alias = {};
     if (tsOptions && tsOptions.paths) {
@@ -741,6 +744,24 @@ export class SdProjectBuilder {
         alias: {
           SIMPLYSM_CLIENT_APP_MODULE: SdProjectBuilderUtil.getPackagesPath(packageKey, "src", "AppModule"),
           ...alias
+        }
+      },
+      optimization: {
+        splitChunks: {
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/](?!@simplysm)/,
+              name: "vendor",
+              chunks: "initial",
+              enforce: true
+            },
+            simplism: {
+              test: /[\\/]node_modules[\\/]@simplysm/,
+              name: "simplysm",
+              chunks: "initial",
+              enforce: true
+            }
+          }
         }
       },
       module: {
@@ -810,7 +831,12 @@ export class SdProjectBuilder {
           "process.env": SdProjectBuilder._envStringify({
             VERSION: projectNpmConfig.version
           })
-        })
+        }),
+        new CopyWebpackPlugin([{
+          context: path.resolve(__dirname, "../lib/fonts"),
+          from: "**/*",
+          to: "fonts"
+        }])
       ]
     };
 

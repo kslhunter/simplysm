@@ -27,7 +27,7 @@ platformBrowserDynamic().bootstrapModule(AppModule)
         for (const prevEl of prevEls) {
           const newEl = document.createElement(prevEl.tagName);
           const parentNode = prevEl.parentNode;
-          parentNode.replaceChild(newEl, prevEl);
+          parentNode.insertBefore(newEl, prevEl);
         }
         ngModuleRef.destroy();
       });

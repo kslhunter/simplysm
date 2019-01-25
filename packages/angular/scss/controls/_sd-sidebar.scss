@@ -8,6 +8,7 @@ sd-sidebar-container {
 
   > sd-sidebar {
     transition: transform .1s ease-out;
+    border-right: 1px solid get($trans-color, default);
   }
 
   > ._backdrop {

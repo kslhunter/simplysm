@@ -10,12 +10,12 @@ export class OrmService extends SdWebSocketServiceBase {
   private static readonly _wsConnectionCloseListenerMap = new Map<number, () => Promise<void>>();
 
   public async getMainDbNameAsync(configName: string): Promise<string> {
-    const config = (await SdWebSocketServerUtil.getConfig(this.request.url))["orm"][configName];
+    const config = (await SdWebSocketServerUtil.getConfigAsync(this.request.url))["orm"][configName];
     return config.database;
   }
 
   public async connectAsync(configName: string): Promise<number> {
-    const config = (await SdWebSocketServerUtil.getConfig(this.request.url))["orm"][configName];
+    const config = (await SdWebSocketServerUtil.getConfigAsync(this.request.url))["orm"][configName];
     const conn = new DbConnection(config);
 
     const lastConnId = Array.from(OrmService._connections.keys()).max() || 0;

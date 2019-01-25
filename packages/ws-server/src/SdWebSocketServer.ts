@@ -105,33 +105,32 @@ export class SdWebSocketServer extends EventEmitter {
   }
 
   public async closeAsync(): Promise<void> {
-    await Promise.all(this._wsConnections.map(async wsConnection => {
-      await wsConnection.closeAsync();
-    }));
-
-    await new Promise<void>((resolve, reject) => {
-      this._wsServer!.close(err => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve();
-      });
-    });
-
-    for (const httpConnection of this._httpConnections) {
-      httpConnection.end();
-    }
-
-    await new Promise<void>((resolve, reject) => {
-      this._httpServer!.close((err: Error) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve();
-      });
-    });
+    await Promise.all([
+      ...this._wsConnections.map(async wsConnection => {
+        await wsConnection.closeAsync();
+      }),
+      ...this._httpConnections.map(async httpConnection => {
+        httpConnection.end();
+      }),
+      new Promise<void>((resolve, reject) => {
+        this._wsServer!.close(err => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve();
+        });
+      }),
+      new Promise<void>((resolve, reject) => {
+        this._httpServer!.close((err: Error) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve();
+        });
+      })
+    ]);
   }
 
   public async emitAsync(id: number, data: any): Promise<void> {

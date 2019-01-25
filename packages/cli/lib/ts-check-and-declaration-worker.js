@@ -11,6 +11,7 @@ const parsedConfig = ts.parseJsonConfigFileContent(fs.readJsonSync(configPath), 
 const outDir = parsedConfig.options.outDir || path.resolve(contextPath, "dist");
 
 if (watch) {
+  const promiseList = [];
   const host = ts.createWatchCompilerHost(
     configPath,
     {
@@ -22,7 +23,7 @@ if (watch) {
     {
       ...ts.sys,
       writeFile: (filePath, content) => {
-        writeFile(filePath, content);
+        promiseList.push(writeFileAsync(filePath, content));
       },
       createDirectory: () => {
       }
@@ -37,14 +38,23 @@ if (watch) {
 
   ts.createWatchProgram(host);
 
-  sendMessage({
-    type: "finish"
+  Promise.all(promiseList).then(() => {
+    sendMessage({
+      type: "finish"
+    });
+  }).catch(err => {
+    sendMessage({
+      type: "error",
+      message: err.stack
+    });
   });
 }
 else {
+  const promiseList = [];
+
   const host = ts.createCompilerHost(parsedConfig.options);
-  host.writeFile = (filePath, content) => {
-    writeFile(filePath, content);
+  host.writeFile = async (filePath, content) => {
+    promiseList.push(writeFileAsync(filePath, content));
   };
 
   const program = ts.createProgram(
@@ -74,12 +84,19 @@ else {
     printDiagnostic(diagnostic);
   }
 
-  sendMessage({
-    type: "finish"
+  Promise.all(promiseList).then(() => {
+    sendMessage({
+      type: "finish"
+    });
+  }).catch(err => {
+    sendMessage({
+      type: "error",
+      message: err.stack
+    });
   });
 }
 
-function writeFile(filePath, content) {
+async function writeFileAsync(filePath, content) {
   if (!parsedConfig.options.declaration) return;
 
   let newFilePath = filePath.replace(/\\/g, "/");
@@ -93,8 +110,8 @@ function writeFile(filePath, content) {
     newFilePath = path.resolve(outDir, path.relative(prevOutDir, filePath));
   }
 
-  fs.mkdirsSync(path.dirname(newFilePath));
-  fs.writeFileSync(newFilePath, content);
+  await fs.mkdirs(path.dirname(newFilePath));
+  await fs.writeFile(newFilePath, content);
 }
 
 function printDiagnostic(diagnostic) {

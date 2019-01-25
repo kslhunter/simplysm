@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import {IStorage} from "../common/IStorage";
 import {IFtpConnectionConfig} from "./IFtpConnectionConfig";
 import * as JSFtp from "jsftp";
@@ -50,7 +50,7 @@ export class FtpStorage implements IStorage {
 
   public async putAsync(localPathOrBuffer: string | Buffer, storageFilePath: string): Promise<void> {
     const buffer = typeof localPathOrBuffer === "string"
-      ? fs.readFileSync(localPathOrBuffer)
+      ? await fs.readFile(localPathOrBuffer)
       : localPathOrBuffer;
 
     await new Promise<void>((resolve, reject) => {

@@ -32,52 +32,43 @@ process.on("message", async (changedFiles) => {
       }
     }
 
-    await Promise.all(sourceFiles.map(sourceFile => new Promise(async (resolve, reject) => {
-      try {
-        if (/\.d\.ts$/.test(sourceFile.fileName)) {
-          resolve();
-          return;
-        }
-
-        if (!path.resolve(sourceFile.fileName).startsWith(path.resolve(path.dirname(tsconfigFile)))) {
-          resolve();
-          return;
-        }
-
-        const config = tslint.Configuration.findConfiguration(configFile, sourceFile.fileName);
-        linter.lint(sourceFile.fileName, sourceFile.getFullText(), config.results);
-
-        const result = linter.getResult();
-
-        let resultMessages = [];
-        for (const failure of result.failures) {
-          if (failure.getFileName() !== sourceFile.fileName) {
-            continue;
-          }
-
-          const severity = failure.getRuleSeverity();
-          const message = failure.getFailure();
-          const rule = failure.getRuleName();
-          const fileName = failure.getFileName();
-          const lineNumber = failure.getStartPosition().getLineAndCharacter().line + 1;
-          const charNumber = failure.getStartPosition().getLineAndCharacter().character + 1;
-
-          resultMessages.push(`${fileName}(${lineNumber},${charNumber}): ${severity}: ${message} (${rule})`);
-        }
-
-        if (resultMessages.length > 0) {
-          sendMessage({
-            type: "warning",
-            message: resultMessages.join("\r\n")
-          });
-        }
-
-        resolve();
+    await Promise.all(sourceFiles.map(async sourceFile => {
+      if (/\.d\.ts$/.test(sourceFile.fileName)) {
+        return;
       }
-      catch (err) {
-        reject(err);
+
+      if (!path.resolve(sourceFile.fileName).startsWith(path.resolve(path.dirname(tsconfigFile)))) {
+        return;
       }
-    })));
+
+      const config = tslint.Configuration.findConfiguration(configFile, sourceFile.fileName);
+      linter.lint(sourceFile.fileName, sourceFile.getFullText(), config.results);
+
+      const result = linter.getResult();
+
+      let resultMessages = [];
+      for (const failure of result.failures) {
+        if (failure.getFileName() !== sourceFile.fileName) {
+          continue;
+        }
+
+        const severity = failure.getRuleSeverity();
+        const message = failure.getFailure();
+        const rule = failure.getRuleName();
+        const fileName = failure.getFileName();
+        const lineNumber = failure.getStartPosition().getLineAndCharacter().line + 1;
+        const charNumber = failure.getStartPosition().getLineAndCharacter().character + 1;
+
+        resultMessages.push(`${fileName}(${lineNumber},${charNumber}): ${severity}: ${message} (${rule})`);
+      }
+
+      if (resultMessages.length > 0) {
+        sendMessage({
+          type: "warning",
+          message: resultMessages.join("\r\n")
+        });
+      }
+    }));
   }
   catch (err) {
     sendMessage({

@@ -33,7 +33,7 @@ export class SdWebSocketProvider implements OnDestroy {
   public async sendAsync(command: string, params: any[]): Promise<any> {
     let currToast: ISdProgressToast;
 
-    this.socket.sendAsync(command, params, progress => {
+    return await this.socket.sendAsync(command, params, progress => {
       const totalTextLength = progress.total.toLocaleString().length;
       const currentText = progress.current.toLocaleString().padStart(totalTextLength, " ");
       const totalText = progress.total.toLocaleString();
@@ -48,8 +48,6 @@ export class SdWebSocketProvider implements OnDestroy {
         currToast.message(message);
         currToast.progress(percent);
       }
-    }).catch(err => {
-      this._logger.error(err);
     });
   }
 

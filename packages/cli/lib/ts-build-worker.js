@@ -18,14 +18,14 @@ process.on("message", async (changedFiles) => {
       const distFilePath = path.resolve(tsConfig.options.outDir, path.relative(path.resolve(packagePath, "src"), changedFile))
         .replace(/\.ts$/, ".js");
 
-      fs.ensureDirSync(path.dirname(distFilePath));
+      await fs.ensureDir(path.dirname(distFilePath));
 
-      if (!fs.existsSync(changedFile)) {
-        fs.removeSync(distFilePath);
-        fs.removeSync(distFilePath + ".map");
+      if (!await fs.pathExists(changedFile)) {
+        await fs.remove(distFilePath);
+        await fs.remove(distFilePath + ".map");
       }
       else {
-        const content = fs.readFileSync(changedFile, "utf8");
+        const content = await fs.readFile(changedFile, "utf8");
 
         const result = ts.transpileModule(content, {
           compilerOptions: tsConfig.options,
@@ -33,8 +33,8 @@ process.on("message", async (changedFiles) => {
           fileName: changedFile
         });
 
-        fs.writeFileSync(distFilePath, result.outputText);
-        fs.writeFileSync(distFilePath + ".map", result.sourceMapText);
+        await fs.writeFile(distFilePath, result.outputText);
+        await fs.writeFile(distFilePath + ".map", result.sourceMapText);
       }
     }
   }
