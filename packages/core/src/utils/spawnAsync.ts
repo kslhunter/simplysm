@@ -3,6 +3,10 @@ import {Logger, optional} from "@simplysm/common";
 import ProcessEnv = NodeJS.ProcessEnv;
 
 export async function spawnAsync(cmds: string[], opts?: { env?: ProcessEnv; cwd?: string; logger?: Logger; onMessage?(errMsg: string | undefined, logMsg: string | undefined): Promise<boolean | void> }): Promise<void> {
+  if (opts && opts.logger) {
+    opts.logger!.log(`$ ` + cmds.join(" "));
+  }
+
   await new Promise<void>((resolve, reject) => {
     const worker = childProcess.spawn(cmds[0], cmds.slice(1), {
       shell: true,
