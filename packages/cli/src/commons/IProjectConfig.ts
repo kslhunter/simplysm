@@ -1,6 +1,5 @@
 export interface IProjectConfig {
   packages: (ILibraryPackageConfig | IClientPackageConfig | IServerPackageConfig)[];
-  tests?: ITestPackageConfig[];
   localDependencies?: { [key: string]: string };
   env?: { [key: string]: string };
   "env.development"?: { [key: string]: string };
@@ -44,17 +43,6 @@ export interface IPublishConfig {
   username: string;
   password: string;
   path: string;
-}
-
-export interface ITestPackageConfig {
-  name: string;
-  packages: string[];
-  jsdom?: {
-    url?: string;
-  };
-  angular?: {
-    url?: string;
-  };
 }
 
 export interface ICordovaConfig {

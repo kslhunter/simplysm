@@ -1,12 +1,6 @@
 import "./extension/ElementExtensions";
 import "./extension/HTMLElementExtensions";
 
-export * from "./style/SdColors";
-export * from "./style/SdStyleBuilder";
-export * from "./style/SdStyleMixins";
-export * from "./style/SdStylePresets";
-export * from "./style/SdStyleVariables";
-
 export * from "./control/SdBusyContainerControl";
 export * from "./control/SdButtonControl";
 export * from "./control/SdCheckboxControl";
@@ -66,7 +60,5 @@ export * from "./provider/SdSocketProvider";
 export * from "./provider/SdPrintProvider";
 export * from "./provider/SdSmtpClientProvider";
 export * from "./provider/SdSoapClientProvider";
-// export * from "./provider/SdKtCallManagerApiProvider";
-export * from "./provider/SdStyleProvider";
 
 export * from "./SimplismModule";

@@ -9,20 +9,22 @@ import {
   QueryList,
   ViewChild
 } from "@angular/core";
-import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {SdListControl} from "./SdListControl";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../decorator/SdNotifyPropertyChange";
-
+import {SdTypeValidate} from "../decorator/SdTypeValidate";
 
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <label (click)="onLabelClick()"
-           [attr.tabindex]="(header || !clickable) ? undefined : '0'">
-      <ng-content></ng-content>
-      <sd-icon class="_angle-icon" [icon]="'angle-left'" *ngIf="hasChildren"></sd-icon>
-    </label>
+    <div class="_content">
+      <label (click)="onLabelClick()"
+             [attr.tabindex]="(header || !clickable) ? undefined : '0'">
+        <ng-content></ng-content>
+        <sd-icon class="_angle-icon" [icon]="'chevron-right'" [fixedWidth]="true" *ngIf="hasChildren"></sd-icon>
+      </label>
+      <ng-content select="sd-list-item-button"></ng-content>
+    </div>
     <div class="_child">
       <div #childContent class="_child-content">
         <ng-content select="sd-list"></ng-content>
@@ -54,7 +56,7 @@ export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit
   @Input()
   @SdTypeValidate({
     type: String,
-    validator: value => ["sm", "lg"].includes(value)
+    includes: ["sm", "lg"]
   })
   @HostBinding("attr.sd-size")
   public size?: "sm" | "lg";
@@ -69,12 +71,13 @@ export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit
   @HostBinding("attr.sd-disabled")
   public disabled?: boolean;
 
+  @HostBinding("attr.sd-has-children")
   public get hasChildren(): boolean {
     return !!this.listControls && this.listControls.length > 0;
   }
 
   public onLabelClick(): void {
-    if (this.clickable) {
+    if (this.clickable && this.hasChildren && !this.header) {
       this.open = !this.open;
     }
   }

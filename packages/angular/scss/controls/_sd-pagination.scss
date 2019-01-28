@@ -1,0 +1,12 @@
+sd-pagination {
+  display: block;
+
+  > a {
+    display: inline-block;
+    padding: 0 get($gap, xs);
+
+    &[sd-selected=true] {
+      text-decoration: underline;
+    }
+  }
+}

@@ -1,0 +1,201 @@
+sd-sheet {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: $bg-color;
+  z-index: 0;
+
+  ._content {
+    white-space: nowrap;
+    width: fit-content;
+  }
+
+  ._pagination {
+    background: get($theme-color, grey, lightest);
+    border-top: 1px solid white;
+    padding: $sheet-padding-v $sheet-padding-h;
+    border-bottom: 1px solid get($theme-color, grey, lighter);
+    border-right: 1px solid get($theme-color, grey, lighter);
+  }
+
+  ._head {
+    display: block;
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    white-space: nowrap;
+    border-bottom: 1px solid get($theme-color, grey, lighter);
+  }
+
+  ._col-group {
+    display: inline-block;
+  }
+
+  ._col {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    height: $sheet-row-height + 1;
+
+    &:focus {
+      outline-color: transparent;
+    }
+  }
+
+  ._head ._col {
+    background: get($theme-color, grey, lightest);
+    font-weight: bold;
+    text-align: center;
+    padding: $sheet-padding-v $sheet-padding-h;
+    border-bottom: 1px solid get($theme-color, grey, lighter);
+    user-select: none;
+    border-top: 1px solid white;
+
+    > ._border {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 4px;
+      border-right: 1px solid get($theme-color, grey, lighter);
+    }
+  }
+
+  ._body ._col {
+    background: white;
+    border-right: 1px solid get($theme-color, grey, lighter);
+    border-bottom: 1px solid get($theme-color, grey, lighter);
+
+    sd-textfield > input {
+      border: none;
+      padding: $sheet-padding-v $sheet-padding-h;
+
+      &[type=year],
+      &[type=month],
+      &[type=date],
+      &[type=datetime],
+      &[type=time],
+      &[type=datetime-local] {
+        padding: ($sheet-padding-v - 1) $sheet-padding-h;
+      }
+
+      &[type=color] {
+        height: $sheet-row-height;
+      }
+
+      &:disabled {
+        background: transparent;
+        color: get($text-color, default);
+      }
+    }
+
+    sd-combobox {
+      > ._icon {
+        top: 0;
+        right: 0;
+        width: $sheet-row-height;
+        padding: $sheet-padding-v 0;
+      }
+
+      > sd-textfield > input {
+        padding-right: $sheet-row-height;
+      }
+    }
+
+    sd-checkbox > label {
+      display: inline-block;
+      width: auto;
+      border: none;
+      padding: $sheet-padding-v $sheet-padding-h;
+
+      > input:disabled + ._indicator_rect {
+        background: transparent;
+      }
+    }
+
+    sd-button > button {
+      border: none;
+      padding: $sheet-padding-v $sheet-padding-h;
+      text-align: left;
+      border-radius: 0;
+    }
+
+    sd-select,
+    sd-multi-select {
+      > sd-dropdown > div {
+        border: none;
+        padding: $sheet-padding-v $sheet-padding-h;
+        height: $sheet-row-height;
+        background: $sheet-edit-cell-bg;
+        border-radius: 0;
+
+        > ._icon {
+          top: 0;
+          right: 0;
+          width: $sheet-row-height;
+          padding: $sheet-padding-v;
+        }
+      }
+
+      &[sd-disabled=true] > sd-dropdown > div {
+        background: transparent;
+        color: get($text-color, default);
+
+        > ._icon {
+          display: none;
+        }
+      }
+    }
+
+    > ._focus-indicator {
+      position: absolute;
+      opacity: 0;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      outline: 2px solid get($theme-color, primary, default);
+      outline-offset: -2px;
+      pointer-events: none;
+      transition: opacity .1s linear;
+    }
+
+    &:focus {
+      z-index: 3;
+    }
+
+    &:focus > ._focus-indicator {
+      opacity: 1;
+    }
+  }
+
+  ._head ._col._first-col,
+  ._body ._col._first-col {
+    width: $sheet-row-height;
+    text-align: center;
+    padding: $sheet-padding-v;
+  }
+
+  ._body ._col._first-col {
+    background: get($theme-color, grey, lightest);
+  }
+
+  ._fixed-col-group {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    border-right: 1px solid get($theme-color, grey, lighter);
+  }
+
+  ._row {
+    position: relative;
+  }
+
+  &[sd-selectable=true] ._body ._first-col {
+    cursor: pointer;
+  }
+}

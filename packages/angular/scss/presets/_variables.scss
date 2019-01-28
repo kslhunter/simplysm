@@ -1,0 +1,67 @@
+$theme-color-pallet: (
+  grey: $color-grey,
+  bluegrey: $color-bluegrey,
+  primary: $color-deep-purple,
+  secondary: $color-yellow,
+  info: $color-blue,
+  success: $color-green,
+  warning: $color-orange,
+  danger: $color-red
+) !default;
+
+$trans-color: (
+  darkest: rgba(0, 0, 0, .4),
+  darker: rgba(0, 0, 0, .3),
+  dark: rgba(0, 0, 0, .2),
+  default: rgba(0, 0, 0, .1),
+  light: rgba(255, 255, 255, .1),
+  lighter: rgba(255, 255, 255, .2)
+) !default;
+
+$text-color: (
+  dark: black,
+  default: rgba(0, 0, 0, .87),
+  light: rgba(0, 0, 0, .60),
+  lighter: rgba(0, 0, 0, .38)
+) !default;
+
+$text-reverse-color: (
+  default: white,
+  dark: rgba(255, 255, 255, .7)
+) !default;
+
+$gap: (
+  xxs: 2px,
+  xs: 4px,
+  sm: 6px,
+  default: 8px,
+  lg: 12px,
+  xl: 18px,
+  xxl: 24px
+) !default;
+
+$font-size: (
+  lg: 15px,
+  default: 13px,
+  sm: 11px,
+  h1: 23px,
+  h2: 19px,
+  h3: 17px,
+  h4: 15px,
+  h5: 13px,
+  h6: 11px
+) !default;
+
+$font-family: 'Noto Sans KR', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;
+$font-family-monospace: 'D2 coding', monospace !default;
+$line-height: 1.4em !default;
+
+$z-index-toast: 9999 !default;
+$z-index-busy: 9998 !default;
+$z-index-dropdown: 5000 !default;
+$z-index-modal: 4000 !default;
+$z-index-fullscreen: 3000 !default;
+$z-index-sidebar: 2100 !default;
+$z-index-topbar: 2000 !default;
+
+$screen-mobile: "screen and (max-width : 520px)" !default;

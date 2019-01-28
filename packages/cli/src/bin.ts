@@ -5,7 +5,6 @@ import {buildAsync} from "./commands/buildAsync";
 import {publishAsync} from "./commands/publishAsync";
 import {localUpdateAsync} from "./commands/localUpdateAsync";
 import {EventEmitter} from "events";
-import {testAsync} from "./commands/testAsync";
 import {keygenAsync} from "./commands/keygenAsync";
 import {runDeviceAsync} from "./commands/runDeviceAsync";
 import {Logger} from "@simplism/core";
@@ -22,28 +21,6 @@ yargs
   .version(false)
   .help("help", "도움말")
   .alias("help", "h")
-  .command(
-    "test",
-    "프로젝트를 테스트합니다.",
-    cmd => cmd.version(false)
-      .options({
-        config: {
-          type: "string",
-          describe: "설정파일"
-        },
-        package: {
-          type: "string",
-          describe: "테스트할 패키지를 설정합니다."
-        }
-      }),
-    async argv => {
-      await testAsync(argv as any)
-        .catch(err => {
-          logger.error(err);
-          process.exit(1);
-        });
-    }
-  )
   .command(
     "build",
     "프로젝트를 빌드합니다.",

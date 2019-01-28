@@ -21,7 +21,6 @@ import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdTypeValidate} from "../decorator/SdTypeValidate";
 import {animate, state, style, transition, trigger} from "@angular/animations";
 import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
-import {SdStyleProvider} from "../provider/SdStyleProvider";
 
 
 @Component({
@@ -163,10 +162,12 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   @HostBinding("style.padding-top")
   public get paddingTop(): string {
-    const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
-      + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default));
-
-    return ((this.hasHeaderGroup ? (Math.floor(size * 2) + 2) : (Math.floor(size) + 1)) + 1) + "px";
+    const headEl = this._elRef.nativeElement.findAll("._head")[0];
+    return (headEl.clientHeight + 1) + "px";
+    // const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
+    //   + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default));
+    //
+    // return ((this.hasHeaderGroup ? (Math.floor(size * 2) + 2) : (Math.floor(size) + 1)) + 1) + "px";
   }
 
   public get hasHeaderGroup(): boolean {
@@ -218,15 +219,18 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public get fixedColumnWidth(): number {
-    const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
-      + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default)) + 1;
+    const fixedColGroupEl = this._elRef.nativeElement.findAll("._head > ._row > ._fixed-col-group")[0];
+    return fixedColGroupEl.clientWidth + 1;
 
-    if (this.fixedColumnControls.length > 0) {
-      return this.fixedHeaderGroups.map(item => item.width).reduce((a, b) => a + b) + size;
-    }
-    else {
-      return size;
-    }
+    // const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
+    //   + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default)) + 1;
+    //
+    // if (this.fixedColumnControls.length > 0) {
+    //   return this.fixedHeaderGroups.map(item => item.width).reduce((a, b) => a + b) + size;
+    // }
+    // else {
+    //   return size;
+    // }
   }
 
   public trackByColumnControlFn(index: number, item: SdSheetColumnControl): any {
@@ -256,8 +260,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _elRef: ElementRef<HTMLElement>,
-                     private readonly _localStorage: SdLocalStorageProvider,
-                     private readonly _style: SdStyleProvider) {
+                     private readonly _localStorage: SdLocalStorageProvider) {
     this._iterableDiffer = this._iterableDiffers.find([]).create(this.trackByItemFn);
 
     this._elRef.nativeElement.addEventListener(

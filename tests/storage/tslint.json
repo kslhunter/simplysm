@@ -1,6 +1,0 @@
-{
-  "extends": "../../packages/storage/tslint.json",
-  "rules": {
-    "no-implicit-dependencies": false
-  }
-}

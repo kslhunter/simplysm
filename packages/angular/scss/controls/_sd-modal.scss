@@ -1,0 +1,96 @@
+sd-modal {
+  display: block;
+  position: absolute;
+  z-index: $z-index-modal;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  padding-top: 24px;
+  overflow: auto;
+
+  > ._backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, .6);
+  }
+
+  > ._dialog {
+    position: relative;
+    display: inline-block;
+    text-align: left;
+    margin: 0 auto;
+    background: white;
+    overflow: hidden;
+    max-width: 100%;
+    min-width: 240px;
+    @include elevation(16);
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border: 1px solid get($theme-color, primary, default);
+
+    &:focus {
+      outline-color: transparent;
+    }
+
+    > sd-dock-container {
+      > ._header {
+        background: get($theme-color, primary, default);
+        color: get($text-reverse-color, default);
+
+        > ._title {
+          display: inline-block;
+          padding: get($gap, default) get($gap, lg);
+        }
+
+        > ._close-button {
+          float: right;
+          cursor: pointer;
+          text-align: center;
+          padding: get($gap, default) get($gap, lg);
+          color: get($text-reverse-color, dark);
+
+          &:hover {
+            background: rgba(0, 0, 0, .1);
+            color: get($text-reverse-color, default);
+          }
+
+          &:active {
+            background: rgba(0, 0, 0, .2);
+          }
+        }
+      }
+    }
+  }
+
+  opacity: 0;
+  transition: opacity .3s ease-in-out;
+  pointer-events: none;
+
+  > ._dialog {
+    transform: translateY(-25px);
+    transition: transform .3s ease-in-out;
+  }
+
+  &[sd-open=true] {
+    opacity: 1;
+    pointer-events: auto;
+
+    > ._dialog {
+      transform: none;
+    }
+  }
+
+  @media #{$screen-mobile} {
+    padding-top: 0;
+
+    > ._dialog {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}

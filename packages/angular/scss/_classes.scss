@@ -1,0 +1,196 @@
+@each $key, $val in $theme-color {
+  @each $key1, $val1 in $val {
+    .sd-background-#{$key}-#{$key1} {
+      background: $val1 !important;
+
+      @if $key1 != lighter and $key1 != lightest {
+        color: get($text-reverse-color, default);
+
+        a {
+          color: get($text-reverse-color, dark);
+
+          &:hover,
+          &:focus {
+            color: get($text-reverse-color, default);
+          }
+        }
+
+        sd-textfield > input {
+          background: get($trans-color, light) !important;
+          color: get($text-reverse-color, default) !important;
+          border-color: get($trans-color, light) !important;
+        }
+
+        sd-list-item[sd-header=true] > label {
+          color: get($text-reverse-color, dark) !important;
+        }
+
+        sd-list-item > ._child > ._child-content {
+          background: rgba(0, 0, 0, .2);
+
+          sd-list-item > label {
+            opacity: .8;
+
+            &:hover {
+              opacity: 1;
+            }
+          }
+        }
+
+        sd-checkbox {
+          > label {
+            color: get($text-reverse-color, default) !important;
+
+            > ._indicator_rect {
+              background: get($trans-color, light) !important;
+              border-color: get($trans-color, light) !important;
+            }
+
+            > ._indicator {
+              color: get($text-reverse-color, default) !important;
+            }
+          }
+
+          &[sd-radio=true] {
+            > label {
+              > ._indicator > div {
+                background: get($text-reverse-color, default) !important;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@each $key, $val in $trans-color {
+  .sd-background-trans-#{$key} {
+    background: $val;
+  }
+}
+
+.sd-background-white {
+  background: white !important;
+}
+
+.sd-background-default {
+  background: $bg-color !important;
+}
+
+@each $key, $val in $font-size {
+  .sd-font-size-#{$key} {
+    font-size: $val !important;
+  }
+}
+
+@each $key, $val in $text-color {
+  .sd-text-color-#{$key} {
+    color: $val !important;
+  }
+}
+
+@each $key, $val in $text-reverse-color {
+  .sd-text-color-reverse-#{$key} {
+    color: $val !important;
+  }
+}
+
+@each $key, $val in $theme-color {
+  @each $key1, $val1 in $val {
+    .sd-text-color-#{$key}-#{$key1} {
+      color: $val1 !important;
+    }
+  }
+}
+
+
+@each $direction in top, right, bottom, left {
+  @each $key, $val in $theme-color {
+    @each $key1, $val1 in $val {
+      .sd-border-#{$direction}-#{$key}-#{$key1} {
+        border-#{$direction}: 1px solid $val1;
+      }
+    }
+  }
+
+  @each $key, $val in $trans-color {
+    .sd-border-#{$direction}-#{$key} {
+      border-#{$direction}: 1px solid $val;
+    }
+  }
+
+  .sd-border-#{$direction}-none {
+    border-#{$direction}: none !important;
+  }
+}
+
+@each $key, $val in $theme-color {
+  @each $key1, $val1 in $val {
+    .sd-border-#{$key}-#{$key1} {
+      border: 1px solid $val1;
+    }
+  }
+}
+
+@each $key, $val in $trans-color {
+  .sd-border-#{$key} {
+    border: 1px solid $val;
+  }
+}
+
+.sd-border-none {
+  border: none !important;
+}
+
+@each $key, $val in map_merge($gap, (0: 0)) {
+  .sd-padding-#{$key} {
+    padding: $val;
+  }
+
+  .sd-margin-#{$key} {
+    margin: $val;
+  }
+
+  @each $direction in top, right, bottom, left {
+    .sd-padding-#{$direction}-#{$key} {
+      padding-#{$direction}: $val;
+    }
+
+    .sd-margin-#{$direction}-#{$key} {
+      margin-#{$direction}: $val;
+    }
+  }
+
+  @each $key1, $val1 in map_merge($gap, (0: 0)) {
+    .sd-padding-#{$key}-#{$key1} {
+      padding: $val $val1;
+    }
+
+    .sd-margin-#{$key}-#{$key1} {
+      margin: $val $val1;
+    }
+  }
+}
+
+@each $key, $val in map_merge($gap, (0: 0)) {
+  .sd-padding-v-#{$key} {
+    padding-top: $val;
+    padding-bottom: $val;
+  }
+
+  .sd-padding-h-#{$key} {
+    padding-left: $val;
+    padding-right: $val;
+  }
+
+  .sd-margin-v-#{$key} {
+    margin-top: $val;
+    margin-bottom: $val;
+  }
+
+  .sd-margin-h-#{$key} {
+    margin-left: $val;
+    margin-right: $val;
+  }
+}

@@ -332,7 +332,14 @@ export class ClientPackageBuilder {
             loaders: [
               "style-loader",
               "css-loader",
-              "sass-loader"
+              "resolve-url-loader",
+              {
+                loader: "sass-loader",
+                options: {
+                  sourceMap: true,
+                  sourceMapContents: false
+                }
+              }
             ]
           },
           {

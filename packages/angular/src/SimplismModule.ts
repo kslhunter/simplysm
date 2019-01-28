@@ -58,11 +58,9 @@ import {SdTabItemControl} from "./control/SdTabItemControl";
 import {SdViewControl} from "./control/SdViewControl";
 import {SdViewItemControl} from "./control/SdViewItemControl";
 import {SdHtmlEditorControl} from "./control/SdHtmlEditorControl";
-import {SdStyleProvider} from "./provider/SdStyleProvider";
 import {SdSoapClientProvider} from "./provider/SdSoapClientProvider";
 import {SdNoteControl} from "./control/SdNoteControl";
 import {SdAddressSearchModal} from "./modal/SdAddressSearchModal";
-// import {SdKtCallManagerApiProvider} from "./provider/SdKtCallManagerApiProvider";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -135,10 +133,8 @@ const providers: any[] = [
   SdPrintProvider,
   SdSmtpClientProvider,
   SdSoapClientProvider,
-  // SdKtCallManagerApiProvider,
   {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
-  {provide: ErrorHandler, useClass: GlobalErrorHandler},
-  SdStyleProvider
+  {provide: ErrorHandler, useClass: GlobalErrorHandler}
 ];
 
 @NgModule({

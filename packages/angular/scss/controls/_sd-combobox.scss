@@ -1,0 +1,46 @@
+sd-combobox {
+  display: block;
+  overflow: visible;
+  position: relative;
+
+  > ._icon {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    padding: get($gap, sm) 0;
+    width: 30px;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  > sd-textfield > input {
+    padding-right: 30px !important;
+  }
+}
+
+._sd-combobox-dropdown {
+  position: fixed;
+  z-index: $z-index-dropdown;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: .1s linear;
+  transition-property: transform, opacity;
+  pointer-events: none;
+  background: white;
+  @include elevation(6);
+  min-width: 120px;
+
+  &:focus {
+    outline: 1px solid get($theme-color, primary, default);
+  }
+}
+
+sd-combobox-item {
+  display: block;
+  padding: get($gap, sm) get($gap, default);
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(0, 0, 0, .1);
+  }
+}

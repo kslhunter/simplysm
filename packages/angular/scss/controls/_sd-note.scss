@@ -1,0 +1,11 @@
+sd-note {
+  display: block;
+  padding: get($gap, sm) get($gap, default);
+  background: get($theme-color, grey, lightest);
+  border-left: get($gap, xxs) solid get($trans-color, default);
+
+  @each $key, $val in $theme-color {
+    background: get($val, lightest);
+    border-color: get($val, lighter);
+  }
+}

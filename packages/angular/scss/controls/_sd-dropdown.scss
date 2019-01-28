@@ -1,0 +1,24 @@
+sd-dropdown {
+  > div {
+    position: relative;
+  }
+}
+
+sd-dropdown-popup {
+  position: fixed;
+  z-index: $z-index-dropdown;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: .1s linear;
+  transition-property: transform, opacity;
+  pointer-events: none;
+  background: white;
+  min-width: 120px;
+  max-height: 300px;
+  overflow: auto;
+  @include elevation(6);
+
+  &:focus {
+    outline: 1px solid get($theme-color, primary, default);
+  }
+}

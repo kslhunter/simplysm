@@ -1,0 +1,99 @@
+sd-dock-container {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  z-index: 0;
+}
+
+sd-dock {
+  display: block;
+  position: absolute;
+  overflow: auto;
+  z-index: 1;
+  background: white;
+
+  &[sd-position=top] {
+    border-bottom: 1px solid get($trans-color, default);
+  }
+
+  &[sd-position=bottom] {
+    border-top: 1px solid get($trans-color, default);
+  }
+
+  &[sd-position=left] {
+    border-right: 1px solid get($trans-color, default);
+  }
+
+  &[sd-position=right] {
+    border-left: 1px solid get($trans-color, default);
+  }
+
+  > hr {
+    display: none;
+    user-select: none;
+  }
+
+  &[sd-resizable=true] {
+    > hr {
+      display: block;
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: get($trans-color, dark);
+      margin: 0;
+      padding: 0;
+      border: none;
+      z-index: 1;
+    }
+
+    &[sd-position=top] {
+      border: none;
+      padding-bottom: 4px;
+
+      > hr {
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        cursor: ns-resize;
+      }
+    }
+
+    &[sd-position=bottom] {
+      border: none;
+      padding-top: 4px;
+
+      > hr {
+        top: 0;
+        left: 0;
+        width: 100%;
+        cursor: ns-resize;
+      }
+    }
+
+    &[sd-position=left] {
+      border: none;
+      padding-right: 4px;
+
+      > hr {
+        top: 0;
+        right: 0;
+        height: 100%;
+        cursor: ew-resize;
+      }
+    }
+
+    &[sd-position=right] {
+      border: none;
+      padding-left: 4px;
+
+      > hr {
+        top: 0;
+        left: 0;
+        height: 100%;
+        cursor: ew-resize;
+      }
+    }
+  }
+}

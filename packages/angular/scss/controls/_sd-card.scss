@@ -1,0 +1,7 @@
+sd-card {
+  display: block;
+  background: white;
+  border-radius: get($gap, xxs);
+  @include elevation(1);
+  overflow: hidden;
+}

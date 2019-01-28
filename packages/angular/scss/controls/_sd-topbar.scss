@@ -1,0 +1,70 @@
+sd-topbar-container {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding-top: $topbar-height;
+}
+
+sd-topbar {
+  display: block;
+  position: absolute;
+  z-index: $z-index-topbar;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: $topbar-height;
+  line-height: $topbar-height;
+  background: white;
+  color: get($text-color, default);
+  @include elevation(2);
+
+  > * {
+    float: left;
+    line-height: $topbar-height;
+  }
+
+  > a {
+    min-width: $topbar-height;
+    text-align: center;
+    margin-right: get($gap, sm);
+    color: get($theme-color, primary, default);
+    transition: background .1s ease-in;
+
+    &:hover,
+    &:focus {
+      transition: background .1s ease-out;
+      background: rgba(0, 0, 0, 0.07);
+    }
+  }
+
+  > h1,
+  > h2,
+  > h3,
+  > h4,
+  > h5,
+  > h6 {
+    padding-right: get($gap, default);
+  }
+}
+
+sd-topbar-menu {
+  display: block;
+  padding: 0 get($gap, default);
+  cursor: pointer;
+  user-select: none;
+  color: get($theme-color, primary, default);
+  float: left;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.07);
+  }
+
+  &:active {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  @media #{$screen-mobile} {
+    float: right;
+  }
+}

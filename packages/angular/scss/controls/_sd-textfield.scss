@@ -1,0 +1,104 @@
+sd-textfield {
+  display: block;
+  position: relative;
+
+  > input,
+  > textarea {
+    @include form-control-base();
+
+    background: get($theme-color, secondary, lightest);
+    border-color: get($trans-color, default);
+    transition: outline-color .1s linear;
+    outline: 1px solid transparent;
+    outline-offset: -1px;
+
+    &::-webkit-input-placeholder {
+      color: get($text-color, lighter);
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    &::-webkit-calendar-picker-indicator {
+      background: white;
+      color: get($text-color, default);
+      cursor: pointer;
+    }
+
+    &:focus {
+      outline-color: get($theme-color, primary, default);
+    }
+
+    &:disabled {
+      background: $bg-color;
+      color: get($text-color, light);
+    }
+
+    &[type='color'] {
+      padding: 1px get($gap, default) !important;
+      height: get($gap, sm) * 2 + strip-unit($line-height) * get($font-size, default) + 2;
+    }
+
+    &[type=year],
+    &[type=month],
+    &[type=date],
+    &[type=datetime],
+    &[type=time],
+    &[type=datetime-local] {
+      padding: (get($gap, sm) - 1) get($gap, default);
+    }
+  }
+
+  > ._invalid-indicator {
+    display: none;
+  }
+
+  > input[sd-invalid=true] + ._invalid-indicator,
+  > input:invalid + ._invalid-indicator {
+    @include invalid-indicator();
+  }
+
+  &[sd-inset=true] {
+    height: 100%;
+
+    > input,
+    > textarea {
+      display: block;
+      border: none;
+      //background: get($theme-color, secondary, lightest);
+    }
+
+    > textarea {
+      height: 100%;
+      resize: none;
+    }
+  }
+
+  &[sd-inline=true] {
+    display: inline-block;
+  }
+
+  &[sd-size=sm] > input,
+  &[sd-size=sm] > textarea {
+    padding: get($gap, xs) get($gap, sm);
+  }
+
+  &[sd-size=lg] > input,
+  &[sd-size=lg] > textarea {
+    padding: get($gap, default) get($gap, lg);
+  }
+
+  @each $key, $val in $theme-color {
+    @each $key1, $val1 in $val {
+      &.sd-text-color-#{$key}-#{$key1} {
+        > input,
+        > textarea {
+          color: $val1 !important;
+        }
+      }
+    }
+  }
+}
