@@ -53,7 +53,7 @@ sd-topbar-menu {
   padding: 0 get($gap, default);
   cursor: pointer;
   user-select: none;
-  color: get($theme-color, primary, default);
+  //color: get($theme-color, primary, default);
   float: left;
 
   &:hover {

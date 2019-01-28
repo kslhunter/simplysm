@@ -65,6 +65,7 @@ sd-sidebar-container {
       > ._child {
         > ._child-content {
           background: get($trans-color, dark);
+          padding-left: get($gap, xxl);
 
           sd-list {
             background: transparent;
