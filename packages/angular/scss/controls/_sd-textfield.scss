@@ -6,7 +6,7 @@ sd-textfield {
   > textarea {
     @include form-control-base();
 
-    background: get($theme-color, secondary, lightest);
+    //background: get($theme-color, secondary, lightest);
     border-color: get($trans-color, default);
     transition: outline-color .1s linear;
     outline: 1px solid transparent;

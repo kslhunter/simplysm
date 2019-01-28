@@ -72,6 +72,7 @@ sd-sheet {
     sd-textfield > input {
       border: none;
       padding: $sheet-padding-v $sheet-padding-h;
+      background: get($theme-color, secondary, lightest);
 
       &[type=year],
       &[type=month],
