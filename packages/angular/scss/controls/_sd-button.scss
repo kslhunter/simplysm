@@ -5,7 +5,7 @@ sd-button {
   & > button {
     @include form-control-base();
 
-    font-weight: bold;
+    //font-weight: bold;
     transition: box-shadow .1s linear;
     background: white;
     cursor: pointer;
