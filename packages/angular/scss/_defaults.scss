@@ -43,7 +43,6 @@ code {
 }
 
 a {
-  display: inline-block;
   cursor: pointer;
   color: get($theme-color, primary, default);
 
@@ -58,19 +57,19 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  background-color: rgba(get($theme-color, grey, darker), .1);
+  background-color: get($theme-color, grey, light);
 }
 
 ::-webkit-scrollbar-corner {
-  background-color: rgba(get($theme-color, grey, light), .1);
+  background-color: get($theme-color, grey, light);
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: get($gap, lg);
+  height: get($gap, lg);
   background-color: rgba(0, 0, 0, 0);
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(get($theme-color, grey, darker), .15);
+  background-color: get($theme-color, grey, default);
 }

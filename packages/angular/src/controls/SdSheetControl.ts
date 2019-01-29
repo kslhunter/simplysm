@@ -24,93 +24,121 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
   selector: "sd-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="_content _head" [style.top.px]="headTop">
-      <div class="_row" *ngIf="hasHeaderGroup">
-        <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
-          <div class="_col _first-col">
-            <div class="_border"></div>
+    <div class="_sheet" [style.padding-top]="paddingTop">
+      <div class="_content _head" [style.top.px]="headTop">
+        <div class="_row _pagination" *ngIf="pageLength > 1">
+          <sd-pagination [page]="page" [length]="pageLength"
+                         (pageChange)="pageChange.emit($event)"></sd-pagination>
+        </div>
+        <div class="_row" *ngIf="hasHeaderGroup">
+          <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
+            <div class="_col _first-col"
+                 [class._double]="selectable && children">
+              <div class="_border"></div>
+            </div>
+            <div class="_col" *ngFor="let headerGroup of fixedHeaderGroups; trackBy: trackByIndexFn"
+                 [style.width.px]="headerGroup.width">
+              {{ headerGroup.header }}
+              <div class="_border"></div>
+            </div>
           </div>
-          <div class="_col" *ngFor="let headerGroup of fixedHeaderGroups; trackBy: trackByIndexFn"
-               [style.width.px]="headerGroup.width">
-            {{ headerGroup.header }}
-            <div class="_border"></div>
+          <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
+            <div class="_col" *ngFor="let headerGroup of nonFixedHeaderGroups; trackBy: trackByIndexFn"
+                 [style.width.px]="headerGroup.width">
+              {{ headerGroup.header }}
+              <div class="_border"></div>
+            </div>
           </div>
         </div>
-        <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
-          <div class="_col" *ngFor="let headerGroup of nonFixedHeaderGroups; trackBy: trackByIndexFn"
-               [style.width.px]="headerGroup.width">
-            {{ headerGroup.header }}
-            <div class="_border"></div>
+        <div class="_row">
+          <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
+            <div class="_col _first-col"
+                 [class._double]="selectable && children">
+              <div class="_border"></div>
+            </div>
+            <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
+                 [style.width.px]="getWidth(columnControl)"
+                 [attr.col-index]="getIndex(columnControl)"
+                 [attr.title]="columnControl.help"
+                 [attr.sd-header]="columnControl.header">
+              {{ columnControl.header && columnControl.header.split(".").last() }}
+              <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
+                   (mousedown)="onHeadBorderMousedown($event)"></div>
+            </div>
+          </div>
+          <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
+            <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
+                 [style.width.px]="getWidth(columnControl)"
+                 [attr.col-index]="getIndex(columnControl)"
+                 [attr.title]="columnControl.help"
+                 [attr.sd-header]="columnControl.header">
+              {{ columnControl.header && columnControl.header.split(".").last() }}
+              <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
+                   (mousedown)="onHeadBorderMousedown($event)"></div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="_row">
-        <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
-          <div class="_col _first-col">
-            <div class="_border"></div>
-          </div>
-          <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
-               [style.width.px]="getWidth(columnControl)"
-               [attr.col-index]="getIndex(columnControl)"
-               [attr.title]="columnControl.help"
-               [attr.sd-header]="columnControl.header">
-            {{ columnControl.header && columnControl.header.split(".").last() }}
-            <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
-                 (mousedown)="onHeadBorderMousedown($event)"></div>
-          </div>
-        </div>
-        <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
-          <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
-               [style.width.px]="getWidth(columnControl)"
-               [attr.col-index]="getIndex(columnControl)"
-               [attr.title]="columnControl.help"
-               [attr.sd-header]="columnControl.header">
-            {{ columnControl.header && columnControl.header.split(".").last() }}
-            <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
-                 (mousedown)="onHeadBorderMousedown($event)"></div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <div class="_content _body">
-      <div class="_row" *ngFor="let item of items; trackBy: trackByItemFn" [@rowState]="'in'">
-        <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
-          <div class="_col _first-col"
-               (click)="onFirstColClick($event)">
-            <sd-icon [icon]="'arrow-right'" *ngIf="selectable === true"
-                     [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-grey-default': !selectedItem !== item}"></sd-icon>
-            <sd-icon [icon]="'arrow-right'" *ngIf="selectable === 'multi'"
-                     [ngClass]="{'sd-text-color-primary-default': selectedItems.includes(item), 'sd-text-color-grey-default': !selectedItems.includes(item)}"></sd-icon>
-          </div>
-          <div
-            [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
-            *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
-            [style.width.px]="getWidth(columnControl)" tabindex="0"
-            (keydown)="onCellKeydown($event)">
-            <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
-                         [ngTemplateOutletContext]="{item: item}"></ng-template>
-            <div class="_focus-indicator"></div>
-          </div>
-        </div>
-        <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
-          <div
-            [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
-            *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
-            [style.width.px]="getWidth(columnControl)" tabindex="0"
-            (keydown)="onCellKeydown($event)">
-            <ng-template [ngTemplateOutlet]="columnControl.itemTemplateRef"
-                         [ngTemplateOutletContext]="{item: item}"></ng-template>
-            <div class="_focus-indicator"></div>
-          </div>
-        </div>
+      <div class="_content _body">
+        <ng-template #rowOfList let-items="items">
+          <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
+            <div class="_row" [@rowState]="'in'">
+              <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
+                <div class="_col _first-col"
+                     [class._double]="selectable && children"
+                     [class._selectable]="selectable"
+                     [class._selected]="((selectable === true || selectable === 'manual') && selectedItem === item) || (selectable === 'multi' && selectedItems.includes(item))"
+                     [class._expandable]="getHasChildren(i, item)"
+                     [class._expanded]="getIsExpended(i, item)">
+                  <sd-icon class="_expand-icon" [icon]="getHasChildren(i, item) ? 'caret-right' : undefined" [fw]="true"
+                           *ngIf="!!children"
+                           (click)="onExpandIconClick($event, i, item)"></sd-icon>
+
+                  <sd-icon [icon]="'arrow-right'" *ngIf="selectable === true || selectable === 'manual'" [fw]="true"
+                           [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-grey-default': !selectedItem !== item}"
+                           (click)="onSelectIconClick($event, i, item)"></sd-icon>
+
+                  <sd-icon [icon]="'arrow-right'" *ngIf="selectable === 'multi'" [fw]="true"
+                           [ngClass]="{'sd-text-color-primary-default': selectedItems.includes(item), 'sd-text-color-grey-default': !selectedItems.includes(item)}"
+                           (click)="onSelectIconClick($event, i, item)"></sd-icon>
+                </div>
+                <div
+                  [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
+                  *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
+                  [style.width.px]="getWidth(columnControl)" tabindex="0"
+                  (keydown)="onCellKeydown($event)">
+                  <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
+                               [ngTemplateOutletContext]="{item: item}"></ng-template>
+                  <div class="_focus-indicator"></div>
+                </div>
+              </div>
+              <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
+                <div
+                  [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
+                  *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
+                  [style.width.px]="getWidth(columnControl)" tabindex="0"
+                  (keydown)="onCellKeydown($event)">
+                  <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
+                               [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
+                  <div class="_focus-indicator"></div>
+                </div>
+              </div>
+            </div>
+            <ng-container *ngIf="getHasChildren(i, item) && getIsExpended(i, item)">
+              <ng-template [ngTemplateOutlet]="rowOfList"
+                           [ngTemplateOutletContext]="{items: children(i, item)}"></ng-template>
+            </ng-container>
+          </ng-container>
+        </ng-template>
+        <ng-template [ngTemplateOutlet]="rowOfList" [ngTemplateOutletContext]="{items: items}"></ng-template>
       </div>
     </div>`,
   animations: [
     trigger("rowState", [
       state("void", style({height: "0"})),
       state("*", style({height: "*"})),
-      transition("void <=> *", animate(".1s ease-out"))
+      transition("void <=> *", animate(".1s ease-in-out"))
     ])
   ]
 })
@@ -125,9 +153,6 @@ export class SdSheetControl implements DoCheck, OnInit {
   @Input()
   @SdTypeValidate(Function)
   public trackBy?: (index: number, item: any) => any;
-
-  public headTop = 0;
-  public fixedLeft = 0;
 
   @Input()
   @SdTypeValidate({
@@ -157,14 +182,43 @@ export class SdSheetControl implements DoCheck, OnInit {
   @SdTypeValidate(Function)
   public itemThemeFn?: (item: any) => undefined | "primary" | "info" | "success" | "warning" | "danger";
 
-  @HostBinding("style.padding-top")
+  @Input()
+  @SdTypeValidate({type: Number, notnull: true})
+  public page = 0;
+
+  @Input()
+  @SdTypeValidate({type: Number, notnull: true})
+  public pageLength = 0;
+
+  @Output()
+  public readonly pageChange = new EventEmitter<number>();
+
+  @Input()
+  @SdTypeValidate(Function)
+  public children?: (index: number, item: any) => any;
+
+  @Input()
+  @SdTypeValidate({
+    type: Array,
+    notnull: true
+  })
+  public expandedItemTracks: any[] = [];
+
+  @Output()
+  public readonly expandedItemTracksChange = new EventEmitter<any[]>();
+
+
+  public headTop = 0;
+  public fixedLeft = 0;
+
   public get paddingTop(): string {
-    console.error("미구현");
+    const headEl = this._elRef.nativeElement.findAll("._head")[0];
+    return headEl.clientHeight + "px";
+
     /*const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
       + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default));
 
     return ((this.hasHeaderGroup ? (Math.floor(size * 2) + 2) : (Math.floor(size) + 1)) + 1) + "px";*/
-    return "0";
   }
 
   public get hasHeaderGroup(): boolean {
@@ -216,7 +270,9 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public get fixedColumnWidth(): number {
-    console.error("미구현");
+    const fixedColGroupEl = this._elRef.nativeElement.findAll("._head > ._row > ._fixed-col-group")[0];
+    return fixedColGroupEl.clientWidth;
+
     /*const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
       + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default)) + 1;
 
@@ -226,8 +282,6 @@ export class SdSheetControl implements DoCheck, OnInit {
     else {
       return size;
     }*/
-
-    return 0;
   }
 
   public trackByColumnControlFn(index: number, item: SdSheetColumnControl): any {
@@ -260,28 +314,49 @@ export class SdSheetControl implements DoCheck, OnInit {
                      private readonly _localStorage: SdLocalStorageProvider) {
     this._iterableDiffer = this._iterableDiffers.find([]).create(this.trackByItemFn);
 
-    this._elRef.nativeElement.addEventListener(
-      "focus",
-      (event: Event) => {
-        if (this.selectable === "manual" && this.selectedItem) {
-          const rowEl = (event.target as HTMLElement).findParent("._row");
+    this._elRef.nativeElement.addEventListener("focus", (event: Event) => {
+      if (this.selectable === "manual" && this.selectedItem) {
+        const rowEl = (event.target as HTMLElement).findParent("._row");
 
-          if (rowEl) {
-            const bodyEl = rowEl.parentElement as Element;
-            const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-            const cursorItem = this.items![rowIndex];
-            if (this.selectedItem !== cursorItem) {
-              this.selectedItem = undefined;
-              this.selectedItemChange.emit(undefined);
-            }
+        if (rowEl) {
+          const bodyEl = rowEl.parentElement as Element;
+          const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+          const cursorItem = this._getItemByRowIndex(rowIndex); //this.items![rowIndex];
+          if (this.selectedItem !== cursorItem) {
+            this.selectedItem = undefined;
+            this.selectedItemChange.emit(undefined);
           }
         }
-        else if (this.selectable === true) {
-          this.selectRow(event.target as HTMLElement);
+      }
+      else if (this.selectable === true) {
+        this.selectRow(event.target as HTMLElement);
+      }
+    }, true);
+  }
+
+  private _getItemByRowIndex(index: number): any {
+    if (!this.items) return undefined;
+
+    let i = 0;
+    const loop = (items: any[]): any => {
+      for (const item of items) {
+        if (i === index) {
+          return item;
         }
-      },
-      true
-    );
+        i++;
+
+        const children = this.children && this.getIsExpended(items.indexOf(item), item) && this.children(items.indexOf(item), item);
+        if (children) {
+          const selected = loop(children);
+          if (selected) {
+            return selected;
+          }
+        }
+      }
+
+      return undefined;
+    };
+    return loop(this.items);
   }
 
   public ngOnInit(): void {
@@ -304,6 +379,14 @@ export class SdSheetControl implements DoCheck, OnInit {
     return columnConfig ? columnConfig.width : columnControl.width;
   }
 
+  public getIsExpended(i: number, item: any): boolean {
+    return this.expandedItemTracks.includes(this.trackBy!(i, item));
+  }
+
+  public getHasChildren(i: number, item: any): boolean {
+    return this.children && this.children(i, item) && this.children(i, item).length > 0;
+  }
+
   public selectRow(targetEl: Element): void {
     if (!this.selectable) return;
 
@@ -311,51 +394,63 @@ export class SdSheetControl implements DoCheck, OnInit {
     if (rowEl) {
       const bodyEl = rowEl.parentElement as Element;
       const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-      const selectedItem = this.items![rowIndex];
+      const selectedItem = this._getItemByRowIndex(rowIndex); //this.items![rowIndex];
 
       if (this.selectable === "multi") {
         if (!this.selectedItems.includes(selectedItem)) {
-          this.selectedItems.push(this.items![rowIndex]);
+          this.selectedItems.push(selectedItem /*this.items![rowIndex]*/);
           this.selectedItemsChange.emit(this.selectedItems);
         }
       }
       else {
         if (this.selectedItem !== selectedItem) {
-          this.selectedItem = this.items![rowIndex];
+          this.selectedItem = selectedItem/*this.items![rowIndex]*/;
           this.selectedItemChange.emit(this.selectedItem);
         }
       }
     }
   }
 
-  public onFirstColClick(event: Event): void {
-    if (!this.selectable) return;
+  public onSelectIconClick(event: Event, i: number, item: any): void {
+    if (this.selectable) {
+      const targetEl = event.target as Element;
+      const rowEl = targetEl.findParent("._row");
+      if (!rowEl) return;
 
-    const targetEl = event.target as Element;
-    const rowEl = targetEl.findParent("._row");
-    if (!rowEl) return;
+      const bodyEl = rowEl.parentElement as Element;
+      const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+      const selectedItem = this._getItemByRowIndex(rowIndex); //this.items![rowIndex];
 
-    const bodyEl = rowEl.parentElement as Element;
-    const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-    const selectedItem = this.items![rowIndex];
-
-    if (this.selectable === "multi") {
-      if (this.selectedItems.includes(selectedItem)) {
-        this.selectedItems.remove(selectedItem);
-        this.selectedItemsChange.emit(this.selectedItems);
+      if (this.selectable === "multi") {
+        if (this.selectedItems.includes(selectedItem)) {
+          this.selectedItems.remove(selectedItem);
+          this.selectedItemsChange.emit(this.selectedItems);
+        }
+        else {
+          this.selectRow(event.target as Element);
+        }
       }
       else {
-        this.selectRow(event.target as Element);
+        if (this.selectedItem === selectedItem) {
+          this.selectedItem = undefined;
+          this.selectedItemChange.emit(undefined);
+        }
+        else {
+          this.selectRow(event.target as Element);
+        }
       }
     }
-    else {
-      if (this.selectedItem === selectedItem) {
-        this.selectedItem = undefined;
-        this.selectedItemChange.emit(undefined);
+  }
+
+  public onExpandIconClick(event: Event, i: number, item: any): void {
+    if (this.getHasChildren(i, item)) {
+      if (this.getIsExpended(i, item)) {
+        this.expandedItemTracks.remove(this.trackBy!(i, item));
       }
       else {
-        this.selectRow(event.target as Element);
+        this.expandedItemTracks.push(this.trackBy!(i, item));
       }
+      this.expandedItemTracksChange.emit(this.expandedItemTracks);
     }
   }
 

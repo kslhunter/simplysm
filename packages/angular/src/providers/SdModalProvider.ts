@@ -9,7 +9,7 @@ export class SdModalProvider {
                      private readonly _appRef: ApplicationRef) {
   }
 
-  public async show<T extends SdModalBase<any, any>>(modalType: Type<T>, title: string, param: T["_tParam"], option?: { hideCloseButton?: boolean }): Promise<T["_tResult"] | undefined> {
+  public async show<T extends SdModalBase<any, any>>(modalType: Type<T>, title: string, param: T["_tParam"], option?: { hideCloseButton?: boolean; float?: boolean; height?: string }): Promise<T["_tResult"] | undefined> {
     return await new Promise<T["_tResult"]>(async resolve => {
       const compRef = this._cfr.resolveComponentFactory(modalType).create(this._injector);
       const rootComp = this._appRef.components[0];
@@ -39,6 +39,8 @@ export class SdModalProvider {
 
       modalRef.instance.title = title;
       modalRef.instance.hideCloseButton = option && option.hideCloseButton;
+      modalRef.instance.float = option && option.float;
+      modalRef.instance.height = option && option.height;
       modalRef.instance.close.subscribe(async () => {
         await close();
       });

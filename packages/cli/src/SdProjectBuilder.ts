@@ -15,7 +15,6 @@ import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import {RequestHandler} from "express";
 import {SdWebSocketServer} from "@simplysm/ws-server";
 import * as os from "os";
-import * as CopyWebpackPlugin from "copy-webpack-plugin";
 
 export class SdProjectBuilder {
   private readonly _serverMap = new Map<number, SdWebSocketServer>();
@@ -831,12 +830,7 @@ export class SdProjectBuilder {
           "process.env": SdProjectBuilder._envStringify({
             VERSION: projectNpmConfig.version
           })
-        }),
-        new CopyWebpackPlugin([{
-          context: path.resolve(__dirname, "../lib/fonts"),
-          from: "**/*",
-          to: "fonts"
-        }])
+        })
       ]
     };
 
@@ -852,7 +846,7 @@ export class SdProjectBuilder {
         mode: "development",
         devtool: "cheap-module-source-map",
         entry: [
-          `webpack-hot-middleware/client?path=/${projectNpmConfig.name}/${packageKey}/__webpack_hmr&timeout=20000`,
+          `webpack-hot-middleware/client?path=/${projectNpmConfig.name}/${packageKey}/__webpack_hmr&timeout=20000&reload=true`,
           path.resolve(__dirname, "../lib/main.js")
         ],
         plugins: [

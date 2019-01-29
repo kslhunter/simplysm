@@ -9,7 +9,7 @@ import {SdSidebarControl} from "./controls/SdSidebarControl";
 import {SdPaneControl} from "./controls/SdPaneControl";
 import {SdIconControl} from "./controls/SdIconControl";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
-import {SdNavigateAttribute} from "./commons/SdNavigateAttribute";
+import {SdNavigateDirective} from "./directives/SdNavigateDirective";
 import {SdBusyContainerControl} from "./controls/SdBusyContainerControl";
 import {SdCheckboxControl} from "./controls/SdCheckboxControl";
 import {SdComboboxControl} from "./controls/SdComboboxControl";
@@ -63,6 +63,12 @@ import {SdWebSocketProvider} from "./providers/SdWebSocketProvider";
 import {SdOrmProvider} from "./providers/SdOrmProvider";
 import {SdSmtpClientProvider} from "./providers/SdSmtpClientProvider";
 import {SdCryptoProvider} from "./providers/SdCryptoProvider";
+import {SdSidebarBrandControl} from "./controls/SdSidebarBrandControl";
+import {SdSidebarUserControl} from "./controls/SdSidebarUserControl";
+import {SdSidebarUserMenuControl} from "./controls/SdSidebarUserMenuControl";
+import {SdTableControl} from "./controls/SdTableControl";
+import {SdListItemButtonControl} from "./controls/SdListItemButtonControl";
+import {LinkActionDirective} from "./directives/LinkActionDirective";
 
 const controls: Type<any>[] = [
   SdBusyContainerControl,
@@ -78,12 +84,16 @@ const controls: Type<any>[] = [
   SdLabelControl,
   SdListControl,
   SdListItemControl,
+  SdListItemButtonControl,
   SdPaginationControl,
   SdPaneControl,
   SdSheetControl,
   SdSheetColumnControl,
   SdSidebarControl,
   SdSidebarContainerControl,
+  SdSidebarBrandControl,
+  SdSidebarUserControl,
+  SdSidebarUserMenuControl,
   SdTextfieldControl,
   SdTopbarControl,
   SdTopbarContainerControl,
@@ -108,7 +118,8 @@ const controls: Type<any>[] = [
   SdViewControl,
   SdViewItemControl,
   SdHtmlEditorControl,
-  SdNoteControl
+  SdNoteControl,
+  SdTableControl
 ];
 
 const entryControls: Type<any>[] = [
@@ -116,8 +127,9 @@ const entryControls: Type<any>[] = [
   SdAddressSearchModal
 ];
 
-const attributes: Type<any>[] = [
-  SdNavigateAttribute
+const directives: Type<any>[] = [
+  SdNavigateDirective,
+  LinkActionDirective
 ];
 
 const pipes: Type<any>[] = [
@@ -147,13 +159,13 @@ const providers: Provider[] = [
   exports: [
     ...controls,
     ...entryControls,
-    ...attributes,
+    ...directives,
     ...pipes
   ],
   declarations: [
     ...controls,
     ...entryControls,
-    ...attributes,
+    ...directives,
     ...pipes
   ],
   entryComponents: entryControls

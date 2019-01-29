@@ -1,32 +1,31 @@
-import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input, OnInit} from "@angular/core";
-import {counter, icon, IconLookup, IconName, library} from "@fortawesome/fontawesome-svg-core";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {IconName, library, SizeProp} from "@fortawesome/fontawesome-svg-core";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {far} from "@fortawesome/free-regular-svg-icons";
 import {fab} from "@fortawesome/free-brands-svg-icons";
-import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 
 library.add(fas, far, fab);
-const iconNames = Object.values(fas).map(item => item.iconName);
+export const sdIconNames = Object.values(fas).map(item => item.iconName).distinct();
 
 @Component({
   selector: "sd-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: ``
+  template: `
+    <fa-icon [icon]="iconArr" [fixedWidth]="fw" [size]="size"></fa-icon>`
 })
-export class SdIconControl implements ISdNotifyPropertyChange, OnInit {
+export class SdIconControl {
   @Input()
   @SdTypeValidate({
     type: String,
-    includes: iconNames
+    includes: sdIconNames
   })
-  @SdNotifyPropertyChange()
   public icon?: IconName;
 
   @Input()
-  @SdNotifyPropertyChange()
-  @HostBinding("attr.sd-fixed-width")
-  public fixedWidth?: boolean;
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-fw")
+  public fw?: boolean;
 
   @Input()
   @SdTypeValidate({
@@ -34,76 +33,19 @@ export class SdIconControl implements ISdNotifyPropertyChange, OnInit {
     includes: ["solid", "regular", "brands"],
     notnull: true
   })
-  @SdNotifyPropertyChange()
   public type = "solid";
 
   @Input()
-  @SdTypeValidate(Number)
-  @SdNotifyPropertyChange()
-  public count?: number;
+  @SdTypeValidate({
+    type: String,
+    includes: ["xs", "lg", "sm", "1x", "2x", "3x", "4x", "5x", "6x", "7x", "8x", "9x", "10x"]
+  })
+  public size?: SizeProp;
 
-  @Input()
-  @SdTypeValidate(Boolean)
-  @SdNotifyPropertyChange()
-  @HostBinding("attr.sd-dot")
-  public dot?: number;
-
-  @Input()
-  @SdTypeValidate(Boolean)
-  @SdNotifyPropertyChange()
-  public spin?: boolean;
-
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
-  }
-
-  public ngOnInit(): void {
-    this.render();
-  }
-
-  public sdOnPropertyChange(propertyName: string, oldValue: any, newValue: any): void {
-    this.render();
-  }
-
-  public render(): void {
-    if (this.icon) {
-      const iconSpec: IconLookup = {
-        prefix: this.type === "brands" ? "fab" : this.type === "regular" ? "far" : "fas",
-        iconName: this.icon
-      };
-
-      const classes = [
-        this.fixedWidth ? "fa-fw" : undefined,
-        this.spin ? "fa-spin" : undefined
-      ].filterExists();
-
-      const iconObj = icon(iconSpec, {classes});
-
-      if (iconObj) {
-        let html = iconObj.html.join("\n");
-
-        if (this.count) {
-          const counterObj = counter(this.count!);
-
-          html = `<span class='fa-layers${this.fixedWidth ? " fa-fw" : ""}'>` + html + counterObj.html.join("\n") + "</span>";
-        }
-
-        if (this.dot) {
-          const dotObj = icon(
-            {prefix: "fas", iconName: "circle"},
-            {transform: {size: 8, x: 6, y: 6}}
-          );
-
-          html = `<span class='fa-layers${this.fixedWidth ? " fa-fw" : ""}'>` + html + dotObj.html.join("\n") + "</span>";
-        }
-
-        this._elRef.nativeElement.innerHTML = html;
-      }
-      else {
-        this._elRef.nativeElement.innerHTML = "";
-      }
-    }
-    else {
-      this._elRef.nativeElement.innerHTML = "";
-    }
+  public get iconArr(): string[] | undefined {
+    return this.icon ? [
+      this.type === "brands" ? "fab" : this.type === "regular" ? "far" : "fas",
+      this.icon
+    ] : undefined;
   }
 }

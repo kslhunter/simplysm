@@ -79,7 +79,7 @@ export class SdToastProvider implements OnDestroy {
         () => {
           toastEl.remove();
         },
-        3000
+        5000
       );
     }
 

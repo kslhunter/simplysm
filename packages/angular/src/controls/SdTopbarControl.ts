@@ -5,8 +5,8 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a (click)="toggleSidebar()">
-      <sd-icon [icon]="'bars'" [fixedWidth]="true"></sd-icon>
+    <a (click)="toggleSidebar()" style="font-size: 16px;">
+      <sd-icon [icon]="'bars'" [fw]="true"></sd-icon>
     </a>
     <ng-content></ng-content>`
 })

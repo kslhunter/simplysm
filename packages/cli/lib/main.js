@@ -20,16 +20,22 @@ platformBrowserDynamic().bootstrapModule(AppModule)
     if (module.hot) {
       const appRef = ngModuleRef.injector.get(ApplicationRef);
 
-      console.clear();
       module.hot.accept();
       module.hot.dispose(() => {
+        console.clear();
         const prevEls = appRef.components.map(cmp => cmp.location.nativeElement);
         for (const prevEl of prevEls) {
           const newEl = document.createElement(prevEl.tagName);
-          const parentNode = prevEl.parentNode;
-          parentNode.insertBefore(newEl, prevEl);
+          prevEl.parentNode.insertBefore(newEl, prevEl);
         }
         ngModuleRef.destroy();
+        for (const prevEl of prevEls) {
+          try {
+            prevEl.parentNode.removeChild(prevEl);
+          }
+          catch (err) {
+          }
+        }
       });
     }
   });

@@ -5,13 +5,14 @@ sd-select {
   > sd-dropdown > div {
     @include form-control-base();
 
+    background: get($theme-color, secondary, lightest);
     display: block;
     overflow: visible;
     padding-right: 30px !important;
     height: get($gap, sm) * 2 + strip-unit($line-height) * get($font-size, default) + 2;
+    border-radius: 3px;
 
-    background: white;
-    border-color: get($trans-color, default);
+    border-color: get($theme-color, grey, lighter);
     transition: outline-color .1s linear;
     outline: 1px solid transparent;
     outline-offset: -1px;
@@ -50,10 +51,24 @@ sd-select {
 
 sd-select-item {
   display: block;
-  padding: get($gap, xs) get($gap, sm);
+  padding: get($gap, sm) get($gap, default);
   cursor: pointer;
+  transition: background .1s ease-in;
+  background: white;
 
   &:hover {
-    background: get($trans-color, dark);
+    transition: background .1s ease-out;
+    background: rgba(0, 0, 0, .07);
   }
+
+  &:focus {
+    outline: none;
+    transition: background .1s ease-out;
+    background: rgba(0, 0, 0, .07);
+  }
+}
+
+
+._sd-select-item > ._children {
+  border-left: get($gap, xl) solid get($theme-color, secondary, lightest);
 }

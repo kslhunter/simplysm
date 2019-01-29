@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, Component} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-topbar-container",
@@ -7,4 +8,8 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
     <ng-content></ng-content>`
 })
 export class SdTopbarContainerControl {
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-hide-topbar")
+  public hideTopbar?: boolean;
 }

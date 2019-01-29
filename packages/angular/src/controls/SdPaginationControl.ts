@@ -6,14 +6,14 @@ import {SdTypeValidate} from "../commons/SdTypeValidate";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a *ngIf="hasPrev" (click)="onPrevClick()">
-      <sd-icon [icon]="'angle-double-left'" [fixedWidth]="true"></sd-icon>
+      <sd-icon [icon]="'angle-double-left'" [fw]="true"></sd-icon>
     </a>
     <a *ngFor="let displayPage of displayPages; trackBy: trackByPageFn" (click)="onPageClick(displayPage)"
        [attr.sd-selected]="displayPage === page">
       {{ displayPage + 1 }}
     </a>
     <a *ngIf="hasNext" (click)="onNextClick()">
-      <sd-icon [icon]="'angle-double-right'" [fixedWidth]="true"></sd-icon>
+      <sd-icon [icon]="'angle-double-right'" [fw]="true"></sd-icon>
     </a>`
 })
 export class SdPaginationControl {

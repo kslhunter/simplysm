@@ -1,8 +1,12 @@
 sd-sheet {
+  $header-bg: get($theme-color, grey, lightest);
+  $border-color: get($theme-color, grey, lighter);
+  $border-color-dark: get($theme-color, grey, light);
+
   display: block;
   position: relative;
   width: 100%;
-  max-height: 100%;
+  height: 100%;
   overflow: auto;
   background: $bg-color;
   z-index: 0;
@@ -12,6 +16,14 @@ sd-sheet {
     width: fit-content;
   }
 
+  ._pagination {
+    background: $header-bg;
+    border-top: 1px solid white;
+    padding: $sheet-padding-v $sheet-padding-h;
+    border-bottom: 1px solid $border-color;
+    border-right: 1px solid $border-color;
+  }
+
   ._head {
     display: block;
     position: absolute;
@@ -19,7 +31,6 @@ sd-sheet {
     top: 0;
     left: 0;
     white-space: nowrap;
-    border-bottom: 1px solid get($theme-color, grey, light);
   }
 
   ._col-group {
@@ -38,11 +49,13 @@ sd-sheet {
   }
 
   ._head ._col {
-    background: get($theme-color, grey, lighter);
+    background: $header-bg;
+    font-weight: bold;
     text-align: center;
     padding: $sheet-padding-v $sheet-padding-h;
-    border-bottom: 1px solid get($theme-color, grey, light);
+    border-bottom: 1px solid $border-color;
     user-select: none;
+    border-top: 1px solid white;
 
     > ._border {
       position: absolute;
@@ -50,19 +63,18 @@ sd-sheet {
       right: 0;
       bottom: 0;
       width: 4px;
-      border-right: 1px solid get($theme-color, grey, light);
+      border-right: 1px solid $border-color;
     }
   }
 
   ._body ._col {
     background: white;
-    border-right: 1px solid get($theme-color, grey, light);
-    border-bottom: 1px solid get($theme-color, grey, light);
+    border-right: 1px solid $border-color;
+    border-bottom: 1px solid $border-color;
 
     sd-textfield > input {
       border: none;
       padding: $sheet-padding-v $sheet-padding-h;
-      background: $sheet-edit-cell-bg;
 
       &[type=year],
       &[type=month],
@@ -101,10 +113,6 @@ sd-sheet {
       width: auto;
       border: none;
       padding: $sheet-padding-v $sheet-padding-h;
-
-      > ._indicator_rect {
-        background: $sheet-edit-cell-bg;
-      }
 
       > input:disabled + ._indicator_rect {
         background: transparent;
@@ -167,15 +175,60 @@ sd-sheet {
     }
   }
 
+  ._head > ._row > ._col-group:last-child > ._col:last-child > ._border,
+  ._body > ._row > ._col-group:last-child > ._col:last-child {
+    border-right-color: $border-color-dark;
+  }
+
+  ._head > ._row:last-child > ._col-group > ._col {
+    border-bottom-color: $border-color-dark;
+  }
+
+  ._body > ._row:last-child > ._col-group > ._col {
+    border-bottom-color: $border-color-dark;
+  }
+
   ._head ._col._first-col,
   ._body ._col._first-col {
     width: $sheet-row-height;
     text-align: center;
     padding: $sheet-padding-v;
+
+    &._double {
+      width: $sheet-row-height * 2;
+    }
   }
 
   ._body ._col._first-col {
-    background: get($theme-color, grey, lighter);
+    background: $header-bg;
+
+    &._selectable {
+      cursor: pointer;
+    }
+
+    &._expandable {
+      cursor: pointer;
+
+      > ._expand-icon {
+        display: inline-block;
+        color: get($theme-color, grey, default);
+        transition: .1s ease-in;
+      }
+
+      &._expanded > ._expand-icon {
+        color: get($theme-color, primary, default);
+        transform: rotate(90deg);
+        transition: .1s ease-out;
+      }
+    }
+  }
+
+  ._body > ._row > ._fixed-col-group > ._col:last-child {
+    border-right-color: $border-color-dark;
+  }
+
+  ._head > ._row > ._fixed-col-group > ._col:last-child > ._border {
+    border-right-color: $border-color-dark;
   }
 
   ._fixed-col-group {
@@ -183,7 +236,6 @@ sd-sheet {
     z-index: 1;
     top: 0;
     left: 0;
-    border-right: 1px solid get($theme-color, grey, light);
   }
 
   ._row {

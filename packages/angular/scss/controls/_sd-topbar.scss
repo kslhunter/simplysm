@@ -4,6 +4,14 @@ sd-topbar-container {
   width: 100%;
   height: 100%;
   padding-top: $topbar-height;
+
+  &[sd-hide-topbar=true] {
+    padding-top: 0 !important;
+
+    sd-topbar {
+      display: none !important;
+    }
+  }
 }
 
 sd-topbar {
@@ -15,9 +23,9 @@ sd-topbar {
   width: 100%;
   height: $topbar-height;
   line-height: $topbar-height;
-  background: $topbar-bg;
+  background: get($theme-color, primary, default);
   color: get($text-reverse-color, default);
-  @include elevation(4);
+  @include elevation(6);
 
   > * {
     float: left;
@@ -27,12 +35,25 @@ sd-topbar {
   > a {
     min-width: $topbar-height;
     text-align: center;
-    margin-right: get($gap, sm);
-    color: get($text-reverse-color, dark);
+    margin-right: get($gap, lg);
+    color: get($theme-color, grey, lighter);
+    transition-property: background, color;
+    transition: .1s ease-in;
 
     &:hover,
     &:focus {
-      color: get($text-reverse-color, default);
+      outline-color: transparent;
+      background: rgba(0, 0, 0, 0.2);
+      color: white;
+      transition-property: background, color;
+      transition: .1s ease-out;
+    }
+
+    &:active {
+      background: rgba(0, 0, 0, .3);
+      color: white;
+      transition-property: background, color;
+      transition: .1s ease-out;
     }
   }
 
@@ -42,29 +63,26 @@ sd-topbar {
   > h4,
   > h5,
   > h6 {
-    padding-right: get($gap, default);
+    padding-right: get($gap, lg);
   }
 }
 
 sd-topbar-menu {
   display: block;
-  padding: 0 get($gap, default);
+  padding: 0 get($gap, lg);
   cursor: pointer;
-  transition: .1s linear;
-  transition-property: background, color;
   user-select: none;
-  color: $topbar-link-color;
+  color: get($theme-color, grey, lighter);
   float: left;
 
   &:hover {
-    background: get($trans-color, dark);
-    color: $topbar-link-hover-color;
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
   }
 
   &:active {
-    transition: none;
-    background: get($trans-color, darker);
-    color: $topbar-link-hover-color;
+    background: rgba(0, 0, 0, .3);
+    color: white;
   }
 
   @media #{$screen-mobile} {

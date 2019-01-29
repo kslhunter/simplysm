@@ -2,7 +2,7 @@ $theme-color-pallet: (
   grey: $color-grey,
   bluegrey: $color-bluegrey,
   primary: $color-deep-purple,
-  secondary: $color-yellow,
+  secondary: $color-blue,
   info: $color-blue,
   success: $color-green,
   warning: $color-orange,
@@ -10,6 +10,7 @@ $theme-color-pallet: (
 ) !default;
 
 $trans-color: (
+  darkest: rgba(0, 0, 0, .4),
   darker: rgba(0, 0, 0, .3),
   dark: rgba(0, 0, 0, .2),
   default: rgba(0, 0, 0, .1),
@@ -30,25 +31,25 @@ $text-reverse-color: (
 ) !default;
 
 $gap: (
-  xxs: 4px,
-  xs: 6px,
-  sm: 8px,
-  default: 10px,
-  lg: 14px,
+  xxs: 2px,
+  xs: 4px,
+  sm: 6px,
+  default: 8px,
+  lg: 12px,
   xl: 18px,
   xxl: 24px
 ) !default;
 
 $font-size: (
-  lg: 17px,
-  default: 15px,
-  sm: 13px,
+  lg: 15px,
+  default: 13px,
+  sm: 11px,
   h1: 23px,
-  h2: 21px,
-  h3: 19px,
-  h4: 17px,
-  h5: 15px,
-  h6: 13px
+  h2: 19px,
+  h3: 17px,
+  h4: 15px,
+  h5: 13px,
+  h6: 11px
 ) !default;
 
 $font-family: 'Noto Sans KR', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;

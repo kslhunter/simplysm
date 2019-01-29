@@ -3,10 +3,12 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ContentChild,
   ContentChildren,
   DoCheck,
   ElementRef,
-  EventEmitter, forwardRef,
+  EventEmitter,
+  forwardRef,
   HostBinding,
   Input,
   IterableDiffer,
@@ -14,6 +16,7 @@ import {
   OnInit,
   Output,
   QueryList,
+  TemplateRef,
   ViewChild
 } from "@angular/core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
@@ -26,11 +29,39 @@ import {SdMultiSelectItemControl} from "./SdMultiSelectItemControl";
     <sd-dropdown [disabled]="disabled" (open)="open.emit()" (close)="close.emit()">
       <div #content></div>
       <div class="_icon">
-        <sd-icon [fixedWidth]="true" [icon]="'angle-down'"></sd-icon>
+        <sd-icon [fw]="true" [icon]="'caret-down'"></sd-icon>
       </div>
 
       <sd-dropdown-popup>
-        <ng-content></ng-content>
+        <ng-container *ngIf="!items">
+          <ng-content></ng-content>
+        </ng-container>
+        <ng-container *ngIf="items">
+          <sd-dock-container>
+            <sd-dock>
+              <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
+            </sd-dock>
+            <sd-pane>
+              <ng-template #rowOfList let-items="items">
+                <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
+                  <div class="_sd-multi-select-item">
+                    <ng-template [ngTemplateOutlet]="itemTemplateRef"
+                                 [ngTemplateOutletContext]="{item: item}"></ng-template>
+
+                    <ng-container *ngIf="children && children(i, item) && children(i, item).length > 0">
+                      <div class="_children">
+                        <ng-template [ngTemplateOutlet]="rowOfList"
+                                     [ngTemplateOutletContext]="{items: children(i, item)}"></ng-template>
+                      </div>
+                    </ng-container>
+                  </div>
+                </ng-container>
+              </ng-template>
+              <ng-template [ngTemplateOutlet]="rowOfList"
+                           [ngTemplateOutletContext]="{items: items}"></ng-template>
+            </sd-pane>
+          </sd-dock-container>
+        </ng-container>
       </sd-dropdown-popup>
     </sd-dropdown>`
 })
@@ -64,6 +95,33 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
 
   @ViewChild("content")
   public contentElRef?: ElementRef<HTMLDivElement>;
+
+  @ContentChild("item")
+  public itemTemplateRef?: TemplateRef<any>;
+
+  @ContentChild("header")
+  public headerTemplateRef?: TemplateRef<any>;
+
+  @Input()
+  @SdTypeValidate(Array)
+  public items?: any[];
+
+  @Input()
+  @SdTypeValidate(Function)
+  public trackBy?: (index: number, item: any) => any;
+
+  @Input()
+  @SdTypeValidate(Function)
+  public children?: (index: number, item: any) => any;
+
+  public trackByItemFn(index: number, item: any): any {
+    if (this.trackBy) {
+      return this.trackBy(index, item);
+    }
+    else {
+      return item;
+    }
+  }
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef) {

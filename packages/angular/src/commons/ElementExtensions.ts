@@ -11,6 +11,8 @@ declare interface Element {
   findFocusableAll(): HTMLElement[];
 
   findFocusableAllIncludeMe(): HTMLElement[];
+
+  findFirstFocusableParent(): HTMLElement | undefined;
 }
 
 Element.prototype.prependChild = function <T extends Node>(newChild: T): T {
@@ -63,4 +65,16 @@ Element.prototype.findFocusableAllIncludeMe = function (): HTMLElement[] {
 
   result.pushRange(this.findFocusableAll());
   return result;
+};
+
+Element.prototype.findFirstFocusableParent = function (): HTMLElement | undefined {
+  let parentEl = this.parentElement;
+  while (parentEl) {
+    if (parentEl.matches(focusableSelectorList.join(", "))) {
+      return parentEl;
+    }
+    parentEl = parentEl.parentElement;
+  }
+
+  return undefined;
 };

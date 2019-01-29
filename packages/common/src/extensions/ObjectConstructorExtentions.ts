@@ -130,8 +130,10 @@ Object.equal = function (source: any, target: any, options?: { excludeProps?: st
       return false;
     }
 
-    const sourceKeys = Object.keys(source).filter(sourceKey => !options || !options.excludeProps || !options.excludeProps.includes(sourceKey));
-    const targetKeys = Object.keys(target).filter(targetKey => !options || !options.excludeProps || !options.excludeProps.includes(targetKey));
+    const sourceKeys = Object.keys(source)
+      .filter(sourceKey => (!options || !options.excludeProps || !options.excludeProps.includes(sourceKey)) && source[sourceKey] !== undefined);
+    const targetKeys = Object.keys(target)
+      .filter(targetKey => (!options || !options.excludeProps || !options.excludeProps.includes(targetKey)) && target[targetKey] !== undefined);
 
     if (sourceKeys.length !== targetKeys.length) {
       return false;

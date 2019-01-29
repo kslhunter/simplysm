@@ -54,7 +54,7 @@
     ],
     "directive-class-suffix": [
       true,
-      "Attribute"
+      "Directive"
     ],
     "pipe-impure": true,
     "i18n": false,

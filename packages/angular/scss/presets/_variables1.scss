@@ -1,6 +1,6 @@
 $theme-color: (
   grey: (
-    lightest: get($theme-color-pallet, grey, 200),
+    lightest: get($theme-color-pallet, grey, 100),
     lighter: get($theme-color-pallet, grey, 300),
     light: get($theme-color-pallet, grey, 400),
     default: get($theme-color-pallet, grey, 500),

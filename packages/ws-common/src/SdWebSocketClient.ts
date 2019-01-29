@@ -15,37 +15,42 @@ export class SdWebSocketClient {
   }
 
   public async connectAsync(): Promise<void> {
-    this._ws = new WebSocket(`${this._protocol || "ws"}://${this._host || location.hostname}:${this._port || location.port}`);
-    this._ws.onopen = () => {
-      this._ws!.onopen = null;
-    };
 
-    this._ws.onmessage = message => {
-      const obj = JsonConvert.parse(message.data);
+    await new Promise<void>((resolve, reject) => {
+      this._ws = new WebSocket(`${this._protocol || "ws"}://${this._host || location.hostname}:${this._port || location.port}`);
+      this._ws.onopen = () => {
+        this._ws!.onopen = null;
+        resolve();
+      };
 
-      if (obj.eventListenerId) {
-        this._eventListeners.get(obj.eventListenerId)!(obj.data);
-      }
-      else {
-        const response: ISdWebSocketResponse = obj;
-        this._reqMap.get(response.requestId)!(response);
-      }
-    };
+      this._ws.onmessage = message => {
+        const obj = JsonConvert.parse(message.data);
 
-    this._ws.onerror = err => {
-      this._logger.error(err);
-    };
+        if (obj.eventListenerId) {
+          this._eventListeners.get(obj.eventListenerId)!(obj.data);
+        }
+        else {
+          const response: ISdWebSocketResponse = obj;
+          this._reqMap.get(response.requestId)!(response);
+        }
+      };
 
-    this._ws.onclose = () => {
-      this._ws!.onopen = null;
-      this._ws!.onmessage = null;
-      this._ws!.onerror = null;
-      this._ws = undefined;
+      this._ws.onerror = err => {
+        this._logger.error(err);
+        reject(err);
+      };
 
-      setTimeout(async () => {
-        await this.connectAsync();
-      }, 1000);
-    };
+      this._ws.onclose = () => {
+        this._ws!.onopen = null;
+        this._ws!.onmessage = null;
+        this._ws!.onerror = null;
+        this._ws = undefined;
+
+        setTimeout(async () => {
+          await this.connectAsync();
+        }, 1000);
+      };
+    });
   }
 
   public async closeAsync(): Promise<void> {
@@ -78,8 +83,10 @@ export class SdWebSocketClient {
   public async sendAsync(command: string, params: any[], sendProgressCallback?: (progress: { current: number; total: number }) => void): Promise<any> {
     return await new Promise<any>(async (resolve, reject) => {
       if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
-        await Wait.time(3000);
-        if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
+        try {
+          await Wait.true(() => !!this._ws && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
+        }
+        catch (err) {
           throw new Error("웹 소켓이 연결되어있지 않습니다.");
         }
       }
@@ -128,14 +135,14 @@ export class SdWebSocketClient {
         let cursor = 0;
         while (cursor < requestJson.length) {
           const str = "!split(" + requestId + "," + i + "," + Math.ceil(requestJson.length / splitLength) + ")!" + requestJson.slice(cursor, Math.min(cursor + splitLength, requestJson.length));
-          this._ws.send(str);
+          this._ws!.send(str);
           cursor += splitLength;
           i++;
           await Wait.time(10);
         }
       }
       else {
-        this._ws.send(requestJson);
+        this._ws!.send(requestJson);
       }
     });
   }

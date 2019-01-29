@@ -1,6 +1,5 @@
 import * as path from "path";
 import * as fs from "fs-extra";
-import * as os from "os";
 import {INpmConfig, ISdConfigFileJson, ISdPackageConfig, ISdProjectConfig, ITsConfig} from "./commons";
 import {optional} from "@simplysm/common";
 
@@ -24,7 +23,7 @@ export class SdProjectBuilderUtil {
 
   public static async writeTsConfigAsync(packageKey: string, tsconfig: ITsConfig, isForBuild: boolean = false): Promise<void> {
     const tsconfigPath = SdProjectBuilderUtil.getTsConfigPath(packageKey, isForBuild);
-    await fs.writeJson(tsconfigPath, tsconfig, {spaces: 2, EOL: os.EOL});
+    await fs.writeJson(tsconfigPath, tsconfig, {spaces: 2});
   }
 
   public static async readConfigAsync(env: "development" | "production", packageKeys: string[] | undefined): Promise<ISdProjectConfig> {
@@ -85,18 +84,13 @@ export class SdProjectBuilderUtil {
   }
 
   public static async readNpmConfigAsync(packageKey: string): Promise<INpmConfig> {
-    try {
-      const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
-      return await fs.readJson(configPath);
-    }
-    catch (err) {
-      throw new Error("여긴가");
-    }
+    const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
+    return await fs.readJson(configPath);
   }
 
   public static async writeNpmConfigAsync(packageKey: string, npmConfig: INpmConfig): Promise<void> {
     const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
-    await fs.writeJson(configPath, npmConfig, {spaces: 2, EOL: os.EOL});
+    await fs.writeJson(configPath, npmConfig, {spaces: 2});
   }
 
   public static getProjectNpmConfigPath(): string {

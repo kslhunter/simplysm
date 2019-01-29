@@ -6,7 +6,7 @@ import {JsonConvert} from "@simplysm/common";
 @Directive({
   selector: "[sdNavigate]"
 })
-export class SdNavigateAttribute {
+export class SdNavigateDirective {
   @Input()
   public sdNavigate?: [string, object | undefined];
 

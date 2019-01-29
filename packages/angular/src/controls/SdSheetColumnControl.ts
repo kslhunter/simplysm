@@ -29,6 +29,6 @@ export class SdSheetColumnControl {
   @SdTypeValidate(Boolean)
   public fixed?: boolean;
 
-  @ContentChild("item")
-  public itemTemplateRef?: TemplateRef<any>;
+  @ContentChild("cell")
+  public cellTemplateRef?: TemplateRef<any>;
 }

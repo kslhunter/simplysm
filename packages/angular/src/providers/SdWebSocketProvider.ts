@@ -18,13 +18,13 @@ export class SdWebSocketProvider implements OnDestroy {
     await this.socket.connectAsync();
   }
 
-  public on<T extends SdServiceEventBase<any, any>>(eventType: Type<T>, info: T["info"], cb: (data: T["data"]) => (Promise<void> | void)): void {
+  public on<T extends SdWebSocketEventBase<any, any>>(eventType: Type<T>, info: T["info"], cb: (data: T["data"]) => (Promise<void> | void)): void {
     this.socket.addEventListenerAsync(eventType, info, cb).catch(err => {
       this._logger.error(err);
     });
   }
 
-  public emit<T extends SdServiceEventBase<any, any>>(eventType: Type<T>, infoSelector: (item: T["info"]) => boolean, data: T["data"]): void {
+  public emit<T extends SdWebSocketEventBase<any, any>>(eventType: Type<T>, infoSelector: (item: T["info"]) => boolean, data: T["data"]): void {
     this.socket.emitAsync(eventType, infoSelector, data).catch(err => {
       this._logger.error(err);
     });
@@ -56,7 +56,7 @@ export class SdWebSocketProvider implements OnDestroy {
   }
 }
 
-export class SdServiceEventBase<I, O> {
+export class SdWebSocketEventBase<I, O> {
   public info!: I;
   public data!: O;
 }

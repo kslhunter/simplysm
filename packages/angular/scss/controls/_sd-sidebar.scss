@@ -8,7 +8,84 @@ sd-sidebar-container {
 
   > sd-sidebar {
     transition: transform .1s ease-out;
-    border-right: 1px solid get($trans-color, default);
+    background: get($theme-color, bluegrey, darkest);
+    color: get($text-reverse-color, default);
+
+    ::-webkit-scrollbar-track {
+      background-color: get($theme-color, bluegrey, darker);
+    }
+
+    ::-webkit-scrollbar-corner {
+      background-color: get($theme-color, bluegrey, darker);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: get($theme-color, bluegrey, dark);
+    }
+
+    sd-list {
+      background: get($theme-color, bluegrey, darkest);
+    }
+
+    sd-list-item {
+      > ._content > label {
+        background: get($theme-color, bluegrey, darkest);
+
+        > ._angle-icon {
+          color: get($text-reverse-color, dark);
+        }
+      }
+
+      &[sd-has-children=true] {
+        > ._content {
+          border-color: get($theme-color, bluegrey, darkest);
+        }
+      }
+
+      &[sd-clickable=true] {
+        > ._content > label {
+          &:hover {
+            background: get($trans-color, dark);
+          }
+        }
+      }
+
+      &[sd-open=true] {
+        > ._content > label {
+          background: get($trans-color, light);
+        }
+      }
+
+      &[sd-header=true] {
+        > ._content > label {
+          color: get($text-reverse-color, dark);
+        }
+      }
+
+      > ._child {
+        > ._child-content {
+          background: get($trans-color, dark);
+
+          sd-list {
+            background: transparent;
+          }
+
+          sd-list-item {
+            > ._content > label {
+              background: transparent;
+            }
+
+            &[sd-clickable=true] {
+              > ._content > label {
+                &:hover {
+                  background: get($trans-color, dark);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   > ._backdrop {
@@ -24,34 +101,6 @@ sd-sidebar-container {
       transition: transform .1s ease-in;
     }
   }
-
-  @media #{$screen-mobile} {
-    padding-left: 0;
-    transition: none;
-
-    > sd-sidebar {
-      transform: translateX(-100%);
-      transition: transform .1s ease-in;
-    }
-
-    &[sd-toggle=true] {
-      > sd-sidebar {
-        transform: none;
-        transition: transform .1s ease-out;
-      }
-
-      > ._backdrop {
-        display: block;
-        position: absolute;
-        z-index: $z-index-sidebar - 1;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, .6);
-      }
-    }
-  }
 }
 
 sd-sidebar {
@@ -63,4 +112,88 @@ sd-sidebar {
   width: $sidebar-width;
   height: 100%;
   background: white;
+
+  > sd-dock-container {
+    > sd-dock {
+      border: none !important;
+      background: get($theme-color, bluegrey, darkest);
+    }
+
+    > ._brand {
+      @include elevation(4);
+      z-index: $z-index-sidebar + 1;
+    }
+  }
+}
+
+sd-sidebar-brand {
+  display: block;
+  height: $topbar-height;
+  padding: get($gap, sm) get($gap, default);
+}
+
+sd-sidebar-user {
+  > ._content {
+    background-image: url(../../assets/user_bg.jpg);
+    background-size: cover;
+    text-shadow: 0 0 1px get($text-color, default);
+
+    > ._content-user {
+      text-align: center;
+      padding: get($gap, default);
+    }
+
+    > ._btn {
+      padding: get($gap, sm) get($gap, default);
+      background: get($trans-color, default);
+      cursor: pointer;
+      transition: background .1s ease-in;
+
+      > ._angle-icon {
+        float: right;
+        transition: transform .1s ease-in;
+        color: get($text-reverse-color, dark);
+      }
+
+      &:hover {
+        transition: background .1s ease-out;
+        background: get($trans-color, dark);
+      }
+
+      &:active {
+        background: get($trans-color, darker);
+      }
+    }
+  }
+
+  > ._child {
+    overflow: hidden;
+
+    > ._child-content {
+      transition: margin-top .1s ease-out;
+      padding: get($gap, sm) 0;
+    }
+  }
+
+  &[sd-open=true] {
+    > ._content {
+      > ._btn {
+        background: get($trans-color, dark);
+
+        > ._angle-icon {
+          transform: rotate(180deg);
+          transition: transform .1s ease-out;
+        }
+
+        &:active {
+          background: get($trans-color, darker);
+        }
+      }
+    }
+
+    > ._child > ._child-content {
+      transition: margin-top .1s ease-in;
+      border-bottom: 1px solid get($trans-color, light);
+    }
+  }
 }

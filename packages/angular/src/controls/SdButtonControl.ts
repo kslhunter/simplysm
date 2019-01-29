@@ -14,10 +14,10 @@ export class SdButtonControl implements AfterContentChecked {
   @Input()
   @SdTypeValidate({
     type: String,
-    includes: ["primary", "info", "success", "warning", "danger"]
+    includes: ["primary", "secondary", "info", "success", "warning", "danger"]
   })
   @HostBinding("attr.sd-theme")
-  public theme?: "primary" | "info" | "success" | "warning" | "danger";
+  public theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger";
 
   @Input()
   @SdTypeValidate({

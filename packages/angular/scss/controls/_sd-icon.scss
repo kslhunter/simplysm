@@ -1,16 +1,6 @@
 sd-icon {
-  display: inline-block;
-  pointer-events: none;
-
-  &[sd-fixed-width=true] {
+  &[sd-fw=true] {
+    display: inline-block;
     width: 1.25em;
-  }
-
-  .fa-layers-counter {
-    transform: scale(0.4);
-  }
-
-  &[sd-dot=true] svg:nth-child(2) {
-    color: get($theme-color, danger, default);
   }
 }

@@ -1,5 +1,6 @@
 sd-form {
   display: block;
+  overflow: hidden;
 
   &[sd-inline=true] {
     display: inline-block;

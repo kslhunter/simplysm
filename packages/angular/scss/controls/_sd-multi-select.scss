@@ -1,17 +1,19 @@
 sd-multi-select {
   display: block;
   width: 100%;
+  min-width: 120px;
 
   > sd-dropdown > div {
     @include form-control-base();
 
+    background: get($theme-color, secondary, lightest);
     text-align: left;
     display: block;
     overflow: visible;
     padding-right: 30px !important;
     height: get($gap, sm) * 2 + strip-unit($line-height) * get($font-size, default) + 2;
+    border-radius: 3px;
 
-    background: white;
     border-color: get($trans-color, default);
     transition: outline-color .1s linear;
     outline: 1px solid transparent;
@@ -46,11 +48,20 @@ sd-multi-select {
 
 sd-multi-select-item {
   display: block;
-  padding: get($gap, xs) get($gap, sm);
+  padding: get($gap, sm) get($gap, default);
   cursor: pointer;
+  transition: background .1s ease-in;
+  background: white;
 
   &:hover {
-    background: get($trans-color, dark);
+    transition: background .1s ease-out;
+    background: rgba(0, 0, 0, .07);
+  }
+
+  &:focus {
+    outline: none;
+    transition: background .1s ease-out;
+    background: rgba(0, 0, 0, .07);
   }
 
   > sd-checkbox > label {
@@ -60,4 +71,8 @@ sd-multi-select-item {
   &[hidden] {
     display: none;
   }
+}
+
+._sd-multi-select-item > ._children {
+  border-left: get($gap, xl) solid get($theme-color, secondary, lightest);
 }

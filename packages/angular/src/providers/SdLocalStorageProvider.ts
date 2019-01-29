@@ -16,6 +16,6 @@ export class SdLocalStorageProvider {
   }
 
   public remove(key: string): void {
-    localStorage.removeItem(key);
+    localStorage.removeItem(`${this.prefix}.${key}`);
   }
 }

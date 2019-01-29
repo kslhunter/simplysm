@@ -1,23 +1,31 @@
 sd-list {
   display: block;
   user-select: none;
+  background: white;
 }
 
 sd-list-item {
   display: block;
 
-  > label {
-    display: block;
-    padding: get($gap, sm) get($gap, default);
-    transition: background .1s linear;
+  > ._content {
+    display: flex;
+    border-top: 1px solid transparent;
 
-    > sd-icon {
-      float: right;
-      transition: transform .1s ease-in;
-    }
+    > label {
+      display: block;
+      width: 100%;
+      padding: get($gap, sm) get($gap, default);
+      background: white;
 
-    &:focus {
-      outline-color: transparent;
+      > ._angle-icon {
+        float: right;
+        transition: transform .1s ease-in;
+        color: get($text-color, light);
+      }
+
+      &:focus {
+        outline-color: transparent;
+      }
     }
   }
 
@@ -27,23 +35,41 @@ sd-list-item {
     > ._child-content {
       transition: margin-top .1s ease-out;
       background: rgba(0, 0, 0, .05);
+
+      > sd-list {
+        padding-bottom: get($gap, sm);
+      }
+    }
+  }
+
+  &[sd-has-children=true] {
+    > ._content {
+      border-color: white;
     }
   }
 
   &[sd-clickable=true] {
-    > label {
-      cursor: pointer;
+    > ._content {
+      > label {
+        cursor: pointer;
+        transition: background .1s ease-in;
 
-      &:hover {
-        background: rgba(0, 0, 0, .1);
+        &:hover {
+          transition: background .1s ease-out;
+          background: rgba(0, 0, 0, .07);
+        }
       }
     }
   }
 
   &[sd-open=true] {
-    > label > sd-icon {
-      transform: rotate(-90deg);
-      transition: transform .1s ease-out;
+    > ._content {
+      > label {
+        > ._angle-icon {
+          transform: rotate(90deg);
+          transition: transform .1s ease-out;
+        }
+      }
     }
 
     > ._child > ._child-content {
@@ -51,15 +77,16 @@ sd-list-item {
     }
   }
 
-  &[sd-size=sm] > label {
+  &[sd-size=sm] > ._content > label {
+    font-size: get($font-size, sm);
     padding: get($gap, xs) get($gap, sm);
   }
 
-  &[sd-size=lg] > label {
+  &[sd-size=lg] > ._content > label {
     padding: get($gap, default) get($gap, lg);
   }
 
-  &[sd-selected=true] > label {
+  &[sd-selected=true] > ._content > label {
     color: get($theme-color, primary, default);
     font-weight: bold;
   }
@@ -67,23 +94,22 @@ sd-list-item {
   &[sd-disabled=true] {
     pointer-events: none;
 
-    > label {
+    > ._content > label {
       color: get($text-color, lighter);
       cursor: default;
     }
   }
 
   &[sd-header=true] {
-    > label {
+    > ._content > label {
       cursor: default;
       background: transparent;
-      padding: get($gap, xs) get($gap, default);
       color: get($text-color, light);
       font-size: get($font-size, sm);
-      margin-top: get($gap, sm);
+      font-weight: lighter;
 
       &:hover {
-        background: transparent;
+        background: transparent !important;
       }
 
       > ._angle-icon {
@@ -95,5 +121,19 @@ sd-list-item {
       margin-top: 0 !important;
       background: transparent !important;
     }
+  }
+}
+
+sd-list-item-button {
+  display: block;
+  min-width: floor(get($gap, sm) * 2 + strip-unit($line-height) * get($font-size, default));
+  text-align: center;
+  padding: get($gap, sm) get($gap, default);
+  background: transparent;
+  color: get($theme-color, primary, default);
+
+  &:hover {
+    background: rgba(0, 0, 0, .07);
+    cursor: pointer;
   }
 }

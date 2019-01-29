@@ -74,10 +74,13 @@ export class SdDropdownControl implements OnInit, OnDestroy {
         {
           top: "",
           bottom: (window.innerHeight - controlEl.windowOffset.top) + "px",
-          left: controlEl.windowOffset.left + "px",
+          left: controlEl.windowOffset.left + 1 + "px",
+          minWidth: controlEl.clientWidth + "px",
           opacity: "1",
           pointerEvents: "auto",
-          transform: "none"
+          transform: "none",
+          borderTopRightRadius: "4px",
+          borderTopLeftRadius: "4px"
         }
       );
     }
@@ -87,10 +90,13 @@ export class SdDropdownControl implements OnInit, OnDestroy {
         {
           top: (controlEl.windowOffset.top + controlEl.offsetHeight) + "px",
           bottom: "",
-          left: controlEl.windowOffset.left + "px",
+          left: controlEl.windowOffset.left + 1 + "px",
+          minWidth: controlEl.clientWidth + "px",
           opacity: "1",
           pointerEvents: "auto",
-          transform: "none"
+          transform: "none",
+          borderBottomRightRadius: "4px",
+          borderBottomLeftRadius: "4px"
         }
       );
     }
@@ -117,6 +123,11 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     if (this._isOpen) {
       this.close.emit();
       this._isOpen = false;
+
+      // const parentFocusableEl = this.controlElRef!.nativeElement.findFirstFocusableParent();
+      // if (parentFocusableEl) {
+      //   parentFocusableEl.focus();
+      // }
       dropdownEl.remove();
     }
   }

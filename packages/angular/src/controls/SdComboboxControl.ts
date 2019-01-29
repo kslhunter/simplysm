@@ -1,10 +1,14 @@
 import {
+  AfterContentChecked,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ContentChildren,
   ElementRef,
   EventEmitter,
   Input,
+  IterableDiffer,
+  IterableDiffers,
   OnDestroy,
   OnInit,
   Output,
@@ -26,13 +30,13 @@ import {SdTypeValidate} from "../commons/SdTypeValidate";
                   (focusedChange)="textfieldFocusedChange.emit($event)">
     </sd-textfield>
     <div class="_icon" *ngIf="!disabled">
-      <sd-icon [fixedWidth]="true" [icon]="'angle-down'"></sd-icon>
+      <sd-icon [fw]="true" [icon]="'caret-down'"></sd-icon>
     </div>
     <div #dropdown class="_sd-combobox-dropdown" tabindex="0">
       <ng-content></ng-content>
     </div>`
 })
-export class SdComboboxControl implements OnInit, OnDestroy {
+export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked {
   @Input()
   public value?: any;
 
@@ -69,14 +73,24 @@ export class SdComboboxControl implements OnInit, OnDestroy {
   @Output()
   public readonly textfieldFocusedChange = new EventEmitter<boolean>();
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  private readonly _iterableDiffer: IterableDiffer<SdComboboxItemControl>;
+
+  public constructor(private readonly _iterableDiffers: IterableDiffers,
+                     private readonly _elRef: ElementRef<HTMLElement>,
+                     private readonly _cdr: ChangeDetectorRef) {
+    this._iterableDiffer = this._iterableDiffers.find([]).create((i, itemControl) => itemControl.value);
+  }
+
+  public ngAfterContentChecked(): void {
+    if (this.itemControls && this._iterableDiffer.diff(this.itemControls.toArray())) {
+      this._refreshText();
+      this._cdr.markForCheck();
+    }
   }
 
   public ngOnInit(): void {
     const textfieldEl = this.textfieldElRef!.nativeElement;
     const dropdownEl = this.dropdownElRef!.nativeElement;
-
-    dropdownEl.remove();
 
     textfieldEl.addEventListener("focus", this.focusEventHandler, true);
     textfieldEl.addEventListener("blur", this.blurEventHandler, true);
@@ -172,17 +186,7 @@ export class SdComboboxControl implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.value) {
-      const selectedItemControl = this.itemControls!.find(item => item.value === this.value);
-
-      if (selectedItemControl) {
-        const text = selectedItemControl.content;
-        if (text !== this.text) {
-          this.text = text || "";
-          this.textChange.emit(this.text);
-        }
-      }
-    }
+    this._refreshText();
   }
 
   public scrollEventHandler = (event: UIEvent) => {
@@ -239,4 +243,18 @@ export class SdComboboxControl implements OnInit, OnDestroy {
 
     this.closePopup();
   };
+
+  private _refreshText(): void {
+    if (this.value) {
+      const selectedItemControl = this.itemControls!.find(item => item.value === this.value);
+
+      if (selectedItemControl) {
+        const text = selectedItemControl.content;
+        if (text !== this.text) {
+          this.text = text || "";
+          this.textChange.emit(this.text);
+        }
+      }
+    }
+  }
 }

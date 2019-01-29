@@ -23,7 +23,7 @@ sd-textfield {
     }
 
     &::-webkit-calendar-picker-indicator {
-      background: white;
+      background: transparent;
       color: get($text-color, default);
       cursor: pointer;
     }
@@ -68,7 +68,7 @@ sd-textfield {
     > textarea {
       display: block;
       border: none;
-      background: get($theme-color, info, lightest);
+      //background: get($theme-color, secondary, lightest);
     }
 
     > textarea {
