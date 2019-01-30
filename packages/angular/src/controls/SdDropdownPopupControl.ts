@@ -5,7 +5,6 @@ import {ChangeDetectionStrategy, Component, ElementRef, HostBinding} from "@angu
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div [class._large]="height >= 300">
-      {{ height }}
       <ng-content></ng-content>
     </div>`
 })

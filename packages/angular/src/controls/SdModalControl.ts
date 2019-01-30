@@ -84,10 +84,6 @@ export class SdModalControl {
       e.stopPropagation();
       e.preventDefault();
 
-      console.log(
-        startLeft + e.clientX - startX,
-        startTop + e.clientY - startY
-      );
       el.style.position = "absolute";
       el.style.left = `${startLeft + e.clientX - startX}px`;
       el.style.top = `${startTop + e.clientY - startY}px`;

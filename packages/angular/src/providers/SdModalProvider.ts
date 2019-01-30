@@ -9,7 +9,11 @@ export class SdModalProvider {
                      private readonly _appRef: ApplicationRef) {
   }
 
+  public modalCount = 0;
+
   public async show<T extends SdModalBase<any, any>>(modalType: Type<T>, title: string, param: T["_tParam"], option?: { hideCloseButton?: boolean; float?: boolean; height?: string }): Promise<T["_tResult"] | undefined> {
+    this.modalCount++;
+
     return await new Promise<T["_tResult"]>(async resolve => {
       const compRef = this._cfr.resolveComponentFactory(modalType).create(this._injector);
       const rootComp = this._appRef.components[0];
@@ -35,6 +39,8 @@ export class SdModalProvider {
         if (activeElement) {
           activeElement.focus();
         }
+
+        this.modalCount--;
       };
 
       modalRef.instance.title = title;
@@ -57,6 +63,7 @@ export class SdModalProvider {
             activeElement.blur();
           }
           modalRef.instance.open = true;
+          this._appRef.tick();
           await compRef.instance.sdOnOpen(param);
           this._appRef.tick();
         }

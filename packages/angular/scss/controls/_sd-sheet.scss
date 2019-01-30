@@ -14,6 +14,7 @@ sd-sheet {
   ._content {
     white-space: nowrap;
     width: fit-content;
+    overflow: hidden;
   }
 
   ._pagination {
@@ -201,17 +202,39 @@ sd-sheet {
 
   ._body ._col._first-col {
     background: $header-bg;
+    user-select: none;
+
+    > a {
+      display: inline-block;
+      padding: $sheet-padding-v;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    &._selectable,
+    &._expandable {
+      padding: 0;
+    }
 
     &._selectable {
-      cursor: pointer;
+      > ._select-icon {
+        display: inline-block;
+        color: get($theme-color, grey, light);
+        transition: .1s ease-in;
+      }
+
+      &._selected > ._select-icon {
+        color: get($theme-color, primary, default);
+        transition: .1s ease-out;
+      }
     }
 
     &._expandable {
-      cursor: pointer;
-
       > ._expand-icon {
         display: inline-block;
-        color: get($theme-color, grey, default);
+        color: get($theme-color, grey, light);
         transition: .1s ease-in;
       }
 

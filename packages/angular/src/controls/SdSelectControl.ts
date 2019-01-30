@@ -4,22 +4,21 @@ import {
   ChangeDetectorRef,
   Component,
   ContentChild,
-  ContentChildren,
+  DoCheck,
+  ElementRef,
   EventEmitter,
   HostBinding,
   Input,
   IterableDiffer,
   IterableDiffers,
   Output,
-  QueryList,
   TemplateRef,
   ViewChild
 } from "@angular/core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {SdSelectItemControl} from "./SdSelectItemControl";
 import {SdDropdownControl} from "./SdDropdownControl";
-import {optional, Wait} from "@simplysm/common";
+import {optional} from "@simplysm/common";
 
 @Component({
   selector: "sd-select",
@@ -32,7 +31,7 @@ import {optional, Wait} from "@simplysm/common";
         <sd-icon [fw]="true" [icon]="'caret-down'"></sd-icon>
       </div>
 
-      <sd-dropdown-popup>
+      <sd-dropdown-popup #popup>
         <ng-container *ngIf="!items">
           <ng-content></ng-content>
         </ng-container>
@@ -42,6 +41,7 @@ import {optional, Wait} from "@simplysm/common";
               <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
             </sd-dock>
             <sd-pane>
+              <ng-template [ngTemplateOutlet]="beforeTemplateRef"></ng-template>
               <ng-template #rowOfList let-items="items">
                 <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
                   <div class="_sd-select-item">
@@ -65,7 +65,7 @@ import {optional, Wait} from "@simplysm/common";
       </sd-dropdown-popup>
     </sd-dropdown>`
 })
-export class SdSelectControl implements AfterContentChecked {
+export class SdSelectControl implements DoCheck, AfterContentChecked {
   @Input()
   public value?: any;
 
@@ -90,17 +90,20 @@ export class SdSelectControl implements AfterContentChecked {
     return !!this.required && !this.value;
   }
 
-  @ContentChildren(SdSelectItemControl, {descendants: true})
-  public itemControls?: QueryList<SdSelectItemControl>;
-
   @ViewChild("dropdown")
   public dropdownControl?: SdDropdownControl;
+
+  @ViewChild("popup", {read: ElementRef})
+  public popupElRef?: ElementRef<HTMLElement>;
 
   @ContentChild("item")
   public itemTemplateRef?: TemplateRef<any>;
 
   @ContentChild("header")
   public headerTemplateRef?: TemplateRef<any>;
+
+  @ContentChild("before")
+  public beforeTemplateRef?: TemplateRef<any>;
 
   @Input()
   @SdTypeValidate(Array)
@@ -116,44 +119,49 @@ export class SdSelectControl implements AfterContentChecked {
 
   public trackByItemFn(index: number, item: any): any {
     if (this.trackBy) {
-      return this.trackBy(index, item);
+      return this.trackBy(index, item) || item;
     }
     else {
       return item;
     }
   }
 
-  private readonly _itemControlsContentIterableDiffer: IterableDiffer<SdSelectItemControl>;
+  private readonly _iterableDiffer: IterableDiffer<any>;
+  private readonly _itemElsIterableDiffer: IterableDiffer<any>;
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _sanitizer: DomSanitizer) {
-    this._itemControlsContentIterableDiffer = this._iterableDiffers.find([]).create((i, itemControl) => itemControl.labelContent);
+    this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => this.trackByItemFn(index, item));
+    this._itemElsIterableDiffer = this._iterableDiffers.find([]).create();
   }
 
-  public async ngAfterContentChecked(): Promise<void> {
-    await Wait.true(() => !!this.itemControls, 1000);
-
-    if (this.itemControls && this._itemControlsContentIterableDiffer.diff(this.itemControls.toArray())) {
+  public ngDoCheck(): void {
+    if (this.items && this._iterableDiffer.diff(this.items)) {
       this._cdr.markForCheck();
     }
   }
 
-  public getIsItemSelected(item: SdSelectItemControl): boolean {
-    const thisKeyValue = this.keyProp && this.value ? this.value[this.keyProp] : this.value;
-    const itemKeyValue = this.keyProp && item.value ? item.value[this.keyProp] : item.value;
-    return thisKeyValue === itemKeyValue;
+  public ngAfterContentChecked(): void {
+    if (this.popupElRef) {
+      const itemEls = this.popupElRef.nativeElement.findAll("sd-select-item");
+      if (itemEls && this._itemElsIterableDiffer.diff(itemEls)) {
+        this._cdr.markForCheck();
+      }
+    }
   }
 
   public getContentHtml(): SafeHtml {
-    if (!this.itemControls) {
-      return "";
-    }
+    if (!this.popupElRef) return "";
+
+    const itemEls = this.popupElRef.nativeElement.findAll("sd-select-item");
 
     return this._sanitizer.bypassSecurityTrustHtml(
       optional(
-        this.itemControls.toArray().single(item => this.getIsItemSelected(item)),
-        o => o.labelContent
+        itemEls.find(itemEl => itemEl.classList.contains("_selected")),
+        itemEl => itemEl.findAll("> ._labelTemplate").length > 0
+          ? itemEl.findAll("> ._labelTemplate")[0].innerHTML.trim()
+          : itemEl.findAll("> ._label")[0].innerHTML.trim()
       ) || ""
     );
   }

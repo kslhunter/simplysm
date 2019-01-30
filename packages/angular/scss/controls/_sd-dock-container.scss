@@ -8,7 +8,7 @@ sd-dock-container {
 }
 
 sd-dock {
-  $border-color: get($trans-color, default);
+  $border-color: get($theme-color, grey, lighter);
 
   display: block;
   position: absolute;

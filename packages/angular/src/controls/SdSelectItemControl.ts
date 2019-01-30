@@ -33,14 +33,18 @@ export class SdSelectItemControl {
   @ContentChild("label")
   public labelTemplateRef?: TemplateRef<any>;
 
-  public get content(): string {
-    return this._elRef.nativeElement.innerHTML.trim();
+  @HostBinding("class._selected")
+  public get isSelected(): boolean {
+    const keyProp = this._selectControl.keyProp;
+    const parentValue = this._selectControl.value;
+
+    const parentKeyValue = keyProp && parentValue ? parentValue[keyProp] : parentValue;
+    const itemKeyValue = keyProp && this.value ? this.value[keyProp] : this.value;
+    return parentKeyValue === itemKeyValue;
   }
 
-  public get labelContent(): string | undefined {
-    return this._elRef.nativeElement.findAll("> ._labelTemplate").length > 0
-      ? this._elRef.nativeElement.findAll("> ._labelTemplate")[0].innerHTML.trim()
-      : this._elRef.nativeElement.findAll("> ._label")[0].innerHTML.trim();
+  public get content(): string {
+    return this._elRef.nativeElement.innerHTML.trim();
   }
 
   public constructor(@Inject(forwardRef(() => SdSelectControl))

@@ -21,9 +21,7 @@ import {SdTypeValidate} from "../commons/SdTypeValidate";
     <div class="_sd-dropdown-control" #control [attr.tabindex]="disabled ? undefined : '0'">
       <ng-content></ng-content>
     </div>
-    <div *ngIf="false">
-      <ng-content select="sd-dropdown-popup"></ng-content>
-    </div>`
+    <ng-content select="sd-dropdown-popup"></ng-content>`
 })
 export class SdDropdownControl implements OnInit, OnDestroy {
   @Input()
@@ -54,7 +52,8 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     controlEl.addEventListener("blur", this.blurEventHandler, true);
 
     const dropdownEl = this.dropdownElRef!.nativeElement;
-    dropdownEl.remove();
+    // dropdownEl.remove();
+    document.body.appendChild(dropdownEl);
   }
 
   public ngOnDestroy(): void {
@@ -65,7 +64,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     const controlEl = this.controlElRef!.nativeElement;
 
     const dropdownEl = this.dropdownElRef!.nativeElement;
-    document.body.appendChild(dropdownEl);
+    // document.body.appendChild(dropdownEl);
     dropdownEl.addEventListener("blur", this.blurEventHandler, true);
 
     if (window.innerHeight < controlEl.windowOffset.top * 2) {
@@ -128,7 +127,8 @@ export class SdDropdownControl implements OnInit, OnDestroy {
       // if (parentFocusableEl) {
       //   parentFocusableEl.focus();
       // }
-      dropdownEl.remove();
+
+      // dropdownEl.remove();
     }
   }
 

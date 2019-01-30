@@ -116,7 +116,7 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
 
   public trackByItemFn(index: number, item: any): any {
     if (this.trackBy) {
-      return this.trackBy(index, item);
+      return this.trackBy(index, item) || item;
     }
     else {
       return item;

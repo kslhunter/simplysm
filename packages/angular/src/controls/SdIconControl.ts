@@ -12,7 +12,7 @@ export const sdIconNames = Object.values(fas).map(item => item.iconName).distinc
   selector: "sd-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <fa-icon [icon]="iconArr" [fixedWidth]="fw" [size]="size"></fa-icon>`
+    <fa-icon [icon]="iconArr" [fixedWidth]="fw" [size]="size" *ngIf="icon"></fa-icon>`
 })
 export class SdIconControl {
   @Input()

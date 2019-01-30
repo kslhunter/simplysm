@@ -66,6 +66,12 @@ sd-select-item {
     transition: background .1s ease-out;
     background: rgba(0, 0, 0, .07);
   }
+
+  &._selected {
+    color: get($theme-color, primary, default);
+    font-weight: bold;
+    background: rgba(0, 0, 0, .07);
+  }
 }
 
 

@@ -25,15 +25,14 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="_sheet" [style.padding-top]="paddingTop">
-      <div class="_content _head" [style.top.px]="headTop">
+      <div #headerElRef class="_content _head" [style.top.px]="headTop">
         <div class="_row _pagination" *ngIf="pageLength > 1">
           <sd-pagination [page]="page" [length]="pageLength"
                          (pageChange)="pageChange.emit($event)"></sd-pagination>
         </div>
         <div class="_row" *ngIf="hasHeaderGroup">
           <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
-            <div class="_col _first-col"
-                 [class._double]="selectable && children">
+            <div class="_col _first-col" [class._double]="selectable && children">
               <div class="_border"></div>
             </div>
             <div class="_col" *ngFor="let headerGroup of fixedHeaderGroups; trackBy: trackByIndexFn"
@@ -52,8 +51,7 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
         </div>
         <div class="_row">
           <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
-            <div class="_col _first-col"
-                 [class._double]="selectable && children">
+            <div class="_col _first-col" [class._double]="selectable && children">
               <div class="_border"></div>
             </div>
             <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
@@ -80,7 +78,7 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
         </div>
       </div>
 
-      <div class="_content _body">
+      <div class="_content _body" [style.width.px]="headerElRef.offsetWidth">
         <ng-template #rowOfList let-items="items">
           <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
             <div class="_row" [@rowState]="'in'">
@@ -91,17 +89,19 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
                      [class._selected]="((selectable === true || selectable === 'manual') && selectedItem === item) || (selectable === 'multi' && selectedItems.includes(item))"
                      [class._expandable]="getHasChildren(i, item)"
                      [class._expanded]="getIsExpended(i, item)">
-                  <sd-icon class="_expand-icon" [icon]="getHasChildren(i, item) ? 'caret-right' : undefined" [fw]="true"
-                           *ngIf="!!children"
-                           (click)="onExpandIconClick($event, i, item)"></sd-icon>
-
-                  <sd-icon [icon]="'arrow-right'" *ngIf="selectable === true || selectable === 'manual'" [fw]="true"
-                           [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-grey-default': !selectedItem !== item}"
-                           (click)="onSelectIconClick($event, i, item)"></sd-icon>
-
-                  <sd-icon [icon]="'arrow-right'" *ngIf="selectable === 'multi'" [fw]="true"
-                           [ngClass]="{'sd-text-color-primary-default': selectedItems.includes(item), 'sd-text-color-grey-default': !selectedItems.includes(item)}"
-                           (click)="onSelectIconClick($event, i, item)"></sd-icon>
+                  <a class="_select-icon" (click)="onSelectIconClick($event, i, item)" *ngIf="selectable">
+                    <sd-icon [icon]="'arrow-right'"
+                             *ngIf="(!selectableFn || selectableFn(i, item)) && (selectable === true || selectable === 'manual')"
+                             [fw]="true"></sd-icon>
+                    <sd-icon [icon]="'arrow-right'"
+                             *ngIf="(!selectableFn || selectableFn(i, item)) && (selectable === 'multi')"
+                             [fw]="true"></sd-icon>
+                  </a>
+                  <a class="_expand-icon" *ngIf="!!children" (click)="onExpandIconClick($event, i, item)"
+                     [style.visibility]="getHasChildren(i, item) ? undefined : 'hidden'">
+                    <sd-icon [icon]="getHasChildren(i, item) ? 'caret-right' : undefined"
+                             [fw]="true"></sd-icon>
+                  </a>
                 </div>
                 <div
                   [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
@@ -153,6 +153,10 @@ export class SdSheetControl implements DoCheck, OnInit {
   @Input()
   @SdTypeValidate(Function)
   public trackBy?: (index: number, item: any) => any;
+
+  @Input()
+  @SdTypeValidate(Function)
+  public selectableFn?: (index: number, item: any) => any;
 
   @Input()
   @SdTypeValidate({
@@ -290,7 +294,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public trackByItemFn(index: number, item: any): any {
     if (this.trackBy) {
-      return this.trackBy(index, item);
+      return this.trackBy(index, item) || item;
     }
     else {
       return item;
@@ -312,20 +316,23 @@ export class SdSheetControl implements DoCheck, OnInit {
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _elRef: ElementRef<HTMLElement>,
                      private readonly _localStorage: SdLocalStorageProvider) {
-    this._iterableDiffer = this._iterableDiffers.find([]).create(this.trackByItemFn);
+    this._iterableDiffer = this._iterableDiffers.find([]).create((i: number, item: any) => this.trackByItemFn(i, item));
 
     this._elRef.nativeElement.addEventListener("focus", (event: Event) => {
       if (this.selectable === "manual" && this.selectedItem) {
-        const rowEl = (event.target as HTMLElement).findParent("._row");
+        const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
+        if (!cellEl) return;
+        if (cellEl.classList.contains("_first-col")) return;
 
-        if (rowEl) {
-          const bodyEl = rowEl.parentElement as Element;
-          const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-          const cursorItem = this._getItemByRowIndex(rowIndex); //this.items![rowIndex];
-          if (this.selectedItem !== cursorItem) {
-            this.selectedItem = undefined;
-            this.selectedItemChange.emit(undefined);
-          }
+        const rowEl = (event.target as HTMLElement).findParent("._row") as HTMLElement;
+        if (!rowEl) return;
+
+        const bodyEl = rowEl.parentElement as Element;
+        const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+        const cursorItem = this._getItemByRowIndex(rowIndex); //this.items![rowIndex];
+        if (this.selectedItem !== cursorItem) {
+          this.selectedItem = undefined;
+          this.selectedItemChange.emit(undefined);
         }
       }
       else if (this.selectable === true) {
@@ -380,7 +387,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public getIsExpended(i: number, item: any): boolean {
-    return this.expandedItemTracks.includes(this.trackBy!(i, item));
+    return this.expandedItemTracks.includes(this.trackByItemFn(i, item));
   }
 
   public getHasChildren(i: number, item: any): boolean {
@@ -445,10 +452,10 @@ export class SdSheetControl implements DoCheck, OnInit {
   public onExpandIconClick(event: Event, i: number, item: any): void {
     if (this.getHasChildren(i, item)) {
       if (this.getIsExpended(i, item)) {
-        this.expandedItemTracks.remove(this.trackBy!(i, item));
+        this.expandedItemTracks.remove(this.trackByItemFn(i, item));
       }
       else {
-        this.expandedItemTracks.push(this.trackBy!(i, item));
+        this.expandedItemTracks.push(this.trackByItemFn(i, item));
       }
       this.expandedItemTracksChange.emit(this.expandedItemTracks);
     }

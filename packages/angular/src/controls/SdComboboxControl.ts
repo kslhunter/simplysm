@@ -73,6 +73,12 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
   @Output()
   public readonly textfieldFocusedChange = new EventEmitter<boolean>();
 
+  @Output()
+  public readonly open = new EventEmitter();
+
+  @Output()
+  public readonly close = new EventEmitter();
+
   private readonly _iterableDiffer: IterableDiffer<SdComboboxItemControl>;
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
@@ -158,6 +164,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     }
 
     document.addEventListener("scroll", this.scrollEventHandler, true);
+    this.open.emit();
   }
 
   public closePopup(): void {
@@ -187,6 +194,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     }
 
     this._refreshText();
+    this.close.emit();
   }
 
   public scrollEventHandler = (event: UIEvent) => {
