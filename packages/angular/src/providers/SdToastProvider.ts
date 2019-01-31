@@ -14,15 +14,17 @@ export class SdToastProvider implements OnDestroy {
     this._containerEl.remove();
   }
 
-  public async try(fn: () => Promise<void>, successMessage?: string): Promise<void> {
+  public async try(fn: () => Promise<void>, messageFn?: (err: Error) => string): Promise<void> {
     try {
       await fn();
-      if (successMessage) {
-        this.success(successMessage);
-      }
     }
     catch (err) {
-      this.danger(err.message);
+      if (messageFn) {
+        this.danger(messageFn(err));
+      }
+      else {
+        this.danger(err.message);
+      }
       if (process.env.NODE_ENV !== "production") console.error(err);
     }
   }

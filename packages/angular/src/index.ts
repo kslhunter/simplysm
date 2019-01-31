@@ -69,6 +69,7 @@ export * from "./providers/SdModalProvider";
 export * from "./providers/SdOrmProvider";
 export * from "./providers/SdPrintProvider";
 export * from "./providers/SdSmtpClientProvider";
+export * from "./providers/SdSoapClientProvider";
 export * from "./providers/SdToastProvider";
 export * from "./providers/SdWebSocketProvider";
 export * from "./SdAngularModule";

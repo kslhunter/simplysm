@@ -91,10 +91,10 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
                      [class._expanded]="getIsExpended(i, item)">
                   <a class="_select-icon" (click)="onSelectIconClick($event, i, item)" *ngIf="selectable">
                     <sd-icon [icon]="'arrow-right'"
-                             *ngIf="(!selectableFn || selectableFn(i, item)) && (selectable === true || selectable === 'manual')"
+                             *ngIf="(!itemSelectableFn || itemSelectableFn(i, item)) && (selectable === true || selectable === 'manual')"
                              [fw]="true"></sd-icon>
                     <sd-icon [icon]="'arrow-right'"
-                             *ngIf="(!selectableFn || selectableFn(i, item)) && (selectable === 'multi')"
+                             *ngIf="(!itemSelectableFn || itemSelectableFn(i, item)) && (selectable === 'multi')"
                              [fw]="true"></sd-icon>
                   </a>
                   <a class="_expand-icon" *ngIf="!!children" (click)="onExpandIconClick($event, i, item)"
@@ -156,7 +156,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   @Input()
   @SdTypeValidate(Function)
-  public selectableFn?: (index: number, item: any) => any;
+  public itemSelectableFn?: (index: number, item: any) => any;
 
   @Input()
   @SdTypeValidate({

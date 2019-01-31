@@ -155,8 +155,8 @@ sd-sheet {
     }
 
     > ._focus-indicator {
+      display: none;
       position: absolute;
-      opacity: 0;
       top: 0;
       left: 0;
       width: 100%;
@@ -164,7 +164,6 @@ sd-sheet {
       outline: 2px solid get($theme-color, primary, default);
       outline-offset: -2px;
       pointer-events: none;
-      transition: opacity .1s linear;
     }
 
     &:focus {
@@ -172,7 +171,7 @@ sd-sheet {
     }
 
     &:focus > ._focus-indicator {
-      opacity: 1;
+      display: block;
     }
   }
 

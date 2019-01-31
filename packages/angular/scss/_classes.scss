@@ -194,3 +194,9 @@
     margin-right: $val;
   }
 }
+
+@each $direction in left, center, right {
+  .sd-text-align-#{$direction} {
+    text-align: $direction;
+  }
+}

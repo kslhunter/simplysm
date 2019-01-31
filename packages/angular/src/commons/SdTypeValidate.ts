@@ -13,16 +13,29 @@ export function SdTypeValidate(params: ValidateDef): any {
     };
 
     const setter = function (this: any, value: any): void {
-      const error = Object.validate(value, params);
+      let realValue = value;
+      if (
+        (
+          params === Boolean ||
+          (params instanceof Array && params.includes(Boolean)) ||
+          params["type"] === Boolean ||
+          (params["type"] instanceof Array && params["type"].includes(Boolean))
+        ) &&
+        realValue === ""
+      ) {
+        realValue = true;
+      }
+
+      const error = Object.validate(realValue, params);
       if (error) {
         throw new Error(`입력값이 잘못되었습니다: ${JSON.stringify({component: target.constructor.name, propertyKey, ...error})}`);
       }
 
       if (prevSetter) {
-        prevSetter.bind(this)(value);
+        prevSetter.bind(this)(realValue);
       }
       else {
-        core.Reflect.defineMetadata(symbol, value, this, propertyKey);
+        core.Reflect.defineMetadata(symbol, realValue, this, propertyKey);
       }
     };
 
