@@ -54,6 +54,11 @@ a {
   &:focus {
     color: get($theme-color, primary, dark);
   }
+
+  &._disabled {
+    pointer-events: none;
+    color: get($theme-color, grey, light);
+  }
 }
 
 ::-webkit-scrollbar-track {

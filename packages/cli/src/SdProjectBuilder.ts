@@ -831,6 +831,16 @@ export class SdProjectBuilder {
             VERSION: projectNpmConfig.version
           })
         })
+      ],
+      externals: [
+        (context, request, callback) => {
+          if (request === "net" || request === "fs" || request === "tls") {
+            callback(undefined, `""`);
+            return;
+          }
+          
+          callback(undefined, undefined);
+        }
       ]
     };
 

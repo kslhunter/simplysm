@@ -17,7 +17,12 @@ export class DateTime {
       this.date = new Date(args1);
     }
     else if (typeof args1 === "number" && args2 !== undefined) {
-      this.date = new Date(args1, args2 - 1, args3, args4, args5, args6, args7);
+      if (args7) {
+        this.date = new Date(args1, args2 - 1, args3, args4, args5, args6, args7);
+      }
+      else {
+        this.date = new Date(args1, args2 - 1, args3, args4, args5, args6);
+      }
     }
     else if (args1 instanceof Date) {
       this.date = new Date(args1.getTime());
@@ -29,10 +34,20 @@ export class DateTime {
 
   public static parse(value: string): DateTime {
     const parsedTick = Date.parse(value) as any;
-    if (typeof parsedTick === "number") {
+    if (parsedTick && typeof parsedTick === "number") {
       return new DateTime(parsedTick);
     }
 
+    if (/^[0-9]{14}$/.test(value)) {
+      return new DateTime(
+        Number(value.substr(0, 4)),
+        Number(value.substr(4, 2)),
+        Number(value.substr(6, 2)),
+        Number(value.substr(8, 2)),
+        Number(value.substr(10, 2)),
+        Number(value.substr(12, 2))
+      );
+    }
     /*if (/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}\+[0-9]{2}:[0-9]{2}/.test(value)) {
       const matches = value.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}\+[0-9]{2}:[0-9]{2}/);
       return new DateTime(
