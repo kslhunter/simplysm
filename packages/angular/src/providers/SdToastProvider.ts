@@ -14,6 +14,19 @@ export class SdToastProvider implements OnDestroy {
     this._containerEl.remove();
   }
 
+  public async try(fn: () => Promise<void>, successMessage?: string): Promise<void> {
+    try {
+      await fn();
+      if (successMessage) {
+        this.success(successMessage);
+      }
+    }
+    catch (err) {
+      this.danger(err.message);
+      if (process.env.NODE_ENV !== "production") console.error(err);
+    }
+  }
+
   public info<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
     return this._show("info", message, progress) as any;
   }

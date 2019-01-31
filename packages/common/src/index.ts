@@ -1,7 +1,7 @@
 export * from "./errors/ArgumentError";
-export * from "./extensions/ArrayExtentions";
+import "./extensions/ArrayExtensions";
 export * from "./extensions/commons";
-export * from "./extensions/ObjectConstructorExtentions";
+import "./extensions/ObjectConstructorExtensions";
 export * from "./types/DateOnly";
 export * from "./types/DateTime";
 export * from "./types/StripTypeWrap";

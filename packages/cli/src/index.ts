@@ -1,3 +1,6 @@
+import "@simplysm/common";
+import "@simplysm/core";
+import "@simplysm/ws-server";
 export * from "./commons";
 export * from "./SdProjectBuilder";
 export * from "./SdProjectBuilderUtil";

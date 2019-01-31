@@ -1,4 +1,4 @@
-import "./ArrayExtentions";
+import "./ArrayExtensions";
 import {DateOnly} from "../types/DateOnly";
 import {Uuid} from "../types/Uuid";
 import {Type} from "../types/Type";

@@ -1,3 +1,7 @@
+import "@simplysm/common";
+import "@simplysm/orm";
+import "@simplysm/orm-common";
+import "@simplysm/ws-common";
 export * from "./SdWebSocketServer";
 export * from "./SdWebSocketServerConnection";
 export * from "./SdWebSocketServerUtil";

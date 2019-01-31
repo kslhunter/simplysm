@@ -1,7 +1,8 @@
 import "@simplysm/common";
+import "@simplysm/orm-common";
+import "@simplysm/ws-common";
 import "./commons/ElementExtensions";
 import "./commons/HTMLElementExtensions";
-
 export * from "./commons/SdNotifyPropertyChange";
 export * from "./commons/SdTypeValidate";
 export * from "./controls/SdBarcodeControl";

@@ -1,3 +1,4 @@
+import "@simplysm/common";
 export * from "./ExcelCell";
 export * from "./ExcelCellStyle";
 export * from "./ExcelColumn";

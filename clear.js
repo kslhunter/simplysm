@@ -1,39 +1,37 @@
 const fs = require("fs");
 const path = require("path");
 
-removeRecursive(process.cwd(), contentPath =>
-  contentPath.endsWith("yarn.lock") ||
-  contentPath.endsWith("node_modules") ||
-  contentPath.endsWith("tsconfig.build.json") ||
-  contentPath.endsWith("dist") ||
-  contentPath.endsWith("yarn-error.log")
+removeRecursiveAsync(process.cwd(), contentPath =>
+  /[\\/]yarn\.lock$/.test(contentPath) ||
+  /[\\/]node_modules$/.test(contentPath) ||
+  /[\\/]node_modules[\\/]/.test(contentPath) ||
+  /[\\/]tsconfig\.build\.json$/.test(contentPath) ||
+  /[\\/]dist$/.test(contentPath) ||
+  /[\\/]dist[\\/]/.test(contentPath) ||
+  /[\\/]yarn-error\.log$/.test(contentPath)
 ).catch(err => {
   console.error(err);
 });
 
-async function removeRecursive(dirPath, predicate) {
+async function removeRecursiveAsync(dirPath, predicate) {
   const contentNames = fs.readdirSync(dirPath);
   await Promise.all(contentNames.map(contentName => new Promise(async (resolve, reject) => {
     try {
       const contentPath = path.resolve(dirPath, contentName);
       if (predicate(contentPath)) {
         if (fs.lstatSync(contentPath).isDirectory()) {
+          await removeRecursiveAsync(contentPath, predicate);
           fs.rmdirSync(contentPath);
-        }
-        else {
+        } else {
           fs.unlinkSync(contentPath);
         }
+
         resolve();
         return;
       }
 
-      if (fs.lstatSync(contentPath).isDirectory()) {
-        await removeRecursive(contentPath, predicate);
-      }
-
       resolve();
-    }
-    catch (err) {
+    } catch (err) {
       reject(err);
     }
   })));

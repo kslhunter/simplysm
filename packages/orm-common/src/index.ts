@@ -1,3 +1,4 @@
+import "@simplysm/common";
 export * from "./commons";
 export * from "./DbContext";
 export * from "./decorators";
