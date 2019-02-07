@@ -15,8 +15,6 @@ import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import {RequestHandler} from "express";
 import {SdWebSocketServer} from "@simplysm/ws-server";
 import * as os from "os";
-import * as electron from "electron";
-import * as url from "url";
 
 export class SdProjectBuilder {
   private readonly _serverMap = new Map<number, SdWebSocketServer>();
@@ -516,19 +514,20 @@ export class SdProjectBuilder {
     });
 
     if (packageConfig.type!.startsWith("electron.")) {
-      electron.app.on("ready", () => {
-        let win: electron.BrowserWindow | undefined = new electron.BrowserWindow({width: 800, height: 600});
-
-        // and load the index.html of the app.
-        win.loadURL(url.format({
-          pathname: `localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`,
-          protocol: "http:",
-          slashes: true
-        }));
-        win.on("closed", () => {
-          win = undefined;
+      const run = () => {
+        spawnAsync([
+            "electron",
+            path.resolve(__dirname, "../lib/electron.js"),
+            `http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`
+          ], {logger}
+        ).then(() => {
+          run();
+        }).catch(err => {
+          logger.error(err);
+          run();
         });
-      });
+      };
+      run();
     }
   }
 
@@ -855,7 +854,7 @@ export class SdProjectBuilder {
             VERSION: projectNpmConfig.version
           })
         })
-      ],
+      ]/*,
       externals: [
         (context, request, callback) => {
           if (request === "net" || request === "fs" || request === "tls") {
@@ -865,7 +864,7 @@ export class SdProjectBuilder {
 
           callback(undefined, undefined);
         }
-      ]
+      ]*/
     };
 
     if (mode === "production") {
@@ -890,7 +889,7 @@ export class SdProjectBuilder {
     }
 
     if (packageConfig.type!.startsWith("electron.")) {
-      webpackConfig.target = "electron-main";
+      webpackConfig.target = "electron-renderer";
     }
 
     return webpackConfig;

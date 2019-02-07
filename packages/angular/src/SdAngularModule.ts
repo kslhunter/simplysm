@@ -69,7 +69,6 @@ import {SdSidebarUserMenuControl} from "./controls/SdSidebarUserMenuControl";
 import {SdTableControl} from "./controls/SdTableControl";
 import {SdListItemButtonControl} from "./controls/SdListItemButtonControl";
 import {LinkActionDirective} from "./directives/LinkActionDirective";
-import {SdSoapClientProvider} from "./providers/SdSoapClientProvider";
 
 const controls: Type<any>[] = [
   SdBusyContainerControl,
@@ -148,7 +147,6 @@ const providers: Provider[] = [
   SdOrmProvider,
   SdSmtpClientProvider,
   SdCryptoProvider,
-  SdSoapClientProvider,
   {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
   {provide: ErrorHandler, useClass: GlobalErrorHandler}
 ];

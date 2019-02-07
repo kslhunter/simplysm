@@ -23,6 +23,9 @@
       ],
       "@simplysm/ws-common": [
         "../ws-common/src/index.ts"
+      ],
+      "@simplysm/barobill-common": [
+        "../barobill-common/src/index.ts"
       ]
     }
   }

@@ -6,6 +6,12 @@
         "protocol": "npm"
       }
     },
+    "barobill-common": {
+      "type": "node",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
     "cli": {
       "type": "node",
       "publish": {
