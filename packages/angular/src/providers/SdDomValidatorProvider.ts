@@ -11,16 +11,23 @@ export class SdDomValidatorProvider {
         focusableElement.focus();
       }
 
+      if (!focusableElement) {
+        const firstCell = invalidEls[0].findParent("._col");
+        if (firstCell) {
+          (firstCell as HTMLElement).focus();
+        }
+      }
+
       const invalidLabelsText = invalidEls.map(item => {
         const formItem = item.findParent("sd-form-item");
         if (formItem) {
           return formItem.getAttribute("sd-label");
         }
 
-        const cell = item.findParent(".col");
+        const cell = item.findParent("._col");
         if (cell) {
-          const index = cell.findParent(".row")!.findAll(".col").indexOf(cell);
-          const headerCell = cell.findParent("sd-sheet")!.findAll("._head .row").last()!.findAll(".col")[index];
+          const index = cell.findParent("._row")!.findAll("._col").indexOf(cell);
+          const headerCell = cell.findParent("sd-sheet")!.findAll("._head ._row").last()!.findAll("._col")[index];
           return headerCell.getAttribute("sd-header") || headerCell.textContent!.trim();
         }
 

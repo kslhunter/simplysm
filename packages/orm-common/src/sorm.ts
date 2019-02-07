@@ -242,6 +242,12 @@ export const sorm = {
   cast<P extends QueryType>(src: any, targetType: Type<P>): StripTypeWrap<P> {
     return new QueryUnit(targetType, `CONVERT(${QueryHelper.getDataTypeFromType(targetType)}, ${QueryHelper.getFieldQuery(src)})`) as any;
   },
+  left(src: string | QueryUnit<string>, num: number): string {
+    return new QueryUnit(String, "LEFT(" + QueryHelper.getFieldQuery(src) + ", " + num + ")") as any;
+  },
+  right(src: string | QueryUnit<string>, num: number): string {
+    return new QueryUnit(String, "RIGHT(" + QueryHelper.getFieldQuery(src) + ", " + num + ")") as any;
+  },
   formula<T extends QueryType>(arg1: T | QueryUnit<T>, arg2: string, arg3: T | QueryUnit<T>): StripTypeWrap<T> {
     let type: any;
     const argForType = arg1 || arg3;

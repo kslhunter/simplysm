@@ -27,7 +27,8 @@ $text-color: (
 
 $text-reverse-color: (
   default: white,
-  dark: rgba(255, 255, 255, .7)
+  dark: rgba(255, 255, 255, .7),
+  darker: rgba(255, 255, 255, .5)
 ) !default;
 
 $gap: (

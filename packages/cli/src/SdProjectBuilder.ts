@@ -15,6 +15,8 @@ import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import {RequestHandler} from "express";
 import {SdWebSocketServer} from "@simplysm/ws-server";
 import * as os from "os";
+import * as electron from "electron";
+import * as url from "url";
 
 export class SdProjectBuilder {
   private readonly _serverMap = new Map<number, SdWebSocketServer>();
@@ -419,7 +421,6 @@ export class SdProjectBuilder {
     await fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"));
 
     const packageConfig = this.config.packages[packageKey];
-    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
 
     if (packageConfig.type === "none") {
     }
@@ -431,80 +432,103 @@ export class SdProjectBuilder {
       ]);
     }
     else {
-      const logger = new Logger("@simplysm/cli", packageKey);
-
       const result = await Promise.all([
         this._runTsLintWorkerAsync(packageKey, true),
         this._runTsCheckAndDeclarationWorkerAsync(packageKey, true),
-        new Promise<void>(async (resolve, reject) => {
-          try {
-            if (!this._serverMap.has(serverPort)) {
-              let server = new SdWebSocketServer();
-              await server.listenAsync(serverPort);
-              this._serverMap.set(serverPort, server);
-
-              await FileWatcher.watch(
-                path.resolve(process.cwd(), "node_modules", "@simplysm", "ws-server", "dist", "**/*.js"),
-                ["add", "change", "unlink"],
-                async () => {
-                  logger.log(`개발서버를 다시 시작합니다.`);
-                  await server.closeAsync();
-
-                  require("decache")("@simplysm/ws-server"); //tslint:disable-line:no-require-imports
-                  const newSdWebSocketServer = require("@simplysm/ws-server").SdWebSocketServer; //tslint:disable-line:no-require-imports
-                  server = new newSdWebSocketServer();
-                  await server.listenAsync(serverPort);
-                  this._serverMap.set(serverPort, server);
-                  server.expressServer!.use(this._expressServerMiddlewareMap.get(serverPort)!);
-                  logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`);
-                });
-            }
-
-            const webpackConfig: webpack.Configuration = await this._getWebpackConfigAsync(packageKey, "development");
-
-            const compiler = webpack(webpackConfig);
-
-            const currServer = this._serverMap.get(serverPort)!;
-
-            if (!this._expressServerMiddlewareMap.get(serverPort)) {
-              this._expressServerMiddlewareMap.set(serverPort, []);
-            }
-
-            const expressServerMiddlewareList = this._expressServerMiddlewareMap.get(serverPort)!;
-            expressServerMiddlewareList.pushRange([
-              WebpackDevMiddleware(compiler, {
-                publicPath: webpackConfig.output!.publicPath!,
-                logLevel: "silent",
-                watchOptions: {
-                  aggregateTimeout: 600
-                }
-              }),
-              WebpackHotMiddleware(compiler, {
-                path: `/${projectNpmConfig.name}/${packageKey}/__webpack_hmr`,
-                log: false
-              })
-            ]);
-            currServer.expressServer!.use(expressServerMiddlewareList);
-
-            const serverDirPath = path.dirname(require.resolve("@simplysm/ws-server"));
-
-            const packageDistConfigsFilePath = path.resolve(serverDirPath, "www", projectNpmConfig.name, packageKey, "configs.json");
-            await fs.mkdirs(path.dirname(packageDistConfigsFilePath));
-            await fs.writeJson(packageDistConfigsFilePath, packageConfig.configs);
-
-            logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`);
-
-            compiler.hooks.done.tap("SdProjectBuilder", () => {
-              resolve();
-            });
-          }
-          catch (err) {
-            reject(err);
-          }
-        })
+        this._runWebpackBuildWatchAsync(packageKey, serverPort)
       ]);
 
       return result[2];
+    }
+  }
+
+  private async _runWebpackBuildWatchAsync(packageKey: string, serverPort: number): Promise<void> {
+    const logger = new Logger("@simplysm/cli", packageKey);
+
+    const packageConfig = this.config.packages[packageKey];
+    const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
+
+    await new Promise<void>(async (resolve, reject) => {
+      try {
+        if (!this._serverMap.has(serverPort)) {
+          let server = new SdWebSocketServer();
+          await server.listenAsync(serverPort);
+          this._serverMap.set(serverPort, server);
+
+          await FileWatcher.watch(
+            path.resolve(process.cwd(), "node_modules", "@simplysm", "ws-server", "dist", "**/*.js"),
+            ["add", "change", "unlink"],
+            async () => {
+              logger.log(`개발서버를 다시 시작합니다.`);
+              await server.closeAsync();
+
+              require("decache")("@simplysm/ws-server"); //tslint:disable-line:no-require-imports
+              const newSdWebSocketServer = require("@simplysm/ws-server").SdWebSocketServer; //tslint:disable-line:no-require-imports
+              server = new newSdWebSocketServer();
+              await server.listenAsync(serverPort);
+              this._serverMap.set(serverPort, server);
+              server.expressServer!.use(this._expressServerMiddlewareMap.get(serverPort)!);
+              logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`);
+            });
+        }
+
+        const webpackConfig: webpack.Configuration = await this._getWebpackConfigAsync(packageKey, "development");
+
+        const compiler = webpack(webpackConfig);
+
+        const currServer = this._serverMap.get(serverPort)!;
+
+        if (!this._expressServerMiddlewareMap.get(serverPort)) {
+          this._expressServerMiddlewareMap.set(serverPort, []);
+        }
+
+        const expressServerMiddlewareList = this._expressServerMiddlewareMap.get(serverPort)!;
+        expressServerMiddlewareList.pushRange([
+          WebpackDevMiddleware(compiler, {
+            publicPath: webpackConfig.output!.publicPath!,
+            logLevel: "silent",
+            watchOptions: {
+              aggregateTimeout: 600
+            }
+          }),
+          WebpackHotMiddleware(compiler, {
+            path: `/${projectNpmConfig.name}/${packageKey}/__webpack_hmr`,
+            log: false
+          })
+        ]);
+        currServer.expressServer!.use(expressServerMiddlewareList);
+
+        const serverDirPath = path.dirname(require.resolve("@simplysm/ws-server"));
+
+        const packageDistConfigsFilePath = path.resolve(serverDirPath, "www", projectNpmConfig.name, packageKey, "configs.json");
+        await fs.mkdirs(path.dirname(packageDistConfigsFilePath));
+        await fs.writeJson(packageDistConfigsFilePath, packageConfig.configs);
+
+        logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`);
+
+        compiler.hooks.done.tap("SdProjectBuilder", () => {
+          resolve();
+        });
+      }
+      catch (err) {
+        reject(err);
+      }
+    });
+
+    if (packageConfig.type!.startsWith("electron.")) {
+      electron.app.on("ready", () => {
+        let win: electron.BrowserWindow | undefined = new electron.BrowserWindow({width: 800, height: 600});
+
+        // and load the index.html of the app.
+        win.loadURL(url.format({
+          pathname: `localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`,
+          protocol: "http:",
+          slashes: true
+        }));
+        win.on("closed", () => {
+          win = undefined;
+        });
+      });
     }
   }
 
@@ -711,7 +735,7 @@ export class SdProjectBuilder {
   private async _getWebpackConfigAsync(packageKey: string, mode: "production" | "development"): Promise<webpack.Configuration> {
     const packageConfig = this.config.packages[packageKey];
 
-    if (packageConfig.type!.startsWith("cordova.") || packageConfig.type!.startsWith("electron.")) {
+    if (packageConfig.type!.startsWith("cordova.")) {
       throw new Error("미구현 (webpack-config)");
     }
 
@@ -838,7 +862,7 @@ export class SdProjectBuilder {
             callback(undefined, `""`);
             return;
           }
-          
+
           callback(undefined, undefined);
         }
       ]
@@ -863,6 +887,10 @@ export class SdProjectBuilder {
           new webpack.HotModuleReplacementPlugin()
         ]
       });
+    }
+
+    if (packageConfig.type!.startsWith("electron.")) {
+      webpackConfig.target = "electron-main";
     }
 
     return webpackConfig;

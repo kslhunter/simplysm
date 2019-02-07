@@ -26,7 +26,10 @@ export class SdNavigateDirective {
       }
     }
 
-    if (event.ctrlKey) {
+    if (event.shiftKey || event.ctrlKey || event.altKey) {
+      // 알트키: 새탭
+      // 컨트롤키: 새탭 (새탭이 포커싱되지 않음)
+      // 쉬프트키: 새창
       window.open(location.pathname + `#${this.sdNavigate[0]};${this.sdNavigate[1] ? querystring.stringify(newObj) : ""}`, "_blank");
     }
     else {

@@ -28,7 +28,7 @@ sd-topbar {
   @include elevation(6);
 
   > * {
-    float: left;
+    display: inline-block;
     line-height: $topbar-height;
   }
 
@@ -68,12 +68,10 @@ sd-topbar {
 }
 
 sd-topbar-menu {
-  display: block;
   padding: 0 get($gap, lg);
   cursor: pointer;
   user-select: none;
   color: get($theme-color, grey, lighter);
-  float: left;
 
   &:hover {
     background: rgba(0, 0, 0, 0.2);
@@ -83,9 +81,5 @@ sd-topbar-menu {
   &:active {
     background: rgba(0, 0, 0, .3);
     color: white;
-  }
-
-  @media #{$screen-mobile} {
-    float: right;
   }
 }

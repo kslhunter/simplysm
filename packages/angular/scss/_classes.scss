@@ -91,7 +91,7 @@
 }
 
 @each $key, $val in $text-reverse-color {
-  .sd-text-color-reverse-#{$key} {
+  .sd-text-reverse-color-#{$key} {
     color: $val !important;
   }
 }
