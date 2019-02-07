@@ -345,6 +345,7 @@ export class SdSheetControl implements DoCheck, OnInit {
     if (this.selectable === "multi") {
       if (this.selectedItems.includes(selectedItem)) {
         this.selectedItems.remove(selectedItem);
+
         this.selectedItemsChange.emit(this.selectedItems);
       }
       else {
