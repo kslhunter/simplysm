@@ -114,6 +114,10 @@ export class SdWebSocketServer extends EventEmitter {
         resolve();
       });
     });
+
+    process.once("exit", async () => {
+      await this.closeAsync();
+    });
   }
 
   public async closeAsync(): Promise<void> {
