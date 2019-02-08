@@ -1,5 +1,6 @@
 const {SdWebSocketServer} = require("@simplysm/ws-server");
 const {Logger} = require("@simplysm/common");
+const path = require("path");
 
 new SdWebSocketServer()
   .listenAsync(path.resolve(process.cwd(), "www"), Number(process.argv[2]))
