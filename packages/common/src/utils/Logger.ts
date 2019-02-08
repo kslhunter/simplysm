@@ -29,7 +29,7 @@ export class Logger {
     fileLogSeverities: (process.env.NODE_ENV === "production" && process.versions.node)
       ? ["log", "info", "warn", "error"]
       : [],
-    outputPath: undefined,
+    outputPath: process.env.NODE_ENV === "production" && process.versions.node ? "logs" : undefined,
     historySize: 30,
     color: !process.versions.node
       ? {
@@ -65,9 +65,13 @@ export class Logger {
 
   public static restoreDefaultConfig(): void {
     this._defaultConfig = {
-      consoleLogSeverities: ["log", "info", "warn", "error"],
-      fileLogSeverities: [],
-      outputPath: undefined,
+      consoleLogSeverities: process.env.NODE_ENV === "production"
+        ? []
+        : ["log", "info", "warn", "error"],
+      fileLogSeverities: (process.env.NODE_ENV === "production" && process.versions.node)
+        ? ["log", "info", "warn", "error"]
+        : [],
+      outputPath: process.env.NODE_ENV === "production" && process.versions.node ? "logs" : undefined,
       historySize: 30,
       color: !process.versions.node
         ? {
