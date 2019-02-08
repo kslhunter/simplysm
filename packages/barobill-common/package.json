@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/barobill-common",
-  "version": "1.0.92",
+  "version": "1.0.93",
   "description": "심플리즘 패키지 (바로빌 공통)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,6 +8,6 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/common": "1.0.92"
+    "@simplysm/common": "1.0.93"
   }
 }
