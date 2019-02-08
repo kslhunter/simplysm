@@ -6,6 +6,7 @@ import * as sourceMapSupport from "source-map-support";
 import {Logger} from "@simplysm/common";
 
 sourceMapSupport.install();
+process.setMaxListeners(0);
 
 const argv = yargs
   .version(false)
