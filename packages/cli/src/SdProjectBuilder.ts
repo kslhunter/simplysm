@@ -194,17 +194,19 @@ export class SdProjectBuilder {
             });
           });
 
-          const fileInfos = await Promise.all(filePaths.map(async filePath => {
+          await Promise.all(filePaths.map(async filePath => {
             const relativeFilePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"), filePath);
-            return {
-              path: path.join("www", projectNpmConfig.name, packageKey, relativeFilePath),
-              buffer: await fs.readFile(filePath)
-            };
+            await wsClient.sendAsync(
+              "FileService.uploadFileAsync",
+              [
+                path.join("www", projectNpmConfig.name, packageKey, relativeFilePath),
+                await fs.readFile(filePath)
+              ],
+              progress => {
+                packageLogger.log(`파일 업로드 : (${Math.ceil(progress.current * 100 / progress.total)}) ${filePath}`);
+              }
+            );
           }));
-
-          await wsClient.sendAsync("FileService.uploadFilesAsync", [fileInfos], progress => {
-            packageLogger.log(`파일 업로드 : ${Math.ceil(progress.current * 100 / progress.total)}`);
-          });
         }
         else {
           throw new Error("미구현 (publish)");
