@@ -44,9 +44,8 @@ export class SdWebSocketClient {
         }
       };
 
-      this._ws.onerror = err => {
-        this._logger.error(err);
-        reject(err);
+      this._ws.onerror = errEvt => {
+        reject(errEvt.error);
       };
 
       this._ws.onclose = () => {
@@ -151,7 +150,7 @@ export class SdWebSocketClient {
       });
 
       // 요청 보내기
-      if (requestJson.length > splitLength) {
+      if (requestJson.length > splitLength && sendProgressCallback) {
         let i = 0;
         let cursor = 0;
         while (cursor < requestJson.length) {

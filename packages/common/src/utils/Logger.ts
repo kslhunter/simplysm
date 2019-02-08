@@ -23,8 +23,12 @@ export class Logger {
   private static _lastId = 0;
 
   private static _defaultConfig: ILoggerConfig = {
-    consoleLogSeverities: ["log", "info", "warn", "error"],
-    fileLogSeverities: [],
+    consoleLogSeverities: process.env.NODE_ENV === "production"
+      ? []
+      : ["log", "info", "warn", "error"],
+    fileLogSeverities: (process.env.NODE_ENV === "production" && process.versions.node)
+      ? ["log", "info", "warn", "error"]
+      : [],
     outputPath: undefined,
     historySize: 30,
     color: !process.versions.node
