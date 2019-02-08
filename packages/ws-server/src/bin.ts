@@ -14,8 +14,9 @@ fs.writeFileSync(
         script: "./app.js",
         args: [process.argv[2]],
         watch: [
-          path.resolve(require.resolve("@simplysm/ws-server")),
+          path.resolve(process.cwd(), "node_modules"),
           "pm2.json",
+          "package.json",
           "app.js"
         ],
         env: {
