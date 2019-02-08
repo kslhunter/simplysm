@@ -121,7 +121,7 @@ export class SdWebSocketClient {
       const requestJson = JsonConvert.stringify(request)!;
 
       const splitLength = 10000;
-      if (requestJson.length > splitLength && sendProgressCallback) {
+      if (requestJson.length > splitLength * 10 && sendProgressCallback) {
         sendProgressCallback({
           current: 0,
           total: requestJson.length
@@ -150,7 +150,7 @@ export class SdWebSocketClient {
       });
 
       // 요청 보내기
-      if (requestJson.length > splitLength && sendProgressCallback) {
+      if (requestJson.length > splitLength * 10 && sendProgressCallback) {
         let i = 0;
         let cursor = 0;
         while (cursor < requestJson.length) {
@@ -158,7 +158,7 @@ export class SdWebSocketClient {
           this._ws!.send(str);
           cursor += splitLength;
           i++;
-          await Wait.time(10);
+          // await Wait.time(10);
         }
       }
       else {
