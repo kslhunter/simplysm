@@ -36,7 +36,7 @@ const argv = yargs
             script: "./app.js",
             args: [argv.port.toString()],
             watch: [
-              path.resolve(process.cwd(), "node_modules"),
+              "node_modules/**/*",
               "pm2.json",
               "package.json",
               "app.js"
