@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/core",
-  "version": "1.0.93",
+  "version": "1.0.94",
   "description": "심플리즘 패키지 (코어)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,7 +8,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/common": "1.0.93",
+    "@simplysm/common": "1.0.94",
     "chokidar": "^2.0.4"
   }
 }
