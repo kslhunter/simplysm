@@ -1,18 +1,20 @@
 #!/usr/bin/env node
 
+import "@simplysm/common";
 import * as fs from "fs";
 import * as path from "path";
 
-fs.copyFileSync(path.resolve(__dirname, "../lib/app.js"), process.cwd());
+fs.copyFileSync(path.resolve(__dirname, "../lib/app.js"), path.resolve(process.cwd(), "app.js"));
 fs.writeFileSync(
   "pm2.json",
   JSON.stringify({
     apps: [
       {
         name: process.cwd().replace(/\//g, "\\").split("\\").last(),
-        script: "app.js " + process.argv[2],
+        script: "./app.js",
+        args: [process.argv[2]],
         watch: [
-          path.resolve(require.resolve("@simplysm/ws-server"), "dist"),
+          path.resolve(require.resolve("@simplysm/ws-server")),
           "pm2.json",
           "app.js"
         ],
