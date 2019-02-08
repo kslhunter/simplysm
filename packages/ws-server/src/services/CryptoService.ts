@@ -4,7 +4,7 @@ import {SdWebSocketServerUtil} from "../SdWebSocketServerUtil";
 
 export class CryptoService extends SdWebSocketServiceBase {
   public async encryptAsync(str: string): Promise<string> {
-    const config = await SdWebSocketServerUtil.getConfigAsync(this.request.url);
+    const config = await SdWebSocketServerUtil.getConfigAsync(this.staticPath, this.request.url);
     const cryptoKey = config["crypto"]["key"];
     return crypto.createHmac("sha256", cryptoKey)
       .update(str)

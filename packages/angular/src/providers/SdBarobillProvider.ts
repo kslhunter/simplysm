@@ -17,6 +17,6 @@ export class SdBarobillProvider {
   }
 
   public async getAccountLogAsync(param: IBarobillServiceGetAccountLogParam): Promise<IBarobillServiceGetAccountLogResult> {
-    return await this._ws.sendAsync("BarobillService.getCardLogAsync", [param]);
+    return await this._ws.sendAsync("BarobillService.getAccountLogAsync", [param]);
   }
 }

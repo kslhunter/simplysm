@@ -450,7 +450,7 @@ export class SdProjectBuilder {
       try {
         if (!this._serverMap.has(serverPort)) {
           let server = new SdWebSocketServer();
-          await server.listenAsync(serverPort);
+          await server.listenAsync(SdProjectBuilderUtil.getPackagesPath(packageKey, "www"), serverPort);
           this._serverMap.set(serverPort, server);
 
           await FileWatcher.watch(
@@ -463,7 +463,7 @@ export class SdProjectBuilder {
               require("decache")("@simplysm/ws-server"); //tslint:disable-line:no-require-imports
               const newSdWebSocketServer = require("@simplysm/ws-server").SdWebSocketServer; //tslint:disable-line:no-require-imports
               server = new newSdWebSocketServer();
-              await server.listenAsync(serverPort);
+              await server.listenAsync(SdProjectBuilderUtil.getPackagesPath(packageKey, "www"), serverPort);
               this._serverMap.set(serverPort, server);
               server.expressServer!.use(this._expressServerMiddlewareMap.get(serverPort)!);
               logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`);

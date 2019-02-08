@@ -72,7 +72,7 @@ export class BarobillService extends SdWebSocketServiceBase {
       ? `http://ws.baroservice.com/${target}.asmx?WSDL`
       : `http://testws.baroservice.com/${target}.asmx?WSDL`;
 
-    const config = await SdWebSocketServerUtil.getConfigAsync(this.request.url);
+    const config = await SdWebSocketServerUtil.getConfigAsync(this.staticPath, this.request.url);
     const certKey = config["barobill"]["certKey"];
 
     const client = await soap.createClientAsync(url);

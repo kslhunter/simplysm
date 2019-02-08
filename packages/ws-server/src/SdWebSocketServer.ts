@@ -25,6 +25,7 @@ export class SdWebSocketServer extends EventEmitter {
   private _wsConnections: SdWebSocketServerConnection[] = [];
   private _httpConnections: net.Socket[] = [];
   private _eventListeners: IEventListener[] = [];
+  private _staticPath?: string;
 
   public get isListening(): boolean {
     return !!this._httpServer && !!this._httpServer.listening;
@@ -34,18 +35,19 @@ export class SdWebSocketServer extends EventEmitter {
     super();
   }
 
-  public async listenAsync(port?: number): Promise<void> {
+  public async listenAsync(staticPath: string, port: number): Promise<void> {
     if (this.isListening) {
       await this.closeAsync();
     }
 
     await new Promise<void>((resolve, reject) => {
       this.expressServer = express();
-      this.expressServer.use(express.static("www"));
+      this.expressServer.use(express.static(staticPath));
       this._httpServer = http.createServer(this.expressServer);
       this._wsServer = new WebSocket.Server({server: this._httpServer});
       this._wsConnections = [];
       this._eventListeners = [];
+      this._staticPath = staticPath;
 
       this._wsServer.on("connection", async (conn, connReq) => {
         this._logger.log(`클라이언트의 연결 요청을 받았습니다 : ${connReq.headers.origin}`);
@@ -76,7 +78,7 @@ export class SdWebSocketServer extends EventEmitter {
         });
       });
 
-      this._httpServer.listen(port || 80, (err: Error) => {
+      this._httpServer.listen(port, (err: Error) => {
         if (err) {
           reject(err);
           return;
@@ -97,6 +99,7 @@ export class SdWebSocketServer extends EventEmitter {
           this._wsConnections = [];
           this._httpConnections = [];
           this._eventListeners = [];
+          this._staticPath = undefined;
         });
 
         resolve();
@@ -199,6 +202,7 @@ export class SdWebSocketServer extends EventEmitter {
       service.request = req;
       service.server = this;
       service.conn = conn;
+      service.staticPath = this._staticPath!;
 
       // 메소드 가져오기
       const method = service[methodName];

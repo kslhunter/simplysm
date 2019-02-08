@@ -19,6 +19,7 @@ app.on("ready", () => {
     slashes: true
   }));
   win.on("closed", () => {
+    win.destroy();
     win = undefined;
   });
 

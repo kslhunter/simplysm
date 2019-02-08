@@ -27,7 +27,7 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
     <div class="_sheet" [style.padding-top]="paddingTop">
       <div #headerElRef class="_content _head" [style.top.px]="headTop">
         <div class="_row _pagination" *ngIf="pageLength > 1">
-          <sd-pagination [page]="page" [length]="pageLength"
+          <sd-pagination [(page)]="page" [length]="pageLength"
                          (pageChange)="pageChange.emit($event)"></sd-pagination>
         </div>
         <div class="_row" *ngIf="hasHeaderGroup">
@@ -131,7 +131,7 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
             </ng-container>
           </ng-container>
         </ng-template>
-        <ng-template [ngTemplateOutlet]="rowOfList" [ngTemplateOutletContext]="{items: items}"></ng-template>
+        <ng-template [ngTemplateOutlet]="rowOfList" [ngTemplateOutletContext]="{items: getPagedItems()}"></ng-template>
       </div>
     </div>`,
   animations: [
@@ -192,7 +192,28 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   @Input()
   @SdTypeValidate({type: Number, notnull: true})
-  public pageLength = 0;
+  public get pageLength(): number {
+    if (this.pageItemCount && this.items) {
+      return Math.ceil(this.items.length / this.pageItemCount);
+    }
+    else {
+      return this._pageLength;
+    }
+  }
+
+  public set pageLength(value: number) {
+    if (this.pageItemCount) {
+      throw new Error("'sd-sheet'에 'pageItemCount''와 'pageLength'를 함께 설정할 수 없습니다.");
+    }
+
+    this._pageLength = value;
+  }
+
+  public _pageLength = 0;
+
+  @Input()
+  @SdTypeValidate({type: Number})
+  public pageItemCount?: number;
 
   @Output()
   public readonly pageChange = new EventEmitter<number>();
@@ -210,7 +231,6 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   @Output()
   public readonly expandedItemTracksChange = new EventEmitter<any[]>();
-
 
   public headTop = 0;
   public fixedLeft = 0;
@@ -305,6 +325,15 @@ export class SdSheetControl implements DoCheck, OnInit {
     return index;
   }
 
+  public getPagedItems(): any[] | undefined {
+    if (this.pageItemCount && this.items) {
+      return this.items.slice(this.page * this.pageItemCount, (this.page + 1) * this.pageItemCount);
+    }
+    else {
+      return this.items;
+    }
+  }
+
   private readonly _iterableDiffer: IterableDiffer<any>;
   private _columnConfigs: {
     header?: string;
@@ -329,7 +358,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
         const bodyEl = rowEl.parentElement as Element;
         const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-        const cursorItem = this._getItemByRowIndex(rowIndex); //this.items![rowIndex];
+        const cursorItem = this._getItemByRowIndex(rowIndex);
         if (this.selectedItem !== cursorItem) {
           this.selectedItem = undefined;
           this.selectedItemChange.emit(undefined);
@@ -363,7 +392,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
       return undefined;
     };
-    return loop(this.items);
+    return loop(this.getPagedItems()!);
   }
 
   public ngOnInit(): void {
@@ -401,17 +430,17 @@ export class SdSheetControl implements DoCheck, OnInit {
     if (rowEl) {
       const bodyEl = rowEl.parentElement as Element;
       const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-      const selectedItem = this._getItemByRowIndex(rowIndex); //this.items![rowIndex];
+      const selectedItem = this._getItemByRowIndex(rowIndex);
 
       if (this.selectable === "multi") {
         if (!this.selectedItems.includes(selectedItem)) {
-          this.selectedItems.push(selectedItem /*this.items![rowIndex]*/);
+          this.selectedItems.push(selectedItem);
           this.selectedItemsChange.emit(this.selectedItems);
         }
       }
       else {
         if (this.selectedItem !== selectedItem) {
-          this.selectedItem = selectedItem/*this.items![rowIndex]*/;
+          this.selectedItem = selectedItem;
           this.selectedItemChange.emit(this.selectedItem);
         }
       }
@@ -426,7 +455,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
       const bodyEl = rowEl.parentElement as Element;
       const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-      const selectedItem = this._getItemByRowIndex(rowIndex); //this.items![rowIndex];
+      const selectedItem = this._getItemByRowIndex(rowIndex);
 
       if (this.selectable === "multi") {
         if (this.selectedItems.includes(selectedItem)) {

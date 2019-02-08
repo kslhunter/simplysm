@@ -1,8 +1,8 @@
+import "@simplysm/barobill-common";
 import "@simplysm/common";
 import "@simplysm/orm";
 import "@simplysm/orm-common";
 import "@simplysm/ws-common";
-import "@simplysm/barobill-common";
 export * from "./SdWebSocketServer";
 export * from "./SdWebSocketServerConnection";
 export * from "./SdWebSocketServerUtil";

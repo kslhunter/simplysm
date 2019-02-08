@@ -6,4 +6,5 @@ export abstract class SdWebSocketServiceBase {
   public server!: SdWebSocketServer;
   public conn!: SdWebSocketServerConnection;
   public request!: ISdWebSocketRequest;
+  public staticPath!: string;
 }

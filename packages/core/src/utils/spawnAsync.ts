@@ -72,5 +72,11 @@ export async function spawnAsync(cmds: string[], opts?: { env?: ProcessEnv; cwd?
         reject(new Error());
       }
     });
+
+    process.once("exit", () => {
+      if (worker.connected) {
+        childProcess.spawn("taskkill", ["/pid", worker.pid.toString(), "/f", "/t"]);
+      }
+    });
   });
 }
