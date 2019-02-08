@@ -15,6 +15,8 @@ import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import {RequestHandler} from "express";
 import {SdWebSocketServer} from "@simplysm/ws-server";
 import * as os from "os";
+import {SdWebSocketClient} from "@simplysm/ws-common";
+import {SdWebpackWriteFilePlugin} from "./SdWebpackWriteFilePlugin";
 
 export class SdProjectBuilder {
   private readonly _serverMap = new Map<number, SdWebSocketServer>();
@@ -103,6 +105,10 @@ export class SdProjectBuilder {
 
     const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
 
+    if (Object.keys(this.config.packages).every(packageKey => !this.config.packages[packageKey].publish)) {
+      throw new Error("배포할 패키지가 없습니다.");
+    }
+
     await this._parallelPackages(false, async packageKey => {
       const packageLogger = new Logger("@simplysm/cli", packageKey);
 
@@ -167,20 +173,46 @@ export class SdProjectBuilder {
             }
           }
         }
-        else {
+        else if (packageConfig.publish.protocol === "simplysm") {
+          const wsClient = new SdWebSocketClient(packageConfig.publish.port, packageConfig.publish.host);
+          await wsClient.connectAsync();
+
           // 결과 파일 업로드
+          const filePaths = await new Promise<string[]>((resolve, reject) => {
+            glob(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist", "**", "*"), (err, files) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve(files);
+            });
+          });
+
+
+          for (const filePath of filePaths) {
+            packageLogger.log(`파일 업로드 : `, filePath);
+            const relativeFilePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"), filePath);
+            await wsClient.sendAsync(
+              "FileService.uploadAsync",
+              [
+                path.join("www", projectNpmConfig.name, packageKey, relativeFilePath),
+                await fs.readFile(filePath)
+              ]
+            );
+          }
 
           // 프로젝트 설정파일 업로드
 
           // 가상호스트 파일 재설정/업로드
-
+        }
+        else {
           throw new Error("미구현 (publish)");
         }
 
         packageLogger.log(`배포가 완료되었습니다. - v${projectNpmConfig.version}`);
       }
     });
-
 
     await spawnAsync(["git", "add", "."], {logger});
     await spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});
@@ -387,7 +419,9 @@ export class SdProjectBuilder {
 
     const packageConfig = this.config.packages[packageKey];
 
-    if (packageConfig.type === "node" || packageConfig.type === "dom") {
+    if (packageConfig.type === "none") {
+    }
+    else if (packageConfig.type === "node" || packageConfig.type === "dom") {
       await Promise.all([
         this._runTsLintWorkerAsync(packageKey),
         this._runTsCheckAndDeclarationWorkerAsync(packageKey),
@@ -446,11 +480,13 @@ export class SdProjectBuilder {
     const packageConfig = this.config.packages[packageKey];
     const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
 
+    const serverDirPath = path.dirname(require.resolve("@simplysm/ws-server"));
+
     await new Promise<void>(async (resolve, reject) => {
       try {
         if (!this._serverMap.has(serverPort)) {
           let server = new SdWebSocketServer();
-          await server.listenAsync(SdProjectBuilderUtil.getPackagesPath(packageKey, "www"), serverPort);
+          await server.listenAsync(path.resolve(serverDirPath, "www"), serverPort);
           this._serverMap.set(serverPort, server);
 
           await FileWatcher.watch(
@@ -463,7 +499,7 @@ export class SdProjectBuilder {
               require("decache")("@simplysm/ws-server"); //tslint:disable-line:no-require-imports
               const newSdWebSocketServer = require("@simplysm/ws-server").SdWebSocketServer; //tslint:disable-line:no-require-imports
               server = new newSdWebSocketServer();
-              await server.listenAsync(SdProjectBuilderUtil.getPackagesPath(packageKey, "www"), serverPort);
+              await server.listenAsync(path.resolve(serverDirPath, "www"), serverPort);
               this._serverMap.set(serverPort, server);
               server.expressServer!.use(this._expressServerMiddlewareMap.get(serverPort)!);
               logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`);
@@ -495,8 +531,6 @@ export class SdProjectBuilder {
           })
         ]);
         currServer.expressServer!.use(expressServerMiddlewareList);
-
-        const serverDirPath = path.dirname(require.resolve("@simplysm/ws-server"));
 
         const packageDistConfigsFilePath = path.resolve(serverDirPath, "www", projectNpmConfig.name, packageKey, "configs.json");
         await fs.mkdirs(path.dirname(packageDistConfigsFilePath));
@@ -845,6 +879,13 @@ export class SdProjectBuilder {
         new SdWebpackLoggerPlugin({
           logger: new Logger("@simplysm/cli", packageKey)
         }),
+        new SdWebpackWriteFilePlugin({
+          logger: new Logger("@simplysm/cli", packageKey),
+          files: [{
+            path: SdProjectBuilderUtil.getPackagesPath(packageKey, "dist", "configs.json"),
+            content: JSON.stringify(packageConfig.configs, undefined, 2)
+          }]
+        }),
         new HtmlWebpackPlugin({
           template: path.resolve(__dirname, "../lib/index.ejs"),
           BASE_HREF: `/${projectNpmConfig.name}/${packageKey}/`
@@ -854,6 +895,16 @@ export class SdProjectBuilder {
             VERSION: projectNpmConfig.version
           })
         })
+      ],
+      externals: [
+        (context, request, callback) => {
+          if (request === "ws") {
+            callback(undefined, `WebSocket`);
+            return;
+          }
+
+          callback(undefined, undefined);
+        }
       ]/*,
       externals: [
         (context, request, callback) => {

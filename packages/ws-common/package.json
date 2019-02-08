@@ -9,6 +9,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplysm/common": "1.0.85",
-    "@simplysm/orm-common": "1.0.85"
+    "@simplysm/orm-common": "1.0.85",
+    "ws": "^6.1.3"
   }
 }

@@ -2,6 +2,7 @@
 
 import {JsonConvert, Logger, Type, Wait} from "@simplysm/common";
 import {ISdWebSocketRequest, ISdWebSocketResponse} from "./commons";
+import * as WebSocket from "ws";
 
 export class SdWebSocketClient {
   private readonly _logger = new Logger("@simplysm/angular", "SdSocketClient");
@@ -15,16 +16,24 @@ export class SdWebSocketClient {
   }
 
   public async connectAsync(): Promise<void> {
-
     await new Promise<void>((resolve, reject) => {
+      if (process.versions.node) {
+        if (!this._host || !this._port) {
+          throw new Error("호스트와 포트가 반드시 입력되어야 합니다.");
+        }
+      }
+
+      // @ts-ignore
       this._ws = new WebSocket(`${this._protocol || "ws"}://${this._host || location.hostname}:${this._port || location.port}`);
+
       this._ws.onopen = () => {
+        // @ts-ignore
         this._ws!.onopen = null;
         resolve();
       };
 
       this._ws.onmessage = message => {
-        const obj = JsonConvert.parse(message.data);
+        const obj = JsonConvert.parse(String(message.data));
 
         if (obj.eventListenerId) {
           this._eventListeners.get(obj.eventListenerId)!(obj.data);
@@ -41,8 +50,11 @@ export class SdWebSocketClient {
       };
 
       this._ws.onclose = () => {
+        // @ts-ignore
         this._ws!.onopen = null;
+        // @ts-ignore
         this._ws!.onmessage = null;
+        // @ts-ignore
         this._ws!.onerror = null;
         this._ws = undefined;
 
@@ -56,8 +68,11 @@ export class SdWebSocketClient {
   public async closeAsync(): Promise<void> {
     await new Promise<void>(resolve => {
       this._ws!.onclose = () => {
+        // @ts-ignore
         this._ws!.onopen = null;
+        // @ts-ignore
         this._ws!.onmessage = null;
+        // @ts-ignore
         this._ws!.onerror = null;
         this._ws = undefined;
 
@@ -94,10 +109,16 @@ export class SdWebSocketClient {
       const requestId = (Array.from(this._reqMap.keys()).max() || 0) + 1;
       const request: ISdWebSocketRequest = {
         id: requestId,
-        url: `${location.protocol}//${location.host}${location.pathname}`,
+        url: "",
         command,
         params
       };
+
+      if (!process.versions.node) {
+        // @ts-ignore
+        request.url = `${location.protocol}//${location.host}${location.pathname}`;
+      }
+
       const requestJson = JsonConvert.stringify(request)!;
 
       const splitLength = 10000;

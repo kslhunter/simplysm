@@ -1,7 +1,7 @@
 import * as WebSocket from "ws";
 import * as http from "http";
 import {EventEmitter} from "events";
-import {JsonConvert, Logger} from "@simplysm/common";
+import {JsonConvert, Logger, optional} from "@simplysm/common";
 import {ISdWebSocketEmitResponse, ISdWebSocketRequest, ISdWebSocketResponse} from "@simplysm/ws-common";
 
 export class SdWebSocketServerConnection extends EventEmitter {
@@ -15,7 +15,7 @@ export class SdWebSocketServerConnection extends EventEmitter {
 
   public constructor(private readonly _conn: WebSocket, req: http.IncomingMessage) {
     super();
-    this.origin = req.headers.origin!.toString();
+    this.origin = optional(req.headers.origin, o => o.toString()) || "";
 
     this._conn.on("close", async () => {
       this._splitRequestMap.clear();

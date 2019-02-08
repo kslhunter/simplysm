@@ -42,6 +42,15 @@ export class SdWebSocketServer extends EventEmitter {
 
     await new Promise<void>((resolve, reject) => {
       this.expressServer = express();
+      this.expressServer.use("/", (req, res, next) => {
+        if (req.url.match(/configs.json$/)) {
+          res.status(403).end("403 Forbidden");
+        }
+        else {
+          next();
+        }
+      });
+
       this.expressServer.use(express.static(staticPath));
       this._httpServer = http.createServer(this.expressServer);
       this._wsServer = new WebSocket.Server({server: this._httpServer});

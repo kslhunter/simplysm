@@ -13,6 +13,7 @@
   "dependencies": {
     "@simplysm/common": "1.0.85",
     "@simplysm/core": "1.0.85",
+    "@simplysm/ws-common": "1.0.85",
     "@simplysm/ws-server": "1.0.85",
     "angular-router-loader": "^0.8.5",
     "copy-webpack-plugin": "^4.6.0",

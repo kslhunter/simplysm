@@ -41,15 +41,15 @@ export class SdProjectBuilderUtil {
         currPackageConfig = Object.merge(currPackageConfig, currPackageConfig[env]);
       }
 
-      if (orgConfig.packages[packageKey][env]) {
-        currPackageConfig = Object.merge(currPackageConfig, orgConfig.packages[packageKey][env]);
-      }
-
       const orgPackageConfig = Object.clone(orgConfig.packages[packageKey]);
       delete orgPackageConfig.extends;
       delete orgPackageConfig.development;
       delete orgPackageConfig.production;
       currPackageConfig = Object.merge(currPackageConfig, orgPackageConfig);
+
+      if (orgConfig.packages[packageKey][env]) {
+        currPackageConfig = Object.merge(currPackageConfig, orgConfig.packages[packageKey][env]);
+      }
 
       if (!currPackageConfig.type) {
         throw new Error(`타입이 지정되지 않은 패키지가 있습니다. (${packageKey})`);
