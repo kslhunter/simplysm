@@ -194,7 +194,7 @@ export class SdProjectBuilder {
             });
           });
 
-          const files = await Promise.all(filePaths.map(async filePath => {
+          const fileInfos = await Promise.all(filePaths.map(async filePath => {
             const relativeFilePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"), filePath);
             return {
               path: path.join("www", projectNpmConfig.name, packageKey, relativeFilePath),
@@ -202,7 +202,7 @@ export class SdProjectBuilder {
             };
           }));
 
-          await wsClient.sendAsync("FileService.uploadFilesAsync", [files], progress => {
+          await wsClient.sendAsync("FileService.uploadFilesAsync", [fileInfos], progress => {
             packageLogger.log(`파일 업로드 : ${Math.ceil(progress.current * 100 / progress.total)}`);
           });
         }
