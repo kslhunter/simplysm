@@ -1,6 +1,6 @@
 import * as express from "express";
-import * as proxy from "express-http-proxy";
 import * as http from "http";
+import {IncomingMessage} from "http";
 import * as WebSocket from "ws";
 import * as path from "path";
 import {EventEmitter} from "events";
@@ -11,6 +11,8 @@ import * as net from "net";
 import {ISdWebSocketRequest, ISdWebSocketResponse} from "@simplysm/ws-common";
 import * as glob from "glob";
 import * as fs from "fs-extra";
+
+const proxy = require("express-http-proxy"); // tslint:disable-line:no-require-imports no-var-requires
 
 interface IEventListener {
   id: number;
@@ -69,8 +71,8 @@ export class SdWebSocketServer extends EventEmitter {
               const packageName = path.dirname(file).split(/[\\\/]/).last();
 
               this.expressServer!.use(proxy(config.vhost, {
-                proxyReqPathResolver: req => {
-                  const parts = req.url.split("?");
+                proxyReqPathResolver: (req: IncomingMessage) => {
+                  const parts = req.url!.split("?");
                   const urlPath = parts[0];
                   const queryString = parts[1];
                   return urlPath + "/" + projectName + "/" + packageName + "/" + (queryString ? "?" + queryString : "");
