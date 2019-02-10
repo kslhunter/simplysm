@@ -31,8 +31,6 @@ export class SdWebSocketServerUtil {
           reject(new Error("서버에서 이 패키지의 설정파일을 찾는데 실패하였습니다."));
         });
       });
-
-      throw new Error("미구현");
     }
   }
 }
