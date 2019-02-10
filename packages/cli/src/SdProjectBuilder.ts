@@ -500,7 +500,7 @@ export class SdProjectBuilder {
       path.resolve(process.cwd(), "node_modules", "@simplysm", "ws-server", "dist", "**/*.js"),
       ["add", "change", "unlink"],
       async () => {
-        logger.log(`개발서버를 다시 재시작합니다.`);
+        logger.log(`개발서버를 재시작합니다.`);
         await server.closeAsync();
 
         require("decache")("@simplysm/ws-server"); //tslint:disable-line:no-require-imports
@@ -536,7 +536,7 @@ export class SdProjectBuilder {
             path.resolve(process.cwd(), "node_modules", "@simplysm", "ws-server", "dist", "**/*.js"),
             ["add", "change", "unlink"],
             async () => {
-              logger.log(`개발서버를 다시 재시작합니다.`);
+              logger.log(`개발서버를 재시작합니다.`);
               await server.closeAsync();
 
               require("decache")("@simplysm/ws-server"); //tslint:disable-line:no-require-imports
@@ -549,9 +549,12 @@ export class SdProjectBuilder {
               logger.info.apply(
                 logger,
                 [`개발서버 서비스가 재시작되었습니다`]
-                  .concat(serverInfo.packageKeys.map(serverPackageKey =>
-                    `http://localhost:${serverPort}/${projectNpmConfig.name}/${serverPackageKey}/`
-                  ))
+                  .concat(serverInfo.packageKeys.map(serverPackageKey => {
+                    const serverPackageConfig = this.config.packages[serverPackageKey];
+                    return packageConfig.vhost
+                      ? `http://${serverPackageConfig.vhost}:${serverPort}`
+                      : `http://localhost:${serverPort}/${projectNpmConfig.name}/${serverPackageKey}/`;
+                  }))
               );
             });
         }
@@ -581,9 +584,16 @@ export class SdProjectBuilder {
 
         const packageDistConfigsFilePath = path.resolve(serverDirPath, "www", projectNpmConfig.name, packageKey, "configs.json");
         await fs.mkdirs(path.dirname(packageDistConfigsFilePath));
-        await fs.writeJson(packageDistConfigsFilePath, packageConfig.configs);
+        await fs.writeJson(packageDistConfigsFilePath, {
+          vhost: packageConfig.vhost,
+          ...packageConfig.configs
+        });
 
-        logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`);
+        logger.info(`개발서버 서비스가 시작되었습니다.: ` + (
+          packageConfig.vhost
+            ? `http://${packageConfig.vhost}:${serverPort}`
+            : `http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`
+        ));
 
         compiler.hooks.done.tap("SdProjectBuilder", () => {
           resolve();
@@ -948,7 +958,10 @@ export class SdProjectBuilder {
           logger: new Logger("@simplysm/cli", packageKey),
           files: [{
             path: SdProjectBuilderUtil.getPackagesPath(packageKey, "dist", "configs.json"),
-            content: JSON.stringify(packageConfig.configs, undefined, 2)
+            content: JSON.stringify({
+              vhost: packageConfig.vhost,
+              ...packageConfig.configs
+            }, undefined, 2)
           }]
         }),
         new HtmlWebpackPlugin({

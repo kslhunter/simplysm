@@ -11,7 +11,7 @@ import {ISdWebSocketRequest, ISdWebSocketResponse} from "@simplysm/ws-common";
 import * as glob from "glob";
 import * as fs from "fs-extra";
 
-const proxy = require("express-http-proxy"); // tslint:disable-line:no-require-imports no-var-requires
+const vhost = require("vhost"); //tslint:disable-line:no-var-requires no-require-imports
 
 interface IEventListener {
   id: number;
@@ -66,17 +66,9 @@ export class SdWebSocketServer extends EventEmitter {
           for (const file of files) {
             const config = await fs.readJson(file);
             if (config.vhost) {
-              const projectName = path.resolve(path.dirname(file), "..").split(/[\\\/]/).last();
-              const packageName = path.dirname(file).split(/[\\\/]/).last();
-
-              this.expressServer!.use(proxy(config.vhost, {
-                proxyReqPathResolver: (req: http.IncomingMessage) => {
-                  const parts = req.url!.split("?");
-                  const urlPath = parts[0];
-                  const queryString = parts[1];
-                  return urlPath + "/" + projectName + "/" + packageName + "/" + (queryString ? "?" + queryString : "");
-                }
-              }));
+              const currExpress = express();
+              currExpress.use(express.static(path.dirname(file)));
+              this.expressServer!.use(vhost(config.vhost, currExpress));
             }
           }
 
