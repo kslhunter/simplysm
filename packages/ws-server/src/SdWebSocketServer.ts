@@ -1,6 +1,5 @@
 import * as express from "express";
 import * as http from "http";
-import {IncomingMessage} from "http";
 import * as WebSocket from "ws";
 import * as path from "path";
 import {EventEmitter} from "events";
@@ -71,7 +70,7 @@ export class SdWebSocketServer extends EventEmitter {
               const packageName = path.dirname(file).split(/[\\\/]/).last();
 
               this.expressServer!.use(proxy(config.vhost, {
-                proxyReqPathResolver: (req: IncomingMessage) => {
+                proxyReqPathResolver: (req: http.IncomingMessage) => {
                   const parts = req.url!.split("?");
                   const urlPath = parts[0];
                   const queryString = parts[1];
