@@ -15,6 +15,7 @@
       <w>unitless</w>
       <w>upsert</w>
       <w>vhost</w>
+      <w>yargs</w>
     </words>
   </dictionary>
 </component>

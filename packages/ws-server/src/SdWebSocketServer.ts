@@ -1,4 +1,5 @@
 import * as express from "express";
+import * as proxy from "express-http-proxy";
 import * as http from "http";
 import * as WebSocket from "ws";
 import * as path from "path";
@@ -8,6 +9,8 @@ import {SdWebSocketServerConnection} from "./SdWebSocketServerConnection";
 import {SdWebSocketServiceBase} from "./SdWebSocketServiceBase";
 import * as net from "net";
 import {ISdWebSocketRequest, ISdWebSocketResponse} from "@simplysm/ws-common";
+import * as glob from "glob";
+import * as fs from "fs-extra";
 
 interface IEventListener {
   id: number;
@@ -40,7 +43,7 @@ export class SdWebSocketServer extends EventEmitter {
       await this.closeAsync();
     }
 
-    await new Promise<void>((resolve, reject) => {
+    await new Promise<void>(async (resolve, reject) => {
       this.expressServer = express();
       this.expressServer.use("/", (req, res, next) => {
         if (req.url.match(/configs.json$/)) {
@@ -52,6 +55,33 @@ export class SdWebSocketServer extends EventEmitter {
       });
 
       this.expressServer.use(express.static(staticPath));
+      await new Promise<void>((resolve1, reject1) => {
+        glob(path.resolve(staticPath, "*", "*", "configs.json"), async (err, files) => {
+          if (err) {
+            reject1(err);
+            return;
+          }
+
+          for (const file of files) {
+            const config = await fs.readJson(file);
+            if (config.vhost) {
+              const projectName = path.resolve(path.dirname(file), "..").split(/[\\\/]/).last();
+              const packageName = path.dirname(file).split(/[\\\/]/).last();
+
+              this.expressServer!.use(proxy(config.vhost, {
+                proxyReqPathResolver: req => {
+                  const parts = req.url.split("?");
+                  const urlPath = parts[0];
+                  const queryString = parts[1];
+                  return urlPath + "/" + projectName + "/" + packageName + "/" + (queryString ? "?" + queryString : "");
+                }
+              }));
+            }
+          }
+
+          resolve1();
+        });
+      });
       this._httpServer = http.createServer(this.expressServer);
       this._wsServer = new WebSocket.Server({server: this._httpServer});
       this._wsConnections = [];

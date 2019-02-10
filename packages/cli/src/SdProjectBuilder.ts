@@ -200,16 +200,21 @@ export class SdProjectBuilder {
             });
           });
 
+          const status: { total: number; current: number; filePath: string }[] = filePaths.map(filePath => ({
+            filePath,
+            total: fs.lstatSync(filePath).size,
+            current: 0
+          }));
           await Promise.all(filePaths.map(async filePath => {
             const relativeFilePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"), filePath);
 
-            let total = 0;
-            let current = 0;
             await wsClient.uploadAsync(filePath, path.join("www", projectNpmConfig.name, packageKey, relativeFilePath), progress => {
-              current += progress.current;
-              total += progress.total;
+              status.single(item => item.filePath === filePath)!.current = progress.current;
+
+              const current = status.sum(item => item.current)!;
+              const total = status.sum(item => item.total)!;
               packageLogger.log(`파일 업로드 : (${(Math.floor(current * 10000 / total) / 100).toFixed(2).padStart(6, " ")}%) ${current.toLocaleString()} / ${total.toLocaleString()}`);
-            });
+            }, 10000);
           }));
         }
         else {

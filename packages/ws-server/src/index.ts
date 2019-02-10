@@ -9,6 +9,5 @@ export * from "./SdWebSocketServerUtil";
 export * from "./SdWebSocketServiceBase";
 export * from "./services/BarobillService";
 export * from "./services/CryptoService";
-export * from "./services/FileService";
 export * from "./services/OrmService";
 export * from "./services/SmtpClientService";
