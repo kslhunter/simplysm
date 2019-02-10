@@ -13,7 +13,7 @@ export class SdWebSocketServerUtil {
       return await fs.readJson(path.resolve(staticPath, "." + urlPath, "configs.json"));
     }
     else {
-      await new Promise<void>((resolve, reject) => {
+      return await new Promise<any>((resolve, reject) => {
         glob(path.resolve(staticPath, "*", "*", "configs.json"), async (err, files) => {
           if (err) {
             reject(err);
