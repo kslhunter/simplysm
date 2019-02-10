@@ -3,16 +3,21 @@
 import {JsonConvert, Logger, Type, Wait} from "@simplysm/common";
 import {ISdWebSocketRequest, ISdWebSocketResponse} from "./commons";
 import * as WebSocket from "ws";
+import * as fs from "fs-extra";
 
 export class SdWebSocketClient {
   private readonly _logger = new Logger("@simplysm/angular", "SdSocketClient");
   private _ws?: WebSocket;
   private readonly _eventListeners = new Map<number, (data: any) => (Promise<void> | void)>();
   private readonly _reqMap = new Map<number, (response: ISdWebSocketResponse) => void>();
+  private _lastRequestId = 0;
+
+  public get connected(): boolean {
+    return !!this._ws && this._ws.readyState === WebSocket.OPEN;
+  }
 
   public constructor(private readonly _port?: number,
-                     private readonly _host?: string,
-                     private readonly _protocol?: "ws" | "http") {
+                     private readonly _host?: string) {
   }
 
   public async connectAsync(): Promise<void> {
@@ -24,7 +29,7 @@ export class SdWebSocketClient {
       }
 
       // @ts-ignore
-      this._ws = new WebSocket(`${this._protocol || "ws"}://${this._host || location.hostname}:${this._port || location.port}`);
+      this._ws = new WebSocket(`ws://${this._host || location.hostname}:${this._port || location.port}`);
 
       this._ws.onopen = () => {
         // @ts-ignore
@@ -94,7 +99,7 @@ export class SdWebSocketClient {
     await this.sendAsync("emitEvent", [events.filter(item => infoSelector(item.info)).map(item => item.id), data]);
   }
 
-  public async sendAsync(command: string, params: any[], sendProgressCallback?: (progress: { current: number; total: number }) => void): Promise<any> {
+  public async uploadAsync(filePath: string, serverPath: string, sendProgressCallback?: (progress: { current: number; total: number }) => void, splitLength: number = 10000): Promise<void> {
     return await new Promise<any>(async (resolve, reject) => {
       if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
         try {
@@ -105,7 +110,69 @@ export class SdWebSocketClient {
         }
       }
 
-      const requestId = (Array.from(this._reqMap.keys()).max() || 0) + 1;
+      const requestId = this._lastRequestId++;
+      const fileSize = (await fs.lstat(filePath)).size;
+
+      if (sendProgressCallback) {
+        sendProgressCallback({
+          current: 0,
+          total: fileSize
+        });
+      }
+
+      let splitCompletedLength = 0;
+      this._reqMap.set(requestId, response => {
+        if (response.type === "error") {
+          this._reqMap.delete(requestId);
+          reject(new Error(response.body));
+        }
+        else if (response.type === "upload") {
+          splitCompletedLength += response.body;
+          if (sendProgressCallback) {
+            sendProgressCallback({
+              current: splitCompletedLength,
+              total: fileSize
+            });
+          }
+        }
+        else {
+          this._reqMap.delete(requestId);
+          resolve(response.body);
+        }
+      });
+
+      // 요청 보내기
+      if (sendProgressCallback) {
+        const fd = await fs.open(filePath, "r");
+        let cursor = 0;
+        while (cursor < fileSize) {
+          const buffer = Buffer.alloc(Math.min(splitLength, fileSize - cursor));
+          await fs.read(fd, buffer, 0, Math.min(splitLength, fileSize - cursor), cursor);
+          const str = `!upload(${requestId},${serverPath},${cursor},${fileSize})!${JsonConvert.stringify(buffer)}`;
+          this._ws!.send(str);
+          cursor += splitLength;
+        }
+      }
+      else {
+        const buffer = await fs.readFile(filePath);
+        const str = `!upload(${requestId},${serverPath},${0},${fileSize})!${JsonConvert.stringify(buffer)}`;
+        this._ws!.send(str);
+      }
+    });
+  }
+
+  public async sendAsync(command: string, params: any[], sendProgressCallback?: (progress: { current: number; total: number }) => void, splitLength: number = 10000): Promise<any> {
+    return await new Promise<any>(async (resolve, reject) => {
+      if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
+        try {
+          await Wait.true(() => !!this._ws && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
+        }
+        catch (err) {
+          throw new Error("웹 소켓이 연결되어있지 않습니다.");
+        }
+      }
+
+      const requestId = this._lastRequestId++;
       const request: ISdWebSocketRequest = {
         id: requestId,
         url: "",
@@ -120,8 +187,7 @@ export class SdWebSocketClient {
 
       const requestJson = JsonConvert.stringify(request)!;
 
-      const splitLength = 10000;
-      if (requestJson.length > splitLength * 10 && sendProgressCallback) {
+      if ((requestJson.length > splitLength * 10) && sendProgressCallback) {
         sendProgressCallback({
           current: 0,
           total: requestJson.length
@@ -150,15 +216,14 @@ export class SdWebSocketClient {
       });
 
       // 요청 보내기
-      if (requestJson.length > splitLength * 10 && sendProgressCallback) {
+      if ((requestJson.length > splitLength * 10) && sendProgressCallback) {
         let i = 0;
         let cursor = 0;
         while (cursor < requestJson.length) {
-          const str = "!split(" + requestId + "," + i + "," + Math.ceil(requestJson.length / splitLength) + ")!" + requestJson.slice(cursor, Math.min(cursor + splitLength, requestJson.length));
+          const str = `!split(${requestId},${i},${Math.ceil(requestJson.length / splitLength)})!${requestJson.slice(cursor, Math.min(cursor + splitLength, requestJson.length))}`;
           this._ws!.send(str);
           cursor += splitLength;
           i++;
-          // await Wait.time(10);
         }
       }
       else {

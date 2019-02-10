@@ -2,8 +2,6 @@ const {app, BrowserWindow} = require("electron");
 const url = require("url");
 const path = require("path");
 
-console.log(process.argv);
-
 app.on("ready", () => {
   let win = new BrowserWindow({
     width: 800,

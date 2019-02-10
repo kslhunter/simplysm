@@ -7,7 +7,7 @@ export interface ISdWebSocketRequest {
 
 export interface ISdWebSocketResponse {
   requestId: number;
-  type: "response" | "error" | "split";
+  type: "response" | "error" | "split" | "upload";
   body?: any;
 }
 

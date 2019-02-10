@@ -8,6 +8,10 @@ export class SdWebSocketProvider implements OnDestroy {
   private readonly _logger = new Logger("@simplysm/angular", "SdServiceProvider");
   public readonly socket = new SdWebSocketClient();
 
+  public get connected(): boolean {
+    return this.socket.connected;
+  }
+
   public constructor(private readonly _toast: SdToastProvider) {
     this._connectAsync().catch(err => {
       this._logger.error(err);
@@ -38,7 +42,7 @@ export class SdWebSocketProvider implements OnDestroy {
       const currentText = progress.current.toLocaleString().padStart(totalTextLength, " ");
       const totalText = progress.total.toLocaleString();
       const percent = progress.current * 100 / progress.total;
-      const message = `업로드: ${currentText} / ${totalText} (${Math.ceil(percent)}%)`;
+      const message = `전송 : ${currentText} / ${totalText} (${Math.ceil(percent)}%)`;
 
       if (!currToast) {
         currToast = this._toast.info(message, true);

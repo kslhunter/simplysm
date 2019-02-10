@@ -254,7 +254,7 @@ export class Queryable<T extends object> {
 
     if (queryDefJson) {
       if (Queryable._selectQueryHistory.has(queryDefJson)) {
-        await Wait.true(() => Queryable._selectQueryHistory.get(queryDefJson) !== undefined);
+        await Wait.true(() => Queryable._selectQueryHistory.get(queryDefJson) !== undefined, undefined, 30000);
         return Queryable._selectQueryHistory.get(queryDefJson) as T[];
       }
       Queryable._selectQueryHistory.set(queryDefJson, undefined);

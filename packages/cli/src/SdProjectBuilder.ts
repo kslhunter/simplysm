@@ -19,8 +19,12 @@ import {SdWebSocketClient} from "@simplysm/ws-common";
 import {SdWebpackWriteFilePlugin} from "./SdWebpackWriteFilePlugin";
 
 export class SdProjectBuilder {
-  private readonly _serverMap = new Map<number, SdWebSocketServer>();
-  private readonly _expressServerMiddlewareMap = new Map<number, RequestHandler[]>();
+  private readonly _serverMap = new Map<number, {
+    server: SdWebSocketServer;
+    middlewares: RequestHandler[];
+    packageKeys: string[];
+  }>();
+  // private readonly _expressServerMiddlewareMap = new Map<number, RequestHandler[]>();
   private config: ISdProjectConfig = {packages: {}};
 
   public async bootstrapAsync(): Promise<void> {
@@ -83,21 +87,23 @@ export class SdProjectBuilder {
     });
   }
 
-  public async publishAsync(argv?: { build?: boolean; packages?: string }): Promise<void> {
+  public async publishAsync(argv?: { build?: boolean; packages?: string; noCommit?: boolean }): Promise<void> {
     const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
     await this._readConfigAsync("production", packageKeys);
 
     const logger = new Logger("@simplysm/cli");
-    await new Promise<void>(async (resolve, reject) => {
-      await spawnAsync(["git", "status"], {
-        onMessage: async (errMsg, logMsg) => {
-          if (logMsg && logMsg.includes("Changes")) {
-            reject(new Error("커밋되지 않은 정보가 있습니다."));
+    if (!optional(argv, o => o.noCommit)) {
+      await new Promise<void>(async (resolve, reject) => {
+        await spawnAsync(["git", "status"], {
+          onMessage: async (errMsg, logMsg) => {
+            if (logMsg && logMsg.includes("Changes")) {
+              reject(new Error("커밋되지 않은 정보가 있습니다."));
+            }
           }
-        }
+        });
+        resolve();
       });
-      resolve();
-    });
+    }
 
     if (optional(argv, o => o.build)) {
       await this._parallelPackages(true, async packageKey => {
@@ -196,16 +202,14 @@ export class SdProjectBuilder {
 
           await Promise.all(filePaths.map(async filePath => {
             const relativeFilePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"), filePath);
-            await wsClient.sendAsync(
-              "FileService.uploadFileAsync",
-              [
-                path.join("www", projectNpmConfig.name, packageKey, relativeFilePath),
-                await fs.readFile(filePath)
-              ],
-              progress => {
-                packageLogger.log(`파일 업로드 : (${Math.ceil(progress.current * 100 / progress.total)}) ${filePath}`);
-              }
-            );
+
+            let total = 0;
+            let current = 0;
+            await wsClient.uploadAsync(filePath, path.join("www", projectNpmConfig.name, packageKey, relativeFilePath), progress => {
+              current += progress.current;
+              total += progress.total;
+              packageLogger.log(`파일 업로드 : (${(Math.floor(current * 10000 / total) / 100).toFixed(2).padStart(6, " ")}%) ${current.toLocaleString()} / ${total.toLocaleString()}`);
+            });
           }));
         }
         else {
@@ -217,9 +221,19 @@ export class SdProjectBuilder {
     });
 
     await spawnAsync(["git", "add", "."], {logger});
-    await spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});
-    await spawnAsync(["git", "tag", "-a", `"v${projectNpmConfig.version}"`, "-m", `"v${projectNpmConfig.version}"`], {logger});
-    // await spawnAsync(["git", "push", "origin", "--tags"], {logger});
+
+    if (!optional(argv, o => o.noCommit)) {
+      await spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});
+      await spawnAsync(["git", "tag", "-a", `"v${projectNpmConfig.version}"`, "-m", `"v${projectNpmConfig.version}"`], {logger});
+    }
+
+    logger.log(`배포가 완료되었습니다.`);
+  }
+
+  public async startServerOnlyAsync(argv?: { port: number }): Promise<void> {
+    await this._readConfigAsync("development", undefined);
+    await this._localUpdateAsync(true);
+    await this._startServerOnlyAsync(optional(argv, o => o.port) || 80);
   }
 
   public async _localUpdateAsync(watch?: boolean): Promise<void> {
@@ -365,44 +379,38 @@ export class SdProjectBuilder {
   }
 
   private async _parallelPackages(byDep: boolean, cb: (packageKey: string) => Promise<void>): Promise<void> {
-    const promises: Promise<void>[] = [];
-
     if (byDep) {
       const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
 
       const completedPackageNpmNames: string[] = [];
-      for (const packageKey of Object.keys(this.config.packages)) {
-        promises.push(new Promise<void>(async (resolve, reject) => {
-          try {
-            const packageNpmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
-            const packageNpmName = packageNpmConfig.name;
-            const packageNpmDeps = Object.merge(packageNpmConfig.dependencies, packageNpmConfig.devDependencies);
-            if (packageNpmDeps) {
-              for (const packageNpmDepName of Object.keys(packageNpmDeps)) {
-                if (allBuildPackageNpmNames.includes(packageNpmDepName)) {
-                  await Wait.true(() => completedPackageNpmNames.includes(packageNpmDepName));
-                }
+      await Promise.all(Object.keys(this.config.packages).map(async packageKey => {
+        const packageNpmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
+        const packageNpmName = packageNpmConfig.name;
+        const packageNpmDeps = Object.merge(packageNpmConfig.dependencies, packageNpmConfig.devDependencies);
+        if (packageNpmDeps) {
+          for (const packageNpmDepName of Object.keys(packageNpmDeps)) {
+            if (allBuildPackageNpmNames.includes(packageNpmDepName)) {
+              try {
+                await Wait.true(() => completedPackageNpmNames.includes(packageNpmDepName), undefined, 30000);
+              }
+              catch (err) {
+                new Logger("@simplysm/cli", packageKey).error("의존성 패키지의 빌드가 끝나지 않습니다.", packageNpmDepName);
+                throw err;
               }
             }
-
-            await cb(packageKey);
-
-            completedPackageNpmNames.push(packageNpmName);
-            resolve();
           }
-          catch (err) {
-            reject(err);
-          }
-        }));
-      }
+        }
+
+        await cb(packageKey);
+
+        completedPackageNpmNames.push(packageNpmName);
+      }));
     }
     else {
-      for (const packageKey of Object.keys(this.config.packages)) {
-        promises.push(cb(packageKey));
-      }
+      await Promise.all(Object.keys(this.config.packages).map(async packageKey => {
+        await cb(packageKey);
+      }));
     }
-
-    await Promise.all(promises);
   }
 
   private async _getAllBuildPackageNpmNamesAsync(): Promise<string[]> {
@@ -476,6 +484,30 @@ export class SdProjectBuilder {
     }
   }
 
+  private async _startServerOnlyAsync(serverPort: number): Promise<void> {
+    const logger = new Logger("@simplysm/cli", "server");
+    const serverDirPath = path.dirname(require.resolve("@simplysm/ws-server"));
+
+    let server = new SdWebSocketServer();
+    await server.listenAsync(path.resolve(serverDirPath, "www"), serverPort);
+
+    await FileWatcher.watch(
+      path.resolve(process.cwd(), "node_modules", "@simplysm", "ws-server", "dist", "**/*.js"),
+      ["add", "change", "unlink"],
+      async () => {
+        logger.log(`개발서버를 다시 재시작합니다.`);
+        await server.closeAsync();
+
+        require("decache")("@simplysm/ws-server"); //tslint:disable-line:no-require-imports
+        const newSdWebSocketServer = require("@simplysm/ws-server").SdWebSocketServer; //tslint:disable-line:no-require-imports
+        server = new newSdWebSocketServer();
+        await server.listenAsync(path.resolve(serverDirPath, "www"), serverPort);
+        logger.info(`개발서버 서비스가 재시작되었습니다`);
+      });
+
+    logger.info(`개발서버 서비스가 시작되었습니다`);
+  }
+
   private async _runWebpackBuildWatchAsync(packageKey: string, serverPort: number): Promise<void> {
     const logger = new Logger("@simplysm/cli", packageKey);
 
@@ -489,22 +521,33 @@ export class SdProjectBuilder {
         if (!this._serverMap.has(serverPort)) {
           let server = new SdWebSocketServer();
           await server.listenAsync(path.resolve(serverDirPath, "www"), serverPort);
-          this._serverMap.set(serverPort, server);
+          this._serverMap.set(serverPort, {
+            server,
+            packageKeys: [],
+            middlewares: []
+          });
 
           await FileWatcher.watch(
             path.resolve(process.cwd(), "node_modules", "@simplysm", "ws-server", "dist", "**/*.js"),
             ["add", "change", "unlink"],
             async () => {
-              logger.log(`개발서버를 다시 시작합니다.`);
+              logger.log(`개발서버를 다시 재시작합니다.`);
               await server.closeAsync();
 
               require("decache")("@simplysm/ws-server"); //tslint:disable-line:no-require-imports
               const newSdWebSocketServer = require("@simplysm/ws-server").SdWebSocketServer; //tslint:disable-line:no-require-imports
               server = new newSdWebSocketServer();
               await server.listenAsync(path.resolve(serverDirPath, "www"), serverPort);
-              this._serverMap.set(serverPort, server);
-              server.expressServer!.use(this._expressServerMiddlewareMap.get(serverPort)!);
-              logger.info(`개발서버 서비스가 시작되었습니다: http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`);
+              const serverInfo = this._serverMap.get(serverPort)!;
+              serverInfo.server = server;
+              server.expressServer!.use(serverInfo.middlewares);
+              logger.info.apply(
+                logger,
+                [`개발서버 서비스가 재시작되었습니다`]
+                  .concat(serverInfo.packageKeys.map(serverPackageKey =>
+                    `http://localhost:${serverPort}/${projectNpmConfig.name}/${serverPackageKey}/`
+                  ))
+              );
             });
         }
 
@@ -512,13 +555,10 @@ export class SdProjectBuilder {
 
         const compiler = webpack(webpackConfig);
 
-        const currServer = this._serverMap.get(serverPort)!;
+        const currServerInfo = this._serverMap.get(serverPort)!;
+        currServerInfo.packageKeys.push(packageKey);
 
-        if (!this._expressServerMiddlewareMap.get(serverPort)) {
-          this._expressServerMiddlewareMap.set(serverPort, []);
-        }
-
-        const expressServerMiddlewareList = this._expressServerMiddlewareMap.get(serverPort)!;
+        const expressServerMiddlewareList = currServerInfo.middlewares;
         expressServerMiddlewareList.pushRange([
           WebpackDevMiddleware(compiler, {
             publicPath: webpackConfig.output!.publicPath!,
@@ -532,7 +572,7 @@ export class SdProjectBuilder {
             log: false
           })
         ]);
-        currServer.expressServer!.use(expressServerMiddlewareList);
+        currServerInfo.server.expressServer!.use(expressServerMiddlewareList);
 
         const packageDistConfigsFilePath = path.resolve(serverDirPath, "www", projectNpmConfig.name, packageKey, "configs.json");
         await fs.mkdirs(path.dirname(packageDistConfigsFilePath));
@@ -644,6 +684,8 @@ export class SdProjectBuilder {
   private async _runTsLintWorkerAsync(packageKey: string, watch?: boolean): Promise<void> {
     const logger = new Logger("@simplysm/cli", packageKey);
 
+    logger.log("코드검사를 시작합니다...");
+
     const worker = child_process.fork(
       path.resolve(__dirname, "..", "lib", "ts-lint-worker.js"),
       [
@@ -658,6 +700,7 @@ export class SdProjectBuilder {
     await new Promise<void>((resolve, reject) => {
       worker.on("message", message => {
         if (message.type === "finish") {
+          logger.log("코드검사가 완료되었습니다.");
           resolve();
         }
         else if (message.type === "warning") {
@@ -665,7 +708,15 @@ export class SdProjectBuilder {
         }
         else if (message.type === "error") {
           logger.error("코드검사중 에러가 발생하였습니다.", message.message);
-          reject(new Error(message.message));
+          if (!watch) {
+            reject(new Error(message.message));
+          }
+        }
+        else {
+          logger.error("코드검사중 메시지가 잘못되었습니다. [" + message + "]");
+          if (!watch) {
+            reject(new Error("코드검사중 메시지가 잘못되었습니다."));
+          }
         }
       });
 
@@ -677,7 +728,7 @@ export class SdProjectBuilder {
     });
 
     if (watch) {
-      await FileWatcher.watch(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/**/*.ts"), ["add", "change"], async files => {
+      await FileWatcher.watch(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/**/*.ts"), ["add", "change"], files => {
         try {
           worker.send(files.map(item => item.filePath));
         }
@@ -717,7 +768,9 @@ export class SdProjectBuilder {
         }
         else if (message.type === "error") {
           logger.error("빌드중 에러가 발생하였습니다.", message.message);
-          reject(new Error(message.message));
+          if (!watch) {
+            reject(new Error(message.message));
+          }
         }
       });
 
@@ -745,6 +798,8 @@ export class SdProjectBuilder {
     await new Promise<void>((resolve, reject) => {
       const logger = new Logger("@simplysm/cli", packageKey);
 
+      logger.log("타입체크를 시작합니다.");
+
       const worker = child_process.fork(
         path.resolve(__dirname, "..", "lib", "ts-check-and-declaration-worker.js"),
         [
@@ -757,11 +812,14 @@ export class SdProjectBuilder {
       );
       worker.on("message", message => {
         if (message.type === "finish") {
+          logger.log("타입체크가 완료되었습니다.");
           resolve();
         }
         else if (message.type === "error") {
           logger.error(`타입체크중 오류가 발생하였습니다.`, message.message);
-          reject(new Error(message.message));
+          if (!watch) {
+            reject(new Error(message.message));
+          }
         }
       });
     });
@@ -813,7 +871,7 @@ export class SdProjectBuilder {
               chunks: "initial",
               enforce: true
             },
-            simplism: {
+            simplysm: {
               test: /[\\/]node_modules[\\/]@simplysm/,
               name: "simplysm",
               chunks: "initial",
@@ -900,6 +958,11 @@ export class SdProjectBuilder {
       ],
       externals: [
         (context, request, callback) => {
+          if (request === "fs" || request === "fs-extra") {
+            callback(undefined, "undefined");
+            return;
+          }
+
           if (request === "ws") {
             callback(undefined, `WebSocket`);
             return;

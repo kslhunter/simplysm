@@ -23,7 +23,7 @@ export class SdProjectBuilderUtil {
 
   public static async writeTsConfigAsync(packageKey: string, tsconfig: ITsConfig, isForBuild: boolean = false): Promise<void> {
     const tsconfigPath = SdProjectBuilderUtil.getTsConfigPath(packageKey, isForBuild);
-    await fs.writeJson(tsconfigPath, tsconfig, {spaces: 2});
+    await fs.writeJson(tsconfigPath, tsconfig, {spaces: 2, fs});
   }
 
   public static async readConfigAsync(env: "development" | "production", packageKeys: string[] | undefined): Promise<ISdProjectConfig> {
@@ -90,7 +90,7 @@ export class SdProjectBuilderUtil {
 
   public static async writeNpmConfigAsync(packageKey: string, npmConfig: INpmConfig): Promise<void> {
     const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
-    await fs.writeJson(configPath, npmConfig, {spaces: 2});
+    await fs.writeJson(configPath, npmConfig, {spaces: 2, fs});
   }
 
   public static getProjectNpmConfigPath(): string {

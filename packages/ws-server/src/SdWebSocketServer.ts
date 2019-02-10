@@ -64,6 +64,7 @@ export class SdWebSocketServer extends EventEmitter {
         this._wsConnections.push(wsConnection);
 
         wsConnection.on("request", async req => {
+
           this._logger.log(`요청을 받았습니다 : ${connReq.headers.origin} - ${JsonConvert.stringify(req, {hideBuffer: true})}`);
           let res: ISdWebSocketResponse;
           try {

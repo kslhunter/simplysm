@@ -54,9 +54,26 @@ const argv = yargs
           describe: "빌드후에 배포합니다.",
           default: false
         },
+        noCommit: {
+          type: "boolean",
+          describe: "커밋하지 않습니다.",
+          default: false
+        },
         packages: {
           type: "string",
           describe: "수행할 패키지를 선택합니다."
+        }
+      })
+  )
+  .command(
+    "server",
+    "서버만 시작합니다.",
+    cmd => cmd.version(false)
+      .options({
+        port: {
+          type: "number",
+          describe: "서버포트 설정",
+          default: 80
         }
       })
   )
@@ -65,18 +82,25 @@ const argv = yargs
 (async () => {
   if (argv._[0] === "bootstrap") {
     await new SdProjectBuilder().bootstrapAsync();
+    process.exit(0);
   }
   else if (argv._[0] === "local-update") {
     await new SdProjectBuilder().localUpdateAsync();
+    process.exit(0);
   }
   else if (argv._[0] === "watch") {
     await new SdProjectBuilder().watchAsync(argv as any);
   }
   else if (argv._[0] === "build") {
     await new SdProjectBuilder().buildAsync(argv as any);
+    process.exit(0);
   }
   else if (argv._[0] === "publish") {
     await new SdProjectBuilder().publishAsync(argv as any);
+    process.exit(0);
+  }
+  else if (argv._[0] === "server") {
+    await new SdProjectBuilder().startServerOnlyAsync(argv as any);
   }
   else {
     throw new Error("명령어가 잘못 되었습니다.");

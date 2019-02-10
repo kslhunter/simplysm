@@ -3,10 +3,13 @@ import * as http from "http";
 import {EventEmitter} from "events";
 import {JsonConvert, Logger, optional} from "@simplysm/common";
 import {ISdWebSocketEmitResponse, ISdWebSocketRequest, ISdWebSocketResponse} from "@simplysm/ws-common";
+import * as fs from "fs-extra";
+import * as path from "path";
 
 export class SdWebSocketServerConnection extends EventEmitter {
-  private readonly _logger = new Logger("@simplysm/ws-server", "SdServerConnection");
+  private readonly _logger = new Logger("@simplysm/ws-server", "SdWebSocketServerConnection");
   private readonly _splitRequestMap = new Map<number, { timer: NodeJS.Timer; bufferStrings: string[] }>();
+  private readonly _uploadRequestMap = new Map<number, { timer: NodeJS.Timer; fd: number; filePath: string; completedLength: number }>();
   private readonly origin: string;
 
   public get isOpen(): boolean {
@@ -19,11 +22,17 @@ export class SdWebSocketServerConnection extends EventEmitter {
 
     this._conn.on("close", async () => {
       this._splitRequestMap.clear();
+      this._uploadRequestMap.clear();
       this.emit("close");
     });
 
     this._conn.on("message", async (msg: string) => {
-      await this._onMessageAsync(msg);
+      try {
+        await this._onMessageAsync(msg);
+      }
+      catch (err) {
+        this._logger.error(err);
+      }
     });
   }
 
@@ -52,8 +61,10 @@ export class SdWebSocketServerConnection extends EventEmitter {
   private async _onMessageAsync(msg: string): Promise<void> {
     let message;
 
-    // 부분 요청 합치
     const splitRegexp = /^!split\(([0-9]*),([0-9]*),([0-9]*)\)!(.*)/;
+    const uploadRegexp = /^!upload\(([0-9]*),([^,]*),([0-9]*),([0-9]*)\)!(.*)/;
+
+    // 부분 요청 합치
     if (splitRegexp.test(msg)) {
       const match = msg.match(splitRegexp)!;
       const requestId = Number(match[1]);
@@ -85,6 +96,7 @@ export class SdWebSocketServerConnection extends EventEmitter {
         type: "split",
         body: str.length
       };
+
       if (this.isOpen) {
         await this.sendAsync(res);
       }
@@ -100,6 +112,72 @@ export class SdWebSocketServerConnection extends EventEmitter {
       clearTimeout(this._splitRequestMap.get(requestId)!.timer);
       this._splitRequestMap.delete(requestId);
       message = splitRequestValue.bufferStrings.join("");
+    }
+    // 업로드 요청시 파일쓰기
+    else if (uploadRegexp.test(msg)) {
+      const match = msg.match(uploadRegexp)!;
+      const requestId = Number(match[1]);
+      const filePath = match[2];
+      const offset = Number(match[3]);
+      const length = Number(match[4]);
+      const buf = JsonConvert.parse(match[5]) as Buffer;
+
+      if (!this._uploadRequestMap.has(requestId)) {
+        fs.mkdirsSync(path.dirname(filePath));
+        const fd = fs.openSync(filePath, "w");
+        const newUploadRequestValue = {
+          timer: setTimeout(async () => {
+            this._logger.warn(`업로드중에 타임아웃이 발생했습니다. : ${this.origin}`);
+            fs.closeSync(fd);
+            fs.unlinkSync(filePath);
+            this._uploadRequestMap.delete(requestId);
+          }, 30000),
+          fd,
+          filePath,
+          completedLength: 0
+        };
+        this._uploadRequestMap.set(requestId, newUploadRequestValue);
+      }
+
+      const uploadRequestValue = this._uploadRequestMap.get(requestId)!;
+      fs.writeSync(uploadRequestValue.fd, buf, 0, buf.length, offset);
+      uploadRequestValue.completedLength += buf.length;
+
+      clearTimeout(uploadRequestValue.timer);
+      uploadRequestValue.timer = setTimeout(() => {
+        this._logger.warn(`업로드중에 타임아웃이 발생했습니다. : ${this.origin}`);
+        fs.closeSync(uploadRequestValue.fd);
+        fs.unlinkSync(uploadRequestValue.filePath);
+        this._uploadRequestMap.delete(requestId);
+      }, 30000);
+
+      const res: ISdWebSocketResponse = {
+        requestId,
+        type: "upload",
+        body: buf.length
+      };
+
+      if (this.isOpen) {
+        await this.sendAsync(res);
+      }
+
+      const completedLength = uploadRequestValue.completedLength;
+      this._logger.log(`업로드 요청을 처리했습니다 : ${this.origin} - ${completedLength.toLocaleString()} /${length.toLocaleString()}`);
+
+      if (uploadRequestValue.completedLength !== length) {
+        return;
+      }
+
+      clearTimeout(uploadRequestValue.timer);
+      fs.closeSync(uploadRequestValue.fd);
+      this._uploadRequestMap.delete(requestId);
+
+      const endRes: ISdWebSocketResponse = {
+        requestId,
+        type: "response"
+      };
+      await this.sendAsync(endRes);
+      return;
     }
     else {
       message = msg;
