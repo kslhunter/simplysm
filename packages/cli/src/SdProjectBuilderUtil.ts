@@ -2,6 +2,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import {INpmConfig, ISdConfigFileJson, ISdPackageConfig, ISdProjectConfig, ITsConfig} from "./commons";
 import {optional} from "@simplysm/common";
+import * as os from "os";
 
 export class SdProjectBuilderUtil {
   public static getProjectPath(...args: string[]): string {
@@ -23,7 +24,7 @@ export class SdProjectBuilderUtil {
 
   public static async writeTsConfigAsync(packageKey: string, tsconfig: ITsConfig, isForBuild: boolean = false): Promise<void> {
     const tsconfigPath = SdProjectBuilderUtil.getTsConfigPath(packageKey, isForBuild);
-    await fs.writeJson(tsconfigPath, tsconfig, {spaces: 2, fs});
+    await fs.writeJson(tsconfigPath, tsconfig, {spaces: 2, fs, EOL: os.EOL});
   }
 
   public static async readConfigAsync(env: "development" | "production", packageKeys: string[] | undefined): Promise<ISdProjectConfig> {
@@ -90,7 +91,7 @@ export class SdProjectBuilderUtil {
 
   public static async writeNpmConfigAsync(packageKey: string, npmConfig: INpmConfig): Promise<void> {
     const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
-    await fs.writeJson(configPath, npmConfig, {spaces: 2, fs});
+    await fs.writeJson(configPath, npmConfig, {spaces: 2, fs, EOL: os.EOL});
   }
 
   public static getProjectNpmConfigPath(): string {
