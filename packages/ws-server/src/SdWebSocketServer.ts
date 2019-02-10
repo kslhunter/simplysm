@@ -66,15 +66,14 @@ export class SdWebSocketServer extends EventEmitter {
           for (const file of files) {
             const config = await fs.readJson(file);
             if (config.vhost) {
-              const currExpress = express();
-              currExpress.use(express.static(path.dirname(file)));
-              this.expressServer!.use(vhost(config.vhost, currExpress));
+              this.expressServer!.use(vhost(config.vhost, express.static(path.dirname(file))));
             }
           }
 
           resolve1();
         });
       });
+
       this._httpServer = http.createServer(this.expressServer);
       this._wsServer = new WebSocket.Server({server: this._httpServer});
       this._wsConnections = [];

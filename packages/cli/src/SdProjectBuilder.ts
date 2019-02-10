@@ -551,7 +551,7 @@ export class SdProjectBuilder {
                 [`개발서버 서비스가 재시작되었습니다`]
                   .concat(serverInfo.packageKeys.map(serverPackageKey => {
                     const serverPackageConfig = this.config.packages[serverPackageKey];
-                    return packageConfig.vhost
+                    return serverPackageConfig.vhost
                       ? `http://${serverPackageConfig.vhost}:${serverPort}`
                       : `http://localhost:${serverPort}/${projectNpmConfig.name}/${serverPackageKey}/`;
                   }))
