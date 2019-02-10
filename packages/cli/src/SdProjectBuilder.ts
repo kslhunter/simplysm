@@ -988,24 +988,18 @@ export class SdProjectBuilder {
 
           callback(undefined, undefined);
         }
-      ]/*,
-      externals: [
-        (context, request, callback) => {
-          if (request === "net" || request === "fs" || request === "tls") {
-            callback(undefined, `""`);
-            return;
-          }
-
-          callback(undefined, undefined);
-        }
-      ]*/
+      ]
     };
 
     if (mode === "production") {
       webpackConfig = webpackMerge(webpackConfig, {
         mode: "production",
         devtool: "source-map",
-        entry: path.resolve(__dirname, "../lib/main.js")
+        entry: path.resolve(__dirname, "../lib/main.js"),
+        optimization: {
+          noEmitOnErrors: true,
+          minimize: false
+        }
       });
     }
     else {
