@@ -51,6 +51,8 @@ export * from "./controls/SdTableControl";
 export * from "./controls/SdTabviewControl";
 export * from "./controls/SdTabviewItemControl";
 export * from "./controls/SdTextfieldControl";
+export * from "./controls/SdToastContainerControl";
+export * from "./controls/SdToastControl";
 export * from "./controls/SdTopbarContainerControl";
 export * from "./controls/SdTopbarControl";
 export * from "./controls/SdTopbarMenuControl";

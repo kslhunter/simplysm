@@ -1,5 +1,6 @@
 import {Type} from "../types/Type";
 import {JsonConvert} from "../utils/JsonConvert";
+import {optional} from "..";
 
 declare global {
   // tslint:disable-next-line:interface-name
@@ -58,7 +59,7 @@ declare global {
 
     ofType<N>(type: Type<N>): N[];
 
-    diffs<K extends Extract<keyof T, string>>(target: T[], options?: { keyProps?: K[] }): { source?: T; target?: T }[];
+    diffs<K extends Extract<keyof P, string>, P extends T>(target: P[], options?: { keyProps?: K[]; excludeProps?: K[] }): { source?: T; target?: T }[];
 
     merge<K extends Extract<keyof T, string>>(target: Partial<T>[], options?: { keyProps?: K[]; replacement?: boolean }): void;
 
@@ -255,7 +256,7 @@ Array.prototype.ofType = function <N>(type: Type<N>): N[] {
   return this.filter(item => item instanceof type);
 };
 
-Array.prototype.diffs = function (target: any[], options?: { keyProps?: string[] }): { source?: any; target?: any }[] {
+Array.prototype.diffs = function (target: any[], options?: { keyProps?: string[]; excludeProps?: string[] }): { source?: any; target?: any }[] {
   if (target.length < 1) {
     return this.map(item => ({source: item}));
   }
@@ -269,7 +270,7 @@ Array.prototype.diffs = function (target: any[], options?: { keyProps?: string[]
         return options.keyProps.every(keyProp => targetItem[keyProp] === item[keyProp]);
       }
       else {
-        return Object.equal(targetItem, item);
+        return Object.equal(targetItem, item, {excludeProps: optional(options, o => o.excludeProps)});
       }
     });
 
@@ -279,7 +280,7 @@ Array.prototype.diffs = function (target: any[], options?: { keyProps?: string[]
     }
     else {
       // 수정됨
-      if (options && options.keyProps && !Object.equal(item, existsTargetItem)) {
+      if (options && options.keyProps && !Object.equal(item, existsTargetItem, {excludeProps: options.excludeProps})) {
         result.push({source: item, target: existsTargetItem});
       }
       currTarget.remove(existsTargetItem);

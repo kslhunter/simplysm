@@ -1,3 +1,4 @@
+sd-toast-container,
 ._sd-toast-container {
   display: block;
   position: fixed;
@@ -9,6 +10,7 @@
   padding: get($gap, xxl);
   z-index: $z-index-toast;
 
+  > sd-toast,
   > ._sd-toast {
     display: block;
     margin-bottom: get($gap, sm);
@@ -41,6 +43,7 @@
     }
 
     @each $key, $val in $theme-color {
+      &[sd-theme=#{$key}],
       &._sd-toast-#{$key} {
         > ._sd-toast-block {
           background: get($val, default);

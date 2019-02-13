@@ -70,6 +70,8 @@ import {SdTableControl} from "./controls/SdTableControl";
 import {SdListItemButtonControl} from "./controls/SdListItemButtonControl";
 import {LinkActionDirective} from "./directives/LinkActionDirective";
 import {SdBarobillProvider} from "./providers/SdBarobillProvider";
+import {SdToastContainerControl} from "./controls/SdToastContainerControl";
+import {SdToastControl} from "./controls/SdToastControl";
 
 const controls: Type<any>[] = [
   SdBusyContainerControl,
@@ -125,7 +127,9 @@ const controls: Type<any>[] = [
 
 const entryControls: Type<any>[] = [
   SdModalControl,
-  SdAddressSearchModal
+  SdAddressSearchModal,
+  SdToastContainerControl,
+  SdToastControl
 ];
 
 const directives: Type<any>[] = [
