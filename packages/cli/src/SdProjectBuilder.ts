@@ -396,7 +396,7 @@ export class SdProjectBuilder {
           for (const packageNpmDepName of Object.keys(packageNpmDeps)) {
             if (allBuildPackageNpmNames.includes(packageNpmDepName)) {
               try {
-                await Wait.true(() => completedPackageNpmNames.includes(packageNpmDepName), undefined, 30000);
+                await Wait.true(() => completedPackageNpmNames.includes(packageNpmDepName), undefined, 60000);
               }
               catch (err) {
                 new Logger("@simplysm/cli", packageKey).error("의존성 패키지의 빌드가 끝나지 않습니다.", packageNpmDepName);
@@ -708,7 +708,8 @@ export class SdProjectBuilder {
         watch ? "watch" : "build"
       ],
       {
-        stdio: [undefined, undefined, undefined, "ipc"]
+        stdio: ["inherit", "inherit", "inherit", "ipc"],
+        execArgv: ["--max-old-space-size=2048"]
       }
     );
 
@@ -776,7 +777,8 @@ export class SdProjectBuilder {
         watch ? "watch" : "build"
       ],
       {
-        stdio: [undefined, undefined, undefined, "ipc"]
+        stdio: ["inherit", "inherit", "inherit", "ipc"],
+        execArgv: ["--max-old-space-size=2048"]
       }
     );
 
@@ -824,7 +826,6 @@ export class SdProjectBuilder {
       const logger = new Logger("@simplysm/cli", packageKey);
 
       logger.log("타입체크를 시작합니다.");
-
       const worker = child_process.fork(
         path.resolve(__dirname, "..", "lib", "ts-check-and-declaration-worker.js"),
         [
@@ -832,7 +833,8 @@ export class SdProjectBuilder {
           watch ? "watch" : "build"
         ],
         {
-          stdio: [undefined, undefined, undefined, "ipc"]
+          stdio: ["inherit", "inherit", "inherit", "ipc"],
+          execArgv: ["--max-old-space-size=2048"]
         }
       );
 

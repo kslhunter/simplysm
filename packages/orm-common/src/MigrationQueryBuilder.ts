@@ -95,7 +95,7 @@ export class MigrationQueryBuilder {
       name: string;
       columnNames: string[];
     }
-  ) {
+  ): string {
     let query = "";
 
     query += `CREATE INDEX [IDX_${tableDef.database}_${tableDef.scheme}_${tableDef.name}_${indexDef.name}] ON [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] (${indexDef.columnNames.map(colName => `[${colName}]`).join(", ")});\n`;
