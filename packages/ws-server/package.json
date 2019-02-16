@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/ws-server",
-  "version": "1.0.105",
+  "version": "1.0.107",
   "description": "심플리즘 패키지 (웹소켓 서버)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -11,19 +11,19 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/barobill-common": "1.0.105",
-    "@simplysm/common": "1.0.105",
-    "@simplysm/orm": "1.0.105",
-    "@simplysm/orm-common": "1.0.105",
-    "@simplysm/smtp-client-common": "1.0.105",
-    "@simplysm/ws-common": "1.0.105",
+    "@simplysm/barobill-common": "1.0.107",
+    "@simplysm/common": "1.0.107",
+    "@simplysm/orm": "1.0.107",
+    "@simplysm/orm-common": "1.0.107",
+    "@simplysm/smtp-client-common": "1.0.107",
+    "@simplysm/ws-common": "1.0.107",
     "express": "^4.16.4",
     "fs-extra": "^7.0.1",
     "glob": "^7.1.3",
     "nodemailer": "^5.1.1",
-    "soap": "^0.25.0",
+    "soap": "^0.26.0",
     "vhost": "^3.0.2",
     "ws": "^6.1.3",
-    "yargs": "^12.0.5"
+    "yargs": "^13.2.0"
   }
 }
