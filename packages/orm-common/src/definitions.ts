@@ -8,6 +8,7 @@ export interface ITableDef {
   columns?: IColumnDef[];
   foreignKeys?: IForeignKeyDef[];
   foreignKeyTargets?: IForeignKeyTargetDef[];
+  indexes?: IIndexDef[];
 }
 
 export interface IColumnDef {
@@ -19,6 +20,11 @@ export interface IColumnDef {
   description?: string;
 
   typeFwd(): Type<any>;
+}
+
+export interface IIndexDef {
+  name: string;
+  columnNames: string[];
 }
 
 export interface IForeignKeyDef {

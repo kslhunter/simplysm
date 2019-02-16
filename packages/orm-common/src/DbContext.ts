@@ -283,6 +283,23 @@ export abstract class DbContext {
     }
     query += "GO\n\n";
 
+    // INDEX 구성
+    for (const tableDef of tableDefs) {
+      if (!tableDef.indexes) continue;
+      for (const indexDef of tableDef.indexes) {
+        query += new MigrationQueryBuilder().createIndex(
+          {
+            database: tableDef.database || this.mainDb!,
+            scheme: tableDef.scheme,
+            name: tableDef.name
+          },
+          indexDef
+        ) + "\n";
+      }
+    }
+    query += "GO\n\n";
+
+    // Migration 테이블 구성
     query += new MigrationQueryBuilder().createTable(
       {database: this.mainDb!, scheme: "dbo", name: "_migration"},
       [
@@ -394,6 +411,24 @@ export abstract class DbContext {
         },
         targetColumnNames: fkDef.targetColumnNames
       }
+    );
+    await this.executeAsync([query]);
+  }
+
+  public async createIndexAsync(
+    tableDef: { database?: string; scheme?: string; name: string },
+    indexDef: {
+      name: string;
+      columnNames: string[];
+    }
+  ): Promise<void> {
+    const query = new MigrationQueryBuilder().createIndex(
+      {
+        database: tableDef.database || this.mainDb!,
+        scheme: tableDef.scheme || "dbo",
+        name: tableDef.name
+      },
+      indexDef
     );
     await this.executeAsync([query]);
   }

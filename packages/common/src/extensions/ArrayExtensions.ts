@@ -59,7 +59,7 @@ declare global {
 
     ofType<N>(type: Type<N>): N[];
 
-    diffs<K extends Extract<keyof P, string>, P extends T>(target: P[], options?: { keyProps?: K[]; excludeProps?: K[] }): { source?: T; target?: T }[];
+    diffs<K extends Extract<keyof P, string>, P extends T>(target: P[], options?: { keyProps?: K[]; excludeProps?: K[] }): { source?: T; target?: P }[];
 
     merge<K extends Extract<keyof T, string>>(target: Partial<T>[], options?: { keyProps?: K[]; replacement?: boolean }): void;
 

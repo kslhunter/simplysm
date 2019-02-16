@@ -51,6 +51,26 @@ export function Column<T>(columnDef?: {
   };
 }
 
+export function Index<T>(indexName?: string, order?: number): (object: T, propertyKey: string) => void {
+  return (object: T, propertyKey: string) => {
+    const classType = object.constructor;
+
+    const tableDef: ITableDef = core.Reflect.getMetadata(tableDefMetadataKey, classType) || {};
+    tableDef.indexes = tableDef.indexes || [];
+
+    let indexObj = tableDef.indexes.single(item => item.name === (indexName || propertyKey));
+    if (!indexObj) {
+      indexObj = {
+        name: indexName || propertyKey,
+        columnNames: []
+      };
+      tableDef.indexes.push(indexObj);
+    }
+
+    indexObj.columnNames[order || 0] = propertyKey;
+  };
+}
+
 export function ForeignKey<T>(columnNames: (keyof T) | ((keyof T)[]), targetTypeFwd: () => Type<any>, description?: string): (object: Partial<T>, propertyKey: string) => void {
   return (object: Partial<T>, propertyKey: string) => {
     const classType = object.constructor;

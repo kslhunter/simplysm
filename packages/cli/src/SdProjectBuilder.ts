@@ -713,6 +713,11 @@ export class SdProjectBuilder {
     );
 
     await new Promise<void>((resolve, reject) => {
+      worker.on("error", err => {
+        logger.log("코드검사 실행중 오류가 발생했습니다.");
+        reject(err);
+      });
+
       worker.on("message", message => {
         if (message.type === "finish") {
           logger.log("코드검사가 완료되었습니다.");
@@ -776,6 +781,11 @@ export class SdProjectBuilder {
     );
 
     await new Promise<void>((resolve, reject) => {
+      worker.on("error", err => {
+        logger.log("빌드 실행중 오류가 발생했습니다.");
+        reject(err);
+      });
+
       worker.on("message", message => {
         if (message.type === "finish") {
           logger.log("빌드가 완료되었습니다.");
@@ -825,6 +835,12 @@ export class SdProjectBuilder {
           stdio: [undefined, undefined, undefined, "ipc"]
         }
       );
+
+      worker.on("error", err => {
+        logger.log("빌드 실행중 오류가 발생했습니다.");
+        reject(err);
+      });
+
       worker.on("message", message => {
         if (message.type === "finish") {
           logger.log("타입체크가 완료되었습니다.");

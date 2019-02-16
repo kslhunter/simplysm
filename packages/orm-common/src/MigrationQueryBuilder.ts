@@ -85,6 +85,27 @@ export class MigrationQueryBuilder {
     return query.trim();
   }
 
+  public createIndex(
+    tableDef: {
+      database: string;
+      scheme: string;
+      name: string;
+    },
+    indexDef: {
+      name: string;
+      columnNames: string[];
+    }
+  ) {
+    let query = "";
+
+    query += `CREATE INDEX [IDX_${tableDef.database}_${tableDef.scheme}_${tableDef.name}_${indexDef.name}] ON [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] (${indexDef.columnNames.map(colName => `[${colName}]`).join(", ")});\n`;
+    query += ``;
+    query += ``;
+    query += ``;
+
+    return query.trim();
+  }
+
   public removeForeignKey(
     tableDef: {
       database: string;
