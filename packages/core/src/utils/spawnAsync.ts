@@ -15,6 +15,10 @@ export async function spawnAsync(cmds: string[], opts?: { env?: ProcessEnv; cwd?
       cwd: optional(opts, o => o.cwd) || process.cwd()
     });
 
+    worker.on("error", err => {
+      reject(err);
+    });
+
     let resultMessage = "";
     worker.stdout.on("data", async data => {
       resultMessage += data.toString();
@@ -49,7 +53,7 @@ export async function spawnAsync(cmds: string[], opts?: { env?: ProcessEnv; cwd?
       }
     });
 
-    worker.on("close", async code => {
+    worker.on("exit", async code => {
       if (opts && opts.logger) {
         if (errorMessage.replace(/\r/g, "")) {
           opts.logger!.error(errorMessage);
