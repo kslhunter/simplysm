@@ -194,7 +194,13 @@ export class SdSheetControl implements DoCheck, OnInit {
   @SdTypeValidate({type: Number, notnull: true})
   public get pageLength(): number {
     if (this.pageItemCount && this.items) {
-      return Math.ceil(this.items.length / this.pageItemCount);
+      const pageLength = Math.ceil(this.items.length / this.pageItemCount);
+
+      if (this.page + 1 < pageLength) {
+        this.page = pageLength - 1;
+      }
+
+      return pageLength;
     }
     else {
       return this._pageLength;

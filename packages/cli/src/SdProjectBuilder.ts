@@ -5,11 +5,10 @@ import * as webpack from "webpack";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import * as webpackMerge from "webpack-merge";
 import * as glob from "glob";
-import {FileWatcher, spawnAsync} from "@simplysm/core";
+import {FileWatcher, ProcessManager} from "@simplysm/core";
 import {SdProjectBuilderUtil} from "./SdProjectBuilderUtil";
 import {SdWebpackLoggerPlugin} from "./SdWebpackLoggerPlugin";
 import {ISdProjectConfig, ITsConfig} from "./commons";
-import * as child_process from "child_process";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import {RequestHandler} from "express";
@@ -34,7 +33,7 @@ export class SdProjectBuilder {
       await this._createTsConfigFileAsync(packageKey);
 
       const logger = new Logger("@simplysm/cli", packageKey);
-      await spawnAsync(["git", "add", SdProjectBuilderUtil.getTsConfigPath(packageKey)], {logger});
+      await ProcessManager.spawnAsync(["git", "add", SdProjectBuilderUtil.getTsConfigPath(packageKey)], {logger});
     }
   }
 
@@ -94,7 +93,7 @@ export class SdProjectBuilder {
     const logger = new Logger("@simplysm/cli");
     if (!optional(argv, o => o.noCommit)) {
       await new Promise<void>(async (resolve, reject) => {
-        await spawnAsync(["git", "status"], {
+        await ProcessManager.spawnAsync(["git", "status"], {
           onMessage: async (errMsg, logMsg) => {
             if (logMsg && logMsg.includes("Changes")) {
               reject(new Error("커밋되지 않은 정보가 있습니다."));
@@ -112,7 +111,7 @@ export class SdProjectBuilder {
       });
     }
 
-    await spawnAsync(["npm", "version", "patch", "--git-tag-version", "false"], {logger});
+    await ProcessManager.spawnAsync(["npm", "version", "patch", "--git-tag-version", "false"], {logger});
 
     const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
 
@@ -128,7 +127,7 @@ export class SdProjectBuilder {
       if (packageConfig.publish) {
         packageLogger.log(`배포를 시작합니다. - v${projectNpmConfig.version}`);
 
-        await spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
+        await ProcessManager.spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
           cwd: SdProjectBuilderUtil.getPackagesPath(packageKey)
         });
 
@@ -159,7 +158,7 @@ export class SdProjectBuilder {
         if (packageConfig.publish.protocol === "npm") {
           let message = "";
           try {
-            await spawnAsync(["yarn", "publish", "--access", "public"], {
+            await ProcessManager.spawnAsync(["yarn", "publish", "--access", "public"], {
               cwd: SdProjectBuilderUtil.getPackagesPath(packageKey),
               onMessage: async (errMsg, logMsg) => {
                 if (errMsg) {
@@ -225,11 +224,11 @@ export class SdProjectBuilder {
       }
     });
 
-    await spawnAsync(["git", "add", "."], {logger});
+    await ProcessManager.spawnAsync(["git", "add", "."], {logger});
 
     if (!optional(argv, o => o.noCommit)) {
-      await spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});
-      await spawnAsync(["git", "tag", "-a", `"v${projectNpmConfig.version}"`, "-m", `"v${projectNpmConfig.version}"`], {logger});
+      await ProcessManager.spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});
+      await ProcessManager.spawnAsync(["git", "tag", "-a", `"v${projectNpmConfig.version}"`, "-m", `"v${projectNpmConfig.version}"`], {logger});
     }
 
     logger.log(`배포가 완료되었습니다.`);
@@ -606,7 +605,7 @@ export class SdProjectBuilder {
 
     if (packageConfig.type!.startsWith("electron.")) {
       const run = () => {
-        spawnAsync([
+        ProcessManager.spawnAsync([
             "electron",
             path.resolve(__dirname, "../lib/electron.js"),
             `http://localhost:${serverPort}/${projectNpmConfig.name}/${packageKey}/`
@@ -701,52 +700,35 @@ export class SdProjectBuilder {
 
     logger.log("코드검사를 시작합니다...");
 
-    const worker = child_process.fork(
+    const worker = await ProcessManager.forkAsync(
       path.resolve(__dirname, "..", "lib", "ts-lint-worker.js"),
-      [
-        packageKey,
-        watch ? "watch" : "build"
-      ],
+      [packageKey, watch ? "watch" : "build"],
       {
-        stdio: ["inherit", "inherit", "inherit", "ipc"],
-        execArgv: ["--max-old-space-size=2048"]
+        logger,
+        sendData: [],
+        async onMessage(message: any): Promise<boolean | void> {
+          if (message.type === "finish") {
+            logger.log("코드검사가 완료되었습니다.");
+            return true;
+          }
+          else if (message.type === "warning") {
+            logger.warn("코드검사중 경고가 발생하였습니다.", message.message);
+          }
+          else if (message.type === "error") {
+            logger.error("코드검사중 에러가 발생하였습니다.", message.message);
+            if (!watch) {
+              throw new Error(message.message);
+            }
+          }
+          else {
+            logger.error("코드검사중 메시지가 잘못되었습니다. [" + message + "]");
+            if (!watch) {
+              throw new Error("코드검사중 메시지가 잘못되었습니다.");
+            }
+          }
+        }
       }
     );
-
-    await new Promise<void>((resolve, reject) => {
-      worker.on("error", err => {
-        logger.log("코드검사 실행중 오류가 발생했습니다.");
-        reject(err);
-      });
-
-      worker.on("message", message => {
-        if (message.type === "finish") {
-          logger.log("코드검사가 완료되었습니다.");
-          resolve();
-        }
-        else if (message.type === "warning") {
-          logger.warn("코드검사중 경고가 발생하였습니다.", message.message);
-        }
-        else if (message.type === "error") {
-          logger.error("코드검사중 에러가 발생하였습니다.", message.message);
-          if (!watch) {
-            reject(new Error(message.message));
-          }
-        }
-        else {
-          logger.error("코드검사중 메시지가 잘못되었습니다. [" + message + "]");
-          if (!watch) {
-            reject(new Error("코드검사중 메시지가 잘못되었습니다."));
-          }
-        }
-      });
-
-      worker.send([], err => {
-        if (err) {
-          reject(err);
-        }
-      });
-    });
 
     if (watch) {
       await FileWatcher.watch(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/**/*.ts"), ["add", "change"], files => {
@@ -770,43 +752,32 @@ export class SdProjectBuilder {
       logger.log("빌드를 시작합니다...");
     }
 
-    const worker = child_process.fork(
+    const worker = await ProcessManager.forkAsync(
       path.resolve(__dirname, "..", "lib", "ts-build-worker.js"),
-      [
-        packageKey,
-        watch ? "watch" : "build"
-      ],
+      [packageKey, watch ? "watch" : "build"],
       {
-        stdio: ["inherit", "inherit", "inherit", "ipc"],
-        execArgv: ["--max-old-space-size=2048"]
-      }
-    );
-
-    await new Promise<void>((resolve, reject) => {
-      worker.on("error", err => {
-        logger.log("빌드 실행중 오류가 발생했습니다.");
-        reject(err);
-      });
-
-      worker.on("message", message => {
-        if (message.type === "finish") {
-          logger.log("빌드가 완료되었습니다.");
-          resolve();
-        }
-        else if (message.type === "error") {
-          logger.error("빌드중 에러가 발생하였습니다.", message.message);
-          if (!watch) {
-            reject(new Error(message.message));
+        logger,
+        sendData: [],
+        async onMessage(message: any): Promise<boolean | void> {
+          if (message.type === "finish") {
+            logger.log("빌드가 완료되었습니다.");
+            return true;
+          }
+          else if (message.type === "error") {
+            logger.error("빌드중 에러가 발생하였습니다.", message.message);
+            if (!watch) {
+              throw new Error(message.message);
+            }
+          }
+          else {
+            logger.error("빌드중 메시지가 잘못되었습니다. [" + message + "]");
+            if (!watch) {
+              throw new Error("빌드중 메시지가 잘못되었습니다.");
+            }
           }
         }
-      });
-
-      worker.send([], err => {
-        if (err) {
-          reject(err);
-        }
-      });
-    });
+      }
+    );
 
     if (watch) {
       await FileWatcher.watch(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/**/*.ts"), ["add", "change", "unlink"], async files => {
@@ -822,40 +793,29 @@ export class SdProjectBuilder {
   }
 
   private async _runTsCheckAndDeclarationWorkerAsync(packageKey: string, watch?: boolean): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-      const logger = new Logger("@simplysm/cli", packageKey);
+    const logger = new Logger("@simplysm/cli", packageKey);
 
-      logger.log("타입체크를 시작합니다.");
-      const worker = child_process.fork(
-        path.resolve(__dirname, "..", "lib", "ts-check-and-declaration-worker.js"),
-        [
-          packageKey,
-          watch ? "watch" : "build"
-        ],
-        {
-          stdio: ["inherit", "inherit", "inherit", "ipc"],
-          execArgv: ["--max-old-space-size=2048"]
-        }
-      );
+    logger.log("타입체크를 시작합니다.");
 
-      worker.on("error", err => {
-        logger.log("빌드 실행중 오류가 발생했습니다.");
-        reject(err);
-      });
-
-      worker.on("message", message => {
-        if (message.type === "finish") {
-          logger.log("타입체크가 완료되었습니다.");
-          resolve();
-        }
-        else if (message.type === "error") {
-          logger.error(`타입체크중 오류가 발생하였습니다.`, message.message);
-          if (!watch) {
-            reject(new Error(message.message));
+    await ProcessManager.forkAsync(
+      path.resolve(__dirname, "..", "lib", "ts-check-and-declaration-worker.js"),
+      [packageKey, watch ? "watch" : "build"],
+      {
+        logger,
+        async onMessage(message: any): Promise<boolean | void> {
+          if (message.type === "finish") {
+            logger.log("타입체크가 완료되었습니다.");
+            return true;
+          }
+          else if (message.type === "error") {
+            logger.error(`타입체크중 오류가 발생하였습니다.`, message.message);
+            if (!watch) {
+              throw new Error(message.message);
+            }
           }
         }
-      });
-    });
+      }
+    );
   }
 
   private async _getWebpackConfigAsync(packageKey: string, mode: "production" | "development"): Promise<webpack.Configuration> {

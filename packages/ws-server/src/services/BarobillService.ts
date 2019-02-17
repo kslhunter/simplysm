@@ -30,7 +30,8 @@ export class BarobillService extends SdWebSocketServiceBase {
         approvalNumber: item["CardApprovalNum"],
         storeName: item["UseStoreName"],
         amount: Number(item["TotalAmount"]),
-        doneAtDateTime: DateTime.parse(item["UseDT"])
+        doneAtDateTime: DateTime.parse(item["UseDT"]),
+        approvalType: item["CardApprovalType"]
       })) : []
     };
   }
@@ -58,7 +59,8 @@ export class BarobillService extends SdWebSocketServiceBase {
         type: Number(item["Deposit"]) - Number(item["Withdraw"]) > 0 ? "입금" : "출금",
         amount: Math.abs(Number(item["Deposit"]) - Number(item["Withdraw"])),
         doneAtDateTime: DateTime.parse(item["TransDT"]),
-        content: item["TransRemark"]
+        content: item["TransRemark"],
+        transType: item["TransType"]
       })) : []
     };
   }

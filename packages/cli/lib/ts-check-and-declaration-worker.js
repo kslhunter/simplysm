@@ -39,16 +39,18 @@ try {
 
     ts.createWatchProgram(host);
 
-    Promise.all(promiseList).then(() => {
-      sendMessage({
-        type: "finish"
+    Promise.all(promiseList)
+      .then(() => {
+        sendMessage({
+          type: "finish"
+        });
+      })
+      .catch(err => {
+        sendMessage({
+          type: "error",
+          message: err.stack
+        });
       });
-    }).catch(err => {
-      sendMessage({
-        type: "error",
-        message: err.stack
-      });
-    });
   }
   else {
     const promiseList = [];
@@ -85,16 +87,18 @@ try {
       printDiagnostic(diagnostic);
     }
 
-    Promise.all(promiseList).then(() => {
-      sendMessage({
-        type: "finish"
+    Promise.all(promiseList)
+      .then(() => {
+        sendMessage({
+          type: "finish"
+        });
+      })
+      .catch(err => {
+        sendMessage({
+          type: "error",
+          message: err.stack
+        });
       });
-    }).catch(err => {
-      sendMessage({
-        type: "error",
-        message: err.stack
-      });
-    });
   }
 
   async function writeFileAsync(filePath, content) {

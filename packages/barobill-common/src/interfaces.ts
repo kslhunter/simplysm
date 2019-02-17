@@ -20,6 +20,7 @@ export interface IBarobillServiceGetCardLogResultItem {
   storeName: string | undefined;
   amount: number;
   doneAtDateTime: DateTime;
+  approvalType: string | undefined;
 }
 
 export interface IBarobillServiceGetAccountLogParam {
@@ -43,4 +44,5 @@ export interface IBarobillServiceGetAccountLogResultItem {
   amount: number;
   doneAtDateTime: DateTime;
   content: string | undefined;
+  transType: string | undefined;
 }
