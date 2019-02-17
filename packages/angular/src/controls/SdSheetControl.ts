@@ -188,19 +188,20 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   @Input()
   @SdTypeValidate({type: Number, notnull: true})
-  public page = 0;
+  public get page(): number {
+    return Math.min(this._page, this.pageLength - 1);
+  }
+
+  public set page(value: number) {
+    this._page = value;
+  }
+  private _page = 0;
 
   @Input()
   @SdTypeValidate({type: Number, notnull: true})
   public get pageLength(): number {
     if (this.pageItemCount && this.items) {
-      const pageLength = Math.ceil(this.items.length / this.pageItemCount);
-
-      if (this.page + 1 < pageLength) {
-        this.page = pageLength - 1;
-      }
-
-      return pageLength;
+      return Math.ceil(this.items.length / this.pageItemCount);
     }
     else {
       return this._pageLength;
