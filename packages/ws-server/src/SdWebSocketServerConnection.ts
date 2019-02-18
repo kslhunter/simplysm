@@ -151,6 +151,7 @@ export class SdWebSocketServerConnection extends EventEmitter {
         };
         await this.sendAsync(endRes);
       }
+      return;
     }
     // 업로드 요청시 파일쓰기
     else if (uploadRegexp.test(msg)) {
@@ -224,7 +225,6 @@ export class SdWebSocketServerConnection extends EventEmitter {
 
     // Request 파싱
     const request: ISdWebSocketRequest = JsonConvert.parse(message);
-
     this.emit("request", request);
   }
 }

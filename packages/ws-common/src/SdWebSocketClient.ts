@@ -114,7 +114,6 @@ export class SdWebSocketClient {
       const requestId = this._lastRequestId++;
       const fileSize = (await fs.lstat(filePath)).size;
 
-
       let splitCompletedLength = 0;
       this._reqMap.set(requestId, async response => {
         if (response.type === "error") {
