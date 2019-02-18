@@ -199,16 +199,23 @@ export class SdProjectBuilder {
             });
           });
 
-          const status: { total: number; current: number; filePath: string }[] = filePaths.map(filePath => ({
-            filePath,
-            total: fs.lstatSync(filePath).size,
-            current: 0
-          }));
+          const status: { total: number; current: number; filePath: string }[] = [];
           await Promise.all(filePaths.map(async filePath => {
             const relativeFilePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"), filePath);
 
             await wsClient.uploadAsync(filePath, path.join("www", projectNpmConfig.name, packageKey, relativeFilePath), progress => {
-              status.single(item => item.filePath === filePath)!.current = progress.current;
+              let curr = status.single(item => item.filePath === filePath);
+
+              if (!curr) {
+                curr = {
+                  filePath,
+                  total: progress.total,
+                  current: 0
+                };
+                status.push(curr);
+              }
+
+              curr.current = progress.current;
 
               const current = status.sum(item => item.current)!;
               const total = status.sum(item => item.total)!;
