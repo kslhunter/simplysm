@@ -1,7 +1,7 @@
 import {SdWebSocketServiceBase} from "../SdWebSocketServiceBase";
 import {SdWebSocketServerUtil} from "../SdWebSocketServerUtil";
 import * as soap from "soap";
-import {DateTime} from "@simplysm/common";
+import {DateTime, Logger} from "@simplysm/common";
 import {
   IBarobillServiceGetAccountLogParam,
   IBarobillServiceGetAccountLogResult,
@@ -10,6 +10,8 @@ import {
 } from "@simplysm/barobill-common";
 
 export class BarobillService extends SdWebSocketServiceBase {
+  private readonly _logger = new Logger("@simplysm/ws-server", "BarobillService");
+
   public async getCardLogAsync(param: IBarobillServiceGetCardLogParam): Promise<IBarobillServiceGetCardLogResult> {
     const result = await this._sendAsync("CARD", "GetCardLog", {
       CorpNum: param.brn.replace(/-/g, ""),
@@ -70,6 +72,8 @@ export class BarobillService extends SdWebSocketServiceBase {
   }
 
   private async _sendAsync(target: "CARD" | "BANKACCOUNT", method: string, args: { [key: string]: any }): Promise<any> {
+    this._logger.log(`바로빌 명령 전달 [${target}.${method}]`, args);
+    
     const url = process.env.NODE_ENV === "production"
       ? `http://ws.baroservice.com/${target}.asmx?WSDL`
       : `http://testws.baroservice.com/${target}.asmx?WSDL`;
@@ -82,6 +86,8 @@ export class BarobillService extends SdWebSocketServiceBase {
       CERTKEY: certKey,
       ...args
     });
+
+    this._logger.log("바로빌 결과 반환", result[0][method + "Result"]);
     return result[0][method + "Result"];
   }
 }
