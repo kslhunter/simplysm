@@ -31,7 +31,7 @@ export class BarobillService extends SdWebSocketServiceBase {
       items: result["CardLogList"] ? result["CardLogList"]["CardLog"].map((item: any) => ({
         approvalNumber: item["CardApprovalNum"],
         storeName: item["UseStoreName"],
-        amount: Number(item["TotalAmount"]),
+        amount: Number(item["CardApprovalCost"]),
         doneAtDateTime: DateTime.parse(item["UseDT"]),
         approvalType: item["CardApprovalType"]
       })) : []
