@@ -78,3 +78,7 @@ a {
 ::-webkit-scrollbar-thumb {
   background-color: get($theme-color, grey, default);
 }
+
+*[hidden] {
+  display: none !important;
+}

@@ -89,17 +89,17 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
                      [class._selected]="((selectable === true || selectable === 'manual') && selectedItem === item) || (selectable === 'multi' && selectedItems.includes(item))"
                      [class._expandable]="getHasChildren(i, item)"
                      [class._expanded]="getIsExpended(i, item)">
-                  <a class="_select-icon" (click)="onSelectIconClick($event, i, item)" *ngIf="selectable">
-                    <sd-icon [icon]="'arrow-right'"
-                             *ngIf="(!itemSelectableFn || itemSelectableFn(i, item)) && (selectable === true || selectable === 'manual')"
-                             [fw]="true"></sd-icon>
-                    <sd-icon [icon]="'arrow-right'"
-                             *ngIf="(!itemSelectableFn || itemSelectableFn(i, item)) && (selectable === 'multi')"
-                             [fw]="true"></sd-icon>
-                  </a>
                   <a class="_expand-icon" *ngIf="!!children" (click)="onExpandIconClick($event, i, item)"
                      [style.visibility]="getHasChildren(i, item) ? undefined : 'hidden'">
                     <sd-icon [icon]="getHasChildren(i, item) ? 'caret-right' : undefined"
+                             [fw]="true"></sd-icon>
+                  </a>
+                  <a class="_select-icon" (click)="onSelectIconClick($event, i, item)" *ngIf="selectable">
+                    <sd-icon icon="arrow-right"
+                             *ngIf="(!itemSelectableFn || itemSelectableFn(i, item)) && (selectable === true || selectable === 'manual')"
+                             [fw]="true"></sd-icon>
+                    <sd-icon icon="arrow-right"
+                             *ngIf="(!itemSelectableFn || itemSelectableFn(i, item)) && (selectable === 'multi')"
                              [fw]="true"></sd-icon>
                   </a>
                 </div>

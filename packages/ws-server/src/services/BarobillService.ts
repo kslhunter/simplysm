@@ -72,14 +72,13 @@ export class BarobillService extends SdWebSocketServiceBase {
   }
 
   private async _sendAsync(target: "CARD" | "BANKACCOUNT", method: string, args: { [key: string]: any }): Promise<any> {
-    this._logger.log(`바로빌 명령 전달 [${target}.${method}]`, JsonConvert.stringify(args, {space: 2}));
-
-    const url = process.env.NODE_ENV === "production"
-      ? `http://ws.baroservice.com/${target}.asmx?WSDL`
-      : `http://testws.baroservice.com/${target}.asmx?WSDL`;
-
     const config = await SdWebSocketServerUtil.getConfigAsync(this.staticPath, this.request.url);
+    const host = config["barobill"]["host"];
     const certKey = config["barobill"]["certKey"];
+
+    const url = `http://${host}/${target}.asmx?WSDL`;
+
+    this._logger.log(`바로빌 명령 전달 [${target}.${method}]`, JsonConvert.stringify({CERTKEY: certKey, ...args}, {space: 2}));
 
     const client = await soap.createClientAsync(url);
     const result = await client[method + "Async"]({
