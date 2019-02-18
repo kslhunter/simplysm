@@ -117,7 +117,7 @@ export class SdWebSocketServerConnection extends EventEmitter {
     }
     // MD5 확인 요청 처리
     else if (checkMd5Regexp.test(msg)) {
-      const match = msg.match(uploadRegexp)!;
+      const match = msg.match(checkMd5Regexp)!;
       const requestId = Number(match[1]);
       const filePath = match[2];
       const md5 = match[3];
