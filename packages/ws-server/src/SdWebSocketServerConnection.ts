@@ -5,6 +5,7 @@ import {JsonConvert, Logger, optional} from "@simplysm/common";
 import {ISdWebSocketEmitResponse, ISdWebSocketRequest, ISdWebSocketResponse} from "@simplysm/ws-common";
 import * as fs from "fs-extra";
 import * as path from "path";
+import * as crypto from "crypto";
 
 export class SdWebSocketServerConnection extends EventEmitter {
   private readonly _logger = new Logger("@simplysm/ws-server", "SdWebSocketServerConnection");
@@ -62,6 +63,7 @@ export class SdWebSocketServerConnection extends EventEmitter {
     let message;
 
     const splitRegexp = /^!split\(([0-9]*),([0-9]*),([0-9]*)\)!(.*)/;
+    const checkMd5Regexp = /^!checkMd5\(([0-9]*),([^,]*)\)!(.*)/;
     const uploadRegexp = /^!upload\(([0-9]*),([^,]*),([0-9]*),([0-9]*)\)!(.*)/;
 
     // 부분 요청 합치
@@ -112,6 +114,43 @@ export class SdWebSocketServerConnection extends EventEmitter {
       clearTimeout(this._splitRequestMap.get(requestId)!.timer);
       this._splitRequestMap.delete(requestId);
       message = splitRequestValue.bufferStrings.join("");
+    }
+    // MD5 확인 요청 처리
+    else if (checkMd5Regexp.test(msg)) {
+      const match = msg.match(uploadRegexp)!;
+      const requestId = Number(match[1]);
+      const filePath = match[2];
+      const md5 = match[3];
+
+      const fileMd5 = await new Promise<string>((resolve1, reject1) => {
+        const output = crypto.createHash("md5");
+        const input = fs.createReadStream(filePath);
+
+        input.on("error", err => {
+          reject1(err);
+        });
+
+        output.once("readable", () => {
+          resolve1(output.read().toString("hex"));
+        });
+
+        input.pipe(output);
+      });
+
+      if (fileMd5 === md5) {
+        const endRes: ISdWebSocketResponse = {
+          requestId,
+          type: "response"
+        };
+        await this.sendAsync(endRes);
+      }
+      else {
+        const endRes: ISdWebSocketResponse = {
+          requestId,
+          type: "checkMd5"
+        };
+        await this.sendAsync(endRes);
+      }
     }
     // 업로드 요청시 파일쓰기
     else if (uploadRegexp.test(msg)) {

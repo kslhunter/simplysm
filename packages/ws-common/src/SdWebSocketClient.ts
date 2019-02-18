@@ -4,6 +4,7 @@ import {JsonConvert, Logger, Type, Wait} from "@simplysm/common";
 import {ISdWebSocketRequest, ISdWebSocketResponse} from "./commons";
 import * as WebSocket from "ws";
 import * as fs from "fs-extra";
+import * as crypto from "crypto";
 
 export class SdWebSocketClient {
   private readonly _logger = new Logger("@simplysm/angular", "SdSocketClient");
@@ -113,15 +114,9 @@ export class SdWebSocketClient {
       const requestId = this._lastRequestId++;
       const fileSize = (await fs.lstat(filePath)).size;
 
-      if (sendProgressCallback) {
-        sendProgressCallback({
-          current: 0,
-          total: fileSize
-        });
-      }
 
       let splitCompletedLength = 0;
-      this._reqMap.set(requestId, response => {
+      this._reqMap.set(requestId, async response => {
         if (response.type === "error") {
           this._reqMap.delete(requestId);
           reject(new Error(response.body));
@@ -135,29 +130,53 @@ export class SdWebSocketClient {
             });
           }
         }
+        else if (response.type === "checkMd5") {
+          // 업로드 요청 보내기
+          if (sendProgressCallback) {
+            sendProgressCallback({
+              current: 0,
+              total: fileSize
+            });
+
+            const fd = await fs.open(filePath, "r");
+            let cursor = 0;
+            while (cursor < fileSize) {
+              const buffer = Buffer.alloc(Math.min(splitLength, fileSize - cursor));
+              await fs.read(fd, buffer, 0, Math.min(splitLength, fileSize - cursor), cursor);
+              const str = `!upload(${requestId},${serverPath},${cursor},${fileSize})!${JsonConvert.stringify(buffer)}`;
+              this._ws!.send(str);
+              cursor += splitLength;
+            }
+          }
+          else {
+            const buffer = await fs.readFile(filePath);
+            const str = `!upload(${requestId},${serverPath},${0},${fileSize})!${JsonConvert.stringify(buffer)}`;
+            this._ws!.send(str);
+          }
+        }
         else {
           this._reqMap.delete(requestId);
           resolve(response.body);
         }
       });
 
-      // 요청 보내기
-      if (sendProgressCallback) {
-        const fd = await fs.open(filePath, "r");
-        let cursor = 0;
-        while (cursor < fileSize) {
-          const buffer = Buffer.alloc(Math.min(splitLength, fileSize - cursor));
-          await fs.read(fd, buffer, 0, Math.min(splitLength, fileSize - cursor), cursor);
-          const str = `!upload(${requestId},${serverPath},${cursor},${fileSize})!${JsonConvert.stringify(buffer)}`;
-          this._ws!.send(str);
-          cursor += splitLength;
-        }
-      }
-      else {
-        const buffer = await fs.readFile(filePath);
-        const str = `!upload(${requestId},${serverPath},${0},${fileSize})!${JsonConvert.stringify(buffer)}`;
-        this._ws!.send(str);
-      }
+      // 업로드가 필요한지 먼저 확인 필요
+      const fileMd5 = await new Promise<string>((resolve1, reject1) => {
+        const output = crypto.createHash("md5");
+        const input = fs.createReadStream(filePath);
+
+        input.on("error", err => {
+          reject1(err);
+        });
+
+        output.once("readable", () => {
+          resolve1(output.read().toString("hex"));
+        });
+
+        input.pipe(output);
+      });
+      const checkMd5String = `!checkMd5(${requestId},${serverPath})!${fileMd5}`;
+      this._ws!.send(checkMd5String);
     });
   }
 
