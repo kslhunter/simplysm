@@ -16,6 +16,7 @@ export interface IBarobillServiceGetCardLogResult {
 }
 
 export interface IBarobillServiceGetCardLogResultItem {
+  cardNumber: string;
   approvalNumber: string;
   storeName: string | undefined;
   amount: number;
@@ -40,9 +41,26 @@ export interface IBarobillServiceGetAccountLogResult {
 
 export interface IBarobillServiceGetAccountLogResultItem {
   key: string;
+  accountNumber: string;
   type: "입금" | "출금";
   amount: number;
   doneAtDateTime: DateTime;
   content: string | undefined;
   transType: string | undefined;
+}
+
+export interface IBarobillServiceGetCardLogListParam {
+  brn: string;
+  userId: string;
+  cardNumbers: string[];
+  fromDoneAtDate: DateOnly;
+  toDoneAtDate: DateOnly;
+}
+
+export interface IBarobillServiceGetAccountLogListParam {
+  brn: string;
+  userId: string;
+  accountNumbers: string[];
+  fromDoneAtDate: DateOnly;
+  toDoneAtDate: DateOnly;
 }

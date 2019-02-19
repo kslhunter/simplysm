@@ -152,22 +152,32 @@ export class SdWebSocketServer extends EventEmitter {
         httpConnection.end();
       }),
       new Promise<void>((resolve, reject) => {
-        this._wsServer!.close(err => {
-          if (err) {
-            reject(err);
-            return;
-          }
+        if (this._wsServer) {
+          this._wsServer.close(err => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve();
+          });
+        }
+        else {
           resolve();
-        });
+        }
       }),
       new Promise<void>((resolve, reject) => {
-        this._httpServer!.close((err: Error) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+        if (this._httpServer) {
+          this._httpServer.close((err: Error) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve();
+          });
+        }
+        else {
           resolve();
-        });
+        }
       })
     ]);
   }

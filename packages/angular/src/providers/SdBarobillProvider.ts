@@ -1,10 +1,14 @@
 import {Injectable} from "@angular/core";
 import {SdWebSocketProvider} from "./SdWebSocketProvider";
 import {
+  IBarobillServiceGetAccountLogListParam,
   IBarobillServiceGetAccountLogParam,
   IBarobillServiceGetAccountLogResult,
+  IBarobillServiceGetAccountLogResultItem,
+  IBarobillServiceGetCardLogListParam,
   IBarobillServiceGetCardLogParam,
-  IBarobillServiceGetCardLogResult
+  IBarobillServiceGetCardLogResult,
+  IBarobillServiceGetCardLogResultItem
 } from "@simplysm/barobill-common";
 
 @Injectable()
@@ -18,5 +22,13 @@ export class SdBarobillProvider {
 
   public async getAccountLogAsync(param: IBarobillServiceGetAccountLogParam): Promise<IBarobillServiceGetAccountLogResult> {
     return await this._ws.sendAsync("BarobillService.getAccountLogAsync", [param]);
+  }
+
+  public async getCardLogListAsync(param: IBarobillServiceGetCardLogListParam): Promise<IBarobillServiceGetCardLogResultItem[]> {
+    return await this._ws.sendAsync("BarobillService.getCardLogListAsync", [param]);
+  }
+
+  public async getAccountLogListAsync(param: IBarobillServiceGetAccountLogListParam): Promise<IBarobillServiceGetAccountLogResultItem[]> {
+    return await this._ws.sendAsync("BarobillService.getAccountLogListAsync", [param]);
   }
 }

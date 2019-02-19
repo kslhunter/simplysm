@@ -3,10 +3,14 @@ import {SdWebSocketServerUtil} from "../SdWebSocketServerUtil";
 import * as soap from "soap";
 import {DateTime, JsonConvert, Logger} from "@simplysm/common";
 import {
+  IBarobillServiceGetAccountLogListParam,
   IBarobillServiceGetAccountLogParam,
   IBarobillServiceGetAccountLogResult,
+  IBarobillServiceGetAccountLogResultItem,
+  IBarobillServiceGetCardLogListParam,
   IBarobillServiceGetCardLogParam,
-  IBarobillServiceGetCardLogResult
+  IBarobillServiceGetCardLogResult,
+  IBarobillServiceGetCardLogResultItem
 } from "@simplysm/barobill-common";
 
 export class BarobillService extends SdWebSocketServiceBase {
@@ -29,6 +33,7 @@ export class BarobillService extends SdWebSocketServiceBase {
       totalCount: result["MaxIndex"],
       pageCount: result["MaxPageNum"],
       items: result["CardLogList"] ? result["CardLogList"]["CardLog"].map((item: any) => ({
+        cardNumber: param.cardNumber,
         approvalNumber: item["CardApprovalNum"],
         storeName: item["UseStoreName"],
         amount: Number(item["CardApprovalCost"]),
@@ -58,6 +63,7 @@ export class BarobillService extends SdWebSocketServiceBase {
       pageCount: result["MaxPageNum"],
       items: result["BankAccountLogList"] ? result["BankAccountLogList"]["BankAccountLogEx"].map((item: any) => ({
         key: item["TransRefKey"],
+        accountNumber: param.accountNumber,
         type: Number(item["Deposit"]) - Number(item["Withdraw"]) > 0 ? "입금" : "출금",
         amount: Math.abs(Number(item["Deposit"]) - Number(item["Withdraw"])),
         doneAtDateTime: DateTime.parse(item["TransDT"]),
@@ -65,6 +71,86 @@ export class BarobillService extends SdWebSocketServiceBase {
         transType: item["TransType"]
       })) : []
     };
+  }
+
+  public async getAccountLogListAsync(param: IBarobillServiceGetAccountLogListParam): Promise<IBarobillServiceGetAccountLogResultItem[]> {
+    const result: IBarobillServiceGetAccountLogResultItem[] = [];
+
+    const promiseList: Promise<void>[] = [];
+    for (const accountNumber of param.accountNumbers) {
+      for (let doneAtDate = param.fromDoneAtDate; doneAtDate.tick <= param.toDoneAtDate.tick; doneAtDate = doneAtDate.addDays(1)) {
+        promiseList.push(new Promise<void>(async (resolve, reject) => {
+          try {
+            let currentPage = 0;
+            while (true) {
+              const currentResult = await this.getAccountLogAsync({
+                brn: param.brn,
+                userId: param.userId,
+                accountNumber,
+                doneAtDate,
+                itemLengthPerPage: 100,
+                page: currentPage
+              });
+
+              if (currentPage >= currentResult.pageCount) {
+                break;
+              }
+
+              result.pushRange(currentResult.items);
+
+              currentPage++;
+            }
+            resolve();
+          }
+          catch (err) {
+            reject(err);
+          }
+        }));
+      }
+    }
+
+    await Promise.all(promiseList);
+    return result.orderBy(item => item.doneAtDateTime, true);
+  }
+
+  public async getCardLogListAsync(param: IBarobillServiceGetCardLogListParam): Promise<IBarobillServiceGetCardLogResultItem[]> {
+    const result: IBarobillServiceGetCardLogResultItem[] = [];
+
+    const promiseList: Promise<void>[] = [];
+    for (const cardNumber of param.cardNumbers) {
+      for (let doneAtDate = param.fromDoneAtDate; doneAtDate.tick <= param.toDoneAtDate.tick; doneAtDate = doneAtDate.addDays(1)) {
+        promiseList.push(new Promise<void>(async (resolve, reject) => {
+          try {
+            let currentPage = 0;
+            while (true) {
+              const currentResult = await this.getCardLogAsync({
+                brn: param.brn,
+                userId: param.userId,
+                cardNumber,
+                doneAtDate,
+                itemLengthPerPage: 100,
+                page: currentPage
+              });
+
+              if (currentPage >= currentResult.pageCount) {
+                break;
+              }
+
+              result.pushRange(currentResult.items);
+
+              currentPage++;
+            }
+            resolve();
+          }
+          catch (err) {
+            reject(err);
+          }
+        }));
+      }
+    }
+
+    await Promise.all(promiseList);
+    return result.orderBy(item => item.doneAtDateTime, true);
   }
 
   private async _getErrorString(target: "CARD" | "BANKACCOUNT", errorCode: number): Promise<string> {
@@ -78,7 +164,7 @@ export class BarobillService extends SdWebSocketServiceBase {
 
     const url = `http://${host}/${target}.asmx?WSDL`;
 
-    this._logger.log(`바로빌 명령 전달 [${target}.${method}]`, JsonConvert.stringify({CERTKEY: certKey, ...args}, {space: 2}));
+    this._logger.log(`바로빌 명령 전달 : ${target}.${method} - ${JsonConvert.stringify({CERTKEY: certKey, ...args})}`);
 
     const client = await soap.createClientAsync(url);
     const result = await client[method + "Async"]({
@@ -86,7 +172,7 @@ export class BarobillService extends SdWebSocketServiceBase {
       ...args
     });
 
-    this._logger.log("바로빌 결과 반환", JsonConvert.stringify(result[0][method + "Result"], {space: 2}));
+    this._logger.log(`바로빌 결과 반환 : ${target}.${method} - ${JsonConvert.stringify(result[0][method + "Result"])}`);
     return result[0][method + "Result"];
   }
 }
