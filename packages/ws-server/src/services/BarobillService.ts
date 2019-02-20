@@ -37,6 +37,7 @@ export class BarobillService extends SdWebSocketServiceBase {
         approvalNumber: item["CardApprovalNum"],
         storeName: item["UseStoreName"],
         amount: Number(item["CardApprovalCost"]),
+        tax: Number(item["Tax"]),
         doneAtDateTime: DateTime.parse(item["UseDT"]),
         approvalType: item["CardApprovalType"]
       })) : []

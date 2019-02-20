@@ -20,6 +20,7 @@ export interface IBarobillServiceGetCardLogResultItem {
   approvalNumber: string;
   storeName: string | undefined;
   amount: number;
+  tax: number;
   doneAtDateTime: DateTime;
   approvalType: string | undefined;
 }
