@@ -10,8 +10,8 @@ export class ExcelCellStyle {
     newStyle.alignment[0].$.horizontal = "center";
     const newIndex = this._setStyleData(newStyle);
 
-    this._ec.cellData.$ = this._ec.cellData.$ || {};
-    this._ec.cellData.$.s = newIndex;
+    this._excelCell.cellData.$ = this._excelCell.cellData.$ || {};
+    this._excelCell.cellData.$.s = newIndex;
   }
 
   public set background(value: string) {
@@ -34,8 +34,8 @@ export class ExcelCellStyle {
     newStyle.$.fillId = newFillIndex;
     const newIndex = this._setStyleData(newStyle);
 
-    this._ec.cellData.$ = this._ec.cellData.$ || {};
-    this._ec.cellData.$.s = newIndex;
+    this._excelCell.cellData.$ = this._excelCell.cellData.$ || {};
+    this._excelCell.cellData.$.s = newIndex;
   }
 
   public set foreground(value: string) {
@@ -55,8 +55,8 @@ export class ExcelCellStyle {
     newStyle.$.fontId = newFontIndex;
     const newIndex = this._setStyleData(newStyle);
 
-    this._ec.cellData.$ = this._ec.cellData.$ || {};
-    this._ec.cellData.$.s = newIndex;
+    this._excelCell.cellData.$ = this._excelCell.cellData.$ || {};
+    this._excelCell.cellData.$.s = newIndex;
   }
 
   public set bold(value: boolean) {
@@ -75,11 +75,11 @@ export class ExcelCellStyle {
     newStyle.$.fontId = newFontIndex;
     const newIndex = this._setStyleData(newStyle);
 
-    this._ec.cellData.$ = this._ec.cellData.$ || {};
-    this._ec.cellData.$.s = newIndex;
+    this._excelCell.cellData.$ = this._excelCell.cellData.$ || {};
+    this._excelCell.cellData.$.s = newIndex;
   }
 
-  public get numberFormat(): "DateTime" | "DateOnly" | "number" {
+  public get numberFormat(): "DateTime" | "DateOnly" | "number" | "Currency" {
     const styleData = this._getStyleData();
     if (!styleData || !styleData.$ || !styleData.$.numFmtId) {
       return "number";
@@ -93,6 +93,9 @@ export class ExcelCellStyle {
     else if (styleData.$.numFmtId === "22") {
       return "DateTime";
     }
+    else if (styleData.$.numFmtId === "42") {
+      return "Currency";
+    }
     else {
       return "number";
     }
@@ -101,7 +104,7 @@ export class ExcelCellStyle {
     }*/
   }
 
-  public set numberFormat(value: "DateTime" | "DateOnly" | "number") {
+  public set numberFormat(value: "DateTime" | "DateOnly" | "number" | "Currency") {
     const newStyle = this._createNewStyle();
     newStyle.$ = newStyle.$ || {};
     newStyle.$.applyFont = 1;
@@ -114,14 +117,17 @@ export class ExcelCellStyle {
     else if (value === "DateTime") {
       newStyle.$.numFmtId = 22;
     }
+    else if (value === "Currency") {
+      newStyle.$.numFmtId = 42;
+    }
     else {
       throw new Error("지원되지 않는 숫자포맷 입니다.");
     }
 
     const newIndex = this._setStyleData(newStyle);
 
-    this._ec.cellData.$ = this._ec.cellData.$ || {};
-    this._ec.cellData.$.s = newIndex;
+    this._excelCell.cellData.$ = this._excelCell.cellData.$ || {};
+    this._excelCell.cellData.$.s = newIndex;
   }
 
   public set borderLeftWidth(value: "thin" | "medium") {
@@ -174,7 +180,7 @@ export class ExcelCellStyle {
     const styleData = this._getStyleData();
     const fillId = (styleData && styleData.$) ? Number(styleData.$.fillId) : undefined;
     if (fillId) {
-      return Object.clone(this._ec.ews.workbook.stylesData.styleSheet.fills[0].fill[fillId]);
+      return Object.clone(this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fills[0].fill[fillId]);
     }
     else {
       return {};
@@ -191,7 +197,7 @@ export class ExcelCellStyle {
     const fontId = (styleData && styleData.$) ? Number(styleData.$.fontId) : undefined;
 
     if (fontId) {
-      return Object.clone(this._ec.ews.workbook.stylesData.styleSheet.fonts[0].font[fontId]);
+      return Object.clone(this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fonts[0].font[fontId]);
     }
     else {
       return {};
@@ -203,7 +209,7 @@ export class ExcelCellStyle {
     const borderId = (styleData && styleData.$) ? Number(styleData.$.borderId) : undefined;
 
     if (borderId) {
-      return Object.clone(this._ec.ews.workbook.stylesData.styleSheet.borders[0].border[borderId]);
+      return Object.clone(this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.borders[0].border[borderId]);
     }
     else {
       return {};
@@ -223,8 +229,8 @@ export class ExcelCellStyle {
     newStyle.$.borderId = newBorderIndex;
     const newIndex = this._setStyleData(newStyle);
 
-    this._ec.cellData.$ = this._ec.cellData.$ || {};
-    this._ec.cellData.$.s = newIndex;
+    this._excelCell.cellData.$ = this._excelCell.cellData.$ || {};
+    this._excelCell.cellData.$.s = newIndex;
   }
 
   private _setBorderColor(direction: "left" | "right" | "bottom" | "top", color: string): void {
@@ -245,40 +251,47 @@ export class ExcelCellStyle {
     newStyle.$.borderId = newBorderIndex;
     const newIndex = this._setStyleData(newStyle);
 
-    this._ec.cellData.$ = this._ec.cellData.$ || {};
-    this._ec.cellData.$.s = newIndex;
+    this._excelCell.cellData.$ = this._excelCell.cellData.$ || {};
+    this._excelCell.cellData.$.s = newIndex;
   }
 
   private _setFillData(data: any): number {
-    const index = this._ec.ews.workbook.stylesData.styleSheet.fills[0].fill.findIndex((item: any) => Object.equal(item, data));
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fills[0].fill.findIndex((item: any) => Object.equal(item, data));
     if (index >= 0) return index;
-    return this._ec.ews.workbook.stylesData.styleSheet.fills[0].fill.push(data) - 1;
+    return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fills[0].fill.push(data) - 1;
   }
 
   private _setFontData(data: any): number {
-    const index = this._ec.ews.workbook.stylesData.styleSheet.fonts[0].font.findIndex((item: any) => Object.equal(item, data));
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fonts[0].font.findIndex((item: any) => Object.equal(item, data));
     if (index >= 0) return index;
-    return this._ec.ews.workbook.stylesData.styleSheet.fonts[0].font.push(data) - 1;
+    return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fonts[0].font.push(data) - 1;
   }
 
   private _setStyleData(data: any): number {
-    const index = this._ec.ews.workbook.stylesData.styleSheet.cellXfs[0].xf.findIndex((item: any) => Object.equal(item, data));
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf.findIndex((item: any) => Object.equal(item, data));
     if (index >= 0) return index;
-    return this._ec.ews.workbook.stylesData.styleSheet.cellXfs[0].xf.push(data) - 1;
+    return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf.push(data) - 1;
   }
 
   private _getStyleData(): any {
-    return (this._ec.cellData.$ && this._ec.cellData.$.s)
-      ? this._ec.ews.workbook.stylesData.styleSheet.cellXfs[0].xf[Number(this._ec.cellData.$.s)]
-      : undefined;
+    if (this._excelCell.cellData.$ && this._excelCell.cellData.$.s) {
+      return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf[Number(this._excelCell.cellData.$.s)];
+    }
+
+    const colData = this._excelCell.excelWorkSheet.column(this._excelCell.col).colData;
+    if (colData.$ && colData.$.style) {
+      return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf[Number(colData.$.style)];
+    }
+
+    return undefined;
   }
 
   private _setBorderData(data: any): number {
-    const index = this._ec.ews.workbook.stylesData.styleSheet.borders[0].border.findIndex((item: any) => Object.equal(item, data));
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.borders[0].border.findIndex((item: any) => Object.equal(item, data));
     if (index >= 0) return index;
-    return this._ec.ews.workbook.stylesData.styleSheet.borders[0].border.push(data) - 1;
+    return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.borders[0].border.push(data) - 1;
   }
 
-  public constructor(private readonly _ec: ExcelCell) {
+  public constructor(private readonly _excelCell: ExcelCell) {
   }
 }

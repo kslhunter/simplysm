@@ -186,12 +186,14 @@ export class ExcelWorkbook {
 
     // Worksheets
     const worksheets = wb._wbData.workbook.sheets[0].sheet.map((item: any) => ({
-      id: item.$.sheetId,
+      rid: item.$["r:id"],
       name: item.$.name
     }));
     for (const item of worksheets) {
-      const sheetData = await XmlConvert.parseAsync(await zip.file(`xl/worksheets/sheet${item.id}.xml`).async("text"));
-      wb._worksheets[item.id - 1] = new ExcelWorksheet(wb, item.name, sheetData);
+      const r = wb._wbRelData.Relationships.Relationship.single((item1: any) => item1.$.Id === item.rid);
+      const sheetData = await XmlConvert.parseAsync(await zip.file(`xl/${r.$.Target}`).async("text"));
+      const id = Number(r.$.Target.match(/\/sheet(.*)\./)[1]);
+      wb._worksheets[id] = new ExcelWorksheet(wb, item.name, sheetData);
     }
 
     // SharedStrings
@@ -335,12 +337,22 @@ export class ExcelWorkbook {
       }
 
       const rowItems: any[] = data[sheetName];
-      const headerColumnIndexMap = rowItems.mapMany(item => Object.keys(item)).distinct()
-        .toMap(item => item, (item, index) => index);
+      // const headerColumnIndexMap = rowItems.mapMany(item => Object.keys(item)).distinct()
+      //   .toMap(item => item, (item, index) => index);
+      const headerColumns = rowItems.mapMany(item => Object.keys(item).map((item1, i) => [item1, i] as [string, number]));
+      const headerColumnIndexMap = new Map<string, number>();
+      for (const headerColumn of headerColumns) {
+        headerColumnIndexMap.set(
+          headerColumn[0],
+          headerColumnIndexMap.has(headerColumn[0])
+            ? Math.max(headerColumnIndexMap.get(headerColumn[0])!, headerColumn[1])
+            : headerColumn[1]
+        );
+      }
 
-
-      for (let c = 0; c < headerColumnIndexMap.size; c++) {
-        sheet.cell(0, c).value = Array.from(headerColumnIndexMap.keys())[c];
+      for (const colName of Array.from(headerColumnIndexMap.keys())) {
+        const c = headerColumnIndexMap.get(colName)!;
+        sheet.cell(0, c).value = colName;
       }
 
       for (let r = 0; r < rowItems.length; r++) {

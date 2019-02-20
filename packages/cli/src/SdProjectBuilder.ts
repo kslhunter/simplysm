@@ -922,7 +922,7 @@ export class SdProjectBuilder {
             ]
           },
           {
-            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf)$/,
+            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx)$/,
             loader: "file-loader",
             options: {
               name: "assets/[name].[ext]?[hash]"

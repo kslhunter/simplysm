@@ -1,7 +1,7 @@
 import {ExcelWorksheet} from "./ExcelWorksheet";
 import {ExcelUtils} from "./utils/ExcelUtils";
 import {ExcelCellStyle} from "./ExcelCellStyle";
-import {DateOnly, DateTime} from "@simplysm/common";
+import {DateOnly, DateTime, optional} from "@simplysm/common";
 
 export class ExcelCell {
   public cellData: any;
@@ -67,11 +67,11 @@ export class ExcelCell {
     else if (this.cellData.$.t === "s") {
       const sstIndex = Number(this.cellData.v[0]._ || this.cellData.v[0]);
 
-      if (this.ews.workbook.sstData.sst.si[sstIndex].t) {
-        return this.ews.workbook.sstData.sst.si[sstIndex].t[0]._ || this.ews.workbook.sstData.sst.si[sstIndex].t[0];
+      if (this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t) {
+        return this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0]._ || this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0];
       }
       else {
-        return this.ews.workbook.sstData.sst.si[sstIndex].r.map((item: any) => item.t[0]).join("");
+        return this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].r.map((item: any) => item.t[0]).join("");
       }
     }
     else {
@@ -79,30 +79,70 @@ export class ExcelCell {
     }
   }
 
-  public constructor(public readonly ews: ExcelWorksheet,
+  public set formula(value: string | undefined) {
+    if (this.cellData.v && (this.cellData.v[0]._ || this.cellData.v._)) {
+      throw new Error("하나의 셀에 'value'가 지정된 상태로, 'Formula'를 지정할 수 없습니다. ('formula'를 먼저 지정하고 'value'값을 넣으세요.)");
+    }
+
+    if (value === undefined) {
+      delete this.cellData.$.t;
+      delete this.cellData.f;
+    }
+    else {
+      this.cellData.$.t = "str";
+      this.cellData.f = this.cellData.f || {};
+      this.cellData.f._ = value;
+    }
+  }
+
+  public get formula(): string | undefined {
+    if (!this.cellData.f) {
+      return undefined;
+    }
+    else {
+      return this.cellData.f[0]._ || this.cellData.f[0];
+    }
+  }
+
+  public constructor(public readonly excelWorkSheet: ExcelWorksheet,
                      public readonly row: number,
                      public readonly col: number) {
-    this.ews.sheetData.worksheet.sheetData[0].row = this.ews.sheetData.worksheet.sheetData[0].row || [];
-    let currRow = this.ews.sheetData.worksheet.sheetData[0].row.single((item: any) => Number(item.$.r) === row + 1);
+    this.excelWorkSheet.sheetData.worksheet.sheetData[0].row = this.excelWorkSheet.sheetData.worksheet.sheetData[0].row || [];
+    const rowNodes = this.excelWorkSheet.sheetData.worksheet.sheetData[0].row as any[];
+    let currRow = rowNodes.single((item: any) => Number(item.$.r) === row + 1);
     if (!currRow) {
       currRow = {$: {r: row + 1}};
-      this.ews.sheetData.worksheet.sheetData[0].row.push(currRow);
+
+      const beforeRow = rowNodes.orderBy(item => item.$.r).last(item => item.$.r < currRow.$.r);
+      const beforeRowIndex = beforeRow ? rowNodes.indexOf(beforeRow) : -1;
+
+      rowNodes.insert(beforeRowIndex + 1, currRow);
     }
 
     currRow.c = currRow.c || [];
-    let currCell = currRow.c.single((item: any) => item.$.r === ExcelUtils.getAddress(this.row, this.col));
+    const cellNodes = currRow.c as any[];
+    let currCell = cellNodes.single((item: any) => item.$.r === ExcelUtils.getAddress(this.row, this.col));
     if (!currCell) {
       currCell = {$: {r: ExcelUtils.getAddress(this.row, this.col)}};
-      currRow.c.push(currCell);
+
+      const colStyle = optional(this.excelWorkSheet.column(col).colData.$, o => o.style);
+      if (colStyle) {
+        currCell.$.s = colStyle;
+      }
+
+      const beforeCell = cellNodes.orderBy(item => item.$.r).last(item => item.$.r < currCell.$.r);
+      const beforeCellIndex = beforeCell ? cellNodes.indexOf(beforeCell) : -1;
+
+      cellNodes.insert(beforeCellIndex + 1, currCell);
     }
 
     this.cellData = currCell;
   }
 
   public merge(row: number, col: number): void {
-    this.ews.sheetData.worksheet.mergeCells = this.ews.sheetData.worksheet.mergeCells || [{}];
-    this.ews.sheetData.worksheet.mergeCells[0].mergeCell = this.ews.sheetData.worksheet.mergeCells[0].mergeCell || [];
-    this.ews.sheetData.worksheet.mergeCells[0].mergeCell.push({
+    this.excelWorkSheet.sheetData.worksheet.mergeCells = this.excelWorkSheet.sheetData.worksheet.mergeCells || [{}];
+    this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell = this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell || [];
+    this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell.push({
       $: {
         ref: ExcelUtils.getRangeAddress(this.row, this.col, row, col)
       }

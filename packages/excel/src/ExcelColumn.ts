@@ -1,4 +1,5 @@
 import {ExcelWorksheet} from "./ExcelWorksheet";
+import {JsonConvert} from "@simplysm/common";
 
 export class ExcelColumn {
   public colData: any;
@@ -7,10 +8,38 @@ export class ExcelColumn {
                      private readonly _col: number) {
     this._ews.sheetData.worksheet.cols[0] = this._ews.sheetData.worksheet.cols[0] || {};
     this._ews.sheetData.worksheet.cols[0].col = this._ews.sheetData.worksheet.cols[0].col || [];
-    while (this._ews.sheetData.worksheet.cols[0].col.length < _col + 1) {
-      this._ews.sheetData.worksheet.cols[0].col.push({});
+    const colDataList = this._ews.sheetData.worksheet.cols[0].col as any[];
+
+    for (const colData of colDataList) {
+      const min = Number(colData.$.min);
+      const max = Number(colData.$.max);
+      if (min !== max) {
+        colDataList.remove(colData);
+
+        for (let i = min; i <= max; i++) {
+          const newColData = Object.clone(colData);
+          newColData.$.min = i;
+          newColData.$.max = i;
+          colDataList.push(newColData);
+        }
+      }
     }
-    this.colData = this._ews.sheetData.worksheet.cols[0].col[_col];
+
+    this.colData = colDataList.single(item => Number(item.$.min) === _col + 1);
+    if (!this.colData) {
+      console.log(JsonConvert.stringify(colDataList, {space: 2}), _col + 1);
+
+      this.colData = {
+        $: {
+          min: (_col + 1).toString(),
+          max: (_col + 1).toString(),
+          bestFit: "1",
+          customWidth: "1",
+          width: "9.5"
+        }
+      };
+      colDataList.push(this.colData);
+    }
   }
 
   public set width(value: number) {
