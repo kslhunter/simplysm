@@ -130,10 +130,14 @@ export class MigrationQueryBuilder {
   ): string {
     let query = "";
     query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ADD [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}NULL\n`;
-    query += "GO\n";
-    query += `UPDATE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] SET [${colDef.name}] = ${QueryHelper.getFieldQuery(defaultValue)}\n`;
-    query += "GO\n";
-    query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ALTER COLUMN [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}${colDef.nullable ? "NULL" : "NOT NULL"}\n`;
+
+    if (!colDef.nullable && defaultValue) {
+      query += "GO\n";
+      query += `UPDATE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] SET [${colDef.name}] = ${QueryHelper.getFieldQuery(defaultValue)}\n`;
+      query += "GO\n";
+      query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ALTER COLUMN [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}NOT NULL\n`;
+    }
+
     return query;
   }
 
@@ -151,9 +155,19 @@ export class MigrationQueryBuilder {
       dataType: string;
       nullable?: boolean;
       autoIncrement?: boolean;
-    }
+    },
+    defaultValue: any
   ): string {
-    return `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ALTER COLUMN [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}${colDef.nullable ? "NULL" : "NOT NULL"}`;
+    let query = "";
+    query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ALTER COLUMN [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}NULL\n`;
+
+    if (!colDef.nullable && defaultValue) {
+      query += "GO\n";
+      query += `UPDATE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] SET [${colDef.name}] = ${QueryHelper.getFieldQuery(defaultValue)} WHERE [${colDef.name}] IS NULL\n`;
+      query += "GO\n";
+      query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ALTER COLUMN [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}NOT NULL\n`;
+    }
+    return query;
   }
 
   public renameColumn(

@@ -248,6 +248,9 @@ export const sorm = {
   right(src: string | QueryUnit<string>, num: number): string {
     return new QueryUnit(String, "RIGHT(" + QueryHelper.getFieldQuery(src) + ", " + num + ")") as any;
   },
+  replace(src: string | QueryUnit<string>, from: string, to: string): string {
+    return new QueryUnit(String, "REPLACE(" + QueryHelper.getFieldQuery(src) + ", " + QueryHelper.getFieldQuery(from) + ", " + QueryHelper.getFieldQuery(to) + ")") as any;
+  },
   formula<T extends QueryType>(arg1: T | QueryUnit<T>, arg2: string, arg3: T | QueryUnit<T>): StripTypeWrap<T> {
     let type: any;
     const argForType = arg1 || arg3;

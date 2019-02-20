@@ -492,7 +492,8 @@ export abstract class DbContext {
       dataType: string;
       nullable?: boolean;
       autoIncrement?: boolean;
-    }
+    },
+    defaultValue?: any
   ): Promise<void> {
     const query = new MigrationQueryBuilder().modifyColumn(
       {
@@ -500,7 +501,8 @@ export abstract class DbContext {
         scheme: tableDef.scheme || "dbo",
         name: tableDef.name
       },
-      colDef
+      colDef,
+      defaultValue
     );
     await this.executeAsync([query]);
   }

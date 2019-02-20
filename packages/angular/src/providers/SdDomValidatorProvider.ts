@@ -8,13 +8,19 @@ export class SdDomValidatorProvider {
     if (invalidEls.length > 0) {
       const focusableElement = invalidEls[0].findFocusableAllIncludeMe()[0];
       if (focusableElement) {
-        focusableElement.focus();
+        // "confirm"창울 띄우는 경우에 포커싱이 안되는 현상 때문에 "setTimeout"이 필요함.
+        setTimeout(() => {
+          focusableElement.focus();
+        });
       }
 
       if (!focusableElement) {
         const firstCell = invalidEls[0].findParent("._col");
         if (firstCell) {
-          (firstCell as HTMLElement).focus();
+          // "confirm"창울 띄우는 경우에 포커싱이 안되는 현상 때문에 "setTimeout"이 필요함.
+          setTimeout(() => {
+            (firstCell as HTMLElement).focus();
+          });
         }
       }
 

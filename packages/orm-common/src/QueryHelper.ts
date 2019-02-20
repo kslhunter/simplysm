@@ -20,7 +20,10 @@ export class QueryHelper {
       return arg ? "1" : "0";
     }
     else if (arg instanceof DateTime) {
-      return "'" + arg.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + "'";
+      return "'" + arg.toFormatString("yyyy-MM-dd HH:mm:ss") + "'";
+      // "select"할때 어차피 "fff"를 못가져오는 관계로, 아래 코드 주석
+      // (차후에 "tedious"가 업데이트 되면, 다시 "fff를 넣어야 할 수도 있음)
+      // return "'" + arg.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + "'";
     }
     else if (arg instanceof DateOnly) {
       return "'" + arg.toFormatString("yyyy-MM-dd") + "'";
