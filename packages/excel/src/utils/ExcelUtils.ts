@@ -29,6 +29,15 @@ export class ExcelUtils {
     return new DateOnly(date);
   }
 
+  public static getDateTime(excelTime: number): DateTime {
+    const excelBaseDateNumberUtc = Date.UTC(1899, 11, 31);
+    const excelDateNumberUtc = (excelTime - 1) * 24 * 60 * 60 * 1000;
+    const dateNumberUtc = excelBaseDateNumberUtc + excelDateNumberUtc;
+    const date = new Date(dateNumberUtc);
+    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+    return new DateTime(date);
+  }
+
   private static _getColAddress(index: number): string {
     let remained = index;
     let result = String.fromCharCode(remained % 26 + 65);
