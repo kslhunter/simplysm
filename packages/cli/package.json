@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/cli",
-  "version": "1.0.117",
+  "version": "1.0.118",
   "description": "심플리즘 패키지 (CLI)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -11,10 +11,10 @@
     "sd-cli": "./dist/bin.js"
   },
   "dependencies": {
-    "@simplysm/common": "1.0.117",
-    "@simplysm/core": "1.0.117",
-    "@simplysm/ws-common": "1.0.117",
-    "@simplysm/ws-server": "1.0.117",
+    "@simplysm/common": "1.0.118",
+    "@simplysm/core": "1.0.118",
+    "@simplysm/ws-common": "1.0.118",
+    "@simplysm/ws-server": "1.0.118",
     "angular-router-loader": "^0.8.5",
     "copy-webpack-plugin": "^4.6.0",
     "css-loader": "^2.1.0",
@@ -33,10 +33,10 @@
     "style-loader": "^0.23.1",
     "tslint": "^5.12.1",
     "typescript": "^3.3.3",
-    "webpack": "^4.29.4",
-    "webpack-dev-middleware": "^3.5.2",
+    "webpack": "^4.29.5",
+    "webpack-dev-middleware": "^3.6.0",
     "webpack-hot-middleware": "^2.24.3",
     "webpack-merge": "^4.2.1",
-    "yargs": "^13.2.0"
+    "yargs": "^13.2.1"
   }
 }
