@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as yargs from "yargs";
 import {Logger} from "@simplysm/common";
+import {spawnSync} from "child_process";
 
 
 const argv = yargs
@@ -21,6 +22,16 @@ const argv = yargs
           describe: "서버 포트를 설정합니다."
         }
       })
+  )
+  .command(
+    "start",
+    "서버를 시작합니다.",
+    cmd => cmd.version(false)
+  )
+  .command(
+    "upgrade",
+    "서버를 업그레이드합니다.",
+    cmd => cmd.version(false)
   )
   .argv as any;
 
@@ -48,6 +59,28 @@ const argv = yargs
         ]
       }, undefined, 2)
     );
+  }
+  else if (argv._[0] === "start") {
+    spawnSync("pm2", ["start", "pm2.json"], {
+      shell: true,
+      stdio: "inherit"
+    });
+  }
+  else if (argv._[0] === "upgrade") {
+    spawnSync("pm2", ["stop", "pm2.json"], {
+      shell: true,
+      stdio: "inherit"
+    });
+
+    spawnSync("yarn", ["upgrade", "--latest"], {
+      shell: true,
+      stdio: "inherit"
+    });
+
+    spawnSync("pm2", ["start", "pm2.json"], {
+      shell: true,
+      stdio: "inherit"
+    });
   }
   else {
     throw new Error("명령어가 잘못 되었습니다.");
