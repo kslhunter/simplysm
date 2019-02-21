@@ -63,6 +63,12 @@ export const sorm = {
   null<T extends QueryType>(source: T | QueryUnit<T>): boolean {
     return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " IS NULL") as any;
   },
+  nullOrEmpty(source: undefined | string | QueryUnit<string | undefined>): boolean {
+    return this.or([
+      this.null(source),
+      this.equal(source, "")
+    ]);
+  },
   notNull<T extends QueryType>(source: T | QueryUnit<T>): boolean {
     return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " IS NOT NULL") as any;
   },
