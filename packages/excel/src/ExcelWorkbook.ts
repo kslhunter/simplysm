@@ -301,16 +301,18 @@ export class ExcelWorkbook {
     link.click();
   }
 
-  public get json(): { [sheetName: string]: any } {
-    const result: { [sheetName: string]: any } = {};
+  public get json(): { [sheetName: string]: { [key: string]: any }[] } {
+    const result: { [sheetName: string]: { [key: string]: any }[] } = {};
 
-    for (const sheet of this._worksheets) {
+    for (const sheet of this._worksheets.filterExists()) {
       const sheetData = [];
       for (let r = 1; r < sheet.rowLength; r++) {
         const data = {};
         for (let c = 0; c < sheet.row(r).columnLength; c++) {
           const header = sheet.cell(0, c).value;
-          data[header] = sheet.cell(r, c).value;
+          if (header) {
+            data[header] = sheet.cell(r, c).value;
+          }
         }
         sheetData.push(data);
       }
@@ -320,7 +322,7 @@ export class ExcelWorkbook {
     return result;
   }
 
-  public set json(data: { [sheetName: string]: any }) {
+  public set json(data: { [sheetName: string]: { [key: string]: any }[] }) {
     for (const sheetName of Object.keys(data)) {
       let sheet = this._worksheets.single(item => item.name === sheetName);
       if (!sheet) {

@@ -1,5 +1,4 @@
 import {ExcelWorksheet} from "./ExcelWorksheet";
-import {JsonConvert} from "@simplysm/common";
 
 export class ExcelColumn {
   public colData: any;
@@ -27,8 +26,6 @@ export class ExcelColumn {
 
     this.colData = colDataList.single(item => Number(item.$.min) === _col + 1);
     if (!this.colData) {
-      console.log(JsonConvert.stringify(colDataList, {space: 2}), _col + 1);
-
       this.colData = {
         $: {
           min: (_col + 1).toString(),

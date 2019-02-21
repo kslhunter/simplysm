@@ -55,7 +55,13 @@ export class ExcelCell {
     else if (this.cellData.$.t === "str") {
       return this.cellData.v[0]._ || this.cellData.v[0];
     }
+    else if (this.cellData.$.t === "b") {
+      return Number(this.cellData.v[0]._ || this.cellData.v[0]) === 1;
+    }
     else if (this.cellData.$.t === undefined && this.style.numberFormat === "number") {
+      return Number(this.cellData.v[0]._ || this.cellData.v[0]);
+    }
+    else if (this.cellData.$.t === undefined && this.style.numberFormat === "Currency") {
       return Number(this.cellData.v[0]._ || this.cellData.v[0]);
     }
     else if (this.cellData.$.t === undefined && this.style.numberFormat === "DateOnly") {
@@ -75,7 +81,7 @@ export class ExcelCell {
       }
     }
     else {
-      throw new Error("지원되지 않는 타입입니다: " + this.cellData.$.t);
+      throw new Error("지원되지 않는 타입입니다: " + this.cellData.$.t + ", " + this.style.numberFormat);
     }
   }
 
