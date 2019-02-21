@@ -94,6 +94,7 @@ export class SdProjectBuilder {
     if (!optional(argv, o => o.noCommit)) {
       await new Promise<void>(async (resolve, reject) => {
         await ProcessManager.spawnAsync(["git", "status"], {
+          logger,
           onMessage: async (errMsg, logMsg) => {
             if (logMsg && logMsg.includes("Changes")) {
               reject(new Error("커밋되지 않은 정보가 있습니다."));
@@ -128,7 +129,8 @@ export class SdProjectBuilder {
         packageLogger.log(`배포를 시작합니다. - v${projectNpmConfig.version}`);
 
         await ProcessManager.spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
-          cwd: SdProjectBuilderUtil.getPackagesPath(packageKey)
+          cwd: SdProjectBuilderUtil.getPackagesPath(packageKey),
+          logger
         });
 
         const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
@@ -160,6 +162,7 @@ export class SdProjectBuilder {
           try {
             await ProcessManager.spawnAsync(["yarn", "publish", "--access", "public"], {
               cwd: SdProjectBuilderUtil.getPackagesPath(packageKey),
+              logger,
               onMessage: async (errMsg, logMsg) => {
                 if (errMsg) {
                   message += errMsg + "\r\n";
