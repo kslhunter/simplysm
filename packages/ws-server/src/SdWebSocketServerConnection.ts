@@ -122,20 +122,22 @@ export class SdWebSocketServerConnection extends EventEmitter {
       const filePath = match[2];
       const md5 = match[3];
 
-      const fileMd5 = await new Promise<string>((resolve1, reject1) => {
-        const output = crypto.createHash("md5");
-        const input = fs.createReadStream(filePath);
+      const fileMd5 = await fs.pathExists(filePath)
+        ? await new Promise<string>((resolve1, reject1) => {
+          const output = crypto.createHash("md5");
+          const input = fs.createReadStream(filePath);
 
-        input.on("error", err => {
-          reject1(err);
-        });
+          input.on("error", err => {
+            reject1(err);
+          });
 
-        output.once("readable", () => {
-          resolve1(output.read().toString("hex"));
-        });
+          output.once("readable", () => {
+            resolve1(output.read().toString("hex"));
+          });
 
-        input.pipe(output);
-      });
+          input.pipe(output);
+        })
+        : undefined;
 
       if (fileMd5 === md5) {
         const endRes: ISdWebSocketResponse = {
