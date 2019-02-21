@@ -86,7 +86,8 @@ export class ExcelCell {
   }
 
   public set formula(value: string | undefined) {
-    if (this.cellData.v && (this.cellData.v[0]._ || this.cellData.v._)) {
+    if (this.cellData.v && ((this.cellData.v[0] && this.cellData.v[0]._) || this.cellData.v._)) {
+      console.log(this.cellData.v && ((this.cellData.v[0] && this.cellData.v[0]._) || this.cellData.v._));
       throw new Error("하나의 셀에 'value'가 지정된 상태로, 'Formula'를 지정할 수 없습니다. ('formula'를 먼저 지정하고 'value'값을 넣으세요.)");
     }
 
