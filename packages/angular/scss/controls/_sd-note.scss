@@ -5,7 +5,9 @@ sd-note {
   border-left: get($gap, xxs) solid get($trans-color, default);
 
   @each $key, $val in $theme-color {
-    background: get($val, lightest);
-    border-color: get($val, lighter);
+    &[sd-theme=#{$key}] {
+      background: get($val, lightest);
+      border-color: get($val, lighter);
+    }
   }
 }

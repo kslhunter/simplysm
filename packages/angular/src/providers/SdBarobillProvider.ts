@@ -16,6 +16,14 @@ export class SdBarobillProvider {
   public constructor(private readonly _ws: SdWebSocketProvider) {
   }
 
+  public async getCardListAsync(brn: string): Promise<string[]> {
+    return await this._ws.sendAsync("BarobillService.getCardListAsync", [brn]);
+  }
+
+  public async getAccountListAsync(brn: string): Promise<string[]> {
+    return await this._ws.sendAsync("BarobillService.getAccountListAsync", [brn]);
+  }
+
   public async getCardLogAsync(param: IBarobillServiceGetCardLogParam): Promise<IBarobillServiceGetCardLogResult> {
     return await this._ws.sendAsync("BarobillService.getCardLogAsync", [param]);
   }

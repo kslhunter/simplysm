@@ -16,6 +16,18 @@ import {
 export class BarobillService extends SdWebSocketServiceBase {
   private readonly _logger = new Logger("@simplysm/ws-server", "BarobillService");
 
+  public async getCardListAsync(brn: string): Promise<string[]> {
+    const result = await this._sendAsync("CARD", "GetCard", {
+      CorpNum: brn.replace(/-/g, "")
+    });
+
+    if (Number(result["Card"][0]["CardNum"]) < 0) {
+      throw new Error(await this._getErrorString("CARD", Number(result["Card"][0]["CardNum"])));
+    }
+
+    return result["Card"].map((item: any) => item["CardNum"]);
+  }
+
   public async getCardLogAsync(param: IBarobillServiceGetCardLogParam): Promise<IBarobillServiceGetCardLogResult> {
     const result = await this._sendAsync("CARD", "GetCardLog", {
       CorpNum: param.brn.replace(/-/g, ""),
@@ -72,6 +84,18 @@ export class BarobillService extends SdWebSocketServiceBase {
         transType: item["TransType"]
       })) : []
     };
+  }
+
+  public async getAccountListAsync(brn: string): Promise<string[]> {
+    const result = await this._sendAsync("BANKACCOUNT", "GetBankAccount", {
+      CorpNum: brn.replace(/-/g, "")
+    });
+
+    if (Number(result["BankAccount"][0]["BankAccountNum"]) < 0) {
+      throw new Error(await this._getErrorString("BANKACCOUNT", Number(result["BankAccount"][0]["BankAccountNum"])));
+    }
+
+    return result["BankAccount"].map((item: any) => item["BankAccountNum"]);
   }
 
   public async getAccountLogListAsync(param: IBarobillServiceGetAccountLogListParam): Promise<IBarobillServiceGetAccountLogResultItem[]> {
