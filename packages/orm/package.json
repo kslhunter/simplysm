@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/orm",
-  "version": "1.0.122",
+  "version": "1.0.123",
   "description": "심플리즘 패키지 (ORM)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,8 +8,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/common": "1.0.122",
-    "@simplysm/orm-common": "1.0.122",
+    "@simplysm/common": "1.0.123",
+    "@simplysm/orm-common": "1.0.123",
     "tedious": "^5.0.3"
   }
 }
