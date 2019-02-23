@@ -3,11 +3,14 @@ import {Wait} from "@simplysm/common";
 export class SdFileDialogProvider {
   public async showAsync(): Promise<File | undefined> {
     return await new Promise<File | undefined>(resolve => {
-      const inputEl = document.createElement("input");
+      let inputEl: HTMLInputElement | undefined = document.createElement("input");
       inputEl.type = "file";
       inputEl.multiple = false;
       inputEl.onchange = (event: Event) => {
-        document.body.removeChild(inputEl);
+        if (inputEl) {
+          document.body.removeChild(inputEl);
+          inputEl = undefined;
+        }
 
         const file = event.target!["files"][0];
         resolve(file);
@@ -22,9 +25,11 @@ export class SdFileDialogProvider {
       inputEl.click();
 
       inputEl.onfocus = async () => {
-        document.body.removeChild(inputEl);
-
         await Wait.time(100);
+        if (inputEl) {
+          document.body.removeChild(inputEl);
+          inputEl = undefined;
+        }
         resolve();
       };
     });
