@@ -130,7 +130,7 @@ export class SdProjectBuilder {
 
         await ProcessManager.spawnAsync(["yarn", "version", "--new-version", projectNpmConfig.version, "--no-git-tag-version"], {
           cwd: SdProjectBuilderUtil.getPackagesPath(packageKey),
-          logger
+          logger: packageLogger
         });
 
         const allBuildPackageNpmNames: string[] = await this._getAllBuildPackageNpmNamesAsync();
@@ -162,7 +162,7 @@ export class SdProjectBuilder {
           try {
             await ProcessManager.spawnAsync(["yarn", "publish", "--access", "public"], {
               cwd: SdProjectBuilderUtil.getPackagesPath(packageKey),
-              logger,
+              logger: packageLogger,
               onMessage: async (errMsg, logMsg) => {
                 if (errMsg) {
                   message += errMsg + "\r\n";
