@@ -51,9 +51,9 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     controlEl.addEventListener("focus", this.focusEventHandler, true);
     controlEl.addEventListener("blur", this.blurEventHandler, true);
 
-    const dropdownEl = this.dropdownElRef!.nativeElement;
+    // const dropdownEl = this.dropdownElRef!.nativeElement;
     // dropdownEl.remove();
-    document.body.appendChild(dropdownEl);
+    // document.body.appendChild(dropdownEl);
   }
 
   public ngOnDestroy(): void {
@@ -64,7 +64,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     const controlEl = this.controlElRef!.nativeElement;
 
     const dropdownEl = this.dropdownElRef!.nativeElement;
-    // document.body.appendChild(dropdownEl);
+    document.body.appendChild(dropdownEl);
     dropdownEl.addEventListener("blur", this.blurEventHandler, true);
 
     if (window.innerHeight < controlEl.windowOffset.top * 2) {
@@ -128,7 +128,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
       //   parentFocusableEl.focus();
       // }
 
-      // dropdownEl.remove();
+      dropdownEl.remove();
     }
   }
 

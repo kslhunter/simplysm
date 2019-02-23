@@ -1,4 +1,5 @@
 import {ExcelWorksheet} from "./ExcelWorksheet";
+import {ExcelUtils} from "./utils/ExcelUtils";
 
 export class ExcelRow {
   public rowData: any;
@@ -9,6 +10,8 @@ export class ExcelRow {
   }
 
   public get columnLength(): number {
-    return this.rowData.c.length;
+    const lastAddr = this.rowData.c.last().$.r;
+    const rowCol = ExcelUtils.getAddressRowCol(lastAddr);
+    return rowCol.col + 1;
   }
 }

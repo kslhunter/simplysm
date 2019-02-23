@@ -52,26 +52,32 @@ export class ExcelCell {
     if (!this.cellData.v) {
       return undefined;
     }
+
+    const value = this.cellData.v[0]._ || this.cellData.v[0];
+
+    if (!value) {
+      return undefined;
+    }
     else if (this.cellData.$.t === "str") {
-      return this.cellData.v[0]._ || this.cellData.v[0];
+      return value;
     }
     else if (this.cellData.$.t === "b") {
-      return Number(this.cellData.v[0]._ || this.cellData.v[0]) === 1;
+      return Number(value) === 1;
     }
     else if (this.cellData.$.t === undefined && this.style.numberFormat === "number") {
-      return Number(this.cellData.v[0]._ || this.cellData.v[0]);
+      return Number(value);
     }
     else if (this.cellData.$.t === undefined && this.style.numberFormat === "Currency") {
-      return Number(this.cellData.v[0]._ || this.cellData.v[0]);
+      return Number(value);
     }
     else if (this.cellData.$.t === undefined && this.style.numberFormat === "DateOnly") {
-      return ExcelUtils.getDateOnly(Number(this.cellData.v[0]._ || this.cellData.v[0]));
+      return ExcelUtils.getDateOnly(Number(value));
     }
     else if (this.cellData.$.t === undefined && this.style.numberFormat === "DateTime") {
-      return ExcelUtils.getDateTime(Number(this.cellData.v[0]._ || this.cellData.v[0]));
+      return ExcelUtils.getDateTime(Number(value));
     }
     else if (this.cellData.$.t === "s") {
-      const sstIndex = Number(this.cellData.v[0]._ || this.cellData.v[0]);
+      const sstIndex = Number(value);
 
       if (this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t) {
         return this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0]._ || this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0];
@@ -87,7 +93,6 @@ export class ExcelCell {
 
   public set formula(value: string | undefined) {
     if (this.cellData.v && ((this.cellData.v[0] && this.cellData.v[0]._) || this.cellData.v._)) {
-      console.log(this.cellData.v && ((this.cellData.v[0] && this.cellData.v[0]._) || this.cellData.v._));
       throw new Error("하나의 셀에 'value'가 지정된 상태로, 'Formula'를 지정할 수 없습니다. ('formula'를 먼저 지정하고 'value'값을 넣으세요.)");
     }
 
