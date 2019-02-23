@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as fs from "fs-extra";
 import {INpmConfig, ISdConfigFileJson, ISdPackageConfig, ISdProjectConfig, ITsConfig} from "./commons";
-import {optional} from "@simplysm/common";
+import {JsonConvert, optional} from "@simplysm/common";
 import * as os from "os";
 
 export class SdProjectBuilderUtil {
@@ -91,7 +91,7 @@ export class SdProjectBuilderUtil {
 
   public static async writeNpmConfigAsync(packageKey: string, npmConfig: INpmConfig): Promise<void> {
     const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
-    await fs.writeJson(configPath, npmConfig, {spaces: 2, fs, EOL: os.EOL});
+    await fs.writeFile(configPath, JsonConvert.stringify(npmConfig, {space: 2}));
   }
 
   public static getProjectNpmConfigPath(): string {
