@@ -11,7 +11,7 @@ export class QueryUnit<T extends QueryType> {
 
   public get query(): string {
     if (this.type === QueriedBoolean) {
-      return `CASE WHEN ${this._query} THEN 1 ELSE 0 END`;
+      return `CONVERT(BIT, CASE WHEN ${this._query} THEN 1 ELSE 0 END)`;
     }
     else {
       return this._query;
