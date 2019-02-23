@@ -4,6 +4,14 @@ import {SdWebSocketServerUtil} from "../SdWebSocketServerUtil";
 import {IQueryDef} from "@simplysm/orm-common";
 import {DbConnection} from "@simplysm/orm";
 
+if (process.env.NODE_ENV !== "production") {
+  Logger.setGroupConfig("@simplysm/orm-connector", {
+    consoleLogSeverities: [],
+    fileLogSeverities: ["log", "info", "warn", "error"],
+    outputPath: "logs"
+  });
+}
+
 export class OrmService extends SdWebSocketServiceBase {
   private readonly _logger = new Logger("@simplysm/ws-server", "OrmService");
   private static readonly _connections = new Map<number, DbConnection>();

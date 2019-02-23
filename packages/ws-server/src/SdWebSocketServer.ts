@@ -13,6 +13,14 @@ import * as fs from "fs-extra";
 
 const vhost = require("vhost"); //tslint:disable-line:no-var-requires no-require-imports
 
+if (process.env.NODE_ENV !== "production") {
+  Logger.setGroupConfig("@simplysm/ws-server", {
+    consoleLogSeverities: [],
+    fileLogSeverities: ["log", "info", "warn", "error"],
+    outputPath: "logs"
+  });
+}
+
 interface IEventListener {
   id: number;
   eventName: string;
