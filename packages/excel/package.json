@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/excel",
-  "version": "1.0.129",
+  "version": "1.0.130",
   "description": "심플리즘 패키지 (엑셀)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,7 +8,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/common": "1.0.129",
+    "@simplysm/common": "1.0.130",
     "jszip": "^3.2.0",
     "xml2js": "^0.4.19"
   }
