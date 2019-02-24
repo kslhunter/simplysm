@@ -22,8 +22,7 @@ export class ResizeEventPlugin {
         }
 
         if (dimensions.length > 0) {
-          const event = new CustomEvent("resize");
-          event["dimensions"] = dimensions;
+          const event = new CustomEvent("resize", {detail: {dimensions}}) as ResizeEvent;
           this.manager.getZone().run(() => {
             handler(event as any);
           });
@@ -45,8 +44,7 @@ export class ResizeEventPlugin {
         }
 
         if (dimensions.length > 0) {
-          const event = new CustomEvent("resize");
-          event["dimensions"] = dimensions;
+          const event = new CustomEvent("resize", {detail: {dimensions}}) as ResizeEvent;
           this.manager.getZone().run(() => {
             handler(event as any);
           });
@@ -65,6 +63,5 @@ export class ResizeEventPlugin {
 }
 
 // tslint:disable-next-line:interface-name
-export interface ResizeEvent extends CustomEvent {
-  dimensions: ("width" | "height")[];
+export interface ResizeEvent extends CustomEvent<{ dimensions: ("width" | "height")[] }> {
 }

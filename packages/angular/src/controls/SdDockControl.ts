@@ -79,10 +79,10 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
   public onResize(event: ResizeEvent): void {
     if (this._isOnDragging) return;
 
-    if (event.dimensions.includes("height") && ["top", "bottom"].includes(this.position)) {
+    if (event.detail.dimensions.includes("height") && ["top", "bottom"].includes(this.position)) {
       this._containerControl.redraw();
     }
-    else if (event.dimensions.includes("width") && ["left", "right"].includes(this.position)) {
+    else if (event.detail.dimensions.includes("width") && ["left", "right"].includes(this.position)) {
       this._containerControl.redraw();
     }
   }

@@ -4,7 +4,7 @@
     "rootDir": "src",
     "outDir": "dist",
     "lib": [
-      "es2017",
+      "es2015",
       "dom"
     ],
     "declaration": true,

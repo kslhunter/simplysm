@@ -1,6 +1,10 @@
-// tslint:disable-next-line:interface-name
-declare interface HTMLElement {
-  readonly windowOffset: { top: number; left: number };
+import {ResizeEvent} from "../plugins/ResizeEventPlugin";
+
+declare global {
+  // tslint:disable-next-line:interface-name
+  interface HTMLElement {
+    readonly windowOffset: { top: number; left: number };
+  }
 }
 
 Object.defineProperty(HTMLElement.prototype, "windowOffset", {
@@ -24,3 +28,73 @@ Object.defineProperty(HTMLElement.prototype, "windowOffset", {
     return {top, left};
   }
 });
+
+HTMLElement.prototype["orgAddEventListener"] = HTMLElement.prototype["orgAddEventListener"] || HTMLElement.prototype.addEventListener;
+HTMLElement.prototype.addEventListener = function (type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
+  if (type === "resize") {
+    let prevWidth = this.offsetWidth;
+    let prevHeight = this.offsetHeight;
+
+    if (window["ResizeObserver"]) {
+      const observer = new window["ResizeObserver"](() => {
+        const dimensions: ("width" | "height")[] = [];
+
+        if (prevWidth !== this.offsetWidth) {
+          dimensions.push("width");
+          prevWidth = this.offsetWidth;
+        }
+
+        if (prevHeight !== this.offsetHeight) {
+          dimensions.push("height");
+          prevHeight = this.offsetHeight;
+        }
+
+        if (dimensions.length > 0) {
+          const event = new CustomEvent("resize", {detail: {dimensions}}) as ResizeEvent;
+          if (listener["handleEvent"]) {
+            (listener as EventListenerObject).handleEvent(event);
+          }
+          else {
+            (listener as EventListener)(event);
+          }
+        }
+      });
+      observer.observe(this);
+    }
+    else {
+      const timeout = window.setInterval(() => {
+        const dimensions: ("width" | "height")[] = [];
+
+        if (prevWidth !== this.offsetWidth) {
+          dimensions.push("width");
+          prevWidth = this.offsetWidth;
+        }
+        if (prevHeight !== this.offsetHeight) {
+          dimensions.push("height");
+          prevHeight = this.offsetHeight;
+        }
+
+        if (dimensions.length > 0) {
+          const event = new CustomEvent("resize", {detail: {dimensions}}) as ResizeEvent;
+          if (listener["handleEvent"]) {
+            (listener as EventListenerObject).handleEvent(event);
+          }
+          else {
+            (listener as EventListener)(event);
+          }
+        }
+      }, 100);
+
+      const removedEventListener = (e: Event) => {
+        if (this === e.target || this.findParent(e.target as Element)) {
+          window.clearTimeout(timeout);
+          document.body.removeEventListener("DOMNodeRemoved", removedEventListener);
+        }
+      };
+      document.body.addEventListener("DOMNodeRemoved", removedEventListener);
+    }
+  }
+  else {
+    this["orgAddEventListener"](type, listener, options);
+  }
+};

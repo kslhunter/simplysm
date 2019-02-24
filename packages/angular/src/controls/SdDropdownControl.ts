@@ -1,24 +1,20 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ContentChild,
   ElementRef,
   EventEmitter,
-  HostBinding,
   Input,
   OnDestroy,
   OnInit,
-  Output,
-  ViewChild
+  Output
 } from "@angular/core";
-import {SdDropdownPopupControl} from "./SdDropdownPopupControl";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-dropdown",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="_sd-dropdown-control" #control [attr.tabindex]="disabled ? undefined : '0'">
+    <div class="_sd-dropdown-control" tabindex="0">
       <ng-content></ng-content>
     </div>
     <ng-content select="sd-dropdown-popup"></ng-content>`
@@ -26,14 +22,24 @@ import {SdTypeValidate} from "../commons/SdTypeValidate";
 export class SdDropdownControl implements OnInit, OnDestroy {
   @Input()
   @SdTypeValidate(Boolean)
-  @HostBinding("attr.sd-disabled")
-  public disabled?: boolean;
+  public set disabled(value: boolean) {
+    this._disabled = value;
 
-  @ViewChild("control")
-  public controlElRef?: ElementRef<HTMLElement>;
+    if (value) {
+      if (this._el) this._el.setAttribute("sd-disabled", "");
+      if (this._controlEl) this._controlEl.removeAttribute("tabindex");
+    }
+    else {
+      if (this._el) this._el.removeAttribute("sd-disabled");
+      if (this._controlEl) this._controlEl.setAttribute("tabindex", "0");
+    }
+  }
 
-  @ContentChild(SdDropdownPopupControl, {read: ElementRef})
-  public dropdownElRef?: ElementRef<HTMLElement>;
+  public get disabled(): boolean {
+    return this._disabled;
+  }
+
+  private _disabled = false;
 
   @Output()
   public readonly open = new EventEmitter();
@@ -43,38 +49,48 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
   private _isOpen = false;
 
+  private _el!: HTMLElement;
+  private _controlEl!: HTMLElement;
+  private _dropdownEl!: HTMLElement;
+
   public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
   }
 
   public ngOnInit(): void {
-    const controlEl = this.controlElRef!.nativeElement;
-    controlEl.addEventListener("focus", this.focusEventHandler, true);
-    controlEl.addEventListener("blur", this.blurEventHandler, true);
+    this._el = this._elRef.nativeElement;
+    this._controlEl = this._el.findAll("> ._sd-dropdown-control")[0] as HTMLElement;
+    this._dropdownEl = this._el.findAll("> sd-dropdown-popup")[0] as HTMLElement;
 
-    // const dropdownEl = this.dropdownElRef!.nativeElement;
-    // dropdownEl.remove();
-    // document.body.appendChild(dropdownEl);
+    this._controlEl.addEventListener("focus", this.focusEventHandler, true);
+    this._controlEl.addEventListener("blur", this.blurEventHandler, true);
+
+    this._dropdownEl.remove();
+
+    this.disabled = this._disabled;
   }
 
   public ngOnDestroy(): void {
-    this.dropdownElRef!.nativeElement.remove();
+    if (this._dropdownEl) {
+      this._dropdownEl.remove();
+      document.removeEventListener("scroll", this.scrollEventHandler, true);
+    }
   }
 
   public openPopup(): void {
-    const controlEl = this.controlElRef!.nativeElement;
+    if (this._isOpen) return;
+    this._isOpen = true;
 
-    const dropdownEl = this.dropdownElRef!.nativeElement;
-    document.body.appendChild(dropdownEl);
-    dropdownEl.addEventListener("blur", this.blurEventHandler, true);
+    document.body.appendChild(this._dropdownEl);
+    this._dropdownEl.addEventListener("blur", this.blurEventHandler, true);
 
-    if (window.innerHeight < controlEl.windowOffset.top * 2) {
+    if (window.innerHeight < this._controlEl.windowOffset.top * 2) {
       Object.assign(
-        dropdownEl.style,
+        this._dropdownEl.style,
         {
           top: "",
-          bottom: (window.innerHeight - controlEl.windowOffset.top) + "px",
-          left: controlEl.windowOffset.left + 1 + "px",
-          minWidth: controlEl.clientWidth + "px",
+          bottom: (window.innerHeight - this._controlEl.windowOffset.top) + "px",
+          left: this._controlEl.windowOffset.left + 1 + "px",
+          minWidth: this._controlEl.clientWidth + "px",
           opacity: "1",
           pointerEvents: "auto",
           transform: "none",
@@ -85,12 +101,12 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     }
     else {
       Object.assign(
-        dropdownEl.style,
+        this._dropdownEl.style,
         {
-          top: (controlEl.windowOffset.top + controlEl.offsetHeight) + "px",
+          top: (this._controlEl.windowOffset.top + this._controlEl.offsetHeight) + "px",
           bottom: "",
-          left: controlEl.windowOffset.left + 1 + "px",
-          minWidth: controlEl.clientWidth + "px",
+          left: this._controlEl.windowOffset.left + 1 + "px",
+          minWidth: this._controlEl.clientWidth + "px",
           opacity: "1",
           pointerEvents: "auto",
           transform: "none",
@@ -102,16 +118,15 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
     document.addEventListener("scroll", this.scrollEventHandler, true);
 
-    if (!this._isOpen) {
-      this.open.emit();
-      this._isOpen = true;
-    }
+    this.open.emit();
   }
 
   public closePopup(): void {
-    const dropdownEl = this.dropdownElRef!.nativeElement;
+    if (!this._isOpen) return;
+    this._isOpen = false;
+
     Object.assign(
-      dropdownEl.style,
+      this._dropdownEl.style,
       {
         opacity: "0",
         pointerEvents: "none",
@@ -119,41 +134,30 @@ export class SdDropdownControl implements OnInit, OnDestroy {
       }
     );
 
-    if (this._isOpen) {
-      this.close.emit();
-      this._isOpen = false;
+    document.removeEventListener("scroll", this.scrollEventHandler, true);
 
-      // const parentFocusableEl = this.controlElRef!.nativeElement.findFirstFocusableParent();
-      // if (parentFocusableEl) {
-      //   parentFocusableEl.focus();
-      // }
-
-      dropdownEl.remove();
-    }
+    this.close.emit();
   }
 
   public scrollEventHandler = (event: UIEvent) => {
-    const controlEl = this.controlElRef!.nativeElement;
-    const dropdownEl = this.dropdownElRef!.nativeElement;
-
-    if (this._elRef.nativeElement.findParent(event.target as HTMLElement)) {
-      if (window.innerHeight < controlEl.windowOffset.top * 2) {
+    if (this._el.findParent(event.target as HTMLElement)) {
+      if (window.innerHeight < this._controlEl.windowOffset.top * 2) {
         Object.assign(
-          dropdownEl.style,
+          this._dropdownEl.style,
           {
             top: "",
-            bottom: (window.innerHeight - controlEl.windowOffset.top) + "px",
-            left: controlEl.windowOffset.left + "px"
+            bottom: (window.innerHeight - this._controlEl.windowOffset.top) + "px",
+            left: this._controlEl.windowOffset.left + "px"
           }
         );
       }
       else {
         Object.assign(
-          dropdownEl.style,
+          this._dropdownEl.style,
           {
-            top: (controlEl.windowOffset.top + controlEl.offsetHeight) + "px",
+            top: (this._controlEl.windowOffset.top + this._controlEl.offsetHeight) + "px",
             bottom: "",
-            left: controlEl.windowOffset.left + "px"
+            left: this._controlEl.windowOffset.left + "px"
           }
         );
       }
@@ -165,19 +169,13 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   };
 
   public blurEventHandler = (event: FocusEvent) => {
-    document.removeEventListener("scroll", this.scrollEventHandler, true);
-
-    const controlEl = this.controlElRef!.nativeElement;
-    const dropdownEl = this.dropdownElRef!.nativeElement;
-
     const relatedTarget = event.relatedTarget as HTMLElement;
     if (
-      relatedTarget &&
-      (
-        relatedTarget === controlEl ||
-        relatedTarget === dropdownEl ||
-        relatedTarget.findParent(controlEl) ||
-        relatedTarget.findParent(dropdownEl)
+      relatedTarget && (
+        relatedTarget === this._controlEl ||
+        relatedTarget === this._dropdownEl ||
+        relatedTarget.findParent(this._controlEl) ||
+        relatedTarget.findParent(this._dropdownEl)
       )
     ) {
       return;

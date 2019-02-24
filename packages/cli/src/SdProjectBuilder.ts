@@ -319,7 +319,7 @@ export class SdProjectBuilder {
     tsOptions.rootDir = "src";
     tsOptions.outDir = "dist";
 
-    tsOptions.lib = ["es2017"];
+    tsOptions.lib = ["es2015"];
 
     const packageConfig = this.config.packages[packageKey];
     if (packageConfig.type !== "node") {
