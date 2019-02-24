@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, ElementRef, OnInit} from "@angular/core";
-import {ResizeEvent} from "../plugins/ResizeEventPlugin";
+import {ResizeEvent} from "../commons/ResizeEvent";
 
 @Component({
   selector: "sd-dropdown-popup",

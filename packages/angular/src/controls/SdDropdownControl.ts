@@ -26,11 +26,11 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     this._disabled = value;
 
     if (value) {
-      if (this._el) this._el.setAttribute("sd-disabled", "");
+      this._el.setAttribute("sd-disabled", "true");
       if (this._controlEl) this._controlEl.removeAttribute("tabindex");
     }
     else {
-      if (this._el) this._el.removeAttribute("sd-disabled");
+      this._el.setAttribute("sd-disabled", "false");
       if (this._controlEl) this._controlEl.setAttribute("tabindex", "0");
     }
   }
@@ -49,15 +49,15 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
   private _isOpen = false;
 
-  private _el!: HTMLElement;
+  private readonly _el: HTMLElement;
   private _controlEl!: HTMLElement;
   private _dropdownEl!: HTMLElement;
 
   public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+    this._el = this._elRef.nativeElement;
   }
 
   public ngOnInit(): void {
-    this._el = this._elRef.nativeElement;
     this._controlEl = this._el.findAll("> ._sd-dropdown-control")[0] as HTMLElement;
     this._dropdownEl = this._el.findAll("> sd-dropdown-popup")[0] as HTMLElement;
 

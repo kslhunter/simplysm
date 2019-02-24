@@ -11,6 +11,7 @@ import {
   TemplateRef
 } from "@angular/core";
 import {SdSelectControl} from "./SdSelectControl";
+import {JsonConvert} from "@simplysm/common";
 
 @Component({
   selector: "sd-select-item",
@@ -28,7 +29,17 @@ export class SdSelectItemControl {
   public tabIndex = 0;
 
   @Input()
-  public value?: any;
+  public set value(value: any) {
+    this._value = value;
+
+    this._el.setAttribute("sd-value-json", JsonConvert.stringify(value) || "");
+  }
+
+  public get value(): any {
+    return this._value;
+  }
+
+  private _value: any;
 
   @ContentChild("label")
   public labelTemplateRef?: TemplateRef<any>;
@@ -47,9 +58,12 @@ export class SdSelectItemControl {
     return this._elRef.nativeElement.innerHTML.trim();
   }
 
+  private readonly _el: HTMLElement;
+
   public constructor(@Inject(forwardRef(() => SdSelectControl))
                      private readonly _selectControl: SdSelectControl,
                      private readonly _elRef: ElementRef<HTMLElement>) {
+    this._el = this._elRef.nativeElement;
   }
 
   @HostListener("click", ["$event"])

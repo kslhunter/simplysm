@@ -1,4 +1,5 @@
-import {ResizeEvent} from "../plugins/ResizeEventPlugin";
+import {SdMutationEvent} from "./SdMutationEvent";
+import {ResizeEvent} from "./ResizeEvent";
 
 declare global {
   // tslint:disable-next-line:interface-name
@@ -92,6 +93,30 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: Event
         }
       };
       document.body.addEventListener("DOMNodeRemoved", removedEventListener);
+    }
+  }
+  else if (type === "mutation") {
+    if (window["MutationObserver"]) {
+      const observer = new MutationObserver(mutations => {
+        const event = new CustomEvent("mutation", {detail: {mutations}}) as SdMutationEvent;
+        if (listener["handleEvent"]) {
+          (listener as EventListenerObject).handleEvent(event);
+        }
+        else {
+          (listener as EventListener)(event);
+        }
+      });
+      observer.observe(this, {
+        childList: true,
+        attributes: true,
+        attributeOldValue: true,
+        characterData: true,
+        characterDataOldValue: true,
+        subtree: true
+      });
+    }
+    else {
+      throw new Error("지원하지 않는 브라우져 입니다." + (process.env.NODE_ENV === "production" ? "" : "(MutationObserver)"));
     }
   }
   else {

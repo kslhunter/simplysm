@@ -17,7 +17,6 @@ import {
 } from "@angular/core";
 import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
-import {animate, state, style, transition, trigger} from "@angular/animations";
 import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
 
 @Component({
@@ -81,7 +80,7 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
       <div class="_content _body" [style.width.px]="headerElRef.offsetWidth">
         <ng-template #rowOfList let-items="items">
           <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
-            <div class="_row" [@rowState]="'in'">
+            <div class="_row"> <!-- [@rowState]="'in'" -->
               <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
                 <div class="_col _first-col"
                      [class._double]="selectable && children"
@@ -133,14 +132,14 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
         </ng-template>
         <ng-template [ngTemplateOutlet]="rowOfList" [ngTemplateOutletContext]="{items: getPagedItems()}"></ng-template>
       </div>
-    </div>`,
+    </div>`/*,
   animations: [
     trigger("rowState", [
       state("void", style({height: "0"})),
       state("*", style({height: "*"})),
       transition("void <=> *", animate(".1s ease-in-out"))
     ])
-  ]
+  ]*/
 })
 export class SdSheetControl implements DoCheck, OnInit {
   @ContentChildren(SdSheetColumnControl)
@@ -195,6 +194,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public set page(value: number) {
     this._page = value;
   }
+
   private _page = 0;
 
   @Input()

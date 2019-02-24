@@ -14,7 +14,7 @@ import {SdDockContainerControl} from "./SdDockContainerControl";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
-import {ResizeEvent} from "../plugins/ResizeEventPlugin";
+import {ResizeEvent} from "../commons/ResizeEvent";
 
 @Component({
   selector: "sd-dock",

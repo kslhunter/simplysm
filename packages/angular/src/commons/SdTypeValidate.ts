@@ -4,8 +4,7 @@ const symbol = `sd-type-validate`;
 
 // tslint:disable-next-line:variable-name
 export function SdTypeValidate(params: ValidateDef): any {
-  return (target: any, propertyKey: string) => {
-    const descriptor = Object.getOwnPropertyDescriptor(target, propertyKey);
+  return (target: any, propertyKey: string, descriptor: PropertyDescriptor | undefined) => {
     const prevSetter = descriptor ? descriptor.set : undefined;
 
     const getter = function (this: any): any {
