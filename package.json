@@ -81,7 +81,7 @@
     "tedious": "^5.0.3",
     "ts-node": "^8.0.2",
     "tsconfig-paths": "^3.8.0",
-    "tslint": "^5.12.1",
+    "tslint": "^5.13.0",
     "typescript": "^3.3.3333",
     "typescript-tslint-plugin": "^0.3.1",
     "vhost": "^3.0.2",
