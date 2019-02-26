@@ -251,6 +251,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   private readonly _iterableDiffer: IterableDiffer<any>;
+  private readonly _iterableDiffer2: IterableDiffer<any>;
   private _columnConfigs: {
     header?: string;
     index: number;
@@ -262,6 +263,7 @@ export class SdSheetControl implements DoCheck, OnInit {
                      private readonly _elRef: ElementRef<HTMLElement>,
                      private readonly _localStorage: SdLocalStorageProvider) {
     this._iterableDiffer = this._iterableDiffers.find([]).create(this.trackByItemFn);
+    this._iterableDiffer2 = this._iterableDiffers.find([]).create();
 
     this._elRef.nativeElement.addEventListener(
       "focus",
@@ -293,6 +295,10 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public ngDoCheck(): void {
     if (this.items && this._iterableDiffer.diff(this.items)) {
+      this._cdr.markForCheck();
+    }
+
+    if (this.columnControls && this._iterableDiffer2.diff(this.columnControls.toArray())) {
       this._cdr.markForCheck();
     }
   }

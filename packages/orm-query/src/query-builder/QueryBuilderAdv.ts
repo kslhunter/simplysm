@@ -56,7 +56,8 @@ export class QueryBuilderAdv<T> {
       }
 
       this.qb = new QueryBuilder().from(unionQueryBuilders, `[${as}]`);
-    } else if (arg instanceof QueryBuilderAdv) {
+    }
+    else if (arg instanceof QueryBuilderAdv) {
       this._subQba = arg;
       if (tableType) {
         this._tableType = tableType;
@@ -88,7 +89,8 @@ export class QueryBuilderAdv<T> {
         subQueryBuilder = subQueryBuilder.select(subSelect).distinct();
 
         this.qb = new QueryBuilder().from(subQueryBuilder, `[${as}]`);
-      } else {
+      }
+      else {
         for (const selectAs of Object.keys(this._subQba.selectObj)) {
           const selectOrg = this._subQba.selectObj[selectAs]!;
           const selectType = selectOrg instanceof QueryUnit ? selectOrg.type : selectOrg.constructor;
@@ -105,7 +107,8 @@ export class QueryBuilderAdv<T> {
 
         this.qb = new QueryBuilder().from(subQueryBuilder, `[${as}]`);
       }
-    } else {
+    }
+    else {
       this._tableType = arg;
       const tableDef = core.Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
 
@@ -133,7 +136,8 @@ export class QueryBuilderAdv<T> {
         select[`[${selectAs}]`] = this.selectObj[selectAs];
       }
       return this.qb.select(select).query;
-    } else {
+    }
+    else {
       return this.qb.query;
     }
   }
@@ -145,7 +149,8 @@ export class QueryBuilderAdv<T> {
         select[`[${selectAs}]`] = this.selectObj[selectAs];
       }
       return this.qb.select(select).def;
-    } else {
+    }
+    else {
       return this.qb.def;
     }
   }
@@ -174,11 +179,13 @@ export class QueryBuilderAdv<T> {
             for (const item of currObj[key]) {
               generate(item, (parentKey ? parentKey + "." : "") + key);
             }
-          } else {
+          }
+          else {
             generate(currObj[key], (parentKey ? parentKey + "." : "") + key);
             result.singleSelectAsNames.push((parentKey ? parentKey + "." : "") + key);
           }
-        } else {
+        }
+        else {
           result.selectObj[(parentKey ? parentKey + "." : "") + key] = currObj[key];
         }
       }
@@ -482,14 +489,16 @@ export class QueryBuilderAdv<T> {
           if (isCursorSingle) {
             cursorEntity[tblAsSplitItem] = cursorEntity[tblAsSplitItem] || {};
             cursorEntity = cursorEntity[tblAsSplitItem];
-          } else {
+          }
+          else {
             cursorEntity[tblAsSplitItem] = cursorEntity[tblAsSplitItem] || [{}];
             cursorEntity = cursorEntity[tblAsSplitItem][0];
           }
         }
 
         cursorEntity[colAs] = selectQueryUnit;
-      } else {
+      }
+      else {
         entity[selectAs] = selectQueryUnit;
       }
     }
@@ -507,7 +516,8 @@ export class QueryBuilderAdv<T> {
           for (const item1 of item[key]) {
             obj[key].push(generate(item1));
           }
-        } else if (
+        }
+        else if (
           item[key] instanceof Object
           && !(item[key] instanceof QueriedBoolean)
           && !(item[key] instanceof Number)
@@ -518,9 +528,11 @@ export class QueryBuilderAdv<T> {
           && !(item[key] instanceof Time)
           && !(item[key] instanceof QueryUnit)) {
           obj[key] = generate(item[key]);
-        } else if (item[key] instanceof QueryUnit && item[key].type === QueriedBoolean) {
+        }
+        else if (item[key] instanceof QueryUnit && item[key].type === QueriedBoolean) {
           obj[key] = new QueryUnit(Boolean, item[key].queryForWhere);
-        } else {
+        }
+        else {
           obj[key] = item[key];
         }
       }
@@ -533,7 +545,8 @@ export class QueryBuilderAdv<T> {
 
   public getAllJoinDef(): { [chain: string]: IJoinDef } {
     if (!this._tableType) {
-      throw new Error("테이블 타입을 알 수 없습니다.");
+      // throw new Error("테이블 타입을 알 수 없습니다.");
+      return {};
     }
 
     const result: { [chain: string]: IJoinDef } = {};
@@ -577,7 +590,8 @@ export class QueryBuilderAdv<T> {
       ];
 
       return fkOrFkts.single(item => item.name === chain.split(".").last());
-    } else {
+    }
+    else {
       if (!this._tableType) {
         throw new Error("테이블 타입을 알 수 없습니다.");
       }

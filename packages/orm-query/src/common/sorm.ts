@@ -244,6 +244,9 @@ export const sorm = {
   cast<P extends QueryType>(src: any, targetType: Type<P>): StripTypeWrap<P> {
     return new QueryUnit(targetType, `CONVERT(${ormHelpers.getDataTypeFromType(targetType)}, ${ormHelpers.getFieldQuery(src)})`) as any;
   },
+  query<T extends QueryType>(q: string, targetType: Type<T>): StripTypeWrap<T> | undefined {
+    return new QueryUnit(targetType, q) as any;
+  },
   formula<T extends QueryType>(arg1: T | QueryUnit<T>, arg2: string, arg3: T | QueryUnit<T>): StripTypeWrap<T> {
     let type: any;
     const argForType = arg1 || arg3;
