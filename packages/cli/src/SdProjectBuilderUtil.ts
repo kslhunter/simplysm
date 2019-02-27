@@ -91,7 +91,15 @@ export class SdProjectBuilderUtil {
 
   public static async writeNpmConfigAsync(packageKey: string, npmConfig: INpmConfig): Promise<void> {
     const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
-    await fs.writeFile(configPath, JsonConvert.stringify(npmConfig, {space: 2}));
+    await new Promise<void>((resolve, reject) => {
+      fs.writeFile(configPath, JsonConvert.stringify(npmConfig, {space: 2}), err => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      });
+    });
   }
 
   public static getProjectNpmConfigPath(): string {
