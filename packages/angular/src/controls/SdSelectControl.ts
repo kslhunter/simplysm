@@ -213,10 +213,9 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
       this._contentEl.innerHTML = "";
     }
     else {
-      this._contentEl.innerHTML = "";
       const labelTemplateEl = selectedItemEl.findAll("> ._labelTemplate")[0];
       const labelEl = labelTemplateEl ? labelTemplateEl : selectedItemEl.findAll("> ._label")[0] as HTMLElement;
-      this._contentEl.appendChild(labelEl.cloneNode(true));
+      this._contentEl.innerHTML = labelEl.innerHTML;
     }
   }
 
