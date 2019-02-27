@@ -1,9 +1,9 @@
-export function SdNotifyPropertyChange(): any {
-  return (target: ISdNotifyPropertyChange, propertyKey: string) => {
-    const descriptor = Object.getOwnPropertyDescriptor(target, propertyKey);
-    const prevSetter = descriptor && descriptor.set;
+const symbol = `sd-notify-property-change`;
 
-    const symbol = `sd-notify-property-change`;
+export function SdNotifyPropertyChange(): any {
+  return (target: ISdNotifyPropertyChange, propertyKey: string, inputDescriptor: PropertyDescriptor | undefined) => {
+    const descriptor = inputDescriptor || Object.getOwnPropertyDescriptor(target, propertyKey);
+    const prevSetter = descriptor ? descriptor.set : undefined;
 
     const getter = function (this: any): any {
       return core.Reflect.getMetadata(symbol, this, propertyKey);

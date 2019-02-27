@@ -2,9 +2,9 @@ import {ValidateDef} from "@simplysm/common";
 
 const symbol = `sd-type-validate`;
 
-// tslint:disable-next-line:variable-name
 export function SdTypeValidate(params: ValidateDef): any {
-  return (target: any, propertyKey: string, descriptor: PropertyDescriptor | undefined) => {
+  return (target: any, propertyKey: string, inputDescriptor: PropertyDescriptor | undefined) => {
+    const descriptor = inputDescriptor || Object.getOwnPropertyDescriptor(target, propertyKey);
     const prevSetter = descriptor ? descriptor.set : undefined;
 
     const getter = function (this: any): any {
