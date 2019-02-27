@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/ws-common",
-  "version": "1.0.130",
+  "version": "1.0.131",
   "description": "심플리즘 패키지 (웹소켓 공통)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,8 +8,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/common": "1.0.130",
-    "@simplysm/orm-common": "1.0.130",
+    "@simplysm/common": "1.0.131",
+    "@simplysm/orm-common": "1.0.131",
     "fs-extra": "^7.0.1",
     "ws": "^6.1.4"
   }
