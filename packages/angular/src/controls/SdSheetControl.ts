@@ -18,6 +18,7 @@ import {
 import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
+import {optional} from "@simplysm/common";
 
 @Component({
   selector: "sd-sheet",
@@ -243,8 +244,9 @@ export class SdSheetControl implements DoCheck, OnInit {
   public fixedLeft = 0;
 
   public get paddingTop(): string {
-    const headEl = this._elRef.nativeElement.findAll("._head")[0];
-    return headEl.clientHeight + "px";
+    const rowEls = this._elRef.nativeElement.findAll("._head > ._row");
+    const rowHeight = rowEls.filter(item => !item.classList.contains("_pagination")).sum(item => item.clientHeight) || 0;
+    return rowHeight + (this.pageLength > 1 ? optional(rowEls.single(item => item.classList.contains("_pagination")), o => o.clientHeight) || 0 : 0) + "px";
 
     /*const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
       + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default));
