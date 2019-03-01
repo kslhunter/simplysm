@@ -27,7 +27,7 @@ export class SdProjectBuilder {
   private config: ISdProjectConfig = {packages: {}};
 
   public async bootstrapAsync(): Promise<void> {
-    await this._readConfigAsync("production", undefined);
+    await this._readConfigAsync("production");
 
     for (const packageKey of Object.keys(this.config.packages)) {
       await this._createTsConfigFileAsync(packageKey);
@@ -38,7 +38,7 @@ export class SdProjectBuilder {
   }
 
   public async localUpdateAsync(): Promise<void> {
-    await this._readConfigAsync("development", undefined);
+    await this._readConfigAsync("development");
 
     if (!this.config.localUpdates) {
       new Logger("@simplysm/cli").warn("로컬 업데이트 설정이 없습니다.");
@@ -48,9 +48,9 @@ export class SdProjectBuilder {
     await this._localUpdateAsync();
   }
 
-  public async watchAsync(argv?: { packages?: string }): Promise<void> {
+  public async watchAsync(argv?: { packages?: string; option?: string }): Promise<void> {
     const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
-    await this._readConfigAsync("development", packageKeys);
+    await this._readConfigAsync("development", packageKeys, argv && argv.option);
 
     await this._localUpdateAsync(true);
 
@@ -245,7 +245,7 @@ export class SdProjectBuilder {
   }
 
   public async startServerOnlyAsync(argv?: { port: number }): Promise<void> {
-    await this._readConfigAsync("development", undefined);
+    await this._readConfigAsync("development");
     await this._localUpdateAsync(true);
     await this._startServerOnlyAsync(optional(argv, o => o.port) || 80);
   }
@@ -388,8 +388,8 @@ export class SdProjectBuilder {
     await SdProjectBuilderUtil.writeTsConfigAsync(packageKey, tsconfig, true);
   }
 
-  private async _readConfigAsync(env: "production" | "development", packageKeys: string[] | undefined): Promise<void> {
-    this.config = await SdProjectBuilderUtil.readConfigAsync(env, packageKeys);
+  private async _readConfigAsync(env: "production" | "development", packageKeys?: string[], option?: string): Promise<void> {
+    this.config = await SdProjectBuilderUtil.readConfigAsync(env, packageKeys, option);
   }
 
   private async _parallelPackages(byDep: boolean, cb: (packageKey: string) => Promise<void>): Promise<void> {

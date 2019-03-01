@@ -30,6 +30,10 @@ const argv = yargs
         packages: {
           type: "string",
           describe: "수행할 패키지를 선택합니다."
+        },
+        option: {
+          type: "string",
+          describe: "추가옵션을 줍니다. ('remote'로 설정할 경우, 설정 중 'development'와 'development.remote'를 결합하여 가져옵니다.)"
         }
       })
   )

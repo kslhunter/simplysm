@@ -27,7 +27,7 @@ export class SdProjectBuilderUtil {
     await fs.writeJson(tsconfigPath, tsconfig, {spaces: 2, fs, EOL: os.EOL});
   }
 
-  public static async readConfigAsync(env: "development" | "production", packageKeys: string[] | undefined): Promise<ISdProjectConfig> {
+  public static async readConfigAsync(env: "development" | "production", packageKeys: string[] | undefined, option: string | undefined): Promise<ISdProjectConfig> {
     const orgConfig: ISdConfigFileJson = await fs.readJson(SdProjectBuilderUtil.getProjectPath("simplysm.json"));
 
     const result: ISdProjectConfig = {packages: {}};
@@ -41,6 +41,9 @@ export class SdProjectBuilderUtil {
       if (currPackageConfig[env]) {
         currPackageConfig = Object.merge(currPackageConfig, currPackageConfig[env]);
       }
+      if (option && currPackageConfig[`${env}.${option}`]) {
+        currPackageConfig = Object.merge(currPackageConfig, currPackageConfig[`${env}.${option}`]);
+      }
 
       const orgPackageConfig = Object.clone(orgConfig.packages[packageKey]);
       delete orgPackageConfig.extends;
@@ -50,6 +53,9 @@ export class SdProjectBuilderUtil {
 
       if (orgConfig.packages[packageKey][env]) {
         currPackageConfig = Object.merge(currPackageConfig, orgConfig.packages[packageKey][env]);
+      }
+      if (option && orgConfig.packages[packageKey][`${env}.${option}`]) {
+        currPackageConfig = Object.merge(currPackageConfig, orgConfig.packages[packageKey][`${env}.${option}`]);
       }
 
       if (!currPackageConfig.type) {
