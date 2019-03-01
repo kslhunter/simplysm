@@ -86,7 +86,7 @@ import {optional} from "@simplysm/common";
                 <div class="_col _first-col"
                      [class._double]="selectable && children"
                      [class._selectable]="selectable"
-                     [class._selected]="((selectable === true || selectable === 'manual') && selectedItem === item) || (selectable === 'multi' && selectedItems.includes(item))"
+                     [class._selected]="getIsItemSelected(item)"
                      [class._expandable]="getHasChildren(i, item)"
                      [class._expanded]="getIsExpended(i, item)">
                   <a class="_expand-icon" *ngIf="!!children" (click)="onExpandIconClick($event, i, item)"
@@ -357,6 +357,10 @@ export class SdSheetControl implements DoCheck, OnInit {
     this._iterableDiffer = this._iterableDiffers.find([]).create((i: number, item: any) => this.trackByItemFn(i, item));
 
     this._elRef.nativeElement.addEventListener("focus", (event: Event) => {
+      if ((event.target as HTMLElement).classList.contains("_select-icon")) {
+        return;
+      }
+
       if (this.selectable === "manual" && this.selectedItem) {
         const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
         if (!cellEl) return;
@@ -426,6 +430,19 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public getIsExpended(i: number, item: any): boolean {
     return this.expandedItemTracks.includes(this.trackByItemFn(i, item));
+  }
+
+  public getIsItemSelected(item: any): boolean {
+    if (item.name === "관리자") {
+      console.log(this.selectable, this.selectedItem);
+    }
+    return (
+      (this.selectable === true || this.selectable === "manual") &&
+      this.selectedItem === item
+    ) || (
+      this.selectable === "multi" &&
+      this.selectedItems.includes(item)
+    );
   }
 
   public getHasChildren(i: number, item: any): boolean {
