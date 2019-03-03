@@ -155,7 +155,7 @@ export class SdProjectBuilder {
             }
           }
         }
-        await SdProjectBuilderUtil.writeNpmConfigAsync(packageKey, npmConfig);
+        SdProjectBuilderUtil.writeNpmConfig(packageKey, npmConfig);
 
         if (packageConfig.publish.protocol === "npm") {
           let message = "";
