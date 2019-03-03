@@ -24,7 +24,7 @@ export class ProcessManager {
       });
 
       let resultMessage = "";
-      worker.stdout.on("data", async data => {
+      worker.stdout!.on("data", async data => {
         resultMessage += data.toString();
         if (resultMessage.includes("\n")) {
           const newMessages = resultMessage.split("\n").map(item => `${item.replace(/\r/g, "")}`).slice(0, -1).filter(item => !!item);
@@ -41,7 +41,7 @@ export class ProcessManager {
       });
 
       let errorMessage = "";
-      worker.stderr.on("data", async data => {
+      worker.stderr!.on("data", async data => {
         errorMessage += data.toString();
         if (errorMessage.includes("\n")) {
           const newMessages = errorMessage.split("\n").map(item => `${item.replace(/\r/g, "")}`).slice(0, -1).filter(item => !!item);
