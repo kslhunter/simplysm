@@ -1,7 +1,7 @@
 import {SdWebSocketServiceBase} from "../SdWebSocketServiceBase";
 import {SdWebSocketServerUtil} from "../SdWebSocketServerUtil";
 import * as soap from "soap";
-import {DateTime, JsonConvert, Logger} from "@simplysm/common";
+import {DateOnly, DateTime, JsonConvert, Logger} from "@simplysm/common";
 import {
   IBarobillServiceGetAccountLogListParam,
   IBarobillServiceGetAccountLogParam,
@@ -10,7 +10,11 @@ import {
   IBarobillServiceGetCardLogListParam,
   IBarobillServiceGetCardLogParam,
   IBarobillServiceGetCardLogResult,
-  IBarobillServiceGetCardLogResultItem
+  IBarobillServiceGetCardLogResultItem,
+  IBarobillServiceGetTaxInvoiceLogListParam,
+  IBarobillServiceGetTaxInvoiceLogParam,
+  IBarobillServiceGetTaxInvoiceLogResult,
+  IBarobillServiceGetTaxInvoiceLogResultItem
 } from "@simplysm/barobill-common";
 
 export class BarobillService extends SdWebSocketServiceBase {
@@ -178,11 +182,89 @@ export class BarobillService extends SdWebSocketServiceBase {
     return result.orderBy(item => item.doneAtDateTime, true);
   }
 
-  private async _getErrorString(target: "CARD" | "BANKACCOUNT", errorCode: number): Promise<string> {
+  public async getTaxInvoiceLogAsync(param: IBarobillServiceGetTaxInvoiceLogParam): Promise<IBarobillServiceGetTaxInvoiceLogResult> {
+    const method = param.type === "매출" ? "GetDailyTaxInvoiceSalesList" : "GetDailyTaxInvoicePurchaseList";
+
+    const result = await this._sendAsync("TI", method, {
+      CorpNum: param.brn.replace(/-/g, ""),
+      UserID: param.userId,
+      TaxType: param.taxType === "과세" ? 1 : 3,
+      DateType: param.dateType === "발행일자" ? 2 : 1,
+      BaseDate: param.doneAtDate.toFormatString("yyyyMMdd"),
+      CountPerPage: param.itemLengthPerPage,
+      CurrentPage: param.page + 1
+    });
+
+    if (Number(result["CurrentPage"]) < 0) {
+      throw new Error(await this._getErrorString("TI", Number(result["CurrentPage"])));
+    }
+
+    return {
+      totalCount: result["MaxIndex"],
+      pageCount: result["MaxPageNum"],
+      items: result["SimpleTaxInvoiceExList"] ? result["SimpleTaxInvoiceExList"]["SimpleTaxInvoiceEx"].map((item: any) => ({
+        type: param.type,
+        title: item["ItemName"],
+        ntsApprovalNumber: item["NTSSendKey"],
+        issueDateTime: DateTime.parse(item["IssueDT"]),
+        writeDate: DateOnly.parse(item["WriteDate"]),
+        targetName: item[param.type === "매출" ? "InvoiceeCorpName" : "InvoicerCorpName"],
+        amount: Number(item["AmountTotal"]),
+        tax: Number(item["TaxTotal"]),
+        totalAmount: Number(item["TotalAmount"])
+      })) : []
+    };
+  }
+
+  public async getTaxInvoiceLogListAsync(param: IBarobillServiceGetTaxInvoiceLogListParam): Promise<IBarobillServiceGetTaxInvoiceLogResultItem[]> {
+    const result: IBarobillServiceGetTaxInvoiceLogResultItem[] = [];
+
+    const promiseList: Promise<void>[] = [];
+    for (const type of ["매출", "매입"] as ("매출" | "매입")[]) {
+      for (const taxType of ["과세", "면세"] as ("과세" | "면세")[]) {
+        for (let doneAtDate = param.fromDoneAtDate; doneAtDate.tick <= param.toDoneAtDate.tick; doneAtDate = doneAtDate.addDays(1)) {
+          promiseList.push(new Promise<void>(async (resolve, reject) => {
+            try {
+              let currentPage = 0;
+              while (true) {
+                const currentResult = await this.getTaxInvoiceLogAsync({
+                  brn: param.brn,
+                  userId: param.userId,
+                  dateType: param.dateType,
+                  taxType,
+                  type,
+                  doneAtDate,
+                  itemLengthPerPage: 100,
+                  page: currentPage
+                });
+
+                if (currentPage >= currentResult.pageCount) {
+                  break;
+                }
+
+                result.pushRange(currentResult.items);
+
+                currentPage++;
+              }
+              resolve();
+            }
+            catch (err) {
+              reject(err);
+            }
+          }));
+        }
+      }
+    }
+
+    await Promise.all(promiseList);
+    return result.orderBy(item => item.issueDateTime, true);
+  }
+
+  private async _getErrorString(target: "CARD" | "BANKACCOUNT" | "TI", errorCode: number): Promise<string> {
     return await this._sendAsync(target, "GetErrString", {ErrCode: errorCode});
   }
 
-  private async _sendAsync(target: "CARD" | "BANKACCOUNT", method: string, args: { [key: string]: any }): Promise<any> {
+  private async _sendAsync(target: "CARD" | "BANKACCOUNT" | "TI", method: string, args: { [key: string]: any }): Promise<any> {
     const config = await SdWebSocketServerUtil.getConfigAsync(this.staticPath, this.request.url);
     const host = config["barobill"]["host"];
     const certKey = config["barobill"]["certKey"];

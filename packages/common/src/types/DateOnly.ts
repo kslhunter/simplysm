@@ -29,9 +29,18 @@ export class DateOnly {
 
   public static parse(value: string): DateOnly {
     const parsedTick = Date.parse(value) as any;
-    if (typeof parsedTick === "number") {
+    if (parsedTick && typeof parsedTick === "number") {
       return new DateOnly(parsedTick);
     }
+
+    if (/^[0-9]{8}$/.test(value)) {
+      return new DateOnly(
+        Number(value.substr(0, 4)),
+        Number(value.substr(4, 2)),
+        Number(value.substr(6, 2))
+      );
+    }
+
     throw new ArgumentError({value});
   }
 

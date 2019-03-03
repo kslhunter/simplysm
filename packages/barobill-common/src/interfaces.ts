@@ -65,3 +65,40 @@ export interface IBarobillServiceGetAccountLogListParam {
   fromDoneAtDate: DateOnly;
   toDoneAtDate: DateOnly;
 }
+
+export interface IBarobillServiceGetTaxInvoiceLogParam {
+  type: "매입" | "매출";
+  taxType: "과세" | "면세";
+  brn: string;
+  userId: string;
+  dateType: "발행일자" | "작성일자";
+  doneAtDate: DateOnly;
+  itemLengthPerPage: number;
+  page: number;
+}
+
+export interface IBarobillServiceGetTaxInvoiceLogResult {
+  totalCount: number;
+  pageCount: number;
+  items: IBarobillServiceGetTaxInvoiceLogResultItem[];
+}
+
+export interface IBarobillServiceGetTaxInvoiceLogResultItem {
+  type: "매입" | "매출";
+  title: string;
+  ntsApprovalNumber: string;
+  issueDateTime: DateTime;
+  writeDate: DateOnly;
+  targetName: string;
+  amount: number;
+  tax: number;
+  totalAmount: number;
+}
+
+export interface IBarobillServiceGetTaxInvoiceLogListParam {
+  brn: string;
+  userId: string;
+  dateType: "발행일자" | "작성일자";
+  fromDoneAtDate: DateOnly;
+  toDoneAtDate: DateOnly;
+}

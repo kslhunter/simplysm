@@ -8,7 +8,11 @@ import {
   IBarobillServiceGetCardLogListParam,
   IBarobillServiceGetCardLogParam,
   IBarobillServiceGetCardLogResult,
-  IBarobillServiceGetCardLogResultItem
+  IBarobillServiceGetCardLogResultItem,
+  IBarobillServiceGetTaxInvoiceLogListParam,
+  IBarobillServiceGetTaxInvoiceLogParam,
+  IBarobillServiceGetTaxInvoiceLogResult,
+  IBarobillServiceGetTaxInvoiceLogResultItem
 } from "@simplysm/barobill-common";
 
 @Injectable()
@@ -38,5 +42,13 @@ export class SdBarobillProvider {
 
   public async getAccountLogListAsync(param: IBarobillServiceGetAccountLogListParam): Promise<IBarobillServiceGetAccountLogResultItem[]> {
     return await this._ws.sendAsync("BarobillService.getAccountLogListAsync", [param]);
+  }
+
+  public async getTaxInvoiceLogAsync(param: IBarobillServiceGetTaxInvoiceLogParam): Promise<IBarobillServiceGetTaxInvoiceLogResult> {
+    return await this._ws.sendAsync("BarobillService.getTaxInvoiceLogAsync", [param]);
+  }
+
+  public async getTaxInvoiceLogListAsync(param: IBarobillServiceGetTaxInvoiceLogListParam): Promise<IBarobillServiceGetTaxInvoiceLogResultItem[]> {
+    return await this._ws.sendAsync("BarobillService.getTaxInvoiceLogListAsync", [param]);
   }
 }
