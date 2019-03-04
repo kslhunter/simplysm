@@ -137,7 +137,7 @@ export class ExcelCell {
     if (!currCell) {
       currCell = {$: {r: ExcelUtils.getAddress(this.row, this.col)}};
 
-      const colStyle = optional(this.excelWorkSheet.column(col).colData.$, o => o.style);
+      const colStyle = optional(() => this.excelWorkSheet.column(col).colData.$.style);
       if (colStyle) {
         currCell.$.s = colStyle;
       }

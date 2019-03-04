@@ -38,11 +38,11 @@ export function Column<T>(columnDef?: {
 
     tableDef.columns.push({
       name: propertyKey,
-      dataType: optional(columnDef, o => o.dataType),
-      nullable: optional(columnDef, o => o.nullable),
-      autoIncrement: optional(columnDef, o => o.autoIncrement),
-      primaryKey: optional(columnDef, o => o.primaryKey),
-      description: optional(columnDef, o => o.description),
+      dataType: optional(() => columnDef!.dataType),
+      nullable: optional(() => columnDef!.nullable),
+      autoIncrement: optional(() => columnDef!.autoIncrement),
+      primaryKey: optional(() => columnDef!.primaryKey),
+      description: optional(() => columnDef!.description),
 
       typeFwd: () => core.Reflect.getMetadata("design:type", object, propertyKey)
     });

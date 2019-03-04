@@ -246,7 +246,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public get paddingTop(): string {
     const rowEls = this._elRef.nativeElement.findAll("._head > ._row");
     const rowHeight = rowEls.filter(item => !item.classList.contains("_pagination")).sum(item => item.clientHeight) || 0;
-    return rowHeight + (this.pageLength > 1 ? optional(rowEls.single(item => item.classList.contains("_pagination")), o => o.clientHeight) || 0 : 0) + "px";
+    return rowHeight + (this.pageLength > 1 ? optional(() => rowEls.single(item => item.classList.contains("_pagination"))!.clientHeight) || 0 : 0) + "px";
 
     /*const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
       + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default));

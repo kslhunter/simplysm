@@ -19,7 +19,7 @@ export class SdWebSocketServerConnection extends EventEmitter {
 
   public constructor(private readonly _conn: WebSocket, req: http.IncomingMessage) {
     super();
-    this.origin = optional(req.headers.origin, o => o.toString()) || "";
+    this.origin = optional(() => req.headers.origin!.toString()) || "";
 
     this._conn.on("close", async () => {
       this._splitRequestMap.clear();

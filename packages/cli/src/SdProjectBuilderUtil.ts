@@ -74,7 +74,7 @@ export class SdProjectBuilderUtil {
     if (extendNames) {
       let result = Object.clone(curr);
       for (const extendName of extendNames) {
-        const extendConfig = optional(orgConfig, o => o.extends![extendName]);
+        const extendConfig = optional(() => orgConfig.extends![extendName]);
         if (!extendConfig) {
           throw new Error(`설정에서 확장 "${extendName}"를 찾을 수 없습니다.`);
         }

@@ -38,7 +38,7 @@ export class QueryHelper {
       return "'" + arg.toString() + "'";
     }
     else {
-      throw new TypeError(`${optional(arg.constructor, o => o.name) || typeof arg}: ${arg}: ${JsonConvert.stringify(arg)}`);
+      throw new TypeError(`${optional(() => arg.constructor.name) || typeof arg}: ${arg}: ${JsonConvert.stringify(arg)}`);
     }
   }
 

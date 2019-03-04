@@ -270,7 +270,7 @@ Array.prototype.diffs = function (target: any[], options?: { keyProps?: string[]
         return options.keyProps.every(keyProp => targetItem[keyProp] === item[keyProp]);
       }
       else {
-        return Object.equal(targetItem, item, {excludeProps: optional(options, o => o.excludeProps)});
+        return Object.equal(targetItem, item, {excludeProps: optional(() => options!.excludeProps)});
       }
     });
 

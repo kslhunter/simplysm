@@ -12,8 +12,8 @@ export class ProcessManager {
       const worker = childProcess.spawn(cmds[0], cmds.slice(1), {
         shell: true,
         stdio: "pipe",
-        env: optional(opts, o => o.env),
-        cwd: optional(opts, o => o.cwd) || process.cwd()
+        env: optional(() => opts!.env),
+        cwd: optional(() => opts!.cwd) || process.cwd()
       });
 
       worker.on("error", err => {
@@ -100,8 +100,8 @@ export class ProcessManager {
         cmds,
         {
           stdio: ["inherit", "inherit", "inherit", "ipc"],
-          env: optional(opts, o => o.env),
-          cwd: optional(opts, o => o.cwd) || process.cwd()
+          env: optional(() => opts!.env),
+          cwd: optional(() => opts!.cwd) || process.cwd()
         }
       );
 

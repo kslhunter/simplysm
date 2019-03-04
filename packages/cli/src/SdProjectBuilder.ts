@@ -49,7 +49,7 @@ export class SdProjectBuilder {
   }
 
   public async watchAsync(argv?: { packages?: string; option?: string }): Promise<void> {
-    const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
+    const packageKeys = optional(() => argv!.packages!.split(",").map(item => item.trim()));
     await this._readConfigAsync("development", packageKeys, argv && argv.option);
 
     await this._localUpdateAsync(true);
@@ -62,7 +62,7 @@ export class SdProjectBuilder {
 
       await SdProjectBuilder._createTsConfigForBuildFileAsync(packageKey);
       if (packageConfig.type !== "dom" && packageConfig.type !== "node") {
-        const port = optional(packageConfig.server, o => o.port) || 80;
+        const port = optional(() => packageConfig.server!.port) || 80;
         await this._watchPackageAsync(packageKey, port);
       }
       else {
@@ -72,7 +72,7 @@ export class SdProjectBuilder {
   }
 
   public async buildAsync(argv?: { packages?: string }): Promise<void> {
-    const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
+    const packageKeys = optional(() => argv!.packages!.split(",").map(item => item.trim()));
     await this._readConfigAsync("production", packageKeys);
 
     await this._parallelPackages(true, async packageKey => {
@@ -87,11 +87,11 @@ export class SdProjectBuilder {
   }
 
   public async publishAsync(argv?: { build?: boolean; packages?: string; noCommit?: boolean }): Promise<void> {
-    const packageKeys = optional(argv, o => o.packages!.split(",").map(item => item.trim()));
+    const packageKeys = optional(() => argv!.packages!.split(",").map(item => item.trim()));
     await this._readConfigAsync("production", packageKeys);
 
     const logger = new Logger("@simplysm/cli");
-    if (!optional(argv, o => o.noCommit)) {
+    if (!optional(() => argv!.noCommit)) {
       await new Promise<void>(async (resolve, reject) => {
         await ProcessManager.spawnAsync(["git", "status"], {
           logger,
@@ -105,7 +105,7 @@ export class SdProjectBuilder {
       });
     }
 
-    if (optional(argv, o => o.build)) {
+    if (optional(() => argv!.build)) {
       await this._parallelPackages(true, async packageKey => {
         await SdProjectBuilder._createTsConfigForBuildFileAsync(packageKey);
         await this._buildPackageAsync(packageKey);
@@ -236,7 +236,7 @@ export class SdProjectBuilder {
 
     await ProcessManager.spawnAsync(["git", "add", "."], {logger});
 
-    if (!optional(argv, o => o.noCommit)) {
+    if (!optional(() => argv!.noCommit)) {
       await ProcessManager.spawnAsync(["git", "commit", "-m", `"v${projectNpmConfig.version}"`], {logger});
       await ProcessManager.spawnAsync(["git", "tag", "-a", `"v${projectNpmConfig.version}"`, "-m", `"v${projectNpmConfig.version}"`], {logger});
     }
@@ -247,7 +247,7 @@ export class SdProjectBuilder {
   public async startServerOnlyAsync(argv?: { port: number }): Promise<void> {
     await this._readConfigAsync("development");
     await this._localUpdateAsync(true);
-    await this._startServerOnlyAsync(optional(argv, o => o.port) || 80);
+    await this._startServerOnlyAsync(optional(() => argv!.port) || 80);
   }
 
   public async _localUpdateAsync(watch?: boolean): Promise<void> {
