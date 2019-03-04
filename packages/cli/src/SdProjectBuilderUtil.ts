@@ -97,7 +97,10 @@ export class SdProjectBuilderUtil {
 
   public static writeNpmConfig(packageKey: string, npmConfig: INpmConfig): void {
     const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
-    fs.writeJsonSync(configPath, npmConfig);
+    fs.writeJsonSync(configPath, npmConfig, {
+      spaces: 2,
+      EOL: os.EOL
+    });
   }
 
   public static getProjectNpmConfigPath(): string {
