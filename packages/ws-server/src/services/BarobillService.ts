@@ -206,7 +206,7 @@ export class BarobillService extends SdWebSocketServiceBase {
         type: param.type,
         title: item["ItemName"],
         ntsApprovalNumber: item["NTSSendKey"],
-        issueDateTime: DateTime.parse(item["IssueDT"]),
+        issueDate: DateOnly.parse(item["IssueDT"]),
         writeDate: DateOnly.parse(item["WriteDate"]),
         targetName: item[param.type === "매출" ? "InvoiceeCorpName" : "InvoicerCorpName"],
         amount: Number(item["AmountTotal"]),
@@ -257,7 +257,7 @@ export class BarobillService extends SdWebSocketServiceBase {
     }
 
     await Promise.all(promiseList);
-    return result.orderBy(item => item.issueDateTime, true);
+    return result.orderBy(item => item.issueDate, true);
   }
 
   private async _getErrorString(target: "CARD" | "BANKACCOUNT" | "TI", errorCode: number): Promise<string> {

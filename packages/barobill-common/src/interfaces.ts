@@ -87,7 +87,7 @@ export interface IBarobillServiceGetTaxInvoiceLogResultItem {
   type: "매입" | "매출";
   title: string;
   ntsApprovalNumber: string;
-  issueDateTime: DateTime;
+  issueDate: DateOnly;
   writeDate: DateOnly;
   targetName: string;
   amount: number;
