@@ -18,7 +18,7 @@ export class ProcessManager {
 
       worker.on("error", err => {
         if (opts && opts.logger) {
-          opts.logger!.log(err.message);
+          opts.logger!.error(err);
         }
         reject(err);
       });
