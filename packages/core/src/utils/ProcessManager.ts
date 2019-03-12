@@ -136,7 +136,7 @@ export class ProcessManager {
           resolve(worker);
         }
         else {
-          reject(new Error());
+          reject(new Error(code!.toString()));
         }
       });
 
