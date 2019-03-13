@@ -57,14 +57,14 @@ export class Logger {
   }
 
   public static setDefaultConfig(config: Partial<ILoggerConfig>): void {
-    this._defaultConfig = {
-      ...this._defaultConfig,
+    Logger._defaultConfig = {
+      ...Logger._defaultConfig,
       ...config
     };
   }
 
   public static restoreDefaultConfig(): void {
-    this._defaultConfig = {
+    Logger._defaultConfig = {
       consoleLogSeverities: process.env.NODE_ENV === "production"
         ? []
         : ["log", "info", "warn", "error"],
@@ -92,15 +92,15 @@ export class Logger {
   }
 
   public static setGroupConfig(groupName: string, config: Partial<ILoggerConfig>): void {
-    if (this._groupMap.has(groupName)) {
-      const prevConfig = this._groupMap.get(groupName)!;
-      this._groupMap.set(groupName, {
+    if (Logger._groupMap.has(groupName)) {
+      const prevConfig = Logger._groupMap.get(groupName)!;
+      Logger._groupMap.set(groupName, {
         ...prevConfig,
         ...config
       });
     }
     else {
-      this._groupMap.set(groupName, {
+      Logger._groupMap.set(groupName, {
         ...Logger._defaultConfig,
         ...config
       });
@@ -109,10 +109,10 @@ export class Logger {
 
   public static restoreGroupConfig(groupName?: string): void {
     if (groupName) {
-      this._groupMap.delete(groupName);
+      Logger._groupMap.delete(groupName);
     }
     else {
-      this._groupMap.clear();
+      Logger._groupMap.clear();
     }
   }
 

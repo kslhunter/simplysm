@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-smtp-client-service-client",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "심플리즘 패키지 - SMTP 클라이언트 서비스 (클라이언트)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",

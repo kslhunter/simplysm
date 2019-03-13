@@ -152,6 +152,7 @@
     ],
     "increment-decrement": false,
     "ban-ts-ignore": false,
-    "max-file-line-count": false
+    "max-file-line-count": false,
+    "unnecessary-else": false
   }
 }

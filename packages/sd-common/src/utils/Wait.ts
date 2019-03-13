@@ -5,7 +5,7 @@ export class Wait {
       if (await forwarder()) {
         break;
       }
-      await this.time(milliseconds || 100);
+      await Wait.time(milliseconds || 100);
 
       if (timeout) {
         currMs += milliseconds || 100;

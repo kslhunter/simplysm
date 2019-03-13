@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular-address-search-modal",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "심플리즘 패키지 - Angular 주소 검색창 모듈",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
