@@ -2,19 +2,19 @@ import {DateOnly, DateTime} from "@simplysm/sd-common";
 
 export class SdExcelUtils {
   public static getRangeAddress(fromRow: number, fromCol: number, toRow: number, toCol: number): string {
-    return `${this.getAddress(fromRow, fromCol)}:${this.getAddress(toRow, toCol)}`;
+    return `${SdExcelUtils.getAddress(fromRow, fromCol)}:${SdExcelUtils.getAddress(toRow, toCol)}`;
   }
 
   public static getAddress(row: number, col: number): string {
     const rowStr = (row + 1).toString();
-    const colStr = this._getColAddress(col);
+    const colStr = SdExcelUtils._getColAddress(col);
     return `${colStr}${rowStr}`;
   }
 
   public static getAddressRowCol(addr: string): { row: number; col: number } {
     return {
       row: Number(addr.match(/[0-9]*$/)![0]),
-      col: this._getAddressCol(addr.match(/^[a-zA-Z]*/)![0])
+      col: SdExcelUtils._getAddressCol(addr.match(/^[a-zA-Z]*/)![0])
     };
   }
 

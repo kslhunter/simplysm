@@ -47,7 +47,7 @@ export class QueryHelper {
       return arg.queryForWhere;
     }
 
-    return this.getFieldQuery(arg);
+    return QueryHelper.getFieldQuery(arg);
   }
 
   public static getDataTypeFromType(type: Type<any>): string {

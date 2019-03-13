@@ -78,7 +78,7 @@ export class SdProjectBuilderUtil {
         if (!extendConfig) {
           throw new Error(`설정에서 확장 "${extendName}"를 찾을 수 없습니다.`);
         }
-        result = this._mergePackageConfigExtends(result, orgConfig, extendConfig.extends);
+        result = SdProjectBuilderUtil._mergePackageConfigExtends(result, orgConfig, extendConfig.extends);
         result = Object.merge(result, extendConfig);
       }
       return result;

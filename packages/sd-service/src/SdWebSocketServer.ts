@@ -249,7 +249,7 @@ export class SdWebSocketServer extends EventEmitter {
 
       // 서비스 가져오기
       let serviceClass: Type<SdWebSocketServiceBase> | undefined;
-      for (let servicesPath of this._servicesPaths) {
+      for (const servicesPath of this._servicesPaths) {
         const servicesFilePath = path.resolve(servicesPath, `services`);
         serviceClass = require(servicesFilePath)[serviceName];
         if (serviceClass) {
