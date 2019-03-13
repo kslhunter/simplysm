@@ -21,6 +21,7 @@
     "@fortawesome/free-regular-svg-icons": "^5.7.2",
     "@fortawesome/free-solid-svg-icons": "^5.7.2",
     "@simplysm/sd-common": "1.1.9",
+    "@simplysm/sd-service-client": "1.1.9",
     "core-js": "^2.6.5",
     "jsbarcode": "^3.11.0",
     "marked": "^0.6.1",

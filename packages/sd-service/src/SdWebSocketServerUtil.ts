@@ -8,7 +8,6 @@ export class SdWebSocketServerUtil {
     const urlObj = url.parse(requestUrl!, true, false);
     const urlPath = decodeURI(urlObj.pathname!);
 
-
     if (urlPath !== "/") {
       return await fs.readJson(path.resolve(staticPath, "." + urlPath, "configs.json"));
     }

@@ -4,9 +4,9 @@ import {IQueryDef} from "@simplysm/sd-orm-service-client";
 import {DbConnection} from "./DbConnection";
 
 if (process.env.NODE_ENV !== "production") {
-  Logger.setGroupConfig("@simplysm/orm-connector", {
-    consoleLogSeverities: [],
-    fileLogSeverities: ["log", "info", "warn", "error"],
+  Logger.setGroupConfig("@simplysm/sd-orm-service", {
+    consoleLogSeverities: ["info", "warn", "error"],
+    fileLogSeverities: ["log"],
     outputPath: "logs"
   });
 }
@@ -17,12 +17,12 @@ export class SdOrmService extends SdWebSocketServiceBase {
   private static readonly _wsConnectionCloseListenerMap = new Map<number, () => Promise<void>>();
 
   public async getMainDbNameAsync(configName: string): Promise<string> {
-    const config = (await SdWebSocketServerUtil.getConfigAsync(this.staticPath, this.request.url))["orm-connector"][configName];
+    const config = (await SdWebSocketServerUtil.getConfigAsync(this.staticPath, this.request.url))["orm"][configName];
     return config.database;
   }
 
   public async connectAsync(configName: string): Promise<number> {
-    const config = (await SdWebSocketServerUtil.getConfigAsync(this.staticPath, this.request.url))["orm-connector"][configName];
+    const config = (await SdWebSocketServerUtil.getConfigAsync(this.staticPath, this.request.url))["orm"][configName];
     const conn = new DbConnection(config);
 
     const lastConnId = Array.from(SdOrmService._connections.keys()).max() || 0;
@@ -103,9 +103,11 @@ export class SdOrmService extends SdWebSocketServiceBase {
         const colDef = colDefs.single(item1 => item1.name === key)!;
         if (item[key] && colDef.dataType === "DateTime") {
           item[key] = DateTime.parse(item[key]);
-        } else if (item[key] && colDef.dataType === "DateOnly") {
+        }
+        else if (item[key] && colDef.dataType === "DateOnly") {
           item[key] = DateOnly.parse(item[key]);
-        } else if (item[key] && colDef.dataType === "Time") {
+        }
+        else if (item[key] && colDef.dataType === "Time") {
           item[key] = Time.parse(item[key]);
         }
       }
@@ -134,7 +136,8 @@ export class SdOrmService extends SdWebSocketServiceBase {
         const exists = grouped.single(g => Object.equal(g.key, keyObj));
         if (exists) {
           exists.values.push(valueObj);
-        } else {
+        }
+        else {
           grouped.push({
             key: keyObj,
             values: [valueObj]
@@ -167,7 +170,8 @@ export class SdOrmService extends SdWebSocketServiceBase {
         if (item.every(itemItem => itemItem == undefined)) {
           return undefined;
         }
-      } else if (item instanceof Object) {
+      }
+      else if (item instanceof Object) {
         for (const key of Object.keys(item)) {
           item[key] = clearEmpty(item[key]);
         }

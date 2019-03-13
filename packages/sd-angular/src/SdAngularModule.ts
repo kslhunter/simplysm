@@ -66,6 +66,7 @@ import {SdListItemButtonControl} from "./controls/SdListItemButtonControl";
 import {LinkActionDirective} from "./directives/LinkActionDirective";
 import {SdToastContainerControl} from "./controls/SdToastContainerControl";
 import {SdToastControl} from "./controls/SdToastControl";
+import {SdServiceProvider} from "./providers/SdServiceProvider";
 
 const controls: Type<any>[] = [
   SdBusyContainerControl,
@@ -141,6 +142,7 @@ const providers: Provider[] = [
   SdModalProvider,
   SdPrintProvider,
   SdToastProvider,
+  SdServiceProvider,
   {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
   {provide: ErrorHandler, useClass: GlobalErrorHandler}
 ];

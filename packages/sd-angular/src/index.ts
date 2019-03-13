@@ -67,5 +67,6 @@ export * from "./providers/SdFileDialogProvider";
 export * from "./providers/SdLocalStorageProvider";
 export * from "./providers/SdModalProvider";
 export * from "./providers/SdPrintProvider";
+export * from "./providers/SdServiceProvider";
 export * from "./providers/SdToastProvider";
 export * from "./SdAngularModule";
