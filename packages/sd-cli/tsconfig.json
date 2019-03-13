@@ -1,0 +1,29 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "lib": [
+      "es2015"
+    ],
+    "declaration": true,
+    "baseUrl": ".",
+    "paths": {
+      "tslint": [
+        "../../node_modules/tslint"
+      ],
+      "@simplysm/sd-common": [
+        "../sd-common/src/index.ts"
+      ],
+      "@simplysm/sd-core": [
+        "../sd-core/src/index.ts"
+      ],
+      "@simplysm/sd-service": [
+        "../sd-service/src/index.ts"
+      ],
+      "@simplysm/sd-service-client": [
+        "../sd-service-client/src/index.ts"
+      ]
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "lib": [
+      "es2015"
+    ],
+    "declaration": true,
+    "baseUrl": ".",
+    "paths": {
+      "@simplysm/sd-common": [
+        "../sd-common/src/index.ts"
+      ],
+      "@simplysm/sd-service": [
+        "../sd-service/src/index.ts"
+      ],
+      "@simplysm/sd-service-client": [
+        "../sd-service-client/src/index.ts"
+      ],
+      "@simplysm/sd-smtp-client-service-client": [
+        "../sd-smtp-client-service-client/src/index.ts"
+      ]
+    }
+  }
+}

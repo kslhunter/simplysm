@@ -1,72 +1,96 @@
 {
   "packages": {
-    "angular": {
+    "sd-angular": {
       "type": "dom",
       "publish": {
         "protocol": "npm"
       }
     },
-    "barobill-common": {
-      "type": "node",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
-    "cli": {
-      "type": "node",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
-    "common": {
+    "sd-angular-address-search-modal": {
       "type": "dom",
       "publish": {
         "protocol": "npm"
       }
     },
-    "core": {
+    "sd-cli": {
       "type": "node",
       "publish": {
         "protocol": "npm"
       }
     },
-    "excel": {
+    "sd-common": {
+      "type": "all",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "sd-core": {
+      "type": "node",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "sd-crypto-service": {
+      "type": "node",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "sd-crypto-service-client": {
       "type": "dom",
       "publish": {
         "protocol": "npm"
       }
     },
-    "orm": {
+    "sd-excel": {
       "type": "dom",
       "publish": {
         "protocol": "npm"
       }
     },
-    "orm-common": {
+    "sd-orm-service": {
       "type": "node",
       "publish": {
         "protocol": "npm"
       }
     },
-    "smtp-client-common": {
-      "type": "node",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
-    "storage": {
-      "type": "node",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
-    "ws-common": {
+    "sd-orm-service-client": {
       "type": "dom",
       "publish": {
         "protocol": "npm"
       }
     },
-    "ws-server": {
+    "sd-service": {
+      "type": "node",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "sd-service-client": {
+      "type": "dom",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "sd-smtp-client-service": {
+      "type": "node",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "sd-smtp-client-service-client": {
+      "type": "dom",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "sd-soap-client": {
+      "type": "all",
+      "publish": {
+        "protocol": "npm"
+      }
+    },
+    "sd-storage": {
       "type": "node",
       "publish": {
         "protocol": "npm"

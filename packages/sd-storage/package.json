@@ -1,0 +1,15 @@
+{
+  "name": "@simplysm/sd-storage",
+  "version": "1.1.4",
+  "description": "심플리즘 패키지 - 저장소",
+  "author": "김석래",
+  "repository": "gihub:kslhunter/simplysm",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@simplysm/sd-common": "1.1.4",
+    "fs-extra": "^7.0.1",
+    "jsftp": "^2.1.3"
+  }
+}
