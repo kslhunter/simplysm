@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service-client",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "심플리즘 패키지 - 서비스 클라이언트",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",

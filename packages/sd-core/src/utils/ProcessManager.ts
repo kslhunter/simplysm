@@ -60,7 +60,7 @@ export class ProcessManager {
       worker.on("exit", async code => {
         if (opts && opts.logger) {
           if (errorMessage.replace(/\r/g, "")) {
-            opts.logger!.error(errorMessage);
+            opts.logger!.error(`$ ` + cmds.join(" "), errorMessage);
           }
           if (resultMessage.replace(/\r/g, "")) {
             opts.logger!.log(resultMessage);

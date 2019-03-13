@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "심플리즘 패키지 - Angular",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -20,7 +20,7 @@
     "@fortawesome/free-brands-svg-icons": "^5.7.2",
     "@fortawesome/free-regular-svg-icons": "^5.7.2",
     "@fortawesome/free-solid-svg-icons": "^5.7.2",
-    "@simplysm/sd-common": "1.1.7",
+    "@simplysm/sd-common": "1.1.8",
     "core-js": "^2.6.5",
     "jsbarcode": "^3.11.0",
     "marked": "^0.6.1",
