@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-smtp-client-service-client",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "심플리즘 패키지 - SMTP 클라이언트 서비스 (클라이언트)",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,6 +8,6 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-service-client": "1.1.4"
+    "@simplysm/sd-service-client": "1.1.9"
   }
 }
