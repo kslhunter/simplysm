@@ -760,7 +760,7 @@ export class SdProjectBuilder {
     if (packageConfig.type === "all" || packageConfig.type === "dom" || packageConfig.type === "node" || packageConfig.type === "server") {
       const packageNpmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
 
-      const entryFilePaths = [packageNpmConfig["main"]]
+      const entryFilePaths = [packageNpmConfig["main"] ? packageNpmConfig["main"] : "src/app.ts"]
         .concat(packageNpmConfig["bin"] ? Object.keys(packageNpmConfig["bin"]).map(key => packageNpmConfig["bin"][key]) : [])
         .filterExists()
         .map(filePath => SdProjectBuilderUtil.getPackagesPath(packageKey, filePath.replace("dist", "src").replace(/\.js$/g, ".ts")));
@@ -774,7 +774,7 @@ export class SdProjectBuilder {
       webpackConfig = webpackMerge(webpackConfig, {
         target: "node",
         node: {
-          __dirname: true
+          __dirname: false
         },
         entry,
         output: {
