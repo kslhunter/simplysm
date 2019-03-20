@@ -8,97 +8,70 @@ try {
 
   const contextPath = path.resolve(process.cwd(), "packages", packageName).replace(/\\/g, "/");
   const configPath = path.resolve(contextPath, "tsconfig.build.json").replace(/\\/g, "/");
+  // const configPath = path.resolve(contextPath, "tsconfig.json").replace(/\\/g, "/");
   const parsedConfig = ts.parseJsonConfigFileContent(fs.readJsonSync(configPath), ts.sys, contextPath);
   const outDir = parsedConfig.options.outDir || path.resolve(contextPath, "dist");
 
   if (watch) {
-    const promiseList = [];
-    const host = ts.createWatchCompilerHost(
-      configPath,
-      {
-        outDir,
-        sourceMap: false,
-        noEmit: !parsedConfig.options.declaration,
-        emitDeclarationOnly: parsedConfig.options.declaration
-      },
-      {
-        ...ts.sys,
-        writeFile: (filePath, content) => {
-          promiseList.push(writeFileAsync(filePath, content));
-        },
-        createDirectory: () => {
-        }
-      },
-      ts.createEmitAndSemanticDiagnosticsBuilderProgram,
-      diagnostic => {
-        printDiagnostic(diagnostic);
-      },
-      () => {
-      }
-    );
+    process.on("message", async (changedFiles) => {
+      await runAsync(changedFiles);
 
-    ts.createWatchProgram(host);
-
-    Promise.all(promiseList)
-      .then(() => {
-        sendMessage({
-          type: "finish"
-        });
-      })
-      .catch(err => {
-        sendMessage({
-          type: "error",
-          message: err.stack
-        });
+      sendMessage({
+        type: "finish"
       });
+    });
   }
   else {
-    const promiseList = [];
+    (async () => {
+      await runAsync([]);
+      process.exit();
+    })();
+  }
 
-    const host = ts.createCompilerHost(parsedConfig.options);
-    host.writeFile = async (filePath, content) => {
-      promiseList.push(writeFileAsync(filePath, content));
-    };
+  async function runAsync(changedFiles) {
+    try {
+      const promiseList = [];
 
-    const program = ts.createProgram(
-      parsedConfig.fileNames,
-      {
-        ...parsedConfig.options,
-        outDir: outDir,
-        sourceMap: false,
-        noEmit: !parsedConfig.options.declaration,
-        emitDeclarationOnly: parsedConfig.options.declaration
-      },
-      host
-    );
+      const host = ts.createCompilerHost(parsedConfig.options);
+      host.writeFile = async (filePath, content) => {
+        promiseList.push(writeFileAsync(filePath, content));
+      };
 
-    let diagnostics = parsedConfig.options.declaration
-      ? ts.getPreEmitDiagnostics(program)
-      : program.getSemanticDiagnostics();
+      const program = ts.createProgram(
+        changedFiles.length > 0 ? changedFiles : parsedConfig.fileNames,
+        {
+          ...parsedConfig.options,
+          outDir: outDir,
+          sourceMap: false,
+          noEmit: !parsedConfig.options.declaration,
+          emitDeclarationOnly: parsedConfig.options.declaration
+        },
+        host
+      );
 
-    if (parsedConfig.options.declaration) {
-      diagnostics = diagnostics.concat(program.emit(undefined, undefined, undefined, true).diagnostics);
+      let diagnostics = parsedConfig.options.declaration
+        ? ts.getPreEmitDiagnostics(program)
+        : program.getSemanticDiagnostics();
+
+      if (parsedConfig.options.declaration) {
+        diagnostics = diagnostics.concat(program.emit(undefined, undefined, undefined, true).diagnostics);
+      }
+      else {
+        diagnostics = diagnostics.concat(program.getSyntacticDiagnostics());
+      }
+
+      for (const diagnostic of diagnostics) {
+        printDiagnostic(diagnostic);
+      }
+
+      await Promise.all(promiseList);
     }
-    else {
-      diagnostics = diagnostics.concat(program.getSyntacticDiagnostics());
-    }
-
-    for (const diagnostic of diagnostics) {
-      printDiagnostic(diagnostic);
-    }
-
-    Promise.all(promiseList)
-      .then(() => {
-        sendMessage({
-          type: "finish"
-        });
-      })
-      .catch(err => {
-        sendMessage({
-          type: "error",
-          message: err.stack
-        });
+    catch (err) {
+      sendMessage({
+        type: "error",
+        message: err.stack
       });
+    }
   }
 
   async function writeFileAsync(filePath, content) {

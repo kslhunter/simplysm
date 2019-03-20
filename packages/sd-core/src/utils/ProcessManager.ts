@@ -89,7 +89,7 @@ export class ProcessManager {
     });
   }
 
-  public static async forkAsync(modulePath: string, cmds: string[], opts?: { env?: ProcessEnv; cwd?: string; logger?: Logger; onMessage?(message: any): Promise<boolean | void>; sendData?: any }): Promise<childProcess.ChildProcess> {
+  /*public static async forkAsync(modulePath: string, cmds: string[], opts?: { env?: ProcessEnv; cwd?: string; logger?: Logger; onMessage?(message: any): Promise<boolean | void>; sendData?: any }): Promise<childProcess.ChildProcess> {
     if (opts && opts.logger) {
       opts.logger!.log(`$ node ${modulePath} ${cmds.join(" ")}`);
     }
@@ -146,5 +146,21 @@ export class ProcessManager {
         }
       });
     });
+  }*/
+
+  public static fork(modulePath: string, cmds: string[], opts?: { env?: ProcessEnv; cwd?: string; logger?: Logger }): childProcess.ChildProcess {
+    if (opts && opts.logger) {
+      opts.logger!.log(`$ node ${modulePath} ${cmds.join(" ")}`);
+    }
+
+    return childProcess.fork(
+      modulePath,
+      cmds,
+      {
+        stdio: ["inherit", "inherit", "inherit", "ipc"],
+        env: optional(() => opts!.env),
+        cwd: optional(() => opts!.cwd) || process.cwd()
+      }
+    );
   }
 }

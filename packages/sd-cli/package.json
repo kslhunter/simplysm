@@ -37,6 +37,7 @@
     "webpack-dev-middleware": "^3.6.1",
     "webpack-hot-middleware": "^2.24.3",
     "webpack-merge": "^4.2.1",
-    "yargs": "^13.2.2"
+    "yargs": "^13.2.2",
+    "webpack-node-externals": "^1.7.2"
   }
 }

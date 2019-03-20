@@ -4,16 +4,16 @@ import * as path from "path";
 import * as glob from "glob";
 
 export class SdWebSocketServerUtil {
-  public static async getConfigAsync(staticPath: string, requestUrl: string): Promise<any> {
+  public static async getConfigAsync(rootPath: string, requestUrl: string): Promise<any> {
     const urlObj = url.parse(requestUrl!, true, false);
     const urlPath = decodeURI(urlObj.pathname!);
 
     if (urlPath !== "/") {
-      return await fs.readJson(path.resolve(staticPath, "." + urlPath, "configs.json"));
+      return await fs.readJson(path.resolve(rootPath, "www", "." + urlPath, "configs.json"));
     }
     else {
       return await new Promise<any>((resolve, reject) => {
-        glob(path.resolve(staticPath, "*", "*", "configs.json"), async (err, files) => {
+        glob(path.resolve(rootPath, "www", "*", "*", "configs.json"), async (err, files) => {
           if (err) {
             reject(err);
             return;

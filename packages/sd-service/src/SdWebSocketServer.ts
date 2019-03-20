@@ -37,18 +37,18 @@ export class SdWebSocketServer extends EventEmitter {
   private _wsConnections: SdWebSocketServerConnection[] = [];
   private _httpConnections: net.Socket[] = [];
   private _eventListeners: IEventListener[] = [];
-  private _staticPath?: string;
-  private _servicesPaths: string[] = [];
 
   public get isListening(): boolean {
     return !!this._httpServer && !!this._httpServer.listening;
   }
 
-  public constructor() {
+  public constructor(public port: number,
+                     public services: Type<SdWebSocketServiceBase>[],
+                     public rootPath: string) {
     super();
   }
 
-  public async listenAsync(staticPath: string, port: number, servicesPaths?: string[]): Promise<void> {
+  public async listenAsync(): Promise<void> {
     if (this.isListening) {
       await this.closeAsync();
     }
@@ -64,9 +64,9 @@ export class SdWebSocketServer extends EventEmitter {
         }
       });
 
-      this.expressServer.use(express.static(staticPath));
+      this.expressServer.use(express.static(path.resolve(this.rootPath, "www")));
       await new Promise<void>((resolve1, reject1) => {
-        glob(path.resolve(staticPath, "*", "*", "configs.json"), async (err, files) => {
+        glob(path.resolve(this.rootPath, "www", "*", "*", "configs.json"), async (err, files) => {
           if (err) {
             reject1(err);
             return;
@@ -87,8 +87,6 @@ export class SdWebSocketServer extends EventEmitter {
       this._wsServer = new WebSocket.Server({server: this._httpServer});
       this._wsConnections = [];
       this._eventListeners = [];
-      this._staticPath = staticPath;
-      this._servicesPaths = servicesPaths || glob.sync(path.resolve(process.cwd(), "services", "*", "*")).filter(item => fs.lstatSync(item).isDirectory());
 
       this._wsServer.on("connection", async (conn, connReq) => {
         this._logger.log(`클라이언트의 연결 요청을 받았습니다 : ${connReq.headers.origin}`);
@@ -120,7 +118,7 @@ export class SdWebSocketServer extends EventEmitter {
         });
       });
 
-      this._httpServer.listen(port, () => {
+      this._httpServer.listen(this.port, () => {
         this._httpServer!.on("connection", conn => {
           this._httpConnections.push(conn);
 
@@ -137,8 +135,6 @@ export class SdWebSocketServer extends EventEmitter {
           this._wsConnections = [];
           this._httpConnections = [];
           this._eventListeners = [];
-          this._staticPath = undefined;
-          this._servicesPaths = [];
         });
 
         resolve();
@@ -248,14 +244,7 @@ export class SdWebSocketServer extends EventEmitter {
       const methodName = cmdSplit[1];
 
       // 서비스 가져오기
-      let serviceClass: Type<SdWebSocketServiceBase> | undefined;
-      for (const servicesPath of this._servicesPaths) {
-        const servicesFilePath = path.resolve(servicesPath, `services`);
-        serviceClass = require(servicesFilePath)[serviceName];
-        if (serviceClass) {
-          break;
-        }
-      }
+      const serviceClass = this.services.single(item => item.name === serviceName);
       if (!serviceClass) {
         throw new Error(`서비스[${serviceName}]를 찾을 수 없습니다.`);
       }
@@ -264,7 +253,7 @@ export class SdWebSocketServer extends EventEmitter {
       service.request = req;
       service.server = this;
       service.conn = conn;
-      service.staticPath = this._staticPath!;
+      service.rootPath = this.rootPath;
 
       // 메소드 가져오기
       const method = service[methodName];

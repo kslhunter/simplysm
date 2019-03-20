@@ -14,9 +14,27 @@ try {
     projectPath = process.cwd()
   }
 
-  process.on("message", async (changedFiles) => {
+
+  if (watch) {
+    process.on("message", async (changedFiles) => {
+      await runAsync(changedFiles);
+
+      sendMessage({
+        type: "finish"
+      });
+    });
+  }
+  else {
+    (async () => {
+      await runAsync([]);
+      process.exit();
+    })();
+  }
+
+  async function runAsync(changedFiles) {
     try {
-      const tsconfigFile = path.resolve(projectPath, "packages", packageKey, "tsconfig.build.json");
+      // const tsconfigFile = path.resolve(projectPath, "packages", packageKey, "tsconfig.build.json");
+      const tsconfigFile = path.resolve(projectPath, "packages", packageKey, "tsconfig.json");
       const configFile = path.resolve(projectPath, "packages", packageKey, "tslint.json");
 
       const program = tslint.Linter.createProgram(tsconfigFile, path.dirname(tsconfigFile));
@@ -77,13 +95,7 @@ try {
         message: err.stack
       });
     }
-
-    sendMessage({
-      type: "finish"
-    });
-
-    if (!watch) process.exit();
-  });
+  }
 }
 catch (err) {
   sendMessage({

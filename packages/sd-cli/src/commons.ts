@@ -20,13 +20,12 @@ export interface ISdProjectConfig {
 }
 
 export interface ISdPackageConfig {
-  type?: "none" | "dom" | "node" | "all" | "services" | "web" | "cordova.android" | "cordova.browser" | "electron.windows";
+  type?: "none" | "dom" | "node" | "all" | "server" | "web" | "cordova.android" | "cordova.browser" | "electron.windows";
   publish?: ISdPublishConfig;
   env?: { [key: string]: any };
   vhost?: string;
-  server?: {
-    port?: number;
-  };
+  server?: string;
+  port?: number;
   configs?: { [key: string]: { [key: string]: string } };
 }
 

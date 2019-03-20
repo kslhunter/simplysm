@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import * as yargs from "yargs";
 import {SdProjectBuilder} from "./SdProjectBuilder";
 import * as sourceMapSupport from "source-map-support";
@@ -69,18 +67,6 @@ const argv = yargs
         }
       })
   )
-  .command(
-    "server",
-    "서버만 시작합니다.",
-    cmd => cmd.version(false)
-      .options({
-        port: {
-          type: "number",
-          describe: "서버포트 설정",
-          default: 80
-        }
-      })
-  )
   .argv;
 
 (async () => {
@@ -102,9 +88,6 @@ const argv = yargs
   else if (argv._[0] === "publish") {
     await new SdProjectBuilder().publishAsync(argv as any);
     process.exit(0);
-  }
-  else if (argv._[0] === "server") {
-    await new SdProjectBuilder().startServerOnlyAsync(argv as any);
   }
   else {
     throw new Error("명령어가 잘못 되었습니다.");
