@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-smtp-client-service",
-  "version": "1.1.10",
+  "version": "1.1.14",
   "description": "심플리즘 패키지 - SMTP 클라이언트 서비스",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,9 +8,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-common": "1.1.9",
-    "@simplysm/sd-service": "1.1.9",
-    "@simplysm/sd-smtp-client-service-client": "1.1.9",
+    "@simplysm/sd-common": "1.1.14",
+    "@simplysm/sd-service": "1.1.14",
+    "@simplysm/sd-smtp-client-service-client": "1.1.14",
     "nodemailer": "^5.1.1"
   }
 }

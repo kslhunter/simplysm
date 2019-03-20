@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service",
-  "version": "1.1.11",
+  "version": "1.1.14",
   "description": "심플리즘 패키지 - 서비스 서버",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,8 +8,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-common": "1.1.9",
-    "@simplysm/sd-service-client": "1.1.9",
+    "@simplysm/sd-common": "1.1.14",
+    "@simplysm/sd-service-client": "1.1.14",
     "decache": "^4.5.1",
     "express": "^4.16.4",
     "fs-extra": "^7.0.1",
