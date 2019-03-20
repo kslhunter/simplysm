@@ -97,7 +97,7 @@ export class SdProjectBuilderUtil {
 
   public static async writeNpmConfigAsync(packageKey: string, npmConfig: INpmConfig): Promise<void> {
     const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
-    await fs.writeJson(configPath, npmConfig, {spaces: 2, EOL: os.EOL});
+    fs.writeJsonSync(configPath, npmConfig, {spaces: 2, EOL: os.EOL});
   }
 
   public static getProjectNpmConfigPath(): string {
