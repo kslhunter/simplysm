@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular",
-  "version": "1.1.14",
+  "version": "1.1.15",
   "description": "심플리즘 패키지 - Angular",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -20,15 +20,15 @@
     "@fortawesome/free-brands-svg-icons": "^5.7.2",
     "@fortawesome/free-regular-svg-icons": "^5.7.2",
     "@fortawesome/free-solid-svg-icons": "^5.7.2",
-    "@simplysm/sd-common": "1.1.14",
-    "@simplysm/sd-service-client": "1.1.14",
-    "@simplysm/sd-orm-client": "1.1.14",
-    "@simplysm/sd-smtp-client-common": "1.1.14",
+    "@simplysm/sd-common": "1.1.15",
+    "@simplysm/sd-orm-client": "1.1.15",
+    "@simplysm/sd-service-client": "1.1.15",
+    "@simplysm/sd-smtp-client-common": "1.1.15",
     "core-js": "^2.6.5",
     "jsbarcode": "^3.11.0",
     "marked": "^0.6.1",
     "rxjs": "^6.4.0",
-    "zone.js": "^0.8.29",
-    "soap": "^0.26.0"
+    "soap": "^0.26.0",
+    "zone.js": "^0.8.29"
   }
 }
