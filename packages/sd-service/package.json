@@ -10,12 +10,16 @@
   "dependencies": {
     "@simplysm/sd-common": "1.1.14",
     "@simplysm/sd-service-client": "1.1.14",
+    "@simplysm/sd-orm": "1.1.14",
+    "@simplysm/sd-orm-client": "1.1.14",
+    "@simplysm/sd-smtp-client-common": "1.1.14",
     "decache": "^4.5.1",
     "express": "^4.16.4",
     "fs-extra": "^7.0.1",
     "glob": "^7.1.3",
     "vhost": "^3.0.2",
     "ws": "^6.2.0",
-    "yargs": "^13.2.2"
+    "yargs": "^13.2.2",
+    "nodemailer": "^5.1.1"
   }
 }

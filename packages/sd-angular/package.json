@@ -22,10 +22,13 @@
     "@fortawesome/free-solid-svg-icons": "^5.7.2",
     "@simplysm/sd-common": "1.1.14",
     "@simplysm/sd-service-client": "1.1.14",
+    "@simplysm/sd-orm-client": "1.1.14",
+    "@simplysm/sd-smtp-client-common": "1.1.14",
     "core-js": "^2.6.5",
     "jsbarcode": "^3.11.0",
     "marked": "^0.6.1",
     "rxjs": "^6.4.0",
-    "zone.js": "^0.8.29"
+    "zone.js": "^0.8.29",
+    "soap": "^0.26.0"
   }
 }

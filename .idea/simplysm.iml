@@ -19,10 +19,13 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-crypto-service-client/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-crypto-service/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-client/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-service-client/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-service/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-client/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-service/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-smtp-client-common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-smtp-client-service-client/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-smtp-client-service/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-soap-client/dist" />

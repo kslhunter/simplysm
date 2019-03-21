@@ -10,6 +10,9 @@ import * as net from "net";
 import {ISdWebSocketRequest, ISdWebSocketResponse} from "@simplysm/sd-service-client";
 import * as glob from "glob";
 import * as fs from "fs-extra";
+import {SdCryptoService} from "./services/SdCryptoService";
+import {SdOrmService} from "./services/SdOrmService";
+import {SdSmtpClientService} from "./services/SdSmtpClientService";
 
 const vhost = require("vhost"); //tslint:disable-line:no-var-requires no-require-imports
 
@@ -244,7 +247,13 @@ export class SdWebSocketServer extends EventEmitter {
       const methodName = cmdSplit[1];
 
       // 서비스 가져오기
-      const serviceClass = this.services.single(item => item.name === serviceName);
+      const serviceClass = this.services
+        .concat([
+          SdCryptoService,
+          SdOrmService,
+          SdSmtpClientService
+        ])
+        .single(item => item.name === serviceName);
       if (!serviceClass) {
         throw new Error(`서비스[${serviceName}]를 찾을 수 없습니다.`);
       }

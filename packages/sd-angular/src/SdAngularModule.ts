@@ -67,6 +67,11 @@ import {LinkActionDirective} from "./directives/LinkActionDirective";
 import {SdToastContainerControl} from "./controls/SdToastContainerControl";
 import {SdToastControl} from "./controls/SdToastControl";
 import {SdServiceProvider} from "./providers/SdServiceProvider";
+import {SdAddressSearchModal} from "./modals/SdAddressSearchModal";
+import {SdCryptoServiceProvider} from "./providers/SdCryptoServiceProvider";
+import {SdOrmServiceProvider} from "./providers/SdOrmServiceProvider";
+import {SdSmtpClientServiceProvider} from "./providers/SdSmtpClientServiceProvider";
+import {SdSoapProvider} from "./providers/SdSoapProvider";
 
 const controls: Type<any>[] = [
   SdBusyContainerControl,
@@ -123,7 +128,8 @@ const controls: Type<any>[] = [
 const entryControls: Type<any>[] = [
   SdModalControl,
   SdToastContainerControl,
-  SdToastControl
+  SdToastControl,
+  SdAddressSearchModal
 ];
 
 const directives: Type<any>[] = [
@@ -143,6 +149,10 @@ const providers: Provider[] = [
   SdPrintProvider,
   SdToastProvider,
   SdServiceProvider,
+  SdCryptoServiceProvider,
+  SdOrmServiceProvider,
+  SdSmtpClientServiceProvider,
+  SdSoapProvider,
   {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
   {provide: ErrorHandler, useClass: GlobalErrorHandler}
 ];

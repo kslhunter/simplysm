@@ -6,12 +6,6 @@
         "protocol": "npm"
       }
     },
-    "sd-angular-address-search-modal": {
-      "type": "dom",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
     "sd-cli": {
       "type": "node",
       "publish": {
@@ -30,32 +24,20 @@
         "protocol": "npm"
       }
     },
-    "sd-crypto-service": {
-      "type": "node",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
-    "sd-crypto-service-client": {
-      "type": "dom",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
     "sd-excel": {
       "type": "dom",
       "publish": {
         "protocol": "npm"
       }
     },
-    "sd-orm-service": {
+    "sd-orm": {
       "type": "node",
       "publish": {
         "protocol": "npm"
       }
     },
-    "sd-orm-service-client": {
-      "type": "dom",
+    "sd-orm-client": {
+      "type": "all",
       "publish": {
         "protocol": "npm"
       }
@@ -67,24 +49,12 @@
       }
     },
     "sd-service-client": {
-      "type": "dom",
+      "type": "all",
       "publish": {
         "protocol": "npm"
       }
     },
-    "sd-smtp-client-service": {
-      "type": "node",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
-    "sd-smtp-client-service-client": {
-      "type": "dom",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
-    "sd-soap-client": {
+    "sd-smtp-client-common": {
       "type": "all",
       "publish": {
         "protocol": "npm"
