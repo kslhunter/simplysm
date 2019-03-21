@@ -905,8 +905,8 @@ export class SdProjectBuilder {
         ],
         externals: [
           (context, request, callback) => {
-            if (request === "fs" || request === "fs-extra") {
-              callback(undefined, "undefined");
+            if (request === "fs" || request === "fs-extra" || request === "net" || request === "tls") {
+              callback(undefined, `""`);
               return;
             }
 

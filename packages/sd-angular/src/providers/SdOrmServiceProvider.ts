@@ -2,6 +2,7 @@ import {Type, Wait} from "@simplysm/sd-common";
 import {SdServiceProvider} from "./SdServiceProvider";
 import {DbContext, IDbContextExecutor, IQueryDef} from "@simplysm/sd-orm-client";
 import {SdWebSocketClient} from "@simplysm/sd-service-client";
+import {Injectable} from "@angular/core";
 
 export class SdWebSocketDbContextExecutor implements IDbContextExecutor {
   private _connId?: number;
@@ -38,6 +39,7 @@ export class SdWebSocketDbContextExecutor implements IDbContextExecutor {
   }
 }
 
+@Injectable()
 export class SdOrmServiceProvider {
   public constructor(private readonly _service: SdServiceProvider) {
   }

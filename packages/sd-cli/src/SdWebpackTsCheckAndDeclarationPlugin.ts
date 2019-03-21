@@ -5,8 +5,8 @@ import {ProcessManager} from "@simplysm/sd-core";
 import * as child_process from "child_process";
 
 export class SdWebpackTsCheckAndDeclarationPlugin implements webpack.Plugin {
-  private readonly _startTime = Date.now();
-  private _prevTimestamps = new Map<string, number>();
+  // private readonly _startTime = Date.now();
+  // private _prevTimestamps = new Map<string, number>();
 
   public constructor(private readonly _options: { packageKey: string; logger: Logger }) {
   }
@@ -48,11 +48,12 @@ export class SdWebpackTsCheckAndDeclarationPlugin implements webpack.Plugin {
         };
         worker.on("message", listener);
 
-        const fileTimestamps = compilation["fileTimestamps"] as Map<string, number>;
+        /*const fileTimestamps = compilation["fileTimestamps"] as Map<string, number>;
         const changedFiles = Array.from(fileTimestamps.keys())
           .filter(watchFile => (this._prevTimestamps.get(watchFile) || this._startTime) < (fileTimestamps.get(watchFile) || Infinity));
         this._prevTimestamps = fileTimestamps;
-        worker.send(changedFiles);
+        worker.send(changedFiles);*/
+        worker.send([]);
       }
       else {
         worker = ProcessManager.fork(
