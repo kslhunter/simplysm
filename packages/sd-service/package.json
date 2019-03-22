@@ -20,6 +20,8 @@
     "nodemailer": "^5.1.1",
     "vhost": "^3.0.2",
     "ws": "^6.2.0",
-    "yargs": "^13.2.2"
+    "yargs": "^13.2.2",
+    "bufferutil": "^4.0.1",
+    "utf-8-validate": "^5.0.2"
   }
 }

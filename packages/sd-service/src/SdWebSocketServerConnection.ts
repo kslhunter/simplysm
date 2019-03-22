@@ -122,36 +122,45 @@ export class SdWebSocketServerConnection extends EventEmitter {
       const filePath = match[2];
       const md5 = match[3];
 
-      const fileMd5 = await fs.pathExists(filePath)
-        ? await new Promise<string>((resolve1, reject1) => {
-          const output = crypto.createHash("md5");
-          const input = fs.createReadStream(filePath);
+      try {
+        const fileMd5 = await fs.pathExists(filePath)
+          ? await new Promise<string>((resolve1, reject1) => {
+            const output = crypto.createHash("md5");
+            const input = fs.createReadStream(filePath);
 
-          input.on("error", err => {
-            reject1(err);
-          });
+            input.on("error", errMessage => {
+              reject1(new Error(errMessage));
+            });
 
-          output.once("readable", () => {
-            resolve1(output.read().toString("hex"));
-          });
+            output.once("readable", () => {
+              resolve1(output.read().toString("hex"));
+            });
 
-          input.pipe(output);
-        })
-        : undefined;
+            input.pipe(output);
+          })
+          : undefined;
 
-      if (fileMd5 === md5) {
-        const endRes: ISdWebSocketResponse = {
-          requestId,
-          type: "response"
-        };
-        await this.sendAsync(endRes);
+        if (fileMd5 === md5) {
+          const endRes: ISdWebSocketResponse = {
+            requestId,
+            type: "response"
+          };
+          await this.sendAsync(endRes);
+        }
+        else {
+          const endRes: ISdWebSocketResponse = {
+            requestId,
+            type: "checkMd5"
+          };
+          await this.sendAsync(endRes);
+        }
       }
-      else {
-        const endRes: ISdWebSocketResponse = {
+      catch (err) {
+        await this.sendAsync({
           requestId,
-          type: "checkMd5"
-        };
-        await this.sendAsync(endRes);
+          type: "error",
+          body: err.message
+        });
       }
       return;
     }

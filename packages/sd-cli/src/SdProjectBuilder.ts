@@ -199,33 +199,49 @@ export class SdProjectBuilder {
             });
           });
 
-          const status: { total: number; current: number; filePath: string }[] = [];
+          const uploadFileInfos: { total: number; current: number; filePath: string; targetPath: string }[] = [];
           await Promise.all(filePaths.map(async filePath => {
             const relativeFilePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"), filePath);
 
             const targetPath = packageConfig.type === "server"
-              ? path.join("/")
+              ? path.join("/"/*, relativeFilePath*/)
               : path.join("www", projectNpmConfig.name, packageKey, relativeFilePath);
 
-            await wsClient.uploadAsync(filePath, targetPath, progress => {
-              let curr = status.single(item => item.filePath === filePath);
+            const fileSize = await wsClient.checkUploadFileSizeAsync(filePath, targetPath);
 
-              if (!curr) {
-                curr = {
-                  filePath,
-                  total: progress.total,
-                  current: 0
-                };
-                status.push(curr);
-              }
+            if (fileSize > 0) {
+              uploadFileInfos.push({
+                filePath,
+                targetPath,
+                total: fileSize,
+                current: 0
+              });
+            }
+          }));
 
-              curr.current = progress.current;
+          const total = uploadFileInfos.sum(item => item.total)!;
 
-              const current = status.sum(item => item.current)!;
-              const total = status.sum(item => item.total)!;
+          await Promise.all(uploadFileInfos.map(async uploadFileInfo => {
+            await wsClient.uploadAsync(uploadFileInfo.filePath, uploadFileInfo.targetPath, progress => {
+              uploadFileInfo.current = progress.current;
+
+              const current = uploadFileInfos.sum(item => item.current)!;
               packageLogger.log(`파일 업로드 : (${(Math.floor(current * 10000 / total) / 100).toFixed(2).padStart(6, " ")}%) ${current.toLocaleString()} / ${total.toLocaleString()}`);
             }, 10000);
           }));
+
+          if (packageConfig.type === "server") {
+            const fileSize = await wsClient.checkUploadFileSizeAsync(
+              SdProjectBuilderUtil.getPackagesPath(packageKey, "package.json"),
+              "/package.json"
+            );
+            if (fileSize > 0) {
+              await wsClient.uploadAsync(
+                SdProjectBuilderUtil.getPackagesPath(packageKey, "package.json"),
+                "/package.json"
+              );
+            }
+          }
         }
         else {
           throw new Error("미구현 (publish)");
@@ -702,24 +718,6 @@ export class SdProjectBuilder {
       output: {
         path: distPath
       },
-      optimization: {
-        splitChunks: {
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/](?!@simplysm)/,
-              name: "vendor",
-              chunks: "initial",
-              enforce: true
-            },
-            simplysm: {
-              test: /[\\/]node_modules[\\/]@simplysm/,
-              name: "simplysm",
-              chunks: "initial",
-              enforce: true
-            }
-          }
-        }
-      },
       module: {
         rules: [
           {
@@ -750,9 +748,7 @@ export class SdProjectBuilder {
         }),
         new SdWebpackTimeFixPlugin(),
         new webpack.DefinePlugin({
-          "process.env": SdProjectBuilder._envStringify({
-            VERSION: projectNpmConfig.version
-          })
+          "process.env.VERSION": `"${projectNpmConfig.version}"`
         })
       ]
     };
@@ -804,17 +800,6 @@ export class SdProjectBuilder {
               })
             ]
             : []
-        ],
-        externals: [
-          (context, request, callback) => {
-            if (alias[request]) {
-              callback(undefined, `commonjs ${request}`);
-              return;
-            }
-
-            callback(undefined, undefined);
-          },
-          nodeExternals()
         ]
       });
 
@@ -832,6 +817,69 @@ export class SdProjectBuilder {
         webpackConfig = webpackMerge(webpackConfig, {
           mode: "development",
           devtool: "cheap-module-source-map"
+        });
+      }
+
+      if (packageConfig.type === "server") {
+        webpackConfig = webpackMerge(webpackConfig, {
+          module: {
+            rules: [
+              {
+                test: /\.node$/,
+                loader: path.resolve(__dirname, "..", "lib", "node-loader.js")
+              }
+            ]
+          },
+          externals: [
+            (context, request, callback) => {
+              if (path.normalize(context) === path.normalize(SdProjectBuilderUtil.getProjectPath("node_modules", "express", "lib")) && request === "./view") {
+                callback(undefined, `commonjs ${path.resolve(__dirname, "..", "lib", "express-view").replace(/\\/g, "/")}`);
+                return;
+              }
+              callback(undefined, undefined);
+            }
+          ]
+        });
+
+        if (mode === "production") {
+          webpackConfig = webpackMerge(webpackConfig, {
+            plugins: [
+              new SdWebpackWriteFilePlugin({
+                logger: new Logger("@simplysm/sd-cli", packageKey),
+                files: [{
+                  path: SdProjectBuilderUtil.getPackagesPath(packageKey, "dist", "pm2.json"),
+                  content: JSON.stringify({
+                    name: "simplysm",
+                    script: "app.js",
+                    watch: [
+                      "node_modules",
+                      "pm2.json",
+                      "package.json",
+                      "app.js"
+                    ],
+                    env: {
+                      "NODE_ENV": "production"
+                    }
+                  }, undefined, 2)
+                }]
+              })
+            ]
+          });
+        }
+      }
+      else {
+        webpackConfig = webpackMerge(webpackConfig, {
+          externals: [
+            (context, request, callback) => {
+              if (alias[request]) {
+                callback(undefined, `commonjs ${request}`);
+                return;
+              }
+
+              callback(undefined, undefined);
+            },
+            nodeExternals()
+          ]
         });
       }
     }
@@ -929,6 +977,22 @@ export class SdProjectBuilder {
           devtool: "source-map",
           entry: path.resolve(__dirname, "../lib/main.js"),
           optimization: {
+            splitChunks: {
+              cacheGroups: {
+                vendor: {
+                  test: /[\\/]node_modules[\\/](?!@simplysm)/,
+                  name: "vendor",
+                  chunks: "initial",
+                  enforce: true
+                },
+                simplysm: {
+                  test: /[\\/]node_modules[\\/]@simplysm/,
+                  name: "simplysm",
+                  chunks: "initial",
+                  enforce: true
+                }
+              }
+            },
             noEmitOnErrors: true,
             minimize: false
           }
@@ -958,11 +1022,11 @@ export class SdProjectBuilder {
     return webpackConfig;
   }
 
-  private static _envStringify(param: { [key: string]: string | undefined }): { [key: string]: string } {
+  /*private static _envStringify(param: { [key: string]: string | undefined }): { [key: string]: string } {
     const result: { [key: string]: string } = {};
     for (const key of Object.keys(param)) {
       result[key] = param[key] === undefined ? "undefined" : JSON.stringify(param[key]);
     }
     return result;
-  }
+  }*/
 }

@@ -100,82 +100,118 @@ export class SdWebSocketClient {
     await this.sendAsync("emitEvent", [events.filter(item => infoSelector(item.info)).map(item => item.id), data]);
   }
 
-  public async uploadAsync(filePath: string, serverPath: string, sendProgressCallback?: (progress: { current: number; total: number }) => void, splitLength: number = 10000): Promise<void> {
-    return await new Promise<any>(async (resolve, reject) => {
-      if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
-        try {
-          await Wait.true(() => !!this._ws && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
-        }
-        catch (err) {
-          throw new Error("웹 소켓이 연결되어있지 않습니다.");
-        }
-      }
-
-      const requestId = this._lastRequestId++;
-      const fileSize = (await fs.lstat(filePath)).size;
-
-      let splitCompletedLength = 0;
-      this._reqMap.set(requestId, async response => {
-        if (response.type === "error") {
-          this._reqMap.delete(requestId);
-          reject(new Error(response.body));
-        }
-        else if (response.type === "upload") {
-          splitCompletedLength += response.body;
-          if (sendProgressCallback) {
-            sendProgressCallback({
-              current: splitCompletedLength,
-              total: fileSize
-            });
+  public async checkUploadFileSizeAsync(filePath: string, serverPath: string): Promise<number> {
+    return await new Promise<number>(async (resolve, reject) => {
+      try {
+        if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
+          try {
+            await Wait.true(() => !!this._ws && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
+          }
+          catch (err) {
+            throw new Error("웹 소켓이 연결되어있지 않습니다.");
           }
         }
-        else if (response.type === "checkMd5") {
-          // 업로드 요청 보내기
-          if (sendProgressCallback) {
-            sendProgressCallback({
-              current: 0,
-              total: fileSize
+
+        const requestId = this._lastRequestId++;
+        this._reqMap.set(requestId, async response => {
+          this._reqMap.delete(requestId);
+
+          if (response.type === "error") {
+            reject(new Error(response.body));
+          }
+          else if (response.type === "checkMd5") {
+            resolve((await fs.lstat(filePath)).size);
+          }
+          else {
+            resolve(0);
+          }
+        });
+
+        const fileMd5 = await new Promise<string>((resolve1, reject1) => {
+          try {
+            const output = crypto.createHash("md5");
+            const input = fs.createReadStream(filePath);
+
+            input.on("error", err => {
+              reject1(err);
             });
 
-            const fd = await fs.open(filePath, "r");
-            let cursor = 0;
-            while (cursor < fileSize) {
-              const buffer = Buffer.alloc(Math.min(splitLength, fileSize - cursor));
-              await fs.read(fd, buffer, 0, Math.min(splitLength, fileSize - cursor), cursor);
-              const str = `!upload(${requestId},${serverPath},${cursor},${fileSize})!${JsonConvert.stringify(buffer)}`;
-              this._ws!.send(str);
-              cursor += splitLength;
+            output.once("readable", () => {
+              resolve1(output.read().toString("hex"));
+            });
+
+            input.pipe(output);
+          }
+          catch (err) {
+            reject1(err);
+          }
+        });
+        const checkMd5String = `!checkMd5(${requestId},${serverPath})!${fileMd5}`;
+        this._ws!.send(checkMd5String);
+      }
+      catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  public async uploadAsync(filePath: string, serverPath: string, sendProgressCallback?: (progress: { current: number; total: number }) => void, splitLength: number = 10000): Promise<any> {
+    return await new Promise<any>(async (resolve, reject) => {
+      try {
+        if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
+          try {
+            await Wait.true(() => !!this._ws && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
+          }
+          catch (err) {
+            throw new Error("웹 소켓이 연결되어있지 않습니다.");
+          }
+        }
+
+        const requestId = this._lastRequestId++;
+        const fileSize = (await fs.lstat(filePath)).size;
+
+        let splitCompletedLength = 0;
+        this._reqMap.set(requestId, async response => {
+          if (response.type === "error") {
+            this._reqMap.delete(requestId);
+            reject(new Error(response.body));
+          }
+          else if (response.type === "upload") {
+            splitCompletedLength += response.body;
+            if (sendProgressCallback) {
+              sendProgressCallback({
+                current: splitCompletedLength,
+                total: fileSize
+              });
             }
           }
           else {
-            const buffer = await fs.readFile(filePath);
-            const str = `!upload(${requestId},${serverPath},${0},${fileSize})!${JsonConvert.stringify(buffer)}`;
+            this._reqMap.delete(requestId);
+            resolve(response.body);
+          }
+        });
+
+        // 업로드 요청 보내기
+        if (sendProgressCallback) {
+          const fd = await fs.open(filePath, "r");
+          let cursor = 0;
+          while (cursor < fileSize) {
+            const buffer = Buffer.alloc(Math.min(splitLength, fileSize - cursor));
+            await fs.read(fd, buffer, 0, Math.min(splitLength, fileSize - cursor), cursor);
+            const str = `!upload(${requestId},${serverPath},${cursor},${fileSize})!${JsonConvert.stringify(buffer)}`;
             this._ws!.send(str);
+            cursor += splitLength;
           }
         }
         else {
-          this._reqMap.delete(requestId);
-          resolve(response.body);
+          const buffer = await fs.readFile(filePath);
+          const str = `!upload(${requestId},${serverPath},${0},${fileSize})!${JsonConvert.stringify(buffer)}`;
+          this._ws!.send(str);
         }
-      });
-
-      // 업로드가 필요한지 먼저 확인 필요
-      const fileMd5 = await new Promise<string>((resolve1, reject1) => {
-        const output = crypto.createHash("md5");
-        const input = fs.createReadStream(filePath);
-
-        input.on("error", err => {
-          reject1(err);
-        });
-
-        output.once("readable", () => {
-          resolve1(output.read().toString("hex"));
-        });
-
-        input.pipe(output);
-      });
-      const checkMd5String = `!checkMd5(${requestId},${serverPath})!${fileMd5}`;
-      this._ws!.send(checkMd5String);
+      }
+      catch (err) {
+        reject(err);
+      }
     });
   }
 
