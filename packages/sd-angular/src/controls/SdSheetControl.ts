@@ -433,9 +433,6 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public getIsItemSelected(item: any): boolean {
-    if (item.name === "관리자") {
-      console.log(this.selectable, this.selectedItem);
-    }
     return (
       (this.selectable === true || this.selectable === "manual") &&
       this.selectedItem === item

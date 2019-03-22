@@ -156,6 +156,7 @@ export class SdWebSocketServerConnection extends EventEmitter {
         }
       }
       catch (err) {
+        this._logger.error(err, filePath);
         await this.sendAsync({
           requestId,
           type: "error",

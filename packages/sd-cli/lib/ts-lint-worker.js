@@ -14,22 +14,17 @@ try {
     projectPath = process.cwd()
   }
 
+  process.on("message", async (changedFiles) => {
+    await runAsync(changedFiles);
 
-  if (watch) {
-    process.on("message", async (changedFiles) => {
-      await runAsync(changedFiles);
-
-      sendMessage({
-        type: "finish"
-      });
+    sendMessage({
+      type: "finish"
     });
-  }
-  else {
-    (async () => {
-      await runAsync([]);
+
+    if (!watch) {
       process.exit();
-    })();
-  }
+    }
+  });
 
   async function runAsync(changedFiles) {
     try {

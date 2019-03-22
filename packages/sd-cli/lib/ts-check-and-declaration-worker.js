@@ -13,65 +13,93 @@ try {
   const outDir = parsedConfig.options.outDir || path.resolve(contextPath, "dist");
 
   if (watch) {
-    process.on("message", async (changedFiles) => {
-      await runAsync(changedFiles);
+    const promiseList = [];
 
-      sendMessage({
-        type: "finish"
+    const host = ts.createWatchCompilerHost(
+      configPath,
+      {
+        outDir,
+        sourceMap: false,
+        noEmit: !parsedConfig.options.declaration,
+        emitDeclarationOnly: parsedConfig.options.declaration
+      },
+      {
+        ...ts.sys,
+        writeFile: (filePath, content) => {
+          promiseList.push(writeFileAsync(filePath, content));
+        },
+        createDirectory: () => {
+        }
+      },
+      ts.createEmitAndSemanticDiagnosticsBuilderProgram,
+      diagnostic => {
+        printDiagnostic(diagnostic);
+      },
+      () => {
+      }
+    );
+
+    ts.createWatchProgram(host);
+    Promise.all(promiseList)
+      .then(() => {
+        sendMessage({
+          type: "finish"
+        });
+      })
+      .catch(err => {
+        sendMessage({
+          type: "error",
+          message: err.stack
+        });
       });
-    });
   }
   else {
-    (async () => {
-      await runAsync([]);
-      process.exit();
-    })();
-  }
+    const promiseList = [];
 
-  async function runAsync(changedFiles) {
-    try {
-      const promiseList = [];
+    const host = ts.createCompilerHost(parsedConfig.options);
+    host.writeFile = async (filePath, content) => {
+      promiseList.push(writeFileAsync(filePath, content));
+    };
 
-      const host = ts.createCompilerHost(parsedConfig.options);
-      host.writeFile = async (filePath, content) => {
-        promiseList.push(writeFileAsync(filePath, content));
-      };
+    const program = ts.createProgram(
+      parsedConfig.fileNames,
+      {
+        ...parsedConfig.options,
+        outDir: outDir,
+        sourceMap: false,
+        noEmit: !parsedConfig.options.declaration,
+        emitDeclarationOnly: parsedConfig.options.declaration
+      },
+      host
+    );
 
-      const program = ts.createProgram(
-        changedFiles.length > 0 ? changedFiles : parsedConfig.fileNames,
-        {
-          ...parsedConfig.options,
-          outDir: outDir,
-          sourceMap: false,
-          noEmit: !parsedConfig.options.declaration,
-          emitDeclarationOnly: parsedConfig.options.declaration
-        },
-        host
-      );
+    let diagnostics = parsedConfig.options.declaration
+      ? ts.getPreEmitDiagnostics(program)
+      : program.getSemanticDiagnostics();
 
-      let diagnostics = parsedConfig.options.declaration
-        ? ts.getPreEmitDiagnostics(program)
-        : program.getSemanticDiagnostics();
-
-      if (parsedConfig.options.declaration) {
-        diagnostics = diagnostics.concat(program.emit(undefined, undefined, undefined, true).diagnostics);
-      }
-      else {
-        diagnostics = diagnostics.concat(program.getSyntacticDiagnostics());
-      }
-
-      for (const diagnostic of diagnostics) {
-        printDiagnostic(diagnostic);
-      }
-
-      await Promise.all(promiseList);
+    if (parsedConfig.options.declaration) {
+      diagnostics = diagnostics.concat(program.emit(undefined, undefined, undefined, true).diagnostics);
     }
-    catch (err) {
-      sendMessage({
-        type: "error",
-        message: err.stack
+    else {
+      diagnostics = diagnostics.concat(program.getSyntacticDiagnostics());
+    }
+
+    for (const diagnostic of diagnostics) {
+      printDiagnostic(diagnostic);
+    }
+
+    Promise.all(promiseList)
+      .then(() => {
+        sendMessage({
+          type: "finish"
+        });
+      })
+      .catch(err => {
+        sendMessage({
+          type: "error",
+          message: err.stack
+        });
       });
-    }
   }
 
   async function writeFileAsync(filePath, content) {

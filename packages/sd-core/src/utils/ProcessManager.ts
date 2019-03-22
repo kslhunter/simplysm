@@ -149,10 +149,9 @@ export class ProcessManager {
   }*/
 
   public static fork(modulePath: string, cmds: string[], opts?: { env?: ProcessEnv; cwd?: string; logger?: Logger }): childProcess.ChildProcess {
-    if (opts && opts.logger) {
+    /*if (opts && opts.logger) {
       opts.logger!.log(`$ node ${modulePath} ${cmds.join(" ")}`);
-    }
-
+    }*/
     return childProcess.fork(
       modulePath,
       cmds,
