@@ -5,7 +5,7 @@ import {DbConnection} from "@simplysm/sd-orm";
 import {IQueryDef} from "@simplysm/sd-orm-client";
 
 if (process.env.NODE_ENV !== "production") {
-  Logger.setGroupConfig("@simplysm/sd-orm-service", {
+  Logger.setGroupConfig("@simplysm/sd-orm", {
     consoleLogSeverities: ["info", "warn", "error"],
     fileLogSeverities: ["log"],
     outputPath: "logs"
@@ -13,7 +13,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export class SdOrmService extends SdWebSocketServiceBase {
-  private readonly _logger = new Logger("@simplysm/sd-orm-service", "SdOrmService");
+  private readonly _logger = new Logger("@simplysm/sd-service", "SdOrmService");
   private static readonly _connections = new Map<number, DbConnection>();
   private static readonly _wsConnectionCloseListenerMap = new Map<number, () => Promise<void>>();
 

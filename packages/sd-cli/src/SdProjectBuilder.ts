@@ -781,6 +781,9 @@ export class SdProjectBuilder {
           filename: "[name].js",
           libraryTarget: "umd"
         },
+        optimization: {
+          nodeEnv: false
+        },
         module: {
           rules: [
             {

@@ -4,7 +4,7 @@ import {SdWebSocketServiceBase} from "../SdWebSocketServiceBase";
 import {ISmtpClientSendOption} from "@simplysm/sd-smtp-client-common";
 
 export class SdSmtpClientService extends SdWebSocketServiceBase {
-  private readonly _logger = new Logger("@simplysm/sd-smtp-client-service", "SdSmtpClientService");
+  private readonly _logger = new Logger("@simplysm/sd-service", "SdSmtpClientService");
 
   public async sendAsync(options: ISmtpClientSendOption): Promise<number> {
     return new Promise<number>((resolve, reject) => {

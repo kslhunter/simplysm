@@ -4,7 +4,7 @@ import {EventEmitter} from "events";
 import {IDbConnectionConfig, IQueryDef, QueryBuilder} from "@simplysm/sd-orm-client";
 
 export class DbConnection extends EventEmitter {
-  private readonly _logger = new Logger("@simplysm/sd-orm-service", "DbConnection");
+  private readonly _logger = new Logger("@simplysm/sd-orm", "DbConnection");
 
   private _conn?: tedious.Connection;
   public isConnected = false;
