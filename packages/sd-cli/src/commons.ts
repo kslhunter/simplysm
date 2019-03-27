@@ -30,12 +30,12 @@ export interface ISdPackageConfig {
 }
 
 export interface ISdPublishConfig {
-  protocol?: "npm" | "ftp" | "WebDAV" | "simplysm";
+  protocol?: "npm" | /*"ftp" | "WebDAV" | */"simplysm";
   host?: string;
   port?: number;
-  username?: string;
-  password?: string;
-  path?: string;
+  // username?: string;
+  // password?: string;
+  // path?: string;
 }
 
 

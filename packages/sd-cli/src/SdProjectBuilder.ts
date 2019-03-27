@@ -60,8 +60,8 @@ export class SdProjectBuilder {
       if (this.config.packages[packageKey].type === "none") return;
       await Promise.all([
         SdProjectBuilder._createTsConfigForBuildFileAsync(packageKey),
-        this._generatePackageIndexFileAsync(packageKey, true),
-        fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"))
+        fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist")),
+        this._generatePackageIndexFileAsync(packageKey, true)
       ]);
     });
 

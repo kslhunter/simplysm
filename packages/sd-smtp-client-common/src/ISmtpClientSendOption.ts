@@ -18,3 +18,12 @@ export interface ISmtpClientSendAttachment {
   filename: string;
   content: Buffer;
 }
+
+export interface ISmtpClientSendDefaultOption {
+  to: string;
+  cc?: string;
+  bcc?: string;
+  subject: string;
+  html: string;
+  attachments?: ISmtpClientSendAttachment[];
+}
