@@ -115,11 +115,12 @@ export class Queryable<T extends object> {
     return result;
   }
 
+  public include<A extends string, J>(target: string, depth: number): Queryable<T>;
   public include<A extends string, J>(targetFwd: (entity: NonNullable<T>) => (J | J[] | undefined)): Queryable<T>;
   public include<A extends string, J, S extends boolean>(targetFwd: (entity: NonNullable<T>) => (J | J[] | undefined), as?: A, fwd?: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<J>, isSingle?: S): Queryable<T & { [K in A]?: (S extends true ? J : J[]) }>;
-  public include<A extends string, J, S extends boolean>(targetFwd: (entity: NonNullable<T>) => (J | J[] | undefined), as?: A, fwd?: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<J>, isSingle?: S): Queryable<T & { [K in A]?: (S extends true ? J : J[]) }> {
+  public include<A extends string, J, S extends boolean>(targetOrFwd: ((entity: NonNullable<T>) => (J | J[] | undefined)) | string, asOrDepth?: A | number, fwd?: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<J>, isSingle?: S): Queryable<T & { [K in A]?: (S extends true ? J : J[]) }> {
     const result = this._clone();
-    result._qba = this._qba.include(targetFwd, as, fwd, isSingle);
+    result._qba = this._qba.include(targetOrFwd, asOrDepth, fwd, isSingle);
     return result;
   }
 

@@ -288,13 +288,28 @@ export class QueryBuilderAdv<T> {
     return result as any;
   }
 
-  public include<A extends string, J, S extends boolean>(targetFwd: (entity: NonNullable<T>) => (J | J[] | undefined), as?: A, fwd?: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<J>, isSingle?: S): QueryBuilderAdv<T> {
-    const parsed = LambdaParser.parse(targetFwd);
-    const itemParamName = parsed.params[0];
-    const targetTableChainedName = parsed.returnContent
-      .replace(new RegExp(`${itemParamName}\\.`), "")
-      .replace(/\[0]/g, "")
-      .trim();
+  public include<A extends string, J, S extends boolean>(targetOrFwd: ((entity: NonNullable<T>) => (J | J[] | undefined)) | string, asOrDepth?: A | number, fwd?: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<J>, isSingle?: S): QueryBuilderAdv<T> {
+    let targetTableChainedName = "";
+
+    if (typeof asOrDepth === "number") {
+      if (asOrDepth) {
+        for (let i = 0; i < asOrDepth; i++) {
+          targetTableChainedName += (targetOrFwd as string) + ".";
+        }
+        targetTableChainedName = targetTableChainedName.slice(0, -1);
+      }
+      else {
+        return this._clone();
+      }
+    }
+    else {
+      const parsed = LambdaParser.parse(targetOrFwd as (entity: NonNullable<T>) => (J | J[] | undefined));
+      const itemParamName = parsed.params[0];
+      targetTableChainedName = parsed.returnContent
+        .replace(new RegExp(`${itemParamName}\\.`), "")
+        .replace(/\[0]/g, "")
+        .trim();
+    }
 
     const fkOrFktDef = this._getFkOrFktDef(targetTableChainedName);
     if (!fkOrFktDef) {
@@ -371,7 +386,7 @@ export class QueryBuilderAdv<T> {
 
     return this.join(
       joinTableType,
-      as || targetTableChainedName,
+      (typeof asOrDepth !== "number" && asOrDepth) ? asOrDepth : targetTableChainedName,
       (qr, en) => {
         let result = qr.where(item => {
           const whereQuery = [];

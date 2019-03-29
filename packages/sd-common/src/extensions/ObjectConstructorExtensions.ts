@@ -24,6 +24,8 @@ declare global {
     validatesArray<T, K extends keyof T>(arr: T[], displayName: string, def: ((item: T) => { [P in K]: IValidateDef })): void;
 
     validatesArray<T, K extends keyof T>(arr: T[], displayName: string, def: { [P in K]: IValidateDef }): void;
+
+    getFromChain<T, K extends keyof T>(item: T, key: K, depth: number): NonNullable<T[K]>;
   }
 }
 
@@ -230,4 +232,12 @@ Object.validatesArray = function (arr: any[], displayName: string, def: { [prope
   if (errorMessages.length > 0) {
     throw new Error("입력값이 잘못되었습니다.\n" + errorMessages.join("\n"));
   }
+};
+
+Object.getFromChain = function (item: any, key: any, depth: number): any {
+  let result = Object.clone(item);
+  for (let i = 0; i < depth; i++) {
+    result = result[key];
+  }
+  return result;
 };
