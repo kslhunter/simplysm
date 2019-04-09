@@ -57,9 +57,15 @@ export class SocketClient {
     });
   }
 
-  public async addEventListenerAsync(eventName: string, info: any, cb: (data: any) => Promise<void> | void): Promise<void> {
+  public async addEventListenerAsync(eventName: string, info: any, cb: (data: any) => Promise<void> | void): Promise<number> {
     const id = await this.sendAsync("addEventListener", [eventName, info]);
     this._eventListeners.set(id, cb);
+    return id;
+  }
+
+  public async removeEventListenerAsync(id: number): Promise<void> {
+    await this.sendAsync("removeEventListener", [id]);
+    this._eventListeners.delete(id);
   }
 
   public async emitEventAsync(eventName: string, infoSelector: (item: any) => boolean, data: any): Promise<void> {

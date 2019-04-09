@@ -124,6 +124,15 @@ export class SocketServer {
     }
   }
 
+  public getEventListeners(eventName: string): { id: number; info: object }[] {
+    return this._eventListeners
+      .filter(item => item.eventName === eventName)
+      .map(item => ({
+        id: item.id,
+        info: item.info
+      }));
+  }
+
   private _socketConnectionHandler(socket: WebSocket, req: http.IncomingMessage): void {
     this._logger.log("연결: " + req.connection.remoteAddress);
 
@@ -192,18 +201,22 @@ export class SocketServer {
             body: eventListenerId
           };
         }
+        else if (request.command === "removeEventListener") {
+          const eventListenerId: number = request.params[0];
+          this._eventListeners.remove(item => item.id === eventListenerId);
+
+          response = {
+            requestId: request.id,
+            type: "response"
+          };
+        }
         else if (request.command === "getEventListeners") {
           const eventName = request.params[0];
 
           response = {
             requestId: request.id,
             type: "response",
-            body: this._eventListeners
-              .filter(item => item.eventName === eventName)
-              .map(item => ({
-                id: item.id,
-                info: item.info
-              }))
+            body: this.getEventListeners(eventName)
           };
         }
         else if (request.command === "emitEvent") {

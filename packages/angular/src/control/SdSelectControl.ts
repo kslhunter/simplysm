@@ -20,7 +20,7 @@ import {SdDropdownControl} from "./SdDropdownControl";
   selector: "sd-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-dropdown #dropdown [disabled]="disabled">
+    <sd-dropdown #dropdown [disabled]="disabled" (open)="open.emit()">
       <div class="_sd-select-content" [innerHTML]="getContentHtml()"></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">
@@ -59,6 +59,9 @@ export class SdSelectControl {
 
   @ContentChildren(SdSelectItemControl, {descendants: true})
   public itemControls?: QueryList<SdSelectItemControl>;
+
+  @Output()
+  public readonly open = new EventEmitter();
 
   @ViewChild("dropdown")
   public dropdownControl?: SdDropdownControl;

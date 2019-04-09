@@ -28,13 +28,13 @@ export class SdSocketProvider implements OnDestroy {
     await this.socket.closeAsync();
   }
 
-  public on<T extends SocketEventBase<any, any>>(eventType: Type<T>, info: T["info"], cb: (data: T["data"]) => Promise<void> | void): void {
+  public async addEventListenerAsync<T extends SocketEventBase<any, any>>(eventType: Type<T>, info: T["info"], cb: (data: T["data"]) => Promise<void> | void): Promise<number> {
     // tslint:disable-next-line:no-floating-promises
-    this.socket.addEventListenerAsync(eventType.name, info, cb)
-      .catch(err => {
-        this._logger.error(err);
-        throw err;
-      });
+    return await this.socket.addEventListenerAsync(eventType.name, info, cb);
+  }
+
+  public async removeEventListenerAsync(id: number): Promise<void> {
+    await this.socket.removeEventListenerAsync(id);
   }
 
   public emit<T extends SocketEventBase<any, any>>(eventType: Type<T>, infoSelector: (item: T["info"]) => boolean, data: T["data"]): void {

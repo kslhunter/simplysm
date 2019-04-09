@@ -11,6 +11,7 @@ import * as webpackMerge from "webpack-merge";
 //import {TsLintPlugin} from "../plugins/TsLintPlugin";
 import {TsCheckAndDeclarationPlugin} from "../plugins/TsCheckAndDeclarationPlugin";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
+import * as nodeExternals from "webpack-node-externals";
 
 export class ServerPackageBuilder {
   private readonly _logger = new Logger("@simplism/cli", `${this._config.name}:`);
@@ -238,7 +239,8 @@ export class ServerPackageBuilder {
           packageName: this._packageName,
           logger: this._logger
         })
-      ]
+      ],
+      externals: [nodeExternals()]
     };
 
     const packageJson = fs.readJsonSync(this._packagePath("package.json"));
