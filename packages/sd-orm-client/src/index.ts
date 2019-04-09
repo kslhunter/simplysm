@@ -1,6 +1,4 @@
-import "core-js/es7/reflect";
 import "@simplysm/sd-common";
-
 export * from "./commons";
 export * from "./DbContext";
 export * from "./decorators";
