@@ -16,7 +16,7 @@ import {SdWebSocketClient} from "@simplysm/sd-service-client";
 import {SdWebpackWriteFilePlugin} from "./SdWebpackWriteFilePlugin";
 import {RequestHandler} from "express";
 import * as nodeExternals from "webpack-node-externals";
-import * as os from "os";
+// import * as os from "os";
 import {SdWebpackTimeFixPlugin} from "./SdWebpackTimeFixPlugin";
 import * as child_process from "child_process";
 
@@ -60,8 +60,8 @@ export class SdProjectBuilder {
       if (this.config.packages[packageKey].type === "none") return;
       await Promise.all([
         SdProjectBuilder._createTsConfigForBuildFileAsync(packageKey),
-        fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist")),
-        this._generatePackageIndexFileAsync(packageKey, true)
+        fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"))/*,
+        this._generatePackageIndexFileAsync(packageKey, true)*/
       ]);
     });
 
@@ -95,7 +95,7 @@ export class SdProjectBuilder {
       if (this.config.packages[packageKey].type === "none") return;
       await Promise.all([
         SdProjectBuilder._createTsConfigForBuildFileAsync(packageKey),
-        this._generatePackageIndexFileAsync(packageKey, true),
+        // this._generatePackageIndexFileAsync(packageKey, true),
         fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"))
       ]);
     });
@@ -693,7 +693,7 @@ export class SdProjectBuilder {
     });
   }
 
-  private async _generatePackageIndexFileAsync(packageKey: string, watch?: boolean): Promise<void> {
+  /*private async _generatePackageIndexFileAsync(packageKey: string, watch?: boolean): Promise<void> {
     const writeAsync = async () => {
       let result = "";
 
@@ -727,7 +727,7 @@ export class SdProjectBuilder {
       }
 
       const matches: string[] = await new Promise<string[]>((resolve, reject) => {
-        glob(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/**/*.ts"), (err, globResult) => {
+        glob(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/!**!/!*.ts"), (err, globResult) => {
           if (err) {
             reject(err);
             return;
@@ -756,7 +756,7 @@ export class SdProjectBuilder {
     await writeAsync();
 
     if (watch) {
-      await FileWatcher.watch(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/!**/!*.ts"), ["add", "unlink"], async () => {
+      await FileWatcher.watch(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/!**!/!*.ts"), ["add", "unlink"], async () => {
         try {
           await writeAsync();
         }
@@ -765,8 +765,7 @@ export class SdProjectBuilder {
         }
       });
     }
-  }
-
+  }*/
 
   private async _getWebpackConfigAsync(packageKey: string, mode: "production" | "development"): Promise<webpack.Configuration> {
     const packageConfig = this.config.packages[packageKey];
