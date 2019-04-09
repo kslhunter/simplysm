@@ -240,9 +240,14 @@ export class SdProjectBuilder {
             });
           });
 
+          filePaths.push(SdProjectBuilderUtil.getPackagesPath("package.json"));
+
           const uploadFileInfos: { total: number; current: number; filePath: string; targetPath: string }[] = [];
           await Promise.all(filePaths.map(async filePath => {
-            const relativeFilePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"), filePath);
+            let relativeFilePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"), filePath);
+            if (/^\.\.[\\/]package\.json$/.test(relativeFilePath)) {
+              relativeFilePath = "package.json";
+            }
 
             const targetPath = packageConfig.type === "server"
               ? path.join("/", relativeFilePath)
@@ -270,6 +275,8 @@ export class SdProjectBuilder {
               packageLogger.log(`파일 업로드 : (${(Math.floor(current * 10000 / total) / 100).toFixed(2).padStart(6, " ")}%) ${current.toLocaleString()} / ${total.toLocaleString()}`);
             }, 1000000);
           }));
+
+          await wsClient.execAsync("yarn install");
         }
         else {
           throw new Error("미구현 (publish)");
@@ -628,6 +635,12 @@ export class SdProjectBuilder {
           }
         }
         else {
+          if (packageConfig.type === "server") {
+            const packageDistConfigsFilePath = SdProjectBuilderUtil.getPackagesPath(packageKey, "dist", "configs.json");
+            await fs.mkdirs(path.dirname(packageDistConfigsFilePath));
+            await fs.writeJson(packageDistConfigsFilePath, packageConfig.configs);
+          }
+
           const webpackConfig: webpack.Configuration = await this._getWebpackConfigAsync(packageKey, "development");
           const compiler = webpack(webpackConfig);
           compiler.watch({aggregateTimeout: 600}, async err => {
@@ -860,6 +873,17 @@ export class SdProjectBuilder {
               })
             ]
             : []
+        ],
+        externals: [
+          (context, request, callback) => {
+            if (packageConfig.type !== "server" && alias[request]) {
+              callback(undefined, `commonjs ${request}`);
+              return;
+            }
+
+            callback(undefined, undefined);
+          },
+          nodeExternals()
         ]
       });
 
@@ -883,14 +907,21 @@ export class SdProjectBuilder {
       if (packageConfig.type === "server") {
         webpackConfig = webpackMerge(webpackConfig, {
           plugins: [
-            new webpack.NormalModuleReplacementPlugin(
+            /*new webpack.NormalModuleReplacementPlugin(
               /^\.\/view$/,
               (resource: any) => {
                 if (resource.context.endsWith("express\\lib")) {
                   resource.request = path.resolve(__dirname, "..", "lib", "express-view.js");
                 }
               }
-            )
+            ),*/
+            new SdWebpackWriteFilePlugin({
+              logger: new Logger("@simplysm/sd-cli", packageKey),
+              files: [{
+                path: SdProjectBuilderUtil.getPackagesPath(packageKey, "dist", "configs.json"),
+                content: JSON.stringify(packageConfig.configs, undefined, 2)
+              }]
+            })
           ]
         });
 
@@ -918,7 +949,7 @@ export class SdProjectBuilder {
           });
         }
       }
-      else {
+      /*else {
         webpackConfig = webpackMerge(webpackConfig, {
           externals: [
             (context, request, callback) => {
@@ -932,7 +963,7 @@ export class SdProjectBuilder {
             nodeExternals()
           ]
         });
-      }
+      }*/
     }
     else {
       webpackConfig = webpackMerge(webpackConfig, {

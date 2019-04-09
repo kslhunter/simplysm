@@ -13,6 +13,9 @@
     "plugins": [
       {
         "name": "typescript-tslint-plugin"
+      },
+      {
+        "name": "@angular/language-service"
       }
     ],
     "typeRoots": [

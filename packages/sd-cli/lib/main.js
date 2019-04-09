@@ -1,4 +1,3 @@
-require("core-js/es7/reflect");
 require("zone.js/dist/zone");
 
 const AppModule = require("SIMPLYSM_CLIENT_APP_MODULE").AppModule;

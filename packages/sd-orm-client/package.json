@@ -8,6 +8,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-common": "1.1.21"
+    "@simplysm/sd-common": "1.1.21",
+    "core-js": "~2.6.5"
   }
 }

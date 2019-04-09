@@ -109,7 +109,7 @@ import {optional} from "@simplysm/sd-common";
                   [style.width.px]="getWidth(columnControl)" tabindex="0"
                   (keydown)="onCellKeydown($event)">
                   <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                               [ngTemplateOutletContext]="{item: item}"></ng-template>
+                               [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
                   <div class="_focus-indicator"></div>
                 </div>
               </div>

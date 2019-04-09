@@ -215,6 +215,39 @@ export class SdWebSocketClient {
     });
   }
 
+  public async execAsync(cmd: string): Promise<void> {
+    return await new Promise<any>(async (resolve, reject) => {
+      try {
+
+        if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
+          try {
+            await Wait.true(() => !!this._ws && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
+          }
+          catch (err) {
+            throw new Error("웹 소켓이 연결되어있지 않습니다.");
+          }
+        }
+
+        const requestId = this._lastRequestId++;
+        this._reqMap.set(requestId, async response => {
+          if (response.type === "error") {
+            this._reqMap.delete(requestId);
+            reject(new Error(response.body));
+          }
+          else {
+            this._reqMap.delete(requestId);
+            resolve(response.body);
+          }
+        });
+
+        this._ws!.send(`!exec(${requestId})!${cmd}`);
+      }
+      catch (err) {
+        reject(err);
+      }
+    });
+  }
+
   public async sendAsync(command: string, params: any[], sendProgressCallback?: (progress: { current: number; total: number }) => void, splitLength: number = 10000): Promise<any> {
     return await new Promise<any>(async (resolve, reject) => {
       if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {

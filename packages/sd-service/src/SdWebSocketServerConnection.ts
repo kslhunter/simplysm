@@ -6,6 +6,7 @@ import {ISdWebSocketEmitResponse, ISdWebSocketRequest, ISdWebSocketResponse} fro
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as crypto from "crypto";
+import {ProcessManager} from "@simplysm/sd-core";
 
 export class SdWebSocketServerConnection extends EventEmitter {
   private readonly _logger = new Logger("@simplysm/sd-service", "SdWebSocketServerConnection");
@@ -65,6 +66,7 @@ export class SdWebSocketServerConnection extends EventEmitter {
     const splitRegexp = /^!split\(([0-9]*),([0-9]*),([0-9]*)\)!(.*)/;
     const checkMd5Regexp = /^!checkMd5\(([0-9]*),([^,]*)\)!(.*)/;
     const uploadRegexp = /^!upload\(([0-9]*),([^,]*),([0-9]*),([0-9]*)\)!(.*)/;
+    const execRegexp = /^!upload\(([0-9]*)\)!(.*)/;
 
     // 부분 요청 합치
     if (splitRegexp.test(msg)) {
@@ -223,6 +225,20 @@ export class SdWebSocketServerConnection extends EventEmitter {
       clearTimeout(uploadRequestValue.timer);
       fs.closeSync(uploadRequestValue.fd);
       this._uploadRequestMap.delete(requestId);
+
+      const endRes: ISdWebSocketResponse = {
+        requestId,
+        type: "response"
+      };
+      await this.sendAsync(endRes);
+      return;
+    }
+    else if (execRegexp.test(msg)) {
+      const match = msg.match(uploadRegexp)!;
+      const requestId = Number(match[1]);
+      const cmd = match[2];
+
+      await ProcessManager.spawnAsync(cmd.split(" "), {logger: this._logger});
 
       const endRes: ISdWebSocketResponse = {
         requestId,

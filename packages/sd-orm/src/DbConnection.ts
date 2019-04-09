@@ -1,5 +1,5 @@
 import * as tedious from "tedious";
-import {Logger, Wait} from "@simplysm/sd-common";
+import {DateOnly, DateTime, Logger, Time, Wait} from "@simplysm/sd-common";
 import {EventEmitter} from "events";
 import {IDbConnectionConfig, IQueryDef, QueryBuilder} from "@simplysm/sd-orm-client";
 
@@ -250,5 +250,99 @@ export class DbConnection extends EventEmitter {
     if (this._connTimeout) {
       clearTimeout(this._connTimeout);
     }
+  }
+
+  public generateResult(arr: any[] | undefined, colDefs: { name: string; dataType: string | undefined }[], joinDefs: { as: string; isSingle: boolean }[]): any[] {
+    if (!arr) return [];
+
+    let result: any[] = arr;
+
+    for (const item of result) {
+      for (const key of Object.keys(item)) {
+        const colDef = colDefs.single(item1 => item1.name === key)!;
+        if (item[key] && colDef.dataType === "DateTime") {
+          item[key] = DateTime.parse(item[key]);
+        }
+        else if (item[key] && colDef.dataType === "DateOnly") {
+          item[key] = DateOnly.parse(item[key]);
+        }
+        else if (item[key] && colDef.dataType === "Time") {
+          item[key] = Time.parse(item[key]);
+        }
+      }
+    }
+
+    for (const joinDef of joinDefs) {
+      const grouped: { key: any; values: any[] }[] = [];
+      for (const item of result) {
+        const keys = Object.keys(item)
+          .filter(key => !key.startsWith(joinDef.as + "."));
+
+        const valueKeys = Object.keys(item)
+          .filter(valueKey => valueKey.startsWith(joinDef.as + "."))
+          .distinct();
+
+        const keyObj = {};
+        for (const key of keys) {
+          keyObj[key] = item[key];
+        }
+
+        const valueObj = {};
+        for (const valueKey of valueKeys) {
+          valueObj[valueKey.slice(joinDef.as.length + 1)] = item[valueKey];
+        }
+
+        const exists = grouped.single(g => Object.equal(g.key, keyObj));
+        if (exists) {
+          exists.values.push(valueObj);
+        }
+        else {
+          grouped.push({
+            key: keyObj,
+            values: [valueObj]
+          });
+        }
+      }
+
+      result = grouped.map(item => ({
+        ...item.key,
+        [joinDef.as]: item.values
+      }));
+
+      if (joinDef.isSingle) {
+        result = result.map(item => ({
+          ...item,
+          [joinDef.as]: item[joinDef.as][0]
+        }));
+      }
+    }
+
+    const clearEmpty = (item: any) => {
+      if (item instanceof DateTime || item instanceof DateOnly || item instanceof Time) {
+        return item;
+      }
+      if (item instanceof Array) {
+        for (let i = 0; i < item.length; i++) {
+          item[i] = clearEmpty(item[i]);
+        }
+
+        if (item.every(itemItem => itemItem == undefined)) {
+          return undefined;
+        }
+      }
+      else if (item instanceof Object) {
+        for (const key of Object.keys(item)) {
+          item[key] = clearEmpty(item[key]);
+        }
+
+        if (Object.keys(item).every(key => item[key] == undefined)) {
+          return undefined;
+        }
+      }
+
+      return item;
+    };
+
+    return clearEmpty(result) || [];
   }
 }

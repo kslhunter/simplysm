@@ -9,6 +9,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplysm/sd-common": "1.1.21",
+    "@simplysm/sd-core": "1.1.21",
     "@simplysm/sd-orm": "1.1.21",
     "@simplysm/sd-orm-client": "1.1.21",
     "@simplysm/sd-service-client": "1.1.21",

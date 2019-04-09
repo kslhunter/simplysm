@@ -78,19 +78,19 @@ export const sorm = {
       this.notEqual(source, "")
     ]);
   },
-  lessThen<T extends number | DateOnly | DateTime>(source: T, target: T): boolean {
+  lessThen<T extends number | DateOnly | DateTime>(source: T | undefined, target: T | undefined): boolean {
     return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " < " + QueryHelper.getFieldQuery(target)) as any;
   },
-  lessThenOrEqual<T extends number | DateOnly | DateTime>(source: T, target: T): boolean {
+  lessThenOrEqual<T extends number | DateOnly | DateTime>(source: T | undefined, target: T | undefined): boolean {
     return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " <= " + QueryHelper.getFieldQuery(target)) as any;
   },
-  greaterThen<T extends number | DateOnly | DateTime>(source: T, target: T): boolean {
+  greaterThen<T extends number | DateOnly | DateTime>(source: T | undefined, target: T | undefined): boolean {
     return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " > " + QueryHelper.getFieldQuery(target)) as any;
   },
-  greaterThenOrEqual<T extends number | DateOnly | DateTime>(source: T, target: T): boolean {
+  greaterThenOrEqual<T extends number | DateOnly | DateTime>(source: T | undefined, target: T | undefined): boolean {
     return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " >= " + QueryHelper.getFieldQuery(target)) as any;
   },
-  between<T extends number | DateOnly | DateTime>(source: T, from: T | undefined, to: T | undefined): boolean {
+  between<T extends number | DateOnly | DateTime>(source: T | undefined, from: T | undefined, to: T | undefined): boolean {
     const result: boolean[] = [];
     if (from) {
       result.push(this.greaterThenOrEqual(source, from));
