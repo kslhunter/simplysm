@@ -139,7 +139,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     this.close.emit();
   }
 
-  public scrollEventHandler = (event: UIEvent) => {
+  public scrollEventHandler = (event: Event) => {
     if (this._el.findParent(event.target as HTMLElement)) {
       if (window.innerHeight < this._controlEl.windowOffset.top * 2) {
         Object.assign(

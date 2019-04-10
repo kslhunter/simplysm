@@ -239,6 +239,8 @@ export class SdMarkdownEditorControl implements ISdNotifyPropertyChange {
   }
 
   public async onTextareaPaste(event: ClipboardEvent): Promise<void> {
+    if (!event.clipboardData) return;
+
     const files = Array.from(event.clipboardData.items)
       .filter(item => item.kind === "file")
       .map(item => item.getAsFile())

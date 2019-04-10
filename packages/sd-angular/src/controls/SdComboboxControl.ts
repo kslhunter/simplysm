@@ -197,7 +197,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     this.close.emit();
   }
 
-  public scrollEventHandler = (event: UIEvent) => {
+  public scrollEventHandler = (event: Event) => {
     const textfieldEl = this.textfieldElRef!.nativeElement;
     const dropdownEl = this.dropdownElRef!.nativeElement;
 
