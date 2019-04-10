@@ -157,7 +157,7 @@ export class QueryBuilder {
     const newAdObj = {};
     if (additionalInsertObj) {
       for (const key of Object.keys(additionalInsertObj)) {
-        newAdObj[key] = QueryHelper.getFieldQuery(obj[key]);
+        newAdObj[key] = QueryHelper.getFieldQuery(additionalInsertObj[key]);
       }
     }
 

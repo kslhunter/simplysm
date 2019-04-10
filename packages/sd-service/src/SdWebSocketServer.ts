@@ -122,6 +122,8 @@ export class SdWebSocketServer extends EventEmitter {
       });
 
       this._httpServer.listen(this.port, () => {
+        this.emit("ready");
+
         this._httpServer!.on("connection", conn => {
           this._httpConnections.push(conn);
 
