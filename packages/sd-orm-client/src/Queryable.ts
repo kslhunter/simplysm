@@ -207,11 +207,11 @@ export class Queryable<T extends object> {
   }
 
   public async upsertAsync(fwd: (item: T) => Partial<T>, additionalInsertObj: Partial<T>): Promise<T>;
-  public async upsertAsync(obj: Partial<T>, additionalInsertObj: Partial<T>): Promise<T>;
+  public async upsertAsync(obj: Partial<T> | undefined, additionalInsertObj: Partial<T>): Promise<T>;
   public async upsertAsync(fwd: (item: T) => T): Promise<T>;
   public async upsertAsync(obj: T): Promise<T>;
-  public async upsertAsync(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T>;
-  public async upsertAsync(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T> {
+  public async upsertAsync(arg: (T | Partial<T> | undefined) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T>;
+  public async upsertAsync(arg: (T | Partial<T> | undefined) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T> {
     Queryable._selectQueryHistory.clear();
 
     const obj: object = typeof arg === "function" ? (arg as any)(this._qba.entity) : arg;

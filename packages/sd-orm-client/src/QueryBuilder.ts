@@ -145,14 +145,9 @@ export class QueryBuilder {
     return result;
   }
 
-  public upsert(obj: { [key: string]: string }, additionalInsertObj?: { [key: string]: any }): QueryBuilder {
+  public upsert(obj: { [key: string]: string } | undefined, additionalInsertObj?: { [key: string]: any }): QueryBuilder {
     const result: QueryBuilder = this.clone();
     result.def.type = "upsert";
-
-    const newObj = {};
-    for (const key of Object.keys(obj)) {
-      newObj[key] = QueryHelper.getFieldQuery(obj[key]);
-    }
 
     const newAdObj = {};
     if (additionalInsertObj) {
@@ -161,9 +156,17 @@ export class QueryBuilder {
       }
     }
 
-    result.def.update = newObj;
+    if (obj) {
+      const newObj = {};
+      for (const key of Object.keys(obj)) {
+        newObj[key] = QueryHelper.getFieldQuery(obj[key]);
+      }
+
+      result.def.update = newObj;
+    }
+
     result.def.insert = {
-      ...newObj,
+      ...result.def.update,
       ...newAdObj
     };
     return result;
@@ -314,9 +317,13 @@ export class QueryBuilder {
     let query: string = "MERGE " + this.def.from + (this.def.as ? " AS " + this.def.as : "") + "\n";
     query += "USING (SELECT 0 as _using) AS _using\n";
     query += "ON (" + this.def.where.join(")\n  AND (") + ")\n";
-    query += "WHEN MATCHED THEN\n";
-    query += "  UPDATE SET\n";
-    query += Object.keys(this.def.update!).map(key => "    " + key + " = " + this.def.update![key]).join(",\n") + "\n";
+
+    if (this.def.update) {
+      query += "WHEN MATCHED THEN\n";
+      query += "  UPDATE SET\n";
+      query += Object.keys(this.def.update!).map(key => "    " + key + " = " + this.def.update![key]).join(",\n") + "\n";
+    }
+
     query += "WHEN NOT MATCHED THEN\n";
     query += "  INSERT (" + Object.keys(this.def.insert!).join(", ") + ")\n";
     query += "  VALUES (" + Object.keys(this.def.insert!).map(key => this.def.insert![key]).join(", ") + ")\n";

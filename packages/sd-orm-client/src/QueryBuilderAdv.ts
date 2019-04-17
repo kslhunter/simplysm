@@ -447,17 +447,19 @@ export class QueryBuilderAdv<T> {
   }
 
   public upsert(fwd: (item: T) => Partial<T>, additionalInsertObj: Partial<T>): QueryBuilderAdv<T>;
-  public upsert(obj: Partial<T>, additionalInsertObj: Partial<T>): QueryBuilderAdv<T>;
+  public upsert(obj: Partial<T> | undefined, additionalInsertObj: Partial<T>): QueryBuilderAdv<T>;
   public upsert(fwd: (item: T) => T): QueryBuilderAdv<T>;
   public upsert(obj: T): QueryBuilderAdv<T>;
-  public upsert(arg: Partial<T> | ((item: T) => Partial<T>), additionalInsertObj?: Partial<T>): QueryBuilderAdv<T>;
-  public upsert(arg: Partial<T> | ((item: T) => Partial<T>), additionalInsertObj?: Partial<T>): QueryBuilderAdv<T> {
+  public upsert(arg: Partial<T> | undefined | ((item: T) => Partial<T>), additionalInsertObj?: Partial<T>): QueryBuilderAdv<T>;
+  public upsert(arg: Partial<T> | undefined | ((item: T) => Partial<T>), additionalInsertObj?: Partial<T>): QueryBuilderAdv<T> {
     const result = this._clone();
 
     const obj = typeof arg === "function" ? arg(result.entity) : arg;
-    const upsert = {};
-    for (const upsertKey of Object.keys(obj)) {
-      upsert[`[${upsertKey}]`] = obj[upsertKey];
+    const upsert = obj ? {} : undefined;
+    if (obj) {
+      for (const upsertKey of Object.keys(obj)) {
+        upsert![`[${upsertKey}]`] = obj[upsertKey];
+      }
     }
 
     let additionalInsert: { [key: string]: string } | undefined;
