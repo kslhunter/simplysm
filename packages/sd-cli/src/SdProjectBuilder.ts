@@ -63,10 +63,8 @@ export class SdProjectBuilder {
       if (this.config.packages[packageKey].type === "none") return;
       await Promise.all([
         SdProjectBuilder._createTsConfigForBuildFileAsync(packageKey),
-        fs.remove(
-          SdProjectBuilderUtil.getPackagesPath(packageKey, "dist")
-        ) /*,
-        this._generatePackageIndexFileAsync(packageKey, true)*/
+        fs.remove(SdProjectBuilderUtil.getPackagesPath(packageKey, "dist"))
+        /*, this._generatePackageIndexFileAsync(packageKey, true)*/
       ]);
     });
 
@@ -750,78 +748,78 @@ export class SdProjectBuilder {
   }
 
   /*private async _generatePackageIndexFileAsync(packageKey: string, watch?: boolean): Promise<void> {
-    const writeAsync = async () => {
-      let result = "";
+        const writeAsync = async () => {
+          let result = "";
 
-      const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
-      if (!npmConfig.main) return;
+          const npmConfig = await SdProjectBuilderUtil.readNpmConfigAsync(packageKey);
+          if (!npmConfig.main) return;
 
-      const deps = {
-        ...npmConfig.dependencies,
-        ...npmConfig.devDependencies,
-        ...npmConfig.peerDependencies
-      };
+          const deps = {
+            ...npmConfig.dependencies,
+            ...npmConfig.devDependencies,
+            ...npmConfig.peerDependencies
+          };
 
-      const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
-      for (const depKey of Object.keys(deps)) {
-        if (depKey.startsWith(`@${projectNpmConfig.name}/`)) {
-          const depIndexFilePath = SdProjectBuilderUtil.getPackagesPath(`${depKey.substr(`@${projectNpmConfig.name}/`.length)}`, "src/index.ts");
-          const depIndexFileContent = await fs.readFile(depIndexFilePath);
-          if (depIndexFileContent.includes(`import ".`)) {
-            result += `import "${depKey}";` + os.EOL;
-          }
-        }
-        else {
-          const depIndexFilePath = SdProjectBuilderUtil.getProjectPath("node_modules", depKey, "src", "index.ts");
-          if (await fs.pathExists(depIndexFilePath)) {
-            const depIndexFileContent = await fs.readFile(depIndexFilePath);
-            if (depIndexFileContent.includes(`import ".`)) {
-              result += `import "${depKey}";` + os.EOL;
+          const projectNpmConfig = await SdProjectBuilderUtil.readProjectNpmConfigAsync();
+          for (const depKey of Object.keys(deps)) {
+            if (depKey.startsWith(`@${projectNpmConfig.name}/`)) {
+              const depIndexFilePath = SdProjectBuilderUtil.getPackagesPath(`${depKey.substr(`@${projectNpmConfig.name}/`.length)}`, "src/index.ts");
+              const depIndexFileContent = await fs.readFile(depIndexFilePath);
+              if (depIndexFileContent.includes(`import ".`)) {
+                result += `import "${depKey}";` + os.EOL;
+              }
+            }
+            else {
+              const depIndexFilePath = SdProjectBuilderUtil.getProjectPath("node_modules", depKey, "src", "index.ts");
+              if (await fs.pathExists(depIndexFilePath)) {
+                const depIndexFileContent = await fs.readFile(depIndexFilePath);
+                if (depIndexFileContent.includes(`import ".`)) {
+                  result += `import "${depKey}";` + os.EOL;
+                }
+              }
             }
           }
-        }
-      }
 
-      const matches: string[] = await new Promise<string[]>((resolve, reject) => {
-        glob(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/!**!/!*.ts"), (err, globResult) => {
-          if (err) {
-            reject(err);
-            return;
+          const matches: string[] = await new Promise<string[]>((resolve, reject) => {
+            glob(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/!**!/!*.ts"), (err, globResult) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+              resolve(globResult);
+            });
+          });
+
+          for (const match of matches) {
+            const relativePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "src"), match).replace(/\\/g, "/");
+            if (relativePath === "index.ts" || relativePath === "bin.ts") {
+              continue;
+            }
+
+            if (relativePath.includes("Extension")) {
+              result += `import "./${relativePath.replace(/\.ts/g, "")}";` + os.EOL;
+            }
+            else {
+              result += `export * from "./${relativePath.replace(/\.ts/g, "")}";` + os.EOL;
+            }
           }
-          resolve(globResult);
-        });
-      });
 
-      for (const match of matches) {
-        const relativePath = path.relative(SdProjectBuilderUtil.getPackagesPath(packageKey, "src"), match).replace(/\\/g, "/");
-        if (relativePath === "index.ts" || relativePath === "bin.ts") {
-          continue;
-        }
+          await fs.writeFile(SdProjectBuilderUtil.getPackagesPath(packageKey, "src", "index.ts"), result);
+        };
 
-        if (relativePath.includes("Extension")) {
-          result += `import "./${relativePath.replace(/\.ts/g, "")}";` + os.EOL;
-        }
-        else {
-          result += `export * from "./${relativePath.replace(/\.ts/g, "")}";` + os.EOL;
-        }
-      }
+        await writeAsync();
 
-      await fs.writeFile(SdProjectBuilderUtil.getPackagesPath(packageKey, "src", "index.ts"), result);
-    };
-
-    await writeAsync();
-
-    if (watch) {
-      await FileWatcher.watch(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/!**!/!*.ts"), ["add", "unlink"], async () => {
-        try {
-          await writeAsync();
+        if (watch) {
+          await FileWatcher.watch(SdProjectBuilderUtil.getPackagesPath(packageKey, "src/!**!/!*.ts"), ["add", "unlink"], async () => {
+            try {
+              await writeAsync();
+            }
+            catch (err) {
+              new Logger("@simplysm/sd-cli", packageKey).error(err);
+            }
+          });
         }
-        catch (err) {
-          new Logger("@simplysm/sd-cli", packageKey).error(err);
-        }
-      });
-    }
-  }*/
+      }*/
 
   private async _getWebpackConfigAsync(
     packageKey: string,
@@ -862,7 +860,8 @@ export class SdProjectBuilder {
           {
             enforce: "pre",
             test: /\.js$/,
-            use: ["source-map-loader"]
+            use: ["source-map-loader"],
+            exclude: /node_modules[\\/](?!@simplysm)/
           },
           {
             test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx)$/,
@@ -979,13 +978,13 @@ export class SdProjectBuilder {
         webpackConfig = webpackMerge(webpackConfig, {
           plugins: [
             /*new webpack.NormalModuleReplacementPlugin(
-              /^\.\/view$/,
-              (resource: any) => {
-                if (resource.context.endsWith("express\\lib")) {
-                  resource.request = path.resolve(__dirname, "..", "lib", "express-view.js");
-                }
-              }
-            ),*/
+                                      /^\.\/view$/,
+                                      (resource: any) => {
+                                        if (resource.context.endsWith("express\\lib")) {
+                                          resource.request = path.resolve(__dirname, "..", "lib", "express-view.js");
+                                        }
+                                      }
+                                    ),*/
             new SdWebpackWriteFilePlugin({
               logger: new Logger("@simplysm/sd-cli", packageKey),
               files: [
@@ -1026,20 +1025,20 @@ export class SdProjectBuilder {
         }
       }
       /*else {
-        webpackConfig = webpackMerge(webpackConfig, {
-          externals: [
-            (context, request, callback) => {
-              if (alias[request]) {
-                callback(undefined, `commonjs ${request}`);
-                return;
-              }
+                    webpackConfig = webpackMerge(webpackConfig, {
+                      externals: [
+                        (context, request, callback) => {
+                          if (alias[request]) {
+                            callback(undefined, `commonjs ${request}`);
+                            return;
+                          }
 
-              callback(undefined, undefined);
-            },
-            nodeExternals()
-          ]
-        });
-      }*/
+                          callback(undefined, undefined);
+                        },
+                        nodeExternals()
+                      ]
+                    });
+                  }*/
     } else {
       webpackConfig = webpackMerge(webpackConfig, {
         output: {
@@ -1179,10 +1178,10 @@ export class SdProjectBuilder {
   }
 
   /*private static _envStringify(param: { [key: string]: string | undefined }): { [key: string]: string } {
-    const result: { [key: string]: string } = {};
-    for (const key of Object.keys(param)) {
-      result[key] = param[key] === undefined ? "undefined" : JSON.stringify(param[key]);
-    }
-    return result;
-  }*/
+        const result: { [key: string]: string } = {};
+        for (const key of Object.keys(param)) {
+          result[key] = param[key] === undefined ? "undefined" : JSON.stringify(param[key]);
+        }
+        return result;
+      }*/
 }
