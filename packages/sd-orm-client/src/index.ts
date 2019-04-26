@@ -1,4 +1,4 @@
-import "core-js/es7/reflect";
+import "core-js/es/reflect";
 
 import "@simplysm/sd-common";
 

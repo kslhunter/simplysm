@@ -146,7 +146,7 @@
     "@types/node" "*"
     "@types/webpack" "*"
 
-"@types/core-js@^2.5.0":
+"@types/core-js@~2.5.0":
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/@types/core-js/-/core-js-2.5.0.tgz#35cc282488de6f10af1d92902899a3b8ca3fbc47"
   integrity sha512-qjkHL3wF0JMHMqgm/kmL8Pf8rIiqvueEiZ0g6NVTcBX1WN46GWDr+V5z+gsHUeL0n8TfAmXnYmF7ajsxmBp4PQ==
@@ -1476,10 +1476,10 @@ copy-webpack-plugin@^5.0.3:
     serialize-javascript "^1.7.0"
     webpack-log "^2.0.0"
 
-core-js@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.0.1.tgz#1343182634298f7f38622f95e73f54e48ddf4738"
-  integrity sha512-sco40rF+2KlE0ROMvydjkrVMMG1vYilP2ALoRXcYR4obqbYIuV3Bg+51GEDW+HF8n7NRA+iaA4qD0nD9lo9mew==
+core-js@~2.6.0:
+  version "2.6.5"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.5.tgz#44bc8d249e7fb2ff5d00e0341a7ffb94fbf67895"
+  integrity sha512-klh/kDpwX8hryYL14M9w/xei6vrv6sE8gTHDG7/T/+SEovB/G4ejwcfE/CBzO6Edsu+OETZMZ3wcX/EjUkrl5A==
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -6020,7 +6020,7 @@ yn@^3.0.0:
   resolved "https://registry.yarnpkg.com/yn/-/yn-3.1.0.tgz#fcbe2db63610361afcc5eb9e0ac91e976d046114"
   integrity sha512-kKfnnYkbTfrAdd0xICNFw7Atm8nKpLcLv9AZGEt+kczL/WQVai4e2V6ZN8U/O+iI6WrNuJjNNOyu4zfhl9D3Hg==
 
-zone.js@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/zone.js/-/zone.js-0.9.0.tgz#f42319d657f7616724ed40c5907d4614b4c683fa"
-  integrity sha512-EfygvVnLxPSCMSgJ4h7SoY+XNr7ybdwvvwEQ70lvMFl9coNnciXSyWi8Kg6znK1ubyUSffkCKvleSQpLuUKw0Q==
+zone.js@~0.8.29:
+  version "0.8.29"
+  resolved "https://registry.yarnpkg.com/zone.js/-/zone.js-0.8.29.tgz#8dce92aa0dd553b50bc5bfbb90af9986ad845a12"
+  integrity sha512-mla2acNCMkWXBD+c+yeUrBUrzOxYMNFdQ6FGfigGGtEVBPJx07BQeJekjt9DmH1FtZek4E9rE1eRR9qQpxACOQ==
