@@ -1,9 +1,8 @@
 import * as webpack from "webpack";
-import {Logger} from "@simplysm/sd-common";
+import { Logger } from "@simplysm/sd-common";
 
 export class SdWebpackWriteFilePlugin implements webpack.Plugin {
-  public constructor(private readonly _options: { logger: Logger; files: { path: string; content: string }[] }) {
-  }
+  public constructor(private readonly _options: { logger: Logger; files: { path: string; content: string }[] }) {}
 
   public apply(compiler: webpack.Compiler): void {
     compiler.hooks.afterEmit.tapAsync("SdWebpackWriteFilePlugin", async (compilation, callback) => {

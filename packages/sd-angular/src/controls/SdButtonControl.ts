@@ -1,5 +1,5 @@
-import {AfterContentChecked, ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input} from "@angular/core";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
+import { AfterContentChecked, ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input } from "@angular/core";
+import { SdTypeValidate } from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-button",
@@ -8,7 +8,8 @@ import {SdTypeValidate} from "../commons/SdTypeValidate";
     <button [type]="type" [disabled]="disabled">
       <ng-content></ng-content>
     </button>
-    <div class="_invalid-indicator"></div>`
+    <div class="_invalid-indicator"></div>
+  `
 })
 export class SdButtonControl implements AfterContentChecked {
   @Input()
@@ -56,8 +57,7 @@ export class SdButtonControl implements AfterContentChecked {
   @HostBinding("attr.sd-invalid")
   public isInvalid = false;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
-  }
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {}
 
   public ngAfterContentChecked(): void {
     this.isInvalid = false;

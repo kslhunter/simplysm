@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
+import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output } from "@angular/core";
+import { SdTypeValidate } from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-form",
@@ -7,7 +7,8 @@ import {SdTypeValidate} from "../commons/SdTypeValidate";
   template: `
     <form (submit)="onSubmit($event)">
       <ng-content></ng-content>
-    </form>`
+    </form>
+  `
 })
 export class SdFormControl {
   @Input()

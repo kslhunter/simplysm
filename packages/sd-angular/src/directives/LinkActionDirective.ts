@@ -1,5 +1,5 @@
-import {Directive, HostBinding, Input} from "@angular/core";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
+import { Directive, HostBinding, Input } from "@angular/core";
+import { SdTypeValidate } from "../commons/SdTypeValidate";
 
 @Directive({
   selector: "a" //tslint:disable-line:directive-selector

@@ -1,4 +1,4 @@
-import {CompilerOptions} from "typescript";
+import { CompilerOptions } from "typescript";
 
 type SdConfigFileJsonPackageConfigOfType<T> = T & {
   extends?: string[];
@@ -6,7 +6,6 @@ type SdConfigFileJsonPackageConfigOfType<T> = T & {
   production?: T;
 };
 export type SdConfigFileJsonPackageConfigTypes = SdConfigFileJsonPackageConfigOfType<ISdPackageConfig>;
-
 
 export interface ISdConfigFileJson {
   packages: { [key: string]: SdConfigFileJsonPackageConfigTypes };
@@ -20,7 +19,16 @@ export interface ISdProjectConfig {
 }
 
 export interface ISdPackageConfig {
-  type?: "none" | "dom" | "node" | "all" | "server" | "web" | "cordova.android" | "cordova.browser" | "electron.windows";
+  type?:
+    | "none"
+    | "dom"
+    | "node"
+    | "all"
+    | "server"
+    | "web"
+    | "cordova.android"
+    | "cordova.browser"
+    | "electron.windows";
   publish?: ISdPublishConfig;
   env?: { [key: string]: any };
   vhost?: string;
@@ -30,14 +38,13 @@ export interface ISdPackageConfig {
 }
 
 export interface ISdPublishConfig {
-  protocol?: "npm" | /*"ftp" | "WebDAV" | */"simplysm";
+  protocol?: "npm" | /*"ftp" | "WebDAV" | */ "simplysm";
   host?: string;
   port?: number;
   // username?: string;
   // password?: string;
   // path?: string;
 }
-
 
 export interface ITsConfig {
   extends?: string;

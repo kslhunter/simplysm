@@ -1,9 +1,9 @@
-import {DateOnly, DateTime, Time} from "@simplysm/sd-common";
+import { DateOnly, DateTime, Time } from "@simplysm/sd-common";
 
 export const tableDefMetadataKey = "table-def";
 
 export type QueryType =
-  boolean
+  | boolean
   /*| QueriedBoolean*/
   | number
   | string
@@ -16,5 +16,4 @@ export type QueryType =
   | Time
   | Buffer;
 
-export class QueriedBoolean extends Boolean {
-}
+export class QueriedBoolean extends Boolean {}

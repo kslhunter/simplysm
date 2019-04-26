@@ -1,13 +1,14 @@
-import {SdExcelWorkbook} from "./SdExcelWorkbook";
-import {SdExcelCell} from "./SdExcelCell";
-import {SdExcelColumn} from "./SdExcelColumn";
-import {SdExcelRow} from "./SdExcelRow";
+import { SdExcelWorkbook } from "./SdExcelWorkbook";
+import { SdExcelCell } from "./SdExcelCell";
+import { SdExcelColumn } from "./SdExcelColumn";
+import { SdExcelRow } from "./SdExcelRow";
 
 export class SdExcelWorksheet {
-  public constructor(public readonly workbook: SdExcelWorkbook,
-                     public readonly name: string,
-                     public readonly sheetData: any) {
-  }
+  public constructor(
+    public readonly workbook: SdExcelWorkbook,
+    public readonly name: string,
+    public readonly sheetData: any
+  ) {}
 
   public cell(row: number, col: number): SdExcelCell {
     return new SdExcelCell(this, row, col);

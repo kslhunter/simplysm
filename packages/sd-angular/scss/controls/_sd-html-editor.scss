@@ -13,7 +13,7 @@ sd-html-editor {
         width: get($gap, sm) * 2 + strip-unit($line-height) * get($font-size, default);
 
         &:hover {
-          background: rgba(0, 0, 0, .05);
+          background: rgba(0, 0, 0, 0.05);
         }
 
         &._selected {
@@ -28,7 +28,7 @@ sd-html-editor {
         @include form-control-base();
         height: 100%;
 
-        &[contenteditable=true] {
+        &[contenteditable="true"] {
           cursor: text;
           background: get($theme-color, info, lightest);
         }
@@ -39,7 +39,7 @@ sd-html-editor {
         height: 100%;
         background: get($theme-color, info, lightest);
         border: none;
-        transition: outline-color .1s linear;
+        transition: outline-color 0.1s linear;
         outline: 1px solid transparent;
         outline-offset: -1px;
 
@@ -54,7 +54,7 @@ sd-html-editor {
     }
   }
 
-  &[sd-inset=true] {
+  &[sd-inset="true"] {
     height: 100%;
     border: none;
   }

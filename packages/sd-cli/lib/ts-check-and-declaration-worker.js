@@ -28,15 +28,13 @@ try {
         writeFile: (filePath, content) => {
           promiseList.push(writeFileAsync(filePath, content));
         },
-        createDirectory: () => {
-        }
+        createDirectory: () => {}
       },
       ts.createEmitAndSemanticDiagnosticsBuilderProgram,
       diagnostic => {
         printDiagnostic(diagnostic);
       },
-      () => {
-      }
+      () => {}
     );
 
     ts.createWatchProgram(host);
@@ -52,8 +50,7 @@ try {
           message: err.stack
         });
       });
-  }
-  else {
+  } else {
     const promiseList = [];
 
     const host = ts.createCompilerHost(parsedConfig.options);
@@ -79,8 +76,7 @@ try {
 
     if (parsedConfig.options.declaration) {
       diagnostics = diagnostics.concat(program.emit(undefined, undefined, undefined, true).diagnostics);
-    }
-    else {
+    } else {
       diagnostics = diagnostics.concat(program.getSyntacticDiagnostics());
     }
 
@@ -125,14 +121,14 @@ try {
       if (diagnostic.file.fileName.startsWith(contextPath.replace(/\\/g, "/"))) {
         const position = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
         const tsMessage = ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-        const message = `${diagnostic.file.fileName}(${position.line + 1},${position.character + 1}): error: ${tsMessage}`;
+        const message = `${diagnostic.file.fileName}(${position.line + 1},${position.character +
+          1}): error: ${tsMessage}`;
         sendMessage({
           type: "error",
           message: message
         });
       }
-    }
-    else {
+    } else {
       const message = `error: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`;
       sendMessage({
         type: "error",
@@ -140,8 +136,7 @@ try {
       });
     }
   }
-}
-catch (err) {
+} catch (err) {
   sendMessage({
     type: "error",
     message: err.stack

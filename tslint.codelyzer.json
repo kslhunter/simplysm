@@ -1,64 +1,37 @@
 {
   "extends": "codelyzer",
   "rules": {
-    "angular-whitespace": [
-      true,
-      "check-interpolation",
-      "check-semicolon"
-    ],
-    "banana-in-box": true,
-    "templates-no-negated-async": true,
-    "directive-selector": [
-      true,
-      "attribute",
-      [
-        "sd"
-      ],
-      "camelCase"
-    ],
-    "component-selector": [
-      true,
-      "element",
-      [
-        "sd"
-      ],
-      "kebab-case"
-    ],
-    "max-inline-declarations": false,
-    "no-life-cycle-call": true,
-    "prefer-output-readonly": true,
-    "no-conflicting-life-cycle-hooks": true,
-    "enforce-component-selector": true,
-    "use-input-property-decorator": true,
-    "use-output-property-decorator": true,
-    "use-host-property-decorator": true,
-    "use-view-encapsulation": true,
-    "no-attribute-parameter-decorator": true,
-    "no-output-named-after-standard-event": false,
-    "no-input-rename": true,
-    "no-output-rename": true,
-    "no-output-on-prefix": true,
+    "component-class-suffix": [true, "Page", "Component", "Modal", "Control", "PrintTemplate", "Toast"],
+    "component-max-inline-declarations": false,
+    "component-selector": [true, "element", "sd", "kebab-case"],
+    "contextual-lifecycle": true,
+    "directive-class-suffix": [true, "Directive"],
+    "directive-selector": [true, "attribute", "sd", "camelCase"],
+    "no-attribute-decorator": true,
+    "no-conflicting-lifecycle": true,
     "no-forward-ref": false,
-    "no-unused-css": false,
-    "use-life-cycle-interface": true,
-    "contextual-life-cycle": true,
-    "trackBy-function": true,
-    "use-pipe-transform-interface": true,
-    "component-class-suffix": [
-      true,
-      "Page",
-      "Component",
-      "Modal",
-      "Control",
-      "PrintTemplate"
-    ],
-    "directive-class-suffix": [
-      true,
-      "Directive"
-    ],
-    "pipe-impure": true,
-    "i18n": false,
+    "no-host-metadata-property": true,
+    "no-input-rename": true,
+    "no-inputs-metadata-property": true,
+    "no-lifecycle-call": true,
+    "no-output-native": false,
+    "no-output-on-prefix": true,
+    "no-output-rename": true,
+    "no-outputs-metadata-property": true,
+    "no-pipe-impure": true,
+    "no-queries-metadata-property": true,
+    "no-unused-css": true,
+    "prefer-inline-decorator": false,
+    "prefer-output-readonly": true,
+    "template-banana-in-box": true,
+    "template-conditional-complexity": false,
     "template-cyclomatic-complexity": false,
-    "template-conditional-complexity": false
+    "template-i18n": false,
+    "template-no-negated-async": true,
+    "template-use-track-by-function": true,
+    "use-component-selector": true,
+    "use-component-view-encapsulation": true,
+    "use-lifecycle-interface": true,
+    "use-pipe-transform-interface": true
   }
 }

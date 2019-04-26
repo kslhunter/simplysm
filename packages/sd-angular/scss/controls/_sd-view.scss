@@ -6,7 +6,7 @@ sd-view {
 sd-view-item {
   display: none;
 
-  &[sd-selected=true] {
+  &[sd-selected="true"] {
     display: block;
   }
 }

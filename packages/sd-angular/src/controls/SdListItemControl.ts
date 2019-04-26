@@ -9,17 +9,16 @@ import {
   QueryList,
   ViewChild
 } from "@angular/core";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
-import {SdListControl} from "./SdListControl";
-import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
+import { SdTypeValidate } from "../commons/SdTypeValidate";
+import { SdListControl } from "./SdListControl";
+import { ISdNotifyPropertyChange, SdNotifyPropertyChange } from "../commons/SdNotifyPropertyChange";
 
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="_content">
-      <label (click)="onLabelClick()"
-             [attr.tabindex]="(header || !clickable) ? undefined : '0'">
+      <label (click)="onLabelClick()" [attr.tabindex]="header || !clickable ? undefined : '0'">
         <ng-content></ng-content>
         <sd-icon class="_angle-icon" [icon]="'chevron-right'" [fw]="true" *ngIf="hasChildren"></sd-icon>
       </label>
@@ -29,7 +28,8 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNoti
       <div #childContent class="_child-content">
         <ng-content select="sd-list"></ng-content>
       </div>
-    </div>`
+    </div>
+  `
 })
 export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit {
   @Input()
@@ -43,7 +43,7 @@ export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit
   public open?: boolean;
 
   @Input()
-  @SdTypeValidate({type: Boolean, notnull: true})
+  @SdTypeValidate({ type: Boolean, notnull: true })
   @HostBinding("attr.sd-clickable")
   public clickable = true;
 
@@ -85,13 +85,10 @@ export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit
   public ngAfterViewInit(): void {
     const childContentEl = this.childContentElRef!.nativeElement;
 
-    Object.assign(
-      childContentEl.style,
-      {
-        marginTop: (-childContentEl.offsetHeight) + "px",
-        transition: "margin-top .1s ease-in"
-      }
-    );
+    Object.assign(childContentEl.style, {
+      marginTop: -childContentEl.offsetHeight + "px",
+      transition: "margin-top .1s ease-in"
+    });
   }
 
   public sdOnPropertyChange(propertyName: string, oldValue: any, newValue: any): void {
@@ -100,22 +97,15 @@ export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit
       const childContentEl = this.childContentElRef.nativeElement;
 
       if (newValue) {
-        Object.assign(
-          childContentEl.style,
-          {
-            marginTop: "0",
-            transition: "margin-top .1s ease-out"
-          }
-        );
-      }
-      else {
-        Object.assign(
-          childContentEl.style,
-          {
-            marginTop: (-childContentEl.offsetHeight) + "px",
-            transition: "margin-top .1s ease-in"
-          }
-        );
+        Object.assign(childContentEl.style, {
+          marginTop: "0",
+          transition: "margin-top .1s ease-out"
+        });
+      } else {
+        Object.assign(childContentEl.style, {
+          marginTop: -childContentEl.offsetHeight + "px",
+          transition: "margin-top .1s ease-in"
+        });
       }
     }
   }

@@ -77,16 +77,16 @@ sd-sheet {
       border: none;
       padding: $sheet-padding-v $sheet-padding-h;
 
-      &[type=year],
-      &[type=month],
-      &[type=date],
-      &[type=datetime],
-      &[type=time],
-      &[type=datetime-local] {
+      &[type="year"],
+      &[type="month"],
+      &[type="date"],
+      &[type="datetime"],
+      &[type="time"],
+      &[type="datetime-local"] {
         padding: ($sheet-padding-v - 1) $sheet-padding-h;
       }
 
-      &[type=color] {
+      &[type="color"] {
         height: $sheet-row-height;
       }
 
@@ -144,7 +144,7 @@ sd-sheet {
         }
       }
 
-      &[sd-disabled=true] > sd-dropdown > div {
+      &[sd-disabled="true"] > sd-dropdown > div {
         background: transparent;
         color: get($text-color, default);
 
@@ -221,12 +221,12 @@ sd-sheet {
       > ._select-icon {
         display: inline-block;
         color: get($theme-color, grey, light);
-        transition: .1s ease-in;
+        transition: 0.1s ease-in;
       }
 
       &._selected > ._select-icon {
         color: get($theme-color, primary, default);
-        transition: .1s ease-out;
+        transition: 0.1s ease-out;
       }
     }
 
@@ -234,13 +234,13 @@ sd-sheet {
       > ._expand-icon {
         display: inline-block;
         color: get($theme-color, grey, light);
-        transition: .1s ease-in;
+        transition: 0.1s ease-in;
       }
 
       &._expanded > ._expand-icon {
         color: get($theme-color, primary, default);
         transform: rotate(90deg);
-        transition: .1s ease-out;
+        transition: 0.1s ease-out;
       }
     }
   }
@@ -264,7 +264,7 @@ sd-sheet {
     position: relative;
   }
 
-  &[sd-selectable=true] ._body ._first-col {
+  &[sd-selectable="true"] ._body ._first-col {
     cursor: pointer;
   }
 }

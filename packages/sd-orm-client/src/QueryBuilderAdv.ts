@@ -1,12 +1,12 @@
-import {DateOnly, DateTime, LambdaParser, Time, Type} from "@simplysm/sd-common";
-import {QueryBuilder} from "./QueryBuilder";
-import {QueryUnit} from "./QueryUnit";
-import {QueriedBoolean, QueryType, tableDefMetadataKey} from "./commons";
-import {QueryHelper} from "./QueryHelper";
-import {IJoinDef} from "./IJoinDef";
-import {IForeignKeyDef, IForeignKeyTargetDef, ITableDef} from "./definitions";
-import {sorm} from "./sorm";
-import {IQueryDef} from "./IQueryDef";
+import { DateOnly, DateTime, LambdaParser, Time, Type } from "@simplysm/sd-common";
+import { QueryBuilder } from "./QueryBuilder";
+import { QueryUnit } from "./QueryUnit";
+import { QueriedBoolean, QueryType, tableDefMetadataKey } from "./commons";
+import { QueryHelper } from "./QueryHelper";
+import { IJoinDef } from "./IJoinDef";
+import { IForeignKeyDef, IForeignKeyTargetDef, ITableDef } from "./definitions";
+import { sorm } from "./sorm";
+import { IQueryDef } from "./IQueryDef";
 
 export class QueryBuilderAdv<T> {
   private readonly _unionQba?: QueryBuilderAdv<T>[];
@@ -25,8 +25,18 @@ export class QueryBuilderAdv<T> {
   public constructor(tableType: Type<T>, database?: string, as?: string);
   public constructor(subQueryBuilderAdv: QueryBuilderAdv<T>, database?: string, as?: string, tableType?: Type<T>);
   public constructor(unionQueryBuilderAdv: QueryBuilderAdv<T>[], database?: string, as?: string, tableType?: Type<T>);
-  public constructor(arg: Type<T> | QueryBuilderAdv<T> | QueryBuilderAdv<T>[], database?: string, as?: string, tableType?: Type<T>);
-  public constructor(arg: Type<T> | QueryBuilderAdv<T> | QueryBuilderAdv<T>[], database?: string, as: string = "TBL", tableType?: Type<T>) {
+  public constructor(
+    arg: Type<T> | QueryBuilderAdv<T> | QueryBuilderAdv<T>[],
+    database?: string,
+    as?: string,
+    tableType?: Type<T>
+  );
+  public constructor(
+    arg: Type<T> | QueryBuilderAdv<T> | QueryBuilderAdv<T>[],
+    database?: string,
+    as: string = "TBL",
+    tableType?: Type<T>
+  ) {
     if (arg instanceof Array) {
       this._unionQba = arg;
       this._tableType = tableType;
@@ -48,8 +58,7 @@ export class QueryBuilderAdv<T> {
       }
 
       this.qb = new QueryBuilder().from(unionQueryBuilders, `[${as}]`);
-    }
-    else if (arg instanceof QueryBuilderAdv) {
+    } else if (arg instanceof QueryBuilderAdv) {
       this._subQba = arg;
       if (tableType) {
         this._tableType = tableType;
@@ -80,8 +89,7 @@ export class QueryBuilderAdv<T> {
         subQueryBuilder = subQueryBuilder.select(subSelect).distinct();
 
         this.qb = new QueryBuilder().from(subQueryBuilder, `[${as}]`);
-      }
-      else {
+      } else {
         for (const selectAs of Object.keys(this._subQba.selectObj)) {
           const selectOrg = this._subQba.selectObj[selectAs]!;
           const selectType = selectOrg instanceof QueryUnit ? selectOrg.type : selectOrg.constructor;
@@ -97,8 +105,7 @@ export class QueryBuilderAdv<T> {
 
         this.qb = new QueryBuilder().from(subQueryBuilder, `[${as}]`);
       }
-    }
-    else {
+    } else {
       this._tableType = arg;
       const tableDef = core.Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
 
@@ -112,7 +119,10 @@ export class QueryBuilderAdv<T> {
       for (const colDef of tableDef.columns) {
         this.selectObj[colDef.name] = new QueryUnit(colDef.typeFwd(), `[${as}].[${colDef.name}]`);
       }
-      this.qb = new QueryBuilder().from(`[${tableDef.database || database}].[${tableDef.scheme}].[${tableDef.name}]`, `[${as}]`);
+      this.qb = new QueryBuilder().from(
+        `[${tableDef.database || database}].[${tableDef.scheme}].[${tableDef.name}]`,
+        `[${as}]`
+      );
     }
 
     this._as = as;
@@ -126,8 +136,7 @@ export class QueryBuilderAdv<T> {
         select[`[${selectAs}]`] = this.selectObj[selectAs];
       }
       return this.qb.select(select).query;
-    }
-    else {
+    } else {
       return this.qb.query;
     }
   }
@@ -139,8 +148,7 @@ export class QueryBuilderAdv<T> {
         select[`[${selectAs}]`] = this.selectObj[selectAs];
       }
       return this.qb.select(select).def;
-    }
-    else {
+    } else {
       return this.qb.def;
     }
   }
@@ -155,27 +163,25 @@ export class QueryBuilderAdv<T> {
     const generate = (currObj: object, parentKey?: string) => {
       for (const key of Object.keys(currObj)) {
         if (
-          currObj[key] instanceof Object
-          && !(currObj[key] instanceof QueriedBoolean)
-          && !(currObj[key] instanceof Number)
-          && !(currObj[key] instanceof String)
-          && !(currObj[key] instanceof Boolean)
-          && !(currObj[key] instanceof DateOnly)
-          && !(currObj[key] instanceof DateTime)
-          && !(currObj[key] instanceof Time)
-          && !(currObj[key] instanceof QueryUnit)
+          currObj[key] instanceof Object &&
+          !(currObj[key] instanceof QueriedBoolean) &&
+          !(currObj[key] instanceof Number) &&
+          !(currObj[key] instanceof String) &&
+          !(currObj[key] instanceof Boolean) &&
+          !(currObj[key] instanceof DateOnly) &&
+          !(currObj[key] instanceof DateTime) &&
+          !(currObj[key] instanceof Time) &&
+          !(currObj[key] instanceof QueryUnit)
         ) {
           if (currObj[key] instanceof Array) {
             for (const item of currObj[key]) {
               generate(item, (parentKey ? parentKey + "." : "") + key);
             }
-          }
-          else {
+          } else {
             generate(currObj[key], (parentKey ? parentKey + "." : "") + key);
             result.singleSelectAsNames.push((parentKey ? parentKey + "." : "") + key);
           }
-        }
-        else {
+        } else {
           result.selectObj[(parentKey ? parentKey + "." : "") + key] = currObj[key];
         }
       }
@@ -252,7 +258,12 @@ export class QueryBuilderAdv<T> {
     return result;
   }
 
-  public join<A extends string, J, R, S extends boolean>(joinType: Type<J>, as: A, fwd: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<R>, isSingle?: S): QueryBuilderAdv<T & { [K in A]: (S extends true ? R : R[]) }> {
+  public join<A extends string, J, R, S extends boolean>(
+    joinType: Type<J>,
+    as: A,
+    fwd: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<R>,
+    isSingle?: S
+  ): QueryBuilderAdv<T & { [K in A]: (S extends true ? R : R[]) }> {
     const result = this._clone();
 
     const joinQueryBuilderAdv = fwd(new QueryBuilderAdv(joinType, this._database, as), result.entity);
@@ -288,7 +299,12 @@ export class QueryBuilderAdv<T> {
     return result as any;
   }
 
-  public include<A extends string, J, S extends boolean>(targetOrFwd: ((entity: NonNullable<T>) => (J | J[] | undefined)) | string, asOrDepth?: A | number, fwd?: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<J>, isSingle?: S): QueryBuilderAdv<T> {
+  public include<A extends string, J, S extends boolean>(
+    targetOrFwd: ((entity: NonNullable<T>) => J | J[] | undefined) | string,
+    asOrDepth?: A | number,
+    fwd?: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<J>,
+    isSingle?: S
+  ): QueryBuilderAdv<T> {
     let targetTableChainedName = "";
 
     if (typeof asOrDepth === "number") {
@@ -297,13 +313,11 @@ export class QueryBuilderAdv<T> {
           targetTableChainedName += (targetOrFwd as string) + ".";
         }
         targetTableChainedName = targetTableChainedName.slice(0, -1);
-      }
-      else {
+      } else {
         return this._clone();
       }
-    }
-    else {
-      const parsed = LambdaParser.parse(targetOrFwd as (entity: NonNullable<T>) => (J | J[] | undefined));
+    } else {
+      const parsed = LambdaParser.parse(targetOrFwd as (entity: NonNullable<T>) => J | J[] | undefined);
       const itemParamName = parsed.params[0];
       targetTableChainedName = parsed.returnContent
         .replace(new RegExp(`${itemParamName}\\.`), "")
@@ -343,7 +357,13 @@ export class QueryBuilderAdv<T> {
         const srcColumnName = fkDef.columnNames[i];
         const targetPkColumnName = pkColDefs[i].name;
 
-        filter[targetPkColumnName] = new QueryUnit(pkColDefs[i].typeFwd(), `[${targetTableChainedName.split(".").slice(0, -1).join(".") || this._as}].[${srcColumnName}]`);
+        filter[targetPkColumnName] = new QueryUnit(
+          pkColDefs[i].typeFwd(),
+          `[${targetTableChainedName
+            .split(".")
+            .slice(0, -1)
+            .join(".") || this._as}].[${srcColumnName}]`
+        );
       }
 
       joinTableType = targetTableType;
@@ -377,7 +397,13 @@ export class QueryBuilderAdv<T> {
         const srcColumnName = targetFkDef.columnNames[i];
         const targetPkColumnName = pkColDefs[i].name;
 
-        filter[srcColumnName] = new QueryUnit(pkColDefs[i].typeFwd(), `[${targetTableChainedName.split(".").slice(0, -1).join(".") || this._as}].[${targetPkColumnName}]`);
+        filter[srcColumnName] = new QueryUnit(
+          pkColDefs[i].typeFwd(),
+          `[${targetTableChainedName
+            .split(".")
+            .slice(0, -1)
+            .join(".") || this._as}].[${targetPkColumnName}]`
+        );
       }
 
       joinTableType = sourceTableType;
@@ -386,14 +412,12 @@ export class QueryBuilderAdv<T> {
 
     return this.join(
       joinTableType,
-      (typeof asOrDepth !== "number" && asOrDepth) ? asOrDepth : targetTableChainedName,
+      typeof asOrDepth !== "number" && asOrDepth ? asOrDepth : targetTableChainedName,
       (qr, en) => {
         let result = qr.where(item => {
           const whereQuery = [];
           for (const key of Object.keys(filter)) {
-            whereQuery.push(
-              sorm.equal(item[key], filter[key])
-            );
+            whereQuery.push(sorm.equal(item[key], filter[key]));
           }
           return whereQuery;
         });
@@ -417,17 +441,13 @@ export class QueryBuilderAdv<T> {
       update[`[${updateKey}]`] = obj[updateKey];
     }
 
-    result.qb = result.qb
-      .update(update)
-      .output(["INSERTED.*"]);
+    result.qb = result.qb.update(update).output(["INSERTED.*"]);
     return result;
   }
 
   public delete(): QueryBuilderAdv<T> {
     const result = this._clone();
-    result.qb = result.qb
-      .delete()
-      .output(["DELETED.*"]);
+    result.qb = result.qb.delete().output(["DELETED.*"]);
     return result;
   }
 
@@ -439,9 +459,7 @@ export class QueryBuilderAdv<T> {
       insert[`[${insertKey}]`] = obj[insertKey];
     }
 
-    result.qb = result.qb
-      .insert(insert)
-      .output(["INSERTED.*"]);
+    result.qb = result.qb.insert(insert).output(["INSERTED.*"]);
 
     return result;
   }
@@ -450,8 +468,14 @@ export class QueryBuilderAdv<T> {
   public upsert(obj: Partial<T> | undefined, additionalInsertObj: Partial<T>): QueryBuilderAdv<T>;
   public upsert(fwd: (item: T) => T): QueryBuilderAdv<T>;
   public upsert(obj: T): QueryBuilderAdv<T>;
-  public upsert(arg: Partial<T> | undefined | ((item: T) => Partial<T>), additionalInsertObj?: Partial<T>): QueryBuilderAdv<T>;
-  public upsert(arg: Partial<T> | undefined | ((item: T) => Partial<T>), additionalInsertObj?: Partial<T>): QueryBuilderAdv<T> {
+  public upsert(
+    arg: Partial<T> | undefined | ((item: T) => Partial<T>),
+    additionalInsertObj?: Partial<T>
+  ): QueryBuilderAdv<T>;
+  public upsert(
+    arg: Partial<T> | undefined | ((item: T) => Partial<T>),
+    additionalInsertObj?: Partial<T>
+  ): QueryBuilderAdv<T> {
     const result = this._clone();
 
     const obj = typeof arg === "function" ? arg(result.entity) : arg;
@@ -470,9 +494,7 @@ export class QueryBuilderAdv<T> {
       }
     }
 
-    result.qb = result.qb
-      .upsert(upsert, additionalInsert)
-      .output(["INSERTED.*"]);
+    result.qb = result.qb.upsert(upsert, additionalInsert).output(["INSERTED.*"]);
 
     return result;
   }
@@ -491,21 +513,21 @@ export class QueryBuilderAdv<T> {
         for (const tblAsSplitItem of tblAsSplit) {
           cursorFullAsSplit.push(tblAsSplitItem);
           const joinDef = this.getAllJoinDef()[cursorFullAsSplit.join(".")];
-          const isCursorSingle = joinDef ? joinDef.isSingle : this.singleSelectAsNames.includes(cursorFullAsSplit.join("."));
+          const isCursorSingle = joinDef
+            ? joinDef.isSingle
+            : this.singleSelectAsNames.includes(cursorFullAsSplit.join("."));
 
           if (isCursorSingle) {
             cursorEntity[tblAsSplitItem] = cursorEntity[tblAsSplitItem] || {};
             cursorEntity = cursorEntity[tblAsSplitItem];
-          }
-          else {
+          } else {
             cursorEntity[tblAsSplitItem] = cursorEntity[tblAsSplitItem] || [{}];
             cursorEntity = cursorEntity[tblAsSplitItem][0];
           }
         }
 
         cursorEntity[colAs] = selectQueryUnit;
-      }
-      else {
+      } else {
         entity[selectAs] = selectQueryUnit;
       }
     }
@@ -523,23 +545,21 @@ export class QueryBuilderAdv<T> {
           for (const item1 of item[key]) {
             obj[key].push(generate(item1));
           }
-        }
-        else if (
-          item[key] instanceof Object
-          && !(item[key] instanceof QueriedBoolean)
-          && !(item[key] instanceof Number)
-          && !(item[key] instanceof String)
-          && !(item[key] instanceof Boolean)
-          && !(item[key] instanceof DateOnly)
-          && !(item[key] instanceof DateTime)
-          && !(item[key] instanceof Time)
-          && !(item[key] instanceof QueryUnit)) {
+        } else if (
+          item[key] instanceof Object &&
+          !(item[key] instanceof QueriedBoolean) &&
+          !(item[key] instanceof Number) &&
+          !(item[key] instanceof String) &&
+          !(item[key] instanceof Boolean) &&
+          !(item[key] instanceof DateOnly) &&
+          !(item[key] instanceof DateTime) &&
+          !(item[key] instanceof Time) &&
+          !(item[key] instanceof QueryUnit)
+        ) {
           obj[key] = generate(item[key]);
-        }
-        else if (item[key] instanceof QueryUnit && item[key].type === QueriedBoolean) {
+        } else if (item[key] instanceof QueryUnit && item[key].type === QueriedBoolean) {
           obj[key] = new QueryUnit(Boolean, item[key].queryForWhere);
-        }
-        else {
+        } else {
           obj[key] = item[key];
         }
       }
@@ -567,7 +587,9 @@ export class QueryBuilderAdv<T> {
         const currAs = (parentAs ? parentAs + "." : "") + joinDef.as;
         result[currAs] = joinDef;
 
-        const targetTableDef = core.Reflect.getMetadata(tableDefMetadataKey, joinDef.targetTableType) as ITableDef | undefined;
+        const targetTableDef = core.Reflect.getMetadata(tableDefMetadataKey, joinDef.targetTableType) as
+          | ITableDef
+          | undefined;
         if (!targetTableDef) {
           throw new Error(`'${joinDef.targetTableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
         }
@@ -582,22 +604,23 @@ export class QueryBuilderAdv<T> {
   }
 
   private _getFkOrFktDef(chain: string): IForeignKeyDef | IForeignKeyTargetDef | undefined {
-    const parentAs = chain.split(".").slice(0, -1).join(".");
+    const parentAs = chain
+      .split(".")
+      .slice(0, -1)
+      .join(".");
     if (parentAs) {
       const joinDef = this.getAllJoinDef()[parentAs];
-      const joinTableDef = core.Reflect.getMetadata(tableDefMetadataKey, joinDef.targetTableType) as ITableDef | undefined;
+      const joinTableDef = core.Reflect.getMetadata(tableDefMetadataKey, joinDef.targetTableType) as
+        | ITableDef
+        | undefined;
       if (!joinTableDef) {
         throw new Error(`'${joinDef.targetTableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
       }
 
-      const fkOrFkts = [
-        ...(joinTableDef.foreignKeys || []),
-        ...(joinTableDef.foreignKeyTargets || [])
-      ];
+      const fkOrFkts = [...(joinTableDef.foreignKeys || []), ...(joinTableDef.foreignKeyTargets || [])];
 
       return fkOrFkts.single(item => item.name === chain.split(".").last());
-    }
-    else {
+    } else {
       if (!this._tableType) {
         throw new Error("테이블 타입을 알 수 없습니다.");
       }
@@ -606,18 +629,19 @@ export class QueryBuilderAdv<T> {
       if (!tableDef) {
         throw new Error(`'${this._tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
       }
-      const fkOrFkts = [
-        ...(tableDef.foreignKeys || []),
-        ...(tableDef.foreignKeyTargets || [])
-      ];
+      const fkOrFkts = [...(tableDef.foreignKeys || []), ...(tableDef.foreignKeyTargets || [])];
       return fkOrFkts.single(item => item.name === chain.split(".").last());
     }
   }
 
   private _clone(): QueryBuilderAdv<T> {
-    const cloned = new QueryBuilderAdv((this._tableType || this._subQba || this._unionQba) as any, this._database, this._as);
+    const cloned = new QueryBuilderAdv(
+      (this._tableType || this._subQba || this._unionQba) as any,
+      this._database,
+      this._as
+    );
     cloned.qb = this.qb.clone();
-    cloned.selectObj = {...this.selectObj};
+    cloned.selectObj = { ...this.selectObj };
     cloned.joinDefs = [...this.joinDefs];
     cloned.orderByColNames = [...this.orderByColNames];
     return cloned as any;

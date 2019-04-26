@@ -1,11 +1,12 @@
-import {ChangeDetectionStrategy, Component, ElementRef} from "@angular/core";
-import {SdModalBase} from "../providers/SdModalProvider";
+import { ChangeDetectionStrategy, Component, ElementRef } from "@angular/core";
+import { SdModalBase } from "../providers/SdModalProvider";
 
 @Component({
   selector: "sd-address-search-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="_content" style="min-height: 100px;"></div>`
+    <div class="_content" style="min-height: 100px;"></div>
+  `
 })
 export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
   public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
@@ -30,7 +31,7 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
               }
 
               if (data.buildingName !== "" && data.apartment === "Y") {
-                extraAddr += (extraAddr !== "" ? ", " + data.buildingName : data.buildingName);
+                extraAddr += extraAddr !== "" ? ", " + data.buildingName : data.buildingName;
               }
 
               if (extraAddr !== "") {
@@ -49,7 +50,7 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
           },
           width: "100%",
           height: "100%"
-        }).embed(contentEl, {autoClose: false});
+        }).embed(contentEl, { autoClose: false });
       });
     };
 
@@ -63,8 +64,7 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
         run();
       };
       document.head!.appendChild(scriptEl);
-    }
-    else {
+    } else {
       run();
     }
   }

@@ -9,7 +9,7 @@ sd-dropdown-popup {
   z-index: $z-index-dropdown;
   opacity: 0;
   transform: translateY(-10px);
-  transition: .1s linear;
+  transition: 0.1s linear;
   transition-property: transform, opacity;
   pointer-events: none;
   background: white;

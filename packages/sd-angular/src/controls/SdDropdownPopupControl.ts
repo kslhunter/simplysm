@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, ElementRef, OnInit} from "@angular/core";
-import {ResizeEvent} from "../commons/ResizeEvent";
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit } from "@angular/core";
+import { ResizeEvent } from "../commons/ResizeEvent";
 
 @Component({
   selector: "sd-dropdown-popup",
@@ -7,11 +7,11 @@ import {ResizeEvent} from "../commons/ResizeEvent";
   template: `
     <div>
       <ng-content></ng-content>
-    </div>`
+    </div>
+  `
 })
 export class SdDropdownPopupControl implements OnInit {
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
-  }
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {}
 
   public ngOnInit(): void {
     const thisEl = this._elRef.nativeElement;
@@ -23,8 +23,7 @@ export class SdDropdownPopupControl implements OnInit {
       if (evt.detail.dimensions.includes("height")) {
         if (divEl.clientHeight > 300) {
           thisEl.style.height = "300px";
-        }
-        else {
+        } else {
           delete thisEl.style.height;
         }
       }

@@ -1,21 +1,9 @@
-import {DateTime} from "../types/DateTime";
+import { DateTime } from "../types/DateTime";
 
 export class Logger {
-  private static readonly _palletColors = !process.versions.node ? [
-    "color: #827717;",
-    "color: #388E3C;",
-    "color: #1976D2;",
-    "color: #AB47BC;",
-    "color: #00838F;",
-    "color: #F44336;"
-  ] : [
-    "\x1b[33m",
-    "\x1b[32m",
-    "\x1b[34m",
-    "\x1b[35m",
-    "\x1b[36m",
-    "\x1b[31m"
-  ];
+  private static readonly _palletColors = !process.versions.node
+    ? ["color: #827717;", "color: #388E3C;", "color: #1976D2;", "color: #AB47BC;", "color: #00838F;", "color: #F44336;"]
+    : ["\x1b[33m", "\x1b[32m", "\x1b[34m", "\x1b[35m", "\x1b[36m", "\x1b[31m"];
   private static readonly _prefixColorMap = new Map<string, string>();
 
   public static history: ILoggerHistory[] = [];
@@ -23,35 +11,31 @@ export class Logger {
   private static _lastId = 0;
 
   private static _defaultConfig: ILoggerConfig = {
-    consoleLogSeverities: process.env.NODE_ENV === "production"
-      ? []
-      : ["log", "info", "warn", "error"],
-    fileLogSeverities: (process.env.NODE_ENV === "production" && process.versions.node)
-      ? ["log", "info", "warn", "error"]
-      : [],
+    consoleLogSeverities: process.env.NODE_ENV === "production" ? [] : ["log", "info", "warn", "error"],
+    fileLogSeverities:
+      process.env.NODE_ENV === "production" && process.versions.node ? ["log", "info", "warn", "error"] : [],
     outputPath: process.env.NODE_ENV === "production" && process.versions.node ? "logs" : undefined,
     historySize: 30,
     color: !process.versions.node
       ? {
-        grey: "color: grey;",
-        log: "color: black;",
-        info: "color: #2196F3;",
-        warn: "color: #FF9800;",
-        error: "color: #F44336;"
-      }
+          grey: "color: grey;",
+          log: "color: black;",
+          info: "color: #2196F3;",
+          warn: "color: #FF9800;",
+          error: "color: #F44336;"
+        }
       : {
-        grey: "\x1b[90m",
-        log: "\x1b[0m",
-        info: "\x1b[36m",
-        warn: "\x1b[33m",
-        error: "\x1b[31m"
-      }
+          grey: "\x1b[90m",
+          log: "\x1b[0m",
+          info: "\x1b[36m",
+          warn: "\x1b[33m",
+          error: "\x1b[31m"
+        }
   };
 
   public readonly id: number;
 
-  public constructor(private readonly _groupName: string,
-                     private readonly _prefix?: string) {
+  public constructor(private readonly _groupName: string, private readonly _prefix?: string) {
     Logger._lastId++;
     this.id = Logger._lastId;
   }
@@ -65,29 +49,26 @@ export class Logger {
 
   public static restoreDefaultConfig(): void {
     Logger._defaultConfig = {
-      consoleLogSeverities: process.env.NODE_ENV === "production"
-        ? []
-        : ["log", "info", "warn", "error"],
-      fileLogSeverities: (process.env.NODE_ENV === "production" && process.versions.node)
-        ? ["log", "info", "warn", "error"]
-        : [],
+      consoleLogSeverities: process.env.NODE_ENV === "production" ? [] : ["log", "info", "warn", "error"],
+      fileLogSeverities:
+        process.env.NODE_ENV === "production" && process.versions.node ? ["log", "info", "warn", "error"] : [],
       outputPath: process.env.NODE_ENV === "production" && process.versions.node ? "logs" : undefined,
       historySize: 30,
       color: !process.versions.node
         ? {
-          grey: "color: grey;",
-          log: "color: black;",
-          info: "color: #2196F3;",
-          warn: "color: #FF9800;",
-          error: "color: #F44336;"
-        }
+            grey: "color: grey;",
+            log: "color: black;",
+            info: "color: #2196F3;",
+            warn: "color: #FF9800;",
+            error: "color: #F44336;"
+          }
         : {
-          grey: "\x1b[90m",
-          log: "\x1b[0m",
-          info: "\x1b[36m",
-          warn: "\x1b[33m",
-          error: "\x1b[31m"
-        }
+            grey: "\x1b[90m",
+            log: "\x1b[0m",
+            info: "\x1b[36m",
+            warn: "\x1b[33m",
+            error: "\x1b[31m"
+          }
     };
   }
 
@@ -98,8 +79,7 @@ export class Logger {
         ...prevConfig,
         ...config
       });
-    }
-    else {
+    } else {
       Logger._groupMap.set(groupName, {
         ...Logger._defaultConfig,
         ...config
@@ -110,8 +90,7 @@ export class Logger {
   public static restoreGroupConfig(groupName?: string): void {
     if (groupName) {
       Logger._groupMap.delete(groupName);
-    }
-    else {
+    } else {
       Logger._groupMap.clear();
     }
   }
@@ -140,7 +119,8 @@ export class Logger {
     if (this._prefix && !Logger._prefixColorMap.has(this._prefix)) {
       Logger._prefixColorMap.set(
         this._prefix,
-        Logger._palletColors[Array.from(Logger._prefixColorMap.keys()).length % Logger._palletColors.length]);
+        Logger._palletColors[Array.from(Logger._prefixColorMap.keys()).length % Logger._palletColors.length]
+      );
     }
 
     const now = new DateTime();
@@ -188,7 +168,9 @@ export class Logger {
       const logData = typeof convertedLogs[0] === "string" ? convertedLogs.slice(1) : convertedLogs;
 
       // const text = `${this.config.color.grey}[${log.now}] ${log.group}\t${this.config.color[severity]}${log.severity.padEnd(5, " ")}\t${log.prefix ? Logger._prefixColorMap.get(log.prefix) + log.prefix + " " : ""}${this.config.color.log}${convertedLogs.join("\r\n")}${this.config.color.log}`;
-      const text = `${c}[${log.now}] ${log.group}\t${c}${log.severity.padEnd(5, " ")}\t${log.prefix ? c + log.prefix + "\t" : ""}${c}${logText}${c}`;
+      const text = `${c}[${log.now}] ${log.group}\t${c}${log.severity.padEnd(5, " ")}\t${
+        log.prefix ? c + log.prefix + "\t" : ""
+      }${c}${logText}${c}`;
 
       // 콘솔 출력
       if (this.config.consoleLogSeverities.includes(severity)) {
@@ -196,7 +178,7 @@ export class Logger {
           text,
           this.config.color.grey,
           this.config.color[severity],
-          ...log.prefix ? [Logger._prefixColorMap.get(log.prefix)] : [],
+          ...(log.prefix ? [Logger._prefixColorMap.get(log.prefix)] : []),
           this.config.color.log,
           this.config.color.log,
           ...logData.mapMany(item => ["\r\n", item])
@@ -230,8 +212,7 @@ export class Logger {
       const filePath = path.resolve(outputPath, `${now.toFormatString("yyyyMMdd-HH")}.log`);
       if (fs.existsSync(filePath)) {
         fs.appendFileSync(filePath, `${text}\r\n`, "utf8");
-      }
-      else {
+      } else {
         fs.writeFileSync(filePath, `${text}\r\n`, "utf8");
       }
     }

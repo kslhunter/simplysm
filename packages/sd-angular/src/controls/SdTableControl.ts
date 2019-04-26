@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component} from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 
 @Component({
   selector: "sd-table",
@@ -6,7 +6,7 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
   template: `
     <table>
       <ng-content></ng-content>
-    </table>`
+    </table>
+  `
 })
-export class SdTableControl {
-}
+export class SdTableControl {}

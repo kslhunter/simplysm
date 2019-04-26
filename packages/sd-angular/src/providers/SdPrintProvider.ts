@@ -1,15 +1,18 @@
-import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
+import { ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
 
 @Injectable()
 export class SdPrintProvider {
-  public constructor(private readonly _cfr: ComponentFactoryResolver,
-                     private readonly _appRef: ApplicationRef,
-                     private readonly _injector: Injector) {
-  }
+  public constructor(
+    private readonly _cfr: ComponentFactoryResolver,
+    private readonly _appRef: ApplicationRef,
+    private readonly _injector: Injector
+  ) {}
 
-  public async print<T extends SdPrintTemplateBase<I>, I>(printType: Type<SdPrintTemplateBase<I>>,
-                                                          param: I,
-                                                          options?: { margin?: string; size?: string }): Promise<void> {
+  public async print<T extends SdPrintTemplateBase<I>, I>(
+    printType: Type<SdPrintTemplateBase<I>>,
+    param: I,
+    options?: { margin?: string; size?: string }
+  ): Promise<void> {
     await new Promise<void>(async resolve => {
       const compRef = this._cfr.resolveComponentFactory(printType).create(this._injector);
       const compEl = compRef.location.nativeElement;
@@ -29,8 +32,7 @@ export class SdPrintProvider {
 
       try {
         await compRef.instance.sdOnOpen(param);
-      }
-      catch (e) {
+      } catch (e) {
         throw e;
       }
 

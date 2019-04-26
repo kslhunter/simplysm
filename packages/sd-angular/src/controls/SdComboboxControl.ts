@@ -15,26 +15,29 @@ import {
   QueryList,
   ViewChild
 } from "@angular/core";
-import {SdComboboxItemControl} from "./SdComboboxItemControl";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
+import { SdComboboxItemControl } from "./SdComboboxItemControl";
+import { SdTypeValidate } from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-combobox",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-textfield #textfield
-                  [value]="text"
-                  (valueChange)="onTextChange($event)"
-                  [required]="required"
-                  [disabled]="disabled"
-                  (focusedChange)="textfieldFocusedChange.emit($event)">
+    <sd-textfield
+      #textfield
+      [value]="text"
+      (valueChange)="onTextChange($event)"
+      [required]="required"
+      [disabled]="disabled"
+      (focusedChange)="textfieldFocusedChange.emit($event)"
+    >
     </sd-textfield>
     <div class="_icon" *ngIf="!disabled">
       <sd-icon [fw]="true" [icon]="'caret-down'"></sd-icon>
     </div>
     <div #dropdown class="_sd-combobox-dropdown" tabindex="0">
       <ng-content></ng-content>
-    </div>`
+    </div>
+  `
 })
 export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked {
   @Input()
@@ -61,10 +64,10 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
   @Output()
   public readonly textChangeByInput = new EventEmitter<string | undefined>();
 
-  @ContentChildren(SdComboboxItemControl, {descendants: true})
+  @ContentChildren(SdComboboxItemControl, { descendants: true })
   public itemControls?: QueryList<SdComboboxItemControl>;
 
-  @ViewChild("textfield", {read: ElementRef})
+  @ViewChild("textfield", { read: ElementRef })
   public textfieldElRef?: ElementRef<HTMLElement>;
 
   @ViewChild("dropdown")
@@ -81,9 +84,11 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
 
   private readonly _iterableDiffer: IterableDiffer<SdComboboxItemControl>;
 
-  public constructor(private readonly _iterableDiffers: IterableDiffers,
-                     private readonly _elRef: ElementRef<HTMLElement>,
-                     private readonly _cdr: ChangeDetectorRef) {
+  public constructor(
+    private readonly _iterableDiffers: IterableDiffers,
+    private readonly _elRef: ElementRef<HTMLElement>,
+    private readonly _cdr: ChangeDetectorRef
+  ) {
     this._iterableDiffer = this._iterableDiffers.find([]).create((i, itemControl) => itemControl.value);
   }
 
@@ -137,30 +142,23 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     document.body.appendChild(dropdownEl);
 
     if (window.innerHeight < textfieldEl.windowOffset.top * 2) {
-      Object.assign(
-        dropdownEl.style,
-        {
-          top: "",
-          bottom: (window.innerHeight - textfieldEl.windowOffset.top) + "px",
-          left: textfieldEl.windowOffset.left + "px",
-          opacity: "1",
-          pointerEvents: "auto",
-          transform: "none"
-        }
-      );
-    }
-    else {
-      Object.assign(
-        dropdownEl.style,
-        {
-          top: (textfieldEl.windowOffset.top + textfieldEl.offsetHeight) + "px",
-          bottom: "",
-          left: textfieldEl.windowOffset.left + "px",
-          opacity: "1",
-          pointerEvents: "auto",
-          transform: "none"
-        }
-      );
+      Object.assign(dropdownEl.style, {
+        top: "",
+        bottom: window.innerHeight - textfieldEl.windowOffset.top + "px",
+        left: textfieldEl.windowOffset.left + "px",
+        opacity: "1",
+        pointerEvents: "auto",
+        transform: "none"
+      });
+    } else {
+      Object.assign(dropdownEl.style, {
+        top: textfieldEl.windowOffset.top + textfieldEl.offsetHeight + "px",
+        bottom: "",
+        left: textfieldEl.windowOffset.left + "px",
+        opacity: "1",
+        pointerEvents: "auto",
+        transform: "none"
+      });
     }
 
     document.addEventListener("scroll", this.scrollEventHandler, true);
@@ -171,21 +169,17 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     const dropdownEl = this.dropdownElRef!.nativeElement;
     try {
       dropdownEl.remove();
-    }
-    catch (err) {
+    } catch (err) {
       if (!err.message.includes("no longer a child of this node")) {
         throw err;
       }
     }
 
-    Object.assign(
-      dropdownEl.style,
-      {
-        opacity: "0",
-        pointerEvents: "none",
-        transform: "translateY(-10px)"
-      }
-    );
+    Object.assign(dropdownEl.style, {
+      opacity: "0",
+      pointerEvents: "none",
+      transform: "translateY(-10px)"
+    });
 
     if (!this.value && this.text) {
       this.text = undefined;
@@ -202,26 +196,18 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     const dropdownEl = this.dropdownElRef!.nativeElement;
 
     if (this._elRef.nativeElement.findParent(event.target as HTMLElement)) {
-
       if (window.innerHeight < textfieldEl.windowOffset.top * 2) {
-        Object.assign(
-          dropdownEl.style,
-          {
-            top: "",
-            bottom: (window.innerHeight - textfieldEl.windowOffset.top) + "px",
-            left: textfieldEl.windowOffset.left + "px"
-          }
-        );
-      }
-      else {
-        Object.assign(
-          dropdownEl.style,
-          {
-            top: (textfieldEl.windowOffset.top + textfieldEl.offsetHeight) + "px",
-            bottom: "",
-            left: textfieldEl.windowOffset.left + "px"
-          }
-        );
+        Object.assign(dropdownEl.style, {
+          top: "",
+          bottom: window.innerHeight - textfieldEl.windowOffset.top + "px",
+          left: textfieldEl.windowOffset.left + "px"
+        });
+      } else {
+        Object.assign(dropdownEl.style, {
+          top: textfieldEl.windowOffset.top + textfieldEl.offsetHeight + "px",
+          bottom: "",
+          left: textfieldEl.windowOffset.left + "px"
+        });
       }
     }
   };
@@ -239,12 +225,10 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     const relatedTarget = event.relatedTarget as HTMLElement;
     if (
       relatedTarget &&
-      (
-        relatedTarget === textfieldEl ||
+      (relatedTarget === textfieldEl ||
         relatedTarget === dropdownEl ||
         relatedTarget.findParent(textfieldEl) ||
-        relatedTarget.findParent(dropdownEl)
-      )
+        relatedTarget.findParent(dropdownEl))
     ) {
       return;
     }

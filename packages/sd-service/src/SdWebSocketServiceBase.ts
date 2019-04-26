@@ -1,6 +1,6 @@
-import {SdWebSocketServer} from "./SdWebSocketServer";
-import {SdWebSocketServerConnection} from "./SdWebSocketServerConnection";
-import {ISdWebSocketRequest} from "@simplysm/sd-service-client";
+import { SdWebSocketServer } from "./SdWebSocketServer";
+import { SdWebSocketServerConnection } from "./SdWebSocketServerConnection";
+import { ISdWebSocketRequest } from "@simplysm/sd-service-client";
 
 export abstract class SdWebSocketServiceBase {
   public server!: SdWebSocketServer;

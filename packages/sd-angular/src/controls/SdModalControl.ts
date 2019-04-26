@@ -7,7 +7,7 @@ import {
   HostListener,
   Input
 } from "@angular/core";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
+import { SdTypeValidate } from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-modal",
@@ -16,12 +16,9 @@ import {SdTypeValidate} from "../commons/SdTypeValidate";
     <div class="_backdrop" (click)="onBackdropClick()"></div>
     <div class="_dialog" tabindex="0" [style.height]="height">
       <sd-dock-container>
-        <sd-dock class="_header"
-                 (mousedown)="onHeaderMouseDown($event)">
+        <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)">
           <h5 class="_title">{{ title }}</h5>
-          <a class="_close-button"
-             (click)="onCloseButtonClick()"
-             *ngIf="!hideCloseButton">
+          <a class="_close-button" (click)="onCloseButtonClick()" *ngIf="!hideCloseButton">
             <sd-icon [icon]="'times'" [fw]="true"></sd-icon>
           </a>
         </sd-dock>
@@ -30,11 +27,12 @@ import {SdTypeValidate} from "../commons/SdTypeValidate";
           <ng-content></ng-content>
         </sd-pane>
       </sd-dock-container>
-    </div>`
+    </div>
+  `
 })
 export class SdModalControl {
   @Input()
-  @SdTypeValidate({type: String, notnull: true})
+  @SdTypeValidate({ type: String, notnull: true })
   public title!: string;
 
   @Input()
@@ -57,8 +55,7 @@ export class SdModalControl {
   @SdTypeValidate(String)
   public height?: string;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
-  }
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {}
 
   public onBackdropClick(): void {
     if (this.hideCloseButton) {

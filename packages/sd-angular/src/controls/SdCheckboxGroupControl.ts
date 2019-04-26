@@ -12,13 +12,14 @@ import {
   Output,
   QueryList
 } from "@angular/core";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
+import { SdTypeValidate } from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-checkbox-group",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`
+    <ng-content></ng-content>
+  `
 })
 export class SdCheckboxGroupControl implements DoCheck {
   @Input()
@@ -37,13 +38,12 @@ export class SdCheckboxGroupControl implements DoCheck {
   @SdTypeValidate(String)
   public keyProp?: string;
 
-  @ContentChildren(SdCheckboxGroupControl, {descendants: true})
+  @ContentChildren(SdCheckboxGroupControl, { descendants: true })
   public itemControls?: QueryList<SdCheckboxGroupControl>;
 
   private readonly _iterableDiffer: IterableDiffer<any>;
 
-  public constructor(private readonly _iterableDiffers: IterableDiffers,
-                     private readonly _cdr: ChangeDetectorRef) {
+  public constructor(private readonly _iterableDiffers: IterableDiffers, private readonly _cdr: ChangeDetectorRef) {
     this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => item);
   }
 
@@ -54,8 +54,8 @@ export class SdCheckboxGroupControl implements DoCheck {
   }
 
   public getIsItemSelected(value: any): boolean {
-    const thisKeyValue = (this.keyProp && this.value) ? this.value.map(item => item[this.keyProp!]) : this.value;
-    const itemKeyValue = (this.keyProp && value) ? value[this.keyProp] : value;
+    const thisKeyValue = this.keyProp && this.value ? this.value.map(item => item[this.keyProp!]) : this.value;
+    const itemKeyValue = this.keyProp && value ? value[this.keyProp] : value;
     return !!thisKeyValue && thisKeyValue.includes(itemKeyValue);
   }
 

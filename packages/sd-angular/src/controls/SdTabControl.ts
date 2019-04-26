@@ -1,10 +1,11 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
 
 @Component({
   selector: "sd-tab",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>`
+    <ng-content></ng-content>
+  `
 })
 export class SdTabControl {
   @Input()

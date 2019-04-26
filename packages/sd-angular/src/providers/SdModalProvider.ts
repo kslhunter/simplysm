@@ -1,17 +1,23 @@
-import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector} from "@angular/core";
-import {Type} from "@simplysm/sd-common";
-import {SdModalControl} from "../controls/SdModalControl";
+import { ApplicationRef, ComponentFactoryResolver, Injectable, Injector } from "@angular/core";
+import { Type } from "@simplysm/sd-common";
+import { SdModalControl } from "../controls/SdModalControl";
 
 @Injectable()
 export class SdModalProvider {
-  public constructor(private readonly _cfr: ComponentFactoryResolver,
-                     private readonly _injector: Injector,
-                     private readonly _appRef: ApplicationRef) {
-  }
+  public constructor(
+    private readonly _cfr: ComponentFactoryResolver,
+    private readonly _injector: Injector,
+    private readonly _appRef: ApplicationRef
+  ) {}
 
   public modalCount = 0;
 
-  public async show<T extends SdModalBase<any, any>>(modalType: Type<T>, title: string, param: T["_tParam"], option?: { hideCloseButton?: boolean; float?: boolean; height?: string }): Promise<T["_tResult"] | undefined> {
+  public async show<T extends SdModalBase<any, any>>(
+    modalType: Type<T>,
+    title: string,
+    param: T["_tParam"],
+    option?: { hideCloseButton?: boolean; float?: boolean; height?: string }
+  ): Promise<T["_tResult"] | undefined> {
     this.modalCount++;
 
     return await new Promise<T["_tResult"]>(async resolve => {
@@ -19,10 +25,9 @@ export class SdModalProvider {
       const rootComp = this._appRef.components[0];
       const rootCompEl = rootComp.location.nativeElement as HTMLElement;
 
-      const modalRef = this._cfr.resolveComponentFactory(SdModalControl).create(
-        this._injector,
-        [[compRef.location.nativeElement]]
-      );
+      const modalRef = this._cfr
+        .resolveComponentFactory(SdModalControl)
+        .create(this._injector, [[compRef.location.nativeElement]]);
       const modalEl = modalRef.location.nativeElement as HTMLElement;
       rootCompEl.appendChild(modalEl);
 
@@ -66,8 +71,7 @@ export class SdModalProvider {
           this._appRef.tick();
           await compRef.instance.sdOnOpen(param);
           this._appRef.tick();
-        }
-        catch (e) {
+        } catch (e) {
           await close();
           throw e;
         }

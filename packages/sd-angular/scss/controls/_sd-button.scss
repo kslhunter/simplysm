@@ -11,15 +11,15 @@ sd-button {
     color: get($theme-color, primary, default);
     border-radius: 3px;
     border: 1px solid get($theme-color, grey, lighter);
-    transition: background .1s ease-in;
+    transition: background 0.1s ease-in;
 
     &:hover {
-      transition: .1s ease-out;
+      transition: 0.1s ease-out;
       background: get($theme-color, grey, lightest);
     }
 
     &:active {
-      transition: .1s ease-out;
+      transition: 0.1s ease-out;
       background: get($trans-color, dark);
     }
 
@@ -36,7 +36,7 @@ sd-button {
   }
 
   @each $key, $val in $theme-color {
-    &[sd-theme=#{$key}] > button {
+    &[sd-theme="#{$key}"] > button {
       background: get($val, default);
       border-color: get($val, default);
       color: get($text-reverse-color, default);
@@ -59,15 +59,15 @@ sd-button {
     }
   }
 
-  &[sd-size=sm] > button {
+  &[sd-size="sm"] > button {
     padding: get($gap, xs) get($gap, sm);
   }
 
-  &[sd-size=lg] > button {
+  &[sd-size="lg"] > button {
     padding: get($gap, default) get($gap, lg);
   }
 
-  &[sd-inline=true] {
+  &[sd-inline="true"] {
     display: inline-block;
 
     > button {
@@ -75,11 +75,11 @@ sd-button {
     }
   }
 
-  &[sd-invalid=true] > ._invalid-indicator {
+  &[sd-invalid="true"] > ._invalid-indicator {
     @include invalid-indicator();
   }
 
-  &[sd-inset=true] {
+  &[sd-inset="true"] {
     > button {
       border: none !important;
       box-shadow: none !important;
@@ -100,7 +100,7 @@ sd-button {
     }
 
     @each $key, $val in $theme-color {
-      &[sd-theme=#{$key}] > button {
+      &[sd-theme="#{$key}"] > button {
         background: get($val, default);
 
         &:hover {

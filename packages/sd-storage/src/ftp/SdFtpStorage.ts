@@ -1,8 +1,8 @@
 import * as fs from "fs-extra";
-import {ISdStorage} from "../common/ISdStorage";
-import {ISdFtpConnectionConfig} from "./ISdFtpConnectionConfig";
+import { ISdStorage } from "../common/ISdStorage";
+import { ISdFtpConnectionConfig } from "./ISdFtpConnectionConfig";
 import * as JSFtp from "jsftp";
-import {Logger} from "@simplysm/sd-common";
+import { Logger } from "@simplysm/sd-common";
 
 export class SdFtpStorage implements ISdStorage {
   private readonly _logger = new Logger("@simplysm/sd-storage", "SdFtpStorage");
@@ -49,9 +49,7 @@ export class SdFtpStorage implements ISdStorage {
   }
 
   public async putAsync(localPathOrBuffer: string | Buffer, storageFilePath: string): Promise<void> {
-    const buffer = typeof localPathOrBuffer === "string"
-      ? await fs.readFile(localPathOrBuffer)
-      : localPathOrBuffer;
+    const buffer = typeof localPathOrBuffer === "string" ? await fs.readFile(localPathOrBuffer) : localPathOrBuffer;
 
     await new Promise<void>((resolve, reject) => {
       if (!this._ftp) {

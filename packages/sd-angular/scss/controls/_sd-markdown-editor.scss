@@ -13,7 +13,7 @@ sd-markdown-editor {
         width: get($gap, sm) * 2 + strip-unit($line-height) * get($font-size, default);
 
         &:hover {
-          background: rgba(0, 0, 0, .05);
+          background: rgba(0, 0, 0, 0.05);
         }
 
         &._selected {
@@ -33,7 +33,7 @@ sd-markdown-editor {
         height: 100%;
         background: get($theme-color, info, lightest);
         border: none;
-        transition: outline-color .1s linear;
+        transition: outline-color 0.1s linear;
         outline: 1px solid transparent;
         outline-offset: -1px;
 
@@ -49,7 +49,7 @@ sd-markdown-editor {
           display: none;
         }
 
-        > input[sd-invalid=true] + ._invalid-indicator,
+        > input[sd-invalid="true"] + ._invalid-indicator,
         > input:invalid + ._invalid-indicator {
           @include invalid-indicator();
         }
@@ -63,9 +63,9 @@ sd-markdown-editor {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, .05);
+        background: rgba(0, 0, 0, 0.05);
         font-size: get($font-size, h1);
-        color: rgba(0, 0, 0, .3);
+        color: rgba(0, 0, 0, 0.3);
         text-align: center;
         padding-top: 20px;
       }
@@ -82,12 +82,12 @@ sd-markdown-editor {
       }
 
       code {
-        background: rgba(0, 0, 0, .05);
+        background: rgba(0, 0, 0, 0.05);
         border-radius: 2px;
       }
 
       pre {
-        background: rgba(0, 0, 0, .05);
+        background: rgba(0, 0, 0, 0.05);
         padding: get($gap, sm) get($gap, default);
         border-radius: 2px;
         white-space: pre-wrap;
@@ -104,7 +104,7 @@ sd-markdown-editor {
     }
   }
 
-  &[sd-disabled=true] {
+  &[sd-disabled="true"] {
     > sd-dock-container {
       > sd-pane > ._preview {
         height: auto;
@@ -112,7 +112,7 @@ sd-markdown-editor {
     }
   }
 
-  &[sd-dragover=true] {
+  &[sd-dragover="true"] {
     > sd-dock-container > sd-pane > ._editor > ._dragover {
       display: block;
     }

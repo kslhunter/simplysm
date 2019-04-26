@@ -1,16 +1,18 @@
-import {ApplicationRef, ComponentFactoryResolver, ComponentRef, Injectable, Injector, OnDestroy} from "@angular/core";
-import {Type} from "@simplysm/sd-common";
-import {SdToastControl} from "../controls/SdToastControl";
-import {SdToastContainerControl} from "../controls/SdToastContainerControl";
+import { ApplicationRef, ComponentFactoryResolver, ComponentRef, Injectable, Injector, OnDestroy } from "@angular/core";
+import { Type } from "@simplysm/sd-common";
+import { SdToastControl } from "../controls/SdToastControl";
+import { SdToastContainerControl } from "../controls/SdToastContainerControl";
 
 @Injectable()
 export class SdToastProvider implements OnDestroy {
   private readonly _containerEl: HTMLDivElement;
   private _containerRef?: ComponentRef<SdToastContainerControl>;
 
-  public constructor(private readonly _cfr: ComponentFactoryResolver,
-                     private readonly _injector: Injector,
-                     private readonly _appRef: ApplicationRef) {
+  public constructor(
+    private readonly _cfr: ComponentFactoryResolver,
+    private readonly _injector: Injector,
+    private readonly _appRef: ApplicationRef
+  ) {
     this._containerEl = document.createElement("div");
     this._containerEl.classList.add("_sd-toast-container");
     document.body.appendChild(this._containerEl);
@@ -26,19 +28,21 @@ export class SdToastProvider implements OnDestroy {
   public async try(fn: () => Promise<void>, messageFn?: (err: Error) => string): Promise<void> {
     try {
       await fn();
-    }
-    catch (err) {
+    } catch (err) {
       if (messageFn) {
         this.danger(messageFn(err));
-      }
-      else {
+      } else {
         this.danger(err.message);
       }
       if (process.env.NODE_ENV !== "production") console.error(err);
     }
   }
 
-  public notify<T extends SdToastBase<any, any>>(toastType: Type<T>, param: T["_tParam"], onclose: (result: T["_tResult"] | undefined) => void | Promise<void>): void {
+  public notify<T extends SdToastBase<any, any>>(
+    toastType: Type<T>,
+    param: T["_tParam"],
+    onclose: (result: T["_tResult"] | undefined) => void | Promise<void>
+  ): void {
     if (!this._containerRef) {
       this._containerRef = this._cfr.resolveComponentFactory(SdToastContainerControl).create(this._injector);
       const rootComp = this._appRef.components[0];
@@ -50,10 +54,9 @@ export class SdToastProvider implements OnDestroy {
     const compRef = this._cfr.resolveComponentFactory(toastType).create(this._containerRef.injector);
     const containerEl = this._containerRef.location.nativeElement as HTMLElement;
 
-    const toastRef = this._cfr.resolveComponentFactory(SdToastControl).create(
-      this._containerRef.injector,
-      [[compRef.location.nativeElement]]
-    );
+    const toastRef = this._cfr
+      .resolveComponentFactory(SdToastControl)
+      .create(this._containerRef.injector, [[compRef.location.nativeElement]]);
     const toastEl = toastRef.location.nativeElement as HTMLElement;
     containerEl.appendChild(toastEl);
 
@@ -81,39 +84,39 @@ export class SdToastProvider implements OnDestroy {
         this._appRef.tick();
         await compRef.instance.sdOnOpen(param);
         this._appRef.tick();
-      }
-      catch (e) {
+      } catch (e) {
         await close();
         throw e;
       }
     });
 
-    window.setTimeout(
-      () => {
-        compRef.destroy();
-        toastRef.destroy();
-      },
-      5000
-    );
+    window.setTimeout(() => {
+      compRef.destroy();
+      toastRef.destroy();
+    }, 5000);
   }
 
-  public info<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+  public info<T extends boolean>(message: string, progress?: T): T extends true ? ISdProgressToast : void {
     return this._show("info", message, progress) as any;
   }
 
-  public success<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+  public success<T extends boolean>(message: string, progress?: T): T extends true ? ISdProgressToast : void {
     return this._show("success", message, progress) as any;
   }
 
-  public warning<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+  public warning<T extends boolean>(message: string, progress?: T): T extends true ? ISdProgressToast : void {
     return this._show("warning", message, progress) as any;
   }
 
-  public danger<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+  public danger<T extends boolean>(message: string, progress?: T): T extends true ? ISdProgressToast : void {
     return this._show("danger", message, progress) as any;
   }
 
-  private _show<T extends boolean>(theme: "info" | "success" | "warning" | "danger", message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+  private _show<T extends boolean>(
+    theme: "info" | "success" | "warning" | "danger",
+    message: string,
+    progress?: T
+  ): T extends true ? ISdProgressToast : void {
     const toastEl = document.createElement("div");
     toastEl.classList.add("_sd-toast");
     toastEl.classList.add("_sd-toast-" + theme);
@@ -142,28 +145,21 @@ export class SdToastProvider implements OnDestroy {
         progress: (percent: number) => {
           toastProgressBarEl.style.width = percent + "%";
           if (percent >= 100) {
-            window.setTimeout(
-              () => {
-                toastEl.remove();
-              },
-              1000
-            );
+            window.setTimeout(() => {
+              toastEl.remove();
+            }, 1000);
           }
         },
         message: (msg: string) => {
           toastMessageEl.innerText = msg;
         }
       } as any;
-    }
-    else {
+    } else {
       this._containerEl.prependChild(toastEl);
 
-      window.setTimeout(
-        () => {
-          toastEl.remove();
-        },
-        5000
-      );
+      window.setTimeout(() => {
+        toastEl.remove();
+      }, 5000);
     }
 
     return undefined as any;

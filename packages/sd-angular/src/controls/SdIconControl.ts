@@ -1,18 +1,21 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {IconName, library, SizeProp} from "@fortawesome/fontawesome-svg-core";
-import {fas} from "@fortawesome/free-solid-svg-icons";
-import {far} from "@fortawesome/free-regular-svg-icons";
-import {fab} from "@fortawesome/free-brands-svg-icons";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
+import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
+import { IconName, library, SizeProp } from "@fortawesome/fontawesome-svg-core";
+import { fas } from "@fortawesome/free-solid-svg-icons";
+import { far } from "@fortawesome/free-regular-svg-icons";
+import { fab } from "@fortawesome/free-brands-svg-icons";
+import { SdTypeValidate } from "../commons/SdTypeValidate";
 
 library.add(fas, far, fab);
-export const sdIconNames = Object.values(fas).map(item => item.iconName).distinct();
+export const sdIconNames = Object.values(fas)
+  .map(item => item.iconName)
+  .distinct();
 
 @Component({
   selector: "sd-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <fa-icon [icon]="iconArr" [fixedWidth]="fw" [size]="size" *ngIf="icon"></fa-icon>`
+    <fa-icon [icon]="iconArr" [fixedWidth]="fw" [size]="size" *ngIf="icon"></fa-icon>
+  `
 })
 export class SdIconControl {
   @Input()
@@ -43,9 +46,8 @@ export class SdIconControl {
   public size?: SizeProp;
 
   public get iconArr(): string[] | undefined {
-    return this.icon ? [
-      this.type === "brands" ? "fab" : this.type === "regular" ? "far" : "fas",
-      this.icon
-    ] : undefined;
+    return this.icon
+      ? [this.type === "brands" ? "fab" : this.type === "regular" ? "far" : "fas", this.icon]
+      : undefined;
   }
 }

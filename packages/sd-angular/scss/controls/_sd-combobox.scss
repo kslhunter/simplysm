@@ -23,7 +23,7 @@ sd-combobox {
   z-index: $z-index-dropdown;
   opacity: 0;
   transform: translateY(-10px);
-  transition: .1s linear;
+  transition: 0.1s linear;
   transition-property: transform, opacity;
   pointer-events: none;
   background: white;
@@ -41,6 +41,6 @@ sd-combobox-item {
   cursor: pointer;
 
   &:hover {
-    background: rgba(0, 0, 0, .1);
+    background: rgba(0, 0, 0, 0.1);
   }
 }

@@ -1,4 +1,4 @@
-import {Injectable} from "@angular/core";
+import { Injectable } from "@angular/core";
 
 const soap = require("soap/lib/client"); //tslint:disable-line:no-var-requires no-require-imports
 const wsdl = require("soap/lib/wsdl"); //tslint:disable-line:no-var-requires no-require-imports
@@ -29,8 +29,7 @@ export class SdSoapProvider {
           this._cache[url] = wsdlClient;
           resolve(wsdlClient && new soap.Client(wsdlClient));
         });
-      }
-      else {
+      } else {
         process.nextTick(() => {
           resolve(this._cache[url] && new soap.Client(this._cache[url]));
         });

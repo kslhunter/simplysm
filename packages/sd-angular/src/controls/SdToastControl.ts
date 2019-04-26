@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input} from "@angular/core";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
+import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input } from "@angular/core";
+import { SdTypeValidate } from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-toast",
@@ -9,7 +9,8 @@ import {SdTypeValidate} from "../commons/SdTypeValidate";
       <div class="_sd-toast-message">
         <ng-content></ng-content>
       </div>
-    </div>`
+    </div>
+  `
 })
 export class SdToastControl {
   @Input()

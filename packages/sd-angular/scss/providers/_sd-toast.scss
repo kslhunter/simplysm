@@ -20,10 +20,10 @@ sd-toast-container,
       display: inline-block;
       text-align: left;
       color: white;
-      animation: _sd-toast-show .1s ease-out forwards;
+      animation: _sd-toast-show 0.1s ease-out forwards;
       transform: translateY(-100%);
       border-radius: 4px;
-      opacity: .9;
+      opacity: 0.9;
       @include elevation(6);
 
       > ._sd-toast-message {
@@ -43,7 +43,7 @@ sd-toast-container,
     }
 
     @each $key, $val in $theme-color {
-      &[sd-theme=#{$key}],
+      &[sd-theme="#{$key}"],
       &._sd-toast-#{$key} {
         > ._sd-toast-block {
           background: get($val, default);

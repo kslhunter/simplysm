@@ -1,6 +1,6 @@
-import {optional, Type} from "@simplysm/sd-common";
-import {ITableDef} from "./definitions";
-import {tableDefMetadataKey} from "./commons";
+import { optional, Type } from "@simplysm/sd-common";
+import { ITableDef } from "./definitions";
+import { tableDefMetadataKey } from "./commons";
 
 export function Table<T>(def?: {
   database?: string;
@@ -11,8 +11,8 @@ export function Table<T>(def?: {
   return (classType: Type<T>) => {
     const tableDef: ITableDef = core.Reflect.getMetadata(tableDefMetadataKey, classType) || {};
     tableDef.database = def && def.database;
-    tableDef.scheme = def && def.scheme || "dbo";
-    tableDef.name = def && def.table || classType.name;
+    tableDef.scheme = (def && def.scheme) || "dbo";
+    tableDef.name = (def && def.table) || classType.name;
     tableDef.description = def && def.description;
 
     core.Reflect.defineMetadata(tableDefMetadataKey, tableDef, classType);
@@ -71,7 +71,11 @@ export function Index<T>(indexName?: string, order?: number): (object: T, proper
   };
 }
 
-export function ForeignKey<T>(columnNames: (keyof T) | ((keyof T)[]), targetTypeFwd: () => Type<any>, description?: string): (object: Partial<T>, propertyKey: string) => void {
+export function ForeignKey<T>(
+  columnNames: (keyof T) | ((keyof T)[]),
+  targetTypeFwd: () => Type<any>,
+  description?: string
+): (object: Partial<T>, propertyKey: string) => void {
   return (object: Partial<T>, propertyKey: string) => {
     const classType = object.constructor;
 
@@ -91,7 +95,11 @@ export function ForeignKey<T>(columnNames: (keyof T) | ((keyof T)[]), targetType
   };
 }
 
-export function ForeignKeyTarget<T, P>(sourceTypeFwd: () => Type<P>, foreignKeyName: keyof P, description?: string): (object: T, propertyKey: string) => void {
+export function ForeignKeyTarget<T, P>(
+  sourceTypeFwd: () => Type<P>,
+  foreignKeyName: keyof P,
+  description?: string
+): (object: T, propertyKey: string) => void {
   return (object: T, propertyKey: string) => {
     const classType = object.constructor;
 

@@ -3,30 +3,16 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
-    "lib": [
-      "es2015"
-    ],
+    "lib": ["es2015"],
     "declaration": true,
     "baseUrl": ".",
     "paths": {
-      "@simplysm/sd-common": [
-        "../sd-common/src/index.ts"
-      ],
-      "@simplysm/sd-core": [
-        "../sd-core/src/index.ts"
-      ],
-      "@simplysm/sd-service-client": [
-        "../sd-service-client/src/index.ts"
-      ],
-      "@simplysm/sd-orm": [
-        "../sd-orm/src/index.ts"
-      ],
-      "@simplysm/sd-orm-client": [
-        "../sd-orm-client/src/index.ts"
-      ],
-      "@simplysm/sd-smtp-client-common": [
-        "../sd-smtp-client-common/src/index.ts"
-      ]
+      "@simplysm/sd-common": ["../sd-common/src/index.ts"],
+      "@simplysm/sd-core": ["../sd-core/src/index.ts"],
+      "@simplysm/sd-service-client": ["../sd-service-client/src/index.ts"],
+      "@simplysm/sd-orm": ["../sd-orm/src/index.ts"],
+      "@simplysm/sd-orm-client": ["../sd-orm-client/src/index.ts"],
+      "@simplysm/sd-smtp-client-common": ["../sd-smtp-client-common/src/index.ts"]
     }
   }
 }

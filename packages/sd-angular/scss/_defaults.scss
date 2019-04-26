@@ -8,7 +8,8 @@
   outline-color: get($theme-color, primary, default);
 }
 
-html, body {
+html,
+body {
   height: 100%;
   width: 100%;
   padding: 0;
@@ -23,7 +24,8 @@ body {
   line-height: $line-height;
 }
 
-pre, code {
+pre,
+code {
   font-family: $font-family;
   font-size: get($font-size, default);
   line-height: $line-height;

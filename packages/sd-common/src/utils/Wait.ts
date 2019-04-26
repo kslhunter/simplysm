@@ -1,5 +1,9 @@
 export class Wait {
-  public static async true(forwarder: () => boolean | Promise<boolean>, milliseconds?: number, timeout?: number): Promise<void> {
+  public static async true(
+    forwarder: () => boolean | Promise<boolean>,
+    milliseconds?: number,
+    timeout?: number
+  ): Promise<void> {
     let currMs = 0;
     while (true) {
       if (await forwarder()) {
@@ -18,12 +22,9 @@ export class Wait {
 
   public static async time(millisecond: number): Promise<void> {
     await new Promise<void>(resolve => {
-      setTimeout(
-        () => {
-          resolve();
-        },
-        millisecond
-      );
+      setTimeout(() => {
+        resolve();
+      }, millisecond);
     });
   }
 }

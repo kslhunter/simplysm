@@ -15,21 +15,27 @@ declare interface Element {
   findFirstFocusableParent(): HTMLElement | undefined;
 }
 
-Element.prototype.prependChild = function <T extends Node>(newChild: T): T {
+Element.prototype.prependChild = function<T extends Node>(newChild: T): T {
   return this.insertBefore(newChild, this.childNodes.item(0));
 };
 
-Element.prototype.findAll = function (selector: string): Element[] {
-  return Array.from(this.querySelectorAll(selector.split(",").map(item => `:scope ${item}`).join(","))).ofType(Element);
+Element.prototype.findAll = function(selector: string): Element[] {
+  return Array.from(
+    this.querySelectorAll(
+      selector
+        .split(",")
+        .map(item => `:scope ${item}`)
+        .join(",")
+    )
+  ).ofType(Element);
 };
 
-Element.prototype.findParent = function (arg: string | Element): Element | undefined {
+Element.prototype.findParent = function(arg: string | Element): Element | undefined {
   let cursor = this.parentElement;
   while (cursor) {
     if (typeof arg === "string" && cursor.matches(arg)) {
       break;
-    }
-    else if (arg instanceof Element && arg === cursor) {
+    } else if (arg instanceof Element && arg === cursor) {
       break;
     }
 
@@ -53,11 +59,13 @@ const focusableSelectorList = [
   "*[contenteditable]:not([hidden])"
 ];
 
-Element.prototype.findFocusableAll = function (): HTMLElement[] {
-  return Array.from(this.querySelectorAll(focusableSelectorList.map(item => `:scope ${item}`).join(", "))).ofType(HTMLElement);
+Element.prototype.findFocusableAll = function(): HTMLElement[] {
+  return Array.from(this.querySelectorAll(focusableSelectorList.map(item => `:scope ${item}`).join(", "))).ofType(
+    HTMLElement
+  );
 };
 
-Element.prototype.findFocusableAllIncludeMe = function (): HTMLElement[] {
+Element.prototype.findFocusableAllIncludeMe = function(): HTMLElement[] {
   const result: HTMLElement[] = [];
   if (this.matches(focusableSelectorList.join(", "))) {
     result.push(this as HTMLElement);
@@ -67,7 +75,7 @@ Element.prototype.findFocusableAllIncludeMe = function (): HTMLElement[] {
   return result;
 };
 
-Element.prototype.findFirstFocusableParent = function (): HTMLElement | undefined {
+Element.prototype.findFirstFocusableParent = function(): HTMLElement | undefined {
   let parentEl = this.parentElement;
   while (parentEl) {
     if (parentEl.matches(focusableSelectorList.join(", "))) {

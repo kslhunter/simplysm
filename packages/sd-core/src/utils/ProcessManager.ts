@@ -1,9 +1,17 @@
-import {Logger, optional} from "@simplysm/sd-common";
+import { Logger, optional } from "@simplysm/sd-common";
 import * as childProcess from "child_process";
 import ProcessEnv = NodeJS.ProcessEnv;
 
 export class ProcessManager {
-  public static async spawnAsync(cmds: string[], opts?: { env?: ProcessEnv; cwd?: string; logger?: Logger; onMessage?(errMsg: string | undefined, logMsg: string | undefined): Promise<boolean | void> }): Promise<void> {
+  public static async spawnAsync(
+    cmds: string[],
+    opts?: {
+      env?: ProcessEnv;
+      cwd?: string;
+      logger?: Logger;
+      onMessage?(errMsg: string | undefined, logMsg: string | undefined): Promise<boolean | void>;
+    }
+  ): Promise<void> {
     if (opts && opts.logger) {
       opts.logger!.log(`$ ` + cmds.join(" "));
     }
@@ -27,16 +35,24 @@ export class ProcessManager {
       worker.stdout!.on("data", async data => {
         resultMessage += data.toString();
         if (resultMessage.includes("\n")) {
-          const newMessages = resultMessage.split("\n").map(item => `${item.replace(/\r/g, "")}`).slice(0, -1).filter(item => !!item);
+          const newMessages = resultMessage
+            .split("\n")
+            .map(item => `${item.replace(/\r/g, "")}`)
+            .slice(0, -1)
+            .filter(item => !!item);
           for (const newMessage of newMessages) {
             if (opts && opts.logger) {
               opts.logger!.log(newMessage);
             }
-            if (opts && opts.onMessage && await opts.onMessage(undefined, newMessage)) {
+            if (opts && opts.onMessage && (await opts.onMessage(undefined, newMessage))) {
               resolve();
             }
           }
-          resultMessage = resultMessage.split("\n").slice(-1)[0].replace(/\r/g, "") || "";
+          resultMessage =
+            resultMessage
+              .split("\n")
+              .slice(-1)[0]
+              .replace(/\r/g, "") || "";
         }
       });
 
@@ -44,16 +60,24 @@ export class ProcessManager {
       worker.stderr!.on("data", async data => {
         errorMessage += data.toString();
         if (errorMessage.includes("\n")) {
-          const newMessages = errorMessage.split("\n").map(item => `${item.replace(/\r/g, "")}`).slice(0, -1).filter(item => !!item);
+          const newMessages = errorMessage
+            .split("\n")
+            .map(item => `${item.replace(/\r/g, "")}`)
+            .slice(0, -1)
+            .filter(item => !!item);
           for (const newMessage of newMessages) {
             if (opts && opts.logger) {
               opts.logger!.log(newMessage);
             }
-            if (opts && opts.onMessage && await opts.onMessage(undefined, newMessage)) {
+            if (opts && opts.onMessage && (await opts.onMessage(undefined, newMessage))) {
               resolve();
             }
           }
-          errorMessage = errorMessage.split("\n").slice(-1)[0].replace(/\r/g, "") || "";
+          errorMessage =
+            errorMessage
+              .split("\n")
+              .slice(-1)[0]
+              .replace(/\r/g, "") || "";
         }
       });
 
@@ -75,8 +99,7 @@ export class ProcessManager {
 
         if (code === 0) {
           resolve();
-        }
-        else {
+        } else {
           reject(new Error());
         }
       });
@@ -148,18 +171,18 @@ export class ProcessManager {
     });
   }*/
 
-  public static fork(modulePath: string, cmds: string[], opts?: { env?: ProcessEnv; cwd?: string; logger?: Logger }): childProcess.ChildProcess {
+  public static fork(
+    modulePath: string,
+    cmds: string[],
+    opts?: { env?: ProcessEnv; cwd?: string; logger?: Logger }
+  ): childProcess.ChildProcess {
     /*if (opts && opts.logger) {
       opts.logger!.log(`$ node ${modulePath} ${cmds.join(" ")}`);
     }*/
-    return childProcess.fork(
-      modulePath,
-      cmds,
-      {
-        stdio: ["inherit", "inherit", "inherit", "ipc"],
-        env: optional(() => opts!.env),
-        cwd: optional(() => opts!.cwd) || process.cwd()
-      }
-    );
+    return childProcess.fork(modulePath, cmds, {
+      stdio: ["inherit", "inherit", "inherit", "ipc"],
+      env: optional(() => opts!.env),
+      cwd: optional(() => opts!.cwd) || process.cwd()
+    });
   }
 }

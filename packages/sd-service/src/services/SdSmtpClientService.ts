@@ -1,8 +1,8 @@
 import * as nodemailer from "nodemailer";
-import {Logger} from "@simplysm/sd-common";
-import {SdWebSocketServiceBase} from "../SdWebSocketServiceBase";
-import {ISmtpClientSendDefaultOption, ISmtpClientSendOption} from "@simplysm/sd-smtp-client-common";
-import {SdWebSocketServerUtil} from "../SdWebSocketServerUtil";
+import { Logger } from "@simplysm/sd-common";
+import { SdWebSocketServiceBase } from "../SdWebSocketServiceBase";
+import { ISmtpClientSendDefaultOption, ISmtpClientSendOption } from "@simplysm/sd-smtp-client-common";
+import { SdWebSocketServerUtil } from "../SdWebSocketServerUtil";
 
 export class SdSmtpClientService extends SdWebSocketServiceBase {
   private readonly _logger = new Logger("@simplysm/sd-service", "SdSmtpClientService");

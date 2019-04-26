@@ -1,10 +1,9 @@
-import {SdExcelWorksheet} from "./SdExcelWorksheet";
+import { SdExcelWorksheet } from "./SdExcelWorksheet";
 
 export class SdExcelColumn {
   public colData: any;
 
-  public constructor(private readonly _ews: SdExcelWorksheet,
-                     private readonly _col: number) {
+  public constructor(private readonly _ews: SdExcelWorksheet, private readonly _col: number) {
     this._ews.sheetData.worksheet.cols[0] = this._ews.sheetData.worksheet.cols[0] || {};
     this._ews.sheetData.worksheet.cols[0].col = this._ews.sheetData.worksheet.cols[0].col || [];
     const colDataList = this._ews.sheetData.worksheet.cols[0].col as any[];
@@ -40,7 +39,7 @@ export class SdExcelColumn {
   }
 
   public set width(value: number) {
-    this.colData.$ = this.colData.$ || {min: this._col + 1, max: this._col + 1};
+    this.colData.$ = this.colData.$ || { min: this._col + 1, max: this._col + 1 };
     this.colData.$.width = value;
   }
 }

@@ -5,7 +5,7 @@ sd-pagination {
     display: inline-block;
     padding: 0 get($gap, xs);
 
-    &[sd-selected=true] {
+    &[sd-selected="true"] {
       text-decoration: underline;
     }
   }

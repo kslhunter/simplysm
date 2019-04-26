@@ -1,9 +1,8 @@
 import * as webpack from "webpack";
-import {Logger} from "@simplysm/sd-common";
+import { Logger } from "@simplysm/sd-common";
 
 export class SdWebpackLoggerPlugin implements webpack.Plugin {
-  public constructor(private readonly _options: { logger: Logger }) {
-  }
+  public constructor(private readonly _options: { logger: Logger }) {}
 
   public apply(compiler: webpack.Compiler): void {
     let isWatchStarted = false;
@@ -15,8 +14,7 @@ export class SdWebpackLoggerPlugin implements webpack.Plugin {
     compiler.hooks.watchRun.tap("SdWebpackLoggerPlugin", () => {
       if (isWatchStarted) {
         this._options.logger.log(`변경이 감지되었습니다. 빌드를 시작합니다...`);
-      }
-      else {
+      } else {
         this._options.logger.log(`빌드 및 변경감지를 시작합니다...`);
       }
       isWatchStarted = true;

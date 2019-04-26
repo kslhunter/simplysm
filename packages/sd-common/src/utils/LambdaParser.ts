@@ -5,7 +5,9 @@ export interface ILambdaParseResult {
 
 export class LambdaParser {
   public static parse(predicate: (...args: any[]) => any): ILambdaParseResult {
-    const matches: RegExpMatchArray | null = predicate.toString().match(/function\s?\(([^)]*)\)[^{]*{((?!return)(.|\r|\n))*return\s?((.|\r|\n)*);?\s?}$/);
+    const matches: RegExpMatchArray | null = predicate
+      .toString()
+      .match(/function\s?\(([^)]*)\)[^{]*{((?!return)(.|\r|\n))*return\s?((.|\r|\n)*);?\s?}$/);
     if (matches === null) {
       throw new Error("Lambda 파싱 실패: " + predicate.toString() + "\n");
     }

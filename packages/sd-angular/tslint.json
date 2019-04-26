@@ -1,6 +1,3 @@
 {
-  "extends": [
-    "../../tslint.json",
-    "../../tslint.codelyzer.json"
-  ]
+  "extends": ["../../tslint.json", "../../tslint.codelyzer.json"]
 }

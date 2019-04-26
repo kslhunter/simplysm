@@ -10,18 +10,19 @@ import {
   OnDestroy,
   OnInit
 } from "@angular/core";
-import {SdDockContainerControl} from "./SdDockContainerControl";
-import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
-import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
-import {ResizeEvent} from "../commons/ResizeEvent";
+import { SdDockContainerControl } from "./SdDockContainerControl";
+import { ISdNotifyPropertyChange, SdNotifyPropertyChange } from "../commons/SdNotifyPropertyChange";
+import { SdTypeValidate } from "../commons/SdTypeValidate";
+import { SdLocalStorageProvider } from "../providers/SdLocalStorageProvider";
+import { ResizeEvent } from "../commons/ResizeEvent";
 
 @Component({
   selector: "sd-dock",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <hr *ngIf="!!id" (mousedown)="onResizerMousedown($event)"/>
-    <ng-content></ng-content>`
+    <hr *ngIf="!!id" (mousedown)="onResizerMousedown($event)" />
+    <ng-content></ng-content>
+  `
 })
 export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit {
   @Input()
@@ -34,7 +35,6 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
     includes: ["top", "right", "bottom", "left"],
     notnull: true
   })
-
   @SdNotifyPropertyChange()
   @HostBinding("attr.sd-position")
   public position: "top" | "right" | "bottom" | "left" = "top";
@@ -47,11 +47,12 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
   private _sizeConfig: { width?: number; height?: number } | undefined;
   private _isOnDragging = false;
 
-  public constructor(public readonly elRef: ElementRef<HTMLElement>,
-                     @Inject(forwardRef(() => SdDockContainerControl))
-                     private readonly _containerControl: SdDockContainerControl,
-                     private readonly _localStorage: SdLocalStorageProvider) {
-  }
+  public constructor(
+    public readonly elRef: ElementRef<HTMLElement>,
+    @Inject(forwardRef(() => SdDockContainerControl))
+    private readonly _containerControl: SdDockContainerControl,
+    private readonly _localStorage: SdLocalStorageProvider
+  ) {}
 
   public ngOnInit(): void {
     if (this.resizable) {
@@ -61,8 +62,7 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
         const el = this.elRef.nativeElement;
         if (this._sizeConfig.width && (this.position === "right" || this.position === "left")) {
           el.style.width = this._sizeConfig.width + "px";
-        }
-        else if (this._sizeConfig.height && (this.position === "top" || this.position === "bottom")) {
+        } else if (this._sizeConfig.height && (this.position === "top" || this.position === "bottom")) {
           el.style.height = this._sizeConfig.height + "px";
         }
       }
@@ -81,8 +81,7 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
 
     if (event.detail.dimensions.includes("height") && ["top", "bottom"].includes(this.position)) {
       this._containerControl.redraw();
-    }
-    else if (event.detail.dimensions.includes("width") && ["left", "right"].includes(this.position)) {
+    } else if (event.detail.dimensions.includes("width") && ["left", "right"].includes(this.position)) {
       this._containerControl.redraw();
     }
   }
@@ -102,14 +101,11 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
 
       if (this.position === "bottom") {
         el.style.height = `${startHeight - e.clientY + startY}px`;
-      }
-      else if (this.position === "right") {
+      } else if (this.position === "right") {
         el.style.width = `${startWidth - e.clientX + startX}px`;
-      }
-      else if (this.position === "top") {
+      } else if (this.position === "top") {
         el.style.height = `${startHeight + e.clientY - startY}px`;
-      }
-      else if (this.position === "left") {
+      } else if (this.position === "left") {
         el.style.width = `${startWidth + e.clientX - startX}px`;
       }
     };
@@ -129,8 +125,7 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
           this._sizeConfig = this._sizeConfig || {};
           this._sizeConfig.width = currWidth;
           this._saveSizeConfig();
-        }
-        else {
+        } else {
           const currHeight = el.style.height ? Number(el.style.height.replace("px", "")) : undefined;
           this._sizeConfig = this._sizeConfig || {};
           this._sizeConfig.height = currHeight;

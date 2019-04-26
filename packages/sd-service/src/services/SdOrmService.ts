@@ -1,8 +1,8 @@
-import {Logger} from "@simplysm/sd-common";
-import {SdWebSocketServiceBase} from "../SdWebSocketServiceBase";
-import {SdWebSocketServerUtil} from "../SdWebSocketServerUtil";
-import {DbConnection} from "@simplysm/sd-orm";
-import {IQueryDef} from "@simplysm/sd-orm-client";
+import { Logger } from "@simplysm/sd-common";
+import { SdWebSocketServiceBase } from "../SdWebSocketServiceBase";
+import { SdWebSocketServerUtil } from "../SdWebSocketServerUtil";
+import { DbConnection } from "@simplysm/sd-orm";
+import { IQueryDef } from "@simplysm/sd-orm-client";
 
 if (process.env.NODE_ENV !== "production") {
   Logger.setGroupConfig("@simplysm/sd-orm", {
@@ -84,13 +84,18 @@ export class SdOrmService extends SdWebSocketServiceBase {
     await conn.rollbackTransactionAsync();
   }
 
-  public async executeAsync(connId: number, queries: (string | IQueryDef)[], colDefs?: { name: string; dataType: string | undefined }[], joinDefs?: { as: string; isSingle: boolean }[]): Promise<any[][]> {
+  public async executeAsync(
+    connId: number,
+    queries: (string | IQueryDef)[],
+    colDefs?: { name: string; dataType: string | undefined }[],
+    joinDefs?: { as: string; isSingle: boolean }[]
+  ): Promise<any[][]> {
     const conn = SdOrmService._connections.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
     const result = await conn.executeAsync(queries);
-    return (colDefs && joinDefs) ? conn.generateResult(result[0], colDefs, joinDefs) : result;
+    return colDefs && joinDefs ? conn.generateResult(result[0], colDefs, joinDefs) : result;
   }
 }

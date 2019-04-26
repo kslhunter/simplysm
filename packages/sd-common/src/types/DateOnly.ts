@@ -1,4 +1,4 @@
-import {ArgumentError} from "../errors/ArgumentError";
+import { ArgumentError } from "../errors/ArgumentError";
 
 export class DateOnly {
   public date: Date;
@@ -11,19 +11,15 @@ export class DateOnly {
     if (args1 === undefined) {
       const now = new Date();
       this.date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    }
-    else if (typeof args1 === "number" && args2 === undefined) {
+    } else if (typeof args1 === "number" && args2 === undefined) {
       const date = new Date(args1);
       this.date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    }
-    else if (typeof args1 === "number" && args2 !== undefined) {
+    } else if (typeof args1 === "number" && args2 !== undefined) {
       this.date = new Date(args1, args2 - 1, args3);
-    }
-    else if (args1 instanceof Date) {
+    } else if (args1 instanceof Date) {
       this.date = new Date(args1.getFullYear(), args1.getMonth(), args1.getDate());
-    }
-    else {
-      throw new ArgumentError({args1, args2, args3});
+    } else {
+      throw new ArgumentError({ args1, args2, args3 });
     }
   }
 
@@ -34,14 +30,10 @@ export class DateOnly {
     }
 
     if (/^[0-9]{8}$/.test(value)) {
-      return new DateOnly(
-        Number(value.substr(0, 4)),
-        Number(value.substr(4, 2)),
-        Number(value.substr(6, 2))
-      );
+      return new DateOnly(Number(value.substr(0, 4)), Number(value.substr(4, 2)), Number(value.substr(6, 2)));
     }
 
-    throw new ArgumentError({value});
+    throw new ArgumentError({ value });
   }
 
   public get year(): number {
@@ -106,14 +98,21 @@ export class DateOnly {
     const day = this.day;
 
     const weekString =
-      this.week === 0 ? "일" :
-        this.week === 1 ? "월" :
-          this.week === 2 ? "화" :
-            this.week === 3 ? "수" :
-              this.week === 4 ? "목" :
-                this.week === 5 ? "금" :
-                  this.week === 6 ? "토" :
-                    "";
+      this.week === 0
+        ? "일"
+        : this.week === 1
+        ? "월"
+        : this.week === 2
+        ? "화"
+        : this.week === 3
+        ? "수"
+        : this.week === 4
+        ? "목"
+        : this.week === 5
+        ? "금"
+        : this.week === 6
+        ? "토"
+        : "";
 
     let result = format;
     result = result.replace(/yyyyy/g, year.toString() + "년");

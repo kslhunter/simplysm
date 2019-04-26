@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
-import {SdTypeValidate} from "../commons/SdTypeValidate";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
+import { SdTypeValidate } from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-pagination",
@@ -8,13 +8,17 @@ import {SdTypeValidate} from "../commons/SdTypeValidate";
     <a *ngIf="hasPrev" (click)="onPrevClick()">
       <sd-icon [icon]="'angle-double-left'" [fw]="true"></sd-icon>
     </a>
-    <a *ngFor="let displayPage of displayPages; trackBy: trackByPageFn" (click)="onPageClick(displayPage)"
-       [attr.sd-selected]="displayPage === page">
+    <a
+      *ngFor="let displayPage of displayPages; trackBy: trackByPageFn"
+      (click)="onPageClick(displayPage)"
+      [attr.sd-selected]="displayPage === page"
+    >
       {{ displayPage + 1 }}
     </a>
     <a *ngIf="hasNext" (click)="onNextClick()">
       <sd-icon [icon]="'angle-double-right'" [fw]="true"></sd-icon>
-    </a>`
+    </a>
+  `
 })
 export class SdPaginationControl {
   @Input()
@@ -53,7 +57,7 @@ export class SdPaginationControl {
   }
 
   public get hasNext(): boolean {
-    return (this.displayPages.last() || 0) < (this.length - 1);
+    return (this.displayPages.last() || 0) < this.length - 1;
   }
 
   public get hasPrev(): boolean {

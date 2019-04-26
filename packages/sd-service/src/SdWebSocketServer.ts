@@ -2,17 +2,17 @@ import * as express from "express";
 import * as http from "http";
 import * as WebSocket from "ws";
 import * as path from "path";
-import {EventEmitter} from "events";
-import {JsonConvert, Logger, Type} from "@simplysm/sd-common";
-import {SdWebSocketServerConnection} from "./SdWebSocketServerConnection";
-import {SdWebSocketServiceBase} from "./SdWebSocketServiceBase";
+import { EventEmitter } from "events";
+import { JsonConvert, Logger, Type } from "@simplysm/sd-common";
+import { SdWebSocketServerConnection } from "./SdWebSocketServerConnection";
+import { SdWebSocketServiceBase } from "./SdWebSocketServiceBase";
 import * as net from "net";
-import {ISdWebSocketRequest, ISdWebSocketResponse} from "@simplysm/sd-service-client";
+import { ISdWebSocketRequest, ISdWebSocketResponse } from "@simplysm/sd-service-client";
 import * as glob from "glob";
 import * as fs from "fs-extra";
-import {SdCryptoService} from "./services/SdCryptoService";
-import {SdOrmService} from "./services/SdOrmService";
-import {SdSmtpClientService} from "./services/SdSmtpClientService";
+import { SdCryptoService } from "./services/SdCryptoService";
+import { SdOrmService } from "./services/SdOrmService";
+import { SdSmtpClientService } from "./services/SdSmtpClientService";
 
 const vhost = require("vhost"); //tslint:disable-line:no-var-requires no-require-imports
 
@@ -45,9 +45,7 @@ export class SdWebSocketServer extends EventEmitter {
     return !!this._httpServer && !!this._httpServer.listening;
   }
 
-  public constructor(public port: number,
-                     public services: Type<SdWebSocketServiceBase>[],
-                     public rootPath: string) {
+  public constructor(public port: number, public services: Type<SdWebSocketServiceBase>[], public rootPath: string) {
     super();
   }
 
@@ -61,8 +59,7 @@ export class SdWebSocketServer extends EventEmitter {
       this.expressServer.use("/", (req, res, next) => {
         if (req.url.match(/configs.json$/)) {
           res.status(403).end("403 Forbidden");
-        }
-        else {
+        } else {
           next();
         }
       });
@@ -87,7 +84,7 @@ export class SdWebSocketServer extends EventEmitter {
       });
 
       this._httpServer = http.createServer(this.expressServer);
-      this._wsServer = new WebSocket.Server({server: this._httpServer});
+      this._wsServer = new WebSocket.Server({ server: this._httpServer });
       this._wsConnections = [];
       this._eventListeners = [];
 
@@ -97,13 +94,13 @@ export class SdWebSocketServer extends EventEmitter {
         this._wsConnections.push(wsConnection);
 
         wsConnection.on("request", async req => {
-
-          this._logger.log(`요청을 받았습니다 : ${connReq.headers.origin} - ${JsonConvert.stringify(req, {hideBuffer: true})}`);
+          this._logger.log(
+            `요청을 받았습니다 : ${connReq.headers.origin} - ${JsonConvert.stringify(req, { hideBuffer: true })}`
+          );
           let res: ISdWebSocketResponse;
           try {
             res = await this._onRequestAsync(wsConnection, req);
-          }
-          catch (err) {
+          } catch (err) {
             this._logger.error(`에러가 발생했습니다 : ${connReq.headers.origin}`, err);
             res = {
               requestId: req.id,
@@ -111,7 +108,9 @@ export class SdWebSocketServer extends EventEmitter {
               body: err.message
             };
           }
-          this._logger.log(`결과를 반환합니다. : ${connReq.headers.origin} - ${JsonConvert.stringify(res, {hideBuffer: true})}`);
+          this._logger.log(
+            `결과를 반환합니다. : ${connReq.headers.origin} - ${JsonConvert.stringify(res, { hideBuffer: true })}`
+          );
           await wsConnection.sendAsync(res);
         });
 
@@ -168,8 +167,7 @@ export class SdWebSocketServer extends EventEmitter {
             }
             resolve();
           });
-        }
-        else {
+        } else {
           resolve();
         }
       }),
@@ -182,8 +180,7 @@ export class SdWebSocketServer extends EventEmitter {
             }
             resolve();
           });
-        }
-        else {
+        } else {
           resolve();
         }
       })
@@ -200,7 +197,10 @@ export class SdWebSocketServer extends EventEmitter {
     });
   }
 
-  private async _onRequestAsync(conn: SdWebSocketServerConnection, req: ISdWebSocketRequest): Promise<ISdWebSocketResponse> {
+  private async _onRequestAsync(
+    conn: SdWebSocketServerConnection,
+    req: ISdWebSocketRequest
+  ): Promise<ISdWebSocketResponse> {
     if (req.command === "addEventListener") {
       const eventListenerId = (this._eventListeners.max(item => item.id) || 0) + 1;
 
@@ -216,20 +216,20 @@ export class SdWebSocketServer extends EventEmitter {
         type: "response",
         body: eventListenerId
       };
-    }
-    else if (req.command === "getEventListeners") {
+    } else if (req.command === "getEventListeners") {
       const eventName = req.params[0];
 
       return {
         requestId: req.id,
         type: "response",
-        body: this._eventListeners.filter(item => item.eventName === eventName).map(item => ({
-          id: item.id,
-          info: item.info
-        }))
+        body: this._eventListeners
+          .filter(item => item.eventName === eventName)
+          .map(item => ({
+            id: item.id,
+            info: item.info
+          }))
       };
-    }
-    else if (req.command === "emitEvent") {
+    } else if (req.command === "emitEvent") {
       const ids: number[] = req.params[0];
       const data = req.params[1];
 
@@ -241,8 +241,7 @@ export class SdWebSocketServer extends EventEmitter {
         requestId: req.id,
         type: "response"
       };
-    }
-    else {
+    } else {
       // COMMAND 분할
       const cmdSplit = req.command.split(".");
       const serviceName = cmdSplit[0];
@@ -250,11 +249,7 @@ export class SdWebSocketServer extends EventEmitter {
 
       // 서비스 가져오기
       const serviceClass = this.services
-        .concat([
-          SdCryptoService,
-          SdOrmService,
-          SdSmtpClientService
-        ])
+        .concat([SdCryptoService, SdOrmService, SdSmtpClientService])
         .single(item => item.name === serviceName);
       if (!serviceClass) {
         throw new Error(`서비스[${serviceName}]를 찾을 수 없습니다.`);

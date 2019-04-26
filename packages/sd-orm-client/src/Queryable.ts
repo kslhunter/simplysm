@@ -1,9 +1,9 @@
-import {DbContext} from "./DbContext";
-import {JsonConvert, Type, Wait} from "@simplysm/sd-common";
-import {QueryBuilderAdv} from "./QueryBuilderAdv";
-import {ITableDef} from "./definitions";
-import {QueryType, tableDefMetadataKey} from "./commons";
-import {QueryUnit} from "./QueryUnit";
+import { DbContext } from "./DbContext";
+import { JsonConvert, Type, Wait } from "@simplysm/sd-common";
+import { QueryBuilderAdv } from "./QueryBuilderAdv";
+import { ITableDef } from "./definitions";
+import { QueryType, tableDefMetadataKey } from "./commons";
+import { QueryUnit } from "./QueryUnit";
 
 export class Queryable<T extends object> {
   private static readonly _selectQueryHistory = new Map<string, any[] | undefined>();
@@ -16,12 +16,15 @@ export class Queryable<T extends object> {
     if (!this.__qba) {
       if (this._qbaFirstParam instanceof Function) {
         this.__qba = new QueryBuilderAdv(this._qbaFirstParam, this._db.mainDb);
-      }
-      else if (this._qbaFirstParam instanceof Queryable) {
+      } else if (this._qbaFirstParam instanceof Queryable) {
         this.__qba = new QueryBuilderAdv(this._qbaFirstParam._qba, this._db.mainDb, undefined, this.tableType);
-      }
-      else {
-        this.__qba = new QueryBuilderAdv(this._qbaFirstParam.map(item => item._qba), this._db.mainDb, undefined, this.tableType);
+      } else {
+        this.__qba = new QueryBuilderAdv(
+          this._qbaFirstParam.map(item => item._qba),
+          this._db.mainDb,
+          undefined,
+          this.tableType
+        );
       }
     }
     return this.__qba;
@@ -48,12 +51,10 @@ export class Queryable<T extends object> {
 
     if (arg instanceof Function) {
       this.tableType = arg;
-    }
-    else if (arg instanceof Queryable) {
+    } else if (arg instanceof Queryable) {
       this.subQueryable = arg;
       this.tableType = tableType;
-    }
-    else {
+    } else {
       this.subQueryableList = arg;
       this.tableType = tableType;
     }
@@ -109,16 +110,31 @@ export class Queryable<T extends object> {
     return result;
   }
 
-  public join<A extends string, J, R, S extends boolean>(joinType: Type<J>, as: A, fwd: (qb: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<R>, isSingle?: S): Queryable<T & { [K in A]?: (S extends true ? R : R[]) }> {
+  public join<A extends string, J, R, S extends boolean>(
+    joinType: Type<J>,
+    as: A,
+    fwd: (qb: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<R>,
+    isSingle?: S
+  ): Queryable<T & { [K in A]?: (S extends true ? R : R[]) }> {
     const result = this._clone() as Queryable<any>;
     result._qba = this._qba.join(joinType, as, fwd, isSingle);
     return result;
   }
 
   public include<A extends string, J>(target: string, depth: number): Queryable<T>;
-  public include<A extends string, J>(targetFwd: (entity: NonNullable<T>) => (J | J[] | undefined)): Queryable<T>;
-  public include<A extends string, J, S extends boolean>(targetFwd: (entity: NonNullable<T>) => (J | J[] | undefined), as?: A, fwd?: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<J>, isSingle?: S): Queryable<T & { [K in A]?: (S extends true ? J : J[]) }>;
-  public include<A extends string, J, S extends boolean>(targetOrFwd: ((entity: NonNullable<T>) => (J | J[] | undefined)) | string, asOrDepth?: A | number, fwd?: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<J>, isSingle?: S): Queryable<T & { [K in A]?: (S extends true ? J : J[]) }> {
+  public include<A extends string, J>(targetFwd: (entity: NonNullable<T>) => J | J[] | undefined): Queryable<T>;
+  public include<A extends string, J, S extends boolean>(
+    targetFwd: (entity: NonNullable<T>) => J | J[] | undefined,
+    as?: A,
+    fwd?: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<J>,
+    isSingle?: S
+  ): Queryable<T & { [K in A]?: (S extends true ? J : J[]) }>;
+  public include<A extends string, J, S extends boolean>(
+    targetOrFwd: ((entity: NonNullable<T>) => J | J[] | undefined) | string,
+    asOrDepth?: A | number,
+    fwd?: (qr: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<J>,
+    isSingle?: S
+  ): Queryable<T & { [K in A]?: (S extends true ? J : J[]) }> {
     const result = this._clone();
     result._qba = this._qba.include(targetOrFwd, asOrDepth, fwd, isSingle);
     return result;
@@ -135,11 +151,8 @@ export class Queryable<T extends object> {
         this._getIdentityInsertQuery(false)
       ]);
       return result[1][0];
-    }
-    else {
-      const result = await this._db.executeAsync([
-        queryDef
-      ]);
+    } else {
+      const result = await this._db.executeAsync([queryDef]);
       return result[0][0];
     }
   }
@@ -153,13 +166,11 @@ export class Queryable<T extends object> {
       const queryDef = this._qba.insert(obj).queryDef;
 
       if (this._hasAutoIncrementValue(obj)) {
-        this._db.prepare([
-          this._getIdentityInsertQuery(true),
-          queryDef,
-          this._getIdentityInsertQuery(false)
-        ], [false, true, false]);
-      }
-      else {
+        this._db.prepare(
+          [this._getIdentityInsertQuery(true), queryDef, this._getIdentityInsertQuery(false)],
+          [false, true, false]
+        );
+      } else {
         this._db.prepare([queryDef], [true]);
       }
     }
@@ -174,16 +185,12 @@ export class Queryable<T extends object> {
   public insertPrepare(obj: T): void {
     const queryDef = this._qba.insert(obj).queryDef;
     if (this._hasAutoIncrementValue(obj)) {
-      this._db.prepare([
-        this._getIdentityInsertQuery(true),
-        queryDef,
-        this._getIdentityInsertQuery(false)
-      ], [false, true, false]);
-    }
-    else {
-      this._db.prepare([
-        queryDef
-      ], [true]);
+      this._db.prepare(
+        [this._getIdentityInsertQuery(true), queryDef, this._getIdentityInsertQuery(false)],
+        [false, true, false]
+      );
+    } else {
+      this._db.prepare([queryDef], [true]);
     }
   }
 
@@ -210,22 +217,27 @@ export class Queryable<T extends object> {
   public async upsertAsync(obj: Partial<T> | undefined, additionalInsertObj: Partial<T>): Promise<T>;
   public async upsertAsync(fwd: (item: T) => T): Promise<T>;
   public async upsertAsync(obj: T): Promise<T>;
-  public async upsertAsync(arg: (T | Partial<T> | undefined) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T>;
-  public async upsertAsync(arg: (T | Partial<T> | undefined) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T> {
+  public async upsertAsync(
+    arg: (T | Partial<T> | undefined) | ((item: T) => T | Partial<T>),
+    additionalInsertObj?: Partial<T>
+  ): Promise<T>;
+  public async upsertAsync(
+    arg: (T | Partial<T> | undefined) | ((item: T) => T | Partial<T>),
+    additionalInsertObj?: Partial<T>
+  ): Promise<T> {
     Queryable._selectQueryHistory.clear();
 
     const obj: object = typeof arg === "function" ? (arg as any)(this._qba.entity) : arg;
 
     const queryDef = this._qba.upsert(arg, additionalInsertObj).queryDef;
-    if (this._hasAutoIncrementValue({...obj, ...(additionalInsertObj as object)})) {
+    if (this._hasAutoIncrementValue({ ...obj, ...(additionalInsertObj as object) })) {
       const result = await this._db.executeAsync([
         this._getIdentityInsertQuery(true),
         queryDef,
         this._getIdentityInsertQuery(false)
       ]);
       return result[1][0];
-    }
-    else {
+    } else {
       const result = await this._db.executeAsync([queryDef]);
       return result[0][0];
     }
@@ -235,8 +247,8 @@ export class Queryable<T extends object> {
   public upsertPrepare(obj: Partial<T>, additionalInsertObj?: Partial<T>): void;
   public upsertPrepare(fwd: (item: T) => T): void;
   public upsertPrepare(obj: T): void;
-  public upsertPrepare(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): void;
-  public upsertPrepare(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): void {
+  public upsertPrepare(arg: (T | Partial<T>) | ((item: T) => T | Partial<T>), additionalInsertObj?: Partial<T>): void;
+  public upsertPrepare(arg: (T | Partial<T>) | ((item: T) => T | Partial<T>), additionalInsertObj?: Partial<T>): void {
     const queryDef = this._qba.upsert(arg, additionalInsertObj).queryDef;
     this._db.prepare([queryDef], [true]);
   }
@@ -261,22 +273,27 @@ export class Queryable<T extends object> {
       Queryable._selectQueryHistory.set(queryDefJson, undefined);
     }
 
-    const colDefs = Object.keys(this._qba.selectObj)
-      .map(key => {
-        const colUnit = this._qba.selectObj[key];
-        return {
-          name: key,
-          dataType: colUnit instanceof QueryUnit
+    const colDefs = Object.keys(this._qba.selectObj).map(key => {
+      const colUnit = this._qba.selectObj[key];
+      return {
+        name: key,
+        dataType:
+          colUnit instanceof QueryUnit
             ? colUnit.type.name
             : colUnit === undefined
-              ? undefined
-              : colUnit.constructor.name
-        };
-      });
+            ? undefined
+            : colUnit.constructor.name
+      };
+    });
 
     const joinDefs = Object.keys(this._qba.selectObj)
       .orderBy(key => key.split(".").length, true)
-      .map(key => key.split(".").slice(0, -1).join("."))
+      .map(key =>
+        key
+          .split(".")
+          .slice(0, -1)
+          .join(".")
+      )
       .filterExists()
       .distinct()
       .map(key => {
@@ -310,9 +327,7 @@ export class Queryable<T extends object> {
   }
 
   public async countAsync(): Promise<number> {
-    const item = await this
-      .select(() => ({cnt: new QueryUnit(Number, "COUNT(*)")}))
-      .singleAsync();
+    const item = await this.select(() => ({ cnt: new QueryUnit(Number, "COUNT(*)") })).singleAsync();
 
     return ((item && item.cnt) || 0) as any;
   }
@@ -355,6 +370,8 @@ export class Queryable<T extends object> {
       throw new Error(`'${this.tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
     }
 
-    return `SET IDENTITY_INSERT [${tableDef.database || this._db.mainDb}].[${tableDef.scheme}].[${tableDef.name}] ${on ? "ON" : "OFF"}`;
+    return `SET IDENTITY_INSERT [${tableDef.database || this._db.mainDb}].[${tableDef.scheme}].[${tableDef.name}] ${
+      on ? "ON" : "OFF"
+    }`;
   }
 }

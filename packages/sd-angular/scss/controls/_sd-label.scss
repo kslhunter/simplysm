@@ -7,19 +7,19 @@ sd-label {
   text-indent: 0;
 
   @each $key, $val in $theme-color {
-    &[sd-theme=#{$key}] {
+    &[sd-theme="#{$key}"] {
       background: get($val, default);
     }
   }
 
-  &[sd-clickable=true] {
+  &[sd-clickable="true"] {
     cursor: pointer;
 
     &:hover {
       background: get($theme-color, grey, dark);
 
       @each $key, $val in $theme-color {
-        &[sd-theme=#{$key}] {
+        &[sd-theme="#{$key}"] {
           background: get($val, dark);
         }
       }
