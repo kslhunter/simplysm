@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "1.1.25",
+  "version": "1.1.26",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -11,10 +11,10 @@
     "sd-cli": "./dist/bin.js"
   },
   "dependencies": {
-    "@simplysm/sd-common": "1.1.24",
-    "@simplysm/sd-core": "1.1.24",
-    "@simplysm/sd-service": "1.1.24",
-    "@simplysm/sd-service-client": "1.1.24",
+    "@simplysm/sd-common": "1.1.26",
+    "@simplysm/sd-core": "1.1.26",
+    "@simplysm/sd-service": "1.1.26",
+    "@simplysm/sd-service-client": "1.1.26",
     "angular-router-loader": "^0.8.5",
     "copy-webpack-plugin": "^5.0.3",
     "css-loader": "^2.1.1",
