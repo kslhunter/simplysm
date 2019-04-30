@@ -5,7 +5,7 @@ sd-topbar-container {
   height: 100%;
   padding-top: $topbar-height;
 
-  &[sd-hide-topbar="true"] {
+  &[sd-hide-topbar=true] {
     padding-top: 0 !important;
 
     sd-topbar {
@@ -38,7 +38,7 @@ sd-topbar {
     margin-right: get($gap, lg);
     color: get($theme-color, grey, lighter);
     transition-property: background, color;
-    transition: 0.1s ease-in;
+    transition: .1s ease-in;
 
     &:hover,
     &:focus {
@@ -46,14 +46,14 @@ sd-topbar {
       background: rgba(0, 0, 0, 0.2);
       color: white;
       transition-property: background, color;
-      transition: 0.1s ease-out;
+      transition: .1s ease-out;
     }
 
     &:active {
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, .3);
       color: white;
       transition-property: background, color;
-      transition: 0.1s ease-out;
+      transition: .1s ease-out;
     }
   }
 
@@ -79,7 +79,7 @@ sd-topbar-menu {
   }
 
   &:active {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, .3);
     color: white;
   }
 }

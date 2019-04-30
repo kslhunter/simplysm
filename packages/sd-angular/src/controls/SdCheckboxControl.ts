@@ -1,14 +1,14 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output } from "@angular/core";
-import { SdTypeValidate } from "../commons/SdTypeValidate";
-import { sdIconNames } from "./SdIconControl";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
+import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {sdIconNames} from "./SdIconControl";
+import {IconName} from "@fortawesome/fontawesome-svg-core";
 
 @Component({
   selector: "sd-checkbox",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <label tabindex="0" (keydown)="onKeydown($event)">
-      <input [checked]="value" (change)="onValueChange($event)" type="checkbox" hidden [disabled]="disabled" />
+      <input [checked]="value" (change)="onValueChange($event)" type="checkbox" hidden [disabled]="disabled">
       <div class="_indicator_rect"></div>
       <sd-icon class="_indicator" [icon]="icon" [fw]="true" *ngIf="!radio"></sd-icon>
       <div class="_indicator" *ngIf="radio">
@@ -17,12 +17,11 @@ import { IconName } from "@fortawesome/fontawesome-svg-core";
       <div class="_content">
         <ng-content></ng-content>
       </div>
-    </label>
-  `
+    </label>`
 })
 export class SdCheckboxControl {
   @Input()
-  @SdTypeValidate({ type: Boolean, notnull: true })
+  @SdTypeValidate({type: Boolean, notnull: true})
   @HostBinding("attr.sd-checked")
   public value = false;
 

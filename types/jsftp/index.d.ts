@@ -1,18 +1,18 @@
 declare module "jsftp" {
-  import { Socket } from "net";
-  import { EventEmitter } from "events";
+  import {Socket} from 'net';
+  import {EventEmitter} from 'events';
 
   interface JsftpOpts {
     host?: string;
     port?: number;
     user?: string;
     pass?: string;
-    createSocket?: ({ port, host }: { port: number; host: string }, firstAction: () => {}) => Socket;
+    createSocket?: ({port, host}: { port: number, host: string }, firstAction: () => {}) => Socket;
     useList?: boolean;
   }
 
   type ErrorCallback = (err: Error) => void;
-  type RawCallback = (err: Error, data: { code: number; text: string }) => void;
+  type RawCallback = (err: Error, data: { code: number, text: string }) => void;
   type ListCallback = (err: Error, dirContents: string) => void;
   type GetCallback = (err: Error, socket: Socket) => void;
   type LsCallback = (err: Error, res: [{ name: string }]) => void;
@@ -47,7 +47,7 @@ declare module "jsftp" {
   }
 
   interface JSFtpConstructor {
-    new (options: JsftpOpts): JSFtp;
+    new(options: JsftpOpts): JSFtp;
   }
 
   const JSFtp: JSFtpConstructor;

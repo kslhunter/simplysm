@@ -10,25 +10,25 @@ $theme-color-pallet: (
 ) !default;
 
 $trans-color: (
-  darkest: rgba(0, 0, 0, 0.4),
-  darker: rgba(0, 0, 0, 0.3),
-  dark: rgba(0, 0, 0, 0.2),
-  default: rgba(0, 0, 0, 0.1),
-  light: rgba(255, 255, 255, 0.1),
-  lighter: rgba(255, 255, 255, 0.2)
+  darkest: rgba(0, 0, 0, .4),
+  darker: rgba(0, 0, 0, .3),
+  dark: rgba(0, 0, 0, .2),
+  default: rgba(0, 0, 0, .1),
+  light: rgba(255, 255, 255, .1),
+  lighter: rgba(255, 255, 255, .2)
 ) !default;
 
 $text-color: (
   dark: black,
-  default: rgba(0, 0, 0, 0.87),
-  light: rgba(0, 0, 0, 0.6),
-  lighter: rgba(0, 0, 0, 0.38)
+  default: rgba(0, 0, 0, .87),
+  light: rgba(0, 0, 0, .60),
+  lighter: rgba(0, 0, 0, .38)
 ) !default;
 
 $text-reverse-color: (
   default: white,
-  dark: rgba(255, 255, 255, 0.7),
-  darker: rgba(255, 255, 255, 0.5)
+  dark: rgba(255, 255, 255, .7),
+  darker: rgba(255, 255, 255, .5)
 ) !default;
 
 $gap: (
@@ -53,9 +53,8 @@ $font-size: (
   h6: 11px
 ) !default;
 
-$font-family: "Noto Sans KR", "Malgun Gothic", "AppleGothicNeoSD", "Apple SD 산돌고딕 Neo", "Microsoft NeoGothic",
-  "Droid Sans", sans-serif !default;
-$font-family-monospace: "D2 coding", monospace !default;
+$font-family: 'Noto Sans KR', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;
+$font-family-monospace: 'D2 coding', monospace !default;
 $line-height: 1.4em !default;
 
 $z-index-toast: 9999 !default;

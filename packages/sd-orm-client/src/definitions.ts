@@ -1,4 +1,4 @@
-import { Type } from "@simplysm/sd-common";
+import {Type} from "@simplysm/sd-common";
 
 export interface ITableDef {
   database?: string;

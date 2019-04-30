@@ -1,6 +1,6 @@
-import { SdExcelWorksheet } from "./SdExcelWorksheet";
+import {SdExcelWorksheet} from "./SdExcelWorksheet";
 import * as JSZip from "jszip";
-import { XmlConvert } from "@simplysm/sd-common";
+import {XmlConvert} from "@simplysm/sd-common";
 
 export class SdExcelWorkbook {
   private readonly _worksheets: SdExcelWorksheet[] = [];
@@ -39,7 +39,7 @@ export class SdExcelWorkbook {
     wb._wbData = {
       workbook: {
         $: {
-          xmlns: "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+          "xmlns": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
           "xmlns:r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
         }
       }
@@ -128,26 +128,21 @@ export class SdExcelWorkbook {
         $: {
           xmlns: "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
         },
-        fonts: [
-          {
-            font: [{}]
-          }
-        ],
-        fills: [
-          {
-            fill: [{ patternFill: [{ $: { patternType: "none" } }] }, { patternFill: [{ $: { patternType: "none" } }] }]
-          }
-        ],
-        borders: [
-          {
-            border: [{}]
-          }
-        ],
-        cellXfs: [
-          {
-            xf: [{}]
-          }
-        ]
+        fonts: [{
+          font: [{}]
+        }],
+        fills: [{
+          fill: [
+            {patternFill: [{$: {patternType: "none"}}]},
+            {patternFill: [{$: {patternType: "none"}}]}
+          ]
+        }],
+        borders: [{
+          border: [{}]
+        }],
+        cellXfs: [{
+          xf: [{}]
+        }]
       }
     };
 
@@ -167,7 +162,8 @@ export class SdExcelWorkbook {
         };
         fileReader.readAsArrayBuffer(arg);
       });
-    } else {
+    }
+    else {
       buffer = arg;
     }
 
@@ -226,8 +222,8 @@ export class SdExcelWorkbook {
 
     this._wbData.workbook.sheets[0].sheet.push({
       $: {
-        name,
-        sheetId: newSheetId,
+        "name": name,
+        "sheetId": newSheetId,
         "r:id": `rId${newSheetId}`
       }
     });
@@ -242,9 +238,7 @@ export class SdExcelWorkbook {
 
     // Workbook Rel
     this._wbRelData.Relationships.Relationship = this._wbRelData.Relationships.Relationship || [];
-    const sheetRelationships = this._wbRelData.Relationships.Relationship.filter(
-      (item: any) => item.$.Type === "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
-    );
+    const sheetRelationships = this._wbRelData.Relationships.Relationship.filter((item: any) => item.$.Type === "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet");
     sheetRelationships.push({
       $: {
         Id: `rId${newSheetId}`,
@@ -253,9 +247,7 @@ export class SdExcelWorkbook {
       }
     });
 
-    const nonSheetRelationships = this._wbRelData.Relationships.Relationship.filter(
-      (item: any) => item.$.Type !== "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
-    );
+    const nonSheetRelationships = this._wbRelData.Relationships.Relationship.filter((item: any) => item.$.Type !== "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet");
     let cnt = newSheetId + 1;
     for (const nonSheetRelationship of nonSheetRelationships) {
       nonSheetRelationship.$.Id = "rId" + cnt;
@@ -302,7 +294,7 @@ export class SdExcelWorkbook {
     // Styles
     this._zip.file("xl/styles.xml", XmlConvert.stringify(this.stylesData));
 
-    const blob = await this._zip.generateAsync({ type: "blob" });
+    const blob = await this._zip.generateAsync({type: "blob"});
     const link = document.createElement("a");
     link.href = window.URL.createObjectURL(blob);
     link.download = filename;
@@ -336,7 +328,8 @@ export class SdExcelWorkbook {
       if (!sheet) {
         // new sheet
         sheet = this.createWorksheet(sheetName);
-      } else {
+      }
+      else {
         // clear
         for (let r = 0; r < sheet.rowLength; r++) {
           for (let c = 0; c < sheet.row(r).columnLength; c++) {
@@ -348,9 +341,7 @@ export class SdExcelWorkbook {
       const rowItems: any[] = data[sheetName];
       // const headerColumnIndexMap = rowItems.mapMany(item => Object.keys(item)).distinct()
       //   .toMap(item => item, (item, index) => index);
-      const headerColumns = rowItems.mapMany(item =>
-        Object.keys(item).map((item1, i) => [item1, i] as [string, number])
-      );
+      const headerColumns = rowItems.mapMany(item => Object.keys(item).map((item1, i) => [item1, i] as [string, number]));
       const headerColumnIndexMap = new Map<string, number>();
       for (const headerColumn of headerColumns) {
         headerColumnIndexMap.set(

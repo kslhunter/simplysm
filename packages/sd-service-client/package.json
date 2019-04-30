@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service-client",
-  "version": "1.1.26",
+  "version": "1.1.23",
   "description": "심플리즘 패키지 - 서비스 클라이언트",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,8 +8,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-common": "1.1.26",
+    "@simplysm/sd-common": "1.1.23",
     "fs-extra": "^7.0.1",
-    "ws": "^6.2.1"
+    "ws": "^6.2.0"
   }
 }

@@ -16,7 +16,7 @@ sd-checkbox {
       height: $size;
       border: 1px solid get($trans-color, default);
       vertical-align: top;
-      transition: border-color 0.1s linear;
+      transition: border-color .1s linear;
       background: get($theme-color, secondary, lightest);
     }
 
@@ -24,7 +24,7 @@ sd-checkbox {
       display: inline-block;
       position: relative;
       opacity: 0;
-      transition: opacity 0.1s linear;
+      transition: opacity .1s linear;
       color: get($text-color, default);
       width: $size;
       height: $size;
@@ -56,7 +56,7 @@ sd-checkbox {
     }
   }
 
-  &[sd-checked="true"] {
+  &[sd-checked=true] {
     > label {
       > ._indicator {
         opacity: 1;
@@ -64,7 +64,7 @@ sd-checkbox {
     }
   }
 
-  &[sd-inline="true"] {
+  &[sd-inline=true] {
     display: inline-block;
 
     > label {
@@ -72,7 +72,7 @@ sd-checkbox {
     }
   }
 
-  &[sd-radio="true"] {
+  &[sd-radio=true] {
     > label {
       > ._indicator_rect {
         border-radius: 100%;
@@ -91,16 +91,16 @@ sd-checkbox {
     }
   }
 
-  &[sd-size="sm"] > label {
+  &[sd-size=sm] > label {
     padding: get($gap, xs) get($gap, sm);
   }
 
-  &[sd-size="lg"] > label {
+  &[sd-size=lg] > label {
     padding: get($gap, default) get($gap, lg);
   }
 
   @each $key, $val in $theme-color {
-    &[sd-theme="#{$key}"] > label {
+    &[sd-theme=#{$key}] > label {
       > ._indicator_rect {
         background: get($val, lightest);
       }

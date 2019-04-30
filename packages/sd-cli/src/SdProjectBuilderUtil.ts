@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as fs from "fs-extra";
-import { INpmConfig, ISdConfigFileJson, ISdPackageConfig, ISdProjectConfig, ITsConfig } from "./commons";
-import { optional } from "@simplysm/sd-common";
+import {INpmConfig, ISdConfigFileJson, ISdPackageConfig, ISdProjectConfig, ITsConfig} from "./commons";
+import {optional} from "@simplysm/sd-common";
 import * as os from "os";
 
 export class SdProjectBuilderUtil {
@@ -19,37 +19,25 @@ export class SdProjectBuilderUtil {
 
   public static async readTsConfigAsync(packageKey: string, isForBuild: boolean = false): Promise<ITsConfig> {
     const tsconfigPath = SdProjectBuilderUtil.getTsConfigPath(packageKey, isForBuild);
-    return (await fs.pathExists(tsconfigPath)) ? await fs.readJson(tsconfigPath) : {};
+    return await fs.pathExists(tsconfigPath) ? await fs.readJson(tsconfigPath) : {};
   }
 
-  public static async writeTsConfigAsync(
-    packageKey: string,
-    tsconfig: ITsConfig,
-    isForBuild: boolean = false
-  ): Promise<void> {
+  public static async writeTsConfigAsync(packageKey: string, tsconfig: ITsConfig, isForBuild: boolean = false): Promise<void> {
     const tsconfigPath = SdProjectBuilderUtil.getTsConfigPath(packageKey, isForBuild);
-    await fs.writeJson(tsconfigPath, tsconfig, { spaces: 2, fs, EOL: os.EOL });
+    await fs.writeJson(tsconfigPath, tsconfig, {spaces: 2, fs, EOL: os.EOL});
   }
 
-  public static async readConfigAsync(
-    env: "development" | "production",
-    packageKeys: string[] | undefined,
-    option: string | undefined
-  ): Promise<ISdProjectConfig> {
+  public static async readConfigAsync(env: "development" | "production", packageKeys: string[] | undefined, option: string | undefined): Promise<ISdProjectConfig> {
     const orgConfig: ISdConfigFileJson = await fs.readJson(SdProjectBuilderUtil.getProjectPath("simplysm.json"));
 
-    const result: ISdProjectConfig = { packages: {} };
+    const result: ISdProjectConfig = {packages: {}};
     for (const packageKey of packageKeys || Object.keys(orgConfig.packages)) {
       if (!orgConfig.packages[packageKey]) {
         throw new Error(`"${packageKey}"에 대한 패키지 설정이 없습니다.`);
       }
 
       let currPackageConfig: ISdPackageConfig = {};
-      currPackageConfig = SdProjectBuilderUtil._mergePackageConfigExtends(
-        currPackageConfig,
-        orgConfig,
-        orgConfig.packages[packageKey].extends
-      );
+      currPackageConfig = SdProjectBuilderUtil._mergePackageConfigExtends(currPackageConfig, orgConfig, orgConfig.packages[packageKey].extends);
       if (currPackageConfig[env]) {
         currPackageConfig = Object.merge(currPackageConfig, currPackageConfig[env]);
       }
@@ -82,11 +70,7 @@ export class SdProjectBuilderUtil {
     return result;
   }
 
-  private static _mergePackageConfigExtends(
-    curr: ISdPackageConfig,
-    orgConfig: ISdConfigFileJson,
-    extendNames?: string[]
-  ): ISdPackageConfig {
+  private static _mergePackageConfigExtends(curr: ISdPackageConfig, orgConfig: ISdConfigFileJson, extendNames?: string[]): ISdPackageConfig {
     if (extendNames) {
       let result = Object.clone(curr);
       for (const extendName of extendNames) {
@@ -113,7 +97,7 @@ export class SdProjectBuilderUtil {
 
   public static async writeNpmConfigAsync(packageKey: string, npmConfig: INpmConfig): Promise<void> {
     const configPath = SdProjectBuilderUtil.getNpmConfigPath(packageKey);
-    fs.writeJsonSync(configPath, npmConfig, { spaces: 2, EOL: os.EOL });
+    fs.writeJsonSync(configPath, npmConfig, {spaces: 2, EOL: os.EOL});
   }
 
   public static getProjectNpmConfigPath(): string {

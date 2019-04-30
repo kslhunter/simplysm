@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import {ChangeDetectionStrategy, Component} from "@angular/core";
 
 @Component({
   selector: "sd-sidebar",
@@ -14,7 +14,7 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
       <sd-pane>
         <ng-content></ng-content>
       </sd-pane>
-    </sd-dock-container>
-  `
+    </sd-dock-container>`
 })
-export class SdSidebarControl {}
+export class SdSidebarControl {
+}

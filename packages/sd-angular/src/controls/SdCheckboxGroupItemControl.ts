@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, forwardRef, Inject, Input } from "@angular/core";
-import { SdCheckboxGroupControl } from "./SdCheckboxGroupControl";
+import {ChangeDetectionStrategy, Component, forwardRef, Inject, Input} from "@angular/core";
+import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
 
 @Component({
   selector: "sd-checkbox-group-item",
@@ -7,8 +7,7 @@ import { SdCheckboxGroupControl } from "./SdCheckboxGroupControl";
   template: `
     <sd-checkbox [value]="isSelected" (valueChange)="onValueChange($event)" [inline]="true">
       <ng-content></ng-content>
-    </sd-checkbox>
-  `
+    </sd-checkbox>`
 })
 export class SdCheckboxGroupItemControl {
   @Input()
@@ -18,10 +17,9 @@ export class SdCheckboxGroupItemControl {
     return this._parentControl.getIsItemSelected(this.value);
   }
 
-  public constructor(
-    @Inject(forwardRef(() => SdCheckboxGroupControl))
-    private readonly _parentControl: SdCheckboxGroupControl
-  ) {}
+  public constructor(@Inject(forwardRef(() => SdCheckboxGroupControl))
+                     private readonly _parentControl: SdCheckboxGroupControl) {
+  }
 
   public onValueChange(): void {
     this._parentControl.toggleValueItem(this.value);

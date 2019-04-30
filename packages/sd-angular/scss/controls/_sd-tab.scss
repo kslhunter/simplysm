@@ -8,10 +8,10 @@ sd-tab-item {
   cursor: pointer;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, .05);
   }
 
-  &[sd-selected="true"] {
+  &[sd-selected=true] {
     background: get($theme-color, primary, default);
     color: get($text-reverse-color, default);
   }

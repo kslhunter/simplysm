@@ -1,6 +1,6 @@
-import { Injectable } from "@angular/core";
-import { EventManager } from "@angular/platform-browser";
-import { ResizeEvent } from "../commons/ResizeEvent";
+import {Injectable} from "@angular/core";
+import {EventManager} from "@angular/platform-browser";
+import {ResizeEvent} from "../commons/ResizeEvent";
 
 @Injectable()
 export class ResizeEventPlugin {
@@ -23,7 +23,7 @@ export class ResizeEventPlugin {
         }
 
         if (dimensions.length > 0) {
-          const event = new CustomEvent("resize", { detail: { dimensions } }) as ResizeEvent;
+          const event = new CustomEvent("resize", {detail: {dimensions}}) as ResizeEvent;
           this.manager.getZone().run(() => {
             handler(event as any);
           });
@@ -32,7 +32,8 @@ export class ResizeEventPlugin {
       observer.observe(element);
 
       return () => observer.disconnect();
-    } else {
+    }
+    else {
       const timeout = window.setInterval(() => {
         if (prevWidth !== element.offsetWidth) {
           dimensions.push("width");
@@ -44,7 +45,7 @@ export class ResizeEventPlugin {
         }
 
         if (dimensions.length > 0) {
-          const event = new CustomEvent("resize", { detail: { dimensions } }) as ResizeEvent;
+          const event = new CustomEvent("resize", {detail: {dimensions}}) as ResizeEvent;
           this.manager.getZone().run(() => {
             handler(event as any);
           });

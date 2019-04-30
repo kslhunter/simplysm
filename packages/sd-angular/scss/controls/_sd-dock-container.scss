@@ -16,19 +16,19 @@ sd-dock {
   z-index: 1;
   background: white;
 
-  &[sd-position="top"] {
+  &[sd-position=top] {
     border-bottom: 1px solid $border-color;
   }
 
-  &[sd-position="bottom"] {
+  &[sd-position=bottom] {
     border-top: 1px solid $border-color;
   }
 
-  &[sd-position="left"] {
+  &[sd-position=left] {
     border-right: 1px solid $border-color;
   }
 
-  &[sd-position="right"] {
+  &[sd-position=right] {
     border-left: 1px solid $border-color;
   }
 
@@ -37,7 +37,7 @@ sd-dock {
     user-select: none;
   }
 
-  &[sd-resizable="true"] {
+  &[sd-resizable=true] {
     > hr {
       display: block;
       position: absolute;
@@ -50,7 +50,7 @@ sd-dock {
       z-index: 1;
     }
 
-    &[sd-position="top"] {
+    &[sd-position=top] {
       border: none;
       padding-bottom: 4px;
 
@@ -62,7 +62,7 @@ sd-dock {
       }
     }
 
-    &[sd-position="bottom"] {
+    &[sd-position=bottom] {
       border: none;
       padding-top: 4px;
 
@@ -74,7 +74,7 @@ sd-dock {
       }
     }
 
-    &[sd-position="left"] {
+    &[sd-position=left] {
       border: none;
       padding-right: 4px;
 
@@ -86,7 +86,7 @@ sd-dock {
       }
     }
 
-    &[sd-position="right"] {
+    &[sd-position=right] {
       border: none;
       padding-left: 4px;
 

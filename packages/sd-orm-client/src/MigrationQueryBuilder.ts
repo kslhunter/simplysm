@@ -1,4 +1,4 @@
-import { QueryHelper } from "./QueryHelper";
+import {QueryHelper} from "./QueryHelper";
 
 export class MigrationQueryBuilder {
   public createDatabaseIfNotExists(dbName: string): string {
@@ -20,21 +20,21 @@ export class MigrationQueryBuilder {
   ): string {
     let query = "";
     query += `CREATE TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] (\n`;
-    query +=
-      colDefs
-        .map(
-          colDef =>
-            `  [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}${
-              colDef.nullable ? "NULL" : "NOT NULL"
-            }`
-        )
-        .join(",\n") + "\n";
+    query += colDefs
+      .map(colDef => `  [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}${colDef.nullable ? "NULL" : "NOT NULL"}`)
+      .join(",\n") + "\n";
     query += ")";
 
     return query.trim();
   }
 
-  public dropTable(tableDef: { database: string; scheme: string; name: string }): string {
+  public dropTable(
+    tableDef: {
+      database: string;
+      scheme: string;
+      name: string;
+    }
+  ): string {
     return `DROP TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}]`;
   }
 
@@ -52,9 +52,7 @@ export class MigrationQueryBuilder {
     let query = "";
 
     if (pkColDefs.length > 0) {
-      query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${
-        tableDef.name
-      }] ADD PRIMARY KEY (${pkColDefs.map(item => `[${item.name}] ${item.desc ? "DESC" : "ASC"}`).join(", ")})\n`;
+      query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ADD PRIMARY KEY (${pkColDefs.map(item => `[${item.name}] ${item.desc ? "DESC" : "ASC"}`).join(", ")})\n`;
     }
 
     return query.trim();
@@ -79,14 +77,8 @@ export class MigrationQueryBuilder {
   ): string {
     let query = "";
 
-    query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ADD CONSTRAINT [FK_${
-      tableDef.database
-    }_${tableDef.scheme}_${tableDef.name}_${fkDef.name}] FOREIGN KEY (${fkDef.columnNames
-      .map(colName => `[${colName}]`)
-      .join(", ")})\n`;
-    query += `  REFERENCES [${fkDef.targetTableDef.database}].[${fkDef.targetTableDef.scheme}].[${
-      fkDef.targetTableDef.name
-    }] (${fkDef.targetColumnNames.map(item => `[${item}]`).join(", ")})\n`;
+    query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ADD CONSTRAINT [FK_${tableDef.database}_${tableDef.scheme}_${tableDef.name}_${fkDef.name}] FOREIGN KEY (${fkDef.columnNames.map(colName => `[${colName}]`).join(", ")})\n`;
+    query += `  REFERENCES [${fkDef.targetTableDef.database}].[${fkDef.targetTableDef.scheme}].[${fkDef.targetTableDef.name}] (${fkDef.targetColumnNames.map(item => `[${item}]`).join(", ")})\n`;
     query += "  ON DELETE NO ACTION\n";
     query += "  ON UPDATE NO ACTION;\n";
 
@@ -106,9 +98,7 @@ export class MigrationQueryBuilder {
   ): string {
     let query = "";
 
-    query += `CREATE INDEX [IDX_${tableDef.database}_${tableDef.scheme}_${tableDef.name}_${indexDef.name}] ON [${
-      tableDef.database
-    }].[${tableDef.scheme}].[${tableDef.name}] (${indexDef.columnNames.map(colName => `[${colName}]`).join(", ")});\n`;
+    query += `CREATE INDEX [IDX_${tableDef.database}_${tableDef.scheme}_${tableDef.name}_${indexDef.name}] ON [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] (${indexDef.columnNames.map(colName => `[${colName}]`).join(", ")});\n`;
     query += ``;
     query += ``;
     query += ``;
@@ -139,25 +129,22 @@ export class MigrationQueryBuilder {
     defaultValue: any
   ): string {
     let query = "";
-    query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ADD [${colDef.name}] ${
-      colDef.dataType
-    } ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}NULL\n`;
+    query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ADD [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}NULL\n`;
 
     if (!colDef.nullable && defaultValue) {
       query += "GO\n";
-      query += `UPDATE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] SET [${
-        colDef.name
-      }] = ${QueryHelper.getFieldQuery(defaultValue)}\n`;
+      query += `UPDATE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] SET [${colDef.name}] = ${QueryHelper.getFieldQuery(defaultValue)}\n`;
       query += "GO\n";
-      query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ALTER COLUMN [${
-        colDef.name
-      }] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}NOT NULL\n`;
+      query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ALTER COLUMN [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}NOT NULL\n`;
     }
 
     return query;
   }
 
-  public removeColumn(tableDef: { database: string; scheme: string; name: string }, colName: string): string {
+  public removeColumn(
+    tableDef: { database: string; scheme: string; name: string },
+    colName: string
+  ): string {
     return `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] DROP COLUMN ${colName}`;
   }
 
@@ -172,19 +159,13 @@ export class MigrationQueryBuilder {
     defaultValue: any
   ): string {
     let query = "";
-    query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ALTER COLUMN [${
-      colDef.name
-    }] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}NULL\n`;
+    query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ALTER COLUMN [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}NULL\n`;
 
     if (!colDef.nullable && defaultValue) {
       query += "GO\n";
-      query += `UPDATE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] SET [${
-        colDef.name
-      }] = ${QueryHelper.getFieldQuery(defaultValue)} WHERE [${colDef.name}] IS NULL\n`;
+      query += `UPDATE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] SET [${colDef.name}] = ${QueryHelper.getFieldQuery(defaultValue)} WHERE [${colDef.name}] IS NULL\n`;
       query += "GO\n";
-      query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ALTER COLUMN [${
-        colDef.name
-      }] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}NOT NULL\n`;
+      query += `ALTER TABLE [${tableDef.database}].[${tableDef.scheme}].[${tableDef.name}] ALTER COLUMN [${colDef.name}] ${colDef.dataType} ${colDef.autoIncrement ? "IDENTITY(1,1) " : ""}NOT NULL\n`;
     }
     return query;
   }

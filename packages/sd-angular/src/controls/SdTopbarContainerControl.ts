@@ -1,12 +1,11 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
-import { SdTypeValidate } from "../commons/SdTypeValidate";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-topbar-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>
-  `
+    <ng-content></ng-content>`
 })
 export class SdTopbarContainerControl {
   @Input()

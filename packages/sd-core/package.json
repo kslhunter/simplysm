@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-core",
-  "version": "1.1.26",
+  "version": "1.1.23",
   "description": "심플리즘 패키지 - 코어",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,7 +8,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-common": "1.1.26",
-    "chokidar": "^2.1.5"
+    "@simplysm/sd-common": "1.1.23",
+    "chokidar": "^2.1.2"
   }
 }

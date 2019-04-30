@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
 
 @Component({
   selector: "sd-grid-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>
-  `
+    <ng-content></ng-content>`
 })
 export class SdGridItemControl {
   @Input()

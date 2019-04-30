@@ -104,6 +104,7 @@
   }
 }
 
+
 @each $direction in top, right, bottom, left {
   @each $key, $val in $theme-color {
     @each $key1, $val1 in $val {
@@ -142,15 +143,7 @@
   border: none !important;
 }
 
-@each $key,
-  $val
-    in map_merge(
-      $gap,
-      (
-        0: 0
-      )
-    )
-{
+@each $key, $val in map_merge($gap, (0: 0)) {
   .sd-padding-#{$key} {
     padding: $val;
   }
@@ -169,15 +162,7 @@
     }
   }
 
-  @each $key1,
-    $val1
-      in map_merge(
-        $gap,
-        (
-          0: 0
-        )
-      )
-  {
+  @each $key1, $val1 in map_merge($gap, (0: 0)) {
     .sd-padding-#{$key}-#{$key1} {
       padding: $val $val1;
     }
@@ -188,15 +173,7 @@
   }
 }
 
-@each $key,
-  $val
-    in map_merge(
-      $gap,
-      (
-        0: 0
-      )
-    )
-{
+@each $key, $val in map_merge($gap, (0: 0)) {
   .sd-padding-v-#{$key} {
     padding-top: $val;
     padding-bottom: $val;

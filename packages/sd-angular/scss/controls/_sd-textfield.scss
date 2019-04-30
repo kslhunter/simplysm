@@ -8,7 +8,7 @@ sd-textfield {
 
     background: get($theme-color, secondary, lightest);
     border-color: get($trans-color, default);
-    transition: outline-color 0.1s linear;
+    transition: outline-color .1s linear;
     outline: 1px solid transparent;
     outline-offset: -1px;
 
@@ -37,17 +37,17 @@ sd-textfield {
       color: get($text-color, light);
     }
 
-    &[type="color"] {
+    &[type='color'] {
       padding: 1px get($gap, default) !important;
       height: get($gap, sm) * 2 + strip-unit($line-height) * get($font-size, default) + 2;
     }
 
-    &[type="year"],
-    &[type="month"],
-    &[type="date"],
-    &[type="datetime"],
-    &[type="time"],
-    &[type="datetime-local"] {
+    &[type=year],
+    &[type=month],
+    &[type=date],
+    &[type=datetime],
+    &[type=time],
+    &[type=datetime-local] {
       padding: (get($gap, sm) - 1) get($gap, default);
     }
   }
@@ -56,12 +56,12 @@ sd-textfield {
     display: none;
   }
 
-  > input[sd-invalid="true"] + ._invalid-indicator,
+  > input[sd-invalid=true] + ._invalid-indicator,
   > input:invalid + ._invalid-indicator {
     @include invalid-indicator();
   }
 
-  &[sd-inset="true"] {
+  &[sd-inset=true] {
     height: 100%;
 
     > input,
@@ -77,17 +77,17 @@ sd-textfield {
     }
   }
 
-  &[sd-inline="true"] {
+  &[sd-inline=true] {
     display: inline-block;
   }
 
-  &[sd-size="sm"] > input,
-  &[sd-size="sm"] > textarea {
+  &[sd-size=sm] > input,
+  &[sd-size=sm] > textarea {
     padding: get($gap, xs) get($gap, sm);
   }
 
-  &[sd-size="lg"] > input,
-  &[sd-size="lg"] > textarea {
+  &[sd-size=lg] > input,
+  &[sd-size=lg] > textarea {
     padding: get($gap, default) get($gap, lg);
   }
 

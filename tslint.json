@@ -1,13 +1,15 @@
 {
-  "extends": ["tslint:all", "tslint-config-prettier", "tslint-plugin-prettier"],
+  "extends": "tslint:all",
   "defaultSeverity": "warning",
   "rules": {
-    "prettier": true,
     "no-submodule-imports": false,
     "no-import-side-effect": false,
     "file-name-casing": false,
     "no-unused-variable": false,
-    "variable-name": [true, "allow-leading-underscore"],
+    "variable-name": [
+      true,
+      "allow-leading-underscore"
+    ],
     "ordered-imports": false,
     "member-ordering": false,
     "unified-signatures": false,
@@ -20,17 +22,56 @@
       "array-destructuring"
     ],
     "prefer-template": false,
+    "max-line-length": false,
+    "arrow-parens": [
+      true,
+      "ban-single-arg-parens"
+    ],
+    "newline-per-chained-call": false,
+    "one-line": [
+      true,
+      "check-open-brace",
+      "check-whitespace"
+    ],
     "newline-before-return": false,
     "prefer-switch": false,
     "object-literal-sort-keys": false,
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "never",
+        "singleline": "never"
+      }
+    ],
+    "no-trailing-whitespace": false,
     "no-unnecessary-class": false,
     "no-parameter-properties": false,
+    "eofline": false,
+    "no-consecutive-blank-lines": [
+      true,
+      2
+    ],
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-separator",
+      "check-rest-spread",
+      "check-type",
+      "check-typecast",
+      "check-type-operator",
+      "check-preblock"
+    ],
     "no-any": false,
     "no-magic-numbers": false,
     "no-console": false,
     "no-non-null-assertion": false,
     "only-arrow-functions": false,
-    "array-type": [true, "array"],
+    "array-type": [
+      true,
+      "array"
+    ],
     "comment-format": false,
     "completed-docs": false,
     "no-unsafe-any": false,
@@ -40,28 +81,75 @@
     "prefer-function-over-method": false,
     "binary-expression-operand-order": false,
     "no-empty": false,
-    "triple-equals": [true, "allow-undefined-check"],
+    "triple-equals": [
+      true,
+      "allow-undefined-check"
+    ],
     "no-bitwise": false,
     "no-string-literal": false,
     "no-return-await": false,
+    "space-before-function-paren": [
+      true,
+      {
+        "anonymous": "always",
+        "asyncArrow": "always",
+        "constructor": "never",
+        "method": "never",
+        "named": "never"
+      }
+    ],
     "no-dynamic-delete": false,
     "prefer-conditional-expression": false,
     "no-unnecessary-type-assertion": false,
     "arrow-return-shorthand": false,
     "max-classes-per-file": false,
+    "linebreak-style": false,
+    "quotemark": [
+      true,
+      "double",
+      "avoid-escape"
+    ],
     "no-arg": false,
     "no-unbound-method": false,
+    "semicolon": [
+      true,
+      "always",
+      "ignore-bound-class-methods"
+    ],
     "no-this-assignment": false,
-    "curly": [true, "ignore-same-line"],
+    "curly": [
+      true,
+      "ignore-same-line"
+    ],
     "ban-types": [
       true,
-      ["Object", "Avoid using the `Object` type. Did you mean `object`?"],
-      ["Function", "Avoid using the `Function` type. Prefer a specific function type, like `() => void`."],
-      ["Symbol", "Avoid using the `Symbol` type. Did you mean `symbol`?"]
+      [
+        "Object",
+        "Avoid using the `Object` type. Did you mean `object`?"
+      ],
+      [
+        "Function",
+        "Avoid using the `Function` type. Prefer a specific function type, like `() => void`."
+      ],
+      [
+        "Symbol",
+        "Avoid using the `Symbol` type. Did you mean `symbol`?"
+      ]
     ],
     "no-empty-interface": false,
     "cyclomatic-complexity": false,
     "no-boolean-literal-compare": false,
+    "align": [
+      true,
+      "parameters",
+      "statements",
+      "elements",
+      "members"
+    ],
+    "object-literal-key-quotes": [
+      true,
+      "consistent"
+    ],
     "increment-decrement": false,
     "ban-ts-ignore": false,
     "max-file-line-count": false,

@@ -10,8 +10,8 @@ import {
   Input,
   TemplateRef
 } from "@angular/core";
-import { SdSelectControl } from "./SdSelectControl";
-import { JsonConvert } from "@simplysm/sd-common";
+import {SdSelectControl} from "./SdSelectControl";
+import {JsonConvert} from "@simplysm/sd-common";
 
 @Component({
   selector: "sd-select-item",
@@ -22,8 +22,7 @@ import { JsonConvert } from "@simplysm/sd-common";
     </span>
     <span class="_labelTemplate" hidden *ngIf="labelTemplateRef">
       <ng-template [ngTemplateOutlet]="labelTemplateRef"></ng-template>
-    </span>
-  `
+    </span>`
 })
 export class SdSelectItemControl {
   @HostBinding("attr.tabindex")
@@ -61,11 +60,9 @@ export class SdSelectItemControl {
 
   private readonly _el: HTMLElement;
 
-  public constructor(
-    @Inject(forwardRef(() => SdSelectControl))
-    private readonly _selectControl: SdSelectControl,
-    private readonly _elRef: ElementRef<HTMLElement>
-  ) {
+  public constructor(@Inject(forwardRef(() => SdSelectControl))
+                     private readonly _selectControl: SdSelectControl,
+                     private readonly _elRef: ElementRef<HTMLElement>) {
     this._el = this._elRef.nativeElement;
   }
 

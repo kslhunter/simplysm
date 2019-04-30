@@ -15,9 +15,9 @@ import {
   TemplateRef,
   ViewChild
 } from "@angular/core";
-import { SdTypeValidate } from "../commons/SdTypeValidate";
-import { SdDropdownControl } from "./SdDropdownControl";
-import { JsonConvert } from "@simplysm/sd-common";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {SdDropdownControl} from "./SdDropdownControl";
+import {JsonConvert} from "@simplysm/sd-common";
 
 @Component({
   selector: "sd-select",
@@ -44,29 +44,25 @@ import { JsonConvert } from "@simplysm/sd-common";
               <ng-template #rowOfList let-items="items">
                 <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
                   <div class="_sd-select-item">
-                    <ng-template
-                      [ngTemplateOutlet]="itemTemplateRef"
-                      [ngTemplateOutletContext]="{ item: item }"
-                    ></ng-template>
+                    <ng-template [ngTemplateOutlet]="itemTemplateRef"
+                                 [ngTemplateOutletContext]="{item: item}"></ng-template>
 
                     <ng-container *ngIf="children && children(i, item) && children(i, item).length > 0">
                       <div class="_children">
-                        <ng-template
-                          [ngTemplateOutlet]="rowOfList"
-                          [ngTemplateOutletContext]="{ items: children(i, item) }"
-                        ></ng-template>
+                        <ng-template [ngTemplateOutlet]="rowOfList"
+                                     [ngTemplateOutletContext]="{items: children(i, item)}"></ng-template>
                       </div>
                     </ng-container>
                   </div>
                 </ng-container>
               </ng-template>
-              <ng-template [ngTemplateOutlet]="rowOfList" [ngTemplateOutletContext]="{ items: items }"></ng-template>
+              <ng-template [ngTemplateOutlet]="rowOfList"
+                           [ngTemplateOutletContext]="{items: items}"></ng-template>
             </sd-pane>
           </sd-dock-container>
         </ng-container>
       </sd-dropdown-popup>
-    </sd-dropdown>
-  `
+    </sd-dropdown>`
 })
 export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
   @Input()
@@ -105,7 +101,8 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
 
     if (value) {
       this._el.setAttribute("sd-disabled", "true");
-    } else {
+    }
+    else {
       this._el.setAttribute("sd-disabled", "false");
     }
   }
@@ -123,7 +120,7 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
   @ViewChild("dropdown")
   public dropdownControl?: SdDropdownControl;
 
-  @ViewChild("popup", { read: ElementRef })
+  @ViewChild("popup", {read: ElementRef})
   public popupElRef?: ElementRef<HTMLElement>;
 
   @ContentChild("item")
@@ -147,14 +144,11 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
   @SdTypeValidate(Function)
   public children?: (index: number, item: any) => any;
 
-  public get isDropdownLocatedTop(): boolean {
-    return this.dropdownControl ? this.dropdownControl.isDropdownLocatedTop : false;
-  }
-
   public trackByItemFn(index: number, item: any): any {
     if (this.trackBy) {
       return this.trackBy(index, item) || item;
-    } else {
+    }
+    else {
       return item;
     }
   }
@@ -166,11 +160,9 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
   private _contentEl!: HTMLElement;
   private _popupEl!: HTMLElement;
 
-  public constructor(
-    private readonly _iterableDiffers: IterableDiffers,
-    private readonly _cdr: ChangeDetectorRef,
-    private readonly _elRef: ElementRef<HTMLElement>
-  ) {
+  public constructor(private readonly _iterableDiffers: IterableDiffers,
+                     private readonly _cdr: ChangeDetectorRef,
+                     private readonly _elRef: ElementRef<HTMLElement>) {
     this._el = this._elRef.nativeElement;
     this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => this.trackByItemFn(index, item));
     this._itemElsIterableDiffer = this._iterableDiffers.find([]).create();
@@ -215,14 +207,14 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
   private _refreshContent(): void {
     if (!this._contentEl || !this._popupEl) return;
 
-    const selectedItemEl = this._popupEl
-      .findAll("sd-select-item")
+    const selectedItemEl = this._popupEl.findAll("sd-select-item")
       .single(item => (item.getAttribute("sd-value-json") || undefined) === JsonConvert.stringify(this.value));
     if (!selectedItemEl) {
       this._contentEl.innerHTML = "";
-    } else {
+    }
+    else {
       const labelTemplateEl = selectedItemEl.findAll("> ._labelTemplate")[0];
-      const labelEl = labelTemplateEl ? labelTemplateEl : (selectedItemEl.findAll("> ._label")[0] as HTMLElement);
+      const labelEl = labelTemplateEl ? labelTemplateEl : selectedItemEl.findAll("> ._label")[0] as HTMLElement;
       this._contentEl.innerHTML = labelEl.innerHTML;
     }
   }
@@ -230,7 +222,8 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
   private _refreshInvalid(): void {
     if (this.required && !this.value) {
       this._el.setAttribute("sd-invalid", "true");
-    } else {
+    }
+    else {
       this._el.setAttribute("sd-invalid", "false");
     }
   }

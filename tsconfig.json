@@ -13,8 +13,14 @@
     "plugins": [
       {
         "name": "typescript-tslint-plugin"
+      },
+      {
+        "name": "@angular/language-service"
       }
     ],
-    "typeRoots": ["./node_modules/@types", "./types"]
+    "typeRoots": [
+      "./node_modules/@types",
+      "./types"
+    ]
   }
 }

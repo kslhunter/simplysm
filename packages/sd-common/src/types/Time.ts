@@ -1,4 +1,4 @@
-import { ArgumentError } from "../errors/ArgumentError";
+import {ArgumentError} from "../errors/ArgumentError";
 
 export class Time {
   private _tick: number;
@@ -11,40 +11,35 @@ export class Time {
   public constructor(args1?: number | Date, args2?: number, args3?: number, args4?: number, args5?: number) {
     if (args1 === undefined) {
       const now = new Date();
-      this._tick =
-        now.getMilliseconds() + // ms
-        now.getSeconds() * 1000 + // s
-        now.getMinutes() * 60 * 1000 + // m
-        now.getHours() * 60 * 60 * 1000; // h
-    } else if (typeof args1 === "number" && args2 === undefined) {
+      this._tick = now.getMilliseconds()    // ms
+        + now.getSeconds() * 1000           // s
+        + now.getMinutes() * 60 * 1000      // m
+        + now.getHours() * 60 * 60 * 1000;  // h
+    }
+    else if (typeof args1 === "number" && args2 === undefined) {
       this._tick = args1;
-    } else if (typeof args1 === "number" && args2 !== undefined && args5 === undefined) {
-      this._tick =
-        (args4 || 0) + // ms
-        (args3 || 0) * 1000 + // s
-        args2 * 60 * 1000 + // m
-        args1 * 60 * 60 * 1000; // h
-    } else if (
-      typeof args1 === "number" &&
-      args2 !== undefined &&
-      args3 !== undefined &&
-      args4 !== undefined &&
-      args5 !== undefined
-    ) {
-      this._tick =
-        args5 + // ms
-        args4 * 1000 + // s
-        args3 * 60 * 1000 + // m
-        args2 * 60 * 60 * 1000 + // h
-        args1 * 24 * 60 * 60 * 1000; // d
-    } else if (args1 instanceof Date) {
-      this._tick =
-        args1.getMilliseconds() + // ms
-        args1.getSeconds() * 1000 + // s
-        args1.getMinutes() * 60 * 1000 + // m
-        args1.getHours() * 60 * 60 * 1000; // h
-    } else {
-      throw new ArgumentError({ args1, args2, args3, args4, args5 });
+    }
+    else if (typeof args1 === "number" && args2 !== undefined && args5 === undefined) {
+      this._tick = (args4 || 0)   // ms
+        + (args3 || 0) * 1000     // s
+        + args2 * 60 * 1000       // m
+        + args1 * 60 * 60 * 1000; // h
+    }
+    else if (typeof args1 === "number" && args2 !== undefined && args3 !== undefined && args4 !== undefined && args5 !== undefined) {
+      this._tick = args5                // ms
+        + args4 * 1000                  // s
+        + args3 * 60 * 1000             // m
+        + args2 * 60 * 60 * 1000        // h
+        + args1 * 24 * 60 * 60 * 1000;  // d
+    }
+    else if (args1 instanceof Date) {
+      this._tick = args1.getMilliseconds()    // ms
+        + args1.getSeconds() * 1000           // s
+        + args1.getMinutes() * 60 * 1000      // m
+        + args1.getHours() * 60 * 60 * 1000;  // h
+    }
+    else {
+      throw new ArgumentError({args1, args2, args3, args4, args5});
     }
   }
 
@@ -56,14 +51,19 @@ export class Time {
     else if (/^[0-9]{1,2}$/.test(value)) {
       const hour = Number(value);
 
-      return new Time(hour * 60 * 60 * 1000);
+      return new Time(
+        hour * 60 * 60 * 1000
+      );
     }
     // 103, 0103 => 1시간 3분
     else if (/^[0-9]{3,4}$/.test(value)) {
       const hour = Math.floor(Number(value) / 100);
       const minute = Number(value) % 100;
 
-      return new Time(hour * 60 * 60 * 1000 + minute * 60 * 1000);
+      return new Time(
+        hour * 60 * 60 * 1000 +
+        minute * 60 * 1000
+      );
     }
     // 50103, 050103 => 5시간 1분 3초
     else if (/^[0-9]{5,6}$/.test(value)) {
@@ -71,7 +71,11 @@ export class Time {
       const minute = Math.floor((Number(value) % 10000) / 100);
       const second = Number(value) % 100;
 
-      return new Time(hour * 60 * 60 * 1000 + minute * 60 * 1000 + second * 1000);
+      return new Time(
+        hour * 60 * 60 * 1000 +
+        minute * 60 * 1000 +
+        second * 1000
+      );
     }
     // 1050103, 01050103 => 1일 5시간 1분 3초
     else if (/^[0-9]{7,8}$/.test(value)) {
@@ -80,7 +84,12 @@ export class Time {
       const minute = Math.floor((Number(value) % 10000) / 100);
       const second = Number(value) % 100;
 
-      return new Time(day * 24 * 60 * 60 * 1000 + hour * 60 * 60 * 1000 + minute * 60 * 1000 + second * 1000);
+      return new Time(
+        day * 24 * 60 * 60 * 1000 +
+        hour * 60 * 60 * 1000 +
+        minute * 60 * 1000 +
+        second * 1000
+      );
     }
     // 050103001 => 5시간 1분 3초 1밀리초
     else if (/^[0-9]{9}$/.test(value)) {
@@ -89,7 +98,12 @@ export class Time {
       const second = Math.floor((Number(value) % 100000) / 1000);
       const millisecond = Number(value) % 1000;
 
-      return new Time(hour * 60 * 60 * 1000 + minute * 60 * 1000 + second * 1000 + millisecond);
+      return new Time(
+        hour * 60 * 60 * 1000 +
+        minute * 60 * 1000 +
+        second * 1000 +
+        millisecond
+      );
     }
     // 1050103001, 01050103001 => 1일 5시간 1분 3초 1밀리초
     else if (/^[0-9]{10,11}$/.test(value)) {
@@ -100,13 +114,18 @@ export class Time {
       const millisecond = Number(value) % 1000;
 
       return new Time(
-        day * 24 * 60 * 60 * 1000 + hour * 60 * 60 * 1000 + minute * 60 * 1000 + second * 1000 + millisecond
+        day * 24 * 60 * 60 * 1000 +
+        hour * 60 * 60 * 1000 +
+        minute * 60 * 1000 +
+        second * 1000 +
+        millisecond
       );
-    } else {
+    }
+    else {
       const regex = /^([0-9]+\.)?([0-9]{1,2})(:[0-9]{1,2})?(:[0-9]{1,2})?(.[0-9]{3})?$/;
       const matches = value.match(regex);
       if (!matches) {
-        throw new ArgumentError({ value });
+        throw new ArgumentError({value});
       }
 
       const day = Number((matches[1] || "0").replace(/[.:]/g, ""));
@@ -116,7 +135,11 @@ export class Time {
       const millisecond = Number((matches[5] || "0").replace(/[.:]/g, ""));
 
       return new Time(
-        day * 24 * 60 * 60 * 1000 + hour * 60 * 60 * 1000 + minute * 60 * 1000 + second * 1000 + millisecond
+        day * 24 * 60 * 60 * 1000 +
+        hour * 60 * 60 * 1000 +
+        minute * 60 * 1000 +
+        second * 1000 +
+        millisecond
       );
     }
   }
@@ -126,7 +149,7 @@ export class Time {
   }
 
   public set day(day: number) {
-    this._tick = this._tick + (day - this.day) * 24 * 60 * 60 * 1000;
+    this._tick = this._tick + ((day - this.day) * 24 * 60 * 60 * 1000);
   }
 
   public get hour(): number {
@@ -134,7 +157,7 @@ export class Time {
   }
 
   public set hour(hour: number) {
-    this._tick = this._tick + (hour - this.hour) * 60 * 60 * 1000;
+    this._tick = this._tick + ((hour - this.hour) * 60 * 60 * 1000);
   }
 
   public get minute(): number {
@@ -142,7 +165,7 @@ export class Time {
   }
 
   public set minute(minute: number) {
-    this._tick = this._tick + (minute - this.minute) * 60 * 1000;
+    this._tick = this._tick + ((minute - this.minute) * 60 * 1000);
   }
 
   public get second(): number {
@@ -150,7 +173,7 @@ export class Time {
   }
 
   public set second(second: number) {
-    this._tick = this._tick + (second - this.second) * 1000;
+    this._tick = this._tick + ((second - this.second) * 1000);
   }
 
   public get millisecond(): number {
@@ -235,20 +258,8 @@ export class Time {
     result = result.replace(/s/g, second.toString());
 
     result = result.replace(/fff/g, millisecond.toString().padStart(3, "0"));
-    result = result.replace(
-      /ff/g,
-      millisecond
-        .toString()
-        .padStart(3, "0")
-        .substr(0, 2)
-    );
-    result = result.replace(
-      /f/g,
-      millisecond
-        .toString()
-        .padStart(3, "0")
-        .substr(0, 1)
-    );
+    result = result.replace(/ff/g, millisecond.toString().padStart(3, "0").substr(0, 2));
+    result = result.replace(/f/g, millisecond.toString().padStart(3, "0").substr(0, 1));
 
     return result;
   }

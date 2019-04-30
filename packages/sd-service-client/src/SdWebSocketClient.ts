@@ -1,7 +1,7 @@
 //tslint:disable:no-null-keyword
 
-import { JsonConvert, Logger, Type, Wait } from "@simplysm/sd-common";
-import { ISdWebSocketRequest, ISdWebSocketResponse } from "./commons";
+import {JsonConvert, Logger, Type, Wait} from "@simplysm/sd-common";
+import {ISdWebSocketRequest, ISdWebSocketResponse} from "./commons";
 import * as WebSocket from "ws";
 import * as fs from "fs-extra";
 import * as crypto from "crypto";
@@ -9,7 +9,7 @@ import * as crypto from "crypto";
 export class SdWebSocketClient {
   private readonly _logger = new Logger("@simplysm/sd-service-client", "SdWebSocketClient");
   private _ws?: WebSocket;
-  private readonly _eventListeners = new Map<number, (data: any) => Promise<void> | void>();
+  private readonly _eventListeners = new Map<number, (data: any) => (Promise<void> | void)>();
   private readonly _reqMap = new Map<number, (response: ISdWebSocketResponse) => void>();
   private _lastRequestId = 0;
 
@@ -17,7 +17,9 @@ export class SdWebSocketClient {
     return !!this._ws && this._ws.readyState === WebSocket.OPEN;
   }
 
-  public constructor(private readonly _port?: number, private readonly _host?: string) {}
+  public constructor(private readonly _port?: number,
+                     private readonly _host?: string) {
+  }
 
   public async connectAsync(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
@@ -41,7 +43,8 @@ export class SdWebSocketClient {
 
         if (obj.eventListenerId) {
           this._eventListeners.get(obj.eventListenerId)!(obj.data);
-        } else {
+        }
+        else {
           const response: ISdWebSocketResponse = obj;
           this._reqMap.get(response.requestId)!(response);
         }
@@ -87,20 +90,12 @@ export class SdWebSocketClient {
     });
   }
 
-  public async addEventListenerAsync<T extends SdServiceEventBase<any, any>>(
-    eventType: Type<T>,
-    info: T["info"],
-    cb: (data: T["data"]) => Promise<void> | void
-  ): Promise<void> {
+  public async addEventListenerAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>, info: T["info"], cb: (data: T["data"]) => (Promise<void> | void)): Promise<void> {
     const id = await this.sendAsync("addEventListener", [eventType.name, info]);
     this._eventListeners.set(id, cb);
   }
 
-  public async emitAsync<T extends SdServiceEventBase<any, any>>(
-    eventType: Type<T>,
-    infoSelector: (item: T["info"]) => boolean,
-    data: T["data"]
-  ): Promise<void> {
+  public async emitAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>, infoSelector: (item: T["info"]) => boolean, data: T["data"]): Promise<void> {
     const events: { id: number; info: object }[] = await this.sendAsync("getEventListeners", [eventType.name]);
     await this.sendAsync("emitEvent", [events.filter(item => infoSelector(item.info)).map(item => item.id), data]);
   }
@@ -111,7 +106,8 @@ export class SdWebSocketClient {
         if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
           try {
             await Wait.true(() => !!this._ws && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
-          } catch (err) {
+          }
+          catch (err) {
             throw new Error("웹 소켓이 연결되어있지 않습니다.");
           }
         }
@@ -122,9 +118,11 @@ export class SdWebSocketClient {
 
           if (response.type === "error") {
             reject(new Error(response.body));
-          } else if (response.type === "checkMd5") {
+          }
+          else if (response.type === "checkMd5") {
             resolve((await fs.lstat(filePath)).size);
-          } else {
+          }
+          else {
             resolve(0);
           }
         });
@@ -143,30 +141,28 @@ export class SdWebSocketClient {
             });
 
             input.pipe(output);
-          } catch (err) {
+          }
+          catch (err) {
             reject1(err);
           }
         });
         const checkMd5String = `!checkMd5(${requestId},${serverPath})!${fileMd5}`;
         this._ws!.send(checkMd5String);
-      } catch (err) {
+      }
+      catch (err) {
         reject(err);
       }
     });
   }
 
-  public async uploadAsync(
-    filePath: string,
-    serverPath: string,
-    sendProgressCallback?: (progress: { current: number; total: number }) => void,
-    splitLength: number = 10000
-  ): Promise<any> {
+  public async uploadAsync(filePath: string, serverPath: string, sendProgressCallback?: (progress: { current: number; total: number }) => void, splitLength: number = 10000): Promise<any> {
     return await new Promise<any>(async (resolve, reject) => {
       try {
         if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
           try {
             await Wait.true(() => !!this._ws && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
-          } catch (err) {
+          }
+          catch (err) {
             throw new Error("웹 소켓이 연결되어있지 않습니다.");
           }
         }
@@ -179,7 +175,8 @@ export class SdWebSocketClient {
           if (response.type === "error") {
             this._reqMap.delete(requestId);
             reject(new Error(response.body));
-          } else if (response.type === "upload") {
+          }
+          else if (response.type === "upload") {
             splitCompletedLength += response.body;
             if (sendProgressCallback) {
               sendProgressCallback({
@@ -187,7 +184,8 @@ export class SdWebSocketClient {
                 total: fileSize
               });
             }
-          } else {
+          }
+          else {
             this._reqMap.delete(requestId);
             resolve(response.body);
           }
@@ -204,12 +202,14 @@ export class SdWebSocketClient {
             this._ws!.send(str);
             cursor += splitLength;
           }
-        } else {
+        }
+        else {
           const buffer = await fs.readFile(filePath);
           const str = `!upload(${requestId},${serverPath},${0},${fileSize})!${JsonConvert.stringify(buffer)}`;
           this._ws!.send(str);
         }
-      } catch (err) {
+      }
+      catch (err) {
         reject(err);
       }
     });
@@ -218,10 +218,12 @@ export class SdWebSocketClient {
   public async execAsync(cmd: string): Promise<void> {
     return await new Promise<any>(async (resolve, reject) => {
       try {
+
         if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
           try {
             await Wait.true(() => !!this._ws && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
-          } catch (err) {
+          }
+          catch (err) {
             throw new Error("웹 소켓이 연결되어있지 않습니다.");
           }
         }
@@ -231,30 +233,28 @@ export class SdWebSocketClient {
           if (response.type === "error") {
             this._reqMap.delete(requestId);
             reject(new Error(response.body));
-          } else {
+          }
+          else {
             this._reqMap.delete(requestId);
             resolve(response.body);
           }
         });
 
         this._ws!.send(`!exec(${requestId})!${cmd}`);
-      } catch (err) {
+      }
+      catch (err) {
         reject(err);
       }
     });
   }
 
-  public async sendAsync(
-    command: string,
-    params: any[],
-    sendProgressCallback?: (progress: { current: number; total: number }) => void,
-    splitLength: number = 10000
-  ): Promise<any> {
+  public async sendAsync(command: string, params: any[], sendProgressCallback?: (progress: { current: number; total: number }) => void, splitLength: number = 10000): Promise<any> {
     return await new Promise<any>(async (resolve, reject) => {
       if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
         try {
           await Wait.true(() => !!this._ws && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
-        } catch (err) {
+        }
+        catch (err) {
           throw new Error("웹 소켓이 연결되어있지 않습니다.");
         }
       }
@@ -274,7 +274,7 @@ export class SdWebSocketClient {
 
       const requestJson = JsonConvert.stringify(request)!;
 
-      if (requestJson.length > splitLength * 10 && sendProgressCallback) {
+      if ((requestJson.length > splitLength * 10) && sendProgressCallback) {
         sendProgressCallback({
           current: 0,
           total: requestJson.length
@@ -286,7 +286,8 @@ export class SdWebSocketClient {
         if (response.type === "error") {
           this._reqMap.delete(requestId);
           reject(new Error(response.body));
-        } else if (response.type === "split") {
+        }
+        else if (response.type === "split") {
           splitCompletedLength += response.body;
           if (sendProgressCallback) {
             sendProgressCallback({
@@ -294,26 +295,25 @@ export class SdWebSocketClient {
               total: requestJson.length
             });
           }
-        } else {
+        }
+        else {
           this._reqMap.delete(requestId);
           resolve(response.body);
         }
       });
 
       // 요청 보내기
-      if (requestJson.length > splitLength * 10 && sendProgressCallback) {
+      if ((requestJson.length > splitLength * 10) && sendProgressCallback) {
         let i = 0;
         let cursor = 0;
         while (cursor < requestJson.length) {
-          const str = `!split(${requestId},${i},${Math.ceil(requestJson.length / splitLength)})!${requestJson.slice(
-            cursor,
-            Math.min(cursor + splitLength, requestJson.length)
-          )}`;
+          const str = `!split(${requestId},${i},${Math.ceil(requestJson.length / splitLength)})!${requestJson.slice(cursor, Math.min(cursor + splitLength, requestJson.length))}`;
           this._ws!.send(str);
           cursor += splitLength;
           i++;
         }
-      } else {
+      }
+      else {
         this._ws!.send(requestJson);
       }
     });

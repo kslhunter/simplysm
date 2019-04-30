@@ -1,7 +1,7 @@
-import { Injectable, OnDestroy } from "@angular/core";
-import { Logger, Type } from "@simplysm/sd-common";
-import { ISdProgressToast, SdToastProvider } from "./SdToastProvider";
-import { SdWebSocketClient } from "@simplysm/sd-service-client";
+import {Injectable, OnDestroy} from "@angular/core";
+import {Logger, Type} from "@simplysm/sd-common";
+import {ISdProgressToast, SdToastProvider} from "./SdToastProvider";
+import {SdWebSocketClient} from "@simplysm/sd-service-client";
 
 @Injectable()
 export class SdServiceProvider implements OnDestroy {
@@ -22,21 +22,13 @@ export class SdServiceProvider implements OnDestroy {
     await this.socket.connectAsync();
   }
 
-  public on<T extends SdWebSocketEventBase<any, any>>(
-    eventType: Type<T>,
-    info: T["info"],
-    cb: (data: T["data"]) => Promise<void> | void
-  ): void {
+  public on<T extends SdWebSocketEventBase<any, any>>(eventType: Type<T>, info: T["info"], cb: (data: T["data"]) => (Promise<void> | void)): void {
     this.socket.addEventListenerAsync(eventType, info, cb).catch(err => {
       this._logger.error(err);
     });
   }
 
-  public emit<T extends SdWebSocketEventBase<any, any>>(
-    eventType: Type<T>,
-    infoSelector: (item: T["info"]) => boolean,
-    data: T["data"]
-  ): void {
+  public emit<T extends SdWebSocketEventBase<any, any>>(eventType: Type<T>, infoSelector: (item: T["info"]) => boolean, data: T["data"]): void {
     this.socket.emitAsync(eventType, infoSelector, data).catch(err => {
       this._logger.error(err);
     });
@@ -49,13 +41,14 @@ export class SdServiceProvider implements OnDestroy {
       const totalTextLength = progress.total.toLocaleString().length;
       const currentText = progress.current.toLocaleString().padStart(totalTextLength, " ");
       const totalText = progress.total.toLocaleString();
-      const percent = (progress.current * 100) / progress.total;
+      const percent = progress.current * 100 / progress.total;
       const message = `전송 : ${currentText} / ${totalText} (${Math.ceil(percent)}%)`;
 
       if (!currToast) {
         currToast = this._toast.info(message, true);
         currToast.progress(percent);
-      } else {
+      }
+      else {
         currToast.message(message);
         currToast.progress(percent);
       }

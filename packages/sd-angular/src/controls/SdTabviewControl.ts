@@ -7,7 +7,7 @@ import {
   Output,
   QueryList
 } from "@angular/core";
-import { SdTabviewItemControl } from "./SdTabviewItemControl";
+import {SdTabviewItemControl} from "./SdTabviewItemControl";
 
 @Component({
   selector: "sd-tabview",
@@ -16,7 +16,8 @@ import { SdTabviewItemControl } from "./SdTabviewItemControl";
     <sd-dock-container>
       <sd-dock>
         <sd-tab [(value)]="value" (valueChange)="valueChange.emit($event)">
-          <sd-tab-item *ngFor="let itemControl of itemControls; trackBy: trackByValueFn" [value]="itemControl.value">
+          <sd-tab-item *ngFor="let itemControl of itemControls; trackBy: trackByValueFn"
+                       [value]="itemControl.value">
             {{ itemControl.header || itemControl.value }}
           </sd-tab-item>
         </sd-tab>
@@ -25,8 +26,7 @@ import { SdTabviewItemControl } from "./SdTabviewItemControl";
       <sd-pane>
         <ng-content></ng-content>
       </sd-pane>
-    </sd-dock-container>
-  `
+    </sd-dock-container>`
 })
 export class SdTabviewControl {
   @Input()

@@ -15,8 +15,7 @@ if (process.env.NODE_ENV === "production") {
   enableProdMode();
 }
 
-platformBrowserDynamic()
-  .bootstrapModule(AppModule)
+platformBrowserDynamic().bootstrapModule(AppModule)
   .then(ngModuleRef => {
     if (module.hot) {
       const appRef = ngModuleRef.injector.get(ApplicationRef);
@@ -33,7 +32,9 @@ platformBrowserDynamic()
         for (const prevEl of prevEls) {
           try {
             prevEl.parentNode.removeChild(prevEl);
-          } catch (err) {}
+          }
+          catch (err) {
+          }
         }
       });
     }

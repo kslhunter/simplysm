@@ -1,7 +1,7 @@
 import * as tedious from "tedious";
-import { DateOnly, DateTime, Logger, Time, Wait } from "@simplysm/sd-common";
-import { EventEmitter } from "events";
-import { IDbConnectionConfig, IQueryDef, QueryBuilder } from "@simplysm/sd-orm-client";
+import {DateOnly, DateTime, Logger, Time, Wait} from "@simplysm/sd-common";
+import {EventEmitter} from "events";
+import {IDbConnectionConfig, IQueryDef, QueryBuilder} from "@simplysm/sd-orm-client";
 
 export class DbConnection extends EventEmitter {
   private readonly _logger = new Logger("@simplysm/sd-orm", "DbConnection");
@@ -102,17 +102,13 @@ export class DbConnection extends EventEmitter {
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
-      conn.beginTransaction(
-        err => {
-          if (err) {
-            reject(new Error(err.message));
-            return;
-          }
-          resolve();
-        },
-        "",
-        tedious.ISOLATION_LEVEL.READ_COMMITTED
-      );
+      conn.beginTransaction(err => {
+        if (err) {
+          reject(new Error(err.message));
+          return;
+        }
+        resolve();
+      }, "", tedious.ISOLATION_LEVEL.READ_COMMITTED);
     });
   }
 
@@ -163,29 +159,31 @@ export class DbConnection extends EventEmitter {
     const conn = this._conn;
 
     const results: any[][] = [];
-    const queries = queryList
-      .map(query => (query["type"] ? new QueryBuilder().from(query as IQueryDef).query : (query as string)))
-      .join("\n\n")
-      .split("GO")
-      .map(item => item.trim())
-      .filter((item: any) => !!item);
+    const queries = (
+      queryList.map(query => query["type"]
+        ? new QueryBuilder().from(query as IQueryDef).query
+        : query as string
+      ).join("\n\n")
+    ).split("GO").map(item => item.trim()).filter((item: any) => !!item);
 
     for (const currQuery of queries) {
       this._logger.log("쿼리 실행:", currQuery);
       await new Promise<void>((resolve, reject) => {
         let rejected = false;
-        const queryRequest = new tedious.Request(currQuery, err => {
-          if (err) {
-            rejected = true;
-            this._requests.remove(queryRequest);
+        const queryRequest = new tedious
+          .Request(currQuery, err => {
+            if (err) {
+              rejected = true;
+              this._requests.remove(queryRequest);
 
-            if (err["code"] === "ECANCEL") {
-              reject(new Error("쿼리가 취소되었습니다."));
-            } else {
-              reject(new Error(`[${err["code"]}] ${err.message}\n-- query\n${currQuery}\n--`));
+              if (err["code"] === "ECANCEL") {
+                reject(new Error("쿼리가 취소되었습니다."));
+              }
+              else {
+                reject(new Error(`[${err["code"]}] ${err.message}\n-- query\n${currQuery}\n--`));
+              }
             }
-          }
-        })
+          })
           .on("done", (rowCount, more, rows) => {
             this._startTimeout();
 
@@ -240,9 +238,12 @@ export class DbConnection extends EventEmitter {
     if (this._connTimeout) {
       clearTimeout(this._connTimeout);
     }
-    this._connTimeout = setTimeout(async () => {
-      await this.closeAsync();
-    }, this._timeout * 2);
+    this._connTimeout = setTimeout(
+      async () => {
+        await this.closeAsync();
+      },
+      this._timeout * 2
+    );
   }
 
   private _stopTimeout(): void {
@@ -251,11 +252,7 @@ export class DbConnection extends EventEmitter {
     }
   }
 
-  public generateResult(
-    arr: any[] | undefined,
-    colDefs: { name: string; dataType: string | undefined }[],
-    joinDefs: { as: string; isSingle: boolean }[]
-  ): any[] {
+  public generateResult(arr: any[] | undefined, colDefs: { name: string; dataType: string | undefined }[], joinDefs: { as: string; isSingle: boolean }[]): any[] {
     if (!arr) return [];
 
     let result: any[] = arr;
@@ -265,9 +262,11 @@ export class DbConnection extends EventEmitter {
         const colDef = colDefs.single(item1 => item1.name === key)!;
         if (item[key] && colDef.dataType === "DateTime") {
           item[key] = DateTime.parse(item[key]);
-        } else if (item[key] && colDef.dataType === "DateOnly") {
+        }
+        else if (item[key] && colDef.dataType === "DateOnly") {
           item[key] = DateOnly.parse(item[key]);
-        } else if (item[key] && colDef.dataType === "Time") {
+        }
+        else if (item[key] && colDef.dataType === "Time") {
           item[key] = Time.parse(item[key]);
         }
       }
@@ -276,7 +275,8 @@ export class DbConnection extends EventEmitter {
     for (const joinDef of joinDefs) {
       const grouped: { key: any; values: any[] }[] = [];
       for (const item of result) {
-        const keys = Object.keys(item).filter(key => !key.startsWith(joinDef.as + "."));
+        const keys = Object.keys(item)
+          .filter(key => !key.startsWith(joinDef.as + "."));
 
         const valueKeys = Object.keys(item)
           .filter(valueKey => valueKey.startsWith(joinDef.as + "."))
@@ -295,7 +295,8 @@ export class DbConnection extends EventEmitter {
         const exists = grouped.single(g => Object.equal(g.key, keyObj));
         if (exists) {
           exists.values.push(valueObj);
-        } else {
+        }
+        else {
           grouped.push({
             key: keyObj,
             values: [valueObj]
@@ -328,7 +329,8 @@ export class DbConnection extends EventEmitter {
         if (item.every(itemItem => itemItem == undefined)) {
           return undefined;
         }
-      } else if (item instanceof Object) {
+      }
+      else if (item instanceof Object) {
         for (const key of Object.keys(item)) {
           item[key] = clearEmpty(item[key]);
         }

@@ -1,4 +1,4 @@
-import { Type } from "../types/Type";
+import {Type} from "../types/Type";
 
 export interface IValidateDef {
   displayName?: string;

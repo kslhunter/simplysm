@@ -16,7 +16,7 @@ sd-modal {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, .6);
   }
 
   > ._dialog {
@@ -54,12 +54,12 @@ sd-modal {
           color: get($text-reverse-color, dark);
 
           &:hover {
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, .1);
             color: get($text-reverse-color, default);
           }
 
           &:active {
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, .2);
           }
         }
       }
@@ -67,15 +67,15 @@ sd-modal {
   }
 
   opacity: 0;
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity .3s ease-in-out;
   pointer-events: none;
 
   > ._dialog {
     transform: translateY(-25px);
-    transition: transform 0.3s ease-in-out;
+    transition: transform .3s ease-in-out;
   }
 
-  &[sd-open="true"] {
+  &[sd-open=true] {
     opacity: 1;
     pointer-events: auto;
 
@@ -85,7 +85,7 @@ sd-modal {
     }
   }
 
-  &[sd-float="true"] {
+  &[sd-float=true] {
     padding-top: 0;
     pointer-events: none;
 
@@ -100,10 +100,10 @@ sd-modal {
       border-radius: 0;
       transform: none;
       opacity: 0;
-      transition: opacity 0.1s linear;
+      transition: opacity .1s linear;
     }
 
-    &[sd-open="true"] {
+    &[sd-open=true] {
       > ._dialog {
         opacity: 1;
       }

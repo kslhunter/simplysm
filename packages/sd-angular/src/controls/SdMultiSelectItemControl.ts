@@ -13,7 +13,7 @@ import {
   IterableDiffers,
   TemplateRef
 } from "@angular/core";
-import { SdMultiSelectControl } from "./SdMultiSelectControl";
+import {SdMultiSelectControl} from "./SdMultiSelectControl";
 
 @Component({
   selector: "sd-multi-select-item",
@@ -26,8 +26,7 @@ import { SdMultiSelectControl } from "./SdMultiSelectControl";
       <span class="_labelTemplate" hidden *ngIf="labelTemplateRef">
         <ng-template [ngTemplateOutlet]="labelTemplateRef"></ng-template>
       </span>
-    </sd-checkbox>
-  `
+    </sd-checkbox>`
 })
 export class SdMultiSelectItemControl implements DoCheck {
   @HostBinding("attr.tabindex")
@@ -41,13 +40,11 @@ export class SdMultiSelectItemControl implements DoCheck {
 
   private readonly _iterableDiffer: IterableDiffer<any>;
 
-  public constructor(
-    private readonly _iterableDiffers: IterableDiffers,
-    private readonly _cdr: ChangeDetectorRef,
-    public readonly elRef: ElementRef<HTMLElement>,
-    @Inject(forwardRef(() => SdMultiSelectControl))
-    private readonly _parentControl: SdMultiSelectControl
-  ) {
+  public constructor(private readonly _iterableDiffers: IterableDiffers,
+                     private readonly _cdr: ChangeDetectorRef,
+                     public readonly elRef: ElementRef<HTMLElement>,
+                     @Inject(forwardRef(() => SdMultiSelectControl))
+                     private readonly _parentControl: SdMultiSelectControl) {
     this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => item);
   }
 
@@ -68,13 +65,13 @@ export class SdMultiSelectItemControl implements DoCheck {
         this._parentControl.value!.push(this.value);
         this._parentControl.valueChange.emit(this._parentControl.value);
       }
-    } else {
+    }
+    else {
       if (this.getIsSelected()) {
         if (this._parentControl.keyProp) {
-          this._parentControl.value!.remove(
-            (item: any) => item[this._parentControl.keyProp!] === this.value[this._parentControl.keyProp!]
-          );
-        } else {
+          this._parentControl.value!.remove((item: any) => item[this._parentControl.keyProp!] === this.value[this._parentControl.keyProp!]);
+        }
+        else {
           this._parentControl.value!.remove(this.value);
         }
         this._parentControl.valueChange.emit(this._parentControl.value);

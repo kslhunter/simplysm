@@ -1,13 +1,12 @@
-import { ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input } from "@angular/core";
-import { SdTypeValidate } from "../commons/SdTypeValidate";
-import { SdTabviewControl } from "./SdTabviewControl";
+import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input} from "@angular/core";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {SdTabviewControl} from "./SdTabviewControl";
 
 @Component({
   selector: "sd-tabview-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>
-  `
+    <ng-content></ng-content>`
 })
 export class SdTabviewItemControl {
   @Input()
@@ -22,8 +21,7 @@ export class SdTabviewItemControl {
     return this._parentControl.value === this.value;
   }
 
-  public constructor(
-    @Inject(forwardRef(() => SdTabviewControl))
-    private readonly _parentControl: SdTabviewControl
-  ) {}
+  public constructor(@Inject(forwardRef(() => SdTabviewControl))
+                     private readonly _parentControl: SdTabviewControl) {
+  }
 }

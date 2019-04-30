@@ -1,13 +1,13 @@
-import { IDbMigration } from "./IDbMigration";
-import { Queryable } from "./Queryable";
-import { IDbContextExecutor } from "./IDbContextExecutor";
-import { IQueryDef } from "./IQueryDef";
-import { Type } from "@simplysm/sd-common";
-import { ITableDef } from "./definitions";
-import { MigrationQueryBuilder } from "./MigrationQueryBuilder";
-import { QueryBuilder } from "./QueryBuilder";
-import { tableDefMetadataKey } from "./commons";
-import { QueryHelper } from "./QueryHelper";
+import {IDbMigration} from "./IDbMigration";
+import {Queryable} from "./Queryable";
+import {IDbContextExecutor} from "./IDbContextExecutor";
+import {IQueryDef} from "./IQueryDef";
+import {Type} from "@simplysm/sd-common";
+import {ITableDef} from "./definitions";
+import {MigrationQueryBuilder} from "./MigrationQueryBuilder";
+import {QueryBuilder} from "./QueryBuilder";
+import {tableDefMetadataKey} from "./commons";
+import {QueryHelper} from "./QueryHelper";
 
 export abstract class DbContext {
   // private _connId?: number;
@@ -21,13 +21,11 @@ export abstract class DbContext {
   public abstract get migrations(): Type<IDbMigration>[];
 
   // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
-  public constructor(private readonly _executor: IDbContextExecutor) {}
+  public constructor(private readonly _executor: IDbContextExecutor) {
+  }
 
   public getTableDefinitions(): ITableDef[] {
-    return Object.values(this)
-      .ofType(Queryable)
-      .map(qr => qr.tableDef)
-      .filterExists();
+    return Object.values(this).ofType(Queryable).map(qr => qr.tableDef).filterExists();
   }
 
   public async connectAsync<R>(fn: (db: this) => Promise<R>, trans: boolean = true): Promise<R> {
@@ -51,12 +49,14 @@ export abstract class DbContext {
         await this._executor.commitTransactionAsync();
         this._trans = false;
       }
-    } catch (err) {
+    }
+    catch (err) {
       if (trans) {
         try {
           await this._executor.rollbackTransactionAsync();
           this._trans = false;
-        } catch (err1) {
+        }
+        catch (err1) {
           if (!err1.message.includes("ROLLBACK") || !err1.message.includes("BEGIN")) {
             await this._executor.closeAsync();
             this._trans = false;
@@ -83,11 +83,13 @@ export abstract class DbContext {
 
       await this._executor.commitTransactionAsync();
       this._trans = false;
-    } catch (err) {
+    }
+    catch (err) {
       try {
         await this._executor.rollbackTransactionAsync();
         this._trans = false;
-      } catch (err1) {
+      }
+      catch (err1) {
         if (!err1.message.includes("ROLLBACK") || !err1.message.includes("BEGIN")) {
           await this._executor.closeAsync();
           this._trans = false;
@@ -102,11 +104,7 @@ export abstract class DbContext {
     return result;
   }
 
-  public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(
-    queries: (string | IQueryDef)[],
-    colDefs?: C,
-    joinDefs?: { as: string; isSingle: boolean }[]
-  ): Promise<undefined extends C ? any[][] : any[]> {
+  public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(queries: (string | IQueryDef)[], colDefs?: C, joinDefs?: { as: string; isSingle: boolean }[]): Promise<undefined extends C ? any[][] : any[]> {
     return await this._executor.executeAsync(queries, colDefs, joinDefs);
   }
 
@@ -134,36 +132,39 @@ export abstract class DbContext {
   }
 
   public async initializeAsync(dbs?: string[], force?: boolean): Promise<boolean> {
+    if (force && this._trans) {
+      throw new Error("DB 초기화 함수 (initializeAsync)는 트랜젝션을 사용할 수 없습니다.");
+    }
+
     if (!force) {
-      const isDbExists =
-        (await this.executeAsync([
-          `SELECT COUNT(*) as [cnt] FROM [master].[dbo].[sysdatabases] WHERE [name] = '${this.mainDb}'`
-        ]))[0][0].cnt > 0;
+      const isDbExists = (
+        await this.executeAsync([`SELECT COUNT(*) as [cnt] FROM [master].[dbo].[sysdatabases] WHERE [name] = '${this.mainDb}'`])
+      )[0][0].cnt > 0;
 
       if (isDbExists) {
-        const isTableExists =
-          (await this.executeAsync([
-            `SELECT COUNT(*) as [cnt] FROM [${
-              this.mainDb
-            }].[INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = '_migration'`
-          ]))[0][0].cnt > 0;
+        const isTableExists = (
+          await this.executeAsync([`SELECT COUNT(*) as [cnt] FROM [${this.mainDb}].[INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = '_migration'`])
+        )[0][0].cnt > 0;
 
         if (isTableExists) {
           //-- Migration
-          const dbMigrations = (await this.executeAsync([
-            new QueryBuilder().from(`[${this.mainDb}].[dbo].[_migration]`).def
-          ]))[0].map(item => item.code);
+          const dbMigrations = (
+            await this.executeAsync([
+              new QueryBuilder().from(`[${this.mainDb}].[dbo].[_migration]`).def
+            ])
+          )[0].map(item => item.code);
 
-          const migrations = this.migrations
-            .filter(item => !dbMigrations.includes(item.name))
-            .orderBy(item => item.name);
+          const migrations = this.migrations.filter(item => !dbMigrations.includes(item.name)).orderBy(item => item.name);
           if (migrations.length > 0) {
             await this.transAsync(async () => {
               for (const migration of migrations) {
                 await new migration().up(this);
 
                 await this.executeAsync([
-                  new QueryBuilder().from(`[${this.mainDb}].[dbo].[_migration]`).insert({ code: migration.name }).def
+                  new QueryBuilder()
+                    .from(`[${this.mainDb}].[dbo].[_migration]`)
+                    .insert({code: migration.name})
+                    .def
                 ]);
               }
             });
@@ -172,10 +173,6 @@ export abstract class DbContext {
           return false;
         }
       }
-    }
-
-    if (this._trans) {
-      throw new Error("DB 초기화 함수 (initializeAsync)는 트랜젝션을 사용할 수 없습니다.");
     }
 
     const dbNames = dbs || [this.mainDb!];
@@ -211,15 +208,14 @@ export abstract class DbContext {
         autoIncrement: col.autoIncrement
       }));
 
-      query +=
-        new MigrationQueryBuilder().createTable(
-          {
-            database: tableDef.database || this.mainDb!,
-            scheme: tableDef.scheme,
-            name: tableDef.name
-          },
-          columns
-        ) + "\n";
+      query += new MigrationQueryBuilder().createTable(
+        {
+          database: tableDef.database || this.mainDb!,
+          scheme: tableDef.scheme,
+          name: tableDef.name
+        },
+        columns
+      ) + "\n";
     }
     query += "GO\n\n";
 
@@ -232,58 +228,57 @@ export abstract class DbContext {
       const primaryKeys = tableDef.columns
         .filter(item => item.primaryKey !== undefined)
         .orderBy(item => item.primaryKey)
-        .map(item => ({ name: item.name, desc: false }));
+        .map(item => ({name: item.name, desc: false}));
 
       if (primaryKeys.length > 0) {
-        query +=
-          new MigrationQueryBuilder().addPrimaryKey(
-            {
-              database: tableDef.database || this.mainDb!,
-              scheme: tableDef.scheme,
-              name: tableDef.name
-            },
-            primaryKeys
-          ) + "\n";
+        query += new MigrationQueryBuilder().addPrimaryKey(
+          {
+            database: tableDef.database || this.mainDb!,
+            scheme: tableDef.scheme,
+            name: tableDef.name
+          },
+          primaryKeys
+        ) + "\n";
       }
     }
     query += "GO\n\n";
 
     // FK 연결
     for (const tableDef of tableDefs) {
-      const fkDefs = (tableDef.foreignKeys || []).map(fkDef => {
-        const targetTableDef: ITableDef = core.Reflect.getMetadata(tableDefMetadataKey, fkDef.targetTypeFwd());
+      const fkDefs = (tableDef.foreignKeys || [])
+        .map(fkDef => {
+          const targetTableDef: ITableDef = core.Reflect.getMetadata(tableDefMetadataKey, fkDef.targetTypeFwd());
 
-        if (!targetTableDef.columns) {
-          throw new Error(`${targetTableDef.name}의 컬럼 설정이 잘못되었습니다.`);
-        }
+          if (!targetTableDef.columns) {
+            throw new Error(`${targetTableDef.name}의 컬럼 설정이 잘못되었습니다.`);
+          }
 
-        const targetPkNames = targetTableDef.columns
-          .filter(item => item.primaryKey !== undefined)
-          .orderBy(item => item.primaryKey)
-          .map(item => item.name);
+          const targetPkNames = targetTableDef.columns
+            .filter(item => item.primaryKey !== undefined)
+            .orderBy(item => item.primaryKey)
+            .map(item => item.name);
 
-        return {
-          name: fkDef.name,
-          columnNames: fkDef.columnNames,
-          targetTableDef: {
-            database: targetTableDef.database || this.mainDb!,
-            scheme: targetTableDef.scheme,
-            name: targetTableDef.name
-          },
-          targetColumnNames: targetPkNames
-        };
-      });
+          return {
+            name: fkDef.name,
+            columnNames: fkDef.columnNames,
+            targetTableDef: {
+              database: targetTableDef.database || this.mainDb!,
+              scheme: targetTableDef.scheme,
+              name: targetTableDef.name
+            },
+            targetColumnNames: targetPkNames
+          };
+        });
 
       for (const fkDef of fkDefs) {
-        query +=
-          new MigrationQueryBuilder().addForeignKey(
-            {
-              database: tableDef.database || this.mainDb!,
-              scheme: tableDef.scheme,
-              name: tableDef.name
-            },
-            fkDef
-          ) + "\n";
+        query += new MigrationQueryBuilder().addForeignKey(
+          {
+            database: tableDef.database || this.mainDb!,
+            scheme: tableDef.scheme,
+            name: tableDef.name
+          },
+          fkDef
+        ) + "\n";
       }
     }
     query += "GO\n\n";
@@ -292,39 +287,44 @@ export abstract class DbContext {
     for (const tableDef of tableDefs) {
       if (!tableDef.indexes) continue;
       for (const indexDef of tableDef.indexes) {
-        query +=
-          new MigrationQueryBuilder().createIndex(
-            {
-              database: tableDef.database || this.mainDb!,
-              scheme: tableDef.scheme,
-              name: tableDef.name
-            },
-            indexDef
-          ) + "\n";
+        query += new MigrationQueryBuilder().createIndex(
+          {
+            database: tableDef.database || this.mainDb!,
+            scheme: tableDef.scheme,
+            name: tableDef.name
+          },
+          indexDef
+        ) + "\n";
       }
     }
     query += "GO\n\n";
 
     // Migration 테이블 구성
-    query +=
-      new MigrationQueryBuilder().createTable({ database: this.mainDb!, scheme: "dbo", name: "_migration" }, [
+    query += new MigrationQueryBuilder().createTable(
+      {database: this.mainDb!, scheme: "dbo", name: "_migration"},
+      [
         {
           name: "code",
           dataType: "NVARCHAR(255)",
           autoIncrement: false,
           nullable: false
         }
-      ]) + "\n";
+      ]
+    ) + "\n";
 
-    query +=
-      new MigrationQueryBuilder().addPrimaryKey({ database: this.mainDb!, scheme: "dbo", name: "_migration" }, [
-        { name: "code", desc: false }
-      ]) + "\n";
+    query += new MigrationQueryBuilder().addPrimaryKey(
+      {database: this.mainDb!, scheme: "dbo", name: "_migration"},
+      [
+        {name: "code", desc: false}
+      ]
+    ) + "\n";
     query += "GO\n\n";
 
     for (const migration of this.migrations.orderBy(item => item.name)) {
-      query +=
-        new QueryBuilder().from(`[${this.mainDb}].[dbo].[_migration]`).insert({ code: migration.name }).query + "\n";
+      query += new QueryBuilder()
+        .from(`[${this.mainDb}].[dbo].[_migration]`)
+        .insert({code: migration.name})
+        .query + "\n";
     }
 
     await this.executeAsync([query.trim()]);
@@ -351,12 +351,16 @@ export abstract class DbContext {
     await this.executeAsync([query]);
   }
 
-  public async dropTableAsync(tableDef: { database?: string; scheme?: string; name: string }): Promise<void> {
-    const query = new MigrationQueryBuilder().dropTable({
-      database: tableDef.database || this.mainDb!,
-      scheme: tableDef.scheme || "dbo",
-      name: tableDef.name
-    });
+  public async dropTableAsync(
+    tableDef: { database?: string; scheme?: string; name: string }
+  ): Promise<void> {
+    const query = new MigrationQueryBuilder().dropTable(
+      {
+        database: tableDef.database || this.mainDb!,
+        scheme: tableDef.scheme || "dbo",
+        name: tableDef.name
+      }
+    );
     await this.executeAsync([query]);
   }
 

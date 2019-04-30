@@ -1,20 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  forwardRef,
-  HostBinding,
-  HostListener,
-  Inject,
-  Input
-} from "@angular/core";
-import { SdTabControl } from "./SdTabControl";
+import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, HostListener, Inject, Input} from "@angular/core";
+import {SdTabControl} from "./SdTabControl";
 
 @Component({
   selector: "sd-tab-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>
-  `
+    <ng-content></ng-content>`
 })
 export class SdTabItemControl {
   @Input()
@@ -25,10 +16,9 @@ export class SdTabItemControl {
     return this._parentControl.value === this.value;
   }
 
-  public constructor(
-    @Inject(forwardRef(() => SdTabControl))
-    private readonly _parentControl: SdTabControl
-  ) {}
+  public constructor(@Inject(forwardRef(() => SdTabControl))
+                     private readonly _parentControl: SdTabControl) {
+  }
 
   @HostListener("click")
   public onClick(): void {

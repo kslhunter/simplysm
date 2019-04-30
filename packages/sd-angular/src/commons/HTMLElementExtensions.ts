@@ -1,5 +1,5 @@
-import { SdMutationEvent } from "./SdMutationEvent";
-import { ResizeEvent } from "./ResizeEvent";
+import {SdMutationEvent} from "./SdMutationEvent";
+import {ResizeEvent} from "./ResizeEvent";
 
 declare global {
   // tslint:disable-next-line:interface-name
@@ -26,18 +26,12 @@ Object.defineProperty(HTMLElement.prototype, "windowOffset", {
       left -= cursor.scrollLeft;
     }
 
-    return { top, left };
+    return {top, left};
   }
 });
 
-HTMLElement.prototype["orgAddEventListener"] =
-  HTMLElement.prototype["orgAddEventListener"] || HTMLElement.prototype.addEventListener;
-
-HTMLElement.prototype.addEventListener = function(
-  type: string,
-  listener: EventListenerOrEventListenerObject,
-  options?: boolean | AddEventListenerOptions
-): void {
+HTMLElement.prototype["orgAddEventListener"] = HTMLElement.prototype["orgAddEventListener"] || HTMLElement.prototype.addEventListener;
+HTMLElement.prototype.addEventListener = function (type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
   if (type === "resize") {
     let prevWidth = this.offsetWidth;
     let prevHeight = this.offsetHeight;
@@ -57,16 +51,18 @@ HTMLElement.prototype.addEventListener = function(
         }
 
         if (dimensions.length > 0) {
-          const event = new CustomEvent("resize", { detail: { dimensions } }) as ResizeEvent;
+          const event = new CustomEvent("resize", {detail: {dimensions}}) as ResizeEvent;
           if (listener["handleEvent"]) {
             (listener as EventListenerObject).handleEvent(event);
-          } else {
+          }
+          else {
             (listener as EventListener)(event);
           }
         }
       });
       observer.observe(this);
-    } else {
+    }
+    else {
       const timeout = window.setInterval(() => {
         const dimensions: ("width" | "height")[] = [];
 
@@ -80,10 +76,11 @@ HTMLElement.prototype.addEventListener = function(
         }
 
         if (dimensions.length > 0) {
-          const event = new CustomEvent("resize", { detail: { dimensions } }) as ResizeEvent;
+          const event = new CustomEvent("resize", {detail: {dimensions}}) as ResizeEvent;
           if (listener["handleEvent"]) {
             (listener as EventListenerObject).handleEvent(event);
-          } else {
+          }
+          else {
             (listener as EventListener)(event);
           }
         }
@@ -97,13 +94,15 @@ HTMLElement.prototype.addEventListener = function(
       };
       document.body.addEventListener("DOMNodeRemoved", removedEventListener);
     }
-  } else if (type === "mutation") {
+  }
+  else if (type === "mutation") {
     if (window["MutationObserver"]) {
       const observer = new MutationObserver(mutations => {
-        const event = new CustomEvent("mutation", { detail: { mutations } }) as SdMutationEvent;
+        const event = new CustomEvent("mutation", {detail: {mutations}}) as SdMutationEvent;
         if (listener["handleEvent"]) {
           (listener as EventListenerObject).handleEvent(event);
-        } else {
+        }
+        else {
           (listener as EventListener)(event);
         }
       });
@@ -115,12 +114,12 @@ HTMLElement.prototype.addEventListener = function(
         characterDataOldValue: true,
         subtree: true
       });
-    } else {
-      throw new Error(
-        "지원하지 않는 브라우져 입니다." + (process.env.NODE_ENV === "production" ? "" : "(MutationObserver)")
-      );
     }
-  } else {
+    else {
+      throw new Error("지원하지 않는 브라우져 입니다." + (process.env.NODE_ENV === "production" ? "" : "(MutationObserver)"));
+    }
+  }
+  else {
     this["orgAddEventListener"](type, listener, options);
   }
 };

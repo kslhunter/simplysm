@@ -2,12 +2,12 @@ sd-form {
   display: block;
   overflow: hidden;
 
-  &[sd-inline="true"] {
+  &[sd-inline=true] {
     vertical-align: middle;
 
     > form {
       display: inline-block;
-      margin-bottom: -get($gap, sm);
+      margin-bottom: - get($gap, sm);
 
       > sd-form-item {
         display: inline-block;

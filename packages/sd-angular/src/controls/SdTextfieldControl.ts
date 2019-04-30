@@ -8,45 +8,40 @@ import {
   Output,
   ViewChild
 } from "@angular/core";
-import { SdTypeValidate } from "../commons/SdTypeValidate";
-import { ISdNotifyPropertyChange, SdNotifyPropertyChange } from "../commons/SdNotifyPropertyChange";
-import { DateOnly, DateTime, Time } from "@simplysm/sd-common";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
+import {DateOnly, DateTime, Time} from "@simplysm/sd-common";
 
 @Component({
   selector: "sd-textfield",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <input
-      #input
-      [attr.type]="type === 'number' ? 'text' : type === 'datetime' ? 'datetime-local' : type"
-      [required]="required"
-      [value]="controlValue"
-      [placeholder]="placeholder || ''"
-      [attr.pattern]="pattern"
-      [attr.sd-invalid]="getIsInvalid()"
-      (input)="onInputInput($event)"
-      (focus)="onFocus($event)"
-      (blur)="onBlur($event)"
-      [disabled]="disabled"
-      [style.text-align]="type === 'number' ? 'right' : undefined"
-      *ngIf="!multiline"
-    />
-    <textarea
-      #input
-      [required]="required"
-      [value]="controlValue"
-      [placeholder]="placeholder || ''"
-      [attr.pattern]="pattern"
-      [attr.sd-invalid]="getIsInvalid()"
-      (input)="onInputInput($event)"
-      (focus)="onFocus($event)"
-      (blur)="onBlur($event)"
-      [disabled]="disabled"
-      [style.text-align]="type === 'number' ? 'right' : undefined"
-      *ngIf="multiline"
-    ></textarea>
-    <div class="_invalid-indicator"></div>
-  `
+    <input #input
+           [attr.type]="type === 'number' ? 'text' : type === 'datetime' ? 'datetime-local' : type"
+           [required]="required"
+           [value]="controlValue"
+           [placeholder]="placeholder || ''"
+           [attr.pattern]="pattern"
+           [attr.sd-invalid]="getIsInvalid()"
+           (input)="onInputInput($event)"
+           (focus)="onFocus($event)"
+           (blur)="onBlur($event)"
+           [disabled]="disabled"
+           [style.text-align]="type === 'number' ? 'right' : undefined"
+           *ngIf="!multiline"/>
+    <textarea #input
+              [required]="required"
+              [value]="controlValue"
+              [placeholder]="placeholder || ''"
+              [attr.pattern]="pattern"
+              [attr.sd-invalid]="getIsInvalid()"
+              (input)="onInputInput($event)"
+              (focus)="onFocus($event)"
+              (blur)="onBlur($event)"
+              [disabled]="disabled"
+              [style.text-align]="type === 'number' ? 'right' : undefined"
+              *ngIf="multiline"></textarea>
+    <div class="_invalid-indicator"></div>`
 })
 export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @Input()
@@ -55,8 +50,7 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
     includes: ["number", "text", "password", "date", "datetime", "time", "month", "year", "color", "email"],
     notnull: true
   })
-  public type: "number" | "text" | "password" | "date" | "datetime" | "time" | "month" | "year" | "color" | "email" =
-    "text";
+  public type: "number" | "text" | "password" | "date" | "datetime" | "time" | "month" | "year" | "color" | "email" = "text";
 
   @Input()
   @SdTypeValidate(String)
@@ -74,7 +68,7 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   public readonly valueChange = new EventEmitter<string | number | DateOnly | DateTime | Time | undefined>();
 
   @Input()
-  @SdTypeValidate({ type: Boolean, notnull: true })
+  @SdTypeValidate({type: Boolean, notnull: true})
   @SdNotifyPropertyChange()
   public focused = false;
 
@@ -123,58 +117,47 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   public multiline?: boolean;
 
   public getIsInvalid(): boolean {
-    const hasMinError =
-      this.min !== undefined && this.value !== undefined && this.type === "number" && this.value < this.min;
-    const hasStepError =
-      this.step !== undefined &&
-      this.value !== undefined &&
-      this.type === "number" &&
-      Math.abs(Number(this.value) % this.step) >= 1;
+    const hasMinError = this.min !== undefined && this.value !== undefined && this.type === "number" && this.value < this.min;
+    const hasStepError = this.step !== undefined && this.value !== undefined && this.type === "number" && Math.abs(Number(this.value) % this.step) >= 1;
     const hasRequiredError = this.required && (this.value === "" || this.value === undefined);
     return hasMinError || hasStepError || !!hasRequiredError;
   }
 
   public get controlValue(): number | string {
-    return this.value === undefined
-      ? ""
-      : this.value instanceof DateTime
-      ? this.value.toFormatString("yyyy-MM-ddTHH:mm")
-      : this.value instanceof DateOnly
-      ? this.type === "year" && this.value instanceof DateOnly
-        ? this.value.toFormatString("yyyy")
-        : this.type === "month"
-        ? this.value.toFormatString("yyyy-MM")
-        : this.value.toString()
-      : this.value instanceof Time
-      ? this.value.toFormatString("HH:mm")
-      : this.type === "number" && typeof this.value === "number"
-      ? this.value.toLocaleString()
-      : this.value;
+    return this.value === undefined ? ""
+      : this.value instanceof DateTime ? this.value.toFormatString("yyyy-MM-ddTHH:mm")
+        : this.value instanceof DateOnly ? ((this.type === "year" && this.value instanceof DateOnly) ? this.value.toFormatString("yyyy") : this.type === "month" ? this.value.toFormatString("yyyy-MM") : this.value.toString())
+          : this.value instanceof Time ? this.value.toFormatString("HH:mm")
+            : this.type === "number" && typeof this.value === "number" ? this.value.toLocaleString()
+              : this.value;
   }
 
   public onInputInput(event: Event): void {
-    setTimeout(() => {
-      const inputEl = event.target as (HTMLInputElement | HTMLTextAreaElement);
-      let value;
-      if (this.type === "number") {
-        value = !inputEl.value ? undefined : Number(inputEl.value.replace(/,/g, ""));
-      } else if (this.type === "year") {
-        value = !inputEl.value ? undefined : inputEl.value.length === 4 ? DateOnly.parse(inputEl.value) : inputEl.value;
-      } else if (this.type === "date" || this.type === "month") {
-        value = !inputEl.value ? undefined : DateOnly.parse(inputEl.value);
-      } else if (this.type === "datetime") {
-        value = !inputEl.value ? undefined : DateTime.parse(inputEl.value);
-      } else if (this.type === "time") {
-        value = !inputEl.value ? undefined : Time.parse(inputEl.value);
-      } else {
-        value = inputEl.value;
-      }
+    const inputEl = event.target as (HTMLInputElement | HTMLTextAreaElement);
+    let value;
+    if (this.type === "number") {
+      value = !inputEl.value ? undefined : Number(inputEl.value.replace(/,/g, ""));
+    }
+    else if (this.type === "year") {
+      value = !inputEl.value ? undefined : inputEl.value.length === 4 ? DateOnly.parse(inputEl.value) : inputEl.value;
+    }
+    else if (this.type === "date" || this.type === "month") {
+      value = !inputEl.value ? undefined : DateOnly.parse(inputEl.value);
+    }
+    else if (this.type === "datetime") {
+      value = !inputEl.value ? undefined : DateTime.parse(inputEl.value);
+    }
+    else if (this.type === "time") {
+      value = !inputEl.value ? undefined : Time.parse(inputEl.value);
+    }
+    else {
+      value = inputEl.value;
+    }
 
-      if (this.value !== value) {
-        this.value = value;
-        this.valueChange.emit(this.value);
-      }
-    });
+    if (this.value !== value) {
+      this.value = value;
+      this.valueChange.emit(this.value);
+    }
   }
 
   public onFocus(event: Event): void {
@@ -199,7 +182,8 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
         if (document.activeElement !== this.inputElRef.nativeElement) {
           this.inputElRef.nativeElement.focus();
         }
-      } else {
+      }
+      else {
         if (document.activeElement === this.inputElRef.nativeElement) {
           this.inputElRef.nativeElement.blur();
         }

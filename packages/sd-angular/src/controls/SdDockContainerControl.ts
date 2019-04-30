@@ -7,20 +7,20 @@ import {
   forwardRef,
   QueryList
 } from "@angular/core";
-import { SdDockControl } from "./SdDockControl";
+import {SdDockControl} from "./SdDockControl";
 
 @Component({
   selector: "sd-dock-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>
-  `
+    <ng-content></ng-content>`
 })
 export class SdDockContainerControl implements AfterContentInit {
   @ContentChildren(forwardRef(() => SdDockControl))
   public dockControls?: QueryList<SdDockControl>;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {}
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  }
 
   public ngAfterContentInit(): void {
     this.redraw();
@@ -38,45 +38,60 @@ export class SdDockContainerControl implements AfterContentInit {
       const position = dockControl.position;
 
       if (position === "top") {
-        Object.assign(dockEl.style, {
-          top: top + "px",
-          bottom: "",
-          left: left + "px",
-          right: right + "px"
-        });
+        Object.assign(
+          dockEl.style,
+          {
+            top: top + "px",
+            bottom: "",
+            left: left + "px",
+            right: right + "px"
+          }
+        );
         top += dockEl.offsetHeight;
       } else if (position === "bottom") {
-        Object.assign(dockEl.style, {
-          top: "",
-          bottom: bottom + "px",
-          left: left + "px",
-          right: right + "px"
-        });
+        Object.assign(
+          dockEl.style,
+          {
+            top: "",
+            bottom: bottom + "px",
+            left: left + "px",
+            right: right + "px"
+          }
+        );
         bottom += dockEl.offsetHeight;
       } else if (position === "left") {
-        Object.assign(dockEl.style, {
-          top: top + "px",
-          bottom: bottom + "px",
-          left: left + "px",
-          right: ""
-        });
+        Object.assign(
+          dockEl.style,
+          {
+            top: top + "px",
+            bottom: bottom + "px",
+            left: left + "px",
+            right: ""
+          }
+        );
         left += dockEl.offsetWidth;
       } else if (position === "right") {
-        Object.assign(dockEl.style, {
-          top: top + "px",
-          bottom: bottom + "px",
-          left: "",
-          right: right + "px"
-        });
+        Object.assign(
+          dockEl.style,
+          {
+            top: top + "px",
+            bottom: bottom + "px",
+            left: "",
+            right: right + "px"
+          }
+        );
         right += dockEl.offsetWidth;
       }
     }
 
-    Object.assign(this._elRef.nativeElement.style, {
-      paddingTop: top + "px",
-      paddingBottom: bottom + "px",
-      paddingRight: right + "px",
-      paddingLeft: left + "px"
-    });
+    Object.assign(
+      this._elRef.nativeElement.style,
+      {
+        paddingTop: top + "px",
+        paddingBottom: bottom + "px",
+        paddingRight: right + "px",
+        paddingLeft: left + "px"
+      }
+    );
   }
 }

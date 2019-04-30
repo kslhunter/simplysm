@@ -1,20 +1,23 @@
-import { QueriedBoolean, QueryType } from "./commons";
-import { DateOnly, DateTime, StripTypeWrap, Type } from "@simplysm/sd-common";
-import { QueryUnit } from "./QueryUnit";
-import { QueryHelper } from "./QueryHelper";
+import {QueriedBoolean, QueryType} from "./commons";
+import {DateOnly, DateTime, StripTypeWrap, Type} from "@simplysm/sd-common";
+import {QueryUnit} from "./QueryUnit";
+import {QueryHelper} from "./QueryHelper";
 
 export class CaseQueryable<T extends QueryType> {
   private readonly _cases: string[] = [];
 
-  public constructor(private _type: Type<T> | undefined) {}
+  public constructor(private _type: Type<T> | undefined) {
+  }
 
   public case(predicate: QueriedBoolean | QueryUnit<QueriedBoolean>, then: T | QueryUnit<T>): CaseQueryable<T> {
     if (!this._type) {
       if (then instanceof QueryUnit) {
         this._type = then.type;
-      } else if (then) {
+      }
+      else if (then) {
         this._type = then.constructor as any;
-      } else {
+      }
+      else {
         this._type = undefined;
       }
     }
@@ -27,17 +30,16 @@ export class CaseQueryable<T extends QueryType> {
     if (!this._type) {
       if (then instanceof QueryUnit) {
         this._type = then.type;
-      } else if (then) {
+      }
+      else if (then) {
         this._type = then.constructor as any;
-      } else {
+      }
+      else {
         this._type = undefined;
       }
     }
 
-    return new QueryUnit<T>(
-      this._type as any,
-      `CASE ${this._cases.join(" ")} ELSE ${QueryHelper.getFieldQuery(then)} END`
-    ) as any;
+    return new QueryUnit<T>(this._type as any, `CASE ${this._cases.join(" ")} ELSE ${QueryHelper.getFieldQuery(then)} END`) as any;
   }
 }
 
@@ -45,21 +47,17 @@ export const sorm = {
   equal<T extends QueryType>(source: T | QueryUnit<T>, target: T | undefined | QueryUnit<T>): boolean {
     if (target === undefined) {
       return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " IS NULL") as any;
-    } else {
-      return new QueryUnit(
-        QueriedBoolean,
-        QueryHelper.getFieldQuery(source) + " = " + QueryHelper.getFieldQuery(target)
-      ) as any;
+    }
+    else {
+      return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " = " + QueryHelper.getFieldQuery(target)) as any;
     }
   },
   notEqual<T extends QueryType>(source: T | QueryUnit<T>, target: T | undefined | QueryUnit<T>): boolean {
     if (target === undefined) {
       return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " IS NOT NULL") as any;
-    } else {
-      return new QueryUnit(
-        QueriedBoolean,
-        QueryHelper.getFieldQuery(source) + " != " + QueryHelper.getFieldQuery(target)
-      ) as any;
+    }
+    else {
+      return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " != " + QueryHelper.getFieldQuery(target)) as any;
     }
   },
   null<T extends QueryType>(source: T | QueryUnit<T>): boolean {
@@ -69,40 +67,30 @@ export const sorm = {
     return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " IS NOT NULL") as any;
   },
   nullOrEmpty(source: undefined | string | QueryUnit<string | undefined>): boolean {
-    return this.or([this.null(source), this.equal(source, "")]);
+    return this.or([
+      this.null(source),
+      this.equal(source, "")
+    ]);
   },
   notNullOrEmpty(source: undefined | string | QueryUnit<string | undefined>): boolean {
-    return this.and([this.notNull(source), this.notEqual(source, "")]);
+    return this.and([
+      this.notNull(source),
+      this.notEqual(source, "")
+    ]);
   },
   lessThen<T extends number | DateOnly | DateTime>(source: T | undefined, target: T | undefined): boolean {
-    return new QueryUnit(
-      QueriedBoolean,
-      QueryHelper.getFieldQuery(source) + " < " + QueryHelper.getFieldQuery(target)
-    ) as any;
+    return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " < " + QueryHelper.getFieldQuery(target)) as any;
   },
   lessThenOrEqual<T extends number | DateOnly | DateTime>(source: T | undefined, target: T | undefined): boolean {
-    return new QueryUnit(
-      QueriedBoolean,
-      QueryHelper.getFieldQuery(source) + " <= " + QueryHelper.getFieldQuery(target)
-    ) as any;
+    return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " <= " + QueryHelper.getFieldQuery(target)) as any;
   },
   greaterThen<T extends number | DateOnly | DateTime>(source: T | undefined, target: T | undefined): boolean {
-    return new QueryUnit(
-      QueriedBoolean,
-      QueryHelper.getFieldQuery(source) + " > " + QueryHelper.getFieldQuery(target)
-    ) as any;
+    return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " > " + QueryHelper.getFieldQuery(target)) as any;
   },
   greaterThenOrEqual<T extends number | DateOnly | DateTime>(source: T | undefined, target: T | undefined): boolean {
-    return new QueryUnit(
-      QueriedBoolean,
-      QueryHelper.getFieldQuery(source) + " >= " + QueryHelper.getFieldQuery(target)
-    ) as any;
+    return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " >= " + QueryHelper.getFieldQuery(target)) as any;
   },
-  between<T extends number | DateOnly | DateTime>(
-    source: T | undefined,
-    from: T | undefined,
-    to: T | undefined
-  ): boolean {
+  between<T extends number | DateOnly | DateTime>(source: T | undefined, from: T | undefined, to: T | undefined): boolean {
     const result: boolean[] = [];
     if (from) {
       result.push(this.greaterThenOrEqual(source, from));
@@ -114,21 +102,16 @@ export const sorm = {
     return this.and(result);
   },
   includes(source: string | undefined, target: string | undefined): boolean {
-    return new QueryUnit(
-      QueriedBoolean,
-      QueryHelper.getFieldQuery(source) + " LIKE '%' + " + QueryHelper.getFieldQuery(target) + " + '%'"
-    ) as any;
+    return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " LIKE '%' + " + QueryHelper.getFieldQuery(target) + " + '%'") as any;
   },
   in<P extends QueryType>(src: P, target: P[]): boolean {
     if (target.length < 1) {
       return new QueryUnit(QueriedBoolean, "1 = 0") as any;
-    } else {
+    }
+    else {
       let query = "";
       if (!target.every(item => item === undefined)) {
-        query = `${QueryHelper.getFieldQuery(src)} IN (${target
-          .filterExists()
-          .map(item => QueryHelper.getFieldQuery(item))
-          .join(", ")})`;
+        query = `${QueryHelper.getFieldQuery(src)} IN (${target.filterExists().map(item => QueryHelper.getFieldQuery(item)).join(", ")})`;
       }
 
       // @ts-ignore
@@ -141,13 +124,11 @@ export const sorm = {
   notIn<P extends QueryType>(src: P, target: P[]): boolean {
     if (target.length < 1) {
       return new QueryUnit(QueriedBoolean, "1 = 1") as any;
-    } else {
+    }
+    else {
       let query = "";
       if (!target.every(item => item === undefined)) {
-        query = `${QueryHelper.getFieldQuery(src)} NOT IN (${target
-          .filterExists()
-          .map(item => QueryHelper.getFieldQuery(item))
-          .join(", ")})`;
+        query = `${QueryHelper.getFieldQuery(src)} NOT IN (${target.filterExists().map(item => QueryHelper.getFieldQuery(item)).join(", ")})`;
       }
 
       // @ts-ignore
@@ -158,16 +139,10 @@ export const sorm = {
     }
   },
   and(arg: boolean[]): boolean {
-    return new QueryUnit(
-      QueriedBoolean,
-      "(" + arg.map(item => QueryHelper.getWhereQuery(item)).join(") AND (") + ")"
-    ) as any;
+    return new QueryUnit(QueriedBoolean, "(" + arg.map(item => QueryHelper.getWhereQuery(item)).join(") AND (") + ")") as any;
   },
   or(arg: boolean[]): boolean {
-    return new QueryUnit(
-      QueriedBoolean,
-      "(" + arg.map(item => QueryHelper.getWhereQuery(item)).join(") OR (") + ")"
-    ) as any;
+    return new QueryUnit(QueriedBoolean, "(" + arg.map(item => QueryHelper.getWhereQuery(item)).join(") OR (") + ")") as any;
   },
   search(sources: (string | undefined)[], searchText: string): boolean {
     if (!searchText) {
@@ -192,7 +167,8 @@ export const sorm = {
   count<T extends QueryType>(arg?: T): number | undefined {
     if (arg) {
       return new QueryUnit(Number as any, "COUNT(DISTINCT(" + QueryHelper.getFieldQuery(arg) + "))") as any;
-    } else {
+    }
+    else {
       return new QueryUnit(Number as any, "COUNT(*)") as any;
     }
   },
@@ -224,38 +200,29 @@ export const sorm = {
     return new QueryUnit(unit.type, "MIN(" + QueryHelper.getFieldQuery(unit) + ")") as any;
   },
 
-  if<T extends QueryType, R extends T>(
-    source: T | QueryUnit<T>,
-    predicate: T | QueryUnit<T>,
-    target: R | QueryUnit<R>
-  ): R extends undefined ? R : NonNullable<R> {
+  if<T extends QueryType, R extends T>(source: T | QueryUnit<T>, predicate: T | QueryUnit<T>, target: R | QueryUnit<R>): R extends undefined ? R : NonNullable<R> {
     let type;
     if (source instanceof QueryUnit) {
       type = source.type;
-    } else if (target instanceof QueryUnit) {
+    }
+    else if (target instanceof QueryUnit) {
       type = target.type;
-    } else {
+    }
+    else {
       throw new TypeError();
     }
 
-    return new QueryUnit(
-      type,
-      "ISNULL(NULLIF(" +
-        QueryHelper.getFieldQuery(source) +
-        ", " +
-        QueryHelper.getFieldQuery(predicate) +
-        "), " +
-        QueryHelper.getFieldQuery(target) +
-        ")"
-    ) as any;
+    return new QueryUnit(type, "ISNULL(NULLIF(" + QueryHelper.getFieldQuery(source) + ", " + QueryHelper.getFieldQuery(predicate) + "), " + QueryHelper.getFieldQuery(target) + ")") as any;
   },
   ifNull<T extends QueryType, R extends T>(source: T, ...targets: R[]): R extends undefined ? R : NonNullable<R> {
     let type;
     if (source instanceof QueryUnit) {
       type = source.type;
-    } else if (targets.ofType(QueryUnit).length > 0) {
+    }
+    else if (targets.ofType(QueryUnit).length > 0) {
       type = targets.ofType(QueryUnit)[0].type;
-    } else {
+    }
+    else {
       throw new TypeError();
     }
 
@@ -270,9 +237,11 @@ export const sorm = {
     let type: any;
     if (then instanceof QueryUnit) {
       type = then.type;
-    } else if (then) {
+    }
+    else if (then) {
       type = then.constructor;
-    } else {
+    }
+    else {
       type = undefined;
     }
 
@@ -283,10 +252,7 @@ export const sorm = {
     return new QueryUnit(Number as any, "DATALENGTH(" + QueryHelper.getFieldQuery(arg) + ")") as any;
   },
   cast<P extends QueryType>(src: any, targetType: Type<P>): StripTypeWrap<P> {
-    return new QueryUnit(
-      targetType,
-      `CONVERT(${QueryHelper.getDataTypeFromType(targetType)}, ${QueryHelper.getFieldQuery(src)})`
-    ) as any;
+    return new QueryUnit(targetType, `CONVERT(${QueryHelper.getDataTypeFromType(targetType)}, ${QueryHelper.getFieldQuery(src)})`) as any;
   },
   left(src: string | QueryUnit<string>, num: number): string {
     return new QueryUnit(String, "LEFT(" + QueryHelper.getFieldQuery(src) + ", " + num + ")") as any;
@@ -295,25 +261,18 @@ export const sorm = {
     return new QueryUnit(String, "RIGHT(" + QueryHelper.getFieldQuery(src) + ", " + num + ")") as any;
   },
   replace(src: string | undefined | QueryUnit<string | undefined>, from: string, to: string): string {
-    return new QueryUnit(
-      String,
-      "REPLACE(" +
-        QueryHelper.getFieldQuery(src) +
-        ", " +
-        QueryHelper.getFieldQuery(from) +
-        ", " +
-        QueryHelper.getFieldQuery(to) +
-        ")"
-    ) as any;
+    return new QueryUnit(String, "REPLACE(" + QueryHelper.getFieldQuery(src) + ", " + QueryHelper.getFieldQuery(from) + ", " + QueryHelper.getFieldQuery(to) + ")") as any;
   },
   formula<T extends QueryType>(arg1: T | QueryUnit<T>, arg2: string, arg3: T | QueryUnit<T>): StripTypeWrap<T> {
     let type: any;
     const argForType = arg1 || arg3;
     if (argForType instanceof QueryUnit) {
       type = argForType.type;
-    } else if (argForType !== undefined) {
+    }
+    else if (argForType !== undefined) {
       type = argForType["constructor"];
-    } else {
+    }
+    else {
       throw new Error("타입을 알 수 없습니다.");
     }
 

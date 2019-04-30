@@ -1,20 +1,17 @@
 import * as WebSocket from "ws";
 import * as http from "http";
-import { EventEmitter } from "events";
-import { JsonConvert, Logger, optional } from "@simplysm/sd-common";
-import { ISdWebSocketEmitResponse, ISdWebSocketRequest, ISdWebSocketResponse } from "@simplysm/sd-service-client";
+import {EventEmitter} from "events";
+import {JsonConvert, Logger, optional} from "@simplysm/sd-common";
+import {ISdWebSocketEmitResponse, ISdWebSocketRequest, ISdWebSocketResponse} from "@simplysm/sd-service-client";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as crypto from "crypto";
-import { ProcessManager } from "@simplysm/sd-core";
+import {ProcessManager} from "@simplysm/sd-core";
 
 export class SdWebSocketServerConnection extends EventEmitter {
   private readonly _logger = new Logger("@simplysm/sd-service", "SdWebSocketServerConnection");
   private readonly _splitRequestMap = new Map<number, { timer: NodeJS.Timer; bufferStrings: string[] }>();
-  private readonly _uploadRequestMap = new Map<
-    number,
-    { timer: NodeJS.Timer; fd: number; filePath: string; completedLength: number }
-  >();
+  private readonly _uploadRequestMap = new Map<number, { timer: NodeJS.Timer; fd: number; filePath: string; completedLength: number }>();
   private readonly origin: string;
 
   public get isOpen(): boolean {
@@ -34,7 +31,8 @@ export class SdWebSocketServerConnection extends EventEmitter {
     this._conn.on("message", async (msg: string) => {
       try {
         await this._onMessageAsync(msg);
-      } catch (err) {
+      }
+      catch (err) {
         this._logger.error(err);
       }
     });
@@ -108,12 +106,7 @@ export class SdWebSocketServerConnection extends EventEmitter {
       }
 
       const currentLength = splitRequestValue.bufferStrings.filterExists().length;
-      this._logger.log(
-        `분할된 요청을 받았습니다 : ${this.origin} - ${i
-          .toString()
-          .toLocaleString()
-          .padStart(length.toString().toLocaleString().length)}번째 /${length.toLocaleString()}`
-      );
+      this._logger.log(`분할된 요청을 받았습니다 : ${this.origin} - ${i.toString().toLocaleString().padStart(length.toString().toLocaleString().length)}번째 /${length.toLocaleString()}`);
 
       if (currentLength !== length) {
         this._splitRequestMap.set(requestId, splitRequestValue);
@@ -132,21 +125,21 @@ export class SdWebSocketServerConnection extends EventEmitter {
       const md5 = match[3];
 
       try {
-        const fileMd5 = (await fs.pathExists(filePath))
+        const fileMd5 = await fs.pathExists(filePath)
           ? await new Promise<string>((resolve1, reject1) => {
-              const output = crypto.createHash("md5");
-              const input = fs.createReadStream(filePath);
+            const output = crypto.createHash("md5");
+            const input = fs.createReadStream(filePath);
 
-              input.on("error", errMessage => {
-                reject1(new Error(errMessage));
-              });
+            input.on("error", errMessage => {
+              reject1(new Error(errMessage));
+            });
 
-              output.once("readable", () => {
-                resolve1(output.read().toString("hex"));
-              });
+            output.once("readable", () => {
+              resolve1(output.read().toString("hex"));
+            });
 
-              input.pipe(output);
-            })
+            input.pipe(output);
+          })
           : undefined;
 
         if (fileMd5 === md5) {
@@ -155,14 +148,16 @@ export class SdWebSocketServerConnection extends EventEmitter {
             type: "response"
           };
           await this.sendAsync(endRes);
-        } else {
+        }
+        else {
           const endRes: ISdWebSocketResponse = {
             requestId,
             type: "checkMd5"
           };
           await this.sendAsync(endRes);
         }
-      } catch (err) {
+      }
+      catch (err) {
         this._logger.error(err, filePath);
         await this.sendAsync({
           requestId,
@@ -221,9 +216,7 @@ export class SdWebSocketServerConnection extends EventEmitter {
       }
 
       const completedLength = uploadRequestValue.completedLength;
-      this._logger.log(
-        `업로드 요청을 처리했습니다 : ${this.origin} - ${completedLength.toLocaleString()} /${length.toLocaleString()}`
-      );
+      this._logger.log(`업로드 요청을 처리했습니다 : ${this.origin} - ${completedLength.toLocaleString()} /${length.toLocaleString()}`);
 
       if (uploadRequestValue.completedLength !== length) {
         return;
@@ -239,12 +232,13 @@ export class SdWebSocketServerConnection extends EventEmitter {
       };
       await this.sendAsync(endRes);
       return;
-    } else if (execRegexp.test(msg)) {
+    }
+    else if (execRegexp.test(msg)) {
       const match = msg.match(uploadRegexp)!;
       const requestId = Number(match[1]);
       const cmd = match[2];
 
-      await ProcessManager.spawnAsync(cmd.split(" "), { logger: this._logger });
+      await ProcessManager.spawnAsync(cmd.split(" "), {logger: this._logger});
 
       const endRes: ISdWebSocketResponse = {
         requestId,
@@ -252,7 +246,8 @@ export class SdWebSocketServerConnection extends EventEmitter {
       };
       await this.sendAsync(endRes);
       return;
-    } else {
+    }
+    else {
       message = msg;
     }
 

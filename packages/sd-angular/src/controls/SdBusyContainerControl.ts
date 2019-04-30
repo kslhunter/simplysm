@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, HostBinding, HostListener, Input } from "@angular/core";
-import { SdTypeValidate } from "../commons/SdTypeValidate";
+import {ChangeDetectionStrategy, Component, HostBinding, HostListener, Input} from "@angular/core";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-busy-container",
@@ -10,8 +10,7 @@ import { SdTypeValidate } from "../commons/SdTypeValidate";
         <div class="_indicator"></div>
       </div>
     </div>
-    <ng-content></ng-content>
-  `
+    <ng-content></ng-content>`
 })
 export class SdBusyContainerControl {
   @Input()

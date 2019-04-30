@@ -1,4 +1,4 @@
-import { SdExcelCell } from "./SdExcelCell";
+import {SdExcelCell} from "./SdExcelCell";
 
 export class SdExcelCellStyle {
   public set alignH(value: "center" | "left" | "right") {
@@ -63,7 +63,8 @@ export class SdExcelCellStyle {
     const newFont = this._createNewFont();
     if (value) {
       newFont.b = newFont.b || [{}];
-    } else {
+    }
+    else {
       delete newFont.b;
     }
     const newFontIndex = this._setFontData(newFont);
@@ -82,16 +83,20 @@ export class SdExcelCellStyle {
     const styleData = this._getStyleData();
     if (!styleData || !styleData.$ || !styleData.$.numFmtId) {
       return "number";
-    } else if (styleData.$.numFmtId === "14") {
-      /*else if (styleData.$.numFmtId === "176" || styleData.$.numFmtId === "3") {
+    }
+    /*else if (styleData.$.numFmtId === "176" || styleData.$.numFmtId === "3") {
       return "number";
     }*/
+    else if (styleData.$.numFmtId === "14") {
       return "DateOnly";
-    } else if (styleData.$.numFmtId === "22") {
+    }
+    else if (styleData.$.numFmtId === "22") {
       return "DateTime";
-    } else if (styleData.$.numFmtId === "42") {
+    }
+    else if (styleData.$.numFmtId === "42") {
       return "Currency";
-    } else {
+    }
+    else {
       return "number";
     }
     /*else {
@@ -105,13 +110,17 @@ export class SdExcelCellStyle {
     newStyle.$.applyFont = 1;
     if (value === "number") {
       delete newStyle.$.numFmtId;
-    } else if (value === "DateOnly") {
+    }
+    else if (value === "DateOnly") {
       newStyle.$.numFmtId = 14;
-    } else if (value === "DateTime") {
+    }
+    else if (value === "DateTime") {
       newStyle.$.numFmtId = 22;
-    } else if (value === "Currency") {
+    }
+    else if (value === "Currency") {
       newStyle.$.numFmtId = 42;
-    } else {
+    }
+    else {
       throw new Error("지원되지 않는 숫자포맷 입니다.");
     }
 
@@ -169,37 +178,40 @@ export class SdExcelCellStyle {
 
   private _createNewFill(): any {
     const styleData = this._getStyleData();
-    const fillId = styleData && styleData.$ ? Number(styleData.$.fillId) : undefined;
+    const fillId = (styleData && styleData.$) ? Number(styleData.$.fillId) : undefined;
     if (fillId) {
       return Object.clone(this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fills[0].fill[fillId]);
-    } else {
+    }
+    else {
       return {};
     }
   }
 
   private _createNewStyle(): any {
     const styleData = this._getStyleData();
-    return styleData && styleData.$ ? Object.clone(styleData) : {};
+    return (styleData && styleData.$) ? Object.clone(styleData) : {};
   }
 
   private _createNewFont(): any {
     const styleData = this._getStyleData();
-    const fontId = styleData && styleData.$ ? Number(styleData.$.fontId) : undefined;
+    const fontId = (styleData && styleData.$) ? Number(styleData.$.fontId) : undefined;
 
     if (fontId) {
       return Object.clone(this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fonts[0].font[fontId]);
-    } else {
+    }
+    else {
       return {};
     }
   }
 
   private _createNewBorder(): any {
     const styleData = this._getStyleData();
-    const borderId = styleData && styleData.$ ? Number(styleData.$.borderId) : undefined;
+    const borderId = (styleData && styleData.$) ? Number(styleData.$.borderId) : undefined;
 
     if (borderId) {
       return Object.clone(this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.borders[0].border[borderId]);
-    } else {
+    }
+    else {
       return {};
     }
   }
@@ -244,34 +256,26 @@ export class SdExcelCellStyle {
   }
 
   private _setFillData(data: any): number {
-    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fills[0].fill.findIndex((item: any) =>
-      Object.equal(item, data)
-    );
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fills[0].fill.findIndex((item: any) => Object.equal(item, data));
     if (index >= 0) return index;
     return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fills[0].fill.push(data) - 1;
   }
 
   private _setFontData(data: any): number {
-    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fonts[0].font.findIndex((item: any) =>
-      Object.equal(item, data)
-    );
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fonts[0].font.findIndex((item: any) => Object.equal(item, data));
     if (index >= 0) return index;
     return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fonts[0].font.push(data) - 1;
   }
 
   private _setStyleData(data: any): number {
-    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf.findIndex((item: any) =>
-      Object.equal(item, data)
-    );
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf.findIndex((item: any) => Object.equal(item, data));
     if (index >= 0) return index;
     return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf.push(data) - 1;
   }
 
   private _getStyleData(): any {
     if (this._excelCell.cellData.$ && this._excelCell.cellData.$.s) {
-      return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf[
-        Number(this._excelCell.cellData.$.s)
-      ];
+      return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf[Number(this._excelCell.cellData.$.s)];
     }
 
     const colData = this._excelCell.excelWorkSheet.column(this._excelCell.col).colData;
@@ -283,12 +287,11 @@ export class SdExcelCellStyle {
   }
 
   private _setBorderData(data: any): number {
-    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.borders[0].border.findIndex(
-      (item: any) => Object.equal(item, data)
-    );
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.borders[0].border.findIndex((item: any) => Object.equal(item, data));
     if (index >= 0) return index;
     return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.borders[0].border.push(data) - 1;
   }
 
-  public constructor(private readonly _excelCell: SdExcelCell) {}
+  public constructor(private readonly _excelCell: SdExcelCell) {
+  }
 }

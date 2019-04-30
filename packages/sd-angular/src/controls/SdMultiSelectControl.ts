@@ -19,8 +19,8 @@ import {
   TemplateRef,
   ViewChild
 } from "@angular/core";
-import { SdTypeValidate } from "../commons/SdTypeValidate";
-import { SdMultiSelectItemControl } from "./SdMultiSelectItemControl";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {SdMultiSelectItemControl} from "./SdMultiSelectItemControl";
 
 @Component({
   selector: "sd-multi-select",
@@ -45,29 +45,25 @@ import { SdMultiSelectItemControl } from "./SdMultiSelectItemControl";
               <ng-template #rowOfList let-items="items">
                 <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
                   <div class="_sd-multi-select-item">
-                    <ng-template
-                      [ngTemplateOutlet]="itemTemplateRef"
-                      [ngTemplateOutletContext]="{ item: item }"
-                    ></ng-template>
+                    <ng-template [ngTemplateOutlet]="itemTemplateRef"
+                                 [ngTemplateOutletContext]="{item: item}"></ng-template>
 
                     <ng-container *ngIf="children && children(i, item) && children(i, item).length > 0">
                       <div class="_children">
-                        <ng-template
-                          [ngTemplateOutlet]="rowOfList"
-                          [ngTemplateOutletContext]="{ items: children(i, item) }"
-                        ></ng-template>
+                        <ng-template [ngTemplateOutlet]="rowOfList"
+                                     [ngTemplateOutletContext]="{items: children(i, item)}"></ng-template>
                       </div>
                     </ng-container>
                   </div>
                 </ng-container>
               </ng-template>
-              <ng-template [ngTemplateOutlet]="rowOfList" [ngTemplateOutletContext]="{ items: items }"></ng-template>
+              <ng-template [ngTemplateOutlet]="rowOfList"
+                           [ngTemplateOutletContext]="{items: items}"></ng-template>
             </sd-pane>
           </sd-dock-container>
         </ng-container>
       </sd-dropdown-popup>
-    </sd-dropdown>
-  `
+    </sd-dropdown>`
 })
 export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecked {
   @Input()
@@ -86,7 +82,7 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
   @SdTypeValidate(String)
   public keyProp?: string;
 
-  @ContentChildren(forwardRef(() => SdMultiSelectItemControl), { descendants: true })
+  @ContentChildren(forwardRef(() => SdMultiSelectItemControl), {descendants: true})
   public itemControls?: QueryList<SdMultiSelectItemControl>;
 
   private readonly _iterableDiffer: IterableDiffer<any>;
@@ -121,12 +117,14 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
   public trackByItemFn(index: number, item: any): any {
     if (this.trackBy) {
       return this.trackBy(index, item) || item;
-    } else {
+    }
+    else {
       return item;
     }
   }
 
-  public constructor(private readonly _iterableDiffers: IterableDiffers, private readonly _cdr: ChangeDetectorRef) {
+  public constructor(private readonly _iterableDiffers: IterableDiffers,
+                     private readonly _cdr: ChangeDetectorRef) {
     this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => item);
   }
 
@@ -147,7 +145,8 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
   public getIsItemSelected(item: SdMultiSelectItemControl): boolean {
     if (!this.keyProp) {
       return this.value ? this.value.includes(item.value) : false;
-    } else {
+    }
+    else {
       return this.value ? this.value.map(item1 => item1[this.keyProp!]).includes(item.value[this.keyProp!]) : false;
     }
   }
@@ -160,13 +159,10 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
     for (const selectedItemControl of selectedItemControls) {
       if (selectedItemControl.labelTemplateRef) {
         /*const embeddedView = selectedItemControl.labelTemplateRef.createEmbeddedView({});*/
-        content +=
-          selectedItemControl.elRef.nativeElement.findAll("> sd-checkbox > label > ._content > ._labelTemplate")[0]
-            .innerHTML + ",\n";
-      } else {
-        content +=
-          selectedItemControl.elRef.nativeElement.findAll("> sd-checkbox > label > ._content > ._label")[0].innerHTML +
-          ",\n";
+        content += selectedItemControl.elRef.nativeElement.findAll("> sd-checkbox > label > ._content > ._labelTemplate")[0].innerHTML + ",\n";
+      }
+      else {
+        content += selectedItemControl.elRef.nativeElement.findAll("> sd-checkbox > label > ._content > ._label")[0].innerHTML + ",\n";
       }
     }
     content = content.slice(0, -2);

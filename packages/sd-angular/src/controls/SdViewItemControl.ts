@@ -1,12 +1,11 @@
-import { ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input } from "@angular/core";
-import { SdViewControl } from "./SdViewControl";
+import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input} from "@angular/core";
+import {SdViewControl} from "./SdViewControl";
 
 @Component({
   selector: "sd-view-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>
-  `
+    <ng-content></ng-content>`
 })
 export class SdViewItemControl {
   @Input()
@@ -17,8 +16,7 @@ export class SdViewItemControl {
     return this._parentControl.value === this.value;
   }
 
-  public constructor(
-    @Inject(forwardRef(() => SdViewControl))
-    private readonly _parentControl: SdViewControl
-  ) {}
+  public constructor(@Inject(forwardRef(() => SdViewControl))
+                     private readonly _parentControl: SdViewControl) {
+  }
 }

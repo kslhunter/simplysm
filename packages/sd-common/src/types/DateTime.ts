@@ -1,45 +1,34 @@
-import { DateOnly } from "./DateOnly";
-import { Time } from "./Time";
-import { ArgumentError } from "../errors/ArgumentError";
+import {DateOnly} from "./DateOnly";
+import {Time} from "./Time";
+import {ArgumentError} from "../errors/ArgumentError";
 
 export class DateTime {
   public date: Date;
 
   public constructor();
   public constructor(tick: number);
-  public constructor(
-    year: number,
-    month: number,
-    date?: number,
-    hour?: number,
-    minute?: number,
-    second?: number,
-    millisecond?: number
-  );
+  public constructor(year: number, month: number, date?: number, hour?: number, minute?: number, second?: number, millisecond?: number);
   public constructor(date: Date);
-  public constructor(
-    args1?: number | Date,
-    args2?: number,
-    args3?: number,
-    args4?: number,
-    args5?: number,
-    args6?: number,
-    args7?: number
-  ) {
+  public constructor(args1?: number | Date, args2?: number, args3?: number, args4?: number, args5?: number, args6?: number, args7?: number) {
     if (args1 === undefined) {
       this.date = new Date(new Date().getTime());
-    } else if (typeof args1 === "number" && args2 === undefined) {
+    }
+    else if (typeof args1 === "number" && args2 === undefined) {
       this.date = new Date(args1);
-    } else if (typeof args1 === "number" && args2 !== undefined) {
+    }
+    else if (typeof args1 === "number" && args2 !== undefined) {
       if (args7) {
         this.date = new Date(args1, args2 - 1, args3, args4, args5, args6, args7);
-      } else {
+      }
+      else {
         this.date = new Date(args1, args2 - 1, args3, args4, args5, args6);
       }
-    } else if (args1 instanceof Date) {
+    }
+    else if (args1 instanceof Date) {
       this.date = new Date(args1.getTime());
-    } else {
-      throw new ArgumentError({ args1, args2, args3, args4, args5, args6, args7 });
+    }
+    else {
+      throw new ArgumentError({args1, args2, args3, args4, args5, args6, args7});
     }
   }
 
@@ -72,7 +61,7 @@ export class DateTime {
       );
     }*/
 
-    throw new ArgumentError({ value });
+    throw new ArgumentError({value});
   }
 
   public get timezoneOffset(): number {
@@ -223,21 +212,14 @@ export class DateTime {
     const offsetMinute = -this.timezoneOffset % 60;
 
     const weekString =
-      this.week === 0
-        ? "일"
-        : this.week === 1
-        ? "월"
-        : this.week === 2
-        ? "화"
-        : this.week === 3
-        ? "수"
-        : this.week === 4
-        ? "목"
-        : this.week === 5
-        ? "금"
-        : this.week === 6
-        ? "토"
-        : "";
+      this.week === 0 ? "일" :
+        this.week === 1 ? "월" :
+          this.week === 2 ? "화" :
+            this.week === 3 ? "수" :
+              this.week === 4 ? "목" :
+                this.week === 5 ? "금" :
+                  this.week === 6 ? "토" :
+                    "";
 
     let result = format;
     result = result.replace(/yyyyy/g, year.toString() + "년");
@@ -271,39 +253,11 @@ export class DateTime {
     result = result.replace(/s/g, second.toString());
 
     result = result.replace(/fff/g, millisecond.toString().padStart(3, "0"));
-    result = result.replace(
-      /ff/g,
-      millisecond
-        .toString()
-        .padStart(3, "0")
-        .substr(0, 2)
-    );
-    result = result.replace(
-      /f/g,
-      millisecond
-        .toString()
-        .padStart(3, "0")
-        .substr(0, 1)
-    );
+    result = result.replace(/ff/g, millisecond.toString().padStart(3, "0").substr(0, 2));
+    result = result.replace(/f/g, millisecond.toString().padStart(3, "0").substr(0, 1));
 
-    result = result.replace(
-      /zzz/g,
-      (offsetHour > 0 ? "+" : "-") +
-        Math.abs(offsetHour)
-          .toString()
-          .padStart(2, "0") +
-        ":" +
-        Math.abs(offsetMinute)
-          .toString()
-          .padStart(2, "0")
-    );
-    result = result.replace(
-      /zz/g,
-      (offsetHour > 0 ? "+" : "-") +
-        Math.abs(offsetHour)
-          .toString()
-          .padStart(2, "0")
-    );
+    result = result.replace(/zzz/g, (offsetHour > 0 ? "+" : "-") + Math.abs(offsetHour).toString().padStart(2, "0") + ":" + Math.abs(offsetMinute).toString().padStart(2, "0"));
+    result = result.replace(/zz/g, (offsetHour > 0 ? "+" : "-") + Math.abs(offsetHour).toString().padStart(2, "0"));
     result = result.replace(/z/g, (offsetHour > 0 ? "+" : "-") + Math.abs(offsetHour).toString());
 
     return result;

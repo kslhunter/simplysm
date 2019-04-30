@@ -5,16 +5,17 @@ export function SdNotifyPropertyChange(): any {
     const descriptor = inputDescriptor || Object.getOwnPropertyDescriptor(target, propertyKey);
     const prevSetter = descriptor ? descriptor.set : undefined;
 
-    const getter = function(this: any): any {
+    const getter = function (this: any): any {
       return core.Reflect.getMetadata(symbol, this, propertyKey);
     };
 
-    const setter = function(this: any, value: any): void {
+    const setter = function (this: any, value: any): void {
       const oldValue = this[propertyKey];
 
       if (prevSetter) {
         prevSetter.bind(this)(value);
-      } else {
+      }
+      else {
         core.Reflect.defineMetadata(symbol, value, this, propertyKey);
       }
 
@@ -23,7 +24,8 @@ export function SdNotifyPropertyChange(): any {
 
     if (descriptor) {
       descriptor.set = setter;
-    } else {
+    }
+    else {
       if (delete target[propertyKey]) {
         Object.defineProperty(target, propertyKey, {
           get: getter,

@@ -15,7 +15,7 @@ sd-multi-select {
     border-radius: 3px;
 
     border-color: get($trans-color, default);
-    transition: outline-color 0.1s linear;
+    transition: outline-color .1s linear;
     outline: 1px solid transparent;
     outline-offset: -1px;
     cursor: pointer;
@@ -40,7 +40,7 @@ sd-multi-select {
     }
   }
 
-  &[sd-disabled="true"] > sd-dropdown > div {
+  &[sd-disabled=true] > sd-dropdown > div {
     background: $bg-color;
     color: get($text-color, light);
   }
@@ -50,18 +50,18 @@ sd-multi-select-item {
   display: block;
   padding: get($gap, sm) get($gap, default);
   cursor: pointer;
-  transition: background 0.1s ease-in;
+  transition: background .1s ease-in;
   background: white;
 
   &:hover {
-    transition: background 0.1s ease-out;
-    background: rgba(0, 0, 0, 0.07);
+    transition: background .1s ease-out;
+    background: rgba(0, 0, 0, .07);
   }
 
   &:focus {
     outline: none;
-    transition: background 0.1s ease-out;
-    background: rgba(0, 0, 0, 0.07);
+    transition: background .1s ease-out;
+    background: rgba(0, 0, 0, .07);
   }
 
   > sd-checkbox > label {

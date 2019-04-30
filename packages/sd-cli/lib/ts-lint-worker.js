@@ -9,11 +9,12 @@ try {
   let split = process.cwd().split(/[\\/]/);
   if (split[split.length - 1] === packageKey) {
     projectPath = path.resolve(process.cwd(), "../..");
-  } else {
-    projectPath = process.cwd();
+  }
+  else {
+    projectPath = process.cwd()
   }
 
-  process.on("message", async changedFiles => {
+  process.on("message", async (changedFiles) => {
     await runAsync(changedFiles);
 
     sendMessage({
@@ -32,14 +33,11 @@ try {
       const configFile = path.resolve(projectPath, "packages", packageKey, "tslint.json");
 
       const program = tslint.Linter.createProgram(tsconfigFile, path.dirname(tsconfigFile));
-      const linter = new tslint.Linter({ formatter: "json", fix: false }, program);
+      const linter = new tslint.Linter({formatter: "json", fix: false}, program);
 
-      const prepareSourceFiles = (changedFiles.length > 0
-        ? changedFiles
-        : program.getSourceFiles().map(item => item.fileName)
-      )
-        .map(file => program.getSourceFile(file))
-        .filter(item => !!item);
+      const prepareSourceFiles = (
+        changedFiles.length > 0 ? changedFiles : program.getSourceFiles().map(item => item.fileName)
+      ).map(file => program.getSourceFile(file)).filter(item => !!item);
 
       const sourceFiles = [];
       for (const item of prepareSourceFiles) {
@@ -48,53 +46,53 @@ try {
         }
       }
 
-      await Promise.all(
-        sourceFiles.map(async sourceFile => {
-          if (/\.d\.ts$/.test(sourceFile.fileName)) {
-            return;
+      await Promise.all(sourceFiles.map(async sourceFile => {
+        if (/\.d\.ts$/.test(sourceFile.fileName)) {
+          return;
+        }
+
+        if (!path.resolve(sourceFile.fileName).startsWith(path.resolve(path.dirname(tsconfigFile)))) {
+          return;
+        }
+
+        const config = tslint.Configuration.findConfiguration(configFile, sourceFile.fileName);
+        linter.lint(sourceFile.fileName, sourceFile.getFullText(), config.results);
+
+        const result = linter.getResult();
+
+        let resultMessages = [];
+        for (const failure of result.failures) {
+          if (failure.getFileName() !== sourceFile.fileName) {
+            continue;
           }
 
-          if (!path.resolve(sourceFile.fileName).startsWith(path.resolve(path.dirname(tsconfigFile)))) {
-            return;
-          }
+          const severity = failure.getRuleSeverity();
+          const message = failure.getFailure();
+          const rule = failure.getRuleName();
+          const fileName = failure.getFileName();
+          const lineNumber = failure.getStartPosition().getLineAndCharacter().line + 1;
+          const charNumber = failure.getStartPosition().getLineAndCharacter().character + 1;
 
-          const config = tslint.Configuration.findConfiguration(configFile, sourceFile.fileName);
-          linter.lint(sourceFile.fileName, sourceFile.getFullText(), config.results);
+          resultMessages.push(`${fileName}(${lineNumber},${charNumber}): ${severity}: ${message} (${rule})`);
+        }
 
-          const result = linter.getResult();
-
-          let resultMessages = [];
-          for (const failure of result.failures) {
-            if (failure.getFileName() !== sourceFile.fileName) {
-              continue;
-            }
-
-            const severity = failure.getRuleSeverity();
-            const message = failure.getFailure();
-            const rule = failure.getRuleName();
-            const fileName = failure.getFileName();
-            const lineNumber = failure.getStartPosition().getLineAndCharacter().line + 1;
-            const charNumber = failure.getStartPosition().getLineAndCharacter().character + 1;
-
-            resultMessages.push(`${fileName}(${lineNumber},${charNumber}): ${severity}: ${message} (${rule})`);
-          }
-
-          if (resultMessages.length > 0) {
-            sendMessage({
-              type: "warning",
-              message: resultMessages.join("\r\n")
-            });
-          }
-        })
-      );
-    } catch (err) {
+        if (resultMessages.length > 0) {
+          sendMessage({
+            type: "warning",
+            message: resultMessages.join("\r\n")
+          });
+        }
+      }));
+    }
+    catch (err) {
       sendMessage({
         type: "error",
         message: err.stack
       });
     }
   }
-} catch (err) {
+}
+catch (err) {
   sendMessage({
     type: "error",
     message: err.stack

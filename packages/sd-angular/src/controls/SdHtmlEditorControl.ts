@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output } from "@angular/core";
-import { SdTypeValidate } from "../commons/SdTypeValidate";
-import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
+import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
+import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 
 @Component({
   selector: "sd-html-editor",
@@ -29,22 +29,17 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
       </sd-dock>
 
       <sd-pane>
-        <div
-          *ngIf="viewState !== 'code' || disabled"
-          [attr.contenteditable]="viewState === 'edit' && !disabled"
-          [innerHTML]="content"
-          (input)="onContentInput($event)"
-        ></div>
-        <textarea
-          *ngIf="viewState === 'code' && !disabled"
-          [value]="value || ''"
-          [rows]="inset ? undefined : rows"
-          [style.resize]="inset ? 'none' : resize"
-          (input)="onTextareaInput($event)"
-        ></textarea>
+        <div *ngIf="viewState !== 'code' || disabled"
+             [attr.contenteditable]="viewState === 'edit' && !disabled"
+             [innerHTML]="content"
+             (input)="onContentInput($event)"></div>
+        <textarea *ngIf="viewState === 'code' && !disabled"
+                  [value]="value || ''"
+                  [rows]="inset ? undefined : rows"
+                  [style.resize]="inset ? 'none' : resize"
+                  (input)="onTextareaInput($event)"></textarea>
       </sd-pane>
-    </sd-dock-container>
-  `
+    </sd-dock-container>`
 })
 export class SdHtmlEditorControl {
   @Input()
@@ -66,15 +61,15 @@ export class SdHtmlEditorControl {
   public readonly valueChange = new EventEmitter<string>();
 
   @Input()
-  @SdTypeValidate({ type: String, includes: ["preview", "edit", "code"] })
+  @SdTypeValidate({type: String, includes: ["preview", "edit", "code"]})
   public viewState: "preview" | "edit" | "code" = "edit";
 
   @Input()
-  @SdTypeValidate({ type: Boolean, notnull: true })
+  @SdTypeValidate({type: Boolean, notnull: true})
   public rowsButton = true;
 
   @Input()
-  @SdTypeValidate({ type: Number, notnull: true })
+  @SdTypeValidate({type: Number, notnull: true})
   public rows = 3;
 
   @Input()
@@ -97,7 +92,8 @@ export class SdHtmlEditorControl {
 
   public content: SafeHtml = "";
 
-  public constructor(private readonly _sanitizer: DomSanitizer) {}
+  public constructor(private readonly _sanitizer: DomSanitizer) {
+  }
 
   public onTextareaInput(event: Event): void {
     const textareaEl = event.target as HTMLTextAreaElement;

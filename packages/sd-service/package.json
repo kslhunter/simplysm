@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service",
-  "version": "1.1.26",
+  "version": "1.1.23",
   "description": "심플리즘 패키지 - 서비스 서버",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,21 +8,21 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-common": "1.1.26",
-    "@simplysm/sd-core": "1.1.26",
-    "@simplysm/sd-orm": "1.1.26",
-    "@simplysm/sd-orm-client": "1.1.26",
-    "@simplysm/sd-service-client": "1.1.26",
-    "@simplysm/sd-smtp-client-common": "1.1.26",
+    "@simplysm/sd-common": "1.1.23",
+    "@simplysm/sd-core": "1.1.23",
+    "@simplysm/sd-orm": "1.1.23",
+    "@simplysm/sd-orm-client": "1.1.23",
+    "@simplysm/sd-service-client": "1.1.23",
+    "@simplysm/sd-smtp-client-common": "1.1.23",
     "bufferutil": "^4.0.1",
     "decache": "^4.5.1",
     "express": "^4.16.4",
     "fs-extra": "^7.0.1",
     "glob": "^7.1.3",
-    "nodemailer": "^6.1.1",
+    "nodemailer": "^5.1.1",
     "utf-8-validate": "^5.0.2",
     "vhost": "^3.0.2",
-    "ws": "^6.2.1",
+    "ws": "^6.2.0",
     "yargs": "^13.2.2"
   }
 }

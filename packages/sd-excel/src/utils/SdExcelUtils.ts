@@ -1,4 +1,4 @@
-import { DateOnly, DateTime } from "@simplysm/sd-common";
+import {DateOnly, DateTime} from "@simplysm/sd-common";
 
 export class SdExcelUtils {
   public static getRangeAddress(fromRow: number, fromCol: number, toRow: number, toCol: number): string {
@@ -47,10 +47,10 @@ export class SdExcelUtils {
 
   private static _getColAddress(index: number): string {
     let remained = index;
-    let result = String.fromCharCode((remained % 26) + 65);
+    let result = String.fromCharCode(remained % 26 + 65);
     remained = Math.floor(remained / 26);
     while (remained !== 0) {
-      result = String.fromCharCode((remained % 26) + 64) + result;
+      result = String.fromCharCode(remained % 26 + 64) + result;
       remained = Math.floor(remained / 26);
     }
     return result;
@@ -58,9 +58,7 @@ export class SdExcelUtils {
 
   private static _getAddressCol(addr: string): number {
     let result = 0;
-    const revAddr = Array.from(addr)
-      .reverse()
-      .join("");
+    const revAddr = Array.from(addr).reverse().join("");
     for (let i = 0; i < revAddr.length; i++) {
       const col = revAddr.charCodeAt(i) - 65;
       result += col * Math.pow(26, i);

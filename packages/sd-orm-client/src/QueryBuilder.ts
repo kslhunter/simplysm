@@ -1,5 +1,5 @@
-import { QueryHelper } from "./QueryHelper";
-import { IQueryDef } from "./IQueryDef";
+import {QueryHelper} from "./QueryHelper";
+import {IQueryDef} from "./IQueryDef";
 
 export class QueryBuilder {
   public def: IQueryDef = {
@@ -13,13 +13,15 @@ export class QueryBuilder {
   public from(arg: IQueryDef | string | QueryBuilder | QueryBuilder[], as?: string): QueryBuilder {
     const result: QueryBuilder = this.clone();
     if (arg instanceof Array) {
-      result.def.from =
-        "(\n\n  " + arg.map(item => item.query.replace(/\n/g, "\n  ")).join("\n\n  UNION ALL\n\n  ") + "\n\n)";
-    } else if (arg instanceof QueryBuilder) {
+      result.def.from = "(\n\n  " + arg.map(item => item.query.replace(/\n/g, "\n  ")).join("\n\n  UNION ALL\n\n  ") + "\n\n)";
+    }
+    else if (arg instanceof QueryBuilder) {
       result.def.from = "(\n  " + arg.query.replace(/\n/g, "\n  ") + "\n)";
-    } else if (arg["type"]) {
+    }
+    else if (arg["type"]) {
       result.def = arg as IQueryDef;
-    } else {
+    }
+    else {
       result.def.from = arg as string;
     }
     result.def.as = as || result.def.as;
@@ -92,15 +94,12 @@ export class QueryBuilder {
     result.def.join = result.def.join || [];
 
     let joinQuery: string;
-    if (
-      Object.keys(qb.def).some(
-        key => key !== "type" && key !== "where" && key !== "from" && key !== "as" && qb.def[key]
-      )
-    ) {
+    if (Object.keys(qb.def).some(key => key !== "type" && key !== "where" && key !== "from" && key !== "as" && qb.def[key])) {
       joinQuery = "OUTER APPLY (\n";
       joinQuery += "  " + qb.query.replace(/\n/g, "\n  ") + "\n";
       joinQuery += ") AS " + qb.def.as;
-    } else {
+    }
+    else {
       joinQuery = "LEFT OUTER JOIN " + qb.def.from + " AS " + qb.def.as;
       if (qb.def.where) {
         joinQuery += " ON (" + qb.def.where.join(") AND (") + ")";
@@ -146,10 +145,7 @@ export class QueryBuilder {
     return result;
   }
 
-  public upsert(
-    obj: { [key: string]: string } | undefined,
-    additionalInsertObj?: { [key: string]: any }
-  ): QueryBuilder {
+  public upsert(obj: { [key: string]: string } | undefined, additionalInsertObj?: { [key: string]: any }): QueryBuilder {
     const result: QueryBuilder = this.clone();
     result.def.type = "upsert";
 
@@ -189,44 +185,33 @@ export class QueryBuilder {
 
     if (this.def.type === "select") {
       return this._getSelectQuery();
-    } else if (this.def.type === "update") {
+    }
+    else if (this.def.type === "update") {
       return this._getUpdateQuery();
-    } else if (this.def.type === "delete") {
+    }
+    else if (this.def.type === "delete") {
       return this._getDeleteQuery();
-    } else if (this.def.type === "insert") {
+    }
+    else if (this.def.type === "insert") {
       return this._getInsertQuery();
-    } else if (this.def.type === "upsert") {
+    }
+    else if (this.def.type === "upsert") {
       return this._getUpsertQuery();
-    } else {
+    }
+    else {
       throw new Error("'TYPE'이 잘못되었습니다. (" + this.def.type + ")");
     }
   }
 
   private _getSelectQuery(): string {
-    this._checkKeys([
-      "type",
-      "distinct",
-      "top",
-      "select",
-      "from",
-      "as",
-      "join",
-      "where",
-      "groupBy",
-      "having",
-      "orderBy",
-      "limit"
-    ]);
+    this._checkKeys(["type", "distinct", "top", "select", "from", "as", "join", "where", "groupBy", "having", "orderBy", "limit"]);
 
-    let query: string =
-      "SELECT" + (this.def.distinct ? " DISTINCT" : "") + (this.def.top ? " TOP " + this.def.top : "") + "\n";
+    let query: string = "SELECT" + (this.def.distinct ? " DISTINCT" : "") + (this.def.top ? " TOP " + this.def.top : "") + "\n";
 
     if (this.def.select) {
-      query +=
-        Object.keys(this.def.select)
-          .map(key => "  " + this.def.select![key] + " AS " + key)
-          .join(",\n") + "\n";
-    } else {
+      query += Object.keys(this.def.select).map(key => "  " + this.def.select![key] + " AS " + key).join(",\n") + "\n";
+    }
+    else {
       query += "  *\n";
     }
 
@@ -267,10 +252,7 @@ export class QueryBuilder {
     this._checkKeys(["type", "top", "select", "from", "update", "output", "as", "join", "where"]);
 
     let query: string = "UPDATE" + (this.def.top ? " TOP (" + this.def.top + ")" : "") + " " + this.def.from + " SET\n";
-    query +=
-      Object.keys(this.def.update!)
-        .map(key => "  " + key + " = " + this.def.update![key])
-        .join(",\n") + "\n";
+    query += Object.keys(this.def.update!).map(key => "  " + key + " = " + this.def.update![key]).join(",\n") + "\n";
 
     if (this.def.output) {
       query += "OUTPUT " + this.def.output.join(", ") + "\n";
@@ -292,8 +274,7 @@ export class QueryBuilder {
   public _getDeleteQuery(): string {
     this._checkKeys(["type", "top", "select", "from", "output", "as", "join", "where"]);
 
-    let query: string =
-      "DELETE" + (this.def.top ? " TOP (" + this.def.top + ")" : "") + " FROM " + this.def.from + "\n";
+    let query: string = "DELETE" + (this.def.top ? " TOP (" + this.def.top + ")" : "") + " FROM " + this.def.from + "\n";
 
     if (this.def.output) {
       query += "OUTPUT " + this.def.output.join(", ") + "\n";
@@ -321,12 +302,7 @@ export class QueryBuilder {
       query += "OUTPUT " + this.def.output.join(", ") + "\n";
     }
 
-    query +=
-      "VALUES (" +
-      Object.keys(this.def.insert!)
-        .map(key => this.def.insert![key])
-        .join(", ") +
-      ")\n";
+    query += "VALUES (" + Object.keys(this.def.insert!).map(key => this.def.insert![key]).join(", ") + ")\n";
 
     return query.trim();
   }
@@ -345,20 +321,12 @@ export class QueryBuilder {
     if (this.def.update) {
       query += "WHEN MATCHED THEN\n";
       query += "  UPDATE SET\n";
-      query +=
-        Object.keys(this.def.update!)
-          .map(key => "    " + key + " = " + this.def.update![key])
-          .join(",\n") + "\n";
+      query += Object.keys(this.def.update!).map(key => "    " + key + " = " + this.def.update![key]).join(",\n") + "\n";
     }
 
     query += "WHEN NOT MATCHED THEN\n";
     query += "  INSERT (" + Object.keys(this.def.insert!).join(", ") + ")\n";
-    query +=
-      "  VALUES (" +
-      Object.keys(this.def.insert!)
-        .map(key => this.def.insert![key])
-        .join(", ") +
-      ")\n";
+    query += "  VALUES (" + Object.keys(this.def.insert!).map(key => this.def.insert![key]).join(", ") + ")\n";
 
     if (this.def.output) {
       query += "OUTPUT " + this.def.output.join(", ") + "\n";
@@ -375,7 +343,7 @@ export class QueryBuilder {
       type: this.def.type,
       from: this.def.from,
       as: this.def.as,
-      select: this.def.select && { ...this.def.select },
+      select: this.def.select && {...this.def.select},
       where: this.def.where && [...this.def.where],
       distinct: this.def.distinct,
       top: this.def.top,
@@ -384,26 +352,19 @@ export class QueryBuilder {
       join: this.def.join && [...this.def.join],
       limit: this.def.limit && [...this.def.limit],
       orderBy: this.def.orderBy && [...this.def.orderBy],
-      update: this.def.update && { ...this.def.update },
-      insert: this.def.insert && { ...this.def.insert },
+      update: this.def.update && {...this.def.update},
+      insert: this.def.insert && {...this.def.insert},
       output: this.def.output && [...this.def.output]
     };
     return result;
   }
 
   private _checkKeys(keys: string[]): void {
-    const invalidKeys: string[] = Object.keys(this.def).filter(
-      key => this.def[key] !== undefined && !keys.includes(key)
-    );
+    const invalidKeys: string[] = Object.keys(this.def)
+      .filter(key => this.def[key] !== undefined && !keys.includes(key));
 
     if (invalidKeys.length > 0) {
-      throw new Error(
-        "'" +
-          this.def.type.toUpperCase() +
-          "'에 '" +
-          invalidKeys.map(key => key.toUpperCase()).join(", ") +
-          "'를 사용할 수 없습니다."
-      );
+      throw new Error("'" + this.def.type.toUpperCase() + "'에 '" + invalidKeys.map(key => key.toUpperCase()).join(", ") + "'를 사용할 수 없습니다.");
     }
   }
 }
