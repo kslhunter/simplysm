@@ -1,4 +1,4 @@
-import {Wait} from "@simplysm/sd-common";
+import {Wait} from "@simplysm/sd-core";
 
 export class SdFileDialogProvider {
   public async showAsync(): Promise<File | undefined> {

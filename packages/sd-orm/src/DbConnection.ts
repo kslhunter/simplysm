@@ -1,7 +1,8 @@
 import * as tedious from "tedious";
-import {DateOnly, DateTime, Logger, Time, Wait} from "@simplysm/sd-common";
 import {EventEmitter} from "events";
-import {IDbConnectionConfig, IQueryDef, QueryBuilder} from "@simplysm/sd-orm-client";
+import {DateOnly, DateTime, Logger, Time, Wait} from "@simplysm/sd-core";
+import {IDbConnectionConfig, IQueryDef} from "./commons";
+import {QueryBuilder} from "./QueryBuilder";
 
 export class DbConnection extends EventEmitter {
   private readonly _logger = new Logger("@simplysm/sd-orm", "DbConnection");

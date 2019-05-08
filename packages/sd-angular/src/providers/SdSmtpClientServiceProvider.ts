@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
-import {ISmtpClientSendDefaultOption, ISmtpClientSendOption} from "@simplysm/sd-smtp-client-common";
 import {SdServiceProvider} from "./SdServiceProvider";
+import {ISmtpClientSendByDefaultOption, ISmtpClientSendOption} from "@simplysm/sd-smtp-client";
 
 @Injectable()
 export class SdSmtpClientServiceProvider {
@@ -11,7 +11,7 @@ export class SdSmtpClientServiceProvider {
     await this._service.sendAsync("SdSmtpClientService.sendAsync", [options]);
   }
 
-  public async sendDefaultAsync(options: ISmtpClientSendDefaultOption): Promise<void> {
-    await this._service.sendAsync("SdSmtpClientService.sendDefaultAsync", [options]);
+  public async sendDefaultAsync(options: ISmtpClientSendByDefaultOption): Promise<void> {
+    await this._service.sendAsync("SdSmtpClientService.sendByDefaultAsync", [options]);
   }
 }

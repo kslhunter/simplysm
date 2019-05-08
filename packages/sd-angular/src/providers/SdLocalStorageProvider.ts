@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {JsonConvert} from "@simplysm/sd-common";
+import {JsonConvert} from "@simplysm/sd-core";
 
 @Injectable()
 export class SdLocalStorageProvider {

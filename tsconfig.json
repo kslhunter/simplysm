@@ -8,14 +8,9 @@
     "sourceMap": true,
     "removeComments": true,
     "noUnusedLocals": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "plugins": [
       {
         "name": "typescript-tslint-plugin"
-      },
-      {
-        "name": "@angular/language-service"
       }
     ],
     "typeRoots": [

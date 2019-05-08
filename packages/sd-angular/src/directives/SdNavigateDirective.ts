@@ -1,7 +1,7 @@
 import {Directive, HostListener, Input} from "@angular/core";
 import * as querystring from "querystring";
 import {Router} from "@angular/router";
-import {JsonConvert} from "@simplysm/sd-common";
+import {JsonConvert} from "@simplysm/sd-core";
 
 @Directive({
   selector: "[sdNavigate]"

@@ -1,4 +1,4 @@
-import "@simplysm/sd-common";
+import "@simplysm/sd-core";
 export * from "./SdExcelCell";
 export * from "./SdExcelCellStyle";
 export * from "./SdExcelColumn";

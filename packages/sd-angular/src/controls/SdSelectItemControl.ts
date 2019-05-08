@@ -11,7 +11,7 @@ import {
   TemplateRef
 } from "@angular/core";
 import {SdSelectControl} from "./SdSelectControl";
-import {JsonConvert} from "@simplysm/sd-common";
+import {JsonConvert} from "@simplysm/sd-core";
 
 @Component({
   selector: "sd-select-item",

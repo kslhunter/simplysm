@@ -1,4 +1,4 @@
-import {DateOnly, DateTime} from "@simplysm/sd-common";
+import {DateOnly, DateTime} from "@simplysm/sd-core";
 
 export class SdExcelUtils {
   public static getRangeAddress(fromRow: number, fromCol: number, toRow: number, toCol: number): string {

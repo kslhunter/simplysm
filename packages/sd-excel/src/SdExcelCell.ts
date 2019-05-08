@@ -1,7 +1,7 @@
 import {SdExcelWorksheet} from "./SdExcelWorksheet";
 import {SdExcelUtils} from "./utils/SdExcelUtils";
 import {SdExcelCellStyle} from "./SdExcelCellStyle";
-import {DateOnly, DateTime, optional} from "@simplysm/sd-common";
+import {DateOnly, DateTime, optional} from "@simplysm/sd-core";
 
 export class SdExcelCell {
   public cellData: any;

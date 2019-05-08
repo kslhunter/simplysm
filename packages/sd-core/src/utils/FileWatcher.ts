@@ -1,5 +1,5 @@
 import * as chokidar from "chokidar";
-import {Logger} from "@simplysm/sd-common";
+import {Logger} from "./Logger";
 
 export class FileWatcher {
   public static async watch(paths: string | string[], sits: ("add" | "change" | "unlink")[], callback: (changedFiles: { type: string; filePath: string }[]) => (void | Promise<void>), millisecond?: number): Promise<void> {
@@ -20,11 +20,12 @@ export class FileWatcher {
                   preservedFileChanges = [];
 
                   await callback(fileChanges);
-                } catch (err) {
+                }
+                catch (err) {
                   new Logger("@simplysm/sd-core", "FileWatcher").error(err.stack);
                 }
               },
-              millisecond || 300
+              millisecond || 100
             );
           };
 

@@ -154,6 +154,7 @@
     "ban-ts-ignore": false,
     "max-file-line-count": false,
     "unnecessary-else": false,
-    "no-null-undefined-union": false
+    "no-null-undefined-union": false,
+    "prefer-method-signature": false
   }
 }

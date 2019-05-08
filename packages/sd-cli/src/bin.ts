@@ -1,9 +1,13 @@
 import * as yargs from "yargs";
+import * as os from "os";
+import {Logger} from "@simplysm/sd-core";
 import {SdProjectBuilder} from "./SdProjectBuilder";
-import * as sourceMapSupport from "source-map-support";
-import {Logger} from "@simplysm/sd-common";
 
-sourceMapSupport.install();
+Logger.setGroupConfig("@simplysm/sd-cli", {
+  consoleLogSeverities: ["log", "info", "warn", "error"],
+  fileLogSeverities: [],
+  outputPath: "logs"
+});
 process.setMaxListeners(0);
 
 const argv = yargs
@@ -11,38 +15,23 @@ const argv = yargs
   .help("help", "도움말")
   .alias("help", "h")
   .command(
-    "bootstrap",
-    "프로젝트의 각 패키지 세팅을 다시 합니다.",
-    cmd => cmd.version(false)
-  )
-  .command(
     "local-update",
     "프로젝트의 의존성 패키지에, 외부 디렉토리에 있는 패키지 파일을 덮어씁니다.",
     cmd => cmd.version(false)
-  )
-  .command(
-    "watch",
-    "프로젝트의 각 패키지를 변경감지 모드로 시작합니다.",
-    cmd => cmd.version(false)
-      .options({
-        packages: {
-          type: "string",
-          describe: "수행할 패키지를 선택합니다."
-        },
-        option: {
-          type: "string",
-          describe: "추가옵션을 줍니다. ('remote'로 설정할 경우, 설정 중 'development'와 'development.remote'를 결합하여 가져옵니다.)"
-        }
-      })
   )
   .command(
     "build",
     "프로젝트의 각 패키지를 빌드합니다.",
     cmd => cmd.version(false)
       .options({
-        packages: {
+        watch: {
+          type: "boolean",
+          describe: "변경감지 모드로 실행할지 여부",
+          default: false
+        },
+        options: {
           type: "string",
-          describe: "수행할 패키지를 선택합니다."
+          describe: "빌드 옵션 설정 (설정파일에서 @로 시작하는 부분)"
         }
       })
   )
@@ -53,46 +42,34 @@ const argv = yargs
       .options({
         build: {
           type: "boolean",
-          describe: "빌드후에 배포합니다.",
+          describe: "새로 빌드한 후 배포합니다",
           default: false
         },
-        noCommit: {
-          type: "boolean",
-          describe: "커밋하지 않습니다.",
-          default: false
-        },
-        packages: {
+        options: {
           type: "string",
-          describe: "수행할 패키지를 선택합니다."
+          describe: "빌드 옵션 설정 (설정파일에서 @로 시작하는 부분)"
         }
       })
   )
   .argv;
 
+const logger = new Logger("@simplysm/sd-cli");
+
 (async () => {
-  if (argv._[0] === "bootstrap") {
-    await new SdProjectBuilder().bootstrapAsync();
-    process.exit(0);
-  }
-  else if (argv._[0] === "local-update") {
-    await new SdProjectBuilder().localUpdateAsync();
-    process.exit(0);
-  }
-  else if (argv._[0] === "watch") {
-    await new SdProjectBuilder().watchAsync(argv as any);
-  }
-  else if (argv._[0] === "build") {
-    await new SdProjectBuilder().buildAsync(argv as any);
-    process.exit(0);
-  }
-  else if (argv._[0] === "publish") {
-    await new SdProjectBuilder().publishAsync(argv as any);
-    process.exit(0);
-  }
-  else {
-    throw new Error("명령어가 잘못 되었습니다.");
+  switch (argv._[0]) {
+    case "local-update":
+      await new SdProjectBuilder().localUpdateAsync();
+      break;
+    case "build":
+      await new SdProjectBuilder().buildAsync(argv as any);
+      break;
+    case "publish":
+      await new SdProjectBuilder().publishAsync(argv as any);
+      break;
+    default:
+      throw new Error(`명령어가 잘못되었습니다.${os.EOL}${os.EOL}\t${argv._[0]}${os.EOL}`);
   }
 })().catch(err => {
-  new Logger("@simplysm/sd-cli").error(err);
+  logger.error(err);
   process.exit(1);
 });

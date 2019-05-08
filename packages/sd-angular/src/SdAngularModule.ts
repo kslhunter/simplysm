@@ -1,6 +1,6 @@
 import {CommonModule} from "@angular/common";
 import {ErrorHandler, ModuleWithProviders, NgModule, Provider} from "@angular/core";
-import {Type} from "@simplysm/sd-common";
+import {Type} from "@simplysm/sd-core";
 import {SdCardControl} from "./controls/SdCardControl";
 import {SdFormControl} from "./controls/SdFormControl";
 import {SdTextfieldControl} from "./controls/SdTextfieldControl";
@@ -68,10 +68,10 @@ import {SdToastContainerControl} from "./controls/SdToastContainerControl";
 import {SdToastControl} from "./controls/SdToastControl";
 import {SdServiceProvider} from "./providers/SdServiceProvider";
 import {SdAddressSearchModal} from "./modals/SdAddressSearchModal";
+import {SdSoapProvider} from "./providers/SdSoapProvider";
 import {SdCryptoServiceProvider} from "./providers/SdCryptoServiceProvider";
 import {SdOrmServiceProvider} from "./providers/SdOrmServiceProvider";
 import {SdSmtpClientServiceProvider} from "./providers/SdSmtpClientServiceProvider";
-import {SdSoapProvider} from "./providers/SdSoapProvider";
 
 const controls: Type<any>[] = [
   SdBusyContainerControl,
@@ -149,10 +149,10 @@ const providers: Provider[] = [
   SdPrintProvider,
   SdToastProvider,
   SdServiceProvider,
+  SdSoapProvider,
   SdCryptoServiceProvider,
   SdOrmServiceProvider,
   SdSmtpClientServiceProvider,
-  SdSoapProvider,
   {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
   {provide: ErrorHandler, useClass: GlobalErrorHandler}
 ];

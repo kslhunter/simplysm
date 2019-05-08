@@ -1,4 +1,4 @@
-import {ValidateDef} from "@simplysm/sd-common";
+import {ValidateDef} from "@simplysm/sd-core";
 
 const symbol = `sd-type-validate`;
 

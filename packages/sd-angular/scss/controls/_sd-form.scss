@@ -2,6 +2,14 @@ sd-form {
   display: block;
   overflow: hidden;
 
+  > form > * {
+    margin-bottom: get($gap, default);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
   &[sd-inline=true] {
     vertical-align: middle;
 
@@ -11,12 +19,12 @@ sd-form {
 
       > sd-form-item {
         display: inline-block;
-        margin-bottom: get($gap, sm);
-        margin-right: get($gap, default);
-
-        &:last-child {
-          margin-right: 0;
-        }
+        //margin-bottom: get($gap, sm);
+        //margin-right: get($gap, default);
+        //
+        //&:last-child {
+        //  margin-right: 0;
+        //}
 
         > label {
           display: inline-block;
@@ -35,17 +43,26 @@ sd-form {
           }
         }
       }
+
+      > * {
+        margin-bottom: get($gap, sm);
+        margin-right: get($gap, default);
+
+        &:last-child {
+          margin-right: 0;
+        }
+      }
     }
   }
 }
 
 sd-form-item {
   display: block;
-  margin-bottom: get($gap, default);
-
-  &:last-child {
-    margin-bottom: 0;
-  }
+  //margin-bottom: get($gap, default);
+  //
+  //&:last-child {
+  //  margin-bottom: 0;
+  //}
 
   & > label {
     display: block;

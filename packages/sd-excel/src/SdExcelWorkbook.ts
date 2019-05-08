@@ -1,6 +1,6 @@
 import {SdExcelWorksheet} from "./SdExcelWorksheet";
 import * as JSZip from "jszip";
-import {XmlConvert} from "@simplysm/sd-common";
+import {XmlConvert} from "@simplysm/sd-core";
 
 export class SdExcelWorkbook {
   private readonly _worksheets: SdExcelWorksheet[] = [];

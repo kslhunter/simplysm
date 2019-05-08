@@ -1,5 +1,5 @@
 import {ApplicationRef, ComponentFactoryResolver, ComponentRef, Injectable, Injector, OnDestroy} from "@angular/core";
-import {Type} from "@simplysm/sd-common";
+import {Type} from "@simplysm/sd-core";
 import {SdToastControl} from "../controls/SdToastControl";
 import {SdToastContainerControl} from "../controls/SdToastContainerControl";
 

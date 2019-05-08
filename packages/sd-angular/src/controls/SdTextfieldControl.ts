@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNotifyPropertyChange";
-import {DateOnly, DateTime, Time} from "@simplysm/sd-common";
+import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
 
 @Component({
   selector: "sd-textfield",

@@ -16,9 +16,6 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../commons/SdNoti
   template: `
     <div class="_content">
       <div class="_content-user">
-        <div class="sd-padding-v-sm">
-          <sd-icon style="font-size: 48px;" [icon]="'user-circle'" [fw]="true"></sd-icon>
-        </div>
         <ng-content></ng-content>        
       </div>
       <div class="_btn" (click)="open = !open">

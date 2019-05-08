@@ -1,6 +1,7 @@
-import "@simplysm/sd-common";
+import "@simplysm/sd-core";
 import "./commons/ElementExtensions";
 import "./commons/HTMLElementExtensions";
+
 export * from "./commons/ResizeEvent";
 export * from "./commons/SdMutationEvent";
 export * from "./commons/SdNotifyPropertyChange";

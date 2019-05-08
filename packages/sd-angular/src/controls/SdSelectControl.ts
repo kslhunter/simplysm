@@ -17,7 +17,7 @@ import {
 } from "@angular/core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 import {SdDropdownControl} from "./SdDropdownControl";
-import {JsonConvert} from "@simplysm/sd-common";
+import {JsonConvert} from "@simplysm/sd-core";
 
 @Component({
   selector: "sd-select",
@@ -47,7 +47,7 @@ import {JsonConvert} from "@simplysm/sd-common";
                     <ng-template [ngTemplateOutlet]="itemTemplateRef"
                                  [ngTemplateOutletContext]="{item: item}"></ng-template>
 
-                    <ng-container *ngIf="children && children(i, item) && children(i, item).length > 0">
+                    <ng-container *ngIf="children && children!(i, item) && children!(i, item).length > 0">
                       <div class="_children">
                         <ng-template [ngTemplateOutlet]="rowOfList"
                                      [ngTemplateOutletContext]="{items: children(i, item)}"></ng-template>
@@ -143,6 +143,10 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
   @Input()
   @SdTypeValidate(Function)
   public children?: (index: number, item: any) => any;
+
+  public get isDropdownLocatedTop(): boolean {
+    return this.dropdownControl ? this.dropdownControl.isDropdownLocatedTop : false;
+  }
 
   public trackByItemFn(index: number, item: any): any {
     if (this.trackBy) {

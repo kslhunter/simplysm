@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef} from "@angular/core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
-import {Uuid} from "@simplysm/sd-common";
+import {Uuid} from "@simplysm/sd-core";
 
 @Component({
   selector: "sd-sheet-column",

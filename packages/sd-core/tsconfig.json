@@ -1,17 +1,15 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig",
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
     "lib": [
-      "es2015"
+      "es2015",
+      "dom"
     ],
-    "declaration": true,
-    "baseUrl": ".",
-    "paths": {
-      "@simplysm/sd-common": [
-        "../sd-common/src/index.ts"
-      ]
-    }
-  }
+    "declaration": true
+  },
+  "files": [
+    "src/index.ts"
+  ]
 }

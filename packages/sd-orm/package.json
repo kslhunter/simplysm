@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm",
-  "version": "1.1.23",
+  "version": "2.0.20",
   "description": "심플리즘 패키지 - ORM",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -8,8 +8,10 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@simplysm/sd-common": "1.1.23",
-    "@simplysm/sd-orm-client": "1.1.23",
-    "tedious": "^5.0.3"
+    "tedious": "^6.1.1",
+    "core-js": "^2.6.5"
+  },
+  "peerDependencies": {
+    "@simplysm/sd-core": "2.0.20"
   }
 }

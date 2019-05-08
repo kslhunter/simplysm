@@ -10,9 +10,12 @@
     "declaration": true,
     "baseUrl": ".",
     "paths": {
-      "@simplysm/sd-common": [
-        "../sd-common/src/index.ts"
+      "@simplysm/sd-core": [
+        "../sd-core/src/index.ts"
       ]
     }
-  }
+  },
+  "files": [
+    "./src/index.ts"
+  ]
 }

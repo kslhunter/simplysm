@@ -1,70 +1,28 @@
 {
   "packages": {
     "sd-angular": {
-      "type": "dom",
-      "publish": {
-        "protocol": "npm"
-      }
+      "publish": "npm"
     },
     "sd-cli": {
-      "type": "node",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
-    "sd-common": {
-      "type": "all",
-      "publish": {
-        "protocol": "npm"
-      }
+      "publish": "npm"
     },
     "sd-core": {
-      "type": "node",
-      "publish": {
-        "protocol": "npm"
-      }
+      "publish": "npm"
     },
     "sd-excel": {
-      "type": "dom",
-      "publish": {
-        "protocol": "npm"
-      }
+      "publish": "npm"
     },
     "sd-orm": {
-      "type": "node",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
-    "sd-orm-client": {
-      "type": "all",
-      "publish": {
-        "protocol": "npm"
-      }
+      "publish": "npm"
     },
     "sd-service": {
-      "type": "node",
-      "publish": {
-        "protocol": "npm"
-      }
+      "publish": "npm"
     },
-    "sd-service-client": {
-      "type": "all",
-      "publish": {
-        "protocol": "npm"
-      }
-    },
-    "sd-smtp-client-common": {
-      "type": "all",
-      "publish": {
-        "protocol": "npm"
-      }
+    "sd-smtp-client": {
+      "publish": "npm"
     },
     "sd-storage": {
-      "type": "node",
-      "publish": {
-        "protocol": "npm"
-      }
+      "publish": "npm"
     }
   }
 }

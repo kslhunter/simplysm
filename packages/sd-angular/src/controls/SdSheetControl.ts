@@ -18,7 +18,7 @@ import {
 import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
-import {optional} from "@simplysm/sd-common";
+import {optional} from "@simplysm/sd-core";
 
 @Component({
   selector: "sd-sheet",
@@ -59,7 +59,7 @@ import {optional} from "@simplysm/sd-common";
                  [attr.col-index]="getIndex(columnControl)"
                  [attr.title]="columnControl.help"
                  [attr.sd-header]="columnControl.header">
-              {{ columnControl.header && columnControl.header.split(".").last() }}
+              {{ columnControl.header && columnControl.header!.split(".").last() }}
               <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
                    (mousedown)="onHeadBorderMousedown($event)"></div>
             </div>
@@ -96,10 +96,10 @@ import {optional} from "@simplysm/sd-common";
                   </a>
                   <a class="_select-icon" (click)="onSelectIconClick($event, i, item)" *ngIf="selectable">
                     <sd-icon icon="arrow-right"
-                             *ngIf="(!itemSelectableFn || itemSelectableFn(i, item)) && (selectable === true || selectable === 'manual')"
+                             *ngIf="(!itemSelectableFn || itemSelectableFn!(i, item)) && (selectable === true || selectable === 'manual')"
                              [fw]="true"></sd-icon>
                     <sd-icon icon="arrow-right"
-                             *ngIf="(!itemSelectableFn || itemSelectableFn(i, item)) && (selectable === 'multi')"
+                             *ngIf="(!itemSelectableFn || itemSelectableFn!(i, item)) && (selectable === 'multi')"
                              [fw]="true"></sd-icon>
                   </a>
                 </div>
@@ -133,14 +133,7 @@ import {optional} from "@simplysm/sd-common";
         </ng-template>
         <ng-template [ngTemplateOutlet]="rowOfList" [ngTemplateOutletContext]="{items: getPagedItems()}"></ng-template>
       </div>
-    </div>`/*,
-  animations: [
-    trigger("rowState", [
-      state("void", style({height: "0"})),
-      state("*", style({height: "*"})),
-      transition("void <=> *", animate(".1s ease-in-out"))
-    ])
-  ]*/
+    </div>`
 })
 export class SdSheetControl implements DoCheck, OnInit {
   @ContentChildren(SdSheetColumnControl)

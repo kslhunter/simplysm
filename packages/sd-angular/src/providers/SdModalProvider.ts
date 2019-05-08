@@ -1,5 +1,5 @@
 import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector} from "@angular/core";
-import {Type} from "@simplysm/sd-common";
+import {Type} from "@simplysm/sd-core";
 import {SdModalControl} from "../controls/SdModalControl";
 
 @Injectable()
