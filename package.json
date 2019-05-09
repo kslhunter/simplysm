@@ -9,10 +9,12 @@
   "scripts": {
     "watch": "yarn _sd-cli_ build --watch",
     "build": "yarn _sd-cli_ build",
-    "build-profile": "yarn _sd-cli-profile_ build",
     "publish": "yarn _sd-cli_ publish",
     "build+publish": "yarn _sd-cli_ publish --build",
-    "--": "",
+    "--": " ",
+    "profile:watch": "yarn _sd-cli-profile_ build --watch",
+    "profile:build": "yarn _sd-cli-profile_ build",
+    "-- ": "",
     "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --require ts-node/register --require tsconfig-paths/register packages/sd-cli/src/bin.ts",
     "_sd-cli-profile_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --prof --logfile=profiling/cli.log --no-logfile-per-isolate --require=ts-node/register --require=tsconfig-paths/register packages/sd-cli/src/bin.ts"
   },
