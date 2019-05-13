@@ -61,4 +61,7 @@ export * from "./provider/SdPrintProvider";
 export * from "./provider/SdSmtpClientProvider";
 export * from "./provider/SdSoapClientProvider";
 
+export * from "./directives/LinkActionDirective";
+export * from "./attribute/SdNavigateAttribute";
+
 export * from "./SimplismModule";

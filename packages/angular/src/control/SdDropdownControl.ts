@@ -161,6 +161,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     const dropdownEl = this.dropdownElRef!.nativeElement;
 
     const relatedTarget = event.relatedTarget as HTMLElement;
+    console.log(relatedTarget);
     if (
       relatedTarget &&
       (

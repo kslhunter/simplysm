@@ -61,6 +61,7 @@ import {SdHtmlEditorControl} from "./control/SdHtmlEditorControl";
 import {SdSoapClientProvider} from "./provider/SdSoapClientProvider";
 import {SdNoteControl} from "./control/SdNoteControl";
 import {SdAddressSearchModal} from "./modal/SdAddressSearchModal";
+import {LinkActionDirective} from "./directives/LinkActionDirective";
 
 const controls: any[] = [
   SdBusyContainerControl,
@@ -115,7 +116,8 @@ const entryControls: any[] = [
 ];
 
 const attributes: any[] = [
-  SdNavigateAttribute
+  SdNavigateAttribute,
+  LinkActionDirective
 ];
 
 const pipes: any[] = [
