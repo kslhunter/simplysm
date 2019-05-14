@@ -97,9 +97,9 @@ export class SdDropdownControl implements OnInit, OnDestroy {
           minWidth: this._controlEl.clientWidth + "px",
           opacity: "1",
           pointerEvents: "auto",
-          transform: "none",
-          borderTopRightRadius: "4px",
-          borderTopLeftRadius: "4px"
+          transform: "none"
+          // borderTopRightRadius: "4px",
+          // borderTopLeftRadius: "4px"
         }
       );
     }
@@ -113,9 +113,9 @@ export class SdDropdownControl implements OnInit, OnDestroy {
           minWidth: this._controlEl.clientWidth + "px",
           opacity: "1",
           pointerEvents: "auto",
-          transform: "none",
-          borderBottomRightRadius: "4px",
-          borderBottomLeftRadius: "4px"
+          transform: "none"
+          // borderBottomRightRadius: "4px",
+          // borderBottomLeftRadius: "4px"
         }
       );
     }

@@ -214,8 +214,8 @@ Array.prototype.orderBy = function (selector?: (item: any) => any, desc?: boolea
     const pp = selector ? selector(p) : p;
 
     return desc
-      ? pn < pp ? -1 : pn > pp ? 1 : 0
-      : pn > pp ? -1 : pn < pp ? 1 : 0;
+      ? (pn < pp ? -1 : pn > pp ? 1 : 0)
+      : (pn > pp ? -1 : pn < pp ? 1 : 0);
   });
 };
 

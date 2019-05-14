@@ -147,11 +147,12 @@ export class SdServiceServer extends EventEmitter {
 
   private async _onWebRequestAsync(request: http.IncomingMessage, response: http.ServerResponse): Promise<void> {
     const runners = this._middlewares.concat([
-      async (req, res) => {
+      async (req, res, next) => {
         try {
           if (req.method !== "GET") {
-            this._responseErrorHtml(res, 405, `요청이 잘못되었습니다.${process.env.NODE_ENV === "production" ? "" : `<br/><br/>${req.method!.toUpperCase()}`}`);
-            return;
+            const errorMessage = `요청이 잘못되었습니다. ${process.env.NODE_ENV === "production" ? "" : `<br/><br/>${req.method!.toUpperCase()}`}`;
+            this._responseErrorHtml(res, 405, errorMessage);
+            next(new Error(errorMessage));
           }
 
           const urlObj = url.parse(req.url!, true, false);
@@ -159,12 +160,16 @@ export class SdServiceServer extends EventEmitter {
           const localPath = path.resolve(this.rootPath, "www", urlPath);
 
           if (!await fs.pathExists(localPath)) {
-            this._responseErrorHtml(res, 404, `파일을 찾을 수 없습니다.${process.env.NODE_ENV}` === "production" ? "" : `<br/><br/>${localPath}]`);
+            const errorMessage = `파일을 찾을 수 없습니다.${process.env.NODE_ENV === "production" ? "" : `<br/><br/>${localPath}`}`;
+            this._responseErrorHtml(res, 404, errorMessage);
+            next(new Error(errorMessage));
             return;
           }
 
           if (path.basename(localPath).startsWith(".")) {
-            this._responseErrorHtml(res, 403, `파일을 사용할 권한이 없습니다.${process.env.NODE_ENV}` === "production" ? "" : `<br/><br/>${localPath}]`);
+            const errorMessage = `파일을 사용할 권한이 없습니다.${process.env.NODE_ENV === "production" ? "" : `<br/><br/>${localPath}`}`;
+            this._responseErrorHtml(res, 403, errorMessage);
+            next(new Error(errorMessage));
             return;
           }
 
@@ -178,6 +183,13 @@ export class SdServiceServer extends EventEmitter {
             filePath = localPath;
           }
 
+          if (!await fs.pathExists(filePath)) {
+            const errorMessage = `파일을 찾을 수 없습니다.${process.env.NODE_ENV === "production" ? "" : `<br/><br/>${filePath}`}`;
+            this._responseErrorHtml(res, 404, errorMessage);
+            next(new Error(errorMessage));
+            return;
+          }
+
           const fileStream = fs.createReadStream(filePath);
           const indexFileSize = (await fs.lstat(filePath)).size;
 
@@ -187,7 +199,9 @@ export class SdServiceServer extends EventEmitter {
           fileStream.pipe(res);
         }
         catch (err) {
-          this._responseErrorHtml(res, 405, `요청이 잘못되었습니다.${process.env.NODE_ENV === "production" ? "" : ("<br/><br/>" + err.stack)}`);
+          const errorMessage = `요청이 잘못되었습니다.`;
+          this._responseErrorHtml(res, 405, errorMessage);
+          next(new Error(errorMessage));
         }
       }
     ]);
@@ -196,7 +210,7 @@ export class SdServiceServer extends EventEmitter {
       if (!runners[index]) return;
       runners[index](request, response, err => {
         if (err) {
-          this._responseErrorHtml(response, 405, `요청이 잘못되었습니다.${process.env.NODE_ENV === "production" ? "" : ("<br/><br/>" + err.stack)}`);
+          this._logger.error(err);
           return;
         }
 

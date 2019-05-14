@@ -23,12 +23,15 @@ const builder = new packageBuilderClass(
   packageKey,
   options ? options.split(",").map(item => item.trim()) : undefined
 );
+let cpuUsage: NodeJS.CpuUsage;
 builder
   .on("run", () => {
+    cpuUsage = process.cpuUsage();
     sendMessage({type: "run"});
   })
   .on("done", () => {
-    sendMessage({type: "done"});
+    const usage = process.cpuUsage(cpuUsage);
+    sendMessage({type: "done", message: {cpuUsage: Math.floor((usage.user + usage.system) / 1000)}});
   })
   .on("log", () => (message: string) => {
     sendMessage({type: "log", message});

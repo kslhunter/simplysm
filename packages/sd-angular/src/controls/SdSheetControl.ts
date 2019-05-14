@@ -104,7 +104,7 @@ import {optional} from "@simplysm/sd-core";
                   </a>
                 </div>
                 <div
-                  [classList]="['_col', (itemThemeFn && itemThemeFn(item) ? 'sd-background-' + itemThemeFn(item) + '-lightest' : undefined)]"
+                  [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
                   *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
                   [style.width.px]="getWidth(columnControl)" tabindex="0"
                   (keydown)="onCellKeydown($event)">
@@ -115,7 +115,7 @@ import {optional} from "@simplysm/sd-core";
               </div>
               <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
                 <div
-                  [classList]="['_col', (itemThemeFn && itemThemeFn(item) ? 'sd-background-' + itemThemeFn(item) + '-lightest' : '')]"
+                  [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
                   *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
                   [style.width.px]="getWidth(columnControl)" tabindex="0"
                   (keydown)="onCellKeydown($event)">

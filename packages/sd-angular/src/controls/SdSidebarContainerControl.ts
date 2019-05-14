@@ -6,7 +6,7 @@ import {NavigationStart, Router} from "@angular/router";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-content></ng-content>
-    <div class="_backdrop" (click)="toggle = false"></div>`
+    <div class="_backdrop" (click)="toggle = !toggle"></div>`
 })
 export class SdSidebarContainerControl {
   @HostBinding("attr.sd-toggle")

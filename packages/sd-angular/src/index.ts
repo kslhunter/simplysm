@@ -75,4 +75,5 @@ export * from "./providers/SdServiceProvider";
 export * from "./providers/SdSmtpClientServiceProvider";
 export * from "./providers/SdSoapProvider";
 export * from "./providers/SdToastProvider";
+export * from "./providers/SdWindowProvider";
 export * from "./SdAngularModule";
