@@ -20,7 +20,9 @@ import {ResizeEvent} from "../commons/ResizeEvent";
   selector: "sd-dock",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <hr *ngIf="!!id" (mousedown)="onResizerMousedown($event)"/>
+    <div class="_resizer" *ngIf="!!id" (mousedown)="onResizerMousedown($event)">
+      <!--<hr *ngIf="!!id" (mousedown)="onResizerMousedown($event)"/>-->
+    </div>
     <ng-content></ng-content>`
 })
 export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit {
@@ -34,10 +36,14 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
     includes: ["top", "right", "bottom", "left"],
     notnull: true
   })
-
   @SdNotifyPropertyChange()
   @HostBinding("attr.sd-position")
   public position: "top" | "right" | "bottom" | "left" = "top";
+
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-border")
+  public border?: boolean;
 
   @HostBinding("attr.sd-resizable")
   public get resizable(): boolean {

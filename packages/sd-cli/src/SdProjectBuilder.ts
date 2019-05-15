@@ -67,11 +67,13 @@ export class SdProjectBuilder {
                 targetLogger.log(`파일이 변경되었습니다: [${change.type}] ${change.filePath}`);
                 if (change.type === "unlink") {
                   await fs.remove(targetFilePath);
-                } else {
+                }
+                else {
                   await fs.copy(change.filePath, targetFilePath);
                 }
               }
-            } catch (err) {
+            }
+            catch (err) {
               targetLogger.error(err);
             }
           }, 600);
@@ -145,11 +147,13 @@ export class SdProjectBuilder {
           if (argv.watch && config.packages[packageKey].type === "server") {
             await this._runServerAsync(packageKey, worker);
           }
-        } else if (!argv.watch) {
+        }
+        else if (!argv.watch) {
           // > > 빌드
           const worker = await this._runPackageBuildWorkerAsync("build", packageKey, argv.options, false);
           workerCpuUsages.push({packageKey, type: "build", cpuUsage: worker["cpuUsage"]});
-        } else {
+        }
+        else {
           // > > 빌드
           await this._runClientWatcherAsync(
             packageKey,
@@ -182,18 +186,30 @@ export class SdProjectBuilder {
     let cpuMessage = "------------------------\n";
     const maxPackageKeyLength = workerCpuUsages.max(item => item.packageKey.length)!;
     const maxTypeLength = workerCpuUsages.max(item => item.type.length)!;
-    const maxCpuUsageLength = workerCpuUsages.max(item => item.cpuUsage.toLocaleString().length)!;
     const sumCpuUsage = workerCpuUsages.sum(item => item.cpuUsage)!;
-    const groupedWorkerCpuUsages = workerCpuUsages.groupBy(item => item.type).map(item => ({
+
+    const groupedByTypeWorkerCpuUsages = workerCpuUsages.groupBy(item => item.type).map(item => ({
       type: item.key,
       cpuUsage: item.values.sum(item1 => item1.cpuUsage)!
     }));
-    const maxGroupedCpuUsageLength = groupedWorkerCpuUsages.max(item => item.cpuUsage.toLocaleString().length)!;
-    for (const groupedWorkerCpuUsage of groupedWorkerCpuUsages.orderBy(item => item.type)) {
-      cpuMessage += `${groupedWorkerCpuUsage.type.padEnd(maxTypeLength)}\t${groupedWorkerCpuUsage.cpuUsage.toLocaleString().padStart(maxGroupedCpuUsageLength)}ms\t${(100 * groupedWorkerCpuUsage.cpuUsage / sumCpuUsage).toFixed(2).padStart(5)}%\n`;
+    const maxGroupedByTypeCpuUsageLength = groupedByTypeWorkerCpuUsages.max(item => item.cpuUsage.toLocaleString().length)!;
+    for (const groupedByTypeWorkerCpuUsage of groupedByTypeWorkerCpuUsages.orderBy(item => item.cpuUsage, true)) {
+      cpuMessage += `${groupedByTypeWorkerCpuUsage.type.padEnd(maxTypeLength)}\t${groupedByTypeWorkerCpuUsage.cpuUsage.toLocaleString().padStart(maxGroupedByTypeCpuUsageLength)}ms\t${(100 * groupedByTypeWorkerCpuUsage.cpuUsage / sumCpuUsage).toFixed(2).padStart(5)}%\n`;
     }
     cpuMessage += "------------------------\n";
-    for (const workerCpuUsage of workerCpuUsages.orderBy(item => item.cpuUsage, true).orderBy(item => item.type)) {
+
+    const groupedByPackageWorkerCpuUsages = workerCpuUsages.groupBy(item => item.packageKey).map(item => ({
+      packageKey: item.key,
+      cpuUsage: item.values.sum(item1 => item1.cpuUsage)!
+    }));
+    const maxGroupedByPackageCpuUsageLength = groupedByPackageWorkerCpuUsages.max(item => item.cpuUsage.toLocaleString().length)!;
+    for (const groupedByPackageWorkerCpuUsage of groupedByPackageWorkerCpuUsages.orderBy(item => item.cpuUsage, true)) {
+      cpuMessage += `${groupedByPackageWorkerCpuUsage.packageKey.padEnd(maxPackageKeyLength)}\t${groupedByPackageWorkerCpuUsage.cpuUsage.toLocaleString().padStart(maxGroupedByPackageCpuUsageLength)}ms\t${(100 * groupedByPackageWorkerCpuUsage.cpuUsage / sumCpuUsage).toFixed(2).padStart(5)}%\n`;
+    }
+    cpuMessage += "------------------------\n";
+
+    const maxCpuUsageLength = workerCpuUsages.max(item => item.cpuUsage.toLocaleString().length)!;
+    for (const workerCpuUsage of workerCpuUsages.orderBy(item => item.cpuUsage, true)) {
       cpuMessage += `${workerCpuUsage.type.padEnd(maxTypeLength)}\t${workerCpuUsage.packageKey.padEnd(maxPackageKeyLength)}\t${workerCpuUsage.cpuUsage.toLocaleString().padStart(maxCpuUsageLength)}ms\t${(100 * workerCpuUsage.cpuUsage / sumCpuUsage).toFixed(2).padStart(5)}%\n`;
     }
     cpuMessage += "------------------------";
@@ -271,7 +287,8 @@ export class SdProjectBuilder {
           // > > > 프로젝트의 서브패키지에 대한 버전을 프로젝트 자체 버전으로 변경
           else if (allPackageNames.includes(depKey)) {
             depObj[depKey] = projectNpmConfig.version;
-          } else {
+          }
+          else {
             throw new Error(`의존성 정보를 찾을 수 없습니다.(${packageKey}, ${depType}, ${depKey})`);
           }
         }
@@ -341,7 +358,8 @@ export class SdProjectBuilder {
               logger.error(`처리되지 않은 메시지가 출력되었습니다.(${message.type})`);
               reject(new Error(`처리되지 않은 메시지가 출력되었습니다.(${type}, ${packageKey}, ${message.type})`));
           }
-        } catch (err) {
+        }
+        catch (err) {
           err.message += `(${type}, ${packageKey})`;
           reject(err);
         }
@@ -390,7 +408,8 @@ export class SdProjectBuilder {
           });
 
         resolve(await builder.watchAsync());
-      } catch (err) {
+      }
+      catch (err) {
         logger.error(`오류가 발생했습니다.`, err.stack);
         reject(new Error(`오류가 발생했습니다.(client, ${packageKey})${err.stack ? os.EOL + err.stack : ""}`));
       }

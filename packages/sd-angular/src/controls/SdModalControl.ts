@@ -43,6 +43,10 @@ export class SdModalControl {
 
   @Input()
   @SdTypeValidate(Boolean)
+  public useCloseByBackdrop?: boolean;
+
+  @Input()
+  @SdTypeValidate(Boolean)
   @HostBinding("attr.sd-open")
   public open?: boolean;
 
@@ -62,6 +66,9 @@ export class SdModalControl {
 
   public onBackdropClick(): void {
     if (this.hideCloseButton) {
+      return;
+    }
+    if (!this.useCloseByBackdrop) {
       return;
     }
 

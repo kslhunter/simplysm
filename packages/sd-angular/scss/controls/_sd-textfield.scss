@@ -33,7 +33,8 @@ sd-textfield {
     }
 
     &:disabled {
-      background: $bg-color;
+      background: get($theme-color, grey, lightest) !important;
+      //background: $bg-color;
       color: get($text-color, light);
     }
 

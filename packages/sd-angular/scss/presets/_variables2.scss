@@ -1,8 +1,9 @@
-$bg-color: get($theme-color, grey, lightest) !default;
+//$bg-color: get($theme-color, grey, lightest) !default;
+$bg-color: white !default;
 
-$topbar-height: 42px !default;
+$topbar-height: 37px !default;
 
-$sidebar-width: 200px !default;
+$sidebar-width: 180px !default;
 
 $sheet-padding-v: get($gap, xs) !default;
 $sheet-padding-h: get($gap, sm) !default;

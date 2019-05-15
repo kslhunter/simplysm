@@ -10,9 +10,10 @@ sd-select {
     overflow: visible;
     padding-right: 30px !important;
     height: get($gap, sm) * 2 + strip-unit($line-height) * get($font-size, default) + 2;
-    border-radius: 3px;
+    //border-radius: 3px;
 
-    border-color: get($theme-color, grey, lighter);
+    //border-color: get($theme-color, grey, lighter);
+    border-color: get($trans-color, default);
     transition: outline-color .1s linear;
     outline: 1px solid transparent;
     outline-offset: -1px;
@@ -39,7 +40,8 @@ sd-select {
   }
 
   &[sd-disabled=true] > sd-dropdown > div {
-    background: $bg-color;
+    background: get($theme-color, grey, lightest) !important;
+    //background: $bg-color;
     color: get($text-color, light);
     cursor: default;
   }

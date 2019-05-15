@@ -13,7 +13,13 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 })
 export class SdTopbarControl {
   public get sidebarContainerControl(): SdSidebarContainerControl | undefined {
-    return this._injector.get<SdSidebarContainerControl | undefined>(SdSidebarContainerControl, undefined);
+    const control = this._injector.get<SdSidebarContainerControl | null>(SdSidebarContainerControl, null); //tslint:disable-line:no-null-keyword
+    if (control === null) {
+      return undefined;
+    }
+    else {
+      return control;
+    }
   }
 
   public constructor(private readonly _injector: Injector) {

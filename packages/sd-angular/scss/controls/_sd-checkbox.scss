@@ -1,5 +1,5 @@
 sd-checkbox {
-  $size: strip-unit($line-height) * get($font-size, default);
+  $size: floor(strip-unit($line-height) * get($font-size, default));
 
   color: get($text-color, default);
 
@@ -29,22 +29,25 @@ sd-checkbox {
       width: $size;
       height: $size;
       vertical-align: top;
-      font-size: 16px;
-      margin-left: -1px;
+      //font-size: 16px;
+      font-size: get($font-size, default);
+      //margin-left: -1px;
+      text-indent: 1px;
     }
 
     > ._content {
       display: inline-block;
       vertical-align: top;
-      text-indent: get($gap, xs);
-
+      //text-indent: get($gap, xs);
+      text-indent: get($gap, sm);
       > * {
         text-indent: 0;
       }
     }
 
     > input:disabled + ._indicator_rect {
-      background: $bg-color !important;
+      //background: $bg-color !important;
+      background: get($theme-color, grey, lightest) !important;
     }
 
     &:focus {

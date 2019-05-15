@@ -25,11 +25,12 @@ sd-topbar {
   line-height: $topbar-height;
   background: get($theme-color, primary, default);
   color: get($text-reverse-color, default);
-  @include elevation(6);
+  //@include elevation(6);
 
   > * {
     display: inline-block;
     line-height: $topbar-height;
+    vertical-align: top;
   }
 
   > a {
@@ -37,23 +38,23 @@ sd-topbar {
     text-align: center;
     margin-right: get($gap, lg);
     color: get($theme-color, grey, lighter);
-    transition-property: background, color;
-    transition: .1s ease-in;
+    //transition-property: background, color;
+    //transition: .1s ease-in;
 
     &:hover,
     &:focus {
       outline-color: transparent;
       background: rgba(0, 0, 0, 0.2);
       color: white;
-      transition-property: background, color;
-      transition: .1s ease-out;
+      //transition-property: background, color;
+      //transition: .1s ease-out;
     }
 
     &:active {
       background: rgba(0, 0, 0, .3);
       color: white;
-      transition-property: background, color;
-      transition: .1s ease-out;
+      //transition-property: background, color;
+      //transition: .1s ease-out;
     }
   }
 
@@ -71,7 +72,8 @@ sd-topbar-menu {
   padding: 0 get($gap, lg);
   cursor: pointer;
   user-select: none;
-  color: get($theme-color, grey, lighter);
+  color: rgba(255, 255, 255, .7);
+  font-weight: bold;
 
   &:hover {
     background: rgba(0, 0, 0, 0.2);

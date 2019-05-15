@@ -23,7 +23,7 @@ export class SdSheetColumnControl {
     type: Number,
     notnull: true
   })
-  public width = 140;
+  public width = 120;
 
   @Input()
   @SdTypeValidate(Boolean)

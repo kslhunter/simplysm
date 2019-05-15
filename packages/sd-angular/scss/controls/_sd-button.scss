@@ -10,28 +10,30 @@ sd-button {
     cursor: pointer;
     color: get($theme-color, primary, default);
     border-radius: 3px;
-    border: 1px solid transparent; /*get($theme-color, grey, lighter);*/
-    transition: background .1s ease-in;
+    border-color: get($theme-color, primary, default);
+    /*border: 1px solid transparent;*/
+    //transition: background .1s ease-in;
 
     &:hover {
-      transition: .1s ease-out;
+      //transition: background .1s ease-out;
+      background: get($theme-color, grey, lightest);
+    }
+
+    &:focus {
+      outline-color: transparent;
       background: get($theme-color, grey, lightest);
     }
 
     &:active {
-      transition: .1s ease-out;
-      background: get($trans-color, dark);
+      //transition: background .1s ease-out;
+      background: get($theme-color, grey, lighter);
+      //background: get($trans-color, dark);
     }
 
     &:disabled {
       background: transparent;
       cursor: default;
       color: get($text-color, default);
-    }
-
-    &:focus {
-      outline-color: transparent;
-      background: get($theme-color, grey, lightest);
     }
   }
 
@@ -41,7 +43,8 @@ sd-button {
       border-color: get($val, default);
       color: get($text-reverse-color, default);
 
-      &:hover {
+      &:hover,
+      &:focus {
         background: get($val, dark);
         border-color: get($val, dark);
       }

@@ -27,7 +27,6 @@ export class SdNavigateDirective {
       }
     }
 
-    console.log(this._window.isWindow);
     if (this._window.isWindow) {
       this._window.open(this.sdNavigate[0], newObj, "width=800,height=600");
     }

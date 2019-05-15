@@ -20,7 +20,7 @@ sd-sidebar-container {
       }
     }
 
-    ::-webkit-scrollbar-track {
+    /*::-webkit-scrollbar-track {
       background-color: get($theme-color, bluegrey, darker);
     }
 
@@ -30,7 +30,7 @@ sd-sidebar-container {
 
     ::-webkit-scrollbar-thumb {
       background-color: get($theme-color, bluegrey, dark);
-    }
+    }*/
 
     sd-list {
       background: get($theme-color, bluegrey, darkest);
@@ -176,7 +176,7 @@ sd-sidebar {
     }
 
     > ._brand {
-      @include elevation(4);
+      //@include elevation(4);
       z-index: $z-index-sidebar + 1;
     }
   }
@@ -185,7 +185,7 @@ sd-sidebar {
 sd-sidebar-brand {
   display: block;
   height: $topbar-height;
-  padding: get($gap, sm) get($gap, default);
+  padding: get($gap, default);
 }
 
 sd-sidebar-user {

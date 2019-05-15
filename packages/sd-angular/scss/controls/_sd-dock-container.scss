@@ -8,7 +8,6 @@ sd-dock-container {
 }
 
 sd-dock {
-  $border-color: get($theme-color, grey, lighter);
 
   display: block;
   position: absolute;
@@ -16,85 +15,96 @@ sd-dock {
   z-index: 1;
   background: white;
 
-  &[sd-position=top] {
-    border-bottom: 1px solid $border-color;
-  }
-
-  &[sd-position=bottom] {
-    border-top: 1px solid $border-color;
-  }
-
-  &[sd-position=left] {
-    border-right: 1px solid $border-color;
-  }
-
-  &[sd-position=right] {
-    border-left: 1px solid $border-color;
-  }
-
-  > hr {
+  > ._resizer {
     display: none;
     user-select: none;
   }
 
+  &[sd-border=true] {
+    $border-color: get($theme-color, grey, lighter);
+
+    &[sd-position=top] {
+      border-bottom: 1px solid $border-color;
+    }
+
+    &[sd-position=bottom] {
+      border-top: 1px solid $border-color;
+    }
+
+    &[sd-position=left] {
+      border-right: 1px solid $border-color;
+    }
+
+    &[sd-position=right] {
+      border-left: 1px solid $border-color;
+    }
+  }
+
   &[sd-resizable=true] {
-    > hr {
+    $resizer-size: 4px;
+
+    > ._resizer {
       display: block;
       position: absolute;
-      width: 4px;
-      height: 4px;
-      background: get($trans-color, dark);
+      width: $resizer-size;
+      height: $resizer-size;
+      background: get($theme-color, grey, light);
       margin: 0;
       padding: 0;
-      border: none;
       z-index: 1;
     }
 
-    &[sd-position=top] {
-      border: none;
-      padding-bottom: 4px;
+    border: none !important;
 
-      > hr {
+    &[sd-position=top] {
+      padding-bottom: $resizer-size;
+
+      > ._resizer {
         bottom: 0;
         left: 0;
         width: 100%;
         cursor: ns-resize;
+        border-left: none;
+        border-right: none;
       }
     }
 
     &[sd-position=bottom] {
-      border: none;
-      padding-top: 4px;
+      padding-top: $resizer-size;
 
-      > hr {
+      > ._resizer {
         top: 0;
         left: 0;
         width: 100%;
         cursor: ns-resize;
+        border-left: none;
+        border-right: none;
       }
     }
 
     &[sd-position=left] {
-      border: none;
-      padding-right: 4px;
+      padding-right: $resizer-size;
 
-      > hr {
+      > ._resizer {
         top: 0;
         right: 0;
         height: 100%;
         cursor: ew-resize;
+        border-top: none;
+        border-bottom: none;
       }
     }
 
     &[sd-position=right] {
-      border: none;
-      padding-left: 4px;
+      padding-left: $resizer-size;
 
-      > hr {
+      > ._resizer {
         top: 0;
         left: 0;
         height: 100%;
         cursor: ew-resize;
+        border-top: none;
+        border-bottom: none;
       }
     }
   }

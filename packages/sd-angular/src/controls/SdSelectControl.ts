@@ -36,7 +36,7 @@ import {JsonConvert} from "@simplysm/sd-core";
         </ng-container>
         <ng-container *ngIf="items">
           <sd-dock-container>
-            <sd-dock>
+            <sd-dock [border]="true">
               <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
             </sd-dock>
             <sd-pane>
