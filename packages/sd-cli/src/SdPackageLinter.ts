@@ -60,7 +60,9 @@ export class SdPackageLinter extends events.EventEmitter {
 
     const messages: string[] = [];
     for (const sourceFile of sourceFiles) {
-      linter.lint(sourceFile.fileName, sourceFile.getFullText(), this._tsLintConfig);
+      if (path.resolve(sourceFile.fileName).startsWith(this._contextPath)) {
+        linter.lint(sourceFile.fileName, sourceFile.getFullText(), this._tsLintConfig);
+      }
     }
 
     messages.pushRange(linter.getResult().failures.map(item => this._failureToMessage(item)));

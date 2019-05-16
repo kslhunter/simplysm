@@ -138,7 +138,10 @@ export class SdProjectBuilder {
     await Promise.all([
       // > 패키지별 병렬로,
       this._parallelPackagesByDepAsync(Object.keys(config.packages), async packageKey => {
-        if (config.packages[packageKey].type === undefined || config.packages[packageKey].type === "server") {
+        if (config.packages[packageKey].type === "none") {
+          return;
+        }
+        else if (config.packages[packageKey].type === undefined || config.packages[packageKey].type === "server") {
           // > > 빌드
           const worker = await this._runPackageBuildWorkerAsync("build", packageKey, argv.options, argv.watch);
           workerCpuUsages.push({packageKey, type: "build", cpuUsage: worker["cpuUsage"]});
@@ -165,6 +168,10 @@ export class SdProjectBuilder {
       }),
       // > 패키지별 병렬로,
       this._parallelPackagesByDepAsync(Object.keys(config.packages), async packageKey => {
+        if (config.packages[packageKey].type === "none") {
+          return;
+        }
+
         // > > 타입체크 및 ".d"파일 생성
         const worker = await this._runPackageBuildWorkerAsync("check", packageKey, argv.options, argv.watch);
         workerCpuUsages.push({packageKey, type: "check", cpuUsage: worker["cpuUsage"]});
@@ -174,6 +181,10 @@ export class SdProjectBuilder {
       }),
       // > 패키지별 병렬로,
       Promise.all(Object.keys(config.packages).map(async packageKey => {
+        if (config.packages[packageKey].type === "none") {
+          return;
+        }
+
         // > > LINT
         const worker = await this._runPackageBuildWorkerAsync("lint", packageKey, argv.options, argv.watch);
         workerCpuUsages.push({packageKey, type: "lint", cpuUsage: worker["cpuUsage"]});
@@ -317,7 +328,7 @@ export class SdProjectBuilder {
       const execArgv = Object.clone(process.execArgv);
       if (execArgv.some(item => item.startsWith("--logfile"))) {
         const index = execArgv.indexOf(execArgv.single(item => item.startsWith("--logfile"))!);
-        execArgv[index] = `--logfile=profiling/${type}.log`;
+        execArgv[index] = `--logfile=profiling/${type}-${packageKey}.log`;
       }
 
       const worker = child_process.fork(

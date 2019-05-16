@@ -9,7 +9,7 @@ export interface ISdProjectConfig {
 }
 
 export interface ISdPackageConfig {
-  type?: "server" | "web";
+  type?: "server" | "web" | "none";
   publish?: "npm";
   server?: string;
   configs?: { [key: string]: any };
