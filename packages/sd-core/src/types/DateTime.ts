@@ -17,12 +17,7 @@ export class DateTime {
       this.date = new Date(args1);
     }
     else if (typeof args1 === "number" && args2 !== undefined) {
-      if (args7) {
-        this.date = new Date(args1, args2 - 1, args3, args4, args5, args6, args7);
-      }
-      else {
-        this.date = new Date(args1, args2 - 1, args3, args4, args5, args6);
-      }
+      this.date = new Date(args1, args2 - 1, args3 || 0, args4 || 0, args5 || 0, args6 || 0, args7 || 0);
     }
     else if (args1 instanceof Date) {
       this.date = new Date(args1.getTime());

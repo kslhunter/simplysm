@@ -5,8 +5,11 @@ sd-textfield {
   > input,
   > textarea {
     @include form-control-base();
+    background-clip: padding-box;
+    border-radius: 0;
+    margin: 0;
 
-    background: get($theme-color, secondary, lightest);
+    background-color: get($theme-color, secondary, lightest);
     border-color: get($trans-color, default);
     transition: outline-color .1s linear;
     outline: 1px solid transparent;

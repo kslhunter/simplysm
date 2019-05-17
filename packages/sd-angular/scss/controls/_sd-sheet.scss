@@ -22,10 +22,10 @@ sd-sheet {
 
   ._pagination {
     background: $header-bg;
-    border-top: 1px solid white;
+    //border-top: 1px solid white;
     padding: $sheet-padding-v $sheet-padding-h;
     border-bottom: 1px solid $border-color;
-    border-right: 1px solid $border-color;
+    border-right: 1px solid $border-color-dark;
   }
 
   ._head {
@@ -181,8 +181,8 @@ sd-sheet {
     }
   }
 
-  ._head > ._row > ._col-group:last-child > ._col:last-child > ._border,
-  ._body > ._row > ._col-group:last-child > ._col:last-child {
+  ._head > ._row > ._col-group:nth-child(2) > ._col:last-child > ._border,
+  ._body > ._row > ._col-group:nth-child(2) > ._col:last-child {
     border-right-color: $border-color-dark;
   }
 
@@ -268,6 +268,18 @@ sd-sheet {
 
   ._row {
     position: relative;
+  }
+
+  ._body > ._row._selected > ._select-indicator {
+    display: block;
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+    width: calc(100% - 1px);
+    height: calc(100% - 1px);
+    background: rgba(get($theme-color, primary, default), .1);
   }
 
   &[sd-selectable=true] ._body ._first-col {

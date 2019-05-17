@@ -5,10 +5,13 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a (click)="toggleSidebar()" style="font-size: 16px;" *ngIf="!!sidebarContainerControl">
+    <a (click)="toggleSidebar()" style="font-size: 16px;"
+       *ngIf="!!sidebarContainerControl && !isSidebarContainerHidden">
       <sd-icon [icon]="'bars'" [fw]="true"></sd-icon>
     </a>
-    <div *ngIf="!sidebarContainerControl" style="display: inline-block; width: 12px;"></div>
+    <div *ngIf="!sidebarContainerControl || !!isSidebarContainerHidden"
+         style="display: inline-block;"
+         class="sd-padding-left-lg"></div>
     <ng-content></ng-content>`
 })
 export class SdTopbarControl {
@@ -20,6 +23,10 @@ export class SdTopbarControl {
     else {
       return control;
     }
+  }
+
+  public get isSidebarContainerHidden(): boolean {
+    return !!this.sidebarContainerControl && this.sidebarContainerControl.hidden;
   }
 
   public constructor(private readonly _injector: Injector) {

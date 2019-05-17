@@ -5,6 +5,12 @@ declare global {
   // tslint:disable-next-line:interface-name
   interface HTMLElement {
     readonly windowOffset: { top: number; left: number };
+
+    getRelativeOffset(parentElement: Element): { top: number; left: number };
+
+    getRelativeOffset(parentSelector: string): { top: number; left: number };
+
+    getRelativeOffset(): { top: number; left: number };
   }
 }
 
@@ -29,6 +35,28 @@ Object.defineProperty(HTMLElement.prototype, "windowOffset", {
     return {top, left};
   }
 });
+
+HTMLElement.prototype.getRelativeOffset = function (arg?: string | Element): { top: number; left: number } {
+  const parentEl = arg ? this.findParent(arg as any) : undefined;
+
+  let cursor = this;
+  let top = cursor.offsetTop;
+  let left = cursor.offsetLeft;
+  while (cursor.offsetParent && cursor.offsetParent !== parentEl) {
+    cursor = cursor.offsetParent as HTMLElement;
+    top += cursor.offsetTop;
+    left += cursor.offsetLeft;
+  }
+
+  cursor = this;
+  while (cursor.parentElement) {
+    cursor = cursor.parentElement as HTMLElement;
+    top -= cursor.scrollTop;
+    left -= cursor.scrollLeft;
+  }
+
+  return {top, left};
+};
 
 HTMLElement.prototype["orgAddEventListener"] = HTMLElement.prototype["orgAddEventListener"] || HTMLElement.prototype.addEventListener;
 HTMLElement.prototype.addEventListener = function (type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {

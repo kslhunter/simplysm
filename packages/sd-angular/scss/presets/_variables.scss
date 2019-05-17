@@ -39,8 +39,8 @@ $gap: (
   //lg: 12px,
   //xl: 18px,
   //xxl: 24px
-  xxs: 2px,
-  xs: 3px,
+  xxs: 1px,
+  xs: 2px,
   sm: 4px,
   default: 6px,
   lg: 8px,
@@ -73,7 +73,8 @@ $font-size: (
 $font-family: '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;
 //$font-family-monospace: 'D2 coding', monospace !default;
 $font-family-monospace: monospace !default;
-$line-height: 1.4em !default;
+//$line-height: 1.4em !default;
+$line-height: 1.5em !default;
 
 $z-index-toast: 9999 !default;
 $z-index-busy: 9998 !default;

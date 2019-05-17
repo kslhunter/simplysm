@@ -205,12 +205,23 @@ export class SdExcelWorkbook {
     return wb;
   }
 
-  public getWorksheet(name: string): SdExcelWorksheet {
-    const ws = this._worksheets.single(item => item.name === name);
-    if (!ws) {
-      throw new Error(`시트[${name}]가 존재하지 않습니다.`);
+  public getWorksheet(index: number): SdExcelWorksheet;
+  public getWorksheet(name: string): SdExcelWorksheet;
+  public getWorksheet(arg: string | number): SdExcelWorksheet {
+    if (typeof arg === "string") {
+      const ws = this._worksheets.single(item => item.name === arg);
+      if (!ws) {
+        throw new Error(`시트[${arg}]가 존재하지 않습니다.`);
+      }
+      return ws;
     }
-    return ws;
+    else {
+      const ws = this._worksheets[arg + 1];
+      if (!ws) {
+        throw new Error(`시트[${arg}]가 존재하지 않습니다.`);
+      }
+      return ws;
+    }
   }
 
   public createWorksheet(name: string): SdExcelWorksheet {

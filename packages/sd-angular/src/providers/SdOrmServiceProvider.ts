@@ -45,7 +45,13 @@ export class SdOrmServiceProvider {
   }
 
   public async connectAsync<T extends DbContext, R>(dbType: Type<T>, callback: (conn: T) => Promise<R>, trans: boolean = true): Promise<R> {
-    await Wait.true(() => this._service.connected, undefined, 2000);
+    try {
+      await Wait.true(() => this._service.connected, undefined, 5000);
+    }
+    catch (err) {
+      throw new Error("ORM 서비스에 연결할 수 없습니다.");
+    }
+
     const db = new dbType(new SdServiceDbContextExecutor(this._service.client));
     return await db.connectAsync(callback, trans);
   }

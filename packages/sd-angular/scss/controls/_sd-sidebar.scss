@@ -111,6 +111,14 @@ sd-sidebar-container {
     }
   }
 
+  &[sd-hidden=true] {
+    padding-left: 0;
+
+    > sd-sidebar {
+      display: none;
+    }
+  }
+
   /*&[sd-type=popup] { // 모바일
     padding-left: 0;
     transition: padding-left .1s ease-in;

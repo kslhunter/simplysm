@@ -30,7 +30,7 @@ export class Logger {
       : ["log", "info", "warn", "error"],
     fileLogSeverities: process.versions.node
       ? ["log", "info", "warn", "error"]
-      : [],
+      : ["error"],
     outputPath: process.env.NODE_ENV === "production" && process.versions.node ? "logs" : undefined,
     historySize: 30,
     color: !process.versions.node

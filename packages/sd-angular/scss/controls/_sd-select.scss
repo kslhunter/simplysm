@@ -40,7 +40,7 @@ sd-select {
   }
 
   &[sd-disabled=true] > sd-dropdown > div {
-    background: get($theme-color, grey, lightest) !important;
+    background: get($theme-color, grey, lightest);
     //background: $bg-color;
     color: get($text-color, light);
     cursor: default;

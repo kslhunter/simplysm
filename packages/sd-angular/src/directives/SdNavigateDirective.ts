@@ -30,11 +30,14 @@ export class SdNavigateDirective {
     if (this._window.isWindow) {
       this._window.open(this.sdNavigate[0], newObj, "width=800,height=600");
     }
-    else if (event.shiftKey || event.ctrlKey || event.altKey) {
+    else if (event.ctrlKey || event.altKey) {
       // 알트키: 새탭
       // 컨트롤키: 새탭 (새탭이 포커싱되지 않음)
-      // 쉬프트키: 새창
       this._window.open(this.sdNavigate[0], newObj, "_blank");
+    }
+    else if (event.shiftKey) {
+      // 쉬프트키: 새창
+      this._window.open(this.sdNavigate[0], newObj, "width=800,height=600");
     }
     else {
       await this._router.navigate([`${this.sdNavigate[0]}`, ...(newObj ? [newObj] : [])]);

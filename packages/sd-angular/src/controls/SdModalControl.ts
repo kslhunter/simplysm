@@ -5,9 +5,11 @@ import {
   EventEmitter,
   HostBinding,
   HostListener,
-  Input
+  Input,
+  OnInit
 } from "@angular/core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
 
 @Component({
   selector: "sd-modal",
@@ -30,9 +32,14 @@ import {SdTypeValidate} from "../commons/SdTypeValidate";
           <ng-content></ng-content>
         </sd-pane>
       </sd-dock-container>
+      <div class="_left-resizer" (mousedown)="onResizerMousedown($event, 'left')"></div>
+      <div class="_right-resizer" (mousedown)="onResizerMousedown($event, 'right')"></div>
+      <div class="_bottom-resizer" (mousedown)="onResizerMousedown($event, 'bottom')"></div>
+      <div class="_all-right-resizer" (mousedown)="onResizerMousedown($event, 'all-right')"></div>
+      <div class="_all-left-resizer" (mousedown)="onResizerMousedown($event, 'all-left')"></div>
     </div>`
 })
-export class SdModalControl {
+export class SdModalControl implements OnInit {
   @Input()
   @SdTypeValidate({type: String, notnull: true})
   public title!: string;
@@ -61,7 +68,20 @@ export class SdModalControl {
   @SdTypeValidate(String)
   public height?: string;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  private _sizeConfig: { width?: number; height?: number } | undefined;
+
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>,
+                     private readonly _localStorage: SdLocalStorageProvider) {
+  }
+
+  public ngOnInit(): void {
+    this._sizeConfig = this._localStorage.get(`sd-modal.${this.title}.size-config`);
+
+    if (this._sizeConfig) {
+      const el = this._elRef.nativeElement.findAll("> ._dialog")[0] as HTMLElement;
+      el.style.width = this._sizeConfig.width + "px";
+      el.style.height = this._sizeConfig.height + "px";
+    }
   }
 
   public onBackdropClick(): void {
@@ -131,5 +151,54 @@ export class SdModalControl {
     }
 
     this.onCloseButtonClick();
+  }
+
+  public onResizerMousedown(event: MouseEvent, direction: "left" | "right" | "bottom" | "all-left" | "all-right"): void {
+    const el = this._elRef.nativeElement.findAll("> ._dialog")[0] as HTMLElement;
+
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startHeight = el.clientHeight;
+    const startWidth = el.clientWidth;
+
+    const doDrag = (e: MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      if (direction === "bottom" || direction === "all-right" || direction === "all-left") {
+        el.style.height = `${startHeight + e.clientY - startY}px`;
+      }
+      if (direction === "right" || direction === "all-right") {
+        el.style.width = `${startWidth + (e.clientX - startX) * 2}px`;
+      }
+      if (direction === "left" || direction === "all-left") {
+        el.style.width = `${startWidth - (e.clientX - startX) * 2}px`;
+      }
+    };
+
+    const stopDrag = (e: MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      document.documentElement!.removeEventListener("mousemove", doDrag, false);
+      document.documentElement!.removeEventListener("mouseup", stopDrag, false);
+
+      this._sizeConfig = this._sizeConfig || {};
+      if (direction === "right" || direction === "left" || direction === "all-right" || direction === "all-left") {
+        this._sizeConfig.width = el.style.width ? Number(el.style.width.replace("px", "")) : undefined;
+      }
+
+      if (direction === "bottom" || direction === "all-right" || direction === "all-left") {
+        this._sizeConfig.height = el.style.height ? Number(el.style.height.replace("px", "")) : undefined;
+      }
+
+      this._saveSizeConfig();
+    };
+    document.documentElement!.addEventListener("mousemove", doDrag, false);
+    document.documentElement!.addEventListener("mouseup", stopDrag, false);
+  }
+
+  private _saveSizeConfig(): void {
+    this._localStorage.set(`sd-modal.${this.title}.size-config`, this._sizeConfig);
   }
 }

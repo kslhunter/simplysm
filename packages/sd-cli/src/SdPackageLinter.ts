@@ -55,14 +55,13 @@ export class SdPackageLinter extends events.EventEmitter {
     const linter = new tslint.Linter({formatter: "json", fix: false}, program);
 
     const sourceFiles = (fileNames ? fileNames : tslint.Linter.getFileNames(program))
+      .filter(item => path.resolve(item).startsWith(this._contextPath))
       .map(item => program.getSourceFile(item))
       .filterExists();
 
     const messages: string[] = [];
     for (const sourceFile of sourceFiles) {
-      if (path.resolve(sourceFile.fileName).startsWith(this._contextPath)) {
-        linter.lint(sourceFile.fileName, sourceFile.getFullText(), this._tsLintConfig);
-      }
+      linter.lint(sourceFile.fileName, sourceFile.getFullText(), this._tsLintConfig);
     }
 
     messages.pushRange(linter.getResult().failures.map(item => this._failureToMessage(item)));

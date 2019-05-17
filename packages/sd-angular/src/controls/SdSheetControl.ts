@@ -19,12 +19,13 @@ import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
 import {optional} from "@simplysm/sd-core";
+import {ResizeEvent} from "..";
 
 @Component({
   selector: "sd-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="_sheet" [style.padding-top]="paddingTop">
+    <div class="_sheet" [style.padding-top.px]="paddingTop">
       <div #headerElRef class="_content _head" [style.top.px]="headTop">
         <div class="_row _pagination" *ngIf="pageLength > 1">
           <sd-pagination [(page)]="page" [length]="pageLength"
@@ -81,7 +82,7 @@ import {optional} from "@simplysm/sd-core";
       <div class="_content _body" [style.width.px]="headerElRef.offsetWidth">
         <ng-template #rowOfList let-items="items">
           <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
-            <div class="_row"> <!-- [@rowState]="'in'" -->
+            <div class="_row" [class._selected]="getIsItemSelected(item)"> <!-- [@rowState]="'in'" -->
               <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
                 <div class="_col _first-col"
                      [class._double]="selectable && children"
@@ -124,6 +125,7 @@ import {optional} from "@simplysm/sd-core";
                   <div class="_focus-indicator"></div>
                 </div>
               </div>
+              <div class="_select-indicator"></div>
             </div>
             <ng-container *ngIf="getHasChildren(i, item) && getIsExpended(i, item)">
               <ng-template [ngTemplateOutlet]="rowOfList"
@@ -236,10 +238,10 @@ export class SdSheetControl implements DoCheck, OnInit {
   public headTop = 0;
   public fixedLeft = 0;
 
-  public get paddingTop(): string {
+  public get paddingTop(): number {
     const rowEls = this._elRef.nativeElement.findAll("._head > ._row");
     const rowHeight = rowEls.filter(item => !item.classList.contains("_pagination")).sum(item => item.clientHeight) || 0;
-    return rowHeight + (this.pageLength > 1 ? optional(() => rowEls.single(item => item.classList.contains("_pagination"))!.clientHeight) || 0 : 0) + "px";
+    return rowHeight + (this.pageLength > 1 ? optional(() => rowEls.single(item => item.classList.contains("_pagination"))!.clientHeight + 1) || 0 : 0);
 
     /*const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
       + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default));
@@ -741,6 +743,20 @@ export class SdSheetControl implements DoCheck, OnInit {
 
           event.preventDefault();
         }
+      }
+    }
+  }
+
+  @HostListener("resize", ["$event"])
+  public onResize(event: ResizeEvent): void {
+    if (document.activeElement && document.activeElement.findParent(this._elRef.nativeElement)) {
+      const offset = (document.activeElement as HTMLElement).getRelativeOffset(this._elRef.nativeElement);
+      if (event.detail.dimensions.includes("height")) {
+        this._elRef.nativeElement.scrollTop = offset.top - this.paddingTop - 12;
+      }
+
+      if (event.detail.dimensions.includes("width")) {
+        this._elRef.nativeElement.scrollLeft = offset.left - this.fixedColumnWidth - 12;
       }
     }
   }
