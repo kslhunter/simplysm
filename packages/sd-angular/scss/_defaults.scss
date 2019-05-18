@@ -67,24 +67,6 @@ hr {
   height: 1px;
 }
 
-/*::-webkit-scrollbar-track {
-  background-color: get($theme-color, grey, light);
-}
-
-::-webkit-scrollbar-corner {
-  background-color: get($theme-color, grey, light);
-}
-
-::-webkit-scrollbar {
-  width: get($gap, lg);
-  height: get($gap, lg);
-  background-color: rgba(0, 0, 0, 0);
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: get($theme-color, grey, default);
-}*/
-
 *[hidden] {
   display: none !important;
 }

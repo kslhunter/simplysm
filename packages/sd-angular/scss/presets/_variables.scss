@@ -32,13 +32,6 @@ $text-reverse-color: (
 ) !default;
 
 $gap: (
-  //xxs: 2px,
-  //xs: 4px,
-  //sm: 6px,
-  //default: 8px,
-  //lg: 12px,
-  //xl: 18px,
-  //xxl: 24px
   xxs: 1px,
   xs: 2px,
   sm: 4px,
@@ -49,15 +42,6 @@ $gap: (
 ) !default;
 
 $font-size: (
-  /*lg: 15px,
-  default: 13px,
-  sm: 11px,
-  h1: 23px,
-  h2: 19px,
-  h3: 17px,
-  h4: 15px,
-  h5: 13px,
-  h6: 11px*/
   lg: 14px,
   default: 12px,
   sm: 11px,
@@ -69,11 +53,8 @@ $font-size: (
   h6: 11px
 ) !default;
 
-//$font-family: 'Noto Sans KR', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;
 $font-family: '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;
-//$font-family-monospace: 'D2 coding', monospace !default;
 $font-family-monospace: monospace !default;
-//$line-height: 1.4em !default;
 $line-height: 1.5em !default;
 
 $z-index-toast: 9999 !default;

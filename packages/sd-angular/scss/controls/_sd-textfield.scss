@@ -37,7 +37,6 @@ sd-textfield {
 
     &:disabled {
       background: get($theme-color, grey, lightest) !important;
-      //background: $bg-color;
       color: get($text-color, light);
     }
 
@@ -72,7 +71,6 @@ sd-textfield {
     > textarea {
       display: block;
       border: none;
-      //background: get($theme-color, secondary, lightest);
     }
 
     > textarea {

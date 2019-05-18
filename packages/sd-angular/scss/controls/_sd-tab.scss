@@ -20,9 +20,7 @@ sd-tab-item {
   }
 
   &[sd-selected=true] {
-    //background: get($theme-color, primary, default);
     background: white;
     border-color: get($theme-color, grey, lighter);
-    //color: get($text-reverse-color, default);
   }
 }

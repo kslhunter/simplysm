@@ -19,12 +19,6 @@ sd-form {
 
       > sd-form-item {
         display: inline-block;
-        //margin-bottom: get($gap, sm);
-        //margin-right: get($gap, default);
-        //
-        //&:last-child {
-        //  margin-right: 0;
-        //}
 
         > label {
           display: inline-block;
@@ -58,11 +52,6 @@ sd-form {
 
 sd-form-item {
   display: block;
-  //margin-bottom: get($gap, default);
-  //
-  //&:last-child {
-  //  margin-bottom: 0;
-  //}
 
   & > label {
     display: block;

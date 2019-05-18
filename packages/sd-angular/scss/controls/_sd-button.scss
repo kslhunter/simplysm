@@ -11,11 +11,8 @@ sd-button {
     color: get($theme-color, primary, default);
     border-radius: 3px;
     border-color: get($theme-color, primary, default);
-    /*border: 1px solid transparent;*/
-    //transition: background .1s ease-in;
 
     &:hover {
-      //transition: background .1s ease-out;
       background: get($theme-color, grey, lightest);
     }
 
@@ -25,9 +22,7 @@ sd-button {
     }
 
     &:active {
-      //transition: background .1s ease-out;
       background: get($theme-color, grey, lighter);
-      //background: get($trans-color, dark);
     }
 
     &:disabled {

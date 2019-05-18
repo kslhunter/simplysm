@@ -60,10 +60,6 @@ sd-toast-container,
 }
 
 @keyframes _sd-toast-show {
-  //from {
-  //  $left-calc: calc(get($gap, lg) - 100%);
-  //  transform: translateX($left-calc);
-  //}
   to {
     transform: none;
   }

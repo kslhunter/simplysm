@@ -2,64 +2,6 @@
   @each $key1, $val1 in $val {
     .sd-background-#{$key}-#{$key1} {
       background: $val1 !important;
-
-      //@if $key1 != lighter and $key1 != lightest {
-      //  color: get($text-reverse-color, default);
-      //
-      //  a {
-      //    color: get($text-reverse-color, dark);
-      //
-      //    &:hover,
-      //    &:focus {
-      //      color: get($text-reverse-color, default);
-      //    }
-      //  }
-      //
-      //  sd-textfield > input {
-      //    background: get($trans-color, light) !important;
-      //    color: get($text-reverse-color, default) !important;
-      //    border-color: get($trans-color, light) !important;
-      //  }
-      //
-      //  sd-list-item[sd-header=true] > label {
-      //    color: get($text-reverse-color, dark) !important;
-      //  }
-      //
-      //  sd-list-item > ._child > ._child-content {
-      //    background: rgba(0, 0, 0, .2);
-      //
-      //    sd-list-item > label {
-      //      opacity: .8;
-      //
-      //      &:hover {
-      //        opacity: 1;
-      //      }
-      //    }
-      //  }
-      //
-      //  sd-checkbox {
-      //    > label {
-      //      color: get($text-reverse-color, default) !important;
-      //
-      //      > ._indicator_rect {
-      //        background: get($trans-color, light) !important;
-      //        border-color: get($trans-color, light) !important;
-      //      }
-      //
-      //      > ._indicator {
-      //        color: get($text-reverse-color, default) !important;
-      //      }
-      //    }
-      //
-      //    &[sd-radio=true] {
-      //      > label {
-      //        > ._indicator > div {
-      //          background: get($text-reverse-color, default) !important;
-      //        }
-      //      }
-      //    }
-      //  }
-      //}
     }
   }
 }

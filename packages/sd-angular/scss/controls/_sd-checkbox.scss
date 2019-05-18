@@ -29,16 +29,13 @@ sd-checkbox {
       width: $size;
       height: $size;
       vertical-align: top;
-      //font-size: 16px;
       font-size: get($font-size, default);
-      //margin-left: -1px;
       text-indent: 1px;
     }
 
     > ._content {
       display: inline-block;
       vertical-align: top;
-      //text-indent: get($gap, xs);
       text-indent: get($gap, sm);
       > * {
         text-indent: 0;
@@ -46,7 +43,6 @@ sd-checkbox {
     }
 
     > input:disabled + ._indicator_rect {
-      //background: $bg-color !important;
       background: get($theme-color, grey, lightest) !important;
     }
 
