@@ -38,14 +38,14 @@ import {ResizeEvent} from "..";
             </div>
             <div class="_col" *ngFor="let headerGroup of fixedHeaderGroups; trackBy: trackByIndexFn"
                  [style.width.px]="headerGroup.width">
-              {{ headerGroup.header }}
+              <pre>{{ headerGroup.header }}</pre>
               <div class="_border"></div>
             </div>
           </div>
           <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
             <div class="_col" *ngFor="let headerGroup of nonFixedHeaderGroups; trackBy: trackByIndexFn"
                  [style.width.px]="headerGroup.width">
-              {{ headerGroup.header }}
+              <pre>{{ headerGroup.header }}</pre>
               <div class="_border"></div>
             </div>
           </div>
@@ -60,7 +60,7 @@ import {ResizeEvent} from "..";
                  [attr.col-index]="getIndex(columnControl)"
                  [attr.title]="columnControl.help"
                  [attr.sd-header]="columnControl.header">
-              {{ columnControl.header && columnControl.header!.split(".").last() }}
+              <pre>{{ columnControl.header && columnControl.header!.split(".").last() }}</pre>
               <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
                    (mousedown)="onHeadBorderMousedown($event)"></div>
             </div>
@@ -71,7 +71,7 @@ import {ResizeEvent} from "..";
                  [attr.col-index]="getIndex(columnControl)"
                  [attr.title]="columnControl.help"
                  [attr.sd-header]="columnControl.header">
-              {{ columnControl.header && columnControl.header.split(".").last() }}
+              <pre>{{ columnControl.header && columnControl.header.split(".").last() }}</pre>
               <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
                    (mousedown)="onHeadBorderMousedown($event)"></div>
             </div>

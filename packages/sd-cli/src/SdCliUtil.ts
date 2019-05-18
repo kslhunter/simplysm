@@ -30,6 +30,7 @@ export class SdCliUtil {
           }
         }
       }
+
       for (const optKey of Object.keys(config.packages[packageKey]).filter(item => item.startsWith("@"))) {
         delete config.packages[packageKey][optKey];
       }
