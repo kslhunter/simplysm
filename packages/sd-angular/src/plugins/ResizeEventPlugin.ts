@@ -50,7 +50,7 @@ export class ResizeEventPlugin {
             handler(event as any);
           });
         }
-      }, 100);
+      }, 1000);
 
       return () => {
         window.clearTimeout(timeout);

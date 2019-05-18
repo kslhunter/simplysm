@@ -133,7 +133,8 @@ sd-sidebar {
 sd-sidebar-brand {
   display: block;
   height: $topbar-height;
-  padding: get($gap, default);
+  padding: get($gap, sm) get($gap, default);
+  border-bottom: 2px solid rgba(0, 0, 0, .2);
 }
 
 sd-sidebar-user {

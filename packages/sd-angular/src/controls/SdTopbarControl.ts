@@ -1,5 +1,6 @@
-import {ChangeDetectionStrategy, Component, Injector} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ContentChildren, forwardRef, Injector, QueryList} from "@angular/core";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
+import {SdTopbarMenuControl} from "..";
 
 @Component({
   selector: "sd-topbar",
@@ -15,6 +16,9 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
     <ng-content></ng-content>`
 })
 export class SdTopbarControl {
+  @ContentChildren(forwardRef(() => SdTopbarMenuControl), {descendants: true})
+  public topbarMenuControls?: QueryList<SdTopbarMenuControl>;
+
   public get sidebarContainerControl(): SdSidebarContainerControl | undefined {
     const control = this._injector.get<SdSidebarContainerControl | null>(SdSidebarContainerControl, null); //tslint:disable-line:no-null-keyword
     if (control === null) {

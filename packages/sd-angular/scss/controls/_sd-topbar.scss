@@ -25,6 +25,28 @@ sd-topbar {
   line-height: $topbar-height;
   background: get($theme-color, primary, default);
   color: get($text-reverse-color, default);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  border-bottom: 2px solid rgba(0, 0, 0, .2);
+
+  &::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, .1);
+  }
+
+  &::-webkit-scrollbar-corner {
+    background-color: rgba(0, 0, 0, .1);
+  }
+
+  &::-webkit-scrollbar {
+    width: get($gap, sm);
+    height: get($gap, sm);
+    background-color: rgba(0, 0, 0, 0);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, .2);
+  }
 
   > * {
     display: inline-block;
@@ -67,6 +89,11 @@ sd-topbar-menu {
   user-select: none;
   color: rgba(255, 255, 255, .7);
   font-weight: bold;
+
+  > ._icon,
+  > ._content {
+    display: inline;
+  }
 
   &:hover {
     background: rgba(0, 0, 0, 0.2);
