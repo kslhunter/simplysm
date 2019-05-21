@@ -14,6 +14,7 @@ import {NextHandleFunction} from "@simplysm/sd-service";
 import {SdWebpackWriteFilePlugin} from "./SdWebpackWriteFilePlugin";
 import {SdCliUtil} from "./SdCliUtil";
 import {ISdPackageConfig} from "./commons";
+import {AngularCompilerPlugin} from "@ngtools/webpack";
 
 export class SdPackageBuilder extends events.EventEmitter {
   private readonly _projectNpmConfig: any;
@@ -140,13 +141,17 @@ export class SdPackageBuilder extends events.EventEmitter {
           test: /\.js$/,
           parser: {system: true}
         },
-        {
+        /*{
           test: /\.ts$/,
           exclude: /node_modules/,
           loaders: [
             eval(`require.resolve("./ts-build-loader")`), //tslint:disable-line:no-eval
             "angular-router-loader"
           ]
+        },*/
+        {
+          test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+          loader: "@ngtools/webpack"
         },
         {
           test: /\.scss$/,
@@ -181,6 +186,13 @@ export class SdPackageBuilder extends events.EventEmitter {
         new HtmlWebpackPlugin({
           template: path.resolve(__dirname, "../lib/index.ejs"),
           BASE_HREF: `/${this._packageKey}/`
+        }),
+        new AngularCompilerPlugin({
+          tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
+          entryModule: path.resolve(this._contextPath, "src", "app.module") + "#AppModule",
+          sourceMap: false,
+          forkTypeChecker: false,
+          skipCodeGeneration: true
         })
       ]);
     }
