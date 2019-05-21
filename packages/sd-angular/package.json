@@ -31,5 +31,9 @@
     "rxjs": "^6.5.1",
     "core-js": "^2.6.5",
     "zone.js": "^0.8.29"
+  },
+  "devDependencies": {
+    "@types/ws": "^6.0.1",
+    "@types/nodemailer": "^4.6.8"
   }
 }

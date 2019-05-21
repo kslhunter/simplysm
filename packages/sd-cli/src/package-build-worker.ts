@@ -1,6 +1,6 @@
-import {ISdWorkerMessage} from "./commons";
-import {SdPackageChecker} from "./SdPackageChecker";
-import {SdPackageLinter} from "./SdPackageLinter";
+import {ISdWorkerMessage} from "./commons/interfaces";
+import {SdPackageChecker} from "./builders/SdPackageChecker";
+import {SdPackageLinter} from "./builders/SdPackageLinter";
 import {SdPackageBuilder} from "./SdPackageBuilder";
 
 const type = process.argv[2] as "build" | "check" | "lint";

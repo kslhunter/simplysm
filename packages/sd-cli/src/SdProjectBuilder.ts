@@ -4,12 +4,12 @@ import * as fs from "fs-extra";
 import * as ts from "typescript";
 import * as glob from "glob";
 import * as child_process from "child_process";
-import {ISdProjectConfig, ISdWorkerMessage} from "./commons";
+import {ISdProjectConfig, ISdWorkerMessage} from "./commons/interfaces";
 import * as os from "os";
 import * as semver from "semver";
 import {NextHandleFunction, SdServiceServer} from "@simplysm/sd-service";
 import {SdPackageBuilder} from "./SdPackageBuilder";
-import {SdCliUtil} from "./SdCliUtil";
+import {SdCliUtil} from "./commons/SdCliUtil";
 
 export class SdProjectBuilder {
   private readonly _serverMap = new Map<string, {

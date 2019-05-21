@@ -6,14 +6,14 @@ import * as ts from "typescript";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as webpackNodeExternals from "webpack-node-externals";
-import {SdWebpackTimeFixPlugin} from "./SdWebpackTimeFixPlugin";
+import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import {NextHandleFunction} from "@simplysm/sd-service";
-import {SdWebpackWriteFilePlugin} from "./SdWebpackWriteFilePlugin";
-import {SdCliUtil} from "./SdCliUtil";
-import {ISdPackageConfig} from "./commons";
+import {SdWebpackWriteFilePlugin} from "./plugins/SdWebpackWriteFilePlugin";
+import {SdCliUtil} from "./commons/SdCliUtil";
+import {ISdPackageConfig} from "./commons/interfaces";
 import {AngularCompilerPlugin} from "@ngtools/webpack";
 
 export class SdPackageBuilder extends events.EventEmitter {
@@ -189,10 +189,12 @@ export class SdPackageBuilder extends events.EventEmitter {
         }),
         new AngularCompilerPlugin({
           tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
-          entryModule: path.resolve(this._contextPath, "src", "app.module") + "#AppModule",
-          sourceMap: false,
-          forkTypeChecker: false,
-          skipCodeGeneration: true
+          entryModule: path.resolve(this._contextPath, "src", "AppModule") + "#AppModule",
+          basePath: process.cwd(),
+          compilerOptions: {
+            ...this._parsedTsConfig.options,
+            disableTypeScriptVersionCheck: true
+          }
         })
       ]);
     }

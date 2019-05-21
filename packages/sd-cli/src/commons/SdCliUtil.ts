@@ -1,4 +1,4 @@
-import {ISdProjectConfig} from "./commons";
+import {ISdProjectConfig} from "./interfaces";
 import * as fs from "fs-extra";
 import * as path from "path";
 
