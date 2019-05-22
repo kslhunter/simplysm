@@ -81,7 +81,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
         <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
           <div class="_col _first-col"
                (click)="onFirstColClick($event)">
-            <sd-icon [icon]="'arrow-right'" *ngIf="selectable === true"
+            <sd-icon [icon]="'arrow-right'" *ngIf="selectable === true || selectable === 'manual'"
                      [ngClass]="{'sd-text-color-primary-default': selectedItem === item, 'sd-text-color-grey-default': !selectedItem !== item}"></sd-icon>
             <sd-icon [icon]="'arrow-right'" *ngIf="selectable === 'multi'"
                      [ngClass]="{'sd-text-color-primary-default': selectedItems.includes(item), 'sd-text-color-grey-default': !selectedItems.includes(item)}"></sd-icon>
@@ -319,6 +319,7 @@ export class SdSheetControl implements DoCheck, OnInit {
     const rowEl = targetEl.findParent("._row");
     if (rowEl) {
       const bodyEl = rowEl.parentElement as Element;
+
       const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
       const selectedItem = this.items![rowIndex];
 

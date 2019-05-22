@@ -79,7 +79,7 @@ export class ExcelCellStyle {
     this._ec.cellData.$.s = newIndex;
   }
 
-  public get numberFormat(): "DateOnly" | "number" {
+  public get numberFormat(): "DateOnly" | "number" | "DateTime" {
     const styleData = this._getStyleData();
     if (!styleData || !styleData.$ || !styleData.$.numFmtId) {
       return "number";
@@ -90,6 +90,9 @@ export class ExcelCellStyle {
     else if (styleData.$.numFmtId === "14") {
       return "DateOnly";
     }
+    else if (styleData.$.numFmtId === "22") {
+      return "DateTime";
+    }
     else {
       return "number";
     }
@@ -98,7 +101,7 @@ export class ExcelCellStyle {
     }*/
   }
 
-  public set numberFormat(value: "DateOnly" | "number") {
+  public set numberFormat(value: "DateOnly" | "number" | "DateTime") {
     const newStyle = this._createNewStyle();
     newStyle.$ = newStyle.$ || {};
     newStyle.$.applyFont = 1;
@@ -107,6 +110,9 @@ export class ExcelCellStyle {
     }
     else if (value === "DateOnly") {
       newStyle.$.numFmtId = 14;
+    }
+    else if (value === "DateTime") {
+      newStyle.$.numFmtId = 22;
     }
     else {
       throw new Error("지원되지 않는 숫자포맷 입니다.");

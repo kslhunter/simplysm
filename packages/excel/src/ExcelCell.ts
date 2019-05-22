@@ -1,7 +1,7 @@
 import {ExcelWorksheet} from "./ExcelWorksheet";
 import {ExcelUtils} from "./utils/ExcelUtils";
 import {ExcelCellStyle} from "./ExcelCellStyle";
-import {DateOnly} from "@simplism/core";
+import {DateOnly, DateTime} from "@simplism/core";
 
 export class ExcelCell {
   public cellData: any;
@@ -37,6 +37,12 @@ export class ExcelCell {
       this.cellData.v = this.cellData.v || {};
       this.cellData.v._ = ExcelUtils.getTimeNumber(value);
     }
+    else if (value instanceof DateTime) {
+      delete this.cellData.$.t;
+      this.style.numberFormat = "DateTime";
+      this.cellData.v = this.cellData.v || {};
+      this.cellData.v._ = ExcelUtils.getTimeNumber(value);
+    }
     else {
       throw new Error("지원되지 않는 타입입니다: " + value);
     }
@@ -54,6 +60,9 @@ export class ExcelCell {
     }
     else if (this.cellData.$.t === undefined && this.style.numberFormat === "DateOnly") {
       return ExcelUtils.getDateOnly(Number(this.cellData.v[0]._ || this.cellData.v[0]));
+    }
+    else if (this.cellData.$.t === undefined && this.style.numberFormat === "DateTime") {
+      return ExcelUtils.getDateTime(Number(this.cellData.v[0]._ || this.cellData.v[0]));
     }
     else if (this.cellData.$.t === "s") {
       const sstIndex = Number(this.cellData.v[0]._ || this.cellData.v[0]);
