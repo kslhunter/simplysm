@@ -246,16 +246,6 @@ export class SdPackageBuilder extends events.EventEmitter {
     webpackConfig.mode = "production";
     webpackConfig.devtool = "source-map";
     webpackConfig.optimization!.noEmitOnErrors = true;
-    webpackConfig.optimization!.splitChunks = {
-      chunks: "all"
-    };
-    webpackConfig.optimization!.minimizer = [
-      new UglifyJsPlugin({
-        sourceMap: config.type === undefined,
-        cache: true,
-        parallel: true
-      })
-    ];
 
     if (config.type === undefined || config.type === "server") {
       webpackConfig.entry = this._getEntry();
@@ -266,7 +256,8 @@ export class SdPackageBuilder extends events.EventEmitter {
         clientsClaim: true,
         skipWaiting: true
       }));
-      /*webpackConfig.optimization!.splitChunks = {
+      /*
+      webpackConfig.optimization!.splitChunks = {
         cacheGroups: {
           vendor: {
             test: /[\\/]node_modules[\\/](?!@simplysm)/,
@@ -281,22 +272,35 @@ export class SdPackageBuilder extends events.EventEmitter {
             enforce: true
           }
         }
-      };*/
+      };
+      */
     }
 
     // '.configs.json'파일 생성
-    webpackConfig.plugins!.push(
-      new SdWebpackWriteFilePlugin([
-        {
-          path: path.resolve(this._distPath, ".configs.json"),
-          content: async () => {
-            const currProjectConfig = await SdCliUtil.getConfigObjAsync("production", this._options);
-            const currConfig = currProjectConfig.packages[this._packageKey];
-            return JSON.stringify(currConfig.configs, undefined, 2);
+    if (config.type !== undefined) {
+      webpackConfig.optimization!.splitChunks = {
+        chunks: "all"
+      };
+      webpackConfig.optimization!.minimizer = [
+        new UglifyJsPlugin({
+          sourceMap: false,
+          cache: true,
+          parallel: true
+        })
+      ];
+      webpackConfig.plugins!.push(
+        new SdWebpackWriteFilePlugin([
+          {
+            path: path.resolve(this._distPath, ".configs.json"),
+            content: async () => {
+              const currProjectConfig = await SdCliUtil.getConfigObjAsync("production", this._options);
+              const currConfig = currProjectConfig.packages[this._packageKey];
+              return JSON.stringify(currConfig.configs, undefined, 2);
+            }
           }
-        }
-      ])
-    );
+        ])
+      );
+    }
 
     // 서버일때, 'pm2.json' 파일 생성
     if (config.type === "server") {
