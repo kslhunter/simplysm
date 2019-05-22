@@ -65,8 +65,10 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     this._controlEl = this._el.findAll("> ._sd-dropdown-control")[0] as HTMLElement;
     this._dropdownEl = this._el.findAll("> sd-dropdown-popup")[0] as HTMLElement;
 
-    this._controlEl.addEventListener("focus", this.focusEventHandler, true);
+    // this._controlEl.addEventListener("focus", this.focusEventHandler, true);
     this._controlEl.addEventListener("blur", this.blurEventHandler, true);
+    this._controlEl.addEventListener("click", this.clickEventHandler, true);
+    this._controlEl.addEventListener("keydown", this.keydownEventHandler, true);
 
     this._dropdownEl.remove();
 
@@ -168,8 +170,28 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     }
   };
 
-  public focusEventHandler = (event: FocusEvent) => {
-    this.openPopup();
+  public clickEventHandler = (event: MouseEvent) => {
+    if (this._isOpen) {
+      this.closePopup();
+    }
+    else {
+      this.openPopup();
+    }
+  };
+
+  public keydownEventHandler = (event: KeyboardEvent) => {
+    if (!event.ctrlKey && !event.altKey && event.key === "ArrowDown") {
+      this.openPopup();
+    }
+
+    if (!event.ctrlKey && !event.altKey && event.key === " ") {
+      if (this._isOpen) {
+        this.closePopup();
+      }
+      else {
+        this.openPopup();
+      }
+    }
   };
 
   public blurEventHandler = (event: FocusEvent) => {

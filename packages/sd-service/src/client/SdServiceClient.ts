@@ -30,7 +30,7 @@ export class SdServiceClient {
       }
 
       // @ts-ignore
-      this._ws = new WebSocket(`ws://${this._host || location.hostname}:${this._port || location.port}`);
+      this._ws = new WebSocket(`${location.protocol.startsWith("https") ? "wss" : "ws"}://${this._host || location.hostname}:${this._port || location.port}`);
 
       this._ws.onopen = () => {
         // @ts-ignore

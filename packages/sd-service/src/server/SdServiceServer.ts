@@ -14,11 +14,12 @@ import {SdSmtpClientService} from "./services/SdSmtpClientService";
 import {SdCryptoService} from "./services/SdCryptoService";
 import {NextHandleFunction} from "./commons";
 import {SdOrmService} from "./services/SdOrmService";
+import * as https from "https";
 
 export class SdServiceServer extends EventEmitter {
   private readonly _logger = new Logger("@simplysm/sd-service", "SdServiceServer");
 
-  private _httpServer?: http.Server;
+  private _httpServer?: http.Server | https.Server;
   private _wsServer?: WebSocket.Server;
   private _wsConnections: SdServiceServerConnection[] = [];
   private _httpConnections: net.Socket[] = [];
@@ -36,7 +37,8 @@ export class SdServiceServer extends EventEmitter {
 
   public constructor(public port: number,
                      public services: Type<SdServiceBase>[],
-                     public rootPath: string) {
+                     public rootPath: string,
+                     private readonly _ssl?: string) {
     super();
   }
 
@@ -46,7 +48,12 @@ export class SdServiceServer extends EventEmitter {
     }
 
     await new Promise<void>(async (resolve, reject) => {
-      this._httpServer = http.createServer();
+      this._httpServer = this._ssl
+        ? https.createServer({
+          pfx: await fs.readFile(path.resolve(process.cwd(), `ssl/${this._ssl}.pfx`)),
+          passphrase: await fs.readFile(path.resolve(process.cwd(), `ssl/${this._ssl}.pwd`), "utf-8")
+        })
+        : http.createServer();
 
       this._wsServer = new WebSocket.Server({
         server: this._httpServer
