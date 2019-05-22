@@ -14,7 +14,7 @@ import {NextHandleFunction} from "@simplysm/sd-service";
 import {SdWebpackWriteFilePlugin} from "./plugins/SdWebpackWriteFilePlugin";
 import {SdCliUtil} from "./commons/SdCliUtil";
 import {ISdPackageConfig} from "./commons/interfaces";
-import * as UglifyJsPlugin from "uglifyjs-webpack-plugin";
+import * as TerserPlugin from "terser-webpack-plugin";
 import * as WorkboxPlugin from "workbox-webpack-plugin";
 
 export class SdPackageBuilder extends events.EventEmitter {
@@ -252,10 +252,6 @@ export class SdPackageBuilder extends events.EventEmitter {
     }
     else {
       webpackConfig.entry = path.resolve(__dirname, "../lib/main.js");
-      webpackConfig.plugins!.push(new WorkboxPlugin.GenerateSW({
-        clientsClaim: true,
-        skipWaiting: true
-      }));
       /*
       webpackConfig.optimization!.splitChunks = {
         cacheGroups: {
@@ -276,18 +272,40 @@ export class SdPackageBuilder extends events.EventEmitter {
       */
     }
 
-    // '.configs.json'파일 생성
     if (config.type !== undefined) {
+      // webpackConfig.optimization!.runtimeChunk = "single";
       webpackConfig.optimization!.splitChunks = {
-        chunks: "all"
+        chunks: "all"/*,
+        maxInitialRequests: Infinity,
+        minSize: 0,
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: (module: any) => {
+              const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+              return `npm.${packageName.replace("", "")}`;
+            }
+          }
+        }*/
       };
       webpackConfig.optimization!.minimizer = [
-        new UglifyJsPlugin({
+        new TerserPlugin({
           sourceMap: false,
           cache: true,
           parallel: true
         })
       ];
+    }
+
+    if (config.type !== undefined && config.type !== "server") {
+      webpackConfig.plugins!.push(new WorkboxPlugin.GenerateSW({
+        clientsClaim: true,
+        skipWaiting: true
+      }));
+    }
+
+    // '.configs.json'파일 생성
+    if (config.type !== undefined) {
       webpackConfig.plugins!.push(
         new SdWebpackWriteFilePlugin([
           {
