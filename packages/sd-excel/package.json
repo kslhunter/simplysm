@@ -7,6 +7,7 @@
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "sideEffects": false,
   "dependencies": {
     "jszip": "^3.2.1"
   },

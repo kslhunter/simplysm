@@ -179,7 +179,7 @@ const providers: Provider[] = [
   entryComponents: entryControls
 })
 export class SdAngularModule {
-  public static forRoot(): ModuleWithProviders {
+  public static forRoot(): ModuleWithProviders<SdAngularModule> {
     return {ngModule: SdAngularModule, providers};
   }
 }

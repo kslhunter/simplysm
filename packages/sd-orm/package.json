@@ -7,6 +7,7 @@
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "sideEffects": false,
   "dependencies": {
     "tedious": "^6.1.1",
     "core-js": "^2.6.5"

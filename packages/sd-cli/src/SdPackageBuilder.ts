@@ -14,7 +14,8 @@ import {NextHandleFunction} from "@simplysm/sd-service";
 import {SdWebpackWriteFilePlugin} from "./plugins/SdWebpackWriteFilePlugin";
 import {SdCliUtil} from "./commons/SdCliUtil";
 import {ISdPackageConfig} from "./commons/interfaces";
-import {AngularCompilerPlugin} from "@ngtools/webpack";
+import * as UglifyJsPlugin from "uglifyjs-webpack-plugin";
+import * as WorkboxPlugin from "workbox-webpack-plugin";
 
 export class SdPackageBuilder extends events.EventEmitter {
   private readonly _projectNpmConfig: any;
@@ -141,17 +142,13 @@ export class SdPackageBuilder extends events.EventEmitter {
           test: /\.js$/,
           parser: {system: true}
         },
-        /*{
+        {
           test: /\.ts$/,
           exclude: /node_modules/,
           loaders: [
             eval(`require.resolve("./ts-build-loader")`), //tslint:disable-line:no-eval
             "angular-router-loader"
           ]
-        },*/
-        {
-          test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
-          loader: "@ngtools/webpack"
         },
         {
           test: /\.scss$/,
@@ -178,23 +175,15 @@ export class SdPackageBuilder extends events.EventEmitter {
       ]);
 
       webpackConfig.plugins!.pushRange([
-        new webpack.ContextReplacementPlugin(
+        new webpack.ContextReplacementPlugin(/\@angular(\\|\/)core(\\|\/)/),
+        /*new webpack.ContextReplacementPlugin(
           /angular[\\/]core[\\/]fesm5/,
           path.resolve(this._contextPath, "src"),
           {}
-        ),
+        ),*/
         new HtmlWebpackPlugin({
           template: path.resolve(__dirname, "../lib/index.ejs"),
           BASE_HREF: `/${this._packageKey}/`
-        }),
-        new AngularCompilerPlugin({
-          tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
-          entryModule: path.resolve(this._contextPath, "src", "AppModule") + "#AppModule",
-          basePath: process.cwd(),
-          compilerOptions: {
-            ...this._parsedTsConfig.options,
-            disableTypeScriptVersionCheck: true
-          }
         })
       ]);
     }
@@ -257,14 +246,27 @@ export class SdPackageBuilder extends events.EventEmitter {
     webpackConfig.mode = "production";
     webpackConfig.devtool = "source-map";
     webpackConfig.optimization!.noEmitOnErrors = true;
-    webpackConfig.optimization!.minimize = false;
+    webpackConfig.optimization!.splitChunks = {
+      chunks: "all"
+    };
+    webpackConfig.optimization!.minimizer = [
+      new UglifyJsPlugin({
+        sourceMap: config.type === undefined,
+        cache: true,
+        parallel: true
+      })
+    ];
 
     if (config.type === undefined || config.type === "server") {
       webpackConfig.entry = this._getEntry();
     }
     else {
       webpackConfig.entry = path.resolve(__dirname, "../lib/main.js");
-      webpackConfig.optimization!.splitChunks = {
+      webpackConfig.plugins!.push(new WorkboxPlugin.GenerateSW({
+        clientsClaim: true,
+        skipWaiting: true
+      }));
+      /*webpackConfig.optimization!.splitChunks = {
         cacheGroups: {
           vendor: {
             test: /[\\/]node_modules[\\/](?!@simplysm)/,
@@ -279,7 +281,7 @@ export class SdPackageBuilder extends events.EventEmitter {
             enforce: true
           }
         }
-      };
+      };*/
     }
 
     // '.configs.json'파일 생성
