@@ -244,38 +244,31 @@ export class SdPackageBuilder extends events.EventEmitter {
 
     const webpackConfig = this._getWebpackCommonConfig(config);
     webpackConfig.mode = "production";
-    webpackConfig.devtool = "source-map";
+    // webpackConfig.devtool = "source-map";
     webpackConfig.optimization!.noEmitOnErrors = true;
+    webpackConfig.optimization!.minimizer = [
+      new webpack.HashedModuleIdsPlugin(),
+      new TerserPlugin({
+        sourceMap: false,
+        cache: true,
+        parallel: true,
+        terserOptions: {
+          keep_fnames: true
+        }
+      })
+    ];
 
     if (config.type === undefined || config.type === "server") {
       webpackConfig.entry = this._getEntry();
     }
     else {
       webpackConfig.entry = path.resolve(__dirname, "../lib/main.js");
-      /*
-      webpackConfig.optimization!.splitChunks = {
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/](?!@simplysm)/,
-            name: "vendor",
-            chunks: "initial",
-            enforce: true
-          },
-          simplysm: {
-            test: /[\\/]node_modules[\\/]@simplysm/,
-            name: "simplysm",
-            chunks: "initial",
-            enforce: true
-          }
-        }
-      };
-      */
     }
 
-    if (config.type !== undefined) {
-      // webpackConfig.optimization!.runtimeChunk = "single";
+    if (config.type !== undefined && config.type !== "server") {
+      webpackConfig.optimization!.runtimeChunk = "single";
       webpackConfig.optimization!.splitChunks = {
-        chunks: "all"/*,
+        chunks: "all",
         maxInitialRequests: Infinity,
         minSize: 0,
         cacheGroups: {
@@ -283,18 +276,11 @@ export class SdPackageBuilder extends events.EventEmitter {
             test: /[\\/]node_modules[\\/]/,
             name: (module: any) => {
               const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
-              return `npm.${packageName.replace("", "")}`;
+              return `libs/${packageName.replace("@", "")}`;
             }
           }
-        }*/
+        }
       };
-      webpackConfig.optimization!.minimizer = [
-        new TerserPlugin({
-          sourceMap: false,
-          cache: true,
-          parallel: true
-        })
-      ];
     }
 
     if (config.type !== undefined && config.type !== "server") {
