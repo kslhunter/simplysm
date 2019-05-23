@@ -88,10 +88,17 @@ export class SdPackageBuilder extends events.EventEmitter {
             exclude: /node_modules[\\/](?!@simplysm)/
           },
           {
-            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx)$/,
+            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx|pfx)$/,
             loader: "file-loader",
             options: {
               name: "assets/[name].[ext]?[hash]"
+            }
+          },
+          {
+            test: /\.(pfx|crt|pem)$/,
+            loader: "file-loader",
+            options: {
+              name: "ssl/[name].[ext]?[hash]"
             }
           }
         ]

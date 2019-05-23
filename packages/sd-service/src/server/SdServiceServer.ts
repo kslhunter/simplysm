@@ -38,7 +38,7 @@ export class SdServiceServer extends EventEmitter {
   public constructor(public port: number,
                      public services: Type<SdServiceBase>[],
                      public rootPath: string,
-                     private readonly _ssl?: string) {
+                     private readonly _ssl?: { pfx: string; passphrase: string }) {
     super();
   }
 
@@ -50,8 +50,8 @@ export class SdServiceServer extends EventEmitter {
     await new Promise<void>(async (resolve, reject) => {
       this._httpServer = this._ssl
         ? https.createServer({
-          pfx: await fs.readFile(path.resolve(process.cwd(), `ssl/${this._ssl}.pfx`)),
-          passphrase: await fs.readFile(path.resolve(process.cwd(), `ssl/${this._ssl}.pwd`), "utf-8")
+          pfx: await fs.readFile(this._ssl.pfx),
+          passphrase: this._ssl.passphrase
         })
         : http.createServer();
 
