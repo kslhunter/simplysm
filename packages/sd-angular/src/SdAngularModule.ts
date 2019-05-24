@@ -73,6 +73,7 @@ import {SdCryptoServiceProvider} from "./providers/SdCryptoServiceProvider";
 import {SdOrmServiceProvider} from "./providers/SdOrmServiceProvider";
 import {SdSmtpClientServiceProvider} from "./providers/SdSmtpClientServiceProvider";
 import {SdWindowProvider} from "./providers/SdWindowProvider";
+import {ServiceWorkerModule} from "@angular/service-worker";
 
 const controls: Type<any>[] = [
   SdBusyContainerControl,
@@ -162,7 +163,8 @@ const providers: Provider[] = [
 @NgModule({
   imports: [
     CommonModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    ServiceWorkerModule.register("ngsw-worker.js", {enabled: process.env.NODE_ENV === "production"})
   ],
   exports: [
     ...controls,

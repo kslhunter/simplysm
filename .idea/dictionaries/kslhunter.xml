@@ -2,6 +2,7 @@
   <dictionary name="kslhunter">
     <words>
       <w>codelyzer</w>
+      <w>fnames</w>
       <w>middlewares</w>
       <w>ngls</w>
       <w>nodemailer</w>

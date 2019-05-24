@@ -25,6 +25,7 @@
     "@angular/platform-browser": "^7.2.14",
     "@angular/platform-browser-dynamic": "^7.2.14",
     "@angular/router": "^7.2.14",
+    "@angular/service-worker": "^7.2.15",
     "@simplysm/sd-core": "2.0.37",
     "@simplysm/sd-service": "2.0.37",
     "@simplysm/sd-orm": "2.0.37",

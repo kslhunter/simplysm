@@ -39,7 +39,7 @@ platformBrowserDynamic().bootstrapModule(AppModule)
       });
     }
 
-    if (process.env.NODE_ENV === "production") {
+    /*if (process.env.NODE_ENV === "production") {
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register('service-worker.js').then(registration => {
           console.log('SW registered: ', registration);
@@ -47,5 +47,5 @@ platformBrowserDynamic().bootstrapModule(AppModule)
           console.log('SW registration failed: ', registrationError);
         });
       }
-    }
+    }*/
   });

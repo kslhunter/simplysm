@@ -1,4 +1,3 @@
-import "@simplysm/sd-core";
 import * as os from "os";
 import * as events from "events";
 import * as webpack from "webpack";
@@ -15,7 +14,9 @@ import {SdWebpackWriteFilePlugin} from "./plugins/SdWebpackWriteFilePlugin";
 import {SdCliUtil} from "./commons/SdCliUtil";
 import {ISdPackageConfig} from "./commons/interfaces";
 import * as TerserPlugin from "terser-webpack-plugin";
-import * as WorkboxPlugin from "workbox-webpack-plugin";
+import {Generator} from "@angular/service-worker/config";
+import {JsonConvert} from "@simplysm/sd-core";
+import {NodeFilesystem} from "./service-worker/filesystem";
 
 export class SdPackageBuilder extends events.EventEmitter {
   private readonly _projectNpmConfig: any;
@@ -82,23 +83,10 @@ export class SdPackageBuilder extends events.EventEmitter {
       module: {
         rules: [
           {
-            enforce: "pre",
-            test: /\.js$/,
-            use: ["source-map-loader"],
-            exclude: /node_modules[\\/](?!@simplysm)/
-          },
-          {
-            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx|pfx)$/,
-            loader: "file-loader",
-            options: {
-              name: "assets/[name].[ext]?[hash]"
-            }
-          },
-          {
             test: /\.(pfx|crt|pem)$/,
             loader: "file-loader",
             options: {
-              name: "ssl/[name].[ext]?[hash]"
+              name: "ssl/[name].[ext]"
             }
           }
         ]
@@ -182,12 +170,7 @@ export class SdPackageBuilder extends events.EventEmitter {
       ]);
 
       webpackConfig.plugins!.pushRange([
-        new webpack.ContextReplacementPlugin(/\@angular(\\|\/)core(\\|\/)/),
-        /*new webpack.ContextReplacementPlugin(
-          /angular[\\/]core[\\/]fesm5/,
-          path.resolve(this._contextPath, "src"),
-          {}
-        ),*/
+        new webpack.ContextReplacementPlugin(/@angular([\\/])core([\\/])/),
         new HtmlWebpackPlugin({
           template: path.resolve(__dirname, "../lib/index.ejs"),
           BASE_HREF: `/${this._packageKey}/`
@@ -251,19 +234,17 @@ export class SdPackageBuilder extends events.EventEmitter {
 
     const webpackConfig = this._getWebpackCommonConfig(config);
     webpackConfig.mode = "production";
-    // webpackConfig.devtool = "source-map";
-    webpackConfig.optimization!.noEmitOnErrors = true;
-    webpackConfig.optimization!.minimizer = [
-      new webpack.HashedModuleIdsPlugin(),
-      new TerserPlugin({
-        sourceMap: false,
-        cache: true,
-        parallel: true,
-        terserOptions: {
-          keep_fnames: true
+    webpackConfig.module!.rules.pushRange([
+      {
+        test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?)$/,
+        loader: "file-loader",
+        options: {
+          name: "assets/[name].[ext]"
         }
-      })
-    ];
+      }
+    ]);
+
+    webpackConfig.optimization!.noEmitOnErrors = true;
 
     if (config.type === undefined || config.type === "server") {
       webpackConfig.entry = this._getEntry();
@@ -272,6 +253,45 @@ export class SdPackageBuilder extends events.EventEmitter {
       webpackConfig.entry = path.resolve(__dirname, "../lib/main.js");
     }
 
+
+    // optimization: library
+    if (config.type === undefined) {
+      webpackConfig.devtool = "source-map";
+      webpackConfig.module!.rules.push(
+        {
+          enforce: "pre",
+          test: /\.js$/,
+          use: ["source-map-loader"],
+          exclude: /node_modules[\\/](?!@simplysm)/
+        }
+      );
+      webpackConfig.optimization!.minimizer = [
+        new TerserPlugin({
+          sourceMap: true,
+          cache: true,
+          parallel: true,
+          terserOptions: {
+            keep_fnames: true
+          }
+        })
+      ];
+    }
+    // optimization: client/server
+    else {
+      webpackConfig.devtool = undefined;
+      webpackConfig.optimization!.minimizer = [
+        new TerserPlugin({
+          sourceMap: false,
+          cache: true,
+          parallel: true,
+          terserOptions: {
+            keep_fnames: true
+          }
+        })
+      ];
+    }
+
+    // optimization: client
     if (config.type !== undefined && config.type !== "server") {
       webpackConfig.optimization!.runtimeChunk = "single";
       webpackConfig.optimization!.splitChunks = {
@@ -288,13 +308,9 @@ export class SdPackageBuilder extends events.EventEmitter {
           }
         }
       };
-    }
-
-    if (config.type !== undefined && config.type !== "server") {
-      webpackConfig.plugins!.push(new WorkboxPlugin.GenerateSW({
-        clientsClaim: true,
-        skipWaiting: true
-      }));
+      webpackConfig.optimization!.minimizer.push(
+        new webpack.HashedModuleIdsPlugin()
+      );
     }
 
     // '.configs.json'파일 생성
@@ -363,6 +379,46 @@ export class SdPackageBuilder extends events.EventEmitter {
         resolve();
       });
     });
+
+    if (config.type !== undefined && config.type !== "server") {
+      const gen = new Generator(new NodeFilesystem(this._distPath), `/${this._packageKey}/`);
+
+      const control = await gen.process({
+        index: "/index.html",
+        assetGroups: [
+          {
+            "name": "app",
+            "installMode": "prefetch",
+            "resources": {
+              "files": [
+                "/favicon.ico",
+                "/index.html",
+                "/libs/*.js",
+                "/*.css",
+                "/*.js"
+              ]
+            }
+          },
+          {
+            "name": "assets",
+            "installMode": "lazy",
+            "updateMode": "prefetch",
+            "resources": {
+              "files": [
+                "/assets/**"
+              ]
+            }
+          }
+        ]
+      });
+
+      await fs.writeFile(path.resolve(this._distPath, "ngsw.json"), JsonConvert.stringify(control, {space: 2}));
+
+      await fs.copyFile(
+        path.resolve(process.cwd(), "node_modules", "@angular", "service-worker", "ngsw-worker.js"),
+        path.resolve(this._distPath, "ngsw-worker.js")
+      );
+    }
   }
 
   public async watchAsync(): Promise<NextHandleFunction[]> {
@@ -372,6 +428,22 @@ export class SdPackageBuilder extends events.EventEmitter {
     const webpackConfig = this._getWebpackCommonConfig(config);
     webpackConfig.mode = "development";
     webpackConfig.devtool = "cheap-module-source-map";
+    webpackConfig.module!.rules.pushRange([
+      {
+        enforce: "pre",
+        test: /\.js$/,
+        use: ["source-map-loader"],
+        exclude: /node_modules[\\/](?!@simplysm)/
+      },
+      {
+        test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?)$/,
+        loader: "file-loader",
+        options: {
+          name: "assets/[name].[ext]?[hash]"
+        }
+      }
+    ]);
+
     webpackConfig.output!.pathinfo = false;
     webpackConfig.plugins!.push(new SdWebpackTimeFixPlugin());
     webpackConfig.optimization!.removeAvailableModules = false;
