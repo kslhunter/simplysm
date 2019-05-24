@@ -7,7 +7,7 @@ import * as child_process from "child_process";
 import {ISdProjectConfig, ISdWorkerMessage} from "./commons/interfaces";
 import * as os from "os";
 import * as semver from "semver";
-import {NextHandleFunction, SdServiceServer} from "@simplysm/sd-service";
+import {NextHandleFunction, SdServiceClient, SdServiceServer} from "@simplysm/sd-service";
 import {SdPackageBuilder} from "./SdPackageBuilder";
 import {SdCliUtil} from "./commons/SdCliUtil";
 
@@ -51,7 +51,7 @@ export class SdProjectBuilder {
           localUpdateKey.replace(/([\/.*])/g, item => item === "/" ? "\\/" : item === "." ? "\\." : item === "*" ? "(.*)" : item)
         ))![1];
 
-        const targetLogger = new Logger("@simplysm/sd-cli", `[local-update] ${targetName}`);
+        const targetLogger = new Logger("@simplysm/sd-cli", `[local-update]\t${targetName}`);
 
         // > > 로컬 업데이트 설정에 따라, 가져올 소스 경로 추출
         const sourcePath = path.resolve(config.localUpdates![localUpdateKey].replace(/\*/g, targetName));
@@ -277,6 +277,8 @@ export class SdProjectBuilder {
 
     // 패키지정보별 병렬실행,
     await Promise.all(Object.keys(config.packages).map(async packageKey => {
+      const packageLogger = new Logger("@simplysm/sd-cli", `[publish]\t${packageKey}`);
+
       const packagePath = path.resolve(process.cwd(), "packages", packageKey);
       const packageNpmConfigPath = path.resolve(packagePath, "package.json");
       const packageNpmConfig = await fs.readJson(packageNpmConfigPath);
@@ -309,8 +311,62 @@ export class SdProjectBuilder {
       await fs.writeJson(packageNpmConfigPath, packageNpmConfig, {spaces: 2, EOL: os.EOL});
 
       // > 배포
-      if (config.packages[packageKey].publish === "npm") {
-        await ProcessManager.spawnAsync("yarn publish --access public", {cwd: packagePath});
+      if (config.packages[packageKey].publish) {
+        const publishConfig = config.packages[packageKey].publish!;
+
+        if (publishConfig === "npm") {
+          await ProcessManager.spawnAsync("yarn publish --access public", {cwd: packagePath, logger: packageLogger});
+        }
+        else if (publishConfig.type === "simplysm") {
+          const wsClient = new SdServiceClient(
+            publishConfig.port || (publishConfig.ssl ? 443 : 80),
+            publishConfig.host,
+            publishConfig.ssl
+          );
+          await wsClient.connectAsync();
+
+          // 결과 파일 업로드
+          const filePaths = await new Promise<string[]>((resolve, reject) => {
+            glob(path.resolve(packagePath, "dist", "**", "*"), (err, files) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+
+              resolve(files.filter(file => !fs.lstatSync(file).isDirectory()));
+            });
+          });
+
+          const uploadFileInfos: { total: number; current: number; filePath: string; targetPath: string }[] = [];
+          await Promise.all(filePaths.map(async filePath => {
+            const relativeFilePath = path.relative(path.resolve(packagePath, "dist"), filePath);
+            const targetPath = path.posix.join(publishConfig.path, relativeFilePath);
+
+            const fileSize = await wsClient.checkUploadFileSizeAsync(filePath, targetPath);
+
+            if (fileSize > 0) {
+              uploadFileInfos.push({
+                filePath,
+                targetPath,
+                total: fileSize,
+                current: 0
+              });
+            }
+          }));
+
+          const total = uploadFileInfos.sum(item => item.total)!;
+
+          await Promise.all(uploadFileInfos.map(async uploadFileInfo => {
+            await wsClient.uploadAsync(uploadFileInfo.filePath, uploadFileInfo.targetPath, progress => {
+              uploadFileInfo.current = progress.current;
+
+              const current = uploadFileInfos.sum(item => item.current)!;
+              packageLogger.log(`파일 업로드 : (${(Math.floor(current * 10000 / total) / 100).toFixed(2).padStart(6, " ")}%) ${current.toLocaleString()} / ${total.toLocaleString()}`);
+            }, 1000000);
+          }));
+
+          await wsClient.closeAsync();
+        }
       }
     }));
 

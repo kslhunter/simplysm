@@ -19,7 +19,7 @@ import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
 import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
 import {optional} from "@simplysm/sd-core";
-import {ResizeEvent} from "..";
+import {ResizeEvent} from "../commons/ResizeEvent";
 
 @Component({
   selector: "sd-sheet",
@@ -74,6 +74,29 @@ import {ResizeEvent} from "..";
               <pre>{{ columnControl.header && columnControl.header.split(".").last() }}</pre>
               <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
                    (mousedown)="onHeadBorderMousedown($event)"></div>
+            </div>
+          </div>
+        </div>
+        <div class="_row _summary" *ngIf="hasSummary">
+          <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
+            <div class="_col _first-col">
+              <div class="_border"></div>
+            </div>
+            <div class="_col sd-background-warning-lightest"
+                 *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
+                 [style.width.px]="getWidth(columnControl)">
+              <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"
+                           [ngTemplateOutletContext]="{items: items}"></ng-template>
+              <div class="_border"></div>
+            </div>
+          </div>
+          <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
+            <div class="_col sd-background-warning-lightest"
+                 *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
+                 [style.width.px]="getWidth(columnControl)">
+              <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"
+                           [ngTemplateOutletContext]="{items: items}"></ng-template>
+              <div class="_border"></div>
             </div>
           </div>
         </div>
@@ -247,6 +270,10 @@ export class SdSheetControl implements DoCheck, OnInit {
       + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default));
 
     return ((this.hasHeaderGroup ? (Math.floor(size * 2) + 2) : (Math.floor(size) + 1)) + 1) + "px";*/
+  }
+
+  public get hasSummary(): boolean {
+    return this.columnControls ? this.columnControls.some(item => !!item.summaryTemplateRef) : false;
   }
 
   public get hasHeaderGroup(): boolean {

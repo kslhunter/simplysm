@@ -10,7 +10,15 @@ export interface ISdProjectConfig {
 
 export interface ISdPackageConfig {
   type?: "server" | "web" | "none";
-  publish?: "npm";
+  publish?: "npm" | ISdSimplysmPublishConfig;
   server?: string;
   configs?: { [key: string]: any };
+}
+
+export interface ISdSimplysmPublishConfig {
+  type: "simplysm";
+  host: string;
+  port?: number;
+  path: string;
+  ssl?: boolean;
 }

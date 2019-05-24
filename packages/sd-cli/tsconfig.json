@@ -16,6 +16,12 @@
       ],
       "@simplysm/sd-service": [
         "../sd-service/src/index.ts"
+      ],
+      "@simplysm/sd-smtp-client": [
+        "../sd-smtp-client/src/index.ts"
+      ],
+      "@simplysm/sd-orm": [
+        "../sd-orm/src/index.ts"
       ]
     }
   },

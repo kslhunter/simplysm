@@ -31,4 +31,7 @@ export class SdSheetColumnControl {
 
   @ContentChild("cell")
   public cellTemplateRef?: TemplateRef<{ item: any; index: number }>;
+
+  @ContentChild("summary")
+  public summaryTemplateRef?: TemplateRef<{ items: any[] }>;
 }

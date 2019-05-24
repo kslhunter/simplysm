@@ -68,6 +68,11 @@ sd-sheet {
     }
   }
 
+  ._head ._summary ._col {
+    padding: 0;
+    user-select: auto;
+  }
+
   ._body ._col {
     background: white;
     border-right: 1px solid $border-color;

@@ -18,7 +18,8 @@ export class SdServiceClient {
   }
 
   public constructor(private readonly _port?: number,
-                     private readonly _host?: string) {
+                     private readonly _host?: string,
+                     private readonly _ssl?: boolean) {
   }
 
   public async connectAsync(): Promise<void> {
@@ -30,7 +31,7 @@ export class SdServiceClient {
       }
 
       // @ts-ignore
-      this._ws = new WebSocket(`${location.protocol.startsWith("https") ? "wss" : "ws"}://${this._host || location.hostname}:${this._port || location.port}`);
+      this._ws = new WebSocket(`${this._ssl ? "wss" : (location.protocol.startsWith("https") ? "wss" : "ws")}://${this._host || location.hostname}:${this._port || location.port}`);
 
       this._ws.onopen = () => {
         // @ts-ignore
