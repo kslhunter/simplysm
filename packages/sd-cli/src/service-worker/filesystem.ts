@@ -1,13 +1,13 @@
-import {Filesystem} from '@angular/service-worker/config';
-import {sha1Binary} from './sha1';
+import {Filesystem} from "@angular/service-worker/config";
+import {sha1Binary} from "./sha1";
 import * as fs from "fs";
 import * as path from "path";
 
 export class NodeFilesystem implements Filesystem {
-  constructor(private base: string) {
+  public constructor(private readonly _base: string) {
   }
 
-  async list(_path: string): Promise<string[]> {
+  public async list(_path: string): Promise<string[]> {
     const dir = this.canonical(_path);
     const entries = fs.readdirSync(dir).map(
       (entry: string) => ({entry, stats: fs.statSync(path.join(dir, entry))}));
@@ -22,23 +22,23 @@ export class NodeFilesystem implements Filesystem {
         Promise.resolve(files));
   }
 
-  async read(_path: string): Promise<string> {
+  public async read(_path: string): Promise<string> {
     const file = this.canonical(_path);
     return fs.readFileSync(file).toString();
   }
 
-  async hash(_path: string): Promise<string> {
+  public async hash(_path: string): Promise<string> {
     const file = this.canonical(_path);
     const contents: Buffer = fs.readFileSync(file);
     return sha1Binary(contents as any as ArrayBuffer);
   }
 
-  async write(_path: string, contents: string): Promise<void> {
+  public async write(_path: string, contents: string): Promise<void> {
     const file = this.canonical(_path);
     fs.writeFileSync(file, contents);
   }
 
   private canonical(_path: string): string {
-    return path.posix.join(this.base, _path);
+    return path.posix.join(this._base, _path);
   }
 }

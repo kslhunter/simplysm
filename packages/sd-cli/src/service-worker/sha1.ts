@@ -1,3 +1,8 @@
+enum Endian {
+  Little,
+  Big
+}
+
 export function sha1Binary(buffer: ArrayBuffer): string {
   const words32 = arrayBufferToWords32(buffer, Endian.Big);
   return _sha1(words32, buffer.byteLength * 8);
@@ -5,7 +10,7 @@ export function sha1Binary(buffer: ArrayBuffer): string {
 
 function _sha1(words32: number[], len: number): string {
   const w = new Array(80);
-  let [a, b, c, d, e]: number[] = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0];
+  let [a, b, c, d, e]: number[] = [0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0];
 
   words32[len >> 5] |= 0x80 << (24 - len % 32);
   words32[((len + 64 >> 9) << 4) + 15] = len;
@@ -21,7 +26,10 @@ function _sha1(words32: number[], len: number): string {
         w[j] = rol32(w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16], 1);
       }
 
-      const [f, k] = fk(j, b, c, d);
+      const fkValues = fk(j, b, c, d);
+      const f = fkValues[0];
+      const k = fkValues[1];
+
       const temp = [rol32(a, 5), f, e, k, w[j]].reduce(add32);
       [e, d, c, b, a] = [d, c, rol32(b, 30), a, temp];
     }
@@ -37,9 +45,9 @@ function add32(a: number, b: number): number {
 }
 
 function add32to64(a: number, b: number): [number, number] {
-  const low = (a & 0xffff) + (b & 0xffff);
+  const low = (a & 0xFFFF) + (b & 0xFFFF);
   const high = (a >>> 16) + (b >>> 16) + (low >>> 16);
-  return [high >>> 16, (high << 16) | (low & 0xffff)];
+  return [high >>> 16, (high << 16) | (low & 0xFFFF)];
 }
 
 // Rotate a 32b number left `count` position
@@ -47,25 +55,20 @@ function rol32(a: number, count: number): number {
   return (a << count) | (a >>> (32 - count));
 }
 
-enum Endian {
-  Little,
-  Big,
-}
-
 function fk(index: number, b: number, c: number, d: number): [number, number] {
   if (index < 20) {
-    return [(b & c) | (~b & d), 0x5a827999];
+    return [(b & c) | (~b & d), 0x5A827999];
   }
 
   if (index < 40) {
-    return [b ^ c ^ d, 0x6ed9eba1];
+    return [b ^ c ^ d, 0x6ED9EBA1];
   }
 
   if (index < 60) {
-    return [(b & c) | (b & d) | (c & d), 0x8f1bbcdc];
+    return [(b & c) | (b & d) | (c & d), 0x8F1BBCDC];
   }
 
-  return [b ^ c ^ d, 0xca62c1d6];
+  return [b ^ c ^ d, 0xCA62C1D6];
 }
 
 function arrayBufferToWords32(buffer: ArrayBuffer, endian: Endian): number[] {
@@ -78,11 +81,11 @@ function arrayBufferToWords32(buffer: ArrayBuffer, endian: Endian): number[] {
 }
 
 function byteAt(str: string | Uint8Array, index: number): number {
-  if (typeof str === 'string') {
-    return index >= str.length ? 0 : str.charCodeAt(index) & 0xff;
+  if (typeof str === "string") {
+    return index >= str.length ? 0 : str.charCodeAt(index) & 0xFF;
   }
   else {
-    return index >= str.byteLength ? 0 : str[index] & 0xff;
+    return index >= str.byteLength ? 0 : str[index] & 0xFF;
   }
 }
 
@@ -102,22 +105,22 @@ function wordAt(str: string | Uint8Array, index: number, endian: Endian): number
 }
 
 function words32ToByteString(words32: number[]): string {
-  return words32.reduce((str, word) => str + word32ToByteString(word), '');
+  return words32.reduce((str, word) => str + word32ToByteString(word), "");
 }
 
 function word32ToByteString(word: number): string {
-  let str = '';
+  let str = "";
   for (let i = 0; i < 4; i++) {
-    str += String.fromCharCode((word >>> 8 * (3 - i)) & 0xff);
+    str += String.fromCharCode((word >>> 8 * (3 - i)) & 0xFF);
   }
   return str;
 }
 
 function byteStringToHexString(str: string): string {
-  let hex: string = '';
+  let hex = "";
   for (let i = 0; i < str.length; i++) {
     const b = byteAt(str, i);
-    hex += (b >>> 4).toString(16) + (b & 0x0f).toString(16);
+    hex += (b >>> 4).toString(16) + (b & 0x0F).toString(16);
   }
   return hex.toLowerCase();
 }
