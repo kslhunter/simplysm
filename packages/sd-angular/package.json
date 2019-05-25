@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular",
-  "version": "2.0.41",
+  "version": "2.0.42",
   "description": "심플리즘 패키지 - Angular",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -26,10 +26,10 @@
     "@angular/platform-browser": "^7.2.14",
     "@angular/platform-browser-dynamic": "^7.2.14",
     "@angular/router": "^7.2.14",
-    "@simplysm/sd-core": "2.0.41",
-    "@simplysm/sd-service": "2.0.41",
-    "@simplysm/sd-orm": "2.0.41",
-    "@simplysm/sd-smtp-client": "2.0.41",
+    "@simplysm/sd-core": "2.0.42",
+    "@simplysm/sd-service": "2.0.42",
+    "@simplysm/sd-orm": "2.0.42",
+    "@simplysm/sd-smtp-client": "2.0.42",
     "rxjs": "^6.5.1",
     "core-js": "^2.6.5",
     "zone.js": "^0.8.29"
