@@ -380,7 +380,8 @@ export class SdProjectBuilder {
   private async _runPackageBuildWorkerAsync(type: string, packageKey: string, options?: string, watch?: boolean): Promise<child_process.ChildProcess> {
     const logger = new Logger("@simplysm/sd-cli", `[${type}]\t${packageKey}`);
 
-    return await new Promise<child_process.ChildProcess>((resolve, reject) => {
+    let hasError = false;
+    const wk = await new Promise<child_process.ChildProcess>((resolve, reject) => {
       const execArgv = Object.clone(process.execArgv);
       if (execArgv.some(item => item.startsWith("--logfile"))) {
         const index = execArgv.indexOf(execArgv.single(item => item.startsWith("--logfile"))!);
@@ -419,7 +420,7 @@ export class SdProjectBuilder {
               break;
             case "error":
               logger.error(`오류가 발생했습니다.`, message.message);
-              reject(new Error(`오류가 발생했습니다.(${type}, ${packageKey})${message.message ? os.EOL + message.message : ""}`));
+              hasError = true;
               break;
             default:
               logger.error(`처리되지 않은 메시지가 출력되었습니다.(${message.type})`);
@@ -432,6 +433,12 @@ export class SdProjectBuilder {
         }
       });
     });
+
+    if (hasError) {
+      throw new Error(`오류가 발생했습니다.(${type}, ${packageKey})`);
+    }
+
+    return wk;
   }
 
   private async _runClientWatcherAsync(packageKey: string, options?: string[]): Promise<void> {

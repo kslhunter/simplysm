@@ -6,6 +6,7 @@
   "repository": "gihub:kslhunter/simplysm",
   "license": "MIT",
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
@@ -25,7 +26,6 @@
     "@angular/platform-browser": "^7.2.14",
     "@angular/platform-browser-dynamic": "^7.2.14",
     "@angular/router": "^7.2.14",
-    "@angular/service-worker": "^7.2.15",
     "@simplysm/sd-core": "2.0.38",
     "@simplysm/sd-service": "2.0.38",
     "@simplysm/sd-orm": "2.0.38",

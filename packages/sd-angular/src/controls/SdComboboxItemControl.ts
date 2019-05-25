@@ -21,7 +21,7 @@ export class SdComboboxItemControl {
   }
 
   @HostListener("click", ["$event"])
-  public onClick(): void {
+  public onClick(event: MouseEvent): void {
     this._comboboxControl.setValueFromItemControl(this.value, this);
   }
 }

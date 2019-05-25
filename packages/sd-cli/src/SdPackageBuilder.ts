@@ -17,6 +17,7 @@ import * as TerserPlugin from "terser-webpack-plugin";
 import {Generator} from "@angular/service-worker/config";
 import {JsonConvert} from "@simplysm/sd-core";
 import {NodeFilesystem} from "./service-worker/filesystem";
+import {AngularCompilerPlugin} from "@ngtools/webpack";
 
 export class SdPackageBuilder extends events.EventEmitter {
   private readonly _projectNpmConfig: any;
@@ -131,34 +132,10 @@ export class SdPackageBuilder extends events.EventEmitter {
       }
 
       webpackConfig.output!.publicPath = `/${this._packageKey}/`;
-      webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE"] = this._parsedTsConfig.fileNames[0];
       webpackConfig.module!.rules!.pushRange([
         {
-          test: /\.js$/,
+          test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
           parser: {system: true}
-        },
-        {
-          test: /\.ts$/,
-          exclude: /node_modules/,
-          loaders: [
-            eval(`require.resolve("./ts-build-loader")`), //tslint:disable-line:no-eval
-            "angular-router-loader"
-          ]
-        },
-        {
-          test: /\.scss$/,
-          use: [
-            "style-loader",
-            "css-loader",
-            "resolve-url-loader",
-            {
-              loader: "sass-loader",
-              options: {
-                sourceMap: true,
-                sourceMapContents: false
-              }
-            }
-          ]
         },
         {
           test: /\.css$/,
@@ -253,7 +230,6 @@ export class SdPackageBuilder extends events.EventEmitter {
       webpackConfig.entry = path.resolve(__dirname, "../lib/main.js");
     }
 
-
     // optimization: library
     if (config.type === undefined) {
       webpackConfig.devtool = "source-map";
@@ -278,7 +254,7 @@ export class SdPackageBuilder extends events.EventEmitter {
     }
     // optimization: client/server
     else {
-      webpackConfig.devtool = undefined;
+      webpackConfig.devtool = false;
       webpackConfig.optimization!.minimizer = [
         new TerserPlugin({
           sourceMap: false,
@@ -311,6 +287,60 @@ export class SdPackageBuilder extends events.EventEmitter {
       webpackConfig.optimization!.minimizer.push(
         new webpack.HashedModuleIdsPlugin()
       );
+
+      webpackConfig.performance = {
+        hints: false
+      };
+    }
+
+    // rules
+    if (config.type !== undefined && config.type !== "server") {
+      webpackConfig.module!.rules.pushRange([
+        {
+          test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+          loader: [
+            "@angular-devkit/build-optimizer/webpack-loader",
+            "@ngtools/webpack"
+          ]
+        },
+        {
+          test: /\.scss$/,
+          use: [
+            "style-loader",
+            "css-loader",
+            "resolve-url-loader",
+            {
+              loader: "sass-loader",
+              options: {
+                sourceMap: true,
+                sourceMapContents: false
+              }
+            }
+          ]
+        }
+      ]);
+
+      const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+      webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE_NGFACTORY"] = modulePath + ".ngfactory";
+
+      webpackConfig.plugins!.pushRange([
+        new AngularCompilerPlugin({
+          tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
+          entryModule: modulePath + "#" + path.basename(modulePath),
+          mainPath: path.resolve(__dirname, "../lib/main.js"),
+          basePath: process.cwd(),
+          compilerOptions: {
+            ...this._parsedTsConfig.options,
+            rootDir: undefined,
+            skipTemplateCodegen: false,
+            strictMetadataEmit: true,
+            fullTemplateTypeCheck: true,
+            strictInjectionParameters: true,
+            enableResourceInlining: true,
+            disableTypeScriptVersionCheck: true
+          }
+        })
+      ]);
     }
 
     // '.configs.json'파일 생성
@@ -460,7 +490,68 @@ export class SdPackageBuilder extends events.EventEmitter {
           path.resolve(__dirname, "../lib/main.js")
         ]
       };
-      webpackConfig.plugins!.push(new webpack.HotModuleReplacementPlugin());
+
+      webpackConfig.module!.rules.pushRange([
+        {
+          test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+          loader: "@ngtools/webpack"
+        },
+        {
+          test: /\.scss$/,
+          use: [
+            {
+              loader: "style-loader",
+              options: {
+                sourceMap: true
+              }
+            },
+            {
+              loader: "css-loader",
+              options: {
+                sourceMap: true
+              }
+            },
+            {
+              loader: "resolve-url-loader",
+              options: {
+                sourceMap: true
+              }
+            },
+            {
+              loader: "sass-loader",
+              options: {
+                sourceMap: true,
+                sourceMapContents: false
+              }
+            }
+          ]
+        }
+      ]);
+
+      const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+
+      webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE"] = modulePath;
+
+      webpackConfig.plugins!.pushRange([
+        new AngularCompilerPlugin({
+          tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
+          entryModule: modulePath + "#" + path.basename(modulePath),
+          mainPath: path.resolve(__dirname, "../lib/main.js"),
+          basePath: process.cwd(),
+          compilerOptions: {
+            ...this._parsedTsConfig.options,
+            rootDir: undefined,
+            skipCodeGeneration: true,
+            skipTemplateCodegen: false,
+            strictMetadataEmit: true,
+            fullTemplateTypeCheck: true,
+            strictInjectionParameters: true,
+            enableResourceInlining: true,
+            disableTypeScriptVersionCheck: true
+          }
+        }),
+        new webpack.HotModuleReplacementPlugin()
+      ]);
     }
 
     // 빌드 타입이 서버일 때, '.configs.json'파일 생성

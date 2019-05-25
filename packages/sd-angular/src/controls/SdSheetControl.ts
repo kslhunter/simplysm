@@ -152,7 +152,7 @@ import {ResizeEvent} from "../commons/ResizeEvent";
             </div>
             <ng-container *ngIf="getHasChildren(i, item) && getIsExpended(i, item)">
               <ng-template [ngTemplateOutlet]="rowOfList"
-                           [ngTemplateOutletContext]="{items: children(i, item)}"></ng-template>
+                           [ngTemplateOutletContext]="{items: children!(i, item)}"></ng-template>
             </ng-container>
           </ng-container>
         </ng-template>

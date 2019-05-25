@@ -1,8 +1,10 @@
 <component name="ProjectDictionaryState">
   <dictionary name="kslhunter">
     <words>
+      <w>bundler</w>
       <w>codelyzer</w>
       <w>fnames</w>
+      <w>inlining</w>
       <w>middlewares</w>
       <w>ngls</w>
       <w>nodemailer</w>

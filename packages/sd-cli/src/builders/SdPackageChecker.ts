@@ -3,9 +3,13 @@ import * as events from "events";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as os from "os";
+import {MetadataBundler} from "@angular/compiler-cli/src/metadata/bundler";
+import {MetadataCollector, ModuleMetadata} from "@angular/compiler-cli";
 
 export class SdPackageChecker extends events.EventEmitter {
+  private readonly _projectNpmConfig: any;
   private readonly _contextPath: string;
+  private readonly _npmConfig: any;
   private readonly _tsConfig: any;
   private readonly _parsedTsConfig: ts.ParsedCommandLine;
   private readonly _distPath: string;
@@ -13,7 +17,9 @@ export class SdPackageChecker extends events.EventEmitter {
   public constructor(private readonly _packageKey: string) {
     super();
 
+    this._projectNpmConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
     this._contextPath = path.resolve(process.cwd(), "packages", this._packageKey);
+    this._npmConfig = fs.readJsonSync(path.resolve(this._contextPath, "package.json"));
     this._tsConfig = fs.readJsonSync(path.resolve(this._contextPath, "tsconfig.build.json"));
     this._parsedTsConfig = ts.parseJsonConfigFileContent(this._tsConfig, ts.sys, this._contextPath);
     this._distPath = this._parsedTsConfig.options.outDir ? path.resolve(this._parsedTsConfig.options.outDir) : path.resolve(this._contextPath, "dist");
@@ -27,6 +33,21 @@ export class SdPackageChecker extends events.EventEmitter {
     this.emit("run");
 
     const host = ts.createCompilerHost(this._parsedTsConfig.options);
+
+    if (this._npmConfig.peerDependencies && Object.keys(this._npmConfig.peerDependencies).includes("@angular/core")) {
+      const metadataCollector = new MetadataCollector();
+      const metadataBundler = new MetadataBundler(
+        this._parsedTsConfig.fileNames[0].replace(/\.ts$/, ""),
+        "@" + this._projectNpmConfig.name + "/" + this._packageKey,
+        {
+          getMetadataFor(moduleName: string): ModuleMetadata | undefined {
+            const sourceFile = host.getSourceFile(moduleName + ".ts", ts.ScriptTarget.Latest)!;
+            return metadataCollector.getMetadata(sourceFile);
+          }
+        }
+      );
+      await fs.writeJson(path.resolve(this._distPath, "index.metadata.json"), metadataBundler.getMetadataBundle().metadata);
+    }
 
     const program = ts.createProgram(
       this._parsedTsConfig.fileNames,
@@ -85,7 +106,7 @@ export class SdPackageChecker extends events.EventEmitter {
           messages.push(message);
         }
       },
-      diagnostic => {
+      async diagnostic => {
         const messageText = diagnostic.messageText.toString();
         if (
           messageText.includes("Starting compilation in watch mode") ||
@@ -97,6 +118,22 @@ export class SdPackageChecker extends events.EventEmitter {
         else if (messageText.includes("Watching for file changes")) {
           if (messages.length > 0) {
             this.emit("error", messages.join(os.EOL));
+          }
+
+          if (this._npmConfig.peerDependencies && Object.keys(this._npmConfig.peerDependencies).includes("@angular/core")) {
+            const metadataCollector = new MetadataCollector();
+            const metadataBundler = new MetadataBundler(
+              this._parsedTsConfig.fileNames[0].replace(/\.ts$/, ""),
+              "@" + this._projectNpmConfig.name + "/" + this._packageKey,
+              {
+                getMetadataFor(moduleName: string): ModuleMetadata | undefined {
+                  const sourceText = host.readFile(moduleName + ".ts")!;
+                  const sourceFile = ts.createSourceFile(moduleName + ".ts", sourceText, ts.ScriptTarget.Latest);
+                  return metadataCollector.getMetadata(sourceFile);
+                }
+              }
+            );
+            await fs.writeJson(path.resolve(this._distPath, "index.metadata.json"), metadataBundler.getMetadataBundle().metadata);
           }
 
           this.emit("done");

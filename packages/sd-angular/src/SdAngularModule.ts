@@ -1,6 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {ErrorHandler, ModuleWithProviders, NgModule, Provider} from "@angular/core";
-import {Type} from "@simplysm/sd-core";
+import {ErrorHandler, NgModule} from "@angular/core";
 import {SdCardControl} from "./controls/SdCardControl";
 import {SdFormControl} from "./controls/SdFormControl";
 import {SdTextfieldControl} from "./controls/SdTextfieldControl";
@@ -73,115 +72,156 @@ import {SdCryptoServiceProvider} from "./providers/SdCryptoServiceProvider";
 import {SdOrmServiceProvider} from "./providers/SdOrmServiceProvider";
 import {SdSmtpClientServiceProvider} from "./providers/SdSmtpClientServiceProvider";
 import {SdWindowProvider} from "./providers/SdWindowProvider";
-import {ServiceWorkerModule} from "@angular/service-worker";
+/*import {library} from "@fortawesome/fontawesome-svg-core";
+import {fas} from "@fortawesome/free-solid-svg-icons";
+import {far} from "@fortawesome/free-regular-svg-icons";
+import {fab} from "@fortawesome/free-brands-svg-icons";*/
 
-const controls: Type<any>[] = [
-  SdBusyContainerControl,
-  SdButtonControl,
-  SdCheckboxControl,
-  SdComboboxControl,
-  SdComboboxItemControl,
-  SdDockControl,
-  SdDockContainerControl,
-  SdFormControl,
-  SdFormItemControl,
-  SdIconControl,
-  SdLabelControl,
-  SdListControl,
-  SdListItemControl,
-  SdListItemButtonControl,
-  SdPaginationControl,
-  SdPaneControl,
-  SdSheetControl,
-  SdSheetColumnControl,
-  SdSidebarControl,
-  SdSidebarContainerControl,
-  SdSidebarBrandControl,
-  SdSidebarUserControl,
-  SdSidebarUserMenuControl,
-  SdTextfieldControl,
-  SdTopbarControl,
-  SdTopbarContainerControl,
-  SdTopbarMenuControl,
-  SdSelectControl,
-  SdSelectItemControl,
-  SdMultiSelectControl,
-  SdMultiSelectItemControl,
-  SdDropdownControl,
-  SdDropdownPopupControl,
-  SdGridControl,
-  SdGridItemControl,
-  SdBarcodeControl,
-  SdCardControl,
-  SdMarkdownEditorControl,
-  SdCheckboxGroupControl,
-  SdCheckboxGroupItemControl,
-  SdTabviewControl,
-  SdTabviewItemControl,
-  SdTabControl,
-  SdTabItemControl,
-  SdViewControl,
-  SdViewItemControl,
-  SdHtmlEditorControl,
-  SdNoteControl,
-  SdTableControl
-];
-
-const entryControls: Type<any>[] = [
-  SdModalControl,
-  SdToastContainerControl,
-  SdToastControl,
-  SdAddressSearchModal
-];
-
-const directives: Type<any>[] = [
-  SdNavigateDirective,
-  LinkActionDirective
-];
-
-const pipes: Type<any>[] = [
-  SdCasePipe
-];
-
-const providers: Provider[] = [
-  SdDomValidatorProvider,
-  SdFileDialogProvider,
-  SdLocalStorageProvider,
-  SdModalProvider,
-  SdPrintProvider,
-  SdToastProvider,
-  SdServiceProvider,
-  SdSoapProvider,
-  SdCryptoServiceProvider,
-  SdOrmServiceProvider,
-  SdSmtpClientServiceProvider,
-  SdWindowProvider,
-  {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
-  {provide: ErrorHandler, useClass: GlobalErrorHandler}
-];
+// library.add(fas, far, fab);
 
 @NgModule({
   imports: [
     CommonModule,
-    FontAwesomeModule,
-    ServiceWorkerModule.register("ngsw-worker.js", {enabled: process.env.NODE_ENV === "production"})
+    FontAwesomeModule
   ],
   exports: [
-    ...controls,
-    ...entryControls,
-    ...directives,
-    ...pipes
+    SdBusyContainerControl,
+    SdButtonControl,
+    SdCheckboxControl,
+    SdComboboxControl,
+    SdComboboxItemControl,
+    SdDockControl,
+    SdDockContainerControl,
+    SdFormControl,
+    SdFormItemControl,
+    SdIconControl,
+    SdLabelControl,
+    SdListControl,
+    SdListItemControl,
+    SdListItemButtonControl,
+    SdPaginationControl,
+    SdPaneControl,
+    SdSheetControl,
+    SdSheetColumnControl,
+    SdSidebarControl,
+    SdSidebarContainerControl,
+    SdSidebarBrandControl,
+    SdSidebarUserControl,
+    SdSidebarUserMenuControl,
+    SdTextfieldControl,
+    SdTopbarControl,
+    SdTopbarContainerControl,
+    SdTopbarMenuControl,
+    SdSelectControl,
+    SdSelectItemControl,
+    SdMultiSelectControl,
+    SdMultiSelectItemControl,
+    SdDropdownControl,
+    SdDropdownPopupControl,
+    SdGridControl,
+    SdGridItemControl,
+    SdBarcodeControl,
+    SdCardControl,
+    SdMarkdownEditorControl,
+    SdCheckboxGroupControl,
+    SdCheckboxGroupItemControl,
+    SdTabviewControl,
+    SdTabviewItemControl,
+    SdTabControl,
+    SdTabItemControl,
+    SdViewControl,
+    SdViewItemControl,
+    SdHtmlEditorControl,
+    SdNoteControl,
+    SdTableControl,
+    SdModalControl,
+    SdToastContainerControl,
+    SdToastControl,
+    SdAddressSearchModal,
+    SdNavigateDirective,
+    LinkActionDirective,
+    SdCasePipe
   ],
   declarations: [
-    ...controls,
-    ...entryControls,
-    ...directives,
-    ...pipes
+    SdBusyContainerControl,
+    SdButtonControl,
+    SdCheckboxControl,
+    SdComboboxControl,
+    SdComboboxItemControl,
+    SdDockControl,
+    SdDockContainerControl,
+    SdFormControl,
+    SdFormItemControl,
+    SdIconControl,
+    SdLabelControl,
+    SdListControl,
+    SdListItemControl,
+    SdListItemButtonControl,
+    SdPaginationControl,
+    SdPaneControl,
+    SdSheetControl,
+    SdSheetColumnControl,
+    SdSidebarControl,
+    SdSidebarContainerControl,
+    SdSidebarBrandControl,
+    SdSidebarUserControl,
+    SdSidebarUserMenuControl,
+    SdTextfieldControl,
+    SdTopbarControl,
+    SdTopbarContainerControl,
+    SdTopbarMenuControl,
+    SdSelectControl,
+    SdSelectItemControl,
+    SdMultiSelectControl,
+    SdMultiSelectItemControl,
+    SdDropdownControl,
+    SdDropdownPopupControl,
+    SdGridControl,
+    SdGridItemControl,
+    SdBarcodeControl,
+    SdCardControl,
+    SdMarkdownEditorControl,
+    SdCheckboxGroupControl,
+    SdCheckboxGroupItemControl,
+    SdTabviewControl,
+    SdTabviewItemControl,
+    SdTabControl,
+    SdTabItemControl,
+    SdViewControl,
+    SdViewItemControl,
+    SdHtmlEditorControl,
+    SdNoteControl,
+    SdTableControl,
+    SdModalControl,
+    SdToastContainerControl,
+    SdToastControl,
+    SdAddressSearchModal,
+    SdNavigateDirective,
+    LinkActionDirective,
+    SdCasePipe
   ],
-  entryComponents: entryControls
+  entryComponents: [
+    SdModalControl,
+    SdToastContainerControl,
+    SdToastControl,
+    SdAddressSearchModal
+  ],
+  providers: [
+    SdDomValidatorProvider,
+    SdFileDialogProvider,
+    SdLocalStorageProvider,
+    SdModalProvider,
+    SdPrintProvider,
+    SdToastProvider,
+    SdServiceProvider,
+    SdSoapProvider,
+    SdCryptoServiceProvider,
+    SdOrmServiceProvider,
+    SdSmtpClientServiceProvider,
+    SdWindowProvider,
+    {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
+    {provide: ErrorHandler, useClass: GlobalErrorHandler}
+  ]
 })
 export class SdAngularModule {
-  public static forRoot(): ModuleWithProviders<SdAngularModule> {
-    return {ngModule: SdAngularModule, providers};
-  }
 }

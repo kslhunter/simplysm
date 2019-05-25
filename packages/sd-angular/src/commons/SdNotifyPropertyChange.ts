@@ -1,7 +1,7 @@
 const symbol = `sd-notify-property-change`;
 
 export function SdNotifyPropertyChange(): any {
-  return (target: ISdNotifyPropertyChange, propertyKey: string, inputDescriptor: PropertyDescriptor | undefined) => {
+  const fn = (target: ISdNotifyPropertyChange, propertyKey: string, inputDescriptor: PropertyDescriptor | undefined) => {
     const descriptor = inputDescriptor || Object.getOwnPropertyDescriptor(target, propertyKey);
     const prevSetter = descriptor ? descriptor.set : undefined;
 
@@ -36,6 +36,7 @@ export function SdNotifyPropertyChange(): any {
       }
     }
   };
+  return fn;
 }
 
 export interface ISdNotifyPropertyChange {

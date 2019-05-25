@@ -67,7 +67,7 @@ export class SdSelectItemControl {
   }
 
   @HostListener("click", ["$event"])
-  public onClick(): void {
+  public onClick(event: MouseEvent): void {
     this._selectControl.setValue(this.value);
   }
 }

@@ -1,5 +1,6 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
+import {colorValidator} from "../commons/colorValidator";
 
 @Component({
   selector: "sd-label",
@@ -19,7 +20,7 @@ export class SdLabelControl {
   @Input()
   @SdTypeValidate({
     type: String,
-    validator: value => /^#[0-9a-fA-F]*$/.test(value)
+    validator: colorValidator
   })
   @HostBinding("style.background")
   public color?: string;

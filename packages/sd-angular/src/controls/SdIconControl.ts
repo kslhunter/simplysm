@@ -1,12 +1,8 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {IconName, library, SizeProp} from "@fortawesome/fontawesome-svg-core";
-import {fas} from "@fortawesome/free-solid-svg-icons";
-import {far} from "@fortawesome/free-regular-svg-icons";
-import {fab} from "@fortawesome/free-brands-svg-icons";
+import {IconName, SizeProp} from "@fortawesome/fontawesome-svg-core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
+// import {sdIconNames} from "../commons/icons";
 
-library.add(fas, far, fab);
-export const sdIconNames = Object.values(fas).map(item => item.iconName).distinct();
 
 @Component({
   selector: "sd-icon",
@@ -17,8 +13,8 @@ export const sdIconNames = Object.values(fas).map(item => item.iconName).distinc
 export class SdIconControl {
   @Input()
   @SdTypeValidate({
-    type: String,
-    includes: sdIconNames
+    type: String/*,
+    includes: sdIconNames*/
   })
   public icon?: IconName;
 

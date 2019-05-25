@@ -1,6 +1,5 @@
 import * as events from "events";
 import * as tslint from "tslint";
-// import * as ts from "typescript";
 import * as path from "path";
 import * as os from "os";
 import {FileWatcher} from "@simplysm/sd-core";

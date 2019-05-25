@@ -1,6 +1,8 @@
 import "@simplysm/sd-core";
 import "./commons/ElementExtensions";
 import "./commons/HTMLElementExtensions";
+// export * from "./commons/icons";
+export * from "./commons/colorValidator";
 
 export * from "./commons/ResizeEvent";
 export * from "./commons/SdMutationEvent";

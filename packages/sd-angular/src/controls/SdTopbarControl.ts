@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, ContentChildren, forwardRef, Injector, QueryList} from "@angular/core";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
-import {SdTopbarMenuControl} from "..";
+import {SdTopbarMenuControl} from "./SdTopbarMenuControl";
 
 @Component({
   selector: "sd-topbar",

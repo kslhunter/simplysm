@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
-import {sdIconNames} from "./SdIconControl";
 import {IconName} from "@fortawesome/fontawesome-svg-core";
+// import {sdIconNames} from "../commons/icons";
 
 @Component({
   selector: "sd-checkbox",
@@ -61,8 +61,8 @@ export class SdCheckboxControl {
   @Input()
   @SdTypeValidate({
     type: String,
-    notnull: true,
-    includes: sdIconNames
+    notnull: true/*,
+    includes: sdIconNames*/
   })
   public icon: IconName = "check";
 

@@ -3,7 +3,7 @@ import {ValidateDef} from "@simplysm/sd-core";
 const symbol = `sd-type-validate`;
 
 export function SdTypeValidate(params: ValidateDef): any {
-  return (target: any, propertyKey: string, inputDescriptor: PropertyDescriptor | undefined) => {
+  const fn = (target: any, propertyKey: string, inputDescriptor: PropertyDescriptor | undefined) => {
     const descriptor = inputDescriptor || Object.getOwnPropertyDescriptor(target, propertyKey);
     const prevSetter = descriptor ? descriptor.set : undefined;
 
@@ -52,4 +52,6 @@ export function SdTypeValidate(params: ValidateDef): any {
       }
     }
   };
+
+  return fn;
 }
