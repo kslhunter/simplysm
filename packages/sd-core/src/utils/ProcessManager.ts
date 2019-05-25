@@ -29,7 +29,7 @@ export class ProcessManager {
       worker.stdout.on("data", async (data: Buffer) => {
         if (options && options.logger) {
           try {
-            options.logger.log(data);
+            options.logger.log(data.toString());
           }
           catch (err) {
             reject(err);
@@ -43,7 +43,7 @@ export class ProcessManager {
       worker.stderr.on("data", async (data: Buffer) => {
         if (options && options.logger) {
           try {
-            options.logger.error(data);
+            options.logger.error(data.toString());
           }
           catch (err) {
             reject(err);
