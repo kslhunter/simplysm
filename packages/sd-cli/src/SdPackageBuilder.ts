@@ -332,6 +332,7 @@ export class SdPackageBuilder extends events.EventEmitter {
           compilerOptions: {
             ...this._parsedTsConfig.options,
             rootDir: undefined,
+            sourceMap: false,
             skipTemplateCodegen: false,
             strictMetadataEmit: true,
             fullTemplateTypeCheck: true,
@@ -541,6 +542,7 @@ export class SdPackageBuilder extends events.EventEmitter {
           compilerOptions: {
             ...this._parsedTsConfig.options,
             rootDir: undefined,
+            sourceMap: true,
             skipCodeGeneration: true,
             skipTemplateCodegen: false,
             strictMetadataEmit: true,

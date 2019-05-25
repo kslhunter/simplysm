@@ -34,7 +34,13 @@ export class SdPackageChecker extends events.EventEmitter {
 
     const host = ts.createCompilerHost(this._parsedTsConfig.options);
 
-    if (this._npmConfig.peerDependencies && Object.keys(this._npmConfig.peerDependencies).includes("@angular/core")) {
+    const depKeys = [
+      ...Object.keys(this._npmConfig.dependencies || {}),
+      ...Object.keys(this._npmConfig.devDependencies || {}),
+      ...Object.keys(this._npmConfig.peerDependencies || {})
+    ];
+
+    if (depKeys.includes("@angular/core")) {
       const metadataCollector = new MetadataCollector();
       const metadataBundler = new MetadataBundler(
         this._parsedTsConfig.fileNames[0].replace(/\.ts$/, ""),
@@ -46,6 +52,7 @@ export class SdPackageChecker extends events.EventEmitter {
           }
         }
       );
+      await fs.mkdirs(path.dirname(this._distPath));
       await fs.writeJson(path.resolve(this._distPath, "index.metadata.json"), metadataBundler.getMetadataBundle().metadata);
     }
 
@@ -120,7 +127,14 @@ export class SdPackageChecker extends events.EventEmitter {
             this.emit("error", messages.join(os.EOL));
           }
 
-          if (this._npmConfig.peerDependencies && Object.keys(this._npmConfig.peerDependencies).includes("@angular/core")) {
+
+          const depKeys = [
+            ...Object.keys(this._npmConfig.dependencies || {}),
+            ...Object.keys(this._npmConfig.devDependencies || {}),
+            ...Object.keys(this._npmConfig.peerDependencies || {})
+          ];
+
+          if (depKeys.includes("@angular/core")) {
             const metadataCollector = new MetadataCollector();
             const metadataBundler = new MetadataBundler(
               this._parsedTsConfig.fileNames[0].replace(/\.ts$/, ""),
@@ -133,6 +147,7 @@ export class SdPackageChecker extends events.EventEmitter {
                 }
               }
             );
+            await fs.mkdirs(path.dirname(this._distPath));
             await fs.writeJson(path.resolve(this._distPath, "index.metadata.json"), metadataBundler.getMetadataBundle().metadata);
           }
 
