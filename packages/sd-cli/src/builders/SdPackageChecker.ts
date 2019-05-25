@@ -5,6 +5,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import {MetadataBundler} from "@angular/compiler-cli/src/metadata/bundler";
 import {MetadataCollector, ModuleMetadata} from "@angular/compiler-cli";
+import {SdCliUtil} from "../commons/SdCliUtil";
 
 export class SdPackageChecker extends events.EventEmitter {
   private readonly _projectNpmConfig: any;
@@ -14,7 +15,8 @@ export class SdPackageChecker extends events.EventEmitter {
   private readonly _parsedTsConfig: ts.ParsedCommandLine;
   private readonly _distPath: string;
 
-  public constructor(private readonly _packageKey: string) {
+  public constructor(private readonly _packageKey: string,
+                     private readonly _options?: string[]) {
     super();
 
     this._projectNpmConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
@@ -32,6 +34,9 @@ export class SdPackageChecker extends events.EventEmitter {
 
     this.emit("run");
 
+    const projectConfig = await SdCliUtil.getConfigObjAsync("production", this._options);
+    const config = projectConfig.packages[this._packageKey];
+
     const host = ts.createCompilerHost(this._parsedTsConfig.options);
 
     const depKeys = [
@@ -40,7 +45,7 @@ export class SdPackageChecker extends events.EventEmitter {
       ...Object.keys(this._npmConfig.peerDependencies || {})
     ];
 
-    if (depKeys.includes("@angular/core")) {
+    if (config.type === undefined && depKeys.includes("@angular/core")) {
       const metadataCollector = new MetadataCollector();
       const metadataBundler = new MetadataBundler(
         this._parsedTsConfig.fileNames[0].replace(/\.ts$/, ""),
@@ -95,6 +100,9 @@ export class SdPackageChecker extends events.EventEmitter {
   }
 
   public async watchAsync(): Promise<void> {
+    const projectConfig = await SdCliUtil.getConfigObjAsync("production", this._options);
+    const config = projectConfig.packages[this._packageKey];
+
     let messages: string[] = [];
     const host = ts.createWatchCompilerHost(
       this._parsedTsConfig.fileNames,
@@ -134,7 +142,7 @@ export class SdPackageChecker extends events.EventEmitter {
             ...Object.keys(this._npmConfig.peerDependencies || {})
           ];
 
-          if (depKeys.includes("@angular/core")) {
+          if (config.type === undefined && depKeys.includes("@angular/core")) {
             const metadataCollector = new MetadataCollector();
             const metadataBundler = new MetadataBundler(
               this._parsedTsConfig.fileNames[0].replace(/\.ts$/, ""),

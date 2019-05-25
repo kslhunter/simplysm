@@ -11,9 +11,6 @@
   "dependencies": {
     "nodemailer": "^6.2.1"
   },
-  "devDependencies": {
-    "@types/nodemailer": "^6.1.1"
-  },
   "peerDependencies": {
     "@simplysm/sd-core": "2.0.41"
   }

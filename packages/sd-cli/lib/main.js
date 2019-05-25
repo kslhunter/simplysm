@@ -1,29 +1,15 @@
 require("core-js/es7/reflect");
 require("zone.js/dist/zone");
+require("zone.js/dist/long-stack-trace-zone");
+const ngCore = require("@angular/core");
+const {platformBrowserDynamic} = require("@angular/platform-browser-dynamic");
+const {AppModule} = require("SIMPLYSM_CLIENT_APP_MODULE");
 
-const AppModuleNgFactory = process.env.NODE_ENV === "production" ? require("SIMPLYSM_CLIENT_APP_MODULE_NGFACTORY").AppModuleNgFactory : undefined;
-const AppModule = process.env.NODE_ENV !== "production" ? require("SIMPLYSM_CLIENT_APP_MODULE").AppModule : undefined;
-const platformBrowserDynamic = require("@angular/platform-browser-dynamic").platformBrowserDynamic;
-const ApplicationRef = require("@angular/core").ApplicationRef;
+Error.stackTraceLimit = Infinity;
 
-if (process.env.NODE_ENV !== "production") {
-  require("zone.js/dist/long-stack-trace-zone");
-  Error.stackTraceLimit = Infinity;
-}
-
-if (process.env.NODE_ENV === "production") {
-  const enableProdMode = require("@angular/core").enableProdMode;
-  enableProdMode();
-}
-
-
-const bootstrapPromise = AppModuleNgFactory
-  ? platformBrowserDynamic().bootstrapModuleFactory(AppModuleNgFactory)
-  : platformBrowserDynamic().bootstrapModule(AppModule);
-
-bootstrapPromise.then(ngModuleRef => {
+platformBrowserDynamic().bootstrapModule(AppModule).then(ngModuleRef => {
   if (module.hot) {
-    const appRef = ngModuleRef.injector.get(ApplicationRef);
+    const appRef = ngModuleRef.injector.get(ngCore.ApplicationRef);
 
     module.hot.accept();
     module.hot.dispose(() => {
@@ -43,4 +29,4 @@ bootstrapPromise.then(ngModuleRef => {
       }
     });
   }
-});
+}).catch(err => console.error(err));

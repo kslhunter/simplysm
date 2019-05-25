@@ -227,7 +227,7 @@ export class SdPackageBuilder extends events.EventEmitter {
       webpackConfig.entry = this._getEntry();
     }
     else {
-      webpackConfig.entry = path.resolve(__dirname, "../lib/main.js");
+      webpackConfig.entry = path.resolve(__dirname, "../lib/main.prod.js");
     }
 
     // optimization: library
@@ -322,12 +322,11 @@ export class SdPackageBuilder extends events.EventEmitter {
 
       const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
       webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE_NGFACTORY"] = modulePath + ".ngfactory";
-
       webpackConfig.plugins!.pushRange([
         new AngularCompilerPlugin({
           tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
           entryModule: modulePath + "#" + path.basename(modulePath),
-          mainPath: path.resolve(__dirname, "../lib/main.js"),
+          mainPath: path.resolve(__dirname, "../lib/main.prod.js"),
           basePath: process.cwd(),
           compilerOptions: {
             ...this._parsedTsConfig.options,

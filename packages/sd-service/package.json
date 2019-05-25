@@ -15,9 +15,6 @@
     "bufferutil": "^4.0.1",
     "utf-8-validate": "^5.0.2"
   },
-  "devDependencies": {
-    "@types/ws": "^6.0.1"
-  },
   "peerDependencies": {
     "@simplysm/sd-core": "2.0.41",
     "@simplysm/sd-smtp-client": "2.0.41",
