@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "2.0.39",
+  "version": "2.0.40",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -37,7 +37,7 @@
     "@angular-devkit/build-optimizer": "^0.13.9"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "2.0.39",
-    "@simplysm/sd-service": "2.0.39"
+    "@simplysm/sd-core": "2.0.40",
+    "@simplysm/sd-service": "2.0.40"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service",
-  "version": "2.0.39",
+  "version": "2.0.40",
   "description": "심플리즘 패키지 - 서비스",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -16,8 +16,8 @@
     "utf-8-validate": "^5.0.2"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "2.0.39",
-    "@simplysm/sd-smtp-client": "2.0.39",
-    "@simplysm/sd-orm": "2.0.39"
+    "@simplysm/sd-core": "2.0.40",
+    "@simplysm/sd-smtp-client": "2.0.40",
+    "@simplysm/sd-orm": "2.0.40"
   }
 }
