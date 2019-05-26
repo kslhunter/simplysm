@@ -9,13 +9,13 @@ export function Table<T>(def?: {
   description?: string;
 }): (classType: Type<T>) => void {
   return (classType: Type<T>) => {
-    const tableDef: ITableDef = core.Reflect.getMetadata(tableDefMetadataKey, classType) || {};
+    const tableDef: ITableDef = Reflect.getMetadata(tableDefMetadataKey, classType) || {};
     tableDef.database = def && def.database;
     tableDef.scheme = def && def.scheme || "dbo";
     tableDef.name = def && def.table || classType.name;
     tableDef.description = def && def.description;
 
-    core.Reflect.defineMetadata(tableDefMetadataKey, tableDef, classType);
+    Reflect.defineMetadata(tableDefMetadataKey, tableDef, classType);
   };
 }
 
@@ -29,7 +29,7 @@ export function Column<T>(columnDef?: {
   return (object: T, propertyKey: string) => {
     const classType = object.constructor;
 
-    const tableDef: ITableDef = core.Reflect.getMetadata(tableDefMetadataKey, classType) || {};
+    const tableDef: ITableDef = Reflect.getMetadata(tableDefMetadataKey, classType) || {};
 
     tableDef.columns = tableDef.columns || [];
     if (tableDef.columns.some((item: any) => item.name === propertyKey)) {
@@ -44,10 +44,10 @@ export function Column<T>(columnDef?: {
       primaryKey: optional(() => columnDef!.primaryKey),
       description: optional(() => columnDef!.description),
 
-      typeFwd: () => core.Reflect.getMetadata("design:type", object, propertyKey)
+      typeFwd: () => Reflect.getMetadata("design:type", object, propertyKey)
     });
 
-    core.Reflect.defineMetadata(tableDefMetadataKey, tableDef, classType);
+    Reflect.defineMetadata(tableDefMetadataKey, tableDef, classType);
   };
 }
 
@@ -55,7 +55,7 @@ export function Index<T>(indexName?: string, order?: number): (object: T, proper
   return (object: T, propertyKey: string) => {
     const classType = object.constructor;
 
-    const tableDef: ITableDef = core.Reflect.getMetadata(tableDefMetadataKey, classType) || {};
+    const tableDef: ITableDef = Reflect.getMetadata(tableDefMetadataKey, classType) || {};
     tableDef.indexes = tableDef.indexes || [];
 
     let indexObj = tableDef.indexes.single(item => item.name === (indexName || propertyKey));
@@ -75,7 +75,7 @@ export function ForeignKey<T>(columnNames: (keyof T) | ((keyof T)[]), targetType
   return (object: Partial<T>, propertyKey: string) => {
     const classType = object.constructor;
 
-    const def: ITableDef = core.Reflect.getMetadata(tableDefMetadataKey, classType) || {};
+    const def: ITableDef = Reflect.getMetadata(tableDefMetadataKey, classType) || {};
     def.foreignKeys = def.foreignKeys || [];
 
     if (def.foreignKeys.some((item: any) => item.name === propertyKey)) {
@@ -95,7 +95,7 @@ export function ForeignKeyTarget<T, P>(sourceTypeFwd: () => Type<P>, foreignKeyN
   return (object: T, propertyKey: string) => {
     const classType = object.constructor;
 
-    const def: ITableDef = core.Reflect.getMetadata(tableDefMetadataKey, classType) || {};
+    const def: ITableDef = Reflect.getMetadata(tableDefMetadataKey, classType) || {};
     def.foreignKeyTargets = def.foreignKeyTargets || [];
     def.foreignKeyTargets.push({
       name: propertyKey,

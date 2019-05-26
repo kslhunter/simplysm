@@ -6,7 +6,7 @@ export function SdNotifyPropertyChange(): any {
     const prevSetter = descriptor ? descriptor.set : undefined;
 
     const getter = function (this: any): any {
-      return core.Reflect.getMetadata(symbol, this, propertyKey);
+      return Reflect.getMetadata(symbol, this, propertyKey);
     };
 
     const setter = function (this: any, value: any): void {
@@ -16,7 +16,7 @@ export function SdNotifyPropertyChange(): any {
         prevSetter.bind(this)(value);
       }
       else {
-        core.Reflect.defineMetadata(symbol, value, this, propertyKey);
+        Reflect.defineMetadata(symbol, value, this, propertyKey);
       }
 
       this.sdOnPropertyChange(propertyKey, oldValue, value);

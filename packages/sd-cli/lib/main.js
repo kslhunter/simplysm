@@ -1,4 +1,4 @@
-require("core-js/es7/reflect");
+require("core-js/proposals/reflect-metadata");
 require("zone.js/dist/zone");
 require("zone.js/dist/long-stack-trace-zone");
 const ngCore = require("@angular/core");

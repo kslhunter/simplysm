@@ -72,12 +72,6 @@ import {SdCryptoServiceProvider} from "./providers/SdCryptoServiceProvider";
 import {SdOrmServiceProvider} from "./providers/SdOrmServiceProvider";
 import {SdSmtpClientServiceProvider} from "./providers/SdSmtpClientServiceProvider";
 import {SdWindowProvider} from "./providers/SdWindowProvider";
-/*import {library} from "@fortawesome/fontawesome-svg-core";
-import {fas} from "@fortawesome/free-solid-svg-icons";
-import {far} from "@fortawesome/free-regular-svg-icons";
-import {fab} from "@fortawesome/free-brands-svg-icons";*/
-
-// library.add(fas, far, fab);
 
 @NgModule({
   imports: [

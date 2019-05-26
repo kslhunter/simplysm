@@ -21,7 +21,6 @@
   },
   "peerDependencies": {
     "@angular/common": "^7.2.14",
-    "@angular/compiler": "^7.2.14",
     "@angular/core": "^7.2.14",
     "@angular/platform-browser": "^7.2.14",
     "@angular/platform-browser-dynamic": "^7.2.14",

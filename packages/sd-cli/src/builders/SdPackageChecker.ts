@@ -57,7 +57,7 @@ export class SdPackageChecker extends events.EventEmitter {
           }
         }
       );
-      await fs.mkdirs(path.dirname(this._distPath));
+      await fs.mkdirs(this._distPath);
       await fs.writeJson(path.resolve(this._distPath, "index.metadata.json"), metadataBundler.getMetadataBundle().metadata);
     }
 
@@ -155,7 +155,7 @@ export class SdPackageChecker extends events.EventEmitter {
                 }
               }
             );
-            await fs.mkdirs(path.dirname(this._distPath));
+            await fs.mkdirs(this._distPath);
             await fs.writeJson(path.resolve(this._distPath, "index.metadata.json"), metadataBundler.getMetadataBundle().metadata);
           }
 

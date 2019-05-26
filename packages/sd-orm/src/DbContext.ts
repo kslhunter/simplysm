@@ -177,7 +177,7 @@ export abstract class DbContext {
     //-- Initialize
     const tableDefs = Object.values(this)
       .ofType(Queryable)
-      .map(qr => core.Reflect.getMetadata(tableDefMetadataKey, qr.tableType!) as ITableDef)
+      .map(qr => Reflect.getMetadata(tableDefMetadataKey, qr.tableType!) as ITableDef)
       .filter(item => !item.database || dbNames.includes(item.database))
       .filterExists();
 
@@ -244,7 +244,7 @@ export abstract class DbContext {
     for (const tableDef of tableDefs) {
       const fkDefs = (tableDef.foreignKeys || [])
         .map(fkDef => {
-          const targetTableDef: ITableDef = core.Reflect.getMetadata(tableDefMetadataKey, fkDef.targetTypeFwd());
+          const targetTableDef: ITableDef = Reflect.getMetadata(tableDefMetadataKey, fkDef.targetTypeFwd());
 
           if (!targetTableDef.columns) {
             throw new Error(`${targetTableDef.name}의 컬럼 설정이 잘못되었습니다.`);

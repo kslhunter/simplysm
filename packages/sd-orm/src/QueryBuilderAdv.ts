@@ -52,7 +52,7 @@ export class QueryBuilderAdv<T> {
       if (tableType) {
         this._tableType = tableType;
 
-        const tableDef = core.Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
+        const tableDef = Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
 
         if (!tableDef) {
           throw new Error(`'${this._tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
@@ -98,7 +98,7 @@ export class QueryBuilderAdv<T> {
     }
     else {
       this._tableType = arg;
-      const tableDef = core.Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
+      const tableDef = Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
 
       if (!tableDef) {
         throw new Error(`'${this._tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
@@ -324,7 +324,7 @@ export class QueryBuilderAdv<T> {
 
       const targetTableType = fkDef.targetTypeFwd();
 
-      const targetTableDef = core.Reflect.getMetadata(tableDefMetadataKey, targetTableType) as ITableDef | undefined;
+      const targetTableDef = Reflect.getMetadata(tableDefMetadataKey, targetTableType) as ITableDef | undefined;
       if (!targetTableDef) {
         throw new Error(`'${targetTableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
       }
@@ -351,14 +351,14 @@ export class QueryBuilderAdv<T> {
     else {
       const fktDef = fkOrFktDef as IForeignKeyTargetDef;
       const sourceTableType = fktDef.sourceTypeFwd();
-      const sourceTableDef = core.Reflect.getMetadata(tableDefMetadataKey, sourceTableType) as ITableDef | undefined;
+      const sourceTableDef = Reflect.getMetadata(tableDefMetadataKey, sourceTableType) as ITableDef | undefined;
       if (!sourceTableDef) {
         throw new Error(`'${sourceTableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
       }
 
       const targetFkDef = sourceTableDef.foreignKeys!.single(item => item.name === fktDef.foreignKeyName)!;
       const targetTableType = targetFkDef.targetTypeFwd();
-      const targetTableDef = core.Reflect.getMetadata(tableDefMetadataKey, targetTableType) as ITableDef | undefined;
+      const targetTableDef = Reflect.getMetadata(tableDefMetadataKey, targetTableType) as ITableDef | undefined;
       if (!targetTableDef) {
         throw new Error(`'${targetTableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
       }
@@ -555,7 +555,7 @@ export class QueryBuilderAdv<T> {
 
     const result: { [chain: string]: IJoinDef } = {};
 
-    const tableDef = core.Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
+    const tableDef = Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
     if (!tableDef) {
       throw new Error(`'${this._tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
     }
@@ -565,7 +565,7 @@ export class QueryBuilderAdv<T> {
         const currAs = (parentAs ? parentAs + "." : "") + joinDef.as;
         result[currAs] = joinDef;
 
-        const targetTableDef = core.Reflect.getMetadata(tableDefMetadataKey, joinDef.targetTableType) as ITableDef | undefined;
+        const targetTableDef = Reflect.getMetadata(tableDefMetadataKey, joinDef.targetTableType) as ITableDef | undefined;
         if (!targetTableDef) {
           throw new Error(`'${joinDef.targetTableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
         }
@@ -583,7 +583,7 @@ export class QueryBuilderAdv<T> {
     const parentAs = chain.split(".").slice(0, -1).join(".");
     if (parentAs) {
       const joinDef = this.getAllJoinDef()[parentAs];
-      const joinTableDef = core.Reflect.getMetadata(tableDefMetadataKey, joinDef.targetTableType) as ITableDef | undefined;
+      const joinTableDef = Reflect.getMetadata(tableDefMetadataKey, joinDef.targetTableType) as ITableDef | undefined;
       if (!joinTableDef) {
         throw new Error(`'${joinDef.targetTableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
       }
@@ -600,7 +600,7 @@ export class QueryBuilderAdv<T> {
         throw new Error("테이블 타입을 알 수 없습니다.");
       }
 
-      const tableDef = core.Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
+      const tableDef = Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
       if (!tableDef) {
         throw new Error(`'${this._tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
       }

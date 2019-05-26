@@ -1,20 +1,25 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {IconName, SizeProp} from "@fortawesome/fontawesome-svg-core";
+import {IconName, IconProp, library, SizeProp} from "@fortawesome/fontawesome-svg-core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
-// import {sdIconNames} from "../commons/icons";
+import {fas} from "@fortawesome/free-solid-svg-icons";
+import {far} from "@fortawesome/free-regular-svg-icons";
+import {fab} from "@fortawesome/free-brands-svg-icons";
 
+library.add(fas, far, fab);
+
+export const sdIconNames = Object.values(fas).map(item => item.iconName).distinct();
 
 @Component({
   selector: "sd-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <fa-icon [icon]="iconArr" [fixedWidth]="fw" [size]="size" *ngIf="icon"></fa-icon>`
+    <fa-icon [icon]="faIconProp" [fixedWidth]="fw" [size]="size" *ngIf="icon"></fa-icon>`
 })
 export class SdIconControl {
   @Input()
   @SdTypeValidate({
-    type: String/*,
-    includes: sdIconNames*/
+    type: String,
+    includes: sdIconNames
   })
   public icon?: IconName;
 
@@ -38,7 +43,7 @@ export class SdIconControl {
   })
   public size?: SizeProp;
 
-  public get iconArr(): string[] | undefined {
+  public get faIconProp(): IconProp | undefined {
     return this.icon ? [
       this.type === "brands" ? "fab" : this.type === "regular" ? "far" : "fas",
       this.icon

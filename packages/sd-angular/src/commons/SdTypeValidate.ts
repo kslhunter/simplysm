@@ -8,7 +8,7 @@ export function SdTypeValidate(params: ValidateDef): any {
     const prevSetter = descriptor ? descriptor.set : undefined;
 
     const getter = function (this: any): any {
-      return core.Reflect.getMetadata(symbol, this, propertyKey);
+      return Reflect.getMetadata(symbol, this, propertyKey);
     };
 
     const setter = function (this: any, value: any): void {
@@ -34,7 +34,7 @@ export function SdTypeValidate(params: ValidateDef): any {
         prevSetter.bind(this)(realValue);
       }
       else {
-        core.Reflect.defineMetadata(symbol, realValue, this, propertyKey);
+        Reflect.defineMetadata(symbol, realValue, this, propertyKey);
       }
     };
 

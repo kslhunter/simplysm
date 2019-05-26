@@ -134,14 +134,17 @@ export class SdProjectBuilder {
 
     const workerCpuUsages: { packageKey: string; type: "build" | "lint" | "check"; cpuUsage: number }[] = [];
 
+    const completedDeclarationPackageNames: string[] = [];
     // 병렬로,
     await Promise.all([
       // > 패키지별 병렬로,
-      this._parallelPackagesByDepAsync(Object.keys(config.packages), async packageKey => {
+      this._parallelPackagesByDepAsync(Object.keys(config.packages), async (packageKey, packageName, projectOwnDepPackageNames) => {
         if (config.packages[packageKey].type === "none") {
           return;
         }
-        else if (config.packages[packageKey].type === undefined || config.packages[packageKey].type === "server") {
+
+        // > > 라이브러리/서버
+        if (config.packages[packageKey].type === undefined || config.packages[packageKey].type === "server") {
           // > > 빌드
           const worker = await this._runPackageBuildWorkerAsync("build", packageKey, argv.options, argv.watch);
           workerCpuUsages.push({packageKey, type: "build", cpuUsage: worker["cpuUsage"]});
@@ -151,24 +154,36 @@ export class SdProjectBuilder {
             await this._runServerAsync(packageKey, worker);
           }
         }
-        else if (!argv.watch) {
-          // > > 빌드
-          const worker = await this._runPackageBuildWorkerAsync("build", packageKey, argv.options, false);
-          workerCpuUsages.push({packageKey, type: "build", cpuUsage: worker["cpuUsage"]});
-        }
+
+        // > > 클라이언트
         else {
-          // > > 빌드
-          await this._runClientWatcherAsync(
-            packageKey,
-            argv.options ? argv.options.split(",").map(item => item.trim()) : undefined
-          );
+          // > > 의존성 패키지들의 declaration 체크
+          await Wait.true(() => projectOwnDepPackageNames.every(item => completedDeclarationPackageNames.includes(item)));
+
+          if (!argv.watch) {
+            // > > 빌드
+            const worker = await this._runPackageBuildWorkerAsync("build", packageKey, argv.options, false);
+            workerCpuUsages.push({packageKey, type: "build", cpuUsage: worker["cpuUsage"]});
+          }
+          else {
+            // > > 빌드
+            await this._runClientWatcherAsync(
+              packageKey,
+              argv.options ? argv.options.split(",").map(item => item.trim()) : undefined
+            );
+          }
         }
+
       }).then(() => {
         logger.info("모든 'build'가 완료되었습니다.");
       }),
       // > 패키지별 병렬로,
-      this._parallelPackagesByDepAsync(Object.keys(config.packages), async packageKey => {
+      this._parallelPackagesByDepAsync(Object.keys(config.packages), async (packageKey, packageName) => {
         if (config.packages[packageKey].type === "none") {
+          return;
+        }
+
+        if (config.packages[packageKey].type !== undefined && config.packages[packageKey].type !== "server") {
           return;
         }
 
@@ -176,6 +191,7 @@ export class SdProjectBuilder {
         const worker = await this._runPackageBuildWorkerAsync("check", packageKey, argv.options, argv.watch);
         workerCpuUsages.push({packageKey, type: "check", cpuUsage: worker["cpuUsage"]});
 
+        completedDeclarationPackageNames.push(packageName);
       }).then(() => {
         logger.info("모든 'check'가 완료되었습니다.");
       }),
@@ -571,16 +587,17 @@ export class SdProjectBuilder {
     packageServerLogger.log("시작되었습니다.");
   }
 
-  private async _parallelPackagesByDepAsync(packageKeys: string[], cb: (packageKey: string) => Promise<void>): Promise<void> {
+  private async _parallelPackagesByDepAsync(packageKeys: string[], cb: (packageKey: string, packageName: string, projectOwnDepPackageNames: string[]) => Promise<void>): Promise<void> {
     const completedPackageName: string[] = [];
 
     await Promise.all(packageKeys.map(async packageKey => {
       const projectNpmConfig = await fs.readJson(path.resolve(process.cwd(), "package.json"));
       const packagePath = path.resolve(process.cwd(), "packages", packageKey);
       const packageNpmConfig = await fs.readJson(path.resolve(packagePath, "package.json"));
+      const packageName = "@" + projectNpmConfig.name + "/" + packageKey;
 
       // > 패키지의 의존성 패키지 중에 빌드해야할 패키지 목록에 이미 있는 의존성 패키지만 추리기
-      const deps = [
+      const projectOwnDepPackageNames = [
         ...Object.keys(packageNpmConfig.dependencies || {}),
         ...Object.keys(packageNpmConfig.devDependencies || {}),
         ...Object.keys(packageNpmConfig.peerDependencies || {})
@@ -589,14 +606,14 @@ export class SdProjectBuilder {
       );
 
       // > 추려진 의존성 패키지별,
-      for (const dep of deps) {
+      for (const depPackageName of projectOwnDepPackageNames) {
         // > > 의존성 패키지의 빌드가 완료될때까지 기다리기
-        await Wait.true(() => completedPackageName.includes(dep));
+        await Wait.true(() => completedPackageName.includes(depPackageName));
       }
 
-      await cb(packageKey);
+      await cb(packageKey, packageName, projectOwnDepPackageNames);
 
-      completedPackageName.push("@" + projectNpmConfig.name + "/" + packageKey);
+      completedPackageName.push(packageName);
     }));
   }
 }

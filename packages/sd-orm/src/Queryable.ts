@@ -36,7 +36,7 @@ export class Queryable<T extends object> {
   public readonly subQueryableList?: Queryable<T>[];
 
   public get tableDef(): ITableDef {
-    return core.Reflect.getMetadata(tableDefMetadataKey, this.tableType!) as ITableDef;
+    return Reflect.getMetadata(tableDefMetadataKey, this.tableType!) as ITableDef;
   }
 
   public constructor(db: DbContext, tableType: Type<T>);
@@ -332,7 +332,7 @@ export class Queryable<T extends object> {
       throw new Error(`'INSERT/UPDATE/DELETE'할 수 없는 상태입니다.`);
     }
 
-    const tableDef = core.Reflect.getMetadata(tableDefMetadataKey, this.tableType) as ITableDef | undefined;
+    const tableDef = Reflect.getMetadata(tableDefMetadataKey, this.tableType) as ITableDef | undefined;
     if (!tableDef) {
       throw new Error(`'${this.tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
     }
@@ -350,7 +350,7 @@ export class Queryable<T extends object> {
       throw new Error(`'INSERT/UPDATE/DELETE'할 수 없는 상태입니다.`);
     }
 
-    const tableDef = core.Reflect.getMetadata(tableDefMetadataKey, this.tableType) as ITableDef | undefined;
+    const tableDef = Reflect.getMetadata(tableDefMetadataKey, this.tableType) as ITableDef | undefined;
     if (!tableDef) {
       throw new Error(`'${this.tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
     }

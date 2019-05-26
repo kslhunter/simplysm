@@ -238,7 +238,7 @@ export class SdPackageBuilder extends events.EventEmitter {
           enforce: "pre",
           test: /\.js$/,
           use: ["source-map-loader"],
-          exclude: /node_modules[\\/](?!@simplysm)/
+          exclude: /node_modules[\\/](?!@simplysm|rxjs|@angular|zone\.js)/
         }
       );
       webpackConfig.optimization!.minimizer = [
@@ -328,10 +328,10 @@ export class SdPackageBuilder extends events.EventEmitter {
           entryModule: modulePath + "#" + path.basename(modulePath),
           mainPath: path.resolve(__dirname, "../lib/main.prod.js"),
           basePath: process.cwd(),
+          sourceMap: false,
           compilerOptions: {
             ...this._parsedTsConfig.options,
             rootDir: undefined,
-            sourceMap: false,
             skipTemplateCodegen: false,
             strictMetadataEmit: true,
             fullTemplateTypeCheck: true,
@@ -463,7 +463,11 @@ export class SdPackageBuilder extends events.EventEmitter {
         enforce: "pre",
         test: /\.js$/,
         use: ["source-map-loader"],
-        exclude: /node_modules[\\/](?!@simplysm)/
+        exclude: [
+          /node_modules[\\/](?!@simplysm|rxjs|@angular|zone\.js)/,
+          /\.ngfactory\.js$/,
+          /\.ngstyle\.js$/
+        ]
       },
       {
         test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?)$/,
@@ -529,20 +533,18 @@ export class SdPackageBuilder extends events.EventEmitter {
       ]);
 
       const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
-
       webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE"] = modulePath;
-
       webpackConfig.plugins!.pushRange([
         new AngularCompilerPlugin({
           tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
           entryModule: modulePath + "#" + path.basename(modulePath),
           mainPath: path.resolve(__dirname, "../lib/main.js"),
           basePath: process.cwd(),
+          sourceMap: true,
+          skipCodeGeneration: true,
           compilerOptions: {
             ...this._parsedTsConfig.options,
             rootDir: undefined,
-            sourceMap: true,
-            skipCodeGeneration: true,
             skipTemplateCodegen: false,
             strictMetadataEmit: true,
             fullTemplateTypeCheck: true,

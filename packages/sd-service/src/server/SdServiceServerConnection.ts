@@ -3,7 +3,6 @@ import * as http from "http";
 import {EventEmitter} from "events";
 import {JsonConvert, Logger, optional} from "@simplysm/sd-core";
 import * as fs from "fs-extra";
-import * as path from "path";
 import * as crypto from "crypto";
 import * as child_process from "child_process";
 import {ISdServiceEmitResponse, ISdServiceRequest, ISdServiceResponse} from "../commons";
@@ -177,7 +176,7 @@ export class SdServiceServerConnection extends EventEmitter {
       const buf = JsonConvert.parse(match[5]) as Buffer;
 
       if (!this._uploadRequestMap.has(requestId)) {
-        fs.mkdirsSync(path.dirname(filePath));
+        fs.mkdirsSync(filePath);
         const fd = fs.openSync(filePath, "w");
         const newUploadRequestValue = {
           timer: setTimeout(async () => {
