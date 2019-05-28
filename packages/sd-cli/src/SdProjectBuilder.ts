@@ -183,9 +183,9 @@ export class SdProjectBuilder {
           return;
         }
 
-        if (config.packages[packageKey].type !== undefined && config.packages[packageKey].type !== "server") {
+        /*if (config.packages[packageKey].type !== undefined && config.packages[packageKey].type !== "server") {
           return;
-        }
+        }*/
 
         // > > 타입체크 및 ".d"파일 생성
         const worker = await this._runPackageBuildWorkerAsync("check", packageKey, argv.options, argv.watch);

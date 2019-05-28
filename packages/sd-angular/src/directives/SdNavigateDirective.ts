@@ -8,7 +8,7 @@ import {SdWindowProvider} from "../providers/SdWindowProvider";
 })
 export class SdNavigateDirective {
   @Input()
-  public sdNavigate?: [string, object | undefined];
+  public sdNavigate?: [string, object?];
 
   public constructor(private readonly _router: Router,
                      private readonly _window: SdWindowProvider) {

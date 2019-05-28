@@ -1,6 +1,9 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
 import {SdTypeValidate} from "../commons/SdTypeValidate";
-import {colorValidator} from "../commons/colorValidator";
+
+function colorValidator(value: string): boolean {
+  return /^#[0-9a-fA-F]*$/.test(value);
+}
 
 @Component({
   selector: "sd-label",

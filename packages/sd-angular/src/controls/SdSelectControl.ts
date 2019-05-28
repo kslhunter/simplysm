@@ -47,7 +47,7 @@ import {JsonConvert} from "@simplysm/sd-core";
                     <ng-template [ngTemplateOutlet]="itemTemplateRef"
                                  [ngTemplateOutletContext]="{item: item}"></ng-template>
 
-                    <ng-container *ngIf="children && children!(i, item) && children!(i, item).length > 0">
+                    <ng-container *ngIf="children && children(i, item) && children!(i, item).length > 0">
                       <div class="_children">
                         <ng-template [ngTemplateOutlet]="rowOfList"
                                      [ngTemplateOutletContext]="{items: children(i, item)}"></ng-template>

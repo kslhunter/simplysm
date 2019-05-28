@@ -150,6 +150,7 @@ export class SdPackageBuilder extends events.EventEmitter {
         new webpack.ContextReplacementPlugin(/@angular([\\/])core([\\/])/),
         new HtmlWebpackPlugin({
           template: path.resolve(__dirname, "../lib/index.ejs"),
+          chunksSortMode: "none",
           BASE_HREF: `/${this._packageKey}/`
         })
       ]);
@@ -329,9 +330,11 @@ export class SdPackageBuilder extends events.EventEmitter {
           mainPath: path.resolve(__dirname, "../lib/main.prod.js"),
           basePath: process.cwd(),
           sourceMap: false,
+          forkTypeChecker: false,
           compilerOptions: {
             ...this._parsedTsConfig.options,
             rootDir: undefined,
+            declaration: false,
             skipTemplateCodegen: false,
             strictMetadataEmit: true,
             fullTemplateTypeCheck: true,
@@ -542,9 +545,11 @@ export class SdPackageBuilder extends events.EventEmitter {
           basePath: process.cwd(),
           sourceMap: true,
           skipCodeGeneration: true,
+          forkTypeChecker: false,
           compilerOptions: {
             ...this._parsedTsConfig.options,
             rootDir: undefined,
+            declaration: false,
             skipTemplateCodegen: false,
             strictMetadataEmit: true,
             fullTemplateTypeCheck: true,
