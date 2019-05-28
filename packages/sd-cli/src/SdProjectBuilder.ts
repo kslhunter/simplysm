@@ -274,7 +274,7 @@ export class SdProjectBuilder {
 
     // 빌드가 필요하면 빌드함
     if (argv.build) {
-      await this.buildAsync({watch: false, profile: false});
+      await this.buildAsync({watch: false, profile: false, options: argv.options});
     }
 
     // 프로젝트 "package.json" 버전 업
@@ -380,6 +380,8 @@ export class SdProjectBuilder {
               packageLogger.log(`파일 업로드 : (${(Math.floor(current * 10000 / total) / 100).toFixed(2).padStart(6, " ")}%) ${current.toLocaleString()} / ${total.toLocaleString()}`);
             }, 1000000);
           }));
+
+          await wsClient.execAsync("pm2 restart pm2.json");
 
           await wsClient.closeAsync();
         }

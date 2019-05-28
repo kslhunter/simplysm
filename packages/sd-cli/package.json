@@ -35,7 +35,8 @@
     "@angular/compiler": "^7.2.14",
     "@angular/service-worker": "^7.2.15",
     "@ngtools/webpack": "^7.3.9",
-    "@angular-devkit/build-optimizer": "^0.13.9"
+    "@angular-devkit/build-optimizer": "^0.13.9",
+    "raw-loader": "^2.0.0"
   },
   "peerDependencies": {
     "@simplysm/sd-core": "2.0.44",

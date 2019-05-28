@@ -130,18 +130,15 @@ export class SdServiceClient {
 
         const fileMd5 = await new Promise<string>((resolve1, reject1) => {
           try {
-            const output = crypto.createHash("md5");
-            const input = fs.createReadStream(filePath);
-
-            input.on("error", err => {
-              reject1(err);
-            });
-
-            output.once("readable", () => {
-              resolve1(output.read().toString("hex"));
-            });
-
-            input.pipe(output);
+            const hash = crypto.createHash("md5").setEncoding("hex");
+            fs.createReadStream(filePath)
+              .on("error", err => {
+                reject1(err);
+              })
+              .pipe(hash)
+              .once("finish", () => {
+                resolve1(hash.read());
+              });
           }
           catch (err) {
             reject1(err);

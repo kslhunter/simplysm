@@ -6,6 +6,7 @@ import * as fs from "fs-extra";
 import * as crypto from "crypto";
 import * as child_process from "child_process";
 import {ISdServiceEmitResponse, ISdServiceRequest, ISdServiceResponse} from "../commons";
+import * as path from "path";
 
 export class SdServiceServerConnection extends EventEmitter {
   private readonly _logger = new Logger("@simplysm/sd-service", "SdServiceServerConnection");
@@ -120,24 +121,21 @@ export class SdServiceServerConnection extends EventEmitter {
     else if (checkMd5Regexp.test(msg)) {
       const match = msg.match(checkMd5Regexp)!;
       const requestId = Number(match[1]);
-      const filePath = match[2];
+      const filePath = path.posix.join(process.cwd(), match[2]);
       const md5 = match[3];
 
       try {
         const fileMd5 = await fs.pathExists(filePath)
           ? await new Promise<string>((resolve1, reject1) => {
-            const output = crypto.createHash("md5");
-            const input = fs.createReadStream(filePath);
-
-            input.on("error", errMessage => {
-              reject1(new Error(errMessage));
-            });
-
-            output.once("readable", () => {
-              resolve1(output.read().toString("hex"));
-            });
-
-            input.pipe(output);
+            const hash = crypto.createHash("md5").setEncoding("hex");
+            fs.createReadStream(filePath)
+              .on("error", err => {
+                reject1(err);
+              })
+              .pipe(hash)
+              .once("finish", () => {
+                resolve1(hash.read());
+              });
           })
           : undefined;
 
@@ -170,13 +168,13 @@ export class SdServiceServerConnection extends EventEmitter {
     else if (uploadRegexp.test(msg)) {
       const match = msg.match(uploadRegexp)!;
       const requestId = Number(match[1]);
-      const filePath = match[2];
+      const filePath = path.posix.join(process.cwd(), match[2]);
       const offset = Number(match[3]);
       const length = Number(match[4]);
       const buf = JsonConvert.parse(match[5]) as Buffer;
 
       if (!this._uploadRequestMap.has(requestId)) {
-        fs.mkdirsSync(filePath);
+        fs.mkdirsSync(path.dirname(filePath));
         const fd = fs.openSync(filePath, "w");
         const newUploadRequestValue = {
           timer: setTimeout(async () => {

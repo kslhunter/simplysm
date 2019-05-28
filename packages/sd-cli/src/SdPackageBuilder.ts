@@ -228,7 +228,10 @@ export class SdPackageBuilder extends events.EventEmitter {
       webpackConfig.entry = this._getEntry();
     }
     else {
-      webpackConfig.entry = path.resolve(__dirname, "../lib/main.prod.js");
+      webpackConfig.entry = [
+        path.resolve(__dirname, "../lib/main.prod.js"),
+        path.resolve(this._contextPath, "src", "styles.scss")
+      ];
     }
 
     // optimization: library
@@ -496,7 +499,8 @@ export class SdPackageBuilder extends events.EventEmitter {
       webpackConfig.entry = {
         main: [
           `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
-          path.resolve(__dirname, "../lib/main.js")
+          path.resolve(__dirname, "../lib/main.js"),
+          path.resolve(this._contextPath, "src", "styles.scss")
         ]
       };
 
@@ -542,7 +546,6 @@ export class SdPackageBuilder extends events.EventEmitter {
       webpackConfig.plugins!.pushRange([
         new AngularCompilerPlugin({
           tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
-          // tsConfigPath: path.resolve(this._contextPath, "tsconfig.json"),
           entryModule: modulePath + "#" + path.basename(modulePath),
           mainPath: path.resolve(__dirname, "../lib/main.js"),
           basePath: process.cwd(),
