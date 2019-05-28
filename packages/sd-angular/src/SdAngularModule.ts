@@ -1,5 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {ErrorHandler, ModuleWithProviders, NgModule} from "@angular/core";
+import {ErrorHandler, NgModule} from "@angular/core";
 import {SdCardControl} from "./controls/SdCardControl";
 import {SdFormControl} from "./controls/SdFormControl";
 import {SdTextfieldControl} from "./controls/SdTextfieldControl";
@@ -199,28 +199,23 @@ import {SdWindowProvider} from "./providers/SdWindowProvider";
     SdToastContainerControl,
     SdToastControl,
     SdAddressSearchModal
+  ],
+  providers: [
+    SdDomValidatorProvider,
+    SdFileDialogProvider,
+    SdLocalStorageProvider,
+    SdModalProvider,
+    SdPrintProvider,
+    SdToastProvider,
+    SdServiceProvider,
+    SdSoapProvider,
+    SdCryptoServiceProvider,
+    SdOrmServiceProvider,
+    SdSmtpClientServiceProvider,
+    SdWindowProvider,
+    {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
+    {provide: ErrorHandler, useClass: GlobalErrorHandler}
   ]
 })
 export class SdAngularModule {
-  public static forRoot(): ModuleWithProviders<SdAngularModule> {
-    return {
-      ngModule: SdAngularModule,
-      providers: [
-        SdDomValidatorProvider,
-        SdFileDialogProvider,
-        SdLocalStorageProvider,
-        SdModalProvider,
-        SdPrintProvider,
-        SdToastProvider,
-        SdServiceProvider,
-        SdSoapProvider,
-        SdCryptoServiceProvider,
-        SdOrmServiceProvider,
-        SdSmtpClientServiceProvider,
-        SdWindowProvider,
-        {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
-        {provide: ErrorHandler, useClass: GlobalErrorHandler}
-      ]
-    };
-  }
 }

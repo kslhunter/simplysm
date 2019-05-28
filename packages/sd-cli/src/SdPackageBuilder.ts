@@ -335,6 +335,8 @@ export class SdPackageBuilder extends events.EventEmitter {
             ...this._parsedTsConfig.options,
             rootDir: undefined,
             declaration: false,
+            removeComments: true,
+            skipLibCheck: false,
             skipTemplateCodegen: false,
             strictMetadataEmit: true,
             fullTemplateTypeCheck: true,
@@ -540,6 +542,7 @@ export class SdPackageBuilder extends events.EventEmitter {
       webpackConfig.plugins!.pushRange([
         new AngularCompilerPlugin({
           tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
+          // tsConfigPath: path.resolve(this._contextPath, "tsconfig.json"),
           entryModule: modulePath + "#" + path.basename(modulePath),
           mainPath: path.resolve(__dirname, "../lib/main.js"),
           basePath: process.cwd(),
@@ -550,6 +553,7 @@ export class SdPackageBuilder extends events.EventEmitter {
             ...this._parsedTsConfig.options,
             rootDir: undefined,
             declaration: false,
+            skipLibCheck: false,
             skipTemplateCodegen: false,
             strictMetadataEmit: true,
             fullTemplateTypeCheck: true,

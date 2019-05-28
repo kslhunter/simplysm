@@ -30,7 +30,9 @@ sd-checkbox {
       height: $size;
       vertical-align: top;
       font-size: get($font-size, default);
-      text-indent: 1px;
+      //text-indent: 1px;
+      left: 1px;
+      top: -1px;
     }
 
     > ._content {

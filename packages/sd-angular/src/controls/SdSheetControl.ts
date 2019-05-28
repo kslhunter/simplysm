@@ -26,13 +26,13 @@ import {ResizeEvent} from "../commons/ResizeEvent";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="_sheet" [style.padding-top.px]="paddingTop">
-      <div #headerElRef class="_content _head" [style.top.px]="headTop">
+      <div #headerElRef class="_content _head">
         <div class="_row _pagination" *ngIf="pageLength > 1">
           <sd-pagination [(page)]="page" [length]="pageLength"
                          (pageChange)="pageChange.emit($event)"></sd-pagination>
         </div>
         <div class="_row" *ngIf="hasHeaderGroup">
-          <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
+          <div class="_col-group _fixed-col-group">
             <div class="_col _first-col" [class._double]="selectable && children">
               <div class="_border"></div>
             </div>
@@ -51,7 +51,7 @@ import {ResizeEvent} from "../commons/ResizeEvent";
           </div>
         </div>
         <div class="_row">
-          <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
+          <div class="_col-group _fixed-col-group">
             <div class="_col _first-col" [class._double]="selectable && children">
               <div class="_border"></div>
             </div>
@@ -78,7 +78,7 @@ import {ResizeEvent} from "../commons/ResizeEvent";
           </div>
         </div>
         <div class="_row _summary" *ngIf="hasSummary">
-          <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
+          <div class="_col-group _fixed-col-group">
             <div class="_col _first-col">
               <div class="_border"></div>
             </div>
@@ -106,7 +106,7 @@ import {ResizeEvent} from "../commons/ResizeEvent";
         <ng-template #rowOfList let-items="items">
           <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
             <div class="_row" [class._selected]="getIsItemSelected(item)"> <!-- [@rowState]="'in'" -->
-              <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
+              <div class="_col-group _fixed-col-group">
                 <div class="_col _first-col"
                      [class._double]="selectable && children"
                      [class._selectable]="selectable"
@@ -257,9 +257,6 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   @Output()
   public readonly expandedItemTracksChange = new EventEmitter<any[]>();
-
-  public headTop = 0;
-  public fixedLeft = 0;
 
   public get paddingTop(): number {
     const rowEls = this._elRef.nativeElement.findAll("._head > ._row");
@@ -432,6 +429,21 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public ngOnInit(): void {
     this._loadColumnConfigs();
+
+    const el = this._elRef.nativeElement;
+    el.addEventListener("scroll", () => {
+      const fixedColGroupEls = el.findAll("._fixed-col-group") as HTMLElement[];
+      for (const fixedColGroupEl of fixedColGroupEls) {
+        fixedColGroupEl.style.left = el.scrollLeft + "px";
+      }
+      const paginationRowEl = el.findAll("._pagination")[0] as HTMLElement;
+      if (paginationRowEl) {
+        paginationRowEl.style.left = el.scrollLeft + "px";
+      }
+
+      const headerEl = el.findAll("._head")[0] as HTMLElement;
+      headerEl.style.top = el.scrollTop + "px";
+    });
   }
 
   public ngDoCheck(): void {
@@ -535,12 +547,18 @@ export class SdSheetControl implements DoCheck, OnInit {
     }
   }
 
-  @HostListener("scroll", ["$event"])
+  /*@HostListener("scroll", ["$event"])
   public onScroll(event: Event): void {
-    const el = event.target as Element;
-    this.headTop = el.scrollTop;
-    this.fixedLeft = el.scrollLeft;
-  }
+    const el = this._elRef.nativeElement;
+
+    const fixedColGroupEls = el.findAll("._fixed-col-group") as HTMLElement[];
+    for (const fixedColGroupEl of fixedColGroupEls) {
+      fixedColGroupEl.style.left = el.scrollLeft + "px";
+    }
+
+    const headerEl = el.findAll("._head")[0] as HTMLElement;
+    headerEl.style.top = el.scrollTop + "px";
+  }*/
 
   public onHeadBorderMousedown(event: MouseEvent): void {
     if (!this.id) return;

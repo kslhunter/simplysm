@@ -1,19 +1,19 @@
 import {Wait} from "@simplysm/sd-core";
 
 export class SdFileDialogProvider {
-  public async showAsync(): Promise<File | undefined> {
-    return await new Promise<File | undefined>(resolve => {
+  public async showAsync<T extends boolean>(multiple?: T): Promise<(T extends true ? File[] : File) | undefined> {
+    return await new Promise<(T extends true ? File[] : File) | undefined>(resolve => {
       let inputEl: HTMLInputElement | undefined = document.createElement("input");
       inputEl.type = "file";
-      inputEl.multiple = false;
+      inputEl.multiple = multiple || false;
       inputEl.onchange = (event: Event) => {
         if (inputEl) {
           document.body.removeChild(inputEl);
           inputEl = undefined;
         }
 
-        const file = event.target!["files"][0];
-        resolve(file);
+        const files = event.target!["files"];
+        resolve(multiple ? files : files[0]);
       };
       inputEl.style.opacity = "0";
       inputEl.style.position = "fixed";

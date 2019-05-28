@@ -1,8 +1,8 @@
 sd-note {
   display: block;
-  padding: get($gap, sm) get($gap, default);
+  padding: get($gap, default);
   background: get($theme-color, grey, lightest);
-  border-left: get($gap, xxs) solid get($trans-color, default);
+  border-left: get($gap, sm) solid get($trans-color, default);
 
   @each $key, $val in $theme-color {
     &[sd-theme=#{$key}] {
