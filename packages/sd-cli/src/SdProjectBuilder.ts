@@ -381,8 +381,6 @@ export class SdProjectBuilder {
             }, 1000000);
           }));
 
-          await wsClient.execAsync("pm2 restart pm2.json");
-
           await wsClient.closeAsync();
         }
       }

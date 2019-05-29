@@ -376,7 +376,7 @@ export class SdPackageBuilder extends events.EventEmitter {
             content: JSON.stringify({
               name: "@" + this._projectNpmConfig.name + "/" + this._packageKey,
               script: "app.js",
-              watch: ["./*"],
+              watch: ["./app.js"],
               env: {
                 "NODE_ENV": "production"
               }
