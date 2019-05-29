@@ -66,7 +66,7 @@ export class SdServiceServerConnection extends EventEmitter {
     const splitRegexp = /^!split\(([0-9]*),([0-9]*),([0-9]*)\)!(.*)/;
     const checkMd5Regexp = /^!checkMd5\(([0-9]*),([^,]*)\)!(.*)/;
     const uploadRegexp = /^!upload\(([0-9]*),([^,]*),([0-9]*),([0-9]*)\)!(.*)/;
-    const execRegexp = /^!upload\(([0-9]*)\)!(.*)/;
+    const execRegexp = /^!exec\(([0-9]*)\)!(.*)/;
 
     // 부분 요청 합치
     if (splitRegexp.test(msg)) {
@@ -231,7 +231,7 @@ export class SdServiceServerConnection extends EventEmitter {
       return;
     }
     else if (execRegexp.test(msg)) {
-      const match = msg.match(uploadRegexp)!;
+      const match = msg.match(execRegexp)!;
       const requestId = Number(match[1]);
       const cmd = match[2];
 

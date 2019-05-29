@@ -352,20 +352,23 @@ export class SdPackageBuilder extends events.EventEmitter {
     }
 
     // '.configs.json'파일 생성
-    if (config.type !== undefined) {
-      webpackConfig.plugins!.push(
-        new SdWebpackWriteFilePlugin([
-          {
-            path: path.resolve(this._distPath, ".configs.json"),
-            content: async () => {
-              const currProjectConfig = await SdCliUtil.getConfigObjAsync("production", this._options);
-              const currConfig = currProjectConfig.packages[this._packageKey];
-              return JSON.stringify(currConfig.configs, undefined, 2);
-            }
+    webpackConfig.plugins!.push(
+      new SdWebpackWriteFilePlugin([
+        {
+          path: path.resolve(this._distPath, ".configs.json"),
+          content: async () => {
+            const currProjectConfig = await SdCliUtil.getConfigObjAsync("production", this._options);
+            const currConfig = currProjectConfig.packages[this._packageKey];
+            return JSON.stringify({
+              env: "production",
+              ...currConfig.configs
+            }, undefined, 2);
           }
-        ])
-      );
-    }
+        }
+      ])
+    );
+    /*if (config.type !== undefined) {
+    }*/
 
     // 서버일때, 'pm2.json' 파일 생성
     if (config.type === "server") {
@@ -569,17 +572,20 @@ export class SdPackageBuilder extends events.EventEmitter {
       ]);
     }
 
-    // 빌드 타입이 서버일 때, '.configs.json'파일 생성
-    if (config.type === "server") {
-      webpackConfig.plugins!.push(
-        new SdWebpackWriteFilePlugin([
-          {
-            path: path.resolve(this._distPath, ".configs.json"),
-            content: JSON.stringify(config.configs, undefined, 2)
-          }
-        ])
-      );
-    }
+    // '.configs.json'파일 생성
+    webpackConfig.plugins!.push(
+      new SdWebpackWriteFilePlugin([
+        {
+          path: path.resolve(this._distPath, ".configs.json"),
+          content: JSON.stringify({
+            env: "development",
+            ...config.configs
+          }, undefined, 2)
+        }
+      ])
+    );
+    /*if (config.type === "server") {
+    }*/
 
     const compiler = webpack(webpackConfig);
 

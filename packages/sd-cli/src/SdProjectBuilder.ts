@@ -337,10 +337,19 @@ export class SdProjectBuilder {
       if (config.packages[packageKey].publish) {
         const publishConfig = config.packages[packageKey].publish!;
 
+        const distConfig = await fs.readJson(path.resolve(packagePath, "dist", ".configs.json"));
         if (publishConfig === "npm") {
+          if (distConfig.env === "development") {
+            throw new Error("개발버전을 배포할 순 없습니다.");
+          }
+
           await ProcessManager.spawnAsync("yarn publish --access public", {cwd: packagePath, logger: packageLogger});
         }
         else if (publishConfig.type === "simplysm") {
+          if (distConfig.env === "development") {
+            throw new Error("개발버전을 배포할 순 없습니다.");
+          }
+
           const wsClient = new SdServiceClient(
             publishConfig.port || (publishConfig.ssl ? 443 : 80),
             publishConfig.host,
@@ -389,6 +398,9 @@ export class SdProjectBuilder {
           }));
 
           await wsClient.closeAsync();
+        }
+        else {
+          throw new Error("미구현");
         }
       }
     }));
@@ -519,7 +531,10 @@ export class SdProjectBuilder {
 
     const packageConfigDistPath = path.resolve(serverInfo.server.rootPath, "www", packageKey, ".configs.json");
     await fs.mkdirs(path.dirname(packageConfigDistPath));
-    await fs.writeJson(packageConfigDistPath, packageConfig.configs, {spaces: 2, EOL: os.EOL});
+    await fs.writeJson(packageConfigDistPath, {
+      env: "development",
+      ...packageConfig.configs
+    }, {spaces: 2, EOL: os.EOL});
 
     await FileWatcher.watch(path.resolve(process.cwd(), "simplysm.json"), ["change"], async () => {
       const currConfig: ISdProjectConfig = await SdCliUtil.getConfigObjAsync("development", options);
@@ -527,7 +542,10 @@ export class SdProjectBuilder {
 
       if (!Object.equal(currPackageConfig.configs, packageConfig.configs)) {
         await fs.mkdirs(path.dirname(packageConfigDistPath));
-        await fs.writeJson(packageConfigDistPath, currPackageConfig.configs, {spaces: 2, EOL: os.EOL});
+        await fs.writeJson(packageConfigDistPath, {
+          env: "development",
+          ...currPackageConfig.configs
+        }, {spaces: 2, EOL: os.EOL});
         logger.log(`'${packageKey}'의 '.configs.json' 파일이 변경되었습니다.`);
       }
     });
