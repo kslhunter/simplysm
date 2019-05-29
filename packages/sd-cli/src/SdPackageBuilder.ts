@@ -377,9 +377,9 @@ export class SdPackageBuilder extends events.EventEmitter {
           {
             path: path.resolve(this._distPath, "pm2.json"),
             content: JSON.stringify({
-              name: "@" + this._projectNpmConfig.name + "/" + this._packageKey,
+              name: this._projectNpmConfig.name + "-" + this._packageKey,
               script: "app.js",
-              watch: ["./app.js"],
+              watch: "app.js",
               env: {
                 "NODE_ENV": "production"
               }
@@ -558,6 +558,7 @@ export class SdPackageBuilder extends events.EventEmitter {
           compilerOptions: {
             ...this._parsedTsConfig.options,
             rootDir: undefined,
+            sourceMap: true,
             declaration: false,
             skipLibCheck: false,
             skipTemplateCodegen: false,

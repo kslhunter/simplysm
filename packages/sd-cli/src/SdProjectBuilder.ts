@@ -359,7 +359,7 @@ export class SdProjectBuilder {
 
           // 결과 파일 업로드
           const filePaths = await new Promise<string[]>((resolve, reject) => {
-            glob(path.resolve(packagePath, "dist", "**", "*"), (err, files) => {
+            glob(path.resolve(packagePath, "dist", "**", "*"), {dot: true}, (err, files) => {
               if (err) {
                 reject(err);
                 return;

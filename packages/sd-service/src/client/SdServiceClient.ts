@@ -218,7 +218,6 @@ export class SdServiceClient {
   public async execAsync(cmd: string): Promise<void> {
     return await new Promise<any>(async (resolve, reject) => {
       try {
-
         if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
           try {
             await Wait.true(() => !!this._ws && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
