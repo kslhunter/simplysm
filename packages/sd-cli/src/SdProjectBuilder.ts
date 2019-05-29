@@ -293,8 +293,6 @@ export class SdProjectBuilder {
 
     // 패키지정보별 병렬실행,
     await Promise.all(Object.keys(config.packages).map(async packageKey => {
-      const packageLogger = new Logger("@simplysm/sd-cli", `[publish]\t${packageKey}`);
-
       const packagePath = path.resolve(process.cwd(), "packages", packageKey);
       const packageNpmConfigPath = path.resolve(packagePath, "package.json");
       const packageNpmConfig = await fs.readJson(packageNpmConfigPath);
@@ -325,6 +323,15 @@ export class SdProjectBuilder {
 
       // > "npmConfig"를 패키지 "package.json"에 다시쓰기
       await fs.writeJson(packageNpmConfigPath, packageNpmConfig, {spaces: 2, EOL: os.EOL});
+    }));
+
+    await ProcessManager.spawnAsync("git add .");
+    await ProcessManager.spawnAsync(`git commit -m "v${projectNpmConfig.version}"`);
+    await ProcessManager.spawnAsync(`git tag -a "v${projectNpmConfig.version}" -m "v${projectNpmConfig.version}"`);
+
+    await Promise.all(Object.keys(config.packages).map(async packageKey => {
+      const packageLogger = new Logger("@simplysm/sd-cli", `[publish]\t${packageKey}`);
+      const packagePath = path.resolve(process.cwd(), "packages", packageKey);
 
       // > 배포
       if (config.packages[packageKey].publish) {
@@ -385,10 +392,6 @@ export class SdProjectBuilder {
         }
       }
     }));
-
-    await ProcessManager.spawnAsync("git add .");
-    await ProcessManager.spawnAsync(`git commit -m "v${projectNpmConfig.version}"`);
-    await ProcessManager.spawnAsync(`git tag -a "v${projectNpmConfig.version}" -m "v${projectNpmConfig.version}"`);
 
     logger.log(`모든 배포가 완료되었습니다. - v${projectNpmConfig.version}`);
   }

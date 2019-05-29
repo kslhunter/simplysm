@@ -228,10 +228,10 @@ export class SdPackageBuilder extends events.EventEmitter {
       webpackConfig.entry = this._getEntry();
     }
     else {
-      webpackConfig.entry = [
-        path.resolve(__dirname, "../lib/main.prod.js"),
-        path.resolve(this._contextPath, "src", "styles.scss")
-      ];
+      webpackConfig.entry = {
+        main: path.resolve(__dirname, "../lib/main.prod.js"),
+        styles: path.resolve(this._contextPath, "src", "styles.scss")
+      };
     }
 
     // optimization: library
@@ -499,9 +499,9 @@ export class SdPackageBuilder extends events.EventEmitter {
       webpackConfig.entry = {
         main: [
           `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
-          path.resolve(__dirname, "../lib/main.js"),
-          path.resolve(this._contextPath, "src", "styles.scss")
-        ]
+          path.resolve(__dirname, "../lib/main.js")
+        ],
+        styles: path.resolve(this._contextPath, "src", "styles.scss")
       };
 
       webpackConfig.module!.rules.pushRange([
