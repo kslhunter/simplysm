@@ -552,6 +552,23 @@ export class SdPackageBuilder extends events.EventEmitter {
               }
             }
           ]
+        },
+        {
+          test: /\.css$/,
+          use: [
+            {
+              loader: "style-loader",
+              options: {
+                sourceMap: true
+              }
+            },
+            {
+              loader: "css-loader",
+              options: {
+                sourceMap: true
+              }
+            }
+          ]
         }
       ]);
 
