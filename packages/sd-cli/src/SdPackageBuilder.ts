@@ -147,7 +147,11 @@ export class SdPackageBuilder extends events.EventEmitter {
       ]);
 
       webpackConfig.plugins!.pushRange([
-        new webpack.ContextReplacementPlugin(/@angular([\\/])core([\\/])/),
+        new webpack.ContextReplacementPlugin(
+          /angular[\\/]core[\\/]fesm5/,
+          path.resolve(this._contextPath, "src"),
+          {}
+        ),
         new HtmlWebpackPlugin({
           template: path.resolve(__dirname, "../lib/index.ejs"),
           chunksSortMode: "none",
@@ -229,8 +233,7 @@ export class SdPackageBuilder extends events.EventEmitter {
     }
     else {
       webpackConfig.entry = {
-        main: path.resolve(__dirname, "../lib/main.prod.js"),
-        styles: path.resolve(this._contextPath, "src", "styles.scss")
+        main: path.resolve(__dirname, "../lib/main.prod.js")
       };
     }
 
@@ -503,15 +506,19 @@ export class SdPackageBuilder extends events.EventEmitter {
         main: [
           `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
           path.resolve(__dirname, "../lib/main.js")
-        ],
-        styles: path.resolve(this._contextPath, "src", "styles.scss")
+        ]
       };
 
       webpackConfig.module!.rules.pushRange([
         {
+          test: /\.ts$/,
+          exclude: /node_modules/,
+          loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
+        },
+        /*{
           test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
           loader: "@ngtools/webpack"
-        },
+        },*/
         {
           test: /\.scss$/,
           use: [
@@ -544,10 +551,11 @@ export class SdPackageBuilder extends events.EventEmitter {
         }
       ]);
 
+      // noinspection UnnecessaryLocalVariableJS
       const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
       webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE"] = modulePath;
       webpackConfig.plugins!.pushRange([
-        new AngularCompilerPlugin({
+        /*new AngularCompilerPlugin({
           tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
           entryModule: modulePath + "#" + path.basename(modulePath),
           mainPath: path.resolve(__dirname, "../lib/main.js"),
@@ -568,7 +576,7 @@ export class SdPackageBuilder extends events.EventEmitter {
             strictInjectionParameters: true,
             enableResourceInlining: true
           }
-        }),
+        }),*/
         new webpack.HotModuleReplacementPlugin()
       ]);
     }

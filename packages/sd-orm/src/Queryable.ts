@@ -109,7 +109,7 @@ export class Queryable<T extends object> {
     return result;
   }
 
-  public join<A extends string, J, R, S extends boolean>(joinType: Type<J>, as: A, fwd: (qb: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<R>, isSingle?: S): Queryable<T & { [K in A]?: (S extends true ? R : R[]) }> {
+  public join<A extends string, J, R, S extends boolean>(joinType: Type<J>, as: A, fwd: (qb: QueryBuilderAdv<J>, entity: T) => QueryBuilderAdv<R>, isSingle: S): Queryable<T & { [K in A]?: (S extends true ? R : R[]) }> {
     const result = this._clone() as Queryable<any>;
     result._qba = this._qba.join(joinType, as, fwd, isSingle);
     return result;

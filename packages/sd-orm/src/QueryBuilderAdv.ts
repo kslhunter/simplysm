@@ -579,6 +579,10 @@ export class QueryBuilderAdv<T> {
     return result;
   }
 
+  public wrap(): QueryBuilderAdv<T> {
+    return new QueryBuilderAdv(this, this._database, this._as);
+  }
+
   private _getFkOrFktDef(chain: string): IForeignKeyDef | IForeignKeyTargetDef | undefined {
     const parentAs = chain.split(".").slice(0, -1).join(".");
     if (parentAs) {
