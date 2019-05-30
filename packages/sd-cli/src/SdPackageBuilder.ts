@@ -19,6 +19,7 @@ import {JsonConvert} from "@simplysm/sd-core";
 import {NodeFilesystem} from "./service-worker/filesystem";
 import {AngularCompilerPlugin} from "@ngtools/webpack";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
+import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 
 export class SdPackageBuilder extends events.EventEmitter {
   private readonly _projectNpmConfig: any;
@@ -137,13 +138,6 @@ export class SdPackageBuilder extends events.EventEmitter {
         {
           test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
           parser: {system: true}
-        },
-        {
-          test: /\.css$/,
-          use: [
-            "style-loader",
-            "css-loader"
-          ]
         }
       ]);
 
@@ -293,7 +287,8 @@ export class SdPackageBuilder extends events.EventEmitter {
         }
       };
       webpackConfig.optimization!.minimizer.push(
-        new webpack.HashedModuleIdsPlugin()
+        new webpack.HashedModuleIdsPlugin(),
+        new OptimizeCSSAssetsPlugin()
       );
 
       webpackConfig.performance = {
@@ -314,7 +309,6 @@ export class SdPackageBuilder extends events.EventEmitter {
         {
           test: /\.scss$/,
           use: [
-            // "style-loader",
             MiniCssExtractPlugin.loader,
             "css-loader",
             "resolve-url-loader",
@@ -325,6 +319,13 @@ export class SdPackageBuilder extends events.EventEmitter {
                 sourceMapContents: false
               }
             }
+          ]
+        },
+        {
+          test: /\.css$/,
+          use: [
+            MiniCssExtractPlugin.loader,
+            "css-loader"
           ]
         }
       ]);
