@@ -18,6 +18,7 @@ import {Generator} from "@angular/service-worker/config";
 import {JsonConvert} from "@simplysm/sd-core";
 import {NodeFilesystem} from "./service-worker/filesystem";
 import {AngularCompilerPlugin} from "@ngtools/webpack";
+import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
 
 export class SdPackageBuilder extends events.EventEmitter {
   private readonly _projectNpmConfig: any;
@@ -313,7 +314,8 @@ export class SdPackageBuilder extends events.EventEmitter {
         {
           test: /\.scss$/,
           use: [
-            "style-loader",
+            // "style-loader",
+            MiniCssExtractPlugin.loader,
             "css-loader",
             "resolve-url-loader",
             {
@@ -350,7 +352,8 @@ export class SdPackageBuilder extends events.EventEmitter {
             strictInjectionParameters: true,
             enableResourceInlining: true
           }
-        })
+        }),
+        new MiniCssExtractPlugin()
       ]);
     }
 

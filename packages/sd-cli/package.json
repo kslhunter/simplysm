@@ -34,7 +34,8 @@
     "@angular/compiler-cli": "^8.0.0",
     "@angular/service-worker": "^8.0.0",
     "@ngtools/webpack": "^8.0.0",
-    "@angular-devkit/build-optimizer": "^0.800.0"
+    "@angular-devkit/build-optimizer": "^0.800.0",
+    "mini-css-extract-plugin": "^0.7.0"
   },
   "peerDependencies": {
     "@simplysm/sd-core": "2.1.4",
