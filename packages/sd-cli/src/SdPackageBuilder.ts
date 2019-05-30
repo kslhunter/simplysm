@@ -339,13 +339,13 @@ export class SdPackageBuilder extends events.EventEmitter {
             rootDir: undefined,
             declaration: false,
             removeComments: true,
+            disableTypeScriptVersionCheck: true,
             skipLibCheck: false,
             skipTemplateCodegen: false,
             strictMetadataEmit: true,
             fullTemplateTypeCheck: true,
             strictInjectionParameters: true,
-            enableResourceInlining: true,
-            disableTypeScriptVersionCheck: true
+            enableResourceInlining: true
           }
         })
       ]);
@@ -560,13 +560,13 @@ export class SdPackageBuilder extends events.EventEmitter {
             rootDir: undefined,
             sourceMap: true,
             declaration: false,
+            disableTypeScriptVersionCheck: true,
             skipLibCheck: false,
             skipTemplateCodegen: false,
             strictMetadataEmit: true,
             fullTemplateTypeCheck: true,
             strictInjectionParameters: true,
-            enableResourceInlining: true,
-            disableTypeScriptVersionCheck: true
+            enableResourceInlining: true
           }
         }),
         new webpack.HotModuleReplacementPlugin()

@@ -41,7 +41,7 @@ export class SdSelectItemControl {
 
   private _value: any;
 
-  @ContentChild("label")
+  @ContentChild("label", {static: true})
   public labelTemplateRef?: TemplateRef<any>;
 
   @HostBinding("class._selected")

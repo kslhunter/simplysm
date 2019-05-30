@@ -91,7 +91,7 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @SdTypeValidate(String)
   public pattern?: string;
 
-  @ViewChild("input")
+  @ViewChild("input", {static: true})
   public inputElRef?: ElementRef<HTMLInputElement | HTMLTextAreaElement>;
 
   @Input()

@@ -64,10 +64,10 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
   @ContentChildren(SdComboboxItemControl, {descendants: true})
   public itemControls?: QueryList<SdComboboxItemControl>;
 
-  @ViewChild("textfield", {read: ElementRef})
+  @ViewChild("textfield", {static: true, read: ElementRef})
   public textfieldElRef?: ElementRef<HTMLElement>;
 
-  @ViewChild("dropdown")
+  @ViewChild("dropdown", {static: true})
   public dropdownElRef?: ElementRef<HTMLDivElement>;
 
   @Output()

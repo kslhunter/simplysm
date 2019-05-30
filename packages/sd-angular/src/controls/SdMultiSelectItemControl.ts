@@ -35,7 +35,7 @@ export class SdMultiSelectItemControl implements DoCheck {
   @Input()
   public value?: any;
 
-  @ContentChild("label")
+  @ContentChild("label", {static: true})
   public labelTemplateRef?: TemplateRef<any>;
 
   private readonly _iterableDiffer: IterableDiffer<any>;

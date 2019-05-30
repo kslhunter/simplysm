@@ -36,7 +36,7 @@ export class SdSidebarUserControl implements AfterViewInit, ISdNotifyPropertyCha
   @HostBinding("attr.sd-open")
   public open?: boolean;
 
-  @ViewChild("childContent")
+  @ViewChild("childContent", {static: true})
   public childContentElRef?: ElementRef<HTMLDivElement>;
 
   public ngAfterViewInit(): void {

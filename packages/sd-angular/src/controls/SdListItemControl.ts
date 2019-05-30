@@ -50,7 +50,7 @@ export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit
   @ContentChildren(SdListControl)
   public listControls?: QueryList<SdListControl>;
 
-  @ViewChild("childContent")
+  @ViewChild("childContent", {static: true})
   public childContentElRef?: ElementRef<HTMLDivElement>;
 
   @Input()

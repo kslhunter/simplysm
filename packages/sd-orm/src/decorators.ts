@@ -19,7 +19,7 @@ export function Table<T>(def?: {
   };
 }
 
-export function Column<T>(columnDef?: {
+export function Column<T extends object>(columnDef?: {
   dataType?: string;
   nullable?: boolean;
   autoIncrement?: boolean;
@@ -51,7 +51,7 @@ export function Column<T>(columnDef?: {
   };
 }
 
-export function Index<T>(indexName?: string, order?: number): (object: T, propertyKey: string) => void {
+export function Index<T extends object>(indexName?: string, order?: number): (object: T, propertyKey: string) => void {
   return (object: T, propertyKey: string) => {
     const classType = object.constructor;
 
@@ -91,7 +91,7 @@ export function ForeignKey<T>(columnNames: (keyof T) | ((keyof T)[]), targetType
   };
 }
 
-export function ForeignKeyTarget<T, P>(sourceTypeFwd: () => Type<P>, foreignKeyName: keyof P, description?: string): (object: T, propertyKey: string) => void {
+export function ForeignKeyTarget<T extends object, P>(sourceTypeFwd: () => Type<P>, foreignKeyName: keyof P, description?: string): (object: T, propertyKey: string) => void {
   return (object: T, propertyKey: string) => {
     const classType = object.constructor;
 

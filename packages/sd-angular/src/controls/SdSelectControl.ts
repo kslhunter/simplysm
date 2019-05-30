@@ -117,19 +117,19 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
   @SdTypeValidate(String)
   public keyProp?: string;
 
-  @ViewChild("dropdown")
+  @ViewChild("dropdown", {static: true})
   public dropdownControl?: SdDropdownControl;
 
-  @ViewChild("popup", {read: ElementRef})
+  @ViewChild("popup", {static: true, read: ElementRef})
   public popupElRef?: ElementRef<HTMLElement>;
 
-  @ContentChild("item")
+  @ContentChild("item", {static: true})
   public itemTemplateRef?: TemplateRef<any>;
 
-  @ContentChild("header")
+  @ContentChild("header", {static: true})
   public headerTemplateRef?: TemplateRef<any>;
 
-  @ContentChild("before")
+  @ContentChild("before", {static: true})
   public beforeTemplateRef?: TemplateRef<any>;
 
   @Input()

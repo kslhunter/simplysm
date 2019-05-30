@@ -29,9 +29,9 @@ export class SdSheetColumnControl {
   @SdTypeValidate(Boolean)
   public fixed?: boolean;
 
-  @ContentChild("cell")
+  @ContentChild("cell", {static: true})
   public cellTemplateRef?: TemplateRef<{ item: any; index: number }>;
 
-  @ContentChild("summary")
+  @ContentChild("summary", {static: true})
   public summaryTemplateRef?: TemplateRef<{ items: any[] }>;
 }

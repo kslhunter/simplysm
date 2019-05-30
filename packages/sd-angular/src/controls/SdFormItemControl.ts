@@ -21,6 +21,6 @@ export class SdFormItemControl {
   @SdTypeValidate(String)
   public label?: string;
 
-  @ContentChild("label")
+  @ContentChild("label", {static: true})
   public labelTemplateRef?: TemplateRef<any>;
 }

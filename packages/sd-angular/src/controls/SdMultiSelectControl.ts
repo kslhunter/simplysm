@@ -93,13 +93,13 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
   @Output()
   public readonly close = new EventEmitter();
 
-  @ViewChild("content")
+  @ViewChild("content", {static: true})
   public contentElRef?: ElementRef<HTMLDivElement>;
 
-  @ContentChild("item")
+  @ContentChild("item", {static: true})
   public itemTemplateRef?: TemplateRef<any>;
 
-  @ContentChild("header")
+  @ContentChild("header", {static: true})
   public headerTemplateRef?: TemplateRef<any>;
 
   @Input()
