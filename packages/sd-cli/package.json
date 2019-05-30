@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -39,7 +39,7 @@
     "optimize-css-assets-webpack-plugin": "^5.0.1"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "2.1.5",
-    "@simplysm/sd-service": "2.1.5"
+    "@simplysm/sd-core": "2.1.6",
+    "@simplysm/sd-service": "2.1.6"
   }
 }
