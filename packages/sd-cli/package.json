@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "2.1.7",
+  "version": "2.1.8",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -43,13 +43,13 @@
     "vue": "^2.6.10",
     "vue-loader": "^15.7.0",
     "vue-template-compiler": "^2.6.10",
-    "rxjs": "^6.5.2",
+    "rxjs": "^6.5.1",
     "zone.js": "^0.9.1",
     "workbox-webpack-plugin": "^4.3.1",
     "event-source-polyfill": "^1.0.5"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "2.1.7",
-    "@simplysm/sd-service": "2.1.7"
+    "@simplysm/sd-core": "2.1.8",
+    "@simplysm/sd-service": "2.1.8"
   }
 }
