@@ -576,6 +576,7 @@ export class SdPackageBuilder extends events.EventEmitter {
       if (config.framework === "vue") {
         webpackConfig.entry = {
           main: [
+            "eventsource-polyfill",
             `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
             path.resolve(__dirname, "../lib/main.vue.js")
           ]

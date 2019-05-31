@@ -4,7 +4,6 @@ const Vue = require("vue").default;
 const App = require("SIMPLYSM_CLIENT_APP_VUE").default;
 const router = require("SIMPLYSM_CLIENT_ROUTER").default;
 const {register} = require("register-service-worker");
-require("event-source-polyfill");
 
 register(`${process.env.BASE_HREF}service-worker.js`, {
   ready() {

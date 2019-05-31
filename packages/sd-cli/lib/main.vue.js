@@ -3,7 +3,6 @@
 const Vue = require("vue").default;
 const App = require("SIMPLYSM_CLIENT_APP_VUE").default;
 const router = require("SIMPLYSM_CLIENT_ROUTER").default;
-require("event-source-polyfill");
 
 Vue.config.productionTip = false;
 
