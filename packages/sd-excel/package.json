@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-excel",
-  "version": "2.1.9",
+  "version": "2.1.10",
   "description": "심플리즘 패키지 - 엑셀",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -12,6 +12,6 @@
     "jszip": "^3.2.1"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "2.1.9"
+    "@simplysm/sd-core": "2.1.10"
   }
 }
