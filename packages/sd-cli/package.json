@@ -46,7 +46,7 @@
     "rxjs": "^6.5.1",
     "zone.js": "^0.9.1",
     "workbox-webpack-plugin": "^4.3.1",
-    "eventsource-polyfill": "^0.9.6"
+    "event-source-polyfill": "^1.0.5"
   },
   "peerDependencies": {
     "@simplysm/sd-core": "2.1.9",

@@ -132,7 +132,8 @@ export class SdPackageBuilder extends events.EventEmitter {
           new HtmlWebpackPlugin({
             template: path.resolve(__dirname, "../lib/index.vue.ejs"),
             chunksSortMode: "none",
-            BASE_HREF: `/${this._packageKey}/`
+            BASE_HREF: `/${this._packageKey}/`,
+            inject: true
           })
         );
       }
@@ -576,7 +577,7 @@ export class SdPackageBuilder extends events.EventEmitter {
       if (config.framework === "vue") {
         webpackConfig.entry = {
           main: [
-            "eventsource-polyfill",
+            path.resolve(this._contextPath, "node_modules", "event-source-polyfill", "src", "eventsource.min.js"),
             `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
             path.resolve(__dirname, "../lib/main.vue.js")
           ]
@@ -601,67 +602,113 @@ export class SdPackageBuilder extends events.EventEmitter {
           {
             test: /\.vue$/,
             loader: "vue-loader"
+          },
+          {
+            test: /\.scss$/,
+            use: [
+              {
+                loader: "vue-style-loader",
+                options: {
+                  sourceMap: true
+                }
+              },
+              {
+                loader: "css-loader",
+                options: {
+                  sourceMap: true
+                }
+              },
+              {
+                loader: "resolve-url-loader",
+                options: {
+                  sourceMap: true
+                }
+              },
+              {
+                loader: "sass-loader",
+                options: {
+                  sourceMap: true,
+                  sourceMapContents: false
+                }
+              }
+            ]
+          },
+          {
+            test: /\.css$/,
+            use: [
+              {
+                loader: "vue-style-loader",
+                options: {
+                  sourceMap: true
+                }
+              },
+              {
+                loader: "css-loader",
+                options: {
+                  sourceMap: true
+                }
+              }
+            ]
           }
         ]);
 
         webpackConfig.plugins!.push(new VueLoaderPlugin());
       }
       else {
-        webpackConfig.module!.rules.push({
-          test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
-          loader: "@ngtools/webpack"
-        });
+        webpackConfig.module!.rules.pushRange([
+          {
+            test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+            loader: "@ngtools/webpack"
+          },
+          {
+            test: /\.scss$/,
+            use: [
+              {
+                loader: "style-loader",
+                options: {
+                  sourceMap: true
+                }
+              },
+              {
+                loader: "css-loader",
+                options: {
+                  sourceMap: true
+                }
+              },
+              {
+                loader: "resolve-url-loader",
+                options: {
+                  sourceMap: true
+                }
+              },
+              {
+                loader: "sass-loader",
+                options: {
+                  sourceMap: true,
+                  sourceMapContents: false
+                }
+              }
+            ]
+          },
+          {
+            test: /\.css$/,
+            use: [
+              {
+                loader: "style-loader",
+                options: {
+                  sourceMap: true
+                }
+              },
+              {
+                loader: "css-loader",
+                options: {
+                  sourceMap: true
+                }
+              }
+            ]
+          }
+        ]);
       }
-
-      webpackConfig.module!.rules.pushRange([
-        {
-          test: /\.scss$/,
-          use: [
-            {
-              loader: "style-loader",
-              options: {
-                sourceMap: true
-              }
-            },
-            {
-              loader: "css-loader",
-              options: {
-                sourceMap: true
-              }
-            },
-            {
-              loader: "resolve-url-loader",
-              options: {
-                sourceMap: true
-              }
-            },
-            {
-              loader: "sass-loader",
-              options: {
-                sourceMap: true,
-                sourceMapContents: false
-              }
-            }
-          ]
-        },
-        {
-          test: /\.css$/,
-          use: [
-            {
-              loader: "style-loader",
-              options: {
-                sourceMap: true
-              }
-            },
-            {
-              loader: "css-loader",
-              options: {
-                sourceMap: true
-              }
-            }
-          ]
-        }
-      ]);
 
       if (config.framework === "vue") {
         const appVueFilePath = path.resolve(this._contextPath, "src", "App.vue");
