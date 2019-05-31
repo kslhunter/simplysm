@@ -20,6 +20,9 @@ import {NodeFilesystem} from "./service-worker/filesystem";
 import {AngularCompilerPlugin} from "@ngtools/webpack";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
+import {GenerateSW} from "workbox-webpack-plugin";
+
+const VueLoaderPlugin = require('vue-loader/lib/plugin'); // tslint:disable-line
 
 export class SdPackageBuilder extends events.EventEmitter {
   private readonly _projectNpmConfig: any;
@@ -262,7 +265,7 @@ export class SdPackageBuilder extends events.EventEmitter {
           enforce: "pre",
           test: /\.js$/,
           use: ["source-map-loader"],
-          exclude: /node_modules[\\/](?!@simplysm|rxjs|@angular|zone\.js)/
+          exclude: /node_modules[\\/](?!@simplysm|rxjs|@angular|zone\.js|@?vue)/
         }
       );
       webpackConfig.optimization!.minimizer = [
@@ -320,14 +323,34 @@ export class SdPackageBuilder extends events.EventEmitter {
 
     // rules
     if (config.type !== undefined && config.type !== "server") {
+      if (config.framework === "vue") {
+        webpackConfig.module!.rules.pushRange([
+          {
+            test: /\.ts$/,
+            exclude: /node_modules/,
+            loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
+          },
+          {
+            test: /\.vue$/,
+            loader: "vue-loader"
+          }
+        ]);
+
+        webpackConfig.plugins!.push(new VueLoaderPlugin());
+      }
+      else {
+        webpackConfig.module!.rules.push(
+          {
+            test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+            loader: [
+              "@angular-devkit/build-optimizer/webpack-loader",
+              "@ngtools/webpack"
+            ]
+          }
+        );
+      }
+
       webpackConfig.module!.rules.pushRange([
-        {
-          test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
-          loader: [
-            "@angular-devkit/build-optimizer/webpack-loader",
-            "@ngtools/webpack"
-          ]
-        },
         {
           test: /\.scss$/,
           use: [
@@ -352,36 +375,53 @@ export class SdPackageBuilder extends events.EventEmitter {
         }
       ]);
 
-      if (this._parsedTsConfig.fileNames.length < 1) {
-        throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
-      }
+      if (config.framework === "vue") {
+        const appVueFilePath = path.resolve(this._contextPath, "src", "App.vue");
+        const routerFilePath = path.resolve(this._contextPath, "src", "router.ts");
+        if (!await fs.pathExists(appVueFilePath)) {
+          throw new Error(`파일을 찾을 수 없습니다: ${appVueFilePath}`);
+        }
+        if (!await fs.pathExists(routerFilePath)) {
+          throw new Error(`파일을 찾을 수 없습니다: ${routerFilePath}`);
+        }
 
-      const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
-      webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE_NGFACTORY"] = modulePath + ".ngfactory";
-      webpackConfig.plugins!.pushRange([
-        new AngularCompilerPlugin({
-          tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
-          entryModule: modulePath + "#" + path.basename(modulePath),
-          mainPath: path.resolve(__dirname, "../lib/main.prod.js"),
-          basePath: process.cwd(),
-          sourceMap: false,
-          forkTypeChecker: false,
-          compilerOptions: {
-            ...this._parsedTsConfig.options,
-            rootDir: undefined,
-            declaration: false,
-            removeComments: true,
-            disableTypeScriptVersionCheck: true,
-            skipLibCheck: false,
-            skipTemplateCodegen: false,
-            strictMetadataEmit: true,
-            fullTemplateTypeCheck: true,
-            strictInjectionParameters: true,
-            enableResourceInlining: true
-          }
-        }),
-        new MiniCssExtractPlugin()
-      ]);
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_VUE"] = appVueFilePath;
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_ROUTER"] = routerFilePath;
+
+        webpackConfig.plugins!.push(new GenerateSW());
+      }
+      else {
+        if (this._parsedTsConfig.fileNames.length < 1) {
+          throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
+        }
+
+        const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE_NGFACTORY"] = modulePath + ".ngfactory";
+        webpackConfig.plugins!.pushRange([
+          new AngularCompilerPlugin({
+            tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
+            entryModule: modulePath + "#" + path.basename(modulePath),
+            mainPath: path.resolve(__dirname, "../lib/main.prod.js"),
+            basePath: process.cwd(),
+            sourceMap: false,
+            forkTypeChecker: false,
+            compilerOptions: {
+              ...this._parsedTsConfig.options,
+              rootDir: undefined,
+              declaration: false,
+              removeComments: true,
+              disableTypeScriptVersionCheck: true,
+              skipLibCheck: false,
+              skipTemplateCodegen: false,
+              strictMetadataEmit: true,
+              fullTemplateTypeCheck: true,
+              strictInjectionParameters: true,
+              enableResourceInlining: true
+            }
+          }),
+          new MiniCssExtractPlugin()
+        ]);
+      }
     }
 
     // '.configs.json'파일 생성
@@ -507,7 +547,7 @@ export class SdPackageBuilder extends events.EventEmitter {
         test: /\.js$/,
         use: ["source-map-loader"],
         exclude: [
-          /node_modules[\\/](?!@simplysm|rxjs|@angular|zone\.js|@vue)/,
+          /node_modules[\\/](?!@simplysm|rxjs|@angular|zone\.js|@?vue)/,
           /\.ngfactory\.js$/,
           /\.ngstyle\.js$/
         ]
@@ -562,6 +602,8 @@ export class SdPackageBuilder extends events.EventEmitter {
             loader: "vue-loader"
           }
         ]);
+
+        webpackConfig.plugins!.push(new VueLoaderPlugin());
       }
       else {
         webpackConfig.module!.rules.push({
@@ -623,11 +665,11 @@ export class SdPackageBuilder extends events.EventEmitter {
       if (config.framework === "vue") {
         const appVueFilePath = path.resolve(this._contextPath, "src", "App.vue");
         const routerFilePath = path.resolve(this._contextPath, "src", "router.ts");
-        if (await fs.pathExists(appVueFilePath)) {
-          throw new Error("src/App.vue 파일을 찾을 수 없습니다.");
+        if (!await fs.pathExists(appVueFilePath)) {
+          throw new Error(`파일을 찾을 수 없습니다: ${appVueFilePath}`);
         }
-        if (await fs.pathExists(routerFilePath)) {
-          throw new Error("src/router.ts 파일을 찾을 수 없습니다.");
+        if (!await fs.pathExists(routerFilePath)) {
+          throw new Error(`파일을 찾을 수 없습니다: ${routerFilePath}`);
         }
 
         webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_VUE"] = appVueFilePath;

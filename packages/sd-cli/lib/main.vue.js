@@ -3,10 +3,13 @@
 const Vue = require("vue").default;
 const App = require("SIMPLYSM_CLIENT_APP_VUE").default;
 const router = require("SIMPLYSM_CLIENT_ROUTER").default;
+require("event-source-polyfill");
 
 Vue.config.productionTip = false;
 
 new Vue({
-  router,
-  render: (h) => h(App),
+  router: router,
+  render: function (h) {
+    return h(App)
+  }
 }).$mount('#app');

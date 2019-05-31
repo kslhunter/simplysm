@@ -42,7 +42,11 @@
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "vue": "^2.6.10",
     "vue-loader": "^15.7.0",
-    "vue-template-compiler": "^2.6.10"
+    "vue-template-compiler": "^2.6.10",
+    "rxjs": "^6.5.2",
+    "zone.js": "^0.9.1",
+    "workbox-webpack-plugin": "^4.3.1",
+    "event-source-polyfill": "^1.0.5"
   },
   "peerDependencies": {
     "@simplysm/sd-core": "2.1.7",
