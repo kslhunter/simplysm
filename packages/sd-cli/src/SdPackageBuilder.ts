@@ -84,19 +84,12 @@ export class SdPackageBuilder extends events.EventEmitter {
         alias
       },
       module: {
-        rules: [
-          {
-            test: /\.(pfx|crt|pem)$/,
-            loader: "file-loader",
-            options: {
-              name: "ssl/[name].[ext]"
-            }
-          }
-        ]
+        rules: []
       },
       plugins: [
         new webpack.DefinePlugin({
-          "process.env.VERSION": `"${this._projectNpmConfig.version}"`
+          "process.env.VERSION": `"${this._projectNpmConfig.version}"`,
+          "process.env.BASE_HREF": `"/${this._packageKey}/"`
         })
       ],
       externals: []
@@ -110,13 +103,13 @@ export class SdPackageBuilder extends events.EventEmitter {
       };
       webpackConfig.output!.libraryTarget = "umd";
       webpackConfig.optimization!.nodeEnv = false;
-      webpackConfig.module!.rules!.pushRange([
+      webpackConfig.module!.rules!.push(
         {
           test: /\.ts$/,
           exclude: /node_modules/,
           loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
         }
-      ]);
+      );
 
       if (this._npmConfig["bin"]) {
         webpackConfig.plugins!.push(new webpack.BannerPlugin({
@@ -129,30 +122,39 @@ export class SdPackageBuilder extends events.EventEmitter {
       }
     }
     else {
-      if (this._parsedTsConfig.fileNames.length < 1) {
-        throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
-      }
-
       webpackConfig.output!.publicPath = `/${this._packageKey}/`;
-      webpackConfig.module!.rules!.pushRange([
-        {
-          test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
-          parser: {system: true}
-        }
-      ]);
 
-      webpackConfig.plugins!.pushRange([
-        new webpack.ContextReplacementPlugin(
-          /angular[\\/]core[\\/]fesm5/,
-          path.resolve(this._contextPath, "src"),
-          {}
-        ),
-        new HtmlWebpackPlugin({
-          template: path.resolve(__dirname, "../lib/index.ejs"),
-          chunksSortMode: "none",
-          BASE_HREF: `/${this._packageKey}/`
-        })
-      ]);
+      if (config.framework === "vue") {
+        webpackConfig.plugins!.push(
+          new HtmlWebpackPlugin({
+            template: path.resolve(__dirname, "../lib/index.vue.ejs"),
+            chunksSortMode: "none",
+            BASE_HREF: `/${this._packageKey}/`
+          })
+        );
+      }
+      else {
+        webpackConfig.module!.rules!.push(
+          {
+            test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
+            parser: {system: true}
+          }
+        );
+        webpackConfig.plugins!.push(
+          new webpack.ContextReplacementPlugin(
+            /angular[\\/]core[\\/]fesm5/,
+            path.resolve(this._contextPath, "src"),
+            {}
+          )
+        );
+        webpackConfig.plugins!.push(
+          new HtmlWebpackPlugin({
+            template: path.resolve(__dirname, "../lib/index.ejs"),
+            chunksSortMode: "none",
+            BASE_HREF: `/${this._packageKey}/`
+          })
+        );
+      }
     }
 
     // 빌드 타입별, external 설정
@@ -202,6 +204,19 @@ export class SdPackageBuilder extends events.EventEmitter {
       );
     }
 
+    // 서버 SSL 파일로더
+    if (config.type === "server") {
+      webpackConfig.module!.rules.push(
+        {
+          test: /\.(pfx|crt|pem)$/,
+          loader: "file-loader",
+          options: {
+            name: "ssl/[name].[ext]"
+          }
+        }
+      );
+    }
+
     return webpackConfig;
   }
 
@@ -227,9 +242,16 @@ export class SdPackageBuilder extends events.EventEmitter {
       webpackConfig.entry = this._getEntry();
     }
     else {
-      webpackConfig.entry = {
-        main: path.resolve(__dirname, "../lib/main.prod.js")
-      };
+      if (config.framework === "vue") {
+        webpackConfig.entry = {
+          main: path.resolve(__dirname, "../lib/main.vue.prod.js")
+        };
+      }
+      else {
+        webpackConfig.entry = {
+          main: path.resolve(__dirname, "../lib/main.prod.js")
+        };
+      }
     }
 
     // optimization: library
@@ -330,6 +352,10 @@ export class SdPackageBuilder extends events.EventEmitter {
         }
       ]);
 
+      if (this._parsedTsConfig.fileNames.length < 1) {
+        throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
+      }
+
       const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
       webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE_NGFACTORY"] = modulePath + ".ngfactory";
       webpackConfig.plugins!.pushRange([
@@ -374,8 +400,6 @@ export class SdPackageBuilder extends events.EventEmitter {
         }
       ])
     );
-    /*if (config.type !== undefined) {
-    }*/
 
     // 서버일때, 'pm2.json' 파일 생성
     if (config.type === "server") {
@@ -428,7 +452,8 @@ export class SdPackageBuilder extends events.EventEmitter {
       });
     });
 
-    if (config.type !== undefined && config.type !== "server") {
+    // ngsw 구성
+    if (config.type !== undefined && config.type !== "server" && config.framework !== "vue") {
       const gen = new Generator(new NodeFilesystem(this._distPath), `/${this._packageKey}/`);
 
       const control = await gen.process({
@@ -476,17 +501,19 @@ export class SdPackageBuilder extends events.EventEmitter {
     const webpackConfig = this._getWebpackCommonConfig(config);
     webpackConfig.mode = "development";
     webpackConfig.devtool = "cheap-module-source-map";
-    webpackConfig.module!.rules.pushRange([
+    webpackConfig.module!.rules.push(
       {
         enforce: "pre",
         test: /\.js$/,
         use: ["source-map-loader"],
         exclude: [
-          /node_modules[\\/](?!@simplysm|rxjs|@angular|zone\.js)/,
+          /node_modules[\\/](?!@simplysm|rxjs|@angular|zone\.js|@vue)/,
           /\.ngfactory\.js$/,
           /\.ngstyle\.js$/
         ]
-      },
+      }
+    );
+    webpackConfig.module!.rules.push(
       {
         test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?)$/,
         loader: "file-loader",
@@ -494,7 +521,7 @@ export class SdPackageBuilder extends events.EventEmitter {
           name: "assets/[name].[ext]?[hash]"
         }
       }
-    ]);
+    );
 
     webpackConfig.output!.pathinfo = false;
     webpackConfig.plugins!.push(new SdWebpackTimeFixPlugin());
@@ -506,23 +533,44 @@ export class SdPackageBuilder extends events.EventEmitter {
       webpackConfig.entry = this._getEntry();
     }
     else {
-      webpackConfig.entry = {
-        main: [
-          `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
-          path.resolve(__dirname, "../lib/main.js")
-        ]
-      };
+      if (config.framework === "vue") {
+        webpackConfig.entry = {
+          main: [
+            `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
+            path.resolve(__dirname, "../lib/main.vue.js")
+          ]
+        };
+      }
+      else {
+        webpackConfig.entry = {
+          main: [
+            `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
+            path.resolve(__dirname, "../lib/main.js")
+          ]
+        };
+      }
 
-      webpackConfig.module!.rules.pushRange([
-        /*{
-          test: /\.ts$/,
-          exclude: /node_modules/,
-          loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
-        },*/
-        {
+      if (config.framework === "vue") {
+        webpackConfig.module!.rules.pushRange([
+          {
+            test: /\.ts$/,
+            exclude: /node_modules/,
+            loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
+          },
+          {
+            test: /\.vue$/,
+            loader: "vue-loader"
+          }
+        ]);
+      }
+      else {
+        webpackConfig.module!.rules.push({
           test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
           loader: "@ngtools/webpack"
-        },
+        });
+      }
+
+      webpackConfig.module!.rules.pushRange([
         {
           test: /\.scss$/,
           use: [
@@ -572,34 +620,54 @@ export class SdPackageBuilder extends events.EventEmitter {
         }
       ]);
 
-      // noinspection UnnecessaryLocalVariableJS
-      const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
-      webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE"] = modulePath;
-      webpackConfig.plugins!.pushRange([
-        new AngularCompilerPlugin({
-          tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
-          entryModule: modulePath + "#" + path.basename(modulePath),
-          mainPath: path.resolve(__dirname, "../lib/main.js"),
-          basePath: process.cwd(),
-          sourceMap: true,
-          skipCodeGeneration: true,
-          forkTypeChecker: false,
-          compilerOptions: {
-            ...this._parsedTsConfig.options,
-            rootDir: undefined,
+      if (config.framework === "vue") {
+        const appVueFilePath = path.resolve(this._contextPath, "src", "App.vue");
+        const routerFilePath = path.resolve(this._contextPath, "src", "router.ts");
+        if (await fs.pathExists(appVueFilePath)) {
+          throw new Error("src/App.vue 파일을 찾을 수 없습니다.");
+        }
+        if (await fs.pathExists(routerFilePath)) {
+          throw new Error("src/router.ts 파일을 찾을 수 없습니다.");
+        }
+
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_VUE"] = appVueFilePath;
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_ROUTER"] = routerFilePath;
+      }
+      else {
+        if (this._parsedTsConfig.fileNames.length < 1) {
+          throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
+        }
+
+        // noinspection UnnecessaryLocalVariableJS
+        const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE"] = modulePath;
+        webpackConfig.plugins!.push(
+          new AngularCompilerPlugin({
+            tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
+            entryModule: modulePath + "#" + path.basename(modulePath),
+            mainPath: path.resolve(__dirname, "../lib/main.js"),
+            basePath: process.cwd(),
             sourceMap: true,
-            declaration: false,
-            disableTypeScriptVersionCheck: true,
-            skipLibCheck: false,
-            skipTemplateCodegen: false,
-            strictMetadataEmit: true,
-            fullTemplateTypeCheck: true,
-            strictInjectionParameters: true,
-            enableResourceInlining: true
-          }
-        }),
-        new webpack.HotModuleReplacementPlugin()
-      ]);
+            skipCodeGeneration: true,
+            forkTypeChecker: false,
+            compilerOptions: {
+              ...this._parsedTsConfig.options,
+              rootDir: undefined,
+              sourceMap: true,
+              declaration: false,
+              disableTypeScriptVersionCheck: true,
+              skipLibCheck: false,
+              skipTemplateCodegen: false,
+              strictMetadataEmit: true,
+              fullTemplateTypeCheck: true,
+              strictInjectionParameters: true,
+              enableResourceInlining: true
+            }
+          })
+        );
+      }
+
+      webpackConfig.plugins!.push(new webpack.HotModuleReplacementPlugin());
     }
 
     // '.configs.json'파일 생성
@@ -614,8 +682,6 @@ export class SdPackageBuilder extends events.EventEmitter {
         }
       ])
     );
-    /*if (config.type === "server") {
-    }*/
 
     const compiler = webpack(webpackConfig);
 
