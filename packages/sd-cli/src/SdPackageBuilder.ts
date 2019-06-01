@@ -656,9 +656,14 @@ export class SdPackageBuilder extends events.EventEmitter {
       else {
         webpackConfig.module!.rules.pushRange([
           {
+            test: /\.ts$/,
+            exclude: /node_modules/,
+            loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
+          },
+          /*{
             test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
             loader: "@ngtools/webpack"
-          },
+          },*/
           {
             test: /\.scss$/,
             use: [
@@ -730,7 +735,7 @@ export class SdPackageBuilder extends events.EventEmitter {
         // noinspection UnnecessaryLocalVariableJS
         const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
         webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE"] = modulePath;
-        webpackConfig.plugins!.push(
+        /*webpackConfig.plugins!.push(
           new AngularCompilerPlugin({
             tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
             entryModule: modulePath + "#" + path.basename(modulePath),
@@ -753,7 +758,7 @@ export class SdPackageBuilder extends events.EventEmitter {
               enableResourceInlining: true
             }
           })
-        );
+        );*/
       }
 
       webpackConfig.plugins!.push(new webpack.HotModuleReplacementPlugin());

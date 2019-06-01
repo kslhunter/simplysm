@@ -247,7 +247,11 @@ export class SdServiceClient {
     });
   }
 
-  public async sendAsync(command: string, params: any[], sendProgressCallback?: (progress: { current: number; total: number }) => void, splitLength: number = 10000): Promise<any> {
+  public async sendAsync(command: string,
+                         params: any[],
+                         headers: { [key: string]: any } = {},
+                         sendProgressCallback?: (progress: { current: number; total: number }) => void,
+                         splitLength: number = 10000): Promise<any> {
     return await new Promise<any>(async (resolve, reject) => {
       if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
         try {
@@ -262,6 +266,7 @@ export class SdServiceClient {
       const request: ISdServiceRequest = {
         id: requestId,
         url: "",
+        headers,
         command,
         params
       };

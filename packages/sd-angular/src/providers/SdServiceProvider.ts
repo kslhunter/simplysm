@@ -8,6 +8,8 @@ export class SdServiceProvider implements OnDestroy {
   private readonly _logger = new Logger("@simplysm/sd-angular", "SdServiceProvider");
   public readonly client = new SdServiceClient();
 
+  public headers: { [key: string]: any } = {};
+
   public get connected(): boolean {
     return this.client.connected;
   }
@@ -37,7 +39,7 @@ export class SdServiceProvider implements OnDestroy {
   public async sendAsync(command: string, params: any[]): Promise<any> {
     let currToast: ISdProgressToast;
 
-    return await this.client.sendAsync(command, params, progress => {
+    return await this.client.sendAsync(command, params, this.headers, progress => {
       const totalTextLength = progress.total.toLocaleString().length;
       const currentText = progress.current.toLocaleString().padStart(totalTextLength, " ");
       const totalText = progress.total.toLocaleString();

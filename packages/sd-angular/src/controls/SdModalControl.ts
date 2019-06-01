@@ -16,10 +16,9 @@ import {SdLocalStorageProvider} from "../providers/SdLocalStorageProvider";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
-    <div class="_dialog" tabindex="0" [style.height]="height">
+    <div class="_dialog" tabindex="0" [style.minHeight]="minHeight">
       <sd-dock-container>
-        <sd-dock class="_header"
-                 (mousedown)="onHeaderMouseDown($event)">
+        <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)">
           <h5 class="_title">{{ title }}</h5>
           <a class="_close-button"
              (click)="onCloseButtonClick()"
@@ -66,7 +65,7 @@ export class SdModalControl implements OnInit {
 
   @Input()
   @SdTypeValidate(String)
-  public height?: string;
+  public minHeight?: string;
 
   private _sizeConfig: { width?: number; height?: number } | undefined;
 
@@ -75,13 +74,23 @@ export class SdModalControl implements OnInit {
   }
 
   public ngOnInit(): void {
-    this._sizeConfig = this._localStorage.get(`sd-modal.${this.title}.size-config`);
+    const dialogEl = this._elRef.nativeElement.findAll("> ._dialog")[0] as HTMLElement;
 
+    this._sizeConfig = this._localStorage.get(`sd-modal.${this.title}.size-config`);
     if (this._sizeConfig) {
-      const el = this._elRef.nativeElement.findAll("> ._dialog")[0] as HTMLElement;
-      el.style.width = this._sizeConfig.width + "px";
-      el.style.height = this._sizeConfig.height + "px";
+      dialogEl.style.width = this._sizeConfig.width + "px";
+      dialogEl.style.height = this._sizeConfig.height + "px";
     }
+
+    dialogEl.addEventListener("resize", event => {
+      if (event.detail["dimensions"].includes("height")) {
+        const el = this._elRef.nativeElement;
+        const style = getComputedStyle(el);
+        if (dialogEl.offsetHeight > el.offsetHeight - (Number.parseInt(style.paddingTop!.match(/\d/g)!.join(""), 10) * 2)) {
+          dialogEl.style.height = `calc(100% - ${getComputedStyle(el).paddingTop})`;
+        }
+      }
+    });
   }
 
   public onBackdropClick(): void {

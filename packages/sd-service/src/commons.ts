@@ -2,6 +2,7 @@ export interface ISdServiceRequest {
   id: number;
   url: string;
   command: string;
+  headers: { [key: string]: any };
   params: any[];
 }
 

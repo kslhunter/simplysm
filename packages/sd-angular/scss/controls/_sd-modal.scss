@@ -7,7 +7,7 @@ sd-modal {
   width: 100%;
   height: 100%;
   text-align: center;
-  padding-top: $topbar-height * 2;
+  padding-top: $topbar-height / 2;
   overflow: auto;
 
   > ._backdrop {
@@ -180,4 +180,29 @@ sd-modal {
       height: 100%;
     }
   }
+}
+
+sd-modal-menu {
+  display: none;
+  /*display: inline-block;
+  padding: 0 get($gap, default);
+  cursor: pointer;
+  user-select: none;
+  color: rgba(255, 255, 255, .7);
+  font-weight: bold;
+
+  > ._icon,
+  > ._content {
+    display: inline;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+  }
+
+  &:active {
+    background: rgba(0, 0, 0, .3);
+    color: white;
+  }*/
 }

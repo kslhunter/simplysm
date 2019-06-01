@@ -11,7 +11,7 @@ export class SdModalProvider {
 
   public modalCount = 0;
 
-  public async show<T extends SdModalBase<any, any>>(modalType: Type<T>, title: string, param: T["_tParam"], option?: { hideCloseButton?: boolean; float?: boolean; height?: string; useCloseByBackdrop?: boolean }): Promise<T["_tResult"] | undefined> {
+  public async show<T extends SdModalBase<any, any>>(modalType: Type<T>, title: string, param: T["_tParam"], option?: { hideCloseButton?: boolean; float?: boolean; minHeight?: string; useCloseByBackdrop?: boolean }): Promise<T["_tResult"] | undefined> {
     this.modalCount++;
 
     return await new Promise<T["_tResult"]>(async resolve => {
@@ -47,7 +47,7 @@ export class SdModalProvider {
       modalRef.instance.hideCloseButton = option && option.hideCloseButton;
       modalRef.instance.useCloseByBackdrop = option && option.useCloseByBackdrop;
       modalRef.instance.float = option && option.float;
-      modalRef.instance.height = option && option.height;
+      modalRef.instance.minHeight = option && option.minHeight;
       modalRef.instance.close.subscribe(async () => {
         await close();
       });

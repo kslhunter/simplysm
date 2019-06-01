@@ -45,8 +45,7 @@
     "vue-template-compiler": "^2.6.10",
     "rxjs": "^6.5.1",
     "zone.js": "^0.9.1",
-    "workbox-webpack-plugin": "^4.3.1",
-    "event-source-polyfill": "^1.0.5"
+    "workbox-webpack-plugin": "^4.3.1"
   },
   "peerDependencies": {
     "@simplysm/sd-core": "2.1.10",
