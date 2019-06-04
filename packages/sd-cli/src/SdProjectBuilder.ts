@@ -204,7 +204,7 @@ export class SdProjectBuilder {
         if (config.packages[packageKey].type === "none") {
           return;
         }
-        
+
         if (config.packages[packageKey].framework === "vue") {
           return;
         }
