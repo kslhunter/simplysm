@@ -204,6 +204,10 @@ export class SdProjectBuilder {
         if (config.packages[packageKey].type === "none") {
           return;
         }
+        
+        if (config.packages[packageKey].framework === "vue") {
+          return;
+        }
 
         // > > LINT
         const worker = await this._runPackageBuildWorkerAsync("lint", packageKey, argv.options, argv.watch);
