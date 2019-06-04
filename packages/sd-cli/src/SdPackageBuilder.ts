@@ -1,4 +1,3 @@
-import * as os from "os";
 import * as events from "events";
 import * as webpack from "webpack";
 import * as ts from "typescript";
@@ -63,6 +62,7 @@ export class SdPackageBuilder extends events.EventEmitter {
     if (!this._tsConfig.files || this._tsConfig.files.length < 1) {
       throw new Error("'tsconfig'에 'files'옵션을 반드시 등록해야 합니다.");
     }
+
     const entry: { [key: string]: string } = {};
     for (const filePath of this._parsedTsConfig.fileNames) {
       const basename = path.basename(filePath, path.extname(filePath));
@@ -116,7 +116,7 @@ export class SdPackageBuilder extends events.EventEmitter {
 
       if (this._npmConfig["bin"]) {
         webpackConfig.plugins!.push(new webpack.BannerPlugin({
-          banner: "#!/usr/bin/env node" + os.EOL + "require(\"source-map-support/register\");",
+          banner: "#!/usr/bin/env node",
           raw: true,
           entryOnly: true,
           include: Object.keys(this._npmConfig["bin"])
@@ -375,6 +375,7 @@ export class SdPackageBuilder extends events.EventEmitter {
           ]
         }
       ]);
+      webpackConfig.plugins!.push(new MiniCssExtractPlugin());
 
       if (config.framework === "vue") {
         const appVueFilePath = path.resolve(this._contextPath, "src", "App.vue");
@@ -419,8 +420,7 @@ export class SdPackageBuilder extends events.EventEmitter {
               strictInjectionParameters: true,
               enableResourceInlining: true
             }
-          }),
-          new MiniCssExtractPlugin()
+          })
         ]);
       }
     }

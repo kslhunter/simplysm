@@ -3,6 +3,8 @@ import {SdPackageChecker} from "./builders/SdPackageChecker";
 import {SdPackageLinter} from "./builders/SdPackageLinter";
 import {SdPackageBuilder} from "./SdPackageBuilder";
 
+require("source-map-support/register"); //tslint:disable-line
+
 const type = process.argv[2] as "build" | "check" | "lint";
 const packageKey = process.argv[3];
 const isWatch = process.argv[4] === "watch";

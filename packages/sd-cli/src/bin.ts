@@ -3,6 +3,8 @@ import * as os from "os";
 import {Logger} from "@simplysm/sd-core";
 import {SdProjectBuilder} from "./SdProjectBuilder";
 
+require("source-map-support/register"); //tslint:disable-line
+
 Logger.setGroupConfig("@simplysm/sd-cli", {
   consoleLogSeverities: ["log", "info", "warn", "error"],
   fileLogSeverities: [],

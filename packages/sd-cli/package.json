@@ -45,7 +45,8 @@
     "vue-template-compiler": "^2.6.10",
     "rxjs": "^6.5.1",
     "zone.js": "^0.9.1",
-    "workbox-webpack-plugin": "^4.3.1"
+    "workbox-webpack-plugin": "^4.3.1",
+    "register-service-worker": "^1.6.2"
   },
   "peerDependencies": {
     "@simplysm/sd-core": "2.1.10",

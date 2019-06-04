@@ -5,6 +5,8 @@ import * as fs from "fs-extra";
 import * as ts from "typescript";
 import * as os from "os";
 
+require("source-map-support/register"); //tslint:disable-line
+
 function diagnosticToMessage(diagnostic: ts.Diagnostic): string | undefined {
   if (diagnostic.file) {
     const position = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);

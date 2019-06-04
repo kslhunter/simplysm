@@ -28,10 +28,6 @@ export class SdPackageChecker extends events.EventEmitter {
   }
 
   public async runAsync(): Promise<void> {
-    if (!this._tsConfig.files || this._tsConfig.files.length < 1) {
-      throw new Error("'tsconfig'에 'files'옵션을 반드시 등록해야 합니다.");
-    }
-
     this.emit("run");
 
     const projectConfig = await SdCliUtil.getConfigObjAsync("production", this._options);
@@ -46,6 +42,10 @@ export class SdPackageChecker extends events.EventEmitter {
     ];
 
     if (config.type === undefined && depKeys.includes("@angular/core")) {
+      if (!this._tsConfig.files || this._tsConfig.files.length < 1) {
+        throw new Error("'tsconfig'에 'files'옵션을 반드시 등록해야 합니다.");
+      }
+
       const metadataCollector = new MetadataCollector();
       const metadataBundler = new MetadataBundler(
         this._parsedTsConfig.fileNames[0].replace(/\.ts$/, ""),
@@ -143,6 +143,10 @@ export class SdPackageChecker extends events.EventEmitter {
           ];
 
           if (config.type === undefined && depKeys.includes("@angular/core")) {
+            if (!this._tsConfig.files || this._tsConfig.files.length < 1) {
+              throw new Error("'tsconfig'에 'files'옵션을 반드시 등록해야 합니다.");
+            }
+
             const metadataCollector = new MetadataCollector();
             const metadataBundler = new MetadataBundler(
               this._parsedTsConfig.fileNames[0].replace(/\.ts$/, ""),
