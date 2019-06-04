@@ -14,12 +14,13 @@ import {SdCliUtil} from "./commons/SdCliUtil";
 import {ISdPackageConfig} from "./commons/interfaces";
 import * as TerserPlugin from "terser-webpack-plugin";
 import {Generator} from "@angular/service-worker/config";
-import {JsonConvert} from "@simplysm/sd-core";
+import {JsonConvert, Logger} from "@simplysm/sd-core";
 import {NodeFilesystem} from "./service-worker/filesystem";
 import {AngularCompilerPlugin} from "@ngtools/webpack";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import {GenerateSW} from "workbox-webpack-plugin";
+import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 
 const VueLoaderPlugin = require('vue-loader/lib/plugin'); // tslint:disable-line
 
@@ -333,8 +334,7 @@ export class SdPackageBuilder extends events.EventEmitter {
           {
             test: /\.ts$/,
             exclude: /node_modules/,
-            loader: "ts-loader"
-            //loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
+            loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
           },
           {
             test: /\.vue$/,
@@ -365,6 +365,12 @@ export class SdPackageBuilder extends events.EventEmitter {
         ]);
 
         webpackConfig.plugins!.push(new VueLoaderPlugin());
+        webpackConfig.plugins!.push(new ForkTsCheckerWebpackPlugin({
+          tsconfig: path.resolve(this._contextPath, "tsconfig.build.json"),
+          tslint: path.resolve(this._contextPath, "tslint.json"),
+          logger: new Logger("@simplysm/cli", `SdPackageBuilder(build) [${this._packageKey}]`),
+          vue: true
+        }));
       }
       else {
         webpackConfig.module!.rules.push(
@@ -612,8 +618,7 @@ export class SdPackageBuilder extends events.EventEmitter {
           {
             test: /\.ts$/,
             exclude: /node_modules/,
-            loader: "ts-loader"
-            //loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
+            loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
           },
           {
             test: /\.vue$/,
@@ -669,6 +674,12 @@ export class SdPackageBuilder extends events.EventEmitter {
         ]);
 
         webpackConfig.plugins!.push(new VueLoaderPlugin());
+        webpackConfig.plugins!.push(new ForkTsCheckerWebpackPlugin({
+          tsconfig: path.resolve(this._contextPath, "tsconfig.build.json"),
+          tslint: path.resolve(this._contextPath, "tslint.json"),
+          logger: new Logger("@simplysm/cli", `SdPackageBuilder(build) [${this._packageKey}]`),
+          vue: true
+        }));
       }
       else {
         webpackConfig.module!.rules.pushRange([
