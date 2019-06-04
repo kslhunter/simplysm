@@ -325,6 +325,10 @@ export class SdPackageBuilder extends events.EventEmitter {
     // rules
     if (config.type !== undefined && config.type !== "server") {
       if (config.framework === "vue") {
+        if (this._npmConfig.sideEffects === false) {
+          throw new Error("'vue'를 빌드할때는, 'package.json'의 'sideEffects'옵션이 'false'일 수 없습니다.");
+        }
+
         webpackConfig.module!.rules.pushRange([
           {
             test: /\.ts$/,
@@ -334,6 +338,28 @@ export class SdPackageBuilder extends events.EventEmitter {
           {
             test: /\.vue$/,
             loader: "vue-loader"
+          },
+          {
+            test: /\.scss$/,
+            use: [
+              "vue-style-loader",
+              "css-loader",
+              "resolve-url-loader",
+              {
+                loader: "sass-loader",
+                options: {
+                  sourceMap: true,
+                  sourceMapContents: false
+                }
+              }
+            ]
+          },
+          {
+            test: /\.css$/,
+            use: [
+              "vue-style-loader",
+              "css-loader"
+            ]
           }
         ]);
 
@@ -347,35 +373,32 @@ export class SdPackageBuilder extends events.EventEmitter {
               "@angular-devkit/build-optimizer/webpack-loader",
               "@ngtools/webpack"
             ]
+          },
+          {
+            test: /\.scss$/,
+            use: [
+              MiniCssExtractPlugin.loader,
+              "css-loader",
+              "resolve-url-loader",
+              {
+                loader: "sass-loader",
+                options: {
+                  sourceMap: true,
+                  sourceMapContents: false
+                }
+              }
+            ]
+          },
+          {
+            test: /\.css$/,
+            use: [
+              MiniCssExtractPlugin.loader,
+              "css-loader"
+            ]
           }
         );
+        webpackConfig.plugins!.push(new MiniCssExtractPlugin());
       }
-
-      webpackConfig.module!.rules.pushRange([
-        {
-          test: /\.scss$/,
-          use: [
-            MiniCssExtractPlugin.loader,
-            "css-loader",
-            "resolve-url-loader",
-            {
-              loader: "sass-loader",
-              options: {
-                sourceMap: true,
-                sourceMapContents: false
-              }
-            }
-          ]
-        },
-        {
-          test: /\.css$/,
-          use: [
-            MiniCssExtractPlugin.loader,
-            "css-loader"
-          ]
-        }
-      ]);
-      webpackConfig.plugins!.push(new MiniCssExtractPlugin());
 
       if (config.framework === "vue") {
         const appVueFilePath = path.resolve(this._contextPath, "src", "App.vue");

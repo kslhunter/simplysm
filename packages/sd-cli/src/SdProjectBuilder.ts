@@ -257,20 +257,22 @@ export class SdProjectBuilder {
       argv.options ? argv.options.split(",").map(item => item.trim()) : undefined
     );
 
-    // 커밋되지 않은 수정사항이 있는지 확인
-    await ProcessManager.spawnAsync("git status", {
-      logger: {
-        log: data => {
-          const message = data.toString();
-          if (message.includes("Changes") || message.includes("Untracked")) {
-            throw new Error("커밋되지 않은 정보가 있습니다.");
+    if (await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
+      // 커밋되지 않은 수정사항이 있는지 확인
+      await ProcessManager.spawnAsync("git status", {
+        logger: {
+          log: data => {
+            const message = data.toString();
+            if (message.includes("Changes") || message.includes("Untracked")) {
+              throw new Error("커밋되지 않은 정보가 있습니다.");
+            }
+          },
+          error: message => {
+            process.stderr.write(message);
           }
-        },
-        error: message => {
-          process.stderr.write(message);
         }
-      }
-    });
+      });
+    }
 
     // 빌드가 필요하면 빌드함
     if (argv.build) {
@@ -325,9 +327,11 @@ export class SdProjectBuilder {
       await fs.writeJson(packageNpmConfigPath, packageNpmConfig, {spaces: 2, EOL: os.EOL});
     }));
 
-    await ProcessManager.spawnAsync("git add .");
-    await ProcessManager.spawnAsync(`git commit -m "v${projectNpmConfig.version}"`);
-    await ProcessManager.spawnAsync(`git tag -a "v${projectNpmConfig.version}" -m "v${projectNpmConfig.version}"`);
+    if (await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
+      await ProcessManager.spawnAsync("git add .");
+      await ProcessManager.spawnAsync(`git commit -m "v${projectNpmConfig.version}"`);
+      await ProcessManager.spawnAsync(`git tag -a "v${projectNpmConfig.version}" -m "v${projectNpmConfig.version}"`);
+    }
 
     await Promise.all(Object.keys(config.packages).map(async packageKey => {
       const packageLogger = new Logger("@simplysm/sd-cli", `[publish]\t${packageKey}`);

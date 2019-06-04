@@ -28,10 +28,12 @@ export class SdServiceClient {
         if (!this._host || !this._port) {
           throw new Error("호스트와 포트가 반드시 입력되어야 합니다.");
         }
+        this._ws = new WebSocket(`${this._ssl ? "wss" : "ws"}://${this._host}:${this._port}`);
       }
-
-      // @ts-ignore
-      this._ws = new WebSocket(`${this._ssl ? "wss" : (location.protocol.startsWith("https") ? "wss" : "ws")}://${this._host || location.hostname}:${this._port || location.port}`);
+      else {
+        // @ts-ignore
+        this._ws = new WebSocket(`${this._ssl ? "wss" : (location.protocol.startsWith("https") ? "wss" : "ws")}://${this._host || location.hostname}:${this._port || location.port}`);
+      }
 
       this._ws.onopen = () => {
         // @ts-ignore
