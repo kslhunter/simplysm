@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "2.1.10",
+  "version": "2.1.11",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "gihub:kslhunter/simplysm",
@@ -49,7 +49,7 @@
     "register-service-worker": "^1.6.2"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "2.1.10",
-    "@simplysm/sd-service": "2.1.10"
+    "@simplysm/sd-core": "2.1.11",
+    "@simplysm/sd-service": "2.1.11"
   }
 }
