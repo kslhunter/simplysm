@@ -183,6 +183,10 @@ export class SdProjectBuilder {
           return;
         }
 
+        if (config.packages[packageKey].framework === "vue") {
+          return;
+        }
+
         /*if (config.packages[packageKey].type !== undefined && config.packages[packageKey].type !== "server") {
           return;
         }*/

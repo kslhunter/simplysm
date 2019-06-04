@@ -333,7 +333,8 @@ export class SdPackageBuilder extends events.EventEmitter {
           {
             test: /\.ts$/,
             exclude: /node_modules/,
-            loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
+            loader: "ts-loader"
+            //loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
           },
           {
             test: /\.vue$/,
@@ -401,18 +402,10 @@ export class SdPackageBuilder extends events.EventEmitter {
       }
 
       if (config.framework === "vue") {
-        const appVueFilePath = path.resolve(this._contextPath, "src", "App.vue");
-        const routerFilePath = path.resolve(this._contextPath, "src", "router.ts");
-        if (!await fs.pathExists(appVueFilePath)) {
-          throw new Error(`파일을 찾을 수 없습니다: ${appVueFilePath}`);
+        if (this._parsedTsConfig.fileNames.length < 1) {
+          throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
         }
-        if (!await fs.pathExists(routerFilePath)) {
-          throw new Error(`파일을 찾을 수 없습니다: ${routerFilePath}`);
-        }
-
-        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_VUE"] = appVueFilePath;
-        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_ROUTER"] = routerFilePath;
-
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_MAIN"] = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
         webpackConfig.plugins!.push(new GenerateSW());
       }
       else {
@@ -619,7 +612,8 @@ export class SdPackageBuilder extends events.EventEmitter {
           {
             test: /\.ts$/,
             exclude: /node_modules/,
-            loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
+            loader: "ts-loader"
+            //loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
           },
           {
             test: /\.vue$/,
@@ -738,17 +732,10 @@ export class SdPackageBuilder extends events.EventEmitter {
       }
 
       if (config.framework === "vue") {
-        const appVueFilePath = path.resolve(this._contextPath, "src", "App.vue");
-        const routerFilePath = path.resolve(this._contextPath, "src", "router.ts");
-        if (!await fs.pathExists(appVueFilePath)) {
-          throw new Error(`파일을 찾을 수 없습니다: ${appVueFilePath}`);
+        if (this._parsedTsConfig.fileNames.length < 1) {
+          throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
         }
-        if (!await fs.pathExists(routerFilePath)) {
-          throw new Error(`파일을 찾을 수 없습니다: ${routerFilePath}`);
-        }
-
-        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_VUE"] = appVueFilePath;
-        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_ROUTER"] = routerFilePath;
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_MAIN"] = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
       }
       else {
         if (this._parsedTsConfig.fileNames.length < 1) {
