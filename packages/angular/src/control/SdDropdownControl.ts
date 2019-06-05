@@ -46,6 +46,8 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
   private _isOpen = false;
 
+  private _mouseoverEl?: HTMLElement;
+
   public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
   }
 
@@ -53,6 +55,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     const controlEl = this.controlElRef!.nativeElement;
     controlEl.addEventListener("focus", this.focusEventHandler, true);
     controlEl.addEventListener("blur", this.blurEventHandler, true);
+    document.addEventListener("mouseover", this.mouseoverHandler, true);
 
     const dropdownEl = this.dropdownElRef!.nativeElement;
     dropdownEl.remove();
@@ -60,6 +63,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.dropdownElRef!.nativeElement.remove();
+    document.removeEventListener("mouseover", this.mouseoverHandler);
   }
 
   public openPopup(): void {
@@ -161,7 +165,6 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     const dropdownEl = this.dropdownElRef!.nativeElement;
 
     const relatedTarget = event.relatedTarget as HTMLElement;
-    console.log(relatedTarget);
     if (
       relatedTarget &&
       (
@@ -173,6 +176,26 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     ) {
       return;
     }
+
+    if (this._mouseoverEl && (this._mouseoverEl.findParent(controlEl) || this._mouseoverEl.findParent(dropdownEl))) {
+      const firstFocusableEl = controlEl.findFocusableAllIncludeMe()[0];
+      if (firstFocusableEl) {
+        firstFocusableEl.focus();
+        return;
+      }
+      else {
+        const firstFocusableEl1 = dropdownEl.findFocusableAllIncludeMe()[0];
+        if (firstFocusableEl1) {
+          firstFocusableEl1.focus();
+          return;
+        }
+      }
+    }
+
     this.closePopup();
   };
+
+  public mouseoverHandler = (event: MouseEvent) => {
+    this._mouseoverEl = event.target as HTMLElement;
+  }
 }
