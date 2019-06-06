@@ -14,7 +14,7 @@ import {SdCliUtil} from "./commons/SdCliUtil";
 import {ISdPackageConfig} from "./commons/interfaces";
 import * as TerserPlugin from "terser-webpack-plugin";
 import {Generator} from "@angular/service-worker/config";
-import {JsonConvert, Logger} from "@simplysm/sd-core";
+import {JsonConvert} from "@simplysm/sd-core";
 import {NodeFilesystem} from "./service-worker/filesystem";
 import {AngularCompilerPlugin} from "@ngtools/webpack";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
@@ -368,7 +368,20 @@ export class SdPackageBuilder extends events.EventEmitter {
         webpackConfig.plugins!.push(new ForkTsCheckerWebpackPlugin({
           tsconfig: path.resolve(this._contextPath, "tsconfig.build.json"),
           tslint: path.resolve(this._contextPath, "tslint.json"),
-          logger: new Logger("@simplysm/cli", `SdPackageBuilder(build) [${this._packageKey}]`),
+          logger: {
+            warn: message => {
+              if (!message) return;
+              this.emit("warning", message.replace(/^WARNING in /, ""));
+            },
+            info: message => {
+              if (!message) return;
+              this.emit("into", message);
+            },
+            error: message => {
+              if (!message) return;
+              this.emit("error", message);
+            }
+          },
           vue: true
         }));
       }
@@ -408,10 +421,10 @@ export class SdPackageBuilder extends events.EventEmitter {
       }
 
       if (config.framework === "vue") {
-        if (this._parsedTsConfig.fileNames.length < 1) {
+        /*if (this._parsedTsConfig.fileNames.length < 1) {
           throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
-        }
-        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_MAIN"] = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+        }*/
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_MAIN"] = path.resolve(this._contextPath, "src", "main.ts"); //this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
         webpackConfig.plugins!.push(new GenerateSW());
       }
       else {
@@ -677,7 +690,20 @@ export class SdPackageBuilder extends events.EventEmitter {
         webpackConfig.plugins!.push(new ForkTsCheckerWebpackPlugin({
           tsconfig: path.resolve(this._contextPath, "tsconfig.build.json"),
           tslint: path.resolve(this._contextPath, "tslint.json"),
-          logger: new Logger("@simplysm/cli", `SdPackageBuilder(build) [${this._packageKey}]`),
+          logger: {
+            warn: message => {
+              if (!message) return;
+              this.emit("warning", message.replace(/WARNING in /g, ""));
+            },
+            info: message => {
+              if (!message) return;
+              this.emit("into", message);
+            },
+            error: message => {
+              if (!message) return;
+              this.emit("error", message);
+            }
+          },
           vue: true
         }));
       }
@@ -743,10 +769,10 @@ export class SdPackageBuilder extends events.EventEmitter {
       }
 
       if (config.framework === "vue") {
-        if (this._parsedTsConfig.fileNames.length < 1) {
+        /*if (this._parsedTsConfig.fileNames.length < 1) {
           throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
-        }
-        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_MAIN"] = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+        }*/
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_MAIN"] = path.resolve(this._contextPath, "src", "main.ts"); //this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
       }
       else {
         if (this._parsedTsConfig.fileNames.length < 1) {
