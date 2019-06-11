@@ -7,6 +7,6 @@ export class SdCryptoServiceProvider {
   }
 
   public async encryptAsync(password: string): Promise<string> {
-    return await this._service.sendAsync("SdCryptoService.encryptAsync", [password]);
+    return await this._service.sendCommandAsync("SdCryptoService.encryptAsync", [password]);
   }
 }

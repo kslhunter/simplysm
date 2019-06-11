@@ -107,8 +107,9 @@ export class SdProjectBuilder {
 
       // > tsconfig.build.json 구성
       const buildTsConfig = Object.clone(packageTsConfig);
+      buildTsConfig.compilerOptions = buildTsConfig.compilerOptions || {};
       const tsOptions = buildTsConfig.compilerOptions;
-      if (tsOptions && tsOptions.baseUrl && tsOptions.paths) {
+      if (tsOptions.baseUrl && tsOptions.paths) {
         for (const tsPathKey of Object.keys(tsOptions.paths)) {
           const result = [];
           for (const tsPathValue of tsOptions.paths[tsPathKey] as string[]) {

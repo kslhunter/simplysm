@@ -1,7 +1,7 @@
 import {Injectable, OnDestroy} from "@angular/core";
-import {Logger, Type} from "@simplysm/sd-core";
+import {LambdaParser, Logger, Type} from "@simplysm/sd-core";
 import {ISdProgressToast, SdToastProvider} from "./SdToastProvider";
-import {SdServiceClient} from "@simplysm/sd-service";
+import {SdServiceBase, SdServiceClient} from "@simplysm/sd-service";
 
 @Injectable()
 export class SdServiceProvider implements OnDestroy {
@@ -36,7 +36,17 @@ export class SdServiceProvider implements OnDestroy {
     });
   }
 
-  public async sendAsync(command: string, params: any[]): Promise<any> {
+  public async sendAsync<S extends SdServiceBase, R>(serviceType: Type<S>, action: (s: S) => Promise<R>): Promise<R> {
+    const serviceName = serviceType.name;
+    const parsed = LambdaParser.parse(action);
+    const methodName = parsed.returnContent.replace(/\(.*$/, "").replace(`${parsed.params[0]}.`, "");
+
+    const serviceObj: S = {} as any;
+    serviceObj[methodName] = async (...args: any[]) => await this.sendCommandAsync(`${serviceName}.${methodName}`, args);
+    return await action(serviceObj);
+  }
+
+  public async sendCommandAsync(command: string, params: any[]): Promise<any> {
     let currToast: ISdProgressToast;
 
     return await this.client.sendAsync(command, params, this.headers, progress => {

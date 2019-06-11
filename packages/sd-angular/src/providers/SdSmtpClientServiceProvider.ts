@@ -8,10 +8,10 @@ export class SdSmtpClientServiceProvider {
   }
 
   public async sendAsync(options: ISmtpClientSendOption): Promise<void> {
-    await this._service.sendAsync("SdSmtpClientService.sendAsync", [options]);
+    await this._service.sendCommandAsync("SdSmtpClientService.sendAsync", [options]);
   }
 
   public async sendDefaultAsync(options: ISmtpClientSendByDefaultOption): Promise<void> {
-    await this._service.sendAsync("SdSmtpClientService.sendByDefaultAsync", [options]);
+    await this._service.sendCommandAsync("SdSmtpClientService.sendByDefaultAsync", [options]);
   }
 }

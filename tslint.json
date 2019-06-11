@@ -155,6 +155,7 @@
     "max-file-line-count": false,
     "unnecessary-else": false,
     "no-null-undefined-union": false,
-    "prefer-method-signature": false
+    "prefer-method-signature": false,
+    "no-use-before-declare": false
   }
 }

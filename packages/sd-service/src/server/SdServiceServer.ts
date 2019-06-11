@@ -5,7 +5,7 @@ import * as url from "url";
 import * as http from "http";
 import * as WebSocket from "ws";
 import {EventEmitter} from "events";
-import {JsonConvert, Logger, Type} from "@simplysm/sd-core";
+import {JsonConvert, Logger, optional, Type} from "@simplysm/sd-core";
 import {SdServiceServerConnection} from "./SdServiceServerConnection";
 import {SdServiceBase} from "./SdServiceBase";
 import * as net from "net";
@@ -15,6 +15,7 @@ import {SdCryptoService} from "./services/SdCryptoService";
 import {NextHandleFunction} from "./commons";
 import {SdOrmService} from "./services/SdOrmService";
 import * as https from "https";
+import {SdServiceServerUtil} from "./SdServiceServerUtil";
 
 export class SdServiceServer extends EventEmitter {
   private readonly _logger = new Logger("@simplysm/sd-service", "SdServiceServer");
@@ -62,7 +63,13 @@ export class SdServiceServer extends EventEmitter {
       this._eventListeners = [];
 
       this._wsServer.on("connection", async (conn, connReq) => {
-        await this._onSocketConnectionAsync(conn, connReq);
+        try {
+          await this._onSocketConnectionAsync(conn, connReq);
+        }
+        catch (err) {
+          this._logger.error(`클라이언트와 연결할 수 없습니다.`, err);
+          throw err;
+        }
       });
 
       this._httpServer.on("request", async (req, res) => {
@@ -229,7 +236,13 @@ export class SdServiceServer extends EventEmitter {
   }
 
   private async _onSocketConnectionAsync(conn: WebSocket, connReq: http.IncomingMessage): Promise<void> {
+    const origins = await optional(async () => (await SdServiceServerUtil.getConfigAsync(this.rootPath))["service"]["origins"]);
+    if (origins && !origins.includes(connReq.headers.origin)) {
+      throw new Error(`등록되지 않은 'URL'에서 클라이언트의 연결 요청을 받았습니다: ${connReq.headers.origin}`);
+    }
+
     this._logger.log(`클라이언트의 연결 요청을 받았습니다 : ${connReq.headers.origin}`);
+
     const wsConnection = new SdServiceServerConnection(conn, connReq);
     this._wsConnections.push(wsConnection);
 

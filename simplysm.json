@@ -23,6 +23,10 @@
     },
     "sd-storage": {
       "publish": "npm"
+    },
+    "sd-vue": {
+      "framework": "vue",
+      "publish": "npm"
     }
   }
 }

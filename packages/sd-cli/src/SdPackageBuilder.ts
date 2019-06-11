@@ -60,14 +60,19 @@ export class SdPackageBuilder extends events.EventEmitter {
   }
 
   private _getEntry(): { [key: string]: string } {
-    if (!this._tsConfig.files || this._tsConfig.files.length < 1) {
-      throw new Error("'tsconfig'에 'files'옵션을 반드시 등록해야 합니다.");
-    }
-
     const entry: { [key: string]: string } = {};
-    for (const filePath of this._parsedTsConfig.fileNames) {
-      const basename = path.basename(filePath, path.extname(filePath));
-      entry[basename] = filePath;
+    if (!this._tsConfig.files || this._tsConfig.files.length < 1) {
+      for (const jsFilePath of [this._npmConfig.main, ...Object.values(this._npmConfig.bin || {})]) {
+        const tsFilePath = jsFilePath.replace(/dist\//g, "src/").replace(/\.js$/, ".ts");
+        const basename = path.basename(tsFilePath, path.extname(tsFilePath));
+        entry[basename] = path.resolve(this._contextPath, tsFilePath);
+      }
+    }
+    else {
+      for (const tsFilePath of this._parsedTsConfig.fileNames) {
+        const basename = path.basename(tsFilePath, path.extname(tsFilePath));
+        entry[basename] = tsFilePath;
+      }
     }
 
     return entry;
@@ -201,6 +206,12 @@ export class SdPackageBuilder extends events.EventEmitter {
 
           if (request === "ws") {
             callback(undefined, `WebSocket`);
+            return;
+          }
+
+          if (!path.relative(path.resolve(process.cwd(), "packages", config.server!), path.resolve(context, request)).includes("..")) {
+            const serviceName = request.split(/[\\/]/).last();
+            callback(undefined, `{name: ${serviceName}}`);
             return;
           }
 
@@ -459,6 +470,37 @@ export class SdPackageBuilder extends events.EventEmitter {
         ]);
       }
     }
+    else {
+      if (config.framework === "vue") {
+        webpackConfig.module!.rules.pushRange([
+          {
+            test: /\.vue$/,
+            loader: "vue-loader"
+          }
+        ]);
+
+        webpackConfig.plugins!.push(new VueLoaderPlugin());
+        webpackConfig.plugins!.push(new ForkTsCheckerWebpackPlugin({
+          tsconfig: path.resolve(this._contextPath, "tsconfig.build.json"),
+          tslint: path.resolve(this._contextPath, "tslint.json"),
+          logger: {
+            warn: message => {
+              if (!message) return;
+              this.emit("warning", message.replace(/^WARNING in /, ""));
+            },
+            info: message => {
+              if (!message) return;
+              this.emit("into", message);
+            },
+            error: message => {
+              if (!message) return;
+              this.emit("error", message);
+            }
+          },
+          vue: true
+        }));
+      }
+    }
 
     // '.configs.json'파일 생성
     webpackConfig.plugins!.push(
@@ -607,6 +649,36 @@ export class SdPackageBuilder extends events.EventEmitter {
 
     if (config.type === undefined || config.type === "server") {
       webpackConfig.entry = this._getEntry();
+
+      if (config.framework === "vue") {
+        webpackConfig.module!.rules.pushRange([
+          {
+            test: /\.vue$/,
+            loader: "vue-loader"
+          }
+        ]);
+
+        webpackConfig.plugins!.push(new VueLoaderPlugin());
+        webpackConfig.plugins!.push(new ForkTsCheckerWebpackPlugin({
+          tsconfig: path.resolve(this._contextPath, "tsconfig.build.json"),
+          tslint: path.resolve(this._contextPath, "tslint.json"),
+          logger: {
+            warn: message => {
+              if (!message) return;
+              this.emit("warning", message.replace(/WARNING in /g, ""));
+            },
+            info: message => {
+              if (!message) return;
+              this.emit("into", message);
+            },
+            error: message => {
+              if (!message) return;
+              this.emit("error", message);
+            }
+          },
+          vue: true
+        }));
+      }
     }
     else {
       if (config.framework === "vue") {
