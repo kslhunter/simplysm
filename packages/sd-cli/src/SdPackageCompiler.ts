@@ -142,7 +142,10 @@ export class SdPackageCompiler extends events.EventEmitter {
 
     // 빌드 타입별, 기본 설정 수정
     if (config.type === "library" || config.type === "server") {
-      webpackConfig.target = "node";
+      if (!config.framework) {
+        webpackConfig.target = "node";
+      }
+
       webpackConfig.node = {
         __dirname: false
       };
@@ -514,6 +517,28 @@ export class SdPackageCompiler extends events.EventEmitter {
           {
             test: /\.vue$/,
             loader: "vue-loader"
+          },
+          {
+            test: /\.scss$/,
+            use: [
+              "vue-style-loader",
+              "css-loader",
+              "resolve-url-loader",
+              {
+                loader: "sass-loader",
+                options: {
+                  sourceMap: true,
+                  sourceMapContents: false
+                }
+              }
+            ]
+          },
+          {
+            test: /\.css$/,
+            use: [
+              "vue-style-loader",
+              "css-loader"
+            ]
           }
         ]);
 
@@ -674,6 +699,53 @@ export class SdPackageCompiler extends events.EventEmitter {
           {
             test: /\.vue$/,
             loader: "vue-loader"
+          },
+          {
+            test: /\.scss$/,
+            use: [
+              {
+                loader: "vue-style-loader",
+                options: {
+                  sourceMap: true
+                }
+              },
+              {
+                loader: "css-loader",
+                options: {
+                  sourceMap: true
+                }
+              },
+              {
+                loader: "resolve-url-loader",
+                options: {
+                  sourceMap: true
+                }
+              },
+              {
+                loader: "sass-loader",
+                options: {
+                  sourceMap: true,
+                  sourceMapContents: false
+                }
+              }
+            ]
+          },
+          {
+            test: /\.css$/,
+            use: [
+              {
+                loader: "vue-style-loader",
+                options: {
+                  sourceMap: true
+                }
+              },
+              {
+                loader: "css-loader",
+                options: {
+                  sourceMap: true
+                }
+              }
+            ]
           }
         ]);
 

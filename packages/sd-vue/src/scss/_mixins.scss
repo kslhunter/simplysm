@@ -1,0 +1,41 @@
+@mixin initialize($parentKey, $map) {
+  @each $key, $val in $map {
+    @if (type-of($val) == map) {
+      @include initialize(#{$parentKey}-#{$key}, $val);
+    } @else {
+      #{$parentKey}-#{$key}: $val;
+    }
+  }
+}
+
+@mixin form-control-base() {
+  display: block;
+  width: 100%;
+  font-size: var(--font-size-default);
+  font-family: var(--font-family);
+  line-height: var(--line-height);
+  color: var(--text-color-default);
+  padding: var(--gap-sm) var(--gap-default);
+
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+@mixin elevation($value) {
+  @if $value == none or $value == 0 {
+    box-shadow: none;
+  } @else {
+    box-shadow: 0 0 1px rgba(0, 0, 0, .2), 0 #{$value/2}px #{$value + 1}px rgba(0, 0, 0, .3);
+  }
+}
+
+@mixin invalid-indicator() {
+  display: block;
+  position: absolute;
+  top: var(--gap-xxs);
+  left: var(--gap-xxs);
+  border-radius: 100%;
+  width: 4px;
+  height: 4px;
+  background: var(--theme-danger-default);
+}

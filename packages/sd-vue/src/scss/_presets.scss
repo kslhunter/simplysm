@@ -1,0 +1,148 @@
+$root: ();
+
+@import "./functions";
+@import "./mixins";
+@import "./colors";
+
+$root: map-merge($root, (
+  theme: (
+    grey: (
+      lightest: var(--color-grey-100),
+      lighter: var(--color-grey-300),
+      light: var(--color-grey-400),
+      default: var(--color-grey-500),
+      dark: var(--color-grey-600),
+      darker: var(--color-grey-700),
+      darkest: var(--color-grey-800)
+    ),
+    bluegrey: (
+      lightest: var(--color-bluegrey-200),
+      lighter: var(--color-bluegrey-300),
+      light: var(--color-bluegrey-400),
+      default: var(--color-bluegrey-500),
+      dark: var(--color-bluegrey-600),
+      darker: var(--color-bluegrey-800),
+      darkest: var(--color-bluegrey-900)
+    ),
+    primary: (
+      lightest: var(--color-deep-purple-50),
+      lighter: var(--color-deep-purple-100),
+      light: var(--color-deep-purple-200),
+      default: var(--color-deep-purple-500),
+      dark: var(--color-deep-purple-600),
+      darker: var(--color-deep-purple-700),
+      darkest: var(--color-deep-purple-800)
+    ),
+    secondary: (
+      lightest: var(--color-teal-50),
+      lighter: var(--color-teal-100),
+      light: var(--color-teal-200),
+      default: var(--color-teal-500),
+      dark: var(--color-teal-600),
+      darker: var(--color-teal-700),
+      darkest: var(--color-teal-800)
+    ),
+    info: (
+      lightest: var(--color-blue-50),
+      lighter: var(--color-blue-100),
+      light: var(--color-blue-200),
+      default: var(--color-blue-500),
+      dark: var(--color-blue-600),
+      darker: var(--color-blue-700),
+      darkest: var(--color-blue-800)
+    ),
+    success: (
+      lightest: var(--color-green-50),
+      lighter: var(--color-green-100),
+      light: var(--color-green-300),
+      default: var(--color-green-500),
+      dark: var(--color-green-600),
+      darker: var(--color-green-700),
+      darkest: var(--color-green-800)
+    ),
+    warning: (
+      lightest: var(--color-orange-50),
+      lighter: var(--color-orange-100),
+      light: var(--color-orange-200),
+      default: var(--color-orange-600),
+      dark: var(--color-orange-700),
+      darker: var(--color-orange-800),
+      darkest: var(--color-orange-900)
+    ),
+    danger: (
+      lightest: var(--color-red-50),
+      lighter: var(--color-red-100),
+      light: var(--color-red-200),
+      default: var(--color-red-500),
+      dark: var(--color-red-700),
+      darker: var(--color-red-800),
+      darkest: var(--color-red-900)
+    )
+  ),
+  trans-color: (
+    darkest: rgba(0, 0, 0, .5),
+    darker: rgba(0, 0, 0, .4),
+    dark: rgba(0, 0, 0, .3),
+    default: rgba(0, 0, 0, .2),
+    light: rgba(255, 255, 255, .1),
+    lighter: rgba(255, 255, 255, .2)
+  ),
+  text-color: (
+    dark: black,
+    default: rgba(0, 0, 0, .87),
+    light: rgba(0, 0, 0, .60),
+    lighter: rgba(0, 0, 0, .38)
+  ),
+  text-reverse-color: (
+    default: white,
+    dark: rgba(255, 255, 255, .7),
+    darker: rgba(255, 255, 255, .5)
+  ),
+  gap: (
+    xxs: 1px,
+    xs: 2px,
+    sm: 4px,
+    default: 6px,
+    lg: 8px,
+    xl: 12px,
+    xxl: 18px
+  ),
+  font-size: (
+    lg: 14px,
+    default: 12px,
+    sm: 11px,
+    h1: 24px,
+    h2: 18px,
+    h3: 16px,
+    h4: 14px,
+    h5: 12px,
+    h6: 11px
+  ),
+  font-family: ('맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif),
+  font-family-code: monospace,
+  line-height: 1.5em,
+  z-index: (
+    toast: 9999,
+    busy: 9998,
+    ropdown: 5000,
+    modal: 4000,
+    fullscreen: 3000,
+    sidebar: 2100,
+    topbar: 2000
+  ),
+  bg-color: white,
+  topbar: (
+    height: 36px
+  ),
+  sidebar: (
+    width: 180px
+  ),
+  sheet: (
+    padding: (
+      v: var(--gap-xs),
+      h: var(--gap-xs)
+    ),
+    edit-cell-bg: var(--theme-info-lightest),
+    row-height: calc(var(--sheet-padding-v) * 2 + var(--line-height) * var(--font-size-default))
+  )
+));
