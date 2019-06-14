@@ -5,11 +5,6 @@ import {SdProjectBuilder} from "./SdProjectBuilder";
 
 require("source-map-support/register"); //tslint:disable-line
 
-Logger.setGroupConfig("@simplysm/sd-cli", {
-  consoleLogSeverities: ["log", "info", "warn", "error"],
-  fileLogSeverities: [],
-  outputPath: "logs"
-});
 process.setMaxListeners(0);
 
 const argv = yargs
