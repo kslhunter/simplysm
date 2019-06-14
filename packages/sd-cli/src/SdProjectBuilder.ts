@@ -23,7 +23,7 @@ export class SdProjectBuilder {
     logger.log(watch ? `변경감지를 시작합니다.` : `업데이트를 시작합니다.`);
 
     // "simplysm.json" 정보 가져오기
-    const config: ISdProjectConfig = await fs.readJson(path.resolve(process.cwd(), "simplysm.json"));
+    const config: ISdProjectConfig = await SdCliUtil.getConfigObjAsync("development");
 
     // 옵션체크
     if (!config.localUpdates) {
@@ -89,7 +89,7 @@ export class SdProjectBuilder {
     logger.log(watch ? `모든 변경감지를 시작되었습니다.` : `모든 업데이트가 완료되었습니다.`);
   }
 
-  public async buildAsync(argv: { watch: boolean; profile: boolean; options?: string }): Promise<void> {
+  public async buildAsync(argv: { watch: boolean; options?: string }): Promise<void> {
     const logger = new Logger("@simplysm/sd-cli");
 
     // "simplysm.json" 정보 가져오기
@@ -145,7 +145,7 @@ export class SdProjectBuilder {
         }
 
         // > > 라이브러리/서버
-        if (config.packages[packageKey].type === undefined || config.packages[packageKey].type === "server") {
+        if (config.packages[packageKey].type === "library" || config.packages[packageKey].type === "server") {
           // > > 빌드
           const worker = await this._runPackageBuildWorkerAsync("build", packageKey, argv.options, argv.watch);
           workerCpuUsages.push({packageKey, type: "build", cpuUsage: worker["cpuUsage"]});
@@ -277,7 +277,7 @@ export class SdProjectBuilder {
 
     // 빌드가 필요하면 빌드함
     if (argv.build) {
-      await this.buildAsync({watch: false, profile: false, options: argv.options});
+      await this.buildAsync({watch: false, options: argv.options});
     }
 
     // 프로젝트 "package.json" 버전 업

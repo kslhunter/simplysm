@@ -9,7 +9,7 @@ export interface ISdProjectConfig {
 }
 
 export interface ISdPackageConfig {
-  type?: "server" | "web" | "none";
+  type: "library" | "server" | "web" | "none";
   server?: string;
   framework?: "vue" | "angular";
   publish?: "npm" | ISdSimplysmPublishConfig;

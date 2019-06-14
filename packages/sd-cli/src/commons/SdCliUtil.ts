@@ -34,6 +34,9 @@ export class SdCliUtil {
       for (const optKey of Object.keys(config.packages[packageKey]).filter(item => item.startsWith("@"))) {
         delete config.packages[packageKey][optKey];
       }
+
+      // type 채우기
+      config.packages[packageKey].type = config.packages[packageKey].type || "library";
     }
 
     return config;

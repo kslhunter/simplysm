@@ -2,7 +2,11 @@
   "packages": {
     "sd-angular": {
       "framework": "angular",
-      "publish": "npm"
+      "publish": "npm",
+
+      "@no-ng": {
+        "type": "none"
+      }
     },
     "sd-cli": {
       "publish": "npm"
@@ -26,8 +30,13 @@
       "publish": "npm"
     },
     "sd-vue": {
+      "type": "library",
       "framework": "vue",
-      "publish": "npm"
+      "publish": "npm",
+
+      "@no-vue": {
+        "type": "none"
+      }
     }
   }
 }

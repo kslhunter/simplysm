@@ -141,7 +141,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     };
 
     // 빌드 타입별, 기본 설정 수정
-    if (config.type === undefined || config.type === "server") {
+    if (config.type === "library" || config.type === "server") {
       webpackConfig.target = "node";
       webpackConfig.node = {
         __dirname: false
@@ -211,7 +211,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
 
     // 빌드 타입별, external 설정
-    if (config.type === undefined) {
+    if (config.type === "library") {
       const externals = (webpackConfig.externals as webpack.ExternalsElement[]);
       externals.push(
         (context, request, callback) => {
@@ -297,7 +297,7 @@ export class SdPackageCompiler extends events.EventEmitter {
 
     webpackConfig.optimization!.noEmitOnErrors = true;
 
-    if (config.type === undefined || config.type === "server") {
+    if (config.type === "library" || config.type === "server") {
       webpackConfig.entry = this._getEntry();
     }
     else {
@@ -317,7 +317,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
 
     // optimization: library
-    if (config.type === undefined) {
+    if (config.type === "library") {
       webpackConfig.devtool = "source-map";
       webpackConfig.module!.rules.push(
         {
@@ -354,7 +354,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
 
     // optimization: client
-    if (config.type !== undefined && config.type !== "server") {
+    if (config.type !== "library" && config.type !== "server") {
       webpackConfig.optimization!.runtimeChunk = "single";
       webpackConfig.optimization!.splitChunks = {
         chunks: "all",
@@ -381,7 +381,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
 
     // rules
-    if (config.type !== undefined && config.type !== "server") {
+    if (config.type !== "library" && config.type !== "server") {
       if (config.framework === "vue") {
         if (this._npmConfig.sideEffects === false) {
           throw new Error("'vue'를 빌드할때는, 'package.json'의 'sideEffects'옵션이 'false'일 수 없습니다.");
@@ -590,7 +590,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     });
 
     // ngsw 구성
-    if (config.type !== undefined && config.type !== "server" && config.framework === "angular") {
+    if (config.type !== "library" && config.type !== "server" && config.framework === "angular") {
       const gen = new Generator(new NodeFilesystem(this._distPath), `/${this._packageKey}/`);
 
       const control = await gen.process({
@@ -666,7 +666,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     webpackConfig.optimization!.removeEmptyChunks = false;
     webpackConfig.optimization!.splitChunks = false;
 
-    if (config.type === undefined || config.type === "server") {
+    if (config.type === "library" || config.type === "server") {
       webpackConfig.entry = this._getEntry();
 
       if (config.framework === "vue") {
@@ -901,7 +901,7 @@ export class SdPackageCompiler extends events.EventEmitter {
       this.emit("run");
     });
 
-    if (config.type !== undefined && config.type !== "server") {
+    if (config.type !== "library" && config.type !== "server") {
       return await new Promise<NextHandleFunction[]>((resolve, reject) => {
         const devMiddleware = WebpackDevMiddleware(compiler, {
           publicPath: webpackConfig.output!.publicPath!,
