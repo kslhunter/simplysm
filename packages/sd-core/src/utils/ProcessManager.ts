@@ -4,20 +4,25 @@ export class ProcessManager {
   public static async spawnAsync(cmd: string, options?: {
     cwd?: string;
     logger?: {
-      log: (message: Buffer | Uint8Array | string) => void;
-      error: (message: Buffer | Uint8Array | string) => void;
+      log: (message: string) => void;
+      error: (message: string) => void;
     };
+    env?: NodeJS.ProcessEnv;
   }): Promise<void> {
     const cmds = cmd.split(" ");
 
     await new Promise<void>((resolve, reject) => {
-      const opts: any = {
+      const opts: child_process.SpawnOptionsWithoutStdio = {
         shell: true,
         stdio: "pipe"
       };
 
       if (options && options.cwd) {
         opts.cwd = options.cwd;
+      }
+
+      if (options && options.env) {
+        opts.env = options.env;
       }
 
       const worker = child_process.spawn(cmds[0], cmds.slice(1), opts);
@@ -29,7 +34,7 @@ export class ProcessManager {
       worker.stdout.on("data", async (data: Buffer) => {
         if (options && options.logger) {
           try {
-            options.logger.log(data.toString());
+            options.logger.log(data.toString().trim());
           }
           catch (err) {
             reject(err);
@@ -43,7 +48,7 @@ export class ProcessManager {
       worker.stderr.on("data", async (data: Buffer) => {
         if (options && options.logger) {
           try {
-            options.logger.error(data.toString());
+            options.logger.error(data.toString().trim());
           }
           catch (err) {
             reject(err);
