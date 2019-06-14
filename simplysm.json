@@ -1,6 +1,7 @@
 {
   "packages": {
     "sd-angular": {
+      "framework": "angular",
       "publish": "npm"
     },
     "sd-cli": {

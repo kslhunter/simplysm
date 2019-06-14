@@ -11,7 +11,7 @@ export interface ISdProjectConfig {
 export interface ISdPackageConfig {
   type?: "server" | "web" | "none";
   server?: string;
-  framework?: "angular" | "vue";
+  framework?: "vue" | "angular";
   publish?: "npm" | ISdSimplysmPublishConfig;
   configs?: { [key: string]: any };
 }

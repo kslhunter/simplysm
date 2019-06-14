@@ -20,28 +20,64 @@ import {AngularCompilerPlugin} from "@ngtools/webpack";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import {GenerateSW} from "workbox-webpack-plugin";
-import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 
 const VueLoaderPlugin = require('vue-loader/lib/plugin'); // tslint:disable-line
 
-export class SdPackageBuilder extends events.EventEmitter {
-  private readonly _projectNpmConfig: any;
+export class SdPackageCompiler extends events.EventEmitter {
   private readonly _contextPath: string;
-  private readonly _npmConfig: any;
-  private readonly _tsConfig: any;
-  private readonly _parsedTsConfig: ts.ParsedCommandLine;
-  private readonly _distPath: string;
+  private readonly _tsConfigPath: string;
+
+  private _projectNpmConfig_: any;
+
+  private get _projectNpmConfig(): any {
+    if (!this._projectNpmConfig_) {
+      this._projectNpmConfig_ = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
+    }
+    return this._projectNpmConfig_;
+  }
+
+  private _npmConfig_: any;
+
+  private get _npmConfig(): any {
+    if (!this._npmConfig_) {
+      this._npmConfig_ = fs.readJsonSync(path.resolve(this._contextPath, "package.json"));
+    }
+    return this._npmConfig_;
+  }
+
+  private _tsConfig_: any;
+
+  private get _tsConfig(): any {
+    if (!this._tsConfig_) {
+      this._tsConfig_ = fs.readJsonSync(this._tsConfigPath);
+    }
+    return this._tsConfig_;
+  }
+
+  private _parsedTsConfig_?: ts.ParsedCommandLine;
+
+  private get _parsedTsConfig(): ts.ParsedCommandLine {
+    if (!this._parsedTsConfig_) {
+      this._parsedTsConfig_ = ts.parseJsonConfigFileContent(this._tsConfig, ts.sys, this._contextPath);
+    }
+    return this._parsedTsConfig_;
+  }
+
+  private _distPath_?: string;
+
+  private get _distPath(): string {
+    if (!this._distPath_) {
+      this._distPath_ = this._parsedTsConfig.options.outDir ? path.resolve(this._parsedTsConfig.options.outDir) : path.resolve(this._contextPath, "dist");
+    }
+    return this._distPath_;
+  }
 
   public constructor(private readonly _packageKey: string,
                      private readonly _options?: string[]) {
     super();
 
-    this._projectNpmConfig = fs.readJsonSync(path.resolve(process.cwd(), "package.json"));
     this._contextPath = path.resolve(process.cwd(), "packages", this._packageKey);
-    this._npmConfig = fs.readJsonSync(path.resolve(this._contextPath, "package.json"));
-    this._tsConfig = fs.readJsonSync(path.resolve(this._contextPath, "tsconfig.build.json"));
-    this._parsedTsConfig = ts.parseJsonConfigFileContent(this._tsConfig, ts.sys, this._contextPath);
-    this._distPath = this._parsedTsConfig.options.outDir ? path.resolve(this._parsedTsConfig.options.outDir) : path.resolve(this._contextPath, "dist");
+    this._tsConfigPath = path.resolve(this._contextPath, "tsconfig.build.json");
   }
 
   private _getAlias(): { [key: string]: string } {
@@ -116,7 +152,11 @@ export class SdPackageBuilder extends events.EventEmitter {
         {
           test: /\.ts$/,
           exclude: /node_modules/,
-          loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
+          loader: "ts-loader",
+          options: {
+            transpileOnly: true,
+            configFile: this._tsConfigPath
+          }
         }
       );
 
@@ -143,7 +183,7 @@ export class SdPackageBuilder extends events.EventEmitter {
           })
         );
       }
-      else {
+      else if (config.framework === "angular") {
         webpackConfig.module!.rules!.push(
           {
             test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
@@ -164,6 +204,9 @@ export class SdPackageBuilder extends events.EventEmitter {
             BASE_HREF: `/${this._packageKey}/`
           })
         );
+      }
+      else {
+        throw new Error("미구현");
       }
     }
 
@@ -263,10 +306,13 @@ export class SdPackageBuilder extends events.EventEmitter {
           main: path.resolve(__dirname, "../lib/main.vue.prod.js")
         };
       }
-      else {
+      else if (config.framework === "angular") {
         webpackConfig.entry = {
           main: path.resolve(__dirname, "../lib/main.prod.js")
         };
+      }
+      else {
+        throw new Error("미구현");
       }
     }
 
@@ -345,7 +391,12 @@ export class SdPackageBuilder extends events.EventEmitter {
           {
             test: /\.ts$/,
             exclude: /node_modules/,
-            loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
+            loader: "ts-loader",
+            options: {
+              transpileOnly: true,
+              configFile: this._tsConfigPath,
+              appendTsSuffixTo: [/\.vue$/]
+            }
           },
           {
             test: /\.vue$/,
@@ -376,27 +427,8 @@ export class SdPackageBuilder extends events.EventEmitter {
         ]);
 
         webpackConfig.plugins!.push(new VueLoaderPlugin());
-        webpackConfig.plugins!.push(new ForkTsCheckerWebpackPlugin({
-          tsconfig: path.resolve(this._contextPath, "tsconfig.build.json"),
-          tslint: path.resolve(this._contextPath, "tslint.json"),
-          logger: {
-            warn: message => {
-              if (!message) return;
-              this.emit("warning", message.replace(/^WARNING in /, ""));
-            },
-            info: message => {
-              if (!message) return;
-              this.emit("into", message);
-            },
-            error: message => {
-              if (!message) return;
-              this.emit("error", message);
-            }
-          },
-          vue: true
-        }));
       }
-      else {
+      else if (config.framework === "angular") {
         webpackConfig.module!.rules.push(
           {
             test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
@@ -430,6 +462,9 @@ export class SdPackageBuilder extends events.EventEmitter {
         );
         webpackConfig.plugins!.push(new MiniCssExtractPlugin());
       }
+      else {
+        throw new Error("미구현");
+      }
 
       if (config.framework === "vue") {
         /*if (this._parsedTsConfig.fileNames.length < 1) {
@@ -438,7 +473,7 @@ export class SdPackageBuilder extends events.EventEmitter {
         webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_MAIN"] = path.resolve(this._contextPath, "src", "main.ts"); //this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
         webpackConfig.plugins!.push(new GenerateSW());
       }
-      else {
+      else if (config.framework === "angular") {
         if (this._parsedTsConfig.fileNames.length < 1) {
           throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
         }
@@ -469,6 +504,9 @@ export class SdPackageBuilder extends events.EventEmitter {
           })
         ]);
       }
+      else {
+        throw new Error("미구현");
+      }
     }
     else {
       if (config.framework === "vue") {
@@ -480,25 +518,6 @@ export class SdPackageBuilder extends events.EventEmitter {
         ]);
 
         webpackConfig.plugins!.push(new VueLoaderPlugin());
-        webpackConfig.plugins!.push(new ForkTsCheckerWebpackPlugin({
-          tsconfig: path.resolve(this._contextPath, "tsconfig.build.json"),
-          tslint: path.resolve(this._contextPath, "tslint.json"),
-          logger: {
-            warn: message => {
-              if (!message) return;
-              this.emit("warning", message.replace(/^WARNING in /, ""));
-            },
-            info: message => {
-              if (!message) return;
-              this.emit("into", message);
-            },
-            error: message => {
-              if (!message) return;
-              this.emit("error", message);
-            }
-          },
-          vue: true
-        }));
       }
     }
 
@@ -540,7 +559,7 @@ export class SdPackageBuilder extends events.EventEmitter {
 
     const compiler = webpack(webpackConfig);
 
-    compiler.hooks.run.tap("SdPackageBuilder", () => {
+    compiler.hooks.run.tap("SdPackageCompiler", () => {
       this.emit("run");
     });
 
@@ -571,7 +590,7 @@ export class SdPackageBuilder extends events.EventEmitter {
     });
 
     // ngsw 구성
-    if (config.type !== undefined && config.type !== "server" && config.framework !== "vue") {
+    if (config.type !== undefined && config.type !== "server" && config.framework === "angular") {
       const gen = new Generator(new NodeFilesystem(this._distPath), `/${this._packageKey}/`);
 
       const control = await gen.process({
@@ -659,25 +678,6 @@ export class SdPackageBuilder extends events.EventEmitter {
         ]);
 
         webpackConfig.plugins!.push(new VueLoaderPlugin());
-        webpackConfig.plugins!.push(new ForkTsCheckerWebpackPlugin({
-          tsconfig: path.resolve(this._contextPath, "tsconfig.build.json"),
-          tslint: path.resolve(this._contextPath, "tslint.json"),
-          logger: {
-            warn: message => {
-              if (!message) return;
-              this.emit("warning", message.replace(/WARNING in /g, ""));
-            },
-            info: message => {
-              if (!message) return;
-              this.emit("into", message);
-            },
-            error: message => {
-              if (!message) return;
-              this.emit("error", message);
-            }
-          },
-          vue: true
-        }));
       }
     }
     else {
@@ -689,7 +689,7 @@ export class SdPackageBuilder extends events.EventEmitter {
           ]
         };
       }
-      else {
+      else if (config.framework === "angular") {
         webpackConfig.entry = {
           main: [
             `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
@@ -697,13 +697,21 @@ export class SdPackageBuilder extends events.EventEmitter {
           ]
         };
       }
+      else {
+        throw new Error("미구현");
+      }
 
       if (config.framework === "vue") {
         webpackConfig.module!.rules.pushRange([
           {
             test: /\.ts$/,
             exclude: /node_modules/,
-            loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
+            loader: "ts-loader",
+            options: {
+              transpileOnly: true,
+              configFile: this._tsConfigPath,
+              appendTsSuffixTo: [/\.vue$/]
+            }
           },
           {
             test: /\.vue$/,
@@ -759,32 +767,17 @@ export class SdPackageBuilder extends events.EventEmitter {
         ]);
 
         webpackConfig.plugins!.push(new VueLoaderPlugin());
-        webpackConfig.plugins!.push(new ForkTsCheckerWebpackPlugin({
-          tsconfig: path.resolve(this._contextPath, "tsconfig.build.json"),
-          tslint: path.resolve(this._contextPath, "tslint.json"),
-          logger: {
-            warn: message => {
-              if (!message) return;
-              this.emit("warning", message.replace(/WARNING in /g, ""));
-            },
-            info: message => {
-              if (!message) return;
-              this.emit("into", message);
-            },
-            error: message => {
-              if (!message) return;
-              this.emit("error", message);
-            }
-          },
-          vue: true
-        }));
       }
-      else {
+      else if (config.framework === "angular") {
         webpackConfig.module!.rules.pushRange([
           {
             test: /\.ts$/,
             exclude: /node_modules/,
-            loader: eval(`require.resolve("./ts-build-loader")`) //tslint:disable-line:no-eval
+            loader: "ts-loader",
+            options: {
+              transpileOnly: true,
+              configFile: this._tsConfigPath
+            }
           },
           /*{
             test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
@@ -839,6 +832,9 @@ export class SdPackageBuilder extends events.EventEmitter {
           }
         ]);
       }
+      else {
+        throw new Error("미구현");
+      }
 
       if (config.framework === "vue") {
         /*if (this._parsedTsConfig.fileNames.length < 1) {
@@ -846,7 +842,7 @@ export class SdPackageBuilder extends events.EventEmitter {
         }*/
         webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_MAIN"] = path.resolve(this._contextPath, "src", "main.ts"); //this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
       }
-      else {
+      else if (config.framework === "angular") {
         if (this._parsedTsConfig.fileNames.length < 1) {
           throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
         }
@@ -879,6 +875,9 @@ export class SdPackageBuilder extends events.EventEmitter {
           })
         );*/
       }
+      else {
+        throw new Error("미구현");
+      }
 
       webpackConfig.plugins!.push(new webpack.HotModuleReplacementPlugin());
     }
@@ -898,7 +897,7 @@ export class SdPackageBuilder extends events.EventEmitter {
 
     const compiler = webpack(webpackConfig);
 
-    compiler.hooks.watchRun.tap("SdPackageBuilder", () => {
+    compiler.hooks.watchRun.tap("SdPackageCompiler", () => {
       this.emit("run");
     });
 
@@ -914,12 +913,12 @@ export class SdPackageBuilder extends events.EventEmitter {
           log: false
         });
 
-        compiler.hooks.failed.tap("SdPackageBuilder", err => {
+        compiler.hooks.failed.tap("SdPackageCompiler", err => {
           this.emit("error", err);
           reject(err);
         });
 
-        compiler.hooks.done.tap("SdPackageBuilder", stats => {
+        compiler.hooks.done.tap("SdPackageCompiler", stats => {
           const info = stats.toJson({all: false, assets: true, warnings: true, errors: true, errorDetails: false});
 
           if (stats.hasWarnings()) {

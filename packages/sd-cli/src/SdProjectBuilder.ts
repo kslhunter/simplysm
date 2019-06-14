@@ -8,7 +8,7 @@ import {ISdProjectConfig, ISdWorkerMessage} from "./commons/interfaces";
 import * as os from "os";
 import * as semver from "semver";
 import {NextHandleFunction, SdServiceClient, SdServiceServer} from "@simplysm/sd-service";
-import {SdPackageBuilder} from "./SdPackageBuilder";
+import {SdPackageCompiler} from "./SdPackageCompiler";
 import {SdCliUtil} from "./commons/SdCliUtil";
 
 export class SdProjectBuilder {
@@ -133,7 +133,7 @@ export class SdProjectBuilder {
     const startDateTime = new DateTime();
     logger.info("빌드 프로세스를 시작합니다.");
 
-    const workerCpuUsages: { packageKey: string; type: "build" | "lint" | "check"; cpuUsage: number }[] = [];
+    const workerCpuUsages: { packageKey: string; type: "build" | "check"; cpuUsage: number }[] = [];
 
     const completedDeclarationPackageNames: string[] = [];
     // 병렬로,
@@ -184,10 +184,6 @@ export class SdProjectBuilder {
           return;
         }
 
-        if (config.packages[packageKey].framework === "vue") {
-          return;
-        }
-
         /*if (config.packages[packageKey].type !== undefined && config.packages[packageKey].type !== "server") {
           return;
         }*/
@@ -199,14 +195,10 @@ export class SdProjectBuilder {
         completedDeclarationPackageNames.push(packageName);
       }).then(() => {
         logger.info("모든 'check'가 완료되었습니다.");
-      }),
+      })/*,
       // > 패키지별 병렬로,
       Promise.all(Object.keys(config.packages).map(async packageKey => {
         if (config.packages[packageKey].type === "none") {
-          return;
-        }
-
-        if (config.packages[packageKey].framework === "vue") {
           return;
         }
 
@@ -216,7 +208,7 @@ export class SdProjectBuilder {
 
       })).then(() => {
         logger.info("모든 'lint'가 완료되었습니다.");
-      })
+      })*/
     ]);
 
     let cpuMessage = "------------------------\n";
@@ -438,7 +430,7 @@ export class SdProjectBuilder {
         {
           stdio: ["inherit", "inherit", "inherit", "ipc"],
           cwd: process.cwd(),
-          execArgv
+          execArgv: [...execArgv, "--max-old-space-size=2048"]
         }
       );
 
@@ -501,7 +493,7 @@ export class SdProjectBuilder {
     const middlewares = await new Promise<NextHandleFunction[]>(async (resolve, reject) => {
       try {
         let startDateTime: DateTime | undefined;
-        const builder = new SdPackageBuilder(packageKey, options);
+        const builder = new SdPackageCompiler(packageKey, options);
         builder
           .on("run", () => {
             startDateTime = new DateTime();

@@ -27,7 +27,6 @@
   },
   "files": [
     "src/bin.ts",
-    "src/ts-build-loader.ts",
     "src/package-build-worker.ts"
   ]
 }

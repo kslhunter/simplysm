@@ -1,11 +1,10 @@
 import {ISdWorkerMessage} from "./commons/interfaces";
 import {SdPackageChecker} from "./builders/SdPackageChecker";
-import {SdPackageLinter} from "./builders/SdPackageLinter";
-import {SdPackageBuilder} from "./SdPackageBuilder";
+import {SdPackageCompiler} from "./SdPackageCompiler";
 
 require("source-map-support/register"); //tslint:disable-line
 
-const type = process.argv[2] as "build" | "check" | "lint";
+const type = process.argv[2] as "build" | "check";
 const packageKey = process.argv[3];
 const isWatch = process.argv[4] === "watch";
 const options = process.argv[5];
@@ -17,9 +16,8 @@ const sendMessage = (message: ISdWorkerMessage) => {
 };
 
 const packageBuilderClass =
-  type === "build" ? SdPackageBuilder :
-    type === "check" ? SdPackageChecker :
-      SdPackageLinter;
+  type === "check" ? SdPackageChecker
+    : SdPackageCompiler;
 
 const builder = new packageBuilderClass(
   packageKey,
