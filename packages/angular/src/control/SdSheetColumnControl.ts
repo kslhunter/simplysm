@@ -33,5 +33,6 @@ export class SdSheetColumnControl {
   @ContentChild("item")
   public itemTemplateRef?: TemplateRef<any>;
 
-
+  @ContentChild("head")
+  public headTemplateRef?: TemplateRef<any>;
 }

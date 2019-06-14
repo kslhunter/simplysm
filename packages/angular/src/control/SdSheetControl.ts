@@ -50,6 +50,10 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
       <div class="_row">
         <div class="_col-group _fixed-col-group" [style.left.px]="fixedLeft">
           <div class="_col _first-col">
+            <a (click)="onAllSelectIconClick()">
+              <sd-icon [icon]="'arrow-right'" *ngIf="selectable === 'multi'"
+                       [ngClass]="{'sd-text-color-primary-default': allSelected, 'sd-text-color-grey-default': !allSelected}"></sd-icon>
+            </a>
             <div class="_border"></div>
           </div>
           <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
@@ -58,6 +62,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
                [attr.title]="columnControl.help"
                [attr.sd-header]="columnControl.header">
             {{ columnControl.header && columnControl.header.split(".").last() }}
+            <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
             <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
                  (mousedown)="onHeadBorderMousedown($event)"></div>
           </div>
@@ -69,6 +74,7 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
                [attr.title]="columnControl.help"
                [attr.sd-header]="columnControl.header">
             {{ columnControl.header && columnControl.header.split(".").last() }}
+            <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
             <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
                  (mousedown)="onHeadBorderMousedown($event)"></div>
           </div>
@@ -168,6 +174,19 @@ export class SdSheetControl implements DoCheck, OnInit {
     //   + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default));
     //
     // return ((this.hasHeaderGroup ? (Math.floor(size * 2) + 2) : (Math.floor(size) + 1)) + 1) + "px";
+  }
+
+  public get allSelected(): boolean {
+    return !!this.items && this.items.length === this.selectedItems.length && this.items.every(item => this.selectedItems.includes(item));
+  }
+
+  public onAllSelectIconClick(): void {
+    if (this.allSelected) {
+      this.selectedItems = [];
+    }
+    else if (this.items) {
+      this.selectedItems = [...this.items];
+    }
   }
 
   public get hasHeaderGroup(): boolean {
