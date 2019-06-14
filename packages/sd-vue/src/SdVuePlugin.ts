@@ -1,8 +1,8 @@
-import Vue from "vue";
+import Vue, {PluginObject} from "vue";
 import SdButtonControl from "./controls/ButtonControl.vue";
 
-export default class SdVuePlugin {
-  public static install(vue: Vue): void {
-    Vue.component("sd-button", SdButtonControl);
+export default class SdVuePlugin implements PluginObject<any> {
+  public install(vue: typeof Vue, options?: any): void {
+    vue.component("sd-button", SdButtonControl);
   }
 }
