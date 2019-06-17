@@ -184,10 +184,6 @@ export class SdProjectBuilder {
           return;
         }
 
-        /*if (config.packages[packageKey].type !== undefined && config.packages[packageKey].type !== "server") {
-          return;
-        }*/
-
         // > > 타입체크 및 ".d"파일 생성
         const worker = await this._runPackageBuildWorkerAsync("check", packageKey, argv.options, argv.watch);
         workerCpuUsages.push({packageKey, type: "check", cpuUsage: worker["cpuUsage"]});
@@ -195,20 +191,7 @@ export class SdProjectBuilder {
         completedDeclarationPackageNames.push(packageName);
       }).then(() => {
         logger.info("모든 'check'가 완료되었습니다.");
-      })/*,
-      // > 패키지별 병렬로,
-      Promise.all(Object.keys(config.packages).map(async packageKey => {
-        if (config.packages[packageKey].type === "none") {
-          return;
-        }
-
-        // > > LINT
-        const worker = await this._runPackageBuildWorkerAsync("lint", packageKey, argv.options, argv.watch);
-        workerCpuUsages.push({packageKey, type: "lint", cpuUsage: worker["cpuUsage"]});
-
-      })).then(() => {
-        logger.info("모든 'lint'가 완료되었습니다.");
-      })*/
+      })
     ]);
 
     let cpuMessage = "------------------------\n";
