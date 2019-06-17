@@ -99,7 +99,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     this._tsConfigPath = path.resolve(this._contextPath, "tsconfig.build.json");
   }
 
-  private _mergeStyleLoaders(webpackConfig: webpack.Configuration, opt: { sourceMap: boolean; extract: boolean; vue: boolean }): void {
+  private _mergeStyleConfigs(webpackConfig: webpack.Configuration, opt: { sourceMap: boolean; extract: boolean; vue: boolean }): void {
     webpackConfig.module = webpackConfig.module || {rules: []};
 
     const styleLoader = opt.extract ? MiniCssExtractPlugin.loader
@@ -154,7 +154,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
   }
 
-  private _mergeSourceLoaders(webpackConfig: webpack.Configuration, opt: { type: "node" | "vue" | "angular" | "angular-aot" }): void {
+  private _mergeSourceCompileConfigs(webpackConfig: webpack.Configuration, opt: { type: "node" | "vue" | "angular" | "angular-aot" }): void {
     webpackConfig.module = webpackConfig.module || {rules: []};
 
     if (opt.type === "node" || opt.type === "angular") {
@@ -222,7 +222,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
   }
 
-  private _mergeHtmlPlugin(webpackConfig: webpack.Configuration, opt: { framework: "angular" | "vue" }): void {
+  private _mergeIndexHtmlConfigs(webpackConfig: webpack.Configuration, opt: { framework: "angular" | "vue" }): void {
     webpackConfig.plugins = webpackConfig.plugins || [];
     webpackConfig.plugins.push(
       new HtmlWebpackPlugin({
@@ -234,7 +234,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     );
   }
 
-  private _mergeExternals(webpackConfig: webpack.Configuration, opt: { target: "node" | "web"; nodeModules: boolean }): void {
+  private _mergeExternalConfigs(webpackConfig: webpack.Configuration, opt: { target: "node" | "web"; nodeModules: boolean }): void {
     webpackConfig.externals = (webpackConfig.externals || []) as webpack.ExternalsElement[];
 
     webpackConfig.externals.push(
@@ -281,7 +281,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
   }
 
-  private _mergeAssetsFileLoader(webpackConfig: webpack.Configuration, opt: { hash: boolean }): void {
+  private _mergeAssetsFileConfigs(webpackConfig: webpack.Configuration, opt: { hash: boolean }): void {
     webpackConfig.module = webpackConfig.module || {rules: []};
     webpackConfig.module.rules.pushRange([
       {
@@ -294,7 +294,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     ]);
   }
 
-  private _mergeEntries(webpackConfig: webpack.Configuration, opt: { type: "node" | "vue" | "angular"; prod: boolean }): void {
+  private _mergeEntryConfigs(webpackConfig: webpack.Configuration, opt: { type: "node" | "vue" | "angular"; prod: boolean }): void {
     webpackConfig.entry = webpackConfig.entry || {};
     if (opt.type === "node") {
       if (!this._tsConfig.files || this._tsConfig.files.length < 1) {
@@ -318,7 +318,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
   }
 
-  private _mergeHotMiddleware(webpackConfig: webpack.Configuration): void {
+  private _mergeHotMiddlewareConfigs(webpackConfig: webpack.Configuration): void {
     if (!webpackConfig.entry || typeof webpackConfig.entry !== "object" || !webpackConfig.entry["main"] || (typeof webpackConfig.entry["main"] !== "string" && !(webpackConfig.entry["main"] instanceof Array))) {
       throw new Error("'webpackConfig.entry.main'이 잘못되었습니다.");
     }
@@ -386,7 +386,7 @@ export class SdPackageCompiler extends events.EventEmitter {
 
       webpackConfig.output!.publicPath = `/${this._packageKey}/`;
 
-      this._mergeHtmlPlugin(webpackConfig, {framework: config.framework});
+      this._mergeIndexHtmlConfigs(webpackConfig, {framework: config.framework});
     }
 
     // env 설정
@@ -401,13 +401,13 @@ export class SdPackageCompiler extends events.EventEmitter {
 
     // 빌드 타입별, external 설정
     if (config.type === "library") {
-      this._mergeExternals(webpackConfig, {target: "node", nodeModules: true});
+      this._mergeExternalConfigs(webpackConfig, {target: "node", nodeModules: true});
     }
     else if (config.type === "server") {
-      this._mergeExternals(webpackConfig, {target: "node", nodeModules: false});
+      this._mergeExternalConfigs(webpackConfig, {target: "node", nodeModules: false});
     }
     else {
-      this._mergeExternals(webpackConfig, {target: "web", nodeModules: false});
+      this._mergeExternalConfigs(webpackConfig, {target: "web", nodeModules: false});
     }
 
     // 서버 SSL 파일로더
@@ -432,12 +432,12 @@ export class SdPackageCompiler extends events.EventEmitter {
 
     const webpackConfig = this._getWebpackCommonConfig(config);
     webpackConfig.mode = "production";
-    this._mergeAssetsFileLoader(webpackConfig, {hash: false});
+    this._mergeAssetsFileConfigs(webpackConfig, {hash: false});
 
     webpackConfig.optimization!.noEmitOnErrors = true;
 
     if (config.type === "library" || config.type === "server") {
-      this._mergeEntries(webpackConfig, {type: "node", prod: true});
+      this._mergeEntryConfigs(webpackConfig, {type: "node", prod: true});
     }
     else {
       if (!config.framework) {
@@ -445,10 +445,10 @@ export class SdPackageCompiler extends events.EventEmitter {
       }
 
       if (config.framework === "vue") {
-        this._mergeEntries(webpackConfig, {type: "vue", prod: true});
+        this._mergeEntryConfigs(webpackConfig, {type: "vue", prod: true});
       }
       else if (config.framework === "angular") {
-        this._mergeEntries(webpackConfig, {type: "angular", prod: true});
+        this._mergeEntryConfigs(webpackConfig, {type: "angular", prod: true});
       }
     }
 
@@ -523,22 +523,19 @@ export class SdPackageCompiler extends events.EventEmitter {
           throw new Error("'vue' 클라이언트를 빌드할때는, 'package.json'의 'sideEffects'옵션이 'false'일 수 없습니다.");
         }
 
-        this._mergeSourceLoaders(webpackConfig, {type: "vue"});
-        this._mergeStyleLoaders(webpackConfig, {sourceMap: false, extract: false, vue: true});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "vue"});
+        this._mergeStyleConfigs(webpackConfig, {sourceMap: false, extract: false, vue: true});
       }
       else if (config.framework === "angular") {
-        this._mergeSourceLoaders(webpackConfig, {type: "angular-aot"});
-        this._mergeStyleLoaders(webpackConfig, {sourceMap: false, extract: true, vue: false});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "angular-aot"});
+        this._mergeStyleConfigs(webpackConfig, {sourceMap: false, extract: true, vue: false});
       }
       else {
         throw new Error("미구현");
       }
 
       if (config.framework === "vue") {
-        /*if (this._parsedTsConfig.fileNames.length < 1) {
-          throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
-        }*/
-        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_MAIN"] = path.resolve(this._contextPath, "src", "main.ts"); //this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_MAIN"] = path.resolve(this._contextPath, "src", "main.ts");
         webpackConfig.plugins!.push(new GenerateSW());
       }
       else if (config.framework === "angular") {
@@ -578,11 +575,11 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
     else {
       if (config.framework === "vue") {
-        this._mergeSourceLoaders(webpackConfig, {type: "vue"});
-        this._mergeStyleLoaders(webpackConfig, {sourceMap: false, extract: false, vue: true});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "vue"});
+        this._mergeStyleConfigs(webpackConfig, {sourceMap: false, extract: false, vue: true});
       }
       else {
-        this._mergeSourceLoaders(webpackConfig, {type: "angular"});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "angular"});
       }
     }
 
@@ -612,7 +609,7 @@ export class SdPackageCompiler extends events.EventEmitter {
             content: JSON.stringify({
               name: this._projectNpmConfig.name + "-" + this._packageKey,
               script: "app.js",
-              watch: false, //"app.js",
+              watch: false,
               env: {
                 "NODE_ENV": "production"
               }
@@ -715,7 +712,7 @@ export class SdPackageCompiler extends events.EventEmitter {
         ]
       }
     );
-    this._mergeAssetsFileLoader(webpackConfig, {hash: true});
+    this._mergeAssetsFileConfigs(webpackConfig, {hash: true});
 
     webpackConfig.output!.pathinfo = false;
     webpackConfig.plugins!.push(new SdWebpackTimeFixPlugin());
@@ -724,83 +721,54 @@ export class SdPackageCompiler extends events.EventEmitter {
     webpackConfig.optimization!.splitChunks = false;
 
     if (config.type === "library" || config.type === "server") {
-      this._mergeEntries(webpackConfig, {type: "node", prod: false});
+      this._mergeEntryConfigs(webpackConfig, {type: "node", prod: false});
 
       if (config.framework === "vue") {
-        this._mergeSourceLoaders(webpackConfig, {type: "vue"});
-        this._mergeStyleLoaders(webpackConfig, {sourceMap: true, extract: false, vue: true});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "vue"});
+        this._mergeStyleConfigs(webpackConfig, {sourceMap: true, extract: false, vue: true});
       }
       else {
-        this._mergeSourceLoaders(webpackConfig, {type: "node"});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "node"});
       }
     }
     else {
       if (config.framework === "vue") {
-        this._mergeEntries(webpackConfig, {type: "vue", prod: false});
+        this._mergeEntryConfigs(webpackConfig, {type: "vue", prod: false});
       }
       else if (config.framework === "angular") {
-        this._mergeEntries(webpackConfig, {type: "angular", prod: false});
+        this._mergeEntryConfigs(webpackConfig, {type: "angular", prod: false});
       }
       else {
         throw new Error("미구현");
       }
 
       if (config.framework === "vue") {
-        this._mergeSourceLoaders(webpackConfig, {type: "vue"});
-        this._mergeStyleLoaders(webpackConfig, {sourceMap: true, extract: false, vue: true});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "vue"});
+        this._mergeStyleConfigs(webpackConfig, {sourceMap: true, extract: false, vue: true});
       }
       else if (config.framework === "angular") {
-        this._mergeSourceLoaders(webpackConfig, {type: "node"});
-        this._mergeStyleLoaders(webpackConfig, {sourceMap: true, extract: false, vue: false});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "node"});
+        this._mergeStyleConfigs(webpackConfig, {sourceMap: true, extract: false, vue: false});
       }
       else {
         throw new Error("미구현");
       }
 
       if (config.framework === "vue") {
-        /*if (this._parsedTsConfig.fileNames.length < 1) {
-          throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
-        }*/
-        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_MAIN"] = path.resolve(this._contextPath, "src", "main.ts"); //this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_MAIN"] = path.resolve(this._contextPath, "src", "main.ts");
       }
       else if (config.framework === "angular") {
         if (this._parsedTsConfig.fileNames.length < 1) {
           throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
         }
 
-        // noinspection UnnecessaryLocalVariableJS
-        const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
-        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE"] = modulePath;
-        /*webpackConfig.plugins!.push(
-          new AngularCompilerPlugin({
-            tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
-            entryModule: modulePath + "#" + path.basename(modulePath),
-            mainPath: path.resolve(__dirname, "../lib/main.js"),
-            basePath: process.cwd(),
-            sourceMap: true,
-            skipCodeGeneration: true,
-            forkTypeChecker: false,
-            compilerOptions: {
-              ...this._parsedTsConfig.options,
-              rootDir: undefined,
-              sourceMap: true,
-              declaration: false,
-              disableTypeScriptVersionCheck: true,
-              skipLibCheck: false,
-              skipTemplateCodegen: false,
-              strictMetadataEmit: true,
-              fullTemplateTypeCheck: true,
-              strictInjectionParameters: true,
-              enableResourceInlining: true
-            }
-          })
-        );*/
+        webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE"] = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
       }
       else {
         throw new Error("미구현");
       }
 
-      this._mergeHotMiddleware(webpackConfig);
+      this._mergeHotMiddlewareConfigs(webpackConfig);
     }
 
     // '.configs.json'파일 생성
