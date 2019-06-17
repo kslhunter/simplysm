@@ -14,7 +14,7 @@ import {SdCliUtil} from "./commons/SdCliUtil";
 import {ISdPackageConfig} from "./commons/interfaces";
 import * as TerserPlugin from "terser-webpack-plugin";
 import {Generator} from "@angular/service-worker/config";
-import {JsonConvert} from "@simplysm/sd-core";
+import {ArgumentError, JsonConvert} from "@simplysm/sd-core";
 import {NodeFilesystem} from "./service-worker/filesystem";
 import {AngularCompilerPlugin} from "@ngtools/webpack";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
@@ -72,6 +72,25 @@ export class SdPackageCompiler extends events.EventEmitter {
     return this._distPath_;
   }
 
+  private _alias_?: { [key: string]: string };
+
+  private get _alias(): { [key: string]: string } {
+    if (!this._alias_) {
+      const tsOptions = this._parsedTsConfig.options;
+      const alias = {};
+      if (tsOptions && tsOptions.paths) {
+        for (const tsPathKey of Object.keys(tsOptions.paths)) {
+          if (tsOptions.paths[tsPathKey].length !== 1) {
+            throw new Error("'tsconfig'의 'paths'옵션에서, 하나의 명칭에 반드시 하나의 목적지를 지정해야 합니다.");
+          }
+          alias[tsPathKey] = path.resolve(this._contextPath, tsOptions.paths[tsPathKey][0]);
+        }
+      }
+      this._alias_ = alias;
+    }
+    return this._alias_;
+  }
+
   public constructor(private readonly _packageKey: string,
                      private readonly _options?: string[]) {
     super();
@@ -80,78 +99,66 @@ export class SdPackageCompiler extends events.EventEmitter {
     this._tsConfigPath = path.resolve(this._contextPath, "tsconfig.build.json");
   }
 
-  private _getAlias(): { [key: string]: string } {
-    const tsOptions = this._parsedTsConfig.options;
-    const alias = {};
-    if (tsOptions && tsOptions.paths) {
-      for (const tsPathKey of Object.keys(tsOptions.paths)) {
-        if (tsOptions.paths[tsPathKey].length !== 1) {
-          throw new Error("'tsconfig'의 'paths'옵션에서, 하나의 명칭에 반드시 하나의 목적지를 지정해야 합니다.");
+  private _mergeStyleLoaders(webpackConfig: webpack.Configuration, opt: { sourceMap: boolean; extract: boolean; vue: boolean }): void {
+    webpackConfig.module = webpackConfig.module || {rules: []};
+
+    const styleLoader = opt.extract ? MiniCssExtractPlugin.loader
+      : opt.vue ? {
+          loader: "vue-style-loader",
+          options: {sourceMap: opt.sourceMap}
         }
-        alias[tsPathKey] = path.resolve(this._contextPath, tsOptions.paths[tsPathKey][0]);
-      }
-    }
+        : {
+          loader: "style-loader",
+          options: {sourceMap: opt.sourceMap}
+        };
 
-    return alias;
+    webpackConfig.module.rules = webpackConfig.module.rules.concat(
+      [
+        {
+          test: /\.scss$/,
+          use: [
+            styleLoader,
+            {
+              loader: "css-loader",
+              options: {sourceMap: opt.sourceMap}
+            },
+            {
+              loader: "resolve-url-loader",
+              options: {sourceMap: opt.sourceMap}
+            },
+            {
+              loader: "sass-loader",
+              options: {
+                sourceMap: true,
+                sourceMapContents: false
+              }
+            }
+          ]
+        },
+        {
+          test: /\.css$/,
+          use: [
+            styleLoader,
+            {
+              loader: "css-loader",
+              options: {sourceMap: opt.sourceMap}
+            }
+          ]
+        }
+      ]
+    );
+
+    if (opt.extract) {
+      webpackConfig.plugins = webpackConfig.plugins || [];
+      webpackConfig.plugins = webpackConfig.plugins.concat([new MiniCssExtractPlugin()]);
+    }
   }
 
-  private _getEntry(): { [key: string]: string } {
-    const entry: { [key: string]: string } = {};
-    if (!this._tsConfig.files || this._tsConfig.files.length < 1) {
-      for (const jsFilePath of [this._npmConfig.main, ...Object.values(this._npmConfig.bin || {})]) {
-        const tsFilePath = jsFilePath.replace(/dist\//g, "src/").replace(/\.js$/, ".ts");
-        const basename = path.basename(tsFilePath, path.extname(tsFilePath));
-        entry[basename] = path.resolve(this._contextPath, tsFilePath);
-      }
-    }
-    else {
-      for (const tsFilePath of this._parsedTsConfig.fileNames) {
-        const basename = path.basename(tsFilePath, path.extname(tsFilePath));
-        entry[basename] = tsFilePath;
-      }
-    }
+  private _mergeSourceLoaders(webpackConfig: webpack.Configuration, opt: { type: "node" | "vue" | "angular" | "angular-aot" }): void {
+    webpackConfig.module = webpackConfig.module || {rules: []};
 
-    return entry;
-  }
-
-  private _getWebpackCommonConfig(config: ISdPackageConfig): webpack.Configuration {
-    const alias = this._getAlias();
-
-    const webpackConfig: webpack.Configuration = {
-      output: {
-        path: this._distPath,
-        filename: "[name].js",
-        chunkFilename: "[name].chunk.js"
-      },
-      optimization: {},
-      resolve: {
-        extensions: [".ts", ".js", ".json"],
-        alias
-      },
-      module: {
-        rules: []
-      },
-      plugins: [
-        new webpack.DefinePlugin({
-          "process.env.VERSION": `"${this._projectNpmConfig.version}"`,
-          "process.env.BASE_HREF": `"/${this._packageKey}/"`
-        })
-      ],
-      externals: []
-    };
-
-    // 빌드 타입별, 기본 설정 수정
-    if (config.type === "library" || config.type === "server") {
-      if (!config.framework) {
-        webpackConfig.target = "node";
-      }
-
-      webpackConfig.node = {
-        __dirname: false
-      };
-      webpackConfig.output!.libraryTarget = "umd";
-      webpackConfig.optimization!.nodeEnv = false;
-      webpackConfig.module!.rules!.push(
+    if (opt.type === "node" || opt.type === "angular") {
+      webpackConfig.module.rules.push(
         {
           test: /\.ts$/,
           exclude: /node_modules/,
@@ -162,6 +169,205 @@ export class SdPackageCompiler extends events.EventEmitter {
           }
         }
       );
+    }
+    else if (opt.type === "vue") {
+      webpackConfig.module.rules.pushRange([
+        {
+          test: /\.vue$/,
+          loader: "vue-loader"
+        },
+        {
+          test: /\.ts$/,
+          exclude: /node_modules/,
+          loader: "ts-loader",
+          options: {
+            transpileOnly: true,
+            configFile: this._tsConfigPath,
+            appendTsSuffixTo: [/\.vue$/]
+          }
+        }
+      ]);
+
+      webpackConfig.plugins = webpackConfig.plugins || [];
+      webpackConfig.plugins.push(new VueLoaderPlugin());
+    }
+    else if (opt.type === "angular-aot") {
+      webpackConfig.module!.rules.push(
+        {
+          test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+          loader: [
+            "@angular-devkit/build-optimizer/webpack-loader",
+            "@ngtools/webpack"
+          ]
+        }
+      );
+    }
+
+    if (opt.type.startsWith("angular")) {
+      webpackConfig.module.rules.push(
+        {
+          test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
+          parser: {system: true}
+        }
+      );
+
+      webpackConfig.plugins = webpackConfig.plugins || [];
+      webpackConfig.plugins.push(
+        new webpack.ContextReplacementPlugin(
+          /angular[\\/]core[\\/]fesm5/,
+          path.resolve(this._contextPath, "src"),
+          {}
+        )
+      );
+    }
+  }
+
+  private _mergeHtmlPlugin(webpackConfig: webpack.Configuration, opt: { framework: "angular" | "vue" }): void {
+    webpackConfig.plugins = webpackConfig.plugins || [];
+    webpackConfig.plugins.push(
+      new HtmlWebpackPlugin({
+        template: path.resolve(__dirname, `../lib/index${opt.framework === "vue" ? ".vue" : ""}.ejs`),
+        chunksSortMode: "none",
+        BASE_HREF: `/${this._packageKey}/`,
+        inject: true
+      })
+    );
+  }
+
+  private _mergeExternals(webpackConfig: webpack.Configuration, opt: { target: "node" | "web"; nodeModules: boolean }): void {
+    webpackConfig.externals = (webpackConfig.externals || []) as webpack.ExternalsElement[];
+
+    webpackConfig.externals.push(
+      (context, request, callback) => {
+        if (["fsevents"].includes(request)) {
+          callback(undefined, `{}`);
+          return;
+        }
+
+        callback(undefined, undefined);
+      }
+    );
+
+    if (opt.nodeModules) {
+      webpackConfig.externals.pushRange([
+        (context, request, callback) => {
+          if (this._alias[request]) {
+            callback(undefined, `commonjs ${request}`);
+            return;
+          }
+
+          callback(undefined, undefined);
+        },
+        webpackNodeExternals()
+      ]);
+    }
+
+    if (opt.target === "web") {
+      webpackConfig.externals.push(
+        (context, request, callback) => {
+          if (["tedious", "chokidar", "nodemailer", "fs-extra", "fs", "child_process", "net", "tls"].includes(request)) {
+            callback(undefined, `{}`);
+            return;
+          }
+
+          if (request === "ws") {
+            callback(undefined, `WebSocket`);
+            return;
+          }
+
+          callback(undefined, undefined);
+        }
+      );
+    }
+  }
+
+  private _mergeAssetsFileLoader(webpackConfig: webpack.Configuration, opt: { hash: boolean }): void {
+    webpackConfig.module = webpackConfig.module || {rules: []};
+    webpackConfig.module.rules.pushRange([
+      {
+        test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?)$/,
+        loader: "file-loader",
+        options: {
+          name: `assets/[name].[ext]${opt.hash ? "?[hash]" : ""}`
+        }
+      }
+    ]);
+  }
+
+  private _mergeEntries(webpackConfig: webpack.Configuration, opt: { type: "node" | "vue" | "angular"; prod: boolean }): void {
+    webpackConfig.entry = webpackConfig.entry || {};
+    if (opt.type === "node") {
+      if (!this._tsConfig.files || this._tsConfig.files.length < 1) {
+        for (const jsFilePath of [this._npmConfig.main, ...Object.values(this._npmConfig.bin || {})]) {
+          const tsFilePath = jsFilePath.replace(/dist\//g, "src/").replace(/\.js$/, ".ts");
+          const basename = path.basename(tsFilePath, path.extname(tsFilePath));
+          webpackConfig.entry[basename] = path.resolve(this._contextPath, tsFilePath);
+        }
+      }
+      else {
+        for (const tsFilePath of this._parsedTsConfig.fileNames) {
+          const basename = path.basename(tsFilePath, path.extname(tsFilePath));
+          webpackConfig.entry[basename] = tsFilePath;
+        }
+      }
+    }
+    else {
+      webpackConfig.entry = {
+        main: path.resolve(__dirname, `../lib/main.${opt.type === "vue" ? ".vue" : ""}${opt.prod ? ".prod" : ""}.js`)
+      };
+    }
+  }
+
+  private _mergeHotMiddleware(webpackConfig: webpack.Configuration): void {
+    if (!webpackConfig.entry || typeof webpackConfig.entry !== "object" || !webpackConfig.entry["main"] || (typeof webpackConfig.entry["main"] !== "string" && !(webpackConfig.entry["main"] instanceof Array))) {
+      throw new Error("'webpackConfig.entry.main'이 잘못되었습니다.");
+    }
+
+    const hotMiddlewareEntry = `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`;
+    if (webpackConfig.entry["main"] instanceof Array) {
+      webpackConfig.entry["main"].insert(0, hotMiddlewareEntry);
+    }
+    else {
+      webpackConfig.entry["main"] = [
+        hotMiddlewareEntry,
+        webpackConfig.entry["main"]
+      ];
+    }
+
+    webpackConfig.plugins = webpackConfig.plugins || [];
+    webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
+
+
+  }
+
+  private _getWebpackCommonConfig(config: ISdPackageConfig): webpack.Configuration {
+    const webpackConfig: webpack.Configuration = {
+      output: {
+        path: this._distPath,
+        filename: "[name].js",
+        chunkFilename: "[name].chunk.js"
+      },
+      optimization: {},
+      resolve: {
+        extensions: [".ts", ".js", ".json"],
+        alias: this._alias
+      },
+      module: {
+        rules: []
+      },
+      plugins: [],
+      externals: []
+    };
+
+    // 빌드 타입별, 기본 설정 수정
+    if (config.type === "library" || config.type === "server") {
+      if (!config.framework) {
+        webpackConfig.target = "node";
+      }
+
+      webpackConfig.node = {__dirname: false};
+      webpackConfig.output!.libraryTarget = "umd";
+      webpackConfig.optimization!.nodeEnv = false;
 
       if (this._npmConfig["bin"]) {
         webpackConfig.plugins!.push(new webpack.BannerPlugin({
@@ -174,96 +380,34 @@ export class SdPackageCompiler extends events.EventEmitter {
       }
     }
     else {
+      if (!config.framework) {
+        throw new ArgumentError({framework: config.framework});
+      }
+
       webpackConfig.output!.publicPath = `/${this._packageKey}/`;
 
-      if (config.framework === "vue") {
-        webpackConfig.plugins!.push(
-          new HtmlWebpackPlugin({
-            template: path.resolve(__dirname, "../lib/index.vue.ejs"),
-            chunksSortMode: "none",
-            BASE_HREF: `/${this._packageKey}/`,
-            inject: true
-          })
-        );
-      }
-      else if (config.framework === "angular") {
-        webpackConfig.module!.rules!.push(
-          {
-            test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
-            parser: {system: true}
-          }
-        );
-        webpackConfig.plugins!.push(
-          new webpack.ContextReplacementPlugin(
-            /angular[\\/]core[\\/]fesm5/,
-            path.resolve(this._contextPath, "src"),
-            {}
-          )
-        );
-        webpackConfig.plugins!.push(
-          new HtmlWebpackPlugin({
-            template: path.resolve(__dirname, "../lib/index.ejs"),
-            chunksSortMode: "none",
-            BASE_HREF: `/${this._packageKey}/`
-          })
-        );
-      }
-      else {
-        throw new Error("미구현");
-      }
+      this._mergeHtmlPlugin(webpackConfig, {framework: config.framework});
+    }
+
+    // env 설정
+    if (config.type !== "library") {
+      webpackConfig.plugins!.push(
+        new webpack.DefinePlugin({
+          "process.env.VERSION": `"${this._projectNpmConfig.version}"`,
+          "process.env.BASE_HREF": `"/${this._packageKey}/"`
+        })
+      );
     }
 
     // 빌드 타입별, external 설정
     if (config.type === "library") {
-      const externals = (webpackConfig.externals as webpack.ExternalsElement[]);
-      externals.push(
-        (context, request, callback) => {
-          if (alias[request]) {
-            callback(undefined, `commonjs ${request}`);
-            return;
-          }
-
-          callback(undefined, undefined);
-        }
-      );
-      externals.push(webpackNodeExternals());
+      this._mergeExternals(webpackConfig, {target: "node", nodeModules: true});
     }
     else if (config.type === "server") {
-      const externals = (webpackConfig.externals as webpack.ExternalsElement[]);
-      externals.push(
-        (context, request, callback) => {
-          if (["fsevents"].includes(request)) {
-            callback(undefined, `""`);
-            return;
-          }
-
-          callback(undefined, undefined);
-        }
-      );
+      this._mergeExternals(webpackConfig, {target: "node", nodeModules: false});
     }
     else {
-      const externals = (webpackConfig.externals as webpack.ExternalsElement[]);
-      externals.push(
-        (context, request, callback) => {
-          if (["tedious", "chokidar", "nodemailer", "fs-extra", "fs", "child_process", "net", "tls"].includes(request)) {
-            callback(undefined, `""`);
-            return;
-          }
-
-          if (request === "ws") {
-            callback(undefined, `WebSocket`);
-            return;
-          }
-
-          if (!path.relative(path.resolve(process.cwd(), "packages", config.server!), path.resolve(context, request)).includes("..")) {
-            const serviceName = request.split(/[\\/]/).last();
-            callback(undefined, `{name: ${serviceName}}`);
-            return;
-          }
-
-          callback(undefined, undefined);
-        }
-      );
+      this._mergeExternals(webpackConfig, {target: "web", nodeModules: false});
     }
 
     // 서버 SSL 파일로더
@@ -288,34 +432,23 @@ export class SdPackageCompiler extends events.EventEmitter {
 
     const webpackConfig = this._getWebpackCommonConfig(config);
     webpackConfig.mode = "production";
-    webpackConfig.module!.rules.pushRange([
-      {
-        test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?)$/,
-        loader: "file-loader",
-        options: {
-          name: "assets/[name].[ext]"
-        }
-      }
-    ]);
+    this._mergeAssetsFileLoader(webpackConfig, {hash: false});
 
     webpackConfig.optimization!.noEmitOnErrors = true;
 
     if (config.type === "library" || config.type === "server") {
-      webpackConfig.entry = this._getEntry();
+      this._mergeEntries(webpackConfig, {type: "node", prod: true});
     }
     else {
+      if (!config.framework) {
+        throw new ArgumentError({framework: config.framework});
+      }
+
       if (config.framework === "vue") {
-        webpackConfig.entry = {
-          main: path.resolve(__dirname, "../lib/main.vue.prod.js")
-        };
+        this._mergeEntries(webpackConfig, {type: "vue", prod: true});
       }
       else if (config.framework === "angular") {
-        webpackConfig.entry = {
-          main: path.resolve(__dirname, "../lib/main.prod.js")
-        };
-      }
-      else {
-        throw new Error("미구현");
+        this._mergeEntries(webpackConfig, {type: "angular", prod: true});
       }
     }
 
@@ -387,83 +520,15 @@ export class SdPackageCompiler extends events.EventEmitter {
     if (config.type !== "library" && config.type !== "server") {
       if (config.framework === "vue") {
         if (this._npmConfig.sideEffects === false) {
-          throw new Error("'vue'를 빌드할때는, 'package.json'의 'sideEffects'옵션이 'false'일 수 없습니다.");
+          throw new Error("'vue' 클라이언트를 빌드할때는, 'package.json'의 'sideEffects'옵션이 'false'일 수 없습니다.");
         }
 
-        webpackConfig.module!.rules.pushRange([
-          {
-            test: /\.ts$/,
-            exclude: /node_modules/,
-            loader: "ts-loader",
-            options: {
-              transpileOnly: true,
-              configFile: this._tsConfigPath,
-              appendTsSuffixTo: [/\.vue$/]
-            }
-          },
-          {
-            test: /\.vue$/,
-            loader: "vue-loader"
-          },
-          {
-            test: /\.scss$/,
-            use: [
-              "vue-style-loader",
-              "css-loader",
-              "resolve-url-loader",
-              {
-                loader: "sass-loader",
-                options: {
-                  sourceMap: true,
-                  sourceMapContents: false
-                }
-              }
-            ]
-          },
-          {
-            test: /\.css$/,
-            use: [
-              "vue-style-loader",
-              "css-loader"
-            ]
-          }
-        ]);
-
-        webpackConfig.plugins!.push(new VueLoaderPlugin());
+        this._mergeSourceLoaders(webpackConfig, {type: "vue"});
+        this._mergeStyleLoaders(webpackConfig, {sourceMap: false, extract: false, vue: true});
       }
       else if (config.framework === "angular") {
-        webpackConfig.module!.rules.push(
-          {
-            test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
-            loader: [
-              "@angular-devkit/build-optimizer/webpack-loader",
-              "@ngtools/webpack"
-            ]
-          },
-          {
-            test: /\.scss$/,
-            use: [
-              MiniCssExtractPlugin.loader,
-              "css-loader",
-              "resolve-url-loader",
-              {
-                loader: "sass-loader",
-                options: {
-                  sourceMap: true,
-                  sourceMapContents: false
-                }
-              }
-            ]
-          },
-          {
-            test: /\.css$/,
-            use: [
-              MiniCssExtractPlugin.loader,
-              "css-loader"
-            ]
-          }
-        );
-        webpackConfig.plugins!.push(new MiniCssExtractPlugin());
+        this._mergeSourceLoaders(webpackConfig, {type: "angular-aot"});
+        this._mergeStyleLoaders(webpackConfig, {sourceMap: false, extract: true, vue: false});
       }
       else {
         throw new Error("미구현");
@@ -513,36 +578,11 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
     else {
       if (config.framework === "vue") {
-        webpackConfig.module!.rules.pushRange([
-          {
-            test: /\.vue$/,
-            loader: "vue-loader"
-          },
-          {
-            test: /\.scss$/,
-            use: [
-              "vue-style-loader",
-              "css-loader",
-              "resolve-url-loader",
-              {
-                loader: "sass-loader",
-                options: {
-                  sourceMap: true,
-                  sourceMapContents: false
-                }
-              }
-            ]
-          },
-          {
-            test: /\.css$/,
-            use: [
-              "vue-style-loader",
-              "css-loader"
-            ]
-          }
-        ]);
-
-        webpackConfig.plugins!.push(new VueLoaderPlugin());
+        this._mergeSourceLoaders(webpackConfig, {type: "vue"});
+        this._mergeStyleLoaders(webpackConfig, {sourceMap: false, extract: false, vue: true});
+      }
+      else {
+        this._mergeSourceLoaders(webpackConfig, {type: "angular"});
       }
     }
 
@@ -675,15 +715,7 @@ export class SdPackageCompiler extends events.EventEmitter {
         ]
       }
     );
-    webpackConfig.module!.rules.push(
-      {
-        test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?)$/,
-        loader: "file-loader",
-        options: {
-          name: "assets/[name].[ext]?[hash]"
-        }
-      }
-    );
+    this._mergeAssetsFileLoader(webpackConfig, {hash: true});
 
     webpackConfig.output!.pathinfo = false;
     webpackConfig.plugins!.push(new SdWebpackTimeFixPlugin());
@@ -692,217 +724,34 @@ export class SdPackageCompiler extends events.EventEmitter {
     webpackConfig.optimization!.splitChunks = false;
 
     if (config.type === "library" || config.type === "server") {
-      webpackConfig.entry = this._getEntry();
+      this._mergeEntries(webpackConfig, {type: "node", prod: false});
 
       if (config.framework === "vue") {
-        webpackConfig.module!.rules.pushRange([
-          {
-            test: /\.vue$/,
-            loader: "vue-loader"
-          },
-          {
-            test: /\.scss$/,
-            use: [
-              {
-                loader: "vue-style-loader",
-                options: {
-                  sourceMap: true
-                }
-              },
-              {
-                loader: "css-loader",
-                options: {
-                  sourceMap: true
-                }
-              },
-              {
-                loader: "resolve-url-loader",
-                options: {
-                  sourceMap: true
-                }
-              },
-              {
-                loader: "sass-loader",
-                options: {
-                  sourceMap: true,
-                  sourceMapContents: false
-                }
-              }
-            ]
-          },
-          {
-            test: /\.css$/,
-            use: [
-              {
-                loader: "vue-style-loader",
-                options: {
-                  sourceMap: true
-                }
-              },
-              {
-                loader: "css-loader",
-                options: {
-                  sourceMap: true
-                }
-              }
-            ]
-          }
-        ]);
-
-        webpackConfig.plugins!.push(new VueLoaderPlugin());
+        this._mergeSourceLoaders(webpackConfig, {type: "vue"});
+        this._mergeStyleLoaders(webpackConfig, {sourceMap: true, extract: false, vue: true});
+      }
+      else {
+        this._mergeSourceLoaders(webpackConfig, {type: "node"});
       }
     }
     else {
       if (config.framework === "vue") {
-        webpackConfig.entry = {
-          main: [
-            `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
-            path.resolve(__dirname, "../lib/main.vue.js")
-          ]
-        };
+        this._mergeEntries(webpackConfig, {type: "vue", prod: false});
       }
       else if (config.framework === "angular") {
-        webpackConfig.entry = {
-          main: [
-            `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
-            path.resolve(__dirname, "../lib/main.js")
-          ]
-        };
+        this._mergeEntries(webpackConfig, {type: "angular", prod: false});
       }
       else {
         throw new Error("미구현");
       }
 
       if (config.framework === "vue") {
-        webpackConfig.module!.rules.pushRange([
-          {
-            test: /\.ts$/,
-            exclude: /node_modules/,
-            loader: "ts-loader",
-            options: {
-              transpileOnly: true,
-              configFile: this._tsConfigPath,
-              appendTsSuffixTo: [/\.vue$/]
-            }
-          },
-          {
-            test: /\.vue$/,
-            loader: "vue-loader"
-          },
-          {
-            test: /\.scss$/,
-            use: [
-              {
-                loader: "vue-style-loader",
-                options: {
-                  sourceMap: true
-                }
-              },
-              {
-                loader: "css-loader",
-                options: {
-                  sourceMap: true
-                }
-              },
-              {
-                loader: "resolve-url-loader",
-                options: {
-                  sourceMap: true
-                }
-              },
-              {
-                loader: "sass-loader",
-                options: {
-                  sourceMap: true,
-                  sourceMapContents: false
-                }
-              }
-            ]
-          },
-          {
-            test: /\.css$/,
-            use: [
-              {
-                loader: "vue-style-loader",
-                options: {
-                  sourceMap: true
-                }
-              },
-              {
-                loader: "css-loader",
-                options: {
-                  sourceMap: true
-                }
-              }
-            ]
-          }
-        ]);
-
-        webpackConfig.plugins!.push(new VueLoaderPlugin());
+        this._mergeSourceLoaders(webpackConfig, {type: "vue"});
+        this._mergeStyleLoaders(webpackConfig, {sourceMap: true, extract: false, vue: true});
       }
       else if (config.framework === "angular") {
-        webpackConfig.module!.rules.pushRange([
-          {
-            test: /\.ts$/,
-            exclude: /node_modules/,
-            loader: "ts-loader",
-            options: {
-              transpileOnly: true,
-              configFile: this._tsConfigPath
-            }
-          },
-          /*{
-            test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
-            loader: "@ngtools/webpack"
-          },*/
-          {
-            test: /\.scss$/,
-            use: [
-              {
-                loader: "style-loader",
-                options: {
-                  sourceMap: true
-                }
-              },
-              {
-                loader: "css-loader",
-                options: {
-                  sourceMap: true
-                }
-              },
-              {
-                loader: "resolve-url-loader",
-                options: {
-                  sourceMap: true
-                }
-              },
-              {
-                loader: "sass-loader",
-                options: {
-                  sourceMap: true,
-                  sourceMapContents: false
-                }
-              }
-            ]
-          },
-          {
-            test: /\.css$/,
-            use: [
-              {
-                loader: "style-loader",
-                options: {
-                  sourceMap: true
-                }
-              },
-              {
-                loader: "css-loader",
-                options: {
-                  sourceMap: true
-                }
-              }
-            ]
-          }
-        ]);
+        this._mergeSourceLoaders(webpackConfig, {type: "node"});
+        this._mergeStyleLoaders(webpackConfig, {sourceMap: true, extract: false, vue: false});
       }
       else {
         throw new Error("미구현");
@@ -951,7 +800,7 @@ export class SdPackageCompiler extends events.EventEmitter {
         throw new Error("미구현");
       }
 
-      webpackConfig.plugins!.push(new webpack.HotModuleReplacementPlugin());
+      this._mergeHotMiddleware(webpackConfig);
     }
 
     // '.configs.json'파일 생성

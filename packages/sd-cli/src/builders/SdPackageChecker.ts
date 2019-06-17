@@ -94,54 +94,35 @@ export class SdPackageChecker extends events.EventEmitter {
       host
     );
 
-    await Promise.all([
-      new Promise((resolve, reject) => {
-        try {
-          let diagnostics = this._parsedTsConfig.options.declaration
-            ? ts.getPreEmitDiagnostics(program)
-            : program.getSemanticDiagnostics();
+    let diagnostics = this._parsedTsConfig.options.declaration
+      ? ts.getPreEmitDiagnostics(program)
+      : program.getSemanticDiagnostics();
 
-          if (this._parsedTsConfig.options.declaration) {
-            diagnostics = diagnostics.concat(program.emit(undefined, undefined, undefined, true).diagnostics);
-          }
-          else {
-            diagnostics = diagnostics.concat(program.getSyntacticDiagnostics());
-          }
+    if (this._parsedTsConfig.options.declaration) {
+      diagnostics = diagnostics.concat(program.emit(undefined, undefined, undefined, true).diagnostics);
+    }
+    else {
+      diagnostics = diagnostics.concat(program.getSyntacticDiagnostics());
+    }
 
-          const messages: string[] = [];
-          for (const diagnostic of diagnostics) {
-            const message = this._diagnosticToMessage(diagnostic);
-            if (message) {
-              messages.push(message);
-            }
-          }
+    const messages: string[] = [];
+    for (const diagnostic of diagnostics) {
+      const message = this._diagnosticToMessage(diagnostic);
+      if (message) {
+        messages.push(message);
+      }
+    }
 
-          if (messages.length > 0) {
-            this.emit("error", messages.join(os.EOL));
-          }
-
-          resolve();
-        }
-        catch (err) {
-          reject(err);
-        }
-      }),
-      new Promise(async (resolve, reject) => {
-        try {
-          const messages = await this._lintAsync(program);
-          if (messages.length > 0) {
-            this.emit("warning", messages.join(os.EOL));
-          }
-
-          resolve();
-        }
-        catch (err) {
-          reject(err);
-        }
-      })
-    ]);
+    if (messages.length > 0) {
+      this.emit("error", messages.join(os.EOL));
+    }
 
     this.emit("done");
+
+    const lintMessages = await this._lintAsync(program);
+    if (lintMessages.length > 0) {
+      this.emit("warning", lintMessages.join(os.EOL));
+    }
   }
 
   public async watchAsync(): Promise<void> {
@@ -181,12 +162,12 @@ export class SdPackageChecker extends events.EventEmitter {
           this.emit("error", messages.join(os.EOL));
         }
 
+        this.emit("done");
+
         const lintMessages1 = await this._lintAsync(watchProgram.getProgram(), lintFilePaths.distinct());
         if (lintMessages1.length > 0) {
           this.emit("warning", lintMessages1.join(os.EOL));
         }
-
-        this.emit("done");
       },
       (filePath, content) => {
         if (content && !lintFilePaths.includes(filePath)) {
