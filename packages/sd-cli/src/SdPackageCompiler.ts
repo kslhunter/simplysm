@@ -313,7 +313,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
     else {
       webpackConfig.entry = {
-        main: path.resolve(__dirname, `../lib/main.${opt.type === "vue" ? ".vue" : ""}${opt.prod ? ".prod" : ""}.js`)
+        main: path.resolve(__dirname, `../lib/main${opt.type === "vue" ? ".vue" : ""}${opt.prod ? ".prod" : ""}.js`)
       };
     }
   }

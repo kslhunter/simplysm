@@ -81,7 +81,7 @@
     display: block;
     position: relative;
 
-    & > button {
+    > button {
       @include form-control-base();
 
       font-weight: bold;

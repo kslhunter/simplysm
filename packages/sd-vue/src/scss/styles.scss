@@ -4,6 +4,16 @@
   @include initialize("-", $root);
 }
 
+*,
+*:after,
+*:before {
+  box-sizing: border-box;
+}
+
+*:focus {
+  outline-color: var(--theme-primary-default);
+}
+
 html, body {
   height: 100%;
   width: 100%;
