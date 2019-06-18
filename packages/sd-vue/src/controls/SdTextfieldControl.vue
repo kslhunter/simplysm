@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts">
-  import {Component, Emit, Prop, Vue, Watch} from "vue-property-decorator";
+  import {Component, Emit, Prop, Vue} from "vue-property-decorator";
   import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
 
   @Component
@@ -94,14 +94,28 @@
       return event;
     }
 
-    @Watch("value", {immediate: true, deep: true})
-    public onValueChanged(val?: number | string | DateOnly | DateTime | Time): void {
-      this.inputValue = this._convertToInputValue(val);
-      this.refreshIsInvalid();
-    }
-
-    public inputValue: string | undefined;
+    public inputValue: string | undefined = "";
     public isInvalid = false;
+
+    public mounted(): void {
+      this.$watch(
+        () => [this.inputValue, this.type, this.min, this.step, this.required],
+        () => {
+          this.refreshIsInvalid();
+          this.$forceUpdate();
+        },
+        {immediate: true}
+      );
+
+      this.$watch(
+        () => this.value,
+        () => {
+          this.inputValue = this._convertToInputValue(this.value);
+          this.$forceUpdate();
+        },
+        {immediate: true}
+      );
+    }
 
     public onInput(event: Event): void {
       const inputEl = event.target as (HTMLInputElement | HTMLTextAreaElement);
@@ -120,14 +134,9 @@
       const realValue = this._convertToRealValue(inputEl.value);
       this.updateValue(realValue);
 
-      this.refreshIsInvalid();
       this.$forceUpdate();
     }
 
-    @Watch("type", {immediate: true})
-    @Watch("min", {immediate: true})
-    @Watch("step", {immediate: true})
-    @Watch("required", {immediate: true})
     public refreshIsInvalid(): void {
       const realValue = this._convertToRealValue(this.inputValue);
       const hasMinError = this.min !== undefined && realValue !== undefined && this.type === "number" && realValue < this.min;

@@ -49,12 +49,12 @@
     @Prop(Boolean)
     public inset?: boolean;
 
-    public isInvalid = false;
-
     @Emit()
     public click(event: MouseEvent): MouseEvent {
       return event;
     }
+
+    public isInvalid = false;
 
     public onClick(event: MouseEvent): void {
       this.click(event);
@@ -175,7 +175,7 @@
         }
       }
 
-      @each $key, $val in get($root, theme) {
+      @each $key, $val in map_get($root, theme) {
         &[sd-theme=#{$key}] > button {
           background: var(--theme-#{$key}-default);
 

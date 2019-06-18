@@ -33,8 +33,21 @@
     })
     public height!: number;
 
-    public updated(): void {
-      if (this.value) {
+    public mounted(): void {
+      this.$watch(
+        () => [
+          this.value,
+          this.type,
+          this.lineWidth,
+          this.height
+        ],
+        this.refresh.bind(this),
+        {immediate: true}
+      );
+    }
+
+    public refresh(): void {
+      if (this.value && this.$el) {
         const canvasEl = this.$el.firstChild as HTMLCanvasElement;
 
         if (canvasEl) {
