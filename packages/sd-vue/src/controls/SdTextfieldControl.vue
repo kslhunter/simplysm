@@ -260,7 +260,7 @@
 
       &[type='color'] {
         padding: 1px var(--gap-default) !important;
-        height: calc(var(--gap-sm) * 2 + var(--line-height) * var(--font-size-default) + 2);
+        height: calc(var(--gap-sm) * 2 + var(--line-height-stip) * var(--font-size-default) + 2);
       }
 
       &[type=year],

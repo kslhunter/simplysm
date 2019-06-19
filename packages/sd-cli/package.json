@@ -3,7 +3,7 @@
   "version": "2.2.4",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
-  "repository": "gihub:kslhunter/simplysm",
+  "repository": "github:kslhunter/simplysm",
   "license": "MIT",
   "bin": {
     "sd-cli": "./dist/bin.js"

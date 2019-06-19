@@ -121,6 +121,7 @@ $root: map-merge($root, (
   font-family: ('맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif),
   font-family-code: monospace,
   line-height: 1.5em,
+  line-height-stip: 1.5,
   z-index: (
     toast: 9999,
     busy: 9998,
@@ -143,6 +144,6 @@ $root: map-merge($root, (
       h: var(--gap-xs)
     ),
     edit-cell-bg: var(--theme-info-lightest),
-    row-height: calc(var(--sheet-padding-v) * 2 + var(--line-height) * var(--font-size-default))
+    row-height: calc(var(--sheet-padding-v) * 2 + var(--line-height-stip) * var(--font-size-default))
   )
 ));

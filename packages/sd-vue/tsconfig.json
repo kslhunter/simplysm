@@ -4,7 +4,7 @@
     "rootDir": "src",
     "outDir": "dist",
     "lib": [
-      "es2018",
+      "esnext",
       "dom"
     ],
     "declaration": true,

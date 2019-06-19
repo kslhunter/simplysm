@@ -74,7 +74,8 @@ Array.prototype.groupBy = function (keySelectorOrKeys: ((item: any, index: numbe
     let keyObj: any;
     if (typeof keySelectorOrKeys === "function") {
       keyObj = keySelectorOrKeys(this[i], i);
-    } else {
+    }
+    else {
       keyObj = {};
       for (const key of keySelectorOrKeys) {
         keyObj[key] = this[i][key];
@@ -84,12 +85,14 @@ Array.prototype.groupBy = function (keySelectorOrKeys: ((item: any, index: numbe
     let valueObj: any;
     if (typeof valueSelectorOrValueKeys === "function") {
       valueObj = valueSelectorOrValueKeys(this[i], i);
-    } else if (valueSelectorOrValueKeys instanceof Array) {
+    }
+    else if (valueSelectorOrValueKeys instanceof Array) {
       valueObj = {};
       for (const valueKey of valueSelectorOrValueKeys) {
         valueObj[valueKey] = this[i][valueKey];
       }
-    } else {
+    }
+    else {
       valueObj = this[i];
     }
 
@@ -97,7 +100,8 @@ Array.prototype.groupBy = function (keySelectorOrKeys: ((item: any, index: numbe
 
     if (existsRecord) {
       existsRecord.values.push(valueObj);
-    } else {
+    }
+    else {
       result.push({key: keyObj, values: [valueObj]});
     }
   }
@@ -140,7 +144,8 @@ Array.prototype.single = function (...args: any[]): any {
       throw new Error("복수의 결과물이 있습니다.");
     }
     return filtered[0];
-  } else {
+  }
+  else {
     const key = args[0];
     const checkValue = args[1];
     return this.single(item => item[key] === checkValue);
@@ -154,7 +159,8 @@ Array.prototype.last = function (predicate?: (item: any, index: number) => boole
         return this[i];
       }
     }
-  } else {
+  }
+  else {
     return this[this.length - 1];
   }
 };
@@ -165,7 +171,8 @@ Array.prototype.sum = function (selector?: (item: any) => any): any {
     item = selector ? selector(item) : item;
     if (result) {
       result += item;
-    } else {
+    }
+    else {
       result = item;
     }
   }
@@ -261,7 +268,8 @@ Array.prototype.diffs = function (target: any[], options?: { keyProps?: string[]
     const existsTargetItem = currTarget.find(targetItem => {
       if (options && options.keyProps) {
         return options.keyProps.every(keyProp => targetItem[keyProp] === item[keyProp]);
-      } else {
+      }
+      else {
         return Object.equal(targetItem, item, {excludeProps: optional(() => options!.excludeProps)});
       }
     });
@@ -269,7 +277,8 @@ Array.prototype.diffs = function (target: any[], options?: { keyProps?: string[]
     // 추가됨
     if (!existsTargetItem) {
       result.push({source: item});
-    } else {
+    }
+    else {
       // 수정됨
       if (options && options.keyProps && !Object.equal(item, existsTargetItem, {excludeProps: options.excludeProps})) {
         result.push({source: item, target: existsTargetItem});
@@ -302,7 +311,8 @@ Array.prototype.merge = function (target: any[], options?: { keyProps?: string[]
         this.push(targetItem);
       }
     }
-  } else {
+  }
+  else {
     for (const targetItem of target) {
       const item = this.single(sourceItem => options.keyProps!.every(keyProp => sourceItem[keyProp] === targetItem[keyProp]));
       if (item) {
@@ -313,7 +323,8 @@ Array.prototype.merge = function (target: any[], options?: { keyProps?: string[]
         }
 
         Object.assign(item, targetItem);
-      } else {
+      }
+      else {
         this.push(targetItem);
       }
     }

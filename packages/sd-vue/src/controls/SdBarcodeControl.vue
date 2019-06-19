@@ -15,22 +15,13 @@
     @Prop(String)
     public value?: string;
 
-    @Prop({
-      type: String,
-      default: "code128"
-    })
+    @Prop({type: String, default: "code128"})
     public type!: string;
 
-    @Prop({
-      type: Number,
-      default: 1
-    })
+    @Prop({type: Number, default: 1})
     public lineWidth!: number;
 
-    @Prop({
-      type: Number,
-      default: 58
-    })
+    @Prop({type: Number, default: 58})
     public height!: number;
 
     public mounted(): void {

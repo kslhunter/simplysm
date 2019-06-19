@@ -1,6 +1,6 @@
 <template>
   <div class="sd-checkbox"
-       :sd-checked="value"
+       :sd-checked="inputValue"
        :sd-inline="inline"
        :sd-radio="radio"
        :sd-size="size"
@@ -8,12 +8,12 @@
     <label tabindex="0" @keydown="onKeydown">
       <input :checked="inputValue" @change="onValueChange" type="checkbox" hidden :disabled="disabled">
       <div class="_indicator_rect"></div>
-      <fa-icon class="_indicator" icon="icon" fixed-width v-if="!radio"></fa-icon>
+      <sd-icon class="_indicator" fw v-if="!radio" :icon="icon"></sd-icon>
       <div class="_indicator" v-if="radio">
         <div></div>
       </div>
       <div class="_content">
-        <ng-content></ng-content>
+        <slot></slot>
       </div>
     </label>
   </div>
@@ -22,19 +22,10 @@
 <script lang="ts">
   import {Component, Emit, Prop, Vue} from "vue-property-decorator";
   import {IconName} from "@fortawesome/fontawesome-svg-core";
-  import {fas} from "@fortawesome/free-solid-svg-icons";
-  import {far} from "@fortawesome/free-regular-svg-icons";
-  import {fab} from "@fortawesome/free-brands-svg-icons";
-
-  export const sdIconNames = Object.values({...fas, ...far, ...fab})
-    .map(item => item["iconName"]).distinct();
 
   @Component
   export default class SdCheckboxControl extends Vue {
-    @Prop({
-      type: Boolean,
-      default: false
-    })
+    @Prop({type: Boolean, default: false})
     public value!: boolean;
 
     @Prop(Boolean)
@@ -57,10 +48,7 @@
     })
     public theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger";
 
-    @Prop({
-      type: String,
-      default: "check"
-    })
+    @Prop({type: String, default: "check"})
     public icon!: IconName;
 
     @Emit("update:value")
@@ -84,6 +72,8 @@
     public onValueChange(event: Event): void {
       const el = event.target as HTMLInputElement;
       this.inputValue = el.checked;
+      this.$forceUpdate();
+
       this.updateValue(this.inputValue);
     }
 
@@ -92,6 +82,8 @@
 
       if (event.key === " ") {
         this.inputValue = !this.inputValue;
+        this.$forceUpdate();
+
         this.updateValue(this.inputValue);
       }
     }
@@ -102,7 +94,7 @@
   @import "../scss/presets";
 
   .sd-checkbox {
-    --sd-checkbox-size: calc(var(--line-height) * var(--font-size-default));
+    --sd-checkbox-size: calc(var(--line-height-stip) * var(--font-size-default));
 
     color: var(--text-color-default);
 

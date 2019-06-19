@@ -3,7 +3,7 @@
   "version": "2.2.4",
   "description": "심플리즘 패키지 - SMTP 클라이언트",
   "author": "김석래",
-  "repository": "gihub:kslhunter/simplysm",
+  "repository": "github:kslhunter/simplysm",
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

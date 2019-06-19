@@ -11,6 +11,7 @@ import SdBusyContainerControl from "./controls/SdBusyContainerControl.vue";
 import SdBarcodeControl from "./controls/SdBarcodeControl.vue";
 import SdCardControl from "./controls/SdCardControl.vue";
 import SdCheckboxControl from "./controls/SdCheckboxControl.vue";
+import SdIconControl from "./controls/SdIconControl.vue";
 
 //tslint:disable-next-line:variable-name
 const SdVuePlugin: PluginFunction<any> = Vue => {
@@ -23,5 +24,6 @@ const SdVuePlugin: PluginFunction<any> = Vue => {
   Vue.component("sd-barcode", SdBarcodeControl);
   Vue.component("sd-card", SdCardControl);
   Vue.component("sd-checkbox", SdCheckboxControl);
+  Vue.component("sd-icon", SdIconControl);
 };
 export default SdVuePlugin;
