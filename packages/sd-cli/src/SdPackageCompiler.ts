@@ -201,10 +201,6 @@ export class SdPackageCompiler extends events.EventEmitter {
             transpileOnly: true,
             configFile: this._tsConfigPath
           }
-        },
-        {
-          test: /\.(ts|js)$/,
-          loader: "angular-router-loader"
         }
       );
     }

@@ -1546,13 +1546,6 @@ amdefine@>=0.0.4:
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
   integrity sha1-SlKCrBZHKek2Gbz9OtFR+BfOkfU=
 
-angular-router-loader@^0.8.5:
-  version "0.8.5"
-  resolved "https://registry.yarnpkg.com/angular-router-loader/-/angular-router-loader-0.8.5.tgz#42b378d0914c1ce412b851c1d92b80dbbe4f2fc5"
-  integrity sha512-8wggCTKGgzB1o8co3Wvj+p9pKN7T7q3C477lEz3NLjvPVzUti8rv9i45Di+4aO/k+HvzGh3s8QdNlXU2Bl4avQ==
-  dependencies:
-    loader-utils "^1.0.2"
-
 ansi-colors@^3.0.0:
   version "3.2.4"
   resolved "https://registry.yarnpkg.com/ansi-colors/-/ansi-colors-3.2.4.tgz#e3a3da4bfbae6c86a9c285625de124a234026fbf"
