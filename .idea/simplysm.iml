@@ -21,6 +21,7 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-smtp-client-common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-smtp-client/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-storage/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-vue" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-vue/dist" />
       <excludeFolder url="file://$MODULE_DIR$/profiling" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />

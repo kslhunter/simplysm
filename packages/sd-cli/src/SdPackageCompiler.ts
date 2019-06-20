@@ -157,7 +157,7 @@ export class SdPackageCompiler extends events.EventEmitter {
   private _mergeSourceCompileConfigs(webpackConfig: webpack.Configuration, opt: { type: "node" | "vue" | "angular" | "angular-aot" }): void {
     webpackConfig.module = webpackConfig.module || {rules: []};
 
-    if (opt.type === "node" || opt.type === "angular") {
+    if (opt.type === "node") {
       webpackConfig.module.rules.push(
         {
           test: /\.ts$/,
@@ -190,6 +190,23 @@ export class SdPackageCompiler extends events.EventEmitter {
 
       webpackConfig.plugins = webpackConfig.plugins || [];
       webpackConfig.plugins.push(new VueLoaderPlugin());
+    }
+    else if (opt.type === "angular") {
+      webpackConfig.module.rules.push(
+        {
+          test: /\.ts$/,
+          exclude: /node_modules/,
+          loader: "ts-loader",
+          options: {
+            transpileOnly: true,
+            configFile: this._tsConfigPath
+          }
+        },
+        {
+          test: /\.(ts|js)$/,
+          loader: "angular-router-loader"
+        }
+      );
     }
     else if (opt.type === "angular-aot") {
       webpackConfig.module!.rules.push(
