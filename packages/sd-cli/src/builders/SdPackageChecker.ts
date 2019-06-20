@@ -80,9 +80,10 @@ export class SdPackageChecker extends events.EventEmitter {
       emitDeclarationOnly: this._parsedTsConfig.options.declaration
     };
 
+
     const host = SdCompilerHostFactory.createCompilerHost(
       this._npmConfig.name,
-      config.framework,
+      config.framework === "angular" && config.type === "library" ? "angular-lib" : config.framework,
       this._parsedTsConfig.fileNames,
       options,
       this._contextPath
@@ -142,7 +143,7 @@ export class SdPackageChecker extends events.EventEmitter {
     let messages: string[] = [];
     const host = SdCompilerHostFactory.createWatchCompilerHost(
       this._npmConfig.name,
-      config.framework,
+      config.framework === "angular" && config.type === "library" ? "angular-lib" : config.framework,
       this._parsedTsConfig.fileNames,
       options,
       this._contextPath,
@@ -205,7 +206,7 @@ export class SdPackageChecker extends events.EventEmitter {
     const linter = new tslint.Linter({formatter: "json", fix: false}, program);
 
     const sourceFiles = (filePaths ? filePaths : tslint.Linter.getFileNames(program))
-      .filter(item => path.resolve(item).startsWith(this._contextPath))
+      .filter(item => path.resolve(item).startsWith(path.resolve(this._contextPath, "src")))
       .map(item => program.getSourceFile(item))
       .filterExists();
 

@@ -13,9 +13,7 @@
     "mime": "^2.4.4",
     "fs-extra": "^8.0.1",
     "bufferutil": "^4.0.1",
-    "utf-8-validate": "^5.0.2"
-  },
-  "peerDependencies": {
+    "utf-8-validate": "^5.0.2",
     "@simplysm/sd-core": "2.2.4",
     "@simplysm/sd-smtp-client": "2.2.4",
     "@simplysm/sd-orm": "2.2.4"

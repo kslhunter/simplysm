@@ -9,9 +9,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "nodemailer": "^6.2.1"
-  },
-  "peerDependencies": {
+    "nodemailer": "^6.2.1",
     "@simplysm/sd-core": "2.2.4"
   }
 }

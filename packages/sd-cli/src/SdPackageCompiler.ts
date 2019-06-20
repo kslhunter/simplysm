@@ -747,7 +747,7 @@ export class SdPackageCompiler extends events.EventEmitter {
         this._mergeStyleConfigs(webpackConfig, {sourceMap: true, extract: false, vue: true});
       }
       else if (config.framework === "angular") {
-        this._mergeSourceCompileConfigs(webpackConfig, {type: "node"});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "angular"});
         this._mergeStyleConfigs(webpackConfig, {sourceMap: true, extract: false, vue: false});
       }
       else {

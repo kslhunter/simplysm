@@ -9,9 +9,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "jszip": "^3.2.1"
-  },
-  "peerDependencies": {
+    "jszip": "^3.2.1",
     "@simplysm/sd-core": "2.2.4"
   }
 }

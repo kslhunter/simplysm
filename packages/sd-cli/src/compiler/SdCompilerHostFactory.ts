@@ -8,7 +8,7 @@ import * as fs from "fs-extra";
 export class SdCompilerHostFactory {
   public static createWatchCompilerHost(
     packageName: string,
-    framework: undefined | "vue" | "angular",
+    framework: undefined | "vue" | "angular" | "angular-lib",
     rootFiles: string[],
     options: ts.CompilerOptions,
     contextPath: string,
@@ -35,7 +35,7 @@ export class SdCompilerHostFactory {
           onStart();
         }
         else if (messageText.includes("Watching for file changes")) {
-          if (framework === "angular") {
+          if (framework === "angular-lib") {
             const distPath = options.outDir || path.resolve(contextPath, "dist");
             SdCompilerHostFactory._emitMetadata(packageName, rootFiles[0], distPath);
           }
@@ -136,14 +136,14 @@ export class SdCompilerHostFactory {
 
   public static createCompilerHost(
     packageName: string,
-    framework: undefined | "vue" | "angular",
+    framework: undefined | "vue" | "angular" | "angular-lib",
     rootFiles: string[],
     options: ts.CompilerOptions,
     contextPath: string
   ): ts.CompilerHost {
     const host = ts.createCompilerHost(options);
 
-    if (framework === "angular") {
+    if (framework === "angular-lib") {
       const distPath = options.outDir || path.resolve(contextPath, "dist");
       SdCompilerHostFactory._emitMetadata(packageName, rootFiles[0], distPath);
     }
