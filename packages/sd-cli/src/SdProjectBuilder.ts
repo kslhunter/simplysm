@@ -267,7 +267,7 @@ export class SdProjectBuilder {
     projectNpmConfig.version = semver.inc(projectNpmConfig.version, "patch");
     await fs.writeJson(projectNpmConfigPath, projectNpmConfig, {spaces: 2, EOL: os.EOL});
 
-    // 프로젝트 "package.json"의 의존성 패키지 버전목록 가져오기
+    /*// 프로젝트 "package.json"의 의존성 패키지 버전목록 가져오기
     const projectDepObj = {
       ...(projectNpmConfig.dependencies || {}),
       ...(projectNpmConfig.devDependencies || {}),
@@ -309,7 +309,7 @@ export class SdProjectBuilder {
 
       // > "npmConfig"를 패키지 "package.json"에 다시쓰기
       await fs.writeJson(packageNpmConfigPath, packageNpmConfig, {spaces: 2, EOL: os.EOL});
-    }));
+    }));*/
 
     if (await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
       await ProcessManager.spawnAsync("git add .");
