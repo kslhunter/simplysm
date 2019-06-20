@@ -268,14 +268,14 @@ export class SdProjectBuilder {
     await fs.writeJson(projectNpmConfigPath, projectNpmConfig, {spaces: 2, EOL: os.EOL});
 
     // 프로젝트 "package.json"의 의존성 패키지 버전목록 가져오기
-    /*const projectDepObj = {
+    const projectDepObj = {
       ...(projectNpmConfig.dependencies || {}),
       ...(projectNpmConfig.devDependencies || {}),
       ...(projectNpmConfig.peerDependencies || {})
     };
 
     // 현재 프로젝트의 패키지명 목록 가져오기
-    const allPackageNames = Object.keys(config.packages).map(key => ("@" + projectNpmConfig.name + "/" + key));*/
+    // const allPackageNames = Object.keys(config.packages).map(key => ("@" + projectNpmConfig.name + "/" + key));
 
     // 패키지정보별 병렬실행,
     await Promise.all(Object.keys(config.packages).map(async packageKey => {
@@ -286,7 +286,7 @@ export class SdProjectBuilder {
       // > "npmConfig" 버전 변경
       packageNpmConfig.version = projectNpmConfig.version;
 
-      /*// > "npmConfig"의 의존성 종류별,
+      // > "npmConfig"의 의존성 종류별,
       for (const depType of ["dependencies", "devDependencies", "peerDependencies"]) {
         const depObj = packageNpmConfig[depType];
         if (!depObj) continue;
@@ -297,15 +297,15 @@ export class SdProjectBuilder {
           if (Object.keys(projectDepObj).includes(depKey)) {
             depObj[depKey] = projectDepObj[depKey];
           }
-          // > > > 프로젝트의 서브패키지에 대한 버전을 프로젝트 자체 버전으로 변경
+          /*// > > > 프로젝트의 서브패키지에 대한 버전을 프로젝트 자체 버전으로 변경
           else if (allPackageNames.includes(depKey)) {
             depObj[depKey] = projectNpmConfig.version;
           }
           else {
             throw new Error(`의존성 정보를 찾을 수 없습니다.(${packageKey}, ${depType}, ${depKey})`);
-          }
+          }*/
         }
-      }*/
+      }
 
       // > "npmConfig"를 패키지 "package.json"에 다시쓰기
       await fs.writeJson(packageNpmConfigPath, packageNpmConfig, {spaces: 2, EOL: os.EOL});
