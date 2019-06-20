@@ -32,12 +32,12 @@ export class SdBarcodeControl implements ISdNotifyPropertyChange {
   @SdNotifyPropertyChange()
   public height = 58;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  public constructor(private readonly _elRef: ElementRef) {
   }
 
   public sdOnPropertyChange(propertyName: string, oldValue: any, newValue: any): void {
     if (newValue) {
-      const canvasEl = this._elRef.nativeElement.findAll("canvas")[0];
+      const canvasEl = (this._elRef.nativeElement as HTMLElement).findAll("canvas")[0];
 
       if (canvasEl) {
         window["JsBarcode"](

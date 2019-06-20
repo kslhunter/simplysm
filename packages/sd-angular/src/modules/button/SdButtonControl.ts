@@ -56,14 +56,14 @@ export class SdButtonControl implements AfterContentChecked {
   @HostBinding("attr.sd-invalid")
   public isInvalid = false;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  public constructor(private readonly _elRef: ElementRef) {
   }
 
   public ngAfterContentChecked(): void {
     this.isInvalid = false;
 
     if (this.required) {
-      if (!(this._elRef.nativeElement.findAll("> button")[0] as HTMLElement).innerText.trim()) {
+      if (!((this._elRef.nativeElement as HTMLElement).findAll("> button")[0] as HTMLElement).innerText.trim()) {
         this.isInvalid = true;
       }
     }

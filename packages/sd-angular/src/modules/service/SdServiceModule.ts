@@ -5,11 +5,13 @@ import {SdOrmServiceProvider} from "./SdOrmServiceProvider";
 import {SdSmtpClientServiceProvider} from "./SdSmtpClientServiceProvider";
 import {SdServiceProvider} from "./SdServiceProvider";
 import {SdSharedModule} from "../shared/SdSharedModule";
+import {SdToastModule} from "../toast/SdToastModule";
 
 @NgModule({
   imports: [
     CommonModule,
-    SdSharedModule
+    SdSharedModule,
+    SdToastModule
   ],
   providers: [
     SdCryptoServiceProvider,

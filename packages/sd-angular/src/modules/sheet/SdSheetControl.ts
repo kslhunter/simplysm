@@ -128,10 +128,10 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
                   </a>
                 </div>
                 <div
-                  [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
-                  *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
-                  [style.width.px]="getWidth(columnControl)" tabindex="0"
-                  (keydown)="onCellKeydown($event)">
+                    [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
+                    *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
+                    [style.width.px]="getWidth(columnControl)" tabindex="0"
+                    (keydown)="onCellKeydown($event)">
                   <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
                                [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
                   <div class="_focus-indicator"></div>
@@ -139,10 +139,10 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
               </div>
               <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
                 <div
-                  [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
-                  *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
-                  [style.width.px]="getWidth(columnControl)" tabindex="0"
-                  (keydown)="onCellKeydown($event)">
+                    [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
+                    *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
+                    [style.width.px]="getWidth(columnControl)" tabindex="0"
+                    (keydown)="onCellKeydown($event)">
                   <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
                                [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
                   <div class="_focus-indicator"></div>
@@ -259,7 +259,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public readonly expandedItemTracksChange = new EventEmitter<any[]>();
 
   public get paddingTop(): number {
-    const rowEls = this._elRef.nativeElement.findAll("._head > ._row");
+    const rowEls = (this._elRef.nativeElement as HTMLElement).findAll("._head > ._row");
     const rowHeight = rowEls.filter(item => !item.classList.contains("_pagination")).sum(item => item.clientHeight) || 0;
     return rowHeight + (this.pageLength > 1 ? optional(() => rowEls.single(item => item.classList.contains("_pagination"))!.clientHeight + 1) || 0 : 0);
 
@@ -322,7 +322,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public get fixedColumnWidth(): number {
-    const fixedColGroupEl = this._elRef.nativeElement.findAll("._head > ._row > ._fixed-col-group")[0];
+    const fixedColGroupEl = (this._elRef.nativeElement as HTMLElement).findAll("._head > ._row > ._fixed-col-group")[0];
     return fixedColGroupEl.clientWidth;
 
     /*const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
@@ -371,11 +371,11 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
-                     private readonly _elRef: ElementRef<HTMLElement>,
+                     private readonly _elRef: ElementRef,
                      private readonly _localStorage: SdLocalStorageProvider) {
     this._iterableDiffer = this._iterableDiffers.find([]).create((i: number, item: any) => this.trackByItemFn(i, item));
 
-    this._elRef.nativeElement.addEventListener("focus", (event: Event) => {
+    (this._elRef.nativeElement as HTMLElement).addEventListener("focus", (event: Event) => {
       if ((event.target as HTMLElement).classList.contains("_select-icon")) {
         return;
       }
@@ -430,7 +430,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public ngOnInit(): void {
     this._loadColumnConfigs();
 
-    const el = this._elRef.nativeElement;
+    const el = (this._elRef.nativeElement as HTMLElement);
     el.addEventListener("scroll", () => {
       const fixedColGroupEls = el.findAll("._fixed-col-group") as HTMLElement[];
       for (const fixedColGroupEl of fixedColGroupEls) {
@@ -549,7 +549,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   /*@HostListener("scroll", ["$event"])
   public onScroll(event: Event): void {
-    const el = this._elRef.nativeElement;
+    const el = (this._elRef.nativeElement as HTMLElement);
 
     const fixedColGroupEls = el.findAll("._fixed-col-group") as HTMLElement[];
     for (const fixedColGroupEl of fixedColGroupEls) {
@@ -794,14 +794,14 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   @HostListener("resize", ["$event"])
   public onResize(event: ResizeEvent): void {
-    if (document.activeElement && document.activeElement.findParent(this._elRef.nativeElement)) {
-      const offset = (document.activeElement as HTMLElement).getRelativeOffset(this._elRef.nativeElement);
+    if (document.activeElement && document.activeElement.findParent((this._elRef.nativeElement as HTMLElement))) {
+      const offset = (document.activeElement as HTMLElement).getRelativeOffset((this._elRef.nativeElement as HTMLElement));
       if (event.detail.dimensions.includes("height")) {
-        this._elRef.nativeElement.scrollTop = offset.top - this.paddingTop - 12;
+        (this._elRef.nativeElement as HTMLElement).scrollTop = offset.top - this.paddingTop - 12;
       }
 
       if (event.detail.dimensions.includes("width")) {
-        this._elRef.nativeElement.scrollLeft = offset.left - this.fixedColumnWidth - 12;
+        (this._elRef.nativeElement as HTMLElement).scrollLeft = offset.left - this.fixedColumnWidth - 12;
       }
     }
   }

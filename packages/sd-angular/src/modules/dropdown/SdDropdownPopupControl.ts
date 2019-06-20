@@ -10,12 +10,12 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
     </div>`
 })
 export class SdDropdownPopupControl implements OnInit {
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  public constructor(private readonly _elRef: ElementRef) {
   }
 
   public ngOnInit(): void {
-    const thisEl = this._elRef.nativeElement;
-    const divEl = this._elRef.nativeElement.firstElementChild!;
+    const thisEl = (this._elRef.nativeElement as HTMLElement);
+    const divEl = (this._elRef.nativeElement as HTMLElement).firstElementChild!;
 
     divEl.addEventListener("resize", (e: Event) => {
       const evt = e as ResizeEvent;

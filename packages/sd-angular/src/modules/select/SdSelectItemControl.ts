@@ -55,15 +55,15 @@ export class SdSelectItemControl {
   }
 
   public get content(): string {
-    return this._elRef.nativeElement.innerHTML.trim();
+    return (this._elRef.nativeElement as HTMLElement).innerHTML.trim();
   }
 
   private readonly _el: HTMLElement;
 
   public constructor(@Inject(forwardRef(() => SdSelectControl))
                      private readonly _selectControl: SdSelectControl,
-                     private readonly _elRef: ElementRef<HTMLElement>) {
-    this._el = this._elRef.nativeElement;
+                     private readonly _elRef: ElementRef) {
+    this._el = (this._elRef.nativeElement as HTMLElement);
   }
 
   @HostListener("click", ["$event"])

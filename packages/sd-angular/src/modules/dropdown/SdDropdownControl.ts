@@ -57,8 +57,8 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     return this._controlEl ? window.innerHeight < this._controlEl.windowOffset.top * 2 : false;
   }
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
-    this._el = this._elRef.nativeElement;
+  public constructor(private readonly _elRef: ElementRef) {
+    this._el = (this._elRef.nativeElement as HTMLElement);
   }
 
   public ngOnInit(): void {

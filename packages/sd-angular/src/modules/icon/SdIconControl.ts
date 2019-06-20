@@ -4,10 +4,9 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {far} from "@fortawesome/free-regular-svg-icons";
 import {fab} from "@fortawesome/free-brands-svg-icons";
+import {sdIconNameFn} from "../../commons/sdIconNameFn";
 
 library.add(fas, far, fab);
-
-export const sdIconNames = Object.values(fas).map(item => item.iconName).distinct();
 
 @Component({
   selector: "sd-icon",
@@ -19,7 +18,7 @@ export class SdIconControl {
   @Input()
   @SdTypeValidate({
     type: String,
-    includes: sdIconNames
+    includes: Object.values(fas).map(sdIconNameFn).distinct()
   })
   public icon?: IconName;
 

@@ -19,7 +19,7 @@ export class SdDockContainerControl implements AfterContentInit {
   @ContentChildren(forwardRef(() => SdDockControl))
   public dockControls?: QueryList<SdDockControl>;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  public constructor(private readonly _elRef: ElementRef) {
   }
 
   public ngAfterContentInit(): void {
@@ -85,7 +85,7 @@ export class SdDockContainerControl implements AfterContentInit {
     }
 
     Object.assign(
-      this._elRef.nativeElement.style,
+      (this._elRef.nativeElement as HTMLElement).style,
       {
         paddingTop: top + "px",
         paddingBottom: bottom + "px",

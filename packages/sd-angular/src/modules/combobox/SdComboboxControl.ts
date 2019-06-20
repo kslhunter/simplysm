@@ -82,7 +82,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
   private readonly _iterableDiffer: IterableDiffer<SdComboboxItemControl>;
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
-                     private readonly _elRef: ElementRef<HTMLElement>,
+                     private readonly _elRef: ElementRef,
                      private readonly _cdr: ChangeDetectorRef) {
     this._iterableDiffer = this._iterableDiffers.find([]).create((i, itemControl) => itemControl.value);
   }
@@ -201,7 +201,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     const textfieldEl = this.textfieldElRef!.nativeElement;
     const dropdownEl = this.dropdownElRef!.nativeElement;
 
-    if (this._elRef.nativeElement.findParent(event.target as HTMLElement)) {
+    if ((this._elRef.nativeElement as HTMLElement).findParent(event.target as HTMLElement)) {
 
       if (window.innerHeight < textfieldEl.windowOffset.top * 2) {
         Object.assign(

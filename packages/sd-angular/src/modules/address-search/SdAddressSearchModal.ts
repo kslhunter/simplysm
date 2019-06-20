@@ -8,13 +8,13 @@ import {SdModalBase} from "../modal/SdModalProvider";
     <div class="_content" style="min-height: 100px;"></div>`
 })
 export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  public constructor(private readonly _elRef: ElementRef) {
     super();
   }
 
   public async sdOnOpen(param: undefined): Promise<void> {
     const run = () => {
-      const contentEl = this._elRef.nativeElement.firstChild! as HTMLDivElement;
+      const contentEl = (this._elRef.nativeElement as HTMLElement).firstChild! as HTMLDivElement;
 
       // @ts-ignore
       daum.postcode.load(() => {

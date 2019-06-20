@@ -12,12 +12,12 @@ export class SdComboboxItemControl {
   public value?: any;
 
   public get content(): string {
-    return this._elRef.nativeElement.innerText.trim();
+    return (this._elRef.nativeElement as HTMLElement).innerText.trim();
   }
 
   public constructor(@Inject(forwardRef(() => SdComboboxControl))
                      private readonly _comboboxControl: SdComboboxControl,
-                     private readonly _elRef: ElementRef<HTMLElement>) {
+                     private readonly _elRef: ElementRef) {
   }
 
   @HostListener("click", ["$event"])

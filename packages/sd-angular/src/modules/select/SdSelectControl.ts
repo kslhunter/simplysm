@@ -166,8 +166,8 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
-                     private readonly _elRef: ElementRef<HTMLElement>) {
-    this._el = this._elRef.nativeElement;
+                     private readonly _elRef: ElementRef) {
+    this._el = (this._elRef.nativeElement as HTMLElement);
     this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => this.trackByItemFn(index, item));
     this._itemElsIterableDiffer = this._iterableDiffers.find([]).create();
   }

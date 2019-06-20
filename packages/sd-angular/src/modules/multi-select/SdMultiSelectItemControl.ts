@@ -42,9 +42,9 @@ export class SdMultiSelectItemControl implements DoCheck {
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
-                     public readonly elRef: ElementRef<HTMLElement>,
                      @Inject(forwardRef(() => SdMultiSelectControl))
-                     private readonly _parentControl: SdMultiSelectControl) {
+                     private readonly _parentControl: SdMultiSelectControl,
+                     public readonly elRef: ElementRef) {
     this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => item);
   }
 

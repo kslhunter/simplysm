@@ -53,7 +53,7 @@ export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit
   private _sizeConfig: { width?: number; height?: number } | undefined;
   private _isOnDragging = false;
 
-  public constructor(public readonly elRef: ElementRef<HTMLElement>,
+  public constructor(public readonly elRef: ElementRef,
                      @Inject(forwardRef(() => SdDockContainerControl))
                      private readonly _containerControl: SdDockContainerControl,
                      private readonly _localStorage: SdLocalStorageProvider) {

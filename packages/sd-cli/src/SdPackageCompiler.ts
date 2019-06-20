@@ -214,6 +214,31 @@ export class SdPackageCompiler extends events.EventEmitter {
           ]
         }
       );
+
+      const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+      webpackConfig.plugins!.pushRange([
+        new AngularCompilerPlugin({
+          tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
+          entryModule: modulePath + "#" + path.basename(modulePath),
+          mainPath: path.resolve(__dirname, "../lib/main.prod.js"),
+          basePath: process.cwd(),
+          sourceMap: false,
+          forkTypeChecker: false,
+          compilerOptions: {
+            ...this._parsedTsConfig.options,
+            rootDir: undefined,
+            declaration: false,
+            removeComments: true,
+            disableTypeScriptVersionCheck: true,
+            skipLibCheck: false,
+            skipTemplateCodegen: false,
+            strictMetadataEmit: true,
+            fullTemplateTypeCheck: true,
+            strictInjectionParameters: true,
+            enableResourceInlining: true
+          }
+        })
+      ]);
     }
 
     if (opt.type.startsWith("angular")) {
@@ -558,29 +583,6 @@ export class SdPackageCompiler extends events.EventEmitter {
 
         const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
         webpackConfig.resolve!.alias!["SIMPLYSM_CLIENT_APP_MODULE_NGFACTORY"] = modulePath + ".ngfactory";
-        webpackConfig.plugins!.pushRange([
-          new AngularCompilerPlugin({
-            tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
-            entryModule: modulePath + "#" + path.basename(modulePath),
-            mainPath: path.resolve(__dirname, "../lib/main.prod.js"),
-            basePath: process.cwd(),
-            sourceMap: false,
-            forkTypeChecker: false,
-            compilerOptions: {
-              ...this._parsedTsConfig.options,
-              rootDir: undefined,
-              declaration: false,
-              removeComments: true,
-              disableTypeScriptVersionCheck: true,
-              skipLibCheck: false,
-              skipTemplateCodegen: false,
-              strictMetadataEmit: true,
-              fullTemplateTypeCheck: true,
-              strictInjectionParameters: true,
-              enableResourceInlining: true
-            }
-          })
-        ]);
       }
       else {
         throw new Error("미구현");

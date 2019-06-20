@@ -6,6 +6,8 @@ import {SdCliUtil} from "../commons/SdCliUtil";
 import {SdCompilerHostFactory} from "../compiler/SdCompilerHostFactory";
 import * as tslint from "tslint";
 import * as fs from "fs-extra";
+import {MetadataCollector, ModuleMetadata} from "@angular/compiler-cli";
+import {MetadataBundler} from "@angular/compiler-cli/src/metadata/bundler";
 
 export class SdPackageChecker extends events.EventEmitter {
   private readonly _contextPath: string;
@@ -81,13 +83,7 @@ export class SdPackageChecker extends events.EventEmitter {
     };
 
 
-    const host = SdCompilerHostFactory.createCompilerHost(
-      this._npmConfig.name,
-      config.framework === "angular" && config.type === "library" ? "angular-lib" : config.framework,
-      this._parsedTsConfig.fileNames,
-      options,
-      this._contextPath
-    );
+    const host = SdCompilerHostFactory.createCompilerHost(options);
 
     const program = ts.createProgram(
       this._parsedTsConfig.fileNames,
@@ -98,6 +94,12 @@ export class SdPackageChecker extends events.EventEmitter {
     let diagnostics = this._parsedTsConfig.options.declaration
       ? ts.getPreEmitDiagnostics(program)
       : program.getSemanticDiagnostics();
+
+    if (config.framework === "angular" && config.type === "library") {
+      diagnostics = diagnostics.concat(
+        this._emitMetadata(this._npmConfig.name, this._parsedTsConfig.fileNames[0], this._distPath)
+      );
+    }
 
     if (this._parsedTsConfig.options.declaration) {
       diagnostics = diagnostics.concat(program.emit(undefined, undefined, undefined, true).diagnostics);
@@ -115,14 +117,14 @@ export class SdPackageChecker extends events.EventEmitter {
     }
 
     if (messages.length > 0) {
-      this.emit("error", messages.join(os.EOL));
+      this.emit("error", messages.distinct().join(os.EOL));
     }
 
     this.emit("done");
 
     const lintMessages = await this._lintAsync(program);
     if (lintMessages.length > 0) {
-      this.emit("warning", lintMessages.join(os.EOL));
+      this.emit("error", lintMessages.distinct().join(os.EOL));
     }
   }
 
@@ -142,8 +144,7 @@ export class SdPackageChecker extends events.EventEmitter {
     let lintFilePaths: string[] = [];
     let messages: string[] = [];
     const host = SdCompilerHostFactory.createWatchCompilerHost(
-      this._npmConfig.name,
-      config.framework === "angular" && config.type === "library" ? "angular-lib" : config.framework,
+      config.framework === "vue",
       this._parsedTsConfig.fileNames,
       options,
       this._contextPath,
@@ -161,6 +162,15 @@ export class SdPackageChecker extends events.EventEmitter {
       async () => {
         if (messages.length > 0) {
           this.emit("error", messages.join(os.EOL));
+        }
+
+        if (config.framework === "angular" && config.type === "library") {
+          const emitMetadataResult = this._emitMetadata(this._npmConfig.name, this._parsedTsConfig.fileNames[0], this._distPath);
+          const emitMetadataMessages = emitMetadataResult.map(item => this._diagnosticToMessage(item)).filterExists().distinct();
+
+          if (emitMetadataMessages.length > 0) {
+            this.emit("warning", emitMetadataMessages.join(os.EOL));
+          }
         }
 
         this.emit("done");
@@ -228,5 +238,39 @@ export class SdPackageChecker extends events.EventEmitter {
     const charNumber = failure.getStartPosition().getLineAndCharacter().character + 1;
 
     return `${fileName}(${lineNumber},${charNumber}): ${severity}: ${message} (${rule})`;
+  }
+
+  private _emitMetadata(packageName: string, rootFilePath: string, distPath: string): ts.Diagnostic[] {
+    const result: ts.Diagnostic[] = [];
+
+    const metadataCollector = new MetadataCollector();
+    const metadataBundler = new MetadataBundler(
+      rootFilePath.replace(/\.ts$/, ""),
+      packageName,
+      {
+        getMetadataFor: (moduleName: string): ModuleMetadata | undefined => {
+          const sourceText = fs.readFileSync(moduleName + ".ts").toString();
+          const sourceFile = ts.createSourceFile(moduleName + ".ts", sourceText, ts.ScriptTarget.Latest);
+          return metadataCollector.getMetadata(sourceFile, false, (value, tsNode) => {
+            if (value && value["__symbolic"] && value["__symbolic"] === "error") {
+              result.push({
+                file: sourceFile,
+                start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
+                messageText: value["message"],
+                category: ts.DiagnosticCategory.Error,
+                code: 0,
+                length: undefined
+              });
+            }
+            return value;
+          });
+        }
+      }
+    );
+
+    fs.mkdirsSync(distPath);
+    fs.writeJsonSync(path.resolve(distPath, path.basename(rootFilePath, path.extname(rootFilePath)) + ".metadata.json"), metadataBundler.getMetadataBundle().metadata);
+
+    return result;
   }
 }

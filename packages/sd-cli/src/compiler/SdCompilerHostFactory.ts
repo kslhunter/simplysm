@@ -1,14 +1,10 @@
 import * as ts from "typescript";
 import * as path from "path";
 import * as vueCompiler from "vue-template-compiler";
-import {MetadataCollector, ModuleMetadata} from "@angular/compiler-cli";
-import {MetadataBundler} from "@angular/compiler-cli/src/metadata/bundler";
-import * as fs from "fs-extra";
 
 export class SdCompilerHostFactory {
   public static createWatchCompilerHost(
-    packageName: string,
-    framework: undefined | "vue" | "angular" | "angular-lib",
+    vue: boolean,
     rootFiles: string[],
     options: ts.CompilerOptions,
     contextPath: string,
@@ -35,17 +31,12 @@ export class SdCompilerHostFactory {
           onStart();
         }
         else if (messageText.includes("Watching for file changes")) {
-          if (framework === "angular-lib") {
-            const distPath = options.outDir || path.resolve(contextPath, "dist");
-            SdCompilerHostFactory._emitMetadata(packageName, rootFiles[0], distPath);
-          }
-
           onFinish();
         }
       }
     );
 
-    if (framework === "vue") {
+    if (vue) {
       const prevReadFile = host.readFile;
       host.readFile = (filePath, encoding) => {
         const content = prevReadFile(filePath, encoding);
@@ -134,21 +125,8 @@ export class SdCompilerHostFactory {
     return host;
   }
 
-  public static createCompilerHost(
-    packageName: string,
-    framework: undefined | "vue" | "angular" | "angular-lib",
-    rootFiles: string[],
-    options: ts.CompilerOptions,
-    contextPath: string
-  ): ts.CompilerHost {
-    const host = ts.createCompilerHost(options);
-
-    if (framework === "angular-lib") {
-      const distPath = options.outDir || path.resolve(contextPath, "dist");
-      SdCompilerHostFactory._emitMetadata(packageName, rootFiles[0], distPath);
-    }
-
-    return host;
+  public static createCompilerHost(options: ts.CompilerOptions): ts.CompilerHost {
+    return ts.createCompilerHost(options);
   }
 
   private static _resolveNonTsModuleName(moduleName: string, containingFile: string, basedir: string, options: ts.CompilerOptions): string {
@@ -227,24 +205,6 @@ export class SdCompilerHostFactory {
     const paddedContent = Array(offset).join("//\n") + script.content.slice(script.start);
 
     return {scriptKind, content: paddedContent};
-  }
-
-  private static _emitMetadata(packageName: string, rootFilePath: string, distPath: string): void {
-    const metadataCollector = new MetadataCollector();
-    const metadataBundler = new MetadataBundler(
-      rootFilePath.replace(/\.ts$/, ""),
-      packageName,
-      {
-        getMetadataFor: (moduleName: string): ModuleMetadata | undefined => {
-          const sourceText = fs.readFileSync(moduleName + ".ts").toString();
-          const sourceFile = ts.createSourceFile(moduleName + ".ts", sourceText, ts.ScriptTarget.Latest);
-          return metadataCollector.getMetadata(sourceFile);
-        }
-      }
-    );
-
-    fs.mkdirsSync(distPath);
-    fs.writeJsonSync(path.resolve(distPath, path.basename(rootFilePath, path.extname(rootFilePath)) + ".metadata.json"), metadataBundler.getMetadataBundle().metadata);
   }
 }
 

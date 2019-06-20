@@ -69,12 +69,12 @@ export class SdModalControl implements OnInit {
 
   private _sizeConfig: { width?: number; height?: number } | undefined;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>,
+  public constructor(private readonly _elRef: ElementRef,
                      private readonly _localStorage: SdLocalStorageProvider) {
   }
 
   public ngOnInit(): void {
-    const dialogEl = this._elRef.nativeElement.findAll("> ._dialog")[0] as HTMLElement;
+    const dialogEl = (this._elRef.nativeElement as HTMLElement).findAll("> ._dialog")[0] as HTMLElement;
 
     this._sizeConfig = this._localStorage.get(`sd-modal.${this.title}.size-config`);
     if (this._sizeConfig) {
@@ -84,7 +84,7 @@ export class SdModalControl implements OnInit {
 
     dialogEl.addEventListener("resize", event => {
       if (event.detail["dimensions"].includes("height")) {
-        const el = this._elRef.nativeElement;
+        const el = (this._elRef.nativeElement as HTMLElement);
         const style = getComputedStyle(el);
         if (dialogEl.offsetHeight > el.offsetHeight - (Number.parseInt(style.paddingTop!.match(/\d/g)!.join(""), 10) * 2)) {
           dialogEl.style.height = `calc(100% - ${getComputedStyle(el).paddingTop})`;
@@ -110,7 +110,7 @@ export class SdModalControl implements OnInit {
   }
 
   public onHeaderMouseDown(event: MouseEvent): void {
-    const el = this._elRef.nativeElement.findAll("> ._dialog")[0] as HTMLElement;
+    const el = (this._elRef.nativeElement as HTMLElement).findAll("> ._dialog")[0] as HTMLElement;
     const startX = event.clientX;
     const startY = event.clientY;
     const startTop = el.offsetTop;
@@ -163,7 +163,7 @@ export class SdModalControl implements OnInit {
   }
 
   public onResizerMousedown(event: MouseEvent, direction: "left" | "right" | "bottom" | "all-left" | "all-right"): void {
-    const el = this._elRef.nativeElement.findAll("> ._dialog")[0] as HTMLElement;
+    const el = (this._elRef.nativeElement as HTMLElement).findAll("> ._dialog")[0] as HTMLElement;
 
     const startX = event.clientX;
     const startY = event.clientY;
