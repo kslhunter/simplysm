@@ -19,7 +19,8 @@ export class SdServiceClient {
 
   public constructor(private readonly _port?: number,
                      private readonly _host?: string,
-                     private readonly _ssl?: boolean) {
+                     private readonly _ssl?: boolean,
+                     private readonly _origin?: string) {
   }
 
   public async connectAsync(): Promise<void> {
@@ -28,7 +29,7 @@ export class SdServiceClient {
         if (!this._host || !this._port) {
           throw new Error("호스트와 포트가 반드시 입력되어야 합니다.");
         }
-        this._ws = new WebSocket(`${this._ssl ? "wss" : "ws"}://${this._host}:${this._port}`);
+        this._ws = new WebSocket(`${this._ssl ? "wss" : "ws"}://${this._host}:${this._port}`, {origin: this._origin});
       }
       else {
         // @ts-ignore

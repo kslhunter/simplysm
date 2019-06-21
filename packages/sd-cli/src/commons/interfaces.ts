@@ -22,4 +22,5 @@ export interface ISdSimplysmPublishConfig {
   port?: number;
   path: string;
   ssl?: boolean;
+  origin?: string;
 }

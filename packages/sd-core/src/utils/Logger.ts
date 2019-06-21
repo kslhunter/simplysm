@@ -25,9 +25,9 @@ export class Logger {
   private static _lastId = 0;
 
   private static _defaultConfig: ILoggerConfig = {
-    consoleLogSeverities: process.env.NODE_ENV === "production"
+    consoleLogSeverities: ["log", "info", "warn", "error"], /*process.env.NODE_ENV === "production"
       ? []
-      : ["log", "info", "warn", "error"],
+      : ["log", "info", "warn", "error"],*/
     fileLogSeverities: process.env.NODE_ENV === "production"
       ? ["log", "info", "warn", "error"]
       : [],

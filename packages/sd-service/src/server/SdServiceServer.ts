@@ -164,9 +164,9 @@ export class SdServiceServer extends EventEmitter {
       async (req, res, next) => {
         try {
           if (req.method !== "GET") {
-            const errorMessage = `요청이 잘못되었습니다. ${process.env.NODE_ENV === "production" ? "" : `<br/><br/>${req.method!.toUpperCase()}`}`;
+            const errorMessage = `요청이 잘못되었습니다.`;
             this._responseErrorHtml(res, 405, errorMessage);
-            next(new Error(errorMessage));
+            next(new Error(`${errorMessage} (${req.method!.toUpperCase()})`));
           }
 
           const urlObj = url.parse(req.url!, true, false);
@@ -174,16 +174,16 @@ export class SdServiceServer extends EventEmitter {
           const localPath = path.resolve(this.rootPath, "www", urlPath);
 
           if (!await fs.pathExists(localPath)) {
-            const errorMessage = `파일을 찾을 수 없습니다.${process.env.NODE_ENV === "production" ? "" : `<br/><br/>${localPath}`}`;
+            const errorMessage = `파일을 찾을 수 없습니다.`;
             this._responseErrorHtml(res, 404, errorMessage);
-            next(new Error(errorMessage));
+            next(new Error(`${errorMessage} (${localPath})`));
             return;
           }
 
           if (path.basename(localPath).startsWith(".")) {
-            const errorMessage = `파일을 사용할 권한이 없습니다.${process.env.NODE_ENV === "production" ? "" : `<br/><br/>${localPath}`}`;
+            const errorMessage = `파일을 사용할 권한이 없습니다.`;
             this._responseErrorHtml(res, 403, errorMessage);
-            next(new Error(errorMessage));
+            next(new Error(`${errorMessage} (${localPath})`));
             return;
           }
 
@@ -198,9 +198,9 @@ export class SdServiceServer extends EventEmitter {
           }
 
           if (!await fs.pathExists(filePath)) {
-            const errorMessage = `파일을 찾을 수 없습니다.${process.env.NODE_ENV === "production" ? "" : `<br/><br/>${filePath}`}`;
+            const errorMessage = `파일을 찾을 수 없습니다.`;
             this._responseErrorHtml(res, 404, errorMessage);
-            next(new Error(errorMessage));
+            next(new Error(`${errorMessage} (${filePath})`));
             return;
           }
 

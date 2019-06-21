@@ -209,6 +209,40 @@ export class SdPackageCompiler extends events.EventEmitter {
           ]
         }
       );
+      /*webpackConfig.module!.rules.pushRange([
+        {
+          test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+          loader: "@ngtools/webpack"
+        }
+      ]);
+
+      const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+      webpackConfig.plugins!.pushRange([
+        new AngularCompilerPlugin({
+          mainPath: path.resolve(__dirname, "../lib/main.js"),
+          platform: PLATFORM.Browser,
+          sourceMap: opt.sourceMap,
+          // directTemplateLoading: true,
+          tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
+          entryModule: modulePath + "#" + path.basename(modulePath),
+          basePath: process.cwd(),
+          forkTypeChecker: false,
+          skipCodeGeneration: true,
+          compilerOptions: {
+            ...this._parsedTsConfig.options,
+            rootDir: undefined,
+            declaration: false,
+            removeComments: true,
+            disableTypeScriptVersionCheck: true,
+            skipLibCheck: false,
+            skipTemplateCodegen: false,
+            strictMetadataEmit: true,
+            fullTemplateTypeCheck: true,
+            strictInjectionParameters: true,
+            enableResourceInlining: true
+          }
+        })
+      ]);*/
     }
     else if (opt.type === "angular-aot") {
       webpackConfig.module!.rules.pushRange([
@@ -241,7 +275,7 @@ export class SdPackageCompiler extends events.EventEmitter {
           mainPath: path.resolve(__dirname, "../lib/main.prod.js"),
           platform: PLATFORM.Browser,
           sourceMap: opt.sourceMap,
-          directTemplateLoading: true,
+          // directTemplateLoading: true,
           tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
           entryModule: modulePath + "#" + path.basename(modulePath),
           basePath: process.cwd(),
@@ -519,7 +553,7 @@ export class SdPackageCompiler extends events.EventEmitter {
           enforce: "pre",
           test: /\.js$/,
           use: ["source-map-loader"],
-          exclude: /node_modules[\\/](?!@simplysm|rxjs|@angular|zone\.js|@?vue)/
+          exclude: /node_modules[\\/](?!@simplysm)/
         }
       );
       webpackConfig.optimization!.minimizer = [
@@ -757,7 +791,7 @@ export class SdPackageCompiler extends events.EventEmitter {
         test: /\.js$/,
         use: ["source-map-loader"],
         exclude: [
-          /node_modules[\\/](?!@simplysm|rxjs|@angular|zone\.js|@?vue)/,
+          /node_modules[\\/](?!@simplysm)/,
           /\.ngfactory\.js$/,
           /\.ngstyle\.js$/
         ]

@@ -15,6 +15,7 @@ export * from "./modules/barcode/SdBarcodeControl";
 
 export * from "./modules/busy/SdBusyModule";
 export * from "./modules/busy/SdBusyContainerControl";
+export * from "./modules/busy/SdBusyContainerProvider";
 
 export * from "./modules/button/SdButtonModule";
 export * from "./modules/button/SdButtonControl";

@@ -10,6 +10,7 @@ import {
 } from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {SdLocalStorageProvider} from "../local-storage/SdLocalStorageProvider";
+import {optional} from "@simplysm/sd-core";
 
 @Component({
   selector: "sd-modal",
@@ -86,7 +87,7 @@ export class SdModalControl implements OnInit {
       if (event.detail["dimensions"].includes("height")) {
         const el = (this._elRef.nativeElement as HTMLElement);
         const style = getComputedStyle(el);
-        if (dialogEl.offsetHeight > el.offsetHeight - (Number.parseInt(style.paddingTop!.match(/\d/g)!.join(""), 10) * 2)) {
+        if (dialogEl.offsetHeight > el.offsetHeight - (optional(() => Number.parseInt(style.paddingTop!.match(/\d/g)!.join(""), 10) * 2) || 0)) {
           dialogEl.style.height = `calc(100% - ${getComputedStyle(el).paddingTop})`;
         }
       }
