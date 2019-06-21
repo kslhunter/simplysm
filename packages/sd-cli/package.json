@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "2.2.14",
+  "version": "2.2.15",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -17,8 +17,8 @@
     "@angular/core": "^8.0.2",
     "@angular/service-worker": "^8.0.2",
     "@ngtools/webpack": "^8.0.3",
-    "@simplysm/sd-core": "2.2.14",
-    "@simplysm/sd-service": "2.2.14",
+    "@simplysm/sd-core": "2.2.15",
+    "@simplysm/sd-service": "2.2.15",
     "angular-router-loader": "^0.8.5",
     "chokidar": "^3.0.1",
     "css-loader": "^3.0.0",
