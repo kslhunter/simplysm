@@ -1170,10 +1170,10 @@
     "@types/node" "*"
     "@types/tough-cookie" "*"
 
-"@types/semver@^6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@types/semver/-/semver-6.0.0.tgz#86ba89f02a414e39c68d02b351872e4ed31bd773"
-  integrity sha512-OO0srjOGH99a4LUN2its3+r6CBYcplhJ466yLqs+zvAWgphCpS8hYZEZ797tRDP/QKcqTdb/YCN6ifASoAWkrQ==
+"@types/semver@^6.0.1":
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/@types/semver/-/semver-6.0.1.tgz#a984b405c702fa5a7ec6abc56b37f2ba35ef5af6"
+  integrity sha512-ffCdcrEE5h8DqVxinQjo+2d1q+FV5z7iNtPofw3JsrltSoSVlOGaW0rY8XxtO9XukdTn8TaCGWmk2VFGhI70mg==
 
 "@types/tapable@*":
   version "1.0.4"
@@ -1545,6 +1545,13 @@ amdefine@>=0.0.4:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
   integrity sha1-SlKCrBZHKek2Gbz9OtFR+BfOkfU=
+
+angular-router-loader@^0.8.5:
+  version "0.8.5"
+  resolved "https://registry.yarnpkg.com/angular-router-loader/-/angular-router-loader-0.8.5.tgz#42b378d0914c1ce412b851c1d92b80dbbe4f2fc5"
+  integrity sha512-8wggCTKGgzB1o8co3Wvj+p9pKN7T7q3C477lEz3NLjvPVzUti8rv9i45Di+4aO/k+HvzGh3s8QdNlXU2Bl4avQ==
+  dependencies:
+    loader-utils "^1.0.2"
 
 ansi-colors@^3.0.0:
   version "3.2.4"
@@ -7530,10 +7537,10 @@ snapdragon@^0.8.1:
     source-map-resolve "^0.5.0"
     use "^3.1.0"
 
-soap@^0.27.1:
-  version "0.27.1"
-  resolved "https://registry.yarnpkg.com/soap/-/soap-0.27.1.tgz#044fc69a8fd67c13922be380737b4e9a973b6239"
-  integrity sha512-64kq+4IeRxxR7HUPhFzwjdM17xovZxYMS8n4JE7LGrytM8Kl0NFaA5DlKOafgGBGENhgapsIYS6sVKJE43PmWA==
+soap@^0.28.0:
+  version "0.28.0"
+  resolved "https://registry.yarnpkg.com/soap/-/soap-0.28.0.tgz#e3221096f17587b6ab26031c55f71a8a5dcee352"
+  integrity sha512-NCKR9kiX/Tdv0r+FCV0L3u12FI5LddzE8ZDzbG4rdwdtD4rT/6JRq/sm2Wd/2alNlVy71fJfj8p2C/JUvMEZ+g==
   dependencies:
     "@types/request" "^2.48.1"
     bluebird "^3.5.0"

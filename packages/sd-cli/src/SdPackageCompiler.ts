@@ -16,10 +16,11 @@ import * as TerserPlugin from "terser-webpack-plugin";
 import {Generator} from "@angular/service-worker/config";
 import {ArgumentError, JsonConvert} from "@simplysm/sd-core";
 import {NodeFilesystem} from "./service-worker/filesystem";
-import {AngularCompilerPlugin} from "@ngtools/webpack";
+import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import {GenerateSW} from "workbox-webpack-plugin";
+import {GLOBAL_DEFS_FOR_TERSER} from "@angular/compiler-cli";
 
 const VueLoaderPlugin = require('vue-loader/lib/plugin'); // tslint:disable-line
 
@@ -154,7 +155,7 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
   }
 
-  private _mergeSourceCompileConfigs(webpackConfig: webpack.Configuration, opt: { type: "node" | "vue" | "angular" | "angular-aot" }): void {
+  private _mergeSourceCompileConfigs(webpackConfig: webpack.Configuration, opt: { type: "node" | "vue" | "angular" | "angular-aot"; sourceMap: boolean }): void {
     webpackConfig.module = webpackConfig.module || {rules: []};
 
     if (opt.type === "node") {
@@ -196,33 +197,54 @@ export class SdPackageCompiler extends events.EventEmitter {
         {
           test: /\.ts$/,
           exclude: /node_modules/,
-          loader: "ts-loader",
-          options: {
-            transpileOnly: true,
-            configFile: this._tsConfigPath
-          }
+          loaders: [
+            {
+              loader: "ts-loader",
+              options: {
+                transpileOnly: true,
+                configFile: this._tsConfigPath
+              }
+            },
+            "angular-router-loader"
+          ]
         }
       );
     }
     else if (opt.type === "angular-aot") {
-      webpackConfig.module!.rules.push(
+      webpackConfig.module!.rules.pushRange([
+        {
+          test: /\.js$/,
+          loader: "@angular-devkit/build-optimizer/webpack-loader",
+          options: {
+            sourceMap: opt.sourceMap
+          }
+        },
         {
           test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
-          loader: [
-            "@angular-devkit/build-optimizer/webpack-loader",
-            "@ngtools/webpack"
+          loaders: [
+            {
+              loader: "@angular-devkit/build-optimizer/webpack-loader",
+              options: {
+                sourceMap: opt.sourceMap
+              }
+            },
+            {
+              loader: "@ngtools/webpack"
+            }
           ]
         }
-      );
+      ]);
 
       const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
       webpackConfig.plugins!.pushRange([
         new AngularCompilerPlugin({
+          mainPath: path.resolve(__dirname, "../lib/main.prod.js"),
+          platform: PLATFORM.Browser,
+          sourceMap: opt.sourceMap,
+          directTemplateLoading: true,
           tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
           entryModule: modulePath + "#" + path.basename(modulePath),
-          mainPath: path.resolve(__dirname, "../lib/main.prod.js"),
           basePath: process.cwd(),
-          sourceMap: false,
           forkTypeChecker: false,
           compilerOptions: {
             ...this._parsedTsConfig.options,
@@ -374,8 +396,6 @@ export class SdPackageCompiler extends events.EventEmitter {
 
     webpackConfig.plugins = webpackConfig.plugins || [];
     webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
-
-
   }
 
   private _getWebpackCommonConfig(config: ISdPackageConfig): webpack.Configuration {
@@ -391,6 +411,7 @@ export class SdPackageCompiler extends events.EventEmitter {
         alias: this._alias
       },
       module: {
+        strictExportPresence: true,
         rules: []
       },
       plugins: [],
@@ -512,8 +533,8 @@ export class SdPackageCompiler extends events.EventEmitter {
         })
       ];
     }
-    // optimization: client/server
-    else {
+    // optimization: server
+    else if (config.type === "server") {
       webpackConfig.devtool = false;
       webpackConfig.optimization!.minimizer = [
         new TerserPlugin({
@@ -522,6 +543,35 @@ export class SdPackageCompiler extends events.EventEmitter {
           parallel: true,
           terserOptions: {
             keep_fnames: true
+          }
+        })
+      ];
+    }
+    // optimization: client
+    else {
+      webpackConfig.devtool = false;
+      webpackConfig.optimization!.minimizer = [
+        new TerserPlugin({
+          sourceMap: false,
+          cache: true,
+          parallel: true,
+          terserOptions: {
+            keep_fnames: true,
+            ecma: 5,
+            warnings: false,
+            output: {
+              ascii_only: true,
+              comments: false,
+              webkit: true
+            },
+            compress: {
+              pure_getters: true,
+              passes: 3,
+              global_defs: config.framework === "angular" ? GLOBAL_DEFS_FOR_TERSER : {
+                ngDevMode: false,
+                ngI18nClosureMode: false
+              }
+            }
           }
         })
       ];
@@ -561,11 +611,11 @@ export class SdPackageCompiler extends events.EventEmitter {
           throw new Error("'vue' 클라이언트를 빌드할때는, 'package.json'의 'sideEffects'옵션이 'false'일 수 없습니다.");
         }
 
-        this._mergeSourceCompileConfigs(webpackConfig, {type: "vue"});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "vue", sourceMap: false});
         this._mergeStyleConfigs(webpackConfig, {sourceMap: false, extract: false, vue: true});
       }
       else if (config.framework === "angular") {
-        this._mergeSourceCompileConfigs(webpackConfig, {type: "angular-aot"});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "angular-aot", sourceMap: false});
         this._mergeStyleConfigs(webpackConfig, {sourceMap: false, extract: true, vue: false});
       }
       else {
@@ -590,11 +640,11 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
     else {
       if (config.framework === "vue") {
-        this._mergeSourceCompileConfigs(webpackConfig, {type: "vue"});
-        this._mergeStyleConfigs(webpackConfig, {sourceMap: false, extract: false, vue: true});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "vue", sourceMap: config.type === "library"});
+        this._mergeStyleConfigs(webpackConfig, {sourceMap: true, extract: false, vue: true});
       }
       else {
-        this._mergeSourceCompileConfigs(webpackConfig, {type: "angular"});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "angular", sourceMap: config.type === "library"});
       }
     }
 
@@ -647,21 +697,7 @@ export class SdPackageCompiler extends events.EventEmitter {
           return;
         }
 
-        const info = stats.toJson({all: false, assets: true, warnings: true, errors: true, errorDetails: false});
-
-        if (stats.hasWarnings()) {
-          for (const warning of info.warnings) {
-            this.emit("warning", warning);
-          }
-        }
-
-        if (stats.hasErrors()) {
-          for (const error of info.errors) {
-            this.emit("error", error);
-          }
-        }
-
-        this.emit("done");
+        this._emitWebpackCompilerStats(stats);
         resolve();
       });
     });
@@ -739,11 +775,11 @@ export class SdPackageCompiler extends events.EventEmitter {
       this._mergeEntryConfigs(webpackConfig, {type: "node", prod: false});
 
       if (config.framework === "vue") {
-        this._mergeSourceCompileConfigs(webpackConfig, {type: "vue"});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "vue", sourceMap: true});
         this._mergeStyleConfigs(webpackConfig, {sourceMap: true, extract: false, vue: true});
       }
       else {
-        this._mergeSourceCompileConfigs(webpackConfig, {type: "node"});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "node", sourceMap: true});
       }
     }
     else {
@@ -758,11 +794,11 @@ export class SdPackageCompiler extends events.EventEmitter {
       }
 
       if (config.framework === "vue") {
-        this._mergeSourceCompileConfigs(webpackConfig, {type: "vue"});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "vue", sourceMap: true});
         this._mergeStyleConfigs(webpackConfig, {sourceMap: true, extract: false, vue: true});
       }
       else if (config.framework === "angular") {
-        this._mergeSourceCompileConfigs(webpackConfig, {type: "angular"});
+        this._mergeSourceCompileConfigs(webpackConfig, {type: "angular", sourceMap: true});
         this._mergeStyleConfigs(webpackConfig, {sourceMap: true, extract: false, vue: false});
       }
       else {
@@ -823,21 +859,7 @@ export class SdPackageCompiler extends events.EventEmitter {
         });
 
         compiler.hooks.done.tap("SdPackageCompiler", stats => {
-          const info = stats.toJson({all: false, assets: true, warnings: true, errors: true, errorDetails: false});
-
-          if (stats.hasWarnings()) {
-            for (const warning of info.warnings) {
-              this.emit("warning", warning);
-            }
-          }
-
-          if (stats.hasErrors()) {
-            for (const error of info.errors) {
-              this.emit("error", error);
-            }
-          }
-
-          this.emit("done");
+          this._emitWebpackCompilerStats(stats);
           resolve([devMiddleware, hotMiddleware]);
         });
       });
@@ -850,26 +872,30 @@ export class SdPackageCompiler extends events.EventEmitter {
             return;
           }
 
-          const info = stats.toJson({all: false, assets: true, warnings: true, errors: true, errorDetails: false});
-
-          if (stats.hasWarnings()) {
-            for (const warning of info.warnings) {
-              this.emit("warning", warning);
-            }
-          }
-
-          if (stats.hasErrors()) {
-            for (const error of info.errors) {
-              this.emit("error", error);
-            }
-          }
-
-          this.emit("done");
+          this._emitWebpackCompilerStats(stats);
           resolve();
         });
       });
 
       return [];
     }
+  }
+
+  private _emitWebpackCompilerStats(stats: webpack.Stats): void {
+    const info = stats.toJson({all: false, assets: true, warnings: true, errors: true, errorDetails: false});
+
+    if (stats.hasWarnings()) {
+      for (const warning of info.warnings) {
+        this.emit("warning", warning);
+      }
+    }
+
+    if (stats.hasErrors()) {
+      for (const error of info.errors) {
+        this.emit("error", error);
+      }
+    }
+
+    this.emit("done");
   }
 }
