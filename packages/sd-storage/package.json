@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-storage",
-  "version": "2.2.16",
+  "version": "2.2.17",
   "description": "심플리즘 패키지 - 저장소",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -11,6 +11,6 @@
   "dependencies": {
     "fs-extra": "^8.0.1",
     "jsftp": "^2.1.3",
-    "@simplysm/sd-core": "2.2.16"
+    "@simplysm/sd-core": "2.2.17"
   }
 }
