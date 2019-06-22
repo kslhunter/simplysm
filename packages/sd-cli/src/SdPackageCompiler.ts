@@ -20,6 +20,7 @@ import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import {GenerateSW} from "workbox-webpack-plugin";
+import * as CopyWebpackPlugin from "copy-webpack-plugin";
 
 const VueLoaderPlugin = require('vue-loader/lib/plugin'); // tslint:disable-line
 
@@ -325,6 +326,12 @@ export class SdPackageCompiler extends events.EventEmitter {
         inject: true
       })
     );
+
+    webpackConfig.plugins.push(
+      new CopyWebpackPlugin([
+        path.resolve(this._contextPath, "src", "favicon.ico")
+      ])
+    );
   }
 
   private _mergeExternalConfigs(webpackConfig: webpack.Configuration, opt: { target: "node" | "web"; nodeModules: boolean }): void {
@@ -624,7 +631,14 @@ export class SdPackageCompiler extends events.EventEmitter {
               const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
               return `libs/${packageName.replace("@", "")}`;
             }
-          }
+          }/*,
+          module: {
+            test: /Module[\\/].ts$/,
+            name: (module: any) => {
+              const packageName = module.context.match(/[\\/]([\\/^]*)\.ts$/)[1];
+              return `modules/${packageName}`;
+            }
+          }*/
         }
       };
       webpackConfig.optimization!.minimizer.push(

@@ -86,7 +86,7 @@ export class SdProjectBuilder {
       }));
     }));
 
-    logger.log(watch ? `모든 변경감지를 시작되었습니다.` : `모든 업데이트가 완료되었습니다.`);
+    logger.log(watch ? `모든 변경감지가 시작되었습니다.` : `모든 업데이트가 완료되었습니다.`);
   }
 
   public async buildAsync(argv: { watch: boolean; options?: string }): Promise<void> {

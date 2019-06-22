@@ -10,10 +10,7 @@ import {SdServiceServerConnection} from "./SdServiceServerConnection";
 import {SdServiceBase} from "./SdServiceBase";
 import * as net from "net";
 import {ISdServiceRequest, ISdServiceResponse} from "../commons";
-import {SdSmtpClientService} from "./services/SdSmtpClientService";
-import {SdCryptoService} from "./services/SdCryptoService";
 import {NextHandleFunction} from "./commons";
-import {SdOrmService} from "./services/SdOrmService";
 import * as https from "https";
 import {SdServiceServerUtil} from "./SdServiceServerUtil";
 
@@ -320,11 +317,11 @@ export class SdServiceServer extends EventEmitter {
 
       // 서비스 가져오기
       const serviceClass = this.services
-        .concat([
-          SdSmtpClientService,
-          SdCryptoService,
-          SdOrmService
-        ])
+      /*.concat([
+        SdSmtpClientService,
+        SdCryptoService,
+        SdOrmService
+      ])*/
         .single(item => item.name === serviceName);
       if (!serviceClass) {
         throw new Error(`서비스[${serviceName}]를 찾을 수 없습니다.`);
