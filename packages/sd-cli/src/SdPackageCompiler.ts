@@ -20,7 +20,6 @@ import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import {GenerateSW} from "workbox-webpack-plugin";
-import {GLOBAL_DEFS_FOR_TERSER} from "@angular/compiler-cli";
 
 const VueLoaderPlugin = require('vue-loader/lib/plugin'); // tslint:disable-line
 
@@ -246,13 +245,13 @@ export class SdPackageCompiler extends events.EventEmitter {
     }
     else if (opt.type === "angular-aot") {
       webpackConfig.module!.rules.pushRange([
-        {
+        /*{
           test: /\.js$/,
           loader: "@angular-devkit/build-optimizer/webpack-loader",
           options: {
             sourceMap: opt.sourceMap
           }
-        },
+        },*/
         {
           test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
           loaders: [
@@ -275,7 +274,7 @@ export class SdPackageCompiler extends events.EventEmitter {
           mainPath: path.resolve(__dirname, "../lib/main.prod.js"),
           platform: PLATFORM.Browser,
           sourceMap: opt.sourceMap,
-          // directTemplateLoading: true,
+          directTemplateLoading: true,
           tsConfigPath: path.resolve(this._contextPath, "tsconfig.build.json"),
           entryModule: modulePath + "#" + path.basename(modulePath),
           basePath: process.cwd(),
@@ -590,7 +589,7 @@ export class SdPackageCompiler extends events.EventEmitter {
           cache: true,
           parallel: true,
           terserOptions: {
-            keep_fnames: true,
+            keep_fnames: true/*,
             ecma: 5,
             warnings: false,
             output: {
@@ -605,7 +604,7 @@ export class SdPackageCompiler extends events.EventEmitter {
                 ngDevMode: false,
                 ngI18nClosureMode: false
               }
-            }
+            }*/
           }
         })
       ];
