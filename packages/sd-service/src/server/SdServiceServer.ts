@@ -72,8 +72,8 @@ export class SdServiceServer extends EventEmitter {
         }
       });
 
-      this._httpServer.on("request", async (req, res) => {
-        await this._onWebRequestAsync(req, res);
+      this._httpServer.on("request", (req, res) => {
+        this._onWebRequest(req, res);
       });
 
       this._httpServer.listen(this.port, () => {
@@ -111,7 +111,7 @@ export class SdServiceServer extends EventEmitter {
       ...this._wsConnections.map(async wsConnection => {
         await wsConnection.closeAsync();
       }),
-      ...this._httpConnections.map(async httpConnection => {
+      ...this._httpConnections.map(httpConnection => {
         httpConnection.end();
       }),
       new Promise<void>((resolve, reject) => {
@@ -159,7 +159,7 @@ export class SdServiceServer extends EventEmitter {
     this._middlewares.push(middleware);
   }
 
-  private async _onWebRequestAsync(request: http.IncomingMessage, response: http.ServerResponse): Promise<void> {
+  private _onWebRequest(request: http.IncomingMessage, response: http.ServerResponse): void {
     const runners = this._middlewares.concat([
       async (req, res, next) => {
         try {

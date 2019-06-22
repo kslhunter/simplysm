@@ -172,7 +172,7 @@ export class SdServiceClient {
         const fileSize = (await fs.lstat(filePath)).size;
 
         let splitCompletedLength = 0;
-        this._reqMap.set(requestId, async response => {
+        this._reqMap.set(requestId, response => {
           if (response.type === "error") {
             this._reqMap.delete(requestId);
             reject(new Error(response.body));
@@ -231,7 +231,7 @@ export class SdServiceClient {
         }
 
         const requestId = this._lastRequestId++;
-        this._reqMap.set(requestId, async response => {
+        this._reqMap.set(requestId, response => {
           if (response.type === "error") {
             this._reqMap.delete(requestId);
             reject(new Error(response.body));

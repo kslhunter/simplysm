@@ -158,6 +158,12 @@
     "no-null-undefined-union": false,
     "prefer-method-signature": false,
     "no-use-before-declare": false,
-    "no-object-literal-type-assertion": false
+    "no-object-literal-type-assertion": false,
+    "strict-comparisons": [
+      true,
+      {
+        "allow-object-equal-comparison": true
+      }
+    ]
   }
 }

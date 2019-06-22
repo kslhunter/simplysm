@@ -32,7 +32,7 @@ export class SdOrmService extends SdServiceBase {
     SdOrmService._wsConnectionCloseListenerMap.set(connId, closeEventListener);
     this.conn.on("close", closeEventListener);
 
-    conn.on("close", async () => {
+    conn.on("close", () => {
       SdOrmService._connections.delete(connId);
       SdOrmService._wsConnectionCloseListenerMap.delete(connId);
       this.conn.off("close", closeEventListener);

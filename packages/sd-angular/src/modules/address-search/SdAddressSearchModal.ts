@@ -12,7 +12,7 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
     super();
   }
 
-  public async sdOnOpen(param: undefined): Promise<void> {
+  public sdOnOpen(param: undefined): void {
     const run = () => {
       const contentEl = (this._elRef.nativeElement as HTMLElement).firstChild! as HTMLDivElement;
 

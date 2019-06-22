@@ -120,12 +120,12 @@ export class SdPackageChecker extends events.EventEmitter {
       this.emit("error", messages.distinct().join(os.EOL));
     }
 
-    this.emit("done");
-
     const lintMessages = await this._lintAsync(program);
     if (lintMessages.length > 0) {
       this.emit("error", lintMessages.distinct().join(os.EOL));
     }
+
+    this.emit("done");
   }
 
   public async watchAsync(): Promise<void> {
@@ -173,12 +173,12 @@ export class SdPackageChecker extends events.EventEmitter {
           }
         }
 
-        this.emit("done");
-
         const lintMessages1 = await this._lintAsync(watchProgram.getProgram(), lintFilePaths.distinct());
         if (lintMessages1.length > 0) {
           this.emit("warning", lintMessages1.join(os.EOL));
         }
+
+        this.emit("done");
       },
       (filePath, content) => {
         if (content && !lintFilePaths.includes(filePath)) {

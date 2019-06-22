@@ -206,11 +206,11 @@ export class Queryable<T extends object> {
     this._db.prepare([queryDef], [true]);
   }
 
-  public async upsertAsync(fwd: (item: T) => Partial<T>, additionalInsertObj: Partial<T>): Promise<T>;
-  public async upsertAsync(obj: Partial<T> | undefined, additionalInsertObj: Partial<T>): Promise<T>;
-  public async upsertAsync(fwd: (item: T) => T): Promise<T>;
-  public async upsertAsync(obj: T): Promise<T>;
-  public async upsertAsync(arg: (T | Partial<T> | undefined) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T>;
+  public upsertAsync(fwd: (item: T) => Partial<T>, additionalInsertObj: Partial<T>): Promise<T>;
+  public upsertAsync(obj: Partial<T> | undefined, additionalInsertObj: Partial<T>): Promise<T>;
+  public upsertAsync(fwd: (item: T) => T): Promise<T>;
+  public upsertAsync(obj: T): Promise<T>;
+  public upsertAsync(arg: (T | Partial<T> | undefined) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T>;
   public async upsertAsync(arg: (T | Partial<T> | undefined) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): Promise<T> {
     Queryable._selectQueryHistory.clear();
 

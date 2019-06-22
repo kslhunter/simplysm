@@ -22,7 +22,7 @@ export class SdServiceServerConnection extends EventEmitter {
     super();
     this.origin = optional(() => req.headers.origin!.toString()) || "";
 
-    this._conn.on("close", async () => {
+    this._conn.on("close", () => {
       this._splitRequestMap.clear();
       this._uploadRequestMap.clear();
       this.emit("close");
@@ -177,7 +177,7 @@ export class SdServiceServerConnection extends EventEmitter {
         fs.mkdirsSync(path.dirname(filePath));
         const fd = fs.openSync(filePath, "w");
         const newUploadRequestValue = {
-          timer: setTimeout(async () => {
+          timer: setTimeout(() => {
             this._logger.warn(`업로드중에 타임아웃이 발생했습니다. : ${this.origin}`);
             fs.closeSync(fd);
             fs.unlinkSync(filePath);

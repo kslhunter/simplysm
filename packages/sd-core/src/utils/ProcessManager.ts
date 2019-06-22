@@ -31,7 +31,7 @@ export class ProcessManager {
         reject(err);
       });
 
-      worker.stdout.on("data", async (data: Buffer) => {
+      worker.stdout.on("data", (data: Buffer) => {
         if (options && options.logger) {
           try {
             options.logger.log(data.toString().trim());
@@ -45,7 +45,7 @@ export class ProcessManager {
         }
       });
 
-      worker.stderr.on("data", async (data: Buffer) => {
+      worker.stderr.on("data", (data: Buffer) => {
         if (options && options.logger) {
           try {
             options.logger.error(data.toString().trim());
@@ -59,7 +59,7 @@ export class ProcessManager {
         }
       });
 
-      worker.on("exit", async code => {
+      worker.on("exit", code => {
         if (code === 0) {
           resolve();
         }

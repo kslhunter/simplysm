@@ -149,9 +149,9 @@ export class SdExcelWorkbook {
     return wb;
   }
 
-  public static async loadAsync(buffer: Buffer): Promise<SdExcelWorkbook>;
-  public static async loadAsync(file: File): Promise<SdExcelWorkbook>;
-  public static async loadAsync(blob: Blob): Promise<SdExcelWorkbook>;
+  public static loadAsync(buffer: Buffer): Promise<SdExcelWorkbook>;
+  public static loadAsync(file: File): Promise<SdExcelWorkbook>;
+  public static loadAsync(blob: Blob): Promise<SdExcelWorkbook>;
   public static async loadAsync(arg: Buffer | Blob | File): Promise<SdExcelWorkbook> {
     let buffer: Buffer | Blob;
     if (arg instanceof File) {

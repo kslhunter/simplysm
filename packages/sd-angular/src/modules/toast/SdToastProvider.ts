@@ -57,7 +57,7 @@ export class SdToastProvider implements OnDestroy {
     const toastEl = toastRef.location.nativeElement as HTMLElement;
     containerEl.appendChild(toastEl);
 
-    const close = async (value?: any) => {
+    const close = (value?: any) => {
       toastEl.addEventListener("transitionend", () => {
         compRef.destroy();
         toastRef.destroy();
@@ -66,8 +66,8 @@ export class SdToastProvider implements OnDestroy {
       onclose(value);
     };
 
-    toastRef.instance.close.subscribe(async () => {
-      await close();
+    toastRef.instance.close.subscribe(() => {
+      close();
     });
     compRef.instance.close = close.bind(this); //tslint:disable-line:unnecessary-bind
 
@@ -83,7 +83,7 @@ export class SdToastProvider implements OnDestroy {
         this._appRef.tick();
       }
       catch (e) {
-        await close();
+        close();
         throw e;
       }
     });

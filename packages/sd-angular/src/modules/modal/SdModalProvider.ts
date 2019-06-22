@@ -15,7 +15,7 @@ export class SdModalProvider {
 
     this.modalCount++;
 
-    return await new Promise<T["_tResult"]>(async resolve => {
+    return await new Promise<T["_tResult"]>(resolve => {
       const compRef = this._cfr.resolveComponentFactory(modalType).create(this._injector);
       const rootComp = this._appRef.components[0];
       const rootCompEl = rootComp.location.nativeElement as HTMLElement;
@@ -28,7 +28,7 @@ export class SdModalProvider {
       rootCompEl.appendChild(modalEl);
 
       const activeElement = document.activeElement as HTMLElement | undefined;
-      const close = async (value?: any) => {
+      const close = (value?: any) => {
         resolve(value);
 
         modalEl.addEventListener("transitionend", () => {
@@ -49,8 +49,8 @@ export class SdModalProvider {
       modalRef.instance.useCloseByBackdrop = option && option.useCloseByBackdrop;
       modalRef.instance.float = option && option.float;
       modalRef.instance.minHeight = option && option.minHeight;
-      modalRef.instance.close.subscribe(async () => {
-        await close();
+      modalRef.instance.close.subscribe(() => {
+        close();
       });
 
       compRef.instance.close = close.bind(this); //tslint:disable-line:unnecessary-bind
@@ -70,7 +70,7 @@ export class SdModalProvider {
           this._appRef.tick();
         }
         catch (e) {
-          await close();
+          close();
           throw e;
         }
       });
@@ -82,7 +82,7 @@ export abstract class SdModalBase<P, R> {
   public _tParam!: P;
   public _tResult!: R;
 
-  public abstract sdOnOpen(param: P): Promise<void>;
+  public abstract sdOnOpen(param: P): void | Promise<void>;
 
   public close: (value?: R) => void = (value?: R) => {
     throw new Error("모달이 초기화되어있지 않습니다.");

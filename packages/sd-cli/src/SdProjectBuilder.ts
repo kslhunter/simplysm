@@ -34,7 +34,7 @@ export class SdProjectBuilder {
     // 로컬 업데이트 설정별 병렬로,
     await Promise.all(Object.keys(config.localUpdates).map(async localUpdateKey => {
       // > "node_modules'에서 로컬업데이트 설정에 맞는 패키지를 "glob"하여 대상 패키지경로 목록 가져오기
-      const targetPaths = await new Promise<string[]>(async (resolve, reject) => {
+      const targetPaths = await new Promise<string[]>((resolve, reject) => {
         glob(path.resolve(process.cwd(), "node_modules", localUpdateKey), (err, files) => {
           if (err) {
             reject(err);
