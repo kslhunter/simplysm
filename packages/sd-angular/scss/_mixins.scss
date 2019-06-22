@@ -1,13 +1,3 @@
-@mixin initialize($parentKey, $map) {
-  @each $key, $val in $map {
-    @if (type-of($val) == map) {
-      @include initialize(#{$parentKey}-#{$key}, $val);
-    } @else {
-      #{$parentKey}-#{$key}: $val;
-    }
-  }
-}
-
 @mixin form-control-base() {
   display: block;
   width: 100%;

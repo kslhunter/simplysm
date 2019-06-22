@@ -205,6 +205,7 @@ export class SdPackageCompiler extends events.EventEmitter {
                 configFile: this._tsConfigPath
               }
             },
+            eval(`require.resolve("./inline-sass-loader")`), //tslint:disable-line:no-eval
             "angular-router-loader"
           ]
         }
@@ -262,9 +263,8 @@ export class SdPackageCompiler extends events.EventEmitter {
                 sourceMap: opt.sourceMap
               }
             },
-            {
-              loader: "@ngtools/webpack"
-            }
+            "@ngtools/webpack",
+            eval(`require.resolve("./inline-sass-loader")`) //tslint:disable-line:no-eval
           ]
         }
       ]);

@@ -3,10 +3,7 @@
     "sd-angular": {
       "type": "library",
       "framework": "angular",
-      "publish": "npm",
-      "@no-ng": {
-        "type": "none"
-      }
+      "publish": "npm"
     },
     "sd-cli": {
       "type": "library",
@@ -35,14 +32,6 @@
     "sd-storage": {
       "type": "library",
       "publish": "npm"
-    },
-    "sd-vue": {
-      "type": "library",
-      "framework": "vue",
-      "publish": "npm",
-      "@no-vue": {
-        "type": "none"
-      }
     }
   }
 }

@@ -5,7 +5,7 @@
 }
 
 *:focus {
-  outline-color: get($theme-color, primary, default);
+  outline-color: var(--theme-primary-default);
 }
 
 html, body {
@@ -16,35 +16,59 @@ html, body {
 }
 
 body {
-  background: $bg-color;
-  color: get($text-color, default);
-  font-family: $font-family;
-  font-size: get($font-size, default);
-  line-height: $line-height;
+  background: var(--bg-color);
+  color: var(--text-color-default);
+  font-family: var(--font-family);
+  font-size: var(--font-size-default);
+  line-height: var(--line-height);
 }
 
 pre, code {
-  font-family: $font-family;
-  font-size: get($font-size, default);
-  line-height: $line-height;
+  font-size: var(--font-size-default);
+  line-height: var(--line-height);
   margin: 0;
 }
 
-code {
-  font-family: $font-family-monospace;
+pre {
+  font-family: var(--font-family);
 }
 
-@for $i from 1 through 6 {
-  h#{$i} {
-    font-size: get($font-size, h#{$i});
-    line-height: $line-height;
-    margin: 0;
-  }
+code {
+  font-family: var(--font-family-monospace);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: var(--line-height);
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+}
+
+h3 {
+  font-size: var(--font-size-h3);
+}
+
+h4 {
+  font-size: var(--font-size-h4);
+}
+
+h5 {
+  font-size: var(--font-size-h5);
+}
+
+h6 {
+  font-size: var(--font-size-h6);
 }
 
 a {
   cursor: pointer;
-  color: get($theme-color, primary, default);
+  color: var(--theme-primary-default);
 
   &:focus {
     outline-color: transparent;
@@ -52,17 +76,17 @@ a {
 
   &:hover,
   &:focus {
-    color: get($theme-color, primary, dark);
+    color: var(--theme-primary-dark);
   }
 
   &._disabled {
     pointer-events: none;
-    color: get($theme-color, grey, light);
+    color: var(--theme-grey-light);
   }
 }
 
 hr {
-  background: get($trans-color, default);
+  background: var(--trans-color-default);
   border: none;
   height: 1px;
 }

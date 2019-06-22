@@ -27,6 +27,7 @@
   },
   "files": [
     "src/bin.ts",
-    "src/package-build-worker.ts"
+    "src/package-build-worker.ts",
+    "src/inline-sass-loader.ts"
   ]
 }
