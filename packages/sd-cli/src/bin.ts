@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as yargs from "yargs";
 import * as os from "os";
 import {Logger} from "@simplysm/sd-core";
