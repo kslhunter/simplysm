@@ -8,6 +8,7 @@ import {SdCliUtils} from "../commons/SdCliUtils";
 const packageKey = process.argv[2];
 const opts = process.argv[3] ? process.argv[3].split(",").map(item => item.trim()) : undefined;
 const useScss = process.argv.slice(4).includes("scss");
+console.log(process.argv, useScss);
 
 const contextPath = path.resolve(process.cwd(), "packages", packageKey);
 const parsedTsConfig = SdTypescriptUtils.getParsedConfig(contextPath);
