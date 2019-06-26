@@ -13,7 +13,7 @@ export * from "./modules/address-search/SdAddressSearchModal";
 export * from "./modules/barcode/SdBarcodeModule";
 export * from "./modules/barcode/SdBarcodeControl";
 
-export * from "./modules/busy/SdBusyModule";
+export * from "./modules/busy/SdBusyContainerModule";
 export * from "./modules/busy/SdBusyContainerControl";
 export * from "./modules/busy/SdBusyContainerProvider";
 
@@ -28,8 +28,10 @@ export * from "./modules/case-pipe/SdCasePipe";
 
 export * from "./modules/checkbox/SdCheckboxModule";
 export * from "./modules/checkbox/SdCheckboxControl";
-export * from "./modules/checkbox/SdCheckboxGroupControl";
-export * from "./modules/checkbox/SdCheckboxGroupItemControl";
+
+export * from "./modules/checkbox-group/SdCheckboxGroupModule";
+export * from "./modules/checkbox-group/SdCheckboxGroupControl";
+export * from "./modules/checkbox-group/SdCheckboxGroupItemControl";
 
 export * from "./modules/combobox/SdComboboxModule";
 export * from "./modules/combobox/SdComboboxControl";
@@ -38,7 +40,6 @@ export * from "./modules/combobox/SdComboboxItemControl";
 export * from "./modules/dock/SdDockModule";
 export * from "./modules/dock/SdDockContainerControl";
 export * from "./modules/dock/SdDockControl";
-export * from "./modules/dock/SdPaneControl";
 
 export * from "./modules/dom-validator/SdDomValidatorModule";
 export * from "./modules/dom-validator/SdDomValidatorProvider";
@@ -94,6 +95,9 @@ export * from "./modules/note/SdNoteControl";
 
 export * from "./modules/pagination/SdPaginationModule";
 export * from "./modules/pagination/SdPaginationControl";
+
+export * from "./modules/pane/SdPaneModule";
+export * from "./modules/pane/SdPaneControl";
 
 export * from "./modules/print/SdPrintModule";
 export * from "./modules/print/SdPrintProvider";

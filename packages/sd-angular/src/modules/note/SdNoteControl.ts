@@ -1,11 +1,29 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, Input, ViewEncapsulation} from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-note",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
-    <ng-content></ng-content>`
+    <ng-content></ng-content>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-note {
+      display: block;
+      padding: var(--gap-default);
+      background: var(--theme-grey-lightest);
+      border-left: var(--gap-sm) solid var(--trans-color-default);
+
+      @each $color in $arr-theme-color {
+        &[sd-theme=#{$color}] {
+          background: var(--theme-#{$color}-lightest);
+          border-color: var(--theme-#{$color}-lighter);
+        }
+      }
+    }
+  `]
 })
 export class SdNoteControl {
   @Input()

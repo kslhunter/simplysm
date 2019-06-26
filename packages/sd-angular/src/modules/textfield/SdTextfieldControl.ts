@@ -6,7 +6,8 @@ import {
   HostBinding,
   Input,
   Output,
-  ViewChild
+  ViewChild,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdNotifyPropertyChange";
@@ -15,6 +16,7 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
 @Component({
   selector: "sd-textfield",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <input #input
            [attr.type]="type === 'number' ? 'text' : type === 'datetime' ? 'datetime-local' : type"
@@ -30,6 +32,7 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
            [style.text-align]="type === 'number' ? 'right' : undefined"
            *ngIf="!multiline"/>
     <textarea #input
+              [rows]="rows"
               [required]="required"
               [value]="controlValue"
               [placeholder]="placeholder || ''"
@@ -41,7 +44,117 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
               [disabled]="disabled"
               [style.text-align]="type === 'number' ? 'right' : undefined"
               *ngIf="multiline"></textarea>
-    <div class="_invalid-indicator"></div>`
+    <div class="_invalid-indicator"></div>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-textfield {
+      display: block;
+      position: relative;
+
+      > input,
+      > textarea {
+        @include form-control-base();
+        background-clip: padding-box;
+        border-radius: 0;
+        margin: 0;
+
+        background-color: var(--theme-secondary-lightest);
+        border-color: var(--trans-color-default);
+        transition: outline-color .1s linear;
+        outline: 1px solid transparent;
+        outline-offset: -1px;
+
+        &::-webkit-input-placeholder {
+          color: var(--text-color-lighter);
+        }
+
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+
+        &::-webkit-calendar-picker-indicator {
+          background: transparent;
+          color: var(--text-color-default);
+          cursor: pointer;
+        }
+
+        &:focus {
+          outline-color: var(--theme-primary-default);
+        }
+
+        &:disabled {
+          background: var(--theme-grey-lightest) !important;
+          color: var(--text-color-light);
+        }
+
+        &[type='color'] {
+          padding: 1px var(--gap-default) !important;
+          height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip) + 2);
+        }
+
+        &[type=year],
+        &[type=month],
+        &[type=date],
+        &[type=datetime],
+        &[type=time],
+        &[type=datetime-local] {
+          padding: calc(var(--gap-sm) - 1) var(--gap-default);
+        }
+      }
+
+      > ._invalid-indicator {
+        display: none;
+      }
+
+      > input[sd-invalid=true] + ._invalid-indicator,
+      > input:invalid + ._invalid-indicator {
+        @include invalid-indicator();
+      }
+
+      &[sd-inset=true] {
+        height: 100%;
+
+        > input,
+        > textarea {
+          display: block;
+          border: none;
+        }
+
+        > textarea {
+          height: 100%;
+          resize: none;
+        }
+      }
+
+      &[sd-inline=true] {
+        display: inline-block;
+      }
+
+      &[sd-size=sm] > input,
+      &[sd-size=sm] > textarea {
+        padding: var(--gap-xs) var(--gap-sm);
+      }
+
+      &[sd-size=lg] > input,
+      &[sd-size=lg] > textarea {
+        padding: var(--gap-default) var(--gap-lg);
+      }
+
+      @each $color in $arr-theme-color {
+        @each $brightness in $arr-theme-brightness {
+          &.sd-text-color-#{$color}-#{$brightness} {
+            > input,
+            > textarea {
+              color: var(--theme-#{$color}-#{$brightness}) !important;
+            }
+          }
+        }
+      }
+    }
+  `]
 })
 export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @Input()
@@ -115,6 +228,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate(Boolean)
   public multiline?: boolean;
+
+  @Input()
+  @SdTypeValidate(Number)
+  public rows?: number;
 
   public getIsInvalid(): boolean {
     const hasMinError = this.min !== undefined && this.value !== undefined && this.type === "number" && this.value < this.min;

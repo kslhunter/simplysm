@@ -1,10 +1,11 @@
-import {ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef, ViewEncapsulation} from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {Uuid} from "@simplysm/sd-core";
 
 @Component({
   selector: "sd-sheet-column",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: ``
 })
 export class SdSheetColumnControl {

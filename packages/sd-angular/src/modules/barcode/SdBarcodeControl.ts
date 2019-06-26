@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, ElementRef, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, Input, ViewEncapsulation} from "@angular/core";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdNotifyPropertyChange";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 
@@ -8,6 +8,7 @@ require("jsbarcode");
 @Component({
   selector: "sd-barcode",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <canvas></canvas>`
 })

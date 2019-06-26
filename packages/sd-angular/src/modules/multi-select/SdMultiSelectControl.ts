@@ -17,7 +17,8 @@ import {
   Output,
   QueryList,
   TemplateRef,
-  ViewChild
+  ViewChild,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {SdMultiSelectItemControl} from "./SdMultiSelectItemControl";
@@ -25,6 +26,7 @@ import {SdMultiSelectItemControl} from "./SdMultiSelectItemControl";
 @Component({
   selector: "sd-multi-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <sd-dropdown [disabled]="disabled" (open)="open.emit()" (close)="close.emit()">
       <div #content></div>
@@ -63,7 +65,61 @@ import {SdMultiSelectItemControl} from "./SdMultiSelectItemControl";
           </sd-dock-container>
         </ng-container>
       </sd-dropdown-popup>
-    </sd-dropdown>`
+    </sd-dropdown>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-multi-select {
+      display: block;
+      width: 100%;
+      min-width: 120px;
+
+      > sd-dropdown > div {
+        @include form-control-base();
+
+        background: var(--theme-secondary-lightest);
+        text-align: left;
+        display: block;
+        overflow: visible;
+        padding-right: 30px !important;
+        height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip) + 2);
+
+        border-color: var(--trans-color-default);
+        transition: outline-color .1s linear;
+        outline: 1px solid transparent;
+        outline-offset: -1px;
+        cursor: pointer;
+
+        > div:first-child {
+          overflow: hidden;
+          white-space: nowrap;
+        }
+
+        > ._icon {
+          position: absolute;
+          top: -1px;
+          right: -1px;
+          padding: var(--gap-sm) 0;
+          width: 30px;
+          text-align: center;
+          pointer-events: none;
+        }
+
+        &:focus {
+          outline-color: var(--theme-primary-default);
+        }
+      }
+
+      &[sd-disabled=true] > sd-dropdown > div {
+        background: var(--theme-grey-lightest);
+        color: var(--text-color-light);
+      }
+    }
+
+    ._sd-multi-select-item > ._children {
+      border-left: var(--gap-xl) solid var(--theme-secondary-lightest);
+    }
+  `]
 })
 export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecked {
   @Input()

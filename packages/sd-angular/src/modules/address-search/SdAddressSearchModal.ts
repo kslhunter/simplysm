@@ -1,9 +1,10 @@
-import {ChangeDetectionStrategy, Component, ElementRef} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, ViewEncapsulation} from "@angular/core";
 import {SdModalBase} from "../modal/SdModalProvider";
 
 @Component({
   selector: "sd-address-search-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <div class="_content" style="min-height: 100px;"></div>`
 })

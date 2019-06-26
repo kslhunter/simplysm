@@ -5,7 +5,8 @@ import {
   EventEmitter,
   HostBinding,
   Input,
-  Output
+  Output,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import * as marked from "marked";
@@ -15,6 +16,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
 @Component({
   selector: "sd-markdown-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <sd-dock-container>
       <sd-dock class="_toolbar" *ngIf="!disabled">
@@ -139,7 +141,132 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
         </div>
         <div class="_invalid-indicator"></div>
       </sd-pane>
-    </sd-dock-container>`
+    </sd-dock-container>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-markdown-editor {
+      display: block;
+      border: 1px solid var(--trans-color-default);
+
+      > sd-dock-container {
+        > ._toolbar {
+          user-select: none;
+
+          > a {
+            display: inline-block;
+            padding: var(--gap-sm) 0;
+            text-align: center;
+            width: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip));
+
+            &:hover {
+              background: rgba(0, 0, 0, .05);
+            }
+
+            &._selected {
+              background: var(--theme-primary-default);
+              color: var(--text-reverse-color-default);
+            }
+          }
+        }
+
+        > sd-pane > ._editor {
+          position: relative;
+          width: 100%;
+          height: 100%;
+
+          > textarea {
+            @include form-control-base();
+            height: 100%;
+            background: var(--theme-info-lightest);
+            border: none;
+            transition: outline-color .1s linear;
+            outline: 1px solid transparent;
+            outline-offset: -1px;
+
+            &::-webkit-input-placeholder {
+              color: var(--text-color-lighter);
+            }
+
+            &:focus {
+              outline-color: var(--theme-primary-default);
+            }
+
+            > ._invalid-indicator {
+              display: none;
+            }
+
+            > input[sd-invalid=true] + ._invalid-indicator,
+            > input:invalid + ._invalid-indicator {
+              @include invalid-indicator();
+            }
+          }
+
+          > ._dragover {
+            display: none;
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, .05);
+            font-size: var(--font-size-h1);
+            color: rgba(0, 0, 0, .3);
+            text-align: center;
+            padding-top: 20px;
+          }
+        }
+
+        > sd-pane > ._preview {
+          padding: var(--gap-sm);
+          height: 100%;
+          overflow: auto;
+          background: white;
+
+          ol {
+            padding-left: 20px;
+          }
+
+          code {
+            background: rgba(0, 0, 0, .05);
+            border-radius: 2px;
+          }
+
+          pre {
+            background: rgba(0, 0, 0, .05);
+            padding: var(--gap-sm) var(--gap-default);
+            border-radius: 2px;
+            white-space: pre-wrap;
+
+            > code {
+              background: transparent;
+            }
+          }
+
+          p {
+            margin-top: var(--gap-sm);
+            margin-bottom: var(--gap-sm);
+          }
+        }
+      }
+
+      &[sd-disabled=true] {
+        > sd-dock-container {
+          > sd-pane > ._preview {
+            height: auto;
+          }
+        }
+      }
+
+      &[sd-dragover=true] {
+        > sd-dock-container > sd-pane > ._editor > ._dragover {
+          display: block;
+        }
+      }
+    }
+
+  `]
 })
 export class SdMarkdownEditorControl implements ISdNotifyPropertyChange {
   @Input()

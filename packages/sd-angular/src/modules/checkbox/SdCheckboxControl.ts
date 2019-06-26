@@ -1,11 +1,20 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  HostBinding,
+  Input,
+  Output,
+  ViewEncapsulation
+} from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {IconName} from "@fortawesome/fontawesome-svg-core";
-// import {sdIconNames} from "../commons/icons";
+import {sdIconNames} from "../../commons/sdIconNames";
 
 @Component({
   selector: "sd-checkbox",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <label tabindex="0" (keydown)="onKeydown($event)">
       <input [checked]="value" (change)="onValueChange($event)" type="checkbox" hidden [disabled]="disabled">
@@ -17,7 +26,129 @@ import {IconName} from "@fortawesome/fontawesome-svg-core";
       <div class="_content">
         <ng-content></ng-content>
       </div>
-    </label>`
+    </label>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-checkbox {
+      color: var(--text-color-default);
+
+      > label {
+        @include form-control-base();
+        color: inherit;
+        cursor: pointer;
+        position: relative;
+
+        > ._indicator_rect {
+          position: absolute;
+          display: block;
+          width: var(--checkbox-size);
+          height: var(--checkbox-size);
+          border: 1px solid var(--trans-color-default);
+          vertical-align: top;
+          transition: border-color .1s linear;
+          background: var(--theme-secondary-lightest);
+        }
+
+        > ._indicator {
+          display: inline-block;
+          position: relative;
+          opacity: 0;
+          transition: opacity .1s linear;
+          color: var(--text-color-default);
+          width: var(--checkbox-size);
+          height: var(--checkbox-size);
+          vertical-align: top;
+          font-size: var(--font-size-default);
+          text-indent: 1px;
+        }
+
+        > ._content {
+          display: inline-block;
+          vertical-align: top;
+          text-indent: var(--gap-sm);
+
+          > * {
+            text-indent: 0;
+          }
+        }
+
+        > input:disabled + ._indicator_rect {
+          background: var(--theme-grey-lightest) !important;
+        }
+
+        &:focus {
+          outline-color: transparent;
+
+          > ._indicator_rect {
+            border-color: var(--theme-primary-default);
+          }
+        }
+      }
+
+      &[sd-checked=true] {
+        > label {
+          > ._indicator {
+            opacity: 1;
+          }
+        }
+      }
+
+      &[sd-inline=true] {
+        display: inline-block;
+
+        > label {
+          padding-left: 0;
+        }
+      }
+
+      &[sd-radio=true] {
+        > label {
+          > ._indicator_rect {
+            border-radius: 100%;
+          }
+
+          > ._indicator {
+            padding: var(--gap-xs);
+          }
+
+          > ._indicator > div {
+            border-radius: 100%;
+            background: var(--text-color-default);
+            width: 100%;
+            height: 100%;
+          }
+        }
+      }
+
+      &[sd-size=sm] > label {
+        padding: var(--gap-xs) var(--gap-sm);
+      }
+
+      &[sd-size=lg] > label {
+        padding: var(--gap-default) var(--gap-lg);
+      }
+
+      @each $color in $arr-theme-color {
+        &[sd-theme=#{$color}] > label {
+          > ._indicator_rect {
+            background: var(--theme-#{$color}-lightest);
+          }
+
+          > ._indicator {
+            color: var(--theme-#{$color}-default);
+          }
+
+          &:focus {
+            > ._indicator_rect {
+              border-color: var(--theme-#{$color}-default);
+            }
+          }
+        }
+      }
+    }
+
+  `]
 })
 export class SdCheckboxControl {
   @Input()
@@ -61,8 +192,8 @@ export class SdCheckboxControl {
   @Input()
   @SdTypeValidate({
     type: String,
-    notnull: true/*,
-    includes: sdIconNames*/
+    notnull: true,
+    includes: sdIconNames
   })
   public icon: IconName = "check";
 

@@ -1,9 +1,26 @@
-import {ChangeDetectionStrategy, Component} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/core";
 
 @Component({
   selector: "sd-toast-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: ``
+  encapsulation: ViewEncapsulation.None,
+  template: ``,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-toast-container,
+    ._sd-toast-container {
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      pointer-events: none;
+      padding: var(--gap-xxl);
+      z-index: var(--z-index-toast);
+    }
+  `]
 })
 export class SdToastContainerControl {
 }

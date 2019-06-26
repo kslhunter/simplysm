@@ -4,7 +4,6 @@ import {SdSharedModule} from "../shared/SdSharedModule";
 import {SdLocalStorageModule} from "../local-storage/SdLocalStorageModule";
 import {SdDockControl} from "./SdDockControl";
 import {SdDockContainerControl} from "./SdDockContainerControl";
-import {SdPaneControl} from "./SdPaneControl";
 
 @NgModule({
   imports: [
@@ -14,13 +13,11 @@ import {SdPaneControl} from "./SdPaneControl";
   ],
   exports: [
     SdDockControl,
-    SdDockContainerControl,
-    SdPaneControl
+    SdDockContainerControl
   ],
   declarations: [
     SdDockControl,
-    SdDockContainerControl,
-    SdPaneControl
+    SdDockContainerControl
   ]
 })
 export class SdDockModule {

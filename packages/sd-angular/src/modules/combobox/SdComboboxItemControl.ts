@@ -1,11 +1,34 @@
-import {ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostListener, Inject, Input} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  forwardRef,
+  HostListener,
+  Inject,
+  Input,
+  ViewEncapsulation
+} from "@angular/core";
 import {SdComboboxControl} from "./SdComboboxControl";
 
 @Component({
   selector: "sd-combobox-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
-    <ng-content></ng-content>`
+    <ng-content></ng-content>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+    
+    sd-combobox-item {
+      display: block;
+      padding: var(--gap-sm) var(--gap-default);
+      cursor: pointer;
+
+      &:hover {
+        background: rgba(0, 0, 0, .1);
+      }
+    }
+  `]
 })
 export class SdComboboxItemControl {
   @Input()

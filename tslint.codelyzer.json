@@ -44,7 +44,7 @@
     "no-outputs-metadata-property": true,
     "no-pipe-impure": true,
     "no-queries-metadata-property": true,
-    "no-unused-css": true,
+    "no-unused-css": false,
     "prefer-inline-decorator": false,
     "prefer-output-readonly": true,
     "template-banana-in-box": true,
@@ -54,7 +54,7 @@
     "template-no-negated-async": true,
     "template-use-track-by-function": true,
     "use-component-selector": true,
-    "use-component-view-encapsulation": true,
+    "use-component-view-encapsulation": false,
     "use-lifecycle-interface": true,
     "use-pipe-transform-interface": true
   }

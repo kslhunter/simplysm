@@ -7,7 +7,8 @@ import {
   HostBinding,
   Input,
   QueryList,
-  ViewChild
+  ViewChild,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {SdListControl} from "./SdListControl";
@@ -16,6 +17,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <div class="_content">
       <label (click)="onLabelClick()"
@@ -29,7 +31,130 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
       <div #childContent class="_child-content">
         <ng-content select="sd-list"></ng-content>
       </div>
-    </div>`
+    </div>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-list-item {
+      display: block;
+
+      > ._content {
+        display: flex;
+        border-top: 1px solid transparent;
+
+        > label {
+          display: block;
+          width: 100%;
+          padding: var(--gap-sm) var(--gap-default);
+          background: white;
+
+          > ._angle-icon {
+            float: right;
+            transition: transform .1s ease-in;
+            color: var(--text-color-light);
+          }
+
+          &:focus {
+            outline-color: transparent;
+          }
+        }
+      }
+
+      > ._child {
+        overflow: hidden;
+
+        > ._child-content {
+          transition: margin-top .1s ease-out;
+          background: rgba(0, 0, 0, .05);
+
+          > sd-list {
+            padding: var(--gap-sm) 0 var(--gap-default) 0;
+          }
+        }
+      }
+
+      &[sd-has-children=true] {
+        > ._content {
+          border-color: white;
+        }
+      }
+
+      &[sd-clickable=true] {
+        > ._content {
+          > label {
+            cursor: pointer;
+            transition: background .1s ease-in;
+
+            &:hover {
+              transition: background .1s ease-out;
+              background: rgba(0, 0, 0, .07);
+            }
+          }
+        }
+      }
+
+      &[sd-open=true] {
+        > ._content {
+          > label {
+            > ._angle-icon {
+              transform: rotate(90deg);
+              transition: transform .1s ease-out;
+            }
+          }
+        }
+
+        > ._child > ._child-content {
+          transition: margin-top .1s ease-in;
+        }
+      }
+
+      &[sd-size=sm] > ._content > label {
+        font-size: var(--font-size-sm);
+        padding: var(--gap-xs) var(--gap-sm);
+      }
+
+      &[sd-size=lg] > ._content > label {
+        padding: var(--gap-default) var(--gap-lg);
+      }
+
+      &[sd-selected=true] > ._content > label {
+        color: var(--theme-primary-default);
+        font-weight: bold;
+      }
+
+      &[sd-disabled=true] {
+        pointer-events: none;
+
+        > ._content > label {
+          color: var(--text-color-lighter);
+          cursor: default;
+        }
+      }
+
+      &[sd-header=true] {
+        > ._content > label {
+          cursor: default;
+          background: transparent;
+          color: var(--text-color-light);
+          font-size: var(--font-size-sm);
+          font-weight: lighter;
+
+          &:hover {
+            background: transparent !important;
+          }
+
+          > ._angle-icon {
+            display: none;
+          }
+        }
+
+        > ._child > ._child-content {
+          margin-top: 0 !important;
+          background: transparent !important;
+        }
+      }
+    }
+  `]
 })
 export class SdListItemControl implements ISdNotifyPropertyChange, AfterViewInit {
   @Input()

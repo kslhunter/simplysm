@@ -2,8 +2,6 @@ import {NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {SdSharedModule} from "../shared/SdSharedModule";
 import {SdCheckboxControl} from "./SdCheckboxControl";
-import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
-import {SdCheckboxGroupItemControl} from "./SdCheckboxGroupItemControl";
 import {SdIconModule} from "../icon/SdIconModule";
 
 
@@ -14,14 +12,10 @@ import {SdIconModule} from "../icon/SdIconModule";
     SdIconModule
   ],
   exports: [
-    SdCheckboxControl,
-    SdCheckboxGroupControl,
-    SdCheckboxGroupItemControl
+    SdCheckboxControl
   ],
   declarations: [
-    SdCheckboxControl,
-    SdCheckboxGroupControl,
-    SdCheckboxGroupItemControl
+    SdCheckboxControl
   ]
 })
 export class SdCheckboxModule {

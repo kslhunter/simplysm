@@ -13,7 +13,8 @@ import {
   IterableDiffers,
   OnInit,
   Output,
-  QueryList
+  QueryList,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
@@ -24,6 +25,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
 @Component({
   selector: "sd-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <div class="_sheet" [style.padding-top.px]="paddingTop">
       <div #headerElRef class="_content _head">
@@ -158,7 +160,296 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
         </ng-template>
         <ng-template [ngTemplateOutlet]="rowOfList" [ngTemplateOutletContext]="{items: getPagedItems()}"></ng-template>
       </div>
-    </div>`
+    </div>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-sheet {
+      display: block;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background: var(--theme-grey-lightest);
+      z-index: 0;
+
+      border: 1px solid var(--sheet-border-color-dark);
+
+      ._content {
+        white-space: nowrap;
+        width: fit-content;
+        overflow: hidden;
+      }
+
+      ._pagination {
+        background: var(--sheet-header-bg);
+        padding: var(--sheet-padding-v) var(--sheet-padding-h);
+        border-bottom: 1px solid var(--sheet-border-color);
+        border-right: 1px solid var(--sheet-border-color-dark);
+      }
+
+      ._head {
+        display: block;
+        position: absolute;
+        z-index: 2;
+        top: 0;
+        left: 0;
+        white-space: nowrap;
+      }
+
+      ._col-group {
+        display: inline-block;
+      }
+
+      ._col {
+        position: relative;
+        display: inline-block;
+        vertical-align: top;
+        height: calc(var(--sheet-row-height) + 1);
+
+        &:focus {
+          outline-color: transparent;
+        }
+      }
+
+      ._head ._col {
+        background: var(--sheet-header-bg);
+        font-weight: bold;
+        text-align: center;
+        padding: var(--sheet-padding-v) var(--sheet-padding-h);
+        border-bottom: 1px solid var(--sheet-border-color);
+        user-select: none;
+
+        > ._border {
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          width: 4px;
+          border-right: 1px solid var(--sheet-border-color);
+        }
+      }
+
+      ._head ._summary ._col {
+        padding: 0;
+        user-select: auto;
+        text-align: left;
+      }
+
+      ._body ._col {
+        background: white;
+        border-right: 1px solid var(--sheet-border-color);
+        border-bottom: 1px solid var(--sheet-border-color);
+
+        sd-textfield > input {
+          border: none;
+          padding: var(--sheet-padding-v) var(--sheet-padding-h);
+
+          &[type=year],
+          &[type=month],
+          &[type=date],
+          &[type=datetime],
+          &[type=time],
+          &[type=datetime-local] {
+            padding: calc(var(--sheet-padding-v) - 1) var(--sheet-padding-h);
+          }
+
+          &[type=color] {
+            height: var(--sheet-row-height);
+          }
+
+          &:disabled {
+            background: transparent;
+            color: var(--text-color-default);
+          }
+        }
+
+        sd-combobox {
+          > ._icon {
+            top: 0;
+            right: 0;
+            width: var(--sheet-row-height);
+            padding: var(--sheet-padding-v) 0;
+          }
+
+          > sd-textfield > input {
+            padding-right: var(--sheet-row-height);
+          }
+        }
+
+        sd-checkbox > label {
+          display: inline-block;
+          width: auto;
+          border: none;
+          padding: var(--sheet-padding-v) var(--sheet-padding-h);
+
+          > input:disabled + ._indicator_rect {
+            background: transparent;
+          }
+        }
+
+        sd-button > button {
+          border: none;
+          padding: var(--sheet-padding-v) var(--sheet-padding-h);
+          text-align: left;
+          border-radius: 0;
+        }
+
+        sd-select,
+        sd-multi-select {
+          > sd-dropdown > div {
+            border: none;
+            padding: var(--sheet-padding-v) var(--sheet-padding-h);
+            height: var(--sheet-row-height);
+            background: var(--sheet-edit-cell-bg);
+            border-radius: 0;
+
+            > ._icon {
+              top: 0;
+              right: 0;
+              width: var(--sheet-row-height);
+              padding: var(--sheet-padding-v);
+            }
+          }
+
+          &[sd-disabled=true] > sd-dropdown > div {
+            background: transparent;
+            color: var(--text-color-default);
+
+            > ._icon {
+              display: none;
+            }
+          }
+        }
+
+        > ._focus-indicator {
+          display: none;
+          position: absolute;
+          pointer-events: none;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          outline: 1px solid var(--theme-primary-default);
+          outline-offset: -1px;
+          background: rgba(var(--theme-primary-default), .1);
+        }
+
+        &:focus {
+          z-index: 3;
+        }
+
+        &:focus > ._focus-indicator {
+          display: block;
+        }
+      }
+
+      ._head > ._row > ._col-group:nth-child(2) > ._col:last-child > ._border,
+      ._body > ._row > ._col-group:nth-child(2) > ._col:last-child {
+        border-right-color: var(--sheet-border-color-dark);
+      }
+
+      ._head > ._row:last-child > ._col-group > ._col {
+        border-bottom-color: var(--sheet-border-color-dark);
+      }
+
+      ._body > ._row:last-child > ._col-group > ._col {
+        border-bottom-color: var(--sheet-border-color-dark);
+      }
+
+      ._head ._col._first-col,
+      ._body ._col._first-col {
+        width: var(--sheet-row-height);
+        text-align: center;
+        padding: var(--sheet-padding-v);
+
+        &._double {
+          width: calc(var(--sheet-row-height) * 2);
+        }
+      }
+
+      ._body ._col._first-col {
+        background: var(--sheet-header-bg);
+        user-select: none;
+
+        > a {
+          display: inline-block;
+          padding: var(--sheet-padding-v);
+
+          &:focus {
+            outline: none;
+          }
+        }
+
+        &._selectable,
+        &._expandable {
+          padding: 0;
+        }
+
+        &._selectable {
+          > ._select-icon {
+            display: inline-block;
+            color: var(--theme-grey-light);
+            transition: .1s ease-in;
+          }
+
+          &._selected > ._select-icon {
+            color: var(--theme-primary-default);
+            transition: .1s ease-out;
+          }
+        }
+
+        &._expandable {
+          > ._expand-icon {
+            display: inline-block;
+            color: var(--theme-grey-light);
+            transition: .1s ease-in;
+          }
+
+          &._expanded > ._expand-icon {
+            color: var(--theme-primary-default);
+            transform: rotate(90deg);
+            transition: .1s ease-out;
+          }
+        }
+      }
+
+      ._body > ._row > ._fixed-col-group > ._col:last-child {
+        border-right-color: var(--sheet-border-color-dark);
+      }
+
+      ._head > ._row > ._fixed-col-group > ._col:last-child > ._border {
+        border-right-color: var(--sheet-border-color-dark);
+      }
+
+      ._fixed-col-group {
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+      }
+
+      ._row {
+        position: relative;
+      }
+
+      ._body > ._row._selected > ._select-indicator {
+        display: block;
+        position: absolute;
+        z-index: 3;
+        pointer-events: none;
+        top: 0;
+        left: 0;
+        width: calc(100% - 1px);
+        height: calc(100% - 1px);
+        background: rgba(var(--theme-primary-default), .1);
+      }
+
+      &[sd-selectable=true] ._body ._first-col {
+        cursor: pointer;
+      }
+    }
+  `]
 })
 export class SdSheetControl implements DoCheck, OnInit {
   @ContentChildren(SdSheetColumnControl)

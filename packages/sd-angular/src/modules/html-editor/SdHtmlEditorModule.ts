@@ -4,13 +4,15 @@ import {SdSharedModule} from "../shared/SdSharedModule";
 import {SdDockModule} from "../dock/SdDockModule";
 import {SdIconModule} from "../icon/SdIconModule";
 import {SdHtmlEditorControl} from "./SdHtmlEditorControl";
+import {SdPaneModule} from "../..";
 
 @NgModule({
   imports: [
     CommonModule,
     SdSharedModule,
     SdDockModule,
-    SdIconModule
+    SdIconModule,
+    SdPaneModule
   ],
   exports: [
     SdHtmlEditorControl

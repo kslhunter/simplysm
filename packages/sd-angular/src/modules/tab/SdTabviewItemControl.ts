@@ -1,12 +1,34 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  HostBinding,
+  Inject,
+  Input,
+  ViewEncapsulation
+} from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {SdTabviewControl} from "./SdTabviewControl";
 
 @Component({
   selector: "sd-tabview-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
-    <ng-content></ng-content>`
+    <ng-content></ng-content>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-tabview-item {
+      display: none;
+      width: 100%;
+      height: 100%;
+
+      &[sd-selected=true] {
+        display: block;
+      }
+    }
+  `]
 })
 export class SdTabviewItemControl {
   @Input()

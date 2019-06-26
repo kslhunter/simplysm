@@ -27,7 +27,17 @@
   },
   "files": [
     "src/bin.ts",
+    "src/sdc.ts",
     "src/package-build-worker.ts",
-    "src/inline-sass-loader.ts"
+    "src/inline-sass-loader.ts",
+    "src/ts-build-loader.ts",
+    "src/workers/run-check.ts",
+    "src/workers/run-compile.ts",
+    "src/workers/run-lint.ts",
+    "src/workers/run-metadata.ts",
+    "src/workers/watch-check.ts",
+    "src/workers/watch-compile.ts",
+    "src/workers/watch-lint.ts",
+    "src/workers/watch-metadata.ts"
   ]
 }

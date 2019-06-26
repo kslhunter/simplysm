@@ -1,24 +1,35 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, Input, ViewEncapsulation} from "@angular/core";
 import {IconName, IconProp, library, SizeProp} from "@fortawesome/fontawesome-svg-core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {far} from "@fortawesome/free-regular-svg-icons";
 import {fab} from "@fortawesome/free-brands-svg-icons";
-import {sdIconNameFn} from "../../commons/sdIconNameFn";
+import {sdIconNames} from "../../commons/sdIconNames";
 
 library.add(fas, far, fab);
 
 @Component({
   selector: "sd-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
-    <fa-icon [icon]="faIconProp" [fixedWidth]="fw" [size]="size" *ngIf="icon"></fa-icon>`
+    <fa-icon [icon]="faIconProp" [fixedWidth]="fw" [size]="size" *ngIf="icon"></fa-icon>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-icon {
+      &[sd-fw=true] {
+        display: inline-block;
+        width: 1.25em;
+      }
+    }
+  `]
 })
 export class SdIconControl {
   @Input()
   @SdTypeValidate({
     type: String,
-    includes: Object.values(fas).map(sdIconNameFn).distinct()
+    includes: sdIconNames
   })
   public icon?: IconName;
 

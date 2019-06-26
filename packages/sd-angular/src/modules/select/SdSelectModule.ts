@@ -6,6 +6,7 @@ import {SdIconModule} from "../icon/SdIconModule";
 import {SdDockModule} from "../dock/SdDockModule";
 import {SdSelectControl} from "./SdSelectControl";
 import {SdSelectItemControl} from "./SdSelectItemControl";
+import {SdPaneModule} from "../pane/SdPaneModule";
 
 @NgModule({
   imports: [
@@ -13,7 +14,8 @@ import {SdSelectItemControl} from "./SdSelectItemControl";
     SdSharedModule,
     SdDropdownModule,
     SdIconModule,
-    SdDockModule
+    SdDockModule,
+    SdPaneModule
   ],
   exports: [
     SdSelectControl,

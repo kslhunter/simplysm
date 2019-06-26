@@ -6,18 +6,29 @@ import {
   Input,
   OnDestroy,
   OnInit,
-  Output
+  Output,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-dropdown",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <div class="_sd-dropdown-control" tabindex="0">
       <ng-content></ng-content>
     </div>
-    <ng-content select="sd-dropdown-popup"></ng-content>`
+    <ng-content select="sd-dropdown-popup"></ng-content>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-dropdown {
+      > div {
+        position: relative;
+      }
+    }
+  `]
 })
 export class SdDropdownControl implements OnInit, OnDestroy {
   @Input()

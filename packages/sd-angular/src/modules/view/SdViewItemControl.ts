@@ -1,11 +1,36 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  HostBinding,
+  Inject,
+  Input,
+  ViewEncapsulation
+} from "@angular/core";
 import {SdViewControl} from "./SdViewControl";
 
 @Component({
   selector: "sd-view-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
-    <ng-content></ng-content>`
+    <ng-content></ng-content>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-view {
+      display: block;
+      background: white;
+    }
+
+    sd-view-item {
+      display: none;
+
+      &[sd-selected=true] {
+        display: block;
+      }
+    }
+  `]
 })
 export class SdViewItemControl {
   @Input()

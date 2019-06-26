@@ -7,6 +7,7 @@ import {SdDockModule} from "../dock/SdDockModule";
 import {SdMultiSelectControl} from "./SdMultiSelectControl";
 import {SdMultiSelectItemControl} from "./SdMultiSelectItemControl";
 import {SdCheckboxModule} from "../checkbox/SdCheckboxModule";
+import {SdPaneModule} from "../pane/SdPaneModule";
 
 @NgModule({
   imports: [
@@ -15,7 +16,8 @@ import {SdCheckboxModule} from "../checkbox/SdCheckboxModule";
     SdDropdownModule,
     SdIconModule,
     SdDockModule,
-    SdCheckboxModule
+    SdCheckboxModule,
+    SdPaneModule
   ],
   exports: [
     SdMultiSelectControl,

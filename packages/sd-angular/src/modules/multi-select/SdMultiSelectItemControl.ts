@@ -11,13 +11,15 @@ import {
   Input,
   IterableDiffer,
   IterableDiffers,
-  TemplateRef
+  TemplateRef,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdMultiSelectControl} from "./SdMultiSelectControl";
 
 @Component({
   selector: "sd-multi-select-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <sd-checkbox [value]="getIsSelected()" (valueChange)="setIsSelected($event)">
       <span class="_label">
@@ -26,7 +28,37 @@ import {SdMultiSelectControl} from "./SdMultiSelectControl";
       <span class="_labelTemplate" hidden *ngIf="labelTemplateRef">
         <ng-template [ngTemplateOutlet]="labelTemplateRef"></ng-template>
       </span>
-    </sd-checkbox>`
+    </sd-checkbox>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-multi-select-item {
+      display: block;
+      padding: var(--gap-sm) var(--gap-default);
+      cursor: pointer;
+      transition: background .1s ease-in;
+      background: white;
+
+      &:hover {
+        transition: background .1s ease-out;
+        background: rgba(0, 0, 0, .07);
+      }
+
+      &:focus {
+        outline: none;
+        transition: background .1s ease-out;
+        background: rgba(0, 0, 0, .07);
+      }
+
+      > sd-checkbox > label {
+        padding: 0 !important;
+      }
+
+      &[hidden] {
+        display: none;
+      }
+    }
+  `]
 })
 export class SdMultiSelectItemControl implements DoCheck {
   @HostBinding("attr.tabindex")

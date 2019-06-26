@@ -6,7 +6,8 @@ import {
   HostBinding,
   HostListener,
   Input,
-  OnInit
+  OnInit,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {SdLocalStorageProvider} from "../local-storage/SdLocalStorageProvider";
@@ -15,6 +16,7 @@ import {optional} from "@simplysm/sd-core";
 @Component({
   selector: "sd-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
     <div class="_dialog" tabindex="0" [style.minHeight]="minHeight">
@@ -37,7 +39,194 @@ import {optional} from "@simplysm/sd-core";
       <div class="_bottom-resizer" (mousedown)="onResizerMousedown($event, 'bottom')"></div>
       <div class="_all-right-resizer" (mousedown)="onResizerMousedown($event, 'all-right')"></div>
       <div class="_all-left-resizer" (mousedown)="onResizerMousedown($event, 'all-left')"></div>
-    </div>`
+    </div>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-modal {
+      display: block;
+      position: fixed;
+      z-index: var(--z-index-modal);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      padding-top: calc(var(--topbar-height) / 2);
+      overflow: auto;
+
+      > ._backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, .6);
+      }
+
+      > ._dialog {
+        position: relative;
+        display: inline-block;
+        text-align: left;
+        margin: 0 auto;
+        background: white;
+        overflow: hidden;
+        max-width: 100%;
+        min-width: 240px;
+        border: 1px solid var(--theme-primary-dark);
+
+        &:focus {
+          outline-color: transparent;
+        }
+
+        > sd-dock-container {
+          > ._header {
+            background: var(--theme-primary-default);
+            color: var(--text-reverse-color-default);
+
+            > ._title {
+              display: inline-block;
+              padding: var(--gap-default) var(--gap-lg);
+            }
+
+            > ._close-button {
+              float: right;
+              cursor: pointer;
+              text-align: center;
+              padding: var(--gap-default) var(--gap-lg);
+              color: var(--text-reverse-color-dark);
+
+              &:hover {
+                background: rgba(0, 0, 0, .1);
+                color: var(--text-reverse-color-default);
+              }
+
+              &:active {
+                background: rgba(0, 0, 0, .2);
+              }
+            }
+          }
+        }
+
+        > ._left-resizer {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 4px;
+          height: 100%;
+          cursor: ew-resize;
+
+          &:hover {
+            background: rgba(0, 0, 0, .3);
+          }
+        }
+
+        > ._right-resizer {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 4px;
+          height: 100%;
+          cursor: ew-resize;
+
+          &:hover {
+            background: rgba(0, 0, 0, .3);
+          }
+        }
+
+        > ._bottom-resizer {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 4px;
+          cursor: ns-resize;
+
+          &:hover {
+            background: rgba(0, 0, 0, .3);
+          }
+        }
+
+        > ._all-right-resizer {
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          width: 4px;
+          height: 4px;
+          z-index: 1;
+          cursor: nwse-resize;
+
+          &:hover {
+            background: rgba(0, 0, 0, .3);
+          }
+        }
+
+        > ._all-left-resizer {
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          width: 4px;
+          height: 4px;
+          cursor: nesw-resize;
+          z-index: 1;
+
+          &:hover {
+            background: rgba(0, 0, 0, .1);
+          }
+        }
+      }
+
+      opacity: 0;
+      transition: opacity .3s ease-in-out;
+      pointer-events: none;
+
+      > ._dialog {
+        transform: translateY(-25px);
+        transition: transform .3s ease-in-out;
+      }
+
+      &[sd-open=true] {
+        opacity: 1;
+        pointer-events: auto;
+
+        > ._dialog {
+          transform: none;
+          @include elevation(16);
+        }
+      }
+
+      &[sd-float=true] {
+        pointer-events: none;
+
+        > ._backdrop {
+          display: none;
+        }
+
+        > ._dialog {
+          pointer-events: auto;
+          right: var(--gap-lg);
+          bottom: var(--gap-lg);
+          border-radius: 0;
+          opacity: 0;
+        }
+
+        &[sd-open=true] {
+          > ._dialog {
+            opacity: 1;
+          }
+        }
+      }
+
+      @media screen and (max-width: var(--screen-mobile-width)) {
+        padding-top: 0;
+
+        > ._dialog {
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+  `]
 })
 export class SdModalControl implements OnInit {
   @Input()

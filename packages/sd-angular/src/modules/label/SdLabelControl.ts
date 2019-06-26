@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, Input, ViewEncapsulation} from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 
 function colorValidator(value: string): boolean {
@@ -8,8 +8,41 @@ function colorValidator(value: string): boolean {
 @Component({
   selector: "sd-label",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
-    <ng-content></ng-content>`
+    <ng-content></ng-content>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-label {
+      display: inline-block;
+      background: var(--theme-grey-darkest);
+      color: var(--text-reverse-color-default);
+      padding: 0 var(--gap-xs);
+      border-radius: 2px;
+      text-indent: 0;
+
+      @each $color in $arr-theme-color {
+        &[sd-theme=#{$color}] {
+          background: var(--theme-#{$color}-default);
+        }
+      }
+
+      &[sd-clickable=true] {
+        cursor: pointer;
+
+        &:hover {
+          background: var(--theme-grey-dark);
+
+          @each $color in $arr-theme-color {
+            &[sd-theme=#{$color}] {
+              background: var(--theme-#{$color}-dark);
+            }
+          }
+        }
+      }
+    }
+  `]
 })
 export class SdLabelControl {
   @Input()

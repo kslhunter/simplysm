@@ -8,6 +8,7 @@
       <w>middlewares</w>
       <w>ngls</w>
       <w>nodemailer</w>
+      <w>pathinfo</w>
       <w>resizer</w>
       <w>simplysm</w>
       <w>smtp</w>

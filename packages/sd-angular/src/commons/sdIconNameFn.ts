@@ -3,4 +3,3 @@ export function sdIconNameFn(item: any): any {
   const result: any = item.iconName;
   return result;
 }
-

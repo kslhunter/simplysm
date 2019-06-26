@@ -8,7 +8,8 @@ import {
   HostListener,
   Inject,
   Input,
-  TemplateRef
+  TemplateRef,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdSelectControl} from "./SdSelectControl";
 import {JsonConvert} from "@simplysm/sd-core";
@@ -16,13 +17,42 @@ import {JsonConvert} from "@simplysm/sd-core";
 @Component({
   selector: "sd-select-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <span class="_label">
       <ng-content></ng-content>
     </span>
     <span class="_labelTemplate" hidden *ngIf="labelTemplateRef">
       <ng-template [ngTemplateOutlet]="labelTemplateRef"></ng-template>
-    </span>`
+    </span>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-select-item {
+      display: block;
+      padding: var(--gap-sm) var(--gap-default);
+      cursor: pointer;
+      transition: background .1s ease-in;
+      background: white;
+
+      &:hover {
+        transition: background .1s ease-out;
+        background: rgba(0, 0, 0, .07);
+      }
+
+      &:focus {
+        outline: none;
+        transition: background .1s ease-out;
+        background: rgba(0, 0, 0, .07);
+      }
+
+      &._selected {
+        color: var(--theme-primary-default);
+        font-weight: bold;
+        background: rgba(0, 0, 0, .07);
+      }
+    }
+  `]
 })
 export class SdSelectItemControl {
   @HostBinding("attr.tabindex")

@@ -5,15 +5,29 @@ import {
   ContentChildren,
   ElementRef,
   forwardRef,
-  QueryList
+  QueryList,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdDockControl} from "./SdDockControl";
 
 @Component({
   selector: "sd-dock-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
-    <ng-content></ng-content>`
+    <ng-content></ng-content>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-dock-container {
+      display: block;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      z-index: 0;
+    }
+  `]
 })
 export class SdDockContainerControl implements AfterContentInit {
   @ContentChildren(forwardRef(() => SdDockControl))
@@ -48,7 +62,8 @@ export class SdDockContainerControl implements AfterContentInit {
           }
         );
         top += dockEl.offsetHeight;
-      } else if (position === "bottom") {
+      }
+      else if (position === "bottom") {
         Object.assign(
           dockEl.style,
           {
@@ -59,7 +74,8 @@ export class SdDockContainerControl implements AfterContentInit {
           }
         );
         bottom += dockEl.offsetHeight;
-      } else if (position === "left") {
+      }
+      else if (position === "left") {
         Object.assign(
           dockEl.style,
           {
@@ -70,7 +86,8 @@ export class SdDockContainerControl implements AfterContentInit {
           }
         );
         left += dockEl.offsetWidth;
-      } else if (position === "right") {
+      }
+      else if (position === "right") {
         Object.assign(
           dockEl.style,
           {

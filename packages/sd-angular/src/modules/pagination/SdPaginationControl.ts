@@ -1,9 +1,10 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation} from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <a *ngIf="hasPrev" (click)="onPrevClick()">
       <sd-icon [icon]="'angle-double-left'" [fw]="true"></sd-icon>
@@ -14,7 +15,23 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
     </a>
     <a *ngIf="hasNext" (click)="onNextClick()">
       <sd-icon [icon]="'angle-double-right'" [fw]="true"></sd-icon>
-    </a>`
+    </a>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-pagination {
+      display: block;
+
+      > a {
+        display: inline-block;
+        padding: 0 var(--gap-xs);
+
+        &[sd-selected=true] {
+          text-decoration: underline;
+        }
+      }
+    }
+  `]
 })
 export class SdPaginationControl {
   @Input()
@@ -42,7 +59,7 @@ export class SdPaginationControl {
   public readonly pageChange = new EventEmitter<number>();
 
   public get displayPages(): number[] {
-    const pages = [];
+    const pages: number[] = [];
     for (let i = 0; i < this.length; i++) {
       pages.push(i);
     }

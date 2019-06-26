@@ -9,6 +9,7 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 import {SdSidebarBrandControl} from "./SdSidebarBrandControl";
 import {SdSidebarUserControl} from "./SdSidebarUserControl";
 import {SdSidebarUserMenuControl} from "./SdSidebarUserMenuControl";
+import {SdPaneModule} from "../pane/SdPaneModule";
 
 @NgModule({
   imports: [
@@ -16,7 +17,8 @@ import {SdSidebarUserMenuControl} from "./SdSidebarUserMenuControl";
     SdSharedModule,
     SdDockModule,
     SdWindowModule,
-    SdIconModule
+    SdIconModule,
+    SdPaneModule
   ],
   exports: [
     SdSidebarControl,

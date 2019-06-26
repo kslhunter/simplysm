@@ -1,4 +1,4 @@
-@import "var-colors";
+@import "variables-color";
 
 :root {
   --theme-grey-lightest: var(--color-grey-100);
@@ -9,13 +9,13 @@
   --theme-grey-darker: var(--color-grey-700);
   --theme-grey-darkest: var(--color-grey-800);
 
-  --theme-blue-grey-lightest: var(--color-bluegrey-200);
-  --theme-blue-grey-lighter: var(--color-bluegrey-300);
-  --theme-blue-grey-light: var(--color-bluegrey-400);
-  --theme-blue-grey-default: var(--color-bluegrey-500);
-  --theme-blue-grey-dark: var(--color-bluegrey-600);
-  --theme-blue-grey-darker: var(--color-bluegrey-800);
-  --theme-blue-grey-darkest: var(--color-bluegrey-900);
+  --theme-bluegrey-lightest: var(--color-bluegrey-200);
+  --theme-bluegrey-lighter: var(--color-bluegrey-300);
+  --theme-bluegrey-light: var(--color-bluegrey-400);
+  --theme-bluegrey-default: var(--color-bluegrey-500);
+  --theme-bluegrey-dark: var(--color-bluegrey-600);
+  --theme-bluegrey-darker: var(--color-bluegrey-800);
+  --theme-bluegrey-darkest: var(--color-bluegrey-900);
 
   --theme-primary-lightest: var(--color-deep-purple-50);
   --theme-primary-lighter: var(--color-deep-purple-100);
@@ -105,6 +105,8 @@
   --gap-xl: 12px;
   --gap-xxl: 18px;
 
+  --screen-mobile-width: 520px;
+
   --z-index-toast: 9999;
   --z-index-busy: 9998;
   --z-index-dropdown: 5000;
@@ -112,4 +114,18 @@
   --z-index-fullscreen: 3000;
   --z-index-sidebar: 2100;
   --z-index-topbar: 2000;
+
+  --checkbox-size: calc(var(--font-size-default) * var(--line-height-strip));
+  --dock-border-color: var(--theme-grey-lighter);
+  --dock-resizer-size: 4px;
+  --topbar-height: 36px;
+  --sidebar-width: 180px;
+
+  --sheet-padding-v: var(--gap-xs);
+  --sheet-padding-h: var(--gap-sm);
+  --sheet-edit-cell-bg: var(--theme--secondary-lightest);
+  --sheet-header-bg: var(--theme-grey-lightest);
+  --sheet-border-color: var(--theme-grey-lighter);
+  --sheet-border-color-dark: var(--theme-grey-light);
+  --sheet-row-height: calc(var(--sheet-padding-v) * 2 + var(--font-size-default) * var(--line-height-strip));
 }

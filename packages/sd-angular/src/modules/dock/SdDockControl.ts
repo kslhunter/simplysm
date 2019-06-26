@@ -8,7 +8,8 @@ import {
   Inject,
   Input,
   OnDestroy,
-  OnInit
+  OnInit,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdNotifyPropertyChange";
@@ -19,11 +20,113 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
 @Component({
   selector: "sd-dock",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <div class="_resizer" *ngIf="!!id" (mousedown)="onResizerMousedown($event)">
       <!--<hr *ngIf="!!id" (mousedown)="onResizerMousedown($event)"/>-->
     </div>
-    <ng-content></ng-content>`
+    <ng-content></ng-content>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-dock {
+      display: block;
+      position: absolute;
+      overflow: auto;
+      z-index: 1;
+      background: white;
+
+      > ._resizer {
+        display: none;
+        user-select: none;
+      }
+
+      &[sd-border=true] {
+        &[sd-position=top] {
+          border-bottom: 1px solid var(--dock-border-color);
+        }
+
+        &[sd-position=bottom] {
+          border-top: 1px solid var(--dock-border-color);
+        }
+
+        &[sd-position=left] {
+          border-right: 1px solid var(--dock-border-color);
+        }
+
+        &[sd-position=right] {
+          border-left: 1px solid var(--dock-border-color);
+        }
+      }
+
+      &[sd-resizable=true] {
+        > ._resizer {
+          display: block;
+          position: absolute;
+          width: var(--dock-resizer-size);
+          height: var(--dock-resizer-size);
+          background: var(--theme-grey-light);
+          margin: 0;
+          padding: 0;
+          z-index: 1;
+        }
+
+        border: none !important;
+
+        &[sd-position=top] {
+          padding-bottom: var(--dock-resizer-size);
+
+          > ._resizer {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            cursor: ns-resize;
+            border-left: none;
+            border-right: none;
+          }
+        }
+
+        &[sd-position=bottom] {
+          padding-top: var(--dock-resizer-size);
+
+          > ._resizer {
+            top: 0;
+            left: 0;
+            width: 100%;
+            cursor: ns-resize;
+            border-left: none;
+            border-right: none;
+          }
+        }
+
+        &[sd-position=left] {
+          padding-right: var(--dock-resizer-size);
+
+          > ._resizer {
+            top: 0;
+            right: 0;
+            height: 100%;
+            cursor: ew-resize;
+            border-top: none;
+            border-bottom: none;
+          }
+        }
+
+        &[sd-position=right] {
+          padding-left: var(--dock-resizer-size);
+
+          > ._resizer {
+            top: 0;
+            left: 0;
+            height: 100%;
+            cursor: ew-resize;
+            border-top: none;
+            border-bottom: none;
+          }
+        }
+      }
+    }
+  `]
 })
 export class SdDockControl implements ISdNotifyPropertyChange, OnDestroy, OnInit {
   @Input()

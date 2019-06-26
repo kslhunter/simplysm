@@ -5,13 +5,15 @@ import {
   EventEmitter,
   Input,
   Output,
-  QueryList
+  QueryList,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdTabviewItemControl} from "./SdTabviewItemControl";
 
 @Component({
   selector: "sd-tabview",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <sd-dock-container>
       <sd-dock>

@@ -1,9 +1,10 @@
-import {ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef, ViewEncapsulation} from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-form-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <label [style.display]="label ? 'display' : 'none'">
       <ng-container *ngIf="!labelTemplateRef">{{ label }}</ng-container>

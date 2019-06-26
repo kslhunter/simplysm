@@ -8,8 +8,8 @@ import {ISdProjectConfig, ISdWorkerMessage} from "./commons/interfaces";
 import * as os from "os";
 import * as semver from "semver";
 import {NextHandleFunction, SdServiceClient, SdServiceServer} from "@simplysm/sd-service";
-import {SdPackageCompiler} from "./SdPackageCompiler";
-import {SdCliUtil} from "./commons/SdCliUtil";
+import {SdAngularCompiler} from "./SdAngularCompiler";
+import {SdCliUtils} from "./commons/SdCliUtils";
 
 export class SdProjectBuilder {
   private readonly _serverMap = new Map<string, {
@@ -23,7 +23,7 @@ export class SdProjectBuilder {
     logger.log(watch ? `변경감지를 시작합니다.` : `업데이트를 시작합니다.`);
 
     // "simplysm.json" 정보 가져오기
-    const config: ISdProjectConfig = await SdCliUtil.getConfigObjAsync("development");
+    const config: ISdProjectConfig = await SdCliUtils.getConfigObjAsync("development");
 
     // 옵션체크
     if (!config.localUpdates) {
@@ -93,13 +93,17 @@ export class SdProjectBuilder {
     const logger = new Logger("@simplysm/sd-cli");
 
     // "simplysm.json" 정보 가져오기
-    const config: ISdProjectConfig = await SdCliUtil.getConfigObjAsync(
+    const config: ISdProjectConfig = await SdCliUtils.getConfigObjAsync(
       argv.watch ? "development" : "production",
       argv.options ? argv.options.split(",").map(item => item.trim()) : undefined
     );
 
     // 패키지정보별 병렬실행,
     await Promise.all(Object.keys(config.packages).map(async packageKey => {
+      if (config.packages[packageKey].type === "none") {
+        return;
+      }
+
       const packagePath = path.resolve(process.cwd(), "packages", packageKey);
       const packageTsConfig = await fs.readJson(path.resolve(packagePath, "tsconfig.json"));
       const packageParsedTsConfig = ts.parseJsonConfigFileContent(packageTsConfig, ts.sys, packagePath);
@@ -133,64 +137,105 @@ export class SdProjectBuilder {
     const startDateTime = new DateTime();
     logger.info("빌드 프로세스를 시작합니다.");
 
-    const workerCpuUsages: { packageKey: string; type: "build" | "check"; cpuUsage: number }[] = [];
-
     const completedDeclarationPackageNames: string[] = [];
-    // 병렬로,
+    const workerCpuUsages: { packageKey: string; type: string; cpuUsage: number }[] = [];
+    const prefix = argv.watch ? "watch" : "run";
+    const packageKeys = Object.keys(config.packages);
+
     await Promise.all([
-      // > 패키지별 병렬로,
-      this._parallelPackagesByDepAsync(Object.keys(config.packages), async (packageKey, packageName, projectOwnDepPackageNames) => {
+      this._parallelPackagesByDepAsync(packageKeys, async (packageKey, packageName, projectOwnDepPackageNames) => {
         if (config.packages[packageKey].type === "none") {
           return;
         }
 
-        // > > 라이브러리/서버
         if (config.packages[packageKey].type === "library" || config.packages[packageKey].type === "server") {
-          // > > 빌드
-          const worker = await this._runPackageBuildWorkerAsync("build", packageKey, argv.options, argv.watch);
-          workerCpuUsages.push({packageKey, type: "build", cpuUsage: worker["cpuUsage"]});
+          const worker = await this._runWorkerAsync(
+            `${prefix}-compile`,
+            packageKey,
+            config.packages[packageKey].framework === "angular" ? "scss" : undefined
+          );
 
-          // > > 변경감지 모드이며, 서버빌드 일때, 서버 실행 (변경감지 포함)
+          if (worker.cpuUsage) {
+            workerCpuUsages.push({packageKey, type: worker.workerName, cpuUsage: worker.cpuUsage});
+          }
+
+          // 변경감지 모드이며, 서버빌드 일때, 서버 실행 (변경감지 포함)
           if (argv.watch && config.packages[packageKey].type === "server") {
             await this._runServerAsync(packageKey, worker);
           }
         }
-
-        // > > 클라이언트
         else {
-          // > > 의존성 패키지들의 declaration 체크
+          // 의존성 패키지들의 declaration 체크
           await Wait.true(() => projectOwnDepPackageNames.every(item => completedDeclarationPackageNames.includes(item)));
 
           if (!argv.watch) {
-            // > > 빌드
-            const worker = await this._runPackageBuildWorkerAsync("build", packageKey, argv.options, false);
-            workerCpuUsages.push({packageKey, type: "build", cpuUsage: worker["cpuUsage"]});
+            const worker = await this._runWorkerAsync(
+              "run-angular",
+              packageKey,
+              argv.options
+            );
+            if (worker.cpuUsage) {
+              workerCpuUsages.push({packageKey, type: worker.workerName, cpuUsage: worker.cpuUsage});
+            }
           }
           else {
-            // > > 빌드
             await this._runClientWatcherAsync(
               packageKey,
               argv.options ? argv.options.split(",").map(item => item.trim()) : undefined
             );
           }
         }
-
       }).then(() => {
-        logger.info("모든 'build'가 완료되었습니다.");
+        logger.info("모든 'compile'가 완료되었습니다.");
       }),
-      // > 패키지별 병렬로,
-      this._parallelPackagesByDepAsync(Object.keys(config.packages), async (packageKey, packageName) => {
+      this._parallelPackagesByDepAsync(packageKeys, async (packageKey, packageName, projectOwnDepPackageNames) => {
         if (config.packages[packageKey].type === "none") {
           return;
         }
 
-        // > > 타입체크 및 ".d"파일 생성
-        const worker = await this._runPackageBuildWorkerAsync("check", packageKey, argv.options, argv.watch);
-        workerCpuUsages.push({packageKey, type: "check", cpuUsage: worker["cpuUsage"]});
+        if (config.packages[packageKey].type !== "library" && config.packages[packageKey].type !== "server") {
+          return;
+        }
+
+        const worker = await this._runWorkerAsync(`${prefix}-check`, packageKey);
+
+        if (worker.cpuUsage) {
+          workerCpuUsages.push({packageKey, type: worker.workerName, cpuUsage: worker.cpuUsage});
+        }
 
         completedDeclarationPackageNames.push(packageName);
       }).then(() => {
         logger.info("모든 'check'가 완료되었습니다.");
+      }),
+      Promise.all(packageKeys.map(async packageKey => {
+        if (config.packages[packageKey].type === "none") {
+          return;
+        }
+
+        const worker = await this._runWorkerAsync(`${prefix}-lint`, packageKey);
+
+        if (worker.cpuUsage) {
+          workerCpuUsages.push({packageKey, type: worker.workerName, cpuUsage: worker.cpuUsage});
+        }
+      })).then(() => {
+        logger.info("모든 'lint'가 완료되었습니다.");
+      }),
+      Promise.all(packageKeys.map(async packageKey => {
+        if (config.packages[packageKey].type !== "library" || config.packages[packageKey].framework !== "angular") {
+          return;
+        }
+
+        const worker = await this._runWorkerAsync(
+          `${prefix}-metadata`,
+          packageKey,
+          config.packages[packageKey].framework === "angular" ? "scss" : undefined
+        );
+
+        if (worker.cpuUsage) {
+          workerCpuUsages.push({packageKey, type: worker.workerName, cpuUsage: worker.cpuUsage});
+        }
+      })).then(() => {
+        logger.info("모든 'metadata'가 완료되었습니다.");
       })
     ]);
 
@@ -199,25 +244,20 @@ export class SdProjectBuilder {
     const maxTypeLength = workerCpuUsages.max(item => item.type.length)!;
     const sumCpuUsage = workerCpuUsages.sum(item => item.cpuUsage)!;
 
-    const groupedByTypeWorkerCpuUsages = workerCpuUsages.groupBy(item => item.type).map(item => ({
-      type: item.key,
-      cpuUsage: item.values.sum(item1 => item1.cpuUsage)!
-    }));
-    const maxGroupedByTypeCpuUsageLength = groupedByTypeWorkerCpuUsages.max(item => item.cpuUsage.toLocaleString().length)!;
-    for (const groupedByTypeWorkerCpuUsage of groupedByTypeWorkerCpuUsages.orderBy(item => item.cpuUsage, true)) {
-      cpuMessage += `${groupedByTypeWorkerCpuUsage.type.padEnd(maxTypeLength)}\t${groupedByTypeWorkerCpuUsage.cpuUsage.toLocaleString().padStart(maxGroupedByTypeCpuUsageLength)}ms\t${(100 * groupedByTypeWorkerCpuUsage.cpuUsage / sumCpuUsage).toFixed(2).padStart(5)}%\n`;
-    }
-    cpuMessage += "------------------------\n";
-
-    const groupedByPackageWorkerCpuUsages = workerCpuUsages.groupBy(item => item.packageKey).map(item => ({
-      packageKey: item.key,
-      cpuUsage: item.values.sum(item1 => item1.cpuUsage)!
-    }));
-    const maxGroupedByPackageCpuUsageLength = groupedByPackageWorkerCpuUsages.max(item => item.cpuUsage.toLocaleString().length)!;
-    for (const groupedByPackageWorkerCpuUsage of groupedByPackageWorkerCpuUsages.orderBy(item => item.cpuUsage, true)) {
-      cpuMessage += `${groupedByPackageWorkerCpuUsage.packageKey.padEnd(maxPackageKeyLength)}\t${groupedByPackageWorkerCpuUsage.cpuUsage.toLocaleString().padStart(maxGroupedByPackageCpuUsageLength)}ms\t${(100 * groupedByPackageWorkerCpuUsage.cpuUsage / sumCpuUsage).toFixed(2).padStart(5)}%\n`;
-    }
-    cpuMessage += "------------------------\n";
+    const appendCpuMessageByGroup = (groupName: "type" | "packageKey") => {
+      const groupedCpuUsages = workerCpuUsages.groupBy(item => item[groupName]).map(item => ({
+        type: item.key,
+        packageKey: item.key,
+        cpuUsage: item.values.sum(item1 => item1.cpuUsage)!
+      }));
+      const maxGroupedCpuUsageLength = groupedCpuUsages.max(item => item.cpuUsage.toLocaleString().length)!;
+      for (const groupedWorkerCpuUsage of groupedCpuUsages.orderBy(item => item.cpuUsage, true)) {
+        cpuMessage += `${groupedWorkerCpuUsage.type.padEnd(maxTypeLength)}\t${groupedWorkerCpuUsage.cpuUsage.toLocaleString().padStart(maxGroupedCpuUsageLength)}ms\t${(100 * groupedWorkerCpuUsage.cpuUsage / sumCpuUsage).toFixed(2).padStart(5)}%\n`;
+      }
+      cpuMessage += "------------------------\n";
+    };
+    appendCpuMessageByGroup("type");
+    appendCpuMessageByGroup("packageKey");
 
     const maxCpuUsageLength = workerCpuUsages.max(item => item.cpuUsage.toLocaleString().length)!;
     for (const workerCpuUsage of workerCpuUsages.orderBy(item => item.cpuUsage, true)) {
@@ -236,7 +276,7 @@ export class SdProjectBuilder {
     const projectNpmConfig = await fs.readJson(projectNpmConfigPath);
 
     // "simplysm.json" 정보 가져오기
-    const config: ISdProjectConfig = await SdCliUtil.getConfigObjAsync(
+    const config: ISdProjectConfig = await SdCliUtils.getConfigObjAsync(
       "production",
       argv.options ? argv.options.split(",").map(item => item.trim()) : undefined
     );
@@ -398,24 +438,24 @@ export class SdProjectBuilder {
     logger.log(`모든 배포가 완료되었습니다. - v${projectNpmConfig.version}`);
   }
 
-  private async _runPackageBuildWorkerAsync(type: string, packageKey: string, options?: string, watch?: boolean): Promise<child_process.ChildProcess> {
-    const logger = new Logger("@simplysm/sd-cli", `[${type}]\t${packageKey}`);
+  private async _runWorkerAsync(workerName: string, packageKey: string, ...args: (string | undefined)[]): Promise<child_process.ChildProcess & { cpuUsage?: number; workerName: string }> {
+    const logger = new Logger("@simplysm/sd-cli", `[${workerName}] ${packageKey}`);
 
     let hasError = false;
     const wk = await new Promise<child_process.ChildProcess>((resolve, reject) => {
       const execArgv = Object.clone(process.execArgv);
       if (execArgv.some(item => item.startsWith("--logfile"))) {
         const index = execArgv.indexOf(execArgv.single(item => item.startsWith("--logfile"))!);
-        execArgv[index] = `--logfile=profiling/${type}-${packageKey}.log`;
+        execArgv[index] = `--logfile=profiling/${workerName}-${packageKey}.log`;
       }
 
       const worker = child_process.fork(
-        eval(`require.resolve("./package-build-worker")`), //tslint:disable-line:no-eval
-        [type, packageKey, watch ? "watch" : "build", ...(options ? [options] : [])],
+        require.resolve(`./workers/${workerName}`),
+        [packageKey, ...args.filterExists()],
         {
           stdio: ["inherit", "inherit", "inherit", "ipc"],
           cwd: process.cwd(),
-          execArgv: [...execArgv, "--max-old-space-size=2048"]
+          execArgv: [...execArgv]
         }
       );
 
@@ -445,27 +485,28 @@ export class SdProjectBuilder {
               break;
             default:
               logger.error(`처리되지 않은 메시지가 출력되었습니다.(${message.type})`);
-              reject(new Error(`처리되지 않은 메시지가 출력되었습니다.(${type}, ${packageKey}, ${message.type})`));
+              reject(new Error(`처리되지 않은 메시지가 출력되었습니다.(${workerName}, ${packageKey}, ${message.type})`));
           }
         }
         catch (err) {
-          err.message += `(${type}, ${packageKey})`;
+          err.message += `(${workerName}, ${packageKey})`;
           reject(err);
         }
       });
     });
 
     if (hasError) {
-      throw new Error(`오류가 발생했습니다.(${type}, ${packageKey})`);
+      throw new Error(`오류가 발생했습니다.(${workerName}, ${packageKey})`);
     }
 
-    return wk;
+    wk["workerName"] = workerName;
+    return wk as any;
   }
 
   private async _runClientWatcherAsync(packageKey: string, options?: string[]): Promise<void> {
     const logger = new Logger("@simplysm/sd-cli", `[client]\t${packageKey}`);
 
-    const config: ISdProjectConfig = await SdCliUtil.getConfigObjAsync("development", options);
+    const config: ISdProjectConfig = await SdCliUtils.getConfigObjAsync("development", options);
     const packageConfig = config.packages[packageKey];
     if (!packageConfig.server) {
       throw new Error(`서버 패키지가 설정되어있지 않습니다. (client, ${packageKey})`);
@@ -478,7 +519,7 @@ export class SdProjectBuilder {
     const middlewares = await new Promise<NextHandleFunction[]>(async (resolve, reject) => {
       try {
         let startDateTime: DateTime | undefined;
-        const builder = new SdPackageCompiler(packageKey, options);
+        const builder = new SdAngularCompiler(packageKey, options);
         builder
           .on("run", () => {
             startDateTime = new DateTime();
@@ -527,7 +568,7 @@ export class SdProjectBuilder {
     }, {spaces: 2, EOL: os.EOL});
 
     await FileWatcher.watch(path.resolve(process.cwd(), "simplysm.json"), ["change"], async () => {
-      const currConfig: ISdProjectConfig = await SdCliUtil.getConfigObjAsync("development", options);
+      const currConfig: ISdProjectConfig = await SdCliUtils.getConfigObjAsync("development", options);
       const currPackageConfig = currConfig.packages[packageKey];
 
       if (!Object.equal(currPackageConfig.configs, packageConfig.configs)) {

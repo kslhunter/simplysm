@@ -13,7 +13,8 @@ import {
   OnInit,
   Output,
   TemplateRef,
-  ViewChild
+  ViewChild,
+  ViewEncapsulation
 } from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {SdDropdownControl} from "../dropdown/SdDropdownControl";
@@ -22,6 +23,7 @@ import {JsonConvert} from "@simplysm/sd-core";
 @Component({
   selector: "sd-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <sd-dropdown #dropdown [disabled]="disabled">
       <div class="_sd-select-content"></div>
@@ -62,7 +64,64 @@ import {JsonConvert} from "@simplysm/sd-core";
           </sd-dock-container>
         </ng-container>
       </sd-dropdown-popup>
-    </sd-dropdown>`
+    </sd-dropdown>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-select {
+      display: block;
+      width: 100%;
+
+      > sd-dropdown > div {
+        @include form-control-base();
+
+        background: var(--theme-secondary-lightest);
+        display: block;
+        overflow: visible;
+        padding-right: 30px !important;
+        height: 30px; //calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip) + 2);
+
+        border-color: var(--trans-color-default);
+        transition: outline-color .1s linear;
+        outline: 1px solid transparent;
+        outline-offset: -1px;
+        cursor: pointer;
+
+        > div:first-child {
+          overflow: hidden;
+          white-space: nowrap;
+        }
+
+        > ._icon {
+          position: absolute;
+          top: -1px;
+          right: -1px;
+          padding: var(--gap-sm) 0;
+          width: 30px;
+          text-align: center;
+          pointer-events: none;
+        }
+
+        &:focus {
+          outline-color: var(--theme-primary-default);
+        }
+      }
+
+      &[sd-disabled=true] > sd-dropdown > div {
+        background: var(--theme-grey-lightest);
+        color: var(--text-color-light);
+        cursor: default;
+      }
+
+      &[sd-invalid=true] > sd-dropdown > div > ._invalid-indicator {
+        @include invalid-indicator();
+      }
+    }
+
+    ._sd-select-item > ._children {
+      border-left: var(--gap-xl) solid var(--theme-secondary-lightest);
+    }
+  `]
 })
 export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
   @Input()

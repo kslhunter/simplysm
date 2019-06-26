@@ -2,6 +2,7 @@ import {NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {SdSharedModule} from "../shared/SdSharedModule";
 import {SdDockModule} from "../dock/SdDockModule";
+import {SdPaneModule} from "../pane/SdPaneModule";
 import {SdTabviewControl} from "./SdTabviewControl";
 import {SdTabviewItemControl} from "./SdTabviewItemControl";
 import {SdTabControl} from "./SdTabControl";
@@ -11,7 +12,8 @@ import {SdTabItemControl} from "./SdTabItemControl";
   imports: [
     CommonModule,
     SdSharedModule,
-    SdDockModule
+    SdDockModule,
+    SdPaneModule
   ],
   exports: [
     SdTabviewControl,

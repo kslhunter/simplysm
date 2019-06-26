@@ -1,14 +1,144 @@
-import {AfterContentChecked, ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input} from "@angular/core";
+import {
+  AfterContentChecked,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostBinding,
+  Input,
+  ViewEncapsulation
+} from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 
 @Component({
   selector: "sd-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <button [type]="type" [disabled]="disabled">
       <ng-content></ng-content>
     </button>
-    <div class="_invalid-indicator"></div>`
+    <div class="_invalid-indicator"></div>`,
+  styles: [/* language=SCSS */ `
+    @import "../../../scss/presets";
+
+    sd-button {
+      display: block;
+      position: relative;
+
+      > button {
+        @include form-control-base();
+
+        font-weight: bold;
+        background: white;
+        cursor: pointer;
+        color: var(--theme-primary-default);
+        border-radius: 3px;
+
+        &:hover {
+          background: var(--theme-grey-lightest);
+        }
+
+        &:focus {
+          outline-color: transparent;
+          background: var(--theme-grey-lightest);
+        }
+
+        &:active {
+          background: var(--theme-grey-lighter);
+        }
+
+        &:disabled {
+          background: transparent;
+          cursor: default;
+          color: var(--text-color-default);
+        }
+      }
+
+      @each $color in $arr-theme-color {
+        &[sd-theme=#{$color}] > button {
+          background: var(--theme-#{$color}-default);
+          border-color: var(--theme-#{$color}-default);
+          color: var(--text-reverse-color-default);
+
+          &:hover,
+          &:focus {
+            background: var(--theme-#{$color}-dark);
+            border-color: var(--theme-#{$color}-dark);
+          }
+
+          &:active {
+            background: var(--theme-#{$color}-darker);
+            border-color: var(--theme-#{$color}-darker);
+          }
+
+          &:disabled {
+            background: var(--theme-grey-default);
+            border-color: var(--theme-grey-default);
+            cursor: default;
+          }
+        }
+      }
+
+      &[sd-size=sm] > button {
+        padding: var(--gap-xs) var(--gap-sm);
+      }
+
+      &[sd-size=lg] > button {
+        padding: var(--gap-default) var(--gap-lg);
+      }
+
+      &[sd-inline=true] {
+        display: inline-block;
+
+        > button {
+          width: 100%;
+        }
+      }
+
+      &[sd-invalid=true] > ._invalid-indicator {
+        @include invalid-indicator();
+      }
+
+      &[sd-inset=true] {
+        > button {
+          border: none !important;
+          box-shadow: none !important;
+          border-radius: 0;
+          color: var(--theme-primary-default);
+
+          &:hover {
+            background: var(--theme-grey-lightest);
+          }
+
+          &:active {
+            background: var(--theme-grey-lighter);
+          }
+
+          &:disabled {
+            background: transparent;
+          }
+        }
+
+        @each $color in $arr-theme-color {
+          &[sd-theme=#{$color}] > button {
+            background: var(--theme-#{$color}-default);
+
+            &:hover {
+              background: var(--theme-#{$color}-dark);
+            }
+
+            &:active {
+              background: var(--theme-#{$color}-darker);
+            }
+
+            &:disabled {
+              background: var(--theme-grey-default);
+            }
+          }
+        }
+      }
+    }
+  `]
 })
 export class SdButtonControl implements AfterContentChecked {
   @Input()

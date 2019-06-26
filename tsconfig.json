@@ -9,7 +9,6 @@
     "removeComments": true,
     "noUnusedLocals": true,
     "importHelpers": true,
-    "skipLibCheck": false,
     "plugins": [
       {
         "name": "typescript-tslint-plugin"

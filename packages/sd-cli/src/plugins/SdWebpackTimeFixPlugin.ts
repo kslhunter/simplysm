@@ -1,6 +1,6 @@
 import * as webpack from "webpack";
 
-export class SdWebpackTimeFixPlugin {
+export class SdWebpackTimeFixPlugin implements webpack.Plugin {
   public constructor(private readonly _watchOffset: number = 11000) {
   }
 
