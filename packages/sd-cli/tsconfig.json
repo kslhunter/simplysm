@@ -27,10 +27,7 @@
   },
   "files": [
     "src/bin.ts",
-    "src/sdc.ts",
-    "src/package-build-worker.ts",
-    "src/inline-sass-loader.ts",
-    "src/ts-build-loader.ts",
+    "src/workers/run-angular.ts",
     "src/workers/run-check.ts",
     "src/workers/run-compile.ts",
     "src/workers/run-lint.ts",
