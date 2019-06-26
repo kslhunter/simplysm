@@ -3,9 +3,11 @@ import * as path from "path";
 import {SdWorkerUtils} from "../commons/SdWorkerUtils";
 import * as fs from "fs-extra";
 import {SdTypescriptUtils} from "../commons/SdTypescriptUtils";
+import {SdCliUtils} from "../commons/SdCliUtils";
 
 const packageKey = process.argv[2];
-const useScss = process.argv.slice(3).includes("scss");
+const opts = process.argv[3] ? process.argv[3].split(",").map(item => item.trim()) : undefined;
+const useScss = process.argv.slice(4).includes("scss");
 
 const contextPath = path.resolve(process.cwd(), "packages", packageKey);
 const parsedTsConfig = SdTypescriptUtils.getParsedConfig(contextPath);
@@ -56,3 +58,6 @@ SdTypescriptUtils.watch(
     SdWorkerUtils.sendMessage({type: "done"});
   }
 );
+
+const config = SdCliUtils.getConfigObj("development", opts).packages[packageKey];
+fs.writeFileSync(path.resolve(parsedTsConfig.options.outDir!, ".configs.json"), JSON.stringify({env: "development", ...config.configs}, undefined, 2));

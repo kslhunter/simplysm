@@ -4,9 +4,12 @@ import * as ts from "typescript";
 import {SdWorkerUtils} from "../commons/SdWorkerUtils";
 import * as os from "os";
 import {SdTypescriptUtils} from "../commons/SdTypescriptUtils";
+import * as fs from "fs-extra";
+import {SdCliUtils} from "../commons/SdCliUtils";
 
 const packageKey = process.argv[2];
-const useScss = process.argv.slice(3).includes("scss");
+const opts = process.argv[3] ? process.argv[3].split(",").map(item => item.trim()) : undefined;
+const useScss = process.argv.slice(4).includes("scss");
 
 const contextPath = path.resolve(process.cwd(), "packages", packageKey);
 const parsedTsConfig = SdTypescriptUtils.getParsedConfig(contextPath);
@@ -38,5 +41,8 @@ const messages = diagnostics.map(item => SdTypescriptUtils.diagnosticToMessage(i
 if (messages.length > 0) {
   SdWorkerUtils.sendMessage({type: "error", message: messages.distinct().join(os.EOL)});
 }
+
+const config = SdCliUtils.getConfigObj("production", opts).packages[packageKey];
+fs.writeFileSync(path.resolve(parsedTsConfig.options.outDir!, ".configs.json"), JSON.stringify({env: "production", ...config.configs}, undefined, 2));
 
 SdWorkerUtils.sendMessage({type: "done"});

@@ -23,7 +23,7 @@ export class SdProjectBuilder {
     logger.log(watch ? `변경감지를 시작합니다.` : `업데이트를 시작합니다.`);
 
     // "simplysm.json" 정보 가져오기
-    const config: ISdProjectConfig = await SdCliUtils.getConfigObjAsync("development");
+    const config: ISdProjectConfig = SdCliUtils.getConfigObj("development");
 
     // 옵션체크
     if (!config.localUpdates) {
@@ -93,7 +93,7 @@ export class SdProjectBuilder {
     const logger = new Logger("@simplysm/sd-cli");
 
     // "simplysm.json" 정보 가져오기
-    const config: ISdProjectConfig = await SdCliUtils.getConfigObjAsync(
+    const config: ISdProjectConfig = SdCliUtils.getConfigObj(
       argv.watch ? "development" : "production",
       argv.options ? argv.options.split(",").map(item => item.trim()) : undefined
     );
@@ -276,7 +276,7 @@ export class SdProjectBuilder {
     const projectNpmConfig = await fs.readJson(projectNpmConfigPath);
 
     // "simplysm.json" 정보 가져오기
-    const config: ISdProjectConfig = await SdCliUtils.getConfigObjAsync(
+    const config: ISdProjectConfig = SdCliUtils.getConfigObj(
       "production",
       argv.options ? argv.options.split(",").map(item => item.trim()) : undefined
     );
@@ -506,7 +506,7 @@ export class SdProjectBuilder {
   private async _runClientWatcherAsync(packageKey: string, options?: string[]): Promise<void> {
     const logger = new Logger("@simplysm/sd-cli", `[client]\t${packageKey}`);
 
-    const config: ISdProjectConfig = await SdCliUtils.getConfigObjAsync("development", options);
+    const config: ISdProjectConfig = SdCliUtils.getConfigObj("development", options);
     const packageConfig = config.packages[packageKey];
     if (!packageConfig.server) {
       throw new Error(`서버 패키지가 설정되어있지 않습니다. (client, ${packageKey})`);
@@ -568,7 +568,7 @@ export class SdProjectBuilder {
     }, {spaces: 2, EOL: os.EOL});
 
     await FileWatcher.watch(path.resolve(process.cwd(), "simplysm.json"), ["change"], async () => {
-      const currConfig: ISdProjectConfig = await SdCliUtils.getConfigObjAsync("development", options);
+      const currConfig: ISdProjectConfig = SdCliUtils.getConfigObj("development", options);
       const currPackageConfig = currConfig.packages[packageKey];
 
       if (!Object.equal(currPackageConfig.configs, packageConfig.configs)) {

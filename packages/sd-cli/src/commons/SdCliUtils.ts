@@ -3,8 +3,8 @@ import * as fs from "fs-extra";
 import * as path from "path";
 
 export class SdCliUtils {
-  public static async getConfigObjAsync(env: "development" | "production", opts?: string[]): Promise<ISdProjectConfig> {
-    const config = await fs.readJson(path.resolve(process.cwd(), "simplysm.json"));
+  public static getConfigObj(env: "development" | "production", opts?: string[]): ISdProjectConfig {
+    const config = fs.readJsonSync(path.resolve(process.cwd(), "simplysm.json"));
     for (const packageKey of Object.keys(config.packages)) {
       // extends 처리
       if (config.packages[packageKey].extends) {

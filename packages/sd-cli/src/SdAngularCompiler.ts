@@ -290,7 +290,7 @@ export class SdAngularCompiler extends events.EventEmitter {
       throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
     }
 
-    const projectConfig = await SdCliUtils.getConfigObjAsync("production", this._options);
+    const projectConfig = SdCliUtils.getConfigObj("production", this._options);
     const config = projectConfig.packages[this._packageKey];
 
     const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
@@ -466,7 +466,7 @@ export class SdAngularCompiler extends events.EventEmitter {
             {
               path: path.resolve(this._distPath, ".configs.json"),
               content: async () => {
-                const currProjectConfig = await SdCliUtils.getConfigObjAsync("development", this._options);
+                const currProjectConfig = SdCliUtils.getConfigObj("development", this._options);
                 const currConfig = currProjectConfig.packages[this._packageKey];
                 return JSON.stringify({env: "development", ...currConfig.configs}, undefined, 2);
               }
