@@ -156,21 +156,16 @@ export class SdAngularCompiler extends events.EventEmitter {
       module: {
         rules: [
           {
-            test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
-            parser: {system: true}
-          },
-          {
             test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
             loaders
+          },
+          {
+            test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
+            parser: {system: true}
           }
         ]
       },
       plugins: [
-        new webpack.ContextReplacementPlugin(
-          /angular[\\/]core[\\/]fesm5/,
-          path.resolve(this._contextPath, "src"),
-          {}
-        ),
         new AngularCompilerPlugin({
           mainPath,
           platform: PLATFORM.Browser,
@@ -187,15 +182,19 @@ export class SdAngularCompiler extends events.EventEmitter {
             rootDir: undefined,
             declaration: false,
             removeComments: true,
-            disableTypeScriptVersionCheck: true,
-            skipLibCheck: true,
+            skipLibCheck: false,
             skipTemplateCodegen: false,
             strictMetadataEmit: true,
             fullTemplateTypeCheck: true,
             strictInjectionParameters: true,
             enableResourceInlining: true
           }
-        })
+        }),
+        new webpack.ContextReplacementPlugin(
+          /angular[\\/]core[\\/]fesm5/,
+          this._parsedTsConfig.options.rootDir!,
+          {}
+        )
       ]
     };
   }
