@@ -152,6 +152,7 @@ export class SdProjectBuilder {
           const worker = await this._runWorkerAsync(
             `${prefix}-compile`,
             packageKey,
+            argv.options,
             config.packages[packageKey].framework === "angular" ? "scss" : undefined
           );
 
