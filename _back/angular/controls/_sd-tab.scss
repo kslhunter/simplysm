@@ -1,0 +1,26 @@
+sd-tab {
+  display: block;
+  background: get($theme-color, grey, lightest);
+  border-bottom: 2px solid get($theme-color, grey, lighter);
+  padding-left: get($gap, default);
+  padding-top: 1px;
+}
+
+sd-tab-item {
+  display: inline-block;
+  padding: get($gap, sm) get($gap, default);
+  cursor: pointer;
+  border-top: 2px solid transparent;
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
+  margin-bottom: -2px;
+
+  &:hover {
+    background: rgba(0, 0, 0, .05);
+  }
+
+  &[sd-selected=true] {
+    background: white;
+    border-color: get($theme-color, grey, lighter);
+  }
+}

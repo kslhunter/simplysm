@@ -1,0 +1,139 @@
+sd-list {
+  display: block;
+  user-select: none;
+  background: white;
+}
+
+sd-list-item {
+  display: block;
+
+  > ._content {
+    display: flex;
+    border-top: 1px solid transparent;
+
+    > label {
+      display: block;
+      width: 100%;
+      padding: get($gap, sm) get($gap, default);
+      background: white;
+
+      > ._angle-icon {
+        float: right;
+        transition: transform .1s ease-in;
+        color: get($text-color, light);
+      }
+
+      &:focus {
+        outline-color: transparent;
+      }
+    }
+  }
+
+  > ._child {
+    overflow: hidden;
+
+    > ._child-content {
+      transition: margin-top .1s ease-out;
+      background: rgba(0, 0, 0, .05);
+
+      > sd-list {
+        padding: get($gap, sm) 0 get($gap, default) 0;
+      }
+    }
+  }
+
+  &[sd-has-children=true] {
+    > ._content {
+      border-color: white;
+    }
+  }
+
+  &[sd-clickable=true] {
+    > ._content {
+      > label {
+        cursor: pointer;
+        transition: background .1s ease-in;
+
+        &:hover {
+          transition: background .1s ease-out;
+          background: rgba(0, 0, 0, .07);
+        }
+      }
+    }
+  }
+
+  &[sd-open=true] {
+    > ._content {
+      > label {
+        > ._angle-icon {
+          transform: rotate(90deg);
+          transition: transform .1s ease-out;
+        }
+      }
+    }
+
+    > ._child > ._child-content {
+      transition: margin-top .1s ease-in;
+    }
+  }
+
+  &[sd-size=sm] > ._content > label {
+    font-size: get($font-size, sm);
+    padding: get($gap, xs) get($gap, sm);
+  }
+
+  &[sd-size=lg] > ._content > label {
+    padding: get($gap, default) get($gap, lg);
+  }
+
+  &[sd-selected=true] > ._content > label {
+    color: get($theme-color, primary, default);
+    font-weight: bold;
+  }
+
+  &[sd-disabled=true] {
+    pointer-events: none;
+
+    > ._content > label {
+      color: get($text-color, lighter);
+      cursor: default;
+    }
+  }
+
+  &[sd-header=true] {
+    > ._content > label {
+      cursor: default;
+      background: transparent;
+      color: get($text-color, light);
+      font-size: get($font-size, sm);
+      font-weight: lighter;
+
+      &:hover {
+        background: transparent !important;
+      }
+
+      > ._angle-icon {
+        display: none;
+      }
+    }
+
+    > ._child > ._child-content {
+      margin-top: 0 !important;
+      background: transparent !important;
+    }
+  }
+}
+
+sd-list-item-button {
+  display: block;
+  min-width: floor(get($gap, sm) * 2 + strip-unit($line-height) * get($font-size, default));
+  text-align: center;
+  padding: get($gap, sm) get($gap, default);
+  background: transparent;
+  color: get($theme-color, primary, default);
+
+  &:hover {
+    background: rgba(0, 0, 0, .07);
+    cursor: pointer;
+  }
+}

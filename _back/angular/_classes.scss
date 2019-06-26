@@ -1,0 +1,144 @@
+@each $key, $val in $theme-color {
+  @each $key1, $val1 in $val {
+    .sd-background-#{$key}-#{$key1} {
+      background: $val1 !important;
+    }
+  }
+}
+
+@each $key, $val in $trans-color {
+  .sd-background-trans-#{$key} {
+    background: $val;
+  }
+}
+
+.sd-background-white {
+  background: white !important;
+}
+
+.sd-background-default {
+  background: $bg-color !important;
+}
+
+@each $key, $val in $font-size {
+  .sd-font-size-#{$key} {
+    font-size: $val !important;
+  }
+}
+
+@each $key, $val in $text-color {
+  .sd-text-color-#{$key} {
+    color: $val !important;
+  }
+}
+
+@each $key, $val in $text-reverse-color {
+  .sd-text-reverse-color-#{$key} {
+    color: $val !important;
+  }
+}
+
+@each $key, $val in $theme-color {
+  @each $key1, $val1 in $val {
+    .sd-text-color-#{$key}-#{$key1} {
+      color: $val1 !important;
+    }
+  }
+}
+
+
+@each $direction in top, right, bottom, left {
+  @each $key, $val in $theme-color {
+    @each $key1, $val1 in $val {
+      .sd-border-#{$direction}-#{$key}-#{$key1} {
+        border-#{$direction}: 1px solid $val1;
+      }
+    }
+  }
+
+  @each $key, $val in $trans-color {
+    .sd-border-#{$direction}-#{$key} {
+      border-#{$direction}: 1px solid $val;
+    }
+  }
+
+  .sd-border-#{$direction}-none {
+    border-#{$direction}: none !important;
+  }
+}
+
+@each $key, $val in $theme-color {
+  @each $key1, $val1 in $val {
+    .sd-border-#{$key}-#{$key1} {
+      border: 1px solid $val1;
+    }
+  }
+}
+
+@each $key, $val in $trans-color {
+  .sd-border-#{$key} {
+    border: 1px solid $val;
+  }
+}
+
+.sd-border-none {
+  border: none !important;
+}
+
+@each $key, $val in map_merge($gap, (0: 0)) {
+  .sd-padding-#{$key} {
+    padding: $val;
+  }
+
+  .sd-margin-#{$key} {
+    margin: $val;
+  }
+
+  @each $direction in top, right, bottom, left {
+    .sd-padding-#{$direction}-#{$key} {
+      padding-#{$direction}: $val;
+    }
+
+    .sd-margin-#{$direction}-#{$key} {
+      margin-#{$direction}: $val;
+    }
+  }
+
+  @each $key1, $val1 in map_merge($gap, (0: 0)) {
+    .sd-padding-#{$key}-#{$key1} {
+      padding: $val $val1;
+    }
+
+    .sd-margin-#{$key}-#{$key1} {
+      margin: $val $val1;
+    }
+  }
+}
+
+@each $key, $val in map_merge($gap, (0: 0)) {
+  .sd-padding-v-#{$key} {
+    padding-top: $val;
+    padding-bottom: $val;
+  }
+
+  .sd-padding-h-#{$key} {
+    padding-left: $val;
+    padding-right: $val;
+  }
+
+  .sd-margin-v-#{$key} {
+    margin-top: $val;
+    margin-bottom: $val;
+  }
+
+  .sd-margin-h-#{$key} {
+    margin-left: $val;
+    margin-right: $val;
+  }
+}
+
+@each $direction in left, center, right {
+  .sd-text-align-#{$direction} {
+    text-align: $direction;
+  }
+}

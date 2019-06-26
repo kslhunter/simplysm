@@ -1,0 +1,12 @@
+sd-view {
+  display: block;
+  background: white;
+}
+
+sd-view-item {
+  display: none;
+
+  &[sd-selected=true] {
+    display: block;
+  }
+}

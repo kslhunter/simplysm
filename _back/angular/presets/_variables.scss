@@ -1,0 +1,68 @@
+$theme-color-pallet: (
+  grey: $color-grey,
+  bluegrey: $color-bluegrey,
+  primary: $color-deep-purple,
+  secondary: $color-blue,
+  info: $color-blue,
+  success: $color-green,
+  warning: $color-orange,
+  danger: $color-red
+) !default;
+
+$trans-color: (
+  darkest: rgba(0, 0, 0, .5),
+  darker: rgba(0, 0, 0, .4),
+  dark: rgba(0, 0, 0, .3),
+  default: rgba(0, 0, 0, .2),
+  light: rgba(255, 255, 255, .1),
+  lighter: rgba(255, 255, 255, .2)
+) !default;
+
+$text-color: (
+  dark: black,
+  default: rgba(0, 0, 0, .87),
+  light: rgba(0, 0, 0, .60),
+  lighter: rgba(0, 0, 0, .38)
+) !default;
+
+$text-reverse-color: (
+  default: white,
+  dark: rgba(255, 255, 255, .7),
+  darker: rgba(255, 255, 255, .5)
+) !default;
+
+$gap: (
+  xxs: 1px,
+  xs: 2px,
+  sm: 4px,
+  default: 6px,
+  lg: 8px,
+  xl: 12px,
+  xxl: 18px
+) !default;
+
+$font-size: (
+  lg: 14px,
+  default: 12px,
+  sm: 11px,
+  h1: 24px,
+  h2: 18px,
+  h3: 16px,
+  h4: 14px,
+  h5: 12px,
+  h6: 11px
+) !default;
+
+$font-family: '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif !default;
+$font-family-monospace: monospace !default;
+$line-height: 1.5em !default;
+
+$z-index-toast: 9999 !default;
+$z-index-busy: 9998 !default;
+$z-index-dropdown: 5000 !default;
+$z-index-modal: 4000 !default;
+$z-index-fullscreen: 3000 !default;
+$z-index-sidebar: 2100 !default;
+$z-index-topbar: 2000 !default;
+
+$screen-mobile: "screen and (max-width : 520px)" !default;

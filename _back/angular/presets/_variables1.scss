@@ -1,0 +1,74 @@
+$theme-color: (
+  grey: (
+    lightest: get($theme-color-pallet, grey, 100),
+    lighter: get($theme-color-pallet, grey, 300),
+    light: get($theme-color-pallet, grey, 400),
+    default: get($theme-color-pallet, grey, 500),
+    dark: get($theme-color-pallet, grey, 600),
+    darker: get($theme-color-pallet, grey, 700),
+    darkest: get($theme-color-pallet, grey, 800)
+  ),
+  bluegrey: (
+    lightest: get($theme-color-pallet, bluegrey, 200),
+    lighter: get($theme-color-pallet, bluegrey, 300),
+    light: get($theme-color-pallet, bluegrey, 400),
+    default: get($theme-color-pallet, bluegrey, 500),
+    dark: get($theme-color-pallet, bluegrey, 600),
+    darker: get($theme-color-pallet, bluegrey, 800),
+    darkest: get($theme-color-pallet, bluegrey, 900)
+  ),
+  primary: (
+    lightest: get($theme-color-pallet, primary, 50),
+    lighter: get($theme-color-pallet, primary, 100),
+    light: get($theme-color-pallet, primary, 200),
+    default: get($theme-color-pallet, primary, 500),
+    dark: get($theme-color-pallet, primary, 600),
+    darker: get($theme-color-pallet, primary, 700),
+    darkest: get($theme-color-pallet, primary, 800)
+  ),
+  secondary: (
+    lightest: get($theme-color-pallet, secondary, 50),
+    lighter: get($theme-color-pallet, secondary, 100),
+    light: get($theme-color-pallet, secondary, 200),
+    default: get($theme-color-pallet, secondary, 500),
+    dark: get($theme-color-pallet, secondary, 600),
+    darker: get($theme-color-pallet, secondary, 700),
+    darkest: get($theme-color-pallet, secondary, 800)
+  ),
+  info: (
+    lightest: get($theme-color-pallet, info, 50),
+    lighter: get($theme-color-pallet, info, 100),
+    light: get($theme-color-pallet, info, 200),
+    default: get($theme-color-pallet, info, 500),
+    dark: get($theme-color-pallet, info, 600),
+    darker: get($theme-color-pallet, info, 700),
+    darkest: get($theme-color-pallet, info, 800)
+  ),
+  success: (
+    lightest: get($theme-color-pallet, success, 50),
+    lighter: get($theme-color-pallet, success, 100),
+    light: get($theme-color-pallet, success, 300),
+    default: get($theme-color-pallet, success, 500),
+    dark: get($theme-color-pallet, success, 600),
+    darker: get($theme-color-pallet, success, 700),
+    darkest: get($theme-color-pallet, success, 800)
+  ),
+  warning: (
+    lightest: get($theme-color-pallet, warning, 50),
+    lighter: get($theme-color-pallet, warning, 100),
+    light: get($theme-color-pallet, warning, 200),
+    default: get($theme-color-pallet, warning, 600),
+    dark: get($theme-color-pallet, warning, 700),
+    darker: get($theme-color-pallet, warning, 800),
+    darkest: get($theme-color-pallet, warning, 900)
+  ),
+  danger: (
+    lightest: get($theme-color-pallet, danger, 50),
+    lighter: get($theme-color-pallet, danger, 100),
+    light: get($theme-color-pallet, danger, 200),
+    default: get($theme-color-pallet, danger, 500),
+    dark: get($theme-color-pallet, danger, 700),
+    darker: get($theme-color-pallet, danger, 800),
+    darkest: get($theme-color-pallet, danger, 900)
+  )
+) !default;

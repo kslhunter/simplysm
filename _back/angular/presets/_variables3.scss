@@ -1,0 +1,1 @@
+$sheet-row-height: floor($sheet-padding-v * 2 + strip-unit($line-height) * get($font-size, default)) !default;

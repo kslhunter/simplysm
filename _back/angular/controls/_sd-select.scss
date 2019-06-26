@@ -1,0 +1,79 @@
+sd-select {
+  display: block;
+  width: 100%;
+
+  > sd-dropdown > div {
+    @include form-control-base();
+
+    background: get($theme-color, secondary, lightest);
+    display: block;
+    overflow: visible;
+    padding-right: 30px !important;
+    height: get($gap, sm) * 2 + strip-unit($line-height) * get($font-size, default) + 2;
+
+    border-color: get($trans-color, default);
+    transition: outline-color .1s linear;
+    outline: 1px solid transparent;
+    outline-offset: -1px;
+    cursor: pointer;
+
+    > div:first-child {
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    > ._icon {
+      position: absolute;
+      top: -1px;
+      right: -1px;
+      padding: get($gap, sm) 0;
+      width: 30px;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    &:focus {
+      outline-color: get($theme-color, primary, default);
+    }
+  }
+
+  &[sd-disabled=true] > sd-dropdown > div {
+    background: get($theme-color, grey, lightest);
+    color: get($text-color, light);
+    cursor: default;
+  }
+
+  &[sd-invalid=true] > sd-dropdown > div > ._invalid-indicator {
+    @include invalid-indicator();
+  }
+}
+
+sd-select-item {
+  display: block;
+  padding: get($gap, sm) get($gap, default);
+  cursor: pointer;
+  transition: background .1s ease-in;
+  background: white;
+
+  &:hover {
+    transition: background .1s ease-out;
+    background: rgba(0, 0, 0, .07);
+  }
+
+  &:focus {
+    outline: none;
+    transition: background .1s ease-out;
+    background: rgba(0, 0, 0, .07);
+  }
+
+  &._selected {
+    color: get($theme-color, primary, default);
+    font-weight: bold;
+    background: rgba(0, 0, 0, .07);
+  }
+}
+
+
+._sd-select-item > ._children {
+  border-left: get($gap, xl) solid get($theme-color, secondary, lightest);
+}
