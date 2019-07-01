@@ -6,6 +6,7 @@
     "lib": [
       "es2018"
     ],
+    "declaration": false,
     "baseUrl": ".",
     "paths": {
       "tslint": [
@@ -27,6 +28,7 @@
   },
   "files": [
     "src/bin.ts",
+    "src/inline-sass-dependency-loader.ts",
     "src/workers/run-angular.ts",
     "src/workers/run-check.ts",
     "src/workers/run-compile.ts",

@@ -97,7 +97,6 @@ hr {
 }
 
 
-
 @each $color in $arr-theme-color {
   @each $brightness in $arr-theme-brightness {
     .sd-background-#{$color}-#{$brightness} {
@@ -237,7 +236,7 @@ hr {
   }
 }
 
-@each $direction in $arr-direction {
+@each $direction in left, right, center {
   .sd-text-align-#{$direction} {
     text-align: $direction;
   }

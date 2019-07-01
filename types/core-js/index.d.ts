@@ -48,3 +48,7 @@ declare namespace Reflect {
     (target: Object, targetKey: string | symbol): void;
   };
 }
+
+declare module "core-js/proposals/reflect-metadata" {
+  export = Reflect;
+}

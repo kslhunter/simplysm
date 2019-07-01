@@ -10,11 +10,9 @@ import {Stats} from "fs";
 import {Observable, throwError} from "rxjs";
 import {map} from "rxjs/operators";
 import {InputFileSystem} from "webpack";
-import {SdTypescriptUtils} from "./SdTypescriptUtils";
+import {SdTypescriptBuilder} from "../SdTypescriptBuilder";
 
-// Host is used instead of ReadonlyHost due to most decorators only supporting Hosts
 export class SdWebpackInputHostWithScss implements virtualFs.Host<Stats> {
-
   public constructor(public readonly inputFileSystem: InputFileSystem) {
   }
 
@@ -41,7 +39,7 @@ export class SdWebpackInputHostWithScss implements virtualFs.Host<Stats> {
         let data = this.inputFileSystem.readFileSync(filePath);
         if (filePath.match(/\.ts$/) && !filePath.match(/\.d\.ts$/)) {
           data = Buffer.from(
-            SdTypescriptUtils.compileScss(filePath, data.toString(), false)
+            SdTypescriptBuilder.convertScssToCss(filePath, data.toString()).content
           );
         }
         obs.next(new Uint8Array(data).buffer as ArrayBuffer);

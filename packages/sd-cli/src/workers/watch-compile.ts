@@ -1,63 +1,38 @@
-import * as ts from "typescript";
+import {SdTypescriptBuilder} from "../SdTypescriptBuilder";
 import * as path from "path";
+import * as os from "os";
 import {SdWorkerUtils} from "../commons/SdWorkerUtils";
-import * as fs from "fs-extra";
-import {SdTypescriptUtils} from "../commons/SdTypescriptUtils";
 import {SdCliUtils} from "../commons/SdCliUtils";
+import * as fs from "fs-extra";
 
 const packageKey = process.argv[2];
 const opts = process.argv[3] ? process.argv[3].split(",").map(item => item.trim()) : undefined;
-const useScss = process.argv.slice(4).includes("scss");
 
 const contextPath = path.resolve(process.cwd(), "packages", packageKey);
-const parsedTsConfig = SdTypescriptUtils.getParsedConfig(contextPath);
+const tsConfigPath = path.resolve(contextPath, "tsconfig.build.json");
 
-const options = parsedTsConfig.options;
+SdWorkerUtils.sendMessage({type: "run"});
 
-SdTypescriptUtils.watch(
-  contextPath,
-  parsedTsConfig.fileNames,
-  options,
-  false,
-  (program, changedInfos) => {
-    const diagnostics: ts.Diagnostic[] = [];
-    for (const changedInfo of changedInfos) {
-      if (changedInfo.type === "unlink") {
-        const relativePath = path.relative(parsedTsConfig.options.rootDir!, changedInfo.filePath);
-        const outPath = path.resolve(parsedTsConfig.options.outDir!, relativePath).replace(/\.ts$/, ".js");
-        fs.removeSync(outPath);
-      }
-      else {
-        const sourceFile = program.getSourceFile(changedInfo.filePath);
-        if (!sourceFile) {
-          continue;
-        }
-
-        const fileName = sourceFile.fileName;
-        let content = sourceFile.getFullText();
-
-        if (useScss) {
-          content = SdTypescriptUtils.compileScss(fileName, content, false);
-        }
-
-        diagnostics.pushRange(
-          SdTypescriptUtils.compile(fileName, content, options)
-        );
-      }
+const builder = new SdTypescriptBuilder(tsConfigPath);
+builder.watch(
+  changedInfos => {
+    const messages: string[] = [];
+    for (const changedInfo of changedInfos.filter(item => item.type !== "dependency")) {
+      messages.pushRange(builder.compile(changedInfo.filePath));
     }
 
-    return diagnostics;
-  },
-  message => {
-    SdWorkerUtils.sendMessage({type: "error", message});
+    if (messages.length > 0) {
+      SdWorkerUtils.sendMessage({type: "error", message: messages.distinct().join(os.EOL).trim()});
+    }
+
+    SdWorkerUtils.sendMessage({type: "done"});
   },
   () => {
     SdWorkerUtils.sendMessage({type: "run"});
-  },
-  () => {
-    SdWorkerUtils.sendMessage({type: "done"});
   }
-);
-
-const config = SdCliUtils.getConfigObj("development", opts).packages[packageKey];
-fs.writeFileSync(path.resolve(parsedTsConfig.options.outDir!, ".configs.json"), JSON.stringify({env: "development", ...config.configs}, undefined, 2));
+).then(() => {
+  const config = SdCliUtils.getConfigObj("development", opts).packages[packageKey];
+  fs.writeFileSync(path.resolve(builder.outDir, ".configs.json"), JSON.stringify({env: "development", ...config.configs}, undefined, 2));
+}).catch(err => {
+  SdWorkerUtils.sendMessage({type: "error", message: err.stack});
+});

@@ -23,9 +23,9 @@ export class SdToastProvider implements OnDestroy {
     }
   }
 
-  public async try(fn: () => Promise<void>, messageFn?: (err: Error) => string): Promise<void> {
+  public async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined> {
     try {
-      await fn();
+      return await fn();
     }
     catch (err) {
       if (messageFn) {

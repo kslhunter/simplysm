@@ -6,7 +6,7 @@ import {SdIconModule} from "../icon/SdIconModule";
 import {SdLocalStorageModule} from "../local-storage/SdLocalStorageModule";
 import {SdModalControl} from "./SdModalControl";
 import {SdModalProvider} from "./SdModalProvider";
-import {SdPaneModule} from "../..";
+import {SdPaneModule} from "../pane/SdPaneModule";
 
 @NgModule({
   imports: [

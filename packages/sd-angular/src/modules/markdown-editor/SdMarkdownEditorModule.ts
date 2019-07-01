@@ -4,7 +4,7 @@ import {SdSharedModule} from "../shared/SdSharedModule";
 import {SdDockModule} from "../dock/SdDockModule";
 import {SdIconModule} from "../icon/SdIconModule";
 import {SdMarkdownEditorControl} from "./SdMarkdownEditorControl";
-import {SdPaneModule} from "../..";
+import {SdPaneModule} from "../pane/SdPaneModule";
 
 @NgModule({
   imports: [

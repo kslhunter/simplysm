@@ -61,10 +61,11 @@ export class SdProjectBuilder {
           // > > > 변경감지 시작
           await FileWatcher.watch(path.resolve(sourcePath, "**", "*"), ["add", "change", "unlink"], async changes => {
             try {
+              targetLogger.log(`파일이 변경되었습니다.`, ...changes.map(item => `[${item.type}] ${item.filePath}`));
+
               for (const change of changes) {
                 const targetFilePath = path.resolve(targetPath, path.relative(sourcePath, change.filePath));
 
-                targetLogger.log(`파일이 변경되었습니다: [${change.type}] ${change.filePath}`);
                 if (change.type === "unlink") {
                   await fs.remove(targetFilePath);
                 }
@@ -153,8 +154,7 @@ export class SdProjectBuilder {
           const worker = await this._runWorkerAsync(
             `${prefix}-compile`,
             packageKey,
-            argv.options || "",
-            config.packages[packageKey].framework === "angular" ? "scss" : undefined
+            argv.options
           );
 
           if (worker.cpuUsage) {
@@ -229,8 +229,7 @@ export class SdProjectBuilder {
 
         const worker = await this._runWorkerAsync(
           `${prefix}-metadata`,
-          packageKey,
-          config.packages[packageKey].framework === "angular" ? "scss" : undefined
+          packageKey
         );
 
         if (worker.cpuUsage) {
@@ -457,6 +456,7 @@ export class SdProjectBuilder {
         {
           stdio: ["inherit", "inherit", "inherit", "ipc"],
           cwd: process.cwd(),
+          env: process.env,
           execArgv: [...execArgv]
         }
       );
@@ -598,7 +598,7 @@ export class SdProjectBuilder {
     const packageEntryPath = path.resolve(packagePath, packageNpmConfig.main);
 
     // 서버 시작
-    const server = eval(`require("${packageEntryPath.replace(/\\/g, "\\\\")}")`) as SdServiceServer; //tslint:disable-line:no-eval
+    const server = require(packageEntryPath) as SdServiceServer;
 
     // 서버가 시작되면,
     await new Promise<void>(resolve => {
@@ -624,7 +624,7 @@ export class SdProjectBuilder {
         const serverInfo = this._serverMap.get(packageKey)!;
         await serverInfo.server.closeAsync();
         require("decache")(packageEntryPath); //tslint:disable-line:no-require-imports
-        const newServer = eval(`require("${packageEntryPath.replace(/\\/g, "\\\\")}")`) as SdServiceServer; //tslint:disable-line:no-eval
+        const newServer = require(packageEntryPath) as SdServiceServer;
         serverInfo.server = newServer;
         for (const middleware of serverInfo.middlewares) {
           newServer.addMiddleware(middleware);

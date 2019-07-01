@@ -162,6 +162,10 @@ export class SdAngularCompiler extends events.EventEmitter {
           {
             test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
             parser: {system: true}
+          },
+          {
+            test: /\.ts$/,
+            loader: require.resolve("./inline-sass-dependency-loader")
           }
         ]
       },
@@ -448,13 +452,12 @@ export class SdAngularCompiler extends events.EventEmitter {
         module: {
           rules: [
             {
-              enforce: "pre",
               test: /\.js$/,
-              use: ["source-map-loader"],
+              enforce: "pre",
+              loader: "source-map-loader",
               exclude: [
                 /node_modules[\\/](?!@simplysm)/,
-                /\.ngfactory\.js$/,
-                /\.ngstyle\.js$/
+                /(ngfactory|ngstyle).js$/
               ]
             }
           ]

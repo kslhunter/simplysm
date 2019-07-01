@@ -22,3 +22,4 @@ export interface IValidateResult {
 
   validator?(value: any): boolean;
 }
+

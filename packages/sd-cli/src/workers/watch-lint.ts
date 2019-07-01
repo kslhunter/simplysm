@@ -1,39 +1,29 @@
-import "@simplysm/sd-core";
+import {SdTypescriptBuilder} from "../SdTypescriptBuilder";
 import * as path from "path";
+import * as os from "os";
 import {SdWorkerUtils} from "../commons/SdWorkerUtils";
-import {SdTypescriptUtils} from "../commons/SdTypescriptUtils";
 
 const packageKey = process.argv[2];
 
 const contextPath = path.resolve(process.cwd(), "packages", packageKey);
-const parsedTsConfig = SdTypescriptUtils.getParsedConfig(contextPath);
+const tsConfigPath = path.resolve(contextPath, "tsconfig.build.json");
 
-const options = {
-  ...parsedTsConfig.options,
-  strictNullChecks: true
-};
+SdWorkerUtils.sendMessage({type: "run"});
 
-SdTypescriptUtils.watch(
-  contextPath,
-  parsedTsConfig.fileNames,
-  options,
-  true,
-  (program, changedInfos) => {
-    return SdTypescriptUtils.lint(
-      program,
-      contextPath,
-      changedInfos.filter(item => item.type !== "unlink")
-        .map(item => program.getSourceFile(item.filePath))
-        .filterExists()
-    );
-  },
-  message => {
-    SdWorkerUtils.sendMessage({type: "error", message});
+const builder = new SdTypescriptBuilder(tsConfigPath);
+builder.watch(
+  changedInfos => {
+    const messages = builder.lint(changedInfos.filter(item => item.type !== "dependency-scss").map(item => item.filePath));
+
+    if (messages.length > 0) {
+      SdWorkerUtils.sendMessage({type: "error", message: messages.distinct().join(os.EOL).trim()});
+    }
+
+    SdWorkerUtils.sendMessage({type: "done"});
   },
   () => {
     SdWorkerUtils.sendMessage({type: "run"});
-  },
-  () => {
-    SdWorkerUtils.sendMessage({type: "done"});
   }
-);
+).catch(err => {
+  SdWorkerUtils.sendMessage({type: "error", message: err.stack});
+});
