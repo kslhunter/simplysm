@@ -38,9 +38,8 @@ export class SdWebpackInputHostWithScss implements virtualFs.Host<Stats> {
         const filePath = getSystemPath(path);
         let data = this.inputFileSystem.readFileSync(filePath);
         if (filePath.match(/\.ts$/) && !filePath.match(/\.d\.ts$/)) {
-          data = Buffer.from(
-            SdTypescriptBuilder.convertScssToCss(filePath, data.toString()).content
-          );
+          const newContent = SdTypescriptBuilder.convertScssToCss(filePath, data.toString()).content;
+          data = Buffer.from(newContent);
         }
         obs.next(new Uint8Array(data).buffer as ArrayBuffer);
         obs.complete();

@@ -205,7 +205,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
         position: relative;
         display: inline-block;
         vertical-align: top;
-        height: calc(var(--sheet-row-height) + 1);
+        height: calc(var(--sheet-row-height) + 1px);
 
         &:focus {
           outline-color: transparent;
@@ -251,7 +251,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
           &[type=datetime],
           &[type=time],
           &[type=datetime-local] {
-            padding: calc(var(--sheet-padding-v) - 1) var(--sheet-padding-h);
+            padding: calc(var(--sheet-padding-v) - 1px) var(--sheet-padding-h);
           }
 
           &[type=color] {

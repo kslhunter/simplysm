@@ -16,7 +16,7 @@ builder.watch(
     const messages = builder.lint(changedInfos.filter(item => item.type !== "dependency-scss").map(item => item.filePath));
 
     if (messages.length > 0) {
-      SdWorkerUtils.sendMessage({type: "error", message: messages.distinct().join(os.EOL).trim()});
+      SdWorkerUtils.sendMessage({type: "warning", message: messages.distinct().join(os.EOL).trim()});
     }
 
     SdWorkerUtils.sendMessage({type: "done"});

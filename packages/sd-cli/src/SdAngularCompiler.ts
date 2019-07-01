@@ -163,10 +163,12 @@ export class SdAngularCompiler extends events.EventEmitter {
             test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
             parser: {system: true}
           },
-          {
-            test: /\.ts$/,
-            loader: require.resolve("./inline-sass-dependency-loader")
-          }
+          ...opt.aot ? [] : [
+            {
+              test: /\.ts$/,
+              loader: require.resolve("./inline-sass-dependency-loader")
+            }
+          ]
         ]
       },
       plugins: [
@@ -240,6 +242,8 @@ export class SdAngularCompiler extends events.EventEmitter {
   }
 
   private _getWebpackCommonConfig(): webpack.Configuration {
+    const faviconPath = path.resolve(this._contextPath, "src", "favicon.ico");
+
     return {
       output: {
         publicPath: `/${this._packageKey}/`,
@@ -262,9 +266,13 @@ export class SdAngularCompiler extends events.EventEmitter {
           BASE_HREF: `/${this._packageKey}/`,
           inject: true
         }),
-        new CopyWebpackPlugin([
-          path.resolve(this._contextPath, "src", "favicon.ico")
-        ]),
+        ...fs.pathExistsSync(faviconPath)
+          ? [
+            new CopyWebpackPlugin([
+              path.resolve(this._contextPath, "src", "favicon.ico")
+            ])
+          ]
+          : [],
         new webpack.DefinePlugin({
           "process.env.VERSION": `"${this._projectNpmConfig.version}"`,
           "process.env.BASE_HREF": `"/${this._packageKey}/"`

@@ -16,7 +16,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div class="_content">
+    <div class="_content" [style.backgroundImage]="backgroundImage ? 'url(' + backgroundImage + ')' : undefined">
       <div class="_content-user">
         <ng-content></ng-content>
       </div>
@@ -35,7 +35,6 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
 
     sd-sidebar-user {
       > ._content {
-        background-image: url(./user_bg.jpg);
         background-size: cover;
         text-shadow: 0 0 1px var(--text-color-default);
 
@@ -109,6 +108,8 @@ export class SdSidebarUserControl implements AfterViewInit, ISdNotifyPropertyCha
 
   @ViewChild("childContent", {static: true})
   public childContentElRef?: ElementRef<HTMLDivElement>;
+
+  public backgroundImage = require("../../../assets/user_bg.jpg"); //tslint:disable-line:no-require-imports
 
   public ngAfterViewInit(): void {
     const childContentEl = this.childContentElRef!.nativeElement;

@@ -82,7 +82,7 @@ import {SdMultiSelectItemControl} from "./SdMultiSelectItemControl";
         display: block;
         overflow: visible;
         padding-right: 30px !important;
-        height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip) + 2);
+        height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip) + 2px);
 
         border-color: var(--trans-color-default);
         transition: outline-color .1s linear;

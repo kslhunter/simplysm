@@ -92,7 +92,7 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
 
         &[type='color'] {
           padding: 1px var(--gap-default) !important;
-          height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip) + 2);
+          height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip) + 2px);
         }
 
         &[type=year],
@@ -101,7 +101,7 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
         &[type=datetime],
         &[type=time],
         &[type=datetime-local] {
-          padding: calc(var(--gap-sm) - 1) var(--gap-default);
+          padding: calc(var(--gap-sm) - 1px) var(--gap-default);
         }
       }
 
