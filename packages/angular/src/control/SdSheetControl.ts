@@ -186,6 +186,7 @@ export class SdSheetControl implements DoCheck, OnInit {
     }
     else if (this.items) {
       this.selectedItems = [...this.items];
+      this.selectedItemsChange.emit(this.selectedItems);
     }
   }
 
@@ -225,7 +226,6 @@ export class SdSheetControl implements DoCheck, OnInit {
         });
       }
     }
-
     return result;
   }
 
