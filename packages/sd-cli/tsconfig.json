@@ -37,6 +37,7 @@
     "src/workers/watch-check.ts",
     "src/workers/watch-compile.ts",
     "src/workers/watch-lint.ts",
-    "src/workers/watch-metadata.ts"
+    "src/workers/watch-metadata.ts",
+    "src/workers/watch-ng-routes.ts"
   ]
 }

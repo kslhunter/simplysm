@@ -237,6 +237,22 @@ export class SdProjectBuilder {
         }
       })).then(() => {
         logger.info("모든 'metadata'가 완료되었습니다.");
+      }),
+      Promise.all(packageKeys.map(async packageKey => {
+        if (config.packages[packageKey].type === "library" || config.packages[packageKey].framework !== "angular") {
+          return;
+        }
+
+        const worker = await this._runWorkerAsync(
+          `${prefix}-ng-routes`,
+          packageKey
+        );
+
+        if (worker.cpuUsage) {
+          workerCpuUsages.push({packageKey, type: worker.workerName, cpuUsage: worker.cpuUsage});
+        }
+      })).then(() => {
+        logger.info("모든 'ng-routes'가 완료되었습니다.");
       })
     ]);
 
