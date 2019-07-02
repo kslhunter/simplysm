@@ -2,6 +2,7 @@ import * as path from "path";
 import {SdWorkerUtils} from "../commons/SdWorkerUtils";
 import {SdTypescriptBuilder} from "../SdTypescriptBuilder";
 import {JSDOM} from "jsdom";
+import * as fs from "fs-extra";
 
 require("source-map-support/register"); //tslint:disable-line
 
@@ -44,7 +45,7 @@ builder.watch(
         // console.log("...Module.ts", changedInfo.filePath);
 
         const className = path.basename(changedInfo.filePath, path.extname(changedInfo.filePath));
-        const outDirPath = path.resolve(modulesDirPath, path.relative(contextPath, path.dirname(changedInfo.filePath)));
+        const outDirPath = path.resolve(modulesDirPath, path.relative(builder.rootDirPath, path.dirname(changedInfo.filePath)));
         const outFilePath = path.resolve(outDirPath, className + "Module.ts");
 
         // console.log("...Module.ts", changedInfo.filePath, "outFilePath", outFilePath);
@@ -53,8 +54,8 @@ builder.watch(
         content += `import {NgModule} from "@angular/core";\n`;
         content += `import {CommonModule} from "@angular/common";\n`;
 
-        const fileRelativePath = path.relative(outFilePath, changedInfo.filePath);
-        content += `import {${className}} from "${fileRelativePath.replace(/\\/g, "/")}";\n`;
+        const fileRelativePath = path.relative(outDirPath, changedInfo.filePath);
+        content += `import {${className}} from "${fileRelativePath.replace(/\\/g, "/").replace(/\.d\.ts$/g, "").replace(/\.ts$/g, "")}";\n`;
 
         const imports = builder.getImports(changedInfo.filePath);
 
@@ -64,30 +65,27 @@ builder.watch(
         );
 
         const componentTemplate = ngComponents.single(item => item.path === changedInfo.filePath)!.template;
-        const componentDom = new JSDOM(componentTemplate);
-        for (const ngComponent of ngComponents) {
-          if (componentDom.window.document.querySelector(ngComponent.selector)) {
-            useModules.push(...ngModules.filter(item => item.exports.includes(ngComponent.name)));
+        if (componentTemplate) {
+          const componentDom = new JSDOM(componentTemplate);
+          for (const ngComponent of ngComponents.filter(item => item.selector)) {
+            const selectors = [
+              ngComponent.selector,
+              ngComponent.selector.replace(/\[/g, "[\\[").replace(/]/g, "\\]]")
+            ];
+            if (selectors.some(selector => !!componentDom.window.document.querySelector(selector))) {
+              useModules.push(...ngModules.filter(item => item.exports.includes(ngComponent.name)));
+            }
           }
         }
-
-        /*const sdComponentMatches = componentTemplate.match(/<[^ >]*!/g) || [];
-        for (const sdComponentMatch of sdComponentMatches) {
-          const componentSelector = sdComponentMatch.slice(1);
-          const component = ngComponents.single(item => item.selector === componentSelector);
-
-          if (component) {
-            useModules.push(...ngModules.filter(item => item.exports.includes(component.name)));
-          }
-        }*/
 
         // console.log("...Module.ts", changedInfo.filePath, "useMyModules.name", useModules.map(item => item.name));
 
         const importInfos = useModules.map(item => {
           let module = item.module;
           if (!module) {
-            module = path.relative(changedInfo.filePath, item.path).replace(/\\/g, "/");
+            module = path.relative(outDirPath, item.path).replace(/\\/g, "/");
             module = module.startsWith(".") ? module : "./" + module;
+            module = module.replace(/\.d\.ts$/g, "").replace(/\.ts$/g, "");
           }
 
           return {
@@ -118,10 +116,13 @@ builder.watch(
         content += `  exports: [${className}]\n`;
         content += `})\n`;
         content += `export class ${className}Module {\n`;
-        content += `}`;
+        content += `}\n`;
 
-        if (changedInfo.filePath.includes("HomePage")) {
-          console.log("...Module.ts", changedInfo.filePath, "content", content);
+        const prevContent = fs.pathExistsSync(outFilePath)
+          ? fs.readFileSync(outFilePath).toString()
+          : undefined;
+        if (!prevContent || prevContent !== content) {
+          fs.writeFileSync(outFilePath, content);
         }
       }
 
@@ -129,7 +130,7 @@ builder.watch(
         console.log("...RoutingModule.ts", changedInfo.filePath);
       }
 
-      // pages => routes.ts 파일 세팅
+      // routes.ts 파일 세팅
       const rootRoutesFileRegex = new RegExp(pagesDirPath.replace(/[\\/]/g, "[\\\\/]") + "[^\\\\/]*Page.ts");
       if (rootRoutesFileRegex.test(changedInfo.filePath)) {
         console.log("routes.ts", changedInfo.filePath);

@@ -4,6 +4,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as sass from "node-sass";
 import * as tslint from "tslint";
+import * as glob from "glob";
 import {MetadataCollector} from "@angular/compiler-cli";
 
 export class SdTypescriptBuilder {
@@ -13,7 +14,12 @@ export class SdTypescriptBuilder {
   private _program: ts.Program;
   private _checker: ts.TypeChecker;
 
-  private readonly _fileInfos: { filePath: string; sourceFile: ts.SourceFile | undefined; version: number; dependencies: string[] | undefined }[] = [];
+  private readonly _fileInfos: {
+    filePath: string;
+    sourceFile: ts.SourceFile | undefined;
+    version: number;
+    dependencies: string[] | undefined;
+  }[] = [];
 
   public readonly rootDirPath: string;
   public readonly outDir: string;
@@ -21,6 +27,7 @@ export class SdTypescriptBuilder {
   public constructor(private readonly _tsConfigFilePath: string) {
     this._contextPath = path.dirname(this._tsConfigFilePath);
     this._tsConfig = ts.parseJsonConfigFileContent(fs.readJsonSync(this._tsConfigFilePath), ts.sys, this._contextPath);
+    this._tsConfig.fileNames = glob.sync(path.resolve(this._contextPath, "src", "**", "*.ts"));
 
     this._host = ts.createCompilerHost(this._tsConfig.options);
     this._host["sourceFileVersions"] = {};
@@ -434,8 +441,8 @@ export class SdTypescriptBuilder {
     return result;
   }
 
-  public getNgComponentAndDirectives(): { module: string | undefined; path: string; name: string; selector: string; template: string }[] {
-    const result: { module: string | undefined; path: string; name: string; selector: string; template: string }[] = [];
+  public getNgComponentAndDirectives(): { module: string | undefined; path: string; name: string; selector: string; template: string | undefined }[] {
+    const result: { module: string | undefined; path: string; name: string; selector: string; template: string | undefined }[] = [];
 
     const sourceFiles = this._program.getSourceFiles();
     for (const sourceFile of sourceFiles) {
