@@ -81,10 +81,10 @@ export class SdSelectControl {
     }
 
     return this._sanitizer.bypassSecurityTrustHtml(
-      optional(
-        this.itemControls.toArray().single(item => this.getIsItemSelected(item)),
-        o => o.content
-      ) || ""
+      this.itemControls.toArray().single(item => this.getIsItemSelected(item)) ?
+        optional(() =>
+          this.itemControls!.toArray().single(item => this.getIsItemSelected(item))
+        )!.content : ""
     );
   }
 
