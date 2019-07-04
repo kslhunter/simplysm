@@ -3,7 +3,6 @@ import * as webpack from "webpack";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as ts from "typescript";
-import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
@@ -17,9 +16,11 @@ import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
-import {SdWebpackInputHostWithScss} from "./commons/SdWebpackInputHostWithScss";
 import {SdCliUtils} from "./commons/SdCliUtils";
 import * as webpackMerge from "webpack-merge";
+import {SdWebpackNgModulePlugin} from "./plugins/SdWebpackNgModulePlugin";
+import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
+import {SdWebpackInputHostWithScss} from "./commons/SdWebpackInputHostWithScss";
 
 export class SdAngularCompiler extends events.EventEmitter {
   private readonly _contextPath: string;
@@ -149,7 +150,7 @@ export class SdAngularCompiler extends events.EventEmitter {
     }
 
     const mainPath = opt.aot ? path.resolve(__dirname, "../lib/main.aot.js") : path.resolve(__dirname, "../lib/main.js");
-    const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+    const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
     const moduleName = path.basename(modulePath);
 
     return {
@@ -196,6 +197,7 @@ export class SdAngularCompiler extends events.EventEmitter {
             enableResourceInlining: true
           }
         }),
+        new SdWebpackNgModulePlugin({tsConfigPath: this._tsConfigPath}),
         new webpack.ContextReplacementPlugin(
           /angular[\\/]core[\\/]fesm5/,
           this._parsedTsConfig.options.rootDir!,
@@ -297,14 +299,10 @@ export class SdAngularCompiler extends events.EventEmitter {
   }
 
   public async runAsync(): Promise<void> {
-    if (this._parsedTsConfig.fileNames.length < 1) {
-      throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
-    }
-
     const projectConfig = SdCliUtils.getConfigObj("production", this._options);
     const config = projectConfig.packages[this._packageKey];
 
-    const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+    const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
 
     const webpackConfig = webpackMerge(this._getWebpackCommonConfig(),
       {
@@ -435,11 +433,7 @@ export class SdAngularCompiler extends events.EventEmitter {
   }
 
   public async watchAsync(): Promise<NextHandleFunction[]> {
-    if (this._parsedTsConfig.fileNames.length < 1) {
-      throw new Error("'tsconfig.json'의 'files' 설정이 잘못되었습니다. (첫번째 파일이 모듈로 설정되어있어야함.)");
-    }
-
-    const modulePath = this._parsedTsConfig.fileNames[0].replace(/\.ts$/, "");
+    const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
     const webpackConfig = webpackMerge(this._getWebpackCommonConfig(),
       {
         mode: "development",
@@ -492,8 +486,9 @@ export class SdAngularCompiler extends events.EventEmitter {
 
     const compiler = webpack(webpackConfig);
 
-    compiler.hooks.watchRun.tap("SdPackageCompiler", () => {
+    compiler.hooks.watchRun.tapAsync("SdPackageCompiler", async (compiler1, callback) => {
       this.emit("run");
+      callback();
     });
 
     return await new Promise<NextHandleFunction[]>((resolve, reject) => {

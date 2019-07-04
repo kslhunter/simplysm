@@ -13,7 +13,7 @@ SdWorkerUtils.sendMessage({type: "run"});
 const builder = new SdTypescriptBuilder(tsConfigPath);
 builder.watch(
   changedInfos => {
-    const messages = builder.lint(changedInfos.filter(item => item.type !== "dependency-scss").map(item => item.filePath));
+    const messages = builder.lint(changedInfos.filter(item => item.type !== "embed-dependency").map(item => item.filePath));
 
     if (messages.length > 0) {
       SdWorkerUtils.sendMessage({type: "warning", message: messages.distinct().join(os.EOL).trim()});

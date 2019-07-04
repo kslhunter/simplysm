@@ -8,6 +8,11 @@ function loader(this: webpack.loader.LoaderContext, content: string, sourceMap: 
     this.cacheable();
   }
 
+  if (!fs.pathExistsSync(this.resourcePath)) {
+    this.callback(undefined);
+    return;
+  }
+
   try {
     const reloadContent = fs.readFileSync(this.resourcePath).toString();
 

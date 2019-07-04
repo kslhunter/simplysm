@@ -3,6 +3,7 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
+    "target": "es2018",
     "lib": [
       "es2018"
     ],
@@ -25,19 +26,5 @@
         "../sd-orm/src/index.ts"
       ]
     }
-  },
-  "files": [
-    "src/bin.ts",
-    "src/inline-sass-dependency-loader.ts",
-    "src/workers/run-angular.ts",
-    "src/workers/run-check.ts",
-    "src/workers/run-compile.ts",
-    "src/workers/run-lint.ts",
-    "src/workers/run-metadata.ts",
-    "src/workers/watch-check.ts",
-    "src/workers/watch-compile.ts",
-    "src/workers/watch-lint.ts",
-    "src/workers/watch-metadata.ts",
-    "src/workers/watch-ng-routes.ts"
-  ]
+  }
 }

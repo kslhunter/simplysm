@@ -13,8 +13,5 @@
         "../sd-core/src/index.ts"
       ]
     }
-  },
-  "files": [
-    "./src/index.ts"
-  ]
+  }
 }

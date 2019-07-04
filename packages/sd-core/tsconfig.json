@@ -8,8 +8,5 @@
       "dom"
     ],
     "declaration": true
-  },
-  "files": [
-    "src/index.ts"
-  ]
+  }
 }

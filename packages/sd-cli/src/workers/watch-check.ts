@@ -14,7 +14,7 @@ const builder = new SdTypescriptBuilder(tsConfigPath);
 builder.watch(
   changedInfos => {
     const messages: string[] = [];
-    for (const changedInfo of changedInfos.filter(item => item.type !== "dependency-scss")) {
+    for (const changedInfo of changedInfos.filter(item => item.type !== "embed-dependency")) {
       if (changedInfo.type === "dependency") {
         messages.pushRange(builder.typeCheck(changedInfo.filePath));
       }

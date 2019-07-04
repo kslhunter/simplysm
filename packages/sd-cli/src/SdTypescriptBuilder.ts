@@ -1,11 +1,11 @@
 import * as ts from "typescript";
-import {FileChangeInfoType, FileWatcher, JsonConvert, optional} from "@simplysm/sd-core";
+import {FileChangeInfoType, FileWatcher, IFileChangeInfo, optional, Wait} from "@simplysm/sd-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sass from "node-sass";
 import * as tslint from "tslint";
 import * as glob from "glob";
-import {MetadataCollector} from "@angular/compiler-cli";
+import {MetadataCollector, ModuleMetadata} from "@angular/compiler-cli";
 
 export class SdTypescriptBuilder {
   private readonly _tsConfig: ts.ParsedCommandLine;
@@ -14,12 +14,7 @@ export class SdTypescriptBuilder {
   private _program: ts.Program;
   private _checker: ts.TypeChecker;
 
-  private readonly _fileInfos: {
-    filePath: string;
-    sourceFile: ts.SourceFile | undefined;
-    version: number;
-    dependencies: string[] | undefined;
-  }[] = [];
+  private readonly _fileInfos: ITsFileInfo[] = [];
 
   public readonly rootDirPath: string;
   public readonly outDir: string;
@@ -27,21 +22,18 @@ export class SdTypescriptBuilder {
   public constructor(private readonly _tsConfigFilePath: string) {
     this._contextPath = path.dirname(this._tsConfigFilePath);
     this._tsConfig = ts.parseJsonConfigFileContent(fs.readJsonSync(this._tsConfigFilePath), ts.sys, this._contextPath);
-    this._tsConfig.fileNames = glob.sync(path.resolve(this._contextPath, "src", "**", "*.ts"));
 
     this._host = ts.createCompilerHost(this._tsConfig.options);
-    this._host["sourceFileVersions"] = {};
 
     this._host.getSourceFile = (filePath, languageVersion) => {
       const normalFilePath = path.normalize(filePath);
 
       const fileInfo = this._fileInfos.single(item => item.filePath === normalFilePath);
-      if (fileInfo && this._host["sourceFileVersions"][normalFilePath] === fileInfo.version) {
+      if (fileInfo && fileInfo.syncVersions.sourceFile === fileInfo.version) {
         return fileInfo.sourceFile;
       }
       else {
         let content = this._host.readFile(normalFilePath);
-
         if (!content) {
           return undefined;
         }
@@ -50,22 +42,23 @@ export class SdTypescriptBuilder {
 
         content = converted.content;
         const sourceFile = ts.createSourceFile(normalFilePath, content, languageVersion);
-        sourceFile["scssDependencies"] = converted.dependencies.map(item => path.normalize(item));
 
         if (!fileInfo) {
-          const newFileInfo = {
+          const newFileInfo: ITsFileInfo = {
             filePath: normalFilePath,
             sourceFile,
             version: 0,
-            dependencies: undefined
+            isMyFile: this._isMyFile(normalFilePath),
+            embedDependencies: converted.dependencies.map(item => path.normalize(item)),
+            syncVersions: {}
           };
           this._fileInfos.push(newFileInfo);
-          this._host["sourceFileVersions"][normalFilePath] = newFileInfo.version;
+          newFileInfo.syncVersions.sourceFile = newFileInfo.version;
           return newFileInfo.sourceFile;
         }
         else {
           fileInfo.sourceFile = sourceFile;
-          this._host["sourceFileVersions"][normalFilePath] = fileInfo.version;
+          fileInfo.syncVersions.sourceFile = fileInfo.version;
           return fileInfo.sourceFile;
         }
       }
@@ -74,71 +67,79 @@ export class SdTypescriptBuilder {
     this.rootDirPath = path.normalize(this._tsConfig.options.rootDir!);
     this.outDir = path.normalize(this._tsConfig.options.outDir!);
 
-    this._program = ts.createProgram(this._tsConfig.fileNames, this._tsConfig.options, this._host);
+    this._program = ts.createProgram(glob.sync(path.resolve(this._tsConfig.options.rootDir!, "**", "*.ts")), this._tsConfig.options, this._host);
     this._checker = this._program.getTypeChecker();
   }
 
   public getFilePaths(): string[] {
-    return this._program.getSourceFiles().filter(item => this._isMyFile(item.fileName)).map(item => path.normalize(item.fileName));
+    return this._fileInfos.filter(item => item.isMyFile).map(item => item.filePath);
   }
 
-  public async watch(callback: (changeInfos: ITsFileChangeInfo[]) => void, watch?: () => void): Promise<void> {
-    this._updateDependencies();
+  public getWatchFilePaths(): string[] {
+    return this._fileInfos.mapMany(item1 => [
+      item1.filePath,
+      ...(item1.dependencies || []),
+      ...(item1.embedDependencies || [])
+    ]).distinct();
+  }
 
-    callback(
-      this._program.getSourceFiles().filter(item => this._isMyFile(item.fileName)).map(item => ({
-        type: "add",
-        filePath: path.normalize(item.fileName)
-      }))
-    );
+  public async watch(callback: (changeInfos: ITsFileChangeInfo[]) => IFileChangeInfo[] | void | Promise<IFileChangeInfo[] | void>, watch?: () => void, done?: () => void): Promise<void> {
+    this.updateDependencies();
+
+    const doingChanges = async (doingChangeInfos: IFileChangeInfo[]) => {
+      this.configFileInfos(doingChangeInfos);
+      this.initializeProgram();
+      this.updateDependencies();
+
+      const currentChangeInfos: ITsFileChangeInfo[] = this.convertChangeInfosByDependencies(doingChangeInfos);
+
+      const newChangedFileInfos = await callback(currentChangeInfos);
+
+      if (newChangedFileInfos && newChangedFileInfos.length > 0) {
+        await doingChanges(newChangedFileInfos);
+      }
+    };
+
+    const firstNewChangedFileInfos = await callback(this._fileInfos.filter(item => item.isMyFile).map(item => ({
+      type: "add",
+      filePath: item.filePath
+    })));
+
+    if (firstNewChangedFileInfos && firstNewChangedFileInfos.length > 0) {
+      await this.applyChanges(firstNewChangedFileInfos, changedInfos => {
+        return callback(changedInfos);
+      });
+    }
+
+    if (done) {
+      done();
+    }
+
+    let processing = false;
 
     const createWatcher = async (first?: boolean) => {
-      const watchFiles = this._fileInfos.mapMany(item1 => [item1.filePath, ...(item1.dependencies || [])]).distinct();
-
       const watcher = await FileWatcher.watch(
-        watchFiles,
+        [path.resolve(this.rootDirPath, "**", "*.ts"), ...this.getWatchFilePaths()],
         ["add", "change", "unlink"],
         async changeInfos => {
-          watcher.close();
+          await Wait.true(() => !processing);
+          processing = true;
 
-          if (watch) {
+          if (!first && watch) {
             watch();
           }
 
-          for (const changeInfo of changeInfos) {
-            if (!changeInfo.filePath.endsWith(".scss")) {
-              const fileInfo = this._fileInfos.single(item => item.filePath === changeInfo.filePath);
-              if (fileInfo) {
-                fileInfo.version++;
-              }
-            }
-            else {
-              const fileInfos = this._fileInfos.filter(item => item.dependencies && item.dependencies.includes(changeInfo.filePath));
-              for (const fileInfo of fileInfos) {
-                fileInfo.version++;
-              }
-            }
+          await this.applyChanges(changeInfos, changedInfos => {
+            return callback(changedInfos);
+          });
+
+          if (done) {
+            done();
           }
 
-          this._program = ts.createProgram(this._tsConfig.fileNames, this._tsConfig.options, this._host);
-          this._checker = this._program.getTypeChecker();
-          this._updateDependencies();
-
-          const currentChangedInfos: ITsFileChangeInfo[] = changeInfos.filter(item => this._isMyFile(item.filePath));
-          currentChangedInfos.push(
-            ...this._getReverseDependencies(changeInfos.map(item => item.filePath).filter(item => !item.endsWith(".scss")))
-              .filter(item => !currentChangedInfos.some(item1 => item1.filePath === item))
-              .map(item => ({type: "dependency", filePath: item} as ITsFileChangeInfo))
-          );
-          currentChangedInfos.push(
-            ...this._getReverseDependencies(changeInfos.map(item => item.filePath).filter(item => item.endsWith(".scss")))
-              .filter(item => !currentChangedInfos.some(item1 => item1.filePath === item))
-              .map(item => ({type: "dependency-scss", filePath: item} as ITsFileChangeInfo))
-          );
-
-          callback(currentChangedInfos);
-
-          await createWatcher();
+          processing = false;
+          watcher.close();
+          await createWatcher(false);
         }
       );
     };
@@ -146,11 +147,73 @@ export class SdTypescriptBuilder {
     await createWatcher(true);
   }
 
-  public compile(fileName: string): string[] {
-    const relativePath = path.relative(this.rootDirPath, fileName);
+  public async applyChanges(changeInfos: IFileChangeInfo[], callback: (changeInfos: ITsFileChangeInfo[]) => IFileChangeInfo[] | void | Promise<IFileChangeInfo[] | void>): Promise<IFileChangeInfo[]> {
+    const result = Object.clone(changeInfos);
+
+    this.configFileInfos(changeInfos);
+    this.initializeProgram();
+    this.updateDependencies();
+
+    const currentChangeInfos: ITsFileChangeInfo[] = this.convertChangeInfosByDependencies(changeInfos);
+
+    const newChangedFileInfos = await callback(currentChangeInfos);
+
+    if (newChangedFileInfos && newChangedFileInfos.length > 0) {
+      result.push(...await this.applyChanges(newChangedFileInfos, currChangeInfos => {
+        return callback(currChangeInfos);
+      }));
+    }
+
+    return result;
+  }
+
+  public configFileInfos(changeInfos: IFileChangeInfo[]): void {
+    for (const changeInfo of changeInfos) {
+      if (changeInfo.type === "unlink") {
+        this._fileInfos.remove(item => item.filePath === changeInfo.filePath);
+      }
+      else {
+        const fileInfos = this._fileInfos
+          .filter(item =>
+            item.filePath === changeInfo.filePath ||
+            item.embedDependencies && item.embedDependencies.includes(changeInfo.filePath)
+          );
+        if (fileInfos.length > 0) {
+          for (const fileInfo of fileInfos) {
+            fileInfo.version++;
+          }
+        }
+      }
+    }
+  }
+
+  public convertChangeInfosByDependencies(changeInfos: IFileChangeInfo[]): ITsFileChangeInfo[] {
+    const result: ITsFileChangeInfo[] = changeInfos.filter(item => this._isMyFile(item.filePath));
+    result.push(
+      ...this._getReverseDependencies(changeInfos.map(item => item.filePath))
+        .filter(item => !result.some(item1 => item1.filePath === item))
+        .map(item => ({type: "dependency", filePath: item} as ITsFileChangeInfo))
+    );
+    result.push(
+      ...this._getReverseEmbedDependencies(changeInfos.map(item => item.filePath))
+        .filter(item => !result.some(item1 => item1.filePath === item))
+        .map(item => ({type: "embed-dependency", filePath: item} as ITsFileChangeInfo))
+    );
+
+    return result;
+  }
+
+  public initializeProgram(): void {
+    const oldProgram = this._program;
+    this._program = ts.createProgram(glob.sync(path.resolve(this._tsConfig.options.rootDir!, "**", "*.ts")), this._tsConfig.options, this._host, oldProgram);
+    this._checker = this._program.getTypeChecker();
+  }
+
+  public compile(filePath: string): string[] {
+    const relativePath = path.relative(this.rootDirPath, filePath);
     const outFilePath = path.resolve(this.outDir, relativePath).replace(/\.ts$/, ".js");
 
-    const sourceFile = this._program.getSourceFile(fileName);
+    const sourceFile = this._program.getSourceFile(filePath);
     if (!sourceFile) {
       fs.removeSync(outFilePath);
       fs.removeSync(outFilePath + ".map");
@@ -160,7 +223,7 @@ export class SdTypescriptBuilder {
     const diagnostics: ts.Diagnostic[] = [];
 
     const result = ts.transpileModule(sourceFile.getFullText(), {
-      fileName,
+      fileName: filePath,
       compilerOptions: this._tsConfig.options,
       reportDiagnostics: false
     });
@@ -170,15 +233,20 @@ export class SdTypescriptBuilder {
     }
 
     fs.mkdirsSync(path.dirname(outFilePath));
-    const prevOutText = fs.pathExistsSync(outFilePath) ? fs.readFileSync(outFilePath).toString() : undefined;
+
+    const fileInfo = this._fileInfos.single(item => item.filePath === path.normalize(filePath))!;
+
+    const prevOutText = fileInfo.outputText;
     if (prevOutText !== result.outputText) {
       fs.writeFileSync(outFilePath, result.outputText);
+      fileInfo.outputText = result.outputText;
     }
 
     if (this._tsConfig.options.sourceMap && !this._tsConfig.options.inlineSourceMap) {
-      const prevOutMapText = fs.pathExistsSync(outFilePath + ".map") ? fs.readFileSync(outFilePath + ".map").toString() : undefined;
+      const prevOutMapText = fileInfo.sourceMapText;
       if (prevOutMapText !== result.sourceMapText) {
         fs.writeFileSync(outFilePath + ".map", result.sourceMapText);
+        fileInfo.sourceMapText = result.sourceMapText;
       }
     }
 
@@ -195,28 +263,31 @@ export class SdTypescriptBuilder {
       .map(item => this._diagnosticToMessage(item)).filterExists().distinct();
   }
 
-  public emitDeclaration(fileName: string): string[] {
+  public emitDeclaration(filePath: string): string[] {
     if (!this._tsConfig.options.declaration) {
-      return this.typeCheck(fileName);
+      return this.typeCheck(filePath);
     }
 
-    const sourceFile = this._program.getSourceFile(fileName);
+    const sourceFile = this._program.getSourceFile(filePath);
 
     if (!sourceFile) {
-      const relativePath = path.relative(this.rootDirPath, fileName);
+      const relativePath = path.relative(this.rootDirPath, filePath);
       const outPath = path.resolve(this.outDir, relativePath).replace(/\.ts$/, ".d.ts");
       fs.removeSync(outPath);
       return [];
     }
 
+    const fileInfo = this._fileInfos.single(item => item.filePath === path.normalize(filePath))!;
+
     return ts.getPreEmitDiagnostics(this._program, sourceFile)
       .concat(
         this._program.emit(
           sourceFile,
-          (filePath, data, writeByteOrderMark) => {
-            const prevOutText = fs.pathExistsSync(filePath) ? fs.readFileSync(filePath).toString() : undefined;
+          (emitFilePath, data, writeByteOrderMark) => {
+            const prevOutText = fileInfo.declarationText;
             if (data !== prevOutText) {
-              ts.sys.writeFile(filePath, data, writeByteOrderMark);
+              ts.sys.writeFile(emitFilePath, data, writeByteOrderMark);
+              fileInfo.declarationText = data;
             }
           },
           undefined,
@@ -230,7 +301,7 @@ export class SdTypescriptBuilder {
     const linter = new tslint.Linter({formatter: "json", fix: false}, this._program);
     const config = tslint.Configuration.findConfiguration(path.resolve(this._contextPath, "tslint.json")).results!;
 
-    for (const fileName of fileNames) {
+    for (const fileName of fileNames.distinct()) {
       const sourceFile = this._program.getSourceFile(fileName);
       if (!sourceFile) continue;
 
@@ -250,306 +321,274 @@ export class SdTypescriptBuilder {
     })).map(item => this._diagnosticToMessage(item)).filterExists().distinct();
   }
 
-  public generateMetadata(fileName: string): string[] {
-    const relativePath = path.relative(this.rootDirPath, fileName);
+  public generateMetadata(filePath: string): string[] {
+    const relativePath = path.relative(this.rootDirPath, filePath);
     const outFilePath = path.resolve(this.outDir, relativePath).replace(/\.ts$/, ".metadata.json");
 
-    const sourceFile = this._program.getSourceFile(fileName);
+    const sourceFile = this._program.getSourceFile(filePath);
     if (!sourceFile) {
       fs.removeSync(outFilePath);
       return [];
     }
 
-    const diagnostics: ts.Diagnostic[] = [];
-    const metadata = new MetadataCollector().getMetadata(sourceFile, false, (value, tsNode) => {
-      if (value && value["__symbolic"] && value["__symbolic"] === "error") {
-        diagnostics.push({
-          file: sourceFile,
-          start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
-          messageText: value["message"],
-          category: ts.DiagnosticCategory.Error,
-          code: 0,
-          length: undefined
-        });
-      }
+    const fileInfo = this._fileInfos.single(item => item.filePath === path.normalize(filePath))!;
+    const prevOutMetadata = fileInfo.metadata;
 
-      return value;
-    });
+    const metadataObj = this._getMetadata(filePath);
 
-    if (metadata) {
-      const metadataText = JsonConvert.stringify(metadata);
-
+    if (metadataObj.metadata) {
       fs.mkdirsSync(path.dirname(outFilePath));
 
-      const prevOutText = fs.pathExistsSync(outFilePath) ? fs.readFileSync(outFilePath).toString() : undefined;
-      if (!prevOutText || metadataText !== prevOutText) {
-        fs.writeFileSync(outFilePath, metadataText);
+      if (!prevOutMetadata || !Object.equal(metadataObj.metadata, prevOutMetadata)) {
+        fs.writeJsonSync(outFilePath, metadataObj.metadata);
       }
     }
 
-    return diagnostics.map(item => this._diagnosticToMessage(item)).filterExists().distinct();
+    return metadataObj.diagnostics.map(item => this._diagnosticToMessage(item)).filterExists().distinct();
   }
 
-  private _updateDependencies(): void {
-    for (const fileInfo of this._fileInfos) {
-      if (!fileInfo.dependencies && fileInfo.sourceFile) {
-        fileInfo.dependencies = this._getDependencies(fileInfo.sourceFile);
-      }
-    }
-  }
-
-  public getNgModules(): { module: string | undefined; path: string; name: string; exports: string[]; providers: string[] }[] {
-    const result: { module: string | undefined; path: string; name: string; exports: string[]; providers: string[] }[] = [];
+  public getNgModules(): ITsNgModuleInfo[] {
+    const result: ITsNgModuleInfo[] = [];
 
     const sourceFiles = this._program.getSourceFiles();
     for (const sourceFile of sourceFiles) {
-      try {
-        const imports = this.getImports(sourceFile.fileName);
+      const filePath = sourceFile.fileName;
+      const fileInfo = this._fileInfos.single(item => item.filePath === path.normalize(filePath))!;
 
-        if (sourceFile.fileName.endsWith(".ts") && !sourceFile.fileName.endsWith(".d.ts")) {
-          result.push(...this._getSourceNodes(sourceFile)
-            .filter(node =>
-              node.kind === ts.SyntaxKind.Decorator &&
-              (node as ts.Decorator).expression.kind === ts.SyntaxKind.CallExpression
-            )
-            .map(node => (node as ts.Decorator).expression as ts.CallExpression)
-            .filter(expr => {
-              const identifier = expr.expression as ts.Identifier;
-              const importInfo = imports.single(item => item.targets.includes(identifier.text));
-              return identifier.text === "NgModule" && importInfo && importInfo.module === "@angular/core";
-            })
-            .filter(expr => expr.arguments[0] && expr.arguments[0].kind === ts.SyntaxKind.ObjectLiteralExpression)
-            .map(expr => {
-              const args = expr.arguments[0] as ts.ObjectLiteralExpression;
-              const classNode = this._getParentClassNode(expr)!;
+      if (fileInfo.syncVersions.ngModules !== fileInfo.version) {
+        try {
+          const module = this._getModuleName(sourceFile.fileName);
 
-              const exportProperty = args.properties.filter(item => (item.name as ts.Identifier).text === "exports")[0] as ts.PropertyAssignment;
-              const exports = exportProperty
-                ? (exportProperty.initializer as ts.ArrayLiteralExpression).elements.map(item => (item as ts.Identifier).text)
-                : [];
+          const modules = this._getClassMetadataByDecorator(sourceFile.fileName, "@angular/core", ["NgModule"])
+            .filterExists()
+            .map(classMetadataObj => {
+              const decorator = classMetadataObj.decorator;
 
-              const providerProperty = args.properties.filter(item => (item.name as ts.Identifier).text === "providers")[0] as ts.PropertyAssignment;
-              const providers = providerProperty
-                ? (providerProperty.initializer as ts.ArrayLiteralExpression).elements.map(item => (item as ts.Identifier).text)
-                : [];
+              const exports: string[] = (optional(() => decorator.arguments[0].exports) || []).map((item: any) => item.name);
 
-              providers.push(
-                ...classNode.members
-                  .filter(item => item.kind === ts.SyntaxKind.MethodDeclaration)
-                  .filter(item =>
-                    optional(() =>
-                      (((item as ts.MethodDeclaration).type as ts.TypeReferenceNode).typeName as ts.Identifier).text === "ModuleWithProviders"
-                    ) ||
-                    false
-                  )
-                  .mapMany(item =>
-                    ((item as ts.MethodDeclaration).body as ts.FunctionBody).getFullText()
-                      .replace(/[\r\n ]/g, "")
-                      .match(/providers:\[([^\]]*)]/)![1]
-                      .split(",")
-                  )
-              );
+              const providerProperties = optional(() => decorator.arguments[0].providers) || [];
+
+              // noinspection SuspiciousTypeOfGuard
+              let providers: string[] = ((providerProperties instanceof Array) ? providerProperties : [providerProperties])
+                .map((item: any) => optional(() => item.name || /*item.provide.name ||*/ item.expression.name))
+                .filterExists();
+
+              if (classMetadataObj.statics) {
+                providers.push(
+                  ...Object.keys(classMetadataObj.statics)
+                    .mapMany(key1 =>
+                      ((optional(() => classMetadataObj.statics[key1].value.providers) as any[]) || [])
+                        .map((item: any) => optional(() => item.name || /*item.provide.name ||*/ item.expression.name))
+                        .filterExists()
+                    )
+                );
+              }
+
+              providers = this._convertMetadataReferenceTarget(filePath, providers);
 
               return {
-                module: undefined,
+                module,
                 path: path.normalize(sourceFile.fileName),
-                name: classNode.name!.text,
+                name: classMetadataObj.name,
                 exports: exports.distinct(),
                 providers: providers.distinct()
               };
-            }));
+            });
+
+          fileInfo.ngModules = modules;
+          result.push(...modules);
         }
-        else if (sourceFile.fileName.endsWith(".d.ts")) {
-          const metadataFilePath = sourceFile.fileName.replace(/\.d\.ts$/, ".metadata.json");
-          if (fs.pathExistsSync(metadataFilePath)) {
-            const nodeModulesDirPath = path.resolve(process.cwd(), "node_modules");
-
-            let module: string | undefined;
-            if (path.normalize(sourceFile.fileName).startsWith(nodeModulesDirPath)) {
-              const relativePath = path.relative(nodeModulesDirPath, sourceFile.fileName).replace(/\\/g, "/");
-              module = relativePath.split("/")[0].includes("@")
-                ? relativePath.split("/")[0] + "/" + relativePath.split("/")[1]
-                : relativePath.split("/")[0];
-            }
-
-            const metadata = fs.readJsonSync(metadataFilePath);
-
-            result.push(...Object.keys(metadata.metadata)
-              .filter(key =>
-                optional(() =>
-                  metadata.metadata[key].decorators.some((item: any) => item.expression.name === "NgModule" && item.expression.module === "@angular/core")
-                ) ||
-                false
-              )
-              .map(key => {
-                const decorator = metadata.metadata[key].decorators.single((item: any) => item.expression.name === "NgModule" && item.expression.module === "@angular/core");
-
-                const exports: string[] = (optional(() => decorator.arguments[0].exports) || []).map((item: any) => item.name);
-
-                const providerProperties = optional(() => decorator.arguments[0].providers) || [];
-
-                // noinspection SuspiciousTypeOfGuard
-                const providers: string[] = ((providerProperties instanceof Array) ? providerProperties : [providerProperties])
-                  .map((item: any) => optional(() => item.name || /*item.provide.name ||*/ item.expression.name))
-                  .filterExists();
-
-                if (metadata.metadata[key].statics) {
-                  providers.push(
-                    ...Object.keys(metadata.metadata[key].statics)
-                      .mapMany(key1 =>
-                        ((optional(() => metadata.metadata[key].statics[key1].value.providers) as any[]) || [])
-                          .map((item: any) => optional(() => item.name || /*item.provide.name ||*/ item.expression.name))
-                          .filterExists()
-                      )
-                  );
-                }
-
-                const refProviders = providers.filter(item => item.startsWith("ɵ"));
-                for (const refProvider of refProviders) {
-                  try {
-                    providers.push(
-                      ...(metadata.metadata[refProvider] instanceof Array ? metadata.metadata[refProvider] : [metadata.metadata[refProvider]])
-                        .map((item: any) => optional(() => item.name || /*item.provide.name ||*/ item.expression.name))
-                        .filterExists()
-                    );
-                  }
-                  catch (err) {
-                    err.message = "[refProvider: " + refProvider + "] ==>\n" + err.message;
-                    throw err;
-                  }
-                }
-                providers.remove(refProviders);
-
-                return {
-                  module,
-                  path: path.normalize(sourceFile.fileName),
-                  name: key,
-                  exports: exports.distinct(),
-                  providers: providers.distinct()
-                };
-              })
-            );
-          }
+        catch (err) {
+          err.message = sourceFile.fileName + " ==>\n" + err.message;
+          throw err;
         }
       }
+      else {
+        result.push(...fileInfo.ngModules || []);
+      }
+
+      fileInfo.syncVersions.ngModules = fileInfo.version;
+    }
+
+    return result.distinct();
+  }
+
+  private _convertMetadataReferenceTarget(filePath: string, metadataNames: string[]): string[] {
+    const metadataObj = this._getMetadata(filePath);
+    if (metadataObj.diagnostics.length > 0) {
+      throw new Error(metadataObj.diagnostics.map(item => this._diagnosticToMessage(item)).filterExists().distinct().join("\n"));
+    }
+
+    const metadata = metadataObj.metadata as any;
+    if (!metadata) {
+      throw new Error();
+    }
+
+    const result: string[] = metadataNames;
+
+    const refNames = result.filter(item => item.startsWith("ɵ"));
+    for (const refName of refNames) {
+      try {
+        const newRefs = (metadata.metadata[refName] instanceof Array ? metadata.metadata[refName] : [metadata.metadata[refName]])
+          .map((item: any) => optional(() => item.name || item.expression.name))
+          .filterExists();
+        result.push(...newRefs);
+        result.push(...this._convertMetadataReferenceTarget(filePath, newRefs));
+      }
       catch (err) {
-        err.message = sourceFile.fileName + "==>\n" + err.message;
+        err.message = "[refProvider: " + refName + "] ==>\n" + err.message;
         throw err;
       }
     }
+    result.remove(refNames);
 
-    return result;
+    return result.distinct();
   }
 
-  public getNgComponentAndDirectives(): { module: string | undefined; path: string; name: string; selector: string; template: string | undefined }[] {
-    const result: { module: string | undefined; path: string; name: string; selector: string; template: string | undefined }[] = [];
+  private _getClassMetadataByDecorator(filePath: string, decoratorModule: string, decoratorNames: string[]): { name: string; decorator: any; statics: any }[] {
+    const metadataObj = this._getMetadata(filePath);
+    if (metadataObj.diagnostics.length > 0) {
+      throw new Error(metadataObj.diagnostics.map(item => this._diagnosticToMessage(item)).filterExists().distinct().join("\n"));
+    }
+
+    const metadata = metadataObj.metadata as any;
+    if (!metadata) {
+      return [];
+    }
+
+    return Object.keys(metadata.metadata)
+      .filter(key =>
+        optional(() =>
+          metadata.metadata[key].decorators.some((item: any) => decoratorNames.includes(item.expression.name) && item.expression.module === decoratorModule)
+        ) ||
+        false
+      )
+      .map(key => ({
+        name: key,
+        decorator: metadata.metadata[key].decorators.single((item: any) => decoratorNames.includes(item.expression.name) && item.expression.module === decoratorModule),
+        statics: metadata.metadata[key].statics
+      }));
+  }
+
+  private _getModuleName(filePath: string): string | undefined {
+    const nodeModulesDirPath = path.resolve(process.cwd(), "node_modules");
+
+    if (path.normalize(filePath).startsWith(nodeModulesDirPath)) {
+      const relativePath = path.relative(nodeModulesDirPath, filePath).replace(/\\/g, "/");
+      return relativePath.split("/")[0].includes("@")
+        ? relativePath.split("/")[0] + "/" + relativePath.split("/")[1]
+        : relativePath.split("/")[0];
+    }
+
+    return undefined;
+  }
+
+  public getNgComponentAndDirectives(): ITsNgComponentOrDirectiveInfo[] {
+    const result: ITsNgComponentOrDirectiveInfo[] = [];
 
     const sourceFiles = this._program.getSourceFiles();
     for (const sourceFile of sourceFiles) {
-      try {
-        const imports = this.getImports(sourceFile.fileName);
+      const filePath = sourceFile.fileName;
+      const fileInfo = this._fileInfos.single(item => item.filePath === path.normalize(filePath))!;
 
-        if (sourceFile.fileName.endsWith(".ts") && !sourceFile.fileName.endsWith(".d.ts")) {
-          result.push(...this._getSourceNodes(sourceFile)
-            .filter(node =>
-              node.kind === ts.SyntaxKind.Decorator &&
-              (node as ts.Decorator).expression.kind === ts.SyntaxKind.CallExpression
-            )
-            .map(node => (node as ts.Decorator).expression as ts.CallExpression)
-            .filter(expr => {
-              const identifier = expr.expression as ts.Identifier;
-              const importInfo = imports.single(item => item.targets.includes(identifier.text));
-              return (identifier.text === "Component" || identifier.text === "Directive") && importInfo && importInfo.module === "@angular/core";
-            })
-            .filter(expr => expr.arguments[0] && expr.arguments[0].kind === ts.SyntaxKind.ObjectLiteralExpression)
-            .map(expr => {
-              const args = expr.arguments[0] as ts.ObjectLiteralExpression;
-              const classNode = this._getParentClassNode(expr)!;
+      if (fileInfo.syncVersions.ngComponentOrDirectives !== fileInfo.version) {
+        try {
+          const module = this._getModuleName(sourceFile.fileName);
 
-              const selectorProperty = args.properties.filter(item => (item.name as ts.Identifier).text === "selector")[0] as ts.PropertyAssignment;
-              const selector = (selectorProperty.initializer as ts.StringLiteral).text;
+          const modules = this._getClassMetadataByDecorator(sourceFile.fileName, "@angular/core", ["Component", "Directive"])
+            .filterExists()
+            .map(classMetadataObj => {
+              const decorator = classMetadataObj.decorator;
 
-              const templateProperty = args.properties.filter(item => (item.name as ts.Identifier).text === "template")[0] as ts.PropertyAssignment;
-              const template = (templateProperty.initializer as ts.StringLiteral).text;
+              const selector = decorator.arguments[0].selector;
+              const template = decorator.arguments[0].template;
 
               return {
-                module: undefined,
+                module,
                 path: path.normalize(sourceFile.fileName),
-                name: classNode.name!.text,
+                name: classMetadataObj.name,
                 selector,
                 template
               };
-            }));
+            });
+
+          fileInfo.ngComponentOrDirectives = modules;
+          result.push(...modules);
         }
-        else if (sourceFile.fileName.endsWith(".d.ts")) {
-          const metadataFilePath = sourceFile.fileName.replace(/\.d\.ts$/, ".metadata.json");
-          if (fs.pathExistsSync(metadataFilePath)) {
-            const nodeModulesDirPath = path.resolve(process.cwd(), "node_modules");
+        catch (err) {
+          err.message = sourceFile.fileName + " ==>\n" + err.message;
+          throw err;
+        }
+      }
+      else {
+        result.push(...fileInfo.ngComponentOrDirectives || []);
+      }
 
-            let module: string | undefined;
-            if (path.normalize(sourceFile.fileName).startsWith(nodeModulesDirPath)) {
-              const relativePath = path.relative(nodeModulesDirPath, sourceFile.fileName).replace(/\\/g, "/");
-              module = relativePath.split("/")[0].includes("@")
-                ? relativePath.split("/")[0] + "/" + relativePath.split("/")[1]
-                : relativePath.split("/")[0];
-            }
+      fileInfo.syncVersions.ngComponentOrDirectives = fileInfo.version;
+    }
 
-            const metadata = fs.readJsonSync(metadataFilePath);
+    return result.distinct();
+  }
 
-            result.push(...Object.keys(metadata.metadata)
-              .filter(key =>
-                optional(() =>
-                  metadata.metadata[key].decorators.some((item: any) => (item.expression.name === "Component" || item.expression.name === "Directive") && item.expression.module === "@angular/core")
-                ) ||
-                false
-              )
-              .map(key => {
-                const decorator = metadata.metadata[key].decorators.single((item: any) => (item.expression.name === "Component" || item.expression.name === "Directive") && item.expression.module === "@angular/core");
+  public getImports(filePath: string): ITsImportInfo[] {
+    const fileInfo = this._fileInfos.single(item => item.filePath === path.normalize(filePath))!;
 
-                const selector = decorator.arguments[0].selector;
-                const template = decorator.arguments[0].template;
+    if (fileInfo.syncVersions.imports !== fileInfo.version) {
+      const sourceFile = this._program.getSourceFile(filePath)!;
 
-                return {
-                  module,
-                  path: path.normalize(sourceFile.fileName),
-                  name: key,
-                  selector,
-                  template
-                };
-              })
-            );
+      fileInfo.imports = this._getSourceNodes(sourceFile)
+        .filter(node => node.kind === ts.SyntaxKind.ImportDeclaration)
+        .map(node => ({
+          module: ((node as ts.ImportDeclaration).moduleSpecifier as ts.StringLiteral).text,
+          targets: optional(() =>
+            ((node as ts.ImportDeclaration).importClause!.namedBindings! as ts.NamedImports).elements
+              .map(item => item.propertyName ? item.propertyName.text : item.name.text)
+          )
+        }))
+        .filter(item => item.module && item.targets) as { module: string; targets: string[] }[];
+    }
+
+    fileInfo.syncVersions.imports = fileInfo.version;
+    return fileInfo.imports || [];
+  }
+
+  private _getMetadata(filePath: string): { metadata: ModuleMetadata | undefined; diagnostics: ts.Diagnostic[] } {
+    const fileInfo = this._fileInfos.single(item => item.filePath === path.normalize(filePath))!;
+
+    const diagnostics: ts.Diagnostic[] = [];
+
+    if (fileInfo.syncVersions.metadata !== fileInfo.version) {
+      const sourceFile = this._program.getSourceFile(filePath)!;
+
+      if (filePath.endsWith(".d.ts")) {
+        const metadataFilePath = filePath.replace(/\.d\.ts$/, ".metadata.json");
+        if (fs.pathExistsSync(metadataFilePath)) {
+          fileInfo.metadata = fs.readJsonSync(metadataFilePath);
+        }
+        else {
+          fileInfo.metadata = undefined;
+        }
+      }
+      else {
+        fileInfo.metadata = new MetadataCollector().getMetadata(sourceFile, false, (value, tsNode) => {
+          if (value && value["__symbolic"] && value["__symbolic"] === "error") {
+            diagnostics.push({
+              file: sourceFile,
+              start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
+              messageText: value["message"],
+              category: ts.DiagnosticCategory.Error,
+              code: 0,
+              length: undefined
+            });
           }
-        }
-      }
-      catch (err) {
-        err.message = sourceFile.fileName + "==>\n" + err.message;
-        throw err;
+
+          return value;
+        });
       }
     }
 
-    return result;
-  }
-
-  public getImports(filePath: string): { module: string; targets: string[] }[] {
-    const sourceFile = this._program.getSourceFile(filePath)!;
-    return this._getSourceNodes(sourceFile)
-      .filter(node => node.kind === ts.SyntaxKind.ImportDeclaration)
-      .map(node => ({
-        module: ((node as ts.ImportDeclaration).moduleSpecifier as ts.StringLiteral).text,
-        targets: optional(() =>
-          ((node as ts.ImportDeclaration).importClause!.namedBindings! as ts.NamedImports).elements
-            .map(item => item.propertyName ? item.propertyName.text : item.name.text)
-        )
-      }))
-      .filter(item => item.module && item.targets) as { module: string; targets: string[] }[];
-  }
-
-  private _getParentClassNode(node: ts.Node): ts.ClassDeclaration | undefined {
-    if (ts.isClassDeclaration(node)) {
-      return node;
-    }
-
-    return node.parent && this._getParentClassNode(node.parent);
+    fileInfo.syncVersions.metadata = fileInfo.version;
+    return {metadata: fileInfo.metadata, diagnostics};
   }
 
   private _getSourceNodes(sourceFile: ts.SourceFile): ts.Node[] {
@@ -570,23 +609,13 @@ export class SdTypescriptBuilder {
     return result;
   }
 
-  /*private _findNodes(node: ts.Node | undefined, kind: ts.SyntaxKind): ts.Node[] {
-    if (!node) {
-      return [];
+  public updateDependencies(): void {
+    for (const fileInfo of this._fileInfos) {
+      if (!fileInfo.dependencies && fileInfo.sourceFile) {
+        fileInfo.dependencies = this._getDependencies(fileInfo.sourceFile);
+      }
     }
-
-    const result: ts.Node[] = [];
-
-    if (node.kind === kind) {
-      result.push(node);
-    }
-
-    for (const child of node.getChildren()) {
-      result.push(...this._findNodes(child, kind));
-    }
-
-    return result;
-  }*/
+  }
 
   private _getDependencies(sourceFile: ts.SourceFile): string[] {
     const result: string[] = [];
@@ -607,7 +636,7 @@ export class SdTypescriptBuilder {
 
             const fileName = path.normalize((node as ts.SourceFile).fileName);
             if (!result.includes(fileName) && fileName !== path.normalize(sourceFile.fileName)) {
-              result.push(path.normalize(fileName));
+              result.push(fileName);
               const fileInfo = this._fileInfos.single(item => item.filePath === fileName);
               if (fileInfo && fileInfo.dependencies) {
                 result.push(...fileInfo.dependencies.filter(item => !result.includes(item) && item !== path.normalize(sourceFile.fileName)));
@@ -623,14 +652,19 @@ export class SdTypescriptBuilder {
         }
       }
 
-      if (sourceFile["scssDependencies"]) {
-        result.push(...(sourceFile["scssDependencies"] as string[]).filter(item => !result.includes(item)));
+      const matches = sf.getFullText().replace(/[\r\n\s]/g, "").match(/loadChildren:"([^#]*)#/g);
+      if (matches) {
+        for (const match of matches) {
+          const importRelativePath = match.match(/loadChildren:"([^#]*)#/)![1];
+          const importFilePath = path.resolve(path.dirname(sf.fileName), importRelativePath) + ".ts";
+          result.push(importFilePath);
+        }
       }
     };
 
     doing(sourceFile);
 
-    return result;
+    return result.distinct();
   }
 
   public static convertScssToCss(fileName: string, content: string): { content: string; dependencies: string[] } {
@@ -690,9 +724,27 @@ export class SdTypescriptBuilder {
     for (const filePath of filePaths) {
       const currResult = this._fileInfos
         .filter(fileInfo =>
-          this._isMyFile(fileInfo.filePath) &&
+          fileInfo.isMyFile &&
           fileInfo.dependencies &&
           fileInfo.dependencies.includes(filePath) &&
+          !result.some(item1 => item1 === fileInfo.filePath)
+        )
+        .map(fileInfo => fileInfo.filePath);
+
+      result.push(...currResult);
+    }
+
+    return result;
+  }
+
+  private _getReverseEmbedDependencies(filePaths: string[]): string[] {
+    const result: string[] = [];
+
+    for (const filePath of filePaths) {
+      const currResult = this._fileInfos
+        .filter(fileInfo =>
+          fileInfo.isMyFile &&
+          fileInfo.embedDependencies.includes(filePath) &&
           !result.some(item1 => item1 === fileInfo.filePath)
         )
         .map(fileInfo => fileInfo.filePath);
@@ -708,9 +760,53 @@ export class SdTypescriptBuilder {
   }
 }
 
-interface ITsFileChangeInfo {
+export interface ITsFileChangeInfo {
   type: TsFileChangeInfoType;
   filePath: string;
 }
 
-type TsFileChangeInfoType = FileChangeInfoType | "dependency" | "dependency-scss";
+export type TsFileChangeInfoType = FileChangeInfoType | "dependency" | "embed-dependency";
+
+interface ITsImportInfo {
+  module: string;
+  targets: string[];
+}
+
+export interface ITsNgModuleInfo {
+  module: string | undefined;
+  path: string;
+  name: string;
+  exports: string[];
+  providers: string[];
+}
+
+export interface ITsNgComponentOrDirectiveInfo {
+  module: string | undefined;
+  path: string;
+  name: string;
+  selector: string;
+  template: string | undefined;
+}
+
+interface ITsFileInfo {
+  filePath: string;
+  sourceFile: ts.SourceFile | undefined;
+  version: number;
+  isMyFile: boolean;
+  embedDependencies: string[];
+  dependencies?: string[];
+  outputText?: string;
+  sourceMapText?: string;
+  declarationText?: string;
+  metadata?: ModuleMetadata;
+  imports?: ITsImportInfo[];
+  ngModules?: ITsNgModuleInfo[];
+  ngComponentOrDirectives?: ITsNgComponentOrDirectiveInfo[];
+  syncVersions: {
+    sourceFile?: number;
+    imports?: number;
+    metadata?: number;
+    ngModules?: number;
+    ngComponentOrDirectives?: number;
+  };
+}
