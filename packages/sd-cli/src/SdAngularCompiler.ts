@@ -137,7 +137,95 @@ export class SdAngularCompiler extends events.EventEmitter {
   }
 
   private _sourceCompileConfigs(opt: { aot: boolean; sourceMap: boolean }): webpack.Configuration {
-    const loaders: webpack.RuleSetUse = ["@ngtools/webpack"];
+    if (opt.aot) {
+      const mainPath = path.resolve(__dirname, "../lib/main.aot.js");
+      const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
+      const moduleName = path.basename(modulePath);
+
+      return {
+        module: {
+          rules: [
+            {
+              test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+              loaders: [
+                {
+                  loader: "@angular-devkit/build-optimizer/webpack-loader",
+                  options: {
+                    sourceMap: opt.sourceMap
+                  }
+                },
+                "@ngtools/webpack"
+              ]
+            },
+            {
+              test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
+              parser: {system: true}
+            }
+          ]
+        },
+        plugins: [
+          new AngularCompilerPlugin({
+            mainPath,
+            platform: PLATFORM.Browser,
+            sourceMap: opt.sourceMap,
+            directTemplateLoading: true,
+            tsConfigPath: this._tsConfigPath,
+            entryModule: `${modulePath}#${moduleName}`,
+            basePath: process.cwd(),
+            forkTypeChecker: true,
+            host: new SdWebpackInputHostWithScss(fs),
+            skipCodeGeneration: false,
+            compilerOptions: {
+              ...this._parsedTsConfig.options,
+              rootDir: undefined,
+              declaration: false,
+              removeComments: true,
+              skipLibCheck: false,
+              skipTemplateCodegen: false,
+              strictMetadataEmit: true,
+              fullTemplateTypeCheck: true,
+              strictInjectionParameters: true,
+              enableResourceInlining: true
+            }
+          }),
+          new webpack.ContextReplacementPlugin(
+            /angular[\\/]core[\\/]fesm5/,
+            this._parsedTsConfig.options.rootDir!,
+            {}
+          )
+        ]
+      };
+    }
+    else {
+      return {
+        module: {
+          rules: [
+            {
+              test: /\.ts$/,
+              loaders: [
+                require.resolve("./loaders/ts-transpile-loader"),
+                require.resolve("./loaders/inline-sass-loader"),
+                "angular-router-loader"
+              ]
+            },
+            {
+              test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
+              parser: {system: true}
+            }
+          ]
+        },
+        plugins: [
+          new webpack.ContextReplacementPlugin(
+            /angular[\\/]core[\\/]fesm5/,
+            this._parsedTsConfig.options.rootDir!,
+            {}
+          )
+        ]
+      };
+    }
+
+
+    /*const loaders: webpack.RuleSetUse = ["@ngtools/webpack"];
 
     if (opt.aot) {
       loaders.unshift({
@@ -166,7 +254,7 @@ export class SdAngularCompiler extends events.EventEmitter {
           ...opt.aot ? [] : [
             {
               test: /\.ts$/,
-              loader: require.resolve("./inline-sass-dependency-loader")
+              loader: require.resolve("./loaders/inline-sass-dependency-loader")
             }
           ]
         ]
@@ -202,7 +290,7 @@ export class SdAngularCompiler extends events.EventEmitter {
           {}
         )
       ]
-    };
+    };*/
   }
 
   private _assetsFileConfigs(opt: { hash: boolean }): webpack.Configuration {

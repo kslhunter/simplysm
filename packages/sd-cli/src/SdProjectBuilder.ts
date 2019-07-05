@@ -295,7 +295,7 @@ export class SdProjectBuilder {
 
     // "simplysm.json" 정보 가져오기
     const config: ISdProjectConfig = SdCliUtils.getConfigObj(
-      argv.watch ? "development" : "production",
+      "development",
       argv.options ? argv.options.split(",").map(item => item.trim()) : undefined
     );
 
