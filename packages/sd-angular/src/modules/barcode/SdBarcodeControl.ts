@@ -36,11 +36,6 @@ export class SdBarcodeControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate(Number)
   @SdNotifyPropertyChange()
-  public fontSize = 12;
-
-  @Input()
-  @SdTypeValidate(Number)
-  @SdNotifyPropertyChange()
   public margin = 10;
 
   public constructor(private readonly _elRef: ElementRef) {
@@ -60,7 +55,7 @@ export class SdBarcodeControl implements ISdNotifyPropertyChange {
             width: this.lineWidth,
             height: this.height,
             fontOptions: "bold",
-            fontSize: this.fontSize
+            fontSize: this.lineWidth * 12
           }
         );
       }
