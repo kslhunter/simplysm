@@ -33,6 +33,16 @@ export class SdBarcodeControl implements ISdNotifyPropertyChange {
   @SdNotifyPropertyChange()
   public height = 58;
 
+  @Input()
+  @SdTypeValidate(Number)
+  @SdNotifyPropertyChange()
+  public fontSize = 12;
+
+  @Input()
+  @SdTypeValidate(Number)
+  @SdNotifyPropertyChange()
+  public margin = 10;
+
   public constructor(private readonly _elRef: ElementRef) {
   }
 
@@ -45,11 +55,12 @@ export class SdBarcodeControl implements ISdNotifyPropertyChange {
           canvasEl,
           this.value,
           {
+            margin: this.margin,
             format: this.type,
             width: this.lineWidth,
             height: this.height,
             fontOptions: "bold",
-            fontSize: this.lineWidth * 12
+            fontSize: this.fontSize
           }
         );
       }
