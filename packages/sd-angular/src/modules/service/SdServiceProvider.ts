@@ -24,10 +24,12 @@ export class SdServiceProvider implements OnDestroy {
     await this.client.connectAsync();
   }
 
-  public on<T extends SdServiceEventBase<any, any>>(eventType: Type<T>, info: T["info"], cb: (data: T["data"]) => (Promise<void> | void)): void {
-    this.client.addEventListenerAsync(eventType, info, cb).catch(err => {
-      this._logger.error(err);
-    });
+  public async on<T extends SdServiceEventBase<any, any>>(eventType: Type<T>, info: T["info"], cb: (data: T["data"]) => (Promise<void> | void)): Promise<number | undefined> {
+    return await this.client.addEventListenerAsync(eventType, info, cb);
+  }
+
+  public off(id: number): void {
+    this.client.removeEventListener(id);
   }
 
   public emit<T extends SdServiceEventBase<any, any>>(eventType: Type<T>, infoSelector: (item: T["info"]) => boolean, data: T["data"]): void {

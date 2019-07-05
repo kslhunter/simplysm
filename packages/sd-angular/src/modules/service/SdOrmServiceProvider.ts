@@ -1,6 +1,6 @@
 import {SdServiceProvider} from "./SdServiceProvider";
 import {Injectable} from "@angular/core";
-import {DbContext, IDbContextExecutor, IQueryDef} from "@simplysm/sd-orm";
+import {DbContext, IDbContextExecutor, IQueryDef, ITableDef} from "@simplysm/sd-orm";
 import {Type, Wait} from "@simplysm/sd-core";
 import {SdServiceClient} from "@simplysm/sd-service";
 
@@ -54,5 +54,10 @@ export class SdOrmServiceProvider {
 
     const db = new dbType(new SdServiceDbContextExecutor(this._service.client));
     return await db.connectAsync(callback, trans);
+  }
+
+  public getTableDefinitions(dbType: Type<DbContext>): ITableDef[] {
+    const db = new dbType(new SdServiceDbContextExecutor(this._service.client));
+    return db.getTableDefinitions();
   }
 }

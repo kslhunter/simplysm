@@ -1,5 +1,3 @@
-import {getSystemPath, normalize, Path} from "@angular-devkit/core";
-import {NodeWatchFileSystem, VirtualFileSystemDecorator} from "@ngtools/webpack/src/virtual_file_system_decorator";
 import {
   ITsFileChangeInfo,
   ITsNgComponentOrDirectiveInfo,
@@ -7,32 +5,33 @@ import {
   SdTypescriptBuilder
 } from "../SdTypescriptBuilder";
 import {IFileChangeInfo} from "@simplysm/sd-core";
-import * as fs from "fs-extra";
 import * as path from "path";
+import * as fs from "fs-extra";
 import {JSDOM} from "jsdom";
 import * as glob from "glob";
 
-export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
+export class SdNgGenerator {
   private readonly _builder: SdTypescriptBuilder;
 
   private readonly _pagesDirPath: string;
   private readonly _modalsDirPath: string;
+  private readonly _printTemplatesDirPath: string;
   private readonly _controlsDirPath: string;
   private readonly _modulesDirPath: string;
 
-  public constructor(private readonly _virtualInputFileSystem: VirtualFileSystemDecorator,
-                     private readonly _replacements: Map<Path, Path> | ((path: Path) => Path),
-                     private readonly _tsConfigPath: string) {
-    super(_virtualInputFileSystem);
-
+  public constructor(private readonly _tsConfigPath: string) {
     this._builder = new SdTypescriptBuilder(this._tsConfigPath);
 
     this._pagesDirPath = path.resolve(this._builder.rootDirPath, "pages");
     this._modalsDirPath = path.resolve(this._builder.rootDirPath, "modals");
+    this._printTemplatesDirPath = path.resolve(this._builder.rootDirPath, "print-templates");
     this._controlsDirPath = path.resolve(this._builder.rootDirPath, "controls");
     this._modulesDirPath = path.resolve(this._builder.rootDirPath, "_modules");
+  }
 
+  public build(): void {
     this._builder.updateDependencies();
+
     const newChangeInfos = this._generateModuleFiles(this._builder.getFilePaths().map(item => ({
       type: "add",
       filePath: item
@@ -44,133 +43,22 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
     }
   }
 
-  public watch(files: string[],
-               dirs: string[],
-               missing: string[],
-               startTime: number | undefined,
-               options: {},
-               callback: any,
-               callbackUndelayed: (filename: string, timestamp: number) => void): any {
-    files.push(...[
-      ...glob.sync(path.resolve(this._builder.rootDirPath, "**", "*.ts")),
-      ...this._builder.getWatchFilePaths()
-    ]);
-
-    const reverseReplacements = new Map<string, string>();
-    const reverseTimestamps = (map: Map<string, number>) => {
-      for (const entry of Array.from(map.entries())) {
-        const original = reverseReplacements.get(entry[0]);
-        if (original) {
-          map.set(original, entry[1]);
-          map.delete(entry[0]);
+  public async watch(watch: () => void, done: () => void): Promise<void> {
+    await this._builder.watch(
+      changedInfos => {
+        const myTsFilePaths = this._builder.getFilePaths();
+        const myChangedInfos = changedInfos.filter(item => item.type === "unlink" || myTsFilePaths.includes(item.filePath));
+        if (myChangedInfos.length > 0) {
+          return this._generateModuleFiles(myChangedInfos);
         }
+      },
+      () => {
+        watch();
+      },
+      () => {
+        done();
       }
-
-      return map;
-    };
-
-    const newCallbackUndelayed = async (filename: string, timestamp: number) => {
-      const original = reverseReplacements.get(filename);
-      if (original) {
-        this._virtualInputFileSystem.purge(original);
-        callbackUndelayed(original, timestamp);
-      }
-      else {
-        callbackUndelayed(filename, timestamp);
-      }
-    };
-
-    const newCallback = async (
-      err: Error | null,
-      filesModified: string[],
-      contextModified: string[],
-      missingModified: string[],
-      fileTimestamps: Map<string, number>,
-      contextTimestamps: Map<string, number>
-    ) => {
-      const filePaths = filesModified.map(item => item.replace(/\.js$/, ".d.ts"));
-
-      const changeInfos: IFileChangeInfo[] = filePaths.map(item => ({
-        filePath: item,
-        type: fs.pathExistsSync(item) ? "change" : "unlink"
-      }));
-
-      const allChangeInfos = await this._builder.applyChanges(changeInfos, currChangeInfos => {
-        return this._generateModuleFiles(currChangeInfos);
-      });
-
-      const changedFilePaths = allChangeInfos
-        .map(item => item.filePath.replace(/\.d\.ts$/, ".js"))
-        .filter(item => !filesModified.includes(item));
-
-      filesModified.push(...changedFilePaths);
-
-      this._virtualInputFileSystem.purge(filesModified);
-
-      // Update fileTimestamps with timestamps from virtual files.
-      const virtualFilesStats = this._virtualInputFileSystem.getVirtualFilesPaths()
-        .map(fileName => ({
-          path: fileName,
-          mtime: +this._virtualInputFileSystem.statSync(fileName).mtime
-        }));
-      virtualFilesStats.forEach(stats => fileTimestamps.set(stats.path, +stats.mtime));
-
-      callback(
-        err,
-        filesModified.map(value => reverseReplacements.get(value) || value),
-        contextModified.map(value => reverseReplacements.get(value) || value),
-        missingModified.map(value => reverseReplacements.get(value) || value),
-        reverseTimestamps(fileTimestamps),
-        reverseTimestamps(contextTimestamps)
-      );
-    };
-
-    const mapReplacements = (original: string[]): string[] => {
-      if (!this._replacements) {
-        return original;
-      }
-      const replacements = this._replacements;
-
-      return original.map(file => {
-        if (typeof replacements === "function") {
-          const replacement = getSystemPath(replacements(normalize(file)));
-          if (replacement !== file) {
-            reverseReplacements.set(replacement, file);
-          }
-
-          return replacement;
-        }
-        else {
-          const replacement = replacements.get(normalize(file));
-          if (replacement) {
-            const fullReplacement = getSystemPath(replacement);
-            reverseReplacements.set(fullReplacement, file);
-
-            return fullReplacement;
-          }
-          else {
-            return file;
-          }
-        }
-      });
-    };
-
-    const watcher = super.watch(
-      mapReplacements(files),
-      mapReplacements(dirs),
-      mapReplacements(missing),
-      startTime,
-      options,
-      newCallback,
-      newCallbackUndelayed
     );
-
-    return {
-      close: () => watcher.close(),
-      pause: () => watcher.pause(),
-      getFileTimestamps: () => reverseTimestamps(watcher.getFileTimestamps()),
-      getContextTimestamps: () => reverseTimestamps(watcher.getContextTimestamps())
-    };
   }
 
   private _generateModuleFiles(changedInfos: ITsFileChangeInfo[]): IFileChangeInfo[] {
@@ -184,8 +72,6 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
         !item.filePath.endsWith("RoutingModule.ts")
       );
 
-    console.log(changedInfosForAllModule.map(item => item.filePath));
-
     if (changedInfosForAllModule.length > 0) {
       const ngModules = this._builder.getNgModules();
       const ngComponentOrDirectives = this._builder.getNgComponentAndDirectives();
@@ -194,7 +80,8 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
         .filter(item =>
           item.startsWith(this._controlsDirPath) ||
           item.startsWith(this._pagesDirPath) ||
-          item.startsWith(this._modalsDirPath)
+          item.startsWith(this._modalsDirPath) ||
+          item.startsWith(this._printTemplatesDirPath)
         );
 
       for (const filePath of filePathsForModule) {
@@ -213,30 +100,30 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
         }
       }
     }
-    else {
-      // pages, controls, modals => Module.ts
-      const changedInfosForModule = changedInfos
-        .filter(item =>
-          item.filePath.startsWith(this._controlsDirPath) ||
-          item.filePath.startsWith(this._pagesDirPath) ||
-          item.filePath.startsWith(this._modalsDirPath)
-        );
 
-      if (changedInfosForModule.length > 0) {
-        const ngModules = this._builder.getNgModules();
-        const ngComponentOrDirectives = this._builder.getNgComponentAndDirectives();
+    // pages, controls, modals => Module.ts
+    const changedInfosForModule = changedInfos
+      .filter(item =>
+        item.filePath.startsWith(this._controlsDirPath) ||
+        item.filePath.startsWith(this._pagesDirPath) ||
+        item.filePath.startsWith(this._modalsDirPath) ||
+        item.filePath.startsWith(this._printTemplatesDirPath)
+      );
 
-        for (const changedInfo of changedInfosForModule) {
-          try {
-            const newChangeInfo = this._generateNgModule(ngModules!, ngComponentOrDirectives!, changedInfo);
-            if (newChangeInfo) {
-              newChangeInfos.push(newChangeInfo);
-            }
+    if (changedInfosForModule.length > 0) {
+      const ngModules = this._builder.getNgModules();
+      const ngComponentOrDirectives = this._builder.getNgComponentAndDirectives();
+
+      for (const changedInfo of changedInfosForModule) {
+        try {
+          const newChangeInfo = this._generateNgModule(ngModules!, ngComponentOrDirectives!, changedInfo);
+          if (newChangeInfo) {
+            newChangeInfos.push(newChangeInfo);
           }
-          catch (err) {
-            err.message = changedInfo.filePath + " ==>\n" + err.message;
-            throw err;
-          }
+        }
+        catch (err) {
+          err.message = changedInfo.filePath + " ==>\n" + err.message;
+          throw err;
         }
       }
     }
@@ -342,7 +229,10 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
       }
       content += `  ],\n`;
 
-      if (changedInfo.filePath.startsWith(this._modalsDirPath)) {
+      if (
+        changedInfo.filePath.startsWith(this._modalsDirPath) ||
+        changedInfo.filePath.startsWith(this._printTemplatesDirPath)
+      ) {
         content += `  entryComponents: [${className}],\n`;
       }
 

@@ -237,8 +237,8 @@ export class SdProjectBuilder {
         }
       })).then(() => {
         logger.info("모든 'metadata'가 완료되었습니다.");
-      })/*,
-      Promise.all(packageKeys.map(async packageKey => {
+      })
+      /*Promise.all(packageKeys.map(async packageKey => {
         if (config.packages[packageKey].type === "none") {
           return;
         }
@@ -248,7 +248,7 @@ export class SdProjectBuilder {
         }
 
         const worker = await this._runWorkerAsync(
-          `${prefix}-ng-routes`,
+          `${prefix}-ng-module`,
           packageKey
         );
 
@@ -288,6 +288,34 @@ export class SdProjectBuilder {
 
     const span = new DateTime().tick - startDateTime!.tick;
     logger.info(`모든 빌드 프로세스가 완료되었습니다: ${span.toLocaleString()}ms\n${cpuMessage}`);
+  }
+
+  public async generateNgModule(argv: { watch?: boolean; options?: string }): Promise<void> {
+    const logger = new Logger("@simplysm/sd-cli");
+
+    // "simplysm.json" 정보 가져오기
+    const config: ISdProjectConfig = SdCliUtils.getConfigObj(
+      argv.watch ? "development" : "production",
+      argv.options ? argv.options.split(",").map(item => item.trim()) : undefined
+    );
+
+    const prefix = argv.watch ? "watch" : "run";
+    const packageKeys = Object.keys(config.packages);
+
+    await Promise.all(packageKeys.map(async packageKey => {
+      if (config.packages[packageKey].type === "none") {
+        return;
+      }
+
+      if (config.packages[packageKey].type === "library" || config.packages[packageKey].framework !== "angular") {
+        return;
+      }
+
+
+      await this._runWorkerAsync(`${prefix}-ng-gen`, packageKey);
+    })).then(() => {
+      logger.info("모든 'ng-gen'이 완료되었습니다.");
+    });
   }
 
   public async publishAsync(argv: { build: boolean; options?: string }): Promise<void> {

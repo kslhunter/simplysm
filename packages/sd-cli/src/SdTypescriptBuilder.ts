@@ -1,5 +1,5 @@
 import * as ts from "typescript";
-import {FileChangeInfoType, FileWatcher, IFileChangeInfo, optional, Wait} from "@simplysm/sd-core";
+import {FileChangeInfoType, FileWatcher, IFileChangeInfo, optional} from "@simplysm/sd-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sass from "node-sass";
@@ -48,7 +48,7 @@ export class SdTypescriptBuilder {
             filePath: normalFilePath,
             sourceFile,
             version: 0,
-            isMyFile: this._isMyFile(normalFilePath),
+            isMyFile: this.isMyFile(normalFilePath),
             embedDependencies: converted.dependencies.map(item => path.normalize(item)),
             syncVersions: {}
           };
@@ -86,20 +86,6 @@ export class SdTypescriptBuilder {
   public async watch(callback: (changeInfos: ITsFileChangeInfo[]) => IFileChangeInfo[] | void | Promise<IFileChangeInfo[] | void>, watch?: () => void, done?: () => void): Promise<void> {
     this.updateDependencies();
 
-    const doingChanges = async (doingChangeInfos: IFileChangeInfo[]) => {
-      this.configFileInfos(doingChangeInfos);
-      this.initializeProgram();
-      this.updateDependencies();
-
-      const currentChangeInfos: ITsFileChangeInfo[] = this.convertChangeInfosByDependencies(doingChangeInfos);
-
-      const newChangedFileInfos = await callback(currentChangeInfos);
-
-      if (newChangedFileInfos && newChangedFileInfos.length > 0) {
-        await doingChanges(newChangedFileInfos);
-      }
-    };
-
     const firstNewChangedFileInfos = await callback(this._fileInfos.filter(item => item.isMyFile).map(item => ({
       type: "add",
       filePath: item.filePath
@@ -115,17 +101,14 @@ export class SdTypescriptBuilder {
       done();
     }
 
-    let processing = false;
-
-    const createWatcher = async (first?: boolean) => {
+    const createWatcher = async () => {
       const watcher = await FileWatcher.watch(
         [path.resolve(this.rootDirPath, "**", "*.ts"), ...this.getWatchFilePaths()],
         ["add", "change", "unlink"],
         async changeInfos => {
-          await Wait.true(() => !processing);
-          processing = true;
+          watcher.close();
 
-          if (!first && watch) {
+          if (watch) {
             watch();
           }
 
@@ -137,14 +120,12 @@ export class SdTypescriptBuilder {
             done();
           }
 
-          processing = false;
-          watcher.close();
-          await createWatcher(false);
+          await createWatcher();
         }
       );
     };
 
-    await createWatcher(true);
+    await createWatcher();
   }
 
   public async applyChanges(changeInfos: IFileChangeInfo[], callback: (changeInfos: ITsFileChangeInfo[]) => IFileChangeInfo[] | void | Promise<IFileChangeInfo[] | void>): Promise<IFileChangeInfo[]> {
@@ -188,7 +169,7 @@ export class SdTypescriptBuilder {
   }
 
   public convertChangeInfosByDependencies(changeInfos: IFileChangeInfo[]): ITsFileChangeInfo[] {
-    const result: ITsFileChangeInfo[] = changeInfos.filter(item => this._isMyFile(item.filePath));
+    const result: ITsFileChangeInfo[] = changeInfos.filter(item => this.isMyFile(item.filePath));
     result.push(
       ...this._getReverseDependencies(changeInfos.map(item => item.filePath))
         .filter(item => !result.some(item1 => item1.filePath === item))
@@ -563,7 +544,8 @@ export class SdTypescriptBuilder {
       if (filePath.endsWith(".d.ts")) {
         const metadataFilePath = filePath.replace(/\.d\.ts$/, ".metadata.json");
         if (fs.pathExistsSync(metadataFilePath)) {
-          fileInfo.metadata = fs.readJsonSync(metadataFilePath);
+          const metadataContent = fs.readJsonSync(metadataFilePath);
+          fileInfo.metadata = metadataContent instanceof Array ? metadataContent[0] : metadataContent;
         }
         else {
           fileInfo.metadata = undefined;
@@ -755,7 +737,7 @@ export class SdTypescriptBuilder {
     return result;
   }
 
-  private _isMyFile(filePath: string): boolean {
+  public isMyFile(filePath: string): boolean {
     return filePath.endsWith(".ts") && path.normalize(filePath).startsWith(path.normalize(this.rootDirPath));
   }
 }

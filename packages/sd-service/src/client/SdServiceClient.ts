@@ -94,9 +94,14 @@ export class SdServiceClient {
     });
   }
 
-  public async addEventListenerAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>, info: T["info"], cb: (data: T["data"]) => (Promise<void> | void)): Promise<void> {
+  public async addEventListenerAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>, info: T["info"], cb: (data: T["data"]) => (Promise<void> | void)): Promise<number> {
     const id = await this.sendAsync("addEventListener", [eventType.name, info]);
     this._eventListeners.set(id, cb);
+    return id;
+  }
+
+  public removeEventListener(id: number): void {
+    this._eventListeners.delete(id);
   }
 
   public async emitAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>, infoSelector: (item: T["info"]) => boolean, data: T["data"]): Promise<void> {

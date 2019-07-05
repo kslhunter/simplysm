@@ -278,5 +278,8 @@ export const sorm = {
 
     const query = `${QueryHelper.getFieldQuery(arg1)} ${arg2} ${QueryHelper.getFieldQuery(arg3)}`;
     return new QueryUnit(type, "(" + query + ")") as any;
+  },
+  query<T extends QueryType>(q: string, targetType: Type<T>): StripTypeWrap<T> | undefined {
+    return new QueryUnit(targetType, q) as any;
   }
 };

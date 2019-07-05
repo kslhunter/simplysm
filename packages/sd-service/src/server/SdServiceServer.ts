@@ -21,12 +21,7 @@ export class SdServiceServer extends EventEmitter {
   private _wsServer?: WebSocket.Server;
   private _wsConnections: SdServiceServerConnection[] = [];
   private _httpConnections: net.Socket[] = [];
-  private _eventListeners: {
-    id: number;
-    eventName: string;
-    info: object;
-    conn: SdServiceServerConnection;
-  }[] = [];
+  private _eventListeners: ISdServiceServerEventListener[] = [];
   private readonly _middlewares: NextHandleFunction[] = [];
 
   public get isListening(): boolean {
@@ -267,6 +262,13 @@ export class SdServiceServer extends EventEmitter {
     });
   }
 
+  public getEventListeners(eventName: string): { id: number; info: object }[] {
+    return this._eventListeners.filter(item => item.eventName === eventName).map(item => ({
+      id: item.id,
+      info: item.info
+    }));
+  }
+
   private async _onSocketRequestAsync(conn: SdServiceServerConnection, req: ISdServiceRequest): Promise<ISdServiceResponse> {
     if (req.command === "addEventListener") {
       const eventListenerId = (this._eventListeners.max(item => item.id) || 0) + 1;
@@ -359,4 +361,11 @@ export class SdServiceServer extends EventEmitter {
 <body>${code}: ${message}</body>
 </html>`);
   }
+}
+
+export interface ISdServiceServerEventListener {
+  id: number;
+  eventName: string;
+  info: object;
+  conn: SdServiceServerConnection;
 }

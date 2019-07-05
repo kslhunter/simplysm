@@ -18,9 +18,8 @@ import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
 import {SdCliUtils} from "./commons/SdCliUtils";
 import * as webpackMerge from "webpack-merge";
-import {SdWebpackNgModulePlugin} from "./plugins/SdWebpackNgModulePlugin";
 import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
-import {SdWebpackInputHostWithScss} from "./commons/SdWebpackInputHostWithScss";
+import {SdWebpackInputHostWithScss} from "./plugins/SdWebpackInputHostWithScss";
 
 export class SdAngularCompiler extends events.EventEmitter {
   private readonly _contextPath: string;
@@ -197,7 +196,6 @@ export class SdAngularCompiler extends events.EventEmitter {
             enableResourceInlining: true
           }
         }),
-        new SdWebpackNgModulePlugin({tsConfigPath: this._tsConfigPath}),
         new webpack.ContextReplacementPlugin(
           /angular[\\/]core[\\/]fesm5/,
           this._parsedTsConfig.options.rootDir!,
