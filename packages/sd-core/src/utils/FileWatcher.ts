@@ -1,12 +1,11 @@
 import * as chokidar from "chokidar";
 import {Logger} from "./Logger";
-import * as fs from "fs";
 import * as path from "path";
 
 export class FileWatcher {
   public static async watch(paths: string | string[], sits: FileChangeInfoType[], callback: (changedFiles: IFileChangeInfo[]) => (void | Promise<void>), millisecond?: number): Promise<chokidar.FSWatcher> {
-    return await new Promise<chokidar.FSWatcher>(resolve => {
-      const watcher = chokidar.watch((typeof paths === "string" ? [paths] : paths).map(item => item.replace(/\\/g, "/")))
+    return await new Promise<chokidar.FSWatcher>((resolve, reject) => {
+      const watcher = chokidar.watch((typeof paths === "string" ? [paths] : paths).map(item => item.replace(/\\/g, "/")).distinct())
         .on("ready", () => {
           let preservedFileChanges: IFileChangeInfo[] = [];
           let timeout: NodeJS.Timer;
@@ -32,12 +31,15 @@ export class FileWatcher {
           };
 
           for (const sit of sits) {
-            watcher.on(sit, (filePath, stats?: fs.Stats) => {
+            watcher.on(sit, filePath => {
               onWatched(sit, filePath);
             });
           }
 
           resolve(watcher);
+        })
+        .on("error", err => {
+          reject(err);
         });
     });
   }

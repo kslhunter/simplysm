@@ -19,17 +19,6 @@ const argv = yargs
     cmd => cmd.version(false)
   )
   .command(
-    "ng-gen",
-    "앵귤라 프로젝트의 _routes.ts 파일과 _modules 디렉토리 및 내용을 생성합니다.",
-    cmd => cmd.version(false)
-      .options({
-        options: {
-          type: "string",
-          describe: "빌드 옵션 설정 (설정파일에서 @로 시작하는 부분)"
-        }
-      })
-  )
-  .command(
     "build",
     "프로젝트의 각 패키지를 빌드합니다.",
     cmd => cmd.version(false)
@@ -72,12 +61,6 @@ const logger = new Logger("@simplysm/sd-cli");
       break;
     case "build":
       await new SdProjectBuilder().buildAsync(argv as any);
-      break;
-    case "ng-gen":
-      if (argv.watch) {
-        logger.warn("'ng-gen'의 감지모드와 'build'의 감지모드를 절대 함께 사용하지 마세요.");
-      }
-      await new SdProjectBuilder().generateNgModule(argv as any);
       break;
     case "publish":
       await new SdProjectBuilder().publishAsync(argv as any);

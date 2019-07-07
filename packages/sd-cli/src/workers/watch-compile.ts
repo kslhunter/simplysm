@@ -24,11 +24,12 @@ builder.watch(
     if (messages.length > 0) {
       SdWorkerUtils.sendMessage({type: "error", message: messages.distinct().join(os.EOL).trim()});
     }
-
-    SdWorkerUtils.sendMessage({type: "done"});
   },
   () => {
     SdWorkerUtils.sendMessage({type: "run"});
+  },
+  () => {
+    SdWorkerUtils.sendMessage({type: "done"});
   }
 ).then(() => {
   const config = SdCliUtils.getConfigObj("development", opts).packages[packageKey];

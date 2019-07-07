@@ -3,7 +3,7 @@ import {
   ITsNgComponentOrDirectiveInfo,
   ITsNgModuleInfo,
   SdTypescriptBuilder
-} from "../SdTypescriptBuilder";
+} from "@simplysm/sd-cli/dist/SdTypescriptBuilder";
 import {IFileChangeInfo} from "@simplysm/sd-core";
 import * as path from "path";
 import * as fs from "fs-extra";

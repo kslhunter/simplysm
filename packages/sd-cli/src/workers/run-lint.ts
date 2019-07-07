@@ -20,3 +20,4 @@ if (messages.length > 0) {
 }
 
 SdWorkerUtils.sendMessage({type: "done"});
+

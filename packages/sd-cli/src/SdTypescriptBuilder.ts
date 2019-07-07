@@ -103,11 +103,13 @@ export class SdTypescriptBuilder {
 
     const createWatcher = async () => {
       const watcher = await FileWatcher.watch(
-        [path.resolve(this.rootDirPath, "**", "*.ts"), ...this.getWatchFilePaths()],
+        [
+          path.resolve(this.rootDirPath, "**", "*.ts"),
+          ...this.getWatchFilePaths()
+            .filter(item => !item.startsWith(this.rootDirPath))
+        ],
         ["add", "change", "unlink"],
         async changeInfos => {
-          watcher.close();
-
           if (watch) {
             watch();
           }
@@ -120,6 +122,7 @@ export class SdTypescriptBuilder {
             done();
           }
 
+          watcher.close();
           await createWatcher();
         }
       );
@@ -129,6 +132,10 @@ export class SdTypescriptBuilder {
   }
 
   public async applyChanges(changeInfos: IFileChangeInfo[], callback: (changeInfos: ITsFileChangeInfo[]) => IFileChangeInfo[] | void | Promise<IFileChangeInfo[] | void>): Promise<IFileChangeInfo[]> {
+    if (changeInfos.length < 1) {
+      return [];
+    }
+
     const result = Object.clone(changeInfos);
 
     this.configFileInfos(changeInfos);
@@ -186,7 +193,12 @@ export class SdTypescriptBuilder {
 
   public initializeProgram(): void {
     const oldProgram = this._program;
-    this._program = ts.createProgram(glob.sync(path.resolve(this._tsConfig.options.rootDir!, "**", "*.ts")), this._tsConfig.options, this._host, oldProgram);
+    this._program = ts.createProgram(
+      glob.sync(path.resolve(this.rootDirPath, "**", "*.ts")),
+      this._tsConfig.options,
+      this._host,
+      oldProgram
+    );
     this._checker = this._program.getTypeChecker();
   }
 

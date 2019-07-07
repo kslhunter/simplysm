@@ -20,6 +20,7 @@ import {SdCliUtils} from "./commons/SdCliUtils";
 import * as webpackMerge from "webpack-merge";
 import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
 import {SdWebpackInputHostWithScss} from "./plugins/SdWebpackInputHostWithScss";
+import {SdWebpackNgModulePlugin} from "./plugins/SdWebpackNgModulePlugin";
 
 export class SdAngularCompiler extends events.EventEmitter {
   private readonly _contextPath: string;
@@ -136,98 +137,10 @@ export class SdAngularCompiler extends events.EventEmitter {
     };
   }
 
-  private _sourceCompileConfigs(opt: { aot: boolean; sourceMap: boolean }): webpack.Configuration {
-    if (opt.aot) {
-      const mainPath = path.resolve(__dirname, "../lib/main.aot.js");
-      const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
-      const moduleName = path.basename(modulePath);
+  private _sourceCompileConfigs(opt: { prod: boolean; sourceMap: boolean }): webpack.Configuration {
+    const loaders: webpack.RuleSetUse = ["@ngtools/webpack"];
 
-      return {
-        module: {
-          rules: [
-            {
-              test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
-              loaders: [
-                {
-                  loader: "@angular-devkit/build-optimizer/webpack-loader",
-                  options: {
-                    sourceMap: opt.sourceMap
-                  }
-                },
-                "@ngtools/webpack"
-              ]
-            },
-            {
-              test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
-              parser: {system: true}
-            }
-          ]
-        },
-        plugins: [
-          new AngularCompilerPlugin({
-            mainPath,
-            platform: PLATFORM.Browser,
-            sourceMap: opt.sourceMap,
-            directTemplateLoading: true,
-            tsConfigPath: this._tsConfigPath,
-            entryModule: `${modulePath}#${moduleName}`,
-            basePath: process.cwd(),
-            forkTypeChecker: true,
-            host: new SdWebpackInputHostWithScss(fs),
-            skipCodeGeneration: false,
-            compilerOptions: {
-              ...this._parsedTsConfig.options,
-              rootDir: undefined,
-              declaration: false,
-              removeComments: true,
-              skipLibCheck: false,
-              skipTemplateCodegen: false,
-              strictMetadataEmit: true,
-              fullTemplateTypeCheck: true,
-              strictInjectionParameters: true,
-              enableResourceInlining: true
-            }
-          }),
-          new webpack.ContextReplacementPlugin(
-            /angular[\\/]core[\\/]fesm5/,
-            this._parsedTsConfig.options.rootDir!,
-            {}
-          )
-        ]
-      };
-    }
-    else {
-      return {
-        module: {
-          rules: [
-            {
-              test: /\.ts$/,
-              loaders: [
-                require.resolve("./loaders/ts-transpile-loader"),
-                require.resolve("./loaders/inline-sass-loader"),
-                "angular-router-loader"
-              ]
-            },
-            {
-              test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
-              parser: {system: true}
-            }
-          ]
-        },
-        plugins: [
-          new webpack.ContextReplacementPlugin(
-            /angular[\\/]core[\\/]fesm5/,
-            this._parsedTsConfig.options.rootDir!,
-            {}
-          )
-        ]
-      };
-    }
-
-
-    /*const loaders: webpack.RuleSetUse = ["@ngtools/webpack"];
-
-    if (opt.aot) {
+    if (opt.prod) {
       loaders.unshift({
         loader: "@angular-devkit/build-optimizer/webpack-loader",
         options: {
@@ -236,9 +149,9 @@ export class SdAngularCompiler extends events.EventEmitter {
       });
     }
 
-    const mainPath = opt.aot ? path.resolve(__dirname, "../lib/main.aot.js") : path.resolve(__dirname, "../lib/main.js");
-    const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
-    const moduleName = path.basename(modulePath);
+    // const mainPath = opt.prod ? path.resolve(__dirname, "../lib/main.aot.js") : path.resolve(__dirname, "../lib/main.js");
+    /*const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
+    const moduleName = path.basename(modulePath);*/
 
     return {
       module: {
@@ -251,7 +164,7 @@ export class SdAngularCompiler extends events.EventEmitter {
             test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
             parser: {system: true}
           },
-          ...opt.aot ? [] : [
+          ...opt.prod ? [] : [
             {
               test: /\.ts$/,
               loader: require.resolve("./loaders/inline-sass-dependency-loader")
@@ -261,19 +174,19 @@ export class SdAngularCompiler extends events.EventEmitter {
       },
       plugins: [
         new AngularCompilerPlugin({
-          mainPath,
+          mainPath: path.resolve(this._contextPath, "src/main.ts"),
           platform: PLATFORM.Browser,
           sourceMap: opt.sourceMap,
+          nameLazyFiles: !opt.prod,
+          forkTypeChecker: true,
+          contextElementDependencyConstructor: require("webpack/lib/dependencies/ContextElementDependency"), //tslint:disable-line:no-require-imports
           directTemplateLoading: true,
           tsConfigPath: this._tsConfigPath,
-          entryModule: `${modulePath}#${moduleName}`,
-          basePath: process.cwd(),
-          forkTypeChecker: true,
+          skipCodeGeneration: !opt.prod,
+          // basePath: process.cwd(),
           host: new SdWebpackInputHostWithScss(fs),
-          skipCodeGeneration: !opt.aot,
           compilerOptions: {
-            ...this._parsedTsConfig.options,
-            rootDir: undefined,
+            /*...this._parsedTsConfig.options,
             declaration: false,
             removeComments: true,
             skipLibCheck: false,
@@ -281,16 +194,18 @@ export class SdAngularCompiler extends events.EventEmitter {
             strictMetadataEmit: true,
             fullTemplateTypeCheck: true,
             strictInjectionParameters: true,
-            enableResourceInlining: true
+            enableResourceInlining: true*/
+            rootDir: undefined
           }
         }),
+        new SdWebpackNgModulePlugin({tsConfigPath: this._tsConfigPath}),
         new webpack.ContextReplacementPlugin(
           /angular[\\/]core[\\/]fesm5/,
           this._parsedTsConfig.options.rootDir!,
           {}
         )
       ]
-    };*/
+    };
   }
 
   private _assetsFileConfigs(opt: { hash: boolean }): webpack.Configuration {
@@ -313,14 +228,14 @@ export class SdAngularCompiler extends events.EventEmitter {
     return opt.aot
       ? {
         entry: {
-          main: path.resolve(__dirname, "../lib/main.aot.js")
+          main: path.resolve(this._contextPath, "src/main.ts")
         }
       }
       : {
         entry: {
           main: [
             `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
-            path.resolve(__dirname, "../lib/main.js")
+            path.resolve(this._contextPath, "src/main.ts")
           ]
         },
         plugins: [
@@ -331,7 +246,7 @@ export class SdAngularCompiler extends events.EventEmitter {
 
   private _getWebpackCommonConfig(): webpack.Configuration {
     const faviconPath = path.resolve(this._contextPath, "src", "favicon.ico");
-
+    // const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
     return {
       output: {
         publicPath: `/${this._packageKey}/`,
@@ -388,17 +303,17 @@ export class SdAngularCompiler extends events.EventEmitter {
     const projectConfig = SdCliUtils.getConfigObj("production", this._options);
     const config = projectConfig.packages[this._packageKey];
 
-    const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
+    // const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
 
     const webpackConfig = webpackMerge(this._getWebpackCommonConfig(),
       {
         mode: "production",
         devtool: false,
-        resolve: {
+        /*resolve: {
           alias: {
             "SIMPLYSM_CLIENT_APP_MODULE_NGFACTORY": modulePath + ".ngfactory"
           }
-        },
+        },*/
         optimization: {
           noEmitOnErrors: true,
           runtimeChunk: "single",
@@ -456,7 +371,7 @@ export class SdAngularCompiler extends events.EventEmitter {
       },
       this._entryConfigs({aot: true}),
       this._assetsFileConfigs({hash: false}),
-      this._sourceCompileConfigs({aot: true, sourceMap: false}),
+      this._sourceCompileConfigs({prod: true, sourceMap: false}),
       this._styleConfigs({sourceMap: false, extract: true})
     );
 
@@ -519,16 +434,16 @@ export class SdAngularCompiler extends events.EventEmitter {
   }
 
   public async watchAsync(): Promise<NextHandleFunction[]> {
-    const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
+    // const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
     const webpackConfig = webpackMerge(this._getWebpackCommonConfig(),
       {
         mode: "development",
         devtool: "cheap-module-source-map",
-        resolve: {
+        /*resolve: {
           alias: {
             "SIMPLYSM_CLIENT_APP_MODULE": modulePath
           }
-        },
+        },*/
         output: {
           pathinfo: false
         },
@@ -566,16 +481,26 @@ export class SdAngularCompiler extends events.EventEmitter {
       },
       this._entryConfigs({aot: false}),
       this._assetsFileConfigs({hash: true}),
-      this._sourceCompileConfigs({aot: false, sourceMap: true}),
+      this._sourceCompileConfigs({prod: false, sourceMap: true}),
       this._styleConfigs({sourceMap: false, extract: false})
     );
 
+    this.emit("run");
+
     const compiler = webpack(webpackConfig);
 
-    compiler.hooks.watchRun.tapAsync("SdPackageCompiler", async (compiler1, callback) => {
+    let first = true;
+    compiler.hooks.invalid.tap("SdPackageCompiler", () => {
+      if (first) {
+        first = false;
+        this.emit("run");
+      }
+    });
+
+    /*compiler.hooks.watchRun.tapAsync("SdPackageCompiler", async (compiler1, callback) => {
       this.emit("run");
       callback();
-    });
+    });*/
 
     return await new Promise<NextHandleFunction[]>((resolve, reject) => {
       const devMiddleware = WebpackDevMiddleware(compiler, {
@@ -594,6 +519,7 @@ export class SdAngularCompiler extends events.EventEmitter {
       });
 
       compiler.hooks.done.tap("SdPackageCompiler", stats => {
+        first = true;
         this._emitWebpackCompilerStats(stats);
         resolve([devMiddleware, hotMiddleware]);
       });
