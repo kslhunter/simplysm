@@ -20,9 +20,6 @@ import * as webpackMerge from "webpack-merge";
 import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
 import {SdWebpackInputHostWithScss} from "./plugins/SdWebpackInputHostWithScss";
 import {SdWebpackNgModulePlugin} from "./plugins/SdWebpackNgModulePlugin";
-import * as TerserPlugin from "terser-webpack-plugin";
-import {SuppressExtractedTextChunksWebpackPlugin} from "@angular-devkit/build-angular/src/angular-cli-files/plugins/suppress-entry-chunks-webpack-plugin";
-import * as CircularDependencyPlugin from "circular-dependency-plugin";
 
 export class SdAngularCompiler extends events.EventEmitter {
   private readonly _contextPath: string;
@@ -171,10 +168,10 @@ export class SdAngularCompiler extends events.EventEmitter {
         ]
       },
       plugins: [
-        new SuppressExtractedTextChunksWebpackPlugin(),
+        /*new SuppressExtractedTextChunksWebpackPlugin(),
         new CircularDependencyPlugin({
           exclude: /([\\\/]node_modules[\\\/])|(ngfactory\.js$)/
-        }),
+        }),*/
         new AngularCompilerPlugin({
           mainPath: path.resolve(this._contextPath, "src/main.ts"),
           platform: PLATFORM.Browser,
@@ -246,7 +243,25 @@ export class SdAngularCompiler extends events.EventEmitter {
     const faviconPath = path.resolve(this._contextPath, "src", "favicon.ico");
     // const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
     return {
-      node: false,
+      /*node: {
+        "fsevents": "empty",
+        "fs": "empty",
+        "fs-extra": "empty",
+        "child_process": "empty",
+        "net": "empty",
+        "tls": "empty",
+        "tedious": "empty",
+        "chokidar": "empty",
+        "nodemailer": "empty",
+        "stream": "empty",
+        "crypto": "empty",
+        "http": "empty",
+        "https": "empty",
+        "os": "empty",
+        "path": "empty",
+        "timers": "empty",
+        "zlib": "empty"
+      },*/
       output: {
         publicPath: `/${this._packageKey}/`,
         path: this._distPath,
@@ -307,25 +322,14 @@ export class SdAngularCompiler extends events.EventEmitter {
         mode: "production",
         devtool: false,
         profile: false,
+        performance: {
+          hints: false
+        },
         optimization: {
           noEmitOnErrors: true,
           runtimeChunk: "single",
           splitChunks: {
-            maxAsyncRequests: Infinity,
-            cacheGroups: {
-              default: {chunks: "async", minChunks: 2, priority: 10},
-              common:
-                {
-                  name: "common",
-                  chunks: "async",
-                  minChunks: 2,
-                  enforce: true,
-                  priority: 5
-                },
-              vendors: false,
-              vendor: false
-            }
-            /*chunks: "all",
+            chunks: "all",
             maxInitialRequests: Infinity,
             minSize: 0,
             cacheGroups: {
@@ -336,15 +340,18 @@ export class SdAngularCompiler extends events.EventEmitter {
                   return `libs/${packageName.replace("@", "")}`;
                 }
               }
-            }*/
+            }
           },
           minimizer: [
+            new webpack.HashedModuleIdsPlugin(),
+            new OptimizeCSSAssetsPlugin()/*,
             new TerserPlugin({
+              extractComments: false,
               sourceMap: false,
               parallel: true,
               cache: true,
               terserOptions: {
-                ecma: 6,
+                ecma: 5,
                 warnings: false,
                 safari10: true,
                 output: {
@@ -361,13 +368,8 @@ export class SdAngularCompiler extends events.EventEmitter {
                   }
                 }
               }
-            }),
-            new webpack.HashedModuleIdsPlugin(),
-            new OptimizeCSSAssetsPlugin()
+            })*/
           ]
-        },
-        performance: {
-          hints: false
         },
         plugins: [
           new SdWebpackWriteFilePlugin([{
