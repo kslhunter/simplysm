@@ -12,6 +12,7 @@
   "sideEffects": false,
   "dependencies": {
     "@angular-devkit/build-optimizer": "^0.801.0",
+    "@angular-devkit/build-angular": "^0.801.0",
     "@angular-devkit/core": "^8.0.4",
     "@angular/common": "^8.0.2",
     "@angular/compiler": "^8.0.2",
@@ -21,6 +22,7 @@
     "@ngtools/webpack": "^8.0.3",
     "@simplysm/sd-core": "2.2.29",
     "@simplysm/sd-service": "2.2.29",
+    "circular-dependency-plugin": "^5.0.2",
     "copy-webpack-plugin": "^5.0.3",
     "core-js": "^3.1.4",
     "css-loader": "^3.0.0",
@@ -67,6 +69,7 @@
     "@types/webpack-hot-middleware": "^2.16.5",
     "@types/webpack-merge": "^4.1.5",
     "@types/yargs": "^13.0.0",
+    "@types/circular-dependency-plugin": "^5.0.0",
     "tslint": "^5.18.0",
     "typescript": "3.4.4",
     "typescript-tslint-plugin": "^0.5.2"

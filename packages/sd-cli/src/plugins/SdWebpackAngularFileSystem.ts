@@ -35,10 +35,10 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
     this._controlsDirPath = path.resolve(this._builder.rootDirPath, "controls");
     this._modulesDirPath = path.resolve(this._builder.rootDirPath, "_modules");
 
-    this._builder.updateDependencies();
+    /*fs.removeSync(this._modulesDirPath);
+    fs.removeSync(path.resolve(this._builder.rootDirPath, "_routes.ts"));*/
 
-    fs.removeSync(this._modulesDirPath);
-    fs.removeSync(path.resolve(this._builder.rootDirPath, "_routes.ts"));
+    this._builder.updateDependencies();
 
     const newChangeInfos = this._generateModuleFiles(this._builder.getFilePaths().map(item => ({
       type: "add",

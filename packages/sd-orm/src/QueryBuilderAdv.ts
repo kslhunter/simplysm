@@ -550,7 +550,12 @@ export class QueryBuilderAdv<T> {
 
   public getAllJoinDef(): { [chain: string]: IJoinDef } {
     if (!this._tableType) {
-      throw new Error("테이블 타입을 알 수 없습니다.");
+      if (this.joinDefs.length > 0) {
+        throw new Error("테이블 타입을 알 수 없습니다.");
+      }
+      else {
+        return {};
+      }
     }
 
     const result: { [chain: string]: IJoinDef } = {};

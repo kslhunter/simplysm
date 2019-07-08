@@ -8,7 +8,6 @@ import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import {NextHandleFunction} from "@simplysm/sd-service";
 import {SdWebpackWriteFilePlugin} from "./plugins/SdWebpackWriteFilePlugin";
-import * as TerserPlugin from "terser-webpack-plugin";
 import {Generator} from "@angular/service-worker/config";
 import {JsonConvert} from "@simplysm/sd-core";
 import {NodeFilesystem} from "./service-worker/filesystem";
@@ -21,6 +20,9 @@ import * as webpackMerge from "webpack-merge";
 import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
 import {SdWebpackInputHostWithScss} from "./plugins/SdWebpackInputHostWithScss";
 import {SdWebpackNgModulePlugin} from "./plugins/SdWebpackNgModulePlugin";
+import * as TerserPlugin from "terser-webpack-plugin";
+import {SuppressExtractedTextChunksWebpackPlugin} from "@angular-devkit/build-angular/src/angular-cli-files/plugins/suppress-entry-chunks-webpack-plugin";
+import * as CircularDependencyPlugin from "circular-dependency-plugin";
 
 export class SdAngularCompiler extends events.EventEmitter {
   private readonly _contextPath: string;
@@ -149,10 +151,6 @@ export class SdAngularCompiler extends events.EventEmitter {
       });
     }
 
-    // const mainPath = opt.prod ? path.resolve(__dirname, "../lib/main.aot.js") : path.resolve(__dirname, "../lib/main.js");
-    /*const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
-    const moduleName = path.basename(modulePath);*/
-
     return {
       module: {
         rules: [
@@ -173,37 +171,37 @@ export class SdAngularCompiler extends events.EventEmitter {
         ]
       },
       plugins: [
+        new SuppressExtractedTextChunksWebpackPlugin(),
+        new CircularDependencyPlugin({
+          exclude: /([\\\/]node_modules[\\\/])|(ngfactory\.js$)/
+        }),
         new AngularCompilerPlugin({
           mainPath: path.resolve(this._contextPath, "src/main.ts"),
           platform: PLATFORM.Browser,
           sourceMap: opt.sourceMap,
           nameLazyFiles: !opt.prod,
           forkTypeChecker: true,
-          contextElementDependencyConstructor: require("webpack/lib/dependencies/ContextElementDependency"), //tslint:disable-line:no-require-imports
+          // contextElementDependencyConstructor: require("webpack/lib/dependencies/ContextElementDependency"), //tslint:disable-line:no-require-imports
           directTemplateLoading: true,
           tsConfigPath: this._tsConfigPath,
           skipCodeGeneration: !opt.prod,
           // basePath: process.cwd(),
           host: new SdWebpackInputHostWithScss(fs),
           compilerOptions: {
-            /*...this._parsedTsConfig.options,
-            declaration: false,
-            removeComments: true,
-            skipLibCheck: false,
-            skipTemplateCodegen: false,
-            strictMetadataEmit: true,
-            fullTemplateTypeCheck: true,
-            strictInjectionParameters: true,
-            enableResourceInlining: true*/
+            // ...this._parsedTsConfig.options,
+            // declaration: false,
+            // removeComments: true,
+            // skipLibCheck: false,
+            // skipTemplateCodegen: false,
+            // strictMetadataEmit: true,
+            // fullTemplateTypeCheck: true,
+            // strictInjectionParameters: true,
+            // enableResourceInlining: true,
             rootDir: undefined
           }
         }),
         new SdWebpackNgModulePlugin({tsConfigPath: this._tsConfigPath}),
-        new webpack.ContextReplacementPlugin(
-          /angular[\\/]core[\\/]fesm5/,
-          this._parsedTsConfig.options.rootDir!,
-          {}
-        )
+        new webpack.ContextReplacementPlugin(/@angular([\\/])core([\\/])/)
       ]
     };
   }
@@ -248,6 +246,7 @@ export class SdAngularCompiler extends events.EventEmitter {
     const faviconPath = path.resolve(this._contextPath, "src", "favicon.ico");
     // const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
     return {
+      node: false,
       output: {
         publicPath: `/${this._packageKey}/`,
         path: this._distPath,
@@ -303,22 +302,30 @@ export class SdAngularCompiler extends events.EventEmitter {
     const projectConfig = SdCliUtils.getConfigObj("production", this._options);
     const config = projectConfig.packages[this._packageKey];
 
-    // const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
-
     const webpackConfig = webpackMerge(this._getWebpackCommonConfig(),
       {
         mode: "production",
         devtool: false,
-        /*resolve: {
-          alias: {
-            "SIMPLYSM_CLIENT_APP_MODULE_NGFACTORY": modulePath + ".ngfactory"
-          }
-        },*/
+        profile: false,
         optimization: {
           noEmitOnErrors: true,
           runtimeChunk: "single",
           splitChunks: {
-            chunks: "all",
+            maxAsyncRequests: Infinity,
+            cacheGroups: {
+              default: {chunks: "async", minChunks: 2, priority: 10},
+              common:
+                {
+                  name: "common",
+                  chunks: "async",
+                  minChunks: 2,
+                  enforce: true,
+                  priority: 5
+                },
+              vendors: false,
+              vendor: false
+            }
+            /*chunks: "all",
             maxInitialRequests: Infinity,
             minSize: 0,
             cacheGroups: {
@@ -329,30 +336,30 @@ export class SdAngularCompiler extends events.EventEmitter {
                   return `libs/${packageName.replace("@", "")}`;
                 }
               }
-            }
+            }*/
           },
           minimizer: [
             new TerserPlugin({
               sourceMap: false,
-              cache: true,
               parallel: true,
+              cache: true,
               terserOptions: {
-                keep_fnames: true/*,
-            ecma: 5,
-            warnings: false,
-            output: {
-              ascii_only: true,
-              comments: false,
-              webkit: true
-            },
-            compress: {
-              pure_getters: true,
-              passes: 3,
-              global_defs: config.framework === "angular" ? GLOBAL_DEFS_FOR_TERSER : {
-                ngDevMode: false,
-                ngI18nClosureMode: false
-              }
-            }*/
+                ecma: 6,
+                warnings: false,
+                safari10: true,
+                output: {
+                  ascii_only: true,
+                  comments: false,
+                  webkit: true
+                },
+                compress: {
+                  pure_getters: true,
+                  passes: 3,
+                  global_defs: {
+                    ngDevMode: false,
+                    ngI18nClosureMode: false
+                  }
+                }
               }
             }),
             new webpack.HashedModuleIdsPlugin(),

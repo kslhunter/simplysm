@@ -14,7 +14,7 @@ function loader(this: webpack.loader.LoaderContext, content: string, sourceMap: 
   }
 
   try {
-    const reloadContent = fs.readFileSync(this.resourcePath).toString();
+    const reloadContent = fs.readFileSync(this.resourcePath, "utf-8");
 
     const scssRegex = /(scss\()?\/\* *language=SCSS *\*\/ *[`"'](((?!['"`]\)?[\],][,;]?[\r\n\\])(.|\r|\n))*)['"`]\)?/;
 
