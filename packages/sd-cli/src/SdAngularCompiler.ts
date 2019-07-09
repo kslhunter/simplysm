@@ -19,7 +19,6 @@ import {SdCliUtils} from "./commons/SdCliUtils";
 import * as webpackMerge from "webpack-merge";
 import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
 import {SdWebpackInputHostWithScss} from "./plugins/SdWebpackInputHostWithScss";
-import {SdWebpackNgModulePlugin} from "./plugins/SdWebpackNgModulePlugin";
 
 export class SdAngularCompiler extends events.EventEmitter {
   private readonly _contextPath: string;
@@ -197,7 +196,7 @@ export class SdAngularCompiler extends events.EventEmitter {
             rootDir: undefined
           }
         }),
-        new SdWebpackNgModulePlugin({tsConfigPath: this._tsConfigPath}),
+        // new SdWebpackNgModulePlugin({tsConfigPath: this._tsConfigPath}),
         new webpack.ContextReplacementPlugin(/@angular([\\/])core([\\/])/)
       ]
     };

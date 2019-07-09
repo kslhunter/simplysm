@@ -19,6 +19,8 @@ export class SdTypescriptBuilder {
   public readonly rootDirPath: string;
   public readonly outDir: string;
 
+  public cpuUsages = new Map<string, number>();
+
   public constructor(private readonly _tsConfigFilePath: string) {
     this._contextPath = path.dirname(this._tsConfigFilePath);
     this._tsConfig = ts.parseJsonConfigFileContent(fs.readJsonSync(this._tsConfigFilePath), ts.sys, this._contextPath);
@@ -151,7 +153,6 @@ export class SdTypescriptBuilder {
         return callback(currChangeInfos);
       }));
     }
-
     return result;
   }
 
@@ -176,6 +177,8 @@ export class SdTypescriptBuilder {
   }
 
   public convertChangeInfosByDependencies(changeInfos: IFileChangeInfo[]): ITsFileChangeInfo[] {
+    const cpuUsage = process.cpuUsage();
+
     const result: ITsFileChangeInfo[] = changeInfos.filter(item => this.isMyFile(item.filePath));
     result.push(
       ...this._getReverseDependencies(changeInfos.map(item => item.filePath))
@@ -188,10 +191,15 @@ export class SdTypescriptBuilder {
         .map(item => ({type: "embed-dependency", filePath: item} as ITsFileChangeInfo))
     );
 
+    const prevCpuUsage = this.cpuUsages.get("convertChangeInfosByDependencies") || 0;
+    this.cpuUsages.set("convertChangeInfosByDependencies", prevCpuUsage + process.cpuUsage(cpuUsage).system + process.cpuUsage(cpuUsage).user);
+
     return result;
   }
 
   public initializeProgram(): void {
+    const cpuUsage = process.cpuUsage();
+
     const oldProgram = this._program;
     this._program = ts.createProgram(
       glob.sync(path.resolve(this.rootDirPath, "**", "*.ts")),
@@ -200,6 +208,9 @@ export class SdTypescriptBuilder {
       oldProgram
     );
     this._checker = this._program.getTypeChecker();
+
+    const prevCpuUsage = this.cpuUsages.get("initializeProgram") || 0;
+    this.cpuUsages.set("initializeProgram", prevCpuUsage + process.cpuUsage(cpuUsage).system + process.cpuUsage(cpuUsage).user);
   }
 
   public compile(filePath: string): string[] {
@@ -341,7 +352,9 @@ export class SdTypescriptBuilder {
   }
 
   public getNgModules(): ITsNgModuleInfo[] {
-    const result: ITsNgModuleInfo[] = [];
+    const cpuUsage = process.cpuUsage();
+
+    let result: ITsNgModuleInfo[] = [];
 
     const sourceFiles = this._program.getSourceFiles();
     for (const sourceFile of sourceFiles) {
@@ -403,10 +416,17 @@ export class SdTypescriptBuilder {
       fileInfo.syncVersions.ngModules = fileInfo.version;
     }
 
-    return result.distinct();
+    result = result.distinct();
+
+    const prevCpuUsage = this.cpuUsages.get("getNgModules") || 0;
+    this.cpuUsages.set("getNgModules", prevCpuUsage + process.cpuUsage(cpuUsage).system + process.cpuUsage(cpuUsage).user);
+
+    return result;
   }
 
   private _convertMetadataReferenceTarget(filePath: string, metadataNames: string[]): string[] {
+    const cpuUsage = process.cpuUsage();
+
     const metadataObj = this._getMetadata(filePath);
     if (metadataObj.diagnostics.length > 0) {
       throw new Error(metadataObj.diagnostics.map(item => this._diagnosticToMessage(item)).filterExists().distinct().join("\n"));
@@ -417,7 +437,7 @@ export class SdTypescriptBuilder {
       throw new Error();
     }
 
-    const result: string[] = metadataNames;
+    let result: string[] = metadataNames;
 
     const refNames = result.filter(item => item.startsWith("ɵ"));
     for (const refName of refNames) {
@@ -435,10 +455,17 @@ export class SdTypescriptBuilder {
     }
     result.remove(refNames);
 
-    return result.distinct();
+    result = result.distinct();
+
+    const prevCpuUsage = this.cpuUsages.get("_convertMetadataReferenceTarget") || 0;
+    this.cpuUsages.set("_convertMetadataReferenceTarget", prevCpuUsage + process.cpuUsage(cpuUsage).system + process.cpuUsage(cpuUsage).user);
+
+    return result;
   }
 
   private _getClassMetadataByDecorator(filePath: string, decoratorModule: string, decoratorNames: string[]): { name: string; decorator: any; statics: any }[] {
+    const cpuUsage = process.cpuUsage();
+
     const metadataObj = this._getMetadata(filePath);
     if (metadataObj.diagnostics.length > 0) {
       throw new Error(metadataObj.diagnostics.map(item => this._diagnosticToMessage(item)).filterExists().distinct().join("\n"));
@@ -449,7 +476,7 @@ export class SdTypescriptBuilder {
       return [];
     }
 
-    return Object.keys(metadata.metadata)
+    const result = Object.keys(metadata.metadata)
       .filter(key =>
         optional(() =>
           metadata.metadata[key].decorators.some((item: any) => decoratorNames.includes(item.expression.name) && item.expression.module === decoratorModule)
@@ -461,6 +488,11 @@ export class SdTypescriptBuilder {
         decorator: metadata.metadata[key].decorators.single((item: any) => decoratorNames.includes(item.expression.name) && item.expression.module === decoratorModule),
         statics: metadata.metadata[key].statics
       }));
+
+    const prevCpuUsage = this.cpuUsages.get("_getClassMetadataByDecorator") || 0;
+    this.cpuUsages.set("_getClassMetadataByDecorator", prevCpuUsage + process.cpuUsage(cpuUsage).system + process.cpuUsage(cpuUsage).user);
+
+    return result;
   }
 
   private _getModuleName(filePath: string): string | undefined {
@@ -477,6 +509,8 @@ export class SdTypescriptBuilder {
   }
 
   public getNgComponentAndDirectives(): ITsNgComponentOrDirectiveInfo[] {
+    const cpuUsage = process.cpuUsage();
+
     const result: ITsNgComponentOrDirectiveInfo[] = [];
 
     const sourceFiles = this._program.getSourceFiles();
@@ -520,10 +554,15 @@ export class SdTypescriptBuilder {
       fileInfo.syncVersions.ngComponentOrDirectives = fileInfo.version;
     }
 
+    const prevCpuUsage = this.cpuUsages.get("getNgComponentAndDirectives") || 0;
+    this.cpuUsages.set("getNgComponentAndDirectives", prevCpuUsage + process.cpuUsage(cpuUsage).system + process.cpuUsage(cpuUsage).user);
+
     return result.distinct();
   }
 
   public getImports(filePath: string): ITsImportInfo[] {
+    const cpuUsage = process.cpuUsage();
+
     const fileInfo = this._fileInfos.single(item => item.filePath === path.normalize(filePath))!;
 
     if (fileInfo.syncVersions.imports !== fileInfo.version) {
@@ -542,10 +581,16 @@ export class SdTypescriptBuilder {
     }
 
     fileInfo.syncVersions.imports = fileInfo.version;
+
+    const prevCpuUsage = this.cpuUsages.get("getImports") || 0;
+    this.cpuUsages.set("getImports", prevCpuUsage + process.cpuUsage(cpuUsage).system + process.cpuUsage(cpuUsage).user);
+
     return fileInfo.imports || [];
   }
 
   private _getMetadata(filePath: string): { metadata: ModuleMetadata | undefined; diagnostics: ts.Diagnostic[] } {
+    const cpuUsage = process.cpuUsage();
+
     const fileInfo = this._fileInfos.single(item => item.filePath === path.normalize(filePath))!;
 
     const diagnostics: ts.Diagnostic[] = [];
@@ -581,11 +626,16 @@ export class SdTypescriptBuilder {
       }
     }
 
+    const prevCpuUsage = this.cpuUsages.get("_getMetadata") || 0;
+    this.cpuUsages.set("_getMetadata", prevCpuUsage + process.cpuUsage(cpuUsage).system + process.cpuUsage(cpuUsage).user);
+
     fileInfo.syncVersions.metadata = fileInfo.version;
     return {metadata: fileInfo.metadata, diagnostics};
   }
 
   private _getSourceNodes(sourceFile: ts.SourceFile): ts.Node[] {
+    const cpuUsage = process.cpuUsage();
+
     const nodes: ts.Node[] = [sourceFile];
     const result = [];
 
@@ -600,15 +650,23 @@ export class SdTypescriptBuilder {
       }
     }
 
+    const prevCpuUsage = this.cpuUsages.get("_getSourceNodes") || 0;
+    this.cpuUsages.set("_getSourceNodes", prevCpuUsage + process.cpuUsage(cpuUsage).system + process.cpuUsage(cpuUsage).user);
+
     return result;
   }
 
   public updateDependencies(): void {
+    const cpuUsage = process.cpuUsage();
+
     for (const fileInfo of this._fileInfos) {
       if (!fileInfo.dependencies && fileInfo.sourceFile) {
         fileInfo.dependencies = this._getDependencies(fileInfo.sourceFile);
       }
     }
+
+    const prevCpuUsage = this.cpuUsages.get("updateDependencies") || 0;
+    this.cpuUsages.set("updateDependencies", prevCpuUsage + process.cpuUsage(cpuUsage).system + process.cpuUsage(cpuUsage).user);
   }
 
   private _getDependencies(sourceFile: ts.SourceFile): string[] {

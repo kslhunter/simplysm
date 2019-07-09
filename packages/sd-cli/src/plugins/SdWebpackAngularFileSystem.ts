@@ -9,7 +9,7 @@ import {
   ITsNgModuleInfo,
   SdTypescriptBuilder
 } from "../SdTypescriptBuilder";
-import {IFileChangeInfo} from "@simplysm/sd-core";
+import {DateTime, IFileChangeInfo} from "@simplysm/sd-core";
 import {JSDOM} from "jsdom";
 
 
@@ -49,6 +49,8 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
         return this._generateModuleFiles(currChangeInfos);
       }).catch();
     }
+
+    console.log(this._builder.cpuUsages);
   }
 
   public watch(files: string[],
@@ -98,6 +100,9 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
       fileTimestamps: Map<string, number>,
       contextTimestamps: Map<string, number>
     ) => {
+      const startTick = new DateTime().tick;
+      this._builder.cpuUsages = new Map<string, number>();
+
       const filePaths = [
         ...filesModified,
         ...contextModified.filter(item => item.endsWith(".ts")),
@@ -115,6 +120,8 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
       const allChangeInfos = await this._builder.applyChanges(changeInfos, currChangeInfos => {
         return this._generateModuleFiles(currChangeInfos);
       });
+
+      console.log(this._builder.cpuUsages, (new DateTime().tick - startTick).toLocaleString() + "ms");
 
       const changedFilePaths = allChangeInfos
         .map(item => item.filePath.replace(/\.d\.ts$/, ".js"))
