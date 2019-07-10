@@ -6,8 +6,8 @@
   "repository": "github:kslhunter/simplysm",
   "license": "MIT",
   "main": "./dist/index.js",
-  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "metadata": "./dist/index.metadata.json",
   "sideEffects": false,
   "dependencies": {
     "@angular/common": "^8.0.2",

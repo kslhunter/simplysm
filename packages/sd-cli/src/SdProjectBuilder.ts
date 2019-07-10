@@ -64,6 +64,13 @@ export class SdProjectBuilder {
               targetLogger.log(`파일이 변경되었습니다.`, ...changes.map(item => `[${item.type}] ${item.filePath}`));
 
               for (const change of changes) {
+                if (
+                  change.filePath.includes("node_modules") ||
+                  change.filePath.endsWith("package.json")
+                ) {
+                  continue;
+                }
+
                 const targetFilePath = path.resolve(targetPath, path.relative(sourcePath, change.filePath));
 
                 if (change.type === "unlink") {
@@ -82,7 +89,12 @@ export class SdProjectBuilder {
         // > > 변경감지 모드가 아닐 경우,
         else {
           // > > 소스경로에서 대상경로로 파일 복사
-          await fs.copy(sourcePath, targetPath);
+          await fs.copy(sourcePath, targetPath, {
+            filter: (src: string) => {
+              return !src.includes("node_modules") &&
+                !src.endsWith("package.json");
+            }
+          });
         }
       }));
     }));

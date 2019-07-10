@@ -6,7 +6,7 @@ import * as glob from "glob";
 import * as os from "os";
 import * as tslint from "tslint";
 import {FileChangeInfoType, FileWatcher, IFileChangeInfo, optional} from "@simplysm/sd-core";
-import {MetadataCollector} from "@angular/compiler-cli";
+import {ClassMetadata, MetadataCollector, MetadataEntry, ModuleMetadata} from "@angular/compiler-cli";
 
 export class SdTypescriptProgram {
   private readonly _fileInfoMap = new Map<string, {
@@ -39,6 +39,16 @@ export class SdTypescriptProgram {
         dependencies: string[];
         invalid: boolean;
       };
+      getMetadata: {
+        metadata: ModuleMetadata | undefined;
+        messages: string[];
+        invalid: boolean;
+      };
+      getNgModuleInfos: {
+        ngModuleInfos: ISdNgModuleInfo[];
+        messages: string[];
+        invalid: boolean;
+      };
     };
     syncVersions: {
       getSourceFile: number;
@@ -46,7 +56,9 @@ export class SdTypescriptProgram {
       emitDeclaration: number;
       lint: number;
       emitMetadata: number;
+      getMetadata: number;
       getDependencies: number;
+      getNgModuleInfos: number;
     };
   }>();
 
@@ -350,41 +362,19 @@ export class SdTypescriptProgram {
       }
 
       if (fileInfo.syncVersions.emitMetadata !== fileInfo.version) {
-        const diagnostics: ts.Diagnostic[] = [];
-
-        const metadata = new MetadataCollector().getMetadata(
-          fileInfo.sourceFile,
-          false,
-          (value, tsNode) => {
-            if (value && value["__symbolic"] && value["__symbolic"] === "error") {
-              diagnostics.push({
-                file: fileInfo.sourceFile,
-                start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
-                messageText: value["message"],
-                category: ts.DiagnosticCategory.Error,
-                code: 0,
-                length: undefined
-              });
-            }
-
-            return value;
-          }
-        );
-
-        if (diagnostics.length > 0) {
+        const metadataInfo = this._getMetadata(filePath);
+        if (!metadataInfo.metadata || metadataInfo.messages.length > 0) {
           fs.removeSync(outFilePath);
           fileInfo.output.emitMetadata.metadata = "";
         }
         else {
-          const metadataJsonString = JSON.stringify(metadata);
+          const metadataJsonString = JSON.stringify(metadataInfo.metadata);
           this._writeFile(outFilePath, metadataJsonString);
           fileInfo.output.emitMetadata.metadata = metadataJsonString;
         }
 
-        fileInfo.output.emitMetadata.messages = this._diagnosticsToMessages(diagnostics);
-
+        fileInfo.output.emitMetadata.messages = metadataInfo.messages;
         fileInfo.syncVersions.emitMetadata = fileInfo.version;
-
         fileInfo.output.emitMetadata.invalid = fileInfo.output.emitMetadata.messages.length > 0;
       }
 
@@ -392,6 +382,177 @@ export class SdTypescriptProgram {
     }
 
     return result.distinct();
+  }
+
+  public emitNgModule(filePaths: string[] = this._getMyTypescriptFiles()): string[] {
+    const getAllNgModuleInfoResult = this._getAllNgModuleInfoMap();
+
+    console.log(1, getAllNgModuleInfoResult.infoMap);
+
+    return getAllNgModuleInfoResult.messages;
+  }
+
+  public emitNgRoutingModule(filePaths: string[] = this._getMyTypescriptFiles()): string[] {
+    throw new Error("미구현");
+  }
+
+  public emitRoutesRoot(): string[] {
+    throw new Error("미구현");
+  }
+
+  private _getMetadata(filePath: string): { metadata: ModuleMetadata | undefined; messages: string[] } {
+    try {
+      const fileInfo = this._fileInfoMap.get(path.normalize(filePath));
+      if (!fileInfo) {
+        return {
+          metadata: undefined,
+          messages: []
+        };
+      }
+
+      if (fileInfo.syncVersions.getMetadata !== fileInfo.version) {
+        if (filePath.endsWith(".d.ts") || filePath.endsWith(".js")) {
+          const metadataFilePath = filePath.replace(/\.d\.ts$/, ".metadata.json");
+          if (fs.pathExistsSync(metadataFilePath)) {
+            const metadata = fs.readJsonSync(metadataFilePath);
+
+            fileInfo.output.getMetadata.metadata = metadata instanceof Array ? metadata[0] : metadata;
+            fileInfo.output.getMetadata.messages = [];
+            fileInfo.output.getMetadata.invalid = false;
+          }
+          else {
+            fileInfo.output.getMetadata.metadata = undefined;
+            fileInfo.output.getMetadata.messages = [];
+            fileInfo.output.getMetadata.invalid = false;
+          }
+
+          fileInfo.syncVersions.getMetadata = fileInfo.version;
+        }
+        else {
+          const diagnostics: ts.Diagnostic[] = [];
+
+          const metadata = new MetadataCollector().getMetadata(
+            fileInfo.sourceFile,
+            true,
+            (value, tsNode) => {
+              if (value && value["__symbolic"] && value["__symbolic"] === "error") {
+                diagnostics.push({
+                  file: fileInfo.sourceFile,
+                  start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
+                  messageText: value["message"],
+                  category: ts.DiagnosticCategory.Error,
+                  code: 0,
+                  length: undefined
+                });
+              }
+
+              return value;
+            }
+          );
+
+          if (diagnostics.length > 0) {
+            fileInfo.output.getMetadata.metadata = undefined;
+          }
+          else {
+            fileInfo.output.getMetadata.metadata = metadata;
+          }
+
+          fileInfo.output.getMetadata.messages = this._diagnosticsToMessages(diagnostics);
+          fileInfo.syncVersions.getMetadata = fileInfo.version;
+          fileInfo.output.getMetadata.invalid = fileInfo.output.getMetadata.messages.length > 0;
+        }
+      }
+
+      return {
+        metadata: fileInfo.output.getMetadata.metadata,
+        messages: fileInfo.output.emitMetadata.messages
+      };
+    }
+    catch (err) {
+      err.message = "[SdTypescriptProgram._getMetadata] " + filePath + "\n==> " + err.message;
+      throw err;
+    }
+  }
+
+  private _getAllNgModuleInfoMap(): { infoMap: Map<string, ISdNgModuleInfo[]>; messages: string[] } {
+    const messages: string[] = [];
+
+    const infoMap = Array.from(this._fileInfoMap.keys()).toMap(key => key, key => {
+      const result = this._getNgModuleInfos(key);
+      messages.push(...result.messages);
+      return result.infos;
+    });
+
+    return {infoMap, messages};
+  }
+
+  private _getNgModuleInfos(filePath: string): { infos: ISdNgModuleInfo[]; messages: string[] } {
+    try {
+      const fileInfo = this._fileInfoMap.get(filePath);
+      if (!fileInfo) {
+        return {
+          infos: [],
+          messages: []
+        };
+      }
+
+      if (fileInfo.syncVersions.getNgModuleInfos !== fileInfo.version) {
+        const messages: string[] = [];
+
+        const metadataInfo = this._getMetadata(filePath);
+        if (!metadataInfo.metadata || metadataInfo.messages.length > 0) {
+          messages.push(...metadataInfo.messages);
+          fileInfo.output.getNgModuleInfos.ngModuleInfos = [];
+        }
+        else {
+          const findNgModuleClassMetadataListResult = this._findClassMetadataListByDecorator(metadataInfo.metadata, "@angular/core", ["NgModule"]);
+
+          fileInfo.output.getNgModuleInfos.ngModuleInfos = findNgModuleClassMetadataListResult.map(info => {
+            const decorator = this._findDecorator(info.metadata, "@angular/core", "NgModule");
+
+            const exports: string[] = (optional(() => decorator.arguments[0].exports) || []).map((item: any) => item.name);
+
+            const providerProperties: any | any[] = optional(() => decorator.arguments[0].providers) || [];
+            let providers: string[] = ((providerProperties instanceof Array) ? providerProperties : [providerProperties])
+              .map((item: any) => optional(() => item.name || item.expression.name))
+              .filterExists();
+
+            if (info.metadata.statics) {
+              providers.push(
+                ...Object.keys(info.metadata.statics)
+                  .mapMany(key =>
+                    ((optional(() => (info.metadata.statics![key] as any).value.providers) as any[]) || [])
+                      .map((item: any) => optional(() => item.name || item.expression.name))
+                      .filterExists()
+                  )
+              );
+            }
+
+            providers = providers.mapMany(item => this._getMetadataReferenceTarget(metadataInfo.metadata!, item));
+
+            return {
+              packageName: this._getPackageName(filePath),
+              className: info.className,
+              exports: exports.distinct(),
+              providers: providers.distinct()
+            };
+          });
+        }
+
+        fileInfo.output.getNgModuleInfos.messages = messages;
+        fileInfo.syncVersions.getNgModuleInfos = fileInfo.version;
+        fileInfo.output.getNgModuleInfos.invalid = fileInfo.output.getNgModuleInfos.messages.length > 0;
+      }
+
+      return {
+        infos: fileInfo.output.getNgModuleInfos.ngModuleInfos,
+        messages: fileInfo.output.getNgModuleInfos.messages
+      };
+    }
+    catch (err) {
+      err.message = "[SdTypescriptProgram._getNgModuleInfos] " + filePath + "\n==> " + err.message;
+      throw err;
+    }
   }
 
   private _getDependencies(filePath: string): string[] {
@@ -454,6 +615,62 @@ export class SdTypescriptProgram {
     }
 
     return fileInfo.output.getDependencies.dependencies;
+  }
+
+  private _findClassMetadataListByDecorator(metadata: ModuleMetadata, packageName: string, decoratorNames: string[]): { className: string; metadata: ClassMetadata }[] {
+    const metadataObj = metadata.metadata as { [key: string]: ClassMetadata };
+
+    return Object.keys(metadataObj)
+      .filter(key =>
+        optional(() =>
+          metadataObj[key].decorators!.some((item: any) => item.expression.module === packageName && decoratorNames.includes(item.expression.name))
+        ) || false
+      )
+      .map(key => ({
+        className: key,
+        metadata: metadataObj[key]
+      }));
+  }
+
+  private _findDecorator(classMetadata: ClassMetadata, packageName: string, decoratorName: string): any | undefined {
+    const result = optional(() => classMetadata.decorators!.single((item: any) => item.expression.module === packageName && decoratorName === item.expression.name));
+    if (!result || result.__symbolic === "error") {
+      return undefined;
+    }
+
+    return result;
+  }
+
+  private _getMetadataReferenceTarget(metadata: ModuleMetadata, metadataName: string): string[] {
+    if (!metadataName.startsWith("ɵ")) {
+      return [];
+    }
+
+    const newRefs = (metadata.metadata[metadataName] instanceof Array ? (metadata.metadata[metadataName] as MetadataEntry[]) : [metadata.metadata[metadataName]])
+      .map((item: any) => optional(() => item.name || item.expression.name))
+      .filterExists();
+
+    const result: string[] = [metadataName];
+
+    result.push(...newRefs);
+    for (const newRef of newRefs) {
+      result.push(...this._getMetadataReferenceTarget(metadata, newRef));
+    }
+
+    return result.distinct();
+  }
+
+  private _getPackageName(filePath: string): string | undefined {
+    const nodeModulesDirPath = path.resolve(process.cwd(), "node_modules");
+
+    if (path.normalize(filePath).startsWith(nodeModulesDirPath)) {
+      const relativePath = path.relative(nodeModulesDirPath, filePath).replace(/\\/g, "/");
+      return relativePath.split("/")[0].includes("@")
+        ? relativePath.split("/")[0] + "/" + relativePath.split("/")[1]
+        : relativePath.split("/")[0];
+    }
+
+    return undefined;
   }
 
   private _diagnosticsToMessages(diagnostics: ts.Diagnostic[]): string[] {
@@ -563,6 +780,16 @@ export class SdTypescriptProgram {
               getDependencies: {
                 dependencies: [],
                 invalid: false
+              },
+              getMetadata: {
+                metadata: undefined,
+                messages: [],
+                invalid: false
+              },
+              getNgModuleInfos: {
+                ngModuleInfos: [],
+                messages: [],
+                invalid: false
               }
             },
             syncVersions: {
@@ -571,7 +798,9 @@ export class SdTypescriptProgram {
               emitDeclaration: 0,
               lint: 0,
               emitMetadata: 0,
-              getDependencies: 0
+              getDependencies: 0,
+              getMetadata: 0,
+              getNgModuleInfos: 0
             }
           };
 
@@ -646,3 +875,19 @@ export class SdTypescriptProgram {
     fs.writeFileSync(filePath, content, {encoding: "utf-8"});
   }
 }
+
+interface ISdNgModuleInfo {
+  packageName: string | undefined;
+  className: string;
+  exports: string[];
+  providers: string[];
+}
+
+/*
+interface ISdNgComponentOrDirectiveInfo {
+  packageName: string | undefined;
+  className: string;
+  selector: string;
+  template: string | undefined;
+}
+*/

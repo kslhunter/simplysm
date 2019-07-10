@@ -19,6 +19,7 @@ import {SdCliUtils} from "./commons/SdCliUtils";
 import * as webpackMerge from "webpack-merge";
 import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
 import {SdWebpackInputHostWithScss} from "./plugins/SdWebpackInputHostWithScss";
+import {SdWebpackNgModulePlugin} from "./plugins/SdWebpackNgModulePlugin";
 
 export class SdAngularCompiler extends events.EventEmitter {
   private readonly _contextPath: string;
@@ -190,13 +191,14 @@ export class SdAngularCompiler extends events.EventEmitter {
             // skipLibCheck: false,
             // skipTemplateCodegen: false,
             // strictMetadataEmit: true,
-            // fullTemplateTypeCheck: true,
-            // strictInjectionParameters: true,
+            fullTemplateTypeCheck: true,
+            strictInjectionParameters: true,
             // enableResourceInlining: true,
             rootDir: undefined
+            // enableIvy: true
           }
         }),
-        // new SdWebpackNgModulePlugin({tsConfigPath: this._tsConfigPath}),
+        new SdWebpackNgModulePlugin({tsConfigPath: this._tsConfigPath}),
         new webpack.ContextReplacementPlugin(/@angular([\\/])core([\\/])/)
       ]
     };
@@ -218,8 +220,8 @@ export class SdAngularCompiler extends events.EventEmitter {
     };
   }
 
-  private _entryConfigs(opt: { aot: boolean }): webpack.Configuration {
-    return opt.aot
+  private _entryConfigs(opt: { prod: boolean }): webpack.Configuration {
+    return opt.prod
       ? {
         entry: {
           main: path.resolve(this._contextPath, "src/main.ts")
@@ -377,7 +379,7 @@ export class SdAngularCompiler extends events.EventEmitter {
           }])
         ]
       },
-      this._entryConfigs({aot: true}),
+      this._entryConfigs({prod: true}),
       this._assetsFileConfigs({hash: false}),
       this._sourceCompileConfigs({prod: true, sourceMap: false}),
       this._styleConfigs({sourceMap: false, extract: true})
@@ -487,7 +489,7 @@ export class SdAngularCompiler extends events.EventEmitter {
           ])
         ]
       },
-      this._entryConfigs({aot: false}),
+      this._entryConfigs({prod: false}),
       this._assetsFileConfigs({hash: true}),
       this._sourceCompileConfigs({prod: false, sourceMap: true}),
       this._styleConfigs({sourceMap: false, extract: false})
