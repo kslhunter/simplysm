@@ -12,7 +12,6 @@
   "sideEffects": false,
   "dependencies": {
     "@angular-devkit/build-optimizer": "^0.801.0",
-    "@angular-devkit/build-angular": "^0.801.0",
     "@angular-devkit/core": "^8.0.4",
     "@angular/common": "^8.0.2",
     "@angular/compiler": "^8.0.2",
@@ -49,8 +48,7 @@
     "webpack-hot-middleware": "^2.24.4",
     "webpack-merge": "^4.2.1",
     "yargs": "^13.2.2",
-    "zone.js": "^0.9.1",
-    "chokidar": "^2.1.6"
+    "zone.js": "^0.9.1"
   },
   "devDependencies": {
     "@types/copy-webpack-plugin": "^5.0.0",

@@ -1,7 +1,7 @@
 import "@simplysm/sd-core";
-import * as sass from "node-sass";
 import * as webpack from "webpack";
 import * as fs from "fs-extra";
+import {SdAngularUtils} from "../commons/SdAngularUtils";
 
 function loader(this: webpack.loader.LoaderContext, content: string, sourceMap: any): void {
   if (this.cacheable) {
@@ -16,32 +16,9 @@ function loader(this: webpack.loader.LoaderContext, content: string, sourceMap: 
   try {
     const reloadContent = fs.readFileSync(this.resourcePath, "utf-8");
 
-    const scssRegex = /(scss\()?\/\* *language=SCSS *\*\/ *[`"'](((?!['"`]\)?[\],][,;]?[\r\n\\])(.|\r|\n))*)['"`]\)?/;
-
-    const matches = reloadContent.match(new RegExp(scssRegex, "gi"));
-    if (matches) {
-      const results = matches.map(match => {
-        try {
-          return sass.renderSync({
-            file: this.resourcePath,
-            data: match.match(scssRegex)![2],
-            sourceMap: false
-          });
-        }
-        catch (err) {
-          this.emitWarning(err);
-        }
-      });
-
-      const includedFiles = results
-        .filterExists()
-        .map(result => result.stats.includedFiles)
-        .mapMany(item => item)
-        .distinct();
-
-      for (const includedFile of includedFiles) {
-        this.addDependency(includedFile);
-      }
+    const result = SdAngularUtils.replaceScssToCss(this.resourcePath, reloadContent);
+    for (const dependency of result.dependencies) {
+      this.addDependency(dependency);
     }
   }
   catch (err) {

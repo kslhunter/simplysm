@@ -242,27 +242,8 @@ export class SdAngularCompiler extends events.EventEmitter {
 
   private _getWebpackCommonConfig(): webpack.Configuration {
     const faviconPath = path.resolve(this._contextPath, "src", "favicon.ico");
-    // const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
+
     return {
-      /*node: {
-        "fsevents": "empty",
-        "fs": "empty",
-        "fs-extra": "empty",
-        "child_process": "empty",
-        "net": "empty",
-        "tls": "empty",
-        "tedious": "empty",
-        "chokidar": "empty",
-        "nodemailer": "empty",
-        "stream": "empty",
-        "crypto": "empty",
-        "http": "empty",
-        "https": "empty",
-        "os": "empty",
-        "path": "empty",
-        "timers": "empty",
-        "zlib": "empty"
-      },*/
       output: {
         publicPath: `/${this._packageKey}/`,
         path: this._distPath,

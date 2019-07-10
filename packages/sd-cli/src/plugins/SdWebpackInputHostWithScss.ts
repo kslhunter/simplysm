@@ -7,8 +7,8 @@
  */
 import {getSystemPath, Path, virtualFs} from "@angular-devkit/core";
 import {Observable} from "rxjs";
-import {SdTypescriptBuilder} from "../SdTypescriptBuilder";
 import {WebpackInputHost} from "@ngtools/webpack/src/webpack-input-host";
+import {SdAngularUtils} from "../commons/SdAngularUtils";
 
 export class SdWebpackInputHostWithScss extends WebpackInputHost {
   public read(path: Path): Observable<virtualFs.FileBuffer> {
@@ -17,7 +17,7 @@ export class SdWebpackInputHostWithScss extends WebpackInputHost {
         const filePath = getSystemPath(path);
         let data = this.inputFileSystem.readFileSync(filePath);
         if (filePath.match(/\.ts$/) && !filePath.match(/\.d\.ts$/)) {
-          const newContent = SdTypescriptBuilder.convertScssToCss(filePath, data.toString()).content;
+          const newContent = SdAngularUtils.replaceScssToCss(filePath, data.toString()).content;
           data = Buffer.from(newContent);
         }
         obs.next(new Uint8Array(data).buffer as ArrayBuffer);

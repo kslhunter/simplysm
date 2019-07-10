@@ -15,9 +15,11 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
     super(_virtualInputFileSystem);
 
     this._program = new SdTypescriptProgram(this._tsConfigPath, {});
-    const messages = this._program.emitNgModule();
+    const messages = this._program.emitNgModule().messages;
+    messages.push(...this._program.emitNgRoutingModule().messages);
+    messages.push(...this._program.emitRoutesRoot());
     if (messages.length > 0) {
-      throw new Error(messages.join(os.EOL));
+      throw new Error(messages.distinct().join(os.EOL));
     }
   }
 
@@ -41,15 +43,18 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
       return map;
     };
 
+    let undelayedChanged: string[] = [];
     const newCallbackUndelayed = (...args: any[]) => {
       if (typeof args[0] === "string") {
         const original = reverseReplacements.get(args[0]);
         if (original) {
           this._virtualInputFileSystem.purge(original);
           callbackUndelayed(original, args[1]);
+          undelayedChanged.push(original);
         }
         else {
           callbackUndelayed(args[0], args[1]);
+          undelayedChanged.push(args[0]);
         }
       }
       else {
@@ -65,7 +70,28 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
       fileTimestamps: Map<string, number>,
       contextTimestamps: Map<string, number>
     ) => {
-      this._virtualInputFileSystem.purge(filesModified);
+      const changeInfos = filesModified
+        .concat(contextModified.filter(item => item.endsWith(".ts")))
+        .concat(undelayedChanged)
+        .map(item => path.normalize(item).replace(/\.js$/, ".d.ts"))
+        .distinct()
+        .map(item => ({
+          type: "change" as "change",
+          filePath: item
+        }));
+      undelayedChanged = [];
+
+      const reloadedFileChangeInfos = this._program.applyChanges(changeInfos, {withBeImportedFiles: true});
+      const newFileModified = reloadedFileChangeInfos.map(item => item.filePath);
+
+      const messages = this._program.emitNgModule(newFileModified).messages;
+      messages.push(...this._program.emitNgRoutingModule(newFileModified).messages);
+      messages.push(...this._program.emitRoutesRoot(newFileModified));
+      if (messages.length > 0) {
+        throw new Error(messages.distinct().join(os.EOL));
+      }
+
+      this._virtualInputFileSystem.purge(newFileModified);
 
       // Update fileTimestamps with timestamps from virtual files.
       const virtualFilesStats = this._virtualInputFileSystem.getVirtualFilesPaths()
@@ -77,7 +103,7 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
 
       callback(
         err,
-        filesModified.map(value => reverseReplacements.get(value) || value),
+        newFileModified.map(value => reverseReplacements.get(value) || value),
         contextModified.map(value => reverseReplacements.get(value) || value),
         missingModified.map(value => reverseReplacements.get(value) || value),
         reverseTimestamps(fileTimestamps),
