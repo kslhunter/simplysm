@@ -433,7 +433,7 @@ export class SdTypescriptProgram {
 
           const metadata = new MetadataCollector().getMetadata(
             fileInfo.sourceFile,
-            true,
+            false,
             (value, tsNode) => {
               if (value && value["__symbolic"] && value["__symbolic"] === "error") {
                 diagnostics.push({
