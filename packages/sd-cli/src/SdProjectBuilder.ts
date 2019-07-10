@@ -452,7 +452,7 @@ export class SdProjectBuilder {
   }
 
   private async _runWorkerAsync(workerName: string, packageKey: string, ...args: (string | undefined)[]): Promise<child_process.ChildProcess & { cpuUsage?: number; workerName: string }> {
-    const logger = new Logger("@simplysm/sd-cli", `[${workerName}] ${packageKey}`);
+    const logger = new Logger("@simplysm/sd-cli", `[${workerName}]\t${packageKey}`);
 
     let hasError = false;
     const wk = await new Promise<child_process.ChildProcess>((resolve, reject) => {
