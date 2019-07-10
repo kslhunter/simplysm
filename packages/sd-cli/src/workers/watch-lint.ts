@@ -26,7 +26,7 @@ program
       SdWorkerUtils.sendMessage({type: "done"});
     },
     {
-      millisecond: 500
+      millisecond: 1000
     }
   )
   .then(() => {

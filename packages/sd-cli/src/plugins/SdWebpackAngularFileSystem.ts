@@ -91,6 +91,11 @@ export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
         throw new Error(messages.distinct().join(os.EOL));
       }
 
+      const maxTimestamp = Array.from(fileTimestamps.values()).max()!;
+      for (const filesModifiedItem of newFileModified) {
+        fileTimestamps.set(filesModifiedItem, maxTimestamp);
+      }
+
       this._virtualInputFileSystem.purge(newFileModified);
 
       // Update fileTimestamps with timestamps from virtual files.

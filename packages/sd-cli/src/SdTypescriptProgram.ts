@@ -214,7 +214,7 @@ export class SdTypescriptProgram {
     // 프로그램 다시 로드
     this.reloadProgram();
 
-    return reloadedFileChangeInfos;
+    return reloadedFileChangeInfos.distinct();
   }
 
   public transpile(filePaths: string[] = this._getMyTypescriptFiles()): string[] {
