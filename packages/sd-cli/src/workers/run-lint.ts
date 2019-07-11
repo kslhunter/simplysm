@@ -19,16 +19,3 @@ if (messages.length > 0) {
 }
 
 SdWorkerUtils.sendMessage({type: "done"});
-
-/*SdWorkerUtils.sendMessage({type: "run"});
-
-const builder = new SdTypescriptBuilder(tsConfigPath);
-
-const messages = builder.lint(builder.getFilePaths());
-
-if (messages.length > 0) {
-  SdWorkerUtils.sendMessage({type: "error", message: messages.distinct().join(os.EOL).trim()});
-}
-
-SdWorkerUtils.sendMessage({type: "done"});*/
-

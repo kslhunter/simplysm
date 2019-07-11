@@ -480,7 +480,7 @@ export class SdTypescriptProgram {
           const imports = this._getImports(filePath);
           for (const imp of imports) {
             useModules.push(
-              ...ngModules.filter(item => (!item.packageName || item.packageName === imp.require) && item.exports.some(item1 => imp.targets.includes(item1)))
+              ...ngModules.filter(item => (!item.packageName || item.packageName === imp.require) && item.exports.concat(item.providers).some(item1 => imp.targets.includes(item1)))
             );
           }
 

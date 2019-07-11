@@ -31,22 +31,3 @@ fs.writeFileSync(
 );
 
 SdWorkerUtils.sendMessage({type: "done"});
-
-/*SdWorkerUtils.sendMessage({type: "run"});
-
-const builder = new SdTypescriptBuilder(tsConfigPath);
-
-const messages: string[] = [];
-for (const filePath of builder.getFilePaths()) {
-  messages.pushRange(builder.compile(filePath));
-}
-
-if (messages.length > 0) {
-  SdWorkerUtils.sendMessage({type: "error", message: messages.distinct().join(os.EOL).trim()});
-}
-
-
-const config = SdCliUtils.getConfigObj("production", opts).packages[packageKey];
-fs.writeFileSync(path.resolve(builder.outDir, ".configs.json"), JSON.stringify({env: "production", ...config.configs}, undefined, 2));
-
-SdWorkerUtils.sendMessage({type: "done"});*/

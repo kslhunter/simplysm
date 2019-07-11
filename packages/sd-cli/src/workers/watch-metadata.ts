@@ -34,26 +34,3 @@ program
   .catch(err => {
     SdWorkerUtils.sendMessage({type: "error", message: err.stack});
   });
-
-/*SdWorkerUtils.sendMessage({type: "run"});
-
-const builder = new SdTypescriptBuilder(tsConfigPath);
-builder.watch(
-  changedInfos => {
-    const messages: string[] = [];
-    for (const changedInfo of changedInfos) {
-      messages.pushRange(builder.generateMetadata(changedInfo.filePath));
-    }
-
-    if (messages.length > 0) {
-      SdWorkerUtils.sendMessage({type: "error", message: messages.distinct().join(os.EOL).trim()});
-    }
-
-    SdWorkerUtils.sendMessage({type: "done"});
-  },
-  () => {
-    SdWorkerUtils.sendMessage({type: "run"});
-  }
-).catch(err => {
-  SdWorkerUtils.sendMessage({type: "error", message: err.stack});
-});*/

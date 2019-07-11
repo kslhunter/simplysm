@@ -43,30 +43,3 @@ program
   .catch(err => {
     SdWorkerUtils.sendMessage({type: "error", message: err.stack});
   });
-/*
-
-const builder = new SdTypescriptBuilder(tsConfigPath);
-builder.watch(
-  changedInfos => {
-    const messages: string[] = [];
-    for (const changedInfo of changedInfos.filter(item => item.type !== "dependency")) {
-      messages.pushRange(builder.compile(changedInfo.filePath));
-    }
-
-    if (messages.length > 0) {
-      SdWorkerUtils.sendMessage({type: "error", message: messages.distinct().join(os.EOL).trim()});
-    }
-  },
-  () => {
-    SdWorkerUtils.sendMessage({type: "run"});
-  },
-  () => {
-    SdWorkerUtils.sendMessage({type: "done"});
-  }
-).then(() => {
-  const config = SdCliUtils.getConfigObj("development", opts).packages[packageKey];
-  fs.writeFileSync(path.resolve(builder.outDir, ".configs.json"), JSON.stringify({env: "development", ...config.configs}, undefined, 2));
-}).catch(err => {
-  SdWorkerUtils.sendMessage({type: "error", message: err.stack});
-});
-*/
