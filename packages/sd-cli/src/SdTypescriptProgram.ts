@@ -476,7 +476,7 @@ export class SdTypescriptProgram {
 
           const useModules: (ISdNgModuleInfo & { filePath: string })[] = [];
 
-          // 현재 코드에서 'import'한 모든것들을 읽고, 해당 'import'파일들을 'export'하는 모든 모듈을 사용모듈로 등록
+          // 현재 코드에서 'import'한 모든것들을 읽고, 해당 'import'파일들을 'exports'나 'providers'에 포함한 모든 모듈을 사용모듈로 등록
           const imports = this._getImports(filePath);
           for (const imp of imports) {
             useModules.push(
@@ -1143,7 +1143,7 @@ export class SdTypescriptProgram {
 
   private _getMetadataReferenceTarget(metadata: ModuleMetadata, metadataName: string): string[] {
     if (!metadataName.startsWith("ɵ")) {
-      return [];
+      return [metadataName];
     }
 
     const newRefs = (metadata.metadata[metadataName] instanceof Array ? (metadata.metadata[metadataName] as MetadataEntry[]) : [metadata.metadata[metadataName]])

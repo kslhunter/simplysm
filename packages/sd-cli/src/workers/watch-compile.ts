@@ -31,11 +31,11 @@ program
     {}
   )
   .then(() => {
-    const config = SdCliUtils.getConfigObj("production", opts).packages[packageKey];
+    const config = SdCliUtils.getConfigObj("development", opts).packages[packageKey];
 
     fs.writeFileSync(
       path.resolve(program.outDirPath, ".configs.json"),
-      JSON.stringify({env: "production", ...config.configs}, undefined, 2)
+      JSON.stringify({env: "development", ...config.configs}, undefined, 2)
     );
 
     SdWorkerUtils.sendMessage({type: "done"});
