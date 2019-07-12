@@ -578,9 +578,10 @@ export class SdTypescriptProgram {
       );
 
       for (const filePath of myNgFiles) {
-        this._fileInfoMap.get(filePath)!.syncVersions.getDependencies--;
-        this._fileInfoMap.get(filePath)!.syncVersions.getImports--;
-        this._fileInfoMap.get(filePath)!.syncVersions.emitNgModule--;
+        const fileInfo = this._fileInfoMap.get(filePath)!;
+        fileInfo.syncVersions.getNgModuleInfos = fileInfo.version - 1;
+        fileInfo.syncVersions.getNgComponentOrDirectiveInfos = fileInfo.version - 1;
+        fileInfo.syncVersions.emitNgModule = fileInfo.version - 1;
       }
 
       const currResult = this.emitNgModule();
@@ -748,7 +749,8 @@ export class SdTypescriptProgram {
 
       if (parentPageFilePaths.length > 0) {
         for (const filePath of parentPageFilePaths) {
-          this._fileInfoMap.get(filePath)!.syncVersions.emitNgRoutingModule--;
+          const fileInfo = this._fileInfoMap.get(filePath)!;
+          fileInfo.syncVersions.emitNgRoutingModule = fileInfo.version - 1;
         }
 
         const newResult = this.emitNgRoutingModule(parentPageFilePaths);
