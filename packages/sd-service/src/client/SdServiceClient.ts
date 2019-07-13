@@ -24,54 +24,63 @@ export class SdServiceClient {
   }
 
   public async connectAsync(): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-      if (process.versions.node) {
-        if (!this._host || !this._port) {
-          throw new Error("호스트와 포트가 반드시 입력되어야 합니다.");
-        }
-        this._ws = new WebSocket(`${this._ssl ? "wss" : "ws"}://${this._host}:${this._port}`, {origin: this._origin});
-      }
-      else {
-        // @ts-ignore
-        this._ws = new WebSocket(`${this._ssl ? "wss" : (location.protocol.startsWith("https") ? "wss" : "ws")}://${this._host || location.hostname}:${this._port || location.port}`);
-      }
-
-      this._ws.onopen = () => {
-        // @ts-ignore
-        this._ws!.onopen = null;
-        resolve();
-      };
-
-      this._ws.onmessage = message => {
-        const obj = JsonConvert.parse(String(message.data));
-
-        if (obj.eventListenerId) {
-          this._eventListeners.get(obj.eventListenerId)!(obj.data);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        if (process.versions.node) {
+          if (!this._host || !this._port) {
+            throw new Error("호스트와 포트가 반드시 입력되어야 합니다.");
+          }
+          this._ws = new WebSocket(`${this._ssl ? "wss" : "ws"}://${this._host}:${this._port}`, {origin: this._origin});
         }
         else {
-          const response: ISdServiceResponse = obj;
-          this._reqMap.get(response.requestId)!(response);
+          // @ts-ignore
+          this._ws = new WebSocket(`${this._ssl ? "wss" : (location.protocol.startsWith("https") ? "wss" : "ws")}://${this._host || location.hostname}:${this._port || location.port}`);
         }
-      };
 
-      this._ws.onerror = errEvt => {
-        reject(errEvt.error);
-      };
+        this._ws.onopen = () => {
+          // @ts-ignore
+          this._ws!.onopen = null;
+          resolve();
+        };
 
-      this._ws.onclose = () => {
-        // @ts-ignore
-        this._ws!.onopen = null;
-        // @ts-ignore
-        this._ws!.onmessage = null;
-        // @ts-ignore
-        this._ws!.onerror = null;
-        this._ws = undefined;
+        this._ws.onmessage = message => {
+          const obj = JsonConvert.parse(String(message.data));
 
-        setTimeout(async () => {
-          await this.connectAsync();
-        }, 1000);
-      };
-    });
+          if (obj.eventListenerId) {
+            this._eventListeners.get(obj.eventListenerId)!(obj.data);
+          }
+          else {
+            const response: ISdServiceResponse = obj;
+            this._reqMap.get(response.requestId)!(response);
+          }
+        };
+
+        this._ws.onerror = errEvt => {
+          reject(errEvt.error);
+        };
+
+        this._ws.onclose = () => {
+          // @ts-ignore
+          this._ws!.onopen = null;
+          // @ts-ignore
+          this._ws!.onmessage = null;
+          // @ts-ignore
+          this._ws!.onerror = null;
+          this._ws = undefined;
+
+          setTimeout(async () => {
+            await this.connectAsync();
+          }, 1000);
+        };
+      });
+    }
+    catch (err) {
+      this._logger.error(err);
+
+      setTimeout(async () => {
+        await this.connectAsync();
+      }, 1000);
+    }
   }
 
   public async closeAsync(): Promise<void> {
