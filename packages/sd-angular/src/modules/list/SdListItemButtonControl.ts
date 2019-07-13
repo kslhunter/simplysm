@@ -7,8 +7,6 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-    
     sd-list-item-button {
       display: block;
       min-width: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip));

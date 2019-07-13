@@ -41,8 +41,7 @@ import {optional} from "@simplysm/sd-core";
       <div class="_all-left-resizer" (mousedown)="onResizerMousedown($event, 'all-left')"></div>
     </div>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
+    @import "../../../scss/mixins";
     sd-modal {
       display: block;
       position: fixed;

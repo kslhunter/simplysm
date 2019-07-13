@@ -67,7 +67,7 @@ import {SdMultiSelectItemControl} from "./SdMultiSelectItemControl";
       </sd-dropdown-popup>
     </sd-dropdown>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
+    @import "../../../scss/mixins";
 
     sd-multi-select {
       display: block;

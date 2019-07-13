@@ -55,6 +55,10 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
         <div class="_row">
           <div class="_col-group _fixed-col-group">
             <div class="_col _first-col" [class._double]="selectable && children">
+              <a (click)="onAllSelectIconClick()">
+                <sd-icon [icon]="'arrow-right'" *ngIf="selectable === 'multi'"
+                         [ngClass]="{'sd-text-color-primary-default': allSelected, 'sd-text-color-grey-default': !allSelected}"></sd-icon>
+              </a>
               <div class="_border"></div>
             </div>
             <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
@@ -63,6 +67,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
                  [attr.title]="columnControl.help"
                  [attr.sd-header]="columnControl.header">
               <pre>{{ columnControl.header && columnControl.header!.split(".").last() }}</pre>
+              <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
               <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
                    (mousedown)="onHeadBorderMousedown($event)"></div>
             </div>
@@ -74,6 +79,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
                  [attr.title]="columnControl.help"
                  [attr.sd-header]="columnControl.header">
               <pre>{{ columnControl.header && columnControl.header.split(".").last() }}</pre>
+              <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
               <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
                    (mousedown)="onHeadBorderMousedown($event)"></div>
             </div>
@@ -162,8 +168,6 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
       </div>
     </div>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-sheet {
       display: block;
       position: relative;
@@ -549,6 +553,21 @@ export class SdSheetControl implements DoCheck, OnInit {
   @Output()
   public readonly expandedItemTracksChange = new EventEmitter<any[]>();
 
+  public get allSelected(): boolean {
+    return !!this.items && this.items.length === this.selectedItems.length && this.items.every(item => this.selectedItems.includes(item));
+  }
+
+  public onAllSelectIconClick(): void {
+    if (this.allSelected) {
+      this.selectedItems = [];
+    }
+    else if (this.items) {
+      this.selectedItems = [...this.items];
+    }
+
+    this.selectedItemsChange.emit(this.selectedItems);
+  }
+
   public get paddingTop(): number {
     const rowEls = (this._elRef.nativeElement as HTMLElement).findAll("._head > ._row");
     const rowHeight = rowEls.filter(item => !item.classList.contains("_pagination")).sum(item => item.clientHeight) || 0;
@@ -654,6 +673,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   private readonly _iterableDiffer: IterableDiffer<any>;
+  private readonly _iterableDifferForColumn: IterableDiffer<any>;
   private _columnConfigs: {
     header?: string;
     index: number;
@@ -665,6 +685,7 @@ export class SdSheetControl implements DoCheck, OnInit {
                      private readonly _elRef: ElementRef,
                      private readonly _localStorage: SdLocalStorageProvider) {
     this._iterableDiffer = this._iterableDiffers.find([]).create((i: number, item: any) => this.trackByItemFn(i, item));
+    this._iterableDifferForColumn = this._iterableDiffers.find([]).create();
 
     (this._elRef.nativeElement as HTMLElement).addEventListener("focus", (event: Event) => {
       if ((event.target as HTMLElement).classList.contains("_select-icon")) {
@@ -739,6 +760,10 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public ngDoCheck(): void {
     if (this.items && this._iterableDiffer.diff(this.items)) {
+      this._cdr.markForCheck();
+    }
+
+    if (this.columnControls && this._iterableDifferForColumn.diff(this.columnControls.toArray())) {
       this._cdr.markForCheck();
     }
   }

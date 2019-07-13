@@ -17,8 +17,6 @@ import {SdDockControl} from "./SdDockControl";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-dock-container {
       display: block;
       position: relative;

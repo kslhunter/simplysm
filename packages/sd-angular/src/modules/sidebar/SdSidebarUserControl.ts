@@ -31,8 +31,6 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
       </div>
     </div>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-sidebar-user {
       > ._content {
         background-size: cover;

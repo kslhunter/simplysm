@@ -30,8 +30,6 @@ import {SdMultiSelectControl} from "./SdMultiSelectControl";
       </span>
     </sd-checkbox>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-multi-select-item {
       display: block;
       padding: var(--gap-sm) var(--gap-default);

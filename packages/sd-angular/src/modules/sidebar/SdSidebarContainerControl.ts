@@ -10,8 +10,6 @@ import {SdWindowProvider} from "../window/SdWindowProvider";
     <ng-content></ng-content>
     <div class="_backdrop" (click)="toggle = !toggle"></div>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-sidebar-container {
       display: block;
       position: relative;

@@ -16,8 +16,6 @@ import {SdViewControl} from "./SdViewControl";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-view {
       display: block;
       background: white;

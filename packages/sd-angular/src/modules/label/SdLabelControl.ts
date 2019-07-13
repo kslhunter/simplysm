@@ -12,7 +12,7 @@ function colorValidator(value: string): boolean {
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
+    @import "../../../scss/variables-scss";
 
     sd-label {
       display: inline-block;

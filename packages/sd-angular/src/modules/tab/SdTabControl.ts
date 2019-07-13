@@ -7,8 +7,6 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEnc
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-tab {
       display: block;
       background: var(--theme-grey-lightest);

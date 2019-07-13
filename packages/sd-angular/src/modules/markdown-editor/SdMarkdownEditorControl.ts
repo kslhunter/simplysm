@@ -143,7 +143,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
       </sd-pane>
     </sd-dock-container>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
+    @import "../../../scss/mixins";
 
     sd-markdown-editor {
       display: block;

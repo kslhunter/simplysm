@@ -9,8 +9,6 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
       <ng-content></ng-content>
     </table>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-table {
       display: block;
       width: auto;

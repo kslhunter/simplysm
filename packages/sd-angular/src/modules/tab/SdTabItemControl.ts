@@ -17,8 +17,6 @@ import {SdTabControl} from "./SdTabControl";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-tab-item {
       display: inline-block;
       padding: var(--gap-sm) var(--gap-default);

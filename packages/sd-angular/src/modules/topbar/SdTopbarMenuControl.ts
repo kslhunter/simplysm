@@ -12,8 +12,6 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-topbar-menu {
       padding: 0 var(--gap-lg);
       cursor: pointer;

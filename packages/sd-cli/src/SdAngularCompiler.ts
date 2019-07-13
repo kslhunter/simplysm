@@ -173,7 +173,9 @@ export class SdAngularCompiler extends events.EventEmitter {
           exclude: /([\\\/]node_modules[\\\/])|(ngfactory\.js$)/
         }),*/
         new AngularCompilerPlugin({
-          mainPath: path.resolve(this._contextPath, "src/main.ts"),
+          // mainPath: path.resolve(this._contextPath, "src/main.ts"),
+          mainPath: path.resolve(__dirname, "../lib/main." + (opt.prod ? "prod" : "dev") + ".js"),
+          entryModule: path.resolve(this._contextPath, "src/AppModule") + "#AppModule",
           platform: PLATFORM.Browser,
           sourceMap: opt.sourceMap,
           nameLazyFiles: !opt.prod,
@@ -224,15 +226,25 @@ export class SdAngularCompiler extends events.EventEmitter {
     return opt.prod
       ? {
         entry: {
-          main: path.resolve(this._contextPath, "src/main.ts")
+          main: path.resolve(__dirname, "../lib/main.prod.js")
+        },
+        resolve: {
+          alias: {
+            "SD_APP_MODULE_FACTORY": path.resolve(this._contextPath, "src/AppModule.ngfactory")
+          }
         }
       }
       : {
         entry: {
           main: [
             `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
-            path.resolve(this._contextPath, "src/main.ts")
+            path.resolve(__dirname, "../lib/main.dev.js")
           ]
+        },
+        resolve: {
+          alias: {
+            "SD_APP_MODULE": path.resolve(this._contextPath, "src/AppModule")
+          }
         },
         plugins: [
           new webpack.HotModuleReplacementPlugin()
@@ -451,7 +463,7 @@ export class SdAngularCompiler extends events.EventEmitter {
               loader: "source-map-loader",
               exclude: [
                 /node_modules[\\/](?!@simplysm)/,
-                /(ngfactory|ngstyle).js$/
+                /(ngfactory|ngstyle)\.js$/
               ]
             }
           ]

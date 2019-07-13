@@ -17,8 +17,6 @@ import {SdTabviewControl} from "./SdTabviewControl";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-tabview-item {
       display: none;
       width: 100%;

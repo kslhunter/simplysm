@@ -26,8 +26,6 @@ import {JsonConvert} from "@simplysm/sd-core";
       <ng-template [ngTemplateOutlet]="labelTemplateRef"></ng-template>
     </span>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-select-item {
       display: block;
       padding: var(--gap-sm) var(--gap-default);

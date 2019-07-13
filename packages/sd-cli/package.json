@@ -6,8 +6,7 @@
   "repository": "github:kslhunter/simplysm",
   "license": "MIT",
   "bin": {
-    "sd-cli": "./dist/bin.js",
-    "sdc": "./dist/sdc.js"
+    "sd-cli": "./dist/bin.js"
   },
   "sideEffects": false,
   "dependencies": {

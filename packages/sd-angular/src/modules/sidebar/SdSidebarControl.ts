@@ -17,8 +17,6 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
       </sd-pane>
     </sd-dock-container>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-sidebar {
       display: block;
       position: absolute;

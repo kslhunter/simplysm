@@ -46,7 +46,8 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
               *ngIf="multiline"></textarea>
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
+    @import "../../../scss/mixins";
+    @import "../../../scss/variables-scss";
 
     sd-textfield {
       display: block;

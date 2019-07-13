@@ -7,8 +7,6 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-grid {
       display: block;
       width: 100%;

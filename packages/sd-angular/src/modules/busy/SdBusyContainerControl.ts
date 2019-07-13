@@ -14,8 +14,6 @@ import {SdBusyContainerProvider} from "./SdBusyContainerProvider";
     </div>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-busy-container {
       display: block;
       position: relative;

@@ -10,7 +10,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
+    @import "../../../scss/mixins";
 
     sd-dropdown-popup {
       position: fixed;

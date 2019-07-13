@@ -8,7 +8,7 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
+    @import "../../../scss/variables-scss";
 
     sd-note {
       display: block;

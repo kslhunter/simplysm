@@ -27,8 +27,6 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
     </div>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-dock {
       display: block;
       position: absolute;

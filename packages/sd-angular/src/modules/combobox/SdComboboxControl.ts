@@ -38,7 +38,7 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
+    @import "../../../scss/mixins";
 
     sd-combobox {
       display: block;

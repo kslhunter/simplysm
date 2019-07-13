@@ -19,6 +19,10 @@ import {SdSharedModule} from "../shared/SdSharedModule";
     SdToastContainerControl,
     SdToastControl
   ],
+  entryComponents: [
+    SdToastContainerControl,
+    SdToastControl
+  ],
   providers: [
     SdToastProvider
   ]

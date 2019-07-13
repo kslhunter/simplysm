@@ -6,10 +6,7 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
   encapsulation: ViewEncapsulation.None,
   template: ``,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
-    sd-toast-container,
-    ._sd-toast-container {
+    sd-toast-container {
       display: block;
       position: fixed;
       top: 0;

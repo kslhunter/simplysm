@@ -19,7 +19,8 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
     </button>
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
+    @import "../../../scss/variables-scss";
+    @import "../../../scss/mixins";
 
     sd-button {
       display: block;

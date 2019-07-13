@@ -18,8 +18,6 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
       <ng-content></ng-content>
     </form>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-form {
       display: block;
       overflow: hidden;

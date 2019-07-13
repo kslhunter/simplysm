@@ -21,8 +21,6 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
     </div>
     <ng-content select="sd-dropdown-popup"></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-dropdown {
       > div {
         position: relative;
@@ -64,6 +62,12 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   private _controlEl!: HTMLElement;
   private _dropdownEl!: HTMLElement;
 
+  private _mouseoverEl?: HTMLElement;
+
+  public mouseoverEventHandler = (event: MouseEvent) => {
+    this._mouseoverEl = event.target as HTMLElement;
+  };
+
   public get isDropdownLocatedTop(): boolean {
     return this._controlEl ? window.innerHeight < this._controlEl.windowOffset.top * 2 : false;
   }
@@ -80,6 +84,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     this._controlEl.addEventListener("blur", this.blurEventHandler, true);
     this._controlEl.addEventListener("click", this.clickEventHandler, true);
     this._controlEl.addEventListener("keydown", this.keydownEventHandler, true);
+    document.addEventListener("mouseover", this.mouseoverEventHandler, true);
 
     this._dropdownEl.remove();
 
@@ -90,6 +95,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     if (this._dropdownEl) {
       this._dropdownEl.remove();
       document.removeEventListener("scroll", this.scrollEventHandler, true);
+      document.removeEventListener("mouseover", this.mouseoverEventHandler);
     }
   }
 
@@ -217,6 +223,22 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     ) {
       return;
     }
+
+    if (this._mouseoverEl && (this._mouseoverEl.findParent(this._controlEl) || this._mouseoverEl.findParent(this._dropdownEl))) {
+      const firstFocusableEl = this._controlEl.findFocusableAllIncludeMe()[0];
+      if (firstFocusableEl) {
+        firstFocusableEl.focus();
+        return;
+      }
+      else {
+        const firstFocusableEl1 = this._dropdownEl.findFocusableAllIncludeMe()[0];
+        if (firstFocusableEl1) {
+          firstFocusableEl1.focus();
+          return;
+        }
+      }
+    }
+
     this.closePopup();
   };
 }

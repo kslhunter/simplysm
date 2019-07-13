@@ -50,7 +50,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
       </sd-pane>
     </sd-dock-container>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
+    @import "../../../scss/mixins";
 
     sd-html-editor {
       display: block;

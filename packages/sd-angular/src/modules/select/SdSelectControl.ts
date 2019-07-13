@@ -25,7 +25,7 @@ import {JsonConvert} from "@simplysm/sd-core";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <sd-dropdown #dropdown [disabled]="disabled">
+    <sd-dropdown #dropdown [disabled]="disabled" (open)="open.emit()">
       <div class="_sd-select-content"></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">
@@ -66,7 +66,7 @@ import {JsonConvert} from "@simplysm/sd-core";
       </sd-dropdown-popup>
     </sd-dropdown>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
+    @import "../../../scss/mixins";
 
     sd-select {
       display: block;
@@ -202,6 +202,9 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
   @Input()
   @SdTypeValidate(Function)
   public children?: (index: number, item: any) => any;
+
+  @Output()
+  public readonly open = new EventEmitter();
 
   public get isDropdownLocatedTop(): boolean {
     return this.dropdownControl ? this.dropdownControl.isDropdownLocatedTop : false;

@@ -17,8 +17,6 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
       <sd-icon [icon]="'angle-double-right'" [fw]="true"></sd-icon>
     </a>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-pagination {
       display: block;
 

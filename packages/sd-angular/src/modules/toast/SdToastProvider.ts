@@ -1,27 +1,27 @@
-import {ApplicationRef, ComponentFactoryResolver, ComponentRef, Injectable, Injector, OnDestroy} from "@angular/core";
+import {ApplicationRef, ComponentFactoryResolver, ComponentRef, Injectable, Injector} from "@angular/core";
 import {Type} from "@simplysm/sd-core";
 import {SdToastControl} from "./SdToastControl";
 import {SdToastContainerControl} from "./SdToastContainerControl";
 
 @Injectable()
-export class SdToastProvider implements OnDestroy {
-  private readonly _containerEl: HTMLDivElement;
+export class SdToastProvider {
+  // private readonly _containerEl: HTMLDivElement;
   private _containerRef?: ComponentRef<SdToastContainerControl>;
 
   public constructor(private readonly _cfr: ComponentFactoryResolver,
                      private readonly _injector: Injector,
                      private readonly _appRef: ApplicationRef) {
-    this._containerEl = document.createElement("div");
+    /*this._containerEl = document.createElement("div");
     this._containerEl.classList.add("_sd-toast-container");
-    document.body.appendChild(this._containerEl);
+    document.body.appendChild(this._containerEl);*/
   }
 
-  public ngOnDestroy(): void {
+  /*public ngOnDestroy(): void {
     this._containerEl.remove();
     if (this._containerRef) {
       this._containerRef.destroy();
     }
-  }
+  }*/
 
   public async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined> {
     try {
@@ -114,7 +114,69 @@ export class SdToastProvider implements OnDestroy {
   }
 
   private _show<T extends boolean>(theme: "info" | "success" | "warning" | "danger", message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
-    const toastEl = document.createElement("div");
+    if (!this._containerRef) {
+      this._containerRef = this._cfr.resolveComponentFactory(SdToastContainerControl).create(this._injector);
+      const rootComp = this._appRef.components[0];
+      const rootCompEl = rootComp.location.nativeElement as HTMLElement;
+      rootCompEl.appendChild(this._containerRef.location.nativeElement);
+      this._appRef.attachView(this._containerRef.hostView);
+    }
+
+    const containerEl = this._containerRef.location.nativeElement as HTMLElement;
+    const toastRef = this._cfr.resolveComponentFactory(SdToastControl).create(this._containerRef.injector);
+    const toastEl = toastRef.location.nativeElement as HTMLElement;
+    containerEl.appendChild(toastEl);
+    this._appRef.attachView(toastRef.hostView);
+
+    (toastEl.findAll("._sd-toast-message")[0] as HTMLElement).innerText = message;
+    toastRef.instance.useProgress = progress;
+    toastRef.instance.progress = 0;
+
+    // repaint
+    containerEl.offsetHeight; // tslint:disable-line:no-unused-expression
+
+    toastRef.instance.open = true;
+    toastRef.instance.theme = theme;
+    this._appRef.tick();
+
+    if (progress) {
+      return {
+        progress: (percent: number) => {
+          toastRef.instance.progress = percent;
+          if (percent >= 100) {
+            window.setTimeout(
+              () => {
+                toastEl.addEventListener("transitionend", () => {
+                  toastRef.destroy();
+                });
+                toastRef.instance.open = false;
+                this._appRef.tick();
+              },
+              1000
+            );
+          }
+        },
+        message: (msg: string) => {
+          (toastEl.findAll("._sd-toast-message")[0] as HTMLElement).innerText = msg;
+        }
+      } as any;
+    }
+    else {
+      window.setTimeout(
+        () => {
+          toastEl.addEventListener("transitionend", () => {
+            toastRef.destroy();
+          });
+          toastRef.instance.open = false;
+          this._appRef.tick();
+        },
+        5000
+      );
+
+      return undefined as any;
+    }
+
+    /*const toastEl = document.createElement("div");
     toastEl.classList.add("_sd-toast");
     toastEl.classList.add("_sd-toast-" + theme);
 
@@ -166,7 +228,7 @@ export class SdToastProvider implements OnDestroy {
       );
     }
 
-    return undefined as any;
+    return undefined as any;*/
   }
 }
 

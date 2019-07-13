@@ -10,12 +10,16 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
       <div class="_sd-toast-message">
         <ng-content></ng-content>
       </div>
+      <div class="_sd-toast-progress" *ngIf="useProgress">
+        <div class="_sd-toast-progress-bar" [style.width.%]="progress">
+        </div>
+      </div>
     </div>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
+    @import "../../../scss/mixins";
+    @import "../../../scss/variables-scss";
 
-    > sd-toast,
-    > ._sd-toast {
+    sd-toast {
       display: block;
       margin-bottom: var(--gap-sm);
       text-align: center;
@@ -24,10 +28,9 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
         display: inline-block;
         text-align: left;
         color: white;
-        animation: _sd-toast-show .1s ease-out forwards;
         transform: translateY(-100%);
         border-radius: 4px;
-        opacity: .9;
+        opacity: 0;
         @include elevation(6);
 
         > ._sd-toast-message {
@@ -47,8 +50,7 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
       }
 
       @each $color in $arr-theme-color {
-        &[sd-theme=#{$color}],
-        &._sd-toast-#{$color} {
+        &[sd-theme=#{$color}] {
           > ._sd-toast-block {
             background: var(--theme-#{$color}-default);
 
@@ -60,11 +62,22 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
           }
         }
       }
-    }
 
-    @keyframes _sd-toast-show {
-      to {
-        transform: none;
+      &[sd-open=true] {
+        > ._sd-toast-block {
+          transform: none;
+          transition: .1s ease-out;
+          transition-property: transform, opacity;
+          opacity: .9;   
+        }
+      }
+      &[sd-open=false] {
+        > ._sd-toast-block {
+          transform: translateY(-100%);
+          transition: .1s ease-in;
+          transition-property: transform, opacity;
+          opacity: 0;
+        }
       }
     }
   `]
@@ -74,6 +87,14 @@ export class SdToastControl {
   @SdTypeValidate(Boolean)
   @HostBinding("attr.sd-open")
   public open?: boolean;
+
+  @Input()
+  @SdTypeValidate(Boolean)
+  public useProgress?: boolean;
+
+  @Input()
+  @SdTypeValidate(Number)
+  public progress?: number;
 
   public close = new EventEmitter<any>();
 

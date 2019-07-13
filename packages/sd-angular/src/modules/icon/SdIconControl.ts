@@ -15,8 +15,6 @@ library.add(fas, far, fab);
   template: `
     <fa-icon [icon]="faIconProp" [fixedWidth]="fw" [size]="size" *ngIf="icon"></fa-icon>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-icon {
       &[sd-fw=true] {
         display: inline-block;

@@ -28,7 +28,8 @@ import {sdIconNames} from "../../commons/sdIconNames";
       </div>
     </label>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
+    @import "../../../scss/mixins";
+    @import "../../../scss/variables-scss";
 
     sd-checkbox {
       color: var(--text-color-default);

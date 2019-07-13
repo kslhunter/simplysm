@@ -16,9 +16,7 @@ import {SdComboboxControl} from "./SdComboboxControl";
   encapsulation: ViewEncapsulation.None,
   template: `
     <ng-content></ng-content>`,
-  styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-    
+  styles: [/* language=SCSS */ `    
     sd-combobox-item {
       display: block;
       padding: var(--gap-sm) var(--gap-default);

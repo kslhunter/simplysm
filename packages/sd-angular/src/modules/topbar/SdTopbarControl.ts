@@ -24,8 +24,6 @@ import {SdTopbarMenuControl} from "./SdTopbarMenuControl";
          class="sd-padding-left-lg"></div>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-topbar {
       display: block;
       position: absolute;

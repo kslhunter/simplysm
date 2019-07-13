@@ -7,8 +7,6 @@ import {ChangeDetectionStrategy, Component, HostBinding, Input, ViewEncapsulatio
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-grid-item {
       display: inline-block;
       vertical-align: top;

@@ -7,8 +7,6 @@ import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@ang
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-view {
       display: block;
       background: white;

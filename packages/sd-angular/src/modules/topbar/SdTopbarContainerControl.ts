@@ -8,8 +8,6 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../../scss/presets";
-
     sd-topbar-container {
       display: block;
       position: relative;
