@@ -33,6 +33,7 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
 
         sd-form-item {
           display: block;
+          margin-bottom: var(--gap-default);
 
           > label {
             display: block;
