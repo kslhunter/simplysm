@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm",
-  "version": "2.2.40",
+  "version": "2.2.41",
   "description": "심플리즘 패키지 - ORM",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -11,7 +11,7 @@
   "dependencies": {
     "tedious": "^6.2.0",
     "core-js": "^3.1.3",
-    "@simplysm/sd-core": "2.2.40"
+    "@simplysm/sd-core": "2.2.41"
   },
   "devDependencies": {
     "@types/node": "^12.0.10",
