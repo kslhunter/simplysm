@@ -150,6 +150,7 @@ export class SdAngularCompiler extends events.EventEmitter {
               test: /\.ts$/,
               loaders: [
                 require.resolve("./loaders/ts-transpile-loader"),
+                require.resolve("angular-router-loader"),
                 require.resolve("./loaders/inline-sass-loader")
               ]
             }

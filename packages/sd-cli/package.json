@@ -48,7 +48,8 @@
     "webpack-merge": "^4.2.1",
     "yargs": "^13.2.2",
     "zone.js": "^0.9.1",
-    "fork-ts-checker-webpack-plugin": "^1.4.3"
+    "fork-ts-checker-webpack-plugin": "^1.4.3",
+    "angular-router-loader": "^0.8.5"
   },
   "devDependencies": {
     "@types/copy-webpack-plugin": "^5.0.0",
