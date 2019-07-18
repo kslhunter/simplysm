@@ -6,7 +6,7 @@ import {SdTypescriptProgram} from "../SdTypescriptProgram";
 import * as os from "os";
 
 
-export class SdWebpackAngularFileSystem extends NodeWatchFileSystem {
+export class SdWebpackAngularWatchFileSystem extends NodeWatchFileSystem {
   private readonly _program: SdTypescriptProgram;
 
   public constructor(private readonly _virtualInputFileSystem: VirtualFileSystemDecorator,

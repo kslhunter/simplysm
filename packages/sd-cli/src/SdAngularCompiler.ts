@@ -20,7 +20,7 @@ import * as webpackMerge from "webpack-merge";
 import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
 import {SdWebpackInputHostWithScss} from "./plugins/SdWebpackInputHostWithScss";
 import {SdWebpackNgModulePlugin} from "./plugins/SdWebpackNgModulePlugin";
-import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
+import {SdWebpackForkTsCheckerPlugin} from "./plugins/SdWebpackForkTsCheckerPlugin";
 
 export class SdAngularCompiler extends events.EventEmitter {
   private readonly _contextPath: string;
@@ -157,12 +157,13 @@ export class SdAngularCompiler extends events.EventEmitter {
           ]
         },
         plugins: [
-          new SdWebpackNgModulePlugin({tsConfigPath: this._tsConfigPath}),
+          new SdWebpackNgModulePlugin({tsConfigPath: this._tsConfigPath, jit: true}),
           new webpack.ContextReplacementPlugin(/@angular([\\/])core([\\/])/),
-          new ForkTsCheckerWebpackPlugin({
-            tsconfig: this._tsConfigPath,
-            async: true,
-            silent: true
+          new SdWebpackForkTsCheckerPlugin({
+            tsConfigPath: this._tsConfigPath,
+            error: messages => {
+              this.emit("error", ...messages);
+            }
           })
         ]
       };
@@ -231,7 +232,7 @@ export class SdAngularCompiler extends events.EventEmitter {
               // enableIvy: true
             }
           }),
-          new SdWebpackNgModulePlugin({tsConfigPath: this._tsConfigPath}),
+          new SdWebpackNgModulePlugin({tsConfigPath: this._tsConfigPath, jit: false}),
           new webpack.ContextReplacementPlugin(/@angular([\\/])core([\\/])/)
         ]
       };
