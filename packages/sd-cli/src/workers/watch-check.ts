@@ -16,8 +16,6 @@ program.emitDeclaration();
 program
   .watch(
     changeInfos => {
-      console.log("!!change!!", changeInfos);
-
       SdWorkerUtils.sendMessage({type: "run"});
 
       const messages = program.emitDeclaration(changeInfos.map(item => item.filePath));

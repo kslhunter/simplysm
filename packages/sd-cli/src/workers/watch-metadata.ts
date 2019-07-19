@@ -11,7 +11,9 @@ const tsConfigPath = path.resolve(contextPath, "tsconfig.build.json");
 
 SdWorkerUtils.sendMessage({type: "run"});
 
-const program = new SdTypescriptProgram(tsConfigPath, {});
+const program = new SdTypescriptProgram(tsConfigPath, {
+  replaceScssToCss: true
+});
 program.emitMetadata();
 
 program

@@ -8,5 +8,5 @@ const AppModuleNgFactory = require("SD_APP_MODULE_FACTORY").AppModuleNgFactory;
 enableProdMode();
 
 platformBrowserDynamic().bootstrapModuleFactory(AppModuleNgFactory).catch(err => {
-  console.log(err);
+  console.error(err);
 });

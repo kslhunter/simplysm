@@ -41,5 +41,5 @@ platformBrowserDynamic().bootstrapModule(AppModule).then(ngModuleRef => {
     });
   }
 }).catch(err => {
-  console.log(err);
+  console.error(err);
 });
