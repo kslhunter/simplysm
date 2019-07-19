@@ -25,11 +25,12 @@ export class SdFileDialogProvider {
       inputEl.click();
 
       inputEl.onfocus = async () => {
-        await Wait.time(100);
+        await Wait.time(1000);
         if (inputEl) {
           document.body.removeChild(inputEl);
           inputEl = undefined;
         }
+
         resolve();
       };
     });

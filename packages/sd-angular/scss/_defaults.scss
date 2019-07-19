@@ -194,17 +194,9 @@ hr {
   .sd-margin-#{$gap} {
     margin: var(--gap-#{$gap});
   }
+}
 
-  @each $direction in top, right, bottom, left {
-    .sd-padding-#{$direction}-#{$gap} {
-      padding-#{$direction}: var(--gap-#{$gap});
-    }
-
-    .sd-margin-#{$direction}-#{$gap} {
-      margin-#{$direction}: var(--gap-#{$gap});
-    }
-  }
-
+@each $gap in $arr-gap {
   @each $gap1 in $arr-gap {
     .sd-padding-#{$gap}-#{$gap1} {
       padding: var(--gap-#{$gap}) var(--gap-#{$gap1});
@@ -212,6 +204,18 @@ hr {
 
     .sd-margin-#{$gap}-#{$gap1} {
       margin: var(--gap-#{$gap}) var(--gap-#{$gap1});
+    }
+  }
+}
+
+@each $gap in $arr-gap {
+  @each $direction in top, right, bottom, left {
+    .sd-padding-#{$direction}-#{$gap} {
+      padding-#{$direction}: var(--gap-#{$gap});
+    }
+
+    .sd-margin-#{$direction}-#{$gap} {
+      margin-#{$direction}: var(--gap-#{$gap});
     }
   }
 }
