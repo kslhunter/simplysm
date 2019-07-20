@@ -81,7 +81,7 @@ export class SdWebpackAngularWatchFileSystem extends NodeWatchFileSystem {
         }));
       undelayedChanged = [];
 
-      const reloadedFileChangeInfos = this._program.applyChanges(changeInfos, {withBeImportedFiles: true});
+      const reloadedFileChangeInfos = this._program.applyChanges(changeInfos, {});
       const newFileModified = reloadedFileChangeInfos.map(item => item.filePath);
 
       const messages = this._program.emitNgModule(newFileModified).messages;

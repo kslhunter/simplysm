@@ -52,6 +52,7 @@ export class SdWebpackAngularJitWatchFileSystem extends NodeWatchFileSystem {
       const changeInfos = filesModified
         .concat(contextModified.filter(item => item.endsWith(".ts")))
         .concat(undelayedChanged)
+        .filter(item => item.endsWith(".map"))
         .map(item => path.normalize(item).replace(/\.js$/, ".d.ts"))
         .distinct()
         .map(item => ({
@@ -60,12 +61,13 @@ export class SdWebpackAngularJitWatchFileSystem extends NodeWatchFileSystem {
         }));
       undelayedChanged = [];
 
-      const reloadedFileChangeInfos = this._program.applyChanges(changeInfos, {withBeImportedFiles: true});
+      const reloadedFileChangeInfos = this._program.applyChanges(changeInfos, {});
       const newFileModified = reloadedFileChangeInfos.map(item => item.filePath);
 
       const messages = this._program.emitNgModule(newFileModified).messages;
       messages.push(...this._program.emitNgRoutingModule(newFileModified).messages);
       messages.push(...this._program.emitRoutesRoot(newFileModified));
+
       if (messages.length > 0) {
         throw new Error(messages.distinct().join(os.EOL));
       }
