@@ -234,11 +234,25 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @SdTypeValidate(Number)
   public rows?: number;
 
+  @Input()
+  @SdTypeValidate(Function)
+  public validator?: (value: number | string | DateOnly | DateTime | Time) => boolean;
+
   public getIsInvalid(): boolean {
-    const hasMinError = this.min !== undefined && this.value !== undefined && this.type === "number" && this.value < this.min;
-    const hasStepError = this.step !== undefined && this.value !== undefined && this.type === "number" && Math.abs(Number(this.value) % this.step) >= 1;
-    const hasRequiredError = this.required && (this.value === "" || this.value === undefined);
-    return hasMinError || hasStepError || !!hasRequiredError;
+    if (this.min !== undefined && this.value !== undefined && this.type === "number" && this.value < this.min) {
+      return true;
+    }
+    else if (this.step !== undefined && this.value !== undefined && this.type === "number" && Math.abs(Number(this.value) % this.step) >= 1) {
+      return true;
+    }
+    else if (this.required && (this.value === "" || this.value === undefined)) {
+      return true;
+    }
+    else if (this.validator && this.value && !this.validator(this.value)) {
+      return true;
+    }
+
+    return false;
   }
 
   public get controlValue(): number | string {
