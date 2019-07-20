@@ -6,7 +6,7 @@ import {
   ContentChild,
   DoCheck,
   ElementRef,
-  EventEmitter,
+  EventEmitter, HostBinding,
   Input,
   IterableDiffer,
   IterableDiffers,
@@ -154,23 +154,9 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
   private _required: boolean | undefined;
 
   @Input()
+  @HostBinding("attr.sd-disabled")
   @SdTypeValidate(Boolean)
-  public set disabled(value: boolean | undefined) {
-    this._disabled = value;
-
-    if (value) {
-      this._el.setAttribute("sd-disabled", "true");
-    }
-    else {
-      this._el.setAttribute("sd-disabled", "false");
-    }
-  }
-
-  public get disabled(): boolean | undefined {
-    return this._disabled;
-  }
-
-  private _disabled?: boolean;
+  public disabled?: boolean;
 
   @Input()
   @SdTypeValidate(String)

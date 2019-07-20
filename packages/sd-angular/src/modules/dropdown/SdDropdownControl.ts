@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostBinding,
   Input,
   OnDestroy,
   OnInit,
@@ -16,7 +17,7 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div class="_sd-dropdown-control" tabindex="0">
+    <div class="_sd-dropdown-control" [attr.tabindex]="disabled ? undefined : '0'">
       <ng-content></ng-content>
     </div>
     <ng-content select="sd-dropdown-popup"></ng-content>`,
@@ -30,25 +31,9 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
 })
 export class SdDropdownControl implements OnInit, OnDestroy {
   @Input()
+  @HostBinding("attr.sd-disabled")
   @SdTypeValidate(Boolean)
-  public set disabled(value: boolean) {
-    this._disabled = value;
-
-    if (value) {
-      this._el.setAttribute("sd-disabled", "true");
-      if (this._controlEl) this._controlEl.removeAttribute("tabindex");
-    }
-    else {
-      this._el.setAttribute("sd-disabled", "false");
-      if (this._controlEl) this._controlEl.setAttribute("tabindex", "0");
-    }
-  }
-
-  public get disabled(): boolean {
-    return this._disabled;
-  }
-
-  private _disabled = false;
+  public disabled?: boolean;
 
   @Output()
   public readonly open = new EventEmitter();
@@ -87,8 +72,6 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     document.addEventListener("mouseover", this.mouseoverEventHandler, true);
 
     this._dropdownEl.remove();
-
-    this.disabled = this._disabled;
   }
 
   public ngOnDestroy(): void {
@@ -101,6 +84,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
   public openPopup(): void {
     if (this._isOpen) return;
+    if (this.disabled) return;
     this._isOpen = true;
 
     document.body.appendChild(this._dropdownEl);
