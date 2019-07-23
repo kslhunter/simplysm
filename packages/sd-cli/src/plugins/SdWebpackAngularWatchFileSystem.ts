@@ -17,7 +17,8 @@ export class SdWebpackAngularWatchFileSystem extends NodeWatchFileSystem {
     this._program = new SdTypescriptProgram(this._tsConfigPath, {});
     const messages = this._program.emitNgModule().messages;
     messages.push(...this._program.emitNgRoutingModule().messages);
-    messages.push(...this._program.emitRoutesRoot());
+    this._program.emitRoutesRoot();
+
     if (messages.length > 0) {
       throw new Error(messages.distinct().join(os.EOL));
     }
@@ -73,6 +74,7 @@ export class SdWebpackAngularWatchFileSystem extends NodeWatchFileSystem {
       const changeInfos = filesModified
         .concat(contextModified.filter(item => item.endsWith(".ts")))
         .concat(undelayedChanged)
+        .filter(item => item.endsWith(".map"))
         .map(item => path.normalize(item).replace(/\.js$/, ".d.ts"))
         .distinct()
         .map(item => ({
@@ -82,11 +84,20 @@ export class SdWebpackAngularWatchFileSystem extends NodeWatchFileSystem {
       undelayedChanged = [];
 
       const reloadedFileChangeInfos = this._program.applyChanges(changeInfos, {});
-      const newFileModified = reloadedFileChangeInfos.map(item => item.filePath);
+      let newFileModified = reloadedFileChangeInfos.map(item => item.filePath);
 
-      const messages = this._program.emitNgModule(newFileModified).messages;
-      messages.push(...this._program.emitNgRoutingModule(newFileModified).messages);
-      messages.push(...this._program.emitRoutesRoot(newFileModified));
+      const emitNgModuleResult = this._program.emitNgModule(newFileModified);
+      const emitNgRoutingModuleResult = this._program.emitNgRoutingModule(newFileModified);
+      const emitRoutesRootResult = this._program.emitRoutesRoot(newFileModified);
+      newFileModified.push(
+        ...(emitRoutesRootResult ? [emitRoutesRootResult] : [])
+          .concat(emitNgModuleResult.changedModuleFilePaths)
+          .concat(emitNgRoutingModuleResult.changedRoutingModuleFilePaths)
+      );
+      newFileModified = newFileModified.distinct();
+
+      const messages = emitNgModuleResult.messages.concat(emitNgRoutingModuleResult.messages);
+
       if (messages.length > 0) {
         throw new Error(messages.distinct().join(os.EOL));
       }
@@ -148,7 +159,7 @@ export class SdWebpackAngularWatchFileSystem extends NodeWatchFileSystem {
 
     const watcher = super.watch(
       mapReplacements(files),
-      mapReplacements([...dirs, ...glob.sync(path.resolve(this._program.rootDirPath, "**"))].distinct()),
+      mapReplacements([...dirs, ...glob.sync(path.resolve(this._program.rootDirPath, "**/"))].distinct()),
       mapReplacements(missing),
       startTime,
       options,

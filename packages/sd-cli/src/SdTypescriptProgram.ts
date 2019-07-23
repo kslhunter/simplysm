@@ -765,11 +765,12 @@ export class SdTypescriptProgram {
     };
   }
 
-  public emitRoutesRoot(filePaths: string[] = this._getMyTypescriptFiles()): string[] {
+  public emitRoutesRoot(filePaths: string[] = this._getMyTypescriptFiles()): string | undefined {
     const pagesDirPath = path.resolve(this.rootDirPath, "pages");
+    const outFilePath = path.resolve(this.rootDirPath, "_routes.ts");
 
     if (!filePaths.some(item => item.startsWith(pagesDirPath))) {
-      return [];
+      return undefined;
     }
 
     let content = ``;
@@ -792,10 +793,15 @@ export class SdTypescriptProgram {
 
     content += `];\n`;
 
-    const outFilePath = path.resolve(this.rootDirPath, "_routes.ts");
+    if (fs.pathExistsSync(outFilePath)) {
+      const prevText = fs.readFileSync(outFilePath, "utf-8");
+      if (prevText === content) {
+        return undefined;
+      }
+    }
 
     this._writeFile(outFilePath, content);
-    return [];
+    return outFilePath;
   }
 
   private _getMetadata(filePath: string): { metadata: ModuleMetadata | undefined; messages: string[] } {
