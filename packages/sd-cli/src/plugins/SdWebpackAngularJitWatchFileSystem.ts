@@ -53,7 +53,7 @@ export class SdWebpackAngularJitWatchFileSystem extends NodeWatchFileSystem {
       const changeInfos = filesModified
         .concat(contextModified.filter(item => item.endsWith(".ts")))
         .concat(undelayedChanged)
-        .filter(item => item.endsWith(".map"))
+        .filter(item => !item.endsWith(".map"))
         .map(item => path.normalize(item).replace(/\.js$/, ".d.ts"))
         .distinct()
         .map(item => ({
