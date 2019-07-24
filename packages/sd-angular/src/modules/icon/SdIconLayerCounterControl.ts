@@ -1,5 +1,5 @@
 import {Component, HostBinding} from "@angular/core";
-import {counter, CounterParams, FontawesomeObject,} from "@fortawesome/fontawesome-svg-core";
+import {counter, CounterParams, FontawesomeObject} from "@fortawesome/fontawesome-svg-core";
 import {SdIconLayerTextBaseControl} from "./SdIconLayerTextBaseControl";
 
 /**

@@ -118,9 +118,6 @@ export class SdTypescriptProgram {
       // 콜백수행 (사용자 코드 수행)
       callback(reloadedFileChangeInfos);
 
-      // Watch 경로 재설정
-      watcher.unwatch(watchPaths);
-
       watchPaths = [path.resolve(this.rootDirPath, "**", "*.ts")];
       if (this._options.replaceScssToCss) {
         watchPaths.push(...Array.from(this._fileInfoMap.entries()).mapMany(entry => entry[1].embeddedDependencies));
@@ -130,6 +127,8 @@ export class SdTypescriptProgram {
         watchPaths.push(...this._getMyTypescriptFiles().mapMany(item => this._getDependencies(item)));
       }
 
+      // Watch 경로 재설정
+      watcher.unwatch(watchPaths);
       watcher.add(watchPaths.distinct());
     }, options.millisecond);
   }

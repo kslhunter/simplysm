@@ -1,5 +1,6 @@
 import {Component, HostBinding, Input, OnChanges, SimpleChanges} from "@angular/core";
 import {
+  config,
   FaSymbol,
   FlipProp,
   icon,
@@ -17,15 +18,10 @@ import {
 } from "@fortawesome/fontawesome-svg-core";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 
-import {faNormalizeIconSpec} from "@fortawesome/angular-fontawesome/shared/utils/normalize-icon-spec.util";
-import {FaProps} from "@fortawesome/angular-fontawesome";
-import {objectWithKey} from "@fortawesome/angular-fontawesome/shared/utils/object-with-keys.util";
-import {faClassList} from "@fortawesome/angular-fontawesome/shared/utils/classlist.util";
-import {faWarnIfIconSpecMissing} from "@fortawesome/angular-fontawesome/shared/errors/warn-if-icon-spec-missing";
-import {faWarnIfIconHtmlMissing} from "@fortawesome/angular-fontawesome/shared/errors/warn-if-icon-html-missing";
-import {faNotFoundIconHtml} from "@fortawesome/angular-fontawesome/shared/errors/not-found-icon-html";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {sdIconNames} from "../../commons/sdIconNames";
+import {Logger} from "@simplysm/sd-core";
+import {ISdIconProps, objectWithKey, sdIconClassList, sdIconNormalizeIconSpec} from "./SdIconUtils";
 
 @Component({
   selector: "sd-icon",
@@ -147,6 +143,8 @@ export class SdIconControl implements OnChanges {
   @HostBinding("class")
   public hostClass = "ng-fa-icon";
 
+  private readonly _logger = new Logger("@simplysm/sd-angular", "SdIconControl");
+
   public constructor(private readonly _sanitizer: DomSanitizer) {
   }
 
@@ -171,10 +169,10 @@ export class SdIconControl implements OnChanges {
       ] : undefined;
 
       // iconSpec 업데이트
-      this._iconSpec = faNormalizeIconSpec(this._iconProp!);
+      this._iconSpec = sdIconNormalizeIconSpec(this._iconProp);
 
       // params 업데이트
-      const classOpts: FaProps = {
+      const classOpts: ISdIconProps = {
         flip: this.flip,
         spin: this.spin,
         pulse: this.pulse,
@@ -187,8 +185,8 @@ export class SdIconControl implements OnChanges {
         fixedWidth: this.fw
       };
 
-      const classes = objectWithKey("classes", [...faClassList(classOpts), ...(this.classes || [])]);
-      const mask = objectWithKey("mask", faNormalizeIconSpec(this._maskProp!));
+      const classes = objectWithKey("classes", [...sdIconClassList(classOpts), ...(this.classes || [])]);
+      const mask = objectWithKey("mask", sdIconNormalizeIconSpec(this._maskProp));
       const parsedTransform = typeof this.transform === "string" ? parse.transform(this.transform) : this.transform;
       const transform = objectWithKey("transform", parsedTransform);
 
@@ -202,14 +200,21 @@ export class SdIconControl implements OnChanges {
       };
 
       // icon 업데이트
-      this._faIcon = icon(this._iconSpec, this._params);
+      this._faIcon = icon(this._iconSpec!, this._params);
 
       // 렌더링
-      faWarnIfIconSpecMissing(this._iconSpec);
-      faWarnIfIconHtmlMissing(this._faIcon, this._iconSpec);
+      if (!this._iconSpec) {
+        this._logger.error("아이콘을 찾을 수 없습니다");
+      }
+
+      if (this._iconSpec && !this._faIcon) {
+        this._logger.error("아이콘을 찾을 수 없습니다 (iconName=" + this._iconSpec.iconName + ", prefix=" + this._iconSpec.prefix + ")");
+      }
 
       this.renderedIconHTML = this._sanitizer.bypassSecurityTrustHtml(
-        this.icon ? this._faIcon.html.join("\n") : faNotFoundIconHtml
+        this.icon
+          ? this._faIcon.html.join("\n")
+          : "<svg class=\"" + config.replacementClass + "\" viewBox=\"0 0 448 512\"></svg><!--icon not found-->"
       );
     }
   }

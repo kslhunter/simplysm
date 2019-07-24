@@ -1,9 +1,9 @@
 import {forwardRef, HostBinding, Inject, Injectable, Input, OnChanges, Optional, SimpleChanges} from "@angular/core";
 import {FontawesomeObject, Styles, TextParams} from "@fortawesome/fontawesome-svg-core";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {faWarnIfParentNotExist} from "@fortawesome/angular-fontawesome/shared/errors/warn-if-parent-not-exist";
 import {SdIconLayerControl} from "./SdIconLayerControl";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
+import {Logger} from "@simplysm/sd-core";
 
 @Injectable()
 export abstract class SdIconLayerTextBaseControl implements OnChanges {
@@ -27,11 +27,15 @@ export abstract class SdIconLayerTextBaseControl implements OnChanges {
 
   protected params?: TextParams;
 
+  private readonly _logger = new Logger("@simplysm/sd-angular", "SdIconLayerTextBaseControl");
+
   public constructor(@Inject(forwardRef(() => SdIconLayerControl))
                      @Optional()
                      private readonly _parent: SdIconLayerControl,
                      private readonly _sanitizer: DomSanitizer) {
-    faWarnIfParentNotExist(this._parent, "SdIconLayerControl", this.constructor.name);
+    if (!this._parent) {
+      this._logger.error(this.constructor.name + "는 SdIconLayerControl 의 하위에만 사용될 수 있습니다");
+    }
   }
 
   // tslint:disable-next-line:contextual-lifecycle

@@ -12,9 +12,7 @@ import {
 } from "@fortawesome/fontawesome-svg-core";
 import {SdIconLayerTextBaseControl} from "./SdIconLayerTextBaseControl";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
-import {FaProps} from "@fortawesome/angular-fontawesome";
-import {faClassList} from "@fortawesome/angular-fontawesome/shared/utils/classlist.util";
-import {objectWithKey} from "@fortawesome/angular-fontawesome/shared/utils/object-with-keys.util";
+import {ISdIconProps, objectWithKey, sdIconClassList} from "./SdIconUtils";
 
 @Component({
   selector: "sd-icon-layer-text",
@@ -89,7 +87,7 @@ export class SdIconLayerTextControl extends SdIconLayerTextBaseControl {
   public hostClass = "ng-fa-layers-text";
 
   protected updateParams(): void {
-    const classOpts: FaProps = {
+    const classOpts: ISdIconProps = {
       flip: this.flip,
       spin: this.spin,
       pulse: this.pulse,
@@ -102,7 +100,7 @@ export class SdIconLayerTextControl extends SdIconLayerTextBaseControl {
       fixedWidth: this.fw
     };
 
-    const classes = objectWithKey("classes", [...faClassList(classOpts), ...(this.classes || [])]);
+    const classes = objectWithKey("classes", [...sdIconClassList(classOpts), ...(this.classes || [])]);
     const parsedTransform = typeof this.transform === "string" ? parse.transform(this.transform) : this.transform;
     const transform = objectWithKey("transform", parsedTransform);
 
