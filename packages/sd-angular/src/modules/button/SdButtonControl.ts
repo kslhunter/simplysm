@@ -8,13 +8,14 @@ import {
   ViewEncapsulation
 } from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
+import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 
 @Component({
   selector: "sd-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <button [type]="type" [disabled]="disabled">
+    <button [type]="type" [disabled]="disabled" [attr.style]="safeHtml(buttonStyle)" [attr.class]="safeHtml(buttonClass)">
       <ng-content></ng-content>
     </button>
     <div class="_invalid-indicator"></div>`,
@@ -51,7 +52,7 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
         &:disabled {
           background: transparent;
           cursor: default;
-          color: var(--text-color-default);
+          color: var(--text-color-lighter);
         }
       }
 
@@ -187,7 +188,16 @@ export class SdButtonControl implements AfterContentChecked {
   @HostBinding("attr.sd-invalid")
   public isInvalid = false;
 
-  public constructor(private readonly _elRef: ElementRef) {
+  @Input("button.style")
+  @SdTypeValidate(String)
+  public buttonStyle?: string;
+
+  @Input("button.class")
+  @SdTypeValidate(String)
+  public buttonClass?: string;
+
+  public constructor(private readonly _elRef: ElementRef,
+                     private readonly _sanitization: DomSanitizer) {
   }
 
   public ngAfterContentChecked(): void {
@@ -198,5 +208,9 @@ export class SdButtonControl implements AfterContentChecked {
         this.isInvalid = true;
       }
     }
+  }
+
+  public safeHtml(value?: string): SafeHtml {
+    return value ? this._sanitization.bypassSecurityTrustStyle(value) : "";
   }
 }
