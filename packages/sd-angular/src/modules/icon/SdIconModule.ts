@@ -1,20 +1,27 @@
 import {NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import {SdIconControl} from "./SdIconControl";
 import {SdSharedModule} from "../shared/SdSharedModule";
+import {SdIconLayerControl} from "./SdIconLayerControl";
+import {SdIconLayerTextControl} from "./SdIconLayerTextControl";
+import {SdIconLayerCounterControl} from "./SdIconLayerCounterControl";
 
 @NgModule({
   imports: [
     CommonModule,
-    SdSharedModule,
-    FontAwesomeModule
+    SdSharedModule
   ],
   exports: [
-    SdIconControl
+    SdIconControl,
+    SdIconLayerControl,
+    SdIconLayerTextControl,
+    SdIconLayerCounterControl
   ],
   declarations: [
-    SdIconControl
+    SdIconControl,
+    SdIconLayerControl,
+    SdIconLayerTextControl,
+    SdIconLayerCounterControl
   ]
 })
 export class SdIconModule {

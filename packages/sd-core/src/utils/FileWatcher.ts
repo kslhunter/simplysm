@@ -21,15 +21,17 @@ export class FileWatcher {
             timeout = setTimeout(
               async () => {
                 processing = true;
-                try {
-                  const fileChanges = Object.clone(preservedFileChanges);
-                  preservedFileChanges = [];
 
+                const fileChanges = Object.clone(preservedFileChanges);
+                preservedFileChanges = [];
+
+                try {
                   await callback(fileChanges);
                 }
                 catch (err) {
                   new Logger("@simplysm/sd-core", "FileWatcher").error(err.stack);
                 }
+
                 processing = false;
               },
               millisecond || 100
