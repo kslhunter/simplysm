@@ -16,18 +16,27 @@ export class SdWebpackForkTsCheckerPlugin extends ForkTsCheckerWebpackPlugin {
     const tsCheckerHooks = ForkTsCheckerWebpackPlugin.getCompilerHooks(compiler);
     tsCheckerHooks.receive.tap("SdWebpackForkTsCheckerPlugin", (diagnostics: NormalizedMessage[]) => {
       if (diagnostics.length > 0) {
-        this._options.error(diagnostics.map(item => {
-          if (!item.file) return undefined;
+        this._options.error(
+          diagnostics.map(item => {
+            if (!item.file) {
+              let result = "";
+              result += item.severity.toLowerCase() + ": ";
+              result += "TS" + item.code + ": ";
+              result += item.content;
+              return result;
+            }
+            else {
+              let result = item.file.replace(/\//g, "\\");
+              result += `(${item.line! + 1},${item.character! + 1})`;
+              result += ": ";
+              result += item.severity.toLowerCase() + ": ";
+              result += "TS" + item.code + ": ";
+              result += item.content;
 
-          let result = item.file.replace(/\//g, "\\");
-          result += `(${item.line! + 1},${item.character! + 1})`;
-          result += ": ";
-          result += item.severity.toLowerCase() + ": ";
-          result += "TS" + item.code + ": ";
-          result += item.content;
-
-          return result;
-        }).filterExists());
+              return result;
+            }
+          }).filterExists()
+        );
       }
     });
   }
