@@ -9,6 +9,7 @@ import {
   IconName,
   IconParams,
   IconProp,
+  library,
   parse,
   PullProp,
   RotateProp,
@@ -17,11 +18,15 @@ import {
   Transform
 } from "@fortawesome/fontawesome-svg-core";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {sdIconNames} from "../../commons/sdIconNames";
 import {Logger} from "@simplysm/sd-core";
 import {ISdIconProps, objectWithKey, sdIconClassList, sdIconNormalizeIconSpec} from "./SdIconUtils";
+import {fab} from "@fortawesome/free-brands-svg-icons";
+import {far} from "@fortawesome/free-regular-svg-icons";
+import {fas} from "@fortawesome/free-solid-svg-icons";
+
+library.add(fas, far, fab);
 
 @Component({
   selector: "sd-icon",
@@ -140,8 +145,8 @@ export class SdIconControl implements OnChanges {
   @HostBinding("innerHTML")
   public renderedIconHTML?: SafeHtml;
 
-  @HostBinding("class")
-  public hostClass = "ng-fa-icon";
+  @HostBinding("class.ng-fa-icon")
+  public classBoolean = true;
 
   private readonly _logger = new Logger("@simplysm/sd-angular", "SdIconControl");
 
@@ -212,7 +217,7 @@ export class SdIconControl implements OnChanges {
       }
 
       this.renderedIconHTML = this._sanitizer.bypassSecurityTrustHtml(
-        this.icon
+        this._faIcon
           ? this._faIcon.html.join("\n")
           : "<svg class=\"" + config.replacementClass + "\" viewBox=\"0 0 448 512\"></svg><!--icon not found-->"
       );

@@ -10,8 +10,8 @@ import {SdIconLayerTextBaseControl} from "./SdIconLayerTextBaseControl";
   template: ""
 })
 export class SdIconLayerCounterControl extends SdIconLayerTextBaseControl {
-  @HostBinding("class")
-  public hostClass = "ng-fa-layers-counter";
+  @HostBinding("class.ng-fa-layers-counter")
+  public classBoolean = true;
 
   protected updateParams(): void {
     this.params = {

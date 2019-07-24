@@ -62,8 +62,13 @@ export * from "./modules/grid/SdGridItemControl";
 export * from "./modules/html-editor/SdHtmlEditorModule";
 export * from "./modules/html-editor/SdHtmlEditorControl";
 
-export * from "./modules/icon/SdIconModule";
 export * from "./modules/icon/SdIconControl";
+export * from "./modules/icon/SdIconLayerControl";
+export * from "./modules/icon/SdIconLayerCounterControl";
+export * from "./modules/icon/SdIconLayerTextBaseControl";
+export * from "./modules/icon/SdIconLayerTextControl";
+export * from "./modules/icon/SdIconModule";
+export * from "./modules/icon/SdIconUtils";
 
 export * from "./modules/label/SdLabelModule";
 export * from "./modules/label/SdLabelControl";

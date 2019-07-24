@@ -83,8 +83,8 @@ export class SdIconLayerTextControl extends SdIconLayerTextBaseControl {
   @Input()
   public transform?: string | Transform;
 
-  @HostBinding("class")
-  public hostClass = "ng-fa-layers-text";
+  @HostBinding("class.ng-fa-layers-text")
+  public classBoolean = true;
 
   protected updateParams(): void {
     const classOpts: ISdIconProps = {
