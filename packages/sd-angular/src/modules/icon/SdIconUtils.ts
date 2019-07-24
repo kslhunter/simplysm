@@ -31,7 +31,7 @@ export interface ISdIconProps {
 }
 
 export function sdIconClassList(props: ISdIconProps): string[] {
-  return [
+  const result = [
     props.spin ? "fa-spin" : undefined,
     props.pulse ? "fa-pulse" : undefined,
     props.fixedWidth ? "fa-fw" : undefined,
@@ -45,10 +45,13 @@ export function sdIconClassList(props: ISdIconProps): string[] {
     props.rotate !== undefined ? `fa-rotate-${props.rotate}` : undefined,
     props.pull !== undefined ? `fa-pull-${props.pull}` : undefined
   ].filterExists();
+
+  return result;
 }
 
 export function isIconLookup(i: IconProp): i is IconLookup {
-  return !!(i as IconLookup).prefix && !!(i as IconLookup).iconName;
+  const result = !!(i as IconLookup).prefix && !!(i as IconLookup).iconName;
+  return result;
 }
 
 export function sdIconNormalizeIconSpec(iconSpec: IconProp | undefined, defaultPrefix: IconPrefix = "fas"): IconLookup | undefined {
@@ -70,5 +73,6 @@ export function sdIconNormalizeIconSpec(iconSpec: IconProp | undefined, defaultP
 }
 
 export function objectWithKey<T>(key: string, value: T): { [id: string]: T } {
-  return (Array.isArray(value) && value.length > 0) || (!Array.isArray(value) && value) ? {[key]: value} : {};
+  const result = (Array.isArray(value) && value.length > 0) || (!Array.isArray(value) && value) ? {[key]: value} : {};
+  return result;
 }
