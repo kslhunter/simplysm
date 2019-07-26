@@ -1,7 +1,6 @@
 import * as chokidar from "chokidar";
 import {Logger} from "./Logger";
 import * as path from "path";
-import {Wait} from "./Wait";
 
 export class FileWatcher {
   public static async watch(paths: string | string[], sits: FileChangeInfoType[], callback: (changedFiles: IFileChangeInfo[]) => (void | Promise<void>), millisecond?: number): Promise<chokidar.FSWatcher> {
@@ -11,16 +10,16 @@ export class FileWatcher {
           let preservedFileChanges: IFileChangeInfo[] = [];
           let timeout: NodeJS.Timer;
 
-          let processing = false;
+          // let processing = false;
 
           const onWatched = async (type: "add" | "change" | "unlink", filePath: string) => {
             preservedFileChanges.push({type, filePath: path.normalize(filePath)});
-            await Wait.true(() => !processing);
+            // await Wait.true(() => !processing);
 
             clearTimeout(timeout);
             timeout = setTimeout(
               async () => {
-                processing = true;
+                // processing = true;
 
                 const fileChanges = Object.clone(preservedFileChanges);
                 preservedFileChanges = [];
@@ -32,7 +31,7 @@ export class FileWatcher {
                   new Logger("@simplysm/sd-core", "FileWatcher").error(err.stack);
                 }
 
-                processing = false;
+                // processing = false;
               },
               millisecond || 100
             );

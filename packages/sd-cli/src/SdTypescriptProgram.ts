@@ -279,11 +279,13 @@ export class SdTypescriptProgram {
       const outFilePath = path.resolve(this.outDirPath, relativePath).replace(/\.ts$/, ".d.ts");
 
       if (!fileInfo) {
+        // console.log("removed\t", filePath);
         fs.removeSync(outFilePath);
         continue;
       }
 
       if (!this._compilerOptions.declaration || fileInfo.syncVersions.emitDeclaration === fileInfo.version) {
+        // console.log("check-only\t", filePath);
         // NOTE: 파일이 변경되지 않았더라도, 타입체크는 해야함. (다른 파일의 변경에 따른 오류발생 가능성이 있음)
         result.push(...this._diagnosticsToMessages(
           this._program.getSemanticDiagnostics(fileInfo.sourceFile).concat(this._program.getSyntacticDiagnostics(fileInfo.sourceFile))
@@ -303,10 +305,12 @@ export class SdTypescriptProgram {
         );
 
         if (emitResult.emitSkipped) {
+          // console.log("emit-skip\t", filePath);
           fs.removeSync(outFilePath);
           fileInfo.output.emitDeclaration.declaration = "";
         }
         else if (fileInfo.output.emitDeclaration.declaration !== declarationText) {
+          // console.log("emit-decl\t", filePath);
           this._writeFile(outFilePath, declarationText);
           fileInfo.output.emitDeclaration.declaration = declarationText;
         }
