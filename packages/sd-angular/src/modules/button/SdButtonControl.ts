@@ -35,6 +35,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
         cursor: pointer;
         color: var(--theme-primary-default);
         border-radius: 3px;
+        border-color: var(--theme-grey-lighter);
 
         &:hover {
           background: var(--theme-grey-lightest);
@@ -50,7 +51,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
         }
 
         &:disabled {
-          background: transparent;
+          border-color: var(--theme-grey-lighter);
           cursor: default;
           color: var(--text-color-lighter);
         }

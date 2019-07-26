@@ -117,7 +117,7 @@
   --z-index-sidebar: 2100;
   --z-index-topbar: 2000;
 
-  --checkbox-size: calc(var(--font-size-default) * var(--line-height-strip));
+  --checkbox-size: calc(var(--font-size-default) * var(--line-height-strip) - var(--gap-sm));
   --dock-border-color: var(--theme-grey-lighter);
   --dock-resizer-size: 4px;
   --topbar-height: 36px;
