@@ -55,6 +55,9 @@ export * from "./modules/form/SdFormModule";
 export * from "./modules/form/SdFormControl";
 export * from "./modules/form/SdFormItemControl";
 
+export * from "./modules/gap/SdGapModule";
+export * from "./modules/gap/SdGapControl";
+
 export * from "./modules/grid/SdGridModule";
 export * from "./modules/grid/SdGridControl";
 export * from "./modules/grid/SdGridItemControl";
