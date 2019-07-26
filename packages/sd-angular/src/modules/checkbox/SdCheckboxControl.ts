@@ -19,7 +19,7 @@ import {sdIconNames} from "../../commons/sdIconNames";
     <label tabindex="0" (keydown)="onKeydown($event)">
       <input [checked]="value" (change)="onValueChange($event)" type="checkbox" hidden [disabled]="disabled">
       <div class="_indicator_rect"></div>
-      <sd-icon class="_indicator" [icon]="icon" [fw]="true" *ngIf="!radio"></sd-icon>
+      <sd-icon class="_indicator" [icon]="icon" *ngIf="!radio"></sd-icon>
       <div class="_indicator" *ngIf="radio">
         <div></div>
       </div>
@@ -49,6 +49,7 @@ import {sdIconNames} from "../../commons/sdIconNames";
           vertical-align: top;
           transition: border-color .1s linear;
           background: var(--theme-secondary-lightest);
+          margin-top: calc(var(--gap-sm) / 2);
         }
 
         > ._indicator {
@@ -111,6 +112,7 @@ import {sdIconNames} from "../../commons/sdIconNames";
 
           > ._indicator {
             padding: var(--gap-xs);
+            margin-top: calc(var(--gap-sm) / 2);
           }
 
           > ._indicator > div {
