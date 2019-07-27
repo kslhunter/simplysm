@@ -1,30 +1,34 @@
 const fs = require("fs");
 
+
+// yarn.lock 말고 각 node_modules의 패키지중 prodDep, devDep, peerDep 으로 검색해야함..
+// yarn.lock 으론 peerDep 체크가 안됨
 const content = fs.readFileSync("yarn.lock").toString();
-const matches = content.match(/ {4}.* "[^^*>].*/g);
-const yarnDeps = [];
+const matches = content.match(/.*[0-9*]:/g);
+const yarnPackageCounts = {};
 for (const match of matches) {
-  const split = match.trim().replace(/"/g, "").split(" ");
-  if (!yarnDeps.some(item => item.name === split[0] && item.version === split[1])) {
-    yarnDeps.push({
-      name: split[0],
-      version: split[1]
-    });
-  }
+  const packageName = match.split("@")[0];
+
+  yarnPackageCounts[packageName] = (yarnPackageCounts[packageName] || 0) + 1;
 }
 
-console.log(yarnDeps.sort((a, b) => a.name > b.name ? 1 : a.name === b.name ? 0 : -1));
+const duplicatedYarnPackageKeys = Object.keys(yarnPackageCounts).filter(key => yarnPackageCounts[key] > 1);
 
-/*
-const packages = fs.readdirSync("packages");
-for (const pkg of packages) {
+const myPackages = fs.readdirSync("packages");
+let allDeps = {};
+for (const pkg of myPackages) {
   const packageJson = JSON.parse(fs.readFileSync(`packages/${pkg}/package.json`).toString());
-  const deps = {
+
+  allDeps = {
+    ...allDeps,
     ...packageJson["dependencies"] || {},
     ...packageJson["devDependencies"] || {},
-    ...packageJson["peerDependencies"] || {},
+    ...packageJson["peerDependencies"] || {}
   };
-
-  console.log(pkg, deps);
 }
-*/
+
+for (const duplicatedYarnPackageKey of duplicatedYarnPackageKeys) {
+  if (Object.keys(allDeps).includes(duplicatedYarnPackageKey)) {
+    console.log(duplicatedYarnPackageKey + "@" + allDeps[duplicatedYarnPackageKey]);
+  }
+}

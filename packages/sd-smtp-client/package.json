@@ -10,13 +10,13 @@
   "sideEffects": false,
   "dependencies": {
     "@simplysm/sd-core": "2.2.51",
-    "nodemailer": "^6.2.1"
+    "nodemailer": ">=6.2.1"
   },
   "devDependencies": {
-    "@types/node": "^12.0.10",
-    "tslint": "^5.18.0",
+    "@types/node": ">=12.0.10",
+    "tslint": ">=5.18.0",
     "typescript": "3.4.5",
-    "typescript-tslint-plugin": "^0.5.2",
-    "@types/nodemailer": "^6.2.0"
+    "typescript-tslint-plugin": ">=0.5.2",
+    "@types/nodemailer": ">=6.2.0"
   }
 }
