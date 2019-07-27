@@ -55,6 +55,10 @@ export class SdProjectBuilder {
 
         // > > 로컬 업데이트 설정에 따라, 가져올 소스 경로 추출
         const sourcePath = path.resolve(config.localUpdates![localUpdateKey].replace(/\*/g, targetName));
+        if (!fs.pathExistsSync(sourcePath)) {
+          logger.info(`소스경로를 찾을 수 없어 무시됩니다(${sourcePath})`);
+          return;
+        }
 
         // > > 변경감지 모드일 경우,
         if (watch) {
