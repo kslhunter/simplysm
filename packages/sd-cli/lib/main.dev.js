@@ -5,41 +5,46 @@ const ApplicationRef = require("@angular/core").ApplicationRef;
 const platformBrowserDynamic = require("@angular/platform-browser-dynamic").platformBrowserDynamic;
 const AppModule = require("SD_APP_MODULE").AppModule;
 
-platformBrowserDynamic().bootstrapModule(AppModule).then(ngModuleRef => {
-  if (module["hot"]) {
-    const appRef = ngModuleRef.injector.get(ApplicationRef);
+let ngModuleRef;
 
-    module["hot"].accept();
-    module["hot"].dispose(() => {
-      console.clear();
-      // 새 엘리먼트 넣기
-      const prevEls = appRef.components.map(cmp => cmp.location.nativeElement);
-      for (const prevEl of prevEls) {
-        const newEl = document.createElement(prevEl.tagName);
-        prevEl.parentNode.insertBefore(newEl, prevEl);
-      }
+module["hot"].accept();
 
-      // 이전 스타일 삭제
-      const prevNgStyleEls = document.head.findAll("> style")
-        .filter(styleEl => styleEl.innerText.indexOf("_ng") !== -1);
+platformBrowserDynamic().bootstrapModule(AppModule)
+  .then(mod => {
+    ngModuleRef = mod;
+  })
+  .catch(err => {
+    console.log(err);
+  });
 
-      for (const prevNgStyleEl of prevNgStyleEls) {
-        document.head.removeChild(prevNgStyleEl);
-      }
+module["hot"].dispose(() => {
+  // console.clear();
+  const appRef = ngModuleRef.injector.get(ApplicationRef);
 
-      // 이전 ngModule 지우기
-      ngModuleRef.destroy();
-
-      // 이전 엘리먼트 삭제
-      for (const prevEl of prevEls) {
-        try {
-          prevEl.parentNode.removeChild(prevEl);
-        }
-        catch (err) {
-        }
-      }
-    });
+  // 새 엘리먼트 넣기
+  const prevEls = appRef.components.map(cmp => cmp.location.nativeElement);
+  for (const prevEl of prevEls) {
+    const newEl = document.createElement(prevEl.tagName);
+    prevEl.parentNode.insertBefore(newEl, prevEl);
   }
-}).catch(err => {
-  console.error(err);
+
+  // 이전 스타일 삭제
+  const prevNgStyleEls = document.head.findAll("> style")
+    .filter(styleEl => styleEl.innerText.indexOf("_ng") !== -1);
+
+  for (const prevNgStyleEl of prevNgStyleEls) {
+    document.head.removeChild(prevNgStyleEl);
+  }
+
+  // 이전 ngModule 지우기
+  ngModuleRef.destroy();
+
+  // 이전 엘리먼트 삭제
+  for (const prevEl of prevEls) {
+    try {
+      prevEl.parentNode.removeChild(prevEl);
+    }
+    catch (err) {
+    }
+  }
 });

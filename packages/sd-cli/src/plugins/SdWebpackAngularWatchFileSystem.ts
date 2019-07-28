@@ -87,7 +87,6 @@ export class SdWebpackAngularWatchFileSystem extends NodeWatchFileSystem {
       let newFileModified = reloadedFileChangeInfos.map(item => item.filePath);
 
       const emitNgModuleResult = this._program.emitNgModule(newFileModified);
-
       const emitNgRoutingModuleResult = this._program.emitNgRoutingModule(newFileModified);
       const emitRoutesRootResult = this._program.emitRoutesRoot(newFileModified);
       newFileModified.push(
@@ -161,8 +160,8 @@ export class SdWebpackAngularWatchFileSystem extends NodeWatchFileSystem {
     };
 
     const watcher = super.watch(
-      mapReplacements(files).map(item => path.resolve(item)),
-      mapReplacements([...dirs, ...glob.sync(path.resolve(this._program.rootDirPath, "**") + "\\")].distinct()).map(item => path.resolve(item)),
+      mapReplacements(files).map(item => path.resolve(item)).distinct(),
+      mapReplacements([...dirs, ...glob.sync(path.resolve(this._program.rootDirPath, "**") + "\\")]).map(item => path.resolve(item)).distinct(),
       mapReplacements(missing),
       startTime,
       options,

@@ -1,29 +1,30 @@
 import {NodeWatchFileSystem} from "@ngtools/webpack/src/virtual_file_system_decorator";
-import * as glob from "glob";
+/*import * as glob from "glob";
 import * as path from "path";
 import {SdTypescriptProgram} from "../SdTypescriptProgram";
-import * as os from "os";
-import {InputFileSystem} from "webpack";
+import * as os from "os";*/
+import {NodeWatchFileSystemInterface} from "@ngtools/webpack/src/webpack";
 
 
 export class SdWebpackAngularJitWatchFileSystem extends NodeWatchFileSystem {
-  private readonly _program: SdTypescriptProgram;
+  // private readonly _program: SdTypescriptProgram;
 
-  public constructor(inputFileSystem: InputFileSystem,
-                     private readonly _tsConfigPath: string) {
-    super(inputFileSystem);
+  public constructor(prevWatchFileSystem: NodeWatchFileSystemInterface/*,
+                     private readonly _tsConfigPath: string*/) {
+    super(prevWatchFileSystem["_inputFileSystem"]);
+    Object.setPrototypeOf(this, new.target.prototype);
 
-    this._program = new SdTypescriptProgram(this._tsConfigPath, {});
+    /*this._program = new SdTypescriptProgram(this._tsConfigPath, {});
     const messages = this._program.emitNgModule().messages;
     messages.push(...this._program.emitNgRoutingModule().messages);
     this._program.emitRoutesRoot();
 
     if (messages.length > 0) {
       throw new Error(messages.distinct().join(os.EOL));
-    }
+    }*/
   }
 
-  public watch(files: string[],
+  /*public watch(files: string[],
                dirs: string[],
                missing: string[],
                startTime: number | undefined,
@@ -99,13 +100,13 @@ export class SdWebpackAngularJitWatchFileSystem extends NodeWatchFileSystem {
     };
 
     return super.watch(
-      files.distinct().map(item => path.resolve(item)),
-      [...dirs, ...glob.sync(path.resolve(this._program.rootDirPath, "**") + "\\")].distinct().map(item => path.resolve(item)),
+      files.map(item => path.resolve(item)).distinct(),
+      [...dirs, ...glob.sync(path.resolve(this._program.rootDirPath, "**") + "\\")].map(item => path.resolve(item)).distinct(),
       missing,
       startTime,
       options,
       newCallback,
       newCallbackUndelayed
     );
-  }
+  }*/
 }

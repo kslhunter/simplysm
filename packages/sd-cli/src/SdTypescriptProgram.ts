@@ -575,6 +575,9 @@ export class SdTypescriptProgram {
     }
 
     if (changeModuleFilePaths.length > 0) {
+      // 모듈파일들을 포함하여 프로그램 다시 로드
+      this.reloadProgram();
+
       const myNgFiles = Array.from(this._fileInfoMap.keys()).filter(item =>
         item.startsWith(pagesDirPath) ||
         item.startsWith(modalsDirPath) ||

@@ -150,8 +150,8 @@ export class SdAngularCompiler extends events.EventEmitter {
               test: /\.ts$/,
               loaders: [
                 require.resolve("./loaders/ts-transpile-loader"),
-                require.resolve("angular-router-loader"),
-                require.resolve("./loaders/inline-sass-loader")
+                require.resolve("./loaders/inline-sass-loader"),
+                require.resolve("angular-router-loader")
               ]
             }
           ]
@@ -306,9 +306,9 @@ export class SdAngularCompiler extends events.EventEmitter {
       plugins: [
         new HtmlWebpackPlugin({
           template: path.resolve(__dirname, `../lib/index.ejs`),
-          chunksSortMode: "none",
-          BASE_HREF: `/${this._packageKey}/`,
-          inject: true
+          // chunksSortMode: "none",
+          BASE_HREF: `/${this._packageKey}/`/*,
+          inject: true*/
         }),
         ...fs.pathExistsSync(faviconPath)
           ? [

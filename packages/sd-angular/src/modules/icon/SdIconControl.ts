@@ -208,12 +208,14 @@ export class SdIconControl implements OnChanges {
       this._faIcon = icon(this._iconSpec!, this._params);
 
       // 렌더링
-      if (!this._iconSpec) {
-        this._logger.error("아이콘을 찾을 수 없습니다");
-      }
+      if (this.icon) {
+        if (!this._iconSpec) {
+          this._logger.error("아이콘을 찾을 수 없습니다");
+        }
 
-      if (this._iconSpec && !this._faIcon) {
-        this._logger.error("아이콘을 찾을 수 없습니다 (iconName=" + this._iconSpec.iconName + ", prefix=" + this._iconSpec.prefix + ")");
+        if (this._iconSpec && !this._faIcon) {
+          this._logger.error("아이콘을 찾을 수 없습니다 (iconName=" + this._iconSpec.iconName + ", prefix=" + this._iconSpec.prefix + ")");
+        }
       }
 
       this.renderedIconHTML = this._sanitizer.bypassSecurityTrustHtml(
