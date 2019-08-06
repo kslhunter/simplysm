@@ -14,47 +14,58 @@ export class SocketClient {
   }
 
   public async connectAsync(port?: number, host?: string): Promise<void> {
-    const url = `${host || location.hostname}:${port || location.port || 80}`;
-    this._url = url;
+    try {
+      const url = `${host || location.hostname}:${port || location.port || 80}`;
+      this._url = url;
 
-    await new Promise<void>(resolve => {
-      if (SocketClient._wsMap.has(url)) {
-        this._ws = SocketClient._wsMap.get(url)!;
-        resolve();
-      }
-      else {
-        this._ws = new WebSocket(`ws://${url}`);
-        SocketClient._wsMap.set(url, this._ws);
-
-        this._ws.onopen = () => {
+      await new Promise<void>((resolve, reject) => {
+        if (SocketClient._wsMap.has(url)) {
+          this._ws = SocketClient._wsMap.get(url)!;
           resolve();
-        };
-      }
-
-      this._ws.onmessage = message => {
-        const obj = JsonConvert.parse(message.data);
-
-        if (obj.eventListenerId) {
-          this._eventListeners.get(obj.eventListenerId)!(obj.data);
         }
         else {
-          const response: ISocketResponse = obj;
+          this._ws = new WebSocket(`ws://${url}`);
+          SocketClient._wsMap.set(url, this._ws);
 
-          // 요청맵.콜백 수행
-          this._reqMap.get(response.requestId)!(response);
+          this._ws.onopen = () => {
+            resolve();
+          };
         }
-      };
 
-      // 닫히면, 자동 재연결
-      this._ws.onclose = () => {
-        setTimeout(
-          async () => {
+        this._ws.onmessage = message => {
+          const obj = JsonConvert.parse(message.data);
+
+          if (obj.eventListenerId) {
+            this._eventListeners.get(obj.eventListenerId)!(obj.data);
+          }
+          else {
+            const response: ISocketResponse = obj;
+
+            // 요청맵.콜백 수행
+            this._reqMap.get(response.requestId)!(response);
+          }
+        };
+
+
+        this._ws.onerror = errEvt => {
+          reject(errEvt["error"]);
+        };
+
+        // 닫히면, 자동 재연결
+        this._ws.onclose = () => {
+          setTimeout(async () => {
             await this.connectAsync(port, host);
-          },
-          300
-        );
-      };
-    });
+          }, 1000);
+        };
+      });
+    }
+    catch (err) {
+      console.error(err);
+
+      setTimeout(async () => {
+        await this.connectAsync();
+      }, 1000);
+    }
   }
 
   public async addEventListenerAsync(eventName: string, info: any, cb: (data: any) => Promise<void> | void): Promise<number> {
@@ -93,7 +104,7 @@ export class SocketClient {
   public async sendAsync(command: string, params: any[], sendProgressCallback?: (progress: { current: number; total: number }) => void): Promise<any> {
     return await new Promise<any>(async (resolve, reject) => {
       if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
-        await Wait.time(1000);
+        await Wait.time(3000);
         if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
           throw new Error("웹 소켓이 연결되어있지 않습니다.");
         }

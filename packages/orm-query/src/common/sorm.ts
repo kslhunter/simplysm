@@ -189,7 +189,6 @@ export const sorm = {
 
     return new QueryUnit(unit.type, "MIN(" + ormHelpers.getFieldQuery(unit) + ")") as any;
   },
-
   if<T extends QueryType, R extends T>(source: T | QueryUnit<T>, predicate: T | QueryUnit<T>, target: R | QueryUnit<R>): R extends undefined ? R : NonNullable<R> {
     let type;
     if (source instanceof QueryUnit) {
@@ -240,6 +239,9 @@ export const sorm = {
   },
   dataLength<T extends QueryType>(arg: T): number | undefined {
     return new QueryUnit(Number as any, "DATALENGTH(" + ormHelpers.getFieldQuery(arg) + ")") as any;
+  },
+  trim<T extends string>(arg: T | undefined): T | undefined {
+    return new QueryUnit(Number as any, "RTRIM(LTRIM(" + ormHelpers.getFieldQuery(arg) + "))") as any;
   },
   cast<P extends QueryType>(src: any, targetType: Type<P>): StripTypeWrap<P> {
     return new QueryUnit(targetType, `CONVERT(${ormHelpers.getDataTypeFromType(targetType)}, ${ormHelpers.getFieldQuery(src)})`) as any;

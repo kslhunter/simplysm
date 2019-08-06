@@ -25,6 +25,13 @@ export class OrmService extends SocketServiceBase {
         this.server.removeCloseListener("orm." + newId);
         this._logger.warn("서버가 종료되어, DB 연결이 끊었습니다.");
       });
+
+      this.server.addClientCloseListener(this.clientId, async () => {
+        if (conn.isConnected) {
+          await conn.closeAsync();
+        }
+        this._logger.warn("클라이언트와의 연결이 종료되어, DB 연결이 끊었습니다.");
+      });
     }
     else {
       await conn.closeAsync();

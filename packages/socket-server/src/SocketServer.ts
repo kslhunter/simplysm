@@ -14,8 +14,10 @@ export class SocketServer {
   private _server?: WebSocket.Server;
   private _isCustomServer = false;
   private readonly _closeListenerMap = new Map<string, (() => void | Promise<void>)>();
+  private readonly _clientCloseListenerMap = new Map<number, (() => void | Promise<void>)[]>();
   private readonly _eventListeners: { id: number; eventName: string; info: object; socket: WebSocket }[] = [];
   private readonly _requestBuffer = new Map<number, string[]>();
+  private _lastClientId = 1;
 
   public get isConnected(): boolean {
     return !!this._app && !!this._server;
@@ -72,6 +74,13 @@ export class SocketServer {
     }
 
     this._closeListenerMap.set(key, listener);
+  }
+
+  public addClientCloseListener(clientId: number, listener: () => (void | Promise<void>)): void {
+    if (this._clientCloseListenerMap.has(clientId)) {
+      this._clientCloseListenerMap.get(clientId)!.push(listener);
+    }
+    this._clientCloseListenerMap.set(clientId, [listener]);
   }
 
   public removeCloseListener(key: string): void {
@@ -135,6 +144,8 @@ export class SocketServer {
 
   private _socketConnectionHandler(socket: WebSocket, req: http.IncomingMessage): void {
     this._logger.log("연결: " + req.connection.remoteAddress);
+
+    const clientId = this._lastClientId++;
 
     socket.on("message", async (msg: string) => {
       let message;
@@ -254,7 +265,7 @@ export class SocketServer {
           };
         }
         else {
-          response = await this._socketRequestHandler(request);
+          response = await this._socketRequestHandler(clientId, request);
         }
       }
       catch (err) {
@@ -273,9 +284,18 @@ export class SocketServer {
         socket.send(responseJson);
       }
     });
+
+    socket.on("close", async () => {
+      if (this._clientCloseListenerMap.has(clientId)) {
+        for (const listener of this._clientCloseListenerMap.get(clientId)!) {
+          await listener();
+        }
+        this._clientCloseListenerMap.delete(clientId);
+      }
+    });
   }
 
-  private async _socketRequestHandler(request: ISocketRequest): Promise<ISocketResponse> {
+  private async _socketRequestHandler(clientId: number, request: ISocketRequest): Promise<ISocketResponse> {
     // COMMAND 분할
     const cmdSplit = request.command.split(".");
     const serviceName = cmdSplit[0];
@@ -290,6 +310,7 @@ export class SocketServer {
     const service = new serviceClass();
     service.request = request;
     service.server = this;
+    service.clientId = clientId;
 
     // 메소드 가져오기
     const method = service[methodName];
