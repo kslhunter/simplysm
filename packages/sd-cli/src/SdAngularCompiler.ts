@@ -93,8 +93,8 @@ export class SdAngularCompiler extends events.EventEmitter {
     const styleLoader = opt.extract
       ? MiniCssExtractPlugin.loader
       : {
-        loader: "style-loader",
-        options: {sourceMap: opt.sourceMap}
+        loader: "style-loader"/*,
+        options: {sourceMap: opt.sourceMap}*/
       };
 
     return {
