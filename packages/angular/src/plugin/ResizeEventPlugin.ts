@@ -9,9 +9,10 @@ export class ResizeEventPlugin {
     let prevWidth = element.offsetWidth;
     let prevHeight = element.offsetHeight;
 
-    const dimensions: string[] = [];
     if (window["ResizeObserver"]) {
       const observer = new window["ResizeObserver"](() => {
+        const dimensions: string[] = [];
+
         if (prevWidth !== element.offsetWidth) {
           dimensions.push("width");
           prevWidth = element.offsetWidth;
@@ -35,6 +36,8 @@ export class ResizeEventPlugin {
     }
     else {
       const timeout = window.setInterval(() => {
+        const dimensions: string[] = [];
+
         if (prevWidth !== element.offsetWidth) {
           dimensions.push("width");
           prevWidth = element.offsetWidth;
