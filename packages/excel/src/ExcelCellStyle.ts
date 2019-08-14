@@ -14,6 +14,18 @@ export class ExcelCellStyle {
     this._ec.cellData.$.s = newIndex;
   }
 
+  public set alignV(value: "center" | "top" | "bottom") {
+    const newStyle = this._createNewStyle();
+    newStyle.$ = newStyle.$ || {};
+    newStyle.$.applyAlignment = 1;
+    newStyle.alignment = newStyle.alignment || [{}];
+    newStyle.alignment[0].$ = newStyle.alignment[0].$ || {};
+    newStyle.alignment[0].$.vertical = "center";
+    const newIndex = this._setStyleData(newStyle);
+    this._ec.cellData.$ = this._ec.cellData.$ || {};
+    this._ec.cellData.$.s = newIndex;
+  }
+
   public set background(value: string) {
     if (!/^[0-9A-F]{8}/.test(value.toUpperCase())) {
       throw new Error("색상 형식이 잘못되었습니다. (형식: FFFFFFFF: alpha+rgb)");
