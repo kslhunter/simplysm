@@ -156,11 +156,11 @@ export const sorm = {
 
     const orArr: boolean[] = [];
     for (const source of sources) {
-      const orArr1: boolean[] = [];
+      const andArr: boolean[] = [];
       for (const searchWord of searchWords) {
-        orArr1.push(sorm.includes(source, searchWord));
+        andArr.push(sorm.includes(source, searchWord));
       }
-      orArr.push(sorm.or(orArr1));
+      orArr.push(sorm.and(andArr));
     }
     return sorm.or(orArr);
   },
