@@ -421,6 +421,18 @@ export class SdTypescriptProgram {
     return result.distinct();
   }
 
+  public clearNgModules(): void {
+    const moduleDirPath = path.resolve(this.rootDirPath, "_modules");
+    const routesRootFilePath = path.resolve(this.rootDirPath, "routes.ts");
+    fs.removeSync(moduleDirPath);
+    fs.removeSync(routesRootFilePath);
+
+    for (const fileInfo of this._fileInfoMap.values()) {
+      fileInfo.syncVersions.emitNgModule = 0;
+      fileInfo.syncVersions.emitNgRoutingModule = 0;
+    }
+  }
+
   public emitNgModule(filePaths: string[] = this._getMyTypescriptFiles()): { changedModuleFilePaths: string[]; messages: string[] } {
     const pagesDirPath = path.resolve(this.rootDirPath, "pages");
     const modalsDirPath = path.resolve(this.rootDirPath, "modals");

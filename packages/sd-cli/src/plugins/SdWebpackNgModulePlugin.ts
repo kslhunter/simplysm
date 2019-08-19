@@ -15,6 +15,7 @@ export class SdWebpackNgModulePlugin implements webpack.Plugin {
         const program = new SdTypescriptProgram(this._options.tsConfigPath, {});
 
         {
+          program.clearNgModules();
           const messages = program.emitNgModule().messages;
           messages.push(...program.emitNgRoutingModule().messages);
           program.emitRoutesRoot();

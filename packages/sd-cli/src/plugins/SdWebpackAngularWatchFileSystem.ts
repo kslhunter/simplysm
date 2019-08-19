@@ -15,6 +15,7 @@ export class SdWebpackAngularWatchFileSystem extends NodeWatchFileSystem {
     super(_virtualInputFileSystem);
 
     this._program = new SdTypescriptProgram(this._tsConfigPath, {});
+    this._program.clearNgModules();
     const messages = this._program.emitNgModule().messages;
     messages.push(...this._program.emitNgRoutingModule().messages);
     this._program.emitRoutesRoot();
