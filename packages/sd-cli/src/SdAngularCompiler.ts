@@ -165,7 +165,11 @@ export class SdAngularCompiler extends events.EventEmitter {
             error: messages => {
               this.emit("error", ...messages);
             }
-          })
+          }),
+          new CircularDependencyPlugin({
+            exclude: /[\\\/]node_modules[\\\/]/,
+            include: new RegExp("^" + this._contextPath.replace(/\\/g, "\\\\"))
+          } as any)
         ]
       };
     }
@@ -203,8 +207,9 @@ export class SdAngularCompiler extends events.EventEmitter {
         plugins: [
           /*new SuppressExtractedTextChunksWebpackPlugin(),*/
           new CircularDependencyPlugin({
-            exclude: /([\\\/]node_modules[\\\/])|(ngfactory\.js$)/
-          }),
+            exclude: /([\\\/]node_modules[\\\/])|(ngfactory\.js$)/,
+            include: new RegExp("^" + this._contextPath.replace(/\\/g, "\\\\"))
+          } as any),
           new AngularCompilerPlugin({
             // mainPath: path.resolve(this._contextPath, "src/main.ts"),
             mainPath: path.resolve(__dirname, "../lib/main." + (opt.prod ? "prod" : "dev") + ".js"),
