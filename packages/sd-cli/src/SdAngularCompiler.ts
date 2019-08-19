@@ -21,6 +21,7 @@ import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
 import {SdWebpackInputHostWithScss} from "./plugins/SdWebpackInputHostWithScss";
 import {SdWebpackNgModulePlugin} from "./plugins/SdWebpackNgModulePlugin";
 import {SdWebpackForkTsCheckerPlugin} from "./plugins/SdWebpackForkTsCheckerPlugin";
+import * as CircularDependencyPlugin from "circular-dependency-plugin";
 
 export class SdAngularCompiler extends events.EventEmitter {
   private readonly _contextPath: string;
@@ -200,10 +201,10 @@ export class SdAngularCompiler extends events.EventEmitter {
           ]
         },
         plugins: [
-          /*new SuppressExtractedTextChunksWebpackPlugin(),
+          /*new SuppressExtractedTextChunksWebpackPlugin(),*/
           new CircularDependencyPlugin({
             exclude: /([\\\/]node_modules[\\\/])|(ngfactory\.js$)/
-          }),*/
+          }),
           new AngularCompilerPlugin({
             // mainPath: path.resolve(this._contextPath, "src/main.ts"),
             mainPath: path.resolve(__dirname, "../lib/main." + (opt.prod ? "prod" : "dev") + ".js"),
