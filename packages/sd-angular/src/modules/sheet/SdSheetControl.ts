@@ -336,7 +336,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
           height: 100%;
           outline: 1px solid var(--theme-primary-default);
           outline-offset: -1px;
-          background: rgba(var(--theme-primary-default), .1);
+          background: rgba(var(--theme-primary-default-rgb), .1);
         }
 
         &:focus {
@@ -446,7 +446,8 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
         left: 0;
         width: calc(100% - 1px);
         height: calc(100% - 1px);
-        background: rgba(var(--theme-primary-default), .1);
+        background: var(--theme-primary-default);
+        opacity: .1;
       }
 
       &[sd-selectable=true] ._body ._first-col {
