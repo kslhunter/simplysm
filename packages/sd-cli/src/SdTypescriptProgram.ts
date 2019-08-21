@@ -491,14 +491,28 @@ export class SdTypescriptProgram {
           fileRelativePath = fileRelativePath.startsWith(".") ? fileRelativePath : ("./" + fileRelativePath);
           content += `import {${className}} from "${fileRelativePath.replace(/\\/g, "/").replace(/\.d\.ts$/g, "").replace(/\.ts$/g, "")}";\n`;
 
-          const useModules: (ISdNgModuleInfo & { filePath: string })[] = [];
+          let useModules: (ISdNgModuleInfo & { filePath: string })[] = [];
+          let entryComponents: string[] = [];
 
           // 현재 코드에서 'import'한 모든것들을 읽고, 해당 'import'파일들을 'exports'나 'providers'에 포함한 모든 모듈을 사용모듈로 등록
           const imports = this._getImports(filePath);
           for (const imp of imports) {
-            useModules.push(
-              ...ngModules.filter(item => (!item.packageName || item.packageName === imp.require) && item.exports.concat(item.providers).some(item1 => imp.targets.includes(item1)))
-            );
+            const impModules = ngModules.filter(item => (!item.packageName || item.packageName === imp.require) && item.exports.concat(item.providers).some(item1 => imp.targets.includes(item1)));
+            for (const impModule of impModules) {
+              if (className === "BankAccountLogPage" && imp.targets.includes("BankAccountLogModal")) {
+                console.log(impModule.imports, className + "Module");
+              }
+
+              if (impModule.imports.includes(className + "Module")) {
+                for (const circularDepImp of impModule.imports.filter(item => item !== (className + "Module") && item !== "CommonModule")) {
+                  useModules.push(...ngModules.filter(item => item.className === circularDepImp));
+                }
+                entryComponents.push(...impModule.entryComponents);
+              }
+              else {
+                useModules.push(impModule);
+              }
+            }
           }
 
           // 현재 코드의 'template'에 있는 모든컨트롤들에 해당하는 컴포넌트나 디렉티브 파일들을 확인하고, 해당 컴포넌트등의 파일을 'export'하는 모든 모듈을 사용모듈로 등록
@@ -515,20 +529,36 @@ export class SdTypescriptProgram {
             }
           }
 
-          // 사용모듈의 'import' 경로 정리
-          const importInfos = useModules.map(item => {
-            let requireText = item.packageName;
-            if (!requireText) {
-              requireText = path.relative(outDirPath, item.filePath).replace(/\\/g, "/");
+          useModules = useModules.distinct();
+          entryComponents = entryComponents.distinct();
+
+          // 사용모듈 및 부가 컨트롤의 'import' 경로 정리
+          const importInfos = useModules
+            .map(item => {
+              let requireText = item.packageName;
+              if (!requireText) {
+                requireText = path.relative(outDirPath, item.filePath).replace(/\\/g, "/");
+                requireText = requireText.startsWith(".") ? requireText : "./" + requireText;
+                requireText = requireText.replace(/\.d\.ts$/g, "").replace(/\.ts$/g, "");
+              }
+
+              return {
+                className: item.className,
+                requireText
+              };
+            })
+            .concat(entryComponents.map(item => {
+              const comp = components.single(item1 => item1.className === item)!;
+              let requireText = path.relative(outDirPath, comp.filePath).replace(/\\/g, "/");
               requireText = requireText.startsWith(".") ? requireText : "./" + requireText;
               requireText = requireText.replace(/\.d\.ts$/g, "").replace(/\.ts$/g, "");
-            }
 
-            return {
-              className: item.className,
-              requireText
-            };
-          }).distinct();
+              return {
+                className: item,
+                requireText
+              };
+            }))
+            .distinct();
 
           // 사용모듈들 'import'
           for (const group of importInfos.orderBy(item => item.className).groupBy(item => item.requireText)) {
@@ -547,9 +577,9 @@ export class SdTypescriptProgram {
           // 사용모듈들 'NgModule'에 'import'
           content += `@NgModule({\n`;
           content += `  imports: [\n`;
-          content += `    CommonModule${importInfos.length > 0 ? "," : ""}\n`;
-          if (importInfos.length > 0) {
-            content += importInfos.orderBy(item => item.className).map(item => `    ${item.className}`).join(",\n") + "\n";
+          content += `    CommonModule${useModules.length > 0 ? "," : ""}\n`;
+          if (useModules.length > 0) {
+            content += useModules.orderBy(item => item.className).map(item => `    ${item.className}`).join(",\n") + "\n";
           }
           content += `  ],\n`;
 
@@ -557,10 +587,17 @@ export class SdTypescriptProgram {
             filePath.startsWith(modalsDirPath) ||
             filePath.startsWith(printTemplatesDirPath)
           ) {
-            content += `  entryComponents: [${className}],\n`;
+            entryComponents.push(className);
           }
 
-          content += `  declarations: [${className}],\n`;
+          if (entryComponents.length > 0) {
+            content += `  entryComponents: [${entryComponents.join(", ")}],\n`;
+            content += `  declarations: [${entryComponents.concat([className]).distinct().join(", ")}],\n`;
+          }
+          else {
+            content += `  declarations: [${className}],\n`;
+          }
+
           content += `  exports: [${className}]\n`;
           content += `})\n`;
           content += `export class ${className}Module {\n`;
@@ -946,7 +983,9 @@ export class SdTypescriptProgram {
           fileInfo.output.getNgModuleInfos.ngModuleInfos = findNgModuleClassMetadataListResult.map(info => {
             const decorator = this._findDecorator(info.metadata, "@angular/core", "NgModule");
 
+            const imports: string[] = (optional(() => decorator.arguments[0].imports) || []).map((item: any) => item.name);
             const exports: string[] = (optional(() => decorator.arguments[0].exports) || []).map((item: any) => item.name);
+            const entryComponents: string[] = (optional(() => decorator.arguments[0].entryComponents) || []).map((item: any) => item.name);
 
             const providerProperties: any | any[] = optional(() => decorator.arguments[0].providers) || [];
             let providers: string[] = ((providerProperties instanceof Array) ? providerProperties : [providerProperties])
@@ -969,7 +1008,9 @@ export class SdTypescriptProgram {
             return {
               packageName: this._getPackageName(filePath),
               className: info.className,
+              imports: imports.distinct(),
               exports: exports.distinct(),
+              entryComponents: entryComponents.distinct(),
               providers: providers.distinct()
             };
           });
@@ -1393,7 +1434,9 @@ export class SdTypescriptProgram {
 interface ISdNgModuleInfo {
   packageName: string | undefined;
   className: string;
+  imports: string[];
   exports: string[];
+  entryComponents: string[];
   providers: string[];
 }
 
