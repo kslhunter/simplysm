@@ -166,6 +166,8 @@
         "allow-object-equal-comparison": true
       }
     ],
-    "no-async-without-await": false
+    "no-async-without-await": false,
+    "invalid-void": false,
+    "strict-string-expressions": false
   }
 }
