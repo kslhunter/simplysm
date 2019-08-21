@@ -33,6 +33,7 @@ export class SdServiceServer extends EventEmitter {
                      public rootPath: string,
                      private readonly _ssl?: { pfx: string; passphrase: string }) {
     super();
+    // console.log(1);
   }
 
   public async listenAsync(): Promise<void> {

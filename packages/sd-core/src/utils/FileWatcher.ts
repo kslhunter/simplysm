@@ -4,9 +4,11 @@ import * as path from "path";
 import {Wait} from "./Wait";
 
 export class FileWatcher {
-  public static async watch(paths: string | string[], sits: FileChangeInfoType[], callback: (changedFiles: IFileChangeInfo[]) => (void | Promise<void>), millisecond?: number): Promise<chokidar.FSWatcher> {
+  public static async watch(paths: string | string[], sits: FileChangeInfoType[], callback: (changedFiles: IFileChangeInfo[]) => (void | Promise<void>), options: { millisecond?: number; ignoreInitial?: boolean }): Promise<chokidar.FSWatcher> {
     return await new Promise<chokidar.FSWatcher>((resolve, reject) => {
-      const watcher = chokidar.watch((typeof paths === "string" ? [paths] : paths).map(item => item.replace(/\\/g, "/")).distinct())
+      const watcher = chokidar.watch((typeof paths === "string" ? [paths] : paths).map(item => item.replace(/\\/g, "/")).distinct(), {
+        ignoreInitial: options.ignoreInitial
+      })
         .on("ready", () => {
           let preservedFileChanges: IFileChangeInfo[] = [];
           let timeout: NodeJS.Timer;
@@ -34,7 +36,7 @@ export class FileWatcher {
 
                 processing = false;
               },
-              millisecond || 100
+              options.millisecond || 100
             );
           };
 

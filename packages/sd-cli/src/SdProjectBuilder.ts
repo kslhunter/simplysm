@@ -10,6 +10,7 @@ import * as semver from "semver";
 import {NextHandleFunction, SdServiceClient, SdServiceServer} from "@simplysm/sd-service";
 import {SdAngularCompiler} from "./SdAngularCompiler";
 import {SdCliUtils} from "./commons/SdCliUtils";
+import {SdTypescriptProgram} from "./SdTypescriptProgram";
 
 export class SdProjectBuilder {
   private readonly _serverMap = new Map<string, {
@@ -88,7 +89,9 @@ export class SdProjectBuilder {
             catch (err) {
               targetLogger.error(err);
             }
-          }, 600);
+          }, {
+            millisecond: 600
+          });
         }
         // > > 변경감지 모드가 아닐 경우,
         else {
@@ -122,7 +125,8 @@ export class SdProjectBuilder {
       }
 
       const packagePath = path.resolve(process.cwd(), "packages", packageKey);
-      const packageTsConfig = await fs.readJson(path.resolve(packagePath, "tsconfig.json"));
+      const packageTsConfigPath = path.resolve(packagePath, "tsconfig.json");
+      const packageTsConfig = await fs.readJson(packageTsConfigPath);
       const packageParsedTsConfig = ts.parseJsonConfigFileContent(packageTsConfig, ts.sys, packagePath);
       const distPath = packageParsedTsConfig.options.outDir ? path.resolve(packageParsedTsConfig.options.outDir) : path.resolve(packagePath, "dist");
 
@@ -179,7 +183,9 @@ export class SdProjectBuilder {
 
           // 변경감지 모드이며, 서버빌드 일때, 서버 실행 (변경감지 포함)
           if (argv.watch && config.packages[packageKey].type === "server") {
-            await this._runServerAsync(packageKey, worker);
+            const packagePath = path.resolve(process.cwd(), "packages", packageKey);
+            const packageTsConfigPath = path.resolve(packagePath, "tsconfig.json");
+            await this._runServerAsync(packageKey, worker, packageTsConfigPath);
           }
         }
         else {
@@ -597,12 +603,12 @@ export class SdProjectBuilder {
         }, {spaces: 2, EOL: os.EOL});
         logger.log(`'${packageKey}'의 '.configs.json' 파일이 변경되었습니다.`);
       }
-    });
+    }, {});
 
     logger.info(`개발서버 서비스가 시작되었습니다.: http://localhost:${serverInfo.server.port}/${packageKey}/`);
   }
 
-  private async _runServerAsync(packageKey: string, worker: child_process.ChildProcess): Promise<void> {
+  private async _runServerAsync(packageKey: string, worker: child_process.ChildProcess, tsConfigPath: string): Promise<void> {
     const packageServerLogger = new Logger("@simplysm/sd-cli", `[server]\t${packageKey}`);
     packageServerLogger.log("시작합니다.");
 
@@ -630,7 +636,49 @@ export class SdProjectBuilder {
       });
     });
 
-    // 서버빌드 메시지 발생별,
+    const program = new SdTypescriptProgram(tsConfigPath, {});
+
+    const watch = async () => {
+      const watchPaths = [path.resolve(program.outDirPath, "**", "*.js")];
+      watchPaths.push(...program
+        .getMyTypescriptFiles()
+        .mapMany(item => program.getDependencies(item))
+        .map(item => item.replace(/\.d\.ts$/, ".js")));
+
+      console.log("create watcher");
+      /*const watcher = */await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async fileChangeInfos => {
+        console.log("run watcher", fileChangeInfos);
+        packageServerLogger.log("재시작합니다.");
+
+        program.applyChanges(fileChangeInfos, {withBeImportedFiles: true});
+
+        // > > 서버 재시작
+        const serverInfo = this._serverMap.get(packageKey)!;
+        await serverInfo.server.closeAsync();
+        require("decache")(packageEntryPath); //tslint:disable-line:no-require-imports
+        const newServer = require(packageEntryPath) as SdServiceServer;
+        serverInfo.server = newServer;
+        for (const middleware of serverInfo.middlewares) {
+          newServer.addMiddleware(middleware);
+        }
+
+        packageServerLogger.log.apply(packageServerLogger, ["재시작되었습니다."].concat(
+          serverInfo.clientKeys.map(clientKey => {
+            return `http://localhost:${server.port}/${clientKey}/`;
+          })
+        ));
+
+        /*watcher.close();
+        await watch();*/
+      }, {
+        millisecond: 1000,
+        ignoreInitial: true
+      });
+    };
+
+    await watch();
+
+    /*// 서버빌드 메시지 발생별,
     worker.on("message", async (message: ISdWorkerMessage) => {
       // > 서버빌드 완료시 (변경감지일 경우)
       if (message.type === "done") {
@@ -652,7 +700,7 @@ export class SdProjectBuilder {
           })
         ));
       }
-    });
+    });*/
 
     packageServerLogger.log("시작되었습니다.");
   }

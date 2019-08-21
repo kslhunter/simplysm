@@ -109,7 +109,7 @@ export class SdTypescriptProgram {
     }
 
     if (options.withBeImportedFiles) {
-      watchPaths.push(...this._getMyTypescriptFiles().mapMany(item => this._getDependencies(item)));
+      watchPaths.push(...this.getMyTypescriptFiles().mapMany(item => this.getDependencies(item)));
     }
 
     const watcher = await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async fileChangeInfos => {
@@ -132,11 +132,13 @@ export class SdTypescriptProgram {
       await this.watch(callback, options);
       /*watcher.unwatch(watchPaths);
       watcher.add(watchPaths.distinct());*/
-    }, options.millisecond);
+    }, {
+      millisecond: options.millisecond
+    });
   }
 
   public applyChanges(fileChangeInfos: IFileChangeInfo[], options: { withBeImportedFiles?: boolean }): IFileChangeInfo[] {
-    const myTypescriptFiles = this._getMyTypescriptFiles();
+    const myTypescriptFiles = this.getMyTypescriptFiles();
     const fileInfoEntries = Array.from(this._fileInfoMap.entries());
 
     // 내 소스만 포함
@@ -169,7 +171,7 @@ export class SdTypescriptProgram {
     // 변경된 파일을 사용(import)하고있는 내 소스 파일들을 모두 추가 포함
     if (options.withBeImportedFiles) {
       for (const fileChangeInfo of fileChangeInfos) {
-        const beImportedFileInfoEntries = fileInfoEntries.filter(entry => this._getDependencies(entry[0]).includes(fileChangeInfo.filePath));
+        const beImportedFileInfoEntries = fileInfoEntries.filter(entry => this.getDependencies(entry[0]).includes(fileChangeInfo.filePath));
 
         const beImportedFilePaths = beImportedFileInfoEntries.map(entry => entry[0]);
         for (const beImportedFilePath of beImportedFilePaths) {
@@ -218,7 +220,7 @@ export class SdTypescriptProgram {
     return reloadedFileChangeInfos.distinct();
   }
 
-  public transpile(filePaths: string[] = this._getMyTypescriptFiles()): string[] {
+  public transpile(filePaths: string[] = this.getMyTypescriptFiles()): string[] {
     const result: string[] = [];
     for (const filePath of filePaths.distinct()) {
       const fileInfo = this._fileInfoMap.get(path.normalize(filePath));
@@ -272,7 +274,7 @@ export class SdTypescriptProgram {
     return result.distinct();
   }
 
-  public emitDeclaration(filePaths: string[] = this._getMyTypescriptFiles()): string[] {
+  public emitDeclaration(filePaths: string[] = this.getMyTypescriptFiles()): string[] {
     const result: string[] = [];
     for (const filePath of filePaths.distinct()) {
       const fileInfo = this._fileInfoMap.get(path.normalize(filePath));
@@ -327,7 +329,7 @@ export class SdTypescriptProgram {
     return result.distinct();
   }
 
-  public lint(filePaths: string[] = this._getMyTypescriptFiles()): string[] {
+  public lint(filePaths: string[] = this.getMyTypescriptFiles()): string[] {
     const lintConfigPath = path.resolve(path.dirname(this._tsConfigFilePath), "tslint.json");
     const config = tslint.Configuration.findConfiguration(path.resolve(path.dirname(this._tsConfigFilePath), "tslint.json")).results;
     if (!config) {
@@ -382,7 +384,7 @@ export class SdTypescriptProgram {
     return result.distinct();
   }
 
-  public emitMetadata(filePaths: string[] = this._getMyTypescriptFiles()): string[] {
+  public emitMetadata(filePaths: string[] = this.getMyTypescriptFiles()): string[] {
     const result: string[] = [];
     for (const filePath of filePaths.distinct()) {
       const fileInfo = this._fileInfoMap.get(path.normalize(filePath));
@@ -433,7 +435,7 @@ export class SdTypescriptProgram {
     }
   }
 
-  public emitNgModule(filePaths: string[] = this._getMyTypescriptFiles()): { changedModuleFilePaths: string[]; messages: string[] } {
+  public emitNgModule(filePaths: string[] = this.getMyTypescriptFiles()): { changedModuleFilePaths: string[]; messages: string[] } {
     const pagesDirPath = path.resolve(this.rootDirPath, "pages");
     const modalsDirPath = path.resolve(this.rootDirPath, "modals");
     const printTemplatesDirPath = path.resolve(this.rootDirPath, "print-templates");
@@ -499,10 +501,6 @@ export class SdTypescriptProgram {
           for (const imp of imports) {
             const impModules = ngModules.filter(item => (!item.packageName || item.packageName === imp.require) && item.exports.concat(item.providers).some(item1 => imp.targets.includes(item1)));
             for (const impModule of impModules) {
-              if (className === "BankAccountLogPage" && imp.targets.includes("BankAccountLogModal")) {
-                console.log(impModule.imports, className + "Module");
-              }
-
               if (impModule.imports.includes(className + "Module")) {
                 for (const circularDepImp of impModule.imports.filter(item => item !== (className + "Module") && item !== "CommonModule")) {
                   useModules.push(...ngModules.filter(item => item.className === circularDepImp));
@@ -652,7 +650,7 @@ export class SdTypescriptProgram {
     };
   }
 
-  public emitNgRoutingModule(filePaths: string[] = this._getMyTypescriptFiles()): { changedRoutingModuleFilePaths: string[]; messages: string[] } {
+  public emitNgRoutingModule(filePaths: string[] = this.getMyTypescriptFiles()): { changedRoutingModuleFilePaths: string[]; messages: string[] } {
     const pagesDirPath = path.resolve(this.rootDirPath, "pages");
     const modulesDirPath = path.resolve(this.rootDirPath, "_modules");
 
@@ -822,7 +820,7 @@ export class SdTypescriptProgram {
     };
   }
 
-  public emitRoutesRoot(filePaths: string[] = this._getMyTypescriptFiles()): string | undefined {
+  public emitRoutesRoot(filePaths: string[] = this.getMyTypescriptFiles()): string | undefined {
     const pagesDirPath = path.resolve(this.rootDirPath, "pages");
     const outFilePath = path.resolve(this.rootDirPath, "_routes.ts");
 
@@ -1082,7 +1080,7 @@ export class SdTypescriptProgram {
     }
   }
 
-  private _getDependencies(filePath: string): string[] {
+  public getDependencies(filePath: string): string[] {
     const result: string[] = [];
     let invalid = false;
 
@@ -1412,7 +1410,7 @@ export class SdTypescriptProgram {
   }
 
   public reloadProgram(): void {
-    const myTypescriptFiles = this._getMyTypescriptFiles();
+    const myTypescriptFiles = this.getMyTypescriptFiles();
     this._program = ts.createProgram(
       myTypescriptFiles,
       this._compilerOptions,
@@ -1421,7 +1419,7 @@ export class SdTypescriptProgram {
     );
   }
 
-  private _getMyTypescriptFiles(): string[] {
+  public getMyTypescriptFiles(): string[] {
     return glob.sync(path.resolve(this.rootDirPath, "**", "*.ts")).map(item => path.normalize(item));
   }
 
