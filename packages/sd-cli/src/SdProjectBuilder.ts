@@ -646,7 +646,8 @@ export class SdProjectBuilder {
         .map(item => item.replace(/\.d\.ts$/, ".js")));
 
       console.log("create watcher");
-      /*const watcher = */await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async fileChangeInfos => {
+      /*const watcher = */
+      await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async fileChangeInfos => {
         console.log("run watcher", fileChangeInfos);
         packageServerLogger.log("재시작합니다.");
 
