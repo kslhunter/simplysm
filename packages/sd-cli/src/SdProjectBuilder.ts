@@ -643,9 +643,10 @@ export class SdProjectBuilder {
       watchPaths.push(...program
         .getMyTypescriptFiles()
         .mapMany(item => program.getDependencies(item))
-        .map(item => item.replace(/\.d\.ts$/, ".js")));
+        .map(item => item.replace(/\.d\.ts$/, ".js"))
+        .filter(item => fs.pathExistsSync(item)));
 
-      console.log("create watcher");
+      console.log("create watcher", watchPaths);
       /*const watcher = */
       await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async fileChangeInfos => {
         console.log("run watcher", fileChangeInfos);
