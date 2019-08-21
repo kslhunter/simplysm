@@ -324,6 +324,39 @@ export abstract class DbContext {
         .query + "\n";
     }
 
+    // Log 테이블 구성
+    /*query += new MigrationQueryBuilder().createTable(
+      {database: this.mainDb!, scheme: "dbo", name: "_error"},
+      [
+        {
+          name: "id",
+          dataType: "INT",
+          autoIncrement: true,
+          nullable: false
+        },
+        {
+          name: "datetime",
+          dataType: "DATETIME2",
+          autoIncrement: false,
+          nullable: false
+        },
+        {
+          name: "error",
+          dataType: "TEXT",
+          autoIncrement: false,
+          nullable: false
+        }
+      ]
+    ) + "\n";
+
+    query += new MigrationQueryBuilder().addPrimaryKey(
+      {database: this.mainDb!, scheme: "dbo", name: "_error"},
+      [
+        {name: "id", desc: false}
+      ]
+    ) + "\n";
+    query += "GO\n\n";*/
+
     await this.executeAsync([query.trim()]);
     return true;
   }

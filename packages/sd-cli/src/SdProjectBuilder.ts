@@ -646,10 +646,7 @@ export class SdProjectBuilder {
         .map(item => item.replace(/\.d\.ts$/, ".js"))
         .filter(item => fs.pathExistsSync(item)));
 
-      console.log("create watcher", watchPaths);
-      /*const watcher = */
-      await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async fileChangeInfos => {
-        console.log("run watcher", fileChangeInfos);
+      const watcher = await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async fileChangeInfos => {
         packageServerLogger.log("재시작합니다.");
 
         program.applyChanges(fileChangeInfos, {withBeImportedFiles: true});
@@ -670,8 +667,8 @@ export class SdProjectBuilder {
           })
         ));
 
-        /*watcher.close();
-        await watch();*/
+        watcher.close();
+        await watch();
       }, {
         millisecond: 1000,
         ignoreInitial: true

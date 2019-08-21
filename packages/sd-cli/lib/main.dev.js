@@ -14,7 +14,7 @@ platformBrowserDynamic().bootstrapModule(AppModule)
     ngModuleRef = mod;
   })
   .catch(err => {
-    console.log(err);
+    console.error(err);
   });
 
 module["hot"].dispose(() => {

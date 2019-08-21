@@ -23,21 +23,6 @@ export class SdToastProvider {
     }
   }*/
 
-  public async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined> {
-    try {
-      return await fn();
-    }
-    catch (err) {
-      if (messageFn) {
-        this.danger(messageFn(err));
-      }
-      else {
-        this.danger(err.message);
-      }
-      if (process.env.NODE_ENV !== "production") console.error(err);
-    }
-  }
-
   public notify<T extends SdToastBase<any, any>>(toastType: Type<T>, param: T["_tParam"], onclose: (result: T["_tResult"] | undefined) => void | Promise<void>): void {
     if (!this._containerRef) {
       this._containerRef = this._cfr.resolveComponentFactory(SdToastContainerControl).create(this._injector);
