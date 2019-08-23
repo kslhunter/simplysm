@@ -51,7 +51,7 @@
     "fork-ts-checker-webpack-plugin": "^1.5.0",
     "angular-router-loader": "^0.8.5",
     "circular-dependency-plugin": "^5.2.0",
-    "@types/circular-dependency-plugin": "^5.0.0"
+    "webpack-node-externals": "^1.7.2"
   },
   "devDependencies": {
     "@types/copy-webpack-plugin": "^5.0.0",
@@ -70,6 +70,8 @@
     "@types/webpack-hot-middleware": "^2.16.5",
     "@types/webpack-merge": "^4.1.5",
     "@types/yargs": "^13.0.2",
+    "@types/circular-dependency-plugin": "^5.0.0",
+    "@types/webpack-node-externals": "^1.6.3",
     "tslint": "^5.18.0",
     "typescript": "3.5.3",
     "typescript-tslint-plugin": "^0.5.4"

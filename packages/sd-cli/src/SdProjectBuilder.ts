@@ -171,21 +171,35 @@ export class SdProjectBuilder {
         }
 
         if (config.packages[packageKey].type === "library" || config.packages[packageKey].type === "server") {
-          const worker = await this._runWorkerAsync(
-            `${prefix}-compile`,
-            packageKey,
-            argv.options
-          );
+          // 변경감지 모드가 아니고, 서버빌드이면, 'webpack'으로 빌드
+          if (!argv.watch && config.packages[packageKey].type === "server") {
+            const worker = await this._runWorkerAsync(
+              `run-compile-server`,
+              packageKey,
+              argv.options
+            );
 
-          if (worker.cpuUsage) {
-            workerCpuUsages.push({packageKey, type: worker.workerName, cpuUsage: worker.cpuUsage});
+            if (worker.cpuUsage) {
+              workerCpuUsages.push({packageKey, type: worker.workerName, cpuUsage: worker.cpuUsage});
+            }
           }
+          else {
+            const worker = await this._runWorkerAsync(
+              `${prefix}-compile`,
+              packageKey,
+              argv.options
+            );
 
-          // 변경감지 모드이며, 서버빌드 일때, 서버 실행 (변경감지 포함)
-          if (argv.watch && config.packages[packageKey].type === "server") {
-            const packagePath = path.resolve(process.cwd(), "packages", packageKey);
-            const packageTsConfigPath = path.resolve(packagePath, "tsconfig.json");
-            await this._runServerAsync(packageKey, worker, packageTsConfigPath);
+            if (worker.cpuUsage) {
+              workerCpuUsages.push({packageKey, type: worker.workerName, cpuUsage: worker.cpuUsage});
+            }
+
+            // 변경감지 모드이며, 서버빌드 일때, 서버 실행 (변경감지 포함)
+            if (argv.watch && config.packages[packageKey].type === "server") {
+              const packagePath = path.resolve(process.cwd(), "packages", packageKey);
+              const packageTsConfigPath = path.resolve(packagePath, "tsconfig.json");
+              await this._runServerAsync(packageKey, worker, packageTsConfigPath);
+            }
           }
         }
         else {
