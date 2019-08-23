@@ -27,146 +27,240 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div class="_sheet" [style.padding-top.px]="paddingTop">
-      <div #headerElRef class="_content _head">
-        <div class="_row _pagination" *ngIf="pageLength > 1">
-          <sd-pagination [(page)]="page" [length]="pageLength"
-                         (pageChange)="pageChange.emit($event)"></sd-pagination>
-        </div>
-        <div class="_row" *ngIf="hasHeaderGroup">
-          <div class="_col-group _fixed-col-group">
-            <div class="_col _first-col" [class._double]="selectable && children">
-              <div class="_border"></div>
-            </div>
-            <div class="_col" *ngFor="let headerGroup of fixedHeaderGroups; trackBy: trackByIndexFn"
-                 [style.width.px]="headerGroup.width">
-              <pre>{{ headerGroup.header }}</pre>
-              <div class="_border"></div>
-            </div>
-          </div>
-          <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
-            <div class="_col" *ngFor="let headerGroup of nonFixedHeaderGroups; trackBy: trackByIndexFn"
-                 [style.width.px]="headerGroup.width">
-              <pre>{{ headerGroup.header }}</pre>
-              <div class="_border"></div>
-            </div>
-          </div>
-        </div>
-        <div class="_row">
-          <div class="_col-group _fixed-col-group">
-            <div class="_col _first-col" [class._double]="selectable && children">
-              <a (click)="onAllSelectIconClick()">
-                <sd-icon [icon]="'arrow-right'" *ngIf="selectable === 'multi'"
-                         [ngClass]="{'sd-text-color-primary-default': allSelected, 'sd-text-color-grey-default': !allSelected}"></sd-icon>
-              </a>
-              <div class="_border"></div>
-            </div>
-            <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
-                 [style.width.px]="getWidth(columnControl)"
-                 [attr.col-index]="getIndex(columnControl)"
-                 [attr.title]="columnControl.help"
-                 [attr.sd-header]="columnControl.header">
-              <pre>{{ columnControl.header && columnControl.header!.split(".").last() }}</pre>
-              <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
-              <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
-                   (mousedown)="onHeadBorderMousedown($event)"></div>
-            </div>
-          </div>
-          <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
-            <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
-                 [style.width.px]="getWidth(columnControl)"
-                 [attr.col-index]="getIndex(columnControl)"
-                 [attr.title]="columnControl.help"
-                 [attr.sd-header]="columnControl.header">
-              <pre>{{ columnControl.header && columnControl.header.split(".").last() }}</pre>
-              <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
-              <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
-                   (mousedown)="onHeadBorderMousedown($event)"></div>
-            </div>
-          </div>
-        </div>
-        <div class="_row _summary" *ngIf="hasSummary">
-          <div class="_col-group _fixed-col-group">
-            <div class="_col _first-col">
-              <div class="_border"></div>
-            </div>
-            <div class="_col sd-background-warning-lightest"
-                 *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
-                 [style.width.px]="getWidth(columnControl)">
-              <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"
-                           [ngTemplateOutletContext]="{items: items}"></ng-template>
-              <div class="_border"></div>
-            </div>
-          </div>
-          <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
-            <div class="_col sd-background-warning-lightest"
-                 *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
-                 [style.width.px]="getWidth(columnControl)">
-              <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"
-                           [ngTemplateOutletContext]="{items: items}"></ng-template>
-              <div class="_border"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <ng-container *ngIf="displayType === 'sheet'">
+      <div class="_sheet" [style.padding-top.px]="paddingTop">
+        <div #headerElRef class="_content _head">
+          <div class="_row _pagination">
+            <ng-template [ngTemplateOutlet]="options"></ng-template>
 
-      <div class="_content _body" [style.width.px]="headerElRef.offsetWidth">
-        <ng-template #rowOfList let-items="items">
-          <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
-            <div class="_row" [class._selected]="getIsItemSelected(item)"> <!-- [@rowState]="'in'" -->
-              <div class="_col-group _fixed-col-group">
-                <div class="_col _first-col"
-                     [class._double]="selectable && children"
-                     [class._selectable]="selectable"
-                     [class._selected]="getIsItemSelected(item)"
-                     [class._expandable]="getHasChildren(i, item)"
-                     [class._expanded]="getIsExpended(i, item)">
-                  <a class="_expand-icon" *ngIf="!!children" (click)="onExpandIconClick($event, i, item)"
-                     [style.visibility]="getHasChildren(i, item) ? undefined : 'hidden'">
-                    <sd-icon [icon]="getHasChildren(i, item) ? 'caret-right' : undefined"
-                             [fw]="true"></sd-icon>
-                  </a>
-                  <a class="_select-icon" (click)="onSelectIconClick($event, i, item)" *ngIf="selectable">
-                    <sd-icon icon="arrow-right"
-                             *ngIf="(!itemSelectableFn || itemSelectableFn!(i, item)) && (selectable === true || selectable === 'manual')"
-                             [fw]="true"></sd-icon>
-                    <sd-icon icon="arrow-right"
-                             *ngIf="(!itemSelectableFn || itemSelectableFn!(i, item)) && (selectable === 'multi')"
-                             [fw]="true"></sd-icon>
-                  </a>
-                </div>
-                <div
-                    [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
-                    *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
-                    [style.width.px]="getWidth(columnControl)" tabindex="0"
-                    (keydown)="onCellKeydown($event)">
-                  <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                               [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
-                  <div class="_focus-indicator"></div>
-                </div>
+            <sd-pagination [(page)]="page" [length]="pageLength" *ngIf="pageLength > 1"
+                           (pageChange)="pageChange.emit($event)"></sd-pagination>
+          </div>
+          <div class="_row" *ngIf="hasHeaderGroup">
+            <div class="_col-group _fixed-col-group">
+              <div class="_col _first-col" [class._double]="selectable && children">
+                <div class="_border"></div>
               </div>
-              <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
-                <div
-                    [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
-                    *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
-                    [style.width.px]="getWidth(columnControl)" tabindex="0"
-                    (keydown)="onCellKeydown($event)">
-                  <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                               [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
-                  <div class="_focus-indicator"></div>
-                </div>
+              <div class="_col" *ngFor="let headerGroup of fixedHeaderGroups; trackBy: trackByIndexFn"
+                   [style.width.px]="headerGroup.width">
+                <pre>{{ headerGroup.header }}</pre>
+                <div class="_border"></div>
               </div>
-              <div class="_select-indicator"></div>
             </div>
-            <ng-container *ngIf="getHasChildren(i, item) && getIsExpended(i, item)">
-              <ng-template [ngTemplateOutlet]="rowOfList"
-                           [ngTemplateOutletContext]="{items: children!(i, item)}"></ng-template>
+            <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
+              <div class="_col" *ngFor="let headerGroup of nonFixedHeaderGroups; trackBy: trackByIndexFn"
+                   [style.width.px]="headerGroup.width">
+                <pre>{{ headerGroup.header }}</pre>
+                <div class="_border"></div>
+              </div>
+            </div>
+          </div>
+          <div class="_row">
+            <div class="_col-group _fixed-col-group">
+              <div class="_col _first-col" [class._double]="selectable && children">
+                <a (click)="onAllSelectIconClick()">
+                  <sd-icon [icon]="'arrow-right'" *ngIf="selectable === 'multi'"
+                           [ngClass]="{'sd-text-color-primary-default': allSelected, 'sd-text-color-grey-default': !allSelected}"></sd-icon>
+                </a>
+                <div class="_border"></div>
+              </div>
+              <div class="_col" *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
+                   [style.width.px]="getWidth(columnControl)"
+                   [attr.col-index]="getIndex(columnControl)"
+                   [attr.title]="columnControl.help"
+                   [attr.sd-header]="columnControl.header">
+                <pre>{{ columnControl.header && columnControl.header!.split(".").last() }}</pre>
+                <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
+                <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
+                     (mousedown)="onHeadBorderMousedown($event)"></div>
+              </div>
+            </div>
+            <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
+              <div class="_col" *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
+                   [style.width.px]="getWidth(columnControl)"
+                   [attr.col-index]="getIndex(columnControl)"
+                   [attr.title]="columnControl.help"
+                   [attr.sd-header]="columnControl.header">
+                <pre>{{ columnControl.header && columnControl.header.split(".").last() }}</pre>
+                <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
+                <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
+                     (mousedown)="onHeadBorderMousedown($event)"></div>
+              </div>
+            </div>
+          </div>
+          <div class="_row _summary" *ngIf="hasSummary">
+            <div class="_col-group _fixed-col-group">
+              <div class="_col _first-col">
+                <div class="_border"></div>
+              </div>
+              <div class="_col sd-background-warning-lightest"
+                   *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
+                   [style.width.px]="getWidth(columnControl)">
+                <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"
+                             [ngTemplateOutletContext]="{items: items}"></ng-template>
+                <div class="_border"></div>
+              </div>
+            </div>
+            <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
+              <div class="_col sd-background-warning-lightest"
+                   *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
+                   [style.width.px]="getWidth(columnControl)">
+                <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"
+                             [ngTemplateOutletContext]="{items: items}"></ng-template>
+                <div class="_border"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="_content _body" [style.width.px]="headerElRef.offsetWidth">
+          <ng-template #rowOfList let-items="items">
+            <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
+              <div class="_row" [class._selected]="getIsItemSelected(item)"> <!-- [@rowState]="'in'" -->
+                <div class="_col-group _fixed-col-group">
+                  <div class="_col _first-col"
+                       [class._double]="selectable && children"
+                       [class._selectable]="selectable"
+                       [class._selected]="getIsItemSelected(item)"
+                       [class._expandable]="getHasChildren(i, item)"
+                       [class._expanded]="getIsExpended(i, item)">
+                    <a class="_expand-icon" *ngIf="!!children" (click)="onExpandIconClick($event, i, item)"
+                       [style.visibility]="getHasChildren(i, item) ? undefined : 'hidden'">
+                      <sd-icon [icon]="getHasChildren(i, item) ? 'caret-right' : undefined"
+                               [fw]="true"></sd-icon>
+                    </a>
+                    <a class="_select-icon" (click)="onSelectIconClick($event, i, item)" *ngIf="selectable">
+                      <sd-icon icon="arrow-right"
+                               *ngIf="(!itemSelectableFn || itemSelectableFn!(i, item)) && (selectable === true || selectable === 'manual')"
+                               [fw]="true"></sd-icon>
+                      <sd-icon icon="arrow-right"
+                               *ngIf="(!itemSelectableFn || itemSelectableFn!(i, item)) && (selectable === 'multi')"
+                               [fw]="true"></sd-icon>
+                    </a>
+                  </div>
+                  <div
+                      [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
+                      *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
+                      [style.width.px]="getWidth(columnControl)" tabindex="0"
+                      (keydown)="onCellKeydown($event)">
+                    <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
+                                 [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
+                    <div class="_focus-indicator"></div>
+                  </div>
+                </div>
+                <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
+                  <div
+                      [class]="'_col' + (itemThemeFn && itemThemeFn(item) ? ' sd-background-' + itemThemeFn(item) + '-lightest' : '')"
+                      *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
+                      [style.width.px]="getWidth(columnControl)" tabindex="0"
+                      (keydown)="onCellKeydown($event)">
+                    <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
+                                 [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
+                    <div class="_focus-indicator"></div>
+                  </div>
+                </div>
+                <div class="_select-indicator"></div>
+              </div>
+              <ng-container *ngIf="getHasChildren(i, item) && getIsExpended(i, item)">
+                <ng-template [ngTemplateOutlet]="rowOfList"
+                             [ngTemplateOutletContext]="{items: children!(i, item)}"></ng-template>
+              </ng-container>
             </ng-container>
-          </ng-container>
-        </ng-template>
-        <ng-template [ngTemplateOutlet]="rowOfList" [ngTemplateOutletContext]="{items: getPagedItems()}"></ng-template>
+          </ng-template>
+          <ng-template [ngTemplateOutlet]="rowOfList"
+                       [ngTemplateOutletContext]="{items: getPagedItems()}"></ng-template>
+        </div>
       </div>
-    </div>`,
+    </ng-container>
+    <ng-container *ngIf="displayType === 'card'">
+      <sd-dock-container>
+        <sd-dock>
+          <ng-template [ngTemplateOutlet]="options"></ng-template>
+          <div *ngIf="pageLength > 1">
+            <sd-pagination [(page)]="page" [length]="pageLength"
+                           (pageChange)="pageChange.emit($event)"></sd-pagination>
+          </div>
+        </sd-dock>
+        <sd-pane>
+          <sd-grid>
+            <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
+              <sd-grid-item [width]="(100 / cardItemCount) + '%'">
+                <sd-card>
+                  <table>
+                    <thead>
+                    <ng-container *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn">
+                      <tr>
+                        <th>
+                          <pre>{{ columnControl.header }}</pre>
+                          <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
+                        </th>
+                        <td>
+                          <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
+                                       [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
+                        </td>
+                      </tr>
+                    </ng-container>
+                    </thead>
+                    <tbody>
+                    <ng-container *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn">
+                      <tr>
+                        <th>
+                          <pre>{{ columnControl.header }}</pre>
+                          <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
+                        </th>
+                        <td>
+                          <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
+                                       [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
+                        </td>
+                      </tr>
+                    </ng-container>
+                    </tbody>
+                  </table>
+                </sd-card>
+              </sd-grid-item>
+            </ng-container>
+          </sd-grid>
+        </sd-pane>
+      </sd-dock-container>
+    </ng-container>
+
+
+    <ng-template #options>
+      <div class="_options">
+        <sd-dropdown>
+          <a>
+            <sd-icon icon="cog" fw></sd-icon>
+          </a>
+          <sd-dropdown-popup>
+            <sd-form class="sd-padding-default">
+              <sd-form-item label="표시형식">
+                <sd-checkbox radio inline [value]="displayType === 'sheet'"
+                             (valueChange)="$event ? displayType = 'sheet' : 'card'">
+                  시트형
+                </sd-checkbox>
+                <sd-checkbox radio inline [value]="displayType === 'card'"
+                             (valueChange)="$event ? displayType = 'card' : 'sheet'">
+                  카드형
+                </sd-checkbox>
+              </sd-form-item>
+              <ng-container *ngIf="displayType === 'card'">
+                <sd-form-item label="표시항목수">
+                  <sd-textfield type="number" [(value)]="cardItemCount" required></sd-textfield>
+                </sd-form-item>
+              </ng-container>
+              <sd-form-item label="표시컬럼">
+                <div *ngFor="let columnControl of columnControls; trackBy: trackByColumnControlFn">
+                  <sd-checkbox [value]="!hideColumnsGuid.includes(columnControl.guid)"
+                               (valueChange)="$event ? hideColumnsGuid.remove(columnControl.guid) : hideColumnsGuid.push(columnControl.guid)">
+                    <pre style="display: inline-block">{{ columnControl.header }}</pre>
+                  </sd-checkbox>
+                </div>
+              </sd-form-item>
+            </sd-form>
+          </sd-dropdown-popup>
+        </sd-dropdown>
+      </div>
+    </ng-template>`,
   styles: [/* language=SCSS */ `
     sd-sheet {
       display: block;
@@ -186,7 +280,8 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
       }
 
       ._pagination {
-        background: var(--sheet-header-bg);
+        //background: var(--sheet-header-bg);
+        background: white;
         padding: var(--sheet-padding-v) var(--sheet-padding-h);
         border-bottom: 1px solid var(--sheet-border-color);
         border-right: 1px solid var(--sheet-border-color-dark);
@@ -453,6 +548,49 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
       &[sd-selectable=true] ._body ._first-col {
         cursor: pointer;
       }
+
+      ._options {
+        float: right;
+
+        sd-icon {
+          font-size: var(--font-size-sm);
+        }
+      }
+      
+      //-- card 형
+      &[sd-display-type=card] {
+        sd-dock {
+          background: white;
+          padding: var(--sheet-padding-v) var(--sheet-padding-h);
+          border-bottom: 1px solid var(--sheet-border-color);
+          border-right: none;
+        }
+
+        sd-grid {
+          padding: var(--gap-sm);
+
+          sd-grid-item {
+            padding: var(--gap-sm);
+
+            sd-card {
+              padding: var(--gap-lg);
+
+              > table {
+                border-collapse: collapse;
+                width: 100%;
+
+                td, th {
+                  padding: var(--gap-xs) var(--gap-default);
+                }
+
+                th {
+                  text-align: right;
+                }
+              }
+            }
+          }
+        }
+      }
     }
   `]
 })
@@ -554,6 +692,20 @@ export class SdSheetControl implements DoCheck, OnInit {
   @Output()
   public readonly expandedItemTracksChange = new EventEmitter<any[]>();
 
+  @Input()
+  @SdTypeValidate({
+    type: String,
+    includes: ["card", "sheet"]
+  })
+  @HostBinding("attr.sd-display-type")
+  public displayType: "card" | "sheet" = "sheet";
+
+  @Input()
+  @SdTypeValidate(Number)
+  public cardItemCount = 3;
+
+  public hideColumnsGuid: string[] = [];
+
   public get allSelected(): boolean {
     return !!this.items && this.items.length === this.selectedItems.length && this.items.every(item => this.selectedItems.includes(item));
   }
@@ -625,11 +777,11 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public get fixedColumnControls(): SdSheetColumnControl[] {
-    return this.columnControls ? this.columnControls.filter(item => !!item.fixed) : [];
+    return this.columnControls ? this.columnControls.filter(item => !this.hideColumnsGuid.includes(item.guid)).filter(item => !!item.fixed) : [];
   }
 
   public get nonFixedColumnControls(): SdSheetColumnControl[] {
-    return this.columnControls ? this.columnControls.filter(item => !item.fixed) : [];
+    return this.columnControls ? this.columnControls.filter(item => !this.hideColumnsGuid.includes(item.guid)).filter(item => !item.fixed) : [];
   }
 
   public get fixedColumnWidth(): number {

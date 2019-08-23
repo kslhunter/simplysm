@@ -6,6 +6,16 @@ import {SdIconModule} from "../icon/SdIconModule";
 import {SdLocalStorageModule} from "../local-storage/SdLocalStorageModule";
 import {SdSheetControl} from "./SdSheetControl";
 import {SdSheetColumnControl} from "./SdSheetColumnControl";
+import {SdCardModule} from "../card/SdCardModule";
+import {SdGridModule} from "../grid/SdGridModule";
+import {SdDockModule} from "../dock/SdDockModule";
+import {SdPaneModule} from "../pane/SdPaneModule";
+import {SdDropdownModule} from "../dropdown/SdDropdownModule";
+import {SdListModule} from "../list/SdListModule";
+import {SdCheckboxModule} from "../checkbox/SdCheckboxModule";
+import {SdFormModule} from "../form/SdFormModule";
+import {SdTextfieldModule} from "../textfield/SdTextfieldModule";
+import {SdMultiSelectModule} from "../multi-select/SdMultiSelectModule";
 
 @NgModule({
   imports: [
@@ -13,7 +23,17 @@ import {SdSheetColumnControl} from "./SdSheetColumnControl";
     SdSharedModule,
     SdPaginationModule,
     SdIconModule,
-    SdLocalStorageModule
+    SdLocalStorageModule,
+    SdCardModule,
+    SdGridModule,
+    SdDockModule,
+    SdPaneModule,
+    SdDropdownModule,
+    SdListModule,
+    SdCheckboxModule,
+    SdFormModule,
+    SdTextfieldModule,
+    SdMultiSelectModule
   ],
   exports: [
     SdSheetControl,

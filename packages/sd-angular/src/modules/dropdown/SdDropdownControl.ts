@@ -90,7 +90,42 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     document.body.appendChild(this._dropdownEl);
     this._dropdownEl.addEventListener("blur", this.blurEventHandler, true);
 
-    if (window.innerHeight < this._controlEl.windowOffset.top * 2) {
+    const placeBottom = window.innerHeight < this._controlEl.windowOffset.top * 2;
+    const placeRight = window.innerWidth < this._controlEl.windowOffset.left * 2;
+
+    const top = placeBottom ? "" : (this._controlEl.windowOffset.top + this._controlEl.offsetHeight) + "px";
+    const bottom = placeBottom ? (window.innerHeight - this._controlEl.windowOffset.top) + "px" : "";
+    const left = placeRight ? "" : this._controlEl.windowOffset.left + 1 + "px";
+    const right = placeRight ? (window.innerWidth - this._controlEl.windowOffset.left - this._controlEl.clientWidth) + "px" : "";
+    const minWidth = this._controlEl.clientWidth + "px";
+    const opacity = "1";
+    const pointerEvents = "auto";
+    const transform = "none";
+    const borderTopRightRadius = placeBottom ? "4px" : "";
+    const borderTopLeftRadius = placeBottom ? "4px" : "";
+    const borderBottomRightRadius = placeBottom ? "" : "4px";
+    const borderBottomLeftRadius = placeBottom ? "" : "4px";
+
+    Object.assign(
+      this._dropdownEl.style,
+      {
+        top,
+        bottom,
+        left,
+        right,
+        minWidth,
+        opacity,
+        pointerEvents,
+        transform,
+        borderTopRightRadius,
+        borderTopLeftRadius,
+        borderBottomRightRadius,
+        borderBottomLeftRadius
+      }
+    );
+
+
+    /*if (window.innerHeight < this._controlEl.windowOffset.top * 2) {
       Object.assign(
         this._dropdownEl.style,
         {
@@ -121,7 +156,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
           // borderBottomLeftRadius: "4px"
         }
       );
-    }
+    }*/
 
     document.addEventListener("scroll", this.scrollEventHandler, true);
 
