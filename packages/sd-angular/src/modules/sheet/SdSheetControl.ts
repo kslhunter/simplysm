@@ -28,32 +28,33 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
   template: `
     <sd-dock-container>
       <sd-dock class="_topbar">
-        <div class="_options">
+        <div class="_options" *ngIf="!!id">
           <sd-dropdown>
             <a>
               <sd-icon icon="cog" fw></sd-icon>
             </a>
             <sd-dropdown-popup>
               <sd-form class="sd-padding-default">
-                <sd-form-item label="표시형식">
-                  <sd-checkbox radio inline [value]="displayType === 'sheet'"
-                               (valueChange)="$event ? displayType = 'sheet' : 'card'">
+                <sd-form-item label="표시형식" *ngIf="!children">
+                  <sd-checkbox radio inline [value]="getDisplayType() === 'sheet'"
+                               (valueChange)="onDisplayTypeChange($event ? 'sheet' : 'card')">
                     시트형
                   </sd-checkbox>
-                  <sd-checkbox radio inline [value]="displayType === 'card'"
-                               (valueChange)="$event ? displayType = 'card' : 'sheet'">
+                  <sd-checkbox radio inline [value]="getDisplayType() === 'card'"
+                               (valueChange)="onDisplayTypeChange($event ? 'card' : 'sheet')">
                     카드형
                   </sd-checkbox>
                 </sd-form-item>
-                <ng-container *ngIf="displayType === 'card'">
+                <ng-container *ngIf="getDisplayType() === 'card'">
                   <sd-form-item label="표시항목수">
-                    <sd-textfield type="number" [(value)]="cardItemCount" required></sd-textfield>
+                    <sd-textfield type="number" [value]="getCardItemCount()"
+                                  (valueChange)="onCardItemCountChange($event)" required></sd-textfield>
                   </sd-form-item>
                 </ng-container>
                 <sd-form-item label="표시컬럼">
                   <div *ngFor="let columnControl of columnControls; trackBy: trackByColumnControlFn">
-                    <sd-checkbox [value]="!hideColumnsGuid.includes(columnControl.guid)"
-                                 (valueChange)="$event ? hideColumnsGuid.remove(columnControl.guid) : hideColumnsGuid.push(columnControl.guid)"
+                    <sd-checkbox [value]="!getIsHideColumn(columnControl)"
+                                 (valueChange)="onIsHideColumnChange(columnControl, !$event)"
                                  inline style="width: 100%">
                       <pre style="display: inline-block">{{ columnControl.header }}</pre>
                     </sd-checkbox>
@@ -70,7 +71,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
       </sd-dock>
 
       <sd-pane style="position: relative;">
-        <ng-container *ngIf="displayType === 'sheet'">
+        <ng-container *ngIf="getDisplayType() === 'sheet'">
           <div class="_sheet" [style.padding-top.px]="paddingTop">
             <div #headerElRef class="_content _head">
               <div class="_row" *ngIf="hasHeaderGroup">
@@ -210,10 +211,10 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
             </div>
           </div>
         </ng-container>
-        <ng-container *ngIf="displayType === 'card'">
+        <ng-container *ngIf="getDisplayType() === 'card'">
           <sd-grid>
             <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
-              <sd-grid-item [width]="(100 / cardItemCount) + '%'">
+              <sd-grid-item [width]="(100 / getCardItemCount()) + '%'">
                 <sd-card>
                   <table>
                     <thead>
@@ -548,34 +549,25 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
       }
 
       //-- card 형
-      &[sd-display-type=card] {
-        sd-dock {
-          background: white;
-          padding: var(--sheet-padding-v) var(--sheet-padding-h);
-          border-bottom: 1px solid var(--sheet-border-color);
-          border-right: none;
-        }
+      sd-grid {
+        padding: var(--gap-sm);
 
-        sd-grid {
+        sd-grid-item {
           padding: var(--gap-sm);
 
-          sd-grid-item {
-            padding: var(--gap-sm);
+          sd-card {
+            padding: var(--gap-lg);
 
-            sd-card {
-              padding: var(--gap-lg);
+            > table {
+              border-collapse: collapse;
+              width: 100%;
 
-              > table {
-                border-collapse: collapse;
-                width: 100%;
+              td, th {
+                padding: var(--gap-xs) var(--gap-default);
+              }
 
-                td, th {
-                  padding: var(--gap-xs) var(--gap-default);
-                }
-
-                th {
-                  text-align: right;
-                }
+              th {
+                text-align: right;
               }
             }
           }
@@ -682,20 +674,6 @@ export class SdSheetControl implements DoCheck, OnInit {
   @Output()
   public readonly expandedItemTracksChange = new EventEmitter<any[]>();
 
-  @Input()
-  @SdTypeValidate({
-    type: String,
-    includes: ["card", "sheet"]
-  })
-  @HostBinding("attr.sd-display-type")
-  public displayType: "card" | "sheet" = "sheet";
-
-  @Input()
-  @SdTypeValidate(Number)
-  public cardItemCount = 3;
-
-  public hideColumnsGuid: string[] = [];
-
   public get allSelected(): boolean {
     return !!this.items && this.items.length === this.selectedItems.length && this.items.every(item => this.selectedItems.includes(item));
   }
@@ -767,11 +745,11 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public get fixedColumnControls(): SdSheetColumnControl[] {
-    return this.columnControls ? this.columnControls.filter(item => !this.hideColumnsGuid.includes(item.guid)).filter(item => !!item.fixed) : [];
+    return this.columnControls ? this.columnControls.filter(item => !this.getIsHideColumn(item)).filter(item => !!item.fixed) : [];
   }
 
   public get nonFixedColumnControls(): SdSheetColumnControl[] {
-    return this.columnControls ? this.columnControls.filter(item => !this.hideColumnsGuid.includes(item.guid)).filter(item => !item.fixed) : [];
+    return this.columnControls ? this.columnControls.filter(item => !this.getIsHideColumn(item)).filter(item => !item.fixed) : [];
   }
 
   public get fixedColumnWidth(): number {
@@ -817,11 +795,20 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   private readonly _iterableDiffer: IterableDiffer<any>;
   private readonly _iterableDifferForColumn: IterableDiffer<any>;
-  private _columnConfigs: {
-    header?: string;
-    index: number;
-    width: number;
-  }[] = [];
+  private _sheetConfig: {
+    displayType: "sheet" | "card";
+    cardItemCount: number;
+    columns: {
+      header?: string;
+      index: number;
+      width: number;
+      hide: boolean;
+    }[];
+  } = {
+    displayType: "sheet",
+    cardItemCount: 3,
+    columns: []
+  };
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
@@ -883,7 +870,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public ngOnInit(): void {
-    this._loadColumnConfigs();
+    this._loadConfig();
 
     const el = (this._elRef.nativeElement as HTMLElement);
     el.addEventListener("scroll", () => {
@@ -911,13 +898,57 @@ export class SdSheetControl implements DoCheck, OnInit {
     }
   }
 
+  public getDisplayType(): "sheet" | "card" {
+    return this._sheetConfig.displayType;
+  }
+
+  public onDisplayTypeChange(val: "sheet" | "card"): void {
+    this._sheetConfig.displayType = val;
+    this._saveConfig();
+    this._cdr.markForCheck();
+  }
+
+  public getCardItemCount(): number {
+    return this._sheetConfig.cardItemCount;
+  }
+
+  public onCardItemCountChange(val: number): void {
+    this._sheetConfig.cardItemCount = val;
+    this._saveConfig();
+    this._cdr.markForCheck();
+  }
+
+  public getIsHideColumn(columnControl: SdSheetColumnControl): boolean {
+    const index = this.getIndex(columnControl);
+    const columnConfig = this._sheetConfig.columns.single(item => item.header === columnControl.header && item.index === index);
+    return columnConfig ? columnConfig.hide : false;
+  }
+
+  public onIsHideColumnChange(columnControl: SdSheetColumnControl, val: boolean): void {
+    const index = this.getIndex(columnControl);
+    const columnConfig = this._sheetConfig.columns.single(item => item.header === columnControl.header && item.index === index);
+    if (columnConfig) {
+      columnConfig.hide = val;
+    }
+    else {
+      this._sheetConfig.columns.push({
+        header: columnControl.header,
+        width: columnControl.width,
+        index,
+        hide: val
+      });
+    }
+    this._saveConfig();
+    this._cdr.markForCheck();
+  }
+
   public getIndex(columnControl: SdSheetColumnControl): number {
     return this.columnControls!.toArray().indexOf(columnControl);
   }
 
   public getWidth(columnControl: SdSheetColumnControl): number {
     const index = this.getIndex(columnControl);
-    const columnConfig = this._columnConfigs.single(item => item.header === columnControl.header && item.index === index);
+    const columnConfig = this._sheetConfig.columns.single(item => item.header === columnControl.header && item.index === index);
     return columnConfig ? columnConfig.width : columnControl.width;
   }
 
@@ -1037,18 +1068,19 @@ export class SdSheetControl implements DoCheck, OnInit {
       const index = Number(cellEl.getAttribute("col-index"));
       const columnControl = this.columnControls!.toArray()[index];
 
-      const columnConfig = this._columnConfigs.single(item => item.header === columnControl.header && item.index === index);
+      const columnConfig = this._sheetConfig.columns.single(item => item.header === columnControl.header && item.index === index);
       if (columnConfig) {
         columnConfig.width = cellEl.offsetWidth;
       }
       else {
-        this._columnConfigs.push({
+        this._sheetConfig.columns.push({
           header: columnControl.header,
           width: cellEl.offsetWidth,
-          index
+          index,
+          hide: false
         });
       }
-      this._saveColumnConfigs();
+      this._saveConfig();
 
       this._cdr.markForCheck();
     };
@@ -1265,15 +1297,19 @@ export class SdSheetControl implements DoCheck, OnInit {
     }
   }
 
-  public _loadColumnConfigs(): void {
-    this._columnConfigs = this._localStorage.get("sd-sheet." + this.id + ".column-config") || [];
+  public _loadConfig(): void {
+    this._sheetConfig = this._localStorage.get("sd-sheet." + this.id + ".config") || {
+      displayType: "sheet",
+      cardItemCount: 3,
+      columns: []
+    };
   }
 
-  public _saveColumnConfigs(): void {
-    const removedColumns = this._columnConfigs.filter(item => !this.columnControls!
+  public _saveConfig(): void {
+    const removedColumns = this._sheetConfig.columns.filter(item => !this.columnControls!
       .some((item1, index) => (item1.header || "") + index === ((item.header || "") + item.index))
     );
-    this._columnConfigs.remove(removedColumns);
-    this._localStorage.set("sd-sheet." + this.id + ".column-config", this._columnConfigs);
+    this._sheetConfig.columns.remove(removedColumns);
+    this._localStorage.set("sd-sheet." + this.id + ".config", this._sheetConfig);
   }
 }
