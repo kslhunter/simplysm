@@ -7,7 +7,6 @@ import {SdWebpackWriteFilePlugin} from "./plugins/SdWebpackWriteFilePlugin";
 import {SdCliUtils} from "./commons/SdCliUtils";
 import * as webpackMerge from "webpack-merge";
 import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
-import {SdWebpackForkTsCheckerPlugin} from "./plugins/SdWebpackForkTsCheckerPlugin";
 import * as CircularDependencyPlugin from "circular-dependency-plugin";
 import * as webpackNodeExternals from "webpack-node-externals";
 
@@ -91,12 +90,6 @@ export class SdWebpackServerCompiler extends events.EventEmitter {
         ]
       },
       plugins: [
-        new SdWebpackForkTsCheckerPlugin({
-          tsConfigPath: this._tsConfigPath,
-          error: messages => {
-            this.emit("error", ...messages);
-          }
-        }),
         new CircularDependencyPlugin({
           exclude: /[\\\/]node_modules[\\\/]/,
           include: new RegExp("^" + this._contextPath.replace(/\\/g, "\\\\"))
@@ -124,7 +117,7 @@ export class SdWebpackServerCompiler extends events.EventEmitter {
   private _entryConfigs(): webpack.Configuration {
     return {
       entry: {
-        main: path.resolve(this._contextPath, "src/app.ts")
+        app: path.resolve(this._contextPath, "src/app.ts")
       }
     };
   }
@@ -140,6 +133,10 @@ export class SdWebpackServerCompiler extends events.EventEmitter {
         extensions: [".ts", ".js", ".json"],
         alias: this._alias
       },
+      target: "node",
+      node: {
+        __dirname: false
+      },
       module: {
         strictExportPresence: true,
         rules: []
@@ -149,13 +146,25 @@ export class SdWebpackServerCompiler extends events.EventEmitter {
           "process.env.VERSION": `"${this._projectNpmConfig.version}"`
         })
       ],
-      externals: [webpackNodeExternals()]
+      externals: [
+        webpackNodeExternals({
+          whitelist: Object.keys(this._alias)
+        })
+      ]
     };
   }
 
   public async runAsync(): Promise<void> {
     const projectConfig = SdCliUtils.getConfigObj("production", this._options);
     const config = projectConfig.packages[this._packageKey];
+
+    const packageNpmConfig = fs.readJsonSync(path.resolve(this._contextPath, "package.json"));
+    delete packageNpmConfig.devDependencies;
+    for (const depKey of Object.keys(packageNpmConfig.dependencies)) {
+      if (depKey.startsWith("@" + this._projectNpmConfig.name)) {
+        delete packageNpmConfig.dependencies[depKey];
+      }
+    }
 
     const webpackConfig = webpackMerge(this._getWebpackCommonConfig(),
       {
@@ -167,30 +176,33 @@ export class SdWebpackServerCompiler extends events.EventEmitter {
         },
         optimization: {
           noEmitOnErrors: true,
-          runtimeChunk: "single",
-          splitChunks: {
-            chunks: "all",
-            maxInitialRequests: Infinity,
-            minSize: 0,
-            cacheGroups: {
-              vendor: {
-                test: /[\\/]node_modules[\\/]/,
-                name: (module: any) => {
-                  const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
-                  return `libs/${packageName.replace("@", "")}`;
-                }
-              }
-            }
-          },
           minimizer: [
             new webpack.HashedModuleIdsPlugin()
           ]
         },
         plugins: [
-          new SdWebpackWriteFilePlugin([{
-            path: path.resolve(this._distPath, ".configs.json"),
-            content: JSON.stringify({env: "production", ...config.configs}, undefined, 2)
-          }])
+          new SdWebpackWriteFilePlugin([
+            {
+              path: path.resolve(this._distPath, ".configs.json"),
+              content: JSON.stringify({env: "production", ...config.configs}, undefined, 2)
+            },
+            {
+              path: path.resolve(this._distPath, "package.json"),
+              content: JSON.stringify(packageNpmConfig, undefined, 2)
+            },
+            {
+              path: path.resolve(this._distPath, "pm2.json"),
+              content: JSON.stringify({
+                name: packageNpmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
+                script: "app.js",
+                watch: false,
+                env: {
+                  NODE_ENV: "production",
+                  VERSION: this._projectNpmConfig.version
+                }
+              }, undefined, 2)
+            }
+          ])
         ]
       },
       this._entryConfigs(),
