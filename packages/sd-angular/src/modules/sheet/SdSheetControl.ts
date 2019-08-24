@@ -216,36 +216,51 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
             <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
               <sd-grid-item [width]="(100 / getCardItemCount()) + '%'">
                 <sd-card>
-                  <table>
-                    <thead>
-                    <ng-container *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn">
-                      <tr>
-                        <th>
-                          <pre>{{ columnControl.header }}</pre>
-                          <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
-                        </th>
-                        <td>
-                          <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                       [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
-                        </td>
-                      </tr>
-                    </ng-container>
-                    </thead>
-                    <tbody>
-                    <ng-container *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn">
-                      <tr>
-                        <th>
-                          <pre>{{ columnControl.header }}</pre>
-                          <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
-                        </th>
-                        <td>
-                          <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                       [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
-                        </td>
-                      </tr>
-                    </ng-container>
-                    </tbody>
-                  </table>
+                  <div class="_select-bar" [class._selected]="getIsItemSelected(item)" *ngIf="selectable"
+                       (click)="onSelectIconClick($event, i, item)">
+                    <div class="_select-icon">
+                      <sd-icon icon="arrow-right"
+                               *ngIf="(!itemSelectableFn || itemSelectableFn!(i, item)) && (selectable === true || selectable === 'manual')"
+                               [fw]="true"></sd-icon>
+                      <sd-icon icon="arrow-right"
+                               *ngIf="(!itemSelectableFn || itemSelectableFn!(i, item)) && (selectable === 'multi')"
+                               [fw]="true"></sd-icon>
+                    </div>
+                  </div>
+
+                  <div class="_content">
+                    <table>
+                      <thead>
+                      <ng-container *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn">
+                        <tr>
+                          <th>
+                            <pre>{{ columnControl.header }}</pre>
+                            <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
+                          </th>
+                          <td>
+                            <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
+                                         [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
+                          </td>
+                        </tr>
+                      </ng-container>
+                      </thead>
+                      <tbody>
+                      <ng-container
+                          *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn">
+                        <tr>
+                          <th>
+                            <pre>{{ columnControl.header }}</pre>
+                            <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
+                          </th>
+                          <td>
+                            <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
+                                         [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
+                          </td>
+                        </tr>
+                      </ng-container>
+                      </tbody>
+                    </table>
+                  </div>
                 </sd-card>
               </sd-grid-item>
             </ng-container>
@@ -556,18 +571,44 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
           padding: var(--gap-sm);
 
           sd-card {
-            padding: var(--gap-lg);
+            div._select-bar {
+              cursor: pointer;
+              border-top-left-radius: 2px;
+              border-top-right-radius: 2px;
+              padding: var(--gap-sm) var(--gap-default);
+              border-bottom: 1px solid var(--theme-grey-lighter);
 
-            > table {
-              border-collapse: collapse;
-              width: 100%;
-
-              td, th {
-                padding: var(--gap-xs) var(--gap-default);
+              > ._select-icon {
+                display: inline-block;
+                color: var(--theme-grey-light);
+                transition: .1s ease-in;
               }
 
-              th {
-                text-align: right;
+              &._selected {
+                background: var(--theme-primary-default);
+                
+                > ._select-icon {
+                  color: white
+                }
+              }
+            }
+
+            div._content {
+              display: block;
+              width: 100%;
+              padding: var(--gap-lg);
+
+              table {
+                border-collapse: collapse;
+                width: 100%;
+
+                td, th {
+                  padding: var(--gap-xs) var(--gap-default);
+                }
+
+                th {
+                  text-align: right;
+                }
               }
             }
           }
@@ -754,7 +795,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public get fixedColumnWidth(): number {
     const fixedColGroupEl = (this._elRef.nativeElement as HTMLElement).findAll("._head > ._row > ._fixed-col-group")[0];
-    return fixedColGroupEl.clientWidth;
+    return fixedColGroupEl ? fixedColGroupEl.clientWidth : 0;
 
     /*const size = Math.floor(this._style.presets.fns.stripUnit(this._style.presets.vars.sheetPaddingV) * 2
       + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default)) + 1;
@@ -996,30 +1037,42 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public onSelectIconClick(event: Event, i: number, item: any): void {
     if (this.selectable) {
-      const targetEl = event.target as Element;
-      const rowEl = targetEl.findParent("._row");
-      if (!rowEl) return;
+      if (this.getDisplayType() === "sheet") {
+        const targetEl = event.target as Element;
+        const rowEl = targetEl.findParent("._row");
+        if (!rowEl) return;
 
-      const bodyEl = rowEl.parentElement as Element;
-      const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-      const selectedItem = this._getItemByRowIndex(rowIndex);
+        const bodyEl = rowEl.parentElement as Element;
+        const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+        const selectedItem = this._getItemByRowIndex(rowIndex);
 
-      if (this.selectable === "multi") {
-        if (this.selectedItems.includes(selectedItem)) {
-          this.selectedItems.remove(selectedItem);
-          this.selectedItemsChange.emit(this.selectedItems);
+        if (this.selectable === "multi") {
+          if (this.selectedItems.includes(selectedItem)) {
+            this.selectedItems.remove(selectedItem);
+            this.selectedItemsChange.emit(this.selectedItems);
+          }
+          else {
+            this.selectRow(event.target as Element);
+          }
         }
         else {
-          this.selectRow(event.target as Element);
+          if (this.selectedItem === selectedItem) {
+            this.selectedItem = undefined;
+            this.selectedItemChange.emit(undefined);
+          }
+          else {
+            this.selectRow(event.target as Element);
+          }
         }
       }
       else {
-        if (this.selectedItem === selectedItem) {
+        if (this.selectedItem === item) {
           this.selectedItem = undefined;
           this.selectedItemChange.emit(undefined);
         }
         else {
-          this.selectRow(event.target as Element);
+          this.selectedItem = item;
+          this.selectedItemChange.emit(item);
         }
       }
     }

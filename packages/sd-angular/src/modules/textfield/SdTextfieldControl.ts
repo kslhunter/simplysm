@@ -56,7 +56,7 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
       > input,
       > textarea {
         @include form-control-base();
-        background-clip: padding-box;
+        //background-clip: padding-box;
         border-radius: 0;
         margin: 0;
 
