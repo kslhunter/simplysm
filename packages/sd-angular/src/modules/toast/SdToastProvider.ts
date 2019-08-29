@@ -122,7 +122,11 @@ export class SdToastProvider {
 
     toastRef.instance.open = true;
     toastRef.instance.theme = theme;
-    this._appRef.tick();
+    try {
+      this._appRef.tick();
+    }
+    catch {
+    }
 
     if (progress) {
       return {

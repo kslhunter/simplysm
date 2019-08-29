@@ -1,4 +1,4 @@
-import {NgModule} from "@angular/core";
+import {ModuleWithProviders, NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {SdToastContainerControl} from "./SdToastContainerControl";
 import {SdToastControl} from "./SdToastControl";
@@ -22,10 +22,15 @@ import {SdSharedModule} from "../shared/SdSharedModule";
   entryComponents: [
     SdToastContainerControl,
     SdToastControl
-  ],
-  providers: [
-    SdToastProvider
   ]
 })
 export class SdToastModule {
+  public static forRoot(): ModuleWithProviders<SdToastModule> {
+    return {
+      ngModule: SdToastModule,
+      providers: [
+        SdToastProvider
+      ]
+    };
+  }
 }
