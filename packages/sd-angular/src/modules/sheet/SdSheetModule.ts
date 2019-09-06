@@ -3,7 +3,6 @@ import {CommonModule} from "@angular/common";
 import {SdSharedModule} from "../shared/SdSharedModule";
 import {SdPaginationModule} from "../pagination/SdPaginationModule";
 import {SdIconModule} from "../icon/SdIconModule";
-import {SdLocalStorageModule} from "../local-storage/SdLocalStorageModule";
 import {SdSheetControl} from "./SdSheetControl";
 import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdCardModule} from "../card/SdCardModule";
@@ -23,7 +22,6 @@ import {SdMultiSelectModule} from "../multi-select/SdMultiSelectModule";
     SdSharedModule,
     SdPaginationModule,
     SdIconModule,
-    SdLocalStorageModule,
     SdCardModule,
     SdGridModule,
     SdDockModule,

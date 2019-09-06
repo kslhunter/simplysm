@@ -3,7 +3,6 @@ import {CommonModule} from "@angular/common";
 import {SdSharedModule} from "../shared/SdSharedModule";
 import {SdDockModule} from "../dock/SdDockModule";
 import {SdIconModule} from "../icon/SdIconModule";
-import {SdLocalStorageModule} from "../local-storage/SdLocalStorageModule";
 import {SdModalControl} from "./SdModalControl";
 import {SdModalProvider} from "./SdModalProvider";
 import {SdPaneModule} from "../pane/SdPaneModule";
@@ -14,7 +13,6 @@ import {SdPaneModule} from "../pane/SdPaneModule";
     SdSharedModule,
     SdDockModule,
     SdIconModule,
-    SdLocalStorageModule,
     SdPaneModule
   ],
   exports: [
