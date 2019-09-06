@@ -81,9 +81,6 @@ export * from "./modules/list/SdListControl";
 export * from "./modules/list/SdListItemButtonControl";
 export * from "./modules/list/SdListItemControl";
 
-export * from "./modules/local-storage/SdLocalStorageModule";
-export * from "./modules/local-storage/SdLocalStorageProvider";
-
 export * from "./modules/markdown-editor/SdMarkdownEditorModule";
 export * from "./modules/markdown-editor/SdMarkdownEditorControl";
 
@@ -154,6 +151,10 @@ export * from "./modules/view/SdViewItemControl";
 export * from "./modules/shared/SdSharedModule";
 export * from "./modules/shared/LinkActionDirective";
 export * from "./modules/shared/ResizeEventPlugin";
+export * from "./modules/shared/SdLocalStorageProvider";
+export * from "./modules/shared/GlobalErrorHandler";
+export * from "./modules/shared/SdConfigProvider";
+export * from "./modules/shared/SdLogProvider";
 
 export * from "./modules/service/SdServiceModule";
 export * from "./modules/service/SdCryptoServiceProvider";

@@ -18,7 +18,7 @@ import {
 } from "@angular/core";
 import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
-import {SdLocalStorageProvider} from "../local-storage/SdLocalStorageProvider";
+import {SdLocalStorageProvider} from "../shared/SdLocalStorageProvider";
 import {ResizeEvent} from "../../commons/ResizeEvent";
 
 @Component({

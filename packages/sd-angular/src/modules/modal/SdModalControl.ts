@@ -10,7 +10,7 @@ import {
   ViewEncapsulation
 } from "@angular/core";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
-import {SdLocalStorageProvider} from "../local-storage/SdLocalStorageProvider";
+import {SdLocalStorageProvider} from "../shared/SdLocalStorageProvider";
 import {optional} from "@simplysm/sd-core";
 
 @Component({

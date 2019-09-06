@@ -14,7 +14,7 @@ import {
 import {SdDockContainerControl} from "./SdDockContainerControl";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdNotifyPropertyChange";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
-import {SdLocalStorageProvider} from "../local-storage/SdLocalStorageProvider";
+import {SdLocalStorageProvider} from "../shared/SdLocalStorageProvider";
 import {ResizeEvent} from "../../commons/ResizeEvent";
 
 @Component({
