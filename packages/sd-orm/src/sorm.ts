@@ -66,6 +66,10 @@ export const sorm = {
   notNull<T extends QueryType>(source: T | QueryUnit<T>): boolean {
     return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " IS NOT NULL") as any;
   },
+  dateDiff<T extends QueryType>(separator: string | undefined, from: T | undefined, to: T | undefined): number {
+    const type = separator || "dd";
+    return new QueryUnit(Number, "DATEDIFF(" + type + ", " + QueryHelper.getFieldQuery(from) + ", " + QueryHelper.getFieldQuery(to) + ") + 1") as any;
+  },
   nullOrEmpty(source: undefined | string | QueryUnit<string | undefined>): boolean {
     return this.or([
       this.null(source),
