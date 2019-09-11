@@ -7,15 +7,11 @@ import * as os from "os";
 
 
 export class SdWebpackAngularWatchFileSystem extends NodeWatchFileSystem {
-  private readonly _program: SdTypescriptProgram;
-
   public constructor(private readonly _virtualInputFileSystem: VirtualFileSystemDecorator,
                      private readonly _replacements: Map<Path, Path> | ((path: Path) => Path),
-                     private readonly _tsConfigPath: string) {
+                     private readonly _program: SdTypescriptProgram) {
     super(_virtualInputFileSystem);
 
-    this._program = new SdTypescriptProgram(this._tsConfigPath, {});
-    this._program.clearNgModules();
     const messages = this._program.emitNgModule().messages;
     messages.push(...this._program.emitNgRoutingModule().messages);
     this._program.emitRoutesRoot();
