@@ -116,8 +116,7 @@ export class SdAngularCompiler extends events.EventEmitter {
               {
                 loader: "sass-loader",
                 options: {
-                  sourceMap: false,
-                  sourceMapContents: false
+                  sourceMap: false
                 }
               }
             ]
