@@ -2,6 +2,7 @@ import {ApplicationRef, ComponentFactoryResolver, ComponentRef, Injectable, Inje
 import {Type} from "@simplysm/sd-core";
 import {SdToastControl} from "./SdToastControl";
 import {SdToastContainerControl} from "./SdToastContainerControl";
+import {SdLogProvider} from "../shared/SdLogProvider";
 
 @Injectable()
 export class SdToastProvider {
@@ -10,7 +11,8 @@ export class SdToastProvider {
 
   public constructor(private readonly _cfr: ComponentFactoryResolver,
                      private readonly _injector: Injector,
-                     private readonly _appRef: ApplicationRef) {
+                     private readonly _appRef: ApplicationRef,
+                     private readonly _log: SdLogProvider) {
     /*this._containerEl = document.createElement("div");
     this._containerEl.classList.add("_sd-toast-container");
     document.body.appendChild(this._containerEl);*/
@@ -22,6 +24,24 @@ export class SdToastProvider {
       this._containerRef.destroy();
     }
   }*/
+
+  public async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined> {
+    try {
+      return await fn();
+    }
+    catch (err) {
+      if (messageFn) {
+        this.danger(messageFn(err));
+      }
+      else {
+        this.danger(err.message);
+      }
+
+      await this._log.write(err.stack);
+
+      if (process.env.NODE_ENV !== "production") console.error(err);
+    }
+  }
 
   public notify<T extends SdToastBase<any, any>>(toastType: Type<T>, param: T["_tParam"], onclose: (result: T["_tResult"] | undefined) => void | Promise<void>): void {
     if (!this._containerRef) {
