@@ -10,12 +10,12 @@ export class SdWebpackNgModulePlugin implements webpack.Plugin {
   }
 
   public apply(compiler: webpack.Compiler): void {
+    const program = new SdTypescriptProgram(this._options.tsConfigPath, {});
+    program.clearNgModules();
+
     if (this._options.jit) {
       compiler.hooks.environment.tap("SdWebpackNgModulePlugin", () => {
-        const program = new SdTypescriptProgram(this._options.tsConfigPath, {});
-
         {
-          program.clearNgModules();
           const messages = program.emitNgModule().messages;
           messages.push(...program.emitNgRoutingModule().messages);
           program.emitRoutesRoot();
@@ -121,7 +121,7 @@ export class SdWebpackNgModulePlugin implements webpack.Plugin {
         compiler["watchFileSystem"] = new SdWebpackAngularWatchFileSystem(
           prevWatchFileSystem._virtualInputFileSystem,
           prevWatchFileSystem._replacements,
-          this._options.tsConfigPath
+          program
         );
       });
     }
