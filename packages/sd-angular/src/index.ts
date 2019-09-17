@@ -76,6 +76,10 @@ export * from "./modules/icon/SdIconUtils";
 export * from "./modules/label/SdLabelModule";
 export * from "./modules/label/SdLabelControl";
 
+export * from "./modules/progress/SdProgressModule";
+export * from "./modules/progress/SdProgressControl";
+export * from "./modules/progress/SdProgressItemControl";
+
 export * from "./modules/list/SdListModule";
 export * from "./modules/list/SdListControl";
 export * from "./modules/list/SdListItemButtonControl";
