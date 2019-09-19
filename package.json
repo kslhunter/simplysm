@@ -24,7 +24,7 @@
     "_sd-cli-profile_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --prof --no-logfile-per-isolate --logfile=profiling/cli.log --require=ts-node/register --require=tsconfig-paths/register packages/sd-cli/src/bin.ts"
   },
   "devDependencies": {
-    "cross-env": "^5.2.0",
+    "cross-env": "^6.0.0",
     "ts-node": "^8.3.0",
     "tsconfig-paths": "^3.8.0",
     "typescript": "3.5.3"
