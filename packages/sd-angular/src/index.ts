@@ -134,6 +134,7 @@ export * from "./modules/tab/SdTabviewItemControl";
 
 export * from "./modules/table/SdTableModule";
 export * from "./modules/table/SdTableControl";
+export * from "./modules/table/SdTableColumnControl";
 
 export * from "./modules/textfield/SdTextfieldModule";
 export * from "./modules/textfield/SdTextfieldControl";

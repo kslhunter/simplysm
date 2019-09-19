@@ -2,6 +2,7 @@ import {NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {SdSharedModule} from "../shared/SdSharedModule";
 import {SdTableControl} from "./SdTableControl";
+import {SdTableColumnControl} from "./SdTableColumnControl";
 
 @NgModule({
   imports: [
@@ -9,10 +10,12 @@ import {SdTableControl} from "./SdTableControl";
     SdSharedModule
   ],
   exports: [
-    SdTableControl
+    SdTableControl,
+    SdTableColumnControl
   ],
   declarations: [
-    SdTableControl
+    SdTableControl,
+    SdTableColumnControl
   ]
 })
 export class SdTableModule {
