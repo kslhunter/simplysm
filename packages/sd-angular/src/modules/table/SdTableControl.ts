@@ -14,7 +14,7 @@ import {
   ViewEncapsulation
 } from "@angular/core";
 import {ResizeEvent} from "../../commons/ResizeEvent";
-import {SdTypeValidate} from "../..";
+import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {SdTableColumnControl} from "./SdTableColumnControl";
 
 @Component({
@@ -99,7 +99,7 @@ import {SdTableColumnControl} from "./SdTableColumnControl";
 
         > table {
           background: white;
-          
+
           > * > * > * {
             border-top: 1px solid var(--theme-grey-light);
           }
