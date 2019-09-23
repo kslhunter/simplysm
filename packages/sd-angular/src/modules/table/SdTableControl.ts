@@ -1,5 +1,6 @@
 import {
-  ChangeDetectionStrategy, ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ContentChildren,
   DoCheck,
@@ -26,7 +27,7 @@ import {SdTableColumnControl} from "./SdTableColumnControl";
         <thead>
         <tr>
           <th *ngIf="selectable">
-            <input #allSelector type="checkbox"
+            <input type="checkbox"
                    [checked]="!!items.length && getIsAllItemsChecked(item)"
                    (click)="onAllSelectorClick()"
                    [disabled]="!items.length">
@@ -73,13 +74,9 @@ import {SdTableColumnControl} from "./SdTableColumnControl";
         width: 100%;
         border-collapse: collapse;
 
-        /*> * > * {
+        > * > * > * {
           border-bottom: 1px solid var(--theme-grey-light);
         }
-
-        > * > * > * {
-          border-right: 1px solid var(--theme-grey-light);
-        }*/
       }
 
       > ._header {
@@ -88,7 +85,7 @@ import {SdTableColumnControl} from "./SdTableColumnControl";
         left: 0;
         background: var(--theme-grey-lightest);
         border-top: 1px solid white;
-        border-bottom: 1px solid var(--theme-grey-light);
+        //border-bottom: 1px solid var(--theme-grey-light);
 
         > table > thead > tr > th > div {
           padding: var(--gap-xs) var(--gap-sm);
@@ -98,9 +95,14 @@ import {SdTableColumnControl} from "./SdTableColumnControl";
       > ._content {
         overflow-y: auto;
         height: 100%;
+        margin-bottom: -1px;
 
         > table {
           background: white;
+          
+          > * > * > * {
+            border-top: 1px solid var(--theme-grey-light);
+          }
         }
       }
     }
