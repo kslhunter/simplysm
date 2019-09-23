@@ -28,9 +28,9 @@ import {SdTableColumnControl} from "./SdTableColumnControl";
         <tr>
           <th *ngIf="selectable">
             <input type="checkbox"
-                   [checked]="!!items.length && getIsAllItemsChecked(item)"
+                   [checked]="!!items && !!items.length && getIsAllItemsChecked()"
                    (click)="onAllSelectorClick()"
-                   [disabled]="!items.length">
+                   [disabled]="!items || !items.length">
           </th>
           <th *ngFor="let columnControl of columnControls; trackBy: trackByColumnControlFn;"
               [style.width]="columnControl.widthPercent + '%'">
