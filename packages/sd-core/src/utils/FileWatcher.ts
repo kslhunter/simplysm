@@ -2,6 +2,7 @@ import * as chokidar from "chokidar";
 import {Logger} from "./Logger";
 import * as path from "path";
 import {Wait} from "./Wait";
+import * as fs from "fs-extra";
 
 export class FileWatcher {
   public static async watch(paths: string | string[], sits: FileChangeInfoType[], callback: (changedFiles: IFileChangeInfo[]) => (void | Promise<void>), options: { millisecond?: number; ignoreInitial?: boolean }): Promise<chokidar.FSWatcher> {
@@ -40,11 +41,12 @@ export class FileWatcher {
             );
           };
 
-          for (const sit of sits) {
-            watcher.on(sit, async filePath => {
-              await onWatched(sit, filePath);
-            });
-          }
+          watcher.on("raw", async (event, fileName, details) => {
+            if ((sits as string[]).includes(event)) {
+              const filePath = fs.statSync(details.watchedPath).isDirectory() ? path.resolve(details.watchedPath, fileName) : details.watchedPath;
+              await onWatched(event as FileChangeInfoType, filePath);
+            }
+          });
 
           resolve(watcher);
         })

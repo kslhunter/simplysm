@@ -202,8 +202,6 @@ export class SdProjectBuilder {
               await this._runServerAsync(packageKey, worker, packageTsConfigPath);
             }
           }
-
-          completedCompilePackageNames.push(packageName);
         }
         else {
           // 의존성 패키지들의 declaration 체크
@@ -226,6 +224,8 @@ export class SdProjectBuilder {
             );
           }
         }
+
+        completedCompilePackageNames.push(packageName);
       }).then(() => {
         logger.info("모든 'compile'가 완료되었습니다.");
       }),

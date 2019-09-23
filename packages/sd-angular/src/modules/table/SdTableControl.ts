@@ -27,7 +27,7 @@ import {SdTableColumnControl} from "./SdTableColumnControl";
         <thead>
         <tr>
           <th *ngIf="selectable">
-            <input type="checkbox"
+            <input [type]="selectMode === 'multi' ? 'checkbox' : 'radio'"
                    [checked]="!!items && !!items.length && getIsAllItemsChecked()"
                    (click)="onAllSelectorClick()"
                    [disabled]="!items || !items.length">
@@ -51,7 +51,7 @@ import {SdTableColumnControl} from "./SdTableColumnControl";
         <tbody *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
         <tr>
           <td *ngIf="selectable" class="sd-text-align-center">
-            <input #selector type="checkbox"
+            <input type="checkbox"
                    [checked]="getIsItemChecked(item)"
                    (click)="onItemSelectorClick(item)">
           </td>
@@ -133,6 +133,14 @@ export class SdTableControl implements DoCheck {
   @Input()
   @SdTypeValidate(Boolean)
   public selectable?: boolean;
+
+  @Input()
+  @SdTypeValidate({
+    type: String,
+    notnull: true,
+    includes: ["single", "multi"]
+  })
+  public selectMode: "single" | "multi" = "multi";
 
   @Input()
   public selectedItems: any[] = [];
