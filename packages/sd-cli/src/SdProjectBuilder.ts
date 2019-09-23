@@ -160,6 +160,7 @@ export class SdProjectBuilder {
     logger.info("빌드 프로세스를 시작합니다.");
 
     const completedDeclarationPackageNames: string[] = [];
+    const completedCompilePackageNames: string[] = [];
     const workerCpuUsages: { packageKey: string; type: string; cpuUsage: number }[] = [];
     const prefix = argv.watch ? "watch" : "run";
     const packageKeys = Object.keys(config.packages);
@@ -201,6 +202,8 @@ export class SdProjectBuilder {
               await this._runServerAsync(packageKey, worker, packageTsConfigPath);
             }
           }
+
+          completedCompilePackageNames.push(packageName);
         }
         else {
           // 의존성 패키지들의 declaration 체크
@@ -248,6 +251,14 @@ export class SdProjectBuilder {
       Promise.all(packageKeys.map(async packageKey => {
         if (config.packages[packageKey].type === "none") {
           return;
+        }
+
+        // angular 인 경우, 컴파일 완료를 기다림
+        if (config.packages[packageKey].type !== "library" && config.packages[packageKey].type !== "server") {
+          const projectNpmConfig = await fs.readJson(path.resolve(process.cwd(), "package.json"));
+          const packageName = "@" + projectNpmConfig.name + "/" + packageKey;
+
+          await Wait.true(() => completedCompilePackageNames.includes(packageName));
         }
 
         const worker = await this._runWorkerAsync(`${prefix}-lint`, packageKey);
