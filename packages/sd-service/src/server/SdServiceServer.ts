@@ -13,6 +13,7 @@ import {ISdServiceRequest, ISdServiceResponse} from "../commons";
 import {NextHandleFunction} from "./commons";
 import * as https from "https";
 import {SdServiceServerUtil} from "./SdServiceServerUtil";
+import * as querystring from "querystring";
 
 export class SdServiceServer extends EventEmitter {
   private readonly _logger = new Logger("@simplysm/sd-service", "SdServiceServer");
@@ -22,7 +23,6 @@ export class SdServiceServer extends EventEmitter {
   private _wsConnections: SdServiceServerConnection[] = [];
   private _httpConnections: net.Socket[] = [];
   private _eventListeners: ISdServiceServerEventListener[] = [];
-  private readonly _middlewares: NextHandleFunction[] = [];
 
   public get isListening(): boolean {
     return !!this._httpServer && this._httpServer.listening;
@@ -31,7 +31,8 @@ export class SdServiceServer extends EventEmitter {
   public constructor(public port: number,
                      public services: Type<SdServiceBase>[],
                      public rootPath: string,
-                     private readonly _ssl?: { pfx: string; passphrase: string }) {
+                     private readonly _ssl?: { pfx: string; passphrase: string },
+                     private readonly _middlewares: NextHandleFunction[] = []) {
     super();
   }
 
@@ -154,13 +155,23 @@ export class SdServiceServer extends EventEmitter {
   private _onWebRequest(request: http.IncomingMessage, response: http.ServerResponse): void {
     const runners = this._middlewares.concat([
       async (req, res, next) => {
-        try {
-          if (req.method !== "GET") {
-            const errorMessage = `요청이 잘못되었습니다.`;
-            this._responseErrorHtml(res, 405, errorMessage);
-            next(new Error(`${errorMessage} (${req.method!.toUpperCase()})`));
-          }
+        if (req.method !== "GET") {
+          await new Promise<void>(resolve => {
+            let body = "";
+            req.on("readable", () => {
+              body += req.read();
+            });
+            req.on("end", () => {
+              const errorMessage = `요청이 잘못되었습니다.`;
+              this._responseErrorHtml(res, 405, errorMessage + "\n" + JsonConvert.stringify(querystring.parse(body), {space: 2}));
+              next(new Error(`${errorMessage} (${req.method!.toUpperCase()})`));
+              resolve();
+            });
+          });
+          return;
+        }
 
+        try {
           const urlObj = url.parse(req.url!, true, false);
           const urlPath = decodeURI(urlObj.pathname!.slice(1));
           const localPath = path.resolve(this.rootPath, "www", urlPath);

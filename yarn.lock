@@ -2301,6 +2301,19 @@ ecdsa-sig-formatter@1.0.11:
   dependencies:
     safe-buffer "^5.0.1"
 
+edge-cs@1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/edge-cs/-/edge-cs-1.2.1.tgz#bd1a9ecdb94ef0ed40c894582046749e57045e5a"
+  integrity sha1-vRqezblO8O1AyJRYIEZ0nlcEXlo=
+
+edge-js@^12.3.1:
+  version "12.3.1"
+  resolved "https://registry.yarnpkg.com/edge-js/-/edge-js-12.3.1.tgz#fbf6d0ee6dd217a54320d8266aa58d42f9b84f63"
+  integrity sha512-462ULqher3F8x96zuh+LBMpOp8/o4GBTHhxJqVEb0aiii/mir+Ch3uLhcstkaBJ11DS1Peo+CZRAaEXXfifQYg==
+  dependencies:
+    edge-cs "1.2.1"
+    nan "^2.14.0"
+
 ee-first@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
@@ -4151,7 +4164,7 @@ ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
-nan@^2.12.1, nan@^2.13.2:
+nan@^2.12.1, nan@^2.13.2, nan@^2.14.0:
   version "2.14.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.0.tgz#7818f722027b2459a86f0295d434d1fc2336c52c"
   integrity sha512-INOFj37C7k3AfaNTtX8RhsTw7qRy7eLET14cROi9+5HAVbbHuIWUHEauBv5qT4Av2tWasiTY1Jw6puUNqRJXQg==

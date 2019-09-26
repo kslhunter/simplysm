@@ -48,6 +48,9 @@ export * from "./modules/dropdown/SdDropdownModule";
 export * from "./modules/dropdown/SdDropdownControl";
 export * from "./modules/dropdown/SdDropdownPopupControl";
 
+export * from "./modules/easy-pay/SdEasyPayModule";
+export * from "./modules/easy-pay/SdEasyPayProvider";
+
 export * from "./modules/file-dialog/SdFileDialogModule";
 export * from "./modules/file-dialog/SdFileDialogProvider";
 

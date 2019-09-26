@@ -674,7 +674,10 @@ export class SdProjectBuilder {
       const watcher = await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async fileChangeInfos => {
         packageServerLogger.log("재시작합니다.");
 
-        program.applyChanges(fileChangeInfos, {withBeImportedFiles: true});
+        program.applyChanges(fileChangeInfos.map(item => ({
+          type: item.type,
+          filePath: item.filePath.replace(/\.js$/, ".d.ts")
+        })), {withBeImportedFiles: true});
 
         // > > 서버 재시작
         const serverInfo = this._serverMap.get(packageKey)!;

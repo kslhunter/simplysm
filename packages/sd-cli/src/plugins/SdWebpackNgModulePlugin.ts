@@ -53,52 +53,64 @@ export class SdWebpackNgModulePlugin implements webpack.Plugin {
             fileTimestamps: Map<string, number>,
             contextTimestamps: Map<string, number>
           ) => {
-            const changeInfos = filesModified
-              .concat(contextModified.filter(item => item.endsWith(".ts")))
-              .concat(undelayedChanged)
-              .filter(item => !item.endsWith(".map"))
-              .map(item => path.normalize(item).replace(/\.js$/, ".d.ts"))
-              .distinct()
-              .map(item => ({
-                type: "change" as "change",
-                filePath: item
-              }));
-            undelayedChanged = [];
+            try {
+              const changeInfos = filesModified
+                .concat(contextModified.filter(item => item.endsWith(".ts")))
+                .concat(undelayedChanged)
+                .filter(item => !item.endsWith(".map"))
+                .map(item => path.normalize(item).replace(/\.js$/, ".d.ts"))
+                .distinct()
+                .map(item => ({
+                  type: "change" as "change",
+                  filePath: item
+                }));
+              undelayedChanged = [];
 
-            const reloadedFileChangeInfos = program.applyChanges(changeInfos, {});
-            let newFileModified = reloadedFileChangeInfos.map(item => item.filePath);
+              const reloadedFileChangeInfos = program.applyChanges(changeInfos, {});
+              let newFileModified = reloadedFileChangeInfos.map(item => item.filePath);
 
-            const emitNgModuleResult = program.emitNgModule(newFileModified);
-            const emitNgRoutingModuleResult = program.emitNgRoutingModule(newFileModified);
-            const emitRoutesRootResult = program.emitRoutesRoot(newFileModified);
-            newFileModified.push(
-              ...(emitRoutesRootResult ? [emitRoutesRootResult] : [])
-                .concat(emitNgModuleResult.changedModuleFilePaths)
-                .concat(emitNgRoutingModuleResult.changedRoutingModuleFilePaths)
-            );
-            newFileModified = newFileModified
-              .map(item => item.replace(/\.d\.ts$/, ".js"))
-              .distinct();
+              const emitNgModuleResult = program.emitNgModule(newFileModified);
+              const emitNgRoutingModuleResult = program.emitNgRoutingModule(newFileModified);
+              const emitRoutesRootResult = program.emitRoutesRoot(newFileModified);
+              newFileModified.push(
+                ...(emitRoutesRootResult ? [emitRoutesRootResult] : [])
+                  .concat(emitNgModuleResult.changedModuleFilePaths)
+                  .concat(emitNgRoutingModuleResult.changedRoutingModuleFilePaths)
+              );
+              newFileModified = newFileModified
+                .map(item => item.replace(/\.d\.ts$/, ".js"))
+                .distinct();
 
-            const messages = emitNgModuleResult.messages.concat(emitNgRoutingModuleResult.messages);
+              const messages = emitNgModuleResult.messages.concat(emitNgRoutingModuleResult.messages);
 
-            if (messages.length > 0) {
-              throw new Error(messages.distinct().join(os.EOL));
+              if (messages.length > 0) {
+                throw new Error(messages.distinct().join(os.EOL));
+              }
+
+              const maxTimestamp = Array.from(fileTimestamps.values()).max()!;
+              for (const filesModifiedItem of newFileModified) {
+                fileTimestamps.set(filesModifiedItem, maxTimestamp);
+              }
+
+              callback(
+                err,
+                newFileModified,
+                contextModified,
+                missingModified,
+                fileTimestamps,
+                contextTimestamps
+              );
             }
-
-            const maxTimestamp = Array.from(fileTimestamps.values()).max()!;
-            for (const filesModifiedItem of newFileModified) {
-              fileTimestamps.set(filesModifiedItem, maxTimestamp);
+            catch (err) {
+              callback(
+                err,
+                filesModified,
+                contextModified,
+                missingModified,
+                fileTimestamps,
+                contextTimestamps
+              );
             }
-
-            callback(
-              err,
-              newFileModified,
-              contextModified,
-              missingModified,
-              fileTimestamps,
-              contextTimestamps
-            );
           };
 
           return prevWatch.call(

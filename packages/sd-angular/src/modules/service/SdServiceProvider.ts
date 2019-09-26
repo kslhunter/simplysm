@@ -20,6 +20,10 @@ export class SdServiceProvider implements OnDestroy {
     });
   }
 
+  public get webUrl(): string {
+    return this.client.webUrl;
+  }
+
   private async _connectAsync(): Promise<void> {
     await this.client.connectAsync();
   }

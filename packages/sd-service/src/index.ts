@@ -10,6 +10,8 @@ export * from "./server/SdServiceServer";
 export * from "./server/SdServiceServerConnection";
 export * from "./server/SdServiceServerUtil";
 
+export * from "./server/middlewares/SdEasyPayMiddleware";
+
 export * from "./server/services/SdCryptoService";
 export * from "./server/services/SdOrmService";
 export * from "./server/services/SdSmtpClientService";

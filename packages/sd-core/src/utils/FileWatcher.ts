@@ -44,6 +44,7 @@ export class FileWatcher {
           watcher.on("raw", async (event, fileName, details) => {
             if ((sits as string[]).includes(event)) {
               const filePath = fs.statSync(details.watchedPath).isDirectory() ? path.resolve(details.watchedPath, fileName) : details.watchedPath;
+              /*console.log(event, filePath);*/
               await onWatched(event as FileChangeInfoType, filePath);
             }
           });

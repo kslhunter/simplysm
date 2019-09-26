@@ -215,7 +215,7 @@ hr {
     }
 
     .sd-margin-#{$direction}-#{$gap} {
-      margin-#{$direction}: var(--gap-#{$gap});
+      margin-#{$direction}: var(--gap-#{$gap}) !important;
     }
   }
 }

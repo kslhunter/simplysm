@@ -23,6 +23,10 @@ export class SdServiceClient {
                      private readonly _origin?: string) {
   }
 
+  public get webUrl(): string {
+    return `${this._ssl ? "https" : (location.protocol.startsWith("https") ? "https" : "http")}://${this._host || location.hostname}:${this._port || location.port}`;
+  }
+
   public async connectAsync(): Promise<void> {
     try {
       await new Promise<void>((resolve, reject) => {
