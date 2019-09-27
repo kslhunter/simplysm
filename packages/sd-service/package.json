@@ -17,7 +17,7 @@
     "mime": "^2.4.4",
     "utf-8-validate": "^5.0.2",
     "ws": "^7.1.1",
-    "edge-js": "^12.3.1"
+    "jszip": "^3.2.2"
   },
   "devDependencies": {
     "@types/node": "^12.7.1",
@@ -26,6 +26,9 @@
     "typescript-tslint-plugin": "^0.5.4",
     "@types/fs-extra": "^8.0.0",
     "@types/mime": "^2.0.1",
-    "@types/ws": "^6.0.2"
+    "@types/ws": "^6.0.2",
+    "mocha": "^6.2.0",
+    "@types/mocha": "^5.2.7",
+    "@types/jszip": "^3.1.6"
   }
 }

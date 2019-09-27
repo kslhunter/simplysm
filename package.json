@@ -7,13 +7,15 @@
   "license": "UNLICENSED",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "tests/*"
   ],
   "scripts": {
     "watch": "yarn _sd-cli_ build --watch",
     "build": "yarn _sd-cli_ build",
     "publish": "yarn _sd-cli_ publish",
     "build+publish": "yarn _sd-cli_ publish --build",
+    "test": "yarn _sd-cli_ test",
     "--": "",
     "profile:watch": "yarn _sd-cli-profile_ build --watch",
     "profile:build": "yarn _sd-cli-profile_ build",

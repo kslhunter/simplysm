@@ -63,8 +63,6 @@ export class SdEasyPayProvider {
     document.body.appendChild(formEl);
     // @ts-ignore
     easypay_webpay(formEl, "http://testpg.easypay.co.kr/webpay/MainAction.do", "hiddenifr", "", "", "iframe", "");
-
-    console.log("!!");
   }
 
   private _setFormData(formEl: HTMLFormElement, key: string, value: string): void {
@@ -73,6 +71,7 @@ export class SdEasyPayProvider {
       inputEl = document.createElement("input");
       inputEl.type = "hidden";
       inputEl.name = key;
+      inputEl.setAttribute("id", key);
       formEl.appendChild(inputEl);
     }
 

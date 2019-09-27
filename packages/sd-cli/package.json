@@ -52,7 +52,8 @@
     "angular-router-loader": "^0.8.5",
     "circular-dependency-plugin": "^5.2.0",
     "webpack-node-externals": "^1.7.2",
-    "minimatch": "^3.0.4"
+    "minimatch": "^3.0.4",
+    "mocha": "^6.2.0"
   },
   "devDependencies": {
     "@types/copy-webpack-plugin": "^5.0.0",
@@ -74,6 +75,7 @@
     "@types/circular-dependency-plugin": "^5.0.0",
     "@types/webpack-node-externals": "^1.6.3",
     "@types/minimatch": "^3.0.3",
+    "@types/mocha": "^5.2.7",
     "tslint": "^5.18.0",
     "typescript": "3.5.3",
     "typescript-tslint-plugin": "^0.5.4"

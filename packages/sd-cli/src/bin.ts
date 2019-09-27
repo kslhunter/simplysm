@@ -50,6 +50,17 @@ const argv = yargs
         }
       })
   )
+  .command(
+    "test",
+    "테스트 프로젝트를 수행합니다.",
+    cmd => cmd.version(false)
+      .options({
+        options: {
+          type: "string",
+          describe: "빌드 옵션 설정 (설정파일에서 @로 시작하는 부분)"
+        }
+      })
+  )
   .argv;
 
 const logger = new Logger("@simplysm/sd-cli");
@@ -64,6 +75,9 @@ const logger = new Logger("@simplysm/sd-cli");
       break;
     case "publish":
       await new SdProjectBuilder().publishAsync(argv as any);
+      break;
+    case "test":
+      await new SdProjectBuilder().testAsync(argv as any);
       break;
     default:
       throw new Error(`명령어가 잘못되었습니다.${os.EOL}${os.EOL}\t${argv._[0]}${os.EOL}`);

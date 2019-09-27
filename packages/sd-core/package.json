@@ -11,7 +11,8 @@
   "dependencies": {
     "chokidar": "^3.0.2",
     "fs-extra": "^8.1.0",
-    "xml2js": "^0.4.19"
+    "xml2js": "^0.4.19",
+    "iconv": "^2.3.4"
   },
   "devDependencies": {
     "@types/node": "^12.7.1",

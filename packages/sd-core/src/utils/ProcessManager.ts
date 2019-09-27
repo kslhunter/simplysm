@@ -1,4 +1,5 @@
 import * as child_process from "child_process";
+const Iconv = require("iconv").Iconv; //tslint:disable-line
 
 export class ProcessManager {
   public static async spawnAsync(cmd: string, options?: {
@@ -31,31 +32,33 @@ export class ProcessManager {
         reject(err);
       });
 
+      const iconv = new Iconv("CP949", "UTF-8");
+
       worker.stdout.on("data", (data: Buffer) => {
         if (options && options.logger) {
           try {
-            options.logger.log(data.toString().trim());
+            options.logger.log(iconv.convert(data).toString().trim());
           }
           catch (err) {
             reject(err);
           }
         }
         else {
-          process.stdout.write(data.toString("utf-8"));
+          process.stdout.write(iconv.convert(data).toString());
         }
       });
 
       worker.stderr.on("data", (data: Buffer) => {
         if (options && options.logger) {
           try {
-            options.logger.error(data.toString().trim());
+            options.logger.error(iconv.convert(data).toString().trim());
           }
           catch (err) {
             reject(err);
           }
         }
         else {
-          process.stderr.write(data.toString("utf-8"));
+          process.stderr.write(iconv.convert(data).toString());
         }
       });
 

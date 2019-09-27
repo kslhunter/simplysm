@@ -1,6 +1,7 @@
 .idea/**/workspace.xml
 node_modules
 tsconfig.build.json
+/assets
 dist
 yarn-error.log
 logs

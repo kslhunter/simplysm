@@ -11,6 +11,8 @@ import {NextHandleFunction, SdServiceClient, SdServiceServer} from "@simplysm/sd
 import {SdAngularCompiler} from "./SdAngularCompiler";
 import {SdCliUtils} from "./commons/SdCliUtils";
 import {SdTypescriptProgram} from "./SdTypescriptProgram";
+import * as Mocha from "mocha";
+import {SdMochaReporter} from "./plugins/SdMochaReporter";
 
 export class SdProjectBuilder {
   private readonly _serverMap = new Map<string, {
@@ -110,7 +112,7 @@ export class SdProjectBuilder {
   }
 
   public async buildAsync(argv: { watch: boolean; options?: string }): Promise<void> {
-    const logger = new Logger("@simplysm/sd-cli");
+    const logger = new Logger("@simplysm/sd-cli", "[" + (argv.watch ? "watch" : "build") + "]");
 
     // "simplysm.json" 정보 가져오기
     const config: ISdProjectConfig = SdCliUtils.getConfigObj(
@@ -484,6 +486,48 @@ export class SdProjectBuilder {
     }));
 
     logger.log(`모든 배포가 완료되었습니다. - v${projectNpmConfig.version}`);
+  }
+
+  public async testAsync(argv: { options?: string }): Promise<void> {
+    const logger = new Logger("@simplysm/sd-cli", "[test]");
+
+    // "simplysm.json" 정보 가져오기
+    const config: ISdProjectConfig = SdCliUtils.getConfigObj(
+      "development",
+      argv.options ? argv.options.split(",").map(item => item.trim()) : undefined
+    );
+
+    logger.info("테스트 프로세스를 시작합니다.");
+
+    const packageKeys = Object.keys(config.packages);
+
+    await Promise.all(packageKeys.map(async packageKey => {
+      if (config.packages[packageKey].type === "none") {
+        return;
+      }
+
+      const packageLogger = new Logger("@simplysm/sd-cli", `[test]\t${packageKey}`);
+
+      // 테스트
+      packageLogger.log(`시작합니다.`);
+
+      const mocha = new Mocha();
+      mocha.reporter(SdMochaReporter, {logger: packageLogger});
+      const testFilePaths = glob.sync(path.resolve(process.cwd(), "packages", packageKey, "src", "**", "*.spec.ts"));
+      for (const testFilePath of testFilePaths) {
+        mocha.addFile(testFilePath);
+      }
+
+      await new Promise<void>(resolve => {
+        mocha.run(() => {
+          resolve();
+        });
+      });
+
+      packageLogger.log(`완료되었습니다.`);
+    }));
+
+    logger.info("모든 테스트가 완료되었습니다.");
   }
 
   private async _runWorkerAsync(workerName: string, packageKey: string, ...args: (string | undefined)[]): Promise<child_process.ChildProcess & { cpuUsage?: number; workerName: string }> {
