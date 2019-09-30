@@ -9,6 +9,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
+    "@types/nodemailer": "^6.2.1",
     "@simplysm/sd-core": "2.2.77",
     "nodemailer": "^6.3.0"
   },
@@ -16,7 +17,6 @@
     "@types/node": "^12.7.1",
     "tslint": "^5.18.0",
     "typescript": "3.5.3",
-    "typescript-tslint-plugin": "^0.5.4",
-    "@types/nodemailer": "^6.2.1"
+    "typescript-tslint-plugin": "^0.5.4"
   }
 }

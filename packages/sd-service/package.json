@@ -9,6 +9,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
+    "@types/ws": "^6.0.2",
     "@simplysm/sd-core": "2.2.77",
     "@simplysm/sd-orm": "2.2.77",
     "@simplysm/sd-smtp-client": "2.2.77",
@@ -26,7 +27,6 @@
     "typescript-tslint-plugin": "^0.5.4",
     "@types/fs-extra": "^8.0.0",
     "@types/mime": "^2.0.1",
-    "@types/ws": "^6.0.2",
     "mocha": "^6.2.0",
     "@types/mocha": "^5.2.7",
     "@types/jszip": "^3.1.6"

@@ -718,10 +718,6 @@ export class SdProjectBuilder {
           .filter(item => fs.pathExistsSync(item))
       );
 
-
-      //TODO
-      console.log(watchPaths.filter(item => item.includes("sd-service")));
-
       await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async (watcher, fileChangeInfos) => {
         packageServerLogger.log("재시작합니다.");
 
