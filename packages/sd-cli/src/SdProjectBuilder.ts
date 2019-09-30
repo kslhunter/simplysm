@@ -92,7 +92,8 @@ export class SdProjectBuilder {
               targetLogger.error(err);
             }
           }, {
-            millisecond: 600
+            millisecond: 600,
+            ignoreInitial: true
           });
         }
         // > > 변경감지 모드가 아닐 경우,
