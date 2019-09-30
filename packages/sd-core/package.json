@@ -9,10 +9,11 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "chokidar": "^3.0.2",
     "fs-extra": "^8.1.0",
     "xml2js": "^0.4.19",
-    "iconv": "^2.3.4"
+    "iconv": "^2.3.4",
+    "anymatch": "^3.1.0",
+    "glob": "^7.1.4"
   },
   "devDependencies": {
     "@types/node": "^12.7.1",
@@ -20,6 +21,7 @@
     "@types/fs-extra": "^8.0.0",
     "tslint": "^5.18.0",
     "typescript": "3.5.3",
-    "typescript-tslint-plugin": "^0.5.4"
+    "typescript-tslint-plugin": "^0.5.4",
+    "mocha": "^6.2.0"
   }
 }

@@ -25,6 +25,8 @@ export class SdEasyPayProvider {
     }
 
     const formEl = document.createElement("form");
+    document.body.appendChild(formEl);
+
     formEl.method = "post";
     this._setFormData(formEl, "EP_mall_id", request.mallId);
     this._setFormData(formEl, "EP_mall_nm", encodeURIComponent(request.mallName || ""));
@@ -60,7 +62,6 @@ export class SdEasyPayProvider {
       this._setFormData(formEl, "EP_vacct_end_time", request.virtualAccountExpiryDateTime.toFormatString("HHmmss"));
     }
 
-    document.body.appendChild(formEl);
     // @ts-ignore
     easypay_webpay(formEl, "http://testpg.easypay.co.kr/webpay/MainAction.do", "hiddenifr", "", "", "iframe", "");
   }

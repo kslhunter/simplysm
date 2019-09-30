@@ -249,7 +249,7 @@ export class SdAngularCompiler extends events.EventEmitter {
       module: {
         rules: [
           {
-            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?)$/,
+            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip)$/,
             loader: "file-loader",
             options: {
               name: `assets/[name].[ext]${opt.hash ? "?[hash]" : ""}`
@@ -329,7 +329,7 @@ export class SdAngularCompiler extends events.EventEmitter {
       ],
       externals: [
         (context, request, callback) => {
-          if (["fsevents", "fs", "fs-extra", "child_process", "net", "tls", "tedious", "chokidar", "nodemailer"].includes(request)) {
+          if (["fsevents", "fs", "fs-extra", "child_process", "net", "tls", "tedious", "chokidar", "nodemailer", "iconv"].includes(request)) {
             callback(undefined, `{}`);
             return;
           }

@@ -49,6 +49,10 @@ export class SdServiceServerConnection extends EventEmitter {
   }
 
   public async sendAsync(data: ISdServiceResponse | ISdServiceEmitResponse): Promise<void> {
+    if (!this.isOpen) {
+      return;
+    }
+
     await new Promise<void>((resolve, reject) => {
       this._conn.send(JsonConvert.stringify(data), err => {
         if (err) {
@@ -101,9 +105,7 @@ export class SdServiceServerConnection extends EventEmitter {
         body: str.length
       };
 
-      if (this.isOpen) {
-        await this.sendAsync(res);
-      }
+      await this.sendAsync(res);
 
       const currentLength = splitRequestValue.bufferStrings.filterExists().length;
       this._logger.log(`분할된 요청을 받았습니다 : ${this.origin} - ${i.toString().toLocaleString().padStart(length.toString().toLocaleString().length)}번째 /${length.toLocaleString()}`);
@@ -208,9 +210,7 @@ export class SdServiceServerConnection extends EventEmitter {
         body: buf.length
       };
 
-      if (this.isOpen) {
-        await this.sendAsync(res);
-      }
+      await this.sendAsync(res);
 
       const completedLength = uploadRequestValue.completedLength;
       this._logger.log(`업로드 요청을 처리했습니다 : ${this.origin} - ${completedLength.toLocaleString()} /${length.toLocaleString()}`);

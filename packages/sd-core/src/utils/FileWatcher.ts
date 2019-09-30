@@ -1,59 +1,119 @@
-import * as chokidar from "chokidar";
-import {Logger} from "./Logger";
+import * as fs from "fs-extra";
 import * as path from "path";
 import {Wait} from "./Wait";
-import * as fs from "fs-extra";
+import {Logger} from "./Logger";
+import anymatch from "anymatch";
+import {DateTime} from "../types/DateTime";
+import * as glob from "glob";
 
 export class FileWatcher {
-  public static async watch(paths: string | string[], sits: FileChangeInfoType[], callback: (changedFiles: IFileChangeInfo[]) => (void | Promise<void>), options: { millisecond?: number; ignoreInitial?: boolean }): Promise<chokidar.FSWatcher> {
-    return await new Promise<chokidar.FSWatcher>((resolve, reject) => {
-      const watcher = chokidar.watch((typeof paths === "string" ? [paths] : paths).map(item => item.replace(/\\/g, "/")).distinct(), {
-        ignoreInitial: options.ignoreInitial
-      })
-        .on("ready", () => {
-          let preservedFileChanges: IFileChangeInfo[] = [];
-          let timeout: NodeJS.Timer;
+  private static readonly _logger = new Logger("@simplysm/sd-core", "FileWatcher");
 
-          let processing = false;
+  public constructor(private readonly _watchers: fs.FSWatcher[]) {
 
-          const onWatched = async (type: "add" | "change" | "unlink", filePath: string) => {
-            preservedFileChanges.push({type, filePath: path.normalize(filePath)});
-            await Wait.true(() => !processing);
+  }
 
-            clearTimeout(timeout);
-            timeout = setTimeout(
-              async () => {
-                processing = true;
+  public close(): void {
+    for (const watcher of this._watchers) {
+      watcher.close();
+    }
+  }
 
-                const fileChanges = Object.clone(preservedFileChanges);
-                preservedFileChanges = [];
+  public static async watch(paths: string | string[], sits: FileChangeInfoType[], callback: (watcher: FileWatcher, changedFiles: IFileChangeInfo[]) => (void | Promise<void>), options: { millisecond?: number; ignoreInitial?: boolean }): Promise<FileWatcher> {
+    return await new Promise<FileWatcher>(async resolve => {
+      const currPaths = typeof paths === "string" ? [paths] : paths;
 
-                try {
-                  await callback(fileChanges);
-                }
-                catch (err) {
-                  new Logger("@simplysm/sd-core", "FileWatcher").error(err.stack);
-                }
+      let preservedFileChanges: IFileChangeInfo[] = [];
+      let timeout: NodeJS.Timer;
 
-                processing = false;
-              },
-              options.millisecond || 100
-            );
-          };
+      let processing = false;
+      let thisWatcher: FileWatcher;
 
-          watcher.on("raw", async (event, fileName, details) => {
-            if ((sits as string[]).includes(event)) {
-              const filePath = fs.statSync(details.watchedPath).isDirectory() ? path.resolve(details.watchedPath, fileName) : details.watchedPath;
-              /*console.log(event, filePath);*/
-              await onWatched(event as FileChangeInfoType, filePath);
+      const onWatched = async (type: FileChangeInfoType, filePath: string) => {
+        preservedFileChanges.push({type, filePath: path.resolve(filePath)});
+        await Wait.true(() => !processing);
+
+        clearTimeout(timeout);
+        timeout = setTimeout(
+          async () => {
+            processing = true;
+
+            const fileChanges = Object.clone(preservedFileChanges);
+            preservedFileChanges = [];
+
+            try {
+              await callback(thisWatcher, fileChanges);
             }
-          });
+            catch (err) {
+              FileWatcher._logger.error(err.stack);
+            }
 
-          resolve(watcher);
-        })
-        .on("error", err => {
-          reject(err);
+            processing = false;
+          },
+          options.millisecond || 100
+        );
+      };
+
+      const watchers = [];
+      for (const watchPath of currPaths) {
+        let currWatchPath = watchPath;
+        if (watchPath.includes("*")) {
+          currWatchPath = watchPath.slice(0, watchPath.indexOf("*"));
+        }
+
+        const watcher = fs.watch(currWatchPath, {recursive: watchPath.includes("**")}, async (event, filename) => {
+          const filePath = path.resolve(currWatchPath, filename);
+          if (watchPath.includes("*")) {
+            if (!anymatch(watchPath.replace(/\\/g, "/"), filePath.replace(/\\/g, "/"))) {
+              return;
+            }
+          }
+
+          let eventType: FileChangeInfoType;
+          if (!fs.pathExistsSync(filePath)) {
+            eventType = "unlink";
+          }
+          else if (fs.statSync(filePath).birthtime.getTime() >= (new DateTime().tick - 300)) {
+            eventType = "add";
+          }
+          else {
+            eventType = "change";
+          }
+
+          if ((sits as string[]).includes(eventType)) {
+            await onWatched(eventType, filePath);
+          }
         });
+        watcher.on("error", err => {
+          FileWatcher._logger.error(err.stack);
+        });
+
+        watchers.push(watcher);
+      }
+      thisWatcher = new FileWatcher(watchers);
+
+      if (!options.ignoreInitial) {
+        const globPaths = [];
+        for (const currPath of currPaths) {
+          if (currPath.includes("*")) {
+            globPaths.push(...glob.sync(currPath));
+          }
+          else {
+            globPaths.push(currPath);
+          }
+        }
+
+        await callback(
+          thisWatcher,
+          globPaths.map(item => path.resolve(item)).distinct()
+            .map(item => ({
+              type: "add",
+              filePath: item
+            }))
+        );
+      }
+
+      resolve(thisWatcher);
     });
   }
 }

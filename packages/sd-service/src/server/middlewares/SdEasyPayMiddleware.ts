@@ -2,11 +2,9 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as JSZip from "jszip";
-
 import * as url from "url";
 import * as querystring from "querystring";
-
-/*import {JsonConvert} from "@simplysm/sd-core";*/
+import {JsonConvert, ProcessManager} from "@simplysm/sd-core";
 
 export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.ServerResponse, next: (err?: any) => void): Promise<void> {
   try {
@@ -30,34 +28,19 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
     });
 
     if (urlPath === "_easy-pay") {
-      //-- easy-pay-cli 압축 풀기
-      const zipFilePath = require.resolve("../../../assets/easy-pay-cli.zip");
-      const cliDirPath = path.resolve(process.cwd(), "assets", "easy-pay-cli");
-
-      if (!fs.pathExistsSync(cliDirPath)) {
-        fs.mkdirsSync(cliDirPath);
-
-        const zipBinary = fs.readFileSync(zipFilePath);
-        const zip = await new JSZip().loadAsync(zipBinary);
-        for (const zipContainsFileName of Object.keys(zip.files)) {
-          const outputFilePath = path.resolve(cliDirPath, zipContainsFileName);
-          zip.file(zipContainsFileName).nodeStream().pipe(fs.createWriteStream(outputFilePath));
-        }
-      }
-
-      res.end(/* language=HTML */ `
+      const resHtml = /* language=HTML */ `
         <html lang="kr">
         <head>
           <title>이지페이</title>
           <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
           <script>
             function _setFormData(formEl, key, value) {
-              let inputEl = formEl.document.getElementById(key);
+              let inputEl = window.document.getElementById(key);
               if (!inputEl) {
-                inputEl = document.createElement("input");
+                inputEl = window.document.createElement("input");
                 inputEl.type = "hidden";
                 inputEl.name = key;
-                inputEl.setAttribute("id", key);
+                inputEl.id = key;
                 formEl.appendChild(inputEl);
               }
 
@@ -74,6 +57,8 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
 
             window.onload = function () {
               const formEl = document.createElement("form");
+              document.body.appendChild(formEl);
+              
               formEl.method = "post";
               formEl.action = "./_easy-pay-result";
 
@@ -99,46 +84,64 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
               _copyFormDataFromParent(formEl, "EP_vacct_end_date");
               _copyFormDataFromParent(formEl, "EP_vacct_end_time");
               
-              ${Object.keys(params).map(key => `_setFormData(formEl, "${key}", "${params[key]}")`).join("\n")}
+              ${Object.keys(params).map(key => `_setFormData(formEl, "${key}", "${params[key]}");`).join("\n")}
 
-              document.body.appendChild(formEl);
               formEl.submit();
             }
 
           </script>
         </head>
         </html>
-      `);
+      `;
+
+      res.end(resHtml);
     }
     else if (urlPath === "_easy-pay-result") {
       console.log(params);
-    }
 
-    /*//-- easy-pay-cli 실행
-    const cliFilePath = path.resolve(cliDirPath, "SDCM.EasyPayCLI.exe");
-    console.log(JsonConvert.stringify(params)!.replace(/"/g, "\\\""));
-    let resultMessage = "";
-    let errorMessage = "";
-    await ProcessManager.spawnAsync(
-      cliFilePath
-      + " \""
-      + JsonConvert.stringify(params)!.replace(/"/g, "\\\"")
-      + "\"",
-      {
-        logger: {
-          log: message => {
-            resultMessage += message;
-          },
-          error: message => {
-            errorMessage += message;
-          }
+      //-- easy-pay-cli 압축 풀기
+      const zipFilePath = require.resolve("../../../assets/easy-pay-cli.zip");
+      const cliDirPath = path.resolve(process.cwd(), "assets", "easy-pay-cli");
+
+      if (!fs.pathExistsSync(cliDirPath)) {
+        fs.mkdirsSync(cliDirPath);
+
+        const zipBinary = fs.readFileSync(zipFilePath);
+        const zip = await new JSZip().loadAsync(zipBinary);
+        for (const zipContainsFileName of Object.keys(zip.files)) {
+          const outputFilePath = path.resolve(cliDirPath, zipContainsFileName);
+          const readStream = zip.file(zipContainsFileName).nodeStream();
+          const writeStream = fs.createWriteStream(outputFilePath);
+          readStream.pipe(writeStream);
+          writeStream.close();
         }
       }
-    ).catch(err => {
-      throw new Error(errorMessage);
-    });
 
-    res.end(JsonConvert.stringify(resultMessage, {space: 2}));*/
+      //-- easy-pay-cli 실행
+      const cliFilePath = path.resolve(cliDirPath, "SDCM.EasyPayCLI.exe");
+      let resultMessage = "";
+      let errorMessage = "";
+      await ProcessManager.spawnAsync(
+        cliFilePath
+        + " \""
+        + JsonConvert.stringify(params)!.replace(/"/g, "\\\"")
+        + "\"",
+        {
+          logger: {
+            log: message => {
+              resultMessage += message;
+            },
+            error: message => {
+              errorMessage += message;
+            }
+          }
+        }
+      ).catch(err => {
+        throw new Error(errorMessage);
+      });
+
+      res.end(JsonConvert.stringify(resultMessage, {space: 2}));
+    }
   }
   catch (err) {
     next(err);

@@ -66,7 +66,7 @@ export class SdProjectBuilder {
         // > > 변경감지 모드일 경우,
         if (watch) {
           // > > > 변경감지 시작
-          await FileWatcher.watch(path.resolve(sourcePath, "**", "*"), ["add", "change", "unlink"], async changes => {
+          await FileWatcher.watch(path.resolve(sourcePath, "**", "*"), ["add", "change", "unlink"], async (watcher, changes) => {
             try {
               targetLogger.log(`파일이 변경되었습니다.`, ...changes.map(item => `[${item.type}] ${item.filePath}`));
 
@@ -709,13 +709,19 @@ export class SdProjectBuilder {
 
     const watch = async () => {
       const watchPaths = [path.resolve(program.outDirPath, "**", "*.js")];
-      watchPaths.push(...program
-        .getMyTypescriptFiles()
-        .mapMany(item => program.getDependencies(item))
-        .map(item => item.replace(/\.d\.ts$/, ".js"))
-        .filter(item => fs.pathExistsSync(item)));
+      watchPaths.push(
+        ...program
+          .getMyTypescriptFiles()
+          .mapMany(item => program.getDependencies(item))
+          .map(item => item.replace(/\.d\.ts$/, ".js"))
+          .filter(item => fs.pathExistsSync(item))
+      );
 
-      const watcher = await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async fileChangeInfos => {
+
+      //TODO
+      console.log(watchPaths.filter(item => item.includes("sd-service")));
+
+      await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async (watcher, fileChangeInfos) => {
         packageServerLogger.log("재시작합니다.");
 
         program.applyChanges(fileChangeInfos.map(item => ({

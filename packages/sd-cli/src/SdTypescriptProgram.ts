@@ -112,28 +112,18 @@ export class SdTypescriptProgram {
       watchPaths.push(...this.getMyTypescriptFiles().mapMany(item => this.getDependencies(item)));
     }
 
-    const watcher = await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async fileChangeInfos => {
+    await FileWatcher.watch(watchPaths.distinct(), ["add", "change", "unlink"], async (watcher, fileChangeInfos) => {
       const reloadedFileChangeInfos = this.applyChanges(fileChangeInfos, {withBeImportedFiles: options.withBeImportedFiles});
 
       // 콜백수행 (사용자 코드 수행)
       callback(reloadedFileChangeInfos);
 
-      /*watchPaths = [path.resolve(this.rootDirPath, "**", "*.ts")];
-      if (this._options.replaceScssToCss) {
-        watchPaths.push(...Array.from(this._fileInfoMap.entries()).mapMany(entry => entry[1].embeddedDependencies));
-      }
-
-      if (options.withBeImportedFiles) {
-        watchPaths.push(...this._getMyTypescriptFiles().mapMany(item => this._getDependencies(item)));
-      }*/
-
       // Watch 경로 재설정
       watcher.close();
-      await this.watch(callback, options);
-      /*watcher.unwatch(watchPaths);
-      watcher.add(watchPaths.distinct());*/
+      await this.watch(callback, {...options});
     }, {
-      millisecond: options.millisecond
+      millisecond: options.millisecond,
+      ignoreInitial: true
     });
   }
 
