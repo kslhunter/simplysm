@@ -14,11 +14,11 @@ export interface ISdPackageConfig {
   framework?: "vue" | "angular" | "angular-jit";
   mobile?: {
     id: string;
-    name?: string;
-    platforms: "android" | ("android")[];
+    name: string;
     plugins?: string[];
     sign?: string;
     icon?: string;
+    device?: boolean;
   };
   publish?: "npm" | ISdSimplysmPublishConfig;
   configs?: { [key: string]: any };

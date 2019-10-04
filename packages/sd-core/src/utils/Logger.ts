@@ -31,9 +31,9 @@ export class Logger {
     fileLogSeverities: process.env.NODE_ENV === "production"
       ? ["log", "info", "warn", "error"]
       : [],
-    outputPath: process.env.NODE_ENV === "production" && process.versions.node ? "logs" : undefined,
+    outputPath: process.env.NODE_ENV === "production" && (process.versions.node && !process.env.PLATFORM) ? "logs" : undefined,
     historySize: 30,
-    color: !process.versions.node
+    color: !(process.versions.node && !process.env.PLATFORM)
       ? {
         grey: "color: grey;",
         log: "color: black;",
@@ -70,12 +70,12 @@ export class Logger {
       consoleLogSeverities: process.env.NODE_ENV === "production"
         ? []
         : ["log", "info", "warn", "error"],
-      fileLogSeverities: (process.env.NODE_ENV === "production" && process.versions.node)
+      fileLogSeverities: (process.env.NODE_ENV === "production" && (process.versions.node && !process.env.PLATFORM))
         ? ["log", "info", "warn", "error"]
         : [],
-      outputPath: process.env.NODE_ENV === "production" && process.versions.node ? "logs" : undefined,
+      outputPath: process.env.NODE_ENV === "production" && (process.versions.node && !process.env.PLATFORM) ? "logs" : undefined,
       historySize: 30,
-      color: !process.versions.node
+      color: !(process.versions.node && !process.env.PLATFORM)
         ? {
           grey: "color: grey;",
           log: "color: black;",
@@ -185,7 +185,7 @@ export class Logger {
 
     // 콘솔 출력
     if (this.config.consoleLogSeverities.includes(severity)) {
-      const c = !process.versions.node ? "%c" : "%s";
+      const c = !(process.versions.node && !process.env.PLATFORM) ? "%c" : "%s";
       const logText = typeof convertedLogs[0] === "string" ? convertedLogs[0] : "";
       const logData = typeof convertedLogs[0] === "string" ? convertedLogs.slice(1) : convertedLogs;
 

@@ -44,7 +44,7 @@ export class ProcessManager {
           }
         }
         else {
-          process.stdout.write(iconv.convert(data).toString());
+          process.stdout.write(data.toString());
         }
       });
 
@@ -58,7 +58,7 @@ export class ProcessManager {
           }
         }
         else {
-          process.stderr.write(iconv.convert(data).toString());
+          process.stderr.write(data.toString());
         }
       });
 

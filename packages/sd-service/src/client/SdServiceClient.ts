@@ -17,28 +17,28 @@ export class SdServiceClient {
     return !!this._ws && this._ws.readyState === WebSocket.OPEN;
   }
 
-  public constructor(private readonly _port?: number,
-                     private readonly _host?: string,
-                     private readonly _ssl?: boolean,
-                     private readonly _origin?: string) {
+  public constructor(public port?: number,
+                     public host?: string,
+                     public ssl?: boolean,
+                     public origin?: string) {
   }
 
   public get webUrl(): string {
-    return `${this._ssl ? "https" : (location.protocol.startsWith("https") ? "https" : "http")}://${this._host || location.hostname}:${this._port || location.port}`;
+    return `${this.ssl ? "https" : (location.protocol.startsWith("https") ? "https" : "http")}://${this.host || location.hostname}:${this.port || location.port}`;
   }
 
   public async connectAsync(): Promise<void> {
     try {
       await new Promise<void>((resolve, reject) => {
         if (process.versions.node) {
-          if (!this._host || !this._port) {
+          if (!this.host || !this.port) {
             throw new Error("호스트와 포트가 반드시 입력되어야 합니다.");
           }
-          this._ws = new WebSocket(`${this._ssl ? "wss" : "ws"}://${this._host}:${this._port}`, {origin: this._origin});
+          this._ws = new WebSocket(`${this.ssl ? "wss" : "ws"}://${this.host}:${this.port}`, {origin: this.origin});
         }
         else {
           // @ts-ignore
-          this._ws = new WebSocket(`${this._ssl ? "wss" : (location.protocol.startsWith("https") ? "wss" : "ws")}://${this._host || location.hostname}:${this._port || location.port}`);
+          this._ws = new WebSocket(`${this.ssl ? "wss" : (location.protocol.startsWith("https") ? "wss" : "ws")}://${this.host || location.hostname}:${this.port || location.port}`);
         }
 
         this._ws.onopen = () => {

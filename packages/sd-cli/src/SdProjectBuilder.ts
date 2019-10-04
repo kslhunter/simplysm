@@ -610,10 +610,13 @@ export class SdProjectBuilder {
       throw new Error(`클라이언트를 올릴 서버 패키지가 빌드 설정에 존재하지 않습니다. (client, ${packageKey})`);
     }
 
+    await Wait.true(() => this._serverMap.has(packageConfig.server!));
+    const serverInfo = this._serverMap.get(packageConfig.server)!;
+
     const middlewares = await new Promise<NextHandleFunction[]>(async (resolve, reject) => {
       try {
         let startDateTime: DateTime | undefined;
-        const builder = new SdAngularCompiler(packageKey, options);
+        const builder = new SdAngularCompiler(packageKey, options, serverInfo.server.port);
         builder
           .on("run", () => {
             startDateTime = new DateTime();
@@ -645,9 +648,6 @@ export class SdProjectBuilder {
       }
     });
 
-    await Wait.true(() => this._serverMap.has(packageConfig.server!));
-
-    const serverInfo = this._serverMap.get(packageConfig.server)!;
     serverInfo.clientKeys.push(packageKey);
     serverInfo.middlewares.pushRange(middlewares);
     for (const middleware of middlewares) {

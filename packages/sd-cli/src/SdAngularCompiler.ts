@@ -22,6 +22,7 @@ import {SdWebpackInputHostWithScss} from "./plugins/SdWebpackInputHostWithScss";
 import {SdWebpackNgModulePlugin} from "./plugins/SdWebpackNgModulePlugin";
 import {SdWebpackForkTsCheckerPlugin} from "./plugins/SdWebpackForkTsCheckerPlugin";
 import * as CircularDependencyPlugin from "circular-dependency-plugin";
+import * as https from "https";
 
 export class SdAngularCompiler extends events.EventEmitter {
   private readonly _contextPath: string;
@@ -83,7 +84,8 @@ export class SdAngularCompiler extends events.EventEmitter {
   }
 
   public constructor(private readonly _packageKey: string,
-                     private readonly _options?: string[]) {
+                     private readonly _options?: string[],
+                     private readonly _serverPort?: number) {
     super();
 
     this._contextPath = path.resolve(process.cwd(), "packages", this._packageKey);
@@ -290,13 +292,14 @@ export class SdAngularCompiler extends events.EventEmitter {
       };
   }
 
-  private _getWebpackCommonConfig(): webpack.Configuration {
+  private _getWebpackCommonConfig(platform?: "android"): webpack.Configuration {
     const faviconPath = path.resolve(this._contextPath, "src", "favicon.ico");
 
     return {
+      target: platform ? "node" : "web",
       output: {
-        publicPath: `/${this._packageKey}/`,
-        path: this._distPath,
+        publicPath: platform ? "/android_asset/www/" : `/${this._packageKey}/`,
+        path: platform ? path.resolve(this._contextPath, ".cordova", "www") : this._distPath,
         filename: "[name].js",
         chunkFilename: "[name].chunk.js"
       },
@@ -311,9 +314,12 @@ export class SdAngularCompiler extends events.EventEmitter {
       plugins: [
         new HtmlWebpackPlugin({
           template: path.resolve(__dirname, `../lib/index.ejs`),
+          BASE_HREF: `/${this._packageKey}/`,
+          ...platform ? {
+            PLATFORM: platform
+          } : {}
           // chunksSortMode: "none",
-          BASE_HREF: `/${this._packageKey}/`/*,
-          inject: true*/
+          // inject: true
         }),
         ...fs.pathExistsSync(faviconPath)
           ? [
@@ -324,7 +330,10 @@ export class SdAngularCompiler extends events.EventEmitter {
           : [],
         new webpack.DefinePlugin({
           "process.env.VERSION": `"${this._projectNpmConfig.version}"`,
-          "process.env.BASE_HREF": `"/${this._packageKey}/"`
+          "process.env.BASE_HREF": `"/${this._packageKey}/"`,
+          ...platform ? {
+            "process.env.PLATFORM": platform
+          } : {}
         })
       ],
       externals: [
@@ -349,7 +358,16 @@ export class SdAngularCompiler extends events.EventEmitter {
     const projectConfig = SdCliUtils.getConfigObj("production", this._options);
     const config = projectConfig.packages[this._packageKey];
 
-    const webpackConfig = webpackMerge(this._getWebpackCommonConfig(),
+    //-- 모바일
+    if (config.type === "mobile") {
+      if (!config.mobile) {
+        throw new Error("모바일 설정이 되어있지 않습니다.");
+      }
+
+      await this._initializeCordovaAsync("android");
+    }
+
+    const webpackConfig = webpackMerge(this._getWebpackCommonConfig(config.type === "mobile" ? "android" : undefined),
       {
         mode: "production",
         devtool: false,
@@ -405,7 +423,7 @@ export class SdAngularCompiler extends events.EventEmitter {
         },
         plugins: [
           new SdWebpackWriteFilePlugin([{
-            path: path.resolve(this._distPath, ".configs.json"),
+            path: path.resolve(config.type === "mobile" ? path.resolve(this._contextPath, ".cordova", "www") : this._distPath, ".configs.json"),
             content: JSON.stringify({env: "production", ...config.configs}, undefined, 2)
           }])
         ]
@@ -422,56 +440,109 @@ export class SdAngularCompiler extends events.EventEmitter {
       this.emit("run");
     });
 
-    await new Promise<void>((resolve, reject) => {
+    const isSuccess = await new Promise<boolean>((resolve, reject) => {
       compiler.run((err, stats) => {
         if (err) {
           reject(err);
           return;
         }
 
-        this._emitWebpackCompilerStats(stats);
-        resolve();
+        resolve(this._emitWebpackCompilerStats(stats));
       });
     });
 
-    // ngsw 구성
-    const gen = new Generator(new NodeFilesystem(this._distPath), `/${this._packageKey}/`);
+    if (!isSuccess) {
+      this.emit("done");
+      return;
+    }
 
-    const control = await gen.process({
-      index: "/index.html",
-      assetGroups: [
-        {
-          "name": "app",
-          "installMode": "prefetch",
-          "resources": {
-            "files": [
-              "/favicon.ico",
-              "/index.html",
-              "/libs/*.js",
-              "/*.css",
-              "/*.js"
-            ]
+    if (config.type !== "mobile") {
+      // ngsw 구성
+      const gen = new Generator(new NodeFilesystem(this._distPath), `/${this._packageKey}/`);
+
+      const control = await gen.process({
+        index: "/index.html",
+        assetGroups: [
+          {
+            "name": "app",
+            "installMode": "prefetch",
+            "resources": {
+              "files": [
+                "/favicon.ico",
+                "/index.html",
+                "/libs/*.js",
+                "/*.css",
+                "/*.js"
+              ]
+            }
+          },
+          {
+            "name": "assets",
+            "installMode": "lazy",
+            "updateMode": "prefetch",
+            "resources": {
+              "files": [
+                "/assets/**"
+              ]
+            }
           }
-        },
-        {
-          "name": "assets",
-          "installMode": "lazy",
-          "updateMode": "prefetch",
-          "resources": {
-            "files": [
-              "/assets/**"
-            ]
-          }
-        }
-      ]
-    });
+        ]
+      });
 
-    await fs.writeFile(path.resolve(this._distPath, "ngsw.json"), JsonConvert.stringify(control, {space: 2}));
+      await fs.writeFile(path.resolve(this._distPath, "ngsw.json"), JsonConvert.stringify(control, {space: 2}));
 
-    await fs.copyFile(
-      path.resolve(process.cwd(), "node_modules", "@angular", "service-worker", "ngsw-worker.js"),
-      path.resolve(this._distPath, "ngsw-worker.js")
-    );
+      await fs.copyFile(
+        path.resolve(process.cwd(), "node_modules", "@angular", "service-worker", "ngsw-worker.js"),
+        path.resolve(this._distPath, "ngsw-worker.js")
+      );
+    }
+
+    if (config.type === "mobile") {
+      console.log(`CORDOVA 빌드`);
+      const cordovaProjectPath = path.resolve(this._contextPath, ".cordova");
+      const mobileConfig = config.mobile!;
+
+      if (mobileConfig.sign) {
+        fs.copySync(
+          path.resolve(this._contextPath, mobileConfig.sign, "release-signing.jks"),
+          path.resolve(cordovaProjectPath, "platforms", "android", "release-signing.jks")
+        );
+        fs.copySync(
+          path.resolve(this._contextPath, mobileConfig.sign, "release-signing.properties"),
+          path.resolve(cordovaProjectPath, "platforms", "android", "release-signing.properties")
+        );
+      }
+
+      if (mobileConfig.icon) {
+        fs.copySync(
+          path.resolve(this._contextPath, mobileConfig.icon),
+          path.resolve(cordovaProjectPath, "res", "icon", "icon.png")
+        );
+      }
+
+      const version = fs.readJsonSync(path.resolve(this._contextPath, "package.json")).version;
+      let configFileContent = fs.readFileSync(path.resolve(cordovaProjectPath, "config.xml"), "utf-8");
+      configFileContent = configFileContent.replace(/<allow-navigation href="[^"]"\s?\/>/g, "");
+      configFileContent = configFileContent.replace(/version="[^"]*"/g, `version="${version}"`);
+      if (mobileConfig.icon && !configFileContent.includes("<icon")) {
+        configFileContent = configFileContent.replace("</widget>", "    <icon src=\"res/icon/icon.png\" />\r\n</widget>");
+      }
+      fs.writeFileSync(path.resolve(cordovaProjectPath, "config.xml"), configFileContent, "utf-8");
+
+      const cordovaBinPath = path.resolve(process.cwd(), "node_modules", ".bin", "cordova.cmd");
+      await ProcessManager.spawnAsync(`${cordovaBinPath} build android --release`, {cwd: cordovaProjectPath});
+
+      const apkFileName = mobileConfig.sign ? "app-release.apk" : "app-release-unsigned.apk";
+      const distApkFileName = `${mobileConfig.name.replace(/ /g, "_")}${mobileConfig.sign ? "" : "-unsigned"}-v${version}.apk`;
+
+      fs.mkdirsSync(this._distPath);
+      fs.copyFileSync(
+        path.resolve(cordovaProjectPath, "platforms", "android", "app", "build", "outputs", "apk", "release", apkFileName),
+        path.resolve(this._distPath, distApkFileName)
+      );
+    }
+
+    this.emit("done");
   }
 
   public async watchAsync(): Promise<NextHandleFunction[]> {
@@ -588,26 +659,81 @@ export class SdAngularCompiler extends events.EventEmitter {
       });
     });
 
+    if (config.type === "mobile" && config.mobile!.device) {
+      const cordovaProjectPath = path.resolve(this._contextPath, ".cordova");
+      const serverUrl = `http://${await this._getCurrentIPAsync()}:${this._serverPort}`;
 
+      fs.removeSync(path.resolve(cordovaProjectPath, "www"));
+      fs.mkdirsSync(path.resolve(cordovaProjectPath, "www"));
+      fs.writeFileSync(path.resolve(cordovaProjectPath, "www/index.html"), `'${serverUrl}/${this._packageKey}/'로 이동중... <script>setTimeout(function () {window.location.href = "${serverUrl}/${this._packageKey}/"}, 1000);</script>`.trim(), "utf-8");
+
+      let configFileContent = fs.readFileSync(path.resolve(cordovaProjectPath, "config.xml"), "utf-8");
+      configFileContent = configFileContent.replace(/    <allow-navigation href="[^"]*"\s?\/>\n/g, "");
+      configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="${serverUrl}" />\n</widget>`);
+      configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="${serverUrl}/*" />\n</widget>`);
+      if (!configFileContent.includes("xmlns:android=\"http://schemas.android.com/apk/res/android\"")) {
+        configFileContent = configFileContent.replace(
+          "xmlns=\"http://www.w3.org/ns/widgets\"",
+          `xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android"`
+        );
+      }
+      if (!configFileContent.includes("application android:usesCleartextTraffic=\"true\" />")) {
+        configFileContent = configFileContent.replace("<platform name=\"android\">", `<platform name="android">
+        <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+            <application android:usesCleartextTraffic="true" />
+        </edit-config>`);
+      }
+      fs.writeFileSync(path.resolve(cordovaProjectPath, "config.xml"), configFileContent, "utf-8");
+
+      const cordovaBinPath = path.resolve(process.cwd(), "node_modules", ".bin", "cordova.cmd");
+      await ProcessManager.spawnAsync(`${cordovaBinPath} run android --device`, {cwd: cordovaProjectPath});
+    }
+
+    this.emit("done");
     return middlewares;
   }
 
-  private _emitWebpackCompilerStats(stats: webpack.Stats): void {
+  private async _getCurrentIPAsync(): Promise<string> {
+    return await new Promise<string>(resolve => {
+      https.request({
+        hostname: "api.ipify.org",
+        path: "/",
+        method: "GET"
+      }, res => {
+        res.on("data", chunk => {
+          resolve(chunk.toString());
+          res.destroy();
+        });
+      }).end();
+    });
+
+    /*const ifaces = os.networkInterfaces();
+    const result = Object.keys(ifaces)
+      .map(key => ifaces[key].filter(item => item.family === "IPv4" && !item.internal))
+      .filter(item => item.length > 0).mapMany(item => item.map(item1 => item1.address));
+    console.log(result);
+    return result[0];*/
+  }
+
+  private _emitWebpackCompilerStats(stats: webpack.Stats): boolean {
     const info = stats.toJson({all: false, assets: true, warnings: true, errors: true, errorDetails: false});
 
-    if (stats.hasWarnings()) {
+    const hasWarning = stats.hasWarnings();
+    const hasErrors = stats.hasErrors();
+
+    if (hasWarning) {
       for (const warning of info.warnings) {
         this.emit("warning", warning);
       }
     }
 
-    if (stats.hasErrors()) {
+    if (hasErrors) {
       for (const error of info.errors) {
         this.emit("error", error);
       }
     }
 
-    this.emit("done");
+    return !(hasWarning || hasErrors);
   }
 
   private async _initializeCordovaAsync(platform: string): Promise<void> {
@@ -618,9 +744,11 @@ export class SdAngularCompiler extends events.EventEmitter {
     const cordovaProjectPath = path.resolve(this._contextPath, ".cordova");
     const cordovaBinPath = path.resolve(process.cwd(), "node_modules", ".bin", "cordova.cmd");
 
+    await ProcessManager.spawnAsync(`${cordovaBinPath} telemetry on`);
+
     if (!fs.existsSync(cordovaProjectPath)) {
       console.log(`CORDOVA 프로젝트 생성`);
-      await ProcessManager.spawnAsync(`${cordovaBinPath} create .cordova ${mobileConfig.id} ${mobileConfig.name || this._packageKey}`, {cwd: process.cwd()});
+      await ProcessManager.spawnAsync(`${cordovaBinPath} create "${cordovaProjectPath}" "${mobileConfig.id}" "${mobileConfig.name}"`, {cwd: process.cwd()});
     }
 
     fs.mkdirsSync(path.resolve(cordovaProjectPath, "www"));
