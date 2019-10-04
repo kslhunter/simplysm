@@ -9,9 +9,17 @@ export interface ISdProjectConfig {
 }
 
 export interface ISdPackageConfig {
-  type: "library" | "server" | "web" | "none";
+  type: "library" | "server" | "web" | "mobile" | "none";
   server?: string;
   framework?: "vue" | "angular" | "angular-jit";
+  mobile?: {
+    id: string;
+    name?: string;
+    platforms: "android" | ("android")[];
+    plugins?: string[];
+    sign?: string;
+    icon?: string;
+  };
   publish?: "npm" | ISdSimplysmPublishConfig;
   configs?: { [key: string]: any };
 }

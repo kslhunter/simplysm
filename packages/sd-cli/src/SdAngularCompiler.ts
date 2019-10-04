@@ -9,7 +9,7 @@ import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import {NextHandleFunction} from "@simplysm/sd-service";
 import {SdWebpackWriteFilePlugin} from "./plugins/SdWebpackWriteFilePlugin";
 import {Generator} from "@angular/service-worker/config";
-import {JsonConvert} from "@simplysm/sd-core";
+import {JsonConvert, ProcessManager} from "@simplysm/sd-core";
 import {NodeFilesystem} from "./service-worker/filesystem";
 import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
@@ -478,6 +478,15 @@ export class SdAngularCompiler extends events.EventEmitter {
     const projectConfig = SdCliUtils.getConfigObj("development", this._options);
     const config = projectConfig.packages[this._packageKey];
 
+    //-- 모바일
+    if (config.type === "mobile") {
+      if (!config.mobile) {
+        throw new Error("모바일 설정이 되어있지 않습니다.");
+      }
+
+      await this._initializeCordovaAsync("browser");
+    }
+
     // const modulePath = path.resolve(this._parsedTsConfig.options.rootDir!, "AppModule");
     const webpackConfig = webpackMerge(this._getWebpackCommonConfig(),
       {
@@ -529,6 +538,16 @@ export class SdAngularCompiler extends events.EventEmitter {
       this._styleConfigs({sourceMap: false, extract: false})
     );
 
+    //-- 모바일
+    if (config.type === "mobile") {
+      webpackConfig.plugins!.push(
+        new CopyWebpackPlugin([{
+          context: path.resolve(this._contextPath, `.cordova/platforms/browser/platform_www`),
+          from: "**/*"
+        }])
+      );
+    }
+
     this.emit("run");
 
     const compiler = webpack(webpackConfig);
@@ -546,7 +565,7 @@ export class SdAngularCompiler extends events.EventEmitter {
       callback();
     });*/
 
-    return await new Promise<NextHandleFunction[]>((resolve, reject) => {
+    const middlewares = await new Promise<NextHandleFunction[]>((resolve, reject) => {
       const devMiddleware = WebpackDevMiddleware(compiler, {
         publicPath: webpackConfig.output!.publicPath!,
         logLevel: "silent"
@@ -568,6 +587,9 @@ export class SdAngularCompiler extends events.EventEmitter {
         resolve([devMiddleware, hotMiddleware]);
       });
     });
+
+
+    return middlewares;
   }
 
   private _emitWebpackCompilerStats(stats: webpack.Stats): void {
@@ -586,5 +608,42 @@ export class SdAngularCompiler extends events.EventEmitter {
     }
 
     this.emit("done");
+  }
+
+  private async _initializeCordovaAsync(platform: string): Promise<void> {
+    const projectConfig = SdCliUtils.getConfigObj("development", this._options);
+    const config = projectConfig.packages[this._packageKey];
+    const mobileConfig = config.mobile!;
+
+    const cordovaProjectPath = path.resolve(this._contextPath, ".cordova");
+    const cordovaBinPath = path.resolve(process.cwd(), "node_modules", ".bin", "cordova.cmd");
+
+    if (!fs.existsSync(cordovaProjectPath)) {
+      console.log(`CORDOVA 프로젝트 생성`);
+      await ProcessManager.spawnAsync(`${cordovaBinPath} create .cordova ${mobileConfig.id} ${mobileConfig.name || this._packageKey}`, {cwd: process.cwd()});
+    }
+
+    fs.mkdirsSync(path.resolve(cordovaProjectPath, "www"));
+
+    if (!fs.existsSync(path.resolve(cordovaProjectPath, "platforms", platform))) {
+      console.log(`CORDOVA 플랫폼 생성: ${platform}`);
+      await ProcessManager.spawnAsync(`${cordovaBinPath} platform add ${platform}`, {cwd: cordovaProjectPath});
+    }
+
+    const prevPlugins = Object.values(fs.readJsonSync(path.resolve(cordovaProjectPath, "plugins", "fetch.json"))).map((item: any) => item["source"].id ? item["source"].id.replace(/@.*$/, "") : item["source"].url);
+
+    if (!prevPlugins.includes("cordova-android-support-gradle-release")) {
+      console.log(`CORDOVA 플러그인 설치: cordova-android-support-gradle-release`);
+      await ProcessManager.spawnAsync(`${cordovaBinPath} plugin add cordova-android-support-gradle-release`, {cwd: cordovaProjectPath});
+    }
+
+    if (mobileConfig.plugins) {
+      for (const plugin of mobileConfig.plugins) {
+        if (!prevPlugins.includes(plugin)) {
+          console.log(`CORDOVA 플러그인 설치  : ${plugin}`);
+          await ProcessManager.spawnAsync(`${cordovaBinPath} plugin add ${plugin}`, {cwd: cordovaProjectPath});
+        }
+      }
+    }
   }
 }
