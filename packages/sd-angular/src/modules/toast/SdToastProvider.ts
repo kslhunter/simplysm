@@ -37,7 +37,7 @@ export class SdToastProvider {
         this.danger(err.message);
       }
 
-      await this._log.write(err.stack);
+      await this._log.write({error: err.stack, type: "error"});
 
       if (process.env.NODE_ENV !== "production") console.error(err);
     }

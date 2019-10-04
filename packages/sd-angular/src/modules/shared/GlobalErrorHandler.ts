@@ -10,7 +10,7 @@ export class GlobalErrorHandler implements ErrorHandler {
     const err = error.rejection ? error.rejection : error;
 
     if (!err.handled) {
-      await this._log.write(err.stack);
+      await this._log.write({error: err.stack, type: "error"});
 
       if (process.env.NODE_ENV === "production") {
         alert(`처리되지 않은 오류가 발생하였습니다.\r\n\r\n${err.message}`);

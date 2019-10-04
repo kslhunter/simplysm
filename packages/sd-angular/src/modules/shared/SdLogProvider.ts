@@ -14,7 +14,6 @@ export class SdLogProvider {
     this._saveListFn = saveListFn;
   }
 
-  //TODO: type 걸기
   public async write(data: any): Promise<void> {
     const logs = (this._localStorage.get("sd-logs") || []) as any[];
     if (this._genDataFn) {

@@ -4,9 +4,11 @@ import * as path from "path";
 import * as JSZip from "jszip";
 import * as url from "url";
 import * as querystring from "querystring";
-import {JsonConvert, ProcessManager} from "@simplysm/sd-core";
+import {JsonConvert, Logger, ProcessManager} from "@simplysm/sd-core";
 
 export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.ServerResponse, next: (err?: any) => void): Promise<void> {
+  const logger = new Logger("@simplysm/sd-service", `SdEasyPayMiddleware`);
+
   try {
     const urlObj = url.parse(req.url!, true, false);
     const urlPath = decodeURI(urlObj.pathname!.slice(1));
@@ -28,6 +30,8 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
     });
 
     if (urlPath === "_easy-pay") {
+      logger.log("easy-pay", JsonConvert.stringify(params));
+
       const resHtml = /* language=HTML */ `
         <html lang="kr">
         <head>
@@ -44,6 +48,9 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
                 formEl.appendChild(inputEl);
               }
 
+              if(["EP_mall_nm", "EP_product_nm", "EP_user_nm", "EP_user_addr", "EP_res_msg"].includes(key)){
+                value = decodeURIComponent(value);
+              }
               inputEl.value = value;
             }
 
@@ -84,11 +91,10 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
               _copyFormDataFromParent(formEl, "EP_vacct_end_date");
               _copyFormDataFromParent(formEl, "EP_vacct_end_time");
               
-              ${Object.keys(params).map(key => `_setFormData(formEl, "${key}", "${params[key]}");`).join("\n")}
+              ${Object.keys(params).map(key => `_setFormData(formEl, "${key}", ${params[key] ? `"${params[key]}"` : "null"});`).join("\n")}
 
               formEl.submit();
-            }
-
+            } 
           </script>
         </head>
         </html>
@@ -97,7 +103,7 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
       res.end(resHtml);
     }
     else if (urlPath === "_easy-pay-result") {
-      console.log(params);
+      logger.log("easy-pay-result", JsonConvert.stringify(params));
 
       //-- easy-pay-cli 압축 풀기
       const zipFilePath = require.resolve("../../../assets/easy-pay-cli.zip");
@@ -110,16 +116,14 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
         const zip = await new JSZip().loadAsync(zipBinary);
         for (const zipContainsFileName of Object.keys(zip.files)) {
           const outputFilePath = path.resolve(cliDirPath, zipContainsFileName);
-          const readStream = zip.file(zipContainsFileName).nodeStream();
-          const writeStream = fs.createWriteStream(outputFilePath);
-          readStream.pipe(writeStream);
-          writeStream.close();
+          const zipFile = await zip.file(zipContainsFileName).async("nodebuffer");
+          fs.writeFileSync(outputFilePath, zipFile);
         }
       }
 
       //-- easy-pay-cli 실행
       const cliFilePath = path.resolve(cliDirPath, "SDCM.EasyPayCLI.exe");
-      let resultMessage = "";
+      let resultMessageJson = "";
       let errorMessage = "";
       await ProcessManager.spawnAsync(
         cliFilePath
@@ -129,7 +133,7 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
         {
           logger: {
             log: message => {
-              resultMessage += message;
+              resultMessageJson += message;
             },
             error: message => {
               errorMessage += message;
@@ -140,7 +144,34 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
         throw new Error(errorMessage);
       });
 
-      res.end(JsonConvert.stringify(resultMessage, {space: 2}));
+      const resultMessage = JsonConvert.parse(resultMessageJson);
+
+      res.end(/* language=HTML */ `
+        <html lang="kr">
+        <head>
+          <title>이지페이</title>
+          <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+          <script>
+            function _setFormData(formEl, key, value) {
+              let inputEl = window.document.getElementById(key);
+              if (!inputEl) {
+                inputEl = window.document.createElement("input");
+                inputEl.type = "hidden";
+                inputEl.name = key;
+                inputEl.id = key;
+                formEl.appendChild(inputEl);
+              }
+              
+              inputEl.value = value;
+            }
+            
+            const parent = window.opener || window.parent;
+            const formEl = parent.document.getElementById("sd-easy-pay-form");
+            ${Object.keys(resultMessage).map(key => `_setFormData(formEl, "${key}", ${resultMessage[key] ? `"${resultMessage[key]}"` : "null"});`).join("\n")}
+            parent.kicc_popup_close();
+          </script>
+        </head>
+        </html>`);
     }
   }
   catch (err) {

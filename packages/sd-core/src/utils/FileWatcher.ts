@@ -38,7 +38,7 @@ export class FileWatcher {
           async () => {
             processing = true;
 
-            const fileChanges = Object.clone(preservedFileChanges);
+            const fileChanges = Object.clone(preservedFileChanges.distinct());
             preservedFileChanges = [];
 
             try {
