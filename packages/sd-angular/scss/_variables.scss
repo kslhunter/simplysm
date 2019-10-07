@@ -1,4 +1,5 @@
 @import "variables-color";
+@import "variables-scss";
 
 :root {
   --theme-grey-lightest: var(--color-grey-100);
@@ -108,8 +109,6 @@
   --gap-xl: 12px;
   --gap-xxl: 18px;
 
-  --screen-mobile-width: 520px;
-
   --z-index-toast: 9999;
   --z-index-busy: 9998;
   --z-index-dropdown: 5000;
@@ -131,4 +130,29 @@
   --sheet-border-color: var(--theme-grey-lighter);
   --sheet-border-color-dark: var(--theme-grey-light);
   --sheet-row-height: calc(var(--sheet-padding-v) * 2 + var(--font-size-default) * var(--line-height-strip));
+}
+
+@media screen and (max-width: $screen-mobile-width) {
+  :root {
+    --gap-xxs: 4px;
+    --gap-xs: 6px;
+    --gap-sm: 8px;
+    --gap-default: 12px;
+    --gap-lg: 16px;
+    --gap-xl: 20px;
+    --gap-xxl: 24px;
+
+    --font-size-lg: 18px;
+    --font-size-default: 16px;
+    --font-size-sm: 14px;
+    --font-size-h1: 28px;
+    --font-size-h2: 24px;
+    --font-size-h3: 22px;
+    --font-size-h4: 18px;
+    --font-size-h5: 16px;
+    --font-size-h6: 14px;
+
+    --sidebar-width: 70%;
+    --topbar-height: 52px;
+  }
 }

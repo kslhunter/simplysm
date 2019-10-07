@@ -54,7 +54,7 @@
     "webpack-node-externals": "^1.7.2",
     "minimatch": "^3.0.4",
     "mocha": "^6.2.0",
-    "cordova": "^9.0.0"
+    "cordova": "^8.1.2"
   },
   "devDependencies": {
     "@types/copy-webpack-plugin": "^5.0.0",

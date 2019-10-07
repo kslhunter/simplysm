@@ -42,6 +42,8 @@ import {optional} from "@simplysm/sd-core";
     </div>`,
   styles: [/* language=SCSS */ `
     @import "../../../scss/mixins";
+    @import "../../../scss/variables-scss";
+    
     sd-modal {
       display: block;
       position: fixed;
@@ -216,7 +218,7 @@ import {optional} from "@simplysm/sd-core";
         }
       }
 
-      @media screen and (max-width: var(--screen-mobile-width)) {
+      @media screen and (max-width: $screen-mobile-width) {
         padding-top: 0;
 
         > ._dialog {

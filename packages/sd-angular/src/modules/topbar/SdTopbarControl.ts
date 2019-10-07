@@ -24,6 +24,9 @@ import {SdTopbarMenuControl} from "./SdTopbarMenuControl";
          class="sd-padding-left-lg"></div>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
+    @import "../../../scss/_mixins";
+    @import "../../../scss/_variables-scss";
+    
     sd-topbar {
       display: block;
       position: absolute;
@@ -38,8 +41,7 @@ import {SdTopbarMenuControl} from "./SdTopbarMenuControl";
       overflow-x: auto;
       overflow-y: hidden;
       white-space: nowrap;
-      border-bottom: 2px solid rgba(0, 0, 0, .2);
-
+      
       &::-webkit-scrollbar-track {
         background-color: rgba(0, 0, 0, .1);
       }
@@ -85,6 +87,10 @@ import {SdTopbarMenuControl} from "./SdTopbarMenuControl";
 
       > h1, > h2, > h3, > h4, > h5, > h6 {
         padding-right: var(--gap-lg);
+      }
+      
+      @media screen and (max-width: $screen-mobile-width) {
+        @include elevation(4);
       }
     }
   `]

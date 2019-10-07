@@ -24,11 +24,18 @@ export class SdCliUtils {
 
       // options 처리
       if (opts && opts.length > 0) {
-        for (const opt of opts) {
+        const pkgOpts = Object.keys(config.packages[packageKey])
+          .filter(key => key.startsWith("@") && opts.some(opt => opt === key.slice(1)));
+
+        for (const pkgOpt of pkgOpts) {
+          config.packages[packageKey] = Object.merge(config.packages[packageKey], config.packages[packageKey][pkgOpt]);
+        }
+
+        /*for (const opt of opts) {
           if (config.packages[packageKey]["@" + opt]) {
             config.packages[packageKey] = Object.merge(config.packages[packageKey], config.packages[packageKey]["@" + opt]);
           }
-        }
+        }*/
       }
 
       for (const optKey of Object.keys(config.packages[packageKey]).filter(item => item.startsWith("@"))) {

@@ -202,7 +202,7 @@ export class SdProjectBuilder {
             if (argv.watch && config.packages[packageKey].type === "server") {
               const packagePath = path.resolve(process.cwd(), "packages", packageKey);
               const packageTsConfigPath = path.resolve(packagePath, "tsconfig.json");
-              await this._runServerAsync(packageKey, worker, packageTsConfigPath);
+              await this._runServerAsync(packageKey, worker, packageTsConfigPath, argv.options ? argv.options.split(",").map(item => item.trim()) : undefined);
             }
           }
         }
@@ -678,7 +678,7 @@ export class SdProjectBuilder {
     logger.info(`개발서버 서비스가 시작되었습니다.: http://localhost:${serverInfo.server.port}/${packageKey}/`);
   }
 
-  private async _runServerAsync(packageKey: string, worker: child_process.ChildProcess, tsConfigPath: string): Promise<void> {
+  private async _runServerAsync(packageKey: string, worker: child_process.ChildProcess, tsConfigPath: string, options?: string[]): Promise<void> {
     const packageServerLogger = new Logger("@simplysm/sd-cli", `[server]\t${packageKey}`);
     packageServerLogger.log("시작합니다.");
 
@@ -690,6 +690,12 @@ export class SdProjectBuilder {
     const packageEntryPath = path.resolve(packagePath, packageNpmConfig.main);
 
     // 서버 시작
+    const projectNpmConfig = await fs.readJson(path.resolve(process.cwd(), "package.json"));
+    const projectConfig = SdCliUtils.getConfigObj("development", options);
+    const config = projectConfig.packages[packageKey];
+    process.env.VERSION = projectNpmConfig.version;
+    Object.assign(process.env, config.env);
+
     const server = require(packageEntryPath) as SdServiceServer;
 
     // 서버가 시작되면,
@@ -730,6 +736,13 @@ export class SdProjectBuilder {
         const serverInfo = this._serverMap.get(packageKey)!;
         await serverInfo.server.closeAsync();
         require("decache")(packageEntryPath); //tslint:disable-line:no-require-imports
+
+        const projectNpmConfig2 = await fs.readJson(path.resolve(process.cwd(), "package.json"));
+        const projectConfig2 = SdCliUtils.getConfigObj("development", options);
+        const config2 = projectConfig2.packages[packageKey];
+        process.env.VERSION = projectNpmConfig2.version;
+        Object.assign(process.env, config2.env);
+
         const newServer = require(packageEntryPath) as SdServiceServer;
         serverInfo.server = newServer;
         for (const middleware of serverInfo.middlewares) {

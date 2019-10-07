@@ -2,11 +2,14 @@
 
 import * as yargs from "yargs";
 import * as os from "os";
-import {Logger} from "@simplysm/sd-core";
+import {Logger, ProcessManager} from "@simplysm/sd-core";
 import {SdProjectBuilder} from "./SdProjectBuilder";
+import * as path from "path";
+import {EventEmitter} from "events";
 
 require("source-map-support/register"); //tslint:disable-line
 
+EventEmitter.defaultMaxListeners = 0;
 process.setMaxListeners(0);
 
 const argv = yargs
@@ -61,6 +64,18 @@ const argv = yargs
         }
       })
   )
+  .command(
+    "run-device",
+    "현재 watch중인 프로젝트의 장치를 실행합니다.",
+    cmd => cmd.version(false)
+      .options({
+        package: {
+          type: "string",
+          describe: "장치에 실행시킬 모바일 패키지",
+          demandOption: true
+        }
+      })
+  )
   .argv;
 
 const logger = new Logger("@simplysm/sd-cli");
@@ -78,6 +93,11 @@ const logger = new Logger("@simplysm/sd-cli");
       break;
     case "test":
       await new SdProjectBuilder().testAsync(argv as any);
+      break;
+    case "run-device":
+      const cordovaProjectPath = path.resolve(process.cwd(), "packages", argv.package as string, ".cordova");
+      const cordovaBinPath = path.resolve(process.cwd(), "node_modules", ".bin", "cordova.cmd");
+      await ProcessManager.spawnAsync(`${cordovaBinPath} run android --device`, {cwd: cordovaProjectPath});
       break;
     default:
       throw new Error(`명령어가 잘못되었습니다.${os.EOL}${os.EOL}\t${argv._[0]}${os.EOL}`);

@@ -7,6 +7,7 @@ import {SdLocalStorageProvider} from "./SdLocalStorageProvider";
 import {GlobalErrorHandler} from "./GlobalErrorHandler";
 import {SdConfigProvider} from "./SdConfigProvider";
 import {SdLogProvider} from "./SdLogProvider";
+import {BackButtonEventPlugin} from "./BackButtonEventPlugin";
 
 @NgModule({
   imports: [
@@ -28,7 +29,8 @@ export class SdSharedModule {
         SdLocalStorageProvider,
         SdConfigProvider,
         {provide: ErrorHandler, useClass: GlobalErrorHandler},
-        {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true}
+        {provide: EVENT_MANAGER_PLUGINS, useClass: ResizeEventPlugin, multi: true},
+        {provide: EVENT_MANAGER_PLUGINS, useClass: BackButtonEventPlugin, multi: true}
       ]
     };
   }

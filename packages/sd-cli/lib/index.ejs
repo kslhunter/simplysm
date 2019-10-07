@@ -8,7 +8,7 @@
   <base href="<%= htmlWebpackPlugin.options.BASE_HREF %>">
 
   <link rel="shortcut icon" href="favicon.ico">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
 </head>
 <body>
 <app-root>
@@ -83,8 +83,8 @@
       <div></div>
     </div>
   </div>
-
-  <%= htmlWebpackPlugin.options.PLATFORM ? "<script src=\"cordova.js\"></script>" : "" %>
 </app-root>
+
+<%= htmlWebpackPlugin.options.PLATFORM ? "<script src=\"cordova.js\"></script>" : "" %>
 </body>
 </html>

@@ -141,11 +141,6 @@ export class SdWebpackServerCompiler extends events.EventEmitter {
         strictExportPresence: true,
         rules: []
       },
-      plugins: [
-        new webpack.DefinePlugin({
-          "process.env.VERSION": `"${this._projectNpmConfig.version}"`
-        })
-      ],
       externals: [
         webpackNodeExternals({
           whitelist: Object.keys(this._alias)
@@ -198,7 +193,8 @@ export class SdWebpackServerCompiler extends events.EventEmitter {
                 watch: false,
                 env: {
                   NODE_ENV: "production",
-                  VERSION: this._projectNpmConfig.version
+                  VERSION: this._projectNpmConfig.version,
+                  ...config.env ? config.env : {}
                 }
               }, undefined, 2)
             }
@@ -212,7 +208,7 @@ export class SdWebpackServerCompiler extends events.EventEmitter {
 
     const compiler = webpack(webpackConfig);
 
-    compiler.hooks.run.tap("SdPackageCompiler", () => {
+    compiler.hooks.run.tap("SdAngularCompiler", () => {
       this.emit("run");
     });
 
@@ -278,7 +274,7 @@ export class SdWebpackServerCompiler extends events.EventEmitter {
     const compiler = webpack(webpackConfig);
 
     let first = true;
-    compiler.hooks.invalid.tap("SdPackageCompiler", () => {
+    compiler.hooks.invalid.tap("SdAngularCompiler", () => {
       if (first) {
         first = false;
         this.emit("run");

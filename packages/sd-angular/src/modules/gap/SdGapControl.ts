@@ -43,7 +43,7 @@ export class SdGapControl {
   @HostBinding("attr.sd-width")
   public width?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl" | number;
 
-  @Input()
+  @Input("width.px")
   @SdTypeValidate(Number)
   @HostBinding("style.width.px")
   public widthPx?: number;

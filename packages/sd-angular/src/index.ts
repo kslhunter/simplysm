@@ -159,6 +159,7 @@ export * from "./modules/view/SdViewItemControl";
 export * from "./modules/shared/SdSharedModule";
 export * from "./modules/shared/LinkActionDirective";
 export * from "./modules/shared/ResizeEventPlugin";
+export * from "./modules/shared/BackButtonEventPlugin";
 export * from "./modules/shared/SdLocalStorageProvider";
 export * from "./modules/shared/GlobalErrorHandler";
 export * from "./modules/shared/SdConfigProvider";

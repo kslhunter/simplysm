@@ -12,6 +12,7 @@ export interface ISdPackageConfig {
   type: "library" | "server" | "web" | "mobile" | "none";
   server?: string;
   framework?: "vue" | "angular" | "angular-jit";
+  env?: { [key: string]: string };
   mobile?: {
     id: string;
     name: string;

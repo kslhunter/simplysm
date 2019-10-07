@@ -15,7 +15,8 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <button [type]="type" [disabled]="disabled" [attr.style]="safeHtml(buttonStyle)" [attr.class]="safeHtml(buttonClass)">
+    <button [type]="type" [disabled]="disabled" [attr.style]="safeHtml(buttonStyle)"
+            [attr.class]="safeHtml(buttonClass)">
       <ng-content></ng-content>
     </button>
     <div class="_invalid-indicator"></div>`,

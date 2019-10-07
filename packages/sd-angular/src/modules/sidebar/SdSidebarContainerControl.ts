@@ -10,6 +10,9 @@ import {SdWindowProvider} from "../window/SdWindowProvider";
     <ng-content></ng-content>
     <div class="_backdrop" (click)="toggle = !toggle"></div>`,
   styles: [/* language=SCSS */ `
+    @import "../../../scss/_mixins";
+    @import "../../../scss/_variables-scss";
+
     sd-sidebar-container {
       display: block;
       position: relative;
@@ -116,6 +119,44 @@ import {SdWindowProvider} from "../window/SdWindowProvider";
 
         > sd-sidebar {
           display: none;
+        }
+      }
+
+      @media screen and (max-width: $screen-mobile-width) {
+        padding-left: 0;
+
+        > sd-sidebar {
+          @include elevation(none);
+          transform: translateX(calc(-100% - 1px));
+          transition: transform .2s ease-in;
+        }
+
+        ._backdrop {
+          display: block;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, .4);
+          opacity: 0;
+          visibility: hidden;
+          transition: .2s ease-in;
+          z-index: calc(var(--z-index-sidebar) - 1);
+        }
+
+        &[sd-toggle=true] {
+          > sd-sidebar {
+            @include elevation(16);
+            transform: none;
+            transition: transform .2s ease-out;
+          }
+
+          ._backdrop {
+            opacity: 1;
+            visibility: visible;
+            transition: .2s ease-out;
+          }
         }
       }
     }
