@@ -53,11 +53,11 @@ function start() {
 
 if (process.env.PLATFORM) {
   document.addEventListener("deviceready", () => {
-    document.addEventListener("backbutton", e => {
-      console.log("backbutton");
-      window.history.go(-1);
-    }, false);
-
+    /*document.addEventListener("backbutton", (e) => {
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      alert("keyup");
+    });*/
     start();
   }, false);
 }

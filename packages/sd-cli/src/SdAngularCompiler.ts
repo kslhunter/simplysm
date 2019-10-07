@@ -616,7 +616,7 @@ export class SdAngularCompiler extends events.EventEmitter {
     if (config.type === "mobile") {
       webpackConfig.plugins!.push(
         new CopyWebpackPlugin([{
-          context: path.resolve(this._contextPath, `.cordova/platforms/browser/platform_www`),
+          context: path.resolve(this._contextPath, `.cordova/platforms/${config.mobile!.device ? "android" : "browser"}/platform_www`),
           from: "**/*"
         }])
       );
@@ -786,10 +786,10 @@ export class SdAngularCompiler extends events.EventEmitter {
 
     const prevPlugins = Object.values(fs.readJsonSync(path.resolve(cordovaProjectPath, "plugins", "fetch.json"))).map((item: any) => item["source"].id ? item["source"].id.replace(/@.*$/, "") : item["source"].url);
 
-    if (!prevPlugins.includes("cordova-android-support-gradle-release")) {
+    /*if (!prevPlugins.includes("cordova-android-support-gradle-release")) {
       console.log(`CORDOVA 플러그인 설치: cordova-android-support-gradle-release`);
       await ProcessManager.spawnAsync(`${cordovaBinPath} plugin add cordova-android-support-gradle-release`, {cwd: cordovaProjectPath});
-    }
+    }*/
 
     /*if (!prevPlugins.includes("phonegap-plugin-mobile-accessibility")) {
       console.log(`CORDOVA 플러그인 설치: phonegap-plugin-mobile-accessibility`);
