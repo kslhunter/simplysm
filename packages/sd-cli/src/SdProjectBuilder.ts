@@ -693,7 +693,7 @@ export class SdProjectBuilder {
     const projectNpmConfig = await fs.readJson(path.resolve(process.cwd(), "package.json"));
     const projectConfig = SdCliUtils.getConfigObj("development", options);
     const config = projectConfig.packages[packageKey];
-    process.env.VERSION = projectNpmConfig.version;
+    process.env.SD_VERSION = projectNpmConfig.version;
     Object.assign(process.env, config.env);
 
     const server = require(packageEntryPath) as SdServiceServer;
@@ -740,7 +740,7 @@ export class SdProjectBuilder {
         const projectNpmConfig2 = await fs.readJson(path.resolve(process.cwd(), "package.json"));
         const projectConfig2 = SdCliUtils.getConfigObj("development", options);
         const config2 = projectConfig2.packages[packageKey];
-        process.env.VERSION = projectNpmConfig2.version;
+        process.env.SD_VERSION = projectNpmConfig2.version;
         Object.assign(process.env, config2.env);
 
         const newServer = require(packageEntryPath) as SdServiceServer;

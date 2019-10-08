@@ -7,7 +7,7 @@ const AppModuleNgFactory = require("SD_APP_MODULE_FACTORY").AppModuleNgFactory;
 
 enableProdMode();
 
-if (process.env.PLATFORM) {
+if (process.env.SD_PLATFORM) {
   document.addEventListener("deviceready", () => {
     platformBrowserDynamic().bootstrapModuleFactory(AppModuleNgFactory).catch(err => {
       console.error(err);

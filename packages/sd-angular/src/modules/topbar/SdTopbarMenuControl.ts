@@ -12,6 +12,8 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
+    @import "../../../scss/_variables-scss";
+    
     sd-topbar-menu {
       padding: 0 var(--gap-lg);
       cursor: pointer;
@@ -32,6 +34,10 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
       &:active {
         background: rgba(0, 0, 0, .3);
         color: white;
+      }
+
+      @media screen and (max-width: $screen-mobile-width) {
+        float: right;
       }
     }
   `]

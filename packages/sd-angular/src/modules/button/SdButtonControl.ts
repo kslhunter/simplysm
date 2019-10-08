@@ -126,6 +126,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
         @each $color in $arr-theme-color {
           &[sd-theme=#{$color}] > button {
             background: var(--theme-#{$color}-default);
+            color: var(--text-reverse-color-default);
 
             &:hover {
               background: var(--theme-#{$color}-dark);
@@ -139,6 +140,19 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
               background: var(--theme-grey-default);
             }
           }
+        }
+      }
+
+
+      @media screen and (max-width: $screen-mobile-width) {
+        &[sd-size=sm] > button {
+          font-size: var(--font-size-sm);
+          padding: var(--gap-xs) var(--gap-sm);
+        }
+
+        &[sd-size=lg] > button {
+          font-size: var(--font-size-lg);
+          padding: var(--gap-default) var(--gap-lg);
         }
       }
     }

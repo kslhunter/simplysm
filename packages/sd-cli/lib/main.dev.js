@@ -51,15 +51,21 @@ function start() {
   });
 }
 
-if (process.env.PLATFORM) {
-  document.addEventListener("deviceready", () => {
-    /*document.addEventListener("backbutton", (e) => {
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      alert("keyup");
-    });*/
-    start();
-  }, false);
+if (process.env.SD_PLATFORM) {
+  window.addEventListener = function () {
+    EventTarget.prototype.addEventListener.apply(this, arguments);
+  };
+  window.removeEventListener = function () {
+    EventTarget.prototype.removeEventListener.apply(this, arguments);
+  };
+  document.addEventListener = function () {
+    EventTarget.prototype.addEventListener.apply(this, arguments);
+  };
+  document.removeEventListener = function () {
+    EventTarget.prototype.removeEventListener.apply(this, arguments);
+  };
+
+  start();
 }
 else {
   start();

@@ -20,11 +20,11 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="_content">
-      <label (click)="onLabelClick()"
-             [attr.tabindex]="(header || !clickable) ? undefined : '0'">
+      <div class="_label" (click)="onLabelClick()"
+           [attr.tabindex]="(header || !clickable) ? undefined : '0'">
         <ng-content></ng-content>
         <sd-icon class="_angle-icon" [icon]="'chevron-right'" [fw]="true" *ngIf="hasChildren"></sd-icon>
-      </label>
+      </div>
       <ng-content select="sd-list-item-button"></ng-content>
     </div>
     <div class="_child">
@@ -38,9 +38,9 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
 
       > ._content {
         display: flex;
-        border-top: 1px solid transparent;
+        //border-top: 1px solid transparent;
 
-        > label {
+        > ._label {
           display: block;
           width: 100%;
           padding: var(--gap-sm) var(--gap-default);
@@ -79,7 +79,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
 
       &[sd-clickable=true] {
         > ._content {
-          > label {
+          > ._label {
             cursor: pointer;
             transition: background .1s ease-in;
 
@@ -93,7 +93,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
 
       &[sd-open=true] {
         > ._content {
-          > label {
+          > ._label {
             > ._angle-icon {
               transform: rotate(90deg);
               transition: transform .1s ease-out;
@@ -106,16 +106,16 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
         }
       }
 
-      &[sd-size=sm] > ._content > label {
+      &[sd-size=sm] > ._content > ._label {
         font-size: var(--font-size-sm);
         padding: var(--gap-xs) var(--gap-sm);
       }
 
-      &[sd-size=lg] > ._content > label {
+      &[sd-size=lg] > ._content > ._label {
         padding: var(--gap-default) var(--gap-lg);
       }
 
-      &[sd-selected=true] > ._content > label {
+      &[sd-selected=true] > ._content > ._label {
         color: var(--theme-primary-default);
         font-weight: bold;
       }
@@ -123,14 +123,14 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
       &[sd-disabled=true] {
         pointer-events: none;
 
-        > ._content > label {
+        > ._content > ._label {
           color: var(--text-color-lighter);
           cursor: default;
         }
       }
 
       &[sd-header=true] {
-        > ._content > label {
+        > ._content > ._label {
           cursor: default;
           background: transparent;
           color: var(--text-color-light);

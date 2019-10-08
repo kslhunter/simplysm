@@ -40,7 +40,7 @@ import {SdWindowProvider} from "../window/SdWindowProvider";
         }
 
         sd-list-item {
-          > ._content > label {
+          > ._content > ._label {
             background: var(--theme-bluegrey-darkest);
 
             > ._angle-icon {
@@ -55,7 +55,7 @@ import {SdWindowProvider} from "../window/SdWindowProvider";
           }
 
           &[sd-clickable=true] {
-            > ._content > label {
+            > ._content > ._label {
               &:hover {
                 background: var(--trans-color-dark);
               }
@@ -63,13 +63,13 @@ import {SdWindowProvider} from "../window/SdWindowProvider";
           }
 
           &[sd-open=true] {
-            > ._content > label {
+            > ._content > ._label {
               background: var(--trans-color-light);
             }
           }
 
           &[sd-header=true] {
-            > ._content > label {
+            > ._content > ._label {
               color: var(--text-reverse-color-dark);
             }
           }
@@ -83,12 +83,12 @@ import {SdWindowProvider} from "../window/SdWindowProvider";
               }
 
               sd-list-item {
-                > ._content > label {
+                > ._content > ._label {
                   background: transparent;
                 }
 
                 &[sd-clickable=true] {
-                  > ._content > label {
+                  > ._content > ._label {
                     &:hover {
                       background: var(--trans-color-dark);
                     }

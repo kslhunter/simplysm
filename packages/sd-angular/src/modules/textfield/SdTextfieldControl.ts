@@ -154,6 +154,21 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
           }
         }
       }
+
+
+      @media screen and (max-width: $screen-mobile-width) {
+        > input {
+          &[type=year],
+          &[type=month],
+          &[type=date],
+          &[type=datetime],
+          &[type=time],
+          &[type=datetime-local] {
+            padding: calc((var(--font-size-default) * var(--line-height-strip) - var(--font-size-default)) / 2 + var(--gap-sm)) var(--gap-default);
+            /*height: calc(var(--font-size-default) * var(--line-height-strip) + var(--gap-sm) + var(--gap-sm) + 2px);*/
+          }
+        }
+      }
     }
   `]
 })

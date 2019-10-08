@@ -330,11 +330,11 @@ export class SdAngularCompiler extends events.EventEmitter {
           ]
           : [],
         new webpack.DefinePlugin({
-          "process.env.VERSION": `"${this._projectNpmConfig.version}"`,
-          "process.env.BASE_HREF": `"/${this._packageKey}/"`,
+          "process.env.SD_VERSION": `"${this._projectNpmConfig.version}"`,
+          "process.env.SD_BASE_HREF": `"/${this._packageKey}/"`,
           ...env ? this._convertEnvObject(env) : {},
           ...platform ? {
-            "process.env.PLATFORM": `"${platform}"`
+            "process.env.SD_PLATFORM": `"${platform}"`
           } : {}
         })
       ],
