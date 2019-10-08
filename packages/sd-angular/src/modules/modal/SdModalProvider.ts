@@ -52,6 +52,11 @@ export class SdModalProvider {
       modalRef.instance.close.subscribe(() => {
         close();
       });
+      modalRef.instance.closeButtonClickHandler = () => {
+        return compRef.instance.closeButtonClickHandler
+          ? compRef.instance.closeButtonClickHandler.bind(compRef.instance)()
+          : true;
+      };
 
       compRef.instance.close = close.bind(this); //tslint:disable-line:unnecessary-bind
 
@@ -83,6 +88,8 @@ export abstract class SdModalBase<P, R> {
   public _tResult!: R;
 
   public abstract sdOnOpen(param: P): void | Promise<void>;
+
+  public closeButtonClickHandler?: () => boolean | Promise<boolean>;
 
   public close: (value?: R) => void = (value?: R) => {
     throw new Error("모달이 초기화되어있지 않습니다.");

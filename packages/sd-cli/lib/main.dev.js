@@ -38,7 +38,11 @@ function start() {
     }
 
     // 이전 ngModule 지우기
-    ngModuleRef.destroy();
+    try {
+      ngModuleRef.destroy();
+    }
+    catch {
+    }
 
     // 이전 엘리먼트 삭제
     for (const prevEl of prevEls) {

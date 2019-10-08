@@ -43,7 +43,7 @@ import {optional} from "@simplysm/sd-core";
   styles: [/* language=SCSS */ `
     @import "../../../scss/mixins";
     @import "../../../scss/variables-scss";
-    
+
     sd-modal {
       display: block;
       position: fixed;
@@ -260,6 +260,8 @@ export class SdModalControl implements OnInit {
 
   private _sizeConfig: { width?: number; height?: number } | undefined;
 
+  public closeButtonClickHandler?: () => boolean | Promise<boolean>;
+
   public constructor(private readonly _elRef: ElementRef,
                      private readonly _localStorage: SdLocalStorageProvider) {
   }
@@ -296,6 +298,13 @@ export class SdModalControl implements OnInit {
   }
 
   public onCloseButtonClick(): void {
+    if (this.closeButtonClickHandler) {
+      const isContinue = this.closeButtonClickHandler();
+      if (!isContinue) {
+        return;
+      }
+    }
+
     this.open = false;
     this.close.emit();
   }
