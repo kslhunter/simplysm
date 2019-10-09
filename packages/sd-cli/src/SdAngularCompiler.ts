@@ -22,8 +22,8 @@ import {SdWebpackInputHostWithScss} from "./plugins/SdWebpackInputHostWithScss";
 import {SdWebpackNgModulePlugin} from "./plugins/SdWebpackNgModulePlugin";
 import {SdWebpackForkTsCheckerPlugin} from "./plugins/SdWebpackForkTsCheckerPlugin";
 import * as CircularDependencyPlugin from "circular-dependency-plugin";
-import * as https from "https";
 import * as glob from "glob";
+import * as os from "os";
 
 export class SdAngularCompiler extends events.EventEmitter {
   private readonly _contextPath: string;
@@ -715,7 +715,7 @@ export class SdAngularCompiler extends events.EventEmitter {
   }
 
   private async _getCurrentIPAsync(): Promise<string> {
-    return await new Promise<string>(resolve => {
+    /*return await new Promise<string>(resolve => {
       https.request({
         hostname: "api.ipify.org",
         path: "/",
@@ -726,14 +726,14 @@ export class SdAngularCompiler extends events.EventEmitter {
           res.destroy();
         });
       }).end();
-    });
+    });*/
 
-    /*const ifaces = os.networkInterfaces();
+    const ifaces = os.networkInterfaces();
     const result = Object.keys(ifaces)
       .map(key => ifaces[key].filter(item => item.family === "IPv4" && !item.internal))
       .filter(item => item.length > 0).mapMany(item => item.map(item1 => item1.address));
     console.log(result);
-    return result[0];*/
+    return result[0];
   }
 
   private _emitWebpackCompilerStats(stats: webpack.Stats): boolean {
