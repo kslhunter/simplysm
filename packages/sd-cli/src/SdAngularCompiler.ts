@@ -732,7 +732,7 @@ export class SdAngularCompiler extends events.EventEmitter {
     const result = Object.keys(ifaces)
       .map(key => ifaces[key].filter(item => item.family === "IPv4" && !item.internal))
       .filter(item => item.length > 0).mapMany(item => item.map(item1 => item1.address));
-    console.log(result);
+    // console.log(result);
     return result[0];
   }
 

@@ -30,8 +30,6 @@ export class SdServiceClient {
   public async connectAsync(): Promise<void> {
     try {
       await new Promise<void>((resolve, reject) => {
-        console.log(1);
-
         if (process.versions.node) {
           if (!this.host || !this.port) {
             throw new Error("호스트와 포트가 반드시 입력되어야 합니다.");
