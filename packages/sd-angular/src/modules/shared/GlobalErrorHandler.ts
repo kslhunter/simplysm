@@ -19,14 +19,14 @@ export class GlobalErrorHandler implements ErrorHandler {
     const err: Error = error.rejection ? error.rejection : error;
     console.error(err);
 
-    const isUserSendFnSuccess = await this._log.write({stack: err.stack, type: "error"});
-
     const appRef = this._ngModule.injector.get(ApplicationRef);
 
     // 새 엘리먼트 넣기
-    const prevEls = appRef.components.map(cmp => cmp.location.nativeElement);
+    const prevEls = appRef.components.map(cmp => cmp.location.nativeElement).filterExists();
 
     if (process.env.NODE_ENV === "production") {
+      const isUserSendFnSuccess = await this._log.write({stack: err.stack, type: "error"});
+
       for (const prevEl of prevEls) {
         const newEl = document.createElement(prevEl.tagName);
         if (process.env.NODE_ENV === "production") {
@@ -64,6 +64,8 @@ ${new DateTime().toFormatString("yyyy-MM-dd HH:mm:ss.fff")}<br/>
 
       divEl.innerHTML = `<pre style="font-size: 12px; font-family: 'D2Coding', monospace; line-height: 1.2em;">${err.stack}</pre>`;
       prevEls[0].appendChild(divEl);
+
+      await this._log.write({stack: err.stack, type: "error"});
     }
   }
 }

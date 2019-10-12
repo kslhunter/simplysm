@@ -147,6 +147,7 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
       const resultMessage = JsonConvert.parse(resultMessageJson);
 
       res.end(/* language=HTML */ `
+        <!DOCTYPE html>
         <html lang="kr">
         <head>
           <title>이지페이</title>
@@ -175,6 +176,20 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
     }
   }
   catch (err) {
+    res.writeHead(500);
+    res.end(`
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <title>이지페이</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+</head>
+<body>
+<div>500 Internal Server Error</div>
+<pre>${process.env.NODE_ENV === "production" ? "" : err.stack}</pre>
+</body>
+</html>`);
     next(err);
   }
 }

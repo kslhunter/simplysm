@@ -82,7 +82,6 @@ export class SdEasyPayProvider {
         prevKiccPopupClose();
 
         const inputEl = window.document.getElementById("res_cd") as HTMLInputElement;
-        console.log(inputEl);
         if (!inputEl) {
           document.body.removeChild(formEl);
           resolve(undefined);
