@@ -41,7 +41,8 @@ function start() {
     try {
       ngModuleRef.destroy();
     }
-    catch {
+    catch (err) {
+
     }
 
     // 이전 엘리먼트 삭제
