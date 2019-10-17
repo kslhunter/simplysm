@@ -141,7 +141,7 @@ export class SdProjectBuilder {
         for (const tsPathKey of Object.keys(tsOptions.paths)) {
           const result = [];
           for (const tsPathValue of tsOptions.paths[tsPathKey] as string[]) {
-            result.push(tsPathValue.replace(/\/src\/index\.ts$/, ""));
+            result.push(tsPathValue.replace(/\/src\/index\..*ts$/, ""));
           }
           tsOptions.paths[tsPathKey] = result;
         }

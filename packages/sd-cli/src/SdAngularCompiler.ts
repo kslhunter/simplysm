@@ -306,7 +306,8 @@ export class SdAngularCompiler extends events.EventEmitter {
       },
       resolve: {
         extensions: [".ts", ".js", ".json"],
-        alias: this._alias
+        alias: this._alias,
+        aliasFields: ["browser"]
       },
       module: {
         strictExportPresence: true,

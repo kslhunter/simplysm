@@ -25,7 +25,7 @@ declare global {
 
     single(predicate?: (item: T, index: number) => boolean): T | undefined;
 
-    single(key: keyof T, checkValue: T): T | undefined;
+    single<K extends keyof T>(key: K, checkValue: T[K]): T | undefined;
 
     last(predicate?: (item: T, index: number) => boolean): T | undefined;
 
