@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-smtp-client",
-  "version": "2.2.87",
+  "version": "2.2.88",
   "description": "심플리즘 패키지 - SMTP 클라이언트",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -10,7 +10,7 @@
   "sideEffects": false,
   "dependencies": {
     "@types/nodemailer": "^6.2.1",
-    "@simplysm/sd-core": "2.2.87",
+    "@simplysm/sd-core": "2.2.88",
     "nodemailer": "^6.3.0"
   },
   "devDependencies": {
