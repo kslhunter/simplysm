@@ -419,7 +419,7 @@ export class SdTypescriptProgram {
     fs.removeSync(moduleDirPath);
     fs.removeSync(routesRootFilePath);
 
-    for (const fileInfo of this._fileInfoMap.values()) {
+    for (const fileInfo of Array.from(this._fileInfoMap.values())) {
       fileInfo.syncVersions.emitNgModule = 0;
       fileInfo.syncVersions.emitNgRoutingModule = 0;
     }
