@@ -9,6 +9,18 @@ enableProdMode();
 
 if (process.env.SD_PLATFORM) {
   // document.addEventListener("deviceready", () => {
+  window.addEventListener = function () {
+    EventTarget.prototype.addEventListener.apply(this, arguments);
+  };
+  window.removeEventListener = function () {
+    EventTarget.prototype.removeEventListener.apply(this, arguments);
+  };
+  document.addEventListener = function () {
+    EventTarget.prototype.addEventListener.apply(this, arguments);
+  };
+  document.removeEventListener = function () {
+    EventTarget.prototype.removeEventListener.apply(this, arguments);
+  };
   platformBrowserDynamic().bootstrapModuleFactory(AppModuleNgFactory).catch(err => {
     console.error(err);
   });
