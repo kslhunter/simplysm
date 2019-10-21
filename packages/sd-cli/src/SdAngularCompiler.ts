@@ -297,7 +297,7 @@ export class SdAngularCompiler extends events.EventEmitter {
     const faviconPath = path.resolve(this._contextPath, "src", "favicon.ico");
 
     return {
-      target: platform === "android" ? "node" : "web",
+      target: /*platform === "android" ? "node" :*/ "web",
       output: {
         publicPath: platform === "android" ? "/android_asset/www/" : `/${this._packageKey}/`,
         path: platform === "android" ? path.resolve(this._contextPath, ".cordova", "www") : this._distPath,
@@ -316,7 +316,7 @@ export class SdAngularCompiler extends events.EventEmitter {
       plugins: [
         new HtmlWebpackPlugin({
           template: path.resolve(__dirname, `../lib/index.ejs`),
-          BASE_HREF: `/${this._packageKey}/`,
+          BASE_HREF: platform === "android" ? "/android_asset/www/" : `/${this._packageKey}/`,
           ...platform ? {
             PLATFORM: platform
           } : {}
@@ -503,14 +503,18 @@ export class SdAngularCompiler extends events.EventEmitter {
           const cordovaProjectPath = path.resolve(this._contextPath, ".cordova");
           const mobileConfig = config.mobile!;
 
+          const buildType = mobileConfig.debug ? "debug" : "release";
+
+          fs.removeSync(path.resolve(cordovaProjectPath, "platforms", "android", `${buildType}-signing.jks`));
+          fs.removeSync(path.resolve(cordovaProjectPath, "platforms", "android", `${buildType}-signing.properties`));
           if (mobileConfig.sign) {
             fs.copySync(
-              path.resolve(this._contextPath, mobileConfig.sign, "release-signing.jks"),
-              path.resolve(cordovaProjectPath, "platforms", "android", "release-signing.jks")
+              path.resolve(this._contextPath, mobileConfig.sign, `${buildType}-signing.jks`),
+              path.resolve(cordovaProjectPath, "platforms", "android", `${buildType}-signing.jks`)
             );
             fs.copySync(
-              path.resolve(this._contextPath, mobileConfig.sign, "release-signing.properties"),
-              path.resolve(cordovaProjectPath, "platforms", "android", "release-signing.properties")
+              path.resolve(this._contextPath, mobileConfig.sign, `${buildType}-signing.properties`),
+              path.resolve(cordovaProjectPath, "platforms", "android", `${buildType}-signing.properties`)
             );
           }
 
@@ -531,16 +535,22 @@ export class SdAngularCompiler extends events.EventEmitter {
           fs.writeFileSync(path.resolve(cordovaProjectPath, "config.xml"), configFileContent, "utf-8");
 
           const cordovaBinPath = path.resolve(process.cwd(), "node_modules", ".bin", "cordova.cmd");
-          await ProcessManager.spawnAsync(`${cordovaBinPath} build android --release`, {cwd: cordovaProjectPath});
 
-          const apkFileName = mobileConfig.sign ? "app-release.apk" : "app-release-unsigned.apk";
-          const distApkFileName = `${mobileConfig.name.replace(/ /g, "_")}${mobileConfig.sign ? "" : "-unsigned"}-v${version}.apk`;
+          if (mobileConfig.device) {
+            await ProcessManager.spawnAsync(`${cordovaBinPath} run android --${buildType} --device`, {cwd: cordovaProjectPath});
+          }
+          else {
+            await ProcessManager.spawnAsync(`${cordovaBinPath} build android --${buildType}`, {cwd: cordovaProjectPath});
 
-          fs.mkdirsSync(this._distPath);
-          fs.copyFileSync(
-            path.resolve(cordovaProjectPath, "platforms", "android", "app", "build", "outputs", "apk", "release", apkFileName),
-            path.resolve(this._distPath, distApkFileName)
-          );
+            const apkFileName = `app-${buildType}.apk`;
+            const distApkFileName = `${mobileConfig.name.replace(/ /g, "_")}${mobileConfig.debug ? "-debug" : ""}${mobileConfig.sign ? "" : "-unsigned"}-v${version}.apk`;
+
+            fs.mkdirsSync(this._distPath);
+            fs.copyFileSync(
+              path.resolve(cordovaProjectPath, "platforms", "android", "app", "build", "outputs", "apk", buildType, apkFileName),
+              path.resolve(this._distPath, distApkFileName)
+            );
+          }
         }
 
         this.emit("done");

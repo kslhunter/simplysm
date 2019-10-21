@@ -85,6 +85,7 @@
   </div>
 </app-root>
 
-<%= htmlWebpackPlugin.options.PLATFORM ? "<script src=\"cordova.js\"></script>" : "" %>
+<%= htmlWebpackPlugin.options.PLATFORM === "android" ? "<script src=\"/android_asset/www/cordova.js\"></script>" : "" %>
+<%= htmlWebpackPlugin.options.PLATFORM === "browser" ? "<script src=\"cordova.js\"></script>" : "" %>
 </body>
 </html>

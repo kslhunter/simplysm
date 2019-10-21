@@ -28,7 +28,7 @@ export class Logger {
     consoleLogSeverities: process.env.NODE_ENV === "production"
       ? []
       : ["log", "info", "warn", "error"],
-    fileLogSeverities: process.env.NODE_ENV === "production"
+    fileLogSeverities: (process.env.NODE_ENV === "production" && (process.versions.node && !process.env.SD_PLATFORM))
       ? ["log", "info", "warn", "error"]
       : [],
     outputPath: process.env.NODE_ENV === "production" && (process.versions.node && !process.env.SD_PLATFORM) ? "logs" : undefined,

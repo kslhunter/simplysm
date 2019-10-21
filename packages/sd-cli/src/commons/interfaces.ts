@@ -20,6 +20,7 @@ export interface ISdPackageConfig {
     sign?: string;
     icon?: string;
     device?: boolean;
+    debug?: boolean;
   };
   publish?: "npm" | ISdSimplysmPublishConfig;
   configs?: { [key: string]: any };
