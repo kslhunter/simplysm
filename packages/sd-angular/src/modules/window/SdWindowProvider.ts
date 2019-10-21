@@ -9,7 +9,7 @@ export class SdWindowProvider {
   }
 
   public open(navigate: string, params?: { [key: string]: string } | undefined, features?: string): void {
-    if (this.isWindow || features) {
+    if (this.isWindow || (features && features !== "_blank")) {
       const newWindow = window.open(
         `${location.pathname}#${navigate};${querystring.stringify({...params, window: true})}`,
         "",
