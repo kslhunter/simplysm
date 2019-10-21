@@ -240,7 +240,7 @@ export class SdServiceServer extends EventEmitter {
 
   private async _onSocketConnectionAsync(conn: WebSocket, connReq: http.IncomingMessage): Promise<void> {
     const origins = await optional(async () => (await SdServiceServerUtil.getConfigAsync(this.rootPath))["service"]["origins"]);
-    if (origins && !origins.includes(connReq.headers.origin)) {
+    if (origins && ![...origins, "file://"].includes(connReq.headers.origin)) {
       throw new Error(`등록되지 않은 'URL'에서 클라이언트의 연결 요청을 받았습니다: ${connReq.headers.origin}`);
     }
 

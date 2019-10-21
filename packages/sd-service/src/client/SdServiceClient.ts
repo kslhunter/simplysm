@@ -292,7 +292,7 @@ export class SdServiceClient {
         params
       };
 
-      if (!process.versions.node) {
+      if (!process.versions.node && process.env.SD_PLATFORM !== "android") {
         // @ts-ignore
         request.url = `${location.protocol}//${location.host}${location.pathname}`;
       }

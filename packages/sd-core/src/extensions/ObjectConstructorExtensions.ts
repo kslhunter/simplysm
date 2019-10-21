@@ -30,7 +30,10 @@ declare global {
 }
 
 Object.clone = function (source: any, options?: { excludeProps?: string[] }): any {
-  if (source instanceof Array) {
+  if (source == undefined) {
+    return source;
+  }
+  else if (source instanceof Array) {
     const result = [];
     for (const sourceItem of source) {
       result.push(Object.clone(sourceItem));
@@ -70,12 +73,16 @@ Object.clone = function (source: any, options?: { excludeProps?: string[] }): an
 Object.merge = function (source: any, obj: any): any {
   const sourceClone = Object.clone(source);
 
-  if (source === undefined) {
+  if (source == undefined) {
     return obj;
   }
 
   if (obj === undefined) {
     return sourceClone;
+  }
+
+  if (obj === null) {
+    return obj;
   }
 
   if (typeof source !== typeof obj) {
