@@ -14,6 +14,7 @@ export * from "./types/Uuid";
 export * from "./utils/JsonConvert";
 export * from "./utils/LambdaParser";
 export * from "./utils/Logger";
+export * from "./utils/MathUtils";
 export * from "./utils/optional";
 export * from "./utils/Wait";
 export * from "./utils/XmlConvert";

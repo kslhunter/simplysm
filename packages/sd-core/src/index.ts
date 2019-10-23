@@ -15,6 +15,7 @@ export * from "./utils/FileWatcher";
 export * from "./utils/JsonConvert";
 export * from "./utils/LambdaParser";
 export * from "./utils/Logger";
+export * from "./utils/MathUtils";
 export * from "./utils/optional";
 export * from "./utils/ProcessManager";
 export * from "./utils/Wait";
