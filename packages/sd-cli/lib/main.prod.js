@@ -8,23 +8,9 @@ const AppModuleNgFactory = require("SD_APP_MODULE_FACTORY").AppModuleNgFactory;
 enableProdMode();
 
 if (process.env.SD_PLATFORM) {
-  // document.addEventListener("deviceready", () => {
-  window.addEventListener = function () {
-    EventTarget.prototype.addEventListener.apply(this, arguments);
-  };
-  window.removeEventListener = function () {
-    EventTarget.prototype.removeEventListener.apply(this, arguments);
-  };
-  document.addEventListener = function () {
-    EventTarget.prototype.addEventListener.apply(this, arguments);
-  };
-  document.removeEventListener = function () {
-    EventTarget.prototype.removeEventListener.apply(this, arguments);
-  };
   platformBrowserDynamic().bootstrapModuleFactory(AppModuleNgFactory).catch(err => {
     console.error(err);
   });
-  // });
 }
 else {
   platformBrowserDynamic().bootstrapModuleFactory(AppModuleNgFactory).catch(err => {
