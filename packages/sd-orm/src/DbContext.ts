@@ -166,9 +166,9 @@ export abstract class DbContext {
               }
             });
           }
-
-          return false;
         }
+
+        return false;
       }
     }
 
