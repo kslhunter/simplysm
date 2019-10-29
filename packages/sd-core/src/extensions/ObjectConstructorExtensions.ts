@@ -106,7 +106,10 @@ Object.merge = function (source: any, obj: any): any {
 };
 
 Object.equal = function (source: any, target: any, options?: { excludeProps?: string[] }): boolean {
-  if (source instanceof Date) {
+  if (source === target) {
+    return true;
+  }
+  else if (source instanceof Date) {
     if (!(target instanceof Date)) {
       return false;
     }
