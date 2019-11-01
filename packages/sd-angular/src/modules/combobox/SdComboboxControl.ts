@@ -121,6 +121,9 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
   @Output()
   public readonly close = new EventEmitter();
 
+  @Input()
+  public valueOption?: boolean;
+
   private readonly _iterableDiffer: IterableDiffer<SdComboboxItemControl>;
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
@@ -143,6 +146,11 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     textfieldEl.addEventListener("focus", this.focusEventHandler, true);
     textfieldEl.addEventListener("blur", this.blurEventHandler, true);
     dropdownEl.addEventListener("blur", this.blurEventHandler, true);
+
+    if (this.valueOption) {
+      this.text = this.value ? this.value.toString() : this.value;
+      this.textChange.emit(this.text);
+    }
   }
 
   public ngOnDestroy(): void {
@@ -155,8 +163,20 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     this.textChangeByInput.emit(this.text);
 
     if (this.value !== undefined) {
-      this.value = undefined;
-      this.valueChange.emit(this.value);
+      if (this.valueOption) {
+        this.value = Number(this.text) || undefined;
+        this.valueChange.emit(this.value);
+      }
+      else {
+        this.value = undefined;
+        this.valueChange.emit(this.value);
+      }
+    }
+    else {
+      if (this.valueOption) {
+        this.value = Number(this.text) || undefined;
+        this.valueChange.emit(this.value);
+      }
     }
   }
 
@@ -230,7 +250,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     );
 
     if (!this.value && this.text) {
-      this.text = undefined;
+      this.text = this.valueOption ? this.text : undefined;
       this.textChange.emit(this.text);
       return;
     }
@@ -296,13 +316,15 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
 
   private _refreshText(): void {
     if (this.value) {
-      const selectedItemControl = this.itemControls!.find(item => item.value === this.value);
+          if (!this.valueOption) {
+        const selectedItemControl = this.itemControls!.find(item => item.value === this.value);
 
-      if (selectedItemControl) {
-        const text = selectedItemControl.content;
-        if (text !== this.text) {
-          this.text = text || "";
-          this.textChange.emit(this.text);
+        if (selectedItemControl) {
+          const text = selectedItemControl.content;
+          if (text !== this.text) {
+            this.text = text || "";
+            this.textChange.emit(this.text);
+          }
         }
       }
     }

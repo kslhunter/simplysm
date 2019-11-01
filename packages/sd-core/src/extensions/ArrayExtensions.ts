@@ -266,7 +266,10 @@ Array.prototype.diffs = function (target: any[], options?: { keyProps?: string[]
   const currTarget = ([] as any[]).concat(target);
   for (const item of this) {
     const existsTargetItem = currTarget.find(targetItem => {
-      if (options && options.keyProps) {
+      if (targetItem === item) {
+        return true;
+      }
+      else if (options && options.keyProps) {
         return options.keyProps.every(keyProp => targetItem[keyProp] === item[keyProp]);
       }
       else {
