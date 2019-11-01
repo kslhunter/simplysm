@@ -42,8 +42,10 @@ export class SdServiceClient {
         }
 
         this._ws.onopen = () => {
-          // @ts-ignore
-          this._ws!.onopen = null;
+          if (this._ws) {
+            // @ts-ignore
+            this._ws.onopen = null;
+          }
           resolve();
         };
 
@@ -64,13 +66,15 @@ export class SdServiceClient {
         };
 
         this._ws.onclose = () => {
-          // @ts-ignore
-          this._ws!.onopen = null;
-          // @ts-ignore
-          this._ws!.onmessage = null;
-          // @ts-ignore
-          this._ws!.onerror = null;
-          this._ws = undefined;
+          if (this._ws) {
+            // @ts-ignore
+            this._ws!.onopen = null;
+            // @ts-ignore
+            this._ws!.onmessage = null;
+            // @ts-ignore
+            this._ws!.onerror = null;
+            this._ws = undefined;
+          }
 
           setTimeout(async () => {
             await this.connectAsync();
@@ -90,13 +94,15 @@ export class SdServiceClient {
   public async closeAsync(): Promise<void> {
     await new Promise<void>(resolve => {
       this._ws!.onclose = () => {
-        // @ts-ignore
-        this._ws!.onopen = null;
-        // @ts-ignore
-        this._ws!.onmessage = null;
-        // @ts-ignore
-        this._ws!.onerror = null;
-        this._ws = undefined;
+        if (this._ws) {
+          // @ts-ignore
+          this._ws!.onopen = null;
+          // @ts-ignore
+          this._ws!.onmessage = null;
+          // @ts-ignore
+          this._ws!.onerror = null;
+          this._ws = undefined;
+        }
 
         resolve();
       };
