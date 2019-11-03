@@ -68,7 +68,7 @@ export const sorm = {
   },
   dateDiff<T extends QueryType>(separator: string | undefined, from: T | undefined, to: T | undefined): number {
     const type = separator || "dd";
-    return new QueryUnit(Number, "DATEDIFF(" + type + ", " + QueryHelper.getFieldQuery(from) + ", " + QueryHelper.getFieldQuery(to) + ") + 1") as any;
+    return new QueryUnit(Number, "DATEDIFF(" + type + ", " + QueryHelper.getFieldQuery(from) + ", " + QueryHelper.getFieldQuery(to) + ")") as any;
   },
   nullOrEmpty(source: undefined | string | QueryUnit<string | undefined>): boolean {
     return this.or([
