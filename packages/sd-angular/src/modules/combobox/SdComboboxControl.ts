@@ -122,7 +122,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
   public readonly close = new EventEmitter();
 
   @Input()
-  public valueOption?: boolean;
+  public userCustomText?: boolean;
 
   private readonly _iterableDiffer: IterableDiffer<SdComboboxItemControl>;
 
@@ -147,7 +147,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     textfieldEl.addEventListener("blur", this.blurEventHandler, true);
     dropdownEl.addEventListener("blur", this.blurEventHandler, true);
 
-    if (this.valueOption) {
+    if (this.userCustomText) {
       this.text = this.value ? this.value.toString() : this.value;
       this.textChange.emit(this.text);
     }
@@ -163,7 +163,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     this.textChangeByInput.emit(this.text);
 
     if (this.value !== undefined) {
-      if (this.valueOption) {
+      if (this.userCustomText) {
         this.value = Number(this.text) || undefined;
         this.valueChange.emit(this.value);
       }
@@ -173,7 +173,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
       }
     }
     else {
-      if (this.valueOption) {
+      if (this.userCustomText) {
         this.value = Number(this.text) || undefined;
         this.valueChange.emit(this.value);
       }
@@ -250,7 +250,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     );
 
     if (!this.value && this.text) {
-      this.text = this.valueOption ? this.text : undefined;
+      this.text = this.userCustomText ? this.text : undefined;
       this.textChange.emit(this.text);
       return;
     }
@@ -316,7 +316,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
 
   private _refreshText(): void {
     if (this.value) {
-          if (!this.valueOption) {
+          if (!this.userCustomText) {
         const selectedItemControl = this.itemControls!.find(item => item.value === this.value);
 
         if (selectedItemControl) {
