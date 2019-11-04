@@ -316,7 +316,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
 
   private _refreshText(): void {
     if (this.value) {
-          if (!this.userCustomText) {
+      if (!this.userCustomText) {
         const selectedItemControl = this.itemControls!.find(item => item.value === this.value);
 
         if (selectedItemControl) {
