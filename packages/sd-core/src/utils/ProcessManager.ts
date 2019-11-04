@@ -9,10 +9,10 @@ export class ProcessManager {
       error: (message: string) => void;
     };
     env?: NodeJS.ProcessEnv;
-  }): Promise<void> {
+  }): Promise<string> {
     const cmds = cmd.split(" ");
 
-    await new Promise<void>((resolve, reject) => {
+    return await new Promise<string>((resolve, reject) => {
       const opts: child_process.SpawnOptionsWithoutStdio = {
         shell: true,
         stdio: "pipe"
@@ -33,8 +33,11 @@ export class ProcessManager {
       });
 
       const iconv = new Iconv("CP949", "UTF-8");
+      let messages = "";
 
       worker.stdout.on("data", (data: Buffer) => {
+        messages += data.toString();
+
         if (options && options.logger) {
           try {
             options.logger.log(iconv.convert(data).toString().trim());
@@ -49,6 +52,8 @@ export class ProcessManager {
       });
 
       worker.stderr.on("data", (data: Buffer) => {
+        messages += data.toString();
+
         if (options && options.logger) {
           try {
             options.logger.error(iconv.convert(data).toString().trim());
@@ -64,7 +69,7 @@ export class ProcessManager {
 
       worker.on("exit", code => {
         if (code === 0) {
-          resolve();
+          resolve(messages);
         }
         else {
           reject(new Error(`exit with code ${code}`));

@@ -153,10 +153,11 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
           <title>이지페이</title>
           <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
           <script>
+            const parent = window.opener || window.parent;
             function _setFormData(formEl, key, value) {
-              let inputEl = window.document.getElementById(key);
+              let inputEl = parent.document.getElementById(key);
               if (!inputEl) {
-                inputEl = window.document.createElement("input");
+                inputEl = parent.document.createElement("input");
                 inputEl.type = "hidden";
                 inputEl.name = key;
                 inputEl.id = key;
@@ -166,7 +167,6 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
               inputEl.value = value;
             }
             
-            const parent = window.opener || window.parent;
             const formEl = parent.document.getElementById("sd-easy-pay-form");
             ${Object.keys(resultMessage).map(key => `_setFormData(formEl, "${key}", ${resultMessage[key] ? `"${resultMessage[key]}"` : "null"});`).join("\n")}
             parent.kicc_popup_close();

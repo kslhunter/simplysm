@@ -103,7 +103,7 @@ export class SdWebpackServerCompiler extends events.EventEmitter {
       module: {
         rules: [
           {
-            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|pfx|zip)$/,
+            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|pfx|zip|exe)$/,
             loader: "file-loader",
             options: {
               name: `assets/[name].[ext]${opt.hash ? "?[hash]" : ""}`

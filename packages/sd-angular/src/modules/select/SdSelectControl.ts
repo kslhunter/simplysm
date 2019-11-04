@@ -6,7 +6,8 @@ import {
   ContentChild,
   DoCheck,
   ElementRef,
-  EventEmitter, HostBinding,
+  EventEmitter,
+  HostBinding,
   Input,
   IterableDiffer,
   IterableDiffers,
@@ -116,6 +117,20 @@ import {JsonConvert} from "@simplysm/sd-core";
       &[sd-invalid=true] > sd-dropdown > div > ._invalid-indicator {
         @include invalid-indicator();
       }
+
+      &[sd-inline=true] {
+        display: inline-block;
+        width: auto;
+        vertical-align: top;
+      }
+
+      &[sd-size=sm] > sd-dropdown > div {
+        padding-left: var(--gap-xs);
+        > ._icon {
+          padding: var(--gap-xs) 0;
+        }
+        height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip) + 2px);
+      }
     }
 
     ._sd-select-item > ._children {
@@ -191,6 +206,19 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
 
   @Output()
   public readonly open = new EventEmitter();
+
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-inline")
+  public inline?: boolean;
+
+  @Input()
+  @SdTypeValidate({
+    type: String,
+    includes: ["sm", "lg"]
+  })
+  @HostBinding("attr.sd-size")
+  public size?: "sm" | "lg";
 
   public get isDropdownLocatedTop(): boolean {
     return this.dropdownControl ? this.dropdownControl.isDropdownLocatedTop : false;
