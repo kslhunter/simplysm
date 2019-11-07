@@ -30,6 +30,7 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
            (blur)="onBlur($event)"
            [disabled]="disabled"
            [style.text-align]="type === 'number' ? 'right' : undefined"
+           [step]="step"
            *ngIf="!multiline"/>
     <textarea #input
               [rows]="rows"
@@ -272,9 +273,9 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
 
   public get controlValue(): number | string {
     return this.value === undefined ? ""
-      : this.value instanceof DateTime ? this.value.toFormatString("yyyy-MM-ddTHH:mm")
+      : this.value instanceof DateTime ? this.value.toFormatString("yyyy-MM-ddTHH:mm:ss")
         : this.value instanceof DateOnly ? ((this.type === "year" && this.value instanceof DateOnly) ? this.value.toFormatString("yyyy") : this.type === "month" ? this.value.toFormatString("yyyy-MM") : this.value.toString())
-          : this.value instanceof Time ? this.value.toFormatString("HH:mm")
+          : this.value instanceof Time ? this.value.toFormatString("HH:mm:ss")
             : this.type === "number" && typeof this.value === "number" ? this.value.toLocaleString()
               : this.value;
   }
