@@ -950,7 +950,6 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
 
     el.findAll("._body")[0].addEventListener("mutation", (event: Event) => {
       const records = event["detail"].mutations as MutationRecord[];
-      console.log("mutation", records);
       const record = records
         .filter(item =>
           (item.type === "childList" && item.target instanceof HTMLElement && item.target.findParent("._body ._row")) ||

@@ -397,7 +397,7 @@ export class SdModalControl implements OnInit {
 
   public onResizerMousedown(event: MouseEvent, direction: "left" | "right" | "bottom" | "all-left" | "all-right"): void {
     const dialogEl = (this._elRef.nativeElement as HTMLElement).findAll("> ._dialog")[0] as HTMLElement;
-    console.log(dialogEl.style.left, dialogEl.style.top);
+    // console.log(dialogEl.style.left, dialogEl.style.top);
 
     const startX = event.clientX;
     const startY = event.clientY;
