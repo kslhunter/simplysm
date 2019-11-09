@@ -888,49 +888,62 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
 
   public ngOnInit(): void {
     this._loadConfig();
-
-    const el = (this._elRef.nativeElement as HTMLElement);
-    el.addEventListener("scroll", () => {
-      const fixedColGroupEls = el.findAll("._fixed-col-group") as HTMLElement[];
-      for (const fixedColGroupEl of fixedColGroupEls) {
-        fixedColGroupEl.style.left = el.scrollLeft + "px";
-      }
-      const topbarEl = el.findAll("._topbar")[0] as HTMLElement;
-      if (topbarEl) {
-        topbarEl.style.left = el.scrollLeft + "px";
-      }
-
-      const headerEl = el.findAll("._head")[0] as HTMLElement;
-      headerEl.style.top = el.scrollTop + "px";
-    });
   }
 
   public ngAfterViewInit(): void {
     const el = this._elRef.nativeElement as HTMLElement;
-    el.addEventListener("focus", (event: Event) => {
-      if ((event.target as HTMLElement).classList.contains("_select-icon")) {
-        return;
+    const pane = el.findAll("sd-pane")[0];
+    pane.addEventListener("scroll", () => {
+      const fixedColGroupEls = el.findAll("._fixed-col-group") as HTMLElement[];
+      for (const fixedColGroupEl of fixedColGroupEls) {
+        fixedColGroupEl.style.left = pane.scrollLeft + "px";
       }
+      /*const topbarEl = el.findAll("._topbar")[0] as HTMLElement;
+      if (topbarEl) {
+        topbarEl.style.left = pane.scrollLeft + "px";
+      }*/
 
-      if (this.selectable === "manual" && this.selectedItem) {
-        const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
-        if (!cellEl) return;
-        if (cellEl.classList.contains("_first-col")) return;
+      const headerEl = el.findAll("._head")[0] as HTMLElement;
+      headerEl.style.top = pane.scrollTop + "px";
+    });
 
-        const rowEl = (event.target as HTMLElement).findParent("._row") as HTMLElement;
-        if (!rowEl) return;
+    el.addEventListener("focus", (event: Event) => {
+      if (!(event.target as HTMLElement).classList.contains("_select-icon")) {
+        if (this.selectable === "manual" && this.selectedItem) {
+          const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
+          if (!cellEl) return;
+          if (cellEl.classList.contains("_first-col")) return;
 
-        const bodyEl = rowEl.parentElement as Element;
-        const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-        const cursorItem = this._getItemByRowIndex(rowIndex);
-        if (this.selectedItem !== cursorItem) {
-          this.selectedItem = undefined;
-          this.selectedItemChange.emit(undefined);
+          const rowEl = (event.target as HTMLElement).findParent("._row") as HTMLElement;
+          if (!rowEl) return;
+
+          const bodyEl = rowEl.parentElement as Element;
+          const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+          const cursorItem = this._getItemByRowIndex(rowIndex);
+          if (this.selectedItem !== cursorItem) {
+            this.selectedItem = undefined;
+            this.selectedItemChange.emit(undefined);
+          }
+        }
+        else if (this.selectable === true) {
+          this.selectRow(event.target as HTMLElement);
         }
       }
-      else if (this.selectable === true) {
-        this.selectRow(event.target as HTMLElement);
+
+      {
+        const fixedColGroupEls = el.findAll("._fixed-col-group") as HTMLElement[];
+        const cellEl = (event.target as HTMLElement).matches("._col")
+          ? event.target as HTMLElement
+          : (event.target as HTMLElement).findParent("._col") as HTMLElement | undefined;
+        if (cellEl && !cellEl.findParent("._fixed-col-group")) {
+          const left = fixedColGroupEls[0].offsetWidth;
+          const offset = cellEl.getRelativeOffset(cellEl.findParent("sd-pane") as HTMLElement);
+          if (offset.left < left) {
+            el.findAll("sd-pane")[0].scrollLeft += offset.left - left;
+          }
+        }
       }
+
     }, true);
 
     const configRowColHeight = (rowEl: Element) => {
