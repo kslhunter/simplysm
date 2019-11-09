@@ -122,21 +122,7 @@
       true,
       "ignore-same-line"
     ],
-    "ban-types": [
-      true,
-      [
-        "Object",
-        "Avoid using the `Object` type. Did you mean `object`?"
-      ],
-      [
-        "Function",
-        "Avoid using the `Function` type. Prefer a specific function type, like `() => void`."
-      ],
-      [
-        "Symbol",
-        "Avoid using the `Symbol` type. Did you mean `symbol`?"
-      ]
-    ],
+    "ban-types": false,
     "no-empty-interface": false,
     "cyclomatic-complexity": false,
     "no-boolean-literal-compare": false,

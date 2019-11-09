@@ -31,7 +31,7 @@ export class SdSheetColumnControl {
   public fixed?: boolean;
 
   @ContentChild("cell", {static: true})
-  public cellTemplateRef?: TemplateRef<{ item: any; index: number }>;
+  public cellTemplateRef?: TemplateRef<{ items: any[]; item: any; index: number }>;
 
   @ContentChild("head", {static: true})
   public headTemplateRef?: TemplateRef<{ item: any; index: number }>;

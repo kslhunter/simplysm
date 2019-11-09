@@ -1,4 +1,4 @@
-import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector} from "@angular/core";
+import {ApplicationRef, ComponentFactoryResolver, ComponentRef, Injectable, Injector} from "@angular/core";
 import {Type} from "@simplysm/sd-core";
 import {SdModalControl} from "./SdModalControl";
 
@@ -11,8 +11,7 @@ export class SdModalProvider {
 
   public modalCount = 0;
 
-  public async show<T extends SdModalBase<any, any>>(modalType: Type<T>, title: string, param: T["_tParam"], option?: { hideCloseButton?: boolean; float?: boolean; minHeight?: string; useCloseByBackdrop?: boolean }): Promise<T["_tResult"] | undefined> {
-
+  public async show<T extends SdModalBase<any, any>>(modalType: Type<T>, title: string, param: T["_tParam"], option?: { hideCloseButton?: boolean; float?: boolean; minHeight?: string; useCloseByBackdrop?: boolean; onModalRefCreated?: (modalRef: ComponentRef<SdModalControl>) => void }): Promise<T["_tResult"] | undefined> {
     this.modalCount++;
 
     return await new Promise<T["_tResult"]>(resolve => {
@@ -24,6 +23,10 @@ export class SdModalProvider {
         this._injector,
         [[compRef.location.nativeElement]]
       );
+      if (option && option.onModalRefCreated) {
+        option.onModalRefCreated(modalRef);
+      }
+
       const modalEl = modalRef.location.nativeElement as HTMLElement;
       rootCompEl.appendChild(modalEl);
 
@@ -73,6 +76,7 @@ export class SdModalProvider {
           this._appRef.tick();
           await compRef.instance.sdOnOpen(param);
           this._appRef.tick();
+          (modalEl.findAll("> ._dialog")[0] as HTMLElement).focus();
         }
         catch (e) {
           close();
