@@ -1,6 +1,7 @@
 import {Injectable} from "@angular/core";
 import {EventManager} from "@angular/platform-browser";
 import {ResizeEvent} from "../../commons/ResizeEvent";
+import {NotImplementError} from "@simplysm/sd-core";
 
 @Injectable()
 export class ResizeEventPlugin {
@@ -59,6 +60,22 @@ export class ResizeEventPlugin {
         window.clearTimeout(timeout);
       };
     }
+  }
+
+  public addGlobalEventListener(element: string, eventName: string, handler: Function): Function {
+    if (element === "window") {
+      const listener = (event: Event) => {
+        handler(event);
+      };
+
+      window.addEventListener(eventName, listener);
+
+      return () => {
+        window.removeEventListener(eventName, listener);
+      };
+    }
+
+    throw new NotImplementError();
   }
 
   public supports(eventName: string): boolean {

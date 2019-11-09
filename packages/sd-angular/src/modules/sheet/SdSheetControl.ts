@@ -27,7 +27,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
   encapsulation: ViewEncapsulation.None,
   template: `
     <sd-dock-container>
-      <sd-dock class="_topbar">
+      <sd-dock class="_topbar" *ngIf="!!id || pageLength > 1">
         <div class="_options" *ngIf="!!id">
           <sd-dropdown>
             <a>
@@ -183,7 +183,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
                           [style.width.px]="getWidth(columnControl)" tabindex="0"
                           (keydown)="onCellKeydown($event)">
                         <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                     [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
+                                     [ngTemplateOutletContext]="{items: items, item: item, index: i}"></ng-template>
                         <div class="_focus-indicator"></div>
                       </div>
                     </div>
@@ -194,7 +194,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
                           [style.width.px]="getWidth(columnControl)" tabindex="0"
                           (keydown)="onCellKeydown($event)">
                         <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                     [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
+                                     [ngTemplateOutletContext]="{items: items, item: item, index: i}"></ng-template>
                         <div class="_focus-indicator"></div>
                       </div>
                     </div>
@@ -239,7 +239,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
                           </th>
                           <td>
                             <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                         [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
+                                         [ngTemplateOutletContext]="{items: items, item: item, index: i}"></ng-template>
                           </td>
                         </tr>
                       </ng-container>
@@ -254,7 +254,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
                           </th>
                           <td>
                             <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                         [ngTemplateOutletContext]="{item: item, index: i}"></ng-template>
+                                         [ngTemplateOutletContext]="{items: items, item: item, index: i}"></ng-template>
                           </td>
                         </tr>
                       </ng-container>
@@ -318,7 +318,8 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
         position: relative;
         display: inline-block;
         vertical-align: top;
-        height: calc(var(--sheet-row-height) + 1px);
+        // TODO: height
+        min-height: calc(var(--sheet-row-height) + 1px);
 
         &:focus {
           outline-color: transparent;
@@ -586,7 +587,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
 
               &._selected {
                 background: var(--theme-primary-default);
-                
+
                 > ._select-icon {
                   color: white
                 }
@@ -858,7 +859,8 @@ export class SdSheetControl implements DoCheck, OnInit {
     this._iterableDiffer = this._iterableDiffers.find([]).create((i: number, item: any) => this.trackByItemFn(i, item));
     this._iterableDifferForColumn = this._iterableDiffers.find([]).create();
 
-    (this._elRef.nativeElement as HTMLElement).addEventListener("focus", (event: Event) => {
+    const el = this._elRef.nativeElement as HTMLElement;
+    el.addEventListener("focus", (event: Event) => {
       if ((event.target as HTMLElement).classList.contains("_select-icon")) {
         return;
       }
@@ -881,6 +883,43 @@ export class SdSheetControl implements DoCheck, OnInit {
       }
       else if (this.selectable === true) {
         this.selectRow(event.target as HTMLElement);
+      }
+    }, true);
+
+    const configRowColHeight = (rowEl: HTMLElement) => {
+      console.log("rowColHeight");
+      const siblingEls = rowEl.parentElement!.parentElement!.findAll("._col") as HTMLElement[];
+      for (const siblingEl of siblingEls) {
+        siblingEl.style.height = null; //tslint:disable-line:no-null-keyword
+      }
+
+      // repaint
+      (rowEl as HTMLElement).offsetHeight; // tslint:disable-line:no-unused-expression
+
+      const maxHeight = siblingEls.filter(item => !item.classList.contains("_first-col")).max(item => item.clientHeight);
+      for (const siblingEl of siblingEls) {
+        siblingEl.style.height = maxHeight + "px";
+      }
+    };
+
+    el.addEventListener("mutation", (event: Event) => {
+      const records = event["detail"].mutations as MutationRecord[];
+      const record = records
+        .filter(item => ["childList"].includes(item.type))
+        .filter(item => el.findAll("._body ._row").includes((item.target instanceof HTMLElement && item.target.findParent("._row")) as any))
+        .distinct()
+        .single();
+      if (!record) return;
+
+      const rowEl = (record.target as HTMLElement).findParent("._row") as HTMLElement;
+      configRowColHeight(rowEl);
+    }, true);
+
+    el.addEventListener("resize", (event: Event) => {
+      const dimensions = event["detail"].dimensions as string[];
+      if (dimensions.includes("height") && event.target instanceof HTMLElement && event.target.findParent("._row")) {
+        const rowEl = (event.target as HTMLElement).findParent("._row") as HTMLElement;
+        configRowColHeight(rowEl);
       }
     }, true);
   }

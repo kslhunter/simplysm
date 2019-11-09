@@ -19,7 +19,8 @@ import {optional} from "@simplysm/sd-core";
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
-    <div class="_dialog" tabindex="0" [style.minHeight]="minHeight">
+    <div class="_dialog" tabindex="0" [style.minHeight]="minHeight"
+         (focus)="onDialogFocus($event)">
       <sd-dock-container>
         <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)">
           <h5 class="_title">{{ title }}</h5>
@@ -117,9 +118,9 @@ import {optional} from "@simplysm/sd-core";
           height: 100%;
           cursor: ew-resize;
 
-          &:hover {
+          /*&:hover {
             background: rgba(0, 0, 0, .3);
-          }
+          }*/
         }
 
         > ._right-resizer {
@@ -130,9 +131,9 @@ import {optional} from "@simplysm/sd-core";
           height: 100%;
           cursor: ew-resize;
 
-          &:hover {
+          /*&:hover {
             background: rgba(0, 0, 0, .3);
-          }
+          }*/
         }
 
         > ._bottom-resizer {
@@ -143,9 +144,9 @@ import {optional} from "@simplysm/sd-core";
           height: 4px;
           cursor: ns-resize;
 
-          &:hover {
+          /*&:hover {
             background: rgba(0, 0, 0, .3);
-          }
+          }*/
         }
 
         > ._all-right-resizer {
@@ -157,9 +158,9 @@ import {optional} from "@simplysm/sd-core";
           z-index: 1;
           cursor: nwse-resize;
 
-          &:hover {
+          /*&:hover {
             background: rgba(0, 0, 0, .3);
-          }
+          }*/
         }
 
         > ._all-left-resizer {
@@ -171,9 +172,9 @@ import {optional} from "@simplysm/sd-core";
           cursor: nesw-resize;
           z-index: 1;
 
-          &:hover {
+          /*&:hover {
             background: rgba(0, 0, 0, .1);
-          }
+          }*/
         }
       }
 
@@ -209,6 +210,11 @@ import {optional} from "@simplysm/sd-core";
           bottom: var(--gap-lg);
           border-radius: 0;
           opacity: 0;
+          @include elevation(4);
+
+          &:focus {
+            @include elevation(16);
+          }
         }
 
         &[sd-open=true] {
@@ -310,21 +316,29 @@ export class SdModalControl implements OnInit {
   }
 
   public onHeaderMouseDown(event: MouseEvent): void {
-    const el = (this._elRef.nativeElement as HTMLElement).findAll("> ._dialog")[0] as HTMLElement;
+    const dialogEl = (this._elRef.nativeElement as HTMLElement).findAll("> ._dialog")[0] as HTMLElement;
     const startX = event.clientX;
     const startY = event.clientY;
-    const startTop = el.offsetTop;
-    const startLeft = el.offsetLeft;
+    const startTop = dialogEl.offsetTop;
+    const startLeft = dialogEl.offsetLeft;
 
     const doDrag = (e: MouseEvent) => {
       e.stopPropagation();
       e.preventDefault();
 
-      el.style.position = "absolute";
-      el.style.left = `${startLeft + e.clientX - startX}px`;
-      el.style.top = `${startTop + e.clientY - startY}px`;
-      el.style.right = `auto`;
-      el.style.bottom = `auto`;
+      dialogEl.style.position = "absolute";
+      dialogEl.style.left = `${startLeft + e.clientX - startX}px`;
+      dialogEl.style.top = `${startTop + e.clientY - startY}px`;
+      dialogEl.style.right = `auto`;
+      dialogEl.style.bottom = `auto`;
+
+      const el = (this._elRef.nativeElement as HTMLElement);
+      if (dialogEl.offsetLeft > el.offsetWidth - 100) {
+        dialogEl.style.left = (el.offsetWidth - 100) + "px";
+      }
+      if (dialogEl.offsetTop > el.offsetHeight - 100) {
+        dialogEl.style.top = (el.offsetHeight - 100) + "px";
+      }
     };
 
     const stopDrag = (e: MouseEvent) => {
@@ -339,6 +353,13 @@ export class SdModalControl implements OnInit {
     document.documentElement!.addEventListener("mouseup", stopDrag, false);
   }
 
+  public onDialogFocus(event: FocusEvent): void {
+    const maxZIndex = document.body.findAll("sd-modal").max(el => Number(getComputedStyle(el).zIndex)) || 4000;
+
+    const currModalEl = (event.target as HTMLElement).findParent("sd-modal") as HTMLElement;
+    currModalEl.style.zIndex = (maxZIndex + 1).toString();
+  }
+
   @HostListener("keydown", ["$event"])
   public onKeydown(event: KeyboardEvent): void {
     if (this.hideCloseButton) {
@@ -347,6 +368,18 @@ export class SdModalControl implements OnInit {
 
     if (event.key === "Escape") {
       this.onCloseButtonClick();
+    }
+  }
+
+  @HostListener("window:resize", ["$event"])
+  public onWindowResize(event: Event): void {
+    const dialogEl = (this._elRef.nativeElement as HTMLElement).findAll("> ._dialog")[0] as HTMLElement;
+    const el = (this._elRef.nativeElement as HTMLElement);
+    if (dialogEl.offsetLeft > el.offsetWidth - 100) {
+      dialogEl.style.left = (el.offsetWidth - 100) + "px";
+    }
+    if (dialogEl.offsetTop > el.offsetHeight - 100) {
+      dialogEl.style.top = (el.offsetHeight - 100) + "px";
     }
   }
 
@@ -363,25 +396,30 @@ export class SdModalControl implements OnInit {
   }
 
   public onResizerMousedown(event: MouseEvent, direction: "left" | "right" | "bottom" | "all-left" | "all-right"): void {
-    const el = (this._elRef.nativeElement as HTMLElement).findAll("> ._dialog")[0] as HTMLElement;
+    const dialogEl = (this._elRef.nativeElement as HTMLElement).findAll("> ._dialog")[0] as HTMLElement;
+    console.log(dialogEl.style.left, dialogEl.style.top);
 
     const startX = event.clientX;
     const startY = event.clientY;
-    const startHeight = el.clientHeight;
-    const startWidth = el.clientWidth;
+    const startHeight = dialogEl.clientHeight;
+    const startWidth = dialogEl.clientWidth;
+    const startLeft = dialogEl.offsetLeft;
 
     const doDrag = (e: MouseEvent) => {
       e.stopPropagation();
       e.preventDefault();
 
       if (direction === "bottom" || direction === "all-right" || direction === "all-left") {
-        el.style.height = `${startHeight + e.clientY - startY}px`;
+        dialogEl.style.height = `${startHeight + e.clientY - startY}px`;
       }
       if (direction === "right" || direction === "all-right") {
-        el.style.width = `${startWidth + (e.clientX - startX) * 2}px`;
+        dialogEl.style.width = `${startWidth + (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2)}px`;
       }
       if (direction === "left" || direction === "all-left") {
-        el.style.width = `${startWidth - (e.clientX - startX) * 2}px`;
+        if (dialogEl.style.position === "absolute") {
+          dialogEl.style.left = (startLeft + (e.clientX - startX)) + "px";
+        }
+        dialogEl.style.width = `${startWidth - (e.clientX - startX) * (dialogEl.style.position === "absolute" ? 1 : 2)}px`;
       }
     };
 
@@ -394,11 +432,11 @@ export class SdModalControl implements OnInit {
 
       this._sizeConfig = this._sizeConfig || {};
       if (direction === "right" || direction === "left" || direction === "all-right" || direction === "all-left") {
-        this._sizeConfig.width = el.style.width ? Number(el.style.width.replace("px", "")) : undefined;
+        this._sizeConfig.width = dialogEl.style.width ? Number(dialogEl.style.width.replace("px", "")) : undefined;
       }
 
       if (direction === "bottom" || direction === "all-right" || direction === "all-left") {
-        this._sizeConfig.height = el.style.height ? Number(el.style.height.replace("px", "")) : undefined;
+        this._sizeConfig.height = dialogEl.style.height ? Number(dialogEl.style.height.replace("px", "")) : undefined;
       }
 
       this._saveSizeConfig();
