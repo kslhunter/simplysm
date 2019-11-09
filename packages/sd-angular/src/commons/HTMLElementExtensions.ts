@@ -88,7 +88,19 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: Event
           }
         }
       });
-      observer.observe(this);
+      if (options === true) {
+        throw new Error("resize 이벤트는 children 의 이벤트를 가져올 수 없습니다.");
+        /*const observeWithChildren = (el: Element) => {
+          observer.observe(el);
+          for (const childEl of Array.from(el.children)) {
+            observeWithChildren(childEl);
+          }
+        };
+        observeWithChildren(this);*/
+      }
+      else {
+        observer.observe(this);
+      }
     }
     else {
       const timeout = window.setInterval(() => {
@@ -140,7 +152,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: Event
         attributeOldValue: true,
         characterData: true,
         characterDataOldValue: true,
-        subtree: true
+        subtree: options === true
       });
     }
     else {

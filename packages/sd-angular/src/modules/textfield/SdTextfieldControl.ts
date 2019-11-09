@@ -43,6 +43,7 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
               (blur)="onBlur($event)"
               [disabled]="disabled"
               [style.text-align]="type === 'number' ? 'right' : undefined"
+              [style.resize]="resize === 'v' ? 'vertical' : resize === 'h' ? 'horizontal' : resize ? '' : 'none'"
               *ngIf="multiline"></textarea>
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
@@ -248,6 +249,13 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate(Number)
   public rows?: number;
+
+  @Input()
+  @SdTypeValidate({
+    type: [String, Boolean],
+    includes: ["v", "h", true, false]
+  })
+  public resize?: "v" | "h" | boolean;
 
   @Input()
   @SdTypeValidate(Function)

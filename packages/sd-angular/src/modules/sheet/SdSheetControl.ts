@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -618,7 +619,7 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
     }
   `]
 })
-export class SdSheetControl implements DoCheck, OnInit {
+export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
   @ContentChildren(SdSheetColumnControl)
   public columnControls?: QueryList<SdSheetColumnControl>;
 
@@ -858,70 +859,6 @@ export class SdSheetControl implements DoCheck, OnInit {
                      private readonly _localStorage: SdLocalStorageProvider) {
     this._iterableDiffer = this._iterableDiffers.find([]).create((i: number, item: any) => this.trackByItemFn(i, item));
     this._iterableDifferForColumn = this._iterableDiffers.find([]).create();
-
-    const el = this._elRef.nativeElement as HTMLElement;
-    el.addEventListener("focus", (event: Event) => {
-      if ((event.target as HTMLElement).classList.contains("_select-icon")) {
-        return;
-      }
-
-      if (this.selectable === "manual" && this.selectedItem) {
-        const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
-        if (!cellEl) return;
-        if (cellEl.classList.contains("_first-col")) return;
-
-        const rowEl = (event.target as HTMLElement).findParent("._row") as HTMLElement;
-        if (!rowEl) return;
-
-        const bodyEl = rowEl.parentElement as Element;
-        const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
-        const cursorItem = this._getItemByRowIndex(rowIndex);
-        if (this.selectedItem !== cursorItem) {
-          this.selectedItem = undefined;
-          this.selectedItemChange.emit(undefined);
-        }
-      }
-      else if (this.selectable === true) {
-        this.selectRow(event.target as HTMLElement);
-      }
-    }, true);
-
-    const configRowColHeight = (rowEl: HTMLElement) => {
-      console.log("rowColHeight");
-      const siblingEls = rowEl.parentElement!.parentElement!.findAll("._col") as HTMLElement[];
-      for (const siblingEl of siblingEls) {
-        siblingEl.style.height = null; //tslint:disable-line:no-null-keyword
-      }
-
-      // repaint
-      (rowEl as HTMLElement).offsetHeight; // tslint:disable-line:no-unused-expression
-
-      const maxHeight = siblingEls.filter(item => !item.classList.contains("_first-col")).max(item => item.clientHeight);
-      for (const siblingEl of siblingEls) {
-        siblingEl.style.height = maxHeight + "px";
-      }
-    };
-
-    el.addEventListener("mutation", (event: Event) => {
-      const records = event["detail"].mutations as MutationRecord[];
-      const record = records
-        .filter(item => ["childList"].includes(item.type))
-        .filter(item => el.findAll("._body ._row").includes((item.target instanceof HTMLElement && item.target.findParent("._row")) as any))
-        .distinct()
-        .single();
-      if (!record) return;
-
-      const rowEl = (record.target as HTMLElement).findParent("._row") as HTMLElement;
-      configRowColHeight(rowEl);
-    }, true);
-
-    el.addEventListener("resize", (event: Event) => {
-      const dimensions = event["detail"].dimensions as string[];
-      if (dimensions.includes("height") && event.target instanceof HTMLElement && event.target.findParent("._row")) {
-        const rowEl = (event.target as HTMLElement).findParent("._row") as HTMLElement;
-        configRowColHeight(rowEl);
-      }
-    }, true);
   }
 
   private _getItemByRowIndex(index: number): any {
@@ -966,6 +903,70 @@ export class SdSheetControl implements DoCheck, OnInit {
       const headerEl = el.findAll("._head")[0] as HTMLElement;
       headerEl.style.top = el.scrollTop + "px";
     });
+  }
+
+  public ngAfterViewInit(): void {
+    const el = this._elRef.nativeElement as HTMLElement;
+    el.addEventListener("focus", (event: Event) => {
+      if ((event.target as HTMLElement).classList.contains("_select-icon")) {
+        return;
+      }
+
+      if (this.selectable === "manual" && this.selectedItem) {
+        const cellEl = (event.target as HTMLElement).findParent("._col") as HTMLElement;
+        if (!cellEl) return;
+        if (cellEl.classList.contains("_first-col")) return;
+
+        const rowEl = (event.target as HTMLElement).findParent("._row") as HTMLElement;
+        if (!rowEl) return;
+
+        const bodyEl = rowEl.parentElement as Element;
+        const rowIndex = Array.from(bodyEl.children).indexOf(rowEl);
+        const cursorItem = this._getItemByRowIndex(rowIndex);
+        if (this.selectedItem !== cursorItem) {
+          this.selectedItem = undefined;
+          this.selectedItemChange.emit(undefined);
+        }
+      }
+      else if (this.selectable === true) {
+        this.selectRow(event.target as HTMLElement);
+      }
+    }, true);
+
+    const configRowColHeight = (rowEl: Element) => {
+      const siblingEls = rowEl./*parentElement!.parentElement!.*/findAll("._col") as HTMLElement[];
+      for (const siblingEl of siblingEls) {
+        siblingEl.style.height = null; //tslint:disable-line:no-null-keyword
+      }
+
+      // repaint
+      (rowEl as HTMLElement).offsetHeight; // tslint:disable-line:no-unused-expression
+
+      const maxHeight = siblingEls.filter(item => !item.classList.contains("_first-col")).max(item => item.clientHeight);
+      for (const siblingEl of siblingEls) {
+        siblingEl.style.height = maxHeight + "px";
+      }
+    };
+
+    el.findAll("._body")[0].addEventListener("mutation", (event: Event) => {
+      const records = event["detail"].mutations as MutationRecord[];
+      console.log("mutation", records);
+      const record = records
+        .filter(item =>
+          (item.type === "childList" && item.target instanceof HTMLElement && item.target.findParent("._body ._row")) ||
+          (item.type === "attributes" && item.attributeName === "style" && item.target instanceof HTMLElement && item.target.findParent("._col"))
+        )
+        .distinct()
+        .single();
+      if (!record) return;
+
+      const rowEl = (record.target as HTMLElement).findParent("._body ._row") as HTMLElement;
+      configRowColHeight(rowEl);
+    }, true);
+
+    for (const rowEl of el.findAll("._body ._row")) {
+      configRowColHeight(rowEl);
+    }
   }
 
   public ngDoCheck(): void {
