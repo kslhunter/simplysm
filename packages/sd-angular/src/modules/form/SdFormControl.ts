@@ -50,8 +50,14 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
           display: inline-block;
           margin-bottom: calc(var(--gap-sm) * -1);
 
-          > sd-form-item {
+          sd-form-item {
             display: inline-block;
+            margin-bottom: var(--gap-sm);
+            margin-right: var(--gap-default);
+
+            &:last-child {
+              margin-right: 0;
+            }
 
             > label {
               display: inline-block;

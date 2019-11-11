@@ -1,5 +1,5 @@
 import {
-  AfterContentChecked,
+  AfterContentChecked, AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -138,7 +138,7 @@ import {JsonConvert} from "@simplysm/sd-core";
     }
   `]
 })
-export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
+export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, AfterViewInit {
   @Input()
   public set value(value: any) {
     this._value = value;
@@ -251,7 +251,9 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit {
   public ngOnInit(): void {
     this._contentEl = this._el.findAll("._sd-select-content")[0] as HTMLElement;
     this._popupEl = this._el.findAll("sd-dropdown-popup")[0] as HTMLElement;
+  }
 
+  public ngAfterViewInit(): void {
     this._refreshContent();
     this._popupEl.addEventListener("mutation", () => {
       this._refreshContent();

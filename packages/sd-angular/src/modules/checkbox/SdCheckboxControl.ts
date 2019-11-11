@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   EventEmitter,
   HostBinding,
   Input,
@@ -17,7 +18,9 @@ import {sdIconNames} from "../../commons/sdIconNames";
   encapsulation: ViewEncapsulation.None,
   template: `
     <label tabindex="0" (keydown)="onKeydown($event)">
-      <input [checked]="value" (change)="onValueChange($event)" [type]="radio ? 'radio' : 'checkbox'" hidden [disabled]="disabled">
+      <input [checked]="value" (change)="onValueChange($event)"
+             [type]="radio ? 'radio' : 'checkbox'" hidden
+             [disabled]="disabled">
       <div class="_indicator_rect"></div>
       <sd-icon class="_indicator" [icon]="icon" *ngIf="!radio"></sd-icon>
       <div class="_indicator" *ngIf="radio">
@@ -201,18 +204,30 @@ export class SdCheckboxControl {
   })
   public icon: IconName = "check";
 
+  public el: HTMLElement;
+
+  public constructor(private readonly _elRef: ElementRef) {
+    this.el = this._elRef.nativeElement as HTMLElement;
+  }
+
   public onValueChange(event: Event): void {
     const el = event.target as HTMLInputElement;
-    this.value = el.checked;
-    this.valueChange.emit(this.value);
+    if (!this.el.hasAttribute("ng-reflect-value")) {
+      this.value = el.checked;
+    }
+    this.valueChange.emit(el.checked);
   }
 
   public onKeydown(event: KeyboardEvent): void {
     if (this.disabled) return;
 
     if (event.key === " ") {
-      this.value = !this.value;
-      this.valueChange.emit(this.value);
+      const el = event.target as HTMLInputElement;
+      if (!el.hasAttribute("ng-reflect-value")) {
+        console.log("??");
+        this.value = !this.value;
+      }
+      this.valueChange.emit(!this.value);
     }
   }
 }
