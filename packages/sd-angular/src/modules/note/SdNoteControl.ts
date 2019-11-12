@@ -22,6 +22,15 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
           border-color: var(--theme-#{$color}-lighter);
         }
       }
+
+      &[sd-size=sm] {
+        font-size: var(--font-size-sm);
+        padding: var(--gap-xs) var(--gap-sm);
+      }
+
+      &[sd-size=lg] {
+        padding: var(--gap-default) var(--gap-lg);
+      }
     }
   `]
 })
@@ -33,4 +42,12 @@ export class SdNoteControl {
   })
   @HostBinding("attr.sd-theme")
   public theme?: "primary" | "info" | "success" | "warning" | "danger";
+
+  @Input()
+  @SdTypeValidate({
+    type: String,
+    includes: ["sm", "lg"]
+  })
+  @HostBinding("attr.sd-size")
+  public size?: "sm" | "lg";
 }
