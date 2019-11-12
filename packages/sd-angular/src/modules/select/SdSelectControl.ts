@@ -257,7 +257,7 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
     this._refreshContent();
     this._popupEl.addEventListener("mutation", () => {
       this._refreshContent();
-    });
+    }, true);
   }
 
   public ngDoCheck(): void {
