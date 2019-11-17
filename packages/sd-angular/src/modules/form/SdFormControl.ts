@@ -43,6 +43,16 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
         }
       }
 
+      &[sd-full-screen=true] {
+        width: 100%;
+        height: 100%;
+
+        > form {
+          width: 100%;
+          height: 100%;
+        }
+      }
+
       &[sd-inline=true] {
         vertical-align: middle;
 
@@ -95,6 +105,11 @@ export class SdFormControl {
   @SdTypeValidate(Boolean)
   @HostBinding("attr.sd-inline")
   public inline?: boolean;
+
+  @Input()
+  @SdTypeValidate(Boolean)
+  @HostBinding("attr.sd-full-screen")
+  public fullScreen?: boolean;
 
   @Output()
   public readonly submit = new EventEmitter<void>();
