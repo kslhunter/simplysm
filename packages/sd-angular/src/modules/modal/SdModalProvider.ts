@@ -77,7 +77,9 @@ export class SdModalProvider {
           this._appRef.tick();
           await compRef.instance.sdOnOpen(param);
           this._appRef.tick();
-          (modalEl.findAll("> ._dialog")[0] as HTMLElement).focus();
+          if (!document.activeElement || !document.activeElement.findParent(modalRef.location.nativeElement)) {
+            (modalEl.findAll("> ._dialog")[0] as HTMLElement).focus();
+          }
         }
         catch (e) {
           close();

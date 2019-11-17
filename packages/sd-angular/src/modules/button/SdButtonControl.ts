@@ -198,6 +198,10 @@ export class SdButtonControl implements AfterContentChecked {
 
   @Input()
   @SdTypeValidate(Boolean)
+  public invalid?: boolean;
+
+  @Input()
+  @SdTypeValidate(Boolean)
   @HostBinding("attr.sd-inset")
   public inset?: boolean;
 
@@ -223,6 +227,10 @@ export class SdButtonControl implements AfterContentChecked {
       if (!((this._elRef.nativeElement as HTMLElement).findAll("> button")[0] as HTMLElement).innerText.trim()) {
         this.isInvalid = true;
       }
+    }
+
+    if (this.invalid) {
+      this.isInvalid = true;
     }
   }
 

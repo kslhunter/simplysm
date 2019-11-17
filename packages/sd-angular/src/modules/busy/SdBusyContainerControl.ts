@@ -12,7 +12,9 @@ import {SdBusyContainerProvider} from "./SdBusyContainerProvider";
         <div class="_indicator"></div>
       </div>
     </div>
-    <ng-content></ng-content>`,
+    <div class="_content">
+      <ng-content></ng-content>
+    </div>`,
   styles: [/* language=SCSS */ `
     sd-busy-container {
       display: block;
@@ -23,6 +25,15 @@ import {SdBusyContainerProvider} from "./SdBusyContainerProvider";
       height: 100%;
       min-width: 70px;
       min-height: 70px;
+
+      > ._content {
+        position: relative;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+      }
 
       > ._screen {
         position: absolute;

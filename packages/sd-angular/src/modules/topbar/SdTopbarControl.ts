@@ -89,9 +89,11 @@ import {SdTopbarMenuControl} from "./SdTopbarMenuControl";
         padding-right: var(--gap-lg);
       }
 
+      /*
       @media screen and (max-width: $screen-mobile-width) {
         @include elevation(4);
       }
+      */
     }
   `]
 })

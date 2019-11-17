@@ -48,7 +48,7 @@ import {optional} from "@simplysm/sd-core";
     @import "../../../scss/variables-scss";
 
     sd-modal {
-      display: block;
+      display: inline-block;
       position: fixed;
       z-index: var(--z-index-modal);
       top: 0;
@@ -57,7 +57,7 @@ import {optional} from "@simplysm/sd-core";
       height: 100%;
       text-align: center;
       padding-top: calc(var(--topbar-height) / 2);
-      overflow: auto;
+      //overflow: auto;
 
       > ._backdrop {
         position: fixed;
@@ -232,6 +232,18 @@ import {optional} from "@simplysm/sd-core";
         > ._dialog {
           width: 100%;
           height: 100%;
+
+          > sd-dock-container {
+            > ._header {
+              > ._title {
+                padding: var(--gap-sm) var(--gap-default);
+              }
+
+              > ._close-button {
+                padding: var(--gap-sm) var(--gap-default);
+              }
+            }
+          }
         }
       }
     }
