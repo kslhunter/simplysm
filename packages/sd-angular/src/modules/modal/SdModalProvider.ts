@@ -11,7 +11,7 @@ export class SdModalProvider {
 
   public modalCount = 0;
 
-  public async show<T extends SdModalBase<any, any>>(modalType: Type<T>, title: string, param: T["_tParam"], option?: { hideCloseButton?: boolean; float?: boolean; minHeight?: string; useCloseByBackdrop?: boolean; onModalRefCreated?: (modalRef: ComponentRef<SdModalControl>) => void }): Promise<T["_tResult"] | undefined> {
+  public async show<T extends SdModalBase<any, any>>(modalType: Type<T>, title: string, param: T["_tParam"], option?: { hideCloseButton?: boolean; float?: boolean; minHeight?: string; minWidth?: string; useCloseByBackdrop?: boolean; onModalRefCreated?: (modalRef: ComponentRef<SdModalControl>) => void }): Promise<T["_tResult"] | undefined> {
     this.modalCount++;
 
     return await new Promise<T["_tResult"]>(resolve => {
@@ -52,6 +52,7 @@ export class SdModalProvider {
       modalRef.instance.useCloseByBackdrop = option && option.useCloseByBackdrop;
       modalRef.instance.float = option && option.float;
       modalRef.instance.minHeight = option && option.minHeight;
+      modalRef.instance.minWidth = option && option.minWidth;
       modalRef.instance.close.subscribe(() => {
         close();
       });
@@ -76,7 +77,9 @@ export class SdModalProvider {
           this._appRef.tick();
           await compRef.instance.sdOnOpen(param);
           this._appRef.tick();
-          (modalEl.findAll("> ._dialog")[0] as HTMLElement).focus();
+          if (!document.activeElement || !document.activeElement.findParent(modalRef.location.nativeElement)) {
+            (modalEl.findAll("> ._dialog")[0] as HTMLElement).focus();
+          }
         }
         catch (e) {
           close();

@@ -157,8 +157,7 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
         }
       }
 
-
-      @media screen and (max-width: $screen-mobile-width) {
+      /*@media screen and (max-width: $screen-mobile-width) {
         > input {
           &[type=year],
           &[type=month],
@@ -167,10 +166,10 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
           &[type=time],
           &[type=datetime-local] {
             padding: calc((var(--font-size-default) * var(--line-height-strip) - var(--font-size-default)) / 2 + var(--gap-sm)) var(--gap-default);
-            /*height: calc(var(--font-size-default) * var(--line-height-strip) + var(--gap-sm) + var(--gap-sm) + 2px);*/
+            !*height: calc(var(--font-size-default) * var(--line-height-strip) + var(--gap-sm) + var(--gap-sm) + 2px);*!
           }
         }
-      }
+      }*/
     }
   `]
 })
@@ -318,6 +317,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
 
   public onFocus(event: Event): void {
     event.preventDefault();
+    if (window.innerWidth < 520 && event.target && event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      event.target.select();
+    }
+
     if (!this.focused) {
       this.focused = true;
       this.focusedChange.emit(this.focused);

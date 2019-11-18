@@ -224,7 +224,6 @@ export class SdCheckboxControl {
     if (event.key === " ") {
       const el = event.target as HTMLInputElement;
       if (!el.hasAttribute("ng-reflect-value")) {
-        console.log("??");
         this.value = !this.value;
       }
       this.valueChange.emit(!this.value);

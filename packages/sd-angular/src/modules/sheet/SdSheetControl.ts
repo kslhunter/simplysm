@@ -12,6 +12,7 @@ import {
   Input,
   IterableDiffer,
   IterableDiffers,
+  NgZone,
   OnInit,
   Output,
   QueryList,
@@ -856,7 +857,8 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
   public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _elRef: ElementRef,
-                     private readonly _localStorage: SdLocalStorageProvider) {
+                     private readonly _localStorage: SdLocalStorageProvider,
+                     private readonly _zone: NgZone) {
     this._iterableDiffer = this._iterableDiffers.find([]).create((i: number, item: any) => this.trackByItemFn(i, item));
     this._iterableDifferForColumn = this._iterableDiffers.find([]).create();
   }
@@ -947,18 +949,20 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
     }, true);
 
     const configRowColHeight = (rowEl: Element) => {
-      const siblingEls = rowEl./*parentElement!.parentElement!.*/findAll("._col") as HTMLElement[];
-      for (const siblingEl of siblingEls) {
-        siblingEl.style.height = null; //tslint:disable-line:no-null-keyword
-      }
+      this._zone.runOutsideAngular(() => {
+        const siblingEls = rowEl./*parentElement!.parentElement!.*/findAll("._col") as HTMLElement[];
+        for (const siblingEl of siblingEls) {
+          siblingEl.style.height = null; //tslint:disable-line:no-null-keyword
+        }
 
-      // repaint
-      (rowEl as HTMLElement).offsetHeight; // tslint:disable-line:no-unused-expression
+        // repaint
+        (rowEl as HTMLElement).offsetHeight; // tslint:disable-line:no-unused-expression
 
-      const maxHeight = siblingEls.filter(item => !item.classList.contains("_first-col")).max(item => item.clientHeight);
-      for (const siblingEl of siblingEls) {
-        siblingEl.style.height = maxHeight + "px";
-      }
+        const maxHeight = siblingEls.filter(item => !item.classList.contains("_first-col")).max(item => item.clientHeight);
+        for (const siblingEl of siblingEls) {
+          siblingEl.style.height = maxHeight + "px";
+        }
+      });
     };
 
     el.findAll("._body")[0].addEventListener("mutation", (event: Event) => {

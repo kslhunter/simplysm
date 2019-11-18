@@ -19,7 +19,9 @@ import {optional} from "@simplysm/sd-core";
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
-    <div class="_dialog" tabindex="0" [style.minHeight]="minHeight"
+    <div class="_dialog" tabindex="0"
+         [style.minHeight]="minHeight"
+         [style.minWidth]="minWidth"
          (focus)="onDialogFocus($event)">
       <sd-dock-container>
         <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)">
@@ -46,7 +48,7 @@ import {optional} from "@simplysm/sd-core";
     @import "../../../scss/variables-scss";
 
     sd-modal {
-      display: block;
+      display: inline-block;
       position: fixed;
       z-index: var(--z-index-modal);
       top: 0;
@@ -55,7 +57,7 @@ import {optional} from "@simplysm/sd-core";
       height: 100%;
       text-align: center;
       padding-top: calc(var(--topbar-height) / 2);
-      overflow: auto;
+      //overflow: auto;
 
       > ._backdrop {
         position: fixed;
@@ -75,7 +77,7 @@ import {optional} from "@simplysm/sd-core";
         overflow: hidden;
         max-width: 100%;
         min-width: 240px;
-        border: 1px solid var(--theme-primary-dark);
+        border: 1px solid var(--theme-primary-darker);
 
         &:focus {
           outline-color: transparent;
@@ -230,6 +232,18 @@ import {optional} from "@simplysm/sd-core";
         > ._dialog {
           width: 100%;
           height: 100%;
+
+          > sd-dock-container {
+            > ._header {
+              > ._title {
+                padding: var(--gap-sm) var(--gap-default);
+              }
+
+              > ._close-button {
+                padding: var(--gap-sm) var(--gap-default);
+              }
+            }
+          }
         }
       }
     }
@@ -263,6 +277,10 @@ export class SdModalControl implements OnInit {
   @Input()
   @SdTypeValidate(String)
   public minHeight?: string;
+
+  @Input()
+  @SdTypeValidate(String)
+  public minWidth?: string;
 
   private _sizeConfig: { width?: number; height?: number } | undefined;
 
