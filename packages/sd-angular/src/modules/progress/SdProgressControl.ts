@@ -16,8 +16,8 @@ import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@ang
       display: block;
       width: 100%;
       white-space: nowrap;
+      background: white;
       background: var(--theme-grey-lighter);
-
       border-radius: 2px;
       overflow: hidden;
 
@@ -27,10 +27,21 @@ import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from "@ang
         background: white;
         padding: var(--gap-lg) var(--gap-default);
       }
+
+      &._size-lg {
+        > ._sd-progress-content,
+        > sd-progress-item > div {
+          padding: var(--gap-default) var(--gap-lg);
+          font-size: large;
+        }
+      }
     }
   `]
 })
 export class SdProgressControl {
   @Input()
   public label?: string;
+
+  @Input()
+  public maxValue?: number;
 }

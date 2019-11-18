@@ -45,6 +45,10 @@ export class SdProgressItemControl implements OnInit {
   public width = "100%";
 
   @Input()
+  @HostBinding("style.height")
+  public height = "30px";
+
+  @Input()
   @SdTypeValidate({
     type: String,
     includes: ["primary", "info", "success", "warning", "danger", "grey", "bluegrey"]
@@ -66,5 +70,6 @@ export class SdProgressItemControl implements OnInit {
   public ngOnInit(): void {
     const el = this.elRef.nativeElement;
     el.style.width = `${this.width}%`;
+    el.style.height = `${this.height}px`;
   }
 }
