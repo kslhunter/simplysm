@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@angular/compiler": "^8.2.1",
-    "@types/marked": "^0.6.5",
+    "@types/marked": "^0.7.2",
     "@types/node": "^12.7.1",
     "codelyzer": "^5.1.0",
     "tslint": "^5.18.0",
