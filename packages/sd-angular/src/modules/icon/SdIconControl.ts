@@ -1,4 +1,4 @@
-import {Component, HostBinding, Input, OnChanges, SimpleChanges} from "@angular/core";
+import {Component, HostBinding, Input, OnChanges, SimpleChanges, ViewEncapsulation} from "@angular/core";
 import {
   config,
   FaSymbol,
@@ -30,6 +30,7 @@ library.add(fas, far, fab);
 
 @Component({
   selector: "sd-icon",
+  encapsulation: ViewEncapsulation.None,
   template: ``,
   styles: [/* language=SCSS */ `
     sd-icon {

@@ -234,6 +234,7 @@ export class DateTime {
     result = result.replace(/d/g, day.toString());
 
     result = result.replace(/tt/g, hour < 12 ? "오전" : "오후");
+    result = result.replace(/TT/g, hour < 12 ? "AM" : "PM");
 
     result = result.replace(/hh/g, (hour % 12).toString().padStart(2, "0"));
     result = result.replace(/h/g, (hour % 12).toString());
