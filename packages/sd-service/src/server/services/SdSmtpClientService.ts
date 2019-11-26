@@ -12,6 +12,9 @@ export class SdSmtpClientService extends SdServiceBase {
       auth: {
         user: options.user,
         pass: options.pass
+      },
+      tls: {
+        rejectUnauthorized: false
       }
     });
 

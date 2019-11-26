@@ -16,7 +16,9 @@ export interface ISmtpClientSendOption {
 
 export interface ISmtpClientSendAttachment {
   filename: string;
-  content: Buffer;
+  content?: Buffer;
+  path?: any;
+  contentType?: string;
 }
 
 export interface ISmtpClientSendByDefaultOption {
