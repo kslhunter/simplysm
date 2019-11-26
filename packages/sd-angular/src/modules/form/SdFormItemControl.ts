@@ -6,7 +6,7 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <label [style.display]="label ? 'display' : 'none'">
+    <label [style.display]="label || labelTemplateRef ? 'display' : 'none'">
       <ng-container *ngIf="!labelTemplateRef">{{ label }}</ng-container>
       <ng-container *ngIf="labelTemplateRef">
         <ng-template [ngTemplateOutlet]="labelTemplateRef"

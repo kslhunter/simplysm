@@ -296,6 +296,7 @@ export class SdAngularCompiler extends events.EventEmitter {
   private _getWebpackCommonConfig(platform?: "android" | "browser", env?: { [key: string]: string }): webpack.Configuration {
     const faviconPath = path.resolve(this._contextPath, "src", "favicon.ico");
 
+    const indexEjsPath = path.resolve(this._contextPath, "src", "index.ejs");
     return {
       target: /*platform === "android" ? "node" :*/ "web",
       output: {
@@ -315,7 +316,7 @@ export class SdAngularCompiler extends events.EventEmitter {
       },
       plugins: [
         new HtmlWebpackPlugin({
-          template: path.resolve(__dirname, `../lib/index.ejs`),
+          template: fs.existsSync(indexEjsPath) ? indexEjsPath : path.resolve(__dirname, `../lib/index.ejs`),
           BASE_HREF: platform === "android" ? "/android_asset/www/" : `/${this._packageKey}/`,
           ...platform ? {
             PLATFORM: platform

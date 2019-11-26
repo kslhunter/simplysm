@@ -706,7 +706,7 @@ export class SdTypescriptProgram {
               subPageRelativeImportPath = subPageRelativeImportPath.startsWith(".") ? subPageRelativeImportPath : ("./" + subPageRelativeImportPath)
                 .replace(/\\/g, "/").replace(/\.d\.ts$/g, "").replace(/\.ts$/g, "");
 
-              content += (sub ? "  " : "") + `        {path: "${subPageId}", loadChildren: "${subPageRelativeImportPath}RoutingModule#${subClassName}RoutingModule"},\n`;
+              content += (sub ? "  " : "") + `        {path: "${subPageId}", loadChildren: "${subPageRelativeImportPath}RoutingModule#${subClassName}RoutingModule", data: {name: "${subClassName}"}},\n`;
             };
 
             for (const subPageFilePath of subPageFilePaths) {
@@ -821,17 +821,52 @@ export class SdTypescriptProgram {
     let content = ``;
     content += `export const routes = [\n`;
 
-    const pageFilePaths = glob.sync(path.resolve(pagesDirPath, "*Page.ts"));
 
-    for (const pageFilePath of pageFilePaths) {
-      const className = path.basename(pageFilePath, path.extname(pageFilePath));
+    const pageFilePaths = glob.sync(path.resolve(pagesDirPath, "*"));
+    // const pageFilePaths = glob.sync(path.resolve(pagesDirPath, "*Page.ts"));
+
+    const addSubClassContent = (subPageFilePath: string, sub?: boolean) => {
+      const subClassName = path.basename(subPageFilePath, path.extname(subPageFilePath));
+      let subPageId = subClassName.replace(/Page$/, "");
+      subPageId = subPageId[0].toLowerCase() + subPageId.slice(1).replace(/[A-Z]/g, match => "-" + match.toLowerCase());
+      let subPageRelativeImportPath = path.join("./_modules", path.relative(path.dirname(pagesDirPath), subPageFilePath));
+      subPageRelativeImportPath = subPageRelativeImportPath.startsWith(".") ? subPageRelativeImportPath : ("./" + subPageRelativeImportPath)
+        .replace(/\\/g, "/").replace(/\.d\.ts$/g, "").replace(/\.ts$/g, "");
+
+      content += (sub ? "  " : "") + `  {path: "${subPageId}", loadChildren: "${subPageRelativeImportPath}RoutingModule#${subClassName}RoutingModule", data: {name: "${subClassName}"}},\n`;
+    };
+
+    for (const subPageFilePath of pageFilePaths) {
+      if (!fs.lstatSync(subPageFilePath).isDirectory()) {
+        addSubClassContent(subPageFilePath);
+      }
+      else {
+        const subPageId = path.basename(subPageFilePath);
+        let subClassName = subPageId[0].toUpperCase() + subPageId.slice(1).replace(/-[a-z]/g, match => match.slice(1).toUpperCase());
+        subClassName = subClassName + "Page";
+        if (fs.pathExistsSync(path.resolve(path.dirname(subPageFilePath), subClassName + ".ts"))) {
+          continue;
+        }
+
+        content += `  {path: "${subPageId}", children: [\n`;
+
+        const subSubPageFilePaths = glob.sync(path.resolve(subPageFilePath, "*"));
+        for (const subSubPageFilePath of subSubPageFilePaths) {
+          addSubClassContent(subSubPageFilePath, true);
+        }
+        content = content.slice(0, -2) + "\n";
+
+        content += `  ]},\n`;
+      }
+
+      /*const className = path.basename(pageFilePath, path.extname(pageFilePath));
       let pageId = className.replace(/Page$/, "");
       pageId = pageId[0].toLowerCase() + pageId.slice(1).replace(/[A-Z]/g, match => "-" + match.toLowerCase());
 
       let relativeImportPath = path.relative(this.rootDirPath, pageFilePath);
       relativeImportPath = ("./\_modules/" + relativeImportPath).replace(/\\/g, "/").replace(/\.d\.ts$/g, "").replace(/\.ts$/g, "");
 
-      content += `  {path: "${pageId}", loadChildren: "${relativeImportPath}RoutingModule#${className}RoutingModule"},\n`;
+      content += `  {path: "${pageId}", loadChildren: "${relativeImportPath}RoutingModule#${className}RoutingModule", data: {name: "${className}"}},\n`;*/
     }
 
     content = content.slice(0, -2) + "\n";

@@ -131,7 +131,7 @@ export class SdIconControl implements OnChanges {
 
   @Input()
   @SdTypeValidate({
-    type: String,
+    type: Number,
     includes: [90, 180, 270]
   })
   public rotate?: RotateProp;
