@@ -192,6 +192,7 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
 
   @Input()
   @SdTypeValidate([Number, String, DateOnly, DateTime, Time])
+  @SdNotifyPropertyChange()
   public value?: number | string | DateOnly | DateTime | Time;
 
   @Output()
@@ -280,15 +281,16 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
 
   public get controlValue(): number | string {
     return this.value === undefined ? ""
-      : this.value instanceof DateTime ? this.value.toFormatString("yyyy-MM-ddTHH:mm:ss")
+      : this.value instanceof DateTime ? (this.value.second ? this.value.toFormatString("yyyy-MM-ddTHH:mm:ss") : this.value.toFormatString("yyyy-MM-ddTHH:mm"))
         : this.value instanceof DateOnly ? ((this.type === "year" && this.value instanceof DateOnly) ? this.value.toFormatString("yyyy") : this.type === "month" ? this.value.toFormatString("yyyy-MM") : this.value.toString())
-          : this.value instanceof Time ? this.value.toFormatString("HH:mm:ss")
+          : this.value instanceof Time ? (this.value.second ? this.value.toFormatString("HH:mm:ss") : this.value.toFormatString("HH:mm"))
             : this.type === "number" && typeof this.value === "number" ? this.value.toLocaleString()
               : this.value;
   }
 
   public onInputInput(event: Event): void {
     const inputEl = event.target as (HTMLInputElement | HTMLTextAreaElement);
+    console.log("!!!", inputEl.value);
     let value;
     if (this.type === "number") {
       value = !inputEl.value ? undefined : Number(inputEl.value.replace(/,/g, ""));
@@ -347,6 +349,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
           this.inputElRef.nativeElement.blur();
         }
       }
+    }
+
+    if (propertyName === "value") {
+      console.log("value", oldValue, newValue);
     }
   }
 }
