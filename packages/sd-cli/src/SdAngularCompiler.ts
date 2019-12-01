@@ -533,6 +533,7 @@ export class SdAngularCompiler extends events.EventEmitter {
           if (mobileConfig.icon && !configFileContent.includes("<icon")) {
             configFileContent = configFileContent.replace("</widget>", "    <icon src=\"res/icon/icon.png\" />\r\n</widget>");
           }
+          configFileContent = configFileContent.replace("</widget>", "    <preference name=\"Orientation\" value=\"portrait\" />\r\n</widget>");
           fs.writeFileSync(path.resolve(cordovaProjectPath, "config.xml"), configFileContent, "utf-8");
 
           const cordovaBinPath = path.resolve(process.cwd(), "node_modules", ".bin", "cordova.cmd");
@@ -710,6 +711,8 @@ export class SdAngularCompiler extends events.EventEmitter {
           if (mobileConfig.icon && !configFileContent.includes("<icon")) {
             configFileContent = configFileContent.replace("</widget>", "    <icon src=\"res/icon/icon.png\" />\r\n</widget>");
           }
+
+          configFileContent = configFileContent.replace("</widget>", "    <preference name=\"Orientation\" value=\"portrait\" />\r\n</widget>");
 
           fs.writeFileSync(path.resolve(cordovaProjectPath, "config.xml"), configFileContent, "utf-8");
 
