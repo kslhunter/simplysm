@@ -154,13 +154,13 @@ export class SdExcelWorkbook {
   public static loadAsync(blob: Blob): Promise<SdExcelWorkbook>;
   public static async loadAsync(arg: Buffer | Blob | File): Promise<SdExcelWorkbook> {
     let buffer: Buffer | Blob;
-    if (arg instanceof File) {
+    if (!!arg["lastModified"]) {
       buffer = await new Promise<Buffer>(resolve => {
         const fileReader = new FileReader();
         fileReader.onload = () => {
           resolve(Buffer.from(fileReader.result as ArrayBuffer));
         };
-        fileReader.readAsArrayBuffer(arg);
+        fileReader.readAsArrayBuffer(arg as any);
       });
     }
     else {
@@ -300,7 +300,12 @@ export class SdExcelWorkbook {
     }
 
     // SharedStrings
-    this._zip.file("xl/sharedStrings.xml", XmlConvert.stringify(this.sstData));
+    this._zip.file(
+      "xl/sharedStrings.xml",
+      XmlConvert.stringify(this.sstData)
+        .replace(/&#xD;/g, "\r")
+        .replace(/<t xml:space="preserve"\/>/g, "<t xml:space=\"preserve\"> </t>")
+    );
 
     // Styles
     this._zip.file("xl/styles.xml", XmlConvert.stringify(this.stylesData));
@@ -310,6 +315,38 @@ export class SdExcelWorkbook {
     link.href = window.URL.createObjectURL(blob);
     link.download = filename;
     link.click();
+  }
+
+  public async getBufferAsync(): Promise<Buffer> {
+    // .rel
+    this._zip.file("_rels/.rels", XmlConvert.stringify(this._relData));
+
+    // Workbook
+    this._zip.file("xl/workbook.xml", XmlConvert.stringify(this._wbData));
+
+    // ContentType
+    this._zip.file("[Content_Types].xml", XmlConvert.stringify(this._contentTypeData));
+
+    // Workbook Rel
+    this._zip.file("xl/_rels/workbook.xml.rels", XmlConvert.stringify(this._wbRelData));
+
+    // Worksheets
+    for (const wsId of Object.keys(this._worksheets)) {
+      this._zip.file(`xl/worksheets/sheet${wsId}.xml`, XmlConvert.stringify(this._worksheets[wsId].sheetData));
+    }
+
+    // SharedStrings
+    this._zip.file(
+      "xl/sharedStrings.xml",
+      XmlConvert.stringify(this.sstData)
+        .replace(/&#xD;/g, "\r")
+        .replace(/<t xml:space="preserve"\/>/g, "<t xml:space=\"preserve\"> </t>")
+    );
+
+    // Styles
+    this._zip.file("xl/styles.xml", XmlConvert.stringify(this.stylesData));
+
+    return await this._zip.generateAsync({type: "nodebuffer"});
   }
 
   public get json(): { [sheetName: string]: { [key: string]: any }[] } {

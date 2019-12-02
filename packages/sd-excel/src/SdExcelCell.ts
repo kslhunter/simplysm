@@ -17,31 +17,61 @@ export class SdExcelCell {
     }
     else if (typeof value === "string") {
       this.cellData.$.t = "str";
-      this.cellData.v = this.cellData.v || {};
-      this.cellData.v._ = value;
+      this.cellData.v = this.cellData.v || [];
+      this.cellData.v[0] = this.cellData.v[0] || {};
+      if (Object.keys(this.cellData.v[0]).includes("_")) {
+        this.cellData.v[0]._ = value;
+      }
+      else {
+        this.cellData.v[0] = value;
+      }
     }
     else if (typeof value === "boolean") {
       this.cellData.$.t = "b";
-      this.cellData.v = this.cellData.v || {};
-      this.cellData.v._ = value === true ? "1" : value === false ? "0" : undefined;
+      this.cellData.v = this.cellData.v || [];
+      this.cellData.v[0] = this.cellData.v[0] || {};
+      if (Object.keys(this.cellData.v[0]).includes("_")) {
+        this.cellData.v[0]._ = value === true ? "1" : value === false ? "0" : undefined;
+      }
+      else {
+        this.cellData.v[0] = value === true ? "1" : value === false ? "0" : undefined;
+      }
     }
     else if (typeof value === "number") {
       delete this.cellData.$.t;
       this.style.numberFormat = "number";
-      this.cellData.v = this.cellData.v || {};
-      this.cellData.v._ = value;
+      this.cellData.v = this.cellData.v || [];
+      this.cellData.v[0] = this.cellData.v[0] || {};
+      if (Object.keys(this.cellData.v[0]).includes("_")) {
+        this.cellData.v[0]._ = value;
+      }
+      else {
+        this.cellData.v[0] = value;
+      }
     }
     else if (value instanceof DateOnly) {
       delete this.cellData.$.t;
       this.style.numberFormat = "DateOnly";
-      this.cellData.v = this.cellData.v || {};
-      this.cellData.v._ = SdExcelUtils.getTimeNumber(value);
+      this.cellData.v = this.cellData.v || [];
+      this.cellData.v[0] = this.cellData.v[0] || {};
+      if (Object.keys(this.cellData.v[0]).includes("_")) {
+        this.cellData.v[0]._ = SdExcelUtils.getTimeNumber(value);
+      }
+      else {
+        this.cellData.v[0] = SdExcelUtils.getTimeNumber(value);
+      }
     }
     else if (value instanceof DateTime) {
       delete this.cellData.$.t;
       this.style.numberFormat = "DateTime";
-      this.cellData.v = this.cellData.v || {};
-      this.cellData.v._ = SdExcelUtils.getTimeNumber(value);
+      this.cellData.v = this.cellData.v || [];
+      this.cellData.v[0] = this.cellData.v[0] || {};
+      if (Object.keys(this.cellData.v[0]).includes("_")) {
+        this.cellData.v[0]._ = SdExcelUtils.getTimeNumber(value);
+      }
+      else {
+        this.cellData.v[0] = SdExcelUtils.getTimeNumber(value);
+      }
     }
     else {
       throw new Error("지원되지 않는 타입입니다: " + value);

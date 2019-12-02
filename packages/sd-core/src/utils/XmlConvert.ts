@@ -14,7 +14,7 @@ export class XmlConvert {
   }
 
   public static stringify(obj: any): string {
-    const builder = new xml2js.Builder();
+    const builder = new xml2js.Builder({renderOpts: {pretty: false}});
     return builder.buildObject(obj);
   }
 }
