@@ -80,6 +80,29 @@ import {SdLocalStorageProvider} from "../provider/SdLocalStorageProvider";
           </div>
         </div>
       </div>
+      <div class="_row _summary" *ngIf="hasSummary">
+        <div class="_col-group _fixed-col-group">
+          <div class="_col _first-col">
+            <div class="_border"></div>
+          </div>
+          <div class="_col" style="background: #4288bf8c"
+               *ngFor="let columnControl of fixedColumnControls; trackBy: trackByColumnControlFn"
+               [style.width.px]="getWidth(columnControl)">
+            <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"
+                         [ngTemplateOutletContext]="{items: items}"></ng-template>
+            <div class="_border"></div>
+          </div>
+        </div>
+        <div class="_col-group" [style.padding-left.px]="fixedColumnWidth">
+          <div class="_col" style="background: #4288bf8c"
+               *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByColumnControlFn"
+               [style.width.px]="getWidth(columnControl)">
+            <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"
+                         [ngTemplateOutletContext]="{items: items}"></ng-template>
+            <div class="_border"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="_content _body">
@@ -174,6 +197,10 @@ export class SdSheetControl implements DoCheck, OnInit {
     //   + this._style.presets.fns.stripUnit(this._style.presets.vars.lineHeight) * this._style.presets.fns.stripUnit(this._style.presets.vars.fontSize.default));
     //
     // return ((this.hasHeaderGroup ? (Math.floor(size * 2) + 2) : (Math.floor(size) + 1)) + 1) + "px";
+  }
+
+  public get hasSummary(): boolean {
+    return this.columnControls ? this.columnControls.some(item => !!item.summaryTemplateRef) : false;
   }
 
   public get allSelected(): boolean {
