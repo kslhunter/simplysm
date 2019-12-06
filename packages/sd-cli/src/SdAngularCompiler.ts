@@ -530,6 +530,20 @@ export class SdAngularCompiler extends events.EventEmitter {
           let configFileContent = fs.readFileSync(path.resolve(cordovaProjectPath, "config.xml"), "utf-8");
           configFileContent = configFileContent.replace(/<allow-navigation href="[^"]"\s?\/>/g, "");
           configFileContent = configFileContent.replace(/version="[^"]*"/g, `version="${version}"`);
+
+          if (!configFileContent.includes("xmlns:android=\"http://schemas.android.com/apk/res/android\"")) {
+            configFileContent = configFileContent.replace(
+              "xmlns=\"http://www.w3.org/ns/widgets\"",
+              `xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android"`
+            );
+          }
+          if (!configFileContent.includes("application android:usesCleartextTraffic=\"true\" />")) {
+            configFileContent = configFileContent.replace("<platform name=\"android\">", `<platform name="android">
+        <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+            <application android:usesCleartextTraffic="true" />
+        </edit-config>`);
+          }
+
           if (mobileConfig.icon && !configFileContent.includes("<icon")) {
             configFileContent = configFileContent.replace("</widget>", "    <icon src=\"res/icon/icon.png\" />\r\n</widget>");
           }
