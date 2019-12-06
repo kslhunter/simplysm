@@ -290,7 +290,6 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
 
   public onInputInput(event: Event): void {
     const inputEl = event.target as (HTMLInputElement | HTMLTextAreaElement);
-    console.log("!!!", inputEl.value);
     let value;
     if (this.type === "number") {
       value = !inputEl.value ? undefined : Number(inputEl.value.replace(/,/g, ""));
@@ -349,10 +348,6 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
           this.inputElRef.nativeElement.blur();
         }
       }
-    }
-
-    if (propertyName === "value") {
-      console.log("value", oldValue, newValue);
     }
   }
 }
