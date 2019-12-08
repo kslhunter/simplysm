@@ -24,4 +24,24 @@ export class SdExcelWorksheet {
   public get rowLength(): number {
     return this.sheetData.worksheet.sheetData[0].row.length;
   }
+
+
+  public setData(data: any[][]): void {
+    for (let r = 0; r < data.length; r++) {
+      for (let c = 0; c < data[r].length; c++) {
+        this.cell(r, c).value = data[r][c];
+      }
+    }
+  }
+
+  public getData(): any[][] {
+    const result: any[][] = [];
+    for (let r = 0; r < this.rowLength; r++) {
+      result[r] = [];
+      for (let c = 0; c < this.row(r).columnLength; c++) {
+        result[r][c] = this.cell(r, c).value;
+      }
+    }
+    return result;
+  }
 }

@@ -118,6 +118,7 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
       &[sd-selected=true] > ._content > ._label {
         color: var(--theme-primary-default);
         font-weight: bold;
+        background: rgba(0, 0, 0, .07);
       }
 
       &[sd-disabled=true] {
@@ -133,9 +134,9 @@ import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdN
         > ._content > ._label {
           cursor: default;
           background: transparent;
-          color: var(--text-color-light);
+          color: var(--text-color-lighter);
           font-size: var(--font-size-sm);
-          font-weight: lighter;
+          font-weight: bold;
 
           &:hover {
             background: transparent !important;

@@ -50,12 +50,27 @@ export class DefaultDbContextExecutor implements IDbContextExecutor {
     await this._conn.closeAsync();
   }
 
-  public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(queries: (string | IQueryDef)[], colDefs?: C, joinDefs?: { as: string; isSingle: boolean }[]): Promise<undefined extends C ? any[][] : any[]> {
+  public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(queries: (string | IQueryDef)[], colDefs?: C, joinDefs?: { as: string; isSingle: boolean }[], dataQueryIndex?: number): Promise<undefined extends C ? any[][] : any[]> {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
     const result = await this._conn.executeAsync(queries);
-    return ((colDefs && joinDefs) ? this._conn.generateResult(result[0], colDefs!, joinDefs) : result) as any;
+    if (colDefs && joinDefs) {
+      const realResult: any = [];
+      for (let i = 0; i < result.length; i++) {
+        if ((dataQueryIndex && i === dataQueryIndex) || (!dataQueryIndex && i === 0)) {
+          realResult.push(this._conn.generateResult(result[i], colDefs!, joinDefs));
+        }
+        else {
+          realResult.push(result[i]);
+        }
+      }
+
+      return realResult;
+    }
+    else {
+      return result as any;
+    }
   }
 }

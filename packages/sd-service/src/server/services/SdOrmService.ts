@@ -77,13 +77,28 @@ export class SdOrmService extends SdServiceBase {
     await conn.rollbackTransactionAsync();
   }
 
-  public async executeAsync(connId: number, queries: (string | IQueryDef)[], colDefs?: { name: string; dataType: string | undefined }[], joinDefs?: { as: string; isSingle: boolean }[]): Promise<any[][]> {
+  public async executeAsync(connId: number, queries: (string | IQueryDef)[], colDefs?: { name: string; dataType: string | undefined }[], joinDefs?: { as: string; isSingle: boolean }[], dataQueryIndex?: number): Promise<any[][]> {
     const conn = SdOrmService._connections.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
     const result = await conn.executeAsync(queries);
-    return (colDefs && joinDefs) ? conn.generateResult(result[0], colDefs, joinDefs) : result;
+    if (colDefs && joinDefs) {
+      const realResult: any = [];
+      for (let i = 0; i < result.length; i++) {
+        if ((dataQueryIndex && i === dataQueryIndex) || (!dataQueryIndex && i === 0)) {
+          realResult.push(conn.generateResult(result[i], colDefs!, joinDefs));
+        }
+        else {
+          realResult.push(result[i]);
+        }
+      }
+
+      return realResult;
+    }
+    else {
+      return result as any;
+    }
   }
 }

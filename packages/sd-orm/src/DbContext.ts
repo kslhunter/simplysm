@@ -101,8 +101,8 @@ export abstract class DbContext {
     return result;
   }
 
-  public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(queries: (string | IQueryDef)[], colDefs?: C, joinDefs?: { as: string; isSingle: boolean }[]): Promise<undefined extends C ? any[][] : any[]> {
-    return await this._executor.executeAsync(queries, colDefs, joinDefs);
+  public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(queries: (string | IQueryDef)[], colDefs?: C, joinDefs?: { as: string; isSingle: boolean }[], dataQueryIndex?: number): Promise<undefined extends C ? any[][] : any[]> {
+    return await this._executor.executeAsync(queries, colDefs, joinDefs, dataQueryIndex);
   }
 
   public prepare(query: (string | IQueryDef)[], preparedResultIndexed: boolean[]): void {

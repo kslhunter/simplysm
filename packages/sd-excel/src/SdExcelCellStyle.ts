@@ -14,7 +14,7 @@ export class SdExcelCellStyle {
     this._excelCell.cellData.$.s = newIndex;
   }
 
-  public set alignV(value: "center" | "left" | "right") {
+  public set alignV(value: "center" | "top" | "bottom") {
     const newStyle = this._createNewStyle();
     newStyle.$ = newStyle.$ || {};
     newStyle.$.applyAlignment = 1;

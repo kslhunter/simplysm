@@ -127,19 +127,32 @@ export class Queryable<T extends object> {
   public async insertAsync(obj: T): Promise<T> {
     Queryable._selectQueryHistory.clear();
 
+    const colDefs = Object.keys(this._qba.selectObj)
+      .map(key => {
+        const colUnit = this._qba.selectObj[key];
+        return {
+          name: key,
+          dataType: colUnit instanceof QueryUnit
+            ? colUnit.type.name
+            : colUnit === undefined
+              ? undefined
+              : colUnit.constructor.name
+        };
+      });
+
     const queryDef = this._qba.insert(obj).queryDef;
     if (this._hasAutoIncrementValue(obj)) {
       const result = await this._db.executeAsync([
         this._getIdentityInsertQuery(true),
         queryDef,
         this._getIdentityInsertQuery(false)
-      ]);
+      ], colDefs, [], 1);
       return result[1][0];
     }
     else {
       const result = await this._db.executeAsync([
         queryDef
-      ]);
+      ], colDefs, []);
       return result[0][0];
     }
   }
@@ -196,8 +209,21 @@ export class Queryable<T extends object> {
   public async updateAsync(fwd: (entity: T) => Partial<T>): Promise<T> {
     Queryable._selectQueryHistory.clear();
 
+    const colDefs = Object.keys(this._qba.selectObj)
+      .map(key => {
+        const colUnit = this._qba.selectObj[key];
+        return {
+          name: key,
+          dataType: colUnit instanceof QueryUnit
+            ? colUnit.type.name
+            : colUnit === undefined
+              ? undefined
+              : colUnit.constructor.name
+        };
+      });
+
     const queryDef = this._qba.update(fwd).queryDef;
-    const result = await this._db.executeAsync([queryDef]);
+    const result = await this._db.executeAsync([queryDef], colDefs, []);
     return result[0][0];
   }
 
@@ -216,17 +242,30 @@ export class Queryable<T extends object> {
 
     const obj: object = typeof arg === "function" ? (arg as any)(this._qba.entity) : arg;
 
+    const colDefs = Object.keys(this._qba.selectObj)
+      .map(key => {
+        const colUnit = this._qba.selectObj[key];
+        return {
+          name: key,
+          dataType: colUnit instanceof QueryUnit
+            ? colUnit.type.name
+            : colUnit === undefined
+              ? undefined
+              : colUnit.constructor.name
+        };
+      });
+
     const queryDef = this._qba.upsert(arg, additionalInsertObj).queryDef;
     if (this._hasAutoIncrementValue({...obj, ...(additionalInsertObj as object)})) {
       const result = await this._db.executeAsync([
         this._getIdentityInsertQuery(true),
         queryDef,
         this._getIdentityInsertQuery(false)
-      ]);
+      ], colDefs, [], 1);
       return result[1][0];
     }
     else {
-      const result = await this._db.executeAsync([queryDef]);
+      const result = await this._db.executeAsync([queryDef], colDefs, []);
       return result[0][0];
     }
   }
@@ -244,8 +283,21 @@ export class Queryable<T extends object> {
   public async deleteAsync(): Promise<T> {
     Queryable._selectQueryHistory.clear();
 
+    const colDefs = Object.keys(this._qba.selectObj)
+      .map(key => {
+        const colUnit = this._qba.selectObj[key];
+        return {
+          name: key,
+          dataType: colUnit instanceof QueryUnit
+            ? colUnit.type.name
+            : colUnit === undefined
+              ? undefined
+              : colUnit.constructor.name
+        };
+      });
+
     const queryDef = this._qba.delete().queryDef;
-    const result = await this._db.executeAsync([queryDef]);
+    const result = await this._db.executeAsync([queryDef], colDefs, []);
     return result[0][0];
   }
 
@@ -291,13 +343,13 @@ export class Queryable<T extends object> {
     const result = await this._db.executeAsync([queryDef], colDefs, joinDefs);
 
     if (queryDefJson && Queryable._selectQueryHistory.has(queryDefJson)) {
-      Queryable._selectQueryHistory.set(queryDefJson, result || []);
+      Queryable._selectQueryHistory.set(queryDefJson, result[0] || []);
       setTimeout(() => {
         Queryable._selectQueryHistory.delete(queryDefJson);
       }, 500);
     }
 
-    return result;
+    return result[0];
   }
 
   public async singleAsync(): Promise<T | undefined> {

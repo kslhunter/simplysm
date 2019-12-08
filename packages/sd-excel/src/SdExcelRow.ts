@@ -6,7 +6,7 @@ export class SdExcelRow {
 
   public constructor(private readonly _ews: SdExcelWorksheet,
                      row: number) {
-    this.rowData = this._ews.sheetData.worksheet.sheetData[0].row.single((item: any) => Number(item.$.r) === row);
+    this.rowData = this._ews.sheetData.worksheet.sheetData[0].row.single((item: any) => Number(item.$.r) === row + 1);
   }
 
   public get columnLength(): number {
