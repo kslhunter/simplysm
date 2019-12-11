@@ -5,6 +5,7 @@ export class SdExcelColumn {
 
   public constructor(private readonly _ews: SdExcelWorksheet,
                      private readonly _col: number) {
+    this._ews.sheetData.worksheet.cols = this._ews.sheetData.worksheet.cols || [];
     this._ews.sheetData.worksheet.cols[0] = this._ews.sheetData.worksheet.cols[0] || {};
     this._ews.sheetData.worksheet.cols[0].col = this._ews.sheetData.worksheet.cols[0].col || [];
     const colDataList = this._ews.sheetData.worksheet.cols[0].col as any[];
