@@ -11,7 +11,7 @@ export class QueryHelper {
       return "NULL";
     }
     else if (typeof arg === "string") {
-      return "'" + arg.replace(/'/g, "''") + "'";
+      return "N'" + arg.replace(/'/g, "''") + "'";
     }
     else if (typeof arg === "number") {
       return arg.toString();
