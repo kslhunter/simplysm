@@ -98,9 +98,6 @@ export class SdExcelCellStyle {
     if (!styleData || !styleData.$ || !styleData.$.numFmtId) {
       return "number";
     }
-    /*else if (styleData.$.numFmtId === "176" || styleData.$.numFmtId === "3") {
-      return "number";
-    }*/
     else if (styleData.$.numFmtId === "14") {
       return "DateOnly";
     }
@@ -109,6 +106,22 @@ export class SdExcelCellStyle {
     }
     else if (styleData.$.numFmtId === "42") {
       return "Currency";
+    }
+    else if (styleData.$.numFmtId === "176") {
+      const numFmtData = this._getNumFmtData();
+      if (numFmtData.$.formatCode.includes("yy") &&
+        numFmtData.$.formatCode.includes("mm") &&
+        numFmtData.$.formatCode.includes("dd") &&
+        numFmtData.$.formatCode.includes("hh")) {
+        return "DateTime";
+      }
+      else if (numFmtData.$.formatCode.includes("yy") &&
+        numFmtData.$.formatCode.includes("mm") &&
+        numFmtData.$.formatCode.includes("dd")) {
+        return "DateOnly";
+      }
+
+      return "number";
     }
     else {
       return "number";
@@ -295,6 +308,15 @@ export class SdExcelCellStyle {
     const colData = this._excelCell.excelWorkSheet.column(this._excelCell.col).colData;
     if (colData.$ && colData.$.style) {
       return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf[Number(colData.$.style)];
+    }
+
+    return undefined;
+  }
+
+  private _getNumFmtData(): any {
+    const styleData = this._getStyleData();
+    if (styleData.$.numFmtId) {
+      return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt.single((item: any) => item.$.numFmtId === styleData.$.numFmtId);
     }
 
     return undefined;

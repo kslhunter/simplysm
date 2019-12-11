@@ -172,7 +172,9 @@ export class SdExcelCell {
         currCell.$.s = colStyle;
       }
 
-      const beforeCell = cellNodes.orderBy(item => item.$.r).last(item => item.$.r < currCell.$.r);
+      const beforeCell = cellNodes
+        .orderBy(item => SdExcelUtils.getAddressRowCol(item.$.r).col)
+        .last(item => SdExcelUtils.getAddressRowCol(item.$.r).col < SdExcelUtils.getAddressRowCol(currCell.$.r).col);
       const beforeCellIndex = beforeCell ? cellNodes.indexOf(beforeCell) : -1;
 
       cellNodes.insert(beforeCellIndex + 1, currCell);

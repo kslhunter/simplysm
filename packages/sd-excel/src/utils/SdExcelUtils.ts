@@ -60,7 +60,7 @@ export class SdExcelUtils {
     let result = 0;
     const revAddr = Array.from(addr).reverse().join("");
     for (let i = 0; i < revAddr.length; i++) {
-      const col = revAddr.charCodeAt(i) - 65;
+      const col = revAddr.charCodeAt(i) - (i === 0 ? 65 : 64);
       result += col * Math.pow(26, i);
     }
     return result;
