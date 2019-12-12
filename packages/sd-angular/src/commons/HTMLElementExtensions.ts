@@ -138,6 +138,11 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: Event
   else if (type === "mutation") {
     if (window["MutationObserver"]) {
       const observer = new MutationObserver(mutations => {
+        mutations.remove(item => item.target.nodeName === "#comment");
+        if (mutations.length <= 0) {
+          return;
+        }
+
         const event = new CustomEvent("mutation", {detail: {mutations}}) as SdMutationEvent;
         if (listener["handleEvent"]) {
           (listener as EventListenerObject).handleEvent(event);
@@ -150,8 +155,8 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: Event
         childList: true,
         attributes: true,
         attributeOldValue: true,
-        characterData: true,
-        characterDataOldValue: true,
+        characterData: false,
+        characterDataOldValue: false,
         subtree: options === true
       });
     }
