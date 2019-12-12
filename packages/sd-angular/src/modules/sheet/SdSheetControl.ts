@@ -969,6 +969,10 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
         }
       };
 
+      for (const rowEl of el.findAll("._body ._row")) {
+        configRowColHeight(rowEl);
+      }
+
       el.findAll("._body")[0].addEventListener("mutation", (event: Event) => {
         const records = event["detail"].mutations as MutationRecord[];
         const record = records
@@ -983,12 +987,6 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
         const rowEl = (record.target as HTMLElement).findParent("._body ._row") as HTMLElement;
         configRowColHeight(rowEl);
       }, true);
-
-      for (const rowEl of el.findAll("._body ._row")) {
-        setTimeout(() => {
-          configRowColHeight(rowEl);
-        });
-      }
     });
   }
 
