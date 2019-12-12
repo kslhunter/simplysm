@@ -970,7 +970,9 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
       };
 
       for (const rowEl of el.findAll("._body ._row")) {
-        configRowColHeight(rowEl);
+        setTimeout(() => {
+          configRowColHeight(rowEl);
+        });
       }
 
       el.findAll("._body")[0].addEventListener("mutation", (event: Event) => {
