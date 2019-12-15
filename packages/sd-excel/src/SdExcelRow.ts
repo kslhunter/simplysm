@@ -10,6 +10,10 @@ export class SdExcelRow {
   }
 
   public get columnLength(): number {
+    if (!this.rowData) {
+      return 0;
+    }
+
     const lastAddr = this.rowData.c.last().$.r;
     const rowCol = SdExcelUtils.getAddressRowCol(lastAddr);
     return rowCol.col + 1;

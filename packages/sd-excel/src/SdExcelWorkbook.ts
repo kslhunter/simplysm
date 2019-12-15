@@ -128,6 +128,9 @@ export class SdExcelWorkbook {
         $: {
           xmlns: "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
         },
+        numFmts: [{
+          numFmt: []
+        }],
         fonts: [{
           font: [{}]
         }],

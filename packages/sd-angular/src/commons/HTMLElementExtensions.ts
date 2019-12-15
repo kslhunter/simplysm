@@ -153,8 +153,8 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: Event
       });
       observer.observe(this, {
         childList: true,
-        attributes: true,
-        attributeOldValue: true,
+        attributes: false,
+        attributeOldValue: false,
         characterData: false,
         characterDataOldValue: false,
         subtree: options === true

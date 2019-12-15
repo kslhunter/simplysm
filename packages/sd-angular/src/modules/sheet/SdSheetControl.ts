@@ -22,6 +22,7 @@ import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import {SdLocalStorageProvider} from "../shared/SdLocalStorageProvider";
 import {ResizeEvent} from "../../commons/ResizeEvent";
+import {SdMutationEvent} from "../..";
 
 @Component({
   selector: "sd-sheet",
@@ -964,18 +965,25 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
 
       if (this.autoHeight) {
         el.findAll("._body")[0].addEventListener("mutation", (event: Event) => {
-          const records = event["detail"].mutations as MutationRecord[];
-          const record = records
-            .filter(item =>
-              (item.type === "childList" && item.target instanceof HTMLElement && item.target.findParent("._body ._row")) ||
-              (item.type === "attributes" && item.attributeName === "style" && item.target instanceof HTMLElement && item.target.findParent("._col"))
-            )
-            .distinct()
-            .single();
-          if (!record) return;
+          const records = (event as SdMutationEvent).detail.mutations;
+          for (const record of records) {
+            for (const addedNode of Array.from(record.addedNodes)) {
+              if (!(addedNode instanceof Element) || !addedNode.findParent("._col")) {
+                continue;
+              }
 
-          const rowEl = (record.target as HTMLElement).findParent("._body ._row") as HTMLElement;
-          this._configRowColHeight(rowEl);
+              const rowEl = addedNode.findParent("._body ._row") as HTMLElement;
+
+              addedNode.addEventListener("resize", (event1: Event) => {
+                const dimensions = (event1 as ResizeEvent).detail.dimensions;
+                if (dimensions.includes("height")) {
+                  this._configRowColHeight(rowEl);
+                }
+              });
+
+              this._configRowColHeight(rowEl);
+            }
+          }
         }, true);
 
         for (const rowEl of el.findAll("._body ._row")) {
