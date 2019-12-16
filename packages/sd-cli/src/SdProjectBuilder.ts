@@ -409,8 +409,8 @@ export class SdProjectBuilder {
       await ProcessManager.spawnAsync(`git tag -a "v${projectNpmConfig.version}" -m "v${projectNpmConfig.version}"`);
     }
 
-    await this._parallelPackagesByDepAsync(Object.keys(config.packages), async packageKey => {
-      // await Promise.all(Object.keys(config.packages).map(async packageKey => {
+    // await this._parallelPackagesByDepAsync(Object.keys(config.packages), async packageKey => {
+    await Promise.all(Object.keys(config.packages).map(async packageKey => {
       const packageLogger = new Logger("@simplysm/sd-cli", `[publish]\t${packageKey}`);
       const packagePath = path.resolve(process.cwd(), "packages", packageKey);
 
@@ -485,7 +485,7 @@ export class SdProjectBuilder {
           throw new Error("미구현");
         }
       }
-    }/*)*/);
+    }));
 
     logger.log(`모든 배포가 완료되었습니다. - v${projectNpmConfig.version}`);
   }
