@@ -93,6 +93,10 @@ import {SdMultiSelectItemControl} from "./SdMultiSelectItemControl";
         > div:first-child {
           overflow: hidden;
           white-space: nowrap;
+
+          > ._placeholder {
+            color: var(--text-color-lighter);
+          }
         }
 
         > ._icon {
@@ -170,6 +174,10 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
   @SdTypeValidate(Function)
   public children?: (index: number, item: any) => any;
 
+  @Input()
+  @SdTypeValidate(String)
+  public placeholder?: string;
+
   public trackByItemFn(index: number, item: any): any {
     if (this.trackBy) {
       return this.trackBy(index, item) || item;
@@ -223,6 +231,6 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
     }
     content = content.slice(0, -2);
 
-    this.contentElRef.nativeElement.innerHTML = content;
+    this.contentElRef.nativeElement.innerHTML = content || (this.placeholder ? "<div class='_placeholder'>" + this.placeholder + "</div>" : "");
   }
 }

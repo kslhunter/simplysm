@@ -327,8 +327,8 @@ export class DbConnection extends EventEmitter {
           item[i] = clearEmpty(item[i]);
         }
 
-        if (item.every(itemItem => itemItem == undefined)) {
-          return undefined;
+        if (item.every(itemItem => itemItem == undefined || (itemItem instanceof Array && itemItem.length < 0))) {
+          return [];
         }
       }
       else if (item instanceof Object) {
@@ -336,7 +336,7 @@ export class DbConnection extends EventEmitter {
           item[key] = clearEmpty(item[key]);
         }
 
-        if (Object.keys(item).every(key => item[key] == undefined)) {
+        if (Object.keys(item).every(key => item[key] == undefined || (item[key] instanceof Array && item[key].length < 0))) {
           return undefined;
         }
       }

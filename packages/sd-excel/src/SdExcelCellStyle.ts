@@ -109,13 +109,17 @@ export class SdExcelCellStyle {
     }
     else {
       const numFmtData = this._getNumFmtData();
-      if (numFmtData.$.formatCode.includes("yy") &&
+      if (
+        numFmtData && numFmtData.$ &&
+        numFmtData.$.formatCode.includes("yy") &&
         numFmtData.$.formatCode.includes("mm") &&
         numFmtData.$.formatCode.includes("dd") &&
         numFmtData.$.formatCode.includes("hh")) {
         return "DateTime";
       }
-      else if (numFmtData.$.formatCode.includes("yy") &&
+      else if (
+        numFmtData && numFmtData.$ &&
+        numFmtData.$.formatCode.includes("yy") &&
         numFmtData.$.formatCode.includes("mm") &&
         numFmtData.$.formatCode.includes("dd")) {
         return "DateOnly";

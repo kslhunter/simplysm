@@ -5,6 +5,19 @@ export class SdExcelUtils {
     return `${SdExcelUtils.getAddress(fromRow, fromCol)}:${SdExcelUtils.getAddress(toRow, toCol)}`;
   }
 
+  public static getRangeAddressRowCol(addr: string): { fromRow: number; fromCol: number; toRow: number; toCol: number } {
+    const fromTo = addr.split(":");
+    const fromRowCol = SdExcelUtils.getAddressRowCol(fromTo[0]);
+    const toRowCol = SdExcelUtils.getAddressRowCol(fromTo[1]);
+
+    return {
+      fromRow: fromRowCol.row,
+      fromCol: fromRowCol.col,
+      toRow: toRowCol.row,
+      toCol: toRowCol.col
+    };
+  }
+
   public static getAddress(row: number, col: number): string {
     const rowStr = (row + 1).toString();
     const colStr = SdExcelUtils._getColAddress(col);
@@ -13,7 +26,7 @@ export class SdExcelUtils {
 
   public static getAddressRowCol(addr: string): { row: number; col: number } {
     return {
-      row: Number(addr.match(/[0-9]*$/)![0]),
+      row: Number(addr.match(/[0-9]*$/)![0]) - 1,
       col: SdExcelUtils._getAddressCol(addr.match(/^[a-zA-Z]*/)![0])
     };
   }

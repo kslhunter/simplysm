@@ -39,7 +39,12 @@ export class SdExcelCell {
     }
     else if (typeof value === "number") {
       delete this.cellData.$.t;
-      this.style.numberFormat = "number";
+      if (
+        this.style.numberFormat === "DateOnly" ||
+        this.style.numberFormat === "DateTime"
+      ) {
+        this.style.numberFormat = "number";
+      }
       this.cellData.v = this.cellData.v || [];
       this.cellData.v[0] = this.cellData.v[0] || {};
       if (Object.keys(this.cellData.v[0]).includes("_")) {
@@ -155,7 +160,7 @@ export class SdExcelCell {
     if (!currRow) {
       currRow = {$: {r: row + 1}};
 
-      const beforeRow = rowNodes.orderBy(item => item.$.r).last(item => item.$.r < currRow.$.r);
+      const beforeRow = rowNodes.orderBy(item => Number(item.$.r)).last(item => Number(item.$.r) < Number(currRow.$.r));
       const beforeRowIndex = beforeRow ? rowNodes.indexOf(beforeRow) : -1;
 
       rowNodes.insert(beforeRowIndex + 1, currRow);
@@ -186,10 +191,44 @@ export class SdExcelCell {
   public merge(row: number, col: number): void {
     this.excelWorkSheet.sheetData.worksheet.mergeCells = this.excelWorkSheet.sheetData.worksheet.mergeCells || [{}];
     this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell = this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell || [];
-    this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell.push({
-      $: {
-        ref: SdExcelUtils.getRangeAddress(this.row, this.col, row, col)
-      }
+
+    const mergeCells = this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell;
+    const prev = mergeCells.single((item: any) => {
+      const mergeCellRowCol = SdExcelUtils.getRangeAddressRowCol(item.$.ref);
+      return mergeCellRowCol.fromRow === this.row && mergeCellRowCol.fromCol === this.col;
     });
+
+    if (prev) {
+      prev.$.rev = SdExcelUtils.getRangeAddress(this.row, this.col, row, col);
+    }
+    else {
+      this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell.push({
+        $: {
+          ref: SdExcelUtils.getRangeAddress(this.row, this.col, row, col)
+        }
+      });
+    }
+  }
+
+  public async drawingAsync(buffer: Buffer, mime: string): Promise<void> {
+    /*this.excelWorkSheet.sheetData.worksheet.mergeCells = this.excelWorkSheet.sheetData.worksheet.mergeCells || [{}];
+    this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell = this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell || [];
+
+    const mergeCells = this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell;
+    const prev = mergeCells.single((item: any) => {
+      const mergeCellRowCol = SdExcelUtils.getRangeAddressRowCol(item.$.ref);
+      return mergeCellRowCol.fromRow === this.row && mergeCellRowCol.fromCol === this.col;
+    });
+
+    if (prev) {
+      prev.$.rev = SdExcelUtils.getRangeAddress(this.row, this.col, row, col);
+    }
+    else {
+      this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell.push({
+        $: {
+          ref: SdExcelUtils.getRangeAddress(this.row, this.col, row, col)
+        }
+      });
+    }*/
   }
 }
