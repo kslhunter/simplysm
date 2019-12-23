@@ -1,4 +1,5 @@
 import {SdExcelWorksheet} from "./SdExcelWorksheet";
+
 import {SdExcelUtils} from "./utils/SdExcelUtils";
 import {SdExcelCellStyle} from "./SdExcelCellStyle";
 import {DateOnly, DateTime, optional} from "@simplysm/sd-core";
@@ -210,25 +211,169 @@ export class SdExcelCell {
     }
   }
 
-  public async drawingAsync(buffer: Buffer, mime: string): Promise<void> {
-    /*this.excelWorkSheet.sheetData.worksheet.mergeCells = this.excelWorkSheet.sheetData.worksheet.mergeCells || [{}];
-    this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell = this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell || [];
-
-    const mergeCells = this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell;
-    const prev = mergeCells.single((item: any) => {
-      const mergeCellRowCol = SdExcelUtils.getRangeAddressRowCol(item.$.ref);
-      return mergeCellRowCol.fromRow === this.row && mergeCellRowCol.fromCol === this.col;
-    });
-
-    if (prev) {
-      prev.$.rev = SdExcelUtils.getRangeAddress(this.row, this.col, row, col);
+  public async drawingAsync(buffer: Buffer, ext: string): Promise<void> {
+    // Sheet Rel
+    this.excelWorkSheet.relData = this.excelWorkSheet.relData || {};
+    this.excelWorkSheet.relData.Relationships = this.excelWorkSheet.relData.Relationships || {};
+    this.excelWorkSheet.relData.Relationships.$ = this.excelWorkSheet.relData.Relationships.$ || {};
+    this.excelWorkSheet.relData.Relationships.$.xmlns = this.excelWorkSheet.relData.Relationships.$.xmlns || "http://schemas.openxmlformats.org/package/2006/relationships";
+    this.excelWorkSheet.relData.Relationships.Relationship = this.excelWorkSheet.relData.Relationships.Relationship || [];
+    const wsRels: any[] = this.excelWorkSheet.relData.Relationships.Relationship;
+    const wsDrawingRel = wsRels.single(item => item.$.Target.includes("drawing"));
+    let wsRelId: number;
+    if (wsDrawingRel) {
+      wsRelId = Number(wsDrawingRel.$.Id.replace("rId", ""));
     }
     else {
-      this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell.push({
+      const wsRelLastId = wsRels.max((item: any) => Number(item.$.Id.replace(/rId/, ""))) || 0;
+      const wsRelNewId = wsRelLastId + 1;
+      wsRels.push({
         $: {
-          ref: SdExcelUtils.getRangeAddress(this.row, this.col, row, col)
+          Id: "rId" + wsRelNewId,
+          Type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
+          Target: "../drawings/drawing1.xml"
         }
       });
-    }*/
+      wsRelId = wsRelNewId;
+    }
+
+    // Media (copy)
+    const imageMaxId = this.excelWorkSheet.workbook.medias
+      .filter(item => item.name.includes("image"))
+      .map(item => Number(item.name.match(/\/image(.*)\./)![1]))
+      .max() || 0;
+
+    const imageNewId = imageMaxId + 1;
+    this.excelWorkSheet.workbook.medias.push({
+      name: "xl/media/image" + imageNewId + "." + ext,
+      buffer
+    });
+
+    // Drawing Rel
+    this.excelWorkSheet.drawingRelData = this.excelWorkSheet.drawingRelData || {};
+    this.excelWorkSheet.drawingRelData.Relationships = this.excelWorkSheet.drawingRelData.Relationships || {};
+    this.excelWorkSheet.drawingRelData.Relationships.$ = this.excelWorkSheet.drawingRelData.Relationships.$ || {};
+    this.excelWorkSheet.drawingRelData.Relationships.$.xmlns = this.excelWorkSheet.drawingRelData.Relationships.$.xmlns || "http://schemas.openxmlformats.org/package/2006/relationships";
+    this.excelWorkSheet.drawingRelData.Relationships.Relationship = this.excelWorkSheet.drawingRelData.Relationships.Relationship || [];
+
+    const relationshipArray: any[] = this.excelWorkSheet.drawingRelData.Relationships.Relationship;
+    const maxId = relationshipArray.max((item: any) => Number(item.$["Id"].replace(/rId/, ""))) || 0;
+    const newId = maxId + 1;
+    relationshipArray.push({
+      $: {
+        "Id": "rId" + newId,
+        "Type": "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
+        "Target": `../media/image${imageNewId}.${ext}`
+      }
+    });
+
+    // Drawing
+    this.excelWorkSheet.drawingData = this.excelWorkSheet.drawingData || {};
+    this.excelWorkSheet.drawingData["xdr:wsDr"] = this.excelWorkSheet.drawingData["xdr:wsDr"] || {};
+    this.excelWorkSheet.drawingData["xdr:wsDr"].$ = this.excelWorkSheet.drawingData["xdr:wsDr"].$ || {};
+    this.excelWorkSheet.drawingData["xdr:wsDr"].$["xmlns:xdr"] = this.excelWorkSheet.drawingData["xdr:wsDr"].$["xmlns:xdr"] || "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing";
+    this.excelWorkSheet.drawingData["xdr:wsDr"].$["xmlns:a"] = this.excelWorkSheet.drawingData["xdr:wsDr"].$["xmlns:a"] || "http://schemas.openxmlformats.org/drawingml/2006/main";
+
+    this.excelWorkSheet.drawingData["xdr:wsDr"]["xdr:oneCellAnchor"] = this.excelWorkSheet.drawingData["xdr:wsDr"]["xdr:oneCellAnchor"] || [];
+
+    const anchorArray = this.excelWorkSheet.drawingData["xdr:wsDr"]["xdr:oneCellAnchor"];
+
+    const dataUrl = "data:image/" + ext + ";base64, " + btoa(String.fromCharCode(...Array.from(buffer)));
+    const img = new Image();
+    await new Promise<void>(resolve => {
+      img.onload = () => {
+        resolve();
+      };
+      img.src = dataUrl;
+    });
+
+    anchorArray.push({
+      "xdr:from": [
+        {
+          "xdr:col": [this.col.toString()],
+          "xdr:colOff": ["0"],
+          "xdr:row": [this.row.toString()],
+          "xdr:rowOff": ["0"]
+        }
+      ],
+      "xdr:ext": [
+        {
+          $: {
+            "cx": img.width * 9525,
+            "cy": img.height * 9525
+          }
+        }
+      ],
+      "xdr:pic": [
+        {
+          "xdr:nvPicPr": [
+            {
+              "xdr:cNvPr": [
+                {
+                  $: {
+                    id: newId.toString(),
+                    name: `Image ${imageNewId}`
+                  }
+                }
+              ],
+              "xdr:cNvPicPr": [{}]
+            }
+          ],
+          "xdr:blipFill": [
+            {
+              "a:blip": [
+                {
+                  $: {
+                    "xmlns:r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+                    "r:embed": "rId" + newId
+                  }
+                }
+              ]
+            }
+          ],
+          "xdr:spPr": [
+            {
+              "a:prstGeom": [
+                {
+                  $: {
+                    "prst": "rect"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "xdr:clientData": [{}]
+    });
+
+    // Content_Types
+    const contentType = this.excelWorkSheet.workbook.contentTypeData.Types;
+    if (!contentType.Default.some((item: any) => item.$.Extension === ext)) {
+      contentType.Default.push({
+        $: {
+          Extension: ext,
+          ContentType: "image/" + ext
+        }
+      });
+    }
+
+    if (!contentType.Override.some((item: any) => item.$.PartName === "/xl/drawings/drawing1.xml")) {
+      contentType.Override.push({
+        $: {
+          PartName: "/xl/drawings/drawing1.xml",
+          ContentType: "application/vnd.openxmlformats-officedocument.drawing+xml"
+        }
+      });
+    }
+
+    this.excelWorkSheet.sheetData.worksheet.drawing = this.excelWorkSheet.sheetData.worksheet.drawing || [];
+    if (!this.excelWorkSheet.sheetData.worksheet.drawing.some((item: any) => item.$["r:id"] === "rId" + wsRelId)) {
+      this.excelWorkSheet.sheetData.worksheet.drawing.push({
+        $: {
+          "r:id": "rId" + wsRelId
+        }
+      });
+    }
   }
 }

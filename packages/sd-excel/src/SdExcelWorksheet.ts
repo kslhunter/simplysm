@@ -5,6 +5,10 @@ import {SdExcelRow} from "./SdExcelRow";
 import {SdExcelUtils} from "./utils/SdExcelUtils";
 
 export class SdExcelWorksheet {
+  public relData: any;
+  public drawingRelData: any;
+  public drawingData: any;
+
   public constructor(public readonly workbook: SdExcelWorkbook,
                      public readonly name: string,
                      public readonly sheetData: any) {
