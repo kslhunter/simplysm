@@ -70,6 +70,10 @@ export const sorm = {
     const type = separator || "dd";
     return new QueryUnit(Number, "DATEDIFF(" + type + ", " + QueryHelper.getFieldQuery(from) + ", " + QueryHelper.getFieldQuery(to) + ")") as any;
   },
+  dateAdd<T extends QueryType>(separator: string | undefined, from: T | undefined, value: number | undefined): DateOnly {
+    const type = separator || "dd";
+    return new QueryUnit(DateOnly, "DATEADD(" + type + ", " + QueryHelper.getFieldQuery(value) + ", " + QueryHelper.getFieldQuery(from) + ")") as any;
+  },
   nullOrEmpty(source: undefined | string | QueryUnit<string | undefined>): boolean {
     return this.or([
       this.null(source),

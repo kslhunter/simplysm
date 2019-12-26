@@ -219,7 +219,7 @@ export class SdExcelCell {
     this.excelWorkSheet.relData.Relationships.$.xmlns = this.excelWorkSheet.relData.Relationships.$.xmlns || "http://schemas.openxmlformats.org/package/2006/relationships";
     this.excelWorkSheet.relData.Relationships.Relationship = this.excelWorkSheet.relData.Relationships.Relationship || [];
     const wsRels: any[] = this.excelWorkSheet.relData.Relationships.Relationship;
-    const wsDrawingRel = wsRels.single(item => item.$.Target.includes("drawing"));
+    const wsDrawingRel = wsRels.single(item => /drawing[0-9]/.test(item.$.Target));
     let wsRelId: number;
     if (wsDrawingRel) {
       wsRelId = Number(wsDrawingRel.$.Id.replace("rId", ""));
