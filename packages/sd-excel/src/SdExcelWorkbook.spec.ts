@@ -12,4 +12,10 @@ describe("SdExcelWorkbook", () => {
     const result: Buffer = await wb.getBufferAsync();
     fs.writeFileSync(path.resolve(__dirname, "test/test.result.xlsx"), result);
   });
+
+  it("(FIX) 셀 서식이 있는경우에 numFmtId가 '0'이 들어가 생기는 오류 수정", async () => {
+    const buffer = fs.readFileSync(path.resolve(__dirname, "test/stock_upload_fail.xlsx"));
+    const wb = await SdExcelWorkbook.loadAsync(buffer);
+    console.log(wb.json);
+  });
 });

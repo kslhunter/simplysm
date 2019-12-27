@@ -95,7 +95,7 @@ export class SdExcelCellStyle {
 
   public get numberFormat(): string {
     const styleData = this._getStyleData();
-    if (!styleData || !styleData.$ || !styleData.$.numFmtId) {
+    if (!styleData || !styleData.$ || !styleData.$.numFmtId || styleData.$.numFmtId === "0") {
       return "number";
     }
     else if (styleData.$.numFmtId === "14") {
