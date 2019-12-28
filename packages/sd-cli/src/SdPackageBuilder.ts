@@ -104,24 +104,26 @@ export class SdPackageBuilder {
   }
 
   public async publishAsync(): Promise<void> {
-    const packageLogger = Logger.get(["simplysm", "sd-cli", "publish", this._packageKey]);
+    const logger = Logger.get(["simplysm", "sd-cli", "publish", this._packageKey]);
+    logger.log("배포를 시작합니다.");
+
     const publishConfig = this._config.publish!;
 
     if (publishConfig === "npm") {
       await ProcessManager.spawnAsync(
         "yarn publish --access public",
         {cwd: this._packagePath},
-        (message) => {
-          packageLogger.log(message);
+        () => {
         },
-        (errorMessage) => {
-          packageLogger.error(errorMessage);
+        () => {
         }
       );
     }
     else {
       throw new NotImplementError();
     }
+
+    logger.log("배포가 완료되었습니다.");
   }
 
   private async _getWebpackConfigAsync(tsConfigPath: string, watch?: true): Promise<webpack.Configuration> {
