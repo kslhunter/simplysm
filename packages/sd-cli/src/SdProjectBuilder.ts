@@ -150,10 +150,8 @@ export class SdProjectBuilder {
           if (message.includes("Changes") || message.includes("Untracked")) {
             throw new Error("커밋되지 않은 정보가 있습니다.");
           }
-          logger.log(message);
         },
         (message) => {
-          logger.error(message);
         }
       );
     }
@@ -172,22 +170,18 @@ export class SdProjectBuilder {
       await ProcessManager.spawnAsync(
         `git add .`,
         {},
-        (message) => {
-          logger.log(message);
+        () => {
         },
-        (message) => {
-          logger.error(message);
+        () => {
         }
       );
 
       await ProcessManager.spawnAsync(
         `git commit -m "v${projectNpmConfig.version}"`,
         {},
-        (message) => {
-          logger.log(message);
+        () => {
         },
-        (message) => {
-          logger.error(message);
+        () => {
         }
       );
     }
@@ -202,11 +196,9 @@ export class SdProjectBuilder {
       await ProcessManager.spawnAsync(
         `git tag -a "v${projectNpmConfig.version}" -m "v${projectNpmConfig.version}"`,
         {},
-        (message) => {
-          logger.log(message);
+        () => {
         },
-        (message) => {
-          logger.error(message);
+        () => {
         });
     }
 

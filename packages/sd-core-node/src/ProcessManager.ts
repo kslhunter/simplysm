@@ -92,7 +92,7 @@ export class ProcessManager {
           resolve(message ? message.slice(0, -2) : message);
         }
         else {
-          reject(new Error(`exit with code ${code}`));
+          reject(new Error((message ? message.slice(0, -2) : message) + `\n\n: exit with code ${code}`));
         }
       });
     });
