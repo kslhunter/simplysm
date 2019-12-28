@@ -52,7 +52,7 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
       await new SdProjectBuilder(argv.options as any).buildAsync(argv.watch as any);
       break;
     case "publish":
-      await new SdProjectBuilder(argv.options as any).publishAsync(argv.buils as any);
+      await new SdProjectBuilder(argv.options as any).publishAsync(argv.build as any);
       break;
     default:
       throw new Error(`명령어가 잘못되었습니다.\n\n\t${argv._[0]}\n`);
