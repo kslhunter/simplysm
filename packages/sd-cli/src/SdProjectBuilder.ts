@@ -137,8 +137,8 @@ export class SdProjectBuilder {
 
           if (config.packages[packageKey].type === "server") {
             // 서버 시작
-            const packageEntryPath = path.resolve(process.cwd(), "packages", packageKey, "app.js");
-            const server = require(packageEntryPath) as SdServiceServer;
+            // tslint:disable-next-line:no-eval
+            const server = eval(`require(path.resolve(process.cwd(), "packages", packageKey, "app.js"))`) as SdServiceServer;
             await new Promise<void>((resolve) => {
               server.on("ready", () => {
                 // > 서버 맵 구성
@@ -178,7 +178,7 @@ export class SdProjectBuilder {
             throw new Error("커밋되지 않은 정보가 있습니다.");
           }
         },
-        (message) => {
+        () => {
         }
       );
     }
