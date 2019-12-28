@@ -150,7 +150,12 @@ export class SdProjectBuilder {
           if (message.includes("Changes") || message.includes("Untracked")) {
             throw new Error("커밋되지 않은 정보가 있습니다.");
           }
-        });
+          logger.log(message);
+        },
+        (message) => {
+          logger.error(message);
+        }
+      );
     }
 
     // 빌드가 필요하면 빌드함
@@ -164,7 +169,16 @@ export class SdProjectBuilder {
 
     // GIT 사용중일경우, 새 버전 커밋
     if (build && await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
-      await ProcessManager.spawnAsync(`git commit -m "v${projectNpmConfig.version}"`);
+      await ProcessManager.spawnAsync(
+        `git commit -m "v${projectNpmConfig.version}"`,
+        {},
+        (message) => {
+          logger.log(message);
+        },
+        (message) => {
+          logger.error(message);
+        }
+      );
     }
 
     // watch 버전에선 배포 불가
@@ -174,7 +188,15 @@ export class SdProjectBuilder {
 
     // GIT 사용중일경우, TAG 생성
     if (await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
-      await ProcessManager.spawnAsync(`git tag -a "v${projectNpmConfig.version}" -m "v${projectNpmConfig.version}"`);
+      await ProcessManager.spawnAsync(
+        `git tag -a "v${projectNpmConfig.version}" -m "v${projectNpmConfig.version}"`,
+        {},
+        (message) => {
+          logger.log(message);
+        },
+        (message) => {
+          logger.error(message);
+        });
     }
 
     await Promise.all(packageKeys.map(async (packageKey) => {
