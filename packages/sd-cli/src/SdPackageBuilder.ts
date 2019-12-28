@@ -191,6 +191,9 @@ export class SdPackageBuilder {
       output: {
         path: distPath
       },
+      optimization: {
+        minimize: false
+      },
       externals: [
         nodeExternals()
       ],
