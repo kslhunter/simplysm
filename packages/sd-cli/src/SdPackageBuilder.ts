@@ -72,7 +72,7 @@ export class SdPackageBuilder {
 
     const compiler = webpack(webpackConfigs);
 
-    compiler.hooks.invalid.tap("SdAngularCompiler", () => {
+    compiler.hooks.invalid.tap("SdPackageBuilder", () => {
       logger.log("변경사항이 감지되었습니다.");
     });
 
@@ -179,6 +179,7 @@ export class SdPackageBuilder {
       }
     }
 
+    // TODO: 옵션 파일 생성
 
     return {
       mode: watch ? "development" : "production",
@@ -191,14 +192,15 @@ export class SdPackageBuilder {
       output: {
         path: distPath,
         filename: "[name].js",
-        libraryTarget: "umd"
+        ...this._config.type === "library" ? {
+          libraryTarget: "umd"
+        } : {}
       },
-      optimization: {
-        minimize: false
-      },
-      externals: [
-        nodeExternals()
-      ],
+      ...this._config.type === "library" ? {
+        externals: [
+          nodeExternals()
+        ]
+      } : {},
       module: {
         rules: [
           {

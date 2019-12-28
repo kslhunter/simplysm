@@ -4,7 +4,7 @@ export interface ISdProjectConfig {
 }
 
 export interface ISdPackageConfig {
-  type: "library" | "none";
+  type: "library" | "server" | "web" | "none";
   env?: { [key: string]: string };
   configs?: { [key: string]: any };
   publish?: "npm";
