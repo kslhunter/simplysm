@@ -185,6 +185,9 @@ export class SdPackageBuilder {
       mode: watch ? "development" : "production",
       devtool: watch ? "cheap-module-source-map" : "source-map",
       target,
+      node: {
+        __dirname: false
+      },
       resolve: {
         extensions: [".ts", ".js"]
       },

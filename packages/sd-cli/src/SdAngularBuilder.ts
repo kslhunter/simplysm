@@ -72,6 +72,9 @@ export class SdAngularBuilder {
       target: "web",
       resolve: {
         extensions: [".ts", ".js"],
+        alias: {
+          "SD_APP_MODULE_FACTORY": path.resolve(this._packagePath, "src/AppModule.ngfactory")
+        },
         aliasFields: ["browser"]
       },
       entry: {
@@ -123,7 +126,8 @@ export class SdAngularBuilder {
           compilerOptions: {
             fullTemplateTypeCheck: true,
             strictInjectionParameters: true,
-            rootDir: undefined
+            rootDir: undefined,
+            disableTypeScriptVersionCheck: true
           }
         }),
         new webpack.ContextReplacementPlugin(
