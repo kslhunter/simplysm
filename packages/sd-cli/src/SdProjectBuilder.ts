@@ -1,4 +1,4 @@
-import {Logger} from "@simplysm/sd-core-node";
+import {Logger, ProcessManager} from "@simplysm/sd-core-node";
 import {SdCliUtil} from "./SdCliUtil";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -15,7 +15,7 @@ export class SdProjectBuilder {
     this._options = options?.split(",").map((item) => item.trim()) || [];
   }
 
-  public async buildAsync(watch?: true): Promise<void> {
+  public async buildAsync(watch: boolean): Promise<void> {
     const logger = Logger.get(["simplysm", "sd-cli", "build"]);
 
     if (!watch) {
@@ -23,6 +23,38 @@ export class SdProjectBuilder {
       const projectNpmConfigPath = path.resolve(process.cwd(), "package.json");
       const projectNpmConfig = await fs.readJson(projectNpmConfigPath);
       projectNpmConfig.version = semver.inc(projectNpmConfig.version, "patch");
+      await fs.writeJson(projectNpmConfigPath, projectNpmConfig, {spaces: 2, EOL: os.EOL});
+
+      // 각 패키지의 package.json 에 버전적용
+      const packagePaths = (await fs.readdir(path.resolve(process.cwd(), "packages")))
+        .map((item) => path.resolve(process.cwd(), "packages", item));
+      packagePaths.push(path.resolve(process.cwd(), "test"));
+      await Promise.all(packagePaths.map(async (packagePath) => {
+        const packageNpmConfigPath = path.resolve(packagePath, "package.json");
+        const packageNpmConfig = await fs.readJson(packageNpmConfigPath);
+
+        // 버전에 프로젝트 버전 복사
+        packageNpmConfig.version = projectNpmConfig.version;
+
+        // 의존성에 프로젝트 버전 복사
+        const depKeys = Object.keys(packageNpmConfig.dependencies).filter((key) => key.startsWith("@" + projectNpmConfig.name + "/"));
+        for (const depKey of depKeys) {
+          packageNpmConfig.dependencies[depKey] = projectNpmConfig.version;
+        }
+
+        const devDepKeys = Object.keys(packageNpmConfig.devDependencies).filter((key) => key.startsWith("@" + projectNpmConfig.name + "/"));
+        for (const depKey of devDepKeys) {
+          packageNpmConfig.devDependencies[depKey] = projectNpmConfig.version;
+        }
+
+        await fs.writeJson(packageNpmConfigPath, packageNpmConfig, {spaces: 2, EOL: os.EOL});
+      }));
+    }
+    else {
+      // 프로젝트의 package.json 버전 올리기
+      const projectNpmConfigPath = path.resolve(process.cwd(), "package.json");
+      const projectNpmConfig = await fs.readJson(projectNpmConfigPath);
+      projectNpmConfig.version = semver.inc(projectNpmConfig.version, "prerelease");
       await fs.writeJson(projectNpmConfigPath, projectNpmConfig, {spaces: 2, EOL: os.EOL});
 
       // 각 패키지의 package.json 에 버전적용
@@ -87,7 +119,7 @@ export class SdProjectBuilder {
     logger.info("빌드 프로세스를 시작합니다.");
 
     await this._parallelPackagesByDepAsync(packageKeys, async (packageKey) => {
-      const builder = new SdPackageBuilder(packageKey);
+      const builder = new SdPackageBuilder(packageKey, config.packages[packageKey]);
 
       if (!watch) {
         await builder.buildAsync();
@@ -98,6 +130,58 @@ export class SdProjectBuilder {
     });
 
     logger.info("모든 빌드 프로세스가 완료되었습니다.");
+  }
+
+  public async publishAsync(build: boolean): Promise<void> {
+    const logger = Logger.get(["simplysm", "sd-cli", "publish"]);
+    logger.info(`배포를 시작합니다.`);
+
+    // project NPM 가져오기
+    const projectNpmConfigPath = path.resolve(process.cwd(), "package.json");
+    const projectNpmConfig = await fs.readJson(projectNpmConfigPath);
+
+    // "simplysm.json" 정보 가져오기
+    const config = await SdCliUtil.getConfigObjAsync("production", this._options);
+    const packageKeys = Object.keys(config.packages)
+      .filter((packageKey) => config.packages[packageKey].type !== "none" && config.packages[packageKey].publish);
+
+    // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
+    if (await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
+      await ProcessManager.spawnAsync(
+        "git status",
+        {},
+        (message) => {
+          if (message.includes("Changes") || message.includes("Untracked")) {
+            throw new Error("커밋되지 않은 정보가 있습니다.");
+          }
+        });
+    }
+
+    // 빌드가 필요하면 빌드함
+    if (build) {
+      await this.buildAsync(false);
+
+      // GIT 사용중일경우, 새 버전 커밋
+      if (await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
+        await ProcessManager.spawnAsync(`git commit -m "v${projectNpmConfig.version}"`);
+      }
+    }
+    // watch 버전에선 배포 불가
+    else if (projectNpmConfig.version.includes("-")) {
+      throw new Error("현재 최종 버전이 빌드(배포) 버전이 아닙니다.");
+    }
+
+    // GIT 사용중일경우, TAG 생성
+    if (await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
+      await ProcessManager.spawnAsync(`git tag -a "v${projectNpmConfig.version}" -m "v${projectNpmConfig.version}"`);
+    }
+
+    await Promise.all(packageKeys.map(async (packageKey) => {
+      const builder = new SdPackageBuilder(packageKey, config.packages[packageKey]);
+      await builder.publishAsync();
+    }));
+
+    logger.info(`모든 배포가 완료되었습니다. - v${projectNpmConfig.version}`);
   }
 
   private _tsConfigToBuildVersion(packageTsConfig: any): any {

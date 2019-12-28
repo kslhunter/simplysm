@@ -2,14 +2,17 @@ import * as webpack from "webpack";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as ts from "typescript";
-import {Logger} from "@simplysm/sd-core-node";
+import {Logger, ProcessManager} from "@simplysm/sd-core-node";
 import * as nodeExternals from "webpack-node-externals";
 import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
+import {ISdPackageConfig} from "./common";
+import {NotImplementError} from "@simplysm/sd-core-common";
 
 export class SdPackageBuilder {
   private readonly _packagePath: string;
 
-  public constructor(private readonly _packageKey: string) {
+  public constructor(private readonly _packageKey: string,
+                     private readonly _config: ISdPackageConfig) {
     this._packagePath = path.resolve(process.cwd(), "packages", this._packageKey);
   }
 
@@ -98,6 +101,27 @@ export class SdPackageBuilder {
         resolve();
       });
     });
+  }
+
+  public async publishAsync(): Promise<void> {
+    const packageLogger = Logger.get(["simplysm", "sd-cli", "publish", this._packageKey]);
+    const publishConfig = this._config.publish!;
+
+    if (publishConfig === "npm") {
+      await ProcessManager.spawnAsync(
+        "yarn publish --access public",
+        {cwd: this._packagePath},
+        (message) => {
+          packageLogger.log(message);
+        },
+        (errorMessage) => {
+          packageLogger.error(errorMessage);
+        }
+      );
+    }
+    else {
+      throw new NotImplementError();
+    }
   }
 
   private async _getWebpackConfigAsync(tsConfigPath: string, watch?: true): Promise<webpack.Configuration> {

@@ -25,6 +25,23 @@ const argv = yargs
           }
         })
   )
+  .command(
+    "publish",
+    "프로젝트의 각 패키지를 배포합니다.",
+    (cmd) =>
+      cmd.version(false)
+        .options({
+          build: {
+            type: "boolean",
+            describe: "새로 빌드한 후 배포합니다",
+            default: false
+          },
+          options: {
+            type: "string",
+            describe: "빌드 옵션 설정 (설정파일에서 @로 시작하는 부분)"
+          }
+        })
+  )
   .argv;
 
 const logger = Logger.get(["simplysm", "sd-cli"]);
@@ -33,6 +50,9 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
   switch (argv._[0]) {
     case "build":
       await new SdProjectBuilder(argv.options as any).buildAsync(argv.watch as any);
+      break;
+    case "publish":
+      await new SdProjectBuilder(argv.options as any).publishAsync(argv.buils as any);
       break;
     default:
       throw new Error(`명령어가 잘못되었습니다.\n\n\t${argv._[0]}\n`);

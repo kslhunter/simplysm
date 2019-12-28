@@ -6,4 +6,5 @@ export interface ISdPackageConfig {
   type: "library" | "none";
   env?: { [key: string]: string };
   configs?: { [key: string]: any };
+  publish?: "npm";
 }
