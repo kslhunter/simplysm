@@ -189,7 +189,9 @@ export class SdPackageBuilder {
       },
       entry,
       output: {
-        path: distPath
+        path: distPath,
+        filename: "[name].js",
+        libraryTarget: "umd"
       },
       optimization: {
         minimize: false
