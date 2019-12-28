@@ -1,5 +1,6 @@
 export interface ISdProjectConfig {
   packages: { [key: string]: ISdPackageConfig };
+  localUpdates?: { [key: string]: string };
 }
 
 export interface ISdPackageConfig {

@@ -9,6 +9,12 @@ const argv = yargs
   .help("help", "도움말")
   .alias("help", "h")
   .command(
+    "local-update",
+    "프로젝트의 의존성 패키지에, 외부 디렉토리에 있는 패키지 파일을 덮어씁니다.",
+    (cmd) =>
+      cmd.version(false)
+  )
+  .command(
     "build",
     "프로젝트의 각 패키지를 빌드합니다.",
     (cmd) =>
