@@ -1,23 +1,28 @@
 {
   "packages": {
     "sd-cli": {
-      "type": "library"
+      "type": "library",
+      "publish": "npm"
     },
     "sd-core-browser": {
-      "type": "library"
+      "type": "library",
+      "publish": "npm"
     },
     "sd-core-common": {
       "type": "library",
       "publish": "npm"
     },
     "sd-core-node": {
-      "type": "library"
+      "type": "library",
+      "publish": "npm"
     },
     "sd-orm-common": {
-      "type": "library"
+      "type": "library",
+      "publish": "npm"
     },
     "sd-orm-node": {
-      "type": "library"
+      "type": "library",
+      "publish": "npm"
     }
   }
 }
