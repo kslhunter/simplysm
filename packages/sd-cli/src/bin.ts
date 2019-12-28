@@ -3,6 +3,7 @@
 import * as yargs from "yargs";
 import {Logger} from "@simplysm/sd-core-node";
 import {SdProjectBuilder} from "./SdProjectBuilder";
+import {SdLibraryLocalUpdater} from "./SdLibraryLocalUpdater";
 
 const argv = yargs
   .version(false)
@@ -59,6 +60,9 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
       break;
     case "publish":
       await new SdProjectBuilder(argv.options as any).publishAsync(argv.build as any);
+      break;
+    case "local-update":
+      await SdLibraryLocalUpdater.localUpdateAsync(argv.build as any);
       break;
     default:
       throw new Error(`명령어가 잘못되었습니다.\n\n\t${argv._[0]}\n`);
