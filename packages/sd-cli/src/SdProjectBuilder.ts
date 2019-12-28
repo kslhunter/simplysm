@@ -136,10 +136,6 @@ export class SdProjectBuilder {
     const logger = Logger.get(["simplysm", "sd-cli", "publish"]);
     logger.info(`배포를 시작합니다.`);
 
-    // project NPM 가져오기
-    const projectNpmConfigPath = path.resolve(process.cwd(), "package.json");
-    const projectNpmConfig = await fs.readJson(projectNpmConfigPath);
-
     // "simplysm.json" 정보 가져오기
     const config = await SdCliUtil.getConfigObjAsync("production", this._options);
     const packageKeys = Object.keys(config.packages)
@@ -160,14 +156,19 @@ export class SdProjectBuilder {
     // 빌드가 필요하면 빌드함
     if (build) {
       await this.buildAsync(false);
-
-      // GIT 사용중일경우, 새 버전 커밋
-      if (await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
-        await ProcessManager.spawnAsync(`git commit -m "v${projectNpmConfig.version}"`);
-      }
     }
+
+    // project NPM 가져오기
+    const projectNpmConfigPath = path.resolve(process.cwd(), "package.json");
+    const projectNpmConfig = await fs.readJson(projectNpmConfigPath);
+
+    // GIT 사용중일경우, 새 버전 커밋
+    if (build && await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
+      await ProcessManager.spawnAsync(`git commit -m "v${projectNpmConfig.version}"`);
+    }
+
     // watch 버전에선 배포 불가
-    else if (projectNpmConfig.version.includes("-")) {
+    if (projectNpmConfig.version.includes("-")) {
       throw new Error("현재 최종 버전이 빌드(배포) 버전이 아닙니다.");
     }
 
