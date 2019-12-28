@@ -1,4 +1,3 @@
-/*
 require("core-js/proposals/reflect-metadata");
 require("zone.js/dist/zone");
 
@@ -11,15 +10,3 @@ enableProdMode();
 platformBrowserDynamic().bootstrapModuleFactory(AppModuleNgFactory).catch(err => {
   console.error(err);
 });
-*/
-
-
-
-const enableProdMode = require("@angular/core").enableProdMode;
-enableProdMode();
-
-const AppServerModuleNgFactory = require("SD_APP_MODULE_FACTORY").AppServerModuleNgFactory;
-
-export { AppServerModuleNgFactory };
-export { ngExpressEngine } from "@nguniversal/express-engine";
-export { provideModuleMap } from "@nguniversal/module-map-ngfactory-loader";

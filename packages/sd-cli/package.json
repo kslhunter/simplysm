@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "3.1.19",
+  "version": "3.1.20-0",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -24,8 +24,8 @@
     "rxjs": "^6.5.4",
     "zone.js": "~0.9.1",
     "express": "^4.17.1",
-    "@simplysm/sd-core-common": "3.1.19",
-    "@simplysm/sd-core-node": "3.1.19",
+    "@simplysm/sd-core-common": "3.1.20-0",
+    "@simplysm/sd-core-node": "3.1.20-0",
     "yargs": "^15.0.2",
     "fs-extra": "^8.1.0",
     "webpack": "^4.41.2",
@@ -40,7 +40,9 @@
     "@angular-devkit/build-optimizer": "^0.803.21",
     "core-js": "^3.6.1",
     "@nguniversal/express-engine": "^8.2.6",
-    "@nguniversal/module-map-ngfactory-loader": "^8.2.6"
+    "@nguniversal/module-map-ngfactory-loader": "^8.2.6",
+    "webpack-dev-middleware": "^3.7.2",
+    "webpack-hot-middleware": "^2.25.0"
   },
   "devDependencies": {
     "@types/node": "^13.1.1",
@@ -50,6 +52,8 @@
     "@types/semver": "^6.2.0",
     "@types/webpack": "^4.41.0",
     "@types/webpack-node-externals": "^1.7.0",
-    "@types/html-webpack-plugin": "^3.2.1"
+    "@types/html-webpack-plugin": "^3.2.1",
+    "@types/webpack-dev-middleware": "^2.0.3",
+    "@types/webpack-hot-middleware": "^2.25.0"
   }
 }

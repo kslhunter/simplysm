@@ -7,6 +7,9 @@ import * as fs from "fs-extra";
 import * as ts from "typescript";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
+import * as WebpackDevMiddleware from "webpack-dev-middleware";
+import * as WebpackHotMiddleware from "webpack-hot-middleware";
+import {NextHandleFunction} from "connect";
 
 export class SdAngularBuilder {
   private readonly _packagePath: string;
@@ -20,9 +23,14 @@ export class SdAngularBuilder {
     logger.log("빌드를 시작합니다.");
 
     const packageTsConfigPath = path.resolve(this._packagePath, "tsconfig.build.json");
+    const packageTsConfigForNodePath = path.resolve(this._packagePath, "tsconfig-node.build.json");
 
-    const webpackConfig = await this._getWebpackConfigAsync(packageTsConfigPath);
-    const compiler = webpack(webpackConfig);
+    const webpackConfigs = [await this._getWebpackConfigAsync(packageTsConfigPath)];
+    if (await fs.pathExists(packageTsConfigForNodePath)) {
+      webpackConfigs.push(await this._getWebpackConfigAsync(packageTsConfigForNodePath));
+    }
+
+    const compiler = webpack(webpackConfigs);
 
     await new Promise<void>((resolve, reject) => {
       compiler.run((err, stats) => {
@@ -53,7 +61,56 @@ export class SdAngularBuilder {
   }
 
   public async watchAsync(): Promise<void> {
-    throw new NotImplementError();
+    const logger = Logger.get(["simplysm", "sd-cli", "watch", this._packageKey]);
+    logger.log("빌드 및 변경감지를 시작합니다.");
+
+    const packageTsConfigPath = path.resolve(this._packagePath, "tsconfig.build.json");
+    const packageTsConfigForNodePath = path.resolve(this._packagePath, "tsconfig-node.build.json");
+
+    const webpackConfigs = [await this._getWebpackConfigAsync(packageTsConfigPath)];
+    if (await fs.pathExists(packageTsConfigForNodePath)) {
+      webpackConfigs.push(await this._getWebpackConfigAsync(packageTsConfigForNodePath));
+    }
+
+    const compiler = webpack(webpackConfigs);
+
+    compiler.hooks.invalid.tap("SdPackageBuilder", () => {
+      logger.log("변경사항이 감지되었습니다.");
+    });
+
+    await new Promise<NextHandleFunction[]>((resolve, reject) => {
+      const devMiddleware = WebpackDevMiddleware(compiler, {
+        publicPath: webpackConfigs[0].output!.publicPath!,
+        logLevel: "silent"
+      });
+
+      const hotMiddleware = WebpackHotMiddleware(compiler, {
+        path: `/${this._packageKey}/__webpack_hmr`,
+        log: false
+      });
+
+      compiler.hooks.done.tap("SdAngularBuilder", async (multiStats) => {
+        for (const stats of multiStats.stats) {
+          const info = stats.toJson({all: false, assets: true, warnings: true, errors: true, errorDetails: false});
+
+          if (stats.hasWarnings()) {
+            for (const warning of info.warnings) {
+              logger.warn(warning);
+            }
+          }
+
+          if (stats.hasErrors()) {
+            for (const error of info.errors) {
+              logger.error(error);
+            }
+          }
+        }
+
+
+        logger.log("빌드가 완료되었습니다.");
+        resolve([devMiddleware, hotMiddleware]);
+      });
+    });
   }
 
   public async publishAsync(): Promise<void> {
@@ -66,19 +123,70 @@ export class SdAngularBuilder {
     const packageParsedTsConfig = ts.parseJsonConfigFileContent(packageTsConfig, ts.sys, this._packagePath);
     const distPath = packageParsedTsConfig.options.outDir ? path.resolve(packageParsedTsConfig.options.outDir) : path.resolve(this._packagePath, "dist");
 
+    // target 확인
+    let target: "web" | "node";
+    if (await fs.pathExists(path.resolve(this._packagePath, "tsconfig-node.build.json"))) {
+      if (path.basename(tsConfigPath).startsWith("tsconfig-node")) {
+        target = "node";
+      }
+      else {
+        target = "web";
+      }
+    }
+    else {
+      if (packageParsedTsConfig.options.target === ts.ScriptTarget.ES5) {
+        target = "web";
+      }
+      else {
+        target = "node";
+      }
+    }
+
+    // main entry 경로 확인
+    let mainEntryPath: string | string[];
+    if (watch) {
+      if (target === "web") {
+        mainEntryPath = [
+          `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
+          path.resolve(__dirname, "../lib/main.dev.js")
+        ];
+      }
+      else {
+        mainEntryPath = path.resolve(__dirname, "../lib/main.server.dev.js");
+      }
+    }
+    else {
+      if (target === "web") {
+        mainEntryPath = path.resolve(__dirname, "../lib/main.prod.js");
+      }
+      else {
+        mainEntryPath = path.resolve(__dirname, "../lib/main.server.prod.js");
+      }
+    }
+
+    // appModuleClass 경로 확인
+    let appModulePath;
+    if (target === "web") {
+      appModulePath = path.resolve(this._packagePath, "src/AppModule");
+    }
+    else {
+      appModulePath = path.resolve(this._packagePath, "src/AppServerModule");
+    }
+
     return {
       mode: watch ? "development" : "production",
       devtool: watch ? "cheap-module-source-map" : false,
-      target: "web",
+      target,
+      node: false,
       resolve: {
         extensions: [".ts", ".js"],
         alias: {
-          "SD_APP_MODULE_FACTORY": path.resolve(this._packagePath, "src/AppModule.ngfactory")
+          "SD_APP_MODULE_FACTORY": appModulePath + ".ngfactory"
         },
-        aliasFields: ["browser"]
+        aliasFields: [target === "web" ? "browser" : "main"]
       },
       entry: {
-        main: path.resolve(__dirname, "../lib/main.prod.js")
+        main: mainEntryPath
       },
       output: {
         publicPath: `/${this._packageKey}/`,
@@ -86,7 +194,7 @@ export class SdAngularBuilder {
         filename: "[name].js",
         chunkFilename: "[name].chunk.js"
       },
-      optimization: {
+      optimization: watch ? {} : {
         noEmitOnErrors: true,
         minimizer: [
           new webpack.HashedModuleIdsPlugin()
@@ -114,9 +222,9 @@ export class SdAngularBuilder {
           BASE_HREF: `/${this._packageKey}/`
         }),
         new AngularCompilerPlugin({
-          mainPath: path.resolve(__dirname, "../lib/main.prod.js"),
-          entryModule: path.resolve(this._packagePath, "src/AppModule") + "#AppModule",
-          platform: PLATFORM.Browser,
+          mainPath: mainEntryPath instanceof Array ? mainEntryPath.last() : mainEntryPath,
+          entryModule: appModulePath + "#" + appModulePath.split("/").last(),
+          platform: PLATFORM.Server,
           sourceMap: false,
           nameLazyFiles: false,
           forkTypeChecker: true,
@@ -130,11 +238,7 @@ export class SdAngularBuilder {
             disableTypeScriptVersionCheck: true
           }
         }),
-        new webpack.ContextReplacementPlugin(
-          /(.+)?angular(\\|\/)core(.+)?/,
-          path.join(this._packagePath, "src"),
-          {}
-        )
+        new webpack.ContextReplacementPlugin(/@angular(\\|\/)core(\\|\/)/)
       ]
     };
   }
