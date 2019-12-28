@@ -212,6 +212,12 @@ export class SdPackageBuilder {
       },
       plugins: [
         new webpack.BannerPlugin({
+          banner: "require(\"source-map-support/register\");",
+          raw: true,
+          entryOnly: true,
+          include: ["bin.js"]
+        }),
+        new webpack.BannerPlugin({
           banner: "#!/usr/bin/env node",
           raw: true,
           entryOnly: true,
