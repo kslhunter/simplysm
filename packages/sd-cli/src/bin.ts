@@ -62,7 +62,7 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
       await new SdProjectBuilder(argv.options as any).publishAsync(argv.build as any);
       break;
     case "local-update":
-      await SdLibraryLocalUpdater.localUpdateAsync(argv.build as any);
+      await SdLibraryLocalUpdater.localUpdateAsync();
       break;
     default:
       throw new Error(`명령어가 잘못되었습니다.\n\n\t${argv._[0]}\n`);
