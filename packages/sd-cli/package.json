@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -12,8 +12,8 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-common": "3.1.4",
-    "@simplysm/sd-core-node": "3.1.4",
+    "@simplysm/sd-core-common": "3.1.5",
+    "@simplysm/sd-core-node": "3.1.5",
     "yargs": "^15.0.2",
     "fs-extra": "^8.1.0",
     "webpack": "^4.41.2",

@@ -170,6 +170,17 @@ export class SdProjectBuilder {
     // GIT 사용중일경우, 새 버전 커밋
     if (build && await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
       await ProcessManager.spawnAsync(
+        `git add .`,
+        {},
+        (message) => {
+          logger.log(message);
+        },
+        (message) => {
+          logger.error(message);
+        }
+      );
+
+      await ProcessManager.spawnAsync(
         `git commit -m "v${projectNpmConfig.version}"`,
         {},
         (message) => {
