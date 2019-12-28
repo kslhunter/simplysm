@@ -182,7 +182,7 @@ export class SdPackageBuilder {
 
     return {
       mode: watch ? "development" : "production",
-      devtool: watch ? "cheap-module-source-map" : false,
+      devtool: watch ? "cheap-module-source-map" : "source-map",
       target,
       resolve: {
         extensions: [".ts", ".js"]
