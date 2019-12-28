@@ -13,9 +13,6 @@
       ],
       "@simplysm/sd-core-node": [
         "../sd-core-node/src/index.ts"
-      ],
-      "@simplysm/sd-service-server": [
-        "../sd-service-server/src/index.ts"
       ]
     }
   }

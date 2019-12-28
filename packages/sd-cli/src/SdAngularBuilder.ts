@@ -60,7 +60,7 @@ export class SdAngularBuilder {
     logger.log("빌드가 완료되었습니다.");
   }
 
-  public async watchAsync(): Promise<void> {
+  public async watchAsync(): Promise<NextHandleFunction[]> {
     const logger = Logger.get(["simplysm", "sd-cli", "watch", this._packageKey]);
     logger.log("빌드 및 변경감지를 시작합니다.");
 
@@ -78,7 +78,7 @@ export class SdAngularBuilder {
       logger.log("변경사항이 감지되었습니다.");
     });
 
-    await new Promise<NextHandleFunction[]>((resolve, reject) => {
+    return await new Promise<NextHandleFunction[]>((resolve, reject) => {
       const devMiddleware = WebpackDevMiddleware(compiler, {
         publicPath: webpackConfigs[0].output!.publicPath!,
         logLevel: "silent"

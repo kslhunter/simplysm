@@ -2,6 +2,7 @@
   <dictionary name="kslhunter">
     <words>
       <w>anymatch</w>
+      <w>middlewares</w>
       <w>simplysm</w>
       <w>sorm</w>
       <w>upsert</w>

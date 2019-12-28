@@ -23,6 +23,10 @@
     "sd-orm-node": {
       "type": "library",
       "publish": "npm"
+    },
+    "sd-service-server": {
+      "type": "library",
+      "publish": "npm"
     }
   }
 }

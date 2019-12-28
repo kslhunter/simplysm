@@ -1,7 +1,7 @@
 {
-  "name": "@simplysm/sd-orm-node",
+  "name": "@simplysm/sd-service-server",
   "version": "3.1.21-1",
-  "description": "심플리즘 패키지 - ORM 모듈 (node)",
+  "description": "심플리즘 패키지 - 서비스 서버 모듈",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
   "license": "MIT",
@@ -11,8 +11,10 @@
   "dependencies": {
     "@simplysm/sd-core-common": "3.1.21-1",
     "@simplysm/sd-core-node": "3.1.21-1",
-    "@simplysm/sd-orm-common": "3.1.21-1",
-    "tedious": "^6.6.2"
+    "express": "^4.17.1",
+    "ws": "^7.1.1",
+    "connect": "^3.7.0",
+    "fs-extra": "^8.1.0"
   },
   "devDependencies": {
     "@types/node": "^13.1.1",

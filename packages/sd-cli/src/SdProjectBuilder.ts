@@ -8,9 +8,16 @@ import * as ts from "typescript";
 import * as semver from "semver";
 import {SdPackageBuilder} from "./SdPackageBuilder";
 import {SdAngularBuilder} from "./SdAngularBuilder";
+import {NextHandleFunction} from "connect";
+import {SdServiceServer} from "@simplysm/sd-service-server";
 
 export class SdProjectBuilder {
   private readonly _options: string[];
+  private readonly _serverMap = new Map<string, {
+    server: SdServiceServer;
+    middlewares: NextHandleFunction[];
+    clientKeys: string[];
+  }>();
 
   public constructor(options?: string) {
     this._options = options?.split(",").map((item) => item.trim()) || [];
@@ -88,6 +95,8 @@ export class SdProjectBuilder {
     logger.info("빌드 프로세스를 시작합니다.");
 
     await this._parallelPackagesByDepAsync(packageKeys, async (packageKey) => {
+      const packageConfig = config.packages[packageKey];
+
       if (config.packages[packageKey].type === "web") {
         const builder = new SdAngularBuilder(packageKey);
 
@@ -95,7 +104,26 @@ export class SdProjectBuilder {
           await builder.buildAsync();
         }
         else {
-          await builder.watchAsync();
+          const middlewares = await builder.watchAsync();
+
+          if (!packageConfig.server) {
+            throw new Error(`서버 패키지가 설정되어있지 않습니다. (client, ${packageKey})`);
+          }
+
+          if (!Object.keys(config.packages).includes(packageConfig.server)) {
+            throw new Error(`클라이언트를 올릴 서버 패키지가 빌드 설정에 존재하지 않습니다. (client, ${packageKey})`);
+          }
+
+          await Wait.true(() => this._serverMap.has(packageConfig.server!));
+          const serverInfo = this._serverMap.get(packageConfig.server)!;
+
+          serverInfo.clientKeys.push(packageKey);
+          serverInfo.middlewares.push(...middlewares);
+          for (const middleware of middlewares) {
+            serverInfo.server.addMiddleware(middleware);
+          }
+
+          logger.info(`개발서버 서비스가 시작되었습니다.: http://localhost:${serverInfo.server.port}/${packageKey}/`);
         }
       }
       else {
@@ -106,6 +134,24 @@ export class SdProjectBuilder {
         }
         else {
           await builder.watchAsync();
+
+          if (config.packages[packageKey].type === "server") {
+            // 서버 시작
+            const packageEntryPath = path.resolve(process.cwd(), "packages", packageKey, "app.js");
+            const server = require(packageEntryPath) as SdServiceServer;
+            await new Promise<void>((resolve) => {
+              server.on("ready", () => {
+                // > 서버 맵 구성
+                this._serverMap.set(packageKey, {
+                  server,
+                  middlewares: [],
+                  clientKeys: []
+                });
+
+                resolve();
+              });
+            });
+          }
         }
       }
     });

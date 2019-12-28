@@ -8,4 +8,5 @@ export interface ISdPackageConfig {
   env?: { [key: string]: string };
   configs?: { [key: string]: any };
   publish?: "npm";
+  server?: string;
 }
