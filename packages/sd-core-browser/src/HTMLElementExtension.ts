@@ -1,0 +1,233 @@
+import ResizeObserver from "resize-observer-polyfill";
+
+// tslint:disable-next-line:interface-name
+export interface ResizeEvent extends Event {
+  readonly prevWidth: number;
+  readonly newWidth: number;
+  readonly prevHeight: number;
+  readonly newHeight: number;
+}
+
+// tslint:disable-next-line:interface-name
+export interface MutationEvent extends Event {
+  readonly mutations: MutationRecord[];
+}
+
+declare global {
+  // tslint:disable-next-line:interface-name
+  interface HTMLElement {
+    getRelativeOffset(parentElement: HTMLElement): { top: number; left: number };
+
+    getRelativeOffset(parentSelector: string): { top: number; left: number };
+
+    prependChild<T extends HTMLElement>(newChild: T): T;
+
+    findAll(selector: string): HTMLElement[];
+
+    findParent(selector: string): HTMLElement | undefined;
+
+    isFocusable(): boolean;
+
+    findFocusableAll(): HTMLElement[];
+
+    findFocusableParent(): HTMLElement | undefined;
+
+    addEventListener(type: "mutation", listener: (event: MutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
+
+    addEventListener(type: "resize", listener: (event: ResizeEvent) => any, options?: boolean | AddEventListenerOptions): void;
+
+    removeEventListener(type: "mutation", listener: (event: MutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
+
+    removeEventListener(type: "resize", listener: (event: ResizeEvent) => any, options?: boolean | AddEventListenerOptions): void;
+  }
+}
+
+if (!HTMLElement.prototype.matches) {
+  HTMLElement.prototype.matches = HTMLElement.prototype["msMatchesSelector"];
+}
+
+HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string): { top: number; left: number } {
+  const parentEl = typeof parent === "string" ? this.findParent(parent) : parent;
+
+  let cursor = this;
+  let top = cursor.offsetTop;
+  let left = cursor.offsetLeft;
+  while (cursor.offsetParent && cursor.offsetParent !== parentEl) {
+    cursor = cursor.offsetParent as HTMLElement;
+    top += cursor.offsetTop;
+    left += cursor.offsetLeft;
+  }
+
+  cursor = this;
+  while (cursor.parentElement) {
+    cursor = cursor.parentElement as HTMLElement;
+    top -= cursor.scrollTop;
+    left -= cursor.scrollLeft;
+  }
+
+  return {top, left};
+};
+
+HTMLElement.prototype.findParent = function (selector: string): HTMLElement | undefined {
+  let cursor = this.parentElement;
+  while (cursor) {
+    if (cursor.matches(selector)) {
+      break;
+    }
+
+    cursor = cursor.parentElement;
+  }
+
+  return cursor || undefined;
+};
+
+HTMLElement.prototype.prependChild = function <T extends HTMLElement>(newChild: T): T {
+  return this.insertBefore(newChild, this.children.item(0));
+};
+
+HTMLElement.prototype.findAll = function (selector: string): HTMLElement[] {
+  if (process.versions.node || /Chrome/.test(navigator.userAgent)) {
+    return Array.from(
+      this.querySelectorAll(selector.split(",").map((item) => `:scope ${item}`).join(","))
+    ).ofType(HTMLElement);
+  }
+  else {
+    return Array.from(
+      this.querySelectorAll(selector.split(",").map((item) => `:scope ${item}`).join(","))
+    ).ofType(HTMLElement);
+  }
+};
+
+const focusableSelectorList = [
+  "a[href]:not([hidden])",
+  "button:not([disabled]):not([hidden])",
+  "area[href]:not([hidden])",
+  "input:not([disabled]):not([hidden])",
+  "select:not([disabled]):not([hidden])",
+  "textarea:not([disabled]):not([hidden])",
+  "iframe:not([hidden])",
+  "object:not([hidden])",
+  "embed:not([hidden])",
+  "*[tabindex]:not([hidden])",
+  "*[contenteditable]:not([hidden])"
+];
+
+HTMLElement.prototype.isFocusable = function (): boolean {
+  return this.matches(focusableSelectorList.join(","));
+};
+
+HTMLElement.prototype.findFocusableAll = function (): HTMLElement[] {
+  return Array.from(
+    this.querySelectorAll(focusableSelectorList.map((item) => `:scope ${item}`).join(","))
+  ).ofType(HTMLElement);
+};
+
+HTMLElement.prototype.findFocusableParent = function (): HTMLElement | undefined {
+  let parentEl = this.parentElement;
+  while (parentEl) {
+    if (parentEl.matches(focusableSelectorList.join(","))) {
+      return parentEl;
+    }
+    parentEl = parentEl.parentElement;
+  }
+
+  return undefined;
+};
+
+
+const orgAddEventListener = HTMLElement.prototype.addEventListener;
+HTMLElement.prototype.addEventListener = function (type: string, listener: ((event: any) => any) | EventListenerObject, options?: boolean | AddEventListenerOptions): void {
+  if (type === "resize") {
+    if (this["__resizeEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options)) {
+      return;
+    }
+
+    let prevWidth = this.offsetWidth;
+    let prevHeight = this.offsetHeight;
+
+    const observer = new ResizeObserver(() => {
+      const event = new CustomEvent("resize") as any;
+      event.prevWidth = prevWidth;
+      event.newWidth = this.offsetWidth;
+      event.prevHeight = prevHeight;
+      event.newHeight = this.offsetHeight;
+
+      prevWidth = this.offsetWidth;
+      prevHeight = this.offsetHeight;
+
+      if (event.newWidth !== event.prevWidth || event.newHeight !== event.prevHeight) {
+        if (listener["handleEvent"]) {
+          (listener as EventListenerObject).handleEvent(event);
+        }
+        else {
+          (listener as EventListener)(event);
+        }
+      }
+    });
+
+    this["__resizeEventListeners__"] = this["__resizeEventListeners__"] ?? [];
+    this["__resizeEventListeners__"].push({listener, options, observer});
+
+
+    if (options === true) {
+      throw new Error("resize 이벤트는 children 의 이벤트를 가져올 수 없습니다.");
+    }
+    else {
+      observer.observe(this);
+    }
+  }
+  else if (type === "mutation") {
+    if (this["__mutationEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options)) {
+      return;
+    }
+
+    const observer = new window["MutationObserver"]((mutations) => {
+      const event = new CustomEvent("mutation") as any;
+      event.mutations = mutations;
+
+      if (listener["handleEvent"]) {
+        (listener as EventListenerObject).handleEvent(event);
+      }
+      else {
+        (listener as EventListener)(event);
+      }
+    });
+
+
+    this["__mutationEventListeners__"] = this["__mutationEventListeners__"] ?? [];
+    this["__mutationEventListeners__"].push({listener, options, observer});
+
+    observer.observe(this, {
+      childList: true,
+      attributes: true,
+      attributeOldValue: true,
+      characterData: true,
+      characterDataOldValue: true,
+      subtree: options === true
+    });
+  }
+  else {
+    orgAddEventListener.bind(this)(type, listener, options);
+  }
+};
+
+const orgRemoveEventListener = HTMLElement.prototype.removeEventListener;
+HTMLElement.prototype.removeEventListener = function (type: string, listener: ((event: any) => any) | EventListenerObject, options?: boolean | EventListenerOptions): void {
+  if (type === "resize") {
+    const obj = this["__resizeEventListeners__"]?.single((item: any) => item.listener === listener && item.options === options);
+    if (obj) {
+      obj.observer.disconnect();
+      this["__resizeEventListeners__"].remove(obj);
+    }
+  }
+  else if (type === "mutation") {
+    const obj = this["__mutationEventListeners__"]?.single((item: any) => item.listener === listener && item.options === options);
+    if (obj) {
+      obj.observer.disconnect();
+      this["__mutationEventListeners__"].remove(obj);
+    }
+  }
+  else {
+    orgRemoveEventListener.bind(this)(type, listener, options);
+  }
+};

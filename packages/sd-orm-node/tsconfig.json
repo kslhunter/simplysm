@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "target": "es2018",
+    "lib": [
+      "es2018"
+    ],
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@simplysm/sd-core-common": [
+        "../sd-core-common/src/index.ts"
+      ],
+      "@simplysm/sd-core-node": [
+        "../sd-core-node/src/index.ts"
+      ],
+      "@simplysm/sd-orm-common": [
+        "../sd-orm-common/src/index.ts"
+      ]
+    }
+  }
+}

@@ -1,29 +1,18 @@
 {
   "extends": "../../tsconfig",
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist",
     "target": "es2018",
     "lib": [
       "es2018"
     ],
-    "declaration": false,
+    "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "tslint": [
-        "../../node_modules/tslint"
+      "@simplysm/sd-core-common": [
+        "../sd-core-common/src/index.ts"
       ],
-      "@simplysm/sd-core": [
-        "../sd-core/src/index.ts"
-      ],
-      "@simplysm/sd-service": [
-        "../sd-service/src/index.ts"
-      ],
-      "@simplysm/sd-smtp-client": [
-        "../sd-smtp-client/src/index.ts"
-      ],
-      "@simplysm/sd-orm": [
-        "../sd-orm/src/index.ts"
+      "@simplysm/sd-core-node": [
+        "../sd-core-node/src/index.ts"
       ]
     }
   }

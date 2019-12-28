@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "target": "es5",
     "module": "commonjs",
     "moduleResolution": "node",
     "strict": true,
@@ -9,6 +8,9 @@
     "removeComments": true,
     "noUnusedLocals": true,
     "importHelpers": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": true,
     "plugins": [
       {
         "name": "typescript-tslint-plugin"
@@ -16,7 +18,7 @@
     ],
     "typeRoots": [
       "./node_modules/@types",
-      "./types"
+      "./node_modules/@simplysm-types"
     ]
   }
 }

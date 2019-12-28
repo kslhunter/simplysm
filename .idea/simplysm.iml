@@ -1,34 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$">
-      <excludeFolder url="file://$MODULE_DIR$/.clinic" />
-      <excludeFolder url="file://$MODULE_DIR$/.tmp" />
-      <excludeFolder url="file://$MODULE_DIR$/_back" />
-      <excludeFolder url="file://$MODULE_DIR$/_back/sd-angular/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/_back/sd-core/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/_back/sd-excel/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/_back/sd-service/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/assets" />
-      <excludeFolder url="file://$MODULE_DIR$/docs" />
-      <excludeFolder url="file://$MODULE_DIR$/logs" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-client/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-client/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-smtp-client-common/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-smtp-client/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-storage/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-vue" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-vue/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/profiling" />
-      <excludeFolder url="file://$MODULE_DIR$/temp" />
-      <excludeFolder url="file://$MODULE_DIR$/tmp" />
-    </content>
+    <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

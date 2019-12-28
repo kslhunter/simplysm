@@ -1,10 +1,7 @@
 .idea/**/workspace.xml
 node_modules
 tsconfig.build.json
-/assets
+tsconfig-node.build.json
 dist
 yarn-error.log
 logs
-profiling/*.log
-.clinic
-.cordova

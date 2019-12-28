@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "es2018",
+      "dom"
+    ],
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@simplysm/sd-core-common": [
+        "../sd-core-common/src/index.ts"
+      ]
+    }
+  }
+}

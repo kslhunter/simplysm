@@ -1,0 +1,22 @@
+{
+  "packages": {
+    "sd-core-common": {
+      "type": "library",
+      "@AAA": {
+        "env": {
+          "AAA": "1"
+        }
+      },
+      "@BBB": {
+        "env": {
+          "BBB": "2"
+        }
+      },
+      "@CCC": {
+        "env": {
+          "CCC": "3"
+        }
+      }
+    }
+  }
+}

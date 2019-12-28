@@ -1,34 +1,26 @@
 {
   "name": "simplysm",
-  "version": "2.2.112",
+  "version": "3.0.88",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "private": true,
   "workspaces": [
     "packages/*",
-    "tests/*"
+    "types/*",
+    "test"
   ],
   "scripts": {
     "watch": "yarn _sd-cli_ build --watch",
     "build": "yarn _sd-cli_ build",
-    "publish": "yarn _sd-cli_ publish",
-    "build+publish": "yarn _sd-cli_ publish --build",
-    "test": "yarn _sd-cli_ test",
     "--": "",
-    "profile:watch": "yarn _sd-cli-profile_ build --watch",
-    "profile:build": "yarn _sd-cli-profile_ build",
-    "-- ": "",
-    "reinstall": "./reinstall.bat",
-    "--  ": "",
-    "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --require=ts-node/register --require=tsconfig-paths/register packages/sd-cli/src/bin.ts",
-    "_sd-cli-profile_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --prof --no-logfile-per-isolate --logfile=profiling/cli.log --require=ts-node/register --require=tsconfig-paths/register packages/sd-cli/src/bin.ts"
+    "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --require=ts-node/register --require=tsconfig-paths/register packages/sd-cli/src/bin.ts"
   },
   "devDependencies": {
-    "cross-env": "^6.0.0",
-    "ts-node": "^8.3.0",
-    "tsconfig-paths": "^3.8.0",
-    "typescript": "3.5.3"
+    "cross-env": "^6.0.3",
+    "ts-node": "^8.5.4",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^3.7.2"
   }
 }

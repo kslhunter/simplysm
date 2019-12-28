@@ -1,24 +1,11 @@
 <component name="ProjectDictionaryState">
   <dictionary name="kslhunter">
     <words>
-      <w>bundler</w>
-      <w>codelyzer</w>
-      <w>cordova</w>
-      <w>fnames</w>
-      <w>inlining</w>
-      <w>middlewares</w>
-      <w>ngls</w>
-      <w>nodemailer</w>
-      <w>pathinfo</w>
-      <w>resizer</w>
+      <w>anymatch</w>
       <w>simplysm</w>
-      <w>smtp</w>
-      <w>textfield</w>
-      <w>topbar</w>
-      <w>undelayed</w>
-      <w>unitless</w>
-      <w>untracked</w>
-      <w>yargs</w>
+      <w>sorm</w>
+      <w>upsert</w>
+      <w>uuids</w>
     </words>
   </dictionary>
 </component>
