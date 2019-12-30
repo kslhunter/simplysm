@@ -147,7 +147,6 @@ export class SdProjectBuilder {
         }
       }
 
-
       await Promise.all([
         fs.remove(distPath),
         fs.writeJson(path.resolve(packagePath, "tsconfig.build.json"), buildTsConfig, {spaces: 2, EOL: os.EOL})

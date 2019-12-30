@@ -165,7 +165,7 @@ export class DbConnection extends EventEmitter {
         ? new QueryBuilder().from(query as IQueryDef).query
         : query as string
       ).join("\n\n")
-    ).split("GO\n\n").map(item => item.trim()).filter((item: any) => !!item);
+    ).split("GO\n\n").map(item => item.trim().replace(/GO$/, "")).filter((item: any) => !!item);
 
     for (const currQuery of queries) {
       this._logger.log("쿼리 실행:", currQuery);
