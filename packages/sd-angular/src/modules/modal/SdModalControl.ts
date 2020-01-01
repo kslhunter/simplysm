@@ -88,12 +88,12 @@ import {optional} from "@simplysm/sd-core";
             background: var(--theme-primary-default);
             color: var(--text-reverse-color-default);
 
-            > ._title {
+            ._title {
               display: inline-block;
               padding: var(--gap-default) var(--gap-lg);
             }
 
-            > ._close-button {
+            ._close-button {
               float: right;
               cursor: pointer;
               text-align: center;

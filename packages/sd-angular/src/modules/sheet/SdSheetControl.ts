@@ -290,17 +290,23 @@ import {SdMutationEvent} from "../..";
       }
 
       ._topbar {
-        // background: var(--sheet-header-bg);
-        background: white;
-        padding: var(--sheet-padding-v) var(--sheet-padding-h);
-        border-bottom: 1px solid var(--sheet-border-color);
-        // border-right: 1px solid var(--sheet-border-color-dark);
-        height: calc(var(--sheet-row-height) + 1px);
-        overflow: hidden;
+        width: 100%;
+        
+        > ._content {
+          // background: var(--sheet-header-bg);
+          background: white;
+          padding: var(--sheet-padding-v) var(--sheet-padding-h);
+          border-bottom: 1px solid var(--sheet-border-color);
+          // border-right: 1px solid var(--sheet-border-color-dark);
+          height: calc(var(--sheet-row-height) + 1px);
+          overflow: hidden;
+          white-space: normal;
+          width: 100%;
 
-        ._options {
-          float: right;
-          font-size: var(--font-size-sm);
+          ._options {
+            float: right;
+            font-size: var(--font-size-sm);
+          }
         }
       }
 

@@ -271,7 +271,13 @@ export const sorm = {
   replace(src: string | undefined | QueryUnit<string | undefined>, from: string, to: string): string {
     return new QueryUnit(String, "REPLACE(" + QueryHelper.getFieldQuery(src) + ", " + QueryHelper.getFieldQuery(from) + ", " + QueryHelper.getFieldQuery(to) + ")") as any;
   },
-  formula<T extends QueryType>(arg1: T | QueryUnit<T>, arg2: string, arg3: T | QueryUnit<T>): StripTypeWrap<T> {
+  subString(src: string | undefined | QueryUnit<string | undefined>, startIndex: number | QueryUnit<number>, length: number | QueryUnit<number>): string {
+    return new QueryUnit(String, "SUBSTRING(" + QueryHelper.getFieldQuery(src) + ", " + QueryHelper.getFieldQuery(startIndex) + ", " + QueryHelper.getFieldQuery(length) + ")") as any;
+  },
+  charIndex(char: string | QueryUnit<string>, src: string | undefined | QueryUnit<string | undefined>, startIndex: number | QueryUnit<number>): number {
+    return new QueryUnit(String, "CHARINDEX(" + QueryHelper.getFieldQuery(char)  + ", " + QueryHelper.getFieldQuery(src) + ", " + QueryHelper.getFieldQuery(startIndex) + ")") as any;
+  },
+  formula<T extends QueryType>(arg1: T | QueryUnit<T>, arg2: string, arg3: T | QueryUnit<T>, ...args: (string | T | QueryUnit<T>)[]): StripTypeWrap<T> {
     let type: any;
     const argForType = arg1 || arg3;
     if (argForType instanceof QueryUnit) {
@@ -284,8 +290,16 @@ export const sorm = {
       throw new Error("타입을 알 수 없습니다.");
     }
 
-    const query = `${QueryHelper.getFieldQuery(arg1)} ${arg2} ${QueryHelper.getFieldQuery(arg3)}`;
-    return new QueryUnit(type, "(" + query + ")") as any;
+    let query = `${QueryHelper.getFieldQuery(arg1)} ${arg2} ${QueryHelper.getFieldQuery(arg3)} `;
+    for (let i = 0; i < args.length; i++) {
+      if (i % 2 === 0) {
+        query += args[i] + " ";
+      }
+      else {
+        query += QueryHelper.getFieldQuery(args[i]) + " ";
+      }
+    }
+    return new QueryUnit(type, "(" + query.slice(0, -1) + ")") as any;
   },
   query<T extends QueryType>(q: string, targetType: Type<T>): StripTypeWrap<T> | undefined {
     return new QueryUnit(targetType, q) as any;

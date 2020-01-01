@@ -100,18 +100,6 @@ export class SdExcelCell {
     else if (this.cellData.$.t === "b") {
       return Number(value) === 1;
     }
-    else if (this.cellData.$.t === undefined && this.style.numberFormat === "number") {
-      return Number(value);
-    }
-    else if (this.cellData.$.t === undefined && this.style.numberFormat === "Currency") {
-      return Number(value);
-    }
-    else if (this.cellData.$.t === undefined && this.style.numberFormat === "DateOnly") {
-      return SdExcelUtils.getDateOnly(Number(value));
-    }
-    else if (this.cellData.$.t === undefined && this.style.numberFormat === "DateTime") {
-      return SdExcelUtils.getDateTime(Number(value));
-    }
     else if (this.cellData.$.t === "s") {
       const sstIndex = Number(value);
 
@@ -121,6 +109,18 @@ export class SdExcelCell {
       else {
         return this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].r.map((item: any) => item.t[0]).join("");
       }
+    }
+    else if (this.style.numberFormat === "number") {
+      return Number(value);
+    }
+    else if (this.style.numberFormat === "Currency") {
+      return Number(value);
+    }
+    else if (this.style.numberFormat === "DateOnly") {
+      return SdExcelUtils.getDateOnly(Number(value));
+    }
+    else if (this.style.numberFormat === "DateTime") {
+      return SdExcelUtils.getDateTime(Number(value));
     }
     else {
       throw new Error("지원되지 않는 타입입니다: " + this.cellData.$.t + ", " + this.style.numberFormat);

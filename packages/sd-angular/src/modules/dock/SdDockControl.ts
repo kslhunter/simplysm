@@ -25,7 +25,9 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
     <div class="_resizer" *ngIf="!!id" (mousedown)="onResizerMousedown($event)">
       <!--<hr *ngIf="!!id" (mousedown)="onResizerMousedown($event)"/>-->
     </div>
-    <ng-content></ng-content>`,
+    <div class="_content">
+      <ng-content></ng-content>
+    </div>`,
   styles: [/* language=SCSS */ `
     sd-dock {
       display: block;
@@ -33,6 +35,13 @@ import {ResizeEvent} from "../../commons/ResizeEvent";
       overflow: auto;
       z-index: 1;
       background: white;
+      
+      > ._content{
+        display: block;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+      }
 
       > ._resizer {
         display: none;
