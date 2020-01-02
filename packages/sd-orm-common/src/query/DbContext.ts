@@ -215,7 +215,7 @@ export abstract class DbContext {
 
     // 강제
 
-    const dbNames = dbs || [this.schema.database];
+    const dbNames = dbs ?? [this.schema.database];
     if (dbNames.length < 1) {
       throw new Error("생성할 데이터베이스가 없습니다.");
     }
@@ -255,13 +255,13 @@ export abstract class DbContext {
       createTableQueryDefs.push({
         type: "createTable",
         table: {
-          database: tableDef.database || this.schema.database,
-          schema: tableDef.schema || this.schema.schema,
+          database: tableDef.database ?? this.schema.database,
+          schema: tableDef.schema ?? this.schema.schema,
           name: tableDef.name
         },
         columns: tableDef.columns.map((col) => ObjectUtil.clearUndefined({
           name: col.name,
-          dataType: col.dataType || QueryUtil.getDataType(col.typeFwd()),
+          dataType: col.dataType ?? QueryUtil.getDataType(col.typeFwd()),
           autoIncrement: col.autoIncrement,
           nullable: col.nullable
         }))
@@ -279,8 +279,8 @@ export abstract class DbContext {
       addPKQueryDefs.push({
         type: "addPrimaryKey",
         table: {
-          database: tableDef.database || this.schema.database,
-          schema: tableDef.schema || this.schema.schema,
+          database: tableDef.database ?? this.schema.database,
+          schema: tableDef.schema ?? this.schema.schema,
           name: tableDef.name
         },
         primaryKeys: tableDef.columns
@@ -315,16 +315,16 @@ export abstract class DbContext {
         addFkQueryDefs.push({
           type: "addForeignKey",
           table: {
-            database: tableDef.database || this.schema.database,
-            schema: tableDef.schema || this.schema.schema,
+            database: tableDef.database ?? this.schema.database,
+            schema: tableDef.schema ?? this.schema.schema,
             name: tableDef.name
           },
           foreignKey: {
             name: fkDef.name,
             fkColumns: fkDef.columnPropertyKeys.map((propKey) => tableDef.columns.single((col) => col.propertyKey === propKey)!.name),
             targetTable: {
-              database: targetTableDef.database || this.schema.database,
-              schema: targetTableDef.schema || this.schema.schema,
+              database: targetTableDef.database ?? this.schema.database,
+              schema: targetTableDef.schema ?? this.schema.schema,
               name: targetTableDef.name
             },
             targetPkColumns: targetPkNames
@@ -345,8 +345,8 @@ export abstract class DbContext {
         createIndexQueryDefs.push({
           type: "createIndex",
           table: {
-            database: tableDef.database || this.schema.database,
-            schema: tableDef.schema || this.schema.schema,
+            database: tableDef.database ?? this.schema.database,
+            schema: tableDef.schema ?? this.schema.schema,
             name: tableDef.name
           },
           index: {

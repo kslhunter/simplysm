@@ -1,4 +1,4 @@
-import {DateTime, DeepPartial, ObjectUtil} from "@simplysm/sd-core-common";
+import {DateTime, DeepPartial, MathUtil, ObjectUtil} from "@simplysm/sd-core-common";
 import * as path from "path";
 import * as fs from "fs-extra";
 
@@ -35,6 +35,7 @@ export enum LoggerSeverity {
 
 export interface ILoggerConfig {
   console: {
+    style: LoggerStyle;
     level: LoggerSeverity;
     styles: {
       log: LoggerStyle;
@@ -59,7 +60,10 @@ export interface ILoggerHistory {
 
 export class Logger {
   private static readonly _configs = new Map<string, DeepPartial<ILoggerConfig>>();
+  private static _maxGroupLength = 0;
   private static _historyLength = 0;
+
+  private readonly _randomForStyle = MathUtil.getRandomInt(4, 9);
 
   public static get(group: string[] = []): Logger {
     return new Logger(group);
@@ -85,6 +89,7 @@ export class Logger {
   public static history: ILoggerHistory[] = [];
 
   private constructor(private readonly _group: string[]) {
+    Logger._maxGroupLength = Math.max(Logger._maxGroupLength, this._group.join(".").length);
   }
 
   public log(...args: any[]): void {
@@ -114,7 +119,7 @@ export class Logger {
     if (severityIndex >= consoleLevelIndex) {
       console.log(
         LoggerStyle.fgGray + now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + "\t" +
-        (this._group.length > 0 ? "[" + this._group.join(".") + "]\t" : "") +
+        (this._group.length > 0 ? config.console.style + "[" + this._group.join(".").padEnd(Logger._maxGroupLength) + "]\t" : "") +
         config.console.styles[severity] + severity.toUpperCase().padStart(5, " ") + "\t",
         ...logs,
         LoggerStyle.clear
@@ -190,6 +195,7 @@ export class Logger {
   private _getConfig(): ILoggerConfig {
     let config: ILoggerConfig = {
       console: {
+        style: LoggerStyle[Object.keys(LoggerStyle)[this._randomForStyle]],
         level: LoggerSeverity.log,
         styles: {
           log: LoggerStyle.clear,

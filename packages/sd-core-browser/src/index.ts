@@ -1,5 +1,6 @@
 import "element-qsa-scope";
 import "events-polyfill";
+import "./HTMLElementExtension";
 
-export * from "./HTMLElementExtension";
+export * from "./events";
 export * from "./Logger";

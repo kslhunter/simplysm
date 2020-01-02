@@ -1,74 +1,65 @@
-import * as webpack from "webpack";
+import {Logger} from "@simplysm/sd-core-node";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as ts from "typescript";
-import {Logger, ProcessManager} from "@simplysm/sd-core-node";
-import * as nodeExternals from "webpack-node-externals";
+import * as webpack from "webpack";
 import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
-import {ISdPackageConfig} from "./common";
-import {NotImplementError} from "@simplysm/sd-core-common";
+import * as nodeExternals from "webpack-node-externals";
+import * as os from "os";
 
 export class SdPackageBuilder {
   private readonly _packagePath: string;
+  private readonly _options: string[];
+  private readonly _mode: "development" | "production";
 
-  public constructor(private readonly _packageKey: string,
-                     private readonly _config: ISdPackageConfig) {
-    this._packagePath = path.resolve(process.cwd(), "packages", this._packageKey);
+  public constructor(argv: {
+    package: string;
+    options: string;
+    mode: "development" | "production";
+  }) {
+    this._packagePath = argv.package;
+    this._options = argv.options?.split(",").map((item) => item.trim()).filter((item) => !!item) ?? [];
+    this._mode = argv.mode;
   }
 
-  public async buildAsync(): Promise<void> {
-    const logger = Logger.get(["simplysm", "sd-cli", "build", this._packageKey]);
-    logger.log("빌드를 시작합니다.");
-
-    const packageTsConfigPath = path.resolve(this._packagePath, "tsconfig.build.json");
-    const packageTsConfigForNodePath = path.resolve(this._packagePath, "tsconfig-node.build.json");
-
-    const webpackConfigs = [await this._getWebpackConfigAsync(packageTsConfigPath)];
-    if (await fs.pathExists(packageTsConfigForNodePath)) {
-      webpackConfigs.push(await this._getWebpackConfigAsync(packageTsConfigForNodePath));
+  private async _generateTsCompilerOptionsAsync(node?: true): Promise<string | undefined> {
+    const tsConfigPath = path.resolve(this._packagePath, node ? "tsconfig-node.json" : "tsconfig.json");
+    if (node && !await fs.pathExists(tsConfigPath)) {
+      return undefined;
     }
 
-    const compiler = webpack(webpackConfigs);
-
-    await new Promise<void>((resolve, reject) => {
-      compiler.run((err, stats) => {
-        if (err) {
-          reject(err);
-          return;
+    const tsConfig = await fs.readJson(tsConfigPath);
+    const tsConfigOptions = tsConfig.compilerOptions;
+    if (tsConfigOptions.baseUrl && tsConfigOptions.paths) {
+      for (const tsPathKey of Object.keys(tsConfigOptions.paths)) {
+        const result = [];
+        for (const tsPathValue of tsConfigOptions.paths[tsPathKey] as string[]) {
+          result.push(tsPathValue.replace(/\/src\/index\..*ts$/, ""));
         }
+        tsConfigOptions.paths[tsPathKey] = result;
+      }
+    }
 
-        const info = stats.toJson({all: false, assets: true, warnings: true, errors: true, errorDetails: false});
+    if (
+      tsConfig.extends === "tsconfig" ||
+      tsConfig.extends === "tsconfig.json" ||
+      tsConfig.extends === "./tsconfig" ||
+      tsConfig.extends === "./tsconfig.json"
+    ) {
+      tsConfig.extends = "./tsconfig.build.json";
+    }
 
-        if (stats.hasWarnings()) {
-          for (const warning of info.warnings) {
-            logger.warn(warning);
-          }
-        }
+    const tsConfigPathForBuild = path.resolve(this._packagePath, node ? "tsconfig-node.build.json" : "tsconfig.build.json");
+    await fs.writeJson(tsConfigPathForBuild, tsConfig, {spaces: 2, EOL: os.EOL});
 
-        if (stats.hasErrors()) {
-          for (const error of info.errors) {
-            logger.error(error);
-          }
-        }
-
-        resolve();
-      });
-    });
-
-    logger.log("빌드가 완료되었습니다.");
+    return tsConfigPathForBuild;
   }
 
   public async watchAsync(): Promise<void> {
-    const logger = Logger.get(["simplysm", "sd-cli", "watch", this._packageKey]);
+    const logger = Logger.get(["simplysm", "sd-cli", "watch", "SdPackageBuilder", this._packagePath.split("/").last()!]);
     logger.log("빌드 및 변경감지를 시작합니다.");
 
-    const packageTsConfigPath = path.resolve(this._packagePath, "tsconfig.build.json");
-    const packageTsConfigForNodePath = path.resolve(this._packagePath, "tsconfig-node.build.json");
-
-    const webpackConfigs = [await this._getWebpackConfigAsync(packageTsConfigPath)];
-    if (await fs.pathExists(packageTsConfigForNodePath)) {
-      webpackConfigs.push(await this._getWebpackConfigAsync(packageTsConfigForNodePath));
-    }
+    const webpackConfigs = await this._getWebpackConfigsAsync();
 
     const compiler = webpack(webpackConfigs);
 
@@ -103,138 +94,105 @@ export class SdPackageBuilder {
     });
   }
 
-  public async publishAsync(): Promise<void> {
-    const logger = Logger.get(["simplysm", "sd-cli", "publish", this._packageKey]);
-    logger.log("배포를 시작합니다.");
 
-    const publishConfig = this._config.publish!;
+  private async _getWebpackConfigsAsync(): Promise<webpack.Configuration[]> {
+    const tsConfigPaths = [
+      await this._generateTsCompilerOptionsAsync(),
+      await this._generateTsCompilerOptionsAsync(true)
+    ].filterExists();
 
-    if (publishConfig === "npm") {
-      await ProcessManager.spawnAsync(
-        "yarn publish --access public",
-        {cwd: this._packagePath},
-        () => {
-        },
-        () => {
-        }
-      );
-    }
-    else {
-      throw new NotImplementError();
-    }
-
-    logger.log("배포가 완료되었습니다.");
-  }
-
-  private async _getWebpackConfigAsync(tsConfigPath: string, watch?: true): Promise<webpack.Configuration> {
-    // dist 경로 확인
-    const packageTsConfig = await fs.readJson(tsConfigPath);
-    const packageParsedTsConfig = ts.parseJsonConfigFileContent(packageTsConfig, ts.sys, this._packagePath);
-    const distPath = packageParsedTsConfig.options.outDir ? path.resolve(packageParsedTsConfig.options.outDir) : path.resolve(this._packagePath, "dist");
-
-    // entry 구성
-    const entry: { [key: string]: string } = {};
+    const isDev = this._mode === "development";
+    const isMulti = tsConfigPaths.length > 1;
 
     const indexFilePath = path.resolve(this._packagePath, "src", "index.ts");
-    if (await fs.pathExists(indexFilePath)) {
-      if (await fs.pathExists(path.resolve(this._packagePath, "tsconfig-node.build.json"))) {
-        if (path.basename(tsConfigPath).includes("-node")) {
-          entry.index = indexFilePath;
-        }
-        else {
-          entry["index.browser"] = indexFilePath;
-        }
-      }
-      else {
-        entry.index = indexFilePath;
-      }
-    }
-
+    const hasIndex = await fs.pathExists(indexFilePath);
     const binFilePath = path.resolve(this._packagePath, "src", "bin.ts");
-    if (await fs.pathExists(binFilePath)) {
-      entry.bin = binFilePath;
-    }
+    const hasBin = await fs.pathExists(binFilePath);
 
-    const appFilePath = path.resolve(this._packagePath, "src", "app.ts");
-    if (await fs.pathExists(appFilePath)) {
-      entry.app = appFilePath;
-    }
 
-    // target 확인
-    let target: "web" | "node";
-    if (await fs.pathExists(path.resolve(this._packagePath, "tsconfig-node.build.json"))) {
-      if (path.basename(tsConfigPath).startsWith("tsconfig-node")) {
-        target = "node";
-      }
-      else {
-        target = "web";
-      }
-    }
-    else {
-      if (packageParsedTsConfig.options.target === ts.ScriptTarget.ES5) {
-        target = "web";
-      }
-      else {
-        target = "node";
-      }
-    }
+    return await Promise.all(tsConfigPaths.map(async (tsConfigPath) => {
+      const parsedTsConfig = ts.parseJsonConfigFileContent(await fs.readJson(tsConfigPath), ts.sys, path.dirname(tsConfigPath));
 
-    // TODO: 옵션 파일 생성
+      const isNode = parsedTsConfig.options.target !== ts.ScriptTarget.ES5;
 
-    return {
-      mode: watch ? "development" : "production",
-      devtool: watch ? "cheap-module-source-map" : "source-map",
-      target,
-      node: {
-        __dirname: false
-      },
-      resolve: {
-        extensions: [".ts", ".js"]
-      },
-      entry,
-      output: {
-        path: distPath,
-        filename: "[name].js",
-        ...this._config.type === "library" ? {
+      const distPath = parsedTsConfig.options.outDir
+        ? path.resolve(parsedTsConfig.options.outDir)
+        : path.resolve(this._packagePath, "dist");
+
+      const webpackConfig: webpack.Configuration = {
+        mode: this._mode,
+        devtool: isDev ? "cheap-module-source-map" : "source-map",
+        target: isNode ? "node" : "web",
+        node: {
+          __dirname: false
+        },
+        resolve: {
+          extensions: [".ts", ".js"]
+        },
+        entry: {
+          ...hasIndex ? {
+            [isMulti && !isNode ? "index.browser" : "index"]: indexFilePath
+          } : {},
+          ...hasBin ? {
+            bin: binFilePath
+          } : {}
+        },
+        output: {
+          path: distPath,
+          filename: "[name].js",
           libraryTarget: "umd"
-        } : {}
-      },
-      ...this._config.type === "library" ? {
+        },
         externals: [
           nodeExternals()
-        ]
-      } : {},
-      module: {
-        rules: [
-          {
-            test: /\.ts$/,
-            use: [
-              "shebang-loader",
-              {
-                loader: "ts-loader",
-                options: {
-                  configFile: tsConfigPath
+        ],
+        module: {
+          rules: [
+            {
+              test: /\.ts$/,
+              exclude: /node_modules/,
+              use: [
+                ...hasBin ? ["shebang-loader"] : [],
+                {
+                  loader: "ts-loader",
+                  options: {
+                    configFile: tsConfigPath,
+                    transpileOnly: isMulti && isNode
+                    //TODO: transpileOnly & fork-ts-checker-webpack-plugin + declaration
+                  }
                 }
-              }
-            ]
-          }
+              ]
+            }
+          ]
+        },
+        plugins: [
+          ...hasBin ? [
+            new webpack.BannerPlugin({
+              banner: "require(\"source-map-support/register\");",
+              raw: true,
+              entryOnly: true,
+              include: ["bin.js"]
+            }),
+            new webpack.BannerPlugin({
+              banner: "#!/usr/bin/env node",
+              raw: true,
+              entryOnly: true,
+              include: ["bin.js"]
+            })
+          ] : [],
+          new SdWebpackTimeFixPlugin()
         ]
-      },
-      plugins: [
-        new webpack.BannerPlugin({
-          banner: "require(\"source-map-support/register\");",
-          raw: true,
-          entryOnly: true,
-          include: ["bin.js"]
-        }),
-        new webpack.BannerPlugin({
-          banner: "#!/usr/bin/env node",
-          raw: true,
-          entryOnly: true,
-          include: ["bin.js"]
-        }),
-        new SdWebpackTimeFixPlugin()
-      ]
-    };
+      };
+
+      return webpackConfig;
+    }));
+  }
+
+  public async buildAsync(): Promise<void> {
+    // TODO
+    console.log(
+      this._packagePath,
+      this._options,
+      this._mode
+    );
   }
 }

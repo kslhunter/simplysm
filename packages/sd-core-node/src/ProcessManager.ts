@@ -97,4 +97,35 @@ export class ProcessManager {
       });
     });
   }
+
+  public static async forkAsync(
+    command: string,
+    args: string[],
+    options?: { cwd?: string; env?: NodeJS.ProcessEnv; execArgv?: string[] }
+  ): Promise<child_process.ChildProcess> {
+    const opts: child_process.ForkOptions = {
+      stdio: ["pipe", "pipe", "pipe", "ipc"],
+      ...options
+    };
+
+    const worker = child_process.fork(command, args, opts);
+
+    let processing = false;
+
+    worker.stdout!.on("data", async (data: Buffer) => {
+      await Wait.true(() => !processing);
+      processing = true;
+      process.stdout.write(data.toString());
+      processing = false;
+    });
+
+    worker.stderr!.on("data", async (data: Buffer) => {
+      await Wait.true(() => !processing);
+      processing = true;
+      process.stderr.write(data.toString());
+      processing = false;
+    });
+
+    return worker;
+  }
 }

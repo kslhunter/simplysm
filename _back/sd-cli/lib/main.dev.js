@@ -1,3 +1,4 @@
+require("@simplysm/sd-core-browser");
 require("core-js/proposals/reflect-metadata");
 require("zone.js/dist/zone");
 
@@ -42,7 +43,6 @@ function start() {
       ngModuleRef.destroy();
     }
     catch (err) {
-
     }
 
     // 이전 엘리먼트 삭제
@@ -56,9 +56,6 @@ function start() {
   });
 }
 
-if (process.env.SD_PLATFORM) {
+document.addEventListener('DOMContentLoaded', () => {
   start();
-}
-else {
-  start();
-}
+});

@@ -129,7 +129,7 @@ export class Queryable<D extends DbContext, T> {
 
   public orderBy(fwd: (entity: TEntity<T>) => TEntityValue<TQueryValue>, desc?: boolean): Queryable<D, T> {
     const result = new Queryable(this._db, this);
-    result._def.orderBy = result._def.orderBy || [];
+    result._def.orderBy = result._def.orderBy ?? [];
     result._def.orderBy.push([QueryUtil.getQueryValue(fwd(this._entity)), (desc ? "DESC" : "ASC")]);
     return result;
   }
@@ -148,7 +148,7 @@ export class Queryable<D extends DbContext, T> {
 
   public having(predicate: (entity: TEntity<T>) => TQueryValueOrSelectArray[]): Queryable<D, T> {
     const result = new Queryable(this._db, this);
-    result._def.having = result._def.having || [];
+    result._def.having = result._def.having ?? [];
     result._def.having.push(...sorm.and(predicate(this._entity)));
     return result;
   }
@@ -170,7 +170,7 @@ export class Queryable<D extends DbContext, T> {
       ...this._entity,
       [as]: isSingle ? joinEntity : [joinEntity]
     } as TEntity<T & { [K in A]: R | R[] }>);
-    result._def.join = result._def.join || [];
+    result._def.join = result._def.join ?? [];
     result._def.join.push({
       ...joinQueryable.getSelectDef() as IJoinQueryDef,
       isSingle: !!isSingle
@@ -319,7 +319,7 @@ export class Queryable<D extends DbContext, T> {
     }) as any;
 
     // ORDER BY
-    result._def.orderBy = result._def.orderBy || [];
+    result._def.orderBy = result._def.orderBy ?? [];
     result._def.orderBy.insert(0, ["[__search_order]", "DESC"]);
     return result;
   }
@@ -658,7 +658,7 @@ export class Queryable<D extends DbContext, T> {
     const timeout = setTimeout(() => {
       DbContext.selectCache.delete(cacheKey);
     }, 1000);
-    DbContext.selectCache.set(cacheKey, {result: results[0] || [], timeout});
+    DbContext.selectCache.set(cacheKey, {result: results[0] ?? [], timeout});
 
     return results[0];
   }
@@ -677,7 +677,7 @@ export class Queryable<D extends DbContext, T> {
       .select(() => ({cnt: new QueryUnit(Number, "COUNT(*)")}))
       .singleAsync();
 
-    return ((item && item.cnt) || 0) as any;
+    return (item?.cnt ?? 0) as any;
   }
 
   public async insertAsync(record: InsertObject<T>): Promise<T> {
@@ -703,8 +703,8 @@ export class Queryable<D extends DbContext, T> {
             type: "configIdentityInsert",
             ...{
               table: {
-                database: this._tableDef.database || this._db.schema.database,
-                schema: this._tableDef.schema || this._db.schema.schema,
+                database: this._tableDef.database ?? this._db.schema.database,
+                schema: this._tableDef.schema ?? this._db.schema.schema,
                 name: this._tableDef.name
               },
               state: "on"
@@ -718,8 +718,8 @@ export class Queryable<D extends DbContext, T> {
             type: "configIdentityInsert",
             ...{
               table: {
-                database: this._tableDef.database || this._db.schema.database,
-                schema: this._tableDef.schema || this._db.schema.schema,
+                database: this._tableDef.database ?? this._db.schema.database,
+                schema: this._tableDef.schema ?? this._db.schema.schema,
                 name: this._tableDef.name
               },
               state: "off"
@@ -754,8 +754,8 @@ export class Queryable<D extends DbContext, T> {
             type: "configIdentityInsert" as "configIdentityInsert",
             ...{
               table: {
-                database: this._tableDef.database || this._db.schema.database,
-                schema: this._tableDef.schema || this._db.schema.schema,
+                database: this._tableDef.database ?? this._db.schema.database,
+                schema: this._tableDef.schema ?? this._db.schema.schema,
                 name: this._tableDef.name
               },
               state: "on"
@@ -777,8 +777,8 @@ export class Queryable<D extends DbContext, T> {
             type: "configIdentityInsert" as "configIdentityInsert",
             ...{
               table: {
-                database: this._tableDef.database || this._db.schema.database,
-                schema: this._tableDef.schema || this._db.schema.schema,
+                database: this._tableDef.database ?? this._db.schema.database,
+                schema: this._tableDef.schema ?? this._db.schema.schema,
                 name: this._tableDef.name
               },
               state: "off"

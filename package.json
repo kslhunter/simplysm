@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "3.1.21",
+  "version": "3.1.56-43",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -23,6 +23,6 @@
     "cross-env": "^6.0.3",
     "ts-node": "^8.5.4",
     "tsconfig-paths": "^3.9.0",
-    "typescript": "^3.7.2"
+    "typescript": "^3.7.4"
   }
 }

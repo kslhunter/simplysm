@@ -135,7 +135,7 @@ export const sorm = {
 
     for (const target of targets) {
       cursorQuery = ["ISNULL(", cursorQuery, ", ", QueryUtil.getQueryValue(target), ")"];
-      type = type || QueryUtil.getQueryValueType(target);
+      type = type ?? QueryUtil.getQueryValueType(target);
     }
 
     return new QueryUnit<S | T, TEntityValueOrQueryableArray>(type, cursorQuery);

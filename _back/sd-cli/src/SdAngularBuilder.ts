@@ -7,8 +7,8 @@ import * as fs from "fs-extra";
 import * as ts from "typescript";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
-import * as WebpackDevMiddleware from "webpack-dev-middleware";
-import * as WebpackHotMiddleware from "webpack-hot-middleware";
+// import * as WebpackDevMiddleware from "webpack-dev-middleware";
+// import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import {NextHandleFunction} from "connect";
 
 export class SdAngularBuilder {
@@ -67,9 +67,9 @@ export class SdAngularBuilder {
     const packageTsConfigPath = path.resolve(this._packagePath, "tsconfig.build.json");
     const packageTsConfigForNodePath = path.resolve(this._packagePath, "tsconfig-node.build.json");
 
-    const webpackConfigs = [await this._getWebpackConfigAsync(packageTsConfigPath)];
+    const webpackConfigs = [await this._getWebpackConfigAsync(packageTsConfigPath, true)];
     if (await fs.pathExists(packageTsConfigForNodePath)) {
-      webpackConfigs.push(await this._getWebpackConfigAsync(packageTsConfigForNodePath));
+      webpackConfigs.push(await this._getWebpackConfigAsync(packageTsConfigForNodePath, true));
     }
 
     const compiler = webpack(webpackConfigs);
@@ -79,37 +79,58 @@ export class SdAngularBuilder {
     });
 
     return await new Promise<NextHandleFunction[]>((resolve, reject) => {
-      const devMiddleware = WebpackDevMiddleware(compiler, {
-        publicPath: webpackConfigs[0].output!.publicPath!,
+      compiler.watch({}, (err, stats) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        const info = stats.toJson({all: false, assets: true, warnings: true, errors: true, errorDetails: false});
+
+        if (stats.hasWarnings()) {
+          for (const warning of info.warnings) {
+            logger.warn(warning);
+          }
+        }
+
+        if (stats.hasErrors()) {
+          for (const error of info.errors) {
+            logger.error(error);
+          }
+        }
+
+        logger.log("빌드가 완료되었습니다.");
+        resolve();
+      });
+
+      /*const devMiddleware = WebpackDevMiddleware(compiler.compilers[0], {
+        publicPath: `/${this._packageKey}/`,
         logLevel: "silent"
       });
 
-      const hotMiddleware = WebpackHotMiddleware(compiler, {
+      const hotMiddleware = WebpackHotMiddleware(compiler.compilers[0], {
         path: `/${this._packageKey}/__webpack_hmr`,
         log: false
       });
 
-      compiler.hooks.done.tap("SdAngularBuilder", async (multiStats) => {
-        for (const stats of multiStats.stats) {
-          const info = stats.toJson({all: false, assets: true, warnings: true, errors: true, errorDetails: false});
+      compiler.compilers[0].hooks.done.tap("SdAngularBuilder", async (stats) => {
+        const info = stats.toJson({all: false, assets: true, warnings: true, errors: true, errorDetails: false});
 
-          if (stats.hasWarnings()) {
-            for (const warning of info.warnings) {
-              logger.warn(warning);
-            }
-          }
-
-          if (stats.hasErrors()) {
-            for (const error of info.errors) {
-              logger.error(error);
-            }
+        if (stats.hasWarnings()) {
+          for (const warning of info.warnings) {
+            logger.warn(warning);
           }
         }
 
+        if (stats.hasErrors()) {
+          for (const error of info.errors) {
+            logger.error(error);
+          }
+        }
 
         logger.log("빌드가 완료되었습니다.");
         resolve([devMiddleware, hotMiddleware]);
-      });
+      });*/
     });
   }
 
@@ -173,17 +194,19 @@ export class SdAngularBuilder {
       appModulePath = path.resolve(this._packagePath, "src/AppServerModule");
     }
 
+
     return {
       mode: watch ? "development" : "production",
       devtool: watch ? "cheap-module-source-map" : false,
       target,
-      node: false,
       resolve: {
         extensions: [".ts", ".js"],
         alias: {
           "SD_APP_MODULE_FACTORY": appModulePath + ".ngfactory"
         },
-        aliasFields: [target === "web" ? "browser" : "main"]
+        ...target === "web" ? {
+          mainFields: ["browser", "main"]
+        } : {}
       },
       entry: {
         main: mainEntryPath
@@ -192,10 +215,28 @@ export class SdAngularBuilder {
         publicPath: `/${this._packageKey}/`,
         path: distPath,
         filename: "[name].js",
-        chunkFilename: "[name].chunk.js"
+        chunkFilename: "[name].chunk.js",
+        ...target === "node" ? {
+          libraryTarget: "commonjs"
+        } : {}
       },
       optimization: watch ? {} : {
         noEmitOnErrors: true,
+        runtimeChunk: "single",
+        splitChunks: {
+          chunks: "all",
+          maxInitialRequests: Infinity,
+          minSize: 0,
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: (module: any) => {
+                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+                return `libs/${packageName.replace("@", "")}`;
+              }
+            }
+          }
+        },
         minimizer: [
           new webpack.HashedModuleIdsPlugin()
         ]
@@ -224,7 +265,7 @@ export class SdAngularBuilder {
         new AngularCompilerPlugin({
           mainPath: mainEntryPath instanceof Array ? mainEntryPath.last() : mainEntryPath,
           entryModule: appModulePath + "#" + appModulePath.split("/").last(),
-          platform: PLATFORM.Server,
+          platform: target === "web" ? PLATFORM.Browser : PLATFORM.Server,
           sourceMap: false,
           nameLazyFiles: false,
           forkTypeChecker: true,
@@ -238,7 +279,10 @@ export class SdAngularBuilder {
             disableTypeScriptVersionCheck: true
           }
         }),
-        new webpack.ContextReplacementPlugin(/@angular(\\|\/)core(\\|\/)/)
+        new webpack.ContextReplacementPlugin(/@angular(\\|\/)core(\\|\/)/),
+        ...(watch && target === "web") ? [
+          new webpack.HotModuleReplacementPlugin()
+        ] : []
       ]
     };
   }

@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm-node",
-  "version": "3.1.21",
+  "version": "3.1.56-43",
   "description": "심플리즘 패키지 - ORM 모듈 (node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -9,16 +9,16 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-common": "3.1.21",
-    "@simplysm/sd-core-node": "3.1.21",
-    "@simplysm/sd-orm-common": "3.1.21",
-    "tedious": "^6.6.2"
+    "@simplysm/sd-core-common": "3.1.56-43",
+    "@simplysm/sd-core-node": "3.1.56-43",
+    "@simplysm/sd-orm-common": "3.1.56-43",
+    "tedious": "^6.6.5"
   },
   "devDependencies": {
-    "@types/node": "^13.1.1",
+    "@types/node": "^13.1.2",
     "@types/tedious": "^4.0.0",
     "tslint": "^5.20.1",
-    "typescript": "^3.7.2",
+    "typescript": "^3.7.4",
     "typescript-tslint-plugin": "^0.5.5"
   }
 }

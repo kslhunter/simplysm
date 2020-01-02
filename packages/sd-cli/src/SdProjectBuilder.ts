@@ -1,286 +1,267 @@
-import {Logger, ProcessManager} from "@simplysm/sd-core-node";
-import {SdCliUtil} from "./SdCliUtil";
-import * as path from "path";
+import {NotImplementError, ObjectUtil, Wait} from "@simplysm/sd-core-common";
 import * as fs from "fs-extra";
-import {ObjectUtil, Wait} from "@simplysm/sd-core-common";
+import * as path from "path";
+import {ISdNpmConfig, ISdProjectConfig} from "./common";
 import * as os from "os";
-import * as ts from "typescript";
 import * as semver from "semver";
-import {SdPackageBuilder} from "./SdPackageBuilder";
-import {SdAngularBuilder} from "./SdAngularBuilder";
-import {NextHandleFunction} from "connect";
-import {SdServiceServer} from "@simplysm/sd-service-server";
+import * as glob from "glob";
+import {Logger, ProcessManager} from "@simplysm/sd-core-node";
 
 export class SdProjectBuilder {
   private readonly _options: string[];
-  private readonly _serverMap = new Map<string, {
-    server: SdServiceServer;
-    middlewares: NextHandleFunction[];
-    clientKeys: string[];
-  }>();
+  private _config?: ISdProjectConfig;
+  private _npmConfig?: ISdNpmConfig;
+  private _packageNpmConfigs?: { [path: string]: ISdNpmConfig };
 
-  public constructor(options?: string) {
-    this._options = options?.split(",").map((item) => item.trim()) || [];
+  public constructor(optionsText: string | undefined,
+                     private readonly _mode: "development" | "production") {
+    this._options = optionsText?.split(",").map((item) => item.trim()) ?? [];
   }
 
-  public async buildAsync(watch: boolean): Promise<void> {
-    const logger = Logger.get(["simplysm", "sd-cli", "build"]);
+  private async _getConfigAsync(): Promise<ISdProjectConfig> {
+    if (!this._config) {
+      const config = await fs.readJson(path.resolve(process.cwd(), "simplysm.json"));
 
-    // 프로젝트의 package.json 버전 올리기
-    const projectNpmConfigPath = path.resolve(process.cwd(), "package.json");
-    const projectNpmConfig = await fs.readJson(projectNpmConfigPath);
-    projectNpmConfig.version = semver.inc(projectNpmConfig.version, watch ? "prerelease" : "patch");
-    await fs.writeJson(projectNpmConfigPath, projectNpmConfig, {spaces: 2, EOL: os.EOL});
+      for (const packageName of Object.keys(config.packages)) {
+        // extends 처리
+        if (config.packages[packageName].extends) {
+          for (const extendKey of config.packages[packageName].extends) {
+            const extendObj = config.extends[extendKey];
+            config.packages[packageName] = ObjectUtil.merge(config.packages[packageName], extendObj);
+          }
+          delete config.packages[packageName].extends;
+        }
 
-    // 각 패키지의 package.json 에 버전적용
-    const packagePaths = (await fs.readdir(path.resolve(process.cwd(), "packages")))
-      .map((item) => path.resolve(process.cwd(), "packages", item));
-    if (await fs.pathExists(path.resolve(process.cwd(), "test"))) {
-      packagePaths.push(path.resolve(process.cwd(), "test"));
+        // mode 처리
+        if (config.packages[packageName][this._mode]) {
+          config.packages[packageName] = ObjectUtil.merge(config.packages[packageName], config.packages[packageName][this._mode]!);
+        }
+        delete config.packages[packageName]["development"];
+        delete config.packages[packageName]["production"];
+
+        // options 처리
+        if (this._options.length > 0) {
+          const pkgOpts = Object.keys(config.packages[packageName])
+            .filter((key) => key.startsWith("@") && this._options.some((opt) => opt === key.slice(1)));
+
+          for (const pkgOpt of pkgOpts) {
+            config.packages[packageName] = ObjectUtil.merge(config.packages[packageName], config.packages[packageName][pkgOpt]);
+          }
+        }
+
+        for (const optKey of Object.keys(config.packages[packageName]).filter((item) => item.startsWith("@"))) {
+          delete config.packages[packageName][optKey];
+        }
+      }
+
+      delete config.extends;
+
+      this._config = config;
     }
-    await Promise.all(packagePaths.map(async (packagePath) => {
-      const packageNpmConfigPath = path.resolve(packagePath, "package.json");
-      const packageNpmConfig = await fs.readJson(packageNpmConfigPath);
 
-      // 버전에 프로젝트 버전 복사
-      packageNpmConfig.version = projectNpmConfig.version;
+    return this._config!;
+  }
 
-      // 의존성에 프로젝트 버전 복사
-      const depKeys = Object.keys(packageNpmConfig.dependencies).filter((key) => key.startsWith("@" + projectNpmConfig.name + "/"));
-      for (const depKey of depKeys) {
-        packageNpmConfig.dependencies[depKey] = projectNpmConfig.version;
+  private async _getNpmConfigAsync(): Promise<ISdNpmConfig> {
+    if (!this._npmConfig) {
+      const filePath = path.resolve(process.cwd(), "package.json");
+      this._npmConfig = await fs.readJson(filePath);
+    }
+
+    return this._npmConfig!;
+  }
+
+  private async _saveNpmConfigAsync(npmConfig: ISdNpmConfig): Promise<void> {
+    this._npmConfig = npmConfig;
+    await fs.writeJson(path.resolve(process.cwd(), "package.json"), npmConfig, {spaces: 2, EOL: os.EOL});
+  }
+
+  private async _getPackageNpmConfigsAsync(): Promise<{ [key: string]: ISdNpmConfig }> {
+    if (!this._packageNpmConfigs) {
+      const npmConfig = await this._getNpmConfigAsync();
+      if (!npmConfig.workspaces) {
+        throw new Error("package.json 에 workspaces 정의가 없습니다.");
       }
 
-      const devDepKeys = Object.keys(packageNpmConfig.devDependencies).filter((key) => key.startsWith("@" + projectNpmConfig.name + "/"));
-      for (const depKey of devDepKeys) {
-        packageNpmConfig.devDependencies[depKey] = projectNpmConfig.version;
-      }
+      const packagePaths = (
+        await Promise.all(
+          npmConfig.workspaces.map(async (workspace) =>
+            await new Promise<string[]>((resolve, reject) => {
+              glob(workspace, (err, matches) => {
+                if (err) {
+                  reject(err);
+                  return;
+                }
+                resolve(matches);
+              });
+            })
+          )
+        )
+      ).mapMany((item) => item);
 
-      await fs.writeJson(packageNpmConfigPath, packageNpmConfig, {spaces: 2, EOL: os.EOL});
-    }));
+      const npmConfigs: { [key: string]: ISdNpmConfig } = {};
+      await Promise.all(packagePaths.map(async (packagePath) => {
+        const packageNpmConfigPath = path.resolve(packagePath, "package.json");
+        npmConfigs[packagePath] = await fs.readJson(packageNpmConfigPath);
+      }));
 
-    // "simplysm.json" 정보 가져오기
-    const config = await SdCliUtil.getConfigObjAsync(watch ? "development" : "production", this._options);
-    const packageKeys = Object.keys(config.packages)
-      .filter((packageKey) => config.packages[packageKey].type !== "none");
+      this._packageNpmConfigs = npmConfigs;
+    }
 
-    // 패키지정보별 병렬실행,
-    await Promise.all(packageKeys.map(async (packageKey) => {
-      const packagePath = path.resolve(process.cwd(), "packages", packageKey);
-      const packageTsConfigPath = path.resolve(packagePath, "tsconfig.json");
-      const packageTsConfig = await fs.readJson(packageTsConfigPath);
-      const packageParsedTsConfig = ts.parseJsonConfigFileContent(packageTsConfig, ts.sys, packagePath);
+    return this._packageNpmConfigs!;
+  }
 
-      // dist 삭제
-      const distPath = packageParsedTsConfig.options.outDir ? path.resolve(packageParsedTsConfig.options.outDir) : path.resolve(packagePath, "dist");
-      await fs.remove(distPath);
+  private async _savePackageNpmConfigAsync(packagePath: string, npmConfig: ISdNpmConfig): Promise<void> {
+    this._npmConfig = npmConfig;
+    await fs.writeJson(path.resolve(packagePath, "package.json"), npmConfig, {spaces: 2, EOL: os.EOL});
+  }
 
-      // tsconfig.build.json 구성
-      const buildTsConfig = this._tsConfigToBuildVersion(packageTsConfig);
-      await fs.writeJson(path.resolve(packagePath, "tsconfig.build.json"), buildTsConfig, {spaces: 2, EOL: os.EOL});
+  public async buildAsync(watch?: boolean): Promise<void> {
+    const logger = Logger.get(["simplysm", "sd-cli", watch ? "watch" : "build"]);
 
-      // tsconfig-node.build.json 구성
-      const packageTsConfigForNodePath = path.resolve(packagePath, "tsconfig-node.json");
-      if (await fs.pathExists(packageTsConfigForNodePath)) {
-        const packageTsConfigForNode = await fs.readJson(packageTsConfigForNodePath);
-        const buildTsConfigForNode = this._tsConfigToBuildVersion(packageTsConfigForNode);
-        buildTsConfigForNode.extends = "./tsconfig.build.json";
-        await fs.writeJson(path.resolve(packagePath, "tsconfig-node.build.json"), buildTsConfigForNode, {
-          spaces: 2,
-          EOL: os.EOL
-        });
-      }
-    }));
+    await this._updateVersionAsync();
 
     logger.info("빌드 프로세스를 시작합니다.");
 
-    await this._parallelPackagesByDepAsync(packageKeys, async (packageKey) => {
-      const packageConfig = config.packages[packageKey];
+    await this._parallelPackagesByDependencyAsync(async (packageName, packagePath) => {
+      const config = await this._getConfigAsync();
+      const packageConfig = config.packages[packageName];
+      if (!packageConfig?.type) {
+        return;
+      }
 
-      if (config.packages[packageKey].type === "web") {
-        const builder = new SdAngularBuilder(packageKey);
-
-        if (!watch) {
-          await builder.buildAsync();
-        }
-        else {
-          const middlewares = await builder.watchAsync();
-
-          if (!packageConfig.server) {
-            throw new Error(`서버 패키지가 설정되어있지 않습니다. (client, ${packageKey})`);
-          }
-
-          if (!Object.keys(config.packages).includes(packageConfig.server)) {
-            throw new Error(`클라이언트를 올릴 서버 패키지가 빌드 설정에 존재하지 않습니다. (client, ${packageKey})`);
-          }
-
-          await Wait.true(() => this._serverMap.has(packageConfig.server!));
-          const serverInfo = this._serverMap.get(packageConfig.server)!;
-
-          serverInfo.clientKeys.push(packageKey);
-          serverInfo.middlewares.push(...middlewares);
-          for (const middleware of middlewares) {
-            serverInfo.server.addMiddleware(middleware);
-          }
-
-          logger.info(`개발서버 서비스가 시작되었습니다.: http://localhost:${serverInfo.server.port}/${packageKey}/`);
-        }
+      if (packageConfig.type === "library") {
+        await this._runWorkerAsync(packagePath,  {
+          options: this._options.join(","),
+          mode: this._mode,
+          watch
+        });
+      }
+      else if (packageConfig.type === "server") {
+        throw new NotImplementError();
+      }
+      else if (packageConfig.type === "web") {
+        throw new NotImplementError();
       }
       else {
-        const builder = new SdPackageBuilder(packageKey, config.packages[packageKey]);
-
-        if (!watch) {
-          await builder.buildAsync();
-        }
-        else {
-          await builder.watchAsync();
-
-          if (config.packages[packageKey].type === "server") {
-            // 서버 시작
-            // tslint:disable-next-line:no-eval
-            const server = eval(`require(path.resolve(process.cwd(), "packages", packageKey, "app.js"))`) as SdServiceServer;
-            await new Promise<void>((resolve) => {
-              server.on("ready", () => {
-                // > 서버 맵 구성
-                this._serverMap.set(packageKey, {
-                  server,
-                  middlewares: [],
-                  clientKeys: []
-                });
-
-                resolve();
-              });
-            });
-          }
-        }
+        throw new Error("패키지의 빌드 타입은 ['library', 'web', 'server']중 하나여야 합니다.");
       }
     });
 
-    logger.info("모든 빌드 프로세스가 완료되었습니다.");
+    logger.info(`모든 빌드 프로세스가 완료되었습니다`);
   }
 
-  public async publishAsync(build: boolean): Promise<void> {
-    const logger = Logger.get(["simplysm", "sd-cli", "publish"]);
-    logger.info(`배포를 시작합니다.`);
+  private async _runWorkerAsync(packagePath: string, args: { [key: string]: (string | number | boolean | undefined) }): Promise<void> {
+    await new Promise<void>(async (resolve, reject) => {
+      try {
+        const worker = await ProcessManager.forkAsync(
+          require.resolve(`./build-worker`),
+          [
+            `--package=${packagePath}`,
+            ...Object.keys(args).map((key) => args[key] ? `--${key}=${args[key]}` : undefined).filterExists()
+          ]
+        );
 
-    // "simplysm.json" 정보 가져오기
-    const config = await SdCliUtil.getConfigObjAsync("production", this._options);
-    const packageKeys = Object.keys(config.packages)
-      .filter((packageKey) => config.packages[packageKey].type !== "none" && config.packages[packageKey].publish);
-
-    // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
-    if (await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
-      await ProcessManager.spawnAsync(
-        "git status",
-        {},
-        (message) => {
-          if (message.includes("Changes") || message.includes("Untracked")) {
-            throw new Error("커밋되지 않은 정보가 있습니다.");
+        worker.on("message", (message: any) => {
+          if (message === "done") {
+            resolve();
           }
-        },
-        () => {
-        }
-      );
-    }
-
-    // 빌드가 필요하면 빌드함
-    if (build) {
-      await this.buildAsync(false);
-    }
-
-    // project NPM 가져오기
-    const projectNpmConfigPath = path.resolve(process.cwd(), "package.json");
-    const projectNpmConfig = await fs.readJson(projectNpmConfigPath);
-
-    // GIT 사용중일경우, 새 버전 커밋
-    if (build && await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
-      await ProcessManager.spawnAsync(
-        `git add .`,
-        {},
-        () => {
-        },
-        () => {
-        }
-      );
-
-      await ProcessManager.spawnAsync(
-        `git commit -m "v${projectNpmConfig.version}"`,
-        {},
-        () => {
-        },
-        () => {
-        }
-      );
-    }
-
-    // watch 버전에선 배포 불가
-    if (projectNpmConfig.version.includes("-")) {
-      throw new Error("현재 최종 버전이 빌드(배포) 버전이 아닙니다.");
-    }
-
-    // GIT 사용중일경우, TAG 생성
-    if (await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
-      await ProcessManager.spawnAsync(
-        `git tag -a "v${projectNpmConfig.version}" -m "v${projectNpmConfig.version}"`,
-        {},
-        () => {
-        },
-        () => {
         });
-    }
 
-    await Promise.all(packageKeys.map(async (packageKey) => {
-      const builder = new SdPackageBuilder(packageKey, config.packages[packageKey]);
-      await builder.publishAsync();
-    }));
-
-    logger.info(`모든 배포가 완료되었습니다. - v${projectNpmConfig.version}`);
-  }
-
-  private _tsConfigToBuildVersion(packageTsConfig: any): any {
-    const buildTsConfig = ObjectUtil.clone(packageTsConfig);
-    buildTsConfig.compilerOptions = buildTsConfig.compilerOptions || {};
-    const tsOptions = buildTsConfig.compilerOptions;
-    if (tsOptions.baseUrl && tsOptions.paths) {
-      for (const tsPathKey of Object.keys(tsOptions.paths)) {
-        const result = [];
-        for (const tsPathValue of tsOptions.paths[tsPathKey] as string[]) {
-          result.push(tsPathValue.replace(/\/src\/index\..*ts$/, ""));
-        }
-        tsOptions.paths[tsPathKey] = result;
+        worker.on("exit", (code) => {
+          if (code !== 0) {
+            reject(new Error("'worker'를 실행하는 중에 오류가 발생했습니다."));
+          }
+        });
       }
-    }
-
-    return buildTsConfig;
+      catch (err) {
+        reject(err);
+      }
+    });
   }
 
-  private async _parallelPackagesByDepAsync(packageKeys: string[], cb: (packageKey: string) => Promise<void>): Promise<void> {
-    const completedPackageName: string[] = [];
+  private async _updateVersionAsync(): Promise<void> {
+    // 프로젝트의 package.json 버전 올리기
+    const npmConfig = await this._getNpmConfigAsync();
+    npmConfig.version = semver.inc(npmConfig.version, this._mode === "development" ? "prerelease" : "patch")!;
+    await this._saveNpmConfigAsync(npmConfig);
 
-    await Promise.all(packageKeys.map(async (packageKey) => {
-      const projectNpmConfig = await fs.readJson(path.resolve(process.cwd(), "package.json"));
-      const packagePath = path.resolve(process.cwd(), "packages", packageKey);
-      const packageNpmConfig = await fs.readJson(path.resolve(packagePath, "package.json"));
-      const packageName = "@" + projectNpmConfig.name + "/" + packageKey;
+    // 각 패키지의 package.json 에 버전적용
+    const packageNpmConfigs = await this._getPackageNpmConfigsAsync();
+    await Promise.all(Object.keys(packageNpmConfigs).map(async (packagePath) => {
+      const packageNpmConfig = packageNpmConfigs[packagePath];
+
+      // 프로젝트 버전 복사
+      packageNpmConfig.version = npmConfig.version;
+
+      // 의존성에 프로젝트 버전 복사
+      if (packageNpmConfig.dependencies) {
+        const depPackageNames = Object.keys(packageNpmConfig.dependencies)
+          .filter((pkgDepPackageName) =>
+            Object.values(packageNpmConfigs)
+              .some((targetPackageNpmConfig) => targetPackageNpmConfig.name === pkgDepPackageName)
+          );
+
+        for (const depPackageName of depPackageNames) {
+          packageNpmConfig.dependencies[depPackageName] = npmConfig.version;
+        }
+      }
+
+      // 의존성(dev)에 프로젝트 버전 복사
+      if (packageNpmConfig.devDependencies) {
+        const devDepPackageNames = Object.keys(packageNpmConfig.devDependencies)
+          .filter((pkgDepPackageName) =>
+            Object.values(packageNpmConfigs)
+              .some((targetPackageNpmConfig) => targetPackageNpmConfig.name === pkgDepPackageName)
+          );
+
+        for (const devDepPackageName of devDepPackageNames) {
+          packageNpmConfig.devDependencies[devDepPackageName] = npmConfig.version;
+        }
+      }
+
+      // 의존성(peer)에 프로젝트 버전 복사
+      if (packageNpmConfig.peerDependencies) {
+        const peerDepPackageNames = Object.keys(packageNpmConfig.peerDependencies)
+          .filter((pkgDepPackageName) =>
+            Object.values(packageNpmConfigs)
+              .some((targetPackageNpmConfig) => targetPackageNpmConfig.name === pkgDepPackageName)
+          );
+
+        for (const peerDepPackageName of peerDepPackageNames) {
+          packageNpmConfig.peerDependencies[peerDepPackageName] = npmConfig.version;
+        }
+      }
+
+      await this._savePackageNpmConfigAsync(packagePath, packageNpmConfig);
+    }));
+  }
+
+  private async _parallelPackagesByDependencyAsync(cb: (packageName: string, packagePath: string) => Promise<void>): Promise<void> {
+    const completedPackageNames: string[] = [];
+
+    const packageNpmConfigs = await this._getPackageNpmConfigsAsync();
+    await Promise.all(Object.keys(packageNpmConfigs).map(async (packagePath) => {
+      const packageNpmConfig = packageNpmConfigs[packagePath];
 
       // 패키지의 의존성 패키지 중에 빌드해야할 패키지 목록에 이미 있는 의존성 패키지만 추리기
-      const projectOwnDepPackageNames = [
-        ...Object.keys(packageNpmConfig.dependencies || {}),
-        ...Object.keys(packageNpmConfig.devDependencies || {}),
-        ...Object.keys(packageNpmConfig.peerDependencies || {})
-      ].filter((dep) =>
-        packageKeys.some((key) => ("@" + projectNpmConfig.name + "/" + key) === dep)
+      const depPackageNames = [
+        ...Object.keys(packageNpmConfig.dependencies ?? {}),
+        ...Object.keys(packageNpmConfig.devDependencies ?? {}),
+        ...Object.keys(packageNpmConfig.peerDependencies ?? {})
+      ].filter((pkgDepPackageName) =>
+        Object.values(packageNpmConfigs)
+          .some((targetPackageNpmConfig) => targetPackageNpmConfig.name === pkgDepPackageName)
       );
 
-      // 추려진 의존성 패키지별,
-      for (const depPackageName of projectOwnDepPackageNames) {
-        // 의존성 패키지의 빌드가 완료될때까지 기다리기
-        await Wait.true(() => completedPackageName.includes(depPackageName));
-      }
+      // 추려진 의존성 패키지별로 의존성 패키지의 빌드가 완료될때까지 기다리기
+      await Promise.all(depPackageNames.map(async (depPackageName) => {
+        await Wait.true(() => completedPackageNames.includes(depPackageName));
+      }));
 
-      await cb(packageKey);
+      await cb(packageNpmConfig.name, packagePath);
 
-      completedPackageName.push(packageName);
+      completedPackageNames.push(packageNpmConfig.name);
     }));
   }
 }

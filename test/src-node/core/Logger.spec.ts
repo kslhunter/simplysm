@@ -229,4 +229,8 @@ describe("(node) core.Logger", () => {
 
     Logger.setHistoryLength(0);
   });
+
+  // TODO: 그룹 가장 긴것 만큼 모두 padRight
+  // TODO: 그룹 랜덤 색상
+  // TODO: 그룹 색상 지정
 });

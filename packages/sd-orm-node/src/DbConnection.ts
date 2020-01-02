@@ -26,7 +26,7 @@ export class DbConnection extends EventEmitter {
     }
 
     const conn = new tedious.Connection({
-      server: this._config.host || "localhost",
+      server: this._config.host ?? "localhost",
       authentication: {
         type: "default",
         options: {
