@@ -23,6 +23,10 @@
     "@simplysm/sd-orm-node": {
       "type": "library",
       "publish": "npm"
+    },
+    "@simplysm/sd-service-server": {
+      "type": "library",
+      "publish": "npm"
     }
   }
 }

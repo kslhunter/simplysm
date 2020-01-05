@@ -248,7 +248,7 @@ export class SdProject {
           false
         );
 
-        packageLogger.log(`배포가 완료되었습니다. ${pkg.npmConfig.version}`);
+        packageLogger.log(`배포가 완료되었습니다. (v${pkg.npmConfig.version})`);
       }
       else {
         throw new NotImplementError();

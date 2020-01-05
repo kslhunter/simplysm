@@ -1,0 +1,24 @@
+{
+  "name": "@simplysm/sd-service-server",
+  "version": "3.1.112",
+  "description": "심플리즘 패키지 - 서비스 서버 모듈 (node)",
+  "author": "김석래",
+  "repository": "github:kslhunter/simplysm",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "dependencies": {
+    "@simplysm/sd-core-common": "3.1.112",
+    "@simplysm/sd-core-node": "3.1.112",
+    "fs-extra": "^8.1.0",
+    "ws": "^7.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^13.1.2",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4",
+    "typescript-tslint-plugin": "^0.5.5",
+    "@types/ws": "^6.0.4"
+  }
+}
