@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as glob from "glob";
 
 export class FsUtil {
-  public static async getMd5(filePath: string): Promise<string> {
+  public static async getMd5Async(filePath: string): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       const hash = crypto.createHash("md5").setEncoding("hex");
       fs.createReadStream(filePath)
