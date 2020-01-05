@@ -204,9 +204,8 @@ export class SdProject {
     if (build) {
       await this.buildAsync(false);
     }
-
     // watch 버전에선 배포 불가
-    if (this._npmConfig.version.includes("-")) {
+    else if (this._npmConfig.version.includes("-")) {
       throw new Error("현재 최종 버전이 빌드(배포) 버전이 아닙니다.");
     }
 
