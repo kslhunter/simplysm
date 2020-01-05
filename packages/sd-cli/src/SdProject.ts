@@ -224,7 +224,6 @@ export class SdProject {
         false,
         false
       );
-      console.log("commit");
 
       await ProcessManager.spawnAsync(
         `git tag -a "v${this._npmConfig.version}" -m "v${this._npmConfig.version}"`,
