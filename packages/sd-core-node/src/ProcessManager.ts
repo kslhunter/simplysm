@@ -6,8 +6,8 @@ export class ProcessManager {
   public static async spawnAsync(
     commandFullText: string,
     options?: { cwd?: string; env?: NodeJS.ProcessEnv },
-    messageHandler?: (message: string) => boolean | void | Promise<boolean> | Promise<void>,
-    errorMessageHandler?: (errorMessage: string) => boolean | void | Promise<boolean> | Promise<void>
+    messageHandler?: ((message: string) => boolean | void | Promise<boolean> | Promise<void>) | false,
+    errorMessageHandler?: ((errorMessage: string) => boolean | void | Promise<boolean> | Promise<void>) | false
   ): Promise<string> {
     const commands = commandFullText.split(" ");
 
@@ -98,17 +98,17 @@ export class ProcessManager {
     });
   }
 
-  public static async forkAsync(
-    command: string,
+  public static fork(
+    binPath: string,
     args: string[],
     options?: { cwd?: string; env?: NodeJS.ProcessEnv; execArgv?: string[] }
-  ): Promise<child_process.ChildProcess> {
+  ): child_process.ChildProcess {
     const opts: child_process.ForkOptions = {
       stdio: ["pipe", "pipe", "pipe", "ipc"],
       ...options
     };
 
-    const worker = child_process.fork(command, args, opts);
+    const worker = child_process.fork(binPath, args, opts);
 
     let processing = false;
 

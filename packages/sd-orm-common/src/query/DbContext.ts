@@ -181,7 +181,9 @@ export abstract class DbContext {
               .resultAsync()
           ).map((item) => item.code);
 
-          const migrations = this.migrations.filter(item => !dbMigrationCodes.includes(item.name)).orderBy(item => item.name);
+          const migrations = this.migrations
+            .filter((item) => !dbMigrationCodes.includes(item.name))
+            .orderBy((item) => item.name);
 
           if (migrations.length > 0) {
             if (this.status !== "transact") {

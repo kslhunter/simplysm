@@ -1,40 +1,38 @@
 #!/usr/bin/env node
 
-import * as yargs from "yargs";
-import {Logger} from "@simplysm/sd-core-node";
-import {SdPackageBuilder} from "./SdPackageBuilder";
-
-const argv = yargs
-  .options({
-    package: {type: "string", requiresArg: true},
-    options: {type: "string", default: ""},
-    mode: {type: "string", default: "production"},
-    watch: {type: "boolean", default: false}
-  })
-  .argv;
+import {Logger, ProcessWorkManager} from "@simplysm/sd-core-node";
+import {SdTypescriptChecker} from "./SdTypescriptChecker";
+import {SdTypescriptCompiler} from "./SdTypescriptCompiler";
 
 const logger = Logger.get(["simplysm", "sd-cli", "build-worker"]);
 
-(async () => {
-  const builder = new SdPackageBuilder({
-    package: argv.package!,
-    options: argv.options!,
-    mode: argv.mode! as "development" | "production"
-  });
+ProcessWorkManager
+  .runWorkAsync(async (message) => {
+    if (message[0] === "compile") {
+      const watch = message[1];
+      const tsConfigPath = message[2];
+      const mode = message[3];
 
-  if (argv.watch) {
-    await builder.watchAsync();
-    process.send!("done", (err?: Error) => {
-      if (err) {
-        logger.error(err);
-        process.exit(1);
+      const builder = await SdTypescriptCompiler.createAsync({tsConfigPath, mode});
+      await builder.runAsync(watch);
+    }
+    else if (message[0] === "check") {
+      const watch = message[1];
+      const tsConfigPath = message[2];
+
+      const checker = await SdTypescriptChecker.createAsync(tsConfigPath);
+      if (watch) {
+        await checker.watchAsync();
       }
-    });
-  }
-  else {
-    await builder.buildAsync();
-  }
-})().catch((err) => {
-  logger.error(err);
-  process.exit(1);
-});
+      else {
+        await checker.runAsync();
+      }
+    }
+    else {
+      throw new Error(`명령어가 잘못되었습니다 (${message[0]})`);
+    }
+  })
+  .catch((err) => {
+    logger.error(err);
+    process.exit(1);
+  });

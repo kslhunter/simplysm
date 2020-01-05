@@ -1,19 +1,17 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "3.1.56-43",
+  "version": "3.1.109",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
   "license": "MIT",
-  "main": "dist/index.js",
-  "types": "./dist/index.d.ts",
   "bin": {
     "sd-cli": "dist/bin.js"
   },
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-common": "3.1.56-43",
-    "@simplysm/sd-core-node": "3.1.56-43",
+    "@simplysm/sd-core-common": "3.1.109",
+    "@simplysm/sd-core-node": "3.1.109",
     "yargs": "^15.0.2",
     "semver": "^7.1.1",
     "glob": "^7.1.6",
@@ -23,11 +21,11 @@
     "webpack-node-externals": "^1.7.2",
     "shebang-loader": "^0.0.1",
     "source-map-support": "^0.5.16",
-    "typescript": "^3.7.4"
+    "typescript": "^3.7.4",
+    "tslint": "^5.20.1"
   },
   "devDependencies": {
     "@types/node": "^13.1.2",
-    "tslint": "^5.20.1",
     "typescript-tslint-plugin": "^0.5.5",
     "@types/yargs": "^13.0.4",
     "@types/semver": "^6.2.0",

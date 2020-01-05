@@ -1,15 +1,16 @@
 {
   "name": "@simplysm/sd-orm-common",
-  "version": "3.1.56-43",
+  "version": "3.1.109",
   "description": "심플리즘 패키지 - ORM 모듈 (browser/node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
   "license": "MIT",
   "main": "./dist/index.js",
+  "browser": "./dist/index.browser.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-common": "3.1.56-43"
+    "@simplysm/sd-core-common": "3.1.109"
   },
   "devDependencies": {
     "@types/node": "^13.1.2",

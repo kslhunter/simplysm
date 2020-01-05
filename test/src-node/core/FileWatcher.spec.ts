@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import * as path from "path";
 import * as fs from "fs-extra";
-import {FileWatcher} from "@simplysm/sd-core-node";
+import {FsWatcher} from "@simplysm/sd-core-node";
 import {Wait} from "@simplysm/sd-core-common";
 
 describe("(node) core.FileWatcher", () => {
@@ -16,7 +16,7 @@ describe("(node) core.FileWatcher", () => {
     const testFile1Path = path.resolve(testDirPath, "test.txt");
 
     let result: any;
-    const watcher = await FileWatcher.watch(path.resolve(testDirPath, "**", "*.txt"), (changedInfos) => {
+    const watcher = await FsWatcher.watch(path.resolve(testDirPath, "**", "*.txt"), (changedInfos) => {
       expect(changedInfos).to.deep.equal([
         {
           type: "add",
@@ -39,7 +39,7 @@ describe("(node) core.FileWatcher", () => {
   });
 
   it("최초 실행시에는 변경이벤트가 발생하지 않는다.", async () => {
-    const watcher = await FileWatcher.watch(path.resolve(testDirPath, "**", "*.txt"), (changedInfos) => {
+    const watcher = await FsWatcher.watch(path.resolve(testDirPath, "**", "*.txt"), (changedInfos) => {
       expect.fail();
     }, (err) => {
       expect.fail();
@@ -54,7 +54,7 @@ describe("(node) core.FileWatcher", () => {
     const testFile2Path = path.resolve(testDirPath, "test2.txt");
 
     let result: any;
-    const watcher = await FileWatcher.watch(path.resolve(testDirPath, "**", "*.txt"), (changedInfos) => {
+    const watcher = await FsWatcher.watch(path.resolve(testDirPath, "**", "*.txt"), (changedInfos) => {
       expect(changedInfos).to.deep.equal([
         {
           type: "add",
@@ -88,7 +88,7 @@ describe("(node) core.FileWatcher", () => {
     const testFile2Path = path.resolve(testDirPath, "test2.txt");
 
     let result: any;
-    const watcher = await FileWatcher.watch(path.resolve(testDirPath, "**", "*.txt"), (changedInfos) => {
+    const watcher = await FsWatcher.watch(path.resolve(testDirPath, "**", "*.txt"), (changedInfos) => {
       expect(changedInfos).to.deep.equal([
         {
           type: "add",
@@ -119,7 +119,7 @@ describe("(node) core.FileWatcher", () => {
   it("close 를 통해 감지를 종료할 수 있다.", async () => {
     const testFile1Path = path.resolve(testDirPath, "test.txt");
 
-    const watcher = await FileWatcher.watch(path.resolve(testDirPath, "**", "*.txt"), (changedInfos) => {
+    const watcher = await FsWatcher.watch(path.resolve(testDirPath, "**", "*.txt"), (changedInfos) => {
       expect.fail();
     }, (err) => {
       expect.fail(err.message);

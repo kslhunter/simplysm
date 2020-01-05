@@ -6,5 +6,8 @@
       "es2018"
     ],
     "declaration": false
-  }
+  },
+  "files": [
+    "src/index.ts"
+  ]
 }

@@ -1,9 +1,6 @@
-export interface ISdProjectConfig {
-  packages: { [key: string]: TSdPackageConfig };
-}
-
 export interface ISdLibraryPackageConfig {
   type?: "library";
+  publish?: "npm";
 }
 
 export interface ISdServerPackageConfig {
@@ -30,13 +27,4 @@ export interface ISdSimplysmPublishConfig {
   path: string;
   ssl?: boolean;
   origin?: string;
-}
-
-export interface ISdNpmConfig {
-  name: string;
-  version: string;
-  workspaces?: string[];
-  dependencies?: { [key: string]: string };
-  devDependencies?: { [key: string]: string };
-  peerDependencies?: { [key: string]: string };
 }

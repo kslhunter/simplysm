@@ -3,7 +3,7 @@ import {DateTime, ObjectUtil, Wait} from "@simplysm/sd-core-common";
 import * as path from "path";
 import anymatch from "anymatch";
 
-export class FileWatcher {
+export class FsWatcher {
   private constructor(private readonly _watchers: fs.FSWatcher[]) {
   }
 
@@ -16,7 +16,7 @@ export class FileWatcher {
   public static async watch(paths: string | string[],
                             callback: (changedInfos: IFileChangeInfo[]) => void | Promise<void>,
                             errorCallback: (err: Error) => void,
-                            options?: { aggregateTimeout?: number }): Promise<FileWatcher> {
+                            options?: { aggregateTimeout?: number }): Promise<FsWatcher> {
 
     let preservedFileChanges: IFileChangeInfo[] = [];
     let timeout: NodeJS.Timer;
@@ -42,7 +42,7 @@ export class FileWatcher {
       );
     };
 
-    return await new Promise<FileWatcher>((resolve, reject) => {
+    return await new Promise<FsWatcher>((resolve, reject) => {
       const watchPaths = typeof paths === "string" ? [paths] : paths;
 
       const watchers = [];
@@ -98,7 +98,7 @@ export class FileWatcher {
         watchers.push(watcher);
       }
 
-      resolve(new FileWatcher(watchers));
+      resolve(new FsWatcher(watchers));
     });
   }
 }

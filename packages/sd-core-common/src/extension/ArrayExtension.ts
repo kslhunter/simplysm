@@ -16,6 +16,15 @@ declare global {
 
     mapMany(): T;
 
+    //TODO: UnitTest
+    mapAsync<R>(selector: (item: T, index: number) => Promise<R>): Promise<R[]>;
+
+    //TODO: UnitTest
+    mapManyAsync<R>(selector: (item: T, index: number) => Promise<R[]>): Promise<R[]>;
+
+    //TODO: UnitTest
+    parallelAsync(fn: (item: T, index: number) => Promise<void>): Promise<void>;
+
     groupBy<K>(keySelector: (item: T, index: number) => K): { key: K; values: T[] }[];
 
     groupBy<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): { key: K; values: V[] }[];
@@ -23,6 +32,12 @@ declare global {
     toMap<K>(keySelector: (item: T, index: number) => K): Map<K, T>;
 
     toMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V>;
+
+    // TODO: UnitTest
+    toObject(keySelector: (item: T, index: number) => string): { [key: string]: T };
+
+    // TODO: UnitTest
+    toObject<V>(keySelector: (item: T, index: number) => string, valueSelector: (item: T, index: number) => V): { [key: string]: V };
 
     distinct(): T[];
 
@@ -88,6 +103,21 @@ Array.prototype.mapMany = function <T, R>(this: T[], selector?: (item: T, index:
   return arr.reduce((p: any, n: any) => p.concat(n));
 };
 
+Array.prototype.mapAsync = async function <T, R>(this: T[], selector: (item: T, index: number) => Promise<R>): Promise<R[]> {
+  return await Promise.all(this.map(selector));
+};
+
+Array.prototype.mapManyAsync = async function <T, R>(this: T[], selector?: (item: T, index: number) => Promise<R[]>): Promise<R[]> {
+  const arr: any[] = selector ? await this.mapAsync(selector) : this;
+  return arr.mapMany();
+};
+
+Array.prototype.parallelAsync = async function <T>(this: T[], fn: (item: T, index: number) => Promise<void>): Promise<void> {
+  await Promise.all(this.map(async (item, index) => {
+    await fn(item, index);
+  }));
+};
+
 Array.prototype.groupBy = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector?: (item: T, index: number) => V): { key: K; values: (V | T)[] }[] {
   const result: { key: K; values: (V | T)[] }[] = [];
 
@@ -120,6 +150,24 @@ Array.prototype.toMap = function <T, K, V>(this: T[], keySelector: (item: T, ind
       throw new Error(`키가 중복되었습니다. (중복된키: ${JSON.stringify(keyObj)})`);
     }
     result.set(keyObj, valueObj);
+  }
+
+  return result;
+};
+
+Array.prototype.toObject = function <T, V>(this: T[], keySelector: (item: T, index: number) => string, valueSelector?: (item: T, index: number) => V): { [key: string]: V | T } {
+  const result: { [key: string]: V | T } = {};
+
+  for (let i = 0; i < this.length; i++) {
+    const item = this[i];
+
+    const key = keySelector(item, i);
+    const valueObj = valueSelector ? valueSelector(item, i) : item;
+
+    if (result[key]) {
+      throw new Error(`키가 중복되었습니다. (중복된키: ${key})`);
+    }
+    result[key] = valueObj;
   }
 
   return result;

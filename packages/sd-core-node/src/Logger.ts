@@ -60,7 +60,6 @@ export interface ILoggerHistory {
 
 export class Logger {
   private static readonly _configs = new Map<string, DeepPartial<ILoggerConfig>>();
-  private static _maxGroupLength = 0;
   private static _historyLength = 0;
 
   private readonly _randomForStyle = MathUtil.getRandomInt(4, 9);
@@ -89,7 +88,6 @@ export class Logger {
   public static history: ILoggerHistory[] = [];
 
   private constructor(private readonly _group: string[]) {
-    Logger._maxGroupLength = Math.max(Logger._maxGroupLength, this._group.join(".").length);
   }
 
   public log(...args: any[]): void {
@@ -118,17 +116,17 @@ export class Logger {
 
     if (severityIndex >= consoleLevelIndex) {
       console.log(
-        LoggerStyle.fgGray + now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + "\t" +
-        (this._group.length > 0 ? config.console.style + "[" + this._group.join(".").padEnd(Logger._maxGroupLength) + "]\t" : "") +
-        config.console.styles[severity] + severity.toUpperCase().padStart(5, " ") + "\t",
+        LoggerStyle.fgGray + now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " " +
+        (this._group.length > 0 ? config.console.style + "[" + this._group.join(".") + "]" + " " : "") +
+        config.console.styles[severity] + severity.toUpperCase().padStart(5, " ") + " ",
         ...logs,
         LoggerStyle.clear
       );
     }
 
     if (severityIndex >= fileLevelIndex) {
-      let text = now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + "\t";
-      text += (this._group.length > 0 ? "[" + this._group.join(".") + "]\t" : "");
+      let text = now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " ";
+      text += (this._group.length > 0 ? "[" + this._group.join(".") + "] " : "");
       text += severity.toUpperCase().padStart(5, " ") + "\r\n";
 
       for (const log of logs) {

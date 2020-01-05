@@ -267,7 +267,9 @@ export class Queryable<D extends DbContext, T> {
   public search(fwd: (entity: TEntity<T>) => TEntityValue<String | string | undefined>[], searchText: string): Queryable<D, T> {
     let result: Queryable<D, T> = new Queryable(this._db, this);
 
-    const splitSearchText = searchText.trim().split(" ").map(item => item.trim()).filter(item => !!item);
+    const splitSearchText = searchText.trim().split(" ")
+      .map((item) => item.trim())
+      .filter((item) => !!item);
 
     // WHERE
     result = result

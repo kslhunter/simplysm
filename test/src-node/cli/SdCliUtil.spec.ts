@@ -1,4 +1,4 @@
-import {FileUtil} from "@simplysm/sd-core-node";
+import {FsUtil} from "@simplysm/sd-core-node";
 import * as path from "path";
 import {expect} from "chai";
 import {SdCliUtil} from "@simplysm/sd-cli";

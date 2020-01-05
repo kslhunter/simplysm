@@ -8,6 +8,9 @@
     "outDir": "dist",
     "baseUrl": "./",
     "paths": {
+      "tslint": [
+        "../../node_modules/tslint"
+      ],
       "@simplysm/sd-core-common": [
         "../sd-core-common/src/index.ts"
       ],
@@ -15,5 +18,9 @@
         "../sd-core-node/src/index.ts"
       ]
     }
-  }
+  },
+  "files": [
+    "src/bin.ts",
+    "src/build-worker.ts"
+  ]
 }
