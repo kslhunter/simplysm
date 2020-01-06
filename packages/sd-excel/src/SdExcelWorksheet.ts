@@ -27,7 +27,11 @@ export class SdExcelWorksheet {
   }
 
   public get rowLength(): number {
-    return this.sheetData.worksheet.sheetData[0].row.length;
+    let length = this.sheetData.worksheet.sheetData[0].row.max((item: any) => item && item.$ && item.$.r ? Number(item.$.r) : 0);
+    if (length === 0) {
+      length = this.sheetData.worksheet.sheetData[0].row.length;
+    }
+    return length;
   }
 
   public insertEmptyRow(row: number): void {

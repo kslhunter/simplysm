@@ -10,7 +10,7 @@ export class SdExcelRow {
   }
 
   public get columnLength(): number {
-    if (!this.rowData) {
+    if (!this.rowData || !this.rowData.c) {
       return 0;
     }
 
