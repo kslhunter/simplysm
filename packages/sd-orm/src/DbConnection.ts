@@ -165,7 +165,7 @@ export class DbConnection extends EventEmitter {
         ? new QueryBuilder().from(query as IQueryDef).query
         : query as string
       ).join("\n\n")
-    ).split("GO\n\n").map(item => item.trim().replace(/GO$/, "")).filter((item: any) => !!item);
+    ).split("GO\n").map(item => item.trim().replace(/GO$/, "")).filter((item: any) => !!item);
 
     for (const currQuery of queries) {
       this._logger.log("쿼리 실행:", currQuery);
@@ -322,7 +322,7 @@ export class DbConnection extends EventEmitter {
       if (item instanceof DateTime || item instanceof DateOnly || item instanceof Time) {
         return item;
       }
-      if (item instanceof Array) {
+      else if (item instanceof Array) {
         for (let i = 0; i < item.length; i++) {
           item[i] = clearEmpty(item[i]);
         }
@@ -333,7 +333,12 @@ export class DbConnection extends EventEmitter {
       }
       else if (item instanceof Object) {
         for (const key of Object.keys(item)) {
-          item[key] = clearEmpty(item[key]);
+          if (key === "") {
+            delete item[key];
+          }
+          else {
+            item[key] = clearEmpty(item[key]);
+          }
         }
 
         if (Object.keys(item).every(key => item[key] == undefined || (item[key] instanceof Array && item[key].length < 0))) {
