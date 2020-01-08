@@ -12,6 +12,7 @@ import {ChangeDetectionStrategy, Component, ViewEncapsulation} from "@angular/co
       height: var(--topbar-height);
       padding: var(--gap-sm) var(--gap-default);
       border-bottom: 2px solid rgba(0, 0, 0, .2);
+      overflow: hidden;
     }
   `]
 })

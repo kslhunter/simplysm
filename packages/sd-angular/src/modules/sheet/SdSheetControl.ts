@@ -550,6 +550,7 @@ import {SdMutationEvent} from "../..";
         z-index: 1;
         top: 0;
         left: 0;
+        overflow: hidden;
       }
 
       ._row {
