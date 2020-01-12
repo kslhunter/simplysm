@@ -107,6 +107,9 @@ export class SdExcelCellStyle {
     else if (styleData.$.numFmtId === "42") {
       return "Currency";
     }
+    else if (styleData.$.numFmtId === "49") {
+      return "string";
+    }
     else {
       const numFmtData = this._getNumFmtData();
       if (

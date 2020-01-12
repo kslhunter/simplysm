@@ -104,11 +104,19 @@ export class SdExcelCell {
       const sstIndex = Number(value);
 
       if (this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t) {
-        return this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0]._ || this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0];
+        const v = this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0]._ || this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0];
+        return v && v.$ ? " " : v ? v.toString() : undefined;
       }
       else {
-        return this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].r.map((item: any) => item.t[0]).join("");
+        const v = this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].r.map((item: any) => {
+          const sub = item.t[0]._ || item.t[0];
+          return sub && sub.$ ? " " : sub ? sub.toString() : undefined;
+        }).filterExists().join("");
+        return v ? v.toString() : undefined;
       }
+    }
+    else if (this.style.numberFormat === "string") {
+      return value ? value.toString() : undefined;
     }
     else if (this.style.numberFormat === "number") {
       return Number(value);

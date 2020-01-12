@@ -94,7 +94,7 @@ export abstract class DbContext {
         }
       }
 
-      await this._executor.closeAsync();
+      // await this._executor.closeAsync();
       throw err;
     }
 

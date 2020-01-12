@@ -38,7 +38,7 @@ import {SdMutationEvent} from "../..";
             </a>
             <sd-dropdown-popup>
               <sd-form class="sd-padding-default">
-                <sd-form-item label="표시형식" *ngIf="!children">
+                <!--<sd-form-item label="표시형식" *ngIf="!children">
                   <sd-checkbox radio inline [value]="getDisplayType() === 'sheet'"
                                (valueChange)="onDisplayTypeChange($event ? 'sheet' : 'card')">
                     시트형
@@ -47,7 +47,7 @@ import {SdMutationEvent} from "../..";
                                (valueChange)="onDisplayTypeChange($event ? 'card' : 'sheet')">
                     카드형
                   </sd-checkbox>
-                </sd-form-item>
+                </sd-form-item>-->
                 <ng-container *ngIf="getDisplayType() === 'card'">
                   <sd-form-item label="표시항목수">
                     <sd-textfield type="number" [value]="getCardItemCount()"

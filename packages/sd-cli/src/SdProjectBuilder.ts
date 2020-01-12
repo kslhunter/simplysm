@@ -638,7 +638,7 @@ export class SdProjectBuilder {
           })
           .on("error", (message: string) => {
             logger.error(`오류가 발생했습니다.`, message);
-            reject(new Error(`오류가 발생했습니다.(client, ${packageKey})${message ? os.EOL + message : ""}`));
+            // reject(new Error(`오류가 발생했습니다.(client, ${packageKey})${message ? os.EOL + message : ""}`));
           });
 
         resolve(await builder.watchAsync());

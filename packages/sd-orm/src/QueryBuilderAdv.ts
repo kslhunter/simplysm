@@ -429,7 +429,7 @@ export class QueryBuilderAdv<T> {
     return result;
   }
 
-  public insert(obj: T): QueryBuilderAdv<T> {
+  public insert(obj: T, output: boolean = true): QueryBuilderAdv<T> {
     const result = this._clone();
 
     const insert = {};
@@ -437,9 +437,11 @@ export class QueryBuilderAdv<T> {
       insert[`[${insertKey}]`] = obj[insertKey];
     }
 
-    result.qb = result.qb
-      .insert(insert)
-      .output(["INSERTED.*"]);
+    result.qb = result.qb.insert(insert);
+
+    if (output) {
+      result.qb = result.qb.output(["INSERTED.*"]);
+    }
 
     return result;
   }

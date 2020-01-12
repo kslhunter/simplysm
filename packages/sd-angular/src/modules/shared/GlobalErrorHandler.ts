@@ -69,6 +69,7 @@ ${new DateTime().toFormatString("yyyy-MM-dd HH:mm:ss.fff")}<br/>
         catch (err) {
         }
 
+        console.error(err);
         await this._log.write({stack: err.stack, type: "error"});
       }
     });

@@ -8,6 +8,7 @@ import {SdLogProvider} from "../shared/SdLogProvider";
 export class SdToastProvider {
   // private readonly _containerEl: HTMLDivElement;
   private _containerRef?: ComponentRef<SdToastContainerControl>;
+  public alertThemes: ("info" | "success" | "warning" | "danger")[] = [];
 
   public constructor(private readonly _cfr: ComponentFactoryResolver,
                      private readonly _injector: Injector,
@@ -103,18 +104,34 @@ export class SdToastProvider {
   }
 
   public info<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+    if (this.alertThemes.includes("info")) {
+      alert(message);
+      return undefined as any;
+    }
     return this._show("info", message, progress) as any;
   }
 
   public success<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+    if (this.alertThemes.includes("success")) {
+      alert(message);
+      return undefined as any;
+    }
     return this._show("success", message, progress) as any;
   }
 
   public warning<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+    if (this.alertThemes.includes("warning")) {
+      alert(message);
+      return undefined as any;
+    }
     return this._show("warning", message, progress) as any;
   }
 
   public danger<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
+    if (this.alertThemes.includes("danger")) {
+      alert(message);
+      return undefined as any;
+    }
     return this._show("danger", message, progress) as any;
   }
 
