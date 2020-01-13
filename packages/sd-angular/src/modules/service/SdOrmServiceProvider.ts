@@ -34,8 +34,8 @@ export class SdServiceDbContextExecutor implements IDbContextExecutor {
     await this._client.sendAsync("SdOrmService.closeAsync", [this._connId]);
   }
 
-  public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(queries: (string | IQueryDef)[], colDefs?: C, joinDefs?: { as: string; isSingle: boolean }[]): Promise<undefined extends C ? any[][] : any[]> {
-    return await this._client.sendAsync("SdOrmService.executeAsync", [this._connId, queries, colDefs, joinDefs]);
+  public async executeAsync<C extends { name: string; dataType: string | undefined }[] | undefined>(queries: (string | IQueryDef)[], colDefs?: C, joinDefs?: { as: string; isSingle: boolean }[], dataQueryIndex?: number): Promise<undefined extends C ? any[][] : any[]> {
+    return await this._client.sendAsync("SdOrmService.executeAsync", [this._connId, queries, colDefs, joinDefs, dataQueryIndex]);
   }
 }
 
