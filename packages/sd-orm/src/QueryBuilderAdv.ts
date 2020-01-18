@@ -594,6 +594,9 @@ export class QueryBuilderAdv<T> {
     const parentAs = chain.split(".").slice(0, -1).join(".");
     if (parentAs) {
       const joinDef = this.getAllJoinDef()[parentAs];
+      if (!joinDef) {
+        throw new Error(`'${chain}'을 조인하려면 '${parentAs}'가 먼저 조인되어야 합니다.`);
+      }
       const joinTableDef = Reflect.getMetadata(tableDefMetadataKey, joinDef.targetTableType) as ITableDef | undefined;
       if (!joinTableDef) {
         throw new Error(`'${joinDef.targetTableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
