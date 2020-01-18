@@ -78,6 +78,8 @@ export class SdModalProvider {
           await compRef.instance.sdOnOpen(param);
           this._appRef.tick();
           if (!document.activeElement || !document.activeElement.findParent(modalRef.location.nativeElement)) {
+            const maxZIndex = document.body.findAll("sd-modal").max(el => Number(getComputedStyle(el).zIndex)) || 4000;
+            modalEl.style.zIndex = (maxZIndex + 1).toString();
             (modalEl.findAll("> ._dialog")[0] as HTMLElement).focus();
           }
         }
