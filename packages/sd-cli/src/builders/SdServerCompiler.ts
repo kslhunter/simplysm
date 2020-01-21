@@ -154,6 +154,10 @@ export class SdServerCompiler extends EventEmitter {
                 }
               }
             ]
+          },
+          {
+            test: /\.node$/,
+            use: "node-loader"
           }
         ]
       },
