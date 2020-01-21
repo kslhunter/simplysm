@@ -19,8 +19,9 @@ ProcessWorkManager
     else if (message[0] === "check") {
       const watch = message[1];
       const tsConfigPath = message[2];
+      const withMetadata = message[3];
 
-      const checker = await SdTypescriptChecker.createAsync(tsConfigPath);
+      const checker = await SdTypescriptChecker.createAsync(tsConfigPath, withMetadata);
       if (watch) {
         await checker.watchAsync();
       }

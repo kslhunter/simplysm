@@ -280,7 +280,7 @@ export class SdProject {
         }
 
         await pkg.tsConfigs.parallelAsync(async (tsConfig) => {
-          await processWorkManager.runAsync("check", watch, tsConfig.configForBuildPath);
+          await processWorkManager.runAsync("check", watch, tsConfig.configForBuildPath, pkg.config?.type === "library" ? pkg.config.metadata : undefined);
         });
       })
     ]);

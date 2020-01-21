@@ -33,7 +33,7 @@ export class SdAngularCompiler extends EventEmitter {
     const tsConfig = await fs.readJson(tsConfigPath);
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(tsConfigPath));
 
-    if (!tsConfig.files) {
+    if (tsConfig.files) {
       throw new Error("'angular' 클라이언트는 'tsConfig.json'에 'files'가 정의되어 있지 않아야 합니다.");
     }
 

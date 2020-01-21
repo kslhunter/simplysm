@@ -1,5 +1,6 @@
 export interface ISdLibraryPackageConfig {
   type?: "library";
+  metadata?: boolean;
   publish?: "npm";
 }
 

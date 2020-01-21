@@ -5,26 +5,35 @@ import * as path from "path";
 import {ObjectUtil} from "@simplysm/sd-core-common";
 import * as tslint from "tslint";
 import * as fs from "fs-extra";
+import {MetadataCollector} from "@angular/compiler-cli";
 
 export class SdTypescriptChecker {
   private _program?: ts.Program;
 
   public constructor(private readonly _tsConfigPath: string,
                      private readonly _packagePath: string,
-                     private readonly _logger: Logger) {
+                     private readonly _logger: Logger,
+                     private readonly _distPath: string,
+                     private readonly _withMetadata?: boolean) {
   }
 
-  public static async createAsync(tsConfigPath: string): Promise<SdTypescriptChecker> {
+  public static async createAsync(tsConfigPath: string, withMetadata?: boolean): Promise<SdTypescriptChecker> {
     const packagePath = path.dirname(tsConfigPath);
     const packageKey = path.basename(packagePath);
     const parsedTsConfig = ts.parseJsonConfigFileContent(await fs.readJson(tsConfigPath), ts.sys, path.dirname(tsConfigPath));
     const isNode = parsedTsConfig.options.target !== ts.ScriptTarget.ES5;
     const logger = Logger.get(["simplysm", "sd-cli", packageKey, isNode ? "node" : "browser", "check"]);
 
+    const distPath = parsedTsConfig.options.outDir
+      ? path.resolve(parsedTsConfig.options.outDir)
+      : path.resolve(packagePath, "dist");
+
     return new SdTypescriptChecker(
       tsConfigPath,
       packagePath,
-      logger
+      logger,
+      distPath,
+      withMetadata
     );
   }
 
@@ -77,6 +86,18 @@ export class SdTypescriptChecker {
           prevAfterProgramCreate(program);
         }
 
+        const watchFilesClone = ObjectUtil.clone(watchFiles);
+        watchFiles.clear();
+
+        if (watchFilesClone.length > 0 && this._withMetadata) {
+          for (const watchFile of watchFilesClone) {
+            const sourceFile = this._program.getSourceFile(watchFile.fileName);
+            if (sourceFile) {
+              diagnostics.concat(await this._generateMetadataFileAsync(sourceFile));
+            }
+          }
+        }
+
         const messages = diagnostics.map((diagnostic) => this._getDiagnosticMessage(diagnostic));
 
         diagnostics.clear();
@@ -87,9 +108,7 @@ export class SdTypescriptChecker {
         const errorTextArr = messages.filter((item) => item.severity === "error")
           .map((item) => this._getDiagnosticMessageText(item));
 
-        if (watchFiles.length > 0) {
-          const watchFilesClone = ObjectUtil.clone(watchFiles);
-          watchFiles.clear();
+        if (watchFilesClone.length > 0) {
           const lintFailures = await this._lintAsync(watchFilesClone);
           for (const lintFailure of lintFailures) {
             const file = lintFailure.getFileName();
@@ -172,6 +191,12 @@ export class SdTypescriptChecker {
         .concat(program.getSyntacticDiagnostics());
     }
 
+    if (this._withMetadata) {
+      for (const sourceFile of program.getSourceFiles()) {
+        diagnostics.concat(await this._generateMetadataFileAsync(sourceFile));
+      }
+    }
+
     const messages = diagnostics.map((diagnostic) => this._getDiagnosticMessage(diagnostic));
 
     const warningTextArr = messages.filter((item) => item.severity === "warning")
@@ -189,6 +214,43 @@ export class SdTypescriptChecker {
     }
 
     this._logger.log("타입체크가 완료되었습니다.");
+  }
+
+  private async _generateMetadataFileAsync(sourceFile: ts.SourceFile): Promise<ts.Diagnostic[]> {
+    const diagnostics: ts.Diagnostic[] = [];
+
+    if (path.resolve(sourceFile.fileName).startsWith(path.resolve(this._packagePath, "src"))) {
+      const metadata = new MetadataCollector().getMetadata(
+        sourceFile,
+        false,
+        (value, tsNode) => {
+          if (value && value["__symbolic"] && value["__symbolic"] === "error") {
+            diagnostics.push({
+              file: sourceFile,
+              start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
+              messageText: value["message"],
+              category: ts.DiagnosticCategory.Error,
+              code: 0,
+              length: undefined
+            });
+          }
+
+          return value;
+        }
+      );
+
+      const outFilePath = path.resolve(this._distPath, path.relative(path.resolve(this._packagePath, "src"), sourceFile.fileName))
+        .replace(/\.ts$/, ".metadata.json");
+      if (metadata) {
+        const metadataJsonString = JSON.stringify(metadata);
+        await fs.writeFile(outFilePath, metadataJsonString);
+      }
+      else {
+        await fs.remove(outFilePath);
+      }
+    }
+
+    return diagnostics;
   }
 
   private async _lintAsync(watchFiles: { eventKind: ts.FileWatcherEventKind; fileName: string }[]): Promise<tslint.RuleFailure[]> {
