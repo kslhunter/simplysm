@@ -6,20 +6,22 @@ import * as webpack from "webpack";
 import * as os from "os";
 import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
 import {EventEmitter} from "events";
+import * as HtmlWebpackPlugin from "html-webpack-plugin";
 
-export class SdServerCompiler extends EventEmitter {
+export class SdSvelteCompiler extends EventEmitter {
   private constructor(private readonly _mode: "development" | "production",
                       private readonly _tsConfigPath: string,
                       private readonly _distPath: string,
-                      private readonly _entry: { [key: string]: string },
-                      private readonly _logger: Logger) {
+                      private readonly _entry: string,
+                      private readonly _logger: Logger,
+                      private readonly _packageKey: string) {
     super();
   }
 
   public static async createAsync(argv: {
     tsConfigPath: string;
     mode: "development" | "production";
-  }): Promise<SdServerCompiler> {
+  }): Promise<SdSvelteCompiler> {
     const tsConfigPath = argv.tsConfigPath;
     const mode = argv.mode;
 
@@ -32,10 +34,11 @@ export class SdServerCompiler extends EventEmitter {
       throw new Error("'tsConfig.json'에 'files'가 반드시 정의되어야 합니다.");
     }
 
-    const entry = (tsConfig.files as string[]).toObject(
-      (item) => path.basename(item, path.extname(item)),
-      (item) => path.resolve(packagePath, item)
-    );
+    if (tsConfig.files.length > 1) {
+      throw new Error("'svelte' 클라이언트는 'tsConfig.json'에 'files'가 단 하나만 정의되어야 합니다.");
+    }
+
+    const entry = path.resolve(packagePath, tsConfig.files[0]);
 
     const distPath = parsedTsConfig.options.outDir
       ? path.resolve(parsedTsConfig.options.outDir)
@@ -46,17 +49,18 @@ export class SdServerCompiler extends EventEmitter {
         "simplysm",
         "sd-cli",
         path.basename(packagePath),
-        "server",
+        "svelte",
         "compile"
       ]
     );
 
-    return new SdServerCompiler(
+    return new SdSvelteCompiler(
       mode,
       tsConfigPath,
       distPath,
       entry,
-      logger
+      logger,
+      path.basename(packagePath)
     );
   }
 
@@ -124,21 +128,25 @@ export class SdServerCompiler extends EventEmitter {
     return {
       mode: this._mode,
       devtool: this._mode === "development" ? "cheap-module-source-map" : "source-map",
-      target: "node",
-      node: {
-        __dirname: false
-      },
+      target: "web",
       resolve: {
-        extensions: [".ts", ".js"]
+        extensions: [".ts", ".js", ".svelte"],
+        alias: {
+          "SD_APP": path.resolve(path.dirname(this._tsConfigPath), "src/App.svelte")
+        }
       },
       optimization: {
         minimize: false
       },
-      entry: this._entry,
+      entry: {
+        main: [
+          `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
+          this._entry
+        ]
+      },
       output: {
         path: this._distPath,
-        filename: "[name].js",
-        libraryTarget: "umd"
+        filename: "[name].js"
       },
       module: {
         rules: [
@@ -154,42 +162,28 @@ export class SdServerCompiler extends EventEmitter {
                 }
               }
             ]
+          },
+          {
+            test: /\.svelte$/,
+            use: {
+              loader: 'svelte-loader',
+              options: {
+                hotReload: watch
+              }
+            }
           }
         ]
       },
       plugins: [
-        ...watch ? [new SdWebpackTimeFixPlugin()] : []
-      ],
-      externals: [
-        (context, request, callback) => {
-          if (request === "node-gyp-build") {
-            const sourcePath = path.resolve(context, "prebuilds", "win32-x64", "node-napi.node");
-            const targetRelativePath = path.relative(path.resolve(process.cwd(), "node_modules"), sourcePath);
-            const targetPath = path.resolve(this._distPath, "node_modules", targetRelativePath);
+        ...watch ? [
+          new SdWebpackTimeFixPlugin(),
+          new webpack.HotModuleReplacementPlugin()
+        ] : [],
 
-            if (fs.pathExistsSync(sourcePath)) {
-              fs.mkdirsSync(path.dirname(targetPath));
-              fs.copyFileSync(sourcePath, targetPath);
-            }
-
-            callback(undefined, `function (() => require('${targetRelativePath.replace(/\\/g, "/")}'))`);
-          }
-          else if (/.*\.node$/.test(request)) {
-            const sourcePath = path.resolve(context, request);
-            const targetRelativePath = path.relative(path.resolve(process.cwd(), "node_modules"), sourcePath);
-            const targetPath = path.resolve(this._distPath, "node_modules", targetRelativePath);
-
-            if (fs.pathExistsSync(sourcePath)) {
-              fs.mkdirsSync(path.dirname(targetPath));
-              fs.copyFileSync(sourcePath, targetPath);
-            }
-
-            callback(undefined, `commonjs ${targetRelativePath.replace(/\\/g, "/")}`);
-          }
-          else {
-            callback(undefined, undefined);
-          }
-        }
+        new HtmlWebpackPlugin({
+          template: path.resolve(__dirname, `../lib/index.ejs`),
+          BASE_HREF: `/${this._packageKey}/`
+        })
       ]
     };
   }
