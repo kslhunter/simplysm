@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "3.1.122",
+  "version": "3.1.123-1",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -10,10 +10,10 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-common": "3.1.122",
-    "@simplysm/sd-core-node": "3.1.122",
-    "@simplysm/sd-service-common": "3.1.122",
-    "@simplysm/sd-service-server": "3.1.122",
+    "@simplysm/sd-core-common": "3.1.123-1",
+    "@simplysm/sd-core-node": "3.1.123-1",
+    "@simplysm/sd-service-common": "3.1.123-1",
+    "@simplysm/sd-service-server": "3.1.123-1",
     "yargs": "^15.0.2",
     "semver": "^7.1.1",
     "glob": "^7.1.6",
@@ -51,6 +51,8 @@
     "@types/webpack": "^4.41.1",
     "@types/webpack-node-externals": "^1.7.0",
     "@types/html-webpack-plugin": "^3.2.1",
-    "@types/karma": "^3.0.5"
+    "@types/karma": "^3.0.5",
+    "@types/webpack-hot-middleware": "^2.25.0",
+    "@types/webpack-dev-middleware": "^2.0.3"
   }
 }

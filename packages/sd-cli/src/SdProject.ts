@@ -235,10 +235,18 @@ export class SdProject {
             mode: this._mode
           });
 
-          // TODO
-          console.log("TODO");
-
-          await builder.runAsync(watch);
+          const middlewares = await builder.runAsync(watch);
+          if (this._servers[pkg.packageKey]) {
+            this._servers[pkg.packageKey].middlewares.push(...middlewares);
+          }
+          else {
+            this._servers[pkg.packageKey] = {
+              entry: undefined,
+              server: undefined,
+              middlewares,
+              isClosing: false
+            };
+          }
 
           return;
         }

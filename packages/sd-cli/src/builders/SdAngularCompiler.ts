@@ -8,6 +8,9 @@ import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
 import {EventEmitter} from "events";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
+import * as WebpackDevMiddleware from "webpack-dev-middleware";
+import * as WebpackHotMiddleware from "webpack-hot-middleware";
+import {NextHandleFunction} from "connect";
 
 export class SdAngularCompiler extends EventEmitter {
   private constructor(private readonly _mode: "development" | "production",
@@ -57,7 +60,7 @@ export class SdAngularCompiler extends EventEmitter {
     );
   }
 
-  public async runAsync(watch: boolean): Promise<void> {
+  public async runAsync(watch: boolean): Promise<NextHandleFunction[]> {
     if (watch) {
       this._logger.log("컴파일 및 변경감지를 시작합니다.");
     }
@@ -76,7 +79,10 @@ export class SdAngularCompiler extends EventEmitter {
       });
     }
 
-    await new Promise<void>(async (resolve, reject) => {
+    return await new Promise<NextHandleFunction[]>(async (resolve, reject) => {
+      let devMiddleware: NextHandleFunction | undefined;
+      let hotMiddleware: NextHandleFunction | undefined;
+
       const callback = (err: Error, stats: webpack.Stats) => {
         if (err) {
           reject(err);
@@ -105,10 +111,20 @@ export class SdAngularCompiler extends EventEmitter {
 
         this.emit("complete");
         this._logger.log("컴파일이 완료되었습니다.");
-        resolve();
+        resolve([devMiddleware, hotMiddleware].filterExists());
       };
 
       if (watch) {
+        devMiddleware = WebpackDevMiddleware(compiler, {
+          publicPath: webpackConfig.output!.publicPath!,
+          logLevel: "silent"
+        });
+
+        hotMiddleware = WebpackHotMiddleware(compiler, {
+          path: `/${path.basename(this._packagePath)}/__webpack_hmr`,
+          log: false
+        });
+
         compiler.watch({}, callback);
       }
       else {
