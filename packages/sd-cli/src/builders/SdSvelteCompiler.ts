@@ -166,7 +166,7 @@ export class SdSvelteCompiler extends EventEmitter {
           {
             test: /\.svelte$/,
             use: {
-              loader: 'svelte-loader',
+              loader: "svelte-loader",
               options: {
                 hotReload: watch
               }
