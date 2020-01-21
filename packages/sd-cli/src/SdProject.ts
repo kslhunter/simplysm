@@ -10,7 +10,7 @@ import {SdServiceServer} from "@simplysm/sd-service-server";
 import {NextHandleFunction} from "connect";
 import decache from "decache";
 import {SdServerCompiler} from "./builders/SdServerCompiler";
-import {SdSvelteCompiler} from "./builders/SdSvelteCompiler";
+import {SdAngularCompiler} from "./builders/SdAngularCompiler";
 
 // TODO: 각 package.json 에 사용하지 않는 패키지가 있는지 확인
 
@@ -230,12 +230,13 @@ export class SdProject {
         }
 
         if (pkg.config?.type === "web") {
-          const builder = await SdSvelteCompiler.createAsync({
+          const builder = await SdAngularCompiler.createAsync({
             tsConfigPath: pkg.tsConfigs.single()!.configForBuildPath,
             mode: this._mode
           });
 
           // TODO
+          console.log("TODO");
 
           await builder.runAsync(watch);
 

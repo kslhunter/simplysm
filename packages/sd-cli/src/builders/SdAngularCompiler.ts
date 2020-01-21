@@ -7,21 +7,21 @@ import * as os from "os";
 import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
 import {EventEmitter} from "events";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
+import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
 
-export class SdSvelteCompiler extends EventEmitter {
+export class SdAngularCompiler extends EventEmitter {
   private constructor(private readonly _mode: "development" | "production",
                       private readonly _tsConfigPath: string,
                       private readonly _distPath: string,
-                      private readonly _entry: string,
                       private readonly _logger: Logger,
-                      private readonly _packageKey: string) {
+                      private readonly _packagePath: string) {
     super();
   }
 
   public static async createAsync(argv: {
     tsConfigPath: string;
     mode: "development" | "production";
-  }): Promise<SdSvelteCompiler> {
+  }): Promise<SdAngularCompiler> {
     const tsConfigPath = argv.tsConfigPath;
     const mode = argv.mode;
 
@@ -31,14 +31,8 @@ export class SdSvelteCompiler extends EventEmitter {
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(tsConfigPath));
 
     if (!tsConfig.files) {
-      throw new Error("'tsConfig.json'에 'files'가 반드시 정의되어야 합니다.");
+      throw new Error("'angular' 클라이언트는 'tsConfig.json'에 'files'가 정의되어 있지 않아야 합니다.");
     }
-
-    if (tsConfig.files.length > 1) {
-      throw new Error("'svelte' 클라이언트는 'tsConfig.json'에 'files'가 단 하나만 정의되어야 합니다.");
-    }
-
-    const entry = path.resolve(packagePath, tsConfig.files[0]);
 
     const distPath = parsedTsConfig.options.outDir
       ? path.resolve(parsedTsConfig.options.outDir)
@@ -49,18 +43,17 @@ export class SdSvelteCompiler extends EventEmitter {
         "simplysm",
         "sd-cli",
         path.basename(packagePath),
-        "svelte",
+        "angular",
         "compile"
       ]
     );
 
-    return new SdSvelteCompiler(
+    return new SdAngularCompiler(
       mode,
       tsConfigPath,
       distPath,
-      entry,
       logger,
-      path.basename(packagePath)
+      packagePath
     );
   }
 
@@ -125,24 +118,35 @@ export class SdSvelteCompiler extends EventEmitter {
   }
 
   private async _getWebpackConfigAsync(watch: boolean): Promise<webpack.Configuration> {
+    const packageKey = path.basename(this._packagePath);
+    const mainPath = path.resolve(__dirname, "../lib/main." + (watch ? "dev" : "prod") + ".js");
+    const indexPath = path.resolve(__dirname, `../lib/index.ejs`);
+
+    const tsConfig = await fs.readJson(this._tsConfigPath);
+    const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(this._tsConfigPath));
+
+    const loaders: webpack.RuleSetUse = ["@ngtools/webpack"];
+
     return {
       mode: this._mode,
       devtool: this._mode === "development" ? "cheap-module-source-map" : "source-map",
       target: "web",
       resolve: {
-        extensions: [".ts", ".js", ".svelte"],
+        extensions: [".ts", ".js"],
         alias: {
-          "SD_APP": path.resolve(path.dirname(this._tsConfigPath), "src/App.svelte")
+          "SD_APP_MODULE_FACTORY": path.resolve(this._packagePath, "src/AppModule.ngfactory")
         }
       },
       optimization: {
         minimize: false
       },
       entry: {
-        main: [
-          `webpack-hot-middleware/client?path=/${this._packageKey}/__webpack_hmr&timeout=20000&reload=true`,
-          this._entry
-        ]
+        main: watch
+          ? [
+            `webpack-hot-middleware/client?path=/${packageKey}/__webpack_hmr&timeout=20000&reload=true`,
+            mainPath
+          ]
+          : mainPath
       },
       output: {
         path: this._distPath,
@@ -151,26 +155,8 @@ export class SdSvelteCompiler extends EventEmitter {
       module: {
         rules: [
           {
-            test: /\.ts$/,
-            exclude: /node_modules/,
-            use: [
-              {
-                loader: "ts-loader",
-                options: {
-                  configFile: this._tsConfigPath,
-                  transpileOnly: true
-                }
-              }
-            ]
-          },
-          {
-            test: /\.svelte$/,
-            use: {
-              loader: "svelte-loader",
-              options: {
-                hotReload: watch
-              }
-            }
+            test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+            loaders
           }
         ]
       },
@@ -179,10 +165,25 @@ export class SdSvelteCompiler extends EventEmitter {
           new SdWebpackTimeFixPlugin(),
           new webpack.HotModuleReplacementPlugin()
         ] : [],
-
         new HtmlWebpackPlugin({
-          template: path.resolve(__dirname, `../lib/index.ejs`),
-          BASE_HREF: `/${this._packageKey}/`
+          template: indexPath,
+          BASE_HREF: `/${packageKey}/`
+        }),
+        new AngularCompilerPlugin({
+          mainPath,
+          entryModule: path.resolve(this._packagePath, "src/AppModule") + "#AppModule",
+          platform: PLATFORM.Browser,
+          sourceMap: parsedTsConfig.options.sourceMap,
+          nameLazyFiles: watch,
+          forkTypeChecker: true,
+          directTemplateLoading: true,
+          tsConfigPath: this._tsConfigPath,
+          skipCodeGeneration: watch,
+          compilerOptions: {
+            fullTemplateTypeCheck: true,
+            strictInjectionParameters: true,
+            disableTypeScriptVersionCheck: true
+          }
         })
       ]
     };
