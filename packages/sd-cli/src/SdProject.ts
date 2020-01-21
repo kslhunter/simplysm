@@ -6,10 +6,10 @@ import {FsUtil, FsWatcher, Logger, ProcessManager, ProcessWorkManager} from "@si
 import * as semver from "semver";
 import * as fs from "fs-extra";
 import {NotImplementError, Wait} from "@simplysm/sd-core-common";
-import {SdTypescriptCompiler} from "./builders/SdTypescriptCompiler";
 import {SdServiceServer} from "@simplysm/sd-service-server";
 import {NextHandleFunction} from "connect";
 import decache from "decache";
+import {SdServerCompiler} from "./builders/SdServerCompiler";
 
 // TODO: 각 package.json 에 사용하지 않는 패키지가 있는지 확인
 
@@ -156,9 +156,11 @@ export class SdProject {
     }
 
     // 필요한 WORKER 생성
-    const processCount = this.packages.filter((item) => item.config?.type === "library").length * 2;
+    const processCount =
+      this.packages.filter((item) => item.config?.type === "library").length * 2 +
+      this.packages.filter((item) => item.config && item.config.type !== "library").length;
     const processWorkManager = await ProcessWorkManager.createAsync(
-      require.resolve(`./build-worker`),
+      path.resolve(__dirname, `build-worker`),
       processCount,
       true
     );
@@ -173,10 +175,14 @@ export class SdProject {
         }
 
         if (pkg.config?.type === "server") {
-          const builder = await SdTypescriptCompiler.createAsync({
+          const builder = await SdServerCompiler.createAsync({
             tsConfigPath: pkg.tsConfigs.single()!.configForBuildPath,
             mode: this._mode
           });
+
+          if (!pkg.npmConfig.main) {
+            throw new Error(`서버 패키지인 '${pkg.npmConfig.name}'에는 'main'이 반드시 설정되어야 합니다.`);
+          }
 
           const entry = path.resolve(pkg.packagePath, pkg.npmConfig.main);
 
@@ -196,9 +202,12 @@ export class SdProject {
           });
 
           builder.on("complete", async () => {
-            await Wait.true(() => !this._servers[pkg.packageKey] || !this._servers[pkg.packageKey].isClosing);
+            await Wait.true(() =>
+              (!this._servers[pkg.packageKey] || !this._servers[pkg.packageKey].isClosing) &&
+              fs.existsSync(entry)
+            );
 
-            const server = eval(`require("${entry}")`) as SdServiceServer; //tslint:disable-line:no-eval
+            const server = eval(`require(entry)`) as SdServiceServer; //tslint:disable-line:no-eval
             server.middlewares = this._servers[pkg.packageKey]?.middlewares || [];
             if (this._servers[pkg.packageKey]) {
               this._servers[pkg.packageKey].entry = entry;
@@ -215,6 +224,8 @@ export class SdProject {
           });
 
           await builder.runAsync(watch);
+
+          return;
         }
 
         if (pkg.config?.type === "web") {

@@ -3,24 +3,23 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as ts from "typescript";
 import * as webpack from "webpack";
-import * as nodeExternals from "webpack-node-externals";
 import * as os from "os";
 import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
+import {EventEmitter} from "events";
 
-export class SdTypescriptCompiler {
+export class SdServerCompiler extends EventEmitter {
   private constructor(private readonly _mode: "development" | "production",
                       private readonly _tsConfigPath: string,
-                      private readonly _isNode: boolean,
                       private readonly _distPath: string,
                       private readonly _entry: { [key: string]: string },
-                      private readonly _hasBinFile: boolean,
                       private readonly _logger: Logger) {
+    super();
   }
 
   public static async createAsync(argv: {
     tsConfigPath: string;
     mode: "development" | "production";
-  }): Promise<SdTypescriptCompiler> {
+  }): Promise<SdServerCompiler> {
     const tsConfigPath = argv.tsConfigPath;
     const mode = argv.mode;
 
@@ -28,20 +27,13 @@ export class SdTypescriptCompiler {
 
     const tsConfig = await fs.readJson(tsConfigPath);
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(tsConfigPath));
-    const isNode = parsedTsConfig.options.target !== ts.ScriptTarget.ES5;
-
-    const npmConfigPath = path.resolve(packagePath, "package.json");
-    const npmConfig = await fs.readJson(npmConfigPath);
-    const hasBin = npmConfig.bin;
 
     if (!tsConfig.files) {
       throw new Error("'tsConfig.json'에 'files'가 반드시 정의되어야 합니다.");
     }
 
     const entry = (tsConfig.files as string[]).toObject(
-      (item) => npmConfig.browser && !isNode
-        ? (path.basename(item, path.extname(item)) + ".browser")
-        : path.basename(item, path.extname(item)),
+      (item) => path.basename(item, path.extname(item)),
       (item) => path.resolve(packagePath, item)
     );
 
@@ -54,18 +46,16 @@ export class SdTypescriptCompiler {
         "simplysm",
         "sd-cli",
         path.basename(packagePath),
-        isNode ? "node" : "browser",
+        "server",
         "compile"
       ]
     );
 
-    return new SdTypescriptCompiler(
+    return new SdServerCompiler(
       mode,
       tsConfigPath,
-      isNode,
       distPath,
       entry,
-      hasBin,
       logger
     );
   }
@@ -83,7 +73,8 @@ export class SdTypescriptCompiler {
     const compiler = webpack(webpackConfig);
 
     if (watch) {
-      compiler.hooks.invalid.tap("SdTypescriptCompiler", () => {
+      compiler.hooks.invalid.tap("SdServerCompiler", () => {
+        this.emit("change");
         this._logger.log("컴파일에 대한 변경사항이 감지되었습니다.");
       });
     }
@@ -115,6 +106,7 @@ export class SdTypescriptCompiler {
           );
         }
 
+        this.emit("complete");
         this._logger.log("컴파일이 완료되었습니다.");
         resolve();
       };
@@ -132,7 +124,7 @@ export class SdTypescriptCompiler {
     return {
       mode: this._mode,
       devtool: this._mode === "development" ? "cheap-module-source-map" : "source-map",
-      target: this._isNode ? "node" : "web",
+      target: "node",
       node: {
         __dirname: false
       },
@@ -148,16 +140,12 @@ export class SdTypescriptCompiler {
         filename: "[name].js",
         libraryTarget: "umd"
       },
-      externals: [
-        nodeExternals()
-      ],
       module: {
         rules: [
           {
             test: /\.ts$/,
             exclude: /node_modules/,
             use: [
-              ...this._hasBinFile ? ["shebang-loader"] : [],
               {
                 loader: "ts-loader",
                 options: {
@@ -170,14 +158,6 @@ export class SdTypescriptCompiler {
         ]
       },
       plugins: [
-        ...this._hasBinFile ? [
-          new webpack.BannerPlugin({
-            banner: "#!/usr/bin/env node",
-            raw: true,
-            entryOnly: true,
-            include: ["bin.js"]
-          })
-        ] : [],
         ...watch ? [new SdWebpackTimeFixPlugin()] : []
       ]
     };
