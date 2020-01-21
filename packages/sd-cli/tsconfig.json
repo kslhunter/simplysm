@@ -27,6 +27,8 @@
   },
   "files": [
     "src/bin.ts",
-    "src/build-worker.ts"
+    "src/build-worker.ts",
+    "src/node-loader.ts",
+    "src/node-gyp-build.ts"
   ]
 }

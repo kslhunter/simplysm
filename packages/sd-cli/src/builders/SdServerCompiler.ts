@@ -6,6 +6,7 @@ import * as webpack from "webpack";
 import * as os from "os";
 import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
 import {EventEmitter} from "events";
+const nodeGypBuild = require("node-gyp-build"); // tslint:disable-line:no-var-requires no-require-imports
 
 export class SdServerCompiler extends EventEmitter {
   private constructor(private readonly _mode: "development" | "production",
@@ -154,15 +155,42 @@ export class SdServerCompiler extends EventEmitter {
                 }
               }
             ]
-          },
+          }/*,
           {
             test: /\.node$/,
-            use: "node-loader"
-          }
+            use: path.resolve(__dirname, "node-loader")
+          }*/
         ]
       },
       plugins: [
-        ...watch ? [new SdWebpackTimeFixPlugin()] : []
+        ...watch ? [new SdWebpackTimeFixPlugin()] : []/*,
+        new webpack.NormalModuleReplacementPlugin(
+          /^node-gyp-build$/,
+          path.resolve(__dirname, "node-gyp-build")
+        )*/
+      ],
+      externals: [
+        (context, request, callback) => {
+          if (request === "node-gyp-build") {
+            console.warn(nodeGypBuild.path(context));
+            callback(undefined, undefined);
+          }
+          else if (/.*\.node$/.test(request)) {
+            const sourcePath = path.resolve(context, request);
+            const targetRelativePath = path.relative(path.resolve(process.cwd(), "node_modules"), path.resolve(context, request));
+            const targetPath = path.resolve(this._distPath, "node_modules", targetRelativePath);
+
+            if (fs.pathExistsSync(sourcePath)) {
+              fs.mkdirsSync(path.dirname(targetPath));
+              fs.copyFileSync(sourcePath, targetPath);
+            }
+
+            callback(undefined, `commonjs ${targetRelativePath.replace(/\\/g, "/")}`);
+          }
+          else {
+            callback(undefined, undefined);
+          }
+        }
       ]
     };
   }
