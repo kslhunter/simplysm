@@ -24,6 +24,14 @@
       "type": "library",
       "publish": "npm"
     },
+    "@simplysm/sd-service-client-browser": {
+      "type": "library",
+      "publish": "npm"
+    },
+    "@simplysm/sd-service-common": {
+      "type": "library",
+      "publish": "npm"
+    },
     "@simplysm/sd-service-server": {
       "type": "library",
       "publish": "npm"

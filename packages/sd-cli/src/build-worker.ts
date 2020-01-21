@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import {Logger, ProcessWorkManager} from "@simplysm/sd-core-node";
-import {SdTypescriptChecker} from "./SdTypescriptChecker";
-import {SdTypescriptCompiler} from "./SdTypescriptCompiler";
+import {SdTypescriptChecker} from "./builders/SdTypescriptChecker";
+import {SdTypescriptCompiler} from "./builders/SdTypescriptCompiler";
 
 const logger = Logger.get(["simplysm", "sd-cli", "build-worker"]);
 

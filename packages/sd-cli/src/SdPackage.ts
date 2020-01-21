@@ -1,9 +1,9 @@
-import {SdNpmConfig} from "./SdNpmConfig";
-import {SdProjectConfig} from "./SdProjectConfig";
-import {TSdPackageConfig} from "./common";
+import {SdNpmConfig} from "./configs/SdNpmConfig";
+import {SdProjectConfig} from "./configs/SdProjectConfig";
+import {TSdPackageConfig} from "./commons";
 import {FsUtil} from "@simplysm/sd-core-node";
 import * as path from "path";
-import {SdTsConfig} from "./SdTsConfig";
+import {SdTsConfig} from "./configs/SdTsConfig";
 
 export class SdPackage {
   private constructor(public readonly npmConfig: SdNpmConfig,

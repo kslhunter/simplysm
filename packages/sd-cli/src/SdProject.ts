@@ -1,16 +1,31 @@
-import {SdNpmConfig} from "./SdNpmConfig";
-import {SdProjectConfig} from "./SdProjectConfig";
+import {SdNpmConfig} from "./configs/SdNpmConfig";
+import {SdProjectConfig} from "./configs/SdProjectConfig";
 import * as path from "path";
 import {SdPackage} from "./SdPackage";
 import {FsUtil, FsWatcher, Logger, ProcessManager, ProcessWorkManager} from "@simplysm/sd-core-node";
 import * as semver from "semver";
 import * as fs from "fs-extra";
 import {NotImplementError, Wait} from "@simplysm/sd-core-common";
+import {SdTypescriptCompiler} from "./builders/SdTypescriptCompiler";
+import {SdServiceServer} from "@simplysm/sd-service-server";
+import {NextHandleFunction} from "connect";
+import decache from "decache";
+
+// TODO: 각 package.json 에 사용하지 않는 패키지가 있는지 확인
 
 export class SdProject {
+  private readonly _servers: {
+    [name: string]: {
+      entry: string | undefined;
+      server: SdServiceServer | undefined;
+      middlewares: NextHandleFunction[];
+      isClosing: boolean;
+    };
+  } = {};
+
   private constructor(private readonly _npmConfig: SdNpmConfig,
                       private readonly _config: SdProjectConfig,
-                      private readonly _mode: string,
+                      private readonly _mode: "development" | "production",
                       public packages: SdPackage[]) {
   }
 
@@ -157,6 +172,56 @@ export class SdProject {
           return;
         }
 
+        if (pkg.config?.type === "server") {
+          const builder = await SdTypescriptCompiler.createAsync({
+            tsConfigPath: pkg.tsConfigs.single()!.configForBuildPath,
+            mode: this._mode
+          });
+
+          const entry = path.resolve(pkg.packagePath, pkg.npmConfig.main);
+
+          builder.on("change", async () => {
+            if (this._servers[pkg.packageKey]) {
+              this._servers[pkg.packageKey].isClosing = true;
+              if (this._servers[pkg.packageKey].server) {
+                await this._servers[pkg.packageKey].server!.closeAsync();
+                delete this._servers[pkg.packageKey].server;
+              }
+              if (this._servers[pkg.packageKey].entry) {
+                decache(this._servers[pkg.packageKey].entry!);
+                delete this._servers[pkg.packageKey].entry;
+              }
+              this._servers[pkg.packageKey].isClosing = false;
+            }
+          });
+
+          builder.on("complete", async () => {
+            await Wait.true(() => !this._servers[pkg.packageKey] || !this._servers[pkg.packageKey].isClosing);
+
+            const server = eval(`require("${entry}")`) as SdServiceServer; //tslint:disable-line:no-eval
+            server.middlewares = this._servers[pkg.packageKey]?.middlewares || [];
+            if (this._servers[pkg.packageKey]) {
+              this._servers[pkg.packageKey].entry = entry;
+              this._servers[pkg.packageKey].server = server;
+            }
+            else {
+              this._servers[pkg.packageKey] = {
+                entry,
+                server,
+                middlewares: server.middlewares,
+                isClosing: false
+              };
+            }
+          });
+
+          await builder.runAsync(watch);
+        }
+
+        if (pkg.config?.type === "web") {
+          // TODO
+          throw new NotImplementError();
+        }
+
         await pkg.tsConfigs.parallelAsync(async (tsConfig) => {
           await processWorkManager.runAsync("compile", watch, tsConfig.configForBuildPath, this._mode);
         });
@@ -171,7 +236,6 @@ export class SdProject {
           await processWorkManager.runAsync("check", watch, tsConfig.configForBuildPath);
         });
       })
-      // TODO: 메타데이터
     ]);
 
     logger.info(`모든 빌드 프로세스가 완료되었습니다`);
@@ -179,6 +243,26 @@ export class SdProject {
     if (!watch) {
       await processWorkManager.closeAllAsync();
     }
+  }
+
+  public async testAsync(): Promise<void> {
+    ProcessManager.fork(
+      path.resolve(process.cwd(), "node_modules", "karma", "bin", "karma"),
+      ["start", path.resolve(process.cwd(), "test", "karma.conf.ts")],
+      {
+        cwd: process.cwd(),
+        env: {
+          TS_NODE_PROJECT: "test/tsconfig-node.json",
+          TS_NODE_TRANSPILE_ONLY: "true",
+          IE_BIN: "C:\\Program Files\\Internet Explorer\\iexplore.exe",
+          CHROME_BIN: "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+        },
+        execArgv: [
+          "--require=ts-node/register",
+          "--require=tsconfig-paths/register"
+        ]
+      }
+    );
   }
 
   public async publishAsync(build: boolean = false): Promise<void> {

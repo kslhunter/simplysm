@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import {ObjectUtil} from "@simplysm/sd-core-common";
-import {TSdPackageConfig} from "./common";
+import {TSdPackageConfig} from "../commons";
 
 export class SdProjectConfig {
   public get packages(): { [packageKey: string]: TSdPackageConfig } {

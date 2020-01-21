@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "3.1.113",
+  "version": "3.1.114-1",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -10,8 +10,10 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-common": "3.1.113",
-    "@simplysm/sd-core-node": "3.1.113",
+    "@simplysm/sd-core-common": "3.1.114-1",
+    "@simplysm/sd-core-node": "3.1.114-1",
+    "@simplysm/sd-service-common": "3.1.114-1",
+    "@simplysm/sd-service-server": "3.1.114-1",
     "yargs": "^15.0.2",
     "semver": "^7.1.1",
     "glob": "^7.1.6",
@@ -22,7 +24,16 @@
     "shebang-loader": "^0.0.1",
     "source-map-support": "^0.5.16",
     "typescript": "^3.7.4",
-    "tslint": "^5.20.1"
+    "tslint": "^5.20.1",
+    "mocha": "^7.0.0",
+    "karma": "^4.4.1",
+    "karma-mocha": "^1.3.0",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-ie-launcher": "^1.0.0",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^4.0.2",
+    "connect": "^3.7.0",
+    "decache": "^4.5.1"
   },
   "devDependencies": {
     "@types/node": "^13.1.2",
@@ -33,6 +44,7 @@
     "@types/fs-extra": "^8.0.1",
     "@types/webpack": "^4.41.1",
     "@types/webpack-node-externals": "^1.7.0",
-    "@types/html-webpack-plugin": "^3.2.1"
+    "@types/html-webpack-plugin": "^3.2.1",
+    "@types/karma": "^3.0.5"
   }
 }

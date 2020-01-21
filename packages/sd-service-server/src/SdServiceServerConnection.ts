@@ -3,13 +3,20 @@ import {EventEmitter} from "events";
 import {JsonConvert} from "@simplysm/sd-core-common";
 import * as path from "path";
 import * as fs from "fs-extra";
-import {ISdServiceErrorResponse, ISdServiceRequest, ISdServiceResponse} from "./common";
+import {
+  ISdServiceRequest,
+  ISdServiceSplitRawResponse,
+  ISdServiceUploadRawResponse,
+  TSdServiceRawRequest,
+  TSdServiceRawResponse
+} from "@simplysm/sd-service-common";
 
 export class SdServiceServerConnection extends EventEmitter {
   private readonly _splitRequestMap = new Map<number, { timer: NodeJS.Timer; bufferStrings: string[] }>();
   private readonly _uploadRequestMap = new Map<number, { timer: NodeJS.Timer; fd: number; filePath: string; completedLength: number }>();
 
-  public constructor(private readonly _conn: WebSocket) {
+  public constructor(private readonly _conn: WebSocket,
+                     private readonly _rootPath: string) {
     super();
     this._conn.on("message", async (msg: string) => {
       try {
@@ -24,13 +31,14 @@ export class SdServiceServerConnection extends EventEmitter {
   private async _onMessageAsync(msg: string): Promise<void> {
     const rawReq = JsonConvert.parse(msg) as TSdServiceRawRequest;
 
+    // 분할 요청
     if (rawReq.type === "split") {
       if (!this._splitRequestMap.has(rawReq.id)) {
         this._splitRequestMap.set(rawReq.id, {
           timer: setTimeout(() => {
             this.emit("error", new Error(`분할요청중에 타임아웃이 발생했습니다.`));
             this._splitRequestMap.delete(rawReq.id);
-          }, 3000),
+          }, 10000),
           bufferStrings: []
         });
       }
@@ -43,17 +51,18 @@ export class SdServiceServerConnection extends EventEmitter {
       const res: ISdServiceSplitRawResponse = {
         type: "split",
         requestId: rawReq.id,
-        index: rawReq.index
+        length: rawReq.data.length
       };
 
       await this.sendAsync(res);
 
       const receivedLength = splitRequestValue.bufferStrings.filterExists().length;
       if (receivedLength !== rawReq.length) {
+        clearTimeout(splitRequestValue.timer);
         splitRequestValue.timer = setTimeout(() => {
           this.emit("error", new Error(`분할요청중에 타임아웃이 발생했습니다.`));
           this._splitRequestMap.delete(rawReq.id);
-        }, 3000);
+        }, 10000);
         return;
       }
 
@@ -62,19 +71,22 @@ export class SdServiceServerConnection extends EventEmitter {
 
       this.emit("request", JsonConvert.parse(reqText));
     }
+    // 업로드
     else if (rawReq.type === "upload") {
+      const filePath = path.resolve(this._rootPath, rawReq.filePath);
+
       if (!this._uploadRequestMap.has(rawReq.id)) {
-        fs.mkdirsSync(path.dirname(rawReq.filePath));
-        const fd = fs.openSync(rawReq.filePath, "w");
+        fs.mkdirsSync(path.dirname(filePath));
+        const fd = fs.openSync(filePath, "w");
         const newUploadRequestValue = {
           timer: setTimeout(() => {
             this.emit("error", `업로드중에 타임아웃이 발생했습니다.`);
             fs.closeSync(fd);
-            fs.unlinkSync(rawReq.filePath);
+            fs.unlinkSync(filePath);
             this._uploadRequestMap.delete(rawReq.id);
-          }, 3000),
+          }, 20000),
           fd,
-          filePath: rawReq.filePath,
+          filePath,
           completedLength: 0
         };
         this._uploadRequestMap.set(rawReq.id, newUploadRequestValue);
@@ -82,7 +94,7 @@ export class SdServiceServerConnection extends EventEmitter {
 
       const uploadRequestValue = this._uploadRequestMap.get(rawReq.id)!;
       fs.writeSync(uploadRequestValue.fd, rawReq.buffer, 0, rawReq.buffer.length, rawReq.offset);
-      uploadRequestValue.completedLength += rawReq.length;
+      uploadRequestValue.completedLength += rawReq.buffer.length;
 
       clearTimeout(uploadRequestValue.timer);
 
@@ -95,18 +107,17 @@ export class SdServiceServerConnection extends EventEmitter {
       await this.sendAsync(res);
 
       if (uploadRequestValue.completedLength !== rawReq.length) {
+        clearTimeout(uploadRequestValue.timer);
         uploadRequestValue.timer = setTimeout(() => {
           this.emit("error", new Error(`업로드중에 타임아웃이 발생했습니다.`));
           fs.closeSync(uploadRequestValue.fd);
           fs.unlinkSync(uploadRequestValue.filePath);
           this._uploadRequestMap.delete(rawReq.id);
-        }, 3000);
+        }, 20000);
         return;
       }
 
-      clearTimeout(uploadRequestValue.timer);
       fs.closeSync(uploadRequestValue.fd);
-      fs.unlinkSync(uploadRequestValue.filePath);
       this._uploadRequestMap.delete(rawReq.id);
 
       const req: ISdServiceRequest = {
@@ -128,6 +139,7 @@ export class SdServiceServerConnection extends EventEmitter {
     }
 
     await new Promise<void>((resolve, reject) => {
+      // TODO: 크면 분할
       this._conn.send(JsonConvert.stringify(res), (err) => {
         if (err) {
           reject(err);
@@ -137,45 +149,4 @@ export class SdServiceServerConnection extends EventEmitter {
       });
     });
   }
-}
-
-
-type TSdServiceRawRequest =
-  ISdServiceSplitRawRequest
-  | ISdServiceUploadRawRequest
-  | ISdServiceRequest;
-
-interface ISdServiceSplitRawRequest {
-  type: "split";
-  id: number;
-  index: number;
-  length: number;
-  data: string;
-}
-
-interface ISdServiceUploadRawRequest {
-  type: "upload";
-  id: number;
-  filePath: string;
-  offset: number;
-  length: number;
-  buffer: Buffer;
-}
-
-type TSdServiceRawResponse =
-  ISdServiceSplitRawResponse
-  | ISdServiceUploadRawResponse
-  | ISdServiceResponse
-  | ISdServiceErrorResponse;
-
-interface ISdServiceSplitRawResponse {
-  type: "split";
-  requestId: number;
-  index: number;
-}
-
-interface ISdServiceUploadRawResponse {
-  type: "upload";
-  requestId: number;
-  length: number;
 }

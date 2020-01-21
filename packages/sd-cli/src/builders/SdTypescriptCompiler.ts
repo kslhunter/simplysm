@@ -5,9 +5,10 @@ import * as ts from "typescript";
 import * as webpack from "webpack";
 import * as nodeExternals from "webpack-node-externals";
 import * as os from "os";
-import {SdWebpackTimeFixPlugin} from "./plugins/SdWebpackTimeFixPlugin";
+import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
+import {EventEmitter} from "events";
 
-export class SdTypescriptCompiler {
+export class SdTypescriptCompiler extends EventEmitter {
   private constructor(private readonly _mode: "development" | "production",
                       private readonly _tsConfigPath: string,
                       private readonly _isNode: boolean,
@@ -15,6 +16,7 @@ export class SdTypescriptCompiler {
                       private readonly _entry: { [key: string]: string },
                       private readonly _hasBinFile: boolean,
                       private readonly _logger: Logger) {
+    super();
   }
 
   public static async createAsync(argv: {
@@ -84,6 +86,7 @@ export class SdTypescriptCompiler {
 
     if (watch) {
       compiler.hooks.invalid.tap("SdPackageBuilder", () => {
+        this.emit("change");
         this._logger.log("컴파일에 대한 변경사항이 감지되었습니다.");
       });
     }
@@ -115,6 +118,7 @@ export class SdTypescriptCompiler {
           );
         }
 
+        this.emit("complete");
         this._logger.log("컴파일이 완료되었습니다.");
         resolve();
       };

@@ -26,6 +26,15 @@
       ],
       "@simplysm/sd-cli": [
         "../packages/sd-cli/src/index.ts"
+      ],
+      "@simplysm/sd-service-client-browser": [
+        "../packages/sd-service-client-browser/src/index.ts"
+      ],
+      "@simplysm/sd-service-common": [
+        "../packages/sd-service-common/src/index.ts"
+      ],
+      "@simplysm/sd-service-server": [
+        "../packages/sd-service-server/src/index.ts"
       ]
     }
   }

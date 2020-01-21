@@ -1,7 +1,7 @@
 {
-  "name": "@simplysm/sd-core-browser",
+  "name": "@simplysm/sd-service-client-browser",
   "version": "3.1.114-1",
-  "description": "심플리즘 패키지 - 코어 모듈 (browser)",
+  "description": "심플리즘 패키지 - 서비스 클라이언트 모듈 (browser)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
   "license": "MIT",
@@ -10,16 +10,13 @@
   "sideEffects": false,
   "dependencies": {
     "@simplysm/sd-core-common": "3.1.114-1",
-    "element-qsa-scope": "^1.1.0",
-    "resize-observer-polyfill": "^1.5.1",
-    "events-polyfill": "^2.1.2",
-    "spark-md5": "^3.0.0"
+    "@simplysm/sd-core-browser": "3.1.114-1",
+    "@simplysm/sd-service-common": "3.1.114-1"
   },
   "devDependencies": {
     "@types/node": "^13.1.2",
     "tslint": "^5.20.1",
     "typescript": "^3.7.4",
-    "typescript-tslint-plugin": "^0.5.5",
-    "@types/spark-md5": "^3.0.2"
+    "typescript-tslint-plugin": "^0.5.5"
   }
 }

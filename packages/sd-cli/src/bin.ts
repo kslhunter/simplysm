@@ -4,6 +4,8 @@ import * as yargs from "yargs";
 import {Logger} from "@simplysm/sd-core-node";
 import {SdProject} from "./SdProject";
 
+// TODO: test 에는 tsconfig.build.json 이 생성되지 않도록 수정
+
 const argv = yargs
   .version(false)
   .help("help", "도움말")
@@ -25,6 +27,18 @@ const argv = yargs
             describe: "변경감지 모드로 실행할지 여부",
             default: false
           },
+          options: {
+            type: "string",
+            describe: "빌드 옵션 설정 (설정파일에서 @로 시작하는 부분)"
+          }
+        })
+  )
+  .command(
+    "test",
+    "프로젝트의 각 패키지를 테스트합니다.",
+    (cmd) =>
+      cmd.version(false)
+        .options({
           options: {
             type: "string",
             describe: "빌드 옵션 설정 (설정파일에서 @로 시작하는 부분)"
@@ -69,6 +83,14 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
 
     const project = await SdProject.createAsync(mode, options);
     await project.buildAsync(watch);
+  }
+  else if (argv._[0] === "test") {
+    const optionsText = argv.options as string | undefined;
+
+    const options = optionsText?.split(",")?.map((item) => item.trim()) ?? [];
+
+    const project = await SdProject.createAsync("development", options);
+    await project.testAsync();
   }
   else if (argv._[0] === "publish") {
     const optionsText = argv.options as string | undefined;

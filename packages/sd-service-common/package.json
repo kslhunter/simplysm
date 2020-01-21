@@ -1,22 +1,17 @@
 {
-  "name": "@simplysm/sd-orm-node",
+  "name": "@simplysm/sd-service-common",
   "version": "3.1.114-1",
-  "description": "심플리즘 패키지 - ORM 모듈 (node)",
+  "description": "심플리즘 패키지 - 서비스 공통 모듈 (browser/node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
   "license": "MIT",
   "main": "./dist/index.js",
+  "browser": "./dist/index.browser.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
-  "dependencies": {
-    "@simplysm/sd-core-common": "3.1.114-1",
-    "@simplysm/sd-core-node": "3.1.114-1",
-    "@simplysm/sd-orm-common": "3.1.114-1",
-    "tedious": "^6.6.5"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^13.1.2",
-    "@types/tedious": "^4.0.0",
     "tslint": "^5.20.1",
     "typescript": "^3.7.4",
     "typescript-tslint-plugin": "^0.5.5"

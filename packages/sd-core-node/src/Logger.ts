@@ -118,7 +118,7 @@ export class Logger {
       console.log(
         LoggerStyle.fgGray + now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " " +
         (this._group.length > 0 ? config.console.style + "[" + this._group.join(".") + "] " : "") +
-        config.console.styles[severity] + severity.toUpperCase().padStart(5, " ") + " ",
+        config.console.styles[severity] + severity.toUpperCase().padStart(5, " "),
         ...logs,
         LoggerStyle.clear
       );

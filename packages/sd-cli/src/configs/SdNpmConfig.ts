@@ -15,6 +15,10 @@ export class SdNpmConfig {
     this._config.version = value;
   }
 
+  public get main(): string {
+    return this._config.main;
+  }
+
   public get workspaces(): string[] | undefined {
     return this._config.workspaces;
   }
