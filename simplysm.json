@@ -1,5 +1,9 @@
 {
   "packages": {
+    "@simplysm/sd-angular": {
+      "type": "library",
+      "publish": "npm"
+    },
     "@simplysm/sd-cli": {
       "type": "library",
       "publish": "npm"

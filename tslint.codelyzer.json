@@ -1,0 +1,61 @@
+{
+  "extends": [
+    "./tslint.json",
+    "codelyzer"
+  ],
+  "rules": {
+    "component-class-suffix": [
+      true,
+      "Page",
+      "Component",
+      "Modal",
+      "Control",
+      "PrintTemplate",
+      "Toast"
+    ],
+    "component-max-inline-declarations": false,
+    "component-selector": [
+      true,
+      "element",
+      "sd",
+      "kebab-case"
+    ],
+    "contextual-lifecycle": true,
+    "directive-class-suffix": [
+      true,
+      "Directive"
+    ],
+    "directive-selector": [
+      true,
+      "attribute",
+      "sd",
+      "camelCase"
+    ],
+    "no-attribute-decorator": true,
+    "no-conflicting-lifecycle": true,
+    "no-forward-ref": false,
+    "no-host-metadata-property": true,
+    "no-input-rename": false,
+    "no-inputs-metadata-property": true,
+    "no-lifecycle-call": true,
+    "no-output-native": false,
+    "no-output-on-prefix": true,
+    "no-output-rename": false,
+    "no-outputs-metadata-property": true,
+    "no-pipe-impure": true,
+    "no-queries-metadata-property": true,
+    "no-unused-css": false,
+    "prefer-inline-decorator": false,
+    "prefer-output-readonly": true,
+    "template-banana-in-box": true,
+    "template-conditional-complexity": false,
+    "template-cyclomatic-complexity": false,
+    "template-i18n": false,
+    "template-no-negated-async": true,
+    "template-use-track-by-function": true,
+    "use-component-selector": true,
+    "use-component-view-encapsulation": false,
+    "use-lifecycle-interface": true,
+    "use-pipe-transform-interface": true
+  }
+}

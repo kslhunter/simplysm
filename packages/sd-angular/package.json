@@ -1,7 +1,7 @@
 {
-  "name": "@simplysm/sd-orm-node",
+  "name": "@simplysm/sd-angular",
   "version": "3.1.124-2",
-  "description": "심플리즘 패키지 - ORM 모듈 (node)",
+  "description": "심플리즘 패키지 - Angular 모듈 (browser)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
   "license": "MIT",
@@ -10,15 +10,18 @@
   "sideEffects": false,
   "dependencies": {
     "@simplysm/sd-core-common": "3.1.124-2",
-    "@simplysm/sd-core-node": "3.1.124-2",
-    "@simplysm/sd-orm-common": "3.1.124-2",
-    "tedious": "^8.0.1"
+    "@angular/common": "^8.2.14",
+    "@angular/core": "^8.2.14",
+    "@angular/compiler": "^8.2.14",
+    "@angular/platform-browser": "^8.2.14",
+    "rxjs": "^6.5.4",
+    "zone.js": "~0.9.1"
   },
   "devDependencies": {
     "@types/node": "^13.1.8",
-    "@types/tedious": "^4.0.0",
     "tslint": "^5.20.1",
     "typescript": "^3.7.4",
-    "typescript-tslint-plugin": "^0.5.5"
+    "typescript-tslint-plugin": "^0.5.5",
+    "codelyzer": "^5.2.1"
   }
 }
