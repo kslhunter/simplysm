@@ -127,6 +127,15 @@ export class SdAngularCompiler extends EventEmitter {
 
     const loaders: webpack.RuleSetUse = ["@ngtools/webpack"];
 
+    if (!watch) {
+      loaders.unshift({
+        loader: "@angular-devkit/build-optimizer/webpack-loader",
+        options: {
+          sourceMap: parsedTsConfig.options.sourceMap
+        }
+      });
+    }
+
     return {
       mode: this._mode,
       devtool: this._mode === "development" ? "cheap-module-source-map" : "source-map",
@@ -134,6 +143,7 @@ export class SdAngularCompiler extends EventEmitter {
       resolve: {
         extensions: [".ts", ".js"],
         alias: {
+          // "SD_APP_MODULE": path.resolve(this._packagePath, "src/AppModule")
           "SD_APP_MODULE_FACTORY": path.resolve(this._packagePath, "src/AppModule.ngfactory")
         }
       },
@@ -157,6 +167,10 @@ export class SdAngularCompiler extends EventEmitter {
           {
             test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
             loaders
+          },
+          {
+            test: /(\\|\/)@angular(\\|\/)core(\\|\/).+\.js$/,
+            parser: {system: true}
           }
         ]
       },
@@ -184,7 +198,12 @@ export class SdAngularCompiler extends EventEmitter {
             strictInjectionParameters: true,
             disableTypeScriptVersionCheck: true
           }
-        })
+        }),
+        new webpack.ContextReplacementPlugin(
+          /(.+)?angular(\\|\/)core(.+)?/,
+          path.join(__dirname, "src"),
+          {}
+        )
       ]
     };
   }
