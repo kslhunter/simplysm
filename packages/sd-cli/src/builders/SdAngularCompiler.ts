@@ -4,13 +4,13 @@ import * as fs from "fs-extra";
 import * as ts from "typescript";
 import * as webpack from "webpack";
 import * as os from "os";
-import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
 import {EventEmitter} from "events";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
 import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import {NextHandleFunction} from "connect";
+import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
 
 export class SdAngularCompiler extends EventEmitter {
   private constructor(private readonly _mode: "development" | "production",
@@ -83,34 +83,36 @@ export class SdAngularCompiler extends EventEmitter {
       let devMiddleware: NextHandleFunction | undefined;
       let hotMiddleware: NextHandleFunction | undefined;
 
-      const callback = (err: Error, stats: webpack.Stats) => {
+      const callback = (err: Error | undefined, stats?: webpack.Stats) => {
         if (err) {
           reject(err);
           return;
         }
 
-        const info = stats.toJson("errors-warnings");
+        if (stats) {
+          const info = stats.toJson("errors-warnings");
 
-        if (stats.hasWarnings()) {
-          this._logger.warn(
-            "컴파일 경고\n",
-            info.warnings
-              .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
-              .join(os.EOL)
-          );
+          if (stats.hasWarnings()) {
+            this._logger.warn(
+              "컴파일 경고\n",
+              info.warnings
+                .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
+                .join(os.EOL)
+            );
+          }
+
+          if (stats.hasErrors()) {
+            this._logger.error(
+              "컴파일 오류\n",
+              info.errors
+                .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
+                .join(os.EOL)
+            );
+          }
         }
 
-        if (stats.hasErrors()) {
-          this._logger.error(
-            "컴파일 오류\n",
-            info.errors
-              .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
-              .join(os.EOL)
-          );
-        }
-
-        this.emit("complete");
         this._logger.log("컴파일이 완료되었습니다.");
+        this.emit("complete");
         resolve([devMiddleware, hotMiddleware].filterExists());
       };
 
@@ -125,7 +127,13 @@ export class SdAngularCompiler extends EventEmitter {
           log: false
         });
 
-        compiler.watch({}, callback);
+        compiler.hooks.failed.tap("SdAngularCompiler", (err) => {
+          callback(err);
+        });
+
+        compiler.hooks.done.tap("SdAngularCompiler", (stats) => {
+          callback(undefined, stats);
+        });
       }
       else {
         compiler.run(callback);
@@ -143,14 +151,14 @@ export class SdAngularCompiler extends EventEmitter {
 
     const loaders: webpack.RuleSetUse = ["@ngtools/webpack"];
 
-    if (!watch) {
-      loaders.unshift({
-        loader: "@angular-devkit/build-optimizer/webpack-loader",
-        options: {
-          sourceMap: parsedTsConfig.options.sourceMap
-        }
-      });
-    }
+    // if (!watch) {
+    loaders.unshift({
+      loader: "@angular-devkit/build-optimizer/webpack-loader",
+      options: {
+        sourceMap: parsedTsConfig.options.sourceMap
+      }
+    });
+    // }
 
     return {
       mode: this._mode,
@@ -158,8 +166,11 @@ export class SdAngularCompiler extends EventEmitter {
       target: "web",
       resolve: {
         extensions: [".ts", ".js"],
-        alias: {
-          // "SD_APP_MODULE": path.resolve(this._packagePath, "src/AppModule")
+        alias: /*watch
+          ? {
+            "SD_APP_MODULE": path.resolve(this._packagePath, "src/AppModule")
+          }
+          : */{
           "SD_APP_MODULE_FACTORY": path.resolve(this._packagePath, "src/AppModule.ngfactory")
         }
       },
@@ -175,6 +186,7 @@ export class SdAngularCompiler extends EventEmitter {
           : mainPath
       },
       output: {
+        publicPath: `/${packageKey}/`,
         path: this._distPath,
         filename: "[name].js"
       },
@@ -204,11 +216,11 @@ export class SdAngularCompiler extends EventEmitter {
           entryModule: path.resolve(this._packagePath, "src/AppModule") + "#AppModule",
           platform: PLATFORM.Browser,
           sourceMap: parsedTsConfig.options.sourceMap,
-          nameLazyFiles: watch,
+          nameLazyFiles: false, //watch,
           forkTypeChecker: true,
           directTemplateLoading: true,
           tsConfigPath: this._tsConfigPath,
-          skipCodeGeneration: watch,
+          skipCodeGeneration: false, //watch,
           compilerOptions: {
             fullTemplateTypeCheck: true,
             strictInjectionParameters: true,

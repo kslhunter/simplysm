@@ -106,8 +106,8 @@ export class SdServerCompiler extends EventEmitter {
           );
         }
 
-        this.emit("complete");
         this._logger.log("컴파일이 완료되었습니다.");
+        this.emit("complete");
         resolve();
       };
 

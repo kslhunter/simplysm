@@ -15,7 +15,7 @@ export interface ISdWebPackageConfig {
   env?: { [key: string]: string };
   configs?: { [key: string]: any };
   publish?: ISdSimplysmPublishConfig;
-  server?: string;
+  serverPackage?: string;
 }
 
 export type TSdPackageConfig = ISdLibraryPackageConfig | ISdServerPackageConfig | ISdWebPackageConfig;

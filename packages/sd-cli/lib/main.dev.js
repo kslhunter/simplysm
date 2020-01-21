@@ -1,18 +1,19 @@
+require("@simplysm/sd-core-common");
 require("core-js/proposals/reflect-metadata");
 require("zone.js/dist/zone");
 
 const ApplicationRef = require("@angular/core").ApplicationRef;
 const platformBrowserDynamic = require("@angular/platform-browser-dynamic").platformBrowserDynamic;
-// const AppModuleNgFactory = require("SD_APP_MODULE_FACTORY").AppModuleNgFactory;
-const AppModule = require("SD_APP_MODULE").AppModule;
+const AppModuleNgFactory = require("SD_APP_MODULE_FACTORY").AppModuleNgFactory;
+// const AppModule = require("SD_APP_MODULE").AppModule;
 
 let ngModuleRef;
 
 function start() {
   module["hot"].accept();
 
-  platformBrowserDynamic().bootstrapModule(AppModule)
-  // platformBrowserDynamic().bootstrapModuleFactory(AppModuleNgFactory)
+  // platformBrowserDynamic().bootstrapModule(AppModule)
+  platformBrowserDynamic().bootstrapModuleFactory(AppModuleNgFactory)
     .then(mod => {
       ngModuleRef = mod;
     })
@@ -32,7 +33,7 @@ function start() {
     }
 
     // 이전 스타일 삭제
-    const prevNgStyleEls = document.head.findAll("> style")
+    const prevNgStyleEls = Array.from(document.head.querySelectorAll(":scope > style"))
       .filter(styleEl => styleEl.innerText.indexOf("_ng") !== -1);
 
     for (const prevNgStyleEl of prevNgStyleEls) {
@@ -43,7 +44,8 @@ function start() {
     try {
       ngModuleRef.destroy();
     }
-    catch (err) {}
+    catch (err) {
+    }
 
     // 이전 엘리먼트 삭제
     for (const prevEl of prevEls) {
