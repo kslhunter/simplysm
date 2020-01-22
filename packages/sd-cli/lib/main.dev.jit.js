@@ -1,8 +1,8 @@
 require("@simplysm/sd-core-common");
-require("@simplysm/sd-core-browser");
+require("element-qsa-scope");
 require("core-js/proposals/reflect-metadata");
 
-window.__Zone_enable_cross_context_check = true;
+// window.__Zone_enable_cross_context_check = true;
 require("zone.js/dist/zone");
 
 const ApplicationRef = require("@angular/core").ApplicationRef;
@@ -23,6 +23,7 @@ function start() {
     });
 
   module["hot"].dispose(() => {
+    // TODO: IE 지원
     // console.clear();
     const appRef = ngModuleRef.injector.get(ApplicationRef);
 

@@ -14,6 +14,7 @@ export class SdTypescriptCompiler {
                       private readonly _framework: TSdFramework | undefined,
                       private readonly _scriptTarget: ts.ScriptTarget,
                       private readonly _packagePath: string,
+                      private readonly _indexTargetPath: string,
                       private readonly _logger: Logger) {
   }
 
@@ -34,6 +35,12 @@ export class SdTypescriptCompiler {
     if (tsConfig.files) {
       throw new Error("라이브러리 패키지의 'tsConfig.json'에는 'files'가 정의되어 있지 않아야 합니다.");
     }
+
+
+    const npmConfigPath = path.resolve(packagePath, "package.json");
+    const npmConfig = await fs.readJson(npmConfigPath);
+
+    const indexTargetPath = npmConfig.browser && !isNode ? npmConfig.browser : npmConfig.main;
 
     const srcPath = parsedTsConfig.options.sourceRoot
       ? path.resolve(parsedTsConfig.options.sourceRoot)
@@ -60,6 +67,7 @@ export class SdTypescriptCompiler {
       framework,
       scriptTarget ?? ts.ScriptTarget.ES2018,
       packagePath,
+      indexTargetPath,
       logger
     );
   }
@@ -79,10 +87,22 @@ export class SdTypescriptCompiler {
         try {
           const tsFilePath = changedInfo.filePath;
           const tsFileRelativePath = path.relative(this._srcPath, changedInfo.filePath);
-          const jsFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".js");
-          const jsFilePath = path.resolve(this._distPath, jsFileRelativePath);
-          const mapFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".js.map");
-          const mapFilePath = path.resolve(this._distPath, mapFileRelativePath);
+
+
+          let jsFilePath: string;
+          let mapFilePath: string;
+
+          if (path.resolve(tsFilePath) === path.resolve(this._srcPath, "index.ts")) {
+            jsFilePath = path.resolve(this._packagePath, this._indexTargetPath);
+            mapFilePath = path.resolve(this._packagePath, this._indexTargetPath.replace(/\.js$/, ".js.map"));
+          }
+          else {
+            const jsFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".js");
+            jsFilePath = path.resolve(this._distPath, jsFileRelativePath);
+
+            const mapFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".js.map");
+            mapFilePath = path.resolve(this._distPath, mapFileRelativePath);
+          }
 
           if (changedInfo.type === "unlink") {
             if (await fs.pathExists(jsFilePath)) {
@@ -169,13 +189,15 @@ export class SdTypescriptCompiler {
     await FsWatcher.watch(
       watchPaths,
       async (changedInfos) => {
-        const newChangedInfos = changedInfos.mapMany((changedInfo) => {
-          if (path.extname(changedInfo.filePath) === ".scss") {
-            const filePaths = Object.keys(scssDepsObj).filter((key) => scssDepsObj[key].includes(changedInfo.filePath));
-            return filePaths.map((filePath) => ({type: "change" as "change", filePath}));
-          }
-          return [changedInfo];
-        }).distinct();
+        const newChangedInfos = this._framework?.startsWith("angular")
+          ? changedInfos.mapMany((changedInfo) => {
+            if (path.extname(changedInfo.filePath) === ".scss") {
+              const filePaths = Object.keys(scssDepsObj).filter((key) => scssDepsObj[key].includes(changedInfo.filePath));
+              return filePaths.map((filePath) => ({type: "change" as "change", filePath}));
+            }
+            return [changedInfo];
+          }).distinct()
+          : changedInfos;
 
         if (newChangedInfos.length < 1) {
           return;
