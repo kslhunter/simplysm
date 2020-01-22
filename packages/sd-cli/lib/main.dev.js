@@ -1,5 +1,7 @@
 require("@simplysm/sd-core-common");
 require("core-js/proposals/reflect-metadata");
+
+window.__Zone_enable_cross_context_check = true;
 require("zone.js/dist/zone");
 
 const ApplicationRef = require("@angular/core").ApplicationRef;

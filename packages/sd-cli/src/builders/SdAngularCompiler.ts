@@ -191,6 +191,7 @@ export class SdAngularCompiler extends EventEmitter {
       entry: {
         main: watch
           ? [
+            "event-source-polyfill",
             `webpack-hot-middleware/client?path=/${packageKey}/__webpack_hmr&timeout=20000&reload=true`,
             mainPath
           ]
@@ -204,6 +205,14 @@ export class SdAngularCompiler extends EventEmitter {
       module: {
         rules: [
           {
+            test: /main\.dev\.jit\.js/,
+            loader: "ts-loader",
+            options: {
+              configFile: this._tsConfigPath,
+              transpileOnly: true
+            }
+          },
+          {
             test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
             loaders
           },
@@ -214,22 +223,10 @@ export class SdAngularCompiler extends EventEmitter {
           {
             test: /\.scss$/,
             use: [
-              {
-                loader: "style-loader",
-                options: {sourceMap: parsedTsConfig.options.sourceMap}
-              },
-              {
-                loader: "css-loader",
-                options: {sourceMap: parsedTsConfig.options.sourceMap}
-              },
-              {
-                loader: "resolve-url-loader",
-                options: {sourceMap: parsedTsConfig.options.sourceMap}
-              },
-              {
-                loader: "sass-loader",
-                options: {sourceMap: parsedTsConfig.options.sourceMap}
-              }
+              "style-loader",
+              "css-loader",
+              "resolve-url-loader",
+              "sass-loader"
             ]
           },
           {
