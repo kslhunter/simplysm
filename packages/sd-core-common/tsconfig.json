@@ -7,8 +7,5 @@
       "dom"
     ],
     "outDir": "dist"
-  },
-  "files": [
-    "src/index.ts"
-  ]
+  }
 }

@@ -11,22 +11,27 @@ import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import {NextHandleFunction} from "connect";
 import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
+import {TSdFramework} from "../commons";
+import {SdWebpackInputHostWithScss} from "../plugins/SdWebpackInputHostWithScss";
 
 export class SdAngularCompiler extends EventEmitter {
   private constructor(private readonly _mode: "development" | "production",
                       private readonly _tsConfigPath: string,
                       private readonly _distPath: string,
-                      private readonly _logger: Logger,
-                      private readonly _packagePath: string) {
+                      private readonly _packagePath: string,
+                      private readonly _framework: TSdFramework | undefined,
+                      private readonly _logger: Logger) {
     super();
   }
 
   public static async createAsync(argv: {
     tsConfigPath: string;
+    framework?: TSdFramework;
     mode: "development" | "production";
   }): Promise<SdAngularCompiler> {
     const tsConfigPath = argv.tsConfigPath;
     const mode = argv.mode;
+    const framework = argv.framework;
 
     const packagePath = path.dirname(argv.tsConfigPath);
 
@@ -34,7 +39,7 @@ export class SdAngularCompiler extends EventEmitter {
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(tsConfigPath));
 
     if (tsConfig.files) {
-      throw new Error("'angular' 클라이언트는 'tsConfig.json'에 'files'가 정의되어 있지 않아야 합니다.");
+      throw new Error("앵귤라 클라이언트 패키지의 'tsConfig.json'에는 'files'가 정의되어 있지 않아야 합니다.");
     }
 
     const distPath = parsedTsConfig.options.outDir
@@ -55,8 +60,9 @@ export class SdAngularCompiler extends EventEmitter {
       mode,
       tsConfigPath,
       distPath,
-      logger,
-      packagePath
+      packagePath,
+      framework,
+      logger
     );
   }
 
@@ -93,12 +99,15 @@ export class SdAngularCompiler extends EventEmitter {
           const info = stats.toJson("errors-warnings");
 
           if (stats.hasWarnings()) {
-            this._logger.warn(
-              "컴파일 경고\n",
-              info.warnings
-                .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
-                .join(os.EOL)
-            );
+            const warnings = info.warnings.filter((item) => !item.includes("Emitted no files."));
+            if (warnings.length > 0) {
+              this._logger.warn(
+                "컴파일 경고\n",
+                warnings
+                  .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
+                  .join(os.EOL)
+              );
+            }
           }
 
           if (stats.hasErrors()) {
@@ -142,23 +151,25 @@ export class SdAngularCompiler extends EventEmitter {
   }
 
   private async _getWebpackConfigAsync(watch: boolean): Promise<webpack.Configuration> {
+    const isJit = this._framework?.endsWith("-jit");
+
     const packageKey = path.basename(this._packagePath);
-    const mainPath = path.resolve(__dirname, "../lib/main." + (watch ? "dev" : "prod") + ".js");
-    const indexPath = path.resolve(__dirname, `../lib/index.ejs`);
+    const mainPath = path.resolve(__dirname, "../../lib/main." + (watch ? (isJit ? "dev.jit" : "dev") : "prod") + ".js");
+    const indexPath = path.resolve(__dirname, `../../lib/index.ejs`);
 
     const tsConfig = await fs.readJson(this._tsConfigPath);
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(this._tsConfigPath));
 
     const loaders: webpack.RuleSetUse = ["@ngtools/webpack"];
 
-    // if (!watch) {
-    loaders.unshift({
-      loader: "@angular-devkit/build-optimizer/webpack-loader",
-      options: {
-        sourceMap: parsedTsConfig.options.sourceMap
-      }
-    });
-    // }
+    if (!isJit) {
+      loaders.unshift({
+        loader: "@angular-devkit/build-optimizer/webpack-loader",
+        options: {
+          sourceMap: parsedTsConfig.options.sourceMap
+        }
+      });
+    }
 
     return {
       mode: this._mode,
@@ -166,13 +177,13 @@ export class SdAngularCompiler extends EventEmitter {
       target: "web",
       resolve: {
         extensions: [".ts", ".js"],
-        alias: /*watch
+        alias: isJit
           ? {
             "SD_APP_MODULE": path.resolve(this._packagePath, "src/AppModule")
           }
-          : */{
-          "SD_APP_MODULE_FACTORY": path.resolve(this._packagePath, "src/AppModule.ngfactory")
-        }
+          : {
+            "SD_APP_MODULE_FACTORY": path.resolve(this._packagePath, "src/AppModule.ngfactory")
+          }
       },
       optimization: {
         minimize: false
@@ -199,6 +210,34 @@ export class SdAngularCompiler extends EventEmitter {
           {
             test: /(\\|\/)@angular(\\|\/)core(\\|\/).+\.js$/,
             parser: {system: true}
+          },
+          {
+            test: /\.scss$/,
+            use: [
+              {
+                loader: "style-loader",
+                options: {sourceMap: parsedTsConfig.options.sourceMap}
+              },
+              {
+                loader: "css-loader",
+                options: {sourceMap: parsedTsConfig.options.sourceMap}
+              },
+              {
+                loader: "resolve-url-loader",
+                options: {sourceMap: parsedTsConfig.options.sourceMap}
+              },
+              {
+                loader: "sass-loader",
+                options: {sourceMap: parsedTsConfig.options.sourceMap}
+              }
+            ]
+          },
+          {
+            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip)$/,
+            loader: "file-loader",
+            options: {
+              name: `assets/[name].[ext]${watch ? "?[hash]" : ""}`
+            }
           }
         ]
       },
@@ -220,7 +259,8 @@ export class SdAngularCompiler extends EventEmitter {
           forkTypeChecker: true,
           directTemplateLoading: true,
           tsConfigPath: this._tsConfigPath,
-          skipCodeGeneration: false, //watch,
+          skipCodeGeneration: isJit,
+          host: new SdWebpackInputHostWithScss(fs),
           compilerOptions: {
             fullTemplateTypeCheck: true,
             strictInjectionParameters: true,
@@ -229,7 +269,7 @@ export class SdAngularCompiler extends EventEmitter {
         }),
         new webpack.ContextReplacementPlugin(
           /(.+)?angular(\\|\/)core(.+)?/,
-          path.join(__dirname, "src"),
+          path.join(this._packagePath, "src"),
           {}
         )
       ]

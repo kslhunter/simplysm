@@ -1,6 +1,6 @@
 export interface ISdLibraryPackageConfig {
   type?: "library";
-  metadata?: boolean;
+  framework?: TSdFramework;
   publish?: "npm";
 }
 
@@ -13,6 +13,7 @@ export interface ISdServerPackageConfig {
 
 export interface ISdWebPackageConfig {
   type?: "web";
+  framework?: TSdFramework;
   env?: { [key: string]: string };
   configs?: { [key: string]: any };
   publish?: ISdSimplysmPublishConfig;
@@ -29,3 +30,5 @@ export interface ISdSimplysmPublishConfig {
   ssl?: boolean;
   origin?: string;
 }
+
+export type TSdFramework = "angular" | "angular-jit";

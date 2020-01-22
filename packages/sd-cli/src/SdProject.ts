@@ -81,7 +81,7 @@ export class SdProject {
         if (watch) {
           // 변경감지 시작
           await FsWatcher.watch(path.resolve(sourcePath, "**", "*"), async (changedInfos) => {
-            logger.log(`'${targetName}' 파일이 변경되었습니다.`, ...changedInfos.map((item) => `[${item.type}] ${item.filePath}`));
+            logger.log(`'${targetName}' 파일이 변경되었습니다.\n` + changedInfos.map((item) => `[${item.type}] ${item.filePath}`).join("\n"));
 
             for (const changeInfo of changedInfos) {
               if (
@@ -118,7 +118,7 @@ export class SdProject {
     logger.log(watch ? `모든 로컬 패키지 변경감지가 시작되었습니다.` : `모든 로컬 패키지 업데이트가 완료되었습니다.`);
   }
 
-  public async buildAsync(watch: boolean = false): Promise<void> {
+  public async buildAsync(watch: boolean): Promise<void> {
     const logger = Logger.get(["simplysm", "sd-cli", "build"]);
 
     logger.log("빌드 준비중...");
@@ -205,12 +205,12 @@ export class SdProject {
 
             builder.on("complete", async () => {
               await Wait.true(() =>
-                (!this._servers[pkg.npmConfig.name] || !this._servers[pkg.npmConfig.name].isClosing) &&
+                !this._servers[pkg.npmConfig.name]?.isClosing &&
                 fs.existsSync(entry)
               );
 
               const server = eval(`require(entry)`) as SdServiceServer; //tslint:disable-line:no-eval
-              server.middlewares = this._servers[pkg.npmConfig.name]?.middlewares || [];
+              server.middlewares = this._servers[pkg.npmConfig.name]?.middlewares ?? [];
               if (this._servers[pkg.npmConfig.name]) {
                 this._servers[pkg.npmConfig.name].entry = entry;
                 this._servers[pkg.npmConfig.name].server = server;
@@ -238,14 +238,15 @@ export class SdProject {
 
           const builder = await SdAngularCompiler.createAsync({
             tsConfigPath: pkg.tsConfigs.single()!.configForBuildPath,
-            mode: this._mode
+            mode: this._mode,
+            framework: pkg.config.framework
           });
 
           if (watch) {
             builder.on("complete", async () => {
               await Wait.true(() => !!this._servers[pkg.config!["serverPackage"]]?.server);
 
-              const port = this._servers[pkg.config!["serverPackage"]].server!.options!.port || 80;
+              const port = this._servers[pkg.config!["serverPackage"]].server!.options!.port ?? 80;
               logger.info(`클라이언트 열림: http://localhost:${port}/${pkg.packageKey}/`);
             });
 
@@ -270,7 +271,12 @@ export class SdProject {
         }
 
         await pkg.tsConfigs.parallelAsync(async (tsConfig) => {
-          await processWorkManager.runAsync("compile", watch, tsConfig.configForBuildPath, this._mode);
+          await processWorkManager.runAsync(
+            "compile",
+            watch,
+            tsConfig.configForBuildPath,
+            (pkg.config?.type === "library" || pkg.config?.type === "web") ? pkg.config?.framework : undefined
+          );
         });
       }),
       // 타입체크
@@ -280,7 +286,7 @@ export class SdProject {
         }
 
         await pkg.tsConfigs.parallelAsync(async (tsConfig) => {
-          await processWorkManager.runAsync("check", watch, tsConfig.configForBuildPath, pkg.config?.type === "library" ? pkg.config.metadata : undefined);
+          await processWorkManager.runAsync("check", watch, tsConfig.configForBuildPath);
         });
       })
     ]);

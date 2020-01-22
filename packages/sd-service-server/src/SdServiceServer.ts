@@ -272,7 +272,7 @@ export class SdServiceServer extends EventEmitter {
       };
     }
     else if (req.command === "addEventListener") {
-      const eventListenerId = (this._eventListeners.max((item) => item.id) || 0) + 1;
+      const eventListenerId = (this._eventListeners.max((item) => item.id) ?? 0) + 1;
 
       this._eventListeners.push({
         id: eventListenerId,

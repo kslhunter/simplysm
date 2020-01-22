@@ -1,49 +1,42 @@
-import {Logger} from "@simplysm/sd-core-node";
+import {FsUtil, FsWatcher, IFileChangeInfo, Logger} from "@simplysm/sd-core-node";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as ts from "typescript";
-import * as webpack from "webpack";
-import * as nodeExternals from "webpack-node-externals";
-import * as os from "os";
-import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
+import {SdTypescriptUtils} from "../utils/SdTypescriptUtils";
+import {MetadataCollector} from "@angular/compiler-cli";
+import {TSdFramework} from "../commons";
 
 export class SdTypescriptCompiler {
-  private constructor(private readonly _mode: "development" | "production",
-                      private readonly _tsConfigPath: string,
-                      private readonly _isNode: boolean,
+  private constructor(private readonly _srcPath: string,
                       private readonly _distPath: string,
-                      private readonly _entry: { [key: string]: string },
-                      private readonly _hasBinFile: boolean,
+                      private readonly _compilerOptions: ts.CompilerOptions,
+                      private readonly _framework: TSdFramework | undefined,
+                      private readonly _scriptTarget: ts.ScriptTarget,
+                      private readonly _packagePath: string,
                       private readonly _logger: Logger) {
   }
 
   public static async createAsync(argv: {
     tsConfigPath: string;
-    mode: "development" | "production";
+    framework: TSdFramework | undefined;
   }): Promise<SdTypescriptCompiler> {
     const tsConfigPath = argv.tsConfigPath;
-    const mode = argv.mode;
+    const framework = argv.framework;
 
     const packagePath = path.dirname(argv.tsConfigPath);
 
     const tsConfig = await fs.readJson(tsConfigPath);
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(tsConfigPath));
-    const isNode = parsedTsConfig.options.target !== ts.ScriptTarget.ES5;
+    const scriptTarget = parsedTsConfig.options.target;
+    const isNode = scriptTarget !== ts.ScriptTarget.ES5;
 
-    const npmConfigPath = path.resolve(packagePath, "package.json");
-    const npmConfig = await fs.readJson(npmConfigPath);
-    const hasBin = npmConfig.bin;
-
-    if (!tsConfig.files) {
-      throw new Error("'tsConfig.json'에 'files'가 반드시 정의되어야 합니다.");
+    if (tsConfig.files) {
+      throw new Error("라이브러리 패키지의 'tsConfig.json'에는 'files'가 정의되어 있지 않아야 합니다.");
     }
 
-    const entry = (tsConfig.files as string[]).toObject(
-      (item) => npmConfig.browser && !isNode
-        ? (path.basename(item, path.extname(item)) + ".browser")
-        : path.basename(item, path.extname(item)),
-      (item) => path.resolve(packagePath, item)
-    );
+    const srcPath = parsedTsConfig.options.sourceRoot
+      ? path.resolve(parsedTsConfig.options.sourceRoot)
+      : path.resolve(packagePath, "src");
 
     const distPath = parsedTsConfig.options.outDir
       ? path.resolve(parsedTsConfig.options.outDir)
@@ -60,12 +53,12 @@ export class SdTypescriptCompiler {
     );
 
     return new SdTypescriptCompiler(
-      mode,
-      tsConfigPath,
-      isNode,
+      srcPath,
       distPath,
-      entry,
-      hasBin,
+      parsedTsConfig.options,
+      framework,
+      scriptTarget ?? ts.ScriptTarget.ES2018,
+      packagePath,
       logger
     );
   }
@@ -78,108 +71,129 @@ export class SdTypescriptCompiler {
       this._logger.log("컴파일를 시작합니다.");
     }
 
-    const webpackConfig = await this._getWebpackConfigAsync(watch);
+    const buildAsync = async (changedInfos: IFileChangeInfo[]) => {
+      for (const changeInfo of changedInfos) {
+        const tsFilePath = changeInfo.filePath;
+        const tsFileRelativePath = path.relative(this._srcPath, changeInfo.filePath);
+        const jsFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".js");
+        const jsFilePath = path.resolve(this._distPath, jsFileRelativePath);
+        const mapFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".js.map");
+        const mapFilePath = path.resolve(this._distPath, mapFileRelativePath);
 
-    const compiler = webpack(webpackConfig);
+        if (changeInfo.type === "unlink") {
+          if (await fs.pathExists(jsFilePath)) {
+            await fs.remove(jsFilePath);
+          }
+          if (await fs.pathExists(mapFilePath)) {
+            await fs.remove(mapFilePath);
+          }
+        }
+        else {
+          const tsFileContent = await fs.readFile(tsFilePath, "utf-8");
+          const result = ts.transpileModule(tsFileContent, {
+            compilerOptions: this._compilerOptions
+          });
 
-    if (watch) {
-      compiler.hooks.invalid.tap("SdTypescriptCompiler", () => {
+          const diagnostics = result.diagnostics?.filter((item) => !item.messageText.toString().includes("Emitted no files.")) ?? [];
+
+          if (this._framework?.startsWith("angular")) {
+            const sourceFile = ts.createSourceFile(tsFilePath, tsFileContent, this._scriptTarget);
+            if (sourceFile) {
+              diagnostics.concat(await this._generateMetadataFileAsync(sourceFile));
+            }
+          }
+
+          if (diagnostics.length > 0) {
+            const messages = diagnostics.map((diagnostic) => SdTypescriptUtils.getDiagnosticMessage(diagnostic));
+
+            const warningTextArr = messages.filter((item) => item.severity === "warning")
+              .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
+
+            const errorTextArr = messages.filter((item) => item.severity === "error")
+              .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
+
+            if (warningTextArr.length > 0) {
+              this._logger.warn("컴파일 경고\n", warningTextArr.join("\n").trim());
+            }
+
+            if (errorTextArr.length > 0) {
+              this._logger.error("컴파일 오류\n", errorTextArr.join("\n").trim());
+            }
+          }
+
+          if (result.outputText) {
+            await fs.mkdirs(path.dirname(jsFilePath));
+            await fs.writeFile(jsFilePath, result.outputText);
+          }
+          else if (await fs.pathExists(jsFilePath)) {
+            await fs.remove(jsFilePath);
+          }
+          if (result.sourceMapText) {
+            await fs.mkdirs(path.dirname(mapFilePath));
+            await fs.writeFile(mapFilePath, result.sourceMapText);
+          }
+          else if (await fs.pathExists(mapFilePath)) {
+            await fs.remove(mapFilePath);
+          }
+        }
+      }
+    };
+
+    await FsWatcher.watch(
+      path.resolve(this._srcPath, "**", "*.ts"),
+      async (changedInfos) => {
         this._logger.log("컴파일에 대한 변경사항이 감지되었습니다.");
-      });
-    }
 
-    await new Promise<void>(async (resolve, reject) => {
-      const callback = (err: Error, stats: webpack.Stats) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        const info = stats.toJson("errors-warnings");
-
-        if (stats.hasWarnings()) {
-          this._logger.warn(
-            "컴파일 경고\n",
-            info.warnings
-              .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
-              .join(os.EOL)
-          );
-        }
-
-        if (stats.hasErrors()) {
-          this._logger.error(
-            "컴파일 오류\n",
-            info.errors
-              .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
-              .join(os.EOL)
-          );
-        }
+        await buildAsync(changedInfos);
 
         this._logger.log("컴파일이 완료되었습니다.");
-        resolve();
-      };
+      },
+      (err) => {
+        this._logger.error("변경감지 작업중 오류 발생\n", err);
+      }
+    );
 
-      if (watch) {
-        compiler.watch({}, callback);
-      }
-      else {
-        compiler.run(callback);
-      }
-    });
+    const fileList = await FsUtil.globAsync(path.resolve(this._srcPath, "**", "*.ts"));
+    await buildAsync(fileList.map((item) => ({filePath: item, type: "add"})));
+
+    this._logger.log("컴파일이 완료되었습니다.");
   }
 
-  private async _getWebpackConfigAsync(watch: boolean): Promise<webpack.Configuration> {
-    return {
-      mode: this._mode,
-      devtool: this._mode === "development" ? "cheap-module-source-map" : "source-map",
-      target: this._isNode ? "node" : "web",
-      node: {
-        __dirname: false
-      },
-      resolve: {
-        extensions: [".ts", ".js"]
-      },
-      optimization: {
-        minimize: false
-      },
-      entry: this._entry,
-      output: {
-        path: this._distPath,
-        filename: "[name].js",
-        libraryTarget: "umd"
-      },
-      externals: [
-        nodeExternals()
-      ],
-      module: {
-        rules: [
-          {
-            test: /\.ts$/,
-            exclude: /node_modules/,
-            use: [
-              ...this._hasBinFile ? ["shebang-loader"] : [],
-              {
-                loader: "ts-loader",
-                options: {
-                  configFile: this._tsConfigPath,
-                  transpileOnly: true
-                }
-              }
-            ]
+  private async _generateMetadataFileAsync(sourceFile: ts.SourceFile): Promise<ts.Diagnostic[]> {
+    const diagnostics: ts.Diagnostic[] = [];
+
+    if (path.resolve(sourceFile.fileName).startsWith(path.resolve(this._packagePath, "src"))) {
+      const metadata = new MetadataCollector().getMetadata(
+        sourceFile,
+        true, //TODO: 원래 false 였음 확인 필요
+        (value, tsNode) => {
+          if (value && value["__symbolic"] && value["__symbolic"] === "error") {
+            diagnostics.push({
+              file: sourceFile,
+              start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
+              messageText: value["message"],
+              category: ts.DiagnosticCategory.Error,
+              code: 0,
+              length: undefined
+            });
           }
-        ]
-      },
-      plugins: [
-        ...this._hasBinFile ? [
-          new webpack.BannerPlugin({
-            banner: "#!/usr/bin/env node",
-            raw: true,
-            entryOnly: true,
-            include: ["bin.js"]
-          })
-        ] : [],
-        ...watch ? [new SdWebpackTimeFixPlugin()] : []
-      ]
-    };
+
+          return value;
+        }
+      );
+
+      const outFilePath = path.resolve(this._distPath, path.relative(path.resolve(this._packagePath, "src"), sourceFile.fileName))
+        .replace(/\.ts$/, ".metadata.json");
+      if (metadata) {
+        const metadataJsonString = JSON.stringify(metadata);
+        await fs.mkdirs(path.dirname(outFilePath));
+        await fs.writeFile(outFilePath, metadataJsonString);
+      }
+      else {
+        await fs.remove(outFilePath);
+      }
+    }
+
+    return diagnostics;
   }
 }

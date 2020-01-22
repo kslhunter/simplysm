@@ -1,9 +1,11 @@
 import {ProcessManager} from "./ProcessManager";
 import * as child_process from "child_process";
+import {CustomError} from "@simplysm/sd-core-common";
 
 // TODO: UnitTest
 export class ProcessWorkManager {
-  private constructor(private readonly _workers: TSdWorker[]) {
+  private constructor(private readonly _workers: TSdWorker[],
+                      private readonly _binPath: string) {
   }
 
   public static async createAsync(binPath: string, count: number, notDone: boolean): Promise<ProcessWorkManager> {
@@ -14,12 +16,12 @@ export class ProcessWorkManager {
           const worker: TSdWorker = ProcessManager.fork(binPath, []) as TSdWorker;
           worker.processingCount = 1;
 
-          worker.on("message", (message) => {
-            if (message === "ready") {
+          worker.on("message", (message: { event: "ready" | "done" | "error"; body?: any }) => {
+            if (message.event === "ready") {
               worker.processingCount--;
               resolve(worker);
             }
-            if (!notDone && message === "done") {
+            if (!notDone && message.event === "done") {
               worker.processingCount--;
             }
           });
@@ -33,7 +35,7 @@ export class ProcessWorkManager {
       );
     }
 
-    return new ProcessWorkManager(await Promise.all(promiseList));
+    return new ProcessWorkManager(await Promise.all(promiseList), binPath);
   }
 
   public async runAsync(...args: any[]): Promise<child_process.ChildProcess> {
@@ -57,9 +59,12 @@ export class ProcessWorkManager {
         }
       });
 
-      worker.on("message", (message) => {
-        if (message === "done") {
+      worker.on("message", (message: { event: "ready" | "done" | "error"; body?: any }) => {
+        if (message.event === "done") {
           resolve();
+        }
+        if (message.event === "error") {
+          reject(new CustomError(message.body, `프로세스 수행중 에러 [${this._binPath} ${args.join(" ")}]`));
         }
       });
     });
@@ -73,15 +78,19 @@ export class ProcessWorkManager {
     }));
   }
 
-  public static async runWorkAsync(fn: (message: any) => Promise<void>): Promise<void> {
+  public static async defineWorkAsync(fn: (message: any) => Promise<void>): Promise<void> {
     process.on("message", async (message: any) => {
-      await fn(message);
-      process.send!("done");
+      try {
+        await fn(message);
+        process.send!({event: "done"});
+      }
+      catch (err) {
+        process.send!({event: "error", body: {name: err.name, message: err.message, stack: err.stack}});
+      }
     });
 
-    process.send!("ready");
+    process.send!({event: "ready"});
   }
-
 }
 
 type TSdWorker = child_process.ChildProcess & { processingCount: number };

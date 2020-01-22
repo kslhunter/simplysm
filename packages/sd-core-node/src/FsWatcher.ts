@@ -56,35 +56,35 @@ export class FsWatcher {
           currWatchPath,
           {recursive: watchPath.includes("**")},
           async (event, filename) => {
-            const fullPath = path.resolve(currWatchPath, filename);
-            if (watchPath.includes("*")) {
-              if (
-                !anymatch(
-                  watchPath.replace(/\\/g, "/"),
-                  fullPath.replace(/\\/g, "/")
-                )
-              ) {
-                return;
-              }
-            }
-            else {
-              if (watchPath.replace(/\\/g, "/") !== fullPath.replace(/\\/g, "/")) {
-                return;
-              }
-            }
-
-            let eventType: "add" | "change" | "unlink";
-            if (!fs.pathExistsSync(fullPath)) {
-              eventType = "unlink";
-            }
-            else if (fs.statSync(fullPath).birthtime.getTime() >= (new DateTime().tick - 300)) {
-              eventType = "add";
-            }
-            else {
-              eventType = "change";
-            }
-
             try {
+              const fullPath = path.resolve(currWatchPath, filename);
+              if (watchPath.includes("*")) {
+                if (
+                  !anymatch(
+                    watchPath.replace(/\\/g, "/"),
+                    fullPath.replace(/\\/g, "/")
+                  )
+                ) {
+                  return;
+                }
+              }
+              else {
+                if (watchPath.replace(/\\/g, "/") !== fullPath.replace(/\\/g, "/")) {
+                  return;
+                }
+              }
+
+              let eventType: "add" | "change" | "unlink";
+              if (!fs.pathExistsSync(fullPath)) {
+                eventType = "unlink";
+              }
+              else if (fs.statSync(fullPath).birthtime.getTime() >= (new DateTime().tick - 300)) {
+                eventType = "add";
+              }
+              else {
+                eventType = "change";
+              }
+
               await onWatched(eventType, fullPath);
             }
             catch (err) {

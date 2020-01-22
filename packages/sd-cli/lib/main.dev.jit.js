@@ -4,14 +4,14 @@ require("zone.js/dist/zone");
 
 const ApplicationRef = require("@angular/core").ApplicationRef;
 const platformBrowserDynamic = require("@angular/platform-browser-dynamic").platformBrowserDynamic;
-const AppModuleNgFactory = require("SD_APP_MODULE_FACTORY").AppModuleNgFactory;
+const AppModule = require("SD_APP_MODULE").AppModule;
 
 let ngModuleRef;
 
 function start() {
   module["hot"].accept();
 
-  platformBrowserDynamic().bootstrapModuleFactory(AppModuleNgFactory)
+  platformBrowserDynamic().bootstrapModule(AppModule)
     .then(mod => {
       ngModuleRef = mod;
     })

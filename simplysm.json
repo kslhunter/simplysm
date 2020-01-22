@@ -2,7 +2,7 @@
   "packages": {
     "@simplysm/sd-angular": {
       "type": "library",
-      "metadata": true,
+      "framework": "angular",
       "publish": "npm"
     },
     "@simplysm/sd-cli": {

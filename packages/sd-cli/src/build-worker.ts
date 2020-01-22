@@ -7,21 +7,20 @@ import {SdTypescriptCompiler} from "./builders/SdTypescriptCompiler";
 const logger = Logger.get(["simplysm", "sd-cli", "build-worker"]);
 
 ProcessWorkManager
-  .runWorkAsync(async (message) => {
+  .defineWorkAsync(async (message) => {
     if (message[0] === "compile") {
       const watch = message[1];
       const tsConfigPath = message[2];
-      const mode = message[3];
+      const framework = message[3];
 
-      const builder = await SdTypescriptCompiler.createAsync({tsConfigPath, mode});
+      const builder = await SdTypescriptCompiler.createAsync({tsConfigPath, framework});
       await builder.runAsync(watch);
     }
     else if (message[0] === "check") {
       const watch = message[1];
       const tsConfigPath = message[2];
-      const withMetadata = message[3];
 
-      const checker = await SdTypescriptChecker.createAsync(tsConfigPath, withMetadata);
+      const checker = await SdTypescriptChecker.createAsync(tsConfigPath);
       if (watch) {
         await checker.watchAsync();
       }

@@ -29,7 +29,7 @@ export class SdServerCompiler extends EventEmitter {
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(tsConfigPath));
 
     if (!tsConfig.files) {
-      throw new Error("'tsConfig.json'에 'files'가 반드시 정의되어야 합니다.");
+      throw new Error("서버 패키지의 'tsConfig.json'에는 'files'가 반드시 정의되어야 합니다.");
     }
 
     const entry = (tsConfig.files as string[]).toObject(

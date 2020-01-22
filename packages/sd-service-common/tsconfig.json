@@ -10,8 +10,5 @@
     "baseUrl": ".",
     "paths": {
     }
-  },
-  "files": [
-    "src/index.ts"
-  ]
+  }
 }
