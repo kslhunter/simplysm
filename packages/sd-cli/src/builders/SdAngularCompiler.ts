@@ -191,7 +191,7 @@ export class SdAngularCompiler extends EventEmitter {
       entry: {
         main: watch
           ? [
-            "event-source-polyfill",
+            "eventsource-polyfill",
             `webpack-hot-middleware/client?path=/${packageKey}/__webpack_hmr&timeout=20000&reload=true`,
             mainPath
           ]
@@ -205,7 +205,7 @@ export class SdAngularCompiler extends EventEmitter {
       module: {
         rules: [
           {
-            test: /main\.dev\.jit\.js/,
+            test: /(?:main\.dev\.jit\.js|main\.prod\.js|main\.dev\.js)$/,
             loader: "ts-loader",
             options: {
               configFile: this._tsConfigPath,

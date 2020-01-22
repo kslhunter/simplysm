@@ -1,4 +1,5 @@
 require("@simplysm/sd-core-common");
+require("@simplysm/sd-core-browser");
 require("core-js/proposals/reflect-metadata");
 
 window.__Zone_enable_cross_context_check = true;
