@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular",
-  "version": "3.1.135-0",
+  "version": "3.1.135-1",
   "description": "심플리즘 패키지 - Angular 모듈 (browser)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -9,7 +9,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-common": "3.1.135-0",
+    "@simplysm/sd-core-common": "3.1.135-1",
     "@angular/common": "^8.2.14",
     "@angular/core": "^8.2.14",
     "@angular/compiler": "^8.2.14",
