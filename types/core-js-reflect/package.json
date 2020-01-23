@@ -1,6 +1,6 @@
 {
   "name": "@simplysm-types/core-js-reflect",
-  "version": "3.1.138-0",
+  "version": "3.1.138",
   "description": "심플리즘 패키지 - core-js 의 Reflect 에 대한 타입정의",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
