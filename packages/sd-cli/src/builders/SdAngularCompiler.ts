@@ -196,6 +196,7 @@ export class SdAngularCompiler extends EventEmitter {
       entry: {
         main: watch
           ? [
+            "eventsource-polyfill",
             `webpack-hot-middleware/client?path=/${packageKey}/__webpack_hmr&timeout=20000&reload=true`,
             mainPath
           ]
