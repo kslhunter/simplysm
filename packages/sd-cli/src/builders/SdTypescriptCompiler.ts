@@ -6,23 +6,35 @@ import {SdTypescriptUtils} from "../utils/SdTypescriptUtils";
 import {MetadataCollector} from "@angular/compiler-cli";
 import {TSdFramework} from "../commons";
 import {SdAngularUtils} from "../utils/SdAngularUtils";
+import * as nodeExternals from "webpack-node-externals";
+import * as webpack from "webpack";
+import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
+import * as os from "os";
 
 export class SdTypescriptCompiler {
-  private constructor(private readonly _srcPath: string,
+  private constructor(private readonly _mode: "development" | "production",
+                      private readonly _tsConfigPath: string,
+                      private readonly _isNode: boolean,
+                      private readonly _srcPath: string,
                       private readonly _distPath: string,
+                      private readonly _entry: { [key: string]: string },
+                      private readonly _hasBinFile: boolean,
                       private readonly _compilerOptions: ts.CompilerOptions,
                       private readonly _framework: TSdFramework | undefined,
                       private readonly _scriptTarget: ts.ScriptTarget,
                       private readonly _packagePath: string,
                       private readonly _indexTargetPath: string,
+                      private readonly _npmConfig: any,
                       private readonly _logger: Logger) {
   }
 
   public static async createAsync(argv: {
     tsConfigPath: string;
+    mode: "development" | "production";
     framework: TSdFramework | undefined;
   }): Promise<SdTypescriptCompiler> {
     const tsConfigPath = argv.tsConfigPath;
+    const mode = argv.mode;
     const framework = argv.framework;
 
     const packagePath = path.dirname(argv.tsConfigPath);
@@ -32,13 +44,20 @@ export class SdTypescriptCompiler {
     const scriptTarget = parsedTsConfig.options.target;
     const isNode = scriptTarget !== ts.ScriptTarget.ES5;
 
-    if (tsConfig.files) {
-      throw new Error("라이브러리 패키지의 'tsConfig.json'에는 'files'가 정의되어 있지 않아야 합니다.");
+    if (!tsConfig.files) {
+      throw new Error("라이브러리 패키지의 'tsConfig.json'에는 'files'가 반드시 정의되어야 합니다.");
     }
-
 
     const npmConfigPath = path.resolve(packagePath, "package.json");
     const npmConfig = await fs.readJson(npmConfigPath);
+    const hasBin = !!npmConfig.bin;
+
+    const entry = (tsConfig.files as string[]).toObject(
+      (item) => npmConfig.browser && !isNode
+        ? (path.basename(item, path.extname(item)) + ".browser")
+        : path.basename(item, path.extname(item)),
+      (item) => path.resolve(packagePath, item)
+    );
 
     const indexTargetPath = npmConfig.browser && !isNode ? npmConfig.browser : npmConfig.main;
 
@@ -61,18 +80,92 @@ export class SdTypescriptCompiler {
     );
 
     return new SdTypescriptCompiler(
+      mode,
+      tsConfigPath,
+      isNode,
       srcPath,
       distPath,
+      entry,
+      hasBin,
       parsedTsConfig.options,
       framework,
       scriptTarget ?? ts.ScriptTarget.ES2018,
       packagePath,
       indexTargetPath,
+      npmConfig,
       logger
     );
   }
 
   public async runAsync(watch: boolean): Promise<void> {
+    if (this._npmConfig.browser && !this._isNode) {
+      await this._runWebpackAsync(watch);
+    }
+    else {
+      await this._runTscAsync(watch);
+    }
+  }
+
+
+  private async _runWebpackAsync(watch: boolean): Promise<void> {
+    if (watch) {
+      this._logger.log("컴파일 및 변경감지를 시작합니다.");
+    }
+    else {
+      this._logger.log("컴파일를 시작합니다.");
+    }
+
+    const webpackConfig = await this._getWebpackConfigAsync(watch);
+
+    const compiler = webpack(webpackConfig);
+
+    if (watch) {
+      compiler.hooks.invalid.tap("SdTypescriptCompiler", () => {
+        this._logger.log("컴파일에 대한 변경사항이 감지되었습니다.");
+      });
+    }
+
+    await new Promise<void>(async (resolve, reject) => {
+      const callback = (err: Error, stats: webpack.Stats) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        const info = stats.toJson("errors-warnings");
+
+        if (stats.hasWarnings()) {
+          this._logger.warn(
+            "컴파일 경고\n",
+            info.warnings
+              .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
+              .join(os.EOL)
+          );
+        }
+
+        if (stats.hasErrors()) {
+          this._logger.error(
+            "컴파일 오류\n",
+            info.errors
+              .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
+              .join(os.EOL)
+          );
+        }
+
+        this._logger.log("컴파일이 완료되었습니다.");
+        resolve();
+      };
+
+      if (watch) {
+        compiler.watch({}, callback);
+      }
+      else {
+        compiler.run(callback);
+      }
+    });
+  }
+
+  private async _runTscAsync(watch: boolean): Promise<void> {
     if (watch) {
       this._logger.log("컴파일 및 변경감지를 시작합니다.");
     }
@@ -218,6 +311,61 @@ export class SdTypescriptCompiler {
     await buildAsync(fileList.map((item) => ({filePath: item, type: "add"})));
 
     this._logger.log("컴파일이 완료되었습니다.");
+  }
+
+  private async _getWebpackConfigAsync(watch: boolean): Promise<webpack.Configuration> {
+    return {
+      mode: this._mode,
+      devtool: this._mode === "development" ? "cheap-module-source-map" : "source-map",
+      target: this._isNode ? "node" : "web",
+      node: {
+        __dirname: false
+      },
+      resolve: {
+        extensions: [".ts", ".js"]
+      },
+      optimization: {
+        minimize: false
+      },
+      entry: this._entry,
+      output: {
+        path: this._distPath,
+        filename: "[name].js",
+        libraryTarget: "umd"
+      },
+      externals: [
+        nodeExternals()
+      ],
+      module: {
+        rules: [
+          {
+            test: /\.ts$/,
+            exclude: /node_modules/,
+            use: [
+              ...this._hasBinFile ? ["shebang-loader"] : [],
+              {
+                loader: "ts-loader",
+                options: {
+                  configFile: this._tsConfigPath,
+                  transpileOnly: true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      plugins: [
+        ...this._hasBinFile ? [
+          new webpack.BannerPlugin({
+            banner: "#!/usr/bin/env node",
+            raw: true,
+            entryOnly: true,
+            include: ["bin.js"]
+          })
+        ] : [],
+        ...watch ? [new SdWebpackTimeFixPlugin()] : []
+      ]
+    };
   }
 
   private async _generateMetadataFileAsync(sourceFile: ts.SourceFile): Promise<ts.Diagnostic[]> {

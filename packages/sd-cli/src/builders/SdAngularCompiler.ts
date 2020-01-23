@@ -128,12 +128,17 @@ export class SdAngularCompiler extends EventEmitter {
       if (watch) {
         devMiddleware = WebpackDevMiddleware(compiler, {
           publicPath: webpackConfig.output!.publicPath!,
-          logLevel: "silent"
+          logLevel: "silent",
+          watchOptions: {
+            aggregateTimeout: 300,
+            poll: 1000
+          }
         });
 
         hotMiddleware = WebpackHotMiddleware(compiler, {
           path: `/${path.basename(this._packagePath)}/__webpack_hmr`,
-          log: false
+          log: false,
+          overlay: true
         });
 
         compiler.hooks.failed.tap("SdAngularCompiler", (err) => {
@@ -191,7 +196,6 @@ export class SdAngularCompiler extends EventEmitter {
       entry: {
         main: watch
           ? [
-            "eventsource-polyfill",
             `webpack-hot-middleware/client?path=/${packageKey}/__webpack_hmr&timeout=20000&reload=true`,
             mainPath
           ]

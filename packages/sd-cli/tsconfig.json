@@ -24,5 +24,9 @@
         "../sd-service-server/src/index.ts"
       ]
     }
-  }
+  },
+  "files": [
+    "src/bin.ts",
+    "src/build-worker.ts"
+  ]
 }

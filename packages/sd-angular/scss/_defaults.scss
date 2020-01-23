@@ -39,63 +39,63 @@ code {
 @each $key1, $val1 in $theme {
   @each $key2, $val2 in $val1 {
     .sd-bg-#{$key1}-#{$key2} {
-      background: $val2;
+      background: $val2 !important;
     }
   }
 }
 
 @each $key, $val in $trans-brightness {
   .sd-bg-trans-#{$key} {
-    background: $val;
+    background: $val !important;
   }
 }
 
 @each $key, $val in $trans-brightness-rev {
   .sd-bg-trans-rev-#{$key} {
-    background: $val;
+    background: $val !important;
   }
 }
 
 .sd-bg-white {
-  background: white;
+  background: white !important;
 }
 
 .sd-bg-default {
-  background: $sd-bg-color;
+  background: $sd-bg-color !important;
 }
 
 // FONT SIZE
 @each $key, $val in $font-size {
   .sd-font-size-#{$key} {
-    font-size: $val;
+    font-size: $val !important;
   }
 }
 
 @each $h in (h1, h2, h3, h4, h5, h6) {
   #{$h} {
-    font-size: get($font-size, $h);
-    line-height: $line-height;
-    margin: 0;
+    font-size: get($font-size, $h) !important;
+    line-height: $line-height !important;
+    margin: 0 !important;
   }
 }
 
 // TEXT COLOR
 @each $key, $val in $text-brightness {
   .sd-text-#{$key} {
-    color: var(--text-#{$val});
+    color: var(--text-#{$val}) !important;
   }
 }
 
 @each $key, $val in $text-brightness-rev {
   .sd-text-rev-#{$key} {
-    color: var(--text-rev-#{$val});
+    color: var(--text-rev-#{$val}) !important;
   }
 }
 
 @each $key1, $val1 in $theme {
   @each $key2, $val2 in $val1 {
     .sd-text-#{$key1}-#{$key2} {
-      color: $val2;
+      color: $val2 !important;
     }
   }
 }
@@ -104,26 +104,26 @@ code {
 @each $key1, $val1 in $theme {
   @each $key2, $val2 in $val1 {
     .sd-border-#{$key1}-#{$key2} {
-      border: 1px solid $val2;
+      border: 1px solid $val2 !important;
     }
   }
 }
 
 @each $key, $val in $trans-brightness {
   .sd-border-#{$key} {
-    border: 1px solid $val;
+    border: 1px solid $val !important;
   }
 }
 
 @each $key, $val in $trans-brightness-rev {
   .sd-border-rev-#{$key} {
-    border: 1px solid $val;
+    border: 1px solid $val !important;
   }
 }
 
 .sd-border-0,
 .sd-border-none {
-  border: none;
+  border: none !important;
 }
 
 // BORDER WITH DIRECTION
@@ -131,37 +131,37 @@ code {
   @each $key1, $val1 in $theme {
     @each $key2, $val2 in $val1 {
       .sd-border-#{$dir}-#{$key1}-#{$key2} {
-        border-#{$dir}: 1px solid $val2;
+        border-#{$dir}: 1px solid $val2 !important;
       }
     }
   }
 
   @each $key, $val in $trans-brightness {
     .sd-border-#{$dir}-#{$key} {
-      border-#{$dir}: 1px solid $val;
+      border-#{$dir}: 1px solid $val !important;
     }
   }
 
   @each $key, $val in $trans-brightness-rev {
     .sd-border-#{$dir}-rev-#{$key} {
-      border-#{$dir}: 1px solid $val;
+      border-#{$dir}: 1px solid $val !important;
     }
   }
 
   .sd-border-#{$dir}-0,
   .sd-border-#{$dir}-none {
-    border-#{$dir}: none;
+    border-#{$dir}: none !important;
   }
 }
 
 // GAP (PADDING, MARGIN)
 @each $key, $val in $gap {
   .sd-padding-#{$key} {
-    padding: $val;
+    padding: $val !important;
   }
 
   .sd-margin-#{$key} {
-    margin: $val;
+    margin: $val !important;
   }
 }
 
@@ -169,11 +169,11 @@ code {
 @each $dir in (top, right, bottom, left) {
   @each $key, $val in $gap {
     .sd-padding-#{$dir}-#{$key} {
-      padding-#{$dir}: $val;
+      padding-#{$dir}: $val !important;
     }
 
     .sd-margin-#{$dir}-#{$key} {
-      margin-#{$dir}: $val;
+      margin-#{$dir}: $val !important;
     }
   }
 }
@@ -182,11 +182,11 @@ code {
 @each $keyV, $valV in $gap {
   @each $keyH, $valH in $gap {
     .sd-padding-#{$keyV}-#{$keyH} {
-      padding: $valV $valH;
+      padding: $valV $valH !important;
     }
 
     .sd-margin-#{$keyV}-#{$keyH} {
-      margin: $valV $valH;
+      margin: $valV $valH !important;
     }
   }
 }
@@ -194,23 +194,23 @@ code {
 // GAP (PADDING, MARGIN) WITH [V | H]
 @each $key, $val in $gap {
   .sd-padding-v-#{$key} {
-    padding-top: $val;
-    padding-bottom: $val;
+    padding-top: $val !important;
+    padding-bottom: $val !important;
   }
 
   .sd-padding-h-#{$key} {
-    padding-left: $val;
-    padding-right: $val;
+    padding-left: $val !important;
+    padding-right: $val !important;
   }
 
   .sd-margin-v-#{$key} {
-    padding-top: $val;
-    padding-bottom: $val;
+    padding-top: $val !important;
+    padding-bottom: $val !important;
   }
 
   .sd-margin-h-#{$key} {
-    padding-left: $val;
-    padding-right: $val;
+    padding-left: $val !important;
+    padding-right: $val !important;
   }
 }
 
@@ -220,11 +220,11 @@ code {
     @each $keyB, $valB in $gap {
       @each $keyL, $valL in $gap {
         .sd-padding-#{$keyT}-#{$keyR}-#{$keyB}-#{$keyL} {
-          padding: $valT $valR $valB $valL;
+          padding: $valT $valR $valB $valL !important;
         }
 
         .sd-margin-#{$keyT}-#{$keyR}-#{$keyB}-#{$keyL} {
-          margin: $valT $valR $valB $valL;
+          margin: $valT $valR $valB $valL !important;
         }
       }
     }

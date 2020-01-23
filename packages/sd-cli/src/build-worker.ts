@@ -11,9 +11,10 @@ ProcessWorkManager
     if (message[0] === "compile") {
       const watch = message[1];
       const tsConfigPath = message[2];
-      const framework = message[3];
+      const mode = message[3];
+      const framework = message[4];
 
-      const builder = await SdTypescriptCompiler.createAsync({tsConfigPath, framework});
+      const builder = await SdTypescriptCompiler.createAsync({tsConfigPath, mode, framework});
       await builder.runAsync(watch);
     }
     else if (message[0] === "check") {

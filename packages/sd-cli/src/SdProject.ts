@@ -275,6 +275,7 @@ export class SdProject {
             "compile",
             watch,
             tsConfig.configForBuildPath,
+            this._mode,
             (pkg.config?.type === "library" || pkg.config?.type === "web") ? pkg.config?.framework : undefined
           );
         });
