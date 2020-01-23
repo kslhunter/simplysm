@@ -210,6 +210,15 @@ export class SdAngularCompiler extends EventEmitter {
       module: {
         rules: [
           {
+            test: /\.js$/,
+            enforce: "pre",
+            loader: "source-map-loader",
+            exclude: [
+              /node_modules[\\/](?!@simplysm)/,
+              /(ngfactory|ngstyle)\.js$/
+            ]
+          },
+          {
             test: /(?:main\.dev\.jit\.js|main\.prod\.js|main\.dev\.js)$/,
             loader: "ts-loader",
             options: {

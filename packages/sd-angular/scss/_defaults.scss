@@ -13,218 +13,216 @@ html, body {
 }
 
 body {
-  background: $sd-bg-color;
-  color: get($text-brightness, default);
-  font-family: $font-family;
-  font-size: get($font-size, default);
-  line-height: $line-height;
+  background: var(--sd-background-color);
+  color: var(--text-brightness-default);
+  font-family: var(--font-family);
+  font-size: var(--font-size-default);
+  line-height: var(--line-height);
 }
 
 // DEFAULT TAGS
 pre, code {
-  font-size: get($font-size, default);
-  line-height: $line-height;
+  font-size: var(--font-size-default);
+  line-height: var(--line-height);
   margin: 0;
 }
 
 pre {
-  font-family: $font-family;
+  font-family: var(--font-family);
 }
 
 code {
-  font-family: $font-family-monospace;
+  font-family: var(--font-family-monospace);
 }
 
 // BACKGROUND
-@each $key1, $val1 in $theme {
-  @each $key2, $val2 in $val1 {
-    .sd-bg-#{$key1}-#{$key2} {
-      background: $val2 !important;
+@each $theme in $arr-theme-color {
+  @each $brightness in $arr-theme-brightness {
+    .sd-background-color-#{$theme}-#{$brightness} {
+      background: var(--theme-color-#{$theme}-#{$brightness}) !important;
     }
   }
 }
 
-@each $key, $val in $trans-brightness {
-  .sd-bg-trans-#{$key} {
-    background: $val !important;
+@each $brightness in $arr-trans-brightness {
+  .sd-background-trans-#{$brightness} {
+    background: var(--trans-brightness-#{$brightness}) !important;
   }
 }
 
-@each $key, $val in $trans-brightness-rev {
-  .sd-bg-trans-rev-#{$key} {
-    background: $val !important;
+@each $brightness in $arr-trans-brightness-rev {
+  .sd-background-trans-rev-#{$brightness} {
+    background: var(--trans-brightness-rev-#{$brightness}) !important;
   }
 }
 
-.sd-bg-white {
+.sd-background-color-white {
   background: white !important;
 }
 
-.sd-bg-default {
-  background: $sd-bg-color !important;
+.sd-background-default {
+  background: var(--sd-background-color) !important;
 }
 
 // FONT SIZE
-@each $key, $val in $font-size {
-  .sd-font-size-#{$key} {
-    font-size: $val !important;
+@each $size in $arr-font-size {
+  .sd-font-size-#{$size} {
+    font-size: var(--font-size-#{$size}) !important;
   }
 }
 
 @each $h in (h1, h2, h3, h4, h5, h6) {
   #{$h} {
-    font-size: get($font-size, $h) !important;
-    line-height: $line-height !important;
+    font-size: var(--font-size-#{$h}) !important;
+    line-height: var(--line-height) !important;
     margin: 0 !important;
   }
 }
 
 // TEXT COLOR
-@each $key, $val in $text-brightness {
-  .sd-text-#{$key} {
-    color: var(--text-#{$val}) !important;
+@each $brightness in $arr-text-brightness {
+  .sd-text-brightness-#{$brightness} {
+    color: var(--text-brightness-#{$brightness}) !important;
   }
 }
 
-@each $key, $val in $text-brightness-rev {
-  .sd-text-rev-#{$key} {
-    color: var(--text-rev-#{$val}) !important;
+@each $brightness in $arr-text-brightness-rev {
+  .sd-text-brightness-rev-#{$brightness} {
+    color: var(--text-brightness-rev-#{$brightness}) !important;
   }
 }
 
-@each $key1, $val1 in $theme {
-  @each $key2, $val2 in $val1 {
-    .sd-text-#{$key1}-#{$key2} {
-      color: $val2 !important;
+@each $theme in $arr-theme-color {
+  @each $brightness in $arr-theme-brightness {
+    .sd-text-color-#{$theme}-#{$brightness} {
+      color: var(--text-brightness-#{$theme}-#{$brightness}) !important;
     }
   }
 }
 
 // BORDER
-@each $key1, $val1 in $theme {
-  @each $key2, $val2 in $val1 {
-    .sd-border-#{$key1}-#{$key2} {
-      border: 1px solid $val2 !important;
+@each $theme in $arr-theme-color {
+  @each $brightness in $arr-theme-brightness {
+    .sd-border-color-#{$theme}-#{$brightness} {
+      border: 1px solid var(--theme-color-#{$theme}-#{$brightness}) !important;
     }
   }
 }
 
-@each $key, $val in $trans-brightness {
-  .sd-border-#{$key} {
-    border: 1px solid $val !important;
+@each $brightness in $arr-trans-brightness {
+  .sd-border-brightness-#{$brightness} {
+    border: 1px solid var(--trans-brightness-#{$brightness}) !important;
   }
 }
 
-@each $key, $val in $trans-brightness-rev {
-  .sd-border-rev-#{$key} {
-    border: 1px solid $val !important;
+@each $brightness in $arr-trans-brightness-rev {
+  .sd-border-brightness-rev-#{$brightness} {
+    border: 1px solid var(--trans-brightness-rev-#{$brightness}) !important;
   }
 }
 
-.sd-border-0,
 .sd-border-none {
   border: none !important;
 }
 
 // BORDER WITH DIRECTION
 @each $dir in (top, right, bottom, left) {
-  @each $key1, $val1 in $theme {
-    @each $key2, $val2 in $val1 {
-      .sd-border-#{$dir}-#{$key1}-#{$key2} {
-        border-#{$dir}: 1px solid $val2 !important;
+  @each $theme in $arr-theme-color {
+    @each $brightness in $arr-theme-brightness {
+      .sd-border-#{$dir}-color-#{$theme}-#{$brightness} {
+        border-#{$dir}: 1px solid var(--theme-color-#{$theme}-#{$brightness}) !important;
       }
     }
   }
 
-  @each $key, $val in $trans-brightness {
-    .sd-border-#{$dir}-#{$key} {
-      border-#{$dir}: 1px solid $val !important;
+  @each $brightness in $arr-trans-brightness {
+    .sd-border-#{$dir}-brightness-#{$brightness} {
+      border-#{$dir}: 1px solid var(--trans-brightness-#{$brightness}) !important;
     }
   }
 
-  @each $key, $val in $trans-brightness-rev {
-    .sd-border-#{$dir}-rev-#{$key} {
-      border-#{$dir}: 1px solid $val !important;
+  @each $brightness in $arr-trans-brightness-rev {
+    .sd-border-#{$dir}-brightness-rev-#{$brightness} {
+      border-#{$dir}: 1px solid var(--trans-brightness-rev-#{$brightness}) !important;
     }
   }
 
-  .sd-border-#{$dir}-0,
   .sd-border-#{$dir}-none {
     border-#{$dir}: none !important;
   }
 }
 
 // GAP (PADDING, MARGIN)
-@each $key, $val in $gap {
-  .sd-padding-#{$key} {
-    padding: $val !important;
+@each $gap in $arr-gap {
+  .sd-padding-#{$gap} {
+    padding: var(--gap-#{$gap}) !important;
   }
 
-  .sd-margin-#{$key} {
-    margin: $val !important;
+  .sd-margin-#{$gap} {
+    margin: var(--gap-#{$gap}) !important;
   }
 }
 
 // GAP (PADDING, MARGIN) WITH DIRECTION
 @each $dir in (top, right, bottom, left) {
-  @each $key, $val in $gap {
-    .sd-padding-#{$dir}-#{$key} {
-      padding-#{$dir}: $val !important;
+  @each $gap in $arr-gap {
+    .sd-padding-#{$dir}-#{$gap} {
+      padding-#{$dir}: var(--gap-#{$gap}) !important;
     }
 
-    .sd-margin-#{$dir}-#{$key} {
-      margin-#{$dir}: $val !important;
+    .sd-margin-#{$dir}-#{$gap} {
+      margin-#{$dir}: var(--gap-#{$gap}) !important;
     }
   }
 }
 
 // GAP (PADDING, MARGIN) WITH [V & H]
-@each $keyV, $valV in $gap {
-  @each $keyH, $valH in $gap {
-    .sd-padding-#{$keyV}-#{$keyH} {
-      padding: $valV $valH !important;
+@each $gapV in $arr-gap {
+  @each $gapH in $arr-gap {
+    .sd-padding-#{$gapV}-#{$gapH} {
+      padding: var(--gap-#{$gapV}) var(--gap-#{$gapH}) !important;
     }
 
-    .sd-margin-#{$keyV}-#{$keyH} {
-      margin: $valV $valH !important;
+    .sd-margin-#{$gapV}-#{$gapH} {
+      margin: var(--gap-#{$gapV}) var(--gap-#{$gapH}) !important;
     }
   }
 }
 
 // GAP (PADDING, MARGIN) WITH [V | H]
-@each $key, $val in $gap {
-  .sd-padding-v-#{$key} {
-    padding-top: $val !important;
-    padding-bottom: $val !important;
+@each $gap in $arr-gap {
+  .sd-padding-v-#{$gap} {
+    padding-top: var(--gap-#{$gap}) !important;
+    padding-bottom: var(--gap-#{$gap}) !important;
   }
 
-  .sd-padding-h-#{$key} {
-    padding-left: $val !important;
-    padding-right: $val !important;
+  .sd-padding-h-#{$gap} {
+    padding-left: var(--gap-#{$gap}) !important;
+    padding-right: var(--gap-#{$gap}) !important;
   }
 
-  .sd-margin-v-#{$key} {
-    padding-top: $val !important;
-    padding-bottom: $val !important;
+  .sd-margin-v-#{$gap} {
+    padding-top: var(--gap-#{$gap}) !important;
+    padding-bottom: var(--gap-#{$gap}) !important;
   }
 
-  .sd-margin-h-#{$key} {
-    padding-left: $val !important;
-    padding-right: $val !important;
+  .sd-margin-h-#{$gap} {
+    padding-left: var(--gap-#{$gap}) !important;
+    padding-right: var(--gap-#{$gap}) !important;
   }
 }
 
 // GAP (PADDING, MARGIN) WITH [ALL DIRECTION]
-@each $keyT, $valT in $gap {
-  @each $keyR, $valR in $gap {
-    @each $keyB, $valB in $gap {
-      @each $keyL, $valL in $gap {
-        .sd-padding-#{$keyT}-#{$keyR}-#{$keyB}-#{$keyL} {
-          padding: $valT $valR $valB $valL !important;
+@each $gapT in $arr-gap {
+  @each $gapR in $arr-gap {
+    @each $gapB in $arr-gap {
+      @each $gapL in $arr-gap {
+        .sd-padding-#{$gapT}-#{$gapR}-#{$gapB}-#{$gapL} {
+          padding: var(--gap-#{$gapT}) var(--gap-#{$gapR}) var(--gap-#{$gapB}) var(--gap-#{$gapL}) !important;
         }
 
-        .sd-margin-#{$keyT}-#{$keyR}-#{$keyB}-#{$keyL} {
-          margin: $valT $valR $valB $valL !important;
+        .sd-margin-#{$gapT}-#{$gapR}-#{$gapB}-#{$gapL} {
+          margin: var(--gap-#{$gapT}) var(--gap-#{$gapR}) var(--gap-#{$gapB}) var(--gap-#{$gapL}) !important;
         }
       }
     }

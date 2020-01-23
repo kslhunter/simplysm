@@ -10,6 +10,7 @@ const AppModule = require("SD_APP_MODULE").AppModule;
 let ngModuleRef;
 
 function start() {
+  // TODO: IE 에서 새로고침 반응이 너무 느린 현상 수정 필요
   module["hot"].accept();
 
   platformBrowserDynamic().bootstrapModule(AppModule)
@@ -17,7 +18,7 @@ function start() {
       ngModuleRef = mod;
     })
     .catch(err => {
-      console.error(err);
+      window.document.body.innerHTML = err;
     });
 
   module["hot"].dispose(() => {

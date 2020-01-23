@@ -1,3 +1,6 @@
+
+const symbol = `sd-type-validate`;
+
 export function PropertyGetSetDecoratorBase<O, K extends keyof O>(arg: {
   beforeSet?: (target: O, propertyName: K, oldValue: O[K], newValue: O[K]) => ((() => O[K]) | void);
   afterSet?: (target: O, propertyName: K, oldValue: O[K], newValue: O[K]) => void;
@@ -8,10 +11,10 @@ export function PropertyGetSetDecoratorBase<O, K extends keyof O>(arg: {
     const prevGetter = prevDescriptor?.get;
     const prevSetter = prevDescriptor?.set;
 
-    let _val = target[propertyName];
+    Reflect.defineMetadata(symbol, target[propertyName], target, propertyName as string);
 
     const getter = function (this: O): O[K] {
-      const value = prevGetter ? prevGetter.bind(this)() : _val;
+      const value = prevGetter ? prevGetter.bind(this)() : Reflect.getMetadata(symbol, this, propertyName as string);
 
       if (arg.get) {
         arg.get(this, propertyName, value);
@@ -21,7 +24,7 @@ export function PropertyGetSetDecoratorBase<O, K extends keyof O>(arg: {
     };
 
     const setter = function (this: O, value: O[K]): void {
-      const prevValue = prevGetter ? prevGetter.bind(this)() : _val;
+      const prevValue = prevGetter ? prevGetter.bind(this)() : Reflect.getMetadata(symbol, this, propertyName as string);
 
       let realValue = value;
       if (arg.beforeSet) {
@@ -35,7 +38,7 @@ export function PropertyGetSetDecoratorBase<O, K extends keyof O>(arg: {
         prevSetter.bind(this)(realValue);
       }
       else {
-        _val = realValue;
+        Reflect.defineMetadata(symbol, realValue, this, propertyName as string);
       }
 
       if (arg.afterSet) {

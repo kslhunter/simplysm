@@ -1,0 +1,119 @@
+:root {
+  // THEME COLOR
+  --theme-color-grey-lightest: var(--color-grey-100);
+  --theme-color-grey-lighter: var(--color-grey-300);
+  --theme-color-grey-light: var(--color-grey-400);
+  --theme-color-grey-default: var(--color-grey-500);
+  --theme-color-grey-dark: var(--color-grey-600);
+  --theme-color-grey-darker: var(--color-grey-700);
+  --theme-color-grey-darkest: var(--color-grey-800);
+
+  --theme-color-bluegrey-lightest: var(--color-bluegrey-200);
+  --theme-color-bluegrey-lighter: var(--color-bluegrey-300);
+  --theme-color-bluegrey-light: var(--color-bluegrey-400);
+  --theme-color-bluegrey-default: var(--color-bluegrey-500);
+  --theme-color-bluegrey-dark: var(--color-bluegrey-600);
+  --theme-color-bluegrey-darker: var(--color-bluegrey-800);
+  --theme-color-bluegrey-darkest: var(--color-bluegrey-900);
+
+  --theme-color-primary-lightest: var(--color-deep-purple-50);
+  --theme-color-primary-lighter: var(--color-deep-purple-100);
+  --theme-color-primary-light: var(--color-deep-purple-200);
+  --theme-color-primary-default: var(--color-deep-purple-500);
+  --theme-color-primary-dark: var(--color-deep-purple-600);
+  --theme-color-primary-darker: var(--color-deep-purple-700);
+  --theme-color-primary-darkest: var(--color-deep-purple-800);
+
+  --theme-color-secondary-lightest: var(--color-teal-50);
+  --theme-color-secondary-lighter: var(--color-teal-100);
+  --theme-color-secondary-light: var(--color-teal-200);
+  --theme-color-secondary-default: var(--color-teal-500);
+  --theme-color-secondary-dark: var(--color-teal-600);
+  --theme-color-secondary-darker: var(--color-teal-700);
+  --theme-color-secondary-darkest: var(--color-teal-800);
+
+  --theme-color-info-lightest: var(--color-blue-50);
+  --theme-color-info-lighter: var(--color-blue-100);
+  --theme-color-info-light: var(--color-blue-200);
+  --theme-color-info-default: var(--color-blue-500);
+  --theme-color-info-dark: var(--color-blue-600);
+  --theme-color-info-darker: var(--color-blue-700);
+  --theme-color-info-darkest: var(--color-blue-800);
+
+  --theme-color-success-lightest: var(--color-green-50);
+  --theme-color-success-lighter: var(--color-green-100);
+  --theme-color-success-light: var(--color-green-300);
+  --theme-color-success-default: var(--color-green-500);
+  --theme-color-success-dark: var(--color-green-600);
+  --theme-color-success-darker: var(--color-green-700);
+  --theme-color-success-darkest: var(--color-green-800);
+
+  --theme-color-warning-lightest: var(--color-orange-50);
+  --theme-color-warning-lighter: var(--color-orange-100);
+  --theme-color-warning-light: var(--color-orange-200);
+  --theme-color-warning-default: var(--color-orange-600);
+  --theme-color-warning-dark: var(--color-orange-700);
+  --theme-color-warning-darker: var(--color-orange-800);
+  --theme-color-warning-darkest: var(--color-orange-900);
+
+  --theme-color-danger-lightest: var(--color-red-50);
+  --theme-color-danger-lighter: var(--color-red-100);
+  --theme-color-danger-light: var(--color-red-200);
+  --theme-color-danger-default: var(--color-red-500);
+  --theme-color-danger-dark: var(--color-red-700);
+  --theme-color-danger-darker: var(--color-red-800);
+  --theme-color-danger-darkest: var(--color-red-900);
+
+
+  // TRANSPARENT RGBA COLOR
+  --trans-brightness-darkest: rgba(0, 0, 0, .5);
+  --trans-brightness-darker: rgba(0, 0, 0, .4);
+  --trans-brightness-dark: rgba(0, 0, 0, .3);
+  --trans-brightness-default: rgba(0, 0, 0, .2);
+
+  --trans-brightness-rev-default: rgba(255, 255, 255, .1);
+  --trans-brightness-rev-light: rgba(255, 255, 255, .2);
+  --trans-brightness-rev-lighter: rgba(255, 255, 255, .3);
+  --trans-brightness-rev-lightest: rgba(255, 255, 255, .4);
+
+
+  // TEXT COLOR
+  --text-brightness-dark: black;
+  --text-brightness-default: rgba(0, 0, 0, .87);
+  --text-brightness-light: rgba(0, 0, 0, .60);
+  --text-brightness-lighter: rgba(0, 0, 0, .38);
+  --text-brightness-lightest: rgba(0, 0, 0, .2);
+
+  --text-brightness-rev-default: white;
+  --text-brightness-rev-dark: rgba(255, 255, 255, .7);
+  --text-brightness-rev-darker: rgba(255, 255, 255, .5);
+
+  // FONT STYLE
+  --font-size-lg: 14px;
+  --font-size-default: 12px;
+  --font-size-sm: 11px;
+  --font-size-h1: 24px;
+  --font-size-h2: 18px;
+  --font-size-h3: 16px;
+  --font-size-h4: 14px;
+  --font-size-h5: 12px;
+  --font-size-h6: 11px;
+
+  --line-height: 1em;
+  --font-family: '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif;
+  --font-family-monospace: monospace;
+
+  // GAP STYLE
+  --gap-0: 0;
+  --gap-xxs: 1px;
+  --gap-xs: 2px;
+  --gap-sm: 4px;
+  --gap-default: 6px;
+  --gap-lg: 8px;
+  --gap-xl: 12px;
+  --gap-xxl: 18px;
+
+  // DEFAULT STYLES
+  --sd-background-color: var(--theme-color-grey-lightest);
+  --sd-border-color: var(--theme-color-grey-lighter);
+}
