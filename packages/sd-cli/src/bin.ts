@@ -5,7 +5,6 @@ import {Logger} from "@simplysm/sd-core-node";
 import {SdProject} from "./SdProject";
 
 // TODO: test 에는 tsconfig.build.json 이 생성되지 않도록 수정
-
 // TODO: 모든 package.json 의 의존성 패키지 버전을 yarn.lock 에 설치된 버전으로 덮어쓰기 기능 추가
 
 const argv = yargs
@@ -64,6 +63,12 @@ const argv = yargs
           }
         })
   )
+  .command(
+    "depcheck",
+    "프로젝트의 각 패키지에 대한 의존성 문제를 판단합니다.",
+    (cmd) =>
+      cmd.version(false)
+  )
   .argv;
 
 const logger = Logger.get(["simplysm", "sd-cli"]);
@@ -101,6 +106,13 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
 
     const project = await SdProject.createAsync("production", options);
     await project.publishAsync(build);
+  }
+  else if (argv._[0] === "depcheck") {
+    const optionsText = argv.options as string | undefined;
+    const options = optionsText?.split(",")?.map((item) => item.trim()) ?? [];
+
+    const project = await SdProject.createAsync("production", options);
+    await project.depcheckAsync();
   }
   else {
     throw new Error(`명령어가 잘못되었습니다.\n\n\t${argv._[0]}\n`);

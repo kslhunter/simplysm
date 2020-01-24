@@ -16,13 +16,10 @@ declare global {
 
     mapMany(): T;
 
-    //TODO: UnitTest
     mapAsync<R>(selector: (item: T, index: number) => Promise<R>): Promise<R[]>;
 
-    //TODO: UnitTest
     mapManyAsync<R>(selector: (item: T, index: number) => Promise<R[]>): Promise<R[]>;
 
-    //TODO: UnitTest
     parallelAsync(fn: (item: T, index: number) => Promise<void>): Promise<void>;
 
     groupBy<K>(keySelector: (item: T, index: number) => K): { key: K; values: T[] }[];
@@ -33,10 +30,8 @@ declare global {
 
     toMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V>;
 
-    // TODO: UnitTest
     toObject(keySelector: (item: T, index: number) => string): { [key: string]: T };
 
-    // TODO: UnitTest
     toObject<V>(keySelector: (item: T, index: number) => string, valueSelector: (item: T, index: number) => V): { [key: string]: V };
 
     distinct(): T[];

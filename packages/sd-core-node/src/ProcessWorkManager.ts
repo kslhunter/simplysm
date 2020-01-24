@@ -2,7 +2,6 @@ import {ProcessManager} from "./ProcessManager";
 import * as child_process from "child_process";
 import {CustomError} from "@simplysm/sd-core-common";
 
-// TODO: UnitTest
 export class ProcessWorkManager {
   private constructor(private readonly _workers: TSdWorker[],
                       private readonly _binPath: string) {

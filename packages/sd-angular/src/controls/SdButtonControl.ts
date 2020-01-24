@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {PropertyValidate} from "@simplysm/sd-core-common";
+import {SdInputValidate} from "../commons/SdInputValidate";
 
 @Component({
   selector: "sd-button",
@@ -15,7 +15,7 @@ import {PropertyValidate} from "@simplysm/sd-core-common";
 
     :host {
       display: block;
-      padding: var(--gap-default);
+      padding: var(--gap-sm) var(--gap-default);
       text-align: center;
       background: white;
       border: 1px solid var(--sd-border-color);
@@ -30,31 +30,42 @@ import {PropertyValidate} from "@simplysm/sd-core-common";
         background: var(--theme-color-grey-lighter);
       }
 
-
       @each $theme in $arr-theme-color {
         &[sd-theme=#{$theme}] {
           background: var(--theme-color-#{$theme}-default);
+          border-color: var(--theme-color-#{$theme}-default);
           color: var(--text-brightness-rev-default);
-
 
           &:hover {
             background: var(--theme-color-#{$theme}-dark);
+            border-color: var(--theme-color-#{$theme}-dark);
           }
 
           &:active {
             background: var(--theme-color-#{$theme}-darker);
+            border-color: var(--theme-color-#{$theme}-darker);
           }
         }
+      }
+
+      &[sd-inline] {
+        display: inline-block;
+        width: auto;
       }
     }
   `]
 })
 export class SdButtonControl {
   @Input()
-  @PropertyValidate({
+  @SdInputValidate({
     type: String,
-    includes: ["primary", /*"secondary", */"info", "success", "warning", "danger"]
+    includes: ["primary", "secondary", "info", "success", "warning", "danger"]
   })
   @HostBinding("attr.sd-theme")
   public theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger";
+
+  @Input()
+  @SdInputValidate(Boolean)
+  @HostBinding("attr.sd-inline")
+  public inline?: boolean;
 }

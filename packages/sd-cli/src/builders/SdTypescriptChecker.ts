@@ -12,19 +12,32 @@ export class SdTypescriptChecker {
 
   public constructor(private readonly _tsConfigPath: string,
                      private readonly _packagePath: string,
+                     private readonly _srcPath: string,
+                     private readonly _distPath: string,
                      private readonly _logger: Logger) {
   }
 
   public static async createAsync(tsConfigPath: string): Promise<SdTypescriptChecker> {
     const packagePath = path.dirname(tsConfigPath);
     const packageKey = path.basename(packagePath);
-    const parsedTsConfig = ts.parseJsonConfigFileContent(await fs.readJson(tsConfigPath), ts.sys, path.dirname(tsConfigPath));
+
+    const tsConfig = await fs.readJson(tsConfigPath);
+    tsConfig.compilerOptions.rootDir = tsConfig.compilerOptions.rootDir || "src";
+    tsConfig.compilerOptions.outDir = tsConfig.compilerOptions.outDir || "dist";
+
+    const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(tsConfigPath));
     const isNode = parsedTsConfig.options.target !== ts.ScriptTarget.ES5;
+
+    const srcPath = path.resolve(parsedTsConfig.options.rootDir!);
+    const distPath = path.resolve(parsedTsConfig.options.outDir!);
+
     const logger = Logger.get(["simplysm", "sd-cli", packageKey, isNode ? "node" : "browser", "check"]);
 
     return new SdTypescriptChecker(
       tsConfigPath,
       packagePath,
+      srcPath,
+      distPath,
       logger
     );
   }
@@ -78,11 +91,8 @@ export class SdTypescriptChecker {
           prevAfterProgramCreate(program);
         }
 
-        const watchFilesClone = ObjectUtil.clone(watchFiles);
-        watchFiles.clear();
-
+        // 타입체크 메시지 구성
         const messages = diagnostics.map((diagnostic) => SdTypescriptUtils.getDiagnosticMessage(diagnostic));
-
         diagnostics.clear();
 
         const warningTextArr = messages.filter((item) => item.severity === "warning")
@@ -91,6 +101,10 @@ export class SdTypescriptChecker {
         const errorTextArr = messages.filter((item) => item.severity === "error")
           .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
 
+        const watchFilesClone = ObjectUtil.clone(watchFiles);
+        watchFiles.clear();
+
+        // TSLINT 메시지 구성
         if (watchFilesClone.length > 0) {
           const lintFailures = await this._lintAsync(watchFilesClone);
           for (const lintFailure of lintFailures) {
@@ -113,6 +127,7 @@ export class SdTypescriptChecker {
           }
         }
 
+        // 메시지 출력
         if (warningTextArr.length > 0) {
           this._logger.warn("타입체크 경고\n", warningTextArr.join("\n").trim());
         }
@@ -121,13 +136,28 @@ export class SdTypescriptChecker {
           this._logger.error("타입체크 오류\n", errorTextArr.join("\n").trim());
         }
 
+        // 삭제된 소스의 d.ts 파일 삭제
+        const deletedItems = watchFilesClone
+          .filter((item) => item.eventKind === ts.FileWatcherEventKind.Deleted);
+        for (const deletedItem of deletedItems) {
+          const tsFileRelativePath = path.relative(this._srcPath, deletedItem.fileName);
+          const descFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".d.ts");
+          const descFilePath = path.resolve(this._distPath, descFileRelativePath);
+
+          if (await fs.pathExists(descFilePath)) {
+            await fs.remove(descFilePath);
+          }
+        }
+
         this._logger.log("타입체크가 완료되었습니다.");
         resolve();
       };
 
       const prevWatchFile = host.watchFile;
       host.watchFile = (filePath: string, callback: ts.FileWatcherCallback, pollingInterval?: number): ts.FileWatcher => {
-        watchFiles.push({eventKind: ts.FileWatcherEventKind.Created, fileName: filePath});
+        if (fs.pathExistsSync(filePath)) {
+          watchFiles.push({eventKind: ts.FileWatcherEventKind.Created, fileName: filePath});
+        }
 
         return prevWatchFile(
           filePath,

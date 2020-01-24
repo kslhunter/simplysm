@@ -40,6 +40,9 @@ export class SdTypescriptCompiler {
     const packagePath = path.dirname(argv.tsConfigPath);
 
     const tsConfig = await fs.readJson(tsConfigPath);
+    tsConfig.compilerOptions.rootDir = tsConfig.compilerOptions.rootDir || "src";
+    tsConfig.compilerOptions.outDir = tsConfig.compilerOptions.outDir || "dist";
+
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(tsConfigPath));
     const scriptTarget = parsedTsConfig.options.target;
     const isNode = scriptTarget !== ts.ScriptTarget.ES5;
@@ -59,15 +62,10 @@ export class SdTypescriptCompiler {
       (item) => path.resolve(packagePath, item)
     );
 
+    const srcPath = path.resolve(parsedTsConfig.options.rootDir!);
+    const distPath = path.resolve(parsedTsConfig.options.outDir!);
+
     const indexTargetPath = npmConfig.browser && !isNode ? npmConfig.browser : npmConfig.main;
-
-    const srcPath = parsedTsConfig.options.sourceRoot
-      ? path.resolve(parsedTsConfig.options.sourceRoot)
-      : path.resolve(packagePath, "src");
-
-    const distPath = parsedTsConfig.options.outDir
-      ? path.resolve(parsedTsConfig.options.outDir)
-      : path.resolve(packagePath, "dist");
 
     const logger = Logger.get(
       [
@@ -105,7 +103,6 @@ export class SdTypescriptCompiler {
       await this._runTscAsync(watch);
     }
   }
-
 
   private async _runWebpackAsync(watch: boolean): Promise<void> {
     if (watch) {
@@ -181,13 +178,14 @@ export class SdTypescriptCompiler {
           const tsFilePath = changedInfo.filePath;
           const tsFileRelativePath = path.relative(this._srcPath, changedInfo.filePath);
 
-
           let jsFilePath: string;
           let mapFilePath: string;
+          let metadataFilePath: string;
 
           if (path.resolve(tsFilePath) === path.resolve(this._srcPath, "index.ts")) {
             jsFilePath = path.resolve(this._packagePath, this._indexTargetPath);
             mapFilePath = path.resolve(this._packagePath, this._indexTargetPath.replace(/\.js$/, ".js.map"));
+            metadataFilePath = path.resolve(this._packagePath, this._indexTargetPath.replace(/\.js$/, ".metadata.json"));
           }
           else {
             const jsFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".js");
@@ -195,6 +193,9 @@ export class SdTypescriptCompiler {
 
             const mapFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".js.map");
             mapFilePath = path.resolve(this._distPath, mapFileRelativePath);
+
+            const metadataFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".metadata.json");
+            metadataFilePath = path.resolve(this._distPath, metadataFileRelativePath);
           }
 
           if (changedInfo.type === "unlink") {
@@ -203,6 +204,9 @@ export class SdTypescriptCompiler {
             }
             if (await fs.pathExists(mapFilePath)) {
               await fs.remove(mapFilePath);
+            }
+            if (await fs.pathExists(metadataFilePath)) {
+              await fs.remove(metadataFilePath);
             }
 
             delete scssDepsObj[tsFilePath];
@@ -222,6 +226,7 @@ export class SdTypescriptCompiler {
             }
 
             const result = ts.transpileModule(tsFileContent, {
+              fileName: tsFilePath,
               compilerOptions: this._compilerOptions
             });
 
@@ -230,7 +235,7 @@ export class SdTypescriptCompiler {
             if (this._framework?.startsWith("angular")) {
               const sourceFile = ts.createSourceFile(tsFilePath, tsFileContent, this._scriptTarget);
               if (sourceFile) {
-                diagnostics.concat(await this._generateMetadataFileAsync(sourceFile));
+                diagnostics.concat(await this._generateMetadataFileAsync(sourceFile, metadataFilePath));
               }
             }
 
@@ -368,13 +373,13 @@ export class SdTypescriptCompiler {
     };
   }
 
-  private async _generateMetadataFileAsync(sourceFile: ts.SourceFile): Promise<ts.Diagnostic[]> {
+  private async _generateMetadataFileAsync(sourceFile: ts.SourceFile, outFilePath: string): Promise<ts.Diagnostic[]> {
     const diagnostics: ts.Diagnostic[] = [];
 
     if (path.resolve(sourceFile.fileName).startsWith(path.resolve(this._packagePath, "src"))) {
       const metadata = new MetadataCollector().getMetadata(
         sourceFile,
-        true, //TODO: 원래 false 였음 확인 필요
+        true,
         (value, tsNode) => {
           if (value && value["__symbolic"] && value["__symbolic"] === "error") {
             diagnostics.push({
@@ -391,8 +396,6 @@ export class SdTypescriptCompiler {
         }
       );
 
-      const outFilePath = path.resolve(this._distPath, path.relative(path.resolve(this._packagePath, "src"), sourceFile.fileName))
-        .replace(/\.ts$/, ".metadata.json");
       if (metadata) {
         const metadataJsonString = JSON.stringify(metadata);
         await fs.mkdirs(path.dirname(outFilePath));

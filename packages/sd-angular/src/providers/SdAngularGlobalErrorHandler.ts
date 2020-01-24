@@ -1,9 +1,9 @@
-import {ErrorHandler, Injectable} from "@angular/core";
-import {Logger} from "@simplysm/sd-core-browser";
+import {ApplicationRef, ErrorHandler, Injectable, NgModuleRef} from "@angular/core";
 
 @Injectable()
 export class SdAngularGlobalErrorHandler implements ErrorHandler {
-  private readonly _logger = Logger.get(["simplysm", "sd-angular"]);
+  public constructor(private readonly _ngModuleRef: NgModuleRef<any>) {
+  }
 
   public handleError(error: any): void {
     const err: Error = error.rejection ? error.rejection : error;
@@ -20,10 +20,10 @@ export class SdAngularGlobalErrorHandler implements ErrorHandler {
     divEl.style.overflow = "auto";
     divEl.style.padding = "4px";
 
-    divEl.innerHTML = `<pre style="font-size: 12px; font-family: 'D2Coding', monospace; line-height: 1.4em;">${err.stack}</pre>`;
+    divEl.innerHTML = `<pre style="font-size: 12px; font-family: monospace; line-height: 1.4em;">${err.stack}</pre>`;
 
-    window.document.body.appendChild(divEl);
+    this._ngModuleRef.injector.get(ApplicationRef)["_views"][0]["rootNodes"][0].appendChild(divEl);
 
-    this._logger.error(err);
+    throw err;
   }
 }

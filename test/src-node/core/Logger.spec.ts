@@ -229,7 +229,4 @@ describe("(node) core.Logger", () => {
 
     Logger.setHistoryLength(0);
   });
-
-  // TODO: 그룹 랜덤 색상
-  // TODO: 그룹 색상 지정
 });

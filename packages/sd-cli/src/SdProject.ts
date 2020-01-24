@@ -11,8 +11,7 @@ import {NextHandleFunction} from "connect";
 import decache from "decache";
 import {SdServerCompiler} from "./builders/SdServerCompiler";
 import {SdAngularCompiler} from "./builders/SdAngularCompiler";
-
-// TODO: 각 package.json 에 사용하지 않는 패키지가 있는지 확인
+import * as depcheck from "depcheck";
 
 export class SdProject {
   private readonly _servers: {
@@ -189,6 +188,8 @@ export class SdProject {
             const entry = path.resolve(pkg.packagePath, pkg.npmConfig.main);
 
             builder.on("change", async () => {
+              logger.log(`서버를 재시작 합니다`);
+
               if (this._servers[pkg.npmConfig.name]) {
                 this._servers[pkg.npmConfig.name].isClosing = true;
                 if (this._servers[pkg.npmConfig.name].server) {
@@ -204,6 +205,7 @@ export class SdProject {
             });
 
             builder.on("complete", async () => {
+              // 서버 켜기
               await Wait.true(() =>
                 !this._servers[pkg.npmConfig.name]?.isClosing &&
                 fs.existsSync(entry)
@@ -223,6 +225,7 @@ export class SdProject {
                   isClosing: false
                 };
               }
+              logger.info(`서버가 시작되었습니다.`);
             });
           }
 
@@ -244,7 +247,10 @@ export class SdProject {
 
           if (watch) {
             builder.on("complete", async () => {
-              await Wait.true(() => !!this._servers[pkg.config!["serverPackage"]]?.server);
+              await Wait.true(() => {
+                const serverObj = this._servers[pkg.config!["serverPackage"]];
+                return !!(serverObj && !serverObj.isClosing && serverObj.server);
+              });
 
               const port = this._servers[pkg.config!["serverPackage"]].server!.options!.port ?? 80;
               logger.info(`클라이언트 열림: http://localhost:${port}/${pkg.packageKey}/`);
@@ -392,6 +398,55 @@ export class SdProject {
         throw new NotImplementError();
       }
     });
+  }
+
+  public async depcheckAsync(): Promise<void> {
+    // TODO: 각 package.json 에 사용하지 않는 패키지가 있는지 확인하는 로직 구현
+
+    await Promise.all(this.packages.map(async (pkg) => {
+      const packageLogger = Logger.get(["simplysm", "sd-cli", pkg.packageKey, "depcheck"]);
+
+      await depcheck(path.resolve(process.cwd(), pkg.packagePath), {
+        ignoreMatches: [
+          "@types/node",
+          "typescript-tslint-plugin"
+        ]
+      }, (unused) => {
+        const excludeFn = (isDev: boolean, dep: string) => {
+          if (
+            isDev &&
+            dep.includes("types/") &&
+            Object.keys(unused.using).includes(dep.split("/").last()!)
+          ) {
+            return true;
+          }
+          if (
+            isDev &&
+            Object.keys(unused.using).some((item) => item.startsWith("@angular")) &&
+            ["codelyzer", "@angular/compiler"].includes(dep)
+          ) {
+            return true;
+          }
+
+          // TODO
+
+          return false;
+        };
+
+        if (unused.dependencies.filter((item) => !excludeFn(false, item)).length > 0) {
+          packageLogger.warn("unused dep", unused.dependencies.filter((item) => !excludeFn(false, item))); // an array containing the unused dependencies
+        }
+        if (unused.devDependencies.filter((item) => !excludeFn(true, item)).length > 0) {
+          packageLogger.warn("unused devDep", unused.devDependencies.filter((item) => !excludeFn(true, item))); // an array containing the unused devDependencies
+        }
+        /*logger.log(unused.missing); // a lookup containing the dependencies missing in `package.json` and where they are used
+        logger.log(unused.using); // a lookup indicating each dependency is used by which files
+        logger.log(unused.invalidFiles); // files that cannot access or parse
+        logger.log(unused.invalidDirs); // directories that cannot access*/
+      });
+
+      packageLogger.log(`의존성 확인이 완료되었습니다.`);
+    }));
   }
 
   private async _parallelPackagesByDepAsync(cb: (pkg: SdPackage) => Promise<void>): Promise<void> {

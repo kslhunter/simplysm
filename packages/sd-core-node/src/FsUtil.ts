@@ -17,7 +17,6 @@ export class FsUtil {
     });
   }
 
-  // TODO: UnitTest
   public static async globAsync(pattern: string): Promise<string[]>;
   public static async globAsync(pattern: string, options: glob.IOptions): Promise<string[]>;
   public static async globAsync(pattern: string, options?: glob.IOptions): Promise<string[]> {

@@ -1,4 +1,3 @@
-
 const symbol = `sd-type-validate`;
 
 export function PropertyGetSetDecoratorBase<O, K extends keyof O>(arg: {

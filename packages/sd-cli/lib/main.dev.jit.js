@@ -18,41 +18,43 @@ function start() {
       ngModuleRef = mod;
     })
     .catch(err => {
-      window.document.body.innerHTML = err;
+      console.error(err);
     });
 
   module["hot"].dispose(() => {
-    // console.clear();
-    const appRef = ngModuleRef.injector.get(ApplicationRef);
+    if (ngModuleRef) {
+      // console.clear();
+      const appRef = ngModuleRef.injector.get(ApplicationRef);
 
-    // 새 엘리먼트 넣기
-    const prevEls = appRef.components.map(cmp => cmp.location.nativeElement);
-    for (const prevEl of prevEls) {
-      const newEl = document.createElement(prevEl.tagName);
-      prevEl.parentNode.insertBefore(newEl, prevEl);
-    }
+      // 새 엘리먼트 넣기
+      const prevEls = appRef.components.map(cmp => cmp.location.nativeElement);
+      for (const prevEl of prevEls) {
+        const newEl = document.createElement(prevEl.tagName);
+        prevEl.parentNode.insertBefore(newEl, prevEl);
+      }
 
-    // 이전 스타일 삭제
-    const prevNgStyleEls = Array.from(document.head.querySelectorAll(":scope > style"))
-      .filter(styleEl => styleEl.innerText.indexOf("_ng") !== -1);
+      // 이전 스타일 삭제
+      const prevNgStyleEls = Array.from(document.head.querySelectorAll(":scope > style"))
+        .filter(styleEl => styleEl.innerText.indexOf("_ng") !== -1);
 
-    for (const prevNgStyleEl of prevNgStyleEls) {
-      document.head.removeChild(prevNgStyleEl);
-    }
+      for (const prevNgStyleEl of prevNgStyleEls) {
+        document.head.removeChild(prevNgStyleEl);
+      }
 
-    // 이전 ngModule 지우기
-    try {
-      ngModuleRef.destroy();
-    }
-    catch (err) {
-    }
-
-    // 이전 엘리먼트 삭제
-    for (const prevEl of prevEls) {
+      // 이전 ngModule 지우기
       try {
-        prevEl.parentNode.removeChild(prevEl);
+        ngModuleRef.destroy();
       }
       catch (err) {
+      }
+
+      // 이전 엘리먼트 삭제
+      for (const prevEl of prevEls) {
+        try {
+          prevEl.parentNode.removeChild(prevEl);
+        }
+        catch (err) {
+        }
       }
     }
   });

@@ -13,6 +13,7 @@ import * as url from "url";
 import * as path from "path";
 import * as mime from "mime";
 import {ISdServiceErrorResponse, ISdServiceRequest, ISdServiceResponse} from "@simplysm/sd-service-common";
+import * as net from "net";
 
 export class SdServiceServer extends EventEmitter {
   private _wsServer?: WebSocket.Server;
@@ -20,6 +21,9 @@ export class SdServiceServer extends EventEmitter {
   private readonly _logger: Logger;
   public middlewares: NextHandleFunction[] = [];
   public readonly rootPath: string;
+
+  private readonly _httpConnections: net.Socket[] = [];
+  private readonly _wsConnections: WebSocket[] = [];
 
   private readonly _eventListeners: ISdServiceServerEventListener[] = [];
 
@@ -52,6 +56,12 @@ export class SdServiceServer extends EventEmitter {
       });
 
       this._wsServer.on("connection", async (conn, connReq) => {
+        this._wsConnections.push(conn);
+
+        conn.on("close", () => {
+          this._wsConnections.remove(conn);
+        });
+
         try {
           await this._onSocketConnectionAsync(conn, connReq);
         }
@@ -83,6 +93,14 @@ export class SdServiceServer extends EventEmitter {
         }
       });
 
+      this._httpServer!.on("connection", (conn) => {
+        this._httpConnections.push(conn);
+
+        conn.on("close", () => {
+          this._httpConnections.remove(conn);
+        });
+      });
+
       this._httpServer!.listen(this.options?.port, () => {
         this.emit("ready");
         resolve();
@@ -94,9 +112,18 @@ export class SdServiceServer extends EventEmitter {
   public async closeAsync(): Promise<void> {
     this._eventListeners.clear();
 
+    if (this._wsConnections.length > 0) {
+      await new Promise<void>((resolve) => {
+        for (const wsConnection of this._wsConnections) {
+          wsConnection.close();
+        }
+      });
+    }
+
     if (this._wsServer) {
       await new Promise<void>((resolve, reject) => {
         this._wsServer!.close((err) => {
+          console.log("close", 3);
           if (err) {
             reject(err);
             return;
@@ -106,9 +133,20 @@ export class SdServiceServer extends EventEmitter {
       });
     }
 
+    if (this._httpConnections.length > 0) {
+      await new Promise<void>((resolve) => {
+        for (const httpConnection of this._httpConnections) {
+          httpConnection.end(() => {
+            resolve();
+          });
+        }
+      });
+    }
+
     if (this._httpServer?.listening) {
       await new Promise<void>((resolve, reject) => {
         this._httpServer!.close((err) => {
+          console.log("close", 5);
           if (err) {
             reject(err);
             return;
@@ -120,13 +158,6 @@ export class SdServiceServer extends EventEmitter {
   }
 
   private async _onSocketConnectionAsync(conn: WebSocket, connReq: http.IncomingMessage): Promise<void> {
-    /*const rootPath = this._options?.rootPath ?? process.cwd();
-    const config = await this._getConfigAsync(rootPath);
-    const availableOrigins = config.origins;
-    if (!availableOrigins?.includes(connReq.headers.origin)) {
-      throw new Error(`등록되지 않은 'URL'에서 클라이언트의 연결 요청을 받았습니다: ${connReq.headers.origin}`);
-    }*/
-
     this._logger.log(`클라이언트의 연결 요청을 받았습니다 : ${connReq.headers.origin}`);
 
     const wsConn = new SdServiceServerConnection(conn, this.rootPath);

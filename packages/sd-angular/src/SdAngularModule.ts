@@ -2,16 +2,19 @@ import {ErrorHandler, NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {SdButtonControl} from "./controls/SdButtonControl";
 import {SdAngularGlobalErrorHandler} from "./providers/SdAngularGlobalErrorHandler";
+import {SdFormControl} from "./controls/SdFormControl";
 
 @NgModule({
   imports: [
     CommonModule
   ],
   declarations: [
-    SdButtonControl
+    SdButtonControl,
+    SdFormControl
   ],
   exports: [
-    SdButtonControl
+    SdButtonControl,
+    SdFormControl
   ],
   providers: [
     {provide: ErrorHandler, useClass: SdAngularGlobalErrorHandler}

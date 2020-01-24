@@ -139,7 +139,7 @@ export class SdServiceServerConnection extends EventEmitter {
     }
 
     await new Promise<void>((resolve, reject) => {
-      // TODO: 크면 분할
+      // TODO(편의성): 크면 분할
       this._conn.send(JsonConvert.stringify(res), (err) => {
         if (err) {
           reject(err);

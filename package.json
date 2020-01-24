@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "3.1.140",
+  "version": "3.1.141-19",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -17,6 +17,7 @@
     "test": "yarn _sd-cli_ test",
     "publish": "yarn _sd-cli_ publish",
     "build+publish": "yarn _sd-cli_ publish --build",
+    "depcheck": "yarn _sd-cli_ depcheck",
     "--": "",
     "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --require=ts-node/register --require=tsconfig-paths/register packages/sd-cli/src/bin.ts"
   },
