@@ -1,6 +1,5 @@
 import {FsUtil, FsWatcher, IFileChangeInfo, Logger} from "@simplysm/sd-core-node";
 import * as path from "path";
-import * as fs from "fs-extra";
 import * as ts from "typescript";
 import {SdTypescriptUtils} from "../utils/SdTypescriptUtils";
 import {MetadataCollector} from "@angular/compiler-cli";
@@ -39,7 +38,7 @@ export class SdTypescriptCompiler {
 
     const packagePath = path.dirname(argv.tsConfigPath);
 
-    const tsConfig = await fs.readJson(tsConfigPath);
+    const tsConfig = await FsUtil.readJsonAsync(tsConfigPath);
     tsConfig.compilerOptions.rootDir = tsConfig.compilerOptions.rootDir || "src";
     tsConfig.compilerOptions.outDir = tsConfig.compilerOptions.outDir || "dist";
 
@@ -52,7 +51,7 @@ export class SdTypescriptCompiler {
     }
 
     const npmConfigPath = path.resolve(packagePath, "package.json");
-    const npmConfig = await fs.readJson(npmConfigPath);
+    const npmConfig = await FsUtil.readJsonAsync(npmConfigPath);
     const hasBin = !!npmConfig.bin;
 
     const entry = (tsConfig.files as string[]).toObject(
@@ -199,20 +198,20 @@ export class SdTypescriptCompiler {
           }
 
           if (changedInfo.type === "unlink") {
-            if (await fs.pathExists(jsFilePath)) {
-              await fs.remove(jsFilePath);
+            if (FsUtil.exists(jsFilePath)) {
+              await FsUtil.removeAsync(jsFilePath);
             }
-            if (await fs.pathExists(mapFilePath)) {
-              await fs.remove(mapFilePath);
+            if (FsUtil.exists(mapFilePath)) {
+              await FsUtil.removeAsync(mapFilePath);
             }
-            if (await fs.pathExists(metadataFilePath)) {
-              await fs.remove(metadataFilePath);
+            if (FsUtil.exists(metadataFilePath)) {
+              await FsUtil.removeAsync(metadataFilePath);
             }
 
             delete scssDepsObj[tsFilePath];
           }
           else {
-            let tsFileContent = await fs.readFile(tsFilePath, "utf-8");
+            let tsFileContent = await FsUtil.readFileAsync(tsFilePath);
             if (this._framework?.startsWith("angular")) {
               try {
                 const scssResult = SdAngularUtils.replaceScssToCss(tsFilePath, tsFileContent);
@@ -258,18 +257,18 @@ export class SdTypescriptCompiler {
             }
 
             if (result.outputText) {
-              await fs.mkdirs(path.dirname(jsFilePath));
-              await fs.writeFile(jsFilePath, result.outputText);
+              await FsUtil.mkdirsAsync(path.dirname(jsFilePath));
+              await FsUtil.writeFileAsync(jsFilePath, result.outputText);
             }
-            else if (await fs.pathExists(jsFilePath)) {
-              await fs.remove(jsFilePath);
+            else if (FsUtil.exists(jsFilePath)) {
+              await FsUtil.removeAsync(jsFilePath);
             }
             if (result.sourceMapText) {
-              await fs.mkdirs(path.dirname(mapFilePath));
-              await fs.writeFile(mapFilePath, result.sourceMapText);
+              await FsUtil.mkdirsAsync(path.dirname(mapFilePath));
+              await FsUtil.writeFileAsync(mapFilePath, result.sourceMapText);
             }
-            else if (await fs.pathExists(mapFilePath)) {
-              await fs.remove(mapFilePath);
+            else if (FsUtil.exists(mapFilePath)) {
+              await FsUtil.removeAsync(mapFilePath);
             }
           }
         }
@@ -284,7 +283,7 @@ export class SdTypescriptCompiler {
       watchPaths.push(path.resolve(this._packagePath, "scss", "**", "*.scss"));
     }
 
-    await FsWatcher.watch(
+    await FsWatcher.watchAsync(
       watchPaths,
       async (changedInfos) => {
         const newChangedInfos = this._framework?.startsWith("angular")
@@ -398,11 +397,11 @@ export class SdTypescriptCompiler {
 
       if (metadata) {
         const metadataJsonString = JSON.stringify(metadata);
-        await fs.mkdirs(path.dirname(outFilePath));
-        await fs.writeFile(outFilePath, metadataJsonString);
+        await FsUtil.mkdirsAsync(path.dirname(outFilePath));
+        await FsUtil.writeFileAsync(outFilePath, metadataJsonString);
       }
       else {
-        await fs.remove(outFilePath);
+        await FsUtil.removeAsync(outFilePath);
       }
     }
 

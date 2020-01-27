@@ -1,7 +1,6 @@
 import {EventEmitter} from "events";
 import * as https from "https";
 import * as http from "http";
-import * as fs from "fs-extra";
 import * as WebSocket from "ws";
 import {FsUtil, Logger, ProcessManager} from "@simplysm/sd-core-node";
 import {JsonConvert, Type} from "@simplysm/sd-core-common";
@@ -46,7 +45,7 @@ export class SdServiceServer extends EventEmitter {
 
       this._httpServer = this.options?.ssl
         ? https.createServer({
-          pfx: await fs.readFile(this.options.ssl.pfx),
+          pfx: await FsUtil.readFileAsync(this.options.ssl.pfx),
           passphrase: this.options.ssl.passphrase
         })
         : http.createServer();
@@ -210,7 +209,7 @@ export class SdServiceServer extends EventEmitter {
           const urlPath = decodeURI(urlObj.pathname!.slice(1));
           const localPath = path.resolve(this.rootPath, "www", urlPath);
 
-          if (!await fs.pathExists(localPath)) {
+          if (!FsUtil.exists(localPath)) {
             const errorMessage = `파일을 찾을 수 없습니다.`;
             this._responseErrorHtml(res, 404, errorMessage);
             next(new Error(`${errorMessage} (${localPath})`));
@@ -227,22 +226,22 @@ export class SdServiceServer extends EventEmitter {
           let filePath: string;
 
           // 'url'이 디렉토리일 경우, index.html 파일 사용
-          if ((await fs.lstat(localPath)).isDirectory()) {
+          if ((await FsUtil.lstatAsync(localPath)).isDirectory()) {
             filePath = path.resolve(localPath, "index.html");
           }
           else {
             filePath = localPath;
           }
 
-          if (!await fs.pathExists(filePath)) {
+          if (!FsUtil.exists(filePath)) {
             const errorMessage = `파일을 찾을 수 없습니다.`;
             this._responseErrorHtml(res, 404, errorMessage);
             next(new Error(`${errorMessage} (${filePath})`));
             return;
           }
 
-          const fileStream = fs.createReadStream(filePath);
-          const indexFileSize = (await fs.lstat(filePath)).size;
+          const fileStream = FsUtil.createReadStream(filePath);
+          const indexFileSize = (await FsUtil.lstatAsync(filePath)).size;
 
           res.setHeader("Content-Length", indexFileSize);
           res.setHeader("Content-Type", mime.getType(filePath)!);
@@ -277,7 +276,7 @@ export class SdServiceServer extends EventEmitter {
     if (req.command === "md5") {
       const filePath = req[0];
 
-      const md5 = (await fs.pathExists(filePath))
+      const md5 = FsUtil.exists(filePath)
         ? await FsUtil.getMd5Async(filePath)
         : undefined;
 

@@ -1,6 +1,6 @@
-import {Logger} from "@simplysm/sd-core-node";
+import {FsUtil, Logger} from "@simplysm/sd-core-node";
 import * as path from "path";
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import * as ts from "typescript";
 import * as webpack from "webpack";
 import * as os from "os";
@@ -35,7 +35,7 @@ export class SdAngularCompiler extends EventEmitter {
 
     const packagePath = path.dirname(argv.tsConfigPath);
 
-    const tsConfig = await fs.readJson(tsConfigPath);
+    const tsConfig = await FsUtil.readJsonAsync(tsConfigPath);
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(tsConfigPath));
 
     if (tsConfig.files) {
@@ -162,7 +162,7 @@ export class SdAngularCompiler extends EventEmitter {
     const mainPath = path.resolve(__dirname, "../../lib/main." + (watch ? (isJit ? "dev.jit" : "dev") : "prod") + ".js");
     const indexPath = path.resolve(__dirname, `../../lib/index.ejs`);
 
-    const tsConfig = await fs.readJson(this._tsConfigPath);
+    const tsConfig = await FsUtil.readJsonAsync(this._tsConfigPath);
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(this._tsConfigPath));
 
     const loaders: webpack.RuleSetUse = ["@ngtools/webpack"];

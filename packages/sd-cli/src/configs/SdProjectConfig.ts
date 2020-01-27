@@ -1,6 +1,6 @@
-import * as fs from "fs-extra";
 import {ObjectUtil} from "@simplysm/sd-core-common";
 import {TSdPackageConfig} from "../commons";
+import {FsUtil} from "@simplysm/sd-core-node";
 
 export class SdProjectConfig {
   public get packages(): { [packageKey: string]: TSdPackageConfig } {
@@ -19,7 +19,7 @@ export class SdProjectConfig {
   }
 
   public static async loadAsync(configFilePath: string, mode: "development" | "production", options: string[]): Promise<SdProjectConfig> {
-    const config = await fs.readJson(configFilePath);
+    const config = await FsUtil.readJsonAsync(configFilePath);
     for (const packageName of Object.keys(config.packages)) {
       // extends 처리
       if (config.packages[packageName].extends) {

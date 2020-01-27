@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-core-common",
-  "version": "3.1.141-19",
+  "version": "3.1.141-50",
   "description": "심플리즘 패키지 - 코어 모듈 (browser/node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -13,8 +13,8 @@
     "core-js": "^3.6.4"
   },
   "devDependencies": {
-    "@types/node": "^13.1.8",
     "@types/core-js": "^2.5.2",
+    "@types/node": "^13.1.8",
     "tslint": "^5.20.1",
     "typescript": "^3.7.4",
     "typescript-tslint-plugin": "^0.5.5"

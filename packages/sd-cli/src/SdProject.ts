@@ -4,7 +4,6 @@ import * as path from "path";
 import {SdPackage} from "./SdPackage";
 import {FsUtil, FsWatcher, Logger, ProcessManager, ProcessWorkManager} from "@simplysm/sd-core-node";
 import * as semver from "semver";
-import * as fs from "fs-extra";
 import {NotImplementError, Wait} from "@simplysm/sd-core-common";
 import {SdServiceServer} from "@simplysm/sd-service-server";
 import {NextHandleFunction} from "connect";
@@ -72,14 +71,14 @@ export class SdProject {
 
         // 로컬 업데이트 설정에 따라, 가져올 소스 경로 추출
         const sourcePath = path.resolve(this._config.localUpdates![localUpdateKey].replace(/\*/g, targetName));
-        if (!fs.pathExistsSync(sourcePath)) {
+        if (!FsUtil.exists(sourcePath)) {
           logger.warn(`소스경로를 찾을 수 없어 무시됩니다(${sourcePath})`);
           return;
         }
 
         if (watch) {
           // 변경감지 시작
-          await FsWatcher.watch(path.resolve(sourcePath, "**", "*"), async (changedInfos) => {
+          await FsWatcher.watchAsync(path.resolve(sourcePath, "**", "*"), async (changedInfos) => {
             logger.log(`'${targetName}' 파일이 변경되었습니다.\n` + changedInfos.map((item) => `[${item.type}] ${item.filePath}`).join("\n"));
 
             for (const changeInfo of changedInfos) {
@@ -93,10 +92,10 @@ export class SdProject {
               const targetFilePath = path.resolve(targetPath, path.relative(sourcePath, changeInfo.filePath));
 
               if (changeInfo.type === "unlink") {
-                await fs.remove(targetFilePath);
+                await FsUtil.removeAsync(targetFilePath);
               }
               else {
-                await fs.copy(changeInfo.filePath, targetFilePath);
+                await FsUtil.copyAsync(changeInfo.filePath, targetFilePath);
               }
             }
           }, (err) => {
@@ -105,10 +104,8 @@ export class SdProject {
         }
         else {
           // 소스경로에서 대상경로로 파일 복사
-          await fs.copy(sourcePath, targetPath, {
-            filter: (src: string) => {
-              return !src.includes("node_modules") && !src.endsWith("package.json");
-            }
+          await FsUtil.copyAsync(sourcePath, targetPath, (src: string) => {
+            return !src.includes("node_modules") && !src.endsWith("package.json");
           });
         }
       });
@@ -146,7 +143,7 @@ export class SdProject {
           await tsConfig.saveForBuildAsync();
 
           // dist 디렉토리 삭제
-          await fs.remove(tsConfig.distPath);
+          await FsUtil.removeAsync(tsConfig.distPath);
         });
       }
     }));
@@ -168,6 +165,80 @@ export class SdProject {
     logger.log("빌드 프로세스를 시작합니다.");
 
     await Promise.all([
+      // INDEX 파일 생성기
+      ...this.packages.map(async (pkg) => {
+        if (!pkg.config?.type) {
+          return;
+        }
+
+        if (!pkg.npmConfig.main) {
+          return;
+        }
+
+        const indexTsFilePath = path.resolve(
+          pkg.tsConfigs[0].srcPath,
+          path.relative(
+            pkg.tsConfigs[0].distPath,
+            path.resolve(
+              pkg.packagePath,
+              pkg.npmConfig.main
+            )
+          )
+        ).replace(/\.js$/, ".ts");
+
+        const generateIndexTsFileAsync = async () => {
+          if (!FsUtil.exists(indexTsFilePath)) {
+            return;
+          }
+
+          const srcTsFiles = await FsUtil.globAsync(path.resolve(pkg.packagePath, "src", "**", "*.ts"));
+          const importTexts: string[] = [];
+          if (pkg.config?.type === "library" && pkg.config.polyfills) {
+            for (const polyfill of pkg.config.polyfills) {
+              importTexts.push(`import "${polyfill}";`);
+            }
+          }
+
+          for (const srcTsFile of srcTsFiles) {
+            if (srcTsFile === indexTsFilePath) {
+              continue;
+            }
+
+            const relativePath = path.relative(path.resolve(pkg.packagePath, "src"), srcTsFile);
+            const modulePath = relativePath.replace(/\.ts$/, "").replace(/\\/g, "/");
+
+            const contents = await FsUtil.readFileAsync(srcTsFile);
+            if (contents.split("\n").some((line) => /^export /.test(line))) {
+              importTexts.push(`export * from "./${modulePath}";`);
+            }
+            else {
+              importTexts.push(`import "./${modulePath}";`);
+            }
+          }
+
+          await FsUtil.writeFileAsync(indexTsFilePath, importTexts.join("\n"));
+        };
+
+        await generateIndexTsFileAsync();
+
+        if (watch) {
+          await FsWatcher.watchAsync(path.resolve(pkg.packagePath, "src", "**", "*.ts"), async (changedInfos) => {
+            for (const changedInfo of changedInfos) {
+              if (path.resolve(changedInfo.filePath) === indexTsFilePath) {
+                return;
+              }
+
+              if (changedInfo.type === "change") {
+                return;
+              }
+
+              await generateIndexTsFileAsync();
+            }
+          }, (err) => {
+            logger.error(`'${pkg.packageKey}'의 변경사항을 처리하는 중에 오류가 발생하였습니다.`, err);
+          });
+        }
+      }),
       // 빌드
       ...this.packages.map(async (pkg) => {
         if (!pkg.config?.type) {
@@ -208,7 +279,7 @@ export class SdProject {
               // 서버 켜기
               await Wait.true(() =>
                 !this._servers[pkg.npmConfig.name]?.isClosing &&
-                fs.existsSync(entry)
+                FsUtil.exists(entry)
               );
 
               const server = eval(`require(entry)`) as SdServiceServer; //tslint:disable-line:no-eval
@@ -306,6 +377,8 @@ export class SdProject {
   }
 
   public async testAsync(): Promise<void> {
+    // TODO: karma.conf.ts 를 자동으로 만들어서 읽기
+
     ProcessManager.fork(
       path.resolve(process.cwd(), "node_modules", "karma", "bin", "karma"),
       ["start", path.resolve(process.cwd(), "test", "karma.conf.ts")],
@@ -331,7 +404,7 @@ export class SdProject {
     logger.log("배포 준비중...");
 
     // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
-    if (await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
+    if (FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
       await ProcessManager.spawnAsync(
         "git status",
         undefined,
@@ -354,7 +427,7 @@ export class SdProject {
     }
 
     // GIT 사용중일경우, 새 버전 커밋 및 TAG 생성
-    if (build && await fs.pathExists(path.resolve(process.cwd(), ".git"))) {
+    if (build && FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
       await ProcessManager.spawnAsync(
         `git add .`,
         undefined,
@@ -401,9 +474,11 @@ export class SdProject {
   }
 
   public async depcheckAsync(): Promise<void> {
-    // TODO: 각 package.json 에 사용하지 않는 패키지가 있는지 확인하는 로직 구현
-
     await Promise.all(this.packages.map(async (pkg) => {
+      if (path.resolve(process.cwd(), pkg.packagePath) === path.resolve(process.cwd(), "test")) {
+        return;
+      }
+
       const packageLogger = Logger.get(["simplysm", "sd-cli", pkg.packageKey, "depcheck"]);
 
       await depcheck(path.resolve(process.cwd(), pkg.packagePath), {
@@ -420,6 +495,7 @@ export class SdProject {
           ) {
             return true;
           }
+
           if (
             isDev &&
             Object.keys(unused.using).some((item) => item.startsWith("@angular")) &&
@@ -428,7 +504,7 @@ export class SdProject {
             return true;
           }
 
-          // TODO
+          // TODO: node_modules 외의 모든 파일을 돌면서 "karma.*"식의 문자열이가 있으면 해당 dep은 무시하도록 함
 
           return false;
         };

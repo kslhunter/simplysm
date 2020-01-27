@@ -8,5 +8,5 @@ export function SdInputValidate(def: TValidateDef<any>): (target: any, propertyN
     (def["type"] instanceof Array && def["type"].includes(Boolean))
   );
 
-  return PropertyValidate(def, (v) => (isForBoolean && v === "") ? true : v)
+  return PropertyValidate(def, (v) => (isForBoolean && v === "") ? true : v);
 }

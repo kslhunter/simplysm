@@ -1,8 +1,7 @@
-import * as fs from "fs-extra";
-import * as os from "os";
 import * as path from "path";
 import {ObjectUtil} from "@simplysm/sd-core-common";
 import * as ts from "typescript";
+import {FsUtil} from "@simplysm/sd-core-node";
 
 export class SdTsConfig {
   private readonly _packagePath: string;
@@ -13,6 +12,12 @@ export class SdTsConfig {
       : path.resolve(this._packagePath, "dist");
   }
 
+  public get srcPath(): string {
+    return this.parsedConfigForBuild.options.rootDir
+      ? path.resolve(this.parsedConfigForBuild.options.rootDir)
+      : path.resolve(this._packagePath, "src");
+  }
+
   private constructor(private readonly _configPath: string,
                       public readonly configForBuildPath: string,
                       private readonly _configForBuild: any,
@@ -21,7 +26,7 @@ export class SdTsConfig {
   }
 
   public static async loadAsync(configPath: string): Promise<SdTsConfig> {
-    const config = await fs.readJson(configPath);
+    const config = await FsUtil.readJsonAsync(configPath);
 
     const configForBuild = ObjectUtil.clone(config);
     const tsConfigOptions = configForBuild.compilerOptions;
@@ -53,6 +58,6 @@ export class SdTsConfig {
   }
 
   public async saveForBuildAsync(): Promise<void> {
-    await fs.writeJson(this.configForBuildPath, this._configForBuild, {spaces: 2, EOL: os.EOL});
+    await FsUtil.writeJsonAsync(this.configForBuildPath, this._configForBuild, {space: 2});
   }
 }

@@ -1,10 +1,9 @@
 import * as ts from "typescript";
 import * as os from "os";
-import {Logger} from "@simplysm/sd-core-node";
+import {FsUtil, Logger} from "@simplysm/sd-core-node";
 import * as path from "path";
 import {ObjectUtil} from "@simplysm/sd-core-common";
 import * as tslint from "tslint";
-import * as fs from "fs-extra";
 import {SdTypescriptUtils} from "../utils/SdTypescriptUtils";
 
 export class SdTypescriptChecker {
@@ -21,7 +20,7 @@ export class SdTypescriptChecker {
     const packagePath = path.dirname(tsConfigPath);
     const packageKey = path.basename(packagePath);
 
-    const tsConfig = await fs.readJson(tsConfigPath);
+    const tsConfig = await FsUtil.readJsonAsync(tsConfigPath);
     tsConfig.compilerOptions.rootDir = tsConfig.compilerOptions.rootDir || "src";
     tsConfig.compilerOptions.outDir = tsConfig.compilerOptions.outDir || "dist";
 
@@ -101,10 +100,21 @@ export class SdTypescriptChecker {
         const errorTextArr = messages.filter((item) => item.severity === "error")
           .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
 
+        // TSLINT 메시지 구성
         const watchFilesClone = ObjectUtil.clone(watchFiles);
         watchFiles.clear();
 
-        // TSLINT 메시지 구성
+        // INDEX 체크 메시지 구성
+        for (const watchFile of watchFilesClone) {
+          const content = await FsUtil.readFileAsync(watchFile.fileName);
+          const matches = content.match(/from ".*"/g);
+          if (watchFile.fileName.endsWith("PropertyValidate.ts")) {
+            if (matches && matches.some((match) => match.match(/\.\.\/?"$/))) {
+              errorTextArr.push(`${watchFile.fileName}: 소속 패키지의 'index.ts'를 import 하고 있습니다.`);
+            }
+          }
+        }
+
         if (watchFilesClone.length > 0) {
           const lintFailures = await this._lintAsync(watchFilesClone);
           for (const lintFailure of lintFailures) {
@@ -144,9 +154,7 @@ export class SdTypescriptChecker {
           const descFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".d.ts");
           const descFilePath = path.resolve(this._distPath, descFileRelativePath);
 
-          if (await fs.pathExists(descFilePath)) {
-            await fs.remove(descFilePath);
-          }
+          await FsUtil.removeAsync(descFilePath);
         }
 
         this._logger.log("타입체크가 완료되었습니다.");
@@ -155,7 +163,7 @@ export class SdTypescriptChecker {
 
       const prevWatchFile = host.watchFile;
       host.watchFile = (filePath: string, callback: ts.FileWatcherCallback, pollingInterval?: number): ts.FileWatcher => {
-        if (fs.pathExistsSync(filePath)) {
+        if (FsUtil.exists(filePath)) {
           watchFiles.push({eventKind: ts.FileWatcherEventKind.Created, fileName: filePath});
         }
 
@@ -182,7 +190,7 @@ export class SdTypescriptChecker {
   public async runAsync(): Promise<void> {
     this._logger.log("타입체크를 시작합니다.");
 
-    const tsConfig = await fs.readJson(this._tsConfigPath);
+    const tsConfig = await FsUtil.readJsonAsync(this._tsConfigPath);
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, this._packagePath);
     const program = ts.createProgram(parsedTsConfig.fileNames, parsedTsConfig.options);
 
@@ -240,7 +248,7 @@ export class SdTypescriptChecker {
       )
       .distinct();
     for (const watchFileInfo of lintFileInfos) {
-      linter.lint(watchFileInfo.fileName, await fs.readFile(watchFileInfo.fileName, "utf8"), config);
+      linter.lint(watchFileInfo.fileName, await FsUtil.readFileAsync(watchFileInfo.fileName), config);
     }
 
     return linter.getResult().failures;

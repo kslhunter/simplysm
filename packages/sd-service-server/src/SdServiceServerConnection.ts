@@ -2,7 +2,6 @@ import * as WebSocket from "ws";
 import {EventEmitter} from "events";
 import {JsonConvert} from "@simplysm/sd-core-common";
 import * as path from "path";
-import * as fs from "fs-extra";
 import {
   ISdServiceRequest,
   ISdServiceSplitRawResponse,
@@ -10,6 +9,7 @@ import {
   TSdServiceRawRequest,
   TSdServiceRawResponse
 } from "@simplysm/sd-service-common";
+import {FsUtil} from "@simplysm/sd-core-node";
 
 export class SdServiceServerConnection extends EventEmitter {
   private readonly _splitRequestMap = new Map<number, { timer: NodeJS.Timer; bufferStrings: string[] }>();
@@ -76,13 +76,13 @@ export class SdServiceServerConnection extends EventEmitter {
       const filePath = path.resolve(this._rootPath, rawReq.filePath);
 
       if (!this._uploadRequestMap.has(rawReq.id)) {
-        fs.mkdirsSync(path.dirname(filePath));
-        const fd = fs.openSync(filePath, "w");
+        FsUtil.mkdirs(path.dirname(filePath));
+        const fd = FsUtil.open(filePath, "w");
         const newUploadRequestValue = {
           timer: setTimeout(() => {
             this.emit("error", `업로드중에 타임아웃이 발생했습니다.`);
-            fs.closeSync(fd);
-            fs.unlinkSync(filePath);
+            FsUtil.close(fd);
+            FsUtil.remove(filePath);
             this._uploadRequestMap.delete(rawReq.id);
           }, 20000),
           fd,
@@ -93,7 +93,7 @@ export class SdServiceServerConnection extends EventEmitter {
       }
 
       const uploadRequestValue = this._uploadRequestMap.get(rawReq.id)!;
-      fs.writeSync(uploadRequestValue.fd, rawReq.buffer, 0, rawReq.buffer.length, rawReq.offset);
+      FsUtil.write(uploadRequestValue.fd, rawReq.buffer, 0, rawReq.buffer.length, rawReq.offset);
       uploadRequestValue.completedLength += rawReq.buffer.length;
 
       clearTimeout(uploadRequestValue.timer);
@@ -110,14 +110,14 @@ export class SdServiceServerConnection extends EventEmitter {
         clearTimeout(uploadRequestValue.timer);
         uploadRequestValue.timer = setTimeout(() => {
           this.emit("error", new Error(`업로드중에 타임아웃이 발생했습니다.`));
-          fs.closeSync(uploadRequestValue.fd);
-          fs.unlinkSync(uploadRequestValue.filePath);
+          FsUtil.close(uploadRequestValue.fd);
+          FsUtil.remove(uploadRequestValue.filePath);
           this._uploadRequestMap.delete(rawReq.id);
         }, 20000);
         return;
       }
 
-      fs.closeSync(uploadRequestValue.fd);
+      FsUtil.close(uploadRequestValue.fd);
       this._uploadRequestMap.delete(rawReq.id);
 
       const req: ISdServiceRequest = {

@@ -1,6 +1,5 @@
 import * as path from "path";
-import * as fs from "fs-extra";
-import * as os from "os";
+import {FsUtil} from "@simplysm/sd-core-node";
 
 export class SdNpmConfig {
   public get name(): string {
@@ -57,7 +56,7 @@ export class SdNpmConfig {
 
   public static async loadAsync(packagePath: string): Promise<SdNpmConfig> {
     const filePath = path.resolve(packagePath, "package.json");
-    const config = await fs.readJson(filePath);
+    const config = await FsUtil.readJsonAsync(filePath);
     return new SdNpmConfig(packagePath, config);
   }
 
@@ -79,6 +78,6 @@ export class SdNpmConfig {
 
   public async saveAsync(): Promise<void> {
     const filePath = path.resolve(this._packagePath, "package.json");
-    await fs.writeJson(filePath, this._config, {spaces: 2, EOL: os.EOL});
+    await FsUtil.writeJsonAsync(filePath, this._config, {space: 2});
   }
 }

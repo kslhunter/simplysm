@@ -11,11 +11,18 @@
     },
     "@simplysm/sd-core-browser": {
       "type": "library",
-      "publish": "npm"
+      "publish": "npm",
+      "polyfills": [
+        "element-qsa-scope",
+        "events-polyfill"
+      ]
     },
     "@simplysm/sd-core-common": {
       "type": "library",
-      "publish": "npm"
+      "publish": "npm",
+      "polyfills": [
+        "core-js"
+      ]
     },
     "@simplysm/sd-core-node": {
       "type": "library",

@@ -22,7 +22,7 @@ export class SdAngularGlobalErrorHandler implements ErrorHandler {
 
     divEl.innerHTML = `<pre style="font-size: 12px; font-family: monospace; line-height: 1.4em;">${err.stack}</pre>`;
 
-    this._ngModuleRef.injector.get(ApplicationRef)["_views"][0]["rootNodes"][0].appendChild(divEl);
+    this._ngModuleRef.injector.get<ApplicationRef>(ApplicationRef)["_views"][0]["rootNodes"][0].appendChild(divEl);
 
     throw err;
   }

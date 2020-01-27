@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import {Logger, LoggerSeverity, LoggerStyle} from "@simplysm/sd-core-node";
 import {DateTime} from "@simplysm/sd-core-common";
 

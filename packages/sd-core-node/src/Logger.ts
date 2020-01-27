@@ -1,6 +1,6 @@
 import {DateTime, DeepPartial, MathUtil, ObjectUtil} from "@simplysm/sd-core-common";
 import * as path from "path";
-import * as fs from "fs-extra";
+import {FsUtil} from "./FsUtil";
 
 export enum LoggerStyle {
   clear = "\x1b[0m",
@@ -119,7 +119,7 @@ export class Logger {
         LoggerStyle.fgGray + now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " " +
         (this._group.length > 0 ? config.console.style + "[" + this._group.join(".") + "] " : "") +
         config.console.styles[severity] + severity.toUpperCase().padStart(5, " "),
-        ...logs,
+        ...logs.map((log) => log instanceof Error ? log.stack : log),
         LoggerStyle.clear
       );
     }
@@ -147,9 +147,9 @@ export class Logger {
 
 
       const outPath = path.resolve(config.file.outDir, now.toFormatString("yyyyMMdd"));
-      fs.mkdirsSync(outPath);
+      FsUtil.mkdirs(outPath);
 
-      const fileNames = fs.readdirSync(outPath);
+      const fileNames = FsUtil.readdir(outPath);
       const lastFileName = fileNames
         .filter((fileName) => fileName.endsWith(".log"))
         .orderBy()
@@ -157,7 +157,7 @@ export class Logger {
 
       let logFileName = "1.log";
       if (lastFileName) {
-        const lstat = fs.lstatSync(path.resolve(outPath, lastFileName));
+        const lstat = FsUtil.lstat(path.resolve(outPath, lastFileName));
         if (lstat.size > 4194304) {
           const seq = Number(path.basename(lastFileName, path.extname(lastFileName)));
 
@@ -168,11 +168,11 @@ export class Logger {
         }
       }
       const logFilePath = path.resolve(outPath, logFileName);
-      if (fs.pathExistsSync(logFilePath)) {
-        fs.appendFileSync(logFilePath, text, "utf8");
+      if (FsUtil.exists(logFilePath)) {
+        FsUtil.appendFile(logFilePath, text);
       }
       else {
-        fs.writeFileSync(logFilePath, text, "utf8");
+        FsUtil.writeFile(logFilePath, text);
       }
     }
 

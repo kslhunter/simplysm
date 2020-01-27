@@ -2,6 +2,7 @@ export interface ISdLibraryPackageConfig {
   type?: "library";
   framework?: TSdFramework;
   publish?: "npm";
+  polyfills?: string[];
 }
 
 export interface ISdServerPackageConfig {

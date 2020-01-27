@@ -1,6 +1,5 @@
-import {Logger} from "@simplysm/sd-core-node";
+import {FsUtil, Logger} from "@simplysm/sd-core-node";
 import * as path from "path";
-import * as fs from "fs-extra";
 import * as ts from "typescript";
 import * as webpack from "webpack";
 import * as os from "os";
@@ -25,7 +24,7 @@ export class SdServerCompiler extends EventEmitter {
 
     const packagePath = path.dirname(argv.tsConfigPath);
 
-    const tsConfig = await fs.readJson(tsConfigPath);
+    const tsConfig = await FsUtil.readJsonAsync(tsConfigPath);
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(tsConfigPath));
 
     if (!tsConfig.files) {
@@ -167,9 +166,9 @@ export class SdServerCompiler extends EventEmitter {
             const targetRelativePath = path.relative(path.resolve(process.cwd(), "node_modules"), sourcePath);
             const targetPath = path.resolve(this._distPath, "node_modules", targetRelativePath);
 
-            if (fs.pathExistsSync(sourcePath)) {
-              fs.mkdirsSync(path.dirname(targetPath));
-              fs.copyFileSync(sourcePath, targetPath);
+            if (FsUtil.exists(sourcePath)) {
+              FsUtil.mkdirs(path.dirname(targetPath));
+              FsUtil.copy(sourcePath, targetPath);
             }
 
             callback(undefined, `function (() => require('${targetRelativePath.replace(/\\/g, "/")}'))`);
@@ -179,9 +178,9 @@ export class SdServerCompiler extends EventEmitter {
             const targetRelativePath = path.relative(path.resolve(process.cwd(), "node_modules"), sourcePath);
             const targetPath = path.resolve(this._distPath, "node_modules", targetRelativePath);
 
-            if (fs.pathExistsSync(sourcePath)) {
-              fs.mkdirsSync(path.dirname(targetPath));
-              fs.copyFileSync(sourcePath, targetPath);
+            if (FsUtil.exists(sourcePath)) {
+              FsUtil.mkdirs(path.dirname(targetPath));
+              FsUtil.copy(sourcePath, targetPath);
             }
 
             callback(undefined, `commonjs ${targetRelativePath.replace(/\\/g, "/")}`);

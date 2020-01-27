@@ -4,7 +4,6 @@ import * as yargs from "yargs";
 import {Logger} from "@simplysm/sd-core-node";
 import {SdProject} from "./SdProject";
 
-// TODO: test 에는 tsconfig.build.json 이 생성되지 않도록 수정
 // TODO: 모든 package.json 의 의존성 패키지 버전을 yarn.lock 에 설치된 버전으로 덮어쓰기 기능 추가
 
 const argv = yargs

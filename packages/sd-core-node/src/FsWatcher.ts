@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import * as fs from "fs";
 import {DateTime, ObjectUtil, Wait} from "@simplysm/sd-core-common";
 import * as path from "path";
 import anymatch from "anymatch";
@@ -13,10 +13,10 @@ export class FsWatcher {
     }
   }
 
-  public static async watch(paths: string | string[],
-                            callback: (changedInfos: IFileChangeInfo[]) => void | Promise<void>,
-                            errorCallback: (err: Error) => void,
-                            options?: { aggregateTimeout?: number }): Promise<FsWatcher> {
+  public static async watchAsync(paths: string | string[],
+                                 callback: (changedInfos: IFileChangeInfo[]) => void | Promise<void>,
+                                 errorCallback: (err: Error) => void,
+                                 options?: { aggregateTimeout?: number }): Promise<FsWatcher> {
 
     let preservedFileChanges: IFileChangeInfo[] = [];
     let timeout: NodeJS.Timer;
@@ -75,7 +75,7 @@ export class FsWatcher {
               }
 
               let eventType: "add" | "change" | "unlink";
-              if (!fs.pathExistsSync(fullPath)) {
+              if (!fs.existsSync(fullPath)) {
                 eventType = "unlink";
               }
               else if (fs.statSync(fullPath).birthtime.getTime() >= (new DateTime().tick - 300)) {
