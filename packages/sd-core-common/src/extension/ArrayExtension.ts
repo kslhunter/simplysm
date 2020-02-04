@@ -34,7 +34,7 @@ declare global {
 
     toObject<V>(keySelector: (item: T, index: number) => string, valueSelector: (item: T, index: number) => V): { [key: string]: V };
 
-    distinct(): T[];
+    distinct(matchAddress?: boolean): T[];
 
     orderBy(selector?: (item: T) => string | number): T[];
 
@@ -168,10 +168,10 @@ Array.prototype.toObject = function <T, V>(this: T[], keySelector: (item: T, ind
   return result;
 };
 
-Array.prototype.distinct = function <T>(this: T[]): T[] {
+Array.prototype.distinct = function <T>(this: T[], matchAddress?: boolean): T[] {
   const result: T[] = [];
   for (const item of this) {
-    if (!result.some((item1) => ObjectUtil.equal(item1, item))) {
+    if (!result.some((item1) => matchAddress ? item1 === item : ObjectUtil.equal(item1, item))) {
       result.push(item);
     }
   }

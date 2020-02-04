@@ -7,13 +7,15 @@ export function PropertyValidate(def: TValidateDef<any>, replacer?: (value: any)
       const replacedNextValue = replacer ? replacer(nextValue) : nextValue;
       const error = ObjectUtil.validate(replacedNextValue, def);
       if (error) {
-        throw new Error(`입력값이 잘못되었습니다: ${JSON.stringify({
+        throw new Error(`${error.message ? error.message : "입력값이 잘못되었습니다"}: ${JSON.stringify({
           component: target.constructor.name,
           propertyName,
           value: error.value,
           errorKeys: Object.keys(error.invalidateDef)
         })}`);
       }
+
+      return replacedNextValue;
     }
   });
 }

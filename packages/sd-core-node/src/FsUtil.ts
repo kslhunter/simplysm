@@ -9,7 +9,7 @@ export class FsUtil {
       const hash = crypto.createHash("md5").setEncoding("hex");
       fs.createReadStream(filePath)
         .on("error", (err) => {
-          reject(err);
+          reject(new Error(err.message + ": " + filePath));
         })
         .pipe(hash)
         .once("finish", () => {
@@ -50,15 +50,30 @@ export class FsUtil {
   }
 
   public static async readdirAsync(targetPath: string): Promise<string[]> {
-    return await fs.promises.readdir(targetPath);
+    try {
+      return await fs.promises.readdir(targetPath);
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
   }
 
   public static readdir(targetPath: string): string[] {
-    return fs.readdirSync(targetPath);
+    try {
+      return fs.readdirSync(targetPath);
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
   }
 
   public static exists(targetPath: string): boolean {
-    return fs.existsSync(targetPath);
+    try {
+      return fs.existsSync(targetPath);
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
   }
 
   public static async removeAsync(targetPath: string): Promise<void> {
@@ -66,7 +81,14 @@ export class FsUtil {
       return;
     }
 
-    const lstat = await fs.promises.lstat(targetPath);
+    let lstat;
+    try {
+      lstat = await fs.promises.lstat(targetPath);
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
+
     if (lstat.isDirectory()) {
       try {
         await fs.promises.rmdir(targetPath, {recursive: true});
@@ -90,7 +112,13 @@ export class FsUtil {
       return;
     }
 
-    const lstat = fs.lstatSync(targetPath);
+    let lstat;
+    try {
+      lstat = fs.lstatSync(targetPath);
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
     if (lstat.isDirectory()) {
       try {
         fs.rmdirSync(targetPath, {recursive: true});
@@ -114,7 +142,14 @@ export class FsUtil {
       return;
     }
 
-    const lstat = await fs.promises.lstat(sourcePath);
+    let lstat;
+    try {
+      lstat = await fs.promises.lstat(sourcePath);
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
+
     if (lstat.isDirectory()) {
       await FsUtil.mkdirsAsync(targetPath);
 
@@ -133,7 +168,12 @@ export class FsUtil {
     else {
       await FsUtil.mkdirsAsync(path.resolve(targetPath, ".."));
 
-      await fs.promises.copyFile(sourcePath, targetPath);
+      try {
+        await fs.promises.copyFile(sourcePath, targetPath);
+      }
+      catch (err) {
+        throw new Error(err.message + ": " + targetPath);
+      }
     }
   }
 
@@ -142,7 +182,13 @@ export class FsUtil {
       return;
     }
 
-    const lstat = fs.lstatSync(sourcePath);
+    let lstat;
+    try {
+      lstat = fs.lstatSync(sourcePath);
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
     if (lstat.isDirectory()) {
       FsUtil.mkdirs(targetPath);
 
@@ -161,7 +207,12 @@ export class FsUtil {
     else {
       FsUtil.mkdirs(path.resolve(targetPath, ".."));
 
-      fs.copyFileSync(sourcePath, targetPath);
+      try {
+        fs.copyFileSync(sourcePath, targetPath);
+      }
+      catch (err) {
+        throw new Error(err.message + ": " + targetPath);
+      }
     }
   }
 
@@ -175,7 +226,12 @@ export class FsUtil {
   }
 
   public static mkdirs(targetPath: string): void {
-    fs.mkdirSync(targetPath, {recursive: true});
+    try {
+      fs.mkdirSync(targetPath, {recursive: true});
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
   }
 
   public static async writeJsonAsync(targetPath: string, data: any, options?: { replacer?: (this: any, key: string, value: any) => any; space?: string | number }): Promise<void> {
@@ -196,11 +252,21 @@ export class FsUtil {
 
   public static writeFile(targetPath: string, data: any): void {
     FsUtil.mkdirs(path.resolve(targetPath, ".."));
-    fs.writeFileSync(targetPath, data);
+    try {
+      fs.writeFileSync(targetPath, data);
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
   }
 
   public static async readFileAsync(targetPath: string): Promise<string> {
-    return await fs.promises.readFile(targetPath, "utf-8");
+    try {
+      return await fs.promises.readFile(targetPath, "utf-8");
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
   }
 
   public static async readJsonAsync(targetPath: string): Promise<any> {
@@ -209,30 +275,69 @@ export class FsUtil {
   }
 
   public static lstat(targetPath: string): fs.Stats {
-    return fs.lstatSync(targetPath);
+    try {
+      return fs.lstatSync(targetPath);
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
   }
 
   public static async lstatAsync(targetPath: string): Promise<fs.Stats> {
-    return await fs.promises.lstat(targetPath);
+    try {
+      return await fs.promises.lstat(targetPath);
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
   }
 
   public static appendFile(targetPath: string, data: any): void {
-    fs.appendFileSync(targetPath, data, "utf8");
+    try {
+      fs.appendFileSync(targetPath, data, "utf8");
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
   }
 
   public static open(targetPath: string, flags: string | number): number {
-    return fs.openSync(targetPath, flags);
+    try {
+      return fs.openSync(targetPath, flags);
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
   }
 
   public static close(fd: number): void {
-    fs.closeSync(fd);
+    try {
+      fs.closeSync(fd);
+    }
+    catch (err) {
+      throw new Error(err.message);
+    }
   }
 
   public static write(fd: number, buffer: NodeJS.ArrayBufferView, offset?: number | null, length?: number | null, position?: number | null): void {
-    fs.writeSync(fd, buffer, offset, length, position);
+    try {
+      fs.writeSync(fd, buffer, offset, length, position);
+    }
+    catch (err) {
+      throw new Error(err.message);
+    }
   }
 
   public static createReadStream(targetPath: string): fs.ReadStream {
-    return fs.createReadStream(targetPath);
+    try {
+      return fs.createReadStream(targetPath);
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
+  }
+
+  public static async isDirectoryAsync(targetPath: string): Promise<boolean> {
+    return (await FsUtil.lstatAsync(targetPath)).isDirectory();
   }
 }

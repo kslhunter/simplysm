@@ -122,7 +122,6 @@ export class SdServiceServer extends EventEmitter {
     if (this._wsServer) {
       await new Promise<void>((resolve, reject) => {
         this._wsServer!.close((err) => {
-          console.log("close", 3);
           if (err) {
             reject(err);
             return;
@@ -145,7 +144,6 @@ export class SdServiceServer extends EventEmitter {
     if (this._httpServer?.listening) {
       await new Promise<void>((resolve, reject) => {
         this._httpServer!.close((err) => {
-          console.log("close", 5);
           if (err) {
             reject(err);
             return;

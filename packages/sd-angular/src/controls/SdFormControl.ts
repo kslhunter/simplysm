@@ -1,19 +1,44 @@
-import {ChangeDetectionStrategy, Component} from "@angular/core";
+import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
+import {SdInputValidate} from "../commons/SdInputValidate";
 
 @Component({
   selector: "sd-form",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    "role": "form"
-  },
   template: `
-    <ng-content></ng-content>`,
+    <form (submit)="onSubmit($event)">
+      <ng-content></ng-content>
+    </form>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/variables-scss-arr";
 
     :host {
+      &[sd-layout="table"] > form {
+        display: table;
+        width: 100%;
+      }
     }
   `]
 })
 export class SdFormControl {
+  @Input()
+  @SdInputValidate({
+    type: String,
+    notnull: true,
+    includes: ["cascade", "inline", "table"]
+  })
+  @HostBinding("attr.sd-layout")
+  public layout: "cascade" | "inline" | "table" = "cascade";
+
+  @Input()
+  @SdInputValidate(String)
+  public labelWidth?: string;
+
+  @Output()
+  public readonly submit = new EventEmitter<void>();
+
+  public onSubmit(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.submit.emit();
+  }
 }

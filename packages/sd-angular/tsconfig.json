@@ -11,6 +11,9 @@
     "paths": {
       "@simplysm/sd-core-common": [
         "../sd-core-common/src/index.ts"
+      ],
+      "@simplysm/sd-core-browser": [
+        "../sd-core-browser/src/index.ts"
       ]
     }
   },

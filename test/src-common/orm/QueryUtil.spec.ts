@@ -243,87 +243,31 @@ describe("orm.QueryUtil", () => {
       ]);
     });
 
-    it("여러계층 안의 데이터가 undefined 여도 문제없이 작동한다.", () => {
-      expect(
-        QueryUtil.parseQueryResult([
-          {
-            "a": "0",
-            "j.a": "1",
-            "j.b": "2",
-            "j.c": "3",
-            "j.d.a": undefined,
-            "j.d.b": undefined,
-            "j.d.c": undefined,
-            "j.d.d.a": "1",
-            "j.d.d.b": "2",
-            "j.d.d.c": "3"
-          },
-          {
-            "a": "0",
-            "j.a": "1",
-            "j.b": "2",
-            "j.c": "3",
-            "j.d.a": undefined,
-            "j.d.b": undefined,
-            "j.d.c": undefined,
-            "j.d.d.a": "1",
-            "j.d.d.b": "2",
-            "j.d.d.c": "4"
-          },
-          {
-            "a": "1",
-            "j.a": "1",
-            "j.b": "2",
-            "j.c": "4",
-            "j.d.a": undefined,
-            "j.d.b": undefined,
-            "j.d.c": undefined,
-            "j.d.d.a": undefined,
-            "j.d.d.b": undefined,
-            "j.d.d.c": undefined
-          }
-        ], {
-          joins: {
-            "j": {isSingle: true},
-            "j.d": {isSingle: false},
-            "j.d.d": {isSingle: true}
-          }
-        })
-      ).to.deep.equal([
-        {
+    it("[FIX] 데이터가 너무 많으면 속도가 느려지는 현상 수정", () => {
+      const data = [];
+      for (let i = 0; i < 10000; i++) {
+        data.push({
           "a": "0",
-          "j": {
-            "a": "1",
-            "b": "2",
-            "c": "3",
-            "d": [
-              {
-                "d": {
-                  "a": "1",
-                  "b": "2",
-                  "c": "3"
-                }
-              },
-              {
-                "d": {
-                  "a": "1",
-                  "b": "2",
-                  "c": "4"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "a": "1",
-          "j": {
-            "a": "1",
-            "b": "2",
-            "c": "4",
-            "d": []
-          }
+          "j.a": i,
+          "j.b": i,
+          "j.c": i,
+          "j.d": i,
+          "j.aa.a": i,
+          "j.aa.b": i,
+          "j.aa.c": i,
+          "j.aa.d": i
+        });
+      }
+
+      const prevTick = new DateTime().tick;
+      QueryUtil.parseQueryResult(data, {
+        joins: {
+          "j": {isSingle: false},
+          "j.aa": {isSingle: false}
         }
-      ]);
+      });
+
+      expect(new DateTime().tick - prevTick).to.lessThan(1000);
     });
   });
 });

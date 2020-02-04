@@ -1,19 +1,34 @@
 import {ErrorHandler, NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {SdAngularGlobalErrorHandler} from "./providers/SdAngularGlobalErrorHandler";
-import {controls} from "./definitions";
+import {SdAngularGlobalErrorHandler} from "./commons/SdAngularGlobalErrorHandler";
+import {controls, directives, entryComponents, pipes, providers} from "./module-definitions";
+import {EVENT_MANAGER_PLUGINS} from "@angular/platform-browser";
+import {SdResizeEventPlugin} from "./commons/SdResizeEventPlugin";
+import {SdMutationEventPlugin} from "./commons/SdMutationEventPlugin";
 
 @NgModule({
   imports: [
     CommonModule
   ],
   declarations: [
-    ...controls
+    ...controls,
+    ...entryComponents,
+    ...directives,
+    ...pipes
   ],
   exports: [
-    ...controls
+    ...controls,
+    ...entryComponents,
+    ...directives,
+    ...pipes
+  ],
+  entryComponents: [
+    ...entryComponents
   ],
   providers: [
+    ...providers,
+    {provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true},
+    {provide: EVENT_MANAGER_PLUGINS, useClass: SdMutationEventPlugin, multi: true},
     {provide: ErrorHandler, useClass: SdAngularGlobalErrorHandler}
   ]
 })

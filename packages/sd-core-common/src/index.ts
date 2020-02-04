@@ -8,7 +8,6 @@ export * from "./error/CustomError";
 export * from "./error/NotImplementError";
 export * from "./error/TimeoutError";
 import "./extension/ArrayExtension";
-export * from "./index";
 export * from "./type/DateOnly";
 export * from "./type/DateTime";
 export * from "./type/Time";

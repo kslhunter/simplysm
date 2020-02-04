@@ -36,6 +36,21 @@ code {
   font-family: var(--font-family-monospace);
 }
 
+@each $h in (h1, h2, h3, h4, h5, h6) {
+  #{$h} {
+    font-size: var(--font-size-#{$h});
+    line-height: var(--line-height);
+    margin: 0;
+  }
+}
+
+// FONT SIZE
+@each $size in $arr-font-size {
+  .sd-font-size-#{$size} {
+    font-size: var(--font-size-#{$size}) !important;
+  }
+}
+
 // BACKGROUND
 @each $theme in $arr-theme-color {
   @each $brightness in $arr-theme-brightness {
@@ -65,21 +80,6 @@ code {
   background: var(--sd-background-color) !important;
 }
 
-// FONT SIZE
-@each $size in $arr-font-size {
-  .sd-font-size-#{$size} {
-    font-size: var(--font-size-#{$size}) !important;
-  }
-}
-
-@each $h in (h1, h2, h3, h4, h5, h6) {
-  #{$h} {
-    font-size: var(--font-size-#{$h}) !important;
-    line-height: var(--line-height) !important;
-    margin: 0 !important;
-  }
-}
-
 // TEXT COLOR
 @each $brightness in $arr-text-brightness {
   .sd-text-brightness-#{$brightness} {
@@ -96,7 +96,7 @@ code {
 @each $theme in $arr-theme-color {
   @each $brightness in $arr-theme-brightness {
     .sd-text-color-#{$theme}-#{$brightness} {
-      color: var(--text-brightness-#{$theme}-#{$brightness}) !important;
+      color: var(--theme-color-#{$theme}-#{$brightness}) !important;
     }
   }
 }

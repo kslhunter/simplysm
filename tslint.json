@@ -153,6 +153,7 @@
     ],
     "no-async-without-await": false,
     "invalid-void": false,
-    "strict-string-expressions": false
+    "strict-string-expressions": false,
+    "no-require-imports": false
   }
 }

@@ -100,21 +100,26 @@ export class SdTypescriptChecker {
         const errorTextArr = messages.filter((item) => item.severity === "error")
           .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
 
-        // TSLINT 메시지 구성
         const watchFilesClone = ObjectUtil.clone(watchFiles);
         watchFiles.clear();
 
-        // INDEX 체크 메시지 구성
+        // 동일 패키지의 index.ts 를 import 한 부분 체크 메시지 구성
         for (const watchFile of watchFilesClone) {
+          if (
+            watchFile.eventKind === ts.FileWatcherEventKind.Deleted ||
+            !FsUtil.exists(watchFile.fileName)
+          ) {
+            continue;
+          }
+
           const content = await FsUtil.readFileAsync(watchFile.fileName);
           const matches = content.match(/from ".*"/g);
-          if (watchFile.fileName.endsWith("PropertyValidate.ts")) {
-            if (matches && matches.some((match) => match.match(/\.\.\/?"$/))) {
-              errorTextArr.push(`${watchFile.fileName}: 소속 패키지의 'index.ts'를 import 하고 있습니다.`);
-            }
+          if (matches && matches.some((match) => match.match(/\.\.\/?"$/))) {
+            errorTextArr.push(`${watchFile.fileName}: 소속 패키지의 'index.ts'를 import 하고 있습니다.`);
           }
         }
 
+        // TSLINT 메시지 구성
         if (watchFilesClone.length > 0) {
           const lintFailures = await this._lintAsync(watchFilesClone);
           for (const lintFailure of lintFailures) {
@@ -147,8 +152,10 @@ export class SdTypescriptChecker {
         }
 
         // 삭제된 소스의 d.ts 파일 삭제
-        const deletedItems = watchFilesClone
-          .filter((item) => item.eventKind === ts.FileWatcherEventKind.Deleted);
+        const deletedItems = watchFilesClone.filter((item) =>
+          item.eventKind === ts.FileWatcherEventKind.Deleted ||
+          !FsUtil.exists(item.fileName)
+        );
         for (const deletedItem of deletedItems) {
           const tsFileRelativePath = path.relative(this._srcPath, deletedItem.fileName);
           const descFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".d.ts");

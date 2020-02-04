@@ -1,7 +1,7 @@
 const symbol = `sd-type-validate`;
 
 export function PropertyGetSetDecoratorBase<O, K extends keyof O>(arg: {
-  beforeSet?: (target: O, propertyName: K, oldValue: O[K], newValue: O[K]) => ((() => O[K]) | void);
+  beforeSet?: (target: O, propertyName: K, oldValue: O[K], newValue: O[K]) => (O[K] | void);
   afterSet?: (target: O, propertyName: K, oldValue: O[K], newValue: O[K]) => void;
   get?: (target: O, propertyName: K, value: O[K]) => void;
 }): (target: O, propertyName: K, inputDescriptor?: PropertyDescriptor) => void {
@@ -29,7 +29,7 @@ export function PropertyGetSetDecoratorBase<O, K extends keyof O>(arg: {
       if (arg.beforeSet) {
         const beforeSetResult = arg.beforeSet(this, propertyName, prevValue, realValue);
         if (beforeSetResult) {
-          realValue = beforeSetResult();
+          realValue = beforeSetResult;
         }
       }
 

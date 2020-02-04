@@ -142,6 +142,14 @@ export class SdServerCompiler extends EventEmitter {
       module: {
         rules: [
           {
+            test: /\.js$/,
+            enforce: "pre",
+            loader: "source-map-loader",
+            exclude: [
+              /node_modules[\\/](?!@simplysm)/
+            ]
+          },
+          {
             test: /\.ts$/,
             exclude: /node_modules/,
             use: [

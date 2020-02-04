@@ -1,37 +1,52 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
 import {SdInputValidate} from "../commons/SdInputValidate";
+import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 
 @Component({
   selector: "sd-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    "role": "button",
-    "tabindex": "0"
-  },
   template: `
-    <ng-content></ng-content>`,
+    <button tabindex="0"
+            [attr.type]="type"
+            [attr.disabled]="disabled"
+            [attr.class]="safeHtml(buttonClass)"
+            [attr.style]="safeHtml(buttonStyle)">
+      <ng-content></ng-content>
+    </button>`,
   styles: [/* language=SCSS */ `
+    @import "../../scss/mixins";
     @import "../../scss/variables-scss-arr";
 
     :host {
-      display: block;
-      padding: var(--gap-sm) var(--gap-default);
-      text-align: center;
-      background: white;
-      border: 1px solid var(--sd-border-color);
-      cursor: pointer;
-      border-radius: 2px;
+      > button {
+        @include form-control-base();
 
-      &:hover {
-        background: var(--theme-color-grey-lightest);
-      }
+        background: white;
+        border-color: var(--sd-border-color);
+        border-radius: 2px;
 
-      &:active {
-        background: var(--theme-color-grey-lighter);
+        font-weight: bold;
+        text-align: center;
+        cursor: pointer;
+
+        &:hover {
+          background: var(--theme-color-grey-lightest);
+        }
+
+        &:active {
+          background: var(--theme-color-grey-lighter);
+        }
+
+        &:disabled {
+          background: white;
+          border-color: var(--theme-color-grey-lighter);
+          color: var(--text-brightness-lighter);
+          cursor: default;
+        }
       }
 
       @each $theme in $arr-theme-color {
-        &[sd-theme=#{$theme}] {
+        &[sd-theme=#{$theme}] > button {
           background: var(--theme-color-#{$theme}-default);
           border-color: var(--theme-color-#{$theme}-default);
           color: var(--text-brightness-rev-default);
@@ -45,12 +60,29 @@ import {SdInputValidate} from "../commons/SdInputValidate";
             background: var(--theme-color-#{$theme}-darker);
             border-color: var(--theme-color-#{$theme}-darker);
           }
+
+          &:disabled {
+            background: var(--theme-color-grey-lighter);
+            border-color: var(--theme-color-grey-lighter);
+            color: var(--text-brightness-lighter);
+            cursor: default;
+          }
         }
       }
 
-      &[sd-inline] {
+      &[sd-inline=true] > button {
         display: inline-block;
         width: auto;
+        vertical-align: top;
+      }
+
+      &[sd-size=sm] > button {
+        padding: var(--gap-xs) var(--gap-sm);
+      }
+
+      &[sd-size=lg] > button {
+        padding: var(--gap-default) var(--gap-lg);
+        border-radius: 2px;
       }
     }
   `]
@@ -68,4 +100,39 @@ export class SdButtonControl {
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-inline")
   public inline?: boolean;
+
+  @Input()
+  @SdInputValidate({
+    type: String,
+    includes: ["sm", "lg"]
+  })
+  @HostBinding("attr.sd-size")
+  public size?: "sm" | "lg";
+
+  @Input()
+  @SdInputValidate(Boolean)
+  public disabled?: boolean;
+
+  @Input("button.style")
+  @SdInputValidate(String)
+  public buttonStyle?: string;
+
+  @Input("button.class")
+  @SdInputValidate(String)
+  public buttonClass?: string;
+
+  @Input()
+  @SdInputValidate({
+    type: String,
+    includes: ["button", "submit"],
+    notnull: true
+  })
+  public type: "button" | "submit" = "button";
+
+  public constructor(private readonly _sanitization: DomSanitizer) {
+  }
+
+  public safeHtml(value?: string): SafeHtml | undefined {
+    return value ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
+  }
 }

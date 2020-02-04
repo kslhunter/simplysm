@@ -11,6 +11,9 @@ import decache from "decache";
 import {SdServerCompiler} from "./builders/SdServerCompiler";
 import {SdAngularCompiler} from "./builders/SdAngularCompiler";
 import * as depcheck from "depcheck";
+import {SdIndexFileGenerator} from "./builders/SdIndexFileGenerator";
+import {SdNgModuleDefinitionsFileGenerator} from "./builders/SdNgModuleDefinitionsFileGenerator";
+import {SdNgRoutesFileGenerator} from "./builders/SdNgRoutesFileGenerator";
 
 export class SdProject {
   private readonly _servers: {
@@ -25,6 +28,7 @@ export class SdProject {
   private constructor(private readonly _npmConfig: SdNpmConfig,
                       private readonly _config: SdProjectConfig,
                       private readonly _mode: "development" | "production",
+                      private readonly _options: string[],
                       public packages: SdPackage[]) {
   }
 
@@ -32,7 +36,6 @@ export class SdProject {
     const npmConfig = await SdNpmConfig.loadAsync(process.cwd());
     const configPath = path.resolve(process.cwd(), "simplysm.json");
     const config = await SdProjectConfig.loadAsync(configPath, mode, options);
-
 
     if (!npmConfig.workspaces) {
       throw new Error("프로젝트의 package.json 에 workspaces 정의가 필요합니다.");
@@ -45,7 +48,7 @@ export class SdProject {
 
     const packages = await packagePaths.mapAsync(async (packagePath) => await SdPackage.createAsync(config, packagePath));
 
-    return new SdProject(npmConfig, config, mode, packages);
+    return new SdProject(npmConfig, config, mode, options, packages);
   }
 
   public async localUpdateAsync(watch: boolean = false): Promise<void> {
@@ -165,82 +168,48 @@ export class SdProject {
     logger.log("빌드 프로세스를 시작합니다.");
 
     await Promise.all([
+      // MODULE DEFINITIONS 파일 생성기
+      ...this.packages.map(async (pkg) => {
+        if (!pkg.config?.type) {
+          return;
+        }
+
+        if ((pkg.config?.type !== "web" && pkg.config?.type !== "library") || !pkg.config?.framework?.startsWith("angular")) {
+          return;
+        }
+
+        const moduleDefinitionsFileGenerator = await SdNgModuleDefinitionsFileGenerator.createAsync(pkg.packagePath, this._mode, this._options);
+        await moduleDefinitionsFileGenerator.runAsync(watch);
+      }),
+      // ROUTES 파일 생성기
+      ...this.packages.map(async (pkg) => {
+        if (pkg.config?.type !== "web" || !pkg.config?.framework?.startsWith("angular")) {
+          return;
+        }
+
+        const routesFileGenerator = await SdNgRoutesFileGenerator.createAsync(pkg.packagePath, this._mode, this._options);
+        await routesFileGenerator.runAsync(watch);
+      }),
       // INDEX 파일 생성기
       ...this.packages.map(async (pkg) => {
         if (!pkg.config?.type) {
           return;
         }
 
-        if (!pkg.npmConfig.main) {
+        if (!pkg.npmConfig.main || !pkg.npmConfig.main.includes("index")) {
           return;
         }
 
-        const indexTsFilePath = path.resolve(
-          pkg.tsConfigs[0].srcPath,
-          path.relative(
-            pkg.tsConfigs[0].distPath,
-            path.resolve(
-              pkg.packagePath,
-              pkg.npmConfig.main
-            )
-          )
-        ).replace(/\.js$/, ".ts");
+        const indexFileGenerator = await SdIndexFileGenerator.createAsync(pkg.packagePath, this._mode, this._options);
+        await indexFileGenerator.runAsync(watch);
+      })
+    ]);
 
-        const generateIndexTsFileAsync = async () => {
-          if (!FsUtil.exists(indexTsFilePath)) {
-            return;
-          }
-
-          const srcTsFiles = await FsUtil.globAsync(path.resolve(pkg.packagePath, "src", "**", "*.ts"));
-          const importTexts: string[] = [];
-          if (pkg.config?.type === "library" && pkg.config.polyfills) {
-            for (const polyfill of pkg.config.polyfills) {
-              importTexts.push(`import "${polyfill}";`);
-            }
-          }
-
-          for (const srcTsFile of srcTsFiles) {
-            if (srcTsFile === indexTsFilePath) {
-              continue;
-            }
-
-            const relativePath = path.relative(path.resolve(pkg.packagePath, "src"), srcTsFile);
-            const modulePath = relativePath.replace(/\.ts$/, "").replace(/\\/g, "/");
-
-            const contents = await FsUtil.readFileAsync(srcTsFile);
-            if (contents.split("\n").some((line) => /^export /.test(line))) {
-              importTexts.push(`export * from "./${modulePath}";`);
-            }
-            else {
-              importTexts.push(`import "./${modulePath}";`);
-            }
-          }
-
-          await FsUtil.writeFileAsync(indexTsFilePath, importTexts.join("\n"));
-        };
-
-        await generateIndexTsFileAsync();
-
-        if (watch) {
-          await FsWatcher.watchAsync(path.resolve(pkg.packagePath, "src", "**", "*.ts"), async (changedInfos) => {
-            for (const changedInfo of changedInfos) {
-              if (path.resolve(changedInfo.filePath) === indexTsFilePath) {
-                return;
-              }
-
-              if (changedInfo.type === "change") {
-                return;
-              }
-
-              await generateIndexTsFileAsync();
-            }
-          }, (err) => {
-            logger.error(`'${pkg.packageKey}'의 변경사항을 처리하는 중에 오류가 발생하였습니다.`, err);
-          });
-        }
-      }),
+    await Promise.all([
       // 빌드
       ...this.packages.map(async (pkg) => {
+        const packageLogger = Logger.get(["simplysm", "sd-cli", pkg.packageKey, "build"]);
+
         if (!pkg.config?.type) {
           return;
         }
@@ -259,7 +228,7 @@ export class SdProject {
             const entry = path.resolve(pkg.packagePath, pkg.npmConfig.main);
 
             builder.on("change", async () => {
-              logger.log(`서버를 재시작 합니다`);
+              packageLogger.log(`서버를 재시작 합니다`);
 
               if (this._servers[pkg.npmConfig.name]) {
                 this._servers[pkg.npmConfig.name].isClosing = true;
@@ -296,7 +265,7 @@ export class SdProject {
                   isClosing: false
                 };
               }
-              logger.info(`서버가 시작되었습니다.`);
+              packageLogger.info(`서버가 시작되었습니다.`);
             });
           }
 
@@ -318,13 +287,18 @@ export class SdProject {
 
           if (watch) {
             builder.on("complete", async () => {
-              await Wait.true(() => {
-                const serverObj = this._servers[pkg.config!["serverPackage"]];
-                return !!(serverObj && !serverObj.isClosing && serverObj.server);
-              });
+              try {
+                await Wait.true(() => {
+                  const serverObj = this._servers[pkg.config!["serverPackage"]];
+                  return !!(serverObj && !serverObj.isClosing && serverObj.server);
+                });
 
-              const port = this._servers[pkg.config!["serverPackage"]].server!.options!.port ?? 80;
-              logger.info(`클라이언트 열림: http://localhost:${port}/${pkg.packageKey}/`);
+                const port = this._servers[pkg.config!["serverPackage"]].server!.options!.port ?? 80;
+                packageLogger.info(`클라이언트 열림: http://localhost:${port}/${pkg.packageKey}/`);
+              }
+              catch (err) {
+                packageLogger.error(err.meaning);
+              }
             });
 
             const middlewares = await builder.runAsync(watch);

@@ -193,8 +193,18 @@ export class ObjectUtil {
       invalidateDef.type = currDef.type;
     }
 
-    if (currDef.validator && !currDef.validator(value as any)) {
-      invalidateDef.validator = currDef.validator;
+    let message: string | undefined;
+    if (currDef.validator) {
+      const validatorResult = currDef.validator(value as any);
+
+      if (validatorResult === true) {
+      }
+      else {
+        invalidateDef.validator = currDef.validator;
+        if (typeof validatorResult === "string") {
+          message = validatorResult;
+        }
+      }
     }
 
     if (currDef.includes && !currDef.includes.includes(value)) {
@@ -202,7 +212,7 @@ export class ObjectUtil {
     }
 
     if (Object.keys(invalidateDef).length > 0) {
-      return {value, invalidateDef};
+      return {value, invalidateDef, message};
     }
 
     return undefined;
@@ -307,12 +317,13 @@ export interface IValidateDef<T> {
   type?: Type<TypeWrap<T>> | Type<TypeWrap<T>>[];
   notnull?: boolean;
   includes?: T[];
-  validator?: (value: T) => boolean;
+  validator?: (value: T) => boolean | string;
 }
 
 export interface IValidateResult<T> {
   value: T;
   invalidateDef: IValidateDef<T> & { type?: Type<TypeWrap<T>>[] };
+  message?: string;
 }
 
 type TValidateObjectDef<T> = { [K in keyof T]?: TValidateDef<T[K]> };

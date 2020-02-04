@@ -8,21 +8,21 @@
   --theme-color-grey-darker: var(--color-grey-700);
   --theme-color-grey-darkest: var(--color-grey-800);
 
-  --theme-color-bluegrey-lightest: var(--color-bluegrey-200);
-  --theme-color-bluegrey-lighter: var(--color-bluegrey-300);
-  --theme-color-bluegrey-light: var(--color-bluegrey-400);
-  --theme-color-bluegrey-default: var(--color-bluegrey-500);
-  --theme-color-bluegrey-dark: var(--color-bluegrey-600);
-  --theme-color-bluegrey-darker: var(--color-bluegrey-800);
-  --theme-color-bluegrey-darkest: var(--color-bluegrey-900);
+  --theme-color-blue-grey-lightest: var(--color-blue-grey-200);
+  --theme-color-blue-grey-lighter: var(--color-blue-grey-300);
+  --theme-color-blue-grey-light: var(--color-blue-grey-400);
+  --theme-color-blue-grey-default: var(--color-blue-grey-500);
+  --theme-color-blue-grey-dark: var(--color-blue-grey-600);
+  --theme-color-blue-grey-darker: var(--color-blue-grey-800);
+  --theme-color-blue-grey-darkest: var(--color-blue-grey-900);
 
-  --theme-color-primary-lightest: var(--color-deep-purple-50);
-  --theme-color-primary-lighter: var(--color-deep-purple-100);
-  --theme-color-primary-light: var(--color-deep-purple-200);
-  --theme-color-primary-default: var(--color-deep-purple-500);
-  --theme-color-primary-dark: var(--color-deep-purple-600);
-  --theme-color-primary-darker: var(--color-deep-purple-700);
-  --theme-color-primary-darkest: var(--color-deep-purple-800);
+  --theme-color-primary-lightest: var(--color-indigo-50);
+  --theme-color-primary-lighter: var(--color-indigo-100);
+  --theme-color-primary-light: var(--color-indigo-200);
+  --theme-color-primary-default: var(--color-indigo-500);
+  --theme-color-primary-dark: var(--color-indigo-600);
+  --theme-color-primary-darker: var(--color-indigo-700);
+  --theme-color-primary-darkest: var(--color-indigo-800);
 
   --theme-color-secondary-lightest: var(--color-teal-50);
   --theme-color-secondary-lighter: var(--color-teal-100);
@@ -70,6 +70,8 @@
   --trans-brightness-darker: rgba(0, 0, 0, .4);
   --trans-brightness-dark: rgba(0, 0, 0, .3);
   --trans-brightness-default: rgba(0, 0, 0, .2);
+  --trans-brightness-light: rgba(0, 0, 0, .1);
+  --trans-brightness-lighter: rgba(0, 0, 0, .05);
 
   --trans-brightness-rev-default: rgba(255, 255, 255, .1);
   --trans-brightness-rev-light: rgba(255, 255, 255, .2);
@@ -99,7 +101,8 @@
   --font-size-h5: 12px;
   --font-size-h6: 11px;
 
-  --line-height: 1.4em;
+  --line-height: 1.5em;
+  --line-height-strip-unit: 1.5;
   --font-family: '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif;
   --font-family-monospace: monospace;
 
@@ -116,4 +119,17 @@
   // DEFAULT STYLES
   --sd-background-color: var(--theme-color-grey-lightest);
   --sd-border-color: var(--theme-color-grey-lighter);
+  --sd-sheet-padding-v: var(--gap-xs);
+  --sd-sheet-padding-h: var(--gap-sm);
+
+  // CONTROL STYLES
+  --sd-sidebar-width: 180px;
+  --sd-topbar-height: 36px;
+
+  // Z-INDEX
+  --z-index-busy: 9999;
+  --z-index-dropdown: 5000;
+  --z-index-modal: 4000;
+  --z-index-sidebar: 3000;
+  --z-index-topbar: 2000;
 }

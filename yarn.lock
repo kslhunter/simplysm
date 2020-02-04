@@ -61,6 +61,20 @@
   dependencies:
     tslib "^1.9.0"
 
+"@angular/platform-browser@^8.2.14":
+  version "8.2.14"
+  resolved "https://registry.yarnpkg.com/@angular/platform-browser/-/platform-browser-8.2.14.tgz#31f082e8ba977f9b89964d721c38cbc32ce0e433"
+  integrity sha512-MtJptptyKzsE37JZ2VB/tI4cvMrdAH+cT9pMBYZd66YSZfKjIj5s+AZo7z8ncoskQSB1o3HMfDjSK7QXGx1mLQ==
+  dependencies:
+    tslib "^1.9.0"
+
+"@angular/router@^8.2.14":
+  version "8.2.14"
+  resolved "https://registry.yarnpkg.com/@angular/router/-/router-8.2.14.tgz#5f9f9707710983c2143aead79dcd2da520ae3eb8"
+  integrity sha512-DHA2BhODqV7F0g6ZKgFaZgbsqzHHWRcfWchCOrOVKu2rYiKUTwwHVLBgZAhrpNeinq2pWanVYSIhMr7wy+LfEA==
+  dependencies:
+    tslib "^1.9.0"
+
 "@azure/ms-rest-azure-env@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@azure/ms-rest-azure-env/-/ms-rest-azure-env-1.1.2.tgz#8505873afd4a1227ec040894a64fdd736b4a101f"
@@ -205,6 +219,46 @@
     esutils "^2.0.2"
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
+
+"@fortawesome/angular-fontawesome@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@fortawesome/angular-fontawesome/-/angular-fontawesome-0.5.0.tgz#5dbc01714b4af45a2ecb8dd63a6f8b462a8337e1"
+  integrity sha512-5IR/jNMddiEpgApcqSMfp7l5kZqOtxQYzkSLW6iZ4MZHbQQ+Kc9tu9qi2hro6VFSk/sPxeYEzkzGZUNrMYiwOg==
+  dependencies:
+    tslib "^1.9.0"
+
+"@fortawesome/fontawesome-common-types@^0.2.26":
+  version "0.2.26"
+  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-0.2.26.tgz#6e0b13a752676036f8196f8a1500d53a27b4adc1"
+  integrity sha512-CcM/fIFwZlRdiWG/25xE/wHbtyUuCtqoCTrr6BsWw7hH072fR++n4L56KPydAr3ANgMJMjT8v83ZFIsDc7kE+A==
+
+"@fortawesome/fontawesome-svg-core@^1.2.26":
+  version "1.2.26"
+  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-svg-core/-/fontawesome-svg-core-1.2.26.tgz#671569271d6b532cdea5e3deb8ff16f8b7ac251d"
+  integrity sha512-3Dfd/v2IztP1TxKOxZiB5+4kaOZK9mNy0KU1vVK7nFlPWz3gzxrCWB+AloQhQUoJ8HhGqbzjliK89Vl7PExGbw==
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.2.26"
+
+"@fortawesome/free-brands-svg-icons@^5.12.0":
+  version "5.12.0"
+  resolved "https://registry.yarnpkg.com/@fortawesome/free-brands-svg-icons/-/free-brands-svg-icons-5.12.0.tgz#b0c78627f811ac030ee0ac88df376567cf74119d"
+  integrity sha512-50uCFzVUki3wfmFmrMNLFhOt8dP6YZ53zwR4dK9FR7Lwq1IVHXnSBb8MtGLe3urLJ2sA+CSu7Pc7s3i6/zLxmA==
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.2.26"
+
+"@fortawesome/free-regular-svg-icons@^5.12.0":
+  version "5.12.0"
+  resolved "https://registry.yarnpkg.com/@fortawesome/free-regular-svg-icons/-/free-regular-svg-icons-5.12.0.tgz#9b7ed5dbd7581aab47960802cc116fdc8b6c8b7d"
+  integrity sha512-FAvpmylTs0PosHwHrWPQX6/7ODc9M11kCE6AOAujFufDYzqTj2cPHT4yJO7zTEkKdAbbusJzbWpnOboMuyjeQA==
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.2.26"
+
+"@fortawesome/free-solid-svg-icons@^5.12.0":
+  version "5.12.0"
+  resolved "https://registry.yarnpkg.com/@fortawesome/free-solid-svg-icons/-/free-solid-svg-icons-5.12.0.tgz#8decac5844e60453cc0c7c51437d1461df053a35"
+  integrity sha512-CnpsWs6GhTs9ekNB3d8rcO5HYqRkXbYKf2YNiAlTWbj5eVlPqsd/XH1F9If8jkcR1aegryAbln/qYeKVZzpM0g==
+  dependencies:
+    "@fortawesome/fontawesome-common-types" "^0.2.26"
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.0.0"

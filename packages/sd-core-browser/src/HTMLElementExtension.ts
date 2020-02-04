@@ -1,5 +1,5 @@
 import ResizeObserver from "resize-observer-polyfill";
-import {ResizeEvent, MutationEvent} from "./events";
+import {MutationEvent, ResizeEvent} from "./events";
 
 declare global {
   // tslint:disable-next-line:interface-name
@@ -12,7 +12,11 @@ declare global {
 
     findAll(selector: string): HTMLElement[];
 
+    findFirst(selector: string): HTMLElement | undefined;
+
     findParent(selector: string): HTMLElement | undefined;
+
+    findParent(element: HTMLElement): HTMLElement | undefined;
 
     isFocusable(): boolean;
 
@@ -21,6 +25,8 @@ declare global {
     findFocusableParent(): HTMLElement | undefined;
 
     addEventListener(type: "mutation", listener: (event: MutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
+
+    addEventListener(type: "mutation-child", listener: (event: MutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
     addEventListener(type: "resize", listener: (event: ResizeEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
@@ -56,10 +62,13 @@ HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string
   return {top, left};
 };
 
-HTMLElement.prototype.findParent = function (selector: string): HTMLElement | undefined {
+HTMLElement.prototype.findParent = function (arg: string | Element): HTMLElement | undefined {
   let cursor = this.parentElement;
   while (cursor) {
-    if (cursor.matches(selector)) {
+    if (typeof arg === "string" && cursor.matches(arg)) {
+      break;
+    }
+    else if (arg instanceof HTMLElement && arg === cursor) {
       break;
     }
 
@@ -74,16 +83,13 @@ HTMLElement.prototype.prependChild = function <T extends HTMLElement>(newChild: 
 };
 
 HTMLElement.prototype.findAll = function (selector: string): HTMLElement[] {
-  if (process.versions.node || /Chrome/.test(navigator.userAgent)) {
-    return Array.from(
-      this.querySelectorAll(selector.split(",").map((item) => `:scope ${item}`).join(","))
-    ).ofType(HTMLElement);
-  }
-  else {
-    return Array.from(
-      this.querySelectorAll(selector.split(",").map((item) => `:scope ${item}`).join(","))
-    ).ofType(HTMLElement);
-  }
+  return Array.from(
+    this.querySelectorAll(selector.split(",").map((item) => `:scope ${item}`).join(","))
+  ).ofType(HTMLElement);
+};
+
+HTMLElement.prototype.findFirst = function (selector: string): HTMLElement | undefined {
+  return (this.querySelector(selector.split(",").map((item) => `:scope ${item}`).join(",")) as HTMLElement | null) || undefined;
 };
 
 const focusableSelectorList = [
@@ -139,6 +145,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
       event.newWidth = this.offsetWidth;
       event.prevHeight = prevHeight;
       event.newHeight = this.offsetHeight;
+      event.relatedTarget = this;
 
       prevWidth = this.offsetWidth;
       prevHeight = this.offsetHeight;
@@ -169,9 +176,11 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
       return;
     }
 
-    const observer = new window["MutationObserver"]((mutations) => {
+
+    const observer = new window.MutationObserver((mutations) => {
       const event = new CustomEvent("mutation") as any;
       event.mutations = mutations;
+      event.relatedTarget = this;
 
       if (listener["handleEvent"]) {
         (listener as EventListenerObject).handleEvent(event);
@@ -194,6 +203,38 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
       subtree: options === true
     });
   }
+  else if (type === "mutation-child") {
+    if (this["__mutationChildEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options)) {
+      return;
+    }
+
+
+    const observer = new window.MutationObserver((mutations) => {
+      const event = new CustomEvent("mutation-child") as any;
+      event.mutations = mutations;
+      event.relatedTarget = this;
+
+      if (listener["handleEvent"]) {
+        (listener as EventListenerObject).handleEvent(event);
+      }
+      else {
+        (listener as EventListener)(event);
+      }
+    });
+
+
+    this["__mutationChildEventListeners__"] = this["__mutationChildEventListeners__"] ?? [];
+    this["__mutationChildEventListeners__"].push({listener, options, observer});
+
+    observer.observe(this, {
+      childList: true,
+      attributes: false,
+      attributeOldValue: false,
+      characterData: false,
+      characterDataOldValue: false,
+      subtree: options === true
+    });
+  }
   else {
     orgAddEventListener.bind(this)(type, listener, options);
   }
@@ -213,6 +254,13 @@ HTMLElement.prototype.removeEventListener = function (type: string, listener: ((
     if (obj) {
       obj.observer.disconnect();
       this["__mutationEventListeners__"].remove(obj);
+    }
+  }
+  else if (type === "mutation-child") {
+    const obj = this["__mutationChildEventListeners__"]?.single((item: any) => item.listener === listener && item.options === options);
+    if (obj) {
+      obj.observer.disconnect();
+      this["__mutationChildEventListeners__"].remove(obj);
     }
   }
   else {

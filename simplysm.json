@@ -3,7 +3,10 @@
     "@simplysm/sd-angular": {
       "type": "library",
       "framework": "angular",
-      "publish": "npm"
+      "publish": "npm",
+      "polyfills": [
+        "@simplysm/sd-core-browser"
+      ]
     },
     "@simplysm/sd-cli": {
       "type": "library",

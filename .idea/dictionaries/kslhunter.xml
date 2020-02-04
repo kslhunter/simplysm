@@ -3,9 +3,12 @@
     <words>
       <w>anymatch</w>
       <w>bluegrey</w>
+      <w>forcusable</w>
       <w>middlewares</w>
       <w>simplysm</w>
       <w>sorm</w>
+      <w>textfield</w>
+      <w>topbar</w>
       <w>upsert</w>
       <w>uuids</w>
     </words>

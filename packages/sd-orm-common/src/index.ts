@@ -1,7 +1,6 @@
 export * from "./common";
 export * from "./decorator";
 export * from "./definition";
-export * from "./index";
 export * from "./model";
 export * from "./query-definition";
 export * from "./query/DbContext";
