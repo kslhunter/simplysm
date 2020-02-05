@@ -54,6 +54,16 @@ a {
   &:focus {
     color: get($theme-color, primary, dark);
   }
+
+  &[sd-disabled=true] {
+    color: get($theme-color, grey, default);
+    cursor: default;
+
+    &:hover,
+    &:focus {
+      color: get($theme-color, grey, default);
+    }
+  }
 }
 
 ::-webkit-scrollbar-track {

@@ -170,7 +170,7 @@ export class QueryBuilder {
     const newAdObj = {};
     if (additionalInsertObj) {
       for (const key of Object.keys(additionalInsertObj)) {
-        newAdObj[key] = ormHelpers.getFieldQuery(obj[key]);
+        newAdObj[key] = ormHelpers.getFieldQuery(additionalInsertObj[key]);
       }
     }
 

@@ -10,6 +10,6 @@ export class LinkActionDirective {
 
   @Input()
   @SdTypeValidate(Boolean)
-  @HostBinding("class._disabled")
+  @HostBinding("attr.sd-disabled")
   public disabled?: boolean;
 }

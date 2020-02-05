@@ -5,21 +5,21 @@ import {SdTypeValidate} from "../decorator/SdTypeValidate";
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <a *ngIf="hasPrev" (click)="onPrevClick()">
-      <sd-icon [icon]="'angle-double-left'" [fixedWidth]="true"></sd-icon>
-    </a>
-    <a *ngFor="let displayPage of displayPages; trackBy: trackByPageFn" (click)="onPageClick(displayPage)"
-       [attr.sd-selected]="displayPage === page">
-      {{ displayPage + 1 }}
-    </a>
-    <a *ngIf="hasNext" (click)="onNextClick()">
-      <sd-icon [icon]="'angle-double-right'" [fixedWidth]="true"></sd-icon>
-    </a>`
+  template: `    
+    <ng-container *ngIf="length > 0">
+      <a [disabled]="!hasPrev" (click)="onPrevClick()">
+        <sd-icon [icon]="'angle-double-left'" [fixedWidth]="true"></sd-icon>
+      </a>
+      <a *ngFor="let displayPage of displayPages; trackBy: trackByPageFn" (click)="onPageClick(displayPage)"
+         [attr.sd-selected]="displayPage === page">
+        {{ displayPage + 1 }}
+      </a>
+      <a class="_next" [disabled]="!hasNext" (click)="onNextClick()">
+        <sd-icon [icon]="'angle-double-right'" [fixedWidth]="true"></sd-icon>
+      </a>
+    </ng-container>`
 })
 export class SdPaginationControl {
-
-
   @Input()
   @SdTypeValidate({
     type: Number,
@@ -73,11 +73,15 @@ export class SdPaginationControl {
   }
 
   public onNextClick(): void {
+    if (!this.hasNext) return;
+
     this.page = (this.displayPages.last() || 0) + 1;
     this.pageChange.emit(this.page);
   }
 
   public onPrevClick(): void {
+    if (!this.hasPrev) return;
+
     this.page = (this.displayPages[0] || 0) - 1;
     this.pageChange.emit(this.page);
   }

@@ -172,6 +172,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     ) {
       return;
     }
+
     this.closePopup();
   };
 }

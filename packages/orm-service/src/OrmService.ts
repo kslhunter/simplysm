@@ -1,7 +1,7 @@
 import {SocketServiceBase} from "@simplism/socket-server";
 import {IDbConnectionConfig} from "@simplism/orm-common";
 import {DbConnection} from "@simplism/orm-connector";
-import {DateOnly, DateTime, Logger, Time} from "@simplism/core";
+import {DateOnly, DateTime, JsonConvert, Logger, Time} from "@simplism/core";
 import {IQueryDef} from "@simplism/orm-query";
 
 export class OrmService extends SocketServiceBase {
@@ -112,6 +112,8 @@ export class OrmService extends SocketServiceBase {
 
     for (const joinDef of joinDefs) {
       const grouped: { key: any; values: any[] }[] = [];
+      const groupedMap = new Map<string, any[]>();
+
       for (const item of result) {
         const keys = Object.keys(item)
           .filter(key => !key.startsWith(joinDef.as + "."));
@@ -130,7 +132,16 @@ export class OrmService extends SocketServiceBase {
           valueObj[valueKey.slice(joinDef.as.length + 1)] = item[valueKey];
         }
 
-        const exists = grouped.single(g => Object.equal(g.key, keyObj));
+        const keyJson = JsonConvert.stringify(keyObj)!;
+        if (groupedMap.has(keyJson)) {
+          groupedMap.get(keyJson)!.push(valueObj);
+        }
+        else {
+          const newValues = [valueObj];
+          grouped.push({key: keyObj, values: newValues});
+          groupedMap.set(keyJson, newValues);
+        }
+        /*const exists = grouped.single(g => Object.equal(g.key, keyObj));
         if (exists) {
           exists.values.push(valueObj);
         }
@@ -139,7 +150,7 @@ export class OrmService extends SocketServiceBase {
             key: keyObj,
             values: [valueObj]
           });
-        }
+        }*/
       }
 
       result = grouped.map(item => ({
