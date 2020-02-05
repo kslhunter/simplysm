@@ -181,7 +181,9 @@ export class QueryUtil {
     if (option?.joins && Object.keys(option.joins).length > 0) {
       const joinKeys = Object.keys(option.joins).orderByDesc((key) => key.length);
       for (const joinKey of joinKeys) {
-        const grouped = new Map<string, any | any[]>();
+        // const grouped = new Map<string, any | any[]>();
+        const grouped: { key: any; values: any | any[] }[] = [];
+        const groupedMultiMap = new Map<string, any | any[]>();
 
         for (const item of result) {
           const keyObjKeys = Object.keys(item).filter((key) => !key.startsWith(joinKey + "."));
@@ -189,7 +191,6 @@ export class QueryUtil {
           for (const keyObjKey of keyObjKeys) {
             keyObj[keyObjKey] = item[keyObjKey];
           }
-          const keyJson = JsonConvert.stringify(keyObj);
 
           const valueObjKeys = Object.keys(item).filter((key) => key.startsWith(joinKey + "."));
           const valueObj: any = {};
@@ -198,28 +199,26 @@ export class QueryUtil {
           }
 
           if (option.joins[joinKey].isSingle) {
-            if (grouped.has(keyJson)) {
-              throw new Error("'SINGLE JOIN'에 복수의 결과물이 있습니다. TOP 1 등의 옵션을 설정하세요.");
-            }
-            else {
-              grouped.set(keyJson, valueObj);
-            }
+            grouped.push({key: keyObj, values: valueObj});
           }
           else {
-            if (grouped.has(keyJson)) {
-              grouped.get(keyJson).push(valueObj);
+            const keyJson = JsonConvert.stringify(keyObj);
+            if (groupedMultiMap.has(keyJson)) {
+              groupedMultiMap.get(keyJson).push(valueObj);
             }
             else {
-              grouped.set(keyJson, [valueObj]);
+              const valueArr = [valueObj];
+              grouped.push({key: keyObj, values: valueArr});
+              groupedMultiMap.set(keyJson, valueArr);
             }
           }
         }
 
-        result = Array.from(grouped.entries()).map((pair) => {
-          if (pair[1] instanceof Array) {
+        result = grouped.map((groupedItem) => {
+          if (groupedItem.values instanceof Array) {
             return {
-              ...JsonConvert.parse(pair[0]),
-              [joinKey]: pair[1]
+              ...groupedItem.key,
+              [joinKey]: groupedItem.values
                 .filter((item1) =>
                   Object.keys(item1)
                     .filter((key) => !(item1[key] instanceof Array) || item1[key].length > 0)
@@ -229,9 +228,9 @@ export class QueryUtil {
           }
           else {
             return {
-              ...JsonConvert.parse(pair[0]),
-              ...Object.keys(pair[1]).length > 0 ? {
-                [joinKey]: pair[1]
+              ...groupedItem.key,
+              ...Object.keys(groupedItem.values).length > 0 ? {
+                [joinKey]: groupedItem.values
               } : {}
             };
           }
