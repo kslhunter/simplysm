@@ -33,6 +33,8 @@ declare global {
 
     sum<P extends NonNullable<any>>(selector: (item: T) => P): P | undefined;
 
+    sum<K extends keyof T>(key: keyof T): T[K] | undefined;
+
     max(): T | undefined;
 
     max<P extends NonNullable<any>>(selector: (item: T) => P): P | undefined;
@@ -165,10 +167,10 @@ Array.prototype.last = function (predicate?: (item: any, index: number) => boole
   }
 };
 
-Array.prototype.sum = function (selector?: (item: any) => any): any {
+Array.prototype.sum = function (selector?: any): any {
   let result;
   for (let item of this) {
-    item = selector ? selector(item) : item;
+    item = selector ? typeof selector === "function" ? selector(item) : item[selector] : item;
     if (result) {
       result += item;
     }

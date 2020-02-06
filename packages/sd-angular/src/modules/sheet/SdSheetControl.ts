@@ -726,7 +726,6 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
   @Output()
   public readonly expandedItemTracksChange = new EventEmitter<any[]>();
 
-
   @Input()
   @SdTypeValidate({
     type: Boolean,

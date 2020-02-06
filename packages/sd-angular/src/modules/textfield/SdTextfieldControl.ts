@@ -289,31 +289,81 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   }
 
   public onInputInput(event: Event): void {
+    let errorMessage = "";
+
     const inputEl = event.target as (HTMLInputElement | HTMLTextAreaElement);
-    let value;
-    if (this.type === "number") {
-      value = !inputEl.value ? undefined : Number(inputEl.value.replace(/,/g, ""));
+
+    if (!inputEl.value) {
+      this.value = undefined;
     }
-    else if (this.type === "year") {
-      value = !inputEl.value ? undefined : inputEl.value.length === 4 ? DateOnly.parse(inputEl.value) : inputEl.value;
+    else if (this.type === "number") {
+      const inputValue = inputEl.value.replace(/,/g, "");
+      const newValue = inputValue.endsWith(".") || Number.isNaN(Number(inputValue)) ? inputValue : Number(inputValue);
+      this.value = newValue;
+
+      if (this.value === newValue) {
+        inputEl.value = newValue.toString();
+      }
+
+      if (typeof this.value !== "number") {
+        errorMessage = "숫자를 입력하세요";
+      }
+      else {
+        errorMessage = "";
+      }
     }
-    else if (this.type === "date" || this.type === "month") {
-      value = !inputEl.value ? undefined : DateOnly.parse(inputEl.value);
+    else if (["year", "month", "date"].includes(this.type)) {
+      try {
+        this.value = DateOnly.parse(inputEl.value);
+      }
+      catch (err) {
+        this.value = inputEl.value;
+      }
+
+      if (!(this.value instanceof DateOnly)) {
+        errorMessage = "날짜를 입력하세요";
+      }
+      else {
+        errorMessage = "";
+      }
     }
-    else if (this.type === "datetime") {
-      value = !inputEl.value ? undefined : DateTime.parse(inputEl.value);
+    else if (["datetime", "datetime-sec"].includes(this.type)) {
+      try {
+        this.value = DateTime.parse(inputEl.value);
+      }
+      catch (err) {
+        this.value = inputEl.value;
+      }
+
+      if (!(this.value instanceof DateTime)) {
+        errorMessage = "날짜 및 시간을 입력하세요";
+      }
+      else {
+        errorMessage = "";
+      }
     }
-    else if (this.type === "time") {
-      value = !inputEl.value ? undefined : Time.parse(inputEl.value);
+    else if (["time", "time-sec"].includes(this.type)) {
+      try {
+        this.value = Time.parse(inputEl.value);
+      }
+      catch (err) {
+        this.value = inputEl.value;
+      }
+
+      if (!(this.value instanceof Time)) {
+        errorMessage = "시간을 입력하세요";
+      }
+      else {
+        errorMessage = "";
+      }
     }
     else {
-      value = inputEl.value;
+      this.value = inputEl.value;
     }
 
-    if (this.value !== value) {
-      this.value = value;
-      this.valueChange.emit(this.value);
-    }
+    inputEl.setCustomValidity(errorMessage);
+
+    this.valueChange.emit(this.value);
   }
 
   public onFocus(event: Event): void {
