@@ -4,8 +4,8 @@ import {SdSheetColumnControlModule} from "./SdSheetColumnControlModule";
 import {SdAngularModule} from "../SdAngularModule";
 import {SdAnchorControlModule} from "./SdAnchorControlModule";
 import {SdIconControlModule} from "./SdIconControlModule";
-import {SdDockContainerControlModule} from "./SdDockContainerControlModule";
 import {SdDockControlModule} from "./SdDockControlModule";
+import {SdDockContainerControlModule} from "./SdDockContainerControlModule";
 import {SdPaginationControlModule} from "./SdPaginationControlModule";
 import {SdPaneControlModule} from "./SdPaneControlModule";
 
@@ -16,8 +16,8 @@ import {SdPaneControlModule} from "./SdPaneControlModule";
     SdAngularModule,
     SdAnchorControlModule,
     SdIconControlModule,
-    SdDockContainerControlModule,
     SdDockControlModule,
+    SdDockContainerControlModule,
     SdPaginationControlModule,
     SdPaneControlModule
   ],

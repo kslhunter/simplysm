@@ -1,5 +1,6 @@
 import {FsUtil, Logger} from "@simplysm/sd-core-node";
 import * as ts from "typescript";
+import {FileWatcherEventKind} from "typescript";
 import * as path from "path";
 import * as os from "os";
 import {ISdMetadataBundleNgModuleDef, SdBundleMetadata, SdObjectMetadata} from "../utils/SdMetadata";
@@ -53,10 +54,12 @@ export class SdTypescriptChecker {
     // GEN FILE CACHE 초기화
     //--------------------------------------------
 
-    const moduleDirFileNames = await FsUtil.readdirAsync(this._moduleDirSrcPath);
-    for (const moduleDirFileName of moduleDirFileNames) {
-      const moduleDirFilePath = path.resolve(this._moduleDirSrcPath, moduleDirFileName);
-      this._genFileCache[moduleDirFilePath] = await FsUtil.readFileAsync(moduleDirFilePath);
+    if (FsUtil.exists(this._moduleDirSrcPath)) {
+      const moduleDirFileNames = await FsUtil.readdirAsync(this._moduleDirSrcPath);
+      for (const moduleDirFileName of moduleDirFileNames) {
+        const moduleDirFilePath = path.resolve(this._moduleDirSrcPath, moduleDirFileName);
+        this._genFileCache[moduleDirFilePath] = await FsUtil.readFileAsync(moduleDirFilePath);
+      }
     }
     if (this._indexTsFilePath && FsUtil.exists(this._indexTsFilePath)) {
       this._genFileCache[this._indexTsFilePath] = await FsUtil.readFileAsync(this._indexTsFilePath);
@@ -98,6 +101,10 @@ export class SdTypescriptChecker {
         if (this._watchFiles.length <= 0) {
           return;
         }
+
+        const warnings: string[] = [];
+        const errors: string[] = [];
+
         const watchFileInfos = this._watchFiles
           .distinct()
           .map((item) => this._getWatchFileInfo(item));
@@ -107,54 +114,44 @@ export class SdTypescriptChecker {
         // 타입체크 결과 구성
         //--------------------------------------------
 
-        const messages = this._diagnostics.map((diagnostic) => SdTypescriptUtils.getDiagnosticMessage(diagnostic));
-        this._diagnostics.clear();
+        {
+          const checkResult = this._getDiagnosticResult(this._diagnostics);
+          this._diagnostics.clear();
 
-        const warnings = messages.filter((item) => item.severity === "warning")
-          .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
+          warnings.push(...checkResult.warnings);
+          errors.push(...checkResult.errors);
 
-        const errors = messages.filter((item) => item.severity === "error")
-          .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
-
-        const errorWatchFileInfos = watchFileInfos.filter((item) =>
-          messages.some((item1) =>
-            item1.severity === "warning" || item1.severity === "error" &&
-            item1.file &&
-            path.resolve(item1.file) === path.resolve(item.watchFile.fileName)
-          )
-        );
-        this._watchFiles.push(...errorWatchFileInfos.map((item) => item.watchFile));
+          const invalidWatchFiles = watchFileInfos.filter((item) =>
+            checkResult.invalidFilePaths.filter((item1) =>
+              path.resolve(item.watchFile.fileName) === path.resolve(item1)
+            )
+          ).map((item) => item.watchFile);
+          this._watchFiles.push(...invalidWatchFiles);
+        }
 
         //--------------------------------------------
         // LINT 수행
         //--------------------------------------------
 
         // TSLINT 메시지 구성
-        if (watchFileInfos.length > 0) {
-          const lintFailures = await this._lintAsync(watchFileInfos);
-          for (const lintFailure of lintFailures) {
-            const file = lintFailure.getFileName();
-            const lineAndCharacter = lintFailure.getStartPosition().getLineAndCharacter();
-            const line = lineAndCharacter.line;
-            const char = lineAndCharacter.character;
-            const severity = lintFailure.getRuleSeverity();
-            const messageText = lintFailure.getFailure();
-            const rule = lintFailure.getRuleName();
+        {
+          const lintFilePaths = watchFileInfos
+            .filter((item) =>
+              !item.isDeleted &&
+              item.isTypescriptFile &&
+              !item.watchFile.fileName.endsWith(".d.ts")
+            ).map((item) => item.watchFile.fileName);
 
-            const text = `${file}(${line}, ${char}): ${rule}: ${severity} ${messageText}`;
+          const lintResult = await this._lintAsync(lintFilePaths);
+          warnings.push(...lintResult.warnings);
+          errors.push(...lintResult.errors);
 
-            if (severity === "warning") {
-              warnings.push(text);
-            }
-            else {
-              errors.push(text);
-
-              const lintErrorWatchFileInfos = watchFileInfos.filter((item) =>
-                path.resolve(item.watchFile.fileName) === path.resolve(file)
-              );
-              this._watchFiles.push(...lintErrorWatchFileInfos.map((item) => item.watchFile));
-            }
-          }
+          const invalidWatchFiles = watchFileInfos.filter((item) =>
+            lintResult.invalidFilePaths.filter((item1) =>
+              path.resolve(item.watchFile.fileName) === path.resolve(item1)
+            )
+          ).map((item) => item.watchFile);
+          this._watchFiles.push(...invalidWatchFiles);
         }
 
         //--------------------------------------------
@@ -162,209 +159,8 @@ export class SdTypescriptChecker {
         //--------------------------------------------
 
         if (this._isAngular) {
-          // 메타데이터 정보 업데이트
-          for (const watchFileInfo of watchFileInfos) {
-            if (watchFileInfo.isDeleted || !watchFileInfo.isTypescriptFile) {
-              this._metadataBundle.unregister(watchFileInfo.metadataFilePath);
-              continue;
-            }
-
-            // 신규 패키지 파일인 경우 메타데이터 파일 생성
-            if (watchFileInfo.isPackageFile) {
-              const result = await this._generateMetadataFileAsync(watchFileInfo);
-              if (result.warnings.length > 0 || result.errors.length > 0) {
-                warnings.push(...result.warnings);
-                errors.push(...result.errors);
-
-                this._watchFiles.push(watchFileInfo.watchFile);
-              }
-            }
-
-            if (FsUtil.exists(watchFileInfo.metadataFilePath)) {
-              await this._metadataBundle.registerAsync(watchFileInfo.metadataFilePath, watchFileInfo.isGeneratedFile);
-            }
-          }
-
-          // 메타데이터로 NgModule 정의 가져오기
-          const ngModuleDefs = this._metadataBundle.ngModuleDefs;
-
-          // 신규 NgModule, NgRoutingModule 파일 생성
-          const moduleFilePaths: string[] = [];
-          for (const ngModuleDef of ngModuleDefs) {
-            if (ngModuleDef.moduleName || !ngModuleDef.isForGeneratedFile) continue;
-            const ngModuleName = ngModuleDef.className;
-
-            const importObj: { [requirePath: string]: string[] } = {
-              "@angular/core": ["NgModule"]
-            };
-
-            // NgModule
-            const ngModuleDeclarations: string[] = [];
-            const ngModuleExports: string[] = [];
-            const ngModuleEntryComponents: string[] = [];
-            const ngModuleImports: string[] = [];
-            for (const exportClass of ngModuleDef.exports) {
-              if (!exportClass.name) throw new NotImplementError();
-
-              const exportClassSourceFilePath = path.resolve(
-                this._srcPath,
-                path.relative(
-                  this._distPath,
-                  exportClass.moduleMetadata.filePath.replace(/\.metadata\.json$/, ".ts")
-                )
-              );
-              if (!exportClass.decorators) throw new NotImplementError();
-              for (const decorator of exportClass.decorators) {
-                if (decorator.expression.module === "@angular/core" && decorator.expression.name === "Component") {
-                  ngModuleExports.push(exportClass.name);
-                  ngModuleDeclarations.push(exportClass.name);
-                  if (exportClass.name.endsWith("PrintTemplate") || exportClass.name.endsWith("Modal")) {
-                    ngModuleEntryComponents.push(exportClass.name);
-                  }
-                }
-                else if (decorator.expression.module === "@angular/core" && decorator.expression.name === "Directive") {
-                  ngModuleExports.push(exportClass.name);
-                  ngModuleDeclarations.push(exportClass.name);
-                }
-                else if (decorator.expression.module === "@angular/core" && decorator.expression.name === "Pipe") {
-                  ngModuleExports.push(exportClass.name);
-                  ngModuleDeclarations.push(exportClass.name);
-                }
-                else {
-                  // IGNORE
-                  // throw new NotImplementError();
-                }
-              }
-
-              const relativePath = path.relative(this._moduleDirSrcPath, exportClassSourceFilePath)
-                .replace(/\\/g, "/")
-                .replace(/\.ts$/, "");
-              importObj[relativePath] = importObj[relativePath] ?? [];
-              if (!importObj[relativePath].includes(exportClass.name)) {
-                importObj[relativePath].push(exportClass.name);
-              }
-
-              const exportClassSourceFile = this._program.getSourceFile(exportClassSourceFilePath);
-              if (!exportClassSourceFile) throw new NotImplementError();
-
-              const exportClassImportNodes = exportClassSourceFile["imports"];
-              if (exportClassImportNodes && exportClassImportNodes instanceof Array) {
-                for (const exportClassImportNode of exportClassImportNodes) {
-                  if (exportClassImportNode.text === "tslib") continue;
-
-                  const importModuleName = exportClassImportNode.text;
-                  const importClassNames = exportClassImportNode.parent.importClause?.namedBindings?.elements?.map((item: any) => item.name.text);
-                  if (!importClassNames) continue;
-
-
-                  const needModuleDefs = ngModuleDefs.filter((moduleDef) =>
-                    moduleDef.exports.some((exp) =>
-                      (
-                        (exp.moduleMetadata.name === undefined && importModuleName.startsWith(".")) ||
-                        (exp.moduleMetadata.name === importModuleName)
-                      ) &&
-                      importClassNames.includes(exp.name)
-                    )
-                  );
-
-                  for (const needModuleDef of needModuleDefs) {
-                    const realModuleImportObj = this._getRealModuleImportObj(needModuleDef);
-
-                    ngModuleImports.push(realModuleImportObj.targetName);
-
-                    const requirePath = realModuleImportObj.requirePath;
-                    importObj[requirePath] = importObj[requirePath] ?? [];
-                    if (!importObj[requirePath].includes(realModuleImportObj.targetName)) {
-                      importObj[requirePath].push(realModuleImportObj.targetName);
-                    }
-                  }
-                }
-              }
-              else {
-                throw new NotImplementError();
-              }
-
-              const componentDec = Array.from(exportClass.decorators).single((dec) => dec.expression.module === "@angular/core" && dec.expression.name === "Component");
-              if (componentDec) {
-                if (!componentDec.arguments || !componentDec.arguments[0] || !(componentDec.arguments[0] instanceof SdObjectMetadata)) throw new NotImplementError();
-                const arg = componentDec.arguments[0] as SdObjectMetadata;
-                const templateText = arg.getChildString("template");
-                if (templateText) {
-                  const templateDOM = new JSDOM(templateText);
-
-                  const needModuleDefs = ngModuleDefs.filter((item) =>
-                    item.exports.some((exp) =>
-                      exp.decorators &&
-                      exp.decorators.some((dec) =>
-                        dec.expression.module === "@angular/core" &&
-                        dec.expression.name === "Component" &&
-                        dec.arguments &&
-                        dec.arguments[0] &&
-                        dec.arguments[0] instanceof SdObjectMetadata &&
-                        dec.arguments[0].getChildString("selector") &&
-                        templateDOM.window.document.querySelector(dec.arguments[0].getChildString("selector")!)
-                      )
-                    )
-                  );
-
-                  for (const needModuleDef of needModuleDefs) {
-                    const realModuleImportObj = this._getRealModuleImportObj(needModuleDef);
-
-                    ngModuleImports.push(realModuleImportObj.targetName);
-
-                    const requirePath = realModuleImportObj.requirePath;
-                    importObj[requirePath] = importObj[requirePath] ?? [];
-                    if (!importObj[requirePath].includes(needModuleDef.className)) {
-                      importObj[requirePath].push(needModuleDef.className);
-                    }
-                  }
-                }
-              }
-            }
-
-            if (ngModuleDeclarations.length > 0) {
-              const importText = Object.keys(importObj)
-                .map((key) => `import {${importObj[key].join(", ")}} from "${key}";`);
-              const ngModuleContent = `
-${importText.join("\n")}
-
-@NgModule({
-  imports: [${ngModuleImports.length > 0 ? "\n    " + ngModuleImports.join(",\n    ") + "\n  " : ""}],
-  declarations: [${ngModuleDeclarations.length > 0 ? "\n    " + ngModuleDeclarations.join(",\n    ") + "\n  " : ""}],
-  exports: [${ngModuleExports.length > 0 ? "\n    " + ngModuleExports.join(",\n    ") + "\n  " : ""}],
-  entryComponents: [${ngModuleEntryComponents.length > 0 ? "\n    " + ngModuleEntryComponents.join(",\n    ") + "\n  " : ""}]
-})
-export class ${ngModuleName} {
-}`.trim();
-
-              const distPath = path.resolve(this._moduleDirSrcPath, ngModuleName + ".ts");
-              if (this._genFileCache[distPath] !== ngModuleContent) {
-                this._genFileCache[distPath] = ngModuleContent;
-                await FsUtil.writeFileAsync(distPath, ngModuleContent);
-              }
-
-              moduleFilePaths.push(distPath);
-            }
-            else {
-              const distPath = path.resolve(this._moduleDirSrcPath, ngModuleName + ".ts");
-              await FsUtil.removeAsync(distPath);
-              delete this._genFileCache[distPath];
-            }
-          }
-
-          // 삭제된 모듈 지우기
-          const moduleDirFileNames = await FsUtil.readdirAsync(this._moduleDirSrcPath);
-          for (const moduleDirFileName of moduleDirFileNames) {
-            const moduleDirFilePath = path.resolve(this._moduleDirSrcPath, moduleDirFileName);
-            if (!moduleFilePaths.includes(path.resolve(this._moduleDirSrcPath, moduleDirFileName))) {
-              await FsUtil.removeAsync(moduleDirFilePath);
-              delete this._genFileCache[moduleDirFilePath];
-            }
-          }
-
-          // TODO: NgRoutingModule
-
-          // TODO: 신규 _routes 파일 생성
+          await this._updateMetadataInfoAsync(watchFileInfos);
+          await this._generateNgModuleAsync();
         }
 
         //--------------------------------------------
@@ -420,7 +216,106 @@ export class ${ngModuleName} {
   }
 
   public async runAsync(): Promise<void> {
-    throw new NotImplementError();
+    this._logger.log("타입체크를 시작합니다.");
+
+    const tsConfig = await FsUtil.readJsonAsync(this._tsconfigPath);
+    const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, this._packagePath);
+
+    const doing = async () => {
+      let changed = false;
+
+      const warnings: string[] = [];
+      const errors: string[] = [];
+
+      this._program = ts.createProgram(parsedTsConfig.fileNames, parsedTsConfig.options);
+
+      //--------------------------------------------
+      // 타입체크
+      //--------------------------------------------
+
+      let diagnostics: ts.Diagnostic[] = [];
+      if (parsedTsConfig.options.declaration) {
+        diagnostics = diagnostics.concat(ts.getPreEmitDiagnostics(this._program));
+        const emitResult = this._program.emit(
+          undefined,
+          undefined,
+          undefined,
+          true,
+          undefined
+        );
+        diagnostics = diagnostics.concat(emitResult.diagnostics);
+      }
+      else {
+        diagnostics = diagnostics
+          .concat(this._program.getSemanticDiagnostics())
+          .concat(this._program.getSyntacticDiagnostics());
+      }
+      const checkResult = this._getDiagnosticResult(diagnostics);
+      warnings.push(...checkResult.warnings);
+      errors.push(...checkResult.errors);
+
+      //--------------------------------------------
+      // LINT 수행
+      //--------------------------------------------
+
+      const sourceFiles = this._program.getSourceFiles();
+      const sourceFilePaths = sourceFiles
+        .filter((item) =>
+          item.fileName.endsWith(".ts") &&
+          !item.fileName.endsWith(".d.ts") &&
+          !path.relative(this._srcPath, item.fileName).includes("..")
+        )
+        .map((item) => item.fileName);
+
+      const lintResult = await this._lintAsync(sourceFilePaths);
+      warnings.push(...lintResult.warnings);
+      errors.push(...lintResult.errors);
+
+      //--------------------------------------------
+      // ANGULAR 모듈 등 생성
+      //--------------------------------------------
+
+      const watchFileInfos = sourceFiles.map((item) =>
+        this._getWatchFileInfo({
+          fileName: item.fileName,
+          eventKind: FileWatcherEventKind.Created
+        })
+      );
+
+      if (this._isAngular) {
+        await this._updateMetadataInfoAsync(watchFileInfos);
+        changed = changed || await this._generateNgModuleAsync();
+      }
+
+      //--------------------------------------------
+      // INDEX 파일 생성
+      //--------------------------------------------
+
+      if (this._indexTsFilePath) {
+        changed = changed || await this._generateIndexTsFileAsync();
+      }
+
+      //--------------------------------------------
+      // 마무리
+      //--------------------------------------------
+
+      if (changed) {
+        await doing();
+      }
+      else {
+        if (warnings.length > 0) {
+          this._logger.warn("타입체크 경고\n", warnings.join("\n").trim());
+        }
+
+        if (errors.length > 0) {
+          this._logger.error("타입체크 오류\n", errors.join("\n").trim());
+        }
+
+        this._logger.log("타입체크가 완료되었습니다.");
+      }
+    };
+
+    await doing();
   }
 
   private _getWatchFileInfo(watchFile: { eventKind: ts.FileWatcherEventKind; fileName: string }): IWatchFileInfo {
@@ -497,7 +392,7 @@ export class ${ngModuleName} {
     };
   }
 
-  private async _generateIndexTsFileAsync(): Promise<void> {
+  private async _generateIndexTsFileAsync(): Promise<boolean> {
     if (!this._indexTsFilePath) throw new NotImplementError();
 
     const importTexts: string[] = [];
@@ -529,7 +424,10 @@ export class ${ngModuleName} {
     if (this._genFileCache[this._indexTsFilePath] !== content) {
       this._genFileCache[this._indexTsFilePath] = content;
       await FsUtil.writeFileAsync(this._indexTsFilePath, content);
+      return true;
     }
+
+    return false;
   }
 
   private _getRealModuleImportObj(moduleDef: ISdMetadataBundleNgModuleDef): { requirePath: string; targetName: string } {
@@ -549,7 +447,10 @@ export class ${ngModuleName} {
     return {requirePath, targetName};
   }
 
-  private async _lintAsync(watchFileInfo: IWatchFileInfo[]): Promise<tslint.RuleFailure[]> {
+  private async _lintAsync(sourceFilePaths: string[]): Promise<{ warnings: string[]; errors: string[]; invalidFilePaths: string[] }> {
+    const warnings: string[] = [];
+    const errors: string[] = [];
+
     const lintConfigPath = path.resolve(this._packagePath, "tslint.json");
     const config = tslint.Configuration.findConfiguration(lintConfigPath).results;
     if (!config) {
@@ -558,18 +459,279 @@ export class ${ngModuleName} {
 
     const linter = new tslint.Linter({formatter: "json", fix: false}, this._program);
 
-    const lintFileInfos = watchFileInfo
-      .filter((item) =>
-        !item.isDeleted &&
-        item.isTypescriptFile &&
-        !item.watchFile.fileName.endsWith(".d.ts")
-      )
-      .distinct();
-    for (const lintFileInfo of lintFileInfos) {
-      linter.lint(lintFileInfo.watchFile.fileName, await FsUtil.readFileAsync(lintFileInfo.watchFile.fileName), config);
+    for (const sourceFilePath of sourceFilePaths.distinct()) {
+      linter.lint(sourceFilePath, await FsUtil.readFileAsync(sourceFilePath), config);
     }
 
-    return linter.getResult().failures;
+    const failures = linter.getResult().failures;
+    for (const lintFailure of failures) {
+      const file = lintFailure.getFileName();
+      const lineAndCharacter = lintFailure.getStartPosition().getLineAndCharacter();
+      const line = lineAndCharacter.line;
+      const char = lineAndCharacter.character;
+      const severity = lintFailure.getRuleSeverity();
+      const messageText = lintFailure.getFailure();
+      const rule = lintFailure.getRuleName();
+
+      const text = `${file}(${line}, ${char}): ${rule}: ${severity} ${messageText}`;
+
+      if (severity === "warning") {
+        warnings.push(text);
+      }
+      else {
+        errors.push(text);
+      }
+    }
+
+    return {
+      warnings,
+      errors,
+      invalidFilePaths: failures
+        .map((item) => path.resolve(item.getFileName()))
+    };
+  }
+
+  private _getDiagnosticResult(diagnostics: ts.Diagnostic[]): { warnings: string[]; errors: string[]; invalidFilePaths: string[] } {
+    const messages = diagnostics.map((diagnostic) => SdTypescriptUtils.getDiagnosticMessage(diagnostic));
+
+    const warnings = messages.filter((item) => item.severity === "warning")
+      .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
+
+    const errors = messages.filter((item) => item.severity === "error")
+      .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
+
+    return {
+      warnings,
+      errors,
+      invalidFilePaths: messages
+        .filter((item) =>
+          item.severity === ("warning" || item.severity === "error")
+          && item.file
+        )
+        .map((item) => path.resolve(item.file!))
+    };
+  }
+
+  private async _updateMetadataInfoAsync(watchFileInfos: IWatchFileInfo[]): Promise<{ warnings: string[]; errors: string[] }> {
+    const warnings: string[] = [];
+    const errors: string[] = [];
+
+    for (const watchFileInfo of watchFileInfos) {
+      if (watchFileInfo.isDeleted || !watchFileInfo.isTypescriptFile) {
+        this._metadataBundle.unregister(watchFileInfo.metadataFilePath);
+        continue;
+      }
+
+      // 신규 패키지 파일인 경우 메타데이터 파일 생성
+      if (watchFileInfo.isPackageFile) {
+        const result = await this._generateMetadataFileAsync(watchFileInfo);
+        if (result.warnings.length > 0 || result.errors.length > 0) {
+          warnings.push(...result.warnings);
+          errors.push(...result.errors);
+        }
+      }
+
+      if (FsUtil.exists(watchFileInfo.metadataFilePath)) {
+        await this._metadataBundle.registerAsync(watchFileInfo.metadataFilePath, watchFileInfo.isGeneratedFile);
+      }
+    }
+
+    return {warnings, errors};
+  }
+
+  private async _generateNgModuleAsync(): Promise<boolean> {
+    let changed = false;
+
+    if (!this._program) {
+      throw new NotImplementError();
+    }
+
+    const ngModuleDefs = this._metadataBundle.ngModuleDefs;
+    const moduleFilePaths: string[] = [];
+    for (const ngModuleDef of ngModuleDefs) {
+      if (ngModuleDef.moduleName || !ngModuleDef.isForGeneratedFile) continue;
+      const ngModuleName = ngModuleDef.className;
+
+      const importObj: { [requirePath: string]: string[] } = {
+        "@angular/core": ["NgModule"]
+      };
+
+      // NgModule
+      const ngModuleDeclarations: string[] = [];
+      const ngModuleExports: string[] = [];
+      const ngModuleEntryComponents: string[] = [];
+      const ngModuleImports: string[] = [];
+      for (const exportClass of ngModuleDef.exports) {
+        if (!exportClass.name) throw new NotImplementError();
+
+        const exportClassSourceFilePath = path.resolve(
+          this._srcPath,
+          path.relative(
+            this._distPath,
+            exportClass.moduleMetadata.filePath.replace(/\.metadata\.json$/, ".ts")
+          )
+        );
+        if (!exportClass.decorators) throw new NotImplementError();
+        for (const decorator of exportClass.decorators) {
+          if (decorator.expression.module === "@angular/core" && decorator.expression.name === "Component") {
+            ngModuleExports.push(exportClass.name);
+            ngModuleDeclarations.push(exportClass.name);
+            if (exportClass.name.endsWith("PrintTemplate") || exportClass.name.endsWith("Modal")) {
+              ngModuleEntryComponents.push(exportClass.name);
+            }
+          }
+          else if (decorator.expression.module === "@angular/core" && decorator.expression.name === "Directive") {
+            ngModuleExports.push(exportClass.name);
+            ngModuleDeclarations.push(exportClass.name);
+          }
+          else if (decorator.expression.module === "@angular/core" && decorator.expression.name === "Pipe") {
+            ngModuleExports.push(exportClass.name);
+            ngModuleDeclarations.push(exportClass.name);
+          }
+          else {
+            // IGNORE
+            // throw new NotImplementError();
+          }
+        }
+
+        const relativePath = path.relative(this._moduleDirSrcPath, exportClassSourceFilePath)
+          .replace(/\\/g, "/")
+          .replace(/\.ts$/, "");
+        importObj[relativePath] = importObj[relativePath] ?? [];
+        if (!importObj[relativePath].includes(exportClass.name)) {
+          importObj[relativePath].push(exportClass.name);
+        }
+
+        const exportClassSourceFile = this._program.getSourceFile(exportClassSourceFilePath);
+        if (!exportClassSourceFile) throw new NotImplementError();
+
+        const exportClassImportNodes = exportClassSourceFile["imports"];
+        if (exportClassImportNodes && exportClassImportNodes instanceof Array) {
+          for (const exportClassImportNode of exportClassImportNodes) {
+            if (exportClassImportNode.text === "tslib") continue;
+
+            const importModuleName = exportClassImportNode.text;
+            const importClassNames = exportClassImportNode.parent.importClause?.namedBindings?.elements?.map((item: any) => item.name.text);
+            if (!importClassNames) continue;
+
+
+            const needModuleDefs = ngModuleDefs.filter((moduleDef) =>
+              moduleDef.exports.some((exp) =>
+                (
+                  (exp.moduleMetadata.name === undefined && importModuleName.startsWith(".")) ||
+                  (exp.moduleMetadata.name === importModuleName)
+                ) &&
+                importClassNames.includes(exp.name)
+              )
+            );
+
+            for (const needModuleDef of needModuleDefs) {
+              const realModuleImportObj = this._getRealModuleImportObj(needModuleDef);
+
+              ngModuleImports.push(realModuleImportObj.targetName);
+
+              const requirePath = realModuleImportObj.requirePath;
+              importObj[requirePath] = importObj[requirePath] ?? [];
+              if (!importObj[requirePath].includes(realModuleImportObj.targetName)) {
+                importObj[requirePath].push(realModuleImportObj.targetName);
+              }
+            }
+          }
+        }
+        else {
+          throw new NotImplementError();
+        }
+
+        const componentDec = Array.from(exportClass.decorators).single((dec) => dec.expression.module === "@angular/core" && dec.expression.name === "Component");
+        if (componentDec) {
+          if (!componentDec.arguments || !componentDec.arguments[0] || !(componentDec.arguments[0] instanceof SdObjectMetadata)) throw new NotImplementError();
+          const arg = componentDec.arguments[0] as SdObjectMetadata;
+          const templateText = arg.getChildString("template");
+          if (templateText) {
+            const templateDOM = new JSDOM(templateText);
+
+            const needModuleDefs = ngModuleDefs.filter((item) =>
+              item.exports.some((exp) =>
+                exp.decorators &&
+                exp.decorators.some((dec) =>
+                  dec.expression.module === "@angular/core" &&
+                  dec.expression.name === "Component" &&
+                  dec.arguments &&
+                  dec.arguments[0] &&
+                  dec.arguments[0] instanceof SdObjectMetadata &&
+                  dec.arguments[0].getChildString("selector") &&
+                  templateDOM.window.document.querySelector(dec.arguments[0].getChildString("selector")!)
+                )
+              )
+            );
+
+            for (const needModuleDef of needModuleDefs) {
+              const realModuleImportObj = this._getRealModuleImportObj(needModuleDef);
+
+              ngModuleImports.push(realModuleImportObj.targetName);
+
+              const requirePath = realModuleImportObj.requirePath;
+              importObj[requirePath] = importObj[requirePath] ?? [];
+              if (!importObj[requirePath].includes(needModuleDef.className)) {
+                importObj[requirePath].push(needModuleDef.className);
+              }
+            }
+          }
+        }
+      }
+
+      if (ngModuleDeclarations.length > 0) {
+        const importText = Object.keys(importObj)
+          .map((key) => `import {${importObj[key].join(", ")}} from "${key}";`);
+        const ngModuleContent = `
+${importText.join("\n")}
+
+@NgModule({
+  imports: [${ngModuleImports.length > 0 ? "\n    " + ngModuleImports.join(",\n    ") + "\n  " : ""}],
+  declarations: [${ngModuleDeclarations.length > 0 ? "\n    " + ngModuleDeclarations.join(",\n    ") + "\n  " : ""}],
+  exports: [${ngModuleExports.length > 0 ? "\n    " + ngModuleExports.join(",\n    ") + "\n  " : ""}],
+  entryComponents: [${ngModuleEntryComponents.length > 0 ? "\n    " + ngModuleEntryComponents.join(",\n    ") + "\n  " : ""}]
+})
+export class ${ngModuleName} {
+}`.trim();
+
+        const distPath = path.resolve(this._moduleDirSrcPath, ngModuleName + ".ts");
+        if (this._genFileCache[distPath] !== ngModuleContent) {
+          this._genFileCache[distPath] = ngModuleContent;
+          await FsUtil.writeFileAsync(distPath, ngModuleContent);
+          changed = true;
+        }
+
+        moduleFilePaths.push(distPath);
+      }
+      else {
+        const distPath = path.resolve(this._moduleDirSrcPath, ngModuleName + ".ts");
+        if (this._genFileCache[distPath]) {
+          await FsUtil.removeAsync(distPath);
+          delete this._genFileCache[distPath];
+          changed = true;
+        }
+      }
+    }
+
+    // 삭제된 모듈 지우기
+    const moduleDirFileNames = await FsUtil.readdirAsync(this._moduleDirSrcPath);
+    for (const moduleDirFileName of moduleDirFileNames) {
+      const moduleDirFilePath = path.resolve(this._moduleDirSrcPath, moduleDirFileName);
+      if (!moduleFilePaths.includes(path.resolve(this._moduleDirSrcPath, moduleDirFileName))) {
+        if (this._genFileCache[moduleDirFilePath]) {
+          await FsUtil.removeAsync(moduleDirFilePath);
+          delete this._genFileCache[moduleDirFilePath];
+          changed = true;
+        }
+      }
+    }
+
+    // TODO: NgRoutingModule
+
+    // TODO: 신규 _routes 파일 생성
+
+    return changed;
   }
 }
 
