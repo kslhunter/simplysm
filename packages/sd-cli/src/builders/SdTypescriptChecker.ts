@@ -49,6 +49,21 @@ export class SdTypescriptChecker {
   public async watchAsync(): Promise<void> {
     this._logger.log("타입체크 및 변경감지를 시작합니다.");
 
+    //--------------------------------------------
+    // GEN FILE CACHE 초기화
+    //--------------------------------------------
+
+    const moduleDirFileNames = await FsUtil.readdirAsync(this._moduleDirSrcPath);
+    for (const moduleDirFileName of moduleDirFileNames) {
+      const moduleDirFilePath = path.resolve(this._moduleDirSrcPath, moduleDirFileName);
+      this._genFileCache[moduleDirFilePath] = await FsUtil.readFileAsync(moduleDirFilePath);
+    }
+    if (this._indexTsFilePath && FsUtil.exists(this._indexTsFilePath)) {
+      this._genFileCache[this._indexTsFilePath] = await FsUtil.readFileAsync(this._indexTsFilePath);
+    }
+
+    //--------------------------------------------
+
     const host = ts.createWatchCompilerHost(
       this._tsconfigPath,
       {},
