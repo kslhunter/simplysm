@@ -76,6 +76,10 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
         }
       }
 
+      &[sd-type=number] > input {
+        text-align: right;
+      }
+
       &[sd-inline=true] > input,
       &[sd-inline=true] > textarea {
         display: inline-block;
@@ -155,6 +159,7 @@ export class SdTextfieldControl {
     includes: ["number", "text", "password", "date", "datetime", "datetime-sec", "time", "time-sec", "month", "year", "color", "email"],
     notnull: true
   })
+  @HostBinding("attr.sd-type")
   public type: "number" | "text" | "password" | "date" | "datetime" | "datetime-sec" | "time" | "time-sec" | "month" | "year" | "color" | "email" = "text";
 
   @Input()
@@ -309,42 +314,89 @@ export class SdTextfieldControl {
   }
 
   public onInput(event: Event): void {
+    let errorMessage = "";
+
     const inputEl = event.target as (HTMLInputElement | HTMLTextAreaElement);
 
     if (!inputEl.value) {
       this.value = undefined;
     }
     else if (this.type === "number") {
-      const inputValue = Number(inputEl.value.replace(/[^0-9]/g, ""));
-      const newValue = Number.isNaN(inputValue) ? inputEl.value : inputValue;
+      const inputValue = inputEl.value.replace(/,/g, "");
+      const newValue = inputValue.endsWith(".") || Number.isNaN(Number(inputValue)) ? inputValue : Number(inputValue);
       this.value = newValue;
 
       if (this.value === newValue) {
         inputEl.value = newValue.toString();
       }
+
+      if (typeof this.value !== "number") {
+        errorMessage = "숫자를 입력하세요";
+      }
+      else {
+        errorMessage = "";
+      }
     }
     else if (["year", "month", "date"].includes(this.type)) {
-      this.value = DateOnly.parse(inputEl.value);
+      try {
+        this.value = DateOnly.parse(inputEl.value);
+      }
+      catch (err) {
+        this.value = inputEl.value;
+      }
+
+      if (!(this.value instanceof DateOnly)) {
+        errorMessage = "날짜를 입력하세요";
+      }
+      else {
+        errorMessage = "";
+      }
     }
     else if (["datetime", "datetime-sec"].includes(this.type)) {
-      this.value = DateTime.parse(inputEl.value);
+      try {
+        this.value = DateTime.parse(inputEl.value);
+      }
+      catch (err) {
+        this.value = inputEl.value;
+      }
+
+      if (!(this.value instanceof DateTime)) {
+        errorMessage = "날짜 및 시간을 입력하세요";
+      }
+      else {
+        errorMessage = "";
+      }
     }
     else if (["time", "time-sec"].includes(this.type)) {
-      this.value = Time.parse(inputEl.value);
+      try {
+        this.value = Time.parse(inputEl.value);
+      }
+      catch (err) {
+        this.value = inputEl.value;
+      }
+
+      if (!(this.value instanceof Time)) {
+        errorMessage = "시간을 입력하세요";
+      }
+      else {
+        errorMessage = "";
+      }
     }
     else {
       this.value = inputEl.value;
     }
 
-    if (this.validatorFn) {
+    if (!errorMessage && this.validatorFn) {
       const message = this.validatorFn(this.value);
       if (message) {
-        inputEl.setCustomValidity(message);
+        errorMessage = message;
       }
       else {
-        inputEl.setCustomValidity("");
+        errorMessage = "";
       }
     }
+
+    inputEl.setCustomValidity(errorMessage);
 
     this.valueChange.emit(this.value);
   }

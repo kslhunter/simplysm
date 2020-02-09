@@ -1,8 +1,8 @@
 import {forwardRef, HostBinding, Inject, Injectable, Input, OnChanges, Optional, SimpleChanges} from "@angular/core";
 import {FontawesomeObject, Styles, TextParams} from "@fortawesome/fontawesome-svg-core";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {SdIconLayerControl} from "./SdIconLayerControl";
-import {SdInputValidate} from "../../commons/SdInputValidate";
+import {SdIconLayerControl} from "../controls/SdIconLayerControl";
+import {SdInputValidate} from "./SdInputValidate";
 
 @Injectable()
 export abstract class SdIconLayerTextBaseControlBase implements OnChanges {

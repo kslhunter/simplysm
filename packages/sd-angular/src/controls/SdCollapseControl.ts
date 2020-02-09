@@ -36,16 +36,16 @@ export class SdCollapseControl implements AfterContentInit {
       : this.open ? "margin-top .1s ease-out" : "margin-top .1s ease-in";
   }
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  public constructor(private readonly _elRef: ElementRef) {
   }
 
   public ngAfterContentInit(): void {
-    this.contentHeight = this._elRef.nativeElement.findFirst("> ._content")!.offsetHeight;
+    this.contentHeight = (this._elRef.nativeElement as HTMLElement).findFirst("> ._content")!.offsetHeight;
   }
 
   public onContentResize(event: ResizeEvent): void {
     if (event.prevHeight !== event.newHeight) {
-      this.contentHeight = this._elRef.nativeElement.findFirst("> ._content")!.offsetHeight;
+      this.contentHeight = (this._elRef.nativeElement as HTMLElement).findFirst("> ._content")!.offsetHeight;
     }
   }
 }

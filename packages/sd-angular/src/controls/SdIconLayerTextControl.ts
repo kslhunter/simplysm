@@ -10,9 +10,9 @@ import {
   TextParams,
   Transform
 } from "@fortawesome/fontawesome-svg-core";
-import {SdIconLayerTextBaseControlBase} from "./SdIconLayerTextBaseControlBase";
-import {ISdIconProps, objectWithKey, sdIconClassList} from "./SdIconUtils";
-import {SdInputValidate} from "../../commons/SdInputValidate";
+import {SdIconLayerTextBaseControlBase} from "../commons/SdIconLayerTextBaseControlBase";
+import {ISdIconProps, objectWithKey, sdIconClassList} from "../commons/SdIconUtils";
+import {SdInputValidate} from "../commons/SdInputValidate";
 
 @Component({
   selector: "sd-icon-layer-text",

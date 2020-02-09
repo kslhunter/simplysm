@@ -240,7 +240,7 @@ export class FsUtil {
   }
 
   public static async writeFileAsync(targetPath: string, data: any): Promise<void> {
-    await FsUtil.mkdirsAsync(path.resolve(targetPath, ".."));
+    await FsUtil.mkdirsAsync(path.dirname(targetPath));
 
     try {
       await fs.promises.writeFile(targetPath, data);
@@ -260,6 +260,15 @@ export class FsUtil {
     }
   }
 
+  public static readFile(targetPath: string): string {
+    try {
+      return fs.readFileSync(targetPath, "utf-8");
+    }
+    catch (err) {
+      throw new Error(err.message + ": " + targetPath);
+    }
+  }
+
   public static async readFileAsync(targetPath: string): Promise<string> {
     try {
       return await fs.promises.readFile(targetPath, "utf-8");
@@ -267,6 +276,11 @@ export class FsUtil {
     catch (err) {
       throw new Error(err.message + ": " + targetPath);
     }
+  }
+
+  public static readJson(targetPath: string): any {
+    const contents = FsUtil.readFile(targetPath);
+    return JSON.parse(contents);
   }
 
   public static async readJsonAsync(targetPath: string): Promise<any> {

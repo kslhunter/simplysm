@@ -2,7 +2,6 @@ import {FsUtil, FsWatcher, IFileChangeInfo, Logger} from "@simplysm/sd-core-node
 import * as path from "path";
 import * as ts from "typescript";
 import {SdTypescriptUtils} from "../utils/SdTypescriptUtils";
-import {MetadataCollector} from "@angular/compiler-cli";
 import {TSdFramework} from "../commons";
 import {SdAngularUtils} from "../utils/SdAngularUtils";
 import * as nodeExternals from "webpack-node-externals";
@@ -20,7 +19,7 @@ export class SdTypescriptCompiler {
                       private readonly _hasBinFile: boolean,
                       private readonly _compilerOptions: ts.CompilerOptions,
                       private readonly _framework: TSdFramework | undefined,
-                      private readonly _scriptTarget: ts.ScriptTarget,
+                      // private readonly _scriptTarget: ts.ScriptTarget,
                       private readonly _packagePath: string,
                       private readonly _indexTargetPath: string,
                       private readonly _npmConfig: any,
@@ -86,7 +85,7 @@ export class SdTypescriptCompiler {
       hasBin,
       parsedTsConfig.options,
       framework,
-      scriptTarget ?? ts.ScriptTarget.ES2018,
+      // scriptTarget ?? ts.ScriptTarget.ES2018,
       packagePath,
       indexTargetPath,
       npmConfig,
@@ -231,13 +230,6 @@ export class SdTypescriptCompiler {
 
             const diagnostics = result.diagnostics?.filter((item) => !item.messageText.toString().includes("Emitted no files.")) ?? [];
 
-            if (this._framework?.startsWith("angular")) {
-              const sourceFile = ts.createSourceFile(tsFilePath, tsFileContent, this._scriptTarget);
-              if (sourceFile) {
-                diagnostics.concat(await this._generateMetadataFileAsync(sourceFile, metadataFilePath));
-              }
-            }
-
             if (diagnostics.length > 0) {
               const messages = diagnostics.map((diagnostic) => SdTypescriptUtils.getDiagnosticMessage(diagnostic));
 
@@ -370,41 +362,5 @@ export class SdTypescriptCompiler {
         ...watch ? [new SdWebpackTimeFixPlugin()] : []
       ]
     };
-  }
-
-  private async _generateMetadataFileAsync(sourceFile: ts.SourceFile, outFilePath: string): Promise<ts.Diagnostic[]> {
-    const diagnostics: ts.Diagnostic[] = [];
-
-    if (path.resolve(sourceFile.fileName).startsWith(path.resolve(this._packagePath, "src"))) {
-      const metadata = new MetadataCollector().getMetadata(
-        sourceFile,
-        true,
-        (value, tsNode) => {
-          if (value && value["__symbolic"] && value["__symbolic"] === "error") {
-            diagnostics.push({
-              file: sourceFile,
-              start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
-              messageText: value["message"],
-              category: ts.DiagnosticCategory.Error,
-              code: 0,
-              length: undefined
-            });
-          }
-
-          return value;
-        }
-      );
-
-      if (metadata) {
-        const metadataJsonString = JSON.stringify(metadata);
-        await FsUtil.mkdirsAsync(path.dirname(outFilePath));
-        await FsUtil.writeFileAsync(outFilePath, metadataJsonString);
-      }
-      else {
-        await FsUtil.removeAsync(outFilePath);
-      }
-    }
-
-    return diagnostics;
   }
 }

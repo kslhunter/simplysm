@@ -27,7 +27,7 @@ export class SdDockContainerControl implements AfterContentInit {
   @ContentChildren(forwardRef(() => SdDockControl))
   public dockControls?: QueryList<SdDockControl>;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>,
+  public constructor(private readonly _elRef: ElementRef,
                      private readonly _zone: NgZone) {
   }
 

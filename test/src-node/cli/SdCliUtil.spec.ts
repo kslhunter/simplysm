@@ -1,3 +1,4 @@
+/*
 import {FsUtil} from "@simplysm/sd-core-node";
 import * as path from "path";
 import {expect} from "chai";
@@ -116,3 +117,4 @@ describe("(node) cli.SdCliUtil", () => {
     });
   });
 });
+*/

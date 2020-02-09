@@ -629,11 +629,15 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   private readonly _itemsDiffer: IterableDiffer<any>;
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>,
+  private readonly _el: HTMLElement;
+
+  public constructor(private readonly _elRef: ElementRef,
                      private readonly _zone: NgZone,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _systemConfig: SdSystemConfigProvider,
                      private readonly _iterableDiffers: IterableDiffers) {
+    this._el = this._elRef.nativeElement;
+
     this._itemsDiffer = this._iterableDiffers.find([])
       .create((i: number, item: any) => this.trackByFn(i, item));
   }
@@ -641,15 +645,15 @@ export class SdSheetControl implements DoCheck, OnInit {
   public async ngOnInit(): Promise<void> {
     this._zone.runOutsideAngular(() => {
       {
-        const headEl = this._elRef.nativeElement.findFirst("> sd-dock-container > sd-pane > ._sheet > ._head")!;
+        const headEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._head")!;
         headEl.addEventListener("resize", (event) => {
           if (event.prevHeight !== event.newHeight) {
-            const bodyEl = this._elRef.nativeElement.findFirst("> sd-dock-container > sd-pane > ._sheet > ._body")!;
+            const bodyEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._body")!;
             bodyEl.style.paddingTop = event.newHeight + "px";
           }
         });
 
-        const paneEl = this._elRef.nativeElement.findFirst("> sd-dock-container > sd-pane")!;
+        const paneEl = this._el.findFirst("> sd-dock-container > sd-pane")!;
         paneEl.addEventListener("scroll", (event) => {
           headEl.style.top = paneEl.scrollTop + "px";
 
@@ -659,9 +663,9 @@ export class SdSheetControl implements DoCheck, OnInit {
           }
         });
 
-        this._elRef.nativeElement.addEventListener("keydown", this.onKeydownAllChildOutside.bind(this), true);
+        this._el.addEventListener("keydown", this.onKeydownAllChildOutside.bind(this), true);
 
-        this._elRef.nativeElement.addEventListener("focus", (event) => {
+        this._el.addEventListener("focus", (event) => {
           if (
             event.target &&
             (event.target instanceof HTMLElement) &&
@@ -706,7 +710,7 @@ export class SdSheetControl implements DoCheck, OnInit {
             (event.target instanceof HTMLElement) &&
             event.target.findParent("._row")
           ) {
-            const rowEls = this._elRef.nativeElement.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
+            const rowEls = this._el.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
             const rowEl = event.target.findParent("._row")!;
             const rowIndex = rowEls.indexOf(rowEl);
             if (rowIndex < 0) return;
@@ -732,7 +736,7 @@ export class SdSheetControl implements DoCheck, OnInit {
           }
         }, true);
 
-        this._elRef.nativeElement.addEventListener("blur", (event) => {
+        this._el.addEventListener("blur", (event) => {
           const focusIndicatorEl = paneEl.findFirst("> ._cell-focus-indicator")!;
           focusIndicatorEl.style.display = "none";
 
@@ -742,14 +746,14 @@ export class SdSheetControl implements DoCheck, OnInit {
       }
 
       if (this.autoHeight) {
-        this._elRef.nativeElement.addEventListener("mutation-child", (event) => {
+        this._el.addEventListener("mutation-child", (event) => {
           const rowEls = event.mutations
             .mapMany((item) => Array.from(item.addedNodes))
             .ofType(HTMLElement)
             .filter((addNode) => addNode.className.includes("_cell"))
             .map((item) => item.findParent("._row")!)
             .distinct(true)
-            .filter((item) => !!item.findParent(this._elRef.nativeElement));
+            .filter((item) => !!item.findParent(this._el));
 
           for (const rowEl of rowEls) {
             const cellEls = rowEl.findAll("> ._cell-group > ._cell");
@@ -1144,7 +1148,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   private _getCellAddress(cellEl: HTMLElement): { r: number; c: number } | undefined {
-    const rowEls = this._elRef.nativeElement.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
+    const rowEls = this._el.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
     const rowEl = cellEl.findParent("._sheet > ._body > ._row");
     if (!rowEl) return undefined;
 
@@ -1161,7 +1165,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   private _getCellEl(r: number, c: number | "last"): HTMLElement | undefined {
     if (c <= 0) return undefined;
 
-    const rowEls = this._elRef.nativeElement.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
+    const rowEls = this._el.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
     const rowEl = rowEls[r];
     if (!rowEl) return undefined;
 

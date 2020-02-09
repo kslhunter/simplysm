@@ -7,13 +7,10 @@ import * as semver from "semver";
 import {NotImplementError, Wait} from "@simplysm/sd-core-common";
 import {SdServiceServer} from "@simplysm/sd-service-server";
 import {NextHandleFunction} from "connect";
-import decache from "decache";
-import {SdServerCompiler} from "./builders/SdServerCompiler";
-import {SdAngularCompiler} from "./builders/SdAngularCompiler";
 import * as depcheck from "depcheck";
-import {SdIndexFileGenerator} from "./builders/SdIndexFileGenerator";
-import {SdNgModuleDefinitionsFileGenerator} from "./builders/SdNgModuleDefinitionsFileGenerator";
-import {SdNgRoutesFileGenerator} from "./builders/SdNgRoutesFileGenerator";
+import {SdAngularCompiler} from "./builders/SdAngularCompiler";
+import {SdServerCompiler} from "./builders/SdServerCompiler";
+import decache from "decache/decache";
 
 export class SdProject {
   private readonly _servers: {
@@ -28,7 +25,6 @@ export class SdProject {
   private constructor(private readonly _npmConfig: SdNpmConfig,
                       private readonly _config: SdProjectConfig,
                       private readonly _mode: "development" | "production",
-                      private readonly _options: string[],
                       public packages: SdPackage[]) {
   }
 
@@ -48,7 +44,7 @@ export class SdProject {
 
     const packages = await packagePaths.mapAsync(async (packagePath) => await SdPackage.createAsync(config, packagePath));
 
-    return new SdProject(npmConfig, config, mode, options, packages);
+    return new SdProject(npmConfig, config, mode, packages);
   }
 
   public async localUpdateAsync(watch: boolean = false): Promise<void> {
@@ -167,160 +163,155 @@ export class SdProject {
 
     logger.log("빌드 프로세스를 시작합니다.");
 
-    await Promise.all([
-      // MODULE DEFINITIONS 파일 생성기
-      ...this.packages.map(async (pkg) => {
-        if (!pkg.config?.type) {
-          return;
+    await this._parallelPackagesByDepAsync(async (pkg) => {
+      if (!pkg.config?.type) {
+        return;
+      }
+
+      const packageLogger = Logger.get(["simplysm", "sd-cli", pkg.packageKey, "build"]);
+
+      //---------------------------------
+      // 타입 체크
+      //---------------------------------
+
+      await pkg.tsConfigs.parallelAsync(async (tsConfig, index) => {
+        const isFirst = index === 0;
+        const framework = (isFirst && (pkg.config?.type === "library" || pkg.config?.type === "web"))
+          ? pkg.config?.framework
+          : undefined;
+
+        const indexFilePath = isFirst && pkg.npmConfig.main
+          ? path.resolve(
+            tsConfig.srcPath,
+            path.relative(
+              tsConfig.distPath,
+              path.resolve(
+                pkg.packagePath,
+                pkg.npmConfig.main
+              )
+            )
+          ).replace(/\.js$/, ".ts")
+          : undefined;
+
+        const polyfills = (isFirst && pkg.config?.type === "library")
+          ? pkg.config?.polyfills : [];
+
+        await processWorkManager.runAsync(
+          "check",
+          watch,
+          tsConfig.configForBuildPath,
+          framework,
+          polyfills,
+          indexFilePath
+        );
+      });
+
+      //---------------------------------
+      // 컴파일
+      //---------------------------------
+
+      if (pkg.config?.type === "server") {
+        const builder = await SdServerCompiler.createAsync({
+          tsConfigPath: pkg.tsConfigs.single()!.configForBuildPath,
+          mode: this._mode
+        });
+
+        if (!pkg.npmConfig.main) {
+          throw new Error(`서버 패키지인 '${pkg.npmConfig.name}'에는 'main'이 반드시 설정되어야 합니다.`);
         }
 
-        if ((pkg.config?.type !== "web" && pkg.config?.type !== "library") || !pkg.config?.framework?.startsWith("angular")) {
-          return;
-        }
+        if (watch) {
+          const entry = path.resolve(pkg.packagePath, pkg.npmConfig.main);
 
-        const moduleDefinitionsFileGenerator = await SdNgModuleDefinitionsFileGenerator.createAsync(pkg.packagePath, this._mode, this._options);
-        await moduleDefinitionsFileGenerator.runAsync(watch);
-      }),
-      // ROUTES 파일 생성기
-      ...this.packages.map(async (pkg) => {
-        if (pkg.config?.type !== "web" || !pkg.config?.framework?.startsWith("angular")) {
-          return;
-        }
+          builder.on("change", async () => {
+            packageLogger.log(`서버를 재시작 합니다`);
 
-        const routesFileGenerator = await SdNgRoutesFileGenerator.createAsync(pkg.packagePath, this._mode, this._options);
-        await routesFileGenerator.runAsync(watch);
-      }),
-      // INDEX 파일 생성기
-      ...this.packages.map(async (pkg) => {
-        if (!pkg.config?.type) {
-          return;
-        }
-
-        if (!pkg.npmConfig.main || !pkg.npmConfig.main.includes("index")) {
-          return;
-        }
-
-        const indexFileGenerator = await SdIndexFileGenerator.createAsync(pkg.packagePath, this._mode, this._options);
-        await indexFileGenerator.runAsync(watch);
-      })
-    ]);
-
-    await Promise.all([
-      // 빌드
-      ...this.packages.map(async (pkg) => {
-        const packageLogger = Logger.get(["simplysm", "sd-cli", pkg.packageKey, "build"]);
-
-        if (!pkg.config?.type) {
-          return;
-        }
-
-        if (pkg.config?.type === "server") {
-          const builder = await SdServerCompiler.createAsync({
-            tsConfigPath: pkg.tsConfigs.single()!.configForBuildPath,
-            mode: this._mode
+            if (this._servers[pkg.npmConfig.name]) {
+              this._servers[pkg.npmConfig.name].isClosing = true;
+              if (this._servers[pkg.npmConfig.name].server) {
+                await this._servers[pkg.npmConfig.name].server!.closeAsync();
+                delete this._servers[pkg.npmConfig.name].server;
+              }
+              if (this._servers[pkg.npmConfig.name].entry) {
+                decache(this._servers[pkg.npmConfig.name].entry!);
+                delete this._servers[pkg.npmConfig.name].entry;
+              }
+              this._servers[pkg.npmConfig.name].isClosing = false;
+            }
           });
 
-          if (!pkg.npmConfig.main) {
-            throw new Error(`서버 패키지인 '${pkg.npmConfig.name}'에는 'main'이 반드시 설정되어야 합니다.`);
-          }
+          builder.on("complete", async () => {
+            // 서버 켜기
+            await Wait.true(() =>
+              !this._servers[pkg.npmConfig.name]?.isClosing &&
+              FsUtil.exists(entry)
+            );
 
-          if (watch) {
-            const entry = path.resolve(pkg.packagePath, pkg.npmConfig.main);
-
-            builder.on("change", async () => {
-              packageLogger.log(`서버를 재시작 합니다`);
-
-              if (this._servers[pkg.npmConfig.name]) {
-                this._servers[pkg.npmConfig.name].isClosing = true;
-                if (this._servers[pkg.npmConfig.name].server) {
-                  await this._servers[pkg.npmConfig.name].server!.closeAsync();
-                  delete this._servers[pkg.npmConfig.name].server;
-                }
-                if (this._servers[pkg.npmConfig.name].entry) {
-                  decache(this._servers[pkg.npmConfig.name].entry!);
-                  delete this._servers[pkg.npmConfig.name].entry;
-                }
-                this._servers[pkg.npmConfig.name].isClosing = false;
-              }
-            });
-
-            builder.on("complete", async () => {
-              // 서버 켜기
-              await Wait.true(() =>
-                !this._servers[pkg.npmConfig.name]?.isClosing &&
-                FsUtil.exists(entry)
-              );
-
-              const server = eval(`require(entry)`) as SdServiceServer; //tslint:disable-line:no-eval
-              server.middlewares = this._servers[pkg.npmConfig.name]?.middlewares ?? [];
-              if (this._servers[pkg.npmConfig.name]) {
-                this._servers[pkg.npmConfig.name].entry = entry;
-                this._servers[pkg.npmConfig.name].server = server;
-              }
-              else {
-                this._servers[pkg.npmConfig.name] = {
-                  entry,
-                  server,
-                  middlewares: server.middlewares,
-                  isClosing: false
-                };
-              }
-              packageLogger.info(`서버가 시작되었습니다.`);
-            });
-          }
-
-          await builder.runAsync(watch);
-
-          return;
-        }
-
-        if (pkg.config?.type === "web") {
-          if (!pkg.config.serverPackage) {
-            throw new Error("클라이언트 설정에는 반드시 'server' 설정이 있어야 합니다.");
-          }
-
-          const builder = await SdAngularCompiler.createAsync({
-            tsConfigPath: pkg.tsConfigs.single()!.configForBuildPath,
-            mode: this._mode,
-            framework: pkg.config.framework
-          });
-
-          if (watch) {
-            builder.on("complete", async () => {
-              try {
-                await Wait.true(() => {
-                  const serverObj = this._servers[pkg.config!["serverPackage"]];
-                  return !!(serverObj && !serverObj.isClosing && serverObj.server);
-                });
-
-                const port = this._servers[pkg.config!["serverPackage"]].server!.options!.port ?? 80;
-                packageLogger.info(`클라이언트 열림: http://localhost:${port}/${pkg.packageKey}/`);
-              }
-              catch (err) {
-                packageLogger.error(err.meaning);
-              }
-            });
-
-            const middlewares = await builder.runAsync(watch);
-            if (this._servers[pkg.config.serverPackage]) {
-              this._servers[pkg.config.serverPackage].middlewares.push(...middlewares);
+            const server = eval(`require(entry)`) as SdServiceServer; //tslint:disable-line:no-eval
+            server.middlewares = this._servers[pkg.npmConfig.name]?.middlewares ?? [];
+            if (this._servers[pkg.npmConfig.name]) {
+              this._servers[pkg.npmConfig.name].entry = entry;
+              this._servers[pkg.npmConfig.name].server = server;
             }
             else {
-              this._servers[pkg.config.serverPackage] = {
-                entry: undefined,
-                server: undefined,
-                middlewares,
+              this._servers[pkg.npmConfig.name] = {
+                entry,
+                server,
+                middlewares: server.middlewares,
                 isClosing: false
               };
             }
-          }
-          else {
-            await builder.runAsync(watch);
-          }
-
-          return;
+            packageLogger.info(`서버가 시작되었습니다.`);
+          });
         }
 
+        await builder.runAsync(watch);
+      }
+      else if (pkg.config?.type === "web") {
+        if (!pkg.config.serverPackage) {
+          throw new Error("클라이언트 설정에는 반드시 'server' 설정이 있어야 합니다.");
+        }
+
+        const builder = await SdAngularCompiler.createAsync({
+          tsConfigPath: pkg.tsConfigs.single()!.configForBuildPath,
+          mode: this._mode,
+          framework: pkg.config.framework
+        });
+
+        if (watch) {
+          builder.on("complete", async () => {
+            try {
+              await Wait.true(() => {
+                const serverObj = this._servers[pkg.config!["serverPackage"]];
+                return !!(serverObj && !serverObj.isClosing && serverObj.server);
+              });
+
+              const port = this._servers[pkg.config!["serverPackage"]].server!.options!.port ?? 80;
+              packageLogger.info(`클라이언트 열림: http://localhost:${port}/${pkg.packageKey}/`);
+            }
+            catch (err) {
+              packageLogger.error(err.meaning);
+            }
+          });
+
+          const middlewares = await builder.runAsync(watch);
+          if (this._servers[pkg.config.serverPackage]) {
+            this._servers[pkg.config.serverPackage].middlewares.push(...middlewares);
+          }
+          else {
+            this._servers[pkg.config.serverPackage] = {
+              entry: undefined,
+              server: undefined,
+              middlewares,
+              isClosing: false
+            };
+          }
+        }
+        else {
+          await builder.runAsync(watch);
+        }
+      }
+      else {
         await pkg.tsConfigs.parallelAsync(async (tsConfig) => {
           await processWorkManager.runAsync(
             "compile",
@@ -330,18 +321,8 @@ export class SdProject {
             (pkg.config?.type === "library" || pkg.config?.type === "web") ? pkg.config?.framework : undefined
           );
         });
-      }),
-      // 타입체크
-      this._parallelPackagesByDepAsync(async (pkg) => {
-        if (!pkg.config?.type) {
-          return;
-        }
-
-        await pkg.tsConfigs.parallelAsync(async (tsConfig) => {
-          await processWorkManager.runAsync("check", watch, tsConfig.configForBuildPath);
-        });
-      })
-    ]);
+      }
+    });
 
     logger.info(`모든 빌드 프로세스가 완료되었습니다`);
 

@@ -1,6 +1,6 @@
 import {Component, ElementRef, HostBinding, Input, OnChanges, OnInit, Renderer2, SimpleChanges} from "@angular/core";
 import {SizeProp} from "@fortawesome/fontawesome-svg-core";
-import {SdInputValidate} from "../../commons/SdInputValidate";
+import {SdInputValidate} from "../commons/SdInputValidate";
 
 /**
  * Fontawesome layers.

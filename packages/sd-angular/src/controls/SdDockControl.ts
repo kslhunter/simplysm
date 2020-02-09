@@ -106,14 +106,18 @@ export class SdDockControl implements OnDestroy, OnInit {
 
   private _config?: { size?: string };
 
-  public constructor(public readonly elRef: ElementRef<HTMLElement>,
+  private readonly _el: HTMLElement;
+
+  public constructor(public readonly elRef: ElementRef,
                      @Inject(forwardRef(() => SdDockContainerControl))
                      private readonly _parentControl: SdDockContainerControl,
                      private readonly _systemConfig: SdSystemConfigProvider,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _zone: NgZone) {
+    this._el = this.elRef.nativeElement;
+
     this._zone.runOutsideAngular(() => {
-      this.elRef.nativeElement.addEventListener("resize", (event) => {
+      this._el.addEventListener("resize", (event) => {
         if (event.prevHeight !== event.newHeight && ["top", "bottom"].includes(this.position)) {
           this._parentControl.redraw();
         }
@@ -131,10 +135,10 @@ export class SdDockControl implements OnDestroy, OnInit {
 
     if (this.resizable && this._config && this._config.size) {
       if (["right", "left"].includes(this.position)) {
-        this.elRef.nativeElement.style.width = this._config.size;
+        this._el.style.width = this._config.size;
       }
       if (["top", "bottom"].includes(this.position)) {
-        this.elRef.nativeElement.style.height = this._config.size;
+        this._el.style.height = this._config.size;
       }
     }
 
@@ -146,7 +150,7 @@ export class SdDockControl implements OnDestroy, OnInit {
   }
 
   public onResizeBarMousedown(event: MouseEvent): void {
-    const thisEl = this.elRef.nativeElement;
+    const thisEl = this._el;
     const startX = event.clientX;
     const startY = event.clientY;
     const startHeight = thisEl.clientHeight;

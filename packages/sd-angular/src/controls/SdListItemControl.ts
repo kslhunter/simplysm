@@ -11,7 +11,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 import {SdListControl} from "./SdListControl";
 import {IconName} from "@fortawesome/fontawesome-svg-core";
-import {sdIconNames} from "./icon/sdIconNames";
+import {sdIconNames} from "../commons/sdIconNames";
 
 // TODO
 @Component({
