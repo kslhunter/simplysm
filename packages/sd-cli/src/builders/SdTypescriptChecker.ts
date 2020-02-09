@@ -420,7 +420,7 @@ export class ${ngModuleName} {
   }
 
   public async runAsync(): Promise<void> {
-
+    throw new NotImplementError();
   }
 
   private _getWatchFileInfo(watchFile: { eventKind: ts.FileWatcherEventKind; fileName: string }): IWatchFileInfo {
