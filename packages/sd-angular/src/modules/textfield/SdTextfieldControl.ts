@@ -298,7 +298,7 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
     }
     else if (this.type === "number") {
       const inputValue = inputEl.value.replace(/,/g, "");
-      const newValue = inputValue.endsWith(".") || Number.isNaN(Number(inputValue)) ? inputValue : Number(inputValue);
+      const newValue = inputValue.endsWith(".") || (inputValue.includes(".") && inputValue.endsWith("0")) || Number.isNaN(Number(inputValue)) ? inputValue : Number(inputValue);
       this.value = newValue;
 
       if (this.value === newValue) {
@@ -380,9 +380,28 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
 
   public onBlur(event: Event): void {
     event.preventDefault();
+
     if (this.focused) {
       this.focused = false;
       this.focusedChange.emit(false);
+    }
+
+    if (this.type === "number") {
+      const inputEl = event.target as (HTMLInputElement | HTMLTextAreaElement);
+      const inputValue = inputEl.value.replace(/,/g, "");
+      const newValue = !inputValue || inputValue.endsWith(".") || Number.isNaN(Number(inputValue)) ? inputValue : Number(inputValue);
+      this.value = newValue === "" ? undefined : newValue;
+
+      if (this.value === newValue) {
+        inputEl.value = newValue.toString();
+      }
+
+      if (this.value !== undefined && typeof this.value !== "number") {
+        inputEl.setCustomValidity("숫자를 입력하세요");
+      }
+      else {
+        inputEl.setCustomValidity("");
+      }
     }
   }
 
