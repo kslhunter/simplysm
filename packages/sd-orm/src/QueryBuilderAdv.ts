@@ -70,7 +70,7 @@ export class QueryBuilderAdv<T> {
         for (const selectAs of Object.keys(this._subQba.selectObj)) {
           if (
             tableDef.columns.map(item => item.name).includes(selectAs) ||
-            this._subQba.orderByColNames.includes(selectAs)
+            this._subQba.orderByColNames.some(item => item instanceof QueryUnit ? item.query.replace(/[\[\]]/g, "") : selectAs)
           ) {
             subSelect[`[${selectAs}]`] = this._subQba.selectObj[selectAs]!;
           }
