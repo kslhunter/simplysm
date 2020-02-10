@@ -142,6 +142,9 @@ export class SdExcelCellStyle {
     else if (value === "DateOnly") {
       newStyle.$.numFmtId = 14;
     }
+    else if (value === "DateOnlySlash") {
+      newStyle.$.numFmtId = 55;
+    }
     else if (value === "DateTime") {
       newStyle.$.numFmtId = 22;
     }
@@ -258,7 +261,13 @@ export class SdExcelCellStyle {
 
     let newItem: any;
     if (numFmtId) {
-      newItem = Object.clone(this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt.single((item: any) => item.$.numFmtId === numFmtId));
+      const prevNumFormat = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt.single((item: any) => item.$.numFmtId === numFmtId);
+      if (prevNumFormat) {
+        newItem = Object.clone(prevNumFormat);
+      }
+      else {
+        newItem = {};
+      }
     }
     else {
       newItem = {};
@@ -347,7 +356,12 @@ export class SdExcelCellStyle {
   private _getNumFmtData(): any {
     const styleData = this._getStyleData();
     if (styleData.$.numFmtId) {
-      return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt.single((item: any) => item.$.numFmtId === styleData.$.numFmtId);
+      if (this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts === undefined) {
+        return undefined;
+      }
+      else {
+        return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt.single((item: any) => item.$.numFmtId === styleData.$.numFmtId);
+      }
     }
 
     return undefined;
