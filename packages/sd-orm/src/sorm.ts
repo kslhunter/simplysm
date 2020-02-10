@@ -60,6 +60,9 @@ export const sorm = {
       return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " != " + QueryHelper.getFieldQuery(target)) as any;
     }
   },
+  isNumber<T extends QueryType>(source: T | QueryUnit<T>): boolean {
+    return new QueryUnit(QueriedBoolean, "ISNUMERIC(" + QueryHelper.getFieldQuery(source) + ") = 1") as any;
+  },
   null<T extends QueryType>(source: T | QueryUnit<T>): boolean {
     return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " IS NULL") as any;
   },
@@ -259,7 +262,21 @@ export const sorm = {
   dataLength<T extends QueryType>(arg: T): number | undefined {
     return new QueryUnit(Number as any, "DATALENGTH(" + QueryHelper.getFieldQuery(arg) + ")") as any;
   },
+  tryConvert<T extends QueryType>(src: any, targetType: Type<T> | string): number | undefined {
+    let targetTypeString: string;
+    if (typeof targetType === "string") {
+      targetTypeString = targetType;
+    }
+    else {
+      targetTypeString = QueryHelper.getDataTypeFromType(targetType);
+    }
+
+    return new QueryUnit(Number, `TRY_CONVERT(${targetTypeString}, ${QueryHelper.getFieldQuery(src)})`) as any;
+  },
   cast<P extends QueryType>(src: any, targetType: Type<P>): StripTypeWrap<P> {
+    return new QueryUnit(targetType, `CONVERT(${QueryHelper.getDataTypeFromType(targetType)}, ${QueryHelper.getFieldQuery(src)})`) as any;
+  },
+  convert<P extends QueryType>(src: any, targetType: Type<P>): StripTypeWrap<P> {
     return new QueryUnit(targetType, `CONVERT(${QueryHelper.getDataTypeFromType(targetType)}, ${QueryHelper.getFieldQuery(src)})`) as any;
   },
   left(src: string | QueryUnit<string>, num: number): string {
@@ -275,7 +292,7 @@ export const sorm = {
     return new QueryUnit(String, "SUBSTRING(" + QueryHelper.getFieldQuery(src) + ", " + QueryHelper.getFieldQuery(startIndex) + ", " + QueryHelper.getFieldQuery(length) + ")") as any;
   },
   charIndex(char: string | QueryUnit<string>, src: string | undefined | QueryUnit<string | undefined>, startIndex: number | QueryUnit<number>): number {
-    return new QueryUnit(String, "CHARINDEX(" + QueryHelper.getFieldQuery(char)  + ", " + QueryHelper.getFieldQuery(src) + ", " + QueryHelper.getFieldQuery(startIndex) + ")") as any;
+    return new QueryUnit(String, "CHARINDEX(" + QueryHelper.getFieldQuery(char) + ", " + QueryHelper.getFieldQuery(src) + ", " + QueryHelper.getFieldQuery(startIndex) + ")") as any;
   },
   formula<T extends QueryType>(arg1: T | QueryUnit<T>, arg2: string, arg3: T | QueryUnit<T>, ...args: (string | T | QueryUnit<T>)[]): StripTypeWrap<T> {
     let type: any;
