@@ -291,7 +291,7 @@ import {SdMutationEvent} from "../..";
 
       ._topbar {
         width: 100%;
-        
+
         > ._content {
           // background: var(--sheet-header-bg);
           background: white;
@@ -733,6 +733,9 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
   })
   public autoHeight = false;
 
+  @Output()
+  public readonly hideColumnHeadersChange = new EventEmitter<string[]>();
+
   public get allSelected(): boolean {
     return !!this.items && this.items.length === this.selectedItems.length && this.items.every(item => this.selectedItems.includes(item));
   }
@@ -1067,6 +1070,11 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
       });
     }
     this._saveConfig();
+    this.hideColumnHeadersChange.emit(
+      this._sheetConfig.columns
+        .filter(item => item.hide).map(item => item.header)
+        .filterExists()
+    );
     this._cdr.markForCheck();
   }
 
@@ -1221,7 +1229,6 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
         });
       }
       this._saveConfig();
-
       this._cdr.markForCheck();
     };
     document.documentElement!.addEventListener("mousemove", doDrag, false);
@@ -1445,6 +1452,18 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
       cardItemCount: 3,
       columns: []
     };
+
+    const hideColumnHeaders = this._sheetConfig.columns
+      .filter(item => item.hide).map(item => item.header)
+      .filterExists();
+
+    if (hideColumnHeaders.length > 0) {
+      this.hideColumnHeadersChange.emit(
+        this._sheetConfig.columns
+          .filter(item => item.hide).map(item => item.header)
+          .filterExists()
+      );
+    }
   }
 
   public _saveConfig(): void {
