@@ -18,7 +18,10 @@ describe("(node) cli.SdModuleMetadata", () => {
     const bundle = bundler.getMetadataBundle();
     console.log(bundle);*/
 
-    // 1
+    //----------------------------------------
+    // 1. generate metadata
+    //----------------------------------------
+
     const srcPath = path.resolve(process.cwd(), "packages", "sd-angular", "src");
     const distPath = path.resolve(process.cwd(), "packages", "sd-angular", "dist");
 
@@ -27,13 +30,14 @@ describe("(node) cli.SdModuleMetadata", () => {
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, path.dirname(tsconfigPath));
     const program = ts.createProgram(parsedTsConfig.fileNames, parsedTsConfig.options);
 
+    const collector = new MetadataCollector();
     for (const sourceFile of program.getSourceFiles()) {
       const isPackageFile = !path.relative(srcPath, path.resolve(sourceFile.fileName)).includes("..");
 
       if (isPackageFile) {
         const metadataFilePath = path.resolve(distPath, path.relative(srcPath, path.resolve(sourceFile.fileName)))
           .replace(/\.ts$/, ".metadata.json");
-        const metadata = new MetadataCollector().getMetadata(
+        const metadata = collector.getMetadata(
           sourceFile,
           true,
           (value, tsNode) => {
@@ -53,8 +57,12 @@ describe("(node) cli.SdModuleMetadata", () => {
         }
       }
     }
+    console.log(1);
 
-    // 2
+    //----------------------------------------
+    // 2. generate NgModules
+    //----------------------------------------
+
     const metadataFilePaths = [
       path.resolve(process.cwd(), "node_modules/@angular/common/common.metadata.json"),
       path.resolve(process.cwd(), "node_modules/@angular/core/core.metadata.json"),
@@ -76,5 +84,43 @@ describe("(node) cli.SdModuleMetadata", () => {
     );
     const changed = await ngModuleGenerator.generateAsync();
     console.log(2, changed);
+
+    //----------------------------------------
+    // TODO: 3 generate NgRouteModules
+    //----------------------------------------
+
+    //----------------------------------------
+    // TODO: 4 generate _routes.ts
+    //----------------------------------------
+
+    //----------------------------------------
+    // 5. generate index.ts
+    //----------------------------------------
+
+    const indexTsFilePath = path.resolve(srcPath, "index.ts");
+    const importTexts: string[] = [];
+
+    const srcTsFiles = await FsUtil.globAsync(path.resolve(srcPath, "**", "*.ts"));
+    for (const srcTsFile of srcTsFiles) {
+      if (path.resolve(srcTsFile) === indexTsFilePath) {
+        continue;
+      }
+
+      const requirePath = path.relative(path.dirname(indexTsFilePath), srcTsFile)
+        .replace(/\\/g, "/")
+        .replace(/\.ts$/, "");
+
+      const contents = await FsUtil.readFileAsync(srcTsFile);
+      if (contents.split("\n").some((line) => /^export /.test(line))) {
+        importTexts.push(`export * from "./${requirePath}";`);
+      }
+      else {
+        importTexts.push(`import "./${requirePath}";`);
+      }
+    }
+
+    const content = importTexts.join("\n") + "\n";
+    await FsUtil.writeFileAsync(indexTsFilePath, content);
+    console.log(3);
   });
 });
