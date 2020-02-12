@@ -1,0 +1,523 @@
+import {
+  SdArrayMetadata,
+  SdCallMetadata,
+  SdClassMetadata,
+  SdFunctionMetadata,
+  SdMetadataBase,
+  SdMetadataCollector,
+  SdObjectMetadata,
+  TSdMetadata
+} from "./SdMetadataCollector";
+import {NotImplementError} from "@simplysm/sd-core-common/src";
+import * as path from "path";
+import * as ts from "typescript";
+import {JSDOM} from "jsdom";
+import {FsUtil} from "@simplysm/sd-core-node";
+
+export class SdNgModuleGenerator {
+  private _defs: ISdNgModuleDef[] = [];
+  private _infos: ISdNgModuleInfo[] = [];
+  private readonly _cacheObj: { [filePath: string]: string } = {};
+  private readonly _modulesGenPath: string;
+
+  public constructor(private readonly _program: ts.Program,
+                     private readonly _metadata: SdMetadataCollector,
+                     private readonly _srcPath: string,
+                     private readonly _distPath: string) {
+    this._modulesGenPath = path.resolve(this._srcPath, "_modules");
+  }
+
+  public async generateAsync(): Promise<boolean> {
+    await this._initCacheAsync();
+    this._configDefs();
+    this._configInfos();
+    this._mergeImportCircleInfos();
+    return await this._writeFilesAsync();
+  }
+
+  private async _initCacheAsync(): Promise<void> {
+    if (FsUtil.exists(this._modulesGenPath)) {
+      const filePaths = await FsUtil.globAsync(path.resolve(this._modulesGenPath, "**", "*.ts"));
+      for (const filePath of filePaths) {
+        this._cacheObj[path.resolve(filePath)] = await FsUtil.readFileAsync(filePath);
+      }
+    }
+  }
+
+  private _configDefs(): void {
+    this._defs = [];
+
+    for (const module of this._metadata.modules) {
+      for (const moduleItemKey of Object.keys(module.items)) {
+        const moduleItem = module.items[moduleItemKey];
+
+        if (!(moduleItem instanceof SdClassMetadata)) continue;
+
+        const def: ISdNgModuleDef = {
+          moduleName: "",
+          className: "",
+          filePath: "",
+          isLibrary: module.isLibrary,
+          exports: []
+        };
+
+        if (module.isLibrary) {
+          const decorators = moduleItem.decorators;
+          if (!decorators) continue;
+
+          const decorator = moduleItem.decorators.single((item) =>
+            item.expression.module === "@angular/core" &&
+            item.expression.name === "NgModule"
+          );
+          if (!decorator) continue;
+
+          const arg = decorator.arguments && decorator.arguments[0];
+          if (!arg) throw new NotImplementError();
+          if (!(arg instanceof SdObjectMetadata)) throw new NotImplementError();
+
+          const exports = arg?.get("exports");
+          if (exports) {
+            if (!(exports instanceof SdArrayMetadata)) throw new NotImplementError();
+
+            for (const export_ of Array.from(exports)) {
+              if (!(export_ instanceof SdClassMetadata)) {
+                throw new NotImplementError();
+              }
+              def.exports.push(export_);
+            }
+          }
+
+          const providers = arg?.get("providers");
+          if (providers) {
+            if (!(providers instanceof SdArrayMetadata)) throw new NotImplementError();
+
+            const providerClassMetadataList = this._getNgModuleProviderClassMetadataList(providers);
+            def.exports.push(...providerClassMetadataList);
+          }
+
+          for (const staticKey of Object.keys(moduleItem.statics)) {
+            const static_ = moduleItem.statics[staticKey];
+            if (!(static_ instanceof SdFunctionMetadata)) continue;
+            if (!static_.value) throw new NotImplementError();
+            if (!(static_.value instanceof SdObjectMetadata)) {
+              throw new NotImplementError();
+            }
+
+            const staticProviders = static_.value.get("providers");
+            if (!staticProviders) continue;
+            if (!(staticProviders instanceof SdArrayMetadata)) throw new NotImplementError();
+
+            const providerClassMetadataList = this._getNgModuleProviderClassMetadataList(staticProviders);
+            def.exports.push(...providerClassMetadataList);
+          }
+
+          if (!moduleItem.name) throw new NotImplementError();
+          def.className = moduleItem.name;
+          def.moduleName = moduleItem.module.name;
+          def.filePath = moduleItem.module.filePath;
+        }
+        else {
+          const decorators = moduleItem.decorators;
+          if (!decorators) continue;
+
+          const decorator = moduleItem.decorators.single((item) =>
+            item.expression.module === "@angular/core" &&
+            [
+              "Component",
+              "Directive",
+              "Pipe"
+            ].includes(item.expression.name)
+          );
+          if (!decorator) continue;
+
+          def.exports.push(moduleItem);
+
+          if (!moduleItem.name) throw new NotImplementError();
+          def.className = moduleItem.name + "Module";
+          def.moduleName = moduleItem.module.name;
+          def.filePath = path.resolve(
+            this._modulesGenPath,
+            path.relative(this._distPath, moduleItem.module.filePath)
+          ).replace(/\.metadata\.json$/, "Module.ts");
+        }
+
+        if (!def.className) throw new NotImplementError();
+        if (!def.moduleName) throw new NotImplementError();
+        if (!def.filePath) throw new NotImplementError();
+        if (def.exports.length > 0) {
+          this._defs.push(def);
+        }
+      }
+    }
+  }
+
+  private _configInfos(): void {
+    this._infos = [];
+
+    for (const def of this._defs) {
+      if (def.isLibrary) continue;
+
+      const info: ISdNgModuleInfo = {
+        filePath: def.filePath,
+        className: def.className,
+        importObj: {"@angular/core": ["NgModule"]},
+        modules: [],
+        declarations: [],
+        exports: [],
+        entryComponents: []
+      };
+
+      for (const export_ of def.exports) {
+        // 1
+
+        const sourceFilePath = this._getSourceFilePath(export_);
+        const moduleSourceFilePath = this._getModuleSourcePath(sourceFilePath);
+        const classRequirePath = path.relative(path.dirname(moduleSourceFilePath), sourceFilePath)
+          .replace(/\\/g, "/")
+          .replace(/\.ts$/, "");
+        info.importObj[classRequirePath] = info.importObj[classRequirePath] ?? [];
+        if (!info.importObj[classRequirePath].includes(classRequirePath)) {
+          info.importObj[classRequirePath].push(classRequirePath);
+        }
+
+
+        // 2
+
+        if (!export_.name) throw new NotImplementError();
+        const exportName = export_.name;
+
+        if (!export_.decorators) throw new NotImplementError();
+        if (
+          this._hasDecorator(export_, "@angular/core", "Component") ||
+          this._hasDecorator(export_, "@angular/core", "Pipe") ||
+          this._hasDecorator(export_, "@angular/core", "Directive")
+        ) {
+          info.exports.push(exportName);
+          info.declarations.push(exportName);
+          if (exportName.endsWith("PrintTemplate") || exportName.endsWith("Modal")) {
+            info.entryComponents.push(exportName);
+          }
+        }
+
+        // 3
+
+        const sourceFile = this._program.getSourceFile(sourceFilePath);
+        if (!sourceFile) throw new NotImplementError();
+        const importNodes = sourceFile["imports"];
+        if (importNodes) {
+          if (!(importNodes instanceof Array)) throw new NotImplementError();
+
+          for (const importNode of importNodes as any[]) {
+            const importModuleNameOrFilePath = importNode.text?.startsWith(".")
+              ? path.resolve(this._distPath, path.relative(this._srcPath, path.resolve(path.dirname(sourceFilePath), importNode.text))) + ".metadata.json"
+              : importNode.text;
+            if (!importModuleNameOrFilePath) throw new NotImplementError();
+            if (importModuleNameOrFilePath === "tslib") continue;
+
+            const importClassNames = importNode.parent.importClause?.namedBindings?.elements?.map((item: any) => item.name.text);
+            if (!importClassNames) throw new NotImplementError();
+
+            const needModuleDefs = this._defs.filter((moduleDef) =>
+              moduleDef.exports.some((ngModuleExport) =>
+                (
+                  (ngModuleExport.module.filePath === importModuleNameOrFilePath) ||
+                  (ngModuleExport.module.name === importModuleNameOrFilePath)
+                ) &&
+                importClassNames.includes(ngModuleExport.name)
+              )
+            );
+
+            for (const needModuleDef of needModuleDefs) {
+              const importInfo = this._getNgModuleImportInfo(def, needModuleDef);
+
+              info.modules.push(importInfo.targetName);
+
+              const requirePath = importInfo.requirePath;
+              info.importObj[requirePath] = info.importObj[requirePath] ?? [];
+              if (!info.importObj[requirePath].includes(importInfo.targetName)) {
+                info.importObj[requirePath].push(importInfo.targetName);
+              }
+            }
+          }
+        }
+
+        // 4
+
+        const decorator = Array.from(export_.decorators)
+          .single((item) =>
+            item.expression.module === "@angular/core" &&
+            item.expression.name === "Component"
+          );
+        if (decorator) {
+          const arg = decorator.arguments && decorator.arguments[0];
+          if (!arg) throw new NotImplementError();
+          if (!(arg instanceof SdObjectMetadata)) throw new NotImplementError();
+
+          const templateText = arg.get("template");
+          if (templateText) {
+            if (typeof templateText !== "string") throw new NotImplementError();
+            const templateDOM = new JSDOM(templateText);
+
+            const needModuleDefs = this._defs.filter((moduleDef) =>
+              moduleDef.exports.some((exp) =>
+                exp.decorators &&
+                exp.decorators.some((dec) =>
+                  dec.expression.module === "@angular/core" &&
+                  dec.expression.name === "Component" &&
+                  dec.arguments &&
+                  dec.arguments[0] &&
+                  dec.arguments[0] instanceof SdObjectMetadata &&
+                  dec.arguments[0].get("selector") &&
+                  typeof dec.arguments[0].get("selector") === "string" &&
+                  templateDOM.window.document.querySelector(dec.arguments[0].get("selector") as string)
+                )
+              )
+            );
+
+            for (const needModuleDef of needModuleDefs) {
+              const importInfo = this._getNgModuleImportInfo(def, needModuleDef);
+
+              info.modules.push(importInfo.targetName);
+
+              const requirePath = importInfo.requirePath;
+              info.importObj[requirePath] = info.importObj[requirePath] ?? [];
+              if (!info.importObj[requirePath].includes(importInfo.targetName)) {
+                info.importObj[requirePath].push(importInfo.targetName);
+              }
+            }
+          }
+        }
+      }
+
+      this._infos.push(info);
+    }
+  }
+
+  private _mergeImportCircleInfos(): void {
+    let alreadyImports: string[] = [];
+    const doing = () => {
+      const importFilePathObj: { [filePath: string]: string[] } = {};
+      for (const info of this._infos) {
+        importFilePathObj[info.filePath] = Object.keys(info.importObj)
+          .filter((key) => key.startsWith("."))
+          .map((key) => path.resolve(path.dirname(info.filePath), key) + ".ts");
+      }
+
+      const checkIsImportCircle = (filePath: string) => {
+        if (alreadyImports.includes(filePath)) {
+          return false;
+        }
+
+        if (importFilePathObj[filePath]) {
+          alreadyImports.push(filePath);
+
+          for (const subFilePath of importFilePathObj[filePath]) {
+            const result = checkIsImportCircle(subFilePath);
+            if (!result) return false;
+          }
+
+          alreadyImports.remove(filePath);
+        }
+
+        return true;
+      };
+
+      for (const filePath of Object.keys(importFilePathObj)) {
+        const result = checkIsImportCircle(filePath);
+        if (!result) return false;
+      }
+
+      return true;
+    };
+
+    while (!doing()) {
+      // 첫번째 모듈에 다른 모듈 모두 병합
+      const mergeInfos = this._infos.filter((item) => alreadyImports.includes(item.filePath));
+      const newInfo = mergeInfos[0];
+      for (const mergeInfo of mergeInfos.slice(1)) {
+        for (const key of Object.keys(mergeInfo.importObj)) {
+          newInfo.importObj[key] = newInfo.importObj[key] ?? [];
+          newInfo.importObj[key].push(...mergeInfo.importObj[key]);
+          newInfo.importObj[key] = newInfo.importObj[key].distinct();
+        }
+
+        newInfo.modules = [...newInfo.modules, ...mergeInfo.modules].distinct();
+        newInfo.declarations = [...newInfo.declarations, ...mergeInfo.declarations].distinct();
+        newInfo.exports = [...newInfo.exports, ...mergeInfo.exports].distinct();
+        newInfo.entryComponents = [...newInfo.entryComponents, ...mergeInfo.entryComponents].distinct();
+      }
+
+      // 첫번째 모듈외 모든 모듈 삭제
+      for (const mergeInfo of mergeInfos.slice(1)) {
+        this._infos.remove(mergeInfo);
+      }
+
+      // 첫번째 모듈외 모든 모듈을 의존하고 있던 모든 다른 모듈에서, importObj/modules 를 새 모듈로 변경
+      for (const info of this._infos) {
+        const removeKeys = Object.keys(info.importObj)
+          .filter((key) => {
+            const filePath = path.resolve(path.dirname(info.filePath), key) + ".ts";
+            return mergeInfos.slice(1).some((item) => item.filePath === filePath);
+          });
+        if (removeKeys.length > 0) {
+          for (const key of removeKeys) {
+            for (const className of info.importObj[key]) {
+              info.modules.remove(className);
+            }
+            delete info.importObj[key];
+          }
+
+          let newKey = path.relative(path.dirname(info.filePath), newInfo.filePath)
+            .replace(/\.ts$/, "");
+          newKey = newKey.startsWith(".") ? newKey : "./" + newKey;
+
+          if (info !== newInfo) {
+            info.importObj[newKey] = [newInfo.className];
+            info.modules.push(newInfo.className);
+            info.modules = info.modules.distinct();
+          }
+          else {
+            delete info.importObj[newKey];
+            info.modules.remove(newInfo.className);
+          }
+        }
+      }
+
+      alreadyImports = [];
+    }
+  }
+
+  private async _writeFilesAsync(): Promise<boolean> {
+    let changed = false;
+
+    for (const info of this._infos) {
+      if (info.declarations.length > 0) {
+        const importText = Object.keys(info.importObj)
+          .map((key) => `import {${info.importObj[key].join(", ")}} from "${key}";`);
+        const ngModuleContent = `
+${importText.join("\n")}
+
+@NgModule({
+  imports: [${info.modules.length > 0 ? "\n    " + info.modules.join(",\n    ") + "\n  " : ""}],
+  declarations: [${info.declarations.length > 0 ? "\n    " + info.declarations.join(",\n    ") + "\n  " : ""}],
+  exports: [${info.exports.length > 0 ? "\n    " + info.exports.join(",\n    ") + "\n  " : ""}],
+  entryComponents: [${info.entryComponents.length > 0 ? "\n    " + info.entryComponents.join(",\n    ") + "\n  " : ""}]
+})
+export class ${info.className} {
+}`.trim();
+
+        if (this._cacheObj[info.filePath] !== ngModuleContent) {
+          this._cacheObj[info.filePath] = ngModuleContent;
+          await FsUtil.writeFileAsync(info.filePath, ngModuleContent);
+          changed = true;
+        }
+      }
+      else {
+        if (this._cacheObj[info.filePath]) {
+          await FsUtil.removeAsync(info.filePath);
+          delete this._cacheObj[info.filePath];
+          changed = true;
+        }
+      }
+    }
+
+    return changed;
+  }
+
+  private _getNgModuleImportInfo(def: ISdNgModuleDef, needDef: ISdNgModuleDef): { requirePath: string; targetName: string } {
+    let requirePath = "";
+    if (needDef.isLibrary) {
+      requirePath = needDef.moduleName;
+    }
+    else {
+      requirePath = path.relative(path.dirname(def.filePath), needDef.filePath)
+        .replace(/\\/g, "/")
+        .replace(/\.ts$/, "");
+      if (!requirePath.startsWith(".")) {
+        requirePath = "./" + requirePath;
+      }
+    }
+
+    let targetName = needDef.className;
+
+    if (requirePath === "@angular/platform-browser" && targetName === "BrowserModule") {
+      requirePath = "@angular/common";
+      targetName = "CommonModule";
+    }
+
+    return {requirePath, targetName};
+  }
+
+  private _getModuleSourcePath(sourceFilePath: string): string {
+    const relativeSourceFilePath = path.relative(this._srcPath, sourceFilePath);
+    return path.resolve(this._modulesGenPath, relativeSourceFilePath)
+      .replace(/\.ts$/, "Module.ts");
+  }
+
+  private _getSourceFilePath(metadata: SdMetadataBase): string {
+    return path.resolve(
+      this._srcPath,
+      path.relative(
+        this._distPath,
+        metadata.module.filePath.replace(/\.metadata\.json$/, ".ts")
+      )
+    );
+  }
+
+  private _hasDecorator(class_: SdClassMetadata, module: string, name: string): boolean {
+    return class_.decorators.some((item) =>
+      item.expression.module === module &&
+      item.expression.name === name
+    );
+  }
+
+  private _getNgModuleProviderClassMetadataList(providers: TSdMetadata): SdClassMetadata[] {
+    return (providers instanceof SdArrayMetadata ? Array.from(providers) : [providers])
+      .mapMany((provider) => {
+        if (provider instanceof SdObjectMetadata) {
+          const subProvider = provider.get("provide");
+          if (!subProvider) throw new NotImplementError();
+          return this._getNgModuleProviderClassMetadataList(subProvider);
+        }
+        else if (provider instanceof SdClassMetadata) {
+          return [provider];
+        }
+        else if (provider instanceof SdCallMetadata) {
+          const sdMetadata = this._metadata.getSdMetadata(provider.module, provider.metadata.expression);
+          return this._getNgModuleProviderClassMetadataList(sdMetadata);
+        }
+        else if (provider instanceof SdFunctionMetadata) {
+          return this._getNgModuleProviderClassMetadataList(provider.value);
+        }
+        else if (provider instanceof SdArrayMetadata || provider instanceof Array) {
+          const result: SdClassMetadata[] = [];
+          for (const providerItem of provider) {
+            const p = this._getNgModuleProviderClassMetadataList(providerItem);
+            result.push(...p);
+          }
+          return result;
+        }
+        else {
+          throw new NotImplementError();
+        }
+      });
+  }
+}
+
+export interface ISdNgModuleDef {
+  moduleName: string;
+  className: string;
+  filePath: string;
+  isLibrary: boolean;
+  exports: SdClassMetadata[];
+}
+
+export interface ISdNgModuleInfo {
+  className: string;
+  filePath: string;
+  importObj: { [requirePath: string]: string[] };
+  modules: string[];
+  declarations: string[];
+  exports: string[];
+  entryComponents: string[];
+}

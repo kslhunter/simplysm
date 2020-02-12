@@ -1,28 +1,25 @@
 import {FsUtil, Logger} from "@simplysm/sd-core-node";
 import * as ts from "typescript";
-import {FileWatcherEventKind} from "typescript";
 import * as path from "path";
 import * as os from "os";
-import {ISdMetadataBundleNgModuleDef, SdBundleMetadata, SdObjectMetadata} from "../utils/SdMetadata";
 import {isMetadataError, MetadataCollector} from "@angular/compiler-cli";
 import {NotImplementError} from "@simplysm/sd-core-common";
 import {SdTypescriptUtils} from "../utils/SdTypescriptUtils";
-import {JSDOM} from "jsdom";
 import * as tslint from "tslint";
+import {SdAngularUtils} from "../utils/SdAngularUtils";
+import {SdMetadataCollector} from "../metadata/SdMetadataCollector";
+import {SdNgModuleGenerator} from "../metadata/SdNgModuleGenerator";
 
 export class SdTypescriptChecker {
   private readonly _packagePath: string;
   private readonly _srcPath: string;
   private readonly _distPath: string;
-  private readonly _moduleDirSrcPath: string;
-  private readonly _moduleDirDistPath: string;
-  private readonly _routesFileSrcPath: string;
   private readonly _logger: Logger;
 
   private _program?: ts.Program;
   private readonly _diagnostics: ts.Diagnostic[] = [];
   private readonly _watchFiles: { eventKind: ts.FileWatcherEventKind; fileName: string }[] = [];
-  private readonly _metadataBundle = new SdBundleMetadata();
+  private readonly _metadataCollector: SdMetadataCollector;
   private readonly _genFileCache: { [fileName: string]: string } = {};
 
   public constructor(private readonly _tsconfigPath: string,
@@ -39,12 +36,9 @@ export class SdTypescriptChecker {
     this._srcPath = parsedTsConfig.options.rootDir ? path.resolve(parsedTsConfig.options.rootDir) : path.resolve(this._packagePath, "src");
     this._distPath = parsedTsConfig.options.outDir ? path.resolve(parsedTsConfig.options.outDir) : path.resolve(this._packagePath, "dist");
 
-    this._moduleDirSrcPath = path.resolve(this._srcPath, "_modules");
-    this._moduleDirDistPath = path.resolve(this._distPath, "_modules");
-
-    this._routesFileSrcPath = path.resolve(this._srcPath, "_routes.ts");
-
     this._logger = Logger.get(["simplysm", "sd-cli", packageKey, isNode ? "node" : "browser", "check"]);
+
+    this._metadataCollector = new SdMetadataCollector(this._distPath);
   }
 
   public async watchAsync(): Promise<void> {
@@ -54,13 +48,6 @@ export class SdTypescriptChecker {
     // GEN FILE CACHE 초기화
     //--------------------------------------------
 
-    if (FsUtil.exists(this._moduleDirSrcPath)) {
-      const moduleDirFileNames = await FsUtil.readdirAsync(this._moduleDirSrcPath);
-      for (const moduleDirFileName of moduleDirFileNames) {
-        const moduleDirFilePath = path.resolve(this._moduleDirSrcPath, moduleDirFileName);
-        this._genFileCache[moduleDirFilePath] = await FsUtil.readFileAsync(moduleDirFilePath);
-      }
-    }
     if (this._indexTsFilePath && FsUtil.exists(this._indexTsFilePath)) {
       this._genFileCache[this._indexTsFilePath] = await FsUtil.readFileAsync(this._indexTsFilePath);
     }
@@ -70,7 +57,24 @@ export class SdTypescriptChecker {
     const host = ts.createWatchCompilerHost(
       this._tsconfigPath,
       {},
-      ts.sys,
+      {
+        ...ts.sys,
+        readFile: (filePath: string, encoding?: string) => {
+          const isPackageFile = !path.relative(this._srcPath, filePath).includes("..");
+          const isTypescriptFile = !!filePath.match(/\.ts$/);
+          const isDeclFile = !!filePath.match(/\.d\.ts$/);
+
+          if (isPackageFile && isTypescriptFile && !isDeclFile) {
+            const fileContent = ts.sys.readFile(filePath, encoding);
+            if (fileContent === undefined) return undefined;
+
+            const scssResult = SdAngularUtils.replaceScssToCss(filePath, fileContent);
+            return scssResult.content;
+          }
+
+          return ts.sys.readFile(filePath, encoding);
+        }
+      },
       ts.createEmitAndSemanticDiagnosticsBuilderProgram,
       (diag: ts.Diagnostic) => {
         this._diagnostics.push(diag);
@@ -160,7 +164,14 @@ export class SdTypescriptChecker {
 
         if (this._isAngular) {
           await this._updateMetadataInfoAsync(watchFileInfos);
-          await this._generateNgModuleAsync();
+
+          const ngModuleGenerator = new SdNgModuleGenerator(
+            this._program,
+            this._metadataCollector,
+            this._srcPath,
+            this._distPath
+          );
+          await ngModuleGenerator.generateAsync();
         }
 
         //--------------------------------------------
@@ -178,11 +189,11 @@ export class SdTypescriptChecker {
         // 메시지 출력
         if (procId !== lastProcId) return;
 
-        if (warnings.length > 0) {
+        if (warnings.filterExists().length > 0) {
           this._logger.warn("타입체크 경고\n", warnings.join("\n").trim());
         }
 
-        if (errors.length > 0) {
+        if (errors.filterExists().length > 0) {
           this._logger.error("타입체크 오류\n", errors.join("\n").trim());
         }
 
@@ -217,6 +228,16 @@ export class SdTypescriptChecker {
 
   public async runAsync(): Promise<void> {
     this._logger.log("타입체크를 시작합니다.");
+
+    //--------------------------------------------
+    // GEN FILE CACHE 초기화
+    //--------------------------------------------
+
+    if (this._indexTsFilePath && FsUtil.exists(this._indexTsFilePath)) {
+      this._genFileCache[this._indexTsFilePath] = await FsUtil.readFileAsync(this._indexTsFilePath);
+    }
+
+    //--------------------------------------------
 
     const tsConfig = await FsUtil.readJsonAsync(this._tsconfigPath);
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, this._packagePath);
@@ -278,13 +299,20 @@ export class SdTypescriptChecker {
       const watchFileInfos = sourceFiles.map((item) =>
         this._getWatchFileInfo({
           fileName: item.fileName,
-          eventKind: FileWatcherEventKind.Created
+          eventKind: ts.FileWatcherEventKind.Created
         })
       );
 
       if (this._isAngular) {
         await this._updateMetadataInfoAsync(watchFileInfos);
-        changed = changed || await this._generateNgModuleAsync();
+        const ngModuleGenerator = new SdNgModuleGenerator(
+          this._program,
+          this._metadataCollector,
+          this._srcPath,
+          this._distPath
+        );
+        const ngModuleGenerated = await ngModuleGenerator.generateAsync();
+        changed = changed || ngModuleGenerated;
       }
 
       //--------------------------------------------
@@ -303,11 +331,11 @@ export class SdTypescriptChecker {
         await doing();
       }
       else {
-        if (warnings.length > 0) {
+        if (warnings.filterExists().length > 0) {
           this._logger.warn("타입체크 경고\n", warnings.join("\n").trim());
         }
 
-        if (errors.length > 0) {
+        if (errors.filterExists().length > 0) {
           this._logger.error("타입체크 오류\n", errors.join("\n").trim());
         }
 
@@ -332,15 +360,11 @@ export class SdTypescriptChecker {
       metadataFilePath = watchFile.fileName.replace(/(\.d)?\.(ts|js)$/, ".metadata.json");
     }
 
-    const isGeneratedFile = !path.relative(this._moduleDirSrcPath, watchFile.fileName).includes("..")
-      || path.resolve(watchFile.fileName) === this._routesFileSrcPath;
-
     return {
       watchFile,
       isTypescriptFile,
       isPackageFile,
       isDeleted,
-      isGeneratedFile,
       metadataFilePath
     };
   }
@@ -430,23 +454,6 @@ export class SdTypescriptChecker {
     return false;
   }
 
-  private _getRealModuleImportObj(moduleDef: ISdMetadataBundleNgModuleDef): { requirePath: string; targetName: string } {
-    let requirePath = moduleDef.moduleName ? moduleDef.moduleName
-      : moduleDef.filePath ? path.relative(this._moduleDirDistPath, moduleDef.filePath)
-          .replace(/\.metadata\.json$/, "")
-          .replace(/\\/g, "/")
-        : "./" + moduleDef.className;
-
-    let targetName = moduleDef.className;
-
-    if (requirePath === "@angular/platform-browser" && targetName === "BrowserModule") {
-      requirePath = "@angular/common";
-      targetName = "CommonModule";
-    }
-
-    return {requirePath, targetName};
-  }
-
   private async _lintAsync(sourceFilePaths: string[]): Promise<{ warnings: string[]; errors: string[]; invalidFilePaths: string[] }> {
     const warnings: string[] = [];
     const errors: string[] = [];
@@ -518,7 +525,7 @@ export class SdTypescriptChecker {
 
     for (const watchFileInfo of watchFileInfos) {
       if (watchFileInfo.isDeleted || !watchFileInfo.isTypescriptFile) {
-        this._metadataBundle.unregister(watchFileInfo.metadataFilePath);
+        this._metadataCollector.unregister(watchFileInfo.metadataFilePath);
         continue;
       }
 
@@ -532,206 +539,11 @@ export class SdTypescriptChecker {
       }
 
       if (FsUtil.exists(watchFileInfo.metadataFilePath)) {
-        await this._metadataBundle.registerAsync(watchFileInfo.metadataFilePath, watchFileInfo.isGeneratedFile);
+        await this._metadataCollector.registerAsync(watchFileInfo.metadataFilePath);
       }
     }
 
     return {warnings, errors};
-  }
-
-  private async _generateNgModuleAsync(): Promise<boolean> {
-    let changed = false;
-
-    if (!this._program) {
-      throw new NotImplementError();
-    }
-
-    const ngModuleDefs = this._metadataBundle.ngModuleDefs;
-    const moduleFilePaths: string[] = [];
-    for (const ngModuleDef of ngModuleDefs) {
-      if (ngModuleDef.moduleName || !ngModuleDef.isForGeneratedFile) continue;
-      const ngModuleName = ngModuleDef.className;
-
-      const importObj: { [requirePath: string]: string[] } = {
-        "@angular/core": ["NgModule"]
-      };
-
-      // NgModule
-      const ngModuleDeclarations: string[] = [];
-      const ngModuleExports: string[] = [];
-      const ngModuleEntryComponents: string[] = [];
-      const ngModuleImports: string[] = [];
-      for (const exportClass of ngModuleDef.exports) {
-        if (!exportClass.name) throw new NotImplementError();
-
-        const exportClassSourceFilePath = path.resolve(
-          this._srcPath,
-          path.relative(
-            this._distPath,
-            exportClass.moduleMetadata.filePath.replace(/\.metadata\.json$/, ".ts")
-          )
-        );
-        if (!exportClass.decorators) throw new NotImplementError();
-        for (const decorator of exportClass.decorators) {
-          if (decorator.expression.module === "@angular/core" && decorator.expression.name === "Component") {
-            ngModuleExports.push(exportClass.name);
-            ngModuleDeclarations.push(exportClass.name);
-            if (exportClass.name.endsWith("PrintTemplate") || exportClass.name.endsWith("Modal")) {
-              ngModuleEntryComponents.push(exportClass.name);
-            }
-          }
-          else if (decorator.expression.module === "@angular/core" && decorator.expression.name === "Directive") {
-            ngModuleExports.push(exportClass.name);
-            ngModuleDeclarations.push(exportClass.name);
-          }
-          else if (decorator.expression.module === "@angular/core" && decorator.expression.name === "Pipe") {
-            ngModuleExports.push(exportClass.name);
-            ngModuleDeclarations.push(exportClass.name);
-          }
-          else {
-            // IGNORE
-            // throw new NotImplementError();
-          }
-        }
-
-        const relativePath = path.relative(this._moduleDirSrcPath, exportClassSourceFilePath)
-          .replace(/\\/g, "/")
-          .replace(/\.ts$/, "");
-        importObj[relativePath] = importObj[relativePath] ?? [];
-        if (!importObj[relativePath].includes(exportClass.name)) {
-          importObj[relativePath].push(exportClass.name);
-        }
-
-        const exportClassSourceFile = this._program.getSourceFile(exportClassSourceFilePath);
-        if (!exportClassSourceFile) throw new NotImplementError();
-
-        const exportClassImportNodes = exportClassSourceFile["imports"];
-        if (exportClassImportNodes && exportClassImportNodes instanceof Array) {
-          for (const exportClassImportNode of exportClassImportNodes) {
-            if (exportClassImportNode.text === "tslib") continue;
-
-            const importModuleName = exportClassImportNode.text;
-            const importClassNames = exportClassImportNode.parent.importClause?.namedBindings?.elements?.map((item: any) => item.name.text);
-            if (!importClassNames) continue;
-
-
-            const needModuleDefs = ngModuleDefs.filter((moduleDef) =>
-              moduleDef.exports.some((exp) =>
-                (
-                  (exp.moduleMetadata.name === undefined && importModuleName.startsWith(".")) ||
-                  (exp.moduleMetadata.name === importModuleName)
-                ) &&
-                importClassNames.includes(exp.name)
-              )
-            );
-
-            for (const needModuleDef of needModuleDefs) {
-              const realModuleImportObj = this._getRealModuleImportObj(needModuleDef);
-
-              ngModuleImports.push(realModuleImportObj.targetName);
-
-              const requirePath = realModuleImportObj.requirePath;
-              importObj[requirePath] = importObj[requirePath] ?? [];
-              if (!importObj[requirePath].includes(realModuleImportObj.targetName)) {
-                importObj[requirePath].push(realModuleImportObj.targetName);
-              }
-            }
-          }
-        }
-        else {
-          throw new NotImplementError();
-        }
-
-        const componentDec = Array.from(exportClass.decorators).single((dec) => dec.expression.module === "@angular/core" && dec.expression.name === "Component");
-        if (componentDec) {
-          if (!componentDec.arguments || !componentDec.arguments[0] || !(componentDec.arguments[0] instanceof SdObjectMetadata)) throw new NotImplementError();
-          const arg = componentDec.arguments[0] as SdObjectMetadata;
-          const templateText = arg.getChildString("template");
-          if (templateText) {
-            const templateDOM = new JSDOM(templateText);
-
-            const needModuleDefs = ngModuleDefs.filter((item) =>
-              item.exports.some((exp) =>
-                exp.decorators &&
-                exp.decorators.some((dec) =>
-                  dec.expression.module === "@angular/core" &&
-                  dec.expression.name === "Component" &&
-                  dec.arguments &&
-                  dec.arguments[0] &&
-                  dec.arguments[0] instanceof SdObjectMetadata &&
-                  dec.arguments[0].getChildString("selector") &&
-                  templateDOM.window.document.querySelector(dec.arguments[0].getChildString("selector")!)
-                )
-              )
-            );
-
-            for (const needModuleDef of needModuleDefs) {
-              const realModuleImportObj = this._getRealModuleImportObj(needModuleDef);
-
-              ngModuleImports.push(realModuleImportObj.targetName);
-
-              const requirePath = realModuleImportObj.requirePath;
-              importObj[requirePath] = importObj[requirePath] ?? [];
-              if (!importObj[requirePath].includes(needModuleDef.className)) {
-                importObj[requirePath].push(needModuleDef.className);
-              }
-            }
-          }
-        }
-      }
-
-      if (ngModuleDeclarations.length > 0) {
-        const importText = Object.keys(importObj)
-          .map((key) => `import {${importObj[key].join(", ")}} from "${key}";`);
-        const ngModuleContent = `
-${importText.join("\n")}
-
-@NgModule({
-  imports: [${ngModuleImports.length > 0 ? "\n    " + ngModuleImports.join(",\n    ") + "\n  " : ""}],
-  declarations: [${ngModuleDeclarations.length > 0 ? "\n    " + ngModuleDeclarations.join(",\n    ") + "\n  " : ""}],
-  exports: [${ngModuleExports.length > 0 ? "\n    " + ngModuleExports.join(",\n    ") + "\n  " : ""}],
-  entryComponents: [${ngModuleEntryComponents.length > 0 ? "\n    " + ngModuleEntryComponents.join(",\n    ") + "\n  " : ""}]
-})
-export class ${ngModuleName} {
-}`.trim();
-
-        const distPath = path.resolve(this._moduleDirSrcPath, ngModuleName + ".ts");
-        if (this._genFileCache[distPath] !== ngModuleContent) {
-          this._genFileCache[distPath] = ngModuleContent;
-          await FsUtil.writeFileAsync(distPath, ngModuleContent);
-          changed = true;
-        }
-
-        moduleFilePaths.push(distPath);
-      }
-      else {
-        const distPath = path.resolve(this._moduleDirSrcPath, ngModuleName + ".ts");
-        if (this._genFileCache[distPath]) {
-          await FsUtil.removeAsync(distPath);
-          delete this._genFileCache[distPath];
-          changed = true;
-        }
-      }
-    }
-
-    // 삭제된 모듈 지우기
-    const moduleDirFileNames = await FsUtil.readdirAsync(this._moduleDirSrcPath);
-    for (const moduleDirFileName of moduleDirFileNames) {
-      const moduleDirFilePath = path.resolve(this._moduleDirSrcPath, moduleDirFileName);
-      if (!moduleFilePaths.includes(path.resolve(this._moduleDirSrcPath, moduleDirFileName))) {
-        if (this._genFileCache[moduleDirFilePath]) {
-          await FsUtil.removeAsync(moduleDirFilePath);
-          delete this._genFileCache[moduleDirFilePath];
-          changed = true;
-        }
-      }
-    }
-
-    // TODO: NgRoutingModule
-
-    // TODO: 신규 _routes 파일 생성
-
-    return changed;
   }
 }
 
@@ -740,6 +552,5 @@ interface IWatchFileInfo {
   isTypescriptFile: boolean;
   isPackageFile: boolean;
   isDeleted: boolean;
-  isGeneratedFile: boolean;
   metadataFilePath: string;
 }

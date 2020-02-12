@@ -1,126 +1,80 @@
 import * as path from "path";
-import {SdBundleMetadata} from "@simplysm/sd-cli/src/utils/SdMetadata";
+import {FsUtil} from "@simplysm/sd-core-node";
+import {isMetadataError, MetadataCollector} from "@angular/compiler-cli";
+import * as ts from "typescript";
+import {SdMetadataCollector, SdNgModuleGenerator} from "@simplysm/sd-cli";
 
 describe("(node) cli.SdModuleMetadata", () => {
   it("1", async () => {
+    /*const indexTsFilePath = path.resolve(process.cwd(), "packages", "sd-angular", "src", "index.ts");
+    const tsconfigPath = path.resolve(process.cwd(), "packages", "sd-angular", "tsconfig.build.json");
+
+
+    const tsconfig = await FsUtil.readJsonAsync(path.resolve(process.cwd(), "packages", "sd-angular", "tsconfig.build.json"));
+    const parsedTsConfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, path.dirname(tsconfigPath));
+    const host = ts.createCompilerHost(parsedTsConfig.options);
+    const metadataHost = new CompilerHostAdapter(host, null, parsedTsConfig.options);
+    const bundler = new MetadataBundler(indexTsFilePath.replace(/\.ts$/, ""), "@simplysm/sd-angular", metadataHost);
+    const bundle = bundler.getMetadataBundle();
+    console.log(bundle);*/
+
+    // 1
+    const srcPath = path.resolve(process.cwd(), "packages", "sd-angular", "src");
+    const distPath = path.resolve(process.cwd(), "packages", "sd-angular", "dist");
+
+    const tsconfigPath = path.resolve(process.cwd(), "packages", "sd-angular", "tsconfig.build.json");
+    const tsconfig = await FsUtil.readJsonAsync(tsconfigPath);
+    const parsedTsConfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, path.dirname(tsconfigPath));
+    const program = ts.createProgram(parsedTsConfig.fileNames, parsedTsConfig.options);
+
+    for (const sourceFile of program.getSourceFiles()) {
+      const isPackageFile = !path.relative(srcPath, path.resolve(sourceFile.fileName)).includes("..");
+
+      if (isPackageFile) {
+        const metadataFilePath = path.resolve(distPath, path.relative(srcPath, path.resolve(sourceFile.fileName)))
+          .replace(/\.ts$/, ".metadata.json");
+        const metadata = new MetadataCollector().getMetadata(
+          sourceFile,
+          true,
+          (value, tsNode) => {
+            if (isMetadataError(value)) {
+              console.log(value["message"]);
+            }
+
+            return value;
+          }
+        );
+
+        if (metadata) {
+          await FsUtil.writeFileAsync(metadataFilePath, JSON.stringify(metadata));
+        }
+        else {
+          await FsUtil.removeAsync(metadataFilePath);
+        }
+      }
+    }
+
+    // 2
     const metadataFilePaths = [
       path.resolve(process.cwd(), "node_modules/@angular/common/common.metadata.json"),
       path.resolve(process.cwd(), "node_modules/@angular/core/core.metadata.json"),
       path.resolve(process.cwd(), "node_modules/@angular/platform-browser/platform-browser.metadata.json"),
-      path.resolve(process.cwd(), "node_modules/@angular/router/router.metadata.json")
+      path.resolve(process.cwd(), "node_modules/@angular/router/router.metadata.json"),
+      ...await FsUtil.globAsync(path.resolve(process.cwd(), "packages/sd-angular/dist/**/*.metadata.json"))
     ];
 
-    const metadataBundle = new SdBundleMetadata();
+    const metadataCollector = new SdMetadataCollector(distPath);
     for (const metadataFilePath of metadataFilePaths) {
-      await metadataBundle.registerAsync(metadataFilePath);
+      await metadataCollector.registerAsync(metadataFilePath);
     }
 
-    console.log(metadataBundle.ngModuleDefs);
-
-    /*for (const module of metadataBundle.modules) {
-      for (const moduleClass of module.classes) {
-        if (!moduleClass.decorators) continue;
-
-        for (const decorator of moduleClass.decorators) {
-          if (decorator.expression.module === "@angular/core" && decorator.expression.name === "NgModule") {
-            if (!decorator.arguments || !decorator.arguments[0]) throw new NotImplementError();
-
-            // EXPORTS
-            const exportClasses = decorator.arguments[0].getChildList("exports");
-            if (exportClasses) {
-              for (const exportClass of exportClasses) {
-                if (!(exportClass instanceof SdClassMetadata)) throw new NotImplementError();
-                if (!exportClass.decorators) throw new NotImplementError();
-
-                for (const exportClassDecorator of exportClass.decorators) {
-                  if (exportClassDecorator.expression.module === "@angular/core") {
-                    if (exportClassDecorator.expression.name === "Component") {
-                      if (!exportClassDecorator.arguments || !exportClassDecorator.arguments[0]) throw new NotImplementError();
-
-                      const selector = exportClassDecorator.arguments[0].getChildString("selector");
-
-                      console.log(module.name, moduleClass.name, exportClass.name, exportClassDecorator.expression.name, selector);
-                    }
-                    else if (exportClassDecorator.expression.name === "Directive") {
-                      if (!exportClassDecorator.arguments || !exportClassDecorator.arguments[0]) throw new NotImplementError();
-
-                      const selector = exportClassDecorator.arguments[0].getChildString("selector");
-
-                      console.log(module.name, moduleClass.name, exportClass.name, exportClassDecorator.expression.name, selector);
-                    }
-                    else if (exportClassDecorator.expression.name === "Pipe") {
-                      if (!exportClassDecorator.arguments || !exportClassDecorator.arguments[0]) throw new NotImplementError();
-
-                      const pipeName = exportClassDecorator.arguments[0].getChildString("name");
-
-                      console.log(module.name, moduleClass.name, exportClass.name, exportClassDecorator.expression.name, pipeName);
-                    }
-                    else if (exportClassDecorator.expression.name === "Injectable") {
-                      console.log(module.name, moduleClass.name, exportClass.name, exportClassDecorator.expression.name);
-                    }
-                  }
-                }
-              }
-            }
-
-            // PROVIDERS
-            const providers = decorator.arguments[0].getChildList("providers");
-            if (providers) {
-              for (const provider of providers) {
-                if (provider instanceof SdObjectMetadata) {
-                  const providerProvide = provider.getChild("provide");
-                  if (providerProvide instanceof SdClassMetadata) {
-                    console.log(module.name, moduleClass.name, providerProvide.name);
-                  }
-                  else if (providerProvide instanceof SdCallMetadata) {
-                    console.log(module.name, moduleClass.name, providerProvide.expression.module + "." + providerProvide.expression.name);
-                  }
-                  else {
-                    throw new NotImplementError();
-                  }
-                }
-                else {
-                  throw new NotImplementError();
-                }
-              }
-            }
-
-
-            // STATIC PROVIDERS
-            if (moduleClass.staticFunctions) {
-              for (const staticFunction of moduleClass.staticFunctions) {
-                if (!staticFunction.value) continue;
-                const staticProviders = staticFunction.value.getChildList("providers");
-                if (!staticProviders) continue;
-
-                for (const staticProvider of staticProviders) {
-                  if (staticProvider instanceof SdObjectMetadata) {
-                    const staticProviderProvide = staticProvider.getChild("provide");
-                    if (staticProviderProvide instanceof SdClassMetadata) {
-                      console.log(module.name, moduleClass.name, staticProviderProvide.name);
-                    }
-                    else if (staticProviderProvide instanceof SdCallMetadata) {
-                      console.log(module.name, moduleClass.name, staticProviderProvide.expression.module + "." + staticProviderProvide.expression.name);
-                    }
-                    else {
-                      throw new NotImplementError();
-                    }
-                  }
-                  else if (staticProvider instanceof SdClassMetadata) {
-                    console.log(module.name, moduleClass.name, staticProvider.name);
-                  }
-                  else if (staticProvider instanceof SdCallMetadata) {
-                    console.log(module.name, moduleClass.name, staticProvider.expression.module + "." + staticProvider.expression.name);
-                  }
-                  else {
-                    throw new NotImplementError();
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }*/
+    const ngModuleGenerator = new SdNgModuleGenerator(
+      program,
+      metadataCollector,
+      srcPath,
+      distPath
+    );
+    const changed = await ngModuleGenerator.generateAsync();
+    console.log(2, changed);
   });
 });

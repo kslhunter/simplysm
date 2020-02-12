@@ -153,8 +153,9 @@ export class SdProject {
 
     // 필요한 WORKER 생성
     const processCount =
-      this.packages.filter((item) => item.config?.type === "library").length * 2 +
-      this.packages.filter((item) => item.config && item.config.type !== "library").length;
+      this.packages.filter((item) => item.config?.type === "library").length * 2 + // CHECK LIBRARY 2가지 TSCONFIG
+      this.packages.filter((item) => item.config && item.config.type && item.config.type !== "library").length + // CHECK NON LIBRARY
+      this.packages.filter((item) => item.config?.type === "library").length * 2; // COMPILE LIBRARY
     const processWorkManager = await ProcessWorkManager.createAsync(
       path.resolve(__dirname, `build-worker`),
       processCount,

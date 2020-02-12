@@ -28,7 +28,7 @@ export class FsUtil {
             reject(err);
             return;
           }
-          resolve(matches);
+          resolve(matches.map((item) => path.resolve(item)));
         });
       });
     }
@@ -39,7 +39,7 @@ export class FsUtil {
             reject(err);
             return;
           }
-          resolve(matches);
+          resolve(matches.map((item) => path.resolve(item)));
         });
       });
     }
