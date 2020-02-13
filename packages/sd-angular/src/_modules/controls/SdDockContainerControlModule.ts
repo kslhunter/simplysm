@@ -1,18 +1,18 @@
 import {NgModule} from "@angular/core";
-import {SdDockControl} from "../../controls/SdDockControl";
 import {SdDockContainerControl} from "../../controls/SdDockContainerControl";
+import {SdDockControl} from "../../controls/SdDockControl";
 
 @NgModule({
   imports: [],
   declarations: [
-    SdDockControl,
-    SdDockContainerControl
+    SdDockContainerControl,
+    SdDockControl
   ],
   exports: [
-    SdDockControl,
-    SdDockContainerControl
+    SdDockContainerControl,
+    SdDockControl
   ],
   entryComponents: []
 })
-export class SdDockControlModule {
+export class SdDockContainerControlModule {
 }
