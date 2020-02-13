@@ -27,8 +27,8 @@ ProcessWorkManager
       const checker = new SdTypescriptChecker(
         tsConfigPath,
         framework?.startsWith("angular"),
-        polyfills,
-        indexFilePath
+        indexFilePath,
+        polyfills
       );
       if (watch) {
         await checker.watchAsync();

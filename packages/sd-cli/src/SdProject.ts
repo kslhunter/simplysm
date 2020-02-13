@@ -10,6 +10,7 @@ import {NextHandleFunction} from "connect";
 import * as depcheck from "depcheck";
 import {SdAngularCompiler} from "./builders/SdAngularCompiler";
 import {SdServerCompiler} from "./builders/SdServerCompiler";
+import * as os from "os";
 // tslint:disable-next-line: no-var-requires
 const decache = require("decache");
 
@@ -173,7 +174,7 @@ export class SdProject {
       this.packages.filter((item) => item.config?.type === "library").length * 2; // COMPILE LIBRARY
     const processWorkManager = await ProcessWorkManager.createAsync(
       path.resolve(__dirname, `build-worker`),
-      processCount,
+      Math.min(processCount, os.cpus().length - 1),
       true
     );
 
@@ -196,7 +197,7 @@ export class SdProject {
           ? pkg.config?.framework
           : undefined;
 
-        const indexFilePath = isFirst && pkg.config?.type === "library" && pkg.npmConfig.main
+        const indexTsFilePath = isFirst && pkg.config?.type === "library" && pkg.npmConfig.main
           ? path.resolve(
             tsConfig.srcPath,
             path.relative(
@@ -218,7 +219,7 @@ export class SdProject {
           tsConfig.configForBuildPath,
           framework,
           polyfills,
-          indexFilePath
+          indexTsFilePath
         );
       });
 

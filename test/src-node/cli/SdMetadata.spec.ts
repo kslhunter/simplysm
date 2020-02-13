@@ -1,7 +1,13 @@
 import * as path from "path";
 import {FsUtil} from "@simplysm/sd-core-node";
 import * as ts from "typescript";
-import {SdIndexTsFileGenerator, SdMetadataCollector, SdMetadataGenerator, SdNgModuleGenerator} from "@simplysm/sd-cli";
+import {
+  SdIndexTsFileGenerator,
+  SdMetadataCollector,
+  SdMetadataGenerator,
+  SdNgModuleGenerator,
+  SdNgRoutingModuleGenerator
+} from "@simplysm/sd-cli";
 import {NotImplementError} from "@simplysm/sd-core-common";
 
 describe("(node) cli.Metadata", () => {
@@ -69,17 +75,21 @@ describe("(node) cli.Metadata", () => {
     }
 
     const ngModuleGenerator = new SdNgModuleGenerator(
-      program,
       metadataCollector,
       srcPath,
       distPath
     );
-    const changed = await ngModuleGenerator.generateAsync();
+    const changed = await ngModuleGenerator.generateAsync(program);
     console.log(2, changed);
 
     //----------------------------------------
     // TODO: 3 generate NgRouteModules
     //----------------------------------------
+    const ngRoutingModuleGenerator = new SdNgRoutingModuleGenerator(
+      srcPath,
+      distPath
+    );
+    await ngRoutingModuleGenerator.generateAsync();
 
     //----------------------------------------
     // TODO: 4 generate _routes.ts
@@ -91,6 +101,7 @@ describe("(node) cli.Metadata", () => {
 
     const indexGenerator = new SdIndexTsFileGenerator(
       path.resolve(srcPath, "index.ts"),
+      [],
       [],
       srcPath
     );

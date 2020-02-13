@@ -13,7 +13,7 @@ import {SdCallMetadata} from "../metadata/SdCallMetadata";
 
 export class SdNgModuleGenerator {
   private _defs: ISdNgModuleDef[] = [];
-  private _infos: ISdNgModuleInfo[] = [];
+  public infos: ISdNgModuleInfo[] = [];
   private readonly _cacheObj: { [filePath: string]: string } = {};
   private readonly _modulesGenPath: string;
 
@@ -149,7 +149,7 @@ export class SdNgModuleGenerator {
   }
 
   private _configInfos(program: ts.Program): void {
-    this._infos = [];
+    this.infos = [];
 
     for (const def of this._defs) {
       if (def.isLibrary) continue;
@@ -260,13 +260,26 @@ export class SdNgModuleGenerator {
                 exp.decorators &&
                 exp.decorators.some((dec) =>
                   dec.expression.module === "@angular/core" &&
-                  dec.expression.name === "Component" &&
+                  (
+                    dec.expression.name === "Component" ||
+                    dec.expression.name === "Directive"
+                  ) &&
                   dec.arguments &&
                   dec.arguments[0] &&
                   dec.arguments[0] instanceof SdObjectMetadata &&
                   dec.arguments[0].get("selector") &&
                   typeof dec.arguments[0].get("selector") === "string" &&
-                  templateDOM.window.document.querySelector(dec.arguments[0].get("selector") as string)
+                  templateDOM.window.document.querySelector([
+                    (dec.arguments[0].get("selector") as string),
+                    (dec.arguments[0].get("selector") as string)
+                      .replace(/\[/g, "[\\[")
+                      .replace(/]/g, "\\]]"),
+                    (dec.arguments[0].get("selector") as string)
+                      .replace(/\[/g, "[\\(")
+                      .replace(/]/g, "\\)]"),
+                    (dec.arguments[0].get("selector") as string)
+                      .replace(/\[/g, "[\\*")
+                  ].join(", "))
                 )
               )
             );
@@ -286,7 +299,7 @@ export class SdNgModuleGenerator {
         }
       }
 
-      this._infos.push(info);
+      this.infos.push(info);
     }
   }
 
@@ -294,7 +307,7 @@ export class SdNgModuleGenerator {
     let alreadyImports: string[] = [];
     const doing = () => {
       const importFilePathObj: { [filePath: string]: string[] } = {};
-      for (const info of this._infos) {
+      for (const info of this.infos) {
         importFilePathObj[info.filePath] = Object.keys(info.importObj)
           .filter((key) => key.startsWith("."))
           .map((key) => path.resolve(path.dirname(info.filePath), key) + ".ts");
@@ -329,7 +342,7 @@ export class SdNgModuleGenerator {
 
     while (!doing()) {
       // 첫번째 모듈에 다른 모듈 모두 병합
-      const mergeInfos = this._infos.filter((item) => alreadyImports.includes(item.filePath));
+      const mergeInfos = this.infos.filter((item) => alreadyImports.includes(item.filePath));
       const newInfo = mergeInfos[0];
       for (const mergeInfo of mergeInfos.slice(1)) {
         for (const key of Object.keys(mergeInfo.importObj)) {
@@ -346,11 +359,11 @@ export class SdNgModuleGenerator {
 
       // 첫번째 모듈외 모든 모듈 삭제
       for (const mergeInfo of mergeInfos.slice(1)) {
-        this._infos.remove(mergeInfo);
+        this.infos.remove(mergeInfo);
       }
 
       // 첫번째 모듈외 모든 모듈을 의존하고 있던 모든 다른 모듈에서, importObj/modules 를 새 모듈로 변경
-      for (const info of this._infos) {
+      for (const info of this.infos) {
         const removeKeys = Object.keys(info.importObj)
           .filter((key) => {
             const filePath = path.resolve(path.dirname(info.filePath), key) + ".ts";
@@ -387,8 +400,9 @@ export class SdNgModuleGenerator {
   private async _writeFilesAsync(): Promise<boolean> {
     let changed = false;
 
-    for (const info of this._infos) {
+    for (const info of this.infos) {
       if (info.declarations.length > 0) {
+        // NgModule
         const importText = Object.keys(info.importObj)
           .map((key) => `import {${info.importObj[key].join(", ")}} from "${key}";`);
         const ngModuleContent = `
@@ -425,7 +439,7 @@ export class ${info.className} {
     let changed = false;
 
     for (const filePath of Object.keys(this._cacheObj)) {
-      if (!this._infos.some((item) => item.filePath === filePath)) {
+      if (!this.infos.some((item) => item.filePath === filePath)) {
         await FsUtil.removeAsync(filePath);
         delete this._cacheObj[filePath];
         changed = true;

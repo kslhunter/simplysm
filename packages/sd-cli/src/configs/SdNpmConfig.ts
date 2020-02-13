@@ -14,8 +14,12 @@ export class SdNpmConfig {
     this._config.version = value;
   }
 
-  public get main(): string {
+  public get main(): string | undefined {
     return this._config.main;
+  }
+
+  public get bin(): string | { [key: string]: string } {
+    return this._config.bin;
   }
 
   public get workspaces(): string[] | undefined {

@@ -249,7 +249,7 @@ export class SdServiceServer extends EventEmitter {
         catch (err) {
           const errorMessage = `요청이 잘못되었습니다.`;
           this._responseErrorHtml(res, 405, errorMessage);
-          next(new Error(errorMessage));
+          next(err);
         }
       }
     ]);

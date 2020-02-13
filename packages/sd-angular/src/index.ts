@@ -4,7 +4,7 @@ export * from "./_modules/controls/SdBusyContainerControlModule";
 export * from "./_modules/controls/SdButtonControlModule";
 export * from "./_modules/controls/SdCollapseControlModule";
 export * from "./_modules/controls/SdCollapseIconControlModule";
-export * from "./_modules/controls/SdDockControlModule";
+export * from "./_modules/controls/SdDockContainerControlModule";
 export * from "./_modules/controls/SdFormControlModule";
 export * from "./_modules/controls/SdFormItemControlModule";
 export * from "./_modules/controls/SdIconControlModule";

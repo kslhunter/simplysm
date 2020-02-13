@@ -10,6 +10,7 @@ import {SdIconControlModule} from "./SdIconControlModule";
   imports: [
     CommonModule,
     SdListControlModule,
+    CommonModule,
     SdCollapseControlModule,
     SdCollapseIconControlModule,
     SdIconControlModule

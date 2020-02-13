@@ -2,8 +2,10 @@ import {NgModule, ApplicationModule} from "@angular/core";
 import {SdSheetControl} from "../../controls/SdSheetControl";
 import {SdSheetColumnControlModule} from "./SdSheetColumnControlModule";
 import {SdAnchorControlModule} from "./SdAnchorControlModule";
+import {CommonModule} from "@angular/common";
+import {SdResizeDirectiveModule} from "../directives/SdResizeDirectiveModule";
 import {SdIconControlModule} from "./SdIconControlModule";
-import {SdDockControlModule} from "./SdDockControlModule";
+import {SdDockContainerControlModule} from "./SdDockContainerControlModule";
 import {SdPaginationControlModule} from "./SdPaginationControlModule";
 import {SdPaneControlModule} from "./SdPaneControlModule";
 
@@ -12,8 +14,10 @@ import {SdPaneControlModule} from "./SdPaneControlModule";
     ApplicationModule,
     SdSheetColumnControlModule,
     SdAnchorControlModule,
+    CommonModule,
+    SdResizeDirectiveModule,
     SdIconControlModule,
-    SdDockControlModule,
+    SdDockContainerControlModule,
     SdPaginationControlModule,
     SdPaneControlModule
   ],

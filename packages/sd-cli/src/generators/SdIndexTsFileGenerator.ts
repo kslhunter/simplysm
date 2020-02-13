@@ -7,6 +7,7 @@ export class SdIndexTsFileGenerator {
 
   public constructor(private readonly _indexTsFilePath: string,
                      private readonly _polyfills: string[],
+                     private readonly _excludes: string[],
                      private readonly _srcPath: string) {
     if (FsUtil.exists(this._indexTsFilePath)) {
       this._cache = FsUtil.readFile(this._indexTsFilePath);
@@ -26,6 +27,9 @@ export class SdIndexTsFileGenerator {
     const srcTsFiles = await FsUtil.globAsync(path.resolve(this._srcPath, "**", "*.ts"));
     for (const srcTsFile of srcTsFiles) {
       if (path.resolve(srcTsFile) === this._indexTsFilePath) {
+        continue;
+      }
+      if (this._excludes.some((item) => path.resolve(item) === path.resolve(srcTsFile))) {
         continue;
       }
 

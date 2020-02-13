@@ -3,13 +3,14 @@ import * as ts from "typescript";
 import * as path from "path";
 import * as os from "os";
 import {NotImplementError, Wait} from "@simplysm/sd-core-common";
-import {SdTypescriptUtils} from "../utils/SdTypescriptUtils";
 import * as tslint from "tslint";
+import {SdTypescriptUtils} from "../utils/SdTypescriptUtils";
 import {SdAngularUtils} from "../utils/SdAngularUtils";
 import {SdMetadataCollector} from "../metadata/SdMetadataCollector";
 import {SdNgModuleGenerator} from "../generators/SdNgModuleGenerator";
 import {SdIndexTsFileGenerator} from "../generators/SdIndexTsFileGenerator";
 import {SdMetadataGenerator} from "../generators/SdMetadataGenerator";
+import {SdNgRoutingModuleGenerator} from "../generators/SdNgRoutingModuleGenerator";
 
 export class SdTypescriptChecker {
   private readonly _packagePath: string;
@@ -20,17 +21,17 @@ export class SdTypescriptChecker {
   private _program?: ts.Program;
   private readonly _diagnostics: ts.Diagnostic[] = [];
   private readonly _watchFiles: { eventKind: ts.FileWatcherEventKind; fileName: string }[] = [];
-  private readonly _genFileCache: { [fileName: string]: string } = {};
 
   private readonly _metadataGenerator: SdMetadataGenerator | undefined;
   private readonly _metadataCollector: SdMetadataCollector | undefined;
   private readonly _ngModuleGenerator: SdNgModuleGenerator | undefined;
+  private readonly _ngRoutingModuleGenerator: SdNgRoutingModuleGenerator | undefined;
   private readonly _indexTsFileGenerator: SdIndexTsFileGenerator | undefined;
 
   public constructor(private readonly _tsconfigPath: string,
                      private readonly _isAngular: boolean,
-                     private readonly _polyfills: string[],
-                     private readonly _indexTsFilePath: string | undefined) {
+                     private readonly _indexTsFilePath: string | undefined,
+                     private readonly _polyfills: string[]) {
     this._packagePath = path.dirname(this._tsconfigPath);
     const packageKey = path.basename(this._packagePath);
 
@@ -47,10 +48,16 @@ export class SdTypescriptChecker {
       this._metadataGenerator = new SdMetadataGenerator(this._srcPath, this._distPath);
       this._metadataCollector = new SdMetadataCollector(this._distPath);
       this._ngModuleGenerator = new SdNgModuleGenerator(this._metadataCollector, this._srcPath, this._distPath);
+      this._ngRoutingModuleGenerator = new SdNgRoutingModuleGenerator(this._srcPath, this._ngModuleGenerator);
     }
 
     if (this._indexTsFilePath) {
-      this._indexTsFileGenerator = new SdIndexTsFileGenerator(this._indexTsFilePath, this._polyfills, this._srcPath);
+      this._indexTsFileGenerator = new SdIndexTsFileGenerator(
+        this._indexTsFilePath,
+        this._polyfills,
+        tsconfig.files?.map((item: string) => path.resolve(path.dirname(this._tsconfigPath), item)) ?? [],
+        this._srcPath
+      );
     }
   }
 
@@ -113,6 +120,8 @@ export class SdTypescriptChecker {
         if (this._watchFiles.length <= 0) {
           return;
         }
+
+        let changed = false;
 
         const warnings: string[] = [];
         const errors: string[] = [];
@@ -209,7 +218,9 @@ export class SdTypescriptChecker {
             }
           }
 
-          await this._ngModuleGenerator!.generateAsync(this._program);
+          const changed1 = await this._ngModuleGenerator!.generateAsync(this._program);
+          const changed2 = await this._ngRoutingModuleGenerator!.generateAsync();
+          changed = changed || changed1 || changed2;
         }
 
         //--------------------------------------------
@@ -217,7 +228,8 @@ export class SdTypescriptChecker {
         //--------------------------------------------
 
         if (this._indexTsFileGenerator) {
-          await this._indexTsFileGenerator.generateAsync();
+          const changed1 = await this._indexTsFileGenerator.generateAsync();
+          changed = changed || changed1;
         }
 
         //--------------------------------------------
@@ -238,7 +250,7 @@ export class SdTypescriptChecker {
         //--------------------------------------------
 
         processing = false;
-        if (procId === lastProcId) {
+        if (procId === lastProcId && !changed) {
           // 메시지 출력
 
           if (warnings.filterExists().length > 0) {
@@ -281,16 +293,6 @@ export class SdTypescriptChecker {
 
   public async runAsync(): Promise<void> {
     this._logger.log("타입체크를 시작합니다.");
-
-    //--------------------------------------------
-    // GEN FILE CACHE 초기화
-    //--------------------------------------------
-
-    if (this._indexTsFilePath && FsUtil.exists(this._indexTsFilePath)) {
-      this._genFileCache[this._indexTsFilePath] = await FsUtil.readFileAsync(this._indexTsFilePath);
-    }
-
-    //--------------------------------------------
 
     const tsConfig = await FsUtil.readJsonAsync(this._tsconfigPath);
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, this._packagePath);
@@ -346,7 +348,7 @@ export class SdTypescriptChecker {
       errors.push(...lintResult.errors);
 
       //--------------------------------------------
-      // ANGULAR 모듈 등 생성
+      // 동일 패키지의 index.ts 를 import 한 부분 체크 메시지 구성
       //--------------------------------------------
 
       const watchFileInfos = sourceFiles.map((item) =>
@@ -355,6 +357,24 @@ export class SdTypescriptChecker {
           eventKind: ts.FileWatcherEventKind.Created
         })
       );
+
+      for (const watchFileInfo of watchFileInfos) {
+        if (watchFileInfo.isDeleted && !watchFileInfo.isPackageFile) {
+          continue;
+        }
+
+        const content = await FsUtil.readFileAsync(watchFileInfo.watchFile.fileName);
+        const matches = content.match(/from ".*"/g);
+        if (matches && matches.some((match) => match.match(/\.\.\/?"$/))) {
+          errors.push(`${watchFileInfo.watchFile.fileName}: 소속 패키지의 'index.ts'를 import 하고 있습니다.`);
+
+          this._watchFiles.push(watchFileInfo.watchFile);
+        }
+      }
+
+      //--------------------------------------------
+      // ANGULAR 모듈 등 생성
+      //--------------------------------------------
 
       if (this._isAngular) {
         for (const watchFileInfo of watchFileInfos) {
@@ -388,6 +408,19 @@ export class SdTypescriptChecker {
       if (this._indexTsFileGenerator) {
         const changed1 = await this._indexTsFileGenerator.generateAsync();
         changed = changed || changed1;
+      }
+
+      //--------------------------------------------
+      // 삭제된 소스의 d.ts 파일 삭제
+      //--------------------------------------------
+
+      const deletedItems = watchFileInfos.filter((watchFileInfo) => watchFileInfo.isPackageFile && watchFileInfo.isDeleted);
+      for (const deletedItem of deletedItems) {
+        const tsFileRelativePath = path.relative(this._srcPath, deletedItem.watchFile.fileName);
+        const descFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".d.ts");
+        const descFilePath = path.resolve(this._distPath, descFileRelativePath);
+
+        await FsUtil.removeAsync(descFilePath);
       }
 
       //--------------------------------------------

@@ -1,5 +1,3 @@
-import "./bin";
-import "./build-worker";
 export * from "./builders/SdAngularCompiler";
 export * from "./builders/SdServerCompiler";
 export * from "./builders/SdTypescriptChecker";
@@ -11,6 +9,7 @@ export * from "./configs/SdTsConfig";
 export * from "./generators/SdIndexTsFileGenerator";
 export * from "./generators/SdMetadataGenerator";
 export * from "./generators/SdNgModuleGenerator";
+export * from "./generators/SdNgRoutingModuleGenerator";
 export * from "./metadata/commons";
 export * from "./metadata/SdArrayMetadata";
 export * from "./metadata/SdCallMetadata";

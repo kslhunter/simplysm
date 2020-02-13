@@ -276,7 +276,8 @@ export class SdAngularCompiler extends EventEmitter {
           compilerOptions: {
             fullTemplateTypeCheck: true,
             strictInjectionParameters: true,
-            disableTypeScriptVersionCheck: true
+            disableTypeScriptVersionCheck: true,
+            enableIvy: false
           }
         }),
         new webpack.ContextReplacementPlugin(
