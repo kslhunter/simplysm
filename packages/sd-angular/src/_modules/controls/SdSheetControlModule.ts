@@ -3,7 +3,7 @@ import {SdSheetControl} from "../../controls/SdSheetControl";
 import {SdSheetColumnControlModule} from "./SdSheetColumnControlModule";
 import {SdAnchorControlModule} from "./SdAnchorControlModule";
 import {SdIconControlModule} from "./SdIconControlModule";
-import {SdDockContainerControlModule} from "./SdDockContainerControlModule";
+import {SdDockControlModule} from "./SdDockControlModule";
 import {SdPaginationControlModule} from "./SdPaginationControlModule";
 import {SdPaneControlModule} from "./SdPaneControlModule";
 
@@ -13,7 +13,7 @@ import {SdPaneControlModule} from "./SdPaneControlModule";
     SdSheetColumnControlModule,
     SdAnchorControlModule,
     SdIconControlModule,
-    SdDockContainerControlModule,
+    SdDockControlModule,
     SdPaginationControlModule,
     SdPaneControlModule
   ],
