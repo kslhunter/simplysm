@@ -120,11 +120,7 @@ export class SdProject {
     logger.log(watch ? `모든 로컬 패키지 변경감지가 시작되었습니다.` : `모든 로컬 패키지 업데이트가 완료되었습니다.`);
   }
 
-  public async buildAsync(watch: boolean): Promise<void> {
-    const logger = Logger.get(["simplysm", "sd-cli", "build"]);
-
-    logger.log("빌드 준비중...");
-
+  private async _upgradeVersionAsync(): Promise<void> {
     // 프로젝트의 package.json 버전 올리기
     this._npmConfig.version = semver.inc(this._npmConfig.version, this._mode === "development" ? "prerelease" : "patch")!;
     await this._npmConfig.saveAsync();
@@ -141,7 +137,19 @@ export class SdProject {
       );
 
       await pkg.npmConfig.saveAsync();
+    }));
+  }
 
+  public async buildAsync(watch: boolean): Promise<void> {
+    const logger = Logger.get(["simplysm", "sd-cli", "build"]);
+
+    logger.log("빌드 준비중...");
+
+    // 버전업
+    await this._upgradeVersionAsync();
+
+    // 각 패키지별 초기화
+    await Promise.all(this.packages.map(async (pkg) => {
       if (pkg.config?.type) {
         // tsconfig 별
         await pkg.tsConfigs.parallelAsync(async (tsConfig) => {
@@ -396,6 +404,10 @@ export class SdProject {
     // watch 버전에선 배포 불가
     else if (this._npmConfig.version.includes("-")) {
       throw new Error("현재 최종 버전이 빌드(배포) 버전이 아닙니다.");
+    }
+    else {
+      // 버전업
+      await this._upgradeVersionAsync();
     }
 
     // GIT 사용중일경우, 새 버전 커밋 및 TAG 생성
