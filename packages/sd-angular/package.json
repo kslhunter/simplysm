@@ -20,7 +20,8 @@
     "@simplysm/sd-core-common": "3.1.199",
     "@simplysm/sd-core-browser": "3.1.199",
     "rxjs": "6.5.3",
-    "zone.js": "~0.10.2"
+    "zone.js": "~0.10.2",
+    "tslib": "^1.10.0"
   },
   "devDependencies": {
     "@angular/compiler": "^9.0.0",
