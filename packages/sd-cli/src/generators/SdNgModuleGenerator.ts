@@ -1,18 +1,15 @@
-import {
-  SdArrayMetadata,
-  SdCallMetadata,
-  SdClassMetadata,
-  SdFunctionMetadata,
-  SdMetadataBase,
-  SdMetadataCollector,
-  SdObjectMetadata,
-  TSdMetadata
-} from "./SdMetadataCollector";
-import {NotImplementError} from "@simplysm/sd-core-common/src";
+import {NotImplementError} from "@simplysm/sd-core-common";
 import * as path from "path";
 import * as ts from "typescript";
 import {JSDOM} from "jsdom";
 import {FsUtil} from "@simplysm/sd-core-node";
+import {SdMetadataCollector} from "../metadata/SdMetadataCollector";
+import {SdMetadataBase, TSdMetadata} from "../metadata/commons";
+import {SdClassMetadata} from "../metadata/SdClassMetadata";
+import {SdObjectMetadata} from "../metadata/SdObjectMetadata";
+import {SdArrayMetadata} from "../metadata/SdArrayMetadata";
+import {SdFunctionMetadata} from "../metadata/SdFunctionMetadata";
+import {SdCallMetadata} from "../metadata/SdCallMetadata";
 
 export class SdNgModuleGenerator {
   private _defs: ISdNgModuleDef[] = [];
@@ -20,28 +17,26 @@ export class SdNgModuleGenerator {
   private readonly _cacheObj: { [filePath: string]: string } = {};
   private readonly _modulesGenPath: string;
 
-  public constructor(private readonly _program: ts.Program,
-                     private readonly _metadata: SdMetadataCollector,
+  public constructor(private readonly _metadata: SdMetadataCollector,
                      private readonly _srcPath: string,
                      private readonly _distPath: string) {
     this._modulesGenPath = path.resolve(this._srcPath, "_modules");
-  }
 
-  public async generateAsync(): Promise<boolean> {
-    await this._initCacheAsync();
-    this._configDefs();
-    this._configInfos();
-    this._mergeImportCircleInfos();
-    return await this._writeFilesAsync();
-  }
-
-  private async _initCacheAsync(): Promise<void> {
     if (FsUtil.exists(this._modulesGenPath)) {
-      const filePaths = await FsUtil.globAsync(path.resolve(this._modulesGenPath, "**", "*.ts"));
+      const filePaths = FsUtil.glob(path.resolve(this._modulesGenPath, "**", "*.ts"));
       for (const filePath of filePaths) {
-        this._cacheObj[path.resolve(filePath)] = await FsUtil.readFileAsync(filePath);
+        this._cacheObj[path.resolve(filePath)] = FsUtil.readFile(filePath);
       }
     }
+  }
+
+  public async generateAsync(program: ts.Program): Promise<boolean> {
+    this._configDefs();
+    this._configInfos(program);
+    this._mergeImportCircleInfos();
+    const changed1 = await this._writeFilesAsync();
+    const changed2 = await this._removeDeletedModuleFileAsync();
+    return changed1 || changed2;
   }
 
   private _configDefs(): void {
@@ -117,6 +112,8 @@ export class SdNgModuleGenerator {
           def.filePath = moduleItem.module.filePath;
         }
         else {
+          if (path.dirname(moduleItem.module.filePath) === this._distPath) continue;
+
           const decorators = moduleItem.decorators;
           if (!decorators) continue;
 
@@ -151,7 +148,7 @@ export class SdNgModuleGenerator {
     }
   }
 
-  private _configInfos(): void {
+  private _configInfos(program: ts.Program): void {
     this._infos = [];
 
     for (const def of this._defs) {
@@ -168,6 +165,9 @@ export class SdNgModuleGenerator {
       };
 
       for (const export_ of def.exports) {
+        if (!export_.name) throw new NotImplementError();
+        const exportName = export_.name;
+
         // 1
 
         const sourceFilePath = this._getSourceFilePath(export_);
@@ -175,16 +175,13 @@ export class SdNgModuleGenerator {
         const classRequirePath = path.relative(path.dirname(moduleSourceFilePath), sourceFilePath)
           .replace(/\\/g, "/")
           .replace(/\.ts$/, "");
-        info.importObj[classRequirePath] = info.importObj[classRequirePath] ?? [];
-        if (!info.importObj[classRequirePath].includes(classRequirePath)) {
-          info.importObj[classRequirePath].push(classRequirePath);
+        info.importObj[classRequirePath] = info.importObj[exportName] ?? [];
+        if (!info.importObj[classRequirePath].includes(exportName)) {
+          info.importObj[classRequirePath].push(exportName);
         }
 
 
         // 2
-
-        if (!export_.name) throw new NotImplementError();
-        const exportName = export_.name;
 
         if (!export_.decorators) throw new NotImplementError();
         if (
@@ -201,7 +198,7 @@ export class SdNgModuleGenerator {
 
         // 3
 
-        const sourceFile = this._program.getSourceFile(sourceFilePath);
+        const sourceFile = program.getSourceFile(sourceFilePath);
         if (!sourceFile) throw new NotImplementError();
         const importNodes = sourceFile["imports"];
         if (importNodes) {
@@ -418,6 +415,20 @@ export class ${info.className} {
           delete this._cacheObj[info.filePath];
           changed = true;
         }
+      }
+    }
+
+    return changed;
+  }
+
+  private async _removeDeletedModuleFileAsync(): Promise<boolean> {
+    let changed = false;
+
+    for (const filePath of Object.keys(this._cacheObj)) {
+      if (!this._infos.some((item) => item.filePath === filePath)) {
+        await FsUtil.removeAsync(filePath);
+        delete this._cacheObj[filePath];
+        changed = true;
       }
     }
 

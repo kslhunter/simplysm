@@ -10,7 +10,8 @@ import {NextHandleFunction} from "connect";
 import * as depcheck from "depcheck";
 import {SdAngularCompiler} from "./builders/SdAngularCompiler";
 import {SdServerCompiler} from "./builders/SdServerCompiler";
-import decache from "decache/decache";
+// tslint:disable-next-line: no-var-requires
+const decache = require("decache");
 
 export class SdProject {
   private readonly _servers: {
@@ -60,13 +61,19 @@ export class SdProject {
     await Object.keys(this._config.localUpdates).parallelAsync(async (localUpdateKey) => {
       // "node_modules'에서 로컬업데이트 설정에 맞는 패키지를 "glob"하여 대상 패키지경로 목록 가져오기
       const targetPaths = await FsUtil.globAsync(path.resolve(process.cwd(), "node_modules", localUpdateKey));
-
-
       // 대상 패키지 경로별
       await targetPaths.parallelAsync(async (targetPath) => {
-        const targetName = targetPath.match(new RegExp(
-          localUpdateKey.replace(/([\/.*])/g, (item) => item === "/" ? "\\/" : item === "." ? "\\." : item === "*" ? "(.*)" : item)
-        ))![1];
+        const regexpText = localUpdateKey.replace(
+          /[\/.*]/g,
+          (item) =>
+            item === "/" ? "[\\\\\\/]"
+              : item === "." ? "\\."
+              : item === "*" ? "(.*)"
+                : item
+        );
+        const targetNameMatch = targetPath.match(new RegExp(regexpText));
+        if (!targetNameMatch || !targetNameMatch[1]) return;
+        const targetName = targetNameMatch[1];
 
         // 로컬 업데이트 설정에 따라, 가져올 소스 경로 추출
         const sourcePath = path.resolve(this._config.localUpdates![localUpdateKey].replace(/\*/g, targetName));
@@ -181,7 +188,7 @@ export class SdProject {
           ? pkg.config?.framework
           : undefined;
 
-        const indexFilePath = isFirst && pkg.npmConfig.main
+        const indexFilePath = isFirst && pkg.config?.type === "library" && pkg.npmConfig.main
           ? path.resolve(
             tsConfig.srcPath,
             path.relative(
@@ -242,27 +249,36 @@ export class SdProject {
           });
 
           builder.on("complete", async () => {
-            // 서버 켜기
-            await Wait.true(() =>
-              !this._servers[pkg.npmConfig.name]?.isClosing &&
-              FsUtil.exists(entry)
-            );
+            try {
+              // 서버 켜기
+              await Wait.true(() =>
+                !this._servers[pkg.npmConfig.name]?.isClosing &&
+                FsUtil.exists(entry)
+              );
 
-            const server = eval(`require(entry)`) as SdServiceServer; //tslint:disable-line:no-eval
-            server.middlewares = this._servers[pkg.npmConfig.name]?.middlewares ?? [];
-            if (this._servers[pkg.npmConfig.name]) {
-              this._servers[pkg.npmConfig.name].entry = entry;
-              this._servers[pkg.npmConfig.name].server = server;
+              const server = eval(`require(entry)`) as SdServiceServer; //tslint:disable-line:no-eval
+              if (Object.keys(server).length <= 0) {
+                throw new Error(`서버코드(${entry})에서 'SdServiceServer'를 'export'하고있지 않습니다.`);
+              }
+
+              server.middlewares = this._servers[pkg.npmConfig.name]?.middlewares ?? [];
+              if (this._servers[pkg.npmConfig.name]) {
+                this._servers[pkg.npmConfig.name].entry = entry;
+                this._servers[pkg.npmConfig.name].server = server;
+              }
+              else {
+                this._servers[pkg.npmConfig.name] = {
+                  entry,
+                  server,
+                  middlewares: server.middlewares,
+                  isClosing: false
+                };
+              }
+              packageLogger.info(`서버가 시작되었습니다.`);
             }
-            else {
-              this._servers[pkg.npmConfig.name] = {
-                entry,
-                server,
-                middlewares: server.middlewares,
-                isClosing: false
-              };
+            catch (err) {
+              packageLogger.error(err);
             }
-            packageLogger.info(`서버가 시작되었습니다.`);
           });
         }
 
@@ -287,11 +303,11 @@ export class SdProject {
                 return !!(serverObj && !serverObj.isClosing && serverObj.server);
               });
 
-              const port = this._servers[pkg.config!["serverPackage"]].server!.options!.port ?? 80;
+              const port = this._servers[pkg.config!["serverPackage"]].server!.options?.port ?? 80;
               packageLogger.info(`클라이언트 열림: http://localhost:${port}/${pkg.packageKey}/`);
             }
             catch (err) {
-              packageLogger.error(err.meaning);
+              packageLogger.error(err.meaning ?? err);
             }
           });
 

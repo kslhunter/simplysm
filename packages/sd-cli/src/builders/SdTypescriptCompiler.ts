@@ -231,20 +231,14 @@ export class SdTypescriptCompiler {
             const diagnostics = result.diagnostics?.filter((item) => !item.messageText.toString().includes("Emitted no files.")) ?? [];
 
             if (diagnostics.length > 0) {
-              const messages = diagnostics.map((diagnostic) => SdTypescriptUtils.getDiagnosticMessage(diagnostic));
+              const messages = SdTypescriptUtils.getDiagnosticMessage(diagnostics);
 
-              const warningTextArr = messages.filter((item) => item.severity === "warning")
-                .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
-
-              const errorTextArr = messages.filter((item) => item.severity === "error")
-                .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
-
-              if (warningTextArr.length > 0) {
-                this._logger.warn("컴파일 경고\n", warningTextArr.join("\n").trim());
+              if (messages.warnings.length > 0) {
+                this._logger.warn("컴파일 경고\n", messages.warnings.join("\n").trim());
               }
 
-              if (errorTextArr.length > 0) {
-                this._logger.error("컴파일 오류\n", errorTextArr.join("\n").trim());
+              if (messages.errors.length > 0) {
+                this._logger.error("컴파일 오류\n", messages.errors.join("\n").trim());
               }
             }
 

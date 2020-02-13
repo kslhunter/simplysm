@@ -2,7 +2,6 @@
   "extends": "tslint:all",
   "defaultSeverity": "warning",
   "rules": {
-    "no-submodule-imports": false,
     "no-import-side-effect": false,
     "file-name-casing": false,
     "no-unused-variable": false,

@@ -1,3 +1,4 @@
+import "@simplysm/sd-core-browser";
 export * from "./_modules/controls/SdAnchorControlModule";
 export * from "./_modules/controls/SdBusyContainerControlModule";
 export * from "./_modules/controls/SdButtonControlModule";

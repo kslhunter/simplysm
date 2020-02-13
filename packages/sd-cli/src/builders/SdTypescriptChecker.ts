@@ -2,13 +2,14 @@ import {FsUtil, Logger} from "@simplysm/sd-core-node";
 import * as ts from "typescript";
 import * as path from "path";
 import * as os from "os";
-import {isMetadataError, MetadataCollector} from "@angular/compiler-cli";
-import {NotImplementError} from "@simplysm/sd-core-common";
+import {NotImplementError, Wait} from "@simplysm/sd-core-common";
 import {SdTypescriptUtils} from "../utils/SdTypescriptUtils";
 import * as tslint from "tslint";
 import {SdAngularUtils} from "../utils/SdAngularUtils";
 import {SdMetadataCollector} from "../metadata/SdMetadataCollector";
-import {SdNgModuleGenerator} from "../metadata/SdNgModuleGenerator";
+import {SdNgModuleGenerator} from "../generators/SdNgModuleGenerator";
+import {SdIndexTsFileGenerator} from "../generators/SdIndexTsFileGenerator";
+import {SdMetadataGenerator} from "../generators/SdMetadataGenerator";
 
 export class SdTypescriptChecker {
   private readonly _packagePath: string;
@@ -19,8 +20,12 @@ export class SdTypescriptChecker {
   private _program?: ts.Program;
   private readonly _diagnostics: ts.Diagnostic[] = [];
   private readonly _watchFiles: { eventKind: ts.FileWatcherEventKind; fileName: string }[] = [];
-  private readonly _metadataCollector: SdMetadataCollector;
   private readonly _genFileCache: { [fileName: string]: string } = {};
+
+  private readonly _metadataGenerator: SdMetadataGenerator | undefined;
+  private readonly _metadataCollector: SdMetadataCollector | undefined;
+  private readonly _ngModuleGenerator: SdNgModuleGenerator | undefined;
+  private readonly _indexTsFileGenerator: SdIndexTsFileGenerator | undefined;
 
   public constructor(private readonly _tsconfigPath: string,
                      private readonly _isAngular: boolean,
@@ -38,21 +43,19 @@ export class SdTypescriptChecker {
 
     this._logger = Logger.get(["simplysm", "sd-cli", packageKey, isNode ? "node" : "browser", "check"]);
 
-    this._metadataCollector = new SdMetadataCollector(this._distPath);
+    if (this._isAngular) {
+      this._metadataGenerator = new SdMetadataGenerator(this._srcPath, this._distPath);
+      this._metadataCollector = new SdMetadataCollector(this._distPath);
+      this._ngModuleGenerator = new SdNgModuleGenerator(this._metadataCollector, this._srcPath, this._distPath);
+    }
+
+    if (this._indexTsFilePath) {
+      this._indexTsFileGenerator = new SdIndexTsFileGenerator(this._indexTsFilePath, this._polyfills, this._srcPath);
+    }
   }
 
   public async watchAsync(): Promise<void> {
     this._logger.log("타입체크 및 변경감지를 시작합니다.");
-
-    //--------------------------------------------
-    // GEN FILE CACHE 초기화
-    //--------------------------------------------
-
-    if (this._indexTsFilePath && FsUtil.exists(this._indexTsFilePath)) {
-      this._genFileCache[this._indexTsFilePath] = await FsUtil.readFileAsync(this._indexTsFilePath);
-    }
-
-    //--------------------------------------------
 
     const host = ts.createWatchCompilerHost(
       this._tsconfigPath,
@@ -90,11 +93,16 @@ export class SdTypescriptChecker {
     );
 
     await new Promise<void>((resolve) => {
+      let processing = false;
       let lastProcId = 0;
       const prevAfterProgramCreate = host.afterProgramCreate;
       host.afterProgramCreate = async (builderProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram) => {
         const procId = lastProcId + 1;
         lastProcId = procId;
+
+        await Wait.true(() => !processing);
+        if (procId !== lastProcId) return;
+        processing = true;
 
         this._program = builderProgram.getProgram();
 
@@ -119,7 +127,7 @@ export class SdTypescriptChecker {
         //--------------------------------------------
 
         {
-          const checkResult = this._getDiagnosticResult(this._diagnostics);
+          const checkResult = SdTypescriptUtils.getDiagnosticMessage(this._diagnostics);
           this._diagnostics.clear();
 
           warnings.push(...checkResult.warnings);
@@ -137,13 +145,13 @@ export class SdTypescriptChecker {
         // LINT 수행
         //--------------------------------------------
 
-        // TSLINT 메시지 구성
         {
           const lintFilePaths = watchFileInfos
             .filter((item) =>
               !item.isDeleted &&
               item.isTypescriptFile &&
-              !item.watchFile.fileName.endsWith(".d.ts")
+              !item.watchFile.fileName.endsWith(".d.ts") &&
+              item.isPackageFile
             ).map((item) => item.watchFile.fileName);
 
           const lintResult = await this._lintAsync(lintFilePaths);
@@ -159,46 +167,91 @@ export class SdTypescriptChecker {
         }
 
         //--------------------------------------------
+        // 동일 패키지의 index.ts 를 import 한 부분 체크 메시지 구성
+        //--------------------------------------------
+
+        for (const watchFileInfo of watchFileInfos) {
+          if (watchFileInfo.isDeleted && !watchFileInfo.isPackageFile) {
+            continue;
+          }
+
+          const content = await FsUtil.readFileAsync(watchFileInfo.watchFile.fileName);
+          const matches = content.match(/from ".*"/g);
+          if (matches && matches.some((match) => match.match(/\.\.\/?"$/))) {
+            errors.push(`${watchFileInfo.watchFile.fileName}: 소속 패키지의 'index.ts'를 import 하고 있습니다.`);
+
+            this._watchFiles.push(watchFileInfo.watchFile);
+          }
+        }
+
+        //--------------------------------------------
         // ANGULAR 모듈 등 생성
         //--------------------------------------------
 
         if (this._isAngular) {
-          await this._updateMetadataInfoAsync(watchFileInfos);
+          for (const watchFileInfo of watchFileInfos) {
+            if (watchFileInfo.isDeleted || !watchFileInfo.isTypescriptFile) {
+              this._metadataCollector!.unregister(watchFileInfo.metadataFilePath);
+              continue;
+            }
 
-          const ngModuleGenerator = new SdNgModuleGenerator(
-            this._program,
-            this._metadataCollector,
-            this._srcPath,
-            this._distPath
-          );
-          await ngModuleGenerator.generateAsync();
+            // 신규 패키지 파일인 경우 메타데이터 파일 생성
+            if (watchFileInfo.isPackageFile) {
+              const result = await this._generateMetadataFileAsync(watchFileInfo);
+              if (result.warnings.length > 0 || result.errors.length > 0) {
+                warnings.push(...result.warnings);
+                errors.push(...result.errors);
+              }
+            }
+
+            if (FsUtil.exists(watchFileInfo.metadataFilePath)) {
+              await this._metadataCollector!.registerAsync(watchFileInfo.metadataFilePath);
+            }
+          }
+
+          await this._ngModuleGenerator!.generateAsync(this._program);
         }
 
         //--------------------------------------------
         // INDEX 파일 생성
         //--------------------------------------------
 
-        if (this._indexTsFilePath) {
-          await this._generateIndexTsFileAsync();
+        if (this._indexTsFileGenerator) {
+          await this._indexTsFileGenerator.generateAsync();
+        }
+
+        //--------------------------------------------
+        // 삭제된 소스의 d.ts 파일 삭제
+        //--------------------------------------------
+
+        const deletedItems = watchFileInfos.filter((watchFileInfo) => watchFileInfo.isPackageFile && watchFileInfo.isDeleted);
+        for (const deletedItem of deletedItems) {
+          const tsFileRelativePath = path.relative(this._srcPath, deletedItem.watchFile.fileName);
+          const descFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".d.ts");
+          const descFilePath = path.resolve(this._distPath, descFileRelativePath);
+
+          await FsUtil.removeAsync(descFilePath);
         }
 
         //--------------------------------------------
         // 마무리
         //--------------------------------------------
 
-        // 메시지 출력
-        if (procId !== lastProcId) return;
+        processing = false;
+        if (procId === lastProcId) {
+          // 메시지 출력
 
-        if (warnings.filterExists().length > 0) {
-          this._logger.warn("타입체크 경고\n", warnings.join("\n").trim());
+          if (warnings.filterExists().length > 0) {
+            this._logger.warn("타입체크 경고\n", warnings.join("\n").trim());
+          }
+
+          if (errors.filterExists().length > 0) {
+            this._logger.error("타입체크 오류\n", errors.join("\n").trim());
+          }
+
+          this._logger.log("타입체크가 완료되었습니다.");
+          resolve();
         }
-
-        if (errors.filterExists().length > 0) {
-          this._logger.error("타입체크 오류\n", errors.join("\n").trim());
-        }
-
-        this._logger.log("타입체크가 완료되었습니다.");
-        resolve();
       };
 
       const prevWatchFile = host.watchFile;
@@ -271,7 +324,7 @@ export class SdTypescriptChecker {
           .concat(this._program.getSemanticDiagnostics())
           .concat(this._program.getSyntacticDiagnostics());
       }
-      const checkResult = this._getDiagnosticResult(diagnostics);
+      const checkResult = SdTypescriptUtils.getDiagnosticMessage(diagnostics);
       warnings.push(...checkResult.warnings);
       errors.push(...checkResult.errors);
 
@@ -304,23 +357,37 @@ export class SdTypescriptChecker {
       );
 
       if (this._isAngular) {
-        await this._updateMetadataInfoAsync(watchFileInfos);
-        const ngModuleGenerator = new SdNgModuleGenerator(
-          this._program,
-          this._metadataCollector,
-          this._srcPath,
-          this._distPath
-        );
-        const ngModuleGenerated = await ngModuleGenerator.generateAsync();
-        changed = changed || ngModuleGenerated;
+        for (const watchFileInfo of watchFileInfos) {
+          if (watchFileInfo.isDeleted || !watchFileInfo.isTypescriptFile) {
+            this._metadataCollector!.unregister(watchFileInfo.metadataFilePath);
+            continue;
+          }
+
+          // 신규 패키지 파일인 경우 메타데이터 파일 생성
+          if (watchFileInfo.isPackageFile) {
+            const result = await this._generateMetadataFileAsync(watchFileInfo);
+            if (result.warnings.length > 0 || result.errors.length > 0) {
+              warnings.push(...result.warnings);
+              errors.push(...result.errors);
+            }
+          }
+
+          if (FsUtil.exists(watchFileInfo.metadataFilePath)) {
+            await this._metadataCollector!.registerAsync(watchFileInfo.metadataFilePath);
+          }
+        }
+
+        const changed1 = await this._ngModuleGenerator!.generateAsync(this._program);
+        changed = changed || changed1;
       }
 
       //--------------------------------------------
       // INDEX 파일 생성
       //--------------------------------------------
 
-      if (this._indexTsFilePath) {
-        changed = changed || await this._generateIndexTsFileAsync();
+      if (this._indexTsFileGenerator) {
+        const changed1 = await this._indexTsFileGenerator.generateAsync();
+        changed = changed || changed1;
       }
 
       //--------------------------------------------
@@ -378,80 +445,12 @@ export class SdTypescriptChecker {
       const sourceFile = this._program.getSourceFile(watchFileInfo.watchFile.fileName);
       if (!sourceFile) throw new NotImplementError();
 
-      const metadata = new MetadataCollector().getMetadata(
-        sourceFile,
-        true,
-        (value, tsNode) => {
-          if (isMetadataError(value)) {
-            diagnostics.push({
-              file: sourceFile,
-              start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
-              messageText: value["message"],
-              category: ts.DiagnosticCategory.Error,
-              code: 0,
-              length: undefined
-            });
-          }
-
-          return value;
-        }
+      diagnostics.push(
+        ...await this._metadataGenerator!.generateAsync(sourceFile)
       );
-
-      if (metadata) {
-        await FsUtil.writeFileAsync(watchFileInfo.metadataFilePath, JSON.stringify(metadata));
-      }
-      else {
-        await FsUtil.removeAsync(watchFileInfo.metadataFilePath);
-      }
     }
 
-    const messages = diagnostics
-      .map((item) => SdTypescriptUtils.getDiagnosticMessage(item));
-
-    return {
-      warnings: messages.filter((item) => item.severity === "warning")
-        .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item)),
-      errors: messages.filter((item) => item.severity === "error")
-        .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item))
-    };
-  }
-
-  private async _generateIndexTsFileAsync(): Promise<boolean> {
-    if (!this._indexTsFilePath) throw new NotImplementError();
-
-    const importTexts: string[] = [];
-    if (this._polyfills) {
-      for (const polyfill of this._polyfills) {
-        importTexts.push(`import "${polyfill}";`);
-      }
-    }
-
-    const srcTsFiles = await FsUtil.globAsync(path.resolve(this._srcPath, "**", "*.ts"));
-    for (const srcTsFile of srcTsFiles) {
-      if (path.resolve(srcTsFile) === this._indexTsFilePath) {
-        continue;
-      }
-
-      const relativePath = path.relative(this._srcPath, srcTsFile);
-      const modulePath = relativePath.replace(/\.ts$/, "").replace(/\\/g, "/");
-
-      const contents = await FsUtil.readFileAsync(srcTsFile);
-      if (contents.split("\n").some((line) => /^export /.test(line))) {
-        importTexts.push(`export * from "./${modulePath}";`);
-      }
-      else {
-        importTexts.push(`import "./${modulePath}";`);
-      }
-    }
-
-    const content = importTexts.join("\n");
-    if (this._genFileCache[this._indexTsFilePath] !== content) {
-      this._genFileCache[this._indexTsFilePath] = content;
-      await FsUtil.writeFileAsync(this._indexTsFilePath, content);
-      return true;
-    }
-
-    return false;
+    return SdTypescriptUtils.getDiagnosticMessage(diagnostics);
   }
 
   private async _lintAsync(sourceFilePaths: string[]): Promise<{ warnings: string[]; errors: string[]; invalidFilePaths: string[] }> {
@@ -467,7 +466,12 @@ export class SdTypescriptChecker {
     const linter = new tslint.Linter({formatter: "json", fix: false}, this._program);
 
     for (const sourceFilePath of sourceFilePaths.distinct()) {
-      linter.lint(sourceFilePath, await FsUtil.readFileAsync(sourceFilePath), config);
+      try {
+        linter.lint(sourceFilePath, await FsUtil.readFileAsync(sourceFilePath), config);
+      }
+      catch (err) {
+        errors.push(`${sourceFilePath}: ` + err.stack);
+      }
     }
 
     const failures = linter.getResult().failures;
@@ -496,54 +500,6 @@ export class SdTypescriptChecker {
       invalidFilePaths: failures
         .map((item) => path.resolve(item.getFileName()))
     };
-  }
-
-  private _getDiagnosticResult(diagnostics: ts.Diagnostic[]): { warnings: string[]; errors: string[]; invalidFilePaths: string[] } {
-    const messages = diagnostics.map((diagnostic) => SdTypescriptUtils.getDiagnosticMessage(diagnostic));
-
-    const warnings = messages.filter((item) => item.severity === "warning")
-      .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
-
-    const errors = messages.filter((item) => item.severity === "error")
-      .map((item) => SdTypescriptUtils.getDiagnosticMessageText(item));
-
-    return {
-      warnings,
-      errors,
-      invalidFilePaths: messages
-        .filter((item) =>
-          item.severity === ("warning" || item.severity === "error")
-          && item.file
-        )
-        .map((item) => path.resolve(item.file!))
-    };
-  }
-
-  private async _updateMetadataInfoAsync(watchFileInfos: IWatchFileInfo[]): Promise<{ warnings: string[]; errors: string[] }> {
-    const warnings: string[] = [];
-    const errors: string[] = [];
-
-    for (const watchFileInfo of watchFileInfos) {
-      if (watchFileInfo.isDeleted || !watchFileInfo.isTypescriptFile) {
-        this._metadataCollector.unregister(watchFileInfo.metadataFilePath);
-        continue;
-      }
-
-      // 신규 패키지 파일인 경우 메타데이터 파일 생성
-      if (watchFileInfo.isPackageFile) {
-        const result = await this._generateMetadataFileAsync(watchFileInfo);
-        if (result.warnings.length > 0 || result.errors.length > 0) {
-          warnings.push(...result.warnings);
-          errors.push(...result.errors);
-        }
-      }
-
-      if (FsUtil.exists(watchFileInfo.metadataFilePath)) {
-        await this._metadataCollector.registerAsync(watchFileInfo.metadataFilePath);
-      }
-    }
-
-    return {warnings, errors};
   }
 }
 

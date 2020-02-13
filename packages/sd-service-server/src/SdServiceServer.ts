@@ -30,11 +30,11 @@ export class SdServiceServer extends EventEmitter {
     return !!(this._httpServer?.listening || this._wsServer);
   }
 
-  public constructor(public readonly options?: ISdServiceServerOptions) {
+  public constructor(public readonly options: ISdServiceServerOptions) {
     super();
     this._logger = Logger.get(["simplysm", "sd-service-server"]);
-    this.middlewares = this.options?.middlewares ?? [];
-    this.rootPath = this.options?.rootPath ?? process.cwd();
+    this.middlewares = this.options.middlewares ?? [];
+    this.rootPath = this.options.rootPath;
   }
 
   public async listenAsync(): Promise<void> {
@@ -43,7 +43,7 @@ export class SdServiceServer extends EventEmitter {
         await this.closeAsync();
       }
 
-      this._httpServer = this.options?.ssl
+      this._httpServer = this.options.ssl
         ? https.createServer({
           pfx: await FsUtil.readFileAsync(this.options.ssl.pfx),
           passphrase: this.options.ssl.passphrase
@@ -100,7 +100,7 @@ export class SdServiceServer extends EventEmitter {
         });
       });
 
-      this._httpServer!.listen(this.options?.port, () => {
+      this._httpServer!.listen(this.options.port, () => {
         this.emit("ready");
         resolve();
         isResolved = true;
@@ -365,7 +365,7 @@ export class SdServiceServer extends EventEmitter {
       const methodName = cmdSplit[1];
 
       // 서비스 가져오기
-      const serviceClass = this.options?.services?.single((item) => item.name === serviceName);
+      const serviceClass = this.options.services.single((item) => item.name === serviceName);
       if (!serviceClass) {
         throw new Error(`서비스[${serviceName}]를 찾을 수 없습니다.`);
       }
@@ -419,8 +419,8 @@ export class SdServiceServer extends EventEmitter {
 interface ISdServiceServerOptions {
   port?: number;
   ssl?: { pfx: string; passphrase: string };
-  rootPath?: string;
-  services?: Type<SdServiceBase>[];
+  rootPath: string;
+  services: Type<SdServiceBase>[];
   middlewares?: NextHandleFunction[];
 }
 

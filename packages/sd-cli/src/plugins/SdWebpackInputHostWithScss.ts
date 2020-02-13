@@ -7,6 +7,7 @@
  */
 import {getSystemPath, Path, virtualFs} from "@angular-devkit/core";
 import {Observable} from "rxjs";
+// tslint:disable-next-line: no-submodule-imports
 import {WebpackInputHost} from "@ngtools/webpack/src/webpack-input-host";
 import {SdAngularUtils} from "../utils/SdAngularUtils";
 

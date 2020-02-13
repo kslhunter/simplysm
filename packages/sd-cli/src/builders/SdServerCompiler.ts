@@ -153,6 +153,7 @@ export class SdServerCompiler extends EventEmitter {
             test: /\.ts$/,
             exclude: /node_modules/,
             use: [
+              "shebang-loader",
               {
                 loader: "ts-loader",
                 options: {
@@ -165,7 +166,13 @@ export class SdServerCompiler extends EventEmitter {
         ]
       },
       plugins: [
-        ...watch ? [new SdWebpackTimeFixPlugin()] : []
+        ...watch ? [new SdWebpackTimeFixPlugin()] : [],
+        new webpack.BannerPlugin({
+          banner: "#!/usr/bin/env node",
+          raw: true,
+          entryOnly: true,
+          include: ["bin.js"]
+        })
       ],
       externals: [
         (context, request, callback) => {

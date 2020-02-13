@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+// tslint:disable-next-line: no-submodule-imports
+import "source-map-support/register";
 import * as yargs from "yargs";
 import {Logger} from "@simplysm/sd-core-node";
 import {SdProject} from "./SdProject";
