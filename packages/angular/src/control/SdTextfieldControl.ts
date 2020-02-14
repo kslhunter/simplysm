@@ -116,6 +116,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @SdTypeValidate(Boolean)
   public multiline?: boolean;
 
+  @Input()
+  @SdTypeValidate(Number)
+  public maximumFractionDigits?: number;
+
 
   public getIsInvalid(): boolean {
     const hasMinError = this.min !== undefined && this.value !== undefined && this.type === "number" && this.value < this.min;
@@ -129,7 +133,7 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
       : this.value instanceof DateTime ? this.value.toFormatString("yyyy-MM-ddTHH:mm")
         : this.value instanceof DateOnly ? (this.type === "month" ? this.value.toFormatString("yyyy-MM") : this.value.toString())
           : this.value instanceof Time ? this.value.toFormatString("HH:mm")
-            : this.type === "number" && typeof this.value === "number" ? this.value.toLocaleString()
+            : this.type === "number" && typeof this.value === "number" ? this.value.toLocaleString(undefined, {maximumFractionDigits: this.maximumFractionDigits || 10})
               : this.value;
   }
 
@@ -143,7 +147,7 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
     }
     else if (this.type === "number") {
       const inputValue = inputEl.value.replace(/,/g, "");
-      const newValue = inputValue.endsWith(".") || Number.isNaN(Number(inputValue)) ? inputValue : Number(inputValue);
+      const newValue = inputValue.endsWith(".") || (inputValue.includes(".") && inputValue.endsWith("0")) || Number.isNaN(Number(inputValue)) ? inputValue : Number(inputValue);
       this.value = newValue;
 
       if (this.value === newValue) {
