@@ -117,132 +117,126 @@ export class SdTypescriptChecker {
           prevAfterProgramCreate(builderProgram);
         }
 
-        if (this._watchFiles.length <= 0) {
-          return;
-        }
-
-        let changed = false;
-
         const warnings: string[] = [];
         const errors: string[] = [];
 
-        const watchFileInfos = this._watchFiles
-          .distinct()
-          .map((item) => this._getWatchFileInfo(item));
-        this._watchFiles.clear();
+        if (this._watchFiles.length > 0) {
+          const watchFileInfos = this._watchFiles
+            .distinct()
+            .map((item) => this._getWatchFileInfo(item));
+          this._watchFiles.clear();
 
-        //--------------------------------------------
-        // 타입체크 결과 구성
-        //--------------------------------------------
+          //--------------------------------------------
+          // 타입체크 결과 구성
+          //--------------------------------------------
 
-        {
-          const checkResult = SdTypescriptUtils.getDiagnosticMessage(this._diagnostics);
-          this._diagnostics.clear();
+          {
+            const checkResult = SdTypescriptUtils.getDiagnosticMessage(this._diagnostics);
+            this._diagnostics.clear();
 
-          warnings.push(...checkResult.warnings);
-          errors.push(...checkResult.errors);
+            warnings.push(...checkResult.warnings);
+            errors.push(...checkResult.errors);
 
-          const invalidWatchFiles = watchFileInfos.filter((item) =>
-            checkResult.invalidFilePaths.filter((item1) =>
-              path.resolve(item.watchFile.fileName) === path.resolve(item1)
-            )
-          ).map((item) => item.watchFile);
-          this._watchFiles.push(...invalidWatchFiles);
-        }
-
-        //--------------------------------------------
-        // LINT 수행
-        //--------------------------------------------
-
-        {
-          const lintFilePaths = watchFileInfos
-            .filter((item) =>
-              !item.isDeleted &&
-              item.isTypescriptFile &&
-              !item.watchFile.fileName.endsWith(".d.ts") &&
-              item.isPackageFile
-            ).map((item) => item.watchFile.fileName);
-
-          const lintResult = await this._lintAsync(lintFilePaths);
-          warnings.push(...lintResult.warnings);
-          errors.push(...lintResult.errors);
-
-          const invalidWatchFiles = watchFileInfos.filter((item) =>
-            lintResult.invalidFilePaths.filter((item1) =>
-              path.resolve(item.watchFile.fileName) === path.resolve(item1)
-            )
-          ).map((item) => item.watchFile);
-          this._watchFiles.push(...invalidWatchFiles);
-        }
-
-        //--------------------------------------------
-        // 동일 패키지의 index.ts 를 import 한 부분 체크 메시지 구성
-        //--------------------------------------------
-
-        for (const watchFileInfo of watchFileInfos) {
-          if (watchFileInfo.isDeleted && !watchFileInfo.isPackageFile) {
-            continue;
+            const invalidWatchFiles = watchFileInfos.filter((item) =>
+              checkResult.invalidFilePaths.filter((item1) =>
+                path.resolve(item.watchFile.fileName) === path.resolve(item1)
+              )
+            ).map((item) => item.watchFile);
+            this._watchFiles.push(...invalidWatchFiles);
           }
 
-          const content = await FsUtil.readFileAsync(watchFileInfo.watchFile.fileName);
-          const matches = content.match(/from ".*"/g);
-          if (matches && matches.some((match) => match.match(/\.\.\/?"$/))) {
-            errors.push(`${watchFileInfo.watchFile.fileName}: 소속 패키지의 'index.ts'를 import 하고 있습니다.`);
+          //--------------------------------------------
+          // LINT 수행
+          //--------------------------------------------
 
-            this._watchFiles.push(watchFileInfo.watchFile);
+          {
+            const lintFilePaths = watchFileInfos
+              .filter((item) =>
+                !item.isDeleted &&
+                item.isTypescriptFile &&
+                !item.watchFile.fileName.endsWith(".d.ts") &&
+                item.isPackageFile
+              ).map((item) => item.watchFile.fileName);
+
+            const lintResult = await this._lintAsync(lintFilePaths);
+            warnings.push(...lintResult.warnings);
+            errors.push(...lintResult.errors);
+
+            const invalidWatchFiles = watchFileInfos.filter((item) =>
+              lintResult.invalidFilePaths.filter((item1) =>
+                path.resolve(item.watchFile.fileName) === path.resolve(item1)
+              )
+            ).map((item) => item.watchFile);
+            this._watchFiles.push(...invalidWatchFiles);
           }
-        }
 
-        //--------------------------------------------
-        // ANGULAR 모듈 등 생성
-        //--------------------------------------------
+          //--------------------------------------------
+          // 동일 패키지의 index.ts 를 import 한 부분 체크 메시지 구성
+          //--------------------------------------------
 
-        if (this._isAngular) {
           for (const watchFileInfo of watchFileInfos) {
-            if (watchFileInfo.isDeleted || !watchFileInfo.isTypescriptFile) {
-              this._metadataCollector!.unregister(watchFileInfo.metadataFilePath);
+            if (watchFileInfo.isDeleted && !watchFileInfo.isPackageFile) {
               continue;
             }
 
-            // 신규 패키지 파일인 경우 메타데이터 파일 생성
-            if (watchFileInfo.isPackageFile) {
-              const result = await this._generateMetadataFileAsync(watchFileInfo);
-              if (result.warnings.length > 0 || result.errors.length > 0) {
-                warnings.push(...result.warnings);
-                errors.push(...result.errors);
-              }
-            }
+            const content = await FsUtil.readFileAsync(watchFileInfo.watchFile.fileName);
+            const matches = content.match(/from ".*"/g);
+            if (matches && matches.some((match) => match.match(/\.\.\/?"$/))) {
+              errors.push(`${watchFileInfo.watchFile.fileName}: 소속 패키지의 'index.ts'를 import 하고 있습니다.`);
 
-            if (FsUtil.exists(watchFileInfo.metadataFilePath)) {
-              await this._metadataCollector!.registerAsync(watchFileInfo.metadataFilePath);
+              this._watchFiles.push(watchFileInfo.watchFile);
             }
           }
 
-          const changed1 = await this._ngModuleGenerator!.generateAsync(this._program);
-          const changed2 = await this._ngRoutingModuleGenerator!.generateAsync();
-          changed = changed || changed1 || changed2;
-        }
+          //--------------------------------------------
+          // ANGULAR 모듈 등 생성
+          //--------------------------------------------
 
-        //--------------------------------------------
-        // INDEX 파일 생성
-        //--------------------------------------------
+          if (this._isAngular) {
+            for (const watchFileInfo of watchFileInfos) {
+              if (watchFileInfo.isDeleted || !watchFileInfo.isTypescriptFile) {
+                this._metadataCollector!.unregister(watchFileInfo.metadataFilePath);
+                continue;
+              }
 
-        if (this._indexTsFileGenerator) {
-          const changed1 = await this._indexTsFileGenerator.generateAsync();
-          changed = changed || changed1;
-        }
+              // 신규 패키지 파일인 경우 메타데이터 파일 생성
+              if (watchFileInfo.isPackageFile) {
+                const result = await this._generateMetadataFileAsync(watchFileInfo);
+                if (result.warnings.length > 0 || result.errors.length > 0) {
+                  warnings.push(...result.warnings);
+                  errors.push(...result.errors);
+                }
+              }
 
-        //--------------------------------------------
-        // 삭제된 소스의 d.ts 파일 삭제
-        //--------------------------------------------
+              if (FsUtil.exists(watchFileInfo.metadataFilePath)) {
+                await this._metadataCollector!.registerAsync(watchFileInfo.metadataFilePath);
+              }
+            }
 
-        const deletedItems = watchFileInfos.filter((watchFileInfo) => watchFileInfo.isPackageFile && watchFileInfo.isDeleted);
-        for (const deletedItem of deletedItems) {
-          const tsFileRelativePath = path.relative(this._srcPath, deletedItem.watchFile.fileName);
-          const descFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".d.ts");
-          const descFilePath = path.resolve(this._distPath, descFileRelativePath);
+            await this._ngModuleGenerator!.generateAsync(this._program);
+            await this._ngRoutingModuleGenerator!.generateAsync();
+          }
 
-          await FsUtil.removeAsync(descFilePath);
+          //--------------------------------------------
+          // INDEX 파일 생성
+          //--------------------------------------------
+
+          if (this._indexTsFileGenerator) {
+            await this._indexTsFileGenerator.generateAsync();
+          }
+
+          //--------------------------------------------
+          // 삭제된 소스의 d.ts 파일 삭제
+          //--------------------------------------------
+
+          const deletedItems = watchFileInfos.filter((watchFileInfo) => watchFileInfo.isPackageFile && watchFileInfo.isDeleted);
+          for (const deletedItem of deletedItems) {
+            const tsFileRelativePath = path.relative(this._srcPath, deletedItem.watchFile.fileName);
+            const descFileRelativePath = tsFileRelativePath.replace(/\.ts$/, ".d.ts");
+            const descFilePath = path.resolve(this._distPath, descFileRelativePath);
+
+            await FsUtil.removeAsync(descFilePath);
+          }
         }
 
         //--------------------------------------------
@@ -250,20 +244,22 @@ export class SdTypescriptChecker {
         //--------------------------------------------
 
         processing = false;
-        if (procId === lastProcId && !changed) {
-          // 메시지 출력
 
-          if (warnings.filterExists().length > 0) {
-            this._logger.warn("타입체크 경고\n", warnings.join("\n").trim());
+        setTimeout(() => {
+          if (procId === lastProcId) {
+            // 메시지 출력
+            if (warnings.filterExists().length > 0) {
+              this._logger.warn("타입체크 경고\n", warnings.join("\n").trim());
+            }
+
+            if (errors.filterExists().length > 0) {
+              this._logger.error("타입체크 오류\n", errors.join("\n").trim());
+            }
+
+            this._logger.log("타입체크가 완료되었습니다.");
+            resolve();
           }
-
-          if (errors.filterExists().length > 0) {
-            this._logger.error("타입체크 오류\n", errors.join("\n").trim());
-          }
-
-          this._logger.log("타입체크가 완료되었습니다.");
-          resolve();
-        }
+        }, 100);
       };
 
       const prevWatchFile = host.watchFile;
@@ -398,7 +394,8 @@ export class SdTypescriptChecker {
         }
 
         const changed1 = await this._ngModuleGenerator!.generateAsync(this._program);
-        changed = changed || changed1;
+        const changed2 = await this._ngRoutingModuleGenerator!.generateAsync();
+        changed = changed || changed1 || changed2;
       }
 
       //--------------------------------------------

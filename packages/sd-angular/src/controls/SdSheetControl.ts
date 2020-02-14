@@ -18,8 +18,9 @@ import {
 import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdInputValidate} from "../commons/SdInputValidate";
 import {ResizeEvent} from "@simplysm/sd-core-browser";
-import {NotImplementError} from "@simplysm/sd-core-common";
 import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
+import {SdModalProvider} from "../providers/SdModalProvider";
+import {SdSheetConfigModal} from "../modals/SdSheetConfigModal";
 
 @Component({
   selector: "sd-sheet",
@@ -27,7 +28,8 @@ import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
   template: `
     <sd-dock-container>
       <sd-dock>
-        <sd-anchor class="_cog-icon" (click)="onConfigButtonClick()">
+        <sd-anchor class="_cog-icon" (click)="onConfigButtonClick()"
+                   *ngIf="configKey">
           <sd-icon icon="cog" fixedWidth></sd-icon>
         </sd-anchor>
         <sd-pagination [page]="page"
@@ -548,15 +550,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public fixedCellGroupWidthPixel = 0;
 
-  private _config?: {
-    columnObj?: {
-      [key: string]: {
-        widthPixel?: number;
-        displayOrder?: number;
-        hidden?: boolean;
-      };
-    };
-  };
+  private _config?: ISdSheetConfigVM;
 
   public get maxDepth(): number | undefined {
     if (!this.getChildrenFn) return undefined;
@@ -635,7 +629,8 @@ export class SdSheetControl implements DoCheck, OnInit {
                      private readonly _zone: NgZone,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _systemConfig: SdSystemConfigProvider,
-                     private readonly _iterableDiffers: IterableDiffers) {
+                     private readonly _iterableDiffers: IterableDiffers,
+                     private readonly _modal: SdModalProvider) {
     this._el = this._elRef.nativeElement;
 
     this._itemsDiffer = this._iterableDiffers.find([])
@@ -895,8 +890,11 @@ export class SdSheetControl implements DoCheck, OnInit {
     this.pageChange.emit(this.page);
   }
 
-  public onConfigButtonClick(): void {
-    throw new NotImplementError();
+  public async onConfigButtonClick(): Promise<void> {
+    const result = await this._modal.showAsync(SdSheetConfigModal, this);
+    if (!result) return;
+
+    // this._config = result;
   }
 
   public onHeadCellBorderMousedown(event: MouseEvent, columnControl: SdSheetColumnControl): void {
@@ -1204,13 +1202,15 @@ export class SdSheetControl implements DoCheck, OnInit {
         selectable: this.selectMode && (!this.getSelectableFn || this.getSelectableFn(index, item))
       });
 
-      const children = this.getChildrenFn!(index, item);
-      if (!children || children.length < 1) {
-        return;
-      }
+      if (this.getChildrenFn) {
+        const children = this.getChildrenFn!(index, item);
+        if (!children || children.length < 1) {
+          return;
+        }
 
-      for (let i = 0; i < children.length; i++) {
-        loop(i, children[i], depth + 1, visible && this.getIsExtendedItem(item));
+        for (let i = 0; i < children.length; i++) {
+          loop(i, children[i], depth + 1, visible && this.getIsExtendedItem(item));
+        }
       }
     };
 
@@ -1220,4 +1220,14 @@ export class SdSheetControl implements DoCheck, OnInit {
 
     return result;
   }
+}
+
+export interface ISdSheetConfigVM {
+  columnObj?: {
+    [key: string]: {
+      widthPixel?: number;
+      displayOrder?: number;
+      hidden?: boolean;
+    };
+  };
 }

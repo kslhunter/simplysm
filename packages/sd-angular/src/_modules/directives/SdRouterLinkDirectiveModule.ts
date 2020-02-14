@@ -1,10 +1,12 @@
 import {NgModule} from "@angular/core";
 import {SdRouterLinkDirective} from "../../directives/SdRouterLinkDirective";
 import {RouterModule} from "@angular/router";
+import {SdAngularModule} from "../../SdAngularModule";
 
 @NgModule({
   imports: [
-    RouterModule
+    RouterModule,
+    SdAngularModule
   ],
   declarations: [
     SdRouterLinkDirective

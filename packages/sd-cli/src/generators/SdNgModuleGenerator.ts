@@ -48,15 +48,21 @@ export class SdNgModuleGenerator {
 
         if (!(moduleItem instanceof SdClassMetadata)) continue;
 
+        const isNgModuleClass =  moduleItem.decorators?.some((item) =>
+          item.expression.module === "@angular/core" &&
+          item.expression.name === "NgModule"
+        );
+
         const def: ISdNgModuleDef = {
           moduleName: "",
           className: "",
           filePath: "",
           isLibrary: module.isLibrary,
+          isForGenerate: !module.isLibrary && !(path.dirname(module.filePath) === this._distPath && isNgModuleClass),
           exports: []
         };
 
-        if (module.isLibrary) {
+        if (!def.isForGenerate) {
           const decorators = moduleItem.decorators;
           if (!decorators) continue;
 
@@ -109,10 +115,21 @@ export class SdNgModuleGenerator {
           if (!moduleItem.name) throw new NotImplementError();
           def.className = moduleItem.name;
           def.moduleName = moduleItem.module.name;
-          def.filePath = moduleItem.module.filePath;
+
+          if (def.isLibrary) {
+            def.filePath = moduleItem.module.filePath
+              .replace(/\.metadata\.json$/, ".d.ts");
+          }
+          else {
+            def.filePath = path.resolve(
+              this._srcPath,
+              path.relative(this._distPath, moduleItem.module.filePath)
+            ).replace(/\.metadata\.json$/, ".ts");
+          }
         }
         else {
-          if (path.dirname(moduleItem.module.filePath) === this._distPath) continue;
+          // 'src/AppPage.ts'를 제외시키지 말아야 함
+          // if (path.dirname(moduleItem.module.filePath) === this._distPath) continue;
 
           const decorators = moduleItem.decorators;
           if (!decorators) continue;
@@ -152,7 +169,7 @@ export class SdNgModuleGenerator {
     this.infos = [];
 
     for (const def of this._defs) {
-      if (def.isLibrary) continue;
+      if (!def.isForGenerate) continue;
 
       const info: ISdNgModuleInfo = {
         filePath: def.filePath,
@@ -191,7 +208,7 @@ export class SdNgModuleGenerator {
         ) {
           info.exports.push(exportName);
           info.declarations.push(exportName);
-          if (exportName.endsWith("PrintTemplate") || exportName.endsWith("Modal")) {
+          if (exportName.endsWith("PrintTemplate") || exportName.endsWith("Modal") || exportName.endsWith("EntryControl")) {
             info.entryComponents.push(exportName);
           }
         }
@@ -239,7 +256,6 @@ export class SdNgModuleGenerator {
         }
 
         // 4
-
         const decorator = Array.from(export_.decorators)
           .single((item) =>
             item.expression.module === "@angular/core" &&
@@ -343,12 +359,29 @@ export class SdNgModuleGenerator {
     while (!doing()) {
       // 첫번째 모듈에 다른 모듈 모두 병합
       const mergeInfos = this.infos.filter((item) => alreadyImports.includes(item.filePath));
-      const newInfo = mergeInfos[0];
-      for (const mergeInfo of mergeInfos.slice(1)) {
-        for (const key of Object.keys(mergeInfo.importObj)) {
-          newInfo.importObj[key] = newInfo.importObj[key] ?? [];
-          newInfo.importObj[key].push(...mergeInfo.importObj[key]);
-          newInfo.importObj[key] = newInfo.importObj[key].distinct();
+      let newInfo: ISdNgModuleInfo = mergeInfos[0];
+      for (const mergeInfo of mergeInfos.slice(1).orderByDesc((item) => item.className.length)) {
+        if (Object.keys(newInfo.importObj).length < Object.keys(mergeInfo.importObj).length) {
+          newInfo = mergeInfo;
+        }
+      }
+      mergeInfos.remove(newInfo);
+
+      for (const mergeInfo of mergeInfos) {
+        for (const mergeInfoImportKey of Object.keys(mergeInfo.importObj)) {
+          let newInfoImportKey: string;
+          if (mergeInfoImportKey.startsWith(".")) {
+            newInfoImportKey = path.relative(path.dirname(newInfo.filePath), path.resolve(path.dirname(mergeInfo.filePath), mergeInfoImportKey))
+              .replace(/\\/g, "/");
+            newInfoImportKey = newInfoImportKey.startsWith(".") ? newInfoImportKey : "./" + newInfoImportKey;
+          }
+          else {
+            newInfoImportKey = mergeInfoImportKey;
+          }
+
+          newInfo.importObj[newInfoImportKey] = newInfo.importObj[newInfoImportKey] ?? [];
+          newInfo.importObj[newInfoImportKey].push(...mergeInfo.importObj[mergeInfoImportKey]);
+          newInfo.importObj[newInfoImportKey] = newInfo.importObj[newInfoImportKey].distinct();
         }
 
         newInfo.modules = [...newInfo.modules, ...mergeInfo.modules].distinct();
@@ -358,7 +391,7 @@ export class SdNgModuleGenerator {
       }
 
       // 첫번째 모듈외 모든 모듈 삭제
-      for (const mergeInfo of mergeInfos.slice(1)) {
+      for (const mergeInfo of mergeInfos) {
         this.infos.remove(mergeInfo);
       }
 
@@ -367,7 +400,7 @@ export class SdNgModuleGenerator {
         const removeKeys = Object.keys(info.importObj)
           .filter((key) => {
             const filePath = path.resolve(path.dirname(info.filePath), key) + ".ts";
-            return mergeInfos.slice(1).some((item) => item.filePath === filePath);
+            return mergeInfos.some((item) => item.filePath === filePath);
           });
         if (removeKeys.length > 0) {
           for (const key of removeKeys) {
@@ -404,15 +437,15 @@ export class SdNgModuleGenerator {
       if (info.declarations.length > 0) {
         // NgModule
         const importText = Object.keys(info.importObj)
-          .map((key) => `import {${info.importObj[key].join(", ")}} from "${key}";`);
+          .map((key) => `import {${info.importObj[key].distinct().join(", ")}} from "${key}";`);
         const ngModuleContent = `
 ${importText.join("\n")}
 
 @NgModule({
-  imports: [${info.modules.length > 0 ? "\n    " + info.modules.join(",\n    ") + "\n  " : ""}],
-  declarations: [${info.declarations.length > 0 ? "\n    " + info.declarations.join(",\n    ") + "\n  " : ""}],
-  exports: [${info.exports.length > 0 ? "\n    " + info.exports.join(",\n    ") + "\n  " : ""}],
-  entryComponents: [${info.entryComponents.length > 0 ? "\n    " + info.entryComponents.join(",\n    ") + "\n  " : ""}]
+  imports: [${info.modules.length > 0 ? "\n    " + info.modules.distinct().join(",\n    ") + "\n  " : ""}],
+  declarations: [${info.declarations.length > 0 ? "\n    " + info.declarations.distinct().join(",\n    ") + "\n  " : ""}],
+  exports: [${info.exports.length > 0 ? "\n    " + info.exports.distinct().join(",\n    ") + "\n  " : ""}],
+  entryComponents: [${info.entryComponents.length > 0 ? "\n    " + info.entryComponents.distinct().join(",\n    ") + "\n  " : ""}]
 })
 export class ${info.className} {
 }`.trim();
@@ -534,6 +567,7 @@ export interface ISdNgModuleDef {
   className: string;
   filePath: string;
   isLibrary: boolean;
+  isForGenerate: boolean;
   exports: SdClassMetadata[];
 }
 

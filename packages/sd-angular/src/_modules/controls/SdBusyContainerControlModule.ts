@@ -1,8 +1,11 @@
 import {NgModule} from "@angular/core";
 import {SdBusyContainerControl} from "../../controls/SdBusyContainerControl";
+import {SdAngularModule} from "../../SdAngularModule";
 
 @NgModule({
-  imports: [],
+  imports: [
+    SdAngularModule
+  ],
   declarations: [
     SdBusyContainerControl
   ],

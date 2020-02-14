@@ -8,19 +8,11 @@ import {SdBusyContainerProvider} from "./providers/SdBusyContainerProvider";
 import {SdLocalStorageProvider} from "./providers/SdLocalStorageProvider";
 import {SdNavigateWindowProvider} from "./providers/SdNavigateWindowProvider";
 import {SdSystemConfigProvider} from "./providers/SdSystemConfigProvider";
+import {SdModalProvider} from "./providers/SdModalProvider";
 
 @NgModule({
   imports: [
     CommonModule
-  ],
-  providers: [
-    SdBusyContainerProvider,
-    SdLocalStorageProvider,
-    SdNavigateWindowProvider,
-    SdSystemConfigProvider,
-    {provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true},
-    {provide: EVENT_MANAGER_PLUGINS, useClass: SdMutationEventPlugin, multi: true},
-    {provide: ErrorHandler, useClass: SdAngularGlobalErrorHandler}
   ]
 })
 export class SdAngularModule {
@@ -34,7 +26,14 @@ export class SdAngularModule {
     return {
       ngModule: SdAngularModule,
       providers: [
-        SdBusyContainerProvider
+        SdBusyContainerProvider,
+        SdLocalStorageProvider,
+        SdModalProvider,
+        SdNavigateWindowProvider,
+        SdSystemConfigProvider,
+        {provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true},
+        {provide: EVENT_MANAGER_PLUGINS, useClass: SdMutationEventPlugin, multi: true},
+        {provide: ErrorHandler, useClass: SdAngularGlobalErrorHandler}
       ]
     };
   }

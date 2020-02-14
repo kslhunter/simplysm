@@ -210,14 +210,20 @@ export class SdServiceServer extends EventEmitter {
           if (!FsUtil.exists(localPath)) {
             const errorMessage = `파일을 찾을 수 없습니다.`;
             this._responseErrorHtml(res, 404, errorMessage);
-            next(new Error(`${errorMessage} (${localPath})`));
+            /*if (path.basename(localPath) !== "favicon.ico") {
+              next(new Error(`[404] ${errorMessage} (${localPath})`));
+            }
+            else {
+              this._logger.warn(`[404] ${errorMessage} (${localPath})`);
+            }*/
+            this._logger.warn(`[404] ${errorMessage} (${localPath})`);
             return;
           }
 
           if (path.basename(localPath).startsWith(".")) {
             const errorMessage = `파일을 사용할 권한이 없습니다.`;
             this._responseErrorHtml(res, 403, errorMessage);
-            next(new Error(`${errorMessage} (${localPath})`));
+            next(new Error(`[403] ${errorMessage} (${localPath})`));
             return;
           }
 
@@ -234,7 +240,7 @@ export class SdServiceServer extends EventEmitter {
           if (!FsUtil.exists(filePath)) {
             const errorMessage = `파일을 찾을 수 없습니다.`;
             this._responseErrorHtml(res, 404, errorMessage);
-            next(new Error(`${errorMessage} (${filePath})`));
+            next(new Error(`[404] ${errorMessage} (${filePath})`));
             return;
           }
 
