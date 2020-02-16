@@ -117,7 +117,7 @@ export class SdDockControl implements OnDestroy, OnInit {
     this._el = this.elRef.nativeElement;
 
     this._zone.runOutsideAngular(() => {
-      this._el.addEventListener("resize", (event) => {
+      this._el.addEventListener("resize", event => {
         if (event.prevHeight !== event.newHeight && ["top", "bottom"].includes(this.position)) {
           this._parentControl.redraw();
         }

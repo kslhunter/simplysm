@@ -8,7 +8,7 @@ export class FsUtil {
     return await new Promise<string>((resolve, reject) => {
       const hash = crypto.createHash("md5").setEncoding("hex");
       fs.createReadStream(filePath)
-        .on("error", (err) => {
+        .on("error", err => {
           reject(new Error(err.message + ": " + filePath));
         })
         .pipe(hash)
@@ -28,7 +28,7 @@ export class FsUtil {
             reject(err);
             return;
           }
-          resolve(matches.map((item) => path.resolve(item)));
+          resolve(matches.map(item => path.resolve(item)));
         });
       });
     }
@@ -39,7 +39,7 @@ export class FsUtil {
             reject(err);
             return;
           }
-          resolve(matches.map((item) => path.resolve(item)));
+          resolve(matches.map(item => path.resolve(item)));
         });
       });
     }
@@ -155,7 +155,7 @@ export class FsUtil {
 
       const children = await FsUtil.globAsync(path.resolve(sourcePath, "*"));
 
-      await Promise.all(children.map(async (childPath) => {
+      await Promise.all(children.map(async childPath => {
         if (filter && !filter(childPath)) {
           return;
         }

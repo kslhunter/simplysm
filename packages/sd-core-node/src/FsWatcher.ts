@@ -91,7 +91,7 @@ export class FsWatcher {
               errorCallback(err);
             }
           }
-        ).on("error", (err) => {
+        ).on("error", err => {
           reject(err);
         });
 

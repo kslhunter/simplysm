@@ -59,7 +59,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     }
 
     const result = await this._conn.executeAsync(
-      defs.map((def) =>
+      defs.map(def =>
         QueryBuilder.query(def))
     );
     return result.map((item, i) => QueryUtil.parseQueryResult(item, options ? options[i] : undefined));

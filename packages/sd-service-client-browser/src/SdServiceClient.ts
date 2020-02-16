@@ -38,7 +38,7 @@ export class SdServiceClient {
         resolve();
       };
 
-      this._ws.onerror = (errEvt) => {
+      this._ws.onerror = errEvt => {
         if (this._ws?.readyState !== WebSocket.OPEN) {
           reject(new Error(`웹소켓을 연결하는 중에 오류가 발생했습니다.`));
         }
@@ -47,7 +47,7 @@ export class SdServiceClient {
         }
       };
 
-      this._ws!.onmessage = (message) => {
+      this._ws!.onmessage = message => {
         this._eventEmitter.emit("message", message);
       };
 
@@ -60,7 +60,7 @@ export class SdServiceClient {
   }
 
   public async closeAsync(): Promise<void> {
-    await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       if (this._ws) {
         this._eventEmitter.removeAllListeners();
         delete this._ws.onopen;
@@ -196,8 +196,8 @@ export class SdServiceClient {
                                                                  data: T["data"]): Promise<void> {
     const events: { id: number; info: object }[] = await this.sendAsync("getEventListeners", [eventType.name]);
     const eventIds = events
-      .filter((item) => infoSelector(item.info))
-      .map((item) => item.id);
+      .filter(item => infoSelector(item.info))
+      .map(item => item.id);
 
     await this.sendAsync("emitEvent", [eventIds, data]);
   }

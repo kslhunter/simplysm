@@ -29,7 +29,7 @@ export class SdIndexTsFileGenerator {
       if (path.resolve(srcTsFile) === this._indexTsFilePath) {
         continue;
       }
-      if (this._excludes.some((item) => path.resolve(item) === path.resolve(srcTsFile))) {
+      if (this._excludes.some(item => path.resolve(item) === path.resolve(srcTsFile))) {
         continue;
       }
 
@@ -38,7 +38,7 @@ export class SdIndexTsFileGenerator {
         .replace(/\.ts$/, "");
 
       const contents = await FsUtil.readFileAsync(srcTsFile);
-      if (contents.split("\n").some((line) => /^export /.test(line))) {
+      if (contents.split("\n").some(line => /^export /.test(line))) {
         importTexts.push(`export * from "./${requirePath}";`);
       }
       else {

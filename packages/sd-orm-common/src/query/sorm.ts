@@ -65,11 +65,11 @@ export const sorm = {
       return [1, " = ", 0];
     }
     else {
-      if (target.every((item) => item === undefined)) {
+      if (target.every(item => item === undefined)) {
         return sorm.null(src);
       }
 
-      const result = [QueryUtil.getQueryValue(src), " IN ", target.filterExists().mapMany((item) => [QueryUtil.getQueryValue(item), ", "]).slice(0, -1)];
+      const result = [QueryUtil.getQueryValue(src), " IN ", target.filterExists().mapMany(item => [QueryUtil.getQueryValue(item), ", "]).slice(0, -1)];
       if (target.includes(undefined)) {
         return sorm.or([
           result,
@@ -85,11 +85,11 @@ export const sorm = {
       return [1, " = ", 1];
     }
     else {
-      if (target.every((item) => item === undefined)) {
+      if (target.every(item => item === undefined)) {
         return sorm.null(src);
       }
 
-      const result = [QueryUtil.getQueryValue(src), " NOT IN ", target.filterExists().mapMany((item) => [QueryUtil.getQueryValue(item), ", "]).slice(0, -1)];
+      const result = [QueryUtil.getQueryValue(src), " NOT IN ", target.filterExists().mapMany(item => [QueryUtil.getQueryValue(item), ", "]).slice(0, -1)];
       if (target.includes(undefined)) {
         return sorm.and([
           result,

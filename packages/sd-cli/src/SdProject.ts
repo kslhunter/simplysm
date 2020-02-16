@@ -10,7 +10,6 @@ import {NextHandleFunction} from "connect";
 import * as depcheck from "depcheck";
 import {SdAngularCompiler} from "./builders/SdAngularCompiler";
 import {SdServerCompiler} from "./builders/SdServerCompiler";
-import * as os from "os";
 // tslint:disable-next-line: no-var-requires
 const decache = require("decache");
 
@@ -39,12 +38,8 @@ export class SdProject {
       throw new Error("프로젝트의 package.json 에 workspaces 정의가 필요합니다.");
     }
 
-    const packagePaths = await npmConfig.workspaces
-      .mapManyAsync(async (workspace) =>
-        await FsUtil.globAsync(workspace)
-      );
-
-    const packages = await packagePaths.mapAsync(async (packagePath) => await SdPackage.createAsync(config, packagePath));
+    const packagePaths = await npmConfig.workspaces.mapManyAsync(async workspace => await FsUtil.globAsync(workspace));
+    const packages = await packagePaths.mapAsync(async packagePath => await SdPackage.createAsync(config, packagePath));
 
     return new SdProject(npmConfig, config, mode, packages);
   }
@@ -59,18 +54,16 @@ export class SdProject {
     logger.log(watch ? `로컬 패키지 변경감지를 시작합니다.` : `로컬 패키지 업데이트를 시작합니다.`);
 
     // 설정별
-    await Object.keys(this._config.localUpdates).parallelAsync(async (localUpdateKey) => {
+    await Object.keys(this._config.localUpdates).parallelAsync(async localUpdateKey => {
       // "node_modules'에서 로컬업데이트 설정에 맞는 패키지를 "glob"하여 대상 패키지경로 목록 가져오기
       const targetPaths = await FsUtil.globAsync(path.resolve(process.cwd(), "node_modules", localUpdateKey));
       // 대상 패키지 경로별
-      await targetPaths.parallelAsync(async (targetPath) => {
-        const regexpText = localUpdateKey.replace(
-          /[\/.*]/g,
-          (item) =>
-            item === "/" ? "[\\\\\\/]"
-              : item === "." ? "\\."
-              : item === "*" ? "(.*)"
-                : item
+      await targetPaths.parallelAsync(async targetPath => {
+        const regexpText = localUpdateKey.replace(/[\/.*]/g, item =>
+          item === "/" ? "[\\\\\\/]"
+            : item === "." ? "\\."
+            : item === "*" ? "(.*)"
+              : item
         );
         const targetNameMatch = targetPath.match(new RegExp(regexpText));
         if (!targetNameMatch || !targetNameMatch[1]) return;
@@ -85,8 +78,11 @@ export class SdProject {
 
         if (watch) {
           // 변경감지 시작
-          await FsWatcher.watchAsync(path.resolve(sourcePath, "**", "*"), async (changedInfos) => {
-            logger.log(`'${targetName}' 파일이 변경되었습니다.\n` + changedInfos.map((item) => `[${item.type}] ${item.filePath}`).join("\n"));
+          await FsWatcher.watchAsync(path.resolve(sourcePath, "**", "*"), async changedInfos => {
+            logger.log(
+              `'${targetName}' 파일이 변경되었습니다.\n` +
+              changedInfos.map(item => `[${item.type}] ${item.filePath}`).join("\n")
+            );
 
             for (const changeInfo of changedInfos) {
               if (
@@ -105,7 +101,7 @@ export class SdProject {
                 await FsUtil.copyAsync(changeInfo.filePath, targetFilePath);
               }
             }
-          }, (err) => {
+          }, err => {
             logger.error(`'${targetName}'의 변경사항을 처리하는 중에 오류가 발생하였습니다.`, err);
           });
         }
@@ -127,14 +123,11 @@ export class SdProject {
     await this._npmConfig.saveAsync();
 
     // 각 패키지별 초기화
-    await Promise.all(this.packages.map(async (pkg) => {
+    await Promise.all(this.packages.map(async pkg => {
       // package.json 에 버전적용
       pkg.npmConfig.version = this._npmConfig.version;
       pkg.npmConfig.upgradeDependencyVersion(
-        this.packages.toObject(
-          (item) => item.npmConfig.name,
-          () => this._npmConfig.version
-        )
+        this.packages.toObject(item => item.npmConfig.name, () => this._npmConfig.version)
       );
 
       await pkg.npmConfig.saveAsync();
@@ -146,14 +139,14 @@ export class SdProject {
 
     logger.log("빌드 준비중...");
 
-    // 버전업
+    logger.debug("패키지 버전 업데이트...");
     await this._upgradeVersionAsync();
 
-    // 각 패키지별 초기화
-    await Promise.all(this.packages.map(async (pkg) => {
+    logger.debug("각 패키지별 tsconfig.build 생성 및 dist 디렉토리 삭제...");
+    await Promise.all(this.packages.map(async pkg => {
       if (pkg.config?.type) {
         // tsconfig 별
-        await pkg.tsConfigs.parallelAsync(async (tsConfig) => {
+        await pkg.tsConfigs.parallelAsync(async tsConfig => {
           // tsconfig*.build.json 파일 생성
           await tsConfig.saveForBuildAsync();
 
@@ -164,23 +157,21 @@ export class SdProject {
     }));
 
     if (watch) {
+      logger.debug("로컬 업데이트 변경감지 실행...");
       await this.localUpdateAsync(watch);
     }
 
     // 필요한 WORKER 생성
+    logger.debug("빌드 프로세스 생성...");
     const processCount =
-      this.packages.filter((item) => item.config?.type === "library").length * 2 + // CHECK LIBRARY 2가지 TSCONFIG
-      this.packages.filter((item) => item.config && item.config.type && item.config.type !== "library").length + // CHECK NON LIBRARY
-      this.packages.filter((item) => item.config?.type === "library").length * 2; // COMPILE LIBRARY
-    const processWorkManager = await ProcessWorkManager.createAsync(
-      path.resolve(__dirname, `build-worker`),
-      Math.min(processCount, os.cpus().length - 1),
-      true
-    );
+      this.packages.filter(item => item.config?.type).sum(item => item.tsConfigs.length) + // 타입체크
+      this.packages.filter(item => item.config?.type === "library").sum(item => item.tsConfigs.length); // 컴파일
+    const processWorkManager = await ProcessWorkManager.createAsync(path.resolve(__dirname, `build-worker`), [], processCount, true);
+    logger.debug("빌드 프로세스 생성 완료");
 
     logger.log("빌드 프로세스를 시작합니다.");
 
-    await this._parallelPackagesByDepAsync(async (pkg) => {
+    await this._parallelPackagesByDepAsync(async pkg => {
       if (!pkg.config?.type) {
         return;
       }
@@ -190,8 +181,11 @@ export class SdProject {
       //---------------------------------
       // 타입 체크
       //---------------------------------
+      packageLogger.debug("타입체크...");
 
       await pkg.tsConfigs.parallelAsync(async (tsConfig, index) => {
+        packageLogger.debug(`타입체크[${index}]...`);
+
         const isFirst = index === 0;
         const framework = (isFirst && (pkg.config?.type === "library" || pkg.config?.type === "web"))
           ? pkg.config?.framework
@@ -213,6 +207,7 @@ export class SdProject {
         const polyfills = (isFirst && pkg.config?.type === "library")
           ? pkg.config?.polyfills : [];
 
+        packageLogger.debug(`타입체크[${index}] 실행...`);
         await processWorkManager.runAsync(
           "check",
           watch,
@@ -221,6 +216,8 @@ export class SdProject {
           polyfills,
           indexTsFilePath
         );
+
+        packageLogger.debug(`타입체크[${index}] 완료`);
       });
 
       //---------------------------------
@@ -228,6 +225,8 @@ export class SdProject {
       //---------------------------------
 
       if (pkg.config?.type === "server") {
+        packageLogger.debug("컴파일[서버]...");
+
         const builder = await SdServerCompiler.createAsync({
           tsConfigPath: pkg.tsConfigs.single()!.configForBuildPath,
           mode: this._mode
@@ -291,9 +290,14 @@ export class SdProject {
           });
         }
 
+        packageLogger.debug("컴파일[서버] 실행...");
         await builder.runAsync(watch);
+
+        packageLogger.debug("컴파일[서버] 완료.");
       }
       else if (pkg.config?.type === "web") {
+        packageLogger.debug("컴파일[웹]...");
+
         if (!pkg.config.serverPackage) {
           throw new Error("클라이언트 설정에는 반드시 'server' 설정이 있어야 합니다.");
         }
@@ -320,7 +324,8 @@ export class SdProject {
             }
           });
 
-          const middlewares = await builder.runAsync(watch);
+          packageLogger.debug("컴파일[웹] 실행...");
+          const middlewares = await builder.runAsync(true);
           if (this._servers[pkg.config.serverPackage]) {
             this._servers[pkg.config.serverPackage].middlewares.push(...middlewares);
           }
@@ -332,13 +337,21 @@ export class SdProject {
               isClosing: false
             };
           }
+
+          packageLogger.debug("컴파일[웹] 완료");
         }
         else {
-          await builder.runAsync(watch);
+          packageLogger.debug("컴파일[웹] 실행...");
+          await builder.runAsync(false);
+
+          packageLogger.debug("컴파일[웹] 완료");
         }
       }
       else {
-        await pkg.tsConfigs.parallelAsync(async (tsConfig) => {
+        packageLogger.debug("컴파일[라이브러리]...");
+
+        await pkg.tsConfigs.parallelAsync(async (tsConfig, index) => {
+          packageLogger.debug(`컴파일[라이브러리(${index})] 실행...`);
           await processWorkManager.runAsync(
             "compile",
             watch,
@@ -346,6 +359,7 @@ export class SdProject {
             this._mode,
             (pkg.config?.type === "library" || pkg.config?.type === "web") ? pkg.config?.framework : undefined
           );
+          packageLogger.debug(`컴파일[라이브러리(${index})] 완료`);
         });
       }
     });
@@ -353,7 +367,10 @@ export class SdProject {
     logger.info(`모든 빌드 프로세스가 완료되었습니다`);
 
     if (!watch) {
+      logger.debug(`모든 프로세스 종료...`);
       await processWorkManager.closeAllAsync();
+
+      logger.debug(`모든 프로세스 종료됨`);
     }
   }
 
@@ -389,7 +406,7 @@ export class SdProject {
       await ProcessManager.spawnAsync(
         "git status",
         undefined,
-        (message) => {
+        message => {
           if (message.includes("Changes") || message.includes("Untracked")) {
             throw new Error("커밋되지 않은 정보가 있습니다.");
           }
@@ -434,7 +451,7 @@ export class SdProject {
         false);
     }
 
-    await this.packages.parallelAsync(async (pkg) => {
+    await this.packages.parallelAsync(async pkg => {
       if (!pkg.config?.publish) {
         return;
       }
@@ -459,7 +476,7 @@ export class SdProject {
   }
 
   public async depcheckAsync(): Promise<void> {
-    await Promise.all(this.packages.map(async (pkg) => {
+    await Promise.all(this.packages.map(async pkg => {
       if (path.resolve(process.cwd(), pkg.packagePath) === path.resolve(process.cwd(), "test")) {
         return;
       }
@@ -471,7 +488,7 @@ export class SdProject {
           "@types/node",
           "typescript-tslint-plugin"
         ]
-      }, (unused) => {
+      }, unused => {
         const excludeFn = (isDev: boolean, dep: string) => {
           if (
             isDev &&
@@ -483,7 +500,7 @@ export class SdProject {
 
           if (
             isDev &&
-            Object.keys(unused.using).some((item) => item.startsWith("@angular")) &&
+            Object.keys(unused.using).some(item => item.startsWith("@angular")) &&
             ["codelyzer", "@angular/compiler"].includes(dep)
           ) {
             return true;
@@ -494,11 +511,11 @@ export class SdProject {
           return false;
         };
 
-        if (unused.dependencies.filter((item) => !excludeFn(false, item)).length > 0) {
-          packageLogger.warn("unused dep", unused.dependencies.filter((item) => !excludeFn(false, item))); // an array containing the unused dependencies
+        if (unused.dependencies.filter(item => !excludeFn(false, item)).length > 0) {
+          packageLogger.warn("unused dep", unused.dependencies.filter(item => !excludeFn(false, item))); // an array containing the unused dependencies
         }
-        if (unused.devDependencies.filter((item) => !excludeFn(true, item)).length > 0) {
-          packageLogger.warn("unused devDep", unused.devDependencies.filter((item) => !excludeFn(true, item))); // an array containing the unused devDependencies
+        if (unused.devDependencies.filter(item => !excludeFn(true, item)).length > 0) {
+          packageLogger.warn("unused devDep", unused.devDependencies.filter(item => !excludeFn(true, item))); // an array containing the unused devDependencies
         }
         /*logger.log(unused.missing); // a lookup containing the dependencies missing in `package.json` and where they are used
         logger.log(unused.using); // a lookup indicating each dependency is used by which files
@@ -511,22 +528,22 @@ export class SdProject {
   }
 
   private async _parallelPackagesByDepAsync(cb: (pkg: SdPackage) => Promise<void>): Promise<void> {
-    const packages = this.packages.filter((item) => item.config?.type);
+    const packages = this.packages.filter(item => item.config?.type);
 
     const completedPackageNames: string[] = [];
 
-    await packages.parallelAsync(async (pkg) => {
+    await packages.parallelAsync(async pkg => {
       // 패키지의 의존성 패키지 중에 빌드해야할 패키지 목록에 이미 있는 의존성 패키지만 추리기
       const depPackageNames = [
         ...Object.keys(pkg.npmConfig.dependencies ?? {}),
         ...Object.keys(pkg.npmConfig.devDependencies ?? {}),
         ...Object.keys(pkg.npmConfig.peerDependencies ?? {})
-      ].filter((pkgDepPackageName) =>
-        packages.some((targetPackage) => targetPackage.npmConfig.name === pkgDepPackageName)
+      ].filter(pkgDepPackageName =>
+        packages.some(targetPackage => targetPackage.npmConfig.name === pkgDepPackageName)
       );
 
       // 추려진 의존성 패키지별로 의존성 패키지의 빌드가 완료될때까지 기다리기
-      await Promise.all(depPackageNames.map(async (depPackageName) => {
+      await Promise.all(depPackageNames.map(async depPackageName => {
         await Wait.true(() => completedPackageNames.includes(depPackageName));
       }));
 

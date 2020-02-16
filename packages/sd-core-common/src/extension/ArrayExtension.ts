@@ -86,11 +86,11 @@ Array.prototype.last = function <T>(this: T[], predicate?: (item: T, index: numb
 };
 
 Array.prototype.filterExists = function <T>(this: T[]): NonNullable<T>[] {
-  return this.filter((item) => item !== undefined) as NonNullable<T>[];
+  return this.filter(item => item !== undefined) as NonNullable<T>[];
 };
 
 Array.prototype.ofType = function <T, N extends T>(this: T[], type: Type<TypeWrap<N>>): N[] {
-  return this.filter((item) => item instanceof type || (item as any)?.constructor === type) as N[];
+  return this.filter(item => item instanceof type || (item as any)?.constructor === type) as N[];
 };
 
 Array.prototype.mapMany = function <T, R>(this: T[], selector?: (item: T, index: number) => R[]): R[] {
@@ -120,7 +120,7 @@ Array.prototype.groupBy = function <T, K, V>(this: T[], keySelector: (item: T, i
     const keyObj = keySelector(this[i], i);
     const valueObj = valueSelector ? valueSelector(this[i], i) : this[i];
 
-    const existsRecord = result.single((item) => ObjectUtil.equal(item.key, keyObj));
+    const existsRecord = result.single(item => ObjectUtil.equal(item.key, keyObj));
     if (existsRecord) {
       existsRecord.values.push(valueObj);
     }
@@ -171,7 +171,7 @@ Array.prototype.toObject = function <T, V>(this: T[], keySelector: (item: T, ind
 Array.prototype.distinct = function <T>(this: T[], matchAddress?: boolean): T[] {
   const result: T[] = [];
   for (const item of this) {
-    if (!result.some((item1) => matchAddress ? item1 === item : ObjectUtil.equal(item1, item))) {
+    if (!result.some(item1 => matchAddress ? item1 === item : ObjectUtil.equal(item1, item))) {
       result.push(item);
     }
   }
@@ -220,12 +220,12 @@ Array.prototype.diffs = function <T, P>(this: T[], target: P[], options?: { keys
 
   for (const sourceItem of this) {
     //target 에 동일한 항목이 없을 때
-    const sameTarget = uncheckedTarget.single((targetItem) => ObjectUtil.equal(targetItem, sourceItem, options?.excludes ? {excludes: options?.excludes} : undefined));
+    const sameTarget = uncheckedTarget.single(targetItem => ObjectUtil.equal(targetItem, sourceItem, options?.excludes ? {excludes: options?.excludes} : undefined));
     if (!sameTarget) {
       //키 설정시
       if (options?.keys) {
         //target 에 동일한 항목은 아니지만, key 가 같은게 있는 경우: source => target 수정된 항목
-        const sameKeyTargetItem = uncheckedTarget.single((targetItem) => ObjectUtil.equal(targetItem, sourceItem, {keys: options.keys}));
+        const sameKeyTargetItem = uncheckedTarget.single(targetItem => ObjectUtil.equal(targetItem, sourceItem, {keys: options.keys}));
         if (sameKeyTargetItem) {
           result.push({source: sourceItem, target: sameKeyTargetItem});
           uncheckedTarget.remove(sameKeyTargetItem);
@@ -256,7 +256,7 @@ Array.prototype.merge = function <T, P>(this: T[], target: P[], options?: { keys
   for (const diff of diffs) {
     // 변경시
     if (diff.source && diff.target) {
-      const resultSourceItem = result.single((item) => ObjectUtil.equal(item, diff.source))!;
+      const resultSourceItem = result.single(item => ObjectUtil.equal(item, diff.source))!;
       result[result.indexOf(resultSourceItem)] = ObjectUtil.merge(diff.source, diff.target);
     }
     // 추가시

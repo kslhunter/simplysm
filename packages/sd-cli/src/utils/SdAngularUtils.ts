@@ -9,7 +9,7 @@ export class SdAngularUtils {
       return {content, dependencies: []};
     }
 
-    const results = matches.map((match) => sass.renderSync({
+    const results = matches.map(match => sass.renderSync({
       file: filePath,
       data: match.match(scssRegex)![2],
       sourceMapEmbed: false,
@@ -17,15 +17,15 @@ export class SdAngularUtils {
       outputStyle: "compact"
     }));
 
-    const deps = results.mapMany((result) => result.stats.includedFiles).map((item) => path.normalize(item));
+    const deps = results.mapMany(result => result.stats.includedFiles).map(item => path.normalize(item));
 
     let i = 0;
     const newContent = content.replace(new RegExp(scssRegex, "gi"), () => {
       let result = "`" + results[i].css.toString() + "`";
       const prev = matches[i];
 
-      const diffCount = Array.from(prev).filter((item) => item === "\n").length -
-        Array.from(result).filter((item) => item === "\n").length;
+      const diffCount = Array.from(prev).filter(item => item === "\n").length -
+        Array.from(result).filter(item => item === "\n").length;
 
       result += "/* tslint:disable */";
       for (let j = 0; j < diffCount; j++) {

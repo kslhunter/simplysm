@@ -24,7 +24,8 @@
     "prefer-template": false,
     "max-line-length": false,
     "arrow-parens": [
-      true
+      true,
+      "ban-single-arg-parens"
     ],
     "newline-per-chained-call": false,
     "one-line": [

@@ -5,7 +5,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
   selector: "sd-anchor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    "tabindex": "0"
+    "[attr.tabindex]": "disabled ? undefined : 0"
   },
   template: `
     <ng-content></ng-content>`,
@@ -29,7 +29,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
       }
 
       &[disabled=true] {
-        color: var(--theme-grey-light);
+        color: var(--theme-color-grey-light);
         cursor: default;
         pointer-events: none;
       }

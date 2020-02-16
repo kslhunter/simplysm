@@ -20,6 +20,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
     :host {
       > button {
         @include form-control-base();
+        padding: var(--gap-sm) var(--gap-lg);
 
         background: white;
         border-color: var(--sd-border-color);
@@ -77,11 +78,11 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
       }
 
       &[sd-size=sm] > button {
-        padding: var(--gap-xs) var(--gap-sm);
+        padding: var(--gap-xs) var(--gap-default);
       }
 
       &[sd-size=lg] > button {
-        padding: var(--gap-default) var(--gap-lg);
+        padding: var(--gap-default) var(--gap-xl);
         border-radius: 2px;
       }
     }

@@ -25,7 +25,7 @@ export class QueryUtil {
   }
 
   public static getTableName(def: ITableNameDef): string {
-    return QueryUtil.getTableNameChain(def).map((item) => `[${item}]`).join(".");
+    return QueryUtil.getTableNameChain(def).map(item => `[${item}]`).join(".");
   }
 
   public static getQueryValue(value: TEntityValueOrQueryable): TQueryValueOrSelect | TQueryValueOrSelectArray {
@@ -63,7 +63,7 @@ export class QueryUtil {
   }
 
   public static getQueryValueArray(arr: TEntityValueOrQueryableArray): TQueryValueOrSelectArray {
-    return arr.map((item) => {
+    return arr.map(item => {
       if (item instanceof Array) {
         return QueryUtil.getQueryValueArray(item);
       }
@@ -150,7 +150,7 @@ export class QueryUtil {
 
   public static parseQueryResult<T>(orgResults: any[], option?: IQueryResultParseOption): T[] {
     // 타입 변환
-    let result: any[] = orgResults.map((item) => {
+    let result: any[] = orgResults.map(item => {
       const obj: any = {};
       for (const key of Object.keys(item)) {
         if (item[key] == undefined) {
@@ -179,20 +179,20 @@ export class QueryUtil {
 
     // JOIN 에 따른 데이터 구조 설정
     if (option?.joins && Object.keys(option.joins).length > 0) {
-      const joinKeys = Object.keys(option.joins).orderByDesc((key) => key.length);
+      const joinKeys = Object.keys(option.joins).orderByDesc(key => key.length);
       for (const joinKey of joinKeys) {
         // const grouped = new Map<string, any | any[]>();
         const grouped: { key: any; values: any | any[] }[] = [];
         const groupedMultiMap = new Map<string, any | any[]>();
 
         for (const item of result) {
-          const keyObjKeys = Object.keys(item).filter((key) => !key.startsWith(joinKey + "."));
+          const keyObjKeys = Object.keys(item).filter(key => !key.startsWith(joinKey + "."));
           const keyObj = {};
           for (const keyObjKey of keyObjKeys) {
             keyObj[keyObjKey] = item[keyObjKey];
           }
 
-          const valueObjKeys = Object.keys(item).filter((key) => key.startsWith(joinKey + "."));
+          const valueObjKeys = Object.keys(item).filter(key => key.startsWith(joinKey + "."));
           const valueObj: any = {};
           for (const valueObjKey of valueObjKeys) {
             valueObj[valueObjKey.slice(joinKey.length + 1)] = item[valueObjKey];
@@ -214,14 +214,14 @@ export class QueryUtil {
           }
         }
 
-        result = grouped.map((groupedItem) => {
+        result = grouped.map(groupedItem => {
           if (groupedItem.values instanceof Array) {
             return {
               ...groupedItem.key,
               [joinKey]: groupedItem.values
-                .filter((item1) =>
+                .filter(item1 =>
                   Object.keys(item1)
-                    .filter((key) => !(item1[key] instanceof Array) || item1[key].length > 0)
+                    .filter(key => !(item1[key] instanceof Array) || item1[key].length > 0)
                     .length > 0
                 )
             };

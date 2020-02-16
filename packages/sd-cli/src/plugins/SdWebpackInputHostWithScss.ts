@@ -13,7 +13,7 @@ import {SdAngularUtils} from "../utils/SdAngularUtils";
 
 export class SdWebpackInputHostWithScss extends WebpackInputHost {
   public read(path: Path): Observable<virtualFs.FileBuffer> {
-    return new Observable((obs) => {
+    return new Observable(obs => {
       try {
         const filePath = getSystemPath(path);
         let data = this.inputFileSystem.readFileSync(filePath);

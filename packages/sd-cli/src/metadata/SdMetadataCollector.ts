@@ -30,9 +30,9 @@ export class SdMetadataCollector {
 
   public get modules(): SdModuleMetadata[] {
     return Object.keys(this._moduleMetadataListObj)
-      .mapMany((key) =>
+      .mapMany(key =>
         this._moduleMetadataListObj[key]
-          .map((metadata) => new SdModuleMetadata(this, metadata, key))
+          .map(metadata => new SdModuleMetadata(this, metadata, key))
       );
   }
 
@@ -62,10 +62,10 @@ export class SdMetadataCollector {
       let currModule: SdModuleMetadata | undefined;
       if (metadata.module.startsWith(".")) {
         const moduleFilePath = path.resolve(path.dirname(module.filePath), metadata.module) + ".metadata.json";
-        currModule = this.modules.single((item) => item.filePath === moduleFilePath);
+        currModule = this.modules.single(item => item.filePath === moduleFilePath);
       }
       else {
-        currModule = this.modules.single((item) => item.name === metadata.module);
+        currModule = this.modules.single(item => item.name === metadata.module);
       }
       if (!currModule) throw new NotImplementError();
       return this.findRealMetadata(currModule, currModule.metadata.metadata[metadata.name]);

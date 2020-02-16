@@ -19,7 +19,7 @@ export class ProcessManager {
       };
 
       const worker = child_process.spawn(commands[0], commands.slice(1), opts);
-      worker.on("error", (err) => {
+      worker.on("error", err => {
         reject(err);
       });
 
@@ -89,7 +89,7 @@ export class ProcessManager {
         processing = false;
       });
 
-      worker.on("exit", async (code) => {
+      worker.on("exit", async code => {
         await Wait.true(() => !processing);
 
         if (code === 0 || forceClosing) {

@@ -99,12 +99,12 @@ export class SdAngularCompiler extends EventEmitter {
           const info = stats.toJson("errors-warnings");
 
           if (stats.hasWarnings()) {
-            const warnings = info.warnings.filter((item) => !item.includes("Emitted no files."));
+            const warnings = info.warnings.filter(item => !item.includes("Emitted no files."));
             if (warnings.length > 0) {
               this._logger.warn(
                 "컴파일 경고\n",
                 warnings
-                  .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
+                  .map(item => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
                   .join(os.EOL)
               );
             }
@@ -114,7 +114,7 @@ export class SdAngularCompiler extends EventEmitter {
             this._logger.error(
               "컴파일 오류\n",
               info.errors
-                .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
+                .map(item => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
                 .join(os.EOL)
             );
           }
@@ -141,11 +141,11 @@ export class SdAngularCompiler extends EventEmitter {
           overlay: true
         });
 
-        compiler.hooks.failed.tap("SdAngularCompiler", (err) => {
+        compiler.hooks.failed.tap("SdAngularCompiler", err => {
           callback(err);
         });
 
-        compiler.hooks.done.tap("SdAngularCompiler", (stats) => {
+        compiler.hooks.done.tap("SdAngularCompiler", stats => {
           callback(undefined, stats);
         });
       }
@@ -276,8 +276,7 @@ export class SdAngularCompiler extends EventEmitter {
           compilerOptions: {
             fullTemplateTypeCheck: true,
             strictInjectionParameters: true,
-            disableTypeScriptVersionCheck: true,
-            enableIvy: false
+            disableTypeScriptVersionCheck: true
           }
         }),
         new webpack.ContextReplacementPlugin(

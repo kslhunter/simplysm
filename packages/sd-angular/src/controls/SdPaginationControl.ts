@@ -67,7 +67,7 @@ export class SdPaginationControl {
 
     const from = Math.floor(this.page / this.displayPageLength) * this.displayPageLength;
     const to = Math.min(from + this.displayPageLength, this.pageLength);
-    return pages.filter((item) => item >= from && item < to);
+    return pages.filter(item => item >= from && item < to);
   }
 
   public get hasNext(): boolean {

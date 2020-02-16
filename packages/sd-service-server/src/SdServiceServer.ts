@@ -74,7 +74,7 @@ export class SdServiceServer extends EventEmitter {
       });
 
       let isResolved = false;
-      this._wsServer!.on("error", (err) => {
+      this._wsServer!.on("error", err => {
         if (isResolved) {
           this._logger.error(`웹소켓 서버에서 오류가 발생했습니다.`, err);
         }
@@ -83,7 +83,7 @@ export class SdServiceServer extends EventEmitter {
         }
       });
 
-      this._httpServer!.on("error", (err) => {
+      this._httpServer!.on("error", err => {
         if (isResolved) {
           this._logger.error(`HTTP 서버에서 오류가 발생했습니다.`, err);
         }
@@ -92,7 +92,7 @@ export class SdServiceServer extends EventEmitter {
         }
       });
 
-      this._httpServer!.on("connection", (conn) => {
+      this._httpServer!.on("connection", conn => {
         this._httpConnections.push(conn);
 
         conn.on("close", () => {
@@ -112,7 +112,7 @@ export class SdServiceServer extends EventEmitter {
     this._eventListeners.clear();
 
     if (this._wsConnections.length > 0) {
-      await new Promise<void>((resolve) => {
+      await new Promise<void>(resolve => {
         for (const wsConnection of this._wsConnections) {
           wsConnection.close();
         }
@@ -121,7 +121,7 @@ export class SdServiceServer extends EventEmitter {
 
     if (this._wsServer) {
       await new Promise<void>((resolve, reject) => {
-        this._wsServer!.close((err) => {
+        this._wsServer!.close(err => {
           if (err) {
             reject(err);
             return;
@@ -132,7 +132,7 @@ export class SdServiceServer extends EventEmitter {
     }
 
     if (this._httpConnections.length > 0) {
-      await new Promise<void>((resolve) => {
+      await new Promise<void>(resolve => {
         for (const httpConnection of this._httpConnections) {
           httpConnection.end(() => {
             resolve();
@@ -143,7 +143,7 @@ export class SdServiceServer extends EventEmitter {
 
     if (this._httpServer?.listening) {
       await new Promise<void>((resolve, reject) => {
-        this._httpServer!.close((err) => {
+        this._httpServer!.close(err => {
           if (err) {
             reject(err);
             return;
@@ -178,7 +178,7 @@ export class SdServiceServer extends EventEmitter {
       }
     });
 
-    wsConn.on("error", async (err) => {
+    wsConn.on("error", async err => {
       this._logger.error(`요청 처리중 에러가 발생했습니다: ${connReq.headers.origin}`, err);
     });
   }
@@ -187,7 +187,7 @@ export class SdServiceServer extends EventEmitter {
     const runners = this.middlewares.concat([
       async (req, res, next) => {
         if (req.method !== "GET") {
-          await new Promise<void>((resolve) => {
+          await new Promise<void>(resolve => {
             let body = "";
             req.on("readable", () => {
               body += req.read();
@@ -263,7 +263,7 @@ export class SdServiceServer extends EventEmitter {
     const runMiddleware = (index: number) => {
       if (!runners[index]) return;
 
-      runners[index](webReq, webRes, (err) => {
+      runners[index](webReq, webRes, err => {
         if (err) {
           this._logger.error(err);
           return;
@@ -306,7 +306,7 @@ export class SdServiceServer extends EventEmitter {
       };
     }
     else if (req.command === "addEventListener") {
-      const eventListenerId = (this._eventListeners.max((item) => item.id) ?? 0) + 1;
+      const eventListenerId = (this._eventListeners.max(item => item.id) ?? 0) + 1;
 
       this._eventListeners.push({
         id: eventListenerId,
@@ -328,8 +328,8 @@ export class SdServiceServer extends EventEmitter {
         requestId: req.id,
         type: "response",
         body: this._eventListeners
-          .filter((item) => item.eventName === eventName)
-          .map((item) => ({
+          .filter(item => item.eventName === eventName)
+          .map(item => ({
             id: item.id,
             info: item.info
           }))
@@ -337,7 +337,7 @@ export class SdServiceServer extends EventEmitter {
     }
     else if (req.command === "removeEventListener") {
       const eventListenerId = req.params[0];
-      this._eventListeners.remove((item) => item.id === eventListenerId);
+      this._eventListeners.remove(item => item.id === eventListenerId);
 
       return {
         requestId: req.id,
@@ -349,7 +349,7 @@ export class SdServiceServer extends EventEmitter {
       const data = req.params[1];
 
       for (const id of ids) {
-        const eventListener = this._eventListeners.single((item) => item.id === id);
+        const eventListener = this._eventListeners.single(item => item.id === id);
         if (eventListener) {
           await eventListener.conn.sendAsync({
             type: "event",
@@ -371,7 +371,7 @@ export class SdServiceServer extends EventEmitter {
       const methodName = cmdSplit[1];
 
       // 서비스 가져오기
-      const serviceClass = this.options.services.single((item) => item.name === serviceName);
+      const serviceClass = this.options.services.single(item => item.name === serviceName);
       if (!serviceClass) {
         throw new Error(`서비스[${serviceName}]를 찾을 수 없습니다.`);
       }

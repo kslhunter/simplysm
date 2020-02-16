@@ -133,7 +133,7 @@ export abstract class DbContext {
     }
 
     const result: any[][] = [];
-    const resultTmp: any[][] = await this.executeDefsAsync(this.prepareDefs.map((item) => item.def), this.prepareDefs.map((item) => item.option));
+    const resultTmp: any[][] = await this.executeDefsAsync(this.prepareDefs.map(item => item.def), this.prepareDefs.map(item => item.option));
     for (let i = 0; i < resultTmp.length; i++) {
       if (this.prepareDefs[i].isRealResult) {
         result.push(resultTmp[i]);
@@ -155,7 +155,7 @@ export abstract class DbContext {
       // 강제 아님
       const isDbExists = (
         await this._databaseInfo
-          .where((item) => [
+          .where(item => [
             sorm.equal(item.name, this.schema.database)
           ])
           .countAsync()
@@ -165,7 +165,7 @@ export abstract class DbContext {
         // FORCE 아니고 DB 있음
         const hasMigrationTable = (
           await this._tableInfo
-            .where((item) => [
+            .where(item => [
               sorm.equal(item.name, "_migration")
             ])
             .countAsync()
@@ -175,15 +175,15 @@ export abstract class DbContext {
           // FORCE 아니고 DB 있으나, Migration 없음
           const dbMigrationCodes = (
             await this.migration
-              .select((item) => ({
+              .select(item => ({
                 code: item.code
               }))
               .resultAsync()
-          ).map((item) => item.code);
+          ).map(item => item.code);
 
           const migrations = this.migrations
-            .filter((item) => !dbMigrationCodes.includes(item.name))
-            .orderBy((item) => item.name);
+            .filter(item => !dbMigrationCodes.includes(item.name))
+            .orderBy(item => item.name);
 
           if (migrations.length > 0) {
             if (this.status !== "transact") {
@@ -240,11 +240,11 @@ export abstract class DbContext {
 
     // TABLE 초기화: 생성/PK 설정
     const tableDefs = Object.keys(this)
-      .filter((key) => !key.startsWith("_"))
-      .map((key) => this[key])
+      .filter(key => !key.startsWith("_"))
+      .map(key => this[key])
       .ofType<Queryable<any, any>>(Queryable)
-      .map((qr) => DbDefinitionUtil.getTableDef(qr.tableType!))
-      .filter((item) => !item.database || dbNames.includes(item.database))
+      .map(qr => DbDefinitionUtil.getTableDef(qr.tableType!))
+      .filter(item => !item.database || dbNames.includes(item.database))
       .filterExists() as ITableDef[];
 
     const createTableQueryDefs: TQueryDef[] = [];
@@ -261,7 +261,7 @@ export abstract class DbContext {
           schema: tableDef.schema ?? this.schema.schema,
           name: tableDef.name
         },
-        columns: tableDef.columns.map((col) => ObjectUtil.clearUndefined({
+        columns: tableDef.columns.map(col => ObjectUtil.clearUndefined({
           name: col.name,
           dataType: col.dataType ?? QueryUtil.getDataType(col.typeFwd()),
           autoIncrement: col.autoIncrement,
@@ -286,9 +286,9 @@ export abstract class DbContext {
           name: tableDef.name
         },
         primaryKeys: tableDef.columns
-          .filter((item) => item.primaryKey !== undefined)
-          .orderBy((item) => item.primaryKey!)
-          .map((item) => ({
+          .filter(item => item.primaryKey !== undefined)
+          .orderBy(item => item.primaryKey!)
+          .map(item => ({
             column: item.name,
             orderBy: "ASC"
           }))
@@ -310,9 +310,9 @@ export abstract class DbContext {
         }
 
         const targetPkNames = targetTableDef.columns
-          .filter((item) => item.primaryKey !== undefined)
-          .orderBy((item) => item.primaryKey!)
-          .map((item) => item.name);
+          .filter(item => item.primaryKey !== undefined)
+          .orderBy(item => item.primaryKey!)
+          .map(item => item.name);
 
         addFkQueryDefs.push({
           type: "addForeignKey",
@@ -323,7 +323,7 @@ export abstract class DbContext {
           },
           foreignKey: {
             name: fkDef.name,
-            fkColumns: fkDef.columnPropertyKeys.map((propKey) => tableDef.columns.single((col) => col.propertyKey === propKey)!.name),
+            fkColumns: fkDef.columnPropertyKeys.map(propKey => tableDef.columns.single(col => col.propertyKey === propKey)!.name),
             targetTable: {
               database: targetTableDef.database ?? this.schema.database,
               schema: targetTableDef.schema ?? this.schema.schema,
@@ -353,8 +353,8 @@ export abstract class DbContext {
           },
           index: {
             name: indexDef.name,
-            columns: indexDef.columns.orderBy((item) => item.order).map((item) => ({
-              name: tableDef.columns.single((col) => col.propertyKey === item.columnPropertyKey)!.name,
+            columns: indexDef.columns.orderBy(item => item.order).map(item => ({
+              name: tableDef.columns.single(col => col.propertyKey === item.columnPropertyKey)!.name,
               orderBy: item.orderBy
             }))
           }
@@ -365,7 +365,7 @@ export abstract class DbContext {
 
     // Migrations 등록
     const migrationInsertQueryDefs: TQueryDef[] = [];
-    for (const migration of this.migrations.orderBy((item) => item.name)) {
+    for (const migration of this.migrations.orderBy(item => item.name)) {
       migrationInsertQueryDefs.push({
         type: "insert",
         from: `[${this.schema.database}].[${this.schema.schema}].[_migration]`,

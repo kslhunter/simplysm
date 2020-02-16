@@ -18,7 +18,7 @@ export class ObjectUtil {
       return undefined;
     }
     if (source instanceof Array) {
-      return source.map((item) => options ? ObjectUtil._clone(item, options) : ObjectUtil._clone(item));
+      return source.map(item => options ? ObjectUtil._clone(item, options) : ObjectUtil._clone(item));
     }
     if (source instanceof Date) {
       return new Date(source.getTime());
@@ -40,7 +40,7 @@ export class ObjectUtil {
       Object.setPrototypeOf(result, source["constructor"].prototype);
       const currPrevClones = prevClones ?? [];
       currPrevClones.push({source, clone: result});
-      for (const key of Object.keys(source).filter((sourceKey) => !options?.excludes?.includes(sourceKey as any))) {
+      for (const key of Object.keys(source).filter(sourceKey => !options?.excludes?.includes(sourceKey as any))) {
         if (source[key] == undefined) {
           result[key] = undefined;
         }
@@ -48,7 +48,7 @@ export class ObjectUtil {
           result[key] = source[key];
         }
         else {
-          const matchedPrevClone = prevClones?.single((item) => item.source === source[key]);
+          const matchedPrevClone = prevClones?.single(item => item.source === source[key]);
           if (matchedPrevClone) {
             result[key] = matchedPrevClone.clone;
           }
@@ -116,8 +116,8 @@ export class ObjectUtil {
       }
 
       if (options?.ignoreArrayIndex) {
-        return source.every((sourceItem) =>
-          target.some((targetItem) =>
+        return source.every(sourceItem =>
+          target.some(targetItem =>
             ObjectUtil.equal(targetItem, sourceItem, options)
           )
         );
@@ -135,9 +135,9 @@ export class ObjectUtil {
 
     if (typeof source === "object" && typeof target === "object") {
       const sourceKeys = Object.keys(source)
-        .filter((key) => (!options?.keys || options?.keys.includes(key)) && (!options?.excludes?.includes(key)) && source[key] !== undefined);
+        .filter(key => (!options?.keys || options?.keys.includes(key)) && (!options?.excludes?.includes(key)) && source[key] !== undefined);
       const targetKeys = Object.keys(target)
-        .filter((key) => (!options?.keys || options?.keys.includes(key)) && (!options?.excludes?.includes(key)) && target[key] !== undefined);
+        .filter(key => (!options?.keys || options?.keys.includes(key)) && (!options?.excludes?.includes(key)) && target[key] !== undefined);
 
       if (sourceKeys.length !== targetKeys.length) {
         return false;
@@ -185,10 +185,7 @@ export class ObjectUtil {
 
     if (
       currDef.type &&
-      !currDef.type.some(
-        (type) =>
-          type === (value as any)?.constructor
-      )
+      !currDef.type.some(type => type === (value as any)?.constructor)
     ) {
       invalidateDef.type = currDef.type;
     }

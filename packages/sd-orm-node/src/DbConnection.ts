@@ -43,20 +43,20 @@ export class DbConnection extends EventEmitter {
       }
     } as any);
 
-    conn.on("infoMessage", (info) => {
+    conn.on("infoMessage", info => {
       this._logger.log(info.message);
     });
 
-    conn.on("errorMessage", (error) => {
+    conn.on("errorMessage", error => {
       this._logger.error("errorMessage: " + error.message);
     });
 
-    conn.on("error", (error) => {
+    conn.on("error", error => {
       this._logger.error("error: " + error.message);
     });
 
     await new Promise<void>((resolve, reject) => {
-      conn.on("connect", (err) => {
+      conn.on("connect", err => {
         if (err) {
           reject(new Error(err.message));
           return;
@@ -108,7 +108,7 @@ export class DbConnection extends EventEmitter {
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
-      conn.beginTransaction((err) => {
+      conn.beginTransaction(err => {
         if (err) {
           reject(new Error(err.message));
           return;
@@ -129,7 +129,7 @@ export class DbConnection extends EventEmitter {
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
-      conn.commitTransaction((err) => {
+      conn.commitTransaction(err => {
         if (err) {
           reject(new Error(err.message));
           return;
@@ -150,7 +150,7 @@ export class DbConnection extends EventEmitter {
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
-      conn.rollbackTransaction((err) => {
+      conn.rollbackTransaction(err => {
         if (err) {
           reject(new Error(err.message));
           return;
@@ -177,7 +177,7 @@ export class DbConnection extends EventEmitter {
     await new Promise<void>((resolve, reject) => {
       let rejected = false;
       const queryRequest = new tedious
-        .Request(currQuery, (err) => {
+        .Request(currQuery, err => {
           if (err) {
             rejected = true;
             this._requests.remove(queryRequest);
@@ -214,7 +214,7 @@ export class DbConnection extends EventEmitter {
 
           results.push(result);
         })
-        .on("error", (err) => {
+        .on("error", err => {
           this._startTimeout();
 
           if (rejected) {

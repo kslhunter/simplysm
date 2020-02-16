@@ -97,14 +97,14 @@ export class QueryBuilder {
     // WHERE
 
     if (def.where) {
-      q += `WHERE ${def.where.map((item) => QueryBuilder.getQueryOfQueryValue(item)).join("")}`;
+      q += `WHERE ${def.where.map(item => QueryBuilder.getQueryOfQueryValue(item)).join("")}`;
       q += "\n";
     }
 
     // GROUP BY
 
     if (def.groupBy && def.groupBy.length > 0) {
-      q += `GROUP BY ${def.groupBy.map((item) => QueryBuilder.getQueryOfQueryValue(item)).join(", ")}`;
+      q += `GROUP BY ${def.groupBy.map(item => QueryBuilder.getQueryOfQueryValue(item)).join(", ")}`;
       q += "\n";
     }
 
@@ -115,14 +115,14 @@ export class QueryBuilder {
         throw new Error("'HAVING'을 사용하려면, 'GROUP BY'를 반드시 설정해야 합니다.");
       }
 
-      q += `HAVING ${def.having.map((item) => QueryBuilder.getQueryOfQueryValue(item)).join("")}`;
+      q += `HAVING ${def.having.map(item => QueryBuilder.getQueryOfQueryValue(item)).join("")}`;
       q += "\n";
     }
 
     // ORDER BY
 
     if (def.orderBy && def.orderBy.length > 0) {
-      q += `ORDER BY ${def.orderBy.map((item) => QueryBuilder.getQueryOfQueryValue(item[0]) + " " + item[1]).join(", ")}`;
+      q += `ORDER BY ${def.orderBy.map(item => QueryBuilder.getQueryOfQueryValue(item[0]) + " " + item[1]).join(", ")}`;
       q += "\n";
     }
 
@@ -150,7 +150,7 @@ export class QueryBuilder {
       q += "\n";
     }
 
-    q += `VALUES (${Object.values(def.record).map((val) => QueryBuilder.getQueryOfQueryValue(val)).join(", ")})`;
+    q += `VALUES (${Object.values(def.record).map(val => QueryBuilder.getQueryOfQueryValue(val)).join(", ")})`;
     q += "\n";
 
     return q.trim();
@@ -168,7 +168,7 @@ export class QueryBuilder {
     q += "\n";
 
     // FIELD = VALUE
-    q += Object.keys(def.record).map((key) => `  ${key} = ${QueryBuilder.getQueryOfQueryValue(def.record[key])}`).join(",\n");
+    q += Object.keys(def.record).map(key => `  ${key} = ${QueryBuilder.getQueryOfQueryValue(def.record[key])}`).join(",\n");
     q += "\n";
 
     // OUTPUT
@@ -196,7 +196,7 @@ export class QueryBuilder {
 
     // WHERE
     if (def.where) {
-      q += `WHERE ${def.where.map((item) => QueryBuilder.getQueryOfQueryValue(item)).join("")}`;
+      q += `WHERE ${def.where.map(item => QueryBuilder.getQueryOfQueryValue(item)).join("")}`;
       q += "\n";
     }
 
@@ -218,21 +218,21 @@ export class QueryBuilder {
     q += "\n";
 
     // WHERE
-    q += `ON ${def.where.map((item) => QueryBuilder.getQueryOfQueryValue(item)).join("")}`;
+    q += `ON ${def.where.map(item => QueryBuilder.getQueryOfQueryValue(item)).join("")}`;
     q += "\n";
 
     // UPDATE
     if (def.updateRecord && Object.keys(def.updateRecord).length > 0) {
       q += "WHEN MATCHED THEN\n";
       q += "  UPDATE SET\n";
-      q += Object.keys(def.updateRecord).map((key) => `    ${key} = ${QueryBuilder.getQueryOfQueryValue(def.updateRecord![key])}`).join(",\n");
+      q += Object.keys(def.updateRecord).map(key => `    ${key} = ${QueryBuilder.getQueryOfQueryValue(def.updateRecord![key])}`).join(",\n");
       q += "\n";
     }
 
     // INSERT
     q += "WHEN NOT MATCHED THEN\n";
     q += `  INSERT (${Object.keys(def.insertRecord).join(", ")})\n`;
-    q += `  VALUES (${Object.values(def.insertRecord).map((val) => QueryBuilder.getQueryOfQueryValue(val)).join(", ")})`;
+    q += `  VALUES (${Object.values(def.insertRecord).map(val => QueryBuilder.getQueryOfQueryValue(val)).join(", ")})`;
     q += "\n";
 
     if (def.output) {
@@ -281,7 +281,7 @@ export class QueryBuilder {
 
     // WHERE
     if (def.where) {
-      q += `WHERE ${def.where.map((item) => QueryBuilder.getQueryOfQueryValue(item)).join("")}`;
+      q += `WHERE ${def.where.map(item => QueryBuilder.getQueryOfQueryValue(item)).join("")}`;
       q += "\n";
     }
 
@@ -334,7 +334,7 @@ END`.trim();
 
     let query = "";
     query += `CREATE TABLE ${tableName} (\n`;
-    query += def.columns.map((colDef) => "  " + QueryBuilder._getQueryOfColDef(colDef)).join(",\n") + "\n";
+    query += def.columns.map(colDef => "  " + QueryBuilder._getQueryOfColDef(colDef)).join(",\n") + "\n";
     query += ")";
 
     return query.trim();
@@ -394,7 +394,7 @@ END`.trim();
     }
 
     const tableName = QueryUtil.getTableName(def.table);
-    return `ALTER TABLE ${tableName} ADD PRIMARY KEY (${def.primaryKeys.map((item) => `[${item.column}] ${item.orderBy}`).join(", ")})`;
+    return `ALTER TABLE ${tableName} ADD PRIMARY KEY (${def.primaryKeys.map(item => `[${item.column}] ${item.orderBy}`).join(", ")})`;
   }
 
   public static addForeignKey(def: IAddForeignKeyQueryDef): string {
@@ -404,8 +404,8 @@ END`.trim();
     const targetTableName = QueryUtil.getTableName(def.foreignKey.targetTable);
 
     let query = "";
-    query += `ALTER TABLE ${tableName} ADD CONSTRAINT ${fkName} FOREIGN KEY (${def.foreignKey.fkColumns.map((columnName) => `[${columnName}]`).join(", ")})\n`;
-    query += `  REFERENCES ${targetTableName} (${def.foreignKey.targetPkColumns.map((columnName) => `[${columnName}]`).join(", ")})\n`;
+    query += `ALTER TABLE ${tableName} ADD CONSTRAINT ${fkName} FOREIGN KEY (${def.foreignKey.fkColumns.map(columnName => `[${columnName}]`).join(", ")})\n`;
+    query += `  REFERENCES ${targetTableName} (${def.foreignKey.targetPkColumns.map(columnName => `[${columnName}]`).join(", ")})\n`;
     query += "  ON DELETE NO ACTION\n";
     query += "  ON UPDATE NO ACTION";
     return query.trim();
@@ -424,7 +424,7 @@ END`.trim();
     const tableNameChain = QueryUtil.getTableNameChain(def.table);
     const idxName = `[IDX_${tableNameChain.join("_")}_${def.index.name}]`;
 
-    return `CREATE INDEX ${idxName} ON ${tableName} (${def.index.columns.map((item) => `[${item.name}] ${item.orderBy}`).join(", ")})`;
+    return `CREATE INDEX ${idxName} ON ${tableName} (${def.index.columns.map(item => `[${item.name}] ${item.orderBy}`).join(", ")})`;
   }
 
   public static configIdentityInsert(def: IConfigIdentityInsertQueryDef): string {
@@ -471,7 +471,7 @@ END`.trim();
       return `0x${queryValue.toString("hex")}`;
     }
     else if (queryValue instanceof Array) {
-      return "(" + (queryValue as TQueryValueArray).map((item) => QueryBuilder.getQueryOfQueryValue(item)).join("") + ")";
+      return "(" + (queryValue as TQueryValueArray).map(item => QueryBuilder.getQueryOfQueryValue(item)).join("") + ")";
     }
     else if (queryValue["from"]) {
       let subQuery = `(\n`;
@@ -487,7 +487,7 @@ END`.trim();
   private static _getQueryOfJoinDef(def: IJoinQueryDef): string {
     let q = "";
 
-    if (Object.keys(def).every((key) => !def[key] || ["where", "from", "as"].includes(key))) {
+    if (Object.keys(def).every(key => !def[key] || ["where", "from", "as"].includes(key))) {
 
       if (def.from instanceof Array) {
         q += `LEFT OUTER JOIN (\n`;
@@ -510,7 +510,7 @@ END`.trim();
       }
 
       if (def.where) {
-        q += ` ON ${def.where.map((item) => QueryBuilder.getQueryOfQueryValue(item)).join("")}`;
+        q += ` ON ${def.where.map(item => QueryBuilder.getQueryOfQueryValue(item)).join("")}`;
       }
     }
     else {

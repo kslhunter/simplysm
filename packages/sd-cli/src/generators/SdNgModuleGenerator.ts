@@ -2,7 +2,7 @@ import {NotImplementError} from "@simplysm/sd-core-common";
 import * as path from "path";
 import * as ts from "typescript";
 import {JSDOM} from "jsdom";
-import {FsUtil} from "@simplysm/sd-core-node";
+import {FsUtil, Logger} from "@simplysm/sd-core-node";
 import {SdMetadataCollector} from "../metadata/SdMetadataCollector";
 import {SdMetadataBase, TSdMetadata} from "../metadata/commons";
 import {SdClassMetadata} from "../metadata/SdClassMetadata";
@@ -12,10 +12,12 @@ import {SdFunctionMetadata} from "../metadata/SdFunctionMetadata";
 import {SdCallMetadata} from "../metadata/SdCallMetadata";
 
 export class SdNgModuleGenerator {
-  private _defs: ISdNgModuleDef[] = [];
+  private readonly _defs: ISdNgModuleDef[] = [];
   public infos: ISdNgModuleInfo[] = [];
   private readonly _cacheObj: { [filePath: string]: string } = {};
   private readonly _modulesGenPath: string;
+
+  private readonly _logger = Logger.get(["simplysm", "sd-cli", "SdNgModuleGenerator"]);
 
   public constructor(private readonly _metadata: SdMetadataCollector,
                      private readonly _srcPath: string,
@@ -30,25 +32,38 @@ export class SdNgModuleGenerator {
     }
   }
 
-  public async generateAsync(program: ts.Program): Promise<boolean> {
-    this._configDefs();
+  public async generateAsync(program: ts.Program, changedMetadataFilePaths?: string[]): Promise<boolean> {
+    this._logger.debug("모듈 정의 목록 생성...");
+    this._configDefs(changedMetadataFilePaths);
+
+    this._logger.debug("새로 생성할 모듈 정보 목록 생성...");
     this._configInfos(program);
+
+    this._logger.debug("새로 생성할 모듈의 IMPORT 순환 오류 해결 (모듈 병합)...");
     this._mergeImportCircleInfos();
+
+    this._logger.debug("새로운 모듈 파일쓰기...");
     const changed1 = await this._writeFilesAsync();
+
+    this._logger.debug("안쓰는 모듈 삭제...");
     const changed2 = await this._removeDeletedModuleFileAsync();
+
+    this._logger.debug(`완료 ${changed1 || changed2 ? "(변경됨)" : "(변경되지 않음)"}`);
     return changed1 || changed2;
   }
 
-  private _configDefs(): void {
-    this._defs = [];
+  private _configDefs(changedMetadataFilePaths?: string[]): void {
+    const modules = changedMetadataFilePaths
+      ? this._metadata.modules.filter(item => changedMetadataFilePaths.map(item1 => path.resolve(item1)).includes(path.resolve(item.filePath)))
+      : this._metadata.modules;
 
-    for (const module of this._metadata.modules) {
+    for (const module of modules) {
       for (const moduleItemKey of Object.keys(module.items)) {
         const moduleItem = module.items[moduleItemKey];
 
         if (!(moduleItem instanceof SdClassMetadata)) continue;
 
-        const isNgModuleClass =  moduleItem.decorators?.some((item) =>
+        const isNgModuleClass = moduleItem.decorators?.some(item =>
           item.expression.module === "@angular/core" &&
           item.expression.name === "NgModule"
         );
@@ -66,7 +81,7 @@ export class SdNgModuleGenerator {
           const decorators = moduleItem.decorators;
           if (!decorators) continue;
 
-          const decorator = moduleItem.decorators.single((item) =>
+          const decorator = moduleItem.decorators.single(item =>
             item.expression.module === "@angular/core" &&
             item.expression.name === "NgModule"
           );
@@ -134,7 +149,7 @@ export class SdNgModuleGenerator {
           const decorators = moduleItem.decorators;
           if (!decorators) continue;
 
-          const decorator = moduleItem.decorators.single((item) =>
+          const decorator = moduleItem.decorators.single(item =>
             item.expression.module === "@angular/core" &&
             [
               "Component",
@@ -159,7 +174,20 @@ export class SdNgModuleGenerator {
         if (!def.moduleName) throw new NotImplementError();
         if (!def.filePath) throw new NotImplementError();
         if (def.exports.length > 0) {
-          this._defs.push(def);
+          const prevDef = this._defs.single(item =>
+            item.className === def.className &&
+            item.moduleName === def.moduleName &&
+            item.filePath === def.filePath &&
+            item.isLibrary === def.isLibrary &&
+            item.isForGenerate === def.isForGenerate
+          );
+          if (prevDef) {
+            prevDef.exports.push(...def.exports);
+            prevDef.exports = prevDef.exports.distinct(true);
+          }
+          else {
+            this._defs.push(def);
+          }
         }
       }
     }
@@ -229,15 +257,14 @@ export class SdNgModuleGenerator {
             if (importModuleNameOrFilePath === "tslib") continue;
 
             const importClassNames = importNode.parent.importClause?.namedBindings?.elements?.map((item: any) => item.name.text);
-            if (!importClassNames) throw new NotImplementError();
 
-            const needModuleDefs = this._defs.filter((moduleDef) =>
-              moduleDef.exports.some((ngModuleExport) =>
+            const needModuleDefs = this._defs.filter(moduleDef =>
+              moduleDef.exports.some(ngModuleExport =>
                 (
                   (ngModuleExport.module.filePath === importModuleNameOrFilePath) ||
                   (ngModuleExport.module.name === importModuleNameOrFilePath)
                 ) &&
-                importClassNames.includes(ngModuleExport.name)
+                importClassNames ? importClassNames.includes(ngModuleExport.name) : true
               )
             );
 
@@ -257,7 +284,7 @@ export class SdNgModuleGenerator {
 
         // 4
         const decorator = Array.from(export_.decorators)
-          .single((item) =>
+          .single(item =>
             item.expression.module === "@angular/core" &&
             item.expression.name === "Component"
           );
@@ -271,10 +298,10 @@ export class SdNgModuleGenerator {
             if (typeof templateText !== "string") throw new NotImplementError();
             const templateDOM = new JSDOM(templateText);
 
-            const needModuleDefs = this._defs.filter((moduleDef) =>
-              moduleDef.exports.some((exp) =>
+            const needModuleDefs = this._defs.filter(moduleDef =>
+              moduleDef.exports.some(exp =>
                 exp.decorators &&
-                exp.decorators.some((dec) =>
+                exp.decorators.some(dec =>
                   dec.expression.module === "@angular/core" &&
                   (
                     dec.expression.name === "Component" ||
@@ -325,8 +352,8 @@ export class SdNgModuleGenerator {
       const importFilePathObj: { [filePath: string]: string[] } = {};
       for (const info of this.infos) {
         importFilePathObj[info.filePath] = Object.keys(info.importObj)
-          .filter((key) => key.startsWith("."))
-          .map((key) => path.resolve(path.dirname(info.filePath), key) + ".ts");
+          .filter(key => key.startsWith("."))
+          .map(key => path.resolve(path.dirname(info.filePath), key) + ".ts");
       }
 
       const checkIsImportCircle = (filePath: string) => {
@@ -358,9 +385,9 @@ export class SdNgModuleGenerator {
 
     while (!doing()) {
       // 첫번째 모듈에 다른 모듈 모두 병합
-      const mergeInfos = this.infos.filter((item) => alreadyImports.includes(item.filePath));
+      const mergeInfos = this.infos.filter(item => alreadyImports.includes(item.filePath));
       let newInfo: ISdNgModuleInfo = mergeInfos[0];
-      for (const mergeInfo of mergeInfos.slice(1).orderByDesc((item) => item.className.length)) {
+      for (const mergeInfo of mergeInfos.slice(1).orderByDesc(item => item.className.length)) {
         if (Object.keys(newInfo.importObj).length < Object.keys(mergeInfo.importObj).length) {
           newInfo = mergeInfo;
         }
@@ -398,9 +425,9 @@ export class SdNgModuleGenerator {
       // 첫번째 모듈외 모든 모듈을 의존하고 있던 모든 다른 모듈에서, importObj/modules 를 새 모듈로 변경
       for (const info of this.infos) {
         const removeKeys = Object.keys(info.importObj)
-          .filter((key) => {
+          .filter(key => {
             const filePath = path.resolve(path.dirname(info.filePath), key) + ".ts";
-            return mergeInfos.some((item) => item.filePath === filePath);
+            return mergeInfos.some(item => item.filePath === filePath);
           });
         if (removeKeys.length > 0) {
           for (const key of removeKeys) {
@@ -437,7 +464,7 @@ export class SdNgModuleGenerator {
       if (info.declarations.length > 0) {
         // NgModule
         const importText = Object.keys(info.importObj)
-          .map((key) => `import {${info.importObj[key].distinct().join(", ")}} from "${key}";`);
+          .map(key => `import {${info.importObj[key].distinct().join(", ")}} from "${key}";`);
         const ngModuleContent = `
 ${importText.join("\n")}
 
@@ -472,7 +499,7 @@ export class ${info.className} {
     let changed = false;
 
     for (const filePath of Object.keys(this._cacheObj)) {
-      if (!this.infos.some((item) => item.filePath === filePath)) {
+      if (!this.infos.some(item => item.filePath === filePath)) {
         await FsUtil.removeAsync(filePath);
         delete this._cacheObj[filePath];
         changed = true;
@@ -523,7 +550,7 @@ export class ${info.className} {
   }
 
   private _hasDecorator(class_: SdClassMetadata, module: string, name: string): boolean {
-    return class_.decorators.some((item) =>
+    return class_.decorators.some(item =>
       item.expression.module === module &&
       item.expression.name === name
     );
@@ -531,7 +558,7 @@ export class ${info.className} {
 
   private _getNgModuleProviderClassMetadataList(providers: TSdMetadata): SdClassMetadata[] {
     return (providers instanceof SdArrayMetadata ? Array.from(providers) : [providers])
-      .mapMany((provider) => {
+      .mapMany(provider => {
         if (provider instanceof SdObjectMetadata) {
           const subProvider = provider.get("provide");
           if (!subProvider) throw new NotImplementError();

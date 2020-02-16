@@ -40,14 +40,14 @@ export class SdProjectConfig {
       // options 처리
       if (options.length > 0) {
         const pkgOpts = Object.keys(config.packages[packageName])
-          .filter((key) => key.startsWith("@") && options.some((opt) => opt === key.slice(1)));
+          .filter(key => key.startsWith("@") && options.some(opt => opt === key.slice(1)));
 
         for (const pkgOpt of pkgOpts) {
           config.packages[packageName] = ObjectUtil.merge(config.packages[packageName], config.packages[packageName][pkgOpt]);
         }
       }
 
-      for (const optKey of Object.keys(config.packages[packageName]).filter((item) => item.startsWith("@"))) {
+      for (const optKey of Object.keys(config.packages[packageName]).filter(item => item.startsWith("@"))) {
         delete config.packages[packageName][optKey];
       }
     }

@@ -27,7 +27,7 @@ export class SdSidebarContainerControl {
 
   public constructor(private readonly _cdr: ChangeDetectorRef,
                      private readonly _router: Router) {
-    this._router.events.subscribe((value) => {
+    this._router.events.subscribe(value => {
       if (value instanceof NavigationStart) {
         this.toggle = false;
         this._cdr.markForCheck();

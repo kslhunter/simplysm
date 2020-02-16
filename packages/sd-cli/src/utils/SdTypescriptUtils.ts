@@ -30,10 +30,10 @@ export class SdTypescriptUtils {
 
   public static getDiagnosticMessage(diagnostics: ts.Diagnostic[]): IDiagnosticMessage {
     const getMessages = (severity: string) => diagnostics
-      .filter((diagnostic) =>
+      .filter(diagnostic =>
         ts.DiagnosticCategory[diagnostic.category].toLowerCase() === severity
       )
-      .map((diagnostic) => {
+      .map(diagnostic => {
         const code = diagnostic.code;
         const messageText = ts.flattenDiagnosticMessageText(diagnostic.messageText, os.EOL);
 
@@ -59,12 +59,12 @@ export class SdTypescriptUtils {
       warnings: getMessages("warning"),
       errors: getMessages("error"),
       invalidFilePaths: diagnostics
-        .filter((diagnostic) =>
+        .filter(diagnostic =>
           ["warning", "error"].includes(
             ts.DiagnosticCategory[diagnostic.category].toLowerCase()
           )
         )
-        .map((item) => item.file?.fileName)
+        .map(item => item.file?.fileName)
         .filterExists()
     };
   }

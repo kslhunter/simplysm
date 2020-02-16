@@ -19,7 +19,7 @@ export class SdWebpackTimeFixPlugin implements webpack.Plugin {
       }
     });
 
-    compiler.hooks.done.tap("SdWebpackTimeFixPlugin", (stats) => {
+    compiler.hooks.done.tap("SdWebpackTimeFixPlugin", stats => {
       if (watching) {
         (stats["startTime"] as any) -= this._watchOffset;
       }

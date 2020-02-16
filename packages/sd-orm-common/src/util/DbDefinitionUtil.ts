@@ -50,7 +50,7 @@ export class DbDefinitionUtil {
 
   public static addIndexDef(tableType: Type<any>, def: IIndexDef): void {
     const tableDef = DbDefinitionUtil.getTableDef(tableType, false);
-    const prevIndexDef = tableDef.indexes.single((item) => item.name === def.name);
+    const prevIndexDef = tableDef.indexes.single(item => item.name === def.name);
     if (!prevIndexDef) {
       tableDef.indexes.push(def);
     }

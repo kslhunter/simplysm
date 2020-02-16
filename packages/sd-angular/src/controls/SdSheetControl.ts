@@ -27,7 +27,7 @@ import {SdSheetConfigModal} from "../modals/SdSheetConfigModal";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-dock-container>
-      <sd-dock>
+      <sd-dock *ngIf="configKey || pageLength > 0">
         <sd-anchor class="_cog-icon" (click)="onConfigButtonClick()"
                    *ngIf="configKey">
           <sd-icon icon="cog" fixedWidth></sd-icon>
@@ -555,8 +555,8 @@ export class SdSheetControl implements DoCheck, OnInit {
   public get maxDepth(): number | undefined {
     if (!this.getChildrenFn) return undefined;
     return this.getDisplayItemDefs()
-      .filter((item) => item.visible)
-      .max((item) => item.depth) ?? 0;
+      .filter(item => item.visible)
+      .max(item => item.depth) ?? 0;
   }
 
   public get fixedHeaderGroups(): { name?: string; widthPixel: number }[] {
@@ -568,19 +568,29 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public get fixedColumnControls(): SdSheetColumnControl[] {
-    return this.columnControls?.filter((item) => !!item.fixed) ?? [];
+    let fixedColumnControls = this.columnControls?.filter(item => !!item.fixed) ?? [];
+    if (this.configKey && this._config?.columnObj) {
+      fixedColumnControls = fixedColumnControls.filter(item => !this._config?.columnObj?.[item.configKey!]?.hidden);
+      fixedColumnControls = fixedColumnControls.orderBy(item => this._config?.columnObj?.[item.configKey!]?.displayOrder ?? 0);
+    }
+    return fixedColumnControls;
   }
 
   public get nonFixedColumnControls(): SdSheetColumnControl[] {
-    return this.columnControls?.filter((item) => !item.fixed) ?? [];
+    let nonFixedColumnControls = this.columnControls?.filter(item => !item.fixed) ?? [];
+    if (this.configKey && this._config?.columnObj) {
+      nonFixedColumnControls = nonFixedColumnControls.filter(item => !this._config?.columnObj?.[item.configKey!]?.hidden);
+      nonFixedColumnControls = nonFixedColumnControls.orderBy(item => this._config?.columnObj?.[item.configKey!]?.displayOrder ?? 0);
+    }
+    return nonFixedColumnControls;
   }
 
   public get hasHeaderGroup(): boolean {
-    return (this.columnControls?.filter((item) => !!item.group).length ?? 0) > 0;
+    return (this.columnControls?.filter(item => !!item.group).length ?? 0) > 0;
   }
 
   public get hasSummaryGroup(): boolean {
-    return (this.columnControls?.filter((item) => !!item.summaryTemplateRef).length ?? 0) > 0;
+    return (this.columnControls?.filter(item => !!item.summaryTemplateRef).length ?? 0) > 0;
   }
 
   public get displayItems(): any[] {
@@ -615,7 +625,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public getIsAllSelected(): boolean {
-    return this.getDisplayItemDefs().every((item) => !item.selectable || this.getIsSelectedItem(item.item));
+    return this.getDisplayItemDefs().every(item => !item.selectable || this.getIsSelectedItem(item.item));
   }
 
   public trackByFnForColumnControl = (index: number, item: SdSheetColumnControl) => item.guid;
@@ -641,7 +651,7 @@ export class SdSheetControl implements DoCheck, OnInit {
     this._zone.runOutsideAngular(() => {
       {
         const headEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._head")!;
-        headEl.addEventListener("resize", (event) => {
+        headEl.addEventListener("resize", event => {
           if (event.prevHeight !== event.newHeight) {
             const bodyEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._body")!;
             bodyEl.style.paddingTop = event.newHeight + "px";
@@ -649,7 +659,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         });
 
         const paneEl = this._el.findFirst("> sd-dock-container > sd-pane")!;
-        paneEl.addEventListener("scroll", (event) => {
+        paneEl.addEventListener("scroll", event => {
           headEl.style.top = paneEl.scrollTop + "px";
 
           const fixedCellGroupEls = paneEl.findAll("> ._sheet > ._content > ._row > ._fixed-cell-group") as HTMLElement[];
@@ -660,7 +670,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
         this._el.addEventListener("keydown", this.onKeydownAllChildOutside.bind(this), true);
 
-        this._el.addEventListener("focus", (event) => {
+        this._el.addEventListener("focus", event => {
           if (
             event.target &&
             (event.target instanceof HTMLElement) &&
@@ -710,7 +720,7 @@ export class SdSheetControl implements DoCheck, OnInit {
             const rowIndex = rowEls.indexOf(rowEl);
             if (rowIndex < 0) return;
 
-            const itemDef = this.getDisplayItemDefs().filter((item1) => item1.visible)[rowIndex];
+            const itemDef = this.getDisplayItemDefs().filter(item1 => item1.visible)[rowIndex];
             if (!itemDef) return;
 
             this._zone.run(() => {
@@ -731,7 +741,7 @@ export class SdSheetControl implements DoCheck, OnInit {
           }
         }, true);
 
-        this._el.addEventListener("blur", (event) => {
+        this._el.addEventListener("blur", event => {
           const focusIndicatorEl = paneEl.findFirst("> ._cell-focus-indicator")!;
           focusIndicatorEl.style.display = "none";
 
@@ -741,24 +751,24 @@ export class SdSheetControl implements DoCheck, OnInit {
       }
 
       if (this.autoHeight) {
-        this._el.addEventListener("mutation-child", (event) => {
+        this._el.addEventListener("mutation-child", event => {
           const rowEls = event.mutations
-            .mapMany((item) => Array.from(item.addedNodes))
+            .mapMany(item => Array.from(item.addedNodes))
             .ofType(HTMLElement)
-            .filter((addNode) => addNode.className.includes("_cell"))
-            .map((item) => item.findParent("._row")!)
+            .filter(addNode => addNode.className.includes("_cell"))
+            .map(item => item.findParent("._row")!)
             .distinct(true)
-            .filter((item) => !!item.findParent(this._el));
+            .filter(item => !!item.findParent(this._el));
 
           for (const rowEl of rowEls) {
             const cellEls = rowEl.findAll("> ._cell-group > ._cell");
 
             for (const cellEl of cellEls) {
               const cellContentEl = cellEl.findFirst("> ._cell-content")!;
-              cellContentEl.addEventListener("resize", (event1) => {
+              cellContentEl.addEventListener("resize", event1 => {
                 if (event1.prevHeight !== event1.newHeight) {
                   const maxCellContentHeight =
-                    cellEls.max((cellEl1) => cellEl1.findFirst("> ._cell-content")!.offsetHeight)!;
+                    cellEls.max(cellEl1 => cellEl1.findFirst("> ._cell-content")!.offsetHeight)!;
                   for (const cellEl1 of cellEls) {
                     cellEl1.style.height = (maxCellContentHeight + 1) + "px";
                   }
@@ -768,7 +778,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
             {
               const maxCellContentHeight =
-                cellEls.max((cellEl1) => cellEl1.findFirst("> ._cell-content")!.offsetHeight)!;
+                cellEls.max(cellEl1 => cellEl1.findFirst("> ._cell-content")!.offsetHeight)!;
               for (const cellEl1 of cellEls) {
                 cellEl1.style.height = (maxCellContentHeight + 1) + "px";
               }
@@ -814,7 +824,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         this.selectedItemsChange.emit(this.selectedItems);
       }
       else {
-        this.selectedItems = [...this.getDisplayItemDefs().filter((item) => item.selectable).map((item) => item.item)];
+        this.selectedItems = [...this.getDisplayItemDefs().filter(item => item.selectable).map(item => item.item)];
         this.selectedItemsChange.emit(this.selectedItems);
       }
     }
@@ -891,10 +901,18 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public async onConfigButtonClick(): Promise<void> {
-    const result = await this._modal.showAsync(SdSheetConfigModal, this);
+    const result = await this._modal.showAsync(SdSheetConfigModal, "시트 설정창", {
+      controls: this.columnControls!.toArray(),
+      configObj: this._config?.columnObj
+    }, {
+      useCloseByBackdrop: true
+    });
     if (!result) return;
 
-    // this._config = result;
+    this._config = this._config || {};
+    this._config.columnObj = result;
+    await this._systemConfig.set(`sd-sheet.${this.configKey}`, this._config);
+    this._cdr.markForCheck();
   }
 
   public onHeadCellBorderMousedown(event: MouseEvent, columnControl: SdSheetColumnControl): void {
@@ -903,7 +921,6 @@ export class SdSheetControl implements DoCheck, OnInit {
     const cellEl = (event.target as HTMLElement).findParent("._cell") as HTMLElement;
     const startX = event.clientX;
     const startWidth = cellEl.clientWidth;
-
 
     const doDrag = (e: MouseEvent) => {
       e.stopPropagation();
@@ -1223,11 +1240,13 @@ export class SdSheetControl implements DoCheck, OnInit {
 }
 
 export interface ISdSheetConfigVM {
-  columnObj?: {
-    [key: string]: {
-      widthPixel?: number;
-      displayOrder?: number;
-      hidden?: boolean;
-    };
-  };
+  columnObj?: { [key: string]: ISdSheetColumnConfigVM };
+}
+
+export interface ISdSheetColumnConfigVM {
+  fixed?: boolean;
+  header?: string;
+  widthPixel?: number;
+  displayOrder?: number;
+  hidden?: boolean;
 }

@@ -49,8 +49,8 @@ export class SdNgRoutingModuleGenerator {
         .replace(/\.ts$/, "");
 
       // NgModule
-      const ngModuleInfo = this._ngModuleGenerator.infos.single((item) => {
-        const key = Object.keys(item.importObj).single((key1) =>
+      const ngModuleInfo = this._ngModuleGenerator.infos.single(item => {
+        const key = Object.keys(item.importObj).single(key1 =>
           path.resolve(path.dirname(item.filePath), key1) === pageTsFilePath.replace(/\.ts$/, "")
         );
         if (!key) return false;
@@ -63,7 +63,7 @@ export class SdNgRoutingModuleGenerator {
       // Routing
       const childDirName = className[0].toLowerCase() +
         className.slice(1).replace(/Page$/, "")
-          .replace(/[A-Z]/, (item) => "-" + item.toLowerCase());
+          .replace(/[A-Z]/, item => "-" + item.toLowerCase());
       const childDirPath = path.resolve(path.dirname(pageTsFilePath), childDirName);
       if (FsUtil.exists(childDirPath) && await FsUtil.isDirectoryAsync(childDirPath)) {
         info.children = await this._getRouteChildrenAsync(pageTsFilePath, childDirPath);
@@ -147,7 +147,7 @@ export const routes = [
     let changed = false;
 
     for (const filePath of Object.keys(this._cacheObj)) {
-      if (!this.infos.some((item) => item.filePath === filePath)) {
+      if (!this.infos.some(item => item.filePath === filePath)) {
         await FsUtil.removeAsync(filePath);
         delete this._cacheObj[filePath];
         changed = true;
@@ -166,7 +166,7 @@ export const routes = [
       const childPath = path.resolve(pageChildDirPath, childName);
       if (await FsUtil.isDirectoryAsync(childPath)) {
         const fileName = childName[0].toUpperCase() +
-          childName.slice(1).replace(/-[a-z]/g, (item) => item[1].toUpperCase()) +
+          childName.slice(1).replace(/-[a-z]/g, item => item[1].toUpperCase()) +
           "Page.ts";
         if (FsUtil.exists(path.resolve(pageChildDirPath, fileName))) continue;
 
@@ -179,7 +179,7 @@ export const routes = [
         const className = path.basename(childName, path.extname(childName));
         const pathName = className[0].toLowerCase() +
           className.slice(1).replace(/Page$/, "")
-            .replace(/[A-Z]/g, (item) => "-" + item.toLowerCase());
+            .replace(/[A-Z]/g, item => "-" + item.toLowerCase());
 
         children.push({
           path: pathName,
@@ -194,7 +194,7 @@ export const routes = [
   }
 
   private _getChildrenArrText(children: ISdNgRoutingModuleRoute[]): string {
-    return children.map((child) => {
+    return children.map(child => {
       let result = `{path: "${child.path}", `;
       if (child.loadChildren) {
         result += `loadChildren: "${child.loadChildren}"`;

@@ -164,19 +164,6 @@ code {
   }
 }
 
-// GAP (PADDING, MARGIN) WITH DIRECTION
-@each $dir in (top, right, bottom, left) {
-  @each $gap in $arr-gap {
-    .sd-padding-#{$dir}-#{$gap} {
-      padding-#{$dir}: var(--gap-#{$gap}) !important;
-    }
-
-    .sd-margin-#{$dir}-#{$gap} {
-      margin-#{$dir}: var(--gap-#{$gap}) !important;
-    }
-  }
-}
-
 // GAP (PADDING, MARGIN) WITH [V & H]
 @each $gapV in $arr-gap {
   @each $gapH in $arr-gap {
@@ -226,6 +213,20 @@ code {
           margin: var(--gap-#{$gapT}) var(--gap-#{$gapR}) var(--gap-#{$gapB}) var(--gap-#{$gapL}) !important;
         }
       }
+    }
+  }
+}
+
+
+// GAP (PADDING, MARGIN) WITH DIRECTION
+@each $dir in (top, right, bottom, left) {
+  @each $gap in $arr-gap {
+    .sd-padding-#{$dir}-#{$gap} {
+      padding-#{$dir}: var(--gap-#{$gap}) !important;
+    }
+
+    .sd-margin-#{$dir}-#{$gap} {
+      margin-#{$dir}: var(--gap-#{$gap}) !important;
     }
   }
 }

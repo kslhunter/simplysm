@@ -22,7 +22,7 @@ export class FunctionUtil {
       }
     }
 
-    const params: string[] = matches[1].split(",").map((item) => item.trim());
+    const params: string[] = matches[1].split(",").map(item => item.trim());
     let returnContent: string = matches[4].trim();
     if (returnContent.endsWith(";")) {
       returnContent = returnContent.slice(0, -1);

@@ -54,10 +54,10 @@ export class SdTypescriptCompiler {
     const hasBin = !!npmConfig.bin;
 
     const entry = (tsConfig.files as string[]).toObject(
-      (item) => npmConfig.browser && !isNode
+      item => npmConfig.browser && !isNode
         ? (path.basename(item, path.extname(item)) + ".browser")
         : path.basename(item, path.extname(item)),
-      (item) => path.resolve(packagePath, item)
+      item => path.resolve(packagePath, item)
     );
 
     const srcPath = path.resolve(parsedTsConfig.options.rootDir!);
@@ -133,7 +133,7 @@ export class SdTypescriptCompiler {
           this._logger.warn(
             "컴파일 경고\n",
             info.warnings
-              .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
+              .map(item => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
               .join(os.EOL)
           );
         }
@@ -142,7 +142,7 @@ export class SdTypescriptCompiler {
           this._logger.error(
             "컴파일 오류\n",
             info.errors
-              .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
+              .map(item => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
               .join(os.EOL)
           );
         }
@@ -216,7 +216,7 @@ export class SdTypescriptCompiler {
                 const scssResult = SdAngularUtils.replaceScssToCss(tsFilePath, tsFileContent);
                 tsFileContent = scssResult.content;
 
-                scssDepsObj[tsFilePath] = scssResult.dependencies.map((item) => path.resolve(item));
+                scssDepsObj[tsFilePath] = scssResult.dependencies.map(item => path.resolve(item));
               }
               catch (err) {
                 this._logger.error("SCSS 컴파일 오류\n", err.formatted || err);
@@ -228,7 +228,7 @@ export class SdTypescriptCompiler {
               compilerOptions: this._compilerOptions
             });
 
-            const diagnostics = result.diagnostics?.filter((item) => !item.messageText.toString().includes("Emitted no files.")) ?? [];
+            const diagnostics = result.diagnostics?.filter(item => !item.messageText.toString().includes("Emitted no files.")) ?? [];
 
             if (diagnostics.length > 0) {
               const messages = SdTypescriptUtils.getDiagnosticMessage(diagnostics);
@@ -271,12 +271,12 @@ export class SdTypescriptCompiler {
 
     await FsWatcher.watchAsync(
       watchPaths,
-      async (changedInfos) => {
+      async changedInfos => {
         const newChangedInfos = this._framework?.startsWith("angular")
-          ? changedInfos.mapMany((changedInfo) => {
+          ? changedInfos.mapMany(changedInfo => {
             if (path.extname(changedInfo.filePath) === ".scss") {
-              const filePaths = Object.keys(scssDepsObj).filter((key) => scssDepsObj[key].includes(changedInfo.filePath));
-              return filePaths.map((filePath) => ({type: "change" as "change", filePath}));
+              const filePaths = Object.keys(scssDepsObj).filter(key => scssDepsObj[key].includes(changedInfo.filePath));
+              return filePaths.map(filePath => ({type: "change" as "change", filePath}));
             }
             return [changedInfo];
           }).distinct()
@@ -292,13 +292,13 @@ export class SdTypescriptCompiler {
 
         this._logger.log("컴파일이 완료되었습니다.");
       },
-      (err) => {
+      err => {
         this._logger.error("변경감지 작업중 오류 발생\n", err);
       }
     );
 
     const fileList = await FsUtil.globAsync(path.resolve(this._srcPath, "**", "*.ts"));
-    await buildAsync(fileList.map((item) => ({filePath: item, type: "add"})));
+    await buildAsync(fileList.map(item => ({filePath: item, type: "add"})));
 
     this._logger.log("컴파일이 완료되었습니다.");
   }

@@ -84,7 +84,7 @@ export class Queryable<D extends DbContext, T> {
 
   public static union<D extends DbContext, T>(qrs: Queryable<D, T>[], as?: string): Queryable<D, T> {
     const db = qrs[0]._db;
-    const cqrs = qrs.map((item) => new Queryable(db, item));
+    const cqrs = qrs.map(item => new Queryable(db, item));
 
     // Init entity
     const entity = {} as TEntity<T>;
@@ -98,7 +98,7 @@ export class Queryable<D extends DbContext, T> {
     }
 
     // Init defs.from
-    const from = cqrs.map((item) => item.getSelectDef());
+    const from = cqrs.map(item => item.getSelectDef());
 
     return new Queryable(db, undefined, as, entity, {from});
   }
@@ -142,7 +142,7 @@ export class Queryable<D extends DbContext, T> {
 
   public groupBy(fwd: (entity: TEntity<T>) => TEntityValue<TQueryValue>[]): Queryable<D, T> {
     const result = new Queryable(this._db, this);
-    result._def.groupBy = fwd(this._entity).map((item) => QueryUtil.getQueryValue(item));
+    result._def.groupBy = fwd(this._entity).map(item => QueryUtil.getQueryValue(item));
     return result;
   }
 
@@ -200,8 +200,8 @@ export class Queryable<D extends DbContext, T> {
       const as = asChainArr.join(".");
 
       // FK 정의 가져오기
-      const fkDef = tableDef.foreignKeys.single((item) => item.propertyKey === fkName);
-      const fktDef = tableDef.foreignKeyTargets.single((item) => item.propertyKey === fkName);
+      const fkDef = tableDef.foreignKeys.single(item => item.propertyKey === fkName);
+      const fktDef = tableDef.foreignKeyTargets.single(item => item.propertyKey === fkName);
       if (!fkDef && !fktDef) {
         throw new Error(`'${tableDef.name}.${fkName}'에 '@ForeignKey()'나 '@ForeignKeyTarget()'이 지정되지 않았습니다.`);
       }
@@ -211,7 +211,7 @@ export class Queryable<D extends DbContext, T> {
         // FK 대상 테이블의 정의 가져오기
         const fkTargetType = fkDef.targetTypeFwd();
         const fkTargetTableDef = DbDefinitionUtil.getTableDef(fkTargetType);
-        if (fkDef.columnPropertyKeys.length !== fkTargetTableDef.columns.filter((item) => item.primaryKey !== undefined).length) {
+        if (fkDef.columnPropertyKeys.length !== fkTargetTableDef.columns.filter(item => item.primaryKey !== undefined).length) {
           throw new Error(`'${tableDef.name}.${fkName}'의 FK 설정과 '${fkTargetTableDef.name}'의 PK 설정의 길이가 다릅니다.`);
         }
 
@@ -219,7 +219,7 @@ export class Queryable<D extends DbContext, T> {
         result = result.join(
           fkTargetType,
           as,
-          (q, en) => q.where((item) => {
+          (q, en) => q.where(item => {
             const whereQuery: TQueryValueOrSelectArray[] = [];
             for (let i = 0; i < fkDef.columnPropertyKeys.length; i++) {
               whereQuery.push(sorm.equal(item[fkTargetTableDef.columns[i].propertyKey], en[fkDef.columnPropertyKeys[i]]));
@@ -235,12 +235,12 @@ export class Queryable<D extends DbContext, T> {
       else if (fktDef) {
         const fktSourceType = fktDef.sourceTypeFwd();
         const fktSourceTableDef = DbDefinitionUtil.getTableDef(fktSourceType);
-        const fktSourceFkDef = fktSourceTableDef.foreignKeys.single((item) => item.propertyKey === fktDef.foreignKeyPropertyKey);
+        const fktSourceFkDef = fktSourceTableDef.foreignKeys.single(item => item.propertyKey === fktDef.foreignKeyPropertyKey);
         if (!fktSourceFkDef) {
           throw new Error(`'${fktSourceTableDef.name}.${fktDef.foreignKeyPropertyKey}'에 '@ForeignKey()'가 지정되지 않았습니다.`);
         }
 
-        if (fktSourceFkDef.columnPropertyKeys.length !== tableDef.columns.filter((item) => item.primaryKey !== undefined).length) {
+        if (fktSourceFkDef.columnPropertyKeys.length !== tableDef.columns.filter(item => item.primaryKey !== undefined).length) {
           throw new Error(`'${fktSourceTableDef.name}.${fktDef.foreignKeyPropertyKey}'의 FK 설정과 '${tableDef.name}'의 PK 설정의 길이가 다릅니다.`);
         }
 
@@ -248,7 +248,7 @@ export class Queryable<D extends DbContext, T> {
         result = result.join(
           fktSourceType,
           as,
-          (q, en) => q.where((item) => {
+          (q, en) => q.where(item => {
             const whereQuery: TQueryValueOrSelectArray[] = [];
             for (let i = 0; i < fktSourceFkDef.columnPropertyKeys.length; i++) {
               whereQuery.push(sorm.equal(item[fktSourceFkDef.columnPropertyKeys[i]], en[tableDef.columns[i].propertyKey]));
@@ -268,12 +268,12 @@ export class Queryable<D extends DbContext, T> {
     let result: Queryable<D, T> = new Queryable(this._db, this);
 
     const splitSearchText = searchText.trim().split(" ")
-      .map((item) => item.trim())
-      .filter((item) => !!item);
+      .map(item => item.trim())
+      .filter(item => !!item);
 
     // WHERE
     result = result
-      .where((item) => {
+      .where(item => {
         const orArr = [];
 
         const fields = fwd(item);
@@ -287,7 +287,7 @@ export class Queryable<D extends DbContext, T> {
       });
 
     // SELECT
-    result = result.select((item) => {
+    result = result.select(item => {
       const fields = fwd(item) as any[];
 
       // 같은거 포함(999)
@@ -362,7 +362,7 @@ export class Queryable<D extends DbContext, T> {
         result.select[`[${key}]`] = QueryUtil.getQueryValue(value);
       }
       else if (value instanceof Array) {
-        if (value.some((item) => QueryUtil.canGetQueryValue(item))) {
+        if (value.some(item => QueryUtil.canGetQueryValue(item))) {
           throw new Error("SELECT 에 입력할 수 없는 정보가 입력되었습니다. (sorm.equal 등은 sorm.is 로 wrapping 해 주어야 사용할 수 있습니다.)");
         }
         else {
@@ -395,7 +395,7 @@ export class Queryable<D extends DbContext, T> {
       throw new Error("'HAVING'을 사용하려면, 'GROUP BY'를 반드시 설정해야 합니다.");
     }
 
-    if (this._def.limit && this._def.join && this._def.join.some((item) => !item.isSingle)) {
+    if (this._def.limit && this._def.join && this._def.join.some(item => !item.isSingle)) {
       throw new Error("다수의 'RECORD'를 'JOIN'하는 쿼리를 사용한 이후에는 'LIMIT'을 사용할 수 없습니다. 'LIMIT'을 먼저 사용하고, 'WRAP'한 이후에 'JOIN' 하시기 바랍니다.");
     }
 
@@ -692,8 +692,8 @@ export class Queryable<D extends DbContext, T> {
       throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
     }
 
-    const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
-    const hasAutoIncreaseColumnValue = Object.keys(record).some((item) => aiColNames.includes(item));
+    const aiColNames = this._tableDef.columns.filter(item => item.autoIncrement).map(item => item.name);
+    const hasAutoIncreaseColumnValue = Object.keys(record).some(item => aiColNames.includes(item));
 
     const queryDef = this.getInsertDef(record);
     const parseOption = this._getParseOption();
@@ -744,8 +744,8 @@ export class Queryable<D extends DbContext, T> {
       throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
     }
 
-    const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
-    const hasAutoIncreaseColumnValue = Object.keys(record).some((item) => aiColNames.includes(item));
+    const aiColNames = this._tableDef.columns.filter(item => item.autoIncrement).map(item => item.name);
+    const hasAutoIncreaseColumnValue = Object.keys(record).some(item => aiColNames.includes(item));
 
     const queryDef = this.getInsertDef(record);
     const parseOption = this._getParseOption();

@@ -2,7 +2,7 @@ import * as SparkMD5 from "spark-md5";
 
 export class FileUtil {
   public static async getMd5Async(file: File | Blob): Promise<string> {
-    return await new Promise<string>((resolve) => {
+    return await new Promise<string>(resolve => {
       const chunkSize = 2097152;
       const chunks = Math.ceil(file.size / chunkSize);
 

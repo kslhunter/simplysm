@@ -14,7 +14,7 @@ export class SdClassMetadata extends SdMetadataBase {
     if (!isMetadataArrayExpression(real.metadata)) throw new NotImplementError();
     const arr = this.pkg.getSdMetadataArray(real.module, real.metadata);
 
-    return arr.map((item) => {
+    return arr.map(item => {
       if (!(item instanceof SdCallMetadata)) throw new NotImplementError();
       return item;
     });
@@ -33,7 +33,7 @@ export class SdClassMetadata extends SdMetadataBase {
 
   public get name(): string | undefined {
     return Object.keys(this.module.metadata.metadata)
-      .single((key) => this.module.metadata.metadata[key] === this.metadata);
+      .single(key => this.module.metadata.metadata[key] === this.metadata);
   }
 
   public constructor(public pkg: SdMetadataCollector,

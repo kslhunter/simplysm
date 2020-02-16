@@ -84,12 +84,12 @@ HTMLElement.prototype.prependChild = function <T extends HTMLElement>(newChild: 
 
 HTMLElement.prototype.findAll = function (selector: string): HTMLElement[] {
   return Array.from(
-    this.querySelectorAll(selector.split(",").map((item) => `:scope ${item}`).join(","))
+    this.querySelectorAll(selector.split(",").map(item => `:scope ${item}`).join(","))
   ).ofType(HTMLElement);
 };
 
 HTMLElement.prototype.findFirst = function (selector: string): HTMLElement | undefined {
-  return (this.querySelector(selector.split(",").map((item) => `:scope ${item}`).join(",")) as HTMLElement | null) || undefined;
+  return (this.querySelector(selector.split(",").map(item => `:scope ${item}`).join(",")) as HTMLElement | null) || undefined;
 };
 
 const focusableSelectorList = [
@@ -112,7 +112,7 @@ HTMLElement.prototype.isFocusable = function (): boolean {
 
 HTMLElement.prototype.findFocusableAll = function (): HTMLElement[] {
   return Array.from(
-    this.querySelectorAll(focusableSelectorList.map((item) => `:scope ${item}`).join(","))
+    this.querySelectorAll(focusableSelectorList.map(item => `:scope ${item}`).join(","))
   ).ofType(HTMLElement);
 };
 
@@ -177,7 +177,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
     }
 
 
-    const observer = new window.MutationObserver((mutations) => {
+    const observer = new window.MutationObserver(mutations => {
       const event = new CustomEvent("mutation") as any;
       event.mutations = mutations;
       event.relatedTarget = this;
@@ -209,7 +209,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
     }
 
 
-    const observer = new window.MutationObserver((mutations) => {
+    const observer = new window.MutationObserver(mutations => {
       const event = new CustomEvent("mutation-child") as any;
       event.mutations = mutations;
       event.relatedTarget = this;

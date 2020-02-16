@@ -19,7 +19,7 @@ export class Wait {
   }
 
   public static async time(millisecond: number): Promise<void> {
-    await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       setTimeout(
         () => {
           resolve();

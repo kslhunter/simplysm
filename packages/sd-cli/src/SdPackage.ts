@@ -18,7 +18,7 @@ export class SdPackage {
     const config = projectConfig.packages[npmConfig.name];
 
     const tsConfigsFilePaths = await FsUtil.globAsync(path.resolve(packagePath, "tsconfig!(*.build).json"));
-    const tsConfigs = await tsConfigsFilePaths.mapAsync(async (tsConfigsFilePath) => await SdTsConfig.loadAsync(tsConfigsFilePath));
+    const tsConfigs = await tsConfigsFilePaths.mapAsync(async tsConfigsFilePath => await SdTsConfig.loadAsync(tsConfigsFilePath));
 
     const packageKey = path.basename(packagePath);
 

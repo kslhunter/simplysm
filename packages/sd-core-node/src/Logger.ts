@@ -1,6 +1,7 @@
 import {DateTime, DeepPartial, MathUtil, ObjectUtil} from "@simplysm/sd-core-common";
 import * as path from "path";
 import {FsUtil} from "./FsUtil";
+import CpuUsage = NodeJS.CpuUsage;
 
 export enum LoggerStyle {
   clear = "\x1b[0m",
@@ -26,6 +27,7 @@ export enum LoggerStyle {
 }
 
 export enum LoggerSeverity {
+  debug = "debug",
   log = "log",
   info = "info",
   warn = "warn",
@@ -38,6 +40,7 @@ export interface ILoggerConfig {
     style: LoggerStyle;
     level: LoggerSeverity;
     styles: {
+      debug: LoggerStyle;
       log: LoggerStyle;
       info: LoggerStyle;
       warn: LoggerStyle;
@@ -87,7 +90,24 @@ export class Logger {
 
   public static history: ILoggerHistory[] = [];
 
+
   private constructor(private readonly _group: string[]) {
+  }
+
+  private _prevDebugCpuUsage?: CpuUsage;
+
+  public debug(...args: any[]): void {
+    if (this._prevDebugCpuUsage) {
+      const usage = process.cpuUsage(this._prevDebugCpuUsage);
+      this._write(LoggerSeverity.debug, [
+        "[" + Math.floor((usage.user + usage.system) / 1000) + "ms]",
+        ...args
+      ]);
+    }
+    else {
+      this._write(LoggerSeverity.debug, args);
+    }
+    this._prevDebugCpuUsage = process.cpuUsage();
   }
 
   public log(...args: any[]): void {
@@ -119,7 +139,7 @@ export class Logger {
         LoggerStyle.fgGray + now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " " +
         (this._group.length > 0 ? config.console.style + "[" + this._group.join(".") + "] " : "") +
         config.console.styles[severity] + severity.toUpperCase().padStart(5, " "),
-        ...logs.map((log) => (log instanceof Error && log.stack) ? log.stack : log),
+        ...logs.map(log => (log instanceof Error && log.stack) ? log.stack : log),
         LoggerStyle.clear
       );
     }
@@ -151,7 +171,7 @@ export class Logger {
 
       const fileNames = FsUtil.readdir(outPath);
       const lastFileName = fileNames
-        .filter((fileName) => fileName.endsWith(".log"))
+        .filter(fileName => fileName.endsWith(".log"))
         .orderBy()
         .last();
 
@@ -196,6 +216,7 @@ export class Logger {
         style: LoggerStyle[Object.keys(LoggerStyle)[this._randomForStyle]],
         level: LoggerSeverity.log,
         styles: {
+          debug: LoggerStyle.fgGray,
           log: LoggerStyle.clear,
           info: LoggerStyle.fgCyan,
           warn: LoggerStyle.fgYellow,

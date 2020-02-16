@@ -9,10 +9,19 @@ import {SdLocalStorageProvider} from "./providers/SdLocalStorageProvider";
 import {SdNavigateWindowProvider} from "./providers/SdNavigateWindowProvider";
 import {SdSystemConfigProvider} from "./providers/SdSystemConfigProvider";
 import {SdModalProvider} from "./providers/SdModalProvider";
+import {SdSystemLogProvider} from "./providers/SdSystemLogProvider";
+import {SdDomValidatorProvider} from "./providers/SdDomValidatorProvider";
+import {SdFileDialogProvider} from "./providers/SdFileDialogProvider";
 
 @NgModule({
   imports: [
     CommonModule
+  ],
+  providers: [
+    SdModalProvider,
+    SdDomValidatorProvider,
+    SdFileDialogProvider,
+    SdNavigateWindowProvider
   ]
 })
 export class SdAngularModule {
@@ -28,9 +37,8 @@ export class SdAngularModule {
       providers: [
         SdBusyContainerProvider,
         SdLocalStorageProvider,
-        SdModalProvider,
-        SdNavigateWindowProvider,
         SdSystemConfigProvider,
+        SdSystemLogProvider,
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true},
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdMutationEventPlugin, multi: true},
         {provide: ErrorHandler, useClass: SdAngularGlobalErrorHandler}

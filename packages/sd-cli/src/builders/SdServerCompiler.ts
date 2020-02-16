@@ -32,8 +32,8 @@ export class SdServerCompiler extends EventEmitter {
     }
 
     const entry = (tsConfig.files as string[]).toObject(
-      (item) => path.basename(item, path.extname(item)),
-      (item) => path.resolve(packagePath, item)
+      item => path.basename(item, path.extname(item)),
+      item => path.resolve(packagePath, item)
     );
 
     const distPath = parsedTsConfig.options.outDir
@@ -91,7 +91,7 @@ export class SdServerCompiler extends EventEmitter {
           this._logger.warn(
             "컴파일 경고\n",
             info.warnings
-              .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
+              .map(item => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
               .join(os.EOL)
           );
         }
@@ -100,7 +100,7 @@ export class SdServerCompiler extends EventEmitter {
           this._logger.error(
             "컴파일 오류\n",
             info.errors
-              .map((item) => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
+              .map(item => item.startsWith("(undefined)") ? item.split("\n").slice(1).join("\n") : item)
               .join(os.EOL)
           );
         }
