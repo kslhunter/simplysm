@@ -132,7 +132,7 @@ export class SdNgModuleGenerator {
           def.moduleName = moduleItem.module.name;
 
           if (def.isLibrary) {
-            def.filePath = moduleItem.module.filePath
+            def.filePath = path.resolve(moduleItem.module.filePath)
               .replace(/\.metadata\.json$/, ".d.ts");
           }
           else {
@@ -257,26 +257,27 @@ export class SdNgModuleGenerator {
             if (importModuleNameOrFilePath === "tslib") continue;
 
             const importClassNames = importNode.parent.importClause?.namedBindings?.elements?.map((item: any) => item.name.text);
+            if (importClassNames) {
+              const needModuleDefs = this._defs.filter(moduleDef =>
+                moduleDef.exports.some(ngModuleExport =>
+                  (
+                    (ngModuleExport.module.filePath === importModuleNameOrFilePath) ||
+                    (ngModuleExport.module.name === importModuleNameOrFilePath)
+                  ) &&
+                  importClassNames.includes(ngModuleExport.name)
+                )
+              );
 
-            const needModuleDefs = this._defs.filter(moduleDef =>
-              moduleDef.exports.some(ngModuleExport =>
-                (
-                  (ngModuleExport.module.filePath === importModuleNameOrFilePath) ||
-                  (ngModuleExport.module.name === importModuleNameOrFilePath)
-                ) &&
-                importClassNames ? importClassNames.includes(ngModuleExport.name) : true
-              )
-            );
+              for (const needModuleDef of needModuleDefs) {
+                const importInfo = this._getNgModuleImportInfo(def, needModuleDef);
 
-            for (const needModuleDef of needModuleDefs) {
-              const importInfo = this._getNgModuleImportInfo(def, needModuleDef);
+                info.modules.push(importInfo.targetName);
 
-              info.modules.push(importInfo.targetName);
-
-              const requirePath = importInfo.requirePath;
-              info.importObj[requirePath] = info.importObj[requirePath] ?? [];
-              if (!info.importObj[requirePath].includes(importInfo.targetName)) {
-                info.importObj[requirePath].push(importInfo.targetName);
+                const requirePath = importInfo.requirePath;
+                info.importObj[requirePath] = info.importObj[requirePath] ?? [];
+                if (!info.importObj[requirePath].includes(importInfo.targetName)) {
+                  info.importObj[requirePath].push(importInfo.targetName);
+                }
               }
             }
           }
@@ -384,6 +385,8 @@ export class SdNgModuleGenerator {
     };
 
     while (!doing()) {
+      this._logger.debug("순환 모듈 병합", alreadyImports.join(" => ") + " => " + alreadyImports[0]);
+
       // 첫번째 모듈에 다른 모듈 모두 병합
       const mergeInfos = this.infos.filter(item => alreadyImports.includes(item.filePath));
       let newInfo: ISdNgModuleInfo = mergeInfos[0];
@@ -438,6 +441,7 @@ export class SdNgModuleGenerator {
           }
 
           let newKey = path.relative(path.dirname(info.filePath), newInfo.filePath)
+            .replace(/\\/g, "/")
             .replace(/\.ts$/, "");
           newKey = newKey.startsWith(".") ? newKey : "./" + newKey;
 

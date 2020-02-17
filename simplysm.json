@@ -7,49 +7,6 @@
       "polyfills": [
         "@simplysm/sd-core-browser"
       ]
-    },
-    "@simplysm/sd-cli": {
-      "type": "library",
-      "publish": "npm"
-    },
-    "@simplysm/sd-core-browser": {
-      "type": "library",
-      "publish": "npm",
-      "polyfills": [
-        "element-qsa-scope",
-        "events-polyfill"
-      ]
-    },
-    "@simplysm/sd-core-common": {
-      "type": "library",
-      "publish": "npm",
-      "polyfills": [
-        "core-js"
-      ]
-    },
-    "@simplysm/sd-core-node": {
-      "type": "library",
-      "publish": "npm"
-    },
-    "@simplysm/sd-orm-common": {
-      "type": "library",
-      "publish": "npm"
-    },
-    "@simplysm/sd-orm-node": {
-      "type": "library",
-      "publish": "npm"
-    },
-    "@simplysm/sd-service-client-browser": {
-      "type": "library",
-      "publish": "npm"
-    },
-    "@simplysm/sd-service-common": {
-      "type": "library",
-      "publish": "npm"
-    },
-    "@simplysm/sd-service-server": {
-      "type": "library",
-      "publish": "npm"
     }
   }
 }

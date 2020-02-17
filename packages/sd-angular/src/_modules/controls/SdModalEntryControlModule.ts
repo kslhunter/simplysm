@@ -1,5 +1,5 @@
 import {NgModule} from "@angular/core";
-import {SdMarkdownEditorControl} from "../../controls/SdMarkdownEditorControl";
+import {SdModalEntryControl} from "../../controls/SdModalEntryControl";
 import {CommonModule} from "@angular/common";
 import {SdDockControlModule} from "./SdDockControlModule";
 import {SdIconControlModule} from "./SdIconControlModule";
@@ -13,12 +13,14 @@ import {SdPaneControlModule} from "./SdPaneControlModule";
     SdPaneControlModule
   ],
   declarations: [
-    SdMarkdownEditorControl
+    SdModalEntryControl
   ],
   exports: [
-    SdMarkdownEditorControl
+    SdModalEntryControl
   ],
-  entryComponents: []
+  entryComponents: [
+    SdModalEntryControl
+  ]
 })
-export class SdMarkdownEditorControlModule {
+export class SdModalEntryControlModule {
 }

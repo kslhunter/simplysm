@@ -243,9 +243,9 @@ export class SdTypescriptChecker {
               //--------------------------------------------
               // INDEX 파일 생성
               //--------------------------------------------
-              this._logger.debug("INDEX 파일 생성...");
 
               if (this._indexTsFileGenerator) {
+                this._logger.debug("INDEX 파일 생성...");
                 await this._indexTsFileGenerator.generateAsync();
               }
 
@@ -352,6 +352,7 @@ export class SdTypescriptChecker {
       //--------------------------------------------
       // 타입체크
       //--------------------------------------------
+      this._logger.debug("타입체크...");
 
       let diagnostics: ts.Diagnostic[] = [];
       if (parsedTsConfig.options.declaration) {
@@ -377,6 +378,7 @@ export class SdTypescriptChecker {
       //--------------------------------------------
       // LINT 수행
       //--------------------------------------------
+      this._logger.debug("LINT 수행...");
 
       const sourceFiles = this._program.getSourceFiles();
       const sourceFilePaths = sourceFiles
@@ -394,6 +396,7 @@ export class SdTypescriptChecker {
       //--------------------------------------------
       // 동일 패키지의 index.ts 를 import 한 부분 체크 메시지 구성
       //--------------------------------------------
+      this._logger.debug("내부 import 체크...");
 
       const watchFileInfos = sourceFiles.map(item =>
         this._getWatchFileInfo({
@@ -421,6 +424,8 @@ export class SdTypescriptChecker {
       //--------------------------------------------
 
       if (this._isAngular) {
+        this._logger.debug("ANGULAR 모듈 등 생성 준비...");
+
         for (const watchFileInfo of watchFileInfos) {
           if (watchFileInfo.isDeleted || !watchFileInfo.isTypescriptFile) {
             this._metadataCollector!.unregister(watchFileInfo.metadataFilePath);
@@ -441,8 +446,12 @@ export class SdTypescriptChecker {
           }
         }
 
+        this._logger.debug("ANGULAR 모듈 생성...");
         const changed1 = await this._ngModuleGenerator!.generateAsync(this._program);
+
+        this._logger.debug("ANGULAR 라우팅 모듈 생성...");
         const changed2 = await this._ngRoutingModuleGenerator!.generateAsync();
+
         changed = changed || changed1 || changed2;
       }
 
@@ -451,6 +460,7 @@ export class SdTypescriptChecker {
       //--------------------------------------------
 
       if (this._indexTsFileGenerator) {
+        this._logger.debug("INDEX 파일 생성...");
         const changed1 = await this._indexTsFileGenerator.generateAsync();
         changed = changed || changed1;
       }
@@ -458,6 +468,7 @@ export class SdTypescriptChecker {
       //--------------------------------------------
       // 삭제된 소스의 d.ts 파일 삭제
       //--------------------------------------------
+      this._logger.debug("삭제된 소스의 d.ts 파일 삭제...");
 
       const deletedItems = watchFileInfos.filter(watchFileInfo => watchFileInfo.isPackageFile && watchFileInfo.isDeleted);
       for (const deletedItem of deletedItems) {
