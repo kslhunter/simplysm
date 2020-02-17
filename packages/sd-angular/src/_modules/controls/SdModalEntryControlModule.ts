@@ -3,9 +3,9 @@ import {SdModalEntryControl} from "../../controls/SdModalEntryControl";
 import {CommonModule} from "@angular/common";
 import {SdIconControlModule} from "./SdIconControlModule";
 import {SdPaneControlModule} from "./SdPaneControlModule";
+import {SdDockContainerControl} from "../../controls/SdDockContainerControl";
 import {SdDockControl} from "../../controls/SdDockControl";
 import {SdAngularModule} from "../../SdAngularModule";
-import {SdDockContainerControl} from "../../controls/SdDockContainerControl";
 
 @NgModule({
   imports: [
@@ -16,13 +16,13 @@ import {SdDockContainerControl} from "../../controls/SdDockContainerControl";
   ],
   declarations: [
     SdModalEntryControl,
-    SdDockControl,
-    SdDockContainerControl
+    SdDockContainerControl,
+    SdDockControl
   ],
   exports: [
     SdModalEntryControl,
-    SdDockControl,
-    SdDockContainerControl
+    SdDockContainerControl,
+    SdDockControl
   ],
   entryComponents: [
     SdModalEntryControl
