@@ -26,6 +26,12 @@ export class SdServiceServerConnection extends EventEmitter {
         this.emit("error", err);
       }
     });
+
+    this._conn.on("close", () => {
+      this._splitRequestMap.clear();
+      this._uploadRequestMap.clear();
+      this.emit("close");
+    });
   }
 
   private async _onMessageAsync(msg: string): Promise<void> {
@@ -124,6 +130,7 @@ export class SdServiceServerConnection extends EventEmitter {
         type: "request",
         command: "upload",
         id: rawReq.id,
+        url: rawReq.url,
         params: []
       };
       this.emit("request", req);

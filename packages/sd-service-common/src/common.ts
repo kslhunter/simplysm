@@ -1,6 +1,7 @@
 export interface ISdServiceRequest {
   type: "request";
   id: number;
+  url: string;
   command: string;
   params: any[];
 }
@@ -8,6 +9,7 @@ export interface ISdServiceRequest {
 export interface ISdServiceSplitRawRequest {
   type: "split";
   id: number;
+  url: string;
   index: number;
   length: number;
   data: string;
@@ -16,6 +18,7 @@ export interface ISdServiceSplitRawRequest {
 export interface ISdServiceUploadRawRequest {
   type: "upload";
   id: number;
+  url: string;
   filePath: string;
   offset: number;
   length: number;

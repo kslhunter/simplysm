@@ -105,6 +105,7 @@ export class SdServiceClient {
       const request: ISdServiceRequest = {
         type: "request",
         id: requestId,
+        url: `${location.protocol}//${location.host}${location.pathname}`,
         command,
         params
       };
@@ -152,6 +153,7 @@ export class SdServiceClient {
           const realReq: ISdServiceSplitRawRequest = {
             type: "split",
             id: requestId,
+            url: `${location.protocol}//${location.host}${location.pathname}`,
             index: i,
             data: requestJson.slice(cursor, Math.min(cursor + splitOptions.splitLength!, requestJson.length)),
             length: Math.ceil(requestJson.length / splitOptions.splitLength!)
@@ -266,6 +268,7 @@ export class SdServiceClient {
             const realReq: ISdServiceUploadRawRequest = {
               type: "upload",
               id: requestId,
+              url: `${location.protocol}//${location.host}${location.pathname}`,
               filePath: serverFilePath,
               buffer: Buffer.from(arrBuff),
               length: file.size,
@@ -293,6 +296,7 @@ export class SdServiceClient {
             const realReq: ISdServiceUploadRawRequest = {
               type: "upload",
               id: requestId,
+              url: `${location.protocol}//${location.host}${location.pathname}`,
               filePath: serverFilePath,
               buffer: Buffer.from(arrBuff),
               length: file.size,

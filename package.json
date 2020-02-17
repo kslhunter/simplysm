@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "3.1.215",
+  "version": "3.1.217-1",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -12,8 +12,8 @@
     "test"
   ],
   "scripts": {
-    "watch": "yarn _sd-cli_ build --watch --debug",
-    "build": "yarn _sd-cli_ build --debug",
+    "watch": "yarn _sd-cli_ build --watch",
+    "build": "yarn _sd-cli_ build",
     "test": "yarn _sd-cli_ test",
     "publish": "yarn _sd-cli_ publish",
     "build+publish": "yarn _sd-cli_ publish --build",

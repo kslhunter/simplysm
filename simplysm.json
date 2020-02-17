@@ -46,6 +46,10 @@
       "type": "library",
       "publish": "npm"
     },
+    "@simplysm/sd-orm-service": {
+      "type": "library",
+      "publish": "npm"
+    },
     "@simplysm/sd-service-client-browser": {
       "type": "library",
       "publish": "npm"
