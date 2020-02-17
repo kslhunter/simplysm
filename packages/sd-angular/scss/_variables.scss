@@ -127,7 +127,8 @@
   --sd-topbar-height: 36px;
 
   // Z-INDEX
-  --z-index-busy: 9999;
+  --z-index-toast: 9999;
+  --z-index-busy: 9998;
   --z-index-dropdown: 5000;
   --z-index-modal: 4000;
   --z-index-sidebar: 3000;

@@ -10,6 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-browser/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-node/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-client-browser/dist" />

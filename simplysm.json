@@ -31,6 +31,13 @@
       "type": "library",
       "publish": "npm"
     },
+    "@simplysm/sd-excel": {
+      "type": "library",
+      "publish": "npm",
+      "polyfills": [
+        "@simplysm/sd-core-common"
+      ]
+    },
     "@simplysm/sd-orm-common": {
       "type": "library",
       "publish": "npm"
@@ -48,6 +55,10 @@
       "publish": "npm"
     },
     "@simplysm/sd-service-server": {
+      "type": "library",
+      "publish": "npm"
+    },
+    "@simplysm/sd-smtp-node": {
       "type": "library",
       "publish": "npm"
     }

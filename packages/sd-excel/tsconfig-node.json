@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "es2018",
+    "lib": [
+      "es2018"
+    ],
+    "declaration": false
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

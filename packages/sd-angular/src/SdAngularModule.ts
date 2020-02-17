@@ -12,6 +12,8 @@ import {SdModalProvider} from "./providers/SdModalProvider";
 import {SdSystemLogProvider} from "./providers/SdSystemLogProvider";
 import {SdDomValidatorProvider} from "./providers/SdDomValidatorProvider";
 import {SdFileDialogProvider} from "./providers/SdFileDialogProvider";
+import {SdPrintProvider} from "./providers/SdPrintProvider";
+import {SdToastProvider} from "./providers/SdToastProvider";
 
 @NgModule({
   imports: [
@@ -19,6 +21,7 @@ import {SdFileDialogProvider} from "./providers/SdFileDialogProvider";
   ],
   providers: [
     SdModalProvider,
+    SdPrintProvider,
     SdDomValidatorProvider,
     SdFileDialogProvider,
     SdNavigateWindowProvider
@@ -36,6 +39,7 @@ export class SdAngularModule {
       ngModule: SdAngularModule,
       providers: [
         SdBusyContainerProvider,
+        SdToastProvider,
         SdLocalStorageProvider,
         SdSystemConfigProvider,
         SdSystemLogProvider,

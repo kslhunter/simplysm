@@ -2,21 +2,25 @@ import {ArgumentError} from "../error/ArgumentError";
 import {DateTimeFormatUtil} from "../util/DateTimeFormatUtil";
 
 export class DateOnly {
-  private readonly _date: Date;
+  public readonly date: Date;
 
   public constructor();
   public constructor(year: number, month: number, day: number);
   public constructor(tick: number);
-  public constructor(arg1?: number, arg2?: number, arg3?: number) {
+  public constructor(date: Date);
+  public constructor(arg1?: number | Date, arg2?: number, arg3?: number) {
     if (arg1 === undefined) {
       const tick = Date.now();
-      this._date = new Date(tick - (tick % (24 * 60 * 60 * 1000)));
+      this.date = new Date(tick - (tick % (24 * 60 * 60 * 1000)));
     }
     else if (arg2 !== undefined && arg3 !== undefined) {
-      this._date = new Date(arg1, arg2 - 1, arg3 ?? 0);
+      this.date = new Date(arg1 as number, arg2 - 1, arg3 ?? 0);
+    }
+    else if (arg1 instanceof Date) {
+      this.date = arg1;
     }
     else {
-      this._date = new Date(arg1 - (arg1 % (24 * 60 * 60 * 1000)));
+      this.date = new Date(arg1 - (arg1 % (24 * 60 * 60 * 1000)));
     }
   }
 
@@ -39,39 +43,39 @@ export class DateOnly {
   }
 
   public get year(): number {
-    return this._date.getFullYear();
+    return this.date.getFullYear();
   }
 
   public set year(value: number) {
-    this._date.setFullYear(value);
+    this.date.setFullYear(value);
   }
 
   public get month(): number {
-    return this._date.getMonth() + 1;
+    return this.date.getMonth() + 1;
   }
 
   public set month(value: number) {
-    this._date.setMonth(value - 1);
+    this.date.setMonth(value - 1);
   }
 
   public get day(): number {
-    return this._date.getDate();
+    return this.date.getDate();
   }
 
   public set day(value: number) {
-    this._date.setDate(value);
+    this.date.setDate(value);
   }
 
   public get tick(): number {
-    return this._date.getTime();
+    return this.date.getTime();
   }
 
   public set tick(tick: number) {
-    this._date.setTime(tick - (tick % (24 * 60 * 60 * 1000)));
+    this.date.setTime(tick - (tick % (24 * 60 * 60 * 1000)));
   }
 
   public get week(): number {
-    return this._date.getDay();
+    return this.date.getDay();
   }
 
   public setYear(year: number): DateOnly {

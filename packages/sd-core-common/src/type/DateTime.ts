@@ -2,20 +2,24 @@ import {ArgumentError} from "../error/ArgumentError";
 import {DateTimeFormatUtil} from "../util/DateTimeFormatUtil";
 
 export class DateTime {
-  private readonly _date: Date;
+  public readonly date: Date;
 
   public constructor();
   public constructor(year: number, month: number, day: number, hour?: number, minute?: number, second?: number, millisecond?: number);
   public constructor(tick: number);
-  public constructor(arg1?: number, arg2?: number, arg3?: number, arg4?: number, arg5?: number, arg6?: number, arg7?: number) {
+  public constructor(date: Date);
+  public constructor(arg1?: number | Date, arg2?: number, arg3?: number, arg4?: number, arg5?: number, arg6?: number, arg7?: number) {
     if (arg1 === undefined) {
-      this._date = new Date();
+      this.date = new Date();
     }
     else if (arg2 !== undefined && arg3 !== undefined) {
-      this._date = new Date(arg1, arg2 - 1, arg3 ?? 0, arg4 ?? 0, arg5 ?? 0, arg6 ?? 0, arg7 ?? 0);
+      this.date = new Date(arg1 as number, arg2 - 1, arg3 ?? 0, arg4 ?? 0, arg5 ?? 0, arg6 ?? 0, arg7 ?? 0);
+    }
+    else if (arg1 instanceof Date) {
+      this.date = arg1;
     }
     else {
-      this._date = new Date(arg1);
+      this.date = new Date(arg1);
     }
   }
 
@@ -66,75 +70,75 @@ export class DateTime {
   }
 
   public get year(): number {
-    return this._date.getFullYear();
+    return this.date.getFullYear();
   }
 
   public set year(value: number) {
-    this._date.setFullYear(value);
+    this.date.setFullYear(value);
   }
 
   public get month(): number {
-    return this._date.getMonth() + 1;
+    return this.date.getMonth() + 1;
   }
 
   public set month(value: number) {
-    this._date.setMonth(value - 1);
+    this.date.setMonth(value - 1);
   }
 
   public get day(): number {
-    return this._date.getDate();
+    return this.date.getDate();
   }
 
   public set day(value: number) {
-    this._date.setDate(value);
+    this.date.setDate(value);
   }
 
   public get hour(): number {
-    return this._date.getHours();
+    return this.date.getHours();
   }
 
   public set hour(value: number) {
-    this._date.setHours(value);
+    this.date.setHours(value);
   }
 
   public get minute(): number {
-    return this._date.getMinutes();
+    return this.date.getMinutes();
   }
 
   public set minute(value: number) {
-    this._date.setMinutes(value);
+    this.date.setMinutes(value);
   }
 
   public get second(): number {
-    return this._date.getSeconds();
+    return this.date.getSeconds();
   }
 
   public set second(value: number) {
-    this._date.setSeconds(value);
+    this.date.setSeconds(value);
   }
 
   public get millisecond(): number {
-    return this._date.getMilliseconds();
+    return this.date.getMilliseconds();
   }
 
   public set millisecond(value: number) {
-    this._date.setMilliseconds(value);
+    this.date.setMilliseconds(value);
   }
 
   public get tick(): number {
-    return this._date.getTime();
+    return this.date.getTime();
   }
 
   public set tick(tick: number) {
-    this._date.setTime(tick);
+    this.date.setTime(tick);
   }
 
   public get week(): number {
-    return this._date.getDay();
+    return this.date.getDay();
   }
 
   public get timezoneOffsetMinutes(): number {
-    return -this._date.getTimezoneOffset();
+    return -this.date.getTimezoneOffset();
   }
 
   public setYear(year: number): DateTime {

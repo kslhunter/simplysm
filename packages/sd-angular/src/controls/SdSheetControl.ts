@@ -568,19 +568,27 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public get fixedColumnControls(): SdSheetColumnControl[] {
-    let fixedColumnControls = this.columnControls?.filter(item => !!item.fixed) ?? [];
+    let fixedColumnControls = this.columnControls?.toArray() ?? [];
     if (this.configKey && this._config?.columnObj) {
+      fixedColumnControls = fixedColumnControls.filter(item => this._config?.columnObj?.[item.configKey!]?.fixed ?? !!item.fixed);
       fixedColumnControls = fixedColumnControls.filter(item => !this._config?.columnObj?.[item.configKey!]?.hidden);
       fixedColumnControls = fixedColumnControls.orderBy(item => this._config?.columnObj?.[item.configKey!]?.displayOrder ?? 0);
+    }
+    else {
+      fixedColumnControls = fixedColumnControls.filter(item => !!item.fixed);
     }
     return fixedColumnControls;
   }
 
   public get nonFixedColumnControls(): SdSheetColumnControl[] {
-    let nonFixedColumnControls = this.columnControls?.filter(item => !item.fixed) ?? [];
+    let nonFixedColumnControls = this.columnControls?.toArray() ?? [];
     if (this.configKey && this._config?.columnObj) {
+      nonFixedColumnControls = nonFixedColumnControls.filter(item => !this._config?.columnObj?.[item.configKey!]?.fixed ?? !item.fixed);
       nonFixedColumnControls = nonFixedColumnControls.filter(item => !this._config?.columnObj?.[item.configKey!]?.hidden);
       nonFixedColumnControls = nonFixedColumnControls.orderBy(item => this._config?.columnObj?.[item.configKey!]?.displayOrder ?? 0);
+    }
+    else {
+      nonFixedColumnControls = nonFixedColumnControls.filter(item => !item.fixed);
     }
     return nonFixedColumnControls;
   }
