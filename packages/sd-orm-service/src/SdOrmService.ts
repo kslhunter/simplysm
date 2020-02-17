@@ -2,7 +2,6 @@ import {SdServiceBase, SdServiceServerConfigUtils} from "@simplysm/sd-service-se
 import {Logger} from "@simplysm/sd-core-node";
 import {DbConnection, IDbConnectionConfig} from "@simplysm/sd-orm-node";
 import {IQueryResultParseOption, QueryBuilder, QueryUtil, TQueryDef} from "@simplysm/sd-orm-common";
-import * as url from "url";
 
 export class SdOrmService extends SdServiceBase {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-service", "SdOrmService"]);
@@ -10,11 +9,8 @@ export class SdOrmService extends SdServiceBase {
   private static readonly _wsConnectionCloseListenerMap = new Map<number, () => Promise<void>>();
 
   public async connectAsync(configName: string): Promise<number> {
-    const urlObj = url.parse(this.request.url!, true, false);
-    const clientPath = decodeURI(urlObj.pathname!.slice(1));
-
     const config: IDbConnectionConfig =
-      (await SdServiceServerConfigUtils.getConfigAsync(this.server.rootPath, clientPath))["orm"][configName] as IDbConnectionConfig;
+      (await SdServiceServerConfigUtils.getConfigAsync(this.server.rootPath, this.request.url))["orm"][configName] as IDbConnectionConfig;
     const conn = new DbConnection(config);
 
     const lastConnId = Array.from(SdOrmService._connections.keys()).max() || 0;

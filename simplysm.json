@@ -65,6 +65,10 @@
     "@simplysm/sd-smtp-node": {
       "type": "library",
       "publish": "npm"
+    },
+    "@simplysm/sd-smtp-service": {
+      "type": "library",
+      "publish": "npm"
     }
   }
 }

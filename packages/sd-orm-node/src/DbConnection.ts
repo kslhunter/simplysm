@@ -173,7 +173,7 @@ export class DbConnection extends EventEmitter {
     const results: any[][] = [];
     const currQuery = queries.filter((item: any) => !!item).join("\n\n");
 
-    this._logger.log("쿼리 실행:\n" + currQuery);
+    this._logger.debug("쿼리 실행:\n" + currQuery);
     await new Promise<void>((resolve, reject) => {
       let rejected = false;
       const queryRequest = new tedious

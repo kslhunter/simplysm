@@ -1,9 +1,18 @@
 import * as path from "path";
 import {FsUtil} from "@simplysm/sd-core-node";
+import * as url from "url";
 
 export class SdServiceServerConfigUtils {
-  public static async getConfigAsync(rootPath: string, clientPath?: string): Promise<{ [key: string]: any }> {
-    const targetPath = clientPath ? path.resolve(rootPath, "www", clientPath) : rootPath;
+  public static async getConfigAsync(rootPath: string, requestUrl?: string): Promise<{ [key: string]: any }> {
+    let targetPath: string;
+    if (requestUrl) {
+      const urlObj = url.parse(requestUrl, true, false);
+      const clientPath = decodeURI(urlObj.pathname!.slice(1));
+      targetPath = path.resolve(rootPath, "www", clientPath);
+    }
+    else {
+      targetPath = rootPath;
+    }
 
     const filePath = path.resolve(targetPath, ".config.json");
     if (!(FsUtil.exists(filePath))) {
