@@ -3,8 +3,8 @@ import {Injectable} from "@angular/core";
 @Injectable()
 export class SdSystemConfigProvider {
   public fn?: {
-    set: (key: string, data: any) => Promise<void>;
-    get: (key: string) => Promise<any>;
+    set: (key: string, data: any) => Promise<void> | void;
+    get: (key: string) => Promise<any> | any;
   };
 
   /*public constructor(private readonly _localStorage: SdLocalStorageProvider) {

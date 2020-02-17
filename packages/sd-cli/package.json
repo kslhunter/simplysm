@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "3.1.220",
+  "version": "3.1.221-0",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -15,9 +15,9 @@
     "@angular/compiler": "^8.2.14",
     "@angular/compiler-cli": "^8.2.14",
     "@ngtools/webpack": "^8.3.25",
-    "@simplysm/sd-core-common": "3.1.220",
-    "@simplysm/sd-core-node": "3.1.220",
-    "@simplysm/sd-service-server": "3.1.220",
+    "@simplysm/sd-core-common": "3.1.221-0",
+    "@simplysm/sd-core-node": "3.1.221-0",
+    "@simplysm/sd-service-server": "3.1.221-0",
     "connect": "^3.7.0",
     "core-js": "^3.6.4",
     "css-loader": "^3.4.2",
@@ -51,7 +51,8 @@
     "yargs": "^15.0.2",
     "jsdom": "^16.2.0",
     "source-map-support": "^0.5.16",
-    "shebang-loader": "^0.0.1"
+    "shebang-loader": "^0.0.1",
+    "angular-router-loader": "^0.8.5"
   },
   "devDependencies": {
     "@types/html-webpack-plugin": "^3.2.1",

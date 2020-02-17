@@ -10,6 +10,7 @@ export * from "./generators/SdIndexTsFileGenerator";
 export * from "./generators/SdMetadataGenerator";
 export * from "./generators/SdNgModuleGenerator";
 export * from "./generators/SdNgRoutingModuleGenerator";
+export * from "./inline-sass-loader";
 export * from "./metadata/commons";
 export * from "./metadata/SdArrayMetadata";
 export * from "./metadata/SdCallMetadata";

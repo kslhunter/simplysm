@@ -25,6 +25,7 @@
   "files": [
     "src/index.ts",
     "src/bin.ts",
-    "src/build-worker.ts"
+    "src/build-worker.ts",
+    "src/inline-sass-loader.ts"
   ]
 }

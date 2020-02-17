@@ -165,9 +165,10 @@ export class SdAngularCompiler extends EventEmitter {
     const tsConfig = await FsUtil.readJsonAsync(this._tsConfigPath);
     const parsedTsConfig = ts.parseJsonConfigFileContent(tsConfig, ts.sys, path.dirname(this._tsConfigPath));
 
-    const loaders: webpack.RuleSetUse = ["@ngtools/webpack"];
+    const loaders: webpack.RuleSetUse = [];
 
     if (!isJit) {
+      loaders.push("@ngtools/webpack");
       loaders.unshift({
         loader: "@angular-devkit/build-optimizer/webpack-loader",
         options: {
@@ -226,10 +227,27 @@ export class SdAngularCompiler extends EventEmitter {
               transpileOnly: true
             }
           },
-          {
-            test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
-            loaders
-          },
+          ...isJit ? [
+            {
+              test: /\.ts$/,
+              loaders: [
+                {
+                  loader: "ts-loader",
+                  options: {
+                    configFile: this._tsConfigPath,
+                    transpileOnly: true
+                  }
+                },
+                require.resolve("../inline-sass-loader"),
+                require.resolve("angular-router-loader")
+              ]
+            }
+          ] : [
+            {
+              test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+              loaders
+            }
+          ],
           {
             test: /(\\|\/)@angular(\\|\/)core(\\|\/).+\.js$/,
             parser: {system: true}
@@ -262,23 +280,25 @@ export class SdAngularCompiler extends EventEmitter {
           template: indexPath,
           BASE_HREF: `/${packageKey}/`
         }),
-        new AngularCompilerPlugin({
-          mainPath,
-          entryModule: path.resolve(this._packagePath, "src/AppModule") + "#AppModule",
-          platform: PLATFORM.Browser,
-          sourceMap: parsedTsConfig.options.sourceMap,
-          nameLazyFiles: false, //watch,
-          forkTypeChecker: true,
-          directTemplateLoading: true,
-          tsConfigPath: this._tsConfigPath,
-          skipCodeGeneration: isJit,
-          host: new SdWebpackInputHostWithScss(fs),
-          compilerOptions: {
-            fullTemplateTypeCheck: true,
-            strictInjectionParameters: true,
-            disableTypeScriptVersionCheck: true
-          }
-        }),
+        ...isJit ? [] : [
+          new AngularCompilerPlugin({
+            mainPath,
+            entryModule: path.resolve(this._packagePath, "src/AppModule") + "#AppModule",
+            platform: PLATFORM.Browser,
+            sourceMap: parsedTsConfig.options.sourceMap,
+            nameLazyFiles: false, //watch,
+            forkTypeChecker: false, //true,
+            directTemplateLoading: true,
+            tsConfigPath: this._tsConfigPath,
+            skipCodeGeneration: false, //isJit,
+            host: new SdWebpackInputHostWithScss(fs),
+            compilerOptions: {
+              fullTemplateTypeCheck: true,
+              strictInjectionParameters: true,
+              disableTypeScriptVersionCheck: true
+            }
+          })
+        ],
         new webpack.ContextReplacementPlugin(
           /(.+)?angular(\\|\/)core(.+)?/,
           path.join(this._packagePath, "src"),
