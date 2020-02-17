@@ -17,6 +17,10 @@ export class SdServiceClient {
 
   private _lastRequestId = 0;
 
+  public get connected(): boolean {
+    return !!this._ws && this._ws.readyState === WebSocket.OPEN;
+  }
+
   public constructor(public port?: number,
                      public host?: string,
                      public ssl?: boolean) {

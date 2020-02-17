@@ -46,10 +46,6 @@
       "type": "library",
       "publish": "npm"
     },
-    "@simplysm/sd-orm-service": {
-      "type": "library",
-      "publish": "npm"
-    },
     "@simplysm/sd-service-client-browser": {
       "type": "library",
       "publish": "npm"
@@ -59,14 +55,6 @@
       "publish": "npm"
     },
     "@simplysm/sd-service-server": {
-      "type": "library",
-      "publish": "npm"
-    },
-    "@simplysm/sd-smtp-node": {
-      "type": "library",
-      "publish": "npm"
-    },
-    "@simplysm/sd-smtp-service": {
       "type": "library",
       "publish": "npm"
     }

@@ -1,7 +1,8 @@
-import {SdServiceBase, SdServiceServerConfigUtils} from "@simplysm/sd-service-server";
 import {Logger} from "@simplysm/sd-core-node";
 import {DbConnection, IDbConnectionConfig} from "@simplysm/sd-orm-node";
 import {IQueryResultParseOption, QueryBuilder, QueryUtil, TQueryDef} from "@simplysm/sd-orm-common";
+import {SdServiceBase} from "../SdServiceBase";
+import {SdServiceServerConfigUtils} from "../SdServiceServerConfigUtils";
 
 export class SdOrmService extends SdServiceBase {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-service", "SdOrmService"]);
@@ -71,7 +72,17 @@ export class SdOrmService extends SdServiceBase {
     await conn.rollbackTransactionAsync();
   }
 
-  public async executeAsync(connId: number, defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {
+
+  public async executeAsync(connId: number, queries: string[]): Promise<any[][]> {
+    const conn = SdOrmService._connections.get(connId);
+    if (!conn) {
+      throw new Error("DB에 연결되어있지 않습니다.");
+    }
+
+    return await conn.executeAsync(queries);
+  }
+
+  public async executeDefsAsync(connId: number, defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {
     const conn = SdOrmService._connections.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");

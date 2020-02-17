@@ -2,6 +2,10 @@
   "compilerOptions": {
     "module": "commonjs",
     "moduleResolution": "node",
+    "lib": [
+      "es2018",
+      "dom"
+    ],
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
     "sourceMap": true,

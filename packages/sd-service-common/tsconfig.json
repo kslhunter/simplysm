@@ -2,10 +2,6 @@
   "extends": "../../tsconfig",
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "es2018",
-      "dom"
-    ],
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
