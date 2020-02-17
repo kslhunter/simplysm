@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-smtp-node",
-  "version": "3.1.217-1",
+  "version": "3.1.217",
   "description": "심플리즘 패키지 - SMTP 모듈 (node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
