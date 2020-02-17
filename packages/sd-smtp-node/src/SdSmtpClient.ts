@@ -1,4 +1,5 @@
 import * as nodemailer from "nodemailer";
+// tslint:disable-next-line: no-submodule-imports
 import * as SMTPTransport from "nodemailer/lib/smtp-transport";
 
 export class SdSmtpClient {
