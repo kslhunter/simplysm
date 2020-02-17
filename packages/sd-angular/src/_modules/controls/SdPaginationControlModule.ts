@@ -1,13 +1,13 @@
 import {NgModule} from "@angular/core";
 import {SdPaginationControl} from "../../controls/SdPaginationControl";
-import {CommonModule} from "@angular/common";
 import {SdAnchorControlModule} from "./SdAnchorControlModule";
+import {CommonModule} from "@angular/common";
 import {SdIconControlModule} from "./SdIconControlModule";
 
 @NgModule({
   imports: [
-    CommonModule,
     SdAnchorControlModule,
+    CommonModule,
     SdIconControlModule
   ],
   declarations: [

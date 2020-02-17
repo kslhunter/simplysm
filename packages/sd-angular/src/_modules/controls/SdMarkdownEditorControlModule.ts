@@ -1,16 +1,16 @@
 import {NgModule} from "@angular/core";
 import {SdMarkdownEditorControl} from "../../controls/SdMarkdownEditorControl";
 import {CommonModule} from "@angular/common";
-import {SdDockControlModule} from "./SdDockControlModule";
 import {SdIconControlModule} from "./SdIconControlModule";
 import {SdPaneControlModule} from "./SdPaneControlModule";
+import {SdModalEntryControlModule} from "./SdModalEntryControlModule";
 
 @NgModule({
   imports: [
     CommonModule,
-    SdDockControlModule,
     SdIconControlModule,
-    SdPaneControlModule
+    SdPaneControlModule,
+    SdModalEntryControlModule
   ],
   declarations: [
     SdMarkdownEditorControl
