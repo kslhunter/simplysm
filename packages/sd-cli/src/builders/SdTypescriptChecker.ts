@@ -23,6 +23,8 @@ export class SdTypescriptChecker {
   private readonly _diagnostics: ts.Diagnostic[] = [];
   private readonly _watchFiles: { eventKind: ts.FileWatcherEventKind; fileName: string }[] = [];
 
+  private readonly _declCache: { [key: string]: string } = {};
+
   private readonly _metadataGenerator: SdMetadataGenerator | undefined;
   private readonly _metadataCollector: SdMetadataCollector | undefined;
   private readonly _ngModuleGenerator: SdNgModuleGenerator | undefined;
@@ -71,6 +73,18 @@ export class SdTypescriptChecker {
       {},
       {
         ...ts.sys,
+        writeFile: (filePath: string, data: string, writeByteOrderMark?: boolean) => {
+          const isPackageFile = !path.relative(this._distPath, filePath).includes("..");
+          const isDeclFile = !!filePath.match(/\.d\.ts$/);
+
+          if (isPackageFile && isDeclFile && this._declCache[filePath] !== data) {
+            FsUtil.mkdirs(path.dirname(filePath));
+            ts.sys.writeFile(filePath, data, writeByteOrderMark);
+            this._declCache[filePath] = data;
+          }
+        },
+        createDirectory(dirPath: string): void {
+        },
         readFile: (filePath: string, encoding?: string) => {
           const isPackageFile = !path.relative(this._srcPath, filePath).includes("..");
           const isTypescriptFile = !!filePath.match(/\.ts$/);
@@ -87,7 +101,7 @@ export class SdTypescriptChecker {
           return ts.sys.readFile(filePath, encoding);
         }
       },
-      ts.createEmitAndSemanticDiagnosticsBuilderProgram,
+      ts.createSemanticDiagnosticsBuilderProgram,
       diag => {
         this._diagnostics.push(diag);
       },
@@ -282,11 +296,11 @@ export class SdTypescriptChecker {
             if (procId === lastProcId) {
               // 메시지 출력
               if (warnings.filterExists().length > 0) {
-                this._logger.warn("타입체크 경고\n", warnings.join("\n").trim());
+                this._logger.warn("타입체크 경고\n", warnings.distinct().join("\n").trim());
               }
 
               if (errors.filterExists().length > 0) {
-                this._logger.error("타입체크 오류\n", errors.join("\n").trim());
+                this._logger.error("타입체크 오류\n", errors.distinct().join("\n").trim());
               }
 
               this._logger.log("타입체크가 완료되었습니다.");
@@ -488,11 +502,11 @@ export class SdTypescriptChecker {
       }
       else {
         if (warnings.filterExists().length > 0) {
-          this._logger.warn("타입체크 경고\n", warnings.join("\n").trim());
+          this._logger.warn("타입체크 경고\n", warnings.distinct().join("\n").trim());
         }
 
         if (errors.filterExists().length > 0) {
-          this._logger.error("타입체크 오류\n", errors.join("\n").trim());
+          this._logger.error("타입체크 오류\n", errors.distinct().join("\n").trim());
         }
 
         this._logger.log("타입체크가 완료되었습니다.");

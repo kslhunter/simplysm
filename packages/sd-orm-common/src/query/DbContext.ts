@@ -336,6 +336,34 @@ export abstract class DbContext {
     }
     queryDefsList.push(addFkQueryDefs);
 
+    // TABLE 초기화: FK의 INDEX 설정
+    const createFkIndexQueryDefs: TQueryDef[] = [];
+    for (const tableDef of tableDefs) {
+      if (tableDef.columns.length < 1) {
+        throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
+      }
+
+      for (const fkDef of tableDef.foreignKeys) {
+        createFkIndexQueryDefs.push({
+          type: "createIndex",
+          table: {
+            database: tableDef.database ?? this.schema.database,
+            schema: tableDef.schema ?? this.schema.schema,
+            name: tableDef.name
+          },
+          index: {
+            name: fkDef.name,
+            columns: fkDef.columnPropertyKeys.map(item => ({
+              name: tableDef.columns.single(col => col.propertyKey === item)!.name,
+              orderBy: "DESC"
+            }))
+          }
+        });
+      }
+    }
+    queryDefsList.push(createFkIndexQueryDefs);
+
+
     // TABLE 초기화: INDEX 설정
     const createIndexQueryDefs: TQueryDef[] = [];
     for (const tableDef of tableDefs) {

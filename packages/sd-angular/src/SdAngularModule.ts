@@ -14,6 +14,10 @@ import {SdDomValidatorProvider} from "./providers/SdDomValidatorProvider";
 import {SdFileDialogProvider} from "./providers/SdFileDialogProvider";
 import {SdPrintProvider} from "./providers/SdPrintProvider";
 import {SdToastProvider} from "./providers/SdToastProvider";
+import {SdCryptoServiceProvider} from "./providers/SdCryptoServiceProvider";
+import {SdSmtpClientServiceProvider} from "./providers/SdSmtpClientServiceProvider";
+import {SdOrmServiceProvider} from "./providers/SdOrmServiceProvider";
+import {SdServiceProvider} from "./providers/SdServiceProvider";
 
 @NgModule({
   imports: [
@@ -43,6 +47,10 @@ export class SdAngularModule {
         SdLocalStorageProvider,
         SdSystemConfigProvider,
         SdSystemLogProvider,
+        SdServiceProvider,
+        SdCryptoServiceProvider,
+        SdSmtpClientServiceProvider,
+        SdOrmServiceProvider,
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true},
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdMutationEventPlugin, multi: true},
         {provide: ErrorHandler, useClass: SdAngularGlobalErrorHandler}

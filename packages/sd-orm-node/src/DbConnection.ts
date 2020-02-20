@@ -44,7 +44,7 @@ export class DbConnection extends EventEmitter {
     } as any);
 
     conn.on("infoMessage", info => {
-      this._logger.log(info.message);
+      this._logger.debug(info.message);
     });
 
     conn.on("errorMessage", error => {

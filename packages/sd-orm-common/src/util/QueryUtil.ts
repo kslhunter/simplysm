@@ -130,7 +130,7 @@ export class QueryUtil {
       case String:
         return "NVARCHAR(255)";
       case Number:
-        return "INT";
+        return "BIGINT";
       case Boolean:
         return "BIT";
       case DateTime:

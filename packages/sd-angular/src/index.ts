@@ -9,6 +9,7 @@ export * from "./_modules/controls/SdCheckboxGroupItemControlModule";
 export * from "./_modules/controls/SdCollapseControlModule";
 export * from "./_modules/controls/SdCollapseIconControlModule";
 export * from "./_modules/controls/SdComboboxControlModule";
+export * from "./_modules/controls/SdDockControlModule";
 export * from "./_modules/controls/SdDropdownControlModule";
 export * from "./_modules/controls/SdDropdownPopupControlModule";
 export * from "./_modules/controls/SdFormControlModule";

@@ -32,4 +32,4 @@ export interface ISdSimplysmPublishConfig {
   origin?: string;
 }
 
-export type TSdFramework = "angular" | "angular-jit";
+export type TSdFramework = "angular";

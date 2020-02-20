@@ -5,7 +5,6 @@ import {SdSystemLogProvider} from "./SdSystemLogProvider";
 
 @Injectable()
 export class SdToastProvider {
-  // private readonly _containerEl: HTMLDivElement;
   private _containerRef?: ComponentRef<SdToastContainerControl>;
   public alertThemes: ("info" | "success" | "warning" | "danger")[] = [];
 
@@ -13,17 +12,7 @@ export class SdToastProvider {
                      private readonly _injector: Injector,
                      private readonly _appRef: ApplicationRef,
                      private readonly _log: SdSystemLogProvider) {
-    /*this._containerEl = document.createElement("div");
-    this._containerEl.classList.add("_sd-toast-container");
-    document.body.appendChild(this._containerEl);*/
   }
-
-  /*public ngOnDestroy(): void {
-    this._containerEl.remove();
-    if (this._containerRef) {
-      this._containerRef.destroy();
-    }
-  }*/
 
   public async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined> {
     try {
@@ -37,9 +26,7 @@ export class SdToastProvider {
         this.danger(err.message);
       }
 
-      await this._log.write({error: err.stack, type: "error"});
-
-      if (process.env.NODE_ENV !== "production") console.error(err);
+      await this._log.writeAsync("error", err.stack);
     }
   }
 
@@ -200,60 +187,6 @@ export class SdToastProvider {
 
       return undefined as any;
     }
-
-    /*const toastEl = document.createElement("div");
-    toastEl.classList.add("_sd-toast");
-    toastEl.classList.add("_sd-toast-" + theme);
-
-    const toastBlockEl = document.createElement("div");
-    toastBlockEl.classList.add("_sd-toast-block");
-    toastEl.appendChild(toastBlockEl);
-
-    const toastMessageEl = document.createElement("div");
-    toastMessageEl.classList.add("_sd-toast-message");
-    toastMessageEl.innerText = message;
-    toastBlockEl.appendChild(toastMessageEl);
-
-    if (progress) {
-      const toastProgressEl = document.createElement("div");
-      toastProgressEl.classList.add("_sd-toast-progress");
-      toastBlockEl.appendChild(toastProgressEl);
-
-      const toastProgressBarEl = document.createElement("div");
-      toastProgressBarEl.classList.add("_sd-toast-progress-bar");
-      toastProgressEl.appendChild(toastProgressBarEl);
-
-      this._containerEl.prependChild(toastEl);
-
-      return {
-        progress: (percent: number) => {
-          toastProgressBarEl.style.width = percent + "%";
-          if (percent >= 100) {
-            window.setTimeout(
-              () => {
-                toastEl.remove();
-              },
-              1000
-            );
-          }
-        },
-        message: (msg: string) => {
-          toastMessageEl.innerText = msg;
-        }
-      } as any;
-    }
-    else {
-      this._containerEl.prependChild(toastEl);
-
-      window.setTimeout(
-        () => {
-          toastEl.remove();
-        },
-        5000
-      );
-    }
-
-    return undefined as any;*/
   }
 }
 

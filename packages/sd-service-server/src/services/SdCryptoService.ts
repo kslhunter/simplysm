@@ -4,7 +4,13 @@ import {SdServiceServerConfigUtils} from "../SdServiceServerConfigUtils";
 
 export class SdCryptoService extends SdServiceBase {
   public async encryptAsync(str: string): Promise<string> {
-    const config = (await SdServiceServerConfigUtils.getConfigAsync(this.server.rootPath, this.request.url))["crypto"];
+    const config = (
+      await SdServiceServerConfigUtils.getConfigAsync(this.server.rootPath, this.request.url)
+    )?.["crypto"];
+    if (!config) {
+      throw new Error("서버에서 암호화 설정을 찾을 수 없습니다.");
+    }
+
     return crypto.createHmac("sha256", config.key)
       .update(str)
       .digest("hex");

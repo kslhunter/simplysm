@@ -32,7 +32,7 @@ import {SdSheetColumnControl} from "../controls/SdSheetColumnControl";
               </div>
             </ng-template>
           </sd-sheet-column>
-          <sd-sheet-column header="헤더" resizable>
+          <sd-sheet-column header="헤더" resizable width.px="100">
             <ng-template #cell let-item="item">
               <sd-textfield size="sm" inset [(value)]="item.header"></sd-textfield>
             </ng-template>

@@ -30,6 +30,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
           padding: var(--gap-sm) var(--gap-default);
           background: var(--trans-brightness-default);
           cursor: pointer;
+          user-select: none;
 
           &:hover {
             background: var(--trans-brightness-dark);

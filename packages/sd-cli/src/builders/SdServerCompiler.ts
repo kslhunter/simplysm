@@ -5,12 +5,14 @@ import * as webpack from "webpack";
 import * as os from "os";
 import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
 import {EventEmitter} from "events";
+import {SdWebpackWriteFilePlugin} from "../plugins/SdWebpackWriteFilePlugin";
 
 export class SdServerCompiler extends EventEmitter {
   private constructor(private readonly _mode: "development" | "production",
                       private readonly _tsConfigPath: string,
                       private readonly _distPath: string,
                       private readonly _entry: { [key: string]: string },
+                      private readonly _configs: { [key: string]: string } | undefined,
                       private readonly _logger: Logger) {
     super();
   }
@@ -18,6 +20,7 @@ export class SdServerCompiler extends EventEmitter {
   public static async createAsync(argv: {
     tsConfigPath: string;
     mode: "development" | "production";
+    configs: { [key: string]: string } | undefined;
   }): Promise<SdServerCompiler> {
     const tsConfigPath = argv.tsConfigPath;
     const mode = argv.mode;
@@ -55,6 +58,7 @@ export class SdServerCompiler extends EventEmitter {
       tsConfigPath,
       distPath,
       entry,
+      argv.configs,
       logger
     );
   }
@@ -172,7 +176,13 @@ export class SdServerCompiler extends EventEmitter {
           raw: true,
           entryOnly: true,
           include: ["bin.js"]
-        })
+        }),
+        new SdWebpackWriteFilePlugin([
+          {
+            path: path.resolve(this._distPath, ".configs.json"),
+            content: JSON.stringify(this._configs, undefined, 2)
+          }
+        ])
       ],
       externals: [
         (context, request, callback) => {

@@ -47,7 +47,6 @@ export interface IForeignKeyTargetDef {
 
 export interface IIndexDef {
   name: string;
-  description: string;
   columns: {
     columnPropertyKey: string;
     order: number;

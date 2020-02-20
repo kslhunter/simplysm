@@ -74,6 +74,11 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
           padding-bottom: 1px;
           min-width: 40px;
         }
+
+        &:focus {
+          outline: none;
+          border-color: var(--theme-color-primary-default);
+        }
       }
 
       &[sd-type=number] > input {

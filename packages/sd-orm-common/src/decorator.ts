@@ -77,23 +77,21 @@ export function ForeignKeyTarget<T extends object, P>(
   };
 }
 
-export function Index<T extends object>(def: {
+export function Index<T extends object>(def?: {
   name?: string;
   order?: number;
   orderBy?: "ASC" | "DESC";
-  description: string;
 }): (object: T, propertyKey: string) => void {
   return (object: T, propertyKey: string) => {
     const classType = object.constructor as Type<T>;
 
     DbDefinitionUtil.addIndexDef(classType, {
-      name: def.name ?? propertyKey,
-      description: def.description,
+      name: def?.name ?? propertyKey,
       columns: [
         {
           columnPropertyKey: propertyKey,
-          order: def.order ?? 1,
-          orderBy: def.orderBy ?? "ASC"
+          order: def?.order ?? 1,
+          orderBy: def?.orderBy ?? "ASC"
         }
       ]
     });

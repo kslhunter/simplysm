@@ -37,7 +37,7 @@ export class SdSmtpClientService extends SdServiceBase {
       await SdServiceServerConfigUtils.getConfigAsync(this.server.rootPath, this.request.url)
     )?.["smtp"]?.[configName];
     if (!config) {
-      throw new Error("메일를 보내기 위한 서버 설정을 찾을 수 없습니다.");
+      throw new Error("서버에서 메일서버 설정을 찾을 수 없습니다.");
     }
 
     await this.sendAsync({

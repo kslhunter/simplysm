@@ -10,8 +10,13 @@ export class SdOrmService extends SdServiceBase {
   private static readonly _wsConnectionCloseListenerMap = new Map<number, () => Promise<void>>();
 
   public async connectAsync(configName: string): Promise<number> {
-    const config: IDbConnectionConfig =
-      (await SdServiceServerConfigUtils.getConfigAsync(this.server.rootPath, this.request.url))["orm"][configName] as IDbConnectionConfig;
+    const config: IDbConnectionConfig | undefined = (
+      await SdServiceServerConfigUtils.getConfigAsync(this.server.rootPath, this.request.url)
+    )?.["orm"]?.[configName];
+    if (!config) {
+      throw new Error("서버에서 ORM 설정을 찾을 수 없습니다.");
+    }
+
     const conn = new DbConnection(config);
 
     const lastConnId = Array.from(SdOrmService._connections.keys()).max() || 0;

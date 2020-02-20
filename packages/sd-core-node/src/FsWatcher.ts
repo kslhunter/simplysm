@@ -56,6 +56,8 @@ export class FsWatcher {
           currWatchPath,
           {recursive: watchPath.includes("**")},
           async (event, filename) => {
+            if (!filename) return;
+
             try {
               const fullPath = path.resolve(currWatchPath, filename);
               if (watchPath.includes("*")) {
@@ -88,6 +90,8 @@ export class FsWatcher {
               await onWatched(eventType, fullPath);
             }
             catch (err) {
+              err.message = `[${event}, ${filename}]` + err.message;
+              err.stack = `[${event}, ${filename}]` + err.stack;
               errorCallback(err);
             }
           }

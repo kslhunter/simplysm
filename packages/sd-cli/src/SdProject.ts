@@ -79,7 +79,7 @@ export class SdProject {
         if (watch) {
           // 변경감지 시작
           await FsWatcher.watchAsync(path.resolve(sourcePath, "**", "*"), async changedInfos => {
-            logger.log(
+            logger.debug(
               `'${targetName}' 파일이 변경되었습니다.\n` +
               changedInfos.map(item => `[${item.type}] ${item.filePath}`).join("\n")
             );
@@ -229,7 +229,8 @@ export class SdProject {
 
         const builder = await SdServerCompiler.createAsync({
           tsConfigPath: pkg.tsConfigs.single()!.configForBuildPath,
-          mode: this._mode
+          mode: this._mode,
+          configs: pkg.config.configs
         });
 
         if (!pkg.npmConfig.main) {
@@ -299,13 +300,14 @@ export class SdProject {
         packageLogger.debug("컴파일[웹]...");
 
         if (!pkg.config.serverPackage) {
-          throw new Error("클라이언트 설정에는 반드시 'server' 설정이 있어야 합니다.");
+          throw new Error("클라이언트 설정에는 반드시 'serverPackage' 설정이 있어야 합니다.");
         }
 
         const builder = await SdAngularCompiler.createAsync({
           tsConfigPath: pkg.tsConfigs.single()!.configForBuildPath,
           mode: this._mode,
-          framework: pkg.config.framework
+          configs: pkg.config.configs,
+          serverDistPath: this.packages.single(item => item.npmConfig.name === pkg.config!["serverPackage"])!.tsConfigs[0].distPath!
         });
 
         if (watch) {

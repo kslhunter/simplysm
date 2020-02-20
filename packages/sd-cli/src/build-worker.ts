@@ -33,7 +33,7 @@ ProcessWorkManager.defineWorkAsync(async message => {
 
     const checker = new SdTypescriptChecker(
       tsConfigPath,
-      framework?.startsWith("angular"),
+      framework === "angular",
       indexFilePath,
       polyfills
     );

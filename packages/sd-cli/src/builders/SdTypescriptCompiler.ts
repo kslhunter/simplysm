@@ -10,6 +10,9 @@ import {SdWebpackTimeFixPlugin} from "../plugins/SdWebpackTimeFixPlugin";
 import * as os from "os";
 
 export class SdTypescriptCompiler {
+  private readonly _outputCache: { [key: string]: string } = {};
+  private readonly _sourcemapCache: { [key: string]: string } = {};
+
   private constructor(private readonly _mode: "development" | "production",
                       private readonly _tsConfigPath: string,
                       private readonly _isNode: boolean,
@@ -211,7 +214,7 @@ export class SdTypescriptCompiler {
           }
           else {
             let tsFileContent = await FsUtil.readFileAsync(tsFilePath);
-            if (this._framework?.startsWith("angular")) {
+            if (this._framework === "angular") {
               try {
                 const scssResult = SdAngularUtils.replaceScssToCss(tsFilePath, tsFileContent);
                 tsFileContent = scssResult.content;
@@ -243,15 +246,22 @@ export class SdTypescriptCompiler {
             }
 
             if (result.outputText) {
-              await FsUtil.mkdirsAsync(path.dirname(jsFilePath));
-              await FsUtil.writeFileAsync(jsFilePath, result.outputText);
+              if (this._outputCache[jsFilePath] !== result.outputText) {
+                await FsUtil.mkdirsAsync(path.dirname(jsFilePath));
+                await FsUtil.writeFileAsync(jsFilePath, result.outputText);
+                this._outputCache[jsFilePath] = result.outputText;
+              }
             }
             else if (FsUtil.exists(jsFilePath)) {
               await FsUtil.removeAsync(jsFilePath);
             }
+
             if (result.sourceMapText) {
-              await FsUtil.mkdirsAsync(path.dirname(mapFilePath));
-              await FsUtil.writeFileAsync(mapFilePath, result.sourceMapText);
+              if (this._sourcemapCache[mapFilePath] !== result.sourceMapText) {
+                await FsUtil.mkdirsAsync(path.dirname(mapFilePath));
+                await FsUtil.writeFileAsync(mapFilePath, result.sourceMapText);
+                this._sourcemapCache[mapFilePath] = result.sourceMapText;
+              }
             }
             else if (FsUtil.exists(mapFilePath)) {
               await FsUtil.removeAsync(mapFilePath);
@@ -265,14 +275,14 @@ export class SdTypescriptCompiler {
     };
 
     const watchPaths = [path.resolve(this._srcPath, "**", "*.ts")];
-    if (this._framework?.startsWith("angular")) {
+    if (this._framework === "angular") {
       watchPaths.push(path.resolve(this._packagePath, "scss", "**", "*.scss"));
     }
 
     await FsWatcher.watchAsync(
       watchPaths,
       async changedInfos => {
-        const newChangedInfos = this._framework?.startsWith("angular")
+        const newChangedInfos = (this._framework === "angular")
           ? changedInfos.mapMany(changedInfo => {
             if (path.extname(changedInfo.filePath) === ".scss") {
               const filePaths = Object.keys(scssDepsObj).filter(key => scssDepsObj[key].includes(changedInfo.filePath));

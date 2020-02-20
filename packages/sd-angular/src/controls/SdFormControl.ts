@@ -29,7 +29,7 @@ export class SdFormControl {
   @HostBinding("attr.sd-layout")
   public layout: "cascade" | "inline" | "table" = "cascade";
 
-  @Input()
+  @Input("label.width")
   @SdInputValidate(String)
   public labelWidth?: string;
 

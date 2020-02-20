@@ -7,11 +7,12 @@ import {Type, Wait} from "@simplysm/sd-core-common";
 export class SdServiceDbContextExecutor implements IDbContextExecutor {
   private _connId?: number;
 
-  public constructor(private readonly _client: SdServiceClient) {
+  public constructor(private readonly _client: SdServiceClient,
+                     private readonly _configName: string) {
   }
 
   public async connectAsync(): Promise<void> {
-    this._connId = await this._client.sendAsync("SdOrmService.connectAsync", []);
+    this._connId = await this._client.sendAsync("SdOrmService.connectAsync", [this._configName]);
   }
 
   public async beginTransactionAsync(): Promise<void> {
@@ -44,7 +45,7 @@ export class SdOrmServiceProvider {
   public constructor(private readonly _service: SdServiceProvider) {
   }
 
-  public async connectAsync<T extends DbContext, R>(dbType: Type<T>, callback: () => Promise<R>, trans: boolean = true): Promise<R> {
+  public async connectAsync<T extends DbContext, R>(dbType: Type<T>, configName: string, callback: (conn: T) => Promise<R>): Promise<R> {
     try {
       await Wait.true(() => this._service.connected, undefined, 5000);
     }
@@ -52,7 +53,19 @@ export class SdOrmServiceProvider {
       throw new Error("ORM 서비스에 연결할 수 없습니다.");
     }
 
-    const db = new dbType(new SdServiceDbContextExecutor(this._service.client));
-    return trans ? await db.connectAsync(callback) : await db.connectWithoutTransactionAsync(callback);
+    const db = new dbType(new SdServiceDbContextExecutor(this._service.client, configName));
+    return await db.connectAsync(() => callback(db));
+  }
+
+  public async connectWithoutTransactionAsync<T extends DbContext, R>(dbType: Type<T>, configName: string, callback: (conn: T) => Promise<R>): Promise<R> {
+    try {
+      await Wait.true(() => this._service.connected, undefined, 5000);
+    }
+    catch (err) {
+      throw new Error("ORM 서비스에 연결할 수 없습니다.");
+    }
+
+    const db = new dbType(new SdServiceDbContextExecutor(this._service.client, configName));
+    return await db.connectWithoutTransactionAsync(() => callback(db));
   }
 }

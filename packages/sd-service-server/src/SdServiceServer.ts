@@ -115,11 +115,9 @@ export class SdServiceServer extends EventEmitter {
     this._eventListeners.clear();
 
     if (this._wsConnections.length > 0) {
-      await new Promise<void>(resolve => {
-        for (const wsConnection of this._wsConnections) {
-          wsConnection.close();
-        }
-      });
+      for (const wsConnection of this._wsConnections) {
+        wsConnection.close();
+      }
     }
 
     if (this._wsServer) {
@@ -135,12 +133,12 @@ export class SdServiceServer extends EventEmitter {
     }
 
     if (this._httpConnections.length > 0) {
-      await new Promise<void>(resolve => {
-        for (const httpConnection of this._httpConnections) {
+      await this._httpConnections.parallelAsync(async httpConnection => {
+        await new Promise<void>(resolve => {
           httpConnection.end(() => {
             resolve();
           });
-        }
+        });
       });
     }
 
@@ -162,11 +160,11 @@ export class SdServiceServer extends EventEmitter {
 
     const wsConn = new SdServiceServerConnection(conn, this.rootPath);
     wsConn.on("request", async (req: ISdServiceRequest) => {
-      this._logger.log(`요청을 받았습니다: ${connReq.headers.origin} (${req.id}, ${req.command})`);
+      this._logger.debug(`요청을 받았습니다: ${connReq.headers.origin} (${req.id}, ${req.command})`);
 
       try {
         const res = await this._onSocketRequestAsync(wsConn, req);
-        this._logger.log(`결과를 반환합니다: ${connReq.headers.origin} (${req.id}, ${req.command}, ${res.type})}`);
+        this._logger.debug(`결과를 반환합니다: ${connReq.headers.origin} (${req.id}, ${req.command}, ${res.type})}`);
         await wsConn.sendAsync(res);
       }
       catch (err) {

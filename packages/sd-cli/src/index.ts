@@ -21,6 +21,7 @@ export * from "./metadata/SdModuleMetadata";
 export * from "./metadata/SdObjectMetadata";
 export * from "./plugins/SdWebpackInputHostWithScss";
 export * from "./plugins/SdWebpackTimeFixPlugin";
+export * from "./plugins/SdWebpackWriteFilePlugin";
 export * from "./SdPackage";
 export * from "./SdProject";
 export * from "./utils/SdAngularUtils";

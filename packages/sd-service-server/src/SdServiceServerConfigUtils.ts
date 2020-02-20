@@ -3,7 +3,7 @@ import {FsUtil} from "@simplysm/sd-core-node";
 import * as url from "url";
 
 export class SdServiceServerConfigUtils {
-  public static async getConfigAsync(rootPath: string, requestUrl?: string): Promise<{ [key: string]: any }> {
+  public static async getConfigAsync(rootPath: string, requestUrl?: string): Promise<{ [key: string]: any } | undefined> {
     let targetPath: string;
     if (requestUrl) {
       const urlObj = url.parse(requestUrl, true, false);
@@ -14,9 +14,9 @@ export class SdServiceServerConfigUtils {
       targetPath = rootPath;
     }
 
-    const filePath = path.resolve(targetPath, ".config.json");
+    const filePath = path.resolve(targetPath, ".configs.json");
     if (!(FsUtil.exists(filePath))) {
-      throw new Error(`서버에서 설정파일을 찾는데 실패하였습니다.\n\t- ${filePath}`);
+      return undefined;
     }
 
     return await FsUtil.readJsonAsync(filePath);
