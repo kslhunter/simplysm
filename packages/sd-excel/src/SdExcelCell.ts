@@ -379,6 +379,7 @@ export class SdExcelCell {
     if (!this.excelWorkSheet.sheetData.worksheet.drawing.some((item: any) => item.$["r:id"] === "rId" + wsRelId)) {
       this.excelWorkSheet.sheetData.worksheet.drawing.push({
         $: {
+          "xmlns:r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
           "r:id": "rId" + wsRelId
         }
       });
