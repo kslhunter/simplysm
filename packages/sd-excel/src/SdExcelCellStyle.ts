@@ -151,6 +151,9 @@ export class SdExcelCellStyle {
     else if (value === "Currency") {
       newStyle.$.numFmtId = 42;
     }
+    else if (value === "string") {
+      newStyle.$.numFmtId = 49;
+    }
     else {
       const newNumFmt = this._createNewNumFmt();
       newNumFmt.$ = newNumFmt.$ || {};
