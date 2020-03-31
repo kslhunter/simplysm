@@ -72,7 +72,16 @@ export class DateOnly {
   }
 
   public setMonth(month: number): DateOnly {
-    return new DateOnly(new Date(this.tick).setMonth(month - 1));
+    const date = new Date(this.tick);
+    date.setDate(1);
+    date.setMonth(month);
+    date.setDate(0);
+
+    const lastDay = date.getDate();
+    const currentDay = lastDay < this.day ? lastDay : this.day;
+    date.setDate(currentDay);
+
+    return new DateOnly(date);
   }
 
   public setDay(day: number): DateOnly {
