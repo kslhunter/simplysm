@@ -136,7 +136,16 @@ export class DateTime {
   }
 
   public setMonth(month: number): DateTime {
-    return new DateTime(new Date(this.tick).setMonth(month - 1));
+    const date = new Date(this.tick);
+    date.setDate(1);
+    date.setMonth(month);
+    date.setDate(0);
+
+    const lastDay = date.getDate();
+    const currentDay = lastDay < this.day ? lastDay : this.day;
+    date.setDate(currentDay);
+
+    return new DateTime(date);
   }
 
   public setDay(day: number): DateTime {
