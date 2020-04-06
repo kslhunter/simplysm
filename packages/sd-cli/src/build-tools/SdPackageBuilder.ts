@@ -350,7 +350,7 @@ export class SdPackageBuilder extends EventEmitter {
           cacheGroups: {
             vendor: {
               test: /[\\/]node_modules[\\/]/,
-              name: (module: any) => {
+              name: (module: any): string => {
                 const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
                 return `libs/${packageName.replace("@", "")}`;
               }
