@@ -9,7 +9,8 @@ import {SdListControl} from "../../controls/SdListControl";
   exports: [
     SdListControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdListControlModule {
 }

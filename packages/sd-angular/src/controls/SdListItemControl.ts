@@ -13,7 +13,6 @@ import {SdListControl} from "./SdListControl";
 import {IconName} from "@fortawesome/fontawesome-svg-core";
 import {sdIconNames} from "../commons/sdIconNames";
 
-// TODO
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -126,7 +125,7 @@ export class SdListItemControl {
 
   @HostBinding("attr.sd-has-children")
   public get hasChildren(): boolean {
-    return !!this.listControls && this.listControls.length > 0;
+    return this.listControls !== undefined && this.listControls.length > 0;
   }
 
   @ContentChildren(forwardRef(() => SdListControl))
@@ -137,6 +136,6 @@ export class SdListItemControl {
   }
 
   public safeHtml(value?: string): SafeHtml | undefined {
-    return value ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
+    return value !== undefined ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
   }
 }

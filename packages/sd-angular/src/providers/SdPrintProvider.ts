@@ -1,21 +1,16 @@
-import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
+import {ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
+import {SdRootProvider} from "../root-providers/SdRootProvider";
 
 @Injectable()
 export class SdPrintProvider {
-  private readonly _appRef: ApplicationRef;
-
   public constructor(private readonly _cfr: ComponentFactoryResolver,
-                     private readonly _injector: Injector) {
-    let rootInjector = this._injector;
-    while (!rootInjector["_def"].isRoot) {
-      rootInjector = rootInjector["_parent"];
-    }
-    this._appRef = rootInjector.get<ApplicationRef>(ApplicationRef);
+                     private readonly _injector: Injector,
+                     private readonly _root: SdRootProvider) {
   }
 
-  public async print<T extends SdPrintTemplateBase<I>, I>(printType: Type<SdPrintTemplateBase<I>>,
-                                                          param: I,
-                                                          options?: { margin?: string; size?: string }): Promise<void> {
+  public async printAsync<T extends SdPrintTemplateBase<I>, I>(printType: Type<SdPrintTemplateBase<I>>,
+                                                               param: I,
+                                                               options?: { margin?: string; size?: string }): Promise<void> {
     await new Promise<void>(async (resolve, reject) => {
       try {
         const compRef = this._cfr.resolveComponentFactory(printType).create(this._injector);
@@ -25,23 +20,18 @@ export class SdPrintProvider {
 
         const styleEl = document.createElement("style");
         styleEl.innerHTML = `   
-  @page { size: ${options ? options.size : "auto"}; margin: ${options ? options.margin : "0"}; }
+  @page { size: ${options?.size ?? "auto"}; margin: ${options?.margin ?? "0"}; }
   @media print
   {
       html, body { -webkit-print-color-adjust: exact; }
       body > * { display: none !important; }
       body > ._sd-print-template { display: block !important; }
   }`;
-        document.head!.appendChild(styleEl);
+        document.head.appendChild(styleEl);
 
-        try {
-          await compRef.instance.sdOnOpen(param);
-        }
-        catch (e) {
-          throw e;
-        }
+        await compRef.instance.sdOnOpen(param);
 
-        this._appRef.attachView(compRef.hostView);
+        this._root.appRef.attachView(compRef.hostView);
         setTimeout(() => {
           window.print();
           compEl.remove();

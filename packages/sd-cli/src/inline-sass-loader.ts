@@ -17,13 +17,14 @@ function loader(this: webpack.loader.LoaderContext, content: string, sourceMap: 
         try {
           return sass.renderSync({
             file: this.resourcePath,
-            data: match.match(scssRegex)![2],
+            data: scssRegex.exec(match)?.[2],
             sourceMapEmbed: false,
             sourceMap: false
           });
         }
         catch (err) {
-          console.error(err, match.match(scssRegex)![2]);
+          // eslint-disable-next-line no-console
+          console.error(err, scssRegex.exec(match)![2]);
           throw err;
         }
       });
@@ -41,6 +42,7 @@ function loader(this: webpack.loader.LoaderContext, content: string, sourceMap: 
   }
   catch (err) {
     this.callback(undefined, content, sourceMap);
+    // eslint-disable-next-line no-console
     console.error(err);
   }
 }

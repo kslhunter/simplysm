@@ -1,14 +1,16 @@
-import {ChangeDetectionStrategy, Component, forwardRef, Inject} from "@angular/core";
+import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Injector} from "@angular/core";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
+import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 
 @Component({
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" style="font-size: 16px;"
-       *ngIf="sidebarContainerControl">
+    <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" style="font-size: 16px;"
+               *ngIf="sidebarContainerControl">
       <sd-icon icon="bars" fixedWidth></sd-icon>
-    </a>
+    </sd-anchor>
+    <sd-gap width="default" *ngIf="!sidebarContainerControl"></sd-gap>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -67,12 +69,49 @@ import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
           color: var(--text-brightness-rev-default);
         }
       }
+
+      &[sd-size="sm"] {
+        height: var(--sd-topbar-height-sm);
+        line-height: var(--sd-topbar-height-sm);
+        @each $h in (h1, h2, h3, h4, h5, h6) {
+          > /deep/ #{$h} {
+            line-height: var(--sd-topbar-height-sm);
+          }
+        }
+
+        > ._sidebar-toggle-button {
+          min-width: var(--sd-topbar-height-sm);
+        }
+      }
+
+      &[sd-size="lg"] {
+        height: var(--sd-topbar-height-lg);
+        line-height: var(--sd-topbar-height-lg);
+        @each $h in (h1, h2, h3, h4, h5, h6) {
+          > /deep/ #{$h} {
+            line-height: var(--sd-topbar-height-lg);
+          }
+        }
+
+        > ._sidebar-toggle-button {
+          min-width: var(--sd-topbar-height-lg);
+        }
+      }
     }
   `]
 })
 export class SdTopbarControl {
-  public constructor(@Inject(forwardRef(() => SdSidebarContainerControl))
-                     public sidebarContainerControl?: SdSidebarContainerControl) {
+  @HostBinding("attr.sd-size")
+  public get size(): "sm" | "lg" | undefined {
+    return this.topbarContainerControl.size;
+  }
+
+  public readonly sidebarContainerControl?: SdSidebarContainerControl;
+
+  public constructor(@Inject(forwardRef(() => SdTopbarContainerControl))
+                     private readonly topbarContainerControl: SdTopbarContainerControl,
+                     private readonly _injector: Injector) {
+    this.sidebarContainerControl = this._injector.get<SdSidebarContainerControl | null>(SdSidebarContainerControl, null) ?? undefined;
   }
 
   public onSidebarToggleButtonClick(): void {

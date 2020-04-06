@@ -12,7 +12,8 @@ import {CommonModule} from "@angular/common";
   exports: [
     SdTextfieldControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdTextfieldControlModule {
 }

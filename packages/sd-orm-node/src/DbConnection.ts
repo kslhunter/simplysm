@@ -39,7 +39,8 @@ export class DbConnection extends EventEmitter {
         rowCollectionOnDone: true,
         useUTC: false,
         encrypt: false,
-        requestTimeout: this._timeout
+        requestTimeout: this._timeout,
+        trustServerCertificate: true
       }
     } as any);
 
@@ -171,7 +172,7 @@ export class DbConnection extends EventEmitter {
     const conn = this._conn;
 
     const results: any[][] = [];
-    const currQuery = queries.filter((item: any) => !!item).join("\n\n");
+    const currQuery = queries.filter((item: any) => Boolean(item)).join("\n\n");
 
     this._logger.debug("쿼리 실행:\n" + currQuery);
     await new Promise<void>((resolve, reject) => {
@@ -186,13 +187,13 @@ export class DbConnection extends EventEmitter {
               reject(new Error("쿼리가 취소되었습니다."));
             }
             else {
-              if (err["lineNumber"]) {
+              if (err["lineNumber"] > 0) {
                 const splitQuery = currQuery.split("\n");
                 splitQuery[err["lineNumber"] - 1] = "==> " + splitQuery[err["lineNumber"] - 1];
-                reject(new Error(`[${err["code"]}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`));
+                reject(new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`));
               }
               else {
-                reject(new Error(`[${err["code"]}] ${err.message}\n-- query\n${currQuery}\n--`));
+                reject(new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${currQuery}\n--`));
               }
             }
           }

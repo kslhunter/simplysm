@@ -1,4 +1,5 @@
-import {ChangeDetectionStrategy, Component} from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
+import {SdInputValidate} from "../commons/SdInputValidate";
 
 @Component({
   selector: "sd-topbar-container",
@@ -11,8 +12,23 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
     :host {
       @include container-base();
       padding-top: var(--sd-topbar-height);
+
+      &[sd-size="sm"] {
+        padding-top: var(--sd-topbar-height-sm);
+      }
+
+      &[sd-size="lg"] {
+        padding-top: var(--sd-topbar-height-lg);
+      }
     }
   `]
 })
 export class SdTopbarContainerControl {
+  @Input()
+  @SdInputValidate({
+    type: String,
+    includes: ["sm", "lg"]
+  })
+  @HostBinding("attr.sd-size")
+  public size?: "sm" | "lg";
 }

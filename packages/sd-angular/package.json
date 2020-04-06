@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular",
-  "version": "3.1.222-8",
+  "version": "3.4.48-5",
   "description": "심플리즘 패키지 - Angular 모듈 (browser)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -9,31 +9,27 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@angular/common": "^8.2.14",
-    "@angular/core": "^8.2.14",
-    "@angular/platform-browser": "^8.2.14",
-    "@angular/router": "^8.2.14",
-    "@fortawesome/fontawesome-svg-core": "^1.2.26",
-    "@fortawesome/free-brands-svg-icons": "^5.12.0",
-    "@fortawesome/free-regular-svg-icons": "^5.12.0",
-    "@fortawesome/free-solid-svg-icons": "^5.12.0",
-    "@simplysm/sd-core-common": "3.1.222-8",
-    "@simplysm/sd-core-browser": "3.1.222-8",
-    "@simplysm/sd-service-common": "3.1.222-8",
-    "@simplysm/sd-service-client-browser": "3.1.222-8",
-    "@simplysm/sd-orm-common": "3.1.222-8",
-    "rxjs": "6.4.0",
-    "zone.js": "~0.9.1",
+    "@simplysm/sd-core-common": "3.4.48-5",
+    "@simplysm/sd-core-browser": "3.4.48-5",
+    "@simplysm/sd-service-common": "3.4.48-5",
+    "@simplysm/sd-service-browser": "3.4.48-5",
+    "@simplysm/sd-orm-common": "3.4.48-5",
+    "@angular/common": "^9.1.0",
+    "@angular/core": "^9.1.0",
+    "@angular/platform-browser": "^9.1.0",
+    "@angular/router": "^9.1.0",
+    "rxjs": "6.5.4",
+    "zone.js": "^0.10.3",
+    "tslib": "^1.11.1",
+    "@fortawesome/fontawesome-svg-core": "^1.2.27",
+    "@fortawesome/free-brands-svg-icons": "^5.12.1",
+    "@fortawesome/free-regular-svg-icons": "^5.12.1",
+    "@fortawesome/free-solid-svg-icons": "^5.12.1",
     "jsbarcode": "^3.11.0",
-    "marked": "^0.8.0"
+    "marked": "^0.8.1"
   },
   "devDependencies": {
-    "@types/marked": "^0.7.2",
-    "@angular/compiler": "^8.2.14",
-    "@types/node": "^13.1.8",
-    "codelyzer": "^5.2.1",
-    "tslint": "^5.20.1",
-    "typescript": "^3.7.4",
-    "typescript-tslint-plugin": "^0.5.5"
+    "@types/marked": "^0.7.3",
+    "@angular-eslint/eslint-plugin": "^0.0.1-alpha.27"
   }
 }

@@ -1,17 +1,40 @@
-import {ApplicationRef, ComponentFactoryResolver, ComponentRef, Injectable, Injector, Type} from "@angular/core";
-import {SdToastContainerControl} from "../controls/SdToastContainerControl";
-import {SdToastControl} from "../controls/SdToastControl";
-import {SdSystemLogProvider} from "./SdSystemLogProvider";
+import {ComponentFactoryResolver, ComponentRef, Injectable, Injector, Type} from "@angular/core";
+import {SdToastContainerEntryControl} from "../entry-controls/SdToastContainerEntryControl";
+import {SdToastEntryControl} from "../entry-controls/SdToastEntryControl";
+import {SdRootProvider} from "../root-providers/SdRootProvider";
+import {SdSystemLogRootProvider} from "../root-providers/SdSystemLogRootProvider";
 
 @Injectable()
 export class SdToastProvider {
-  private _containerRef?: ComponentRef<SdToastContainerControl>;
-  public alertThemes: ("info" | "success" | "warning" | "danger")[] = [];
+  public get containerRef(): ComponentRef<SdToastContainerEntryControl> {
+    this._root.data.toast = this._root.data.toast ?? {};
+
+    if (this._root.data.toast.containerRef === undefined) {
+      const compRef = this._cfr.resolveComponentFactory(SdToastContainerEntryControl).create(this._injector);
+      const rootComp = this._root.appRef.components[0];
+      const rootCompEl = rootComp.location.nativeElement as HTMLElement;
+      rootCompEl.appendChild(compRef.location.nativeElement);
+      this._root.appRef.attachView(compRef.hostView);
+      this._root.data.toast.containerRef = compRef;
+    }
+    return this._root.data.toast.containerRef;
+  }
+
+  public get alertThemes(): ("info" | "success" | "warning" | "danger")[] {
+    this._root.data.toast = this._root.data.toast ?? {};
+    this._root.data.toast.alertThemes = this._root.data.toast.alertThemes ?? [];
+    return this._root.data.toast.alertThemes;
+  }
+
+  public set alertThemes(value: ("info" | "success" | "warning" | "danger")[]) {
+    this._root.data.toast = this._root.data.toast ?? {};
+    this._root.data.toast.alertThemes = value;
+  }
 
   public constructor(private readonly _cfr: ComponentFactoryResolver,
                      private readonly _injector: Injector,
-                     private readonly _appRef: ApplicationRef,
-                     private readonly _log: SdSystemLogProvider) {
+                     private readonly _root: SdRootProvider,
+                     private readonly _systemLog: SdSystemLogRootProvider) {
   }
 
   public async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R | undefined> {
@@ -26,56 +49,50 @@ export class SdToastProvider {
         this.danger(err.message);
       }
 
-      await this._log.writeAsync("error", err.stack);
+      await this._systemLog.writeAsync("error", err.stack);
+
+      return undefined;
     }
   }
 
   public notify<T extends SdToastBase<any, any>>(toastType: Type<T>, param: T["_tParam"], onclose: (result: T["_tResult"] | undefined) => void | Promise<void>): void {
-    if (!this._containerRef) {
-      this._containerRef = this._cfr.resolveComponentFactory(SdToastContainerControl).create(this._injector);
-      const rootComp = this._appRef.components[0];
-      const rootCompEl = rootComp.location.nativeElement as HTMLElement;
-      rootCompEl.appendChild(this._containerRef.location.nativeElement);
-      this._appRef.attachView(this._containerRef.hostView);
-    }
+    const compRef = this._cfr.resolveComponentFactory(toastType).create(this.containerRef.injector);
+    const containerEl = this.containerRef.location.nativeElement as HTMLElement;
 
-    const compRef = this._cfr.resolveComponentFactory(toastType).create(this._containerRef.injector);
-    const containerEl = this._containerRef.location.nativeElement as HTMLElement;
-
-    const toastRef = this._cfr.resolveComponentFactory(SdToastControl).create(
-      this._containerRef.injector,
+    const toastRef = this._cfr.resolveComponentFactory(SdToastEntryControl).create(
+      this.containerRef.injector,
       [[compRef.location.nativeElement]]
     );
     const toastEl = toastRef.location.nativeElement as HTMLElement;
     containerEl.appendChild(toastEl);
 
-    const close = (value?: any) => {
+    const close = async (value?: any): Promise<void> => {
       toastEl.addEventListener("transitionend", () => {
         compRef.destroy();
         toastRef.destroy();
       });
       toastRef.instance.open = false;
-      onclose(value);
+      await onclose(value);
     };
 
-    toastRef.instance.close.subscribe(() => {
-      close();
+    toastRef.instance.close.subscribe(async () => {
+      await close();
     });
-    compRef.instance.close = close.bind(this); //tslint:disable-line:unnecessary-bind
+    compRef.instance.close = close.bind(this);
 
     window.setTimeout(async () => {
-      this._appRef.attachView(compRef.hostView);
-      this._appRef.attachView(toastRef.hostView);
-      this._appRef.tick();
+      this._root.appRef.attachView(compRef.hostView);
+      this._root.appRef.attachView(toastRef.hostView);
+      this._root.appRef.tick();
 
       try {
         toastRef.instance.open = true;
-        this._appRef.tick();
+        this._root.appRef.tick();
         await compRef.instance.sdOnOpen(param);
-        this._appRef.tick();
+        this._root.appRef.tick();
       }
       catch (e) {
-        close();
+        await close();
         throw e;
       }
     });
@@ -90,63 +107,45 @@ export class SdToastProvider {
   }
 
   public info<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
-    if (this.alertThemes.includes("info")) {
-      alert(message);
-      return undefined as any;
-    }
     return this._show("info", message, progress) as any;
   }
 
   public success<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
-    if (this.alertThemes.includes("success")) {
-      alert(message);
-      return undefined as any;
-    }
     return this._show("success", message, progress) as any;
   }
 
   public warning<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
-    if (this.alertThemes.includes("warning")) {
-      alert(message);
-      return undefined as any;
-    }
     return this._show("warning", message, progress) as any;
   }
 
   public danger<T extends boolean>(message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
-    if (this.alertThemes.includes("danger")) {
-      alert(message);
-      return undefined as any;
-    }
     return this._show("danger", message, progress) as any;
   }
 
   private _show<T extends boolean>(theme: "info" | "success" | "warning" | "danger", message: string, progress?: T): (T extends true ? ISdProgressToast : void) {
-    if (!this._containerRef) {
-      this._containerRef = this._cfr.resolveComponentFactory(SdToastContainerControl).create(this._injector);
-      const rootComp = this._appRef.components[0];
-      const rootCompEl = rootComp.location.nativeElement as HTMLElement;
-      rootCompEl.appendChild(this._containerRef.location.nativeElement);
-      this._appRef.attachView(this._containerRef.hostView);
+    if (this.alertThemes.includes(theme)) {
+      alert(message);
+      return undefined as any;
     }
 
-    const containerEl = this._containerRef.location.nativeElement as HTMLElement;
-    const toastRef = this._cfr.resolveComponentFactory(SdToastControl).create(this._containerRef.injector);
+    const containerEl = this.containerRef.location.nativeElement as HTMLElement;
+    const toastRef = this._cfr.resolveComponentFactory(SdToastEntryControl).create(this.containerRef.injector);
     const toastEl = toastRef.location.nativeElement as HTMLElement;
     containerEl.appendChild(toastEl);
-    this._appRef.attachView(toastRef.hostView);
+    this._root.appRef.attachView(toastRef.hostView);
 
-    (toastEl.findAll("._sd-toast-message")[0] as HTMLElement).innerText = message;
+    toastEl.findAll("._sd-toast-message")[0].innerText = message;
     toastRef.instance.useProgress = progress;
     toastRef.instance.progress = 0;
 
     // repaint
-    containerEl.offsetHeight; // tslint:disable-line:no-unused-expression
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    containerEl.offsetHeight;
 
     toastRef.instance.open = true;
     toastRef.instance.theme = theme;
     try {
-      this._appRef.tick();
+      this._root.appRef.tick();
     }
     catch {
     }
@@ -162,14 +161,14 @@ export class SdToastProvider {
                   toastRef.destroy();
                 });
                 toastRef.instance.open = false;
-                this._appRef.tick();
+                this._root.appRef.tick();
               },
               1000
             );
           }
         },
         message: (msg: string) => {
-          (toastEl.findAll("._sd-toast-message")[0] as HTMLElement).innerText = msg;
+          toastEl.findAll("._sd-toast-message")[0].innerText = msg;
         }
       } as any;
     }
@@ -180,7 +179,7 @@ export class SdToastProvider {
             toastRef.destroy();
           });
           toastRef.instance.open = false;
-          this._appRef.tick();
+          this._root.appRef.tick();
         },
         5000
       );

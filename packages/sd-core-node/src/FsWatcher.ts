@@ -1,10 +1,14 @@
 import * as fs from "fs";
-import {DateTime, ObjectUtil, Wait} from "@simplysm/sd-core-common";
+import {DateTime, NeverEntryError, ObjectUtils, Wait} from "@simplysm/sd-core-common";
 import * as path from "path";
 import anymatch from "anymatch";
+import {FsUtils} from "./FsUtils";
 
 export class FsWatcher {
-  private constructor(private readonly _watchers: fs.FSWatcher[]) {
+  private readonly _depListenerObj: { [key: string]: ((curr: fs.Stats) => void) | undefined } = {};
+
+  private constructor(private readonly _watchers: fs.FSWatcher[],
+                      private readonly _onWatched: (type: "add" | "change" | "unlink", filePath: string) => Promise<void>) {
   }
 
   public close(): void {
@@ -17,26 +21,34 @@ export class FsWatcher {
                                  callback: (changedInfos: IFileChangeInfo[]) => void | Promise<void>,
                                  errorCallback: (err: Error) => void,
                                  options?: { aggregateTimeout?: number }): Promise<FsWatcher> {
-
     let preservedFileChanges: IFileChangeInfo[] = [];
     let timeout: NodeJS.Timer;
     let processing = false;
 
-    const onWatched = async (type: "add" | "change" | "unlink", filePath: string) => {
+    const onWatched = async (type: "add" | "change" | "unlink", filePath: string): Promise<void> => {
       preservedFileChanges.push({type, filePath});
       await Wait.true(() => !processing);
 
       clearTimeout(timeout);
       timeout = setTimeout(
         async () => {
-          processing = true;
+          try {
+            processing = true;
 
-          const fileChanges = ObjectUtil.clone(preservedFileChanges.distinct());
-          preservedFileChanges = [];
+            const fileChanges = ObjectUtils.clone(preservedFileChanges.distinct());
+            preservedFileChanges = [];
 
-          await callback(fileChanges);
+            await callback(fileChanges);
 
-          processing = false;
+            processing = false;
+          }
+          catch (err) {
+            if (!(err instanceof Error)) {
+              throw new NeverEntryError();
+            }
+
+            errorCallback(err);
+          }
         },
         options?.aggregateTimeout ?? 100
       );
@@ -52,28 +64,26 @@ export class FsWatcher {
           currWatchPath = watchPath.slice(0, watchPath.indexOf("*"));
         }
 
+        while (!FsUtils.exists(currWatchPath)) {
+          currWatchPath = path.dirname(currWatchPath);
+        }
+
         const watcher = fs.watch(
           currWatchPath,
-          {recursive: watchPath.includes("**")},
-          async (event, filename) => {
-            if (!filename) return;
+          {recursive: watchPath !== currWatchPath},
+          async (event, filename: string | null) => {
+            if (filename == null) return;
 
             try {
-              const fullPath = path.resolve(currWatchPath, filename);
-              if (watchPath.includes("*")) {
-                if (
-                  !anymatch(
-                    watchPath.replace(/\\/g, "/"),
-                    fullPath.replace(/\\/g, "/")
-                  )
-                ) {
-                  return;
-                }
-              }
-              else {
-                if (watchPath.replace(/\\/g, "/") !== fullPath.replace(/\\/g, "/")) {
-                  return;
-                }
+              const fullPath = currWatchPath !== watchPath ?
+                path.resolve(currWatchPath, filename) :
+                currWatchPath;
+
+              if (
+                watchPath.replace(/\\/g, "/") !== fullPath.replace(/\\/g, "/") &&
+                !anymatch(watchPath.replace(/\\/g, "/"), fullPath.replace(/\\/g, "/"))
+              ) {
+                return;
               }
 
               let eventType: "add" | "change" | "unlink";
@@ -90,8 +100,12 @@ export class FsWatcher {
               await onWatched(eventType, fullPath);
             }
             catch (err) {
-              err.message = `[${event}, ${filename}]` + err.message;
-              err.stack = `[${event}, ${filename}]` + err.stack;
+              if (!(err instanceof Error)) {
+                throw new NeverEntryError();
+              }
+
+              err.message = `[${event}, ${filename}] ${err.message}`;
+              err.stack = `[${event}, ${filename}]${err.stack !== undefined ? " " + err.stack : ""}`;
               errorCallback(err);
             }
           }
@@ -102,8 +116,32 @@ export class FsWatcher {
         watchers.push(watcher);
       }
 
-      resolve(new FsWatcher(watchers));
+      resolve(new FsWatcher(watchers, onWatched));
     });
+  }
+
+  public add(filePaths: string[]): void {
+    for (const filePath of filePaths) {
+      if (this._depListenerObj[filePath]) continue;
+
+      const listener = async (curr: fs.Stats): Promise<void> => {
+        let eventType: "add" | "change" | "unlink";
+        if (!fs.existsSync(filePath)) {
+          eventType = "unlink";
+        }
+        else if (curr.birthtime.getTime() >= (new DateTime().tick - 300)) {
+          eventType = "add";
+        }
+        else {
+          eventType = "change";
+        }
+
+        await this._onWatched(eventType, filePath);
+      };
+
+      fs.watchFile(filePath, {interval: 100}, listener);
+      this._depListenerObj[filePath] = listener;
+    }
   }
 }
 

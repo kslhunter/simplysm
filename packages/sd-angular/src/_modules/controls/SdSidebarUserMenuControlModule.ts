@@ -9,7 +9,8 @@ import {SdSidebarUserMenuControl} from "../../controls/SdSidebarUserMenuControl"
   exports: [
     SdSidebarUserMenuControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdSidebarUserMenuControlModule {
 }

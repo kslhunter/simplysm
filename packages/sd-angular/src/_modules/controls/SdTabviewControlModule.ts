@@ -21,7 +21,8 @@ import {SdTabviewItemControl} from "../../controls/SdTabviewItemControl";
     SdTabviewControl,
     SdTabviewItemControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdTabviewControlModule {
 }

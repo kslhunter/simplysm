@@ -19,23 +19,23 @@ import * as marked from "marked";
   template: `
     <sd-dock-container>
       <sd-dock class="_toolbar" *ngIf="!disabled">
-        <a (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
+        <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
           <sd-icon [icon]="'eye'"></sd-icon>
-        </a>
-        <a (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
+        </sd-anchor>
+        <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
           <sd-icon [icon]="'pen'"></sd-icon>
-        </a>
-        <a (click)="viewState = 'help'" [class._selected]="viewState === 'help'">
+        </sd-anchor>
+        <sd-anchor (click)="viewState = 'help'" [class._selected]="viewState === 'help'">
           <sd-icon [icon]="'question'"></sd-icon>
-        </a>
+        </sd-anchor>
         <ng-container *ngIf="rowsButton && viewState === 'edit'">
           |
-          <a (click)="rows = rows + 1">
+          <sd-anchor (click)="rows = rows + 1">
             <sd-icon [icon]="'plus'"></sd-icon>
-          </a>
-          <a (click)="rows = rows - 1" *ngIf="rows > 1">
+          </sd-anchor>
+          <sd-anchor (click)="rows = rows - 1" *ngIf="rows > 1">
             <sd-icon [icon]="'minus'"></sd-icon>
-          </a>
+          </sd-anchor>
         </ng-container>
       </sd-dock>
 
@@ -152,7 +152,7 @@ import * as marked from "marked";
         > ._toolbar {
           user-select: none;
 
-          > a {
+          > sd-anchor {
             display: inline-block;
             padding: var(--gap-sm) 0;
             text-align: center;
@@ -344,7 +344,7 @@ export class SdMarkdownEditorControl implements OnChanges {
     this.dragover = false;
   }
 
-  public async onTextareaPaste(event: ClipboardEvent): Promise<void> {
+  public onTextareaPaste(event: ClipboardEvent): void {
     if (!event.clipboardData) return;
 
     const files = Array.from(event.clipboardData.items)
@@ -359,8 +359,8 @@ export class SdMarkdownEditorControl implements OnChanges {
   }
 
   public async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    if (changes) {
-      if (this.value && (this.viewState === "preview" || this.disabled)) {
+    if (Object.keys(changes).length > 0) {
+      if (this.value !== undefined && (this.viewState === "preview" || this.disabled)) {
         const value = this.previewRender ? await this.previewRender(this.value) : this.value;
         const html = marked(value);
         this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);

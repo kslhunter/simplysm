@@ -7,6 +7,7 @@ import {
   HostBinding,
   HostListener,
   Inject,
+  Injector,
   Input,
   TemplateRef
 } from "@angular/core";
@@ -58,7 +59,7 @@ export class SdSelectItemControl {
   public set value(value: any) {
     this._value = value;
 
-    this._el.setAttribute("sd-value-json", JsonConvert.stringify(value) || "");
+    this._el.setAttribute("sd-value-json", JsonConvert.stringify(value) ?? "");
   }
 
   public get value(): any {
@@ -75,8 +76,8 @@ export class SdSelectItemControl {
     const keyProp = this._selectControl.keyProp;
     const parentValue = this._selectControl.value;
 
-    const parentKeyValue = keyProp && parentValue ? parentValue[keyProp] : parentValue;
-    const itemKeyValue = keyProp && this.value ? this.value[keyProp] : this.value;
+    const parentKeyValue = keyProp !== undefined && parentValue !== undefined ? parentValue[keyProp] : parentValue;
+    const itemKeyValue = keyProp !== undefined && this.value !== undefined ? this.value[keyProp] : this.value;
     return parentKeyValue === itemKeyValue;
   }
 

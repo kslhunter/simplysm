@@ -16,7 +16,7 @@ export class SdSheetColumnControl {
 
   @Input()
   @SdInputValidate(String)
-  public configKey?: string;
+  public key?: string;
 
   @Input("width.px")
   @SdInputValidate({
@@ -44,6 +44,10 @@ export class SdSheetColumnControl {
   @Input()
   @SdInputValidate(Boolean)
   public resizable?: boolean;
+
+  @Input()
+  @SdInputValidate(Boolean)
+  public useOrdering?: boolean;
 
   @ContentChild("cell", {static: true})
   public cellTemplateRef?: TemplateRef<{ item: any; index: number }>;

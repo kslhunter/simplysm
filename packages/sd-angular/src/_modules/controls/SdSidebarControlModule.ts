@@ -12,7 +12,8 @@ import {SdSidebarContainerControlModule} from "./SdSidebarContainerControlModule
   exports: [
     SdSidebarControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdSidebarControlModule {
 }

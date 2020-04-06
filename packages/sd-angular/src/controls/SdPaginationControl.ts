@@ -57,7 +57,7 @@ export class SdPaginationControl {
   @Output()
   public readonly pageChange = new EventEmitter<number>();
 
-  public trackByPageFn = (index: number, item: number) => item;
+  public trackByPageFn = (index: number, item: number): any => item;
 
   public get displayPages(): number[] {
     const pages: number[] = [];
@@ -71,11 +71,11 @@ export class SdPaginationControl {
   }
 
   public get hasNext(): boolean {
-    return (this.displayPages.last() || 0) < (this.pageLength - 1);
+    return (this.displayPages.last() ?? 0) < (this.pageLength - 1);
   }
 
   public get hasPrev(): boolean {
-    return (this.displayPages[0] || 0) > 0;
+    return (this.displayPages[0] ?? 0) > 0;
   }
 
   public onPageClick(page: number): void {
@@ -84,12 +84,12 @@ export class SdPaginationControl {
   }
 
   public onNextClick(): void {
-    this.page = (this.displayPages.last() || 0) + 1;
+    this.page = (this.displayPages.last() ?? 0) + 1;
     this.pageChange.emit(this.page);
   }
 
   public onPrevClick(): void {
-    this.page = (this.displayPages[0] || 0) - 1;
+    this.page = (this.displayPages[0] ?? 0) - 1;
     this.pageChange.emit(this.page);
   }
 }

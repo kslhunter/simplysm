@@ -20,7 +20,6 @@
   color: var(--text-color-default);
 }
 
-
 @mixin container-base() {
   display: block;
   position: relative;
@@ -31,10 +30,11 @@
 @mixin invalid-indicator() {
   display: block;
   position: absolute;
+  background: var(--theme-color-danger-default);
+
   top: var(--gap-xs);
   left: var(--gap-xs);
   border-radius: 100%;
   width: var(--gap-sm);
   height: var(--gap-sm);
-  background: var(--theme-color-danger-default);
 }

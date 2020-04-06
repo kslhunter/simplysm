@@ -1,25 +1,21 @@
 {
   "name": "@simplysm/sd-excel",
-  "version": "3.1.222-8",
+  "version": "3.4.48-5",
   "description": "심플리즘 패키지 - 엑셀 모듈 (browser/node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
   "license": "MIT",
-  "main": "./dist/index.js",
-  "browser": "./dist/index.browser.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/index.js",
+  "browser": "dist-browser/index.js",
+  "types": "dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-common": "3.1.222-8",
+    "@simplysm/sd-core-common": "3.4.48-5",
     "jszip": "^3.2.2",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@types/jszip": "^3.1.7",
-    "@types/xml2js": "^0.4.5",
-    "@types/node": "^13.1.8",
-    "tslint": "^5.20.1",
-    "typescript": "^3.7.4",
-    "typescript-tslint-plugin": "^0.5.5"
+    "@types/xml2js": "^0.4.5"
   }
 }

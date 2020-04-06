@@ -12,7 +12,8 @@ import {SdResizeDirectiveModule} from "../directives/SdResizeDirectiveModule";
   exports: [
     SdCollapseControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdCollapseControlModule {
 }

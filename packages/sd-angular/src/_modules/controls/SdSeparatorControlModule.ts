@@ -9,7 +9,8 @@ import {SdSeparatorControl} from "../../controls/SdSeparatorControl";
   exports: [
     SdSeparatorControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdSeparatorControlModule {
 }

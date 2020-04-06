@@ -142,7 +142,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     dropdownEl.addEventListener("blur", this.blurEventHandler, true);
 
     if (this.userCustomText) {
-      this.text = this.value ? this.value.toString() : this.value;
+      this.text = this.value != null ? this.value.toString() : this.value;
       this.textChange.emit(this.text);
     }
   }
@@ -158,7 +158,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
 
     if (this.value !== undefined) {
       if (this.userCustomText) {
-        this.value = Number(this.text) || undefined;
+        this.value = Number(this.text) ?? undefined;
         this.valueChange.emit(this.value);
       }
       else {
@@ -168,7 +168,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     }
     else {
       if (this.userCustomText) {
-        this.value = Number(this.text) || undefined;
+        this.value = Number(this.text) ?? undefined;
         this.valueChange.emit(this.value);
       }
     }
@@ -229,7 +229,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
       // dropdownEl.remove();
     }
     catch (err) {
-      if (!err.message.includes("no longer a child of this node")) {
+      if (!(err.message as string).includes("no longer a child of this node")) {
         throw err;
       }
     }
@@ -243,7 +243,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
       }
     );
 
-    if (!this.value && this.text) {
+    if (this.value == null && this.text != null) {
       this.text = this.userCustomText ? this.text : undefined;
       this.textChange.emit(this.text);
       return;
@@ -253,7 +253,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     this.close.emit();
   }
 
-  public scrollEventHandler = (event: Event) => {
+  public scrollEventHandler = (event: Event): void => {
     const textfieldEl = this.textfieldElRef!.nativeElement;
     const dropdownEl = this.dropdownElRef!.nativeElement;
 
@@ -282,11 +282,11 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     }
   };
 
-  public focusEventHandler = (event: FocusEvent) => {
+  public focusEventHandler = (event: FocusEvent): void => {
     this.openPopup();
   };
 
-  public blurEventHandler = (event: FocusEvent) => {
+  public blurEventHandler = (event: FocusEvent): void => {
     document.removeEventListener("scroll", this.scrollEventHandler, true);
 
     const textfieldEl = this.textfieldElRef!.nativeElement;
@@ -309,14 +309,14 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
   };
 
   private _refreshText(): void {
-    if (this.value) {
+    if (this.value != null) {
       if (!this.userCustomText) {
         const selectedItemControl = this.itemControls!.find(item => item.value === this.value);
 
         if (selectedItemControl) {
           const text = selectedItemControl.content;
           if (text !== this.text) {
-            this.text = text || "";
+            this.text = text ?? "";
             this.textChange.emit(this.text);
           }
         }

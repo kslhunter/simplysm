@@ -13,8 +13,14 @@ import {SdInputValidate} from "../commons/SdInputValidate";
       transition: transform .1s ease-in;
 
       &[sd-open=true] {
-        transform: rotate(90deg);
         transition: transform .1s ease-out;
+        
+        &[sd-open-rotate='90'] {
+          transform: rotate(90deg);
+        }
+        &[sd-open-rotate='180'] {
+          transform: rotate(180deg);
+        }
       }
     }
   `]
@@ -24,4 +30,12 @@ export class SdCollapseIconControl {
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-open")
   public open?: boolean;
+
+  @Input()
+  @SdInputValidate({
+    type: Number,
+    includes: [90, 180]
+  })
+  @HostBinding("attr.sd-open-rotate")
+  public openRotate: 180 | 90 = 90;
 }

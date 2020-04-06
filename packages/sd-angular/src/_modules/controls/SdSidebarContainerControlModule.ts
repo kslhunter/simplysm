@@ -12,7 +12,8 @@ import {RouterModule} from "@angular/router";
   exports: [
     SdSidebarContainerControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdSidebarContainerControlModule {
 }

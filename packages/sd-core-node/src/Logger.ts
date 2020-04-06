@@ -1,6 +1,7 @@
-import {DateTime, DeepPartial, MathUtil, ObjectUtil} from "@simplysm/sd-core-common";
+import {DateTime, DeepPartial, MathUtils, ObjectUtils} from "@simplysm/sd-core-common";
 import * as path from "path";
-import {FsUtil} from "./FsUtil";
+import {FsUtils} from "./FsUtils";
+import * as os from "os";
 import CpuUsage = NodeJS.CpuUsage;
 
 export enum LoggerStyle {
@@ -36,6 +37,8 @@ export enum LoggerSeverity {
 }
 
 export interface ILoggerConfig {
+  dot: boolean;
+
   console: {
     style: LoggerStyle;
     level: LoggerSeverity;
@@ -65,7 +68,7 @@ export class Logger {
   private static readonly _configs = new Map<string, DeepPartial<ILoggerConfig>>();
   private static _historyLength = 0;
 
-  private readonly _randomForStyle = MathUtil.getRandomInt(4, 9);
+  private readonly _randomForStyle = MathUtils.getRandomInt(4, 9);
 
   public static get(group: string[] = []): Logger {
     return new Logger(group);
@@ -74,8 +77,8 @@ export class Logger {
   public static setConfig(group: string[], config: DeepPartial<ILoggerConfig>): void;
   public static setConfig(config: DeepPartial<ILoggerConfig>): void;
   public static setConfig(arg1: string[] | DeepPartial<ILoggerConfig>, arg2?: DeepPartial<ILoggerConfig>): void {
-    const group = (arg2 ? arg1 : []) as string[];
-    const config = (arg2 ? arg2 : arg1) as DeepPartial<ILoggerConfig>;
+    const group = (arg2 !== undefined ? arg1 : []) as string[];
+    const config = (arg2 !== undefined ? arg2 : arg1) as DeepPartial<ILoggerConfig>;
 
     Logger._configs.set(group.join("_"), config);
   }
@@ -100,7 +103,7 @@ export class Logger {
     if (this._prevDebugCpuUsage) {
       const usage = process.cpuUsage(this._prevDebugCpuUsage);
       this._write(LoggerSeverity.debug, [
-        "[" + Math.floor((usage.user + usage.system) / 1000) + "ms]",
+        "[" + Math.floor((usage.user + usage.system) / 1000).toLocaleString() + "ms/cpu]",
         ...args
       ]);
     }
@@ -135,19 +138,28 @@ export class Logger {
     const fileLevelIndex = Object.values(LoggerSeverity).indexOf(config.file.level);
 
     if (severityIndex >= consoleLevelIndex) {
+      if (config.dot && typeof process.stdout.clearLine === "function") {
+        process.stdout.clearLine(0);
+        process.stdout.cursorTo(0);
+      }
+
+      // eslint-disable-next-line no-console
       console.log(
         LoggerStyle.fgGray + now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " " +
         (this._group.length > 0 ? config.console.style + "[" + this._group.join(".") + "] " : "") +
         config.console.styles[severity] + severity.toUpperCase().padStart(5, " "),
-        ...logs.map(log => (log instanceof Error && log.stack) ? log.stack : log),
+        ...logs.map(log => ((log instanceof Error && log.stack !== undefined) ? log.stack : log)),
         LoggerStyle.clear
       );
+    }
+    else if (config.dot) {
+      process.stdout.write(".");
     }
 
     if (severityIndex >= fileLevelIndex) {
       let text = now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " ";
       text += (this._group.length > 0 ? "[" + this._group.join(".") + "] " : "");
-      text += severity.toUpperCase().padStart(5, " ") + "\r\n";
+      text += severity.toUpperCase().padStart(5, " ") + os.EOL;
 
       for (const log of logs) {
         let convertedLog = log;
@@ -155,29 +167,29 @@ export class Logger {
         if (typeof convertedLog === "string") {
           convertedLog = convertedLog.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
         }
-        else if (typeof convertedLog.toString === "function" && !/^\[.*]$/.test(convertedLog.toString())) {
+        else if (typeof convertedLog.toString === "function" && !(/^\[.*]$/).test(convertedLog.toString())) {
           convertedLog = convertedLog.toString();
         }
         else {
           convertedLog = JSON.stringify(convertedLog);
         }
 
-        text += convertedLog + "\r\n";
+        text += convertedLog + os.EOL;
       }
 
 
       const outPath = path.resolve(config.file.outDir, now.toFormatString("yyyyMMdd"));
-      FsUtil.mkdirs(outPath);
+      FsUtils.mkdirs(outPath);
 
-      const fileNames = FsUtil.readdir(outPath);
+      const fileNames = FsUtils.readdir(outPath);
       const lastFileName = fileNames
         .filter(fileName => fileName.endsWith(".log"))
         .orderBy()
         .last();
 
       let logFileName = "1.log";
-      if (lastFileName) {
-        const lstat = FsUtil.lstat(path.resolve(outPath, lastFileName));
+      if (lastFileName !== undefined) {
+        const lstat = FsUtils.lstat(path.resolve(outPath, lastFileName));
         if (lstat.size > 4194304) {
           const seq = Number(path.basename(lastFileName, path.extname(lastFileName)));
 
@@ -188,11 +200,11 @@ export class Logger {
         }
       }
       const logFilePath = path.resolve(outPath, logFileName);
-      if (FsUtil.exists(logFilePath)) {
-        FsUtil.appendFile(logFilePath, text);
+      if (FsUtils.exists(logFilePath)) {
+        FsUtils.appendFile(logFilePath, text);
       }
       else {
-        FsUtil.writeFile(logFilePath, text);
+        FsUtils.writeFile(logFilePath, text);
       }
     }
 
@@ -212,6 +224,8 @@ export class Logger {
 
   private _getConfig(): ILoggerConfig {
     let config: ILoggerConfig = {
+      dot: false,
+
       console: {
         style: LoggerStyle[Object.keys(LoggerStyle)[this._randomForStyle]],
         level: LoggerSeverity.log,
@@ -231,12 +245,12 @@ export class Logger {
     };
 
     const currGroup: string[] = [];
-    config = ObjectUtil.merge(config, Logger._configs.get(currGroup.join("_")));
+    config = ObjectUtils.merge(config, Logger._configs.get(currGroup.join("_")));
     for (const groupItem of this._group) {
       currGroup.push(groupItem);
 
       if (Logger._configs.has(currGroup.join("_"))) {
-        config = ObjectUtil.merge(config, Logger._configs.get(currGroup.join("_")));
+        config = ObjectUtils.merge(config, Logger._configs.get(currGroup.join("_")));
       }
     }
 

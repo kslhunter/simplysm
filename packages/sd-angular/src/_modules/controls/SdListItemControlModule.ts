@@ -2,17 +2,17 @@ import {NgModule} from "@angular/core";
 import {SdListItemControl} from "../../controls/SdListItemControl";
 import {CommonModule} from "@angular/common";
 import {SdListControlModule} from "./SdListControlModule";
+import {SdIconControlModule} from "./icons/SdIconControlModule";
 import {SdCollapseControlModule} from "./SdCollapseControlModule";
 import {SdCollapseIconControlModule} from "./SdCollapseIconControlModule";
-import {SdIconControlModule} from "./SdIconControlModule";
 
 @NgModule({
   imports: [
     CommonModule,
     SdListControlModule,
+    SdIconControlModule,
     SdCollapseControlModule,
-    SdCollapseIconControlModule,
-    SdIconControlModule
+    SdCollapseIconControlModule
   ],
   declarations: [
     SdListItemControl
@@ -20,7 +20,8 @@ import {SdIconControlModule} from "./SdIconControlModule";
   exports: [
     SdListItemControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdListItemControlModule {
 }

@@ -11,7 +11,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
       </div>
       <div class="_menu-button" *ngIf="menuTitle" (click)="menuOpen = !menuOpen">
         {{ menuTitle }}
-        <sd-collapse-icon [open]="menuOpen" style="float: right;"></sd-collapse-icon>
+        <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"></sd-collapse-icon>
       </div>
     </div>
     <sd-collapse [open]="menuOpen" *ngIf="menuTitle">
@@ -57,7 +57,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
   `]
 })
 export class SdSidebarUserControl {
-  public backgroundImage = require("../../assets/user_bg.jpg"); //tslint:disable-line:no-require-imports
+  public backgroundImage = require("../../assets/user_bg.jpg"); //
 
   @Input()
   @SdInputValidate(String)

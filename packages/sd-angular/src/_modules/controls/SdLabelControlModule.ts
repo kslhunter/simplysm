@@ -9,7 +9,8 @@ import {SdLabelControl} from "../../controls/SdLabelControl";
   exports: [
     SdLabelControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdLabelControlModule {
 }

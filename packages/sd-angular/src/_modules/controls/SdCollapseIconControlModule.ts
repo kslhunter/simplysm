@@ -1,6 +1,6 @@
 import {NgModule} from "@angular/core";
 import {SdCollapseIconControl} from "../../controls/SdCollapseIconControl";
-import {SdIconControlModule} from "./SdIconControlModule";
+import {SdIconControlModule} from "./icons/SdIconControlModule";
 
 @NgModule({
   imports: [
@@ -12,7 +12,8 @@ import {SdIconControlModule} from "./SdIconControlModule";
   exports: [
     SdCollapseIconControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdCollapseIconControlModule {
 }

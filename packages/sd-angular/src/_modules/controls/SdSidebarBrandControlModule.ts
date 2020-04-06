@@ -9,7 +9,8 @@ import {SdSidebarBrandControl} from "../../controls/SdSidebarBrandControl";
   exports: [
     SdSidebarBrandControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdSidebarBrandControlModule {
 }

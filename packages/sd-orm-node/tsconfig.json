@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig",
   "compilerOptions": {
-    "target": "es2018",
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {

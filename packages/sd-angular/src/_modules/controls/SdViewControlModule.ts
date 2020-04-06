@@ -9,7 +9,8 @@ import {SdViewControl} from "../../controls/SdViewControl";
   exports: [
     SdViewControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdViewControlModule {
 }

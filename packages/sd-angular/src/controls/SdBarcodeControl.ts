@@ -1,7 +1,6 @@
 import {ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, SimpleChanges} from "@angular/core";
 import {SdInputValidate} from "../commons/SdInputValidate";
 
-// tslint:disable-next-line:no-var-requires no-require-imports
 require("jsbarcode");
 
 @Component({
@@ -39,8 +38,8 @@ export class SdBarcodeControl implements OnChanges {
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes) {
-      const canvasEl = (this._elRef.nativeElement as HTMLElement).findAll("canvas")[0];
+    if (Object.keys(changes).length > 0) {
+      const canvasEl = (this._elRef.nativeElement as HTMLElement).findFirst("canvas");
 
       if (canvasEl) {
         window["JsBarcode"](
@@ -52,7 +51,7 @@ export class SdBarcodeControl implements OnChanges {
             width: this.lineWidth,
             height: this.height,
             fontOptions: "bold",
-            fontSize: this.fontSize ? this.fontSize : (this.lineWidth * 12)
+            fontSize: this.fontSize !== undefined ? this.fontSize : (this.lineWidth * 12)
           }
         );
       }

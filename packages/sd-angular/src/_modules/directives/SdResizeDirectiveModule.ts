@@ -9,7 +9,8 @@ import {SdResizeDirective} from "../../directives/SdResizeDirective";
   exports: [
     SdResizeDirective
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdResizeDirectiveModule {
 }

@@ -1,7 +1,7 @@
 import {forwardRef, HostBinding, Inject, Injectable, Input, OnChanges, Optional, SimpleChanges} from "@angular/core";
 import {FontawesomeObject, Styles, TextParams} from "@fortawesome/fontawesome-svg-core";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {SdIconLayerControl} from "../controls/SdIconLayerControl";
+import {SdIconLayerControl} from "../controls/icons/SdIconLayerControl";
 import {SdInputValidate} from "./SdInputValidate";
 
 @Injectable()
@@ -28,16 +28,16 @@ export abstract class SdIconLayerTextBaseControlBase implements OnChanges {
 
   public constructor(@Inject(forwardRef(() => SdIconLayerControl))
                      @Optional()
-                     private readonly _parent: SdIconLayerControl,
+                     private readonly _parent: SdIconLayerControl | undefined,
                      private readonly _sanitizer: DomSanitizer) {
-    if (!this._parent) {
+    if (this._parent === undefined) {
       throw new Error(this.constructor.name + "는 SdIconLayerControl 의 하위에만 사용될 수 있습니다");
     }
   }
 
-  // tslint:disable-next-line:contextual-lifecycle
+  // eslint-disable-next-line @angular-eslint/contextual-lifecycle
   public ngOnChanges(changes: SimpleChanges): void {
-    if (changes) {
+    if (Object.keys(changes).length > 0) {
       this.updateParams();
       this.updateContent();
     }
@@ -49,7 +49,7 @@ export abstract class SdIconLayerTextBaseControlBase implements OnChanges {
 
   private updateContent(): void {
     this.renderedHTML = this._sanitizer.bypassSecurityTrustHtml(
-      this.renderFontawesomeObject(this.content || "", this.params).html.join("\n")
+      this.renderFontawesomeObject(this.content ?? "", this.params).html.join("\n")
     );
   }
 }

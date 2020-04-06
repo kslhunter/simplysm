@@ -9,7 +9,8 @@ import {SdTabControl} from "../../controls/SdTabControl";
   exports: [
     SdTabControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdTabControlModule {
 }

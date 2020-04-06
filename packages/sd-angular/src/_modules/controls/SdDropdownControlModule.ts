@@ -9,7 +9,8 @@ import {SdDropdownControl} from "../../controls/SdDropdownControl";
   exports: [
     SdDropdownControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdDropdownControlModule {
 }

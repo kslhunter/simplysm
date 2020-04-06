@@ -1,13 +1,9 @@
 {
   "extends": "../../tsconfig",
   "compilerOptions": {
-    "target": "es2018",
     "outDir": "dist",
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
-      "tslint": [
-        "../../node_modules/tslint"
-      ],
       "@simplysm/sd-core-common": [
         "../sd-core-common/src/index.ts"
       ],
@@ -17,8 +13,8 @@
       "@simplysm/sd-service-common": [
         "../sd-service-common/src/index.ts"
       ],
-      "@simplysm/sd-service-server": [
-        "../sd-service-server/src/index.ts"
+      "@simplysm/sd-service-node": [
+        "../sd-service-node/src/index.ts"
       ]
     }
   },

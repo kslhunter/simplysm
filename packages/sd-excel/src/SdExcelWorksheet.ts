@@ -3,7 +3,7 @@ import {SdExcelCell} from "./SdExcelCell";
 import {SdExcelColumn} from "./SdExcelColumn";
 import {SdExcelRow} from "./SdExcelRow";
 import {SdExcelUtils} from "./utils/SdExcelUtils";
-import {ObjectUtil} from "@simplysm/sd-core-common";
+import {ObjectUtils} from "@simplysm/sd-core-common";
 
 export class SdExcelWorksheet {
   public relData: any;
@@ -28,7 +28,9 @@ export class SdExcelWorksheet {
   }
 
   public get rowLength(): number {
-    let length = this.sheetData.worksheet.sheetData[0].row.max((item: any) => item && item.$ && item.$.r ? Number(item.$.r) : 0);
+    let length = this.sheetData.worksheet.sheetData[0].row.max((item: any) => (
+      (item?.$?.r !== undefined) ? Number(item.$.r) : 0
+    ));
     if (length === 0) {
       length = this.sheetData.worksheet.sheetData[0].row.length;
     }
@@ -43,7 +45,7 @@ export class SdExcelWorksheet {
       const rowIndex = Number(nextRowData.$.r);
       nextRowData.$.r = (rowIndex + 1).toString();
 
-      if (nextRowData.c && nextRowData.c.length > 0) {
+      if (nextRowData.c !== undefined && nextRowData.c.length > 0) {
         for (const colData of nextRowData.c) {
           const colRowCol = SdExcelUtils.getAddressRowCol(colData.$.r);
           colData.$.r = SdExcelUtils.getAddress(rowIndex, colRowCol.col);
@@ -52,9 +54,7 @@ export class SdExcelWorksheet {
     }
 
     if (
-      this.sheetData.worksheet.mergeCells &&
-      this.sheetData.worksheet.mergeCells[0] &&
-      this.sheetData.worksheet.mergeCells[0].mergeCell &&
+      this.sheetData.worksheet.mergeCells?.[0]?.mergeCell !== undefined &&
       this.sheetData.worksheet.mergeCells[0].mergeCell.length > 0
     ) {
       const mergeDataList = this.sheetData.worksheet.mergeCells[0].mergeCell;
@@ -69,11 +69,7 @@ export class SdExcelWorksheet {
       }
     }
 
-    if (
-      this.sheetData.worksheet.dimension &&
-      this.sheetData.worksheet.dimension[0] &&
-      this.sheetData.worksheet.dimension[0].$.ref
-    ) {
+    if (this.sheetData.worksheet.dimension?.[0]?.$?.ref !== undefined) {
       const dimension = SdExcelUtils.getRangeAddressRowCol(this.sheetData.worksheet.dimension[0].$.ref);
       this.sheetData.worksheet.dimension[0].$.ref =
         SdExcelUtils.getRangeAddress(dimension.fromRow, dimension.fromCol, dimension.toRow + 1, dimension.toCol);
@@ -87,12 +83,12 @@ export class SdExcelWorksheet {
     const copyRowData = rowDataList.single((item: any) => Number(item.$.r) === (copyRow >= row ? copyRow + 1 : copyRow));
 
     const prevRowData = rowDataList.orderBy(item => Number(item.$.r)).last(item => Number(item.$.r) < row + 1);
-    const prevRowIndex = prevRowData ? rowDataList.indexOf(prevRowData) : -1;
+    const prevRowIndex = prevRowData !== undefined ? rowDataList.indexOf(prevRowData) : -1;
 
-    const currRowData = ObjectUtil.clone(copyRowData);
+    const currRowData = ObjectUtils.clone(copyRowData);
     currRowData.$.r = (row + 1).toString();
 
-    if (currRowData.c && currRowData.c.length > 0) {
+    if (currRowData.c !== undefined && currRowData.c.length > 0) {
       for (const colData of currRowData.c) {
         const colRowCol = SdExcelUtils.getAddressRowCol(colData.$.r);
         colData.$.r = SdExcelUtils.getAddress(row, colRowCol.col);

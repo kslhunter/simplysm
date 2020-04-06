@@ -1,7 +1,6 @@
 {
   "extends": "../../tsconfig",
   "compilerOptions": {
-    "target": "es5",
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
@@ -14,8 +13,8 @@
       "@simplysm/sd-service-common": [
         "../sd-service-common/src/index.ts"
       ],
-      "@simplysm/sd-service-client-browser": [
-        "../sd-service-client-browser/src/index.ts"
+      "@simplysm/sd-service-browser": [
+        "../sd-service-browser/src/index.ts"
       ],
       "@simplysm/sd-orm-common": [
         "../sd-orm-common/src/index.ts"

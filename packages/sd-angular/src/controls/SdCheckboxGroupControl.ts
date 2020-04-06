@@ -54,9 +54,9 @@ export class SdCheckboxGroupControl implements DoCheck {
   }
 
   public getIsItemSelected(value: any): boolean {
-    const thisKeyValue = (this.keyProp && this.value) ? this.value.map(item => item[this.keyProp!]) : this.value;
-    const itemKeyValue = (this.keyProp && value) ? value[this.keyProp] : value;
-    return !!thisKeyValue && thisKeyValue.includes(itemKeyValue);
+    const thisKeyValue = (this.keyProp !== undefined && this.value) ? this.value.map(item => item[this.keyProp!]) : this.value;
+    const itemKeyValue = (this.keyProp !== undefined && value !== undefined) ? value[this.keyProp] : value;
+    return thisKeyValue?.includes(itemKeyValue) ?? false;
   }
 
   public toggleValueItem(item: any): void {

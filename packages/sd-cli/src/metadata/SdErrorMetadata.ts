@@ -5,9 +5,9 @@ import {SdModuleMetadata} from "./SdModuleMetadata";
 
 
 export class SdErrorMetadata extends SdMetadataBase {
-  public constructor(public pkg: SdMetadataCollector,
-                     public module: SdModuleMetadata,
-                     public metadata: MetadataError) {
+  public constructor(public readonly pkg: SdMetadataCollector,
+                     public readonly module: SdModuleMetadata,
+                     public readonly metadata: MetadataError) {
     super();
   }
 }

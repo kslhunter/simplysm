@@ -1,13 +1,12 @@
-import {ObjectUtil, Type} from "@simplysm/sd-core-common";
+import {NeverEntryError, ObjectUtils, Type} from "@simplysm/sd-core-common";
 import {IDbContextExecutor} from "./IDbContextExecutor";
 import {Queryable} from "./Queryable";
 import {DbDatabaseInfoModel, DbMigrationModel, DbTableInfoModel} from "../model";
 import {IDbMigration} from "./IDbMigration";
 import {IQueryResultParseOption, TQueryDef} from "../query-definition";
 import {sorm} from "./sorm";
-import {DbDefinitionUtil} from "../util/DbDefinitionUtil";
-import {ITableDef} from "../definition";
-import {QueryUtil} from "../util/QueryUtil";
+import {DbDefinitionUtils} from "../util/DbDefinitionUtils";
+import {QueryUtils} from "../util/QueryUtils";
 
 export abstract class DbContext {
   public static readonly selectCache = new Map<string, { result: any[]; timeout: any } | undefined>();
@@ -70,6 +69,8 @@ export abstract class DbContext {
         this.status = "connect";
       }
       catch (err1) {
+        if (!(err1 instanceof Error)) throw new NeverEntryError();
+
         if (!err1.message.includes("ROLLBACK") || !err1.message.includes("BEGIN")) {
           await this._executor.closeAsync();
           this.status = "ready";
@@ -108,6 +109,8 @@ export abstract class DbContext {
         this.status = "connect";
       }
       catch (err1) {
+        if (!(err1 instanceof Error)) throw new NeverEntryError();
+
         if (!err1.message.includes("ROLLBACK") || !err1.message.includes("BEGIN")) {
           await this._executor.closeAsync();
           this.status = "ready";
@@ -243,9 +246,9 @@ export abstract class DbContext {
       .filter(key => !key.startsWith("_"))
       .map(key => this[key])
       .ofType<Queryable<any, any>>(Queryable)
-      .map(qr => DbDefinitionUtil.getTableDef(qr.tableType!))
-      .filter(item => !item.database || dbNames.includes(item.database))
-      .filterExists() as ITableDef[];
+      .map(qr => DbDefinitionUtils.getTableDef(qr.tableType!))
+      .filter(item => item.database === undefined || dbNames.includes(item.database))
+      .filterExists();
 
     const createTableQueryDefs: TQueryDef[] = [];
     for (const tableDef of tableDefs) {
@@ -261,9 +264,9 @@ export abstract class DbContext {
           schema: tableDef.schema ?? this.schema.schema,
           name: tableDef.name
         },
-        columns: tableDef.columns.map(col => ObjectUtil.clearUndefined({
+        columns: tableDef.columns.map(col => ObjectUtils.clearUndefined({
           name: col.name,
-          dataType: col.dataType ?? QueryUtil.getDataType(col.typeFwd()),
+          dataType: col.dataType ?? QueryUtils.getDataType(col.typeFwd()),
           autoIncrement: col.autoIncrement,
           nullable: col.nullable
         }))
@@ -304,7 +307,7 @@ export abstract class DbContext {
       }
 
       for (const fkDef of tableDef.foreignKeys) {
-        const targetTableDef = DbDefinitionUtil.getTableDef(fkDef.targetTypeFwd());
+        const targetTableDef = DbDefinitionUtils.getTableDef(fkDef.targetTypeFwd());
         if (targetTableDef.columns.length < 1) {
           throw new Error(`${targetTableDef.name}의 컬럼 설정이 잘못되었습니다.`);
         }

@@ -9,7 +9,8 @@ import {SdTopbarContainerControl} from "../../controls/SdTopbarContainerControl"
   exports: [
     SdTopbarContainerControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdTopbarContainerControlModule {
 }

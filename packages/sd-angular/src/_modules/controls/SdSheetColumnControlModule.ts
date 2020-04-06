@@ -9,7 +9,8 @@ import {SdSheetColumnControl} from "../../controls/SdSheetColumnControl";
   exports: [
     SdSheetColumnControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdSheetColumnControlModule {
 }

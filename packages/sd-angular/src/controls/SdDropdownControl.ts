@@ -10,6 +10,7 @@ import {
   Output
 } from "@angular/core";
 import {SdInputValidate} from "../commons/SdInputValidate";
+import {NeverEntryError} from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-dropdown",
@@ -42,17 +43,17 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   private _isOpen = false;
 
   private readonly _el: HTMLElement;
-  private _controlEl!: HTMLElement;
-  private _dropdownEl!: HTMLElement;
+  private _controlEl?: HTMLElement;
+  private _dropdownEl?: HTMLElement;
 
   private _mouseoverEl?: HTMLElement;
 
-  public mouseoverEventHandler = (event: MouseEvent) => {
+  public mouseoverEventHandler = (event: MouseEvent): void => {
     this._mouseoverEl = event.target as HTMLElement;
   };
 
   public get isDropdownLocatedTop(): boolean {
-    return this._controlEl ? window.innerHeight < this._controlEl.getRelativeOffset(window.document.body).top * 2 : false;
+    return this._controlEl !== undefined ? window.innerHeight < this._controlEl.getRelativeOffset(window.document.body).top * 2 : false;
   }
 
   public constructor(private readonly _elRef: ElementRef) {
@@ -60,8 +61,8 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this._controlEl = this._el.findAll("> ._sd-dropdown-control")[0] as HTMLElement;
-    this._dropdownEl = this._el.findAll("> sd-dropdown-popup")[0] as HTMLElement;
+    this._controlEl = this._el.findAll("> ._sd-dropdown-control")[0];
+    this._dropdownEl = this._el.findAll("> sd-dropdown-popup")[0];
 
     // this._controlEl.addEventListener("focus", this.focusEventHandler, true);
     this._controlEl.addEventListener("blur", this.blurEventHandler, true);
@@ -84,6 +85,9 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     if (this._isOpen) return;
     if (this.disabled) return;
     this._isOpen = true;
+
+    if (!this._dropdownEl) throw new NeverEntryError();
+    if (!this._controlEl) throw new NeverEntryError();
 
     document.body.appendChild(this._dropdownEl);
     this._dropdownEl.addEventListener("blur", this.blurEventHandler, true);
@@ -167,6 +171,8 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     if (!this._isOpen) return;
     this._isOpen = false;
 
+    if (!this._dropdownEl) throw new NeverEntryError();
+
     Object.assign(
       this._dropdownEl.style,
       {
@@ -181,7 +187,10 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     this.close.emit();
   }
 
-  public scrollEventHandler = (event: Event) => {
+  public scrollEventHandler = (event: Event): void => {
+    if (!this._dropdownEl) throw new NeverEntryError();
+    if (!this._controlEl) throw new NeverEntryError();
+
     if (this._el.findParent(event.target as HTMLElement)) {
       const windowOffset = this._controlEl.getRelativeOffset(window.document.body);
 
@@ -208,7 +217,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     }
   };
 
-  public clickEventHandler = (event: MouseEvent) => {
+  public clickEventHandler = (): void => {
     if (this._isOpen) {
       this.closePopup();
     }
@@ -217,7 +226,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     }
   };
 
-  public keydownEventHandler = (event: KeyboardEvent) => {
+  public keydownEventHandler = (event: KeyboardEvent): void => {
     if (!event.ctrlKey && !event.altKey && event.key === "ArrowDown") {
       this.openPopup();
     }
@@ -232,10 +241,13 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     }
   };
 
-  public blurEventHandler = (event: FocusEvent) => {
-    const relatedTarget = event.relatedTarget as HTMLElement;
+  public blurEventHandler = (event: FocusEvent): void => {
+    if (!this._dropdownEl) throw new NeverEntryError();
+    if (!this._controlEl) throw new NeverEntryError();
+
+    const relatedTarget = event.relatedTarget as HTMLElement | undefined;
     if (
-      relatedTarget && (
+      relatedTarget != null && (
         relatedTarget === this._controlEl ||
         relatedTarget === this._dropdownEl ||
         relatedTarget.findParent(this._controlEl) ||
@@ -245,15 +257,19 @@ export class SdDropdownControl implements OnInit, OnDestroy {
       return;
     }
 
-    if (this._mouseoverEl && (this._mouseoverEl.findParent(this._controlEl) || this._mouseoverEl.findParent(this._dropdownEl))) {
-      const firstFocusableEl = this._controlEl.isFocusable ? this._controlEl : this._controlEl.findFocusableAll()[0];
-      if (firstFocusableEl) {
+    if (
+      relatedTarget == null &&
+      this._mouseoverEl instanceof HTMLElement &&
+      (this._mouseoverEl.findParent(this._controlEl) || this._mouseoverEl.findParent(this._dropdownEl))
+    ) {
+      const firstFocusableEl = this._controlEl.isFocusable() ? this._controlEl : this._controlEl.findFocusableAll()[0];
+      if (firstFocusableEl !== undefined) {
         firstFocusableEl.focus();
         return;
       }
       else {
-        const firstFocusableEl1 = this._dropdownEl.isFocusable ? this._dropdownEl : this._dropdownEl.findFocusableAll()[0];
-        if (firstFocusableEl1) {
+        const firstFocusableEl1 = this._dropdownEl.isFocusable() ? this._dropdownEl : this._dropdownEl.findFocusableAll()[0];
+        if (firstFocusableEl1 !== undefined) {
           firstFocusableEl1.focus();
           return;
         }

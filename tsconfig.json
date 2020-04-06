@@ -2,10 +2,8 @@
   "compilerOptions": {
     "module": "commonjs",
     "moduleResolution": "node",
-    "lib": [
-      "es2018",
-      "dom"
-    ],
+    "target": "es5",
+    "lib": ["es2017", "dom"],
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
     "sourceMap": true,
@@ -16,11 +14,6 @@
     "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "declaration": true,
-    "plugins": [
-      {
-        "name": "typescript-tslint-plugin"
-      }
-    ],
     "typeRoots": [
       "./node_modules/@types",
       "./node_modules/@simplysm-types"

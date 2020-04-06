@@ -4,7 +4,7 @@ import {
   MetadataArray,
   MetadataSymbolicCallExpression
 } from "@angular/compiler-cli";
-import {NotImplementError} from "@simplysm/sd-core-common";
+import {NeverEntryError} from "@simplysm/sd-core-common";
 import {SdMetadataCollector} from "./SdMetadataCollector";
 import {isMetadataArrayExpression, SdMetadataBase, TSdMetadata} from "./commons";
 import {SdModuleMetadata} from "./SdModuleMetadata";
@@ -25,7 +25,7 @@ export class SdCallMetadata extends SdMetadataBase {
       };
     }
     else {
-      throw new NotImplementError();
+      throw new NeverEntryError();
     }
   }
 
@@ -33,13 +33,15 @@ export class SdCallMetadata extends SdMetadataBase {
     const metadata = this.metadata.arguments ?? [] as MetadataArray;
 
     const real = this.pkg.findRealMetadata(this.module, metadata);
-    if (!isMetadataArrayExpression(real.metadata)) throw new NotImplementError();
+    if (!real) return [];
+
+    if (!isMetadataArrayExpression(real.metadata)) throw new NeverEntryError();
     return this.pkg.getSdMetadataArray(real.module, real.metadata);
   }
 
-  public constructor(public pkg: SdMetadataCollector,
-                     public module: SdModuleMetadata,
-                     public metadata: MetadataSymbolicCallExpression) {
+  public constructor(public readonly pkg: SdMetadataCollector,
+                     public readonly module: SdModuleMetadata,
+                     public readonly metadata: MetadataSymbolicCallExpression) {
     super();
   }
 }

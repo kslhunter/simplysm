@@ -9,7 +9,8 @@ import {SdFormControl} from "../../controls/SdFormControl";
   exports: [
     SdFormControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdFormControlModule {
 }

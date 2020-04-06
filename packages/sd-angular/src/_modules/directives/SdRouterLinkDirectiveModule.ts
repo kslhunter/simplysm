@@ -1,12 +1,10 @@
 import {NgModule} from "@angular/core";
 import {SdRouterLinkDirective} from "../../directives/SdRouterLinkDirective";
 import {RouterModule} from "@angular/router";
-import {SdAngularModule} from "../../SdAngularModule";
 
 @NgModule({
   imports: [
-    RouterModule,
-    SdAngularModule
+    RouterModule
   ],
   declarations: [
     SdRouterLinkDirective
@@ -14,7 +12,8 @@ import {SdAngularModule} from "../../SdAngularModule";
   exports: [
     SdRouterLinkDirective
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdRouterLinkDirectiveModule {
 }

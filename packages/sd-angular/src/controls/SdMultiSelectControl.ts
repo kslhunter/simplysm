@@ -29,7 +29,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
     <sd-dropdown [disabled]="disabled" (open)="open.emit()" (close)="close.emit()">
       <div #content></div>
       <div class="_icon">
-        <sd-icon fixedWidth="true" icon="caret-down"></sd-icon>
+        <sd-icon fixedWidth icon="caret-down"></sd-icon>
       </div>
 
       <sd-dropdown-popup>
@@ -48,10 +48,10 @@ import {SdInputValidate} from "../commons/SdInputValidate";
                     <ng-template [ngTemplateOutlet]="itemTemplateRef"
                                  [ngTemplateOutletContext]="{item: item}"></ng-template>
 
-                    <ng-container *ngIf="children && children!(i, item) && children!(i, item).length > 0">
+                    <ng-container *ngIf="getChildrenFn && getChildrenFn!(i, item) && getChildrenFn!(i, item).length > 0">
                       <div class="_children">
                         <ng-template [ngTemplateOutlet]="rowOfList"
-                                     [ngTemplateOutletContext]="{items: children(i, item)}"></ng-template>
+                                     [ngTemplateOutletContext]="{items: getChildrenFn(i, item)}"></ng-template>
                       </div>
                     </ng-container>
                   </div>
@@ -116,6 +116,47 @@ import {SdInputValidate} from "../commons/SdInputValidate";
         background: var(--theme-color-grey-lightest);
         color: var(--text-brightness-light);
       }
+
+      &[sd-size=sm] /deep/ > sd-dropdown > div {
+        padding: var(--gap-xs) var(--gap-sm);
+
+        > ._icon {
+          padding: var(--gap-xs) 0;
+        }
+
+        height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+      }
+
+      &[sd-size=lg] /deep/ > sd-dropdown > div {
+        padding: var(--gap-default) var(--gap-lg);
+
+        > ._icon {
+          padding: var(--gap-default) 0;
+        }
+
+        height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+      }
+
+      &[sd-inset=true] {
+        > /deep/ sd-dropdown > div {
+          border: none;
+          border-radius: 0;
+          height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+        }
+
+        &[sd-size=sm] > /deep/ sd-dropdown > div {
+          height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+        }
+
+        &[sd-size=lg] > /deep/ sd-dropdown > div {
+          height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+        }
+
+        > /deep/ sd-dropdown > div:focus {
+          outline: 1px solid var(--theme-color-primary-default);
+          outline-offset: -1px;
+        }
+      }
     }
 
     ._sd-multi-select-item > ._children {
@@ -166,19 +207,42 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
 
   @Input()
   @SdInputValidate(Function)
-  public trackBy?: (index: number, item: any) => any;
+  public trackByFn?: (index: number, item: any) => any;
 
   @Input()
   @SdInputValidate(Function)
-  public children?: (index: number, item: any) => any;
+  public getChildrenFn?: (index: number, item: any) => any;
 
   @Input()
   @SdInputValidate(String)
   public placeholder?: string;
 
+  @Input()
+  @SdInputValidate(Boolean)
+  public set required(value: boolean | undefined) {
+    this._required = value;
+    this._refreshInvalid();
+  }
+
+  public get required(): boolean | undefined {
+    return this._required;
+  }
+
+  private _required: boolean | undefined;
+
+  @Input()
+  @SdInputValidate(Boolean)
+  @HostBinding("attr.sd-inset")
+  public inset?: boolean;
+
+  @Input()
+  @SdInputValidate({type: String, includes: ["sm", "lg"]})
+  @HostBinding("attr.sd-size")
+  public size?: "sm" | "lg";
+
   public trackByItemFn(index: number, item: any): any {
-    if (this.trackBy) {
-      return this.trackBy(index, item) || item;
+    if (this.trackByFn) {
+      return this.trackByFn(index, item) ?? item;
     }
     else {
       return item;
@@ -186,7 +250,8 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
   }
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
-                     private readonly _cdr: ChangeDetectorRef) {
+                     private readonly _cdr: ChangeDetectorRef,
+                     private readonly _elRef: ElementRef) {
     this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => item);
   }
 
@@ -205,11 +270,11 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
   }
 
   public getIsItemSelected(item: SdMultiSelectItemControl): boolean {
-    if (!this.keyProp) {
+    if (this.keyProp === undefined) {
       return this.value ? this.value.includes(item.value) : false;
     }
     else {
-      return this.value ? this.value.map(item1 => item1[this.keyProp!]).includes(item.value[this.keyProp!]) : false;
+      return this.value ? this.value.map(item1 => item1[this.keyProp!]).includes(item.value[this.keyProp]) : false;
     }
   }
 
@@ -229,6 +294,16 @@ export class SdMultiSelectControl implements DoCheck, OnInit, AfterContentChecke
     }
     content = content.slice(0, -2);
 
-    this.contentElRef.nativeElement.innerHTML = content || (this.placeholder ? "<div class='_placeholder'>" + this.placeholder + "</div>" : "");
+    this.contentElRef.nativeElement.innerHTML = content ?? (this.placeholder !== undefined ? "<div class='_placeholder'>" + this.placeholder + "</div>" : "");
+  }
+
+
+  private _refreshInvalid(): void {
+    if (this.required && (this.value === undefined || this.value.length < 1)) {
+      this._elRef.nativeElement.setAttribute("sd-invalid", "true");
+    }
+    else {
+      this._elRef.nativeElement.setAttribute("sd-invalid", "false");
+    }
   }
 }

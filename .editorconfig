@@ -2,6 +2,7 @@ root = true
 
 [*]
 indent_size = 2
+end_of_line = crlf
 ij_any_else_on_new_line = true
 ij_any_catch_on_new_line = true
 ij_any_finally_on_new_line = true

@@ -35,7 +35,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
         color: inherit;
         cursor: pointer;
         position: relative;
-        border: none;
+        border-color: transparent;
 
         > ._indicator_rect {
           position: absolute;
@@ -57,8 +57,8 @@ import {SdInputValidate} from "../commons/SdInputValidate";
           height: $checkbox-size;
           vertical-align: top;
           font-size: var(--font-size-default);
-          margin-top: -1px;
-          //text-indent: 1px;
+          top: -1px;
+          text-indent: 1px;
         }
 
         > ._content {
@@ -128,6 +128,10 @@ import {SdInputValidate} from "../commons/SdInputValidate";
         padding: var(--gap-default) var(--gap-lg);
       }
 
+      &[sd-inset=true] > label {
+        border: none;
+      }
+
       @each $color in $arr-theme-color {
         &[sd-theme=#{$color}] > label {
           > ._indicator_rect {
@@ -166,6 +170,11 @@ export class SdCheckboxControl {
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-inline")
   public inline?: boolean;
+
+  @Input()
+  @SdInputValidate(Boolean)
+  @HostBinding("attr.sd-inset")
+  public inset?: boolean;
 
   @Input()
   @SdInputValidate(Boolean)

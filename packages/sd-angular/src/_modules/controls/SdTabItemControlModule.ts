@@ -12,7 +12,8 @@ import {SdTabControlModule} from "./SdTabControlModule";
   exports: [
     SdTabItemControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdTabItemControlModule {
 }

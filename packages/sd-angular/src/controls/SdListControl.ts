@@ -1,6 +1,5 @@
 import {ChangeDetectionStrategy, Component} from "@angular/core";
 
-// TODO
 @Component({
   selector: "sd-list",
   changeDetection: ChangeDetectionStrategy.OnPush,

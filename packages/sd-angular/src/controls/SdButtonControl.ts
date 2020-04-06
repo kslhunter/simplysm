@@ -134,6 +134,6 @@ export class SdButtonControl {
   }
 
   public safeHtml(value?: string): SafeHtml | undefined {
-    return value ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
+    return value !== undefined ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
   }
 }

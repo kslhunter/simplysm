@@ -9,7 +9,8 @@ import {SdGapControl} from "../../controls/SdGapControl";
   exports: [
     SdGapControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdGapControlModule {
 }

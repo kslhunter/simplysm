@@ -9,7 +9,8 @@ import {SdProgressItemControl} from "../../controls/SdProgressItemControl";
   exports: [
     SdProgressItemControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdProgressItemControlModule {
 }

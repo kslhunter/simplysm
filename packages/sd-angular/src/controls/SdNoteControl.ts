@@ -9,7 +9,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
   styles: [/* language=SCSS */ `
     @import "../../scss/variables-scss-arr";
 
-    sd-note {
+    :host {
       display: block;
       padding: var(--gap-default);
       background: var(--theme-color-grey-lightest);

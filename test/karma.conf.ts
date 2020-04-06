@@ -1,6 +1,6 @@
 import {TsconfigPathsPlugin} from "tsconfig-paths-webpack-plugin";
 import * as path from "path";
-import {ServerMiddleware} from "./config/ServerMiddleware";
+import {ServerMiddleware} from "./server/ServerMiddleware";
 
 delete process.env.TS_NODE_PROJECT;
 delete process.env.TS_NODE_TRANSPILE_ONLY;
@@ -10,17 +10,23 @@ module.exports = function (config: any): void {
     frameworks: ["mocha"],
 
     files: [
-      "../packages/!(*-cli|*-server|*-node)/src/**/*.ts",
-      "src-browser/**/*.ts",
-      "src-common/**/*.ts"
+      "../packages/sd-core-common/src/**/*.ts",
+      "../packages/sd-core-browser/src/**/*.ts",
+      "../packages/sd-orm-common/src/**/*.ts",
+      "src/common/**/*.ts",
+      "src/browser/**/*.ts"
     ],
 
     preprocessors: {
       "**/*.ts": ["webpack", "sourcemap"],
-      "../packages/**/*.ts": ["webpack", "sourcemap"]
+      "../packages/*/src/**/*.ts": ["webpack", "sourcemap"]
     },
 
-    reporters: ["progress"],
+    reporters: ["coverage-istanbul"],
+    coverageIstanbulReporter: {
+      reports: ["lcovonly"],
+      fixWebpackSourcePaths: true
+    },
 
     browsers: ["ChromeHeadless", "IE"],
 
@@ -39,7 +45,7 @@ module.exports = function (config: any): void {
         extensions: [".js", ".ts", ".json"],
         plugins: [
           new TsconfigPathsPlugin({
-            configFile: path.resolve(__dirname, "tsconfig.json")
+            configFile: path.resolve(__dirname, "tsconfig-browser.json")
           })
         ]
       },
@@ -50,9 +56,18 @@ module.exports = function (config: any): void {
             use: {
               loader: "ts-loader",
               options: {
-                configFile: path.resolve(__dirname, "tsconfig.json"),
+                configFile: path.resolve(__dirname, "tsconfig-browser.json"),
                 transpileOnly: true
               }
+            }
+          },
+          {
+            test: /\.ts$/,
+            exclude: [__dirname],
+            enforce: "post",
+            use: {
+              loader: "istanbul-instrumenter-loader",
+              options: {esModules: true}
             }
           }
         ]

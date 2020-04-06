@@ -89,14 +89,14 @@ export class SdMultiSelectItemControl implements DoCheck {
   public setIsSelected(selected: boolean): void {
     if (selected) {
       if (!this.getIsSelected()) {
-        this._parentControl.value = this._parentControl.value || [];
-        this._parentControl.value!.push(this.value);
+        this._parentControl.value = this._parentControl.value ?? [];
+        this._parentControl.value.push(this.value);
         this._parentControl.valueChange.emit(this._parentControl.value);
       }
     }
     else {
       if (this.getIsSelected()) {
-        if (this._parentControl.keyProp) {
+        if (this._parentControl.keyProp !== undefined) {
           this._parentControl.value!.remove((item: any) => item[this._parentControl.keyProp!] === this.value[this._parentControl.keyProp!]);
         }
         else {

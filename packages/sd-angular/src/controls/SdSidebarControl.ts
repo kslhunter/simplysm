@@ -35,6 +35,6 @@ export class SdSidebarControl {
   }
 
   public constructor(@Inject(forwardRef(() => SdSidebarContainerControl))
-                     public parentControl?: SdSidebarContainerControl) {
+                     public readonly parentControl?: SdSidebarContainerControl) {
   }
 }

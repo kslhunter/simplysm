@@ -4,9 +4,6 @@ import {SdInputValidate} from "../commons/SdInputValidate";
 @Component({
   selector: "sd-anchor",
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    "[attr.tabindex]": "disabled ? undefined : 0"
-  },
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
@@ -15,10 +12,10 @@ import {SdInputValidate} from "../commons/SdInputValidate";
       cursor: pointer;
       color: var(--theme-color-primary-default);
 
-      &:focus {
+      /*&:focus {
         outline-color: transparent;
         background: var(--trans-brightness-light);
-      }
+      }*/
 
       &:hover {
         color: var(--theme-color-primary-dark);
@@ -37,6 +34,11 @@ import {SdInputValidate} from "../commons/SdInputValidate";
   `]
 })
 export class SdAnchorControl {
+  @HostBinding("attr.tabindex")
+  public get tabIndex(): number | undefined {
+    return this.disabled === true ? undefined : 0;
+  }
+
   @Input()
   @SdInputValidate(Boolean)
   @HostBinding("attr.disabled")

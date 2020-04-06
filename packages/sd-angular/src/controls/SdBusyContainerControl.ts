@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, HostBinding, HostListener, Input} from "@angular/core";
-import {SdBusyContainerProvider} from "../providers/SdBusyContainerProvider";
 import {SdInputValidate} from "../commons/SdInputValidate";
+import {SdBusyContainerRootProvider} from "../root-providers/SdBusyContainerRootProvider";
 
 @Component({
   selector: "sd-busy-container",
@@ -35,7 +35,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
         visibility: hidden;
         pointer-events: none;
         opacity: 0;
-        transition: opacity .3s linear;
+        transition: opacity 1s linear;
       }
 
       &[sd-busy=true] {
@@ -174,9 +174,9 @@ export class SdBusyContainerControl {
   @HostBinding("attr.sd-no-fade")
   public noFade: boolean;
 
-  public constructor(private readonly _provider: SdBusyContainerProvider) {
-    this.type = this._provider.type || "spinner";
-    this.noFade = this._provider.noFade || false;
+  public constructor(public _busy: SdBusyContainerRootProvider) {
+    this.type = this._busy.type ?? "spinner";
+    this.noFade = this._busy.noFade ?? false;
   }
 
   @HostListener("keydown", ["$event"])

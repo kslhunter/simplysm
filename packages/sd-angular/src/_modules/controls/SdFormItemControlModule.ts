@@ -14,7 +14,8 @@ import {CommonModule} from "@angular/common";
   exports: [
     SdFormItemControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdFormItemControlModule {
 }

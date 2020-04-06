@@ -16,7 +16,8 @@ import {SdCollapseIconControlModule} from "./SdCollapseIconControlModule";
   exports: [
     SdSidebarUserControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdSidebarUserControlModule {
 }

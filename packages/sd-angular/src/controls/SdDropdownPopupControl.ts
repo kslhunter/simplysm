@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, ElementRef, NgZone, OnInit} from "@angular/core";
-import {ResizeEvent} from "@simplysm/sd-core-browser";
+import {SdResizeEvent} from "@simplysm/sd-core-browser";
 
 @Component({
   selector: "sd-dropdown-popup",
@@ -46,7 +46,7 @@ export class SdDropdownPopupControl implements OnInit {
 
     this._zone.runOutsideAngular(() => {
       divEl.addEventListener("resize", (e: Event) => {
-        const evt = e as ResizeEvent;
+        const evt = e as SdResizeEvent;
 
         if (evt.prevHeight !== evt.newHeight) {
           if (divEl.clientHeight > 300) {

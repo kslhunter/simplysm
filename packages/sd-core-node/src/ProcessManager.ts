@@ -1,6 +1,7 @@
-import * as child_process from "child_process";
+import * as cp from "child_process";
 import {Iconv} from "iconv";
-import {Wait} from "@simplysm/sd-core-common";
+import {NeverEntryError, Wait} from "@simplysm/sd-core-common";
+import * as os from "os";
 
 export class ProcessManager {
   public static async spawnAsync(
@@ -12,13 +13,13 @@ export class ProcessManager {
     const commands = commandFullText.split(" ");
 
     return await new Promise<string>((resolve, reject) => {
-      const opts: child_process.SpawnOptionsWithoutStdio = {
+      const opts: cp.SpawnOptionsWithoutStdio = {
         shell: true,
         stdio: "pipe",
         ...options
       };
 
-      const worker = child_process.spawn(commands[0], commands.slice(1), opts);
+      const worker = cp.spawn(commands[0], commands.slice(1), opts);
       worker.on("error", err => {
         reject(err);
       });
@@ -31,24 +32,24 @@ export class ProcessManager {
 
       worker.stdout.on("data", async (data: Buffer) => {
         await Wait.true(() => !processing);
-        if (forceClosing) return;
+        if (forceClosing) {
+          return;
+        }
 
         processing = true;
 
         try {
           const msg = iconv.convert(data).toString().trim();
-          message += msg + "\r\n";
+          message += msg + os.EOL;
 
-          if (messageHandler === false) {
-          }
-          else if (messageHandler) {
+          if (messageHandler) {
             const handlerResult = await messageHandler(msg);
             if (handlerResult) {
-              child_process.spawnSync("taskkill", ["/pid", worker.pid.toString(), "/f", "/t"], {cwd: opts.cwd});
+              cp.spawnSync("taskkill", ["/pid", worker.pid.toString(), "/f", "/t"], {cwd: opts.cwd});
               forceClosing = true;
             }
           }
-          else {
+          else if (messageHandler !== false) {
             process.stdout.write(data.toString());
           }
         }
@@ -61,24 +62,24 @@ export class ProcessManager {
 
       worker.stderr.on("data", async (data: Buffer) => {
         await Wait.true(() => !processing);
-        if (forceClosing) return;
+        if (forceClosing) {
+          return;
+        }
 
         processing = true;
 
         try {
           const msg = iconv.convert(data).toString().trim();
-          message += msg + "\r\n";
+          message += msg + os.EOL;
 
-          if (errorMessageHandler === false) {
-          }
-          else if (errorMessageHandler) {
+          if (errorMessageHandler) {
             const handlerResult = await errorMessageHandler(msg);
             if (handlerResult) {
-              child_process.spawnSync("taskkill", ["/pid", worker.pid.toString(), "/f", "/t"]);
+              cp.spawnSync("taskkill", ["/pid", worker.pid.toString(), "/f", "/t"]);
               forceClosing = true;
             }
           }
-          else {
+          else if (errorMessageHandler !== false) {
             process.stderr.write(data.toString());
           }
         }
@@ -93,10 +94,10 @@ export class ProcessManager {
         await Wait.true(() => !processing);
 
         if (code === 0 || forceClosing) {
-          resolve(message ? message.slice(0, -2) : message);
+          resolve(message.length > 0 ? message.slice(0, -2) : message);
         }
         else {
-          reject(new Error((message ? message.slice(0, -2) : message) + `\n\n: exit with code ${code}`));
+          reject(new Error((message.length > 0 ? message.slice(0, -2) : message) + os.EOL + os.EOL + `: exit with code ${code ?? ""}`));
         }
       });
     });
@@ -106,24 +107,28 @@ export class ProcessManager {
     binPath: string,
     args: string[],
     options?: { cwd?: string; env?: NodeJS.ProcessEnv; execArgv?: string[] }
-  ): child_process.ChildProcess {
-    const opts: child_process.ForkOptions = {
+  ): cp.ChildProcess {
+    const opts: cp.ForkOptions = {
       stdio: ["pipe", "pipe", "pipe", "ipc"],
       ...options
     };
 
-    const worker = child_process.fork(binPath, args, opts);
+    const worker = cp.fork(binPath, args, opts);
 
     let processing = false;
 
-    worker.stdout!.on("data", async (data: Buffer) => {
+    if (!worker.stdout || !worker.stderr) {
+      throw new NeverEntryError();
+    }
+
+    worker.stdout.on("data", async (data: Buffer) => {
       await Wait.true(() => !processing);
       processing = true;
       process.stdout.write(data.toString());
       processing = false;
     });
 
-    worker.stderr!.on("data", async (data: Buffer) => {
+    worker.stderr.on("data", async (data: Buffer) => {
       await Wait.true(() => !processing);
       processing = true;
       process.stderr.write(data.toString());

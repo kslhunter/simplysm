@@ -9,7 +9,8 @@ import {SdBarcodeControl} from "../../controls/SdBarcodeControl";
   exports: [
     SdBarcodeControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdBarcodeControlModule {
 }

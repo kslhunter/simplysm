@@ -1,3 +1,4 @@
+import "@simplysm/sd-core-common";
 export * from "./common";
 export * from "./decorator";
 export * from "./definition";
@@ -10,5 +11,5 @@ export * from "./query/Queryable";
 export * from "./query/QueryBuilder";
 export * from "./query/QueryUnit";
 export * from "./query/sorm";
-export * from "./util/DbDefinitionUtil";
-export * from "./util/QueryUtil";
+export * from "./util/DbDefinitionUtils";
+export * from "./util/QueryUtils";

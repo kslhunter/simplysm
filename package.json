@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "3.1.222-8",
+  "version": "3.4.48-5",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -12,20 +12,39 @@
     "test"
   ],
   "scripts": {
-    "watch": "yarn _sd-cli_ build --watch",
+    "-- watch": "",
+    "build:watch": "yarn _sd-cli_ build --watch",
+    "-- no watch": "",
+    "lint": "yarn _sd-cli_ lint",
     "build": "yarn _sd-cli_ build",
-    "test": "yarn _sd-cli_ test",
     "publish": "yarn _sd-cli_ publish",
-    "build+publish": "yarn _sd-cli_ publish --build",
-    "depcheck": "yarn _sd-cli_ depcheck",
-    "--": "",
+    "publish:build": "yarn _sd-cli_ publish --build",
+    "-- debug": "",
+    "debug:build:watch": "yarn _sd-cli_ --debug build --watch",
+    "debug:publish:build": "yarn _sd-cli_ --debug publish --build",
+    "debug:build": "yarn _sd-cli_ --debug build",
+    "debug:lint": "yarn _sd-cli_ --debug lint",
+    "debug:lint:watch": "yarn _sd-cli_ --debug lint --watch",
+    "-- debug for package": "",
+    "debug:compile:watch:sd-angular": "yarn _sd-cli_ --debug compile --watch --packages @simplysm/sd-angular",
+    "debug:compile:watch:sd-core-excel": "yarn _sd-cli_ --debug compile --watch --packages @simplysm/sd-core-common @simplysm/sd-excel",
+    "debug:build:watch:sd-angular": "yarn _sd-cli_ --debug build --watch --packages @simplysm/sd-angular",
+    "debug:gen-ng:watch:sd-angular": "yarn _sd-cli_ --debug gen-ng --watch --packages @simplysm/sd-angular",
+    "debug:build:watch:sd-core-common": "yarn _sd-cli_ --debug build --watch --packages @simplysm/sd-core-common",
+    "debug:lint:watch:sd-cli": "yarn _sd-cli_ --debug lint --watch --packages @simplysm/sd-cli",
+    "----": "",
     "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --require=ts-node/register --require=tsconfig-paths/register packages/sd-cli/src/bin.ts"
   },
   "devDependencies": {
-    "cross-env": "^7.0.0",
+    "@simplysm/eslint-plugin": "3.4.48-5",
+    "@types/node": "^13.9.1",
+    "@typescript-eslint/eslint-plugin": "^2.24.0",
+    "@typescript-eslint/parser": "^2.24.0",
+    "cross-env": "^7.0.2",
+    "eslint": "^6.8.0",
+    "eslint-plugin-import": "^2.20.1",
     "ts-node": "^8.6.2",
     "tsconfig-paths": "^3.9.0",
-    "tslint": "^5.20.1",
-    "typescript": "^3.7.5"
+    "typescript": "3.8.3"
   }
 }

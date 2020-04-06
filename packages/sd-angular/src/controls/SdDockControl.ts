@@ -1,5 +1,6 @@
 import {
-  ChangeDetectionStrategy, ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   forwardRef,
@@ -12,7 +13,7 @@ import {
 } from "@angular/core";
 import {SdInputValidate} from "../commons/SdInputValidate";
 import {SdDockContainerControl} from "./SdDockContainerControl";
-import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
+import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootProvider";
 
 @Component({
   selector: "sd-dock",
@@ -88,7 +89,7 @@ import {SdSystemConfigProvider} from "../providers/SdSystemConfigProvider";
 export class SdDockControl implements OnDestroy, OnInit {
   @Input()
   @SdInputValidate(String)
-  public configKey?: string;
+  public key?: string;
 
   @Input()
   @SdInputValidate({
@@ -111,9 +112,9 @@ export class SdDockControl implements OnDestroy, OnInit {
   public constructor(public readonly elRef: ElementRef,
                      @Inject(forwardRef(() => SdDockContainerControl))
                      private readonly _parentControl: SdDockContainerControl,
-                     private readonly _systemConfig: SdSystemConfigProvider,
                      private readonly _cdr: ChangeDetectorRef,
-                     private readonly _zone: NgZone) {
+                     private readonly _zone: NgZone,
+                     private readonly _systemConfig: SdSystemConfigRootProvider) {
     this._el = this.elRef.nativeElement;
 
     this._zone.runOutsideAngular(() => {
@@ -129,11 +130,11 @@ export class SdDockControl implements OnDestroy, OnInit {
   }
 
   public async ngOnInit(): Promise<void> {
-    if (this.configKey) {
-      this._config = await this._systemConfig.get(`sd-dock.${this.configKey}`);
+    if (this.key !== undefined) {
+      this._config = await this._systemConfig.getAsync(`sd-dock.${this.key}`);
     }
 
-    if (this.resizable && this._config && this._config.size) {
+    if (this.resizable && this._config && this._config.size !== undefined) {
       if (["right", "left"].includes(this.position)) {
         this._el.style.width = this._config.size;
       }
@@ -156,7 +157,7 @@ export class SdDockControl implements OnDestroy, OnInit {
     const startHeight = thisEl.clientHeight;
     const startWidth = thisEl.clientWidth;
 
-    const doDrag = (e: MouseEvent) => {
+    const doDrag = (e: MouseEvent): void => {
       e.stopPropagation();
       e.preventDefault();
 
@@ -174,28 +175,28 @@ export class SdDockControl implements OnDestroy, OnInit {
       }
     };
 
-    const stopDrag = async (e: MouseEvent) => {
+    const stopDrag = async (e: MouseEvent): Promise<void> => {
       e.stopPropagation();
       e.preventDefault();
 
-      document.documentElement!.removeEventListener("mousemove", doDrag, false);
-      document.documentElement!.removeEventListener("mouseup", stopDrag, false);
+      document.documentElement.removeEventListener("mousemove", doDrag, false);
+      document.documentElement.removeEventListener("mouseup", stopDrag, false);
 
-      if (this.configKey) {
-        this._config = this._config || {};
+      if (this.key !== undefined) {
+        this._config = this._config ?? {};
 
         if (["right", "left"].includes(this.position)) {
           this._config.size = thisEl.style.width;
-          await this._systemConfig.set(`sd-dock.${this.configKey}`, this._config);
+          await this._systemConfig.setAsync(`sd-dock.${this.key}`, this._config);
         }
         else {
           this._config.size = thisEl.style.height;
-          await this._systemConfig.set(`sd-dock.${this.configKey}`, this._config);
+          await this._systemConfig.setAsync(`sd-dock.${this.key}`, this._config);
         }
       }
     };
 
-    document.documentElement!.addEventListener("mousemove", doDrag, false);
-    document.documentElement!.addEventListener("mouseup", stopDrag, false);
+    document.documentElement.addEventListener("mousemove", doDrag, false);
+    document.documentElement.addEventListener("mouseup", stopDrag, false);
   }
 }

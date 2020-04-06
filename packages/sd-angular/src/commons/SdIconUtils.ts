@@ -31,8 +31,7 @@ export interface ISdIconProps {
 }
 
 export function sdIconClassList(props: ISdIconProps): string[] {
-  // noinspection UnnecessaryLocalVariableJS
-  const result = [
+  return [
     props.spin ? "fa-spin" : undefined,
     props.pulse ? "fa-pulse" : undefined,
     props.fixedWidth ? "fa-fw" : undefined,
@@ -46,18 +45,14 @@ export function sdIconClassList(props: ISdIconProps): string[] {
     props.rotate !== undefined ? `fa-rotate-${props.rotate}` : undefined,
     props.pull !== undefined ? `fa-pull-${props.pull}` : undefined
   ].filterExists();
-
-  return result;
 }
 
 export function isIconLookup(i: IconProp): i is IconLookup {
-  // noinspection UnnecessaryLocalVariableJS
-  const result = !!(i as IconLookup).prefix && !!(i as IconLookup).iconName;
-  return result;
+  return i["prefix"] !== undefined && i["iconName"] !== undefined;
 }
 
 export function sdIconNormalizeIconSpec(iconSpec: IconProp | undefined, defaultPrefix: IconPrefix = "fas"): IconLookup | undefined {
-  if (!iconSpec) {
+  if (iconSpec === undefined) {
     return undefined;
   }
 
@@ -65,17 +60,15 @@ export function sdIconNormalizeIconSpec(iconSpec: IconProp | undefined, defaultP
     return iconSpec;
   }
 
-  if (Array.isArray(iconSpec) && iconSpec.length === 2) {
+  if (Array.isArray(iconSpec)) {
     return {prefix: iconSpec[0], iconName: iconSpec[1]};
   }
 
-  if (typeof iconSpec === "string") {
-    return {prefix: defaultPrefix, iconName: iconSpec};
-  }
+  return {prefix: defaultPrefix, iconName: iconSpec};
 }
 
 export function objectWithKey<T>(key: string, value: T): { [id: string]: T } {
   // noinspection UnnecessaryLocalVariableJS
-  const result = (Array.isArray(value) && value.length > 0) || (!Array.isArray(value) && value) ? {[key]: value} : {};
+  const result = (Array.isArray(value) && value.length > 0) || (!Array.isArray(value) && value !== undefined) ? {[key]: value} : {};
   return result;
 }

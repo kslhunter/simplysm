@@ -14,7 +14,8 @@ import {SdCheckboxControlModule} from "./SdCheckboxControlModule";
   exports: [
     SdCheckboxGroupItemControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdCheckboxGroupItemControlModule {
 }

@@ -10,9 +10,9 @@ export class SdArrayMetadata extends SdMetadataBase implements Iterable<TSdMetad
   public [Symbol.iterator](): Iterator<TSdMetadata> {
     let index = 0;
     return {
-      next: () => {
+      next: (): { done: boolean; value: TSdMetadata } => {
         const value = this.sdMetadataList[index];
-        index++;
+        index += 1;
 
         return {
           done: index > this.sdMetadataList.length,
@@ -22,9 +22,9 @@ export class SdArrayMetadata extends SdMetadataBase implements Iterable<TSdMetad
     };
   }
 
-  public constructor(public pkg: SdMetadataCollector,
-                     public module: SdModuleMetadata,
-                     public arr: MetadataArray) {
+  public constructor(public readonly pkg: SdMetadataCollector,
+                     public readonly module: SdModuleMetadata,
+                     public readonly arr: MetadataArray) {
     super();
 
     this.sdMetadataList = this.pkg.getSdMetadataArray(module, arr);

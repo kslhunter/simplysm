@@ -1,10 +1,6 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "target": "es2018",
-    "lib": [
-      "es2018"
-    ],
-    "declaration": false
+    "target": "es2017"
   }
 }

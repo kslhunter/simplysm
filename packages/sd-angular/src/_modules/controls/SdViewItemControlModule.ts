@@ -12,7 +12,8 @@ import {SdViewControlModule} from "./SdViewControlModule";
   exports: [
     SdViewItemControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdViewItemControlModule {
 }

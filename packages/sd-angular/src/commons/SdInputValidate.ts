@@ -1,7 +1,7 @@
 import {PropertyValidate, TValidateDef} from "@simplysm/sd-core-common";
 
 export function SdInputValidate(def: TValidateDef<any>): (target: any, propertyName: string, inputDescriptor?: PropertyDescriptor) => void {
-  const fn = (v: any) => {
+  const fn = (v: any): any => {
     const isForBoolean = (
       def === Boolean ||
       (def instanceof Array && def.includes(Boolean)) ||
@@ -22,7 +22,7 @@ export function SdInputValidate(def: TValidateDef<any>): (target: any, propertyN
       return Number(v);
     }
 
-    if (v === null) {
+    if (v == null) {
       return undefined;
     }
 

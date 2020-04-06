@@ -22,7 +22,7 @@ import {
 } from "../query-definition";
 import {TQueryValue, TQueryValueArray, TQueryValueOrSelect, TQueryValueOrSelectArray} from "../common";
 import {DateOnly, DateTime, JsonConvert, Time, Uuid} from "@simplysm/sd-core-common";
-import {QueryUtil} from "../util/QueryUtil";
+import {QueryUtils} from "../util/QueryUtils";
 
 export class QueryBuilder {
   public static select(def: ISelectQueryDef): string {
@@ -31,7 +31,7 @@ export class QueryBuilder {
     let q = "";
     q += "SELECT";
 
-    if (def.top) {
+    if (def.top !== undefined) {
       q += ` TOP ${def.top}`;
     }
 
@@ -47,7 +47,7 @@ export class QueryBuilder {
     for (const selectKey of Object.keys(def.select)) {
       const selectValue = def.select[selectKey];
 
-      if (selectValue && selectValue["from"]) {
+      if (selectValue?.["from"] !== undefined) {
         const selectQueryDef = selectValue as ISelectQueryDef;
         let subQuery = `  (\n`;
         subQuery += "    " + QueryBuilder.select(selectQueryDef).replace(/\n/g, "\n    ") + "\n";
@@ -66,23 +66,22 @@ export class QueryBuilder {
     if (def.from instanceof Array) {
       q += `FROM (\n`;
       for (const from of def.from) {
-        const fromQueryDef = from as ISelectQueryDef;
-        q += "  " + QueryBuilder.select(fromQueryDef).replace(/\n/g, "\n  ");
+        q += "  " + QueryBuilder.select(from).replace(/\n/g, "\n  ");
         q += "\n\n  UNION ALL\n\n";
       }
       q = q.slice(0, -14);
       q += `)`;
     }
-    else if (def.from["from"]) {
+    else if (def.from["from"] !== undefined) {
       const fromQueryDef = def.from as ISelectQueryDef;
       q += `FROM (\n`;
       q += "  " + QueryBuilder.select(fromQueryDef).replace(/\n/g, "\n  ") + "\n";
       q += `)`;
     }
     else {
-      q += `FROM ${def.from}`;
+      q += `FROM ${def.from as string}`;
     }
-    q += def.as ? ` as ${def.as}` : "";
+    q += def.as !== undefined ? ` as ${def.as}` : "";
     q += "\n";
 
     // JOIN
@@ -161,7 +160,7 @@ export class QueryBuilder {
 
     // LINE 1
     q += `UPDATE`;
-    if (def.top) {
+    if (def.top !== undefined) {
       q += ` TOP (${def.top})`;
     }
     q += ` ${def.as ?? def.from} SET`;
@@ -178,9 +177,9 @@ export class QueryBuilder {
     }
 
     // FROM, AS
-    if (def.as || (def.join && def.join.length > 0)) {
+    if (def.as !== undefined || (def.join && def.join.length > 0)) {
       q += `FROM ${def.from}`;
-      if (def.as) {
+      if (def.as !== undefined) {
         q += ` as ${def.as}`;
       }
       q += "\n";
@@ -208,7 +207,7 @@ export class QueryBuilder {
 
     // LINE 1
     q += `MERGE ${def.from}`;
-    if (def.as) {
+    if (def.as !== undefined) {
       q += ` as ${def.as}`;
     }
     q += "\n";
@@ -225,7 +224,7 @@ export class QueryBuilder {
     if (def.updateRecord && Object.keys(def.updateRecord).length > 0) {
       q += "WHEN MATCHED THEN\n";
       q += "  UPDATE SET\n";
-      q += Object.keys(def.updateRecord).map(key => `    ${key} = ${QueryBuilder.getQueryOfQueryValue(def.updateRecord![key])}`).join(",\n");
+      q += Object.keys(def.updateRecord).map(key => `    ${key} = ${QueryBuilder.getQueryOfQueryValue(def.updateRecord[key])}`).join(",\n");
       q += "\n";
     }
 
@@ -248,7 +247,7 @@ export class QueryBuilder {
 
     // LINE 1
     q += `DELETE`;
-    if (def.top) {
+    if (def.top !== undefined) {
       q += ` TOP (${def.top})`;
     }
 
@@ -262,9 +261,9 @@ export class QueryBuilder {
     }
 
     // FROM, AS
-    if (def.as || (def.join && def.join.length > 0)) {
+    if (def.as !== undefined || (def.join && def.join.length > 0)) {
       q += `FROM ${def.from}`;
-      if (def.as) {
+      if (def.as !== undefined) {
         q += ` as ${def.as}`;
       }
       q += "\n";
@@ -330,7 +329,7 @@ END`.trim();
   }
 
   public static createTable(def: ICreateTableQueryDef): string {
-    const tableName = QueryUtil.getTableName(def.table);
+    const tableName = QueryUtils.getTableName(def.table);
 
     let query = "";
     query += `CREATE TABLE ${tableName} (\n`;
@@ -341,15 +340,15 @@ END`.trim();
   }
 
   public static dropTable(def: IDropTableQueryDef): string {
-    const tableName = QueryUtil.getTableName(def.table);
+    const tableName = QueryUtils.getTableName(def.table);
     return `DROP TABLE ${tableName}`;
   }
 
   public static addColumn(def: IAddColumnQueryDef): string[] {
-    const tableName = QueryUtil.getTableName(def.table);
+    const tableName = QueryUtils.getTableName(def.table);
 
     const queries: string[] = [];
-    if (!def.column.nullable && def.column.defaultValue) {
+    if (!def.column.nullable && def.column.defaultValue !== undefined) {
       queries.push(`ALTER TABLE ${tableName} ADD ${QueryBuilder._getQueryOfColDef({
         ...def.column,
         nullable: true
@@ -365,15 +364,15 @@ END`.trim();
   }
 
   public static removeColumn(def: IRemoveColumnQueryDef): string {
-    const tableName = QueryUtil.getTableName(def.table);
+    const tableName = QueryUtils.getTableName(def.table);
     return `ALTER TABLE ${tableName} DROP COLUMN [${def.column}]`;
   }
 
   public static modifyColumn(def: IModifyColumnQueryDef): string[] {
-    const tableName = QueryUtil.getTableName(def.table);
+    const tableName = QueryUtils.getTableName(def.table);
 
     const queries: string[] = [];
-    if (!def.column.nullable && def.column.defaultValue) {
+    if (!def.column.nullable && def.column.defaultValue !== undefined) {
       queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${QueryBuilder._getQueryOfColDef({
         ...def.column,
         nullable: true
@@ -393,15 +392,15 @@ END`.trim();
       throw new Error("설정할 PK가 입력되지 않았습니다.");
     }
 
-    const tableName = QueryUtil.getTableName(def.table);
+    const tableName = QueryUtils.getTableName(def.table);
     return `ALTER TABLE ${tableName} ADD PRIMARY KEY (${def.primaryKeys.map(item => `[${item.column}] ${item.orderBy}`).join(", ")})`;
   }
 
   public static addForeignKey(def: IAddForeignKeyQueryDef): string {
-    const tableName = QueryUtil.getTableName(def.table);
-    const tableNameChain = QueryUtil.getTableNameChain(def.table);
+    const tableName = QueryUtils.getTableName(def.table);
+    const tableNameChain = QueryUtils.getTableNameChain(def.table);
     const fkName = `[FK_${tableNameChain.join("_")}_${def.foreignKey.name}]`;
-    const targetTableName = QueryUtil.getTableName(def.foreignKey.targetTable);
+    const targetTableName = QueryUtils.getTableName(def.foreignKey.targetTable);
 
     let query = "";
     query += `ALTER TABLE ${tableName} ADD CONSTRAINT ${fkName} FOREIGN KEY (${def.foreignKey.fkColumns.map(columnName => `[${columnName}]`).join(", ")})\n`;
@@ -412,23 +411,23 @@ END`.trim();
   }
 
   public static removeForeignKey(def: IRemoveForeignKeyQueryDef): string {
-    const tableName = QueryUtil.getTableName(def.table);
-    const tableNameChain = QueryUtil.getTableNameChain(def.table);
+    const tableName = QueryUtils.getTableName(def.table);
+    const tableNameChain = QueryUtils.getTableNameChain(def.table);
     const fkName = `[FK_${tableNameChain.join("_")}_${def.foreignKey}]`;
 
     return `ALTER TABLE ${tableName} DROP CONSTRAINT ${fkName}`;
   }
 
   public static createIndex(def: ICreateIndexQueryDef): string {
-    const tableName = QueryUtil.getTableName(def.table);
-    const tableNameChain = QueryUtil.getTableNameChain(def.table);
+    const tableName = QueryUtils.getTableName(def.table);
+    const tableNameChain = QueryUtils.getTableNameChain(def.table);
     const idxName = `[IDX_${tableNameChain.join("_")}_${def.index.name}]`;
 
     return `CREATE INDEX ${idxName} ON ${tableName} (${def.index.columns.map(item => `[${item.name}] ${item.orderBy}`).join(", ")})`;
   }
 
   public static configIdentityInsert(def: IConfigIdentityInsertQueryDef): string {
-    const tableName = QueryUtil.getTableName(def.table);
+    const tableName = QueryUtils.getTableName(def.table);
     return `SET IDENTITY_INSERT ${tableName} ${def.state.toUpperCase()}`;
   }
 
@@ -444,7 +443,7 @@ END`.trim();
       typeof queryValue === "string" || (queryValue as TQueryValue) instanceof String ||
       typeof queryValue === "number" || (queryValue as TQueryValue) instanceof Number
     ) {
-      return queryValue.toString();
+      return (queryValue as string | number).toString();
     }
     else if (typeof queryValue === "boolean" || (queryValue as TQueryValue) instanceof Boolean) {
       return queryValue ? "1" : "0";
@@ -473,40 +472,39 @@ END`.trim();
     else if (queryValue instanceof Array) {
       return "(" + (queryValue as TQueryValueArray).map(item => QueryBuilder.getQueryOfQueryValue(item)).join("") + ")";
     }
-    else if (queryValue["from"]) {
+    else if (queryValue["from"] !== undefined) {
       let subQuery = `(\n`;
       subQuery += "  " + QueryBuilder.select(queryValue as ISelectQueryDef).replace(/\n/g, "\n  ") + "\n";
       subQuery += `)`;
       return subQuery;
     }
     else {
-      throw new TypeError(`${queryValue?.["constructor"]?.["name"] ?? typeof queryValue}: ${queryValue}: ${JsonConvert.stringify(queryValue)}`);
+      throw new TypeError(`${queryValue?.["constructor"]?.["name"] ?? typeof queryValue}: ${queryValue as string}: ${JsonConvert.stringify(queryValue)}`);
     }
   }
 
   private static _getQueryOfJoinDef(def: IJoinQueryDef): string {
     let q = "";
 
-    if (Object.keys(def).every(key => !def[key] || ["where", "from", "as"].includes(key))) {
+    if (Object.keys(def).every(key => def[key] === undefined || ["where", "from", "as"].includes(key))) {
 
       if (def.from instanceof Array) {
         q += `LEFT OUTER JOIN (\n`;
         for (const from of def.from) {
-          const fromQueryDef = from as ISelectQueryDef;
-          q += "  " + QueryBuilder.select(fromQueryDef).replace(/\n/g, "\n  ");
+          q += "  " + QueryBuilder.select(from).replace(/\n/g, "\n  ");
           q += "\n\n  UNION ALL\n\n";
         }
         q = q.slice(0, -14);
         q += `) as ${def.as}`;
       }
-      else if (def.from["from"]) {
+      else if (def.from["from"] !== undefined) {
         const joinFromQueryDef = def.from as ISelectQueryDef;
         q += `LEFT OUTER JOIN (\n`;
         q += "  " + QueryBuilder.select(joinFromQueryDef).replace(/\n/g, "\n  ") + "\n";
         q += `) as ${def.as}`;
       }
       else {
-        q += `LEFT OUTER JOIN ${def.from} as ${def.as}`;
+        q += `LEFT OUTER JOIN ${def.from as string} as ${def.as}`;
       }
 
       if (def.where) {

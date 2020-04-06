@@ -1,54 +1,45 @@
-#!/usr/bin/env node
+import {Logger, LoggerSeverity, SdProcessWorker} from "@simplysm/sd-core-node";
+import {EventEmitter} from "events";
+import {SdPackageBuilder} from "./build-tools/SdPackageBuilder";
+import {ISdPackageInfo} from "./commons";
 
-import {Logger, LoggerSeverity, ProcessWorkManager} from "@simplysm/sd-core-node";
-import {SdTypescriptCompiler} from "./builders/SdTypescriptCompiler";
-import {SdTypescriptChecker} from "./builders/SdTypescriptChecker";
+EventEmitter.defaultMaxListeners = 0;
+process.setMaxListeners(0);
 
 const logger = Logger.get(["simplysm", "sd-cli", "build-worker"]);
-
 if (process.env.SD_CLI_LOGGER_SEVERITY === "DEBUG") {
+  Error.stackTraceLimit = 100; //Infinity;
+
   Logger.setConfig(["simplysm", "sd-cli"], {
     console: {
       level: LoggerSeverity.debug
     }
   });
 }
-
-ProcessWorkManager.defineWorkAsync(async message => {
-  if (message[0] === "compile") {
-    const watch = message[1];
-    const tsConfigPath = message[2];
-    const mode = message[3];
-    const framework = message[4];
-
-    const builder = await SdTypescriptCompiler.createAsync({tsConfigPath, mode, framework});
-    await builder.runAsync(watch);
-  }
-  else if (message[0] === "check") {
-    const watch = message[1];
-    const tsConfigPath = message[2];
-    const framework = message[3];
-    const polyfills = message[4];
-    const indexFilePath = message[5];
-
-    const checker = new SdTypescriptChecker(
-      tsConfigPath,
-      framework === "angular",
-      indexFilePath,
-      polyfills
-    );
-    if (watch) {
-      await checker.watchAsync();
-    }
-    else {
-      await checker.runAsync();
-    }
-  }
-  else {
-    throw new Error(`명령어가 잘못되었습니다 (${message[0]})`);
-  }
-})
-  .catch(err => {
-    logger.error(err);
-    process.exit(1);
+else {
+  Logger.setConfig(["simplysm", "sd-cli"], {
+    dot: true
   });
+}
+
+try {
+  SdProcessWorker.defineWorker(async (worker, args) => {
+    const packageInfo = args[0] as ISdPackageInfo;
+    const command = args[1];
+    const target = args[2] as "browser" | "node" | undefined;
+    const devMode = args[3] as boolean;
+
+    await new SdPackageBuilder(packageInfo, command, target, devMode)
+      .on("change", filePaths => {
+        worker.send("change", {packageName: packageInfo.npmConfig.name, command, target, filePaths});
+      })
+      .on("complete", results => {
+        worker.send("complete", {packageName: packageInfo.npmConfig.name, command, target, results});
+      })
+      .runAsync();
+  });
+}
+catch (err) {
+  logger.error(err);
+  process.exit(1);
+}

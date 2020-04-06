@@ -1,8 +1,7 @@
 import ResizeObserver from "resize-observer-polyfill";
-import {MutationEvent, ResizeEvent} from "./events";
+import {SdMutationEvent, SdResizeEvent} from "./events";
 
 declare global {
-  // tslint:disable-next-line:interface-name
   interface HTMLElement {
     getRelativeOffset(parentElement: HTMLElement): { top: number; left: number };
 
@@ -24,19 +23,19 @@ declare global {
 
     findFocusableParent(): HTMLElement | undefined;
 
-    addEventListener(type: "mutation", listener: (event: MutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: "mutation", listener: (event: SdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
-    addEventListener(type: "mutation-child", listener: (event: MutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: "mutation-child", listener: (event: SdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
-    addEventListener(type: "resize", listener: (event: ResizeEvent) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: "resize", listener: (event: SdResizeEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
-    removeEventListener(type: "mutation", listener: (event: MutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: "mutation", listener: (event: SdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
-    removeEventListener(type: "resize", listener: (event: ResizeEvent) => any, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: "resize", listener: (event: SdResizeEvent) => any, options?: boolean | AddEventListenerOptions): void;
   }
 }
 
-if (!HTMLElement.prototype.matches) {
+if (HTMLElement.prototype.matches === undefined) {
   HTMLElement.prototype.matches = HTMLElement.prototype["msMatchesSelector"];
 }
 
@@ -54,7 +53,7 @@ HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string
 
   cursor = this;
   while (cursor.parentElement) {
-    cursor = cursor.parentElement as HTMLElement;
+    cursor = cursor.parentElement;
     top -= cursor.scrollTop;
     left -= cursor.scrollLeft;
   }
@@ -75,7 +74,7 @@ HTMLElement.prototype.findParent = function (arg: string | Element): HTMLElement
     cursor = cursor.parentElement;
   }
 
-  return cursor || undefined;
+  return cursor ?? undefined;
 };
 
 HTMLElement.prototype.prependChild = function <T extends HTMLElement>(newChild: T): T {
@@ -89,7 +88,7 @@ HTMLElement.prototype.findAll = function (selector: string): HTMLElement[] {
 };
 
 HTMLElement.prototype.findFirst = function (selector: string): HTMLElement | undefined {
-  return (this.querySelector(selector.split(",").map(item => `:scope ${item}`).join(",")) as HTMLElement | null) || undefined;
+  return (this.querySelector(selector.split(",").map(item => `:scope ${item}`).join(",")) as HTMLElement | undefined | null) ?? undefined;
 };
 
 const focusableSelectorList = [
@@ -128,11 +127,10 @@ HTMLElement.prototype.findFocusableParent = function (): HTMLElement | undefined
   return undefined;
 };
 
-
 const orgAddEventListener = HTMLElement.prototype.addEventListener;
 HTMLElement.prototype.addEventListener = function (type: string, listener: ((event: any) => any) | EventListenerObject, options?: boolean | AddEventListenerOptions): void {
   if (type === "resize") {
-    if (this["__resizeEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options)) {
+    if (this["__resizeEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options) === true) {
       return;
     }
 
@@ -151,7 +149,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
       prevHeight = this.offsetHeight;
 
       if (event.newWidth !== event.prevWidth || event.newHeight !== event.prevHeight) {
-        if (listener["handleEvent"]) {
+        if (listener["handleEvent"] !== undefined) {
           (listener as EventListenerObject).handleEvent(event);
         }
         else {
@@ -172,7 +170,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
     }
   }
   else if (type === "mutation") {
-    if (this["__mutationEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options)) {
+    if (this["__mutationEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options) === true) {
       return;
     }
 
@@ -182,7 +180,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
       event.mutations = mutations;
       event.relatedTarget = this;
 
-      if (listener["handleEvent"]) {
+      if (listener["handleEvent"] !== undefined) {
         (listener as EventListenerObject).handleEvent(event);
       }
       else {
@@ -204,7 +202,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
     });
   }
   else if (type === "mutation-child") {
-    if (this["__mutationChildEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options)) {
+    if (this["__mutationChildEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options) === true) {
       return;
     }
 
@@ -214,7 +212,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
       event.mutations = mutations;
       event.relatedTarget = this;
 
-      if (listener["handleEvent"]) {
+      if (listener["handleEvent"] !== undefined) {
         (listener as EventListenerObject).handleEvent(event);
       }
       else {
@@ -244,21 +242,21 @@ const orgRemoveEventListener = HTMLElement.prototype.removeEventListener;
 HTMLElement.prototype.removeEventListener = function (type: string, listener: ((event: any) => any) | EventListenerObject, options?: boolean | EventListenerOptions): void {
   if (type === "resize") {
     const obj = this["__resizeEventListeners__"]?.single((item: any) => item.listener === listener && item.options === options);
-    if (obj) {
+    if (obj !== undefined) {
       obj.observer.disconnect();
       this["__resizeEventListeners__"].remove(obj);
     }
   }
   else if (type === "mutation") {
     const obj = this["__mutationEventListeners__"]?.single((item: any) => item.listener === listener && item.options === options);
-    if (obj) {
+    if (obj !== undefined) {
       obj.observer.disconnect();
       this["__mutationEventListeners__"].remove(obj);
     }
   }
   else if (type === "mutation-child") {
     const obj = this["__mutationChildEventListeners__"]?.single((item: any) => item.listener === listener && item.options === options);
-    if (obj) {
+    if (obj !== undefined) {
       obj.observer.disconnect();
       this["__mutationChildEventListeners__"].remove(obj);
     }

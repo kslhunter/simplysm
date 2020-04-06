@@ -21,7 +21,7 @@ export class SdCheckboxGroupItemControl {
                      private readonly _parentControl: SdCheckboxGroupControl) {
   }
 
-  public onValueChange(value: any): void {
+  public onValueChange(): void {
     this._parentControl.toggleValueItem(this.value);
   }
 }

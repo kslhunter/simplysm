@@ -34,12 +34,16 @@ import {SdSheetColumnControl} from "../controls/SdSheetColumnControl";
           </sd-sheet-column>
           <sd-sheet-column header="헤더" resizable width.px="100">
             <ng-template #cell let-item="item">
-              <sd-textfield size="sm" inset [(value)]="item.header"></sd-textfield>
+              <!--<sd-textfield size="sm" inset [(value)]="item.header"></sd-textfield>-->
+              <div class="sd-padding-xs-sm">
+                {{ item.header }}
+              </div>
             </ng-template>
           </sd-sheet-column>
-          <sd-sheet-column header="너비" resizable width.px="40">
+          <sd-sheet-column header="너비(px)" resizable width.px="60">
             <ng-template #cell let-item="item">
-              <sd-textfield size="sm" inset [(value)]="item.widthPixel" type="number"></sd-textfield>
+              <sd-textfield size="sm" inset [(value)]="item.widthPixel" type="number"
+                            *ngIf="!!item.resizable"></sd-textfield>
             </ng-template>
           </sd-sheet-column>
           <sd-sheet-column header="숨김" width.px="40">
@@ -54,6 +58,9 @@ import {SdSheetColumnControl} from "../controls/SdSheetColumnControl";
       </sd-pane>
 
       <sd-dock position="bottom" class="sd-padding-sm-default sd-padding-top-0" style="text-align: right">
+        <div style="float: left">
+          <sd-button inline theme="warning" (click)="onInitButtonClick()">초기화</sd-button>
+        </div>
         <sd-button inline theme="success" (click)="onOkButtonClick()">확인</sd-button>
         <sd-gap width="sm"></sd-gap>
         <sd-button inline (click)="onCancelButtonClick()">취소</sd-button>
@@ -68,10 +75,10 @@ export class SdSheetConfigModal extends SdModalBase<ISdSheetConfigModalInput, { 
   public configs: IColumnConfigVM[] = [];
 
   public get displayConfigs(): IColumnConfigVM[] {
-    return this.configs.orderBy(item => item.displayOrder ?? -1).orderBy(item => item.fixed ? -1 : 0);
+    return this.configs.orderBy(item => item.displayOrder).orderBy(item => (item.fixed ? -1 : 0));
   }
 
-  public trackByKeyFn = (index: number, item: any) => item.key;
+  public trackByKeyFn = (index: number, item: any): any => item.key;
 
   public sdOnOpen(param: ISdSheetConfigModalInput): void {
     this.param = param;
@@ -81,24 +88,25 @@ export class SdSheetConfigModal extends SdModalBase<ISdSheetConfigModalInput, { 
     let lastDisplayOrder = 0;
     const configs: IColumnConfigVM[] = [];
     for (const columnControl of param.controls) {
-      if (columnControl.configKey) {
-        const columnConfig = configObj[columnControl.configKey];
+      if (columnControl.key !== undefined) {
+        const columnConfig = configObj[columnControl.key];
 
-        lastDisplayOrder++;
+        lastDisplayOrder += 1;
         lastDisplayOrder = columnConfig?.displayOrder ?? lastDisplayOrder;
 
         configs.push({
-          key: columnControl.configKey,
+          key: columnControl.key,
           header: columnConfig?.header ?? columnControl.header,
           fixed: columnConfig?.fixed ?? columnControl.fixed ?? false,
           displayOrder: lastDisplayOrder,
           widthPixel: columnConfig?.widthPixel ?? columnControl.widthPixel,
-          hidden: !!columnConfig?.hidden
+          hidden: columnConfig?.hidden === true,
+          resizable: columnControl.resizable === true
         });
       }
     }
 
-    const orderedItems = configs.orderBy(item => item.displayOrder).orderBy(item => item.fixed ? -1 : 0);
+    const orderedItems = configs.orderBy(item => item.displayOrder).orderBy(item => (item.fixed ? -1 : 0));
     for (let i = 0; i < orderedItems.length; i++) {
       orderedItems[i].displayOrder = i;
     }
@@ -144,11 +152,17 @@ export class SdSheetConfigModal extends SdModalBase<ISdSheetConfigModalInput, { 
   public onCancelButtonClick(): void {
     this.close();
   }
+
+  public onInitButtonClick(): void {
+    if (confirm("설정값이 모두 초기화 됩니다.")) {
+      this.close({});
+    }
+  }
 }
 
 export interface ISdSheetConfigModalInput {
   controls: SdSheetColumnControl[];
-  configObj: { [key: string]: ISdSheetColumnConfigVM } | undefined;
+  configObj: { [key: string]: ISdSheetColumnConfigVM | undefined } | undefined;
 }
 
 interface IColumnConfigVM {
@@ -158,4 +172,5 @@ interface IColumnConfigVM {
   displayOrder: number;
   widthPixel?: number;
   hidden: boolean;
+  resizable: boolean;
 }

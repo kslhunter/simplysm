@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 
-// tslint:disable-next-line: no-submodule-imports
-import "source-map-support/register";
 import * as yargs from "yargs";
 import {Logger, LoggerSeverity} from "@simplysm/sd-core-node";
-import {SdProject} from "./SdProject";
+import * as os from "os";
+import {EventEmitter} from "events";
+import {SdCliProject} from "./bin/SdCliProject";
+import {SdCliLocalUpdate} from "./bin/SdCliLocalUpdate";
 
-// TODO: 모든 package.json 의 의존성 패키지 버전을 yarn.lock 에 설치된 버전으로 덮어쓰기 기능 추가
+EventEmitter.defaultMaxListeners = 0;
+process.setMaxListeners(0);
 
 const argv = yargs
   .version(false)
@@ -22,118 +24,224 @@ const argv = yargs
   .command(
     "local-update",
     "프로젝트의 의존성 패키지에, 외부 디렉토리에 있는 패키지 파일을 덮어씁니다.",
-    cmd =>
-      cmd.version(false)
+    cmd => cmd.version(false)
+      .options({
+        config: {
+          type: "string",
+          describe: "simplysm.json 파일 경로"
+        },
+        options: {
+          type: "array",
+          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
+          default: []
+        }
+      })
+  )
+  .command(
+    "compile",
+    "컴파일을 수행합니다.",
+    cmd => cmd.version(false)
+      .options({
+        watch: {
+          type: "boolean",
+          describe: "변경감지 모드로 실행할지 여부",
+          default: false
+        },
+        packages: {
+          type: "array",
+          describe: "수행할 패키지 설정",
+          default: []
+        },
+        config: {
+          type: "string",
+          describe: "simplysm.json 파일 경로"
+        },
+        options: {
+          type: "array",
+          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
+          default: []
+        }
+      })
+  )
+  .command(
+    "lint",
+    "규칙체크을 수행합니다.",
+    cmd => cmd.version(false)
+      .options({
+        watch: {
+          type: "boolean",
+          describe: "변경감지 모드로 실행할지 여부",
+          default: false
+        },
+        packages: {
+          type: "array",
+          describe: "수행할 패키지 설정",
+          default: []
+        },
+        config: {
+          type: "string",
+          describe: "simplysm.json 파일 경로"
+        },
+        options: {
+          type: "array",
+          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
+          default: []
+        }
+      })
+  )
+  .command(
+    "gen-ng",
+    "ANGULAR 모듈 생성기를 수행합니다.",
+    cmd => cmd.version(false)
+      .options({
+        watch: {
+          type: "boolean",
+          describe: "변경감지 모드로 실행할지 여부",
+          default: false
+        },
+        packages: {
+          type: "array",
+          describe: "수행할 패키지 설정",
+          default: []
+        },
+        config: {
+          type: "string",
+          describe: "simplysm.json 파일 경로"
+        },
+        options: {
+          type: "array",
+          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
+          default: []
+        }
+      })
   )
   .command(
     "build",
-    "프로젝트의 각 패키지를 빌드합니다.",
-    cmd =>
-      cmd.version(false)
-        .options({
-          watch: {
-            type: "boolean",
-            describe: "변경감지 모드로 실행할지 여부",
-            default: false
-          },
-          options: {
-            type: "string",
-            describe: "빌드 옵션 설정 (설정파일에서 @로 시작하는 부분)"
-          }
-        })
-  )
-  .command(
-    "test",
-    "프로젝트의 각 패키지를 테스트합니다.",
-    cmd =>
-      cmd.version(false)
-        .options({
-          options: {
-            type: "string",
-            describe: "빌드 옵션 설정 (설정파일에서 @로 시작하는 부분)"
-          }
-        })
+    "빌드를 수행합니다.",
+    cmd => cmd.version(false)
+      .options({
+        watch: {
+          type: "boolean",
+          describe: "변경감지 모드로 실행할지 여부",
+          default: false
+        },
+        packages: {
+          type: "array",
+          describe: "수행할 패키지 설정",
+          default: []
+        },
+        config: {
+          type: "string",
+          describe: "simplysm.json 파일 경로"
+        },
+        options: {
+          type: "array",
+          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
+          default: []
+        }
+      })
   )
   .command(
     "publish",
     "프로젝트의 각 패키지를 배포합니다.",
-    cmd =>
-      cmd.version(false)
-        .options({
-          build: {
-            type: "boolean",
-            describe: "새로 빌드한 후 배포합니다",
-            default: false
-          },
-          options: {
-            type: "string",
-            describe: "빌드 옵션 설정 (설정파일에서 @로 시작하는 부분)"
-          }
-        })
-  )
-  .command(
-    "depcheck",
-    "프로젝트의 각 패키지에 대한 의존성 문제를 판단합니다.",
-    cmd =>
-      cmd.version(false)
+    cmd => cmd.version(false)
+      .options({
+        build: {
+          type: "boolean",
+          describe: "새로 빌드한 후 배포합니다",
+          default: false
+        },
+        packages: {
+          type: "array",
+          describe: "수행할 패키지 설정",
+          default: []
+        },
+        config: {
+          type: "string",
+          describe: "simplysm.json 파일 경로"
+        },
+        options: {
+          type: "array",
+          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
+          default: []
+        }
+      })
   )
   .argv;
 
 const logger = Logger.get(["simplysm", "sd-cli"]);
 
-const isDebug = argv.debug as boolean;
-if (isDebug) {
+if (argv.debug) {
+  Error.stackTraceLimit = 100; //Infinity;
+
   process.env.SD_CLI_LOGGER_SEVERITY = "DEBUG";
+
   Logger.setConfig(["simplysm", "sd-cli"], {
     console: {
       level: LoggerSeverity.debug
     }
   });
 }
+else {
+  Logger.setConfig(["simplysm", "sd-cli"], {
+    dot: true
+  });
+}
 
-(async () => {
+(async (): Promise<void> => {
   if (argv._[0] === "local-update") {
-    const optionsText = argv.options as string | undefined;
-    const options = optionsText?.split(",")?.map(item => item.trim()) ?? [];
-
-    const project = await SdProject.createAsync("development", options);
-    await project.localUpdateAsync();
+    await SdCliLocalUpdate.runAsync({
+      config: argv.config,
+      options: argv.options
+    });
+  }
+  else if (argv._[0] === "compile") {
+    const project = await SdCliProject.createAsync({
+      devMode: argv.watch,
+      packages: argv.packages,
+      config: argv.config,
+      options: argv.options
+    });
+    await project.compileAsync(argv.watch);
+  }
+  else if (argv._[0] === "lint") {
+    const project = await SdCliProject.createAsync({
+      devMode: argv.watch,
+      packages: argv.packages,
+      config: argv.config,
+      options: argv.options
+    });
+    await project.lintAsync(argv.watch);
+  }
+  else if (argv._[0] === "gen-ng") {
+    const project = await SdCliProject.createAsync({
+      devMode: argv.watch,
+      packages: argv.packages,
+      config: argv.config,
+      options: argv.options
+    });
+    await project.genNgAsync(argv.watch);
   }
   else if (argv._[0] === "build") {
-    const optionsText = argv.options as string | undefined;
-    const watch = argv.watch as boolean;
-    const mode = argv.watch ? "development" : "production";
-
-    const options = optionsText?.split(",")?.map(item => item.trim()) ?? [];
-
-    const project = await SdProject.createAsync(mode, options);
-    await project.buildAsync(watch);
-  }
-  else if (argv._[0] === "test") {
-    const optionsText = argv.options as string | undefined;
-
-    const options = optionsText?.split(",")?.map(item => item.trim()) ?? [];
-
-    const project = await SdProject.createAsync("development", options);
-    await project.testAsync();
+    const project = await SdCliProject.createAsync({
+      devMode: argv.watch,
+      packages: argv.packages,
+      config: argv.config,
+      options: argv.options
+    });
+    await project.buildAsync(argv.watch);
   }
   else if (argv._[0] === "publish") {
-    const optionsText = argv.options as string | undefined;
-    const build = argv.build as boolean;
-    const options = optionsText?.split(",")?.map(item => item.trim()) ?? [];
-
-    const project = await SdProject.createAsync("production", options);
-    await project.publishAsync(build);
-  }
-  else if (argv._[0] === "depcheck") {
-    const optionsText = argv.options as string | undefined;
-    const options = optionsText?.split(",")?.map(item => item.trim()) ?? [];
-
-    const project = await SdProject.createAsync("production", options);
-    await project.depcheckAsync();
+    const project = await SdCliProject.createAsync({
+      devMode: false,
+      packages: argv.packages,
+      config: argv.config,
+      options: argv.options
+    });
+    await project.publishAsync(argv.build);
   }
   else {
-    throw new Error(`명령어가 잘못되었습니다.\n\n\t${argv._[0]}\n`);
+    throw new Error(`명령어가 잘못되었습니다.${os.EOL + os.EOL}\t${argv._[0]}${os.EOL}`);
   }
 })().catch(err => {
   logger.error(err);

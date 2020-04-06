@@ -1,6 +1,6 @@
+import "@simplysm/sd-core-common";
 import "element-qsa-scope";
 import "events-polyfill";
 export * from "./events";
-export * from "./FileUtil";
+export * from "./FileUtils";
 import "./HTMLElementExtension";
-export * from "./Logger";

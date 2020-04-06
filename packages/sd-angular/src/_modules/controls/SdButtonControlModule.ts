@@ -12,7 +12,8 @@ import {CommonModule} from "@angular/common";
   exports: [
     SdButtonControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdButtonControlModule {
 }

@@ -14,7 +14,8 @@ import {CommonModule} from "@angular/common";
   exports: [
     SdSelectItemControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdSelectItemControlModule {
 }

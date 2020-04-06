@@ -9,7 +9,8 @@ import {SdAnchorControl} from "../../controls/SdAnchorControl";
   exports: [
     SdAnchorControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdAnchorControlModule {
 }

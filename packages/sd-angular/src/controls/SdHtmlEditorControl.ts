@@ -8,23 +8,23 @@ import {SdInputValidate} from "../commons/SdInputValidate";
   template: `
     <sd-dock-container>
       <sd-dock class="_toolbar" *ngIf="!disabled">
-        <a (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
+        <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
           <sd-icon [icon]="'eye'"></sd-icon>
-        </a>
-        <a (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
+        </sd-anchor>
+        <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
           <sd-icon [icon]="'pen'"></sd-icon>
-        </a>
-        <a (click)="viewState = 'code'" [class._selected]="viewState === 'code'">
+        </sd-anchor>
+        <sd-anchor (click)="viewState = 'code'" [class._selected]="viewState === 'code'">
           <sd-icon [icon]="'code'"></sd-icon>
-        </a>
+        </sd-anchor>
         <ng-container *ngIf="rowsButton && !inset && viewState === 'code'">
           |
-          <a (click)="rows = rows + 1">
+          <sd-anchor (click)="rows = rows + 1">
             <sd-icon [icon]="'plus'"></sd-icon>
-          </a>
-          <a (click)="rows = rows - 1" *ngIf="rows > 1">
+          </sd-anchor>
+          <sd-anchor (click)="rows = rows - 1" *ngIf="rows > 1">
             <sd-icon [icon]="'minus'"></sd-icon>
-          </a>
+          </sd-anchor>
         </ng-container>
       </sd-dock>
 
@@ -51,7 +51,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
         > ._toolbar {
           user-select: none;
 
-          > a {
+          > sd-anchor {
             display: inline-block;
             padding: var(--gap-sm) 0;
             text-align: center;
@@ -116,7 +116,7 @@ export class SdHtmlEditorControl {
   public set value(value: string | undefined) {
     if (this._value !== value) {
       this._value = value;
-      this.content = this._sanitizer.bypassSecurityTrustHtml(value || "");
+      this.content = this._sanitizer.bypassSecurityTrustHtml(value ?? "");
     }
   }
 

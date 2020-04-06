@@ -9,7 +9,8 @@ import {SdNoteControl} from "../../controls/SdNoteControl";
   exports: [
     SdNoteControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdNoteControlModule {
 }

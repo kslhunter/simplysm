@@ -9,7 +9,8 @@ import {SdGridItemControl} from "../../controls/SdGridItemControl";
   exports: [
     SdGridItemControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdGridItemControlModule {
 }

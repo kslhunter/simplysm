@@ -11,8 +11,8 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
            [value]="controlValue"
            [attr.type]="controlType"
            [attr.placeholder]="placeholder"
-           [attr.disabled]="disabled"
-           [attr.required]="required"
+           [disabled]="disabled"
+           [required]="required"
            [attr.min]="min"
            [attr.max]="max"
            [attr.step]="controlStep"
@@ -23,8 +23,8 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
     <textarea *ngIf="multiline"
               [value]="controlValue"
               [attr.placeholder]="placeholder"
-              [attr.disabled]="disabled"
-              [attr.required]="required"
+              [disabled]="disabled"
+              [required]="required"
               [attr.rows]="rows"
               [attr.class]="safeHtml(inputClass)"
               [attr.style]="safeHtml((controlResize ? 'resize: ' + controlResize + ';' : '') + inputStyle)"
@@ -40,7 +40,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
       > textarea {
         @include form-control-base();
 
-        background: var(--theme-color-info-lightest);
+        background: var(--theme-color-secondary-lightest);
         border: 1px solid var(--sd-border-color);
         border-radius: 2px;
 
@@ -65,7 +65,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 
         &::-webkit-calendar-picker-indicator {
           background: transparent;
-          color: var(--theme-color-info-default);
+          color: var(--theme-color-secondary-default);
           cursor: pointer;
         }
 
@@ -249,15 +249,15 @@ export class SdTextfieldControl {
   public inputClass?: string;
 
   public get controlType(): string {
-    return this.type === "number" ? "text"
-      : this.type === "datetime" ? "datetime-local"
-        : this.type === "datetime-sec" ? "datetime-local"
-          : this.type === "time-sec" ? "time"
-            : this.type;
+    return this.type === "number" ? "text" :
+      this.type === "datetime" ? "datetime-local" :
+        this.type === "datetime-sec" ? "datetime-local" :
+          this.type === "time-sec" ? "time" :
+            this.type;
   }
 
   public get controlStep(): number | undefined {
-    if (this.step) {
+    if (this.step !== undefined) {
       return this.step;
     }
     else if (this.type === "datetime-sec") {
@@ -300,22 +300,23 @@ export class SdTextfieldControl {
     else if (typeof this.value === "string") {
       return this.value;
     }
+
     else {
-      throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value})`);
+      throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
     }
   }
 
   public get controlResize(): "vertical" | "horizontal" | "none" | undefined {
-    return this.resize === "vertical" ? "vertical"
-      : this.resize === "horizontal" ? "horizontal"
-        : this.resize ? undefined : "none";
+    return this.resize === "vertical" ? "vertical" :
+      this.resize === "horizontal" ? "horizontal" :
+        this.resize ? undefined : "none";
   }
 
   public constructor(private readonly _sanitization: DomSanitizer) {
   }
 
   public safeHtml(value?: string): SafeHtml | undefined {
-    return value ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
+    return value !== undefined ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
   }
 
   public onInput(event: Event): void {
@@ -323,7 +324,7 @@ export class SdTextfieldControl {
 
     const inputEl = event.target as (HTMLInputElement | HTMLTextAreaElement);
 
-    if (!inputEl.value) {
+    if (!Boolean(inputEl.value)) {
       this.value = undefined;
     }
     else if (this.type === "number") {
@@ -391,9 +392,9 @@ export class SdTextfieldControl {
       this.value = inputEl.value;
     }
 
-    if (!errorMessage && this.validatorFn) {
+    if (errorMessage !== "" && this.validatorFn) {
       const message = this.validatorFn(this.value);
-      if (message) {
+      if (message !== undefined) {
         errorMessage = message;
       }
       else {

@@ -1,7 +1,12 @@
 .idea/**/workspace.xml
-node_modules
-tsconfig.build.json
-tsconfig-node.build.json
-dist
-yarn-error.log
+.nyc_output
+_back
+coverage
 logs
+node_modules
+dist
+dist-browser
+yarn-error.log
+_modules
+_routes.ts
+report.*.json

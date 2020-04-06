@@ -18,8 +18,8 @@ export class SdExcelCell {
     }
     else if (typeof value === "string") {
       this.cellData.$.t = "str";
-      this.cellData.v = this.cellData.v || [];
-      this.cellData.v[0] = this.cellData.v[0] || {};
+      this.cellData.v = this.cellData.v ?? [];
+      this.cellData.v[0] = this.cellData.v[0] ?? {};
       if (Object.keys(this.cellData.v[0]).includes("_")) {
         this.cellData.v[0]._ = value;
       }
@@ -29,8 +29,8 @@ export class SdExcelCell {
     }
     else if (typeof value === "boolean") {
       this.cellData.$.t = "b";
-      this.cellData.v = this.cellData.v || [];
-      this.cellData.v[0] = this.cellData.v[0] || {};
+      this.cellData.v = this.cellData.v ?? [];
+      this.cellData.v[0] = this.cellData.v[0] ?? {};
       if (Object.keys(this.cellData.v[0]).includes("_")) {
         this.cellData.v[0]._ = value ? "1" : "0";
       }
@@ -46,8 +46,8 @@ export class SdExcelCell {
       ) {
         this.style.numberFormat = "number";
       }
-      this.cellData.v = this.cellData.v || [];
-      this.cellData.v[0] = this.cellData.v[0] || {};
+      this.cellData.v = this.cellData.v ?? [];
+      this.cellData.v[0] = this.cellData.v[0] ?? {};
       if (Object.keys(this.cellData.v[0]).includes("_")) {
         this.cellData.v[0]._ = value;
       }
@@ -58,8 +58,8 @@ export class SdExcelCell {
     else if (value instanceof DateOnly) {
       delete this.cellData.$.t;
       this.style.numberFormat = "DateOnly";
-      this.cellData.v = this.cellData.v || [];
-      this.cellData.v[0] = this.cellData.v[0] || {};
+      this.cellData.v = this.cellData.v ?? [];
+      this.cellData.v[0] = this.cellData.v[0] ?? {};
       if (Object.keys(this.cellData.v[0]).includes("_")) {
         this.cellData.v[0]._ = SdExcelUtils.getTimeNumber(value);
       }
@@ -70,8 +70,8 @@ export class SdExcelCell {
     else if (value instanceof DateTime) {
       delete this.cellData.$.t;
       this.style.numberFormat = "DateTime";
-      this.cellData.v = this.cellData.v || [];
-      this.cellData.v[0] = this.cellData.v[0] || {};
+      this.cellData.v = this.cellData.v ?? [];
+      this.cellData.v[0] = this.cellData.v[0] ?? {};
       if (Object.keys(this.cellData.v[0]).includes("_")) {
         this.cellData.v[0]._ = SdExcelUtils.getTimeNumber(value);
       }
@@ -85,13 +85,13 @@ export class SdExcelCell {
   }
 
   public get value(): any {
-    if (!this.cellData.v) {
+    if (this.cellData.v == null) {
       return undefined;
     }
 
-    const value = this.cellData.v[0]._ || this.cellData.v[0];
+    const value = this.cellData.v[0]._ ?? this.cellData.v[0];
 
-    if (!value) {
+    if (value == null) {
       return undefined;
     }
     else if (this.cellData.$.t === "str") {
@@ -103,20 +103,20 @@ export class SdExcelCell {
     else if (this.cellData.$.t === "s") {
       const sstIndex = Number(value);
 
-      if (this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t) {
-        const v = this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0]._ || this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0];
-        return v && v.$ ? " " : v ? v.toString() : undefined;
+      if (this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t !== undefined) {
+        const v = this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0]._ ?? this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0];
+        return v?.$ !== undefined ? " " : v?.toString();
       }
       else {
         const v = this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].r.map((item: any) => {
-          const sub = item.t[0]._ || item.t[0];
-          return sub && sub.$ ? " " : sub ? sub.toString() : undefined;
+          const sub = item.t[0]._ ?? item.t[0];
+          return sub?.$ !== undefined ? " " : sub?.toString();
         }).filterExists().join("");
-        return v ? v.toString() : undefined;
+        return v?.toString();
       }
     }
     else if (this.style.numberFormat === "string") {
-      return value ? value.toString() : undefined;
+      return value?.toString();
     }
     else if (this.style.numberFormat === "number") {
       return Number(value);
@@ -136,7 +136,7 @@ export class SdExcelCell {
   }
 
   public set formula(value: string | undefined) {
-    if (this.cellData.v && ((this.cellData.v[0] && this.cellData.v[0]._) || this.cellData.v._)) {
+    if (this.cellData.v?.[0]?._ !== undefined || this.cellData.v?._ !== undefined) {
       throw new Error("하나의 셀에 'value'가 지정된 상태로, 'Formula'를 지정할 수 없습니다. ('formula'를 먼저 지정하고 'value'값을 넣으세요.)");
     }
 
@@ -146,50 +146,50 @@ export class SdExcelCell {
     }
     else {
       this.cellData.$.t = "str";
-      this.cellData.f = this.cellData.f || {};
+      this.cellData.f = this.cellData.f ?? {};
       this.cellData.f._ = value;
     }
   }
 
   public get formula(): string | undefined {
-    if (!this.cellData.f) {
+    if (this.cellData.f === undefined) {
       return undefined;
     }
     else {
-      return this.cellData.f[0]._ || this.cellData.f[0];
+      return this.cellData.f[0]._ ?? this.cellData.f[0];
     }
   }
 
   public constructor(public readonly excelWorkSheet: SdExcelWorksheet,
                      public readonly row: number,
                      public readonly col: number) {
-    this.excelWorkSheet.sheetData.worksheet.sheetData[0].row = this.excelWorkSheet.sheetData.worksheet.sheetData[0].row || [];
+    this.excelWorkSheet.sheetData.worksheet.sheetData[0].row = this.excelWorkSheet.sheetData.worksheet.sheetData[0].row ?? [];
     const rowNodes = this.excelWorkSheet.sheetData.worksheet.sheetData[0].row as any[];
     let currRow = rowNodes.single((item: any) => Number(item.$.r) === row + 1);
-    if (!currRow) {
+    if (currRow === undefined) {
       currRow = {$: {r: row + 1}};
 
       const beforeRow = rowNodes.orderBy(item => Number(item.$.r)).last(item => Number(item.$.r) < Number(currRow.$.r));
-      const beforeRowIndex = beforeRow ? rowNodes.indexOf(beforeRow) : -1;
+      const beforeRowIndex = beforeRow !== undefined ? rowNodes.indexOf(beforeRow) : -1;
 
       rowNodes.insert(beforeRowIndex + 1, currRow);
     }
 
-    currRow.c = currRow.c || [];
+    currRow.c = currRow.c ?? [];
     const cellNodes = currRow.c as any[];
     let currCell = cellNodes.single((item: any) => item.$.r === SdExcelUtils.getAddress(this.row, this.col));
-    if (!currCell) {
+    if (currCell === undefined) {
       currCell = {$: {r: SdExcelUtils.getAddress(this.row, this.col)}};
 
       const colStyle = this.excelWorkSheet.column(col)?.colData?.$?.style;
-      if (colStyle) {
+      if (colStyle !== undefined) {
         currCell.$.s = colStyle;
       }
 
       const beforeCell = cellNodes
         .orderBy(item => SdExcelUtils.getAddressRowCol(item.$.r).col)
         .last(item => SdExcelUtils.getAddressRowCol(item.$.r).col < SdExcelUtils.getAddressRowCol(currCell.$.r).col);
-      const beforeCellIndex = beforeCell ? cellNodes.indexOf(beforeCell) : -1;
+      const beforeCellIndex = beforeCell !== undefined ? cellNodes.indexOf(beforeCell) : -1;
 
       cellNodes.insert(beforeCellIndex + 1, currCell);
     }
@@ -198,8 +198,8 @@ export class SdExcelCell {
   }
 
   public merge(row: number, col: number): void {
-    this.excelWorkSheet.sheetData.worksheet.mergeCells = this.excelWorkSheet.sheetData.worksheet.mergeCells || [{}];
-    this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell = this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell || [];
+    this.excelWorkSheet.sheetData.worksheet.mergeCells = this.excelWorkSheet.sheetData.worksheet.mergeCells ?? [{}];
+    this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell = this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell ?? [];
 
     const mergeCells = this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell;
     const prev = mergeCells.single((item: any) => {
@@ -207,7 +207,7 @@ export class SdExcelCell {
       return mergeCellRowCol.fromRow === this.row && mergeCellRowCol.fromCol === this.col;
     });
 
-    if (prev) {
+    if (prev !== undefined) {
       prev.$.rev = SdExcelUtils.getRangeAddress(this.row, this.col, row, col);
     }
     else {
@@ -221,19 +221,19 @@ export class SdExcelCell {
 
   public async drawingAsync(buffer: Buffer, ext: string): Promise<void> {
     // Sheet Rel
-    this.excelWorkSheet.relData = this.excelWorkSheet.relData || {};
-    this.excelWorkSheet.relData.Relationships = this.excelWorkSheet.relData.Relationships || {};
-    this.excelWorkSheet.relData.Relationships.$ = this.excelWorkSheet.relData.Relationships.$ || {};
-    this.excelWorkSheet.relData.Relationships.$.xmlns = this.excelWorkSheet.relData.Relationships.$.xmlns || "http://schemas.openxmlformats.org/package/2006/relationships";
-    this.excelWorkSheet.relData.Relationships.Relationship = this.excelWorkSheet.relData.Relationships.Relationship || [];
+    this.excelWorkSheet.relData = this.excelWorkSheet.relData ?? {};
+    this.excelWorkSheet.relData.Relationships = this.excelWorkSheet.relData.Relationships ?? {};
+    this.excelWorkSheet.relData.Relationships.$ = this.excelWorkSheet.relData.Relationships.$ ?? {};
+    this.excelWorkSheet.relData.Relationships.$.xmlns = this.excelWorkSheet.relData.Relationships.$.xmlns ?? "http://schemas.openxmlformats.org/package/2006/relationships";
+    this.excelWorkSheet.relData.Relationships.Relationship = this.excelWorkSheet.relData.Relationships.Relationship ?? [];
     const wsRels: any[] = this.excelWorkSheet.relData.Relationships.Relationship;
-    const wsDrawingRel = wsRels.single(item => /drawing[0-9]/.test(item.$.Target));
+    const wsDrawingRel = wsRels.single(item => (/drawing[0-9]/).test(item.$.Target));
     let wsRelId: number;
-    if (wsDrawingRel) {
+    if (wsDrawingRel !== undefined) {
       wsRelId = Number(wsDrawingRel.$.Id.replace("rId", ""));
     }
     else {
-      const wsRelLastId = wsRels.max((item: any) => Number(item.$.Id.replace(/rId/, ""))) || 0;
+      const wsRelLastId = wsRels.max((item: any) => Number(item.$.Id.replace(/rId/, ""))) ?? 0;
       const wsRelNewId = wsRelLastId + 1;
       wsRels.push({
         $: {
@@ -248,8 +248,8 @@ export class SdExcelCell {
     // Media (copy)
     const imageMaxId = this.excelWorkSheet.workbook.medias
       .filter(item => item.name.includes("image"))
-      .map(item => Number(item.name.match(/\/image(.*)\./)![1]))
-      .max() || 0;
+      .map(item => Number((/\/image(.*)\./).exec(item.name)![1]))
+      .max() ?? 0;
 
     const imageNewId = imageMaxId + 1;
     this.excelWorkSheet.workbook.medias.push({
@@ -258,14 +258,14 @@ export class SdExcelCell {
     });
 
     // Drawing Rel
-    this.excelWorkSheet.drawingRelData = this.excelWorkSheet.drawingRelData || {};
-    this.excelWorkSheet.drawingRelData.Relationships = this.excelWorkSheet.drawingRelData.Relationships || {};
-    this.excelWorkSheet.drawingRelData.Relationships.$ = this.excelWorkSheet.drawingRelData.Relationships.$ || {};
-    this.excelWorkSheet.drawingRelData.Relationships.$.xmlns = this.excelWorkSheet.drawingRelData.Relationships.$.xmlns || "http://schemas.openxmlformats.org/package/2006/relationships";
-    this.excelWorkSheet.drawingRelData.Relationships.Relationship = this.excelWorkSheet.drawingRelData.Relationships.Relationship || [];
+    this.excelWorkSheet.drawingRelData = this.excelWorkSheet.drawingRelData ?? {};
+    this.excelWorkSheet.drawingRelData.Relationships = this.excelWorkSheet.drawingRelData.Relationships ?? {};
+    this.excelWorkSheet.drawingRelData.Relationships.$ = this.excelWorkSheet.drawingRelData.Relationships.$ ?? {};
+    this.excelWorkSheet.drawingRelData.Relationships.$.xmlns = this.excelWorkSheet.drawingRelData.Relationships.$.xmlns ?? "http://schemas.openxmlformats.org/package/2006/relationships";
+    this.excelWorkSheet.drawingRelData.Relationships.Relationship = this.excelWorkSheet.drawingRelData.Relationships.Relationship ?? [];
 
     const relationshipArray: any[] = this.excelWorkSheet.drawingRelData.Relationships.Relationship;
-    const maxId = relationshipArray.max((item: any) => Number(item.$["Id"].replace(/rId/, ""))) || 0;
+    const maxId = relationshipArray.max((item: any) => Number(item.$["Id"].replace(/rId/, ""))) ?? 0;
     const newId = maxId + 1;
     relationshipArray.push({
       $: {
@@ -276,20 +276,20 @@ export class SdExcelCell {
     });
 
     // Drawing
-    this.excelWorkSheet.drawingData = this.excelWorkSheet.drawingData || {};
-    this.excelWorkSheet.drawingData["xdr:wsDr"] = this.excelWorkSheet.drawingData["xdr:wsDr"] || {};
-    this.excelWorkSheet.drawingData["xdr:wsDr"].$ = this.excelWorkSheet.drawingData["xdr:wsDr"].$ || {};
-    this.excelWorkSheet.drawingData["xdr:wsDr"].$["xmlns:xdr"] = this.excelWorkSheet.drawingData["xdr:wsDr"].$["xmlns:xdr"] || "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing";
-    this.excelWorkSheet.drawingData["xdr:wsDr"].$["xmlns:a"] = this.excelWorkSheet.drawingData["xdr:wsDr"].$["xmlns:a"] || "http://schemas.openxmlformats.org/drawingml/2006/main";
+    this.excelWorkSheet.drawingData = this.excelWorkSheet.drawingData ?? {};
+    this.excelWorkSheet.drawingData["xdr:wsDr"] = this.excelWorkSheet.drawingData["xdr:wsDr"] ?? {};
+    this.excelWorkSheet.drawingData["xdr:wsDr"].$ = this.excelWorkSheet.drawingData["xdr:wsDr"].$ ?? {};
+    this.excelWorkSheet.drawingData["xdr:wsDr"].$["xmlns:xdr"] = this.excelWorkSheet.drawingData["xdr:wsDr"].$["xmlns:xdr"] ?? "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing";
+    this.excelWorkSheet.drawingData["xdr:wsDr"].$["xmlns:a"] = this.excelWorkSheet.drawingData["xdr:wsDr"].$["xmlns:a"] ?? "http://schemas.openxmlformats.org/drawingml/2006/main";
 
-    this.excelWorkSheet.drawingData["xdr:wsDr"]["xdr:oneCellAnchor"] = this.excelWorkSheet.drawingData["xdr:wsDr"]["xdr:oneCellAnchor"] || [];
+    this.excelWorkSheet.drawingData["xdr:wsDr"]["xdr:oneCellAnchor"] = this.excelWorkSheet.drawingData["xdr:wsDr"]["xdr:oneCellAnchor"] ?? [];
 
     const anchorArray = this.excelWorkSheet.drawingData["xdr:wsDr"]["xdr:oneCellAnchor"];
 
     const dataUrl = "data:image/" + ext + ";base64, " + btoa(String.fromCharCode(...Array.from(buffer)));
     const img = new Image();
     await new Promise<void>(resolve => {
-      img.onload = () => {
+      img.onload = (): void => {
         resolve();
       };
       img.src = dataUrl;
@@ -357,7 +357,7 @@ export class SdExcelCell {
 
     // Content_Types
     const contentType = this.excelWorkSheet.workbook.contentTypeData.Types;
-    if (!contentType.Default.some((item: any) => item.$.Extension === ext)) {
+    if (contentType.Default.some((item: any) => item.$.Extension === ext) === undefined) {
       contentType.Default.push({
         $: {
           Extension: ext,
@@ -366,7 +366,7 @@ export class SdExcelCell {
       });
     }
 
-    if (!contentType.Override.some((item: any) => item.$.PartName === "/xl/drawings/drawing1.xml")) {
+    if (contentType.Override.some((item: any) => item.$.PartName === "/xl/drawings/drawing1.xml") === undefined) {
       contentType.Override.push({
         $: {
           PartName: "/xl/drawings/drawing1.xml",
@@ -375,8 +375,8 @@ export class SdExcelCell {
       });
     }
 
-    this.excelWorkSheet.sheetData.worksheet.drawing = this.excelWorkSheet.sheetData.worksheet.drawing || [];
-    if (!this.excelWorkSheet.sheetData.worksheet.drawing.some((item: any) => item.$["r:id"] === "rId" + wsRelId)) {
+    this.excelWorkSheet.sheetData.worksheet.drawing = this.excelWorkSheet.sheetData.worksheet.drawing ?? [];
+    if (this.excelWorkSheet.sheetData.worksheet.drawing.some((item: any) => item.$["r:id"] === "rId" + wsRelId) === undefined) {
       this.excelWorkSheet.sheetData.worksheet.drawing.push({
         $: {
           "r:id": "rId" + wsRelId

@@ -26,8 +26,8 @@ export class SdExcelUtils {
 
   public static getAddressRowCol(addr: string): { row: number; col: number } {
     return {
-      row: Number(addr.match(/[0-9]*$/)![0]) - 1,
-      col: SdExcelUtils._getAddressCol(addr.match(/^[a-zA-Z]*/)![0])
+      row: Number((/[0-9]*$/).exec(addr)![0]) - 1,
+      col: SdExcelUtils._getAddressCol((/^[a-zA-Z]*/).exec(addr)![0])
     };
   }
 
@@ -37,7 +37,7 @@ export class SdExcelUtils {
 
     const excelBaseDateNumberUtc = Date.UTC(1899, 11, 31);
     const inputExcelDateNumberUtc = currDate.getTime() - excelBaseDateNumberUtc;
-    return inputExcelDateNumberUtc / (24 * 60 * 60 * 1000) + 1;
+    return (inputExcelDateNumberUtc / (24 * 60 * 60 * 1000)) + 1;
   }
 
   public static getDateOnly(excelTime: number): DateOnly {
@@ -60,10 +60,10 @@ export class SdExcelUtils {
 
   private static _getColAddress(index: number): string {
     let remained = index;
-    let result = String.fromCharCode(remained % 26 + 65);
+    let result = String.fromCharCode((remained % 26) + 65);
     remained = Math.floor(remained / 26);
     while (remained !== 0) {
-      result = String.fromCharCode(remained % 26 + 64) + result;
+      result = String.fromCharCode((remained % 26) + 64) + result;
       remained = Math.floor(remained / 26);
     }
     return result;
@@ -74,7 +74,7 @@ export class SdExcelUtils {
     const revAddr = Array.from(addr).reverse().join("");
     for (let i = 0; i < revAddr.length; i++) {
       const col = revAddr.charCodeAt(i) - (i === 0 ? 65 : 64);
-      result += col * Math.pow(26, i);
+      result += col * (26 ** i);
     }
     return result;
   }

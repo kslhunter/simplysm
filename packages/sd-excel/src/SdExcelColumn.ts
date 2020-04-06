@@ -5,9 +5,9 @@ export class SdExcelColumn {
 
   public constructor(private readonly _ews: SdExcelWorksheet,
                      private readonly _col: number) {
-    this._ews.sheetData.worksheet.cols = this._ews.sheetData.worksheet.cols || [];
-    this._ews.sheetData.worksheet.cols[0] = this._ews.sheetData.worksheet.cols[0] || {};
-    this._ews.sheetData.worksheet.cols[0].col = this._ews.sheetData.worksheet.cols[0].col || [];
+    this._ews.sheetData.worksheet.cols = this._ews.sheetData.worksheet.cols ?? [];
+    this._ews.sheetData.worksheet.cols[0] = this._ews.sheetData.worksheet.cols[0] ?? {};
+    this._ews.sheetData.worksheet.cols[0].col = this._ews.sheetData.worksheet.cols[0].col ?? [];
     const colDataList = this._ews.sheetData.worksheet.cols[0].col as any[];
 
     /*for (const colData of Object.clone(colDataList)) {
@@ -26,7 +26,7 @@ export class SdExcelColumn {
     }*/
 
     this.colData = colDataList.single(item => Number(item.$.min) <= _col + 1 && Number(item.$.max) >= _col + 1);
-    if (!this.colData) {
+    if (this.colData === undefined) {
       this.colData = {
         $: {
           min: (_col + 1).toString(),
@@ -41,7 +41,7 @@ export class SdExcelColumn {
   }
 
   public set width(value: number) {
-    this.colData.$ = this.colData.$ || {min: this._col + 1, max: this._col + 1};
+    this.colData.$ = this.colData.$ ?? {min: this._col + 1, max: this._col + 1};
     this.colData.$.width = value;
   }
 }

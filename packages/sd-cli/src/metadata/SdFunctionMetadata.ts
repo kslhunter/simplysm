@@ -9,9 +9,9 @@ export class SdFunctionMetadata extends SdMetadataBase {
     return this.pkg.getSdMetadata(this.module, this.metadata.value);
   }
 
-  public constructor(public pkg: SdMetadataCollector,
-                     public module: SdModuleMetadata,
-                     public metadata: FunctionMetadata) {
+  public constructor(public readonly pkg: SdMetadataCollector,
+                     public readonly module: SdModuleMetadata,
+                     public readonly metadata: FunctionMetadata) {
     super();
   }
 }

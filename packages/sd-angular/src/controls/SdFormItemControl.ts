@@ -84,13 +84,13 @@ import {SdFormControl} from "./SdFormControl";
 
         > label {
           display: inline-block;
-          vertical-align: top;
+          vertical-align: middle;
           margin-right: var(--gap-sm);
         }
 
         > ._content {
           display: inline-block;
-          vertical-align: top;
+          vertical-align: middle;
         }
 
         &:last-child {
@@ -118,6 +118,6 @@ export class SdFormItemControl {
   }
 
   public constructor(@Inject(forwardRef(() => SdFormControl))
-                     public parentControl?: SdFormControl) {
+                     public readonly parentControl?: SdFormControl) {
   }
 }

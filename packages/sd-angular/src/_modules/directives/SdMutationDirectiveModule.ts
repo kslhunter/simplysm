@@ -9,7 +9,8 @@ import {SdMutationDirective} from "../../directives/SdMutationDirective";
   exports: [
     SdMutationDirective
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdMutationDirectiveModule {
 }

@@ -38,5 +38,5 @@ export class SdTabviewControl {
   @ContentChildren(SdTabviewItemControl)
   public itemControls?: QueryList<SdTabviewItemControl>;
 
-  public trackByValueFn = (i: number, item: any) => item.value || item;
+  public trackByValueFn = (i: number, item: any): any => item.value ?? item;
 }

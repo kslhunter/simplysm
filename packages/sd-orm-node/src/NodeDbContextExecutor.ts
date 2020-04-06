@@ -1,4 +1,10 @@
-import {IDbContextExecutor, IQueryResultParseOption, QueryBuilder, QueryUtil, TQueryDef} from "@simplysm/sd-orm-common";
+import {
+  IDbContextExecutor,
+  IQueryResultParseOption,
+  QueryBuilder,
+  QueryUtils,
+  TQueryDef
+} from "@simplysm/sd-orm-common";
 import {DbConnection} from "./DbConnection";
 import {IDbConnectionConfig} from "./commons";
 
@@ -59,9 +65,8 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     }
 
     const result = await this._conn.executeAsync(
-      defs.map(def =>
-        QueryBuilder.query(def))
+      defs.map(def => QueryBuilder.query(def))
     );
-    return result.map((item, i) => QueryUtil.parseQueryResult(item, options ? options[i] : undefined));
+    return result.map((item, i) => QueryUtils.parseQueryResult(item, options ? options[i] : undefined));
   }
 }

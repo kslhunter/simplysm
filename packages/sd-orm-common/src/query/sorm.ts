@@ -5,7 +5,7 @@ import {
   TQueryValue,
   TQueryValueOrSelectArray
 } from "../common";
-import {QueryUtil} from "../util/QueryUtil";
+import {QueryUtils} from "../util/QueryUtils";
 import {DateOnly, DateTime, Time, Type} from "@simplysm/sd-core-common";
 import {QueryUnit} from "./QueryUnit";
 
@@ -15,8 +15,14 @@ export const sorm = {
     if (target === undefined) {
       return sorm.null(source);
     }
+    else if (source instanceof QueryUnit && target instanceof QueryUnit) {
+      return sorm.or([
+        sorm.and([sorm.null(source), sorm.null(target)]),
+        [QueryUtils.getQueryValue(source), " = ", QueryUtils.getQueryValue(target)]
+      ]);
+    }
     else {
-      return [QueryUtil.getQueryValue(source), " = ", QueryUtil.getQueryValue(target)];
+      return [QueryUtils.getQueryValue(source), " = ", QueryUtils.getQueryValue(target)];
     }
   },
   notEqual<T extends TQueryValue>(source: TEntityValue<T>, target: TEntityValue<T | undefined>): TQueryValueOrSelectArray {
@@ -24,26 +30,26 @@ export const sorm = {
       return sorm.notNull(source);
     }
     else {
-      return [QueryUtil.getQueryValue(source), " != ", QueryUtil.getQueryValue(target)];
+      return [QueryUtils.getQueryValue(source), " != ", QueryUtils.getQueryValue(target)];
     }
   },
   null<T extends TQueryValue>(source: TEntityValue<T>): TQueryValueOrSelectArray {
-    return [QueryUtil.getQueryValue(source), " IS ", "NULL"];
+    return [QueryUtils.getQueryValue(source), " IS ", "NULL"];
   },
   notNull<T extends TQueryValue>(source: TEntityValue<T>): TQueryValueOrSelectArray {
-    return [QueryUtil.getQueryValue(source), " IS NOT ", "NULL"];
+    return [QueryUtils.getQueryValue(source), " IS NOT ", "NULL"];
   },
   lessThen<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryValueOrSelectArray {
-    return [QueryUtil.getQueryValue(source), " < ", QueryUtil.getQueryValue(target)];
+    return [QueryUtils.getQueryValue(source), " < ", QueryUtils.getQueryValue(target)];
   },
   lessThenOrEqual<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryValueOrSelectArray {
-    return [QueryUtil.getQueryValue(source), " <= ", QueryUtil.getQueryValue(target)];
+    return [QueryUtils.getQueryValue(source), " <= ", QueryUtils.getQueryValue(target)];
   },
   greaterThen<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryValueOrSelectArray {
-    return [QueryUtil.getQueryValue(source), " > ", QueryUtil.getQueryValue(target)];
+    return [QueryUtils.getQueryValue(source), " > ", QueryUtils.getQueryValue(target)];
   },
   greaterThenOrEqual<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryValueOrSelectArray {
-    return [QueryUtil.getQueryValue(source), " >= ", QueryUtil.getQueryValue(target)];
+    return [QueryUtils.getQueryValue(source), " >= ", QueryUtils.getQueryValue(target)];
   },
   between<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, from: TEntityValue<T | undefined>, to: TEntityValue<T | undefined>): TQueryValueOrSelectArray {
     return sorm.and([
@@ -52,13 +58,13 @@ export const sorm = {
     ]);
   },
   includes(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryValueOrSelectArray {
-    return [QueryUtil.getQueryValue(source), " LIKE ", "'%'", " + ", QueryUtil.getQueryValue(target), " + ", "'%'"];
+    return [QueryUtils.getQueryValue(source), " LIKE ", "'%'", " + ", QueryUtils.getQueryValue(target), " + ", "'%'"];
   },
   startsWith(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryValueOrSelectArray {
-    return [QueryUtil.getQueryValue(source), " LIKE ", QueryUtil.getQueryValue(target), " + ", "'%'"];
+    return [QueryUtils.getQueryValue(source), " LIKE ", QueryUtils.getQueryValue(target), " + ", "'%'"];
   },
   endsWith(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryValueOrSelectArray {
-    return [QueryUtil.getQueryValue(source), " LIKE ", "'%'", " + ", QueryUtil.getQueryValue(target)];
+    return [QueryUtils.getQueryValue(source), " LIKE ", "'%'", " + ", QueryUtils.getQueryValue(target)];
   },
   in<P extends TQueryValue>(src: TEntityValue<P>, target: (TEntityValue<P | undefined>)[]): TQueryValueOrSelectArray {
     if (target.length < 1) {
@@ -69,7 +75,7 @@ export const sorm = {
         return sorm.null(src);
       }
 
-      const result = [QueryUtil.getQueryValue(src), " IN ", target.filterExists().mapMany(item => [QueryUtil.getQueryValue(item), ", "]).slice(0, -1)];
+      const result = [QueryUtils.getQueryValue(src), " IN ", target.filterExists().mapMany(item => [QueryUtils.getQueryValue(item), ", "]).slice(0, -1)];
       if (target.includes(undefined)) {
         return sorm.or([
           result,
@@ -89,7 +95,7 @@ export const sorm = {
         return sorm.null(src);
       }
 
-      const result = [QueryUtil.getQueryValue(src), " NOT IN ", target.filterExists().mapMany(item => [QueryUtil.getQueryValue(item), ", "]).slice(0, -1)];
+      const result = [QueryUtils.getQueryValue(src), " NOT IN ", target.filterExists().mapMany(item => [QueryUtils.getQueryValue(item), ", "]).slice(0, -1)];
       if (target.includes(undefined)) {
         return sorm.and([
           result,
@@ -103,8 +109,8 @@ export const sorm = {
   and(args: TQueryValueOrSelectArray[]): TQueryValueOrSelectArray {
     const result: TQueryValueOrSelectArray = [];
     for (const arg of args) {
-      const queryValue = QueryUtil.getQueryValue(arg);
-      if (queryValue) {
+      const queryValue = QueryUtils.getQueryValue(arg);
+      if (queryValue !== undefined) {
         result.push(...[queryValue, " AND "]);
       }
     }
@@ -113,7 +119,7 @@ export const sorm = {
   or(args: TQueryValueOrSelectArray[]): TQueryValueOrSelectArray {
     const result: TQueryValueOrSelectArray = [];
     for (const arg of args) {
-      const queryValue = QueryUtil.getQueryValue(arg);
+      const queryValue = QueryUtils.getQueryValue(arg);
       result.push(...[queryValue, " OR "]);
     }
     return result.slice(0, -1);
@@ -124,48 +130,50 @@ export const sorm = {
     return sorm.case(where, true).else(false);
   },
   dateDiff<T extends DateTime | DateOnly | Time>(separator: TDbDateSeparator, from: TEntityValue<T>, to: TEntityValue<T>): QueryUnit<Number, TEntityValueOrQueryableArray> {
-    return new QueryUnit(Number, ["DATEDIFF(", separator, ", ", QueryUtil.getQueryValue(from), ", ", QueryUtil.getQueryValue(to), ")"]);
+    return new QueryUnit(Number, ["DATEDIFF(", separator, ", ", QueryUtils.getQueryValue(from), ", ", QueryUtils.getQueryValue(to), ")"]);
   },
   dateAdd<T extends DateTime | DateOnly | Time>(separator: TDbDateSeparator, from: TEntityValue<T>, value: TEntityValue<number>): QueryUnit<DateOnly, TEntityValueOrQueryableArray> {
-    return new QueryUnit(DateOnly, ["DATEADD(", separator, ", ", QueryUtil.getQueryValue(value), ", ", QueryUtil.getQueryValue(from), ")"]);
+    return new QueryUnit(DateOnly, ["DATEADD(", separator, ", ", QueryUtils.getQueryValue(value), ", ", QueryUtils.getQueryValue(from), ")"]);
   },
   ifNull<S extends TQueryValue, T extends TQueryValue>(source: TEntityValue<S>, ...targets: TEntityValue<T>[]): QueryUnit<S | T, TEntityValueOrQueryableArray> {
-    let cursorQuery = QueryUtil.getQueryValue(source) as TEntityValueOrQueryableArray;
-    let type = QueryUtil.getQueryValueType(source);
+    let cursorQuery = QueryUtils.getQueryValue(source) as TEntityValueOrQueryableArray;
+    let type = QueryUtils.getQueryValueType(source);
 
     for (const target of targets) {
-      cursorQuery = ["ISNULL(", cursorQuery, ", ", QueryUtil.getQueryValue(target), ")"];
-      type = type ?? QueryUtil.getQueryValueType(target);
+      cursorQuery = ["ISNULL(", cursorQuery, ", ", QueryUtils.getQueryValue(target), ")"];
+      type = type ?? QueryUtils.getQueryValueType(target);
     }
 
     return new QueryUnit<S | T, TEntityValueOrQueryableArray>(type, cursorQuery);
   },
   case<T extends TEntityValueOrQueryable | TEntityValueOrQueryableArray>(predicate: TEntityValue<boolean | Boolean> | TQueryValueOrSelectArray, then: TEntityValue<T>): CaseQueryable<T> {
-    const type = QueryUtil.getQueryValueType(then);
-    const caseQueryable = new CaseQueryable<T>(type as Type<T>);
+    const type = QueryUtils.getQueryValueType(then);
+    const caseQueryable = new CaseQueryable<T>(type);
     return caseQueryable.case(predicate, then);
   },
   dataLength<T extends TQueryValue>(arg: TEntityValue<T>): QueryUnit<Number, TEntityValueOrQueryableArray> {
-    return new QueryUnit(Number, ["DATALENGTH(", QueryUtil.getQueryValue(arg), ")"]);
+    return new QueryUnit(Number, ["DATALENGTH(", QueryUtils.getQueryValue(arg), ")"]);
   },
   stringLength(arg: TEntityValue<String | string>): QueryUnit<Number, TEntityValueOrQueryableArray> {
-    return new QueryUnit(Number, ["LEN(", QueryUtil.getQueryValue(arg), ")"]);
+    return new QueryUnit(Number, ["LEN(", QueryUtils.getQueryValue(arg), ")"]);
   },
   cast<T extends TQueryValue>(src: TEntityValue<TQueryValue>, targetType: Type<T>): QueryUnit<T, TEntityValueOrQueryableArray> {
-    return new QueryUnit(targetType, ["CONVERT(", QueryUtil.getDataType(targetType), ", ", QueryUtil.getQueryValue(src), ")"]);
+    return new QueryUnit(targetType, ["CONVERT(", QueryUtils.getDataType(targetType), ", ", QueryUtils.getQueryValue(src), ")"]);
   },
   left(src: TEntityValue<string | String | undefined>, num: TEntityValue<number | Number>): QueryUnit<String, TEntityValueOrQueryableArray> {
-    return new QueryUnit(String, ["LEFT(", QueryUtil.getQueryValue(src), ", ", QueryUtil.getQueryValue(num), ")"]);
+    return new QueryUnit(String, ["LEFT(", QueryUtils.getQueryValue(src), ", ", QueryUtils.getQueryValue(num), ")"]);
   },
   right(src: TEntityValue<string | String | undefined>, num: TEntityValue<number | Number>): QueryUnit<String, TEntityValueOrQueryableArray> {
-    return new QueryUnit(String, ["RIGHT(", QueryUtil.getQueryValue(src), ", ", QueryUtil.getQueryValue(num), ")"]);
+    return new QueryUnit(String, ["RIGHT(", QueryUtils.getQueryValue(src), ", ", QueryUtils.getQueryValue(num), ")"]);
   },
   replace(src: TEntityValue<string | String | undefined>, from: TEntityValue<String | string>, to: TEntityValue<String | string>): QueryUnit<String, TEntityValueOrQueryableArray> {
     return new QueryUnit(String, [
       "REPLACE(",
-      QueryUtil.getQueryValue(src), ", ",
-      QueryUtil.getQueryValue(from), ", ",
-      QueryUtil.getQueryValue(to),
+      QueryUtils.getQueryValue(src),
+      ", ",
+      QueryUtils.getQueryValue(from),
+      ", ",
+      QueryUtils.getQueryValue(to),
       ")"
     ]);
   },
@@ -173,31 +181,31 @@ export const sorm = {
 
   //region Grouping select
   count<T extends TQueryValue>(arg?: TEntityValue<T>): QueryUnit<Number, TEntityValueOrQueryable | TEntityValueOrQueryableArray> {
-    if (arg) {
-      return new QueryUnit(Number, ["COUNT(DISTINCT(", QueryUtil.getQueryValue(arg), "))"]);
+    if (arg !== undefined) {
+      return new QueryUnit(Number, ["COUNT(DISTINCT(", QueryUtils.getQueryValue(arg), "))"]);
     }
     else {
       return new QueryUnit(Number, "COUNT(*)");
     }
   },
   sum<T extends number | Number>(arg: TEntityValue<T | undefined>): QueryUnit<Number, TEntityValueOrQueryableArray> {
-    return new QueryUnit(Number, ["SUM(", QueryUtil.getQueryValue(arg), ")"]);
+    return new QueryUnit(Number, ["SUM(", QueryUtils.getQueryValue(arg), ")"]);
   },
-  max<T extends number | Number | string | String | DateOnly | DateTime | Time>(unit: TEntityValue<T | undefined>): QueryUnit<T, TEntityValueOrQueryableArray> | undefined {
-    const type = QueryUtil.getQueryValueType(unit);
+  max<T extends number | Number | string | String | DateOnly | DateTime | Time>(unit: TEntityValue<T | undefined>): QueryUnit<T, TEntityValueOrQueryableArray> {
+    const type = QueryUtils.getQueryValueType(unit);
     if (!type) {
       throw new TypeError();
     }
 
-    return new QueryUnit(type as Type<T>, ["MAX(", QueryUtil.getQueryValue(unit), ")"]);
+    return new QueryUnit(type as Type<T>, ["MAX(", QueryUtils.getQueryValue(unit), ")"]);
   },
-  min<T extends number | Number | string | String | DateOnly | DateTime | Time>(unit: TEntityValue<T | undefined>): QueryUnit<T, TEntityValueOrQueryableArray> | undefined {
-    const type = QueryUtil.getQueryValueType(unit);
+  min<T extends number | Number | string | String | DateOnly | DateTime | Time>(unit: TEntityValue<T | undefined>): QueryUnit<T, TEntityValueOrQueryableArray> {
+    const type = QueryUtils.getQueryValueType(unit);
     if (!type) {
       throw new TypeError();
     }
 
-    return new QueryUnit(type as Type<T>, ["MIN(", QueryUtil.getQueryValue(unit), ")"]);
+    return new QueryUnit(type as Type<T>, ["MIN(", QueryUtils.getQueryValue(unit), ")"]);
   },
   exists<T extends TQueryValue>(arg: TEntityValue<T>): QueryUnit<Boolean, TEntityValueOrQueryableArray> {
     return sorm.case(sorm.greaterThen(sorm.ifNull(sorm.count(arg), 0), 0), true as boolean).else(false);
@@ -221,7 +229,6 @@ export type TDbDateSeparator =
   | "microsecond"
   | "nanosecond";
 
-
 export class CaseQueryable<T extends TEntityValueOrQueryable | TEntityValueOrQueryableArray> {
   private readonly _cases: TEntityValueOrQueryableArray = [];
 
@@ -229,14 +236,14 @@ export class CaseQueryable<T extends TEntityValueOrQueryable | TEntityValueOrQue
   }
 
   public case(predicate: TEntityValue<boolean | Boolean> | TQueryValueOrSelectArray, then: TEntityValue<T>): CaseQueryable<T> {
-    this._type = QueryUtil.getQueryValueType(then);
+    this._type = QueryUtils.getQueryValueType(then);
 
-    this._cases.push(...[" WHEN ", QueryUtil.getQueryValue(predicate), " THEN ", QueryUtil.getQueryValue(then)]);
+    this._cases.push(...[" WHEN ", QueryUtils.getQueryValue(predicate), " THEN ", QueryUtils.getQueryValue(then)]);
     return this;
   }
 
   public else(then: TEntityValue<T>): QueryUnit<T, TEntityValueOrQueryableArray> {
-    this._type = QueryUtil.getQueryValueType(then);
-    return new QueryUnit<T, TEntityValueOrQueryableArray>(this._type, ["CASE ", ...this._cases, " ELSE ", QueryUtil.getQueryValue(then), " END"]) as any;
+    this._type = QueryUtils.getQueryValueType(then);
+    return new QueryUnit<T, TEntityValueOrQueryableArray>(this._type, ["CASE ", ...this._cases, " ELSE ", QueryUtils.getQueryValue(then), " END"]) as any;
   }
 }

@@ -57,7 +57,7 @@ export class SdLabelControl {
   @SdInputValidate({
     type: String,
     validator(value: string): boolean {
-      return /^#[0-9a-fA-F]*$/.test(value);
+      return (/^#[0-9a-fA-F]*$/).test(value);
     }
   })
   @HostBinding("style.background")

@@ -9,7 +9,8 @@ import {SdPaneControl} from "../../controls/SdPaneControl";
   exports: [
     SdPaneControl
   ],
-  entryComponents: []
+  entryComponents: [],
+  providers: []
 })
 export class SdPaneControlModule {
 }

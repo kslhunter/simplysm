@@ -18,7 +18,7 @@ import {
   ViewChild
 } from "@angular/core";
 import {SdInputValidate} from "../commons/SdInputValidate";
-import {JsonConvert} from "@simplysm/sd-core-common";
+import {JsonConvert, NeverEntryError} from "@simplysm/sd-core-common";
 import {SdDropdownControl} from "./SdDropdownControl";
 
 @Component({
@@ -41,7 +41,7 @@ import {SdDropdownControl} from "./SdDropdownControl";
             <sd-dock class="sd-border-bottom-default">
               <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
             </sd-dock>
-            
+
             <sd-pane>
               <ng-template [ngTemplateOutlet]="beforeTemplateRef"></ng-template>
               <ng-template #rowOfList let-items="items">
@@ -50,10 +50,10 @@ import {SdDropdownControl} from "./SdDropdownControl";
                     <ng-template [ngTemplateOutlet]="itemTemplateRef"
                                  [ngTemplateOutletContext]="{item: item}"></ng-template>
 
-                    <ng-container *ngIf="children && children(i, item) && children!(i, item).length > 0">
+                    <ng-container *ngIf="getChildrenFn && getChildrenFn(i, item) && getChildrenFn!(i, item).length > 0">
                       <div class="_children">
                         <ng-template [ngTemplateOutlet]="rowOfList"
-                                     [ngTemplateOutletContext]="{items: children(i, item)}"></ng-template>
+                                     [ngTemplateOutletContext]="{items: getChildrenFn(i, item)}"></ng-template>
                       </div>
                     </ng-container>
                   </div>
@@ -82,7 +82,7 @@ import {SdDropdownControl} from "./SdDropdownControl";
         padding-right: 30px !important;
         height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
-        border-color: var(--trans-brightness-default);
+        border: 1px solid var(--sd-border-color);
         transition: outline-color .1s linear;
         outline: 1px solid transparent;
         outline-offset: -1px;
@@ -125,13 +125,44 @@ import {SdDropdownControl} from "./SdDropdownControl";
       }
 
       &[sd-size=sm] /deep/ > sd-dropdown > div {
-        padding-left: var(--gap-xs);
+        padding: var(--gap-xs) var(--gap-sm);
 
         > ._icon {
           padding: var(--gap-xs) 0;
         }
 
         height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+      }
+
+      &[sd-size=lg] /deep/ > sd-dropdown > div {
+        padding: var(--gap-default) var(--gap-lg);
+
+        > ._icon {
+          padding: var(--gap-default) 0;
+        }
+
+        height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+      }
+
+      &[sd-inset=true] {
+        > /deep/ sd-dropdown > div {
+          border: none;
+          border-radius: 0;
+          height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+        }
+
+        &[sd-size=sm] > /deep/ sd-dropdown > div {
+          height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+        }
+
+        &[sd-size=lg] > /deep/ sd-dropdown > div {
+          height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+        }
+
+        > /deep/ sd-dropdown > div:focus {
+          outline: 1px solid var(--theme-color-primary-default);
+          outline-offset: -1px;
+        }
       }
     }
 
@@ -200,11 +231,11 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
 
   @Input()
   @SdInputValidate(Function)
-  public trackBy?: (index: number, item: any) => any;
+  public trackByFn?: (index: number, item: any) => any;
 
   @Input()
   @SdInputValidate(Function)
-  public children?: (index: number, item: any) => any;
+  public getChildrenFn?: (index: number, item: any) => any;
 
   @Output()
   public readonly open = new EventEmitter();
@@ -213,6 +244,11 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-inline")
   public inline?: boolean;
+
+  @Input()
+  @SdInputValidate(Boolean)
+  @HostBinding("attr.sd-inset")
+  public inset?: boolean;
 
   @Input()
   @SdInputValidate({
@@ -227,8 +263,8 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
   }
 
   public trackByItemFn(index: number, item: any): any {
-    if (this.trackBy) {
-      return this.trackBy(index, item) || item;
+    if (this.trackByFn) {
+      return this.trackByFn(index, item) ?? item;
     }
     else {
       return item;
@@ -239,8 +275,8 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
   private readonly _itemElsIterableDiffer: IterableDiffer<any>;
 
   private readonly _el: HTMLElement;
-  private _contentEl!: HTMLElement;
-  private _popupEl!: HTMLElement;
+  private _contentEl?: HTMLElement;
+  private _popupEl?: HTMLElement;
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
@@ -251,12 +287,13 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
   }
 
   public ngOnInit(): void {
-    this._contentEl = this._el.findAll("._sd-select-content")[0] as HTMLElement;
-    this._popupEl = this._el.findAll("sd-dropdown-popup")[0] as HTMLElement;
+    this._contentEl = this._el.findAll("._sd-select-content")[0];
+    this._popupEl = this._el.findAll("sd-dropdown-popup")[0];
   }
 
   public ngAfterViewInit(): void {
     this._refreshContent();
+    if (!this._popupEl) throw new NeverEntryError();
     this._popupEl.addEventListener("mutation", () => {
       this._refreshContent();
     }, true);
@@ -271,7 +308,7 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
   public ngAfterContentChecked(): void {
     if (this.popupElRef) {
       const itemEls = this.popupElRef.nativeElement.findAll("sd-select-item");
-      if (itemEls && this._itemElsIterableDiffer.diff(itemEls)) {
+      if (this._itemElsIterableDiffer.diff(itemEls)) {
         this._cdr.markForCheck();
       }
     }
@@ -289,22 +326,32 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
   }
 
   private _refreshContent(): void {
-    if (!this._contentEl || !this._popupEl) return;
+    if (this._contentEl === undefined || this._popupEl === undefined) return;
 
     const selectedItemEl = this._popupEl.findAll("sd-select-item")
-      .single(item => (item.getAttribute("sd-value-json") || undefined) === JsonConvert.stringify(this.value));
+      .single(item => item.getAttribute("sd-value-json") === JsonConvert.stringify(this.value));
     if (!selectedItemEl) {
       this._contentEl.innerHTML = "";
     }
     else {
-      const labelTemplateEl = selectedItemEl.findAll("> ._labelTemplate")[0];
-      const labelEl = labelTemplateEl ? labelTemplateEl : selectedItemEl.findAll("> ._label")[0] as HTMLElement;
-      this._contentEl.innerHTML = labelEl.innerHTML;
+      let cursorEl: HTMLElement | undefined = selectedItemEl;
+      let innerHTML = "";
+      while (true) {
+        if (!cursorEl) break;
+
+        const labelTemplateEl = cursorEl.findAll("> ._labelTemplate")[0];
+        const labelEl = labelTemplateEl !== undefined ? labelTemplateEl : cursorEl.findAll("> ._label")[0];
+        innerHTML = labelEl.innerHTML + (Boolean(innerHTML) ? " / " + innerHTML : "");
+
+        cursorEl = cursorEl.findParent("._children")?.parentElement?.findFirst("sd-select-item");
+      }
+
+      this._contentEl.innerHTML = innerHTML;
     }
   }
 
   private _refreshInvalid(): void {
-    if (this.required && !this.value) {
+    if (this.required && this.value === undefined) {
       this._el.setAttribute("sd-invalid", "true");
     }
     else {
