@@ -3,6 +3,7 @@
 _back
 coverage
 logs
+_logs
 node_modules
 dist
 dist-browser
