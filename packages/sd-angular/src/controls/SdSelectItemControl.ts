@@ -7,7 +7,6 @@ import {
   HostBinding,
   HostListener,
   Inject,
-  Injector,
   Input,
   TemplateRef
 } from "@angular/core";
