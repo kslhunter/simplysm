@@ -1,8 +1,11 @@
 import {NgModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
 import {SdViewControl} from "../../controls/SdViewControl";
 
 @NgModule({
-  imports: [],
+  imports: [
+    CommonModule
+  ],
   declarations: [
     SdViewControl
   ],

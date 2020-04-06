@@ -21,7 +21,7 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
     <div class="_dialog" tabindex="0"
          (keydown.escape)="onDialogEscapeKeydown($event)">
       <sd-dock-container>
-        <sd-dock class="_header" (mousedown)="_onHeaderMouseDown($event)">
+        <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)">
           <sd-anchor class="_close-button"
              (click)="onCloseButtonClick()"
              *ngIf="!hideCloseButton">
@@ -285,7 +285,7 @@ export class SdModalEntryControl implements OnInit {
       });
 
       this._dialogHeaderEl.addEventListener("mousedown", event => {
-        this._onHeaderMouseDown(event);
+        this.onHeaderMouseDown(event);
       });
     });
   }
@@ -376,7 +376,7 @@ export class SdModalEntryControl implements OnInit {
     document.documentElement.addEventListener("mouseup", stopDrag, false);
   }
 
-  private _onHeaderMouseDown(event: MouseEvent): void {
+  public onHeaderMouseDown(event: MouseEvent): void {
     const startX = event.clientX;
     const startY = event.clientY;
     const startTop = this._dialogEl.offsetTop;

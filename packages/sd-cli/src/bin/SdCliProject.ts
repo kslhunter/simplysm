@@ -73,7 +73,12 @@ export class SdCliProject {
   }
 
   public async buildAsync(watch: boolean, subBuild?: ("gen-index" | "check" | "lint" | "compile" | "gen-ng")[]): Promise<void> {
-    await SdCliLocalUpdate.watchAsync(this._config);
+    if (watch) {
+      await SdCliLocalUpdate.watchAsync(this._config);
+    }
+    else {
+      await SdCliLocalUpdate.runAsync(this._config);
+    }
 
     this._logger.debug(`빌드 준비...`);
     await this._upgradeVersionAsync(watch);
@@ -200,34 +205,44 @@ export class SdCliProject {
                   throw new Error("서버빌드시, 'package.json'에 'main'이 반드시 설정되어 있어야 합니다.");
                 }
 
-                await pkg
-                  .on("change", async arg => {
-                    if (arg.command !== "compile") return;
-                    await this._stopServerAsync(pkg);
-                  })
-                  .on("complete", async arg => {
-                    if (arg.command !== "compile") return;
-                    await this._startServerAsync(pkg);
-                  })
-                  .compileAsync();
-              }
-              else if (pkg.info.config?.type === "web") {
-                const middlewares = (
+                if (watch) {
                   await pkg
-                    .on("change", arg => {
+                    .on("change", async arg => {
                       if (arg.command !== "compile") return;
-                      this._logger.log(`[${pkg.name}] 클라이언트 준비...`);
+                      await this._stopServerAsync(pkg);
                     })
                     .on("complete", async arg => {
                       if (arg.command !== "compile") return;
-                      await Wait.true(() => this._servers[pkg.info.config?.["server"]].server !== undefined);
-                      const port = this._servers[pkg.info.config?.["server"]].server!.options.port ?? 80;
-                      this._logger.info(`[${pkg.name}] 클라이언트가 준비되었습니다.: http://localhost:${port}/${path.basename(pkg.info.rootPath)}/`);
+                      await this._startServerAsync(pkg);
                     })
-                    .compileAsync()
-                ) as NextHandleFunction[];
+                    .compileAsync();
+                }
+                else {
+                  await pkg.compileAsync();
+                }
+              }
+              else if (pkg.info.config?.type === "web") {
+                if (watch) {
+                  const middlewares = (
+                    await pkg
+                      .on("change", arg => {
+                        if (arg.command !== "compile") return;
+                        this._logger.log(`[${pkg.name}] 클라이언트 준비...`);
+                      })
+                      .on("complete", async arg => {
+                        if (arg.command !== "compile") return;
+                        await Wait.true(() => this._servers[pkg.info.config?.["server"]].server !== undefined);
+                        const port = this._servers[pkg.info.config?.["server"]].server!.options.port ?? 80;
+                        this._logger.info(`[${pkg.name}] 클라이언트가 준비되었습니다.: http://localhost:${port}/${path.basename(pkg.info.rootPath)}/`);
+                      })
+                      .compileClientAsync(true)
+                  ) as NextHandleFunction[];
 
-                await this._registerClientAsync(pkg, middlewares);
+                  await this._registerClientAsync(pkg, middlewares);
+                }
+                else {
+                  await pkg.compileClientAsync(false);
+                }
               }
             }
           }),

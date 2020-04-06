@@ -1,8 +1,11 @@
 import {NgModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
 import {SdGridControl} from "../../controls/SdGridControl";
 
 @NgModule({
-  imports: [],
+  imports: [
+    CommonModule
+  ],
   declarations: [
     SdGridControl
   ],

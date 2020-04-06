@@ -1,8 +1,11 @@
 import {NgModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
 import {SdNoteControl} from "../../controls/SdNoteControl";
 
 @NgModule({
-  imports: [],
+  imports: [
+    CommonModule
+  ],
   declarations: [
     SdNoteControl
   ],

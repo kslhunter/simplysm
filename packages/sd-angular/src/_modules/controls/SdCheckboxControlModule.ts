@@ -1,12 +1,12 @@
 import {NgModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
 import {SdCheckboxControl} from "../../controls/SdCheckboxControl";
 import {SdIconControlModule} from "./icons/SdIconControlModule";
-import {CommonModule} from "@angular/common";
 
 @NgModule({
   imports: [
-    SdIconControlModule,
-    CommonModule
+    CommonModule,
+    SdIconControlModule
   ],
   declarations: [
     SdCheckboxControl

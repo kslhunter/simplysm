@@ -5,7 +5,7 @@ import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
   selector: "sd-checkbox-group-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-checkbox [value]="isSelected" (valueChange)="onValueChange($event)" [inline]="true">
+    <sd-checkbox [value]="isSelected" (valueChange)="onValueChange()" [inline]="true">
       <ng-content></ng-content>
     </sd-checkbox>`
 })

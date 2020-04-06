@@ -1,6 +1,6 @@
 import {NgModule} from "@angular/core";
-import {SdHtmlEditorControl} from "../../controls/SdHtmlEditorControl";
 import {CommonModule} from "@angular/common";
+import {SdHtmlEditorControl} from "../../controls/SdHtmlEditorControl";
 import {SdIconControlModule} from "./icons/SdIconControlModule";
 import {SdAnchorControlModule} from "./SdAnchorControlModule";
 import {SdDockControlModule} from "./SdDockControlModule";

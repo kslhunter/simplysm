@@ -1,8 +1,11 @@
 import {NgModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
 import {SdMutationDirective} from "../../directives/SdMutationDirective";
 
 @NgModule({
-  imports: [],
+  imports: [
+    CommonModule
+  ],
   declarations: [
     SdMutationDirective
   ],

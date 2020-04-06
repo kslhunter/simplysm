@@ -1,12 +1,12 @@
 import {NgModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
 import {SdFormItemControl} from "../../controls/SdFormItemControl";
 import {SdFormControlModule} from "./SdFormControlModule";
-import {CommonModule} from "@angular/common";
 
 @NgModule({
   imports: [
-    SdFormControlModule,
-    CommonModule
+    CommonModule,
+    SdFormControlModule
   ],
   declarations: [
     SdFormItemControl

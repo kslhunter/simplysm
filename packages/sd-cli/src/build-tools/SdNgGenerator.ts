@@ -460,8 +460,11 @@ export const routes = [
 
           const ngModuleInfo: ISdNgModuleInfo = {
             def,
-            importMapObj: {"@angular/core": ["NgModule"]},
-            modules: [],
+            importMapObj: {
+              "@angular/core": ["NgModule"],
+              "@angular/common": ["CommonModule"]
+            },
+            modules: ["CommonModule"],
             declarations: [],
             exports: [],
             entryComponents: [],
@@ -594,9 +597,7 @@ export const routes = [
                           .replace(/]/g, "\\]]"),
                         (dec.arguments[0].get("selector") as string)
                           .replace(/\[/g, "[\\(")
-                          .replace(/]/g, "\\)]"),
-                        (dec.arguments[0].get("selector") as string)
-                          .replace(/\[/g, "[\\*")
+                          .replace(/]/g, "\\)]")
                       ].join(", "))
                     ))
                   ))

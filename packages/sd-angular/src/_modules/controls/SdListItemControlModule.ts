@@ -1,6 +1,6 @@
 import {NgModule} from "@angular/core";
-import {SdListItemControl} from "../../controls/SdListItemControl";
 import {CommonModule} from "@angular/common";
+import {SdListItemControl} from "../../controls/SdListItemControl";
 import {SdListControlModule} from "./SdListControlModule";
 import {SdIconControlModule} from "./icons/SdIconControlModule";
 import {SdCollapseControlModule} from "./SdCollapseControlModule";

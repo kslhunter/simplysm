@@ -1,6 +1,6 @@
 import {NgModule} from "@angular/core";
-import {SdTextfieldControl} from "../../controls/SdTextfieldControl";
 import {CommonModule} from "@angular/common";
+import {SdTextfieldControl} from "../../controls/SdTextfieldControl";
 
 @NgModule({
   imports: [

@@ -1,7 +1,7 @@
 import {NgModule, ApplicationModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
 import {SdMultiSelectControl} from "../../controls/SdMultiSelectControl";
 import {SdIconControlModule} from "./icons/SdIconControlModule";
-import {CommonModule} from "@angular/common";
 import {SdDockControlModule} from "./SdDockControlModule";
 import {SdDropdownControlModule} from "./SdDropdownControlModule";
 import {SdDropdownPopupControlModule} from "./SdDropdownPopupControlModule";
@@ -11,9 +11,9 @@ import {SdCheckboxControlModule} from "./SdCheckboxControlModule";
 
 @NgModule({
   imports: [
+    CommonModule,
     ApplicationModule,
     SdIconControlModule,
-    CommonModule,
     SdDockControlModule,
     SdDropdownControlModule,
     SdDropdownPopupControlModule,

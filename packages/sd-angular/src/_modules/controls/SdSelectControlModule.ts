@@ -1,18 +1,18 @@
 import {NgModule, ApplicationModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
 import {SdSelectControl} from "../../controls/SdSelectControl";
 import {SdDropdownControlModule} from "./SdDropdownControlModule";
 import {SdIconControlModule} from "./icons/SdIconControlModule";
-import {CommonModule} from "@angular/common";
 import {SdDockControlModule} from "./SdDockControlModule";
 import {SdDropdownPopupControlModule} from "./SdDropdownPopupControlModule";
 import {SdPaneControlModule} from "./SdPaneControlModule";
 
 @NgModule({
   imports: [
+    CommonModule,
     ApplicationModule,
     SdDropdownControlModule,
     SdIconControlModule,
-    CommonModule,
     SdDockControlModule,
     SdDropdownPopupControlModule,
     SdPaneControlModule

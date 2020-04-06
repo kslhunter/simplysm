@@ -19,6 +19,7 @@ import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import {SdWebpackInputHostWithScss} from "./SdWebpackInputHostWithScss";
 import {SdTypescriptWatcher} from "./SdTypescriptWatcher";
+import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 
 export class SdPackageBuilder extends EventEmitter {
   private readonly _logger = Logger.get([
@@ -133,9 +134,6 @@ export class SdPackageBuilder extends EventEmitter {
       else if (this._info.config?.type === "server") {
         await this._watchServerCompileAsync();
       }
-      else if (this._info.config?.type === "web") {
-        return await this._watchClientCompileAsync();
-      }
       else {
         throw new NeverEntryError();
       }
@@ -147,6 +145,17 @@ export class SdPackageBuilder extends EventEmitter {
       throw new NeverEntryError();
     }
   }
+
+  public async runClientAsync(watch: boolean): Promise<void | NextHandleFunction[]> {
+    if (this._info.config?.type !== "web") throw new NeverEntryError();
+    if (watch) {
+      return await this._watchClientCompileAsync();
+    }
+    else {
+      await this._runClientCompileAsync();
+    }
+  }
+
 
   private async _watchAsync(options: {
                               useDependencyChanges?: boolean; // 컴파일은 제외
@@ -242,6 +251,65 @@ export class SdPackageBuilder extends EventEmitter {
     });
   }
 
+  private async _runClientCompileAsync(): Promise<void> {
+    if (this._info.config?.type !== "web") {
+      throw new Error(`[${this._info.npmConfig.name}] 클라이언트(web) 패키지가 아닙니다.`);
+    }
+
+    const webpackConfig = this._getClientWebpackConfig();
+
+    const compiler = webpack(webpackConfig);
+
+    compiler.hooks.run.tap("SdPackageBuilder", () => {
+      this._logger.debug("컴파일 시작...");
+      this.emit("change");
+    });
+
+    return await new Promise<void>((resolve, reject) => {
+      compiler.run((err, stats) => {
+        if (err) {
+          this._logger.error(err);
+          this.emit("complete", [{
+            filePath: undefined,
+            severity: "error" as const,
+            message: err.message
+          }]);
+          reject(err);
+          return;
+        }
+
+
+        const results: ISdPackageBuildResult[] = [];
+
+        const info = stats.toJson("errors-warnings");
+
+        if (stats.hasWarnings()) {
+          results.push(
+            ...info.warnings.map(item => ({
+              filePath: undefined,
+              severity: "warning" as const,
+              message: item.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item
+            }))
+          );
+        }
+
+        if (stats.hasErrors()) {
+          results.push(
+            ...info.errors.map(item => ({
+              filePath: undefined,
+              severity: "error" as const,
+              message: item.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item
+            }))
+          );
+        }
+
+        this._logger.debug("컴파일 완료");
+        this.emit("complete", results);
+        resolve();
+      });
+    });
+  }
+
   private _getClientWebpackConfig(): webpack.Configuration {
     if (this._info.config?.type !== "web") {
       throw new Error("클라이언트(web) 패키지가 아닙니다.");
@@ -269,8 +337,30 @@ export class SdPackageBuilder extends EventEmitter {
           {"SD_APP_MODULE": path.resolve(srcPath, "AppModule")} :
           {"SD_APP_MODULE_FACTORY": path.resolve(srcPath, "AppModule.ngfactory")}
       },
+      performance: {
+        hints: false
+      },
       optimization: {
-        minimize: false
+        noEmitOnErrors: true,
+        runtimeChunk: "single",
+        splitChunks: {
+          chunks: "all",
+          maxInitialRequests: Infinity,
+          minSize: 0,
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: (module: any) => {
+                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+                return `libs/${packageName.replace("@", "")}`;
+              }
+            }
+          }
+        },
+        minimizer: [
+          new webpack.HashedModuleIdsPlugin(),
+          new OptimizeCSSAssetsPlugin()
+        ]
       },
       entry: {
         main: this._devMode ?

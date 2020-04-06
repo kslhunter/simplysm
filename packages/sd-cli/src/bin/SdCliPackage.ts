@@ -215,22 +215,25 @@ export class SdCliPackage extends EventEmitter {
     else if (this.info.config?.type === "server") {
       await this._runAsync("compile", "node");
     }
-    else if (this.info.config?.type === "web") {
-      const command = "compile";
-      const target = "browser";
-
-      return await new SdPackageBuilder(this.info, command, target, this._devMode)
-        .on("change", filePaths => {
-          this.emit("change", {packageName: this.name, command, target, filePaths});
-        })
-        .on("complete", results => {
-          this.emit("complete", {packageName: this.name, command, target, results});
-        })
-        .runAsync();
-    }
     else {
       throw new NeverEntryError();
     }
+  }
+
+  public async compileClientAsync(watch: boolean): Promise<void | NextHandleFunction[]> {
+    if (this.info.config?.type !== "web") throw new NeverEntryError();
+
+    const command = "compile";
+    const target = "browser";
+
+    return await new SdPackageBuilder(this.info, command, target, this._devMode)
+      .on("change", filePaths => {
+        this.emit("change", {packageName: this.name, command, target, filePaths});
+      })
+      .on("complete", results => {
+        this.emit("complete", {packageName: this.name, command, target, results});
+      })
+      .runClientAsync(watch);
   }
 
   public async genNgAsync(): Promise<void> {

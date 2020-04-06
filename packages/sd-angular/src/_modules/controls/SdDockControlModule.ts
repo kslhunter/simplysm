@@ -1,6 +1,6 @@
 import {NgModule} from "@angular/core";
-import {SdDockControl} from "../../controls/SdDockControl";
 import {CommonModule} from "@angular/common";
+import {SdDockControl} from "../../controls/SdDockControl";
 import {SdDockContainerControl} from "../../controls/SdDockContainerControl";
 
 @NgModule({

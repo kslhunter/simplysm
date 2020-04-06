@@ -1,12 +1,12 @@
 import {NgModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
 import {SdSelectItemControl} from "../../controls/SdSelectItemControl";
 import {SdSelectControlModule} from "./SdSelectControlModule";
-import {CommonModule} from "@angular/common";
 
 @NgModule({
   imports: [
-    SdSelectControlModule,
-    CommonModule
+    CommonModule,
+    SdSelectControlModule
   ],
   declarations: [
     SdSelectItemControl

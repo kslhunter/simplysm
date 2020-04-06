@@ -1,6 +1,6 @@
 import {NgModule} from "@angular/core";
-import {SdButtonControl} from "../../controls/SdButtonControl";
 import {CommonModule} from "@angular/common";
+import {SdButtonControl} from "../../controls/SdButtonControl";
 
 @NgModule({
   imports: [

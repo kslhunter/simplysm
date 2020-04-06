@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "3.4.50",
+  "version": "3.4.52-7",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -15,10 +15,10 @@
     "@angular/compiler": "^9.1.0",
     "@angular/compiler-cli": "^9.1.0",
     "@ngtools/webpack": "^9.1.0",
-    "@simplysm/sd-core-common": "3.4.50",
-    "@simplysm/sd-core-node": "3.4.50",
-    "@simplysm/sd-service-common": "3.4.50",
-    "@simplysm/sd-service-node": "3.4.50",
+    "@simplysm/sd-core-common": "3.4.52-7",
+    "@simplysm/sd-core-node": "3.4.52-7",
+    "@simplysm/sd-service-common": "3.4.52-7",
+    "@simplysm/sd-service-node": "3.4.52-7",
     "@types/node": "^13.9.1",
     "@typescript-eslint/eslint-plugin": "^2.24.0",
     "@typescript-eslint/parser": "^2.24.0",
@@ -46,7 +46,8 @@
     "webpack-dev-middleware": "^3.7.2",
     "webpack-hot-middleware": "^2.25.0",
     "webpack-node-externals": "^1.7.2",
-    "yargs": "^15.3.1"
+    "yargs": "^15.3.1",
+    "optimize-css-assets-webpack-plugin": "^5.0.3"
   },
   "devDependencies": {
     "@types/connect": "^3.4.33",
@@ -59,6 +60,7 @@
     "@types/webpack-dev-middleware": "^3.7.0",
     "@types/webpack-hot-middleware": "^2.25.0",
     "@types/webpack-node-externals": "^1.7.1",
-    "@types/yargs": "^15.0.4"
+    "@types/yargs": "^15.0.4",
+    "@types/optimize-css-assets-webpack-plugin": "^5.0.1"
   }
 }

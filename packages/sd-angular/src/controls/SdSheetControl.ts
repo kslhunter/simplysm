@@ -232,7 +232,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                                [class._expandable]="getChildrenFn(index, item)"
                                [rotate]="getIsExpandedItem(item) ? 90 : undefined"
                                fixedWidth
-                               [style.margin-right.em]="maxDepth - depth"></sd-icon>
+                               [style.margin-right.em]="maxDepth! - depth"></sd-icon>
                     </div>
                     <div class="_border"></div>
                   </div>
