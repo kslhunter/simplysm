@@ -340,7 +340,9 @@ export class SdPackageBuilder extends EventEmitter {
       performance: {
         hints: false
       },
-      optimization: {
+      optimization: this._devMode ? {
+        minimize: false
+      } : {
         noEmitOnErrors: true,
         runtimeChunk: "single",
         splitChunks: {
