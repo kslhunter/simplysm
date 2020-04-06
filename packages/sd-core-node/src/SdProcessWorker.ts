@@ -75,7 +75,7 @@ export class SdProcessWorker extends EventEmitter {
   }
 
   public async closeAsync(): Promise<void> {
-    if (this._closed) throw new Error("이미 닫힌 프로세스 워커입니다.");
+    if (this._closed) return;
 
     this._closed = true;
     await ProcessManager.spawnAsync(`taskkill /pid ${this._worker.pid.toString()} /f /t`, undefined, () => {
