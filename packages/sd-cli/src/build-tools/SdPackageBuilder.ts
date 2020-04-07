@@ -427,12 +427,12 @@ export class SdPackageBuilder extends EventEmitter {
               {
                 test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
                 loaders: [
-                  /*{
+                  {
                     loader: "@angular-devkit/build-optimizer/webpack-loader",
                     options: {
                       sourceMap: parsedTsConfig.options.sourceMap
                     }
-                  },*/
+                  },
                   "@ngtools/webpack"
                 ]
               }
@@ -488,7 +488,7 @@ export class SdPackageBuilder extends EventEmitter {
             entryModule: path.resolve(srcPath, "AppModule") + "#AppModule",
             platform: PLATFORM.Browser,
             sourceMap: parsedTsConfig.options.sourceMap,
-            nameLazyFiles: this._devMode,
+            nameLazyFiles: !this._devMode,
             forkTypeChecker: false,
             directTemplateLoading: true,
             tsConfigPath,
