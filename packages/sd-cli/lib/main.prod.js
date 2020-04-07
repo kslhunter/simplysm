@@ -1,4 +1,5 @@
 require("@simplysm/sd-core-common");
+require("element-qsa-scope");
 require("core-js/proposals/reflect-metadata");
 require("zone.js/dist/zone");
 

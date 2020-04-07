@@ -329,60 +329,72 @@ export class SdPackageBuilder extends EventEmitter {
     const indexPath = path.resolve(__dirname, `../../lib/index.ejs`);
 
     return {
-      mode: this._devMode ? "development" : "production",
-      devtool: this._devMode ? "cheap-module-source-map" : "source-map",
-      target: "web",
-      resolve: {
-        extensions: [".ts", ".js"],
-        alias: this._devMode ?
-          {"SD_APP_MODULE": path.resolve(srcPath, "AppModule")} :
-          {"SD_APP_MODULE_FACTORY": path.resolve(srcPath, "AppModule.ngfactory")}
-      },
-      performance: {
-        hints: false
-      },
-      optimization: this._devMode ? {
-        minimize: false
-      } : {
-        noEmitOnErrors: true,
-        runtimeChunk: "single",
-        splitChunks: {
-          chunks: "all",
-          maxInitialRequests: Infinity,
-          minSize: 0,
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: (module: any): string => {
-                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
-                return `libs/${packageName.replace("@", "")}`;
-              }
-            }
-          }
+      ...this._devMode ? {
+        mode: "development",
+        devtool: "cheap-module-source-map",
+        optimization: {
+          minimize: false
         },
-        minimizer: [
-          new webpack.HashedModuleIdsPlugin(),
-          new OptimizeCSSAssetsPlugin()
-        ]
-      },
-      entry: {
-        main: this._devMode ?
-          [
+        entry: {
+          main: [
             "eventsource-polyfill",
             `webpack-hot-middleware/client?path=/${packageKey}/__webpack_hmr&timeout=20000&reload=true`,
             mainPath
-          ] :
-          [
+          ]
+        },
+        resolve: {
+          extensions: [".ts", ".js"],
+          alias: {"SD_APP_MODULE": path.resolve(srcPath, "AppModule")}
+        }
+      } : {
+        mode: "production",
+        devtool: "source-map",
+        profile: false,
+        performance: {
+          hints: false
+        },
+        optimization: {
+          noEmitOnErrors: true,
+          runtimeChunk: "single",
+          splitChunks: {
+            chunks: "all",
+            maxInitialRequests: Infinity,
+            minSize: 0,
+            cacheGroups: {
+              vendor: {
+                test: /[\\/]node_modules[\\/]/,
+                name: (module: any): string => {
+                  const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+                  return `libs/${packageName.replace("@", "")}`;
+                }
+              }
+            }
+          },
+          minimizer: [
+            new webpack.HashedModuleIdsPlugin(),
+            new OptimizeCSSAssetsPlugin()
+          ]
+        },
+        entry: {
+          main: [
             "eventsource-polyfill",
             mainPath
           ]
+        },
+        resolve: {
+          extensions: [".ts", ".js"],
+          alias: {"SD_APP_MODULE_FACTORY": path.resolve(srcPath, "AppModule.ngfactory")}
+        }
       },
+      target: "web",
       output: {
         publicPath: `/${packageKey}/`,
         path: distPath,
-        filename: "[name].js"
+        filename: "[name].js",
+        chunkFilename: "[name].chunk.js"
       },
       module: {
+        strictExportPresence: true,
         rules: [
           {
             test: /\.js$/,
@@ -392,14 +404,6 @@ export class SdPackageBuilder extends EventEmitter {
               /node_modules[\\/](?!@simplysm)/,
               /(ngfactory|ngstyle)\.js$/
             ]
-          },
-          {
-            test: /(?:main\.prod\.js|main\.dev\.js)$/,
-            loader: "ts-loader",
-            options: {
-              configFile: tsConfigPath,
-              transpileOnly: true
-            }
           },
           {
             test: /(\\|\/)@angular(\\|\/)core(\\|\/).+\.js$/,
@@ -424,6 +428,14 @@ export class SdPackageBuilder extends EventEmitter {
           },
           ...this._devMode ?
             [
+              {
+                test: /(?:main\.prod\.js|main\.dev\.js)$/,
+                loader: "ts-loader",
+                options: {
+                  configFile: tsConfigPath,
+                  transpileOnly: true
+                }
+              },
               {
                 test: /\.ts$/,
                 exclude: /node_modules/,
@@ -466,30 +478,29 @@ export class SdPackageBuilder extends EventEmitter {
           srcPath,
           {}
         ),
-        ...this._devMode ?
-          [
-            new webpack.HotModuleReplacementPlugin()
-          ] :
-          [
-            new AngularCompilerPlugin({
-              mainPath,
-              entryModule: path.resolve(srcPath, "AppModule") + "#AppModule",
-              platform: PLATFORM.Browser,
-              sourceMap: parsedTsConfig.options.sourceMap,
-              nameLazyFiles: this._devMode,
-              forkTypeChecker: false,
-              directTemplateLoading: true,
-              tsConfigPath,
-              skipCodeGeneration: this._devMode,
-              host: new SdWebpackInputHostWithScss(fs),
-              compilerOptions: {
-                fullTemplateTypeCheck: true,
-                strictInjectionParameters: true,
-                disableTypeScriptVersionCheck: true,
-                enableIvy: false
-              }
-            })
-          ],
+        ...this._devMode ? [
+          new webpack.HotModuleReplacementPlugin()
+        ] : [
+          new AngularCompilerPlugin({
+            mainPath,
+            entryModule: path.resolve(srcPath, "AppModule") + "#AppModule",
+            platform: PLATFORM.Browser,
+            sourceMap: parsedTsConfig.options.sourceMap,
+            nameLazyFiles: this._devMode,
+            forkTypeChecker: false,
+            directTemplateLoading: true,
+            tsConfigPath,
+            skipCodeGeneration: this._devMode,
+            host: new SdWebpackInputHostWithScss(fs),
+            compilerOptions: {
+              fullTemplateTypeCheck: true,
+              strictInjectionParameters: true,
+              disableTypeScriptVersionCheck: true,
+              rootDir: undefined,
+              enableIvy: false
+            }
+          })
+        ],
         new SdWebpackWriteFilePlugin([
           {
             path: path.resolve(distPath, ".configs.json"),
@@ -624,7 +635,7 @@ export class SdPackageBuilder extends EventEmitter {
         }
       } : {
         mode: "production",
-        devtool: false,
+        devtool: "source-map",
         profile: false,
         performance: {hints: false},
         optimization: {
@@ -648,6 +659,7 @@ export class SdPackageBuilder extends EventEmitter {
         libraryTarget: "umd"
       },
       module: {
+        strictExportPresence: true,
         rules: [
           {
             test: /\.js$/,

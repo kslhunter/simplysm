@@ -306,6 +306,8 @@ export class SdCliProject {
   }
 
   public async publishAsync(build: boolean): Promise<void> {
+    // TODO: Dependency 폴더의 버전과 yarn.lock에 있는 버전이 서로 다르면 배포 불가
+
     if (!build) {
       this._logger.warn("빌드하지 않고, 배포하는것은 상당히 위험합니다.");
       process.stdout.write("프로세스를 중지하려면, 'CTRL+C'를 누르세요. 3");
