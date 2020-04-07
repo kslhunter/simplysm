@@ -16,6 +16,7 @@ import * as net from "net";
 import {SdCryptoService} from "./services/SdCryptoService";
 import {SdOrmService} from "./services/SdOrmService";
 import {SdSmtpClientService} from "./services/SdSmtpClientService";
+import * as fs from "fs";
 
 export class SdServiceServer extends EventEmitter {
   private _wsServer?: WebSocket.Server;
@@ -48,7 +49,7 @@ export class SdServiceServer extends EventEmitter {
 
       this._httpServer = this.options.ssl ?
         https.createServer({
-          pfx: await FsUtils.readFileAsync(this.options.ssl.pfx),
+          pfx: await fs.promises.readFile(this.options.ssl.pfx),
           passphrase: this.options.ssl.passphrase
         }) :
         http.createServer();

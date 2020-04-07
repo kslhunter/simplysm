@@ -13,6 +13,7 @@ export interface ISdLibraryPackageConfig {
 export interface ISdServerPackageConfig {
   type: "server";
   configs?: { [key: string]: any };
+  env?: { [key: string]: string };
 }
 
 export interface ISdWebPackageConfig {

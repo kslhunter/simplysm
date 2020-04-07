@@ -2,7 +2,7 @@ import {ISdPackageInfo, ITsConfig} from "../commons";
 import {FsUtils, FsWatcher, IFileChangeInfo, Logger} from "@simplysm/sd-core-node";
 import * as path from "path";
 import * as ts from "typescript";
-import {NeverEntryError} from "@simplysm/sd-core-common";
+import {NeverEntryError, ObjectUtils} from "@simplysm/sd-core-common";
 import {EventEmitter} from "events";
 import * as os from "os";
 import anymatch from "anymatch";
@@ -20,6 +20,7 @@ import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import {SdWebpackInputHostWithScss} from "./SdWebpackInputHostWithScss";
 import {SdTypescriptWatcher} from "./SdTypescriptWatcher";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
+import * as webpackNodeExternals from "webpack-node-externals";
 
 export class SdPackageBuilder extends EventEmitter {
   private readonly _logger = Logger.get([
@@ -604,18 +605,41 @@ export class SdPackageBuilder extends EventEmitter {
       item => path.resolve(this._info.rootPath, item)
     );
 
+    const externalsWhiteList = Object.keys(this._info.tsConfig?.config.compilerOptions.paths ?? {});
+    const copyNpmConfig = ObjectUtils.clone(this._info.npmConfig);
+    for (const externalsWhiteListItem of externalsWhiteList) {
+      if (Boolean(copyNpmConfig.dependencies?.[externalsWhiteListItem])) {
+        delete copyNpmConfig.dependencies![externalsWhiteListItem];
+      }
+    }
+    delete copyNpmConfig.devDependencies;
+    delete copyNpmConfig.peerDependencies;
+
     return {
-      mode: this._devMode ? "development" : "production",
-      devtool: this._devMode ? "cheap-module-source-map" : "source-map",
+      ...this._devMode ? {
+        mode: "development",
+        devtool: "cheap-module-source-map",
+        optimization: {
+          minimize: false
+        }
+      } : {
+        mode: "production",
+        devtool: false,
+        profile: false,
+        performance: {hints: false},
+        optimization: {
+          noEmitOnErrors: true,
+          minimizer: [
+            new webpack.HashedModuleIdsPlugin()
+          ]
+        }
+      },
       target: "node",
       node: {
         __dirname: false
       },
       resolve: {
         extensions: [".ts", ".js"]
-      },
-      optimization: {
-        minimize: false
       },
       entry,
       output: {
@@ -646,7 +670,10 @@ export class SdPackageBuilder extends EventEmitter {
             test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip|pfx)$/,
             loader: "file-loader",
             options: {
-              name: `assets/[name].[ext]`,
+              name: `[name].[ext]`,
+              outputPath: "assets/",
+              publicPath: "assets/",
+              postTransformPublicPath: (publicPath: string): string => "__dirname + " + JSON.stringify("/" + JSON.parse(publicPath)),
               esModule: false
             }
           }
@@ -657,9 +684,33 @@ export class SdPackageBuilder extends EventEmitter {
           {
             path: path.resolve(distPath, ".configs.json"),
             content: JSON.stringify(this._info.config.configs, undefined, 2)
+          },
+          {
+            path: path.resolve(distPath, "package.json"),
+            content: JSON.stringify(copyNpmConfig, undefined, 2)
+          },
+          {
+            path: path.resolve(distPath, "pm2.json"),
+            content: JSON.stringify({
+              name: this._info.npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
+              script: "app.js",
+              watch: false,
+              interpreter: "node@" + process.versions.node,
+              env: {
+                NODE_ENV: "production",
+                VERSION: this._info.npmConfig.version,
+                ...this._info.config.env ? this._info.config.env : {}
+              }
+            }, undefined, 2)
           }
         ])
       ],
+      externals: [
+        webpackNodeExternals({
+          whitelist: externalsWhiteList
+        })
+      ]
+      /*,
       externals: [
         (context, request, callback): void => {
           if (request === "node-gyp-build") {
@@ -690,7 +741,7 @@ export class SdPackageBuilder extends EventEmitter {
             callback(undefined, undefined);
           }
         }
-      ]
+      ]*/
     };
   }
 
