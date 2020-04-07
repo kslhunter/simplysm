@@ -343,8 +343,9 @@ export class SdPackageBuilder extends EventEmitter {
           ]
         },
         resolve: {
-          extensions: [".ts", ".js"],
-          alias: {"SD_APP_MODULE": path.resolve(srcPath, "AppModule")}
+          extensions: [".ts", ".js", ".json"],
+          alias: {"SD_APP_MODULE": path.resolve(srcPath, "AppModule")},
+          aliasFields: ["browser"]
         }
       } : {
         mode: "production",
@@ -382,8 +383,9 @@ export class SdPackageBuilder extends EventEmitter {
           ]
         },
         resolve: {
-          extensions: [".ts", ".js"],
-          alias: {"SD_APP_MODULE_FACTORY": path.resolve(srcPath, "AppModule.ngfactory")}
+          extensions: [".ts", ".js", ".json"],
+          alias: {"SD_APP_MODULE_FACTORY": path.resolve(srcPath, "AppModule.ngfactory")},
+          aliasFields: ["browser"]
         }
       },
       target: "web",
