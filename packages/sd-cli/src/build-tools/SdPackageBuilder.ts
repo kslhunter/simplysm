@@ -488,7 +488,7 @@ export class SdPackageBuilder extends EventEmitter {
             entryModule: path.resolve(srcPath, "AppModule") + "#AppModule",
             platform: PLATFORM.Browser,
             sourceMap: parsedTsConfig.options.sourceMap,
-            nameLazyFiles: !this._devMode,
+            nameLazyFiles: true,//!this._devMode,
             forkTypeChecker: false,
             directTemplateLoading: true,
             tsConfigPath,
