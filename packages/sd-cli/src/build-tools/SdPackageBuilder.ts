@@ -496,7 +496,7 @@ export class SdPackageBuilder extends EventEmitter {
             content: JSON.stringify(this._info.config.configs, undefined, 2)
           }
         ])
-      ],
+      ]/*,
       externals: [
         (context, request, callback): void => {
           if (request === "node-gyp-build") {
@@ -527,7 +527,7 @@ export class SdPackageBuilder extends EventEmitter {
             callback(undefined, undefined);
           }
         }
-      ]
+      ]*/
     };
   }
 

@@ -201,7 +201,8 @@ module.exports = {
         "@typescript-eslint/no-use-before-define": "off",
         "@typescript-eslint/no-var-requires": "off",
         //"@typescript-eslint/restrict-template-expressions": ["error", {allowNumber: true}]
-        "@typescript-eslint/restrict-template-expressions": "off"
+        "@typescript-eslint/restrict-template-expressions": "off",
+        "@typescript-eslint/method-signature-style": "off"
       }
     }
   ]
