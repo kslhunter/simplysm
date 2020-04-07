@@ -377,14 +377,13 @@ export class SdPackageBuilder extends EventEmitter {
           ]
         },
         entry: {
-          main: [
-            "eventsource-polyfill",
-            mainPath
-          ]
+          main: ["eventsource-polyfill", mainPath]
         },
         resolve: {
           extensions: [".ts", ".js", ".json"],
-          alias: {"SD_APP_MODULE_FACTORY": path.resolve(srcPath, "AppModule.ngfactory")},
+          alias: {
+            "SD_APP_MODULE_FACTORY": path.resolve(srcPath, "AppModule.ngfactory")
+          },
           aliasFields: ["browser"]
         }
       },
@@ -398,36 +397,6 @@ export class SdPackageBuilder extends EventEmitter {
       module: {
         strictExportPresence: true,
         rules: [
-          {
-            test: /\.js$/,
-            enforce: "pre",
-            loader: "source-map-loader",
-            exclude: [
-              /node_modules[\\/](?!@simplysm)/,
-              /(ngfactory|ngstyle)\.js$/
-            ]
-          },
-          {
-            test: /(\\|\/)@angular(\\|\/)core(\\|\/).+\.js$/,
-            parser: {system: true}
-          },
-          {
-            test: /\.scss$/,
-            use: [
-              "style-loader",
-              "css-loader",
-              "resolve-url-loader",
-              "sass-loader"
-            ]
-          },
-          {
-            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip)$/,
-            loader: "file-loader",
-            options: {
-              name: `assets/[name].[ext]${this._devMode ? "?[hash]" : ""}`,
-              esModule: false
-            }
-          },
           ...this._devMode ?
             [
               {
@@ -458,16 +427,46 @@ export class SdPackageBuilder extends EventEmitter {
               {
                 test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
                 loaders: [
-                  {
+                  /*{
                     loader: "@angular-devkit/build-optimizer/webpack-loader",
                     options: {
                       sourceMap: parsedTsConfig.options.sourceMap
                     }
-                  },
+                  },*/
                   "@ngtools/webpack"
                 ]
               }
+            ],
+          {
+            test: /[\\/]@angular[\\/]core[\\/].+\.js$/,
+            parser: {system: true}
+          },
+          {
+            test: /\.js$/,
+            enforce: "pre",
+            loader: "source-map-loader",
+            exclude: [
+              /node_modules[\\/](?!@simplysm)/,
+              /(ngfactory|ngstyle)\.js$/
             ]
+          },
+          {
+            test: /\.scss$/,
+            use: [
+              "style-loader",
+              "css-loader",
+              "resolve-url-loader",
+              "sass-loader"
+            ]
+          },
+          {
+            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip)$/,
+            loader: "file-loader",
+            options: {
+              name: `assets/[name].[ext]${this._devMode ? "?[hash]" : ""}`,
+              esModule: false
+            }
+          }
         ]
       },
       plugins: [
@@ -482,7 +481,8 @@ export class SdPackageBuilder extends EventEmitter {
         ),
         ...this._devMode ? [
           new webpack.HotModuleReplacementPlugin()
-        ] : [
+        ] : [],
+        ...this._devMode ? [] : [
           new AngularCompilerPlugin({
             mainPath,
             entryModule: path.resolve(srcPath, "AppModule") + "#AppModule",
