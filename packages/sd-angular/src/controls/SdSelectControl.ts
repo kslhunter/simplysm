@@ -1,6 +1,6 @@
 import {
   AfterContentChecked,
-  AfterViewInit,
+  AfterViewChecked,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -18,7 +18,7 @@ import {
   ViewChild
 } from "@angular/core";
 import {SdInputValidate} from "../commons/SdInputValidate";
-import {JsonConvert, NeverEntryError} from "@simplysm/sd-core-common";
+import {JsonConvert} from "@simplysm/sd-core-common";
 import {SdDropdownControl} from "./SdDropdownControl";
 
 @Component({
@@ -50,7 +50,8 @@ import {SdDropdownControl} from "./SdDropdownControl";
                     <ng-template [ngTemplateOutlet]="itemTemplateRef"
                                  [ngTemplateOutletContext]="{item: item}"></ng-template>
 
-                    <ng-container *ngIf="getChildrenFn && getChildrenFn(i, item) && getChildrenFn!(i, item).length > 0">
+                    <ng-container
+                      *ngIf="getChildrenFn && getChildrenFn(i, item) && getChildrenFn!(i, item).length > 0">
                       <div class="_children">
                         <ng-template [ngTemplateOutlet]="rowOfList"
                                      [ngTemplateOutletContext]="{items: getChildrenFn(i, item)}"></ng-template>
@@ -171,7 +172,7 @@ import {SdDropdownControl} from "./SdDropdownControl";
     }
   `]
 })
-export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, AfterViewInit {
+export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, AfterViewChecked {
   @Input()
   public set value(value: any) {
     this._value = value;
@@ -291,18 +292,14 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
     this._popupEl = this._el.findAll("sd-dropdown-popup")[0];
   }
 
-  public ngAfterViewInit(): void {
-    this._refreshContent();
-    if (!this._popupEl) throw new NeverEntryError();
-    this._popupEl.addEventListener("mutation", () => {
-      this._refreshContent();
-    }, true);
-  }
-
   public ngDoCheck(): void {
     if (this.items && this._iterableDiffer.diff(this.items)) {
       this._cdr.markForCheck();
     }
+  }
+
+  public ngAfterViewChecked(): void {
+    this._refreshContent();
   }
 
   public ngAfterContentChecked(): void {
@@ -333,7 +330,7 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
     if (!selectedItemEl) {
       this._contentEl.innerHTML = "";
     }
-    else {
+    else if (this.getChildrenFn) {
       let cursorEl: HTMLElement | undefined = selectedItemEl;
       let innerHTML = "";
       while (true) {
@@ -347,6 +344,11 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
       }
 
       this._contentEl.innerHTML = innerHTML;
+    }
+    else {
+      const labelTemplateEl = selectedItemEl.findAll("> ._labelTemplate")[0];
+      const labelEl = labelTemplateEl !== undefined ? labelTemplateEl : selectedItemEl.findAll("> ._label")[0];
+      this._contentEl.innerHTML = labelEl.innerHTML;
     }
   }
 

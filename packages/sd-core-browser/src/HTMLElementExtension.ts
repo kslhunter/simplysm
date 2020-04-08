@@ -27,6 +27,8 @@ declare global {
 
     addEventListener(type: "mutation-child", listener: (event: SdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
+    addEventListener(type: "mutation-character", listener: (event: SdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
+
     addEventListener(type: "resize", listener: (event: SdResizeEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
     removeEventListener(type: "mutation", listener: (event: SdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
@@ -230,6 +232,38 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
       attributeOldValue: false,
       characterData: false,
       characterDataOldValue: false,
+      subtree: options === true
+    });
+  }
+  else if (type === "mutation-character") {
+    if (this["__mutationCharacterEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options) === true) {
+      return;
+    }
+
+
+    const observer = new window.MutationObserver(mutations => {
+      const event = new CustomEvent("mutation-character") as any;
+      event.mutations = mutations;
+      event.relatedTarget = this;
+
+      if (listener["handleEvent"] !== undefined) {
+        (listener as EventListenerObject).handleEvent(event);
+      }
+      else {
+        (listener as EventListener)(event);
+      }
+    });
+
+
+    this["__mutationCharacterEventListeners__"] = this["__mutationCharacterEventListeners__"] ?? [];
+    this["__mutationCharacterEventListeners__"].push({listener, options, observer});
+
+    observer.observe(this, {
+      childList: false,
+      attributes: false,
+      attributeOldValue: false,
+      characterData: true,
+      characterDataOldValue: true,
       subtree: options === true
     });
   }

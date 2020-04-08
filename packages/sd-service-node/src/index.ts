@@ -1,4 +1,5 @@
 import "@simplysm/sd-core-common";
+export * from "./client/SdServiceClient";
 export * from "./server/SdServiceBase";
 export * from "./server/SdServiceServer";
 export * from "./server/SdServiceServerConfigUtils";

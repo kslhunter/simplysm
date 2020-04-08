@@ -433,6 +433,7 @@ export class SdPackageBuilder extends EventEmitter {
                       sourceMap: parsedTsConfig.options.sourceMap
                     }
                   },
+                  require.resolve("angular-router-loader") + "?aot=true",
                   "@ngtools/webpack"
                 ]
               }
@@ -488,7 +489,7 @@ export class SdPackageBuilder extends EventEmitter {
             entryModule: path.resolve(srcPath, "AppModule") + "#AppModule",
             platform: PLATFORM.Browser,
             sourceMap: parsedTsConfig.options.sourceMap,
-            nameLazyFiles: true,//!this._devMode,
+            nameLazyFiles: this._devMode,
             forkTypeChecker: false,
             directTemplateLoading: true,
             tsConfigPath,
@@ -498,6 +499,7 @@ export class SdPackageBuilder extends EventEmitter {
               fullTemplateTypeCheck: true,
               strictInjectionParameters: true,
               disableTypeScriptVersionCheck: true,
+              skipMetadataEmit: true,
               rootDir: undefined,
               enableIvy: false
             }
@@ -711,7 +713,7 @@ export class SdPackageBuilder extends EventEmitter {
               watch: false,
               interpreter: "node@" + process.versions.node,
               env: {
-                NODE_ENV: "production",
+                NODE_ENV: this._devMode ? "development" : "production",
                 VERSION: this._info.npmConfig.version,
                 ...this._info.config.env ? this._info.config.env : {}
               }

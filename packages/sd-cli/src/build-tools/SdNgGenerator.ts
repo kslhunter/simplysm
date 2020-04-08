@@ -899,7 +899,8 @@ export const routes = [
             path.relative(pagePath !== undefined ? path.dirname(pagePath) : this._srcPath, pageChildDirPath)
               .replace(/\\/g, "/") +
             "/" + className + "RoutingModule" +
-            "#" + className + "RoutingModule"
+            "#" + className + "RoutingModule" +
+            "?chunkName=" + className
           ).replace(/\/\//g, "/")
         });
       }

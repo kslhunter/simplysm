@@ -112,6 +112,9 @@ export class Queryable<D extends DbContext, T> {
 
   public select<R>(fwd: (entity: TEntity<T>) => TEntity<R>): Queryable<D, R> {
     const newEntity = fwd(this._entity);
+    // if (this._entity["__searchOrder"] !== undefined && this._def.orderBy?.some(item => item[0] === "[__searchOrder]")) {
+    //   newEntity["__searchOrder"] = this._entity["__searchOrder"];
+    // }
     return new Queryable(this._db, this, newEntity);
   }
 
@@ -174,6 +177,12 @@ export class Queryable<D extends DbContext, T> {
   public groupBy(fwd: (entity: TEntity<T>) => TEntityValue<TQueryValue>[]): Queryable<D, T> {
     const result = new Queryable(this._db, this);
     result._def.groupBy = fwd(this._entity).map(item => QueryUtils.getQueryValue(item));
+
+    // if (this._entity["__searchOrder"] !== undefined && this._def.orderBy?.some(item => item[0] === "[__searchOrder]")) {
+    //   result._def.orderBy?.remove(item => item[0] === "[__searchOrder]");
+    //   delete result._entity["__searchOrder"];
+    // }
+
     return result;
   }
 
@@ -369,8 +378,9 @@ export class Queryable<D extends DbContext, T> {
     }) as any;
 
     // ORDER BY
-    result._def.orderBy = result._def.orderBy ?? [];
-    result._def.orderBy.insert(0, ["[__searchOrder]", "DESC"]);
+    result.orderBy(item => item["__searchOrder"], true);
+    /*result._def.orderBy = result._def.orderBy ?? [];
+    result._def.orderBy.insert(0, ["[__searchOrder]", "DESC"]);*/
     return result;
   }
 
@@ -724,9 +734,10 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public async countAsync(): Promise<number> {
-    const item = await this
-      .select(() => ({cnt: new QueryUnit(Number, "COUNT(*)")}))
-      .singleAsync();
+    const queryable = this.select(() => ({cnt: new QueryUnit(Number, "COUNT(*)")}));
+    queryable._def.orderBy?.remove(item => item[0] === "[__searchOrder]");
+    delete queryable._entity["__searchOrder"];
+    const item = await queryable.singleAsync();
 
     return (item?.cnt ?? 0) as any;
   }

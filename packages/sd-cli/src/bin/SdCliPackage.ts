@@ -6,6 +6,7 @@ import {ISdPackageBuildResult, SdPackageBuilder} from "../build-tools/SdPackageB
 import {EventEmitter} from "events";
 import {NeverEntryError, ObjectUtils} from "@simplysm/sd-core-common";
 import {NextHandleFunction} from "connect";
+import {SdServiceClient} from "@simplysm/sd-service-node";
 
 export class SdCliPackage extends EventEmitter {
   public get name(): string {
@@ -259,6 +260,42 @@ export class SdCliPackage extends EventEmitter {
         false,
         false
       );
+    }
+    else if (this.info.config?.type !== "library" && this.info.config.publish !== undefined && this.info.config.publish.type === "simplysm") {
+      const publishConfig = this.info.config.publish;
+
+      const wsClient = new SdServiceClient(
+        publishConfig.port ?? (publishConfig.ssl ? 443 : 80),
+        publishConfig.host,
+        publishConfig.ssl
+      );
+      await wsClient.connectAsync();
+
+      // 결과 파일 업로드
+
+      const targets = this.info.tsConfigForBuild ? Object.keys(this.info.tsConfigForBuild) : undefined;
+      if (!targets) return;
+
+      await targets.parallelAsync(async target => {
+        const parsedTsConfig = ts.parseJsonConfigFileContent(this.info.tsConfigForBuild![target].config, ts.sys, this.info.rootPath);
+
+        const distPath = parsedTsConfig.options.outDir !== undefined ?
+          path.resolve(parsedTsConfig.options.outDir) :
+          path.resolve(this.info.rootPath, "dist");
+
+        const filePaths = await FsUtils.globAsync(path.resolve(distPath, "**", "*"), {dot: true, nodir: true});
+
+        await filePaths.parallelAsync(async filePath => {
+          const relativeFilePath = path.relative(distPath, filePath);
+          const targetPath = path.posix.join(publishConfig.path, relativeFilePath);
+
+          await wsClient.uploadAsync(filePath, targetPath, {
+            progressCallback: progress => {
+              this._logger.debug(`파일 업로드 : (${(Math.floor(progress.current * 10000 / progress.total) / 100).toFixed(2).padStart(6, " ")}%) ${progress.current.toLocaleString()} / ${progress.total.toLocaleString()}`);
+            }
+          });
+        });
+      });
     }
   }
 

@@ -14,12 +14,14 @@ export interface ISdServerPackageConfig {
   type: "server";
   configs?: { [key: string]: any };
   env?: { [key: string]: string };
+  publish?: ISdSimplysmPublishConfig;
 }
 
 export interface ISdWebPackageConfig {
   type: "web";
   server: string;
   configs?: { [key: string]: any };
+  publish?: ISdSimplysmPublishConfig;
 }
 
 export type TSdPackageConfig =
@@ -72,4 +74,13 @@ export interface ITsConfig {
     paths?: { [key: string]: string[] | undefined };
   };
   files?: string[];
+}
+
+export interface ISdSimplysmPublishConfig {
+  type: "simplysm";
+  host: string;
+  port?: number;
+  path: string;
+  ssl?: boolean;
+  origin?: string;
 }

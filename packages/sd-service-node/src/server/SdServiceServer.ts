@@ -17,6 +17,7 @@ import {SdCryptoService} from "./services/SdCryptoService";
 import {SdOrmService} from "./services/SdOrmService";
 import {SdSmtpClientService} from "./services/SdSmtpClientService";
 import * as fs from "fs";
+import {SdServiceServerConfigUtils} from "./SdServiceServerConfigUtils";
 
 export class SdServiceServer extends EventEmitter {
   private _wsServer?: WebSocket.Server;
@@ -58,7 +59,7 @@ export class SdServiceServer extends EventEmitter {
         server: this._httpServer
       });
 
-      this._wsServer.on("connection", (conn, connReq) => {
+      this._wsServer.on("connection", async (conn, connReq) => {
         this._wsConnections.push(conn);
 
         conn.on("close", () => {
@@ -66,7 +67,7 @@ export class SdServiceServer extends EventEmitter {
         });
 
         try {
-          this._onSocketConnection(conn, connReq);
+          await this._onSocketConnectionAsync(conn, connReq);
         }
         catch (err) {
           this._logger.error(`클라이언트와 연결할 수 없습니다.`, err);
@@ -156,8 +157,13 @@ export class SdServiceServer extends EventEmitter {
     }
   }
 
-  private _onSocketConnection(conn: WebSocket, connReq: http.IncomingMessage): void {
+  private async _onSocketConnectionAsync(conn: WebSocket, connReq: http.IncomingMessage): Promise<void> {
     const origin: string | string[] = connReq.headers.origin ?? "unknown";
+
+    const availableOrigins = (await SdServiceServerConfigUtils.getConfigAsync(this.rootPath))?.["service"]?.["origins"] ?? [];
+    if (![...availableOrigins, "file://"].includes(connReq.headers.origin)) {
+      throw new Error(`등록되지 않은 'URL'에서 클라이언트의 연결 요청을 받았습니다: ${connReq.headers.origin}`);
+    }
 
     this._logger.log(`클라이언트의 연결 요청을 받았습니다 : ${origin.toString()}`);
 
