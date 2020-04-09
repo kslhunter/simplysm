@@ -109,7 +109,7 @@ export class DbConnection extends EventEmitter {
           return;
         }
         resolve();
-      }, "", tedious.ISOLATION_LEVEL.READ_COMMITTED);
+      }, "", tedious.ISOLATION_LEVEL.READ_UNCOMMITTED);
     });
   }
 
