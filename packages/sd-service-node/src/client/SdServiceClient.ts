@@ -34,7 +34,8 @@ export class SdServiceClient extends EventEmitter {
         await this.closeAsync();
       }
 
-      this._ws = new WebSocket(`${this.ssl ? "wss" : "ws"}://${(this.host)}:${(this.port)}`, {origin: "file://"});
+      this._ws = new WebSocket(`${this.ssl ? "wss" : "ws"}://${this.host}:${this.port}`, {origin: "file://"});
+      console.log(`${this.ssl ? "wss" : "ws"}://${this.host}:${this.port}`);
 
       this._ws.onopen = (): void => {
         resolve();

@@ -117,7 +117,7 @@ export class DbConnection extends EventEmitter {
 
         this.isOnTransaction = true;
         resolve();
-      }, "", tedious.ISOLATION_LEVEL.READ_COMMITTED);
+      }, "", tedious.ISOLATION_LEVEL.READ_UNCOMMITTED);
     });
   }
 
