@@ -8,3 +8,4 @@ logs
 profiling/*.log
 .clinic
 .cordova
+report.*.json
