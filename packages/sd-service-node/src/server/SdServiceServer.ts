@@ -287,7 +287,7 @@ export class SdServiceServer extends EventEmitter {
 
   private async _onSocketRequestAsync(conn: SdServiceServerConnection, req: ISdServiceRequest): Promise<ISdServiceResponse> {
     if (req.command === "md5") {
-      const rawFilePath = req[0] as string;
+      const rawFilePath = req.params[0] as string;
       const filePath = rawFilePath.startsWith("/") ?
         path.resolve(this.rootPath, rawFilePath.slice(1).replace(/\\/g, "/")) :
         path.resolve(this.rootPath, rawFilePath.replace(/\\/g, "/"));
