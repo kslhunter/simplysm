@@ -80,29 +80,6 @@ export class FsUtils {
   }
 
   public static async removeAsync(targetPath: string): Promise<void> {
-    /*if (!FsUtils.exists(targetPath)) {
-      return;
-    }
-
-    let lstat;
-    try {
-      lstat = await fs.promises.lstat(targetPath);
-    }
-    catch (err) {
-      throw new SdError(err, targetPath);
-    }*/
-
-    /*if (lstat.isDirectory()) {
-    }
-    else {
-      try {
-        await fs.promises.unlink(targetPath);
-      }
-      catch (err) {
-        throw new SdError(err, targetPath);
-      }
-    }*/
-
     try {
       await new Promise((resolve, reject) => {
         rimraf(targetPath, err => {
@@ -120,35 +97,6 @@ export class FsUtils {
   }
 
   public static remove(targetPath: string): void {
-    /*if (!FsUtils.exists(targetPath)) {
-      return;
-    }
-
-    let lstat;
-    try {
-      lstat = fs.lstatSync(targetPath);
-    }
-    catch (err) {
-      throw new SdError(err, targetPath);
-    }
-    if (lstat.isDirectory()) {
-      try {
-        fs.rmdirSync(targetPath, {recursive: true});
-      }
-      catch (err) {
-        throw new SdError(err, targetPath);
-      }
-    }
-    else {
-      try {
-        fs.unlinkSync(targetPath);
-      }
-      catch (err) {
-        throw new SdError(err, targetPath);
-      }
-    }*/
-
-
     try {
       rimraf.sync(targetPath);
     }
@@ -241,7 +189,15 @@ export class FsUtils {
     if (FsUtils.exists(targetPath)) return;
 
     try {
-      await fs.promises.mkdir(targetPath, {recursive: true});
+      await new Promise<void>((resolve, reject) => {
+        fs.mkdir(targetPath, {recursive: true}, err => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve();
+        });
+      });
     }
     catch (err) {
       throw new SdError(err, targetPath);
@@ -266,12 +222,26 @@ export class FsUtils {
     await FsUtils.mkdirsAsync(path.dirname(targetPath));
 
     try {
-      if (typeof data === "string") {
-        await fs.promises.writeFile(targetPath, data.replace(new RegExp(os.EOL, "g"), "\n").replace(/\n/g, os.EOL));
-      }
-      else {
-        await fs.promises.writeFile(targetPath, data);
-      }
+      await new Promise<void>((resolve, reject) => {
+        if (typeof data === "string") {
+          fs.writeFile(targetPath, data.replace(new RegExp(os.EOL, "g"), "\n").replace(/\n/g, os.EOL), err => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve();
+          });
+        }
+        else {
+          fs.writeFile(targetPath, data, err => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve();
+          });
+        }
+      });
     }
     catch (err) {
       throw new SdError(err, targetPath);
@@ -305,6 +275,32 @@ export class FsUtils {
   public static async readFileAsync(targetPath: string): Promise<string> {
     try {
       return await fs.promises.readFile(targetPath, "utf-8");
+    }
+    catch (err) {
+      throw new SdError(err, targetPath);
+    }
+  }
+
+  public static readFileBuffer(targetPath: string): Buffer {
+    try {
+      return fs.readFileSync(targetPath);
+    }
+    catch (err) {
+      throw new SdError(err, targetPath);
+    }
+  }
+
+  public static async readFileBufferAsync(targetPath: string): Promise<Buffer> {
+    try {
+      return await new Promise<Buffer>((resolve, reject) => {
+        fs.readFile(targetPath, (err, data) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(data);
+        });
+      });
     }
     catch (err) {
       throw new SdError(err, targetPath);
@@ -363,6 +359,44 @@ export class FsUtils {
     }
   }
 
+  public static async openAsync(targetPath: string, flags: string | number): Promise<number> {
+    try {
+      return await new Promise<number>((resolve, reject) => {
+        fs.open(targetPath, flags, (err, fd) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(fd);
+        });
+      });
+    }
+    catch (err) {
+      throw new SdError(err, targetPath);
+    }
+  }
+
+  public static async readAsync<TBuffer extends NodeJS.ArrayBufferView>(fd: number,
+                                                                        buffer: TBuffer,
+                                                                        offset: number,
+                                                                        length: number,
+                                                                        position: number | null): Promise<void> {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        fs.read(fd, buffer, offset, length, position, err => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve();
+        });
+      });
+    }
+    catch (err) {
+      throw new SdError(err);
+    }
+  }
+
   public static close(fd: number): void {
     try {
       fs.closeSync(fd);
@@ -372,9 +406,43 @@ export class FsUtils {
     }
   }
 
+  public static async closeAsync(fd: number): Promise<void> {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        fs.close(fd, err => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve();
+        });
+      });
+    }
+    catch (err) {
+      throw new SdError(err);
+    }
+  }
+
   public static write(fd: number, buffer: NodeJS.ArrayBufferView, offset?: number | null, length?: number | null, position?: number | null): void {
     try {
       fs.writeSync(fd, buffer, offset, length, position);
+    }
+    catch (err) {
+      throw new SdError(err);
+    }
+  }
+
+  public static async writeAsync(fd: number, buffer: NodeJS.ArrayBufferView, offset?: number | null, length?: number | null, position?: number | null): Promise<void> {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        fs.write(fd, buffer, offset, length, position, err => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve();
+        });
+      });
     }
     catch (err) {
       throw new SdError(err);

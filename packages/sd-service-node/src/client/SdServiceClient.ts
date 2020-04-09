@@ -9,7 +9,6 @@ import {
 import {EventEmitter} from "events";
 import * as WebSocket from "ws";
 import {FsUtils} from "@simplysm/sd-core-node";
-import * as fs from "fs";
 
 export class SdServiceClient extends EventEmitter {
   private _ws?: WebSocket;
@@ -35,7 +34,6 @@ export class SdServiceClient extends EventEmitter {
       }
 
       this._ws = new WebSocket(`${this.ssl ? "wss" : "ws"}://${this.host}:${this.port}`, {origin: "file://"});
-      console.log(`${this.ssl ? "wss" : "ws"}://${this.host}:${this.port}`);
 
       this._ws.onopen = (): void => {
         resolve();
@@ -207,8 +205,21 @@ export class SdServiceClient extends EventEmitter {
   public async uploadAsync(filePath: string,
                            serverFilePath: string,
                            splitOptions?: ISdServiceClientSplitOptions): Promise<void> {
-    const fileMd5 = await FsUtils.getMd5Async(filePath);
-    const serverFileMd5 = await this.sendAsync("md5", [serverFilePath]);
+    if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
+      try {
+        await Wait.true(() => this._ws !== undefined && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
+      }
+      catch (err) {
+        throw new Error("웹 소켓이 연결되어있지 않습니다.");
+      }
+    }
+
+    const md5s = await Promise.all([
+      FsUtils.getMd5Async(filePath),
+      this.sendAsync("md5", [serverFilePath])
+    ]);
+    const fileMd5 = md5s[0];
+    const serverFileMd5 = md5s[1];
 
     if (fileMd5 === serverFileMd5) {
       return;
@@ -216,47 +227,68 @@ export class SdServiceClient extends EventEmitter {
 
     const fileSize = (await FsUtils.lstatAsync(filePath)).size;
 
-    await new Promise<void>((resolve, reject) => {
-      const requestId = this._lastRequestId++;
+    await new Promise<void>(async (resolve, reject) => {
+      try {
+        const requestId = this._lastRequestId++;
 
-      let splitCompletedLength = 0;
+        let splitCompletedLength = 0;
 
-      const messageEventListener = (message: MessageEvent): void => {
-        const response: TSdServiceRawResponse = JsonConvert.parse(String(message.data));
+        const messageEventListener = (message: MessageEvent): void => {
+          const response: TSdServiceRawResponse = JsonConvert.parse(String(message.data));
 
-        if (response.type === "upload" && response.requestId === requestId) {
-          splitCompletedLength += response.length;
-          if (splitOptions?.progressCallback) {
-            splitOptions?.progressCallback({
-              current: splitCompletedLength,
-              total: fileSize
-            });
+          if (response.type === "upload" && response.requestId === requestId) {
+            splitCompletedLength += response.length;
+            if (splitOptions?.progressCallback) {
+              splitOptions?.progressCallback({
+                current: splitCompletedLength,
+                total: fileSize
+              });
+            }
           }
-        }
-        else if (response.type === "response") {
-          this._eventEmitter.off("message", messageEventListener);
-          resolve(response.body);
-        }
-        else if (response.type === "error" && response.requestId === requestId) {
-          this._eventEmitter.off("message", messageEventListener);
-          reject(new Error(response.stack));
-        }
-      };
+          else if (response.type === "response" && response.requestId === requestId) {
+            this._eventEmitter.off("message", messageEventListener);
+            resolve(response.body);
+          }
+          else if (response.type === "error" && response.requestId === requestId) {
+            this._eventEmitter.off("message", messageEventListener);
+            reject(new Error(response.stack));
+          }
+        };
 
-      this._eventEmitter.on("message", messageEventListener);
+        this._eventEmitter.on("message", messageEventListener);
 
-      // 업로드 요청 보내기
-      if (splitOptions && (fileSize > splitOptions.splitLength! * 10)) {
-        splitOptions.progressCallback({
+        // 업로드 요청 보내기
+
+        splitOptions?.progressCallback({
           current: 0,
           total: fileSize
         });
 
-        const fd = fs.openSync(filePath, "r");
-        let cursor = 0;
-        while (cursor < fileSize) {
-          const buffer = Buffer.alloc(Math.min(splitOptions.splitLength!, fileSize - cursor));
-          fs.readSync(fd, buffer, 0, Math.min(splitOptions.splitLength!, fileSize - cursor), cursor);
+        if (splitOptions && (fileSize > splitOptions.splitLength! * 10)) {
+          const fd = await FsUtils.openAsync(filePath, "r");
+          let cursor = 0;
+          while (cursor < fileSize) {
+            const buffer = Buffer.alloc(Math.min(splitOptions.splitLength!, fileSize - cursor));
+            await FsUtils.readAsync(fd, buffer, 0, Math.min(splitOptions.splitLength!, fileSize - cursor), cursor);
+
+            const realReq: ISdServiceUploadRawRequest = {
+              type: "upload",
+              id: requestId,
+              url: "",
+              filePath: serverFilePath,
+              buffer,
+              length: fileSize,
+              offset: cursor
+            };
+
+            this._ws!.send(JsonConvert.stringify(realReq));
+            cursor += splitOptions.splitLength!;
+          }
+
+          await FsUtils.closeAsync(fd);
+        }
+        else {
+          const buffer = await FsUtils.readFileBufferAsync(filePath);
 
           const realReq: ISdServiceUploadRawRequest = {
             type: "upload",
@@ -265,28 +297,14 @@ export class SdServiceClient extends EventEmitter {
             filePath: serverFilePath,
             buffer,
             length: fileSize,
-            offset: cursor
+            offset: 0
           };
 
           this._ws!.send(JsonConvert.stringify(realReq));
-          cursor += splitOptions.splitLength!;
         }
-
-        fs.closeSync(fd);
       }
-      else {
-        const buffer = fs.readFileSync(filePath);
-
-        const realReq: ISdServiceUploadRawRequest = {
-          type: "upload",
-          id: requestId,
-          url: "",
-          filePath: serverFilePath,
-          buffer,
-          length: fileSize,
-          offset: 0
-        };
-        this._ws!.send(JsonConvert.stringify(realReq));
+      catch (err) {
+        reject(err);
       }
     });
   }

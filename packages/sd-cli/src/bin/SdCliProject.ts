@@ -36,8 +36,6 @@ export class SdCliProject {
     const npmConfigPath = path.resolve(process.cwd(), "package.json");
     const npmConfig: INpmConfig = await FsUtils.readJsonAsync(npmConfigPath);
 
-    const processManager = await ProcessWorkManager.createAsync(path.resolve(__dirname, "../build-worker"), [], os.cpus().length - 1);
-
     if (!npmConfig.workspaces) throw new NeverEntryError();
     const packages = (
       await npmConfig.workspaces.parallelAsync(async workspace => {
@@ -54,18 +52,17 @@ export class SdCliProject {
             pkgConfig = undefined;
           }
 
-          return await SdCliPackage.createAsync(processManager, packagePath, pkgNpmConfig, pkgNpmConfigPath, pkgConfig, argv.devMode);
+          return await SdCliPackage.createAsync(packagePath, pkgNpmConfig, pkgNpmConfigPath, pkgConfig, argv.devMode);
         });
       })
     ).mapMany().filterExists();
 
     logger.debug("프로젝트 준비 완료");
 
-    return new SdCliProject(logger, processManager, packages, config, npmConfig, npmConfigPath);
+    return new SdCliProject(logger, packages, config, npmConfig, npmConfigPath);
   }
 
   private constructor(private readonly _logger: Logger,
-                      private readonly _processManager: ProcessWorkManager,
                       private readonly _packages: SdCliPackage[],
                       private readonly _config: ISdProjectConfig,
                       private readonly _npmConfig: INpmConfig,
@@ -94,6 +91,8 @@ export class SdCliProject {
     this._logger.debug(`빌드 시작...`);
 
     let isFirstCompleted = false;
+
+    const processManager = await ProcessWorkManager.createAsync(path.resolve(__dirname, "../build-worker"), [], os.cpus().length - 1);
 
     await new Promise<void>(async (resolve, reject) => {
       try {
@@ -187,7 +186,7 @@ export class SdCliProject {
 
             if (!subBuild || subBuild.includes("check")) {
               this._logger.debug("check: " + pkg.name);
-              await pkg.checkAsync();
+              await pkg.checkAsync(processManager);
               this._logger.debug("check: " + pkg.name + ": end");
             }
 
@@ -198,7 +197,7 @@ export class SdCliProject {
 
             if (!subBuild || subBuild.includes("compile")) {
               if (pkg.info.config?.type === "library") {
-                await pkg.compileAsync();
+                await pkg.compileAsync(processManager);
               }
               else if (pkg.info.config?.type === "server") {
                 if (pkg.info.npmConfig.main === undefined) {
@@ -215,10 +214,10 @@ export class SdCliProject {
                       if (arg.command !== "compile") return;
                       await this._startServerAsync(pkg);
                     })
-                    .compileAsync();
+                    .compileAsync(processManager);
                 }
                 else {
-                  await pkg.compileAsync();
+                  await pkg.compileAsync(processManager);
                 }
               }
               else if (pkg.info.config?.type === "web") {
@@ -250,14 +249,14 @@ export class SdCliProject {
             await Wait.true(() => depCheckCompleted.includes(pkg.name));
 
             if (!subBuild || subBuild.includes("lint")) {
-              await pkg.lintAsync();
+              await pkg.lintAsync(processManager);
             }
           }),
           this._packages.parallelAsync(async pkg => {
             await Wait.true(() => checkCompleted.includes(pkg.name));
 
             if (!subBuild || subBuild.includes("gen-ng")) {
-              await pkg.genNgAsync();
+              await pkg.genNgAsync(processManager);
             }
 
             // genNgCompleted.push(pkg.name);
@@ -266,7 +265,7 @@ export class SdCliProject {
             await Wait.true(() => checkCompleted.includes(pkg.name));
 
             if (!subBuild || subBuild.includes("gen-index")) {
-              await pkg.genIndexAsync();
+              await pkg.genIndexAsync(processManager);
             }
 
             // genIndexCompleted.push(pkg.name);
@@ -285,7 +284,7 @@ export class SdCliProject {
     if (!watch) {
       this._logger.debug(`프로세스 종료...`);
 
-      await this._processManager.closeAllAsync();
+      await processManager.closeAllAsync();
 
       this._logger.debug(`프로세스 종료`);
     }
@@ -306,20 +305,16 @@ export class SdCliProject {
   }
 
   public async publishAsync(build: boolean): Promise<void> {
-    // TODO: Dependency 폴더의 버전과 yarn.lock에 있는 버전이 서로 다르면 배포 불가
-
     if (!build) {
       this._logger.warn("빌드하지 않고, 배포하는것은 상당히 위험합니다.");
-      process.stdout.write("프로세스를 중지하려면, 'CTRL+C'를 누르세요. 3");
-      await Wait.time(1000);
-
-      process.stdout.cursorTo(0);
-      process.stdout.write("프로세스를 중지하려면, 'CTRL+C'를 누르세요. 2");
-      await Wait.time(1000);
-
-      process.stdout.cursorTo(0);
-      process.stdout.write("프로세스를 중지하려면, 'CTRL+C'를 누르세요. 1");
-      await Wait.time(1000);
+      const waitSec = 5;
+      for (let i = waitSec; i > 0; i--) {
+        if (i !== waitSec) {
+          process.stdout.cursorTo(0);
+        }
+        process.stdout.write("프로세스를 중지하려면, 'CTRL+C'를 누르세요. " + i);
+        await Wait.time(1000);
+      }
 
       process.stdout.cursorTo(0);
       process.stdout.clearLine(0);
@@ -358,7 +353,7 @@ export class SdCliProject {
     }
 
     // GIT 사용중일경우, 새 버전 커밋 및 TAG 생성
-    if (build && FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
+    if (FsUtils.exists(path.resolve(process.cwd(), ".git"))) {
       await ProcessManager.spawnAsync(
         `git add .`,
         undefined,
@@ -375,7 +370,7 @@ export class SdCliProject {
 
       await ProcessManager.spawnAsync(
         `git tag -a "v${this._npmConfig.version}" -m "v${this._npmConfig.version}"`,
-        {},
+        undefined,
         false,
         false
       );
@@ -388,12 +383,6 @@ export class SdCliProject {
     await this._packages.parallelAsync(async pkg => {
       await pkg.publishAsync();
     });
-
-    this._logger.debug(`프로세스 종료...`);
-
-    await this._processManager.closeAllAsync();
-
-    this._logger.debug(`프로세스 종료`);
 
     this._logger.info(`배포 프로세스가 완료되었습니다.(v${this._npmConfig.version})`);
   }

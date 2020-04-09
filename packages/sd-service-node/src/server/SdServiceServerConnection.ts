@@ -79,16 +79,18 @@ export class SdServiceServerConnection extends EventEmitter {
     }
     // 업로드
     else if (rawReq.type === "upload") {
-      const filePath = path.resolve(this._rootPath, rawReq.filePath);
+      const filePath = rawReq.filePath.startsWith("/") ?
+        path.resolve(this._rootPath, rawReq.filePath.slice(1).replace(/\\/g, "/")) :
+        path.resolve(this._rootPath, rawReq.filePath.replace(/\\/g, "/"));
 
       if (!this._uploadRequestMap.has(rawReq.id)) {
-        FsUtils.mkdirs(path.dirname(filePath));
-        const fd = FsUtils.open(filePath, "w");
+        await FsUtils.mkdirsAsync(path.dirname(filePath));
+        const fd = await FsUtils.openAsync(filePath, "w");
         const newUploadRequestValue = {
-          timer: setTimeout(() => {
+          timer: setTimeout(async () => {
             this.emit("error", `업로드중에 타임아웃이 발생했습니다.`);
-            FsUtils.close(fd);
-            FsUtils.remove(filePath);
+            await FsUtils.closeAsync(fd);
+            await FsUtils.removeAsync(filePath);
             this._uploadRequestMap.delete(rawReq.id);
           }, 20000),
           fd,
@@ -99,7 +101,7 @@ export class SdServiceServerConnection extends EventEmitter {
       }
 
       const uploadRequestValue = this._uploadRequestMap.get(rawReq.id)!;
-      FsUtils.write(uploadRequestValue.fd, rawReq.buffer, 0, rawReq.buffer.length, rawReq.offset);
+      await FsUtils.writeAsync(uploadRequestValue.fd, rawReq.buffer, 0, rawReq.buffer.length, rawReq.offset);
       uploadRequestValue.completedLength += rawReq.buffer.length;
 
       clearTimeout(uploadRequestValue.timer);
@@ -114,16 +116,16 @@ export class SdServiceServerConnection extends EventEmitter {
 
       if (uploadRequestValue.completedLength !== rawReq.length) {
         clearTimeout(uploadRequestValue.timer);
-        uploadRequestValue.timer = setTimeout(() => {
+        uploadRequestValue.timer = setTimeout(async () => {
           this.emit("error", new Error(`업로드중에 타임아웃이 발생했습니다.`));
-          FsUtils.close(uploadRequestValue.fd);
-          FsUtils.remove(uploadRequestValue.filePath);
+          await FsUtils.closeAsync(uploadRequestValue.fd);
+          await FsUtils.removeAsync(uploadRequestValue.filePath);
           this._uploadRequestMap.delete(rawReq.id);
         }, 20000);
         return;
       }
 
-      FsUtils.close(uploadRequestValue.fd);
+      await FsUtils.closeAsync(uploadRequestValue.fd);
       this._uploadRequestMap.delete(rawReq.id);
 
       const req: ISdServiceRequest = {

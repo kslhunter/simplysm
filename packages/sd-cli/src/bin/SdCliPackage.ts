@@ -4,7 +4,7 @@ import * as path from "path";
 import * as ts from "typescript";
 import {ISdPackageBuildResult, SdPackageBuilder} from "../build-tools/SdPackageBuilder";
 import {EventEmitter} from "events";
-import {NeverEntryError, ObjectUtils} from "@simplysm/sd-core-common";
+import {NeverEntryError, ObjectUtils, SdError} from "@simplysm/sd-core-common";
 import {NextHandleFunction} from "connect";
 import {SdServiceClient} from "@simplysm/sd-service-node";
 
@@ -31,7 +31,7 @@ export class SdCliPackage extends EventEmitter {
       Object.keys(this.info.npmConfig.dependencies).includes("@angular/core");
   }
 
-  public static async createAsync(processManager: ProcessWorkManager, rootPath: string, npmConfig: INpmConfig, npmConfigPath: string, config: TSdPackageConfig | undefined, devMode: boolean): Promise<SdCliPackage> {
+  public static async createAsync(rootPath: string, npmConfig: INpmConfig, npmConfigPath: string, config: TSdPackageConfig | undefined, devMode: boolean): Promise<SdCliPackage> {
     const info: Partial<ISdPackageInfo> = {rootPath};
 
     const tsConfigPath = path.resolve(rootPath, "tsconfig.json");
@@ -78,11 +78,10 @@ export class SdCliPackage extends EventEmitter {
 
     const logger = Logger.get(["simplysm", "sd-cli", "package", info.npmConfig.name]);
 
-    return new SdCliPackage(processManager, info as ISdPackageInfo, devMode, logger);
+    return new SdCliPackage(info as ISdPackageInfo, devMode, logger);
   }
 
-  private constructor(private readonly _processManager: ProcessWorkManager,
-                      public readonly info: ISdPackageInfo,
+  private constructor(public readonly info: ISdPackageInfo,
                       private readonly _devMode: boolean,
                       private readonly _logger: Logger) {
     super();
@@ -168,7 +167,7 @@ export class SdCliPackage extends EventEmitter {
     });
   }
 
-  public async genIndexAsync(): Promise<void> {
+  public async genIndexAsync(processManager: ProcessWorkManager): Promise<void> {
     if (this.info.config?.type === undefined || this.info.config.type === "none") return;
 
     if (this.info.config?.type !== "library") return;
@@ -177,10 +176,10 @@ export class SdCliPackage extends EventEmitter {
     const target = this.info.tsConfigForBuild ? Object.keys(this.info.tsConfigForBuild)[0] : undefined;
     if (target === undefined) return;
 
-    await this._runAsync("gen-index", target);
+    await this._runAsync(processManager, "gen-index", target);
   }
 
-  public async lintAsync(): Promise<void> {
+  public async lintAsync(processManager: ProcessWorkManager): Promise<void> {
     // if (this.info.config?.type === undefined || this.info.config.type === "none") return;
 
     const targets = this.info.tsConfigForBuild ? Object.keys(this.info.tsConfigForBuild) : undefined;
@@ -188,21 +187,21 @@ export class SdCliPackage extends EventEmitter {
       targets.length === 1 ? targets[0] :
         targets.single(item => item === "node");
 
-    await this._runAsync("lint", target);
+    await this._runAsync(processManager, "lint", target);
   }
 
-  public async checkAsync(): Promise<void> {
+  public async checkAsync(processManager: ProcessWorkManager): Promise<void> {
     if (this.info.config?.type === undefined || this.info.config.type === "none") return;
 
     const targets = this.info.tsConfigForBuild ? Object.keys(this.info.tsConfigForBuild) : undefined;
     if (!targets) return;
 
     await targets.parallelAsync(async target => {
-      await this._runAsync("check", target);
+      await this._runAsync(processManager, "check", target);
     });
   }
 
-  public async compileAsync(): Promise<void | NextHandleFunction[]> {
+  public async compileAsync(processManager: ProcessWorkManager): Promise<void | NextHandleFunction[]> {
     if (this.info.config?.type === undefined || this.info.config.type === "none") return;
 
     if (this.info.config?.type === "library") {
@@ -210,11 +209,11 @@ export class SdCliPackage extends EventEmitter {
       if (!targets) return;
 
       await targets.parallelAsync(async target => {
-        await this._runAsync("compile", target);
+        await this._runAsync(processManager, "compile", target);
       });
     }
     else if (this.info.config?.type === "server") {
-      await this._runAsync("compile", "node");
+      await this._runAsync(processManager, "compile", "node");
     }
     else {
       throw new NeverEntryError();
@@ -237,7 +236,7 @@ export class SdCliPackage extends EventEmitter {
       .runClientAsync(watch);
   }
 
-  public async genNgAsync(): Promise<void> {
+  public async genNgAsync(processManager: ProcessWorkManager): Promise<void> {
     if (this.info.config?.type === undefined || this.info.config.type === "none") return;
 
     if (!this._isAngular) return;
@@ -246,7 +245,7 @@ export class SdCliPackage extends EventEmitter {
     if (!targets) return;
 
     await targets.filter(item => item === "browser").parallelAsync(async target => {
-      await this._runAsync("gen-ng", target);
+      await this._runAsync(processManager, "gen-ng", target);
     });
   }
 
@@ -276,6 +275,7 @@ export class SdCliPackage extends EventEmitter {
       const targets = this.info.tsConfigForBuild ? Object.keys(this.info.tsConfigForBuild) : undefined;
       if (!targets) return;
 
+      const fileInfos: { [key: string]: { total: number; current: number } } = {};
       await targets.parallelAsync(async target => {
         const parsedTsConfig = ts.parseJsonConfigFileContent(this.info.tsConfigForBuild![target].config, ts.sys, this.info.rootPath);
 
@@ -289,20 +289,33 @@ export class SdCliPackage extends EventEmitter {
           const relativeFilePath = path.relative(distPath, filePath);
           const targetPath = path.posix.join(publishConfig.path, relativeFilePath);
 
-          await wsClient.uploadAsync(filePath, targetPath, {
-            progressCallback: progress => {
-              this._logger.debug(`파일 업로드 : (${(Math.floor(progress.current * 10000 / progress.total) / 100).toFixed(2).padStart(6, " ")}%) ${progress.current.toLocaleString()} / ${progress.total.toLocaleString()}`);
-            }
-          });
+          try {
+            await wsClient.uploadAsync(filePath, targetPath, {
+              progressCallback: progress => {
+                fileInfos[filePath] = fileInfos[filePath] ?? {};
+                fileInfos[filePath].current = progress.current;
+                fileInfos[filePath].total = progress.total;
+
+                const displayCurrent = Object.values(fileInfos).sum(item => item.current);
+                const displayTotal = Object.values(fileInfos).sum(item => item.total);
+                this._logger.debug(`파일 업로드 : (${(Math.floor(displayCurrent * 10000 / displayTotal) / 100).toFixed(2).padStart(6, " ")}%) ${displayCurrent.toLocaleString()} / ${displayTotal.toLocaleString()}`);
+              }
+            });
+          }
+          catch (err) {
+            throw new SdError(err, this.info.npmConfig.name);
+          }
         });
       });
+
+      await wsClient.closeAsync();
     }
   }
 
-  private async _runAsync(command: string, target?: string): Promise<void> {
+  private async _runAsync(processManager: ProcessWorkManager, command: string, target?: string): Promise<void> {
     this._logger.debug("workerRun: " + this.name + ": " + command + ": " + target);
 
-    await this._processManager.getNextWorker()
+    await processManager.getNextWorker()
       .on("change", data => {
         if (
           data.packageName === this.name &&

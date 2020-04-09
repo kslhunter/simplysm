@@ -20,7 +20,6 @@ import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import {SdWebpackInputHostWithScss} from "./SdWebpackInputHostWithScss";
 import {SdTypescriptWatcher} from "./SdTypescriptWatcher";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
-import * as webpackNodeExternals from "webpack-node-externals";
 
 export class SdPackageBuilder extends EventEmitter {
   private readonly _logger = Logger.get([
@@ -511,38 +510,7 @@ export class SdPackageBuilder extends EventEmitter {
             content: JSON.stringify(this._info.config.configs, undefined, 2)
           }
         ])
-      ]/*,
-      externals: [
-        (context, request, callback): void => {
-          if (request === "node-gyp-build") {
-            const sourcePath = path.resolve(context, "prebuilds", "win32-x64", "node-napi.node");
-            const targetRelativePath = path.relative(path.resolve(process.cwd(), "node_modules"), sourcePath);
-            const targetPath = path.resolve(distPath, "node_modules", targetRelativePath);
-
-            if (FsUtils.exists(sourcePath)) {
-              FsUtils.mkdirs(path.dirname(targetPath));
-              FsUtils.copy(sourcePath, targetPath);
-            }
-
-            callback(undefined, `function (() => require('${targetRelativePath.replace(/\\/g, "/")}'))`);
-          }
-          else if ((/.*\.node$/).test(request)) {
-            const sourcePath = path.resolve(context, request);
-            const targetRelativePath = path.relative(path.resolve(process.cwd(), "node_modules"), sourcePath);
-            const targetPath = path.resolve(distPath, "node_modules", targetRelativePath);
-
-            if (FsUtils.exists(sourcePath)) {
-              FsUtils.mkdirs(path.dirname(targetPath));
-              FsUtils.copy(sourcePath, targetPath);
-            }
-
-            callback(undefined, `commonjs ${targetRelativePath.replace(/\\/g, "/")}`);
-          }
-          else {
-            callback(undefined, undefined);
-          }
-        }
-      ]*/
+      ]
     };
   }
 
@@ -620,12 +588,31 @@ export class SdPackageBuilder extends EventEmitter {
       item => path.resolve(this._info.rootPath, item)
     );
 
-    const externalsWhiteList = Object.keys(this._info.tsConfig?.config.compilerOptions.paths ?? {});
     const copyNpmConfig = ObjectUtils.clone(this._info.npmConfig);
-    for (const externalsWhiteListItem of externalsWhiteList) {
-      if (Boolean(copyNpmConfig.dependencies?.[externalsWhiteListItem])) {
-        delete copyNpmConfig.dependencies![externalsWhiteListItem];
+
+    const loadedModuleNames: string[] = [];
+    const nodeGypModuleNames: string[] = [];
+    const fn = (moduleName: string): void => {
+      if (loadedModuleNames.includes(moduleName)) return;
+      loadedModuleNames.push(moduleName);
+
+      const modulePath = path.resolve(process.cwd(), "node_modules", moduleName);
+      if (FsUtils.exists(path.resolve(modulePath, "binding.gyp"))) {
+        nodeGypModuleNames.push(moduleName);
       }
+
+      const moduleNpmConfig = FsUtils.readJson(path.resolve(modulePath, "package.json"));
+      for (const depModuleName of Object.keys(moduleNpmConfig.dependencies ?? {})) {
+        fn(depModuleName);
+      }
+    };
+    for (const key of Object.keys(copyNpmConfig.dependencies ?? {})) {
+      fn(key);
+    }
+
+    copyNpmConfig.dependencies = {};
+    for (const nodeGypModuleName of nodeGypModuleNames) {
+      copyNpmConfig.dependencies[nodeGypModuleName] = "*";
     }
     delete copyNpmConfig.devDependencies;
     delete copyNpmConfig.peerDependencies;
@@ -654,7 +641,7 @@ export class SdPackageBuilder extends EventEmitter {
         __dirname: false
       },
       resolve: {
-        extensions: [".ts", ".js"]
+        extensions: [".ts", ".js", ".json"]
       },
       entry,
       output: {
@@ -722,14 +709,21 @@ export class SdPackageBuilder extends EventEmitter {
         ])
       ],
       externals: [
-        webpackNodeExternals({
-          whitelist: externalsWhiteList
-        })
-      ]
-      /*,
-      externals: [
         (context, request, callback): void => {
-          if (request === "node-gyp-build") {
+          if (nodeGypModuleNames.includes(request)) {
+            const req = request.replace(/^.*?\/node_modules\//, "") as string;
+            if (req.startsWith("@")) {
+              callback(undefined, `commonjs ${req.split("/", 2).join("/")}`);
+              return;
+            }
+
+            callback(undefined, `commonjs ${req.split("/")[0]}`);
+            return;
+          }
+
+          callback(undefined, undefined);
+
+          /*if (request === "node-gyp-build") {
             const sourcePath = path.resolve(context, "prebuilds", "win32-x64", "node-napi.node");
             const targetRelativePath = path.relative(path.resolve(process.cwd(), "node_modules"), sourcePath);
             const targetPath = path.resolve(distPath, "node_modules", targetRelativePath);
@@ -755,9 +749,9 @@ export class SdPackageBuilder extends EventEmitter {
           }
           else {
             callback(undefined, undefined);
-          }
+          }*/
         }
-      ]*/
+      ]
     };
   }
 

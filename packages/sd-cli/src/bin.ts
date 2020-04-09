@@ -176,14 +176,14 @@ if (argv.debug) {
 
   process.env.SD_CLI_LOGGER_SEVERITY = "DEBUG";
 
-  Logger.setConfig(["simplysm", "sd-cli"], {
+  Logger.setConfig({
     console: {
       level: LoggerSeverity.debug
     }
   });
 }
 else {
-  Logger.setConfig(["simplysm", "sd-cli"], {
+  Logger.setConfig({
     dot: true
   });
 }
