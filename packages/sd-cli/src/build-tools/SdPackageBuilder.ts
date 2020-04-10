@@ -129,7 +129,7 @@ export class SdPackageBuilder extends EventEmitter {
     }
     else if (this._command === "compile") {
       if (this._info.config?.type === "library") {
-        await this._watchAsync({}, this._compileAsync.bind(this));
+        await this._watchAsync({useDependencyChanges: true}, this._compileAsync.bind(this));
       }
       else if (this._info.config?.type === "server") {
         await this._watchServerCompileAsync();
@@ -853,7 +853,14 @@ export class SdPackageBuilder extends EventEmitter {
       const diagnostics: ts.Diagnostic[] = [];
 
       const sourceFile = this._getProgram().getSourceFile(changedInfo.filePath);
-      if (!sourceFile) throw new NeverEntryError(changedInfo.filePath);
+      if (!sourceFile) {
+        results.push({
+          filePath: changedInfo.filePath,
+          severity: "error",
+          message: `error 파일을 찾을 수 없습니다: ${changedInfo.filePath}`
+        });
+        continue;
+      }
 
       if (this._isAngularLibrary) {
         // metadata
@@ -872,7 +879,7 @@ export class SdPackageBuilder extends EventEmitter {
                   start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
                   messageText: value.message,
                   category: ts.DiagnosticCategory.Error,
-                  code: -4,
+                  code: -5,
                   length: undefined
                 }
               ]));
@@ -1000,7 +1007,19 @@ export class SdPackageBuilder extends EventEmitter {
 
       try {
         const sourceFile = this._getProgram().getSourceFile(changedInfo.filePath);
-        if (!sourceFile) throw new NeverEntryError();
+        if (!sourceFile) {
+          results.push({
+            filePath: changedInfo.filePath,
+            severity: "error",
+            message: `error 파일을 찾을 수 없습니다: ${changedInfo.filePath}`
+          });
+          delete this._outputCache[mapFilePath];
+          delete this._outputCache[jsFilePath];
+          await FsUtils.removeAsync(jsFilePath);
+          await FsUtils.removeAsync(mapFilePath);
+          continue;
+        }
+
         const fileContent = sourceFile.getFullText();
         // const fileContent = await FsUtils.readFileAsync(changedInfo.filePath);
 
@@ -1053,6 +1072,8 @@ export class SdPackageBuilder extends EventEmitter {
         });
         delete this._outputCache[mapFilePath];
         delete this._outputCache[jsFilePath];
+        await FsUtils.removeAsync(jsFilePath);
+        await FsUtils.removeAsync(mapFilePath);
       }
     }
 

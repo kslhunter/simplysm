@@ -283,13 +283,11 @@ export class SdTypescriptWatcher extends EventEmitter {
         const importTargets = importNamed?.elements?.map(item => (item.propertyName ? item.propertyName.text : item.name.text));
 
         const resolvedModule = sourceFile["resolvedModules"].get(importRequire);
+        if (importRequire.startsWith(".") && resolvedModule === undefined) {
+          const importFilePath = path.resolve(path.dirname(sourceFile.fileName), importRequire);
+          return [importFilePath + ".ts"];
+        }
         if (resolvedModule === undefined) return [];
-        // if (!importRequire.startsWith(".") && resolvedModule === undefined) return [];
-        // if (importRequire.startsWith(".") && resolvedModule === undefined) {
-        //   const importFilePath = path.resolve(path.dirname(sourceFile.fileName), importRequire);
-        //   return [importFilePath + ".ts"];
-        //   return [];
-        // }
 
         const targetFilePath = path.resolve(resolvedModule.resolvedFileName);
         const targetSourceFile = this.program!.getSourceFile(targetFilePath);

@@ -119,7 +119,19 @@ export class SdNgGenerator {
     for (const changedInfo of changedInfos) {
       if (Object.keys(this._metadataCollector.moduleMapObj).includes(changedInfo.filePath)) {
         const sourceFile = program.getSourceFile(changedInfo.filePath);
-        if (!sourceFile) throw new NeverEntryError();
+
+        if (!sourceFile) {
+          diagnostics.push({
+            file: undefined,
+            start: 0,
+            messageText: `파일을 찾을 수 없습니다: ${changedInfo.filePath}`,
+            category: ts.DiagnosticCategory.Error,
+            code: -4,
+            length: undefined
+          });
+          delete this._defMapObj[changedInfo.filePath];
+          continue;
+        }
 
         this._defMapObj[changedInfo.filePath] = this._getDefs(sourceFile);
       }
