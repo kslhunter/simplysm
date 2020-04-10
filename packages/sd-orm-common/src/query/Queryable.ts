@@ -54,8 +54,8 @@ export class Queryable<D extends DbContext, T> {
       }
     }
     // 일반 생성
-    else if (arg1 !== undefined) {
-      this.tableType = arg1;
+    else if (arg3 === undefined) {
+      this.tableType = arg1 as Type<T>;
       this._as = arg2 as string | undefined;
 
       // Init TABLE Definition
@@ -84,8 +84,19 @@ export class Queryable<D extends DbContext, T> {
     // tableDef 없이 생성 (wrapping)
     else {
       this._as = arg2 as string;
-      this._entity = arg3!;
+      this._entity = arg3;
       this._def = arg4!;
+
+      if (arg1 !== undefined) {
+        this.tableType = arg1;
+
+        // Init TABLE Definition
+        const tableDef = DbDefinitionUtils.getTableDef(this.tableType);
+        if (!tableDef) {
+          throw new Error(`'${this.tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
+        }
+        this._tableDef = tableDef;
+      }
     }
   }
 
@@ -389,9 +400,8 @@ export class Queryable<D extends DbContext, T> {
   public wrap<R>(tableType?: Type<R>): Queryable<D, T | R> {
     const entity = this._generateSubEntity(this._entity, this._as);
 
-    return new Queryable<D, T | R>(this._db, tableType, this._as, entity, {
-      from: this.getSelectDef()
-    });
+    const from = this.getSelectDef();
+    return new Queryable<D, T | R>(this._db, tableType, this._as, entity, {from});
   }
 
   public getSelectDef(): ISelectQueryDef {
@@ -454,7 +464,7 @@ export class Queryable<D extends DbContext, T> {
     }
 
     if (this._def.limit && this._def.join && this._def.join.some(item => !item.isSingle)) {
-      throw new Error("다수의 'RECORD'를 'JOIN'하는 쿼리를 사용한 이후에는 'LIMIT'을 사용할 수 없습니다. 'LIMIT'을 먼저 사용하고, 'WRAP'한 이후에 'JOIN' 하시기 바랍니다.");
+      throw new Error("다수의 'RECORD'를 'JOIN'하는 쿼리와 'LIMIT'을 동시에 사용할 수 없습니다. 'LIMIT'을 먼저 사용하고, 'WRAP'한 이후에 'JOIN' 하시기 바랍니다.");
     }
 
     if (this._def.limit && (!this._def.orderBy || this._def.orderBy.length <= 0)) {

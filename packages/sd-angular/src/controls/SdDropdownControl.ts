@@ -228,10 +228,16 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
   public keydownEventHandler = (event: KeyboardEvent): void => {
     if (!event.ctrlKey && !event.altKey && event.key === "ArrowDown") {
+      event.preventDefault();
+      event.stopPropagation();
+
       this.openPopup();
     }
 
     if (!event.ctrlKey && !event.altKey && event.key === " ") {
+      event.preventDefault();
+      event.stopPropagation();
+
       if (this._isOpen) {
         this.closePopup();
       }

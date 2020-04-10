@@ -54,7 +54,7 @@ export const sorm = {
   between<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, from: TEntityValue<T | undefined>, to: TEntityValue<T | undefined>): TQueryValueOrSelectArray {
     return sorm.and([
       sorm.greaterThenOrEqual(source, from),
-      sorm.lessThenOrEqual(source, to)
+      sorm.lessThen(source, to)
     ]);
   },
   includes(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryValueOrSelectArray {
