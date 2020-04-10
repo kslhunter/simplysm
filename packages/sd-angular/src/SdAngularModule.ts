@@ -5,12 +5,10 @@ import {SdResizeEventPlugin} from "./plugins/SdResizeEventPlugin";
 import {SdMutationEventPlugin} from "./plugins/SdMutationEventPlugin";
 import {SdAngularGlobalErrorHandler} from "./plugins/SdAngularGlobalErrorHandler";
 import {SdSaveEventPlugin} from "./plugins/SdSaveEventPlugin";
-import {SdModalProviderModule} from "./_modules/providers/SdModalProviderModule";
 
 @NgModule({
   imports: [
-    CommonModule,
-    SdModalProviderModule
+    CommonModule
   ],
   providers: []
 })
