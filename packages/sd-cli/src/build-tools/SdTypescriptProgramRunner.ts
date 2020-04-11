@@ -265,7 +265,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
   }
 
   private _getAllRelatedFilePaths(filePath: string): string[] {
-    /* TODO
+    /*
     if (filePath.includes("_modules")) {
       const orgFilePath = filePath.replace(/[\\/]_modules[\\/]/, "\\").replace(/(RoutingModule\.|Module\.)/, ".");
       return [
