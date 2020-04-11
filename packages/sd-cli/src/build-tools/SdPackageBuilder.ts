@@ -1038,24 +1038,24 @@ export class SdPackageBuilder extends EventEmitter {
     const srcPath = this._getSrcPath();
 
     const filePathAnyMatch = path.resolve(srcPath, "**", "*.ts");
+    const changedInfos = (await FsUtils.globAsync(filePathAnyMatch)).map(item => ({
+      type: "add" as const,
+      filePath: item
+    }));
+    this.emit("change", changedInfos.map(item => item.filePath));
+
     if (watch) {
-      await FsWatcher.watchAsync(filePathAnyMatch, async changedInfos => {
-        this.emit("change", changedInfos.map(item => item.filePath));
-        const results = await cb(changedInfos);
+      await FsWatcher.watchAsync(filePathAnyMatch, async changedInfos1 => {
+        this.emit("change", changedInfos1.map(item => item.filePath));
+        const results = await cb(changedInfos1);
         this.emit("complete", results);
       }, err => {
         this._logger.error(err);
       });
     }
-    else {
-      const changedInfos = (await FsUtils.globAsync(filePathAnyMatch)).map(item => ({
-        type: "add" as const,
-        filePath: item
-      }));
-      this.emit("change", changedInfos.map(item => item.filePath));
-      const results = await cb(changedInfos);
-      this.emit("complete", results);
-    }
+
+    const results = await cb(changedInfos);
+    this.emit("complete", results);
   }
 
   private _convertDiagnosticsToResults(diagnostics: ts.Diagnostic[]): ISdPackageBuildResult[] {

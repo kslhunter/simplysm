@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-core-browser",
-  "version": "3.4.66-35",
+  "version": "3.4.66-37",
   "description": "심플리즘 패키지 - 코어 모듈 (browser)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -9,7 +9,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-common": "3.4.66-35",
+    "@simplysm/sd-core-common": "3.4.66-37",
     "element-qsa-scope": "^1.1.0",
     "resize-observer-polyfill": "^1.5.1",
     "events-polyfill": "^2.1.2",

@@ -188,28 +188,20 @@ export class SdCliProject {
             await Wait.true(() => genCompleted.includes(pkg.name));
 
             if (!subBuild || subBuild.includes("check")) {
-              await pkg.checkAsync(false, processManager);
-
-              if (watch) {
-                await pkg.checkAsync(true, processManager);
-              }
+              await pkg.checkAsync(watch, processManager);
             }
           }),
           this._packages.parallelAsync(async pkg => {
             await Wait.true(() => depCheckCompleted.includes(pkg.name));
 
             if (!subBuild || subBuild.includes("gen")) {
-              await pkg.genIndexAsync(false, processManager);
               if (pkg.isAngular) {
-                await pkg.genNgAsync(false, processManager);
                 await pkg.genIndexAsync(false, processManager);
+                await pkg.genNgAsync(watch, processManager);
+                await pkg.genIndexAsync(watch, processManager);
               }
-
-              if (watch) {
-                await pkg.genIndexAsync(true, processManager);
-                if (pkg.isAngular) {
-                  await pkg.genNgAsync(true, processManager);
-                }
+              else {
+                await pkg.genIndexAsync(watch, processManager);
               }
             }
 

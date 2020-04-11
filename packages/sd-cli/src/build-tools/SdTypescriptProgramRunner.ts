@@ -52,6 +52,10 @@ export class SdTypescriptProgramRunner extends EventEmitter {
       .concat(...Object.values(this._fileInfoMapObj).mapMany(v => this._getDependencies(v.sourceFile!)))
       .distinct();
 
+    // 최초 변경 이벤트 알림
+    const firstChangeInfos = filePaths.map(item => ({type: "add" as const, filePath: item}));
+    this.emit("change", firstChangeInfos.map(item => item.filePath));
+
     if (watch) {
       const parsedTsConfig = this._getParsedTsConfig();
 
@@ -130,15 +134,10 @@ export class SdTypescriptProgramRunner extends EventEmitter {
         this._logger.error(err);
       });
     }
-    else {
-      // 최초 변경 이벤트 알림
-      const firstChangeInfos = filePaths.map(item => ({type: "add" as const, filePath: item}));
-      this.emit("change", firstChangeInfos.map(item => item.filePath));
 
-      // 로직 수행
-      const results = await logicFn(firstChangeInfos);
-      this.emit("complete", results);
-    }
+    // 로직 수행
+    const results = await logicFn(firstChangeInfos);
+    this.emit("complete", results);
   }
 
   private _reloadProgram(oldProgram?: ts.Program): void {
@@ -233,7 +232,9 @@ export class SdTypescriptProgramRunner extends EventEmitter {
 
           const sourceFile = prevGetSourceFile(fileName, languageVersion, onError, shouldCreateNewSourceFile);
 
-          this._fileInfoMapObj[filePath].sourceFile = sourceFile;
+          if (sourceFile) {
+            this._fileInfoMapObj[filePath].sourceFile = sourceFile;
+          }
 
           return sourceFile;
         }
