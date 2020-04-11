@@ -102,11 +102,11 @@ export class SdCliProject {
         let busyCount = 0;
         this._logger.debug(`busyCount: ${busyCount}`);
 
-        const endFn = (): void => {
+        const endFn = (key?: string): void => {
           setTimeout(
             async () => {
               busyCount -= 1;
-              this._logger.debug(`busyCount: ${busyCount}`);
+              this._logger.debug(`busyCount--: ${busyCount}: ${key}`);
 
               if (busyCount === 0) {
                 const warnings = Object.values(lastResultsObj)
@@ -144,7 +144,7 @@ export class SdCliProject {
               this._logger.log(`변경감지...`);
             }
             busyCount += 1;
-            this._logger.debug(`busyCount: ${busyCount}`);
+            this._logger.debug(`busyCount++: ${busyCount}: ${data.packageName}: ${data.command}: ${data.target ?? ""}`);
 
             if (data.filePaths) {
               delete lastResultsObj[`${data.command}-${data.target ?? ""}-${data.packageName}`];
@@ -171,7 +171,7 @@ export class SdCliProject {
               });
             }
 
-            endFn();
+            endFn(`${data.packageName}: ${data.command}: ${data.target ?? ""}`);
           });
         }
 
@@ -183,6 +183,20 @@ export class SdCliProject {
 
         await Promise.all([
           this._parallelPackagesByDepAsync(async pkg => {
+            depCheckCompleted.push(pkg.name);
+
+            await Wait.true(() => genCompleted.includes(pkg.name));
+
+            if (!subBuild || subBuild.includes("check")) {
+              await pkg.checkAsync(false, processManager);
+
+              if (watch) {
+                await pkg.checkAsync(true, processManager);
+              }
+            }
+          }),
+          this._packages.parallelAsync(async pkg => {
+            await Wait.true(() => depCheckCompleted.includes(pkg.name));
 
             if (!subBuild || subBuild.includes("gen")) {
               await pkg.genIndexAsync(false, processManager);
@@ -201,20 +215,9 @@ export class SdCliProject {
 
             genCompleted.push(pkg.name);
           }),
-          this._parallelPackagesByDepAsync(async pkg => {
-            depCheckCompleted.push(pkg.name);
-
+          this._packages.parallelAsync(async pkg => {
             await Wait.true(() => genCompleted.includes(pkg.name));
 
-            if (!subBuild || subBuild.includes("check")) {
-              await pkg.checkAsync(false, processManager);
-
-              if (watch) {
-                await pkg.checkAsync(true, processManager);
-              }
-            }
-          }),
-          this._packages.parallelAsync(async pkg => {
             if (!subBuild || subBuild.includes("compile")) {
               if (pkg.info.config?.type === "library") {
                 await pkg.compileAsync(false, processManager);
@@ -225,6 +228,7 @@ export class SdCliProject {
               }
               else if (pkg.info.config?.type === "server") {
                 await Wait.true(() => depCheckCompleted.includes(pkg.name));
+                await Wait.true(() => genCompleted.includes(pkg.name));
 
                 if (pkg.info.npmConfig.main === undefined) {
                   throw new Error("서버빌드시, 'package.json'에 'main'이 반드시 설정되어 있어야 합니다.");
@@ -247,6 +251,7 @@ export class SdCliProject {
                 }
               }
               else if (pkg.info.config?.type === "web") {
+                await Wait.true(() => genCompleted.includes(pkg.name));
                 await Wait.true(() => depCheckCompleted.includes(pkg.name));
 
                 if (watch) {
@@ -274,6 +279,7 @@ export class SdCliProject {
             }
           }),
           this._packages.parallelAsync(async pkg => {
+            await Wait.true(() => genCompleted.includes(pkg.name));
             await Wait.true(() => depCheckCompleted.includes(pkg.name));
 
             if (!subBuild || subBuild.includes("lint")) {

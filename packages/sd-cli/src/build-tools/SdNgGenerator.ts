@@ -39,7 +39,10 @@ export class SdNgGenerator {
     const diagnostics: ts.Diagnostic[] = [];
 
     for (const changedInfo of changedInfos) {
-      if (!path.relative(this._modulesGenDirPath, changedInfo.filePath).includes("..")) {
+      if (
+        !path.relative(this._modulesGenDirPath, changedInfo.filePath).includes("..") ||
+        changedInfo.filePath === this._routesGenFilePath
+      ) {
         continue;
       }
 

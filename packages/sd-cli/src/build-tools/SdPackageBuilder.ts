@@ -167,13 +167,13 @@ export class SdPackageBuilder extends EventEmitter {
 
     const compiler = webpack(webpackConfig);
 
-    compiler.hooks.run.tap("SdPackageBuilder", () => {
-      this._logger.debug("컴파일 시작...");
-      this.emit("change");
-    });
-
     return await new Promise<NextHandleFunction[] | void>((resolve, reject) => {
       if (watch) {
+        compiler.hooks.watchRun.tap("SdPackageBuilder", () => {
+          this._logger.debug("컴파일 시작...");
+          this.emit("change");
+        });
+
         let devMiddleware: NextHandleFunction | undefined; // eslint-disable-line prefer-const
         let hotMiddleware: NextHandleFunction | undefined; // eslint-disable-line prefer-const
 
@@ -204,6 +204,11 @@ export class SdPackageBuilder extends EventEmitter {
         });
       }
       else {
+        compiler.hooks.run.tap("SdPackageBuilder", () => {
+          this._logger.debug("컴파일 시작...");
+          this.emit("change");
+        });
+
         compiler.run((err, stats) => {
           this._emitWebpackResults(err, stats);
           if (err) {
@@ -227,13 +232,13 @@ export class SdPackageBuilder extends EventEmitter {
 
     const compiler = webpack(webpackConfig);
 
-    compiler.hooks.watchRun.tap("SdPackageBuilder", () => {
-      this._logger.debug("컴파일 시작...");
-      this.emit("change");
-    });
-
     await new Promise<void>((resolve, reject) => {
       if (watch) {
+        compiler.hooks.watchRun.tap("SdPackageBuilder", () => {
+          this._logger.debug("컴파일 시작...");
+          this.emit("change");
+        });
+
         compiler.watch({}, (err, stats) => {
           this._emitWebpackResults(err, stats);
           this._logger.debug("컴파일 완료");
@@ -241,6 +246,11 @@ export class SdPackageBuilder extends EventEmitter {
         });
       }
       else {
+        compiler.hooks.run.tap("SdPackageBuilder", () => {
+          this._logger.debug("컴파일 시작...");
+          this.emit("change");
+        });
+
         compiler.run((err, stats) => {
           this._emitWebpackResults(err, stats);
           this._logger.debug("컴파일 완료");
