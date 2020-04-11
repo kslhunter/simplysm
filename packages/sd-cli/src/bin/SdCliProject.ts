@@ -69,7 +69,7 @@ export class SdCliProject {
                       private readonly _npmConfigPath: string) {
   }
 
-  public async buildAsync(watch: boolean, subBuild?: ("gen-index" | "check" | "lint" | "compile" | "gen-ng")[]): Promise<void> {
+  public async buildAsync(watch: boolean, subBuild?: ("gen" | "check" | "lint" | "compile")[]): Promise<void> {
     if (watch) {
       await SdCliLocalUpdate.watchAsync(this._config);
     }
@@ -96,7 +96,7 @@ export class SdCliProject {
 
     await new Promise<void>(async (resolve, reject) => {
       try {
-        const lastResultsObj: { [key: string]: ISdPackageBuildResult[] | undefined } = {};
+        const lastResultsObj: { [key: string]: (ISdPackageBuildResult & { command: string })[] | undefined } = {};
 
         let startTick = new DateTime().tick;
         let busyCount = 0;
@@ -112,12 +112,12 @@ export class SdCliProject {
                 const warnings = Object.values(lastResultsObj)
                   .mapMany(item => item ?? [])
                   .filter(item => item.severity === "warning")
-                  .map(item => item.message.trim())
+                  .map(item => item.message.trim() + "(" + item.command + ")")
                   .distinct().join(os.EOL);
                 const errors = Object.values(lastResultsObj)
                   .mapMany(item => item ?? [])
                   .filter(item => item.severity === "error")
-                  .map(item => item.message.trim())
+                  .map(item => item.message.trim() + "(" + item.command + ")")
                   .distinct().join(os.EOL);
 
                 if (warnings.length > 0) {
@@ -165,7 +165,10 @@ export class SdCliProject {
             for (const result of data.results) {
               const key = `${data.command}-${data.target ?? ""}-${result.filePath ?? data.packageName}`;
               lastResultsObj[key] = lastResultsObj[key] ?? [];
-              lastResultsObj[key]!.push(result);
+              lastResultsObj[key]!.push({
+                ...result,
+                command: data.command
+              });
             }
 
             endFn();
@@ -175,31 +178,54 @@ export class SdCliProject {
         busyCount += 1;
         this._logger.debug(`busyCount: ${busyCount}`);
 
-        // const genIndexCompleted: string[] = [];
-        // const genNgCompleted: string[] = [];
+        const genCompleted: string[] = [];
         const depCheckCompleted: string[] = [];
-        const checkCompleted: string[] = [];
 
         await Promise.all([
           this._parallelPackagesByDepAsync(async pkg => {
-            depCheckCompleted.push(pkg.name);
 
-            if (!subBuild || subBuild.includes("check")) {
-              this._logger.debug("check: " + pkg.name);
-              await pkg.checkAsync(processManager);
-              this._logger.debug("check: " + pkg.name + ": end");
+            if (!subBuild || subBuild.includes("gen")) {
+              await pkg.genIndexAsync(false, processManager);
+              if (pkg.isAngular) {
+                await pkg.genNgAsync(false, processManager);
+                await pkg.genIndexAsync(false, processManager);
+              }
+
+              if (watch) {
+                await pkg.genIndexAsync(true, processManager);
+                if (pkg.isAngular) {
+                  await pkg.genNgAsync(true, processManager);
+                }
+              }
             }
 
-            checkCompleted.push(pkg.name);
+            genCompleted.push(pkg.name);
           }),
           this._parallelPackagesByDepAsync(async pkg => {
-            await Wait.true(() => depCheckCompleted.includes(pkg.name));
+            depCheckCompleted.push(pkg.name);
 
+            await Wait.true(() => genCompleted.includes(pkg.name));
+
+            if (!subBuild || subBuild.includes("check")) {
+              await pkg.checkAsync(false, processManager);
+
+              if (watch) {
+                await pkg.checkAsync(true, processManager);
+              }
+            }
+          }),
+          this._packages.parallelAsync(async pkg => {
             if (!subBuild || subBuild.includes("compile")) {
               if (pkg.info.config?.type === "library") {
-                await pkg.compileAsync(processManager);
+                await pkg.compileAsync(false, processManager);
+
+                if (watch) {
+                  await pkg.compileAsync(true, processManager);
+                }
               }
               else if (pkg.info.config?.type === "server") {
+                await Wait.true(() => depCheckCompleted.includes(pkg.name));
+
                 if (pkg.info.npmConfig.main === undefined) {
                   throw new Error("서버빌드시, 'package.json'에 'main'이 반드시 설정되어 있어야 합니다.");
                 }
@@ -214,13 +240,15 @@ export class SdCliProject {
                       if (arg.command !== "compile") return;
                       await this._startServerAsync(pkg);
                     })
-                    .compileAsync(processManager);
+                    .compileAsync(watch, processManager);
                 }
                 else {
-                  await pkg.compileAsync(processManager);
+                  await pkg.compileAsync(watch, processManager);
                 }
               }
               else if (pkg.info.config?.type === "web") {
+                await Wait.true(() => depCheckCompleted.includes(pkg.name));
+
                 if (watch) {
                   const middlewares = (
                     await pkg
@@ -234,13 +262,13 @@ export class SdCliProject {
                         const port = this._servers[pkg.info.config?.["server"]].server!.options.port ?? 80;
                         this._logger.info(`[${pkg.name}] 클라이언트가 준비되었습니다.: http://localhost:${port}/${path.basename(pkg.info.rootPath)}/`);
                       })
-                      .compileClientAsync(true)
+                      .compileAsync(watch, processManager)
                   ) as NextHandleFunction[];
 
                   await this._registerClientAsync(pkg, middlewares);
                 }
                 else {
-                  await pkg.compileClientAsync(false);
+                  await pkg.compileAsync(watch, processManager);
                 }
               }
             }
@@ -249,26 +277,12 @@ export class SdCliProject {
             await Wait.true(() => depCheckCompleted.includes(pkg.name));
 
             if (!subBuild || subBuild.includes("lint")) {
-              await pkg.lintAsync(processManager);
+              await pkg.lintAsync(false, processManager);
+
+              if (watch) {
+                await pkg.lintAsync(true, processManager);
+              }
             }
-          }),
-          this._packages.parallelAsync(async pkg => {
-            await Wait.true(() => checkCompleted.includes(pkg.name));
-
-            if (!subBuild || subBuild.includes("gen-ng")) {
-              await pkg.genNgAsync(processManager);
-            }
-
-            // genNgCompleted.push(pkg.name);
-          }),
-          this._packages.parallelAsync(async pkg => {
-            await Wait.true(() => checkCompleted.includes(pkg.name));
-
-            if (!subBuild || subBuild.includes("gen-index")) {
-              await pkg.genIndexAsync(processManager);
-            }
-
-            // genIndexCompleted.push(pkg.name);
           })
         ]);
 
@@ -290,18 +304,6 @@ export class SdCliProject {
     }
 
     isFirstCompleted = true;
-  }
-
-  public async compileAsync(watch: boolean): Promise<void> {
-    await this.buildAsync(watch, ["check", "compile"]);
-  }
-
-  public async lintAsync(watch: boolean): Promise<void> {
-    await this.buildAsync(watch, ["check", "lint"]);
-  }
-
-  public async genNgAsync(watch: boolean): Promise<void> {
-    await this.buildAsync(watch, ["check", "gen-ng"]);
   }
 
   public async publishAsync(build: boolean): Promise<void> {

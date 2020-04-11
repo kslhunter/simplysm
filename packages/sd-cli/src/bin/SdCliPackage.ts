@@ -26,7 +26,7 @@ export class SdCliPackage extends EventEmitter {
     return path.resolve(this.info.rootPath, this.info.npmConfig.main);
   }
 
-  private get _isAngular(): boolean {
+  public get isAngular(): boolean {
     return this.info.npmConfig.dependencies !== undefined &&
       Object.keys(this.info.npmConfig.dependencies).includes("@angular/core");
   }
@@ -167,7 +167,7 @@ export class SdCliPackage extends EventEmitter {
     });
   }
 
-  public async genIndexAsync(processManager: ProcessWorkManager): Promise<void> {
+  public async genIndexAsync(watch: boolean, processManager: ProcessWorkManager): Promise<void> {
     if (this.info.config?.type === undefined || this.info.config.type === "none") return;
 
     if (this.info.config?.type !== "library") return;
@@ -176,10 +176,10 @@ export class SdCliPackage extends EventEmitter {
     const target = this.info.tsConfigForBuild ? Object.keys(this.info.tsConfigForBuild)[0] : undefined;
     if (target === undefined) return;
 
-    await this._runAsync(processManager, "gen-index", target);
+    await this._runAsync(watch, processManager, "gen-index", target);
   }
 
-  public async lintAsync(processManager: ProcessWorkManager): Promise<void> {
+  public async lintAsync(watch: boolean, processManager: ProcessWorkManager): Promise<void> {
     // if (this.info.config?.type === undefined || this.info.config.type === "none") return;
 
     const targets = this.info.tsConfigForBuild ? Object.keys(this.info.tsConfigForBuild) : undefined;
@@ -187,21 +187,21 @@ export class SdCliPackage extends EventEmitter {
       targets.length === 1 ? targets[0] :
         targets.single(item => item === "node");
 
-    await this._runAsync(processManager, "lint", target);
+    await this._runAsync(watch, processManager, "lint", target);
   }
 
-  public async checkAsync(processManager: ProcessWorkManager): Promise<void> {
+  public async checkAsync(watch: boolean, processManager: ProcessWorkManager): Promise<void> {
     if (this.info.config?.type === undefined || this.info.config.type === "none") return;
 
     const targets = this.info.tsConfigForBuild ? Object.keys(this.info.tsConfigForBuild) : undefined;
     if (!targets) return;
 
     await targets.parallelAsync(async target => {
-      await this._runAsync(processManager, "check", target);
+      await this._runAsync(watch, processManager, "check", target);
     });
   }
 
-  public async compileAsync(processManager: ProcessWorkManager): Promise<void | NextHandleFunction[]> {
+  public async compileAsync(watch: boolean, processManager: ProcessWorkManager): Promise<void | NextHandleFunction[]> {
     if (this.info.config?.type === undefined || this.info.config.type === "none") return;
 
     if (this.info.config?.type === "library") {
@@ -209,43 +209,42 @@ export class SdCliPackage extends EventEmitter {
       if (!targets) return;
 
       await targets.parallelAsync(async target => {
-        await this._runAsync(processManager, "compile", target);
+        await this._runAsync(watch, processManager, "compile", target);
       });
     }
     else if (this.info.config?.type === "server") {
-      await this._runAsync(processManager, "compile", "node");
+      await this._runAsync(watch, processManager, "compile", "node");
     }
     else {
-      throw new NeverEntryError();
+      if (watch) {
+        const command = "compile";
+        const target = "browser";
+
+        return await new SdPackageBuilder(this.info, command, target, this._devMode)
+          .on("change", filePaths => {
+            this.emit("change", {packageName: this.name, command, target, filePaths});
+          })
+          .on("complete", results => {
+            this.emit("complete", {packageName: this.name, command, target, results});
+          })
+          .runClientCompileAsync(watch);
+      }
+      else {
+        await this._runAsync(watch, processManager, "compile", "browser");
+      }
     }
   }
 
-  public async compileClientAsync(watch: boolean): Promise<void | NextHandleFunction[]> {
-    if (this.info.config?.type !== "web") throw new NeverEntryError();
-
-    const command = "compile";
-    const target = "browser";
-
-    return await new SdPackageBuilder(this.info, command, target, this._devMode)
-      .on("change", filePaths => {
-        this.emit("change", {packageName: this.name, command, target, filePaths});
-      })
-      .on("complete", results => {
-        this.emit("complete", {packageName: this.name, command, target, results});
-      })
-      .runClientAsync(watch);
-  }
-
-  public async genNgAsync(processManager: ProcessWorkManager): Promise<void> {
+  public async genNgAsync(watch: boolean, processManager: ProcessWorkManager): Promise<void> {
     if (this.info.config?.type === undefined || this.info.config.type === "none") return;
 
-    if (!this._isAngular) return;
+    if (!this.isAngular) return;
 
     const targets = this.info.tsConfigForBuild ? Object.keys(this.info.tsConfigForBuild) : undefined;
     if (!targets) return;
 
     await targets.filter(item => item === "browser").parallelAsync(async target => {
-      await this._runAsync(processManager, "gen-ng", target);
+      await this._runAsync(watch, processManager, "gen-ng", target);
     });
   }
 
@@ -312,8 +311,8 @@ export class SdCliPackage extends EventEmitter {
     }
   }
 
-  private async _runAsync(processManager: ProcessWorkManager, command: string, target?: string): Promise<void> {
-    this._logger.debug("workerRun: " + this.name + ": " + command + ": " + target);
+  private async _runAsync(watch: boolean, processManager: ProcessWorkManager, command: string, target?: string): Promise<void> {
+    this._logger.debug("workerRun: " + (watch ? "watch" : "run") + ": " + this.name + ": " + command + ": " + target + ": start");
 
     await processManager.getNextWorker()
       .on("change", data => {
@@ -334,8 +333,8 @@ export class SdCliPackage extends EventEmitter {
           this.emit("complete", data);
         }
       })
-      .sendAsync(this.info, command, target, this._devMode);
+      .sendAsync(watch, this.info, command, target, this._devMode);
 
-    this._logger.debug("workerRun: " + this.name + ": " + command + ": " + target + ": end");
+    this._logger.debug("workerRun: " + (watch ? "watch" : "run") + ": " + this.name + ": " + command + ": " + target + ": end");
   }
 }

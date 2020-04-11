@@ -72,10 +72,8 @@ export class FsWatcher {
           currWatchPath,
           {recursive: watchPath !== currWatchPath},
           async (event, filename: string | null) => {
-            if (filename == null) return;
-
             try {
-              const fullPath = currWatchPath !== watchPath ?
+              const fullPath = currWatchPath !== watchPath && filename != null ?
                 path.resolve(currWatchPath, filename) :
                 currWatchPath;
 
@@ -87,7 +85,7 @@ export class FsWatcher {
               }
 
               let eventType: "add" | "change" | "unlink";
-              if (!fs.existsSync(fullPath)) {
+              if (!FsUtils.exists(fullPath)) {
                 eventType = "unlink";
               }
               else if (fs.statSync(fullPath).birthtime.getTime() >= (new DateTime().tick - 300)) {

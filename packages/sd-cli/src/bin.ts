@@ -38,84 +38,6 @@ const argv = yargs
       })
   )
   .command(
-    "compile",
-    "컴파일을 수행합니다.",
-    cmd => cmd.version(false)
-      .options({
-        watch: {
-          type: "boolean",
-          describe: "변경감지 모드로 실행할지 여부",
-          default: false
-        },
-        packages: {
-          type: "array",
-          describe: "수행할 패키지 설정",
-          default: []
-        },
-        config: {
-          type: "string",
-          describe: "simplysm.json 파일 경로"
-        },
-        options: {
-          type: "array",
-          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
-          default: []
-        }
-      })
-  )
-  .command(
-    "lint",
-    "규칙체크을 수행합니다.",
-    cmd => cmd.version(false)
-      .options({
-        watch: {
-          type: "boolean",
-          describe: "변경감지 모드로 실행할지 여부",
-          default: false
-        },
-        packages: {
-          type: "array",
-          describe: "수행할 패키지 설정",
-          default: []
-        },
-        config: {
-          type: "string",
-          describe: "simplysm.json 파일 경로"
-        },
-        options: {
-          type: "array",
-          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
-          default: []
-        }
-      })
-  )
-  .command(
-    "gen-ng",
-    "ANGULAR 모듈 생성기를 수행합니다.",
-    cmd => cmd.version(false)
-      .options({
-        watch: {
-          type: "boolean",
-          describe: "변경감지 모드로 실행할지 여부",
-          default: false
-        },
-        packages: {
-          type: "array",
-          describe: "수행할 패키지 설정",
-          default: []
-        },
-        config: {
-          type: "string",
-          describe: "simplysm.json 파일 경로"
-        },
-        options: {
-          type: "array",
-          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
-          default: []
-        }
-      })
-  )
-  .command(
     "build",
     "빌드를 수행합니다.",
     cmd => cmd.version(false)
@@ -194,33 +116,6 @@ else {
       config: argv.config,
       options: argv.options
     });
-  }
-  else if (argv._[0] === "compile") {
-    const project = await SdCliProject.createAsync({
-      devMode: argv.watch,
-      packages: argv.packages,
-      config: argv.config,
-      options: argv.options
-    });
-    await project.compileAsync(argv.watch);
-  }
-  else if (argv._[0] === "lint") {
-    const project = await SdCliProject.createAsync({
-      devMode: argv.watch,
-      packages: argv.packages,
-      config: argv.config,
-      options: argv.options
-    });
-    await project.lintAsync(argv.watch);
-  }
-  else if (argv._[0] === "gen-ng") {
-    const project = await SdCliProject.createAsync({
-      devMode: argv.watch,
-      packages: argv.packages,
-      config: argv.config,
-      options: argv.options
-    });
-    await project.genNgAsync(argv.watch);
   }
   else if (argv._[0] === "build") {
     const project = await SdCliProject.createAsync({

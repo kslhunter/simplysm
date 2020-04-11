@@ -178,7 +178,7 @@ export class SdNgGenerator {
         const def: ISdNgModuleDef = {
           sourceFile,
 
-          isForGenerate: !filePath.endsWith(".d.ts") && !anymatch(this._excludes, filePath) && !isNgModuleClass,
+          isForGenerate: !filePath.endsWith(".d.ts") && !anymatch(this._excludes.map(item => item.replace(/\\/g, "/")), filePath.replace(/\\/g, "/")) && !isNgModuleClass,
           filePath: "",
           moduleName: moduleItem.module.name,
           className: "",

@@ -24,10 +24,11 @@ else {
 
 try {
   SdProcessWorker.defineWorker(async (worker, args) => {
-    const packageInfo = args[0] as ISdPackageInfo;
-    const command = args[1];
-    const target = args[2] as "browser" | "node" | undefined;
-    const devMode = args[3] as boolean;
+    const watch = args[0] as boolean;
+    const packageInfo = args[1] as ISdPackageInfo;
+    const command = args[2];
+    const target = args[3] as "browser" | "node" | undefined;
+    const devMode = args[4] as boolean;
 
     await new SdPackageBuilder(packageInfo, command, target, devMode)
       .on("change", filePaths => {
@@ -36,7 +37,7 @@ try {
       .on("complete", results => {
         worker.send("complete", {packageName: packageInfo.npmConfig.name, command, target, results});
       })
-      .runAsync();
+      .runAsync(watch);
   });
 }
 catch (err) {

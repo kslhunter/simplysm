@@ -18,7 +18,7 @@ import * as fs from "fs";
 import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import {SdWebpackInputHostWithScss} from "./SdWebpackInputHostWithScss";
-import {SdTypescriptWatcher} from "./SdTypescriptWatcher";
+import {SdTypescriptProgramRunner} from "./SdTypescriptProgramRunner";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 
 export class SdPackageBuilder extends EventEmitter {
@@ -29,6 +29,9 @@ export class SdPackageBuilder extends EventEmitter {
     this._info.npmConfig.name,
     ...this._target !== undefined ? [this._target] : []
   ]);
+
+  private _ngGenerator?: SdNgGenerator;
+  private _runner?: SdTypescriptProgramRunner;
 
   private readonly _outputCache: { [key: string]: string | undefined } = {};
 
@@ -73,8 +76,6 @@ export class SdPackageBuilder extends EventEmitter {
       path.resolve(this._info.rootPath, "dist");
   }
 
-  private _ngGenerator?: SdNgGenerator;
-
   private _getNgGenerator(): SdNgGenerator {
     if (!this._ngGenerator) {
       const srcPath = this._getSrcPath();
@@ -83,17 +84,15 @@ export class SdPackageBuilder extends EventEmitter {
     return this._ngGenerator;
   }
 
-  private _watcher?: SdTypescriptWatcher;
-
-  private _getWatcher(): SdTypescriptWatcher {
-    if (!this._watcher) {
-      this._watcher = new SdTypescriptWatcher(this._info.npmConfig.name, this._target, this._info.rootPath, this._getTsConfig());
+  private _getRunner(): SdTypescriptProgramRunner {
+    if (!this._runner) {
+      this._runner = new SdTypescriptProgramRunner(this._info.npmConfig.name, this._target, this._info.rootPath, this._getTsConfig());
     }
-    return this._watcher;
+    return this._runner;
   }
 
   private _getProgram(): ts.Program {
-    const result = this._getWatcher().program;
+    const result = this._getRunner().program;
     if (!result) throw new NeverEntryError();
     return result;
   }
@@ -117,141 +116,49 @@ export class SdPackageBuilder extends EventEmitter {
     return super.on(event, listener);
   }
 
-  public async runAsync(): Promise<void | NextHandleFunction[]> {
+  public async runAsync(watch: boolean): Promise<void> {
     if (this._command === "gen-index") {
-      await this._watchFilesAsync(async changedInfos => await this._genIndexAsync(changedInfos));
+      await this._runFilesAsync(watch, async changedInfos => await this._genIndexAsync(changedInfos));
     }
     else if (this._command === "check") {
-      await this._watchAsync({useDependencyChanges: true}, this._checkAsync.bind(this));
+      await this._runProgramAsync(watch, this._checkAsync.bind(this));
     }
     else if (this._command === "lint") {
-      await this._watchAsync({useDependencyChanges: true}, this._lint.bind(this));
+      await this._runProgramAsync(watch, this._lint.bind(this));
     }
     else if (this._command === "compile") {
       if (this._info.config?.type === "library") {
-        await this._watchAsync({useDependencyChanges: true}, this._compileAsync.bind(this));
+        await this._runProgramAsync(watch, this._compileAsync.bind(this));
       }
       else if (this._info.config?.type === "server") {
-        await this._watchServerCompileAsync();
+        await this._runServerCompileAsync(watch);
       }
       else {
-        throw new NeverEntryError();
+        await this.runClientCompileAsync(watch);
       }
     }
     else if (this._command === "gen-ng") {
-      await this._watchAsync({useDependencyChanges: true, includeExternalFiles: true}, this._genNgAsync.bind(this));
+      await this._runProgramAsync(watch, this._genNgAsync.bind(this));
     }
     else {
       throw new NeverEntryError();
     }
   }
 
-  public async runClientAsync(watch: boolean): Promise<void | NextHandleFunction[]> {
-    if (this._info.config?.type !== "web") throw new NeverEntryError();
-    if (watch) {
-      return await this._watchClientCompileAsync();
-    }
-    else {
-      await this._runClientCompileAsync();
-    }
-  }
-
-
-  private async _watchAsync(options: {
-                              useDependencyChanges?: boolean; // 컴파일은 제외
-                              includeExternalFiles?: boolean; // gen-ng만 포함
-                            },
-                            cb: (changedInfos: IFileChangeInfo[]) => Promise<ISdPackageBuildResult[]> | ISdPackageBuildResult[]): Promise<void> {
+  private async _runProgramAsync(watch: boolean, cb: (changedInfos: IFileChangeInfo[]) => Promise<ISdPackageBuildResult[]> | ISdPackageBuildResult[]): Promise<void> {
     const tsConfigPath = this._getTsConfigPath();
     if (tsConfigPath === undefined) {
-      await this._watchFilesAsync(this._lint.bind(this));
+      await this._runFilesAsync(watch, this._lint.bind(this));
     }
     else {
-      await this._getWatcher()
+      await this._getRunner()
         .on("change", filePaths => this.emit("change", filePaths))
         .on("complete", results => this.emit("complete", results))
-        .watchAsync(options, cb);
+        .runAsync(watch, cb);
     }
   }
 
-  private async _watchClientCompileAsync(): Promise<NextHandleFunction[]> {
-    if (this._info.config?.type !== "web") {
-      throw new Error(`[${this._info.npmConfig.name}] 클라이언트(web) 패키지가 아닙니다.`);
-    }
-
-    const webpackConfig = this._getClientWebpackConfig();
-
-    const compiler = webpack(webpackConfig);
-
-    compiler.hooks.watchRun.tap("SdPackageBuilder", () => {
-      this._logger.debug("컴파일 시작...");
-      this.emit("change");
-    });
-
-    return await new Promise<NextHandleFunction[]>((resolve, reject) => {
-      // eslint-disable-next-line prefer-const
-      let devMiddleware: NextHandleFunction | undefined;
-      // eslint-disable-next-line prefer-const
-      let hotMiddleware: NextHandleFunction | undefined;
-
-      compiler.hooks.failed.tap("SdPackageBuilder", err => {
-        this._logger.error(err);
-        this.emit("complete", [{
-          filePath: undefined,
-          severity: "error" as const,
-          message: err.message
-        }]);
-        reject(err);
-      });
-
-      compiler.hooks.done.tap("SdPackageBuilder", stats => {
-        const results: ISdPackageBuildResult[] = [];
-
-        const info = stats.toJson("errors-warnings");
-
-        if (stats.hasWarnings()) {
-          results.push(
-            ...info.warnings.map(item => ({
-              filePath: undefined,
-              severity: "warning" as const,
-              message: item.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item
-            }))
-          );
-        }
-
-        if (stats.hasErrors()) {
-          results.push(
-            ...info.errors.map(item => ({
-              filePath: undefined,
-              severity: "error" as const,
-              message: item.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item
-            }))
-          );
-        }
-
-        this._logger.debug("컴파일 완료");
-        this.emit("complete", results);
-        resolve([devMiddleware, hotMiddleware].filterExists());
-      });
-
-      devMiddleware = WebpackDevMiddleware(compiler, {
-        publicPath: webpackConfig.output!.publicPath!,
-        logLevel: "silent"/*,
-        watchOptions: {
-          aggregateTimeout: 300,
-          poll: 1000
-        }*/
-      });
-
-      hotMiddleware = WebpackHotMiddleware(compiler, {
-        path: `/${path.basename(this._info.rootPath)}/__webpack_hmr`,
-        log: false,
-        overlay: true
-      });
-    });
-  }
-
-  private async _runClientCompileAsync(): Promise<void> {
+  public async runClientCompileAsync(watch: boolean): Promise<void | NextHandleFunction[]> {
     if (this._info.config?.type !== "web") {
       throw new Error(`[${this._info.npmConfig.name}] 클라이언트(web) 패키지가 아닙니다.`);
     }
@@ -265,49 +172,428 @@ export class SdPackageBuilder extends EventEmitter {
       this.emit("change");
     });
 
-    return await new Promise<void>((resolve, reject) => {
-      compiler.run((err, stats) => {
-        if (err) {
-          this._logger.error(err);
-          this.emit("complete", [{
-            filePath: undefined,
-            severity: "error" as const,
-            message: err.message
-          }]);
+    return await new Promise<NextHandleFunction[] | void>((resolve, reject) => {
+      if (watch) {
+        let devMiddleware: NextHandleFunction | undefined; // eslint-disable-line prefer-const
+        let hotMiddleware: NextHandleFunction | undefined; // eslint-disable-line prefer-const
+
+        compiler.hooks.failed.tap("SdPackageBuilder", err => {
+          this._emitWebpackResults(err);
           reject(err);
-          return;
-        }
+        });
 
+        compiler.hooks.done.tap("SdPackageBuilder", stats => {
+          this._emitWebpackResults(undefined, stats);
+          this._logger.debug("컴파일 완료");
+          resolve([devMiddleware, hotMiddleware].filterExists());
+        });
 
-        const results: ISdPackageBuildResult[] = [];
+        devMiddleware = WebpackDevMiddleware(compiler, {
+          publicPath: webpackConfig.output!.publicPath!,
+          logLevel: "silent"/*,
+          watchOptions: {
+            aggregateTimeout: 300,
+            poll: 1000
+          }*/
+        });
 
-        const info = stats.toJson("errors-warnings");
-
-        if (stats.hasWarnings()) {
-          results.push(
-            ...info.warnings.map(item => ({
-              filePath: undefined,
-              severity: "warning" as const,
-              message: item.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item
-            }))
-          );
-        }
-
-        if (stats.hasErrors()) {
-          results.push(
-            ...info.errors.map(item => ({
-              filePath: undefined,
-              severity: "error" as const,
-              message: item.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item
-            }))
-          );
-        }
-
-        this._logger.debug("컴파일 완료");
-        this.emit("complete", results);
-        resolve();
-      });
+        hotMiddleware = WebpackHotMiddleware(compiler, {
+          path: `/${path.basename(this._info.rootPath)}/__webpack_hmr`,
+          log: false,
+          overlay: true
+        });
+      }
+      else {
+        compiler.run((err, stats) => {
+          this._emitWebpackResults(err, stats);
+          if (err) {
+            reject(err);
+          }
+          else {
+            this._logger.debug("컴파일 완료");
+            resolve();
+          }
+        });
+      }
     });
+  }
+
+  private async _runServerCompileAsync(watch: boolean): Promise<void> {
+    if (this._info.config?.type !== "server") {
+      throw new Error("서버 패키지가 아닙니다.");
+    }
+
+    const webpackConfig = this._getServerWebpackConfig();
+
+    const compiler = webpack(webpackConfig);
+
+    compiler.hooks.watchRun.tap("SdPackageBuilder", () => {
+      this._logger.debug("컴파일 시작...");
+      this.emit("change");
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      if (watch) {
+        compiler.watch({}, (err, stats) => {
+          this._emitWebpackResults(err, stats);
+          this._logger.debug("컴파일 완료");
+          resolve();
+        });
+      }
+      else {
+        compiler.run((err, stats) => {
+          this._emitWebpackResults(err, stats);
+          this._logger.debug("컴파일 완료");
+          resolve();
+        });
+      }
+    });
+  }
+
+  private async _genIndexAsync(changedInfos: IFileChangeInfo[]): Promise<ISdPackageBuildResult[]> {
+    if (this._info.npmConfig.main === undefined) throw new NeverEntryError();
+    if (this._info.config?.type !== "library") throw new NeverEntryError();
+
+    const srcPath = this._getSrcPath();
+    const distPath = this._getDistPath();
+
+    const indexTsFilePath = path.resolve(
+      srcPath,
+      path.relative(
+        distPath,
+        path.resolve(
+          this._info.rootPath,
+          this._info.npmConfig.main
+        )
+      )
+    ).replace(/\.js$/, ".ts");
+
+    if (this._outputCache[indexTsFilePath] === undefined && FsUtils.exists(indexTsFilePath)) {
+      this._outputCache[indexTsFilePath] = await FsUtils.readFileAsync(indexTsFilePath);
+    }
+
+    const excludes: string[] = this._getTsConfig().files?.map((item: string) => path.resolve(this._info.rootPath, item)) ?? [];
+
+    const polyfills = this._info.config.polyfills ?? [];
+
+    if (changedInfos.every(item => excludes.includes(item.filePath))) {
+      return [];
+    }
+
+    this._logger.debug("'index.ts' 파일 생성 시작...");
+
+    const importTexts: string[] = [];
+    for (const polyfill of polyfills) {
+      importTexts.push(`import "${polyfill}";`);
+    }
+
+    const srcTsFiles = await FsUtils.globAsync(path.resolve(srcPath, "**", "*.ts"));
+    for (const srcTsFile of srcTsFiles) {
+      if (path.resolve(srcTsFile) === indexTsFilePath) {
+        continue;
+      }
+      if (excludes.some(item => path.resolve(item) === path.resolve(srcTsFile))) {
+        continue;
+      }
+
+      const requirePath = path.relative(path.dirname(indexTsFilePath), srcTsFile)
+        .replace(/\\/g, "/")
+        .replace(/\.ts$/, "");
+
+      const sourceTsFileContent = await FsUtils.readFileAsync(srcTsFile);
+      if (sourceTsFileContent.split("\n").some(line => line.startsWith("export "))) {
+        importTexts.push(`export * from "./${requirePath}";`);
+      }
+      else {
+        importTexts.push(`import "./${requirePath}";`);
+      }
+    }
+
+    const content = importTexts.join(os.EOL) + os.EOL;
+    if (this._outputCache[indexTsFilePath] !== content) {
+      this._outputCache[indexTsFilePath] = content;
+      await FsUtils.writeFileAsync(indexTsFilePath, content);
+    }
+
+    this._logger.debug("'index.ts' 파일 생성 완료");
+    return [];
+  }
+
+  private async _genNgAsync(changedInfos: IFileChangeInfo[]): Promise<ISdPackageBuildResult[]> {
+    this._logger.debug("NG 모듈 생성 시작...");
+
+    const ngGenerator = this._getNgGenerator();
+    const diagnostics = await ngGenerator.updateAsync(this._getProgram(), changedInfos);
+
+    await ngGenerator.emitAsync();
+
+    const results = this._convertDiagnosticsToResults(diagnostics);
+
+    this._logger.debug("NG 모듈 생성 완료");
+    return results;
+  }
+
+  private async _checkAsync(changedInfos: IFileChangeInfo[]): Promise<ISdPackageBuildResult[]> {
+    this._logger.debug(`타입체크 시작...(count: ${changedInfos.length})`);
+
+    const results: ISdPackageBuildResult[] = [];
+
+    const parsedTsConfig = this._getParsedTsConfig();
+
+    const srcPath = this._getSrcPath();
+    const distPath = this._getDistPath();
+
+    for (const changedInfo of changedInfos) {
+      const anymatchPath = path.resolve(srcPath, "**", "*.ts");
+      if (!anymatch(anymatchPath.replace(/\\/g, "/"), changedInfo.filePath.replace(/\\/g, "/"))) continue;
+
+      if (changedInfo.type === "unlink") {
+        const declFilePath = path.resolve(distPath, path.relative(srcPath, changedInfo.filePath))
+          .replace(/\.ts$/, ".d.ts");
+        await FsUtils.removeAsync(declFilePath);
+        delete this._outputCache[declFilePath];
+
+        if (this._isAngularLibrary) {
+          const metadataFilePath = path.resolve(distPath, path.relative(srcPath, changedInfo.filePath))
+            .replace(/\.ts$/, ".metadata.json");
+          await FsUtils.removeAsync(metadataFilePath);
+          delete this._outputCache[metadataFilePath];
+        }
+        return [];
+      }
+
+      const diagnostics: ts.Diagnostic[] = [];
+
+      const sourceFile = this._getProgram().getSourceFile(changedInfo.filePath);
+      if (!sourceFile) {
+        results.push({
+          filePath: changedInfo.filePath,
+          severity: "error",
+          message: `error 파일을 찾을 수 없습니다: ${changedInfo.filePath}`
+        });
+        continue;
+      }
+
+      if (this._isAngularLibrary) {
+        // metadata
+
+        const metadataFilePath = path.resolve(distPath, path.relative(srcPath, changedInfo.filePath))
+          .replace(/\.ts$/, ".metadata.json");
+
+        const metadata = new MetadataCollector().getMetadata(
+          sourceFile,
+          false, // 에러를 아래에서 함수에서 걸러냄, true일 경우, Error 가 throw 됨
+          (value, tsNode) => {
+            if (isMetadataError(value)) {
+              results.push(...this._convertDiagnosticsToResults([
+                {
+                  file: sourceFile,
+                  start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
+                  messageText: value.message,
+                  category: ts.DiagnosticCategory.Error,
+                  code: -5,
+                  length: undefined
+                }
+              ]));
+            }
+
+            return value;
+          }
+        );
+
+        // write: metadata
+
+        if (metadata) {
+          const metadataJson = JSON.stringify(metadata);
+          if (this._outputCache[metadataFilePath] !== metadataJson) {
+            this._outputCache[metadataFilePath] = metadataJson;
+            await FsUtils.writeFileAsync(metadataFilePath, metadataJson);
+          }
+        }
+        else {
+          delete this._outputCache[metadataFilePath];
+          await FsUtils.removeAsync(metadataFilePath);
+        }
+      }
+
+      // check / decl
+
+      if (parsedTsConfig.options.declaration) {
+        diagnostics.push(...ts.getPreEmitDiagnostics(this._getProgram(), sourceFile));
+        const emitResult = this._getProgram().emit(
+          sourceFile,
+          undefined,
+          undefined,
+          true,
+          undefined
+        );
+        diagnostics.push(...emitResult.diagnostics);
+      }
+      else {
+        diagnostics.push(...this._getProgram().getSemanticDiagnostics(sourceFile));
+        diagnostics.push(...this._getProgram().getSyntacticDiagnostics(sourceFile));
+      }
+
+      results.push(...this._convertDiagnosticsToResults(diagnostics));
+    }
+
+    this._logger.debug(`타입체크 완료 (results: ${results.length})`);
+    return results;
+  }
+
+  private async _compileAsync(changedInfos: IFileChangeInfo[]): Promise<ISdPackageBuildResult[]> {
+    this._logger.debug("컴파일 시작...");
+
+    const srcPath = this._getSrcPath();
+    const distPath = this._getDistPath();
+
+    const results: ISdPackageBuildResult[] = [];
+
+    const parsedTsConfig = this._getParsedTsConfig();
+
+    for (const changedInfo of changedInfos) {
+      const anymatchPath = path.resolve(srcPath, "**", "*.ts");
+      if (!anymatch(anymatchPath.replace(/\\/g, "/"), changedInfo.filePath.replace(/\\/g, "/"))) continue;
+
+      const jsFilePath = path.resolve(distPath, path.relative(srcPath, changedInfo.filePath)).replace(/\.ts$/, ".js");
+      const mapFilePath = jsFilePath + ".map";
+
+      if (changedInfo.type === "unlink") {
+        await FsUtils.removeAsync(jsFilePath);
+        await FsUtils.removeAsync(mapFilePath);
+        delete this._outputCache[jsFilePath];
+        delete this._outputCache[mapFilePath];
+        return [];
+      }
+
+      try {
+        const sourceFile = this._getProgram().getSourceFile(changedInfo.filePath);
+        if (!sourceFile) {
+          results.push({
+            filePath: changedInfo.filePath,
+            severity: "error",
+            message: `error 파일을 찾을 수 없습니다: ${changedInfo.filePath}`
+          });
+          delete this._outputCache[mapFilePath];
+          delete this._outputCache[jsFilePath];
+          await FsUtils.removeAsync(jsFilePath);
+          await FsUtils.removeAsync(mapFilePath);
+          continue;
+        }
+
+        const fileContent = sourceFile.getFullText();
+        // const fileContent = await FsUtils.readFileAsync(changedInfo.filePath);
+
+        // transpile
+        const transpileResult = ts.transpileModule(fileContent, {
+          fileName: changedInfo.filePath,
+          compilerOptions: parsedTsConfig.options,
+          reportDiagnostics: true
+        });
+
+        if (transpileResult.diagnostics) {
+          results.push(...this._convertDiagnosticsToResults(transpileResult.diagnostics));
+        }
+
+        // write: transpile: sourcemap
+
+        if (transpileResult.sourceMapText === undefined) {
+          await FsUtils.removeAsync(mapFilePath);
+          delete this._outputCache[mapFilePath];
+        }
+        else if (this._outputCache[mapFilePath] !== transpileResult.sourceMapText) {
+          const sourceMap = JSON.parse(transpileResult.sourceMapText);
+          sourceMap.sources = [
+            path.relative(path.dirname(mapFilePath), changedInfo.filePath).replace(/\\/g, "/")
+          ];
+          const realSourceMapText = JSON.stringify(sourceMap);
+
+          await FsUtils.mkdirsAsync(path.dirname(mapFilePath));
+          await FsUtils.writeFileAsync(mapFilePath, realSourceMapText);
+          this._outputCache[mapFilePath] = transpileResult.sourceMapText;
+        }
+
+        // write: transpile: js
+
+        if (transpileResult.outputText === undefined) {
+          await FsUtils.removeAsync(jsFilePath);
+          delete this._outputCache[jsFilePath];
+        }
+        else if (this._outputCache[jsFilePath] !== transpileResult.outputText) {
+          await FsUtils.mkdirsAsync(path.dirname(jsFilePath));
+          await FsUtils.writeFileAsync(jsFilePath, transpileResult.outputText);
+          this._outputCache[jsFilePath] = transpileResult.outputText;
+        }
+      }
+      catch (err) {
+        results.push({
+          severity: "error",
+          filePath: changedInfo.filePath,
+          message: `${changedInfo.filePath}(0, 0): ${err.message}`
+        });
+        delete this._outputCache[mapFilePath];
+        delete this._outputCache[jsFilePath];
+        await FsUtils.removeAsync(jsFilePath);
+        await FsUtils.removeAsync(mapFilePath);
+      }
+    }
+
+    this._logger.debug("컴파일 완료");
+    return results.distinct();
+  }
+
+  private _lint(changedInfos: IFileChangeInfo[]): ISdPackageBuildResult[] {
+    this._logger.debug("규칙체크 시작...");
+
+    const srcPath = this._getSrcPath();
+
+    const lintConfig = this._target !== undefined && this._info.tsConfigForBuild?.[this._target] !== undefined ?
+      {
+        parserOptions: {
+          tsconfigRootDir: this._info.rootPath,
+          project: path.basename(this._info.tsConfigForBuild[this._target]!.filePath)
+        }
+      } :
+      {};
+
+    /*const lintEngine = new CLIEngine({
+      cache: true,
+      cacheFile: path.resolve(this._info.rootPath, ".eslintcache"),
+      ...lintConfig
+    });*/
+    const lintEngine = new CLIEngine(lintConfig);
+
+    const anymatchPath = path.resolve(srcPath, "**", "+(*.ts|*.js)");
+    const filePaths = changedInfos
+      .filter(item => item.type !== "unlink" && anymatch(anymatchPath.replace(/\\/g, "/"), item.filePath.replace(/\\/g, "/")))
+      .map(item => item.filePath)
+      .distinct();
+
+    let results: ISdPackageBuildResult[];
+
+    try {
+      const reports = lintEngine.executeOnFiles(filePaths).results;
+
+      results = reports.mapMany(report => report.messages.map(msg => {
+        const severity: "warning" | "error" = msg.severity === 1 ? "warning" : "error";
+
+        return {
+          filePath: report.filePath,
+          severity,
+          message: `${report.filePath}(${msg.line}, ${msg.column}): ${msg.ruleId ?? ""}: ${severity} ${msg.message}`
+        };
+      }));
+    }
+    catch (err) {
+      results = [{
+        filePath: undefined,
+        severity: "error",
+        message: err.stack
+      }];
+    }
+
+    this._logger.debug("규칙체크 완료");
+    return results;
   }
 
   private _getClientWebpackConfig(): webpack.Configuration {
@@ -514,64 +800,6 @@ export class SdPackageBuilder extends EventEmitter {
     };
   }
 
-  private async _watchServerCompileAsync(): Promise<void> {
-    if (this._info.config?.type !== "server") {
-      throw new Error("서버 패키지가 아닙니다.");
-    }
-
-    await new Promise<void>((resolve, reject) => {
-      const webpackConfig = this._getServerWebpackConfig();
-
-      const compiler = webpack(webpackConfig);
-
-      compiler.hooks.watchRun.tap("SdPackageBuilder", () => {
-        this._logger.debug("컴파일 시작...");
-        this.emit("change");
-      });
-
-      compiler.watch({}, (err: Error | null, stats) => {
-        if (err) {
-          this._logger.error(err);
-          reject(err);
-          this.emit("complete", [{
-            filePath: undefined,
-            severity: "error" as const,
-            message: err.message
-          }]);
-          return;
-        }
-
-        const results: ISdPackageBuildResult[] = [];
-
-        const info = stats.toJson("errors-warnings");
-
-        if (stats.hasWarnings()) {
-          results.push(
-            ...info.warnings.map(item => ({
-              filePath: undefined,
-              severity: "warning" as const,
-              message: item.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item
-            }))
-          );
-        }
-
-        if (stats.hasErrors()) {
-          results.push(
-            ...info.errors.map(item => ({
-              filePath: undefined,
-              severity: "error" as const,
-              message: item.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item
-            }))
-          );
-        }
-
-        this._logger.debug("컴파일 완료");
-        this.emit("complete", results);
-        resolve();
-      });
-    });
-  }
-
   private _getServerWebpackConfig(): webpack.Configuration {
     if (this._info.config?.type !== "server") {
       throw new Error("서버 패키지가 아닙니다.");
@@ -755,362 +983,69 @@ export class SdPackageBuilder extends EventEmitter {
     };
   }
 
-  private async _genIndexAsync(changedInfos: IFileChangeInfo[]): Promise<ISdPackageBuildResult[]> {
-    if (this._info.npmConfig.main === undefined) throw new NeverEntryError();
-    if (this._info.config?.type !== "library") throw new NeverEntryError();
-
-    const srcPath = this._getSrcPath();
-    const distPath = this._getDistPath();
-
-    const indexTsFilePath = path.resolve(
-      srcPath,
-      path.relative(
-        distPath,
-        path.resolve(
-          this._info.rootPath,
-          this._info.npmConfig.main
-        )
-      )
-    ).replace(/\.js$/, ".ts");
-
-    if (this._outputCache[indexTsFilePath] === undefined && FsUtils.exists(indexTsFilePath)) {
-      this._outputCache[indexTsFilePath] = await FsUtils.readFileAsync(indexTsFilePath);
-    }
-
-    const excludes: string[] = this._getTsConfig().files?.map((item: string) => path.resolve(this._info.rootPath, item)) ?? [];
-
-    const polyfills = this._info.config.polyfills ?? [];
-
-    if (changedInfos.every(item => excludes.includes(item.filePath))) {
-      return [];
-    }
-
-    this._logger.debug("'index.ts' 파일 생성 시작...");
-
-    const importTexts: string[] = [];
-    for (const polyfill of polyfills) {
-      importTexts.push(`import "${polyfill}";`);
-    }
-
-    const srcTsFiles = await FsUtils.globAsync(path.resolve(srcPath, "**", "*.ts"));
-    for (const srcTsFile of srcTsFiles) {
-      if (path.resolve(srcTsFile) === indexTsFilePath) {
-        continue;
-      }
-      if (excludes.some(item => path.resolve(item) === path.resolve(srcTsFile))) {
-        continue;
-      }
-
-      const requirePath = path.relative(path.dirname(indexTsFilePath), srcTsFile)
-        .replace(/\\/g, "/")
-        .replace(/\.ts$/, "");
-
-      const sourceTsFileContent = await FsUtils.readFileAsync(srcTsFile);
-      if (sourceTsFileContent.split("\n").some(line => line.startsWith("export "))) {
-        importTexts.push(`export * from "./${requirePath}";`);
-      }
-      else {
-        importTexts.push(`import "./${requirePath}";`);
-      }
-    }
-
-    const content = importTexts.join(os.EOL) + os.EOL;
-    if (this._outputCache[indexTsFilePath] !== content) {
-      this._outputCache[indexTsFilePath] = content;
-      await FsUtils.writeFileAsync(indexTsFilePath, content);
-    }
-
-    this._logger.debug("'index.ts' 파일 생성 완료");
-    return [];
-  }
-
-  private async _checkAsync(changedInfos: IFileChangeInfo[]): Promise<ISdPackageBuildResult[]> {
-    this._logger.debug(`타입체크 시작...(count: ${changedInfos.length})`);
-
-    const results: ISdPackageBuildResult[] = [];
-
-    const parsedTsConfig = this._getParsedTsConfig();
-
-    const srcPath = this._getSrcPath();
-    const distPath = this._getDistPath();
-
-    for (const changedInfo of changedInfos) {
-      if (changedInfo.type === "unlink") {
-        const declFilePath = path.resolve(distPath, path.relative(srcPath, changedInfo.filePath))
-          .replace(/\.ts$/, ".d.ts");
-        await FsUtils.removeAsync(declFilePath);
-        delete this._outputCache[declFilePath];
-
-        if (this._isAngularLibrary) {
-          const metadataFilePath = path.resolve(distPath, path.relative(srcPath, changedInfo.filePath))
-            .replace(/\.ts$/, ".metadata.json");
-          await FsUtils.removeAsync(metadataFilePath);
-          delete this._outputCache[metadataFilePath];
-        }
-        return [];
-      }
-
-      const diagnostics: ts.Diagnostic[] = [];
-
-      const sourceFile = this._getProgram().getSourceFile(changedInfo.filePath);
-      if (!sourceFile) {
-        results.push({
-          filePath: changedInfo.filePath,
-          severity: "error",
-          message: `error 파일을 찾을 수 없습니다: ${changedInfo.filePath}`
-        });
-        continue;
-      }
-
-      if (this._isAngularLibrary) {
-        // metadata
-
-        const metadataFilePath = path.resolve(distPath, path.relative(srcPath, changedInfo.filePath))
-          .replace(/\.ts$/, ".metadata.json");
-
-        const metadata = new MetadataCollector().getMetadata(
-          sourceFile,
-          false, // 에러를 아래에서 함수에서 걸러냄, true일 경우, Error 가 throw 됨
-          (value, tsNode) => {
-            if (isMetadataError(value)) {
-              results.push(...this._convertDiagnosticsToResults([
-                {
-                  file: sourceFile,
-                  start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
-                  messageText: value.message,
-                  category: ts.DiagnosticCategory.Error,
-                  code: -5,
-                  length: undefined
-                }
-              ]));
-            }
-
-            return value;
-          }
-        );
-
-        // write: metadata
-
-        if (metadata) {
-          const metadataJson = JSON.stringify(metadata);
-          if (this._outputCache[metadataFilePath] !== metadataJson) {
-            this._outputCache[metadataFilePath] = metadataJson;
-            await FsUtils.writeFileAsync(metadataFilePath, metadataJson);
-          }
-        }
-        else {
-          delete this._outputCache[metadataFilePath];
-          await FsUtils.removeAsync(metadataFilePath);
-        }
-      }
-
-      // check / decl
-
-      if (parsedTsConfig.options.declaration) {
-        diagnostics.push(...ts.getPreEmitDiagnostics(this._getProgram(), sourceFile));
-        const emitResult = this._getProgram().emit(
-          sourceFile,
-          undefined,
-          undefined,
-          true,
-          undefined
-        );
-        diagnostics.push(...emitResult.diagnostics);
-      }
-      else {
-        diagnostics.push(...this._getProgram().getSemanticDiagnostics(sourceFile));
-        diagnostics.push(...this._getProgram().getSyntacticDiagnostics(sourceFile));
-      }
-
-      results.push(...this._convertDiagnosticsToResults(diagnostics));
-    }
-
-    this._logger.debug(`타입체크 완료 (results: ${results.length})`);
-    return results;
-  }
-
-  private _lint(changedInfos: IFileChangeInfo[]): ISdPackageBuildResult[] {
-    this._logger.debug("규칙체크 시작...");
-
-    const srcPath = this._getSrcPath();
-
-    const lintConfig = this._target !== undefined && this._info.tsConfigForBuild?.[this._target] !== undefined ?
-      {
-        parserOptions: {
-          tsconfigRootDir: this._info.rootPath,
-          project: path.basename(this._info.tsConfigForBuild[this._target]!.filePath)
-        }
-      } :
-      {};
-
-    const lintEngine = new CLIEngine({
-      cache: true,
-      cacheFile: path.resolve(this._info.rootPath, ".eslintcache"),
-      ...lintConfig
-    });
-    // const lintEngine = new CLIEngine(lintConfig);
-
-    const anymatchPath = path.resolve(srcPath, "**", "+(*.ts|*.js)");
-    const filePaths = changedInfos
-      .filter(item => item.type !== "unlink" && anymatch(anymatchPath.replace(/\\/g, "/"), item.filePath.replace(/\\/g, "/")))
-      .map(item => item.filePath)
-      .distinct();
-
-    let results: ISdPackageBuildResult[];
-
-    try {
-      const reports = lintEngine.executeOnFiles(filePaths).results;
-
-      results = reports.mapMany(report => report.messages.map(msg => {
-        const severity: "warning" | "error" = msg.severity === 1 ? "warning" : "error";
-
-        return {
-          filePath: report.filePath,
-          severity,
-          message: `${report.filePath}(${msg.line}, ${msg.column}): ${msg.ruleId ?? ""}: ${severity} ${msg.message}`
-        };
-      }));
-    }
-    catch (err) {
-      results = [{
+  private _emitWebpackResults(err?: Error, stats?: webpack.Stats): void {
+    if (err != null) {
+      this.emit("complete", [{
         filePath: undefined,
-        severity: "error",
-        message: err.stack
-      }];
+        severity: "error" as const,
+        message: err.message
+      }]);
+      return;
     }
-
-    this._logger.debug("규칙체크 완료");
-    return results;
-  }
-
-  private async _compileAsync(changedInfos: IFileChangeInfo[]): Promise<ISdPackageBuildResult[]> {
-    this._logger.debug("컴파일 시작...");
-
-    const srcPath = this._getSrcPath();
-    const distPath = this._getDistPath();
+    if (stats == null) {
+      throw new NeverEntryError();
+    }
 
     const results: ISdPackageBuildResult[] = [];
 
-    const parsedTsConfig = this._getParsedTsConfig();
+    const info = stats.toJson("errors-warnings");
 
-    for (const changedInfo of changedInfos) {
-      const jsFilePath = path.resolve(distPath, path.relative(srcPath, changedInfo.filePath)).replace(/\.ts$/, ".js");
-      const mapFilePath = jsFilePath + ".map";
-
-      if (changedInfo.type === "unlink") {
-        await FsUtils.removeAsync(jsFilePath);
-        await FsUtils.removeAsync(mapFilePath);
-        delete this._outputCache[jsFilePath];
-        delete this._outputCache[mapFilePath];
-        return [];
-      }
-
-      try {
-        const sourceFile = this._getProgram().getSourceFile(changedInfo.filePath);
-        if (!sourceFile) {
-          results.push({
-            filePath: changedInfo.filePath,
-            severity: "error",
-            message: `error 파일을 찾을 수 없습니다: ${changedInfo.filePath}`
-          });
-          delete this._outputCache[mapFilePath];
-          delete this._outputCache[jsFilePath];
-          await FsUtils.removeAsync(jsFilePath);
-          await FsUtils.removeAsync(mapFilePath);
-          continue;
-        }
-
-        const fileContent = sourceFile.getFullText();
-        // const fileContent = await FsUtils.readFileAsync(changedInfo.filePath);
-
-        // transpile
-        const transpileResult = ts.transpileModule(fileContent, {
-          fileName: changedInfo.filePath,
-          compilerOptions: parsedTsConfig.options,
-          reportDiagnostics: true
-        });
-
-        if (transpileResult.diagnostics) {
-          results.push(...this._convertDiagnosticsToResults(transpileResult.diagnostics));
-        }
-
-        // write: transpile: sourcemap
-
-        if (transpileResult.sourceMapText === undefined) {
-          await FsUtils.removeAsync(mapFilePath);
-          delete this._outputCache[mapFilePath];
-        }
-        else if (this._outputCache[mapFilePath] !== transpileResult.sourceMapText) {
-          const sourceMap = JSON.parse(transpileResult.sourceMapText);
-          sourceMap.sources = [
-            path.relative(path.dirname(mapFilePath), changedInfo.filePath).replace(/\\/g, "/")
-          ];
-          const realSourceMapText = JSON.stringify(sourceMap);
-
-          await FsUtils.mkdirsAsync(path.dirname(mapFilePath));
-          await FsUtils.writeFileAsync(mapFilePath, realSourceMapText);
-          this._outputCache[mapFilePath] = transpileResult.sourceMapText;
-        }
-
-        // write: transpile: js
-
-        if (transpileResult.outputText === undefined) {
-          await FsUtils.removeAsync(jsFilePath);
-          delete this._outputCache[jsFilePath];
-        }
-        else if (this._outputCache[jsFilePath] !== transpileResult.outputText) {
-          await FsUtils.mkdirsAsync(path.dirname(jsFilePath));
-          await FsUtils.writeFileAsync(jsFilePath, transpileResult.outputText);
-          this._outputCache[jsFilePath] = transpileResult.outputText;
-        }
-      }
-      catch (err) {
-        results.push({
-          severity: "error",
-          filePath: changedInfo.filePath,
-          message: `${changedInfo.filePath}(0, 0): ${err.message}`
-        });
-        delete this._outputCache[mapFilePath];
-        delete this._outputCache[jsFilePath];
-        await FsUtils.removeAsync(jsFilePath);
-        await FsUtils.removeAsync(mapFilePath);
-      }
+    if (stats.hasWarnings()) {
+      results.push(
+        ...info.warnings.map(item => ({
+          filePath: undefined,
+          severity: "warning" as const,
+          message: item.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item
+        }))
+      );
     }
 
-    this._logger.debug("컴파일 완료");
-    return results.distinct();
-  }
+    if (stats.hasErrors()) {
+      results.push(
+        ...info.errors.map(item => ({
+          filePath: undefined,
+          severity: "error" as const,
+          message: item.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item
+        }))
+      );
+    }
 
-  private async _watchFilesAsync(cb: (changedInfos: IFileChangeInfo[]) => Promise<ISdPackageBuildResult[]> | ISdPackageBuildResult[]): Promise<void> {
-    const srcPath = this._getSrcPath();
-
-    const watchPath = path.resolve(srcPath, "**", "*.ts");
-    await FsWatcher.watchAsync(watchPath, async changedInfos => {
-      this.emit("change", changedInfos.map(item => item.filePath));
-      const results = await cb(changedInfos);
-      this.emit("complete", results);
-    }, err => {
-      this._logger.error(err);
-    });
-
-    const changedInfos = (await FsUtils.globAsync(watchPath)).map(item => ({type: "add" as const, filePath: item}));
-    this.emit("change", changedInfos.map(item => item.filePath));
-    const results = await cb(changedInfos);
     this.emit("complete", results);
   }
 
-  private async _genNgAsync(changedInfos: IFileChangeInfo[]): Promise<ISdPackageBuildResult[]> {
-    this._logger.debug("NG 모듈 생성 시작...");
+  private async _runFilesAsync(watch: boolean,
+                               cb: (changedInfos: IFileChangeInfo[]) => Promise<ISdPackageBuildResult[]> | ISdPackageBuildResult[]): Promise<void> {
+    const srcPath = this._getSrcPath();
 
-    const ngGenerator = this._getNgGenerator();
-    const diagnostics = await ngGenerator.updateAsync(this._getProgram(), changedInfos);
-
-    await ngGenerator.emitAsync();
-
-    const results = this._convertDiagnosticsToResults(diagnostics);
-
-    this._logger.debug("NG 모듈 생성 완료");
-    return results;
+    const filePathAnyMatch = path.resolve(srcPath, "**", "*.ts");
+    if (watch) {
+      await FsWatcher.watchAsync(filePathAnyMatch, async changedInfos => {
+        this.emit("change", changedInfos.map(item => item.filePath));
+        const results = await cb(changedInfos);
+        this.emit("complete", results);
+      }, err => {
+        this._logger.error(err);
+      });
+    }
+    else {
+      const changedInfos = (await FsUtils.globAsync(filePathAnyMatch)).map(item => ({
+        type: "add" as const,
+        filePath: item
+      }));
+      this.emit("change", changedInfos.map(item => item.filePath));
+      const results = await cb(changedInfos);
+      this.emit("complete", results);
+    }
   }
 
   private _convertDiagnosticsToResults(diagnostics: ts.Diagnostic[]): ISdPackageBuildResult[] {
