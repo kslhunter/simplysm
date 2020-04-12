@@ -199,8 +199,7 @@ export class SdPackageBuilder extends EventEmitter {
 
         hotMiddleware = WebpackHotMiddleware(compiler, {
           path: `/${path.basename(this._info.rootPath)}/__webpack_hmr`,
-          log: false,
-          overlay: true
+          log: false
         });
       }
       else {
@@ -633,7 +632,7 @@ export class SdPackageBuilder extends EventEmitter {
         entry: {
           main: [
             "eventsource-polyfill",
-            `webpack-hot-middleware/client?path=/${packageKey}/__webpack_hmr&timeout=20000&reload=true`,
+            `webpack-hot-middleware/client?path=/${packageKey}/__webpack_hmr&timeout=20000&reload=true&overlay=true`,
             mainPath
           ]
         },
