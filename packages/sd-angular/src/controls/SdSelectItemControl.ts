@@ -17,6 +17,10 @@ import {JsonConvert} from "@simplysm/sd-core-common";
   selector: "sd-select-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <ng-container *ngIf="selectMode === 'multi'">
+      <sd-checkbox [value]="isSelected" inline="text"></sd-checkbox>
+    </ng-container>
+
     <span class="_label">
       <ng-content></ng-content>
     </span>
@@ -70,14 +74,26 @@ export class SdSelectItemControl {
   @ContentChild("label", {static: true})
   public labelTemplateRef?: TemplateRef<any>;
 
+  @HostBinding("attr.sd-select-mode")
+  public get selectMode(): "single" | "multi" {
+    return this._selectControl.selectMode;
+  }
+
   @HostBinding("class._selected")
   public get isSelected(): boolean {
     const keyProp = this._selectControl.keyProp;
     const parentValue = this._selectControl.value;
 
-    const parentKeyValue = keyProp !== undefined && parentValue !== undefined ? parentValue[keyProp] : parentValue;
-    const itemKeyValue = keyProp !== undefined && this.value !== undefined ? this.value[keyProp] : this.value;
-    return parentKeyValue === itemKeyValue;
+    if (this.selectMode === "multi") {
+      const parentKeyValues = keyProp !== undefined && parentValue !== undefined ? parentValue.map((item: any) => item[keyProp]) : parentValue;
+      const itemKeyValue = keyProp !== undefined && this.value !== undefined ? this.value[keyProp] : this.value;
+      return parentKeyValues.includes(itemKeyValue);
+    }
+    else {
+      const parentKeyValue = keyProp !== undefined && parentValue !== undefined ? parentValue[keyProp] : parentValue;
+      const itemKeyValue = keyProp !== undefined && this.value !== undefined ? this.value[keyProp] : this.value;
+      return parentKeyValue === itemKeyValue;
+    }
   }
 
   public get content(): string {
@@ -94,6 +110,9 @@ export class SdSelectItemControl {
 
   @HostListener("click", ["$event"])
   public onClick(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
     this._selectControl.setValue(this.value);
   }
 }

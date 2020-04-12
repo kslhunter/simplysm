@@ -1,21 +1,28 @@
 import {ProcessManager} from "./ProcessManager";
 import * as cp from "child_process";
 import {EventEmitter} from "events";
-import {NeverEntryError, SdError} from "@simplysm/sd-core-common";
+import {NeverEntryError, SdError, Uuid} from "@simplysm/sd-core-common";
 
 export class SdProcessWorker extends EventEmitter {
   private _lastSend = 0;
   public processingCount = 0;
 
-  public static async createAsync(binPath: string, ...args: any[]): Promise<SdProcessWorker> {
+  public static async createAsync(binPath: string, args: any[]): Promise<SdProcessWorker> {
     return await new Promise<SdProcessWorker>((resolve, reject) => {
+      const logFileExecArg = process.execArgv.single(item => item.startsWith("--logfile"));
+      if (logFileExecArg !== undefined) {
+        const index = process.execArgv.indexOf(logFileExecArg);
+        process.execArgv.insert(index, logFileExecArg.replace(/\.log$/, "") + "-" + Uuid.new() + ".log");
+        process.execArgv.remove(logFileExecArg);
+      }
+
       const worker = ProcessManager.fork(
         binPath,
         args.map((item: any) => (typeof item === "string" ? item : JSON.stringify(item))),
         {
           execArgv: [
-            "--max-old-space-size=8192",
             ...process.execArgv
+            // "--max-old-space-size=8192",
           ]
         }
       );

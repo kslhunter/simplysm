@@ -16,9 +16,9 @@ import {SdInputValidate} from "../commons/SdInputValidate";
 
     :host {
       display: inline-block;
-      background: var(--theme-color-grey-darkest);
+      background: var(--theme-color-grey-darker);
       color: var(--text-brightness-rev-default);
-      padding: 0 var(--gap-xs);
+      padding: 0 var(--gap-sm);
       border-radius: 2px;
       text-indent: 0;
 

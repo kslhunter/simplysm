@@ -150,14 +150,15 @@ export class Queryable<D extends DbContext, T> {
 
   public orderBy(fwd: (entity: TEntity<T>) => TEntityValue<TQueryValue>, desc?: boolean): Queryable<D, T>;
   public orderBy(chain: string, desc?: boolean): Queryable<D, T>;
-  public orderBy(arg1: ((entity: TEntity<T>) => TEntityValue<TQueryValue>) | string, desc?: boolean): Queryable<D, T> {
+  public orderBy(defs: { key: string; desc: boolean }[]): Queryable<D, T>;
+  public orderBy(arg1: ((entity: TEntity<T>) => TEntityValue<TQueryValue>) | string | { key: string; desc: boolean }[], desc?: boolean): Queryable<D, T> {
     let result = new Queryable(this._db, this);
 
     let selectedColumn;
     if (typeof arg1 === "function") {
       selectedColumn = arg1(this._entity);
     }
-    else {
+    else if (typeof arg1 === "string") {
       const chain = arg1.split(".").slice(0, -1);
       const asChainArr: string[] = [];
       for (const fkName of chain) {
@@ -168,6 +169,12 @@ export class Queryable<D extends DbContext, T> {
       }
 
       selectedColumn = ObjectUtils.getChainValue(result._entity, arg1);
+    }
+    else {
+      for (const orderingItem of arg1) {
+        result = result.orderBy(orderingItem.key, orderingItem.desc);
+      }
+      return result;
     }
 
     result._def.orderBy = result._def.orderBy ?? [];

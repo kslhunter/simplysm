@@ -21,7 +21,7 @@ export class ProcessWorkManager {
   }
 
   public async createWorkerAsync(): Promise<SdProcessWorker> {
-    const worker = await SdProcessWorker.createAsync(this._binPath, ...this._args);
+    const worker = await SdProcessWorker.createAsync(this._binPath, [this._args]);
     this.workers.push(worker);
     return worker;
   }

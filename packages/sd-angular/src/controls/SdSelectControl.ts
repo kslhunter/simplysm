@@ -73,6 +73,7 @@ import {SdDropdownControl} from "./SdDropdownControl";
     :host {
       display: block;
       width: 100%;
+      min-width: 120px;
 
       /deep/ > sd-dropdown > div {
         @include form-control-base();
@@ -146,6 +147,8 @@ import {SdDropdownControl} from "./SdDropdownControl";
       }
 
       &[sd-inset=true] {
+        min-width: auto;
+        
         > /deep/ sd-dropdown > div {
           border: none;
           border-radius: 0;
@@ -259,6 +262,10 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
   @HostBinding("attr.sd-size")
   public size?: "sm" | "lg";
 
+  @Input()
+  @SdInputValidate({type: String, includes: ["single", "multi"], notnull: true})
+  public selectMode: "single" | "multi" = "single";
+
   public get isDropdownLocatedTop(): boolean {
     return this.dropdownControl ? this.dropdownControl.isDropdownLocatedTop : false;
   }
@@ -312,44 +319,79 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
   }
 
   public setValue(value: any): void {
-    if (this.value !== value) {
-      this.value = value;
+    if (this.selectMode === "multi") {
+      this._value = this._value ?? [];
+      if (this._value.includes(value) === true) {
+        this._value.remove(value);
+      }
+      else {
+        this._value.push(value);
+      }
       this.valueChange.emit(this.value);
     }
+    else {
+      if (this.value !== value) {
+        this.value = value;
+        this.valueChange.emit(this.value);
+      }
 
-    if (this.dropdownControl) {
-      this.dropdownControl.closePopup();
+      if (this.dropdownControl) {
+        this.dropdownControl.closePopup();
+      }
     }
   }
 
   private _refreshContent(): void {
     if (this._contentEl === undefined || this._popupEl === undefined) return;
 
-    const selectedItemEl = this._popupEl.findAll("sd-select-item")
-      .single(item => item.getAttribute("sd-value-json") === JsonConvert.stringify(this.value));
-    if (!selectedItemEl) {
-      this._contentEl.innerHTML = "";
+    const selectedItemEls = this._popupEl.findAll("sd-select-item")
+      .filter(item => (
+        (
+          this.selectMode === "single" &&
+          (
+            (
+              !Boolean(this.value) &&
+              !Boolean(item.getAttribute("sd-value-json"))
+            ) ||
+            item.getAttribute("sd-value-json") === JsonConvert.stringify(this.value)
+          )
+        ) ||
+        (
+          this.selectMode === "multi" &&
+          this.value instanceof Array &&
+          this.value.some((v: any) => JsonConvert.stringify(v) === item.getAttribute("sd-value-json"))
+        )
+      ));
+
+    const innerHTMLs: string[] = [];
+    if (selectedItemEls.length < 1) {
     }
     else if (this.getChildrenFn) {
-      let cursorEl: HTMLElement | undefined = selectedItemEl;
-      let innerHTML = "";
-      while (true) {
-        if (!cursorEl) break;
+      for (const selectedItemEl of selectedItemEls) {
+        let cursorEl: HTMLElement | undefined = selectedItemEl;
+        let innerHTML = "";
+        while (true) {
+          if (!cursorEl) break;
 
-        const labelTemplateEl = cursorEl.findAll("> ._labelTemplate")[0];
-        const labelEl = labelTemplateEl !== undefined ? labelTemplateEl : cursorEl.findAll("> ._label")[0];
-        innerHTML = labelEl.innerHTML + (Boolean(innerHTML) ? " / " + innerHTML : "");
+          const labelTemplateEl = cursorEl.findAll("> ._labelTemplate")[0];
+          const labelEl = labelTemplateEl !== undefined ? labelTemplateEl : cursorEl.findAll("> ._label")[0];
+          innerHTML = labelEl.innerHTML + (Boolean(innerHTML) ? " / " + innerHTML : "");
 
-        cursorEl = cursorEl.findParent("._children")?.parentElement?.findFirst("sd-select-item");
+          cursorEl = cursorEl.findParent("._children")?.parentElement?.findFirst("sd-select-item");
+        }
+
+        innerHTMLs.push(innerHTML);
       }
-
-      this._contentEl.innerHTML = innerHTML;
     }
     else {
-      const labelTemplateEl = selectedItemEl.findAll("> ._labelTemplate")[0];
-      const labelEl = labelTemplateEl !== undefined ? labelTemplateEl : selectedItemEl.findAll("> ._label")[0];
-      this._contentEl.innerHTML = labelEl.innerHTML;
+      for (const selectedItemEl of selectedItemEls) {
+        const labelTemplateEl = selectedItemEl.findAll("> ._labelTemplate")[0];
+        const labelEl = labelTemplateEl !== undefined ? labelTemplateEl : selectedItemEl.findAll("> ._label")[0];
+        innerHTMLs.push(labelEl.innerHTML);
+      }
     }
+
+    this._contentEl.innerHTML = innerHTMLs.join(", ");
   }
 
   private _refreshInvalid(): void {

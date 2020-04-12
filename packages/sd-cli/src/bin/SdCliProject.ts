@@ -10,6 +10,7 @@ import {SdProjectConfigUtils} from "../SdProjectConfigUtils";
 import {SdCliLocalUpdate} from "./SdCliLocalUpdate";
 import {SdServiceServer} from "@simplysm/sd-service-node";
 import {NextHandleFunction} from "connect";
+import * as heapdump from "heapdump";
 
 const decache = require("decache");
 
@@ -105,6 +106,8 @@ export class SdCliProject {
         const endFn = (key?: string): void => {
           setTimeout(
             async () => {
+              heapdump.writeSnapshot(path.resolve(process.cwd(), `profiling/${new DateTime().toFormatString("yyyyMMddHHmmssfff")}_cli_end.heapsnapshot`));
+
               busyCount -= 1;
               this._logger.debug(`busyCount--: ${busyCount}: ${key}`);
 
@@ -133,7 +136,7 @@ export class SdCliProject {
                 this._logger.info(`빌드 프로세스가 완료되었습니다.(${(new DateTime().tick - startTick).toLocaleString()}ms)`);
               }
             },
-            watch && isFirstCompleted ? 300 : 3000
+            watch && isFirstCompleted ? 500 : 3000
           );
         };
 
@@ -142,6 +145,7 @@ export class SdCliProject {
             if (busyCount === 0) {
               startTick = new DateTime().tick;
               this._logger.log(`변경감지...`);
+              heapdump.writeSnapshot(path.resolve(process.cwd(), `profiling/${new DateTime().toFormatString("yyyyMMddHHmmssfff")}_cli_start.heapsnapshot`));
             }
             busyCount += 1;
             this._logger.debug(`busyCount++: ${busyCount}: ${data.packageName}: ${data.command}: ${data.target ?? ""}`);

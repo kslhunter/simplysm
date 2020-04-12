@@ -150,8 +150,27 @@ export class QueryUtils {
     }
   }
 
-  public static getValueFields<T>(entity: TEntity<T>): TEntityValue<any>[] {
-    return Object.values(entity).filter(item => QueryUtils.canGetQueryValue(item));
+  public static getValueFields<T>(entity: TEntity<T>, excludes?: string[]): TEntityValue<any>[] {
+    const result: TEntityValue<any>[] = [];
+    for (const key of Object.keys(entity)) {
+      if (excludes?.includes(key)) continue;
+
+      if (QueryUtils.canGetQueryValue(entity[key])) {
+        result.push(entity[key]);
+      }
+      else if (entity[key] instanceof Array) {
+        for (const itemItem of entity[key]) {
+          result.push(...QueryUtils.getValueFields(itemItem));
+        }
+      }
+      else if (entity[key] != null && typeof entity[key] === "object") {
+        for (const itemItem of Object.values(entity[key] as object)) {
+          result.push(...QueryUtils.getValueFields(itemItem));
+        }
+      }
+    }
+
+    return result;
   }
 
   public static parseQueryResult<T>(orgResults: any[], option?: IQueryResultParseOption): T[] {

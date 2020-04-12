@@ -100,6 +100,16 @@ import {SdInputValidate} from "../commons/SdInputValidate";
         }
       }
 
+      &[sd-inline=text] {
+        display: inline-block;
+
+        > label {
+          padding-left: 0;
+          padding-top: 0;
+          padding-bottom: 0;
+        }
+      }
+
       &[sd-radio=true] {
         > label {
           > ._indicator_rect {
@@ -167,9 +177,12 @@ export class SdCheckboxControl {
   public readonly valueChange = new EventEmitter<boolean>();
 
   @Input()
-  @SdInputValidate(Boolean)
+  @SdInputValidate({
+    type: [Boolean, String],
+    includes: [true, false, "text"]
+  })
   @HostBinding("attr.sd-inline")
-  public inline?: boolean;
+  public inline?: boolean | "text";
 
   @Input()
   @SdInputValidate(Boolean)
