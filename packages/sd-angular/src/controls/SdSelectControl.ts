@@ -81,7 +81,7 @@ import {SdDropdownControl} from "./SdDropdownControl";
         background: var(--theme-color-secondary-lightest);
         display: block;
         overflow: visible;
-        padding-right: 30px !important;
+        padding-right: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px) !important;
         height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
         border: 1px solid var(--sd-border-color);
@@ -100,7 +100,7 @@ import {SdDropdownControl} from "./SdDropdownControl";
           top: -1px;
           right: -1px;
           padding: var(--gap-sm) 0;
-          width: 30px;
+          width: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
           text-align: center;
           pointer-events: none;
         }
@@ -128,9 +128,11 @@ import {SdDropdownControl} from "./SdDropdownControl";
 
       &[sd-size=sm] /deep/ > sd-dropdown > div {
         padding: var(--gap-xs) var(--gap-sm);
+        padding-right: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px) !important;
 
         > ._icon {
           padding: var(--gap-xs) 0;
+          width: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         }
 
         height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
@@ -138,9 +140,11 @@ import {SdDropdownControl} from "./SdDropdownControl";
 
       &[sd-size=lg] /deep/ > sd-dropdown > div {
         padding: var(--gap-default) var(--gap-lg);
+        padding-right: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px) !important;
 
         > ._icon {
           padding: var(--gap-default) 0;
+          width: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         }
 
         height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);

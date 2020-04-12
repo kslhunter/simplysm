@@ -38,10 +38,10 @@ export class SdProgressItemControl implements OnInit {
   @Input()
   @SdInputValidate({
     type: String,
-    includes: ["primary", "info", "success", "warning", "danger", "grey", "bluegrey"]
+    includes: ["primary", "info", "success", "warning", "danger", "grey", "blue-grey"]
   })
   @HostBinding("attr.sd-theme")
-  public theme?: "primary" | "info" | "success" | "warning" | "danger" | "grey" | "bluegrey";
+  public theme?: "primary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
 
   @Input()
   @SdInputValidate({

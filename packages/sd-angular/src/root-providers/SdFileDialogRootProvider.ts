@@ -3,9 +3,10 @@ import {Injectable} from "@angular/core";
 
 @Injectable({providedIn: "root"})
 export class SdFileDialogRootProvider {
-  public async showAsync<T extends boolean>(multiple?: T, accept?: string): Promise<(T extends true ? File[] : File) | undefined> {
-    // noinspection UnnecessaryLocalVariableJS
-    const result = await new Promise<(T extends true ? File[] : File) | undefined>(resolve => {
+  public async showAsync(multiple?: false, accept?: string): Promise<File | undefined>
+  public async showAsync(multiple: true, accept?: string): Promise<File[] | undefined>
+  public async showAsync(multiple?: boolean, accept?: string): Promise<File[] | File | undefined> {
+    return await new Promise<File[] | File | undefined>(resolve => {
       let inputEl: HTMLInputElement | undefined = document.createElement("input");
 
       inputEl.type = "file";
@@ -41,7 +42,5 @@ export class SdFileDialogRootProvider {
         resolve();
       };
     });
-
-    return result;
   }
 }

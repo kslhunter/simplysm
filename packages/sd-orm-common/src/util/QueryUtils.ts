@@ -59,6 +59,9 @@ export class QueryUtils {
 
       return selectDef;
     }
+    else if (value === undefined) {
+      return "NULL";
+    }
     else {
       return value;
     }
@@ -94,7 +97,7 @@ export class QueryUtils {
       value instanceof Buffer;
   }
 
-  public static getQueryValueType<T extends TQueryValue>(value: QueryUnit<T, any> | T): Type<T> {
+  public static getQueryValueType<T extends TQueryValue>(value: QueryUnit<T, any> | T): Type<T> | undefined {
     if (value instanceof QueryUnit) {
       return value.type as any;
     }
@@ -122,8 +125,11 @@ export class QueryUtils {
     else if (value instanceof Buffer) {
       return Buffer as any;
     }
+    else if (value === undefined) {
+      return undefined;
+    }
     else {
-      throw new Error("QueryValue 를 추출할 수 있는 타입이 아닙니다.");
+      throw new Error(`QueryValue 를 추출할 수 있는 타입이 아닙니다: ${value}`);
     }
   }
 
