@@ -11,3 +11,4 @@ yarn-error.log
 _modules
 _routes.ts
 report.*.json
+profiling

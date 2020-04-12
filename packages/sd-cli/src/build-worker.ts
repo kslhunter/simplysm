@@ -2,9 +2,6 @@ import {Logger, LoggerSeverity, SdProcessWorker} from "@simplysm/sd-core-node";
 import {EventEmitter} from "events";
 import {SdPackageBuilder} from "./build-tools/SdPackageBuilder";
 import {ISdPackageInfo} from "./commons";
-import * as heapdump from "heapdump";
-import * as path from "path";
-import {DateTime} from "@simplysm/sd-core-common";
 
 EventEmitter.defaultMaxListeners = 0;
 process.setMaxListeners(0);
@@ -35,11 +32,9 @@ try {
 
     await new SdPackageBuilder(packageInfo, command, target, devMode)
       .on("change", filePaths => {
-        heapdump.writeSnapshot(path.resolve(process.cwd(), `profiling/${new DateTime().toFormatString("yyyyMMddHHmmssfff")}_${packageInfo.npmConfig.name}_${command}_${target}_change.heapsnapshot`));
         worker.send("change", {packageName: packageInfo.npmConfig.name, command, target, filePaths});
       })
       .on("complete", results => {
-        heapdump.writeSnapshot(path.resolve(process.cwd(), `profiling/${new DateTime().toFormatString("yyyyMMddHHmmssfff")}_${packageInfo.npmConfig.name}_${command}_${target}_complete.heapsnapshot`));
         worker.send("complete", {packageName: packageInfo.npmConfig.name, command, target, results});
       })
       .runAsync(watch);
