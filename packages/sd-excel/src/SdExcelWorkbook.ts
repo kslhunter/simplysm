@@ -217,7 +217,13 @@ export class SdExcelWorkbook {
         const drawingRelationship = wsRelData.Relationships.Relationship.single((item1: any) => /drawing[0-9]/.test(item1.$.Target));
         if (drawingRelationship) {
           // drawing rel
-          wb._worksheets[id].drawingRelData = await XmlConvert.parseAsync(await zip.file(`xl/drawings/_rels/drawing1.xml.rels`).async("text"));
+          const drawingRelFile = zip.file(`xl/drawings/_rels/drawing1.xml.rels`);
+          if (drawingRelFile) {
+            wb._worksheets[id].drawingRelData = await XmlConvert.parseAsync(await drawingRelFile.async("text"));
+          }
+          else {
+            wb._worksheets[id].drawingRelData = {};
+          }
 
           // drawing
           wb._worksheets[id].drawingData = await XmlConvert.parseAsync(await zip.file(`xl/drawings/drawing1.xml`).async("text"));
