@@ -8,7 +8,7 @@ import {SdTypeValidate} from "../../commons/SdTypeValidate";
 @Component({
   selector: "sd-icon-layer",
   template: `
-    <ng-content select="fa-icon, fa-layers-text, fa-layers-counter"></ng-content>`,
+    <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
     sd-icon-layer {
       &[sd-fw=true] {
