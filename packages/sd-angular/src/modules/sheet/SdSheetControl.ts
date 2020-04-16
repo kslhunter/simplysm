@@ -1058,12 +1058,6 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
   }
 
   public getIsHideColumn(columnControl: SdSheetColumnControl): boolean {
-    const el = this._elRef.nativeElement as HTMLElement;
-    const rowEls = (this._elRef.nativeElement as HTMLElement).findAll("._head > ._row");
-
-    console.log(el);
-    console.log(rowEls);
-
     const index = this.getIndex(columnControl);
     const columnConfig = this._sheetConfig.columns.single(item => item.header === columnControl.header && item.index === index);
 
