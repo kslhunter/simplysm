@@ -110,8 +110,12 @@ import {SdMutationEvent} from "../..";
                        [attr.col-index]="getIndex(columnControl)"
                        [attr.title]="columnControl.help"
                        [attr.sd-header]="columnControl.header">
-                    <pre>{{ columnControl.header && columnControl.header!.split(".").last() }}</pre>
-                    <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
+                    <ng-container *ngIf="columnControl.headTemplateRef">
+                      <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
+                    </ng-container>
+                    <ng-container *ngIf="!columnControl.headTemplateRef">
+                      <pre>{{ columnControl.header && columnControl.header!.split(".").last() }}</pre>
+                    </ng-container>
                     <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
                          (mousedown)="onHeadBorderMousedown($event)"></div>
                   </div>
@@ -123,8 +127,12 @@ import {SdMutationEvent} from "../..";
                        [attr.col-index]="getIndex(columnControl)"
                        [attr.title]="columnControl.help"
                        [attr.sd-header]="columnControl.header">
-                    <pre>{{ columnControl.header && columnControl.header.split(".").last() }}</pre>
-                    <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
+                    <ng-container *ngIf="columnControl.headTemplateRef">
+                      <ng-template [ngTemplateOutlet]="columnControl.headTemplateRef"></ng-template>
+                    </ng-container>
+                    <ng-container *ngIf="!columnControl.headTemplateRef">
+                      <pre>{{ columnControl.header && columnControl.header.split(".").last() }}</pre>
+                    </ng-container>
                     <div class="_border" [style.cursor]="id ? 'ew-resize' : undefined"
                          (mousedown)="onHeadBorderMousedown($event)"></div>
                   </div>
@@ -1050,8 +1058,15 @@ export class SdSheetControl implements DoCheck, OnInit, AfterViewInit {
   }
 
   public getIsHideColumn(columnControl: SdSheetColumnControl): boolean {
+    const el = this._elRef.nativeElement as HTMLElement;
+    const rowEls = (this._elRef.nativeElement as HTMLElement).findAll("._head > ._row");
+
+    console.log(el);
+    console.log(rowEls);
+
     const index = this.getIndex(columnControl);
     const columnConfig = this._sheetConfig.columns.single(item => item.header === columnControl.header && item.index === index);
+
     return columnConfig ? columnConfig.hide : false;
   }
 
