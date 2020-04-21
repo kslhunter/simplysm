@@ -1,5 +1,4 @@
 import {
-  AfterContentChecked,
   AfterViewChecked,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -152,7 +151,7 @@ import {SdDropdownControl} from "./SdDropdownControl";
 
       &[sd-inset=true] {
         min-width: auto;
-        
+
         > /deep/ sd-dropdown > div {
           border: none;
           border-radius: 0;
@@ -179,7 +178,7 @@ import {SdDropdownControl} from "./SdDropdownControl";
     }
   `]
 })
-export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, AfterViewChecked {
+export class SdSelectControl implements DoCheck, OnInit, AfterViewChecked {
   @Input()
   public set value(value: any) {
     this._value = value;
@@ -283,7 +282,8 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
     }
   }
 
-  private readonly _iterableDiffer: IterableDiffer<any>;
+  private readonly _itemsIterableDiffer: IterableDiffer<any>;
+  private readonly _valueIterableDiffer: IterableDiffer<any>;
   private readonly _itemElsIterableDiffer: IterableDiffer<any>;
 
   private readonly _el: HTMLElement;
@@ -294,7 +294,8 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _elRef: ElementRef) {
     this._el = (this._elRef.nativeElement as HTMLElement);
-    this._iterableDiffer = this._iterableDiffers.find([]).create((index, item) => this.trackByItemFn(index, item));
+    this._itemsIterableDiffer = this._iterableDiffers.find([]).create((index, item) => this.trackByItemFn(index, item));
+    this._valueIterableDiffer = this._iterableDiffers.find([]).create();
     this._itemElsIterableDiffer = this._iterableDiffers.find([]).create();
   }
 
@@ -304,22 +305,22 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
   }
 
   public ngDoCheck(): void {
-    if (this.items && this._iterableDiffer.diff(this.items)) {
+    if (this.items && this._itemsIterableDiffer.diff(this.items)) {
       this._cdr.markForCheck();
     }
-  }
-
-  public ngAfterViewChecked(): void {
-    this._refreshContent();
-  }
-
-  public ngAfterContentChecked(): void {
+    if (this._value instanceof Array && this._valueIterableDiffer.diff(this._value)) {
+      this._cdr.markForCheck();
+    }
     if (this.popupElRef) {
       const itemEls = this.popupElRef.nativeElement.findAll("sd-select-item");
       if (this._itemElsIterableDiffer.diff(itemEls)) {
         this._cdr.markForCheck();
       }
     }
+  }
+
+  public ngAfterViewChecked(): void {
+    this._refreshContent();
   }
 
   public setValue(value: any): void {

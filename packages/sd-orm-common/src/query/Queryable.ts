@@ -18,7 +18,7 @@ import {
 } from "../common";
 import {QueryUtils} from "../util/QueryUtils";
 import {DbContext} from "./DbContext";
-import {FunctionUtils, JsonConvert, ObjectUtils, Type, Wait} from "@simplysm/sd-core-common";
+import {FunctionUtils, JsonConvert, NeverEntryError, ObjectUtils, Type, Wait} from "@simplysm/sd-core-common";
 import {ITableDef} from "../definition";
 import {DbDefinitionUtils} from "../util/DbDefinitionUtils";
 import {QueryUnit} from "./QueryUnit";
@@ -168,7 +168,7 @@ export class Queryable<D extends DbContext, T> {
         result = result.include(as);
       }
 
-      selectedColumn = ObjectUtils.getChainValue(result._entity, arg1);
+      selectedColumn = this._getEntityChainValue(result._entity, arg1);
     }
     else {
       for (const orderingItem of arg1) {
@@ -213,7 +213,7 @@ export class Queryable<D extends DbContext, T> {
 
   public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (queryable: Queryable<D, J>, entity: TEntity<T>) => Queryable<D, R>): Queryable<D, T & { [K in A]: R[] }>;
   public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (queryable: Queryable<D, J>, entity: TEntity<T>) => Queryable<D, R>, isSingle: true): Queryable<D, T & { [K in A]: R }>;
-  public join<A extends string, J, R, S extends true>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (queryable: Queryable<D, J>, entity: TEntity<T>) => Queryable<D, R>, isSingle?: S): Queryable<D, T & { [K in A]: R | R[] }> {
+  public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (queryable: Queryable<D, J>, entity: TEntity<T>) => Queryable<D, R>, isSingle?: boolean): Queryable<D, T & { [K in A]: R | R[] }> {
     if (this._def.join?.some(item => item.as === `[TBL.${as}]`)) {
       return new Queryable(this._db, this) as any;
     }
@@ -229,7 +229,7 @@ export class Queryable<D extends DbContext, T> {
     const joinEntity = joinQueryable._entity;
 
     const entity = {...this._entity};
-    ObjectUtils.setChainValue(entity, as, isSingle ? joinEntity : [joinEntity]);
+    this._setEntityChainValue(entity, as, isSingle ? joinEntity : [joinEntity]);
 
     const result = new Queryable(
       this._db,
@@ -246,8 +246,8 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
-  public include<J>(chain: string): Queryable<D, T>
-  public include<J>(targetFwd: (entity: TEntity<T>) => TEntity<J>): Queryable<D, T>
+  public include<J>(chain: string): Queryable<D, T>;
+  public include<J>(targetFwd: (entity: TEntity<T>) => TEntity<J>): Queryable<D, T>;
   public include<J>(arg: string | ((entity: TEntity<T>) => TEntity<J>)): Queryable<D, T> {
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 include 를 사용할 수 없습니다.");
@@ -271,6 +271,7 @@ export class Queryable<D extends DbContext, T> {
     let tableDef = this._tableDef;
     const asChainArr: string[] = [];
     for (const fkName of chain) {
+      const prevAs = asChainArr.join(".");
       asChainArr.push(fkName);
       const as = asChainArr.join(".");
 
@@ -295,9 +296,11 @@ export class Queryable<D extends DbContext, T> {
           fkTargetType,
           as,
           (q, en) => q.where(item => {
+            const lastEn = this._getEntityChainValue(en, prevAs);
+
             const whereQuery: TQueryValueOrSelectArray[] = [];
             for (let i = 0; i < fkDef.columnPropertyKeys.length; i++) {
-              whereQuery.push(sorm.equal(item[fkTargetTableDef.columns[i].propertyKey], en[fkDef.columnPropertyKeys[i]]));
+              whereQuery.push(sorm.equal(item[fkTargetTableDef.columns[i].propertyKey], lastEn[fkDef.columnPropertyKeys[i]]));
             }
             return whereQuery;
           }),
@@ -319,14 +322,16 @@ export class Queryable<D extends DbContext, T> {
           throw new Error(`'${fktSourceTableDef.name}.${fktDef.foreignKeyPropertyKey}'의 FK 설정과 '${tableDef.name}'의 PK 설정의 길이가 다릅니다.`);
         }
 
-        // JOIN (SINGLE) 실행
+        // JOIN 실행
         result = result.join(
           fktSourceType,
           as,
           (q, en) => q.where(item => {
+            const lastEn = this._getEntityChainValue(en, prevAs);
+
             const whereQuery: TQueryValueOrSelectArray[] = [];
             for (let i = 0; i < fktSourceFkDef.columnPropertyKeys.length; i++) {
-              whereQuery.push(sorm.equal(item[fktSourceFkDef.columnPropertyKeys[i]], en[tableDef.columns[i].propertyKey]));
+              whereQuery.push(sorm.equal(item[fktSourceFkDef.columnPropertyKeys[i]], lastEn[tableDef.columns[i].propertyKey]));
             }
             return whereQuery;
           })
@@ -752,14 +757,14 @@ export class Queryable<D extends DbContext, T> {
 
   public async countAsync(): Promise<number> {
     const queryable = this.select(() => ({cnt: new QueryUnit(Number, "COUNT(*)")}));
-    queryable._def.orderBy?.remove(item => item[0] === "[__searchOrder]");
+    queryable._def.orderBy?.remove(item1 => item1[0] === "[__searchOrder]");
     delete queryable._entity["__searchOrder"];
     const item = await queryable.singleAsync();
 
     return (item?.cnt ?? 0) as any;
   }
 
-  public async insertAsync(record: InsertObject<T>): Promise<T> {
+  public async insertAsync(...records: InsertObject<T>[]): Promise<T[]> {
     if (!this._db) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
@@ -770,9 +775,9 @@ export class Queryable<D extends DbContext, T> {
     }
 
     const aiColNames = this._tableDef.columns.filter(item => item.autoIncrement).map(item => item.name);
-    const hasAutoIncreaseColumnValue = Object.keys(record).some(item => aiColNames.includes(item));
+    const hasAutoIncreaseColumnValue = Object.keys(records[0]).some(item => aiColNames.includes(item));
 
-    const queryDef = this.getInsertDef(record);
+    const queryDefs = records.map(record => this.getInsertDef(record));
     const parseOption = this._getParseOption();
 
     if (hasAutoIncreaseColumnValue) {
@@ -789,10 +794,10 @@ export class Queryable<D extends DbContext, T> {
               state: "on"
             } as IConfigIdentityInsertQueryDef
           },
-          {
-            type: "insert",
+          ...queryDefs.map(queryDef => ({
+            type: "insert" as const,
             ...queryDef
-          },
+          })),
           {
             type: "configIdentityInsert",
             ...{
@@ -805,11 +810,15 @@ export class Queryable<D extends DbContext, T> {
             } as IConfigIdentityInsertQueryDef
           }
         ], [undefined, parseOption, undefined])
-      )[1][0];
+      )[1];
     }
+
     return (
-      await this._db.executeDefsAsync([{type: "insert", ...queryDef}], [parseOption])
-    )[0][0];
+      await this._db.executeDefsAsync(queryDefs.map(queryDef => ({
+        type: "insert" as const,
+        ...queryDef
+      })), [parseOption])
+    )[0];
   }
 
   public insertPrepare(...records: InsertObject<T>[]): void {
@@ -1025,6 +1034,45 @@ export class Queryable<D extends DbContext, T> {
     };
     configuration(this._entity, []);
 
+    return result;
+  }
+
+
+  private _setEntityChainValue(obj: any, chain: string, value: any): void {
+    const split = chain.split(".");
+    let curr = obj;
+    for (const splitItem of split.slice(0, -1)) {
+      if (curr[splitItem] instanceof Array) {
+        curr = curr[splitItem][0];
+      }
+      else {
+        curr = curr[splitItem];
+      }
+    }
+
+    const last = split.last();
+    if (last === undefined) {
+      throw new NeverEntryError();
+    }
+
+    curr[last] = value;
+  }
+
+  public _getEntityChainValue(obj: any, chain: string, optional?: boolean): any {
+    if (chain === "") return obj;
+    const split = chain.split(".");
+    let result = obj;
+    for (const splitItem of split) {
+      if (optional && result === undefined) {
+        result = undefined;
+      }
+      else {
+        result = result[splitItem];
+      }
+      if (result instanceof Array) {
+        result = result[0];
+      }
+    }
     return result;
   }
 }

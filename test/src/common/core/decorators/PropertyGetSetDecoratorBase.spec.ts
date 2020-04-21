@@ -1,3 +1,5 @@
+// tslint:disable:variable-name
+
 import {PropertyGetSetDecoratorBase} from "@simplysm/sd-core-common";
 import * as sinon from "sinon";
 import {expect} from "chai";

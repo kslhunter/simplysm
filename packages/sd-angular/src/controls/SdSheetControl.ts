@@ -7,6 +7,7 @@ import {
   ElementRef,
   EventEmitter,
   forwardRef,
+  HostBinding,
   Input,
   IterableDiffer,
   IterableDiffers,
@@ -17,7 +18,7 @@ import {
 } from "@angular/core";
 import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdInputValidate} from "../commons/SdInputValidate";
-import {SdResizeEvent} from "@simplysm/sd-core-browser";
+import {ISdResizeEvent} from "@simplysm/sd-core-browser";
 import {SdModalProvider} from "../providers/SdModalProvider";
 import {SdSheetConfigModal} from "../modals/SdSheetConfigModal";
 import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootProvider";
@@ -542,6 +543,13 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
           }
         }
       }
+
+      &[sd-inset=true] {
+
+        > sd-dock-container {
+          border: none !important;
+        }
+      }
     }
   `]
 })
@@ -631,6 +639,11 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   @Output()
   public readonly orderingChange = new EventEmitter<ISdSheetColumnOrderingVM[]>();
+
+  @Input()
+  @SdInputValidate({type: Boolean, notnull: true})
+  @HostBinding("attr.sd-inset")
+  public inset = false;
 
   @Input()
   @SdInputValidate(Function)
@@ -766,9 +779,9 @@ export class SdSheetControl implements DoCheck, OnInit {
     this._zone.runOutsideAngular(() => {
       {
         const headEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._head")!;
+        const bodyEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._body")!;
         headEl.addEventListener("resize", event => {
           if (event.prevHeight !== event.newHeight) {
-            const bodyEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._body")!;
             bodyEl.style.paddingTop = event.newHeight + "px";
           }
         });
@@ -790,7 +803,6 @@ export class SdSheetControl implements DoCheck, OnInit {
           }
         });
 
-        const bodyEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._body")!;
         bodyEl.addEventListener("resize", event => {
           if (event.prevWidth !== event.newWidth) {
             const rowFocusIndicatorEl = paneEl.findFirst("> ._row-focus-indicator")!;
@@ -1019,7 +1031,7 @@ export class SdSheetControl implements DoCheck, OnInit {
     }
   }
 
-  public onFixedCellGroupResize(event: SdResizeEvent): void {
+  public onFixedCellGroupResize(event: ISdResizeEvent): void {
     if (event.prevWidth !== event.newWidth) {
       this.fixedCellGroupWidthPixel = event.newWidth;
     }

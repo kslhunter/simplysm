@@ -6,7 +6,7 @@ export class FunctionUtils {
       (/function\s?\(([^)]*)\)[^{]*{((?!return)(.|\r|\n))*return\s?((.|\r|\n)*);?\s?}$/)
         .exec(fn.toString());
 
-    if (matches == null) {
+    if (matches == undefined) {
       matches = (/^\(?([^)]*)\)?(\s?)=>(\s?)(.*)$/).exec(fn.toString());
       if (matches?.[4] === undefined) {
         throw new Error("Function 파싱 실패: " + fn.toString() + os.EOL);

@@ -16,7 +16,7 @@ export class ObjectUtils {
   }
 
   private static _clone(source: any, options?: { excludes?: any[]; useRefTypes?: any[] }, prevClones?: { source: any; clone: any }[]): any {
-    if (source == null) {
+    if (source == undefined) {
       return undefined;
     }
     if (source instanceof Array) {

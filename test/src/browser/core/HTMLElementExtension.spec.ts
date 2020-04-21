@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {SdMutationEvent, SdResizeEvent} from "@simplysm/sd-core-browser";
+import {ISdMutationEvent, ISdResizeEvent} from "@simplysm/sd-core-browser";
 
 describe("(browser) core.HTMLElementExtension", () => {
   let el: HTMLElement;
@@ -207,7 +207,7 @@ describe("(browser) core.HTMLElementExtension", () => {
     it("현재 엘리먼트의 높이나 너비가 변경될 경우 이벤트를 받을 수 있다. 이 경우 이벤트 값으로 어떤것이 변경되었는지, 확인할 수 있다.", done => {
       el.style.display = "inline-block";
 
-      const fn = (event: SdResizeEvent): void => {
+      const fn = (event: ISdResizeEvent): void => {
         expect(event.prevHeight).to.equal(0);
         expect(event.newHeight).to.equal(0);
         expect(event.prevWidth).to.equal(0);
@@ -230,7 +230,7 @@ describe("(browser) core.HTMLElementExtension", () => {
       el.style.display = "inline-block";
 
       const addDiv = document.createElement("div");
-      const fn = (event: SdMutationEvent): void => {
+      const fn = (event: ISdMutationEvent): void => {
         expect(event.mutations).to.length(1);
         expect(event.mutations[0].addedNodes[0]).to.includes(addDiv);
 

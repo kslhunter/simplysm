@@ -17,7 +17,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
     ...(this._target !== undefined ? [this._target] : [])
   ]);
 
-  private _fileInfoMapObj: { [filePath: string]: IFileInfo } = {};
+  private readonly _fileInfoMapObj: { [filePath: string]: IFileInfo } = {};
   private readonly _outputCache: { [key: string]: string | undefined } = {};
 
   private _host?: ts.CompilerHost;
@@ -128,8 +128,8 @@ export class SdTypescriptProgramRunner extends EventEmitter {
         }
 
         // 로직 수행
-        const results = await logicFn(newChangedInfos);
-        this.emit("complete", results);
+        const results1 = await logicFn(newChangedInfos);
+        this.emit("complete", results1);
       }, err => {
         this._logger.error(err);
       });

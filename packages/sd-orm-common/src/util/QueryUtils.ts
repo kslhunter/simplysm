@@ -46,7 +46,7 @@ export class QueryUtils {
       }
     }
     else if (typeof value === "string") {
-      return `N'${value}'`;
+      return `N'${value.replace(/'/g, "''")}'`;
     }
     else if (value instanceof Queryable) {
       const selectDef = value.getSelectDef();
@@ -169,7 +169,7 @@ export class QueryUtils {
           result.push(...QueryUtils.getValueFields(itemItem));
         }
       }
-      else if (entity[key] != null && typeof entity[key] === "object") {
+      else if (entity[key] != undefined && typeof entity[key] === "object") {
         for (const itemItem of Object.values(entity[key] as object)) {
           result.push(...QueryUtils.getValueFields(itemItem));
         }
@@ -184,7 +184,7 @@ export class QueryUtils {
     let result: any[] = orgResults.map(item => {
       const obj: any = {};
       for (const key of Object.keys(item)) {
-        if (item[key] == null) {
+        if (item[key] == undefined) {
         }
         else if (option?.columns?.[key]?.dataType === "DateTime") {
           obj[key] = DateTime.parse(item[key]);
@@ -217,7 +217,7 @@ export class QueryUtils {
       for (const joinKey of joinKeys) {
         // const grouped = new Map<string, any | any[]>();
         const grouped: { key: any; values: any | any[] }[] = [];
-        const groupedMultiMapObj: { [key: string]: any | any[] } = {};// new Map<string, any | any[]>();
+        const groupedMultiMapObj: { [key: string]: any | any[] } = {}; // new Map<string, any | any[]>();
 
         for (const item of result) {
           const keyObjKeys = Object.keys(item).filter(key => !key.startsWith(joinKey + "."));

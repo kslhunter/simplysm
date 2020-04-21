@@ -1,6 +1,6 @@
 const symbol = "sd-type-validate";
 
-export const PropertyGetSetDecoratorBase = function <O extends object, K extends keyof O>(arg: {
+export function PropertyGetSetDecoratorBase<O extends object, K extends keyof O>(arg: {
   beforeSet?: (target: O, propertyName: K, oldValue: O[K], newValue: O[K]) => (O[K] | undefined);
   afterSet?: (target: O, propertyName: K, oldValue: O[K], newValue: O[K]) => void;
   get?: (target: O, propertyName: K, value: O[K]) => void;
@@ -58,4 +58,4 @@ export const PropertyGetSetDecoratorBase = function <O extends object, K extends
       });
     }
   };
-};
+}

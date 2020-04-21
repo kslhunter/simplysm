@@ -1,4 +1,4 @@
-export interface SdResizeEvent extends Event {
+export interface ISdResizeEvent extends Event {
   readonly prevWidth: number;
   readonly newWidth: number;
   readonly prevHeight: number;
@@ -6,7 +6,7 @@ export interface SdResizeEvent extends Event {
   readonly relatedTarget: EventTarget;
 }
 
-export interface SdMutationEvent extends Event {
+export interface ISdMutationEvent extends Event {
   readonly mutations: MutationRecord[];
   readonly relatedTarget: EventTarget;
 }

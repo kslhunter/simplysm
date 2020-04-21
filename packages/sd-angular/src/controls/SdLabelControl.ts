@@ -1,5 +1,6 @@
 import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
 import {SdInputValidate} from "../commons/SdInputValidate";
+import {sdThemes, TSdTheme} from "../commons";
 
 /*export function sdLabelColorValidator(value: string): boolean {
   const result = /^#[0-9a-fA-F]*$/.test(value);
@@ -48,10 +49,10 @@ export class SdLabelControl {
   @Input()
   @SdInputValidate({
     type: String,
-    includes: ["primary", "info", "success", "warning", "danger", "grey", "blue-grey"]
+    includes: sdThemes
   })
   @HostBinding("attr.sd-theme")
-  public theme?: "primary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
+  public theme?: TSdTheme;
 
   @Input()
   @SdInputValidate({

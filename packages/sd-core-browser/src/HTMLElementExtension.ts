@@ -1,7 +1,8 @@
 import ResizeObserver from "resize-observer-polyfill";
-import {SdMutationEvent, SdResizeEvent} from "./events";
+import {ISdMutationEvent, ISdResizeEvent} from "./events";
 
 declare global {
+  //tslint:disable-next-line:interface-name
   interface HTMLElement {
     getRelativeOffset(parentElement: HTMLElement): { top: number; left: number };
 
@@ -23,17 +24,17 @@ declare global {
 
     findFocusableParent(): HTMLElement | undefined;
 
-    addEventListener(type: "mutation", listener: (event: SdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: "mutation", listener: (event: ISdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
-    addEventListener(type: "mutation-child", listener: (event: SdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: "mutation-child", listener: (event: ISdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
-    addEventListener(type: "mutation-character", listener: (event: SdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: "mutation-character", listener: (event: ISdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
-    addEventListener(type: "resize", listener: (event: SdResizeEvent) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: "resize", listener: (event: ISdResizeEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
-    removeEventListener(type: "mutation", listener: (event: SdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: "mutation", listener: (event: ISdMutationEvent) => any, options?: boolean | AddEventListenerOptions): void;
 
-    removeEventListener(type: "resize", listener: (event: SdResizeEvent) => any, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: "resize", listener: (event: ISdResizeEvent) => any, options?: boolean | AddEventListenerOptions): void;
   }
 }
 

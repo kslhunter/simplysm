@@ -3,6 +3,7 @@ import {ObjectUtils} from "../utils/ObjectUtils";
 import {NeverEntryError} from "../errors/NeverEntryError";
 
 declare global {
+  // tslint:disable-next-line:interface-name
   interface Array<T> {
     single(predicate?: (item: T, index: number) => boolean): T | undefined;
 
@@ -40,7 +41,7 @@ declare global {
 
     orderByDesc(selector?: (item: T) => string | number): T[];
 
-    diffs<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): IArrayDiffsResult<T, P>[];
+    diffs<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): TArrayDiffsResult<T, P>[];
 
     merge<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): (T | (T & P))[];
 
@@ -182,14 +183,15 @@ Array.prototype.orderBy = function <T>(this: T[], selector?: (item: T) => string
     const pn = selector !== undefined ? selector(n) : n;
     const pp = selector !== undefined ? selector(p) : p;
 
-    if (
-      (typeof pn !== "string" && typeof pn !== "number") ||
-      (typeof pp !== "string" && typeof pp !== "number")
-    ) {
+    if (typeof pn === "string" && typeof pp === "string") {
+      return pp.localeCompare(pn);
+    }
+    else if (typeof pn === "number" && typeof pp === "number") {
+      return (pn > pp ? -1 : pn < pp ? 1 : 0);
+    }
+    else {
       throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
     }
-
-    return (pn > pp ? -1 : pn < pp ? 1 : 0);
   });
 };
 
@@ -198,19 +200,20 @@ Array.prototype.orderByDesc = function <T>(this: T[], selector?: (item: T) => st
     const pn = selector !== undefined ? selector(n) : n;
     const pp = selector !== undefined ? selector(p) : p;
 
-    if (
-      (typeof pn !== "string" && typeof pn !== "number") ||
-      (typeof pp !== "string" && typeof pp !== "number")
-    ) {
+    if (typeof pn === "string" && typeof pp === "string") {
+      return pn.localeCompare(pp);
+    }
+    else if (typeof pn === "number" && typeof pp === "number") {
+      return (pn < pp ? -1 : pn > pp ? 1 : 0);
+    }
+    else {
       throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
     }
-
-    return (pn < pp ? -1 : pn > pp ? 1 : 0);
   });
 };
 
-Array.prototype.diffs = function <T, P>(this: T[], target: P[], options?: { keys?: string[]; excludes?: string[] }): IArrayDiffsResult<T, P>[] {
-  const result: IArrayDiffsResult<T, P>[] = [];
+Array.prototype.diffs = function <T, P>(this: T[], target: P[], options?: { keys?: string[]; excludes?: string[] }): TArrayDiffsResult<T, P>[] {
+  const result: TArrayDiffsResult<T, P>[] = [];
 
   const uncheckedTarget = ([] as P[]).concat(target); // source 비교시, 수정으로 판단되거나 변경사항이 없는것으로 판단된 target 은 제외시킴
 
@@ -349,7 +352,7 @@ Array.prototype.clear = function <T>(this: T[]): T[] {
   return this.remove(() => true);
 };
 
-export interface IArrayDiffsResult<T, P> {
-  source?: T;
-  target?: P;
-}
+export type TArrayDiffsResult<T, P> =
+  { source?: T; target: P } | // INSERT
+  { source: T; target?: P } | // DELETE
+  { source: T; target: P }; // UPDATE

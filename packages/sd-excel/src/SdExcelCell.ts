@@ -85,13 +85,13 @@ export class SdExcelCell {
   }
 
   public get value(): any {
-    if (this.cellData.v == null) {
+    if (this.cellData.v == undefined) {
       return undefined;
     }
 
     const value = this.cellData.v[0]._ ?? this.cellData.v[0];
 
-    if (value == null) {
+    if (value == undefined) {
       return undefined;
     }
     else if (this.cellData.$.t === "str") {

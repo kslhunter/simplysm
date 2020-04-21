@@ -11,7 +11,7 @@ export class SdLocalStorageRootProvider {
 
   public get(key: string): any {
     const json = localStorage.getItem(`${this.prefix}.${key}`);
-    if (json == null) return undefined;
+    if (json == undefined) return undefined;
     return JsonConvert.parse(json);
   }
 

@@ -993,7 +993,7 @@ export class SdPackageBuilder extends EventEmitter {
   }
 
   private _emitWebpackResults(err?: Error, stats?: webpack.Stats): void {
-    if (err != null) {
+    if (err != undefined) {
       this.emit("complete", [{
         filePath: undefined,
         severity: "error" as const,
@@ -1001,7 +1001,7 @@ export class SdPackageBuilder extends EventEmitter {
       }]);
       return;
     }
-    if (stats == null) {
+    if (stats == undefined) {
       throw new NeverEntryError();
     }
 
@@ -1046,8 +1046,8 @@ export class SdPackageBuilder extends EventEmitter {
     if (watch) {
       await FsWatcher.watchAsync(filePathAnyMatch, async changedInfos1 => {
         this.emit("change", changedInfos1.map(item => item.filePath));
-        const results = await cb(changedInfos1);
-        this.emit("complete", results);
+        const results1 = await cb(changedInfos1);
+        this.emit("complete", results1);
       }, err => {
         this._logger.error(err);
       });

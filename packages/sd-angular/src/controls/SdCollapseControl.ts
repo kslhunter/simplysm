@@ -1,5 +1,5 @@
 import {AfterContentInit, ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input} from "@angular/core";
-import {SdResizeEvent} from "@simplysm/sd-core-browser";
+import {ISdResizeEvent} from "@simplysm/sd-core-browser";
 import {SdInputValidate} from "../commons/SdInputValidate";
 
 @Component({
@@ -43,7 +43,7 @@ export class SdCollapseControl implements AfterContentInit {
     this.contentHeight = (this._elRef.nativeElement as HTMLElement).findFirst("> ._content")!.offsetHeight;
   }
 
-  public onContentResize(event: SdResizeEvent): void {
+  public onContentResize(event: ISdResizeEvent): void {
     if (event.prevHeight !== event.newHeight) {
       this.contentHeight = (this._elRef.nativeElement as HTMLElement).findFirst("> ._content")!.offsetHeight;
     }

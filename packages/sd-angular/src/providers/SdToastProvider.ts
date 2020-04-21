@@ -78,7 +78,9 @@ export class SdToastProvider {
     toastRef.instance.close.subscribe(async () => {
       await close();
     });
-    compRef.instance.close = close.bind(this);
+    compRef.instance.close = async v => {
+      await close(v);
+    };
 
     window.setTimeout(async () => {
       this._root.appRef.attachView(compRef.hostView);

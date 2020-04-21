@@ -85,6 +85,10 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
         padding: var(--gap-default) var(--gap-xl);
         border-radius: 2px;
       }
+
+      &[sd-inset] > button {
+        border-radius: 0;
+      }
     }
   `]
 })
@@ -129,6 +133,11 @@ export class SdButtonControl {
     notnull: true
   })
   public type: "button" | "submit" = "button";
+
+  @Input()
+  @SdInputValidate(Boolean)
+  @HostBinding("attr.sd-inset")
+  public inset?: boolean;
 
   public constructor(private readonly _sanitization: DomSanitizer) {
   }

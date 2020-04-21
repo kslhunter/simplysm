@@ -40,8 +40,7 @@ import * as marked from "marked";
       </sd-dock>
 
       <sd-pane>
-        <div class="_editor"
-             *ngIf="viewState === 'edit' && !disabled">
+        <div class="_editor" *ngIf="viewState === 'edit' && !disabled">
         <textarea [value]="value || ''"
                   [rows]="rows"
                   (input)="onTextareaInput($event)"
@@ -52,7 +51,10 @@ import * as marked from "marked";
                   [style.resize]="resize"></textarea>
           <div class="_dragover" *ngIf="viewState === 'edit' && !disabled">파일을 내려놓으세요.</div>
         </div>
-        <div class="_preview" [innerHTML]="innerHTML" *ngIf="viewState === 'preview' || disabled"></div>
+        <div class="_preview" [hidden]="viewState !== 'preview' && !disabled">
+          <sd-busy-container [busy]="busyCount > 0" [innerHTML]="innerHTML">
+          </sd-busy-container>
+        </div>
         <div *ngIf="viewState === 'help'" class="_help sd-padding-default">
           <div class="sd-margin-bottom-default">
             <h4 class="sd-margin-bottom-xs">강조</h4>
@@ -146,11 +148,12 @@ import * as marked from "marked";
 
     :host {
       display: block;
-      border: 1px solid var(--trans-brightness-default);
+      border: 1px solid var(--sd-border-color);
 
       /deep/ > sd-dock-container {
         > ._toolbar {
           user-select: none;
+          border-bottom: 1px solid var(--sd-border-color);
 
           > sd-anchor {
             display: inline-block;
@@ -177,7 +180,7 @@ import * as marked from "marked";
           > textarea {
             @include form-control-base();
             height: 100%;
-            background: var(--theme-color-info-lightest);
+            background: var(--theme-color-secondary-lightest);
             border: none;
             transition: outline-color .1s linear;
             outline: 1px solid transparent;
@@ -250,6 +253,14 @@ import * as marked from "marked";
         }
       }
 
+      &[sd-inset=true] {
+        border: none !important;
+
+        ///deep/ > sd-dock-container> ._toolbar {
+        //  border-bottom: none !important;
+        //}
+      }
+
       &[sd-disabled=true] {
         /deep/ > sd-dock-container {
           > sd-pane > ._preview {
@@ -285,7 +296,7 @@ export class SdMarkdownEditorControl implements OnChanges {
   public disabled?: boolean;
 
   @Input()
-  public previewRender?: (plainText: string) => string | Promise<string>;
+  public previewRenderFn?: (plainText: string) => string | Promise<string>;
 
   @Output()
   public readonly dropFiles = new EventEmitter<ISdMarkdownEditorDropFilesEvent>();
@@ -311,6 +322,13 @@ export class SdMarkdownEditorControl implements OnChanges {
   @Input()
   @SdInputValidate({type: Boolean, notnull: true})
   public rowsButton = true;
+
+  @Input()
+  @SdInputValidate({type: Boolean, notnull: true})
+  @HostBinding("attr.sd-inset")
+  public inset = false;
+
+  public busyCount = 0;
 
   public constructor(private readonly _sanitizer: DomSanitizer,
                      private readonly _cdr: ChangeDetectorRef) {
@@ -360,12 +378,18 @@ export class SdMarkdownEditorControl implements OnChanges {
 
   public async ngOnChanges(changes: SimpleChanges): Promise<void> {
     if (Object.keys(changes).length > 0) {
-      if (this.value !== undefined && (this.viewState === "preview" || this.disabled)) {
-        const value = this.previewRender ? await this.previewRender(this.value) : this.value;
-        const html = marked(value);
-        this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);
-        if (this.previewRender) {
+      if (this.value !== undefined) {
+        if (this.previewRenderFn) {
+          this.busyCount++;
+          const value = await this.previewRenderFn(this.value);
+          const html = marked(value);
+          this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);
+          this.busyCount--;
           this._cdr.markForCheck();
+        }
+        else {
+          const html = marked(this.value);
+          this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);
         }
       }
       else {

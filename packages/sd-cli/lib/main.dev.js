@@ -3,6 +3,8 @@ require("element-qsa-scope");
 require("core-js/proposals/reflect-metadata");
 require("zone.js/dist/zone");
 
+require("events").EventEmitter.defaultMaxListeners = 0;
+
 const ApplicationRef = require("@angular/core").ApplicationRef;
 const platformBrowserDynamic = require("@angular/platform-browser-dynamic").platformBrowserDynamic;
 const AppModule = require("SD_APP_MODULE").AppModule;

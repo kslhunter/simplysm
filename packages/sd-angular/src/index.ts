@@ -62,6 +62,7 @@ export * from "./_modules/providers/SdModalProviderModule";
 export * from "./_modules/providers/SdPrintProviderModule";
 export * from "./_modules/providers/SdServiceFactoryProviderModule";
 export * from "./_modules/providers/SdToastProviderModule";
+export * from "./commons";
 export * from "./commons/SdIconLayerTextBaseControlBase";
 export * from "./commons/sdIconNameFn";
 export * from "./commons/sdIconNames";

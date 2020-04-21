@@ -1,7 +1,7 @@
 import {PropertyGetSetDecoratorBase} from "./PropertyGetSetDecoratorBase";
 import {ObjectUtils, TValidateDef} from "../utils/ObjectUtils";
 
-export const PropertyValidate = function (def: TValidateDef<any>, replacer?: (value: any) => any): (target: any, propertyName: string, inputDescriptor?: PropertyDescriptor) => void {
+export function PropertyValidate(def: TValidateDef<any>, replacer?: (value: any) => any): (target: any, propertyName: string, inputDescriptor?: PropertyDescriptor) => void {
   return PropertyGetSetDecoratorBase({
     beforeSet: (target, propertyName, prevValue, nextValue) => {
       const replacedNextValue = replacer !== undefined ? replacer(nextValue) : nextValue;
@@ -18,4 +18,4 @@ export const PropertyValidate = function (def: TValidateDef<any>, replacer?: (va
       return replacedNextValue;
     }
   });
-};
+}

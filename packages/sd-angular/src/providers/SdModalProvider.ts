@@ -44,6 +44,7 @@ export class SdModalProvider {
         rootCompEl.appendChild(modalEntryEl);
 
         const prevActiveElement = document.activeElement as HTMLElement | undefined;
+        userModalRef.instance.isModal = true;
         userModalRef.instance.close = (value?: T["_tOutput"]): void => {
           resolve(value);
 
@@ -88,6 +89,7 @@ export class SdModalProvider {
 export abstract class SdModalBase<I, O> {
   public _tInput!: I;
   public _tOutput!: O;
+  public isModal = false;
 
   public abstract sdOnOpen(param: I): void | Promise<void>;
 

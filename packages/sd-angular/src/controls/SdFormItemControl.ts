@@ -15,7 +15,7 @@ import {SdFormControl} from "./SdFormControl";
   selector: "sd-form-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <label [attr.hidden]="!label && !labelTemplateRef"
+    <label [attr.unvisible]="!label && !labelTemplateRef"
            [style.width]="labelWidth">
       <ng-container *ngIf="!labelTemplateRef">{{ label }}</ng-container>
       <ng-container *ngIf="labelTemplateRef">
@@ -80,7 +80,7 @@ import {SdFormControl} from "./SdFormControl";
       &[sd-layout="inline"] {
         display: inline-block;
         vertical-align: top;
-        margin-right: var(--gap-default);
+        margin: var(--gap-xxs) var(--gap-default) var(--gap-xxs) 0;
 
         > label {
           display: inline-block;

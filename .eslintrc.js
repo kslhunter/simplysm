@@ -35,7 +35,8 @@ module.exports = {
     "array-bracket-newline": ["error", "consistent"],
     "curly": ["error", "multi-line"],
     "indent": ["error", 2, {FunctionExpression: {parameters: "first"}, SwitchCase: 1}],
-    "eqeqeq": ["error", "always", {null: "never"}],
+    // "eqeqeq": ["error", "always", {null: "never"}],
+    "eqeqeq": "off",
     "space-before-function-paren": ["error", {
       anonymous: "always",
       named: "never",
@@ -104,7 +105,7 @@ module.exports = {
     "no-magic-numbers": "off",
     // "func-style": ["error", "expression"],
     "func-style": "off",
-    "no-eq-null": "off",
+    // "no-eq-null": "off",
     "no-extend-native": "off",
     "no-bitwise": "off",
     "global-require": "off",
@@ -124,7 +125,11 @@ module.exports = {
         tsconfigRootDir: __dirname,
         createDefaultProgram: true
       },
-      plugins: ["@typescript-eslint", "@simplysm"],
+      plugins: [
+        "@typescript-eslint",
+        "@typescript-eslint/tslint",
+        "@simplysm"
+      ],
       extends: [
         "plugin:import/typescript",
         "plugin:@typescript-eslint/all"
@@ -142,7 +147,8 @@ module.exports = {
           allowConditionalTypes: "always",
           allowAliases: "always",
           allowMappedTypes: "always",
-          allowLiterals: "always"
+          allowLiterals: "always",
+          allowCallbacks: "always"
         }],
         "@typescript-eslint/space-before-function-paren": ["error", {
           anonymous: "always",
@@ -202,7 +208,13 @@ module.exports = {
         "@typescript-eslint/no-var-requires": "off",
         //"@typescript-eslint/restrict-template-expressions": ["error", {allowNumber: true}]
         "@typescript-eslint/restrict-template-expressions": "off",
-        "@typescript-eslint/method-signature-style": "off"
+        "@typescript-eslint/method-signature-style": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-empty-interface": "off",
+
+        "@typescript-eslint/explicit-function-return-type": "off",
+
+        "@typescript-eslint/tslint/config": ["error", {"lintFile": "./tslint.json"}]
       }
     }
   ]

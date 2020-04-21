@@ -46,7 +46,7 @@ export class SdProcessWorker extends EventEmitter {
     super();
 
     this._worker.on("exit", code => {
-      if (code != null && code !== 0 && !this._closed) {
+      if (code != undefined && code !== 0 && !this._closed) {
         this.emit("error", new Error(`프로세스 워커를 실행하는 중에 오류가 발생했습니다. [${code}]`));
       }
       this._closed = true;
@@ -94,7 +94,7 @@ export class SdProcessWorker extends EventEmitter {
       const childWorker = new SdProcessChildWorker(args[0]);
 
       try {
-        const result = await fn(childWorker, args.slice(1).map(item => (item == null ? undefined : item)));
+        const result = await fn(childWorker, args.slice(1).map(item => (item == undefined ? undefined : item)));
         childWorker.send("done", result);
       }
       catch (err) {

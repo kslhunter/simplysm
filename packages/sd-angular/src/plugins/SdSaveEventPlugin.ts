@@ -12,10 +12,9 @@ export class SdSaveEventPlugin {
 
   public addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
     const listener = (event: KeyboardEvent): void => {
-      if (this._modal.modalCount > 0) return;
-
       if ((event.key === "s" || event.key === "S") && event.ctrlKey) {
         event.preventDefault();
+        if (this._modal.modalCount > 0) return;
 
         this.manager.getZone().run(() => {
           handler(event);
@@ -33,10 +32,9 @@ export class SdSaveEventPlugin {
   public addGlobalEventListener(element: string, eventName: string, handler: Function): Function {
     if (element === "document") {
       const listener = (event: KeyboardEvent): void => {
-        if (this._modal.modalCount > 0) return;
-
         if ((event.key === "s" || event.key === "S") && event.ctrlKey) {
           event.preventDefault();
+          if (this._modal.modalCount > 0) return;
 
           this.manager.getZone().run(() => {
             handler(event);

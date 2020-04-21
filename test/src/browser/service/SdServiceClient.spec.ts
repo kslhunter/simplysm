@@ -1,5 +1,6 @@
 import {expect} from "chai";
-import {SdServiceClient, SdServiceEventBase} from "@simplysm/sd-service-client-browser";
+import {SdServiceEventBase} from "@simplysm/sd-service-common";
+import {SdServiceClient} from "@simplysm/sd-service-browser";
 
 describe("(browser) service.SdServiceClient", () => {
   class TestEvent extends SdServiceEventBase<{ name: string }, string> {

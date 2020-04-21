@@ -73,7 +73,7 @@ export class FsWatcher {
           {recursive: watchPath !== currWatchPath},
           async (event, filename: string | null) => {
             try {
-              const fullPath = currWatchPath !== watchPath && filename != null ?
+              const fullPath = currWatchPath !== watchPath && filename != undefined ?
                 path.resolve(currWatchPath, filename) :
                 currWatchPath;
 

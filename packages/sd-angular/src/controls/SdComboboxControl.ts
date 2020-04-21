@@ -142,7 +142,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     dropdownEl.addEventListener("blur", this.blurEventHandler, true);
 
     if (this.userCustomText) {
-      this.text = this.value != null ? this.value.toString() : this.value;
+      this.text = this.value != undefined ? this.value.toString() : this.value;
       this.textChange.emit(this.text);
     }
   }
@@ -243,7 +243,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
       }
     );
 
-    if (this.value == null && this.text != null) {
+    if (this.value == undefined && this.text != undefined) {
       this.text = this.userCustomText ? this.text : undefined;
       this.textChange.emit(this.text);
       return;
@@ -309,7 +309,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
   };
 
   private _refreshText(): void {
-    if (this.value != null) {
+    if (this.value != undefined) {
       if (!this.userCustomText) {
         const selectedItemControl = this.itemControls!.find(item => item.value === this.value);
 

@@ -1,5 +1,6 @@
 import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input, OnInit} from "@angular/core";
 import {SdInputValidate} from "../commons/SdInputValidate";
+import {sdThemes, TSdTheme} from "../commons";
 
 @Component({
   selector: "sd-progress-item",
@@ -38,10 +39,10 @@ export class SdProgressItemControl implements OnInit {
   @Input()
   @SdInputValidate({
     type: String,
-    includes: ["primary", "info", "success", "warning", "danger", "grey", "blue-grey"]
+    includes: sdThemes
   })
   @HostBinding("attr.sd-theme")
-  public theme?: "primary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
+  public theme?: TSdTheme;
 
   @Input()
   @SdInputValidate({

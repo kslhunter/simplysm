@@ -1,5 +1,6 @@
 declare module "iconv" {
   namespace Iconv {
+    // tslint:disable-next-line:interface-name
     interface Static {
 
       new(fromEncoding: string, toEncoding: string): Iconv;
@@ -7,6 +8,7 @@ declare module "iconv" {
       (fromEncoding: string, toEncoding: string): Iconv;
     }
 
+    // tslint:disable-next-line:interface-name
     interface Iconv extends NodeJS.WritableStream {
       writable: boolean;
 
@@ -33,6 +35,7 @@ declare module "iconv" {
     }
   }
 
+  //tslint:disable-next-line:variable-name
   const Iconv: { Iconv: Iconv.Static };
   export = Iconv;
 }
