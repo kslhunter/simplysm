@@ -2,7 +2,6 @@ import {DateTime} from "../types/DateTime";
 import {DateOnly} from "../types/DateOnly";
 import {Time} from "../types/Time";
 import {Uuid} from "../types/Uuid";
-import {Buffer} from "buffer";
 
 export class JsonConvert {
   public static stringify(obj: any,
@@ -40,29 +39,16 @@ export class JsonConvert {
           }
         };
       }
-      /*else if (currValue instanceof Buffer || currValue?.type === "Buffer") {
+      else if (currValue instanceof Buffer || currValue?.type === "Buffer") {
+        const arr = [];
+        for (const key1 of Object.keys(currValue)) {
+          arr[Number(key1)] = currValue[key1];
+        }
         return {
           __type__: "Buffer",
-          data: options?.hideBuffer !== undefined ? "__hidden__" : (currValue.data ?? currValue["_arr"])
+          data: options?.hideBuffer !== undefined ? "__hidden__" : arr
         };
-      }*/
-      /*else if (currValue instanceof Array && currValue.length > 0) {
-        const result = [];
-        for (const item of currValue) {
-          result.push(replacer(undefined, item));
-        }
-        return result;
       }
-      else if (currValue instanceof Object && Object.keys(currValue).length > 0) {
-        const result = {};
-        for (const key1 of Object.keys(currValue)) {
-          result[key1] = replacer(key1, currValue[key1]);
-        }
-        return result;
-      }
-      else {
-        return currValue;
-      }*/
       return currValue;
 
     };
@@ -70,12 +56,12 @@ export class JsonConvert {
     const prevDateToJson = Date.prototype.toJSON;
     delete Date.prototype.toJSON;
 
-    // const prevBufferToJson = Buffer.prototype.toJSON;
-    // delete Buffer.prototype.toJSON;
+    const prevBufferToJson = Buffer.prototype.toJSON;
+    delete Buffer.prototype.toJSON;
 
     const result1 = JSON.stringify(replacer(undefined, obj), replacer, options?.space);
     Date.prototype.toJSON = prevDateToJson;
-    // Buffer.prototype.toJSON = prevBufferToJson;
+    Buffer.prototype.toJSON = prevBufferToJson;
 
     return result1;
   }
@@ -105,7 +91,7 @@ export class JsonConvert {
         Object.assign(error, value.data);
         return error;
       }
-      else if (typeof value === "object" && value.type === "Buffer") {
+      else if (typeof value === "object" && value.__type__ === "Buffer") {
         return Buffer.from(value.data);
       }
 
