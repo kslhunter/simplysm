@@ -211,6 +211,7 @@ module.exports = {
         "@typescript-eslint/method-signature-style": "off",
         "@typescript-eslint/no-unsafe-assignment": "off",
         "@typescript-eslint/no-empty-interface": "off",
+        "@typescript-eslint/init-declarations:": "off",
 
         "@typescript-eslint/explicit-function-return-type": "off",
 
