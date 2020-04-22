@@ -780,6 +780,7 @@ export class SdSheetControl implements DoCheck, OnInit {
       {
         const headEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._head")!;
         const bodyEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._body")!;
+
         headEl.addEventListener("resize", event => {
           if (event.prevHeight !== event.newHeight) {
             bodyEl.style.paddingTop = event.newHeight + "px";
@@ -788,6 +789,10 @@ export class SdSheetControl implements DoCheck, OnInit {
 
         const paneEl = this._el.findFirst("> sd-dock-container > sd-pane")!;
         paneEl.addEventListener("mousewheel", event => {
+          if (Boolean(event["ctrlKey"]) || Boolean(event["altKey"])) {
+            return;
+          }
+
           event.preventDefault();
           event.stopPropagation();
 
@@ -852,7 +857,6 @@ export class SdSheetControl implements DoCheck, OnInit {
           }
 
           if (
-            this.autoSelect === "focus" &&
             event.target &&
             (event.target instanceof HTMLElement) &&
             event.target.findParent("._row")
@@ -865,9 +869,22 @@ export class SdSheetControl implements DoCheck, OnInit {
             const itemDef = this.getDisplayItemDefs().filter(item1 => item1.visible)[rowIndex];
             if (itemDef === undefined) return;
 
-            this._zone.run(() => {
-              this._selectItem(itemDef.item, itemDef.index);
-            });
+            if (this.autoSelect === "focus") {
+              this._zone.run(() => {
+                this._selectItem(itemDef.item, itemDef.index);
+              });
+            }
+            else if (
+              this.autoSelect === undefined &&
+              this.selectMode === "single" &&
+              this.selectedItems[0] !== undefined &&
+              this.selectedItems[0] !== itemDef.item
+            ) {
+              this._zone.run(() => {
+                this.selectedItems = [];
+                this.selectedItemsChange.emit(this.selectedItems);
+              });
+            }
           }
 
           const focusedEl = event.target as HTMLElement;

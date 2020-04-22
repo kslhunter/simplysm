@@ -37,6 +37,9 @@ export class ObjectUtils {
     if (source instanceof Uuid) {
       return new Uuid(source.toString());
     }
+    if (source instanceof Buffer) {
+      return Buffer.from(source.buffer);
+    }
     if (typeof source === "object") {
       const result: { [key: string]: any } = {};
       Object.setPrototypeOf(result, source.constructor.prototype);
@@ -79,7 +82,7 @@ export class ObjectUtils {
       return target as any;
     }
 
-    if (target instanceof Date || target instanceof DateTime || target instanceof DateOnly || target instanceof Time || target instanceof Uuid) {
+    if (target instanceof Date || target instanceof DateTime || target instanceof DateOnly || target instanceof Time || target instanceof Uuid || target instanceof Buffer) {
       return ObjectUtils.clone(target) as any;
     }
 

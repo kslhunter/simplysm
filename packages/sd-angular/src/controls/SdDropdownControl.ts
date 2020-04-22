@@ -34,6 +34,10 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   @SdInputValidate(Boolean)
   public disabled?: boolean;
 
+  @Input()
+  @SdInputValidate(Boolean)
+  public useAllBorderRadius?: boolean;
+
   @Output()
   public readonly open = new EventEmitter();
 
@@ -99,16 +103,18 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
     const top = placeBottom ? "" : (windowOffset.top + this._controlEl.offsetHeight) + "px";
     const bottom = placeBottom ? (window.innerHeight - windowOffset.top) + "px" : "";
-    const left = placeRight ? "" : windowOffset.left + 1 + "px";
-    const right = placeRight ? (window.innerWidth - windowOffset.left - this._controlEl.clientWidth) + "px" : "";
-    const minWidth = this._controlEl.clientWidth + "px";
+    const left = placeRight ? "" : windowOffset.left + "px";
+    const right = placeRight ? (window.innerWidth - windowOffset.left - this._controlEl.offsetWidth) + "px" : "";
+    const minWidth = this._controlEl.offsetWidth + "px";
     const opacity = "1";
     const pointerEvents = "auto";
     const transform = "none";
-    const borderTopRightRadius = placeBottom ? "4px" : "";
-    const borderTopLeftRadius = placeBottom ? "4px" : "";
-    const borderBottomRightRadius = placeBottom ? "" : "4px";
-    const borderBottomLeftRadius = placeBottom ? "" : "4px";
+    const borderTopRightRadius = this.useAllBorderRadius ? "4px" : placeBottom ? "4px" : "";
+    const borderTopLeftRadius = this.useAllBorderRadius ? "4px" : placeBottom ? "4px" : "";
+    const borderBottomRightRadius = this.useAllBorderRadius ? "4px" : placeBottom ? "" : "4px";
+    const borderBottomLeftRadius = this.useAllBorderRadius ? "4px" : placeBottom ? "" : "4px";
+    const paddingTop = this.useAllBorderRadius ? "4px" : placeBottom ? "4px" : "";
+    const paddingBottom = this.useAllBorderRadius ? "4px" : placeBottom ? "" : "4px";
 
     Object.assign(
       this._dropdownEl.style,
@@ -124,7 +130,9 @@ export class SdDropdownControl implements OnInit, OnDestroy {
         borderTopRightRadius,
         borderTopLeftRadius,
         borderBottomRightRadius,
-        borderBottomLeftRadius
+        borderBottomLeftRadius,
+        paddingTop,
+        paddingBottom
       }
     );
 

@@ -185,6 +185,7 @@ import * as marked from "marked";
             transition: outline-color .1s linear;
             outline: 1px solid transparent;
             outline-offset: -1px;
+            white-space: nowrap;
 
             &::-webkit-input-placeholder {
               color: var(--text-brightness-lighter);

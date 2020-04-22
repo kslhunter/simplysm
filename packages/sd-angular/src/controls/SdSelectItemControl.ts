@@ -18,13 +18,13 @@ import {JsonConvert} from "@simplysm/sd-core-common";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-container *ngIf="selectMode === 'multi'">
-      <sd-checkbox [value]="isSelected" inline="text"></sd-checkbox>
+      <sd-checkbox [value]="isSelected" inline="text" inset></sd-checkbox>
     </ng-container>
 
-    <span class="_label">
+    <span class="_label" style="display: inline-block">
       <ng-content></ng-content>
     </span>
-    <span class="_labelTemplate" hidden *ngIf="labelTemplateRef">
+    <span class="_labelTemplate" hidden *ngIf="labelTemplateRef" style="display: inline-block">
       <ng-template [ngTemplateOutlet]="labelTemplateRef"></ng-template>
     </span>`,
   styles: [/* language=SCSS */ `

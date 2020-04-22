@@ -364,7 +364,13 @@ export class SdSelectControl implements DoCheck, OnInit, AfterViewChecked {
         (
           this.selectMode === "multi" &&
           this.value instanceof Array &&
-          this.value.some((v: any) => JsonConvert.stringify(v) === item.getAttribute("sd-value-json"))
+          this.value.some((v: any) => (
+            (
+              !Boolean(v) &&
+              !Boolean(item.getAttribute("sd-value-json"))
+            ) ||
+            JsonConvert.stringify(v) === item.getAttribute("sd-value-json")
+          ))
         )
       ));
 

@@ -39,7 +39,7 @@ export class JsonConvert {
           }
         };
       }
-      else if (currValue instanceof Buffer || currValue?.type === "Buffer") {
+      /*else if (currValue instanceof Buffer || currValue?.type === "Buffer") {
         const arr = [];
         for (const key1 of Object.keys(currValue)) {
           arr[Number(key1)] = currValue[key1];
@@ -48,20 +48,19 @@ export class JsonConvert {
           __type__: "Buffer",
           data: options?.hideBuffer !== undefined ? "__hidden__" : arr
         };
-      }
+      }*/
       return currValue;
-
     };
 
     const prevDateToJson = Date.prototype.toJSON;
     delete Date.prototype.toJSON;
 
-    const prevBufferToJson = Buffer.prototype.toJSON;
-    delete Buffer.prototype.toJSON;
+    // const prevBufferToJson = Buffer.prototype.toJSON;
+    // delete Buffer.prototype.toJSON;
 
     const result1 = JSON.stringify(replacer(undefined, obj), replacer, options?.space);
     Date.prototype.toJSON = prevDateToJson;
-    Buffer.prototype.toJSON = prevBufferToJson;
+    // Buffer.prototype.toJSON = prevBufferToJson;
 
     return result1;
   }
@@ -91,7 +90,7 @@ export class JsonConvert {
         Object.assign(error, value.data);
         return error;
       }
-      else if (typeof value === "object" && value.__type__ === "Buffer") {
+      else if (typeof value === "object" && value.type === "Buffer") {
         return Buffer.from(value.data);
       }
 
