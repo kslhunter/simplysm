@@ -28,7 +28,7 @@ export class Queryable<D extends DbContext, T> {
   public readonly tableType?: Type<T>; // wrapping 사용시, undefined 일 수 있음
   private readonly _as?: string;
   private readonly _tableDef?: ITableDef; // wrapping 사용시, undefined 일 수 있음
-  private readonly _entity: TEntity<T>;
+  private _entity: TEntity<T>;
   private readonly _isCustomEntity: boolean = false;
 
   private readonly _def: IQueryableDef;
@@ -412,8 +412,12 @@ export class Queryable<D extends DbContext, T> {
   public wrap<R>(tableType: Type<R>): Queryable<D, R>;
   public wrap<R>(tableType?: Type<R>): Queryable<D, T | R> {
     const entity = this._generateSubEntity(this._entity, undefined, this._as, tableType !== undefined);
-    const from = tableType !== undefined ? this.distinct().getSelectDef() : this.getSelectDef();
-    return new Queryable<D, T | R>(this._db, tableType, this._as, entity, {from});
+
+    const clone: Queryable<D, T> = new Queryable(this._db, this);
+    clone._entity = this._generateSubEntity(this._entity, undefined, this._as, tableType !== undefined);
+
+    const from = tableType !== undefined ? clone.distinct().getSelectDef() : clone.getSelectDef();
+    return new Queryable<D, T | R>(clone._db, tableType, clone._as, entity, {from});
   }
 
   public getSelectDef(): ISelectQueryDef {
@@ -756,6 +760,12 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public async countAsync(): Promise<number> {
+    if (this._def.distinct) {
+      throw new Error("distinct 이후엔 'countAsync'를 사용할 수 없습니다." +
+        " 사용하려면 distinct와 countAsync 사이에 wrap을 먼저 사용하거나," +
+        " distinct대신 groupBy와 sorm.count 로 수동으로 처리하세요.");
+    }
+
     const queryable = this.select(() => ({cnt: new QueryUnit(Number, "COUNT(*)")}));
     queryable._def.orderBy?.remove(item1 => item1[0] === "[__searchOrder]");
     delete queryable._entity["__searchOrder"];
