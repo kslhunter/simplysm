@@ -11,9 +11,6 @@
     "types/*",
     "test"
   ],
-  "engines": {
-    "node": "^12.16.1"
-  },
   "scripts": {
     "-- watch": "",
     "build:watch": "yarn _sd-cli_ build --watch",
