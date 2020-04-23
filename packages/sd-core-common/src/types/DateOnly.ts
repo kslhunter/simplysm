@@ -20,7 +20,8 @@ export class DateOnly {
       this.date = arg1;
     }
     else {
-      this.date = new Date(arg1 - (arg1 % (24 * 60 * 60 * 1000)));
+      const date = new Date(arg1);
+      this.date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     }
   }
 

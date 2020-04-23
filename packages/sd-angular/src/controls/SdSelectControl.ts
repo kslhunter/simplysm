@@ -170,6 +170,12 @@ import {SdDropdownControl} from "./SdDropdownControl";
           outline: 1px solid var(--theme-color-primary-default);
           outline-offset: -1px;
         }
+
+        &[sd-disabled=true] /deep/ > sd-dropdown > div {
+          background: white !important;
+          color: var(--text-brightness-light);
+          cursor: default;
+        }
       }
     }
 

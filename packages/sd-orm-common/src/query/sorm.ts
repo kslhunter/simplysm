@@ -96,10 +96,10 @@ export const sorm = {
       }
 
       const result = [QueryUtils.getQueryValue(src), " NOT IN ", target.filterExists().mapMany(item => [QueryUtils.getQueryValue(item), ", "]).slice(0, -1)];
-      if (target.includes(undefined)) {
-        return sorm.and([
+      if (!target.includes(undefined)) {
+        return sorm.or([
           result,
-          sorm.notNull(src)
+          sorm.null(src)
         ]);
       }
 

@@ -165,7 +165,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
             </div>
 
             <!-- 합계 ROW -->
-            <div class="_row _summary_row" *ngIf="hasSummaryGroup">
+            <div class="_row _summary_row" *ngIf="hasSummaryGroup || hasOrderingColumn">
               <!-- 고정 셀 그룹 -->
               <div class="_cell-group _fixed-cell-group">
                 <div class="_border"></div>
@@ -707,6 +707,10 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public get hasSummaryGroup(): boolean {
     return (this.columnControls?.filter(item => Boolean(item.summaryTemplateRef)).length ?? 0) > 0;
+  }
+
+  public get hasOrderingColumn(): boolean {
+    return (this.columnControls?.filter(item => item.useOrdering === true).length ?? 0) > 0;
   }
 
   public get displayItems(): any[] {

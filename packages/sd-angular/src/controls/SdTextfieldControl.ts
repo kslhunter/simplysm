@@ -125,6 +125,11 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
       &[sd-inset=true] > textarea {
         border: none;
         border-radius: 0;
+
+        &:disabled {
+          background: white !important;
+          color: var(--text-brightness-light);
+        }
       }
 
       &[sd-inset=true] {

@@ -226,7 +226,8 @@ export class Queryable<D extends DbContext, T> {
       joinTableQueryable = new Queryable(this._db, joinTypeOrQrs, as);
     }
     const joinQueryable = fwd(joinTableQueryable, this._entity);
-    const joinEntity = joinQueryable._entity;
+    // const joinEntity = joinQueryable._entity;
+    const joinEntity = this._generateSubEntity(joinQueryable._entity, as, undefined);
 
     const entity = {...this._entity};
     this._setEntityChainValue(entity, as, isSingle ? joinEntity : [joinEntity]);
@@ -410,9 +411,8 @@ export class Queryable<D extends DbContext, T> {
   public wrap(): Queryable<D, T>;
   public wrap<R>(tableType: Type<R>): Queryable<D, R>;
   public wrap<R>(tableType?: Type<R>): Queryable<D, T | R> {
-    const entity = this._generateSubEntity(this._entity, this._as);
-
-    const from = this.getSelectDef();
+    const entity = this._generateSubEntity(this._entity, undefined, this._as, tableType !== undefined);
+    const from = tableType !== undefined ? this.distinct().getSelectDef() : this.getSelectDef();
     return new Queryable<D, T | R>(this._db, tableType, this._as, entity, {from});
   }
 
@@ -486,21 +486,21 @@ export class Queryable<D extends DbContext, T> {
     return ObjectUtils.clearUndefined(result);
   }
 
-  private _generateSubEntity<P>(fromEntity: TEntity<P>, parentAs?: string): TEntity<P> {
+  private _generateSubEntity<P>(fromEntity: TEntity<P>, currentAs?: string, parentAs?: string, noHirachical?: boolean): TEntity<P> {
     const result = {} as TEntity<P>;
 
     for (const key of Object.keys(fromEntity)) {
       const entityValue = fromEntity[key];
       if (QueryUtils.canGetQueryValue(entityValue)) {
-        result[key] = new QueryUnit(QueryUtils.getQueryValueType(entityValue), "[TBL].[" + (parentAs !== undefined ? `${parentAs}.` : "") + key + "]");
+        result[key] = new QueryUnit(QueryUtils.getQueryValueType(entityValue), "[TBL" + (currentAs !== undefined ? "." + currentAs : "") + "].[" + (parentAs !== undefined ? `${parentAs}.` : "") + key + "]");
       }
-      else if (entityValue instanceof Array) {
+      else if (!noHirachical && entityValue instanceof Array) {
         result[key] = [
-          this._generateSubEntity(entityValue[0], (parentAs !== undefined ? parentAs + "." : "") + key)
+          this._generateSubEntity(entityValue[0], currentAs, (parentAs !== undefined ? parentAs + "." : "") + key)
         ] as any;
       }
-      else {
-        result[key] = this._generateSubEntity(entityValue, (parentAs !== undefined ? parentAs + "." : "") + key);
+      else if (!noHirachical) {
+        result[key] = this._generateSubEntity(entityValue, currentAs, (parentAs !== undefined ? parentAs + "." : "") + key);
       }
     }
 

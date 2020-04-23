@@ -58,8 +58,13 @@ import {sdIconNames} from "../commons/sdIconNames";
       }
 
       &[sd-layout=flat] {
+        > ._content {
+          display: none;
+        }
+
         &[sd-has-children=true] {
           > ._content {
+            display: block;
             background: transparent;
             cursor: default;
             font-size: var(--font-size-sm);
@@ -77,7 +82,7 @@ import {sdIconNames} from "../commons/sdIconNames";
           > ._selected-icon {
             color: var(--theme-color-primary-default);
           }
-          
+
           &:hover,
           &:active {
             background: var(--theme-color-primary-default);

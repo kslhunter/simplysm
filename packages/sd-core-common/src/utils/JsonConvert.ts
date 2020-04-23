@@ -39,6 +39,12 @@ export class JsonConvert {
           }
         };
       }
+      else if (currValue?.type === "Buffer" && options?.hideBuffer === true) {
+        return {
+          __type__: "Buffer",
+          data: options?.hideBuffer !== undefined ? "__hidden__" : currValue["data"]
+        };
+      }
       /*else if (currValue instanceof Buffer || currValue?.type === "Buffer") {
         const arr = [];
         for (const key1 of Object.keys(currValue)) {

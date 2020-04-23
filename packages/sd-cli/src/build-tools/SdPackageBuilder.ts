@@ -1020,8 +1020,25 @@ export class SdPackageBuilder extends EventEmitter {
     }
 
     if (stats.hasErrors()) {
+      const errors = info.errors.map(item => {
+        return item.replace(/.*\.ts.*.html\([0-9]*,[0-9]*\)/g, item1 => {
+          const match = (/(.*\.ts).*.html\(([0-9]*),([0-9]*)\)/).exec(item1);
+          if (!match) throw new NeverEntryError();
+
+          const tsFilePath = match[1];
+          let line = Number(match[2]);
+          const char = Number(match[3]);
+          const content = FsUtils.readFile(tsFilePath);
+          const contentSplit = content.split("\n");
+          const lineText = contentSplit.single(item2 => item2.startsWith("  template:"))!;
+          const index = contentSplit.indexOf(lineText);
+          line += index;
+          return tsFilePath + "(" + line + "," + char + ")";
+        });
+      });
+
       results.push(
-        ...info.errors.map(item => ({
+        ...errors.map(item => ({
           filePath: undefined,
           severity: "error" as const,
           message: item.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item

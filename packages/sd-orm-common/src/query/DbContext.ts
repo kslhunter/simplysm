@@ -130,6 +130,10 @@ export abstract class DbContext {
     return await this._executor.executeDefsAsync(defs, options);
   }
 
+  public async executeQueriesAsync(queries: string[]): Promise<any[][]> {
+    return await this._executor.executeAsync(queries);
+  }
+
   public async executePreparedAsync(): Promise<any[][]> {
     if (this.prepareDefs.length < 1) {
       return [];
