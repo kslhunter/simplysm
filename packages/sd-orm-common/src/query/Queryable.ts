@@ -226,8 +226,7 @@ export class Queryable<D extends DbContext, T> {
       joinTableQueryable = new Queryable(this._db, joinTypeOrQrs, as);
     }
     const joinQueryable = fwd(joinTableQueryable, this._entity);
-    // const joinEntity = joinQueryable._entity;
-    const joinEntity = this._generateSubEntity(joinQueryable._entity, as, undefined);
+    const joinEntity = this._getParentEntity(joinQueryable._entity, as, undefined);
 
     const entity = {...this._entity};
     this._setEntityChainValue(entity, as, isSingle ? joinEntity : [joinEntity]);
@@ -409,15 +408,24 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public wrap(): Queryable<D, T>;
-  public wrap<R>(tableType: Type<R>): Queryable<D, R>;
-  public wrap<R>(tableType?: Type<R>): Queryable<D, T | R> {
-    const entity = this._generateSubEntity(this._entity, undefined, this._as, tableType !== undefined);
-
+  public wrap<R extends Partial<T>>(tableType: Type<R>): Queryable<D, R>;
+  public wrap<R extends Partial<T>>(tableType?: Type<R>): Queryable<D, T | R> {
     const clone: Queryable<D, T> = new Queryable(this._db, this);
-    clone._entity = this._generateSubEntity(this._entity, undefined, this._as, tableType !== undefined);
+    if (tableType !== undefined) {
+      const cloneEntity: any = {};
+      for (const key of Object.keys(this._entity)) {
+        const entityValue = this._entity[key];
+        if (QueryUtils.canGetQueryValue(entityValue)) {
+          cloneEntity[key] = entityValue;
+        }
+      }
+      clone._entity = cloneEntity;
+    }
+    const subFrom = clone.getSelectDef();
 
-    const from = tableType !== undefined ? clone.distinct().getSelectDef() : clone.getSelectDef();
-    return new Queryable<D, T | R>(clone._db, tableType, clone._as, entity, {from});
+    const currEntity = this._getParentEntity(clone._entity, this._as, undefined);
+
+    return new Queryable<D, T | R>(this._db, tableType, this._as, currEntity, {from: subFrom});
   }
 
   public getSelectDef(): ISelectQueryDef {
@@ -490,26 +498,25 @@ export class Queryable<D extends DbContext, T> {
     return ObjectUtils.clearUndefined(result);
   }
 
-  private _generateSubEntity<P>(fromEntity: TEntity<P>, currentAs?: string, parentAs?: string, noHirachical?: boolean): TEntity<P> {
-    const result = {} as TEntity<P>;
 
+  private _getParentEntity<P>(fromEntity: TEntity<P>, rootAs: string | undefined, parentAs: string | undefined): TEntity<P> {
+    const result: any = {};
     for (const key of Object.keys(fromEntity)) {
       const entityValue = fromEntity[key];
       if (QueryUtils.canGetQueryValue(entityValue)) {
-        result[key] = new QueryUnit(QueryUtils.getQueryValueType(entityValue), "[TBL" + (currentAs !== undefined ? "." + currentAs : "") + "].[" + (parentAs !== undefined ? `${parentAs}.` : "") + key + "]");
+        result[key] = new QueryUnit(QueryUtils.getQueryValueType(entityValue), "[TBL" + (rootAs !== undefined ? "." + rootAs : "") + "].[" + (parentAs !== undefined ? `${parentAs}.` : "") + key + "]");
       }
-      else if (!noHirachical && entityValue instanceof Array) {
+      else if (entityValue instanceof Array) {
         result[key] = [
-          this._generateSubEntity(entityValue[0], currentAs, (parentAs !== undefined ? parentAs + "." : "") + key)
+          this._getParentEntity(entityValue[0], rootAs, (parentAs !== undefined ? parentAs + "." : "") + key)
         ] as any;
       }
-      else if (!noHirachical) {
-        result[key] = this._generateSubEntity(entityValue, currentAs, (parentAs !== undefined ? parentAs + "." : "") + key);
+      else {
+        result[key] = this._getParentEntity(entityValue, rootAs, (parentAs !== undefined ? parentAs + "." : "") + key);
       }
     }
-
     return result;
-  }
+  };
 
   public getInsertDef(obj: InsertObject<T>): IInsertQueryDef {
     if (this._def.join !== undefined) {
