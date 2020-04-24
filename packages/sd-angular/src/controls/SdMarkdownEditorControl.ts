@@ -17,241 +17,239 @@ import * as marked from "marked";
   selector: "sd-markdown-editor",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-dock-container>
-      <sd-dock class="_toolbar" *ngIf="!disabled">
-        <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
-          <sd-icon [icon]="'eye'"></sd-icon>
-        </sd-anchor>
-        <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
-          <sd-icon [icon]="'pen'"></sd-icon>
-        </sd-anchor>
-        <sd-anchor (click)="viewState = 'help'" [class._selected]="viewState === 'help'">
-          <sd-icon [icon]="'question'"></sd-icon>
-        </sd-anchor>
-        <ng-container *ngIf="rowsButton && viewState === 'edit'">
-          |
-          <sd-anchor (click)="rows = rows + 1">
-            <sd-icon [icon]="'plus'"></sd-icon>
-          </sd-anchor>
-          <sd-anchor (click)="rows = rows - 1" *ngIf="rows > 1">
-            <sd-icon [icon]="'minus'"></sd-icon>
-          </sd-anchor>
-        </ng-container>
-      </sd-dock>
+    <div class="_toolbar" *ngIf="!disabled">
+      <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
+        <sd-icon [icon]="'eye'"></sd-icon>
+      </sd-anchor>
+      <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
+        <sd-icon [icon]="'pen'"></sd-icon>
+      </sd-anchor>
+      <sd-anchor (click)="viewState = 'help'" [class._selected]="viewState === 'help'">
+        <sd-icon [icon]="'question'"></sd-icon>
+      </sd-anchor>
+    </div>
 
-      <sd-pane>
-        <div class="_editor" *ngIf="viewState === 'edit' && !disabled">
-        <textarea [value]="value || ''"
-                  [rows]="rows"
-                  (input)="onTextareaInput($event)"
-                  (dragover)="onTextareaDragover($event)"
-                  (dragleave)="onTextareaDragLeave($event)"
-                  (drop)="onTextareaDrop($event)"
-                  (paste)="onTextareaPaste($event)"
-                  [style.resize]="resize"></textarea>
-          <div class="_dragover" *ngIf="viewState === 'edit' && !disabled">파일을 내려놓으세요.</div>
+    <div class="_editor" *ngIf="viewState === 'edit' && !disabled">
+          <textarea [value]="value || ''"
+                    [rows]="rows"
+                    (input)="onTextareaInput($event)"
+                    (dragover)="onTextareaDragover($event)"
+                    (dragleave)="onTextareaDragLeave($event)"
+                    (drop)="onTextareaDrop($event)"
+                    (paste)="onTextareaPaste($event)"
+                    [style.resize]="resize"></textarea>
+      <div class="_dragover" *ngIf="viewState === 'edit' && !disabled">파일을 내려놓으세요.</div>
+    </div>
+    <div class="_preview" [hidden]="viewState !== 'preview' && !disabled">
+      <sd-busy-container [busy]="busyCount > 0" [innerHTML]="innerHTML" type="bar">
+      </sd-busy-container>
+    </div>
+    <div *ngIf="viewState === 'help'" class="_help sd-padding-default">
+      <div class="sd-margin-bottom-default">
+        <h4 class="sd-margin-bottom-xs">강조</h4>
+        <div class="sd-padding-default sd-background-grey-lightest"
+             style="border-radius: 2px;">
+          <div style="font-weight: bold">**굵게**</div>
+          <div style="font-style: italic;">*기울임*</div>
+          <div style="text-decoration: line-through;">~~취소선~~</div>
         </div>
-        <div class="_preview" [hidden]="viewState !== 'preview' && !disabled">
-          <sd-busy-container [busy]="busyCount > 0" [innerHTML]="innerHTML">
-          </sd-busy-container>
+      </div>
+
+      <div class="sd-margin-bottom-default">
+        <h4 class="sd-margin-bottom-xs">헤더</h4>
+        <div class="sd-padding-default sd-background-grey-lightest"
+             style="border-radius: 2px;">
+          <h1># 헤더 1</h1>
+          <h2>## 헤더 2</h2>
+          <h3>### 헤더 3</h3>
+          <h4>#### 헤더 4</h4>
         </div>
-        <div *ngIf="viewState === 'help'" class="_help sd-padding-default">
-          <div class="sd-margin-bottom-default">
-            <h4 class="sd-margin-bottom-xs">강조</h4>
-            <div class="sd-padding-default sd-background-grey-lightest"
-                 style="border-radius: 2px;">
-              <div style="font-weight: bold">**굵게**</div>
-              <div style="font-style: italic;">*기울임*</div>
-              <div style="text-decoration: line-through;">~~취소선~~</div>
-            </div>
-          </div>
+      </div>
 
-          <div class="sd-margin-bottom-default">
-            <h4 class="sd-margin-bottom-xs">헤더</h4>
-            <div class="sd-padding-default sd-background-grey-lightest"
-                 style="border-radius: 2px;">
-              <h1># 헤더 1</h1>
-              <h2>## 헤더 2</h2>
-              <h3>### 헤더 3</h3>
-              <h4>#### 헤더 4</h4>
-            </div>
-          </div>
-
-          <div class="sd-margin-bottom-default">
-            <h4 class="sd-margin-bottom-xs">목록</h4>
-            <div class="sd-padding-default sd-background-grey-lightest"
-                 style="border-radius: 2px;">
-              <div>* 일반목록 항목</div>
-              <div>* 일반목록 항목</div>
-              <br/>
-              <div>1. 순번목록 항목</div>
-              <div>2. 순번목록 항목</div>
-            </div>
-          </div>
-
-          <div class="sd-margin-bottom-default">
-            <h4 class="sd-margin-bottom-xs">링크</h4>
-            <div class="sd-padding-default sd-background-grey-lightest"
-                 style="border-radius: 2px;">
-              [보여줄텍스트](http://www.example.com)
-            </div>
-          </div>
-
-          <div class="sd-margin-bottom-default">
-            <h4 class="sd-margin-bottom-xs">참조</h4>
-            <div class="sd-padding-default sd-background-grey-lightest"
-                 style="border-radius: 2px;">
-              > 참조입니다.<br/>
-              > 여러줄을 적을 수 있습니다.
-            </div>
-          </div>
-
-          <div class="sd-margin-bottom-default">
-            <h4 class="sd-margin-bottom-xs">이미지</h4>
-            <div class="sd-padding-default sd-background-grey-lightest"
-                 style="border-radius: 2px;">
-              ![이미지타이틀](http://www.example.com/image.jpg)
-            </div>
-          </div>
-
-          <div class="sd-margin-bottom-default">
-            <h4 class="sd-margin-bottom-xs">표</h4>
-            <div class="sd-padding-default sd-background-grey-lightest"
-                 style="border-radius: 2px;">
-              | 컬럼 1 | 컬럼 2 | 컬럼 3 |<br/>
-              | - | - | - |<br/>
-              | 홍 | 길동 | 남성 |<br/>
-              | 김 | 영희 | 여성 |
-            </div>
-          </div>
-
-          <div class="sd-margin-bottom-default">
-            <h4 class="sd-margin-bottom-xs">코드</h4>
-            <div class="sd-padding-default sd-background-grey-lightest"
-                 style="border-radius: 2px;">
-              \`var example = "hello!";\`<br/>
-              <br/>
-              여러줄일 경우, 아래와 같이...<br/>
-              <br/>
-              \`\`\`<br/>
-              var example = "hello!";<br/>
-              alert(example);<br/>
-              \`\`\`
-            </div>
-          </div>
+      <div class="sd-margin-bottom-default">
+        <h4 class="sd-margin-bottom-xs">목록</h4>
+        <div class="sd-padding-default sd-background-grey-lightest"
+             style="border-radius: 2px;">
+          <div>* 일반목록 항목</div>
+          <div>* 일반목록 항목</div>
+          <br/>
+          <div>1. 순번목록 항목</div>
+          <div>2. 순번목록 항목</div>
         </div>
-        <div class="_invalid-indicator"></div>
-      </sd-pane>
-    </sd-dock-container>`,
+      </div>
+
+      <div class="sd-margin-bottom-default">
+        <h4 class="sd-margin-bottom-xs">링크</h4>
+        <div class="sd-padding-default sd-background-grey-lightest"
+             style="border-radius: 2px;">
+          [보여줄텍스트](http://www.example.com)
+        </div>
+      </div>
+
+      <div class="sd-margin-bottom-default">
+        <h4 class="sd-margin-bottom-xs">참조</h4>
+        <div class="sd-padding-default sd-background-grey-lightest"
+             style="border-radius: 2px;">
+          > 참조입니다.<br/>
+          > 여러줄을 적을 수 있습니다.
+        </div>
+      </div>
+
+      <div class="sd-margin-bottom-default">
+        <h4 class="sd-margin-bottom-xs">이미지</h4>
+        <div class="sd-padding-default sd-background-grey-lightest"
+             style="border-radius: 2px;">
+          ![이미지타이틀](http://www.example.com/image.jpg)
+        </div>
+      </div>
+
+      <div class="sd-margin-bottom-default">
+        <h4 class="sd-margin-bottom-xs">표</h4>
+        <div class="sd-padding-default sd-background-grey-lightest"
+             style="border-radius: 2px;">
+          | 컬럼 1 | 컬럼 2 | 컬럼 3 |<br/>
+          | - | - | - |<br/>
+          | 홍 | 길동 | 남성 |<br/>
+          | 김 | 영희 | 여성 |
+        </div>
+      </div>
+
+      <div class="sd-margin-bottom-default">
+        <h4 class="sd-margin-bottom-xs">코드</h4>
+        <div class="sd-padding-default sd-background-grey-lightest"
+             style="border-radius: 2px;">
+          \`var example = "hello!";\`<br/>
+          <br/>
+          여러줄일 경우, 아래와 같이...<br/>
+          <br/>
+          \`\`\`<br/>
+          var example = "hello!";<br/>
+          alert(example);<br/>
+          \`\`\`
+        </div>
+      </div>
+    </div>
+    <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
 
     :host {
       display: block;
-      border: 1px solid var(--sd-border-color);
+      position: relative;
 
-      /deep/ > sd-dock-container {
-        > ._toolbar {
-          user-select: none;
-          border-bottom: 1px solid var(--sd-border-color);
+      > ._toolbar {
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        right: 0;
+        user-select: none;
 
-          > sd-anchor {
-            display: inline-block;
-            padding: var(--gap-sm) 0;
-            text-align: center;
-            width: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+        > sd-anchor {
+          display: inline-block;
+          padding: var(--gap-sm) var(--gap-default);
+          text-align: center;
+          border-radius: 100%;
+          opacity: 0.2;
 
-            &:hover {
-              background: rgba(0, 0, 0, .05);
-            }
+          &:hover {
+            opacity: 0.7;
+          }
 
-            &._selected {
-              background: var(--theme-color-primary-default);
-              color: var(--text-brightness-rev-default);
-            }
+          &._selected {
+            display: none;
+          }
+        }
+      }
+
+      > ._editor {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border: 1px solid var(--sd-border-color);
+
+        > textarea {
+          @include form-control-base();
+          height: 100%;
+          background: var(--theme-color-secondary-lightest);
+          border: none;
+          transition: outline-color .1s linear;
+          outline: 1px solid transparent;
+          outline-offset: -1px;
+          white-space: nowrap;
+
+          &::-webkit-input-placeholder {
+            color: var(--text-brightness-lighter);
+          }
+
+          &:focus {
+            outline-color: var(--theme-color-primary-default);
+          }
+
+          > ._invalid-indicator {
+            display: none;
+          }
+
+          > input[sd-invalid=true] + ._invalid-indicator,
+          > input:invalid + ._invalid-indicator {
+            @include invalid-indicator();
           }
         }
 
-        > sd-pane > ._editor {
-          position: relative;
+        > ._dragover {
+          display: none;
+          pointer-events: none;
+          position: absolute;
+          top: 0;
+          left: 0;
           width: 100%;
           height: 100%;
+          background: rgba(0, 0, 0, .05);
+          font-size: var(--font-size-h1);
+          color: rgba(0, 0, 0, .3);
+          text-align: center;
+          padding-top: 20px;
+        }
+      }
 
-          > textarea {
-            @include form-control-base();
-            height: 100%;
-            background: var(--theme-color-secondary-lightest);
-            border: none;
-            transition: outline-color .1s linear;
-            outline: 1px solid transparent;
-            outline-offset: -1px;
-            white-space: nowrap;
+      > ._preview {
+        padding: var(--gap-sm);
+        height: 100%;
+        overflow: auto;
+        background: white;
+        min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) + 2px);
 
-            &::-webkit-input-placeholder {
-              color: var(--text-brightness-lighter);
-            }
+        ol {
+          padding-left: 20px;
+        }
 
-            &:focus {
-              outline-color: var(--theme-color-primary-default);
-            }
+        code {
+          background: rgba(0, 0, 0, .05);
+          border-radius: 2px;
+        }
 
-            > ._invalid-indicator {
-              display: none;
-            }
+        pre {
+          background: rgba(0, 0, 0, .05);
+          padding: var(--gap-sm) var(--gap-default);
+          border-radius: 2px;
+          white-space: pre-wrap;
 
-            > input[sd-invalid=true] + ._invalid-indicator,
-            > input:invalid + ._invalid-indicator {
-              @include invalid-indicator();
-            }
-          }
-
-          > ._dragover {
-            display: none;
-            pointer-events: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, .05);
-            font-size: var(--font-size-h1);
-            color: rgba(0, 0, 0, .3);
-            text-align: center;
-            padding-top: 20px;
+          > code {
+            background: transparent;
           }
         }
 
-        > sd-pane > ._preview {
-          padding: var(--gap-sm);
-          height: 100%;
-          overflow: auto;
-          background: white;
-
-          ol {
-            padding-left: 20px;
-          }
-
-          code {
-            background: rgba(0, 0, 0, .05);
-            border-radius: 2px;
-          }
-
-          pre {
-            background: rgba(0, 0, 0, .05);
-            padding: var(--gap-sm) var(--gap-default);
-            border-radius: 2px;
-            white-space: pre-wrap;
-
-            > code {
-              background: transparent;
-            }
-          }
-
-          p {
-            margin-top: var(--gap-sm);
-            margin-bottom: var(--gap-sm);
-          }
+        p {
+          margin-top: var(--gap-sm);
+          margin-bottom: var(--gap-sm);
         }
+      }
+
+      > ._help {
+        padding: var(--gap-sm);
+        border: 1px solid var(--sd-border-color);
+        height: 100%;
+        overflow: auto;
+        background: white;
       }
 
       &[sd-inset=true] {
@@ -263,20 +261,17 @@ import * as marked from "marked";
       }
 
       &[sd-disabled=true] {
-        /deep/ > sd-dock-container {
-          > sd-pane > ._preview {
-            height: auto;
-          }
+        > ._preview {
+          height: auto;
         }
       }
 
       &[sd-dragover=true] {
-        /deep/ > sd-dock-container > sd-pane > ._editor > ._dragover {
+        > ._editor > ._dragover {
           display: block;
         }
       }
     }
-
   `]
 })
 export class SdMarkdownEditorControl implements OnChanges {
@@ -319,10 +314,6 @@ export class SdMarkdownEditorControl implements OnChanges {
   @Input()
   @SdInputValidate({type: Number, notnull: true})
   public rows = 3;
-
-  @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
-  public rowsButton = true;
 
   @Input()
   @SdInputValidate({type: Boolean, notnull: true})

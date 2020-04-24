@@ -22,6 +22,10 @@ body {
 }
 
 // DEFAULT TAGS
+p {
+  margin: 0;
+}
+
 pre, code {
   font-size: var(--font-size-default);
   line-height: var(--line-height);
@@ -48,6 +52,7 @@ code {
 *[hidden] {
   display: none !important;
 }
+
 *[unvisible=true] {
   visibility: hidden !important;
   width: 0 !important;

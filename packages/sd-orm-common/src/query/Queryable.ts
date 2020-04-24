@@ -420,6 +420,7 @@ export class Queryable<D extends DbContext, T> {
         }
       }
       clone._entity = cloneEntity;
+      clone._def.distinct = true;
     }
     const subFrom = clone.getSelectDef();
 
@@ -516,7 +517,7 @@ export class Queryable<D extends DbContext, T> {
       }
     }
     return result;
-  };
+  }
 
   public getInsertDef(obj: InsertObject<T>): IInsertQueryDef {
     if (this._def.join !== undefined) {

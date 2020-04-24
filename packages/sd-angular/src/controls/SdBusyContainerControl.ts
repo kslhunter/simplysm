@@ -80,6 +80,8 @@ import {SdBusyContainerRootProvider} from "../root-providers/SdBusyContainerRoot
       }
 
       &[sd-type=bar] {
+        min-height: 2px;
+
         > ._screen > ._rect {
           > ._indicator {
           }

@@ -86,7 +86,7 @@ export class DbConnection extends EventEmitter {
       this._stopTimeout();
 
       if (!this._conn || !this.isConnected) {
-        reject(new Error("'Connection'이 연결되어있지 않습니다."));
+        // reject(new Error("'Connection'이 연결되어있지 않습니다."));
         return;
       }
 
