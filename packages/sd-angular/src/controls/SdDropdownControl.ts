@@ -56,10 +56,6 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     this._mouseoverEl = event.target as HTMLElement;
   };
 
-  public get isDropdownLocatedTop(): boolean {
-    return this._controlEl !== undefined ? window.innerHeight < this._controlEl.getRelativeOffset(window.document.body).top * 2 : false;
-  }
-
   public constructor(private readonly _elRef: ElementRef) {
     this._el = (this._elRef.nativeElement as HTMLElement);
   }

@@ -1,17 +1,20 @@
 import {
+  AfterContentChecked,
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ContentChild,
   ElementRef,
+  EventEmitter,
   forwardRef,
   HostBinding,
   HostListener,
   Inject,
   Input,
+  Output,
   TemplateRef
 } from "@angular/core";
 import {SdSelectControl} from "./SdSelectControl";
-import {JsonConvert} from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-select-item",
@@ -21,12 +24,14 @@ import {JsonConvert} from "@simplysm/sd-core-common";
       <sd-checkbox [value]="isSelected" inline="text" inset></sd-checkbox>
     </ng-container>
 
-    <span class="_label" style="display: inline-block">
-      <ng-content></ng-content>
-    </span>
-    <span class="_labelTemplate" hidden *ngIf="labelTemplateRef" style="display: inline-block">
-      <ng-template [ngTemplateOutlet]="labelTemplateRef"></ng-template>
-    </span>`,
+    <div class="_content" style="display: inline-block;">
+      <ng-container *ngIf="!labelTemplateRef">
+        <ng-content></ng-content>
+      </ng-container>
+      <ng-container *ngIf="labelTemplateRef">
+        <ng-template [ngTemplateOutlet]="labelTemplateRef"></ng-template>
+      </ng-container>
+    </div>`,
   styles: [/* language=SCSS */ `
     :host {
       display: block;
@@ -46,7 +51,7 @@ import {JsonConvert} from "@simplysm/sd-core-common";
         background: rgba(0, 0, 0, .07);
       }
 
-      &._selected {
+      &[sd-selected=true] {
         color: var(--theme-color-primary-default);
         font-weight: bold;
         background: rgba(0, 0, 0, .07);
@@ -54,22 +59,12 @@ import {JsonConvert} from "@simplysm/sd-core-common";
     }
   `]
 })
-export class SdSelectItemControl {
+export class SdSelectItemControl implements AfterViewInit, AfterContentChecked {
   @HostBinding("attr.tabindex")
   public tabIndex = 0;
 
   @Input()
-  public set value(value: any) {
-    this._value = value;
-
-    this._el.setAttribute("sd-value-json", JsonConvert.stringify(value) ?? "");
-  }
-
-  public get value(): any {
-    return this._value;
-  }
-
-  private _value: any;
+  public value?: any;
 
   @ContentChild("label", {static: true})
   public labelTemplateRef?: TemplateRef<any>;
@@ -79,33 +74,34 @@ export class SdSelectItemControl {
     return this._selectControl.selectMode;
   }
 
-  @HostBinding("class._selected")
+  @HostBinding("attr.sd-selected")
   public get isSelected(): boolean {
-    const keyProp = this._selectControl.keyProp;
-    const parentValue = this._selectControl.value;
-
-    if (this.selectMode === "multi") {
-      const parentKeyValues = keyProp !== undefined && parentValue !== undefined ? parentValue.map((item: any) => item[keyProp]) : parentValue;
-      const itemKeyValue = keyProp !== undefined && this.value !== undefined ? this.value[keyProp] : this.value;
-      return parentKeyValues.includes(itemKeyValue);
-    }
-    else {
-      const parentKeyValue = keyProp !== undefined && parentValue !== undefined ? parentValue[keyProp] : parentValue;
-      const itemKeyValue = keyProp !== undefined && this.value !== undefined ? this.value[keyProp] : this.value;
-      return parentKeyValue === itemKeyValue;
-    }
+    return this._selectControl.getIsSelectedItemControl(this);
   }
 
-  public get content(): string {
-    return (this._elRef.nativeElement as HTMLElement).innerHTML.trim();
-  }
+  public contentHTML = "";
+  public el: HTMLElement;
 
-  private readonly _el: HTMLElement;
+  @Output()
+  public readonly contentHTMLChange = new EventEmitter<string>();
 
   public constructor(@Inject(forwardRef(() => SdSelectControl))
                      private readonly _selectControl: SdSelectControl,
                      private readonly _elRef: ElementRef) {
-    this._el = (this._elRef.nativeElement as HTMLElement);
+    this.el = this._elRef.nativeElement;
+  }
+
+  public ngAfterViewInit(): void {
+    this.contentHTML = this.el.findFirst("> ._content")?.innerHTML ?? "";
+    this._selectControl.onItemControlContentChanged(this);
+  }
+
+  public ngAfterContentChecked(): void {
+    const newContentHTML = this.el.findFirst("> ._content")?.innerHTML ?? "";
+    if (newContentHTML !== this.contentHTML) {
+      this.contentHTML = newContentHTML;
+      this._selectControl.onItemControlContentChanged(this);
+    }
   }
 
   @HostListener("click", ["$event"])
@@ -113,6 +109,6 @@ export class SdSelectItemControl {
     event.preventDefault();
     event.stopPropagation();
 
-    this._selectControl.setValue(this.value);
+    this._selectControl.onItemControlClick(this);
   }
 }

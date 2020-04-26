@@ -1,5 +1,5 @@
 import {
-  AfterViewChecked,
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -11,21 +11,21 @@ import {
   Input,
   IterableDiffer,
   IterableDiffers,
-  OnInit,
   Output,
   TemplateRef,
   ViewChild
 } from "@angular/core";
 import {SdInputValidate} from "../commons/SdInputValidate";
-import {JsonConvert} from "@simplysm/sd-core-common";
 import {SdDropdownControl} from "./SdDropdownControl";
+import {SdSelectItemControl} from "./SdSelectItemControl";
+import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 
 @Component({
   selector: "sd-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-dropdown #dropdown [disabled]="disabled" (open)="open.emit()">
-      <div class="_sd-select-content"></div>
+      <div [innerHTML]="contentHTML"></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">
         <sd-icon fixedWidth icon="caret-down"></sd-icon>
@@ -184,35 +184,27 @@ import {SdDropdownControl} from "./SdDropdownControl";
     }
   `]
 })
-export class SdSelectControl implements DoCheck, OnInit, AfterViewChecked {
+export class SdSelectControl implements DoCheck, AfterViewInit {
   @Input()
-  public set value(value: any) {
-    this._value = value;
-    this._refreshContent();
-    this._refreshInvalid();
+  public set value(value: any | any[] | undefined) {
+    if (this._value !== value) {
+      this._value = value;
+      this._refreshContent();
+    }
   }
 
-  public get value(): any {
+  public get value(): any | any[] | undefined {
     return this._value;
   }
 
-  private _value: any;
+  private _value?: any | any[];
 
   @Output()
-  public readonly valueChange = new EventEmitter<any>();
+  public readonly valueChange = new EventEmitter<any | any[]>();
 
   @Input()
   @SdInputValidate(Boolean)
-  public set required(value: boolean | undefined) {
-    this._required = value;
-    this._refreshInvalid();
-  }
-
-  public get required(): boolean | undefined {
-    return this._required;
-  }
-
-  private _required: boolean | undefined;
+  public required?: boolean;
 
   @Input()
   @HostBinding("attr.sd-disabled")
@@ -221,7 +213,16 @@ export class SdSelectControl implements DoCheck, OnInit, AfterViewChecked {
 
   @Input()
   @SdInputValidate(String)
-  public keyProp?: string;
+  public set keyProp(value: string | undefined) {
+    this._keyProp = value;
+    this._refreshContent();
+  }
+
+  public get keyProp(): string | undefined {
+    return this._keyProp;
+  }
+
+  private _keyProp?: string;
 
   @ViewChild("dropdown", {static: true})
   public dropdownControl?: SdDropdownControl;
@@ -273,41 +274,39 @@ export class SdSelectControl implements DoCheck, OnInit, AfterViewChecked {
 
   @Input()
   @SdInputValidate({type: String, includes: ["single", "multi"], notnull: true})
-  public selectMode: "single" | "multi" = "single";
-
-  public get isDropdownLocatedTop(): boolean {
-    return this.dropdownControl ? this.dropdownControl.isDropdownLocatedTop : false;
+  public set selectMode(value: "single" | "multi") {
+    if (this._selectMode !== value) {
+      this._selectMode = value;
+      this._refreshContent();
+    }
   }
 
-  public trackByItemFn(index: number, item: any): any {
+  public get selectMode(): "single" | "multi" {
+    return this._selectMode;
+  }
+
+  private _selectMode: "single" | "multi" = "single";
+
+  public trackByItemFn = (index: number, item: any) => {
     if (this.trackByFn) {
       return this.trackByFn(index, item) ?? item;
     }
     else {
       return item;
     }
-  }
+  };
+
+  public itemControls: SdSelectItemControl[] = [];
+  public contentHTML?: SafeHtml;
 
   private readonly _itemsIterableDiffer: IterableDiffer<any>;
   private readonly _valueIterableDiffer: IterableDiffer<any>;
-  private readonly _itemElsIterableDiffer: IterableDiffer<any>;
-
-  private readonly _el: HTMLElement;
-  private _contentEl?: HTMLElement;
-  private _popupEl?: HTMLElement;
 
   public constructor(private readonly _iterableDiffers: IterableDiffers,
                      private readonly _cdr: ChangeDetectorRef,
-                     private readonly _elRef: ElementRef) {
-    this._el = (this._elRef.nativeElement as HTMLElement);
+                     private readonly _domSanitizer: DomSanitizer) {
     this._itemsIterableDiffer = this._iterableDiffers.find([]).create((index, item) => this.trackByItemFn(index, item));
     this._valueIterableDiffer = this._iterableDiffers.find([]).create();
-    this._itemElsIterableDiffer = this._iterableDiffers.find([]).create();
-  }
-
-  public ngOnInit(): void {
-    this._contentEl = this._el.findAll("._sd-select-content")[0];
-    this._popupEl = this._el.findAll("sd-dropdown-popup")[0];
   }
 
   public ngDoCheck(): void {
@@ -317,33 +316,40 @@ export class SdSelectControl implements DoCheck, OnInit, AfterViewChecked {
     if (this._value instanceof Array && this._valueIterableDiffer.diff(this._value)) {
       this._cdr.markForCheck();
     }
-    if (this.popupElRef) {
-      const itemEls = this.popupElRef.nativeElement.findAll("sd-select-item");
-      if (this._itemElsIterableDiffer.diff(itemEls)) {
-        this._cdr.markForCheck();
-      }
-    }
   }
 
-  public ngAfterViewChecked(): void {
-    this._refreshContent();
-  }
-
-  public setValue(value: any): void {
-    if (this.selectMode === "multi") {
-      this._value = this._value ?? [];
-      if (this._value.includes(value) === true) {
-        this._value.remove(value);
-      }
-      else {
-        this._value.push(value);
-      }
-      this.valueChange.emit(this.value);
+  public getIsSelectedItemControl(itemControl: SdSelectItemControl): boolean {
+    if (this._selectMode === "multi") {
+      const parentKeyValues = this._keyProp !== undefined && this._value !== undefined ? this._value.map((item: any) => item[this._keyProp!]) : this._value;
+      const itemKeyValue = this._keyProp !== undefined && itemControl.value !== undefined ? itemControl.value[this._keyProp] : itemControl.value;
+      return parentKeyValues.includes(itemKeyValue);
     }
     else {
-      if (this.value !== value) {
-        this.value = value;
-        this.valueChange.emit(this.value);
+      const parentKeyValue = this._keyProp !== undefined && this._value !== undefined ? this._value[this._keyProp] : this._value;
+      const itemKeyValue = this._keyProp !== undefined && itemControl.value !== undefined ? itemControl.value[this._keyProp] : itemControl.value;
+      return parentKeyValue === itemKeyValue;
+    }
+  }
+
+  public onItemControlClick(itemControl: SdSelectItemControl): void {
+    if (this._selectMode === "multi") {
+      this._value = this._value ?? [];
+      if ((this._value as any[]).includes(itemControl.value)) {
+        this._value.remove(itemControl.value);
+      }
+      else {
+        this._value.push(itemControl.value);
+      }
+      this.valueChange.emit(this._value);
+      this._refreshContent();
+      this._cdr.markForCheck();
+    }
+    else {
+      if (this._value !== itemControl.value) {
+        this._value = itemControl.value;
+        this.valueChange.emit(this._value);
+        this._refreshContent();
+        this._cdr.markForCheck();
       }
 
       if (this.dropdownControl) {
@@ -352,7 +358,58 @@ export class SdSelectControl implements DoCheck, OnInit, AfterViewChecked {
     }
   }
 
+  public onItemControlContentChanged(itemControl: SdSelectItemControl): void {
+    if (!this.itemControls.includes(itemControl)) {
+      this.itemControls.push(itemControl);
+      this._cdr.markForCheck();
+    }
+
+    if (this.getIsSelectedItemControl(itemControl) || this.getChildrenFn) {
+      this._refreshContent();
+      this._cdr.markForCheck();
+    }
+  }
+
+  public ngAfterViewInit(): void {
+    this._refreshContent();
+  }
+
   private _refreshContent(): void {
+    const selectedItemControls = this.itemControls?.filter(itemControl => this.getIsSelectedItemControl(itemControl)) ?? [];
+    const selectedItemEls = selectedItemControls.map(item => item.el);
+    const contentHTML = selectedItemEls.map(el => {
+      if (this.getChildrenFn) {
+        let cursorEl: HTMLElement | undefined = el;
+        let resultHTML = "";
+        while (true) {
+          if (!cursorEl) break;
+
+          resultHTML = (cursorEl.findFirst("> ._content")?.innerHTML ?? "") + (Boolean(resultHTML) ? " / " + resultHTML : "");
+          cursorEl = cursorEl.findParent("._children")?.parentElement?.findFirst("sd-select-item");
+        }
+
+        return resultHTML;
+      }
+      else {
+        return el.findFirst("> ._content")?.innerHTML ?? "";
+      }
+    }).join(", ");
+
+    this.contentHTML = this._domSanitizer.bypassSecurityTrustHtml(contentHTML);
+  }
+
+  /*private _getParentItemControl(itemControl: SdSelectItemControl): SdSelectItemControl | undefined {
+    if (!this.getChildrenFn) return undefined;
+    if (!this.items) return undefined;
+
+    return this.itemControls?.find((item, i) => (
+      item.value !== undefined &&
+      this.getChildrenFn!(i, item.value) !== undefined &&
+      this.getChildrenFn!(i, item.value).includes(itemControl.value) === true
+    ));
+  }*/
+
+  /*private _refreshContent(): void {
     if (this._contentEl === undefined || this._popupEl === undefined) return;
 
     const selectedItemEls = this._popupEl.findAll("sd-select-item")
@@ -409,14 +466,14 @@ export class SdSelectControl implements DoCheck, OnInit, AfterViewChecked {
     }
 
     this._contentEl.innerHTML = innerHTMLs.join(", ");
-  }
+  }*/
 
-  private _refreshInvalid(): void {
+  /*private _refreshInvalid(): void {
     if (this.required && this.value === undefined) {
       this._el.setAttribute("sd-invalid", "true");
     }
     else {
       this._el.setAttribute("sd-invalid", "false");
     }
-  }
+  }*/
 }
