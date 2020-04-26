@@ -423,6 +423,14 @@ export class Queryable<D extends DbContext, T> {
       clone._def.distinct = true;
     }
     const subFrom = clone.getSelectDef();
+    if (subFrom.orderBy) {
+      const unknownOrderBys = subFrom.orderBy.filter(item => !Object.values(subFrom.select).includes(item[0]));
+      let seq = 0;
+      for (const unknownOrderBy of unknownOrderBys) {
+        seq++;
+        subFrom.select["__order_" + seq] = unknownOrderBy[0];
+      }
+    }
 
     const currEntity = this._getParentEntity(clone._entity, this._as, undefined);
 
