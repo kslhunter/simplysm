@@ -1280,7 +1280,7 @@ export class SdSheetControl implements DoCheck, OnInit {
           prevRowCellEl.focus();
         }
       }
-      else if (event.ctrlKey && event.key === "ArrowLeft") {
+      /*else if (event.ctrlKey && event.key === "ArrowLeft") {
         event.preventDefault();
 
         const currCellAddr = this._getCellAddress(cellEl);
@@ -1313,7 +1313,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         else {
           nextColCellEl.focus();
         }
-      }
+      }*/
       else if (event.key === "Tab" && !event.shiftKey) {
         event.preventDefault();
 
