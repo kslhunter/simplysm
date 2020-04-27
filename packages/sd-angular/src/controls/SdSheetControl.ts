@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ContentChild,
   ContentChildren,
   DoCheck,
   ElementRef,
@@ -14,7 +15,8 @@ import {
   NgZone,
   OnInit,
   Output,
-  QueryList
+  QueryList,
+  TemplateRef
 } from "@angular/core";
 import {SdSheetColumnControl} from "./SdSheetColumnControl";
 import {SdInputValidate} from "../commons/SdInputValidate";
@@ -33,12 +35,18 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                    *ngIf="key">
           <sd-icon icon="cog" fixedWidth></sd-icon>
         </sd-anchor>
+        <sd-anchor class="_card-icon"
+                   *ngIf="useCardDisplayType"
+                   (click)="displayType = displayType === 'card' ? 'sheet' : 'card'">
+          <sd-icon [icon]="displayType === 'card' ? 'bars' : 'table'" fixedWidth></sd-icon>
+        </sd-anchor>
+
         <sd-pagination [page]="page"
                        [pageLength]="pageLength"
                        (pageChange)="onPageChange($event)"></sd-pagination>
       </sd-dock>
 
-      <sd-pane>
+      <sd-pane [hidden]="displayType !== 'sheet'" [attr.sd-display-type]="'sheet'">
         <div class="_cell-focus-indicator"></div>
         <div class="_row-focus-indicator"></div>
 
@@ -284,8 +292,22 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
           <div class="_border-rect"></div>
         </div>
       </sd-pane>
+
+      <sd-pane *ngIf="useCardDisplayType" [hidden]="displayType !== 'card'" [attr.sd-display-type]="'card'">
+        <div class="sd-padding-default"
+             *ngFor="let item of items; let index = index; trackBy: trackByFn">
+          <sd-card class="sd-padding-default _sd-sheet-card"
+                   [class._selected]="getIsSelectedItem(item)"
+                   (click)="onItemSelectIconClick($event, item, index)">
+            <ng-template [ngTemplateOutlet]="cardTemplateRef"
+                         [ngTemplateOutletContext]="{item: item, index: index}"></ng-template>
+          </sd-card>
+        </div>
+      </sd-pane>
     </sd-dock-container>`,
   styles: [/* language=SCSS */ `
+    @import "../../scss/mixins";
+    
     :host {
       $z-index-fixed: 1;
       $z-index-row-selected-indicator: 2;
@@ -308,9 +330,13 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
           > ._cog-icon {
             float: right;
           }
+
+          > ._card-icon {
+            float: right;
+          }
         }
 
-        > sd-pane { // 하단 PANE (시트)
+        > sd-pane[sd-display-type='sheet'] { // 하단 PANE (시트)
           z-index: 0;
           background: var(--sd-background-color);
 
@@ -542,10 +568,23 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
             opacity: .15;
           }
         }
+
+        > sd-pane[sd-display-type='card'] {
+          background: var(--sd-background-color);
+
+          /deep/ ._sd-sheet-card {
+            cursor: pointer;
+            border-radius: 5px;
+            @include elevation(none);
+
+            &._selected {
+              background: var(--theme-color-primary-lightest);
+            }
+          }
+        }
       }
 
       &[sd-inset=true] {
-
         > sd-dock-container {
           border: none !important;
         }
@@ -652,6 +691,20 @@ export class SdSheetControl implements DoCheck, OnInit {
   @Input()
   @SdInputValidate(Function)
   public getChildrenFn?: (index: number, item: any) => any;
+
+  @Input()
+  @SdInputValidate(Boolean)
+  public useCardDisplayType?: boolean;
+
+  @ContentChild("card", {static: true})
+  public cardTemplateRef?: TemplateRef<{ item: any; index: number }>;
+
+  @Input()
+  @SdInputValidate({
+    type: String,
+    includes: ["sheet", "card"]
+  })
+  public displayType: "sheet" | "card" = "sheet";
 
   @ContentChildren(forwardRef(() => SdSheetColumnControl))
   public columnControls?: QueryList<SdSheetColumnControl>;
