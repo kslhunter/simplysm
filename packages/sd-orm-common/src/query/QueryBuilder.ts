@@ -353,7 +353,9 @@ END`.trim();
         ...def.column,
         nullable: true
       })}`);
+      queries.push("GO");
       queries.push(`UPDATE ${tableName} SET [${def.column.name}] = ${QueryBuilder.getQueryOfQueryValue(def.column.defaultValue)}`);
+      queries.push("GO");
       queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${QueryBuilder._getQueryOfColDef(def.column)}`);
     }
     else {
