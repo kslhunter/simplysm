@@ -37,7 +37,8 @@ import * as marked from "marked";
                     (dragleave)="onTextareaDragLeave($event)"
                     (drop)="onTextareaDrop($event)"
                     (paste)="onTextareaPaste($event)"
-                    [style.resize]="resize"></textarea>
+                    [style.resize]="resize"
+                    [placeholder]="placeholder"></textarea>
       <div class="_dragover" *ngIf="viewState === 'edit' && !disabled">파일을 내려놓으세요.</div>
     </div>
     <div class="_preview" [hidden]="viewState !== 'preview' && !disabled">
@@ -319,6 +320,10 @@ export class SdMarkdownEditorControl implements OnChanges {
   @SdInputValidate({type: Boolean, notnull: true})
   @HostBinding("attr.sd-inset")
   public inset = false;
+
+  @Input()
+  @SdInputValidate(String)
+  public placeholder?: string;
 
   public busyCount = 0;
 
