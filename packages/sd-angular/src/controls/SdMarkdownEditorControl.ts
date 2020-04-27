@@ -375,19 +375,22 @@ export class SdMarkdownEditorControl implements OnChanges {
 
   public async ngOnChanges(changes: SimpleChanges): Promise<void> {
     if (Object.keys(changes).length > 0) {
-      if (this.value !== undefined) {
+      if (Boolean(this.value?.trim())) {
         if (this.previewRenderFn) {
           this.busyCount++;
-          const value = await this.previewRenderFn(this.value);
+          const value = await this.previewRenderFn(this.value!);
           const html = marked(value);
           this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);
           this.busyCount--;
           this._cdr.markForCheck();
         }
         else {
-          const html = marked(this.value);
+          const html = marked(this.value!);
           this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);
         }
+      }
+      else if (Boolean(this.placeholder)) {
+        this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(`<span class="sd-text-color-grey-default">${this.placeholder}</span>`);
       }
       else {
         this.innerHTML = "";
