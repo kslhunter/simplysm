@@ -33,7 +33,6 @@ export * from "./_modules/controls/SdPaneControlModule";
 export * from "./_modules/controls/SdProgressControlModule";
 export * from "./_modules/controls/SdProgressItemControlModule";
 export * from "./_modules/controls/SdSelectControlModule";
-export * from "./_modules/controls/SdSelectItemControlModule";
 export * from "./_modules/controls/SdSeparatorControlModule";
 export * from "./_modules/controls/SdSheetColumnControlModule";
 export * from "./_modules/controls/SdSheetControlModule";

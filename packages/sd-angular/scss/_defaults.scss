@@ -40,6 +40,10 @@ code {
   font-family: var(--font-family-monospace);
 }
 
+small {
+  font-size: .9167em;
+}
+
 @each $h in (h1, h2, h3, h4, h5, h6) {
   #{$h} {
     font-size: var(--font-size-#{$h});
