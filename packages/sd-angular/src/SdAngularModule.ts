@@ -6,6 +6,7 @@ import {SdMutationEventPlugin} from "./plugins/SdMutationEventPlugin";
 import {SdAngularGlobalErrorHandler} from "./plugins/SdAngularGlobalErrorHandler";
 import {SdSaveEventPlugin} from "./plugins/SdSaveEventPlugin";
 import {SdModalProviderModule} from "./_modules/providers/SdModalProviderModule";
+import {SdDataRefreshEventPlugin} from "./plugins/SdDataRefreshEventPlugin";
 
 @NgModule({
   imports: [
@@ -26,6 +27,7 @@ export class SdAngularModule {
       ngModule: SdAngularModule,
       providers: [
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdSaveEventPlugin, multi: true},
+        {provide: EVENT_MANAGER_PLUGINS, useClass: SdDataRefreshEventPlugin, multi: true},
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true},
         {provide: EVENT_MANAGER_PLUGINS, useClass: SdMutationEventPlugin, multi: true},
         {provide: ErrorHandler, useClass: SdAngularGlobalErrorHandler}
