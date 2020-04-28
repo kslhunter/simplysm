@@ -8,6 +8,7 @@ import {
   ElementRef,
   EventEmitter,
   HostBinding,
+  HostListener,
   Input,
   IterableDiffer,
   IterableDiffers,
@@ -316,6 +317,21 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
     }
     if (this._value instanceof Array && this._valueIterableDiffer.diff(this._value)) {
       this._cdr.markForCheck();
+    }
+  }
+
+  @HostListener("keydown", ["$event"])
+  public onKeydown(event: KeyboardEvent): void {
+    if (
+      !event.ctrlKey && !event.altKey && (
+        event.key === "ArrowDown" ||
+        event.key === "ArrowUp" ||
+        event.key === "ArrowLeft" ||
+        event.key === "ArrowRight"
+      )
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
     }
   }
 
