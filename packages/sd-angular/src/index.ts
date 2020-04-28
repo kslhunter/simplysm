@@ -131,6 +131,7 @@ export * from "./entry-controls/SdToastEntryControl";
 export * from "./modals/SdAddressSearchModal";
 export * from "./modals/SdSheetConfigModal";
 export * from "./plugins/SdAngularGlobalErrorHandler";
+export * from "./plugins/SdDataRefreshEventPlugin";
 export * from "./plugins/SdMutationEventPlugin";
 export * from "./plugins/SdResizeEventPlugin";
 export * from "./plugins/SdSaveEventPlugin";

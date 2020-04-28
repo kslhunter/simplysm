@@ -30,15 +30,15 @@ import * as marked from "marked";
     </div>
 
     <div class="_editor" *ngIf="viewState === 'edit' && !disabled">
-          <textarea [value]="value || ''"
-                    [rows]="rows"
-                    (input)="onTextareaInput($event)"
-                    (dragover)="onTextareaDragover($event)"
-                    (dragleave)="onTextareaDragLeave($event)"
-                    (drop)="onTextareaDrop($event)"
-                    (paste)="onTextareaPaste($event)"
-                    [style.resize]="resize"
-                    [placeholder]="placeholder"></textarea>
+        <textarea [value]="value || ''"
+                  [rows]="rows"
+                  (input)="onTextareaInput($event)"
+                  (dragover)="onTextareaDragover($event)"
+                  (dragleave)="onTextareaDragLeave($event)"
+                  (drop)="onTextareaDrop($event)"
+                  (paste)="onTextareaPaste($event)"
+                  [style.resize]="resize"
+                  [attr.placeholder]="placeholder"></textarea>
       <div class="_dragover" *ngIf="viewState === 'edit' && !disabled">파일을 내려놓으세요.</div>
     </div>
     <div class="_preview" [hidden]="viewState !== 'preview' && !disabled">
