@@ -337,14 +337,14 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
 
   public getIsSelectedItemControl(itemControl: SdSelectItemControl): boolean {
     if (this._selectMode === "multi") {
-      const parentKeyValues = this._keyProp !== undefined && this._value !== undefined ? this._value.map((item: any) => item[this._keyProp!]) : this._value;
-      const itemKeyValue = this._keyProp !== undefined && itemControl.value !== undefined ? itemControl.value[this._keyProp] : itemControl.value;
-      return parentKeyValues.includes(itemKeyValue);
+      const itemKeyValues = this._keyProp !== undefined && this._value !== undefined ? this._value.map((item: any) => item[this._keyProp!]) : this._value;
+      const valKeyValue = this._keyProp !== undefined && itemControl.value !== undefined ? itemControl.value[this._keyProp] : itemControl.value;
+      return itemKeyValues.includes(valKeyValue);
     }
     else {
-      const parentKeyValue = this._keyProp !== undefined && this._value !== undefined ? this._value[this._keyProp] : this._value;
-      const itemKeyValue = this._keyProp !== undefined && itemControl.value !== undefined ? itemControl.value[this._keyProp] : itemControl.value;
-      return parentKeyValue === itemKeyValue;
+      const itemKeyValue = this._keyProp !== undefined && this._value !== undefined ? this._value[this._keyProp] : this._value;
+      const valKeyValue = this._keyProp !== undefined && itemControl.value !== undefined ? itemControl.value[this._keyProp] : itemControl.value;
+      return itemKeyValue === valKeyValue;
     }
   }
 
