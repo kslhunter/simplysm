@@ -173,7 +173,8 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 
         &[sd-disabled=true] /deep/ > sd-dropdown > div {
           background: white !important;
-          color: var(--text-brightness-light);
+          //color: var(--text-brightness-light);
+          color: var(--text-brightness-default);
           cursor: default;
         }
       }

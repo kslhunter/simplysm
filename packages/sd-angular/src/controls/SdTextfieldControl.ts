@@ -128,7 +128,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 
         &:disabled {
           background: white !important;
-          color: var(--text-brightness-light);
+          color: var(--text-brightness-default);
         }
       }
 
