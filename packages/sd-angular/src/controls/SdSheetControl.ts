@@ -1493,6 +1493,7 @@ export interface ISdSheetConfigVM {
 
 export interface ISdSheetColumnConfigVM {
   fixed?: boolean;
+  group?: string;
   header?: string;
   widthPixel?: number;
   displayOrder?: number;

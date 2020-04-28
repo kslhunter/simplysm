@@ -32,6 +32,14 @@ import {SdSheetColumnControl} from "../controls/SdSheetColumnControl";
               </div>
             </ng-template>
           </sd-sheet-column>
+          <sd-sheet-column header="그룹" resizable width.px="100">
+            <ng-template #cell let-item="item">
+              <!--<sd-textfield size="sm" inset [(value)]="item.header"></sd-textfield>-->
+              <div class="sd-padding-xs-sm">
+                {{ item.group }}
+              </div>
+            </ng-template>
+          </sd-sheet-column>
           <sd-sheet-column header="헤더" resizable width.px="100">
             <ng-template #cell let-item="item">
               <!--<sd-textfield size="sm" inset [(value)]="item.header"></sd-textfield>-->
@@ -96,6 +104,7 @@ export class SdSheetConfigModal extends SdModalBase<ISdSheetConfigModalInput, { 
 
         configs.push({
           key: columnControl.key,
+          group: columnConfig?.group ?? columnControl.group,
           header: columnConfig?.header ?? columnControl.header,
           fixed: columnConfig?.fixed ?? columnControl.fixed ?? false,
           displayOrder: lastDisplayOrder,
@@ -141,6 +150,7 @@ export class SdSheetConfigModal extends SdModalBase<ISdSheetConfigModalInput, { 
         widthPixel: config.widthPixel,
         displayOrder: config.displayOrder,
         fixed: config.fixed,
+        group: config.group,
         header: config.header,
         hidden: config.hidden
       };
@@ -167,6 +177,7 @@ export interface ISdSheetConfigModalInput {
 
 interface IColumnConfigVM {
   key: string;
+  group?: string;
   header?: string;
   fixed: boolean;
   displayOrder: number;
