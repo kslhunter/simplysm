@@ -10,7 +10,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "tedious": "^6.3.0",
+    "tedious": "^8.3.0",
     "core-js": "^3.2.0",
     "@simplysm/sd-core": "2.2.125"
   },
@@ -19,7 +19,7 @@
     "tslint": "^5.18.0",
     "typescript": "3.5.3",
     "typescript-tslint-plugin": "^0.5.4",
-    "@types/tedious": "^4.0.0",
+    "@types/tedious": "^4.0.1",
     "mocha": "^6.2.0",
     "@types/mocha": "^5.2.7"
   }
