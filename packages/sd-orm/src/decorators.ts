@@ -25,19 +25,23 @@ export function Column<T extends object>(columnDef?: {
   autoIncrement?: boolean;
   primaryKey?: number;
   description?: string;
+  name?: string;
 }): (object: T, propertyKey: string) => void {
   return (object: T, propertyKey: string) => {
     const classType = object.constructor;
 
     const tableDef: ITableDef = Reflect.getMetadata(tableDefMetadataKey, classType) || {};
 
+    const columnName = optional(() => columnDef!.name) || propertyKey;
+
     tableDef.columns = tableDef.columns || [];
-    if (tableDef.columns.some((item: any) => item.name === propertyKey)) {
+    if (tableDef.columns.some((item: any) => item.name === columnName)) {
       return;
     }
 
     tableDef.columns.push({
-      name: propertyKey,
+      propertyKey,
+      name: columnName,
       dataType: optional(() => columnDef!.dataType),
       nullable: optional(() => columnDef!.nullable),
       autoIncrement: optional(() => columnDef!.autoIncrement),

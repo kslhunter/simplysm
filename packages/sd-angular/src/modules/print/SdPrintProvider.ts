@@ -18,7 +18,8 @@ export class SdPrintProvider {
 
       const styleEl = document.createElement("style");
       styleEl.innerHTML = `   
-  @page { size: ${options ? options.size : "auto"}; margin: ${options ? options.margin : "0"}; }
+  @page { size: ${options ? options.size || "auto" : "auto"}; margin: ${options ? options.margin || "0" : "0"}; }
+  body > ._sd-print-template { display: none !important; }
   @media print
   {
       html, body { -webkit-print-color-adjust: exact; }

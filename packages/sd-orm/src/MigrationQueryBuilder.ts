@@ -2,7 +2,8 @@ import {QueryHelper} from "./QueryHelper";
 
 export class MigrationQueryBuilder {
   public createDatabaseIfNotExists(dbName: string): string {
-    return `IF NOT EXISTS(select * from sys.databases WHERE name='${dbName}') CREATE DATABASE [${dbName}]`.trim();
+    return `
+IF NOT EXISTS(select * from sys.databases WHERE name='${dbName}') CREATE DATABASE [${dbName}]`.trim();
   }
 
   public createTable(
@@ -189,8 +190,11 @@ USE [master]`;
 
   public clearDatabaseIfExists(dbName: string): string {
     return `
+USE [${dbName}]
+GO
+
 IF EXISTS(select * from sys.databases WHERE name='${dbName}')
-BEGIN
+BEGIN    
   DECLARE @sql NVARCHAR(MAX);
   SET @sql = N'';
     
@@ -201,26 +205,28 @@ BEGIN
   WHERE type_desc like '%PROCEDURE%'
     
   -- 함수 초기화
-  SELECT @sql = @sql + 'DROP FUNCTION [${dbName}].[dbo].' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(o.name) + N';' + CHAR(13) + CHAR(10)
+  SELECT @sql = @sql + 'DROP FUNCTION [${dbName}].' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(o.name) + N';' + CHAR(13) + CHAR(10)
   FROM [${dbName}].sys.sql_modules m
   INNER JOIN [${dbName}].sys.objects o ON m.object_id=o.object_id
   WHERE type_desc like '%function%'
     
   -- 뷰 초기화
-  SELECT @sql = @sql + 'DROP VIEW [${dbName}].[dbo].' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(v.name) + N';' + CHAR(13) + CHAR(10)
+  SELECT @sql = @sql + 'DROP VIEW [${dbName}].' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(v.name) + N';' + CHAR(13) + CHAR(10)
   FROM [${dbName}].sys.views v
     
   -- 테이블 FK 끊기 초기화
-  SELECT @sql = @sql + N'ALTER TABLE [${dbName}].[dbo].' + QUOTENAME([tbl].[name]) + N' DROP CONSTRAINT ' + QUOTENAME([obj].[name]) + N';' + CHAR(13) + CHAR(10)
+  SELECT @sql = @sql + N'ALTER TABLE [${dbName}].' + QUOTENAME(SCHEMA_NAME([tbl].schema_id)) + '.' + QUOTENAME([tbl].[name]) + N' DROP CONSTRAINT ' + QUOTENAME([obj].[name]) + N';' + CHAR(13) + CHAR(10)
   FROM [${dbName}].sys.tables [tbl]
   INNER JOIN [${dbName}].sys.objects AS [obj] ON [obj].[parent_object_id] = [tbl].[object_id] AND [obj].[type] = 'F'
 
   -- 테이블 삭제
-  SELECT @sql = @sql + N'DROP TABLE [${dbName}].[dbo].' + QUOTENAME([tbl].[name]) + N';' + CHAR(13) + CHAR(10)
+  SELECT @sql = @sql + N'DROP TABLE [${dbName}].' + QUOTENAME(SCHEMA_NAME([tbl].schema_id)) + '.' + QUOTENAME([tbl].[name]) + N';' + CHAR(13) + CHAR(10)
   FROM [${dbName}].sys.tables [tbl]
   WHERE [type]= 'U'
 
   EXEC(@sql);
-END`.trim();
+END
+GO
+USE [master]`.trim();
   }
 }

@@ -62,7 +62,7 @@ export class QueryBuilderAdv<T> {
         }
 
         for (const colDef of tableDef.columns) {
-          this.selectObj[colDef.name] = new QueryUnit(colDef.typeFwd(), `[${as}].[${colDef.name}]`);
+          this.selectObj[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `[${as}].[${colDef.name}]`);
         }
 
         let subQueryBuilder = this._subQba.qb;
@@ -108,7 +108,7 @@ export class QueryBuilderAdv<T> {
       }
 
       for (const colDef of tableDef.columns) {
-        this.selectObj[colDef.name] = new QueryUnit(colDef.typeFwd(), `[${as}].[${colDef.name}]`);
+        this.selectObj[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `[${as}].[${colDef.name}]`);
       }
       this.qb = new QueryBuilder().from(`[${tableDef.database || database}].[${tableDef.scheme}].[${tableDef.name}]`, `[${as}]`);
     }
@@ -271,7 +271,14 @@ export class QueryBuilderAdv<T> {
     for (const selectAs of Object.keys(joinQueryBuilderAdv.selectObj)) {
       const selectOrg = joinQueryBuilderAdv.selectObj[selectAs]!;
       const selectType = selectOrg instanceof QueryUnit ? selectOrg.type : selectOrg.constructor;
-      result.selectObj[`${as}.${selectAs}`] = new QueryUnit(selectType as any, `[${as}].[${selectAs}]`);
+
+
+      if (!joinQueryBuilderAdv.hasCustomSelect) {
+        result.selectObj[`${as}.${selectAs}`] = selectOrg;
+      }
+      else {
+        result.selectObj[`${as}.${selectAs}`] = new QueryUnit(selectType as any, `[${as}].[${selectAs}]`);
+      }
     }
 
     this.hasCustomSelect = true;
@@ -338,10 +345,14 @@ export class QueryBuilderAdv<T> {
       }
 
       for (let i = 0; i < pkColDefs.length; i++) {
-        const srcColumnName = fkDef.columnNames[i];
-        const targetPkColumnName = pkColDefs[i].name;
+        const targetPkColumnPropertyKey = pkColDefs[i].propertyKey;
+        const srcColumnPropertyKey = fkDef.columnNames[i];
 
-        filter[targetPkColumnName] = new QueryUnit(pkColDefs[i].typeFwd(), `[${targetTableChainedName.split(".").slice(0, -1).join(".") || this._as}].[${srcColumnName}]`);
+        const parentTableDef = this._getParentTableDef(targetTableChainedName);
+        const srcColumnDef = parentTableDef.columns!.single(item => item.propertyKey === srcColumnPropertyKey);
+        const srcColumnName = srcColumnDef!.name;
+
+        filter[targetPkColumnPropertyKey] = new QueryUnit(pkColDefs[i].typeFwd(), `[${targetTableChainedName.split(".").slice(0, -1).join(".") || this._as}].[${srcColumnName}]`);
       }
 
       joinTableType = targetTableType;
@@ -372,8 +383,8 @@ export class QueryBuilderAdv<T> {
       }
 
       for (let i = 0; i < pkColDefs.length; i++) {
-        const srcColumnName = targetFkDef.columnNames[i];
         const targetPkColumnName = pkColDefs[i].name;
+        const srcColumnName = targetFkDef.columnNames[i];
 
         filter[srcColumnName] = new QueryUnit(pkColDefs[i].typeFwd(), `[${targetTableChainedName.split(".").slice(0, -1).join(".") || this._as}].[${targetPkColumnName}]`);
       }
@@ -591,7 +602,7 @@ export class QueryBuilderAdv<T> {
   }
 
   private _getFkOrFktDef(chain: string): IForeignKeyDef | IForeignKeyTargetDef | undefined {
-    const parentAs = chain.split(".").slice(0, -1).join(".");
+    /*const parentAs = chain.split(".").slice(0, -1).join(".");
     if (parentAs) {
       const joinDef = this.getAllJoinDef()[parentAs];
       if (!joinDef) {
@@ -623,6 +634,43 @@ export class QueryBuilderAdv<T> {
         ...(tableDef.foreignKeyTargets || [])
       ];
       return fkOrFkts.single(item => item.name === chain.split(".").last());
+    }*/
+
+    const tableDef = this._getParentTableDef(chain);
+
+    const fkOrFkts = [
+      ...(tableDef.foreignKeys || []),
+      ...(tableDef.foreignKeyTargets || [])
+    ];
+    return fkOrFkts.single(item => item.name === chain.split(".").last());
+  }
+
+  private _getParentTableDef(chain: string): ITableDef {
+    const parentAs = chain.split(".").slice(0, -1).join(".");
+    if (parentAs) {
+      const joinDef = this.getAllJoinDef()[parentAs];
+
+      if (!joinDef) {
+        throw new Error(`'${chain}'을 조인하려면 '${parentAs}'가 먼저 조인되어야 합니다.`);
+      }
+      const joinTableDef = Reflect.getMetadata(tableDefMetadataKey, joinDef.targetTableType) as ITableDef | undefined;
+      if (!joinTableDef) {
+        throw new Error(`'${joinDef.targetTableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
+      }
+
+      return joinTableDef;
+    }
+    else {
+      if (!this._tableType) {
+        throw new Error("테이블 타입을 알 수 없습니다.");
+      }
+
+      const tableDef = Reflect.getMetadata(tableDefMetadataKey, this._tableType) as ITableDef | undefined;
+      if (!tableDef) {
+        throw new Error(`'${this._tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
+      }
+
+      return tableDef;
     }
   }
 

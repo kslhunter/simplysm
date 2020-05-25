@@ -12,6 +12,7 @@ export interface ITableDef {
 }
 
 export interface IColumnDef {
+  propertyKey: string;
   name: string;
   dataType?: string;
   nullable?: boolean;

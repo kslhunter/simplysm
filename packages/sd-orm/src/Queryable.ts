@@ -185,8 +185,15 @@ export class Queryable<T extends object> {
   }
 
   public insertPrepare(obj: T): void {
-    const queryDef = this._qba.insert(obj).queryDef;
-    if (this._hasAutoIncrementValue(obj)) {
+    const realObj: any = {};
+    for (const key of Object.keys(obj)) {
+      const colDef = this.tableDef.columns!.single(item => item.propertyKey === key);
+      const colName = colDef!.name;
+      realObj[colName] = obj[key];
+    }
+
+    const queryDef = this._qba.insert(realObj).queryDef;
+    if (this._hasAutoIncrementValue(realObj)) {
       this._db.prepare([
         this._getIdentityInsertQuery(true),
         queryDef,

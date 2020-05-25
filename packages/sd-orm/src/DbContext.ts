@@ -187,11 +187,10 @@ export abstract class DbContext {
     }
 
     for (const dbName of dbNames) {
-      query += new MigrationQueryBuilder().clearDatabaseIfExists(dbName) + "\n";
       query += new MigrationQueryBuilder().createDatabaseIfNotExists(dbName) + "\n";
+      query += new MigrationQueryBuilder().clearDatabaseIfExists(dbName) + "\n";
       query += "GO\n\n";
     }
-
     // 테이블 생성
     for (const tableDef of tableDefs) {
       if (!tableDef.columns) {
@@ -255,9 +254,11 @@ export abstract class DbContext {
             .orderBy(item => item.primaryKey)
             .map(item => item.name);
 
+          const fkColumnPropertyKeys = fkDef.columnNames.map(item => tableDef.columns!.single(item1 => item1.propertyKey === item)!.name);
+
           return {
             name: fkDef.name,
-            columnNames: fkDef.columnNames,
+            columnNames: fkColumnPropertyKeys,
             targetTableDef: {
               database: targetTableDef.database || this.mainDb!,
               scheme: targetTableDef.scheme,
@@ -268,6 +269,10 @@ export abstract class DbContext {
         });
 
       for (const fkDef of fkDefs) {
+        if (fkDef.targetTableDef.database !== (tableDef.database || this.mainDb)) {
+          continue;
+        }
+
         query += new MigrationQueryBuilder().addForeignKey(
           {
             database: tableDef.database || this.mainDb!,
@@ -325,7 +330,7 @@ export abstract class DbContext {
     }
 
     // Log 테이블 구성
-    /*query += new MigrationQueryBuilder().createTable(
+    query += new MigrationQueryBuilder().createTable(
       {database: this.mainDb!, scheme: "dbo", name: "_error"},
       [
         {
@@ -355,7 +360,7 @@ export abstract class DbContext {
         {name: "id", desc: false}
       ]
     ) + "\n";
-    query += "GO\n\n";*/
+    query += "GO\n\n";
 
     await this.executeAsync([query.trim()]);
     return true;

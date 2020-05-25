@@ -109,6 +109,7 @@ export class SdExcelWorksheet {
     }
   }
 
+  // TODO: 모든 Row/Column 을 도는 것은 위험함.
   public getData(): any[][] {
     const result: any[][] = [];
     for (let r = 0; r < this.rowLength; r++) {
