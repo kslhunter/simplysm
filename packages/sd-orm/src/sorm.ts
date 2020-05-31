@@ -259,6 +259,9 @@ export const sorm = {
     const caseQueryable = new CaseQueryable<T>(type);
     return caseQueryable.case(predicate, then);
   },
+  stringLength<T extends QueryType>(arg: T): number | undefined {
+    return new QueryUnit(Number as any, "LEN(" + QueryHelper.getFieldQuery(arg) + ")") as any;
+  },
   dataLength<T extends QueryType>(arg: T): number | undefined {
     return new QueryUnit(Number as any, "DATALENGTH(" + QueryHelper.getFieldQuery(arg) + ")") as any;
   },
