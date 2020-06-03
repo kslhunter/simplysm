@@ -72,14 +72,14 @@ import {DateOnly, DateTime, Time} from "@simplysm/sd-core";
           color: var(--text-color-lighter);
         }
 
-        &::-webkit-outer-spin-button,
-        &::-webkit-inner-spin-button {
-          -webkit-appearance: none;
-          margin: 0;
-        }
-
+        //&::-webkit-outer-spin-button,
+        //&::-webkit-inner-spin-button {
+        //  -webkit-appearance: none;
+        //  margin: 0;
+        //}
+        //
         &::-webkit-calendar-picker-indicator {
-          background: transparent;
+          //background: transparent;
           color: var(--text-color-default);
           cursor: pointer;
         }

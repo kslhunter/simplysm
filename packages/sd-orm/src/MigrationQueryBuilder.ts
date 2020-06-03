@@ -3,7 +3,8 @@ import {QueryHelper} from "./QueryHelper";
 export class MigrationQueryBuilder {
   public createDatabaseIfNotExists(dbName: string): string {
     return `
-IF NOT EXISTS(select * from sys.databases WHERE name='${dbName}') CREATE DATABASE [${dbName}]`.trim();
+IF NOT EXISTS(select * from sys.databases WHERE name='${dbName}') CREATE DATABASE [${dbName}];
+GO`.trim();
   }
 
   public createTable(

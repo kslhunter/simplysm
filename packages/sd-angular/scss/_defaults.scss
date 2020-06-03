@@ -8,7 +8,8 @@
 }
 
 *:focus {
-  outline-color: var(--theme-primary-default);
+  //outline-color: var(--theme-primary-default);
+  outline-style: none;
 }
 
 html, body {
