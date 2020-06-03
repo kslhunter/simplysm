@@ -387,6 +387,10 @@ export class SdExcelWorkbook {
     }
   }
 
+  public get worksheetNames(): string[] {
+    return this._worksheets.filterExists().map(item => item.name);
+  }
+
   public get json(): { [sheetName: string]: { [key: string]: any }[] } {
     const result: { [sheetName: string]: { [key: string]: any }[] } = {};
 
