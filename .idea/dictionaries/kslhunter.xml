@@ -9,11 +9,13 @@
       <w>mkdirs</w>
       <w>nodebuffer</w>
       <w>nodemailer</w>
+      <w>postgresql</w>
       <w>rels</w>
       <w>simplysm</w>
       <w>smtp</w>
       <w>taskkill</w>
       <w>topbar</w>
+      <w>upsert</w>
       <w>yargs</w>
     </words>
   </dictionary>

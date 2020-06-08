@@ -2,20 +2,23 @@ import {
   IDbContextExecutor,
   IQueryResultParseOption,
   QueryBuilder,
-  QueryUtils,
+  SdOrmUtils,
   TQueryDef
 } from "@simplysm/sd-orm-common";
-import {DbConnection} from "./DbConnection";
 import {IDbConnectionConfig} from "./commons";
+import {IDbConnection} from "./IDbConnection";
+import {DbConnectionFactory} from "./DbConnectionFactory";
 
 export class NodeDbContextExecutor implements IDbContextExecutor {
-  private _conn?: DbConnection;
+  private _conn?: IDbConnection;
+  public dialect: "mysql" | "mssql";
 
   public constructor(private readonly _config: IDbConnectionConfig) {
+    this.dialect = this._config.dialect ?? "mssql";
   }
 
   public async connectAsync(): Promise<void> {
-    this._conn = new DbConnection(this._config);
+    this._conn = DbConnectionFactory.create(this._config);
     await this._conn.connectAsync();
   }
 
@@ -65,8 +68,8 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     }
 
     const result = await this._conn.executeAsync(
-      defs.map(def => QueryBuilder.query(def))
+      defs.map(def => new QueryBuilder(this._config.dialect).query(def))
     );
-    return result.map((item, i) => QueryUtils.parseQueryResult(item, options ? options[i] : undefined));
+    return result.map((item, i) => SdOrmUtils.parseQueryResult(item, options ? options[i] : undefined));
   }
 }

@@ -27,7 +27,7 @@ describe("(common) core.utils.JsonConvert", () => {
     expect(json).to.includes(`"d":{"__type__":"DateOnly","data":`);
     expect(json).to.includes(`"t":{"__type__":"Time","data":`);
     expect(json).to.includes(`"uuid":{"__type__":"Uuid","data":`);
-    expect(json).to.includes(`"b":{"__type__":"Buffer","data":`);
+    expect(json).to.includes(`"b":{"type":"Buffer","data":`);
     expect(json).to.includes(`"err":{"__type__":"Error","data":`);
 
     const newObj = JsonConvert.parse(json);
@@ -79,6 +79,6 @@ describe("(common) core.utils.JsonConvert", () => {
     };
 
     const json = JsonConvert.stringify(obj, {hideBuffer: true});
-    expect(json).to.equal(`{"a":{"__type__":"Buffer","data":"__hidden__"},"b":2}`);
+    expect(json).to.equal(`{"a":{"type":"Buffer","data":"__hidden__"},"b":2}`);
   });
 });

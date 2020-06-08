@@ -1,6 +1,8 @@
-import {IQueryResultParseOption, TQueryDef} from "../query-definition";
+import {IQueryResultParseOption, TQueryDef} from "./commons";
 
 export interface IDbContextExecutor {
+  dialect: "mysql" | "mssql";
+
   connectAsync(): Promise<void>;
 
   beginTransactionAsync(): Promise<void>;

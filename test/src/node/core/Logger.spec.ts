@@ -181,9 +181,9 @@ describe("(node) core.Logger", () => {
     });
 
     const logger1 = Logger.get(["simplysm", "core", "test"]);
-    logger1.log(Buffer.alloc(3000000));
-    logger1.log(Buffer.alloc(3000000));
-    logger1.log(Buffer.alloc(3000000));
+    logger1.log(Buffer.alloc(1000000));
+    logger1.log(Buffer.alloc(1000000));
+    logger1.log(Buffer.alloc(1000000));
     expect(fs.readdirSync(path.resolve(__dirname, "logs", "20190101"))).to.deep.equal(["1.log", "2.log"]);
 
     FsUtils.remove(path.resolve(__dirname, "logs"));

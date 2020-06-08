@@ -1,90 +1,9 @@
-import {ITableNameDef} from "../definition";
-import {
-  TEntity,
-  TEntityValue,
-  TEntityValueOrQueryable,
-  TEntityValueOrQueryableArray,
-  TQueryValue,
-  TQueryValueOrSelect,
-  TQueryValueOrSelectArray
-} from "../common";
-import {QueryUnit} from "../query/QueryUnit";
+import {IQueryResultParseOption, TEntityValue, TQueryValue} from "./commons";
 import {DateOnly, DateTime, JsonConvert, Time, Type, Uuid} from "@simplysm/sd-core-common";
-import {Queryable} from "../query/Queryable";
-import {IQueryResultParseOption} from "../query-definition";
+import {QueryUnit} from "./QueryUnit";
 
-export class QueryUtils {
-  public static getTableNameChain(def: ITableNameDef): string[] {
-    if (def.database !== undefined) {
-      return [def.database, def.schema ?? "dbo", def.name];
-    }
-    else if (def.schema !== undefined) {
-      return [def.schema, def.name];
-    }
-    else {
-      return [def.name];
-    }
-  }
-
-  public static getTableName(def: ITableNameDef): string {
-    return QueryUtils.getTableNameChain(def).map(item => `[${item}]`).join(".");
-  }
-
-  public static getQueryValue(value: TEntityValueOrQueryable): TQueryValueOrSelect | TQueryValueOrSelectArray {
-    if (value instanceof QueryUnit) {
-      if (value.query instanceof Array) {
-        return QueryUtils.getQueryValueArray(value.query);
-      }
-      else if (value.query instanceof QueryUnit) {
-        return QueryUtils.getQueryValue(value.query);
-      }
-      else if (value.query instanceof Queryable) {
-        return QueryUtils.getQueryValue(value.query);
-      }
-      else {
-        return value.query;
-      }
-    }
-    else if (typeof value === "string") {
-      return `N'${value.replace(/'/g, "''")}'`;
-    }
-    else if (value instanceof Queryable) {
-      const selectDef = value.getSelectDef();
-      if (selectDef.top !== 1) {
-        throw new Error("하나의 필드를 추출하기 위한 내부쿼리에서는 반드시 TOP 1 이 지정 되야 합니다.");
-      }
-      if (Object.keys(selectDef.select).length > 1) {
-        throw new Error("하나의 필드를 추출하기 위한 내부쿼리에서는 반드시 하나의 컬럼만 SELECT 되야 합니다.");
-      }
-
-      return selectDef;
-    }
-    else if (value === undefined) {
-      return "NULL";
-    }
-    else {
-      return value;
-    }
-  }
-
-  public static getQueryValueArray(arr: TEntityValueOrQueryableArray): TQueryValueOrSelectArray {
-    return arr.map(item => {
-      if (item instanceof Array) {
-        return QueryUtils.getQueryValueArray(item);
-      }
-      else if (item instanceof QueryUnit) {
-        return QueryUtils.getQueryValue(item);
-      }
-      else if (item instanceof Queryable) {
-        return QueryUtils.getQueryValue(item);
-      }
-      else {
-        return item;
-      }
-    });
-  }
-
-  public static canGetQueryValue(value: any): boolean {
+export class SdOrmUtils {
+  public static canConvertToQueryValue(value: any): value is TEntityValue<TQueryValue> {
     return ["undefined", "boolean", "number", "string"].includes(typeof value) ||
       value instanceof QueryUnit ||
       value instanceof Number ||
@@ -97,7 +16,7 @@ export class QueryUtils {
       value instanceof Buffer;
   }
 
-  public static getQueryValueType<T extends TQueryValue>(value: QueryUnit<T, any> | T): Type<T> | undefined {
+  public static getQueryValueType<T extends TQueryValue>(value: TEntityValue<T>): Type<T> | undefined {
     if (value instanceof QueryUnit) {
       return value.type as any;
     }
@@ -131,52 +50,6 @@ export class QueryUtils {
     else {
       throw new Error(`QueryValue 를 추출할 수 있는 타입이 아닙니다: ${value}`);
     }
-  }
-
-  public static getDataType(type: Type<TQueryValue>): string {
-    switch (type) {
-      case String:
-        return "NVARCHAR(255)";
-      case Number:
-        return "BIGINT";
-      case Boolean:
-        return "BIT";
-      case DateTime:
-        return "DATETIME2";
-      case DateOnly:
-        return "DATE";
-      case Time:
-        return "TIME";
-      case Uuid:
-        return "UNIQUEIDENTIFIER";
-      case Buffer:
-        return "VARBINARY(MAX)";
-      default:
-        throw new TypeError(type ? type.name : "undefined");
-    }
-  }
-
-  public static getValueFields<T>(entity: TEntity<T>, excludes?: string[]): TEntityValue<any>[] {
-    const result: TEntityValue<any>[] = [];
-    for (const key of Object.keys(entity)) {
-      if (excludes?.includes(key)) continue;
-
-      if (QueryUtils.canGetQueryValue(entity[key])) {
-        result.push(entity[key]);
-      }
-      else if (entity[key] instanceof Array) {
-        for (const itemItem of entity[key]) {
-          result.push(...QueryUtils.getValueFields(itemItem));
-        }
-      }
-      else if (entity[key] != undefined && typeof entity[key] === "object") {
-        for (const itemItem of Object.values(entity[key] as object)) {
-          result.push(...QueryUtils.getValueFields(itemItem));
-        }
-      }
-    }
-
-    return result;
   }
 
   public static parseQueryResult<T>(orgResults: any[], option?: IQueryResultParseOption): T[] {

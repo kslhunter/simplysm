@@ -950,15 +950,15 @@ export class SdPackageBuilder extends EventEmitter {
           if (nodeGypModuleNames.includes(request)) {
             const req = request.replace(/^.*?\/node_modules\//, "") as string;
             if (req.startsWith("@")) {
-              callback(undefined, `commonjs ${req.split("/", 2).join("/")}`);
+              callback(null, `commonjs ${req.split("/", 2).join("/")}`);
               return;
             }
 
-            callback(undefined, `commonjs ${req.split("/")[0]}`);
+            callback(null, `commonjs ${req.split("/")[0]}`);
             return;
           }
 
-          callback(undefined, undefined);
+          callback();
 
           /*if (request === "node-gyp-build") {
             const sourcePath = path.resolve(context, "prebuilds", "win32-x64", "node-napi.node");

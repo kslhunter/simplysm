@@ -32,7 +32,9 @@ describe("(common) core.types.DateOnly", () => {
   it("tick을 통해 생성할 수 있으며, 설정하거나, 조회할 수 있다. 일자 미만의 값은 tick에서 제외된다.", () => {
     const tick = Date.now();
     const d = new DateOnly(tick);
-    expect(d.tick).to.equal(tick - (tick % (24 * 60 * 60 * 1000)));
+    const datetime = new Date(tick);
+    const date = new Date(datetime.getFullYear(), datetime.getMonth(), datetime.getDate());
+    expect(d.tick).to.equal(date.getTime());
 
     const newTick = tick + (12 * 60 * 60 * 1000);
     d.tick = newTick;

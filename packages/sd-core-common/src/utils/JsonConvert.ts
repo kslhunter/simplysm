@@ -32,16 +32,16 @@ export class JsonConvert {
         return {
           __type__: "Error",
           data: {
+            ...currValue,
             message: currValue.message,
             name: currValue.name,
-            stack: currValue.stack,
-            ...currValue
+            stack: currValue.stack
           }
         };
       }
       else if (currValue?.type === "Buffer" && options?.hideBuffer === true) {
         return {
-          __type__: "Buffer",
+          type: "Buffer",
           data: options?.hideBuffer !== undefined ? "__hidden__" : currValue["data"]
         };
       }

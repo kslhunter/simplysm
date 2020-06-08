@@ -11,7 +11,8 @@ export class DateOnly {
   public constructor(arg1?: number | Date, arg2?: number, arg3?: number) {
     if (arg1 === undefined) {
       const tick = Date.now();
-      this.date = new Date(tick - (tick % (24 * 60 * 60 * 1000)));
+      const date = new Date(tick);
+      this.date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     }
     else if (arg2 !== undefined && arg3 !== undefined) {
       this.date = new Date(arg1 as number, arg2 - 1, arg3);
@@ -26,7 +27,8 @@ export class DateOnly {
   }
 
   public static parse(str: string): DateOnly {
-    const parsedTick = Date.parse(str);
+    const offsetMinutes = new Date().getTimezoneOffset();
+    const parsedTick = Date.parse(str) - (offsetMinutes * 60 * 1000);
     if (!Number.isNaN(parsedTick)) {
       return new DateOnly(parsedTick);
     }

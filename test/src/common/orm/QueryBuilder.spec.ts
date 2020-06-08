@@ -3,641 +3,314 @@ import {QueryBuilder} from "@simplysm/sd-orm-common";
 
 describe("(common) orm.QueryBuilder (QueryDef => Query)", () => {
   describe("SELECT", () => {
-    it("기본적으로 FROM, SELECT 를 통해 테이블을 조회한다", () => {
+    it("기본 테이블 조회", () => {
       expect(
-        QueryBuilder.select({
+        new QueryBuilder("mssql").select({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          }
+          as: "[TBL]"
         })
       ).to.equal(`
-SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]`.trim());
+SELECT *
+FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]`.trim());
     });
 
-    it("SELECT 안에 서브쿼리를 넣을 수 있다.", () => {
+    it("세부 테이블 조회", () => {
       expect(
-        QueryBuilder.select({
+        new QueryBuilder("mssql").select({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]",
-            "[sub_id]": {
-              from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-              select: {
-                "[id1]": "[id]"
-              },
-              top: 1
-            }
-          }
-        })
-      ).to.equal(`
-SELECT
-  [id] as [id1],
-  (
-    SELECT TOP 1
-      [id] as [id1]
-    FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-  ) as [sub_id]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]`.trim());
-    });
-
-    it("FROM 안에 서브 쿼리를 넣을 수 있다.", () => {
-      expect(
-        QueryBuilder.select({
-          from: {
-            from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-            select: {
-              "[id1]": "[id]"
-            }
-          },
-          select: {
-            "[id2]": "[id1]"
-          }
-        })
-      ).to.equal(`
-SELECT
-  [id1] as [id2]
-FROM (
-  SELECT
-    [id] as [id1]
-  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-)`.trim());
-    });
-
-    it("FROM 안에 다수의 서브쿼리를 넣어 UNION ALL 할 수 있다.", () => {
-      expect(
-        QueryBuilder.select({
-          from: [
-            {
-              from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE1]",
-              select: {
-                "[id1]": "[id]"
-              }
-            },
-            {
-              from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE2]",
-              select: {
-                "[id2]": "[id]"
-              }
-            }
-          ],
-          select: {
-            "[id3]": "[id1]",
-            "[id4]": "[id2]"
-          }
-        })
-      ).to.equal(`
-SELECT
-  [id1] as [id3],
-  [id2] as [id4]
-FROM (
-  SELECT
-    [id] as [id1]
-  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE1]
-
-  UNION ALL
-
-  SELECT
-    [id] as [id2]
-  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE2]
-)`.trim());
-    });
-
-    it("AS", () => {
-      expect(
-        QueryBuilder.select({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+          as: "[TBL]",
+          top: 1,
+          distinct: true,
           select: {
             "[id1]": "[TBL].[id]"
           },
-          as: "[TBL]"
+          where: [["[TBL].[id]", " = ", "3"], " AND ", ["[TBL].[name]", " LIKE ", "'%4444%'"]],
+          groupBy: ["[TBL].[id]", "[TBL].[name]"],
+          having: [["[TBL].[id]", " = ", "3"], " AND ", ["[TBL].[name]", " LIKE ", "'%4444%'"]]
+        })
+      ).to.equal(`
+SELECT TOP 1 DISTINCT
+  [TBL].[id] as [id1]
+FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]
+WHERE ([TBL].[id] = 3) AND ([TBL].[name] LIKE '%4444%')
+GROUP BY [TBL].[id], [TBL].[name]
+HAVING ([TBL].[id] = 3) AND ([TBL].[name] LIKE '%4444%')`.trim());
+    });
+
+    it("ORDER BY + LIMIT", () => {
+      expect(
+        new QueryBuilder("mssql").select({
+          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+          as: "[TBL]",
+          select: {
+            "[id1]": "[TBL].[id]"
+          },
+          orderBy: [["[TBL].[id]", "ASC"], ["[TBL].[name]", "DESC"]],
+          limit: [60, 30]
         })
       ).to.equal(`
 SELECT
   [TBL].[id] as [id1]
+FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]
+ORDER BY [TBL].[id] ASC, [TBL].[name] DESC
+OFFSET 60 ROWS FETCH NEXT 30 ROWS ONLY`.trim());
+    });
+
+    it("SELECT 내 서브쿼리 사용", () => {
+      expect(
+        new QueryBuilder("mssql").select({
+          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+          as: "[TBL]",
+          select: {
+            "[id1]": "[TBL].[id]",
+            "[sub_id]": {
+              from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+              as: "[TBL2]"
+            }
+          }
+        })
+      ).to.equal(`
+SELECT
+  [TBL].[id] as [id1],
+  (
+    SELECT *
+    FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL2]
+  ) as [sub_id]
 FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]`.trim());
     });
 
-    it("WHERE", () => {
+    it("FROM 내 서브 쿼리 사용", () => {
       expect(
-        QueryBuilder.select({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
+        new QueryBuilder("mssql").select({
+          from: {
+            from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+            as: "[TBL2]"
           },
-          where: [["[id]", " = ", 3], " AND ", ["[name]", " LIKE ", "'%4444%'"]]
+          as: "[TBL]"
         })
       ).to.equal(`
-SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-WHERE ([id] = 3) AND ([name] LIKE '%4444%')`.trim());
+SELECT *
+FROM (
+  SELECT *
+  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL2]
+) as [TBL]`.trim());
     });
 
-    it("WHERE 안에 서브쿼리를 넣을 수 있다.", () => {
+    it("FROM 내 UNION ALL 서브쿼리 사용", () => {
       expect(
-        QueryBuilder.select({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
-          where: [
-            ["[id]", " = ", {
+        new QueryBuilder("mssql").select({
+          from: [
+            {
               from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-              select: {
-                "[id1]": "[id]"
-              }
+              as: "[TBL2]"
+            },
+            {
+              from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+              as: "[TBL2]"
+            }
+          ],
+          as: "[TBL]"
+        })
+      ).to.equal(`
+SELECT *
+FROM (
+  SELECT *
+  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL2]
+
+  UNION ALL
+
+  SELECT *
+  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL2]
+) as [TBL]`.trim());
+    });
+
+    it("WHERE 조건내 서브쿼리 사용", () => {
+      expect(
+        new QueryBuilder("mssql").select({
+          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+          as: "[TBL]",
+
+          where: [
+            ["[TBL].[id]", " = ", {
+              from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+              as: "[TBL2]"
             }],
             " AND ",
-            ["[name]", " LIKE ", "'%4444%'"]
+            ["[TBL].[name]", " LIKE ", "'%4444%'"]
           ]
         })
       ).to.equal(`
-SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-WHERE ([id] = (
-  SELECT
-    [id] as [id1]
-  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-)) AND ([name] LIKE '%4444%')`.trim());
+SELECT *
+FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]
+WHERE ([TBL].[id] = (
+  SELECT *
+  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL2]
+)) AND ([TBL].[name] LIKE '%4444%')`.trim());
     });
 
-    it("DISTINCT", () => {
-      expect(
-        QueryBuilder.select({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
-          distinct: true
-        })
-      ).to.equal(`
-SELECT DISTINCT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]`.trim());
-    });
-
-    it("TOP", () => {
-      expect(
-        QueryBuilder.select({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
-          top: 10
-        })
-      ).to.equal(`
-SELECT TOP 10
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]`.trim());
-    });
-
-    it("ORDER BY", () => {
-      expect(
-        QueryBuilder.select({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
-          orderBy: [["[id]", "DESC"], ["[name]", "ASC"]]
-        })
-      ).to.equal(`
-SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-ORDER BY [id] DESC, [name] ASC`.trim());
-    });
-
-    it("LIMIT 작업은 반드시 ORDER BY 와 함께 쓰여야 한다.", () => {
+    it("[ERROR] LIMIT은 반드시 ORDER BY 와 함께 쓰여야 한다.", () => {
       expect(() => {
-        QueryBuilder.select({
+        new QueryBuilder("mssql").select({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
+          as: "[TBL]",
           limit: [3, 30]
         });
       }).to.throw(/ORDER BY/);
     });
 
-    it("LIMIT", () => {
-      expect(
-        QueryBuilder.select({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
-          orderBy: [["[id]", "DESC"], ["[name]", "ASC"]],
-          limit: [3, 30]
-        })
-      ).to.equal(`
-SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-ORDER BY [id] DESC, [name] ASC
-OFFSET 3 ROWS FETCH NEXT 30 ROWS ONLY`.trim());
-    });
-
-    it("GROUP BY", () => {
-      expect(
-        QueryBuilder.select({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
-          groupBy: [["[id]", " + ", "[name]"], "[name]"]
-        })
-      ).to.equal(`
-SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-GROUP BY ([id] + [name]), [name]`.trim());
-    });
-
-    it("HAVING 작업은 반드시 GROUP BY 와 함께 쓰여야 한다.", () => {
+    it("[ERROR] HAVING은 반드시 GROUP BY 와 함께 쓰여야 한다.", () => {
       expect(() => {
-        QueryBuilder.select({
+        new QueryBuilder("mssql").select({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
-          having: ["[id]", " = ", 3]
+          as: "[TBL]",
+          having: ["[TBL].[id]", " = ", "3"]
         });
       }).to.throw(/GROUP BY/);
     });
 
-    it("HAVING", () => {
+    it("JOIN 일반", () => {
       expect(
-        QueryBuilder.select({
+        new QueryBuilder("mssql").select({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
-          groupBy: ["[id]", "[name]"],
-          having: ["[id]", " = ", 3]
-        })
-      ).to.equal(`
-SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-GROUP BY [id], [name]
-HAVING [id] = 3`.trim());
-    });
-
-    it("JOIN", () => {
-      expect(
-        QueryBuilder.select({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
+          as: "[TBL]",
           join: [
             {
               from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1]",
-              as: "[TBL_1]"
+              as: "[TBL2]",
+              where: [["[TBL2].[id]", " = ", "3"]]
             }
           ]
         })
       ).to.equal(`
-SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-LEFT OUTER JOIN [TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1] as [TBL_1]`.trim());
+SELECT *
+FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]
+LEFT OUTER JOIN [TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1] as [TBL2] ON ([TBL2].[id] = 3)`.trim());
     });
 
-    it("JOIN 시, [\"where\", \"from\", \"as\"] 만 존재하는 경우, LEFT OUTER JOIN 쿼리가 생성된다.", () => {
+    it("JOIN시, OUTER APPLY (LATERAL) 쿼리가 생성", () => {
       expect(
-        QueryBuilder.select({
+        new QueryBuilder("mssql").select({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
+          as: "[TBL]",
           join: [
             {
               from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1]",
-              as: "[TBL_1]",
-              where: ["[TBL_1].[id]", " = ", "[id]"]
-            }
-          ]
-        })
-      ).to.equal(`
-SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-LEFT OUTER JOIN [TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1] as [TBL_1] ON [TBL_1].[id] = [id]`.trim());
-    });
-
-    it("JOIN 중, LEFT OUTER JOIN 시, from 에 서브쿼리를 사용할 수 있다.", () => {
-      expect(
-        QueryBuilder.select({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
-          join: [
-            {
-              from: {
-                from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1]",
-                select: {
-                  "[id2]": "[id]"
-                }
-              },
-              as: "[TBL_1]"
-            }
-          ]
-        })
-      ).to.equal(`
-SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-LEFT OUTER JOIN (
-  SELECT
-    [id] as [id2]
-  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1]
-) as [TBL_1]`.trim());
-    });
-
-    it("JOIN 중, LEFT OUTER JOIN 시, from 에 다수의 서브쿼리를 넣어 UNION ALL 을 사용할 수 있다.", () => {
-      expect(
-        QueryBuilder.select({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
-          join: [
-            {
-              from: [
-                {
-                  from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1]",
-                  select: {
-                    "[id2]": "[id]"
-                  }
-                },
-                {
-                  from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1]",
-                  select: {
-                    "[id2]": "[id]"
-                  }
-                }
-              ],
-              as: "[TBL_1]"
-            }
-          ]
-        })
-      ).to.equal(`
-SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-LEFT OUTER JOIN (
-  SELECT
-    [id] as [id2]
-  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1]
-
-  UNION ALL
-
-  SELECT
-    [id] as [id2]
-  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1]
-) as [TBL_1]`.trim());
-    });
-
-    it("JOIN 시, [\"where\", \"from\", \"as\"] 외의 다른 값이 존재하는 경우, OUTER APPLY 쿼리가 생성된다.", () => {
-      expect(
-        QueryBuilder.select({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          select: {
-            "[id1]": "[id]"
-          },
-          join: [
-            {
-              from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1]",
-              as: "[TBL_1]",
+              as: "[TBL2]",
+              where: [["[TBL2].[id]", " = ", "3"]],
               select: {
-                "[id2]": "[id]"
-              }
+                "[id2]": "[TBL2].[id]"
+              },
+              top: 1
             }
           ]
         })
       ).to.equal(`
-SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
+SELECT *
+FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]
 OUTER APPLY (
-  SELECT
-    [id] as [id2]
-  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1] as [TBL_1]
-) as [TBL_1]`.trim());
+  SELECT TOP 1
+    [TBL2].[id] as [id2]
+  FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1] as [TBL2]
+  WHERE ([TBL2].[id] = 3)
+) as [TBL2]`.trim());
     });
   });
 
   describe("INSERT", () => {
-    it("기본적으로 FROM, RECORD 를 통해 테이블에 INSERT 한다", () => {
+    it("기본 레코드 입력", () => {
       expect(
-        QueryBuilder.insert({
+        new QueryBuilder("mssql").insert({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
           record: {
-            "[id]": 1,
+            "[id]": "1",
             "[name]": "'AAA'"
           }
         })
       ).to.equal(`
 INSERT INTO [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] ([id], [name])
-VALUES (1, 'AAA')`.trim());
+VALUES (1, 'AAA');`.trim());
     });
 
     it("OUTPUT", () => {
       expect(
-        QueryBuilder.insert({
+        new QueryBuilder("mssql").insert({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
           record: {
-            "[id]": 1,
+            "[id]": "1",
             "[name]": "'AAA'"
           },
-          output: ["INSERTED.*"]
+          output: ["[id]"]
         })
       ).to.equal(`
 INSERT INTO [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] ([id], [name])
-OUTPUT INSERTED.*
-VALUES (1, 'AAA')`.trim());
+OUTPUT INSERTED.[id]
+VALUES (1, 'AAA');`.trim());
     });
   });
 
   describe("UPDATE", () => {
-    it("기본적으로 FROM, RECORD 를 통해 테이블에 UPDATE 한다.", () => {
+    it("기본 레코드 수정", () => {
       expect(
-        QueryBuilder.update({
+        new QueryBuilder("mssql").update({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+          as: "[TBL]",
           record: {
-            "[id]": 1,
+            "[id]": "1",
             "[name]": "'AAA'"
           }
         })
       ).to.equal(`
-UPDATE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] SET
-  [id] = 1,
-  [name] = 'AAA'`.trim());
-    });
-
-    it("OUTPUT", () => {
-      expect(
-        QueryBuilder.update({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          record: {
-            "[id]": 1,
-            "[name]": "'AAA'"
-          },
-          output: ["INSERTED.*"]
-        })
-      ).to.equal(`
-UPDATE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] SET
-  [id] = 1,
-  [name] = 'AAA'
-OUTPUT INSERTED.*`.trim());
-    });
-
-    it("AS", () => {
-      expect(
-        QueryBuilder.update({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          record: {
-            "[id]": 1,
-            "[name]": "'AAA'"
-          },
-          as: "[TBL]"
-        })
-      ).to.equal(`
 UPDATE [TBL] SET
-  [id] = 1,
-  [name] = 'AAA'
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]`.trim());
+  [TBL].[id] = 1,
+  [TBL].[name] = 'AAA'
+FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL];`.trim());
     });
 
-    it("WHERE", () => {
+    it("세부", () => {
       expect(
-        QueryBuilder.update({
+        new QueryBuilder("mssql").update({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+          as: "[TBL]",
           record: {
-            "[id]": 1,
+            "[id]": "1",
             "[name]": "'AAA'"
           },
-          where: ["[id] = 3"]
-        })
-      ).to.equal(`
-UPDATE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] SET
-  [id] = 1,
-  [name] = 'AAA'
-WHERE [id] = 3`.trim());
-    });
-
-    it("TOP", () => {
-      expect(
-        QueryBuilder.update({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          record: {
-            "[id]": 1,
-            "[name]": "'AAA'"
-          },
-          top: 1
-        })
-      ).to.equal(`
-UPDATE TOP (1) [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] SET
-  [id] = 1,
-  [name] = 'AAA'`.trim());
-    });
-
-    it("JOIN", () => {
-      expect(
-        QueryBuilder.update({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          record: {
-            "[id]": 1,
-            "[name]": "'AAA'"
-          },
+          output: ["*"],
+          top: 1,
+          where: ["[TBL].[id]", " = ", "3"],
           join: [
             {
-              from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1]",
-              as: "[TBL_1]"
+              from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+              as: "[TBL2]",
+              where: ["[TBL2].[id]", " = ", "[TBL].[id]"]
             }
           ]
         })
       ).to.equal(`
-UPDATE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] SET
-  [id] = 1,
-  [name] = 'AAA'
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-LEFT OUTER JOIN [TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1] as [TBL_1]`.trim());
+UPDATE TOP (1) [TBL] SET
+  [TBL].[id] = 1,
+  [TBL].[name] = 'AAA'
+OUTPUT INSERTED.*
+FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]
+LEFT OUTER JOIN [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL2] ON [TBL2].[id] = [TBL].[id]
+WHERE [TBL].[id] = 3;`.trim());
     });
   });
 
   describe("UPSERT", () => {
-    it("기본적으로 FROM, WHERE, INSERT RECORD, UPDATE RECORD 를 통해 테이블에 UPDATE 한다.", () => {
+    it("기본 레코드 입력 혹은 수정", () => {
       expect(
-        QueryBuilder.upsert({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          where: ["[id] = 1"],
-          updateRecord: {
-            "[name]": "'BBB'"
-          },
-          insertRecord: {
-            "[id]": 1,
-            "[name]": "'AAA'"
-          }
-        })
-      ).to.equal(`
-MERGE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-USING (SELECT 0 as _using) as _using
-ON [id] = 1
-WHEN MATCHED THEN
-  UPDATE SET
-    [name] = 'BBB'
-WHEN NOT MATCHED THEN
-  INSERT ([id], [name])
-  VALUES (1, 'AAA');`.trim());
-    });
-
-    it("OUTPUT", () => {
-      expect(
-        QueryBuilder.upsert({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          where: ["[id] = 1"],
-          updateRecord: {
-            "[name]": "'BBB'"
-          },
-          insertRecord: {
-            "[id]": 1,
-            "[name]": "'AAA'"
-          },
-          output: ["INSERTED.*"]
-        })
-      ).to.equal(`
-MERGE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-USING (SELECT 0 as _using) as _using
-ON [id] = 1
-WHEN MATCHED THEN
-  UPDATE SET
-    [name] = 'BBB'
-WHEN NOT MATCHED THEN
-  INSERT ([id], [name])
-  VALUES (1, 'AAA')
-OUTPUT INSERTED.*;`.trim());
-    });
-
-    it("AS", () => {
-      expect(
-        QueryBuilder.upsert({
+        new QueryBuilder("mssql").upsert({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
           as: "[TBL]",
-          where: ["[id] = 1"],
           updateRecord: {
-            "[name]": "'BBB'"
+            "[name]": "'AAA'"
           },
           insertRecord: {
-            "[id]": 1,
+            "[id]": "1",
             "[name]": "'AAA'"
-          }
+          },
+          where: ["[id]", " = ", "1"]
         })
       ).to.equal(`
 MERGE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]
@@ -645,95 +318,93 @@ USING (SELECT 0 as _using) as _using
 ON [id] = 1
 WHEN MATCHED THEN
   UPDATE SET
-    [name] = 'BBB'
+    [name] = 'AAA'
 WHEN NOT MATCHED THEN
   INSERT ([id], [name])
   VALUES (1, 'AAA');`.trim());
     });
-  });
-
-  describe("DELETE", () => {
-    it("기본적으로 FROM 를 통해 테이블에서 항목들을 삭제 한다.", () => {
-      expect(
-        QueryBuilder.delete({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]"
-        })
-      ).to.equal(`
-DELETE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]`.trim());
-    });
-
-    it("TOP", () => {
-      expect(
-        QueryBuilder.delete({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          top: 1
-        })
-      ).to.equal(`
-DELETE TOP (1) [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]`.trim());
-    });
 
     it("OUTPUT", () => {
       expect(
-        QueryBuilder.delete({
+        new QueryBuilder("mssql").upsert({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          output: ["DELETED.*"]
+          as: "[TBL]",
+          updateRecord: {
+            "[name]": "'AAA'"
+          },
+          insertRecord: {
+            "[id]": "1",
+            "[name]": "'AAA'"
+          },
+          where: ["[id]", " = ", "1"],
+          output: ["*"]
         })
       ).to.equal(`
-DELETE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-OUTPUT DELETED.*`.trim());
+MERGE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]
+USING (SELECT 0 as _using) as _using
+ON [id] = 1
+WHEN MATCHED THEN
+  UPDATE SET
+    [name] = 'AAA'
+WHEN NOT MATCHED THEN
+  INSERT ([id], [name])
+  VALUES (1, 'AAA')
+OUTPUT INSERTED.*;`.trim());
     });
+  });
 
-    it("AS", () => {
+  describe("DELETE", () => {
+    it("기본 레코드 삭제", () => {
       expect(
-        QueryBuilder.delete({
+        new QueryBuilder("mssql").delete({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
           as: "[TBL]"
         })
       ).to.equal(`
 DELETE [TBL]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]`.trim());
+FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL];`.trim());
     });
 
-    it("JOIN", () => {
+    it("세부", () => {
       expect(
-        QueryBuilder.delete({
+        new QueryBuilder("mssql").delete({
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+          as: "[TBL]",
+          output: ["*"],
+          top: 1,
+          where: ["[TBL].[id]", " = ", "3"],
           join: [
             {
-              from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1]",
-              as: "[TBL_1]"
+              from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+              as: "[TBL2]",
+              where: ["[TBL2].[id]", " = ", "[TBL].[id]"]
             }
           ]
         })
       ).to.equal(`
-DELETE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-LEFT OUTER JOIN [TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1] as [TBL_1]`.trim());
+DELETE TOP (1) [TBL]
+OUTPUT DELETED.*
+FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]
+LEFT OUTER JOIN [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL2] ON [TBL2].[id] = [TBL].[id]
+WHERE [TBL].[id] = 3;`.trim());
     });
 
-    it("WHERE", () => {
-      expect(
-        QueryBuilder.delete({
-          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
-          where: ["[id] = 1"]
-        })
-      ).to.equal(`
-DELETE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]
-WHERE [id] = 1`.trim());
+    it("내부 SELECT", () => {
+      // TODO
     });
   });
 
   describe("DATABASE", () => {
     it("CREATE DATABASE IF NOT EXISTS", () => {
       expect(
-        QueryBuilder.createDatabaseIfNotExists({database: "TEST_DB"})
+        new QueryBuilder("mssql").createDatabaseIfNotExists({database: "TEST_DB"})
       ).to.equal(`
 IF NOT EXISTS(select * from sys.databases WHERE name='TEST_DB') CREATE DATABASE [TEST_DB]`.trim());
     });
 
     it("CLEAR DATABASE IF EXISTS", () => {
       expect(
-        QueryBuilder.clearDatabaseIfExists({database: "TEST_DB"})
+        new QueryBuilder("mssql").clearDatabaseIfExists({database: "TEST_DB"})
       ).to.equal(`
 IF EXISTS(select * from sys.databases WHERE name='TEST_DB')
 BEGIN
@@ -772,7 +443,7 @@ END`.trim());
 
     it("CREATE TABLE", () => {
       expect(
-        QueryBuilder.createTable({
+        new QueryBuilder("mssql").createTable({
           table: {
             database: "TEST_DB",
             schema: "TEST_SCHEMA",
@@ -793,19 +464,26 @@ END`.trim());
               name: "seq",
               dataType: "INT"
             }
+          ],
+          primaryKeys: [
+            {
+              columnName: "id",
+              orderBy: "DESC"
+            }
           ]
         })
       ).to.equal(`
 CREATE TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] (
   [id] INT IDENTITY(1,1) NOT NULL,
   [name] NVARCHAR(255) NULL,
-  [seq] INT NOT NULL
-)`.trim());
+  [seq] INT NOT NULL,
+  CONSTRAINT [PK_TEST_TABLE] PRIMARY KEY ([id] DESC)
+);`.trim());
     });
 
     it("DROP TABLE", () => {
       expect(
-        QueryBuilder.dropTable({
+        new QueryBuilder("mssql").dropTable({
           table: {
             database: "TEST_DB",
             schema: "TEST_SCHEMA",
@@ -816,9 +494,10 @@ CREATE TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] (
 DROP TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]`.trim());
     });
 
+
     it("ADD COLUMN", () => {
       expect(
-        QueryBuilder.addColumn({
+        new QueryBuilder("mssql").addColumn({
           table: {
             database: "TEST_DB",
             schema: "TEST_SCHEMA",
@@ -838,7 +517,7 @@ DROP TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]`.trim());
       "(NOT NULL 에 기본값이 설정되어 있으면, 일단 NULL 로 컬럼을 생성하고, 모든 값을 기본값으로 덮어쓴다음, " +
       "컬럼을 NOT NULL 로 설정하는 3개의 쿼리가 반환됨)", () => {
       expect(
-        QueryBuilder.addColumn({
+        new QueryBuilder("mssql").addColumn({
           table: {
             database: "TEST_DB",
             schema: "TEST_SCHEMA",
@@ -859,7 +538,7 @@ DROP TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]`.trim());
 
     it("REMOVE COLUMN", () => {
       expect(
-        QueryBuilder.removeColumn({
+        new QueryBuilder("mssql").removeColumn({
           table: {
             database: "TEST_DB",
             schema: "TEST_SCHEMA",
@@ -873,7 +552,7 @@ ALTER TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] DROP COLUMN [remark]`.trim());
 
     it("MODIFY COLUMN", () => {
       expect(
-        QueryBuilder.modifyColumn({
+        new QueryBuilder("mssql").modifyColumn({
           table: {
             database: "TEST_DB",
             schema: "TEST_SCHEMA",
@@ -893,7 +572,7 @@ ALTER TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] DROP COLUMN [remark]`.trim());
       "(NOT NULL 에 기본값이 설정되어 있으면, 일단 NULL 로 컬럼을 생성하고, 모든 값을 기본값으로 덮어쓴다음, " +
       "컬럼을 NOT NULL 로 설정하는 3개의 쿼리가 반환됨)", () => {
       expect(
-        QueryBuilder.modifyColumn({
+        new QueryBuilder("mssql").modifyColumn({
           table: {
             database: "TEST_DB",
             schema: "TEST_SCHEMA",
@@ -914,7 +593,7 @@ ALTER TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] DROP COLUMN [remark]`.trim());
 
     it("RENAME COLUMN", () => {
       expect(
-        QueryBuilder.renameColumn({
+        new QueryBuilder("mssql").renameColumn({
           table: {
             database: "TEST_DB",
             schema: "TEST_SCHEMA",
@@ -927,32 +606,9 @@ ALTER TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] DROP COLUMN [remark]`.trim());
 EXECUTE TEST_DB..sp_rename N'TEST_SCHEMA.TEST_TABLE.[name]', N'newName', 'COLUMN'`.trim());
     });
 
-    it("ADD PRIMARY KEY", () => {
-      expect(
-        QueryBuilder.addPrimaryKey({
-          table: {
-            database: "TEST_DB",
-            schema: "TEST_SCHEMA",
-            name: "TEST_TABLE"
-          },
-          primaryKeys: [
-            {
-              column: "parentId",
-              orderBy: "ASC"
-            },
-            {
-              column: "id",
-              orderBy: "DESC"
-            }
-          ]
-        })
-      ).to.equal(`
-ALTER TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] ADD PRIMARY KEY ([parentId] ASC, [id] DESC)`.trim());
-    });
-
     it("ADD FOREIGN KEY", () => {
       expect(
-        QueryBuilder.addForeignKey({
+        new QueryBuilder("mssql").addForeignKey({
           table: {
             database: "TEST_DB",
             schema: "TEST_SCHEMA",
@@ -978,7 +634,7 @@ ALTER TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] ADD CONSTRAINT [FK_TEST_DB_TEST
 
     it("REMOVE FOREIGN KEY", () => {
       expect(
-        QueryBuilder.removeForeignKey({
+        new QueryBuilder("mssql").removeForeignKey({
           table: {
             database: "TEST_DB",
             schema: "TEST_SCHEMA",
@@ -992,7 +648,7 @@ ALTER TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] DROP CONSTRAINT [FK_TEST_DB_TES
 
     it("CREATE INDEX", () => {
       expect(
-        QueryBuilder.createIndex({
+        new QueryBuilder("mssql").createIndex({
           table: {
             database: "TEST_DB",
             schema: "TEST_SCHEMA",
@@ -1018,7 +674,7 @@ CREATE INDEX [IDX_TEST_DB_TEST_SCHEMA_TEST_TABLE_test] ON [TEST_DB].[TEST_SCHEMA
 
     it("SET IDENTITY INSERT", () => {
       expect(
-        QueryBuilder.configIdentityInsert({
+        new QueryBuilder("mssql").configIdentityInsert({
           table: {
             database: "TEST_DB",
             schema: "TEST_SCHEMA",
@@ -1034,17 +690,18 @@ SET IDENTITY_INSERT [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] ON`.trim());
   describe("기타", () => {
     it("query", () => {
       expect(
-        QueryBuilder.query({
+        new QueryBuilder("mssql").query({
           type: "select",
           from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+          as: "[TBL]",
           select: {
-            "[id1]": "[id]"
+            "[id1]": "[TBL].[id]"
           }
         })
       ).to.equal(`
 SELECT
-  [id] as [id1]
-FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]`.trim());
+  [TBL].[id] as [id1]
+FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]`.trim());
     });
   });
 });

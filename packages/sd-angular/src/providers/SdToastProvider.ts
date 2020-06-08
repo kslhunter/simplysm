@@ -199,6 +199,7 @@ export interface ISdProgressToast {
 
 export abstract class SdToastBase<P, R> {
   public _tParam!: P;
+
   public _tResult!: R;
 
   public abstract sdOnOpen(param: P): Promise<void>;

@@ -6,7 +6,7 @@ import {FsUtils, Logger, LoggerSeverity} from "@simplysm/sd-core-node";
 
 Logger.setConfig({
   file: {
-    level: LoggerSeverity.log,
+    level: LoggerSeverity.debug,
     outDir: path.resolve(process.cwd(), "logs")
   }
 });

@@ -3,9 +3,10 @@ import {Logger} from "@simplysm/sd-core-node";
 import * as tedious from "tedious";
 import {EventEmitter} from "events";
 import {Wait} from "@simplysm/sd-core-common";
+import {IDbConnection} from "./IDbConnection";
 
-export class DbConnection extends EventEmitter {
-  private readonly _logger = Logger.get(["simplysm", "sd-orm-node", "DbConnection"]);
+export class MssqlDbConnection extends EventEmitter implements IDbConnection {
+  private readonly _logger = Logger.get(["simplysm", "sd-orm-node", "MssqlDbConnection"]);
 
   private readonly _timeout = 300000;
 
@@ -172,21 +173,7 @@ export class DbConnection extends EventEmitter {
     const conn = this._conn;
 
     const results: any[][] = [];
-    const queryStrings: string[] = [];
-    let index = 0;
-    for (const query of queries.filter((item: any) => Boolean(item))) {
-      if (query === "GO") {
-        index++;
-        continue;
-      }
-
-      queryStrings[index] = queryStrings[index] ?? "";
-      queryStrings[index] += query + "\n\n";
-    }
-
-    // const queryString = queries.filter((item: any) => Boolean(item)).join("\n\n");
-
-    for (const queryString of queryStrings) {
+    for (const queryString of queries) {
       this._logger.debug("쿼리 실행:\n" + queryString);
       await new Promise<void>((resolve, reject) => {
         let rejected = false;

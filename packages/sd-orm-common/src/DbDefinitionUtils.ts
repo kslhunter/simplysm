@@ -1,5 +1,5 @@
 import {ObjectUtils, Type} from "@simplysm/sd-core-common";
-import {IColumnDef, IForeignKeyDef, IForeignKeyTargetDef, IIndexDef, ITableDef} from "../definition";
+import {IColumnDef, IForeignKeyDef, IForeignKeyTargetDef, IIndexDef, ITableDef} from "./commons";
 
 export class DbDefinitionUtils {
   private static readonly _tableDefMetadataKey = "sd-orm-table-def";
@@ -12,7 +12,6 @@ export class DbDefinitionUtils {
 
     return tableDef ?? {
       name: "",
-      description: "",
       columns: [],
       foreignKeys: [],
       foreignKeyTargets: [],

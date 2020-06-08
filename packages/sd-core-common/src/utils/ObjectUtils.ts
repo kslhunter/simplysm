@@ -326,7 +326,7 @@ export class ObjectUtils {
     delete curr[last];
   }
 
-  public static clearUndefined<T extends any>(obj: T): T {
+  public static clearUndefined<T extends object>(obj: T): T {
     if (obj === undefined) {
       return obj;
     }

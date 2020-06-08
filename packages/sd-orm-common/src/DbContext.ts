@@ -1,31 +1,30 @@
-import {NeverEntryError, ObjectUtils, Type} from "@simplysm/sd-core-common";
+import {QueryBuilder} from "./QueryBuilder";
 import {IDbContextExecutor} from "./IDbContextExecutor";
-import {Queryable} from "./Queryable";
-import {DbDatabaseInfoModel, DbMigrationModel, DbTableInfoModel} from "../model";
+import {QueryHelper} from "./QueryHelper";
+import {IQueryResultParseOption, TQueryDef} from "./commons";
+import {NeverEntryError, ObjectUtils, Type} from "@simplysm/sd-core-common";
 import {IDbMigration} from "./IDbMigration";
-import {IQueryResultParseOption, TQueryDef} from "../query-definition";
-import {sorm} from "./sorm";
-import {DbDefinitionUtils} from "../util/DbDefinitionUtils";
-import {QueryUtils} from "../util/QueryUtils";
+import {Queryable} from "./Queryable";
+import {SystemMigration} from "./SystemMigration";
+import {DbDefinitionUtils} from "./DbDefinitionUtils";
 
 export abstract class DbContext {
   public static readonly selectCache = new Map<string, { result: any[]; timeout: any } | undefined>();
 
   public status: "ready" | "connect" | "transact" = "ready";
 
-  public prepareDefs: {
-    def: TQueryDef;
-    option: IQueryResultParseOption | undefined;
-    isRealResult: boolean;
-  }[] = [];
+  public prepareDefs: TQueryDef[] = [];
 
   public abstract get schema(): { database: string; schema: string };
 
   public abstract get migrations(): Type<IDbMigration>[];
 
-  public readonly migration = new Queryable(this, DbMigrationModel);
-  private readonly _databaseInfo = new Queryable(this, DbDatabaseInfoModel);
-  private readonly _tableInfo = new Queryable(this, DbTableInfoModel);
+  public readonly qb = new QueryBuilder(this._executor.dialect);
+  public readonly qh = new QueryHelper(this._executor.dialect);
+
+  public readonly systemMigration = new Queryable(this, SystemMigration);
+
+  public dialect = this._executor.dialect;
 
   public constructor(private readonly _executor: IDbContextExecutor) {
   }
@@ -134,23 +133,12 @@ export abstract class DbContext {
     return await this._executor.executeAsync(queries);
   }
 
-  public async executePreparedAsync(): Promise<any[][]> {
-    if (this.prepareDefs.length < 1) {
-      return [];
-    }
-
-    const result: any[][] = [];
-    const resultTmp: any[][] = await this.executeDefsAsync(this.prepareDefs.map(item => item.def), this.prepareDefs.map(item => item.option));
-    for (let i = 0; i < resultTmp.length; i++) {
-      if (this.prepareDefs[i].isRealResult) {
-        result.push(resultTmp[i]);
-      }
-    }
+  public async executePreparedAsync(): Promise<void> {
+    if (this.prepareDefs.length < 1) return;
+    await this.executeDefsAsync(this.prepareDefs);
 
     this.prepareDefs = [];
     DbContext.selectCache.clear();
-
-    return result;
   }
 
   public async initializeAsync(dbs?: string[], force?: boolean): Promise<boolean> {
@@ -161,27 +149,30 @@ export abstract class DbContext {
     if (!force) {
       // 강제 아님
       const isDbExists = (
-        await this._databaseInfo
-          .where(item => [
-            sorm.equal(item.name, this.schema.database)
-          ])
-          .countAsync()
-      ) > 0;
+        await this.executeDefsAsync([
+          {type: "getDatabaseInfo", database: this.schema.database}
+        ])
+      ).length > 0;
 
       if (isDbExists) {
         // FORCE 아니고 DB 있음
         const hasMigrationTable = (
-          await this._tableInfo
-            .where(item => [
-              sorm.equal(item.name, "_migration")
-            ])
-            .countAsync()
-        ) > 0;
+          await this.executeDefsAsync([
+            {
+              type: "getTableInfo",
+              table: {
+                database: this.schema.database,
+                schema: this.schema.schema,
+                name: "_migration"
+              }
+            }
+          ])
+        ).length > 0;
 
         if (hasMigrationTable) {
           // FORCE 아니고 DB 있으나, Migration 없음
           const dbMigrationCodes = (
-            await this.migration
+            await this.systemMigration
               .select(item => ({
                 code: item.code
               }))
@@ -198,7 +189,7 @@ export abstract class DbContext {
                 for (const migration of migrations) {
                   await new migration().up(this);
 
-                  await this.migration.insertAsync({
+                  await this.systemMigration.insertAsync({
                     code: migration.name
                   });
                 }
@@ -208,7 +199,7 @@ export abstract class DbContext {
               for (const migration of migrations) {
                 await new migration().up(this);
 
-                await this.migration.insertAsync({
+                await this.systemMigration.insertAsync({
                   code: migration.name
                 });
               }
@@ -270,38 +261,20 @@ export abstract class DbContext {
         },
         columns: tableDef.columns.map(col => ObjectUtils.clearUndefined({
           name: col.name,
-          dataType: col.dataType ?? QueryUtils.getDataType(col.typeFwd()),
+          dataType: col.dataType ?? this.qh.type(col.typeFwd()),
           autoIncrement: col.autoIncrement,
           nullable: col.nullable
-        }))
-      });
-    }
-    queryDefsList.push(createTableQueryDefs);
-
-    // PK 설정
-    const addPKQueryDefs: TQueryDef[] = [];
-    for (const tableDef of tableDefs) {
-      if (tableDef.columns.length < 1) {
-        throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
-      }
-
-      addPKQueryDefs.push({
-        type: "addPrimaryKey",
-        table: {
-          database: tableDef.database ?? this.schema.database,
-          schema: tableDef.schema ?? this.schema.schema,
-          name: tableDef.name
-        },
+        })),
         primaryKeys: tableDef.columns
           .filter(item => item.primaryKey !== undefined)
           .orderBy(item => item.primaryKey!)
           .map(item => ({
-            column: item.name,
+            columnName: item.name,
             orderBy: "ASC"
           }))
       });
     }
-    queryDefsList.push(addPKQueryDefs);
+    queryDefsList.push(createTableQueryDefs);
 
     // TABLE 초기화: FK 설정
     const addFkQueryDefs: TQueryDef[] = [];
@@ -403,9 +376,9 @@ export abstract class DbContext {
     for (const migration of this.migrations.orderBy(item => item.name)) {
       migrationInsertQueryDefs.push({
         type: "insert",
-        from: `[${this.schema.database}].[${this.schema.schema}].[_migration]`,
+        from: this.qb.getTableName({...this.schema, name: "_migration"}),
         record: {
-          "[code]": `N'${migration.name}'`
+          [this.qb.wrap("code")]: `N'${migration.name}'`
         }
       });
     }

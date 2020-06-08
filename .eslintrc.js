@@ -101,7 +101,6 @@ module.exports = {
     "max-depth": "off",
     "no-async-promise-executor": "off",
     "array-bracket-spacing": "off",
-    "dot-notation": "off",
     "no-magic-numbers": "off",
     // "func-style": ["error", "expression"],
     "func-style": "off",
@@ -213,6 +212,10 @@ module.exports = {
         "@typescript-eslint/no-empty-interface": "off",
         "@typescript-eslint/init-declarations": "off",
         "@typescript-eslint/prefer-ts-expect-error": "off",
+        "@typescript-eslint/dot-notation": "off",
+        "@typescript-eslint/no-invalid-void-type": "off",
+        "@typescript-eslint/lines-between-class-members": "off",
+        "@typescript-eslint/no-invalid-this": "off",
 
         "@typescript-eslint/explicit-function-return-type": "off",
 

@@ -1,13 +1,29 @@
 import {Logger} from "@simplysm/sd-core-node";
-import {DbConnection, IDbConnectionConfig} from "@simplysm/sd-orm-node";
-import {IQueryResultParseOption, QueryBuilder, QueryUtils, TQueryDef} from "@simplysm/sd-orm-common";
+import {IDbConnection, IDbConnectionConfig, MssqlDbConnection, MysqlDbConnection} from "@simplysm/sd-orm-node";
+import {IQueryResultParseOption, QueryBuilder, SdOrmUtils, TQueryDef} from "@simplysm/sd-orm-common";
 import {SdServiceBase} from "../SdServiceBase";
 import {SdServiceServerConfigUtils} from "../SdServiceServerConfigUtils";
 
 export class SdOrmService extends SdServiceBase {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-service", "SdOrmService"]);
-  private static readonly _connections = new Map<number, DbConnection>();
+
+  private static readonly _connections = new Map<number, IDbConnection>();
   private static readonly _wsConnectionCloseListenerMap = new Map<number, () => Promise<void>>();
+
+  private _config?: IDbConnectionConfig;
+
+  public async getDialectAsync(configName: string): Promise<"mssql" | "mysql" | undefined> {
+    const config: IDbConnectionConfig | undefined = (
+      await SdServiceServerConfigUtils.getConfigAsync(this.server.rootPath, this.request.url)
+    )?.["orm"]?.[configName];
+    if (!config) {
+      throw new Error("서버에서 ORM 설정을 찾을 수 없습니다.");
+    }
+
+    this._config = config;
+
+    return this._config.dialect;
+  }
 
   public async connectAsync(configName: string): Promise<number> {
     const config: IDbConnectionConfig | undefined = (
@@ -17,7 +33,11 @@ export class SdOrmService extends SdServiceBase {
       throw new Error("서버에서 ORM 설정을 찾을 수 없습니다.");
     }
 
-    const conn = new DbConnection(config);
+    this._config = config;
+
+    const conn: IDbConnection = config.dialect === "mysql" ?
+      new MysqlDbConnection(config) :
+      new MssqlDbConnection(config);
 
     const lastConnId = Array.from(SdOrmService._connections.keys()).max() ?? 0;
     const connId = lastConnId + 1;
@@ -93,7 +113,7 @@ export class SdOrmService extends SdServiceBase {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    const result = await conn.executeAsync(defs.map(def => QueryBuilder.query(def)));
-    return result.map((item, i) => QueryUtils.parseQueryResult(item, options ? options[i] : undefined));
+    const result = await conn.executeAsync(defs.map(def => new QueryBuilder(this._config?.dialect).query(def)));
+    return result.map((item, i) => SdOrmUtils.parseQueryResult(item, options ? options[i] : undefined));
   }
 }

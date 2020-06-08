@@ -1,11 +1,11 @@
 import {Type} from "@simplysm/sd-core-common";
-import {DbDefinitionUtils} from "./util/DbDefinitionUtils";
+import {DbDefinitionUtils} from "./DbDefinitionUtils";
 
 export function Table<T>(def: {
   database?: string;
   schema?: string;
   name?: string;
-  description: string;
+  description?: string;
 }): (classType: Type<T>) => void {
   return (classType: Type<T>): void => {
     DbDefinitionUtils.mergeTableDef(classType, {
