@@ -388,10 +388,6 @@ FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]
 LEFT OUTER JOIN [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL2] ON [TBL2].[id] = [TBL].[id]
 WHERE [TBL].[id] = 3;`.trim());
     });
-
-    it("내부 SELECT", () => {
-      // TODO
-    });
   });
 
   describe("DATABASE", () => {
