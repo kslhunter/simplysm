@@ -6,7 +6,7 @@ import {ISdPackageBuildResult} from "./SdPackageBuilder";
 import {SdAngularUtils} from "./SdAngularUtils";
 import {EventEmitter} from "events";
 import {ITsConfig} from "../commons";
-import {ObjectUtils, SdError} from "@simplysm/sd-core-common";
+import {NeverEntryError, ObjectUtils, SdError} from "@simplysm/sd-core-common";
 
 export class SdTypescriptProgramRunner extends EventEmitter {
   private readonly _logger = Logger.get([
@@ -49,7 +49,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
     // 파일 목록 구성
     const filePaths = Object.keys(this._fileInfoMapObj)
       .concat(...Object.values(this._fileInfoMapObj).mapMany(v => v.scssDependencies))
-      .concat(...Object.values(this._fileInfoMapObj).mapMany(v => this._getDependencies(v.sourceFile!)))
+      .concat(...Object.values(this._fileInfoMapObj).mapMany(v => this._getAllDependencies(v.sourceFile!, [])))
       .distinct();
 
     // 최초 변경 이벤트 알림
@@ -112,7 +112,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
           .concat(...Object.values(this._fileInfoMapObj).mapMany(v => v.scssDependencies));
 
         newWatchFilePaths = newWatchFilePaths
-          .concat(...Object.values(this._fileInfoMapObj).mapMany(v => this._getDependencies(v.sourceFile!)))
+          .concat(...Object.values(this._fileInfoMapObj).mapMany(v => this._getAllDependencies(v.sourceFile!, [])))
           .distinct().filter(item => !watchFilePaths.includes(item));
 
         if (this._tsConfig.files === undefined) {
@@ -266,69 +266,194 @@ export class SdTypescriptProgramRunner extends EventEmitter {
   }
 
   private _getAllRelatedFilePaths(filePath: string): string[] {
-    /*
-    if (filePath.includes("_modules")) {
-      const orgFilePath = filePath.replace(/[\\/]_modules[\\/]/, "\\").replace(/(RoutingModule\.|Module\.)/, ".");
-      return [
-        ...Object.keys(this._fileInfoMapObj).filter(key => this._getDependencies(this._fileInfoMapObj[key].sourceFile!).includes(filePath)),
-        orgFilePath,
-        ...Object.keys(this._fileInfoMapObj).filter(key => this._getDependencies(this._fileInfoMapObj[key].sourceFile!).includes(orgFilePath))
-      ];
-    }*/
-
-    return Object.keys(this._fileInfoMapObj).filter(key => this._getDependencies(this._fileInfoMapObj[key].sourceFile!).includes(filePath));
+    return Object.keys(this._fileInfoMapObj).filter(key => this._getAllDependencies(this._fileInfoMapObj[key].sourceFile!, []).includes(filePath));
   }
 
-  private _getDependencies(sourceFile: ts.SourceFile): string[] {
+  private _getAllDependencies(sourceFile: ts.SourceFile, excludes: string[]): string[] {
     const filePath = path.resolve(sourceFile.fileName);
 
     if (this._fileInfoMapObj[filePath].dependencies) {
       return this._fileInfoMapObj[filePath].dependencies!;
     }
 
-    const result = this._getSourceNodes(sourceFile)
-      .filter(item => [ts.SyntaxKind.ExportDeclaration, ts.SyntaxKind.ImportDeclaration].includes(item.kind))
-      .mapMany(node => {
-        const decl = node as ts.ImportDeclaration | ts.ExportDeclaration;
-        if (!decl.moduleSpecifier) return [];
+    const result = this._getImportDeclarations(sourceFile).map(item => ({
+      isExport: false,
+      ...item
+    })).concat(
+      this._getExportDeclarations(sourceFile).map(item => ({
+        isExport: true,
+        ...item
+      }))
+    ).mapMany(item => {
+      if (excludes.includes(item.filePath)) {
+        return [];
+      }
 
-        const moduleSpecifier = decl.moduleSpecifier as ts.StringLiteral;
-        const importRequire = moduleSpecifier.text;
+      const targetSourceFile = this._fileInfoMapObj[item.filePath]?.sourceFile;
 
-        const importNamed = decl["importClause"]?.namedBindings as ts.NamedImports | undefined;
-        const importTargets = importNamed?.elements?.map(item => (item.propertyName ? item.propertyName.text : item.name.text));
-
-        const resolvedModule = sourceFile["resolvedModules"].get(importRequire);
-        if (importRequire.startsWith(".") && resolvedModule === undefined) {
-          const importFilePath = path.resolve(path.dirname(sourceFile.fileName), importRequire);
-          if (sourceFile.fileName.endsWith(".d.ts")) {
-            return [importFilePath + ".d.ts"];
-          }
-          else if (!Boolean(path.extname(importFilePath))) {
-            return [importFilePath + path.extname(sourceFile.fileName)];
-          }
-          else {
-            return [importFilePath];
-          }
-        }
-        if (resolvedModule === undefined) return [];
-
-        const targetFilePath = path.resolve(resolvedModule.resolvedFileName);
-        const targetSourceFile = this.program!.getSourceFile(targetFilePath);
-        if (!targetSourceFile) return [];
-
-        const importChain = importTargets ?
-          importTargets.mapMany(targetName => this._getImportChain(targetSourceFile, targetName)) :
-          this._getImportChain(targetSourceFile);
-
-        return [targetFilePath, ...importChain];
-      });
+      if (targetSourceFile) {
+        return item.targetNames.length > 0 ?
+          item.targetNames.mapMany(item1 => this._getImportChain(targetSourceFile, item1, excludes.concat([]))) :
+          this._getAllDependencies(targetSourceFile, excludes.concat([]));
+      }
+      else {
+        return [item.filePath];
+      }
+    }).distinct();
 
     this._fileInfoMapObj[filePath].dependencies = result;
     return result;
   }
 
-  private _getImportChain(sourceFile: ts.SourceFile, targetName?: string): string[] {
+  private _getImportChain(sourceFile: ts.SourceFile, targetName: string, excludes: string[]): string[] {
+    let result: string[];
+
+    const filePath = path.resolve(sourceFile.fileName);
+
+    if (
+      this._fileInfoMapObj[filePath].importChain &&
+      this._fileInfoMapObj[filePath].importChain![targetName ?? "_"]
+    ) {
+      result = this._fileInfoMapObj[filePath].importChain![targetName ?? "_"];
+    }
+    else {
+      const hasTarget = this._getSourceNodes(sourceFile)
+        .some(item => (
+          item.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword) &&
+          item["name"]?.text === targetName
+        ));
+      if (hasTarget) {
+        result = [filePath, ...this._getAllDependencies(sourceFile, excludes.concat([filePath]))];
+      }
+      else {
+        const childTargets = this._getExportDeclarations(sourceFile)
+          .filter(item => item.targetNames.includes(targetName) || item.targetNames.length < 1)
+          .mapMany(item => {
+            if (excludes.includes(item.filePath)) {
+              return [];
+            }
+
+            const targetSourceFile = this._fileInfoMapObj[item.filePath]?.sourceFile;
+
+            if (targetSourceFile) {
+              const importChain = this._getImportChain(targetSourceFile, targetName, excludes.concat([filePath]));
+              return importChain.length > 0 ? importChain : [];
+            }
+            else {
+              return [];
+            }
+          });
+
+        if (childTargets.length > 0) {
+          result = [filePath, ...childTargets];
+        }
+        else {
+          result = [];
+        }
+      }
+
+      this._fileInfoMapObj[filePath].importChain = this._fileInfoMapObj[filePath].importChain ?? {};
+      this._fileInfoMapObj[filePath].importChain![targetName ?? "_"] = result;
+    }
+
+    return result;
+  }
+
+  private _getImportDeclarations(sourceFile: ts.SourceFile): { filePath: string; targetNames: string[] }[] {
+    return this._getSourceNodes(sourceFile)
+      .map(node => {
+        if (!ts.isImportDeclaration(node)) {
+          return undefined;
+        }
+
+        if (!ts.isStringLiteral(node.moduleSpecifier)) {
+          return undefined;
+        }
+
+        const importRequire = node.moduleSpecifier.text;
+
+        const filePath = this._getResolvedModuleFilePath(sourceFile, importRequire);
+        if (filePath === undefined) {
+          return undefined;
+        }
+
+        const importNamedBindings = node.importClause?.namedBindings;
+        if (!importNamedBindings) {
+          return {filePath, targetNames: []};
+        }
+
+        if (!ts.isNamedImports(importNamedBindings)) {
+          return undefined;
+        }
+
+        const importTargets = importNamedBindings.elements.map(item => (item.propertyName ? item.propertyName.text : item.name.text));
+
+        return {filePath, targetNames: importTargets};
+      })
+      .filterExists();
+  }
+
+  private _getExportDeclarations(sourceFile: ts.SourceFile): { filePath: string; targetNames: string[] }[] {
+    return this._getSourceNodes(sourceFile)
+      .map(node => {
+        if (!ts.isExportDeclaration(node)) {
+          return undefined;
+        }
+
+        if (!node.moduleSpecifier) {
+          return undefined;
+        }
+
+        if (!ts.isStringLiteral(node.moduleSpecifier)) {
+          return undefined;
+        }
+
+        const exportRequire = node.moduleSpecifier.text;
+
+        const filePath = this._getResolvedModuleFilePath(sourceFile, exportRequire);
+        if (filePath === undefined || filePath === path.resolve(sourceFile.fileName)) {
+          return undefined;
+        }
+
+        const exportNamedBindings = node.exportClause;
+        if (!exportNamedBindings) {
+          return {filePath, targetNames: []};
+        }
+
+        if (!ts.isNamedExports(exportNamedBindings)) {
+          throw new NeverEntryError();
+        }
+
+        const exportTargets = exportNamedBindings.elements.map(item => (item.propertyName ? item.propertyName.text : item.name.text));
+
+        return {filePath, targetNames: exportTargets};
+      })
+      .filterExists();
+  }
+
+  private _getResolvedModuleFilePath(sourceFile: ts.SourceFile, requireText: string): string | undefined {
+    const resolvedModule: ts.ResolvedModule | undefined = sourceFile["resolvedModules"].get(requireText);
+    if (resolvedModule === undefined && requireText.startsWith(".")) {
+      const importFilePath = path.resolve(path.dirname(sourceFile.fileName), requireText);
+      if (sourceFile.fileName.endsWith(".d.ts") && !Boolean(path.extname(importFilePath))) {
+        return path.resolve(importFilePath + ".d.ts");
+      }
+      else if (!Boolean(path.extname(importFilePath))) {
+        return path.resolve(importFilePath + path.extname(sourceFile.fileName));
+      }
+      else {
+        return path.resolve(importFilePath);
+      }
+    }
+
+    if (resolvedModule === undefined) {
+      return undefined;
+    }
+
+    return path.resolve(resolvedModule.resolvedFileName);
+  }
+
+  /*private _getImportChain(sourceFile: ts.SourceFile, targetName?: string): string[] {
     const filePath = path.resolve(sourceFile.fileName);
 
     if (
@@ -339,9 +464,15 @@ export class SdTypescriptProgramRunner extends EventEmitter {
     }
 
     const result = this._getSourceNodes(sourceFile)
-      .filter(item => item.kind === ts.SyntaxKind.ExportDeclaration)
+      // .filter(item => item.kind === ts.SyntaxKind.ExportDeclaration)
+      .filter(item => (
+        targetName === undefined ?
+          [ts.SyntaxKind.ExportDeclaration, ts.SyntaxKind.ImportDeclaration].includes(item.kind) :
+          [ts.SyntaxKind.ExportDeclaration].includes(item.kind)
+      ))
       .mapMany(node => {
-        const decl = node as ts.ExportDeclaration;
+        const decl = node as ts.ImportDeclaration | ts.ExportDeclaration;
+        // const decl = node as ts.ExportDeclaration;
 
         const moduleSpecifier = decl.moduleSpecifier as ts.StringLiteral | undefined;
         if (!moduleSpecifier) return [];
@@ -367,8 +498,54 @@ export class SdTypescriptProgramRunner extends EventEmitter {
         const targetSourceFile = this.program!.getSourceFile(targetFilePath);
         if (!targetSourceFile) return [];
 
+        const importNamed = decl["importClause"]?.namedBindings as ts.NamedImports | undefined;
+        const importTargets = importNamed?.elements?.map(item => (item.propertyName ? item.propertyName.text : item.name.text));
+
         if (targetName !== undefined) {
-          const importChain = this._getImportChain(targetSourceFile, targetName);
+          if (importTargets) {
+            if (!importTargets.includes(targetName)) {
+              return [];
+            }
+
+            return [targetFilePath, ...this._getImportChain(targetSourceFile, targetName)];
+          }
+          else {
+            const hasTarget = this._getSourceNodes(sourceFile)
+              .some(item => (
+                item.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword) &&
+                item["name"]?.text === targetName
+              ));
+            if (hasTarget) {
+              return [targetFilePath];
+            }
+
+            const childrenImportChain = this._getImportChain(targetSourceFile, targetName);
+            const hasTargetInChildren = childrenImportChain
+              .some(importFilePath => {
+                const importSourceFile = this.program!.getSourceFile(importFilePath);
+                if (!importSourceFile) return [];
+
+                return this._getSourceNodes(importSourceFile).some(item => (
+                  item.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword) &&
+                  item["name"]?.text === targetName
+                ));
+              });
+            if (hasTargetInChildren) {
+              return [targetFilePath, ...childrenImportChain];
+            }
+
+            return [];
+          }
+        }
+        else {
+          const importChain = importTargets ?
+            importTargets.mapMany(targetName1 => this._getImportChain(targetSourceFile, targetName1)) :
+            this._getImportChain(targetSourceFile);
+          return [targetFilePath, ...importChain];
+        }
+
+        /!*if (targetName !== undefined) {
+          const importChain = this._getImportChain(targetSourceFile);
           const hasTarget = this._getSourceNodes(targetSourceFile)
             .some(item => (
               item.modifiers?.some(mod => mod.kind === ts.SyntaxKind.ExportKeyword) &&
@@ -394,16 +571,18 @@ export class SdTypescriptProgramRunner extends EventEmitter {
           return [targetFilePath, ...importChain];
         }
         else {
-          const importChain = this._getImportChain(targetSourceFile);
+          const importChain = importTargets ?
+            importTargets.mapMany(targetName1 => this._getImportChain(targetSourceFile, targetName1)) :
+            this._getImportChain(targetSourceFile);
           return [targetFilePath, ...importChain];
-        }
+        }*!/
       });
 
     this._fileInfoMapObj[filePath].importChain = this._fileInfoMapObj[filePath].importChain ?? {};
     this._fileInfoMapObj[filePath].importChain![targetName ?? "_"] = result;
 
     return result;
-  }
+  }*/
 
   private _getSourceNodes(sourceFile: ts.SourceFile): ts.Node[] {
     const filePath = path.resolve(sourceFile.fileName);

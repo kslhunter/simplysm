@@ -1,4 +1,4 @@
-import {IQueryResultParseOption, TEntityValue, TQueryValue} from "./commons";
+import {IQueryResultParseOption, TEntity, TEntityValue, TQueryValue} from "./commons";
 import {DateOnly, DateTime, JsonConvert, Time, Type, Uuid} from "@simplysm/sd-core-common";
 import {QueryUnit} from "./QueryUnit";
 
@@ -50,6 +50,16 @@ export class SdOrmUtils {
     else {
       throw new Error(`QueryValue 를 추출할 수 있는 타입이 아닙니다: ${value}`);
     }
+  }
+
+  public static getQueryValueFields<T>(entity: TEntity<T>): TEntityValue<any>[] {
+    return Object.values(entity).mapMany((item: any) => {
+      if (SdOrmUtils.canConvertToQueryValue(item)) {
+        return [item];
+      }
+
+      return SdOrmUtils.getQueryValueFields(item);
+    });
   }
 
   public static parseQueryResult<T>(orgResults: any[], option?: IQueryResultParseOption): T[] {

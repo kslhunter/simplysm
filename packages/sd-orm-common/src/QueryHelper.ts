@@ -160,12 +160,17 @@ export class QueryHelper {
   // FIELD
   // ----------------------------------------------------
   // region FIELD
+  public val<T extends TQueryValue>(value: TEntityValue<T>): QueryUnit<T> {
+    const type: Type<any> | undefined = SdOrmUtils.getQueryValueType(value);
+    return new QueryUnit(type, this.getQueryValue(value));
+  }
+
   public is(where: TQueryBuilderValue[]): QueryUnit<boolean> {
     return this.case<boolean>(where, true).else(false);
   }
 
-  public dateDiff<T extends DateTime | DateOnly | Time>(separator: TDbDateSeparator, from: TEntityValue<T>, to: TEntityValue<T>): QueryUnit<Number> {
-    return new QueryUnit(Number, ["DATEDIFF(", separator, ", ", this.getQueryValue(from), ", ", this.getQueryValue(to), ")"]);
+  public dateDiff<T extends DateTime | DateOnly | Time>(separator: TDbDateSeparator, from: TEntityValue<T>, to: TEntityValue<T>): QueryUnit<number> {
+    return new QueryUnit<number>(Number, ["DATEDIFF(", separator, ", ", this.getQueryValue(from), ", ", this.getQueryValue(to), ")"]);
   }
 
   public dateAdd<T extends DateTime | DateOnly | Time>(separator: TDbDateSeparator, from: TEntityValue<T>, value: TEntityValue<number>): QueryUnit<T> {
@@ -186,34 +191,34 @@ export class QueryHelper {
     return new QueryUnit(type, cursorQuery);
   }
 
-  public case<T extends TQueryValue>(predicate: TEntityValue<boolean | Boolean> | TQueryBuilderValue[], then: TEntityValue<T>): CaseQueryHelper<T> {
+  public case<T extends TQueryValue>(predicate: TEntityValue<boolean | Boolean> | TQueryBuilderValue, then: TEntityValue<T>): CaseQueryHelper<T> {
     const type = SdOrmUtils.getQueryValueType(then);
     const caseQueryable = new CaseQueryHelper(this, type);
     return caseQueryable.case(predicate, then);
   }
 
-  public dataLength<T extends TQueryValue>(arg: TEntityValue<T>): QueryUnit<Number> {
-    return new QueryUnit(Number, ["DATALENGTH(", this.getQueryValue(arg), ")"]);
+  public dataLength<T extends TQueryValue>(arg: TEntityValue<T>): QueryUnit<number> {
+    return new QueryUnit<number>(Number, ["DATALENGTH(", this.getQueryValue(arg), ")"]);
   }
 
-  public stringLength(arg: TEntityValue<String | string>): QueryUnit<Number> {
-    return new QueryUnit(Number, ["LEN(", this.getQueryValue(arg), ")"]);
+  public stringLength(arg: TEntityValue<String | string>): QueryUnit<number> {
+    return new QueryUnit<number>(Number, ["LEN(", this.getQueryValue(arg), ")"]);
   }
 
   public cast<T extends TQueryValue>(src: TEntityValue<TQueryValue>, targetType: Type<T>): QueryUnit<T> {
     return new QueryUnit(targetType, ["CONVERT(", this.type(targetType), ", ", this.getQueryValue(src), ")"]);
   }
 
-  public left(src: TEntityValue<string | String | undefined>, num: TEntityValue<number | Number>): QueryUnit<String> {
-    return new QueryUnit(String, ["LEFT(", this.getQueryValue(src), ", ", this.getQueryValue(num), ")"]);
+  public left(src: TEntityValue<string | String | undefined>, num: TEntityValue<number | Number>): QueryUnit<string> {
+    return new QueryUnit<string>(String, ["LEFT(", this.getQueryValue(src), ", ", this.getQueryValue(num), ")"]);
   }
 
-  public right(src: TEntityValue<string | String | undefined>, num: TEntityValue<number | Number>): QueryUnit<String> {
-    return new QueryUnit(String, ["RIGHT(", this.getQueryValue(src), ", ", this.getQueryValue(num), ")"]);
+  public right(src: TEntityValue<string | String | undefined>, num: TEntityValue<number | Number>): QueryUnit<string> {
+    return new QueryUnit<string>(String, ["RIGHT(", this.getQueryValue(src), ", ", this.getQueryValue(num), ")"]);
   }
 
-  public replace(src: TEntityValue<string | String | undefined>, from: TEntityValue<String | string>, to: TEntityValue<String | string>): QueryUnit<String> {
-    return new QueryUnit(String, [
+  public replace(src: TEntityValue<string | String | undefined>, from: TEntityValue<String | string>, to: TEntityValue<String | string>): QueryUnit<string> {
+    return new QueryUnit<string>(String, [
       "REPLACE(",
       this.getQueryValue(src),
       ", ",
@@ -224,8 +229,8 @@ export class QueryHelper {
     ]);
   }
 
-  public concat(...args: TEntityValue<string | String | undefined>[]): QueryUnit<String> {
-    return new QueryUnit(String, [
+  public concat(...args: TEntityValue<string | String | undefined>[]): QueryUnit<string> {
+    return new QueryUnit<string>(String, [
       "CONCAT(",
       ...args.mapMany(arg => [arg !== undefined ? this.getQueryValue(arg) : "", ", "]).slice(0, -1),
       ")"
@@ -240,17 +245,17 @@ export class QueryHelper {
   // ----------------------------------------------------
   // region GROUPING FIELD
 
-  public count<T extends TQueryValue>(arg?: TEntityValue<T>): QueryUnit<Number> {
+  public count<T extends TQueryValue>(arg?: TEntityValue<T>): QueryUnit<number> {
     if (arg !== undefined) {
-      return new QueryUnit(Number, ["COUNT(DISTINCT(", this.getQueryValue(arg), "))"]);
+      return new QueryUnit<number>(Number, ["COUNT(DISTINCT(", this.getQueryValue(arg), "))"]);
     }
     else {
-      return new QueryUnit(Number, "COUNT(*)");
+      return new QueryUnit<number>(Number, "COUNT(*)");
     }
   }
 
-  public sum<T extends number | Number>(arg: TEntityValue<T | undefined>): QueryUnit<Number> {
-    return new QueryUnit(Number, ["SUM(", this.getQueryValue(arg), ")"]);
+  public sum<T extends number | Number>(arg: TEntityValue<T | undefined>): QueryUnit<number> {
+    return new QueryUnit<number>(Number, ["SUM(", this.getQueryValue(arg), ")"]);
   }
 
   public max<T extends undefined | number | Number | string | String | DateOnly | DateTime | Time>(unit: TEntityValue<T>): QueryUnit<T> {
@@ -306,6 +311,27 @@ export class QueryHelper {
       else {
         return `N'${value.replace(/'/g, "''")}'`;
       }
+    }
+    else if (typeof value === "boolean") {
+      return value ? "1" : "0";
+    }
+    else if (value instanceof DateTime) {
+      return "'" + value.toFormatString("yyyy-MM-dd HH:mm:ss") + "'";
+      // "select"할때 어차피 "fff"를 못가져오는 관계로, 아래 코드 주석
+      // (차후에 "tedious"가 업데이트 되면, 다시 "fff를 넣어야 할 수도 있음)
+      // return "'" + arg.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + "'";
+    }
+    else if (value instanceof DateOnly) {
+      return "'" + value.toFormatString("yyyy-MM-dd") + "'";
+    }
+    else if (value instanceof Time) {
+      return "'" + value.toFormatString("HH:mm:ss") + "'";
+    }
+    else if (value instanceof Buffer) {
+      return `0x${value.toString("hex")}`;
+    }
+    else if (value instanceof Uuid) {
+      return "'" + value.toString() + "'";
     }
     else if (value instanceof Queryable) {
       const selectDef = value.getSelectDef();

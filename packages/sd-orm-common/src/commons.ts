@@ -155,7 +155,7 @@ export interface ISelectQueryDef {
   from?: string | ISelectQueryDef | ISelectQueryDef[];
   as?: string;
 
-  join?: ISelectQueryDef[];
+  join?: IJoinQueryDef[];
   distinct?: true;
   where?: TQueryBuilderValue[];
   top?: number;
@@ -165,6 +165,10 @@ export interface ISelectQueryDef {
   limit?: [number, number];
 
   select?: { [key: string]: TQueryBuilderValue };
+}
+
+export interface IJoinQueryDef extends ISelectQueryDef {
+  isCustomSelect: boolean;
 }
 
 export interface IInsertQueryDef {
@@ -289,7 +293,7 @@ export type TEntity<T> = {
 
 export interface IQueryableDef {
   from: string | ISelectQueryDef | ISelectQueryDef[];
-  join?: (ISelectQueryDef & { isSingle: boolean })[];
+  join?: (IJoinQueryDef & { isSingle: boolean })[];
   distinct?: true;
   where?: TQueryBuilderValue[];
   top?: number;

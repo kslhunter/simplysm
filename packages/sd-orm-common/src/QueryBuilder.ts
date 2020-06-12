@@ -10,7 +10,7 @@ import {
   IDropTableQueryDef,
   IGetDatabaseInfoDef,
   IGetTableInfoDef,
-  IInsertQueryDef,
+  IInsertQueryDef, IJoinQueryDef,
   IModifyColumnQueryDef,
   IQueryColumnDef,
   IQueryTableNameDef,
@@ -695,10 +695,10 @@ DEALLOCATE PREPARE stmt;`.trim();
     return q;
   }
 
-  private _getQueryOfJoinDef(def: ISelectQueryDef): string {
+  private _getQueryOfJoinDef(def: IJoinQueryDef): string {
     let q = "";
 
-    if (Object.keys(def).every(key => def[key] === undefined || (["from", "as", "where", "select"].includes(key)))) {
+    if (Object.keys(def).every(key => def[key] === undefined || (["from", "as", "where", "select"].includes(key))) && !def.isCustomSelect) {
       q += `LEFT OUTER JOIN `;
       if (def.from instanceof Array) {
         q += "(\n";

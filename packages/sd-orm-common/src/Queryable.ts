@@ -2,7 +2,7 @@ import {DbContext} from "./DbContext";
 import {FunctionUtils, JsonConvert, NeverEntryError, ObjectUtils, Type, Wait} from "@simplysm/sd-core-common";
 import {
   IDeleteQueryDef,
-  IInsertQueryDef,
+  IInsertQueryDef, IJoinQueryDef,
   IQueryableDef,
   IQueryResultParseOption,
   ISelectQueryDef,
@@ -36,7 +36,7 @@ export class Queryable<D extends DbContext, T> {
   public constructor(db: D, cloneQueryable: Queryable<D, any>, entity: TEntity<T>);
   public constructor(db: D, tableType: Type<T>, as?: string);
   public constructor(db: D, tableType: Type<T> | undefined, as: string | undefined, entity: TEntity<T>, defs: IQueryableDef);
-  public constructor(private readonly _db: D, arg1?: Queryable<D, T> | Type<T>, arg2?: string | TEntity<T>, arg3?: TEntity<T>, arg4?: IQueryableDef) {
+  public constructor(public readonly db: D, arg1?: Queryable<D, T> | Type<T>, arg2?: string | TEntity<T>, arg3?: TEntity<T>, arg4?: IQueryableDef) {
     // Clone 일때
     if (arg1 instanceof Queryable) {
       this.tableType = arg1.tableType;
@@ -47,7 +47,7 @@ export class Queryable<D extends DbContext, T> {
 
       if (arg2 !== undefined) {
         this._entity = ObjectUtils.clone(arg2 as TEntity<T>, {
-          useRefTypes: [this._db.constructor as Type<any>]
+          useRefTypes: [this.db.constructor as Type<any>]
         });
         this._isCustomEntity = true;
 
@@ -69,14 +69,14 @@ export class Queryable<D extends DbContext, T> {
       this._entity = {} as TEntity<T>;
 
       for (const colDef of this._tableDef.columns) {
-        this._entity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this._db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this._db.qb.wrap(colDef.name)}`);
+        this._entity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(colDef.name)}`);
       }
 
       // Init FROM
       this._def = {
-        from: this._db.qb.getTableName({
-          database: this._tableDef.database ?? this._db.schema.database,
-          schema: this._tableDef.schema ?? this._db.schema.schema,
+        from: this.db.qb.getTableName({
+          database: this._tableDef.database ?? this.db.schema.database,
+          schema: this._tableDef.schema ?? this.db.schema.schema,
           name: this._tableDef.name
         })
       };
@@ -101,7 +101,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public static union<D extends DbContext, T>(qrs: Queryable<D, T>[], as?: string): Queryable<D, T> {
-    const db = qrs[0]._db;
+    const db = qrs[0].db;
     const cqrs = qrs.map(item => new Queryable(db, item));
 
     // Init entity
@@ -112,7 +112,7 @@ export class Queryable<D extends DbContext, T> {
         throw new Error("단일계층 이상의 구조를 가진 'queryable' 은 UNION 할 수 없습니다. select 를 통해 단일계층으로 만드세요.");
       }
 
-      entity[entityKey] = new QueryUnit(SdOrmUtils.getQueryValueType(entityValue), `${cqrs[0]._db.qb.wrap(`TBL${as !== undefined ? "." + as : ""}`)}.${cqrs[0]._db.qb.wrap(entityKey)}`);
+      entity[entityKey] = new QueryUnit(SdOrmUtils.getQueryValueType(entityValue), `${cqrs[0].db.qb.wrap(`TBL${as !== undefined ? "." + as : ""}`)}.${cqrs[0].db.qb.wrap(entityKey)}`);
     }
 
     // Init defs.from
@@ -123,24 +123,24 @@ export class Queryable<D extends DbContext, T> {
 
   public select<R>(fwd: (entity: TEntity<T>) => TEntity<R>): Queryable<D, R> {
     const newEntity = fwd(this._entity);
-    return new Queryable(this._db, this, newEntity) as any;
+    return new Queryable(this.db, this, newEntity) as any;
   }
 
   public where(predicate: (entity: TEntity<T>) => TEntityValueOrQueryableOrArray<D, any>[]): Queryable<D, T> {
-    const result = new Queryable(this._db, this);
-    const where = this._db.qh.and(predicate(this._entity));
-    result._def.where = result._def.where ? this._db.qh.and([result._def.where, where]) : where;
+    const result = new Queryable(this.db, this);
+    const where = this.db.qh.and(predicate(this._entity));
+    result._def.where = result._def.where ? this.db.qh.and([result._def.where, where]) : where;
     return result;
   }
 
   public distinct(): Queryable<D, T> {
-    const result = new Queryable(this._db, this);
+    const result = new Queryable(this.db, this);
     result._def.distinct = true;
     return result;
   }
 
   public top(count: number): Queryable<D, T> {
-    const result = new Queryable(this._db, this);
+    const result = new Queryable(this.db, this);
     result._def.top = count;
     return result;
   }
@@ -149,7 +149,7 @@ export class Queryable<D extends DbContext, T> {
   public orderBy(chain: string, desc?: boolean): Queryable<D, T>;
   public orderBy(defs: { key: string; desc: boolean }[]): Queryable<D, T>;
   public orderBy(arg1: ((entity: TEntity<T>) => TEntityValue<TQueryValue>) | string | { key: string; desc: boolean }[], desc?: boolean): Queryable<D, T> {
-    let result = new Queryable(this._db, this);
+    let result = new Queryable(this.db, this);
 
     let selectedColumn;
     if (typeof arg1 === "function") {
@@ -175,7 +175,7 @@ export class Queryable<D extends DbContext, T> {
     }
 
     result._def.orderBy = result._def.orderBy ?? [];
-    const queryValue = this._db.qh.getQueryValue(selectedColumn);
+    const queryValue = this.db.qh.getQueryValue(selectedColumn);
     if (result._def.orderBy.some(item => item[0] === queryValue)) {
       throw new Error("정렬 기준이 중복 되었습니다: " + queryValue);
     }
@@ -184,14 +184,14 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public limit(skip: number, take: number): Queryable<D, T> {
-    const result = new Queryable(this._db, this);
+    const result = new Queryable(this.db, this);
     result._def.limit = [skip, take];
     return result;
   }
 
   public groupBy(fwd: (entity: TEntity<T>) => TEntityValue<TQueryValue>[]): Queryable<D, T> {
-    const result = new Queryable(this._db, this);
-    result._def.groupBy = fwd(this._entity).map(item => this._db.qh.getQueryValue(item));
+    const result = new Queryable(this.db, this);
+    result._def.groupBy = fwd(this._entity).map(item => this.db.qh.getQueryValue(item));
 
     // if (this._entity["__searchOrder"] !== undefined && this._def.orderBy?.some(item => item[0] === "[__searchOrder]")) {
     //   result._def.orderBy?.remove(item => item[0] === "[__searchOrder]");
@@ -202,17 +202,17 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public having(predicate: (entity: TEntity<T>) => TEntityValueOrQueryableOrArray<D, any>[]): Queryable<D, T> {
-    const result = new Queryable(this._db, this);
+    const result = new Queryable(this.db, this);
     result._def.having = result._def.having ?? [];
-    result._def.having.push(...this._db.qh.and(predicate(this._entity)));
+    result._def.having.push(...this.db.qh.and(predicate(this._entity)));
     return result;
   }
 
   public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (queryable: Queryable<D, J>, entity: TEntity<T>) => Queryable<D, R>): Queryable<D, T & { [K in A]: R[] }>;
   public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (queryable: Queryable<D, J>, entity: TEntity<T>) => Queryable<D, R>, isSingle: true): Queryable<D, T & { [K in A]: R }>;
   public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (queryable: Queryable<D, J>, entity: TEntity<T>) => Queryable<D, R>, isSingle?: boolean): Queryable<D, T & { [K in A]: R | R[] }> {
-    if (this._def.join?.some(item => item.as === this._db.qb.wrap(`TBL.${as}`))) {
-      return new Queryable(this._db, this) as any;
+    if (this._def.join?.some(item => item.as === this.db.qb.wrap(`TBL.${as}`))) {
+      return new Queryable(this.db, this) as any;
     }
 
     let joinTableQueryable: Queryable<D, J>;
@@ -220,7 +220,7 @@ export class Queryable<D extends DbContext, T> {
       joinTableQueryable = Queryable.union(joinTypeOrQrs, as);
     }
     else {
-      joinTableQueryable = new Queryable(this._db, joinTypeOrQrs, as);
+      joinTableQueryable = new Queryable(this.db, joinTypeOrQrs, as);
     }
     const joinQueryable = fwd(joinTableQueryable, this._entity);
     const joinEntity = this._getParentEntity(joinQueryable._entity, as, undefined);
@@ -229,7 +229,7 @@ export class Queryable<D extends DbContext, T> {
     this._setEntityChainValue(entity, as, isSingle ? joinEntity : [joinEntity]);
 
     const result = new Queryable(
-      this._db,
+      this.db,
       this,
       entity as TEntity<T & { [K in A]: R | R[] }>
     );
@@ -237,6 +237,7 @@ export class Queryable<D extends DbContext, T> {
     result._def.join = result._def.join ?? [];
     result._def.join.push({
       ...joinQueryable.getSelectDef(),
+      isCustomSelect: joinQueryable._isCustomEntity,
       isSingle: isSingle === true
     });
 
@@ -297,7 +298,7 @@ export class Queryable<D extends DbContext, T> {
 
             const whereQuery: TQueryBuilderValue[] = [];
             for (let i = 0; i < fkDef.columnPropertyKeys.length; i++) {
-              whereQuery.push(this._db.qh.equal(item[fkTargetTableDef.columns[i].propertyKey], lastEn[fkDef.columnPropertyKeys[i]]));
+              whereQuery.push(this.db.qh.equal(item[fkTargetTableDef.columns[i].propertyKey], lastEn[fkDef.columnPropertyKeys[i]]));
             }
             return whereQuery;
           }),
@@ -328,7 +329,7 @@ export class Queryable<D extends DbContext, T> {
 
             const whereQuery: TQueryBuilderValue[] = [];
             for (let i = 0; i < fktSourceFkDef.columnPropertyKeys.length; i++) {
-              whereQuery.push(this._db.qh.equal(item[fktSourceFkDef.columnPropertyKeys[i]], lastEn[tableDef.columns[i].propertyKey]));
+              whereQuery.push(this.db.qh.equal(item[fktSourceFkDef.columnPropertyKeys[i]], lastEn[tableDef.columns[i].propertyKey]));
             }
             return whereQuery;
           })
@@ -342,7 +343,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public search(fwd: (entity: TEntity<T>) => TEntityValue<String | string | undefined>[], searchText: string): Queryable<D, T> {
-    let result: Queryable<D, T> = new Queryable(this._db, this);
+    let result: Queryable<D, T> = new Queryable(this.db, this);
 
     const splitSearchText = searchText.trim().split(" ")
       .map(item => item.trim())
@@ -356,11 +357,11 @@ export class Queryable<D extends DbContext, T> {
         const fields = fwd(item);
         for (const field of fields) {
           for (const text of splitSearchText) {
-            orArr.push(this._db.qh.includes(field as any, text));
+            orArr.push(this.db.qh.includes(field as any, text));
           }
         }
 
-        return [this._db.qh.or(orArr)];
+        return [this.db.qh.or(orArr)];
       });
 
     // SELECT
@@ -370,22 +371,22 @@ export class Queryable<D extends DbContext, T> {
       // 같은거 포함(999)
       let countQuery = [];
       for (const field of fields) {
-        countQuery.push(...[this._db.qh.case<number>(this._db.qh.includes(field, searchText), 10000).else(0), "+"]);
+        countQuery.push(...[this.db.qh.case<number>(this.db.qh.includes(field, searchText), 10000).else(0), "+"]);
       }
 
       // 분할 텍스트 각각 모두 포함(888)
       for (const field of fields) {
         const andArr = [];
         for (const text of splitSearchText) {
-          andArr.push(this._db.qh.includes(field, text));
+          andArr.push(this.db.qh.includes(field, text));
         }
-        countQuery.push(...[this._db.qh.case<number>(this._db.qh.and(andArr), 100).else(0), "+"]);
+        countQuery.push(...[this.db.qh.case<number>(this.db.qh.and(andArr), 100).else(0), "+"]);
       }
 
       // 분할중 일부만 포함한것(포함갯수)
       for (const field of fields) {
         for (const text of splitSearchText) {
-          countQuery.push(...[this._db.qh.case<number>(this._db.qh.includes(field, text), 1).else(0), "+"]);
+          countQuery.push(...[this.db.qh.case<number>(this.db.qh.includes(field, text), 1).else(0), "+"]);
         }
       }
 
@@ -415,11 +416,11 @@ export class Queryable<D extends DbContext, T> {
           cloneEntity[key] = entityValue;
         }
       }
-      clone = new Queryable(this._db, this, cloneEntity);
+      clone = new Queryable(this.db, this, cloneEntity);
       clone._def.distinct = true;
     }
     else {
-      clone = new Queryable(this._db, this);
+      clone = new Queryable(this.db, this);
     }
 
     const subFrom = clone.getSelectDef();
@@ -434,7 +435,7 @@ export class Queryable<D extends DbContext, T> {
 
     const currEntity = this._getParentEntity(clone._entity, this._as, undefined);
 
-    return new Queryable<D, T | R>(this._db, tableType, this._as, currEntity, {from: subFrom});
+    return new Queryable<D, T | R>(this.db, tableType, this._as, currEntity, {from: subFrom});
   }
 
   public getSelectDef(): ISelectQueryDef & { select: { [key: string]: TQueryBuilderValue } } {
@@ -444,7 +445,7 @@ export class Queryable<D extends DbContext, T> {
     result.from = this._def.from;
 
     // AS 구성
-    result.as = this._db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`);
+    result.as = this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`);
 
     // SELECT 필드 구성
     result.select = {};
@@ -452,7 +453,7 @@ export class Queryable<D extends DbContext, T> {
     const addSelectValue = (key: string, value: QueryUnit<any> | TEntity<any> | TEntity<any>[]): void => {
       if (SdOrmUtils.canConvertToQueryValue(value)) {
         if (!result.select) throw new NeverEntryError();
-        result.select[`${this._db.qb.wrap(key)}`] = this._db.qh.getQueryValue(value);
+        result.select[`${this.db.qb.wrap(key)}`] = this.db.qh.getQueryValue(value);
       }
       else if (value instanceof Array) {
         if (value.some(item => SdOrmUtils.canConvertToQueryValue(item))) {
@@ -512,7 +513,7 @@ export class Queryable<D extends DbContext, T> {
     for (const key of Object.keys(fromEntity)) {
       const entityValue: any = fromEntity[key];
       if (SdOrmUtils.canConvertToQueryValue(entityValue)) {
-        result[key] = new QueryUnit(SdOrmUtils.getQueryValueType(entityValue), this._db.qb.wrap("TBL" + (rootAs !== undefined ? "." + rootAs : "")) + "." + this._db.qb.wrap((parentAs !== undefined ? `${parentAs}.` : "") + key));
+        result[key] = new QueryUnit(SdOrmUtils.getQueryValueType(entityValue), this.db.qb.wrap("TBL" + (rootAs !== undefined ? "." + rootAs : "")) + "." + this.db.qb.wrap((parentAs !== undefined ? `${parentAs}.` : "") + key));
       }
       else if (entityValue instanceof Array) {
         result[key] = [
@@ -569,7 +570,7 @@ export class Queryable<D extends DbContext, T> {
 
     const record = {};
     for (const key of Object.keys(obj)) {
-      record[this._db.qb.wrap(key)] = this._db.qh.getQueryValue(obj[key]);
+      record[this.db.qb.wrap(key)] = this.db.qh.getQueryValue(obj[key]);
     }
 
     return {
@@ -607,10 +608,10 @@ export class Queryable<D extends DbContext, T> {
     const recordEntity = typeof arg === "function" ? arg(this._entity) : arg;
     const record = {};
     for (const key of Object.keys(recordEntity)) {
-      record[this._db.qb.wrap(`${key}`)] = this._db.qh.getQueryValue(recordEntity[key]);
+      record[this.db.qb.wrap(`${key}`)] = this.db.qh.getQueryValue(recordEntity[key]);
     }
 
-    let joinDefs: ISelectQueryDef[] | undefined;
+    let joinDefs: IJoinQueryDef[] | undefined;
     if (this._def.join) {
       const joins = ObjectUtils.clone(this._def.join);
       for (const join of joins) {
@@ -624,7 +625,7 @@ export class Queryable<D extends DbContext, T> {
       from: this._def.from,
       record,
       output: ["*"],
-      as: this._db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`),
+      as: this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`),
       join: joinDefs,
       where: this._def.where
     });
@@ -674,13 +675,13 @@ export class Queryable<D extends DbContext, T> {
     const updateRecordEntity = typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd;
     const updateRecord = {};
     for (const key of Object.keys(updateRecordEntity)) {
-      updateRecord[this._db.qb.wrap(`${key}`)] = this._db.qh.getQueryValue(updateRecordEntity[key]);
+      updateRecord[this.db.qb.wrap(`${key}`)] = this.db.qh.getQueryValue(updateRecordEntity[key]);
     }
 
     let insertRecord = {};
     if (insertObj) {
       for (const key of Object.keys(insertObj)) {
-        insertRecord[this._db.qb.wrap(`${key}`)] = this._db.qh.getQueryValue(insertObj[key]);
+        insertRecord[this.db.qb.wrap(`${key}`)] = this.db.qh.getQueryValue(insertObj[key]);
       }
     }
     else {
@@ -689,7 +690,7 @@ export class Queryable<D extends DbContext, T> {
 
     return ObjectUtils.clearUndefined({
       from: this._def.from,
-      as: this._db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`),
+      as: this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`),
       where: this._def.where,
       updateRecord,
       insertRecord,
@@ -726,7 +727,7 @@ export class Queryable<D extends DbContext, T> {
       throw new Error("INSERT 와 HAVING 를 함께 사용할 수 없습니다.");
     }
 
-    let joinDefs: ISelectQueryDef[] | undefined;
+    let joinDefs: IJoinQueryDef[] | undefined;
     if (this._def.join) {
       const joins = ObjectUtils.clone(this._def.join);
       for (const join of joins) {
@@ -739,14 +740,14 @@ export class Queryable<D extends DbContext, T> {
       top: this._def.top,
       from: this._def.from,
       output: ["*"],
-      as: this._db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`),
+      as: this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`),
       join: joinDefs,
       where: this._def.where
     });
   }
 
   public async resultAsync(): Promise<T[]> {
-    if (!this._db) {
+    if (!this.db) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
 
@@ -773,7 +774,7 @@ export class Queryable<D extends DbContext, T> {
     }
     DbContext.selectCache.set(cacheKey, undefined);
 
-    const results = await this._db.executeDefsAsync([{type: "select", ...def}], [this._getParseOption()]);
+    const results = await this.db.executeDefsAsync([{type: "select", ...def}], [this._getParseOption()]);
 
     const timeout = setTimeout(() => {
       DbContext.selectCache.delete(cacheKey);
@@ -808,7 +809,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public async insertAsync(...records: TInsertObject<T>[]): Promise<T[]> {
-    if (!this._db) {
+    if (!this.db) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     DbContext.selectCache.clear();
@@ -820,7 +821,7 @@ export class Queryable<D extends DbContext, T> {
     const queryDefs = records.map(record => this.getInsertDef(record));
     const parseOption = this._getParseOption();
 
-    if (this._db.dialect === "mysql") {
+    if (this.db.dialect === "mysql") {
       const aiColNames = this._tableDef.columns.filter(item => item.autoIncrement).map(item => item.name);
       if (aiColNames.length > 1) {
         throw new Error("하나의 테이블에 AI 컬럼이 2개 이상일 수 없습니다.");
@@ -836,8 +837,8 @@ export class Queryable<D extends DbContext, T> {
           const selectDef: TQueryDef = {
             type: "select",
             select: {
-              [this._db.qb.wrap("id")]:
-                aiColNames.length === 1 && !Object.keys(queryDef.record).includes(this._db.qb.wrap(aiColNames[0])) ?
+              [this.db.qb.wrap("id")]:
+                aiColNames.length === 1 && !Object.keys(queryDef.record).includes(this.db.qb.wrap(aiColNames[0])) ?
                   "LAST_INSERT_ID()" :
                   "0"
             }
@@ -847,7 +848,7 @@ export class Queryable<D extends DbContext, T> {
         });
 
       const insertIds = (
-        await this._db.executeDefsAsync(prepareDefs)
+        await this.db.executeDefsAsync(prepareDefs)
       ).filter((item, i) => i % 2 !== 0).map(item => item[0].id);
 
       return ObjectUtils.clone(records).map((item, i) => ({
@@ -860,13 +861,13 @@ export class Queryable<D extends DbContext, T> {
       const hasAutoIncreaseColumnValue = Object.keys(records[0]).some(item => aiColNames.includes(item));
       if (hasAutoIncreaseColumnValue) {
         return (
-          await this._db.executeDefsAsync([
+          await this.db.executeDefsAsync([
             {
               type: "configIdentityInsert",
               ...{
                 table: {
-                  database: this._tableDef.database ?? this._db.schema.database,
-                  schema: this._tableDef.schema ?? this._db.schema.schema,
+                  database: this._tableDef.database ?? this.db.schema.database,
+                  schema: this._tableDef.schema ?? this.db.schema.schema,
                   name: this._tableDef.name
                 },
                 state: "on"
@@ -880,8 +881,8 @@ export class Queryable<D extends DbContext, T> {
               type: "configIdentityInsert",
               ...{
                 table: {
-                  database: this._tableDef.database ?? this._db.schema.database,
-                  schema: this._tableDef.schema ?? this._db.schema.schema,
+                  database: this._tableDef.database ?? this.db.schema.database,
+                  schema: this._tableDef.schema ?? this.db.schema.schema,
                   name: this._tableDef.name
                 },
                 state: "off"
@@ -891,7 +892,7 @@ export class Queryable<D extends DbContext, T> {
         ).slice(1, -1).map(item => item[0]);
       }
 
-      return (await this._db.executeDefsAsync(
+      return (await this.db.executeDefsAsync(
         queryDefs.map(queryDef => ({
           type: "insert" as const,
           ...queryDef
@@ -906,7 +907,7 @@ export class Queryable<D extends DbContext, T> {
       return;
     }
 
-    if (!this._db) {
+    if (!this.db) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
 
@@ -916,8 +917,8 @@ export class Queryable<D extends DbContext, T> {
 
     const queryDefs = records.map(record => this.getInsertDef(record));
 
-    if (this._db.dialect === "mysql") {
-      this._db.prepareDefs.push(
+    if (this.db.dialect === "mysql") {
+      this.db.prepareDefs.push(
         ...queryDefs
           .map(queryDef => ({
             type: "insert" as const,
@@ -929,13 +930,13 @@ export class Queryable<D extends DbContext, T> {
       const aiColNames = this._tableDef.columns.filter(item => item.autoIncrement).map(item => item.name);
       const hasAutoIncreaseColumnValue = Object.keys(records[0]).some(item => aiColNames.includes(item));
       if (hasAutoIncreaseColumnValue) {
-        this._db.prepareDefs.push(...[
+        this.db.prepareDefs.push(...[
           {
             type: "configIdentityInsert" as const,
             ...{
               table: {
-                database: this._tableDef.database ?? this._db.schema.database,
-                schema: this._tableDef.schema ?? this._db.schema.schema,
+                database: this._tableDef.database ?? this.db.schema.database,
+                schema: this._tableDef.schema ?? this.db.schema.schema,
                 name: this._tableDef.name
               },
               state: "on" as const
@@ -949,8 +950,8 @@ export class Queryable<D extends DbContext, T> {
             type: "configIdentityInsert" as const,
             ...{
               table: {
-                database: this._tableDef.database ?? this._db.schema.database,
-                schema: this._tableDef.schema ?? this._db.schema.schema,
+                database: this._tableDef.database ?? this.db.schema.database,
+                schema: this._tableDef.schema ?? this.db.schema.schema,
                 name: this._tableDef.name
               },
               state: "off" as const
@@ -959,7 +960,7 @@ export class Queryable<D extends DbContext, T> {
         ]);
       }
       else {
-        this._db.prepareDefs.push(
+        this.db.prepareDefs.push(
           ...queryDefs.map(queryDef => ({
             type: "insert" as const,
             ...queryDef
@@ -970,7 +971,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public async updateAsync(arg: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>)): Promise<T[]> {
-    if (!this._db) {
+    if (!this.db) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
@@ -981,11 +982,11 @@ export class Queryable<D extends DbContext, T> {
     const queryDef = this.getUpdateDef(arg);
     const parseOption = this._getParseOption();
 
-    if (this._db.dialect === "mysql") {
+    if (this.db.dialect === "mysql") {
       let newEntity = {} as TEntity<T>;
 
       for (const colDef of this._tableDef.columns) {
-        newEntity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this._db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this._db.qb.wrap(colDef.name)}`);
+        newEntity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(colDef.name)}`);
       }
 
       newEntity = {
@@ -993,10 +994,10 @@ export class Queryable<D extends DbContext, T> {
         ...(typeof arg === "function" ? arg(this._entity) : arg)
       };
 
-      const clone: Queryable<D, T> = new Queryable(this._db, this, newEntity);
+      const clone: Queryable<D, T> = new Queryable(this.db, this, newEntity);
 
       return (
-        await this._db.executeDefsAsync(
+        await this.db.executeDefsAsync(
           [
             {
               type: "select",
@@ -1010,7 +1011,7 @@ export class Queryable<D extends DbContext, T> {
     }
     else {
       return (
-        await this._db.executeDefsAsync(
+        await this.db.executeDefsAsync(
           [{type: "update", ...queryDef}],
           [{columns: parseOption.columns}]
         )
@@ -1019,7 +1020,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public updatePrepare(arg: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>)): void {
-    if (!this._db) {
+    if (!this.db) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
@@ -1028,14 +1029,14 @@ export class Queryable<D extends DbContext, T> {
 
     const queryDef = this.getUpdateDef(arg);
 
-    this._db.prepareDefs.push({
+    this.db.prepareDefs.push({
       type: "update" as const,
       ...queryDef
     });
   }
 
   public async deleteAsync(): Promise<T[]> {
-    if (!this._db) {
+    if (!this.db) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
@@ -1046,16 +1047,16 @@ export class Queryable<D extends DbContext, T> {
     const queryDef = this.getDeleteDef();
     const parseOption = this._getParseOption();
 
-    if (this._db.dialect === "mysql") {
+    if (this.db.dialect === "mysql") {
       const newEntity = {} as TEntity<T>;
 
       for (const colDef of this._tableDef.columns) {
-        newEntity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this._db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this._db.qb.wrap(colDef.name)}`);
+        newEntity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(colDef.name)}`);
       }
 
-      const clone: Queryable<D, T> = new Queryable(this._db, this, newEntity);
+      const clone: Queryable<D, T> = new Queryable(this.db, this, newEntity);
 
-      return (await this._db.executeDefsAsync(
+      return (await this.db.executeDefsAsync(
         [
           {type: "select", ...clone.getSelectDef()},
           {type: "delete", ...queryDef}
@@ -1064,7 +1065,7 @@ export class Queryable<D extends DbContext, T> {
       ))[0];
     }
     else {
-      return (await this._db.executeDefsAsync(
+      return (await this.db.executeDefsAsync(
         [
           {type: "delete", ...queryDef}
         ],
@@ -1074,18 +1075,18 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public deletePrepare(): void {
-    if (!this._db) {
+    if (!this.db) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
     const queryDef = this.getDeleteDef();
-    this._db.prepareDefs.push({type: "delete", ...queryDef});
+    this.db.prepareDefs.push({type: "delete", ...queryDef});
   }
 
   public async upsertAsync(updateObjOrFwd: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>), insertObj?: TInsertObject<T>): Promise<T[]> {
-    if (!this._db) {
+    if (!this.db) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
@@ -1096,11 +1097,11 @@ export class Queryable<D extends DbContext, T> {
     const queryDef = this.getUpsertDef(updateObjOrFwd, insertObj);
     const parseOption = this._getParseOption();
 
-    if (this._db.dialect === "mysql") {
+    if (this.db.dialect === "mysql") {
       let newEntity = {} as TEntity<T>;
 
       for (const colDef of this._tableDef.columns) {
-        newEntity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this._db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this._db.qb.wrap(colDef.name)}`);
+        newEntity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(colDef.name)}`);
       }
 
       newEntity = {
@@ -1108,14 +1109,14 @@ export class Queryable<D extends DbContext, T> {
         ...(typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd)
       };
 
-      const clone: Queryable<D, T> = new Queryable(this._db, this, newEntity);
+      const clone: Queryable<D, T> = new Queryable(this.db, this, newEntity);
 
       const aiColNames = this._tableDef.columns.filter(item => item.autoIncrement).map(item => item.name);
 
       const insertRecord = insertObj ?? (typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd);
 
       const result = (
-        await this._db.executeDefsAsync(
+        await this.db.executeDefsAsync(
           [
             {
               type: "select",
@@ -1125,7 +1126,7 @@ export class Queryable<D extends DbContext, T> {
             {
               type: "select",
               select: {
-                [this._db.qb.wrap("id")]:
+                [this.db.qb.wrap("id")]:
                   aiColNames.length === 1 && !Object.keys(insertRecord).includes(aiColNames[0]) ?
                     "LAST_INSERT_ID()" :
                     "0"
@@ -1154,7 +1155,7 @@ export class Queryable<D extends DbContext, T> {
     }
     else {
       return (
-        await this._db.executeDefsAsync(
+        await this.db.executeDefsAsync(
           [{type: "upsert", ...queryDef}],
           [{columns: parseOption.columns}]
         )
@@ -1163,7 +1164,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public upsertPrepare(updateObjOrFwd: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>), insertObj?: TInsertObject<T>): void {
-    if (!this._db) {
+    if (!this.db) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
@@ -1171,7 +1172,7 @@ export class Queryable<D extends DbContext, T> {
     }
 
     const queryDef = this.getUpsertDef(updateObjOrFwd, insertObj);
-    this._db.prepareDefs.push({type: "upsert", ...queryDef});
+    this.db.prepareDefs.push({type: "upsert", ...queryDef});
   }
 
   private _getParseOption(): IQueryResultParseOption {
@@ -1183,7 +1184,7 @@ export class Queryable<D extends DbContext, T> {
     const configuration = (entity: TEntity<any>, parentKeys: string[]): void => {
       for (const key of Object.keys(ObjectUtils.clearUndefined(entity))) {
         try {
-          if (entity[key] && SdOrmUtils.canConvertToQueryValue(entity[key])) {
+          if (entity[key] !== undefined && SdOrmUtils.canConvertToQueryValue(entity[key])) {
             result.columns![parentKeys.concat([key]).join(".")] = {dataType: SdOrmUtils.getQueryValueType(entity[key])!.name};
           }
           else if (entity[key] instanceof Array) {
