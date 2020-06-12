@@ -308,6 +308,11 @@ export class Queryable<T extends object> {
     return result[0][0];
   }
 
+  public deletePrepare(): void {
+    const queryDef = this._qba.delete().queryDef;
+    this._db.prepare([queryDef], [true]);
+  }
+
   public async resultAsync(): Promise<T[]> {
     const queryDef = this._qba.queryDef;
     const queryDefJson = JsonConvert.stringify(queryDef);
