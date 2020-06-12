@@ -11,6 +11,7 @@ export class SdExcelWorksheet {
 
   public constructor(public readonly workbook: SdExcelWorkbook,
                      public readonly name: string,
+                     public readonly hidden: boolean,
                      public readonly sheetData: any) {
   }
 

@@ -6,7 +6,7 @@ export class SdExcelWorkbook {
   private readonly _worksheets: SdExcelWorksheet[] = [];
   private _zip!: JSZip;
   private _relData: any;
-  private _wbData: any;
+  public wbData: any;
   public contentTypeData: any;
   private _wbRelData: any;
   public sstData: any;
@@ -41,7 +41,7 @@ export class SdExcelWorkbook {
     };
 
     // Workbook
-    wb._wbData = {
+    wb.wbData = {
       workbook: {
         $: {
           "xmlns": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
@@ -189,7 +189,7 @@ export class SdExcelWorkbook {
     wb._relData = await XmlConvert.parseAsync(await zip.file("_rels/.rels").async("text"));
 
     // Workbook
-    wb._wbData = await XmlConvert.parseAsync(await zip.file("xl/workbook.xml").async("text"));
+    wb.wbData = await XmlConvert.parseAsync(await zip.file("xl/workbook.xml").async("text"));
 
     // ContentType
     wb.contentTypeData = await XmlConvert.parseAsync(await zip.file("[Content_Types].xml").async("text"));
@@ -198,16 +198,17 @@ export class SdExcelWorkbook {
     wb._wbRelData = await XmlConvert.parseAsync(await zip.file("xl/_rels/workbook.xml.rels").async("text"));
 
     // Worksheets
-    const worksheets = wb._wbData.workbook.sheets[0].sheet.map((item: any) => ({
+    const worksheets = wb.wbData.workbook.sheets[0].sheet.map((item: any) => ({
       rid: item.$["r:id"],
-      name: item.$.name
+      name: item.$.name,
+      hidden: item.$.state === "hidden"
     }));
     for (const item of worksheets) {
       const r = wb._wbRelData.Relationships.Relationship.single((item1: any) => item1.$.Id === item.rid);
       const id = Number(r.$.Target.match(/\/sheet(.*)\./)[1]);
 
       const sheetData = await XmlConvert.parseAsync(await zip.file(`xl/${r.$.Target}`).async("text"));
-      wb._worksheets[id] = new SdExcelWorksheet(wb, item.name, sheetData);
+      wb._worksheets[id] = new SdExcelWorksheet(wb, item.name, item.hidden, sheetData);
 
       // Drawing
       if (zip.file(`xl/worksheets/_rels/sheet${id}.xml.rels`)) {
@@ -270,12 +271,12 @@ export class SdExcelWorkbook {
 
   public createWorksheet(name: string): SdExcelWorksheet {
     // Workbook
-    this._wbData.workbook.sheets = this._wbData.workbook.sheets || [{}];
-    this._wbData.workbook.sheets[0].sheet = this._wbData.workbook.sheets[0].sheet || [];
-    const lastSheetId = this._wbData.workbook.sheets[0].sheet.max((item: any) => Number(item.$.sheetId)) || 0;
+    this.wbData.workbook.sheets = this.wbData.workbook.sheets || [{}];
+    this.wbData.workbook.sheets[0].sheet = this.wbData.workbook.sheets[0].sheet || [];
+    const lastSheetId = this.wbData.workbook.sheets[0].sheet.max((item: any) => Number(item.$.sheetId)) || 0;
     const newSheetId = lastSheetId + 1;
 
-    this._wbData.workbook.sheets[0].sheet.push({
+    this.wbData.workbook.sheets[0].sheet.push({
       $: {
         "name": name,
         "sheetId": newSheetId,
@@ -322,7 +323,7 @@ export class SdExcelWorkbook {
       }
     };
 
-    this._worksheets[newSheetId] = new SdExcelWorksheet(this, name, sheetData);
+    this._worksheets[newSheetId] = new SdExcelWorksheet(this, name, false, sheetData);
     return this._worksheets[newSheetId];
   }
 
@@ -347,7 +348,7 @@ export class SdExcelWorkbook {
     this._zip.file("_rels/.rels", XmlConvert.stringify(this._relData));
 
     // Workbook
-    this._zip.file("xl/workbook.xml", XmlConvert.stringify(this._wbData));
+    this._zip.file("xl/workbook.xml", XmlConvert.stringify(this.wbData));
 
     // ContentType
     this._zip.file("[Content_Types].xml", XmlConvert.stringify(this.contentTypeData));
@@ -387,8 +388,8 @@ export class SdExcelWorkbook {
     }
   }
 
-  public get worksheetNames(): string[] {
-    return this._worksheets.filterExists().map(item => item.name);
+  public get worksheets(): SdExcelWorksheet[] {
+    return this._worksheets.filterExists();
   }
 
   public get json(): { [sheetName: string]: { [key: string]: any }[] } {
