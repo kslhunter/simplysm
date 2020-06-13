@@ -64,8 +64,9 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
         }
 
         &::-webkit-calendar-picker-indicator {
-          background: transparent;
-          color: var(--theme-color-secondary-default);
+          margin: auto;
+          //background: transparent;
+          //color: var(--theme-color-secondary-default);
           cursor: pointer;
         }
 
