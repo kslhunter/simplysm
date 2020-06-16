@@ -278,11 +278,11 @@ export class Queryable<T extends object> {
   }
 
   public upsertPrepare(fwd: (item: T) => Partial<T>, additionalInsertObj?: Partial<T>): void;
-  public upsertPrepare(obj: Partial<T>, additionalInsertObj?: Partial<T>): void;
+  public upsertPrepare(obj: Partial<T> | undefined, additionalInsertObj?: Partial<T>): void;
   public upsertPrepare(fwd: (item: T) => T): void;
   public upsertPrepare(obj: T): void;
-  public upsertPrepare(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): void;
-  public upsertPrepare(arg: (T | Partial<T>) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): void {
+  public upsertPrepare(arg: (T | Partial<T> | undefined) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): void;
+  public upsertPrepare(arg: (T | Partial<T> | undefined) | ((item: T) => (T | Partial<T>)), additionalInsertObj?: Partial<T>): void {
     const queryDef = this._qba.upsert(arg, additionalInsertObj).queryDef;
     this._db.prepare([queryDef], [true]);
   }

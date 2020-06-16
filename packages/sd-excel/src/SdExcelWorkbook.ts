@@ -12,10 +12,8 @@ export class SdExcelWorkbook {
   public sstData: any;
   public stylesData: any;
   public drawingData: any;
-  public medias!: {
-    name: string;
-    buffer: Buffer;
-  }[];
+  public medias: { name: string; buffer: Buffer }[] = [];
+  public customFiles: { name: string; data: any }[] = [];
 
   public static create(): SdExcelWorkbook {
     const wb = new SdExcelWorkbook();
@@ -159,6 +157,8 @@ export class SdExcelWorkbook {
 
     wb.medias = [];
 
+    wb.customFiles = [];
+
     return wb;
   }
 
@@ -238,7 +238,6 @@ export class SdExcelWorkbook {
     // Styles
     wb.stylesData = await XmlConvert.parseAsync(await zip.file("xl/styles.xml").async("text"));
 
-    wb.medias = [];
     const mediaFiles = Object.keys(zip.files).map(key => zip.files[key]).filter(item => item.name.startsWith("xl/media"));
     for (const key of Object.keys(mediaFiles)) {
       wb.medias.push({
@@ -248,6 +247,17 @@ export class SdExcelWorkbook {
     }
 
     return wb;
+  }
+
+  public async getCustomFileDataAsync(fileName: string): Promise<any> {
+    if (!this.customFiles.some(item => item.name === fileName)) {
+      this.customFiles.push({
+        name: fileName,
+        data: await XmlConvert.parseAsync(await this._zip.file(fileName).async("text"))
+      });
+    }
+
+    return this.customFiles.single(item => item.name === fileName)!.data;
   }
 
   public getWorksheet(index: number): SdExcelWorksheet;
@@ -385,6 +395,11 @@ export class SdExcelWorkbook {
     // Medias
     for (const media of this.medias) {
       this._zip.file(media.name, media.buffer);
+    }
+
+    // CustomFiles
+    for (const customFile of this.customFiles) {
+      this._zip.file(customFile.name, XmlConvert.stringify(customFile.data));
     }
   }
 

@@ -36,7 +36,8 @@ export class DbConnection extends EventEmitter {
         rowCollectionOnDone: true,
         useUTC: false,
         encrypt: false,
-        requestTimeout: this._timeout
+        requestTimeout: this._timeout,
+        connectTimeout: this._timeout
       }
     } as any);
 

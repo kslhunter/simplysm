@@ -32,7 +32,7 @@ export class SdExcelUtils {
   }
 
   public static getTimeNumber(date: DateTime | DateOnly): number {
-    const currDate = date.date;
+    const currDate = new Date(date.date.getTime());
     currDate.setMinutes(currDate.getMinutes() - currDate.getTimezoneOffset());
 
     const excelBaseDateNumberUtc = Date.UTC(1899, 11, 31);

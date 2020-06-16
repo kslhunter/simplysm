@@ -3,6 +3,7 @@ import {SdExcelCell} from "./SdExcelCell";
 import {SdExcelColumn} from "./SdExcelColumn";
 import {SdExcelRow} from "./SdExcelRow";
 import {SdExcelUtils} from "./utils/SdExcelUtils";
+import {DateOnly} from "@simplysm/sd-core";
 
 export class SdExcelWorksheet {
   public relData: any;
@@ -105,6 +106,9 @@ export class SdExcelWorksheet {
   public setData(data: any[][]): void {
     for (let r = 0; r < data.length; r++) {
       for (let c = 0; c < data[r].length; c++) {
+        if (data[r][c] instanceof DateOnly) {
+          console.log(data[r][c].date.getTime());
+        }
         this.cell(r, c).value = data[r][c];
       }
     }
