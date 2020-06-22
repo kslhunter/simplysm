@@ -52,7 +52,7 @@ import {SdFormControl} from "./SdFormControl";
 
       &[sd-layout="table"] {
         display: table-row;
-
+        
         > label {
           display: table-cell;
           padding-bottom: var(--gap-sm);

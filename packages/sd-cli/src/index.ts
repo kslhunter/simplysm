@@ -7,6 +7,7 @@ export * from "./build-tools/SdNgGenerator";
 export * from "./build-tools/SdPackageBuilder";
 export * from "./build-tools/SdTypescriptProgramRunner";
 export * from "./build-tools/SdWebpackInputHostWithScss";
+export * from "./build-tools/SdWebpackTimeFixPlugin";
 export * from "./build-tools/SdWebpackWriteFilePlugin";
 export * from "./commons";
 export * from "./metadata/commons";

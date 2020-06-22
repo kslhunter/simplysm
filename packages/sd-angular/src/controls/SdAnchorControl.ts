@@ -19,6 +19,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
 
       &:hover {
         color: var(--theme-color-primary-dark);
+        text-decoration: underline;
       }
 
       &:active {

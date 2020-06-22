@@ -20,6 +20,7 @@ import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import {SdWebpackInputHostWithScss} from "./SdWebpackInputHostWithScss";
 import {SdTypescriptProgramRunner} from "./SdTypescriptProgramRunner";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
+import {SdWebpackTimeFixPlugin} from "./SdWebpackTimeFixPlugin";
 
 export class SdPackageBuilder extends EventEmitter {
   private readonly _logger = Logger.get([
@@ -190,11 +191,11 @@ export class SdPackageBuilder extends EventEmitter {
 
         devMiddleware = WebpackDevMiddleware(compiler, {
           publicPath: webpackConfig.output!.publicPath!,
-          logLevel: "silent"/*,
+          logLevel: "silent",
           watchOptions: {
             aggregateTimeout: 300,
             poll: 1000
-          }*/
+          }
         });
 
         hotMiddleware = WebpackHotMiddleware(compiler, {
@@ -804,7 +805,10 @@ export class SdPackageBuilder extends EventEmitter {
             path: path.resolve(distPath, ".configs.json"),
             content: JSON.stringify(this._info.config.configs, undefined, 2)
           }
-        ])
+        ]),
+        ...this._devMode ? [
+          new SdWebpackTimeFixPlugin()
+        ] : []
       ]
     };
   }

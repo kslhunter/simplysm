@@ -12,8 +12,10 @@ import {ChangeDetectionStrategy, Component} from "@angular/core";
       display: block;
       background: white;
       border-radius: 2px;
-      @include elevation(1);
+      @include elevation(2);
       overflow: hidden;
+      padding-top: var(--gap-sm);
+      padding-bottom: var(--gap-sm);
     }
   `]
 })

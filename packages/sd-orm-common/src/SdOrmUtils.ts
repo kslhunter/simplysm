@@ -85,7 +85,7 @@ export class SdOrmUtils {
           obj[key] = Boolean(item[key]);
         }
         else if (option?.columns?.[key]?.dataType === "Number") {
-          obj[key] = Number.parseInt(item[key], 10);
+          obj[key] = Number.parseFloat(item[key]);
         }
         else {
           obj[key] = item[key];

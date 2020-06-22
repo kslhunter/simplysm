@@ -262,7 +262,7 @@ export class SdTextfieldControl {
             this.type;
   }
 
-  public get controlStep(): number | undefined {
+  public get controlStep(): number | string | undefined {
     if (this.step !== undefined) {
       return this.step;
     }
@@ -272,7 +272,8 @@ export class SdTextfieldControl {
     else if (this.type === "time-sec") {
       return 1;
     }
-    return undefined;
+
+    return "any";
   }
 
   public get controlValue(): string {
