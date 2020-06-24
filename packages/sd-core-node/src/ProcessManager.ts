@@ -54,7 +54,8 @@ export class ProcessManager {
           }
         }
         catch (err) {
-          reject(err);
+          // reject(err);
+          console.log(data.toString());
         }
 
         processing = false;
@@ -84,7 +85,8 @@ export class ProcessManager {
           }
         }
         catch (err) {
-          reject(err);
+          // reject(err);
+          console.log(data.toString());
         }
 
         processing = false;

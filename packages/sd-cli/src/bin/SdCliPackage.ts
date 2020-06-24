@@ -311,7 +311,7 @@ export class SdCliPackage extends EventEmitter {
     }
   }
 
-  public async initializeCordovaAsync(): Promise<void> {
+  public async initializeCordovaAsync(platform: "android" | "browser"): Promise<void> {
     const config = this.info.config as ISdAndroidPackageConfig;
 
     const cordovaProjectPath = path.resolve(this.info.rootPath, ".cordova");
@@ -329,13 +329,13 @@ export class SdCliPackage extends EventEmitter {
     await FsUtils.mkdirsAsync(path.resolve(cordovaProjectPath, "www"));
 
     // android 플랫폼
-    if (!FsUtils.exists(path.resolve(cordovaProjectPath, "platforms/android"))) {
+    if (platform === "android" && !FsUtils.exists(path.resolve(cordovaProjectPath, "platforms/android"))) {
       console.log(`CORDOVA 플랫폼 생성: android`);
       await ProcessManager.spawnAsync(`${cordovaBinPath} platform add android`, {cwd: cordovaProjectPath});
     }
 
     // browser 플랫폼
-    if (!FsUtils.exists(path.resolve(cordovaProjectPath, "platforms/browser"))) {
+    if (platform === "browser" && !FsUtils.exists(path.resolve(cordovaProjectPath, "platforms/browser"))) {
       console.log(`CORDOVA 플랫폼 생성: browser`);
       await ProcessManager.spawnAsync(`${cordovaBinPath} platform add browser`, {cwd: cordovaProjectPath});
     }

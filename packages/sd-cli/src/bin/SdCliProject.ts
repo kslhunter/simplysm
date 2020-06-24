@@ -247,7 +247,7 @@ export class SdCliProject {
                 await Wait.true(() => depCheckCompleted.includes(pkg.name));
 
                 if (pkg.info.config?.type === "android") {
-                  await pkg.initializeCordovaAsync();
+                  await pkg.initializeCordovaAsync(pkg.info.config.device ? "android" : "browser");
                 }
 
                 if (watch) {
@@ -496,7 +496,7 @@ export class SdCliProject {
   }
 
   private async _registerClientAsync(pkg: SdCliPackage, middlewares: NextHandleFunction[]): Promise<void> {
-    if (pkg.info.config?.type !== "web") throw new NeverEntryError();
+    if (pkg.info.config?.type !== "web" && pkg.info.config?.type !== "android") throw new NeverEntryError();
 
     this._servers[pkg.info.config.server] = this._servers[pkg.info.config.server] ?? {middlewares: {}};
     this._servers[pkg.info.config.server].middlewares[pkg.name] = middlewares;

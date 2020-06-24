@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="ko">
 <head>
+    <%= htmlWebpackPlugin.options.PLATFORM ? `<meta name="format-detection" content="telephone=no">` : `` %>
+    <%= htmlWebpackPlugin.options.PLATFORM ? `<meta name="msapplication-tap-highlight" content="no">` : `` %>
+
     <meta charset="utf-8">
     <base href="<%= htmlWebpackPlugin.options.BASE_HREF %>">
 
@@ -76,5 +79,24 @@
         <div></div>
     </div>
 </app-root>
+
+<%= htmlWebpackPlugin.options.PLATFORM ? `
+<script>
+  window.addEventListener = function () {
+    EventTarget.prototype.addEventListener.apply(this, arguments);
+  };
+  window.removeEventListener = function () {
+    EventTarget.prototype.removeEventListener.apply(this, arguments);
+  };
+  document.addEventListener = function () {
+    EventTarget.prototype.addEventListener.apply(this, arguments);
+  };
+  document.removeEventListener = function () {
+    EventTarget.prototype.removeEventListener.apply(this, arguments);
+  };
+</script>
+` : "" %>
+
+<%= htmlWebpackPlugin.options.PLATFORM ? "<script src=\"cordova.js\"></script>" : "" %>
 </body>
 </html>
