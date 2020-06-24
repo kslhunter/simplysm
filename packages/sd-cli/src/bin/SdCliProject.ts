@@ -1,4 +1,4 @@
-import {FsUtils, Logger, ProcessManager, ProcessWorkManager} from "@simplysm/sd-core-node";
+import {FsUtils, Logger, NetworkUtils, ProcessManager, ProcessWorkManager} from "@simplysm/sd-core-node";
 import * as path from "path";
 import {INpmConfig, ISdProjectConfig} from "../commons";
 import {DateTime, NeverEntryError, Wait} from "@simplysm/sd-core-common";
@@ -183,13 +183,6 @@ export class SdCliProject {
 
         await Promise.all([
           this._parallelPackagesByDepAsync(async pkg => {
-            if (!subBuild || subBuild.includes("cordova")) {
-              if (pkg.info.config?.type === "android") {
-                await pkg.initializeCordovaAsync();
-              }
-            }
-          }),
-          this._parallelPackagesByDepAsync(async pkg => {
             depCheckCompleted.push(pkg.name);
 
             await Wait.true(() => genCompleted.includes(pkg.name));
@@ -249,9 +242,13 @@ export class SdCliProject {
                   await pkg.compileAsync(watch, processManager);
                 }
               }
-              else if (pkg.info.config?.type === "web") {
+              else if (pkg.info.config?.type === "web" || pkg.info.config?.type === "android") {
                 await Wait.true(() => genCompleted.includes(pkg.name));
                 await Wait.true(() => depCheckCompleted.includes(pkg.name));
+
+                if (pkg.info.config?.type === "android") {
+                  await pkg.initializeCordovaAsync();
+                }
 
                 if (watch) {
                   const middlewares = (
@@ -270,6 +267,12 @@ export class SdCliProject {
                   ) as NextHandleFunction[];
 
                   await this._registerClientAsync(pkg, middlewares);
+
+                  if (pkg.info.config?.type === "android" && pkg.info.config.device) {
+                    const ip = NetworkUtils.getCurrentIPs()[0];
+                    const port = this._servers[pkg.info.config?.["server"]].server!.options.port ?? 80;
+                    await pkg.runCordovaOnDeviceAsync(ip, port);
+                  }
                 }
                 else {
                   await pkg.compileAsync(watch, processManager);

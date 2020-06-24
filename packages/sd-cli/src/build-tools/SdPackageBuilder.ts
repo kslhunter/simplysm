@@ -21,6 +21,7 @@ import {SdWebpackInputHostWithScss} from "./SdWebpackInputHostWithScss";
 import {SdTypescriptProgramRunner} from "./SdTypescriptProgramRunner";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import {SdWebpackTimeFixPlugin} from "./SdWebpackTimeFixPlugin";
+import * as CopyWebpackPlugin from "copy-webpack-plugin";
 
 export class SdPackageBuilder extends EventEmitter {
   private readonly _logger = Logger.get([
@@ -160,8 +161,8 @@ export class SdPackageBuilder extends EventEmitter {
   }
 
   public async runClientCompileAsync(watch: boolean): Promise<void | NextHandleFunction[]> {
-    if (this._info.config?.type !== "web") {
-      throw new Error(`[${this._info.npmConfig.name}] 클라이언트(web) 패키지가 아닙니다.`);
+    if (this._info.config?.type !== "web" && this._info.config?.type !== "android") {
+      throw new Error(`[${this._info.npmConfig.name}] 클라이언트(web, android) 패키지가 아닙니다.`);
     }
 
     const webpackConfig = this._getClientWebpackConfig();
@@ -607,8 +608,8 @@ export class SdPackageBuilder extends EventEmitter {
   }
 
   private _getClientWebpackConfig(): webpack.Configuration {
-    if (this._info.config?.type !== "web") {
-      throw new Error("클라이언트(web) 패키지가 아닙니다.");
+    if (this._info.config?.type !== "web" && this._info.config?.type !== "android") {
+      throw new Error("클라이언트(web, android) 패키지가 아닙니다.");
     }
 
     const packageKey = path.basename(this._info.rootPath);
@@ -768,7 +769,16 @@ export class SdPackageBuilder extends EventEmitter {
       plugins: [
         new HtmlWebpackPlugin({
           template: indexPath,
-          BASE_HREF: `/${packageKey}/`
+          BASE_HREF: `/${packageKey}/`,
+          ...this._info.config.type === "android" ? {
+            PLATFORM: "android"
+          } : {}
+        }),
+        new webpack.DefinePlugin({
+          "process.env.SD_VERSION": `"${this._info.npmConfig.version}"`,
+          ...this._info.config.type === "android" ? {
+            "process.env.SD_PLATFORM": `"android"`
+          } : {}
         }),
         new webpack.ContextReplacementPlugin(
           /(.+)?angular(\\|\/)core(.+)?/,
@@ -808,6 +818,14 @@ export class SdPackageBuilder extends EventEmitter {
         ]),
         ...this._devMode ? [
           new SdWebpackTimeFixPlugin()
+        ] : [],
+        ...this._info.config.type === "android" ? [
+          new CopyWebpackPlugin({
+            patterns: [{
+              context: path.resolve(this._info.rootPath, `.cordova/platforms/${this._info.config.device ? "android" : "browser"}/platform_www`),
+              from: "**/*"
+            }]
+          })
         ] : []
       ]
     };

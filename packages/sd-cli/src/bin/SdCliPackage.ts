@@ -375,6 +375,55 @@ import android.webkit.WebSettings;`);
     }
   }
 
+  public async runCordovaOnDeviceAsync(serverIp: string, serverPort: number): Promise<void> {
+    if (this.info.config?.type !== "android" || !this.info.config.device) {
+      throw new NeverEntryError();
+    }
+
+    const cordovaProjectPath = path.resolve(this.info.rootPath, ".cordova");
+    const cordovaBinPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
+
+    const serverUrl = `http://${serverIp}:${serverPort}`;
+
+    await FsUtils.removeAsync(path.resolve(cordovaProjectPath, "www"));
+    await FsUtils.mkdirsAsync(path.resolve(cordovaProjectPath, "www"));
+    await FsUtils.writeFileAsync(path.resolve(cordovaProjectPath, "www/index.html"), `'${serverUrl}/${path.basename(this.info.rootPath)}/'로 이동중... <script>setTimeout(function () {window.location.href = "${serverUrl}/${path.basename(this.info.rootPath)}/"}, 3000);</script>`.trim());
+
+    if (this.info.config.icon !== undefined) {
+      await FsUtils.copyAsync(
+        path.resolve(this.info.rootPath, this.info.config.icon),
+        path.resolve(cordovaProjectPath, "res", "icon", "icon.png")
+      );
+    }
+
+    let configFileContent = await FsUtils.readFileAsync(path.resolve(cordovaProjectPath, "config.xml"));
+    configFileContent = configFileContent.replace(/ {4}<allow-navigation href="[^"]*"\s?\/>\n/g, "");
+    configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="${serverUrl}" />\n</widget>`);
+    configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="${serverUrl}/*" />\n</widget>`);
+    if (!configFileContent.includes("xmlns:android=\"http://schemas.android.com/apk/res/android\"")) {
+      configFileContent = configFileContent.replace(
+        "xmlns=\"http://www.w3.org/ns/widgets\"",
+        `xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android"`
+      );
+    }
+    if (!configFileContent.includes("application android:usesCleartextTraffic=\"true\" />")) {
+      configFileContent = configFileContent.replace("<platform name=\"android\">", `<platform name="android">
+        <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+            <application android:usesCleartextTraffic="true" />
+        </edit-config>`);
+    }
+
+    if (this.info.config.icon !== undefined && !configFileContent.includes("<icon")) {
+      configFileContent = configFileContent.replace("</widget>", "    <icon src=\"res/icon/icon.png\" />\r\n</widget>");
+    }
+
+    configFileContent = configFileContent.replace("</widget>", "    <preference name=\"Orientation\" value=\"portrait\" />\r\n</widget>");
+
+    await FsUtils.writeFileAsync(path.resolve(cordovaProjectPath, "config.xml"), configFileContent);
+
+    await ProcessManager.spawnAsync(`${cordovaBinPath} run android --device`, {cwd: cordovaProjectPath});
+  }
+
   private async _runAsync(watch: boolean, processManager: ProcessWorkManager, command: string, target?: string): Promise<void> {
     this._logger.debug("workerRun: " + (watch ? "watch" : "run") + ": " + this.name + ": " + command + ": " + target + ": start");
 

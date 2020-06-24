@@ -5,3 +5,4 @@ export * from "./Logger";
 export * from "./ProcessManager";
 export * from "./ProcessWorkManager";
 export * from "./SdProcessWorker";
+export * from "./NetworkUtils";
