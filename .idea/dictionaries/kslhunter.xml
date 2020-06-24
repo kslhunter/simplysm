@@ -2,6 +2,8 @@
   <dictionary name="kslhunter">
     <words>
       <w>anymatch</w>
+      <w>cordorva</w>
+      <w>cordova</w>
       <w>decache</w>
       <w>iconv</w>
       <w>instrumenter</w>

@@ -1,4 +1,4 @@
-import {ISdProjectConfig} from "./commons";
+import {ISdProjectConfig, TSdPackageConfig} from "./commons";
 import {FsUtils} from "@simplysm/sd-core-node";
 import {ObjectUtils} from "@simplysm/sd-core-common";
 
@@ -36,6 +36,15 @@ export class SdProjectConfigUtils {
 
       for (const optKey of Object.keys(config.packages[packageName]).filter(item => item.startsWith("@"))) {
         delete config.packages[packageName][optKey];
+      }
+
+      //오류 체크
+      const pkgConfig = config.packages[packageName] as TSdPackageConfig;
+      if (pkgConfig.type === "android") {
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+        if (!pkgConfig.appId || !pkgConfig.appName) {
+          throw new Error("'android'빌드 설정에는 반드시, 'appId', 'appName'이/가 설정되어 있어야 합니다.");
+        }
       }
     }
 

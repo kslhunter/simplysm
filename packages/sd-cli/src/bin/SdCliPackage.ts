@@ -1,5 +1,5 @@
 import {FsUtils, Logger, ProcessManager, ProcessWorkManager} from "@simplysm/sd-core-node";
-import {INpmConfig, ISdPackageInfo, TSdPackageConfig} from "../commons";
+import {INpmConfig, ISdAndroidPackageConfig, ISdPackageInfo, TSdPackageConfig} from "../commons";
 import * as path from "path";
 import * as ts from "typescript";
 import {ISdPackageBuildResult, SdPackageBuilder} from "../build-tools/SdPackageBuilder";
@@ -308,6 +308,70 @@ export class SdCliPackage extends EventEmitter {
       });
 
       await wsClient.closeAsync();
+    }
+  }
+
+  public async initializeCordovaAsync(): Promise<void> {
+    const config = this.info.config as ISdAndroidPackageConfig;
+
+    const cordovaProjectPath = path.resolve(this.info.rootPath, ".cordova");
+    const cordovaBinPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
+
+    await ProcessManager.spawnAsync(`${cordovaBinPath} telemetry on`, {cwd: this.info.rootPath});
+
+    // 프로젝트 생성
+    if (!FsUtils.exists(cordovaProjectPath)) {
+      console.log(`CORDOVA 프로젝트 생성`);
+      await ProcessManager.spawnAsync(`${cordovaBinPath} create "${cordovaProjectPath}" "${config.appId}" "${config.appName}"`, {cwd: process.cwd()});
+    }
+
+    // www 폴더 혹시 없으면 생성
+    await FsUtils.mkdirsAsync(path.resolve(cordovaProjectPath, "www"));
+
+    // android 플랫폼
+    if (!FsUtils.exists(path.resolve(cordovaProjectPath, "platforms/android"))) {
+      console.log(`CORDOVA 플랫폼 생성: android`);
+      await ProcessManager.spawnAsync(`${cordovaBinPath} platform add android`, {cwd: cordovaProjectPath});
+    }
+
+    // browser 플랫폼
+    if (!FsUtils.exists(path.resolve(cordovaProjectPath, "platforms/browser"))) {
+      console.log(`CORDOVA 플랫폼 생성: browser`);
+      await ProcessManager.spawnAsync(`${cordovaBinPath} platform add browser`, {cwd: cordovaProjectPath});
+    }
+
+    // MainActivity.java 파일 오류 강제 수정
+    /*const mainActivityFilePath = (await FsUtils.globAsync(path.resolve(cordovaProjectPath, "platforms/android/app/src/main/java/!**!/MainActivity.java"))).single();
+    if (mainActivityFilePath === undefined) {
+      throw new Error("MainActivity.java 파일을 찾을 수 없습니다.");
+    }
+    let mainActivityFileContent = await FsUtils.readFileAsync(mainActivityFilePath);
+    if (!mainActivityFileContent.includes("Solve web view font-size problem")) {
+      mainActivityFileContent = mainActivityFileContent.replace(/import org\.apache\.cordova\.\*;/, `import org.apache.cordova.*;
+import android.webkit.WebView;
+import android.webkit.WebSettings;`);
+
+      mainActivityFileContent = mainActivityFileContent.replace(/loadUrl\(launchUrl\);/, `loadUrl(launchUrl);
+
+        // Solve web view font-size problem
+        WebView webView = (WebView)appView.getEngine().getView();
+        WebSettings settings = webView.getSettings();
+        settings.setTextSize(WebSettings.TextSize.NORMAL);`);
+
+      await FsUtils.writeFileAsync(mainActivityFilePath, mainActivityFileContent);
+    }*/
+
+    // 플러그인 설치
+    const cordovaFetchConfig = await FsUtils.readJsonAsync(path.resolve(cordovaProjectPath, "plugins/fetch.json"));
+    const prevPlugins = Object.values(cordovaFetchConfig)
+      .map((item: any) => (item.source.id !== undefined ? item.source.id.replace(/@.*$/, "") : item.source.url));
+    if (config.plugins) {
+      for (const plugin of config.plugins) {
+        if (!prevPlugins.includes(plugin)) {
+          console.log(`CORDOVA 플러그인 설치  : ${plugin}`);
+          await ProcessManager.spawnAsync(`${cordovaBinPath} plugin add ${plugin}`, {cwd: cordovaProjectPath});
+        }
+      }
     }
   }
 

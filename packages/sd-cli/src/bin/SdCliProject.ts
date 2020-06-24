@@ -69,7 +69,7 @@ export class SdCliProject {
                       private readonly _npmConfigPath: string) {
   }
 
-  public async buildAsync(watch: boolean, subBuild?: ("gen" | "check" | "lint" | "compile")[]): Promise<void> {
+  public async buildAsync(watch: boolean, subBuild?: ("gen" | "check" | "lint" | "compile" | "cordova")[]): Promise<void> {
     if (watch) {
       await SdCliLocalUpdate.watchAsync(this._config);
     }
@@ -182,6 +182,13 @@ export class SdCliProject {
         const depCheckCompleted: string[] = [];
 
         await Promise.all([
+          this._parallelPackagesByDepAsync(async pkg => {
+            if (!subBuild || subBuild.includes("cordova")) {
+              if (pkg.info.config?.type === "android") {
+                await pkg.initializeCordovaAsync();
+              }
+            }
+          }),
           this._parallelPackagesByDepAsync(async pkg => {
             depCheckCompleted.push(pkg.name);
 

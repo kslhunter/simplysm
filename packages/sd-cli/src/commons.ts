@@ -24,10 +24,25 @@ export interface ISdWebPackageConfig {
   publish?: ISdSimplysmPublishConfig;
 }
 
+export interface ISdAndroidPackageConfig {
+  type: "android";
+  server: string;
+  configs?: { [key: string]: any };
+  publish?: ISdSimplysmPublishConfig;
+  appId: string;
+  appName: string;
+  plugins?: [];
+  sign?: string;
+  icon?: string;
+  device?: boolean;
+  debug?: boolean;
+}
+
 export type TSdPackageConfig =
   ISdLibraryPackageConfig |
   ISdServerPackageConfig |
   ISdWebPackageConfig |
+  ISdAndroidPackageConfig |
   { type: "none" };
 
 export interface ISdPackageInfo {
