@@ -75,6 +75,10 @@ import {SdInputValidate} from "../commons/SdInputValidate";
           background: var(--theme-color-grey-lightest) !important;
         }
 
+        > input:disabled + ._indicator_rect + ._indicator {
+          color: var(--text-brightness-lighter) !important;
+        }
+
         &:focus {
           outline-color: transparent;
 

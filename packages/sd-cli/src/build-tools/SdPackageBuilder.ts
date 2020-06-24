@@ -191,11 +191,11 @@ export class SdPackageBuilder extends EventEmitter {
 
         devMiddleware = WebpackDevMiddleware(compiler, {
           publicPath: webpackConfig.output!.publicPath!,
-          logLevel: "silent",
+          logLevel: "silent"/*,
           watchOptions: {
             aggregateTimeout: 300,
             poll: 1000
-          }
+          }*/
         });
 
         hotMiddleware = WebpackHotMiddleware(compiler, {
@@ -632,7 +632,7 @@ export class SdPackageBuilder extends EventEmitter {
         },
         entry: {
           main: [
-            "eventsource-polyfill",
+            /*TODO: "eventsource-polyfill",*/
             `webpack-hot-middleware/client?path=/${packageKey}/__webpack_hmr&timeout=20000&reload=true&overlay=true`,
             mainPath
           ]
@@ -672,7 +672,7 @@ export class SdPackageBuilder extends EventEmitter {
           ]
         },
         entry: {
-          main: ["eventsource-polyfill", mainPath]
+          main: [/*TODO: "eventsource-polyfill", */mainPath]
         },
         resolve: {
           extensions: [".ts", ".js", ".json"],

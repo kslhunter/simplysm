@@ -11,7 +11,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
 
     :host {
       @include container-base();
-      padding-top: var(--sd-topbar-height);
+      //padding-top: var(--sd-topbar-height);
 
       &[sd-size="sm"] {
         padding-top: var(--sd-topbar-height-sm);
@@ -31,4 +31,7 @@ export class SdTopbarContainerControl {
   })
   @HostBinding("attr.sd-size")
   public size?: "sm" | "lg";
+
+  @HostBinding("style.padding-top.px")
+  public paddingTopPx = 0;
 }

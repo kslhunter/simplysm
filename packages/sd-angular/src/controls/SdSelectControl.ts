@@ -289,6 +289,11 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
 
   private _selectMode: "single" | "multi" = "single";
 
+  @HostBinding("attr.sd-invalid")
+  public get invalid(): boolean {
+    return this.required === true && this._value === undefined;
+  }
+
   public trackByItemFn = (index: number, item: any) => {
     if (this.trackByFn) {
       return this.trackByFn(index, item) ?? item;

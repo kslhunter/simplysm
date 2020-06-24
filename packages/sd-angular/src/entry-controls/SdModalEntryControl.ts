@@ -19,12 +19,14 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
   template: `
     <div class="_backdrop" (click)="onBackdropClick()"></div>
     <div class="_dialog" tabindex="0"
-         (keydown.escape)="onDialogEscapeKeydown($event)">
+         (keydown.escape)="onDialogEscapeKeydown($event)"
+         [style.width.px]="widthPx"
+         [style.height.px]="heightPx">
       <sd-dock-container>
         <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)">
           <sd-anchor class="_close-button"
-             (click)="onCloseButtonClick()"
-             *ngIf="!hideCloseButton">
+                     (click)="onCloseButtonClick()"
+                     *ngIf="!hideCloseButton">
             <sd-icon icon="times" fixedWidth></sd-icon>
           </sd-anchor>
           <h5 class="_title">{{ title }}</h5>
@@ -55,7 +57,7 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
       left: 0;
       width: 100%;
       height: 100%;
-      padding-top: calc(var(--sd-topbar-height) / 2);
+      padding-top: calc(var(--sd-topbar-height) + var(--gap-sm));
 
       > ._backdrop {
         position: fixed;
@@ -73,8 +75,8 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
         width: fit-content;
         min-width: 240px;
         background: white;
-        border: 1px solid var(--theme-color-primary-darker);
-        border-radius: 2px;
+        //border: 1px solid var(--theme-color-primary-darker);
+        //border-radius: 2px;
         overflow: hidden;
         @include elevation(16);
 
@@ -187,12 +189,11 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
         }
 
         > ._dialog {
-          pointer-events: auto;
-          right: var(--gap-lg);
-          bottom: var(--gap-lg);
-          border-radius: 0;
+          pointer-events: none;
+          //right: var(--gap-lg);
+          //bottom: var(--gap-lg);
           opacity: 0;
-          @include elevation(4);
+          @include elevation(8);
 
           &:focus {
             @include elevation(16);
@@ -201,6 +202,7 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
 
         &[sd-open=true] {
           > ._dialog {
+            pointer-events: auto;
             opacity: 1;
           }
         }
@@ -246,6 +248,14 @@ export class SdModalEntryControl implements OnInit {
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-float")
   public float?: boolean;
+
+  @Input("height.px")
+  @SdInputValidate(Number)
+  public heightPx?: number;
+
+  @Input("width.px")
+  @SdInputValidate(Number)
+  public widthPx?: number;
 
   private readonly _el: HTMLElement;
   private _dialogEl!: HTMLElement;

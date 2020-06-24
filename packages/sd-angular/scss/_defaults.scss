@@ -5,6 +5,10 @@
   outline-color: var(--theme-color-primary-default);
 }
 
+*:focus {
+  outline: none;
+}
+
 // HTML, BODY
 html, body {
   height: 100%;

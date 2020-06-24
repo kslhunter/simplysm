@@ -120,7 +120,8 @@
   --sd-background-color: var(--theme-color-grey-lightest);
   --sd-border-color-light: var(--theme-color-grey-lighter);
   --sd-border-color: var(--theme-color-grey-light);
-  //--sd-border-color-dark: var(--theme-color-grey-light);
+  --sd-border-color-dark: var(--theme-color-grey-default);
+  --sd-border-color-darker: var(--theme-color-grey-dark);
   --sd-sheet-padding-v: var(--gap-xs);
   --sd-sheet-padding-h: var(--gap-sm);
 

@@ -1,4 +1,13 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Injector} from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  forwardRef,
+  HostBinding,
+  Inject,
+  Injector,
+  OnInit
+} from "@angular/core";
 import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
 import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 
@@ -100,7 +109,7 @@ import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
     }
   `]
 })
-export class SdTopbarControl {
+export class SdTopbarControl implements OnInit {
   @HostBinding("attr.sd-size")
   public get size(): "sm" | "lg" | undefined {
     return this.topbarContainerControl.size;
@@ -110,11 +119,16 @@ export class SdTopbarControl {
 
   public constructor(@Inject(forwardRef(() => SdTopbarContainerControl))
                      private readonly topbarContainerControl: SdTopbarContainerControl,
-                     private readonly _injector: Injector) {
+                     private readonly _injector: Injector,
+                     private readonly _elRef: ElementRef) {
     this.sidebarContainerControl = this._injector.get<SdSidebarContainerControl | null>(SdSidebarContainerControl, null) ?? undefined;
   }
 
   public onSidebarToggleButtonClick(): void {
     this.sidebarContainerControl!.toggle = !this.sidebarContainerControl!.toggle;
+  }
+
+  public ngOnInit(): void {
+    this.topbarContainerControl.paddingTopPx = this._elRef.nativeElement.offsetHeight;
   }
 }

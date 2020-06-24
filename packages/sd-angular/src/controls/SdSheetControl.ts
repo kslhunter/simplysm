@@ -71,7 +71,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                     <div class="_cell-content">
                       <pre class="_header-text-content">{{ headerGroup.name }}</pre>
                     </div>
-                    <div class="_border"></div>
+                    <div class="_border _border-split"></div>
                   </div>
                 </ng-container>
               </div>
@@ -83,7 +83,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                     <div class="_cell-content">
                       <pre class="_header-text-content">{{ headerGroup.name }}</pre>
                     </div>
-                    <div class="_border"></div>
+                    <div class="_border _border-split"></div>
                   </div>
                 </ng-container>
               </div>
@@ -134,7 +134,8 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                         <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
                       </ng-container>
                     </div>
-                    <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"></div>
+                    <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"
+                         [ngClass]="{'_border-split': this.getIsGroupLastColumn(columnControl)}"></div>
                   </div>
                 </ng-container>
               </div>
@@ -166,14 +167,16 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                         <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
                       </ng-container>
                     </div>
-                    <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"></div>
+                    <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"
+                         [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
                   </div>
                 </ng-container>
               </div>
             </div>
 
             <!-- 합계 ROW -->
-            <div class="_row _summary_row" *ngIf="hasSummaryGroup || hasOrderingColumn">
+            <!-- TODO: 아래 hasOrderingColumn 일때 왜 표시해야하지? 일단 지움 -->
+            <div class="_row _summary_row" *ngIf="hasSummaryGroup">
               <!-- 고정 셀 그룹 -->
               <div class="_cell-group _fixed-cell-group">
                 <div class="_border"></div>
@@ -191,7 +194,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                     <div class="_cell-content">
                       <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"></ng-template>
                     </div>
-                    <div class="_border"></div>
+                    <div class="_border" [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
                   </div>
                 </ng-container>
               </div>
@@ -203,7 +206,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                     <div class="_cell-content">
                       <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"></ng-template>
                     </div>
-                    <div class="_border"></div>
+                    <div class="_border" [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
                   </div>
                 </ng-container>
               </div>
@@ -252,7 +255,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                         <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
                                      [ngTemplateOutletContext]="{item: item, index: index}"></ng-template>
                       </div>
-                      <div class="_border"></div>
+                      <div class="_border" [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
                     </div>
                   </ng-container>
                 </div>
@@ -266,7 +269,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                         <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
                                      [ngTemplateOutletContext]="{item: item, index: index}"></ng-template>
                       </div>
-                      <div class="_border"></div>
+                      <div class="_border" [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
                     </div>
                   </ng-container>
                 </div>
@@ -307,7 +310,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
     </sd-dock-container>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
-    
+
     :host {
       $z-index-fixed: 1;
       $z-index-row-selected-indicator: 2;
@@ -317,14 +320,14 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
       $z-index-head: 7;
       $z-index-head-fixed: 8;
 
-      $border-color-default: var(--sd-border-color);
       $border-color-light: var(--sd-border-color-light);
+      $border-color-dark: var(--sd-border-color);
 
       > sd-dock-container {
-        border: 1px solid $border-color-default;
+        border: 1px solid $border-color-dark;
 
         > sd-dock { // 상단 DOCK (설정 아이콘 및 페이징)
-          border-bottom: 1px solid $border-color-default;
+          border-bottom: 1px solid $border-color-dark;
           padding: var(--sd-sheet-padding-v) var(--sd-sheet-padding-h);
 
           > ._cog-icon {
@@ -352,8 +355,8 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
               left: 0;
               width: 100%;
               height: 100%;
-              border-bottom: 1px solid $border-color-default;
-              border-right: 1px solid $border-color-default;
+              border-bottom: 1px solid $border-color-dark;
+              border-right: 1px solid $border-color-dark;
               pointer-events: none;
             }
 
@@ -383,6 +386,10 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                       right: 0;
                       background: transparent;
                       border-right: 1px solid $border-color-light;
+
+                      &._border-split {
+                        border-right-color: $border-color-dark;
+                      }
                     }
 
                     &:focus {
@@ -391,7 +398,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                   }
 
                   &:last-child > ._cell:last-child > ._border {
-                    border-right: 1px solid $border-color-default;
+                    border-right: 1px solid $border-color-dark;
                   }
                 }
 
@@ -409,7 +416,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                     top: 0;
                     right: 0;
                     background: transparent;
-                    border-right: 1px solid $border-color-default;
+                    border-right: 2px solid $border-color-dark;
                   }
 
                   > ._feature-cell { // 기능 셀
@@ -475,7 +482,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                 }
 
                 &:last-child > * > ._cell {
-                  border-bottom: 1px solid $border-color-default;
+                  border-bottom: 1px solid $border-color-dark;
                 }
               }
 
@@ -538,7 +545,7 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                   height: calc(100% - 1px);
                   z-index: $z-index-row-selected-indicator;
                   pointer-events: none;
-                  background: var(--theme-color-primary-default);
+                  background: var(--theme-color-secondary-default);
                   opacity: .1;
                 }
 
@@ -720,11 +727,11 @@ export class SdSheetControl implements DoCheck, OnInit {
       .max(item => item.depth) ?? 0;
   }
 
-  public get fixedHeaderGroups(): { name?: string; widthPixel: number }[] {
+  public get fixedHeaderGroups(): { name?: string; widthPixel: number; borderRight: boolean | undefined }[] {
     return this._getHeaderGroups(this.fixedColumnControls);
   }
 
-  public get nonFixedHeaderGroups(): { name?: string; widthPixel: number }[] {
+  public get nonFixedHeaderGroups(): { name?: string; widthPixel: number; borderRight: boolean | undefined }[] {
     return this._getHeaderGroups(this.nonFixedColumnControls);
   }
 
@@ -772,6 +779,19 @@ export class SdSheetControl implements DoCheck, OnInit {
     }
     else {
       return this.items;
+    }
+  }
+
+  public getIsGroupLastColumn(columnControl: SdSheetColumnControl): boolean {
+    if (!this.hasHeaderGroup) return false;
+
+    if (columnControl.fixed) {
+      const fixedColumnControls = this.fixedColumnControls;
+      return fixedColumnControls[fixedColumnControls.indexOf(columnControl) + 1]?.group !== columnControl.group;
+    }
+    else {
+      const nonFixedColumnControls = this.nonFixedColumnControls;
+      return nonFixedColumnControls[nonFixedColumnControls.indexOf(columnControl) + 1]?.group !== columnControl.group;
     }
   }
 
@@ -904,6 +924,8 @@ export class SdSheetControl implements DoCheck, OnInit {
               const rowEl = cellEl.findParent("._sheet > ._body > ._row")!;
               const rowOffset = rowEl.getRelativeOffset(paneEl);
 
+              /*if (this.autoSelect === undefined) {
+              }*/
               const rowFocusIndicatorEl = paneEl.findFirst("> ._row-focus-indicator")!;
               rowFocusIndicatorEl.style.top = (paneEl.scrollTop + rowOffset.top - 1) + "px";
               rowFocusIndicatorEl.style.left = (paneEl.scrollLeft + rowOffset.left - 1) + "px";
@@ -1436,23 +1458,13 @@ export class SdSheetControl implements DoCheck, OnInit {
     return c === "last" ? cellEls.last() : cellEls[c];
   }
 
-  private _getHeaderGroups(columnControls: SdSheetColumnControl[]): { name?: string; widthPixel: number }[] {
-    const result: { name?: string; widthPixel: number }[] = [];
-    for (const columnControl of columnControls) {
-      const groupName = columnControl.group;
-      const lastResult = result.last();
-      if (lastResult && lastResult.name === groupName) {
-        lastResult.widthPixel += this.getColumnWidthPixel(columnControl);
-      }
-      else {
-        result.push({
-          name: groupName,
-          widthPixel: this.getColumnWidthPixel(columnControl)
-        });
-      }
-    }
-
-    return result;
+  private _getHeaderGroups(columnControls: SdSheetColumnControl[]): { name?: string; widthPixel: number; borderRight: boolean | undefined }[] {
+    return columnControls.groupBy(item => item.group)
+      .map(item => ({
+        name: item.key,
+        widthPixel: item.values.sum(item1 => this.getColumnWidthPixel(item1)),
+        borderRight: item.values.last()!.borderRight
+      }));
   }
 
   private getDisplayItemDefs(): { index: number; depth: number; visible: boolean; selectable: boolean; item: any }[] {
