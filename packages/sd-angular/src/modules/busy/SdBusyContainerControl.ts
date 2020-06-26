@@ -10,6 +10,9 @@ import {SdBusyContainerProvider} from "./SdBusyContainerProvider";
     <div class="_screen">
       <div class="_rect">
         <div class="_indicator"></div>
+        <div class="_message" *ngIf="message">
+          {{ message }}
+        </div>
       </div>
     </div>
     <div class="_content">
@@ -80,6 +83,16 @@ import {SdBusyContainerProvider} from "./SdBusyContainerProvider";
             border-bottom-color: var(--theme-primary-default);
             animation: _sd-busy-spin 1s linear infinite;
           }
+
+          > ._message {
+            position: absolute;
+            top: 55px;
+            width: 100%;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 0 2px black;
+          }
         }
 
         &[sd-busy=true] {
@@ -129,6 +142,13 @@ import {SdBusyContainerProvider} from "./SdBusyContainerProvider";
                 animation: _sd-busy-bar-indicator-after 2s infinite ease-out;
               }
             }
+
+            > ._message {
+              position: absolute;
+              top: 2px;
+              right: 0;
+              display: inline-block;
+            }
           }
         }
       }
@@ -167,6 +187,10 @@ export class SdBusyContainerControl {
   @SdTypeValidate(Boolean)
   @HostBinding("attr.sd-busy")
   public busy?: boolean;
+
+  @Input()
+  @SdTypeValidate(String)
+  public message?: string;
 
   @Input()
   @SdTypeValidate({

@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, ElementRef, Input, ViewEncapsulation} from "@angular/core";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdNotifyPropertyChange";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
+import * as QRCode from "qrcode";
 
 // tslint:disable-next-line:no-var-requires no-require-imports
 require("jsbarcode");
@@ -46,11 +47,16 @@ export class SdBarcodeControl implements ISdNotifyPropertyChange {
   public constructor(private readonly _elRef: ElementRef) {
   }
 
-  public sdOnPropertyChange(propertyName: string, oldValue: any, newValue: any): void {
+  public async sdOnPropertyChange(propertyName: string, oldValue: any, newValue: any): Promise<void> {
     if (newValue) {
       const canvasEl = (this._elRef.nativeElement as HTMLElement).findAll("canvas")[0];
 
-      if (canvasEl) {
+      if (!canvasEl) return;
+
+      if (this.type === "qrcode") {
+        await QRCode.toCanvas(canvasEl, this.value || "");
+      }
+      else {
         window["JsBarcode"](
           canvasEl,
           this.value,
