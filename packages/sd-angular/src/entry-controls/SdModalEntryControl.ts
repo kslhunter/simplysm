@@ -13,6 +13,7 @@ import {
 import {SdInputValidate} from "../commons/SdInputValidate";
 import {NeverEntryError} from "@simplysm/sd-core-common";
 
+// TODO: key 에 따른 크기, 위치 저장
 @Component({
   selector: "sd-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -193,7 +194,7 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
           //right: var(--gap-lg);
           //bottom: var(--gap-lg);
           opacity: 0;
-          @include elevation(8);
+          @include elevation(4);
 
           &:focus {
             @include elevation(16);

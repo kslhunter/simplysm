@@ -175,7 +175,6 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
             </div>
 
             <!-- 합계 ROW -->
-            <!-- TODO: 아래 hasOrderingColumn 일때 왜 표시해야하지? 일단 지움 -->
             <div class="_row _summary_row" *ngIf="hasSummaryGroup">
               <!-- 고정 셀 그룹 -->
               <div class="_cell-group _fixed-cell-group">
@@ -727,11 +726,11 @@ export class SdSheetControl implements DoCheck, OnInit {
       .max(item => item.depth) ?? 0;
   }
 
-  public get fixedHeaderGroups(): { name?: string; widthPixel: number; borderRight: boolean | undefined }[] {
+  public get fixedHeaderGroups(): { name?: string; widthPixel: number }[] {
     return this._getHeaderGroups(this.fixedColumnControls);
   }
 
-  public get nonFixedHeaderGroups(): { name?: string; widthPixel: number; borderRight: boolean | undefined }[] {
+  public get nonFixedHeaderGroups(): { name?: string; widthPixel: number }[] {
     return this._getHeaderGroups(this.nonFixedColumnControls);
   }
 
@@ -1458,12 +1457,11 @@ export class SdSheetControl implements DoCheck, OnInit {
     return c === "last" ? cellEls.last() : cellEls[c];
   }
 
-  private _getHeaderGroups(columnControls: SdSheetColumnControl[]): { name?: string; widthPixel: number; borderRight: boolean | undefined }[] {
+  private _getHeaderGroups(columnControls: SdSheetColumnControl[]): { name?: string; widthPixel: number }[] {
     return columnControls.groupBy(item => item.group)
       .map(item => ({
         name: item.key,
-        widthPixel: item.values.sum(item1 => this.getColumnWidthPixel(item1)),
-        borderRight: item.values.last()!.borderRight
+        widthPixel: item.values.sum(item1 => this.getColumnWidthPixel(item1))
       }));
   }
 

@@ -25,6 +25,9 @@ export class SdAngularGlobalErrorHandler implements ErrorHandler {
     try {
       const appRef = this._ngModuleRef.injector.get<ApplicationRef>(ApplicationRef);
       appRef["_views"][0]["rootNodes"][0].appendChild(divEl);
+      divEl.ondblclick = () => {
+        location.reload();
+      };
     }
     catch (err1) {
     }

@@ -54,7 +54,7 @@ export class ProcessManager {
           }
         }
         catch (err) {
-          // reject(err);
+          // eslint-disable-next-line no-console
           console.log(data.toString());
         }
 
@@ -85,7 +85,7 @@ export class ProcessManager {
           }
         }
         catch (err) {
-          // reject(err);
+          // eslint-disable-next-line no-console
           console.log(data.toString());
         }
 

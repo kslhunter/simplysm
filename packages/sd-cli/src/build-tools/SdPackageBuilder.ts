@@ -623,6 +623,7 @@ export class SdPackageBuilder extends EventEmitter {
 
     const mainPath = path.resolve(__dirname, "../../lib/main." + (this._devMode ? "dev" : "prod") + ".js");
     const indexPath = path.resolve(__dirname, `../../lib/index.ejs`);
+    const polyfillsPath = path.resolve(__dirname, `../../lib/polyfills.js`);
 
     return {
       ...this._devMode ? {
@@ -633,7 +634,7 @@ export class SdPackageBuilder extends EventEmitter {
         },
         entry: {
           main: [
-            /*TODO: "eventsource-polyfill",*/
+            polyfillsPath,
             `webpack-hot-middleware/client?path=/${packageKey}/__webpack_hmr&timeout=20000&reload=true&overlay=true`,
             mainPath
           ]
@@ -673,7 +674,10 @@ export class SdPackageBuilder extends EventEmitter {
           ]
         },
         entry: {
-          main: [/*TODO: "eventsource-polyfill", */mainPath]
+          main: [
+            polyfillsPath,
+            mainPath
+          ]
         },
         resolve: {
           extensions: [".ts", ".js", ".json"],

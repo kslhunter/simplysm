@@ -49,10 +49,6 @@ export class SdSheetColumnControl {
   @SdInputValidate(Boolean)
   public useOrdering?: boolean;
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public borderRight?: boolean;
-
   @ContentChild("cell", {static: true})
   public cellTemplateRef?: TemplateRef<{ item: any; index: number }>;
 

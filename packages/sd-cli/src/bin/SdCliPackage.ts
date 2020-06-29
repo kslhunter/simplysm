@@ -321,7 +321,7 @@ export class SdCliPackage extends EventEmitter {
 
     // 프로젝트 생성
     if (!FsUtils.exists(cordovaProjectPath)) {
-      console.log(`CORDOVA 프로젝트 생성`);
+      this._logger.debug(`CORDOVA 프로젝트 생성`);
       await ProcessManager.spawnAsync(`${cordovaBinPath} create "${cordovaProjectPath}" "${config.appId}" "${config.appName}"`, {cwd: process.cwd()});
     }
 
@@ -330,13 +330,13 @@ export class SdCliPackage extends EventEmitter {
 
     // android 플랫폼
     if (platform === "android" && !FsUtils.exists(path.resolve(cordovaProjectPath, "platforms/android"))) {
-      console.log(`CORDOVA 플랫폼 생성: android`);
+      this._logger.debug(`CORDOVA 플랫폼 생성: android`);
       await ProcessManager.spawnAsync(`${cordovaBinPath} platform add android`, {cwd: cordovaProjectPath});
     }
 
     // browser 플랫폼
     if (platform === "browser" && !FsUtils.exists(path.resolve(cordovaProjectPath, "platforms/browser"))) {
-      console.log(`CORDOVA 플랫폼 생성: browser`);
+      this._logger.debug(`CORDOVA 플랫폼 생성: browser`);
       await ProcessManager.spawnAsync(`${cordovaBinPath} platform add browser`, {cwd: cordovaProjectPath});
     }
 
@@ -368,7 +368,7 @@ import android.webkit.WebSettings;`);
     if (config.plugins) {
       for (const plugin of config.plugins) {
         if (!prevPlugins.includes(plugin)) {
-          console.log(`CORDOVA 플러그인 설치  : ${plugin}`);
+          this._logger.debug(`CORDOVA 플러그인 설치  : ${plugin}`);
           await ProcessManager.spawnAsync(`${cordovaBinPath} plugin add ${plugin}`, {cwd: cordovaProjectPath});
         }
       }
