@@ -1,4 +1,13 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
+import {
+  ChangeDetectionStrategy, ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  HostBinding,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges
+} from "@angular/core";
 import {SdInputValidate} from "../commons/SdInputValidate";
 import {DateOnly, DateTime, Time} from "@simplysm/sd-core-common";
 import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
@@ -9,7 +18,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
   template: `
     <input *ngIf="!multiline"
            [value]="controlValue"
-           [attr.type]="controlType"
+           [type]="controlType"
            [attr.placeholder]="placeholder"
            [disabled]="disabled"
            [required]="required"
@@ -163,7 +172,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
     }
   `]
 })
-export class SdTextfieldControl {
+export class SdTextfieldControl implements OnChanges {
   @Input()
   @SdInputValidate({
     type: String,
@@ -245,7 +254,6 @@ export class SdTextfieldControl {
   @SdInputValidate(Function)
   public validatorFn?: (value: number | string | DateOnly | DateTime | Time | undefined) => string | void;
 
-
   @Input("input.style")
   @SdInputValidate(String)
   public inputStyle?: string;
@@ -254,26 +262,15 @@ export class SdTextfieldControl {
   @SdInputValidate(String)
   public inputClass?: string;
 
-  public get controlType(): string {
+  public controlType = "text";
+  public controlValue = "";
+
+  /*public get controlType(): string {
     return this.type === "number" ? "text" :
       this.type === "datetime" ? "datetime-local" :
         this.type === "datetime-sec" ? "datetime-local" :
           this.type === "time-sec" ? "time" :
             this.type;
-  }
-
-  public get controlStep(): number | string | undefined {
-    if (this.step !== undefined) {
-      return this.step;
-    }
-    else if (this.type === "datetime-sec") {
-      return 1;
-    }
-    else if (this.type === "time-sec") {
-      return 1;
-    }
-
-    return "any";
   }
 
   public get controlValue(): string {
@@ -311,6 +308,20 @@ export class SdTextfieldControl {
     else {
       throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
     }
+  }*/
+
+  public get controlStep(): number | string | undefined {
+    if (this.step !== undefined) {
+      return this.step;
+    }
+    else if (this.type === "datetime-sec") {
+      return 1;
+    }
+    else if (this.type === "time-sec") {
+      return 1;
+    }
+
+    return "any";
   }
 
   public get controlResize(): "vertical" | "horizontal" | "none" | undefined {
@@ -319,7 +330,58 @@ export class SdTextfieldControl {
         this.resize ? undefined : "none";
   }
 
-  public constructor(private readonly _sanitization: DomSanitizer) {
+  public constructor(private readonly _sanitization: DomSanitizer,
+                     private readonly _cdr: ChangeDetectorRef) {
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (Object.keys(changes).includes("type")) {
+      this.controlType = this.type === "number" ? "text" :
+        this.type === "datetime" ? "datetime-local" :
+          this.type === "datetime-sec" ? "datetime-local" :
+            this.type === "time-sec" ? "time" :
+              this.type;
+    }
+
+    if (Object.keys(changes).includes("value") || Object.keys(changes).includes("type")) {
+      if (this.value === undefined) {
+        this.controlValue = "";
+      }
+      else if (this.type === "number" && typeof this.value === "number") {
+        this.controlValue = this.value.toLocaleString(undefined, {maximumFractionDigits: 10});
+      }
+      else if (this.type === "datetime" && this.value instanceof DateTime) {
+        this.controlValue = this.value.toFormatString("yyyy-MM-ddTHH:mm");
+      }
+      else if (this.type === "datetime-sec" && this.value instanceof DateTime) {
+        this.controlValue = this.value.toFormatString("yyyy-MM-ddTHH:mm:ss");
+      }
+      else if (this.type === "year" && this.value instanceof DateOnly) {
+        this.controlValue = this.value.toFormatString("yyyy");
+      }
+      else if (this.type === "month" && this.value instanceof DateOnly) {
+        this.controlValue = this.value.toFormatString("yyyy-MM");
+      }
+      else if (this.type === "date" && this.value instanceof DateOnly) {
+        this.controlValue = this.value.toFormatString("yyyy-MM-dd");
+      }
+      else if (this.type === "time" && this.value instanceof DateOnly) {
+        this.controlValue = this.value.toFormatString("HH:mm");
+      }
+      else if (this.type === "time-sec" && this.value instanceof DateOnly) {
+        this.controlValue = this.value.toFormatString("HH:mm:ss");
+      }
+      else if (typeof this.value === "string") {
+        this.controlValue = this.value;
+      }
+
+      else {
+        throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
+      }
+    }
+
+    console.log(this.controlType, this.controlValue);
+    this._cdr.markForCheck();
   }
 
   public safeHtml(value?: string): SafeHtml | undefined {
