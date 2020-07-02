@@ -116,7 +116,7 @@ export async function SdEasyPayMiddleware(req: http.IncomingMessage, res: http.S
         const zip = await new JSZip().loadAsync(zipBinary);
         for (const zipContainsFileName of Object.keys(zip.files)) {
           const outputFilePath = path.resolve(cliDirPath, zipContainsFileName);
-          const zipFile = await zip.file(zipContainsFileName).async("nodebuffer");
+          const zipFile = await zip.file(zipContainsFileName)!.async("nodebuffer");
           fs.writeFileSync(outputFilePath, zipFile);
         }
       }
