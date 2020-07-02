@@ -54,7 +54,9 @@ export class SdBarcodeControl implements ISdNotifyPropertyChange {
       if (!canvasEl) return;
 
       if (this.type === "qrcode") {
-        await QRCode.toCanvas(canvasEl, this.value || "");
+        await QRCode.toCanvas(canvasEl, this.value || "", {
+          scale: this.lineWidth
+        });
       }
       else {
         window["JsBarcode"](
