@@ -186,16 +186,16 @@ export class SdExcelWorkbook {
     wb._zip = zip;
 
     // .rel
-    wb._relData = await XmlConvert.parseAsync(await zip.file("_rels/.rels").async("text"));
+    wb._relData = await XmlConvert.parseAsync(await zip.file("_rels/.rels")!.async("text"));
 
     // Workbook
-    wb.wbData = await XmlConvert.parseAsync(await zip.file("xl/workbook.xml").async("text"));
+    wb.wbData = await XmlConvert.parseAsync(await zip.file("xl/workbook.xml")!.async("text"));
 
     // ContentType
-    wb.contentTypeData = await XmlConvert.parseAsync(await zip.file("[Content_Types].xml").async("text"));
+    wb.contentTypeData = await XmlConvert.parseAsync(await zip.file("[Content_Types].xml")!.async("text"));
 
     // Workbook Rel
-    wb._wbRelData = await XmlConvert.parseAsync(await zip.file("xl/_rels/workbook.xml.rels").async("text"));
+    wb._wbRelData = await XmlConvert.parseAsync(await zip.file("xl/_rels/workbook.xml.rels")!.async("text"));
 
     // Worksheets
     const worksheets = wb.wbData.workbook.sheets[0].sheet.map((item: any) => ({
@@ -207,12 +207,12 @@ export class SdExcelWorkbook {
       const r = wb._wbRelData.Relationships.Relationship.single((item1: any) => item1.$.Id === item.rid);
       const id = Number(r.$.Target.match(/\/sheet(.*)\./)[1]);
 
-      const sheetData = await XmlConvert.parseAsync(await zip.file(`xl/${r.$.Target}`).async("text"));
+      const sheetData = await XmlConvert.parseAsync(await zip.file(`xl/${r.$.Target}`)!.async("text"));
       wb._worksheets[id] = new SdExcelWorksheet(wb, item.name, item.hidden, sheetData);
 
       // Drawing
       if (zip.file(`xl/worksheets/_rels/sheet${id}.xml.rels`)) {
-        const wsRelData = await XmlConvert.parseAsync(await zip.file(`xl/worksheets/_rels/sheet${id}.xml.rels`).async("text"));
+        const wsRelData = await XmlConvert.parseAsync(await zip.file(`xl/worksheets/_rels/sheet${id}.xml.rels`)!.async("text"));
         wb._worksheets[id].relData = wsRelData;
 
         const drawingRelationship = wsRelData.Relationships.Relationship.single((item1: any) => /drawing[0-9]/.test(item1.$.Target));
@@ -227,16 +227,16 @@ export class SdExcelWorkbook {
           }
 
           // drawing
-          wb._worksheets[id].drawingData = await XmlConvert.parseAsync(await zip.file(`xl/drawings/drawing1.xml`).async("text"));
+          wb._worksheets[id].drawingData = await XmlConvert.parseAsync(await zip.file(`xl/drawings/drawing1.xml`)!.async("text"));
         }
       }
     }
 
     // SharedStrings
-    wb.sstData = await XmlConvert.parseAsync(await zip.file("xl/sharedStrings.xml").async("text"));
+    wb.sstData = await XmlConvert.parseAsync(await zip.file("xl/sharedStrings.xml")!.async("text"));
 
     // Styles
-    wb.stylesData = await XmlConvert.parseAsync(await zip.file("xl/styles.xml").async("text"));
+    wb.stylesData = await XmlConvert.parseAsync(await zip.file("xl/styles.xml")!.async("text"));
 
     const mediaFiles = Object.keys(zip.files).map(key => zip.files[key]).filter(item => item.name.startsWith("xl/media"));
     for (const key of Object.keys(mediaFiles)) {
@@ -253,7 +253,7 @@ export class SdExcelWorkbook {
     if (!this.customFiles.some(item => item.name === fileName)) {
       this.customFiles.push({
         name: fileName,
-        data: await XmlConvert.parseAsync(await this._zip.file(fileName).async("text"))
+        data: await XmlConvert.parseAsync(await this._zip.file(fileName)!.async("text"))
       });
     }
 
