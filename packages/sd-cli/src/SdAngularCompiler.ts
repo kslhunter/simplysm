@@ -343,16 +343,18 @@ export class SdAngularCompiler extends events.EventEmitter {
       externals: [
         (context, request, callback) => {
           if (["fsevents", "fs", "fs-extra", "child_process", "net", "tls", "tedious", "chokidar", "nodemailer", "iconv"].includes(request)) {
-            callback(undefined, `{}`);
+            // tslint:disable-next-line: no-null-keyword
+            callback(null, `{}`);
             return;
           }
 
           if (request === "ws") {
-            callback(undefined, `WebSocket`);
+            // tslint:disable-next-line: no-null-keyword
+            callback(null, `WebSocket`);
             return;
           }
 
-          callback(undefined, undefined);
+          callback();
         }
       ]
     };
