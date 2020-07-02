@@ -1,6 +1,6 @@
 import * as cp from "child_process";
 import {Iconv} from "iconv";
-import {NeverEntryError, Wait} from "@simplysm/sd-core-common";
+import {NeverEntryError, SdError, Wait} from "@simplysm/sd-core-common";
 import * as os from "os";
 
 export class ProcessManager {
@@ -54,8 +54,7 @@ export class ProcessManager {
           }
         }
         catch (err) {
-          // eslint-disable-next-line no-console
-          console.log(data.toString());
+          reject(new SdError(err, data.toString()));
         }
 
         processing = false;
@@ -85,8 +84,7 @@ export class ProcessManager {
           }
         }
         catch (err) {
-          // eslint-disable-next-line no-console
-          console.log(data.toString());
+          reject(new SdError(err, data.toString()));
         }
 
         processing = false;
