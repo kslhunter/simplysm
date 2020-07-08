@@ -270,7 +270,7 @@ export class SdServiceServer extends EventEmitter {
     ]);
 
     const runMiddleware = (index: number): void => {
-      if (runners[index] !== undefined) return;
+      if (runners[index] === undefined) return;
 
       runners[index](webReq, webRes, err => {
         if (err !== undefined) {

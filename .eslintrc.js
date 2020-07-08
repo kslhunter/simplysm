@@ -116,6 +116,7 @@ module.exports = {
     "consistent-return": "off",
     "newline-per-chained-call": "off",
     "no-alert": "off",
+    "no-irregular-whitespace": ["error", {skipRegExps: true}]
 
     // "no-invalid-this": "off",
     // "no-sync": "off",

@@ -191,8 +191,6 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
 
         > ._dialog {
           pointer-events: none;
-          //right: var(--gap-lg);
-          //bottom: var(--gap-lg);
           opacity: 0;
           @include elevation(4);
 
@@ -206,6 +204,14 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
             pointer-events: auto;
             opacity: 1;
           }
+        }
+      }
+
+      &[sd-position="right-bottom"] {
+        > ._dialog {
+          position: absolute;
+          right: var(--gap-xxl);
+          bottom: var(--gap-xxl);
         }
       }
 
@@ -257,6 +263,14 @@ export class SdModalEntryControl implements OnInit {
   @Input("width.px")
   @SdInputValidate(Number)
   public widthPx?: number;
+
+  @Input()
+  @SdInputValidate({
+    type: String,
+    includes: ["right-bottom"]
+  })
+  @HostBinding("attr.sd-position")
+  public position?: "right-bottom";
 
   private readonly _el: HTMLElement;
   private _dialogEl!: HTMLElement;
