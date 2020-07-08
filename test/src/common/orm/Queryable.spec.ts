@@ -21,7 +21,6 @@ class TestTable {
 }
 
 class TestDbContext extends DbContext {
-
   public get schema(): { database: string; schema: string } {
     return {database: "TestDb", schema: "TestSchema"};
   }

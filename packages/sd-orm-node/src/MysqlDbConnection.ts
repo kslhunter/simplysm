@@ -20,7 +20,6 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
     super();
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async connectAsync(): Promise<void> {
     if (this.isConnected) {
       throw new Error("이미 'Connection'이 연결되어있습니다.");

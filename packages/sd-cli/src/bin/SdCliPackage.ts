@@ -137,7 +137,6 @@ export class SdCliPackage extends EventEmitter {
       options.target = target === "browser" ? "es5" : "es2017";
 
       if (targets.length > 1 && target !== "node") {
-
         const defaultDistPath = parsedTsConfig.options.outDir !== undefined ?
           path.resolve(parsedTsConfig.options.outDir) :
           path.resolve(this.info.rootPath, "dist");

@@ -1,8 +1,11 @@
 import * as sass from "node-sass";
 import * as path from "path";
 import * as webpack from "webpack";
+import {Logger} from "@simplysm/sd-core-node";
 
 function loader(this: webpack.loader.LoaderContext, content: string, sourceMap: any): void {
+  const logger = Logger.get(["simplysm", "sd-cli", "inline-sass-loader"]);
+
   if (this.cacheable !== undefined) {
     this.cacheable();
   }
@@ -23,8 +26,7 @@ function loader(this: webpack.loader.LoaderContext, content: string, sourceMap: 
           });
         }
         catch (err) {
-          // eslint-disable-next-line no-console
-          console.error(err, scssRegex.exec(match)![2]);
+          logger.error(err, scssRegex.exec(match)![2]);
           throw err;
         }
       });
@@ -42,8 +44,7 @@ function loader(this: webpack.loader.LoaderContext, content: string, sourceMap: 
   }
   catch (err) {
     this.callback(undefined, content, sourceMap);
-    // eslint-disable-next-line no-console
-    console.error(err);
+    logger.error(err);
   }
 }
 

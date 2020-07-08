@@ -50,7 +50,6 @@ export class Queryable<D extends DbContext, T> {
           useRefTypes: [this.db.constructor as Type<any>]
         });
         this._isCustomEntity = true;
-
       }
     }
     // 일반 생성

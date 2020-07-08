@@ -29,7 +29,6 @@ export class SdExcelCellStyle {
   }
 
   public set background(value: string) {
-
     if (!(/^[0-9A-F]{8}/).test(value.toUpperCase())) {
       throw new Error("색상 형식이 잘못되었습니다. (형식: FFFFFFFF: alpha+rgb)");
     }

@@ -1,6 +1,6 @@
 import {ApplicationRef, ErrorHandler, Injectable, NgModuleRef} from "@angular/core";
 
-@Injectable()
+@Injectable({providedIn: null})
 export class SdAngularGlobalErrorHandler implements ErrorHandler {
   public constructor(private readonly _ngModuleRef: NgModuleRef<any>) {
   }

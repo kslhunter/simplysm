@@ -5,7 +5,7 @@ import {NeverEntryError, Type} from "@simplysm/sd-core-common";
 import {SdRootProvider} from "../root-providers/SdRootProvider";
 import {SdSystemLogRootProvider} from "../root-providers/SdSystemLogRootProvider";
 
-@Injectable()
+@Injectable({providedIn: null})
 export class SdServiceFactoryProvider implements OnDestroy {
   public get clientObjMap(): { [key: string]: SdNgServiceClient | undefined } {
     this._root.data.service = this._root.data.service ?? {};

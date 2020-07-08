@@ -44,6 +44,7 @@ module.exports = {
       named: "never",
       asyncArrow: "always"
     }],
+    "padded-blocks": ["error", "never"],
 
     // ---------------------------------
     // warn
@@ -54,69 +55,76 @@ module.exports = {
     // ---------------------------------
     // off
     // ---------------------------------
-    "max-len": "off",
     "capitalized-comments": "off",
-    "init-declarations": "off",
-    "eol-last": "off",
-    "max-statements": "off",
-    "no-ternary": "off",
-    "padded-blocks": "off",
-    "no-negated-condition": "off",
-    "prefer-template": "off",
-    "sort-imports": "off",
-    "require-unicode-regexp": "off",
-    "prefer-named-capture-group": "off",
-    "max-lines-per-function": "off",
-    "complexity": "off",
-    "prefer-destructuring": "off",
-    "no-undefined": "off",
-    "no-nested-ternary": "off",
-    "multiline-ternary": "off",
-    "newline-per-chained-call": "off",
-    "sort-keys": "off",
-    "max-params": "off",
-    "line-comment-position": "off",
     "no-inline-comments": "off",
-    "id-length": "off",
-    "no-underscore-dangle": "off",
-    "no-loop-func": "off",
-    "no-await-in-loop": "off",
-    "max-lines": "off",
-    "func-names": "off",
-    "no-else-return": "off",
+    "line-comment-position": "off",
     "spaced-comment": "off",
-    "no-continue": "off",
-    "consistent-this": "off",
-    "no-invalid-this": "off",
-    "class-methods-use-this": "off",
-    "max-classes-per-file": "off",
-    "no-sync": "off",
-    "callback-return": "off",
-    "no-control-regex": "off",
-    "require-atomic-updates": "off",
-    "no-process-env": "off",
-    "no-process-exit": "off",
     "multiline-comment-style": "off",
     "lines-around-comment": "off",
-    "no-trailing-spaces": "off",
-    "no-lonely-if": "off",
+
+    "max-statements": "off",
+    "max-len": "off",
+    "max-lines-per-function": "off",
+    "max-params": "off",
+    "max-lines": "off",
+    "max-classes-per-file": "off",
     "max-depth": "off",
-    "no-async-promise-executor": "off",
-    "array-bracket-spacing": "off",
-    "no-magic-numbers": "off",
-    // "func-style": ["error", "expression"],
-    "func-style": "off",
+
+    "id-length": "off",
+
+    "no-ternary": "off",
+    "multiline-ternary": "off",
+    "no-nested-ternary": "off",
+
+    "eol-last": "off",
+    "init-declarations": "off",
+    "no-negated-condition": "off",
+    "no-underscore-dangle": "off",
+    "no-undefined": "off",
+    "sort-keys": "off",
+    "sort-imports": "off",
     "no-eq-null": "off",
-    "no-extend-native": "off",
-    "no-bitwise": "off",
-    "global-require": "off",
-    "arrow-body-style": "off",
     "no-empty": "off",
+    "prefer-destructuring": "off",
+    "prefer-template": "off",
+    "class-methods-use-this": "off",
+    "no-else-return": "off",
+    "no-trailing-spaces": "off",
+    "no-async-promise-executor": "off",
+    "require-unicode-regexp": "off",
+    "array-bracket-spacing": "off",
     "no-plusplus": "off",
-    "consistent-return": "off",
+    "no-lonely-if": "off",
+    "no-bitwise": "off",
+    "no-continue": "off",
+    "no-loop-func": "off",
+    "no-await-in-loop": "off",
+    "no-process-env": "off",
+    "no-process-exit": "off",
+    "no-extend-native": "off",
+    "prefer-named-capture-group": "off",
+    "complexity": "off",
+    "no-magic-numbers": "off",
+    "arrow-body-style": "off",
+    "accessor-pairs": "off",
+    "require-atomic-updates": "off",
+    "func-style": "off",
+    "func-names": "off",
+    "no-control-regex": "off",
+    "consistent-this": "off",
     "no-extra-boolean-cast": "off",
+    "consistent-return": "off",
+    "newline-per-chained-call": "off",
     "no-alert": "off",
-    "accessor-pairs": "off"
+
+    // "no-invalid-this": "off",
+    // "no-sync": "off",
+    // "callback-return": "off",
+    // "global-require": "off",
+
+    // ---------------------------------
+    // off
+    // ---------------------------------
   },
   overrides: [
     {
@@ -173,7 +181,7 @@ module.exports = {
         // ---------------------------------
         // warn
         // ---------------------------------
-        "@typescript-eslint/require-await": "warn",
+        // "@typescript-eslint/require-await": "warn",
         // "@typescript-eslint/no-unused-vars": ["warn", {args: "after-used"}],
         "@typescript-eslint/no-unused-vars": ["warn", {args: "none"}],
 
@@ -272,7 +280,8 @@ module.exports = {
             types: ["function"],
             format: ["camelCase", "PascalCase"]
           }
-        ]
+        ],
+        "@typescript-eslint/ban-ts-comment": "off"
       }
     }
   ]

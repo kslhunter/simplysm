@@ -4,7 +4,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 import {SdIconLayerControl} from "../controls/icons/SdIconLayerControl";
 import {SdInputValidate} from "./SdInputValidate";
 
-@Injectable()
+@Injectable({providedIn: null})
 export abstract class SdIconLayerTextBaseControlBase implements OnChanges {
   @Input()
   @SdInputValidate(String)

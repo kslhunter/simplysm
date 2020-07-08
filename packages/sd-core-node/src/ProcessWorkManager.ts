@@ -1,6 +1,9 @@
 import {SdProcessWorker} from "./SdProcessWorker";
+import {Logger} from "./Logger";
 
 export class ProcessWorkManager {
+  private readonly _logger = Logger.get(["simplysm", "sd-core-node", "ProcessWorkManager"]);
+
   public readonly workers: SdProcessWorker[] = [];
 
   public constructor(private readonly _binPath: string,
@@ -23,6 +26,7 @@ export class ProcessWorkManager {
   public async createWorkerAsync(): Promise<SdProcessWorker> {
     const worker = await SdProcessWorker.createAsync(this._binPath, [this._args]);
     this.workers.push(worker);
+    this._logger.debug(`WORKER 생성 완료 (총수량: ${this.workers.length})`);
     return worker;
   }
 

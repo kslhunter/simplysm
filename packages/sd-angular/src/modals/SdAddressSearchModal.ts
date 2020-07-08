@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment,no-undef */
-
 import {ChangeDetectionStrategy, Component, ElementRef} from "@angular/core";
 import {SdModalBase} from "../providers/SdModalProvider";
 

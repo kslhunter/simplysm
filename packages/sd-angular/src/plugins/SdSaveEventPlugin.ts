@@ -3,7 +3,7 @@ import {EventManager} from "@angular/platform-browser";
 import {NeverEntryError} from "@simplysm/sd-core-common";
 import {SdModalProvider} from "../providers/SdModalProvider";
 
-@Injectable()
+@Injectable({providedIn: null})
 export class SdSaveEventPlugin {
   public manager!: EventManager;
 

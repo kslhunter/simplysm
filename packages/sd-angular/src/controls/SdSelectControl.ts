@@ -406,7 +406,7 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
         while (true) {
           if (!cursorEl) break;
 
-          resultHTML = (cursorEl.findFirst("> ._content")?.innerHTML ?? "") + (Boolean(resultHTML) ? " / " + resultHTML : "");
+          resultHTML = (cursorEl.findFirst("> ._content")?.innerHTML ?? "") + (resultHTML ? " / " + resultHTML : "");
           cursorEl = cursorEl.findParent("._children")?.parentElement?.findFirst("sd-select-item");
         }
 

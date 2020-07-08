@@ -41,7 +41,6 @@ export class SdProjectConfigUtils {
       //오류 체크
       const pkgConfig = config.packages[packageName] as TSdPackageConfig;
       if (pkgConfig.type === "android") {
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
         if (!pkgConfig.appId || !pkgConfig.appName) {
           throw new Error("'android'빌드 설정에는 반드시, 'appId', 'appName'이/가 설정되어 있어야 합니다.");
         }

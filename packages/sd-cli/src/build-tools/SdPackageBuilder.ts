@@ -181,8 +181,10 @@ export class SdPackageBuilder extends EventEmitter {
           this.emit("change");
         });
 
-        let devMiddleware: NextHandleFunction | undefined; // eslint-disable-line prefer-const
-        let hotMiddleware: NextHandleFunction | undefined; // eslint-disable-line prefer-const
+        // eslint-disable-next-line prefer-const
+        let devMiddleware: NextHandleFunction | undefined;
+        // eslint-disable-next-line prefer-const
+        let hotMiddleware: NextHandleFunction | undefined;
 
         compiler.hooks.failed.tap("SdPackageBuilder", err => {
           this._emitWebpackResults(err);
@@ -1094,7 +1096,7 @@ export class SdPackageBuilder extends EventEmitter {
                                cb: (changedInfos: IFileChangeInfo[]) => Promise<ISdPackageBuildResult[]> | ISdPackageBuildResult[]): Promise<void> {
     const srcPath = this._getSrcPath();
 
-    const filePathAnyMatch = path.resolve(srcPath, "**", "*.ts");
+    const filePathAnyMatch = path.resolve(srcPath, "**", "+(*.ts|*.js)");
     const changedInfos = (await FsUtils.globAsync(filePathAnyMatch)).map(item => ({
       type: "add" as const,
       filePath: item

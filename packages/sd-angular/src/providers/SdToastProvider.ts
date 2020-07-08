@@ -4,7 +4,7 @@ import {SdToastEntryControl} from "../entry-controls/SdToastEntryControl";
 import {SdRootProvider} from "../root-providers/SdRootProvider";
 import {SdSystemLogRootProvider} from "../root-providers/SdSystemLogRootProvider";
 
-@Injectable()
+@Injectable({providedIn: null})
 export class SdToastProvider {
   public get containerRef(): ComponentRef<SdToastContainerEntryControl> {
     this._root.data.toast = this._root.data.toast ?? {};

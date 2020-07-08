@@ -1063,7 +1063,11 @@ export class SdSheetControl implements DoCheck, OnInit {
         this.selectedItemsChange.emit(this.selectedItems);
       }
       else {
-        this.selectedItems = [...this._getDisplayItemDefs().filter(item => item.selectable).map(item => item.item)];
+        this.selectedItems = [
+          ...this._getDisplayItemDefs()
+            .filter(item => item.selectable)
+            .map(item => item.item)
+        ];
         this.selectedItemsChange.emit(this.selectedItems);
       }
     }

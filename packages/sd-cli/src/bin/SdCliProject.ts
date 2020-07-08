@@ -113,12 +113,14 @@ export class SdCliProject {
                   .mapMany(item => item ?? [])
                   .filter(item => item.severity === "warning")
                   .map(item => item.message.trim() + "(" + item.command + ")")
-                  .distinct().join(os.EOL);
+                  .distinct()
+                  .join(os.EOL);
                 const errors = Object.values(lastResultsObj)
                   .mapMany(item => item ?? [])
                   .filter(item => item.severity === "error")
                   .map(item => item.message.trim() + "(" + item.command + ")")
-                  .distinct().join(os.EOL);
+                  .distinct()
+                  .join(os.EOL);
 
                 if (warnings.length > 0) {
                   this._logger.warn(`경고 발생${os.EOL}`, warnings);
@@ -519,5 +521,4 @@ export class SdCliProject {
     // const port = this._servers[pkg.info.config.server].server!.options.port ?? 80;
     // this._logger.info(`[${pkg.name}] 클라이언트가 준비되었습니다.: http://localhost:${port}/${path.basename(pkg.info.rootPath)}/`);
   }
-
 }

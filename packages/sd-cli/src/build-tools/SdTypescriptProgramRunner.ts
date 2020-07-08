@@ -289,30 +289,34 @@ export class SdTypescriptProgramRunner extends EventEmitter {
       return this._fileInfoMapObj[filePath].dependencies!;
     }
 
-    const result = this._getImportDeclarations(sourceFile).map(item => ({
-      isExport: false,
-      ...item
-    })).concat(
-      this._getExportDeclarations(sourceFile).map(item => ({
-        isExport: true,
+    const result = this._getImportDeclarations(sourceFile)
+      .map(item => ({
+        isExport: false,
         ...item
       }))
-    ).mapMany(item => {
-      if (excludes.includes(item.filePath)) {
-        return [];
-      }
+      .concat(
+        this._getExportDeclarations(sourceFile).map(item => ({
+          isExport: true,
+          ...item
+        }))
+      )
+      .mapMany(item => {
+        if (excludes.includes(item.filePath)) {
+          return [];
+        }
 
-      const targetSourceFile = this._fileInfoMapObj[item.filePath]?.sourceFile;
+        const targetSourceFile = this._fileInfoMapObj[item.filePath]?.sourceFile;
 
-      if (targetSourceFile) {
-        return item.targetNames.length > 0 ?
-          item.targetNames.mapMany(item1 => this._getImportChain(targetSourceFile, item1, excludes.concat([]))) :
-          this._getAllDependencies(targetSourceFile, excludes.concat([]));
-      }
-      else {
-        return [item.filePath];
-      }
-    }).distinct();
+        if (targetSourceFile) {
+          return item.targetNames.length > 0 ?
+            item.targetNames.mapMany(item1 => this._getImportChain(targetSourceFile, item1, excludes.concat([]))) :
+            this._getAllDependencies(targetSourceFile, excludes.concat([]));
+        }
+        else {
+          return [item.filePath];
+        }
+      })
+      .distinct();
 
     this._fileInfoMapObj[filePath].dependencies = result;
     return result;
@@ -451,7 +455,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
       if (sourceFile.fileName.endsWith(".d.ts") && !Boolean(path.extname(importFilePath))) {
         return path.resolve(importFilePath + ".d.ts");
       }
-      else if (!Boolean(path.extname(importFilePath))) {
+      else if (Boolean(path.extname(importFilePath))) {
         return path.resolve(importFilePath + path.extname(sourceFile.fileName));
       }
       else {
