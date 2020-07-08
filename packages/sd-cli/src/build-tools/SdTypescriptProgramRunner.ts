@@ -42,7 +42,8 @@ export class SdTypescriptProgramRunner extends EventEmitter {
   }
 
   public async runAsync(watch: boolean,
-                        logicFn: (changedInfos: IFileChangeInfo[]) => (Promise<ISdPackageBuildResult[]> | ISdPackageBuildResult[])): Promise<void> {
+                        logicFn: (changedInfos: IFileChangeInfo[]) => (Promise<ISdPackageBuildResult[]> | ISdPackageBuildResult[]),
+                        filePathsForReloadAll?: string[]): Promise<void> {
     // 타입스크립트 프로그램 정의
     this._reloadProgram();
 
@@ -70,6 +71,9 @@ export class SdTypescriptProgramRunner extends EventEmitter {
         watchFilePaths.remove(item => anymatch(anyMatchPath.replace(/\\/g, "/"), item.replace(/\\/g, "/")));
         watchFilePaths.insert(0, anyMatchPath);
       }
+      if (filePathsForReloadAll) {
+        watchFilePaths.push(...filePathsForReloadAll);
+      }
 
       // 의존성에 따른 파일 와치 구성
       const watcher = await FsWatcher.watchAsync(watchFilePaths, async changedInfos => {
@@ -80,7 +84,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
         for (const changedInfo of changedInfos) {
           newChangedInfos.push(changedInfo);
 
-          if (this._fileInfoMapObj[changedInfo.filePath]) {
+          if (this._fileInfoMapObj[changedInfo.filePath] !== undefined) {
             this._fileInfoMapObj[changedInfo.filePath].changed = true;
           }
 
@@ -103,10 +107,6 @@ export class SdTypescriptProgramRunner extends EventEmitter {
           }
         }
 
-        // 변경 이벤트 알림
-        newChangedInfos = newChangedInfos.distinct();
-        this.emit("change", newChangedInfos.map(item => item.filePath).distinct());
-
         // 새로 추가된 파일들 감지 목록에 추가
         let newWatchFilePaths = Object.keys(this._fileInfoMapObj)
           .concat(...Object.values(this._fileInfoMapObj).mapMany(v => v.scssDependencies));
@@ -127,9 +127,23 @@ export class SdTypescriptProgramRunner extends EventEmitter {
           watchFilePaths = watchFilePaths.concat(...newWatchFilePaths);
         }
 
-        // 로직 수행
-        const results1 = await logicFn(newChangedInfos);
-        this.emit("complete", results1);
+        if (changedInfos.some(item => filePathsForReloadAll?.includes(item.filePath))) {
+          // 변경 이벤트 알림
+          this.emit("change", watchFilePaths.distinct());
+
+          // 로직 수행
+          const results1 = await logicFn(watchFilePaths.map(item => ({filePath: item, type: "change"})));
+          this.emit("complete", results1);
+        }
+        else {
+          // 변경 이벤트 알림
+          newChangedInfos = newChangedInfos.distinct();
+          this.emit("change", newChangedInfos.map(item => item.filePath).distinct());
+
+          // 로직 수행
+          const results1 = await logicFn(newChangedInfos);
+          this.emit("complete", results1);
+        }
       }, err => {
         this._logger.error(err);
       });
@@ -166,14 +180,14 @@ export class SdTypescriptProgramRunner extends EventEmitter {
         const filePath = path.resolve(fileName);
 
         if (
-          this._fileInfoMapObj[filePath] &&
+          this._fileInfoMapObj[filePath] !== undefined &&
           !this._fileInfoMapObj[filePath].changed &&
           !this._fileInfoMapObj[filePath].changedByScss
         ) {
           return this._fileInfoMapObj[filePath].content;
         }
 
-        const orgContent = (this._fileInfoMapObj[filePath] && !this._fileInfoMapObj[filePath].changed) ?
+        const orgContent = (this._fileInfoMapObj[filePath] !== undefined && !this._fileInfoMapObj[filePath].changed) ?
           this._fileInfoMapObj[filePath].orgContent :
           prevReadFile(fileName);
 
@@ -222,8 +236,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
 
         try {
           if (
-            this._fileInfoMapObj[filePath] &&
-            this._fileInfoMapObj[filePath].sourceFile !== undefined &&
+            this._fileInfoMapObj[filePath]?.sourceFile !== undefined &&
             !this._fileInfoMapObj[filePath].changed &&
             !this._fileInfoMapObj[filePath].changedByScss
           ) {
@@ -311,8 +324,8 @@ export class SdTypescriptProgramRunner extends EventEmitter {
     const filePath = path.resolve(sourceFile.fileName);
 
     if (
-      this._fileInfoMapObj[filePath].importChain &&
-      this._fileInfoMapObj[filePath].importChain![targetName ?? "_"]
+      this._fileInfoMapObj[filePath].importChain !== undefined &&
+      this._fileInfoMapObj[filePath].importChain![targetName ?? "_"] !== undefined
     ) {
       result = this._fileInfoMapObj[filePath].importChain![targetName ?? "_"];
     }

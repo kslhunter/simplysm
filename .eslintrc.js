@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = {
   root: true,
   globals: {
@@ -35,10 +37,10 @@ module.exports = {
     "array-bracket-newline": ["error", "consistent"],
     "curly": ["error", "multi-line"],
     "indent": ["error", 2, {FunctionExpression: {parameters: "first"}, SwitchCase: 1}],
-    // "eqeqeq": ["error", "always", {null: "never"}],
-    "eqeqeq": "off",
+    "eqeqeq": ["error", "always", {null: "never"}],
+    // "eqeqeq": "off",
     "space-before-function-paren": ["error", {
-      anonymous: "always",
+      anonymous: "ignore",
       named: "never",
       asyncArrow: "always"
     }],
@@ -104,7 +106,7 @@ module.exports = {
     "no-magic-numbers": "off",
     // "func-style": ["error", "expression"],
     "func-style": "off",
-    // "no-eq-null": "off",
+    "no-eq-null": "off",
     "no-extend-native": "off",
     "no-bitwise": "off",
     "global-require": "off",
@@ -113,7 +115,8 @@ module.exports = {
     "no-plusplus": "off",
     "consistent-return": "off",
     "no-extra-boolean-cast": "off",
-    "no-alert": "off"
+    "no-alert": "off",
+    "accessor-pairs": "off"
   },
   overrides: [
     {
@@ -126,9 +129,13 @@ module.exports = {
       },
       plugins: [
         "@typescript-eslint",
-        "@typescript-eslint/tslint",
         "@simplysm"
       ],
+      settings: {
+        "import/parsers": {
+          "@typescript-eslint/parser": [".ts", ".tsx"]
+        }
+      },
       extends: [
         "plugin:import/typescript",
         "plugin:@typescript-eslint/all"
@@ -150,16 +157,18 @@ module.exports = {
           allowCallbacks: "always"
         }],
         "@typescript-eslint/space-before-function-paren": ["error", {
-          anonymous: "always",
+          anonymous: "ignore",
           named: "never",
           asyncArrow: "always"
         }],
         "@typescript-eslint/brace-style": ["error", "stroustrup"],
         "@typescript-eslint/no-extraneous-class": ["error", {allowStaticOnly: true, allowEmpty: true}],
-        "@typescript-eslint/strict-boolean-expressions": ["error", {allowNullable: true, allowSafe: true}],
+        "@typescript-eslint/strict-boolean-expressions": ["error", {allowNullableBoolean: true}],
         "@typescript-eslint/quotes": ["error", "double", {avoidEscape: true, allowTemplateLiterals: true}],
         "@typescript-eslint/no-misused-promises": ["error", {checksVoidReturn: false}],
         "@typescript-eslint/no-inferrable-types": ["error", {ignoreParameters: true}],
+        "@typescript-eslint/typedef": ["error", {arrowParameter: false, memberVariableDeclaration: false}],
+        "@typescript-eslint/explicit-module-boundary-types": ["error", {allowArgumentsExplicitlyTypedAsAny: true}],
 
         // ---------------------------------
         // warn
@@ -171,21 +180,21 @@ module.exports = {
         // ---------------------------------
         // off
         // ---------------------------------
-        "import/no-unresolved": "off",
+        // "import/no-unresolved": "off",
         "import/named": "off",
         "import/namespace": "off",
         "import/default": "off",
         "import/no-named-as-default-member": "off",
 
+        "@typescript-eslint/no-parameter-properties": "off",
+        "@typescript-eslint/indent": "off",
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/unified-signatures": "off",
         "@typescript-eslint/ban-types": "off",
         "@typescript-eslint/no-throw-literal": "off",
         "@typescript-eslint/no-magic-numbers": "off",
         "@typescript-eslint/no-extra-parens": "off",
-        "@typescript-eslint/typedef": "off",
         "@typescript-eslint/member-ordering": "off",
-        "@typescript-eslint/explicit-module-boundary-types": "off",
         "@typescript-eslint/unbound-method": "off",
         "@typescript-eslint/no-this-alias": "off",
         "@typescript-eslint/no-dynamic-delete": "off",
@@ -194,18 +203,14 @@ module.exports = {
         "@typescript-eslint/return-await": "off",
         "@typescript-eslint/no-non-null-assertion": "off",
         "@typescript-eslint/no-unused-vars-experimental": "off",
-        "@typescript-eslint/indent": "off",
         "@typescript-eslint/no-unnecessary-condition": "off",
         "@typescript-eslint/no-unsafe-member-access": "off",
         "@typescript-eslint/no-unsafe-call": "off",
         "@typescript-eslint/no-unsafe-return": "off",
         "@typescript-eslint/prefer-readonly-parameter-types": "off",
         "@typescript-eslint/no-require-imports": "off",
-        // "@typescript-eslint/no-parameter-properties": ["error", {allows: ["public readonly", "private readonly", "protected readonly"]}],
-        "@typescript-eslint/no-parameter-properties": "off",
         "@typescript-eslint/no-use-before-define": "off",
         "@typescript-eslint/no-var-requires": "off",
-        //"@typescript-eslint/restrict-template-expressions": ["error", {allowNumber: true}]
         "@typescript-eslint/restrict-template-expressions": "off",
         "@typescript-eslint/method-signature-style": "off",
         "@typescript-eslint/no-unsafe-assignment": "off",
@@ -218,8 +223,56 @@ module.exports = {
         "@typescript-eslint/no-invalid-this": "off",
 
         "@typescript-eslint/explicit-function-return-type": "off",
-
-        "@typescript-eslint/tslint/config": ["error", {"lintFile": "./tslint.json"}]
+        "@typescript-eslint/naming-convention": [
+          "error",
+          {
+            selector: "default",
+            format: ["camelCase"]
+          },
+          {
+            selector: "default",
+            modifiers: ["private"],
+            format: ["camelCase"],
+            leadingUnderscore: "require"
+          },
+          {
+            selector: "typeLike",
+            format: ["PascalCase"]
+          },
+          {
+            selector: "property",
+            format: ["camelCase", "UPPER_CASE", "PascalCase"],
+            leadingUnderscore: "allow"
+          },
+          {
+            selector: "property",
+            filter: {regex: "^\\[(.*)\\]$", match: true},
+            format: null
+          },
+          {
+            selector: "property",
+            filter: {regex: "^_{2}(.*)(_{2})?$", match: true},
+            format: null
+          },
+          {
+            selector: "property",
+            filter: {regex: "\\.", match: true},
+            format: null
+          },
+          {
+            selector: "function",
+            format: ["camelCase", "PascalCase"]
+          },
+          {
+            selector: "variable",
+            format: ["camelCase", "PascalCase"]
+          },
+          {
+            selector: "variable",
+            types: ["function"],
+            format: ["camelCase", "PascalCase"]
+          }
+        ]
       }
     }
   ]

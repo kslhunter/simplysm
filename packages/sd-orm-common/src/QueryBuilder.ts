@@ -532,7 +532,7 @@ DROP PROCEDURE \`mysql\`.${procName};`;
       q += "\n";
 
       // UPDATE
-      if (def.updateRecord && Object.keys(def.updateRecord).length > 0) {
+      if (def.updateRecord !== undefined && Object.keys(def.updateRecord).length > 0) {
         q += "WHEN MATCHED THEN\n";
         q += "  UPDATE SET\n";
         q += Object.keys(def.updateRecord).map(key => `    ${key} = ${this.getQueryOfQueryValue(def.updateRecord[key])}`).join(",\n");

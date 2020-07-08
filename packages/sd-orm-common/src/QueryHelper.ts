@@ -338,7 +338,7 @@ export class QueryHelper {
       if (selectDef.top !== 1) {
         throw new Error("하나의 필드를 추출하기 위한 내부쿼리에서는 반드시 TOP 1 이 지정 되야 합니다.");
       }
-      if (!selectDef.select || Object.keys(selectDef.select).length > 1) {
+      if (selectDef.select !== undefined || Object.keys(selectDef.select).length > 1) {
         throw new Error("하나의 필드를 추출하기 위한 내부쿼리에서는 반드시 하나의 컬럼만 SELECT 되야 합니다.");
       }
 
@@ -369,7 +369,7 @@ export class QueryHelper {
     });
   }
 
-  public type(type: Type<TQueryValue>): string {
+  public type(type: Type<TQueryValue> | undefined): string {
     switch (type) {
       case String:
         return "NVARCHAR(255)";
@@ -388,7 +388,7 @@ export class QueryHelper {
       case Buffer:
         return "VARBINARY(MAX)";
       default:
-        throw new TypeError(type ? type.name : "undefined");
+        throw new TypeError(type !== undefined ? type.name : "undefined");
     }
   }
 

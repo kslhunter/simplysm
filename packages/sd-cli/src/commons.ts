@@ -3,6 +3,10 @@ export interface ISdProjectConfig {
   localUpdates: { [p: string]: string } | undefined;
 }
 
+export interface ISdTestPackageConfig {
+  type: "test";
+}
+
 export interface ISdLibraryPackageConfig {
   type: "library";
   targets: ("node" | "browser")[];
@@ -43,6 +47,7 @@ export type TSdPackageConfig =
   ISdServerPackageConfig |
   ISdWebPackageConfig |
   ISdAndroidPackageConfig |
+  ISdTestPackageConfig |
   { type: "none" };
 
 export interface ISdPackageInfo {

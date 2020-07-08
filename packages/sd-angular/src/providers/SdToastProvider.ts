@@ -55,7 +55,7 @@ export class SdToastProvider {
     }
   }
 
-  public notify<T extends SdToastBase<any, any>>(toastType: Type<T>, param: T["_tParam"], onclose: (result: T["_tResult"] | undefined) => void | Promise<void>): void {
+  public notify<T extends SdToastBase<any, any>>(toastType: Type<T>, param: T["tParam"], onclose: (result: T["tResult"] | undefined) => void | Promise<void>): void {
     const compRef = this._cfr.resolveComponentFactory(toastType).create(this.containerRef.injector);
     const containerEl = this.containerRef.location.nativeElement as HTMLElement;
 
@@ -198,9 +198,9 @@ export interface ISdProgressToast {
 }
 
 export abstract class SdToastBase<P, R> {
-  public _tParam!: P;
+  public tParam!: P;
 
-  public _tResult!: R;
+  public tResult!: R;
 
   public abstract sdOnOpen(param: P): Promise<void>;
 

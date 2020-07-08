@@ -294,7 +294,7 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
     return this.required === true && this._value === undefined;
   }
 
-  public trackByItemFn = (index: number, item: any) => {
+  public trackByItemFn = (index: number, item: any): any => {
     if (this.trackByFn) {
       return this.trackByFn(index, item) ?? item;
     }

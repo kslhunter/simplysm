@@ -73,7 +73,7 @@ export class JsonConvert {
 
   public static parse(json: string): any {
     return JSON.parse(json, (key, value) => {
-      if (value == undefined) {
+      if (value == null) {
         return undefined;
       }
       else if (typeof value === "object" && value.__type__ === "Date") {

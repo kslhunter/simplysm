@@ -3,7 +3,6 @@ import {ObjectUtils} from "../utils/ObjectUtils";
 import {NeverEntryError} from "../errors/NeverEntryError";
 
 declare global {
-  // tslint:disable-next-line:interface-name
   interface Array<T> {
     single(predicate?: (item: T, index: number) => boolean): T | undefined;
 

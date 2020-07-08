@@ -7,6 +7,17 @@ import * as os from "os";
 import * as rimraf from "rimraf";
 
 export class FsUtils {
+  public static getParentPaths(currentPath: string): string[] {
+    const result: string[] = [];
+    let curr = currentPath;
+    while (curr !== path.resolve(curr, "..")) {
+      curr = path.resolve(curr, "..");
+      result.push(curr);
+    }
+
+    return result;
+  }
+
   public static async getMd5Async(filePath: string): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       const hash = crypto.createHash("md5").setEncoding("hex");
@@ -83,7 +94,7 @@ export class FsUtils {
     try {
       await new Promise((resolve, reject) => {
         rimraf(targetPath, err => {
-          if (err) {
+          if (err != null) {
             reject(err);
             return;
           }

@@ -22,7 +22,7 @@ export function SdInputValidate(def: TValidateDef<any>): (target: any, propertyN
       return Number(v);
     }
 
-    if (v == undefined) {
+    if (v == null) {
       return undefined;
     }
 

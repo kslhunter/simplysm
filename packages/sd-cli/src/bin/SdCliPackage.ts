@@ -43,33 +43,34 @@ export class SdCliPackage extends EventEmitter {
         config: tsConfig
       };
 
-      if (config) {
-        let targets: ("browser" | "node")[] | undefined;
-        if (config.type === "library") {
-          targets = config.targets;
-        }
-        else if (config.type === "server") {
-          targets = ["node"];
-        }
-        else {
-          targets = ["browser"];
-        }
-
-        if (targets) {
-          await targets.parallelAsync(async target => {
-            const tsConfigForBuildPath = path.resolve(rootPath, `tsconfig-${target}.build.json`);
-
-            info.tsConfigForBuild = info.tsConfigForBuild ?? {};
-            info.tsConfigForBuild[target] = {
-              filePath: tsConfigForBuildPath
-            };
-
-            if (FsUtils.exists(tsConfigForBuildPath)) {
-              info.tsConfigForBuild[target]!.config = await FsUtils.readJsonAsync(tsConfigForBuildPath);
-            }
-          });
-        }
+      let targets: ("browser" | "node")[];
+      if (config?.type === "library") {
+        targets = config.targets;
       }
+      else if (config?.type === "server") {
+        targets = ["node"];
+      }
+      else if (config) {
+        targets = ["browser"];
+      }
+      else {
+        targets = ["node", "browser"];
+      }
+
+      await targets.parallelAsync(async target => {
+        const tsConfigForBuildPath = FsUtils.exists(path.resolve(rootPath, `tsconfig-${target}.json`)) ?
+          path.resolve(rootPath, `tsconfig-${target}.json`) :
+          path.resolve(rootPath, `tsconfig-${target}.build.json`);
+
+        info.tsConfigForBuild = info.tsConfigForBuild ?? {};
+        info.tsConfigForBuild[target] = {
+          filePath: tsConfigForBuildPath
+        };
+
+        if (FsUtils.exists(tsConfigForBuildPath)) {
+          info.tsConfigForBuild[target]!.config = await FsUtils.readJsonAsync(tsConfigForBuildPath);
+        }
+      });
     }
 
     info.npmConfig = npmConfig;
@@ -114,13 +115,12 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async createTsBuildConfigAsync(): Promise<void> {
-    // if (!this._info.config) return;
     if (!this.info.tsConfigForBuild) return;
+    if (this.info.config?.type === "test") return;
 
     const targets: ("node" | "browser")[] = Object.keys(this.info.tsConfigForBuild) as ("node" | "browser")[];
 
     if (!this.info.tsConfig) return;
-    if (!this.info.tsConfigForBuild) return;
     const parsedTsConfig = ts.parseJsonConfigFileContent(this.info.tsConfig.config, ts.sys, this.info.rootPath);
 
     await targets.parallelAsync(async target => {
@@ -168,8 +168,6 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async genIndexAsync(watch: boolean, processManager: ProcessWorkManager): Promise<void> {
-    if (this.info.config?.type === undefined || this.info.config.type === "none") return;
-
     if (this.info.config?.type !== "library") return;
     if (this.info.npmConfig?.main === undefined) return;
 
@@ -180,7 +178,7 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async lintAsync(watch: boolean, processManager: ProcessWorkManager): Promise<void> {
-    // if (this.info.config?.type === undefined || this.info.config.type === "none") return;
+    if (this.info.config?.type === undefined || this.info.config.type === "none") return;
 
     const targets = this.info.tsConfigForBuild ? Object.keys(this.info.tsConfigForBuild) : undefined;
     const target = targets === undefined ? undefined :
@@ -202,7 +200,7 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async compileAsync(watch: boolean, processManager: ProcessWorkManager): Promise<void | NextHandleFunction[]> {
-    if (this.info.config?.type === undefined || this.info.config.type === "none") return;
+    if (this.info.config?.type === undefined || this.info.config.type === "none" || this.info.config.type === "test") return;
 
     if (this.info.config?.type === "library") {
       const targets = this.info.tsConfigForBuild ? Object.keys(this.info.tsConfigForBuild) : undefined;
@@ -236,7 +234,7 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async genNgAsync(watch: boolean, processManager: ProcessWorkManager): Promise<void> {
-    if (this.info.config?.type === undefined || this.info.config.type === "none") return;
+    if (this.info.config?.type === undefined || this.info.config.type === "none" || this.info.config.type === "test") return;
 
     if (!this.isAngular) return;
 
@@ -249,7 +247,7 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async publishAsync(): Promise<void> {
-    if (this.info.config?.type === undefined || this.info.config.type === "none") return;
+    if (this.info.config?.type === undefined || this.info.config.type === "none" || this.info.config.type === "test") return;
 
     if (this.info.config?.type === "library" && this.info.config.publish === "npm") {
       await ProcessManager.spawnAsync(

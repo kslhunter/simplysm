@@ -6,14 +6,14 @@ export abstract class SdMetadataBase {
 }
 
 export const isMetadataObjectExpression = function (metadata: MetadataEntry): metadata is MetadataObject {
-  return metadata != undefined &&
+  return metadata != null &&
     metadata["__symbolic"] === undefined &&
     !(metadata instanceof Array) &&
     typeof metadata === "object";
 };
 
 export const isMetadataArrayExpression = function (metadata: MetadataEntry): metadata is MetadataArray & MetadataEntry[] {
-  return metadata != undefined && metadata instanceof Array;
+  return metadata != null && metadata instanceof Array;
 };
 
 export type TSdMetadata = SdMetadataBase | string | number | boolean | undefined;

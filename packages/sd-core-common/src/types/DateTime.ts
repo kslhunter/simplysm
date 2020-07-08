@@ -30,7 +30,7 @@ export class DateTime {
     }
 
     const match1 = (/^([0-9]{4})-([0-9]{2})-([0-9]{2}) (오전|오후) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/).exec(str);
-    if (match1 != undefined) {
+    if (match1 != null) {
       return new DateTime(
         Number(match1[1]),
         Number(match1[2]),
@@ -42,7 +42,7 @@ export class DateTime {
     }
 
     const match2 = (/^[0-9]{14}$/).exec(str);
-    if (match2 != undefined) {
+    if (match2 != null) {
       return new DateTime(
         Number(str.substr(0, 4)),
         Number(str.substr(4, 2)),
@@ -54,7 +54,7 @@ export class DateTime {
     }
 
     const match3 = (/^([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})(\.([0-9]{3}))?$/).exec(str);
-    if (match3 != undefined) {
+    if (match3 != null) {
       return new DateTime(
         Number(match3[1]),
         Number(match3[2]),

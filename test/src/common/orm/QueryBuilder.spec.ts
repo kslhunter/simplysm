@@ -177,7 +177,8 @@ WHERE ([TBL].[id] = (
             {
               from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1]",
               as: "[TBL2]",
-              where: [["[TBL2].[id]", " = ", "3"]]
+              where: [["[TBL2].[id]", " = ", "3"]],
+              isCustomSelect: false
             }
           ]
         })
@@ -200,7 +201,8 @@ LEFT OUTER JOIN [TEST_DB].[TEST_SCHEMA].[TEST_TABLE_1] as [TBL2] ON ([TBL2].[id]
               select: {
                 "[id2]": "[TBL2].[id]"
               },
-              top: 1
+              top: 1,
+              isCustomSelect: true
             }
           ]
         })
@@ -282,7 +284,8 @@ FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL];`.trim());
             {
               from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
               as: "[TBL2]",
-              where: ["[TBL2].[id]", " = ", "[TBL].[id]"]
+              where: ["[TBL2].[id]", " = ", "[TBL].[id]"],
+              isCustomSelect: false
             }
           ]
         })
@@ -377,7 +380,8 @@ FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL];`.trim());
             {
               from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
               as: "[TBL2]",
-              where: ["[TBL2].[id]", " = ", "[TBL].[id]"]
+              where: ["[TBL2].[id]", " = ", "[TBL].[id]"],
+              isCustomSelect: false
             }
           ]
         })

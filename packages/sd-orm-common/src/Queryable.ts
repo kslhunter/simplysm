@@ -60,7 +60,7 @@ export class Queryable<D extends DbContext, T> {
 
       // Init TABLE Definition
       const tableDef = DbDefinitionUtils.getTableDef(this.tableType);
-      if (!tableDef) {
+      if (tableDef === undefined) {
         throw new Error(`'${this.tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
       }
       this._tableDef = tableDef;
@@ -92,7 +92,7 @@ export class Queryable<D extends DbContext, T> {
 
         // Init TABLE Definition
         const tableDef = DbDefinitionUtils.getTableDef(this.tableType);
-        if (!tableDef) {
+        if (tableDef === undefined) {
           throw new Error(`'${this.tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
         }
         this._tableDef = tableDef;
@@ -452,7 +452,7 @@ export class Queryable<D extends DbContext, T> {
 
     const addSelectValue = (key: string, value: QueryUnit<any> | TEntity<any> | TEntity<any>[]): void => {
       if (SdOrmUtils.canConvertToQueryValue(value)) {
-        if (!result.select) throw new NeverEntryError();
+        if (result.select === undefined) throw new NeverEntryError();
         result.select[`${this.db.qb.wrap(key)}`] = this.db.qh.getQueryValue(value);
       }
       else if (value instanceof Array) {
@@ -747,7 +747,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public async resultAsync(): Promise<T[]> {
-    if (!this.db) {
+    if (this.db === undefined) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
 
@@ -809,7 +809,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public async insertAsync(...records: TInsertObject<T>[]): Promise<T[]> {
-    if (!this.db) {
+    if (this.db === undefined) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     DbContext.selectCache.clear();
@@ -907,7 +907,7 @@ export class Queryable<D extends DbContext, T> {
       return;
     }
 
-    if (!this.db) {
+    if (this.db === undefined) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
 
@@ -971,7 +971,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public async updateAsync(arg: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>)): Promise<T[]> {
-    if (!this.db) {
+    if (this.db === undefined) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
@@ -1020,7 +1020,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public updatePrepare(arg: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>)): void {
-    if (!this.db) {
+    if (this.db === undefined) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
@@ -1036,7 +1036,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public async deleteAsync(): Promise<T[]> {
-    if (!this.db) {
+    if (this.db === undefined) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
@@ -1075,7 +1075,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public deletePrepare(): void {
-    if (!this.db) {
+    if (this.db === undefined) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
@@ -1086,7 +1086,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public async upsertAsync(updateObjOrFwd: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>), insertObj?: TInsertObject<T>): Promise<T[]> {
-    if (!this.db) {
+    if (this.db === undefined) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
@@ -1164,7 +1164,7 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public upsertPrepare(updateObjOrFwd: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>), insertObj?: TInsertObject<T>): void {
-    if (!this.db) {
+    if (this.db === undefined) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
@@ -1227,7 +1227,7 @@ export class Queryable<D extends DbContext, T> {
     curr[last] = value;
   }
 
-  public _getEntityChainValue(obj: any, chain: string, optional?: boolean): any {
+  private _getEntityChainValue(obj: any, chain: string, optional?: boolean): any {
     if (chain === "") return obj;
     const split = chain.split(".");
     let result = obj;

@@ -106,7 +106,7 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
 
     await new Promise<void>((resolve, reject) => {
       conn.commit(err => {
-        if (err) {
+        if (err != null) {
           reject(new Error(err.message));
           return;
         }
@@ -127,7 +127,7 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
 
     await new Promise<void>((resolve, reject) => {
       conn.rollback(err => {
-        if (err) {
+        if (err != null) {
           reject(new Error(err.message));
           return;
         }

@@ -95,7 +95,7 @@ export class SdNgServiceClient {
   }
 
   public async sendCommandAsync(command: string, params: any[]): Promise<any> {
-    let currToast: ISdProgressToast;
+    let currToast: ISdProgressToast | undefined;
 
     return await this.client.sendAsync(command, params, {
       progressCallback: progress => {
@@ -105,7 +105,7 @@ export class SdNgServiceClient {
         const percent = progress.current * 100 / progress.total;
         const message = `전송 : ${currentText} / ${totalText} (${Math.ceil(percent)}%)`;
 
-        if (!currToast) {
+        if (currToast === undefined) {
           currToast = this._toast.info(message, true);
           currToast.progress(percent);
         }

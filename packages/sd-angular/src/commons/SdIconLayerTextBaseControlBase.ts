@@ -39,7 +39,7 @@ export abstract class SdIconLayerTextBaseControlBase implements OnChanges {
   public ngOnChanges(changes: SimpleChanges): void {
     if (Object.keys(changes).length > 0) {
       this.updateParams();
-      this.updateContent();
+      this._updateContent();
     }
   }
 
@@ -47,7 +47,7 @@ export abstract class SdIconLayerTextBaseControlBase implements OnChanges {
 
   protected abstract renderFontawesomeObject(content: string | number, params?: TextParams): FontawesomeObject;
 
-  private updateContent(): void {
+  private _updateContent(): void {
     this.renderedHTML = this._sanitizer.bypassSecurityTrustHtml(
       this.renderFontawesomeObject(this.content ?? "", this.params).html.join("\n")
     );

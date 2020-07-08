@@ -399,7 +399,7 @@ export class SdCliProject {
 
   private async _upgradeVersionAsync(prerelease: boolean): Promise<void> {
     const newVersion = semver.inc(this._npmConfig.version, prerelease ? "prerelease" : "patch");
-    if (newVersion == undefined) throw new NeverEntryError();
+    if (newVersion == null) throw new NeverEntryError();
     this._npmConfig.version = newVersion;
 
     const dependencyNames = this._packages.map(item => item.name);
@@ -476,7 +476,7 @@ export class SdCliProject {
         return;
       }
 
-      if (!server.on) {
+      if (server.on === undefined) {
         throw new NeverEntryError();
       }
 

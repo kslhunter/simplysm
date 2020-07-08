@@ -380,7 +380,6 @@ export class SdTextfieldControl implements OnChanges {
       }
     }
 
-    console.log(this.controlType, this.controlValue);
     this._cdr.markForCheck();
   }
 

@@ -112,13 +112,13 @@ import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
 export class SdTopbarControl implements OnInit {
   @HostBinding("attr.sd-size")
   public get size(): "sm" | "lg" | undefined {
-    return this.topbarContainerControl.size;
+    return this._topbarContainerControl.size;
   }
 
   public readonly sidebarContainerControl?: SdSidebarContainerControl;
 
   public constructor(@Inject(forwardRef(() => SdTopbarContainerControl))
-                     private readonly topbarContainerControl: SdTopbarContainerControl,
+                     private readonly _topbarContainerControl: SdTopbarContainerControl,
                      private readonly _injector: Injector,
                      private readonly _elRef: ElementRef) {
     this.sidebarContainerControl = this._injector.get<SdSidebarContainerControl | null>(SdSidebarContainerControl, null) ?? undefined;
@@ -129,6 +129,6 @@ export class SdTopbarControl implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.topbarContainerControl.paddingTopPx = this._elRef.nativeElement.offsetHeight;
+    this._topbarContainerControl.paddingTopPx = this._elRef.nativeElement.offsetHeight;
   }
 }

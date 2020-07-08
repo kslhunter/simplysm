@@ -275,7 +275,7 @@ export class SdModalEntryControl implements OnInit {
       this._dialogEl.addEventListener("resize", event => {
         if (event.prevHeight !== event.newHeight) {
           const style = getComputedStyle(this._el);
-          if (style.paddingTop != undefined) {
+          if (style.paddingTop != null) {
             const paddingTopMatch = (/(\d*)/).exec(style.paddingTop);
             if (!paddingTopMatch || paddingTopMatch[1] === undefined) throw new NeverEntryError();
             const paddingTop = (Number.parseInt(paddingTopMatch[1], 10) ?? 0);

@@ -67,7 +67,7 @@ export class SdOrmUtils {
     let result: any[] = orgResults.map(item => {
       const obj: any = {};
       for (const key of Object.keys(item)) {
-        if (item[key] == undefined) {
+        if (item[key] == null) {
         }
         else if (option?.columns?.[key]?.dataType === "DateTime") {
           obj[key] = DateTime.parse(item[key]);

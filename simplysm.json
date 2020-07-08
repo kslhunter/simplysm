@@ -98,6 +98,9 @@
         "@simplysm/sd-core-browser"
       ],
       "publish": "npm"
+    },
+    "@simplysm/test": {
+      "type": "test"
     }
   }
 }

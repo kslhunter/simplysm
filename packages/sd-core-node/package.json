@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-core-node",
-  "version": "3.4.82",
+  "version": "3.5.1-25",
   "description": "심플리즘 패키지 - 코어 모듈 (node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -9,14 +9,14 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-common": "3.4.82",
+    "@simplysm/sd-core-common": "3.5.1-25",
     "anymatch": "^3.1.1",
     "glob": "^7.1.6",
     "iconv": "^3.0.0",
     "rimraf": "^3.0.2"
   },
   "devDependencies": {
-    "@simplysm-types/iconv": "3.4.82",
+    "@simplysm-types/iconv": "3.5.1-25",
     "@types/glob": "^7.1.2",
     "@types/rimraf": "^3.0.0"
   }

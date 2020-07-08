@@ -59,7 +59,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
 
     await new Promise<void>((resolve, reject) => {
       conn.on("connect", err => {
-        if (err) {
+        if (err != null) {
           reject(new Error(err.message));
           return;
         }
@@ -132,7 +132,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
 
     await new Promise<void>((resolve, reject) => {
       conn.commitTransaction(err => {
-        if (err) {
+        if (err != null) {
           reject(new Error(err.message));
           return;
         }
@@ -153,7 +153,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
 
     await new Promise<void>((resolve, reject) => {
       conn.rollbackTransaction(err => {
-        if (err) {
+        if (err != null) {
           reject(new Error(err.message));
           return;
         }
@@ -179,7 +179,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         let rejected = false;
         const queryRequest = new tedious
           .Request(queryString, err => {
-            if (err) {
+            if (err != null) {
               rejected = true;
               this._requests.remove(queryRequest);
 

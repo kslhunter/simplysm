@@ -7,7 +7,7 @@ import {EventEmitter} from "events";
 import * as os from "os";
 import anymatch from "anymatch";
 import {isMetadataError, MetadataCollector} from "@angular/compiler-cli";
-import {CLIEngine} from "eslint";
+import {ESLint} from "eslint";
 import {SdNgGenerator} from "./SdNgGenerator";
 import * as webpack from "webpack";
 import {SdWebpackWriteFilePlugin} from "./SdWebpackWriteFilePlugin";
@@ -126,7 +126,16 @@ export class SdPackageBuilder extends EventEmitter {
       await this._runProgramAsync(watch, this._checkAsync.bind(this));
     }
     else if (this._command === "lint") {
-      await this._runProgramAsync(watch, this._lint.bind(this));
+      const tsConfigPath = this._getTsConfigPath();
+      if (tsConfigPath === undefined) {
+        await this._runFilesAsync(watch, this._lintAsync.bind(this));
+      }
+      else {
+        await this._runProgramAsync(watch, this._lintAsync.bind(this), [
+          path.resolve(this._info.rootPath, ".eslintrc.js"),
+          ...FsUtils.getParentPaths(this._info.rootPath).map(item => path.resolve(item, ".eslintrc.js"))
+        ]);
+      }
     }
     else if (this._command === "compile") {
       if (this._info.config?.type === "library") {
@@ -147,17 +156,13 @@ export class SdPackageBuilder extends EventEmitter {
     }
   }
 
-  private async _runProgramAsync(watch: boolean, cb: (changedInfos: IFileChangeInfo[]) => Promise<ISdPackageBuildResult[]> | ISdPackageBuildResult[]): Promise<void> {
-    const tsConfigPath = this._getTsConfigPath();
-    if (tsConfigPath === undefined) {
-      await this._runFilesAsync(watch, this._lint.bind(this));
-    }
-    else {
-      await this._getRunner()
-        .on("change", filePaths => this.emit("change", filePaths))
-        .on("complete", results => this.emit("complete", results))
-        .runAsync(watch, cb);
-    }
+  private async _runProgramAsync(watch: boolean,
+                                 cb: (changedInfos: IFileChangeInfo[]) => Promise<ISdPackageBuildResult[]> | ISdPackageBuildResult[],
+                                 filePathsForReloadAll?: string[]): Promise<void> {
+    await this._getRunner()
+      .on("change", filePaths => this.emit("change", filePaths))
+      .on("complete", results => this.emit("complete", results))
+      .runAsync(watch, cb, filePathsForReloadAll);
   }
 
   public async runClientCompileAsync(watch: boolean): Promise<void | NextHandleFunction[]> {
@@ -212,13 +217,13 @@ export class SdPackageBuilder extends EventEmitter {
 
         compiler.run((err, stats) => {
           this._emitWebpackResults(err, stats);
-          if (err) {
+          if (err != null) {
             reject(err);
+            return;
           }
-          else {
-            this._logger.debug("컴파일 완료");
-            resolve();
-          }
+
+          this._logger.debug("컴파일 완료");
+          resolve();
         });
       }
     });
@@ -399,7 +404,7 @@ export class SdPackageBuilder extends EventEmitter {
               results.push(...this._convertDiagnosticsToResults([
                 {
                   file: sourceFile,
-                  start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
+                  start: tsNode.parent != null ? tsNode.getStart() : tsNode.pos,
                   messageText: value.message,
                   category: ts.DiagnosticCategory.Error,
                   code: -5,
@@ -553,26 +558,36 @@ export class SdPackageBuilder extends EventEmitter {
     return results.distinct();
   }
 
-  private _lint(changedInfos: IFileChangeInfo[]): ISdPackageBuildResult[] {
+  private async _lintAsync(changedInfos: IFileChangeInfo[]): Promise<ISdPackageBuildResult[]> {
     this._logger.debug("규칙체크 시작...");
 
     const srcPath = this._getSrcPath();
 
     const lintConfig = this._target !== undefined && this._info.tsConfigForBuild?.[this._target] !== undefined ?
       {
-        parserOptions: {
-          tsconfigRootDir: this._info.rootPath,
-          project: path.basename(this._info.tsConfigForBuild[this._target]!.filePath)
-        }
+        overrides: [
+          {
+            files: [".ts"],
+            parserOptions: {
+              project: path.basename(this._getTsConfigPath()!),
+              tsconfigRootDir: this._info.rootPath,
+              createDefaultProgram: false
+            },
+            settings: {
+              "import/resolver": {
+                typescript: {
+                  directory: this._getTsConfigPath()
+                }
+              }
+            }
+          }
+        ]
       } :
       {};
 
-    /*const lintEngine = new CLIEngine({
-      cache: true,
-      cacheFile: path.resolve(this._info.rootPath, ".eslintcache"),
-      ...lintConfig
-    });*/
-    const lintEngine = new CLIEngine(lintConfig);
+    const eslint = new ESLint({
+      baseConfig: lintConfig
+    });
 
     const anymatchPath = path.resolve(srcPath, "**", "+(*.ts|*.js)");
     const filePaths = changedInfos
@@ -583,7 +598,7 @@ export class SdPackageBuilder extends EventEmitter {
     let results: ISdPackageBuildResult[];
 
     try {
-      const reports = lintEngine.executeOnFiles(filePaths).results;
+      const reports = await eslint.lintFiles(filePaths);
 
       results = reports.mapMany(report => report.messages.map(msg => {
         const severity: "warning" | "error" = msg.severity === 1 ? "warning" : "error";
@@ -1019,7 +1034,7 @@ export class SdPackageBuilder extends EventEmitter {
   }
 
   private _emitWebpackResults(err?: Error, stats?: webpack.Stats): void {
-    if (err != undefined) {
+    if (err != null) {
       this.emit("complete", [{
         filePath: undefined,
         severity: "error" as const,
@@ -1027,7 +1042,7 @@ export class SdPackageBuilder extends EventEmitter {
       }]);
       return;
     }
-    if (stats == undefined) {
+    if (stats == null) {
       throw new NeverEntryError();
     }
 

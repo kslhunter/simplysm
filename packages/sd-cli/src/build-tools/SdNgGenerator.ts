@@ -83,7 +83,7 @@ export class SdNgGenerator {
               if (isMetadataError(value)) {
                 diagnostics.push({
                   file: sourceFile,
-                  start: tsNode.parent ? tsNode.getStart() : tsNode.pos,
+                  start: tsNode.parent != null ? tsNode.getStart() : tsNode.pos,
                   messageText: value.message,
                   category: ts.DiagnosticCategory.Error,
                   code: -2,

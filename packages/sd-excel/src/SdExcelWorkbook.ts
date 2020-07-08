@@ -262,7 +262,7 @@ export class SdExcelWorkbook {
     }
     else {
       const ws = this._worksheets[arg + 1];
-      if (!ws) {
+      if (ws === undefined) {
         throw new Error(`시트[${arg}]가 존재하지 않습니다.`);
       }
       return ws;

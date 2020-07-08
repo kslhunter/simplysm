@@ -1,5 +1,3 @@
-// tslint:disable:variable-name
-
 import {PropertyGetSetDecoratorBase} from "@simplysm/sd-core-common";
 import * as sinon from "sinon";
 import {expect} from "chai";
@@ -15,7 +13,7 @@ describe("(common) core.decorators.PropertyGetSetDecoratorBase", () => {
       })
     };
 
-    const TestPropertyDecorator: Function = () => PropertyGetSetDecoratorBase(testDecoratorArg);
+    const TestPropertyDecorator = () => PropertyGetSetDecoratorBase(testDecoratorArg);
 
     class TestClass {
       @TestPropertyDecorator()

@@ -254,7 +254,8 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                         <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
                                      [ngTemplateOutletContext]="{item: item, index: index}"></ng-template>
                       </div>
-                      <div class="_border" [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
+                      <div class="_border"
+                           [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
                     </div>
                   </ng-container>
                 </div>
@@ -268,7 +269,8 @@ import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootPr
                         <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
                                      [ngTemplateOutletContext]="{item: item, index: index}"></ng-template>
                       </div>
-                      <div class="_border" [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
+                      <div class="_border"
+                           [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
                     </div>
                   </ng-container>
                 </div>
@@ -721,7 +723,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public get maxDepth(): number | undefined {
     if (!this.getChildrenFn) return undefined;
-    return this.getDisplayItemDefs()
+    return this._getDisplayItemDefs()
       .filter(item => item.visible)
       .max(item => item.depth) ?? 0;
   }
@@ -816,7 +818,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public getIsAllSelected(): boolean {
-    return this.getDisplayItemDefs().every(item => !item.selectable || this.getIsSelectedItem(item.item));
+    return this._getDisplayItemDefs().every(item => !item.selectable || this.getIsSelectedItem(item.item));
   }
 
   public getIsColumnOrderingDesc(key: string): boolean | undefined {
@@ -944,7 +946,7 @@ export class SdSheetControl implements DoCheck, OnInit {
             const rowIndex = rowEls.indexOf(rowEl);
             if (rowIndex < 0) return;
 
-            const itemDef = this.getDisplayItemDefs().filter(item1 => item1.visible)[rowIndex];
+            const itemDef = this._getDisplayItemDefs().filter(item1 => item1.visible)[rowIndex];
             if (itemDef === undefined) return;
 
             if (this.autoSelect === "focus") {
@@ -1061,7 +1063,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         this.selectedItemsChange.emit(this.selectedItems);
       }
       else {
-        this.selectedItems = [...this.getDisplayItemDefs().filter(item => item.selectable).map(item => item.item)];
+        this.selectedItems = [...this._getDisplayItemDefs().filter(item => item.selectable).map(item => item.item)];
         this.selectedItemsChange.emit(this.selectedItems);
       }
     }
@@ -1107,7 +1109,7 @@ export class SdSheetControl implements DoCheck, OnInit {
     }
   }
 
-  public _selectItem(item: any, index: number): void {
+  private _selectItem(item: any, index: number): void {
     if (this.selectMode === undefined || (this.getItemSelectableFn !== undefined && this.getItemSelectableFn(index, item) !== true)) {
       return;
     }
@@ -1465,7 +1467,7 @@ export class SdSheetControl implements DoCheck, OnInit {
       }));
   }
 
-  private getDisplayItemDefs(): { index: number; depth: number; visible: boolean; selectable: boolean; item: any }[] {
+  private _getDisplayItemDefs(): { index: number; depth: number; visible: boolean; selectable: boolean; item: any }[] {
     const result: { index: number; depth: number; visible: boolean; selectable: boolean; item: any }[] = [];
 
     const loop = (index: number, item: any, depth: number, visible: boolean): void => {

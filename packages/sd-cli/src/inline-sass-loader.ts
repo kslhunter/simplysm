@@ -3,7 +3,7 @@ import * as path from "path";
 import * as webpack from "webpack";
 
 function loader(this: webpack.loader.LoaderContext, content: string, sourceMap: any): void {
-  if (this.cacheable) {
+  if (this.cacheable !== undefined) {
     this.cacheable();
   }
 

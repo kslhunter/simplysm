@@ -42,7 +42,7 @@ export class ProcessManager {
           const msg = iconv.convert(data).toString().trim();
           message += msg + os.EOL;
 
-          if (messageHandler) {
+          if (messageHandler !== undefined && messageHandler !== false) {
             const handlerResult = await messageHandler(msg);
             if (handlerResult) {
               cp.spawnSync("taskkill", ["/pid", worker.pid.toString(), "/f", "/t"], {cwd: opts.cwd});
@@ -72,7 +72,7 @@ export class ProcessManager {
           const msg = iconv.convert(data).toString().trim();
           message += msg + os.EOL;
 
-          if (errorMessageHandler) {
+          if (errorMessageHandler !== undefined && errorMessageHandler !== false) {
             const handlerResult = await errorMessageHandler(msg);
             if (handlerResult) {
               cp.spawnSync("taskkill", ["/pid", worker.pid.toString(), "/f", "/t"]);

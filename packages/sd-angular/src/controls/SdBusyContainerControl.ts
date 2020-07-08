@@ -176,7 +176,7 @@ export class SdBusyContainerControl {
   @HostBinding("attr.sd-no-fade")
   public noFade: boolean;
 
-  public constructor(public _busy: SdBusyContainerRootProvider) {
+  public constructor(private readonly _busy: SdBusyContainerRootProvider) {
     this.type = this._busy.type ?? "spinner";
     this.noFade = this._busy.noFade ?? false;
   }

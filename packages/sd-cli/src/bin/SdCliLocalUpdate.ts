@@ -27,7 +27,7 @@ export class SdCliLocalUpdate {
     await SdCliLocalUpdate._runAsync(config, true);
   }
 
-  public static async _runAsync(config: ISdProjectConfig, watch: boolean): Promise<void> {
+  private static async _runAsync(config: ISdProjectConfig, watch: boolean): Promise<void> {
     // 옵션체크
     if (!config.localUpdates) {
       return;

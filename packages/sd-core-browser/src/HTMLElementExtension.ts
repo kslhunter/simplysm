@@ -2,7 +2,6 @@ import ResizeObserver from "resize-observer-polyfill";
 import {ISdMutationEvent, ISdResizeEvent} from "./events";
 
 declare global {
-  //tslint:disable-next-line:interface-name
   interface HTMLElement {
     getRelativeOffset(parentElement: HTMLElement): { top: number; left: number };
 

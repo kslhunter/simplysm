@@ -34,7 +34,7 @@ export class DateOnly {
     }
 
     const match1 = (/^[0-9]{8}$/).exec(str);
-    if (match1 != undefined) {
+    if (match1 != null) {
       return new DateOnly(
         Number(str.substr(0, 4)),
         Number(str.substr(4, 2)),

@@ -4,7 +4,7 @@ export class XmlConvert {
   public static async parseAsync(str: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       xml2js.parseString(str, (err, parsed) => {
-        if (err) {
+        if (err != null) {
           reject(err);
           return;
         }
