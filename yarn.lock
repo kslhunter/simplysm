@@ -23,12 +23,26 @@
     rxjs "6.5.5"
     source-map "0.7.3"
 
+"@angular-eslint/eslint-plugin-template@^0.0.1-alpha.32":
+  version "0.0.1-alpha.32"
+  resolved "https://registry.yarnpkg.com/@angular-eslint/eslint-plugin-template/-/eslint-plugin-template-0.0.1-alpha.32.tgz#53d0ef6a37bec94b38b9b1924ee96d1f28eb356f"
+  integrity sha512-IQtH+QW4a94cD+3dXJzPhK/gejAjqQGL/y9SaBVa7CMseG1bt4SCEMynPm7k+dE8Sm3ql6NM9Cs23szr4uBYFQ==
+  dependencies:
+    "@typescript-eslint/experimental-utils" "2.31.0"
+
 "@angular-eslint/eslint-plugin@^0.0.1-alpha.32":
   version "0.0.1-alpha.32"
   resolved "https://registry.yarnpkg.com/@angular-eslint/eslint-plugin/-/eslint-plugin-0.0.1-alpha.32.tgz#5c137b77ed7054cb58868d966fb4c6572d1d03c5"
   integrity sha512-QZWDK8ze+rFRXlrqrwxQTj9IVJ/GyoRNFTGUsMjkw1usREghQZmrl3zHLm7YvjPQp8vT+QUKrWu8jP7lB/+pKg==
   dependencies:
     "@typescript-eslint/experimental-utils" "2.31.0"
+
+"@angular-eslint/template-parser@^0.0.1-alpha.32":
+  version "0.0.1-alpha.32"
+  resolved "https://registry.yarnpkg.com/@angular-eslint/template-parser/-/template-parser-0.0.1-alpha.32.tgz#adefb7df5a407e245e676b0ca914ca21ed2802ff"
+  integrity sha512-hq4AkDAcZSpuYAbk74R8znGMIbiBJRbnPDMtQyQWxsPDEQ+HML8AVctFWzemUR+S60PGbtxj8P8kb9shW/3zRQ==
+  dependencies:
+    eslint-scope "^4.0.0"
 
 "@angular/common@^10.0.1":
   version "10.0.2"
@@ -56,7 +70,7 @@
     tslib "^2.0.0"
     yargs "15.3.0"
 
-"@angular/compiler@^10.0.1":
+"@angular/compiler@^10.0.1", "@angular/compiler@^10.0.2":
   version "10.0.2"
   resolved "https://registry.yarnpkg.com/@angular/compiler/-/compiler-10.0.2.tgz#1056af84ad76763f03228aa3a60b63a5cd775944"
   integrity sha512-TNE5ESDlRCVneb/K62HOEgLpxuZZTlw8RcmOy5vt3SngEVc576OE/aYsEA6MCwTlqj16GLSS3jGm9HBJcBKUVw==
@@ -3669,7 +3683,7 @@ eslint-plugin-import@^2.22.0:
     resolve "^1.17.0"
     tsconfig-paths "^3.9.0"
 
-eslint-scope@^4.0.3:
+eslint-scope@^4.0.0, eslint-scope@^4.0.3:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/eslint-scope/-/eslint-scope-4.0.3.tgz#ca03833310f6889a3264781aa82e63eb9cfe7848"
   integrity sha512-p7VutNr1O/QrxysMo3E45FjYDTeXBy0iTltPFNSqKAIfjDSXC+4dj+qfyuD8bfAXrW/y6lW3O76VaYNPKfpKrg==

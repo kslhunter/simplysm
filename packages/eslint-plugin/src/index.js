@@ -1,9 +1,16 @@
 "use strict";
 
 module.exports = {
+  configs: {
+    "base": require("./configs/base"),
+    "angular": require("./configs/angular")
+  },
   rules: {
     "no-self-entry-import": require("./rules/no-self-entry-import"),
     "no-throw-not-implement-error": require("./rules/no-throw-not-implement-error")
+  },
+  processors: {
+    "extract-angular-inline-html": require("./processors/extract-angular-inline-html")
   }
 };
 

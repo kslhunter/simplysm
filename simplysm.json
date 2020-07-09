@@ -12,6 +12,10 @@
       "type": "library",
       "publish": "npm"
     },
+    "@simplysm/eslint-plugin-angular-template": {
+      "type": "library",
+      "publish": "npm"
+    },
     "@simplysm/sd-angular": {
       "type": "library",
       "targets": ["browser"],

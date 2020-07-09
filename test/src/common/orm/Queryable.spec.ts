@@ -1,7 +1,6 @@
 /* eslint-disable array-element-newline */
 import {expect} from "chai";
-import {Queryable} from "@simplysm/sd-orm-common/src/Queryable";
-import {Column, DbContext, ForeignKey, IDbMigration, QueryUnit, Table} from "@simplysm/sd-orm-common";
+import {Column, DbContext, ForeignKey, IDbMigration, Queryable, QueryUnit, Table} from "@simplysm/sd-orm-common";
 import {NodeDbContextExecutor} from "@simplysm/sd-orm-node";
 import {Type} from "@simplysm/sd-core-common";
 

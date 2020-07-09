@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/eslint-plugin",
-  "version": "3.5.1",
+  "version": "3.5.4-15",
   "description": "심플리즘 패키지 - ESLINT 플러그인",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -9,6 +9,10 @@
   "sideEffects": false,
   "dependencies": {
     "eslint-module-utils": "^2.6.0",
-    "@typescript-eslint/experimental-utils": "^3.5.0"
+    "@typescript-eslint/experimental-utils": "^3.5.0",
+    "@typescript-eslint/eslint-plugin": "^3.5.0",
+    "@typescript-eslint/parser": "^3.5.0",
+    "eslint-import-resolver-typescript": "^2.0.0",
+    "eslint-plugin-import": "^2.22.0"
   }
 }
