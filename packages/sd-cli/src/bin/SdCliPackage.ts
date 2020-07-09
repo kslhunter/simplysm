@@ -424,7 +424,7 @@ import android.webkit.WebSettings;`);
   private async _runAsync(watch: boolean, processManager: ProcessWorkManager, command: string, target?: string): Promise<void> {
     this._logger.debug("workerRun: " + (watch ? "watch" : "run") + ": " + this.name + ": " + command + ": " + target + ": start");
 
-    await processManager.getNextWorker()
+    await (await processManager.getNextWorkerAsync())
       .on("change", data => {
         if (
           data.packageName === this.name &&
