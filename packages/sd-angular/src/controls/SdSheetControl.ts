@@ -838,6 +838,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public trackByFnForHeaderGroup = (index: number, item: { name?: string; widthPixel: number }): any => item;
 
   private readonly _itemsDiffer: IterableDiffer<any>;
+  private readonly _selectedItemsDiffer: IterableDiffer<any>;
 
   private readonly _el: HTMLElement;
 
@@ -850,6 +851,9 @@ export class SdSheetControl implements DoCheck, OnInit {
     this._el = this._elRef.nativeElement;
 
     this._itemsDiffer = this._iterableDiffers.find([])
+      .create((i: number, item: any) => this.trackByFn(i, item));
+
+    this._selectedItemsDiffer = this._iterableDiffers.find([])
       .create((i: number, item: any) => this.trackByFn(i, item));
   }
 
@@ -1035,6 +1039,9 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   public ngDoCheck(): void {
     if (this._itemsDiffer.diff(this.items)) {
+      this._cdr.markForCheck();
+    }
+    if (this._selectedItemsDiffer.diff(this.selectedItems)) {
       this._cdr.markForCheck();
     }
   }

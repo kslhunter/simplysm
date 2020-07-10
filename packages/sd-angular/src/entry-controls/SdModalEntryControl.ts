@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -214,6 +215,14 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
           bottom: var(--gap-xxl);
         }
       }
+      
+      &[sd-position="right-top"] {
+        > ._dialog {
+          position: absolute;
+          right: var(--gap-xxl);
+          top: var(--gap-xxl);
+        }
+      }
 
       @media screen and (max-width: 480px) {
         padding-top: 0;
@@ -226,7 +235,7 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
     }
   `]
 })
-export class SdModalEntryControl implements OnInit {
+export class SdModalEntryControl implements OnInit, AfterViewInit {
   @Input()
   @SdInputValidate({type: String, notnull: true})
   public title = "창";
@@ -267,10 +276,10 @@ export class SdModalEntryControl implements OnInit {
   @Input()
   @SdInputValidate({
     type: String,
-    includes: ["right-bottom"]
+    includes: ["right-bottom", "right-top"]
   })
   @HostBinding("attr.sd-position")
-  public position?: "right-bottom";
+  public position?: "right-bottom" | "right-top";
 
   private readonly _el: HTMLElement;
   private _dialogEl!: HTMLElement;
@@ -313,6 +322,14 @@ export class SdModalEntryControl implements OnInit {
         this.onHeaderMouseDown(event);
       });
     });
+  }
+
+  public ngAfterViewInit(): void {
+    this._dialogEl.style.position = "absolute";
+    this._dialogEl.style.left = `${this._dialogEl.offsetLeft}px`;
+    this._dialogEl.style.top = `${this._dialogEl.offsetTop}px`;
+    this._dialogEl.style.right = `auto`;
+    this._dialogEl.style.bottom = `auto`;
   }
 
   public onCloseButtonClick(): void {

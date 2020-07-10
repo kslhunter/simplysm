@@ -20,7 +20,6 @@ import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import {SdWebpackInputHostWithScss} from "./SdWebpackInputHostWithScss";
 import {SdTypescriptProgramRunner} from "./SdTypescriptProgramRunner";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
-import {SdWebpackTimeFixPlugin} from "./SdWebpackTimeFixPlugin";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
 
 export class SdPackageBuilder extends EventEmitter {
@@ -837,9 +836,7 @@ export class SdPackageBuilder extends EventEmitter {
             content: JSON.stringify(this._info.config.configs, undefined, 2)
           }
         ]),
-        ...this._devMode ? [
-          new SdWebpackTimeFixPlugin()
-        ] : [],
+        // ...this._devMode ? [new SdWebpackTimeFixPlugin()] : [],
         ...this._info.config.type === "android" ? [
           new CopyWebpackPlugin({
             patterns: [{

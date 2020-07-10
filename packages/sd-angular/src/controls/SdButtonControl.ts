@@ -8,7 +8,7 @@ import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
   template: `
     <button tabindex="0"
             [attr.type]="type"
-            [attr.disabled]="disabled"
+            [disabled]="disabled"
             [attr.class]="safeHtml(buttonClass)"
             [attr.style]="safeHtml(buttonStyle)">
       <ng-content></ng-content>
