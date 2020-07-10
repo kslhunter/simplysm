@@ -33,7 +33,7 @@
     "karma-mocha": "^2.0.1",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^4.0.2",
-    "ts-loader": "^7.0.5",
+    "ts-loader": "^8.0.0",
     "istanbul-instrumenter-loader": "^3.0.1",
     "karma-coverage-istanbul-reporter": "^3.0.3",
     "webpack": "^4.43.0"
