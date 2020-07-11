@@ -161,7 +161,8 @@ module.exports = {
         "@typescript-eslint/no-misused-promises": ["error", {checksVoidReturn: false}],
         "@typescript-eslint/no-inferrable-types": ["error", {ignoreParameters: true}],
         "@typescript-eslint/typedef": ["error", {arrowParameter: false, memberVariableDeclaration: false}],
-        "@typescript-eslint/explicit-module-boundary-types": ["error", {allowArgumentsExplicitlyTypedAsAny: true}],
+        // "@typescript-eslint/explicit-module-boundary-types": ["error", {allowArgumentsExplicitlyTypedAsAny: true}],
+        "@typescript-eslint/explicit-module-boundary-types": "off", // Maximum call stack size exceeded 때문에 끔
         "@typescript-eslint/naming-convention": [
           "error",
           {

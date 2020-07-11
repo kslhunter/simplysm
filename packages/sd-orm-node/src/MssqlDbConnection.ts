@@ -26,6 +26,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
       throw new Error("이미 'Connection'이 연결되어있습니다.");
     }
 
+
     const conn = new tedious.Connection({
       server: this._config.host ?? "localhost",
       authentication: {
@@ -43,7 +44,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         requestTimeout: this._timeout,
         trustServerCertificate: true
       }
-    } as any);
+    });
 
     conn.on("infoMessage", info => {
       this._logger.debug(info.message);
