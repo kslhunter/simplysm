@@ -58,8 +58,17 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
       this._logger.error("error: " + error.message);
     });
 
+    conn.on("end", () => {
+      this.emit("close");
+      this._requests = [];
+      this.isConnected = false;
+      this.isOnTransaction = false;
+      delete this._conn;
+    });
+
     await new Promise<void>((resolve, reject) => {
-      conn.on("connect", err => {
+      // TODO
+      conn["connect"]((err: Error | undefined) => {
         if (err != null) {
           reject(new Error(err.message));
           return;
@@ -70,14 +79,6 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         this.isOnTransaction = false;
         resolve();
       });
-    });
-
-    conn.on("end", () => {
-      this.emit("close");
-      this._requests = [];
-      this.isConnected = false;
-      this.isOnTransaction = false;
-      delete this._conn;
     });
 
     this._conn = conn;
