@@ -52,13 +52,15 @@ export class SdOrmUtils {
     }
   }
 
-  public static getQueryValueFields<T>(entity: TEntity<T>): TEntityValue<any>[] {
+  public static getQueryValueFields<T>(entity: TEntity<T>, availableDepth?: number): TEntityValue<any>[] {
+    if (availableDepth !== undefined && availableDepth < 1) return [];
+
     return Object.values(entity).mapMany((item: any) => {
       if (SdOrmUtils.canConvertToQueryValue(item)) {
         return [item];
       }
 
-      return SdOrmUtils.getQueryValueFields(item);
+      return SdOrmUtils.getQueryValueFields(item, availableDepth !== undefined ? availableDepth - 1 : undefined);
     });
   }
 

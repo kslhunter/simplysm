@@ -2,7 +2,8 @@ import {DbContext} from "./DbContext";
 import {FunctionUtils, JsonConvert, NeverEntryError, ObjectUtils, Type, Wait} from "@simplysm/sd-core-common";
 import {
   IDeleteQueryDef,
-  IInsertQueryDef, IJoinQueryDef,
+  IInsertQueryDef,
+  IJoinQueryDef,
   IQueryableDef,
   IQueryResultParseOption,
   ISelectQueryDef,
@@ -144,17 +145,18 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
-  public orderBy(fwd: (entity: TEntity<T>) => TEntityValue<TQueryValue>, desc?: boolean): Queryable<D, T>;
-  public orderBy(chain: string, desc?: boolean): Queryable<D, T>;
-  public orderBy(defs: { key: string; desc: boolean }[]): Queryable<D, T>;
-  public orderBy(arg1: ((entity: TEntity<T>) => TEntityValue<TQueryValue>) | string | { key: string; desc: boolean }[], desc?: boolean): Queryable<D, T> {
+  // public orderBy(fwd: (entity: TEntity<T>) => TEntityValue<TQueryValue>, desc?: boolean): Queryable<D, T>;
+  // public orderBy(chain: string, desc?: boolean): Queryable<D, T>;
+  // public orderBy(defs: IQueryableOrderingDef<T>[]): Queryable<D, T>;
+  public orderBy(arg1: ((entity: TEntity<T>) => TEntityValue<TQueryValue>) | string, desc?: boolean): Queryable<D, T> {
+    // public orderBy(arg1: ((entity: TEntity<T>) => TEntityValue<TQueryValue>) | string | IQueryableOrderingDef<T>[], desc?: boolean): Queryable<D, T> {
     let result = new Queryable(this.db, this);
 
     let selectedColumn;
     if (typeof arg1 === "function") {
       selectedColumn = arg1(this._entity);
     }
-    else if (typeof arg1 === "string") {
+    else /*if (typeof arg1 === "string")*/ {
       const chain = arg1.split(".").slice(0, -1);
       const asChainArr: string[] = [];
       for (const fkName of chain) {
@@ -166,12 +168,12 @@ export class Queryable<D extends DbContext, T> {
 
       selectedColumn = this._getEntityChainValue(result._entity, arg1);
     }
-    else {
+    /*else {
       for (const orderingItem of arg1) {
         result = result.orderBy(orderingItem.key, orderingItem.desc);
       }
       return result;
-    }
+    }*/
 
     result._def.orderBy = result._def.orderBy ?? [];
     const queryValue = this.db.qh.getQueryValue(selectedColumn);
@@ -496,8 +498,8 @@ export class Queryable<D extends DbContext, T> {
       throw new Error("'HAVING'을 사용하려면, 'GROUP BY'를 반드시 설정해야 합니다.");
     }
 
-    if (this._def.limit && this._def.join && this._def.join.some(item => !item.isSingle)) {
-      throw new Error("다수의 'RECORD'를 'JOIN'하는 쿼리와 'LIMIT'을 동시에 사용할 수 없습니다. 'LIMIT'을 먼저 사용하고, 'WRAP'한 이후에 'JOIN' 하시기 바랍니다.");
+    if (this._def.limit && this._def.join && this._def.join.some(item => !item.isSingle) && !this._def.groupBy) {
+      throw new Error("다수의 'RECORD'를 'JOIN'하는 쿼리와 'LIMIT'을 동시에 사용할 수 없습니다. 'LIMIT'을 먼저 사용하고, 'WRAP'한 이후에 'JOIN' 하거나, 'GROUP BY'도 함께 사용하세요.");
     }
 
     if (this._def.limit && (!this._def.orderBy || this._def.orderBy.length <= 0)) {

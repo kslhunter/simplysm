@@ -313,4 +313,9 @@ export type TInsertObject<T> =
   &
   Pick<{ [K in keyof T]?: T[K] extends TQueryValue ? (T[K] | QueryUnit<T[K]> | QueryUnit<TypeWrap<T[K]>>) : T[K] }, NullablePropertyNames<T> | NonTQueryValuePropertyNames<T>>;
 
+export interface IQueryableOrderingDef<T> {
+  key: string | ((entity: TEntity<T>) => TEntityValue<TQueryValue>);
+  desc: boolean;
+}
+
 // endregion

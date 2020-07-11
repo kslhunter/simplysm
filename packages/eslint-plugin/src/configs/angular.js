@@ -1,5 +1,7 @@
 "use strict";
 
+const path = require("path");
+
 module.exports = {
   overrides: [
     {
@@ -38,7 +40,9 @@ module.exports = {
         "@angular-eslint/use-injectable-provided-in": "error",
         "@angular-eslint/use-lifecycle-interface": "error",
         "@angular-eslint/use-pipe-decorator": "error",
-        "@angular-eslint/use-pipe-transform-interface": "error"
+        "@angular-eslint/use-pipe-transform-interface": "error",
+
+        "@typescript-eslint/tslint/config": ["error", {lintFile: path.resolve(__dirname, "tslint/codelyzer.json")}]
       },
       overrides: [
         {

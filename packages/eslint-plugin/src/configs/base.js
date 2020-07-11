@@ -1,5 +1,7 @@
 "use strict";
 
+const path = require("path");
+
 module.exports = {
   overrides: [
     {
@@ -118,7 +120,11 @@ module.exports = {
     {
       files: ["*.ts"],
       parser: "@typescript-eslint/parser",
-      plugins: ["@typescript-eslint", "@simplysm"],
+      plugins: [
+        "@typescript-eslint",
+        "@typescript-eslint/tslint",
+        "@simplysm"
+      ],
       extends: [
         "plugin:import/typescript",
         "plugin:@typescript-eslint/all"
@@ -206,18 +212,16 @@ module.exports = {
             format: ["camelCase", "PascalCase"]
           }
         ],
+        "@typescript-eslint/tslint/config": ["error", {lintFile: path.resolve(__dirname, "tslint/default.json")}],
 
         // ---------------------------------
         // warn
         // ---------------------------------
-        // "@typescript-eslint/require-await": "warn",
-        // "@typescript-eslint/no-unused-vars": ["warn", {args: "after-used"}],
         "@typescript-eslint/no-unused-vars": ["warn", {args: "none"}],
 
         // ---------------------------------
         // off
         // ---------------------------------
-        // "import/no-unresolved": "off",
         "import/named": "off",
         "import/namespace": "off",
         "import/default": "off",
@@ -258,8 +262,8 @@ module.exports = {
         "@typescript-eslint/no-invalid-void-type": "off",
         "@typescript-eslint/lines-between-class-members": "off",
         "@typescript-eslint/no-invalid-this": "off",
-
         "@typescript-eslint/explicit-function-return-type": "off",
+
         "@typescript-eslint/ban-ts-comment": "off"
       }
     }

@@ -1,0 +1,159 @@
+{
+  "extends": "tslint:all",
+  "rules": {
+    "no-submodule-imports": false,
+    "no-import-side-effect": false,
+    "file-name-casing": false,
+    "no-unused-variable": false,
+    "variable-name": false,
+    "ordered-imports": false,
+    "member-ordering": false,
+    "unified-signatures": false,
+    "typedef": [
+      true,
+      "call-signature",
+      "parameter",
+      "property-declaration",
+      "object-destructuring",
+      "array-destructuring"
+    ],
+    "prefer-template": false,
+    "max-line-length": false,
+    "arrow-parens": [
+      true,
+      "ban-single-arg-parens"
+    ],
+    "newline-per-chained-call": false,
+    "one-line": [
+      true,
+      "check-open-brace",
+      "check-whitespace"
+    ],
+    "newline-before-return": false,
+    "prefer-switch": false,
+    "object-literal-sort-keys": false,
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "never",
+        "singleline": "never"
+      }
+    ],
+    "no-trailing-whitespace": false,
+    "no-unnecessary-class": false,
+    "no-parameter-properties": false,
+    "eofline": false,
+    "no-consecutive-blank-lines": [
+      true,
+      2
+    ],
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-separator",
+      "check-rest-spread",
+      "check-type",
+      "check-typecast",
+      "check-type-operator",
+      "check-preblock"
+    ],
+    "no-any": false,
+    "no-magic-numbers": false,
+    "no-console": false,
+    "no-non-null-assertion": false,
+    "only-arrow-functions": false,
+    "array-type": [
+      true,
+      "array"
+    ],
+    "comment-format": false,
+    "completed-docs": false,
+    "no-unsafe-any": false,
+    "strict-boolean-expressions": false,
+    "restrict-plus-operands": false,
+    "no-inferred-empty-object-type": false,
+    "prefer-function-over-method": false,
+    "binary-expression-operand-order": false,
+    "no-empty": false,
+    "triple-equals": [
+      true,
+      "allow-null-check"
+    ],
+    "no-bitwise": false,
+    "no-string-literal": false,
+    "no-return-await": false,
+    "space-before-function-paren": [
+      true,
+      {
+        "anonymous": "always",
+        "asyncArrow": "always",
+        "constructor": "never",
+        "method": "never",
+        "named": "never"
+      }
+    ],
+    "no-dynamic-delete": false,
+    "prefer-conditional-expression": false,
+    "no-unnecessary-type-assertion": false,
+    "arrow-return-shorthand": false,
+    "max-classes-per-file": false,
+    "linebreak-style": false,
+    "quotemark": [
+      true,
+      "double",
+      "avoid-escape"
+    ],
+    "no-arg": false,
+    "no-unbound-method": false,
+    "semicolon": [
+      true,
+      "always",
+      "ignore-bound-class-methods"
+    ],
+    "no-this-assignment": false,
+    "curly": [
+      true,
+      "ignore-same-line"
+    ],
+    "ban-types": false,
+    "no-empty-interface": false,
+    "cyclomatic-complexity": false,
+    "no-boolean-literal-compare": false,
+    "align": [
+      true,
+      "parameters",
+      "statements",
+      "elements",
+      "members"
+    ],
+    "object-literal-key-quotes": [
+      true,
+      "consistent"
+    ],
+    "increment-decrement": false,
+    "ban-ts-ignore": false,
+    "max-file-line-count": false,
+    "unnecessary-else": false,
+    "no-null-undefined-union": false,
+    "prefer-method-signature": false,
+    "no-use-before-declare": false,
+    "no-object-literal-type-assertion": false,
+    "no-unnecessary-callback-wrapper": false,
+    "strict-comparisons": false,
+    "no-async-without-await": false,
+    "invalid-void": false,
+    "strict-string-expressions": false,
+    "strict-type-predicates": false,
+    "no-unused-expression": false,
+    "no-null-keyword": false,
+    "no-require-imports": false,
+    "no-var-requires": false,
+    "return-undefined": false,
+    "no-namespace": false,
+    "no-void-expression": false,
+    "no-irregular-whitespace": false,
+    "interface-name": false
+  }
+}

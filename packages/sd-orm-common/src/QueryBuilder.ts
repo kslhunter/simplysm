@@ -698,7 +698,7 @@ DEALLOCATE PREPARE stmt;`.trim();
   private _getQueryOfJoinDef(def: IJoinQueryDef): string {
     let q = "";
 
-    if (Object.keys(def).every(key => def[key] === undefined || (["from", "as", "where", "select"].includes(key))) && !def.isCustomSelect) {
+    if (Object.keys(def).every(key => def[key] === undefined || (["from", "as", "where", "select", "isCustomSelect"].includes(key))) && !def.isCustomSelect) {
       q += `LEFT OUTER JOIN `;
       if (def.from instanceof Array) {
         q += "(\n";

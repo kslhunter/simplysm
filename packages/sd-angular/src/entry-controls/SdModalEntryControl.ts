@@ -41,6 +41,9 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
 
       <div class="_left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'left')"></div>
       <div class="_right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'right')"></div>
+      <div class="_top-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top')"></div>
+      <div class="_top-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-right')"></div>
+      <div class="_top-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-left')"></div>
       <div class="_bottom-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom')"></div>
       <div class="_bottom-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-right')"></div>
       <div class="_bottom-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-left')"></div>
@@ -135,6 +138,35 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
           cursor: ew-resize;
         }
 
+        > ._top-resize-bar {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: var(--gap-sm);
+          cursor: ns-resize;
+        }
+
+        > ._top-right-resize-bar {
+          position: absolute;
+          right: 0;
+          top: 0;
+          width: var(--gap-sm);
+          height: var(--gap-sm);
+          z-index: 1;
+          cursor: nesw-resize;
+        }
+
+        > ._top-left-resize-bar {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: var(--gap-sm);
+          height: var(--gap-sm);
+          cursor: nwse-resize;
+          z-index: 1;
+        }
+
         > ._bottom-resize-bar {
           position: absolute;
           bottom: 0;
@@ -208,15 +240,15 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
         }
       }
 
-      &[sd-position="right-bottom"] {
+      &[sd-position="bottom-right"] {
         > ._dialog {
           position: absolute;
-          right: var(--gap-xxl);
+          right: calc(var(--gap-xxl) * 2);
           bottom: var(--gap-xxl);
         }
       }
-      
-      &[sd-position="right-top"] {
+
+      &[sd-position="top-right"] {
         > ._dialog {
           position: absolute;
           right: var(--gap-xxl);
@@ -276,10 +308,10 @@ export class SdModalEntryControl implements OnInit, AfterViewInit {
   @Input()
   @SdInputValidate({
     type: String,
-    includes: ["right-bottom", "right-top"]
+    includes: ["bottom-right", "top-right"]
   })
   @HostBinding("attr.sd-position")
-  public position?: "right-bottom" | "right-top";
+  public position?: "bottom-right" | "top-right";
 
   private readonly _el: HTMLElement;
   private _dialogEl!: HTMLElement;
@@ -382,24 +414,35 @@ export class SdModalEntryControl implements OnInit, AfterViewInit {
     }
   }
 
-  public onResizeBarMousedown(event: MouseEvent, direction: "left" | "right" | "bottom" | "bottom-left" | "bottom-right"): void {
+  public onResizeBarMousedown(event: MouseEvent,
+                              direction: "left" | "right" |
+                                "top" | "top-left" | "top-right" |
+                                "bottom" | "bottom-left" | "bottom-right"): void {
     const startX = event.clientX;
     const startY = event.clientY;
     const startHeight = this._dialogEl.clientHeight;
     const startWidth = this._dialogEl.clientWidth;
+    const startTop = this._dialogEl.offsetTop;
     const startLeft = this._dialogEl.offsetLeft;
 
     const doDrag = (e: MouseEvent): void => {
       e.stopPropagation();
       e.preventDefault();
 
+      if (direction === "top" || direction === "top-right" || direction === "top-left") {
+        if (this._dialogEl.style.position === "absolute") {
+          this._dialogEl.style.top = (startTop + (e.clientY - startY)) + "px";
+          this._dialogEl.style.bottom = "auto";
+        }
+        this._dialogEl.style.height = `${startHeight - (e.clientY - startY)}px`;
+      }
       if (direction === "bottom" || direction === "bottom-right" || direction === "bottom-left") {
         this._dialogEl.style.height = `${startHeight + e.clientY - startY}px`;
       }
-      if (direction === "right" || direction === "bottom-right") {
+      if (direction === "right" || direction === "bottom-right" || direction === "top-right") {
         this._dialogEl.style.width = `${startWidth + ((e.clientX - startX) * (this._dialogEl.style.position === "absolute" ? 1 : 2))}px`;
       }
-      if (direction === "left" || direction === "bottom-left") {
+      if (direction === "left" || direction === "bottom-left" || direction === "top-left") {
         if (this._dialogEl.style.position === "absolute") {
           this._dialogEl.style.left = (startLeft + (e.clientX - startX)) + "px";
         }

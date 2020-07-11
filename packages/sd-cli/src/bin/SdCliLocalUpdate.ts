@@ -92,6 +92,8 @@ export class SdCliLocalUpdate {
             logger.log("로컬 패키지 변경 처리 완료");
           }, err => {
             logger.error(`'${targetName}'의 변경사항을 처리하는 중에 오류가 발생하였습니다.`, err);
+          }, {
+            aggregateTimeout: 1000
           });
         }
         else {
