@@ -13,23 +13,13 @@
       "Toast"
     ],
     "component-max-inline-declarations": false,
-    "component-selector": [
-      true,
-      "element",
-      "sd",
-      "kebab-case"
-    ],
+    "component-selector": false,
     "contextual-lifecycle": false,
     "directive-class-suffix": [
       true,
       "Directive"
     ],
-    "directive-selector": [
-      true,
-      "attribute",
-      "sd",
-      "camelCase"
-    ],
+    "directive-selector": false,
     "no-attribute-decorator": true,
     "no-conflicting-lifecycle": true,
     "no-forward-ref": false,

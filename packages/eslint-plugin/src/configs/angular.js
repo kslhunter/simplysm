@@ -13,11 +13,11 @@ module.exports = {
         }],
         "@angular-eslint/directive-selector": [
           "error",
-          {type: "attribute", prefix: "sd", style: "camelCase"}
+          {type: "attribute", prefix: "app", style: "camelCase"}
         ],
         "@angular-eslint/component-selector": [
           "error",
-          {type: "element", prefix: "sd", style: "kebab-case"}
+          {type: "element", prefix: "app", style: "kebab-case"}
         ],
         "@angular-eslint/contextual-lifecycle": "error",
         "@angular-eslint/directive-class-suffix": "error",

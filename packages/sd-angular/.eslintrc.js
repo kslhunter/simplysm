@@ -15,6 +15,16 @@ module.exports = {
             directory: require("path").join(__dirname, "tsconfig.json")
           }
         }
+      },
+      rules: {
+        "@angular-eslint/directive-selector": [
+          "error",
+          {type: "attribute", prefix: "sd", style: "camelCase"}
+        ],
+        "@angular-eslint/component-selector": [
+          "error",
+          {type: "element", prefix: "sd", style: "kebab-case"}
+        ]
       }
     }
   ]
