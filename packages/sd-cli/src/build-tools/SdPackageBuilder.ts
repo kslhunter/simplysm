@@ -198,11 +198,11 @@ export class SdPackageBuilder extends EventEmitter {
 
         devMiddleware = WebpackDevMiddleware(compiler, {
           publicPath: webpackConfig.output!.publicPath!,
-          logLevel: "silent"/*,
+          logLevel: "silent",
           watchOptions: {
-            aggregateTimeout: 300,
+            aggregateTimeout: 1000,
             poll: 1000
-          }*/
+          }
         });
 
         hotMiddleware = WebpackHotMiddleware(compiler, {
