@@ -14,4 +14,5 @@ module.exports = {
   }
 };
 
-//TODO: Angular 중 Injectable({providedIn: root}) 인경우 contructor 에 root 가 아닌 다른 Provider 넣을 수 없음.
+// TODO: Angular 중 Injectable({providedIn: root}) 인경우 contructor 에 root 가 아닌 다른 Provider 넣을 수 없음.
+// TODO: HTML파일에서 TODO를 WARNING 걸수 있게

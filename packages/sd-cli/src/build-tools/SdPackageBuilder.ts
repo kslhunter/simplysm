@@ -562,7 +562,7 @@ export class SdPackageBuilder extends EventEmitter {
   private async _lintAsync(changedInfos: IFileChangeInfo[]): Promise<ISdPackageBuildResult[]> {
     this._logger.debug("규칙체크 시작...");
 
-    const srcPath = this._getSrcPath();
+    // const srcPath = this._getSrcPath();
 
     const lintConfig = this._target !== undefined && this._info.tsConfigForBuild?.[this._target] !== undefined ?
       {
@@ -590,11 +590,33 @@ export class SdPackageBuilder extends EventEmitter {
       baseConfig: lintConfig
     });
 
-    const anymatchPath = path.resolve(srcPath, "**", "+(*.ts|*.js)");
+    const ignoreFileAnymatchPath = [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/dist-browser/**",
+      "**/_modules/**",
+      "**/_routes.ts"
+    ];
+
+    const fileAnymatchPath = [
+      "**/+(*.ts|*.js)"
+    ];
+
+    const filePaths = changedInfos
+      .filter(item => (
+        item.type !== "unlink" &&
+        !anymatch(ignoreFileAnymatchPath, item.filePath.replace(/\\/g, "/")) &&
+        anymatch(fileAnymatchPath, item.filePath.replace(/\\/g, "/")) &&
+        FsUtils.exists(item.filePath)
+      ))
+      .map(item => item.filePath)
+      .distinct();
+
+    /*const anymatchPath = path.resolve(srcPath, "**", "+(*.ts|*.js)");
     const filePaths = changedInfos
       .filter(item => item.type !== "unlink" && anymatch(anymatchPath.replace(/\\/g, "/"), item.filePath.replace(/\\/g, "/")))
       .map(item => item.filePath)
-      .distinct();
+      .distinct();*/
 
     let results: ISdPackageBuildResult[];
 

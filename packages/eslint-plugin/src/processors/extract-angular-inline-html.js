@@ -10,7 +10,7 @@ const multipleComponentsPerFileError =
 const rangeMap = new Map();
 
 function quickGetRangeForTemplate(text, template) {
-  const start = text.indexOf(template.replace(/\n/g, "\r\n").replace(/`/g, "\\`"));
+  const start = text.indexOf(template);
   return [start, start + template.length];
 }
 
@@ -96,8 +96,9 @@ module.exports = {
       }
 
       const templateText = templateProperty.initializer.text;
+      const realTemplateText = templateText.replace(/\n/g, "\r\n").replace(/`/g, "\\`");
 
-      const range = quickGetRangeForTemplate(text, templateText);
+      const range = quickGetRangeForTemplate(text, realTemplateText);
 
       rangeMap.set(filename, {
         range,
@@ -119,7 +120,7 @@ module.exports = {
       return [
         text,
         {
-          text: templateText,
+          text: realTemplateText,
           filename: path.basename(filename).replace(/\.ts$/, ".html")
         }
       ];

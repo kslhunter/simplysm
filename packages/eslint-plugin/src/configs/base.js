@@ -3,6 +3,24 @@
 const path = require("path");
 
 module.exports = {
+  globals: {
+    NodeJS: "readonly"
+  },
+  env: {
+    node: true,
+    browser: true,
+    es2017: true
+  },
+  ignorePatterns: [
+    ".idea/",
+    "_back/",
+    "logs/",
+    "node_modules/",
+    "dist/",
+    "dist-browser/",
+    "_modules/",
+    "_routes.ts"
+  ],
   overrides: [
     {
       files: ["*.js", "*.ts"],
