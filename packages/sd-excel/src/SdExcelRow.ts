@@ -1,5 +1,5 @@
-import {SdExcelWorksheet} from "./SdExcelWorksheet";
-import {SdExcelUtils} from "./utils/SdExcelUtils";
+import { SdExcelWorksheet } from "./SdExcelWorksheet";
+import { SdExcelUtils } from "./utils/SdExcelUtils";
 
 export class SdExcelRow {
   public rowData: any;

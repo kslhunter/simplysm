@@ -1,18 +1,18 @@
 /* eslint-disable array-element-newline */
-import {expect} from "chai";
-import {Column, DbContext, ForeignKey, IDbMigration, Queryable, QueryUnit, Table} from "@simplysm/sd-orm-common";
-import {NodeDbContextExecutor} from "@simplysm/sd-orm-node";
-import {Type} from "@simplysm/sd-core-common";
+import { expect } from "chai";
+import { Column, DbContext, ForeignKey, IDbMigration, Queryable, QueryUnit, Table } from "@simplysm/sd-orm-common";
+import { NodeDbContextExecutor } from "@simplysm/sd-orm-node";
+import { Type } from "@simplysm/sd-core-common";
 
-@Table({description: "테스트 테이블", database: "TestDb", schema: "TestSchema"})
+@Table({ description: "테스트 테이블", database: "TestDb", schema: "TestSchema" })
 class TestTable {
-  @Column({description: "아이디", primaryKey: 1, autoIncrement: true})
+  @Column({ description: "아이디", primaryKey: 1, autoIncrement: true })
   public id?: number;
 
-  @Column({description: "명칭"})
+  @Column({ description: "명칭" })
   public name!: string;
 
-  @Column({description: "상위_아이디", nullable: true})
+  @Column({ description: "상위_아이디", nullable: true })
   public parentId?: number;
 
   @ForeignKey(["parentId"], () => TestTable, "상위")
@@ -21,7 +21,7 @@ class TestTable {
 
 class TestDbContext extends DbContext {
   public get schema(): { database: string; schema: string } {
-    return {database: "TestDb", schema: "TestSchema"};
+    return { database: "TestDb", schema: "TestSchema" };
   }
 
   public get migrations(): Type<IDbMigration>[] {
@@ -95,7 +95,7 @@ describe("(common) orm.Queryable (QueryableDef => QueryDef)", () => {
       expect(
         db.test
           .select(item => ({
-            id1: new QueryUnit(String, db.test.top(1).select(item1 => ({id2: item1.id})))
+            id1: new QueryUnit(String, db.test.top(1).select(item1 => ({ id2: item1.id })))
           }))
           .getSelectDef()
       ).to.deep.equal({
@@ -230,7 +230,7 @@ describe("(common) orm.Queryable (QueryableDef => QueryDef)", () => {
       expect(
         db.test
           .where(item => [
-            db.qh.equal(item.id, new QueryUnit(Number, db.test.top(1).select(item1 => ({id: item1.id}))))
+            db.qh.equal(item.id, new QueryUnit(Number, db.test.top(1).select(item1 => ({ id: item1.id }))))
           ])
           .getSelectDef()
       ).to.deep.equal({
@@ -730,49 +730,49 @@ describe("(common) orm.Queryable (QueryableDef => QueryDef)", () => {
       expect(() => {
         db.test
           .where(item => [db.qh.equal(item.id, 1)])
-          .getInsertDef({name: "홍길동"});
+          .getInsertDef({ name: "홍길동" });
       }).to.throw(/WHERE/);
 
       expect(() => {
         db.test
           .distinct()
-          .getInsertDef({name: "홍길동"});
+          .getInsertDef({ name: "홍길동" });
       }).to.throw(/DISTINCT/);
 
       expect(() => {
         db.test
           .top(10)
-          .getInsertDef({name: "홍길동"});
+          .getInsertDef({ name: "홍길동" });
       }).to.throw(/TOP/);
 
       expect(() => {
         db.test
           .orderBy(item => item.id)
-          .getInsertDef({name: "홍길동"});
+          .getInsertDef({ name: "홍길동" });
       }).to.throw(/ORDER BY/);
 
       expect(() => {
         db.test
           .limit(1, 10)
-          .getInsertDef({name: "홍길동"});
+          .getInsertDef({ name: "홍길동" });
       }).to.throw(/LIMIT/);
 
       expect(() => {
         db.test
           .groupBy(item => [item.id])
-          .getInsertDef({name: "홍길동"});
+          .getInsertDef({ name: "홍길동" });
       }).to.throw(/GROUP BY/);
 
       expect(() => {
         db.test
           .having(item => [db.qh.equal(item.id, 1)])
-          .getInsertDef({name: "홍길동"});
+          .getInsertDef({ name: "홍길동" });
       }).to.throw(/HAVING/);
 
       expect(() => {
         db.test
           .join(TestTable, "tests", (qr, en) => qr)
-          .getInsertDef({name: "홍길동"} as any);
+          .getInsertDef({ name: "홍길동" } as any);
       }).to.throw(/JOIN/);
     });
 
@@ -817,25 +817,25 @@ describe("(common) orm.Queryable (QueryableDef => QueryDef)", () => {
       expect(() => {
         db.test
           .orderBy(item => item.id)
-          .getUpdateDef({id: 1, name: "홍길동"});
+          .getUpdateDef({ id: 1, name: "홍길동" });
       }).to.throw(/ORDER BY/);
 
       expect(() => {
         db.test
           .limit(1, 10)
-          .getUpdateDef({id: 1, name: "홍길동"});
+          .getUpdateDef({ id: 1, name: "홍길동" });
       }).to.throw(/LIMIT/);
 
       expect(() => {
         db.test
           .groupBy(item => [item.id])
-          .getUpdateDef({id: 1, name: "홍길동"});
+          .getUpdateDef({ id: 1, name: "홍길동" });
       }).to.throw(/GROUP BY/);
 
       expect(() => {
         db.test
           .having(item => [db.qh.equal(item.id, 1)])
-          .getUpdateDef({id: 1, name: "홍길동"});
+          .getUpdateDef({ id: 1, name: "홍길동" });
       }).to.throw(/HAVING/);
     });
 
@@ -970,7 +970,7 @@ describe("(common) orm.Queryable (QueryableDef => QueryDef)", () => {
       expect(() => {
         db.test
           .distinct()
-          .getInsertDef({name: "홍길동"});
+          .getInsertDef({ name: "홍길동" });
       }).to.throw(/DISTINCT/);
 
       expect(() => {

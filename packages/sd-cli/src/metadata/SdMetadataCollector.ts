@@ -13,16 +13,16 @@ import {
   MetadataSymbolicReferenceExpression,
   ModuleMetadata
 } from "@angular/compiler-cli";
-import {NeverEntryError} from "@simplysm/sd-core-common";
+import { NeverEntryError } from "@simplysm/sd-core-common";
 import * as path from "path";
-import {SdModuleMetadata} from "./SdModuleMetadata";
-import {isMetadataArrayExpression, isMetadataObjectExpression, TSdMetadata} from "./commons";
-import {SdClassMetadata} from "./SdClassMetadata";
-import {SdCallMetadata} from "./SdCallMetadata";
-import {SdObjectMetadata} from "./SdObjectMetadata";
-import {SdArrayMetadata} from "./SdArrayMetadata";
-import {SdFunctionMetadata} from "./SdFunctionMetadata";
-import {SdErrorMetadata} from "./SdErrorMetadata";
+import { SdModuleMetadata } from "./SdModuleMetadata";
+import { isMetadataArrayExpression, isMetadataObjectExpression, TSdMetadata } from "./commons";
+import { SdClassMetadata } from "./SdClassMetadata";
+import { SdCallMetadata } from "./SdCallMetadata";
+import { SdObjectMetadata } from "./SdObjectMetadata";
+import { SdArrayMetadata } from "./SdArrayMetadata";
+import { SdFunctionMetadata } from "./SdFunctionMetadata";
+import { SdErrorMetadata } from "./SdErrorMetadata";
 
 export class SdMetadataCollector {
   private readonly _moduleMetadataListObj: { [filePath: string]: ModuleMetadata[] } = {};
@@ -120,7 +120,7 @@ export class SdMetadataCollector {
       throw new NeverEntryError();
     }
     else {
-      return {module, metadata};
+      return { module, metadata };
     }
   }
 

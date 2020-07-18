@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, SimpleChanges} from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
+import { ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, SimpleChanges } from "@angular/core";
+import { SdInputValidate } from "../commons/SdInputValidate";
 
 require("jsbarcode");
 

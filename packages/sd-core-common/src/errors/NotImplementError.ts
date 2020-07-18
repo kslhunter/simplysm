@@ -1,4 +1,4 @@
-import {SdError} from "./SdError";
+import { SdError } from "./SdError";
 
 export class NotImplementError extends SdError {
   public constructor(message?: string) {

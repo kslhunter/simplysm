@@ -1,5 +1,5 @@
-import {expect} from "chai";
-import {QueryHelper, QueryUnit} from "@simplysm/sd-orm-common";
+import { expect } from "chai";
+import { QueryHelper, QueryUnit } from "@simplysm/sd-orm-common";
 
 describe("(common) orm.QueryHelper", () => {
   const qh = new QueryHelper("mssql");

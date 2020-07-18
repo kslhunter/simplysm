@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, HostBinding, HostListener, Input} from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {SdBusyContainerRootProvider} from "../root-providers/SdBusyContainerRootProvider";
+import { ChangeDetectionStrategy, Component, HostBinding, HostListener, Input } from "@angular/core";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { SdBusyContainerRootProvider } from "../root-providers/SdBusyContainerRootProvider";
 
 @Component({
   selector: "sd-busy-container",

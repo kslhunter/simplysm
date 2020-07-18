@@ -1,9 +1,9 @@
-import {SdExcelWorkbook} from "./SdExcelWorkbook";
-import {SdExcelCell} from "./SdExcelCell";
-import {SdExcelColumn} from "./SdExcelColumn";
-import {SdExcelRow} from "./SdExcelRow";
-import {SdExcelUtils} from "./utils/SdExcelUtils";
-import {ObjectUtils} from "@simplysm/sd-core-common";
+import { SdExcelWorkbook } from "./SdExcelWorkbook";
+import { SdExcelCell } from "./SdExcelCell";
+import { SdExcelColumn } from "./SdExcelColumn";
+import { SdExcelRow } from "./SdExcelRow";
+import { SdExcelUtils } from "./utils/SdExcelUtils";
+import { ObjectUtils } from "@simplysm/sd-core-common";
 
 export class SdExcelWorksheet {
   public relData: any;

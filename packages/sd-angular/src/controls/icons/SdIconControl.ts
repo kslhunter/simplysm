@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input, OnChanges, SimpleChanges} from "@angular/core";
+import { ChangeDetectionStrategy, Component, HostBinding, Input, OnChanges, SimpleChanges } from "@angular/core";
 import {
   config,
   FaSymbol,
@@ -17,13 +17,13 @@ import {
   Styles,
   Transform
 } from "@fortawesome/fontawesome-svg-core";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {ISdIconProps, objectWithKey, sdIconClassList, sdIconNormalizeIconSpec} from "../../commons/SdIconUtils";
-import {fab} from "@fortawesome/free-brands-svg-icons";
-import {far} from "@fortawesome/free-regular-svg-icons";
-import {fas} from "@fortawesome/free-solid-svg-icons";
-import {SdInputValidate} from "../../commons/SdInputValidate";
-import {sdIconNames} from "../../commons/sdIconNames";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
+import { ISdIconProps, objectWithKey, sdIconClassList, sdIconNormalizeIconSpec } from "../../commons/SdIconUtils";
+import { fab } from "@fortawesome/free-brands-svg-icons";
+import { far } from "@fortawesome/free-regular-svg-icons";
+import { fas } from "@fortawesome/free-solid-svg-icons";
+import { SdInputValidate } from "../../commons/SdInputValidate";
+import { sdIconNames } from "../../commons/sdIconNames";
 
 library.add(fas, far, fab);
 

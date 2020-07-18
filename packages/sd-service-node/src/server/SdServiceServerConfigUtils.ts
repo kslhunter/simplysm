@@ -1,5 +1,5 @@
 import * as path from "path";
-import {FsUtils} from "@simplysm/sd-core-node";
+import { FsUtils } from "@simplysm/sd-core-node";
 import * as url from "url";
 
 export class SdServiceServerConfigUtils {

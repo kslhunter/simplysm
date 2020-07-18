@@ -1,7 +1,7 @@
-import {DateTime} from "../types/DateTime";
-import {DateOnly} from "../types/DateOnly";
-import {Time} from "../types/Time";
-import {Uuid} from "../types/Uuid";
+import { DateTime } from "../types/DateTime";
+import { DateOnly } from "../types/DateOnly";
+import { Time } from "../types/Time";
+import { Uuid } from "../types/Uuid";
 
 export class JsonConvert {
   public static stringify(obj: any,
@@ -14,19 +14,19 @@ export class JsonConvert {
       const currValue = options?.replacer !== undefined ? options.replacer(key, value) : value;
 
       if (currValue instanceof Date) {
-        return {__type__: "Date", data: currValue.toISOString()};
+        return { __type__: "Date", data: currValue.toISOString() };
       }
       if (currValue instanceof DateTime) {
-        return {__type__: "DateTime", data: currValue.toString()};
+        return { __type__: "DateTime", data: currValue.toString() };
       }
       else if (currValue instanceof DateOnly) {
-        return {__type__: "DateOnly", data: currValue.toString()};
+        return { __type__: "DateOnly", data: currValue.toString() };
       }
       else if (currValue instanceof Time) {
-        return {__type__: "Time", data: currValue.toString()};
+        return { __type__: "Time", data: currValue.toString() };
       }
       else if (currValue instanceof Uuid) {
-        return {__type__: "Uuid", data: currValue.toString()};
+        return { __type__: "Uuid", data: currValue.toString() };
       }
       else if (currValue instanceof Error) {
         return {

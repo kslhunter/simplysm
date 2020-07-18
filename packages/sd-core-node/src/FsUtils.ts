@@ -2,7 +2,7 @@ import * as crypto from "crypto";
 import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
-import {SdError, Wait} from "@simplysm/sd-core-common";
+import { SdError, Wait } from "@simplysm/sd-core-common";
 import * as os from "os";
 import * as rimraf from "rimraf";
 
@@ -201,7 +201,7 @@ export class FsUtils {
 
     try {
       await new Promise<void>((resolve, reject) => {
-        fs.mkdir(targetPath, {recursive: true}, err => {
+        fs.mkdir(targetPath, { recursive: true }, err => {
           if (err) {
             reject(err);
             return;
@@ -217,7 +217,7 @@ export class FsUtils {
 
   public static mkdirs(targetPath: string): void {
     try {
-      fs.mkdirSync(targetPath, {recursive: true});
+      fs.mkdirSync(targetPath, { recursive: true });
     }
     catch (err) {
       throw new SdError(err, targetPath);

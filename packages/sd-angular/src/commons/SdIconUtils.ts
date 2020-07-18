@@ -61,14 +61,14 @@ export function sdIconNormalizeIconSpec(iconSpec: IconProp | undefined, defaultP
   }
 
   if (Array.isArray(iconSpec)) {
-    return {prefix: iconSpec[0], iconName: iconSpec[1]};
+    return { prefix: iconSpec[0], iconName: iconSpec[1] };
   }
 
-  return {prefix: defaultPrefix, iconName: iconSpec};
+  return { prefix: defaultPrefix, iconName: iconSpec };
 }
 
 export function objectWithKey<T>(key: string, value: T): { [id: string]: T } {
   // noinspection UnnecessaryLocalVariableJS
-  const result = (Array.isArray(value) && value.length > 0) || (!Array.isArray(value) && value !== undefined) ? {[key]: value} : {};
+  const result = (Array.isArray(value) && value.length > 0) || (!Array.isArray(value) && value !== undefined) ? { [key]: value } : {};
   return result;
 }

@@ -1,5 +1,5 @@
-import {ObjectUtils, Type} from "@simplysm/sd-core-common";
-import {IColumnDef, IForeignKeyDef, IForeignKeyTargetDef, IIndexDef, ITableDef} from "./commons";
+import { ObjectUtils, Type } from "@simplysm/sd-core-common";
+import { IColumnDef, IForeignKeyDef, IForeignKeyTargetDef, IIndexDef, ITableDef } from "./commons";
 
 export class DbDefinitionUtils {
   private static readonly _tableDefMetadataKey = "sd-orm-table-def";
@@ -31,19 +31,19 @@ export class DbDefinitionUtils {
 
   public static addColumnDef(tableType: Type<any>, def: IColumnDef): void {
     const tableDef = DbDefinitionUtils.getTableDef(tableType, false);
-    tableDef.columns = tableDef.columns.merge([def], {keys: ["propertyKey"]});
+    tableDef.columns = tableDef.columns.merge([def], { keys: ["propertyKey"] });
     DbDefinitionUtils.setTableDef(tableType, tableDef);
   }
 
   public static addForeignKeyDef(tableType: Type<any>, def: IForeignKeyDef): void {
     const tableDef = DbDefinitionUtils.getTableDef(tableType, false);
-    tableDef.foreignKeys = tableDef.foreignKeys.merge([def], {keys: ["propertyKey"]});
+    tableDef.foreignKeys = tableDef.foreignKeys.merge([def], { keys: ["propertyKey"] });
     DbDefinitionUtils.setTableDef(tableType, tableDef);
   }
 
   public static addForeignKeyTargetDef(tableType: Type<any>, def: IForeignKeyTargetDef): void {
     const tableDef = DbDefinitionUtils.getTableDef(tableType, false);
-    tableDef.foreignKeyTargets = tableDef.foreignKeyTargets.merge([def], {keys: ["propertyKey"]});
+    tableDef.foreignKeyTargets = tableDef.foreignKeyTargets.merge([def], { keys: ["propertyKey"] });
     DbDefinitionUtils.setTableDef(tableType, tableDef);
   }
 
@@ -54,8 +54,8 @@ export class DbDefinitionUtils {
       tableDef.indexes.push(def);
     }
     else {
-      prevIndexDef.columns = prevIndexDef.columns.merge(def.columns, {keys: ["columnPropertyKey"]});
-      tableDef.indexes = tableDef.indexes.merge([prevIndexDef], {keys: ["name"]});
+      prevIndexDef.columns = prevIndexDef.columns.merge(def.columns, { keys: ["columnPropertyKey"] });
+      tableDef.indexes = tableDef.indexes.merge([prevIndexDef], { keys: ["name"] });
     }
     DbDefinitionUtils.setTableDef(tableType, tableDef);
   }

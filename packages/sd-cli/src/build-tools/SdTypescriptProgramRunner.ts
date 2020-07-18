@@ -1,12 +1,12 @@
 import * as path from "path";
 import * as ts from "typescript";
 import anymatch from "anymatch";
-import {FsUtils, FsWatcher, IFileChangeInfo, Logger} from "@simplysm/sd-core-node";
-import {ISdPackageBuildResult} from "./SdPackageBuilder";
-import {SdAngularUtils} from "./SdAngularUtils";
-import {EventEmitter} from "events";
-import {ITsConfig} from "../commons";
-import {NeverEntryError, ObjectUtils, SdError} from "@simplysm/sd-core-common";
+import { FsUtils, FsWatcher, IFileChangeInfo, Logger } from "@simplysm/sd-core-node";
+import { ISdPackageBuildResult } from "./SdPackageBuilder";
+import { SdAngularUtils } from "./SdAngularUtils";
+import { EventEmitter } from "events";
+import { ITsConfig } from "../commons";
+import { NeverEntryError, ObjectUtils, SdError } from "@simplysm/sd-core-common";
 
 export class SdTypescriptProgramRunner extends EventEmitter {
   private readonly _logger = Logger.get([
@@ -54,7 +54,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
       .distinct();
 
     // 최초 변경 이벤트 알림
-    const firstChangeInfos = filePaths.map(item => ({type: "add" as const, filePath: item}));
+    const firstChangeInfos = filePaths.map(item => ({ type: "add" as const, filePath: item }));
     this.emit("change", firstChangeInfos.map(item => item.filePath));
 
     if (watch) {
@@ -92,7 +92,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
             .filter(key => this._fileInfoMapObj[key].scssDependencies.includes(changedInfo.filePath));
           for (const scssRelatedFilePath of scssRelatedFilePaths) {
             this._fileInfoMapObj[scssRelatedFilePath].changedByScss = true;
-            newChangedInfos.push({type: "change", filePath: scssRelatedFilePath});
+            newChangedInfos.push({ type: "change", filePath: scssRelatedFilePath });
           }
         }
 
@@ -103,7 +103,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
         for (const changedInfo of changedInfos) {
           const relatedFilePaths = this._getAllRelatedFilePaths(changedInfo.filePath);
           for (const relatedFilePath of relatedFilePaths) {
-            newChangedInfos.push({type: "change", filePath: relatedFilePath});
+            newChangedInfos.push({ type: "change", filePath: relatedFilePath });
           }
         }
 
@@ -132,7 +132,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
           this.emit("change", watchFilePaths.distinct());
 
           // 로직 수행
-          const results1 = await logicFn(watchFilePaths.map(item => ({filePath: item, type: "change"})));
+          const results1 = await logicFn(watchFilePaths.map(item => ({ filePath: item, type: "change" })));
           this.emit("complete", results1);
         }
         else {
@@ -396,7 +396,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
 
         const importNamedBindings = node.importClause?.namedBindings;
         if (!importNamedBindings) {
-          return {filePath, targetNames: []};
+          return { filePath, targetNames: [] };
         }
 
         if (!ts.isNamedImports(importNamedBindings)) {
@@ -405,7 +405,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
 
         const importTargets = importNamedBindings.elements.map(item => (item.propertyName ? item.propertyName.text : item.name.text));
 
-        return {filePath, targetNames: importTargets};
+        return { filePath, targetNames: importTargets };
       })
       .filterExists();
   }
@@ -434,7 +434,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
 
         const exportNamedBindings = node.exportClause;
         if (!exportNamedBindings) {
-          return {filePath, targetNames: []};
+          return { filePath, targetNames: [] };
         }
 
         if (!ts.isNamedExports(exportNamedBindings)) {
@@ -443,7 +443,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
 
         const exportTargets = exportNamedBindings.elements.map(item => (item.propertyName ? item.propertyName.text : item.name.text));
 
-        return {filePath, targetNames: exportTargets};
+        return { filePath, targetNames: exportTargets };
       })
       .filterExists();
   }

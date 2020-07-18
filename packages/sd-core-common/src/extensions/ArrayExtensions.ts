@@ -1,6 +1,6 @@
-import {Type, TypeWrap} from "../commons";
-import {ObjectUtils} from "../utils/ObjectUtils";
-import {NeverEntryError} from "../errors/NeverEntryError";
+import { Type, TypeWrap } from "../commons";
+import { ObjectUtils } from "../utils/ObjectUtils";
+import { NeverEntryError } from "../errors/NeverEntryError";
 
 declare global {
   interface Array<T> {
@@ -123,7 +123,7 @@ Array.prototype.groupBy = function <T, K, V>(this: T[], keySelector: (item: T, i
       existsRecord.values.push(valueObj);
     }
     else {
-      result.push({key: keyObj, values: [valueObj]});
+      result.push({ key: keyObj, values: [valueObj] });
     }
   }
 
@@ -219,23 +219,23 @@ Array.prototype.diffs = function <T, P>(this: T[], target: P[], options?: { keys
   for (const sourceItem of this) {
     //target 에 동일한 항목이 없을 때
     const sameTarget = uncheckedTarget.single(targetItem => (
-      ObjectUtils.equal(targetItem, sourceItem, options?.excludes !== undefined ? {excludes: options.excludes} : undefined)
+      ObjectUtils.equal(targetItem, sourceItem, options?.excludes !== undefined ? { excludes: options.excludes } : undefined)
     ));
 
     if (sameTarget === undefined) {
       //키 설정시
       if (options?.keys !== undefined) {
         //target 에 동일한 항목은 아니지만, key 가 같은게 있는 경우: source => target 수정된 항목
-        const sameKeyTargetItem = uncheckedTarget.single(targetItem => ObjectUtils.equal(targetItem, sourceItem, {keys: options.keys}));
+        const sameKeyTargetItem = uncheckedTarget.single(targetItem => ObjectUtils.equal(targetItem, sourceItem, { keys: options.keys }));
         if (sameKeyTargetItem !== undefined) {
-          result.push({source: sourceItem, target: sameKeyTargetItem});
+          result.push({ source: sourceItem, target: sameKeyTargetItem });
           uncheckedTarget.remove(sameKeyTargetItem);
           continue;
         }
       }
 
       //기타: source 에서 삭제된 항목
-      result.push({source: sourceItem});
+      result.push({ source: sourceItem });
     }
     else {
       uncheckedTarget.remove(sameTarget);
@@ -244,7 +244,7 @@ Array.prototype.diffs = function <T, P>(this: T[], target: P[], options?: { keys
 
   for (const uncheckedTargetItem of uncheckedTarget) {
     //target 에 추가된 항목
-    result.push({target: uncheckedTargetItem});
+    result.push({ target: uncheckedTargetItem });
   }
 
   return result;

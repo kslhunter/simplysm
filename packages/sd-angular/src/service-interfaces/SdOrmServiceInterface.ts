@@ -1,7 +1,7 @@
-import {DbContext, IDbContextExecutor, IQueryResultParseOption, TQueryDef} from "@simplysm/sd-orm-common";
-import {Type, Wait} from "@simplysm/sd-core-common";
-import {SdNgServiceClient} from "../providers/SdServiceFactoryProvider";
-import {SdServiceClient} from "@simplysm/sd-service-browser";
+import { DbContext, IDbContextExecutor, IQueryResultParseOption, TQueryDef } from "@simplysm/sd-orm-common";
+import { Type, Wait } from "@simplysm/sd-core-common";
+import { SdNgServiceClient } from "../providers/SdServiceFactoryProvider";
+import { SdServiceClient } from "@simplysm/sd-service-browser";
 
 export class SdServiceDbContextExecutor implements IDbContextExecutor {
   private _connId?: number;

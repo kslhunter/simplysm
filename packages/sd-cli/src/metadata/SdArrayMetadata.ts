@@ -1,7 +1,7 @@
-import {MetadataArray} from "@angular/compiler-cli";
-import {SdMetadataCollector} from "./SdMetadataCollector";
-import {SdModuleMetadata} from "./SdModuleMetadata";
-import {SdMetadataBase, TSdMetadata} from "./commons";
+import { MetadataArray } from "@angular/compiler-cli";
+import { SdMetadataCollector } from "./SdMetadataCollector";
+import { SdModuleMetadata } from "./SdModuleMetadata";
+import { SdMetadataBase, TSdMetadata } from "./commons";
 
 
 export class SdArrayMetadata extends SdMetadataBase implements Iterable<TSdMetadata> {

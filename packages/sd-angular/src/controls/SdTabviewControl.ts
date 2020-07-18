@@ -7,7 +7,7 @@ import {
   Output,
   QueryList
 } from "@angular/core";
-import {SdTabviewItemControl} from "./SdTabviewItemControl";
+import { SdTabviewItemControl } from "./SdTabviewItemControl";
 
 @Component({
   selector: "sd-tabview",

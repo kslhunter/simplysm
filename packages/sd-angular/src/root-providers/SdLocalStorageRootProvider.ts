@@ -1,7 +1,7 @@
-import {JsonConvert} from "@simplysm/sd-core-common";
-import {Injectable} from "@angular/core";
+import { JsonConvert } from "@simplysm/sd-core-common";
+import { Injectable } from "@angular/core";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdLocalStorageRootProvider {
   public prefix = "simplysm";
 

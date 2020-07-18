@@ -1,5 +1,5 @@
-import {SdError} from "@simplysm/sd-core-common";
-import {expect} from "chai";
+import { SdError } from "@simplysm/sd-core-common";
+import { expect } from "chai";
 
 describe("(common) core.errors.SdError", () => {
   it("특정 이름의 커스텀 에러를 만들 수 있다.  이를 사용하여 에러를 만들면, 해당 에러가 발생한 stack trace 가 새로 표시된다.", () => {

@@ -1,5 +1,5 @@
-import {ArgumentError} from "../errors/ArgumentError";
-import {DateTimeFormatUtils} from "../utils/DateTimeFormatUtils";
+import { ArgumentError } from "../errors/ArgumentError";
+import { DateTimeFormatUtils } from "../utils/DateTimeFormatUtils";
 
 export class Time {
   private _tick: number;
@@ -51,7 +51,7 @@ export class Time {
       );
     }
 
-    throw new ArgumentError({str});
+    throw new ArgumentError({ str });
   }
 
   public get hour(): number {

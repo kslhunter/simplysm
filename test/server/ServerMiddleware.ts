@@ -1,8 +1,8 @@
-import {SdServiceBase, SdServiceServer} from "@simplysm/sd-service-node";
+import { SdServiceBase, SdServiceServer } from "@simplysm/sd-service-node";
 import * as http from "http";
-import {NextFunction} from "connect";
+import { NextFunction } from "connect";
 import * as path from "path";
-import {FsUtils, Logger, LoggerSeverity} from "@simplysm/sd-core-node";
+import { FsUtils, Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 
 Logger.setConfig({
   file: {

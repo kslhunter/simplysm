@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input, OnInit} from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {sdThemes, TSdTheme} from "../commons";
+import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input, OnInit } from "@angular/core";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { sdThemes, TSdTheme } from "../commons";
 
 @Component({
   selector: "sd-progress-item",

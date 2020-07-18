@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from "@angular/core";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {SdInputValidate} from "../commons/SdInputValidate";
+import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output } from "@angular/core";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
+import { SdInputValidate } from "../commons/SdInputValidate";
 
 @Component({
   selector: "sd-html-editor",
@@ -126,15 +126,15 @@ export class SdHtmlEditorControl {
   public readonly valueChange = new EventEmitter<string>();
 
   @Input()
-  @SdInputValidate({type: String, includes: ["preview", "edit", "code"]})
+  @SdInputValidate({ type: String, includes: ["preview", "edit", "code"] })
   public viewState: "preview" | "edit" | "code" = "edit";
 
   @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
+  @SdInputValidate({ type: Boolean, notnull: true })
   public rowsButton = true;
 
   @Input()
-  @SdInputValidate({type: Number, notnull: true})
+  @SdInputValidate({ type: Number, notnull: true })
   public rows = 3;
 
   @Input()

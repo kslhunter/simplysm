@@ -5,9 +5,9 @@ import {
   SdOrmUtils,
   TQueryDef
 } from "@simplysm/sd-orm-common";
-import {IDbConnectionConfig} from "./commons";
-import {IDbConnection} from "./IDbConnection";
-import {DbConnectionFactory} from "./DbConnectionFactory";
+import { IDbConnectionConfig } from "./commons";
+import { IDbConnection } from "./IDbConnection";
+import { DbConnectionFactory } from "./DbConnectionFactory";
 
 export class NodeDbContextExecutor implements IDbContextExecutor {
   private _conn?: IDbConnection;

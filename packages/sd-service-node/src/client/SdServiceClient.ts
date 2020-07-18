@@ -1,4 +1,4 @@
-import {JsonConvert, Type, Wait} from "@simplysm/sd-core-common";
+import { JsonConvert, Type, Wait } from "@simplysm/sd-core-common";
 import {
   ISdServiceRequest,
   ISdServiceSplitRawRequest,
@@ -6,9 +6,9 @@ import {
   SdServiceEventBase,
   TSdServiceRawResponse
 } from "@simplysm/sd-service-common";
-import {EventEmitter} from "events";
+import { EventEmitter } from "events";
 import * as WebSocket from "ws";
-import {FsUtils} from "@simplysm/sd-core-node";
+import { FsUtils } from "@simplysm/sd-core-node";
 
 export class SdServiceClient extends EventEmitter {
   private _ws?: WebSocket;
@@ -33,7 +33,7 @@ export class SdServiceClient extends EventEmitter {
         await this.closeAsync();
       }
 
-      this._ws = new WebSocket(`${this.ssl ? "wss" : "ws"}://${this.host}:${this.port}`, {origin: "file://"});
+      this._ws = new WebSocket(`${this.ssl ? "wss" : "ws"}://${this.host}:${this.port}`, { origin: "file://" });
 
       this._ws.onopen = (): void => {
         resolve();

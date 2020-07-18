@@ -1,6 +1,6 @@
-import {FsUtils} from "@simplysm/sd-core-node";
+import { FsUtils } from "@simplysm/sd-core-node";
 import * as path from "path";
-import {expect} from "chai";
+import { expect } from "chai";
 
 describe("(node) core.FsUtils", () => {
   describe("getMd5", () => {

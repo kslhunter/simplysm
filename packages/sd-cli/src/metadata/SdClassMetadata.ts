@@ -1,9 +1,9 @@
-import {ClassMetadata, isClassMetadata, MetadataArray, MetadataEntry} from "@angular/compiler-cli";
-import {NeverEntryError} from "@simplysm/sd-core-common";
-import {isMetadataArrayExpression, isMetadataObjectExpression, SdMetadataBase, TSdMetadata} from "./commons";
-import {SdCallMetadata} from "./SdCallMetadata";
-import {SdMetadataCollector} from "./SdMetadataCollector";
-import {SdModuleMetadata} from "./SdModuleMetadata";
+import { ClassMetadata, isClassMetadata, MetadataArray, MetadataEntry } from "@angular/compiler-cli";
+import { NeverEntryError } from "@simplysm/sd-core-common";
+import { isMetadataArrayExpression, isMetadataObjectExpression, SdMetadataBase, TSdMetadata } from "./commons";
+import { SdCallMetadata } from "./SdCallMetadata";
+import { SdMetadataCollector } from "./SdMetadataCollector";
+import { SdModuleMetadata } from "./SdModuleMetadata";
 
 
 export class SdClassMetadata extends SdMetadataBase {

@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, ElementRef} from "@angular/core";
-import {SdModalBase} from "../providers/SdModalProvider";
+import { ChangeDetectionStrategy, Component, ElementRef } from "@angular/core";
+import { SdModalBase } from "../providers/SdModalProvider";
 
 @Component({
   selector: "sd-address-search-modal",
@@ -49,7 +49,7 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
           },
           width: "100%",
           height: "100%"
-        }).embed(contentEl, {autoClose: false});
+        }).embed(contentEl, { autoClose: false });
       });
     };
 

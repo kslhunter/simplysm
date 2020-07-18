@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, forwardRef, Inject, Input} from "@angular/core";
-import {SdCheckboxGroupControl} from "./SdCheckboxGroupControl";
+import { ChangeDetectionStrategy, Component, forwardRef, Inject, Input } from "@angular/core";
+import { SdCheckboxGroupControl } from "./SdCheckboxGroupControl";
 
 @Component({
   selector: "sd-checkbox-group-item",

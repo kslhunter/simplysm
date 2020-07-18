@@ -1,4 +1,4 @@
-import {SdExcelWorksheet} from "./SdExcelWorksheet";
+import { SdExcelWorksheet } from "./SdExcelWorksheet";
 
 export class SdExcelColumn {
   public colData: any;
@@ -41,7 +41,7 @@ export class SdExcelColumn {
   }
 
   public set width(value: number) {
-    this.colData.$ = this.colData.$ ?? {min: this._col + 1, max: this._col + 1};
+    this.colData.$ = this.colData.$ ?? { min: this._col + 1, max: this._col + 1 };
     this.colData.$.width = value;
   }
 }

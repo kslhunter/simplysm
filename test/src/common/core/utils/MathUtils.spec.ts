@@ -1,5 +1,5 @@
-import {MathUtils} from "@simplysm/sd-core-common";
-import {expect} from "chai";
+import { MathUtils } from "@simplysm/sd-core-common";
+import { expect } from "chai";
 
 describe("(common) core.utils.MathUtils", () => {
   it("min/max 사이의 랜덤한 정수값을 가져올 수 있다.", () => {

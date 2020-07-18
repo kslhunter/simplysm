@@ -1,9 +1,9 @@
-import {DateTime} from "../types/DateTime";
-import {DateOnly} from "../types/DateOnly";
-import {Time} from "../types/Time";
-import {Uuid} from "../types/Uuid";
-import {StripTypeWrap, Type, TypeWrap} from "../commons";
-import {NeverEntryError} from "../errors/NeverEntryError";
+import { DateTime } from "../types/DateTime";
+import { DateOnly } from "../types/DateOnly";
+import { Time } from "../types/Time";
+import { Uuid } from "../types/Uuid";
+import { StripTypeWrap, Type, TypeWrap } from "../commons";
+import { NeverEntryError } from "../errors/NeverEntryError";
 import * as os from "os";
 
 export class ObjectUtils {
@@ -44,7 +44,7 @@ export class ObjectUtils {
       const result: { [key: string]: any } = {};
       Object.setPrototypeOf(result, source.constructor.prototype);
       const currPrevClones = prevClones ?? [];
-      currPrevClones.push({source, clone: result});
+      currPrevClones.push({ source, clone: result });
       for (const key of Object.keys(source).filter(sourceKey => options?.excludes?.includes(sourceKey) !== true)) {
         if (source[key] === undefined) {
           result[key] = undefined;
@@ -58,7 +58,7 @@ export class ObjectUtils {
             result[key] = matchedPrevClone.clone;
           }
           else {
-            result[key] = ObjectUtils._clone(source[key], {useRefTypes: options?.useRefTypes}, currPrevClones);
+            result[key] = ObjectUtils._clone(source[key], { useRefTypes: options?.useRefTypes }, currPrevClones);
           }
         }
       }
@@ -149,7 +149,7 @@ export class ObjectUtils {
       }
 
       for (const key of sourceKeys) {
-        if (!ObjectUtils.equal(source[key], target[key], {ignoreArrayIndex: options?.ignoreArrayIndex})) {
+        if (!ObjectUtils.equal(source[key], target[key], { ignoreArrayIndex: options?.ignoreArrayIndex })) {
           return false;
         }
       }
@@ -212,7 +212,7 @@ export class ObjectUtils {
     }
 
     if (Object.keys(invalidateDef).length > 0) {
-      return {value, invalidateDef, message};
+      return { value, invalidateDef, message };
     }
 
     return undefined;

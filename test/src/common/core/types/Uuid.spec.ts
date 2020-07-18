@@ -1,5 +1,5 @@
-import {expect} from "chai";
-import {Uuid} from "@simplysm/sd-core-common";
+import { expect } from "chai";
+import { Uuid } from "@simplysm/sd-core-common";
 
 describe("(common) core.types.Uuid", () => {
   it("새로운 유니크한 아이디를 포함한 객체를 생성할 수 있다.", () => {

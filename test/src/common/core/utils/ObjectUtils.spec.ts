@@ -1,10 +1,10 @@
-import {DateOnly, DateTime, ObjectUtils, Time, Uuid} from "@simplysm/sd-core-common";
-import {expect} from "chai";
+import { DateOnly, DateTime, ObjectUtils, Time, Uuid } from "@simplysm/sd-core-common";
+import { expect } from "chai";
 
 describe("(common) core.utils.ObjectUtils", () => {
   describe("clone", () => {
     it("객체를 복사한 다른 객체를 반환한다.", () => {
-      const obj = {a: 1, b: "2"};
+      const obj = { a: 1, b: "2" };
       const cloneObj = ObjectUtils.clone(obj);
 
       expect(obj).to.not.equal(cloneObj);
@@ -12,14 +12,14 @@ describe("(common) core.utils.ObjectUtils", () => {
     });
 
     it("excludes 옵션이 있는 Property 를 무시하고 복사한다.", () => {
-      const obj = {a: 1, b: "2"};
-      const cloneObj = ObjectUtils.clone(obj, {excludes: ["b"]});
+      const obj = { a: 1, b: "2" };
+      const cloneObj = ObjectUtils.clone(obj, { excludes: ["b"] });
 
       expect(cloneObj).to.not.have.key("b");
     });
 
     it("순환 객체일 경우에도 clone 이 가능하다.", () => {
-      const obj = {a: 1, b: "2", c: {d: "a", e: undefined as any}};
+      const obj = { a: 1, b: "2", c: { d: "a", e: undefined as any } };
       obj.c.e = obj.c;
       const cloneObj = ObjectUtils.clone(obj);
 
@@ -43,8 +43,8 @@ describe("(common) core.utils.ObjectUtils", () => {
 
     it("(array) 정상 작동 한다.", () => {
       const arr = [
-        {a: 1, b: "2"},
-        {a: 3, b: "4"}
+        { a: 1, b: "2" },
+        { a: 3, b: "4" }
       ];
       const cloneObj = ObjectUtils.clone(arr);
 
@@ -54,10 +54,10 @@ describe("(common) core.utils.ObjectUtils", () => {
 
     it("(array) excludes 를 사용해도 정상 작동 한다.", () => {
       const arr = [
-        {a: 1, b: "2"},
-        {a: 3, b: "4"}
+        { a: 1, b: "2" },
+        { a: 3, b: "4" }
       ];
-      const cloneObj = ObjectUtils.clone(arr, {excludes: ["b"]});
+      const cloneObj = ObjectUtils.clone(arr, { excludes: ["b"] });
 
       expect(cloneObj[0]).to.not.have.key("b");
       expect(cloneObj[1]).to.not.have.key("b");
@@ -66,9 +66,9 @@ describe("(common) core.utils.ObjectUtils", () => {
 
   describe("equal", () => {
     it("두 객체의 동일 여부를 확인한다.", () => {
-      const obj1 = {a: 1, b: "2"};
-      const obj2 = {a: 1, b: "2"};
-      const obj3 = {a: 1, b: "3"};
+      const obj1 = { a: 1, b: "2" };
+      const obj2 = { a: 1, b: "2" };
+      const obj3 = { a: 1, b: "3" };
 
       expect(ObjectUtils.equal(obj1, obj2)).to.equal(true);
       expect(ObjectUtils.equal(obj1, obj3)).to.equal(false);
@@ -81,24 +81,24 @@ describe("(common) core.utils.ObjectUtils", () => {
     });
 
     it("excludes 옵션이 설정된 경우, 해당 Property 가 서로 다르더라도, 다른 Property 가 그대로라면 동일한 값으로 인식한다.", () => {
-      const obj1 = {a: 1, b: "2"};
-      const obj2 = {a: 1, b: "3"};
+      const obj1 = { a: 1, b: "2" };
+      const obj2 = { a: 1, b: "3" };
 
-      expect(ObjectUtils.equal(obj1, obj2, {excludes: ["b"]})).to.equal(true);
+      expect(ObjectUtils.equal(obj1, obj2, { excludes: ["b"] })).to.equal(true);
     });
 
     it("keys 옵션이 설정된 경우, 해당 Property 만 비교하여, 다른 Property 가 서로 다르더라도, 동일한 값으로 인식한다.", () => {
-      const obj1 = {a: 1, b: "2"};
-      const obj2 = {a: 1, b: "3"};
+      const obj1 = { a: 1, b: "2" };
+      const obj2 = { a: 1, b: "3" };
 
-      expect(ObjectUtils.equal(obj1, obj2, {keys: ["a"]})).to.equal(true);
+      expect(ObjectUtils.equal(obj1, obj2, { keys: ["a"] })).to.equal(true);
     });
 
     it("순환 Object 의 경우, 순환오류가 발생된다.", () => {
-      const obj1 = {a: 1, b: "2", c: {d: "a", e: undefined as any}};
+      const obj1 = { a: 1, b: "2", c: { d: "a", e: undefined as any } };
       obj1.c.e = obj1.c;
 
-      const obj2 = {a: 1, b: "2", c: {d: "a", e: undefined as any}};
+      const obj2 = { a: 1, b: "2", c: { d: "a", e: undefined as any } };
       obj2.c.e = obj2.c;
 
       if (process.versions.node !== undefined || navigator.userAgent.includes("Chrome")) {
@@ -110,11 +110,11 @@ describe("(common) core.utils.ObjectUtils", () => {
     });
 
     it("순환 Object 이지만, 포인터가 같은곳을 바라보고 있는것이 있다면, 같은 값으로 간주되고, 비교 순환이 멈추기 때문에 정상 동작한다.", () => {
-      const obj1 = {a: 1, b: "2", c: {d: "a", e: undefined as any}};
+      const obj1 = { a: 1, b: "2", c: { d: "a", e: undefined as any } };
       obj1.c.e = obj1.c;
 
-      const obj2 = {a: 1, b: "2", c: {d: "a", f: obj1}};
-      const obj3 = {a: 1, b: "2", c: {d: "a", f: obj1}};
+      const obj2 = { a: 1, b: "2", c: { d: "a", f: obj1 } };
+      const obj3 = { a: 1, b: "2", c: { d: "a", f: obj1 } };
 
       expect(ObjectUtils.equal(obj2, obj3)).to.equal(true);
     });
@@ -133,11 +133,11 @@ describe("(common) core.utils.ObjectUtils", () => {
     });
 
     it("(array) 정상 작동 한다(배열내 객체의 순서가 다르면, 내용물이 같더라도 다른것으로 인식된다)", () => {
-      const arr1 = [{a: 1, b: "1", c: [1, 2]}, {a: 1, b: "2", c: [1, 2]}];
-      const arr2 = [{a: 1, b: "1", c: [1, 2]}, {a: 1, b: "2", c: [1, 2]}];
-      const arr3 = [{a: 1, b: "2", c: [1, 2]}, {a: 1, b: "1", c: [1, 2]}];
-      const arr4 = [{a: 1, b: "1", c: [1, 2]}];
-      const arr5 = [{a: 1, b: "2", c: [1, 2]}];
+      const arr1 = [{ a: 1, b: "1", c: [1, 2] }, { a: 1, b: "2", c: [1, 2] }];
+      const arr2 = [{ a: 1, b: "1", c: [1, 2] }, { a: 1, b: "2", c: [1, 2] }];
+      const arr3 = [{ a: 1, b: "2", c: [1, 2] }, { a: 1, b: "1", c: [1, 2] }];
+      const arr4 = [{ a: 1, b: "1", c: [1, 2] }];
+      const arr5 = [{ a: 1, b: "2", c: [1, 2] }];
 
       expect(ObjectUtils.equal(arr1, arr2)).to.equal(true);
       expect(ObjectUtils.equal(arr1, arr3)).to.equal(false);
@@ -146,37 +146,37 @@ describe("(common) core.utils.ObjectUtils", () => {
     });
 
     it("(array) 내부의 모든 Array 에서 순서가 다르더라도, 내용물이 같다면 같은것으로 인식되도록 옵션으로 설정할 수 있다", () => {
-      const arr1 = [{a: 1, b: "1", c: [1, 2]}, {a: 1, b: "2", c: [1, 2]}];
-      const arr2 = [{a: 1, b: "1", c: [2, 1]}, {a: 1, b: "2", c: [1, 2]}];
-      const arr3 = [{a: 1, b: "2", c: [1, 2]}, {a: 1, b: "1", c: [1, 2]}];
-      const arr4 = [{a: 1, b: "1", c: [1, 2]}];
-      const arr5 = [{a: 1, b: "2", c: [1, 2]}];
+      const arr1 = [{ a: 1, b: "1", c: [1, 2] }, { a: 1, b: "2", c: [1, 2] }];
+      const arr2 = [{ a: 1, b: "1", c: [2, 1] }, { a: 1, b: "2", c: [1, 2] }];
+      const arr3 = [{ a: 1, b: "2", c: [1, 2] }, { a: 1, b: "1", c: [1, 2] }];
+      const arr4 = [{ a: 1, b: "1", c: [1, 2] }];
+      const arr5 = [{ a: 1, b: "2", c: [1, 2] }];
 
-      expect(ObjectUtils.equal(arr1, arr2, {ignoreArrayIndex: true})).to.equal(true);
-      expect(ObjectUtils.equal(arr1, arr3, {ignoreArrayIndex: true})).to.equal(true);
-      expect(ObjectUtils.equal(arr1, arr4, {ignoreArrayIndex: true})).to.equal(false);
-      expect(ObjectUtils.equal(arr1, arr5, {ignoreArrayIndex: true})).to.equal(false);
+      expect(ObjectUtils.equal(arr1, arr2, { ignoreArrayIndex: true })).to.equal(true);
+      expect(ObjectUtils.equal(arr1, arr3, { ignoreArrayIndex: true })).to.equal(true);
+      expect(ObjectUtils.equal(arr1, arr4, { ignoreArrayIndex: true })).to.equal(false);
+      expect(ObjectUtils.equal(arr1, arr5, { ignoreArrayIndex: true })).to.equal(false);
     });
 
     it("(array) Array 에서 excludes 옵션이 정상 동작한다.", () => {
-      const arr1 = [{a: 1, b: "1", c: [1, 2]}, {a: 1, b: "2", c: [1, 2]}];
-      const arr2 = [{a: 1, b: "1", c: [1, 2]}, {a: 1, b: "3", c: [1, 2]}];
+      const arr1 = [{ a: 1, b: "1", c: [1, 2] }, { a: 1, b: "2", c: [1, 2] }];
+      const arr2 = [{ a: 1, b: "1", c: [1, 2] }, { a: 1, b: "3", c: [1, 2] }];
 
-      expect(ObjectUtils.equal(arr1, arr2, {excludes: ["b"]})).to.equal(true);
+      expect(ObjectUtils.equal(arr1, arr2, { excludes: ["b"] })).to.equal(true);
     });
   });
 
   describe("merge", () => {
     it("두개의 객체를 merge 합니다", () => {
-      const obj1 = {a: 1, b: 1, c: 3};
-      const obj2 = {a: 1, b: 2, d: 4};
-      expect(ObjectUtils.merge(obj1, obj2)).to.deep.equal({a: 1, b: 2, c: 3, d: 4});
+      const obj1 = { a: 1, b: 1, c: 3 };
+      const obj2 = { a: 1, b: 2, d: 4 };
+      expect(ObjectUtils.merge(obj1, obj2)).to.deep.equal({ a: 1, b: 2, c: 3, d: 4 });
     });
 
     it("Hierarchical 구조일 경우, 내부 객체 도 merge 로 동작합니다", () => {
-      const obj1 = {a: 1, b: 1, c: 3, e: {f: 1, g: 1, h: 2}};
-      const obj2 = {a: 1, b: 2, d: 4, e: {f: 1, g: 1, i: 3}};
-      expect(ObjectUtils.merge(obj1, obj2)).to.deep.equal({a: 1, b: 2, c: 3, d: 4, e: {f: 1, g: 1, h: 2, i: 3}});
+      const obj1 = { a: 1, b: 1, c: 3, e: { f: 1, g: 1, h: 2 } };
+      const obj2 = { a: 1, b: 2, d: 4, e: { f: 1, g: 1, i: 3 } };
+      expect(ObjectUtils.merge(obj1, obj2)).to.deep.equal({ a: 1, b: 2, c: 3, d: 4, e: { f: 1, g: 1, h: 2, i: 3 } });
     });
 
     it("Date, DateTime, DateOnly, Time 에서도 정상 동작합니다", () => {
@@ -194,7 +194,7 @@ describe("(common) core.utils.ObjectUtils", () => {
         uuid: Uuid.new()
       };
       expect(ObjectUtils.merge(obj1, obj2)).to.deep.equal(
-        {a: 1, ...obj2}
+        { a: 1, ...obj2 }
       );
     });
   });
@@ -357,12 +357,12 @@ describe("(common) core.utils.ObjectUtils", () => {
 
     it("중간 과정에 undefined 가 등장하는경우, 오류가 발생된다", () => {
       expect(() => {
-        ObjectUtils.getChainValueByDepth({a: 1}, "a", 3);
+        ObjectUtils.getChainValueByDepth({ a: 1 }, "a", 3);
       }).to.throw();
     });
 
     it("중간 과정에 undefined 가 등장하는 경우, 오류를 발생하지 않고 undefined 를 반환하도록 설정할 수 있다.", () => {
-      expect(ObjectUtils.getChainValueByDepth({a: 1}, "a", 3, true)).to.equal(undefined);
+      expect(ObjectUtils.getChainValueByDepth({ a: 1 }, "a", 3, true)).to.equal(undefined);
     });
   });
 
@@ -380,12 +380,12 @@ describe("(common) core.utils.ObjectUtils", () => {
 
     it("중간 과정에 undefined 가 등장하는경우, 오류가 발생된다", () => {
       expect(() => {
-        ObjectUtils.getChainValue({a: 1}, "a.b.c");
+        ObjectUtils.getChainValue({ a: 1 }, "a.b.c");
       }).to.throw();
     });
 
     it("중간 과정에 undefined 가 등장하는 경우, 오류를 발생하지 않고 undefined 를 반환하도록 설정할 수 있다.", () => {
-      expect(ObjectUtils.getChainValue({a: 1}, "a.b.c", true)).to.equal(undefined);
+      expect(ObjectUtils.getChainValue({ a: 1 }, "a.b.c", true)).to.equal(undefined);
     });
   });
 
@@ -419,7 +419,7 @@ describe("(common) core.utils.ObjectUtils", () => {
 
   describe("clearUndefined", () => {
     it("Object 의 각 키를 돌면서, 키의 값이 undefined 면, 해당 키 자체를 delete 한다.", () => {
-      const obj = {a: 1, b: undefined};
+      const obj = { a: 1, b: undefined };
       ObjectUtils.clearUndefined(obj);
       expect(obj).to.not.have.key("b");
     });

@@ -1,15 +1,15 @@
-import {FsUtils, Logger, NetworkUtils, ProcessManager, ProcessWorkManager} from "@simplysm/sd-core-node";
+import { FsUtils, Logger, NetworkUtils, ProcessManager, ProcessWorkManager } from "@simplysm/sd-core-node";
 import * as path from "path";
-import {INpmConfig, ISdProjectConfig} from "../commons";
-import {DateTime, NeverEntryError, Wait} from "@simplysm/sd-core-common";
-import {SdCliPackage} from "./SdCliPackage";
-import {ISdPackageBuildResult} from "../build-tools/SdPackageBuilder";
+import { INpmConfig, ISdProjectConfig } from "../commons";
+import { DateTime, NeverEntryError, Wait } from "@simplysm/sd-core-common";
+import { SdCliPackage } from "./SdCliPackage";
+import { ISdPackageBuildResult } from "../build-tools/SdPackageBuilder";
 import * as os from "os";
 import * as semver from "semver";
-import {SdProjectConfigUtils} from "../SdProjectConfigUtils";
-import {SdCliLocalUpdate} from "./SdCliLocalUpdate";
-import {SdServiceServer} from "@simplysm/sd-service-node";
-import {NextHandleFunction} from "connect";
+import { SdProjectConfigUtils } from "../SdProjectConfigUtils";
+import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
+import { SdServiceServer } from "@simplysm/sd-service-node";
+import { NextHandleFunction } from "connect";
 
 const decache = require("decache");
 
@@ -420,7 +420,7 @@ export class SdCliProject {
     fn(this._npmConfig.devDependencies);
     fn(this._npmConfig.peerDependencies);
 
-    await FsUtils.writeJsonAsync(this._npmConfigPath, this._npmConfig, {space: 2});
+    await FsUtils.writeJsonAsync(this._npmConfigPath, this._npmConfig, { space: 2 });
   }
 
   private async _parallelPackagesByDepAsync(cb: (pkg: SdCliPackage) => Promise<void>): Promise<void> {
@@ -482,7 +482,7 @@ export class SdCliProject {
         throw new NeverEntryError();
       }
 
-      this._servers[pkg.name] = this._servers[pkg.name] ?? {middlewares: {}};
+      this._servers[pkg.name] = this._servers[pkg.name] ?? { middlewares: {} };
       server.middlewares = Object.values(this._servers[pkg.name].middlewares).mapMany();
 
       this._servers[pkg.name].server = server;
@@ -500,7 +500,7 @@ export class SdCliProject {
   private async _registerClientAsync(pkg: SdCliPackage, middlewares: NextHandleFunction[]): Promise<void> {
     if (pkg.info.config?.type !== "web" && pkg.info.config?.type !== "android") throw new NeverEntryError();
 
-    this._servers[pkg.info.config.server] = this._servers[pkg.info.config.server] ?? {middlewares: {}};
+    this._servers[pkg.info.config.server] = this._servers[pkg.info.config.server] ?? { middlewares: {} };
     this._servers[pkg.info.config.server].middlewares[pkg.name] = middlewares;
 
     await Wait.true(() => this._servers[pkg.info.config!["server"]].server !== undefined);

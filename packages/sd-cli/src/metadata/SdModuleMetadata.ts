@@ -1,9 +1,9 @@
-import {MetadataEntry, ModuleMetadata} from "@angular/compiler-cli";
+import { MetadataEntry, ModuleMetadata } from "@angular/compiler-cli";
 import * as path from "path";
-import {NeverEntryError} from "@simplysm/sd-core-common";
-import {FsUtils} from "@simplysm/sd-core-node";
-import {SdMetadataCollector} from "./SdMetadataCollector";
-import {isMetadataObjectExpression, TSdMetadata} from "./commons";
+import { NeverEntryError } from "@simplysm/sd-core-common";
+import { FsUtils } from "@simplysm/sd-core-node";
+import { SdMetadataCollector } from "./SdMetadataCollector";
+import { isMetadataObjectExpression, TSdMetadata } from "./commons";
 
 
 export class SdModuleMetadata {

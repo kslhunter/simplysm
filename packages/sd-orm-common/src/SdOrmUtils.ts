@@ -1,6 +1,6 @@
-import {IQueryResultParseOption, TEntity, TEntityValue, TQueryValue} from "./commons";
-import {DateOnly, DateTime, JsonConvert, Time, Type, Uuid} from "@simplysm/sd-core-common";
-import {QueryUnit} from "./QueryUnit";
+import { IQueryResultParseOption, TEntity, TEntityValue, TQueryValue } from "./commons";
+import { DateOnly, DateTime, JsonConvert, Time, Type, Uuid } from "@simplysm/sd-core-common";
+import { QueryUnit } from "./QueryUnit";
 
 export class SdOrmUtils {
   public static canConvertToQueryValue(value: any): value is TEntityValue<TQueryValue> {
@@ -118,7 +118,7 @@ export class SdOrmUtils {
           }
 
           if (option.joins[joinKey].isSingle) {
-            grouped.push({key: keyObj, values: valueObj});
+            grouped.push({ key: keyObj, values: valueObj });
           }
           else {
             const keyJson = JsonConvert.stringify(keyObj);
@@ -127,7 +127,7 @@ export class SdOrmUtils {
             }
             else {
               const valueArr = [valueObj];
-              grouped.push({key: keyObj, values: valueArr});
+              grouped.push({ key: keyObj, values: valueArr });
               groupedMultiMapObj[keyJson] = valueArr;
             }
           }

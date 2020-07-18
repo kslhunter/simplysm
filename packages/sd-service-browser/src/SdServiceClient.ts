@@ -1,5 +1,5 @@
-import {FileUtils} from "@simplysm/sd-core-browser";
-import {JsonConvert, Type, Wait} from "@simplysm/sd-core-common";
+import { FileUtils } from "@simplysm/sd-core-browser";
+import { JsonConvert, Type, Wait } from "@simplysm/sd-core-common";
 import {
   ISdServiceRequest,
   ISdServiceSplitRawRequest,
@@ -7,7 +7,7 @@ import {
   SdServiceEventBase,
   TSdServiceRawResponse
 } from "@simplysm/sd-service-common";
-import {EventEmitter} from "events";
+import { EventEmitter } from "events";
 
 export class SdServiceClient extends EventEmitter {
   private _ws?: WebSocket;

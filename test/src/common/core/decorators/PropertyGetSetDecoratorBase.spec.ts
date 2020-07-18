@@ -1,6 +1,6 @@
-import {PropertyGetSetDecoratorBase} from "@simplysm/sd-core-common";
+import { PropertyGetSetDecoratorBase } from "@simplysm/sd-core-common";
 import * as sinon from "sinon";
-import {expect} from "chai";
+import { expect } from "chai";
 
 describe("(common) core.decorators.PropertyGetSetDecoratorBase", () => {
   it("Object 의 Property 위에 놓을 Decorator 를 작성할 수 있으며, 각 Property 의 get 및 before/after set 에 따른 이벤트를 받아 처리할 수 있다.", () => {

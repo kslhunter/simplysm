@@ -19,11 +19,11 @@ module.exports = {
       rules: {
         "@angular-eslint/directive-selector": [
           "error",
-          {type: "attribute", prefix: "sd", style: "camelCase"}
+          { type: "attribute", prefix: "sd", style: "camelCase" }
         ],
         "@angular-eslint/component-selector": [
           "error",
-          {type: "element", prefix: "sd", style: "kebab-case"}
+          { type: "element", prefix: "sd", style: "kebab-case" }
         ]
       }
     }

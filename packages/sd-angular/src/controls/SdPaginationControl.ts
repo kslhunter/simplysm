@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
+import { SdInputValidate } from "../commons/SdInputValidate";
 
 @Component({
   selector: "sd-pagination",

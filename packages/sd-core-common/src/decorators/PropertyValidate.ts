@@ -1,5 +1,5 @@
-import {PropertyGetSetDecoratorBase} from "./PropertyGetSetDecoratorBase";
-import {ObjectUtils, TValidateDef} from "../utils/ObjectUtils";
+import { PropertyGetSetDecoratorBase } from "./PropertyGetSetDecoratorBase";
+import { ObjectUtils, TValidateDef } from "../utils/ObjectUtils";
 
 export function PropertyValidate(def: TValidateDef<any>, replacer?: (value: any) => any): (target: any, propertyName: string, inputDescriptor?: PropertyDescriptor) => void {
   return PropertyGetSetDecoratorBase({

@@ -1,24 +1,24 @@
-import {ISdPackageInfo, ITsConfig} from "../commons";
-import {FsUtils, FsWatcher, IFileChangeInfo, Logger} from "@simplysm/sd-core-node";
+import { ISdPackageInfo, ITsConfig } from "../commons";
+import { FsUtils, FsWatcher, IFileChangeInfo, Logger } from "@simplysm/sd-core-node";
 import * as path from "path";
 import * as ts from "typescript";
-import {NeverEntryError, ObjectUtils} from "@simplysm/sd-core-common";
-import {EventEmitter} from "events";
+import { NeverEntryError, ObjectUtils } from "@simplysm/sd-core-common";
+import { EventEmitter } from "events";
 import * as os from "os";
 import anymatch from "anymatch";
-import {isMetadataError, MetadataCollector} from "@angular/compiler-cli";
-import {ESLint} from "eslint";
-import {SdNgGenerator} from "./SdNgGenerator";
+import { isMetadataError, MetadataCollector } from "@angular/compiler-cli";
+import { ESLint } from "eslint";
+import { SdNgGenerator } from "./SdNgGenerator";
 import * as webpack from "webpack";
-import {SdWebpackWriteFilePlugin} from "./SdWebpackWriteFilePlugin";
-import {NextHandleFunction} from "connect";
+import { SdWebpackWriteFilePlugin } from "./SdWebpackWriteFilePlugin";
+import { NextHandleFunction } from "connect";
 import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import * as fs from "fs";
-import {AngularCompilerPlugin, PLATFORM} from "@ngtools/webpack";
+import { AngularCompilerPlugin, PLATFORM } from "@ngtools/webpack";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
-import {SdWebpackInputHostWithScss} from "./SdWebpackInputHostWithScss";
-import {SdTypescriptProgramRunner} from "./SdTypescriptProgramRunner";
+import { SdWebpackInputHostWithScss } from "./SdWebpackInputHostWithScss";
+import { SdTypescriptProgramRunner } from "./SdTypescriptProgramRunner";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
 
@@ -119,7 +119,12 @@ export class SdPackageBuilder extends EventEmitter {
 
   public async runAsync(watch: boolean): Promise<void> {
     if (this._command === "gen-index") {
-      await this._runFilesAsync(watch, async changedInfos => await this._genIndexAsync(changedInfos));
+      const srcPath = this._getSrcPath();
+      await this._runFilesAsync(
+        path.resolve(srcPath, "**", "*.ts"),
+        watch,
+        async changedInfos => await this._genIndexAsync(changedInfos)
+      );
     }
     else if (this._command === "check") {
       await this._runProgramAsync(watch, this._checkAsync.bind(this));
@@ -127,9 +132,19 @@ export class SdPackageBuilder extends EventEmitter {
     else if (this._command === "lint") {
       const tsConfigPath = this._getTsConfigPath();
       if (tsConfigPath === undefined) {
-        await this._runFilesAsync(watch, this._lintAsync.bind(this));
+        await this._runFilesAsync(
+          path.resolve(this._info.rootPath, "**", "+(*.ts|*.js)"),
+          watch,
+          this._lintAsync.bind(this)
+        );
       }
       else {
+        await this._runFilesAsync(
+          path.resolve(this._info.rootPath, "**", "*.js"),
+          watch,
+          this._lintAsync.bind(this)
+        );
+
         await this._runProgramAsync(watch, this._lintAsync.bind(this), [
           path.resolve(this._info.rootPath, ".eslintrc.js"),
           ...FsUtils.getParentPaths(this._info.rootPath).map(item => path.resolve(item, ".eslintrc.js"))
@@ -267,6 +282,14 @@ export class SdPackageBuilder extends EventEmitter {
     });
   }
 
+  /**
+   * 패키지의 index.ts 파일 자동 생성
+   *  - 라이브러리타입이며, package.json에 main속성이 존재할때만 동작
+   *
+   * @private
+   * @param changedInfos 파일 변경 정보 목록
+   * @returns 빈 Array
+   */
   private async _genIndexAsync(changedInfos: IFileChangeInfo[]): Promise<ISdPackageBuildResult[]> {
     if (this._info.npmConfig.main === undefined) throw new NeverEntryError();
     if (this._info.config?.type !== "library") throw new NeverEntryError();
@@ -274,6 +297,9 @@ export class SdPackageBuilder extends EventEmitter {
     const srcPath = this._getSrcPath();
     const distPath = this._getDistPath();
 
+    /**
+     * package.json의 main속성을 통해 index.ts 링크 세팅
+     */
     const indexTsFilePath = path.resolve(
       srcPath,
       path.relative(
@@ -285,31 +311,52 @@ export class SdPackageBuilder extends EventEmitter {
       )
     ).replace(/\.js$/, ".ts");
 
+    /**
+     * 첫수행시, 현재 존재하는 index.ts 파일을 캐싱
+     */
     if (this._outputCache[indexTsFilePath] === undefined && FsUtils.exists(indexTsFilePath)) {
       this._outputCache[indexTsFilePath] = await FsUtils.readFileAsync(indexTsFilePath);
     }
 
-    const excludes: string[] = this._getTsConfig().files?.map((item: string) => path.resolve(this._info.rootPath, item)) ?? [];
+    /**
+     * index.ts에 영향을 주는 파일 추출
+     *  1. src\/**\/*.ts 파일만 등록
+     *  2. tsconfig.json의 files에 있는 파일들은 엔트리 파일이므로 제외
+     */
+    const anymatchPath = path.resolve(srcPath, "**", "*.ts");
+    const entryFiles: string[] = this._getTsConfig().files?.map((item: string) => path.resolve(this._info.rootPath, item)) ?? [];
+    const validChangedFilePaths = changedInfos
+      .map(item => item.filePath)
+      .filter(item => anymatch(anymatchPath.replace(/\\/g, "/"), item.replace(/\\/g, "/")))
+      .filter(item => !entryFiles.includes(item));
 
-    const polyfills = this._info.config.polyfills ?? [];
-
-    if (changedInfos.every(item => excludes.includes(item.filePath))) {
+    if (validChangedFilePaths.length < 1) {
       return [];
     }
 
     this._logger.debug("'index.ts' 파일 생성 시작...");
 
+    /**
+     * simplysm.json 에 등록된 polyfills 를 모두 import
+     */
+    const polyfills = this._info.config.polyfills ?? [];
     const importTexts: string[] = [];
     for (const polyfill of polyfills) {
       importTexts.push(`import "${polyfill}";`);
     }
 
-    const srcTsFiles = await FsUtils.globAsync(path.resolve(srcPath, "**", "*.ts"));
+    /**
+     * 새로운 index.ts 파일 텍스트 구성
+     *  1. src\/**\/*.ts 파일만 등록
+     *  2. tsconfig.json의 files에 있는 파일들은 엔트리 파일이므로 제외
+     *  3. export가없는 ts파일은 polyfills처럼 import로 등록
+     */
+    const srcTsFiles = await FsUtils.globAsync(anymatchPath);
     for (const srcTsFile of srcTsFiles) {
       if (path.resolve(srcTsFile) === indexTsFilePath) {
         continue;
       }
-      if (excludes.some(item => path.resolve(item) === path.resolve(srcTsFile))) {
+      if (entryFiles.some(item => path.resolve(item) === path.resolve(srcTsFile))) {
         continue;
       }
 
@@ -326,6 +373,9 @@ export class SdPackageBuilder extends EventEmitter {
       }
     }
 
+    /**
+     * 파일이 변경되었는지 보고, 변경사항이 있으면 새로 쓰기 (없으면 안씀)
+     */
     const content = importTexts.join(os.EOL) + os.EOL;
     if (this._outputCache[indexTsFilePath] !== content) {
       this._outputCache[indexTsFilePath] = content;
@@ -679,7 +729,7 @@ export class SdPackageBuilder extends EventEmitter {
         },
         resolve: {
           extensions: [".ts", ".js", ".json"],
-          alias: {"SD_APP_MODULE": path.resolve(srcPath, "AppModule")},
+          alias: { "SD_APP_MODULE": path.resolve(srcPath, "AppModule") },
           aliasFields: ["browser"]
         }
       } : {
@@ -778,7 +828,7 @@ export class SdPackageBuilder extends EventEmitter {
             ],
           {
             test: /[\\/]@angular[\\/]core[\\/].+\.js$/,
-            parser: {system: true}
+            parser: { system: true }
           },
           {
             test: /\.js$/,
@@ -927,7 +977,7 @@ export class SdPackageBuilder extends EventEmitter {
         mode: "production",
         devtool: "source-map",
         profile: false,
-        performance: {hints: false},
+        performance: { hints: false },
         optimization: {
           noEmitOnErrors: true,
           minimizer: [
@@ -1111,11 +1161,12 @@ export class SdPackageBuilder extends EventEmitter {
     this.emit("complete", results);
   }
 
-  private async _runFilesAsync(watch: boolean,
-                               cb: (changedInfos: IFileChangeInfo[]) => Promise<ISdPackageBuildResult[]> | ISdPackageBuildResult[]): Promise<void> {
-    const srcPath = this._getSrcPath();
+  private async _runFilesAsync(filePathAnyMatch: string,
+                               watch: boolean,
+                               cb: (changedInfos: IFileChangeInfo[]) => (Promise<ISdPackageBuildResult[]> | ISdPackageBuildResult[])): Promise<void> {
+    // const srcPath = this._getSrcPath();
+    // const filePathAnyMatch = path.resolve(srcPath, "**", "+(*.ts|*.js)");
 
-    const filePathAnyMatch = path.resolve(srcPath, "**", "+(*.ts|*.js)");
     const changedInfos = (await FsUtils.globAsync(filePathAnyMatch)).map(item => ({
       type: "add" as const,
       filePath: item

@@ -11,9 +11,9 @@ import {
   OnDestroy,
   OnInit
 } from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {SdDockContainerControl} from "./SdDockContainerControl";
-import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootProvider";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { SdDockContainerControl } from "./SdDockContainerControl";
+import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 
 @Component({
   selector: "sd-dock",

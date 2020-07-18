@@ -1,22 +1,22 @@
-import {EventEmitter} from "events";
+import { EventEmitter } from "events";
 import * as https from "https";
 import * as http from "http";
 import * as WebSocket from "ws";
-import {FsUtils, Logger, ProcessManager} from "@simplysm/sd-core-node";
-import {JsonConvert, Type} from "@simplysm/sd-core-common";
-import {SdServiceServerConnection} from "./SdServiceServerConnection";
-import {SdServiceBase} from "./SdServiceBase";
-import {NextHandleFunction} from "connect";
+import { FsUtils, Logger, ProcessManager } from "@simplysm/sd-core-node";
+import { JsonConvert, Type } from "@simplysm/sd-core-common";
+import { SdServiceServerConnection } from "./SdServiceServerConnection";
+import { SdServiceBase } from "./SdServiceBase";
+import { NextHandleFunction } from "connect";
 import * as querystring from "querystring";
 import * as url from "url";
 import * as path from "path";
 import * as mime from "mime";
-import {ISdServiceErrorResponse, ISdServiceRequest, ISdServiceResponse} from "@simplysm/sd-service-common";
+import { ISdServiceErrorResponse, ISdServiceRequest, ISdServiceResponse } from "@simplysm/sd-service-common";
 import * as net from "net";
-import {SdCryptoService} from "./services/SdCryptoService";
-import {SdOrmService} from "./services/SdOrmService";
-import {SdSmtpClientService} from "./services/SdSmtpClientService";
-import {SdServiceServerConfigUtils} from "./SdServiceServerConfigUtils";
+import { SdCryptoService } from "./services/SdCryptoService";
+import { SdOrmService } from "./services/SdOrmService";
+import { SdSmtpClientService } from "./services/SdSmtpClientService";
+import { SdServiceServerConfigUtils } from "./SdServiceServerConfigUtils";
 
 export class SdServiceServer extends EventEmitter {
   private _wsServer?: WebSocket.Server;
@@ -168,15 +168,15 @@ export class SdServiceServer extends EventEmitter {
 
     const wsConn = new SdServiceServerConnection(conn, this.rootPath);
     wsConn.on("request", async (req: ISdServiceRequest) => {
-      this._logger.debug(`요청을 받았습니다: ${origin.toString()} (${JsonConvert.stringify(req, {hideBuffer: true})})`);
+      this._logger.debug(`요청을 받았습니다: ${origin.toString()} (${JsonConvert.stringify(req, { hideBuffer: true })})`);
 
       try {
         const res = await this._onSocketRequestAsync(wsConn, req);
-        this._logger.debug(`결과를 반환합니다: ${origin.toString()} (${JsonConvert.stringify(res, {hideBuffer: true})})}`);
+        this._logger.debug(`결과를 반환합니다: ${origin.toString()} (${JsonConvert.stringify(res, { hideBuffer: true })})}`);
         await wsConn.sendAsync(res);
       }
       catch (err) {
-        this._logger.error(`요청 처리중 에러가 발생했습니다: ${origin.toString()} (${JsonConvert.stringify(req, {hideBuffer: true})})`, err);
+        this._logger.error(`요청 처리중 에러가 발생했습니다: ${origin.toString()} (${JsonConvert.stringify(req, { hideBuffer: true })})`, err);
         const res: ISdServiceErrorResponse = {
           type: "error",
           requestId: req.id,
@@ -203,7 +203,7 @@ export class SdServiceServer extends EventEmitter {
             });
             req.on("end", () => {
               const errorMessage = `요청이 잘못되었습니다.`;
-              this._responseErrorHtml(res, 405, errorMessage + "\n" + JsonConvert.stringify(querystring.parse(body), {space: 2}));
+              this._responseErrorHtml(res, 405, errorMessage + "\n" + JsonConvert.stringify(querystring.parse(body), { space: 2 }));
               next(new Error(`${errorMessage} (${req.method!.toUpperCase()})`));
               resolve();
             });

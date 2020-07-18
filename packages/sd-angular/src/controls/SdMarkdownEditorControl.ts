@@ -9,8 +9,8 @@ import {
   Output,
   SimpleChanges
 } from "@angular/core";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {SdInputValidate} from "../commons/SdInputValidate";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
+import { SdInputValidate } from "../commons/SdInputValidate";
 import * as marked from "marked";
 
 @Component({
@@ -284,7 +284,7 @@ export class SdMarkdownEditorControl implements OnChanges {
   public readonly valueChange = new EventEmitter<string>();
 
   @Input()
-  @SdInputValidate({type: String, includes: ["preview", "edit", "help"]})
+  @SdInputValidate({ type: String, includes: ["preview", "edit", "help"] })
   public viewState: "preview" | "edit" | "help" = "edit";
 
   @Input()
@@ -313,11 +313,11 @@ export class SdMarkdownEditorControl implements OnChanges {
   public resize = "vertical";
 
   @Input()
-  @SdInputValidate({type: Number, notnull: true})
+  @SdInputValidate({ type: Number, notnull: true })
   public rows = 3;
 
   @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
+  @SdInputValidate({ type: Boolean, notnull: true })
   @HostBinding("attr.sd-inset")
   public inset = false;
 
@@ -355,7 +355,7 @@ export class SdMarkdownEditorControl implements OnChanges {
 
     const files = Array.from(event.dataTransfer!.files);
     const position = (event.target as HTMLTextAreaElement).selectionEnd;
-    this.dropFiles.emit({position, files});
+    this.dropFiles.emit({ position, files });
     this.dragover = false;
   }
 
@@ -369,7 +369,7 @@ export class SdMarkdownEditorControl implements OnChanges {
 
     if (files.length > 0) {
       const position = (event.target as HTMLTextAreaElement).selectionEnd;
-      this.dropFiles.emit({position, files});
+      this.dropFiles.emit({ position, files });
     }
   }
 

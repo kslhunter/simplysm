@@ -11,8 +11,8 @@ import {
   OnInit,
   Output
 } from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {NeverEntryError} from "@simplysm/sd-core-common";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { NeverEntryError } from "@simplysm/sd-core-common";
 
 // TODO: key 에 따른 크기, 위치 저장
 @Component({
@@ -269,7 +269,7 @@ import {NeverEntryError} from "@simplysm/sd-core-common";
 })
 export class SdModalEntryControl implements OnInit, AfterViewInit {
   @Input()
-  @SdInputValidate({type: String, notnull: true})
+  @SdInputValidate({ type: String, notnull: true })
   public title = "창";
 
   @Input()

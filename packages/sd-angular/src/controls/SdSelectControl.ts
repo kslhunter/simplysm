@@ -16,10 +16,10 @@ import {
   TemplateRef,
   ViewChild
 } from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {SdDropdownControl} from "./SdDropdownControl";
-import {SdSelectItemControl} from "./SdSelectItemControl";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { SdDropdownControl } from "./SdDropdownControl";
+import { SdSelectItemControl } from "./SdSelectItemControl";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 
 @Component({
   selector: "sd-select",
@@ -226,19 +226,19 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
 
   private _keyProp?: string;
 
-  @ViewChild("dropdown", {static: true})
+  @ViewChild("dropdown", { static: true })
   public dropdownControl?: SdDropdownControl;
 
-  @ViewChild("popup", {static: true, read: ElementRef})
+  @ViewChild("popup", { static: true, read: ElementRef })
   public popupElRef?: ElementRef<HTMLElement>;
 
-  @ContentChild("item", {static: true})
+  @ContentChild("item", { static: true })
   public itemTemplateRef?: TemplateRef<any>;
 
-  @ContentChild("header", {static: true})
+  @ContentChild("header", { static: true })
   public headerTemplateRef?: TemplateRef<any>;
 
-  @ContentChild("before", {static: true})
+  @ContentChild("before", { static: true })
   public beforeTemplateRef?: TemplateRef<any>;
 
   @Input()
@@ -275,7 +275,7 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
   public size?: "sm" | "lg";
 
   @Input()
-  @SdInputValidate({type: String, includes: ["single", "multi"], notnull: true})
+  @SdInputValidate({ type: String, includes: ["single", "multi"], notnull: true })
   public set selectMode(value: "single" | "multi") {
     if (this._selectMode !== value) {
       this._selectMode = value;

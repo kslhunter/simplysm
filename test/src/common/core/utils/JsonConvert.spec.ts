@@ -1,9 +1,9 @@
-import {expect} from "chai";
-import {DateOnly, DateTime, JsonConvert, SdError, Time, Uuid} from "@simplysm/sd-core-common";
+import { expect } from "chai";
+import { DateOnly, DateTime, JsonConvert, SdError, Time, Uuid } from "@simplysm/sd-core-common";
 
 describe("(common) core.utils.JsonConvert", () => {
   it("객체 와 JSON 문자열 사이를 서로 변환할 수 있다.", () => {
-    const obj = {a: 1};
+    const obj = { a: 1 };
     const json = JsonConvert.stringify(obj);
     expect(json).to.deep.equal(`{"a":1}`);
 
@@ -68,7 +68,7 @@ describe("(common) core.utils.JsonConvert", () => {
       a: "!!!",
       b: 2
     };
-    const json = JsonConvert.stringify(obj, {space: 2});
+    const json = JsonConvert.stringify(obj, { space: 2 });
     expect(json).to.equal(`{\n  "a": "!!!",\n  "b": 2\n}`);
   });
 
@@ -78,7 +78,7 @@ describe("(common) core.utils.JsonConvert", () => {
       b: 2
     };
 
-    const json = JsonConvert.stringify(obj, {hideBuffer: true});
+    const json = JsonConvert.stringify(obj, { hideBuffer: true });
     expect(json).to.equal(`{"a":{"type":"Buffer","data":"__hidden__"},"b":2}`);
   });
 });

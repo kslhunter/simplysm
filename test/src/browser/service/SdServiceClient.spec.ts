@@ -1,6 +1,6 @@
-import {expect} from "chai";
-import {SdServiceEventBase} from "@simplysm/sd-service-common";
-import {SdServiceClient} from "@simplysm/sd-service-browser";
+import { expect } from "chai";
+import { SdServiceEventBase } from "@simplysm/sd-service-common";
+import { SdServiceClient } from "@simplysm/sd-service-browser";
 
 describe("(browser) service.SdServiceClient", () => {
   class TestEvent extends SdServiceEventBase<{ name: string }, string> {
@@ -23,7 +23,7 @@ describe("(browser) service.SdServiceClient", () => {
           }
         }
       };
-      xobj.send(JSON.stringify({port}));
+      xobj.send(JSON.stringify({ port }));
     });
 
     client = new SdServiceClient(port, "localhost");
@@ -86,7 +86,7 @@ describe("(browser) service.SdServiceClient", () => {
         listenerIdPairs.push(
           [
             subClient,
-            await subClient.addEventListenerAsync(TestEvent, {name: "not-listen"}, () => {
+            await subClient.addEventListenerAsync(TestEvent, { name: "not-listen" }, () => {
               expect.fail();
             })
           ]
@@ -96,7 +96,7 @@ describe("(browser) service.SdServiceClient", () => {
         listenerIdPairs.push(
           [
             subClient,
-            await subClient.addEventListenerAsync(TestEvent, {name: "listen"}, result => {
+            await subClient.addEventListenerAsync(TestEvent, { name: "listen" }, result => {
               expect(result).equal("이벤트 발생");
               listenCount++;
             })
@@ -119,7 +119,7 @@ describe("(browser) service.SdServiceClient", () => {
   });
 
   it("업로드", async () => {
-    const blob = new Blob(["123456"], {type: "text/html"});
+    const blob = new Blob(["123456"], { type: "text/html" });
     await client.uploadAsync(blob, "test.txt");
 
     await client.sendAsync("TestService.removeFileAsync", ["test.txt"]);
@@ -128,7 +128,7 @@ describe("(browser) service.SdServiceClient", () => {
   it("업로드 (분할요청)", async () => {
     const longStr = Buffer.alloc(100001, "a").toString();
     let count = 0;
-    const blob = new Blob([longStr], {type: "text/html"});
+    const blob = new Blob([longStr], { type: "text/html" });
     await client.uploadAsync(blob, "test2.txt", {
       progressCallback: progress => {
         count++;

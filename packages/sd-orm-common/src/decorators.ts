@@ -1,5 +1,5 @@
-import {Type} from "@simplysm/sd-core-common";
-import {DbDefinitionUtils} from "./DbDefinitionUtils";
+import { Type } from "@simplysm/sd-core-common";
+import { DbDefinitionUtils } from "./DbDefinitionUtils";
 
 export function Table<T>(def: {
   database?: string;

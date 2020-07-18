@@ -1,5 +1,5 @@
-import {DbContext} from "./DbContext";
-import {FunctionUtils, JsonConvert, NeverEntryError, ObjectUtils, Type, Wait} from "@simplysm/sd-core-common";
+import { DbContext } from "./DbContext";
+import { FunctionUtils, JsonConvert, NeverEntryError, ObjectUtils, Type, Wait } from "@simplysm/sd-core-common";
 import {
   IDeleteQueryDef,
   IInsertQueryDef,
@@ -19,9 +19,9 @@ import {
   TQueryValue,
   TUpdateObject
 } from "./commons";
-import {DbDefinitionUtils} from "./DbDefinitionUtils";
-import {QueryUnit} from "./QueryUnit";
-import {SdOrmUtils} from "./SdOrmUtils";
+import { DbDefinitionUtils } from "./DbDefinitionUtils";
+import { QueryUnit } from "./QueryUnit";
+import { SdOrmUtils } from "./SdOrmUtils";
 
 export class Queryable<D extends DbContext, T> {
   public readonly tableType?: Type<T>; // wrapping 사용시, undefined 일 수 있음
@@ -118,7 +118,7 @@ export class Queryable<D extends DbContext, T> {
     // Init defs.from
     const from = cqrs.map(item => item.getSelectDef());
 
-    return new Queryable(db, undefined, as, entity, {from});
+    return new Queryable(db, undefined, as, entity, { from });
   }
 
   public select<R>(fwd: (entity: TEntity<T>) => TEntity<R>): Queryable<D, R> {
@@ -226,7 +226,7 @@ export class Queryable<D extends DbContext, T> {
     const joinQueryable = fwd(joinTableQueryable, this._entity);
     const joinEntity = this._getParentEntity(joinQueryable._entity, as, undefined);
 
-    const entity = {...this._entity};
+    const entity = { ...this._entity };
     this._setEntityChainValue(entity, as, isSingle ? joinEntity : [joinEntity]);
 
     const result = new Queryable(
@@ -436,7 +436,7 @@ export class Queryable<D extends DbContext, T> {
 
     const currEntity = this._getParentEntity(clone._entity, this._as, undefined);
 
-    return new Queryable<D, T | R>(this.db, tableType, this._as, currEntity, {from: subFrom});
+    return new Queryable<D, T | R>(this.db, tableType, this._as, currEntity, { from: subFrom });
   }
 
   public getSelectDef(): ISelectQueryDef & { select: { [key: string]: TQueryBuilderValue } } {
@@ -775,12 +775,12 @@ export class Queryable<D extends DbContext, T> {
     }
     DbContext.selectCache.set(cacheKey, undefined);
 
-    const results = await this.db.executeDefsAsync([{type: "select", ...def}], [this._getParseOption()]);
+    const results = await this.db.executeDefsAsync([{ type: "select", ...def }], [this._getParseOption()]);
 
     const timeout = setTimeout(() => {
       DbContext.selectCache.delete(cacheKey);
     }, 1000);
-    DbContext.selectCache.set(cacheKey, {result: results[0] ?? [], timeout});
+    DbContext.selectCache.set(cacheKey, { result: results[0] ?? [], timeout });
 
     return results[0];
   }
@@ -801,7 +801,7 @@ export class Queryable<D extends DbContext, T> {
         " distinct대신 groupBy와 sorm.count 로 수동으로 처리하세요.");
     }
 
-    const queryable = this.select(() => ({cnt: new QueryUnit(Number, "COUNT(*)")}));
+    const queryable = this.select(() => ({ cnt: new QueryUnit(Number, "COUNT(*)") }));
     queryable._def.orderBy?.remove(item1 => item1[0] === "[__searchOrder]");
     delete queryable._entity["__searchOrder"];
     const item = await queryable.singleAsync();
@@ -1004,17 +1004,17 @@ export class Queryable<D extends DbContext, T> {
               type: "select",
               ...clone.getSelectDef()
             },
-            {type: "update", ...queryDef}
+            { type: "update", ...queryDef }
           ],
-          [{columns: parseOption.columns}, undefined]
+          [{ columns: parseOption.columns }, undefined]
         )
       )[0];
     }
     else {
       return (
         await this.db.executeDefsAsync(
-          [{type: "update", ...queryDef}],
-          [{columns: parseOption.columns}]
+          [{ type: "update", ...queryDef }],
+          [{ columns: parseOption.columns }]
         )
       )[0];
     }
@@ -1059,18 +1059,18 @@ export class Queryable<D extends DbContext, T> {
 
       return (await this.db.executeDefsAsync(
         [
-          {type: "select", ...clone.getSelectDef()},
-          {type: "delete", ...queryDef}
+          { type: "select", ...clone.getSelectDef() },
+          { type: "delete", ...queryDef }
         ],
-        [{columns: parseOption.columns}]
+        [{ columns: parseOption.columns }]
       ))[0];
     }
     else {
       return (await this.db.executeDefsAsync(
         [
-          {type: "delete", ...queryDef}
+          { type: "delete", ...queryDef }
         ],
-        [{columns: parseOption.columns}]
+        [{ columns: parseOption.columns }]
       ))[0];
     }
   }
@@ -1083,7 +1083,7 @@ export class Queryable<D extends DbContext, T> {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
     const queryDef = this.getDeleteDef();
-    this.db.prepareDefs.push({type: "delete", ...queryDef});
+    this.db.prepareDefs.push({ type: "delete", ...queryDef });
   }
 
   public async upsertAsync(updateObjOrFwd: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>), insertObj?: TInsertObject<T>): Promise<T[]> {
@@ -1123,7 +1123,7 @@ export class Queryable<D extends DbContext, T> {
               type: "select",
               ...clone.getSelectDef()
             },
-            {type: "upsert", ...queryDef},
+            { type: "upsert", ...queryDef },
             {
               type: "select",
               select: {
@@ -1134,7 +1134,7 @@ export class Queryable<D extends DbContext, T> {
               }
             }
           ],
-          [{columns: parseOption.columns}, undefined, undefined]
+          [{ columns: parseOption.columns }, undefined, undefined]
         )
       );
 
@@ -1157,8 +1157,8 @@ export class Queryable<D extends DbContext, T> {
     else {
       return (
         await this.db.executeDefsAsync(
-          [{type: "upsert", ...queryDef}],
-          [{columns: parseOption.columns}]
+          [{ type: "upsert", ...queryDef }],
+          [{ columns: parseOption.columns }]
         )
       )[0];
     }
@@ -1173,7 +1173,7 @@ export class Queryable<D extends DbContext, T> {
     }
 
     const queryDef = this.getUpsertDef(updateObjOrFwd, insertObj);
-    this.db.prepareDefs.push({type: "upsert", ...queryDef});
+    this.db.prepareDefs.push({ type: "upsert", ...queryDef });
   }
 
   private _getParseOption(): IQueryResultParseOption {
@@ -1186,14 +1186,14 @@ export class Queryable<D extends DbContext, T> {
       for (const key of Object.keys(ObjectUtils.clearUndefined(entity))) {
         try {
           if (entity[key] !== undefined && SdOrmUtils.canConvertToQueryValue(entity[key])) {
-            result.columns![parentKeys.concat([key]).join(".")] = {dataType: SdOrmUtils.getQueryValueType(entity[key])!.name};
+            result.columns![parentKeys.concat([key]).join(".")] = { dataType: SdOrmUtils.getQueryValueType(entity[key])!.name };
           }
           else if (entity[key] instanceof Array) {
-            result.joins![parentKeys.concat([key]).join(".")] = {isSingle: false};
+            result.joins![parentKeys.concat([key]).join(".")] = { isSingle: false };
             configuration(entity[key][0], parentKeys.concat([key]));
           }
           else {
-            result.joins![parentKeys.concat([key]).join(".")] = {isSingle: true};
+            result.joins![parentKeys.concat([key]).join(".")] = { isSingle: true };
             configuration(entity[key] as TEntity<any>, parentKeys.concat([key]));
           }
         }

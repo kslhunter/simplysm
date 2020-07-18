@@ -154,6 +154,7 @@
     "no-namespace": false,
     "no-void-expression": false,
     "no-irregular-whitespace": false,
-    "interface-name": false
+    "interface-name": false,
+    "no-redundant-jsdoc": false
   }
 }

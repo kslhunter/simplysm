@@ -1,6 +1,6 @@
-import {DateTime, DeepPartial, MathUtils, ObjectUtils} from "@simplysm/sd-core-common";
+import { DateTime, DeepPartial, MathUtils, ObjectUtils } from "@simplysm/sd-core-common";
 import * as path from "path";
-import {FsUtils} from "./FsUtils";
+import { FsUtils } from "./FsUtils";
 import * as os from "os";
 import CpuUsage = NodeJS.CpuUsage;
 

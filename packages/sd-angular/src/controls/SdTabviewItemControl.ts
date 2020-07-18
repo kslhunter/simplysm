@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input} from "@angular/core";
-import {SdTabviewControl} from "./SdTabviewControl";
-import {SdInputValidate} from "../commons/SdInputValidate";
+import { ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input } from "@angular/core";
+import { SdTabviewControl } from "./SdTabviewControl";
+import { SdInputValidate } from "../commons/SdInputValidate";
 
 @Component({
   selector: "sd-tabview-item",

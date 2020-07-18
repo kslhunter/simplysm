@@ -1,5 +1,5 @@
-import {PropertyValidate} from "@simplysm/sd-core-common";
-import {expect} from "chai";
+import { PropertyValidate } from "@simplysm/sd-core-common";
+import { expect } from "chai";
 
 describe("(common) core.decorators.PropertyValidate", () => {
   it("속성의 유효성을 확인할 수 있다.", () => {

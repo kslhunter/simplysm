@@ -1,4 +1,4 @@
-import {Type, TypeWrap} from "@simplysm/sd-core-common";
+import { Type, TypeWrap } from "@simplysm/sd-core-common";
 
 export class QueryUnit<T> {
   public T?: T;

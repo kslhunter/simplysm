@@ -1,5 +1,5 @@
-import {ArgumentError} from "../errors/ArgumentError";
-import {DateTimeFormatUtils} from "../utils/DateTimeFormatUtils";
+import { ArgumentError } from "../errors/ArgumentError";
+import { DateTimeFormatUtils } from "../utils/DateTimeFormatUtils";
 
 export class DateOnly {
   public readonly date: Date;
@@ -42,7 +42,7 @@ export class DateOnly {
       );
     }
 
-    throw new ArgumentError({str});
+    throw new ArgumentError({ str });
   }
 
   public get year(): number {

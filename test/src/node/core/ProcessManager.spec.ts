@@ -1,5 +1,5 @@
-import {expect} from "chai";
-import {ProcessManager} from "@simplysm/sd-core-node";
+import { expect } from "chai";
+import { ProcessManager } from "@simplysm/sd-core-node";
 import * as path from "path";
 
 describe("(node) core.ProcessManager", () => {
@@ -19,7 +19,7 @@ describe("(node) core.ProcessManager", () => {
     let cnt = 0;
     await ProcessManager.spawnAsync(
       "node ./ProcessManagerTestDir/test.js",
-      {cwd: __dirname},
+      { cwd: __dirname },
       message => {
         expect(message).to.equal("1");
         cnt += 1;

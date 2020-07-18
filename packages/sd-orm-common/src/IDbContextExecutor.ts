@@ -1,4 +1,4 @@
-import {IQueryResultParseOption, TQueryDef} from "./commons";
+import { IQueryResultParseOption, TQueryDef } from "./commons";
 
 export interface IDbContextExecutor {
   dialect: "mysql" | "mssql";

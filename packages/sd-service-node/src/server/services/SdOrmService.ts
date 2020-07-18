@@ -1,8 +1,8 @@
-import {Logger} from "@simplysm/sd-core-node";
-import {IDbConnection, IDbConnectionConfig, MssqlDbConnection, MysqlDbConnection} from "@simplysm/sd-orm-node";
-import {IQueryResultParseOption, QueryBuilder, SdOrmUtils, TQueryDef} from "@simplysm/sd-orm-common";
-import {SdServiceBase} from "../SdServiceBase";
-import {SdServiceServerConfigUtils} from "../SdServiceServerConfigUtils";
+import { Logger } from "@simplysm/sd-core-node";
+import { IDbConnection, IDbConnectionConfig, MssqlDbConnection, MysqlDbConnection } from "@simplysm/sd-orm-node";
+import { IQueryResultParseOption, QueryBuilder, SdOrmUtils, TQueryDef } from "@simplysm/sd-orm-common";
+import { SdServiceBase } from "../SdServiceBase";
+import { SdServiceServerConfigUtils } from "../SdServiceServerConfigUtils";
 
 export class SdOrmService extends SdServiceBase {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-service", "SdOrmService"]);

@@ -4,10 +4,10 @@ import {
   MetadataArray,
   MetadataSymbolicCallExpression
 } from "@angular/compiler-cli";
-import {NeverEntryError} from "@simplysm/sd-core-common";
-import {SdMetadataCollector} from "./SdMetadataCollector";
-import {isMetadataArrayExpression, SdMetadataBase, TSdMetadata} from "./commons";
-import {SdModuleMetadata} from "./SdModuleMetadata";
+import { NeverEntryError } from "@simplysm/sd-core-common";
+import { SdMetadataCollector } from "./SdMetadataCollector";
+import { isMetadataArrayExpression, SdMetadataBase, TSdMetadata } from "./commons";
+import { SdModuleMetadata } from "./SdModuleMetadata";
 
 
 export class SdCallMetadata extends SdMetadataBase {

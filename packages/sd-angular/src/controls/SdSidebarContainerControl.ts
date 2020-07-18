@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding} from "@angular/core";
-import {NavigationStart, Router} from "@angular/router";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding } from "@angular/core";
+import { NavigationStart, Router } from "@angular/router";
 
 @Component({
   selector: "sd-sidebar-container",

@@ -1,5 +1,5 @@
-import {expect} from "chai";
-import {DateTime} from "@simplysm/sd-core-common";
+import { expect } from "chai";
+import { DateTime } from "@simplysm/sd-core-common";
 
 describe("(common) core.types.DateTime", () => {
   it("현재의 날짜+시간 객체를 생성할 수 있다.", () => {

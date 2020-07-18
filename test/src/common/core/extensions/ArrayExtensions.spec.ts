@@ -1,5 +1,5 @@
-import {ArgumentError, DateOnly, DateTime, SdError, Time, TimeoutError, Uuid} from "@simplysm/sd-core-common";
-import {expect} from "chai";
+import { ArgumentError, DateOnly, DateTime, SdError, Time, TimeoutError, Uuid } from "@simplysm/sd-core-common";
+import { expect } from "chai";
 
 describe("(common) core.extensions.ArrayExtensions", () => {
   describe("single", () => {
@@ -9,7 +9,7 @@ describe("(common) core.extensions.ArrayExtensions", () => {
 
     it("검색결과가 1개를 초과하면, 오류가 발생된다", () => {
       expect(() => {
-        [{a: 1, b: "2"}, {a: 1, b: "3"}].single(item => item.a === 1);
+        [{ a: 1, b: "2" }, { a: 1, b: "3" }].single(item => item.a === 1);
       }).to.throw(/복수.*결과/);
     });
 
@@ -25,44 +25,44 @@ describe("(common) core.extensions.ArrayExtensions", () => {
   describe("last", () => {
     it("조건문을 통해, 반환값이 true 인 것중 가장 마지막 단일 객체를 추출한다", () => {
       const arr = [
-        {a: 1, b: "2"},
-        {a: 2, b: "3"},
-        {a: 1, b: "4"},
-        {a: 2, b: "5"}
+        { a: 1, b: "2" },
+        { a: 2, b: "3" },
+        { a: 1, b: "4" },
+        { a: 2, b: "5" }
       ];
-      expect(arr.last(item => item.a === 1)).to.deep.equal({a: 1, b: "4"});
+      expect(arr.last(item => item.a === 1)).to.deep.equal({ a: 1, b: "4" });
     });
 
     it("검색결과가 없으면, undefined 가 반환될 수 있다", () => {
       const arr = [
-        {a: 1, b: "2"},
-        {a: 1, b: "3"},
-        {a: 1, b: "4"}
+        { a: 1, b: "2" },
+        { a: 1, b: "3" },
+        { a: 1, b: "4" }
       ];
       expect(arr.last(item => item.b === "5")).to.deep.equal(undefined);
     });
 
     it("조건문 없이도 사용 가능하다", () => {
       const arr = [
-        {a: 1, b: "2"},
-        {a: 1, b: "3"},
-        {a: 1, b: "4"}
+        { a: 1, b: "2" },
+        { a: 1, b: "3" },
+        { a: 1, b: "4" }
       ];
-      expect(arr.last()).to.deep.equal({a: 1, b: "4"});
+      expect(arr.last()).to.deep.equal({ a: 1, b: "4" });
     });
   });
 
   describe("filterExists", () => {
     it("null 이거나 undefined 인 데이터를 모두 솎아낸다", () => {
       const arr = [
-        {a: 1, b: "2"},
+        { a: 1, b: "2" },
         undefined,
-        {a: 1, b: "4"},
+        { a: 1, b: "4" },
         undefined
       ];
       expect(arr.filterExists()).to.deep.equal([
-        {a: 1, b: "2"},
-        {a: 1, b: "4"}
+        { a: 1, b: "2" },
+        { a: 1, b: "4" }
       ]);
     });
   });
@@ -123,9 +123,9 @@ describe("(common) core.extensions.ArrayExtensions", () => {
   describe("mapMany", () => {
     it("Array 셀렉터를 통해 반환된 Array 의 목록을 하나의 Array 로 concat 할 수 있다.", () => {
       const arr = [
-        {a: 1, b: "2", c: ["a", "b"]},
-        {a: 1, b: "3", c: ["c", "d"]},
-        {a: 1, b: "4", c: ["e", "f"]}
+        { a: 1, b: "2", c: ["a", "b"] },
+        { a: 1, b: "3", c: ["c", "d"] },
+        { a: 1, b: "4", c: ["e", "f"] }
       ];
 
       expect(arr.mapMany(item => item.c)).to.deep.equal(["a", "b", "c", "d", "e", "f"]);
@@ -133,18 +133,18 @@ describe("(common) core.extensions.ArrayExtensions", () => {
 
     it("2차원 배열일 경우, 셀렉터 없이 이 작업을 수행할 수도 있다.", () => {
       const arr = [
-        [{v: "a"}, {v: "b"}],
-        [{v: "c"}, {v: "d"}],
-        [{v: "e"}, {v: "f"}]
+        [{ v: "a" }, { v: "b" }],
+        [{ v: "c" }, { v: "d" }],
+        [{ v: "e" }, { v: "f" }]
       ];
 
       expect(arr.mapMany()).to.deep.equal([
-        {v: "a"},
-        {v: "b"},
-        {v: "c"},
-        {v: "d"},
-        {v: "e"},
-        {v: "f"}
+        { v: "a" },
+        { v: "b" },
+        { v: "c" },
+        { v: "d" },
+        { v: "e" },
+        { v: "f" }
       ]);
     });
   });
@@ -152,36 +152,36 @@ describe("(common) core.extensions.ArrayExtensions", () => {
   describe("groupBy", () => {
     it("키 셀렉터를 사용하여 {key, values}[] 로 데이터를 그룹핑 할 수 있다.", () => {
       const arr = [
-        {a: 1, b: 2, c: 1, d: 2},
-        {a: 3, b: 4, c: 3, d: 4},
-        {a: 1, b: 2, c: 5, d: 6},
-        {a: 3, b: 4, c: 7, d: 8}
+        { a: 1, b: 2, c: 1, d: 2 },
+        { a: 3, b: 4, c: 3, d: 4 },
+        { a: 1, b: 2, c: 5, d: 6 },
+        { a: 3, b: 4, c: 7, d: 8 }
       ];
 
       expect(
-        arr.groupBy(item => ({a: item.a, b: item.b}))
+        arr.groupBy(item => ({ a: item.a, b: item.b }))
       ).to.deep.equal([
-        {key: {a: 1, b: 2}, values: [{a: 1, b: 2, c: 1, d: 2}, {a: 1, b: 2, c: 5, d: 6}]},
-        {key: {a: 3, b: 4}, values: [{a: 3, b: 4, c: 3, d: 4}, {a: 3, b: 4, c: 7, d: 8}]}
+        { key: { a: 1, b: 2 }, values: [{ a: 1, b: 2, c: 1, d: 2 }, { a: 1, b: 2, c: 5, d: 6 }] },
+        { key: { a: 3, b: 4 }, values: [{ a: 3, b: 4, c: 3, d: 4 }, { a: 3, b: 4, c: 7, d: 8 }] }
       ]);
     });
 
     it("값 셀렉터를 입력하여, 객체의 형식을 변경할 수 있다.", () => {
       const arr = [
-        {a: 1, b: 2, c: 1, d: 2},
-        {a: 3, b: 4, c: 3, d: 4},
-        {a: 1, b: 2, c: 5, d: 6},
-        {a: 3, b: 4, c: 7, d: 8}
+        { a: 1, b: 2, c: 1, d: 2 },
+        { a: 3, b: 4, c: 3, d: 4 },
+        { a: 1, b: 2, c: 5, d: 6 },
+        { a: 3, b: 4, c: 7, d: 8 }
       ];
 
       expect(
         arr.groupBy(
-          item => ({a: item.a, b: item.b}),
-          item => ({c: item.c, d: item.d})
+          item => ({ a: item.a, b: item.b }),
+          item => ({ c: item.c, d: item.d })
         )
       ).to.deep.equal([
-        {key: {a: 1, b: 2}, values: [{c: 1, d: 2}, {c: 5, d: 6}]},
-        {key: {a: 3, b: 4}, values: [{c: 3, d: 4}, {c: 7, d: 8}]}
+        { key: { a: 1, b: 2 }, values: [{ c: 1, d: 2 }, { c: 5, d: 6 }] },
+        { key: { a: 3, b: 4 }, values: [{ c: 3, d: 4 }, { c: 7, d: 8 }] }
       ]);
     });
   });
@@ -189,34 +189,34 @@ describe("(common) core.extensions.ArrayExtensions", () => {
   describe("toMap", () => {
     it("키 셀렉터를 사용하여 Map<key, value> 로 데이터를 매핑 할 수 있다.", () => {
       const arr = [
-        {a: 1, b: 2, c: 1, d: 2},
-        {a: 3, b: 4, c: 3, d: 4}
+        { a: 1, b: 2, c: 1, d: 2 },
+        { a: 3, b: 4, c: 3, d: 4 }
       ];
 
       expect(
-        Array.from(arr.toMap(item => ({a: item.a, b: item.b})).entries())
+        Array.from(arr.toMap(item => ({ a: item.a, b: item.b })).entries())
       ).to.deep.equal([
-        [{a: 1, b: 2}, {a: 1, b: 2, c: 1, d: 2}],
-        [{a: 3, b: 4}, {a: 3, b: 4, c: 3, d: 4}]
+        [{ a: 1, b: 2 }, { a: 1, b: 2, c: 1, d: 2 }],
+        [{ a: 3, b: 4 }, { a: 3, b: 4, c: 3, d: 4 }]
       ]);
     });
 
     it("값 셀렉터를 입력하여, 값 객체의 형식을 변경할 수 있다.", () => {
       const arr = [
-        {a: 1, b: 2, c: 1, d: 2},
-        {a: 3, b: 4, c: 3, d: 4}
+        { a: 1, b: 2, c: 1, d: 2 },
+        { a: 3, b: 4, c: 3, d: 4 }
       ];
 
       expect(
         Array.from(
           arr.toMap(
-            item => ({a: item.a, b: item.b}),
-            item => ({c: item.c, d: item.d})
+            item => ({ a: item.a, b: item.b }),
+            item => ({ c: item.c, d: item.d })
           ).entries()
         )
       ).to.deep.equal([
-        [{a: 1, b: 2}, {c: 1, d: 2}],
-        [{a: 3, b: 4}, {c: 3, d: 4}]
+        [{ a: 1, b: 2 }, { c: 1, d: 2 }],
+        [{ a: 3, b: 4 }, { c: 3, d: 4 }]
       ]);
     });
   });
@@ -224,16 +224,16 @@ describe("(common) core.extensions.ArrayExtensions", () => {
   describe("distinct", () => {
     it("동일한 객체들을 하나의 객체로 병합한 결과물을 반환한다. 포인터를 통한 비교가 아닌, 각각의 내부값의 비교로 수행되므로, 클론된 두개의 객체도 같은 객체로 인식한다. 자세한 사항은 ObjectUtil.equal 참고", () => {
       const arr = [
-        {a: 1, b: 2, c: 1, d: 2},
-        {a: 3, b: 4, c: 3, d: 4},
-        {a: 1, b: 2, c: 1, d: 2},
-        {a: 3, b: 4, c: 3, d: 4},
-        {a: 1, b: 2, c: 1, d: 2}
+        { a: 1, b: 2, c: 1, d: 2 },
+        { a: 3, b: 4, c: 3, d: 4 },
+        { a: 1, b: 2, c: 1, d: 2 },
+        { a: 3, b: 4, c: 3, d: 4 },
+        { a: 1, b: 2, c: 1, d: 2 }
       ];
 
       expect(arr.distinct()).to.deep.equal([
-        {a: 1, b: 2, c: 1, d: 2},
-        {a: 3, b: 4, c: 3, d: 4}
+        { a: 1, b: 2, c: 1, d: 2 },
+        { a: 3, b: 4, c: 3, d: 4 }
       ]);
     });
   });
@@ -241,31 +241,31 @@ describe("(common) core.extensions.ArrayExtensions", () => {
   describe("orderBy", () => {
     it("정렬 조건값 셀렉터를 통해 설정된 값들을 비교하여 정렬한다.", () => {
       const arr = [
-        {a: 1, b: "2"},
-        {a: 3, b: "5"},
-        {a: 4, b: "1"},
-        {a: 2, b: "4"},
-        {a: 5, b: "3"}
+        { a: 1, b: "2" },
+        { a: 3, b: "5" },
+        { a: 4, b: "1" },
+        { a: 2, b: "4" },
+        { a: 5, b: "3" }
       ];
 
       expect(
         arr.orderBy(item => item.a)
       ).to.deep.equal([
-        {a: 1, b: "2"},
-        {a: 2, b: "4"},
-        {a: 3, b: "5"},
-        {a: 4, b: "1"},
-        {a: 5, b: "3"}
+        { a: 1, b: "2" },
+        { a: 2, b: "4" },
+        { a: 3, b: "5" },
+        { a: 4, b: "1" },
+        { a: 5, b: "3" }
       ]).and.to.not.deep.equal(arr);
     });
 
     it("정렬 조건값으로는, string, number 만 사용할 수 있으므로, Date, DateTime, DateOnly, Time 등을 조건값으로 하려면, tick 을 사용해야 한다", () => {
       const arr = [
-        {a: 1, b: new DateTime().addDays(2)},
-        {a: 3, b: new DateTime().addDays(5)},
-        {a: 4, b: new DateTime().addDays(1)},
-        {a: 2, b: new DateTime().addDays(4)},
-        {a: 5, b: new DateTime().addDays(3)}
+        { a: 1, b: new DateTime().addDays(2) },
+        { a: 3, b: new DateTime().addDays(5) },
+        { a: 4, b: new DateTime().addDays(1) },
+        { a: 2, b: new DateTime().addDays(4) },
+        { a: 5, b: new DateTime().addDays(3) }
       ];
 
       expect(
@@ -298,11 +298,11 @@ describe("(common) core.extensions.ArrayExtensions", () => {
 
     it("정렬 조건값으로는, string, number 만 사용할 수 있으므로, Date, DateTime, DateOnly, Time 등을 조건값으로 하려면, tick 을 사용해야 한다", () => {
       const arr = [
-        {a: 1, b: new DateTime().addDays(2)},
-        {a: 3, b: new DateTime().addDays(5)},
-        {a: 4, b: new DateTime().addDays(1)},
-        {a: 2, b: new DateTime().addDays(4)},
-        {a: 5, b: new DateTime().addDays(3)}
+        { a: 1, b: new DateTime().addDays(2) },
+        { a: 3, b: new DateTime().addDays(5) },
+        { a: 4, b: new DateTime().addDays(1) },
+        { a: 2, b: new DateTime().addDays(4) },
+        { a: 5, b: new DateTime().addDays(3) }
       ];
 
       expect(
@@ -331,43 +331,43 @@ describe("(common) core.extensions.ArrayExtensions", () => {
     it("비교대상 Array 와의 차이점을 추려낸다. source/target 으로 추려내며," +
       " source 만 있는것은 삭제, target 만 있는것은 추가된 데이터로 볼 수 있다.", () => {
       const arr1 = [
-        {a: 1, b: "2"},
+        { a: 1, b: "2" },
         // {a: 3, b: "5"},
-        {a: 4, b: "1"},
-        {a: 2, b: "4"},
-        {a: 5, b: "3"}
+        { a: 4, b: "1" },
+        { a: 2, b: "4" },
+        { a: 5, b: "3" }
       ];
       const arr2 = [
-        {a: 1, b: "2"},
-        {a: 3, b: "5"},
-        {a: 4, b: "1"},
+        { a: 1, b: "2" },
+        { a: 3, b: "5" },
+        { a: 4, b: "1" },
         // {a: 2, b: "4"},
-        {a: 5, b: "3"}
+        { a: 5, b: "3" }
       ];
 
       expect(arr1.diffs(arr2)).to.deep.equal([
-        {source: {a: 2, b: "4"}},
-        {target: {a: 3, b: "5"}}
+        { source: { a: 2, b: "4" } },
+        { target: { a: 3, b: "5" } }
       ]);
     });
 
     it("데이터의 순서는 비교하지 않으며, source 와 target 사이의 데이터 존재여부 및 변경여부만 확인한다.", () => {
       const arr1 = [
-        {a: 1, b: "2"},
-        {a: 4, b: "1"},
-        {a: 2, b: "4"},
-        {a: 5, b: "3"}
+        { a: 1, b: "2" },
+        { a: 4, b: "1" },
+        { a: 2, b: "4" },
+        { a: 5, b: "3" }
       ];
       const arr2 = [
-        {a: 4, b: "1"},
-        {a: 3, b: "5"},
-        {a: 5, b: "3"},
-        {a: 1, b: "2"}
+        { a: 4, b: "1" },
+        { a: 3, b: "5" },
+        { a: 5, b: "3" },
+        { a: 1, b: "2" }
       ];
 
       expect(arr1.diffs(arr2)).to.deep.equal([
-        {source: {a: 2, b: "4"}},
-        {target: {a: 3, b: "5"}}
+        { source: { a: 2, b: "4" } },
+        { target: { a: 3, b: "5" } }
       ]);
     });
 
@@ -377,43 +377,43 @@ describe("(common) core.extensions.ArrayExtensions", () => {
       "이 경우, 수정된 데이터로 볼 수 있다. " +
       "내부적으로 ObjectUtil.equal 은 사용하므로, ObjectUtil.equal 참고", () => {
       const arr1 = [
-        {a: 1, b: "2"},
-        {a: 4, b: "1"},
-        {a: 2, b: "4"},
-        {a: 5, b: "3"}
+        { a: 1, b: "2" },
+        { a: 4, b: "1" },
+        { a: 2, b: "4" },
+        { a: 5, b: "3" }
       ];
       const arr2 = [
-        {a: 4, b: "1"},
-        {a: 3, b: "5"},
-        {a: 5, b: "9"},
-        {a: 1, b: "2"}
+        { a: 4, b: "1" },
+        { a: 3, b: "5" },
+        { a: 5, b: "9" },
+        { a: 1, b: "2" }
       ];
 
-      expect(arr1.diffs(arr2, {keys: ["a"]})).to.deep.equal([
-        {source: {a: 2, b: "4"}},
-        {source: {a: 5, b: "3"}, target: {a: 5, b: "9"}},
-        {target: {a: 3, b: "5"}}
+      expect(arr1.diffs(arr2, { keys: ["a"] })).to.deep.equal([
+        { source: { a: 2, b: "4" } },
+        { source: { a: 5, b: "3" }, target: { a: 5, b: "9" } },
+        { target: { a: 3, b: "5" } }
       ]);
     });
 
     it("excludes 옵션을 통해, 변경사항 비교에서 특성 속성을 제외할 수 있다. " +
       "제외된 속성의 값이 다르더라도, 다른 속성이 모두 같다면 변경사항이 전혀 없는것으로 간주된다.", () => {
       const arr1 = [
-        {a: 1, b: "2"},
-        {a: 4, b: "1"},
-        {a: 2, b: "4"},
-        {a: 5, b: "3"}
+        { a: 1, b: "2" },
+        { a: 4, b: "1" },
+        { a: 2, b: "4" },
+        { a: 5, b: "3" }
       ];
       const arr2 = [
-        {a: 4, b: "1"},
-        {a: 3, b: "5"},
-        {a: 5, b: "9"},
-        {a: 1, b: "2"}
+        { a: 4, b: "1" },
+        { a: 3, b: "5" },
+        { a: 5, b: "9" },
+        { a: 1, b: "2" }
       ];
 
-      expect(arr1.diffs(arr2, {excludes: ["b"]})).to.deep.equal([
-        {source: {a: 2, b: "4"}},
-        {target: {a: 3, b: "5"}}
+      expect(arr1.diffs(arr2, { excludes: ["b"] })).to.deep.equal([
+        { source: { a: 2, b: "4" } },
+        { target: { a: 3, b: "5" } }
       ]);
     });
   });
@@ -425,44 +425,44 @@ describe("(common) core.extensions.ArrayExtensions", () => {
       "생성/수정/삭제의 구분은 diffs 를 활용하여 비교하므로, " +
       "옵션은 diffs 의 설정을 따른며, diffs 를 하는데에만 사용된다.(diffs 참고)", () => {
       const arr1 = [
-        {a: 1, b: "2"},
-        {a: 4, b: "1"},
-        {a: 2, b: "4"},
-        {a: 5, b: "3"}
+        { a: 1, b: "2" },
+        { a: 4, b: "1" },
+        { a: 2, b: "4" },
+        { a: 5, b: "3" }
       ];
       const arr2 = [
-        {a: 4, b: "1"},
-        {a: 3, b: "5"},
-        {a: 5, b: "9"},
-        {a: 1, b: "2"}
+        { a: 4, b: "1" },
+        { a: 3, b: "5" },
+        { a: 5, b: "9" },
+        { a: 1, b: "2" }
       ];
 
-      expect(arr1.merge(arr2, {keys: ["a"]})).to.deep.equal([
-        {a: 1, b: "2"},
-        {a: 4, b: "1"},
-        {a: 2, b: "4"},
-        {a: 5, b: "9"},
-        {a: 3, b: "5"}
+      expect(arr1.merge(arr2, { keys: ["a"] })).to.deep.equal([
+        { a: 1, b: "2" },
+        { a: 4, b: "1" },
+        { a: 2, b: "4" },
+        { a: 5, b: "9" },
+        { a: 3, b: "5" }
       ]);
     });
 
     it("각 객체 수정에 따른 시에는 ObjectUtil.merge 를 사용하므로 참고", () => {
       const arr1 = [
-        {a: 1, b: 2, c: {d: 3, f: 4}}
+        { a: 1, b: 2, c: { d: 3, f: 4 } }
       ];
       const arr2 = [
-        {a: 1, b: 2, c: {d: 5, f: 4}}
+        { a: 1, b: 2, c: { d: 5, f: 4 } }
       ];
 
-      expect(arr1.merge(arr2, {keys: ["a"]})).to.deep.equal([
-        {a: 1, b: 2, c: {d: 5, f: 4}}
+      expect(arr1.merge(arr2, { keys: ["a"] })).to.deep.equal([
+        { a: 1, b: 2, c: { d: 5, f: 4 } }
       ]);
     });
   });
 
   describe("sum", () => {
     it("값 셀렉터를 통해 합산할 값을 선택하고, 해당 값을 모두 '+' 하여 반환한다.", () => {
-      const arr = [{a: 1}, {a: 2}, {a: 3}, {a: 4}];
+      const arr = [{ a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }];
       expect(arr.sum(item => item.a)).to.equal(10);
     });
 
@@ -485,7 +485,7 @@ describe("(common) core.extensions.ArrayExtensions", () => {
 
   describe("min", () => {
     it("값 셀렉터를 통해 최소값을 가져올 방법을 설정하고, 해당 값중 최소값을 반환한다.", () => {
-      const arr = [{a: 2}, {a: 3}, {a: 4}, {a: 1}];
+      const arr = [{ a: 2 }, { a: 3 }, { a: 4 }, { a: 1 }];
       expect(arr.min(item => item.a)).to.equal(1);
     });
 
@@ -508,7 +508,7 @@ describe("(common) core.extensions.ArrayExtensions", () => {
 
   describe("max", () => {
     it("값 셀렉터를 통해 최대값을 가져올 방법을 설정하고, 해당 값중 최대값을 반환한다.", () => {
-      const arr = [{a: 2}, {a: 3}, {a: 4}, {a: 1}];
+      const arr = [{ a: 2 }, { a: 3 }, { a: 4 }, { a: 1 }];
       expect(arr.max(item => item.a)).to.equal(4);
     });
 
@@ -551,26 +551,26 @@ describe("(common) core.extensions.ArrayExtensions", () => {
   describe("remove", () => {
     it("특정 값을 목록에서 삭제한다. 포인터를 사용하므로, 완전히 동일한 값만 삭제된다. " +
       "기존 데이터 자체가 수정되며, 자기자신(this)이 반환된다.", () => {
-      const obj = {a: 2};
-      const arr = [{a: 1}, obj, {a: 3}, {a: 4}, obj];
-      expect(arr.remove({a: 2})).to.deep.equal([{a: 1}, {a: 2}, {a: 3}, {a: 4}, {a: 2}]);
+      const obj = { a: 2 };
+      const arr = [{ a: 1 }, obj, { a: 3 }, { a: 4 }, obj];
+      expect(arr.remove({ a: 2 })).to.deep.equal([{ a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }, { a: 2 }]);
       expect(arr.remove(obj))
-        .to.deep.equal([{a: 1}, {a: 3}, {a: 4}])
+        .to.deep.equal([{ a: 1 }, { a: 3 }, { a: 4 }])
         .and.to.equal(arr);
     });
 
     it("조건문을 통해, 조건문에 부합하는 데이터만 삭제할 수도 있다.", () => {
-      const obj = {a: 2};
-      const arr = [{a: 1}, obj, {a: 3}, {a: 4}, obj];
+      const obj = { a: 2 };
+      const arr = [{ a: 1 }, obj, { a: 3 }, { a: 4 }, obj];
       expect(arr.remove(item => item.a === 2))
-        .to.deep.equal([{a: 1}, {a: 3}, {a: 4}])
+        .to.deep.equal([{ a: 1 }, { a: 3 }, { a: 4 }])
         .and.to.equal(arr);
     });
   });
 
   describe("clear", () => {
     it("목록을 완전히 비운다. 기존 데이터 자체가 수정되며, 자기자신(this)이 반환된다.", () => {
-      const arr = [{a: 1}, {a: 2}, {a: 3}, {a: 4}];
+      const arr = [{ a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }];
       expect(arr.clear())
         .to.deep.equal([])
         .and.to.equal(arr);

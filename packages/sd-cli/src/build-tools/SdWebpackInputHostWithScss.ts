@@ -5,10 +5,10 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-import {getSystemPath, Path, virtualFs} from "@angular-devkit/core";
-import {Observable} from "rxjs";
-import {WebpackInputHost} from "@ngtools/webpack/src/webpack-input-host";
-import {SdAngularUtils} from "./SdAngularUtils";
+import { getSystemPath, Path, virtualFs } from "@angular-devkit/core";
+import { Observable } from "rxjs";
+import { WebpackInputHost } from "@ngtools/webpack/src/webpack-input-host";
+import { SdAngularUtils } from "./SdAngularUtils";
 
 export class SdWebpackInputHostWithScss extends WebpackInputHost {
   public read(path: Path): Observable<virtualFs.FileBuffer> {

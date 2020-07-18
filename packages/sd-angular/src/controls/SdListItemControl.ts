@@ -7,11 +7,11 @@ import {
   Input,
   QueryList
 } from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
-import {SdListControl} from "./SdListControl";
-import {IconName} from "@fortawesome/fontawesome-svg-core";
-import {sdIconNames} from "../commons/sdIconNames";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
+import { SdListControl } from "./SdListControl";
+import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { sdIconNames } from "../commons/sdIconNames";
 
 @Component({
   selector: "sd-list-item",

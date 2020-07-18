@@ -1,6 +1,6 @@
-import {ISdProjectConfig, TSdPackageConfig} from "./commons";
-import {FsUtils} from "@simplysm/sd-core-node";
-import {ObjectUtils} from "@simplysm/sd-core-common";
+import { ISdProjectConfig, TSdPackageConfig } from "./commons";
+import { FsUtils } from "@simplysm/sd-core-node";
+import { ObjectUtils } from "@simplysm/sd-core-common";
 
 export class SdProjectConfigUtils {
   public static async loadConfigAsync(configFilePath: string, devMode: boolean, options: string[]): Promise<ISdProjectConfig> {

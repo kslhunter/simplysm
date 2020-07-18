@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, ElementRef, NgZone, OnInit} from "@angular/core";
-import {ISdResizeEvent} from "@simplysm/sd-core-browser";
+import { ChangeDetectionStrategy, Component, ElementRef, NgZone, OnInit } from "@angular/core";
+import { ISdResizeEvent } from "@simplysm/sd-core-browser";
 
 @Component({
   selector: "sd-dropdown-popup",

@@ -1,7 +1,7 @@
-import {DateOnly, DateTime, StripTypeWrap, Time, Type, TypeWrap, Uuid} from "@simplysm/sd-core-common";
-import {QueryUnit} from "./QueryUnit";
-import {DbContext} from "./DbContext";
-import {Queryable} from "./Queryable";
+import { DateOnly, DateTime, StripTypeWrap, Time, Type, TypeWrap, Uuid } from "@simplysm/sd-core-common";
+import { QueryUnit } from "./QueryUnit";
+import { DbContext } from "./DbContext";
+import { Queryable } from "./Queryable";
 
 
 // region QueryBuilder COMMONS

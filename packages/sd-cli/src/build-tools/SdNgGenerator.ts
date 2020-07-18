@@ -1,18 +1,18 @@
-import {SdClassMetadata} from "../metadata/SdClassMetadata";
-import {SdMetadataCollector} from "../metadata/SdMetadataCollector";
-import {FsUtils, IFileChangeInfo, Logger} from "@simplysm/sd-core-node";
-import {NeverEntryError} from "@simplysm/sd-core-common";
-import {isMetadataError, MetadataCollector} from "@angular/compiler-cli";
+import { SdClassMetadata } from "../metadata/SdClassMetadata";
+import { SdMetadataCollector } from "../metadata/SdMetadataCollector";
+import { FsUtils, IFileChangeInfo, Logger } from "@simplysm/sd-core-node";
+import { NeverEntryError } from "@simplysm/sd-core-common";
+import { isMetadataError, MetadataCollector } from "@angular/compiler-cli";
 import * as ts from "typescript";
 import * as path from "path";
 import anymatch from "anymatch";
-import {SdArrayMetadata} from "../metadata/SdArrayMetadata";
-import {SdCallMetadata} from "../metadata/SdCallMetadata";
-import {SdFunctionMetadata} from "../metadata/SdFunctionMetadata";
-import {SdObjectMetadata} from "../metadata/SdObjectMetadata";
-import {TSdMetadata} from "../metadata/commons";
+import { SdArrayMetadata } from "../metadata/SdArrayMetadata";
+import { SdCallMetadata } from "../metadata/SdCallMetadata";
+import { SdFunctionMetadata } from "../metadata/SdFunctionMetadata";
+import { SdObjectMetadata } from "../metadata/SdObjectMetadata";
+import { TSdMetadata } from "../metadata/commons";
 import * as os from "os";
-import {JSDOM} from "jsdom";
+import { JSDOM } from "jsdom";
 
 export class SdNgGenerator {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", "gen-ng"]);
@@ -445,7 +445,7 @@ export const routes = [
   private async _removeDeletedModuleFileAsync(): Promise<void> {
     if (!this._info) throw new NeverEntryError();
 
-    const filePaths = await FsUtils.globAsync(path.resolve(this._modulesGenDirPath, "**", "*"), {nodir: true});
+    const filePaths = await FsUtils.globAsync(path.resolve(this._modulesGenDirPath, "**", "*"), { nodir: true });
     for (const filePath of filePaths) {
       if (
         !this._info.ngModules.some(item => item.def.filePath === filePath) &&
@@ -876,7 +876,7 @@ export const routes = [
       targetName = "CommonModule";
     }
 
-    return {requirePath, targetName};
+    return { requirePath, targetName };
   }
 
   private async _getRouteChildrenAsync(pagePath: string | undefined, pageChildDirPath: string): Promise<ISdNgRoutingModuleRoute[]> {

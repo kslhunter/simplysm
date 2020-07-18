@@ -1,12 +1,12 @@
-import {ComponentFactoryResolver, ComponentRef, Injectable, Injector, Type} from "@angular/core";
-import {SdToastContainerEntryControl} from "../entry-controls/SdToastContainerEntryControl";
-import {SdToastEntryControl} from "../entry-controls/SdToastEntryControl";
-import {SdRootProvider} from "../root-providers/SdRootProvider";
-import {SdSystemLogRootProvider} from "../root-providers/SdSystemLogRootProvider";
+import { ComponentFactoryResolver, ComponentRef, Injectable, Injector, Type } from "@angular/core";
+import { SdToastContainerEntryControl } from "../entry-controls/SdToastContainerEntryControl";
+import { SdToastEntryControl } from "../entry-controls/SdToastEntryControl";
+import { SdRootProvider } from "../root-providers/SdRootProvider";
+import { SdSystemLogRootProvider } from "../root-providers/SdSystemLogRootProvider";
 
 // TODO: 마우스가 올라와 있으면 자동으로 안닫히게
 
-@Injectable({providedIn: null})
+@Injectable({ providedIn: null })
 export class SdToastProvider {
   public get containerRef(): ComponentRef<SdToastContainerEntryControl> {
     this._root.data.toast = this._root.data.toast ?? {};

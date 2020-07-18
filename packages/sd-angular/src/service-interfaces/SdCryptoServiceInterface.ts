@@ -1,4 +1,4 @@
-import {SdNgServiceClient} from "../providers/SdServiceFactoryProvider";
+import { SdNgServiceClient } from "../providers/SdServiceFactoryProvider";
 
 export class SdCryptoServiceInterface {
   public constructor(private readonly _service: SdNgServiceClient) {

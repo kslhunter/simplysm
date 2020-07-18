@@ -1,7 +1,7 @@
-import {expect} from "chai";
+import { expect } from "chai";
 import * as path from "path";
-import {FsUtils, FsWatcher} from "@simplysm/sd-core-node";
-import {Wait} from "@simplysm/sd-core-common";
+import { FsUtils, FsWatcher } from "@simplysm/sd-core-node";
+import { Wait } from "@simplysm/sd-core-common";
 
 describe("(node) core.FsWatcher", () => {
   const testDirPath = path.resolve(__dirname, "FsWatcherTestDir");
@@ -103,7 +103,7 @@ describe("(node) core.FsWatcher", () => {
       result = "success";
     }, err => {
       result = err;
-    }, {aggregateTimeout: 50});
+    }, { aggregateTimeout: 50 });
 
     await FsUtils.writeFileAsync(testFile1Path, "1234");
     await Wait.time(20);

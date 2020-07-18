@@ -1,7 +1,7 @@
-import {ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
-import {SdRootProvider} from "../root-providers/SdRootProvider";
+import { ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
+import { SdRootProvider } from "../root-providers/SdRootProvider";
 
-@Injectable({providedIn: null})
+@Injectable({ providedIn: null })
 export class SdPrintProvider {
   public constructor(private readonly _cfr: ComponentFactoryResolver,
                      private readonly _injector: Injector,

@@ -1,9 +1,9 @@
-import {Injectable} from "@angular/core";
-import {EventManager} from "@angular/platform-browser";
-import {NeverEntryError} from "@simplysm/sd-core-common";
-import {SdModalProvider} from "../providers/SdModalProvider";
+import { Injectable } from "@angular/core";
+import { EventManager } from "@angular/platform-browser";
+import { NeverEntryError } from "@simplysm/sd-core-common";
+import { SdModalProvider } from "../providers/SdModalProvider";
 
-@Injectable({providedIn: null})
+@Injectable({ providedIn: null })
 export class SdDataRefreshEventPlugin {
   public manager!: EventManager;
 

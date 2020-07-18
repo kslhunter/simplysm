@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
+import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
+import { SdInputValidate } from "../commons/SdInputValidate";
 
 @Component({
   selector: "sd-anchor",

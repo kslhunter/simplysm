@@ -18,12 +18,12 @@ import {
   QueryList,
   TemplateRef
 } from "@angular/core";
-import {SdSheetColumnControl} from "./SdSheetColumnControl";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {ISdResizeEvent} from "@simplysm/sd-core-browser";
-import {SdModalProvider} from "../providers/SdModalProvider";
-import {SdSheetConfigModal} from "../modals/SdSheetConfigModal";
-import {SdSystemConfigRootProvider} from "../root-providers/SdSystemConfigRootProvider";
+import { SdSheetColumnControl } from "./SdSheetColumnControl";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { ISdResizeEvent } from "@simplysm/sd-core-browser";
+import { SdModalProvider } from "../providers/SdModalProvider";
+import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
+import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 
 @Component({
   selector: "sd-sheet",
@@ -627,11 +627,11 @@ export class SdSheetControl implements DoCheck, OnInit {
   public autoHeight = false;
 
   @Input()
-  @SdInputValidate({type: Number, notnull: true})
+  @SdInputValidate({ type: Number, notnull: true })
   public page = 0;
 
   @Input()
-  @SdInputValidate({type: Number, notnull: true})
+  @SdInputValidate({ type: Number, notnull: true })
   public get pageLength(): number {
     if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
       return Math.ceil(this.items.length / this.pageItemCount);
@@ -669,7 +669,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public autoSelect?: "click" | "focus";
 
   @Input()
-  @SdInputValidate({type: Array, notnull: true})
+  @SdInputValidate({ type: Array, notnull: true })
   public selectedItems: any[] = [];
 
   @Output()
@@ -688,7 +688,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public readonly orderingChange = new EventEmitter<ISdSheetColumnOrderingVM[]>();
 
   @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
+  @SdInputValidate({ type: Boolean, notnull: true })
   @HostBinding("attr.sd-inset")
   public inset = false;
 
@@ -704,7 +704,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   @SdInputValidate(Boolean)
   public useCardDisplayType?: boolean;
 
-  @ContentChild("card", {static: true})
+  @ContentChild("card", { static: true })
   public cardTemplateRef?: TemplateRef<{ item: any; index: number }>;
 
   @Input()
@@ -1423,7 +1423,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         }
       }
       else {
-        this.ordering.push({key: columnControl.key, desc: false});
+        this.ordering.push({ key: columnControl.key, desc: false });
       }
     }
     else {
@@ -1437,7 +1437,7 @@ export class SdSheetControl implements DoCheck, OnInit {
         }
       }
       else {
-        this.ordering = [{key: columnControl.key, desc: false}];
+        this.ordering = [{ key: columnControl.key, desc: false }];
       }
     }
 
@@ -1456,7 +1456,7 @@ export class SdSheetControl implements DoCheck, OnInit {
     const c = cellEls.indexOf(cellEl);
     if (c <= 0) return undefined;
 
-    return {r, c};
+    return { r, c };
   }
 
   private _getCellEl(r: number, c: number | "last"): HTMLElement | undefined {

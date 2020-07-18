@@ -1,5 +1,5 @@
-import {MetadataArray, MetadataEntry, MetadataObject} from "@angular/compiler-cli";
-import {SdModuleMetadata} from "./SdModuleMetadata";
+import { MetadataArray, MetadataEntry, MetadataObject } from "@angular/compiler-cli";
+import { SdModuleMetadata } from "./SdModuleMetadata";
 
 export abstract class SdMetadataBase {
   public abstract module: SdModuleMetadata;

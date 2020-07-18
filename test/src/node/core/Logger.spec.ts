@@ -1,9 +1,9 @@
-import {expect} from "chai";
+import { expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
 import * as fs from "fs";
-import {FsUtils, Logger, LoggerSeverity, LoggerStyle} from "@simplysm/sd-core-node";
-import {DateTime} from "@simplysm/sd-core-common";
+import { FsUtils, Logger, LoggerSeverity, LoggerStyle } from "@simplysm/sd-core-node";
+import { DateTime } from "@simplysm/sd-core-common";
 
 describe("(node) core.Logger", () => {
   const toFormatStringFn = DateTime.prototype.toFormatString;
@@ -29,8 +29,8 @@ describe("(node) core.Logger", () => {
 
   it("log, info, warn, error 방식으로 오류를 표시할 수 있다. 로그레벨에 따라 색상으로 구분한다.", () => {
     const logger = Logger.get();
-    const obj1 = {test: 1};
-    const obj2 = {test: 2};
+    const obj1 = { test: 1 };
+    const obj2 = { test: 2 };
     logger.log("log", obj1, obj2);
     sinon.assert.callCount(spy, 1);
     expect(spy.lastCall.args).to.deep.equal([
@@ -202,7 +202,7 @@ describe("(node) core.Logger", () => {
     logger.warn("warn");
     expect(Logger.history).to.length(2);
 
-    expect(Logger.history.map(item => ({...item, datetime: undefined}))).to.deep.equal([
+    expect(Logger.history.map(item => ({ ...item, datetime: undefined }))).to.deep.equal([
       {
         datetime: undefined,
         group: [],

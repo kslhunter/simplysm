@@ -1,4 +1,4 @@
-import {SdError} from "./SdError";
+import { SdError } from "./SdError";
 
 export class TimeoutError extends SdError {
   public constructor(millisecond?: number, message?: string) {

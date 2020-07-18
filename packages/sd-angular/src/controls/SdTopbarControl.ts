@@ -8,8 +8,8 @@ import {
   Injector,
   OnInit
 } from "@angular/core";
-import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
-import {SdTopbarContainerControl} from "./SdTopbarContainerControl";
+import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
+import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
 
 @Component({
   selector: "sd-topbar",

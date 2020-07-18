@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input} from "@angular/core";
-import {SdViewControl} from "./SdViewControl";
+import { ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input } from "@angular/core";
+import { SdViewControl } from "./SdViewControl";
 
 @Component({
   selector: "sd-view-item",

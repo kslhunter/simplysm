@@ -1,6 +1,6 @@
-import {Injectable} from "@angular/core";
+import { Injectable } from "@angular/core";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdSystemLogRootProvider {
   public writeFn?: (severity: "error" | "warn" | "log", ...data: any[]) => Promise<void> | void;
 

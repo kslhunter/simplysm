@@ -1,6 +1,6 @@
-import {TsconfigPathsPlugin} from "tsconfig-paths-webpack-plugin";
+import { TsconfigPathsPlugin } from "tsconfig-paths-webpack-plugin";
 import * as path from "path";
-import {ServerMiddleware} from "./server/ServerMiddleware";
+import { ServerMiddleware } from "./server/ServerMiddleware";
 
 delete process.env.TS_NODE_PROJECT;
 delete process.env.TS_NODE_TRANSPILE_ONLY;
@@ -67,7 +67,7 @@ module.exports = function (config: any): void {
             enforce: "post",
             use: {
               loader: "istanbul-instrumenter-loader",
-              options: {esModules: true}
+              options: { esModules: true }
             }
           }
         ]

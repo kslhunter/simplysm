@@ -1,7 +1,15 @@
-import {ChangeDetectionStrategy, Component, ElementRef, EventEmitter, HostBinding, Input, Output} from "@angular/core";
-import {IconName} from "@fortawesome/fontawesome-svg-core";
-import {sdIconNames} from "../commons/sdIconNames";
-import {SdInputValidate} from "../commons/SdInputValidate";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  Input,
+  Output
+} from "@angular/core";
+import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { sdIconNames } from "../commons/sdIconNames";
+import { SdInputValidate } from "../commons/SdInputValidate";
 
 @Component({
   selector: "sd-checkbox",
@@ -169,7 +177,7 @@ import {SdInputValidate} from "../commons/SdInputValidate";
 })
 export class SdCheckboxControl {
   @Input()
-  @SdInputValidate({type: Boolean, notnull: true})
+  @SdInputValidate({ type: Boolean, notnull: true })
   @HostBinding("attr.sd-checked")
   public value = false;
 

@@ -1,4 +1,4 @@
-import {INotifyPropertyChange, NotifyPropertyChange} from "@simplysm/sd-core-common";
+import { INotifyPropertyChange, NotifyPropertyChange } from "@simplysm/sd-core-common";
 import * as sinon from "sinon";
 
 describe("(common) core.decorators.NotifyPropertyChange", () => {

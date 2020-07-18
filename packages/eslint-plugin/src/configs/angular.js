@@ -13,11 +13,11 @@ module.exports = {
         }],
         "@angular-eslint/directive-selector": [
           "error",
-          {type: "attribute", prefix: "app", style: "camelCase"}
+          { type: "attribute", prefix: "app", style: "camelCase" }
         ],
         "@angular-eslint/component-selector": [
           "error",
-          {type: "element", prefix: "app", style: "kebab-case"}
+          { type: "element", prefix: "app", style: "kebab-case" }
         ],
         "@angular-eslint/contextual-lifecycle": "error",
         "@angular-eslint/directive-class-suffix": "error",
@@ -42,7 +42,7 @@ module.exports = {
         "@angular-eslint/use-pipe-decorator": "error",
         "@angular-eslint/use-pipe-transform-interface": "error",
 
-        "@typescript-eslint/tslint/config": ["error", {lintFile: path.resolve(__dirname, "tslint/codelyzer.json")}]
+        "@typescript-eslint/tslint/config": ["error", { lintFile: path.resolve(__dirname, "tslint/codelyzer.json") }]
       },
       overrides: [
         {

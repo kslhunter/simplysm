@@ -9,8 +9,8 @@ import {
   Renderer2,
   SimpleChanges
 } from "@angular/core";
-import {SizeProp} from "@fortawesome/fontawesome-svg-core";
-import {SdInputValidate} from "../../commons/SdInputValidate";
+import { SizeProp } from "@fortawesome/fontawesome-svg-core";
+import { SdInputValidate } from "../../commons/SdInputValidate";
 
 /**
  * Fontawesome layers.

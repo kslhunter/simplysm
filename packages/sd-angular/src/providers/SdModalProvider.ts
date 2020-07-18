@@ -1,8 +1,8 @@
-import {ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
-import {SdModalEntryControl} from "../entry-controls/SdModalEntryControl";
-import {SdRootProvider} from "../root-providers/SdRootProvider";
+import { ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
+import { SdModalEntryControl } from "../entry-controls/SdModalEntryControl";
+import { SdRootProvider } from "../root-providers/SdRootProvider";
 
-@Injectable({providedIn: null})
+@Injectable({ providedIn: null })
 export class SdModalProvider {
   public get modalCount(): number {
     this._root.data.modal = this._root.data.modal ?? {};

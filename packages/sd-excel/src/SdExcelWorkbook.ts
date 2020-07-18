@@ -1,6 +1,6 @@
-import {SdExcelWorksheet} from "./SdExcelWorksheet";
+import { SdExcelWorksheet } from "./SdExcelWorksheet";
 import * as JSZip from "jszip";
-import {XmlConvert} from "./utils/XmlConvert";
+import { XmlConvert } from "./utils/XmlConvert";
 
 export class SdExcelWorkbook {
   private readonly _worksheets: SdExcelWorksheet[] = [];
@@ -141,8 +141,8 @@ export class SdExcelWorkbook {
         }],
         fills: [{
           fill: [
-            {patternFill: [{$: {patternType: "none"}}]},
-            {patternFill: [{$: {patternType: "none"}}]}
+            { patternFill: [{ $: { patternType: "none" } }] },
+            { patternFill: [{ $: { patternType: "none" } }] }
           ]
         }],
         borders: [{
@@ -330,7 +330,7 @@ export class SdExcelWorkbook {
   public async downloadAsync(filename: string): Promise<void> {
     this._writeZipObject();
 
-    const blob = await this._zip.generateAsync({type: "blob"});
+    const blob = await this._zip.generateAsync({ type: "blob" });
     const link = document.createElement("a");
     link.href = window.URL.createObjectURL(blob);
     link.download = filename;
@@ -340,7 +340,7 @@ export class SdExcelWorkbook {
   public async getBufferAsync(): Promise<Buffer> {
     this._writeZipObject();
 
-    return await this._zip.generateAsync({type: "nodebuffer"});
+    return await this._zip.generateAsync({ type: "nodebuffer" });
   }
 
   private _writeZipObject(): void {

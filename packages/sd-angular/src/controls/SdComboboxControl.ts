@@ -15,8 +15,8 @@ import {
   QueryList,
   ViewChild
 } from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {SdComboboxItemControl} from "./SdComboboxItemControl";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { SdComboboxItemControl } from "./SdComboboxItemControl";
 
 @Component({
   selector: "sd-combobox",
@@ -100,13 +100,13 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
   @Output()
   public readonly textChangeByInput = new EventEmitter<string | undefined>();
 
-  @ContentChildren(SdComboboxItemControl, {descendants: true})
+  @ContentChildren(SdComboboxItemControl, { descendants: true })
   public itemControls?: QueryList<SdComboboxItemControl>;
 
-  @ViewChild("textfield", {static: true, read: ElementRef})
+  @ViewChild("textfield", { static: true, read: ElementRef })
   public textfieldElRef?: ElementRef<HTMLElement>;
 
-  @ViewChild("dropdown", {static: true})
+  @ViewChild("dropdown", { static: true })
   public dropdownElRef?: ElementRef<HTMLDivElement>;
 
   @Output()

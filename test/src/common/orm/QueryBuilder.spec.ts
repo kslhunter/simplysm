@@ -1,5 +1,5 @@
-import {expect} from "chai";
-import {QueryBuilder} from "@simplysm/sd-orm-common";
+import { expect } from "chai";
+import { QueryBuilder } from "@simplysm/sd-orm-common";
 
 describe("(common) orm.QueryBuilder (QueryDef => Query)", () => {
   describe("SELECT", () => {
@@ -397,14 +397,14 @@ WHERE [TBL].[id] = 3;`.trim());
   describe("DATABASE", () => {
     it("CREATE DATABASE IF NOT EXISTS", () => {
       expect(
-        new QueryBuilder("mssql").createDatabaseIfNotExists({database: "TEST_DB"})
+        new QueryBuilder("mssql").createDatabaseIfNotExists({ database: "TEST_DB" })
       ).to.equal(`
 IF NOT EXISTS(select * from sys.databases WHERE name='TEST_DB') CREATE DATABASE [TEST_DB]`.trim());
     });
 
     it("CLEAR DATABASE IF EXISTS", () => {
       expect(
-        new QueryBuilder("mssql").clearDatabaseIfExists({database: "TEST_DB"})
+        new QueryBuilder("mssql").clearDatabaseIfExists({ database: "TEST_DB" })
       ).to.equal(`
 IF EXISTS(select * from sys.databases WHERE name='TEST_DB')
 BEGIN

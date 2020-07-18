@@ -8,7 +8,7 @@ export class SdAngularUtils {
 
     const matches = content.match(new RegExp(scssRegex, "gi"));
     if (!matches) {
-      return {content, dependencies: []};
+      return { content, dependencies: [] };
     }
 
     const results = matches.map(match => sass.renderSync({
@@ -39,6 +39,6 @@ export class SdAngularUtils {
       return result;
     });
 
-    return {content: newContent, dependencies: deps};
+    return { content: newContent, dependencies: deps };
   }
 }

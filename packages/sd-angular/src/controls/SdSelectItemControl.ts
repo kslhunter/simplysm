@@ -14,7 +14,7 @@ import {
   Output,
   TemplateRef
 } from "@angular/core";
-import {SdSelectControl} from "./SdSelectControl";
+import { SdSelectControl } from "./SdSelectControl";
 
 @Component({
   selector: "sd-select-item",
@@ -66,7 +66,7 @@ export class SdSelectItemControl implements AfterViewInit, AfterContentChecked {
   @Input()
   public value?: any;
 
-  @ContentChild("label", {static: true})
+  @ContentChild("label", { static: true })
   public labelTemplateRef?: TemplateRef<any>;
 
   @HostBinding("attr.sd-select-mode")

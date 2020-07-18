@@ -1,4 +1,4 @@
-import {PropertyGetSetDecoratorBase} from "./PropertyGetSetDecoratorBase";
+import { PropertyGetSetDecoratorBase } from "./PropertyGetSetDecoratorBase";
 
 export function NotifyPropertyChange(): (target: any, propertyName: string, inputDescriptor?: PropertyDescriptor) => void {
   return PropertyGetSetDecoratorBase({

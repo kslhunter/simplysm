@@ -1,4 +1,4 @@
-import {SdError} from "./SdError";
+import { SdError } from "./SdError";
 
 export class ArgumentError extends SdError {
   public constructor(argObj: { readonly [key: string]: any }) {

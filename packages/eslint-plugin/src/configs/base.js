@@ -34,24 +34,24 @@ module.exports = {
         // error
         // ---------------------------------
         "linebreak-style": ["error", "windows"],
-        "lines-between-class-members": ["error", "always", {exceptAfterSingleLine: true}],
+        "lines-between-class-members": ["error", "always", { exceptAfterSingleLine: true }],
         "function-call-argument-newline": ["error", "consistent"],
         "function-paren-newline": ["error", "consistent"],
         "quote-props": ["error", "consistent"],
-        "object-property-newline": ["error", {allowAllPropertiesOnSameLine: true}],
+        "object-property-newline": ["error", { allowAllPropertiesOnSameLine: true }],
         "one-var": ["error", "never"],
         "operator-linebreak": ["error", "after"],
-        "no-multi-spaces": ["error", {ignoreEOLComments: true}],
+        "no-multi-spaces": ["error", { ignoreEOLComments: true }],
         "arrow-parens": ["error", "as-needed"],
-        "no-mixed-operators": ["error", {allowSamePrecedence: true}],
+        "no-mixed-operators": ["error", { allowSamePrecedence: true }],
         "dot-location": ["error", "property"],
-        "no-constant-condition": ["error", {checkLoops: false}],
-        "new-cap": ["error", {capIsNew: false, newIsCap: false}],
+        "no-constant-condition": ["error", { checkLoops: false }],
+        "new-cap": ["error", { capIsNew: false, newIsCap: false }],
         "array-element-newline": ["error", "consistent"],
         "array-bracket-newline": ["error", "consistent"],
         "curly": ["error", "multi-line"],
-        "indent": ["error", 2, {FunctionExpression: {parameters: "first"}, SwitchCase: 1}],
-        "eqeqeq": ["error", "always", {null: "never"}],
+        "indent": ["error", 2, { FunctionExpression: { parameters: "first" }, SwitchCase: 1 }],
+        "eqeqeq": ["error", "always", { null: "never" }],
         // "eqeqeq": "off",
         "space-before-function-paren": ["error", {
           anonymous: "ignore",
@@ -59,8 +59,9 @@ module.exports = {
           asyncArrow: "always"
         }],
         "padded-blocks": ["error", "never"],
-        "no-irregular-whitespace": ["error", {skipRegExps: true}],
+        "no-irregular-whitespace": ["error", { skipRegExps: true }],
         "brace-style": ["error", "stroustrup"],
+        "object-curly-spacing": ["error", "always"],
 
         // ---------------------------------
         // warn
@@ -132,7 +133,8 @@ module.exports = {
         "no-extra-boolean-cast": "off",
         "consistent-return": "off",
         "newline-per-chained-call": "off",
-        "no-alert": "off"
+        "no-alert": "off",
+        "no-extra-parens": "off"
       }
     },
     {
@@ -173,12 +175,12 @@ module.exports = {
           asyncArrow: "always"
         }],
         "@typescript-eslint/brace-style": ["error", "stroustrup"],
-        "@typescript-eslint/no-extraneous-class": ["error", {allowStaticOnly: true, allowEmpty: true}],
-        "@typescript-eslint/strict-boolean-expressions": ["error", {allowNullableBoolean: true}],
-        "@typescript-eslint/quotes": ["error", "double", {avoidEscape: true, allowTemplateLiterals: true}],
-        "@typescript-eslint/no-misused-promises": ["error", {checksVoidReturn: false}],
-        "@typescript-eslint/no-inferrable-types": ["error", {ignoreParameters: true}],
-        "@typescript-eslint/typedef": ["error", {arrowParameter: false, memberVariableDeclaration: false}],
+        "@typescript-eslint/no-extraneous-class": ["error", { allowStaticOnly: true, allowEmpty: true }],
+        "@typescript-eslint/strict-boolean-expressions": ["error", { allowNullableBoolean: true }],
+        "@typescript-eslint/quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
+        "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: false }],
+        "@typescript-eslint/no-inferrable-types": ["error", { ignoreParameters: true }],
+        "@typescript-eslint/typedef": ["error", { arrowParameter: false, memberVariableDeclaration: false }],
         // "@typescript-eslint/explicit-module-boundary-types": ["error", {allowArgumentsExplicitlyTypedAsAny: true}],
         "@typescript-eslint/explicit-module-boundary-types": "off", // Maximum call stack size exceeded 때문에 끔
         "@typescript-eslint/naming-convention": [
@@ -204,17 +206,17 @@ module.exports = {
           },
           {
             selector: "property",
-            filter: {regex: "^\\[(.*)\\]$", match: true},
+            filter: { regex: "^\\[(.*)\\]$", match: true },
             format: null
           },
           {
             selector: "property",
-            filter: {regex: "^_{2}(.*)(_{2})?$", match: true},
+            filter: { regex: "^_{2}(.*)(_{2})?$", match: true },
             format: null
           },
           {
             selector: "property",
-            filter: {regex: "\\.", match: true},
+            filter: { regex: "\\.", match: true },
             format: null
           },
           {
@@ -231,12 +233,12 @@ module.exports = {
             format: ["camelCase", "PascalCase"]
           }
         ],
-        "@typescript-eslint/tslint/config": ["error", {lintFile: path.resolve(__dirname, "tslint/default.json")}],
+        "@typescript-eslint/tslint/config": ["error", { lintFile: path.resolve(__dirname, "tslint/default.json") }],
 
         // ---------------------------------
         // warn
         // ---------------------------------
-        "@typescript-eslint/no-unused-vars": ["warn", {args: "none"}],
+        "@typescript-eslint/no-unused-vars": ["warn", { args: "none" }],
 
         // ---------------------------------
         // off

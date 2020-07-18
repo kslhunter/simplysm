@@ -1,6 +1,6 @@
-import {Injectable} from "@angular/core";
+import { Injectable } from "@angular/core";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdDomValidatorRootProvider {
   public validate(element: HTMLElement): void {
     const invalidEls = element.findAll("*:invalid, *[sd-invalid=true]").ofType(HTMLElement);

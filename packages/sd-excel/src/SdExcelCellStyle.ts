@@ -1,5 +1,5 @@
-import {SdExcelCell} from "./SdExcelCell";
-import {ObjectUtils} from "@simplysm/sd-core-common";
+import { SdExcelCell } from "./SdExcelCell";
+import { ObjectUtils } from "@simplysm/sd-core-common";
 
 export class SdExcelCellStyle {
   public set alignH(value: "center" | "left" | "right") {

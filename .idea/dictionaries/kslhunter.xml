@@ -1,24 +1,3 @@
 <component name="ProjectDictionaryState">
-  <dictionary name="kslhunter">
-    <words>
-      <w>anymatch</w>
-      <w>cordorva</w>
-      <w>cordova</w>
-      <w>decache</w>
-      <w>iconv</w>
-      <w>instrumenter</w>
-      <w>middlewares</w>
-      <w>mkdirs</w>
-      <w>nodebuffer</w>
-      <w>nodemailer</w>
-      <w>postgresql</w>
-      <w>rels</w>
-      <w>simplysm</w>
-      <w>smtp</w>
-      <w>taskkill</w>
-      <w>topbar</w>
-      <w>upsert</w>
-      <w>yargs</w>
-    </words>
-  </dictionary>
+  <dictionary name="kslhunter" />
 </component>

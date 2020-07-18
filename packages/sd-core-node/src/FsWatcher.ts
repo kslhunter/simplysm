@@ -1,8 +1,8 @@
 import * as fs from "fs";
-import {DateTime, NeverEntryError, ObjectUtils, Wait} from "@simplysm/sd-core-common";
+import { DateTime, NeverEntryError, ObjectUtils, Wait } from "@simplysm/sd-core-common";
 import * as path from "path";
 import anymatch from "anymatch";
-import {FsUtils} from "./FsUtils";
+import { FsUtils } from "./FsUtils";
 
 export class FsWatcher {
   private readonly _depListenerObj: { [key: string]: ((curr: fs.Stats) => void) | undefined } = {};
@@ -26,7 +26,7 @@ export class FsWatcher {
     let processing = false;
 
     const onWatched = async (type: "add" | "change" | "unlink", filePath: string): Promise<void> => {
-      preservedFileChanges.push({type, filePath});
+      preservedFileChanges.push({ type, filePath });
       await Wait.true(() => !processing);
 
       clearTimeout(timeout);
@@ -70,7 +70,7 @@ export class FsWatcher {
 
         const watcher = fs.watch(
           currWatchPath,
-          {recursive: watchPath !== currWatchPath},
+          { recursive: watchPath !== currWatchPath },
           async (event, filename: string | null) => {
             try {
               const fullPath = currWatchPath !== watchPath && filename != null ?
@@ -137,7 +137,7 @@ export class FsWatcher {
         await this._onWatched(eventType, filePath);
       };
 
-      fs.watchFile(filePath, {interval: 100}, listener);
+      fs.watchFile(filePath, { interval: 100 }, listener);
       this._depListenerObj[filePath] = listener;
     }
   }

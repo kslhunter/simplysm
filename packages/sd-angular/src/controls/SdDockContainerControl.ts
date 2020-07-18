@@ -8,7 +8,7 @@ import {
   NgZone,
   QueryList
 } from "@angular/core";
-import {SdDockControl} from "./SdDockControl";
+import { SdDockControl } from "./SdDockControl";
 
 @Component({
   selector: "sd-dock-container",

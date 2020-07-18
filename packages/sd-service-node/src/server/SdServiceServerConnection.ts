@@ -1,6 +1,6 @@
 import * as WebSocket from "ws";
-import {EventEmitter} from "events";
-import {JsonConvert} from "@simplysm/sd-core-common";
+import { EventEmitter } from "events";
+import { JsonConvert } from "@simplysm/sd-core-common";
 import * as path from "path";
 import {
   ISdServiceRequest,
@@ -9,7 +9,7 @@ import {
   TSdServiceRawRequest,
   TSdServiceRawResponse
 } from "@simplysm/sd-service-common";
-import {FsUtils} from "@simplysm/sd-core-node";
+import { FsUtils } from "@simplysm/sd-core-node";
 
 export class SdServiceServerConnection extends EventEmitter {
   private readonly _splitRequestMap = new Map<number, { timer: NodeJS.Timer; bufferStrings: string[] }>();

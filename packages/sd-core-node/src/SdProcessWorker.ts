@@ -1,7 +1,7 @@
-import {ProcessManager} from "./ProcessManager";
+import { ProcessManager } from "./ProcessManager";
 import * as cp from "child_process";
-import {EventEmitter} from "events";
-import {NeverEntryError, SdError, Uuid} from "@simplysm/sd-core-common";
+import { EventEmitter } from "events";
+import { NeverEntryError, SdError, Uuid } from "@simplysm/sd-core-common";
 
 export class SdProcessWorker extends EventEmitter {
   private _lastSend = 0;
@@ -98,12 +98,12 @@ export class SdProcessWorker extends EventEmitter {
         childWorker.send("done", result);
       }
       catch (err) {
-        childWorker.send("error", {name: err.name, message: err.message, stack: err.stack});
+        childWorker.send("error", { name: err.name, message: err.message, stack: err.stack });
       }
     });
 
     if (!process.send) throw new NeverEntryError();
-    process.send({event: "ready"});
+    process.send({ event: "ready" });
   }
 }
 
@@ -117,11 +117,11 @@ export class SdProcessChildWorker {
       process.send({
         event: "error",
         sendId: this._id,
-        body: {name: body.name, message: body.message, stack: body.stack}
+        body: { name: body.name, message: body.message, stack: body.stack }
       });
     }
     else {
-      process.send({event, sendId: this._id, body});
+      process.send({ event, sendId: this._id, body });
     }
   }
 }

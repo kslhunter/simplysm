@@ -1,6 +1,6 @@
-import {ApplicationRef, Injectable, Injector, Type} from "@angular/core";
+import { ApplicationRef, Injectable, Injector, Type } from "@angular/core";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdRootProvider {
   public data: { [key: string]: any } = {};
 

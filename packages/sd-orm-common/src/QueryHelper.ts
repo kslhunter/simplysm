@@ -6,10 +6,10 @@ import {
   TQueryBuilderValue,
   TQueryValue
 } from "./commons";
-import {QueryUnit} from "./QueryUnit";
-import {DateOnly, DateTime, Time, Type, Uuid} from "@simplysm/sd-core-common";
-import {Queryable} from "./Queryable";
-import {SdOrmUtils} from "./SdOrmUtils";
+import { QueryUnit } from "./QueryUnit";
+import { DateOnly, DateTime, Time, Type, Uuid } from "@simplysm/sd-core-common";
+import { Queryable } from "./Queryable";
+import { SdOrmUtils } from "./SdOrmUtils";
 
 export class QueryHelper {
   public constructor(private readonly _dialect: "mssql" | "mysql" = "mssql") {

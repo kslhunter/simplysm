@@ -23,7 +23,7 @@ import {
   TQueryBuilderValue,
   TQueryDef
 } from "./commons";
-import {Uuid} from "@simplysm/sd-core-common";
+import { Uuid } from "@simplysm/sd-core-common";
 
 export class QueryBuilder {
   public constructor(private readonly _dialect: "mssql" | "mysql" = "mssql") {
@@ -502,11 +502,11 @@ IF EXISTS (
   ${this.select(def).replace(/\n/g, "\n  ")}
 ) THEN
 
-${this.update({...def, record: def.updateRecord})}
+${this.update({ ...def, record: def.updateRecord })}
 
 ELSE
 
-${this.insert({...def, record: def.insertRecord})}
+${this.insert({ ...def, record: def.insertRecord })}
 
 END IF;
 

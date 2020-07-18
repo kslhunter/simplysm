@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject} from "@angular/core";
-import {SdSidebarContainerControl} from "./SdSidebarContainerControl";
+import { ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject } from "@angular/core";
+import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 
 @Component({
   selector: "sd-sidebar",

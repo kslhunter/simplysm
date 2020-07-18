@@ -1,5 +1,5 @@
 import ResizeObserver from "resize-observer-polyfill";
-import {ISdMutationEvent, ISdResizeEvent} from "./events";
+import { ISdMutationEvent, ISdResizeEvent } from "./events";
 
 declare global {
   interface HTMLElement {
@@ -60,7 +60,7 @@ HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string
     left -= cursor.scrollLeft;
   }
 
-  return {top, left};
+  return { top, left };
 };
 
 HTMLElement.prototype.findParent = function (arg: string | Element): HTMLElement | undefined {
@@ -161,7 +161,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
     });
 
     this["__resizeEventListeners__"] = this["__resizeEventListeners__"] ?? [];
-    this["__resizeEventListeners__"].push({listener, options, observer});
+    this["__resizeEventListeners__"].push({ listener, options, observer });
 
 
     if (options === true) {
@@ -192,7 +192,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
 
 
     this["__mutationEventListeners__"] = this["__mutationEventListeners__"] ?? [];
-    this["__mutationEventListeners__"].push({listener, options, observer});
+    this["__mutationEventListeners__"].push({ listener, options, observer });
 
     observer.observe(this, {
       childList: true,
@@ -224,7 +224,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
 
 
     this["__mutationChildEventListeners__"] = this["__mutationChildEventListeners__"] ?? [];
-    this["__mutationChildEventListeners__"].push({listener, options, observer});
+    this["__mutationChildEventListeners__"].push({ listener, options, observer });
 
     observer.observe(this, {
       childList: true,
@@ -256,7 +256,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
 
 
     this["__mutationCharacterEventListeners__"] = this["__mutationCharacterEventListeners__"] ?? [];
-    this["__mutationCharacterEventListeners__"].push({listener, options, observer});
+    this["__mutationCharacterEventListeners__"].push({ listener, options, observer });
 
     observer.observe(this, {
       childList: false,

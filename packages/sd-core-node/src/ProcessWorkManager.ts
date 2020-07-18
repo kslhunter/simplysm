@@ -1,5 +1,5 @@
-import {SdProcessWorker} from "./SdProcessWorker";
-import {Logger} from "./Logger";
+import { SdProcessWorker } from "./SdProcessWorker";
+import { Logger } from "./Logger";
 
 export class ProcessWorkManager {
   private readonly _logger = Logger.get(["simplysm", "sd-core-node", "ProcessWorkManager"]);

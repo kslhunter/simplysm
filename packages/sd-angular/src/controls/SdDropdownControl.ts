@@ -9,8 +9,8 @@ import {
   OnInit,
   Output
 } from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {NeverEntryError} from "@simplysm/sd-core-common";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { NeverEntryError } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-dropdown",

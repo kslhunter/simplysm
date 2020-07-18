@@ -1,8 +1,8 @@
-import {SdExcelWorksheet} from "./SdExcelWorksheet";
+import { SdExcelWorksheet } from "./SdExcelWorksheet";
 
-import {SdExcelUtils} from "./utils/SdExcelUtils";
-import {SdExcelCellStyle} from "./SdExcelCellStyle";
-import {DateOnly, DateTime} from "@simplysm/sd-core-common";
+import { SdExcelUtils } from "./utils/SdExcelUtils";
+import { SdExcelCellStyle } from "./SdExcelCellStyle";
+import { DateOnly, DateTime } from "@simplysm/sd-core-common";
 
 export class SdExcelCell {
   public cellData: any;
@@ -167,7 +167,7 @@ export class SdExcelCell {
     const rowNodes = this.excelWorkSheet.sheetData.worksheet.sheetData[0].row as any[];
     let currRow = rowNodes.single((item: any) => Number(item.$.r) === row + 1);
     if (currRow === undefined) {
-      currRow = {$: {r: row + 1}};
+      currRow = { $: { r: row + 1 } };
 
       const beforeRow = rowNodes.orderBy(item => Number(item.$.r)).last(item => Number(item.$.r) < Number(currRow.$.r));
       const beforeRowIndex = beforeRow !== undefined ? rowNodes.indexOf(beforeRow) : -1;
@@ -179,7 +179,7 @@ export class SdExcelCell {
     const cellNodes = currRow.c as any[];
     let currCell = cellNodes.single((item: any) => item.$.r === SdExcelUtils.getAddress(this.row, this.col));
     if (currCell === undefined) {
-      currCell = {$: {r: SdExcelUtils.getAddress(this.row, this.col)}};
+      currCell = { $: { r: SdExcelUtils.getAddress(this.row, this.col) } };
 
       const colStyle = this.excelWorkSheet.column(col)?.colData?.$?.style;
       if (colStyle !== undefined) {

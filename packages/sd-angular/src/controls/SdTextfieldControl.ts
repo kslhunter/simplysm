@@ -9,9 +9,9 @@ import {
   Output,
   SimpleChanges
 } from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {DateOnly, DateTime, Time} from "@simplysm/sd-core-common";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 
 @Component({
   selector: "sd-textfield",
@@ -349,7 +349,7 @@ export class SdTextfieldControl implements OnChanges {
         this.controlValue = "";
       }
       else if (this.type === "number" && typeof this.value === "number") {
-        this.controlValue = this.value.toLocaleString(undefined, {maximumFractionDigits: 10});
+        this.controlValue = this.value.toLocaleString(undefined, { maximumFractionDigits: 10 });
       }
       else if (this.type === "datetime" && this.value instanceof DateTime) {
         this.controlValue = this.value.toFormatString("yyyy-MM-ddTHH:mm");

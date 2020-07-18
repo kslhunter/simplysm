@@ -1,3 +1,5 @@
+"use strict";
+
 require("@simplysm/sd-core-common");
 require("element-qsa-scope");
 require("core-js/proposals/reflect-metadata");

@@ -1,6 +1,6 @@
-import {Injectable} from "@angular/core";
+import { Injectable } from "@angular/core";
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class SdSystemConfigRootProvider {
   public fn?: {
     set: (key: string, data: any) => Promise<void> | void;

@@ -1,5 +1,5 @@
-import {TimeoutError, Wait} from "@simplysm/sd-core-common";
-import {expect} from "chai";
+import { TimeoutError, Wait } from "@simplysm/sd-core-common";
+import { expect } from "chai";
 
 describe("(common) core.utils.Wait", () => {
   it("특정 시간을 기다릴 수 있다.", async () => {

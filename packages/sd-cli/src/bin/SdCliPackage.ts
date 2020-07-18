@@ -1,12 +1,12 @@
-import {FsUtils, Logger, ProcessManager, ProcessWorkManager} from "@simplysm/sd-core-node";
-import {INpmConfig, ISdAndroidPackageConfig, ISdPackageInfo, TSdPackageConfig} from "../commons";
+import { FsUtils, Logger, ProcessManager, ProcessWorkManager } from "@simplysm/sd-core-node";
+import { INpmConfig, ISdAndroidPackageConfig, ISdPackageInfo, TSdPackageConfig } from "../commons";
 import * as path from "path";
 import * as ts from "typescript";
-import {ISdPackageBuildResult, SdPackageBuilder} from "../build-tools/SdPackageBuilder";
-import {EventEmitter} from "events";
-import {NeverEntryError, ObjectUtils, SdError} from "@simplysm/sd-core-common";
-import {NextHandleFunction} from "connect";
-import {SdServiceClient} from "@simplysm/sd-service-node";
+import { ISdPackageBuildResult, SdPackageBuilder } from "../build-tools/SdPackageBuilder";
+import { EventEmitter } from "events";
+import { NeverEntryError, ObjectUtils, SdError } from "@simplysm/sd-core-common";
+import { NextHandleFunction } from "connect";
+import { SdServiceClient } from "@simplysm/sd-service-node";
 
 export class SdCliPackage extends EventEmitter {
   public get name(): string {
@@ -32,7 +32,7 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public static async createAsync(rootPath: string, npmConfig: INpmConfig, npmConfigPath: string, config: TSdPackageConfig | undefined, devMode: boolean): Promise<SdCliPackage> {
-    const info: Partial<ISdPackageInfo> = {rootPath};
+    const info: Partial<ISdPackageInfo> = { rootPath };
 
     const tsConfigPath = path.resolve(rootPath, "tsconfig.json");
     if (FsUtils.exists(tsConfigPath)) {
@@ -111,7 +111,7 @@ export class SdCliPackage extends EventEmitter {
     fn(this.info.npmConfig.devDependencies);
     fn(this.info.npmConfig.peerDependencies);
 
-    await FsUtils.writeJsonAsync(this.info.npmConfigPath, this.info.npmConfig, {space: 2});
+    await FsUtils.writeJsonAsync(this.info.npmConfigPath, this.info.npmConfig, { space: 2 });
   }
 
   public async createTsBuildConfigAsync(): Promise<void> {
@@ -145,7 +145,7 @@ export class SdCliPackage extends EventEmitter {
         options.declaration = false;
       }
 
-      await FsUtils.writeJsonAsync(this.info.tsConfigForBuild[target]!.filePath, config, {space: 2});
+      await FsUtils.writeJsonAsync(this.info.tsConfigForBuild[target]!.filePath, config, { space: 2 });
 
       this.info.tsConfigForBuild[target]!.config = config;
     });
@@ -219,10 +219,10 @@ export class SdCliPackage extends EventEmitter {
 
         return await new SdPackageBuilder(this.info, command, target, this._devMode)
           .on("change", filePaths => {
-            this.emit("change", {packageName: this.name, command, target, filePaths});
+            this.emit("change", { packageName: this.name, command, target, filePaths });
           })
           .on("complete", results => {
-            this.emit("complete", {packageName: this.name, command, target, results});
+            this.emit("complete", { packageName: this.name, command, target, results });
           })
           .runClientCompileAsync(watch);
       }
@@ -251,7 +251,7 @@ export class SdCliPackage extends EventEmitter {
     if (this.info.config?.type === "library" && this.info.config.publish === "npm") {
       await ProcessManager.spawnAsync(
         "yarn publish --access public",
-        {cwd: this.info.rootPath},
+        { cwd: this.info.rootPath },
         false,
         false
       );
@@ -279,7 +279,7 @@ export class SdCliPackage extends EventEmitter {
           path.resolve(parsedTsConfig.options.outDir) :
           path.resolve(this.info.rootPath, "dist");
 
-        const filePaths = await FsUtils.globAsync(path.resolve(distPath, "**", "*"), {dot: true, nodir: true});
+        const filePaths = await FsUtils.globAsync(path.resolve(distPath, "**", "*"), { dot: true, nodir: true });
 
         await filePaths.parallelAsync(async filePath => {
           const relativeFilePath = path.relative(distPath, filePath);
@@ -314,12 +314,12 @@ export class SdCliPackage extends EventEmitter {
     const cordovaProjectPath = path.resolve(this.info.rootPath, ".cordova");
     const cordovaBinPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
 
-    await ProcessManager.spawnAsync(`${cordovaBinPath} telemetry on`, {cwd: this.info.rootPath});
+    await ProcessManager.spawnAsync(`${cordovaBinPath} telemetry on`, { cwd: this.info.rootPath });
 
     // 프로젝트 생성
     if (!FsUtils.exists(cordovaProjectPath)) {
       this._logger.debug(`CORDOVA 프로젝트 생성`);
-      await ProcessManager.spawnAsync(`${cordovaBinPath} create "${cordovaProjectPath}" "${config.appId}" "${config.appName}"`, {cwd: process.cwd()});
+      await ProcessManager.spawnAsync(`${cordovaBinPath} create "${cordovaProjectPath}" "${config.appId}" "${config.appName}"`, { cwd: process.cwd() });
     }
 
     // www 폴더 혹시 없으면 생성
@@ -328,13 +328,13 @@ export class SdCliPackage extends EventEmitter {
     // android 플랫폼
     if (platform === "android" && !FsUtils.exists(path.resolve(cordovaProjectPath, "platforms/android"))) {
       this._logger.debug(`CORDOVA 플랫폼 생성: android`);
-      await ProcessManager.spawnAsync(`${cordovaBinPath} platform add android`, {cwd: cordovaProjectPath});
+      await ProcessManager.spawnAsync(`${cordovaBinPath} platform add android`, { cwd: cordovaProjectPath });
     }
 
     // browser 플랫폼
     if (platform === "browser" && !FsUtils.exists(path.resolve(cordovaProjectPath, "platforms/browser"))) {
       this._logger.debug(`CORDOVA 플랫폼 생성: browser`);
-      await ProcessManager.spawnAsync(`${cordovaBinPath} platform add browser`, {cwd: cordovaProjectPath});
+      await ProcessManager.spawnAsync(`${cordovaBinPath} platform add browser`, { cwd: cordovaProjectPath });
     }
 
     // MainActivity.java 파일 오류 강제 수정
@@ -366,7 +366,7 @@ import android.webkit.WebSettings;`);
       for (const plugin of config.plugins) {
         if (!prevPlugins.includes(plugin)) {
           this._logger.debug(`CORDOVA 플러그인 설치  : ${plugin}`);
-          await ProcessManager.spawnAsync(`${cordovaBinPath} plugin add ${plugin}`, {cwd: cordovaProjectPath});
+          await ProcessManager.spawnAsync(`${cordovaBinPath} plugin add ${plugin}`, { cwd: cordovaProjectPath });
         }
       }
     }
@@ -418,7 +418,7 @@ import android.webkit.WebSettings;`);
 
     await FsUtils.writeFileAsync(path.resolve(cordovaProjectPath, "config.xml"), configFileContent);
 
-    await ProcessManager.spawnAsync(`${cordovaBinPath} run android --device`, {cwd: cordovaProjectPath});
+    await ProcessManager.spawnAsync(`${cordovaBinPath} run android --device`, { cwd: cordovaProjectPath });
   }
 
   private async _runAsync(watch: boolean, processManager: ProcessWorkManager, command: string, target?: string): Promise<void> {

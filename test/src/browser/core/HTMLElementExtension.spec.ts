@@ -1,5 +1,5 @@
-import {expect} from "chai";
-import {ISdMutationEvent, ISdResizeEvent} from "@simplysm/sd-core-browser";
+import { expect } from "chai";
+import { ISdMutationEvent, ISdResizeEvent } from "@simplysm/sd-core-browser";
 
 describe("(browser) core.HTMLElementExtension", () => {
   let el: HTMLElement;
@@ -35,7 +35,7 @@ describe("(browser) core.HTMLElementExtension", () => {
       const div4 = div3.children[0] as HTMLElement;
 
       const offset = div4.getRelativeOffset(div2);
-      expect(offset).to.deep.equal({top: 60, left: 80});
+      expect(offset).to.deep.equal({ top: 60, left: 80 });
     });
 
     it("상위 엘리먼트는 엘리먼트 자체, 셀렉터 문자열을 통해 선택할 수 있다. 문자열 사용시, 일치하는 첫 부모 엘리먼트를 사용한다.", () => {
@@ -54,7 +54,7 @@ describe("(browser) core.HTMLElementExtension", () => {
       const div4 = div3.children[0] as HTMLElement;
 
       const offset = div4.getRelativeOffset("#div2");
-      expect(offset).to.deep.equal({top: 60, left: 80});
+      expect(offset).to.deep.equal({ top: 60, left: 80 });
     });
   });
 

@@ -8,19 +8,19 @@ import {
   QueryUnit,
   Table
 } from "@simplysm/sd-orm-common";
-import {expect} from "chai";
-import {IDbConnectionConfig, NodeDbContextExecutor} from "@simplysm/sd-orm-node";
+import { expect } from "chai";
+import { IDbConnectionConfig, NodeDbContextExecutor } from "@simplysm/sd-orm-node";
 import * as sinon from "sinon";
-import {Logger, LoggerSeverity} from "@simplysm/sd-core-node";
-import {Type} from "@simplysm/sd-core-common";
+import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
+import { Type } from "@simplysm/sd-core-common";
 
 Logger.setConfig({
-  console: {level: LoggerSeverity.debug}
+  console: { level: LoggerSeverity.debug }
 });
 
 class TestDbContext extends DbContext {
   public get schema(): { database: string; schema: string } {
-    return {database: "TestDb", schema: "dbo"};
+    return { database: "TestDb", schema: "dbo" };
   }
 
   public get migrations(): Type<IDbMigration>[] {
@@ -32,12 +32,12 @@ class TestDbContext extends DbContext {
   public searchTest = new Queryable(this, SearchTestTable);
 }
 
-@Table({description: "테스트 테이블"})
+@Table({ description: "테스트 테이블" })
 class TestTable {
-  @Column({description: "아이디", primaryKey: 1, autoIncrement: true})
+  @Column({ description: "아이디", primaryKey: 1, autoIncrement: true })
   public id?: number;
 
-  @Column({description: "명칭"})
+  @Column({ description: "명칭" })
   public name!: string;
 
   //-----------------
@@ -45,15 +45,15 @@ class TestTable {
   public children?: ChildTable[];
 }
 
-@Table({description: "조인 자식 테스트 테이블"})
+@Table({ description: "조인 자식 테스트 테이블" })
 class ChildTable {
-  @Column({description: "아이디", primaryKey: 1, autoIncrement: true})
+  @Column({ description: "아이디", primaryKey: 1, autoIncrement: true })
   public id?: number;
 
-  @Column({description: "부모 아이디", nullable: true})
+  @Column({ description: "부모 아이디", nullable: true })
   public parentId?: number;
 
-  @Column({description: "명칭"})
+  @Column({ description: "명칭" })
   public name!: string;
 
   //-----------------
@@ -62,15 +62,15 @@ class ChildTable {
 }
 
 
-@Table({description: "검색 테스트 테이블"})
+@Table({ description: "검색 테스트 테이블" })
 class SearchTestTable {
-  @Column({description: "아이디", primaryKey: 1, autoIncrement: true})
+  @Column({ description: "아이디", primaryKey: 1, autoIncrement: true })
   public id?: number;
 
-  @Column({description: "명칭1"})
+  @Column({ description: "명칭1" })
   public name1!: string;
 
-  @Column({description: "명칭2"})
+  @Column({ description: "명칭2" })
   public name2!: string;
 }
 
@@ -405,10 +405,10 @@ describe(`(node) orm.DbContext`, () => {
                 }))
                 .resultAsync()
             ).to.deep.equal([
-              {id1: 1},
-              {id1: 2},
-              {id1: 3},
-              {id1: 4}
+              { id1: 1 },
+              { id1: 2 },
+              { id1: 3 },
+              { id1: 4 }
             ]);
           });
         });
@@ -418,14 +418,14 @@ describe(`(node) orm.DbContext`, () => {
             expect(
               await db.test
                 .select(item => ({
-                  id1: new QueryUnit(Number, db.test.top(1).select(item1 => ({id2: item1.id})))
+                  id1: new QueryUnit(Number, db.test.top(1).select(item1 => ({ id2: item1.id })))
                 }))
                 .resultAsync()
             ).to.deep.equal([
-              {id1: 1},
-              {id1: 1},
-              {id1: 1},
-              {id1: 1}
+              { id1: 1 },
+              { id1: 1 },
+              { id1: 1 },
+              { id1: 1 }
             ]);
           });
         });
@@ -540,7 +540,7 @@ describe(`(node) orm.DbContext`, () => {
             expect(
               await db.test
                 .where(item => [
-                  db.qh.equal(item.id, new QueryUnit(Number, db.test.top(1).select(item1 => ({id: item1.id}))))
+                  db.qh.equal(item.id, new QueryUnit(Number, db.test.top(1).select(item1 => ({ id: item1.id }))))
                 ])
                 .resultAsync()
             ).to.deep.equal([
@@ -561,7 +561,7 @@ describe(`(node) orm.DbContext`, () => {
                 }))
                 .resultAsync()
             ).to.deep.equal([
-              {id: 1}, {id: 1}, {id: 1}, {id: 1}
+              { id: 1 }, { id: 1 }, { id: 1 }, { id: 1 }
             ]);
 
             expect(
@@ -572,7 +572,7 @@ describe(`(node) orm.DbContext`, () => {
                 .distinct()
                 .resultAsync()
             ).to.deep.equal([
-              {id: 1}
+              { id: 1 }
             ]);
           });
         });
@@ -655,7 +655,7 @@ describe(`(node) orm.DbContext`, () => {
                 }))
                 .resultAsync()
             ).to.deep.equal([
-              {cnt: 1}, {cnt: 1}, {cnt: 1}, {cnt: 1}
+              { cnt: 1 }, { cnt: 1 }, { cnt: 1 }, { cnt: 1 }
             ]);
           });
         });
@@ -696,19 +696,19 @@ describe(`(node) orm.DbContext`, () => {
             ).to.deep.equal([
               {
                 id: 1,
-                tt: [{id1: 1}, {id1: 2}, {id1: 3}, {id1: 4}]
+                tt: [{ id1: 1 }, { id1: 2 }, { id1: 3 }, { id1: 4 }]
               },
               {
                 id: 2,
-                tt: [{id1: 1}, {id1: 2}, {id1: 3}, {id1: 4}]
+                tt: [{ id1: 1 }, { id1: 2 }, { id1: 3 }, { id1: 4 }]
               },
               {
                 id: 3,
-                tt: [{id1: 1}, {id1: 2}, {id1: 3}, {id1: 4}]
+                tt: [{ id1: 1 }, { id1: 2 }, { id1: 3 }, { id1: 4 }]
               },
               {
                 id: 4,
-                tt: [{id1: 1}, {id1: 2}, {id1: 3}, {id1: 4}]
+                tt: [{ id1: 1 }, { id1: 2 }, { id1: 3 }, { id1: 4 }]
               }
             ]);
           });
@@ -762,72 +762,72 @@ describe(`(node) orm.DbContext`, () => {
                 id: 1,
                 name: "홍길동01",
                 test: [
-                  {id: 1, name: "홍길동01"},
-                  {id: 2, name: "홍길동21"},
-                  {id: 3, name: "홍길동3"},
-                  {id: 4, name: "홍길동04"},
-                  {id: 1, name: "홍길동01"},
-                  {id: 2, name: "홍길동21"},
-                  {id: 3, name: "홍길동3"},
-                  {id: 4, name: "홍길동04"},
-                  {id: 1, name: "홍길동01"},
-                  {id: 2, name: "홍길동21"},
-                  {id: 3, name: "홍길동3"},
-                  {id: 4, name: "홍길동04"}
+                  { id: 1, name: "홍길동01" },
+                  { id: 2, name: "홍길동21" },
+                  { id: 3, name: "홍길동3" },
+                  { id: 4, name: "홍길동04" },
+                  { id: 1, name: "홍길동01" },
+                  { id: 2, name: "홍길동21" },
+                  { id: 3, name: "홍길동3" },
+                  { id: 4, name: "홍길동04" },
+                  { id: 1, name: "홍길동01" },
+                  { id: 2, name: "홍길동21" },
+                  { id: 3, name: "홍길동3" },
+                  { id: 4, name: "홍길동04" }
                 ]
               },
               {
                 id: 2,
                 name: "홍길동21",
                 test: [
-                  {id: 1, name: "홍길동01"},
-                  {id: 2, name: "홍길동21"},
-                  {id: 3, name: "홍길동3"},
-                  {id: 4, name: "홍길동04"},
-                  {id: 1, name: "홍길동01"},
-                  {id: 2, name: "홍길동21"},
-                  {id: 3, name: "홍길동3"},
-                  {id: 4, name: "홍길동04"},
-                  {id: 1, name: "홍길동01"},
-                  {id: 2, name: "홍길동21"},
-                  {id: 3, name: "홍길동3"},
-                  {id: 4, name: "홍길동04"}
+                  { id: 1, name: "홍길동01" },
+                  { id: 2, name: "홍길동21" },
+                  { id: 3, name: "홍길동3" },
+                  { id: 4, name: "홍길동04" },
+                  { id: 1, name: "홍길동01" },
+                  { id: 2, name: "홍길동21" },
+                  { id: 3, name: "홍길동3" },
+                  { id: 4, name: "홍길동04" },
+                  { id: 1, name: "홍길동01" },
+                  { id: 2, name: "홍길동21" },
+                  { id: 3, name: "홍길동3" },
+                  { id: 4, name: "홍길동04" }
                 ]
               },
               {
                 id: 3,
                 name: "홍길동3",
                 test: [
-                  {id: 1, name: "홍길동01"},
-                  {id: 2, name: "홍길동21"},
-                  {id: 3, name: "홍길동3"},
-                  {id: 4, name: "홍길동04"},
-                  {id: 1, name: "홍길동01"},
-                  {id: 2, name: "홍길동21"},
-                  {id: 3, name: "홍길동3"},
-                  {id: 4, name: "홍길동04"},
-                  {id: 1, name: "홍길동01"},
-                  {id: 2, name: "홍길동21"},
-                  {id: 3, name: "홍길동3"},
-                  {id: 4, name: "홍길동04"}
+                  { id: 1, name: "홍길동01" },
+                  { id: 2, name: "홍길동21" },
+                  { id: 3, name: "홍길동3" },
+                  { id: 4, name: "홍길동04" },
+                  { id: 1, name: "홍길동01" },
+                  { id: 2, name: "홍길동21" },
+                  { id: 3, name: "홍길동3" },
+                  { id: 4, name: "홍길동04" },
+                  { id: 1, name: "홍길동01" },
+                  { id: 2, name: "홍길동21" },
+                  { id: 3, name: "홍길동3" },
+                  { id: 4, name: "홍길동04" }
                 ]
               },
               {
                 id: 4,
                 name: "홍길동04",
                 test: [
-                  {id: 1, name: "홍길동01"},
-                  {id: 2, name: "홍길동21"},
-                  {id: 3, name: "홍길동3"},
-                  {id: 4, name: "홍길동04"},
-                  {id: 1, name: "홍길동01"},
-                  {id: 2, name: "홍길동21"},
-                  {id: 3, name: "홍길동3"},
-                  {id: 4, name: "홍길동04"},
-                  {id: 1, name: "홍길동01"},
-                  {id: 2, name: "홍길동21"},
-                  {id: 3, name: "홍길동3"},
-                  {id: 4, name: "홍길동04"}
+                  { id: 1, name: "홍길동01" },
+                  { id: 2, name: "홍길동21" },
+                  { id: 3, name: "홍길동3" },
+                  { id: 4, name: "홍길동04" },
+                  { id: 1, name: "홍길동01" },
+                  { id: 2, name: "홍길동21" },
+                  { id: 3, name: "홍길동3" },
+                  { id: 4, name: "홍길동04" },
+                  { id: 1, name: "홍길동01" },
+                  { id: 2, name: "홍길동21" },
+                  { id: 3, name: "홍길동3" },
+                  { id: 4, name: "홍길동04" }
                 ]
               }
             ]);

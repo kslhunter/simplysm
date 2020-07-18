@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
+import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 
 @Component({
   selector: "sd-button",

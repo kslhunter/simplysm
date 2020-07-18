@@ -1,11 +1,11 @@
-import {Injectable, OnDestroy} from "@angular/core";
-import {ISdProgressToast, SdToastProvider} from "./SdToastProvider";
-import {SdServiceClient} from "@simplysm/sd-service-browser";
-import {NeverEntryError, Type} from "@simplysm/sd-core-common";
-import {SdRootProvider} from "../root-providers/SdRootProvider";
-import {SdSystemLogRootProvider} from "../root-providers/SdSystemLogRootProvider";
+import { Injectable, OnDestroy } from "@angular/core";
+import { ISdProgressToast, SdToastProvider } from "./SdToastProvider";
+import { SdServiceClient } from "@simplysm/sd-service-browser";
+import { NeverEntryError, Type } from "@simplysm/sd-core-common";
+import { SdRootProvider } from "../root-providers/SdRootProvider";
+import { SdSystemLogRootProvider } from "../root-providers/SdSystemLogRootProvider";
 
-@Injectable({providedIn: null})
+@Injectable({ providedIn: null })
 export class SdServiceFactoryProvider implements OnDestroy {
   public get clientObjMap(): { [key: string]: SdNgServiceClient | undefined } {
     this._root.data.service = this._root.data.service ?? {};

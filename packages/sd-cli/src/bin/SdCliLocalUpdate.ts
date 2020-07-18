@@ -1,7 +1,7 @@
 import * as path from "path";
-import {SdProjectConfigUtils} from "../SdProjectConfigUtils";
-import {FsUtils, FsWatcher, Logger} from "@simplysm/sd-core-node";
-import {ISdProjectConfig} from "../commons";
+import { SdProjectConfigUtils } from "../SdProjectConfigUtils";
+import { FsUtils, FsWatcher, Logger } from "@simplysm/sd-core-node";
+import { ISdProjectConfig } from "../commons";
 
 export class SdCliLocalUpdate {
   public static async runAsync(config: ISdProjectConfig): Promise<void>;

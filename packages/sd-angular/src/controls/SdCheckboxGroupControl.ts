@@ -12,7 +12,7 @@ import {
   Output,
   QueryList
 } from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
+import { SdInputValidate } from "../commons/SdInputValidate";
 
 @Component({
   selector: "sd-checkbox-group",
@@ -37,7 +37,7 @@ export class SdCheckboxGroupControl implements DoCheck {
   @SdInputValidate(String)
   public keyProp?: string;
 
-  @ContentChildren(SdCheckboxGroupControl, {descendants: true})
+  @ContentChildren(SdCheckboxGroupControl, { descendants: true })
   public itemControls?: QueryList<SdCheckboxGroupControl>;
 
   private readonly _iterableDiffer: IterableDiffer<any>;

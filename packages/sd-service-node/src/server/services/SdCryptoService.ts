@@ -1,6 +1,6 @@
 import * as crypto from "crypto";
-import {SdServiceBase} from "../SdServiceBase";
-import {SdServiceServerConfigUtils} from "../SdServiceServerConfigUtils";
+import { SdServiceBase } from "../SdServiceBase";
+import { SdServiceServerConfigUtils } from "../SdServiceServerConfigUtils";
 
 export class SdCryptoService extends SdServiceBase {
   public async encryptAsync(str: string): Promise<string> {

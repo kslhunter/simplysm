@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef} from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {Uuid} from "@simplysm/sd-core-common";
+import { ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef } from "@angular/core";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { Uuid } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-sheet-column",
@@ -49,12 +49,12 @@ export class SdSheetColumnControl {
   @SdInputValidate(Boolean)
   public useOrdering?: boolean;
 
-  @ContentChild("cell", {static: true})
+  @ContentChild("cell", { static: true })
   public cellTemplateRef?: TemplateRef<{ item: any; index: number }>;
 
-  @ContentChild("header", {static: true})
+  @ContentChild("header", { static: true })
   public headerTemplateRef?: TemplateRef<{}>;
 
-  @ContentChild("summary", {static: true})
+  @ContentChild("summary", { static: true })
   public summaryTemplateRef?: TemplateRef<{}>;
 }

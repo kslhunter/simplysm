@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 import * as yargs from "yargs";
-import {Logger, LoggerSeverity} from "@simplysm/sd-core-node";
+import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import * as os from "os";
-import {EventEmitter} from "events";
-import {SdCliProject} from "./bin/SdCliProject";
-import {SdCliLocalUpdate} from "./bin/SdCliLocalUpdate";
+import { EventEmitter } from "events";
+import { SdCliProject } from "./bin/SdCliProject";
+import { SdCliLocalUpdate } from "./bin/SdCliLocalUpdate";
 
 EventEmitter.defaultMaxListeners = 0;
 process.setMaxListeners(0);

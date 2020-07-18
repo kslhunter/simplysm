@@ -1,7 +1,7 @@
-import {Directive, HostBinding, HostListener, Input} from "@angular/core";
-import {Router} from "@angular/router";
-import {JsonConvert} from "@simplysm/sd-core-common";
-import {SdNavigateWindowRootProvider} from "../root-providers/SdNavigateWindowRootProvider";
+import { Directive, HostBinding, HostListener, Input } from "@angular/core";
+import { Router } from "@angular/router";
+import { JsonConvert } from "@simplysm/sd-core-common";
+import { SdNavigateWindowRootProvider } from "../root-providers/SdNavigateWindowRootProvider";
 
 @Directive({
   selector: "[sdRouterLink]"

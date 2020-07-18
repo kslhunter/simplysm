@@ -1,6 +1,6 @@
 import * as cp from "child_process";
-import {Iconv} from "iconv";
-import {NeverEntryError, SdError, Wait} from "@simplysm/sd-core-common";
+import { Iconv } from "iconv";
+import { NeverEntryError, SdError, Wait } from "@simplysm/sd-core-common";
 import * as os from "os";
 
 export class ProcessManager {
@@ -45,7 +45,7 @@ export class ProcessManager {
           if (messageHandler !== undefined && messageHandler !== false) {
             const handlerResult = await messageHandler(msg);
             if (handlerResult) {
-              cp.spawnSync("taskkill", ["/pid", worker.pid.toString(), "/f", "/t"], {cwd: opts.cwd});
+              cp.spawnSync("taskkill", ["/pid", worker.pid.toString(), "/f", "/t"], { cwd: opts.cwd });
               forceClosing = true;
             }
           }

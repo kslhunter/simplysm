@@ -1,12 +1,12 @@
-import {QueryBuilder} from "./QueryBuilder";
-import {IDbContextExecutor} from "./IDbContextExecutor";
-import {QueryHelper} from "./QueryHelper";
-import {IQueryResultParseOption, TQueryDef} from "./commons";
-import {NeverEntryError, ObjectUtils, Type} from "@simplysm/sd-core-common";
-import {IDbMigration} from "./IDbMigration";
-import {Queryable} from "./Queryable";
-import {SystemMigration} from "./SystemMigration";
-import {DbDefinitionUtils} from "./DbDefinitionUtils";
+import { QueryBuilder } from "./QueryBuilder";
+import { IDbContextExecutor } from "./IDbContextExecutor";
+import { QueryHelper } from "./QueryHelper";
+import { IQueryResultParseOption, TQueryDef } from "./commons";
+import { NeverEntryError, ObjectUtils, Type } from "@simplysm/sd-core-common";
+import { IDbMigration } from "./IDbMigration";
+import { Queryable } from "./Queryable";
+import { SystemMigration } from "./SystemMigration";
+import { DbDefinitionUtils } from "./DbDefinitionUtils";
 
 export abstract class DbContext {
   public static readonly selectCache = new Map<string, { result: any[]; timeout: any } | undefined>();
@@ -150,7 +150,7 @@ export abstract class DbContext {
       // 강제 아님
       const isDbExists = (
         await this.executeDefsAsync([
-          {type: "getDatabaseInfo", database: this.schema.database}
+          { type: "getDatabaseInfo", database: this.schema.database }
         ])
       ).length > 0;
 
@@ -376,7 +376,7 @@ export abstract class DbContext {
     for (const migration of this.migrations.orderBy(item => item.name)) {
       migrationInsertQueryDefs.push({
         type: "insert",
-        from: this.qb.getTableName({...this.schema, name: "_migration"}),
+        from: this.qb.getTableName({ ...this.schema, name: "_migration" }),
         record: {
           [this.qb.wrap("code")]: `N'${migration.name}'`
         }

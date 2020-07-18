@@ -1,5 +1,5 @@
-import {expect} from "chai";
-import {TimeoutError} from "@simplysm/sd-core-common";
+import { expect } from "chai";
+import { TimeoutError } from "@simplysm/sd-core-common";
 
 describe("(common) core.errors.TimeoutError", () => {
   it("대기시간이 초과되었다는 오류를 표시할 수 있다.", () => {

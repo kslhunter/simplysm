@@ -1,9 +1,9 @@
-import {IDbConnectionConfig} from "./commons";
-import {Logger} from "@simplysm/sd-core-node";
+import { IDbConnectionConfig } from "./commons";
+import { Logger } from "@simplysm/sd-core-node";
 import * as tedious from "tedious";
-import {EventEmitter} from "events";
-import {Wait} from "@simplysm/sd-core-common";
-import {IDbConnection} from "./IDbConnection";
+import { EventEmitter } from "events";
+import { Wait } from "@simplysm/sd-core-common";
+import { IDbConnection } from "./IDbConnection";
 
 export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", "MssqlDbConnection"]);

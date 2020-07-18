@@ -1,7 +1,7 @@
-import {FunctionMetadata} from "@angular/compiler-cli";
-import {SdMetadataBase, TSdMetadata} from "./commons";
-import {SdMetadataCollector} from "./SdMetadataCollector";
-import {SdModuleMetadata} from "./SdModuleMetadata";
+import { FunctionMetadata } from "@angular/compiler-cli";
+import { SdMetadataBase, TSdMetadata } from "./commons";
+import { SdMetadataCollector } from "./SdMetadataCollector";
+import { SdModuleMetadata } from "./SdModuleMetadata";
 
 
 export class SdFunctionMetadata extends SdMetadataBase {

@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostListener, Inject, Input} from "@angular/core";
-import {SdComboboxControl} from "./SdComboboxControl";
+import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, HostListener, Inject, Input } from "@angular/core";
+import { SdComboboxControl } from "./SdComboboxControl";
 
 @Component({
   selector: "sd-combobox-item",

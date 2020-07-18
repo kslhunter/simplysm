@@ -1,5 +1,13 @@
-import {ChangeDetectionStrategy, Component, forwardRef, HostBinding, HostListener, Inject, Input} from "@angular/core";
-import {SdTabControl} from "./SdTabControl";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  HostBinding,
+  HostListener,
+  Inject,
+  Input
+} from "@angular/core";
+import { SdTabControl } from "./SdTabControl";
 
 @Component({
   selector: "sd-tab-item",

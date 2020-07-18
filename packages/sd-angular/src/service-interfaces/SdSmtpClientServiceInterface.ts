@@ -1,5 +1,5 @@
-import {ISmtpClientSendByDefaultOption, ISmtpClientSendOption} from "@simplysm/sd-service-common";
-import {SdNgServiceClient} from "../providers/SdServiceFactoryProvider";
+import { ISmtpClientSendByDefaultOption, ISmtpClientSendOption } from "@simplysm/sd-service-common";
+import { SdNgServiceClient } from "../providers/SdServiceFactoryProvider";
 
 export class SdSmtpClientServiceInterface {
   public constructor(private readonly _service: SdNgServiceClient) {

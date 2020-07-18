@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, HostBinding, Input} from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {sdThemes, TSdTheme} from "../commons";
+import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { sdThemes, TSdTheme } from "../commons";
 
 @Component({
   selector: "sd-note",

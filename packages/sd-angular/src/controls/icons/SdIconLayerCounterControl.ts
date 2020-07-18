@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, HostBinding} from "@angular/core";
-import {counter, CounterParams, FontawesomeObject} from "@fortawesome/fontawesome-svg-core";
-import {SdIconLayerTextBaseControlBase} from "../../commons/SdIconLayerTextBaseControlBase";
+import { ChangeDetectionStrategy, Component, HostBinding } from "@angular/core";
+import { counter, CounterParams, FontawesomeObject } from "@fortawesome/fontawesome-svg-core";
+import { SdIconLayerTextBaseControlBase } from "../../commons/SdIconLayerTextBaseControlBase";
 
 /**
  * Fontawesome layers counter.

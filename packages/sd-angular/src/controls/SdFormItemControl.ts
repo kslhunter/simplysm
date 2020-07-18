@@ -8,8 +8,8 @@ import {
   Input,
   TemplateRef
 } from "@angular/core";
-import {SdInputValidate} from "../commons/SdInputValidate";
-import {SdFormControl} from "./SdFormControl";
+import { SdInputValidate } from "../commons/SdInputValidate";
+import { SdFormControl } from "./SdFormControl";
 
 @Component({
   selector: "sd-form-item",
@@ -105,7 +105,7 @@ export class SdFormItemControl {
   @SdInputValidate(String)
   public label?: string;
 
-  @ContentChild("label", {static: true})
+  @ContentChild("label", { static: true })
   public labelTemplateRef?: TemplateRef<{ label?: string }>;
 
   @HostBinding("attr.sd-layout")

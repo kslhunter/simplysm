@@ -1,5 +1,5 @@
-import {Directive, EventEmitter, HostListener, NgZone, Output} from "@angular/core";
-import {ISdMutationEvent} from "@simplysm/sd-core-browser";
+import { Directive, EventEmitter, HostListener, NgZone, Output } from "@angular/core";
+import { ISdMutationEvent } from "@simplysm/sd-core-browser";
 
 @Directive({
   selector: "[sdMutation]"

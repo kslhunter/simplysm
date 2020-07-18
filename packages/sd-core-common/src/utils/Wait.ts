@@ -1,4 +1,4 @@
-import {TimeoutError} from "../errors/TimeoutError";
+import { TimeoutError } from "../errors/TimeoutError";
 
 export class Wait {
   public static async true(forwarder: () => boolean | Promise<boolean>, milliseconds?: number, timeout?: number): Promise<void> {
