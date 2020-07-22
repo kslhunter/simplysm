@@ -80,8 +80,8 @@ import { NeverEntryError } from "@simplysm/sd-core-common";
         width: fit-content;
         min-width: 240px;
         background: white;
-        //border: 1px solid var(--theme-color-primary-darker);
-        //border-radius: 2px;
+        border: 1px solid var(--theme-color-primary-darker);
+        border-radius: 2px;
         overflow: hidden;
         @include elevation(16);
 

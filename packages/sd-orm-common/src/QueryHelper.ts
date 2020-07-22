@@ -160,6 +160,19 @@ export class QueryHelper {
   // FIELD
   // ----------------------------------------------------
   // region FIELD
+  public query<T extends TQueryValue>(type: Type<T>, texts: (string | QueryUnit<any>)[]): QueryUnit<T> {
+    const arr = [];
+    for (const text of texts) {
+      if (text instanceof QueryUnit) {
+        arr.push(this.getQueryValue(text));
+      }
+      else {
+        arr.push(text);
+      }
+    }
+    return new QueryUnit(type, arr);
+  }
+
   public val<T extends TQueryValue>(value: TEntityValue<T>): QueryUnit<T> {
     const type: Type<any> | undefined = SdOrmUtils.getQueryValueType(value);
     return new QueryUnit(type, this.getQueryValue(value));

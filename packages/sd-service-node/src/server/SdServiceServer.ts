@@ -22,7 +22,8 @@ export class SdServiceServer extends EventEmitter {
   private _wsServer?: WebSocket.Server;
   private _httpServer?: http.Server | https.Server;
   private readonly _logger: Logger;
-  public middlewares: NextHandleFunction[] = [];
+  public middlewares: NextHandleFunction[];
+  public wsMiddlewares: ((req: ISdServiceRequest) => ISdServiceResponse | void)[];
   public readonly rootPath: string;
 
   private readonly _httpConnections: net.Socket[] = [];
@@ -38,6 +39,7 @@ export class SdServiceServer extends EventEmitter {
     super();
     this._logger = Logger.get(["simplysm", "sd-service-server"]);
     this.middlewares = this.options.middlewares ?? [];
+    this.wsMiddlewares = [];
     this.rootPath = this.options.rootPath;
   }
 
@@ -286,6 +288,11 @@ export class SdServiceServer extends EventEmitter {
   }
 
   private async _onSocketRequestAsync(conn: SdServiceServerConnection, req: ISdServiceRequest): Promise<ISdServiceResponse> {
+    for (const wsMiddleware of this.wsMiddlewares) {
+      const res = wsMiddleware(req);
+      if (res) return res;
+    }
+
     if (req.command === "md5") {
       const rawFilePath = req.params[0] as string;
       const filePath = rawFilePath.startsWith("/") ?

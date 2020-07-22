@@ -347,7 +347,7 @@ export interface IValidateDef<T> {
   type?: Type<TypeWrap<T>> | Type<TypeWrap<T>>[];
   notnull?: boolean;
   includes?: T[];
-  validator?: (value: StripTypeWrap<T>) => boolean | string;
+  validator?: (value: StripTypeWrap<NonNullable<T>>) => boolean | string;
 }
 
 export interface IValidateResult<T> {

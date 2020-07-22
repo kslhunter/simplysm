@@ -297,9 +297,7 @@ export class SdPackageBuilder extends EventEmitter {
     const srcPath = this._getSrcPath();
     const distPath = this._getDistPath();
 
-    /**
-     * package.json의 main속성을 통해 index.ts 링크 세팅
-     */
+    // package.json의 main속성을 통해 index.ts 링크 세팅
     const indexTsFilePath = path.resolve(
       srcPath,
       path.relative(
@@ -311,18 +309,15 @@ export class SdPackageBuilder extends EventEmitter {
       )
     ).replace(/\.js$/, ".ts");
 
-    /**
-     * 첫수행시, 현재 존재하는 index.ts 파일을 캐싱
-     */
+    // 첫수행시, 현재 존재하는 index.ts 파일을 캐싱
     if (this._outputCache[indexTsFilePath] === undefined && FsUtils.exists(indexTsFilePath)) {
       this._outputCache[indexTsFilePath] = await FsUtils.readFileAsync(indexTsFilePath);
     }
 
-    /**
-     * index.ts에 영향을 주는 파일 추출
-     *  1. src\/**\/*.ts 파일만 등록
-     *  2. tsconfig.json의 files에 있는 파일들은 엔트리 파일이므로 제외
-     */
+
+    // index.ts에 영향을 주는 파일 추출
+    // - src\/**\/*.ts 파일만 등록
+    // - tsconfig.json의 files에 있는 파일들은 엔트리 파일이므로 제외
     const anymatchPath = path.resolve(srcPath, "**", "*.ts");
     const entryFiles: string[] = this._getTsConfig().files?.map((item: string) => path.resolve(this._info.rootPath, item)) ?? [];
     const validChangedFilePaths = changedInfos
@@ -336,21 +331,17 @@ export class SdPackageBuilder extends EventEmitter {
 
     this._logger.debug("'index.ts' 파일 생성 시작...");
 
-    /**
-     * simplysm.json 에 등록된 polyfills 를 모두 import
-     */
+    // simplysm.json 에 등록된 polyfills 를 모두 import
     const polyfills = this._info.config.polyfills ?? [];
     const importTexts: string[] = [];
     for (const polyfill of polyfills) {
       importTexts.push(`import "${polyfill}";`);
     }
 
-    /**
-     * 새로운 index.ts 파일 텍스트 구성
-     *  1. src\/**\/*.ts 파일만 등록
-     *  2. tsconfig.json의 files에 있는 파일들은 엔트리 파일이므로 제외
-     *  3. export가없는 ts파일은 polyfills처럼 import로 등록
-     */
+    // 새로운 index.ts 파일 텍스트 구성
+    // - src\/**\/*.ts 파일만 등록
+    // - tsconfig.json의 files에 있는 파일들은 엔트리 파일이므로 제외
+    // - export가없는 ts파일은 polyfills처럼 import로 등록
     const srcTsFiles = await FsUtils.globAsync(anymatchPath);
     for (const srcTsFile of srcTsFiles) {
       if (path.resolve(srcTsFile) === indexTsFilePath) {
@@ -373,9 +364,7 @@ export class SdPackageBuilder extends EventEmitter {
       }
     }
 
-    /**
-     * 파일이 변경되었는지 보고, 변경사항이 있으면 새로 쓰기 (없으면 안씀)
-     */
+    // 파일이 변경되었는지 보고, 변경사항이 있으면 새로 쓰기 (없으면 안씀)
     const content = importTexts.join(os.EOL) + os.EOL;
     if (this._outputCache[indexTsFilePath] !== content) {
       this._outputCache[indexTsFilePath] = content;

@@ -1,13 +1,16 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   EventEmitter,
   HostBinding,
   Input,
   OnChanges,
   Output,
-  SimpleChanges
+  SimpleChanges,
+  ViewChild
 } from "@angular/core";
 import { SdInputValidate } from "../commons/SdInputValidate";
 import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
@@ -17,7 +20,8 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
   selector: "sd-textfield",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <input *ngIf="!multiline"
+    <input #input
+           *ngIf="!multiline"
            [value]="controlValue"
            [type]="controlType"
            [attr.placeholder]="placeholder"
@@ -29,8 +33,9 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
            [attr.pattern]="pattern"
            [attr.class]="safeHtml(inputClass)"
            [attr.style]="safeHtml(inputStyle)"
-           (input)="onInput($event)"/>
-    <textarea *ngIf="multiline"
+           (input)="onInput()"/>
+    <textarea #input
+              *ngIf="multiline"
               [value]="controlValue"
               [attr.placeholder]="placeholder"
               [disabled]="disabled"
@@ -38,7 +43,7 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
               [attr.rows]="rows"
               [attr.class]="safeHtml(inputClass)"
               [attr.style]="safeHtml((controlResize ? 'resize: ' + controlResize + ';' : '') + inputStyle)"
-              (input)="onInput($event)"></textarea>
+              (input)="onInput()"></textarea>
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
@@ -173,7 +178,7 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
     }
   `]
 })
-export class SdTextfieldControl implements OnChanges {
+export class SdTextfieldControl implements OnChanges, AfterViewInit {
   @Input()
   @SdInputValidate({
     type: String,
@@ -263,6 +268,9 @@ export class SdTextfieldControl implements OnChanges {
   @SdInputValidate(String)
   public inputClass?: string;
 
+  @ViewChild("input", { static: false, read: ElementRef })
+  public inputElRef?: ElementRef<HTMLTextAreaElement | HTMLInputElement>;
+
   public controlType = "text";
   public controlValue = "";
 
@@ -335,6 +343,12 @@ export class SdTextfieldControl implements OnChanges {
                      private readonly _cdr: ChangeDetectorRef) {
   }
 
+  public ngAfterViewInit(): void {
+    const inputEl = this.inputElRef!.nativeElement;
+    const errorMessage = this._validate();
+    inputEl.setCustomValidity(errorMessage);
+  }
+
   public ngOnChanges(changes: SimpleChanges): void {
     if (Object.keys(changes).includes("type")) {
       this.controlType = this.type === "number" ? "text" :
@@ -375,7 +389,6 @@ export class SdTextfieldControl implements OnChanges {
       else if (typeof this.value === "string") {
         this.controlValue = this.value;
       }
-
       else {
         throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
       }
@@ -388,10 +401,8 @@ export class SdTextfieldControl implements OnChanges {
     return value !== undefined ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
   }
 
-  public onInput(event: Event): void {
-    let errorMessage = "";
-
-    const inputEl = event.target as (HTMLInputElement | HTMLTextAreaElement);
+  public onInput(): void {
+    const inputEl = this.inputElRef!.nativeElement;
 
     if (!Boolean(inputEl.value)) {
       this.value = undefined;
@@ -404,13 +415,6 @@ export class SdTextfieldControl implements OnChanges {
       if (this.value === newValue) {
         inputEl.value = newValue.toString();
       }
-
-      if (typeof this.value !== "number") {
-        errorMessage = "숫자를 입력하세요";
-      }
-      else {
-        errorMessage = "";
-      }
     }
     else if (["year", "month", "date"].includes(this.type)) {
       try {
@@ -418,13 +422,6 @@ export class SdTextfieldControl implements OnChanges {
       }
       catch (err) {
         this.value = inputEl.value;
-      }
-
-      if (!(this.value instanceof DateOnly)) {
-        errorMessage = "날짜를 입력하세요";
-      }
-      else {
-        errorMessage = "";
       }
     }
     else if (["datetime", "datetime-sec"].includes(this.type)) {
@@ -434,13 +431,6 @@ export class SdTextfieldControl implements OnChanges {
       catch (err) {
         this.value = inputEl.value;
       }
-
-      if (!(this.value instanceof DateTime)) {
-        errorMessage = "날짜 및 시간을 입력하세요";
-      }
-      else {
-        errorMessage = "";
-      }
     }
     else if (["time", "time-sec"].includes(this.type)) {
       try {
@@ -449,30 +439,53 @@ export class SdTextfieldControl implements OnChanges {
       catch (err) {
         this.value = inputEl.value;
       }
-
-      if (!(this.value instanceof Time)) {
-        errorMessage = "시간을 입력하세요";
-      }
-      else {
-        errorMessage = "";
-      }
     }
     else {
       this.value = inputEl.value;
     }
 
-    if (errorMessage !== "" && this.validatorFn) {
-      const message = this.validatorFn(this.value);
-      if (message !== undefined) {
-        errorMessage = message;
-      }
-      else {
-        errorMessage = "";
-      }
-    }
-
+    const errorMessage = this._validate();
     inputEl.setCustomValidity(errorMessage);
 
     this.valueChange.emit(this.value);
+  }
+
+  private _validate(): string {
+    const errorMessages: string[] = [];
+
+    if (this.value === undefined) {
+    }
+    else if (this.type === "number") {
+      if (typeof this.value !== "number") {
+        errorMessages.push("숫자를 입력하세요");
+      }
+      if (this.min !== undefined && this.min > this.value) {
+        errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
+      }
+    }
+    else if (["year", "month", "date"].includes(this.type)) {
+      if (!(this.value instanceof DateOnly)) {
+        errorMessages.push("날짜를 입력하세요");
+      }
+    }
+    else if (["datetime", "datetime-sec"].includes(this.type)) {
+      if (!(this.value instanceof DateTime)) {
+        errorMessages.push("날짜 및 시간을 입력하세요");
+      }
+    }
+    else if (["time", "time-sec"].includes(this.type)) {
+      if (!(this.value instanceof Time)) {
+        errorMessages.push("시간을 입력하세요");
+      }
+    }
+
+    if (errorMessages.length > 0 && this.validatorFn) {
+      const message = this.validatorFn(this.value);
+      if (message !== undefined) {
+        errorMessages.push(message);
+      }
+    }
+
+    return errorMessages.join("\r\n");
   }
 }

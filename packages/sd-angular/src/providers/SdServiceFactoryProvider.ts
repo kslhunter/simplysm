@@ -70,10 +70,10 @@ export class SdNgServiceClient {
   }
 
   public async connectAsync(): Promise<void> {
-    await this.client.connectAsync();
     this.client.on("error", async err => {
       await this._systemLog.writeAsync("error", err);
     });
+    await this.client.connectAsync();
   }
 
   public async on<T extends SdServiceEventBase<any, any>>(eventType: Type<T>, info: T["info"], cb: (data: T["data"]) => (Promise<void> | void)): Promise<number | undefined> {

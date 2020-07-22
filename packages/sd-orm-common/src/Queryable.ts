@@ -498,7 +498,7 @@ export class Queryable<D extends DbContext, T> {
       throw new Error("'HAVING'을 사용하려면, 'GROUP BY'를 반드시 설정해야 합니다.");
     }
 
-    if (this._def.limit && this._def.join && this._def.join.some(item => !item.isSingle) && !this._def.groupBy) {
+    if (this._def.limit && this._def.join && this._def.join.some(item => !item.isSingle) && !this._def.groupBy && !this._isCustomEntity) {
       throw new Error("다수의 'RECORD'를 'JOIN'하는 쿼리와 'LIMIT'을 동시에 사용할 수 없습니다. 'LIMIT'을 먼저 사용하고, 'WRAP'한 이후에 'JOIN' 하거나, 'GROUP BY'도 함께 사용하세요.");
     }
 

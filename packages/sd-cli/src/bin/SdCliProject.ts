@@ -17,6 +17,7 @@ export class SdCliProject {
   private readonly _servers: {
     [name: string]: {
       server?: SdServiceServer;
+      isClosed: boolean;
       middlewares: {
         [clientName: string]: NextHandleFunction[];
       };
@@ -109,30 +110,48 @@ export class SdCliProject {
               this._logger.debug(`busyCount--: ${busyCount}: ${key}`);
 
               if (busyCount === 0) {
+                // 클라이언트/서버 빌드라면, 서버에 미들웨어 추가
+                for (const serverDefKey of Object.keys(this._servers)) {
+                  const serverDef = this._servers[serverDefKey];
+                  await Wait.true(() => serverDef.server !== undefined);
+                  const defMiddlewares = Object.values(serverDef.middlewares).mapMany().reverse();
+                  for (const defMiddleware of defMiddlewares) {
+                    if (!serverDef.server!.middlewares.includes(defMiddleware)) {
+                      serverDef.server!.middlewares.insert(0, defMiddleware);
+                    }
+                  }
+                }
+
+                // WARN, ERROR 표시
                 const warnings = Object.values(lastResultsObj)
                   .mapMany(item => item ?? [])
                   .filter(item => item.severity === "warning")
                   .map(item => item.message.trim() + "(" + item.command + ")")
-                  .distinct()
-                  .join(os.EOL);
+                  .distinct();
                 const errors = Object.values(lastResultsObj)
                   .mapMany(item => item ?? [])
                   .filter(item => item.severity === "error")
                   .map(item => item.message.trim() + "(" + item.command + ")")
-                  .distinct()
-                  .join(os.EOL);
+                  .distinct();
 
                 if (warnings.length > 0) {
-                  this._logger.warn(`경고 발생${os.EOL}`, warnings);
+                  this._logger.warn(`경고 발생${os.EOL}`, warnings.join(os.EOL));
                 }
                 if (errors.length > 0) {
-                  this._logger.error(`오류 발생${os.EOL}`, errors);
+                  this._logger.error(`오류 발생${os.EOL}`, errors.join(os.EOL));
                 }
 
-                resolve();
+                if (errors.length > 0) {
+                  this._logger.error(`경고: ${warnings.length}건, 오류: ${errors.length}건`);
+                }
+                else if (warnings.length > 0) {
+                  this._logger.warn(`경고: ${warnings.length}건, 오류: ${errors.length}건`);
+                }
 
+                // 완료
+                resolve();
                 await Wait.true(() => isFirstCompleted);
-                this._logger.info(`빌드 프로세스가 완료되었습니다.(${(new DateTime().tick - startTick).toLocaleString()}ms)`);
+                this._logger.info(`빌드 프로세스가 완료되었습니다. (${(new DateTime().tick - startTick).toLocaleString()}ms)`);
               }
             },
             watch && isFirstCompleted ? 500 : 3000
@@ -453,42 +472,63 @@ export class SdCliProject {
     if (this._servers[pkg.name]?.server) {
       this._logger.log(`[${pkg.name}] 서버를 재시작합니다.`);
 
-      await this._servers[pkg.name].server!.closeAsync();
+      const server = this._servers[pkg.name].server!;
       delete this._servers[pkg.name].server;
       decache(pkg.entryFilePath);
+      await server.closeAsync();
+      this._servers[pkg.name].isClosed = true;
     }
   }
 
+  /**
+   * 서버를 시작합니다.
+   * - 처음 변경감지 빌드를 수행할때 혹은 서버의 변경을 감지할 시에 실행됩니다.
+   * @param {SdCliPackage} pkg
+   * @returns {Promise<void>}
+   * @private
+   */
   private async _startServerAsync(pkg: SdCliPackage): Promise<void> {
     if (pkg.entryFilePath === undefined) {
       throw new Error("서버 빌드시, 'package.json'에 'main'이 반드시 설정되어 있어야 합니다.");
     }
 
     try {
+      // 서버 중지가 완료될때까지 대기
       await Wait.true(() => (
-        !this._servers[pkg.name]?.server &&
+        (this._servers[pkg.name] === undefined || this._servers[pkg.name].isClosed) &&
         pkg.entryFilePath !== undefined &&
         FsUtils.exists(pkg.entryFilePath)
       ));
       await Wait.time(1000);
 
+      // 서버 시작
       const server = require(pkg.entryFilePath) as SdServiceServer | undefined;
       if (!server) {
         this._logger.error(`[${pkg.name}] '${pkg.entryFilePath}'에서 'SdServiceServer'를 'export'하고있지 않습니다.`);
         return;
       }
 
-      if (server.on === undefined) {
-        throw new NeverEntryError();
-      }
+      // 서버 설정 정의 추가
+      this._servers[pkg.name] = this._servers[pkg.name] ?? { middlewares: {}, isClosed: true };
 
-      this._servers[pkg.name] = this._servers[pkg.name] ?? { middlewares: {} };
-      server.middlewares = Object.values(this._servers[pkg.name].middlewares).mapMany();
+      // 서버에 미들웨어 추가
+      /*const defMiddlewares = Object.values(this._servers[pkg.name].middlewares).mapMany().reverse();
+      for (const defMiddleware of defMiddlewares) {
+        if (!this._servers[pkg.name].server!.middlewares.includes(defMiddleware)) {
+          this._servers[pkg.name].server!.middlewares.insert(0, defMiddleware);
+        }
+      }*/
 
-      this._servers[pkg.name].server = server;
+      await new Promise<void>(resolve => {
+        server.on("ready", () => {
+          this._logger.info(`[${pkg.name}] 서버가 시작되었습니다.`);
 
-      server.on("ready", () => {
-        this._logger.info(`[${pkg.name}] 서버가 시작되었습니다.`);
+          // 서버 설정 정의에 서버 추가
+          this._servers[pkg.name].server = server;
+          this._servers[pkg.name].isClosed = false;
+
+          resolve();
+        });
       });
     }
     catch (err) {
@@ -497,17 +537,30 @@ export class SdCliProject {
     }
   }
 
+  /**
+   * 클라이언트의 WebpackDevMiddleware에서 나온 middleware를 서버에 등록합니다.
+   * - 처음 변경감지 빌드를 수행할때만 호출됩니다.
+   * @param {SdCliPackage} pkg
+   * @param {createServer.NextHandleFunction[]} middlewares
+   * @returns {Promise<void>}
+   * @private
+   */
   private async _registerClientAsync(pkg: SdCliPackage, middlewares: NextHandleFunction[]): Promise<void> {
     if (pkg.info.config?.type !== "web" && pkg.info.config?.type !== "android") throw new NeverEntryError();
 
-    this._servers[pkg.info.config.server] = this._servers[pkg.info.config.server] ?? { middlewares: {} };
-    this._servers[pkg.info.config.server].middlewares[pkg.name] = middlewares;
+    this._servers[pkg.info.config.server] = this._servers[pkg.info.config.server] ?? { middlewares: {}, isClosed: true };
 
-    await Wait.true(() => this._servers[pkg.info.config!["server"]].server !== undefined);
+    // 서버 설정 정의에 미들웨어 추가
+    const serverDef = this._servers[pkg.info.config.server];
+    serverDef.middlewares[pkg.name] = middlewares;
 
+    // 서버가 실행될때까지 기다리기
+    await Wait.true(() => serverDef.server !== undefined);
+
+    // 서버의 www의 클라이언트 폴더에 .configs.json 파일 쓰기
     await FsUtils.writeJsonAsync(
       path.resolve(
-        this._servers[pkg.info.config["server"]].server!.rootPath,
+        serverDef.server!.rootPath,
         "www",
         path.basename(pkg.info.rootPath),
         ".configs.json"
@@ -515,8 +568,13 @@ export class SdCliProject {
       pkg.info.config.configs
     );
 
-    this._servers[pkg.info.config.server].server!.middlewares =
-      Object.values(this._servers[pkg.info.config.server].middlewares).mapMany();
+    // 서버에 미들웨어 추가
+    /*const serverDefMiddlewares = Object.values(serverDef.middlewares).mapMany().reverse();
+    for (const serverDefMiddleware of serverDefMiddlewares) {
+      if (!serverDef.server!.middlewares.includes(serverDefMiddleware)) {
+        serverDef.server!.middlewares.insert(0, serverDefMiddleware);
+      }
+    }*/
 
     // const port = this._servers[pkg.info.config.server].server!.options.port ?? 80;
     // this._logger.info(`[${pkg.name}] 클라이언트가 준비되었습니다.: http://localhost:${port}/${path.basename(pkg.info.rootPath)}/`);

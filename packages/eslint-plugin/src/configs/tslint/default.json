@@ -155,6 +155,7 @@
     "no-void-expression": false,
     "no-irregular-whitespace": false,
     "interface-name": false,
-    "no-redundant-jsdoc": false
+    "no-redundant-jsdoc": false,
+    "no-eval": false
   }
 }
