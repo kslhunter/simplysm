@@ -67,7 +67,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     });
 
     await new Promise<void>((resolve, reject) => {
-      // TODO
+      // TODO: tedious 업그레이드시 코드 방식 변경해야 할 수 있음
       conn["connect"]((err: Error | undefined) => {
         if (err != null) {
           reject(new Error(err.message));
