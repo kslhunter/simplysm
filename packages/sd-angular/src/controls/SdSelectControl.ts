@@ -1,7 +1,6 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ContentChild,
   DoCheck,
@@ -19,14 +18,13 @@ import {
 import { SdInputValidate } from "../commons/SdInputValidate";
 import { SdDropdownControl } from "./SdDropdownControl";
 import { SdSelectItemControl } from "./SdSelectItemControl";
-import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 
 @Component({
   selector: "sd-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-dropdown #dropdown [disabled]="disabled" (open)="open.emit()">
-      <div [innerHTML]="contentHTML"></div>
+      <div #content></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">
         <sd-icon fixedWidth icon="caret-down"></sd-icon>
@@ -229,6 +227,9 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
   @ViewChild("dropdown", { static: true })
   public dropdownControl?: SdDropdownControl;
 
+  @ViewChild("content", { static: true, read: ElementRef })
+  public contentElRef?: ElementRef<HTMLElement>;
+
   @ViewChild("popup", { static: true, read: ElementRef })
   public popupElRef?: ElementRef<HTMLElement>;
 
@@ -304,24 +305,26 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
   };
 
   public itemControls: SdSelectItemControl[] = [];
-  public contentHTML?: SafeHtml;
+  // public contentHTML?: SafeHtml;
 
   private readonly _itemsIterableDiffer: IterableDiffer<any>;
   private readonly _valueIterableDiffer: IterableDiffer<any>;
 
-  public constructor(private readonly _iterableDiffers: IterableDiffers,
-                     private readonly _cdr: ChangeDetectorRef,
-                     private readonly _domSanitizer: DomSanitizer) {
+  public constructor(private readonly _iterableDiffers: IterableDiffers) {
     this._itemsIterableDiffer = this._iterableDiffers.find([]).create((index, item) => this.trackByItemFn(index, item));
     this._valueIterableDiffer = this._iterableDiffers.find([]).create();
   }
 
+  public ngAfterViewInit(): void {
+    this._refreshContent();
+  }
+
   public ngDoCheck(): void {
     if (this.items && this._itemsIterableDiffer.diff(this.items)) {
-      this._cdr.markForCheck();
+      this._refreshContent();
     }
     if (this._value instanceof Array && this._valueIterableDiffer.diff(this._value)) {
-      this._cdr.markForCheck();
+      this._refreshContent();
     }
   }
 
@@ -364,14 +367,12 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
       }
       this.valueChange.emit(this._value);
       this._refreshContent();
-      this._cdr.markForCheck();
     }
     else {
       if (this._value !== itemControl.value) {
         this._value = itemControl.value;
         this.valueChange.emit(this._value);
         this._refreshContent();
-        this._cdr.markForCheck();
       }
 
       if (this.dropdownControl) {
@@ -383,23 +384,19 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
   public onItemControlContentChanged(itemControl: SdSelectItemControl): void {
     if (!this.itemControls.includes(itemControl)) {
       this.itemControls.push(itemControl);
-      this._cdr.markForCheck();
     }
 
     if (this.getIsSelectedItemControl(itemControl) || this.getChildrenFn) {
       this._refreshContent();
-      this._cdr.markForCheck();
     }
   }
 
-  public ngAfterViewInit(): void {
-    this._refreshContent();
-  }
-
   private _refreshContent(): void {
+    if (!this.contentElRef) return;
+
     const selectedItemControls = this.itemControls?.filter(itemControl => this.getIsSelectedItemControl(itemControl)) ?? [];
     const selectedItemEls = selectedItemControls.map(item => item.el);
-    const contentHTML = selectedItemEls.map(el => {
+    this.contentElRef.nativeElement.innerHTML = selectedItemEls.map(el => {
       if (this.getChildrenFn) {
         let cursorEl: HTMLElement | undefined = el;
         let resultHTML = "";
@@ -416,86 +413,5 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
         return el.findFirst("> ._content")?.innerHTML ?? "";
       }
     }).join(", ");
-
-    this.contentHTML = this._domSanitizer.bypassSecurityTrustHtml(contentHTML);
   }
-
-  /*private _getParentItemControl(itemControl: SdSelectItemControl): SdSelectItemControl | undefined {
-    if (!this.getChildrenFn) return undefined;
-    if (!this.items) return undefined;
-
-    return this.itemControls?.find((item, i) => (
-      item.value !== undefined &&
-      this.getChildrenFn!(i, item.value) !== undefined &&
-      this.getChildrenFn!(i, item.value).includes(itemControl.value) === true
-    ));
-  }*/
-
-  /*private _refreshContent(): void {
-    if (this._contentEl === undefined || this._popupEl === undefined) return;
-
-    const selectedItemEls = this._popupEl.findAll("sd-select-item")
-      .filter(item => (
-        (
-          this.selectMode === "single" &&
-          (
-            (
-              !Boolean(this.value) &&
-              !Boolean(item.getAttribute("sd-value-json"))
-            ) ||
-            item.getAttribute("sd-value-json") === JsonConvert.stringify(this.value)
-          )
-        ) ||
-        (
-          this.selectMode === "multi" &&
-          this.value instanceof Array &&
-          this.value.some((v: any) => (
-            (
-              !Boolean(v) &&
-              !Boolean(item.getAttribute("sd-value-json"))
-            ) ||
-            JsonConvert.stringify(v) === item.getAttribute("sd-value-json")
-          ))
-        )
-      ));
-
-    const innerHTMLs: string[] = [];
-    if (selectedItemEls.length < 1) {
-    }
-    else if (this.getChildrenFn) {
-      for (const selectedItemEl of selectedItemEls) {
-        let cursorEl: HTMLElement | undefined = selectedItemEl;
-        let innerHTML = "";
-        while (true) {
-          if (!cursorEl) break;
-
-          const labelTemplateEl = cursorEl.findAll("> ._labelTemplate")[0];
-          const labelEl = labelTemplateEl !== undefined ? labelTemplateEl : cursorEl.findAll("> ._label")[0];
-          innerHTML = labelEl.innerHTML + (Boolean(innerHTML) ? " / " + innerHTML : "");
-
-          cursorEl = cursorEl.findParent("._children")?.parentElement?.findFirst("sd-select-item");
-        }
-
-        innerHTMLs.push(innerHTML);
-      }
-    }
-    else {
-      for (const selectedItemEl of selectedItemEls) {
-        const labelTemplateEl = selectedItemEl.findAll("> ._labelTemplate")[0];
-        const labelEl = labelTemplateEl !== undefined ? labelTemplateEl : selectedItemEl.findAll("> ._label")[0];
-        innerHTMLs.push(labelEl.innerHTML);
-      }
-    }
-
-    this._contentEl.innerHTML = innerHTMLs.join(", ");
-  }*/
-
-  /*private _refreshInvalid(): void {
-    if (this.required && this.value === undefined) {
-      this._el.setAttribute("sd-invalid", "true");
-    }
-    else {
-      this._el.setAttribute("sd-invalid", "false");
-    }
-  }*/
 }
