@@ -33,7 +33,7 @@
     "@simplysm/eslint-plugin": "3.5.9-12",
     "@types/node": "^14.0.14",
     "cross-env": "^7.0.2",
-    "eslint": "7.4.0",
+    "eslint": "^7.5.0",
     "ts-node": "^8.10.2",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^3.9.5"
