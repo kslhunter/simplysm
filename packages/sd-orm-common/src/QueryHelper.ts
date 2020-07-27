@@ -210,6 +210,10 @@ export class QueryHelper {
     return caseQueryable.case(predicate, then);
   }
 
+  public caseWhen<T extends TQueryValue>(arg: TEntityValue<TQueryValue>): CaseWhenQueryHelper<T> {
+    return new CaseWhenQueryHelper(this, arg);
+  }
+
   public dataLength<T extends TQueryValue>(arg: TEntityValue<T>): QueryUnit<number> {
     return new QueryUnit<number>(Number, ["DATALENGTH(", this.getQueryValue(arg), ")"]);
   }
@@ -408,7 +412,6 @@ export class QueryHelper {
   // endregion
 }
 
-
 export class CaseQueryHelper<T extends TQueryValue> {
   private readonly _cases: any[] = [];
 
@@ -428,3 +431,24 @@ export class CaseQueryHelper<T extends TQueryValue> {
     return new QueryUnit(this._type, ["CASE ", ...this._cases, " ELSE ", this._qh.getQueryValue(then), " END"]);
   }
 }
+
+export class CaseWhenQueryHelper<T extends TQueryValue> {
+  private readonly _cases: any[] = [];
+  private _type: Type<T> | undefined = undefined;
+
+  public constructor(private readonly _qh: QueryHelper,
+                     private readonly _arg: TEntityValue<TQueryValue>) {
+  }
+
+  public when(arg: TEntityValue<TQueryValue>, then: TEntityValue<T>): CaseWhenQueryHelper<T> {
+    this._type = SdOrmUtils.getQueryValueType(then) ?? this._type;
+    this._cases.push(...[" WHEN ", this._qh.getQueryValue(this._qh.equal(this._arg, arg)), " THEN ", this._qh.getQueryValue(then)]);
+    return this as any;
+  }
+
+  public else(then: TEntityValue<T>): QueryUnit<T> {
+    this._type = SdOrmUtils.getQueryValueType(then) ?? this._type;
+    return new QueryUnit(this._type, ["CASE ", ...this._cases, " ELSE ", this._qh.getQueryValue(then), " END"]);
+  }
+}
+

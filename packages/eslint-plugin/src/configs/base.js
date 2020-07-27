@@ -239,6 +239,7 @@ module.exports = {
         // warn
         // ---------------------------------
         "@typescript-eslint/no-unused-vars": ["warn", { args: "none" }],
+        "@typescript-eslint/require-await": "warn",
 
         // ---------------------------------
         // off
