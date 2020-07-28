@@ -5,7 +5,8 @@
 }
 
 *:focus {
-  outline-color: get($theme-color, primary, default);
+  //outline-color: var(--theme-primary-default);
+  outline-style: none;
 }
 
 html, body {

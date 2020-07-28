@@ -27,6 +27,7 @@ import {DateOnly, DateTime, Time} from "@simplism/core";
            (focus)="onFocus($event)"
            (blur)="onBlur($event)"
            [disabled]="disabled"
+           [step]="step"
            [style.text-align]="type === 'number' ? 'right' : undefined"
            *ngIf="!multiline"/>
     <textarea #input
@@ -113,6 +114,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   public size?: "sm" | "lg";
 
   @Input()
+  @SdTypeValidate(Function)
+  public validator?: (value: number | string | DateOnly | DateTime | Time) => boolean;
+
+  @Input()
   @SdTypeValidate(Boolean)
   public multiline?: boolean;
 
@@ -122,10 +127,20 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
 
 
   public getIsInvalid(): boolean {
-    const hasMinError = this.min !== undefined && this.value !== undefined && this.type === "number" && this.value < this.min;
-    const hasStepError = this.step !== undefined && this.value !== undefined && this.type === "number" && Math.abs(Number(this.value) % this.step) >= 1;
-    const hasRequiredError = this.required && (this.value === "" || this.value === undefined);
-    return hasMinError || hasStepError || !!hasRequiredError;
+    if (this.min !== undefined && this.value !== undefined && this.type === "number" && this.value < this.min) {
+      return true;
+    }
+    else if (this.step !== undefined && this.value !== undefined && this.type === "number" && Math.abs(Number(this.value) % this.step) >= 1) {
+      return true;
+    }
+    else if (this.required && (this.value === "" || this.value === undefined)) {
+      return true;
+    }
+    else if (this.validator && this.value && !this.validator(this.value)) {
+      return true;
+    }
+
+    return false;
   }
 
   public get controlValue(): number | string {

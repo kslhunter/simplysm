@@ -16,14 +16,14 @@ sd-textfield {
       color: get($text-color, lighter);
     }
 
-    &::-webkit-outer-spin-button,
+/*    &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button {
       -webkit-appearance: none;
       margin: 0;
-    }
+    }*/
 
     &::-webkit-calendar-picker-indicator {
-      background: white;
+      //background: white;
       color: get($text-color, default);
       cursor: pointer;
     }
