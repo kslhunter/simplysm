@@ -94,7 +94,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
               <!-- 고정 셀 그룹 -->
               <div class="_cell-group _fixed-cell-group"
                    (sdResize)="onFixedCellGroupResize($event)">
-                <div class="_border"></div>
+                <div class="_border" style="pointer-events: none"></div>
                 <div class="_cell _feature-cell">
                   <div class="_cell-content">
                     <sd-icon class="_icon _selected-icon"
@@ -516,7 +516,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
               > ._header-row { // 헤더 ROW
                 > ._cell-group { // 셀 그룹 공통
                   > ._cell { // 셀 공통
-                    &._resizable {
+                    &._resizable { // 크기조절가능한 셀일 경우
                       > ._border {
                         cursor: ew-resize;
                       }

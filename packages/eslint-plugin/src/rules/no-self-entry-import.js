@@ -32,8 +32,7 @@ module.exports = {
   meta: {
     type: "problem",
     docs: {
-      description: "동일 패키지 내의 index.ts 파일 import 금지",
-      recommended: true
+      description: "동일 패키지 내의 index.ts 파일 import 금지"
     },
 
     schema: []

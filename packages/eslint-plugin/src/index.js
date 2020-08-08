@@ -7,7 +7,8 @@ module.exports = {
   },
   rules: {
     "no-self-entry-import": require("./rules/no-self-entry-import"),
-    "no-throw-not-implement-error": require("./rules/no-throw-not-implement-error")
+    "no-throw-not-implement-error": require("./rules/no-throw-not-implement-error"),
+    "no-todo-comments": require("./rules/no-todo-comments")
   },
   processors: {
     "extract-angular-inline-html": require("./processors/extract-angular-inline-html")

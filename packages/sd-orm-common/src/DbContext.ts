@@ -2,7 +2,7 @@ import { QueryBuilder } from "./QueryBuilder";
 import { IDbContextExecutor } from "./IDbContextExecutor";
 import { QueryHelper } from "./QueryHelper";
 import { IQueryResultParseOption, TQueryDef } from "./commons";
-import { NeverEntryError, ObjectUtils, Type } from "@simplysm/sd-core-common";
+import { NeverEntryError, ObjectUtils, SdError, Type } from "@simplysm/sd-core-common";
 import { IDbMigration } from "./IDbMigration";
 import { Queryable } from "./Queryable";
 import { SystemMigration } from "./SystemMigration";
@@ -152,7 +152,7 @@ export abstract class DbContext {
         await this.executeDefsAsync([
           { type: "getDatabaseInfo", database: this.schema.database }
         ])
-      ).length > 0;
+      )[0].length > 0;
 
       if (isDbExists) {
         // FORCE 아니고 DB 있음
@@ -167,7 +167,7 @@ export abstract class DbContext {
               }
             }
           ])
-        ).length > 0;
+        )[0].length > 0;
 
         if (hasMigrationTable) {
           // FORCE 아니고 DB 있으나, Migration 없음
@@ -284,34 +284,39 @@ export abstract class DbContext {
       }
 
       for (const fkDef of tableDef.foreignKeys) {
-        const targetTableDef = DbDefinitionUtils.getTableDef(fkDef.targetTypeFwd());
-        if (targetTableDef.columns.length < 1) {
-          throw new Error(`${targetTableDef.name}의 컬럼 설정이 잘못되었습니다.`);
-        }
-
-        const targetPkNames = targetTableDef.columns
-          .filter(item => item.primaryKey !== undefined)
-          .orderBy(item => item.primaryKey!)
-          .map(item => item.name);
-
-        addFkQueryDefs.push({
-          type: "addForeignKey",
-          table: {
-            database: tableDef.database ?? this.schema.database,
-            schema: tableDef.schema ?? this.schema.schema,
-            name: tableDef.name
-          },
-          foreignKey: {
-            name: fkDef.name,
-            fkColumns: fkDef.columnPropertyKeys.map(propKey => tableDef.columns.single(col => col.propertyKey === propKey)!.name),
-            targetTable: {
-              database: targetTableDef.database ?? this.schema.database,
-              schema: targetTableDef.schema ?? this.schema.schema,
-              name: targetTableDef.name
-            },
-            targetPkColumns: targetPkNames
+        try {
+          const targetTableDef = DbDefinitionUtils.getTableDef(fkDef.targetTypeFwd());
+          if (targetTableDef.columns.length < 1) {
+            throw new Error(`${targetTableDef.name}의 컬럼 설정이 잘못되었습니다.`);
           }
-        });
+
+          const targetPkNames = targetTableDef.columns
+            .filter(item => item.primaryKey !== undefined)
+            .orderBy(item => item.primaryKey!)
+            .map(item => item.name);
+
+          addFkQueryDefs.push({
+            type: "addForeignKey",
+            table: {
+              database: tableDef.database ?? this.schema.database,
+              schema: tableDef.schema ?? this.schema.schema,
+              name: tableDef.name
+            },
+            foreignKey: {
+              name: fkDef.name,
+              fkColumns: fkDef.columnPropertyKeys.map(propKey => tableDef.columns.single(col => col.propertyKey === propKey)!.name),
+              targetTable: {
+                database: targetTableDef.database ?? this.schema.database,
+                schema: targetTableDef.schema ?? this.schema.schema,
+                name: targetTableDef.name
+              },
+              targetPkColumns: targetPkNames
+            }
+          });
+        }
+        catch (err) {
+          throw new SdError(err, tableDef.name + " > " + fkDef.name + ": 오류");
+        }
       }
     }
     queryDefsList.push(addFkQueryDefs);

@@ -802,7 +802,7 @@ export class Queryable<D extends DbContext, T> {
     }
 
     const queryable = this.select(() => ({ cnt: new QueryUnit(Number, "COUNT(*)") }));
-    queryable._def.orderBy?.remove(item1 => item1[0] === "[__searchOrder]");
+    delete queryable._def.orderBy;
     delete queryable._entity["__searchOrder"];
     const item = await queryable.singleAsync();
 

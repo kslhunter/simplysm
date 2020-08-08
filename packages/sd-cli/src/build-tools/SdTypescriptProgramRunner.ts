@@ -455,7 +455,7 @@ export class SdTypescriptProgramRunner extends EventEmitter {
       if (sourceFile.fileName.endsWith(".d.ts") && !Boolean(path.extname(importFilePath))) {
         return path.resolve(importFilePath + ".d.ts");
       }
-      else if (Boolean(path.extname(importFilePath))) {
+      else if (!Boolean(path.extname(importFilePath))) {
         return path.resolve(importFilePath + path.extname(sourceFile.fileName));
       }
       else {

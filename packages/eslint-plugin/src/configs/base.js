@@ -67,7 +67,7 @@ module.exports = {
         // warn
         // ---------------------------------
         "no-console": "warn",
-        "no-warning-comments": "warn",
+        "no-warning-comments": "off",
         "object-shorthand": "warn",
 
         // ---------------------------------
@@ -157,6 +157,8 @@ module.exports = {
       rules: {
         "@simplysm/no-self-entry-import": "error",
         "@simplysm/no-throw-not-implement-error": "warn",
+        "no-warning-comments": "off",
+        "@simplysm/no-todo-comments": "warn",
 
         // ---------------------------------
         // error

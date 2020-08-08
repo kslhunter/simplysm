@@ -87,6 +87,8 @@ import { SdSelectItemControl } from "./SdSelectItemControl";
         outline: 1px solid transparent;
         outline-offset: -1px;
         cursor: pointer;
+        
+        border-radius: 2px;
 
         > div:first-child {
           overflow: hidden;
@@ -150,6 +152,7 @@ import { SdSelectItemControl } from "./SdSelectItemControl";
 
       &[sd-inset=true] {
         min-width: auto;
+        border-radius: 0;
 
         > /deep/ sd-dropdown > div {
           border: none;

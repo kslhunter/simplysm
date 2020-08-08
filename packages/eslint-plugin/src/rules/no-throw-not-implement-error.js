@@ -6,10 +6,9 @@ const { AST_NODE_TYPES } = require("@typescript-eslint/experimental-utils");
 
 module.exports = {
   meta: {
-    type: "problem",
+    type: "suggestion",
     docs: {
-      description: "'NotImplementError' 사용 경고",
-      recommended: true
+      description: "'NotImplementError' 사용 경고"
     },
 
     schema: []
