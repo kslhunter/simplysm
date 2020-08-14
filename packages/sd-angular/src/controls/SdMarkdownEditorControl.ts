@@ -139,25 +139,45 @@ import * as marked from "marked";
       position: relative;
 
       > ._toolbar {
-        position: absolute;
-        z-index: 1;
-        top: 0;
-        right: 0;
-        user-select: none;
+        display: block;
+        border: 1px solid var(--sd-border-color);
+        border-bottom: none;
+        text-align: right;
 
         > sd-anchor {
           display: inline-block;
           padding: var(--gap-sm) var(--gap-default);
           text-align: center;
-          border-radius: 100%;
-          opacity: 0.2;
-
-          &:hover {
-            opacity: 0.7;
-          }
 
           &._selected {
             display: none;
+          }
+        }
+      }
+
+      &[sd-view-state=preview] {
+        > ._toolbar {
+          position: absolute;
+          z-index: 1;
+          top: 0;
+          right: 0;
+          user-select: none;
+          border: none;
+
+          > sd-anchor {
+            display: inline-block;
+            padding: var(--gap-sm) var(--gap-default);
+            text-align: center;
+            border-radius: 100%;
+            opacity: 0.2;
+
+            &:hover {
+              opacity: 0.7;
+            }
+
+            &._selected {
+              display: none;
+            }
           }
         }
       }
@@ -219,29 +239,31 @@ import * as marked from "marked";
         background: white;
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) + 2px);
 
-        ol {
-          padding-left: 20px;
-        }
-
-        code {
-          background: rgba(0, 0, 0, .05);
-          border-radius: 2px;
-        }
-
-        pre {
-          background: rgba(0, 0, 0, .05);
-          padding: var(--gap-sm) var(--gap-default);
-          border-radius: 2px;
-          white-space: pre-wrap;
-
-          > code {
-            background: transparent;
+        /deep/ {
+          ol {
+            padding-left: 20px;
           }
-        }
 
-        p {
-          margin-top: var(--gap-sm);
-          margin-bottom: var(--gap-sm);
+          code {
+            background: rgba(0, 0, 0, .05);
+            border-radius: 2px;
+          }
+
+          pre {
+            background: rgba(0, 0, 0, .05);
+            padding: var(--gap-sm) var(--gap-default);
+            border-radius: 2px;
+            white-space: pre-wrap;
+
+            > code {
+              background: transparent;
+            }
+          }
+
+          p {
+            margin-top: var(--gap-sm);
+            margin-bottom: var(--gap-sm);
+          }
         }
       }
 
@@ -285,6 +307,7 @@ export class SdMarkdownEditorControl implements OnChanges {
 
   @Input()
   @SdInputValidate({ type: String, includes: ["preview", "edit", "help"] })
+  @HostBinding("attr.sd-view-state")
   public viewState: "preview" | "edit" | "help" = "edit";
 
   @Input()

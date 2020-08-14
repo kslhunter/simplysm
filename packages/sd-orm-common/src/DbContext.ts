@@ -8,6 +8,8 @@ import { Queryable } from "./Queryable";
 import { SystemMigration } from "./SystemMigration";
 import { DbDefinitionUtils } from "./DbDefinitionUtils";
 
+// TODO: 모든 데이터를 CSV로 백업하는 기능 추가
+
 export abstract class DbContext {
   public static readonly selectCache = new Map<string, { result: any[]; timeout: any } | undefined>();
 

@@ -420,14 +420,14 @@ export class CaseQueryHelper<T extends TQueryValue> {
   }
 
   public case(predicate: TEntityValue<boolean | Boolean> | TQueryBuilderValue, then: TEntityValue<T>): CaseQueryHelper<T> {
-    this._type = SdOrmUtils.getQueryValueType(then);
+    this._type = SdOrmUtils.getQueryValueType(then) ?? this._type;
 
     this._cases.push(...[" WHEN ", this._qh.getQueryValue(predicate), " THEN ", this._qh.getQueryValue(then)]);
     return this;
   }
 
   public else(then: TEntityValue<T>): QueryUnit<T> {
-    this._type = SdOrmUtils.getQueryValueType(then);
+    this._type = SdOrmUtils.getQueryValueType(then) ?? this._type;
     return new QueryUnit(this._type, ["CASE ", ...this._cases, " ELSE ", this._qh.getQueryValue(then), " END"]);
   }
 }

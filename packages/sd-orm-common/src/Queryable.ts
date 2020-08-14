@@ -425,18 +425,31 @@ export class Queryable<D extends DbContext, T> {
     }
 
     const subFrom = clone.getSelectDef();
+    let unknownOrderBys;
     if (subFrom.orderBy) {
-      const unknownOrderBys = subFrom.orderBy.filter(item => !Object.values(subFrom.select).includes(item[0]));
+      unknownOrderBys = subFrom.orderBy.filter(item => !Object.values(subFrom.select).includes(item[0]));
       let seq = 0;
       for (const unknownOrderBy of unknownOrderBys) {
         seq++;
         subFrom.select["__order_" + seq] = unknownOrderBy[0];
       }
+      delete subFrom.orderBy;
     }
 
     const currEntity = this._getParentEntity(clone._entity, this._as, undefined);
 
-    return new Queryable<D, T | R>(this.db, tableType, this._as, currEntity, { from: subFrom });
+    const result = new Queryable<D, T | R>(this.db, tableType, this._as, currEntity, { from: subFrom });
+
+    if (unknownOrderBys && unknownOrderBys.length > 0) {
+      result._def.orderBy = [];
+      let seq = 0;
+      for (const unknownOrderBy of unknownOrderBys) {
+        seq++;
+        result._def.orderBy.push(["__order_" + seq, unknownOrderBy[1]]);
+      }
+    }
+
+    return result;
   }
 
   public getSelectDef(): ISelectQueryDef & { select: { [key: string]: TQueryBuilderValue } } {

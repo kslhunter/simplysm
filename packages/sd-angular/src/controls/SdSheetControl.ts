@@ -37,7 +37,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
         </sd-anchor>
         <sd-anchor class="_card-icon"
                    *ngIf="useCardDisplayType"
-                   (click)="displayType = displayType === 'card' ? 'sheet' : 'card'">
+                   (click)="onDisplayTypeChangeButtonClick()">
           <sd-icon [icon]="displayType === 'card' ? 'bars' : 'table'" fixedWidth></sd-icon>
         </sd-anchor>
 
@@ -586,7 +586,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
             @include elevation(none);
 
             &._selected {
-              background: var(--theme-color-primary-lightest);
+              background: var(--theme-color-primary-lighter);
             }
           }
         }
@@ -1033,6 +1033,9 @@ export class SdSheetControl implements DoCheck, OnInit {
 
     if (this.key !== undefined) {
       this._config = await this._systemConfig.getAsync(`sd-sheet.${this.key}`);
+      if (this._config?.displayType !== undefined) {
+        this.displayType = this._config.displayType;
+      }
     }
     this._cdr.markForCheck();
   }
@@ -1043,6 +1046,16 @@ export class SdSheetControl implements DoCheck, OnInit {
     }
     if (this._selectedItemsDiffer.diff(this.selectedItems)) {
       this._cdr.markForCheck();
+    }
+  }
+
+  public async onDisplayTypeChangeButtonClick(): Promise<void> {
+    this.displayType = (this.displayType === "card" ? "sheet" : "card");
+
+    if (this.key !== undefined) {
+      this._config = this._config ?? {};
+      this._config.displayType = this.displayType;
+      await this._systemConfig.setAsync(`sd-sheet.${this.key}`, this._config);
     }
   }
 
@@ -1511,6 +1524,7 @@ export class SdSheetControl implements DoCheck, OnInit {
 }
 
 export interface ISdSheetConfigVM {
+  displayType?: "sheet" | "card";
   columnObj?: { [key: string]: ISdSheetColumnConfigVM | undefined };
 }
 

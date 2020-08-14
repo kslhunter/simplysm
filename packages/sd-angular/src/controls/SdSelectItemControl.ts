@@ -2,6 +2,7 @@ import {
   AfterContentChecked,
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ContentChild,
   ElementRef,
@@ -54,7 +55,7 @@ import { SdSelectControl } from "./SdSelectControl";
       &[sd-selected=true] {
         color: var(--theme-color-primary-default);
         font-weight: bold;
-        background: rgba(0, 0, 0, .07);
+        background: var(--theme-color-primary-lightest);
       }
     }
   `]
@@ -87,7 +88,8 @@ export class SdSelectItemControl implements AfterViewInit, AfterContentChecked {
 
   public constructor(@Inject(forwardRef(() => SdSelectControl))
                      private readonly _selectControl: SdSelectControl,
-                     private readonly _elRef: ElementRef) {
+                     private readonly _elRef: ElementRef,
+                     private readonly _cdr: ChangeDetectorRef) {
     this.el = this._elRef.nativeElement;
   }
 
@@ -110,5 +112,9 @@ export class SdSelectItemControl implements AfterViewInit, AfterContentChecked {
     event.stopPropagation();
 
     this._selectControl.onItemControlClick(this);
+  }
+
+  public markForCheck(): void {
+    this._cdr.markForCheck();
   }
 }

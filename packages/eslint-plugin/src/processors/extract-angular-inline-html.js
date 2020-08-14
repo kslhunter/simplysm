@@ -10,7 +10,8 @@ const multipleComponentsPerFileError =
 const rangeMap = new Map();
 
 function quickGetRangeForTemplate(text, template) {
-  const start = text.indexOf(template);
+  //const start = text.indexOf(template);
+  const start = text.indexOf("  template: `") + 13;
   return [start, start + template.length];
 }
 
@@ -96,7 +97,9 @@ module.exports = {
       }
 
       const templateText = templateProperty.initializer.text;
-      const realTemplateText = templateText.replace(/\n/g, "\r\n").replace(/`/g, "\\`");
+      const realTemplateText = templateText
+        .replace(/\n/g, "\r\n")
+        .replace(/`/g, "\\`");
 
       const range = quickGetRangeForTemplate(text, realTemplateText);
 

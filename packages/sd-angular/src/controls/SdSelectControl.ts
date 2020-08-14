@@ -87,7 +87,7 @@ import { SdSelectItemControl } from "./SdSelectItemControl";
         outline: 1px solid transparent;
         outline-offset: -1px;
         cursor: pointer;
-        
+
         border-radius: 2px;
 
         > div:first-child {
@@ -325,9 +325,15 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
   public ngDoCheck(): void {
     if (this.items && this._itemsIterableDiffer.diff(this.items)) {
       this._refreshContent();
+      for (const itemControl of this.itemControls ?? []) {
+        itemControl.markForCheck();
+      }
     }
     if (this._value instanceof Array && this._valueIterableDiffer.diff(this._value)) {
       this._refreshContent();
+      for (const itemControl of this.itemControls ?? []) {
+        itemControl.markForCheck();
+      }
     }
   }
 
