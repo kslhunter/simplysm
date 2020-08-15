@@ -80,7 +80,7 @@ export class SdStatePresetControl implements OnInit {
 
   public onItemClick(preset: ISdStatePresetVM): void {
     if (this.state !== preset.state) {
-      this.state = preset.state;
+      // this.state = preset.state;
       this.stateChange.emit(preset.state);
     }
   }

@@ -12,7 +12,7 @@ module.exports = {
       settings: {
         "import/resolver": {
           typescript: {
-            directory: require("path").join(__dirname, "tsconfig.json")
+            project: require("path").join(__dirname, "tsconfig.json")
           }
         }
       },

@@ -57,6 +57,13 @@ export class QueryHelper {
     return [this.getQueryValue(source), " IS NOT ", "NULL"];
   }
 
+  public isFalse<T extends TQueryValue>(source: TEntityValue<T>): TQueryBuilderValue[] {
+    return this.or([
+      this.isNull(source),
+      this.equal(source, false as any)
+    ]);
+  }
+
   public lessThen<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryBuilderValue[] {
     return [this.getQueryValue(source), " < ", this.getQueryValue(target)];
   }

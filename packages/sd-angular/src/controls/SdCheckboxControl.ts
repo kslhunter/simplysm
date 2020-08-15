@@ -80,7 +80,7 @@ import { SdInputValidate } from "../commons/SdInputValidate";
         }
 
         > input:disabled + ._indicator_rect {
-          background: var(--theme-color-grey-lightest) !important;
+          background: var(--theme-color-grey-lighter) !important;
         }
 
         > input:disabled + ._indicator_rect + ._indicator {

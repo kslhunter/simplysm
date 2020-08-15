@@ -79,17 +79,24 @@ export class SdPaginationControl {
   }
 
   public onPageClick(page: number): void {
-    this.page = page;
-    this.pageChange.emit(this.page);
+    // this.page = page;
+    // this.pageChange.emit(this.page);
+    this.pageChange.emit(page);
   }
 
   public onNextClick(): void {
-    this.page = (this.displayPages.last() ?? 0) + 1;
-    this.pageChange.emit(this.page);
+    // this.page = (this.displayPages.last() ?? 0) + 1;
+    // this.pageChange.emit(this.page);
+
+    const page = (this.displayPages.last() ?? 0) + 1;
+    this.pageChange.emit(page);
   }
 
   public onPrevClick(): void {
-    this.page = (this.displayPages[0] ?? 0) - 1;
-    this.pageChange.emit(this.page);
+    // this.page = (this.displayPages[0] ?? 0) - 1;
+    // this.pageChange.emit(this.page);
+
+    const page = (this.displayPages[0] ?? 0) - 1;
+    this.pageChange.emit(page);
   }
 }

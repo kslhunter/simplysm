@@ -616,7 +616,7 @@ export class SdPackageBuilder extends EventEmitter {
             settings: {
               "import/resolver": {
                 typescript: {
-                  directory: this._getTsConfigPath()
+                  project: this._getTsConfigPath()
                 }
               }
             }

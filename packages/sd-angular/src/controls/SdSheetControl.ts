@@ -24,6 +24,7 @@ import { ISdResizeEvent } from "@simplysm/sd-core-browser";
 import { SdModalProvider } from "../providers/SdModalProvider";
 import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
+import { ObjectUtils } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-sheet",
@@ -546,7 +547,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
                   height: calc(100% - 1px);
                   z-index: $z-index-row-selected-indicator;
                   pointer-events: none;
-                  background: var(--theme-color-secondary-default);
+                  background: var(--theme-color-primary-default);
                   opacity: .1;
                 }
 
@@ -572,8 +573,8 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
             position: absolute;
             z-index: $z-index-row-focus-indicator;
             pointer-events: none;
-            background: var(--theme-color-secondary-default);
-            opacity: .15;
+            background: var(--theme-color-grey-default);
+            opacity: .1;
           }
         }
 
@@ -1159,8 +1160,9 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public onPageChange(page: number): void {
-    this.page = page;
-    this.pageChange.emit(this.page);
+    // this.page = page;
+    // this.pageChange.emit(this.page);
+    this.pageChange.emit(page);
   }
 
   public async onConfigButtonClick(): Promise<void> {
@@ -1425,7 +1427,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   public onColumnOrderingHeaderClick(event: MouseEvent, columnControl: SdSheetColumnControl): void {
     if (columnControl.key === undefined) return;
 
-    if (event.shiftKey || event.ctrlKey) {
+    /*if (event.shiftKey || event.ctrlKey) {
       const orderingItem = this.ordering.single(item => item.key === columnControl.key);
       if (orderingItem) {
         if (orderingItem.desc) {
@@ -1454,7 +1456,39 @@ export class SdSheetControl implements DoCheck, OnInit {
       }
     }
 
-    this.orderingChange.emit(this.ordering);
+    this.orderingChange.emit(this.ordering);*/
+
+    let ordering = ObjectUtils.clone(this.ordering);
+    if (event.shiftKey || event.ctrlKey) {
+      const orderingItem = ordering.single(item => item.key === columnControl.key);
+      if (orderingItem) {
+        if (orderingItem.desc) {
+          ordering.remove(orderingItem);
+        }
+        else {
+          orderingItem.desc = !orderingItem.desc;
+        }
+      }
+      else {
+        ordering.push({ key: columnControl.key, desc: false });
+      }
+    }
+    else {
+      if (ordering.length === 1 && ordering[0].key === columnControl.key) {
+        const orderingItem = ordering[0];
+        if (orderingItem.desc) {
+          ordering.remove(orderingItem);
+        }
+        else {
+          orderingItem.desc = !orderingItem.desc;
+        }
+      }
+      else {
+        ordering = [{ key: columnControl.key, desc: false }];
+      }
+    }
+
+    this.orderingChange.emit(ordering);
   }
 
   private _getCellAddress(cellEl: HTMLElement): { r: number; c: number } | undefined {

@@ -215,6 +215,9 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
   @SdInputValidate(Number)
   public max?: number;
 
+  /**
+   * 10, 1, 0.1, 0.01, 0.01 방식으로 입력
+   */
   @Input()
   @SdInputValidate(Number)
   public step?: number;
@@ -461,6 +464,9 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
       }
       if (this.min !== undefined && this.min > this.value) {
         errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
+      }
+      if (this.max !== undefined && this.max < this.value) {
+        errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
       }
     }
     else if (["year", "month", "date"].includes(this.type)) {

@@ -26,6 +26,12 @@ body {
 }
 
 // DEFAULT TAGS
+hr {
+  border: none;
+  height: 1px;
+  background-color: var(--sd-border-color);
+}
+
 p {
   margin: 0;
 }
