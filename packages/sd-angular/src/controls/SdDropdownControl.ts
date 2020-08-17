@@ -16,7 +16,9 @@ import { NeverEntryError } from "@simplysm/sd-core-common";
   selector: "sd-dropdown",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="_sd-dropdown-control" [attr.tabindex]="disabled ? undefined : '0'">
+    <div [attr.tabindex]="disabled ? undefined : '0'"
+         class="_sd-dropdown-control"
+         [attr.class]="'_sd-dropdown-control ' + contentClass">
       <ng-content></ng-content>
     </div>
     <ng-content select="sd-dropdown-popup"></ng-content>`,
@@ -43,6 +45,10 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
   @Output()
   public readonly close = new EventEmitter();
+
+  @Input("content.class")
+  @SdInputValidate(String)
+  public contentClass?: string;
 
   private _isOpen = false;
 

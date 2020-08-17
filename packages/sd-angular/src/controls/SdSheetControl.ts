@@ -12,6 +12,8 @@ import {
   Input,
   IterableDiffer,
   IterableDiffers,
+  KeyValueDiffer,
+  KeyValueDiffers,
   NgZone,
   OnInit,
   Output,
@@ -24,7 +26,6 @@ import { ISdResizeEvent } from "@simplysm/sd-core-browser";
 import { SdModalProvider } from "../providers/SdModalProvider";
 import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
-import { ObjectUtils } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-sheet",
@@ -111,7 +112,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
                 </div>
                 <ng-container *ngFor="let columnControl of fixedColumnControls; trackBy: trackByFnForColumnControl">
                   <div class="_cell"
-                       [style.width.px]="getColumnWidthPixel(columnControl)"
+                       [style.width.px]="columnWidthPixelMap.get(columnControl.guid)"
                        [attr.title]="columnControl.tooltip"
                        [class._resizable]="columnControl.resizable">
                     <div class="_cell-content">
@@ -136,7 +137,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
                       </ng-container>
                     </div>
                     <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"
-                         [ngClass]="{'_border-split': this.getIsGroupLastColumn(columnControl)}"></div>
+                         [ngClass]="{'_border-split': this.isGroupLastColumMap.get(columnControl.guid)}"></div>
                   </div>
                 </ng-container>
               </div>
@@ -144,7 +145,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
               <div class="_cell-group" [style.padding-left.px]="fixedCellGroupWidthPixel">
                 <ng-container *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
                   <div class="_cell"
-                       [style.width.px]="getColumnWidthPixel(columnControl)"
+                       [style.width.px]="columnWidthPixelMap.get(columnControl.guid)"
                        [attr.title]="columnControl.tooltip"
                        [class._resizable]="columnControl.resizable">
                     <div class="_cell-content">
@@ -169,7 +170,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
                       </ng-container>
                     </div>
                     <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"
-                         [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
+                         [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
                   </div>
                 </ng-container>
               </div>
@@ -190,11 +191,12 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
                 </div>
                 <ng-container *ngFor="let columnControl of fixedColumnControls; trackBy: trackByFnForColumnControl">
                   <div class="_cell"
-                       [style.width.px]="getColumnWidthPixel(columnControl)">
+                       [style.width.px]="columnWidthPixelMap.get(columnControl.guid)">
                     <div class="_cell-content">
                       <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"></ng-template>
                     </div>
-                    <div class="_border" [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
+                    <div class="_border"
+                         [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
                   </div>
                 </ng-container>
               </div>
@@ -202,11 +204,12 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
               <div class="_cell-group" [style.padding-left.px]="fixedCellGroupWidthPixel">
                 <ng-container *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
                   <div class="_cell"
-                       [style.width.px]="getColumnWidthPixel(columnControl)">
+                       [style.width.px]="columnWidthPixelMap.get(columnControl.guid)">
                     <div class="_cell-content">
                       <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"></ng-template>
                     </div>
-                    <div class="_border" [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
+                    <div class="_border"
+                         [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
                   </div>
                 </ng-container>
               </div>
@@ -250,13 +253,15 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
                   </div>
                   <ng-container *ngFor="let columnControl of fixedColumnControls; trackBy: trackByFnForColumnControl">
                     <div class="_cell"
-                         [style.width.px]="getColumnWidthPixel(columnControl)" tabindex="0">
+                         [attr.sd-row-index]="index"
+                         [attr.sd-column-guid]="columnControl.guid"
+                         [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0">
                       <div class="_cell-content">
                         <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                     [ngTemplateOutletContext]="{item: item, index: index}"></ng-template>
+                                     [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl)}"></ng-template>
                       </div>
                       <div class="_border"
-                           [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
+                           [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
                     </div>
                   </ng-container>
                 </div>
@@ -265,13 +270,15 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
                   <ng-container
                     *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
                     <div class="_cell"
-                         [style.width.px]="getColumnWidthPixel(columnControl)" tabindex="0">
+                         [attr.sd-row-index]="index"
+                         [attr.sd-column-guid]="columnControl.guid"
+                         [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0">
                       <div class="_cell-content">
                         <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                     [ngTemplateOutletContext]="{item: item, index: index}"></ng-template>
+                                     [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl)}"></ng-template>
                       </div>
                       <div class="_border"
-                           [ngClass]="{'_border-split':  this.getIsGroupLastColumn(columnControl)}"></div>
+                           [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
                     </div>
                   </ng-container>
                 </div>
@@ -722,69 +729,50 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   private _config?: ISdSheetConfigVM;
 
+  private _editCell = "";
+
+  public getIsEditCell(index: number, columnControl: SdSheetColumnControl): boolean {
+    return this._editCell === index + "_" + columnControl.guid;
+  }
+
   public get maxDepth(): number | undefined {
     if (!this.getChildrenFn) return undefined;
-    return this._getDisplayItemDefs()
+    return this.displayItemDefs
       .filter(item => item.visible)
       .max(item => item.depth) ?? 0;
   }
 
-  public get fixedHeaderGroups(): { name?: string; widthPixel: number }[] {
-    return this._getHeaderGroups(this.fixedColumnControls);
-  }
+  public hasHeaderGroup = false;
+  public hasSummaryGroup = false;
 
-  public get nonFixedHeaderGroups(): { name?: string; widthPixel: number }[] {
-    return this._getHeaderGroups(this.nonFixedColumnControls);
-  }
+  public fixedHeaderGroups: { name?: string; widthPixel: number }[] = [];
+  public nonFixedHeaderGroups: { name?: string; widthPixel: number }[] = [];
+  public fixedColumnControls: SdSheetColumnControl[] = [];
+  public nonFixedColumnControls: SdSheetColumnControl[] = [];
+  public columnWidthPixelMap = new Map<string, number>();
 
-  public get fixedColumnControls(): SdSheetColumnControl[] {
+  public isGroupLastColumMap = new Map<string, boolean>();
+
+  public displayItems: any[] = [];
+  public displayItemDefs: { index: number; depth: number; visible: boolean; selectable: boolean; item: any }[] = [];
+
+  private _getColumnControlsOfFixType(fixed: boolean): SdSheetColumnControl[] {
     let fixedColumnControls = this.columnControls?.toArray() ?? [];
     if (this.key !== undefined && this._config?.columnObj) {
-      fixedColumnControls = fixedColumnControls.filter(item => this._config?.columnObj?.[item.key as string]?.fixed ?? item.fixed);
-      fixedColumnControls = fixedColumnControls.filter(item => !this._config?.columnObj?.[item.key as string]?.hidden);
-      fixedColumnControls = fixedColumnControls.orderBy(item => this._config?.columnObj?.[item.key as string]?.displayOrder ?? 0);
+      fixedColumnControls = fixedColumnControls
+        .filter(item => (
+          Boolean(this._config!.columnObj![item.key as string]?.fixed ?? item.fixed) === fixed &&
+          !this._config!.columnObj![item.key as string]?.hidden
+        ))
+        .orderBy(item => this._config!.columnObj![item.key as string]?.displayOrder ?? 0);
     }
     else {
-      fixedColumnControls = fixedColumnControls.filter(item => Boolean(item.fixed));
+      fixedColumnControls = fixedColumnControls.filter(item => Boolean(item.fixed) === fixed);
     }
     return fixedColumnControls;
   }
 
-  public get nonFixedColumnControls(): SdSheetColumnControl[] {
-    let nonFixedColumnControls = this.columnControls?.toArray() ?? [];
-    if (this.key !== undefined && this._config?.columnObj) {
-      nonFixedColumnControls = nonFixedColumnControls.filter(item => !(this._config?.columnObj?.[item.key as string]?.fixed ?? item.fixed));
-      nonFixedColumnControls = nonFixedColumnControls.filter(item => !this._config?.columnObj?.[item.key as string]?.hidden);
-      nonFixedColumnControls = nonFixedColumnControls.orderBy(item => this._config?.columnObj?.[item.key as string]?.displayOrder ?? 0);
-    }
-    else {
-      nonFixedColumnControls = nonFixedColumnControls.filter(item => !item.fixed);
-    }
-    return nonFixedColumnControls;
-  }
-
-  public get hasHeaderGroup(): boolean {
-    return (this.columnControls?.filter(item => item.group !== undefined).length ?? 0) > 0;
-  }
-
-  public get hasSummaryGroup(): boolean {
-    return (this.columnControls?.filter(item => Boolean(item.summaryTemplateRef)).length ?? 0) > 0;
-  }
-
-  public get hasOrderingColumn(): boolean {
-    return (this.columnControls?.filter(item => item.useOrdering === true).length ?? 0) > 0;
-  }
-
-  public get displayItems(): any[] {
-    if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
-      return this.items.slice(this.page * this.pageItemCount, (this.page + 1) * this.pageItemCount);
-    }
-    else {
-      return this.items;
-    }
-  }
-
-  public getIsGroupLastColumn(columnControl: SdSheetColumnControl): boolean {
+  private _getIsGroupLastColumn(columnControl: SdSheetColumnControl): boolean {
     if (!this.hasHeaderGroup) return false;
 
     if (columnControl.fixed) {
@@ -797,7 +785,7 @@ export class SdSheetControl implements DoCheck, OnInit {
     }
   }
 
-  public getColumnWidthPixel(columnControl: SdSheetColumnControl): number {
+  private _getColumnWidthPixel(columnControl: SdSheetColumnControl): number {
     if (
       this.key !== undefined &&
       columnControl.key !== undefined &&
@@ -819,7 +807,7 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public getIsAllSelected(): boolean {
-    return this._getDisplayItemDefs().every(item => !item.selectable || this.getIsSelectedItem(item.item));
+    return this.displayItemDefs.every(item => !item.selectable || this.getIsSelectedItem(item.item));
   }
 
   public getIsColumnOrderingDesc(key: string): boolean | undefined {
@@ -840,6 +828,9 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   private readonly _itemsDiffer: IterableDiffer<any>;
   private readonly _selectedItemsDiffer: IterableDiffer<any>;
+  private readonly _expandedItemsDiffer: IterableDiffer<any>;
+  private readonly _columnControlsDiffer: IterableDiffer<SdSheetColumnControl>;
+  private readonly _configColumnObjDiffer: KeyValueDiffer<string, any>;
 
   private readonly _el: HTMLElement;
 
@@ -847,15 +838,25 @@ export class SdSheetControl implements DoCheck, OnInit {
                      private readonly _zone: NgZone,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _iterableDiffers: IterableDiffers,
+                     private readonly _keyValueDiffers: KeyValueDiffers,
                      private readonly _modal: SdModalProvider,
                      private readonly _systemConfig: SdSystemConfigRootProvider) {
     this._el = this._elRef.nativeElement;
 
-    this._itemsDiffer = this._iterableDiffers.find([])
+    this._itemsDiffer = this._iterableDiffers.find(this.items)
       .create((i: number, item: any) => this.trackByFn(i, item));
 
-    this._selectedItemsDiffer = this._iterableDiffers.find([])
+    this._selectedItemsDiffer = this._iterableDiffers.find(this.selectedItems)
       .create((i: number, item: any) => this.trackByFn(i, item));
+
+    this._expandedItemsDiffer = this._iterableDiffers.find(this.expandedItems)
+      .create((i: number, item: any) => this.trackByFn(i, item));
+
+    this._columnControlsDiffer = this._iterableDiffers.find(this.columnControls ?? [])
+      .create((i: number, item: SdSheetColumnControl) => this.trackByFn(i, item));
+
+    this._configColumnObjDiffer = this._keyValueDiffers.find(this._config?.columnObj ?? {})
+      .create();
   }
 
   public async ngOnInit(): Promise<void> {
@@ -951,7 +952,7 @@ export class SdSheetControl implements DoCheck, OnInit {
             const rowIndex = rowEls.indexOf(rowEl);
             if (rowIndex < 0) return;
 
-            const itemDef = this._getDisplayItemDefs().filter(item1 => item1.visible)[rowIndex];
+            const itemDef = this.displayItemDefs.filter(item1 => item1.visible)[rowIndex];
             if (itemDef === undefined) return;
 
             if (this.autoSelect === "focus") {
@@ -1041,12 +1042,72 @@ export class SdSheetControl implements DoCheck, OnInit {
     this._cdr.markForCheck();
   }
 
+  private readonly _prevData: { [key: string]: any } = {};
+
   public ngDoCheck(): void {
-    if (this._itemsDiffer.diff(this.items)) {
+    const itemsChanges = this._itemsDiffer.diff(this.items);
+    const selectedItemsChanges = this._selectedItemsDiffer.diff(this.selectedItems);
+    const expandedItemsChanges = this._expandedItemsDiffer.diff(this.expandedItems);
+    const columnControlsChanges = this._columnControlsDiffer.diff(this.columnControls);
+    const configColumnObjChanges = this._configColumnObjDiffer.diff(this._config?.columnObj ?? {});
+
+    const isPageItemCountChange = this._prevData.pageItemCount !== this.pageItemCount;
+    if (isPageItemCountChange) this._prevData.pageItemCount = this.pageItemCount;
+
+    const isPageChange = this._prevData.page !== this.page;
+    if (isPageChange) this._prevData.page = this.page;
+
+    const isKeyChange = this._prevData.key !== this.key;
+    if (isKeyChange) this._prevData.key = this.key;
+
+    const isSelectModeChange = this._prevData.selectMode !== this.selectMode;
+    if (isSelectModeChange) this._prevData.selectMode = this.selectMode;
+
+    const isGetItemSelectableFnChange = this._prevData.getItemSelectableFn !== this.getItemSelectableFn;
+    if (isGetItemSelectableFnChange) this._prevData.getItemSelectableFn = this.getItemSelectableFn;
+
+    const isGetChildrenFnChange = this._prevData.getChildrenFn !== this.getChildrenFn;
+    if (isGetChildrenFnChange) this._prevData.getChildrenFn = this.getChildrenFn;
+
+    if (itemsChanges || selectedItemsChanges || expandedItemsChanges || columnControlsChanges || configColumnObjChanges) {
       this._cdr.markForCheck();
     }
-    if (this._selectedItemsDiffer.diff(this.selectedItems)) {
-      this._cdr.markForCheck();
+
+    if (isPageItemCountChange || itemsChanges || isPageChange) {
+      if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
+        this.displayItems = this.items.slice(this.page * this.pageItemCount, (this.page + 1) * this.pageItemCount);
+      }
+      else {
+        if (itemsChanges) {
+          this.displayItems = this.items;
+        }
+      }
+    }
+
+    if (
+      (expandedItemsChanges || isSelectModeChange || isGetItemSelectableFnChange || isGetChildrenFnChange || isGetChildrenFnChange) ||
+      (isPageItemCountChange || itemsChanges || isPageChange) // displayItems
+    ) {
+      this.displayItemDefs = this._getDisplayItemDefs();
+    }
+
+    if (columnControlsChanges) {
+      this.hasHeaderGroup = (this.columnControls?.filter(item => item.group !== undefined).length ?? 0) > 0;
+      this.hasSummaryGroup = (this.columnControls?.filter(item => Boolean(item.summaryTemplateRef)).length ?? 0) > 0;
+    }
+
+    if (columnControlsChanges || isKeyChange || configColumnObjChanges) {
+      this.fixedColumnControls = this._getColumnControlsOfFixType(true);
+      this.nonFixedColumnControls = this._getColumnControlsOfFixType(false);
+
+      this.columnWidthPixelMap = this.columnControls?.toArray()
+        .toMap(item => item.guid, item => this._getColumnWidthPixel(item)) ?? new Map<string, number>();
+
+      this.fixedHeaderGroups = this._getHeaderGroups(this.fixedColumnControls);
+      this.nonFixedHeaderGroups = this._getHeaderGroups(this.nonFixedColumnControls);
+
+      this.isGroupLastColumMap = this.columnControls?.toArray()
+        .toMap(item => item.guid, item => this._getIsGroupLastColumn(item)) ?? new Map<string, boolean>();
     }
   }
 
@@ -1085,7 +1146,7 @@ export class SdSheetControl implements DoCheck, OnInit {
       }
       else {
         this.selectedItems = [
-          ...this._getDisplayItemDefs()
+          ...this.displayItemDefs
             .filter(item => item.selectable)
             .map(item => item.item)
         ];
@@ -1160,9 +1221,8 @@ export class SdSheetControl implements DoCheck, OnInit {
   }
 
   public onPageChange(page: number): void {
-    // this.page = page;
-    // this.pageChange.emit(this.page);
-    this.pageChange.emit(page);
+    this.page = page;
+    this.pageChange.emit(this.page);
   }
 
   public async onConfigButtonClick(): Promise<void> {
@@ -1236,13 +1296,7 @@ export class SdSheetControl implements DoCheck, OnInit {
       if (event.key === "F2") {
         event.preventDefault();
 
-        const firstForcusableEl = cellEl.findFocusableAll()[0];
-        if (firstForcusableEl !== undefined) {
-          firstForcusableEl.focus();
-        }
-        else {
-          cellEl.focus();
-        }
+        this._setCellEditMode(cellEl);
       }
       else if (event.key === "ArrowDown") {
         event.preventDefault();
@@ -1293,9 +1347,15 @@ export class SdSheetControl implements DoCheck, OnInit {
     else {
       if (event.key === "Escape") {
         event.preventDefault();
+
+        this._zone.run(() => {
+          this._editCell = "";
+          this._cdr.markForCheck();
+        });
+
         cellEl.focus();
       }
-      else if ((event.ctrlKey && event.key === "ArrowDown") || event.key === "Enter") {
+      else if ((event.ctrlKey && event.altKey && event.key === "ArrowDown") || event.key === "Enter") {
         event.preventDefault();
 
         const currCellAddr = this._getCellAddress(cellEl);
@@ -1304,15 +1364,9 @@ export class SdSheetControl implements DoCheck, OnInit {
         const nextRowCellEl = this._getCellEl(currCellAddr.r + 1, currCellAddr.c);
         if (!nextRowCellEl) return;
 
-        const firstForcusableEl = nextRowCellEl.findFocusableAll()[0];
-        if (firstForcusableEl !== undefined) {
-          firstForcusableEl.focus();
-        }
-        else {
-          nextRowCellEl.focus();
-        }
+        this._setCellEditMode(nextRowCellEl);
       }
-      else if (event.ctrlKey && event.key === "ArrowUp") {
+      else if (event.ctrlKey && event.altKey && event.key === "ArrowUp") {
         event.preventDefault();
 
         const currCellAddr = this._getCellAddress(cellEl);
@@ -1321,15 +1375,9 @@ export class SdSheetControl implements DoCheck, OnInit {
         const prevRowCellEl = this._getCellEl(currCellAddr.r - 1, currCellAddr.c);
         if (!prevRowCellEl) return;
 
-        const firstForcusableEl = prevRowCellEl.findFocusableAll()[0];
-        if (firstForcusableEl !== undefined) {
-          firstForcusableEl.focus();
-        }
-        else {
-          prevRowCellEl.focus();
-        }
+        this._setCellEditMode(prevRowCellEl);
       }
-      /*else if (event.ctrlKey && event.key === "ArrowLeft") {
+      else if (event.ctrlKey && event.altKey && event.key === "ArrowLeft") {
         event.preventDefault();
 
         const currCellAddr = this._getCellAddress(cellEl);
@@ -1338,15 +1386,9 @@ export class SdSheetControl implements DoCheck, OnInit {
         const prevColCellEl = this._getCellEl(currCellAddr.r, currCellAddr.c - 1);
         if (!prevColCellEl) return;
 
-        const firstForcusableEl = prevColCellEl.findFocusableAll()[0];
-        if (firstForcusableEl !== undefined) {
-          firstForcusableEl.focus();
-        }
-        else {
-          prevColCellEl.focus();
-        }
+        this._setCellEditMode(prevColCellEl);
       }
-      else if (event.ctrlKey && event.key === "ArrowRight") {
+      else if (event.ctrlKey && event.altKey && event.key === "ArrowRight") {
         event.preventDefault();
 
         const currCellAddr = this._getCellAddress(cellEl);
@@ -1355,14 +1397,8 @@ export class SdSheetControl implements DoCheck, OnInit {
         const nextColCellEl = this._getCellEl(currCellAddr.r, currCellAddr.c + 1);
         if (!nextColCellEl) return;
 
-        const firstForcusableEl = nextColCellEl.findFocusableAll()[0];
-        if (firstForcusableEl !== undefined) {
-          firstForcusableEl.focus();
-        }
-        else {
-          nextColCellEl.focus();
-        }
-      }*/
+        this._setCellEditMode(nextColCellEl);
+      }
       else if (event.key === "Tab" && !event.shiftKey) {
         event.preventDefault();
 
@@ -1371,25 +1407,13 @@ export class SdSheetControl implements DoCheck, OnInit {
 
         const nextColCellEl = this._getCellEl(currCellAddr.r, currCellAddr.c + 1);
         if (nextColCellEl) {
-          const firstForcusableEl = nextColCellEl.findFocusableAll()[0];
-          if (firstForcusableEl !== undefined) {
-            firstForcusableEl.focus();
-          }
-          else {
-            nextColCellEl.focus();
-          }
+          this._setCellEditMode(nextColCellEl);
         }
         else {
           const nextRowCellEl = this._getCellEl(currCellAddr.r + 1, 1);
           if (!nextRowCellEl) return;
 
-          const firstForcusableEl = nextRowCellEl.findFocusableAll()[0];
-          if (firstForcusableEl !== undefined) {
-            firstForcusableEl.focus();
-          }
-          else {
-            nextRowCellEl.focus();
-          }
+          this._setCellEditMode(nextRowCellEl);
         }
       }
       else if (event.key === "Tab" && event.shiftKey) {
@@ -1400,34 +1424,37 @@ export class SdSheetControl implements DoCheck, OnInit {
 
         const prevColCellEl = this._getCellEl(currCellAddr.r, currCellAddr.c - 1);
         if (prevColCellEl) {
-          const firstForcusableEl = prevColCellEl.findFocusableAll()[0];
-          if (firstForcusableEl !== undefined) {
-            firstForcusableEl.focus();
-          }
-          else {
-            prevColCellEl.focus();
-          }
+          this._setCellEditMode(prevColCellEl);
         }
         else {
           const prevRowCellEl = this._getCellEl(currCellAddr.r - 1, "last");
           if (!prevRowCellEl) return;
 
-          const firstForcusableEl = prevRowCellEl.findFocusableAll()[0];
-          if (firstForcusableEl !== undefined) {
-            firstForcusableEl.focus();
-          }
-          else {
-            prevRowCellEl.focus();
-          }
+          this._setCellEditMode(prevRowCellEl);
         }
       }
+    }
+  }
+
+  private _setCellEditMode(cellEl: HTMLElement): void {
+    this._zone.run(() => {
+      this._editCell = (cellEl.getAttribute("sd-row-index") ?? "") + "_" + (cellEl.getAttribute("sd-column-guid") ?? "");
+      this._cdr.markForCheck();
+    });
+
+    const firstForcusableEl = cellEl.findFocusableAll()[0];
+    if (firstForcusableEl !== undefined) {
+      firstForcusableEl.focus();
+    }
+    else {
+      cellEl.focus();
     }
   }
 
   public onColumnOrderingHeaderClick(event: MouseEvent, columnControl: SdSheetColumnControl): void {
     if (columnControl.key === undefined) return;
 
-    /*if (event.shiftKey || event.ctrlKey) {
+    if (event.shiftKey || event.ctrlKey) {
       const orderingItem = this.ordering.single(item => item.key === columnControl.key);
       if (orderingItem) {
         if (orderingItem.desc) {
@@ -1456,39 +1483,7 @@ export class SdSheetControl implements DoCheck, OnInit {
       }
     }
 
-    this.orderingChange.emit(this.ordering);*/
-
-    let ordering = ObjectUtils.clone(this.ordering);
-    if (event.shiftKey || event.ctrlKey) {
-      const orderingItem = ordering.single(item => item.key === columnControl.key);
-      if (orderingItem) {
-        if (orderingItem.desc) {
-          ordering.remove(orderingItem);
-        }
-        else {
-          orderingItem.desc = !orderingItem.desc;
-        }
-      }
-      else {
-        ordering.push({ key: columnControl.key, desc: false });
-      }
-    }
-    else {
-      if (ordering.length === 1 && ordering[0].key === columnControl.key) {
-        const orderingItem = ordering[0];
-        if (orderingItem.desc) {
-          ordering.remove(orderingItem);
-        }
-        else {
-          orderingItem.desc = !orderingItem.desc;
-        }
-      }
-      else {
-        ordering = [{ key: columnControl.key, desc: false }];
-      }
-    }
-
-    this.orderingChange.emit(ordering);
+    this.orderingChange.emit(this.ordering);
   }
 
   private _getCellAddress(cellEl: HTMLElement): { r: number; c: number } | undefined {
@@ -1521,7 +1516,7 @@ export class SdSheetControl implements DoCheck, OnInit {
     return columnControls.groupBy(item => item.group)
       .map(item => ({
         name: item.key,
-        widthPixel: item.values.sum(item1 => this.getColumnWidthPixel(item1))
+        widthPixel: item.values.sum(item1 => this.columnWidthPixelMap.get(item1.guid)!)
       }));
   }
 

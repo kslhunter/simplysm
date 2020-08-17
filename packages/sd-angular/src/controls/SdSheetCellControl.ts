@@ -10,6 +10,7 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
     :host {
       display: block;
       padding: var(--sd-sheet-padding-v) var(--sd-sheet-padding-h);
+      height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
     }
   `]
 })

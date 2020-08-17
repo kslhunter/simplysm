@@ -1,7 +1,6 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -16,35 +15,47 @@ import { SdInputValidate } from "../commons/SdInputValidate";
 import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 
+// TODO: HISTORY 기록을 통해 CTRL+Z 수동 구현
+
 @Component({
   selector: "sd-textfield",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <input #input
-           *ngIf="!multiline"
-           [value]="controlValue"
-           [type]="controlType"
-           [attr.placeholder]="placeholder"
-           [disabled]="disabled"
-           [required]="required"
-           [attr.min]="min"
-           [attr.max]="max"
-           [attr.step]="controlStep"
-           [attr.pattern]="pattern"
-           [attr.class]="safeHtml(inputClass)"
-           [attr.style]="safeHtml(inputStyle)"
-           (input)="onInput()"/>
-    <textarea #input
-              *ngIf="multiline"
-              [value]="controlValue"
-              [attr.placeholder]="placeholder"
-              [disabled]="disabled"
-              [required]="required"
-              [attr.rows]="rows"
-              [attr.class]="safeHtml(inputClass)"
-              [attr.style]="safeHtml((controlResize ? 'resize: ' + controlResize + ';' : '') + inputStyle)"
-              (input)="onInput()"></textarea>
-    <div class="_invalid-indicator"></div>`,
+    <ng-container *ngIf="!multiline">
+      <input #input
+             *ngIf="disabled || !readonly"
+             [value]="controlValue"
+             [type]="controlType"
+             [attr.placeholder]="placeholder"
+             [disabled]="disabled"
+             [required]="required"
+             [attr.min]="min"
+             [attr.max]="max"
+             [attr.step]="controlStep"
+             [attr.pattern]="pattern"
+             [attr.class]="inputClass"
+             [attr.style]="inputSafeStyle"
+             (input)="onInput()"/>
+      <div *ngIf="!disabled && readonly"
+           [attr.class]="'_readonly ' + inputClass"
+           [attr.style]="inputSafeStyle">
+        {{ controlValue }}
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="multiline">
+      <textarea #input
+                [value]="controlValue"
+                [attr.placeholder]="placeholder"
+                [disabled]="disabled"
+                [required]="required"
+                [attr.rows]="rows"
+                [attr.class]="inputClass"
+                [attr.style]="inputSafeStyle"
+                (input)="onInput()"></textarea>
+    </ng-container>
+
+    <div class="_invalid-indicator" [class._has-error-message]="errorMessage"></div>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
 
@@ -52,7 +63,8 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
       position: relative;
 
       > input,
-      > textarea {
+      > textarea,
+      > div._readonly {
         @include form-control-base();
 
         background: var(--theme-color-secondary-lightest);
@@ -62,14 +74,17 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
         &::-webkit-input-placeholder {
           color: var(--text-brightness-lighter);
         }
-
-        &:disabled {
-          background: var(--theme-color-grey-lightest) !important;
-          color: var(--text-brightness-light);
-        }
       }
 
-      > input {
+
+      > input:disabled,
+      > textarea:disabled {
+        background: var(--theme-color-grey-lightest);
+        color: var(--text-brightness-light);
+      }
+
+      > input,
+      > div._readonly {
         height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
         &::-webkit-outer-spin-button,
@@ -97,11 +112,13 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
         }
       }
 
-      &[sd-type=number] > input {
+      &[sd-type=number] > input,
+      &[sd-type=number] > div._readonly {
         text-align: right;
       }
 
       &[sd-inline=true] > input,
+      &[sd-inline=true] > div._readonly,
       &[sd-inline=true] > textarea {
         display: inline-block;
         width: auto;
@@ -109,6 +126,7 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
       }
 
       &[sd-size=sm] > input,
+      &[sd-size=sm] > div._readonly,
       &[sd-size=sm] > textarea {
         padding: var(--gap-xs) var(--gap-sm);
 
@@ -118,11 +136,13 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
         }
       }
 
-      &[sd-size=sm] > input {
+      &[sd-size=sm] > input,
+      &[sd-size=sm] > div._readonly {
         height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
       }
 
       &[sd-size=lg] > input,
+      &[sd-size=lg] > div._readonly,
       &[sd-size=lg] > textarea {
         padding: var(--gap-default) var(--gap-lg);
 
@@ -132,12 +152,14 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
         }
       }
 
-      &[sd-size=lg] > input {
+      &[sd-size=lg] > input,
+      &[sd-size=lg] > div._readonly {
         height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
       }
 
 
       &[sd-inset=true] > input,
+      &[sd-inset=true] > div._readonly,
       &[sd-inset=true] > textarea {
         border: none;
         border-radius: 0;
@@ -148,16 +170,24 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
         }
       }
 
+      &[sd-inset=true] > div._readonly {
+        //background: white;
+        color: var(--text-brightness-default);
+      }
+
       &[sd-inset=true] {
-        > input {
+        > input,
+        > div._readonly {
           height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
         }
 
-        &[sd-size=sm] > input {
+        &[sd-size=sm] > input,
+        &[sd-size=sm] > div._readonly {
           height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
         }
 
-        &[sd-size=lg] > input {
+        &[sd-size=lg] > input,
+        &[sd-size=lg] > div._readonly {
           height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
         }
 
@@ -172,7 +202,8 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
       }
 
       > input:invalid + ._invalid-indicator,
-      > textarea:invalid + ._invalid-indicator {
+      > textarea:invalid + ._invalid-indicator,
+      > ._invalid-indicator._has-error-message {
         @include invalid-indicator();
       }
     }
@@ -202,6 +233,10 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
   @Input()
   @SdInputValidate(Boolean)
   public disabled?: boolean;
+
+  @Input()
+  @SdInputValidate(Boolean)
+  public readonly?: boolean;
 
   @Input()
   @SdInputValidate(Boolean)
@@ -276,83 +311,24 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
 
   public controlType = "text";
   public controlValue = "";
+  public controlStep: number | string = "any";
+  public inputSafeStyle: SafeHtml | undefined;
+  public errorMessage = "";
 
-  /*public get controlType(): string {
-    return this.type === "number" ? "text" :
-      this.type === "datetime" ? "datetime-local" :
-        this.type === "datetime-sec" ? "datetime-local" :
-          this.type === "time-sec" ? "time" :
-            this.type;
-  }
-
-  public get controlValue(): string {
-    if (this.value === undefined) {
-      return "";
-    }
-    else if (this.type === "number" && typeof this.value === "number") {
-      return this.value.toLocaleString(undefined, {maximumFractionDigits: 10});
-    }
-    else if (this.type === "datetime" && this.value instanceof DateTime) {
-      return this.value.toFormatString("yyyy-MM-ddTHH:mm");
-    }
-    else if (this.type === "datetime-sec" && this.value instanceof DateTime) {
-      return this.value.toFormatString("yyyy-MM-ddTHH:mm:ss");
-    }
-    else if (this.type === "year" && this.value instanceof DateOnly) {
-      return this.value.toFormatString("yyyy");
-    }
-    else if (this.type === "month" && this.value instanceof DateOnly) {
-      return this.value.toFormatString("yyyy-MM");
-    }
-    else if (this.type === "date" && this.value instanceof DateOnly) {
-      return this.value.toFormatString("yyyy-MM-dd");
-    }
-    else if (this.type === "time" && this.value instanceof DateOnly) {
-      return this.value.toFormatString("HH:mm");
-    }
-    else if (this.type === "time-sec" && this.value instanceof DateOnly) {
-      return this.value.toFormatString("HH:mm:ss");
-    }
-    else if (typeof this.value === "string") {
-      return this.value;
-    }
-
-    else {
-      throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
-    }
-  }*/
-
-  public get controlStep(): number | string | undefined {
-    if (this.step !== undefined) {
-      return this.step;
-    }
-    else if (this.type === "datetime-sec") {
-      return 1;
-    }
-    else if (this.type === "time-sec") {
-      return 1;
-    }
-
-    return "any";
-  }
-
-  public get controlResize(): "vertical" | "horizontal" | "none" | undefined {
-    return this.resize === "vertical" ? "vertical" :
-      this.resize === "horizontal" ? "horizontal" :
-        this.resize ? undefined : "none";
-  }
-
-  public constructor(private readonly _sanitization: DomSanitizer,
-                     private readonly _cdr: ChangeDetectorRef) {
+  public constructor(private readonly _sanitization: DomSanitizer) {
   }
 
   public ngAfterViewInit(): void {
-    const inputEl = this.inputElRef!.nativeElement;
-    const errorMessage = this._validate();
-    inputEl.setCustomValidity(errorMessage);
+    this.errorMessage = this._validate();
+
+    const inputEl = this.inputElRef?.nativeElement;
+    if (inputEl) {
+      inputEl.setCustomValidity(this.errorMessage);
+    }
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
+    // controlType
     if (Object.keys(changes).includes("type")) {
       this.controlType = this.type === "number" ? "text" :
         this.type === "datetime" ? "datetime-local" :
@@ -361,6 +337,7 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
               this.type;
     }
 
+    // controlValue
     if (Object.keys(changes).includes("value") || Object.keys(changes).includes("type")) {
       if (this.value === undefined) {
         this.controlValue = "";
@@ -397,10 +374,50 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
       }
     }
 
-    this._cdr.markForCheck();
+    // controlStep
+    if (Object.keys(changes).includes("step") || Object.keys(changes).includes("type")) {
+      if (this.step !== undefined) {
+        this.controlStep = this.step;
+      }
+      else if (this.type === "datetime-sec") {
+        this.controlStep = 1;
+      }
+      else if (this.type === "time-sec") {
+        this.controlStep = 1;
+      }
+      else {
+        this.controlStep = "any";
+      }
+    }
+
+    // inputStyleSafeHtml
+    if (Object.keys(changes).includes("inputStyle") || Object.keys(changes).includes("resize") || Object.keys(changes).includes("multiline")) {
+      if (this.multiline) {
+        const controlResize = this.resize === "vertical" ? "vertical" :
+          this.resize === "horizontal" ? "horizontal" :
+            this.resize ? undefined : "none";
+
+        this.inputSafeStyle = this._getSafeHtml((`resize: ${controlResize};`) + this.inputStyle);
+      }
+      else {
+        this.inputSafeStyle = this._getSafeHtml(this.inputStyle);
+      }
+    }
+
+    // errorMessages
+    if (
+      Object.keys(changes).includes("value") ||
+      Object.keys(changes).includes("type") ||
+      Object.keys(changes).includes("required") ||
+      Object.keys(changes).includes("validatorFn") ||
+      Object.keys(changes).includes("max") ||
+      Object.keys(changes).includes("min")
+    ) {
+      this.errorMessage = this._validate();
+    }
   }
 
-  public safeHtml(value?: string): SafeHtml | undefined {
+  private _getSafeHtml(value?: string): SafeHtml | undefined {
     return value !== undefined ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
   }
 
@@ -447,8 +464,8 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
       this.value = inputEl.value;
     }
 
-    const errorMessage = this._validate();
-    inputEl.setCustomValidity(errorMessage);
+    this.errorMessage = this._validate();
+    inputEl.setCustomValidity(this.errorMessage);
 
     this.valueChange.emit(this.value);
   }
@@ -457,6 +474,9 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
     const errorMessages: string[] = [];
 
     if (this.value === undefined) {
+      if (this.required) {
+        errorMessages.push("값을 입력하세요.");
+      }
     }
     else if (this.type === "number") {
       if (typeof this.value !== "number") {

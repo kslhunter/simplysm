@@ -24,6 +24,7 @@ export class SdModalProvider {
                                                           title: string,
                                                           param: T["_tInput"],
                                                           options?: {
+                                                            key?: string;
                                                             hideCloseButton?: boolean;
                                                             useCloseByBackdrop?: boolean;
                                                             useCloseByEscapeKey?: boolean;
@@ -60,6 +61,7 @@ export class SdModalProvider {
           }
         };
 
+        modalEntryRef.instance.key = options?.key;
         modalEntryRef.instance.title = title;
         modalEntryRef.instance.hideCloseButton = options?.hideCloseButton;
         modalEntryRef.instance.useCloseByBackdrop = options?.useCloseByBackdrop;

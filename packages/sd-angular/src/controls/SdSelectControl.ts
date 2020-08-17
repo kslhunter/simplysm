@@ -23,7 +23,8 @@ import { SdSelectItemControl } from "./SdSelectItemControl";
   selector: "sd-select",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-dropdown #dropdown [disabled]="disabled" (open)="open.emit()">
+    <sd-dropdown #dropdown [disabled]="disabled" (open)="open.emit()"
+                 [content.class]="contentClass">
       <div #content></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">
@@ -172,9 +173,9 @@ import { SdSelectItemControl } from "./SdSelectItemControl";
           outline: 1px solid var(--theme-color-primary-default);
           outline-offset: -1px;
         }
-
+        
         &[sd-disabled=true] /deep/ > sd-dropdown > div {
-          background: white !important;
+          background: white;
           //color: var(--text-brightness-light);
           color: var(--text-brightness-default);
           cursor: default;
@@ -292,6 +293,10 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
   }
 
   private _selectMode: "single" | "multi" = "single";
+
+  @Input("content.class")
+  @SdInputValidate(String)
+  public contentClass?: string;
 
   @HostBinding("attr.sd-invalid")
   public get invalid(): boolean {

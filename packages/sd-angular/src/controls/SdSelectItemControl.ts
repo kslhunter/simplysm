@@ -82,6 +82,7 @@ export class SdSelectItemControl implements AfterViewInit, AfterContentChecked {
 
   public contentHTML = "";
   public el: HTMLElement;
+  public contentEl?: HTMLElement;
 
   @Output()
   public readonly contentHTMLChange = new EventEmitter<string>();
@@ -94,12 +95,14 @@ export class SdSelectItemControl implements AfterViewInit, AfterContentChecked {
   }
 
   public ngAfterViewInit(): void {
-    this.contentHTML = this.el.findFirst("> ._content")?.innerHTML ?? "";
+    this.contentEl = this.el.findFirst("> ._content");
+
+    this.contentHTML = this.contentEl?.innerHTML ?? "";
     this._selectControl.onItemControlContentChanged(this);
   }
 
   public ngAfterContentChecked(): void {
-    const newContentHTML = this.el.findFirst("> ._content")?.innerHTML ?? "";
+    const newContentHTML = this.contentEl?.innerHTML ?? "";
     if (newContentHTML !== this.contentHTML) {
       this.contentHTML = newContentHTML;
       this._selectControl.onItemControlContentChanged(this);

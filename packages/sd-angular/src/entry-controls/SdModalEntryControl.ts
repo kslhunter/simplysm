@@ -1,6 +1,7 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -13,8 +14,8 @@ import {
 } from "@angular/core";
 import { SdInputValidate } from "../commons/SdInputValidate";
 import { NeverEntryError } from "@simplysm/sd-core-common";
+import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 
-// TODO: key 에 따른 크기, 위치 저장
 @Component({
   selector: "sd-modal",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -206,7 +207,7 @@ import { NeverEntryError } from "@simplysm/sd-core-common";
         transition: transform .3s ease-in-out;
       }
 
-      &[sd-open=true] {
+      &[sd-open=true][sd-init=true] {
         opacity: 1;
         pointer-events: auto;
 
@@ -232,7 +233,7 @@ import { NeverEntryError } from "@simplysm/sd-core-common";
           }
         }
 
-        &[sd-open=true] {
+        &[sd-open=true][sd-init=true] {
           > ._dialog {
             pointer-events: auto;
             opacity: 1;
@@ -268,6 +269,10 @@ import { NeverEntryError } from "@simplysm/sd-core-common";
   `]
 })
 export class SdModalEntryControl implements OnInit, AfterViewInit {
+  @Input()
+  @SdInputValidate(String)
+  public key?: string;
+
   @Input()
   @SdInputValidate({ type: String, notnull: true })
   public title = "창";
@@ -313,12 +318,19 @@ export class SdModalEntryControl implements OnInit, AfterViewInit {
   @HostBinding("attr.sd-position")
   public position?: "bottom-right" | "top-right";
 
+  private _config?: ISdModalConfigVM;
+
   private readonly _el: HTMLElement;
   private _dialogEl!: HTMLElement;
   private _dialogHeaderEl!: HTMLElement;
 
+  @HostBinding("attr.sd-init")
+  public initialized = false;
+
   public constructor(private readonly _elRef: ElementRef,
-                     private readonly _zone: NgZone) {
+                     private readonly _zone: NgZone,
+                     private readonly _systemConfig: SdSystemConfigRootProvider,
+                     private readonly _cdr: ChangeDetectorRef) {
     this._el = this._elRef.nativeElement;
   }
 
@@ -356,12 +368,19 @@ export class SdModalEntryControl implements OnInit, AfterViewInit {
     });
   }
 
-  public ngAfterViewInit(): void {
-    this._dialogEl.style.position = "absolute";
-    this._dialogEl.style.left = `${this._dialogEl.offsetLeft}px`;
-    this._dialogEl.style.top = `${this._dialogEl.offsetTop}px`;
-    this._dialogEl.style.right = `auto`;
-    this._dialogEl.style.bottom = `auto`;
+  public async ngAfterViewInit(): Promise<void> {
+    if (this.key !== undefined) {
+      this._config = await this._systemConfig.getAsync(`sd-modal.${this.key}`);
+      if (this._config) {
+        this._dialogEl.style.position = this._config.position;
+        this._dialogEl.style.left = this._config.left;
+        this._dialogEl.style.top = this._config.top;
+        this._dialogEl.style.right = this._config.right;
+        this._dialogEl.style.bottom = this._config.bottom;
+      }
+    }
+    this.initialized = true;
+    this._cdr.markForCheck();
   }
 
   public onCloseButtonClick(): void {
@@ -450,12 +469,21 @@ export class SdModalEntryControl implements OnInit, AfterViewInit {
       }
     };
 
-    const stopDrag = (e: MouseEvent): void => {
+    const stopDrag = async (e: MouseEvent): Promise<void> => {
       e.stopPropagation();
       e.preventDefault();
 
       document.documentElement.removeEventListener("mousemove", doDrag, false);
       document.documentElement.removeEventListener("mouseup", stopDrag, false);
+
+      this._config = {
+        position: this._dialogEl.style.position,
+        left: this._dialogEl.style.left,
+        top: this._dialogEl.style.top,
+        right: this._dialogEl.style.right,
+        bottom: this._dialogEl.style.bottom
+      };
+      await this._systemConfig.setAsync(`sd-modal.${this.key}`, this._config);
     };
     document.documentElement.addEventListener("mousemove", doDrag, false);
     document.documentElement.addEventListener("mouseup", stopDrag, false);
@@ -486,15 +514,32 @@ export class SdModalEntryControl implements OnInit, AfterViewInit {
       }
     };
 
-    const stopDrag = (e: MouseEvent): void => {
+    const stopDrag = async (e: MouseEvent): Promise<void> => {
       e.stopPropagation();
       e.preventDefault();
 
       document.documentElement.removeEventListener("mousemove", doDrag, false);
       document.documentElement.removeEventListener("mouseup", stopDrag, false);
+
+      this._config = {
+        position: this._dialogEl.style.position,
+        left: this._dialogEl.style.left,
+        top: this._dialogEl.style.top,
+        right: this._dialogEl.style.right,
+        bottom: this._dialogEl.style.bottom
+      };
+      await this._systemConfig.setAsync(`sd-modal.${this.key}`, this._config);
     };
 
     document.documentElement.addEventListener("mousemove", doDrag, false);
     document.documentElement.addEventListener("mouseup", stopDrag, false);
   }
+}
+
+export interface ISdModalConfigVM {
+  position: string;
+  left: string;
+  top: string;
+  right: string;
+  bottom: string;
 }
