@@ -1,7 +1,6 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -94,6 +93,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
           > ._header {
             background: var(--theme-color-primary-default);
             color: var(--text-brightness-rev-default);
+            user-select: none;
             //border-bottom: 1px solid var(--theme-color-primary-darker);
 
             ._title {
@@ -101,7 +101,8 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
               padding: var(--gap-sm) var(--gap-default);
             }
 
-            ._close-button {
+            ._close-button,
+            ._clear-config-button {
               display: inline-block;
               float: right;
               cursor: pointer;
@@ -199,12 +200,12 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
       }
 
       opacity: 0;
-      transition: opacity .3s ease-in-out;
+      transition: opacity .1s ease-in-out;
       pointer-events: none;
 
       > ._dialog {
         transform: translateY(-25px);
-        transition: transform .3s ease-in-out;
+        transition: transform .1s ease-in-out;
       }
 
       &[sd-open=true][sd-init=true] {
@@ -224,7 +225,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
         }
 
         > ._dialog {
-          pointer-events: none;
+          pointer-events: auto;
           opacity: 0;
           @include elevation(4);
 
@@ -234,6 +235,8 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
         }
 
         &[sd-open=true][sd-init=true] {
+          pointer-events: none;
+
           > ._dialog {
             pointer-events: auto;
             opacity: 1;
@@ -324,13 +327,9 @@ export class SdModalEntryControl implements OnInit, AfterViewInit {
   private _dialogEl!: HTMLElement;
   private _dialogHeaderEl!: HTMLElement;
 
-  @HostBinding("attr.sd-init")
-  public initialized = false;
-
   public constructor(private readonly _elRef: ElementRef,
                      private readonly _zone: NgZone,
-                     private readonly _systemConfig: SdSystemConfigRootProvider,
-                     private readonly _cdr: ChangeDetectorRef) {
+                     private readonly _systemConfig: SdSystemConfigRootProvider) {
     this._el = this._elRef.nativeElement;
   }
 
@@ -377,10 +376,11 @@ export class SdModalEntryControl implements OnInit, AfterViewInit {
         this._dialogEl.style.top = this._config.top;
         this._dialogEl.style.right = this._config.right;
         this._dialogEl.style.bottom = this._config.bottom;
+        this._dialogEl.style.width = this._config.width;
+        this._dialogEl.style.height = this._config.height;
       }
     }
-    this.initialized = true;
-    this._cdr.markForCheck();
+    this._el.setAttribute("sd-init", "true");
   }
 
   public onCloseButtonClick(): void {
@@ -481,7 +481,9 @@ export class SdModalEntryControl implements OnInit, AfterViewInit {
         left: this._dialogEl.style.left,
         top: this._dialogEl.style.top,
         right: this._dialogEl.style.right,
-        bottom: this._dialogEl.style.bottom
+        bottom: this._dialogEl.style.bottom,
+        width: this._dialogEl.style.width,
+        height: this._dialogEl.style.height
       };
       await this._systemConfig.setAsync(`sd-modal.${this.key}`, this._config);
     };
@@ -526,7 +528,9 @@ export class SdModalEntryControl implements OnInit, AfterViewInit {
         left: this._dialogEl.style.left,
         top: this._dialogEl.style.top,
         right: this._dialogEl.style.right,
-        bottom: this._dialogEl.style.bottom
+        bottom: this._dialogEl.style.bottom,
+        width: this._dialogEl.style.width,
+        height: this._dialogEl.style.height
       };
       await this._systemConfig.setAsync(`sd-modal.${this.key}`, this._config);
     };
@@ -542,4 +546,6 @@ export interface ISdModalConfigVM {
   top: string;
   right: string;
   bottom: string;
+  width: string;
+  height: string;
 }

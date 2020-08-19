@@ -8,10 +8,13 @@ import { SdInputValidate } from "../commons/SdInputValidate";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
+    @import "../../scss/mixins";
+    
     :host {
       display: none;
       width: 100%;
       height: 100%;
+      overflow: auto;
 
       &[sd-selected=true] {
         display: block;

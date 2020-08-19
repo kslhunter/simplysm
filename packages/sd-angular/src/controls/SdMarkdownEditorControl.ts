@@ -155,7 +155,7 @@ import * as marked from "marked";
         }
       }
 
-      &[sd-view-state=preview] {
+      /*&[sd-view-state=preview] {
         > ._toolbar {
           position: absolute;
           z-index: 1;
@@ -180,7 +180,7 @@ import * as marked from "marked";
             }
           }
         }
-      }
+      }*/
 
       > ._editor {
         position: relative;
@@ -238,6 +238,7 @@ import * as marked from "marked";
         overflow: auto;
         background: white;
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) + 2px);
+        border: 1px solid var(--sd-border-color);
 
         /deep/ {
           ol {

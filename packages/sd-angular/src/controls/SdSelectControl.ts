@@ -125,7 +125,7 @@ import { Uuid } from "@simplysm/sd-core-common";
       &[sd-inline=true] {
         display: inline-block;
         width: auto;
-        vertical-align: top;
+        vertical-align: middle;
       }
 
       &[sd-size=sm] /deep/ > sd-dropdown > div {

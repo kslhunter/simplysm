@@ -2,9 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   ContentChildren,
+  EventEmitter,
   forwardRef,
   HostBinding,
   Input,
+  Output,
   QueryList
 } from "@angular/core";
 import { SdInputValidate } from "../commons/SdInputValidate";
@@ -19,7 +21,7 @@ import { sdIconNames } from "../commons/sdIconNames";
   template: `
     <div [attr.class]="safeHtml('_content ' + contentClass)"
          [attr.style]="safeHtml(contentStyle)"
-         (click)="open = !open">
+         (click)="open = !open; openChange.emit(open)">
       <sd-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon" fixedWidth></sd-icon>
       <ng-content></ng-content>
 
@@ -115,6 +117,9 @@ export class SdListItemControl {
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-open")
   public open?: boolean;
+
+  @Output()
+  public readonly openChange = new EventEmitter<boolean | undefined>();
 
   @Input()
   @SdInputValidate(Boolean)
