@@ -2,6 +2,7 @@ import { DateTime } from "../types/DateTime";
 import { DateOnly } from "../types/DateOnly";
 import { Time } from "../types/Time";
 import { Uuid } from "../types/Uuid";
+import { ObjectUtils } from "./ObjectUtils";
 
 export class JsonConvert {
   public static stringify(obj: any,
@@ -72,35 +73,36 @@ export class JsonConvert {
   }
 
   public static parse(json: string): any {
-    return JSON.parse(json, (key, value) => {
-      if (value == null) {
-        return undefined;
-      }
-      else if (typeof value === "object" && value.__type__ === "Date") {
-        return new Date(Date.parse(value.data));
-      }
-      else if (typeof value === "object" && value.__type__ === "DateTime") {
-        return DateTime.parse(value.data);
-      }
-      else if (typeof value === "object" && value.__type__ === "DateOnly") {
-        return DateOnly.parse(value.data);
-      }
-      else if (typeof value === "object" && value.__type__ === "Time") {
-        return Time.parse(value.data);
-      }
-      else if (typeof value === "object" && value.__type__ === "Uuid") {
-        return new Uuid(value.data);
-      }
-      else if (typeof value === "object" && value.__type__ === "Error") {
-        const error = new Error(value.data.message);
-        Object.assign(error, value.data);
-        return error;
-      }
-      else if (typeof value === "object" && value.type === "Buffer") {
-        return Buffer.from(value.data);
-      }
+    return ObjectUtils.nullToUndefined(
+      JSON.parse(json, (key, value) => {
+        if (value == null) {
+        }
+        else if (typeof value === "object" && value.__type__ === "Date") {
+          return new Date(Date.parse(value.data));
+        }
+        else if (typeof value === "object" && value.__type__ === "DateTime") {
+          return DateTime.parse(value.data);
+        }
+        else if (typeof value === "object" && value.__type__ === "DateOnly") {
+          return DateOnly.parse(value.data);
+        }
+        else if (typeof value === "object" && value.__type__ === "Time") {
+          return Time.parse(value.data);
+        }
+        else if (typeof value === "object" && value.__type__ === "Uuid") {
+          return new Uuid(value.data);
+        }
+        else if (typeof value === "object" && value.__type__ === "Error") {
+          const error = new Error(value.data.message);
+          Object.assign(error, value.data);
+          return error;
+        }
+        else if (typeof value === "object" && value.type === "Buffer") {
+          return Buffer.from(value.data);
+        }
 
-      return value;
-    });
+        return value;
+      })
+    );
   }
 }

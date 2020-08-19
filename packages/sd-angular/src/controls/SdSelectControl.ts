@@ -18,6 +18,7 @@ import {
 import { SdInputValidate } from "../commons/SdInputValidate";
 import { SdDropdownControl } from "./SdDropdownControl";
 import { SdSelectItemControl } from "./SdSelectItemControl";
+import { Uuid } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-select",
@@ -173,7 +174,7 @@ import { SdSelectItemControl } from "./SdSelectItemControl";
           outline: 1px solid var(--theme-color-primary-default);
           outline-offset: -1px;
         }
-        
+
         &[sd-disabled=true] /deep/ > sd-dropdown > div {
           background: white;
           //color: var(--text-brightness-light);
@@ -189,6 +190,8 @@ import { SdSelectItemControl } from "./SdSelectItemControl";
   `]
 })
 export class SdSelectControl implements DoCheck, AfterViewInit {
+  public guid = Uuid.new().toString();
+
   @Input()
   public set value(value: any | any[] | undefined) {
     if (this._value !== value) {

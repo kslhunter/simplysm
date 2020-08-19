@@ -339,6 +339,40 @@ export class ObjectUtils {
 
     return obj;
   }
+
+  public static nullToUndefined<T>(obj: T): T | undefined {
+    if (obj == null) {
+      return undefined;
+    }
+
+    if (
+      obj instanceof Date ||
+      obj instanceof DateTime ||
+      obj instanceof DateOnly ||
+      obj instanceof Time
+    ) {
+      return obj;
+    }
+
+    if (obj instanceof Array) {
+      for (let i = 0; i < obj.length; i++) {
+        obj[i] = ObjectUtils.nullToUndefined(obj[i]);
+      }
+      return obj;
+    }
+
+    if (typeof obj === "object") {
+      for (const key of Object.keys(obj)) {
+        if (obj[key] == null) {
+          obj[key] = undefined;
+        }
+      }
+
+      return obj;
+    }
+
+    return obj;
+  }
 }
 
 export type TValidateDef<T> = Type<TypeWrap<T>> | Type<TypeWrap<T>>[] | IValidateDef<T>;

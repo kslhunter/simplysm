@@ -709,6 +709,10 @@ export class SdSheetControl implements DoCheck, OnInit {
   public getChildrenFn?: (index: number, item: any) => any;
 
   @Input()
+  @SdInputValidate(Function)
+  public getInitItemFn?: () => any;
+
+  @Input()
   @SdInputValidate(Boolean)
   public useCardDisplayType?: boolean;
 
@@ -1069,6 +1073,9 @@ export class SdSheetControl implements DoCheck, OnInit {
     const isGetChildrenFnChange = this._prevData.getChildrenFn !== this.getChildrenFn;
     if (isGetChildrenFnChange) this._prevData.getChildrenFn = this.getChildrenFn;
 
+    const isWidthChange = this._prevData.width !== this.columnControls?.toArray().sum(item => item.widthPixel);
+    if (isWidthChange) this._prevData.width = this.columnControls?.toArray().sum(item => item.widthPixel);
+
     if (itemsChanges || selectedItemsChanges || expandedItemsChanges || columnControlsChanges || configColumnObjChanges) {
       this._cdr.markForCheck();
     }
@@ -1096,18 +1103,32 @@ export class SdSheetControl implements DoCheck, OnInit {
       this.hasSummaryGroup = (this.columnControls?.filter(item => Boolean(item.summaryTemplateRef)).length ?? 0) > 0;
     }
 
+    if (columnControlsChanges || isKeyChange || configColumnObjChanges || isWidthChange) {
+      this.columnWidthPixelMap = this.columnControls?.toArray()
+        .toMap(item => item.guid, item => this._getColumnWidthPixel(item)) ?? new Map<string, number>();
+    }
+
     if (columnControlsChanges || isKeyChange || configColumnObjChanges) {
       this.fixedColumnControls = this._getColumnControlsOfFixType(true);
       this.nonFixedColumnControls = this._getColumnControlsOfFixType(false);
-
-      this.columnWidthPixelMap = this.columnControls?.toArray()
-        .toMap(item => item.guid, item => this._getColumnWidthPixel(item)) ?? new Map<string, number>();
 
       this.fixedHeaderGroups = this._getHeaderGroups(this.fixedColumnControls);
       this.nonFixedHeaderGroups = this._getHeaderGroups(this.nonFixedColumnControls);
 
       this.isGroupLastColumMap = this.columnControls?.toArray()
         .toMap(item => item.guid, item => this._getIsGroupLastColumn(item)) ?? new Map<string, boolean>();
+    }
+
+    if (itemsChanges) {
+      this._zone.runOutsideAngular(() => {
+        setTimeout(() => {
+          const paneEl = this._el.findFirst("> sd-dock-container > sd-pane")!;
+          const fixedCellGroupEls = paneEl.findAll("> ._sheet > ._content > ._row > ._fixed-cell-group");
+          for (const fixedCellGroupEl of fixedCellGroupEls) {
+            fixedCellGroupEl.style.left = paneEl.scrollLeft + "px";
+          }
+        });
+      });
     }
   }
 
@@ -1361,8 +1382,17 @@ export class SdSheetControl implements DoCheck, OnInit {
         const currCellAddr = this._getCellAddress(cellEl);
         if (!currCellAddr) return;
 
-        const nextRowCellEl = this._getCellEl(currCellAddr.r + 1, currCellAddr.c);
-        if (!nextRowCellEl) return;
+        let nextRowCellEl = this._getCellEl(currCellAddr.r + 1, currCellAddr.c);
+        if (!nextRowCellEl) {
+          if (this.getInitItemFn) {
+            this.items.push(this.getInitItemFn());
+            setTimeout(() => {
+              nextRowCellEl = this._getCellEl(currCellAddr.r + 1, currCellAddr.c)!;
+              this._setCellEditMode(nextRowCellEl);
+            });
+          }
+          return;
+        }
 
         this._setCellEditMode(nextRowCellEl);
       }

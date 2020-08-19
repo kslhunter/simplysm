@@ -184,6 +184,12 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
+  public clearOrderBy(): Queryable<D, T> {
+    const result = new Queryable(this.db, this);
+    delete result._def.orderBy;
+    return result;
+  }
+
   public limit(skip: number, take: number): Queryable<D, T> {
     const result = new Queryable(this.db, this);
     result._def.limit = [skip, take];
@@ -471,7 +477,7 @@ export class Queryable<D extends DbContext, T> {
       }
       else if (value instanceof Array) {
         if (value.some(item => SdOrmUtils.canConvertToQueryValue(item))) {
-          throw new Error("SELECT 에 입력할 수 없는 정보가 입력되었습니다. (sorm.equal 등은 sorm.is 로 wrapping 해 주어야 사용할 수 있습니다.)");
+          throw new Error("SELECT 에 입력할 수 없는 정보가 입력되었습니다. (qh.equal 등은 qh.is 로 wrapping 해 주어야 사용할 수 있습니다.)");
         }
         else {
           for (const subKey of Object.keys(value[0])) {
@@ -811,7 +817,7 @@ export class Queryable<D extends DbContext, T> {
     if (this._def.distinct) {
       throw new Error("distinct 이후엔 'countAsync'를 사용할 수 없습니다." +
         " 사용하려면 distinct와 countAsync 사이에 wrap을 먼저 사용하거나," +
-        " distinct대신 groupBy와 sorm.count 로 수동으로 처리하세요.");
+        " distinct대신 groupBy와 qh.count 로 수동으로 처리하세요.");
     }
 
     const queryable = this.select(() => ({ cnt: new QueryUnit(Number, "COUNT(*)") }));
