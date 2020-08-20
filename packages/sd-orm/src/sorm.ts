@@ -112,6 +112,9 @@ export const sorm = {
 
     return this.and(result);
   },
+  notIncludes(source: string | undefined, target: string | undefined): boolean {
+    return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + "NOT LIKE '%' + " + QueryHelper.getFieldQuery(target) + " + '%'") as any;
+  },
   includes(source: string | undefined, target: string | undefined): boolean {
     return new QueryUnit(QueriedBoolean, QueryHelper.getFieldQuery(source) + " LIKE '%' + " + QueryHelper.getFieldQuery(target) + " + '%'") as any;
   },
