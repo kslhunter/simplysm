@@ -711,10 +711,6 @@ export class SdSheetControl implements DoCheck, OnInit {
   public getChildrenFn?: (index: number, item: any) => any;
 
   @Input()
-  @SdInputValidate(Function)
-  public getInitItemFn?: () => any;
-
-  @Input()
   @SdInputValidate(Boolean)
   public useCardDisplayType?: boolean;
 
@@ -1384,17 +1380,8 @@ export class SdSheetControl implements DoCheck, OnInit {
         const currCellAddr = this._getCellAddress(cellEl);
         if (!currCellAddr) return;
 
-        let nextRowCellEl = this._getCellEl(currCellAddr.r + 1, currCellAddr.c);
-        if (!nextRowCellEl) {
-          if (this.getInitItemFn) {
-            this.items.push(this.getInitItemFn());
-            setTimeout(() => {
-              nextRowCellEl = this._getCellEl(currCellAddr.r + 1, currCellAddr.c)!;
-              this._setCellEditMode(nextRowCellEl);
-            });
-          }
-          return;
-        }
+        const nextRowCellEl = this._getCellEl(currCellAddr.r + 1, currCellAddr.c);
+        if (!nextRowCellEl) return;
 
         this._setCellEditMode(nextRowCellEl);
       }
