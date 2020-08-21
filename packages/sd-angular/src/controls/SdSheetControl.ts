@@ -256,7 +256,8 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
                          [attr.sd-row-index]="index"
                          [attr.sd-column-guid]="columnControl.guid"
                          [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0">
-                      <div class="_cell-content">
+                      <div class="_cell-content"
+                           (dblclick)="onCellDblClick($event)">
                         <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
                                      [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl)}"></ng-template>
                       </div>
@@ -273,7 +274,8 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
                          [attr.sd-row-index]="index"
                          [attr.sd-column-guid]="columnControl.guid"
                          [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0">
-                      <div class="_cell-content">
+                      <div class="_cell-content"
+                           (dblclick)="onCellDblClick($event)">
                         <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
                                      [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl)}"></ng-template>
                       </div>
@@ -1472,13 +1474,15 @@ export class SdSheetControl implements DoCheck, OnInit {
       this._cdr.markForCheck();
     });
 
-    const firstForcusableEl = cellEl.findFocusableAll()[0];
-    if (firstForcusableEl !== undefined) {
-      firstForcusableEl.focus();
-    }
-    else {
-      cellEl.focus();
-    }
+    setTimeout(() => {
+      const firstForcusableEl = cellEl.findFocusableAll()[0];
+      if (firstForcusableEl !== undefined) {
+        firstForcusableEl.focus();
+      }
+      else {
+        cellEl.focus();
+      }
+    });
   }
 
   public onColumnOrderingHeaderClick(event: MouseEvent, columnControl: SdSheetColumnControl): void {
@@ -1514,6 +1518,21 @@ export class SdSheetControl implements DoCheck, OnInit {
     }
 
     this.orderingChange.emit(this.ordering);
+  }
+
+  public onCellDblClick(event: MouseEvent): void {
+    if (!event.target || !(event.target instanceof HTMLElement)) {
+      return;
+    }
+
+    const cellEl = (
+      event.target.matches("._sheet > ._body > ._row > ._cell-group > ._cell") ? event.target :
+        event.target.findParent("._sheet > ._body > ._row > ._cell-group > ._cell")
+    );
+
+    if (!cellEl) return;
+
+    this._setCellEditMode(cellEl);
   }
 
   private _getCellAddress(cellEl: HTMLElement): { r: number; c: number } | undefined {
