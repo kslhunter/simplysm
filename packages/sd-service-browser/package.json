@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service-browser",
-  "version": "3.5.15-4",
+  "version": "3.5.15",
   "description": "심플리즘 패키지 - 서비스 모듈 (browser)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -9,9 +9,9 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-browser": "3.5.15-4",
-    "@simplysm/sd-core-common": "3.5.15-4",
-    "@simplysm/sd-service-common": "3.5.15-4",
-    "@simplysm/sd-orm-common": "3.5.15-4"
+    "@simplysm/sd-core-browser": "3.5.15",
+    "@simplysm/sd-core-common": "3.5.15",
+    "@simplysm/sd-service-common": "3.5.15",
+    "@simplysm/sd-orm-common": "3.5.15"
   }
 }
