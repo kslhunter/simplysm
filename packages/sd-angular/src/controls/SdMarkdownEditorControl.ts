@@ -276,7 +276,7 @@ import * as marked from "marked";
         background: white;
       }
 
-      &[sd-inset=true] {
+      &[sd-inset=true] > * {
         border: none !important;
 
         ///deep/ > sd-dock-container> ._toolbar {
