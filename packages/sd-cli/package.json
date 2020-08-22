@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "3.5.15",
+  "version": "3.5.16-3",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -15,11 +15,11 @@
     "@angular/compiler": "^10.0.6",
     "@angular/compiler-cli": "^10.0.6",
     "@ngtools/webpack": "^10.0.6",
-    "@simplysm/sd-core-common": "3.5.15",
-    "@simplysm/sd-core-node": "3.5.15",
-    "@simplysm/sd-service-common": "3.5.15",
-    "@simplysm/sd-service-node": "3.5.15",
-    "@simplysm/eslint-plugin": "3.5.15",
+    "@simplysm/sd-core-common": "3.5.16-3",
+    "@simplysm/sd-core-node": "3.5.16-3",
+    "@simplysm/sd-service-common": "3.5.16-3",
+    "@simplysm/sd-service-node": "3.5.16-3",
+    "@simplysm/eslint-plugin": "3.5.16-3",
     "@types/node": "^14.0.14",
     "tslib": "^2.0.1",
     "angular-router-loader": "^0.8.5",
@@ -49,7 +49,8 @@
     "anymatch": "^3.1.1",
     "rxjs": "6.5.5",
     "cordova": "^10.0.0",
-    "copy-webpack-plugin": "^6.0.2"
+    "copy-webpack-plugin": "^6.0.2",
+    "source-map-support": "^0.5.19"
   },
   "devDependencies": {
     "@types/connect": "^3.4.33",

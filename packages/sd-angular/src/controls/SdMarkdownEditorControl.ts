@@ -241,7 +241,8 @@ import * as marked from "marked";
         border: 1px solid var(--sd-border-color);
 
         /deep/ {
-          ol {
+          ol, ul {
+            margin-top: 0;
             padding-left: 20px;
           }
 
@@ -278,6 +279,7 @@ import * as marked from "marked";
 
       &[sd-inset=true] > * {
         border: none !important;
+        padding: 0;
 
         ///deep/ > sd-dock-container> ._toolbar {
         //  border-bottom: none !important;

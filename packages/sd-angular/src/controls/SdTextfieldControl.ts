@@ -39,13 +39,13 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
       <div *ngIf="!disabled && readonly"
            [attr.class]="'_readonly ' + inputClass"
            [attr.style]="inputSafeStyle">
+        <ng-content></ng-content>
         <div *ngIf="controlType === 'password'" class="sd-text-brightness-light">
           (숨김)
         </div>
         <ng-container *ngIf="controlType !== 'password'">
           {{ controlValue }}
         </ng-container>
-        <ng-content></ng-content>
       </div>
     </ng-container>
 

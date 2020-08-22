@@ -1,5 +1,6 @@
 import { ArgumentError } from "../errors/ArgumentError";
 import { DateTimeFormatUtils } from "../utils/DateTimeFormatUtils";
+import { DateTime } from "./DateTime";
 
 export class Time {
   private _tick: number;
@@ -31,7 +32,7 @@ export class Time {
   }
 
   public static parse(str: string): Time {
-    const match1 = (/^(오전|오후) ([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/).exec(str);
+    const match1 = (/(오전|오후) ([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/).exec(str);
     if (match1 != null) {
       return new Time(
         Number(match1[2]) + (match1[1] === "오후" ? 12 : 0),
@@ -41,7 +42,7 @@ export class Time {
       );
     }
 
-    const match2 = (/^([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/).exec(str);
+    const match2 = (/([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(\.([0-9]{1,3}))?$/).exec(str);
     if (match2 != null) {
       return new Time(
         Number(match2[1]),
@@ -51,7 +52,18 @@ export class Time {
       );
     }
 
-    throw new ArgumentError({ str });
+    try {
+      const dt = DateTime.parse(str);
+      return new Time(
+        dt.hour,
+        dt.minute,
+        dt.second,
+        dt.millisecond
+      );
+    }
+    catch {
+      throw new ArgumentError({ str });
+    }
   }
 
   public get hour(): number {

@@ -1006,7 +1006,7 @@ export class SdPackageBuilder extends EventEmitter {
             }
           },
           {
-            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip|pfx)$/,
+            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip|pfx|pkl)$/,
             loader: "file-loader",
             options: {
               name: `[name].[ext]`,

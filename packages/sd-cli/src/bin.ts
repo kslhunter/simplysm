@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import "source-map-support/register";
+
 import * as yargs from "yargs";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import * as os from "os";
@@ -11,6 +13,7 @@ EventEmitter.defaultMaxListeners = 0;
 process.setMaxListeners(0);
 
 // TODO: apk 빌드 및 배포 기능 구현 안됨 (android watch만 구현됨)
+
 const argv = yargs
   .version(false)
   .help("help", "도움말")

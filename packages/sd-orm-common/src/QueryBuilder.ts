@@ -10,7 +10,8 @@ import {
   IDropTableQueryDef,
   IGetDatabaseInfoDef,
   IGetTableInfoDef,
-  IInsertQueryDef, IJoinQueryDef,
+  IInsertQueryDef,
+  IJoinQueryDef,
   IModifyColumnQueryDef,
   IQueryColumnDef,
   IQueryTableNameDef,
@@ -266,14 +267,14 @@ END`.trim();
 
     let q = "SELECT";
 
+    if (def.distinct) {
+      q += " DISTINCT";
+    }
+
     if (this._dialect !== "mysql") {
       if (def.top !== undefined) {
         q += ` TOP ${def.top}`;
       }
-    }
-
-    if (def.distinct) {
-      q += " DISTINCT";
     }
 
     // SELECT FIELDS
