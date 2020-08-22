@@ -40,12 +40,22 @@ export class QueryHelper {
     }
     else if (source instanceof QueryUnit && target instanceof QueryUnit) {
       return this.or([
-        this.and([this.isNotNull(source), this.isNotNull(target)]),
-        [this.getQueryValue(source), " != ", this.getQueryValue(target)]
+        this.and([
+          this.isNotNull(source),
+          this.isNotNull(target)
+        ]),
+        [
+          this.getQueryValue(source),
+          " != ",
+          this.getQueryValue(target)
+        ]
       ]);
     }
     else {
-      return [this.getQueryValue(source), " != ", this.getQueryValue(target)];
+      return this.or([
+        this.isNull(source),
+        [this.getQueryValue(source), " != ", this.getQueryValue(target)]
+      ]);
     }
   }
 
