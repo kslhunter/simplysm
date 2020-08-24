@@ -5,7 +5,8 @@ import { IDbConnection } from "./IDbConnection";
 
 export class DbConnectionFactory {
   public static create(config: IDbConnectionConfig): IDbConnection {
-    return config.dialect === "mysql" ? new MysqlDbConnection(config) :
+    return config.dialect === "mysql" ?
+      new MysqlDbConnection(config) :
       new MssqlDbConnection(config);
   }
 }

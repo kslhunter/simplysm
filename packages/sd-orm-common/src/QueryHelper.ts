@@ -10,6 +10,7 @@ import { QueryUnit } from "./QueryUnit";
 import { DateOnly, DateTime, Time, Type, Uuid } from "@simplysm/sd-core-common";
 import { Queryable } from "./Queryable";
 import { SdOrmUtils } from "./SdOrmUtils";
+import { TSdOrmDataType } from "./SdOrmDataType";
 
 export class QueryHelper {
   public constructor(private readonly _dialect: "mssql" | "mysql" = "mssql") {
@@ -214,7 +215,12 @@ export class QueryHelper {
     let type: Type<any> | undefined = SdOrmUtils.getQueryValueType(source);
 
     for (const target of targets) {
-      cursorQuery = ["ISNULL(", cursorQuery, ", ", this.getQueryValue(target), ")"];
+      if (this._dialect === "mysql") {
+        cursorQuery = ["IFNULL(", cursorQuery, ", ", this.getQueryValue(target), ")"];
+      }
+      else {
+        cursorQuery = ["ISNULL(", cursorQuery, ", ", this.getQueryValue(target), ")"];
+      }
       type = type ?? SdOrmUtils.getQueryValueType(target);
     }
 
@@ -232,7 +238,12 @@ export class QueryHelper {
   }
 
   public dataLength<T extends TQueryValue>(arg: TEntityValue<T>): QueryUnit<number> {
-    return new QueryUnit<number>(Number, ["DATALENGTH(", this.getQueryValue(arg), ")"]);
+    if (this._dialect === "mysql") {
+      return new QueryUnit<number>(Number, ["LENGTH(", this.getQueryValue(arg), ")"]);
+    }
+    else {
+      return new QueryUnit<number>(Number, ["DATALENGTH(", this.getQueryValue(arg), ")"]);
+    }
   }
 
   public stringLength(arg: TEntityValue<String | string>): QueryUnit<number> {
@@ -240,7 +251,12 @@ export class QueryHelper {
   }
 
   public cast<T extends TQueryValue>(src: TEntityValue<TQueryValue>, targetType: Type<T>): QueryUnit<T> {
-    return new QueryUnit(targetType, ["CONVERT(", this.type(targetType), ", ", this.getQueryValue(src), ")"]);
+    if (this._dialect === "mysql") {
+      return new QueryUnit(targetType, ["CONVERT(", this.getQueryValue(src), ", ", this.type(targetType), ")"]);
+    }
+    else {
+      return new QueryUnit(targetType, ["CONVERT(", this.type(targetType), ", ", this.getQueryValue(src), ")"]);
+    }
   }
 
   public left(src: TEntityValue<string | String | undefined>, num: TEntityValue<number | Number>): QueryUnit<string> {
@@ -350,13 +366,23 @@ export class QueryHelper {
       return value ? "1" : "0";
     }
     else if (value instanceof DateTime) {
-      return "'" + value.toFormatString("yyyy-MM-dd HH:mm:ss") + "'";
+      if (this._dialect === "mysql") {
+        return "STR_TO_DATE('" + value.toFormatString("yyyy-MM-dd HH:mm:ss") + "', '%Y-%m-%d %H:%i:%s')";
+      }
+      else {
+        return "'" + value.toFormatString("yyyy-MM-dd HH:mm:ss") + "'";
+      }
       // "select"할때 어차피 "fff"를 못가져오는 관계로, 아래 코드 주석
       // (차후에 "tedious"가 업데이트 되면, 다시 "fff를 넣어야 할 수도 있음)
       // return "'" + arg.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + "'";
     }
     else if (value instanceof DateOnly) {
-      return "'" + value.toFormatString("yyyy-MM-dd") + "'";
+      if (this._dialect === "mysql") {
+        return "STR_TO_DATE('" + value.toFormatString("yyyy-MM-dd") + "', '%Y-%m-%d')";
+      }
+      else {
+        return "'" + value.toFormatString("yyyy-MM-dd") + "'";
+      }
     }
     else if (value instanceof Time) {
       return "'" + value.toFormatString("HH:mm:ss") + "'";
@@ -403,26 +429,60 @@ export class QueryHelper {
     });
   }
 
-  public type(type: Type<TQueryValue> | undefined): string {
-    switch (type) {
-      case String:
-        return "NVARCHAR(255)";
-      case Number:
-        return "BIGINT";
-      case Boolean:
-        return "BIT";
-      case DateTime:
-        return "DATETIME2";
-      case DateOnly:
-        return "DATE";
-      case Time:
-        return "TIME";
-      case Uuid:
-        return "UNIQUEIDENTIFIER";
-      case Buffer:
-        return "VARBINARY(MAX)";
-      default:
-        throw new TypeError(type !== undefined ? type.name : "undefined");
+  public type(type: Type<TQueryValue> | TSdOrmDataType | undefined): string {
+    if (type?.["type"] !== undefined) {
+      const currType = type as TSdOrmDataType;
+      switch (currType.type) {
+        case "TEXT":
+          return this._dialect === "mysql" ? "TEXT" : "NTEXT";
+        case "DECIMAL":
+          return "DECIMAL(" + currType.precision + (Boolean(currType.digits) ? ", " + currType.digits : "") + ")";
+        case "STRING":
+          if (this._dialect === "mysql" && currType.length === "MAX") {
+            return "TEXT";
+          }
+          else {
+            return "NVARCHAR(" + (currType.length ?? "255") + ")";
+          }
+        case "BINARY":
+          if (this._dialect === "mysql") {
+            const len = (currType.length ?? "MAX");
+            if (len === "MAX") {
+              return "LONGBLOB";
+            }
+            else {
+              return "VARBINARY(" + len + ")";
+            }
+          }
+          else {
+            return "VARBINARY(" + (currType.length ?? "MAX") + ")";
+          }
+        default:
+          throw new TypeError();
+      }
+    }
+    else {
+      const currType = type as Type<TQueryValue> | undefined;
+      switch (currType) {
+        case String:
+          return "NVARCHAR(255)";
+        case Number:
+          return "BIGINT";
+        case Boolean:
+          return this._dialect === "mysql" ? "BOOLEAN" : "BIT";
+        case DateTime:
+          return this._dialect === "mssql" ? "DATETIME2" : "DATETIME";
+        case DateOnly:
+          return "DATE";
+        case Time:
+          return "TIME";
+        case Uuid:
+          return this._dialect === "mysql" ? "CHAR(38)" : "UNIQUEIDENTIFIER";
+        case Buffer:
+          return this.type({ type: "BINARY", length: "MAX" });
+        default:
+          throw new TypeError(currType !== undefined ? currType.name : "undefined");
+      }
     }
   }
 

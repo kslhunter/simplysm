@@ -50,7 +50,9 @@ ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`.
     if (this._dialect === "mysql") {
       const procName = this.wrap("sd_" + Uuid.new().toString().replace(/-/g, "_"));
 
-      return `
+      return `      
+SET @@group_concat_max_len = 50240;
+
 CREATE PROCEDURE \`mysql\`.${procName}()
 BEGIN
 IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${def.database}') THEN
@@ -566,9 +568,9 @@ SELECT GROUP_CONCAT('${"`_" + def.as!.slice(1)}.\`', COLUMN_NAME, '\`', ' = ', '
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE CONCAT('\`', TABLE_SCHEMA, '\`.\`', TABLE_NAME, '\`') = '${def.from}' AND COLUMN_KEY='PRI';
 
-SET @sql = CONCAT('DELETE ${def.as} FROM ${def.from} as ${def.as} JOIN (
+SET @sql = CONCAT('${`DELETE ${def.as} FROM ${def.from} as ${def.as} JOIN (
   ${this.select(def).replace(/\n/g, "\n  ").replace("*", def.as + ".*")}
-) ${"`_" + def.as!.slice(1)} ON 1 = 1 WHERE ', @cols, ';');
+) ${"`_" + def.as!.slice(1)} ON 1 = 1 WHERE `.replace(/'/g, "''")}', @cols, ';');
 SELECT @sql;
 
 PREPARE stmt FROM @sql;
@@ -693,7 +695,7 @@ DEALLOCATE PREPARE stmt;`.trim();
       q += colDef.autoIncrement ? "IDENTITY(1,1) " : "";
       q += colDef.nullable ? "NULL" : "NOT NULL";
     }
-    return q;
+    return q.trim();
   }
 
   private _getQueryOfJoinDef(def: IJoinQueryDef): string {
@@ -728,9 +730,9 @@ DEALLOCATE PREPARE stmt;`.trim();
     }
     else {
       if (this._dialect === "mysql") {
-        q += ", LATERAL (\n";
+        q += "LEFT OUTER JOIN LATERAL (\n";
         q += "  " + this.select(def).replace(/\n/g, "\n  ") + "\n";
-        q += ") as " + def.as;
+        q += ") as " + def.as + " ON 1 = 1";
       }
       else {
         q += "OUTER APPLY (\n";

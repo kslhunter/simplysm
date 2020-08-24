@@ -1,5 +1,6 @@
 import { Type } from "@simplysm/sd-core-common";
 import { DbDefinitionUtils } from "./DbDefinitionUtils";
+import { TSdOrmDataType } from "./SdOrmDataType";
 
 export function Table<T>(def: {
   database?: string;
@@ -17,7 +18,8 @@ export function Table<T>(def: {
 
 export function Column<T extends object>(columnDef: {
   name?: string;
-  dataType?: string;
+  dataType?: TSdOrmDataType;
+  length?: number | "MAX";
   nullable?: boolean;
   autoIncrement?: boolean;
   primaryKey?: number;
@@ -30,6 +32,7 @@ export function Column<T extends object>(columnDef: {
       propertyKey,
       name: columnDef.name ?? propertyKey,
       dataType: columnDef.dataType,
+      length: columnDef.length,
       nullable: columnDef.nullable,
       autoIncrement: columnDef.autoIncrement,
       primaryKey: columnDef.primaryKey,

@@ -1,9 +1,10 @@
 import { ISdProjectConfig, TSdPackageConfig } from "./commons";
 import { FsUtils } from "@simplysm/sd-core-node";
 import { ObjectUtils } from "@simplysm/sd-core-common";
+import * as path from "path";
 
 export class SdProjectConfigUtils {
-  public static async loadConfigAsync(configFilePath: string, devMode: boolean, options: string[]): Promise<ISdProjectConfig> {
+  private static async _loadConfigAsync(configFilePath: string, devMode: boolean, options: string[]): Promise<ISdProjectConfig> {
     const mode = devMode ? "development" : "production";
 
     const config = await FsUtils.readJsonAsync(configFilePath);
@@ -48,6 +49,18 @@ export class SdProjectConfigUtils {
     }
 
     delete config.extends;
+
+    return config;
+  }
+
+  public static async loadConfigAsync(devMode: boolean, options: string[]): Promise<ISdProjectConfig> {
+    let config = await SdProjectConfigUtils._loadConfigAsync(path.resolve(process.cwd(), "simplysm.json"), devMode, options);
+
+    const myConfigPath = path.resolve(process.cwd(), "simplysm.my.json");
+    if (FsUtils.exists(myConfigPath)) {
+      const myConfig = await SdProjectConfigUtils._loadConfigAsync(myConfigPath, devMode, options);
+      config = ObjectUtils.merge(config, myConfig);
+    }
 
     return config;
   }

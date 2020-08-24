@@ -460,9 +460,19 @@ export class FsUtils {
     }
   }
 
-  public static createReadStream(targetPath: string): fs.ReadStream {
+  public static createReadStream(sourcePath: string): fs.ReadStream {
     try {
-      return fs.createReadStream(targetPath);
+      return fs.createReadStream(sourcePath);
+    }
+    catch (err) {
+      throw new SdError(err, sourcePath);
+    }
+  }
+
+
+  public static createWriteStream(targetPath: string): fs.WriteStream {
+    try {
+      return fs.createWriteStream(targetPath);
     }
     catch (err) {
       throw new SdError(err, targetPath);

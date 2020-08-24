@@ -263,7 +263,7 @@ export abstract class DbContext {
         },
         columns: tableDef.columns.map(col => ObjectUtils.clearUndefined({
           name: col.name,
-          dataType: col.dataType ?? this.qh.type(col.typeFwd()),
+          dataType: this.qh.type(col.dataType ?? col.typeFwd()),
           autoIncrement: col.autoIncrement,
           nullable: col.nullable
         })),

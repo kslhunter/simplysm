@@ -8,12 +8,14 @@ import { IDbConnection } from "./IDbConnection";
 export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", "MssqlDbConnection"]);
 
+
   private readonly _timeout = 300000;
 
   private _conn?: tedious.Connection;
   private _connTimeout?: NodeJS.Timeout;
   private _requests: tedious.Request[] = [];
 
+  public dialect = "mssql" as const;
   public isConnected = false;
   public isOnTransaction = false;
 

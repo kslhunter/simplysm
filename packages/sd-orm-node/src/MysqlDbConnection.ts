@@ -13,6 +13,7 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
   private _conn?: mysql.Connection;
   private _connTimeout?: NodeJS.Timeout;
 
+  public dialect = "mysql" as const;
   public isConnected = false;
   public isOnTransaction = false;
 

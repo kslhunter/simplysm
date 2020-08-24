@@ -134,7 +134,8 @@ module.exports = {
         "consistent-return": "off",
         "newline-per-chained-call": "off",
         "no-alert": "off",
-        "no-extra-parens": "off"
+        "no-extra-parens": "off",
+        "no-case-declarations": "off"
       }
     },
     {

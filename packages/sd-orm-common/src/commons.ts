@@ -2,6 +2,7 @@ import { DateOnly, DateTime, StripTypeWrap, Time, Type, TypeWrap, Uuid } from "@
 import { QueryUnit } from "./QueryUnit";
 import { DbContext } from "./DbContext";
 import { Queryable } from "./Queryable";
+import { TSdOrmDataType } from "./SdOrmDataType";
 
 
 // region QueryBuilder COMMONS
@@ -240,7 +241,8 @@ export interface IColumnDef {
   description?: string;
   propertyKey: string;
   name: string;
-  dataType?: string;
+  dataType?: TSdOrmDataType;
+  length?: number | "MAX";
   nullable?: boolean;
   autoIncrement?: boolean;
   primaryKey?: number;

@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
 
 export interface IDbConnection extends EventEmitter {
+  dialect: "mysql" | "mssql";
   isConnected: boolean;
   isOnTransaction: boolean;
 

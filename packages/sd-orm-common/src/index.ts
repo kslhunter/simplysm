@@ -9,5 +9,6 @@ export * from "./Queryable";
 export * from "./QueryBuilder";
 export * from "./QueryHelper";
 export * from "./QueryUnit";
+export * from "./SdOrmDataType";
 export * from "./SdOrmUtils";
 export * from "./SystemMigration";

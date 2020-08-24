@@ -5,15 +5,12 @@ import { ISdProjectConfig } from "../commons";
 
 export class SdCliLocalUpdate {
   public static async runAsync(config: ISdProjectConfig): Promise<void>;
-  public static async runAsync(argv: { config?: string; options: string[] }): Promise<void>;
+  public static async runAsync(argv: { options: string[] }): Promise<void>;
   public static async runAsync(arg: ISdProjectConfig | { config?: string; options: string[] }): Promise<void> {
     if (arg["options"] instanceof Array) {
       const argv = arg as { config?: string; options: string[] };
 
-      const configPath = argv.config !== undefined ?
-        path.resolve(process.cwd(), argv.config) :
-        path.resolve(process.cwd(), "simplysm.json");
-      const config = await SdProjectConfigUtils.loadConfigAsync(configPath, true, argv.options);
+      const config = await SdProjectConfigUtils.loadConfigAsync(true, argv.options);
 
       await SdCliLocalUpdate._runAsync(config, false);
     }
