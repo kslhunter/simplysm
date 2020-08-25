@@ -130,6 +130,7 @@ export class SdServiceServerConnection extends EventEmitter {
 
       const req: ISdServiceRequest = {
         type: "request",
+        password: rawReq.password,
         command: "upload",
         id: rawReq.id,
         url: rawReq.url,

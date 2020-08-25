@@ -262,7 +262,8 @@ export class SdCliPackage extends EventEmitter {
       const wsClient = new SdServiceClient(
         publishConfig.port ?? (publishConfig.ssl ? 443 : 80),
         publishConfig.host,
-        publishConfig.ssl
+        publishConfig.ssl,
+        publishConfig.password
       );
       await wsClient.connectAsync();
 

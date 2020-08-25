@@ -1,7 +1,7 @@
 import {
   IAddColumnQueryDef,
   IAddForeignKeyQueryDef,
-  IClearDatabaseIfExistsQueryDef,
+  IClearDatabaseIfExistsQueryDef, IConfigForeignKeyCheckQueryDef,
   IConfigIdentityInsertQueryDef,
   ICreateDatabaseIfNotExistsQueryDef,
   ICreateIndexQueryDef,
@@ -10,6 +10,7 @@ import {
   IDropTableQueryDef,
   IGetDatabaseInfoDef,
   IGetTableInfoDef,
+  IGetTablesInfoDef,
   IInsertQueryDef,
   IJoinQueryDef,
   IModifyColumnQueryDef,
@@ -48,18 +49,21 @@ ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`.
 
   public clearDatabaseIfExists(def: IClearDatabaseIfExistsQueryDef): string {
     if (this._dialect === "mysql") {
+      return `DROP DATABASE IF EXISTS ${this.wrap(def.database)};`;
+
+      /*
       const procName = this.wrap("sd_" + Uuid.new().toString().replace(/-/g, "_"));
 
-      return `      
+      return `
 SET @@group_concat_max_len = 50240;
 
-CREATE PROCEDURE \`mysql\`.${procName}()
+CREATE PROCEDURE ${this.wrap(def.database)}.${procName}()
 BEGIN
-IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${def.database}') THEN
+IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '${def.database.toLowerCase()}') THEN
     SET @procs = NULL;
     SELECT GROUP_CONCAT(ROUTINE_SCHEMA, '.', ROUTINE_NAME) INTO @procs
     FROM information_schema.routines
-    WHERE routine_type = 'PROCEDURE' AND routine_schema = '${def.database}';
+    WHERE routine_type = 'PROCEDURE' AND routine_schema = '${def.database.toLowerCase()}';
 
     SET @procs = IFNULL(CONCAT('DROP PROCEDURE ', @procs), 'SELECT "No Procedures"');
     PREPARE stmt FROM @procs;
@@ -69,7 +73,7 @@ IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME
     SET @views = NULL;
     SELECT GROUP_CONCAT(table_schema, '.', table_name) INTO @views
     FROM information_schema.views
-    WHERE table_schema = '${def.database}';
+    WHERE table_schema = '${def.database.toLowerCase()}';
 
     SET @views = IFNULL(CONCAT('DROP VIEW ', @views), 'SELECT "No Views"');
     PREPARE stmt FROM @views;
@@ -79,7 +83,7 @@ IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME
     SET @tables = NULL;
     SELECT GROUP_CONCAT(table_schema, '.', table_name) INTO @tables
     FROM information_schema.tables
-    WHERE table_schema = '${def.database}';
+    WHERE table_schema = '${def.database.toLowerCase()}';
 
     SET @tables = IFNULL(CONCAT('DROP TABLE ', @tables), 'SELECT "No Tables"');
     PREPARE stmt FROM @tables;
@@ -88,9 +92,9 @@ IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME
 END IF;
 END;
 
-CALL \`mysql\`.${procName};
+CALL ${this.wrap(def.database)}.${procName};
 
-DROP PROCEDURE \`mysql\`.${procName};`.trim();
+DROP PROCEDURE ${this.wrap(def.database)}.${procName};`.trim();*/
     }
     else {
       return `
@@ -136,6 +140,15 @@ END`.trim();
     }
     else {
       return `SELECT * FROM master.dbo.sysdatabases WHERE name='${def.database}'`.trim();
+    }
+  }
+
+  public getTableInfos(def: IGetTablesInfoDef): string {
+    if (this._dialect === "mysql") {
+      return `SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='${def.database}'`.trim();
+    }
+    else {
+      return `SELECT * FROM ${def.database}.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='${def.schema}'`.trim();
     }
   }
 
@@ -252,6 +265,11 @@ END`.trim();
   public configIdentityInsert(def: IConfigIdentityInsertQueryDef): string {
     const tableName = this.getTableName(def.table);
     return `SET IDENTITY_INSERT ${tableName} ${def.state.toUpperCase()}`;
+  }
+
+
+  public configForeignKeyCheck(def: IConfigForeignKeyCheckQueryDef): string {
+    return `SET foreign_key_checks=${def.useCheck ? 1 : 0};`;
   }
 
   // endregion
@@ -498,7 +516,9 @@ END`.trim();
       const procName = this.wrap("sd_" + Uuid.new().toString().replace(/-/g, "_"));
 
       const q = `
-CREATE PROCEDURE \`mysql\`.${procName}()
+USE ${def.from.split(".")[0]};
+
+CREATE PROCEDURE ${procName}()
 BEGIN
 
 IF EXISTS (
@@ -514,8 +534,8 @@ ${this.insert({ ...def, record: def.insertRecord })}
 END IF;
 
 END;
-CALL \`mysql\`.${procName};
-DROP PROCEDURE \`mysql\`.${procName};`;
+CALL ${procName};
+DROP PROCEDURE ${procName};`;
 
       return q.trim() + ";";
     }

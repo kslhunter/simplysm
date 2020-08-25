@@ -1,6 +1,12 @@
 import { Logger } from "@simplysm/sd-core-node";
-import { DbConnectionFactory, IDbConnection, IDbConnectionConfig } from "@simplysm/sd-orm-node";
-import { IQueryResultParseOption, QueryBuilder, SdOrmUtils, TQueryDef } from "@simplysm/sd-orm-common";
+import { DbConnectionFactory, IDbConnection } from "@simplysm/sd-orm-node";
+import {
+  IDbConnectionConfig,
+  IQueryResultParseOption,
+  QueryBuilder,
+  SdOrmUtils,
+  TQueryDef
+} from "@simplysm/sd-orm-common";
 import { SdServiceBase } from "../SdServiceBase";
 import { SdServiceServerConfigUtils } from "../SdServiceServerConfigUtils";
 
@@ -98,12 +104,11 @@ export class SdOrmService extends SdServiceBase {
     return result.map((item, i) => SdOrmUtils.parseQueryResult(item, options ? options[i] : undefined));
   }
 
-
   private async _getOrmConfigAsync(configName: string): Promise<IDbConnectionConfig> {
     const config: IDbConnectionConfig | undefined = (
       await SdServiceServerConfigUtils.getConfigAsync(this.server.rootPath, this.request.url)
     )?.["orm"]?.[configName];
-    if (!config) {
+    if (config === undefined) {
       throw new Error("서버에서 ORM 설정을 찾을 수 없습니다.");
     }
 

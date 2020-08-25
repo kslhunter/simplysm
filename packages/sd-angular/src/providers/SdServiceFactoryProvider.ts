@@ -66,7 +66,7 @@ export class SdNgServiceClient {
   public constructor(options: IServiceClientOptions | undefined,
                      private readonly _toast: SdToastProvider,
                      private readonly _systemLog: SdSystemLogRootProvider) {
-    this.client = new SdServiceClient(options?.port, options?.host, options?.ssl);
+    this.client = new SdServiceClient(options?.port, options?.host, options?.ssl, options?.password);
   }
 
   public async connectAsync(): Promise<void> {
@@ -131,4 +131,5 @@ export interface IServiceClientOptions {
   port?: number;
   host?: string;
   ssl?: boolean;
+  password?: string;
 }

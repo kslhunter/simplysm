@@ -18,6 +18,7 @@ export type TQueryDef = (
   (ICreateDatabaseIfNotExistsQueryDef & { type: "createDatabaseIfNotExists" }) |
   (IClearDatabaseIfExistsQueryDef & { type: "clearDatabaseIfExists" }) |
   (IGetDatabaseInfoDef & { type: "getDatabaseInfo" }) |
+  (IGetTablesInfoDef & { type: "getTableInfos" }) |
   (IGetTableInfoDef & { type: "getTableInfo" }) |
   (ICreateTableQueryDef & { type: "createTable" }) |
   (IDropTableQueryDef & { type: "dropTable" }) |
@@ -28,7 +29,8 @@ export type TQueryDef = (
   (IAddForeignKeyQueryDef & { type: "addForeignKey" }) |
   (IRemoveForeignKeyQueryDef & { type: "removeForeignKey" }) |
   (ICreateIndexQueryDef & { type: "createIndex" }) |
-  (IConfigIdentityInsertQueryDef & { type: "configIdentityInsert" })
+  (IConfigIdentityInsertQueryDef & { type: "configIdentityInsert" }) |
+  (IConfigForeignKeyCheckQueryDef & { type: "configForeignKeyCheck" })
   );
 
 export type TDbDateSeparator =
@@ -82,6 +84,11 @@ export interface IClearDatabaseIfExistsQueryDef {
 
 export interface IGetDatabaseInfoDef {
   database: string;
+}
+
+export interface IGetTablesInfoDef {
+  database: string;
+  schema?: string;
 }
 
 export interface IGetTableInfoDef {
@@ -146,6 +153,10 @@ export interface ICreateIndexQueryDef {
 export interface IConfigIdentityInsertQueryDef {
   table: IQueryTableNameDef;
   state: "on" | "off";
+}
+
+export interface IConfigForeignKeyCheckQueryDef {
+  useCheck: boolean;
 }
 
 // endregion
@@ -321,3 +332,11 @@ export interface IQueryableOrderingDef<T> {
 }
 
 // endregion
+
+export interface IDbConnectionConfig {
+  dialect?: "mssql" | "mysql";
+  host?: string;
+  port?: number;
+  username: string;
+  password: string;
+}

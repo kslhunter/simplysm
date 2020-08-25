@@ -1,9 +1,9 @@
-import { IDbConnectionConfig } from "./commons";
 import { Logger } from "@simplysm/sd-core-node";
 import * as mysql from "mysql";
 import { EventEmitter } from "events";
 import { SdError } from "@simplysm/sd-core-common";
 import { IDbConnection } from "./IDbConnection";
+import { IDbConnectionConfig } from "@simplysm/sd-orm-common";
 
 export class MysqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", "MysqlDbConnection"]);

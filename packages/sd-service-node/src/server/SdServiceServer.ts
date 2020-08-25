@@ -68,7 +68,7 @@ export class SdServiceServer extends EventEmitter {
         });
 
         try {
-          await this._onSocketConnectionAsync(conn, connReq);
+          this._onSocketConnection(conn, connReq);
         }
         catch (err) {
           this._logger.error(`클라이언트와 연결할 수 없습니다.`, err);
@@ -158,18 +158,42 @@ export class SdServiceServer extends EventEmitter {
     }
   }
 
-  private async _onSocketConnectionAsync(conn: WebSocket, connReq: http.IncomingMessage): Promise<void> {
+  private _onSocketConnection(conn: WebSocket, connReq: http.IncomingMessage): void {
     const origin: string | string[] = connReq.headers.origin ?? "unknown";
-
-    const availableOrigins = (await SdServiceServerConfigUtils.getConfigAsync(this.rootPath))?.["service"]?.["origins"];
-    if (availableOrigins !== undefined && ![...availableOrigins, "file://"].includes(connReq.headers.origin)) {
-      throw new Error(`등록되지 않은 'URL'에서 클라이언트의 연결 요청을 받았습니다: ${connReq.headers.origin}`);
-    }
 
     this._logger.log(`클라이언트의 연결 요청을 받았습니다 : ${origin.toString()}`);
 
     const wsConn = new SdServiceServerConnection(conn, this.rootPath);
     wsConn.on("request", async (req: ISdServiceRequest) => {
+      const serviceConfig = (await SdServiceServerConfigUtils.getConfigAsync(this.rootPath))?.["service"];
+      const availableOrigins = serviceConfig?.origins as string[] | undefined;
+      const availablePassword = serviceConfig?.password as string | undefined;
+
+      let orgError = false;
+      if (availableOrigins !== undefined) {
+        if (connReq.headers.origin === undefined || !availableOrigins.includes(connReq.headers.origin)) {
+          orgError = true;
+          // throw new Error(`등록되지 않은 'URL'에서 클라이언트의 요청을 받았습니다: ${connReq.headers.origin}`);
+        }
+      }
+
+      let pwdError = false;
+      if (availablePassword !== undefined) {
+        if (req.password !== availablePassword) {
+          pwdError = true;
+          // errors.push(`인증되지 않은 클라이언트에서 요청을 받았습니다: ${connReq.headers.origin}`);
+        }
+      }
+
+      if (
+        (orgError && pwdError) ||
+        (availablePassword === undefined && orgError) ||
+        (availableOrigins === undefined && pwdError)
+      ) {
+        throw new Error(`인증되지 않은 클라이언트에서 요청을 받았습니다: ${connReq.headers.origin}`);
+      }
+
+
       this._logger.debug(`요청을 받았습니다: ${origin.toString()} (${JsonConvert.stringify(req, { hideBuffer: true })})`);
 
       try {

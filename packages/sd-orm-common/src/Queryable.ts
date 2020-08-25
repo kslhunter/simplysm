@@ -1,5 +1,13 @@
 import { DbContext } from "./DbContext";
-import { FunctionUtils, JsonConvert, NeverEntryError, ObjectUtils, Type, Wait } from "@simplysm/sd-core-common";
+import {
+  FunctionUtils,
+  JsonConvert,
+  NeverEntryError,
+  NotImplementError,
+  ObjectUtils,
+  Type,
+  Wait
+} from "@simplysm/sd-core-common";
 import {
   IDeleteQueryDef,
   IInsertQueryDef,
@@ -829,6 +837,14 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public async insertAsync(...records: TInsertObject<T>[]): Promise<T[]> {
+    return await this._insertAsync(false, ...records);
+  }
+
+  public async insertWithoutFkCheckAsync(...records: TInsertObject<T>[]): Promise<T[]> {
+    return await this._insertAsync(true, ...records);
+  }
+
+  private async _insertAsync(ignoreFk: boolean, ...records: TInsertObject<T>[]): Promise<T[]> {
     if (this.db === undefined) {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
@@ -864,12 +880,27 @@ export class Queryable<D extends DbContext, T> {
             }
           };
 
-          return [insertDef, selectDef];
+          return [
+            insertDef,
+            selectDef
+          ].filterExists();
         });
+
+      if (ignoreFk) {
+        prepareDefs.insert(0, {
+          type: "configForeignKeyCheck",
+          useCheck: false
+        });
+
+        prepareDefs.push({
+          type: "configForeignKeyCheck",
+          useCheck: true
+        });
+      }
 
       const insertIds = (
         await this.db.executeDefsAsync(prepareDefs)
-      ).filter((item, i) => i % 2 !== 0).map(item => item[0].id);
+      ).filter((item, i) => prepareDefs[i].type === "select").map(item => item[0].id);
 
       return ObjectUtils.clone(records).map((item, i) => ({
         ...item,
@@ -877,6 +908,10 @@ export class Queryable<D extends DbContext, T> {
       })) as any;
     }
     else {
+      if (ignoreFk) {
+        throw new NotImplementError("mssql 에 대한 IGNORE FK 가 아직 구현되어있지 않습니다.");
+      }
+
       const aiColNames = this._tableDef.columns.filter(item => item.autoIncrement).map(item => item.name);
       const hasAutoIncreaseColumnValue = Object.keys(records[0]).some(item => aiColNames.includes(item));
       if (hasAutoIncreaseColumnValue) {
@@ -923,6 +958,14 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public insertPrepare(...records: TInsertObject<T>[]): void {
+    this._insertPrepare(false, ...records);
+  }
+
+  public insertWithoutFkCheckPrepare(...records: TInsertObject<T>[]): void {
+    this._insertPrepare(true, ...records);
+  }
+
+  private _insertPrepare(ignoreFk: boolean, ...records: TInsertObject<T>[]): void {
     if (records.length < 1) {
       return;
     }
@@ -938,15 +981,27 @@ export class Queryable<D extends DbContext, T> {
     const queryDefs = records.map(record => this.getInsertDef(record));
 
     if (this.db.dialect === "mysql") {
-      this.db.prepareDefs.push(
+      this.db.prepareDefs.push(...[
+        ignoreFk ? {
+          type: "configForeignKeyCheck" as const,
+          useCheck: false
+        } : undefined,
         ...queryDefs
           .map(queryDef => ({
             type: "insert" as const,
             ...queryDef
-          }))
-      );
+          })),
+        ignoreFk ? {
+          type: "configForeignKeyCheck" as const,
+          useCheck: true
+        } : undefined
+      ].filterExists());
     }
     else {
+      if (ignoreFk) {
+        throw new NotImplementError("mssql 에 대한 IGNORE FK 가 아직 구현되어있지 않습니다.");
+      }
+
       const aiColNames = this._tableDef.columns.filter(item => item.autoIncrement).map(item => item.name);
       const hasAutoIncreaseColumnValue = Object.keys(records[0]).some(item => aiColNames.includes(item));
       if (hasAutoIncreaseColumnValue) {

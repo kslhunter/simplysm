@@ -2,14 +2,14 @@ import {
   Column,
   DbContext,
   ForeignKey,
-  ForeignKeyTarget,
+  ForeignKeyTarget, IDbConnectionConfig,
   IDbMigration,
   Queryable,
   QueryUnit,
   Table
 } from "@simplysm/sd-orm-common";
 import { expect } from "chai";
-import { IDbConnectionConfig, NodeDbContextExecutor } from "@simplysm/sd-orm-node";
+import { NodeDbContextExecutor } from "@simplysm/sd-orm-node";
 import * as sinon from "sinon";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { Type } from "@simplysm/sd-core-common";

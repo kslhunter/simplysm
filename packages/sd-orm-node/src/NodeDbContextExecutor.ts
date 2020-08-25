@@ -1,11 +1,11 @@
 import {
+  IDbConnectionConfig,
   IDbContextExecutor,
   IQueryResultParseOption,
   QueryBuilder,
   SdOrmUtils,
   TQueryDef
 } from "@simplysm/sd-orm-common";
-import { IDbConnectionConfig } from "./commons";
 import { IDbConnection } from "./IDbConnection";
 import { DbConnectionFactory } from "./DbConnectionFactory";
 

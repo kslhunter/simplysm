@@ -23,7 +23,8 @@ export class SdServiceClient extends EventEmitter {
 
   public constructor(public readonly port: number,
                      public readonly host: string,
-                     public readonly ssl?: boolean) {
+                     public readonly ssl?: boolean,
+                     private readonly _password?: string) {
     super();
   }
 
@@ -33,7 +34,7 @@ export class SdServiceClient extends EventEmitter {
         await this.closeAsync();
       }
 
-      this._ws = new WebSocket(`${this.ssl ? "wss" : "ws"}://${this.host}:${this.port}`, { origin: "file://" });
+      this._ws = new WebSocket(`${this.ssl ? "wss" : "ws"}://${this.host}:${this.port}`);
 
       this._ws.onopen = (): void => {
         resolve();
@@ -102,6 +103,7 @@ export class SdServiceClient extends EventEmitter {
       const requestId = this._lastRequestId++;
       const request: ISdServiceRequest = {
         type: "request",
+        password: this._password,
         id: requestId,
         url: "",
         command,
@@ -150,6 +152,7 @@ export class SdServiceClient extends EventEmitter {
         while (cursor < requestJson.length) {
           const realReq: ISdServiceSplitRawRequest = {
             type: "split",
+            password: this._password,
             id: requestId,
             url: `${location.protocol}//${location.host}${location.pathname}`,
             index: i,
@@ -273,6 +276,7 @@ export class SdServiceClient extends EventEmitter {
 
             const realReq: ISdServiceUploadRawRequest = {
               type: "upload",
+              password: this._password,
               id: requestId,
               url: "",
               filePath: serverFilePath,
@@ -292,6 +296,7 @@ export class SdServiceClient extends EventEmitter {
 
           const realReq: ISdServiceUploadRawRequest = {
             type: "upload",
+            password: this._password,
             id: requestId,
             url: "",
             filePath: serverFilePath,

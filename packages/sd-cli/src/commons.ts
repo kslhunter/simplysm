@@ -103,4 +103,5 @@ export interface ISdSimplysmPublishConfig {
   path: string;
   ssl?: boolean;
   origin?: string;
+  password?: string;
 }

@@ -22,7 +22,8 @@ export class SdServiceClient extends EventEmitter {
 
   public constructor(public readonly port?: number,
                      public readonly host?: string,
-                     public readonly ssl?: boolean) {
+                     public readonly ssl?: boolean,
+                     private readonly _password?: string) {
     super();
   }
 
@@ -35,6 +36,7 @@ export class SdServiceClient extends EventEmitter {
       const protocol = this.ssl ? "wss" : (location.protocol.startsWith("https") ? "wss" : "ws");
       const host = this.host ?? location.hostname;
       const port = this.port ?? location.port;
+
       this._ws = new WebSocket(`${protocol}://${host}:${port}`);
 
       this._ws.onopen = (): void => {
@@ -104,6 +106,7 @@ export class SdServiceClient extends EventEmitter {
       const requestId = this._lastRequestId++;
       const request: ISdServiceRequest = {
         type: "request",
+        password: this._password,
         id: requestId,
         url: `${location.protocol}//${location.host}${location.pathname}`,
         command,
@@ -152,6 +155,7 @@ export class SdServiceClient extends EventEmitter {
         while (cursor < requestJson.length) {
           const realReq: ISdServiceSplitRawRequest = {
             type: "split",
+            password: this._password,
             id: requestId,
             url: `${location.protocol}//${location.host}${location.pathname}`,
             index: i,
@@ -264,6 +268,7 @@ export class SdServiceClient extends EventEmitter {
 
             const realReq: ISdServiceUploadRawRequest = {
               type: "upload",
+              password: this._password,
               id: requestId,
               url: `${location.protocol}//${location.host}${location.pathname}`,
               filePath: serverFilePath,
@@ -292,6 +297,7 @@ export class SdServiceClient extends EventEmitter {
 
             const realReq: ISdServiceUploadRawRequest = {
               type: "upload",
+              password: this._password,
               id: requestId,
               url: `${location.protocol}//${location.host}${location.pathname}`,
               filePath: serverFilePath,

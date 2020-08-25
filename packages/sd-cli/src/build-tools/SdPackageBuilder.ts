@@ -725,7 +725,7 @@ export class SdPackageBuilder extends EventEmitter {
         mode: "production",
         devtool: "source-map",
         profile: false,
-        performance: { /*hints: false*/ },
+        performance: { hints: false },
         optimization: {
           noEmitOnErrors: true,
           runtimeChunk: "single",
@@ -964,7 +964,7 @@ export class SdPackageBuilder extends EventEmitter {
         mode: "production",
         devtool: "source-map",
         profile: false,
-        performance: { /*hints: false*/ },
+        performance: { hints: false },
         optimization: {
           noEmitOnErrors: true,
           minimizer: [
