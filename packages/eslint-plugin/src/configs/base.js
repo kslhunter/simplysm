@@ -289,7 +289,8 @@ module.exports = {
         "@typescript-eslint/no-invalid-this": "off",
         "@typescript-eslint/explicit-function-return-type": "off",
 
-        "@typescript-eslint/ban-ts-comment": "off"
+        "@typescript-eslint/ban-ts-comment": "off",
+        "@typescript-eslint/no-implicit-any-catch": "off"
       }
     }
   ]
