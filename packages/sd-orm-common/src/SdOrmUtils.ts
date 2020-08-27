@@ -1,5 +1,5 @@
 import { IQueryResultParseOption, TEntity, TEntityValue, TQueryValue } from "./commons";
-import { DateOnly, DateTime, JsonConvert, Time, Type, Uuid } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, ObjectUtils, Time, Type, Uuid } from "@simplysm/sd-core-common";
 import { QueryUnit } from "./QueryUnit";
 
 export class SdOrmUtils {
@@ -100,9 +100,9 @@ export class SdOrmUtils {
     if (option?.joins && Object.keys(option.joins).length > 0) {
       const joinKeys = Object.keys(option.joins).orderByDesc(key => key.length);
       for (const joinKey of joinKeys) {
-        // const grouped = new Map<string, any | any[]>();
         const grouped: { key: any; values: any | any[] }[] = [];
-        const groupedMultiMapObj: { [key: string]: any | any[] } = {}; // new Map<string, any | any[]>();
+        // const groupedMultiMapObj: { [key: string]: any | any[] } = {};
+        const groupedMultiObj: { key: any; values: any | any[] }[] = [];
 
         for (const item of result) {
           const keyObjKeys = Object.keys(item).filter(key => !key.startsWith(joinKey + "."));
@@ -121,7 +121,11 @@ export class SdOrmUtils {
             grouped.push({ key: keyObj, values: valueObj });
           }
           else {
-            const keyJson = JsonConvert.stringify(keyObj);
+            // 데이터의 순서때문에 JsonConvert의 결과물이 서로 달라 중복 표시되는 현상이 있는 관계로
+            // groupedMultiMapObj에 JSON값키를 못 두고, 속도가 느리더라도 그냥 single로 처리함
+            // 속도를 올릴수 있는 다른 방법을 강구해야 할 수 있음
+
+            /*const keyJson = JsonConvert.stringify(keyObj);
             if (groupedMultiMapObj[keyJson] !== undefined) {
               groupedMultiMapObj[keyJson]!.push(valueObj);
             }
@@ -129,6 +133,16 @@ export class SdOrmUtils {
               const valueArr = [valueObj];
               grouped.push({ key: keyObj, values: valueArr });
               groupedMultiMapObj[keyJson] = valueArr;
+            }*/
+
+            const values = groupedMultiObj.single(item1 => ObjectUtils.equal(item1.key, keyObj, { ignoreArrayIndex: true }))?.values;
+            if (values !== undefined) {
+              values.push(valueObj);
+            }
+            else {
+              const valueArr = [valueObj];
+              grouped.push({ key: keyObj, values: valueArr });
+              groupedMultiObj.push({ key: keyObj, values: valueArr });
             }
           }
         }

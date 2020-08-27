@@ -2,17 +2,16 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  DoCheck,
   ElementRef,
   EventEmitter,
   HostBinding,
   Input,
-  OnChanges,
   Output,
-  SimpleChanges,
   ViewChild
 } from "@angular/core";
 import { SdInputValidate } from "../commons/SdInputValidate";
-import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, ObjectUtils, Time } from "@simplysm/sd-core-common";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 
 // TODO: HISTORY 기록을 통해 CTRL+Z 수동 구현
@@ -24,8 +23,8 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
     <ng-container *ngIf="!multiline">
       <input #input
              *ngIf="disabled || !readonly"
-             [value]="controlValue"
              [type]="controlType"
+             [value]="controlValue"
              [attr.placeholder]="placeholder"
              [disabled]="disabled"
              [required]="required"
@@ -215,7 +214,7 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
     }
   `]
 })
-export class SdTextfieldControl implements OnChanges, AfterViewInit {
+export class SdTextfieldControl implements DoCheck, AfterViewInit {
   @Input()
   @SdInputValidate({
     type: String,
@@ -333,9 +332,28 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
     }
   }
 
-  public ngOnChanges(changes: SimpleChanges): void {
+  private readonly _prevData: { [key: string]: any } = {};
+
+  public ngDoCheck(): void {
+    const compare = (propName: keyof this) => {
+      const isChanged = !ObjectUtils.equal(this._prevData[propName as string], this[propName]);
+      if (isChanged) this._prevData[propName as string] = ObjectUtils.clone(this[propName]);
+      return isChanged;
+    };
+
+    const isTypeChange = compare("type");
+    const isValueChange = compare("value");
+    const isStepChange = compare("step");
+    const isInputStyleChange = compare("inputStyle");
+    const isResizeChange = compare("resize");
+    const isMultilineChange = compare("multiline");
+    const isRequiredChange = compare("required");
+    const isValidatorFnChange = compare("validatorFn");
+    const isMaxChange = compare("max");
+    const isMinChange = compare("min");
+
     // controlType
-    if (Object.keys(changes).includes("type")) {
+    if (isTypeChange) {
       this.controlType = this.type === "number" ? "text" :
         this.type === "datetime" ? "datetime-local" :
           this.type === "datetime-sec" ? "datetime-local" :
@@ -344,7 +362,7 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
     }
 
     // controlValue
-    if (Object.keys(changes).includes("value") || Object.keys(changes).includes("type")) {
+    if (isValueChange || isTypeChange) {
       if (this.value === undefined) {
         this.controlValue = "";
       }
@@ -381,7 +399,7 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
     }
 
     // controlStep
-    if (Object.keys(changes).includes("step") || Object.keys(changes).includes("type")) {
+    if (isStepChange || isTypeChange) {
       if (this.step !== undefined) {
         this.controlStep = this.step;
       }
@@ -397,7 +415,7 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
     }
 
     // inputStyleSafeHtml
-    if (Object.keys(changes).includes("inputStyle") || Object.keys(changes).includes("resize") || Object.keys(changes).includes("multiline")) {
+    if (isInputStyleChange || isResizeChange || isMultilineChange) {
       if (this.multiline) {
         const controlResize = this.resize === "vertical" ? "vertical" :
           this.resize === "horizontal" ? "horizontal" :
@@ -412,12 +430,12 @@ export class SdTextfieldControl implements OnChanges, AfterViewInit {
 
     // errorMessages
     if (
-      Object.keys(changes).includes("value") ||
-      Object.keys(changes).includes("type") ||
-      Object.keys(changes).includes("required") ||
-      Object.keys(changes).includes("validatorFn") ||
-      Object.keys(changes).includes("max") ||
-      Object.keys(changes).includes("min")
+      isValueChange ||
+      isTypeChange ||
+      isRequiredChange ||
+      isValidatorFnChange ||
+      isMaxChange ||
+      isMinChange
     ) {
       this.errorMessage = this._validate();
     }
