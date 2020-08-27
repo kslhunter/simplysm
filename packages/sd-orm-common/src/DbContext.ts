@@ -148,56 +148,32 @@ export abstract class DbContext {
       throw new Error("DB 강제 초기화는 트랜젝션 상에서는 동작하지 못합니다.\nconnect 대신에 connectWithoutTransaction 로 연결하여 시도하세요.");
     }
 
+    // 강제 아닐때
     if (!force) {
-      // 강제 아님
       const isDbExists = (
         await this.executeDefsAsync([
           { type: "getDatabaseInfo", database: this.schema.database }
         ])
       )[0].length > 0;
 
+      // DB 있을때
       if (isDbExists) {
-        // FORCE 아니고 DB 있음
-        const hasMigrationTable = (
-          await this.executeDefsAsync([
-            {
-              type: "getTableInfo",
-              table: {
-                database: this.schema.database,
-                schema: this.schema.schema,
-                name: "_migration"
-              }
-            }
-          ])
-        )[0].length > 0;
+        const dbMigrationCodes = (
+          await this.systemMigration
+            .select(item => ({
+              code: item.code
+            }))
+            .resultAsync()
+        ).map(item => item.code);
 
-        if (hasMigrationTable) {
-          // FORCE 아니고 DB 있으나, Migration 없음
-          const dbMigrationCodes = (
-            await this.systemMigration
-              .select(item => ({
-                code: item.code
-              }))
-              .resultAsync()
-          ).map(item => item.code);
+        const migrations = this.migrations
+          .filter(item => !dbMigrationCodes.includes(item.name))
+          .orderBy(item => item.name);
 
-          const migrations = this.migrations
-            .filter(item => !dbMigrationCodes.includes(item.name))
-            .orderBy(item => item.name);
-
-          if (migrations.length > 0) {
-            if (this.status !== "transact") {
-              await this.transAsync(async () => {
-                for (const migration of migrations) {
-                  await new migration().up(this);
-
-                  await this.systemMigration.insertAsync({
-                    code: migration.name
-                  });
-                }
-              });
-            }
-            else {
+        // 마이그레이션 있을때
+        if (migrations.length > 0) {
+          if (this.status !== "transact") {
+            await this.transAsync(async () => {
               for (const migration of migrations) {
                 await new migration().up(this);
 
@@ -205,17 +181,24 @@ export abstract class DbContext {
                   code: migration.name
                 });
               }
+            });
+          }
+          else {
+            for (const migration of migrations) {
+              await new migration().up(this);
+
+              await this.systemMigration.insertAsync({
+                code: migration.name
+              });
             }
           }
         }
 
         return false;
       }
-
-      // 강제 아니고 DB 없음: 강제와 동일한 동작
     }
 
-    // 강제
+    // 강제 혹은 첫 수행
 
     const dbNames = dbs ?? [this.schema.database];
     if (dbNames.length < 1) {
@@ -378,7 +361,7 @@ export abstract class DbContext {
     }
     queryDefsList.push(createIndexQueryDefs);
 
-    // Migrations 등록
+    // Migration 데이터 저장 등록
     const migrationInsertQueryDefs: TQueryDef[] = [];
     for (const migration of this.migrations.orderBy(item => item.name)) {
       migrationInsertQueryDefs.push({

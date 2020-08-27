@@ -3,12 +3,10 @@
 import "source-map-support/register";
 
 import * as yargs from "yargs";
-import { FsUtils, Logger, LoggerSeverity } from "@simplysm/sd-core-node";
+import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import * as os from "os";
 import { EventEmitter } from "events";
-import { SdCliProject } from "./bin/SdCliProject";
-import { SdCliLocalUpdate } from "./bin/SdCliLocalUpdate";
-import * as crypto from "crypto";
+import { SdCliProject } from "../builders/SdCliProject";
 
 EventEmitter.defaultMaxListeners = 0;
 process.setMaxListeners(0);
@@ -26,22 +24,6 @@ const argv = yargs
       default: false
     }
   })
-  .command(
-    "local-update",
-    "프로젝트의 의존성 패키지에, 외부 디렉토리에 있는 패키지 파일을 덮어씁니다.",
-    cmd => cmd.version(false)
-      .options({
-        config: {
-          type: "string",
-          describe: "simplysm.json 파일 경로"
-        },
-        options: {
-          type: "array",
-          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
-          default: []
-        }
-      })
-  )
   .command(
     "build",
     "빌드를 수행합니다.",
@@ -94,32 +76,6 @@ const argv = yargs
         }
       })
   )
-  .command(
-    "encrypt-config <key> <file>",
-    "설정파일을 암호화 합니다.",
-    cmd => cmd.version(false)
-      .positional("key", {
-        type: "string",
-        describe: "암호화키"
-      })
-      .positional("file", {
-        type: "string",
-        describe: "결과물 파일명"
-      })
-  )
-  .command(
-    "decrypt-config <file> <key>",
-    "설정파일을 복호화 합니다.",
-    cmd => cmd.version(false)
-      .positional("file", {
-        type: "string",
-        describe: "암호화된 설정파일"
-      })
-      .positional("key", {
-        type: "string",
-        describe: "복호화키"
-      })
-  )
   .argv;
 
 const logger = Logger.get(["simplysm", "sd-cli"]);
@@ -142,15 +98,11 @@ else {
 }
 
 (async (): Promise<void> => {
-  if (argv._[0] === "local-update") {
-    await SdCliLocalUpdate.runAsync({
-      options: argv.options
-    });
-  }
-  else if (argv._[0] === "build") {
+  if (argv._[0] === "build") {
     const project = await SdCliProject.createAsync({
       devMode: argv.watch,
       packages: argv.packages,
+      config: argv.config,
       options: argv.options
     });
     await project.buildAsync(argv.watch);
@@ -159,33 +111,10 @@ else {
     const project = await SdCliProject.createAsync({
       devMode: false,
       packages: argv.packages,
+      config: argv.config,
       options: argv.options
     });
     await project.publishAsync(argv.build);
-  }
-  else if (argv._[0] === "encrypt-config") {
-    if (!FsUtils.exists("simplysm.my.json")) {
-      throw new Error("simplysm.my.json 파일을 찾을 수 없습니다.");
-    }
-
-    const iv = Buffer.alloc(16, 0);
-    const cipheriv = crypto.createCipheriv("aes-192-cbc", crypto.scryptSync(argv.key!, "salt", 24), iv);
-    const input = FsUtils.createReadStream("simplysm.my.json");
-    const output = FsUtils.createWriteStream(argv.file!);
-    input.pipe(cipheriv).pipe(output);
-  }
-  else if (argv._[0] === "decrypt-config") {
-    const fileName = argv.file!;
-
-    if (!FsUtils.exists(fileName)) {
-      throw new Error(fileName + "파일을 찾을 수 없습니다.");
-    }
-
-    const iv = Buffer.alloc(16, 0);
-    const cipheriv = crypto.createDecipheriv("aes-192-cbc", crypto.scryptSync(argv.key!, "salt", 24), iv);
-    const input = FsUtils.createReadStream(fileName);
-    const output = FsUtils.createWriteStream("simplysm.my.json");
-    input.pipe(cipheriv).pipe(output);
   }
   else {
     throw new Error(`명령어가 잘못되었습니다.${os.EOL + os.EOL}\t${argv._[0]}${os.EOL}`);

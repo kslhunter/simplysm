@@ -53,13 +53,15 @@ export class SdProjectConfigUtils {
     return config;
   }
 
-  public static async loadConfigAsync(devMode: boolean, options: string[]): Promise<ISdProjectConfig> {
+  public static async loadConfigAsync(devMode: boolean, options: string[], configFileName?: string): Promise<ISdProjectConfig> {
     let config = await SdProjectConfigUtils._loadConfigAsync(path.resolve(process.cwd(), "simplysm.json"), devMode, options);
 
-    const myConfigPath = path.resolve(process.cwd(), "simplysm.my.json");
-    if (FsUtils.exists(myConfigPath)) {
-      const myConfig = await SdProjectConfigUtils._loadConfigAsync(myConfigPath, devMode, options);
-      config = ObjectUtils.merge(config, myConfig);
+    if (configFileName !== undefined) {
+      const myConfigPath = path.resolve(process.cwd(), configFileName);
+      if (FsUtils.exists(myConfigPath)) {
+        const myConfig = await SdProjectConfigUtils._loadConfigAsync(myConfigPath, devMode, options);
+        config = ObjectUtils.merge(config, myConfig);
+      }
     }
 
     return config;

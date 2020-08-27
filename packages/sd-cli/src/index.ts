@@ -1,7 +1,4 @@
 import "@simplysm/sd-core-common";
-export * from "./bin/SdCliLocalUpdate";
-export * from "./bin/SdCliPackage";
-export * from "./bin/SdCliProject";
 export * from "./build-tools/SdAngularUtils";
 export * from "./build-tools/SdNgGenerator";
 export * from "./build-tools/SdPackageBuilder";
@@ -9,6 +6,9 @@ export * from "./build-tools/SdTypescriptProgramRunner";
 export * from "./build-tools/SdWebpackInputHostWithScss";
 export * from "./build-tools/SdWebpackTimeFixPlugin";
 export * from "./build-tools/SdWebpackWriteFilePlugin";
+export * from "./builders/SdCliLocalUpdate";
+export * from "./builders/SdCliPackage";
+export * from "./builders/SdCliProject";
 export * from "./commons";
 export * from "./metadata/commons";
 export * from "./metadata/SdArrayMetadata";

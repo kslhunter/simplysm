@@ -24,12 +24,12 @@ export class SdCliProject {
     };
   } = {};
 
-  public static async createAsync(argv: { devMode: boolean; packages: string[]; options: string[] }): Promise<SdCliProject> {
+  public static async createAsync(argv: { devMode: boolean; packages: string[]; options: string[]; config?: string }): Promise<SdCliProject> {
     const logger = Logger.get(["simplysm", "sd-cli", "project"]);
 
     logger.debug("프로젝트 준비...");
 
-    const config = await SdProjectConfigUtils.loadConfigAsync(argv.devMode, argv.options);
+    const config = await SdProjectConfigUtils.loadConfigAsync(argv.devMode, argv.options, argv.config);
 
     const npmConfigPath = path.resolve(process.cwd(), "package.json");
     const npmConfig: INpmConfig = await FsUtils.readJsonAsync(npmConfigPath);
