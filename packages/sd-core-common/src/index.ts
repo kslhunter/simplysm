@@ -18,4 +18,5 @@ export * from "./utils/FunctionUtils";
 export * from "./utils/JsonConvert";
 export * from "./utils/MathUtils";
 export * from "./utils/ObjectUtils";
+export * from "./utils/StringUtils";
 export * from "./utils/Wait";
