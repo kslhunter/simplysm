@@ -26,6 +26,7 @@ import { ISdResizeEvent } from "@simplysm/sd-core-browser";
 import { SdModalProvider } from "../providers/SdModalProvider";
 import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
+import { ObjectUtils } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-sheet",
@@ -1475,36 +1476,43 @@ export class SdSheetControl implements DoCheck, OnInit {
   public onColumnOrderingHeaderClick(event: MouseEvent, columnControl: SdSheetColumnControl): void {
     if (columnControl.key === undefined) return;
 
+    let ordering = ObjectUtils.clone(this.ordering);
+
     if (event.shiftKey || event.ctrlKey) {
-      const orderingItem = this.ordering.single(item => item.key === columnControl.key);
+      const orderingItem = ordering.single(item => item.key === columnControl.key);
       if (orderingItem) {
         if (orderingItem.desc) {
-          this.ordering.remove(orderingItem);
+          ordering.remove(orderingItem);
         }
         else {
           orderingItem.desc = !orderingItem.desc;
         }
       }
       else {
-        this.ordering.push({ key: columnControl.key, desc: false });
+        ordering.push({ key: columnControl.key, desc: false });
       }
     }
     else {
-      if (this.ordering.length === 1 && this.ordering[0].key === columnControl.key) {
-        const orderingItem = this.ordering[0];
+      if (ordering.length === 1 && ordering[0].key === columnControl.key) {
+        const orderingItem = ordering[0];
         if (orderingItem.desc) {
-          this.ordering.remove(orderingItem);
+          ordering.remove(orderingItem);
         }
         else {
           orderingItem.desc = !orderingItem.desc;
         }
       }
       else {
-        this.ordering = [{ key: columnControl.key, desc: false }];
+        ordering = [{ key: columnControl.key, desc: false }];
       }
     }
 
-    this.orderingChange.emit(this.ordering);
+    if (this.orderingChange.observers.length > 0) {
+      this.orderingChange.emit(ordering);
+    }
+    else {
+      this.ordering = ordering;
+    }
   }
 
   public onCellDblClick(event: MouseEvent): void {
