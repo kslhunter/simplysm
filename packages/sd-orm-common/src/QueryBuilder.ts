@@ -26,9 +26,13 @@ import {
   TQueryDef
 } from "./commons";
 import { Uuid } from "@simplysm/sd-core-common";
+import { QueryHelper } from "./QueryHelper";
 
 export class QueryBuilder {
+  public qh: QueryHelper;
+
   public constructor(private readonly _dialect: "mssql" | "mysql" = "mssql") {
+    this.qh = new QueryHelper(this._dialect);
   }
 
   // ----------------------------------------------------
@@ -705,13 +709,13 @@ DEALLOCATE PREPARE stmt;`.trim();
 
     if (this._dialect === "mysql") {
       q += this.wrap(colDef.name) + " ";
-      q += colDef.dataType + " ";
+      q += this.qh.type(colDef.dataType) + " ";
       q += colDef.nullable ? "NULL " : "NOT NULL ";
       q += colDef.autoIncrement ? "AUTO_INCREMENT" : "";
     }
     else {
       q += this.wrap(colDef.name) + " ";
-      q += colDef.dataType + " ";
+      q += this.qh.type(colDef.dataType) + " ";
       q += colDef.autoIncrement ? "IDENTITY(1,1) " : "";
       q += colDef.nullable ? "NULL" : "NOT NULL";
     }

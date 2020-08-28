@@ -58,7 +58,7 @@ export interface IQueryTableNameDef {
 
 export interface IQueryColumnDef {
   name: string;
-  dataType: string;
+  dataType: Type<TQueryValue> | TSdOrmDataType | string;
   autoIncrement?: boolean;
   nullable?: boolean;
 }
@@ -252,7 +252,7 @@ export interface IColumnDef {
   description?: string;
   propertyKey: string;
   name: string;
-  dataType?: TSdOrmDataType;
+  dataType?: Type<TQueryValue> | TSdOrmDataType | string;
   length?: number | "MAX";
   nullable?: boolean;
   autoIncrement?: boolean;

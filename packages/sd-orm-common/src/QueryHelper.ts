@@ -429,7 +429,10 @@ export class QueryHelper {
     });
   }
 
-  public type(type: Type<TQueryValue> | TSdOrmDataType | undefined): string {
+  public type(type: Type<TQueryValue> | TSdOrmDataType | string | undefined): string {
+    if (typeof type === "string") {
+      return type;
+    }
     if (type?.["type"] !== undefined) {
       const currType = type as TSdOrmDataType;
       switch (currType.type) {
