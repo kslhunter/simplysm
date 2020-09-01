@@ -60,7 +60,7 @@ export class SdServiceServer extends EventEmitter {
         server: this._httpServer
       });
 
-      this._wsServer.on("connection", async (conn, connReq) => {
+      this._wsServer.on("connection", (conn, connReq) => {
         this._wsConnections.push(conn);
 
         conn.on("close", () => {

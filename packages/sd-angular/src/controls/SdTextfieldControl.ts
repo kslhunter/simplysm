@@ -363,7 +363,7 @@ export class SdTextfieldControl implements DoCheck, AfterViewInit {
 
     // controlValue
     if (isValueChange || isTypeChange) {
-      if (this.value === undefined) {
+      if (this.value == null) {
         this.controlValue = "";
       }
       else if (this.type === "number" && typeof this.value === "number") {
@@ -394,7 +394,7 @@ export class SdTextfieldControl implements DoCheck, AfterViewInit {
         this.controlValue = this.value;
       }
       else {
-        throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
+        throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value?.toString()})`);
       }
     }
 
@@ -497,7 +497,7 @@ export class SdTextfieldControl implements DoCheck, AfterViewInit {
   private _validate(): string {
     const errorMessages: string[] = [];
 
-    if (this.value === undefined) {
+    if (this.value == null) {
       if (this.required) {
         errorMessages.push("값을 입력하세요.");
       }

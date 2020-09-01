@@ -45,6 +45,66 @@ export class DateOnly {
     throw new ArgumentError({ str });
   }
 
+  public static getByMonthWeekFirstDate(month: DateOnly, week: number, offsetWeek: number = 4, startWeek: number = 1): DateOnly {
+    // 이달 1일
+    const monthFirstDate = month.setDay(1);
+
+    // 이달 1일의 요일
+    const monthFirstDayWeek = monthFirstDate.week;
+
+    // 이달의 주차가 시작되는 날짜
+    const monthWeekNumStartDate = monthFirstDayWeek <= offsetWeek ? monthFirstDate : monthFirstDate.setDay(7 - monthFirstDayWeek + 1 + startWeek);
+    return monthWeekNumStartDate.addDays(7 * (week > 0 ? week - 1 : week));
+  }
+
+  /**
+   * 특정 날짜의 월별주차 가져오기
+   * - 일: 0, 월: 1, 화: 2, 수: 3, 목: 4, 금: 5, 토: 6
+   * @param {DateOnly} date 확인날짜
+   * @param {number} offsetWeek 이 요일이 포함된 월의 주차로 인식됨 (기본값: 4=목요일)
+   * @param {number} startWeek 이 요일을 시작요일로 봄 (기본값: 1=월요일)
+   * @returns {{month: DateOnly; week: number}}
+   */
+  public static getWeekOfMonth(date: DateOnly, offsetWeek: number = 4, startWeek: number = 1): IWeekOfMonth {
+    // 일: 0, 월: 1, 화: 2, 수: 3, 목: 4, 금: 5, 토: 6
+
+    // 이번달의 주차가 시작되는 날짜
+    const monthWeekNumStartDate = DateOnly.getByMonthWeekFirstDate(date.setDay(1), 1, offsetWeek, startWeek);
+
+    // 다음달의 주차가 시작되는 날짜
+    const nextMonthWeekNumStartDate = DateOnly.getByMonthWeekFirstDate(date.setDay(1).addMonths(1), 1, offsetWeek, startWeek);
+
+    // 이번달의 주차가 끝나는 날짜
+    const monthWeekNumEndDate = nextMonthWeekNumStartDate.day !== 1 ?
+      date.addMonths(1).addDays(-1) :
+      nextMonthWeekNumStartDate.addDays(-nextMonthWeekNumStartDate.week - 1 + startWeek);
+
+    if (date.tick < monthWeekNumStartDate.tick) {
+      return DateOnly.getWeekOfMonth(date.setDay(1).addDays(-1), offsetWeek, startWeek);
+    }
+    else if (date.tick > monthWeekNumEndDate.tick) {
+      return DateOnly.getWeekOfMonth(date.addMonths(1).setDay(1), offsetWeek, startWeek);
+    }
+    else {
+      // 1주차의 첫날짜 (전달일 수 있음)
+      const firstWeekNumFirstDate = monthWeekNumStartDate.addDays(-monthWeekNumStartDate.week + 1);
+
+      // 1주차 첫날짜에서 지난 날수
+      const spanDayFromWeekStartDate = Math.floor(
+        ((date.tick - firstWeekNumFirstDate.tick) / (24 * 60 * 60 * 1000))
+      );
+
+      // 1주차 첫날짜에서 지난 주차수
+      const spanWeekFromWeekStartDate = Math.floor(spanDayFromWeekStartDate / 7);
+      return {
+        month: date.setDay(1),
+        week: spanWeekFromWeekStartDate + 1,
+        startDate: date.addDays(-date.week + startWeek),
+        endDate: date.addDays(-date.week + startWeek + 6)
+      };
+    }
+  }
+
   public get year(): number {
     return this.date.getFullYear();
   }
@@ -125,4 +185,11 @@ export class DateOnly {
   public toString(): string {
     return this.toFormatString("yyyy-MM-dd");
   }
+}
+
+export interface IWeekOfMonth {
+  month: DateOnly;
+  week: number; // TODO: weekNum으로 변경
+  startDate: DateOnly;
+  endDate: DateOnly;
 }

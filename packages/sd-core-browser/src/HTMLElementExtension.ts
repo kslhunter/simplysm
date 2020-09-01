@@ -54,7 +54,7 @@ HTMLElement.prototype.getRelativeOffset = function (parent: HTMLElement | string
   }
 
   cursor = this;
-  while (cursor.parentElement) {
+  while (cursor.parentElement && cursor !== parentEl) {
     cursor = cursor.parentElement;
     top -= cursor.scrollTop;
     left -= cursor.scrollLeft;

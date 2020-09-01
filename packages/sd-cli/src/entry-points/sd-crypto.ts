@@ -78,6 +78,7 @@ else {
     if (key === undefined) {
       process.stdout.write("password: ", "utf-8");
 
+      // TODO: 암호를 두번 입력하도록 수정
       key = await new Promise(resolve => {
         const rl = readline.createInterface({
           input: process.stdin,

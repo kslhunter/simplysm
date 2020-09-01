@@ -131,4 +131,27 @@ describe("(common) core.types.DateOnly", () => {
     const d2 = new DateOnly(2020, 3, 31).addMonths(-1);
     expect(d2.toString()).to.equal("2020-02-29");
   });
+
+  it("특정 날짜의 월별주차를 가져올 수 있다.", () => {
+    const test = (year: number, month: number, day: number, year2: number, month2: number, week2: number) => {
+      const r = DateOnly.getWeekOfMonth(new DateOnly(year, month, day), 3, 1);
+      expect(r.month.tick).to.equal(new DateOnly(year2, month2, 1).tick);
+      expect(r.week).to.equal(week2);
+    };
+
+    test(2020, 8, 1, 2020, 7, 5);
+    test(2020, 8, 2, 2020, 7, 5);
+    test(2020, 8, 3, 2020, 8, 1);
+    test(2020, 8, 9, 2020, 8, 1);
+    test(2020, 8, 10, 2020, 8, 2);
+    test(2020, 8, 16, 2020, 8, 2);
+    test(2020, 8, 17, 2020, 8, 3);
+    test(2020, 8, 23, 2020, 8, 3);
+    test(2020, 8, 24, 2020, 8, 4);
+    test(2020, 8, 30, 2020, 8, 4);
+    test(2020, 8, 31, 2020, 9, 1);
+    test(2020, 9, 30, 2020, 9, 5);
+    test(2020, 10, 1, 2020, 9, 5);
+    test(2020, 3, 31, 2020, 4, 1);
+  });
 });

@@ -46,6 +46,23 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
         }
       }
 
+      &[sd-inset] > button {
+        border-radius: 0;
+        border: none;
+        color: var(--theme-color-primary-default);
+
+        &:hover {
+          color: var(--theme-color-primary-darker);
+        }
+
+        &:disabled {
+          background: white;
+          border-color: var(--theme-color-grey-lighter);
+          color: var(--text-brightness-lighter);
+          cursor: default;
+        }
+      }
+
       @each $theme in $arr-theme-color {
         &[sd-theme=#{$theme}] > button {
           background: var(--theme-color-#{$theme}-default);
@@ -84,10 +101,6 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
       &[sd-size=lg] > button {
         padding: var(--gap-default) var(--gap-xl);
         border-radius: 2px;
-      }
-
-      &[sd-inset] > button {
-        border-radius: 0;
       }
     }
   `]
