@@ -10,4 +10,8 @@ export class QueryUnit<T> {
   public get query(): any {
     return this._query;
   }
+
+  public notNull(): QueryUnit<NonNullable<T>> {
+    return this as any;
+  }
 }

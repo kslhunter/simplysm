@@ -59,7 +59,7 @@ export class QueryHelper {
       ]);
     }
   }
-
+  
   public isNull<T extends TQueryValue>(source: TEntityValue<T>): TQueryBuilderValue[] {
     return [this.getQueryValue(source), " IS ", "NULL"];
   }
