@@ -14,7 +14,7 @@ export class SdDomValidatorRootProvider {
         });
       }
       else {
-        const firstCell = invalidEls[0].findParent("._col");
+        const firstCell = invalidEls[0].findParent("._cell");
         if (firstCell) {
           // "confirm"창울 띄우는 경우에 포커싱이 안되는 현상 때문에 "setTimeout"이 필요함.
           setTimeout(() => {
@@ -30,10 +30,10 @@ export class SdDomValidatorRootProvider {
             return formItem.getAttribute("sd-label");
           }
 
-          const cell = item.findParent("._col");
+          const cell = item.findParent("._cell");
           if (cell) {
-            const index = cell.findParent("._row")!.findAll("._col").indexOf(cell);
-            const headerCell = cell.findParent("sd-sheet")!.findAll("._head ._row").last()!.findAll("._col")[index];
+            const index = cell.findParent("._row")!.findAll("._cell").indexOf(cell);
+            const headerCell = cell.findParent("._sheet")!.findAll("._head ._header-row")[0].findAll("._cell")[index];
             return headerCell.getAttribute("sd-header") ?? headerCell.textContent!.trim();
           }
 

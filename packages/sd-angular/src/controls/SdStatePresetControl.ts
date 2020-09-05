@@ -20,11 +20,10 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
     </sd-anchor>
     <sd-gap width="sm"></sd-gap>
     <ng-container *ngFor="let preset of presets; trackBy: trackByNameFn">
-      <sd-label theme="primary">
+      <sd-label theme="info">
         <sd-anchor (click)="onItemClick(preset)" class="sd-text-brightness-rev-default">
           {{ preset.name }}
         </sd-anchor>
-        <sd-gap width="default"></sd-gap>
         <sd-anchor (click)="onRemoveButtonClick(preset)"
                    class="sd-text-brightness-rev-default">
           <sd-icon icon="times"></sd-icon>
@@ -36,7 +35,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
   styles: [/* language=SCSS */ `
     :host {
       /deep/ sd-anchor {
-        padding: var(--gap-xs) 0;
+        padding: var(--gap-sm) var(--gap-default);
       }
     }
   `]

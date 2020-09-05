@@ -55,9 +55,8 @@ import { SdFormControl } from "./SdFormControl";
         
         > label {
           display: table-cell;
-          padding-bottom: var(--gap-sm);
-          padding-left: var(--gap-default);
-          padding-right: var(--gap-default);
+          vertical-align: top;
+          padding: var(--gap-sm) var(--gap-default);
           text-align: right;
         }
 

@@ -529,11 +529,11 @@ IF EXISTS (
   ${this.select(def).replace(/\n/g, "\n  ")}
 ) THEN
 
-${this.update({ ...def, record: def.updateRecord })}
+${Object.keys(def.updateRecord).length > 0 ? this.update({ ...def, record: def.updateRecord }) : ""}
 
 ELSE
 
-${this.insert({ ...def, record: def.insertRecord })}
+${Object.keys(def.insertRecord).length > 0 ? this.insert({ ...def, record: def.insertRecord }) : ""}
 
 END IF;
 

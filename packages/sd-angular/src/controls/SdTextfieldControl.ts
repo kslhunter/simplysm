@@ -60,7 +60,7 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
                 (input)="onInput()"></textarea>
     </ng-container>
 
-    <div class="_invalid-indicator" [class._has-error-message]="errorMessage"></div>`,
+    <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
 
@@ -208,7 +208,7 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 
       > input:invalid + ._invalid-indicator,
       > textarea:invalid + ._invalid-indicator,
-      > ._invalid-indicator._has-error-message {
+      &[sd-invalid=true] > ._invalid-indicator {
         @include invalid-indicator();
       }
     }
@@ -310,6 +310,11 @@ export class SdTextfieldControl implements DoCheck, AfterViewInit {
   @Input("input.class")
   @SdInputValidate(String)
   public inputClass?: string;
+
+  @HostBinding("attr.sd-invalid")
+  public get isInvalid(): boolean {
+    return Boolean(this.errorMessage);
+  }
 
   @ViewChild("input", { static: false, read: ElementRef })
   public inputElRef?: ElementRef<HTMLTextAreaElement | HTMLInputElement>;

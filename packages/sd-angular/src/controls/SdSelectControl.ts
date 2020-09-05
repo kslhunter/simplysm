@@ -82,7 +82,7 @@ import { Uuid } from "@simplysm/sd-core-common";
         display: block;
         overflow: visible;
         padding-right: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px) !important;
-        height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+        min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
         border: 1px solid var(--sd-border-color);
         transition: outline-color .1s linear;
@@ -137,7 +137,7 @@ import { Uuid } from "@simplysm/sd-core-common";
           width: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         }
 
-        height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+        min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
       }
 
       &[sd-size=lg] /deep/ > sd-dropdown > div {
@@ -149,7 +149,7 @@ import { Uuid } from "@simplysm/sd-core-common";
           width: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         }
 
-        height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+        min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
       }
 
       &[sd-inset=true] {
@@ -159,15 +159,15 @@ import { Uuid } from "@simplysm/sd-core-common";
         > /deep/ sd-dropdown > div {
           border: none;
           border-radius: 0;
-          height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+          min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
         }
 
         &[sd-size=sm] > /deep/ sd-dropdown > div {
-          height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+          min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
         }
 
         &[sd-size=lg] > /deep/ sd-dropdown > div {
-          height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+          min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
         }
 
         > /deep/ sd-dropdown > div:focus {
@@ -301,6 +301,10 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
   @SdInputValidate(String)
   public contentClass?: string;
 
+  @Input()
+  @SdInputValidate({ type: String, includes: ["vertical", "horizontal"] })
+  public multiSelectionDisplayDirection?: "vertical" | "horizontal";
+
   @HostBinding("attr.sd-invalid")
   public get invalid(): boolean {
     return this.required === true && this._value === undefined;
@@ -429,6 +433,6 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
       else {
         return el.findFirst("> ._content")?.innerHTML ?? "";
       }
-    }).join(", ");
+    }).join(this.multiSelectionDisplayDirection === "vertical" ? "<div class='sd-padding-sm-0'></div>" : ", ");
   }
 }

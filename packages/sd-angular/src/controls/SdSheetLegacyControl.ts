@@ -27,24 +27,23 @@ import { SdModalProvider } from "../providers/SdModalProvider";
 import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 import { ObjectUtils } from "@simplysm/sd-core-common";
+import { ISdSheetColumnOrderingVM, ISdSheetConfigVM } from "./SdSheetControl";
 
 @Component({
-  selector: "sd-sheet2",
+  selector: "sd-sheet-legacy",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-dock-container>
       <sd-dock *ngIf="key || pageLength > 0">
-        <div class="_icon-container">
-          <sd-anchor class="_card-icon"
-                     *ngIf="useCardDisplayType"
-                     (click)="onDisplayTypeChangeButtonClick()">
-            <sd-icon [icon]="displayType === 'card' ? 'bars' : 'table'" fixedWidth></sd-icon>
-          </sd-anchor>
-          <sd-anchor class="_cog-icon" (click)="onConfigButtonClick()"
-                     *ngIf="key">
-            <sd-icon icon="cog" fixedWidth></sd-icon>
-          </sd-anchor>
-        </div>
+        <sd-anchor class="_cog-icon" (click)="onConfigButtonClick()"
+                   *ngIf="key">
+          <sd-icon icon="cog" fixedWidth></sd-icon>
+        </sd-anchor>
+        <sd-anchor class="_card-icon"
+                   *ngIf="useCardDisplayType"
+                   (click)="onDisplayTypeChangeButtonClick()">
+          <sd-icon [icon]="displayType === 'card' ? 'bars' : 'table'" fixedWidth></sd-icon>
+        </sd-anchor>
 
         <sd-pagination [page]="page"
                        [pageLength]="pageLength"
@@ -81,7 +80,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
                 </ng-container>
               </div>
               <!-- 셀 그룹 -->
-              <div class="_cell-group">
+              <div class="_cell-group" [style.padding-left.px]="fixedCellGroupWidthPixel">
                 <ng-container *ngFor="let headerGroup of nonFixedHeaderGroups; trackBy: trackByFnForHeaderGroup">
                   <div class="_cell"
                        [style.width.px]="headerGroup.widthPixel">
@@ -145,7 +144,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
                 </ng-container>
               </div>
               <!-- 셀 그룹 -->
-              <div class="_cell-group">
+              <div class="_cell-group" [style.padding-left.px]="fixedCellGroupWidthPixel">
                 <ng-container *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
                   <div class="_cell"
                        [style.width.px]="columnWidthPixelMap.get(columnControl.guid)"
@@ -204,7 +203,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
                 </ng-container>
               </div>
               <!-- 셀 그룹 -->
-              <div class="_cell-group">
+              <div class="_cell-group" [style.padding-left.px]="fixedCellGroupWidthPixel">
                 <ng-container *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
                   <div class="_cell"
                        [style.width.px]="columnWidthPixelMap.get(columnControl.guid)">
@@ -270,7 +269,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
                   </ng-container>
                 </div>
                 <!-- 셀 그룹 -->
-                <div class="_cell-group">
+                <div class="_cell-group" [style.padding-left.px]="fixedCellGroupWidthPixel">
                   <ng-container
                     *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
                     <div class="_cell"
@@ -342,10 +341,14 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
 
         > sd-dock { // 상단 DOCK (설정 아이콘 및 페이징)
           border-bottom: 1px solid $border-color-dark;
+          padding: var(--sd-sheet-padding-v) var(--sd-sheet-padding-h);
 
-          > ._icon-container {
+          > ._cog-icon {
             float: right;
-            padding: var(--sd-gap-sm) var(--sd-gap-default);
+          }
+
+          > ._card-icon {
+            float: right;
           }
         }
 
@@ -413,7 +416,8 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
                 }
 
                 > ._fixed-cell-group { // 고정 셀 그룹
-                  position: sticky;
+                  position: absolute;
+                  top: 0;
                   left: 0;
                   z-index: $z-index-fixed;
 
@@ -479,8 +483,9 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
             }
 
             > ._head { // 헤더 구역
-              position: sticky;
+              position: absolute;
               top: 0;
+              left: 0;
               z-index: $z-index-head;
               user-select: none;
 
@@ -607,7 +612,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
     }
   `]
 })
-export class SdSheetControl implements DoCheck, OnInit {
+export class SdSheetLegacyControl implements DoCheck, OnInit {
   @Input()
   @SdInputValidate(String)
   public key?: string;
@@ -864,7 +869,32 @@ export class SdSheetControl implements DoCheck, OnInit {
         const headEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._head")!;
         const bodyEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._body")!;
 
+        headEl.addEventListener("resize", event => {
+          if (event.prevHeight !== event.newHeight) {
+            bodyEl.style.paddingTop = event.newHeight + "px";
+          }
+        });
+
         const paneEl = this._el.findFirst("> sd-dock-container > sd-pane")!;
+        paneEl.addEventListener("mousewheel", event => {
+          if (Boolean(event["ctrlKey"]) || Boolean(event["altKey"])) {
+            return;
+          }
+
+          /*event.preventDefault();
+          event.stopPropagation();*/
+
+          paneEl.scrollTop += (event as WheelEvent).deltaY;
+          paneEl.scrollLeft += (event as WheelEvent).deltaX;
+        });
+        paneEl.addEventListener("scroll", event => {
+          headEl.style.top = paneEl.scrollTop + "px";
+
+          const fixedCellGroupEls = paneEl.findAll("> ._sheet > ._content > ._row > ._fixed-cell-group");
+          for (const fixedCellGroupEl of fixedCellGroupEls) {
+            fixedCellGroupEl.style.left = paneEl.scrollLeft + "px";
+          }
+        });
 
         bodyEl.addEventListener("resize", event => {
           if (event.prevWidth !== event.newWidth) {
@@ -905,6 +935,8 @@ export class SdSheetControl implements DoCheck, OnInit {
               const rowEl = cellEl.findParent("._sheet > ._body > ._row")!;
               const rowOffset = rowEl.getRelativeOffset(paneEl);
 
+              /*if (this.autoSelect === undefined) {
+              }*/
               const rowFocusIndicatorEl = paneEl.findFirst("> ._row-focus-indicator")!;
               rowFocusIndicatorEl.style.top = (paneEl.scrollTop + rowOffset.top - 1) + "px";
               rowFocusIndicatorEl.style.left = (paneEl.scrollLeft + rowOffset.left - 1) + "px";
@@ -964,21 +996,6 @@ export class SdSheetControl implements DoCheck, OnInit {
 
           const rowFocusIndicatorEl = paneEl.findFirst("> ._row-focus-indicator")!;
           rowFocusIndicatorEl.style.display = "none";
-
-
-          const relatedTargetCell = event.relatedTarget instanceof HTMLElement ?
-            event.relatedTarget.matches("._cell") ? event.relatedTarget : event.relatedTarget.findParent("._cell") :
-            undefined;
-          const targetCell = event.target instanceof HTMLElement ?
-            event.target.matches("._cell") ? event.target : event.target.findParent("._cell") :
-            undefined;
-
-          if (relatedTargetCell !== targetCell) {
-            this._zone.run(() => {
-              this._editCell = "";
-              this._cdr.markForCheck();
-            });
-          }
         }, true);
       }
 
@@ -1100,6 +1117,18 @@ export class SdSheetControl implements DoCheck, OnInit {
 
       this.isGroupLastColumMap = this.columnControls?.toArray()
         .toMap(item => item.guid, item => this._getIsGroupLastColumn(item)) ?? new Map<string, boolean>();
+    }
+
+    if (itemsChanges) {
+      this._zone.runOutsideAngular(() => {
+        setTimeout(() => {
+          const paneEl = this._el.findFirst("> sd-dock-container > sd-pane")!;
+          const fixedCellGroupEls = paneEl.findAll("> ._sheet > ._content > ._row > ._fixed-cell-group");
+          for (const fixedCellGroupEl of fixedCellGroupEls) {
+            fixedCellGroupEl.style.left = paneEl.scrollLeft + "px";
+          }
+        });
+      });
     }
   }
 
@@ -1566,23 +1595,4 @@ export class SdSheetControl implements DoCheck, OnInit {
 
     return result;
   }
-}
-
-export interface ISdSheetConfigVM {
-  displayType?: "sheet" | "card";
-  columnObj?: { [key: string]: ISdSheetColumnConfigVM | undefined };
-}
-
-export interface ISdSheetColumnConfigVM {
-  fixed?: boolean;
-  group?: string;
-  header?: string;
-  widthPixel?: number;
-  displayOrder?: number;
-  hidden?: boolean;
-}
-
-export interface ISdSheetColumnOrderingVM {
-  key: string;
-  desc: boolean;
 }
