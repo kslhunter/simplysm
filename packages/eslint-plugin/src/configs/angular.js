@@ -46,6 +46,7 @@ module.exports = {
         "@angular-eslint/no-input-rename": "off",
         "@angular-eslint/component-max-inline-declarations": "off",
         "@angular-eslint/no-forward-ref": "off",
+        "@angular-eslint/no-empty-lifecycle-method": "warn",
 
         "@typescript-eslint/tslint/config": ["error", { lintFile: path.resolve(__dirname, "tslint/codelyzer.json") }]
       },
