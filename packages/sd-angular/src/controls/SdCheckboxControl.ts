@@ -131,6 +131,7 @@ import { SdInputValidate } from "../commons/SdInputValidate";
           > ._indicator {
             padding: 3px;
             margin-top: calc(var(--gap-sm) / 2);
+            top: 0;
           }
 
           > ._indicator > div {

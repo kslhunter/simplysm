@@ -27,6 +27,10 @@ import { SdInputValidate } from "../commons/SdInputValidate";
         &[sd-selected=true] {
           text-decoration: underline;
         }
+
+        &:hover {
+          background: var(--theme-color-grey-lightest);
+        }
       }
     }
   `]

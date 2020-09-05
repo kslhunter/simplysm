@@ -29,7 +29,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
 import { ObjectUtils } from "@simplysm/sd-core-common";
 
 @Component({
-  selector: "sd-sheet2",
+  selector: "sd-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-dock-container>
@@ -334,8 +334,8 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
       $z-index-head: 7;
       $z-index-head-fixed: 8;
 
-      $border-color-light: var(--sd-border-color-light);
-      $border-color-dark: var(--sd-border-color);
+      $border-color-light: var(--theme-color-blue-grey-lightest);
+      $border-color-dark: var(--theme-color-grey-light);
 
       > sd-dock-container {
         border: 1px solid $border-color-dark;
@@ -345,7 +345,14 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
 
           > ._icon-container {
             float: right;
-            padding: var(--sd-gap-sm) var(--sd-gap-default);
+
+            > sd-anchor {
+              padding: var(--gap-sm) var(--gap-default);
+
+              &:hover {
+                background: var(--theme-color-grey-lightest);
+              }
+            }
           }
         }
 
@@ -932,7 +939,7 @@ export class SdSheetControl implements DoCheck, OnInit {
                 this._selectItem(itemDef.item, itemDef.index);
               });
             }
-            else if (
+            /*else if (
               this.autoSelect === undefined &&
               this.selectMode === "single" &&
               this.selectedItems[0] !== undefined &&
@@ -942,7 +949,7 @@ export class SdSheetControl implements DoCheck, OnInit {
                 this.selectedItems = [];
                 this.selectedItemsChange.emit(this.selectedItems);
               });
-            }
+            }*/
           }
 
           const focusedEl = event.target as HTMLElement;
@@ -964,7 +971,6 @@ export class SdSheetControl implements DoCheck, OnInit {
 
           const rowFocusIndicatorEl = paneEl.findFirst("> ._row-focus-indicator")!;
           rowFocusIndicatorEl.style.display = "none";
-
 
           const relatedTargetCell = event.relatedTarget instanceof HTMLElement ?
             event.relatedTarget.matches("._cell") ? event.relatedTarget : event.relatedTarget.findParent("._cell") :

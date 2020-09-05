@@ -60,7 +60,6 @@ export * from "./_modules/entry-controls/SdModalEntryControlModule";
 export * from "./_modules/entry-controls/SdToastContainerEntryControlModule";
 export * from "./_modules/entry-controls/SdToastEntryControlModule";
 export * from "./_modules/modals/SdAddressSearchModalModule";
-export * from "./_modules/modals/SdSheetConfigModalModule";
 export * from "./_modules/providers/SdModalProviderModule";
 export * from "./_modules/providers/SdPrintProviderModule";
 export * from "./_modules/providers/SdServiceFactoryProviderModule";
