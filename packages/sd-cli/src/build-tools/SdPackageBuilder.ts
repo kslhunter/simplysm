@@ -17,7 +17,7 @@ import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import * as fs from "fs";
 import { AngularCompilerPlugin, PLATFORM } from "@ngtools/webpack";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
-import { SdWebpackInputHostWithScss } from "./SdWebpackInputHostWithScss";
+import { createWebpackInputHostForScss } from "./createWebpackInputHostForScss";
 import { SdTypescriptProgramRunner } from "./SdTypescriptProgramRunner";
 import * as OptimizeCSSAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
@@ -878,7 +878,7 @@ export class SdPackageBuilder extends EventEmitter {
             directTemplateLoading: true,
             tsConfigPath,
             skipCodeGeneration: this._devMode,
-            host: new SdWebpackInputHostWithScss(fs),
+            host: createWebpackInputHostForScss(fs),
             compilerOptions: {
               fullTemplateTypeCheck: true,
               strictInjectionParameters: true,

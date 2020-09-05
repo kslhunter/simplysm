@@ -7,6 +7,7 @@ module.exports = {
     {
       files: ["*.ts"],
       plugins: ["@angular-eslint"],
+      extends: ["plugin:@angular-eslint/all"],
       rules: {
         "@angular-eslint/component-class-suffix": ["error", {
           suffixes: ["Page", "Component", "Modal", "Control", "PrintTemplate", "Toast"]
@@ -19,7 +20,7 @@ module.exports = {
           "error",
           { type: "element", prefix: "app", style: "kebab-case" }
         ],
-        "@angular-eslint/contextual-lifecycle": "error",
+        /*"@angular-eslint/contextual-lifecycle": "error",
         "@angular-eslint/directive-class-suffix": "error",
         "@angular-eslint/no-attribute-decorator": "error",
         "@angular-eslint/no-conflicting-lifecycle": "error",
@@ -40,7 +41,11 @@ module.exports = {
         "@angular-eslint/use-injectable-provided-in": "error",
         "@angular-eslint/use-lifecycle-interface": "error",
         "@angular-eslint/use-pipe-decorator": "error",
-        "@angular-eslint/use-pipe-transform-interface": "error",
+        "@angular-eslint/use-pipe-transform-interface": "error",*/
+        "@angular-eslint/no-output-native": "off",
+        "@angular-eslint/no-input-rename": "off",
+        "@angular-eslint/component-max-inline-declarations": "off",
+        "@angular-eslint/no-forward-ref": "off",
 
         "@typescript-eslint/tslint/config": ["error", { lintFile: path.resolve(__dirname, "tslint/codelyzer.json") }]
       },
@@ -56,12 +61,10 @@ module.exports = {
       files: ["+(*Page.html|*Component.html|*Modal.html|*Control.html|*PrintTemplate.html|*Toast.html)"],
       parser: "@angular-eslint/template-parser",
       plugins: ["@angular-eslint/template"],
+      extends: ["plugin:@angular-eslint/template/all"],
       rules: {
         "@angular-eslint/template/cyclomatic-complexity": "off",
-        "@angular-eslint/template/no-call-expression": "off",
-
-        "@angular-eslint/template/banana-in-a-box": "error",
-        "@angular-eslint/template/no-negated-async": "error"
+        "@angular-eslint/template/no-call-expression": "off"
       }
     }
   ]

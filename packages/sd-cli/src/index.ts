@@ -1,9 +1,9 @@
 import "@simplysm/sd-core-common";
+export * from "./build-tools/createWebpackInputHostForScss";
 export * from "./build-tools/SdAngularUtils";
 export * from "./build-tools/SdNgGenerator";
 export * from "./build-tools/SdPackageBuilder";
 export * from "./build-tools/SdTypescriptProgramRunner";
-export * from "./build-tools/SdWebpackInputHostWithScss";
 export * from "./build-tools/SdWebpackTimeFixPlugin";
 export * from "./build-tools/SdWebpackWriteFilePlugin";
 export * from "./builders/SdCliLocalUpdate";

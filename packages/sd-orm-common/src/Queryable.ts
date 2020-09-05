@@ -108,12 +108,12 @@ export class Queryable<D extends DbContext, T> {
     }
   }
 
-  public static union<D extends DbContext, T>(qrs: Queryable<D, T>[], as?: string): Queryable<D, T> {
+  public static union<ND extends DbContext, NT>(qrs: Queryable<ND, NT>[], as?: string): Queryable<ND, NT> {
     const db = qrs[0].db;
     const cqrs = qrs.map(item => new Queryable(db, item));
 
     // Init entity
-    const entity = {} as TEntity<T>;
+    const entity = {} as TEntity<NT>;
     for (const entityKey of Object.keys(cqrs[0]._entity)) {
       const entityValue = cqrs[0]._entity[entityKey];
       if (!SdOrmUtils.canConvertToQueryValue(entityValue)) {
