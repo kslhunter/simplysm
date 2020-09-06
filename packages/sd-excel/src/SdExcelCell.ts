@@ -91,7 +91,7 @@ export class SdExcelCell {
 
     const value = this.cellData.v[0]._ ?? this.cellData.v[0];
 
-    if (value == null) {
+    if (value == null || value === "") {
       return undefined;
     }
     else if (this.cellData.$.t === "str") {
