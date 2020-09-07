@@ -156,6 +156,8 @@ export class SdServiceServer extends EventEmitter {
         });
       });
     }
+
+    this.emit("close");
   }
 
   private _onSocketConnection(conn: WebSocket, connReq: http.IncomingMessage): void {

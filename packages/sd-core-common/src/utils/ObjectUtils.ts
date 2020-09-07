@@ -195,6 +195,10 @@ export class ObjectUtils {
       invalidateDef.type = currDef.type;
     }
 
+    if (Number.isNaN(value)) {
+      invalidateDef.type = currDef.type;
+    }
+
     let message: string | undefined;
     if (currDef.validator !== undefined) {
       const validatorResult = currDef.validator(value as any);
