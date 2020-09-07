@@ -1,0 +1,31 @@
+{
+  "name": "@simplysm/eslint-plugin",
+  "version": "3.5.7-17",
+  "description": "심플리즘 패키지 - ESLINT 플러그인",
+  "author": "김석래",
+  "repository": "github:kslhunter/simplysm",
+  "license": "MIT",
+  "main": "src/index.js",
+  "sideEffects": false,
+  "dependencies": {
+    "eslint-module-utils": "2.6.0",
+    "@typescript-eslint/experimental-utils": "3.6.0",
+    "@typescript-eslint/eslint-plugin": "3.6.0",
+    "@typescript-eslint/eslint-plugin-tslint": "^3.6.0",
+    "@typescript-eslint/parser": "3.6.0",
+    "eslint-import-resolver-typescript": "2.0.0",
+    "eslint-plugin-import": "2.22.0",
+    "tslint": "^6.1.2",
+    "codelyzer": "^6.0.0",
+    "@angular/compiler": "^10.0.2",
+    "@angular-eslint/eslint-plugin": "^0.0.1-alpha.32",
+    "@angular-eslint/template-parser": "^0.0.1-alpha.32",
+    "@angular-eslint/eslint-plugin-template": "^0.0.1-alpha.32",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-config-prettier": "^6.11.0",
+    "prettier": "^2.0.5"
+  },
+  "peerDependencies": {
+    "eslint": "7.4.0"
+  }
+}
