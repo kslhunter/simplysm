@@ -1,6 +1,6 @@
 .idea/**/workspace.xml
+.idea/shelf
 .nyc_output
-_back
 coverage
 logs
 _logs
@@ -12,3 +12,5 @@ _modules
 _routes.ts
 report.*.json
 profiling
+.cordova
+simplysm.ksl.json
