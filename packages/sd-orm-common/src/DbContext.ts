@@ -1,7 +1,7 @@
 import { QueryBuilder } from "./QueryBuilder";
 import { IDbContextExecutor } from "./IDbContextExecutor";
 import { QueryHelper } from "./QueryHelper";
-import { IQueryResultParseOption, TQueryDef } from "./commons";
+import { IQueryColumnDef, IQueryResultParseOption, TQueryDef } from "./commons";
 import { NeverEntryError, ObjectUtils, SdError, Type } from "@simplysm/sd-core-common";
 import { IDbMigration } from "./IDbMigration";
 import { Queryable } from "./Queryable";
@@ -133,6 +133,10 @@ export abstract class DbContext {
 
   public async executeQueriesAsync(queries: string[]): Promise<any[][]> {
     return await this._executor.executeAsync(queries);
+  }
+
+  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], ...records: { [key: string]: any }[]): Promise<void> {
+    return await this._executor.bulkInsertAsync(tableName, columnDefs, ...records);
   }
 
   public async executePreparedAsync(): Promise<void> {

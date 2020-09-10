@@ -836,6 +836,30 @@ export class Queryable<D extends DbContext, T> {
     return (item?.cnt ?? 0) as any;
   }
 
+  public async bulkInsertAsync(...records: TInsertObject<T>[]): Promise<void> {
+    if (this.db === undefined) {
+      throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
+    }
+    DbContext.selectCache.clear();
+
+    if (!this._tableDef) {
+      throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
+    }
+
+    const columnDefs = this._tableDef.columns.map(col => ({
+      name: col.name,
+      dataType: this.db.qh.type(col.dataType ?? col.typeFwd()),
+      autoIncrement: col.autoIncrement,
+      nullable: col.nullable
+    }));
+
+    await this.db.bulkInsertAsync(this.db.qb.getTableName({
+      database: this._tableDef.database ?? this.db.schema.database,
+      schema: this._tableDef.schema ?? this.db.schema.schema,
+      name: this._tableDef.name
+    }), columnDefs, ...records);
+  }
+
   public async insertAsync(...records: TInsertObject<T>[]): Promise<T[]> {
     return await this._insertAsync(false, ...records);
   }

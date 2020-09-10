@@ -1,9 +1,9 @@
 import { Logger } from "@simplysm/sd-core-node";
 import * as mysql from "mysql";
 import { EventEmitter } from "events";
-import { SdError } from "@simplysm/sd-core-common";
+import { NotImplementError, SdError } from "@simplysm/sd-core-common";
 import { IDbConnection } from "./IDbConnection";
-import { IDbConnectionConfig } from "@simplysm/sd-orm-common";
+import { IDbConnectionConfig, IQueryColumnDef } from "@simplysm/sd-orm-common";
 
 export class MysqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", "MysqlDbConnection"]);
@@ -189,6 +189,11 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
     }
 
     return results;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], ...records: { [p: string]: any }[]): Promise<void> {
+    throw new NotImplementError();
   }
 
   private _stopTimeout(): void {

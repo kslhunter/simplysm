@@ -1,4 +1,10 @@
-import { DbContext, IDbContextExecutor, IQueryResultParseOption, TQueryDef } from "@simplysm/sd-orm-common";
+import {
+  DbContext,
+  IDbContextExecutor,
+  IQueryColumnDef,
+  IQueryResultParseOption,
+  TQueryDef
+} from "@simplysm/sd-orm-common";
 import { Type, Wait } from "@simplysm/sd-core-common";
 import { SdNgServiceClient } from "../providers/SdServiceFactoryProvider";
 import { SdServiceClient } from "@simplysm/sd-service-browser";
@@ -68,6 +74,14 @@ export class SdServiceDbContextExecutor implements IDbContextExecutor {
     }
 
     return await this._client.sendAsync("SdOrmService.executeAsync", [this._connId, queries]);
+  }
+
+  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], ...records: { [p: string]: any }[]): Promise<void> {
+    if (this._connId === undefined) {
+      throw new Error("DB에 연결되어있지 않습니다.");
+    }
+
+    return await this._client.sendAsync("SdOrmService.bulkInsertAsync", [this._connId, tableName, columnDefs, ...records]);
   }
 }
 

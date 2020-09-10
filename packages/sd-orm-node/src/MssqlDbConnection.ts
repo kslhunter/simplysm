@@ -1,9 +1,9 @@
 import { Logger } from "@simplysm/sd-core-node";
 import * as tedious from "tedious";
 import { EventEmitter } from "events";
-import { Wait } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, JsonConvert, NeverEntryError, Time, Type, Uuid, Wait } from "@simplysm/sd-core-common";
 import { IDbConnection } from "./IDbConnection";
-import { IDbConnectionConfig } from "@simplysm/sd-orm-common";
+import { IDbConnectionConfig, IQueryColumnDef, TQueryValue, TSdOrmDataType } from "@simplysm/sd-orm-common";
 
 export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", "MssqlDbConnection"]);
@@ -250,6 +250,35 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     return results;
   }
 
+  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], ...records: { [key: string]: any }[]): Promise<void> {
+    if (!this._conn || !this.isConnected) {
+      throw new Error("'Connection'이 연결되어있지 않습니다.");
+    }
+    this._startTimeout();
+
+    const tediousColumnDefs = columnDefs.map(item => this._convertColumnDefToTediousBulkColumnDef(item));
+
+    await new Promise<void>((resolve, reject) => {
+      const bulkLoad = this._conn!.newBulkLoad(tableName, err => {
+        if (err !== undefined) {
+          reject(new Error(`[${err["code"] as string}] ${err.message}\n${JsonConvert.stringify(tediousColumnDefs)}\n-- query\n\n${JsonConvert.stringify(records)}\n--`));
+          return;
+        }
+        resolve();
+      });
+
+      for (const tediousColumnDef of tediousColumnDefs) {
+        bulkLoad.addColumn(tediousColumnDef.name, tediousColumnDef.type, tediousColumnDef.options);
+      }
+
+      for (const record of records) {
+        bulkLoad.addRow(record);
+      }
+
+      this._conn!.execBulkLoad(bulkLoad);
+    });
+  }
+
   private _stopTimeout(): void {
     if (this._connTimeout) {
       clearTimeout(this._connTimeout);
@@ -266,5 +295,82 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
       },
       this._timeout * 2
     );
+  }
+
+  private _convertColumnDefToTediousBulkColumnDef(columnDef: IQueryColumnDef): { name: string; type: tedious.TediousType; options: tedious.BulkLoadColumnOpts } {
+    const tediousDataType = this._convertColumnDataTypeToTediousBulkColumnType(columnDef.dataType);
+    return {
+      name: columnDef.name,
+      type: tediousDataType.type,
+      options: {
+        length: tediousDataType.length,
+        nullable: columnDef.nullable ?? false,
+        precision: tediousDataType.precision,
+        scale: tediousDataType.scale
+      }
+    };
+  }
+
+  private _convertColumnDataTypeToTediousBulkColumnType(type: Type<TQueryValue> | TSdOrmDataType | string): { type: tedious.TediousType; length?: number | "max"; precision?: number; scale?: number } {
+    if (type?.["type"] !== undefined) {
+      const currType = type as TSdOrmDataType;
+      switch (currType.type) {
+        case "TEXT":
+          return { type: tedious.TYPES.NText };
+        case "DECIMAL":
+          return { type: tedious.TYPES.Decimal, precision: currType.precision, scale: currType.digits };
+        case "STRING":
+          return { type: tedious.TYPES.NVarChar, length: currType.length === "MAX" ? "max" : (currType.length ?? 255) };
+        case "BINARY":
+          return {
+            type: tedious.TYPES.VarBinary,
+            length: currType.length === "MAX" ? "max" : (currType.length ?? 255)
+          };
+        default:
+          throw new TypeError();
+      }
+    }
+    else if (typeof type === "string") {
+      const split = type.split(/[(,)]/);
+      const typeStr = split[0];
+      const length = split[1] !== undefined ? Number.parseInt(split[1], 10) : undefined;
+      const digits = split[2] !== undefined ? Number.parseInt(split[2], 10) : undefined;
+
+      const typeKey = Object.keys(tedious.TYPES).single(item => item.toLocaleLowerCase() === typeStr.toLowerCase());
+      if (typeKey === undefined) {
+        throw new NeverEntryError();
+      }
+      const dataType = tedious.TYPES[typeKey];
+
+      if (dataType === tedious.TYPES.Decimal) {
+        return { type: dataType, precision: length, scale: digits };
+      }
+      else {
+        return { type: dataType, length };
+      }
+    }
+    else {
+      const currType = type as Type<TQueryValue>;
+      switch (currType) {
+        case String:
+          return { type: tedious.TYPES.NVarChar, length: 255 };
+        case Number:
+          return { type: tedious.TYPES.BigInt };
+        case Boolean:
+          return { type: tedious.TYPES.Bit };
+        case DateTime:
+          return { type: tedious.TYPES.DateTime2 };
+        case DateOnly:
+          return { type: tedious.TYPES.Date };
+        case Time:
+          return { type: tedious.TYPES.Time };
+        case Uuid:
+          return { type: tedious.TYPES.UniqueIdentifier };
+        case Buffer:
+          return { type: tedious.TYPES.Binary, length: "max" };
+        default:
+          throw new TypeError(currType !== undefined ? currType.name : "undefined");
+      }
+    }
   }
 }

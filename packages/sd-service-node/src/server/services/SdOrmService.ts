@@ -2,6 +2,7 @@ import { Logger } from "@simplysm/sd-core-node";
 import { DbConnectionFactory, IDbConnection } from "@simplysm/sd-orm-node";
 import {
   IDbConnectionConfig,
+  IQueryColumnDef,
   IQueryResultParseOption,
   QueryBuilder,
   SdOrmUtils,
@@ -102,6 +103,15 @@ export class SdOrmService extends SdServiceBase {
 
     const result = await conn.executeAsync(defs.map(def => new QueryBuilder(conn.dialect).query(def)));
     return result.map((item, i) => SdOrmUtils.parseQueryResult(item, options ? options[i] : undefined));
+  }
+
+  public async bulkInsertAsync(connId: number, tableName: string, columnDefs: IQueryColumnDef[], ...records: { [key: string]: any }[]): Promise<void> {
+    const conn = SdOrmService._connections.get(connId);
+    if (!conn) {
+      throw new Error("DB에 연결되어있지 않습니다.");
+    }
+
+    return await conn.bulkInsertAsync(tableName, columnDefs, ...records);
   }
 
   private async _getOrmConfigAsync(configName: string): Promise<IDbConnectionConfig> {

@@ -1,6 +1,7 @@
 import {
   IDbConnectionConfig,
   IDbContextExecutor,
+  IQueryColumnDef,
   IQueryResultParseOption,
   QueryBuilder,
   SdOrmUtils,
@@ -60,6 +61,14 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     }
 
     return await this._conn.executeAsync(queries);
+  }
+
+  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], ...records: { [key: string]: any }[]): Promise<void> {
+    if (!this._conn) {
+      throw new Error("DB에 연결되어있지 않습니다.");
+    }
+
+    return await this._conn.bulkInsertAsync(tableName, columnDefs, ...records);
   }
 
   public async executeDefsAsync(defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {

@@ -2,7 +2,8 @@ import {
   Column,
   DbContext,
   ForeignKey,
-  ForeignKeyTarget, IDbConnectionConfig,
+  ForeignKeyTarget,
+  IDbConnectionConfig,
   IDbMigration,
   Queryable,
   QueryUnit,
@@ -979,6 +980,27 @@ describe(`(node) orm.DbContext`, () => {
                 name2: "가나다라마바사아자차카타파하"
               }
             ]);
+          });
+        });
+      });
+
+      describe("BULK INSERT", () => {
+        it("테이블에 데이터를 입력한다.", async () => {
+          await db.connectAsync(async () => {
+            await db.test.bulkInsertAsync(...[
+              { id: 10, name: "홍길동10" },
+              { id: 11, name: "홍길동11" },
+              { id: 12, name: "홍길동12" },
+              { id: 13, name: "홍길동13" }
+            ]);
+
+            const cnt = await db.test
+              .where(item => [
+                db.qh.in(item.id, [10, 11, 12, 13])
+              ])
+              .countAsync();
+
+            expect(cnt).to.equal(4);
           });
         });
       });
