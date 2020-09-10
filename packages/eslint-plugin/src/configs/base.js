@@ -291,7 +291,8 @@ module.exports = {
 
         "@typescript-eslint/ban-ts-comment": "off",
         "@typescript-eslint/no-implicit-any-catch": "off",
-        "@typescript-eslint/consistent-type-imports": "off"
+        "@typescript-eslint/consistent-type-imports": "off",
+        "@typescript-eslint/no-loop-func": "off"
       }
     }
   ]
