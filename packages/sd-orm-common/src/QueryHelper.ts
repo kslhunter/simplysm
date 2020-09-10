@@ -59,7 +59,7 @@ export class QueryHelper {
       ]);
     }
   }
-  
+
   public isNull<T extends TQueryValue>(source: TEntityValue<T>): TQueryBuilderValue[] {
     return [this.getQueryValue(source), " IS ", "NULL"];
   }
@@ -410,6 +410,76 @@ export class QueryHelper {
     else {
       return value;
     }
+  }
+
+
+  public getBulkInsertQueryValue(value: TEntityValue<any>): any {
+    if (value instanceof QueryUnit) {
+      if (value.query instanceof Array) {
+        return this._getBulkInsertQueryValueArray(value.query);
+      }
+      else if (value.query instanceof QueryUnit) {
+        return this.getBulkInsertQueryValue(value.query);
+      }
+      else if (value.query instanceof Queryable) {
+        return this.getBulkInsertQueryValue(value.query);
+      }
+      else {
+        return value.query;
+      }
+    }
+    else if (typeof value === "string") {
+      return value;
+    }
+    else if (typeof value === "boolean") {
+      return value ? "1" : "0";
+    }
+    else if (value instanceof DateTime) {
+      return value.date;
+    }
+    else if (value instanceof DateOnly) {
+      return value.date;
+    }
+    else if (value instanceof Time) {
+      return value.toFormatString("HH:mm:ss");
+    }
+    else if (value instanceof Buffer) {
+      return `0x${value.toString("hex")}`;
+    }
+    else if (value instanceof Uuid) {
+      return value.toString();
+    }
+    else if (value instanceof Queryable) {
+      const selectDef = value.getSelectDef();
+      if (selectDef.top !== 1) {
+        throw new Error("하나의 필드를 추출하기 위한 내부쿼리에서는 반드시 TOP 1 이 지정 되야 합니다.");
+      }
+      if (selectDef.select !== undefined || Object.keys(selectDef.select).length > 1) {
+        throw new Error("하나의 필드를 추출하기 위한 내부쿼리에서는 반드시 하나의 컬럼만 SELECT 되야 합니다.");
+      }
+
+      return selectDef;
+    }
+    else {
+      return value;
+    }
+  }
+
+  private _getBulkInsertQueryValueArray(arr: any[]): TEntityValueOrQueryableOrArray<any, any> {
+    return arr.map(item => {
+      if (item instanceof Array) {
+        return this._getBulkInsertQueryValueArray(item);
+      }
+      else if (item instanceof QueryUnit) {
+        return this.getBulkInsertQueryValue(item);
+      }
+      else if (item instanceof Queryable) {
+        return this.getBulkInsertQueryValue(item);
+      }
+      else {
+        return item;
+      }
+    });
   }
 
   private _getQueryValueArray(arr: any[]): TEntityValueOrQueryableOrArray<any, any> {

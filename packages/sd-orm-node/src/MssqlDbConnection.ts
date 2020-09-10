@@ -1,7 +1,17 @@
 import { Logger } from "@simplysm/sd-core-node";
 import * as tedious from "tedious";
 import { EventEmitter } from "events";
-import { DateOnly, DateTime, JsonConvert, NeverEntryError, Time, Type, Uuid, Wait } from "@simplysm/sd-core-common";
+import {
+  DateOnly,
+  DateTime,
+  JsonConvert,
+  NeverEntryError,
+  SdError,
+  Time,
+  Type,
+  Uuid,
+  Wait
+} from "@simplysm/sd-core-common";
 import { IDbConnection } from "./IDbConnection";
 import { IDbConnectionConfig, IQueryColumnDef, TQueryValue, TSdOrmDataType } from "@simplysm/sd-orm-common";
 
@@ -272,7 +282,12 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
       }
 
       for (const record of records) {
-        bulkLoad.addRow(record);
+        try {
+          bulkLoad.addRow(record);
+        }
+        catch (err) {
+          throw new SdError(err, JSON.stringify(record));
+        }
       }
 
       this._conn!.execBulkLoad(bulkLoad);

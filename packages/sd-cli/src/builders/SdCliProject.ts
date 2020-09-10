@@ -277,7 +277,7 @@ export class SdCliProject {
                       })
                       .on("complete", async arg => {
                         if (arg.command !== "compile") return;
-                        await Wait.true(() => this._servers[pkg.info.config?.["server"]].server !== undefined);
+                        await Wait.true(() => this._servers[pkg.info.config?.["server"]]?.server !== undefined);
                         const port = this._servers[pkg.info.config?.["server"]].server!.options.port ?? 80;
                         this._logger.info(`[${pkg.name}] 클라이언트가 준비되었습니다.: http://localhost:${port}/${path.basename(pkg.info.rootPath)}/`);
                       })

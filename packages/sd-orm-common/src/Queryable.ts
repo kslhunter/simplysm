@@ -853,11 +853,18 @@ export class Queryable<D extends DbContext, T> {
       nullable: col.nullable
     }));
 
+
     await this.db.bulkInsertAsync(this.db.qb.getTableName({
       database: this._tableDef.database ?? this.db.schema.database,
       schema: this._tableDef.schema ?? this.db.schema.schema,
       name: this._tableDef.name
-    }), columnDefs, ...records);
+    }), columnDefs, ...records.map(item => {
+      const result = {};
+      for (const key of Object.keys(item)) {
+        result[key] = this.db.qh.getBulkInsertQueryValue(item[key]);
+      }
+      return result;
+    }));
   }
 
   public async insertAsync(...records: TInsertObject<T>[]): Promise<T[]> {

@@ -19,7 +19,7 @@ import { sdIconNames } from "../commons/sdIconNames";
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div [attr.class]="safeHtml('_content ' + contentClass)"
+    <div [attr.class]="'_content ' + contentClass"
          [attr.style]="safeHtml(contentStyle)"
          (click)="open = !open; openChange.emit(open)">
       <sd-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon" fixedWidth></sd-icon>
