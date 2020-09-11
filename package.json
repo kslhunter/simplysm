@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "3.5.32-0",
+  "version": "3.5.32",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -30,7 +30,7 @@
     "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --require=ts-node/register --require=tsconfig-paths/register packages/sd-cli/src/entry-points/sd-cli.ts"
   },
   "devDependencies": {
-    "@simplysm/eslint-plugin": "3.5.32-0",
+    "@simplysm/eslint-plugin": "3.5.32",
     "@types/node": "^14.0.14",
     "cross-env": "^7.0.2",
     "eslint": "^7.5.0",
