@@ -8,7 +8,7 @@ import { SdNavigateWindowRootProvider } from "../root-providers/SdNavigateWindow
 })
 export class SdRouterLinkDirective {
   @Input()
-  public sdRouterLink?: [string, object?, { width?: number; height?: number }?];
+  public sdRouterLink?: [string, object?, { width?: number; height?: number }?, string?];
 
   @HostBinding("style.cursor")
   public styleCursor = "pointer";
@@ -33,10 +33,9 @@ export class SdRouterLinkDirective {
       }
     }
 
-    const width = this.sdRouterLink[2]?.width ?? 800;
-    const height = this.sdRouterLink[2]?.height ?? 800;
-
     if (this._navWindow.isWindow) {
+      const width = this.sdRouterLink[2]?.width ?? 800;
+      const height = this.sdRouterLink[2]?.height ?? 800;
       this._navWindow.open(this.sdRouterLink[0], newObj, `width=${width},height=${height}`);
     }
     else if (event.ctrlKey || event.altKey) {
@@ -46,10 +45,17 @@ export class SdRouterLinkDirective {
     }
     else if (event.shiftKey) {
       // 쉬프트키: 새창
+      const width = this.sdRouterLink[2]?.width ?? 800;
+      const height = this.sdRouterLink[2]?.height ?? 800;
       this._navWindow.open(this.sdRouterLink[0], newObj, `width=${width},height=${height}`);
     }
     else {
-      await this._router.navigate([`${this.sdRouterLink[0]}`, ...(newObj ? [newObj] : [])]);
+      if (this.sdRouterLink[3] === undefined) {
+        await this._router.navigate([`${this.sdRouterLink[0]}`, ...(newObj ? [newObj] : [])]);
+      }
+      else {
+        await this._router.navigate([{ outlets: { [this.sdRouterLink[3]]: this.sdRouterLink[0] } }, ...(newObj ? [newObj] : [])]);
+      }
     }
   }
 }
