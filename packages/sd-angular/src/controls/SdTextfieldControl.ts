@@ -162,7 +162,6 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
         height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
       }
 
-
       &[sd-inset=true] > input,
       &[sd-inset=true] > div._readonly,
       &[sd-inset=true] > textarea {
