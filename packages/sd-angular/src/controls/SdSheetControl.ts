@@ -980,10 +980,12 @@ export class SdSheetControl implements DoCheck, OnInit {
             undefined;
 
           if (relatedTargetCell !== targetCell) {
-            this._zone.run(() => {
-              this._editCell = "";
-              this._cdr.markForCheck();
-            });
+            if (this._editCell === (targetCell?.getAttribute("sd-row-index") ?? "") + "_" + (targetCell?.getAttribute("sd-column-guid") ?? "")) {
+              this._zone.run(() => {
+                this._editCell = "";
+                this._cdr.markForCheck();
+              });
+            }
           }
         }, true);
       }
