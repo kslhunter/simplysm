@@ -7,7 +7,7 @@ import {
   TQueryValue
 } from "./commons";
 import { QueryUnit } from "./QueryUnit";
-import { DateOnly, DateTime, Time, Type, Uuid } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, Time, Type, TypeWrap, Uuid } from "@simplysm/sd-core-common";
 import { Queryable } from "./Queryable";
 import { SdOrmUtils } from "./SdOrmUtils";
 import { TSdOrmDataType } from "./SdOrmDataType";
@@ -41,15 +41,9 @@ export class QueryHelper {
     }
     else if (source instanceof QueryUnit && target instanceof QueryUnit) {
       return this.or([
-        this.and([
-          this.isNotNull(source),
-          this.isNotNull(target)
-        ]),
-        [
-          this.getQueryValue(source),
-          " != ",
-          this.getQueryValue(target)
-        ]
+        this.and([this.isNull(source), this.isNotNull(target)]),
+        this.and([this.isNotNull(source), this.isNull(target)]),
+        [this.getQueryValue(source), " != ", this.getQueryValue(target)]
       ]);
     }
     else {
@@ -92,10 +86,15 @@ export class QueryHelper {
   }
 
   public between<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, from: TEntityValue<T | undefined>, to: TEntityValue<T | undefined>): TQueryBuilderValue[] {
-    return this.and([
-      this.greaterThenOrEqual(source, from),
-      this.lessThen(source, to)
-    ]);
+    if (from != null || to != null) {
+      return this.and([
+        from != null ? this.greaterThenOrEqual(source, from) : undefined,
+        to != null ? this.lessThenOrEqual(source, to) : undefined
+      ].filterExists());
+    }
+    else {
+      return [];
+    }
   }
 
   public includes(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
@@ -178,7 +177,7 @@ export class QueryHelper {
   // FIELD
   // ----------------------------------------------------
   // region FIELD
-  public query<T extends TQueryValue>(type: Type<T>, texts: (string | QueryUnit<any>)[]): QueryUnit<T> {
+  public query<T extends TQueryValue>(type: Type<TypeWrap<T>>, texts: (string | QueryUnit<any>)[]): QueryUnit<T> {
     const arr = [];
     for (const text of texts) {
       if (text instanceof QueryUnit) {

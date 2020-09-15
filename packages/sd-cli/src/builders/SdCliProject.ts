@@ -1,6 +1,6 @@
 import { FsUtils, Logger, NetworkUtils, ProcessManager, ProcessWorkManager } from "@simplysm/sd-core-node";
 import * as path from "path";
-import { INpmConfig, ISdProjectConfig } from "../commons";
+import { INpmConfig, ISdProjectConfig, ISdServerPackageConfig } from "../commons";
 import { DateTime, NeverEntryError, Wait } from "@simplysm/sd-core-common";
 import { SdCliPackage } from "./SdCliPackage";
 import { ISdPackageBuildResult } from "../build-tools/SdPackageBuilder";
@@ -499,6 +499,7 @@ export class SdCliProject {
       await Wait.time(1000);
 
       // 서버 시작
+      Object.assign(process.env, (pkg.info.config as ISdServerPackageConfig).env);
       const server = require(pkg.entryFilePath) as SdServiceServer | undefined;
       if (!server) {
         this._logger.error(`[${pkg.name}] '${pkg.entryFilePath}'에서 'SdServiceServer'를 'export'하고있지 않습니다.`);

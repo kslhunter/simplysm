@@ -18,7 +18,9 @@
     },
     "@simplysm/sd-angular": {
       "type": "library",
-      "targets": ["browser"],
+      "targets": [
+        "browser"
+      ],
       "polyfills": [
         "@simplysm/sd-core-browser"
       ],
@@ -26,7 +28,9 @@
     },
     "@simplysm/sd-cli": {
       "type": "library",
-      "targets": ["node"],
+      "targets": [
+        "node"
+      ],
       "polyfills": [
         "@simplysm/sd-core-common"
       ],
@@ -34,7 +38,9 @@
     },
     "@simplysm/sd-core-browser": {
       "type": "library",
-      "targets": ["browser"],
+      "targets": [
+        "browser"
+      ],
       "polyfills": [
         "@simplysm/sd-core-common",
         "element-qsa-scope",
@@ -44,7 +50,10 @@
     },
     "@simplysm/sd-core-common": {
       "type": "library",
-      "targets": ["node", "browser"],
+      "targets": [
+        "node",
+        "browser"
+      ],
       "polyfills": [
         "core-js"
       ],
@@ -52,7 +61,9 @@
     },
     "@simplysm/sd-core-node": {
       "type": "library",
-      "targets": ["node"],
+      "targets": [
+        "node"
+      ],
       "polyfills": [
         "@simplysm/sd-core-common"
       ],
@@ -60,7 +71,10 @@
     },
     "@simplysm/sd-excel": {
       "type": "library",
-      "targets": ["node", "browser"],
+      "targets": [
+        "node",
+        "browser"
+      ],
       "polyfills": [
         "@simplysm/sd-core-common"
       ],
@@ -68,7 +82,10 @@
     },
     "@simplysm/sd-orm-common": {
       "type": "library",
-      "targets": ["node", "browser"],
+      "targets": [
+        "node",
+        "browser"
+      ],
       "polyfills": [
         "@simplysm/sd-core-common"
       ],
@@ -76,7 +93,9 @@
     },
     "@simplysm/sd-orm-node": {
       "type": "library",
-      "targets": ["node"],
+      "targets": [
+        "node"
+      ],
       "polyfills": [
         "@simplysm/sd-core-common"
       ],
@@ -84,12 +103,17 @@
     },
     "@simplysm/sd-service-common": {
       "type": "library",
-      "targets": ["node", "browser"],
+      "targets": [
+        "node",
+        "browser"
+      ],
       "publish": "npm"
     },
     "@simplysm/sd-service-node": {
       "type": "library",
-      "targets": ["node"],
+      "targets": [
+        "node"
+      ],
       "polyfills": [
         "@simplysm/sd-core-common"
       ],
@@ -97,9 +121,21 @@
     },
     "@simplysm/sd-service-browser": {
       "type": "library",
-      "targets": ["browser"],
+      "targets": [
+        "browser"
+      ],
       "polyfills": [
         "@simplysm/sd-core-browser"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/sd-storage": {
+      "type": "library",
+      "targets": [
+        "node"
+      ],
+      "polyfills": [
+        "@simplysm/sd-core-common"
       ],
       "publish": "npm"
     },
