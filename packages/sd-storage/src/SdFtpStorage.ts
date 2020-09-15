@@ -1,14 +1,13 @@
-import * as fs from "fs";
-import { IStorage } from "../common/IStorage";
-import { IFtpConnectionConfig } from "./IFtpConnectionConfig";
-import JSFtp from "jsftp";
-import { Logger } from "@simplysm/sd-core-node";
+// @ts-ignore
+import * as JSFtp from "jsftp";
+import { FsUtils, Logger } from "@simplysm/sd-core-node";
+import { ISdFtpConnectionConfig, ISdStorage } from "./commons";
 
-export class FtpStorage implements IStorage {
-  private readonly _logger = Logger.get(["simplysm", "storage", "FtpStorage"]);
+export class SdFtpStorage implements ISdStorage {
+  private readonly _logger = Logger.get(["simplysm", "sd-storage", "SdFtpStorage"]);
   private _ftp?: JSFtp;
 
-  public async connectAsync(connectionConfig: IFtpConnectionConfig): Promise<void> {
+  public async connectAsync(connectionConfig: ISdFtpConnectionConfig): Promise<void> {
     this._ftp = new JSFtp({
       host: connectionConfig.host,
       port: connectionConfig.port,
@@ -22,8 +21,8 @@ export class FtpStorage implements IStorage {
         throw new Error("FTP 서버에 연결되어있지 않습니다.");
       }
 
-      this._ftp.raw("OPTS UTF8 ON", err => {
-        if (err != null) {
+      this._ftp.raw("OPTS UTF8 ON", (err: Error | undefined) => {
+        if (err) {
           reject(err);
           return;
         }
@@ -38,8 +37,8 @@ export class FtpStorage implements IStorage {
         throw new Error("FTP 서버에 연결되어있지 않습니다.");
       }
 
-      this._ftp.raw("MKD", storageDirPath, (err: Error) => {
-        if (err != null && err["code"] !== 550) {
+      this._ftp.raw("MKD", storageDirPath, (err: Error | undefined) => {
+        if (err && err["code"] !== 550) {
           reject(err);
           return;
         }
@@ -50,7 +49,7 @@ export class FtpStorage implements IStorage {
 
   public async putAsync(localPathOrBuffer: string | Buffer, storageFilePath: string): Promise<void> {
     const buffer = typeof localPathOrBuffer === "string" ?
-      fs.readFileSync(localPathOrBuffer) :
+      await FsUtils.readFileBufferAsync(localPathOrBuffer) :
       localPathOrBuffer;
 
     await new Promise<void>((resolve, reject) => {
@@ -58,8 +57,8 @@ export class FtpStorage implements IStorage {
         throw new Error("FTP 서버에 연결되어있지 않습니다.");
       }
 
-      this._ftp.put(buffer, storageFilePath, err => {
-        if (err != null) {
+      this._ftp.put(buffer, storageFilePath, (err: Error | undefined) => {
+        if (err) {
           if (err["code"] === 550) {
             this._logger.warn(`${storageFilePath}: ${err.message}`);
           }
@@ -76,20 +75,12 @@ export class FtpStorage implements IStorage {
   public async closeAsync(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       if (this._ftp === undefined) {
-        throw new Error("FTP 서버에 연결되어있지 않습니다.");
+        reject(new Error("FTP 서버에 연결되어있지 않습니다."));
+        return;
       }
 
       this._ftp.destroy();
       resolve();
-
-      /*this._ftp.raw("quit", (err: Error) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        resolve();
-      });*/
     });
   }
 }

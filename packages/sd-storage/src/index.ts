@@ -1,3 +1,4 @@
-export * from "./common/IStorage";
-export * from "./ftp/IFtpConnectionConfig";
-export * from "./ftp/FtpStorage";
+import "@simplysm/sd-core-common";
+
+export * from "./commons";
+export * from "./SdFtpStorage";
