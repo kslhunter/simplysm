@@ -27,7 +27,6 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
-
     await this._conn.beginTransactionAsync();
   }
 

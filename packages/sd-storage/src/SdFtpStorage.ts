@@ -47,6 +47,22 @@ export class SdFtpStorage implements ISdStorage {
     });
   }
 
+  public async renameAsync(fromPath: string, toPath: string): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      if (this._ftp === undefined) {
+        throw new Error("FTP 서버에 연결되어있지 않습니다.");
+      }
+
+      this._ftp.rename(fromPath, toPath, (err: Error | undefined) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      });
+    });
+  }
+
   public async putAsync(localPathOrBuffer: string | Buffer, storageFilePath: string): Promise<void> {
     const buffer = typeof localPathOrBuffer === "string" ?
       await FsUtils.readFileBufferAsync(localPathOrBuffer) :

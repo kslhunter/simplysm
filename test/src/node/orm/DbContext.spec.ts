@@ -15,6 +15,8 @@ import * as sinon from "sinon";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { Type } from "@simplysm/sd-core-common";
 
+// TODO: SdOrm 테스트로 변경
+
 Logger.setConfig({
   console: { level: LoggerSeverity.debug }
 });
@@ -74,7 +76,6 @@ class SearchTestTable {
   @Column({ description: "명칭2" })
   public name2!: string;
 }
-
 
 describe(`(node) orm.DbContext`, () => {
   const test = (config: IDbConnectionConfig) => {

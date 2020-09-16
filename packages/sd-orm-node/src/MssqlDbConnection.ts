@@ -54,8 +54,9 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         useUTC: false,
         encrypt: false,
         requestTimeout: this._timeout,
-        trustServerCertificate: true
-      }
+        trustServerCertificate: true,
+        validateBulkLoadParameters: false
+      } as any
     });
 
     conn.on("infoMessage", info => {
@@ -105,7 +106,8 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         return;
       }
 
-      this._conn.on("end", () => {
+      this._conn.on("end", async () => {
+        await Wait.true(() => this._conn == null, undefined, 10000);
         resolve();
       });
 
@@ -117,7 +119,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
 
   public async beginTransactionAsync(): Promise<void> {
     if (!this._conn || !this.isConnected) {
-      throw new Error("'Connection'이 연결되어있지 않습니다.");
+      throw new Error(`'Connection'이 연결되어있지 않습니다. (${!this._conn}, ${!this.isConnected})`);
     }
     this._startTimeout();
 
