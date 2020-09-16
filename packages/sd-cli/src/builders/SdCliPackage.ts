@@ -252,7 +252,6 @@ export class SdCliPackage extends EventEmitter {
       await ProcessManager.spawnAsync(
         "yarn publish --access public",
         { cwd: this.info.rootPath },
-        false,
         false
       );
     }
