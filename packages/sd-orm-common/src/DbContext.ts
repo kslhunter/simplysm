@@ -160,8 +160,17 @@ export abstract class DbContext {
         ])
       )[0].length > 0;
 
-      // DB 있을때
-      if (isDbExists) {
+      const isTableExists = (
+        await this.executeDefsAsync([
+          {
+            type: "getTableInfo",
+            table: { database: this.schema.database, schema: this.schema.schema, name: "_migration" }
+          }
+        ])
+      )[0].length > 0;
+
+      // DB / TABLE 있을때
+      if (isDbExists && isTableExists) {
         const dbMigrationCodes = (
           await this.systemMigration
             .select(item => ({

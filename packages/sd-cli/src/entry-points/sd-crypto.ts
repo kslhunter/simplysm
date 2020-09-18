@@ -77,8 +77,6 @@ else {
 
     if (key === undefined) {
       process.stdout.write("password: ", "utf-8");
-
-      // TODO: 암호를 두번 입력하도록 수정
       key = await new Promise(resolve => {
         const rl = readline.createInterface({
           input: process.stdin,
@@ -90,15 +88,37 @@ else {
           terminal: true
         });
 
-        rl.question("encrypt-key: ", answer => {
+        rl.question("password: ", answer => {
           resolve(answer);
           rl.close();
         });
       });
+
+      process.stdout.write("\nconfirm password: ", "utf-8");
+      const checkKey = await new Promise(resolve => {
+        const rl = readline.createInterface({
+          input: process.stdin,
+          output: new Writable({
+            write: (chunk, encoding, callback) => {
+              callback();
+            }
+          }),
+          terminal: true
+        });
+
+        rl.question("confirm password: ", answer => {
+          resolve(answer);
+          rl.close();
+        });
+      });
+
+      if (key !== checkKey) {
+        throw new Error("암호화키가 서로 다릅니다.");
+      }
     }
 
     if (!Boolean(key)) {
-      throw new Error("암호화키가 잘 못 되었습니다.");
+      throw new Error("암호화키를 반드시 입력해야 합니다.");
     }
 
     const iv = Buffer.alloc(16, 0);
@@ -135,7 +155,7 @@ else {
           terminal: true
         });
 
-        rl.question("encrypt-key: ", answer => {
+        rl.question("password: ", answer => {
           resolve(answer);
           rl.close();
         });
