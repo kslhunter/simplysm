@@ -182,21 +182,19 @@ export class Logger {
       FsUtils.mkdirs(outPath);
 
       const fileNames = FsUtils.readdir(outPath);
-      const lastFileName = fileNames
+      const lastFileSeq = fileNames
         .filter(fileName => fileName.endsWith(".log"))
-        .orderBy()
-        .last();
+        .map(fileName => Number(path.basename(fileName, path.extname(fileName))))
+        .max();
 
       let logFileName = "1.log";
-      if (lastFileName !== undefined) {
-        const lstat = FsUtils.lstat(path.resolve(outPath, lastFileName));
+      if (lastFileSeq !== undefined) {
+        const lstat = FsUtils.lstat(path.resolve(outPath, lastFileSeq + ".log"));
         if (lstat.size > 1048576) {
-          const seq = Number(path.basename(lastFileName, path.extname(lastFileName)));
-
-          logFileName = (seq + 1).toString() + ".log";
+          logFileName = (lastFileSeq + 1).toString() + ".log";
         }
         else {
-          logFileName = lastFileName;
+          logFileName = lastFileSeq + ".log";
         }
       }
       const logFilePath = path.resolve(outPath, logFileName);

@@ -9,6 +9,12 @@ import { SdBusyContainerRootProvider } from "../root-providers/SdBusyContainerRo
     <div class="_screen">
       <div class="_rect">
         <div class="_indicator"></div>
+        <div class="_message" *ngIf="message">
+          {{ message }}
+        </div>
+      </div>
+      <div class="_progress" *ngIf="progressPercent !== undefined">
+        <div class="_progress-bar" [style.transform]="'scaleX(' + (progressPercent / 100) + ')'"></div>
       </div>
     </div>
     <ng-content></ng-content>`,
@@ -36,6 +42,31 @@ import { SdBusyContainerRootProvider } from "../root-providers/SdBusyContainerRo
         pointer-events: none;
         opacity: 0;
         transition: opacity 1s linear;
+
+        > ._progress {
+          display: block;
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: 2px;
+          width: 100%;
+          background-color: white;
+
+          > ._progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: inline-block;
+            content: "";
+            height: 2px;
+            width: 100%;
+            transition: .1s ease-in;
+            transition-property: transform;
+            transform-origin: left;
+            transform: scaleX(0);
+            background-color: var(--theme-color-primary-default);
+          }
+        }
       }
 
       &[sd-busy=true] {
@@ -69,6 +100,16 @@ import { SdBusyContainerRootProvider } from "../root-providers/SdBusyContainerRo
             border-bottom-color: var(--theme-color-primary-default);
             animation: _sd-busy-spin 1s linear infinite;
           }
+
+          > ._message {
+            position: absolute;
+            top: 55px;
+            width: 100%;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 0 0 2px black;
+          }
         }
 
         &[sd-busy=true] {
@@ -81,11 +122,6 @@ import { SdBusyContainerRootProvider } from "../root-providers/SdBusyContainerRo
 
       &[sd-type=bar] {
         min-height: 2px;
-
-        > ._screen > ._rect {
-          > ._indicator {
-          }
-        }
 
         &[sd-busy=true] {
           > ._screen > ._rect {
@@ -119,6 +155,13 @@ import { SdBusyContainerRootProvider } from "../root-providers/SdBusyContainerRo
                 background-color: white;
                 animation: _sd-busy-bar-indicator-after 2s infinite ease-out;
               }
+            }
+
+            > ._message {
+              position: absolute;
+              top: 2px;
+              right: 0;
+              display: inline-block;
             }
           }
         }
@@ -160,6 +203,10 @@ export class SdBusyContainerControl {
   public busy?: boolean;
 
   @Input()
+  @SdInputValidate(String)
+  public message?: string;
+
+  @Input()
   @SdInputValidate({
     type: String,
     includes: ["spinner", "bar"],
@@ -175,6 +222,10 @@ export class SdBusyContainerControl {
   })
   @HostBinding("attr.sd-no-fade")
   public noFade: boolean;
+
+  @Input()
+  @SdInputValidate(Number)
+  public progressPercent?: number;
 
   public constructor(private readonly _busy: SdBusyContainerRootProvider) {
     this.type = this._busy.type ?? "spinner";

@@ -109,6 +109,13 @@
   dependencies:
     tslib "^2.0.0"
 
+"@angular/service-worker@^10.0.6":
+  version "10.1.2"
+  resolved "https://registry.yarnpkg.com/@angular/service-worker/-/service-worker-10.1.2.tgz#2d2a87aa10814e4a52ee7a98201de05180f5e024"
+  integrity sha512-0fYI2rkYuYD6pvVNODAUM+CalLG3QXpw8FhGhn6sMjYx6B4Z0V7qUAUsAOyhzZMndPLEVu4TdkI3HDwAlmV2yA==
+  dependencies:
+    tslib "^2.0.0"
+
 "@azure/ms-rest-azure-env@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@azure/ms-rest-azure-env/-/ms-rest-azure-env-1.1.2.tgz#8505873afd4a1227ec040894a64fdd736b4a101f"

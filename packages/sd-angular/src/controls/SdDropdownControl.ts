@@ -36,6 +36,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   @SdInputValidate(Boolean)
   public disabled?: boolean;
 
+  /** @deprecated */
   @Input()
   @SdInputValidate(Boolean)
   public useAllBorderRadius?: boolean;
@@ -111,12 +112,12 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     const opacity = "1";
     const pointerEvents = "auto";
     const transform = "none";
-    const borderTopRightRadius = this.useAllBorderRadius ? "4px" : placeBottom ? "4px" : "";
+    /*const borderTopRightRadius = this.useAllBorderRadius ? "4px" : placeBottom ? "4px" : "";
     const borderTopLeftRadius = this.useAllBorderRadius ? "4px" : placeBottom ? "4px" : "";
     const borderBottomRightRadius = this.useAllBorderRadius ? "4px" : placeBottom ? "" : "4px";
     const borderBottomLeftRadius = this.useAllBorderRadius ? "4px" : placeBottom ? "" : "4px";
     const paddingTop = this.useAllBorderRadius ? "4px" : placeBottom ? "4px" : "";
-    const paddingBottom = this.useAllBorderRadius ? "4px" : placeBottom ? "" : "4px";
+    const paddingBottom = this.useAllBorderRadius ? "4px" : placeBottom ? "" : "4px";*/
 
     Object.assign(
       this._dropdownEl.style,
@@ -128,13 +129,13 @@ export class SdDropdownControl implements OnInit, OnDestroy {
         minWidth,
         opacity,
         pointerEvents,
-        transform,
+        transform/*,
         borderTopRightRadius,
         borderTopLeftRadius,
         borderBottomRightRadius,
         borderBottomLeftRadius,
         paddingTop,
-        paddingBottom
+        paddingBottom*/
       }
     );
 

@@ -1,5 +1,5 @@
 import { ISdPackageInfo, ITsConfig } from "../commons";
-import { FsUtils, FsWatcher, IFileChangeInfo, Logger } from "@simplysm/sd-core-node";
+import { FsUtils, FsWatcher, IFileChangeInfo, Logger, ProcessManager } from "@simplysm/sd-core-node";
 import * as path from "path";
 import * as ts from "typescript";
 import { NeverEntryError, ObjectUtils } from "@simplysm/sd-core-common";
@@ -231,11 +231,18 @@ export class SdPackageBuilder extends EventEmitter {
           this.emit("change");
         });
 
-        compiler.run((err, stats) => {
+        compiler.run(async (err, stats) => {
           this._emitWebpackResults(err, stats);
           if (err != null) {
             reject(err);
             return;
+          }
+
+          if (this._info.config?.type === "web") {
+            const distPath = path.relative(process.cwd(), this._getDistPath());
+            const ngswConfigPath = path.relative(process.cwd(), path.resolve(__dirname, "../../lib/ngsw-config.json"));
+            const baseHref = `/${path.basename(this._info.rootPath)}/`;
+            await ProcessManager.spawnAsync(`ngsw-config ${distPath} ${ngswConfigPath} ${baseHref}`);
           }
 
           this._logger.debug("컴파일 완료");
@@ -901,6 +908,14 @@ export class SdPackageBuilder extends EventEmitter {
             patterns: [{
               context: path.resolve(this._info.rootPath, `.cordova/platforms/${this._info.config.device ? "android" : "browser"}/platform_www`),
               from: "**/*"
+            }]
+          })
+        ] : [],
+        ...this._info.config.type === "web" ? [
+          new CopyWebpackPlugin({
+            patterns: [{
+              from: path.resolve(process.cwd(), "node_modules", "@angular", "service-worker", "ngsw-worker.js"),
+              to: path.resolve(distPath, "ngsw-worker.js")
             }]
           })
         ] : []

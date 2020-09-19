@@ -81,7 +81,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
         min-width: 240px;
         background: white;
         border: 1px solid var(--theme-color-primary-darker);
-        border-radius: 2px;
+        //border-radius: 2px;
         overflow: hidden;
         @include elevation(16);
 

@@ -18,14 +18,14 @@ export interface ISdServerPackageConfig {
   type: "server";
   configs?: { [key: string]: any };
   env?: { [key: string]: string };
-  publish?: ISdSimplysmPublishConfig;
+  publish?: ISdSimplysmPublishConfig | ISdLocalPublishConfig;
 }
 
 export interface ISdWebPackageConfig {
   type: "web";
   server: string;
   configs?: { [key: string]: any };
-  publish?: ISdSimplysmPublishConfig;
+  publish?: ISdSimplysmPublishConfig | ISdLocalPublishConfig;
 }
 
 export interface ISdAndroidPackageConfig {
@@ -104,4 +104,9 @@ export interface ISdSimplysmPublishConfig {
   ssl?: boolean;
   origin?: string;
   password?: string;
+}
+
+export interface ISdLocalPublishConfig {
+  type: "local";
+  path: string;
 }

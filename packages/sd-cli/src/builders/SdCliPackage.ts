@@ -306,6 +306,34 @@ export class SdCliPackage extends EventEmitter {
 
       await wsClient.closeAsync();
     }
+    else if (this.info.config?.type !== "library" && this.info.config.publish !== undefined && this.info.config.publish.type === "local") {
+      const targetRootPath = this.info.config.publish.path.replace(/^\$project/g, process.cwd());
+
+      const targets = this.info.tsConfigForBuild ? Object.keys(this.info.tsConfigForBuild) : undefined;
+      if (!targets) return;
+
+      await targets.parallelAsync(async target => {
+        const parsedTsConfig = ts.parseJsonConfigFileContent(this.info.tsConfigForBuild![target].config, ts.sys, this.info.rootPath);
+
+        const distPath = parsedTsConfig.options.outDir !== undefined ?
+          path.resolve(parsedTsConfig.options.outDir) :
+          path.resolve(this.info.rootPath, "dist");
+
+        const filePaths = await FsUtils.globAsync(path.resolve(distPath, "**", "*"), { dot: true, nodir: true });
+
+        await filePaths.parallelAsync(async filePath => {
+          const relativeFilePath = path.relative(distPath, filePath);
+          const targetPath = path.posix.join(targetRootPath, relativeFilePath);
+
+          try {
+            await FsUtils.copyAsync(filePath, targetPath);
+          }
+          catch (err) {
+            throw new SdError(err, this.info.npmConfig.name);
+          }
+        });
+      });
+    }
   }
 
   public async initializeCordovaAsync(platform: "android" | "browser"): Promise<void> {

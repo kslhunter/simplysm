@@ -11,7 +11,7 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
     :host {
       display: block;
       background: white;
-      border-radius: 2px;
+      border-radius: var(--gap-xs);
       @include elevation(2);
       overflow: hidden;
       padding-top: var(--gap-sm);
