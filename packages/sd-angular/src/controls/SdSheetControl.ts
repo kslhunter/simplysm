@@ -937,6 +937,7 @@ export class SdSheetControl implements DoCheck, OnInit {
             if (this.autoSelect === "focus") {
               this._zone.run(() => {
                 this._selectItem(itemDef.item, itemDef.index);
+                this._cdr.markForCheck();
               });
             }
             /*else if (

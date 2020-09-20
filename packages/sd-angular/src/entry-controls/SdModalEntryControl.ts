@@ -98,7 +98,8 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
 
             ._title {
               display: inline-block;
-              padding: var(--gap-sm) var(--gap-default);
+              //padding: var(--gap-sm) var(--gap-default);
+              padding: var(--gap-default) var(--gap-lg);
             }
 
             ._close-button,
@@ -107,7 +108,8 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
               float: right;
               cursor: pointer;
               text-align: center;
-              padding: var(--gap-sm) var(--gap-default);
+              //padding: var(--gap-sm) var(--gap-default);
+              padding: var(--gap-default) var(--gap-lg);
               color: var(--text-brightness-rev-dark);
 
               &:hover {

@@ -23,6 +23,9 @@ import { ISdResizeEvent } from "@simplysm/sd-core-browser";
       min-width: 120px;
       @include elevation(6);
       overflow: hidden;
+      border-radius: 2px;
+      //padding-top: 2px;
+      //padding-bottom: 2px;
 
       > div {
         width: 100%;
