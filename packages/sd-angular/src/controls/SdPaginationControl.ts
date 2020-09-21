@@ -5,6 +5,9 @@ import { SdInputValidate } from "../commons/SdInputValidate";
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <sd-anchor *ngIf="hasPrev" (click)="onGoFirstClick()">
+      <sd-icon icon="angle-double-left" fixedWidth></sd-icon>
+    </sd-anchor>
     <sd-anchor *ngIf="hasPrev" (click)="onPrevClick()">
       <sd-icon icon="angle-left" fixedWidth></sd-icon>
     </sd-anchor>
@@ -15,6 +18,9 @@ import { SdInputValidate } from "../commons/SdInputValidate";
     </sd-anchor>
     <sd-anchor *ngIf="hasNext" (click)="onNextClick()">
       <sd-icon icon="angle-right" fixedWidth></sd-icon>
+    </sd-anchor>
+    <sd-anchor *ngIf="hasNext" (click)="onGoLastClick()">
+      <sd-icon icon="angle-double-right" fixedWidth></sd-icon>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -83,24 +89,55 @@ export class SdPaginationControl {
   }
 
   public onPageClick(page: number): void {
-    // this.page = page;
-    // this.pageChange.emit(this.page);
-    this.pageChange.emit(page);
+    if (this.pageChange.observers.length > 0) {
+      this.pageChange.emit(page);
+    }
+    else {
+      this.page = page;
+    }
   }
 
   public onNextClick(): void {
-    // this.page = (this.displayPages.last() ?? 0) + 1;
-    // this.pageChange.emit(this.page);
-
     const page = (this.displayPages.last() ?? 0) + 1;
-    this.pageChange.emit(page);
+
+    if (this.pageChange.observers.length > 0) {
+      this.pageChange.emit(page);
+    }
+    else {
+      this.page = page;
+    }
   }
 
   public onPrevClick(): void {
-    // this.page = (this.displayPages[0] ?? 0) - 1;
-    // this.pageChange.emit(this.page);
-
     const page = (this.displayPages[0] ?? 0) - 1;
-    this.pageChange.emit(page);
+
+    if (this.pageChange.observers.length > 0) {
+      this.pageChange.emit(page);
+    }
+    else {
+      this.page = page;
+    }
+  }
+
+  public onGoFirstClick(): void {
+    const page = 0;
+
+    if (this.pageChange.observers.length > 0) {
+      this.pageChange.emit(page);
+    }
+    else {
+      this.page = page;
+    }
+  }
+
+  public onGoLastClick(): void {
+    const page = this.pageLength - 1;
+
+    if (this.pageChange.observers.length > 0) {
+      this.pageChange.emit(page);
+    }
+    else {
+      this.page = page;
+    }
   }
 }
