@@ -10,9 +10,19 @@ export class SdExcelWorksheet {
   public drawingRelData: any;
   public drawingData: any;
 
+  public rowDataMap = new Map<number, any>();
+
   public constructor(public readonly workbook: SdExcelWorkbook,
                      public readonly name: string,
                      public readonly sheetData: any) {
+    this._reloadRows();
+  }
+
+  private _reloadRows(): void {
+    for (const rowData of this.sheetData.worksheet.sheetData[0].row) {
+      const rowIndex = rowData.$.r - 1;
+      this.rowDataMap.set(rowIndex, rowData);
+    }
   }
 
   public cell(row: number, col: number): SdExcelCell {
@@ -28,9 +38,7 @@ export class SdExcelWorksheet {
   }
 
   public get rowLength(): number {
-    let length = this.sheetData.worksheet.sheetData[0].row.max((item: any) => (
-      (item?.$?.r !== undefined) ? Number(item.$.r) : 0
-    ));
+    let length = Array.from(this.rowDataMap.keys()).max() ?? 0;
     if (length === 0) {
       length = this.sheetData.worksheet.sheetData[0].row.length;
     }
@@ -74,6 +82,8 @@ export class SdExcelWorksheet {
       this.sheetData.worksheet.dimension[0].$.ref =
         SdExcelUtils.getRangeAddress(dimension.fromRow, dimension.fromCol, dimension.toRow + 1, dimension.toCol);
     }
+
+    this._reloadRows();
   }
 
   public insertCopyRow(row: number, copyRow: number): void {

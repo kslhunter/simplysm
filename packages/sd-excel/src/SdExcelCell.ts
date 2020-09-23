@@ -164,15 +164,17 @@ export class SdExcelCell {
                      public readonly row: number,
                      public readonly col: number) {
     this.excelWorkSheet.sheetData.worksheet.sheetData[0].row = this.excelWorkSheet.sheetData.worksheet.sheetData[0].row ?? [];
-    const rowNodes = this.excelWorkSheet.sheetData.worksheet.sheetData[0].row as any[];
-    let currRow = rowNodes.single((item: any) => Number(item.$.r) === row + 1);
+    let currRow = excelWorkSheet.rowDataMap.get(row);
+    // let currRow = rowNodes.single((item: any) => Number(item.$.r) === row + 1);
     if (currRow === undefined) {
       currRow = { $: { r: row + 1 } };
 
+      const rowNodes = this.excelWorkSheet.sheetData.worksheet.sheetData[0].row as any[];
       const beforeRow = rowNodes.orderBy(item => Number(item.$.r)).last(item => Number(item.$.r) < Number(currRow.$.r));
       const beforeRowIndex = beforeRow !== undefined ? rowNodes.indexOf(beforeRow) : -1;
 
       rowNodes.insert(beforeRowIndex + 1, currRow);
+      this.excelWorkSheet.rowDataMap.set(beforeRowIndex + 1, currRow);
     }
 
     currRow.c = currRow.c ?? [];
