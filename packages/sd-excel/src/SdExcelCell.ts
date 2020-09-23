@@ -179,9 +179,10 @@ export class SdExcelCell {
 
     currRow.c = currRow.c ?? [];
     const cellNodes = currRow.c as any[];
-    let currCell = cellNodes.single((item: any) => item.$.r === SdExcelUtils.getAddress(this.row, this.col));
+    const cellAddr = SdExcelUtils.getAddress(this.row, this.col);
+    let currCell = cellNodes.single((item: any) => item.$.r === cellAddr);
     if (currCell === undefined) {
-      currCell = { $: { r: SdExcelUtils.getAddress(this.row, this.col) } };
+      currCell = { $: { r: cellAddr } };
 
       const colStyle = this.excelWorkSheet.column(col)?.colData?.$?.style;
       if (colStyle !== undefined) {
