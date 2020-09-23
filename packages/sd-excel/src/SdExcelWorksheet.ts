@@ -106,6 +106,8 @@ export class SdExcelWorksheet {
     }
 
     rowDataList.insert(prevRowIndex + 1, currRowData);
+
+    this._reloadRows();
   }
 
   public setData(data: any[][]): void {
