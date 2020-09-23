@@ -13,6 +13,7 @@ module.exports = function (config: any): void {
       "../packages/sd-core-common/src/**/*.ts",
       "../packages/sd-core-browser/src/**/*.ts",
       "../packages/sd-orm-common/src/**/*.ts",
+      "../packages/sd-excel/src/**/*.ts",
       "src/common/**/*.ts",
       "src/browser/**/*.ts"
     ],
@@ -28,7 +29,7 @@ module.exports = function (config: any): void {
       fixWebpackSourcePaths: true
     },
 
-    browsers: ["ChromeHeadless", "IE"],
+    browsers: ["Chrome"/*ChromeHeadless, "IE"*/],
 
     singleRun: true,
 
@@ -68,6 +69,14 @@ module.exports = function (config: any): void {
             use: {
               loader: "istanbul-instrumenter-loader",
               options: { esModules: true }
+            }
+          },
+          {
+            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip)$/,
+            loader: "file-loader",
+            options: {
+              name: `assets/[name].[ext]?[hash]`,
+              esModule: false
             }
           }
         ]
