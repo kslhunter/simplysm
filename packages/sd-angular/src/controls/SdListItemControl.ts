@@ -55,7 +55,7 @@ import { sdIconNames } from "../commons/sdIconNames";
 
         > /deep/ ._child > ._content > sd-list {
           padding: var(--gap-sm) 0;
-          background: var(--trans-brightness-default);
+          background: var(--trans-brightness-dark);
         }
       }
 

@@ -19,8 +19,10 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
   selector: "sd-dock",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="_resize-bar" *ngIf="resizable" (mousedown)="onResizeBarMousedown($event)"></div>
-    <ng-content></ng-content>`,
+    <div>
+      <ng-content></ng-content>
+      <div class="_resize-bar" *ngIf="resizable" (mousedown)="onResizeBarMousedown($event)"></div>
+    </div>`,
   styles: [/* language=SCSS */ `
     $resize-bar-width: 4px;
 
@@ -30,56 +32,76 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
       overflow: auto;
 
       &[sd-resizable=true] {
-        > ._resize-bar {
-          position: absolute;
-          background: var(--sd-border-color);
-        }
-
-        &[sd-position=top] {
-          padding-bottom: $resize-bar-width;
-
+        > div {
           > ._resize-bar {
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: $resize-bar-width;
-            cursor: ns-resize;
+            position: absolute;
+            background: var(--sd-border-color);
           }
         }
 
-        &[sd-position=bottom] {
-          padding-top: $resize-bar-width;
+        &[sd-position=top] {
+          > div {
+            padding-bottom: $resize-bar-width;
 
-          > ._resize-bar {
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: $resize-bar-width;
-            cursor: ns-resize;
+            > ._resize-bar {
+              bottom: 0;
+              left: 0;
+              width: 100%;
+              height: $resize-bar-width;
+              cursor: ns-resize;
+            }
+          }
+        }
+
+        > div {
+          &[sd-position=bottom] {
+            padding-top: $resize-bar-width;
+
+            > ._resize-bar {
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: $resize-bar-width;
+              cursor: ns-resize;
+            }
           }
         }
 
         &[sd-position=left] {
-          padding-right: $resize-bar-width;
+          > div {
+            padding-right: $resize-bar-width;
 
-          > ._resize-bar {
-            top: 0;
-            right: 0;
-            height: 100%;
-            width: $resize-bar-width;
-            cursor: ew-resize;
+            > ._resize-bar {
+              top: 0;
+              right: 0;
+              height: 100%;
+              width: $resize-bar-width;
+              cursor: ew-resize;
+            }
           }
         }
 
         &[sd-position=right] {
-          padding-left: $resize-bar-width;
+          > div {
+            padding-left: $resize-bar-width;
+
+            > ._resize-bar {
+              top: 0;
+              left: 0;
+              height: 100%;
+              width: $resize-bar-width;
+              cursor: ew-resize;
+            }
+          }
+        }
+      }
+
+      &[sd-hide-resize-border=true] {
+        > div {
+          padding: 0 !important;
 
           > ._resize-bar {
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: $resize-bar-width;
-            cursor: ew-resize;
+            background: transparent;
           }
         }
       }
@@ -104,6 +126,11 @@ export class SdDockControl implements OnDestroy, OnInit {
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-resizable")
   public resizable?: boolean;
+
+  @Input()
+  @SdInputValidate(Boolean)
+  @HostBinding("attr.sd-hide-resize-border")
+  public hideResizeBorder?: boolean;
 
   private _config?: { size?: string };
 

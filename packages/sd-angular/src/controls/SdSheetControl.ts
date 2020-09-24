@@ -343,14 +343,16 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
         > sd-dock { // 상단 DOCK (설정 아이콘 및 페이징)
           border-bottom: 1px solid $border-color-dark;
 
-          > ._icon-container {
-            float: right;
+          /deep/ > div {
+            > ._icon-container {
+              float: right;
 
-            > sd-anchor {
-              padding: var(--gap-sm) var(--gap-default);
+              > sd-anchor {
+                padding: var(--gap-sm) var(--gap-default);
 
-              &:hover {
-                background: var(--theme-color-grey-lightest);
+                &:hover {
+                  background: var(--theme-color-grey-lightest);
+                }
               }
             }
           }

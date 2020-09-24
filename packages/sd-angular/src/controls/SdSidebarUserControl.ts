@@ -5,7 +5,8 @@ import { SdInputValidate } from "../commons/SdInputValidate";
   selector: "sd-sidebar-user",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="_content" [style.backgroundImage]="'url(' + backgroundImage + ')'">
+    <div class="_content"
+         [style]="'background: ' + 'url(' + backgroundImage + '); ' + contentStyle">
       <div class="sd-padding-lg">
         <ng-content></ng-content>
       </div>
@@ -65,4 +66,8 @@ export class SdSidebarUserControl {
 
   @HostBinding("attr.sd-menu-open")
   public menuOpen?: boolean;
+
+  @Input("content.style")
+  @SdInputValidate(String)
+  public contentStyle?: string;
 }
