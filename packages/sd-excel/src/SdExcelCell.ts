@@ -105,7 +105,11 @@ export class SdExcelCell {
 
       if (this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t !== undefined) {
         const v = this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0]._ ?? this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].t[0];
-        return v?.$ !== undefined ? " " : v?.toString();
+        const realV = v?.$ !== undefined ? " " : v?.toString();
+        if (realV == null || realV === "") {
+          return undefined;
+        }
+        return realV;
       }
       else {
         const v = this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].r.map((item: any) => {
