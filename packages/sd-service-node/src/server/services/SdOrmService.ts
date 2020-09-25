@@ -51,11 +51,9 @@ export class SdOrmService extends SdServiceBase {
 
   public async closeAsync(connId: number): Promise<void> {
     const conn = SdOrmService._connections.get(connId);
-    if (!conn) {
-      throw new Error("DB에 연결되어있지 않습니다.");
+    if (conn) {
+      await conn.closeAsync();
     }
-
-    await conn.closeAsync();
   }
 
   public async beginTransactionAsync(connId: number): Promise<void> {
