@@ -356,12 +356,7 @@ export class SdExcelCellStyle {
   private _getNumFmtData(): any {
     const styleData = this._getStyleData();
     if (styleData.$.numFmtId !== undefined) {
-      if (this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts === undefined) {
-        return undefined;
-      }
-      else {
-        return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt.single((item: any) => item.$.numFmtId === styleData.$.numFmtId);
-      }
+      return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts?.[0]?.numFmt?.single((item: any) => item.$.numFmtId === styleData.$.numFmtId);
     }
 
     return undefined;
