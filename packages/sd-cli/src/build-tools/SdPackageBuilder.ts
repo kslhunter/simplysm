@@ -1,4 +1,4 @@
-import { ISdPackageInfo, ISdWebPackageConfig, ITsConfig } from "../commons";
+import { ISdPackageInfo, ITsConfig } from "../commons";
 import { FsUtils, FsWatcher, IFileChangeInfo, Logger, ProcessManager } from "@simplysm/sd-core-node";
 import * as path from "path";
 import * as ts from "typescript";
@@ -80,7 +80,7 @@ export class SdPackageBuilder extends EventEmitter {
   private _getNgGenerator(): SdNgGenerator {
     if (!this._ngGenerator) {
       const srcPath = this._getSrcPath();
-      this._ngGenerator = new SdNgGenerator(srcPath, [srcPath], (this._info.config as ISdWebPackageConfig).moduleType === "lazyComponent");
+      this._ngGenerator = new SdNgGenerator(srcPath, [srcPath]);
     }
     return this._ngGenerator;
   }
@@ -642,7 +642,7 @@ export class SdPackageBuilder extends EventEmitter {
       "**/dist-browser/**",
       "**/_modules/**",
       "**/_routes.ts",
-      "**/_componentModules.ts"
+      "**/_pageComponents.ts"
     ];
 
     const fileAnymatchPath = [

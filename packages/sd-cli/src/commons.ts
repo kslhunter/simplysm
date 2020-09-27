@@ -24,7 +24,6 @@ export interface ISdServerPackageConfig {
 export interface ISdWebPackageConfig {
   type: "web";
   server: string;
-  moduleType?: "route" | "lazyComponent";
   configs?: { [key: string]: any };
   publish?: ISdSimplysmPublishConfig | ISdLocalPublishConfig;
 }

@@ -23,7 +23,7 @@ export class StringUtils {
 
   public static toKebabCase(str: string): string {
     return str
-      .replace(/^[a-zA-Z]/, m => m.toLowerCase())
-      .replace(/[-_]?[a-zA-Z]/g, m => "-" + m.toLowerCase());
+      .replace(/^[A-Z]/, m => m.toLowerCase())
+      .replace(/[-_]?[A-Z]/g, m => "-" + m.toLowerCase());
   }
 }
