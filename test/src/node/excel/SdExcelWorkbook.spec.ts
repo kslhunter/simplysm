@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import { SdExcelWorkbook } from "@simplysm/sd-excel";
 import { FsUtils } from "@simplysm/sd-core-node";
 import * as path from "path";

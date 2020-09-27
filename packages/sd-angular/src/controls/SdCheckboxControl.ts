@@ -15,7 +15,7 @@ import { SdInputValidate } from "../commons/SdInputValidate";
   selector: "sd-checkbox",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <label tabindex="0" (keydown)="onKeydown($event)">
+    <label tabindex="0" (keydown)="onKeydown($event)" [style]="labelStyle">
       <input [checked]="value"
              (change)="onValueChange($event)"
              [type]="radio ? 'radio' : 'checkbox'" hidden
@@ -230,6 +230,10 @@ export class SdCheckboxControl {
     includes: sdIconNames
   })
   public icon: IconName = "check";
+
+  @Input("label.style")
+  @SdInputValidate(String)
+  public labelStyle?: string;
 
   public el: HTMLElement;
 

@@ -1,4 +1,4 @@
-import { ISdPackageInfo, ITsConfig } from "../commons";
+import { ISdPackageInfo, ISdWebPackageConfig, ITsConfig } from "../commons";
 import { FsUtils, FsWatcher, IFileChangeInfo, Logger, ProcessManager } from "@simplysm/sd-core-node";
 import * as path from "path";
 import * as ts from "typescript";
@@ -80,7 +80,7 @@ export class SdPackageBuilder extends EventEmitter {
   private _getNgGenerator(): SdNgGenerator {
     if (!this._ngGenerator) {
       const srcPath = this._getSrcPath();
-      this._ngGenerator = new SdNgGenerator(srcPath, [srcPath]);
+      this._ngGenerator = new SdNgGenerator(srcPath, [srcPath], (this._info.config as ISdWebPackageConfig).moduleType === "lazyComponent");
     }
     return this._ngGenerator;
   }
@@ -641,7 +641,8 @@ export class SdPackageBuilder extends EventEmitter {
       "**/dist/**",
       "**/dist-browser/**",
       "**/_modules/**",
-      "**/_routes.ts"
+      "**/_routes.ts",
+      "**/_componentModules.ts"
     ];
 
     const fileAnymatchPath = [
@@ -911,7 +912,7 @@ export class SdPackageBuilder extends EventEmitter {
             }]
           })
         ] : [],
-        ...this._info.config.type === "web" ? [
+        ...this._info.config.type === "web" && FsUtils.exists(path.resolve(process.cwd(), "node_modules", "@angular", "service-worker", "ngsw-worker.js")) ? [
           new CopyWebpackPlugin({
             patterns: [{
               from: path.resolve(process.cwd(), "node_modules", "@angular", "service-worker", "ngsw-worker.js"),

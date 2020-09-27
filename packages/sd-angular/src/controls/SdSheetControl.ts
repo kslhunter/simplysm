@@ -33,7 +33,7 @@ import { ObjectUtils } from "@simplysm/sd-core-common";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-dock-container>
-      <sd-dock *ngIf="key || pageLength > 0">
+      <sd-dock *ngIf="(key || pageLength > 0) && !hideConfigBar">
         <div class="_icon-container">
           <sd-anchor class="_card-icon"
                      *ngIf="useCardDisplayType"
@@ -669,6 +669,10 @@ export class SdSheetControl implements DoCheck, OnInit {
 
   @Output()
   public readonly pageChange = new EventEmitter<number>();
+
+  @Input()
+  @SdInputValidate(Boolean)
+  public hideConfigBar?: boolean;
 
   @Input()
   @SdInputValidate({

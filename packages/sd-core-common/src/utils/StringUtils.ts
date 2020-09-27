@@ -14,4 +14,16 @@ export class StringUtils {
     const hasLast = ((text.slice(-1).charCodeAt(0) - 0xAC00) % 28) !== 0;
     return hasLast ? table[type].t : table[type].f;
   }
+
+  public static toPascalCase(str: string): string {
+    return str
+      .replace(/[-_][a-z]/g, m => m[1].toUpperCase())
+      .replace(/^[a-z]/, m => m.toUpperCase());
+  }
+
+  public static toKebabCase(str: string): string {
+    return str
+      .replace(/^[a-zA-Z]/, m => m.toLowerCase())
+      .replace(/[-_]?[a-zA-Z]/g, m => "-" + m.toLowerCase());
+  }
 }

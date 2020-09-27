@@ -64,7 +64,7 @@ small {
       margin-top: var(--gap-default);
       margin-bottom: var(--gap-default);
       padding-bottom: var(--gap-xxs);
-      border-bottom: var(--gap-xs) solid var(--sd-border-color);
+      border-bottom: 1px solid var(--sd-border-color);
     }
   }
 }

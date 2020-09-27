@@ -31,6 +31,10 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
       position: absolute;
       overflow: auto;
 
+      > div {
+        height: 100%;
+      }
+
       &[sd-resizable=true] {
         > div {
           > ._resize-bar {
@@ -53,8 +57,8 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
           }
         }
 
-        > div {
-          &[sd-position=bottom] {
+        &[sd-position=bottom] {
+          > div {
             padding-top: $resize-bar-width;
 
             > ._resize-bar {

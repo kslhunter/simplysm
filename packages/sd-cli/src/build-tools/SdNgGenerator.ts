@@ -1,7 +1,7 @@
 import { SdClassMetadata } from "../metadata/SdClassMetadata";
 import { SdMetadataCollector } from "../metadata/SdMetadataCollector";
 import { FsUtils, IFileChangeInfo, Logger } from "@simplysm/sd-core-node";
-import { NeverEntryError } from "@simplysm/sd-core-common";
+import { NeverEntryError, StringUtils } from "@simplysm/sd-core-common";
 import { isMetadataError, MetadataCollector } from "@angular/compiler-cli";
 import * as ts from "typescript";
 import * as path from "path";
@@ -27,9 +27,11 @@ export class SdNgGenerator {
   private readonly _pagesDirPath = path.resolve(this._srcPath, "pages");
   private readonly _modulesGenDirPath = path.resolve(this._srcPath, "_modules");
   private readonly _routesGenFilePath = path.resolve(this._srcPath, "_routes.ts");
+  private readonly _componentModulesGenFilePath = path.resolve(this._srcPath, "_componentModules.ts");
 
   public constructor(private readonly _srcPath: string,
-                     private readonly _excludes: string[]) {
+                     private readonly _excludes: string[],
+                     private readonly _isForLazyComponent: boolean) {
   }
 
   public async updateAsync(program: { getSourceFile: (filePath: string) => ts.SourceFile | undefined },
@@ -41,7 +43,8 @@ export class SdNgGenerator {
     for (const changedInfo of changedInfos) {
       if (
         !path.relative(this._modulesGenDirPath, changedInfo.filePath).includes("..") ||
-        changedInfo.filePath === this._routesGenFilePath
+        changedInfo.filePath === this._routesGenFilePath ||
+        changedInfo.filePath === this._componentModulesGenFilePath
       ) {
         continue;
       }
@@ -344,7 +347,25 @@ export class SdNgGenerator {
             if (imp === undefined) throw new NeverEntryError();
             return `import {${imp.distinct().join(", ")}} from "${key}";`;
           });
-        const ngModuleContent = `
+
+        let ngModuleContent: string;
+        if (this._isForLazyComponent) {
+          ngModuleContent = `
+${importText.join(os.EOL)}
+
+@NgModule({
+  imports: [${ngModuleInfo.modules.length > 0 ? os.EOL + "    " + ngModuleInfo.modules.distinct().join("," + os.EOL + "    ") + os.EOL + "  " : ""}],
+  declarations: [${ngModuleInfo.declarations.length > 0 ? os.EOL + "    " + ngModuleInfo.declarations.distinct().join("," + os.EOL + "    ") + os.EOL + "  " : ""}],
+  exports: [${ngModuleInfo.exports.length > 0 ? os.EOL + "    " + ngModuleInfo.exports.distinct().join("," + os.EOL + "    ") + os.EOL + "  " : ""}],
+  entryComponents: [${ngModuleInfo.exports.concat(ngModuleInfo.entryComponents).length > 0 ? os.EOL + "    " + ngModuleInfo.exports.concat(ngModuleInfo.entryComponents).distinct().join("," + os.EOL + "    ") + os.EOL + "  " : ""}],
+  providers: [${ngModuleInfo.providers.length > 0 ? os.EOL + "    " + ngModuleInfo.providers.distinct().join("," + os.EOL + "    ") + os.EOL + "  " : ""}]
+})
+export class ${ngModuleInfo.def.className} {
+${ngModuleInfo.exports.distinct().map(item => `  public ${item} = ${item};`).join(os.EOL)}
+}`.trim();
+        }
+        else {
+          ngModuleContent = `
 ${importText.join(os.EOL)}
 
 @NgModule({
@@ -356,6 +377,7 @@ ${importText.join(os.EOL)}
 })
 export class ${ngModuleInfo.def.className} {
 }`.trim();
+        }
 
         if (this._outputCache[ngModuleInfo.def.filePath] !== ngModuleContent) {
           this._outputCache[ngModuleInfo.def.filePath] = ngModuleContent;
@@ -378,28 +400,29 @@ export class ${ngModuleInfo.def.className} {
 
     const info = await this._getInfoAsync();
 
-    for (const ngRoutingModuleInfo of info.ngRoutingModule) {
-      if (this._outputCache[ngRoutingModuleInfo.filePath] === undefined && FsUtils.exists(ngRoutingModuleInfo.filePath)) {
-        this._outputCache[ngRoutingModuleInfo.filePath] = await FsUtils.readFileAsync(ngRoutingModuleInfo.filePath);
-      }
+    if (!this._isForLazyComponent) {
+      for (const ngRoutingModuleInfo of info.ngRoutingModule) {
+        if (this._outputCache[ngRoutingModuleInfo.filePath] === undefined && FsUtils.exists(ngRoutingModuleInfo.filePath)) {
+          this._outputCache[ngRoutingModuleInfo.filePath] = await FsUtils.readFileAsync(ngRoutingModuleInfo.filePath);
+        }
 
-      if (ngRoutingModuleInfo.ngModuleDef !== undefined && ngRoutingModuleInfo.pageFilePath !== undefined) {
-        const moduleFilePath = ngRoutingModuleInfo.ngModuleDef.filePath;
-        const moduleClassName = ngRoutingModuleInfo.ngModuleDef.className;
-        const pageFilePath = ngRoutingModuleInfo.pageFilePath;
+        if (ngRoutingModuleInfo.ngModuleDef !== undefined && ngRoutingModuleInfo.pageFilePath !== undefined) {
+          const moduleFilePath = ngRoutingModuleInfo.ngModuleDef.filePath;
+          const moduleClassName = ngRoutingModuleInfo.ngModuleDef.className;
+          const pageFilePath = ngRoutingModuleInfo.pageFilePath;
 
-        const moduleRelativePath = path.relative(path.dirname(ngRoutingModuleInfo.filePath), moduleFilePath)
-          .replace(/\\/g, "/")
-          .replace(/\.ts$/, "");
+          const moduleRelativePath = path.relative(path.dirname(ngRoutingModuleInfo.filePath), moduleFilePath)
+            .replace(/\\/g, "/")
+            .replace(/\.ts$/, "");
 
-        const pageClassName = path.basename(pageFilePath, path.extname(pageFilePath));
-        const pageRelativePath = path.relative(path.dirname(ngRoutingModuleInfo.filePath), pageFilePath)
-          .replace(/\\/g, "/")
-          .replace(/\.ts$/, "");
+          const pageClassName = path.basename(pageFilePath, path.extname(pageFilePath));
+          const pageRelativePath = path.relative(path.dirname(ngRoutingModuleInfo.filePath), pageFilePath)
+            .replace(/\\/g, "/")
+            .replace(/\.ts$/, "");
 
-        const className = path.basename(ngRoutingModuleInfo.filePath, path.extname(ngRoutingModuleInfo.filePath));
+          const className = path.basename(ngRoutingModuleInfo.filePath, path.extname(ngRoutingModuleInfo.filePath));
 
-        const content = `
+          const content = `
 import {NgModule} from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {RouterModule} from "@angular/router";
@@ -421,21 +444,43 @@ import {${pageClassName}} from "${pageRelativePath}";
 export class ${className} {
 }`.trim();
 
-        if (this._outputCache[ngRoutingModuleInfo.filePath] !== content) {
-          this._outputCache[ngRoutingModuleInfo.filePath] = content;
-          await FsUtils.writeFileAsync(ngRoutingModuleInfo.filePath, content);
+          if (this._outputCache[ngRoutingModuleInfo.filePath] !== content) {
+            this._outputCache[ngRoutingModuleInfo.filePath] = content;
+            await FsUtils.writeFileAsync(ngRoutingModuleInfo.filePath, content);
+          }
         }
-      }
-      else {
-        const content = `
+        else {
+          const content = `
 export const routes = [
   ${this._getRoutingChildrenArrText(ngRoutingModuleInfo.children).replace(/\n/g, "\n  ")}
 ];`.trim();
 
-        if (this._outputCache[ngRoutingModuleInfo.filePath] !== content) {
-          this._outputCache[ngRoutingModuleInfo.filePath] = content;
-          await FsUtils.writeFileAsync(ngRoutingModuleInfo.filePath, content);
+          if (this._outputCache[ngRoutingModuleInfo.filePath] !== content) {
+            this._outputCache[ngRoutingModuleInfo.filePath] = content;
+            await FsUtils.writeFileAsync(ngRoutingModuleInfo.filePath, content);
+          }
         }
+      }
+    }
+    else {
+      const texts: string[] = info.ngRoutingModule.map(item => {
+        const fileRelativePath = path.relative(this._pagesDirPath, item.pageFilePath ?? this._pagesDirPath);
+        const parentCodes = fileRelativePath.split(/[\\/]/).slice(0, -1);
+        const pageCode = StringUtils.toKebabCase(fileRelativePath.split(/[\\/]/).last()!.replace("Page.ts", ""));
+        const code = parentCodes.concat([pageCode]).join(".");
+        const moduleFileRelativePath = fileRelativePath.slice(0, -3) + "Module";
+        const moduleName = moduleFileRelativePath.split(/[\\/]/).last()!;
+        return `  "${code}": async () => (await import("./_modules/pages/${moduleFileRelativePath}"))["${moduleName}"]`;
+      });
+
+      const content = `
+export const componentModules = {
+${texts.join(`,${os.EOL}`)}
+};`.trim();
+
+      if (this._outputCache[this._componentModulesGenFilePath] !== content) {
+        this._outputCache[this._componentModulesGenFilePath] = content;
+        await FsUtils.writeFileAsync(this._componentModulesGenFilePath, content);
       }
     }
 
@@ -456,6 +501,22 @@ export const routes = [
         delete this._outputCache[filePath];
       }
     }
+  }
+
+
+  private _getComponentModulesTextArray(children: ISdNgRoutingModuleRoute[], parentCodes: string[]): string[] {
+    console.log("!!", children, parentCodes);
+    return children.mapMany(child => {
+      if (child.loadChildren !== undefined) {
+        const modulePath = parentCodes.length > 0 ? (parentCodes.join("/") + "/") : "";
+        const moduleName = StringUtils.toPascalCase(child.path) + "PageModule";
+        return [`  "${parentCodes.concat([child.path]).join(".")}": async () => (await import("./_modules/pages/${modulePath}${moduleName}"))["${moduleName}"]`];
+      }
+      if (child.children && child.children.length > 0) {
+        return this._getComponentModulesTextArray(child.children, parentCodes.concat([child.path]));
+      }
+      return [];
+    });
   }
 
   private async _getInfoAsync(): Promise<{ ngModules: ISdNgModuleInfo[]; ngRoutingModule: ISdNgRoutingModuleInfo[] }> {
