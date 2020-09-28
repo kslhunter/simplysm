@@ -91,6 +91,9 @@ export const sorm = {
 
     return this.and(result);
   },
+  notIncludes(source: string | undefined, target: string | undefined): boolean {
+    return new QueryUnit(QueriedBoolean, ormHelpers.getFieldQuery(source) + "NOT LIKE '%' + " + ormHelpers.getFieldQuery(target) + " + '%'") as any;
+  },
   includes(source: string | undefined, target: string | undefined): boolean {
     return new QueryUnit(QueriedBoolean, ormHelpers.getFieldQuery(source) + " LIKE '%' + " + ormHelpers.getFieldQuery(target) + " + '%'") as any;
   },
