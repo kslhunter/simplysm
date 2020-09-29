@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Input, Optional } from "@angular/core";
 import {
   FlipProp,
   FontawesomeObject,
@@ -13,6 +13,8 @@ import {
 import { SdIconLayerTextBaseControlBase } from "../../commons/SdIconLayerTextBaseControlBase";
 import { ISdIconProps, objectWithKey, sdIconClassList } from "../../commons/SdIconUtils";
 import { SdInputValidate } from "../../commons/SdInputValidate";
+import { SdIconLayerControl } from "./SdIconLayerControl";
+import { DomSanitizer } from "@angular/platform-browser";
 
 @Component({
   selector: "sd-icon-layer-text",
@@ -86,6 +88,11 @@ export class SdIconLayerTextControl extends SdIconLayerTextBaseControlBase {
 
   @HostBinding("class.ng-fa-layers-text")
   public classBoolean = true;
+
+  public constructor(@Inject(forwardRef(() => SdIconLayerControl)) @Optional() parent: SdIconLayerControl | undefined,
+                     sanitizer: DomSanitizer) {
+    super(parent, sanitizer);
+  }
 
   protected updateParams(): void {
     const classOpts: ISdIconProps = {

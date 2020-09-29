@@ -79,7 +79,7 @@ import { SdFormControl } from "./SdFormControl";
       &[sd-layout="inline"] {
         display: inline-block;
         vertical-align: top;
-        margin: var(--gap-xxs) var(--gap-default) var(--gap-xxs) 0;
+        margin: var(--gap-xs) var(--gap-default) var(--gap-xs) 0;
 
         > label {
           display: inline-block;

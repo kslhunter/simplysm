@@ -642,7 +642,7 @@ export class SdPackageBuilder extends EventEmitter {
       "**/dist-browser/**",
       "**/_modules/**",
       "**/_routes.ts",
-      "**/_pageComponents.ts"
+      "**/_lazyPages.ts"
     ];
 
     const fileAnymatchPath = [
@@ -881,11 +881,11 @@ export class SdPackageBuilder extends EventEmitter {
             entryModule: path.resolve(srcPath, "AppModule") + "#AppModule",
             platform: PLATFORM.Browser,
             sourceMap: parsedTsConfig.options.sourceMap,
-            nameLazyFiles: this._devMode,
+            nameLazyFiles: false,
             forkTypeChecker: false,
             directTemplateLoading: true,
             tsConfigPath,
-            skipCodeGeneration: this._devMode,
+            skipCodeGeneration: false,
             host: createWebpackInputHostForScss(fs),
             compilerOptions: {
               fullTemplateTypeCheck: true,

@@ -1,12 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DoCheck,
   ElementRef,
   forwardRef,
   HostBinding,
   Inject,
   Injector,
-  OnInit
+  Input
 } from "@angular/core";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
@@ -16,10 +17,10 @@ import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" style="font-size: 16px;"
-               *ngIf="sidebarContainerControl">
+               *ngIf="sidebarContainerControl || sidebarContainer">
       <sd-icon icon="bars" fixedWidth></sd-icon>
     </sd-anchor>
-    <sd-gap width="default" *ngIf="!sidebarContainerControl"></sd-gap>
+    <sd-gap width="default" *ngIf="!sidebarContainerControl && !sidebarContainer"></sd-gap>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -36,6 +37,7 @@ import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
       overflow-y: hidden;
       white-space: nowrap;
       line-height: var(--sd-topbar-height);
+      user-select: none;
 
       @each $h in (h1, h2, h3, h4, h5, h6) {
         > /deep/ #{$h} {
@@ -109,11 +111,14 @@ import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
     }
   `]
 })
-export class SdTopbarControl implements OnInit {
+export class SdTopbarControl implements DoCheck {
   @HostBinding("attr.sd-size")
   public get size(): "sm" | "lg" | undefined {
     return this._topbarContainerControl.size;
   }
+
+  @Input()
+  public sidebarContainer?: SdSidebarContainerControl;
 
   public readonly sidebarContainerControl?: SdSidebarContainerControl;
 
@@ -125,10 +130,11 @@ export class SdTopbarControl implements OnInit {
   }
 
   public onSidebarToggleButtonClick(): void {
-    this.sidebarContainerControl!.toggle = !this.sidebarContainerControl!.toggle;
+    const sidebarContainerControl = this.sidebarContainer ?? this.sidebarContainerControl;
+    sidebarContainerControl!.toggle = !sidebarContainerControl!.toggle;
   }
 
-  public ngOnInit(): void {
+  public ngDoCheck(): void {
     this._topbarContainerControl.paddingTopPx = this._elRef.nativeElement.offsetHeight;
   }
 }

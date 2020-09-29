@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, HostBinding } from "@angular/core";
+import { ChangeDetectionStrategy, Component, forwardRef, HostBinding, Inject, Optional } from "@angular/core";
 import { counter, CounterParams, FontawesomeObject } from "@fortawesome/fontawesome-svg-core";
 import { SdIconLayerTextBaseControlBase } from "../../commons/SdIconLayerTextBaseControlBase";
+import { SdIconLayerControl } from "./SdIconLayerControl";
+import { DomSanitizer } from "@angular/platform-browser";
 
 /**
  * Fontawesome layers counter.
@@ -13,6 +15,11 @@ import { SdIconLayerTextBaseControlBase } from "../../commons/SdIconLayerTextBas
 export class SdIconLayerCounterControl extends SdIconLayerTextBaseControlBase {
   @HostBinding("class.ng-fa-layers-counter")
   public classBoolean = true;
+
+  public constructor(@Inject(forwardRef(() => SdIconLayerControl)) @Optional() parent: SdIconLayerControl | undefined,
+                     sanitizer: DomSanitizer) {
+    super(parent, sanitizer);
+  }
 
   protected updateParams(): void {
     this.params = {

@@ -228,7 +228,7 @@ module.exports = {
           },
           {
             selector: "variable",
-            format: ["camelCase", "PascalCase"]
+            format: ["camelCase", "UPPER_CASE", "PascalCase"]
           },
           {
             selector: "variable",

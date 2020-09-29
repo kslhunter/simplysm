@@ -25,10 +25,10 @@ export class SdNgGenerator {
   private readonly _outputCache: { [key: string]: string | undefined } = {};
 
   private readonly _pagesDirPath = path.resolve(this._srcPath, "pages");
-  private readonly _pageComponentsDirPath = path.resolve(this._srcPath, "page-components");
+  private readonly _lazyPagesDirPath = path.resolve(this._srcPath, "lazy-pages");
   private readonly _modulesGenDirPath = path.resolve(this._srcPath, "_modules");
   private readonly _routesGenFilePath = path.resolve(this._srcPath, "_routes.ts");
-  private readonly _pageComponentsGenFilePath = path.resolve(this._srcPath, "_pageComponents.ts");
+  private readonly _lazyPagesGenFilePath = path.resolve(this._srcPath, "_lazyPages.ts");
 
   public constructor(private readonly _srcPath: string,
                      private readonly _excludes: string[]) {
@@ -44,7 +44,7 @@ export class SdNgGenerator {
       if (
         !path.relative(this._modulesGenDirPath, changedInfo.filePath).includes("..") ||
         changedInfo.filePath === this._routesGenFilePath ||
-        changedInfo.filePath === this._pageComponentsGenFilePath
+        changedInfo.filePath === this._lazyPagesGenFilePath
       ) {
         continue;
       }
@@ -355,7 +355,7 @@ ${importText.join(os.EOL)}
   imports: [${ngModuleInfo.modules.length > 0 ? os.EOL + "    " + ngModuleInfo.modules.distinct().join("," + os.EOL + "    ") + os.EOL + "  " : ""}],
   declarations: [${ngModuleInfo.declarations.length > 0 ? os.EOL + "    " + ngModuleInfo.declarations.distinct().join("," + os.EOL + "    ") + os.EOL + "  " : ""}],
   exports: [${ngModuleInfo.exports.length > 0 ? os.EOL + "    " + ngModuleInfo.exports.distinct().join("," + os.EOL + "    ") + os.EOL + "  " : ""}],
-  entryComponents: [${ngModuleInfo.exports.concat(ngModuleInfo.entryComponents).length > 0 ? os.EOL + "    " + ngModuleInfo.exports.concat(ngModuleInfo.entryComponents).distinct().join("," + os.EOL + "    ") + os.EOL + "  " : ""}],
+  entryComponents: [${ngModuleInfo.entryComponents.length > 0 ? os.EOL + "    " + ngModuleInfo.entryComponents.distinct().join("," + os.EOL + "    ") + os.EOL + "  " : ""}],
   providers: [${ngModuleInfo.providers.length > 0 ? os.EOL + "    " + ngModuleInfo.providers.distinct().join("," + os.EOL + "    ") + os.EOL + "  " : ""}]
 })
 export class ${ngModuleInfo.def.className} {
@@ -457,23 +457,25 @@ export const routes = [
       }
     }
 
-    if (info.pageComponentCodesList.length > 0) {
-      const texts: string[] = info.pageComponentCodesList.map(item => {
+    if (info.lazyPageCodesList.length > 0) {
+      const texts: string[] = info.lazyPageCodesList.map(item => {
         const code = item.join(".");
         const moduleDirPath = item.length > 1 ? item.slice(0, -1).join("/") + "/" : "";
-        const moduleName = StringUtils.toPascalCase(item.last()!) + "PageModule";
+        const moduleName = StringUtils.toPascalCase(item.last()!) + "LazyPageModule";
+        const pageName = StringUtils.toPascalCase(item.last()!) + "LazyPage";
 
-        return `  "${code}": async () => (await import("./_modules/page-components/${moduleDirPath}${moduleName}"))["${moduleName}"]`;
+        /*return `  "${code}": () => import("./_modules/lazy-pages/${moduleDirPath}${moduleName}").then(m => m.${moduleName})`;*/
+        return `  {\n    code: "${code}",\n    loadChildren: "./_modules/lazy-pages/${moduleDirPath}${moduleName}#${moduleName}?chunkName=${pageName}",\n    matcher: () => null\n  }`;
       }).filterExists();
 
       const content = `
-  export const pageComponents = {
-  ${texts.join(`,${os.EOL}`)}
-  };`.trim();
+export const lazyPages = [
+${texts.join(`,${os.EOL}`)}
+];`.trim();
 
-      if (this._outputCache[this._pageComponentsGenFilePath] !== content) {
-        this._outputCache[this._pageComponentsGenFilePath] = content;
-        await FsUtils.writeFileAsync(this._pageComponentsGenFilePath, content);
+      if (this._outputCache[this._lazyPagesGenFilePath] !== content) {
+        this._outputCache[this._lazyPagesGenFilePath] = content;
+        await FsUtils.writeFileAsync(this._lazyPagesGenFilePath, content);
       }
     }
 
@@ -503,7 +505,7 @@ export const routes = [
       this._info = {
         ngModules: [],
         ngRoutingModule: [],
-        pageComponentCodesList: []
+        lazyPageCodesList: []
       };
 
       for (const defs of Object.values(this._defMapObj)) {
@@ -562,6 +564,7 @@ export const routes = [
                 exportName.endsWith("PrintTemplate") ||
                 exportName.endsWith("EntryControl") ||
                 exportName.endsWith("Modal") ||
+                exportName.endsWith("LazyPage") ||
                 exp.extends?.name === "SdModalBase" ||
                 exp.extends?.name === "SdPrintTemplateBase"
               ) {
@@ -705,19 +708,19 @@ export const routes = [
               this._info.ngRoutingModule.push(ngRoutingModuleInfo);
             }
 
-            // pageComponentCodes
+            // lazyPageCodes
 
             if (
               !sourceFilePath.endsWith(".d.ts") &&
-              FsUtils.exists(this._pageComponentsDirPath) &&
-              !path.relative(this._pageComponentsDirPath, sourceFilePath).includes("..")
+              FsUtils.exists(this._lazyPagesDirPath) &&
+              !path.relative(this._lazyPagesDirPath, sourceFilePath).includes("..")
             ) {
-              const relativePath = path.relative(this._pageComponentsDirPath, sourceFilePath);
+              const relativePath = path.relative(this._lazyPagesDirPath, sourceFilePath);
               const split = relativePath.split(/[\\/]/);
               const parentCodes = split.slice(0, -1);
-              const pageCode = StringUtils.toKebabCase(split.last()!.replace(/Page.ts$/, ""));
+              const pageCode = StringUtils.toKebabCase(split.last()!.replace(/LazyPage\.ts$/, ""));
 
-              this._info.pageComponentCodesList.push(parentCodes.concat([pageCode]));
+              this._info.lazyPageCodesList.push(parentCodes.concat([pageCode]));
             }
           }
 
@@ -729,7 +732,7 @@ export const routes = [
 
       // _routes.ts
 
-      if (this._pagesDirPath !== undefined && FsUtils.exists(this._pagesDirPath)) {
+      if (FsUtils.exists(this._pagesDirPath)) {
         this._info.ngRoutingModule.push({
           ngModuleDef: undefined,
           pageFilePath: undefined,
@@ -936,8 +939,6 @@ export const routes = [
   }
 
   private async _getRouteChildrenAsync(pagePath: string | undefined, pageChildDirPath: string): Promise<ISdNgRoutingModuleRoute[]> {
-    if (this._pagesDirPath === undefined) throw new NeverEntryError();
-
     const children: ISdNgRoutingModuleRoute[] = [];
 
     const childNames = await FsUtils.readdirAsync(pageChildDirPath);
@@ -1018,5 +1019,5 @@ interface ISdNgRoutingModuleRoute {
 interface ISdNgGenerateInfo {
   ngModules: ISdNgModuleInfo[];
   ngRoutingModule: ISdNgRoutingModuleInfo[];
-  pageComponentCodesList: string[][];
+  lazyPageCodesList: string[][];
 }

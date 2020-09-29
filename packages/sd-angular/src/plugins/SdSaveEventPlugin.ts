@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, Injector } from "@angular/core";
 import { EventManager } from "@angular/platform-browser";
 import { NeverEntryError } from "@simplysm/sd-core-common";
 import { SdModalProvider } from "../providers/SdModalProvider";
@@ -7,7 +7,10 @@ import { SdModalProvider } from "../providers/SdModalProvider";
 export class SdSaveEventPlugin {
   public manager!: EventManager;
 
-  public constructor(private readonly _modal: SdModalProvider) {
+  private readonly _modal: SdModalProvider;
+
+  public constructor(private readonly _injector: Injector) {
+    this._modal = this._injector.get(SdModalProvider);
   }
 
   public addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {

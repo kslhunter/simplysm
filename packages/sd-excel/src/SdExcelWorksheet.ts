@@ -38,11 +38,11 @@ export class SdExcelWorksheet {
   }
 
   public get rowLength(): number {
-    let length = Array.from(this.rowDataMap.keys()).max() ?? 0;
+    const length = Array.from(this.rowDataMap.keys()).max() ?? 0;
     if (length === 0) {
-      length = this.sheetData.worksheet.sheetData[0].row.length;
+      return this.sheetData.worksheet.sheetData[0].row.length;
     }
-    return length;
+    return length + 1;
   }
 
   public insertEmptyRow(row: number): void {
