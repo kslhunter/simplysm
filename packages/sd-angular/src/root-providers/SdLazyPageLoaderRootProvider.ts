@@ -40,6 +40,12 @@ export class SdLazyPageLoaderRootProvider {
 
     throw new Error(`모듈을 찾을 수 없습니다:${code}`);
   }
+
+  public getPageCode(component: Type<any>): string | undefined {
+    return Array.from(this._loading.entries())
+      .single(item => item[1].component === component)
+      ?.[0];
+  }
 }
 
 export interface ILazyPage {

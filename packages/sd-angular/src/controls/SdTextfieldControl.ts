@@ -34,6 +34,7 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
              [attr.pattern]="pattern"
              [attr.class]="inputClass"
              [attr.style]="inputSafeStyle"
+             [attr.title]="title || placeholder"
              (input)="onInput()"/>
       <div *ngIf="!disabled && readonly"
            [attr.class]="'_readonly ' + inputClass"
@@ -52,6 +53,7 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
       <textarea #input
                 [value]="controlValue"
                 [attr.placeholder]="placeholder"
+                [attr.title]="title || placeholder"
                 [disabled]="disabled"
                 [required]="required"
                 [attr.rows]="rows"
@@ -226,6 +228,10 @@ export class SdTextfieldControl implements DoCheck, AfterViewInit {
   @Input()
   @SdInputValidate(String)
   public placeholder?: string;
+
+  @Input()
+  @SdInputValidate(String)
+  public title?: string;
 
   @Input()
   @SdInputValidate([Number, String, DateOnly, DateTime, Time])
