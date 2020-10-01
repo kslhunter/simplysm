@@ -62,11 +62,15 @@ module.exports = {
     {
       files: ["+(*Page.html|*Component.html|*Modal.html|*Control.html|*PrintTemplate.html|*Toast.html)"],
       parser: "@angular-eslint/template-parser",
-      plugins: ["@angular-eslint/template"],
+      plugins: [
+        "@angular-eslint/template",
+        "@simplysm"
+      ],
       extends: ["plugin:@angular-eslint/template/all"],
       rules: {
         "@angular-eslint/template/cyclomatic-complexity": "off",
-        "@angular-eslint/template/no-call-expression": "off"
+        "@angular-eslint/template/no-call-expression": "off",
+        "@simplysm/template-no-todo-comments": "warn"
       }
     }
   ]
