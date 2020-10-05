@@ -98,7 +98,7 @@ export class DateOnly {
       const spanWeekFromWeekStartDate = Math.floor(spanDayFromWeekStartDate / 7);
       return {
         month: date.setDay(1),
-        week: spanWeekFromWeekStartDate + 1,
+        weekNum: spanWeekFromWeekStartDate + 1,
         startDate: date.addDays(-date.week + startWeek),
         endDate: date.addDays(-date.week + startWeek + 6)
       };
@@ -189,7 +189,7 @@ export class DateOnly {
 
 export interface IWeekOfMonth {
   month: DateOnly;
-  week: number; // TODO: weekNum으로 변경
+  weekNum: number;
   startDate: DateOnly;
   endDate: DateOnly;
 }

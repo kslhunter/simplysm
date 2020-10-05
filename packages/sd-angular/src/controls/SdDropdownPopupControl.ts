@@ -57,7 +57,7 @@ export class SdDropdownPopupControl implements OnInit {
             thisEl.style.height = "300px";
           }
           else {
-            delete thisEl.style.height;
+            delete (thisEl.style as any).height;
           }
         }
       });

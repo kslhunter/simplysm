@@ -1,7 +1,10 @@
 "use strict";
 
 module.exports = {
-  extends: ["plugin:@simplysm/angular"],
+  extends: [
+    // "plugin:@simplysm/angular"
+    "../eslint-plugin/src/configs/angular.js"
+  ],
   overrides: [
     {
       files: ["*.ts"],

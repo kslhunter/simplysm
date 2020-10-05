@@ -13,6 +13,8 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-common/dist-browser" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-node/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel-new/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel-new/dist-browser" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel/dist-browser" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-common/dist" />

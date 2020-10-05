@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/eslint-plugin",
-  "version": "3.5.49-63",
+  "version": "3.5.49-69",
   "description": "심플리즘 패키지 - ESLINT 플러그인",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -20,10 +20,10 @@
     "codelyzer": "^6.0.0",
     "@angular/compiler": "^10.0.9",
     "@angular/core": "^10.0.9",
-    "@angular-eslint/eslint-plugin": "^0.3.0-beta.1",
-    "@angular-eslint/eslint-plugin-template": "^0.3.0-beta.1",
-    "@angular-eslint/template-parser": "^0.3.0-beta.1",
+    "@angular-eslint/eslint-plugin": "^0.5.0-beta.2",
+    "@angular-eslint/eslint-plugin-template": "^0.5.0-beta.2",
+    "@angular-eslint/template-parser": "^0.5.0-beta.2",
     "rxjs": "6.6.2",
-    "zone.js": "^0.10.3"
+    "zone.js": "~0.10.3"
   }
 }

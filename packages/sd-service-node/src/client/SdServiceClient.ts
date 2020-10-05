@@ -65,12 +65,12 @@ export class SdServiceClient extends EventEmitter {
     await new Promise<void>(resolve => {
       if (this._ws) {
         this._eventEmitter.removeAllListeners();
-        delete this._ws.onopen;
-        delete this._ws.onerror;
-        delete this._ws.onclose;
+        delete (this._ws as any).onopen;
+        delete (this._ws as any).onerror;
+        delete (this._ws as any).onclose;
         if (this._ws?.readyState !== WebSocket.CLOSED) {
           this._ws.onclose = (): void => {
-            delete this._ws!.onclose;
+            delete (this._ws as any).onclose;
             delete this._ws;
             resolve();
           };

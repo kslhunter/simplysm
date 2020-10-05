@@ -60,7 +60,7 @@ export class JsonConvert {
     };
 
     const prevDateToJson = Date.prototype.toJSON;
-    delete Date.prototype.toJSON;
+    delete (Date.prototype as any).toJSON;
 
     // const prevBufferToJson = Buffer.prototype.toJSON;
     // delete Buffer.prototype.toJSON;

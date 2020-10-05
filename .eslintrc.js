@@ -3,7 +3,8 @@
 module.exports = {
   root: true,
   extends: [
-    "plugin:@simplysm/base"
+    // "plugin:@simplysm/base"
+    "./packages/eslint-plugin/src/configs/base.js"
   ],
   overrides: [
     {

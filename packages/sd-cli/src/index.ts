@@ -10,6 +10,7 @@ export * from "./builders/SdCliLocalUpdate";
 export * from "./builders/SdCliPackage";
 export * from "./builders/SdCliProject";
 export * from "./commons";
+import "./entry-points/sd-yarn";
 export * from "./metadata/commons";
 export * from "./metadata/SdArrayMetadata";
 export * from "./metadata/SdCallMetadata";

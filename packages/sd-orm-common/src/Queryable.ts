@@ -259,7 +259,7 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
-  public include<J>(chain: string): Queryable<D, T>;
+  public include(chain: string): Queryable<D, T>;
   public include<J>(targetFwd: (entity: TEntity<T>) => TEntity<J>): Queryable<D, T>;
   public include<J>(arg: string | ((entity: TEntity<T>) => TEntity<J>)): Queryable<D, T> {
     if (!this._tableDef) {
@@ -515,6 +515,7 @@ export class Queryable<D extends DbContext, T> {
     if (this._def.join) {
       const joins = ObjectUtils.clone(this._def.join);
       for (const join of joins) {
+        // @ts-ignore
         delete join.isSingle;
       }
       result.join = joins;
@@ -643,7 +644,7 @@ export class Queryable<D extends DbContext, T> {
     if (this._def.join) {
       const joins = ObjectUtils.clone(this._def.join);
       for (const join of joins) {
-        delete join.isSingle;
+        delete (join as any).isSingle;
       }
       joinDefs = joins;
     }
@@ -759,7 +760,7 @@ export class Queryable<D extends DbContext, T> {
     if (this._def.join) {
       const joins = ObjectUtils.clone(this._def.join);
       for (const join of joins) {
-        delete join.isSingle;
+        delete (join as any).isSingle;
       }
       joinDefs = joins;
     }
@@ -945,6 +946,7 @@ export class Queryable<D extends DbContext, T> {
 
       const aiColNames = this._tableDef.columns.filter(item => item.autoIncrement).map(item => item.name);
       const hasAutoIncreaseColumnValue = Object.keys(records[0]).some(item => aiColNames.includes(item));
+
       if (hasAutoIncreaseColumnValue) {
         return (
           await this.db.executeDefsAsync([

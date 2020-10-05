@@ -8,9 +8,9 @@ export class SdPrintProvider {
                      private readonly _root: SdRootProvider) {
   }
 
-  public async printAsync<T extends SdPrintTemplateBase<I>, I>(printType: Type<SdPrintTemplateBase<I>>,
-                                                               param: I,
-                                                               options?: { margin?: string; size?: string }): Promise<void> {
+  public async printAsync<I>(printType: Type<SdPrintTemplateBase<I>>,
+                             param: I,
+                             options?: { margin?: string; size?: string }): Promise<void> {
     await new Promise<void>(async (resolve, reject) => {
       try {
         const compRef = this._cfr.resolveComponentFactory(printType).create(this._injector);

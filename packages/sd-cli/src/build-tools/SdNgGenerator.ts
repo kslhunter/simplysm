@@ -158,7 +158,7 @@ export class SdNgGenerator {
 
     const children = node.getChildren();
     for (const childNode of children) {
-      childNode.parent = childNode.parent ?? node;
+      (childNode as any).parent = childNode.parent ?? node;
       this._configNodesParent(childNode);
     }
   }

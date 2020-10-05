@@ -16,4 +16,4 @@ module.exports = {
   }
 };
 
-// TODO: Angular 중 Injectable({providedIn: root}) 인경우 contructor 에 root 가 아닌 다른 Provider 넣을 수 없음.
+// TODO: Angular에서 "providedIn: root"인  "Injectable"은 "contructor"에 "root"가 아닌 다른 Provider 넣을 수 없음.

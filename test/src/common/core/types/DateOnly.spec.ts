@@ -136,7 +136,7 @@ describe("(common) core.types.DateOnly", () => {
     const test = (year: number, month: number, day: number, year2: number, month2: number, week2: number) => {
       const r = DateOnly.getWeekOfMonth(new DateOnly(year, month, day), 3, 1);
       expect(r.month.tick).to.equal(new DateOnly(year2, month2, 1).tick);
-      expect(r.week).to.equal(week2);
+      expect(r.weekNum).to.equal(week2);
     };
 
     test(2020, 8, 1, 2020, 7, 5);
