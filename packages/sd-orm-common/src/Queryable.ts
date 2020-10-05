@@ -110,7 +110,7 @@ export class Queryable<D extends DbContext, T> {
 
   public static union<ND extends DbContext, NT>(qrs: Queryable<ND, NT>[], as?: string): Queryable<ND, NT> {
     const db = qrs[0].db;
-    const cqrs = qrs.map(item => new Queryable(db, item));
+    const cqrs = qrs.map(item => new Queryable(db, item).wrap().clearOrderBy());
 
     // Init entity
     const entity = {} as TEntity<NT>;
