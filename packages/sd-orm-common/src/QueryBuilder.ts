@@ -1,7 +1,8 @@
 import {
   IAddColumnQueryDef,
   IAddForeignKeyQueryDef,
-  IClearDatabaseIfExistsQueryDef, IConfigForeignKeyCheckQueryDef,
+  IClearDatabaseIfExistsQueryDef,
+  IConfigForeignKeyCheckQueryDef,
   IConfigIdentityInsertQueryDef,
   ICreateDatabaseIfNotExistsQueryDef,
   ICreateIndexQueryDef,
@@ -18,6 +19,7 @@ import {
   IQueryTableNameDef,
   IRemoveColumnQueryDef,
   IRemoveForeignKeyQueryDef,
+  IRemoveIndexQueryDef,
   IRenameColumnQueryDef,
   ISelectQueryDef,
   IUpdateQueryDef,
@@ -264,6 +266,14 @@ END`.trim();
     const idxName = this.wrap(`IDX_${tableNameChain.join("_")}_${def.index.name}`);
 
     return `CREATE INDEX ${idxName} ON ${tableName} (${def.index.columns.map(item => `${this.wrap(item.name)} ${item.orderBy}`).join(", ")})`;
+  }
+
+  public removeIndex(def: IRemoveIndexQueryDef): string {
+    const tableName = this.getTableName(def.table);
+    const tableNameChain = this.getTableNameChain(def.table);
+    const idxName = this.wrap(`IDX_${tableNameChain.join("_")}_${def.index}`);
+
+    return `DROP INDEX ${idxName} ON ${tableName}`;
   }
 
   public configIdentityInsert(def: IConfigIdentityInsertQueryDef): string {

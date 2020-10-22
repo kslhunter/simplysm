@@ -29,6 +29,7 @@ export type TQueryDef = (
   (IAddForeignKeyQueryDef & { type: "addForeignKey" }) |
   (IRemoveForeignKeyQueryDef & { type: "removeForeignKey" }) |
   (ICreateIndexQueryDef & { type: "createIndex" }) |
+  (IRemoveIndexQueryDef & { type: "removeIndex" }) |
   (IConfigIdentityInsertQueryDef & { type: "configIdentityInsert" }) |
   (IConfigForeignKeyCheckQueryDef & { type: "configForeignKeyCheck" })
   );
@@ -148,6 +149,11 @@ export interface ICreateIndexQueryDef {
       orderBy: "ASC" | "DESC";
     }[];
   };
+}
+
+export interface IRemoveIndexQueryDef {
+  table: IQueryTableNameDef;
+  index: string;
 }
 
 export interface IConfigIdentityInsertQueryDef {
