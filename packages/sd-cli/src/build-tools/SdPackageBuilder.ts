@@ -242,7 +242,12 @@ export class SdPackageBuilder extends EventEmitter {
             const distPath = path.relative(process.cwd(), this._getDistPath());
             const ngswConfigPath = path.relative(process.cwd(), path.resolve(__dirname, "../../lib/ngsw-config.json"));
             const baseHref = `/${path.basename(this._info.rootPath)}/`;
-            await ProcessManager.spawnAsync(`ngsw-config ${distPath} ${ngswConfigPath} ${baseHref}`);
+            try {
+              await ProcessManager.spawnAsync(`ngsw-config ${distPath} ${ngswConfigPath} ${baseHref}`);
+            }
+            catch (err1) {
+              this._logger.warn(err1.message);
+            }
           }
 
           this._logger.debug("컴파일 완료");
