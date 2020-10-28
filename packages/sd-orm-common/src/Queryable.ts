@@ -204,6 +204,32 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
+  public pivot<V extends TQueryValue, P extends string>(valueFwd: ((entity: TEntity<T>) => TEntityValue<V>),
+                                                        pivotFwd: ((entity: TEntity<T>) => TEntityValue<P>),
+                                                        pivotKeys: P[]): Queryable<D, T & Record<P, V>> {
+    const valueColumn = valueFwd(this._entity);
+    const pivotColumn = pivotFwd(this._entity);
+
+    const entity: any = { ...this._entity };
+    for (const pivotKey of pivotKeys) {
+      if (valueColumn instanceof QueryUnit) {
+        entity[pivotKey] = new QueryUnit<any>(valueColumn.type, `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(pivotKey)}`);
+      }
+      else {
+        throw new NotImplementError();
+      }
+    }
+
+    const result = new Queryable(this.db, this, entity);
+
+    result._def.pivot = {
+      valueColumn: this.db.qh.getQueryValue(valueColumn),
+      pivotColumn: this.db.qh.getQueryValue(pivotColumn),
+      pivotKeys
+    };
+    return result as any;
+  }
+
   public groupBy(fwd: (entity: TEntity<T>) => TEntityValue<TQueryValue>[]): Queryable<D, T> {
     const result = new Queryable(this.db, this);
     result._def.groupBy = fwd(this._entity).map(item => this.db.qh.getQueryValue(item));
@@ -509,6 +535,7 @@ export class Queryable<D extends DbContext, T> {
     result.top = this._def.top;
     result.orderBy = this._def.orderBy;
     result.limit = this._def.limit;
+    result.pivot = this._def.pivot;
     result.groupBy = this._def.groupBy;
     result.having = this._def.having;
 

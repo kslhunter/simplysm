@@ -338,6 +338,7 @@ END`.trim();
     }
 
     // FROM
+
     if (def.from instanceof Array) {
       q += `FROM (\n`;
       for (const from of def.from) {
@@ -361,6 +362,14 @@ END`.trim();
       q += ` as ${def.as}`;
     }
     q += "\n";
+
+    // PIVOT
+
+    if (def.pivot) {
+      q += `PIVOT (SUM(${this.getQueryOfQueryValue(def.pivot.valueColumn)}) FOR ${this.getQueryOfQueryValue(def.pivot.pivotColumn)}`;
+      q += ` IN (${def.pivot.pivotKeys.map(key => this.wrap(key)).join(", ")})) as ${def.as}`;
+      q += "\n";
+    }
 
     // JOIN
 

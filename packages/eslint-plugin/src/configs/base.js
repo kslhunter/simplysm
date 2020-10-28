@@ -179,7 +179,7 @@ module.exports = {
         }],
         "@typescript-eslint/brace-style": ["error", "stroustrup"],
         "@typescript-eslint/no-extraneous-class": ["error", { allowStaticOnly: true, allowEmpty: true }],
-        "@typescript-eslint/strict-boolean-expressions": ["error", { allowNullableBoolean: true }],
+        "@typescript-eslint/strict-boolean-expressions": ["error", { allowNullableBoolean: true, allowAny: true }],
         "@typescript-eslint/quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
         "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: false }],
         "@typescript-eslint/no-inferrable-types": ["error", { ignoreParameters: true }],
@@ -293,7 +293,8 @@ module.exports = {
         "@typescript-eslint/no-implicit-any-catch": "off",
         "@typescript-eslint/consistent-type-imports": "off",
         "@typescript-eslint/no-loop-func": "off",
-        "@typescript-eslint/consistent-indexed-object-style": "off"
+        "@typescript-eslint/consistent-indexed-object-style": "off",
+        "@typescript-eslint/no-unnecessary-type-assertion": "off"
       }
     }
   ]
