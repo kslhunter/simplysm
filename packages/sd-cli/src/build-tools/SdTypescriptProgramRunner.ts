@@ -449,25 +449,30 @@ export class SdTypescriptProgramRunner extends EventEmitter {
   }
 
   private _getResolvedModuleFilePath(sourceFile: ts.SourceFile, requireText: string): string | undefined {
-    const resolvedModule: ts.ResolvedModule | undefined = sourceFile["resolvedModules"].get(requireText);
-    if (resolvedModule === undefined && requireText.startsWith(".")) {
-      const importFilePath = path.resolve(path.dirname(sourceFile.fileName), requireText);
-      if (sourceFile.fileName.endsWith(".d.ts") && !Boolean(path.extname(importFilePath))) {
-        return path.resolve(importFilePath + ".d.ts");
+    try {
+      const resolvedModule: ts.ResolvedModule | undefined = sourceFile["resolvedModules"]?.get(requireText);
+      if (resolvedModule === undefined && requireText.startsWith(".")) {
+        const importFilePath = path.resolve(path.dirname(sourceFile.fileName), requireText);
+        if (sourceFile.fileName.endsWith(".d.ts") && !Boolean(path.extname(importFilePath))) {
+          return path.resolve(importFilePath + ".d.ts");
+        }
+        else if (!Boolean(path.extname(importFilePath))) {
+          return path.resolve(importFilePath + path.extname(sourceFile.fileName));
+        }
+        else {
+          return path.resolve(importFilePath);
+        }
       }
-      else if (!Boolean(path.extname(importFilePath))) {
-        return path.resolve(importFilePath + path.extname(sourceFile.fileName));
-      }
-      else {
-        return path.resolve(importFilePath);
-      }
-    }
 
-    if (resolvedModule === undefined) {
-      return undefined;
-    }
+      if (resolvedModule === undefined) {
+        return undefined;
+      }
 
-    return path.resolve(resolvedModule.resolvedFileName);
+      return path.resolve(resolvedModule.resolvedFileName);
+    }
+    catch (err) {
+      throw new SdError(err, sourceFile.fileName);
+    }
   }
 
   /*private _getImportChain(sourceFile: ts.SourceFile, targetName?: string): string[] {
