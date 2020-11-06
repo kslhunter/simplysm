@@ -238,7 +238,10 @@ export class SdPackageBuilder extends EventEmitter {
             return;
           }
 
-          if (this._info.config?.type === "web") {
+          if (
+            this._info.config?.type === "web" &&
+            FsUtils.exists(path.resolve(process.cwd(), "node_modules", "@angular", "service-worker", "ngsw-worker.js"))
+          ) {
             const distPath = path.relative(process.cwd(), this._getDistPath());
             const ngswConfigPath = path.relative(process.cwd(), path.resolve(__dirname, "../../lib/ngsw-config.json"));
             const baseHref = `/${path.basename(this._info.rootPath)}/`;
