@@ -65,7 +65,7 @@ declare global {
 Array.prototype.single = function <T>(this: T[], predicate?: (item: T, index: number) => boolean): T | undefined {
   const arr = predicate !== undefined ? this.filter(predicate) : this;
   if (arr.length > 1) {
-    throw new Error("복수의 결과물이 있습니다.");
+    throw new Error("복수의 결과물이 있습니다. (" + arr.length + "개)");
   }
   return arr[0];
 };

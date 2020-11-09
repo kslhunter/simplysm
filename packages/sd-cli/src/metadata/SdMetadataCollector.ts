@@ -13,7 +13,7 @@ import {
   MetadataSymbolicReferenceExpression,
   ModuleMetadata
 } from "@angular/compiler-cli";
-import { NeverEntryError } from "@simplysm/sd-core-common";
+import { NeverEntryError, SdError } from "@simplysm/sd-core-common";
 import * as path from "path";
 import { SdModuleMetadata } from "./SdModuleMetadata";
 import { isMetadataArrayExpression, isMetadataObjectExpression, TSdMetadata } from "./commons";
@@ -106,7 +106,25 @@ export class SdMetadataCollector {
         }*/
       }
       else {
-        currModule = this.modules.single(item => item.name === metadata.module && Object.keys(item.metadata.metadata).includes(metadata.name));
+        try {
+          currModule = this.modules.single(item => (
+            item.name === metadata.module &&
+            Object.keys(item.metadata.metadata).includes(metadata.name)
+          ));
+        }
+        catch (err) {
+          throw new SdError(
+            err,
+            JSON.stringify(
+              this.modules.filter(item => (
+                item.name === metadata.module &&
+                Object.keys(item.metadata.metadata).includes(metadata.name)
+              )).map(item => item.filePath),
+              undefined,
+              2
+            )
+          );
+        }
 
         if (!currModule) {
           // throw new Error(`모듈을 찾을 수 없습니다: ${metadata.module}`);

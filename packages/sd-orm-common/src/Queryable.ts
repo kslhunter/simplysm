@@ -393,6 +393,38 @@ export class Queryable<D extends DbContext, T> {
     // WHERE
     result = result
       .where(item => {
+        const fieldOrArr = [];
+
+        const fields = fwd(item);
+        for (const field of fields) {
+          const splitSearchTextWhereArr = [];
+          for (const text of splitSearchText) {
+            if (text.includes("*")) {
+              splitSearchTextWhereArr.push(this.db.qh.like(field as any, text.replace(/\*/g, "%")));
+            }
+            else {
+              splitSearchTextWhereArr.push(this.db.qh.includes(field as any, text));
+            }
+          }
+          fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));
+        }
+
+        return [this.db.qh.or(fieldOrArr)];
+      });
+
+    return result;
+  }
+  
+  /*public search(fwd: (entity: TEntity<T>) => TEntityValue<String | string | undefined>[], searchText: string): Queryable<D, T> {
+    let result: Queryable<D, T> = new Queryable(this.db, this);
+
+    const splitSearchText = searchText.trim().split(" ")
+      .map(item => item.trim())
+      .filter(item => Boolean(item));
+
+    // WHERE
+    result = result
+      .where(item => {
         const orArr = [];
 
         const fields = fwd(item);
@@ -442,7 +474,7 @@ export class Queryable<D extends DbContext, T> {
     // ORDER BY
     result = result.orderBy(item => item["__searchOrder"], true);
     return result;
-  }
+  }*/
 
   public wrap(): Queryable<D, T>;
   public wrap<R extends Partial<T>>(tableType: Type<R>): Queryable<D, R>;
@@ -858,7 +890,7 @@ export class Queryable<D extends DbContext, T> {
 
     const queryable = this.select(() => ({ cnt: new QueryUnit(Number, "COUNT(*)") }));
     delete queryable._def.orderBy;
-    delete queryable._entity["__searchOrder"];
+    // delete queryable._entity["__searchOrder"];
     const item = await queryable.singleAsync();
 
     return (item?.cnt ?? 0) as any;

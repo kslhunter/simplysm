@@ -101,6 +101,10 @@ export class QueryHelper {
     return [this.getQueryValue(source), " LIKE ", this.concat("%", target, "%").query];
   }
 
+  public like(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
+    return [this.getQueryValue(source), " LIKE ", this.getQueryValue(target)];
+  }
+
   public startsWith(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
     return [this.getQueryValue(source), " LIKE ", this.getQueryValue(target), " + ", "'%'"];
   }
