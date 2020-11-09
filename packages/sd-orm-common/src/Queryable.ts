@@ -497,27 +497,28 @@ export class Queryable<D extends DbContext, T> {
     }
 
     const subFrom = clone.getSelectDef();
-    let unknownOrderBys;
     if (subFrom.orderBy) {
-      unknownOrderBys = subFrom.orderBy.filter(item => !Object.values(subFrom.select).includes(item[0]));
       let seq = 0;
-      for (const unknownOrderBy of unknownOrderBys) {
+      for (const subOrderBy of subFrom.orderBy) {
         seq++;
-        subFrom.select["__order_" + seq] = unknownOrderBy[0];
+        subFrom.select["__order_" + seq] = subOrderBy[0];
       }
-      delete subFrom.orderBy;
     }
 
     const currEntity = this._getParentEntity(clone._entity, this._as, undefined);
 
     const result = new Queryable<D, T | R>(this.db, tableType, this._as, currEntity, { from: subFrom });
 
-    if (unknownOrderBys && unknownOrderBys.length > 0) {
+    if (subFrom.orderBy && subFrom.orderBy.length > 0) {
       result._def.orderBy = [];
       let seq = 0;
-      for (const unknownOrderBy of unknownOrderBys) {
+      for (const subOrderBy of subFrom.orderBy) {
         seq++;
-        result._def.orderBy.push(["__order_" + seq, unknownOrderBy[1]]);
+        result._def.orderBy.push(["__order_" + seq, subOrderBy[1]]);
+      }
+
+      if (!subFrom.limit) {
+        delete subFrom.orderBy;
       }
     }
 
