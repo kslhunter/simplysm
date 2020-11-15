@@ -242,7 +242,7 @@ export class SdServiceClient extends EventEmitter {
           if (response.type === "upload" && response.requestId === requestId) {
             splitCompletedLength += response.length;
             if (splitOptions?.progressCallback) {
-              splitOptions?.progressCallback({
+              splitOptions.progressCallback({
                 current: splitCompletedLength,
                 total: fileSize
               });
