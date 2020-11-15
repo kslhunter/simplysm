@@ -906,7 +906,7 @@ describe("(common) orm.Queryable (QueryableDef => QueryDef)", () => {
           .where(item => [db.qh.equal(item.id, item.test[0].id)])
           .getUpdateDef(item => ({
             id: 1,
-            name: item.test[0].name
+            name: db.qh.ifNull(item.test[0].name, "")
           }))
       ).to.deep.equal({
         from: "[TestDb].[TestSchema].[TestTable]",

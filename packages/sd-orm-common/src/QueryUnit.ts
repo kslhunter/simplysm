@@ -1,7 +1,7 @@
 import { Type, TypeWrap } from "@simplysm/sd-core-common";
 
 export class QueryUnit<T> {
-  public T?: T;
+  public T!: T;
 
   public constructor(public readonly type: Type<T | TypeWrap<T>> | undefined,
                      private readonly _query: any) {

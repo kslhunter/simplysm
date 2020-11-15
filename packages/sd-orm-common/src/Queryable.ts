@@ -18,7 +18,7 @@ import {
   ITableDef,
   IUpdateQueryDef,
   IUpsertQueryDef,
-  TEntity,
+  TEntity, TEntityUnwrap,
   TEntityValue,
   TEntityValueOrQueryableOrArray,
   TInsertObject,
@@ -129,7 +129,7 @@ export class Queryable<D extends DbContext, T> {
     return new Queryable(db, undefined, as, entity, { from });
   }
 
-  public select<R>(fwd: (entity: TEntity<T>) => TEntity<R>): Queryable<D, R> {
+  public select<R>(fwd: (entity: TEntity<T>) => R): Queryable<D, TEntityUnwrap<R>> {
     const newEntity = fwd(this._entity);
     return new Queryable(this.db, this, newEntity) as any;
   }
@@ -249,7 +249,7 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
-  public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (queryable: Queryable<D, J>, entity: TEntity<T>) => Queryable<D, R>): Queryable<D, T & { [K in A]: R[] }>;
+  public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (queryable: Queryable<D, J>, entity: TEntity<T>) => Queryable<D, R>): Queryable<D, T & { [K in A]: Partial<R>[] }>;
   public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (queryable: Queryable<D, J>, entity: TEntity<T>) => Queryable<D, R>, isSingle: true): Queryable<D, T & { [K in A]: Partial<R> }>;
   public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (queryable: Queryable<D, J>, entity: TEntity<T>) => Queryable<D, R>, isSingle?: boolean): Queryable<D, T & { [K in A]: R | R[] }> {
     if (this._def.join?.some(item => item.as === this.db.qb.wrap(`TBL.${as}`))) {

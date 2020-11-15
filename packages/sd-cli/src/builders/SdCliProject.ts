@@ -563,7 +563,7 @@ export class SdCliProject {
         path.basename(pkg.info.rootPath),
         ".configs.json"
       ),
-      pkg.info.config.configs
+      pkg.info.config.configs ?? {}
     );
 
     // 서버에 미들웨어 추가

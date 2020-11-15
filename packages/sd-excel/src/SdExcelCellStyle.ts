@@ -113,17 +113,17 @@ export class SdExcelCellStyle {
     else {
       const numFmtData = this._getNumFmtData();
       if (
-        Boolean(numFmtData?.$?.formatCode?.includes("yy")) &&
-        Boolean(numFmtData?.$?.formatCode?.includes("mm")) &&
-        Boolean(numFmtData?.$?.formatCode?.includes("dd")) &&
-        Boolean(numFmtData?.$?.formatCode?.includes("hh"))
+        (Boolean(numFmtData?.$?.formatCode?.includes("yy")) || Boolean(numFmtData?.$?.formatCode?.includes("YY"))) &&
+        (Boolean(numFmtData?.$?.formatCode?.includes("mm")) || Boolean(numFmtData?.$?.formatCode?.includes("MM"))) &&
+        (Boolean(numFmtData?.$?.formatCode?.includes("dd")) || Boolean(numFmtData?.$?.formatCode?.includes("DD"))) &&
+        (Boolean(numFmtData?.$?.formatCode?.includes("hh")) || Boolean(numFmtData?.$?.formatCode?.includes("HH")))
       ) {
         return "DateTime";
       }
       else if (
-        Boolean(numFmtData?.$?.formatCode?.includes("yy")) &&
-        Boolean(numFmtData?.$?.formatCode?.includes("mm")) &&
-        Boolean(numFmtData?.$?.formatCode?.includes("dd"))
+        (Boolean(numFmtData?.$?.formatCode?.includes("yy")) || Boolean(numFmtData?.$?.formatCode?.includes("YY"))) &&
+        (Boolean(numFmtData?.$?.formatCode?.includes("mm")) || Boolean(numFmtData?.$?.formatCode?.includes("MM"))) &&
+        (Boolean(numFmtData?.$?.formatCode?.includes("dd")) || Boolean(numFmtData?.$?.formatCode?.includes("DD")))
       ) {
         return "DateOnly";
       }

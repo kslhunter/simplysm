@@ -85,16 +85,17 @@ export class SdExcelCell {
   }
 
   public get value(): any {
-    if (this.cellData.v == null) {
+    if (this.cellData.v == null && this.cellData.$.t !== "inlineStr") {
       return undefined;
     }
 
-    const value = this.cellData.v[0]._ ?? this.cellData.v[0];
+    const cellV = this.cellData.v ?? this.cellData.is[0].t;
+    const value = cellV[0]._ ?? cellV[0];
 
     if (value == null || value === "") {
       return undefined;
     }
-    else if (this.cellData.$.t === "str") {
+    else if (this.cellData.$.t === "str" || this.cellData.$.t === "inlineStr") {
       return value;
     }
     else if (this.cellData.$.t === "b") {

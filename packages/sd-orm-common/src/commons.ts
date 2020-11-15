@@ -310,9 +310,15 @@ export type TEntityValueOrQueryableOrArray<D extends DbContext, T extends TQuery
   TEntityValueOrQueryable<D, T> | TEntityValueOrQueryableOrArray<D, T>[];
 
 export type TEntity<T> = {
-  [K in keyof T]-?: T[K] extends QueryUnit<any> ? QueryUnit<T[K]["T"]> :
+  [K in keyof T]-?: T[K] extends QueryUnit<any> ? T[K] :
     T[K] extends TQueryValue ? QueryUnit<T[K]> :
-      TEntity<T[K]>
+      TEntity<T[K]>;
+};
+
+export type TEntityUnwrap<T> = {
+  [K in keyof T]: T[K] extends QueryUnit<any> ? T[K]["T"] :
+    T[K] extends TQueryValue ? T[K] :
+      TEntityUnwrap<T[K]>;
 };
 
 export interface IQueryableDef {
