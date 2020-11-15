@@ -23,4 +23,16 @@ describe("(node) excel.SdExcelWorkbook", () => {
 
     console.log(wb.json);
   });
+
+  it("(fix) 파일읽기", async () => {
+    const buffer = await FsUtils.readFileBufferAsync(path.resolve(__dirname, "test-assets/WE02 (1).xlsx"));
+    const wb = await SdExcelWorkbook.loadAsync(buffer);
+    console.log(wb.json);
+  });
+
+  it("(fix) 파일읽기2", async () => {
+    const buffer = await FsUtils.readFileBufferAsync(path.resolve(__dirname, "test-assets/WE02.xlsx"));
+    const wb = await SdExcelWorkbook.loadAsync(buffer);
+    console.log(wb.json);
+  });
 });
