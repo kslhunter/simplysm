@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es2017",
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "baseUrl": ".",
+    "paths": {}
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

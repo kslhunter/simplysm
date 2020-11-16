@@ -1,0 +1,117 @@
+import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { SdModalBase } from "../providers/SdModalProvider";
+import { ObjectUtil, TFlatType } from "@simplysm/sd-core-common";
+
+@Component({
+  selector: "sd-object-merge3-modal",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <sd-dock-container *ngIf="data && keys">
+      <sd-pane class="sd-padding-sm-default">
+        <sd-table>
+          <thead>
+          <tr>
+            <th>구분</th>
+            <th>기존</th>
+            <th></th>
+            <th>결과</th>
+            <th></th>
+            <th>신규</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let key of keys; trackBy: trackByMeFn"
+              [class.sd-background-color-danger-lightest]="getIsAllNotEqual(key)">
+            <th style="text-align: right">
+              {{ this.getDisplayTitle(key) }}
+            </th>
+            <td style="text-align: right">
+              {{ getDisplayName(key, data.theirs[key]) }}
+            </td>
+            <td>
+              <sd-anchor [disabled]="!getIsNotEqual(data.theirs[key], data.origin[key])">
+                <sd-icon fixedWidth icon="arrow-right" (click)="data.origin[key] = data.theirs[key]"></sd-icon>
+              </sd-anchor>
+            </td>
+            <td style="text-align: center">{{ getDisplayName(key, data.origin[key]) }}</td>
+            <td>
+              <sd-anchor [disabled]="!getIsNotEqual(data.yours[key], data.origin[key])">
+                <sd-icon fixedWidth icon="arrow-left" (click)="data.origin[key] = data.yours[key]"></sd-icon>
+              </sd-anchor>
+            </td>
+            <td style="text-align: left">
+              {{ getDisplayName(key, data.yours[key]) }}
+            </td>
+          </tr>
+          </tbody>
+        </sd-table>
+      </sd-pane>
+
+      <sd-dock position="bottom" class="sd-padding-sm-default sd-padding-top-0">
+        <sd-button theme="primary" (click)="onConfirmButtonClick()">
+          결과 확정
+        </sd-button>
+      </sd-dock>
+    </sd-dock-container>`
+})
+export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends SdModalBase<ISdObjectMerge3ModalInput<T>, T> {
+  public data!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;
+  public keys!: string[];
+  public displayNameRecord?: Partial<Record<keyof T, string>>;
+  public valueTextConverter?: <K extends keyof T>(key: K, value: T[K]) => string | undefined;
+
+  public trackByMeFn = (index: number, item: any): any => item;
+
+  public constructor() {
+    super();
+  }
+
+  public sdOnOpen(param: ISdObjectMerge3ModalInput<T>): void {
+    this.data = {
+      theirs: param.theirs,
+      origin: ObjectUtil.clone(param.origin),
+      yours: param.yours
+    };
+    this.keys = (
+      param.displayNameRecord ?
+        Object.keys(param.displayNameRecord) :
+        Object.keys(param.theirs).concat(Object.keys(param.origin)).concat(Object.keys(param.yours))
+    )
+      .distinct()
+      .filter((key) => !(param.origin[key] === undefined && param.theirs[key] === undefined && param.yours[key] === undefined));
+    this.displayNameRecord = param.displayNameRecord;
+    this.valueTextConverter = param.valueTextConverter;
+  }
+
+  public getDisplayTitle(key: string): string {
+    if (!this.displayNameRecord) return key;
+    return this.displayNameRecord[key] ?? key;
+  }
+
+  public getDisplayName(key: string, val: any): TFlatType {
+    if (!this.valueTextConverter) return val;
+    return this.valueTextConverter(key, val);
+  }
+
+  public getIsAllNotEqual(key: string): boolean {
+    return !ObjectUtil.equal(this.data.theirs[key], this.data.origin[key]) &&
+      !ObjectUtil.equal(this.data.theirs[key], this.data.yours[key]) &&
+      !ObjectUtil.equal(this.data.origin[key], this.data.yours[key]);
+  }
+
+  public getIsNotEqual(item1: TFlatType, item2: TFlatType): boolean {
+    return !ObjectUtil.equal(item1, item2);
+  }
+
+  public onConfirmButtonClick(): void {
+    this.close(this.data.origin);
+  }
+}
+
+export interface ISdObjectMerge3ModalInput<T extends Record<string, TFlatType>> {
+  theirs: T;
+  origin: T;
+  yours: T;
+  displayNameRecord?: Partial<Record<keyof T, string>>;
+  valueTextConverter?: <K extends keyof T>(key: K, value: T[K]) => string | undefined;
+}

@@ -1,0 +1,30 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es2017",
+    "lib": [
+      "es2017"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@simplysm/sd-core-common": [
+        "../sd-core-common/src/index.ts"
+      ],
+      "@simplysm/sd-core-node": [
+        "../sd-core-node/src/index.ts"
+      ],
+      "@simplysm/sd-service-node": [
+        "../sd-service-node/src/index.ts"
+      ],
+      "@simplysm/sd-storage": [
+        "../sd-storage/src/index.ts"
+      ]
+    }
+  },
+  "files": [
+    "src/bin/sd-cli.ts",
+    "src/workers/build-worker.ts",
+    "src/loaders/inline-sass-loader.ts",
+    "src/index.ts"
+  ]
+}

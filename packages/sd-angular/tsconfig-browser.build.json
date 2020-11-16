@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "outDir": "dist",
+    "declaration": true,
+    "declarationDir": "dist"
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

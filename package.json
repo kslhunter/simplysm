@@ -1,0 +1,41 @@
+{
+  "name": "simplysm",
+  "version": "4.0.24-14",
+  "description": "심플리즘 패키지",
+  "author": "김석래",
+  "repository": "github:kslhunter/simplysm",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "types/*",
+    "test"
+  ],
+  "scripts": {
+    "watch": "yarn _sd-cli_ watch",
+    "watch_debug": "yarn _sd-cli_ watch --debug",
+    "build_debug": "yarn _sd-cli_ build --debug",
+    "publish_build": "yarn _sd-cli_ publish --build",
+    "---": "",
+    "watch_debug_sd-angular": "yarn _sd-cli_ --debug watch --packages @simplysm/sd-angular",
+    "watch_debug_sd-excel": "yarn _sd-cli_ --debug watch --packages @simplysm/sd-excel",
+    "watch_debug_sd-core-common": "yarn _sd-cli_ --debug watch --packages @simplysm/sd-core-common",
+    "watch_debug_sd-core-common_sd-excel": "yarn _sd-cli_ --debug watch --packages @simplysm/sd-excel @simplysm/sd-core-common",
+    "----": "",
+    "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --require=ts-node/register --require=tsconfig-paths/register packages/sd-cli/src/bin/sd-cli.ts",
+    "eslint-timing": "cross-env TIMING=1 eslint \"./**/+(*.ts|*.js)\"",
+    "eslint-timing_sd-angular": "cross-env TIMING=1 eslint \"./packages/sd-angular/**/+(*.ts|*.js)\"",
+    "eslint-fix": "eslint --fix --rule \"arrow-parens: error\" \"./**/+(*.ts|*.js)\"",
+    "-----": "",
+    "postinstall": "yarn _sd-cli_ --debug check"
+  },
+  "devDependencies": {
+    "@simplysm/eslint-plugin": "4.0.24-14",
+    "@types/node": "^14.11.2",
+    "cross-env": "^7.0.2",
+    "eslint": "^7.10.0",
+    "ts-node": "^9.0.0",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^4.0.3"
+  }
+}

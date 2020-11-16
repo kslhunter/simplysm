@@ -1,0 +1,44 @@
+{
+  "extends": "../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "baseUrl": ".",
+    "declaration": false,
+    "paths": {
+      "@simplysm/sd-core-browser": [
+        "../packages/sd-core-browser/src/index.ts"
+      ],
+      "@simplysm/sd-core-common": [
+        "../packages/sd-core-common/src/index.ts"
+      ],
+      "@simplysm/sd-core-node": [
+        "../packages/sd-core-node/src/index.ts"
+      ],
+      "@simplysm/sd-orm-common": [
+        "../packages/sd-orm-common/src/index.ts"
+      ],
+      "@simplysm/sd-orm-node": [
+        "../packages/sd-orm-node/src/index.ts"
+      ],
+      "@simplysm/sd-service-browser": [
+        "../packages/sd-service-browser/src/index.ts"
+      ],
+      "@simplysm/sd-service-common": [
+        "../packages/sd-service-common/src/index.ts"
+      ],
+      "@simplysm/sd-service-node": [
+        "../packages/sd-service-node/src/index.ts"
+      ],
+      "@simplysm/sd-excel": [
+        "../packages/sd-excel/src/index.ts"
+      ],
+      "@simplysm/sd-cli": [
+        "../packages/sd-cli/src/index.ts"
+      ]
+    }
+  }
+}

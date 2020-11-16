@@ -1,0 +1,142 @@
+{
+  "packages": {
+    "@simplysm-types/core-js-reflect": {
+      "type": "library",
+      "publish": "npm"
+    },
+    "@simplysm-types/iconv": {
+      "type": "library",
+      "publish": "npm"
+    },
+    "@simplysm/eslint-plugin": {
+      "type": "library",
+      "publish": "npm"
+    },
+    "@simplysm/sd-angular": {
+      "type": "library",
+      "targets": [
+        "browser"
+      ],
+      "polyfills": [
+        "@simplysm/sd-core-browser"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/sd-cli": {
+      "type": "library",
+      "targets": [
+        "node"
+      ],
+      "polyfills": [
+        "@simplysm/sd-core-common"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/sd-core-browser": {
+      "type": "library",
+      "targets": [
+        "browser"
+      ],
+      "polyfills": [
+        "@simplysm/sd-core-common",
+        "element-qsa-scope",
+        "events-polyfill"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/sd-core-common": {
+      "type": "library",
+      "targets": [
+        "node",
+        "browser"
+      ],
+      "polyfills": [
+        "core-js"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/sd-core-node": {
+      "type": "library",
+      "targets": [
+        "node"
+      ],
+      "polyfills": [
+        "@simplysm/sd-core-common"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/sd-excel": {
+      "type": "library",
+      "targets": [
+        "node",
+        "browser"
+      ],
+      "polyfills": [
+        "@simplysm/sd-core-common"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/sd-orm-common": {
+      "type": "library",
+      "targets": [
+        "node",
+        "browser"
+      ],
+      "polyfills": [
+        "@simplysm/sd-core-common"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/sd-orm-node": {
+      "type": "library",
+      "targets": [
+        "node"
+      ],
+      "polyfills": [
+        "@simplysm/sd-core-common"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/sd-service-browser": {
+      "type": "library",
+      "targets": [
+        "browser"
+      ],
+      "polyfills": [
+        "@simplysm/sd-core-browser"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/sd-service-common": {
+      "type": "library",
+      "targets": [
+        "node",
+        "browser"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/sd-service-node": {
+      "type": "library",
+      "targets": [
+        "node"
+      ],
+      "polyfills": [
+        "@simplysm/sd-core-common"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/sd-storage": {
+      "type": "library",
+      "targets": [
+        "node"
+      ],
+      "polyfills": [
+        "@simplysm/sd-core-common"
+      ],
+      "publish": "npm"
+    },
+    "@simplysm/test": {
+      "type": "test"
+    }
+  }
+}

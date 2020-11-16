@@ -1,0 +1,22 @@
+{
+  "name": "@simplysm/sd-orm-node",
+  "version": "4.0.24-14",
+  "description": "심플리즘 패키지 - ORM 모듈 (node)",
+  "author": "김석래",
+  "repository": "github:kslhunter/simplysm",
+  "license": "MIT",
+  "main": "./dist-node/index.js",
+  "types": "./dist-types/index.d.ts",
+  "sideEffects": false,
+  "dependencies": {
+    "@simplysm/sd-core-common": "4.0.24-14",
+    "@simplysm/sd-core-node": "4.0.24-14",
+    "@simplysm/sd-orm-common": "4.0.24-14",
+    "tedious": "^9.2.1",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "@types/tedious": "^4.0.1",
+    "@types/mysql": "^2.15.15"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es2017",
+    "lib": [
+      "es2017"
+    ],
+    "outDir": "dist-node",
+    "declaration": true,
+    "declarationDir": "dist-types"
+  },
+  "files": [
+    "src/bin/sd-cli.ts",
+    "src/workers/build-worker.ts",
+    "src/loaders/inline-sass-loader.ts",
+    "src/index.ts"
+  ]
+}

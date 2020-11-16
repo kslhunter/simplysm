@@ -1,0 +1,15 @@
+.idea/**/workspace.xml
+.idea/shelf
+.nyc_output
+coverage
+_logs
+node_modules
+dist*
+yarn-error.log
+_modules
+report.*.json
+profiling
+.cordova
+simplysm.ksl.json
+_tmp
+~$*.*

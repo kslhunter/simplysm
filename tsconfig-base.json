@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "sourceMap": true,
+    "removeComments": true,
+    "noUnusedLocals": true,
+    "importHelpers": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@simplysm-types"
+    ],
+    "outDir": "./dist"
+  }
+}
