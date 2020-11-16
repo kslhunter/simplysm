@@ -41,7 +41,12 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
           ****
         </div>
         <ng-container *ngIf="controlType !== 'password'">
-          {{ controlValue }}
+          <ng-container *ngIf="controlValue">
+            {{ controlValue }}            
+          </ng-container>
+          <ng-container *ngIf="!controlValue">
+            <span class="sd-text-brightness-lighter">{{ placeholder }}</span>
+          </ng-container>
         </ng-container>
       </div>
     </ng-container>

@@ -37,7 +37,8 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
                   [value]="value || ''"
                   [rows]="inset ? undefined : rows"
                   [style.resize]="inset ? 'none' : resize"
-                  (input)="onTextareaInput($event)"></textarea>
+                  (input)="onTextareaInput($event)"
+                  wrap="off"></textarea>
       </sd-pane>
     </sd-dock-container>`,
   styles: [/* language=SCSS */ `

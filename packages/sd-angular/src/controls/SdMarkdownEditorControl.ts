@@ -38,7 +38,8 @@ import * as marked from "marked";
                   (drop)="onTextareaDrop($event)"
                   (paste)="onTextareaPaste($event)"
                   [style.resize]="resize"
-                  [attr.placeholder]="placeholder"></textarea>
+                  [attr.placeholder]="placeholder"
+                  wrap="off"></textarea>
       <div class="_dragover" *ngIf="viewState === 'edit' && !disabled">파일을 내려놓으세요.</div>
     </div>
     <div class="_preview" [hidden]="viewState !== 'preview' && !disabled">
