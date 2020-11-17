@@ -53,10 +53,10 @@ export class SdIconControl implements OnChanges {
   @Input()
   @SdInputValidate({
     type: String,
-    includes: ["fas", "far", "fab"],
+    includes: ["fas", "far", "fab", "fal", "fad"],
     notnull: true
   })
-  public type: "fas" | "far" | "fab" = "fas";
+  public type: "fas" | "far" | "fab" | "fal" | "fad" = "fas";
 
   @Input("fixedWidth")
   @SdInputValidate(Boolean)
@@ -80,10 +80,10 @@ export class SdIconControl implements OnChanges {
   @Input()
   @SdInputValidate({
     type: String,
-    includes: ["fas", "far", "fab"],
+    includes: ["fas", "far", "fab", "fal", "fad"],
     notnull: true
   })
-  public maskType: "fas" | "far" | "fab" = "fas";
+  public markType: "fas" | "far" | "fab" | "fal" | "fad" = "fas";
 
   @Input()
   @SdInputValidate(String)

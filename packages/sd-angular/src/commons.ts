@@ -10,9 +10,11 @@ import {
   Styles,
   Transform
 } from "@fortawesome/fontawesome-svg-core";
-import { fas } from "@fortawesome/free-solid-svg-icons";
+import { fas } from "@fortawesome/pro-solid-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
-import { far } from "@fortawesome/free-regular-svg-icons";
+import { far } from "@fortawesome/pro-regular-svg-icons";
+import { fal } from "@fortawesome/pro-light-svg-icons";
+import { fad } from "@fortawesome/pro-duotone-svg-icons";
 import { SdServiceEventBase } from "@simplysm/sd-service-common";
 
 export interface ISdIconProps {
@@ -86,6 +88,8 @@ export function sdIconNameFn(item: any): any {
 export const sdIconNames = Object.values(fas)
   .concat(Object.values(fab))
   .concat(Object.values(far))
+  .concat(Object.values(fal))
+  .concat(Object.values(fad))
   .map(sdIconNameFn)
   .distinct();
 
