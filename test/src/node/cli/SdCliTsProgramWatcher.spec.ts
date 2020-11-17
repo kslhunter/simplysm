@@ -1,4 +1,4 @@
-import { FsUtil } from "@simplysm/sd-core-node";
+import { FsUtil, Logger } from "@simplysm/sd-core-node";
 import * as path from "path";
 import { SdCliTsProgramWatcher } from "@simplysm/sd-cli";
 import { Wait } from "@simplysm/sd-core-common";
@@ -73,8 +73,10 @@ export class Test5 {
 export class Test6 {
 }`.trim());
 
+    const logger = Logger.get(["node", "cli", "SdCliTsProgramWatcher"]);
+
     let count = 0;
-    const watcher = new SdCliTsProgramWatcher(rootPath, "node", false);
+    const watcher = new SdCliTsProgramWatcher(rootPath, "node", false, logger);
     await watcher.watchAsync((program, changeInfos) => {
       if (count > 0) {
         console.log(changeInfos);
