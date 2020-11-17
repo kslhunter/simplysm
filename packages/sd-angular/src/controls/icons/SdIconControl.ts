@@ -83,7 +83,7 @@ export class SdIconControl implements OnChanges {
     includes: ["fas", "far", "fab", "fal", "fad"],
     notnull: true
   })
-  public markType: "fas" | "far" | "fab" | "fal" | "fad" = "fas";
+  public maskType: "fas" | "far" | "fab" | "fal" | "fad" = "fas";
 
   @Input()
   @SdInputValidate(String)
