@@ -320,7 +320,6 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                   *ngFor="let childItem of getChildrenFn(index, item); let childIndex = index; trackBy: trackByFn">
                   <ng-template [ngTemplateOutlet]="itemRowTemplate"
                                [ngTemplateOutletContext]="{item: childItem, index: childIndex, depth: depth + 1, parent: item}"></ng-template>
-                  <sd-gap height="sm"></sd-gap>
                 </ng-container>
               </ng-container>
             </ng-template>

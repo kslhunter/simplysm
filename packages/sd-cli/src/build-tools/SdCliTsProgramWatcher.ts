@@ -11,7 +11,7 @@ import anymatch from "anymatch";
  * TS Program의 WATCH 모듈
  */
 export class SdCliTsProgramWatcher {
-  private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name, path.basename(this._rootPath)]);
+  // private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name, path.basename(this._rootPath), ...this._target ? [this._target] : []]);
 
   private readonly _fileCacheMap = new Map<string, IFileCache>();
   private readonly _outputFileCacheMap = new Map<string, string>();
@@ -30,7 +30,8 @@ export class SdCliTsProgramWatcher {
 
   public constructor(private readonly _rootPath: string,
                      private readonly _target: "node" | "browser" | undefined,
-                     private readonly _useAngularSassParser: boolean) {
+                     private readonly _useAngularSassParser: boolean,
+                     private readonly _logger: Logger) {
   }
 
   public deleteOutputFileCache(filePath: string): void {
@@ -62,6 +63,8 @@ export class SdCliTsProgramWatcher {
           return;
         }
 
+        this._logger.debug("변경감지");
+
         // 변경된 파일을 IMPORT하고 있는 다른 파일들도 캐시를 비움 (다시 로딩될 수 있도록)
         const reverseDependencyFilePaths = changeFilePaths
           .mapMany((changeFilePath) => this._getAllReverseDependencyFilePaths(program, currentFilePaths, changeFilePath))
@@ -71,6 +74,7 @@ export class SdCliTsProgramWatcher {
           // exports의 Target을 못찾았을 수 있어 import/export 도 다시 읽어야함
           // this._assignFileCache(reverseDependencyFilePath, { sourceFile: undefined });
         }
+        this._logger.debug("변경감지: REV 의존성 매핑");
 
         // program 재 구성 (파일 캐시가 다시 형성됨)
         program = ts.createProgram(
@@ -79,12 +83,17 @@ export class SdCliTsProgramWatcher {
           host,
           program
         );
+        this._logger.debug("변경감지: 프로그램 재구성");
 
         const prevLoadedFilePaths = [...loadedFilePaths];
         // 로드된 전체 파일 목록
-        loadedFilePaths = rootFilePaths
+        /*loadedFilePaths = rootFilePaths
           .concat(rootFilePaths.mapMany((item) => this._getAllDependencyFilePaths(program, path.normalize(item))))
+          .distinct();*/
+        loadedFilePaths = rootFilePaths
+          .concat(this._getAllDependencyFilePaths(program, ...rootFilePaths.map((item) => path.normalize(item))))
           .distinct();
+        this._logger.debug("변경감지: 읽힌 파일 목록 구성 (" + rootFilePaths.length + " => " + loadedFilePaths.length);
 
         const changeInfos: ISdTsProgramChangeInfo[] = [];
         const diffs = prevLoadedFilePaths.diffs(loadedFilePaths);
@@ -116,6 +125,7 @@ export class SdCliTsProgramWatcher {
             changeInfos.push({ eventType: "dependency", filePath: changeFilePath });
           }
         }
+        this._logger.debug("변경감지: 변경파일 목록 구성");
 
         // chokidar add/unwatch 파일 구성
         for (const changeInfo of changeInfos) {
@@ -136,6 +146,7 @@ export class SdCliTsProgramWatcher {
             }
           }
         }
+        this._logger.debug("변경감지: 감지파일 목록 편집");
 
         // 반환파일 목록이 존재하면, 반환
         if (changeInfos.length > 0) {
@@ -168,7 +179,7 @@ export class SdCliTsProgramWatcher {
     // 로드된 전체 파일 목록
     const rootFilePaths = parsedTsconfig.fileNames.map((item) => path.normalize(item));
     let loadedFilePaths = rootFilePaths
-      .concat(rootFilePaths.mapMany((item) => this._getAllDependencyFilePaths(program, item)))
+      .concat(this._getAllDependencyFilePaths(program, ...rootFilePaths.map((item) => path.normalize(item))))
       .distinct();
 
     watcher.add(loadedFilePaths);
@@ -376,8 +387,8 @@ export class SdCliTsProgramWatcher {
     return result;
   }
 
-  private _getAllDependencyFilePaths(program: ts.Program, rootFilePath: string): string[] {
-    const results: string[] = [rootFilePath + "|"];
+  private _getAllDependencyFilePaths(program: ts.Program, ...rootFilePaths: string[]): string[] {
+    const results: string[] = rootFilePaths.map((item) => item + "|");
     const addResult = (filePath: string, targetName?: string): void => {
       const key = filePath + "|" + (targetName ?? "");
       if (!results.includes(key)) {
@@ -462,7 +473,7 @@ export class SdCliTsProgramWatcher {
     }
 
     return results
-      .remove((item) => item.startsWith(rootFilePath + "|"))
+      .remove((item) => rootFilePaths.includes(item.split("|")[0]))
       .map((item) => item.split("|")[0])
       .distinct();
   }

@@ -17,7 +17,7 @@ import { SdCliNgMetadataGenerator } from "../build-tools/SdCliNgMetadataGenerato
 EventEmitter.defaultMaxListeners = 0;
 process.setMaxListeners(0);
 
-const logger = Logger.get(["simplysm", "sd-cli", "check-worker"]);
+const logger = Logger.get(["simplysm", "sd-cli", "build-worker"]);
 if (process.env.SD_CLI_LOGGER_SEVERITY === "DEBUG") {
   Error.stackTraceLimit = 100; //Infinity;
 
@@ -57,7 +57,8 @@ try {
       const tsconfig: ITsConfig = await FsUtil.readJsonAsync(SdCliPathUtil.getTsConfigBuildFilePath(rootPath, target));
       const parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, rootPath);
 
-      await new SdCliTsProgramWatcher(rootPath, target, isForAngular)
+      const currLogger = Logger.get(["simplysm", "sd-cli", "build-worker", path.basename(rootPath), target, "compile"]);
+      await new SdCliTsProgramWatcher(rootPath, target, isForAngular, currLogger)
         .watchAsync(async (program, changeInfos) => {
           // 변경된 파일에 대한 이전 결과들 삭제
           for (const changeInfo of changeInfos) {
@@ -165,7 +166,8 @@ try {
       const tsconfig: ITsConfig = await FsUtil.readJsonAsync(SdCliPathUtil.getTsConfigBuildFilePath(rootPath, target));
       const parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, rootPath);
 
-      const programWatcher = new SdCliTsProgramWatcher(rootPath, target, isForAngular);
+      const currLogger = Logger.get(["simplysm", "sd-cli", "build-worker", path.basename(rootPath), ...target !== undefined ? [target] : [], "check"]);
+      const programWatcher = new SdCliTsProgramWatcher(rootPath, target, isForAngular, currLogger);
       await programWatcher
         .watchAsync(async (program, changeInfos) => {
           // 변경된 파일에 대한 이전 결과들 삭제
@@ -253,7 +255,8 @@ try {
           }
         };
 
-        await new SdCliTsProgramWatcher(rootPath, target, false)
+        const currLogger = Logger.get(["simplysm", "sd-cli", "build-worker", path.basename(rootPath), target, "lint"]);
+        await new SdCliTsProgramWatcher(rootPath, target, false, currLogger)
           .watchAsync(async (program, changeInfos) => {
             // 변경된 파일에 대한 이전 결과들 삭제
             for (const changeInfo of changeInfos) {
@@ -308,13 +311,14 @@ try {
             emitComplete();
           },
           (err) => {
-            logger.error(err);
+            currLogger.error(err);
           },
           { useFirstRun: true }
         );
       }
       // TARGET이 없는 패키지 (JS 혹은 types 패키지등) LINT
       else {
+        const currLogger = Logger.get(["simplysm", "sd-cli", "build-worker", path.basename(rootPath), "lint"]);
         await FsUtil.watchAsync(
           path.resolve(rootPath, "**", "*.+(js|ts)"),
           async (changeInfos) => {
@@ -341,7 +345,7 @@ try {
             worker.send("complete", resultCacheMap.results);
           },
           (err) => {
-            logger.error(err);
+            currLogger.error(err);
           },
           { useFirstRun: true }
         );
@@ -370,7 +374,8 @@ try {
 
       const isLibrary = npmConfig.main !== undefined;
 
-      await new SdCliTsProgramWatcher(rootPath, "browser", isForAngular)
+      const currLogger = Logger.get(["simplysm", "sd-cli", "build-worker", path.basename(rootPath), "ng-gen"]);
+      await new SdCliTsProgramWatcher(rootPath, "browser", isForAngular, currLogger)
         .watchAsync(async (program, changeInfos) => {
           // 변경된 파일에 대한 이전 결과들 삭제
           for (const changeInfo of changeInfos) {

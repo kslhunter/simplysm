@@ -44,7 +44,7 @@ import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
           display: inline-block;
           vertical-align: top;
           line-height: var(--sd-topbar-height);
-          margin-right: var(--gap-default);
+          margin-right: var(--gap-xxl);
         }
       }
 

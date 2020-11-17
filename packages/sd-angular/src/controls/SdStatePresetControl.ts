@@ -5,8 +5,10 @@ import {
   EventEmitter,
   HostBinding,
   Input,
+  OnChanges,
   OnInit,
-  Output
+  Output,
+  SimpleChanges
 } from "@angular/core";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 import { SdInputValidate } from "../decorators/SdInputValidate";
@@ -85,7 +87,7 @@ import { SdToastProvider } from "../providers/SdToastProvider";
     }
   `]
 })
-export class SdStatePresetControl implements OnInit {
+export class SdStatePresetControl implements OnInit, OnChanges {
   @Input()
   @SdInputValidate(String)
   public key?: string;
@@ -112,6 +114,13 @@ export class SdStatePresetControl implements OnInit {
   public constructor(private readonly _systemConfig: SdSystemConfigRootProvider,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _toast: SdToastProvider) {
+  }
+
+  public async ngOnChanges(changes: SimpleChanges): Promise<void> {
+    if ("key" in changes && this.key !== undefined) {
+      this.presets = (await this._systemConfig.getAsync(`sd-state-preset.${this.key}`)) ?? [];
+      this._cdr.markForCheck();
+    }
   }
 
   public async ngOnInit(): Promise<void> {
