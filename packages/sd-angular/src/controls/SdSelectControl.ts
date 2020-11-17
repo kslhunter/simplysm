@@ -4,6 +4,7 @@ import {
   Component,
   ContentChild,
   DoCheck,
+  ElementRef,
   EventEmitter,
   HostBinding,
   HostListener,
@@ -30,7 +31,7 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
         <sd-icon fixedWidth icon="caret-down"></sd-icon>
       </div>
 
-      <sd-dropdown-popup>
+      <sd-dropdown-popup #dropdownPopup (keydown)="onPopupKeydown($event)">
         <ng-container *ngIf="!items">
           <sd-dock-container>
             <sd-dock class="sd-border-bottom-brightness-default sd-padding-sm-default" *ngIf="selectMode === 'multi'">
@@ -236,6 +237,9 @@ export class SdSelectControl implements DoCheck {
   @ViewChild("dropdown", { static: true })
   public dropdownControl?: SdDropdownControl;
 
+  @ViewChild("dropdownPopup", { static: true, read: ElementRef })
+  public dropdownPopupElRef?: ElementRef<HTMLElement>;
+
   @ContentChild("item", { static: true })
   public itemTemplateRef?: TemplateRef<any>;
 
@@ -343,16 +347,66 @@ export class SdSelectControl implements DoCheck {
 
   @HostListener("keydown", ["$event"])
   public onKeydown(event: KeyboardEvent): void {
+    if (!event.ctrlKey && !event.altKey && event.key === "ArrowDown") {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (this.dropdownPopupElRef) {
+        this.dropdownPopupElRef.nativeElement.findFocusableFirst()?.focus();
+      }
+    }
+    else if (!event.ctrlKey && !event.altKey && event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (this.dropdownControl) {
+        this.dropdownControl.closePopup();
+      }
+    }
+  }
+
+  public onPopupKeydown(event: KeyboardEvent): void {
     if (
       !event.ctrlKey && !event.altKey && (
         event.key === "ArrowDown" ||
-        event.key === "ArrowUp" ||
-        event.key === "ArrowLeft" ||
-        event.key === "ArrowRight"
+        event.key === "ArrowUp"
       )
     ) {
       event.preventDefault();
       event.stopPropagation();
+
+      if (this.dropdownPopupElRef && document.activeElement instanceof HTMLElement) {
+        const focusableEls = this.dropdownPopupElRef.nativeElement.findFocusableAll();
+        const currIndex = focusableEls.indexOf(document.activeElement);
+
+        if (event.key === "ArrowUp") {
+          if (currIndex === 0) {
+            if (this.dropdownControl?.controlEl) {
+              this.dropdownControl.controlEl.focus();
+            }
+          }
+          else {
+            focusableEls[currIndex - 1].focus();
+          }
+        }
+        else {
+          if (typeof focusableEls[currIndex + 1] !== "undefined") {
+            focusableEls[currIndex + 1].focus();
+          }
+        }
+      }
+    }
+    else if (!event.ctrlKey && !event.altKey && event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (this.dropdownControl) {
+        this.dropdownControl.closePopup();
+
+        if (this.dropdownControl.controlEl) {
+          this.dropdownControl.controlEl.focus();
+        }
+      }
     }
   }
 
@@ -369,7 +423,7 @@ export class SdSelectControl implements DoCheck {
     }
   }
 
-  public onItemControlClick(itemControl: SdSelectItemControl): void {
+  public onItemControlClick(itemControl: SdSelectItemControl, noClose?: boolean): void {
     if (this.selectMode === "multi") {
       const value = [...this.value];
       if ((this.value as any[]).includes(itemControl.value)) {
@@ -395,7 +449,7 @@ export class SdSelectControl implements DoCheck {
         }
       }
 
-      if (this.dropdownControl) {
+      if (this.dropdownControl && !noClose) {
         this.dropdownControl.closePopup();
       }
     }

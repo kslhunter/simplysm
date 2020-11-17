@@ -53,9 +53,9 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
   private _isOpen = false;
 
-  private readonly _el: HTMLElement;
-  private _controlEl?: HTMLElement;
-  private _dropdownEl?: HTMLElement;
+  private readonly el: HTMLElement;
+  public controlEl?: HTMLElement;
+  public dropdownEl?: HTMLElement;
 
   private _mouseoverEl?: HTMLElement;
 
@@ -64,25 +64,25 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   };
 
   public constructor(private readonly _elRef: ElementRef) {
-    this._el = (this._elRef.nativeElement as HTMLElement);
+    this.el = (this._elRef.nativeElement as HTMLElement);
   }
 
   public ngOnInit(): void {
-    this._controlEl = this._el.findAll("> ._sd-dropdown-control")[0];
-    this._dropdownEl = this._el.findAll("> sd-dropdown-popup")[0];
+    this.controlEl = this.el.findAll("> ._sd-dropdown-control")[0];
+    this.dropdownEl = this.el.findAll("> sd-dropdown-popup")[0];
 
-    // this._controlEl.addEventListener("focus", this.focusEventHandler, true);
-    this._controlEl.addEventListener("blur", this.blurEventHandler, true);
-    this._controlEl.addEventListener("click", this.clickEventHandler, true);
-    this._controlEl.addEventListener("keydown", this.keydownEventHandler, true);
+    // this.controlEl.addEventListener("focus", this.focusEventHandler, true);
+    this.controlEl.addEventListener("blur", this.blurEventHandler, true);
+    this.controlEl.addEventListener("click", this.clickEventHandler, true);
+    this.controlEl.addEventListener("keydown", this.keydownEventHandler, true);
     document.addEventListener("mouseover", this.mouseoverEventHandler, true);
 
-    this._dropdownEl.remove();
+    this.dropdownEl.remove();
   }
 
   public ngOnDestroy(): void {
-    if (this._dropdownEl) {
-      this._dropdownEl.remove();
+    if (this.dropdownEl) {
+      this.dropdownEl.remove();
       document.removeEventListener("scroll", this.scrollEventHandler, true);
       document.removeEventListener("mouseover", this.mouseoverEventHandler);
     }
@@ -93,22 +93,22 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     if (this.disabled) return;
     this._isOpen = true;
 
-    if (!this._dropdownEl) throw new NeverEntryError();
-    if (!this._controlEl) throw new NeverEntryError();
+    if (!this.dropdownEl) throw new NeverEntryError();
+    if (!this.controlEl) throw new NeverEntryError();
 
-    document.body.appendChild(this._dropdownEl);
-    this._dropdownEl.addEventListener("blur", this.blurEventHandler, true);
+    document.body.appendChild(this.dropdownEl);
+    this.dropdownEl.addEventListener("blur", this.blurEventHandler, true);
 
-    const windowOffset = this._controlEl.getRelativeOffset(window.document.body);
+    const windowOffset = this.controlEl.getRelativeOffset(window.document.body);
 
     const placeBottom = window.innerHeight < windowOffset.top * 2;
     const placeRight = window.innerWidth < windowOffset.left * 2;
 
-    const top = placeBottom ? "" : (windowOffset.top + this._controlEl.offsetHeight + 2) + "px";
+    const top = placeBottom ? "" : (windowOffset.top + this.controlEl.offsetHeight + 2) + "px";
     const bottom = placeBottom ? (window.innerHeight - windowOffset.top) + "px" : "";
     const left = placeRight ? "" : windowOffset.left + "px";
-    const right = placeRight ? (window.innerWidth - windowOffset.left - this._controlEl.offsetWidth) + "px" : "";
-    const minWidth = this._controlEl.offsetWidth + "px";
+    const right = placeRight ? (window.innerWidth - windowOffset.left - this.controlEl.offsetWidth) + "px" : "";
+    const minWidth = this.controlEl.offsetWidth + "px";
     const opacity = "1";
     const pointerEvents = "auto";
     const transform = "none";
@@ -120,7 +120,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     const paddingBottom = this.useAllBorderRadius ? "4px" : placeBottom ? "" : "4px";*/
 
     Object.assign(
-      this._dropdownEl.style,
+      this.dropdownEl.style,
       {
         top,
         bottom,
@@ -140,14 +140,14 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     );
 
 
-    /*if (window.innerHeight < this._controlEl.windowOffset.top * 2) {
+    /*if (window.innerHeight < this.controlEl.windowOffset.top * 2) {
       Object.assign(
-        this._dropdownEl.style,
+        this.dropdownEl.style,
         {
           top: "",
-          bottom: (window.innerHeight - this._controlEl.windowOffset.top) + "px",
-          left: this._controlEl.windowOffset.left + 1 + "px",
-          minWidth: this._controlEl.clientWidth + "px",
+          bottom: (window.innerHeight - this.controlEl.windowOffset.top) + "px",
+          left: this.controlEl.windowOffset.left + 1 + "px",
+          minWidth: this.controlEl.clientWidth + "px",
           opacity: "1",
           pointerEvents: "auto",
           transform: "none"
@@ -158,12 +158,12 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     }
     else {
       Object.assign(
-        this._dropdownEl.style,
+        this.dropdownEl.style,
         {
-          top: (this._controlEl.windowOffset.top + this._controlEl.offsetHeight) + "px",
+          top: (this.controlEl.windowOffset.top + this.controlEl.offsetHeight) + "px",
           bottom: "",
-          left: this._controlEl.windowOffset.left + 1 + "px",
-          minWidth: this._controlEl.clientWidth + "px",
+          left: this.controlEl.windowOffset.left + 1 + "px",
+          minWidth: this.controlEl.clientWidth + "px",
           opacity: "1",
           pointerEvents: "auto",
           transform: "none"
@@ -182,10 +182,10 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     if (!this._isOpen) return;
     this._isOpen = false;
 
-    if (!this._dropdownEl) throw new NeverEntryError();
+    if (!this.dropdownEl) throw new NeverEntryError();
 
     Object.assign(
-      this._dropdownEl.style,
+      this.dropdownEl.style,
       {
         opacity: "0",
         pointerEvents: "none",
@@ -199,15 +199,15 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   }
 
   public scrollEventHandler = (event: Event): void => {
-    if (!this._dropdownEl) throw new NeverEntryError();
-    if (!this._controlEl) throw new NeverEntryError();
+    if (!this.dropdownEl) throw new NeverEntryError();
+    if (!this.controlEl) throw new NeverEntryError();
 
-    if (this._el.findParent(event.target as HTMLElement)) {
-      const windowOffset = this._controlEl.getRelativeOffset(window.document.body);
+    if (this.el.findParent(event.target as HTMLElement)) {
+      const windowOffset = this.controlEl.getRelativeOffset(window.document.body);
 
       if (window.innerHeight < windowOffset.top * 2) {
         Object.assign(
-          this._dropdownEl.style,
+          this.dropdownEl.style,
           {
             top: "",
             bottom: (window.innerHeight - windowOffset.top) + "px",
@@ -217,9 +217,9 @@ export class SdDropdownControl implements OnInit, OnDestroy {
       }
       else {
         Object.assign(
-          this._dropdownEl.style,
+          this.dropdownEl.style,
           {
-            top: (windowOffset.top + this._controlEl.offsetHeight) + "px",
+            top: (windowOffset.top + this.controlEl.offsetHeight) + "px",
             bottom: "",
             left: windowOffset.left + "px"
           }
@@ -239,10 +239,12 @@ export class SdDropdownControl implements OnInit, OnDestroy {
 
   public keydownEventHandler = (event: KeyboardEvent): void => {
     if (!event.ctrlKey && !event.altKey && event.key === "ArrowDown") {
-      event.preventDefault();
-      event.stopPropagation();
+      if (!this._isOpen) {
+        event.preventDefault();
+        event.stopPropagation();
 
-      this.openPopup();
+        this.openPopup();        
+      }
     }
 
     if (!event.ctrlKey && !event.altKey && event.key === " ") {
@@ -259,16 +261,16 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   };
 
   public blurEventHandler = (event: FocusEvent): void => {
-    if (!this._dropdownEl) throw new NeverEntryError();
-    if (!this._controlEl) throw new NeverEntryError();
+    if (!this.dropdownEl) throw new NeverEntryError();
+    if (!this.controlEl) throw new NeverEntryError();
 
     const relatedTarget = event.relatedTarget as HTMLElement | undefined;
     if (
       relatedTarget != null && (
-        relatedTarget === this._controlEl ||
-        relatedTarget === this._dropdownEl ||
-        relatedTarget.findParent(this._controlEl) ||
-        relatedTarget.findParent(this._dropdownEl)
+        relatedTarget === this.controlEl ||
+        relatedTarget === this.dropdownEl ||
+        relatedTarget.findParent(this.controlEl) ||
+        relatedTarget.findParent(this.dropdownEl)
       )
     ) {
       return;
@@ -277,15 +279,15 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     if (
       relatedTarget == null &&
       this._mouseoverEl instanceof HTMLElement &&
-      (this._mouseoverEl.findParent(this._controlEl) || this._mouseoverEl.findParent(this._dropdownEl))
+      (this._mouseoverEl.findParent(this.controlEl) || this._mouseoverEl.findParent(this.dropdownEl))
     ) {
-      const firstFocusableEl = this._controlEl.isFocusable() ? this._controlEl : this._controlEl.findFocusableAll()[0];
+      const firstFocusableEl = this.controlEl.isFocusable() ? this.controlEl : this.controlEl.findFocusableAll()[0];
       if (typeof firstFocusableEl !== "undefined") {
         firstFocusableEl.focus();
         return;
       }
       else {
-        const firstFocusableEl1 = this._dropdownEl.isFocusable() ? this._dropdownEl : this._dropdownEl.findFocusableAll()[0];
+        const firstFocusableEl1 = this.dropdownEl.isFocusable() ? this.dropdownEl : this.dropdownEl.findFocusableAll()[0];
         if (typeof firstFocusableEl1 !== "undefined") {
           firstFocusableEl1.focus();
           return;

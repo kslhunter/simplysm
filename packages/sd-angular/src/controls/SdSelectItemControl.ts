@@ -129,6 +129,18 @@ export class SdSelectItemControl implements AfterViewInit, AfterContentChecked {
     this._selectControl.onItemControlClick(this);
   }
 
+  @HostListener("keydown", ["$event"])
+  public onKeydown(event: KeyboardEvent): void {
+    if (this.disabled) return;
+
+    if (!event.ctrlKey && !event.altKey && event.key === " ") {
+      event.preventDefault();
+      event.stopPropagation();
+
+      this._selectControl.onItemControlClick(this, true);
+    }
+  }
+
   public markForCheck(): void {
     this._cdr.markForCheck();
   }
