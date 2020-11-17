@@ -316,11 +316,13 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
 
               <!-- CHILDREN FOR 문 -->
               <ng-container *ngIf="getIsExpandedItem(item) && getChildrenFn && getChildrenFn(index, item)?.length > 0">
+                <div class="sd-border-top-brightness-default"></div>
                 <ng-container
                   *ngFor="let childItem of getChildrenFn(index, item); let childIndex = index; trackBy: trackByFn">
                   <ng-template [ngTemplateOutlet]="itemRowTemplate"
                                [ngTemplateOutletContext]="{item: childItem, index: childIndex, depth: depth + 1, parent: item}"></ng-template>
                 </ng-container>
+                <div class="sd-border-bottom-brightness-default"></div>
               </ng-container>
             </ng-template>
 

@@ -23,6 +23,8 @@ import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
     <sd-gap width="default" *ngIf="!sidebarContainerControl && !sidebarContainer"></sd-gap>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
+    @import "../../scss/mixins";
+    
     :host {
       display: block;
       position: absolute;

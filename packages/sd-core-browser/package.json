@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-core-browser",
-  "version": "4.0.25",
+  "version": "4.0.26-0",
   "description": "심플리즘 패키지 - 코어 모듈 (browser)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -13,7 +13,7 @@
     "resize-observer-polyfill": "^1.5.1",
     "events-polyfill": "^2.1.2",
     "spark-md5": "^3.0.1",
-    "@simplysm/sd-core-common": "4.0.25"
+    "@simplysm/sd-core-common": "4.0.26-0"
   },
   "devDependencies": {
     "@types/spark-md5": "^3.0.2"
