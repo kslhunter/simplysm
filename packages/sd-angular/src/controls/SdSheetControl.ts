@@ -34,7 +34,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
   selector: "sd-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-dock-container>
+    <sd-dock-container [hidden]="!isInitialized">
       <sd-dock *ngIf="(key || pageLength > 0) && !hideConfigBar">
         <div class="_icon-container">
           <sd-anchor class="_card-icon"
@@ -791,6 +791,8 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   public displayItems: any[] = [];
   public displayItemDefs: { index: number; depth: number; visible: boolean; selectable: boolean; item: any }[] = [];
 
+  public isInitialized = false;
+
   private _getColumnControlsOfFixType(fixed: boolean): SdSheetColumnControl[] {
     let fixedColumnControls = this.columnControls?.toArray() ?? [];
     if (this.key !== undefined && this._config?.columnObj) {
@@ -1028,6 +1030,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
         this.displayType = this._config.displayType;
       }
     }
+    this.isInitialized = true;
     this._cdr.markForCheck();
   }
 
