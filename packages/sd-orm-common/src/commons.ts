@@ -309,7 +309,7 @@ export type TEntity<T> = {
 };
 
 export type TEntityUnwrap<T> = {
-  [K in keyof T]: T[K] extends QueryUnit<any> ? T[K]["T"] :
+  [K in keyof T]: T[K] extends QueryUnit<TQueryValue> ? T[K]["T"] :
     T[K] extends TQueryValue ? T[K] :
       TEntityUnwrap<T[K]>;
 };
@@ -344,22 +344,9 @@ export type TUndefinedPropertyNames<T> = { [K in keyof T]: undefined extends T[K
 export type TOnlyQueryValueProperty<T> = Pick<T, TQueryValuePropertyNames<T>> & Partial<Pick<T, TUndefinedPropertyNames<T>>>;
 
 export type TInsertObject<T> = TOnlyQueryValueProperty<T>;
-export type TUpdateObject<T> = Partial<{
+export type TUpdateObject<T> = TOnlyQueryValueProperty<{
   [K in keyof T]?: T[K] | QueryUnit<T[K]> | QueryUnit<WrappedType<T[K]>>;
 }>;
-
-/*export type TUpdateObject<T> = Partial<Omit<{ [K in keyof T]: T[K] extends TQueryValue ? (T[K] | QueryUnit<T[K]> | QueryUnit<WrappedType<T[K]>>) : never }, NonTQueryValuePropertyNames<T>>>;
-
-export type NullablePropertyNames<T> = { [K in keyof T]: undefined extends T[K] ? K : never }[keyof T];
-export type TInsertObject<T> =
-  Omit<{ [K in keyof T]: T[K] extends TQueryValue ? (T[K] | QueryUnit<T[K]> | QueryUnit<WrappedType<T[K]>>) : T[K] }, NullablePropertyNames<T> | NonTQueryValuePropertyNames<T>>
-  &
-  Pick<{ [K in keyof T]?: T[K] extends TQueryValue ? (T[K] | QueryUnit<T[K]> | QueryUnit<WrappedType<T[K]>>) : T[K] }, NullablePropertyNames<T> | NonTQueryValuePropertyNames<T>>;
-
-export interface IQueryableOrderingDef<T> {
-  key: string | ((entity: TEntity<T>) => TEntityValue<TQueryValue>);
-  desc: boolean;
-}*/
 
 // endregion
 

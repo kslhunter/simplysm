@@ -139,6 +139,10 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
         background: var(--theme-color-grey-lightest);
         color: var(--text-brightness-light);
         cursor: default;
+
+        > ._icon {
+          display: none;
+        }
       }
 
       &[sd-invalid=true] /deep/ > sd-dropdown > div > ._invalid-indicator {

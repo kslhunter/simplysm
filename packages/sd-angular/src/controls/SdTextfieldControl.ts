@@ -19,7 +19,7 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
   template: `
     <ng-container *ngIf="!multiline">
       <input #input
-             *ngIf="disabled || !readonly"
+             *ngIf="(disabled || !readonly) && !(value === undefined && disabled)"
              [type]="controlType"
              [value]="controlValue"
              [attr.placeholder]="placeholder"
