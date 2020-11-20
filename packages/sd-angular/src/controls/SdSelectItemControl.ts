@@ -11,7 +11,7 @@ import {
   HostBinding,
   HostListener,
   Inject,
-  Input,
+  Input, OnDestroy,
   Output,
   TemplateRef
 } from "@angular/core";
@@ -66,7 +66,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
     }
   `]
 })
-export class SdSelectItemControl implements AfterViewInit, AfterContentChecked {
+export class SdSelectItemControl implements AfterViewInit, AfterContentChecked, OnDestroy {
   @HostBinding("attr.tabindex")
   public tabIndex = 0;
 
@@ -107,9 +107,12 @@ export class SdSelectItemControl implements AfterViewInit, AfterContentChecked {
 
   public ngAfterViewInit(): void {
     this.contentEl = this.el.findFirst("> ._content");
-
     this.contentHTML = this.contentEl?.innerHTML ?? "";
-    this._selectControl.onItemControlContentChanged(this);
+    this._selectControl.onItemControlInit(this);
+  }
+
+  public ngOnDestroy(): void {
+    this._selectControl.onItemControlDestroy(this);
   }
 
   public ngAfterContentChecked(): void {
