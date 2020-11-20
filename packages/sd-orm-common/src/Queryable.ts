@@ -181,7 +181,9 @@ export class Queryable<D extends DbContext, T> {
         asChainArr.push(fkName);
         const as = asChainArr.join(".");
 
-        result = result.include(as);
+        if (!this._def.join?.some((item) => item.as === this.db.qb.wrap(`TBL.${as}`))) {
+          result = result.include(as);
+        }
       }
 
       selectedColumn = this._getEntityChainValue(result._entity, arg1);

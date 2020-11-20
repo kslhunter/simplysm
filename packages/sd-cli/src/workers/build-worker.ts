@@ -83,10 +83,8 @@ try {
               const mapFilePath = jsFilePath + ".map";
 
               if (targetInfo.eventType === "unlink") {
-                await Promise.all([
-                  FsUtil.removeAsync(jsFilePath),
-                  FsUtil.removeAsync(mapFilePath)
-                ]);
+                await FsUtil.removeAsync(mapFilePath);
+                await FsUtil.removeAsync(jsFilePath);
               }
               else {
                 const sourceFile = program.getSourceFile(targetInfo.filePath);
@@ -124,10 +122,8 @@ try {
                   }
                 }
                 else {
-                  await Promise.all([
-                    FsUtil.removeAsync(jsFilePath),
-                    FsUtil.removeAsync(mapFilePath)
-                  ]);
+                  await FsUtil.removeAsync(mapFilePath);
+                  await FsUtil.removeAsync(jsFilePath);
                 }
               }
             }
