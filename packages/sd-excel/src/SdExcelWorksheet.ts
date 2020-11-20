@@ -40,7 +40,7 @@ export class SdExcelWorksheet {
   public get rowLength(): number {
     const length = Array.from(this.rowDataMap.keys()).max() ?? 0;
     if (length === 0) {
-      return this.sheetData.worksheet.sheetData[0].row.length;
+      return this.sheetData.worksheet.sheetData[0].row?.length ?? 0;
     }
     return length + 1;
   }

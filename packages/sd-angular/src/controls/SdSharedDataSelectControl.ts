@@ -24,7 +24,7 @@ import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
   template: `
     <sd-select [value]="value"
                (valueChange)="onValueChange($event)"
-               [disabled]="disabled || selectableItems.length < 1"
+               [disabled]="disabled"
                [required]="required"
                [inset]="inset"
                [inline]="inline"
@@ -230,12 +230,6 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
 
     if (itemChanges || isValueChange || isFilterFnChange) {
       this.selectableItems = this.items.filter((item, i) => this.getItemSelectable(i, item));
-      /*if (this.value instanceof Array) {
-        this.value.remove((v: any) => this.selectableItems.every((item, i) => this.trackByFn(i, item.id) !== v));
-      }
-      else if (typeof this.value === "number" && this.selectableItems.every((item, i) => this.trackByFn(i, item.id) !== this.value)) {
-        this.value = undefined;
-      }*/
       this._cdr.markForCheck();
     }
   }

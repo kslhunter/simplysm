@@ -409,7 +409,7 @@ export class QueryHelper {
 
       return selectDef;
     }
-    else if (value === undefined) {
+    else if (value == null) {
       return "NULL";
     }
     else {

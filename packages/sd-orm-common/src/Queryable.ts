@@ -262,13 +262,13 @@ export class Queryable<D extends DbContext, T> {
 
     let joinTableQueryable: Queryable<D, J>;
     if (joinTypeOrQrs instanceof Array) {
-      joinTableQueryable = Queryable.union(joinTypeOrQrs, as);
+      joinTableQueryable = Queryable.union(joinTypeOrQrs, this._as !== undefined ? this._as + "." + as : as);
     }
     else {
-      joinTableQueryable = new Queryable(this.db, joinTypeOrQrs, as);
+      joinTableQueryable = new Queryable(this.db, joinTypeOrQrs, this._as !== undefined ? this._as + "." + as : as);
     }
     const joinQueryable = fwd(joinTableQueryable, this._entity);
-    const joinEntity = this._getParentEntity(joinQueryable._entity, as, undefined);
+    const joinEntity = this._getParentEntity(joinQueryable._entity, this._as !== undefined ? this._as + "." + as : as, undefined);
 
     const entity = { ...this._entity };
     this._setEntityChainValue(entity, as, isSingle ? joinEntity : [joinEntity]);
