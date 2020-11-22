@@ -44,7 +44,7 @@ describe("(node) core.FsWatcher", () => {
     });
 
     await Wait.time(100);
-    watcher.close();
+    await watcher.close();
   });
 
   it("여러 감지 결과가 통합되어, 이벤트가 한번에 발생한다.", async () => {

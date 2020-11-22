@@ -79,10 +79,12 @@ export class SdCliServerCompiler extends EventEmitter {
           reject(err);
         });
 
-        compiler.watch({}, (err, stats) => {
+        compiler.watch({}, (err: Error | null, stats) => {
           const results = SdWebpackUtil.getWebpackResults(err, stats);
 
-          results.push(...this._startServer());
+          if (err != null) {
+            results.push(...this._startServer());
+          }
 
           this.emit("complete", results, this._server);
           resolve();
