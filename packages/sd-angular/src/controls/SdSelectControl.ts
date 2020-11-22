@@ -405,12 +405,20 @@ export class SdSelectControl implements DoCheck, AfterViewInit {
   public onItemControlInit(itemControl: SdSelectItemControl): void {
     if (!this.itemControls.includes(itemControl)) {
       this.itemControls.push(itemControl);
+
+      if (this.getIsSelectedItemControl(itemControl) || this.getChildrenFn) {
+        this._refreshContent();
+      }
     }
   }
 
   public onItemControlDestroy(itemControl: SdSelectItemControl): void {
     if (this.itemControls.includes(itemControl)) {
       this.itemControls.remove(itemControl);
+
+      if (this.getIsSelectedItemControl(itemControl) || this.getChildrenFn) {
+        this._refreshContent();
+      }
     }
   }
 
