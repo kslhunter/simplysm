@@ -334,23 +334,26 @@ export class SdSelectControl implements DoCheck {
   public get contentSafeInnerHTML(): SafeHtml {
     const selectedItemControls = this.itemControls.filter((itemControl) => this.getIsSelectedItemControl(itemControl));
     const selectedItemEls = selectedItemControls.map((item) => item.el);
-    const innerHTML = selectedItemEls.map((el) => {
-      if (this.getChildrenFn) {
-        let cursorEl: HTMLElement | undefined = el;
-        let resultHTML = "";
-        while (true) {
-          if (!cursorEl) break;
+    const innerHTML = selectedItemEls
+      .map((el) => {
+        if (this.getChildrenFn) {
+          let cursorEl: HTMLElement | undefined = el;
+          let resultHTML = "";
+          while (true) {
+            if (!cursorEl) break;
 
-          resultHTML = (cursorEl.findFirst("> ._content")?.innerHTML ?? "") + (resultHTML ? " / " + resultHTML : "");
-          cursorEl = cursorEl.findParent("._children")?.parentElement?.findFirst("sd-select-item");
+            resultHTML = (cursorEl.findFirst("> ._content")?.innerHTML ?? "") + (resultHTML ? " / " + resultHTML : "");
+            cursorEl = cursorEl.findParent("._children")?.parentElement?.findFirst("sd-select-item");
+          }
+
+          return resultHTML;
         }
-
-        return resultHTML;
-      }
-      else {
-        return el.findFirst("> ._content")?.innerHTML ?? "";
-      }
-    }).join(this.multiSelectionDisplayDirection === "vertical" ? "<div class='sd-padding-sm-0'></div>" : ", ");
+        else {
+          return el.findFirst("> ._content")?.innerHTML ?? "";
+        }
+      })
+      .map((item) => `<div style="display: inline-block">${item}</div>`)
+      .join(this.multiSelectionDisplayDirection === "vertical" ? "<div class='sd-padding-sm-0'></div>" : ", ");
 
     return this._domSanitizer.bypassSecurityTrustHtml(innerHTML);
   }
