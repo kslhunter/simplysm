@@ -904,7 +904,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       .create((i: number, item: any) => this.trackByFn(i, item));
 
     this._columnControlsDiffer = this._iterableDiffers.find(this.columnControls ?? [])
-      .create((i: number, item: SdSheetColumnControl) => this.trackByFn(i, item));
+      .create((i: number, item: SdSheetColumnControl) => this.trackByFnForColumnControl(i, item));
 
     this._configColumnObjDiffer = this._keyValueDiffers.find(this._config?.columnObj ?? {})
       .create();
