@@ -25,21 +25,28 @@ import { ObjectUtil, TFlatType } from "@simplysm/sd-core-common";
             <th style="text-align: right">
               {{ this.getDisplayTitle(key) }}
             </th>
-            <td style="text-align: right">
+            <td style="text-align: right"
+                [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">>
               {{ getDisplayName(key, data.theirs[key]) }}
             </td>
-            <td>
+            <td
+              [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.theirs[key], data.origin[key])">
                 <sd-icon fixedWidth icon="arrow-right" (click)="data.origin[key] = data.theirs[key]"></sd-icon>
               </sd-anchor>
             </td>
-            <td style="text-align: center">{{ getDisplayName(key, data.origin[key]) }}</td>
-            <td>
+            <td style="text-align: center"
+                [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsAllNotEqual(key)">
+              {{ getDisplayName(key, data.origin[key]) }}
+            </td>
+            <td
+              [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.yours[key], data.origin[key])">
                 <sd-icon fixedWidth icon="arrow-left" (click)="data.origin[key] = data.yours[key]"></sd-icon>
               </sd-anchor>
             </td>
-            <td style="text-align: left">
+            <td style="text-align: left"
+                [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
               {{ getDisplayName(key, data.yours[key]) }}
             </td>
           </tr>
@@ -56,6 +63,7 @@ import { ObjectUtil, TFlatType } from "@simplysm/sd-core-common";
 })
 export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends SdModalBase<ISdObjectMerge3ModalInput<T>, T> {
   public data!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;
+  public orgData!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;
   public keys!: string[];
   public displayNameRecord?: Partial<Record<keyof T, string>>;
   public valueTextConverter?: <K extends keyof T>(key: K, value: T[K]) => string | undefined;
@@ -72,6 +80,8 @@ export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends Sd
       origin: ObjectUtil.clone(param.origin),
       yours: param.yours
     };
+    this.orgData = ObjectUtil.clone(this.data);
+
     this.keys = (
       param.displayNameRecord ?
         Object.keys(param.displayNameRecord) :
@@ -91,6 +101,12 @@ export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends Sd
   public getDisplayName(key: string, val: any): TFlatType {
     if (!this.valueTextConverter) return val;
     return this.valueTextConverter(key, val);
+  }
+
+  public getIsOrgAllNotEqual(key: string): boolean {
+    return !ObjectUtil.equal(this.orgData.theirs[key], this.orgData.origin[key]) &&
+      !ObjectUtil.equal(this.orgData.theirs[key], this.orgData.yours[key]) &&
+      !ObjectUtil.equal(this.orgData.origin[key], this.orgData.yours[key]);
   }
 
   public getIsAllNotEqual(key: string): boolean {
