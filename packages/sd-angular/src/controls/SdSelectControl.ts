@@ -470,7 +470,7 @@ export class SdSelectControl implements DoCheck {
   public onItemControlDestroy(itemControl: SdSelectItemControl): void {
     if (this.itemControls.includes(itemControl)) {
       this.itemControls.remove(itemControl);
-      this._cdr.detectChanges();
+      this._cdr.markForCheck();
     }
   }
 
