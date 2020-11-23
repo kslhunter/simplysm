@@ -421,6 +421,22 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
+  public searchEveryStringFields(searchText: string): Queryable<D, T> {
+    return this.search((en) => {
+      const result = [];
+
+      for (const key of Object.keys(en)) {
+        const entityValue = en[key];
+        const entityValueType = SdOrmUtil.getQueryValueType(entityValue);
+        if (entityValueType === String) {
+          result.push(entityValue);
+        }
+      }
+
+      return result;
+    }, searchText);
+  }
+
   public wrap(): Queryable<D, T>;
   public wrap<R extends Partial<T>>(tableType: Type<R>): Queryable<D, R>;
   public wrap<R extends Partial<T>>(tableType?: Type<R>): Queryable<D, T | R> {
