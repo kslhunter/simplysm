@@ -318,10 +318,16 @@ export class SdSelectControl implements DoCheck {
     if (!ObjectUtil.equal(this._prevItems, this.items)) {
       this._cdr.markForCheck();
       this._prevItems = ObjectUtil.clone(this.items);
+      for (const itemControl of this.itemControls) {
+        itemControl.markForCheck();
+      }
     }
     if (!ObjectUtil.equal(this._prevValue, this.value)) {
       this._cdr.markForCheck();
       this._prevValue = ObjectUtil.clone(this.value);
+      for (const itemControl of this.itemControls) {
+        itemControl.markForCheck();
+      }
     }
   }
 
