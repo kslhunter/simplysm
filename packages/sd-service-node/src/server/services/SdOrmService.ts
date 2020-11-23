@@ -109,7 +109,7 @@ export class SdOrmService extends SdServiceBase {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    return await conn.bulkInsertAsync(tableName, columnDefs, ...records);
+    await conn.bulkInsertAsync(tableName, columnDefs, ...records);
   }
 
   private async _getOrmConfigAsync(configName: string): Promise<IDbConnectionConfig> {
