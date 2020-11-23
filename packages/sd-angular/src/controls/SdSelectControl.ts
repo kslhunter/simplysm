@@ -463,14 +463,14 @@ export class SdSelectControl implements DoCheck {
   public onItemControlInit(itemControl: SdSelectItemControl): void {
     if (!this.itemControls.includes(itemControl)) {
       this.itemControls.push(itemControl);
-      this._cdr.markForCheck();
+      this._cdr.detectChanges();
     }
   }
 
   public onItemControlDestroy(itemControl: SdSelectItemControl): void {
     if (this.itemControls.includes(itemControl)) {
       this.itemControls.remove(itemControl);
-      this._cdr.markForCheck();
+      this._cdr.detectChanges();
     }
   }
 

@@ -116,6 +116,7 @@ BEGIN
   -- 뷰 초기화
   SELECT @sql = @sql + 'DROP VIEW ${this.wrap(def.database)}.' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(v.name) + N';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.views v
+  WHERE SCHEMA_NAME(schema_id) = 'dbo'
     
   -- 테이블 FK 끊기 초기화
   SELECT @sql = @sql + N'ALTER TABLE ${this.wrap(def.database)}.' + QUOTENAME(SCHEMA_NAME([tbl].schema_id)) + '.' + QUOTENAME([tbl].[name]) + N' DROP CONSTRAINT ' + QUOTENAME([obj].[name]) + N';' + CHAR(13) + CHAR(10)
