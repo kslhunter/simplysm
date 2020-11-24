@@ -309,7 +309,7 @@ export class SdCliClientCompiler extends EventEmitter {
             skipCodeGeneration: false,
             host: this._createWebpackInputHost(fs),
             compilerOptions: {
-              fullTemplateTypeCheck: false, // TODO
+              fullTemplateTypeCheck: false,
               strictInjectionParameters: true,
               disableTypeScriptVersionCheck: true,
               skipMetadataEmit: true,

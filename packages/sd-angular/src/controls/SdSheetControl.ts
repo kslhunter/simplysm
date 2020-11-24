@@ -267,10 +267,10 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
 
                       <sd-icon class="_icon _expand-icon"
                                *ngIf="getChildrenFn"
-                               [icon]="getChildrenFn(index, item)?.length > 0 ? 'caret-right' : undefined"
+                               [icon]="getChildrenFn && getChildrenFn(index, item)?.length > 0 ? 'caret-right' : undefined"
                                (click)="onItemExpandIconClick($event, item)"
                                [class._expanded]="getIsExpandedItem(item)"
-                               [class._expandable]="getChildrenFn(index, item)?.length > 0"
+                               [class._expandable]="getChildrenFn && getChildrenFn(index, item)?.length > 0"
                                [rotate]="getIsExpandedItem(item) ? 90 : undefined"
                                fixedWidth></sd-icon>
                     </div>
@@ -318,7 +318,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
               <ng-container *ngIf="getIsExpandedItem(item) && getChildrenFn && getChildrenFn(index, item)?.length > 0">
                 <div class="sd-border-top-brightness-default"></div>
                 <ng-container
-                  *ngFor="let childItem of getChildrenFn(index, item); let childIndex = index; trackBy: trackByFn">
+                  *ngFor="let childItem of getChildrenFn ? getChildrenFn(index, item) : []; let childIndex = index; trackBy: trackByFn">
                   <ng-template [ngTemplateOutlet]="itemRowTemplate"
                                [ngTemplateOutletContext]="{item: childItem, index: childIndex, depth: depth + 1, parent: item}"></ng-template>
                 </ng-container>

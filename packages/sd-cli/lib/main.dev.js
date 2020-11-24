@@ -63,18 +63,6 @@ function bootstrap() {
   platformBrowserDynamic().bootstrapModule(AppModule)
     .then((mod) => {
       ngModuleRef = mod;
-
-      /*
-      ngDoBootstrap에서 오래걸릴경우 실패가 되버리므로 아래내용을 처리하면 안됨
-      setTimeout(() => {
-        if (ngModuleRef.injector.get(ApplicationRef).components.length === 0) {
-          console.log("[초기화] 실패");
-          /!*bootstrap();*!/
-        }
-        else {
-          console.log("[초기화] 완료");
-        }
-      }, 2000);*/
     })
     .catch((err) => {
       console.error(err);
@@ -88,9 +76,4 @@ function start() {
   bootstrap();
 }
 
-if (process.env.SD_PLATFORM) {
-  document.addEventListener("deviceready", start);
-}
-else {
-  start();
-}
+start();
