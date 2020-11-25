@@ -360,8 +360,13 @@ export class SdMarkdownEditorControl implements OnChanges {
 
   public onTextareaInput(event: Event): void {
     const textareaEl = event.target as HTMLTextAreaElement;
-    this.value = textareaEl.value;
-    this.valueChange.emit(textareaEl.value);
+    const newValue = textareaEl.value;
+    if (this.valueChange.observers.length > 0) {
+      this.valueChange.emit(newValue);
+    }
+    else {
+      this.value = newValue;
+    }
   }
 
   public onTextareaDragover(event: DragEvent): void {

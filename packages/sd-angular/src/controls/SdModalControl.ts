@@ -388,8 +388,12 @@ export class SdModalControl implements OnInit, AfterViewInit {
       return;
     }
 
-    this.open = false;
-    this.openChange.emit(this.open);
+    if (this.openChange.observers.length > 0) {
+      this.openChange.emit(false);
+    }
+    else {
+      this.open = false;
+    }
   }
 
   public onBackdropClick(): void {
@@ -397,8 +401,12 @@ export class SdModalControl implements OnInit, AfterViewInit {
       return;
     }
 
-    this.open = false;
-    this.openChange.emit(this.open);
+    if (this.openChange.observers.length > 0) {
+      this.openChange.emit(false);
+    }
+    else {
+      this.open = false;
+    }
   }
 
   public onDialogEscapeKeydown(event: KeyboardEvent): void {
@@ -406,8 +414,12 @@ export class SdModalControl implements OnInit, AfterViewInit {
       return;
     }
 
-    this.open = false;
-    this.openChange.emit(this.open);
+    if (this.openChange.observers.length > 0) {
+      this.openChange.emit(false);
+    }
+    else {
+      this.open = false;
+    }
   }
 
   @HostListener("document:backbutton", ["$event"])
@@ -419,8 +431,12 @@ export class SdModalControl implements OnInit, AfterViewInit {
       return;
     }
 
-    this.open = false;
-    this.openChange.emit(this.open);
+    if (this.openChange.observers.length > 0) {
+      this.openChange.emit(false);
+    }
+    else {
+      this.open = false;
+    }
   }
 
   @HostListener("window:resize", ["$event"])

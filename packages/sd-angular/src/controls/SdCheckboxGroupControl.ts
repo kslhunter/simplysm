@@ -60,15 +60,21 @@ export class SdCheckboxGroupControl implements DoCheck {
   }
 
   public toggleValueItem(item: any): void {
-    if (!this.value) this.value = [];
+    const newValue = this.value ? [...this.value] : [];
 
     const isSelected = this.getIsItemSelected(item);
     if (isSelected) {
-      this.value.remove(item);
+      newValue.remove(item);
     }
     else {
-      this.value.push(item);
+      newValue.push(item);
     }
-    this.valueChange.emit(this.value);
+
+    if (this.valueChange.observers.length > 0) {
+      this.valueChange.emit(newValue);
+    }
+    else {
+      this.value = newValue;
+    }
   }
 }

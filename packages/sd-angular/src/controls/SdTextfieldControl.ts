@@ -42,7 +42,7 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
         </div>
         <ng-container *ngIf="controlType !== 'password'">
           <ng-container *ngIf="controlValue">
-            {{ controlValue }}            
+            {{ controlValue }}
           </ng-container>
           <ng-container *ngIf="!controlValue">
             <span class="sd-text-brightness-lighter">{{ placeholder }}</span>
@@ -141,7 +141,7 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
       &[sd-inline=true] {
         display: inline-block;
         vertical-align: top;
-        
+
         > input,
         > div._readonly,
         > textarea {
@@ -519,50 +519,56 @@ export class SdTextfieldControl implements DoCheck, AfterViewInit {
   public onInput(): void {
     const inputEl = this.inputElRef!.nativeElement;
 
+    let newValue;
     if (inputEl.value === "") {
-      this.value = undefined;
+      newValue = undefined;
     }
     else if (this.type === "number") {
       const inputValue = inputEl.value.replace(/,/g, "");
-      const newValue = inputValue.endsWith(".") || Number.isNaN(Number(inputValue)) ? inputValue : Number(inputValue);
-      this.value = newValue;
+      const currValue = inputValue.endsWith(".") || Number.isNaN(Number(inputValue)) ? inputValue : Number(inputValue);
+      newValue = currValue;
 
-      if (this.value === newValue) {
-        inputEl.value = newValue.toString();
+      if (newValue === currValue) {
+        inputEl.value = currValue.toString();
       }
     }
     else if (["year", "month", "date"].includes(this.type)) {
       try {
-        this.value = DateOnly.parse(inputEl.value);
+        newValue = DateOnly.parse(inputEl.value);
       }
       catch (err) {
-        this.value = inputEl.value;
+        newValue = inputEl.value;
       }
     }
     else if (["datetime", "datetime-sec"].includes(this.type)) {
       try {
-        this.value = DateTime.parse(inputEl.value);
+        newValue = DateTime.parse(inputEl.value);
       }
       catch (err) {
-        this.value = inputEl.value;
+        newValue = inputEl.value;
       }
     }
     else if (["time", "time-sec"].includes(this.type)) {
       try {
-        this.value = Time.parse(inputEl.value);
+        newValue = Time.parse(inputEl.value);
       }
       catch (err) {
-        this.value = inputEl.value;
+        newValue = inputEl.value;
       }
     }
     else {
-      this.value = inputEl.value;
+      newValue = inputEl.value;
     }
 
     this.errorMessage = this._validate();
     inputEl.setCustomValidity(this.errorMessage);
 
-    this.valueChange.emit(this.value);
+    if (this.valueChange.observers.length > 0) {
+      this.valueChange.emit(newValue);
+    }
+    else {
+      this.value = newValue;
+    }
   }
 
   private _validate(): string {

@@ -21,7 +21,7 @@ import { sdIconNames } from "../commons";
   template: `
     <div [attr.class]="'_content ' + contentClass"
          [attr.style]="safeHtml(contentStyle)"
-         (click)="open = !open; openChange.emit(open)">
+         (click)="onContentClick()">
       <sd-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon" fixedWidth></sd-icon>
       <ng-content></ng-content>
 
@@ -147,5 +147,14 @@ export class SdListItemControl {
 
   public safeHtml(value?: string): SafeHtml | undefined {
     return value !== undefined ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
+  }
+
+  public onContentClick(): void {
+    if (this.openChange.observers.length > 0) {
+      this.openChange.emit(!this.open);
+    }
+    else {
+      this.open = !this.open;
+    }
   }
 }

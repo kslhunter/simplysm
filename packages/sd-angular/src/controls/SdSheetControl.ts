@@ -1190,12 +1190,22 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     event.stopPropagation();
 
     if (!this.expandedItems.includes(item)) {
-      this.expandedItems.push(item);
-      this.expandedItemsChange.emit(this.expandedItems);
+      const newExpandedItems = [...this.expandedItems, item];
+      if (this.expandedItemsChange.observers.length > 0) {
+        this.expandedItemsChange.emit(newExpandedItems);
+      }
+      else {
+        this.expandedItems = newExpandedItems;
+      }
     }
     else {
-      this.expandedItems.remove(item);
-      this.expandedItemsChange.emit(this.expandedItems);
+      const newExpandedItems = [...this.expandedItems].remove(item);
+      if (this.expandedItemsChange.observers.length > 0) {
+        this.expandedItemsChange.emit(newExpandedItems);
+      }
+      else {
+        this.expandedItems = newExpandedItems;
+      }
     }
   }
 
@@ -1344,8 +1354,12 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   }
 
   public onPageChange(page: number): void {
-    this.page = page;
-    this.pageChange.emit(this.page);
+    if (this.pageChange.observers.length > 0) {
+      this.pageChange.emit(page);
+    }
+    else {
+      this.page = page;
+    }
   }
 
   public async onConfigButtonClick(): Promise<void> {

@@ -971,8 +971,12 @@ export class SdSheetLegacyControl implements DoCheck, OnInit {
               this.selectedItems[0] !== itemDef.item
             ) {
               this._zone.run(() => {
-                this.selectedItems = [];
-                this.selectedItemsChange.emit(this.selectedItems);
+                if (this.selectedItemsChange.observers.length > 0) {
+                  this.selectedItemsChange.emit([]);
+                }
+                else {
+                  this.selectedItems = [];
+                }
               });
             }
           }
@@ -1147,12 +1151,22 @@ export class SdSheetLegacyControl implements DoCheck, OnInit {
     event.stopPropagation();
 
     if (!this.expandedItems.includes(item)) {
-      this.expandedItems.push(item);
-      this.expandedItemsChange.emit(this.expandedItems);
+      const newExpandedItems = [...this.expandedItems, item];
+      if (this.expandedItemsChange.observers.length > 0) {
+        this.expandedItemsChange.emit(newExpandedItems);
+      }
+      else {
+        this.expandedItems = newExpandedItems;
+      }
     }
     else {
-      this.expandedItems.remove(item);
-      this.expandedItemsChange.emit(this.expandedItems);
+      const newExpandedItems = [...this.expandedItems].remove(item);
+      if (this.expandedItemsChange.observers.length > 0) {
+        this.expandedItemsChange.emit(newExpandedItems);
+      }
+      else {
+        this.expandedItems = newExpandedItems;
+      }
     }
   }
 
@@ -1162,16 +1176,26 @@ export class SdSheetLegacyControl implements DoCheck, OnInit {
 
     if (this.selectMode === "multi") {
       if (this.getIsAllSelected()) {
-        this.selectedItems = [];
-        this.selectedItemsChange.emit(this.selectedItems);
+        if (this.selectedItemsChange.observers.length > 0) {
+          this.selectedItemsChange.emit([]);
+        }
+        else {
+          this.selectedItems = [];
+        }
       }
       else {
-        this.selectedItems = [
+        const newSelectedItems = [
           ...this.displayItemDefs
             .filter((item) => item.selectable)
             .map((item) => item.item)
         ];
-        this.selectedItemsChange.emit(this.selectedItems);
+
+        if (this.selectedItemsChange.observers.length > 0) {
+          this.selectedItemsChange.emit(newSelectedItems);
+        }
+        else {
+          this.selectedItems = newSelectedItems;
+        }
       }
     }
   }
@@ -1196,22 +1220,40 @@ export class SdSheetLegacyControl implements DoCheck, OnInit {
 
     if (this.selectMode === "single") {
       if (this.selectedItems[0] === item) {
-        this.selectedItems = [];
-        this.selectedItemsChange.emit(this.selectedItems);
+        if (this.selectedItemsChange.observers.length > 0) {
+          this.selectedItemsChange.emit([]);
+        }
+        else {
+          this.selectedItems = [];
+        }
       }
       else {
-        this.selectedItems = [item];
-        this.selectedItemsChange.emit(this.selectedItems);
+        if (this.selectedItemsChange.observers.length > 0) {
+          this.selectedItemsChange.emit([item]);
+        }
+        else {
+          this.selectedItems = [item];
+        }
       }
     }
     else {
       if (this.selectedItems.includes(item)) {
-        this.selectedItems.remove(item);
-        this.selectedItemsChange.emit(this.selectedItems);
+        const newSelectedItems = [...this.selectedItems].remove(item);
+        if (this.selectedItemsChange.observers.length > 0) {
+          this.selectedItemsChange.emit(newSelectedItems);
+        }
+        else {
+          this.selectedItems = newSelectedItems;
+        }
       }
       else {
-        this.selectedItems.push(item);
-        this.selectedItemsChange.emit(this.selectedItems);
+        const newSelectedItems = [...this.selectedItems, item];
+        if (this.selectedItemsChange.observers.length > 0) {
+          this.selectedItemsChange.emit(newSelectedItems);
+        }
+        else {
+          this.selectedItems = newSelectedItems;
+        }
       }
     }
   }
@@ -1223,14 +1265,23 @@ export class SdSheetLegacyControl implements DoCheck, OnInit {
 
     if (this.selectMode === "single") {
       if (this.selectedItems[0] !== item) {
-        this.selectedItems = [item];
-        this.selectedItemsChange.emit(this.selectedItems);
+        if (this.selectedItemsChange.observers.length > 0) {
+          this.selectedItemsChange.emit([item]);
+        }
+        else {
+          this.selectedItems = [item];
+        }
       }
     }
     else {
       if (!this.selectedItems.includes(item)) {
-        this.selectedItems.push(item);
-        this.selectedItemsChange.emit(this.selectedItems);
+        const newSelectedItems = [...this.selectedItems, item];
+        if (this.selectedItemsChange.observers.length > 0) {
+          this.selectedItemsChange.emit(newSelectedItems);
+        }
+        else {
+          this.selectedItems = newSelectedItems;
+        }
       }
     }
   }
@@ -1242,8 +1293,12 @@ export class SdSheetLegacyControl implements DoCheck, OnInit {
   }
 
   public onPageChange(page: number): void {
-    this.page = page;
-    this.pageChange.emit(this.page);
+    if (this.pageChange.observers.length > 0) {
+      this.pageChange.emit(this.page);
+    }
+    else {
+      this.page = page;
+    }
   }
 
   public async onConfigButtonClick(): Promise<void> {

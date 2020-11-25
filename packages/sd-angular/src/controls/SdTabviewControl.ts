@@ -15,7 +15,7 @@ import { SdTabviewItemControl } from "./SdTabviewItemControl";
   template: `
     <sd-dock-container>
       <sd-dock>
-        <sd-tab [(value)]="value" (valueChange)="valueChange.emit($event)">
+        <sd-tab [value]="value" (valueChange)="onValueChange($event)">
           <sd-tab-item *ngFor="let itemControl of itemControls; trackBy: trackByValueFn"
                        [value]="itemControl.value">
             {{ itemControl.header || itemControl.value }}
@@ -39,4 +39,13 @@ export class SdTabviewControl {
   public itemControls?: QueryList<SdTabviewItemControl>;
 
   public trackByValueFn = (i: number, item: any): any => item.value ?? item;
+
+  public onValueChange(value: any): void {
+    if (this.valueChange.observers.length > 0) {
+      this.valueChange.emit(value);
+    }
+    else {
+      this.value = value;
+    }
+  }
 }

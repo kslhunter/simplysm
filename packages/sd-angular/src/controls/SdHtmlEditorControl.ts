@@ -163,13 +163,23 @@ export class SdHtmlEditorControl {
 
   public onTextareaInput(event: Event): void {
     const textareaEl = event.target as HTMLTextAreaElement;
-    this._value = textareaEl.value;
-    this.valueChange.emit(this._value);
+    const newValue = textareaEl.value;
+    if (this.valueChange.observers.length > 0) {
+      this.valueChange.emit(newValue);
+    }
+    else {
+      this._value = newValue;
+    }
   }
 
   public onContentInput(event: Event): void {
     const editorEl = event.target as HTMLDivElement;
-    this._value = editorEl.innerHTML;
-    this.valueChange.emit(this._value);
+    const newValue = editorEl.innerHTML;
+    if (this.valueChange.observers.length > 0) {
+      this.valueChange.emit(newValue);
+    }
+    else {
+      this._value = newValue;
+    }
   }
 }
