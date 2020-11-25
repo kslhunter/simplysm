@@ -6,7 +6,7 @@ import {
   DateTime,
   JsonConvert,
   NeverEntryError,
-  SdError,
+  SdError, StringUtil,
   Time,
   Type,
   Uuid,
@@ -194,74 +194,78 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     const conn = this._conn;
 
     const results: any[][] = [];
-    for (const queryString of queries) {
-      this._logger.debug("쿼리 실행:\n" + queryString);
-      await new Promise<void>((resolve, reject) => {
-        let rejected = false;
-        const queryRequest = new tedious
-          .Request(queryString, (err: Error | null) => {
-            if (err != null) {
-              rejected = true;
-              this._requests.remove(queryRequest);
+    for (const query of queries.filter((item) => !StringUtil.isNullOrEmpty(item))) {
+      const queryStrings = query.split(/\r?\nGO(\r?\n|$)/g);
 
-              if (err["code"] === "ECANCEL") {
-                reject(new Error("쿼리가 취소되었습니다."));
-              }
-              else {
-                if (err["lineNumber"] > 0) {
-                  const splitQuery = queryString.split("\n");
-                  splitQuery[err["lineNumber"] - 1] = "==> " + splitQuery[err["lineNumber"] - 1];
-                  reject(new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`));
+      for (const queryString of queryStrings) {
+        this._logger.debug("쿼리 실행:\n" + queryString);
+        await new Promise<void>((resolve, reject) => {
+          let rejected = false;
+          const queryRequest = new tedious
+            .Request(queryString, (err: Error | null) => {
+              if (err != null) {
+                rejected = true;
+                this._requests.remove(queryRequest);
+
+                if (err["code"] === "ECANCEL") {
+                  reject(new Error("쿼리가 취소되었습니다."));
                 }
                 else {
-                  reject(new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${queryString}\n--`));
+                  if (err["lineNumber"] > 0) {
+                    const splitQuery = queryString.split("\n");
+                    splitQuery[err["lineNumber"] - 1] = "==> " + splitQuery[err["lineNumber"] - 1];
+                    reject(new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${splitQuery.join("\n")}\n--`));
+                  }
+                  else {
+                    reject(new Error(`[${err["code"] as string}] ${err.message}\n-- query\n${queryString}\n--`));
+                  }
                 }
               }
-            }
-          })
-          .on("done", (rowCount, more, rows) => {
-            this._startTimeout();
+            })
+            .on("done", (rowCount, more, rows) => {
+              this._startTimeout();
 
-            if (rejected) {
-              return;
-            }
-
-            const result = rows.map((item: tedious.ColumnValue[]) => {
-              const resultItem = {};
-              for (const col of item) {
-                resultItem[col.metadata.colName] = col.value;
+              if (rejected) {
+                return;
               }
-              return resultItem;
+
+              const result = rows.map((item: tedious.ColumnValue[]) => {
+                const resultItem = {};
+                for (const col of item) {
+                  resultItem[col.metadata.colName] = col.value;
+                }
+                return resultItem;
+              });
+
+              results.push(result);
+            })
+            .on("error", (err) => {
+              this._startTimeout();
+
+              if (rejected) {
+                return;
+              }
+
+              rejected = true;
+              this._requests.remove(queryRequest);
+              reject(new Error(err.message));
+            })
+            .on("requestCompleted", () => {
+              this._startTimeout();
+
+              if (rejected) {
+                return;
+              }
+
+              this._requests.remove(queryRequest);
+              resolve();
             });
 
-            results.push(result);
-          })
-          .on("error", (err) => {
-            this._startTimeout();
+          this._requests.push(queryRequest);
 
-            if (rejected) {
-              return;
-            }
-
-            rejected = true;
-            this._requests.remove(queryRequest);
-            reject(new Error(err.message));
-          })
-          .on("requestCompleted", () => {
-            this._startTimeout();
-
-            if (rejected) {
-              return;
-            }
-
-            this._requests.remove(queryRequest);
-            resolve();
-          });
-
-        this._requests.push(queryRequest);
-
-        conn.execSqlBatch(queryRequest);
-      });
+          conn.execSqlBatch(queryRequest);
+        });
+      }
     }
 
     return results;

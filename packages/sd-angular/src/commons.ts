@@ -96,5 +96,6 @@ export const sdIconNames = Object.values(fas)
 export type TSdTheme = "primary" | "secondary" | "info" | "success" | "warning" | "danger" | "grey" | "blue-grey";
 export const sdThemes = ["primary", "secondary", "info", "success", "warning", "danger", "grey", "blue-grey"];
 
-export class SdSharedDataChangeEvent extends SdServiceEventBase<{ dataType: string }, { changes: { key: string | number; isDeleted: boolean }[] }> {
+// INPUT: 구분, 변경키 목록
+export class SdSharedDataChangeEvent extends SdServiceEventBase<string, (string | number)[] | undefined> {
 }

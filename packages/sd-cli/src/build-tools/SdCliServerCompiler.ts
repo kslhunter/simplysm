@@ -231,7 +231,12 @@ export class SdCliServerCompiler extends EventEmitter {
             }
           },
           {
-            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip|pfx|pkl)$/,
+            test: {
+              or: [
+                /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip|pfx|pkl)$/,
+                /assets/
+              ]
+            },
             loader: "file-loader",
             options: {
               name: `[name].[ext]`,

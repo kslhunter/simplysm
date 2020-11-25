@@ -469,7 +469,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                     padding: var(--sd-sheet-padding-v) var(--sd-sheet-padding-h);
                     user-select: none;
 
-                    > ._cell-content {                      
+                    > ._cell-content {
                       > ._depth-indicator {
                         display: inline-block;
                         margin-top: .4em;
@@ -1144,6 +1144,15 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
             }
           }, 0);
         });
+      }
+
+      // SELECTED ITEM 체크
+      const newSelectedItems = [...this.selectedItems].remove((item: any) => !this.items.includes(item));
+      if (this.selectedItemsChange.observers.length > 0) {
+        this.selectedItemsChange.emit(newSelectedItems);
+      }
+      else {
+        this.selectedItems = newSelectedItems;
       }
     }
   }

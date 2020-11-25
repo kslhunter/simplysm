@@ -273,7 +273,12 @@ export class SdCliClientCompiler extends EventEmitter {
             ]
           },
           {
-            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip)$/,
+            test: {
+              or: [
+                /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip)$/,
+                /assets/
+              ]
+            },
             loader: "file-loader",
             options: {
               name: `assets/[name].[ext]${watch ? "?[hash]" : ""}`,

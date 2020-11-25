@@ -87,12 +87,12 @@ export class SdSharedDataProvider {
     list.remove((item: Function) => item === callback);
   }
 
-  public emit(serviceKey: string, dataType: string, changes: { key: string | number; isDeleted: boolean }[]): void {
+  public emit(serviceKey: string, dataType: string, changeKeys?: (string | number)[]): void {
     this._service.emit(
       serviceKey,
       SdSharedDataChangeEvent,
-      (item) => item.dataType === dataType,
-      { changes }
+      (item) => item === dataType,
+      changeKeys
     );
   }
 
@@ -113,42 +113,56 @@ export class SdSharedDataProvider {
       await this._service.on(
         serviceKey,
         SdSharedDataChangeEvent,
-        { dataType },
-        async (eventParam) => {
-          const currData = this._dataMap.get(dataType);
-          if (!currData) return;
+        dataType,
+        async (changeKeys) => {
+          const currItems = this._dataMap.get(dataType);
+          if (!currItems) return;
 
           const currMapData = this._dataMapMap.get(dataType);
           if (!currMapData) return;
 
-          // 삭제된 항목 제거
-          const deletedEventItemKeys = eventParam.changes.filter((item) => item.isDeleted).map((item) => item.key);
-          currData.remove((item: any) => deletedEventItemKeys.includes(info.getKey(item)));
-          for (const deletedEventItemKey of deletedEventItemKeys) {
-            currMapData.delete(deletedEventItemKey);
+          if (changeKeys) {
+            const dbItems = await info.getData(changeKeys);
+
+            // 삭제된 항목 제거 (DB에 없는 항목)
+            const deleteKeys = changeKeys.filter((changeKey) => !dbItems.some((dbItem) => info.getKey(dbItem) === changeKey));
+            currItems.remove((item: any) => deleteKeys.includes(info.getKey(item)));
+            for (const deleteKey of deleteKeys) {
+              currMapData.delete(deleteKey);
+            }
+
+            // 수정된 항목 변경
+            for (const dbItem of dbItems) {
+              const dbItemKey = info.getKey(dbItem);
+
+              const currItem = currItems.single((item) => info.getKey(item) === dbItemKey);
+              if (currItem !== undefined) {
+                ObjectUtil.clear(currItem);
+                Object.assign(currItem, dbItem);
+              }
+              else {
+                currItems.push(dbItem);
+              }
+
+              if (currMapData.has(dbItemKey)) {
+                const currMapItem = currMapData.get(dbItemKey);
+                ObjectUtil.clear(currMapItem);
+                Object.assign(currMapItem, dbItem);
+              }
+              else {
+                currMapData.set(dbItemKey, dbItem);
+              }
+            }
           }
+          // 모든항목 새로고침
+          else {
+            const dbItems = await info.getData();
 
-          // 수정된 항목 변경
-          const updatedEventItemKeys = eventParam.changes.filter((item) => !item.isDeleted).map((item) => item.key);
-          const newData = await info.getData(updatedEventItemKeys);
-          for (const newItem of newData) {
-            const newKey = info.getKey(newItem);
-
-            const currItem = currData.single((item) => info.getKey(item) === newKey);
-            if (currItem !== undefined) {
-              ObjectUtil.clear(currItem);
-              Object.assign(currItem, newItem);
-            }
-            else {
-              currData.push(newItem);
-            }
-
-            if (currMapData.has(newKey)) {
-              const currMapItem = currMapData.get(newKey);
-              ObjectUtil.clear(currMapItem);
-              Object.assign(currMapItem, newItem);
-            }
-            else {
+            currItems.clear();
+            currMapData.clear();
+            for (const newItem of dbItems) {
+              currItems.push(newItem);
+              const newKey = info.getKey(newItem);
               currMapData.set(newKey, newItem);
             }
           }

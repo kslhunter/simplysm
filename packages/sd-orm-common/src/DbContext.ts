@@ -338,7 +338,7 @@ export abstract class DbContext {
             name: fkDef.name,
             columns: fkDef.columnPropertyKeys.map((item) => ({
               name: tableDef.columns.single((col) => col.propertyKey === item)!.name,
-              orderBy: "DESC"
+              orderBy: "ASC"
             }))
           }
         });

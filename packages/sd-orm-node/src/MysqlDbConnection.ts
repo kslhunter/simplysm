@@ -1,7 +1,7 @@
 import { Logger } from "@simplysm/sd-core-node";
 import * as mysql from "mysql";
 import { EventEmitter } from "events";
-import { NotImplementError, SdError } from "@simplysm/sd-core-common";
+import { NotImplementError, SdError, StringUtil } from "@simplysm/sd-core-common";
 import { IDbConnection } from "./IDbConnection";
 import { IDbConnectionConfig, IQueryColumnDef } from "@simplysm/sd-orm-common";
 
@@ -155,7 +155,7 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
     const conn = this._conn;
 
     const results: any[][] = [];
-    for (const query of queries.filter((item: any) => Boolean(item))) {
+    for (const query of queries.filter((item) => !StringUtil.isNullOrEmpty(item))) {
       const queryStrings = query.split("GO");
 
       const resultItems: any[] = [];

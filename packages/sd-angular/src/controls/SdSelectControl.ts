@@ -472,7 +472,10 @@ export class SdSelectControl implements DoCheck {
   public onItemControlInit(itemControl: SdSelectItemControl): void {
     if (!this.itemControls.includes(itemControl)) {
       this.itemControls.push(itemControl);
-      this._cdr.detectChanges();
+
+      if (this.getIsSelectedItemControl(itemControl) || this.getChildrenFn) {
+        this._cdr.detectChanges();
+      }
     }
   }
 
