@@ -309,8 +309,16 @@ export class QueryHelper {
     }
   }
 
-  public sum<T extends number | Number>(arg: TEntityValue<T | undefined>): QueryUnit<number | undefined> {
-    return new QueryUnit<number | undefined>(Number, ["SUM(", this.getQueryValue(arg), ")"]);
+  public sum<T extends number | Number | undefined>(arg: TEntityValue<T>): QueryUnit<T extends undefined ? (undefined | number) : number> {
+    return new QueryUnit<number | undefined>(Number, ["SUM(", this.getQueryValue(arg), ")"]) as any;
+  }
+
+  public avg<T extends number | Number>(arg: TEntityValue<T | undefined>): QueryUnit<number | undefined> {
+    return new QueryUnit<number | undefined>(Number, ["AVG(", this.getQueryValue(arg), ")"]);
+  }
+
+  public round<T extends number | Number>(arg: TEntityValue<T | undefined>, len: number): QueryUnit<number | undefined> {
+    return new QueryUnit<number | undefined>(Number, ["ROUND(", this.getQueryValue(arg), ", ", len, ")"]);
   }
 
   public max<T extends undefined | number | Number | string | String | DateOnly | DateTime | Time>(unit: TEntityValue<T>): QueryUnit<T> {

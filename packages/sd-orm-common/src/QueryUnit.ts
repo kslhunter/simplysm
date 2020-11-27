@@ -14,4 +14,8 @@ export class QueryUnit<T> {
   public notNull(): QueryUnit<NonNullable<T>> {
     return this as any;
   }
+
+  public nullable(): QueryUnit<T | undefined> {
+    return this as any;
+  }
 }

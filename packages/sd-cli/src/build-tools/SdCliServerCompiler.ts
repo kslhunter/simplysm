@@ -263,7 +263,9 @@ export class SdCliServerCompiler extends EventEmitter {
               content: JSON.stringify({
                 name: distNpmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
                 script: path.basename(mainFilePath),
-                watch: true,
+                watch: "app.js",
+                // eslint-disable-next-line camelcase
+                watch_delay: 2000,
                 interpreter: "node@" + process.versions.node,
                 env: {
                   NODE_ENV: "production",

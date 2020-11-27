@@ -93,8 +93,10 @@ export class SdOrmUtil {
           obj[key] = item[key];
         }
       }
+      if (Object.keys(obj).length === 0) return undefined;
+
       return obj;
-    });
+    }).filterExists();
 
     // JOIN 에 따른 데이터 구조 설정
     if (option?.joins && Object.keys(option.joins).length > 0) {
@@ -121,20 +123,6 @@ export class SdOrmUtil {
             grouped.push({ key: keyObj, values: valueObj });
           }
           else {
-            // 데이터의 순서때문에 JsonConvert의 결과물이 서로 달라 중복 표시되는 현상이 있는 관계로
-            // groupedMultiMapObj에 JSON값키를 못 두고, 속도가 느리더라도 그냥 single로 처리함
-            // 속도를 올릴수 있는 다른 방법을 강구해야 할 수 있음
-
-            /*const keyJson = JsonConvert.stringify(keyObj);
-            if (groupedMultiMapObj[keyJson] !== undefined) {
-              groupedMultiMapObj[keyJson]!.push(valueObj);
-            }
-            else {
-              const valueArr = [valueObj];
-              grouped.push({ key: keyObj, values: valueArr });
-              groupedMultiMapObj[keyJson] = valueArr;
-            }*/
-
             const values = groupedMultiObj.single((item1) => ObjectUtil.equal(item1.key, keyObj, { ignoreArrayIndex: true }))?.values;
             if (values !== undefined) {
               values.push(valueObj);
