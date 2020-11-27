@@ -423,17 +423,31 @@ export class Queryable<D extends DbContext, T> {
 
   public searchEveryStringFields(searchText: string): Queryable<D, T> {
     return this.search((en) => {
-      const result = [];
+      const fields: TEntityValue<string | String | undefined>[] = [];
 
-      for (const key of Object.keys(en)) {
-        const entityValue = en[key];
-        const entityValueType = SdOrmUtil.getQueryValueType(entityValue);
-        if (entityValueType === String) {
-          result.push(entityValue);
+      const addFieldProc = (entity: TEntity<any>): void => {
+        for (const key of Object.keys(entity)) {
+          const entityValue = entity[key];
+          if (SdOrmUtil.canConvertToQueryValue(entityValue)) {
+            const entityValueType = SdOrmUtil.getQueryValueType(entityValue);
+            if (entityValueType === String) {
+              fields.push(entityValue as TEntityValue<string | String | undefined>);
+            }
+          }
+          else if (entityValue instanceof Array) {
+            for (const entityValueItem of entityValue) {
+              addFieldProc(entityValueItem);
+            }
+          }
+          else if (entityValue instanceof Object) {
+            addFieldProc(entityValue);
+          }
         }
-      }
+      };
 
-      return result;
+      addFieldProc(en);
+
+      return fields;
     }, searchText);
   }
 
