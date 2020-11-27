@@ -1,6 +1,6 @@
 {
   "name": "@simplysm-types/iconv",
-  "version": "4.0.28-6",
+  "version": "4.0.28-7",
   "description": "심플리즘 패키지 - iconv 에 대한 타입정의",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
