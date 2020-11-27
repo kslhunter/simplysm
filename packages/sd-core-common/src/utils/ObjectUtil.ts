@@ -106,18 +106,19 @@ export class ObjectUtil {
   public static merge3<S extends Record<string, TFlatType>, O extends Record<string, TFlatType>, T extends Record<string, TFlatType>>(
     source: S,
     origin: O,
-    target: T
+    target: T,
+    optionsObj?: Record<string, { keys?: string[]; excludes?: string[]; ignoreArrayIndex?: boolean }>
   ): { conflict: boolean; result: O & S & T } {
     let conflict = false;
     const result = ObjectUtil.clone(origin) as Record<string, TFlatType>;
     for (const key of Object.keys(source).concat(Object.keys(target)).concat(Object.keys(origin))) {
-      if (ObjectUtil.equal(source[key], result[key])) {
+      if (ObjectUtil.equal(source[key], result[key], optionsObj?.[key])) {
         result[key] = ObjectUtil.clone(target[key]);
       }
-      else if (ObjectUtil.equal(target[key], result[key])) {
+      else if (ObjectUtil.equal(target[key], result[key], optionsObj?.[key])) {
         result[key] = ObjectUtil.clone(source[key]);
       }
-      else if (ObjectUtil.equal(source[key], target[key])) {
+      else if (ObjectUtil.equal(source[key], target[key], optionsObj?.[key])) {
         result[key] = ObjectUtil.clone(source[key]);
       }
       else {

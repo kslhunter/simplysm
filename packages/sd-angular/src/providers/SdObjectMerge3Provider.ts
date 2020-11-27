@@ -27,7 +27,7 @@ export class SdObjectMerge3Provider {
     const origin = ObjectUtil.pick(param.origin, keys);
     const yours = ObjectUtil.pick(param.yours, keys);
 
-    const merge3Result = ObjectUtil.merge3(theirs, origin, yours);
+    const merge3Result = ObjectUtil.merge3(theirs, origin, yours, param.equalOptionsObj);
     if (merge3Result.conflict) {
       await beforeModalCallback?.();
       const conflictItemMergeResult = await this._toast.try(async () => {
@@ -60,4 +60,5 @@ export interface ISdObjectMerge3Param<T extends Record<string, any>, O extends R
   modalTitle?: string;
   displayNameRecord?: Partial<Record<keyof T & keyof O & keyof Y, string>>;
   valueTextConverter?: <K extends keyof T & keyof O & keyof Y>(key: K, value: T[K] | O[K] | Y[K]) => string | undefined;
+  equalOptionsObj?: Record<string, { keys?: string[]; excludes?: string[]; ignoreArrayIndex?: boolean }>;
 }
