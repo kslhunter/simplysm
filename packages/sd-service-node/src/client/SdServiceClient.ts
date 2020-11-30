@@ -136,13 +136,11 @@ export class SdServiceClient extends EventEmitter {
 
       this._eventEmitter.on("message", messageEventListener);
 
-      if (splitOptions) {
-        splitOptions.splitLength = splitOptions.splitLength ?? 10000;
-      }
+      const splitLength = splitOptions?.splitLength ?? 10000;
 
       // 요청 보내기
-      if (splitOptions && (requestJson.length > splitOptions.splitLength! * 10)) {
-        splitOptions.progressCallback({
+      if (requestJson.length > splitLength * 10) {
+        splitOptions?.progressCallback({
           current: 0,
           total: requestJson.length
         });
@@ -156,11 +154,11 @@ export class SdServiceClient extends EventEmitter {
             id: requestId,
             url: undefined,
             index: i,
-            data: requestJson.slice(cursor, Math.min(cursor + splitOptions.splitLength!, requestJson.length)),
-            length: Math.ceil(requestJson.length / splitOptions.splitLength!)
+            data: requestJson.slice(cursor, Math.min(cursor + splitLength, requestJson.length)),
+            length: Math.ceil(requestJson.length / splitLength)
           };
           this._ws!.send(JsonConvert.stringify(realReq));
-          cursor += splitOptions.splitLength!;
+          cursor += splitLength;
           i++;
         }
       }

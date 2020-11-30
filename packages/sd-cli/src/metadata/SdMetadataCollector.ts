@@ -636,7 +636,7 @@ ${texts.join(`,${os.EOL}`)}
         const ngModuleDecoratorFirstArgument = ngModuleDecoratorArguments.get(0);
         if (!(ngModuleDecoratorFirstArgument instanceof SdObjectMetadata)) throw new NeverEntryError();
 
-        // NgModule Decorator의 EXPORT 목록
+        // NgModule Decorator 의 EXPORT 목록
         const ngModuleDecoratorExports = ngModuleDecoratorFirstArgument.get("exports");
         if (ngModuleDecoratorExports !== undefined) {
           if (!(ngModuleDecoratorExports instanceof SdArrayMetadata)) throw new NeverEntryError();

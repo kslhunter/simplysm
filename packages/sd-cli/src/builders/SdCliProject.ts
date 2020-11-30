@@ -1,5 +1,5 @@
 import * as path from "path";
-import { FsUtil, Logger, SdProcessManager, SdProcessWorkManager } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, SdProcessManager, SdProcessWorkManager } from "@simplysm/sd-core-node";
 import { INpmConfig, ISdClientPackageConfig, ISdPackageBuildResult, ISdProjectConfig } from "../commons";
 import { SdCliPackage } from "./SdCliPackage";
 import { DateTime, NeverEntryError, ObjectUtil, Wait } from "@simplysm/sd-core-common";
@@ -10,6 +10,7 @@ import { SdCliPathUtil } from "../utils/SdCliPathUtil";
 import { SdCliLocalUpdater } from "../build-tools/SdCliLocalUpdater";
 import { SdServiceServer } from "@simplysm/sd-service-node";
 import { NextHandleFunction } from "connect";
+import * as JSZip from "jszip";
 
 export class SdCliProject {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -206,8 +207,8 @@ export class SdCliProject {
     await Wait.true(() => isFirstComplete);
   }
 
-  public async publishAsync(argv: { build: boolean; packages: string[]; options: string[]; config?: string }): Promise<void> {
-    if (!argv.build) {
+  public async publishAsync(argv: { build: boolean; packages: string[]; options: string[]; config?: string; force: boolean }): Promise<void> {
+    if (!argv.force && !argv.build) {
       this._logger.warn("빌드하지 않고, 배포하는것은 상당히 위험합니다.");
       const waitSec = 5;
       for (let i = waitSec; i > 0; i--) {
@@ -225,17 +226,33 @@ export class SdCliProject {
     this._logger.debug(`배포 준비...`);
 
     // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
-    if (FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
-      await SdProcessManager.spawnAsync(
-        "git status",
-        undefined,
-        (message) => {
-          if (message.includes("Changes") || message.includes("Untracked")) {
-            throw new Error("커밋되지 않은 정보가 있습니다.");
+    if (!argv.force && FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
+      try {
+        await SdProcessManager.spawnAsync(
+          "git status",
+          undefined,
+          (message) => {
+            if (message.includes("Changes") || message.includes("Untracked")) {
+              throw new Error("커밋되지 않은 정보가 있습니다.");
+            }
+          },
+          false
+        );
+      }
+      catch (err) {
+        this._logger.warn(err.message);
+        const waitSec = 5;
+        for (let i = waitSec; i > 0; i--) {
+          if (i !== waitSec) {
+            process.stdout.cursorTo(0);
           }
-        },
-        false
-      );
+          process.stdout.write("프로세스를 중지하려면, 'CTRL+C'를 누르세요. " + i);
+          await Wait.time(1000);
+        }
+
+        process.stdout.cursorTo(0);
+        process.stdout.clearLine(0);
+      }
     }
 
     // 빌드가 필요하면 빌드함
@@ -277,6 +294,40 @@ export class SdCliProject {
     await pkgs.parallelAsync(async (pkg) => {
       await pkg.publishAsync();
     });
+
+    if (config.afterPublish) {
+      for (const afterPublishCmd of config.afterPublish) {
+        if (afterPublishCmd.type === "zip") {
+          const targetRootPath = afterPublishCmd.path.replace(/%([^%]*)%/g, (item) => {
+            const envName = item.replace(/%/g, "");
+            if (envName === "SD_VERSION") {
+              return this._npmConfig.version;
+            }
+            return process.env[envName] ?? item;
+          });
+
+          const filePaths = await FsUtil.globAsync(path.resolve(targetRootPath, "**", "*"), { dot: true, nodir: true });
+
+          const zip = new JSZip();
+          for (const filePath of filePaths) {
+            const relativeFilePath = path.relative(targetRootPath, filePath);
+            zip.file("/" + PathUtil.posix(relativeFilePath), FsUtil.createReadStream(filePath));
+          }
+          const zipStream = zip.generateNodeStream();
+          const writeStream = FsUtil.createWriteStream(targetRootPath + ".zip");
+          await new Promise<void>((resolve, reject) => {
+            zipStream
+              .on("error", (err: Error) => {
+                reject(err);
+              })
+              .pipe(writeStream)
+              .once("finish", () => {
+                resolve();
+              });
+          });
+        }
+      }
+    }
 
     this._logger.info(`배포 프로세스가 완료되었습니다.(v${this._npmConfig.version})`);
   }

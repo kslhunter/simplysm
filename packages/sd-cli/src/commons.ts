@@ -24,15 +24,20 @@ export interface ITsConfig {
 
 export interface ISdProjectConfig {
   packages: Record<string, TSdPackageConfig>;
+  afterPublish?: TSdAfterPublishConfig[];
   localUpdates?: Record<string, string>;
 }
 
 export type TSdPackageConfig =
-  ISdLibraryPackageConfig
-  | ISdClientPackageConfig
-  | ISdServerPackageConfig
-  | ISdNonePackageConfig
-  | ISdTestPackageConfig;
+  ISdLibraryPackageConfig |
+  ISdClientPackageConfig |
+  ISdServerPackageConfig |
+  ISdNonePackageConfig |
+  ISdTestPackageConfig;
+
+export type TSdAfterPublishConfig =
+  ISdZipAfterPublishConfig |
+  ISdSshAfterPublishConfig;
 
 export interface ISdLibraryPackageConfig {
   type: "library";
@@ -45,14 +50,14 @@ export interface ISdClientPackageConfig {
   type: "client";
   server: string;
   configs?: Record<string, any>;
-  publish?: ISdFtpPublishConfig;
+  publish?: ISdFtpPublishConfig | ISdLocalDirectoryPublishConfig;
 }
 
 export interface ISdServerPackageConfig {
   type: "server";
   env?: Record<string, string>;
   configs?: Record<string, any>;
-  publish?: ISdFtpPublishConfig;
+  publish?: ISdFtpPublishConfig | ISdLocalDirectoryPublishConfig;
 }
 
 export interface ISdNonePackageConfig {
@@ -77,4 +82,19 @@ export interface ISdFtpPublishConfig {
   path: string;
   username: string;
   password: string;
+}
+
+export interface ISdLocalDirectoryPublishConfig {
+  type: "local-directory";
+  path: string;
+}
+
+export interface ISdZipAfterPublishConfig {
+  type: "zip";
+  path: string;
+}
+
+
+export interface ISdSshAfterPublishConfig {
+  type: "ssh";
 }

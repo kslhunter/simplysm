@@ -44,9 +44,9 @@ declare global {
 
     distinct(matchAddress?: boolean): T[];
 
-    orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time): T[];
+    orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
-    orderByDesc(selector?: (item: T) => string | number | DateOnly | DateTime | Time): T[];
+    orderByDesc(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
     diffs<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): TArrayDiffsResult<T, P>[];
 
@@ -108,9 +108,9 @@ declare global {
 
     distinct(matchAddress?: boolean): T[];
 
-    orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time): T[];
+    orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
-    orderByDesc(selector?: (item: T) => string | number | DateOnly | DateTime | Time): T[];
+    orderByDesc(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
     diffs<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): TArrayDiffsResult<T, P>[];
 
@@ -288,7 +288,7 @@ declare global {
   }
 
   if (typeof prototype.orderBy === "undefined") {
-    prototype.orderBy = function <T>(this: T[], selector?: (item: T) => string | number | DateTime | DateOnly | Time): T[] {
+    prototype.orderBy = function <T>(this: T[], selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
       return this.concat().sort((p: any, n: any) => {
         const pn = selector !== undefined ? selector(n) : n;
         const pp = selector !== undefined ? selector(p) : p;
@@ -316,7 +316,7 @@ declare global {
   }
 
   if (typeof prototype.orderByDesc === "undefined") {
-    prototype.orderByDesc = function <T>(this: T[], selector?: (item: T) => string | number): T[] {
+    prototype.orderByDesc = function <T>(this: T[], selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
       return this.concat().sort((p: any, n: any) => {
         const pn = selector !== undefined ? selector(n) : n;
         const pp = selector !== undefined ? selector(p) : p;

@@ -87,11 +87,8 @@ export class SdCliTsProgramWatcher {
 
         const prevLoadedFilePaths = [...loadedFilePaths];
         // 로드된 전체 파일 목록
-        /*loadedFilePaths = rootFilePaths
-          .concat(rootFilePaths.mapMany((item) => this._getAllDependencyFilePaths(program, path.normalize(item))))
-          .distinct();*/
         loadedFilePaths = rootFilePaths
-          .concat(this._getAllDependencyFilePaths(program, ...rootFilePaths.map((item) => path.normalize(item))))
+          .concat(this._getAllDependencyFilePaths(...rootFilePaths.map((item) => path.normalize(item))))
           .distinct();
         this._logger.debug("변경감지: 읽힌 파일 목록 구성 (" + rootFilePaths.length + " => " + loadedFilePaths.length);
 
@@ -179,7 +176,7 @@ export class SdCliTsProgramWatcher {
     // 로드된 전체 파일 목록
     const rootFilePaths = parsedTsconfig.fileNames.map((item) => path.normalize(item));
     let loadedFilePaths = rootFilePaths
-      .concat(this._getAllDependencyFilePaths(program, ...rootFilePaths.map((item) => path.normalize(item))))
+      .concat(this._getAllDependencyFilePaths(...rootFilePaths.map((item) => path.normalize(item))))
       .distinct();
 
     watcher.add(loadedFilePaths);
@@ -387,7 +384,47 @@ export class SdCliTsProgramWatcher {
     return result;
   }
 
-  private _getAllDependencyFilePaths(program: ts.Program, ...rootFilePaths: string[]): string[] {
+  private _getAllDependencyFilePaths(...rootFilePaths: string[]): string[] {
+    const results: string[] = [...rootFilePaths];
+    const addResult = (filePath: string): void => {
+      if (!results.includes(filePath)) {
+        results.push(filePath);
+      }
+    };
+
+    let cursor = 0;
+    while (true) {
+      const filePath = results[cursor];
+      if (!filePath) break;
+      cursor++;
+
+      const importExportDef = this._fileCacheMap.get(filePath)?.importExportDef;
+
+      if (importExportDef) {
+        for (const importDef of importExportDef.imports) {
+          addResult(importDef.filePath);
+        }
+
+        for (const exportDef of importExportDef.exports) {
+          addResult(exportDef.filePath);
+        }
+      }
+
+      const externalDependencies = this._fileCacheMap.get(filePath)?.externalDependencies;
+      if (externalDependencies) {
+        for (const externalDependency of externalDependencies) {
+          addResult(externalDependency);
+        }
+      }
+    }
+
+    return results
+      .remove((item) => rootFilePaths.some((item1) => item.startsWith(item1 + "|")))
+      .map((item) => item.split("|")[0])
+      .distinct();
+  }
+
+  /*private _getAllDependencyFilePaths(program: ts.Program, ...rootFilePaths: string[]): string[] {
     const results: string[] = rootFilePaths.map((item) => item + "|");
     const addResult = (filePath: string, targetName?: string): void => {
       const key = filePath + "|" + (targetName ?? "");
@@ -407,6 +444,7 @@ export class SdCliTsProgramWatcher {
       const targetName = split[1];
 
       const importExportDef = this._fileCacheMap.get(filePath)?.importExportDef;
+
       if (importExportDef) {
         if (!targetName) {
           for (const importDef of importExportDef.imports) {
@@ -473,10 +511,10 @@ export class SdCliTsProgramWatcher {
     }
 
     return results
-      .remove((item) => rootFilePaths.includes(item.split("|")[0]))
+      .remove((item) => rootFilePaths.some((item1) => item.startsWith(item1 + "|")))
       .map((item) => item.split("|")[0])
       .distinct();
-  }
+  }*/
 
   private _getAllReverseDependencyFilePaths(program: ts.Program, loadedFilePaths: string[], orgFilePath: string): string[] {
     const results: string[] = [orgFilePath + "|"];

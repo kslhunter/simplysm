@@ -91,6 +91,11 @@ const argv = yargs.version(false)
           type: "array",
           describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
           default: []
+        },
+        force: {
+          type: "boolean",
+          describe: "GIT 상태등을 확인하지 않고, 강제로 배포합니다.",
+          default: false
         }
       })
   )
@@ -183,7 +188,8 @@ else {
       build: argv.build,
       packages: argv.packages,
       config: argv.config,
-      options: argv.options
+      options: argv.options,
+      force: argv.force
     });
     process.exit(0);
   }

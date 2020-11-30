@@ -289,6 +289,26 @@ export class SdCliPackage extends EventEmitter {
           throw err;
         }
       }
+      else if (this.config.publish?.type === "local-directory") {
+        const targetRootPath = this.config.publish.path.replace(/%([^%]*)%/g, (item) => {
+          const envName = item.replace(/%/g, "");
+          if (envName === "SD_VERSION") {
+            return this.npmConfig.version;
+          }
+          return process.env[envName] ?? item;
+        });
+
+        const distPath = path.resolve(this.rootPath, `dist`);
+
+        const filePaths = await FsUtil.globAsync(path.resolve(distPath, "**", "*"), { dot: true, nodir: true });
+
+        await filePaths.parallelAsync(async (filePath) => {
+          const relativeFilePath = path.relative(distPath, filePath);
+          const targetPath = path.posix.join(targetRootPath, relativeFilePath);
+
+          await FsUtil.copyAsync(filePath, targetPath);
+        });
+      }
     }
   }
 
