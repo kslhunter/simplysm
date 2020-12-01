@@ -89,7 +89,7 @@ module.exports = {
         format: ["PascalCase", "UPPER_CASE"]
       },
       {
-        selector: "property",
+        selector: "memberLike",
         format: null
       }
     ],
