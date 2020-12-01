@@ -67,7 +67,8 @@ export class SdModalProvider {
         modalEntryRef.instance.useCloseByBackdrop = options?.useCloseByBackdrop ?? true;
         modalEntryRef.instance.useCloseByEscapeKey = options?.useCloseByEscapeKey ?? true;
         modalEntryRef.instance.float = options?.float;
-        modalEntryRef.instance.openChange.subscribe(() => {
+        modalEntryRef.instance.openChange.subscribe((value: boolean) => {
+          modalEntryRef.instance.open = value;
           if (!modalEntryRef.instance.open) {
             userModalRef.instance.close();
           }
