@@ -241,7 +241,7 @@ export class SdCliProject {
       }
       catch (err) {
         this._logger.warn(err.message);
-        const waitSec = 10;
+        const waitSec = 9;
         for (let i = waitSec; i > 0; i--) {
           if (i !== waitSec) {
             process.stdout.cursorTo(0);
