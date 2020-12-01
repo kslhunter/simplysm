@@ -31,7 +31,7 @@ export class SdSFtpStorage implements ISdStorage {
     }
   }
 
-  public async uploadDir(fromPath: string, toPath: string): Promise<void> {
+  public async uploadDirAsync(fromPath: string, toPath: string): Promise<void> {
     await this._sftp!.uploadDir(fromPath, toPath);
   }
 

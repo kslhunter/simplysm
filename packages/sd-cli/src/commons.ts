@@ -39,6 +39,11 @@ export type TSdAfterPublishConfig =
   ISdZipAfterPublishConfig |
   ISdSshAfterPublishConfig;
 
+export type TSdPublishConfig =
+  ISdSFtpPublishConfig |
+  ISdLocalDirectoryPublishConfig |
+  ISdFtpPublishConfig;
+
 export interface ISdLibraryPackageConfig {
   type: "library";
   targets?: ("node" | "browser")[];
@@ -50,14 +55,14 @@ export interface ISdClientPackageConfig {
   type: "client";
   server: string;
   configs?: Record<string, any>;
-  publish?: ISdFtpPublishConfig | ISdLocalDirectoryPublishConfig;
+  publish?: TSdPublishConfig;
 }
 
 export interface ISdServerPackageConfig {
   type: "server";
   env?: Record<string, string>;
   configs?: Record<string, any>;
-  publish?: ISdFtpPublishConfig | ISdLocalDirectoryPublishConfig;
+  publish?: TSdPublishConfig;
 }
 
 export interface ISdNonePackageConfig {
@@ -75,8 +80,17 @@ export interface ISdPackageBuildResult {
   message: string;
 }
 
-export interface ISdFtpPublishConfig {
+export interface ISdSFtpPublishConfig {
   type: "sftp";
+  host: string;
+  port?: number;
+  path: string;
+  username: string;
+  password: string;
+}
+
+export interface ISdFtpPublishConfig {
+  type: "ftp";
   host: string;
   port?: number;
   path: string;

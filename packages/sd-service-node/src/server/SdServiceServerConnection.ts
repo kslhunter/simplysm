@@ -10,10 +10,11 @@ import {
   TSdServiceRawResponse
 } from "@simplysm/sd-service-common";
 import { FsUtil } from "@simplysm/sd-core-node";
+import * as fs from "fs";
 
 export class SdServiceServerConnection extends EventEmitter {
   private readonly _splitRequestMap = new Map<number, { timer: NodeJS.Timer; bufferStrings: string[] }>();
-  private readonly _uploadRequestMap = new Map<number, { timer: NodeJS.Timer; fd: number; filePath: string; completedLength: number }>();
+  private readonly _uploadRequestMap = new Map<number, { timer: NodeJS.Timer; fileHandle: fs.promises.FileHandle; filePath: string; completedLength: number }>();
 
   public constructor(private readonly _conn: WebSocket,
                      private readonly _rootPath: string) {
@@ -87,15 +88,15 @@ export class SdServiceServerConnection extends EventEmitter {
 
       if (!this._uploadRequestMap.has(rawReq.id)) {
         await FsUtil.mkdirsAsync(path.dirname(filePath));
-        const fd = await FsUtil.openAsync(filePath, "w");
+        const fileHandle = await FsUtil.openAsync(filePath, "w");
         const newUploadRequestValue = {
           timer: setTimeout(async () => {
             this.emit("error", `업로드중에 타임아웃이 발생했습니다.`);
-            await FsUtil.closeAsync(fd);
+            await fileHandle.close();
             await FsUtil.removeAsync(filePath);
             this._uploadRequestMap.delete(rawReq.id);
           }, 20000),
-          fd,
+          fileHandle,
           filePath,
           completedLength: 0
         };
@@ -103,7 +104,7 @@ export class SdServiceServerConnection extends EventEmitter {
       }
 
       const uploadRequestValue = this._uploadRequestMap.get(rawReq.id)!;
-      await FsUtil.writeAsync(uploadRequestValue.fd, rawReq.buffer, 0, rawReq.buffer.length, rawReq.offset);
+      await uploadRequestValue.fileHandle.write(rawReq.buffer, 0, rawReq.buffer.length, rawReq.offset);
       uploadRequestValue.completedLength += rawReq.buffer.length;
 
       clearTimeout(uploadRequestValue.timer);
@@ -120,14 +121,14 @@ export class SdServiceServerConnection extends EventEmitter {
         clearTimeout(uploadRequestValue.timer);
         uploadRequestValue.timer = setTimeout(async () => {
           this.emit("error", new Error(`업로드중에 타임아웃이 발생했습니다.`));
-          await FsUtil.closeAsync(uploadRequestValue.fd);
+          await uploadRequestValue.fileHandle.close();
           await FsUtil.removeAsync(uploadRequestValue.filePath);
           this._uploadRequestMap.delete(rawReq.id);
         }, 20000);
         return;
       }
 
-      await FsUtil.closeAsync(uploadRequestValue.fd);
+      await uploadRequestValue.fileHandle.close();
       this._uploadRequestMap.delete(rawReq.id);
 
       const req: ISdServiceRequest = {

@@ -9,7 +9,7 @@ import { SdCliServerCompiler } from "../build-tools/SdCliServerCompiler";
 import { SdServiceServer } from "@simplysm/sd-service-node";
 import { NextHandleFunction } from "connect";
 import { SdCliClientCompiler } from "../build-tools/SdCliClientCompiler";
-import { SdSFtpStorage } from "@simplysm/sd-storage";
+import { SdFtpStorage, SdSFtpStorage } from "@simplysm/sd-storage";
 
 export class SdCliPackage extends EventEmitter {
   public get fullDependencies(): string[] {
@@ -271,21 +271,16 @@ export class SdCliPackage extends EventEmitter {
           // 결과 파일 업로드
           const distPath = path.resolve(this.rootPath, `dist`);
 
-          await sftp.uploadDir(distPath, publishConfig.path);
+          await sftp.uploadDirAsync(distPath, publishConfig.path);
 
-          /*const filePaths = await FsUtil.globAsync(path.resolve(distPath, "**", "*"), { dot: true, nodir: true });
-
-          await filePaths.parallelAsync(async (filePath) => {
-            const relativeFilePath = path.relative(distPath, filePath);
-            const targetPath = path.posix.join(publishConfig.path, relativeFilePath);
-
-            await sftp.mkdirAsync(path.dirname(targetPath));
-            await sftp.putAsync(filePath, targetPath);
-          });*/
           await sftp.closeAsync();
         }
         catch (err) {
-          await sftp.closeAsync();
+          try {
+            await sftp.closeAsync();
+          }
+          catch {
+          }
           throw err;
         }
       }
@@ -308,6 +303,33 @@ export class SdCliPackage extends EventEmitter {
 
           await FsUtil.copyAsync(filePath, targetPath);
         });
+      }
+      else if (this.config.publish?.type === "ftp") {
+        const publishConfig = this.config.publish;
+        const ftp = new SdFtpStorage();
+        await ftp.connectAsync({
+          host: publishConfig.host,
+          port: publishConfig.port,
+          username: publishConfig.username,
+          password: publishConfig.password
+        });
+
+        try {
+          // 결과 파일 업로드
+          const distPath = path.resolve(this.rootPath, `dist`);
+
+          await ftp.uploadDirAsync(distPath, publishConfig.path);
+
+          await ftp.closeAsync();
+        }
+        catch (err) {
+          try {
+            await ftp.closeAsync();
+          }
+          catch {
+          }
+          throw err;
+        }
       }
     }
   }

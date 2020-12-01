@@ -14,5 +14,7 @@ export interface ISdStorage {
 
   putAsync(localPathOrBuffer: string | Buffer, storageFilePath: string): Promise<void>;
 
+  uploadDirAsync(fromPath: string, toPath: string): Promise<void>;
+
   closeAsync(): Promise<void>;
 }

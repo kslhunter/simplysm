@@ -266,11 +266,11 @@ export class SdServiceClient extends EventEmitter {
         });
 
         if (splitOptions && (fileSize > splitOptions.splitLength! * 10)) {
-          const fd = await FsUtil.openAsync(filePath, "r");
+          const fileHandle = await FsUtil.openAsync(filePath, "r");
           let cursor = 0;
           while (cursor < fileSize) {
             const buffer = Buffer.alloc(Math.min(splitOptions.splitLength!, fileSize - cursor));
-            await FsUtil.readAsync(fd, buffer, 0, Math.min(splitOptions.splitLength!, fileSize - cursor), cursor);
+            await fileHandle.read(buffer, 0, Math.min(splitOptions.splitLength!, fileSize - cursor), cursor);
 
             const realReq: ISdServiceUploadRawRequest = {
               type: "upload",
@@ -287,7 +287,7 @@ export class SdServiceClient extends EventEmitter {
             cursor += splitOptions.splitLength!;
           }
 
-          await FsUtil.closeAsync(fd);
+          await fileHandle.close();
         }
         else {
           const buffer = await FsUtil.readFileBufferAsync(filePath);

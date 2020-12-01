@@ -176,7 +176,7 @@ export class SdCliProject {
                 pkg.npmConfig.name.split("/").last()!,
                 ".configs.json"
               ),
-              pkgConfig.configs
+              pkgConfig.configs ?? {}
             );
           }, 0);
         }
@@ -241,7 +241,7 @@ export class SdCliProject {
       }
       catch (err) {
         this._logger.warn(err.message);
-        const waitSec = 5;
+        const waitSec = 10;
         for (let i = waitSec; i > 0; i--) {
           if (i !== waitSec) {
             process.stdout.cursorTo(0);

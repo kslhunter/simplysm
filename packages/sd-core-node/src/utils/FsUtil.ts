@@ -179,15 +179,7 @@ export class FsUtil {
     if (FsUtil.exists(targetPath)) return;
 
     try {
-      await new Promise<void>((resolve, reject) => {
-        fs.mkdir(targetPath, { recursive: true }, (err) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve();
-        });
-      });
+      await fs.promises.mkdir(targetPath, { recursive: true });
     }
     catch (err) {
       throw new SdError(err, targetPath);
@@ -212,29 +204,10 @@ export class FsUtil {
     await FsUtil.mkdirsAsync(path.dirname(targetPath));
 
     try {
-      await new Promise<void>((resolve, reject) => {
-        if (typeof data === "string") {
-          fs.writeFile(targetPath, data, (err) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve();
-          });
-        }
-        else {
-          fs.writeFile(targetPath, data, (err) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve();
-          });
-        }
-      });
+      await fs.promises.writeFile(targetPath, data);
     }
     catch (err) {
-      throw new SdError(err, targetPath);
+      throw new SdError(err, targetPath + (typeof data === "object" ? data.constructor?.name ?? "object" : typeof data));
     }
   }
 
@@ -286,15 +259,7 @@ export class FsUtil {
 
   public static async readFileBufferAsync(targetPath: string): Promise<Buffer> {
     try {
-      return await new Promise<Buffer>((resolve, reject) => {
-        fs.readFile(targetPath, (err, data) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(data);
-        });
-      });
+      return await fs.promises.readFile(targetPath);
     }
     catch (err) {
       throw new SdError(err, targetPath);
@@ -352,24 +317,16 @@ export class FsUtil {
     }
   }
 
-  public static async openAsync(targetPath: string, flags: string | number): Promise<number> {
+  public static async openAsync(targetPath: string, flags: string | number): Promise<fs.promises.FileHandle> {
     try {
-      return await new Promise<number>((resolve, reject) => {
-        fs.open(targetPath, flags, (err, fd) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(fd);
-        });
-      });
+      return await fs.promises.open(targetPath, flags);
     }
     catch (err) {
       throw new SdError(err, targetPath);
     }
   }
 
-  public static async readAsync<TBuffer extends NodeJS.ArrayBufferView>(fd: number,
+  /*public static async readAsync<TBuffer extends NodeJS.ArrayBufferView>(fd: number,
                                                                         buffer: TBuffer,
                                                                         offset: number,
                                                                         length: number,
@@ -440,7 +397,7 @@ export class FsUtil {
     catch (err) {
       throw new SdError(err);
     }
-  }
+  }*/
 
   public static createReadStream(sourcePath: string): fs.ReadStream {
     try {
