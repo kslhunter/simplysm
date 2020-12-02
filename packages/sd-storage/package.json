@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-storage",
-  "version": "4.0.31-0",
+  "version": "4.0.31-2",
   "description": "심플리즘 패키지 - 저장소 (node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -9,8 +9,8 @@
   "types": "./dist-types/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-common": "4.0.31-0",
-    "@simplysm/sd-core-node": "4.0.31-0",
+    "@simplysm/sd-core-common": "4.0.31-2",
+    "@simplysm/sd-core-node": "4.0.31-2",
     "basic-ftp": "^4.6.3",
     "ssh2-sftp-client": "^5.3.1"
   },

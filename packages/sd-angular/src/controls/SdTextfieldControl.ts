@@ -19,11 +19,10 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
   template: `
     <ng-container *ngIf="!multiline">
       <input #input
-             *ngIf="(disabled || !readonly)"
+             *ngIf="(!disabled && !readonly)"
              [type]="controlType"
              [value]="controlValue"
              [attr.placeholder]="placeholder"
-             [disabled]="disabled"
              [required]="required"
              [attr.min]="min"
              [attr.max]="max"
@@ -33,11 +32,11 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
              [attr.style]="inputFullStyle"
              [attr.title]="title || placeholder"
              (input)="onInput()"/>
-      <div *ngIf="!disabled && readonly"
-           [attr.class]="'_readonly ' + (inputClass || '')"
+      <div *ngIf="disabled || readonly"
+           [attr.class]="(disabled ? '_disabled ' : readonly ? '_readonly ' : '') + (inputClass || '')"
            [attr.style]="inputFullStyle">
         <ng-content></ng-content>
-        <div *ngIf="controlType === 'password'" class="sd-text-brightness-light">
+        <div *ngIf="controlType === 'password' && readonly && !disabled" class="sd-text-brightness-light">
           ****
         </div>
         <ng-container *ngIf="controlType !== 'password'">
@@ -82,16 +81,22 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
 
       > input,
       > textarea,
-      > div._readonly {
+      > div._readonly,
+      > div._disabled {
         @include form-control-base();
 
-        background: var(--theme-color-secondary-lightest);
         border: 1px solid var(--sd-border-color);
         border-radius: 2px;
 
         &::-webkit-input-placeholder {
           color: var(--text-brightness-lighter);
         }
+      }
+
+      > input,
+      > textarea,
+      > div._readonly {
+        background: var(--theme-color-secondary-lightest);
       }
 
 
@@ -118,13 +123,15 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
         }
       }
 
-      > div._readonly {
+      > div._readonly,
+      > div._disabled {
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
       }
 
       > input,
       > textarea,
-      > div._readonly {
+      > div._readonly,
+      > div._disabled {
         &:focus {
           outline: none;
           border-color: var(--theme-color-primary-default);
@@ -133,7 +140,8 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
 
       &[sd-type=number] {
         > input,
-        > div._readonly {
+        > div._readonly,
+        > div._disabled {
           text-align: right;
         }
       }
@@ -143,8 +151,9 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
         vertical-align: top;
 
         > input,
+        > textarea,
         > div._readonly,
-        > textarea {
+        > div._disabled {
           display: inline-block;
           width: auto;
           vertical-align: top;
@@ -153,8 +162,9 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
 
       &[sd-size=sm] {
         > input,
+        > textarea,
         > div._readonly,
-        > textarea {
+        > div._disabled {
           padding: var(--gap-xs) var(--gap-sm);
 
           &[type=color] {
@@ -167,7 +177,8 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
           height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         }
 
-        > div._readonly {
+        > div._readonly,
+        > div._disabled {
           min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         }
       }
@@ -175,7 +186,8 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
       &[sd-size=lg] {
         > input,
         > textarea,
-        > div._readonly {
+        > div._readonly,
+        > div._disabled {
           padding: var(--gap-default) var(--gap-lg);
 
           &[type=color] {
@@ -188,15 +200,17 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
           height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         }
 
-        > div._readonly {
+        > div._readonly,
+        > div._disabled {
           min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         }
       }
 
       &[sd-inset=true] {
         > input,
+        > textarea,
         > div._readonly,
-        > textarea {
+        > div._disabled {
           border: none;
           border-radius: 0;
 
@@ -210,7 +224,8 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
           height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
         }
 
-        > div._readonly {
+        > div._readonly,
+        > div._disabled {
           min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
         }
 
@@ -219,7 +234,8 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
             height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
           }
 
-          > div._readonly {
+          > div._readonly,
+          > div._disabled {
             min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
           }
         }
@@ -229,7 +245,8 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
             height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
           }
 
-          > div._readonly {
+          > div._readonly,
+          > div._disabled {
             min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
           }
         }
