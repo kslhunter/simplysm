@@ -311,7 +311,7 @@ export class SdCliProject {
           const zip = new JSZip();
           for (const filePath of filePaths) {
             const relativeFilePath = path.relative(targetRootPath, filePath);
-            zip.file("/" + PathUtil.posix(relativeFilePath), FsUtil.createReadStream(filePath));
+            zip.file(PathUtil.posix(relativeFilePath), FsUtil.createReadStream(filePath));
           }
           const zipStream = zip.generateNodeStream();
           const writeStream = FsUtil.createWriteStream(targetRootPath + ".zip");
