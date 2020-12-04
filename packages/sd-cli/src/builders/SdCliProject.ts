@@ -121,6 +121,27 @@ export class SdCliProject {
                 this._logger.warn(`경고: ${warnings.length}건, 오류: ${errors.length}건`);
               }
 
+              const clientHrefs: string[] = [];
+              for (const serverPackageName of this._serverMap.keys()) {
+                const currServer = this._serverMap.get(serverPackageName)!;
+                const middlewares = this._middlewareMap.get(serverPackageName);
+                if (middlewares) {
+                  for (const middleware of middlewares) {
+                    if (typeof middleware["context"]?.["options"]?.["publicPath"] === "string") {
+                      const publicPath = middleware["context"]["options"]["publicPath"] as string;
+                      const protocolStr = currServer.options.ssl ? "https://" : "http://";
+                      const hostStr = "localhost";
+                      const portStr = (currServer.options.port !== undefined ? `:${currServer.options.port}` : "");
+
+                      clientHrefs.push(protocolStr + hostStr + portStr + publicPath);
+                    }
+                  }
+                }
+              }
+              if (clientHrefs.length > 0) {
+                this._logger.log(`오픈된 클라이언트: ${clientHrefs.join(", ")}`);
+              }
+
               const spanTick = startTick === 0 ? 0 : (new DateTime().tick - startTick);
               this._logger.info(`모든 빌드가 완료되었습니다.${spanTick ? ` (${spanTick.toLocaleString()}ms)` : ""}`);
               startTick = 0;

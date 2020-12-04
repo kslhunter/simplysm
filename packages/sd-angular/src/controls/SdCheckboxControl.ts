@@ -104,24 +104,6 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
         }
       }
 
-      &[sd-inline=true] {
-        display: inline-block;
-
-        > div {
-          padding-left: 0;
-        }
-      }
-
-      &[sd-inline=text] {
-        display: inline-block;
-
-        > div {
-          padding-left: 0;
-          padding-top: 0;
-          padding-bottom: 0;
-        }
-      }
-
       &[sd-radio=true] {
         > div {
           > ._indicator_rect {
@@ -153,6 +135,24 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
       &[sd-inset=true] > div {
         border: none;
+      }
+
+      &[sd-inline=true] {
+        display: inline-block;
+
+        > div {
+          padding-left: 0;
+        }
+      }
+
+      &[sd-inline=text] {
+        display: inline-block;
+
+        > div {
+          padding-left: 0;
+          padding-top: 0;
+          padding-bottom: 0;
+        }
       }
 
       @each $color in $arr-theme-color {
