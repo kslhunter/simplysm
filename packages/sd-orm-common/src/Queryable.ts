@@ -645,7 +645,8 @@ export class Queryable<D extends DbContext, T> {
     };
   }
 
-  public getUpdateDef(arg: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>)): IUpdateQueryDef {
+  public getUpdateDef(arg: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>),
+                      options?: { noOutput?: boolean }): IUpdateQueryDef {
     if (typeof this._def.from !== "string") {
       throw new Error("UPDATE 할 TABLE 을 정확히 지정해야 합니다.");
     }
@@ -689,7 +690,7 @@ export class Queryable<D extends DbContext, T> {
       top: this._def.top,
       from: this._def.from,
       record,
-      output: ["*"],
+      output: options?.noOutput ? undefined : ["*"],
       as: this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`),
       join: joinDefs,
       where: this._def.where
@@ -1120,7 +1121,8 @@ export class Queryable<D extends DbContext, T> {
     }
   }
 
-  public async updateAsync(arg: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>)): Promise<T[]> {
+  public async updateAsync(arg: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>),
+                           options?: { noOutput?: boolean }): Promise<T[]> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
@@ -1129,7 +1131,7 @@ export class Queryable<D extends DbContext, T> {
     }
     DbContext.selectCache.clear();
 
-    const queryDef = this.getUpdateDef(arg);
+    const queryDef = this.getUpdateDef(arg, options);
     const parseOption = this._getParseOption();
 
     if (this.db.dialect === "mysql") {

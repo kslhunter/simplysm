@@ -261,13 +261,17 @@ export class SdCliServerCompiler extends EventEmitter {
             {
               path: path.resolve(distPath, "pm2.json"),
               content: JSON.stringify({
-                name: distNpmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
-                script: path.basename(mainFilePath),
-                watch: "app.js",
-                // eslint-disable-next-line camelcase
-                watch_delay: 2000,
-                interpreter: "node@" + process.versions.node,
-                env: {
+                "name": distNpmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
+                "script": path.basename(mainFilePath),
+                "watch": true,
+                "watch_delay": 2000,
+                "ignore_watch": [
+                  "node_modules",
+                  "www",
+                  ...this._config.pm2?.watchIgnoreDirectories ?? []
+                ].distinct(),
+                "interpreter": "node@" + process.versions.node,
+                "env": {
                   NODE_ENV: "production",
                   VERSION: distNpmConfig.version,
                   TZ: "Asia/Seoul",

@@ -56,15 +56,14 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
                 [value]="controlValue"
                 [attr.placeholder]="placeholder"
                 [attr.title]="title || placeholder"
-                [disabled]="disabled"
                 [required]="required"
                 [attr.rows]="rows"
                 [attr.class]="inputClass"
                 [attr.style]="inputFullStyle"
                 (input)="onInput()"
                 wrap="off"></textarea>
-      <div *ngIf="!disabled && readonly"
-           [attr.class]="'_readonly ' + (inputClass || '')"
+      <div *ngIf="disabled || readonly"
+           [attr.class]="(disabled ? '_disabled ' : readonly ? '_readonly ' : '') + (inputClass || '')"
            [attr.style]="inputFullStyle">
         <ng-content></ng-content>
         <pre>{{ controlValue }}</pre>
@@ -99,9 +98,7 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
         background: var(--theme-color-secondary-lightest);
       }
 
-
-      > input:disabled,
-      > textarea:disabled {
+      > div._disabled {
         background: var(--theme-color-grey-lightest);
         color: var(--text-brightness-light);
       }

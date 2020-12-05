@@ -191,7 +191,7 @@ export class Logger {
       let logFileName = "1.log";
       if (lastFileSeq !== undefined) {
         const lstat = FsUtil.lstat(path.resolve(outPath, lastFileSeq + ".log"));
-        if (lstat.size > (config.file.maxBytes ?? 300 * 1000)) {
+        if (lstat.size > (config.file.maxBytes ?? 500 * 1000)) {
           logFileName = (lastFileSeq + 1).toString() + ".log";
         }
         else {

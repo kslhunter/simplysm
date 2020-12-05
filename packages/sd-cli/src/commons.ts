@@ -63,6 +63,7 @@ export interface ISdServerPackageConfig {
   env?: Record<string, string>;
   configs?: Record<string, any>;
   publish?: TSdPublishConfig;
+  pm2?: { watchIgnoreDirectories?: string[] };
 }
 
 export interface ISdNonePackageConfig {
