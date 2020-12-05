@@ -210,11 +210,11 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
         > div._disabled {
           border: none;
           border-radius: 0;
+        }
 
-          &:disabled {
-            background: white !important;
-            color: var(--text-brightness-default);
-          }
+        > div._disabled {
+          background: white !important;
+          color: var(--text-brightness-default);
         }
 
         > input {
