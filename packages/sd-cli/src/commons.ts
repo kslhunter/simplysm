@@ -52,6 +52,7 @@ export interface ISdLibraryPackageConfig {
 }
 
 export interface ISdClientPackageConfig {
+  env?: Record<string, string>;
   type: "client";
   server: string;
   configs?: Record<string, any>;

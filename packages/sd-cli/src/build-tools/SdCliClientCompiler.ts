@@ -293,7 +293,10 @@ export class SdCliClientCompiler extends EventEmitter {
           BASE_HREF: `/${packageKey}/`
         }),
         new webpack.DefinePlugin({
-          "process.env.SD_VERSION": `"${this._npmConfig.version}"`
+          "process.env": {
+            SD_VERSION: JSON.stringify(this._npmConfig.version),
+            ...this._getConfigEnv()
+          }
         }),
         new webpack.ContextReplacementPlugin(
           /(.+)?angular[\\/]core(.+)?/,
@@ -365,5 +368,16 @@ export class SdCliClientCompiler extends EventEmitter {
     });
 
     return host;
+  }
+
+  private _getConfigEnv(): Record<string, string> {
+    if (!this._config.env) return {};
+
+    const result: Record<string, string> = {};
+    const keys = Object.keys(this._config.env);
+    for (const key of keys) {
+      result[key] = JSON.stringify(this._config.env[key]);
+    }
+    return result;
   }
 }
