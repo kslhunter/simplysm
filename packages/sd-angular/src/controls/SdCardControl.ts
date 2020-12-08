@@ -14,8 +14,8 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
       border-radius: var(--gap-xs);
       @include elevation(2);
       overflow: hidden;
-      padding-top: var(--gap-sm);
-      padding-bottom: var(--gap-sm);
+      //padding-top: var(--gap-sm);
+      //padding-bottom: var(--gap-sm);
     }
   `]
 })

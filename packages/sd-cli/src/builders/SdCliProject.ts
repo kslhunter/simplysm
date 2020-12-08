@@ -228,8 +228,8 @@ export class SdCliProject {
     await Wait.true(() => isFirstComplete);
   }
 
-  public async publishAsync(argv: { build: boolean; packages: string[]; options: string[]; config?: string; force: boolean }): Promise<void> {
-    if (!argv.force && !argv.build) {
+  public async publishAsync(argv: { build: boolean; packages: string[]; options: string[]; config?: string }): Promise<void> {
+    if (!argv.build) {
       this._logger.warn("빌드하지 않고, 배포하는것은 상당히 위험합니다.");
       const waitSec = 5;
       for (let i = waitSec; i > 0; i--) {
@@ -247,33 +247,17 @@ export class SdCliProject {
     this._logger.debug(`배포 준비...`);
 
     // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
-    if (!argv.force && FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
-      try {
-        await SdProcessManager.spawnAsync(
-          "git status",
-          undefined,
-          (message) => {
-            if (message.includes("Changes") || message.includes("Untracked")) {
-              throw new Error("커밋되지 않은 정보가 있습니다.");
-            }
-          },
-          false
-        );
-      }
-      catch (err) {
-        this._logger.warn(err.message);
-        const waitSec = 9;
-        for (let i = waitSec; i > 0; i--) {
-          if (i !== waitSec) {
-            process.stdout.cursorTo(0);
+    if (FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
+      await SdProcessManager.spawnAsync(
+        "git status",
+        undefined,
+        (message) => {
+          if (message.includes("Changes") || message.includes("Untracked")) {
+            throw new Error("커밋되지 않은 정보가 있습니다.");
           }
-          process.stdout.write("프로세스를 중지하려면, 'CTRL+C'를 누르세요. " + i);
-          await Wait.time(1000);
-        }
-
-        process.stdout.cursorTo(0);
-        process.stdout.clearLine(0);
-      }
+        },
+        false
+      );
     }
 
     // 빌드가 필요하면 빌드함
