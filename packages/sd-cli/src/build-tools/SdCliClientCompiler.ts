@@ -1,4 +1,4 @@
-import { INpmConfig, ISdClientPackageConfig, ISdPackageBuildResult } from "../commons";
+import { INpmConfig, ISdPackageBuildResult, TSdClientPackageConfig } from "../commons";
 import { NextHandleFunction } from "connect";
 import { EventEmitter } from "events";
 import * as webpack from "webpack";
@@ -24,7 +24,7 @@ export class SdCliClientCompiler extends EventEmitter {
   private readonly _npmConfig: INpmConfig;
 
   public constructor(private readonly _rootPath: string,
-                     private readonly _config: ISdClientPackageConfig) {
+                     private readonly _config: TSdClientPackageConfig) {
     super();
 
     const npmConfigFilePath = SdCliPathUtil.getNpmConfigFilePath(this._rootPath);
@@ -201,7 +201,7 @@ export class SdCliClientCompiler extends EventEmitter {
           aliasFields: ["browser"]
         }
       },
-      target: "web",
+      target: this._config.type === "client-windows" ? "electron-renderer" : "web",
       output: {
         publicPath: `/${packageKey}/`,
         path: distPath,

@@ -9,6 +9,7 @@ import { SdCliProject } from "../builders/SdCliProject";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { SdCliFileCrypto } from "../builders/SdCliFileCrypto";
 import { SdCliCheck } from "../builders/SdCliCheck";
+import { SdCliElectron } from "../builders/SdCliElectron";
 
 // TODO: 2020-11-15 22:04 3.x버전의 수정사항들을 적용함
 
@@ -91,6 +92,18 @@ const argv = yargs.version(false)
           type: "array",
           describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
           default: []
+        }
+      })
+  )
+  .command(
+    "run-desktop-browser",
+    "데스크탑 브라우저를 시작합니다.",
+    (cmd) => cmd
+      .options({
+        url: {
+          type: "string",
+          describe: "오픈할 HTML 파일 혹은 링크",
+          demandOption: true
         }
       })
   )
@@ -186,6 +199,9 @@ else {
       options: argv.options
     });
     process.exit(0);
+  }
+  else if (args[0] === "run-desktop-browser") {
+    await new SdCliElectron().runAsync(argv.url!);
   }
   else if (args[0] === "enc-file") {
     await new SdCliFileCrypto().encryptAsync(argv.file!);

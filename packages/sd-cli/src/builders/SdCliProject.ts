@@ -1,6 +1,6 @@
 import * as path from "path";
 import { FsUtil, Logger, PathUtil, SdProcessManager, SdProcessWorkManager } from "@simplysm/sd-core-node";
-import { INpmConfig, ISdClientPackageConfig, ISdPackageBuildResult, ISdProjectConfig } from "../commons";
+import { INpmConfig, ISdPackageBuildResult, ISdProjectConfig, TSdClientPackageConfig } from "../commons";
 import { SdCliPackage } from "./SdCliPackage";
 import { DateTime, NeverEntryError, ObjectUtil, Wait } from "@simplysm/sd-core-common";
 import * as os from "os";
@@ -180,8 +180,8 @@ export class SdCliProject {
 
         const middlewares = await pkg.runCompileAsync(argv.watch);
         if (middlewares) {
-          if (pkg.config.type !== "client") throw new NeverEntryError();
-          const pkgConfig: ISdClientPackageConfig = pkg.config;
+          if (pkg.config.type !== "client-browser" && pkg.config.type !== "client-windows") throw new NeverEntryError();
+          const pkgConfig: TSdClientPackageConfig = pkg.config;
           this._addMiddlewares(pkgConfig.server, middlewares);
 
           setTimeout(async () => {

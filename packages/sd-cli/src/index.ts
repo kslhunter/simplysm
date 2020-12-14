@@ -8,6 +8,7 @@ export * from "./build-tools/SdCliNgModuleGenerator";
 export * from "./build-tools/SdCliServerCompiler";
 export * from "./build-tools/SdCliTsProgramWatcher";
 export * from "./builders/SdCliCheck";
+export * from "./builders/SdCliElectron";
 export * from "./builders/SdCliFileCrypto";
 export * from "./builders/SdCliPackage";
 export * from "./builders/SdCliProject";

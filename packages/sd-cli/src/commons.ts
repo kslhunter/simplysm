@@ -30,7 +30,7 @@ export interface ISdProjectConfig {
 
 export type TSdPackageConfig =
   ISdLibraryPackageConfig |
-  ISdClientPackageConfig |
+  TSdClientPackageConfig |
   ISdServerPackageConfig |
   ISdNonePackageConfig |
   ISdTestPackageConfig;
@@ -51,9 +51,21 @@ export interface ISdLibraryPackageConfig {
   publish?: "npm";
 }
 
-export interface ISdClientPackageConfig {
+export type TSdClientPackageConfig =
+  ISdClientBrowserPackageConfig |
+  ISdClientWindowsPackageConfig;
+
+export interface ISdClientBrowserPackageConfig {
   env?: Record<string, string>;
-  type: "client";
+  type: "client-browser";
+  server: string;
+  configs?: Record<string, any>;
+  publish?: TSdPublishConfig;
+}
+
+export interface ISdClientWindowsPackageConfig {
+  env?: Record<string, string>;
+  type: "client-windows";
   server: string;
   configs?: Record<string, any>;
   publish?: TSdPublishConfig;

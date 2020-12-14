@@ -73,7 +73,17 @@ export class SdProjectConfigUtil {
         }
       }
     }
-    else if (config.type === "client") {
+    else if (config.type === "client-browser") {
+      if (config.server === undefined || typeof config.server !== "string" || config.server === "") {
+        throw new Error("패키지 '" + packageName + "'의 'server'설정이 반드시 설정되어야 합니다.");
+      }
+      if (config.configs !== undefined) {
+        if (!(typeof config.configs === "object")) {
+          throw new Error("패키지 '" + packageName + "'의 'configs'설정이 잘 못 되었습니다.");
+        }
+      }
+    }
+    else if (config.type === "client-windows") {
       if (config.server === undefined || typeof config.server !== "string" || config.server === "") {
         throw new Error("패키지 '" + packageName + "'의 'server'설정이 반드시 설정되어야 합니다.");
       }

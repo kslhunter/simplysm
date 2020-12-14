@@ -102,40 +102,23 @@ export class SdCliPackage extends EventEmitter {
         });
       }
     }
-    else if (this.config.type === "server") {
-      const baseTsconfigFilePath = SdCliPathUtil.getTsConfigBaseFilePath(this.rootPath);
-      const baseTsconfig: ITsConfig = await FsUtil.readJsonAsync(baseTsconfigFilePath);
+    else {
+      const isClient = this.config.type === "client-browser" || this.config.type === "client-windows";
 
-
-      const buildTsconfig: ITsConfig = ObjectUtil.clone(baseTsconfig);
-      buildTsconfig.compilerOptions = buildTsconfig.compilerOptions ?? {};
-
-      delete buildTsconfig.compilerOptions.baseUrl;
-      delete buildTsconfig.compilerOptions.paths;
-      buildTsconfig.compilerOptions.target = "es2017";
-      buildTsconfig.compilerOptions.outDir = `dist`;
-      buildTsconfig.compilerOptions.declaration = false;
-      delete buildTsconfig.compilerOptions.declarationDir;
-
-      const buildTsconfigFilePath = SdCliPathUtil.getTsConfigBuildFilePath(this.rootPath, "node");
-      await FsUtil.writeJsonAsync(buildTsconfigFilePath, buildTsconfig, { space: 2 });
-    }
-    else if (this.config.type === "client") {
       const baseTsconfigFilePath = SdCliPathUtil.getTsConfigBaseFilePath(this.rootPath);
       const baseTsconfig: ITsConfig = await FsUtil.readJsonAsync(baseTsconfigFilePath);
 
       const buildTsconfig: ITsConfig = ObjectUtil.clone(baseTsconfig);
       buildTsconfig.compilerOptions = buildTsconfig.compilerOptions ?? {};
 
-      // tsconfig-paths
       delete buildTsconfig.compilerOptions.baseUrl;
       delete buildTsconfig.compilerOptions.paths;
-      buildTsconfig.compilerOptions.target = "es5";
+      buildTsconfig.compilerOptions.target = isClient ? "es5" : "es2017";
       buildTsconfig.compilerOptions.outDir = `dist`;
       buildTsconfig.compilerOptions.declaration = false;
       delete buildTsconfig.compilerOptions.declarationDir;
 
-      const buildTsconfigFilePath = SdCliPathUtil.getTsConfigBuildFilePath(this.rootPath, "browser");
+      const buildTsconfigFilePath = SdCliPathUtil.getTsConfigBuildFilePath(this.rootPath, isClient ? "browser" : "node");
       await FsUtil.writeJsonAsync(buildTsconfigFilePath, buildTsconfig, { space: 2 });
     }
   }
@@ -173,7 +156,7 @@ export class SdCliPackage extends EventEmitter {
         await serverCompiler.compileAsync();
       }
     }
-    else if (this.config.type === "client") {
+    else if (this.config.type === "client-browser" || this.config.type === "client-windows") {
       const clientCompiler = new SdCliClientCompiler(this.rootPath, this.config)
         .on("change", () => {
           this.emit("change", "compile", undefined);
@@ -201,7 +184,7 @@ export class SdCliPackage extends EventEmitter {
         await this._runWorkerAsync("check", target);
       });
     }
-    else if (this.config.type === "client") {
+    else if (this.config.type === "client-browser" || this.config.type === "client-windows") {
       await this._runWorkerAsync("check", "browser");
     }
     else if (this.config.type === "server") {
@@ -227,7 +210,7 @@ export class SdCliPackage extends EventEmitter {
     else if (this.config.type === "server") {
       await this._runWorkerAsync("lint", "node");
     }
-    else if (this.config.type === "client") {
+    else if (this.config.type === "client-browser" || this.config.type === "client-windows") {
       await this._runWorkerAsync("lint", "browser");
     }
   }
@@ -240,7 +223,7 @@ export class SdCliPackage extends EventEmitter {
 
       await this._runWorkerAsync("ng-gen", "browser");
     }
-    else if (this.config.type === "client") {
+    else if (this.config.type === "client-browser" || this.config.type === "client-windows") {
       if (!this.fullDependencies.includes("@angular/core")) return;
       await this._runWorkerAsync("ng-gen", "browser");
     }
@@ -256,7 +239,7 @@ export class SdCliPackage extends EventEmitter {
         );
       }
     }
-    else if (this.config.type === "client" || this.config.type === "server") {
+    else if (this.config.type === "client-browser" || this.config.type === "client-windows" || this.config.type === "server") {
       if (this.config.publish?.type === "sftp") {
         const publishConfig = this.config.publish;
         const sftp = new SdSFtpStorage();
