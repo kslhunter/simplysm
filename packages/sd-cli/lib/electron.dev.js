@@ -11,7 +11,7 @@ app.on("ready", async () => {
     height: 600,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: true
+      contextIsolation: false
     }
   });
 
