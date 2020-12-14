@@ -57,283 +57,283 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
         <div class="_cell-focus-indicator"></div>
         <div class="_row-focus-indicator"></div>
 
-        <div class="_sheet">
+        <table class="_sheet">
           <!-- 헤더 구역 -->
-          <div class="_content _head">
-            <!-- 그룹 ROW -->
-            <div class="_row _group-row" *ngIf="hasHeaderGroup">
+          <thead class="_content _head">
+          <!-- 그룹 ROW -->
+          <tr class="_row _group-row" *ngIf="hasHeaderGroup">
+            <!-- 고정 셀 그룹 -->
+            <div class="_cell-group _fixed-cell-group">
+              <div class="_border"></div>
+              <div class="_cell _feature-cell">
+                <div class="_cell-content">
+                  <sd-icon class="_icon _selected-icon" fixedWidth></sd-icon>
+                  <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth></sd-icon>
+                </div>
+                <div class="_border"></div>
+              </div>
+              <ng-container *ngFor="let headerGroup of fixedHeaderGroups; trackBy: trackByFnForHeaderGroup">
+                <td class="_cell" [style.width.px]="headerGroup.widthPixel">
+                  <div class="_cell-content">
+                    <pre class="_header-text-content">{{ headerGroup.name }}</pre>
+                  </div>
+                  <div class="_border _border-split"></div>
+                </td>
+              </ng-container>
+            </div>
+            <!-- 셀 그룹 -->
+            <div class="_cell-group">
+              <ng-container *ngFor="let headerGroup of nonFixedHeaderGroups; trackBy: trackByFnForHeaderGroup">
+                <td class="_cell"
+                    [style.width.px]="headerGroup.widthPixel">
+                  <div class="_cell-content">
+                    <pre class="_header-text-content">{{ headerGroup.name }}</pre>
+                  </div>
+                  <div class="_border _border-split"></div>
+                </td>
+              </ng-container>
+            </div>
+          </tr>
+
+          <!-- 헤더 ROW -->
+          <tr class="_row _header-row">
+            <!-- 고정 셀 그룹 -->
+            <div class="_cell-group _fixed-cell-group"
+                 (sdResize)="onFixedCellGroupResize($event)">
+              <div class="_border" style="pointer-events: none"></div>
+              <div class="_cell _feature-cell">
+                <div class="_cell-content">
+                  <sd-icon class="_icon _selected-icon"
+                           [icon]="selectMode === 'multi' ? 'check' : undefined"
+                           (click)="onAllSelectIconClick($event)"
+                           [class._selected]="getIsAllSelected()"
+                           [class._selectable]="selectMode === 'multi'"
+                           fixedWidth></sd-icon>
+                  <sd-icon class="_icon _expand-icon"
+                           *ngIf="getChildrenFn"
+                           [icon]="getHasParentItem() ? 'caret-right' : undefined"
+                           (click)="onAllExpandIconClick($event)"
+                           [class._expanded]="getIsAllExpanded()"
+                           [class._expandable]="getHasParentItem()"
+                           [rotate]="getIsAllExpanded() ? 90 : undefined"
+                           fixedWidth></sd-icon>
+                </div>
+                <div class="_border"></div>
+              </div>
+              <ng-container *ngFor="let columnControl of fixedColumnControls; trackBy: trackByFnForColumnControl">
+                <td class="_cell"
+                    [attr.sd-key]="columnControl.key"
+                    [style.width.px]="columnWidthPixelMap.get(columnControl.guid)"
+                    [attr.title]="columnControl.tooltip || columnControl.header"
+                    [class._resizable]="columnControl.resizable">
+                  <div class="_cell-content">
+                    <ng-container *ngIf="columnControl.useOrdering && columnControl.key">
+                      <sd-anchor class="_header-text-content sd-text-brightness-default"
+                                 (click)="onColumnOrderingHeaderClick($event, columnControl)">
+                        <div style="position: absolute; right: 0; display: inline-block;"
+                             class="sd-background-color-grey-lightest">
+                          <sd-icon-layer>
+                            <sd-icon icon="sort" class="sd-text-brightness-lightest"></sd-icon>
+                            <sd-icon icon="sort-down"
+                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></sd-icon>
+                            <sd-icon icon="sort-up"
+                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></sd-icon>
+                          </sd-icon-layer>
+                          <small
+                            style="padding-right: 2px;">{{ getColumnOrderingOrderText(columnControl.key) }}</small>
+                        </div>
+                        <span *ngIf="!columnControl.headerTemplateRef">{{ columnControl.header }}</span>
+                        <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
+                        &nbsp;
+                      </sd-anchor>
+                    </ng-container>
+                    <ng-container *ngIf="!(columnControl.useOrdering && columnControl.key)">
+                        <pre class="_header-text-content"
+                             *ngIf="!columnControl.headerTemplateRef">{{ columnControl.header }}</pre>
+                      <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
+                    </ng-container>
+                  </div>
+                  <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"
+                       [ngClass]="{'_border-split': this.isGroupLastColumMap.get(columnControl.guid)}"></div>
+                </td>
+              </ng-container>
+            </div>
+            <!-- 셀 그룹 -->
+            <div class="_cell-group">
+              <ng-container *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
+                <td class="_cell"
+                    [attr.sd-key]="columnControl.key"
+                    [style.width.px]="columnWidthPixelMap.get(columnControl.guid)"
+                    [attr.title]="columnControl.tooltip || columnControl.header"
+                    [class._resizable]="columnControl.resizable">
+                  <div class="_cell-content">
+                    <ng-container *ngIf="columnControl.useOrdering && columnControl.key">
+                      <sd-anchor class="_header-text-content sd-text-brightness-default"
+                                 (click)="onColumnOrderingHeaderClick($event, columnControl)">
+                        <div style="position: absolute; right: 0; display: inline-block;"
+                             class="sd-background-color-grey-lightest">
+                          <sd-icon-layer>
+                            <sd-icon icon="sort" class="sd-text-brightness-lightest"></sd-icon>
+                            <sd-icon icon="sort-down"
+                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></sd-icon>
+                            <sd-icon icon="sort-up"
+                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></sd-icon>
+                          </sd-icon-layer>
+                          <small
+                            style="padding-right: 2px;">{{ getColumnOrderingOrderText(columnControl.key) }}</small>
+                        </div>
+                        <span *ngIf="!columnControl.headerTemplateRef">{{ columnControl.header }}</span>
+                        <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
+                        &nbsp;
+                      </sd-anchor>
+                    </ng-container>
+                    <ng-container *ngIf="!(columnControl.useOrdering && columnControl.key)">
+                        <pre class="_header-text-content"
+                             *ngIf="!columnControl.headerTemplateRef">{{ columnControl.header }}</pre>
+                      <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
+                    </ng-container>
+                  </div>
+                  <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"
+                       [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
+                </td>
+              </ng-container>
+            </div>
+          </tr>
+
+          <!-- 합계 ROW -->
+          <tr class="_row _summary_row" *ngIf="hasSummaryGroup">
+            <!-- 고정 셀 그룹 -->
+            <div class="_cell-group _fixed-cell-group">
+              <div class="_border"></div>
+              <div class="_cell _feature-cell">
+                <div class="_cell-content">
+                  <sd-icon class="_icon _selected-icon" fixedWidth></sd-icon>
+                  <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth></sd-icon>
+                </div>
+                <div class="_border"></div>
+              </div>
+              <ng-container *ngFor="let columnControl of fixedColumnControls; trackBy: trackByFnForColumnControl">
+                <td class="_cell"
+                    [attr.sd-key]="columnControl.key"
+                    [style.width.px]="columnWidthPixelMap.get(columnControl.guid)">
+                  <div class="_cell-content">
+                    <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"></ng-template>
+                  </div>
+                  <div class="_border"
+                       [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
+                </td>
+              </ng-container>
+            </div>
+            <!-- 셀 그룹 -->
+            <div class="_cell-group">
+              <ng-container *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
+                <td class="_cell"
+                    [attr.sd-key]="columnControl.key"
+                    [style.width.px]="columnWidthPixelMap.get(columnControl.guid)">
+                  <div class="_cell-content">
+                    <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"></ng-template>
+                  </div>
+                  <div class="_border"
+                       [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
+                </td>
+              </ng-container>
+            </div>
+          </tr>
+          </thead>
+          <!-- 바디 구역 -->
+          <tbody class="_content _body">
+          <!-- ROW 템플릿 -->
+          <ng-template #itemRowTemplate let-item="item" let-index="index" let-depth="depth" let-parent="parent">
+            <tr class="_row"
+                [class._selected]="getIsSelectedItem(item)"
+                (click)="onItemRowClick($event, item, index)"
+                (keydown)="onItemRowKeydown($event, item, index)">
               <!-- 고정 셀 그룹 -->
               <div class="_cell-group _fixed-cell-group">
                 <div class="_border"></div>
-                <div class="_cell _feature-cell">
-                  <div class="_cell-content">
-                    <sd-icon class="_icon _selected-icon" fixedWidth></sd-icon>
-                    <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth></sd-icon>
-                  </div>
-                  <div class="_border"></div>
-                </div>
-                <ng-container *ngFor="let headerGroup of fixedHeaderGroups; trackBy: trackByFnForHeaderGroup">
-                  <div class="_cell" [style.width.px]="headerGroup.widthPixel">
-                    <div class="_cell-content">
-                      <pre class="_header-text-content">{{ headerGroup.name }}</pre>
-                    </div>
-                    <div class="_border _border-split"></div>
-                  </div>
-                </ng-container>
-              </div>
-              <!-- 셀 그룹 -->
-              <div class="_cell-group">
-                <ng-container *ngFor="let headerGroup of nonFixedHeaderGroups; trackBy: trackByFnForHeaderGroup">
-                  <div class="_cell"
-                       [style.width.px]="headerGroup.widthPixel">
-                    <div class="_cell-content">
-                      <pre class="_header-text-content">{{ headerGroup.name }}</pre>
-                    </div>
-                    <div class="_border _border-split"></div>
-                  </div>
-                </ng-container>
-              </div>
-            </div>
-
-            <!-- 헤더 ROW -->
-            <div class="_row _header-row">
-              <!-- 고정 셀 그룹 -->
-              <div class="_cell-group _fixed-cell-group"
-                   (sdResize)="onFixedCellGroupResize($event)">
-                <div class="_border" style="pointer-events: none"></div>
                 <div class="_cell _feature-cell">
                   <div class="_cell-content">
                     <sd-icon class="_icon _selected-icon"
-                             [icon]="selectMode === 'multi' ? 'check' : undefined"
-                             (click)="onAllSelectIconClick($event)"
-                             [class._selected]="getIsAllSelected()"
-                             [class._selectable]="selectMode === 'multi'"
+                             [icon]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item)) ? 'check' : undefined"
+                             (click)="onItemSelectIconClick($event, item, index)"
+                             [class._selected]="getIsSelectedItem(item)"
+                             [class._selectable]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item))"
                              fixedWidth></sd-icon>
+
+                    <div class="_depth-indicator"
+                         *ngIf="getChildrenFn && depth > 0"
+                         [style.margin-left.em]="depth - .5">
+                    </div>
+
                     <sd-icon class="_icon _expand-icon"
                              *ngIf="getChildrenFn"
-                             [icon]="getHasParentItem() ? 'caret-right' : undefined"
-                             (click)="onAllExpandIconClick($event)"
-                             [class._expanded]="getIsAllExpanded()"
-                             [class._expandable]="getHasParentItem()"
-                             [rotate]="getIsAllExpanded() ? 90 : undefined"
+                             [icon]="getChildrenFn && getChildrenFn(index, item)?.length > 0 ? 'caret-right' : undefined"
+                             (click)="onItemExpandIconClick($event, item)"
+                             [class._expanded]="getIsExpandedItem(item)"
+                             [class._expandable]="getChildrenFn && getChildrenFn(index, item)?.length > 0"
+                             [rotate]="getIsExpandedItem(item) ? 90 : undefined"
                              fixedWidth></sd-icon>
                   </div>
                   <div class="_border"></div>
                 </div>
                 <ng-container *ngFor="let columnControl of fixedColumnControls; trackBy: trackByFnForColumnControl">
-                  <div class="_cell"
-                       [attr.sd-key]="columnControl.key"
-                       [style.width.px]="columnWidthPixelMap.get(columnControl.guid)"
-                       [attr.title]="columnControl.tooltip || columnControl.header"
-                       [class._resizable]="columnControl.resizable">
-                    <div class="_cell-content">
-                      <ng-container *ngIf="columnControl.useOrdering && columnControl.key">
-                        <sd-anchor class="_header-text-content sd-text-brightness-default"
-                                   (click)="onColumnOrderingHeaderClick($event, columnControl)">
-                          <div style="position: absolute; right: 0; display: inline-block;"
-                               class="sd-background-color-grey-lightest">
-                            <sd-icon-layer>
-                              <sd-icon icon="sort" class="sd-text-brightness-lightest"></sd-icon>
-                              <sd-icon icon="sort-down"
-                                       *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></sd-icon>
-                              <sd-icon icon="sort-up"
-                                       *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></sd-icon>
-                            </sd-icon-layer>
-                            <small
-                              style="padding-right: 2px;">{{ getColumnOrderingOrderText(columnControl.key) }}</small>
-                          </div>
-                          <span *ngIf="!columnControl.headerTemplateRef">{{ columnControl.header }}</span>
-                          <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
-                          &nbsp;
-                        </sd-anchor>
-                      </ng-container>
-                      <ng-container *ngIf="!(columnControl.useOrdering && columnControl.key)">
-                        <pre class="_header-text-content"
-                             *ngIf="!columnControl.headerTemplateRef">{{ columnControl.header }}</pre>
-                        <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
-                      </ng-container>
+                  <td class="_cell"
+                      [attr.sd-key]="columnControl.key"
+                      [attr.sd-row-index]="index"
+                      [attr.sd-column-guid]="columnControl.guid"
+                      [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0">
+                    <div class="_cell-content"
+                         (dblclick)="onCellDblClick($event)">
+                      <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
+                                   [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl), parent: parent}"></ng-template>
                     </div>
-                    <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"
-                         [ngClass]="{'_border-split': this.isGroupLastColumMap.get(columnControl.guid)}"></div>
-                  </div>
+                    <div class="_border"
+                         [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
+                  </td>
                 </ng-container>
               </div>
               <!-- 셀 그룹 -->
               <div class="_cell-group">
-                <ng-container *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
-                  <div class="_cell"
-                       [attr.sd-key]="columnControl.key"
-                       [style.width.px]="columnWidthPixelMap.get(columnControl.guid)"
-                       [attr.title]="columnControl.tooltip || columnControl.header"
-                       [class._resizable]="columnControl.resizable">
-                    <div class="_cell-content">
-                      <ng-container *ngIf="columnControl.useOrdering && columnControl.key">
-                        <sd-anchor class="_header-text-content sd-text-brightness-default"
-                                   (click)="onColumnOrderingHeaderClick($event, columnControl)">
-                          <div style="position: absolute; right: 0; display: inline-block;"
-                               class="sd-background-color-grey-lightest">
-                            <sd-icon-layer>
-                              <sd-icon icon="sort" class="sd-text-brightness-lightest"></sd-icon>
-                              <sd-icon icon="sort-down"
-                                       *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></sd-icon>
-                              <sd-icon icon="sort-up"
-                                       *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></sd-icon>
-                            </sd-icon-layer>
-                            <small
-                              style="padding-right: 2px;">{{ getColumnOrderingOrderText(columnControl.key) }}</small>
-                          </div>
-                          <span *ngIf="!columnControl.headerTemplateRef">{{ columnControl.header }}</span>
-                          <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
-                          &nbsp;
-                        </sd-anchor>
-                      </ng-container>
-                      <ng-container *ngIf="!(columnControl.useOrdering && columnControl.key)">
-                        <pre class="_header-text-content"
-                             *ngIf="!columnControl.headerTemplateRef">{{ columnControl.header }}</pre>
-                        <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
-                      </ng-container>
-                    </div>
-                    <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"
-                         [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
-                  </div>
-                </ng-container>
-              </div>
-            </div>
-
-            <!-- 합계 ROW -->
-            <div class="_row _summary_row" *ngIf="hasSummaryGroup">
-              <!-- 고정 셀 그룹 -->
-              <div class="_cell-group _fixed-cell-group">
-                <div class="_border"></div>
-                <div class="_cell _feature-cell">
-                  <div class="_cell-content">
-                    <sd-icon class="_icon _selected-icon" fixedWidth></sd-icon>
-                    <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth></sd-icon>
-                  </div>
-                  <div class="_border"></div>
-                </div>
-                <ng-container *ngFor="let columnControl of fixedColumnControls; trackBy: trackByFnForColumnControl">
-                  <div class="_cell"
-                       [attr.sd-key]="columnControl.key"
-                       [style.width.px]="columnWidthPixelMap.get(columnControl.guid)">
-                    <div class="_cell-content">
-                      <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"></ng-template>
-                    </div>
-                    <div class="_border"
-                         [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
-                  </div>
-                </ng-container>
-              </div>
-              <!-- 셀 그룹 -->
-              <div class="_cell-group">
-                <ng-container *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
-                  <div class="_cell"
-                       [attr.sd-key]="columnControl.key"
-                       [style.width.px]="columnWidthPixelMap.get(columnControl.guid)">
-                    <div class="_cell-content">
-                      <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"></ng-template>
-                    </div>
-                    <div class="_border"
-                         [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
-                  </div>
-                </ng-container>
-              </div>
-            </div>
-          </div>
-          <!-- 바디 구역 -->
-          <div class="_content _body">
-            <!-- ROW 템플릿 -->
-            <ng-template #itemRowTemplate let-item="item" let-index="index" let-depth="depth" let-parent="parent">
-              <div class="_row"
-                   [class._selected]="getIsSelectedItem(item)"
-                   (click)="onItemRowClick($event, item, index)"
-                   (keydown)="onItemRowKeydown($event, item, index)">
-                <!-- 고정 셀 그룹 -->
-                <div class="_cell-group _fixed-cell-group">
-                  <div class="_border"></div>
-                  <div class="_cell _feature-cell">
-                    <div class="_cell-content">
-                      <sd-icon class="_icon _selected-icon"
-                               [icon]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item)) ? 'check' : undefined"
-                               (click)="onItemSelectIconClick($event, item, index)"
-                               [class._selected]="getIsSelectedItem(item)"
-                               [class._selectable]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item))"
-                               fixedWidth></sd-icon>
-
-                      <div class="_depth-indicator"
-                           *ngIf="getChildrenFn && depth > 0"
-                           [style.margin-left.em]="depth - .5">
-                      </div>
-
-                      <sd-icon class="_icon _expand-icon"
-                               *ngIf="getChildrenFn"
-                               [icon]="getChildrenFn && getChildrenFn(index, item)?.length > 0 ? 'caret-right' : undefined"
-                               (click)="onItemExpandIconClick($event, item)"
-                               [class._expanded]="getIsExpandedItem(item)"
-                               [class._expandable]="getChildrenFn && getChildrenFn(index, item)?.length > 0"
-                               [rotate]="getIsExpandedItem(item) ? 90 : undefined"
-                               fixedWidth></sd-icon>
-                    </div>
-                    <div class="_border"></div>
-                  </div>
-                  <ng-container *ngFor="let columnControl of fixedColumnControls; trackBy: trackByFnForColumnControl">
-                    <div class="_cell"
-                         [attr.sd-key]="columnControl.key"
-                         [attr.sd-row-index]="index"
-                         [attr.sd-column-guid]="columnControl.guid"
-                         [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0">
-                      <div class="_cell-content"
-                           (dblclick)="onCellDblClick($event)">
-                        <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                     [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl), parent: parent}"></ng-template>
-                      </div>
-                      <div class="_border"
-                           [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
-                    </div>
-                  </ng-container>
-                </div>
-                <!-- 셀 그룹 -->
-                <div class="_cell-group">
-                  <ng-container
-                    *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
-                    <div class="_cell"
-                         [attr.sd-key]="columnControl.key"
-                         [attr.sd-row-index]="index"
-                         [attr.sd-column-guid]="columnControl.guid"
-                         [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0">
-                      <div class="_cell-content"
-                           (dblclick)="onCellDblClick($event)">
-                        <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                     [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl), parent: parent}"></ng-template>
-                      </div>
-                      <div class="_border"
-                           [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
-                    </div>
-                  </ng-container>
-                </div>
-                <div class="_selected-indicator"></div>
-              </div>
-
-              <!-- CHILDREN FOR 문 -->
-              <ng-container *ngIf="getIsExpandedItem(item) && getChildrenFn && getChildrenFn(index, item)?.length > 0">
-                <div class="sd-border-top-brightness-default"></div>
                 <ng-container
-                  *ngFor="let childItem of getChildrenFn ? getChildrenFn(index, item) : []; let childIndex = index; trackBy: trackByFn">
-                  <ng-template [ngTemplateOutlet]="itemRowTemplate"
-                               [ngTemplateOutletContext]="{item: childItem, index: childIndex, depth: depth + 1, parent: item}"></ng-template>
+                  *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
+                  <td class="_cell"
+                      [attr.sd-key]="columnControl.key"
+                      [attr.sd-row-index]="index"
+                      [attr.sd-column-guid]="columnControl.guid"
+                      [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0">
+                    <div class="_cell-content"
+                         (dblclick)="onCellDblClick($event)">
+                      <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
+                                   [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl), parent: parent}"></ng-template>
+                    </div>
+                    <div class="_border"
+                         [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
+                  </td>
                 </ng-container>
-                <div class="sd-border-bottom-brightness-default"></div>
-              </ng-container>
-            </ng-template>
+              </div>
+              <div class="_selected-indicator"></div>
+            </tr>
 
-            <!-- ROW 템플릿 FOR 문-->
-            <ng-container *ngFor="let item of displayItems; let index = index; trackBy: trackByFn">
-              <ng-template [ngTemplateOutlet]="itemRowTemplate"
-                           [ngTemplateOutletContext]="{item: item, index: index, depth: 0}"></ng-template>
+            <!-- CHILDREN FOR 문 -->
+            <ng-container *ngIf="getIsExpandedItem(item) && getChildrenFn && getChildrenFn(index, item)?.length > 0">
+              <div class="sd-border-top-brightness-default"></div>
+              <ng-container
+                *ngFor="let childItem of getChildrenFn ? getChildrenFn(index, item) : []; let childIndex = index; trackBy: trackByFn">
+                <ng-template [ngTemplateOutlet]="itemRowTemplate"
+                             [ngTemplateOutletContext]="{item: childItem, index: childIndex, depth: depth + 1, parent: item}"></ng-template>
+              </ng-container>
+              <div class="sd-border-bottom-brightness-default"></div>
             </ng-container>
-          </div>
+          </ng-template>
+
+          <!-- ROW 템플릿 FOR 문-->
+          <ng-container *ngFor="let item of displayItems; let index = index; trackBy: trackByFn">
+            <ng-template [ngTemplateOutlet]="itemRowTemplate"
+                         [ngTemplateOutletContext]="{item: item, index: index, depth: 0}"></ng-template>
+          </ng-container>
+          </tbody>
           <div class="_border-rect"></div>
-        </div>
+        </table>
       </sd-pane>
 
       <sd-pane *ngIf="useCardDisplayType" [hidden]="displayType !== 'card'" [attr.sd-display-type]="'card'">
@@ -393,6 +393,11 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
             white-space: nowrap;
             position: relative;
             background: white;
+            border-collapse: collapse;
+
+            td {
+              padding: 0;
+            }
 
             > ._border-rect {
               z-index: $z-index-sheet-border;
@@ -440,6 +445,10 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
 
                     &:focus {
                       outline: none;
+                    }
+
+                    /deep/ * {
+                      user-select: auto;
                     }
                   }
 
@@ -532,7 +541,6 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
 
               > ._group-row, // 그룹 ROW
               > ._header-row { // 헤더 ROW
-
                 > ._cell-group { // 셀 그룹 공통
                   > ._cell { // 셀 공통
                     background: var(--theme-color-grey-lightest);

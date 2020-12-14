@@ -70,6 +70,7 @@ export class SdOrmUtil {
       const obj: any = {};
       for (const key of Object.keys(item)) {
         if (item[key] == null) {
+          obj[key] = undefined;
         }
         else if (option?.columns?.[key]?.dataType === "DateTime") {
           obj[key] = DateTime.parse(item[key]);
@@ -103,7 +104,6 @@ export class SdOrmUtil {
       const joinKeys = Object.keys(option.joins).orderByDesc((key) => key.length);
       for (const joinKey of joinKeys) {
         const grouped: { key: any; values: any | any[] }[] = [];
-        // const groupedMultiMapObj: { [key: string]: any | any[] } = {};
         const groupedMultiObj: { key: any; values: any | any[] }[] = [];
 
         for (const item of result) {
