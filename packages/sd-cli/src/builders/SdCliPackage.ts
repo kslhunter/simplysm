@@ -102,7 +102,11 @@ export class SdCliPackage extends EventEmitter {
         });
       }
     }
-    else {
+    else if (
+      this.config.type === "client-browser" ||
+      this.config.type === "client-windows" ||
+      this.config.type === "server"
+    ) {
       const isClient = this.config.type === "client-browser" || this.config.type === "client-windows";
 
       const baseTsconfigFilePath = SdCliPathUtil.getTsConfigBaseFilePath(this.rootPath);
