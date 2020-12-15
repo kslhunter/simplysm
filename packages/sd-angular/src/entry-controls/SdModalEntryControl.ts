@@ -7,9 +7,9 @@ import {
   HostBinding,
   HostListener,
   Input,
-  NgZone,
+  NgZone, OnChanges,
   OnInit,
-  Output
+  Output, SimpleChanges
 } from "@angular/core";
 import { SdInputValidate } from "../commons/SdInputValidate";
 import { NeverEntryError } from "@simplysm/sd-core-common";
@@ -273,7 +273,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
     }
   `]
 })
-export class SdModalEntryControl implements OnInit, AfterViewInit {
+export class SdModalEntryControl implements OnInit, AfterViewInit, OnChanges {
   @Input()
   @SdInputValidate(String)
   public key?: string;
@@ -383,6 +383,19 @@ export class SdModalEntryControl implements OnInit, AfterViewInit {
       }
     }
     this._el.setAttribute("sd-init", "true");
+
+    if (this.open === true) {
+      this._dialogEl.focus();
+    }
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if ("open" in changes) {
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      if (this.open === true && this._dialogEl) {
+        this._dialogEl.focus();
+      }
+    }
   }
 
   public onCloseButtonClick(): void {
