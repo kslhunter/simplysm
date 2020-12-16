@@ -765,10 +765,10 @@ export class SdSheetLegacyControl implements DoCheck, OnInit {
     if (this.key !== undefined && this._config?.columnObj) {
       fixedColumnControls = fixedColumnControls
         .filter((item) => (
-          Boolean(this._config!.columnObj![item.key as string]?.fixed ?? item.fixed) === fixed &&
-          !this._config!.columnObj![item.key as string]?.hidden
+          Boolean(this._config!.columnObj![item.key!]?.fixed ?? item.fixed) === fixed &&
+          !this._config!.columnObj![item.key!]?.hidden
         ))
-        .orderBy((item) => this._config!.columnObj![item.key as string]?.displayOrder ?? 0);
+        .orderBy((item) => this._config!.columnObj![item.key!]?.displayOrder ?? 0);
     }
     else {
       fixedColumnControls = fixedColumnControls.filter((item) => Boolean(item.fixed) === fixed);
@@ -1319,7 +1319,7 @@ export class SdSheetLegacyControl implements DoCheck, OnInit {
   public onHeadCellBorderMousedown(event: MouseEvent, columnControl: SdSheetColumnControl): void {
     if (!columnControl.resizable) return;
 
-    const cellEl = (event.target as HTMLElement).findParent("._cell") as HTMLElement;
+    const cellEl = (event.target as HTMLElement).findParent("._cell")!;
     const startX = event.clientX;
     const startWidth = cellEl.clientWidth;
 

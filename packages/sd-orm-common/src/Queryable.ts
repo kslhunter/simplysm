@@ -67,7 +67,7 @@ export class Queryable<D extends DbContext, T> {
     }
     // 일반 생성
     else if (arg3 === undefined) {
-      this.tableType = arg1 as Type<T>;
+      this.tableType = arg1!;
       this._as = arg2 as string | undefined;
 
       // Init TABLE Definition
