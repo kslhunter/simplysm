@@ -128,9 +128,6 @@ export class SdCliClientCompiler extends EventEmitter {
     // 패키지 이름 (SCOPE 제외)
     const packageKey = this._npmConfig.name.split("/").last()!;
 
-    // publicPath
-    const publicPath = (this._platform.type === "windows" ? `/__windows__` : "") + `/${packageKey}/`;
-
     // 각종 경로
     const srcPath = SdCliPathUtil.getSourcePath(this._rootPath);
     const distPath = SdCliPathUtil.getDistPath(this._rootPath);
@@ -144,6 +141,9 @@ export class SdCliClientCompiler extends EventEmitter {
     const mainPath = path.resolve(__dirname, "../../lib/main." + (watch ? "dev" : "prod") + ".js");
     const indexPath = path.resolve(__dirname, `../../lib/index.ejs`);
     const polyfillsPath = path.resolve(__dirname, `../../lib/polyfills.js`);
+
+    // publicPath
+    const publicPath = (this._platform.type !== "browser" ? `/__${this._platform.type}__` : "") + `/${packageKey}/`;
 
     return {
       ...watch ? {
@@ -294,11 +294,13 @@ export class SdCliClientCompiler extends EventEmitter {
       plugins: [
         new HtmlWebpackPlugin({
           template: indexPath,
-          BASE_HREF: publicPath
+          BASE_HREF: publicPath,
+          PLATFORM: this._platform.type
         }),
         new webpack.DefinePlugin({
           "process.env": {
             SD_VERSION: JSON.stringify(this._npmConfig.version),
+            SD_PLATFORM: this._platform.type,
             ...this._getConfigEnv()
           }
         }),

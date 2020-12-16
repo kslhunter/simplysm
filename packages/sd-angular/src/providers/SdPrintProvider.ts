@@ -47,5 +47,5 @@ export class SdPrintProvider {
 }
 
 export abstract class SdPrintTemplateBase<I> {
-  public abstract sdOnOpen(param: I): Promise<void>;
+  public abstract sdOnOpen(param: I): void | Promise<void>;
 }

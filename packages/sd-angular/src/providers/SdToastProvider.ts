@@ -204,7 +204,7 @@ export abstract class SdToastBase<P, R> {
 
   public tResult!: R;
 
-  public abstract sdOnOpen(param: P): Promise<void>;
+  public abstract sdOnOpen(param: P): void | Promise<void>;
 
   public close: (value?: R) => void = (value?: R) => {
     throw new Error("초기화되어있지 않습니다.");

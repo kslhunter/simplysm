@@ -881,9 +881,6 @@ export class SdSheetLegacyControl implements DoCheck, OnInit {
             return;
           }
 
-          /*event.preventDefault();
-          event.stopPropagation();*/
-
           paneEl.scrollTop += (event as WheelEvent).deltaY;
           paneEl.scrollLeft += (event as WheelEvent).deltaX;
         });

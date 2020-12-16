@@ -62,7 +62,8 @@ export interface ISdClientPackageConfig {
 
 export type TSdClientPackageConfigPlatform =
   ISdClientPackageConfigBrowserPlatform |
-  ISdClientPackageConfigWindowsPlatform;
+  ISdClientPackageConfigWindowsPlatform |
+  ISdClientPackageConfigAndroidPlatform;
 
 export interface ISdClientPackageConfigBrowserPlatform {
   type: "browser";
@@ -70,6 +71,10 @@ export interface ISdClientPackageConfigBrowserPlatform {
 
 export interface ISdClientPackageConfigWindowsPlatform {
   type: "windows";
+}
+
+export interface ISdClientPackageConfigAndroidPlatform {
+  type: "android";
 }
 
 export interface ISdServerPackageConfig {

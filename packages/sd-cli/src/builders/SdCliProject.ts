@@ -2,7 +2,7 @@ import * as path from "path";
 import { FsUtil, Logger, PathUtil, SdProcessManager, SdProcessWorkManager } from "@simplysm/sd-core-node";
 import { INpmConfig, ISdClientPackageConfig, ISdPackageBuildResult, ISdProjectConfig } from "../commons";
 import { SdCliPackage } from "./SdCliPackage";
-import { DateTime, NeverEntryError, ObjectUtil, SdError, Wait } from "@simplysm/sd-core-common";
+import { DateTime, NeverEntryError, NotImplementError, ObjectUtil, SdError, Wait } from "@simplysm/sd-core-common";
 import * as os from "os";
 import * as semver from "semver";
 import { SdProjectConfigUtil } from "../utils/SdProjectConfigUtil";
@@ -157,6 +157,19 @@ export class SdCliProject {
                       new SdCliElectron().runAsync(url + publicPath).catch((err) => {
                         this._logger.error(err);
                       });
+                    }
+
+
+                    if (
+                      buildablePackage.config.platforms?.some((platform) => platform.type === "android") &&
+                      !isFirstComplete
+                    ) {
+                      throw new NotImplementError();
+                      /*const publicPath = "/__windows__/" + clientPackageName.split("/").last() + "/";
+
+                      new SdCliElectron().runAsync(url + publicPath).catch((err) => {
+                        this._logger.error(err);
+                      });*/
                     }
                   }
                 }
