@@ -110,13 +110,17 @@ export class SdOrmUtil {
           const keyObjKeys = Object.keys(item).filter((key) => !key.startsWith(joinKey + "."));
           const keyObj = {};
           for (const keyObjKey of keyObjKeys) {
-            keyObj[keyObjKey] = item[keyObjKey];
+            if (item[keyObjKey] !== undefined) {
+              keyObj[keyObjKey] = item[keyObjKey];
+            }
           }
 
           const valueObjKeys = Object.keys(item).filter((key) => key.startsWith(joinKey + "."));
           const valueObj: any = {};
           for (const valueObjKey of valueObjKeys) {
-            valueObj[valueObjKey.slice(joinKey.length + 1)] = item[valueObjKey];
+            if (item[valueObjKey] !== undefined) {
+              valueObj[valueObjKey.slice(joinKey.length + 1)] = item[valueObjKey];
+            }
           }
 
           if (option.joins[joinKey].isSingle) {

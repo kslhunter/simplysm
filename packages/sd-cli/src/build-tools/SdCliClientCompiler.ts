@@ -1,4 +1,4 @@
-import { INpmConfig, ISdPackageBuildResult, TSdClientPackageConfig } from "../commons";
+import { INpmConfig, ISdClientPackageConfig, ISdPackageBuildResult, TSdClientPackageConfigPlatform } from "../commons";
 import { NextHandleFunction } from "connect";
 import { EventEmitter } from "events";
 import * as webpack from "webpack";
@@ -24,7 +24,8 @@ export class SdCliClientCompiler extends EventEmitter {
   private readonly _npmConfig: INpmConfig;
 
   public constructor(private readonly _rootPath: string,
-                     private readonly _config: TSdClientPackageConfig) {
+                     private readonly _config: ISdClientPackageConfig,
+                     private readonly _platform: TSdClientPackageConfigPlatform) {
     super();
 
     const npmConfigFilePath = SdCliPathUtil.getNpmConfigFilePath(this._rootPath);
@@ -127,6 +128,9 @@ export class SdCliClientCompiler extends EventEmitter {
     // 패키지 이름 (SCOPE 제외)
     const packageKey = this._npmConfig.name.split("/").last()!;
 
+    // publicPath
+    const publicPath = (this._platform.type === "windows" ? `/__windows__` : "") + `/${packageKey}/`;
+
     // 각종 경로
     const srcPath = SdCliPathUtil.getSourcePath(this._rootPath);
     const distPath = SdCliPathUtil.getDistPath(this._rootPath);
@@ -151,7 +155,7 @@ export class SdCliClientCompiler extends EventEmitter {
         entry: {
           main: [
             polyfillsPath,
-            `webpack-hot-middleware/client?path=/${packageKey}/__webpack_hmr&timeout=20000&reload=true&overlay=true`,
+            `webpack-hot-middleware/client?path=${publicPath}__webpack_hmr&timeout=20000&reload=true&overlay=true`,
             mainPath
           ]
         },
@@ -201,9 +205,9 @@ export class SdCliClientCompiler extends EventEmitter {
           aliasFields: ["browser"]
         }
       },
-      target: this._config.type === "client-windows" ? "electron-renderer" : "web",
+      target: this._platform.type === "windows" ? "electron-renderer" : "web",
       output: {
-        publicPath: `/${packageKey}/`,
+        publicPath,
         path: distPath,
         filename: "[name].js",
         chunkFilename: "[name].chunk.js"
@@ -290,7 +294,7 @@ export class SdCliClientCompiler extends EventEmitter {
       plugins: [
         new HtmlWebpackPlugin({
           template: indexPath,
-          BASE_HREF: `/${packageKey}/`
+          BASE_HREF: publicPath
         }),
         new webpack.DefinePlugin({
           "process.env": {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, Input } from "@angular/core";
 import { NavigationStart, Router } from "@angular/router";
 
 @Component({
@@ -14,16 +14,32 @@ import { NavigationStart, Router } from "@angular/router";
       padding-left: var(--sd-sidebar-width);
       transition: padding-left .1s ease-out;
 
-      &[sd-toggle=true] {
+      &[sd-desktop-toggle=true] {
         padding-left: 0;
         transition: padding-left .1s ease-in;
       }
+
+
     }
   `]
 })
 export class SdSidebarContainerControl {
   @HostBinding("attr.sd-toggle")
   public toggle = false;
+
+  @Input()
+  @HostBinding("attr.sd-open-on-desktop")
+  public openOnDesktop = true;
+
+  @HostBinding("attr.sd-desktop-toggle")
+  public get desktopToggle(): boolean {
+    if (!this.openOnDesktop) {
+      return !this.toggle;
+    }
+    else {
+      return this.toggle;
+    }
+  }
 
   public constructor(private readonly _cdr: ChangeDetectorRef,
                      private readonly _router: Router) {

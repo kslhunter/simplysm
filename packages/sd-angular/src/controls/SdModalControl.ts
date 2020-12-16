@@ -8,8 +8,10 @@ import {
   HostListener,
   Input,
   NgZone,
+  OnChanges,
   OnInit,
-  Output
+  Output,
+  SimpleChanges
 } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { NeverEntryError } from "@simplysm/sd-core-common";
@@ -270,7 +272,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
     }
   `]
 })
-export class SdModalControl implements OnInit, AfterViewInit {
+export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
   @Input()
   @SdInputValidate(String)
   public key?: string;
@@ -323,7 +325,7 @@ export class SdModalControl implements OnInit, AfterViewInit {
   private _config?: ISdModalConfigVM;
 
   private readonly _el: HTMLElement;
-  private _dialogEl!: HTMLElement;
+  private _dialogEl?: HTMLElement;
   private _dialogHeaderEl!: HTMLElement;
 
   public constructor(private readonly _elRef: ElementRef,
@@ -337,10 +339,14 @@ export class SdModalControl implements OnInit, AfterViewInit {
     this._dialogHeaderEl = this._dialogEl.findFirst("._header")!;
 
     this._zone.runOutsideAngular(() => {
+      if (!this._dialogEl) throw new NeverEntryError();
+
       this._dialogEl.addEventListener("resize", (event) => {
         if (event.prevHeight !== event.newHeight) {
           const style = getComputedStyle(this._el);
           if (style.paddingTop !== "") {
+            if (!this._dialogEl) throw new NeverEntryError();
+
             const paddingTopMatch = (/(\d*)/).exec(style.paddingTop);
             if (!paddingTopMatch || typeof paddingTopMatch[1] === "undefined") throw new NeverEntryError();
             const paddingTopNum = Number.parseInt(paddingTopMatch[1], 10);
@@ -371,6 +377,8 @@ export class SdModalControl implements OnInit, AfterViewInit {
     if (this.key !== undefined) {
       this._config = await this._systemConfig.getAsync(`sd-modal.${this.key}`);
       if (this._config) {
+        if (!this._dialogEl) throw new NeverEntryError();
+
         this._dialogEl.style.position = this._config.position;
         this._dialogEl.style.left = this._config.left;
         this._dialogEl.style.top = this._config.top;
@@ -381,6 +389,21 @@ export class SdModalControl implements OnInit, AfterViewInit {
       }
     }
     this._el.setAttribute("sd-init", "true");
+
+    if (this.open === true) {
+      if (!this._dialogEl) throw new NeverEntryError();
+
+      this._dialogEl.focus();
+    }
+  }
+
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if ("open" in changes) {
+      if (this.open === true && this._dialogEl) {
+        this._dialogEl.focus();
+      }
+    }
   }
 
   public onCloseButtonClick(): void {
@@ -441,6 +464,8 @@ export class SdModalControl implements OnInit, AfterViewInit {
 
   @HostListener("window:resize", ["$event"])
   public onWindowResize(event: Event): void {
+    if (!this._dialogEl) throw new NeverEntryError();
+
     if (this._dialogEl.offsetLeft > this._el.offsetWidth - 100) {
       this._dialogEl.style.left = (this._el.offsetWidth - 100) + "px";
     }
@@ -453,6 +478,8 @@ export class SdModalControl implements OnInit, AfterViewInit {
                               direction: "left" | "right" |
                                 "top" | "top-left" | "top-right" |
                                 "bottom" | "bottom-left" | "bottom-right"): void {
+    if (!this._dialogEl) throw new NeverEntryError();
+
     const startX = event.clientX;
     const startY = event.clientY;
     const startHeight = this._dialogEl.clientHeight;
@@ -461,6 +488,8 @@ export class SdModalControl implements OnInit, AfterViewInit {
     const startLeft = this._dialogEl.offsetLeft;
 
     const doDrag = (e: MouseEvent): void => {
+      if (!this._dialogEl) throw new NeverEntryError();
+
       e.stopPropagation();
       e.preventDefault();
 
@@ -486,6 +515,8 @@ export class SdModalControl implements OnInit, AfterViewInit {
     };
 
     const stopDrag = async (e: MouseEvent): Promise<void> => {
+      if (!this._dialogEl) throw new NeverEntryError();
+
       e.stopPropagation();
       e.preventDefault();
 
@@ -510,12 +541,16 @@ export class SdModalControl implements OnInit, AfterViewInit {
   }
 
   public onHeaderMouseDown(event: MouseEvent): void {
+    if (!this._dialogEl) throw new NeverEntryError();
+
     const startX = event.clientX;
     const startY = event.clientY;
     const startTop = this._dialogEl.offsetTop;
     const startLeft = this._dialogEl.offsetLeft;
 
     const doDrag = (e: MouseEvent): void => {
+      if (!this._dialogEl) throw new NeverEntryError();
+
       e.stopPropagation();
       e.preventDefault();
 
@@ -535,6 +570,8 @@ export class SdModalControl implements OnInit, AfterViewInit {
     };
 
     const stopDrag = async (e: MouseEvent): Promise<void> => {
+      if (!this._dialogEl) throw new NeverEntryError();
+
       e.stopPropagation();
       e.preventDefault();
 

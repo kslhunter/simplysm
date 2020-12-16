@@ -1,6 +1,7 @@
 const {
   app,
-  BrowserWindow
+  BrowserWindow,
+  globalShortcut
 } = require("electron");
 
 const targetUrl = process.argv[2];
@@ -21,6 +22,11 @@ app.on("ready", async () => {
   });
 
   win.webContents.openDevTools();
+  win.removeMenu();
+
+  globalShortcut.register("CommandOrControl+Shift+R", () => {
+    win.reload();
+  });
 
   await win.loadURL(targetUrl);
 });

@@ -1,8 +1,8 @@
 import * as path from "path";
 import { FsUtil, Logger, PathUtil, SdProcessManager, SdProcessWorkManager } from "@simplysm/sd-core-node";
-import { INpmConfig, ISdPackageBuildResult, ISdProjectConfig, TSdClientPackageConfig } from "../commons";
+import { INpmConfig, ISdClientPackageConfig, ISdPackageBuildResult, ISdProjectConfig } from "../commons";
 import { SdCliPackage } from "./SdCliPackage";
-import { DateTime, NeverEntryError, ObjectUtil, Wait } from "@simplysm/sd-core-common";
+import { DateTime, NeverEntryError, ObjectUtil, SdError, Wait } from "@simplysm/sd-core-common";
 import * as os from "os";
 import * as semver from "semver";
 import { SdProjectConfigUtil } from "../utils/SdProjectConfigUtil";
@@ -11,6 +11,7 @@ import { SdCliLocalUpdater } from "../build-tools/SdCliLocalUpdater";
 import { SdServiceServer } from "@simplysm/sd-service-node";
 import { NextHandleFunction } from "connect";
 import * as JSZip from "jszip";
+import { SdCliElectron } from "./SdCliElectron";
 
 export class SdCliProject {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -122,22 +123,43 @@ export class SdCliProject {
               }
 
               const clientHrefs: string[] = [];
-              for (const serverPackageName of this._serverMap.keys()) {
-                const currServer = this._serverMap.get(serverPackageName)!;
-                const middlewares = this._middlewareMap.get(serverPackageName);
-                if (middlewares) {
-                  for (const middleware of middlewares) {
-                    if (typeof middleware["context"]?.["options"]?.["publicPath"] === "string") {
-                      const publicPath = middleware["context"]["options"]["publicPath"] as string;
-                      const protocolStr = currServer.options.ssl ? "https://" : "http://";
-                      const hostStr = "localhost";
-                      const portStr = (currServer.options.port !== undefined ? `:${currServer.options.port}` : "");
 
-                      clientHrefs.push(protocolStr + hostStr + portStr + publicPath);
-                    }
+              for (const buildablePackage of buildablePackages) {
+                if (buildablePackage.config.type === "client") {
+                  const serverPackageName = buildablePackage.config.server;
+                  const currServer = this._serverMap.get(serverPackageName);
+                  if (!currServer) {
+                    throw new SdError(buildablePackage.npmConfig.name + " 패키지의 서버 패키지인 " + serverPackageName + "가 빌드되지 않았습니다.");
+                  }
+                  const protocolStr = currServer.options.ssl ? "https://" : "http://";
+                  const hostStr = "localhost";
+                  const portStr = (currServer.options.port !== undefined ? `:${currServer.options.port}` : "");
+                  const url = protocolStr + hostStr + portStr;
+
+                  const clientPackageName = buildablePackage.npmConfig.name;
+
+
+                  if (
+                    buildablePackage.config.platforms === undefined ||
+                    buildablePackage.config.platforms.some((platform) => platform.type === "browser")
+                  ) {
+                    const publicPath = "/" + clientPackageName.split("/").last() + "/";
+                    clientHrefs.push(url + publicPath);
+                  }
+
+                  if (
+                    buildablePackage.config.platforms?.some((platform) => platform.type === "windows") &&
+                    !isFirstComplete
+                  ) {
+                    const publicPath = "/__windows__/" + clientPackageName.split("/").last() + "/";
+
+                    new SdCliElectron().runAsync(url + publicPath).catch((err) => {
+                      this._logger.error(err);
+                    });
                   }
                 }
               }
+
               if (clientHrefs.length > 0) {
                 this._logger.log(`오픈된 클라이언트: ${clientHrefs.join(", ")}`);
               }
@@ -180,8 +202,8 @@ export class SdCliProject {
 
         const middlewares = await pkg.runCompileAsync(argv.watch);
         if (middlewares) {
-          if (pkg.config.type !== "client-browser" && pkg.config.type !== "client-windows") throw new NeverEntryError();
-          const pkgConfig: TSdClientPackageConfig = pkg.config;
+          if (pkg.config.type !== "client") throw new NeverEntryError();
+          const pkgConfig: ISdClientPackageConfig = pkg.config;
           this._addMiddlewares(pkgConfig.server, middlewares);
 
           setTimeout(async () => {

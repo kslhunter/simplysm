@@ -21,7 +21,7 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
       color: var(--text-brightness-rev-default);
       transition: transform .1s ease-out;
 
-      &[sd-toggle=true] {
+      &[sd-desktop-toggle=true] {
         transform: translateX(-100%);
         transition: transform .1s ease-in;
       }
@@ -32,6 +32,11 @@ export class SdSidebarControl {
   @HostBinding("attr.sd-toggle")
   public get toggle(): boolean | undefined {
     return this.parentControl?.toggle;
+  }
+
+  @HostBinding("attr.sd-desktop-toggle")
+  public get desktopToggle(): boolean | undefined {
+    return this.parentControl?.desktopToggle;
   }
 
   public constructor(@Inject(forwardRef(() => SdSidebarContainerControl))

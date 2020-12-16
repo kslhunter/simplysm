@@ -102,12 +102,8 @@ export class SdCliPackage extends EventEmitter {
         });
       }
     }
-    else if (
-      this.config.type === "client-browser" ||
-      this.config.type === "client-windows" ||
-      this.config.type === "server"
-    ) {
-      const isClient = this.config.type === "client-browser" || this.config.type === "client-windows";
+    else if (this.config.type === "client" || this.config.type === "server") {
+      const isClient = this.config.type === "client";
 
       const baseTsconfigFilePath = SdCliPathUtil.getTsConfigBaseFilePath(this.rootPath);
       const baseTsconfig: ITsConfig = await FsUtil.readJsonAsync(baseTsconfigFilePath);
@@ -160,21 +156,27 @@ export class SdCliPackage extends EventEmitter {
         await serverCompiler.compileAsync();
       }
     }
-    else if (this.config.type === "client-browser" || this.config.type === "client-windows") {
-      const clientCompiler = new SdCliClientCompiler(this.rootPath, this.config)
-        .on("change", () => {
-          this.emit("change", "compile", undefined);
-        })
-        .on("complete", (results) => {
-          this.emit("complete", "compile", undefined, results);
-        });
+    else if (this.config.type === "client") {
+      this.config.platforms = this.config.platforms ?? [{ type: "browser" }];
 
-      if (watch) {
-        return await clientCompiler.watchAsync();
+      const handleFns = [];
+      for (const platform of this.config.platforms) {
+        const clientCompiler = new SdCliClientCompiler(this.rootPath, this.config, platform)
+          .on("change", () => {
+            this.emit("change", "compile", undefined);
+          })
+          .on("complete", (results) => {
+            this.emit("complete", "compile", undefined, results);
+          });
+
+        if (watch) {
+          handleFns.push(...await clientCompiler.watchAsync());
+        }
+        else {
+          await clientCompiler.compileAsync();
+        }
       }
-      else {
-        await clientCompiler.compileAsync();
-      }
+      return handleFns.length > 0 ? handleFns : undefined;
     }
 
     return undefined;
@@ -188,7 +190,7 @@ export class SdCliPackage extends EventEmitter {
         await this._runWorkerAsync("check", target);
       });
     }
-    else if (this.config.type === "client-browser" || this.config.type === "client-windows") {
+    else if (this.config.type === "client") {
       await this._runWorkerAsync("check", "browser");
     }
     else if (this.config.type === "server") {
@@ -214,7 +216,7 @@ export class SdCliPackage extends EventEmitter {
     else if (this.config.type === "server") {
       await this._runWorkerAsync("lint", "node");
     }
-    else if (this.config.type === "client-browser" || this.config.type === "client-windows") {
+    else if (this.config.type === "client") {
       await this._runWorkerAsync("lint", "browser");
     }
   }
@@ -227,7 +229,7 @@ export class SdCliPackage extends EventEmitter {
 
       await this._runWorkerAsync("ng-gen", "browser");
     }
-    else if (this.config.type === "client-browser" || this.config.type === "client-windows") {
+    else if (this.config.type === "client") {
       if (!this.fullDependencies.includes("@angular/core")) return;
       await this._runWorkerAsync("ng-gen", "browser");
     }
@@ -243,7 +245,7 @@ export class SdCliPackage extends EventEmitter {
         );
       }
     }
-    else if (this.config.type === "client-browser" || this.config.type === "client-windows" || this.config.type === "server") {
+    else if (this.config.type === "client" || this.config.type === "server") {
       if (this.config.publish?.type === "sftp") {
         const publishConfig = this.config.publish;
         const sftp = new SdSFtpStorage();
