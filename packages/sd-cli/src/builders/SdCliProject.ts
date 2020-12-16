@@ -164,7 +164,8 @@ export class SdCliProject {
                       buildablePackage.config.platforms?.some((platform) => platform.type === "android") &&
                       !isFirstComplete
                     ) {
-                      // TODO
+                      const publicPath = "/__android__/" + clientPackageName.split("/").last() + "/";
+                      clientHrefs.push(url + publicPath);
                     }
                   }
                 }

@@ -39,7 +39,13 @@ export class SdProcessManager {
         processing = true;
 
         try {
-          const msg = iconv.convert(data).toString().trim();
+          let msg: string;
+          try {
+            msg = iconv.convert(data).toString().trim();
+          }
+          catch {
+            msg = data.toString();
+          }
           message += msg + os.EOL;
 
           if (messageHandler !== undefined && messageHandler !== false) {
@@ -69,7 +75,13 @@ export class SdProcessManager {
         processing = true;
 
         try {
-          const msg = iconv.convert(data).toString().trim();
+          let msg: string;
+          try {
+            msg = iconv.convert(data).toString().trim();
+          }
+          catch {
+            msg = data.toString();
+          }
           message += msg + os.EOL;
 
           if (errorMessageHandler !== undefined && errorMessageHandler !== false) {

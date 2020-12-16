@@ -13,6 +13,15 @@ const AppModuleNgFactory = require("SD_APP_MODULE_FACTORY").AppModuleNgFactory;
 
 enableProdMode();
 
-platformBrowserDynamic().bootstrapModuleFactory(AppModuleNgFactory).catch((err) => {
-  console.error(err);
-});
+function start() {
+  platformBrowserDynamic().bootstrapModuleFactory(AppModuleNgFactory).catch((err) => {
+    console.error(err);
+  });
+}
+
+if (process.env.SD_PLATFORM) {
+  document.addEventListener("deviceready", start);
+}
+else {
+  start();
+}

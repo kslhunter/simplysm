@@ -76,4 +76,9 @@ function start() {
   bootstrap();
 }
 
-start();
+if (process.env.SD_PLATFORM) {
+  document.addEventListener("deviceready", start);
+}
+else {
+  start();
+}

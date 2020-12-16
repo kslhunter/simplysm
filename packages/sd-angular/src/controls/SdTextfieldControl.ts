@@ -52,7 +52,7 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
 
     <ng-container *ngIf="multiline">
       <textarea #input
-                *ngIf="disabled || !readonly"
+                *ngIf="(!disabled && !readonly)"
                 [value]="controlValue"
                 [attr.placeholder]="placeholder"
                 [attr.title]="title || placeholder"

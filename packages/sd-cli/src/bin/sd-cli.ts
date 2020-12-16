@@ -10,6 +10,7 @@ import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { SdCliFileCrypto } from "../builders/SdCliFileCrypto";
 import { SdCliCheck } from "../builders/SdCliCheck";
 import { SdCliElectron } from "../builders/SdCliElectron";
+import { SdCliCordova } from "../builders/SdCliCordova";
 
 // TODO: 2020-11-15 22:04 3.x버전의 수정사항들을 적용함
 
@@ -96,21 +97,34 @@ const argv = yargs.version(false)
       })
   )
   .command(
-    "run-desktop-browser",
+    "run-desktop-browser <url>",
     "데스크탑 브라우저를 시작합니다.",
-    (cmd) => cmd
-      .options({
-        url: {
-          type: "string",
-          describe: "오픈할 HTML 파일 혹은 링크",
-          demandOption: true
-        }
+    (cmd) => cmd.version(false)
+      .positional("url", {
+        type: "string",
+        describe: "오픈할 HTML 파일 혹은 링크",
+        demandOption: true
+      })
+  )
+  .command(
+    "run-cordova-device <cordovaProjectPath> <url>",
+    "CORDOVA WATCH를 디바이스에 띄웁니다.",
+    (cmd) => cmd.version(false)
+      .positional("cordovaProjectPath", {
+        type: "string",
+        describe: "CORDOVA 프로젝트 경로",
+        demandOption: true
+      })
+      .positional("url", {
+        type: "string",
+        describe: "오픈할 HTML 파일 혹은 링크",
+        demandOption: true
       })
   )
   .command(
     "local-update",
     "로컬 라이브러리 업데이트를 수행합니다.",
-    (cmd) => cmd
+    (cmd) => cmd.version(false)
       .options({
         config: {
           type: "string",
@@ -202,6 +216,9 @@ else {
   }
   else if (args[0] === "run-desktop-browser") {
     await new SdCliElectron().runAsync(argv.url!);
+  }
+  else if (args[0] === "run-cordova-device") {
+    await new SdCliCordova().runDeviceAsync(argv.cordovaProjectPath, argv.url!);
   }
   else if (args[0] === "enc-file") {
     await new SdCliFileCrypto().encryptAsync(argv.file!);

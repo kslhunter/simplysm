@@ -41,11 +41,7 @@ export class SdCliClientCompiler extends EventEmitter {
 
   public async compileAsync(): Promise<void> {
     if (this._platform.type === "android") {
-      const cordovaTool = new SdCliCordovaTool(
-        this._rootPath,
-        this._platform
-      );
-      await cordovaTool.initializeAsync();
+      await new SdCliCordovaTool().initializeAsync(this._rootPath, this._platform);
     }
 
     const webpackConfig = await this._getWebpackConfigAsync(false);
@@ -87,11 +83,7 @@ export class SdCliClientCompiler extends EventEmitter {
 
   public async watchAsync(): Promise<NextHandleFunction[]> {
     if (this._platform.type === "android") {
-      const cordovaTool = new SdCliCordovaTool(
-        this._rootPath,
-        this._platform
-      );
-      await cordovaTool.initializeAsync();
+      await new SdCliCordovaTool().initializeAsync(this._rootPath, this._platform);
     }
 
     const webpackConfig = await this._getWebpackConfigAsync(true);
@@ -141,7 +133,7 @@ export class SdCliClientCompiler extends EventEmitter {
     });
   }
 
-  private async _getWebpackConfigAsync(watch: boolean, device?: string): Promise<webpack.Configuration> {
+  private async _getWebpackConfigAsync(watch: boolean): Promise<webpack.Configuration> {
     // 패키지 이름 (SCOPE 제외)
     const packageKey = this._npmConfig.name.split("/").last()!;
 
@@ -365,10 +357,18 @@ export class SdCliClientCompiler extends EventEmitter {
         ] : [],
         ...this._platform.type === "android" ? [
           new CopyWebpackPlugin({
-            patterns: [{
-              context: path.resolve(this._rootPath, `.cordova/platforms/android/platform_www`),
-              from: "**/*"
-            }]
+            patterns: [
+              {
+                context: path.resolve(this._rootPath, `.cordova/platforms/browser/platform_www`),
+                from: "**/*",
+                to: "cordova-browser"
+              },
+              {
+                context: path.resolve(this._rootPath, `.cordova/platforms/android/platform_www`),
+                from: "**/*",
+                to: "cordova-android"
+              }
+            ]
           })
         ] : []
       ]
