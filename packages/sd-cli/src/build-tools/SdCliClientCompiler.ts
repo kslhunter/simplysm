@@ -124,7 +124,7 @@ export class SdCliClientCompiler extends EventEmitter {
     });
   }
 
-  private async _getWebpackConfigAsync(watch: boolean): Promise<webpack.Configuration> {
+  private async _getWebpackConfigAsync(watch: boolean, device?: string): Promise<webpack.Configuration> {
     // 패키지 이름 (SCOPE 제외)
     const packageKey = this._npmConfig.name.split("/").last()!;
 
@@ -343,14 +343,6 @@ export class SdCliClientCompiler extends EventEmitter {
             patterns: [{
               from: path.resolve(srcPath, "favicon.ico"),
               to: path.resolve(distPath, "favicon.ico")
-            }]
-          })
-        ] : [],
-        ...this._platform.type === "android" ? [
-          new CopyWebpackPlugin({
-            patterns: [{
-              context: path.resolve(this._rootPath, `.cordova/platforms/browser/platform_www`),
-              from: "**/*"
             }]
           })
         ] : []
