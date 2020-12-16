@@ -122,46 +122,48 @@ export class SdCliProject {
                 this._logger.warn(`경고: ${warnings.length}건, 오류: ${errors.length}건`);
               }
 
-              const clientHrefs: string[] = [];
+              if (argv.watch) {
+                const clientHrefs: string[] = [];
 
-              for (const buildablePackage of buildablePackages) {
-                if (buildablePackage.config.type === "client") {
-                  const serverPackageName = buildablePackage.config.server;
-                  const currServer = this._serverMap.get(serverPackageName);
-                  if (!currServer) {
-                    throw new SdError(buildablePackage.npmConfig.name + " 패키지의 서버 패키지인 " + serverPackageName + "가 빌드되지 않았습니다.");
-                  }
-                  const protocolStr = currServer.options.ssl ? "https://" : "http://";
-                  const hostStr = "localhost";
-                  const portStr = (currServer.options.port !== undefined ? `:${currServer.options.port}` : "");
-                  const url = protocolStr + hostStr + portStr;
+                for (const buildablePackage of buildablePackages) {
+                  if (buildablePackage.config.type === "client") {
+                    const serverPackageName = buildablePackage.config.server;
+                    const currServer = this._serverMap.get(serverPackageName);
+                    if (!currServer) {
+                      throw new SdError(buildablePackage.npmConfig.name + " 패키지의 서버 패키지인 " + serverPackageName + "가 빌드되지 않았습니다.");
+                    }
+                    const protocolStr = currServer.options.ssl ? "https://" : "http://";
+                    const hostStr = "localhost";
+                    const portStr = (currServer.options.port !== undefined ? `:${currServer.options.port}` : "");
+                    const url = protocolStr + hostStr + portStr;
 
-                  const clientPackageName = buildablePackage.npmConfig.name;
+                    const clientPackageName = buildablePackage.npmConfig.name;
 
 
-                  if (
-                    buildablePackage.config.platforms === undefined ||
-                    buildablePackage.config.platforms.some((platform) => platform.type === "browser")
-                  ) {
-                    const publicPath = "/" + clientPackageName.split("/").last() + "/";
-                    clientHrefs.push(url + publicPath);
-                  }
+                    if (
+                      buildablePackage.config.platforms === undefined ||
+                      buildablePackage.config.platforms.some((platform) => platform.type === "browser")
+                    ) {
+                      const publicPath = "/" + clientPackageName.split("/").last() + "/";
+                      clientHrefs.push(url + publicPath);
+                    }
 
-                  if (
-                    buildablePackage.config.platforms?.some((platform) => platform.type === "windows") &&
-                    !isFirstComplete
-                  ) {
-                    const publicPath = "/__windows__/" + clientPackageName.split("/").last() + "/";
+                    if (
+                      buildablePackage.config.platforms?.some((platform) => platform.type === "windows") &&
+                      !isFirstComplete
+                    ) {
+                      const publicPath = "/__windows__/" + clientPackageName.split("/").last() + "/";
 
-                    new SdCliElectron().runAsync(url + publicPath).catch((err) => {
-                      this._logger.error(err);
-                    });
+                      new SdCliElectron().runAsync(url + publicPath).catch((err) => {
+                        this._logger.error(err);
+                      });
+                    }
                   }
                 }
-              }
 
-              if (clientHrefs.length > 0) {
-                this._logger.log(`오픈된 클라이언트: ${clientHrefs.join(", ")}`);
+                if (clientHrefs.length > 0) {
+                  this._logger.log(`오픈된 클라이언트: ${clientHrefs.join(", ")}`);
+                }
               }
 
               const spanTick = startTick === 0 ? 0 : (new DateTime().tick - startTick);
