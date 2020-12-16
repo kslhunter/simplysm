@@ -1,12 +1,6 @@
 import * as path from "path";
 import { FsUtil, Logger, PathUtil, SdProcessManager, SdProcessWorkManager } from "@simplysm/sd-core-node";
-import {
-  INpmConfig,
-  ISdClientPackageConfig,
-  ISdClientPackageConfigAndroidPlatform,
-  ISdPackageBuildResult,
-  ISdProjectConfig
-} from "../commons";
+import { INpmConfig, ISdClientPackageConfig, ISdPackageBuildResult, ISdProjectConfig } from "../commons";
 import { SdCliPackage } from "./SdCliPackage";
 import { DateTime, NeverEntryError, ObjectUtil, SdError, Wait } from "@simplysm/sd-core-common";
 import * as os from "os";
@@ -18,7 +12,6 @@ import { SdServiceServer } from "@simplysm/sd-service-node";
 import { NextHandleFunction } from "connect";
 import * as JSZip from "jszip";
 import { SdCliElectron } from "./SdCliElectron";
-import { SdCliCordovaTool } from "../build-tools/SdCliCordovaTool";
 
 export class SdCliProject {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -98,7 +91,7 @@ export class SdCliProject {
           }
 
           await Wait.true(() => isReadyDone);
-          setTimeout(async () => {
+          setTimeout(() => {
             watchCount--;
             if (watchCount === 0) {
               const totalResults = Array.from(totalResultsMap.values()).mapMany();
@@ -171,15 +164,7 @@ export class SdCliProject {
                       buildablePackage.config.platforms?.some((platform) => platform.type === "android") &&
                       !isFirstComplete
                     ) {
-                      for (const platform of buildablePackage.config.platforms.filter((item) => item.type === "android")) {
-                        const cordovaTool = new SdCliCordovaTool(
-                          buildablePackage.rootPath,
-                          platform as ISdClientPackageConfigAndroidPlatform,
-                          "android"
-                        );
-                        const publicPath = "/__android__/" + clientPackageName.split("/").last() + "/";
-                        await cordovaTool.initializeAsync(url + publicPath);
-                      }
+                      // TODO
                     }
                   }
                 }

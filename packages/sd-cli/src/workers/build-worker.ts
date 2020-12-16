@@ -288,7 +288,8 @@ try {
               .filter((item) => (
                 !(/[\\/]src[\\/]/).test(item.filePath) &&
                 !(/[\\/]node_modules[\\/]/).test(item.filePath) &&
-                !(/[\\/]dist.*[\\/]/).test(item.filePath)
+                !(/[\\/]dist.*[\\/]/).test(item.filePath) &&
+                !(/[\\/]\..*[\\/]/).test(item.filePath)
               ));
 
             // 변경된 파일에 대한 이전 결과들 삭제

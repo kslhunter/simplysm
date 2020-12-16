@@ -19,6 +19,7 @@ import { createWebpackInputHost } from "@ngtools/webpack/src/webpack-input-host"
 import { Observable } from "rxjs";
 import { SdAngularUtil } from "../utils/SdAngularUtil";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
+import { SdCliCordovaTool } from "./SdCliCordovaTool";
 
 export class SdCliClientCompiler extends EventEmitter {
   private readonly _npmConfig: INpmConfig;
@@ -39,6 +40,14 @@ export class SdCliClientCompiler extends EventEmitter {
   }
 
   public async compileAsync(): Promise<void> {
+    if (this._platform.type === "android") {
+      const cordovaTool = new SdCliCordovaTool(
+        this._rootPath,
+        this._platform
+      );
+      await cordovaTool.initializeAsync();
+    }
+
     const webpackConfig = await this._getWebpackConfigAsync(false);
 
     const compiler = webpack(webpackConfig);
@@ -77,6 +86,14 @@ export class SdCliClientCompiler extends EventEmitter {
   }
 
   public async watchAsync(): Promise<NextHandleFunction[]> {
+    if (this._platform.type === "android") {
+      const cordovaTool = new SdCliCordovaTool(
+        this._rootPath,
+        this._platform
+      );
+      await cordovaTool.initializeAsync();
+    }
+
     const webpackConfig = await this._getWebpackConfigAsync(true);
 
     const compiler = webpack(webpackConfig);
@@ -343,6 +360,14 @@ export class SdCliClientCompiler extends EventEmitter {
             patterns: [{
               from: path.resolve(srcPath, "favicon.ico"),
               to: path.resolve(distPath, "favicon.ico")
+            }]
+          })
+        ] : [],
+        ...this._platform.type === "android" ? [
+          new CopyWebpackPlugin({
+            patterns: [{
+              context: path.resolve(this._rootPath, `.cordova/platforms/android/platform_www`),
+              from: "**/*"
             }]
           })
         ] : []

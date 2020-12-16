@@ -258,19 +258,21 @@ export class Queryable<D extends DbContext, T> {
   public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (qr: Queryable<D, J>, en: TEntity<T>) => Queryable<D, R>): Queryable<D, T & { [K in A]: R[] }>;
   public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (qr: Queryable<D, J>, en: TEntity<T>) => Queryable<D, R>, isSingle: true): Queryable<D, T & { [K in A]: Partial<R> }>;
   public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (qr: Queryable<D, J>, en: TEntity<T>) => Queryable<D, R>, isSingle?: true): Queryable<D, any> {
-    if (this._def.join?.some((item) => item.as === this.db.qb.wrap(`TBL.${as}`))) {
+    const realAs = this._as !== undefined ? this._as + "." + as : as;
+
+    if (this._def.join?.some((item) => item.as === this.db.qb.wrap(`TBL.${realAs}`))) {
       return new Queryable(this.db, this) as any;
     }
 
     let joinTableQueryable: Queryable<D, J>;
     if (joinTypeOrQrs instanceof Array) {
-      joinTableQueryable = Queryable.union(joinTypeOrQrs, this._as !== undefined ? this._as + "." + as : as);
+      joinTableQueryable = Queryable.union(joinTypeOrQrs, realAs);
     }
     else {
-      joinTableQueryable = new Queryable(this.db, joinTypeOrQrs, this._as !== undefined ? this._as + "." + as : as);
+      joinTableQueryable = new Queryable(this.db, joinTypeOrQrs, realAs);
     }
     const joinQueryable = fwd(joinTableQueryable, this._entity);
-    const joinEntity = this._getParentEntity(joinQueryable._entity, this._as !== undefined ? this._as + "." + as : as, undefined);
+    const joinEntity = this._getParentEntity(joinQueryable._entity, realAs, undefined);
 
     const entity = { ...this._entity };
     this._setEntityChainValue(entity, as, isSingle ? joinEntity : [joinEntity]);
