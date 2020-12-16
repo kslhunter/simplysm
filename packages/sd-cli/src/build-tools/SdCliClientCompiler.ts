@@ -300,7 +300,7 @@ export class SdCliClientCompiler extends EventEmitter {
         new webpack.DefinePlugin({
           "process.env": {
             SD_VERSION: JSON.stringify(this._npmConfig.version),
-            SD_PLATFORM: this._platform.type,
+            SD_PLATFORM: JSON.stringify(this._platform.type),
             ...this._getConfigEnv()
           }
         }),
@@ -343,6 +343,14 @@ export class SdCliClientCompiler extends EventEmitter {
             patterns: [{
               from: path.resolve(srcPath, "favicon.ico"),
               to: path.resolve(distPath, "favicon.ico")
+            }]
+          })
+        ] : [],
+        ...this._platform.type === "android" ? [
+          new CopyWebpackPlugin({
+            patterns: [{
+              context: path.resolve(this._rootPath, `.cordova/platforms/browser/platform_www`),
+              from: "**/*"
             }]
           })
         ] : []

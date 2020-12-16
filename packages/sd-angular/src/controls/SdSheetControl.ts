@@ -414,6 +414,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
             > ._content { // 헤더/바디 구역 공통
               > ._row { // ROW 공통
                 position: relative;
+                display: block;
 
                 > ._cell-group { // 셀 그룹 공통
                   display: inline-block;
