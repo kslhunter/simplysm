@@ -75,6 +75,10 @@ export interface ISdClientPackageConfigWindowsPlatform {
 
 export interface ISdClientPackageConfigAndroidPlatform {
   type: "android";
+  appId: string;
+  appName: string;
+  plugins?: string[];
+  icon?: string;
 }
 
 export interface ISdServerPackageConfig {
