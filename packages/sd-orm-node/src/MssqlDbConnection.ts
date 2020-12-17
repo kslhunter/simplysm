@@ -19,7 +19,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", "MssqlDbConnection"]);
 
 
-  private readonly _timeout = 10 * 60 * 1000;
+  private readonly _timeout = 3 * 60 * 1000;
 
   private _conn?: tedious.Connection;
   private _connTimeout?: NodeJS.Timeout;
@@ -61,7 +61,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         requestTimeout: this._timeout,
         trustServerCertificate: true,
         validateBulkLoadParameters: false,
-        connectTimeout: this._timeout
+        connectTimeout: this._timeout * 5
       } as any
     });
 

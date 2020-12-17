@@ -19,7 +19,7 @@ function start() {
   });
 }
 
-if (process.env.SD_PLATFORM) {
+if (process.env.SD_PLATFORM === "android") {
   document.addEventListener("deviceready", start);
 }
 else {
