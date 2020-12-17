@@ -620,7 +620,7 @@ export class SdTextfieldControl implements DoCheck, AfterViewInit {
       }
     }
 
-    if (errorMessages.length > 0 && this.validatorFn) {
+    if (this.validatorFn) {
       const message = this.validatorFn(this.value);
       if (message !== undefined) {
         errorMessages.push(message);
