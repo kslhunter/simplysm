@@ -26,6 +26,19 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
         transition: transform .1s ease-in;
       }
     }
+
+    @media screen and (max-width: 520px) {
+      :host {
+        transform: translateX(-100%);
+        transition: transform .3s ease-in;
+
+        &[sd-toggle=true] {
+          transform: none;
+          transition: transform .3s ease-out;
+          @include elevation(16);
+        }
+      }
+    }
   `]
 })
 export class SdSidebarControl {

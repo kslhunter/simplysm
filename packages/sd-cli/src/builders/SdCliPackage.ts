@@ -328,6 +328,10 @@ export class SdCliPackage extends EventEmitter {
       await this._processWorkManager.getNextWorkerAsync() :
       await SdProcessWorker.createAsync(path.resolve(__dirname, `../workers/build-worker`), []);
 
+    worker.on("error", (err) => {
+      console.error(err, this.rootPath);
+    });
+
     const sender = worker.createWorkSender();
     await sender
       .on("change", () => {

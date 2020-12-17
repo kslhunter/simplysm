@@ -3,6 +3,8 @@
 *:before {
   box-sizing: border-box;
   outline-color: var(--theme-color-primary-default);
+
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
 *:focus {
@@ -280,9 +282,11 @@ small {
 .sd-border-radius-default {
   border-radius: var(--gap-xs) !important;
 }
+
 .sd-border-radius-lg {
   border-radius: var(--gap-sm) !important;
 }
+
 .sd-border-radius-xl {
   border-radius: var(--gap-default) !important;
 }
