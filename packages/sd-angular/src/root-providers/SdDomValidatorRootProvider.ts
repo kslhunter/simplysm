@@ -27,7 +27,7 @@ export class SdDomValidatorRootProvider {
         .map((item) => {
           const formItem = item.findParent("sd-form-item");
           if (formItem) {
-            return formItem.getAttribute("sd-label");
+            return formItem.getAttribute("label");
           }
 
           const cell = item.findParent("._cell");
