@@ -3,7 +3,7 @@ import { DbConnectionFactory, IDbConnection } from "@simplysm/sd-orm-node";
 import {
   IDbConnectionConfig,
   IQueryColumnDef,
-  IQueryResultParseOption,
+  IQueryResultParseOption, ISOLATION_LEVEL,
   QueryBuilder,
   SdOrmUtil,
   TQueryDef
@@ -56,13 +56,13 @@ export class SdOrmService extends SdServiceBase {
     }
   }
 
-  public async beginTransactionAsync(connId: number): Promise<void> {
+  public async beginTransactionAsync(connId: number, isolationLevel?: ISOLATION_LEVEL): Promise<void> {
     const conn = SdOrmService._connections.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await conn.beginTransactionAsync();
+    await conn.beginTransactionAsync(isolationLevel);
   }
 
   public async commitTransactionAsync(connId: number): Promise<void> {

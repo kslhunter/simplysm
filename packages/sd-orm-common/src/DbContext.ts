@@ -1,7 +1,7 @@
 import { QueryBuilder } from "./QueryBuilder";
 import { IDbContextExecutor } from "./IDbContextExecutor";
 import { QueryHelper } from "./QueryHelper";
-import { IQueryColumnDef, IQueryResultParseOption, TQueryDef } from "./commons";
+import { IQueryColumnDef, IQueryResultParseOption, ISOLATION_LEVEL, TQueryDef } from "./commons";
 import { NeverEntryError, ObjectUtil, SdError, Type } from "@simplysm/sd-core-common";
 import { IDbMigration } from "./IDbMigration";
 import { Queryable } from "./Queryable";
@@ -50,11 +50,11 @@ export abstract class DbContext {
     return result;
   }
 
-  public async connectAsync<R>(fn: () => Promise<R>): Promise<R> {
+  public async connectAsync<R>(fn: () => Promise<R>, isolationLevel?: ISOLATION_LEVEL): Promise<R> {
     await this._executor.connectAsync();
     this.status = "connect";
 
-    await this._executor.beginTransactionAsync();
+    await this._executor.beginTransactionAsync(isolationLevel);
     this.status = "transact";
 
     let result: R;
@@ -89,12 +89,12 @@ export abstract class DbContext {
     return result;
   }
 
-  public async transAsync<R>(fn: () => Promise<R>): Promise<R> {
+  public async transAsync<R>(fn: () => Promise<R>, isolationLevel?: ISOLATION_LEVEL): Promise<R> {
     if (this.status === "transact") {
       throw new Error("이미 TRANSACTION 상태 입니다.");
     }
 
-    await this._executor.beginTransactionAsync();
+    await this._executor.beginTransactionAsync(isolationLevel);
     this.status = "transact";
 
     let result: R;

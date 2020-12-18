@@ -2,7 +2,7 @@ import {
   IDbConnectionConfig,
   IDbContextExecutor,
   IQueryColumnDef,
-  IQueryResultParseOption,
+  IQueryResultParseOption, ISOLATION_LEVEL,
   QueryBuilder,
   SdOrmUtil,
   TQueryDef
@@ -23,11 +23,11 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     await this._conn.connectAsync();
   }
 
-  public async beginTransactionAsync(): Promise<void> {
+  public async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
     if (!this._conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
-    await this._conn.beginTransactionAsync();
+    await this._conn.beginTransactionAsync(isolationLevel);
   }
 
   public async commitTransactionAsync(): Promise<void> {

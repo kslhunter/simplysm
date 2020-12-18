@@ -341,7 +341,9 @@ export interface IQueryableDef {
 export type TQueryValuePropertyNames<T> = { [K in keyof T]: undefined extends T[K] ? never : T[K] extends TQueryValue ? K : never }[keyof T];
 export type TUndefinedPropertyNames<T> = { [K in keyof T]: undefined extends T[K] ? K : never }[keyof T];
 
-export type TOnlyQueryValueProperty<T> = Pick<T, TQueryValuePropertyNames<T>> & Partial<Pick<T, TUndefinedPropertyNames<T>>>;
+export type TOnlyQueryValueProperty<T> =
+  Pick<T, TQueryValuePropertyNames<T>>
+  & Partial<Pick<T, TUndefinedPropertyNames<T>>>;
 
 export type TInsertObject<T> = TOnlyQueryValueProperty<T>;
 export type TUpdateObject<T> = TOnlyQueryValueProperty<{
@@ -357,4 +359,11 @@ export interface IDbConnectionConfig {
   username: string;
   password: string;
   database?: string;
+}
+
+export enum ISOLATION_LEVEL {
+  READ_UNCOMMITTED = "READ_UNCOMMITTED",
+  READ_COMMITTED = "READ_COMMITTED",
+  REPEATABLE_READ = "REPEATABLE_READ",
+  SERIALIZABLE = "SERIALIZABLE"
 }

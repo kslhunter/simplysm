@@ -3,7 +3,7 @@ import * as mysql from "mysql";
 import { EventEmitter } from "events";
 import { NotImplementError, SdError, StringUtil } from "@simplysm/sd-core-common";
 import { IDbConnection } from "./IDbConnection";
-import { IDbConnectionConfig, IQueryColumnDef } from "@simplysm/sd-orm-common";
+import { IDbConnectionConfig, IQueryColumnDef, ISOLATION_LEVEL } from "@simplysm/sd-orm-common";
 
 export class MysqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", "MysqlDbConnection"]);
@@ -74,7 +74,7 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
     delete this._conn;
   }
 
-  public async beginTransactionAsync(): Promise<void> {
+  public async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
@@ -92,7 +92,7 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
     });
 
     await new Promise<void>((resolve, reject) => {
-      conn.query({ sql: "SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ", timeout: this._timeout }, (err) => {
+      conn.query({ sql: `SET SESSION TRANSACTION ISOLATION LEVEL ` + (isolationLevel ?? ISOLATION_LEVEL.REPEATABLE_READ).replace(/_/g, " "), timeout: this._timeout }, (err) => {
         if (err) {
           reject(new Error(err.message));
           return;

@@ -3,7 +3,7 @@ import {
   DbContext,
   IDbContextExecutor,
   IQueryColumnDef,
-  IQueryResultParseOption,
+  IQueryResultParseOption, ISOLATION_LEVEL,
   TQueryDef
 } from "@simplysm/sd-orm-common";
 import { Wait } from "@simplysm/sd-core-common";
@@ -63,12 +63,12 @@ export class SdServiceDbContextExecutor implements IDbContextExecutor {
     this._connId = await this._client.sendAsync("SdOrmService.connectAsync", [this._configName]);
   }
 
-  public async beginTransactionAsync(): Promise<void> {
+  public async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
     if (this._connId === undefined) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await this._client.sendAsync("SdOrmService.beginTransactionAsync", [this._connId]);
+    await this._client.sendAsync("SdOrmService.beginTransactionAsync", [this._connId, isolationLevel]);
   }
 
   public async commitTransactionAsync(): Promise<void> {

@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { IQueryColumnDef } from "@simplysm/sd-orm-common";
+import { IQueryColumnDef, ISOLATION_LEVEL } from "@simplysm/sd-orm-common";
 
 export interface IDbConnection extends EventEmitter {
   dialect: "mysql" | "mssql" | "mssql-azure";
@@ -10,7 +10,7 @@ export interface IDbConnection extends EventEmitter {
 
   closeAsync(): Promise<void>;
 
-  beginTransactionAsync(): Promise<void>;
+  beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void>;
 
   commitTransactionAsync(): Promise<void>;
 

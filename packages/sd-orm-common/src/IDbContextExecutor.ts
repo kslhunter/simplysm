@@ -1,11 +1,11 @@
-import { IQueryColumnDef, IQueryResultParseOption, TQueryDef } from "./commons";
+import { IQueryColumnDef, IQueryResultParseOption, ISOLATION_LEVEL, TQueryDef } from "./commons";
 
 export interface IDbContextExecutor {
   dialect: "mysql" | "mssql" | "mssql-azure";
 
   connectAsync(): Promise<void>;
 
-  beginTransactionAsync(): Promise<void>;
+  beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void>;
 
   commitTransactionAsync(): Promise<void>;
 

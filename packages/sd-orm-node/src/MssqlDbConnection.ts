@@ -6,14 +6,21 @@ import {
   DateTime,
   JsonConvert,
   NeverEntryError,
-  SdError, StringUtil,
+  SdError,
+  StringUtil,
   Time,
   Type,
   Uuid,
   Wait
 } from "@simplysm/sd-core-common";
 import { IDbConnection } from "./IDbConnection";
-import { IDbConnectionConfig, IQueryColumnDef, TQueryValue, TSdOrmDataType } from "@simplysm/sd-orm-common";
+import {
+  IDbConnectionConfig,
+  IQueryColumnDef,
+  ISOLATION_LEVEL,
+  TQueryValue,
+  TSdOrmDataType
+} from "@simplysm/sd-orm-common";
 
 export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", "MssqlDbConnection"]);
@@ -122,7 +129,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     });
   }
 
-  public async beginTransactionAsync(): Promise<void> {
+  public async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
     if (!this._conn || !this.isConnected) {
       throw new Error(`'Connection'이 연결되어있지 않습니다.`);
     }
@@ -139,7 +146,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
 
         this.isOnTransaction = true;
         resolve();
-      }, "", tedious.ISOLATION_LEVEL.READ_COMMITTED);
+      }, "", tedious.ISOLATION_LEVEL[isolationLevel ?? ISOLATION_LEVEL.READ_COMMITTED]);
     });
   }
 
