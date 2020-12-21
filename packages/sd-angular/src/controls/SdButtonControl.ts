@@ -72,11 +72,13 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
           &:hover {
             background: var(--theme-color-#{$theme}-dark);
             border-color: var(--theme-color-#{$theme}-dark);
+            color: var(--text-brightness-rev-default);
           }
 
           &:active {
             background: var(--theme-color-#{$theme}-darker);
             border-color: var(--theme-color-#{$theme}-darker);
+            color: var(--text-brightness-rev-default);
           }
 
           &:disabled {
@@ -101,7 +103,7 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 
       &[sd-size=lg] > button {
         padding: var(--gap-default) var(--gap-xl);
-        border-radius: 2px;
+        //border-radius: 2px;
       }
     }
   `]
