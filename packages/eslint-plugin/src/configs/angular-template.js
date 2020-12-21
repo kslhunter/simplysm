@@ -8,6 +8,8 @@ module.exports = {
   rules: {
     "@angular-eslint/template/cyclomatic-complexity": "off",
     "@angular-eslint/template/no-call-expression": "off",
+    "@angular-eslint/template/i18n": "off",
+    "@angular-eslint/template/no-any": "off",
     "@simplysm/ng-template-no-todo-comments": "warn"
   }
 };

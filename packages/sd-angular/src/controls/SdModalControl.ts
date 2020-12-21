@@ -328,6 +328,8 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
   private _dialogEl?: HTMLElement;
   private _dialogHeaderEl!: HTMLElement;
 
+  public initialized = false;
+
   public constructor(private readonly _elRef: ElementRef,
                      private readonly _zone: NgZone,
                      private readonly _systemConfig: SdSystemConfigRootProvider) {
@@ -371,6 +373,8 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
         this.onHeaderMouseDown(event);
       });
     });
+
+    this.initialized = true;
   }
 
   public async ngAfterViewInit(): Promise<void> {

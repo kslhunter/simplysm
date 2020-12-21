@@ -1,6 +1,7 @@
 import { ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
 import { SdModalControl } from "../controls/SdModalControl";
 import { SdRootProvider } from "../root-providers/SdRootProvider";
+import { Wait } from "@simplysm/sd-core-common";
 
 @Injectable({ providedIn: null })
 export class SdModalProvider {
@@ -80,7 +81,8 @@ export class SdModalProvider {
         this.modalCount++;
         modalEntryRef.instance.open = true;
         await userModalRef.instance.sdOnOpen(param);
-        modalEntryEl.findFirst("> ._dialog")?.focus();
+        await Wait.true(() => modalEntryRef.instance.initialized);
+        modalEntryEl.findFirst("> ._dialog")!.focus();
       }
       catch (err) {
         reject(err);
