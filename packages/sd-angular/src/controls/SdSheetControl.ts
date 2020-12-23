@@ -1232,7 +1232,10 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       this.expandedItems = [];
     }
     else {
-      this.expandedItems = this.displayItems.filter((item, i) => (this.getChildrenFn?.(i, item)?.length > 0));
+      this.expandedItems = this.displayItems.filter((item, i) => {
+        const children = this.getChildrenFn?.(i, item);
+        return children ? children.length > 0 : false;
+      });
     }
   }
 
