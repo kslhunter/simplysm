@@ -754,7 +754,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
   @Input()
   @SdInputValidate(Function)
-  public getChildrenFn?: (index: number, item: any) => any;
+  public getChildrenFn?: (index: number, item: any) => (any[] | undefined);
 
   @Input()
   @SdInputValidate(Boolean)
@@ -853,12 +853,18 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   }
 
   public getHasParentItem(): boolean {
-    return this.displayItems.some((item, i) => (this.getChildrenFn?.(i, item)?.length > 0));
+    return this.displayItems.some((item, i) => {
+      const children = this.getChildrenFn?.(i, item);
+      return children ? children.length > 0 : false;
+    });
   }
 
   public getIsAllExpanded(): boolean {
     return ObjectUtil.equal(
-      this.displayItems.filter((item, i) => (this.getChildrenFn?.(i, item)?.length > 0)),
+      this.displayItems.filter((item, i) => {
+        const children = this.getChildrenFn?.(i, item);
+        return children ? children.length > 0 : false;
+      }),
       this.expandedItems,
       {
         ignoreArrayIndex: true
@@ -1156,7 +1162,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       }
 
       // SELECTED ITEM 체크
-      const newSelectedItems = [...this.selectedItems].remove((item: any) => !this.items.includes(item));
+      const newSelectedItems = [...this.selectedItems].remove((item: any) => !this._getUngroupedItems(this.items).includes(item));
       if (this.selectedItemsChange.observers.length > 0) {
         this.selectedItemsChange.emit(newSelectedItems);
       }
@@ -1741,6 +1747,19 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     }
 
     return result;
+  }
+
+  private _getUngroupedItems(items: any[]): any[] {
+    if (this.getChildrenFn) {
+      return items.mapMany((item, i) => {
+        const children = this.getChildrenFn!(i, item);
+
+        return [item, ...(children ? this._getUngroupedItems(children) : [])];
+      });
+    }
+    else {
+      return this.items;
+    }
   }
 }
 
