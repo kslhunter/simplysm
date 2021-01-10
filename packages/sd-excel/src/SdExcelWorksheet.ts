@@ -19,7 +19,7 @@ export class SdExcelWorksheet {
   }
 
   private _reloadRows(): void {
-    for (const rowData of this.sheetData.worksheet.sheetData[0].row ?? []) {
+    for (const rowData of this.sheetData?.worksheet.sheetData[0].row ?? []) {
       const rowIndex = rowData.$.r - 1;
       this.rowDataMap.set(rowIndex, rowData);
     }

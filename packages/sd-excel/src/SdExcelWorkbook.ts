@@ -186,19 +186,19 @@ export class SdExcelWorkbook {
     wb._zip = zip;
 
     // .rel
-    wb._relData = await XmlConvert.parseAsync(await zip.file("_rels/.rels")!.async("text"));
+    wb._relData = await XmlConvert.parseAsync(await zip.file("_rels/.rels")!.async("text"), { stripPrefix: true });
 
     // Workbook
-    wb._wbData = await XmlConvert.parseAsync(await zip.file("xl/workbook.xml")!.async("text"));
+    wb._wbData = await XmlConvert.parseAsync(await zip.file("xl/workbook.xml")!.async("text"), { stripPrefix: true });
 
     // ContentType
-    wb.contentTypeData = await XmlConvert.parseAsync(await zip.file("[Content_Types].xml")!.async("text"));
+    wb.contentTypeData = await XmlConvert.parseAsync(await zip.file("[Content_Types].xml")!.async("text"), { stripPrefix: true });
 
     // Workbook Rel
-    wb._wbRelData = await XmlConvert.parseAsync(await zip.file("xl/_rels/workbook.xml.rels")!.async("text"));
+    wb._wbRelData = await XmlConvert.parseAsync(await zip.file("xl/_rels/workbook.xml.rels")!.async("text"), { stripPrefix: true });
 
     // Worksheets
-    const worksheets = wb._wbData.workbook.sheets[0].sheet.map((item: any) => ({
+    const worksheets = wb._wbData.workbook?.sheets[0].sheet.map((item: any) => ({
       rid: item.$["r:id"],
       name: item.$.name
     }));
@@ -206,12 +206,12 @@ export class SdExcelWorkbook {
       const r = wb._wbRelData.Relationships.Relationship.single((item1: any) => item1.$.Id === item.rid);
       const id = Number(r.$.Target.match(/\/sheet(.*)\./)[1]);
 
-      const sheetData = await XmlConvert.parseAsync(await zip.file(`xl/${r.$.Target as string}`)!.async("text"));
+      const sheetData = await XmlConvert.parseAsync(await zip.file(`xl/${r.$.Target as string}`)!.async("text"), { stripPrefix: true });
       wb._worksheets[id] = new SdExcelWorksheet(wb, item.name, sheetData);
 
       // Drawing
       if (zip.file(`xl/worksheets/_rels/sheet${id}.xml.rels`)) {
-        const wsRelData = await XmlConvert.parseAsync(await zip.file(`xl/worksheets/_rels/sheet${id}.xml.rels`)!.async("text"));
+        const wsRelData = await XmlConvert.parseAsync(await zip.file(`xl/worksheets/_rels/sheet${id}.xml.rels`)!.async("text"), { stripPrefix: true });
         wb._worksheets[id].relData = wsRelData;
 
         const drawingRelationship = wsRelData.Relationships.Relationship.single((item1: any) => (/drawing[0-9]/).test(item1.$.Target));
@@ -219,7 +219,7 @@ export class SdExcelWorkbook {
           // drawing rel
           const drawingRelFile = zip.file(`xl/drawings/_rels/drawing1.xml.rels`);
           if (drawingRelFile) {
-            wb._worksheets[id].drawingRelData = await XmlConvert.parseAsync(await drawingRelFile.async("text"));
+            wb._worksheets[id].drawingRelData = await XmlConvert.parseAsync(await drawingRelFile.async("text"), { stripPrefix: true });
           }
           else {
             wb._worksheets[id].drawingRelData = {};
@@ -227,16 +227,16 @@ export class SdExcelWorkbook {
           // wb._worksheets[id].drawingRelData = await XmlConvert.parseAsync(await zip.file(`xl/drawings/_rels/drawing1.xml.rels`).async("text"));
 
           // drawing
-          wb._worksheets[id].drawingData = await XmlConvert.parseAsync(await zip.file(`xl/drawings/drawing1.xml`)!.async("text"));
+          wb._worksheets[id].drawingData = await XmlConvert.parseAsync(await zip.file(`xl/drawings/drawing1.xml`)!.async("text"), { stripPrefix: true });
         }
       }
     }
 
     // SharedStrings
-    wb.sstData = await XmlConvert.parseAsync(await zip.file("xl/sharedStrings.xml")!.async("text"));
+    wb.sstData = await XmlConvert.parseAsync(await zip.file("xl/sharedStrings.xml")!.async("text"), { stripPrefix: true });
 
     // Styles
-    wb.stylesData = await XmlConvert.parseAsync(await zip.file("xl/styles.xml")!.async("text"));
+    wb.stylesData = await XmlConvert.parseAsync(await zip.file("xl/styles.xml")!.async("text"), { stripPrefix: true });
 
     wb.medias = [];
     const mediaFiles = Object.keys(zip.files).map((key) => zip.files[key]).filter((item) => item.name.startsWith("xl/media"));
