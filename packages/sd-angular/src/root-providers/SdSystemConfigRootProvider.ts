@@ -1,7 +1,11 @@
 import { Injectable } from "@angular/core";
+import { SdLocalStorageRootProvider } from "./SdLocalStorageRootProvider";
 
 @Injectable({ providedIn: "root" })
 export class SdSystemConfigRootProvider {
+  public constructor(private readonly _localStorage: SdLocalStorageRootProvider) {
+  }
+
   public fn?: {
     set: (key: string, data: any) => Promise<void> | void;
     get: (key: string) => Promise<any> | any;
@@ -11,12 +15,17 @@ export class SdSystemConfigRootProvider {
     if (this.fn) {
       await this.fn.set(key, data);
     }
+    else {
+      this._localStorage.set(key, data);
+    }
   }
 
   public async getAsync(key: string): Promise<any> {
     if (this.fn) {
       return await this.fn.get(key);
     }
-    return undefined;
+    else {
+      return this._localStorage.get(key);
+    }
   }
 }

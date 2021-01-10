@@ -8,5 +8,9 @@ export class SdSystemLogRootProvider {
     if (this.writeFn) {
       await this.writeFn(severity, ...data);
     }
+    else {
+      // eslint-disable-next-line no-console
+      console[severity](...data);
+    }
   }
 }

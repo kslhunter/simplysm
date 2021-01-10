@@ -40,7 +40,6 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
         transition: .1s ease-in-out;
         opacity: 0;
 
-
         &[sd-position=top] {
           transform: translateY(-100%);
         }

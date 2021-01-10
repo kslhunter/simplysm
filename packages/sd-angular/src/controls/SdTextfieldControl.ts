@@ -59,9 +59,8 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
                 [required]="required"
                 [attr.rows]="rows"
                 [attr.class]="inputClass"
-                [attr.style]="inputFullStyle"
-                (input)="onInput()"
-                wrap="off"></textarea>
+                [attr.style]="'white-space: nowrap; ' + inputFullStyle"
+                (input)="onInput()"></textarea>
       <div *ngIf="disabled || readonly"
            [attr.class]="(disabled ? '_disabled ' : readonly ? '_readonly ' : '') + (inputClass || '')"
            [attr.style]="inputFullStyle">

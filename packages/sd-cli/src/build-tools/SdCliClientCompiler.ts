@@ -1,4 +1,10 @@
-import { INpmConfig, ISdClientPackageConfig, ISdPackageBuildResult, TSdClientPackageConfigPlatform } from "../commons";
+import {
+  INpmConfig,
+  ISdClientPackageConfig,
+  ISdClientPackageConfigAndroidPlatform,
+  ISdPackageBuildResult,
+  TSdClientPackageConfigPlatform
+} from "../commons";
 import { NextHandleFunction } from "connect";
 import { EventEmitter } from "events";
 import * as webpack from "webpack";
@@ -54,12 +60,17 @@ export class SdCliClientCompiler extends EventEmitter {
           this.emit("change");
         });
 
-        compiler.run(async (err, stats) => {
+        compiler.run(async (err: Error | null, stats) => {
+          if (err != null) {
+            reject(err);
+            return;
+          }
+
           const results = SdWebpackUtil.getWebpackResults(err, stats);
 
-          if (this._npmConfig.dependencies && "@angular/service-worker" in this._npmConfig.dependencies) {
-            const distPath = SdCliPathUtil.getDistPath(this._rootPath);
+          const distPath = SdCliPathUtil.getDistPath(this._rootPath);
 
+          if (this._npmConfig.dependencies && "@angular/service-worker" in this._npmConfig.dependencies) {
             await FsUtil.copyAsync(
               path.resolve(process.cwd(), "node_modules", "@angular", "service-worker", "ngsw-worker.js"),
               path.resolve(distPath, "ngsw-worker.js")
@@ -69,6 +80,56 @@ export class SdCliClientCompiler extends EventEmitter {
             const ngswConfigPath = path.relative(process.cwd(), path.resolve(__dirname, "../../lib/ngsw-config.json"));
             const baseHref = `/${path.basename(this._rootPath)}/`;
             await SdProcessManager.spawnAsync(`ngsw-config ${relativeDistPath} ${ngswConfigPath} ${baseHref}`);
+          }
+
+          const androidPlatform: ISdClientPackageConfigAndroidPlatform | undefined =
+            this._config.platforms?.single((item) => item.type === "android") as any;
+          if (androidPlatform) {
+            const cordovaProjectPath = path.resolve(this._rootPath, ".cordova");
+
+            // TODO: SIGN => 사인방식을 어떻게 할지 결정 필요
+            if (androidPlatform.signDirPath !== undefined) {
+              await FsUtil.copyAsync(
+                path.resolve(process.cwd(), androidPlatform.signDirPath),
+                path.resolve(cordovaProjectPath)
+              );
+            }
+
+            // ICON
+            if (androidPlatform.icon !== undefined) {
+              await FsUtil.copyAsync(androidPlatform.icon, path.resolve(cordovaProjectPath, "res", "icon", "icon.png"));
+            }
+
+            // GRADLE
+            const gradleFilePath = path.resolve(cordovaProjectPath, "platforms/android/app/build.gradle");
+            let gradleFileContent = await FsUtil.readFileAsync(gradleFilePath);
+            gradleFileContent = gradleFileContent.replace(/lintOptions {/g, "lintOptions {\r\n      checkReleaseBuilds false;");
+            await FsUtil.writeFileAsync(gradleFilePath, gradleFileContent);
+
+
+            // CONFIG
+            const configFilePath = path.resolve(cordovaProjectPath, "config.xml");
+            let configFileContent = await FsUtil.readFileAsync(configFilePath);
+            configFileContent = configFileContent.replace(/<allow-navigation href="[^"]"\s?\/>/g, "");
+            configFileContent = configFileContent.replace(/version="[^"]*"/g, `version="${this._npmConfig.version}"`);
+            if (androidPlatform.icon !== undefined && !configFileContent.includes("<icon")) {
+              configFileContent = configFileContent.replace("</widget>", "    <icon src=\"res/icon/icon.png\" />\r\n</widget>");
+            }
+            await FsUtil.writeFileAsync(configFilePath, configFileContent);
+
+            // RUN
+            const cordovaBinPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
+            await SdProcessManager.spawnAsync(`${cordovaBinPath} build android --release`, { cwd: cordovaProjectPath });
+
+            // COPY
+            const apkFileName = androidPlatform.signDirPath !== undefined ? "app-release.apk" : "app-release-unsigned.apk";
+            const distApkFileName = `${this._npmConfig.name.replace(/ /g, "_")}${androidPlatform.signDirPath !== undefined ? "" : "-unsigned"}-v${this._npmConfig.version}.apk`;
+
+            await FsUtil.mkdirsAsync(distPath);
+            await FsUtil.copyAsync(
+              path.resolve(cordovaProjectPath, "platforms", "android", "app", "build", "outputs", "apk", "release", apkFileName),
+              path.resolve(distPath, distApkFileName)
+            );
           }
 
           this.emit("complete", results);

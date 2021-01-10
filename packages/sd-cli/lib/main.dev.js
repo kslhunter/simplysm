@@ -16,7 +16,7 @@ const AppModule = require("SD_APP_MODULE").AppModule;
 let ngModuleRef;
 
 function dispose() {
-  const serviceProvider = ngModuleRef.injector.get(SdServiceFactoryProvider);
+  const serviceProvider = ngModuleRef.injector.get(SdServiceFactoryProvider, null);
   if (serviceProvider) {
     serviceProvider.disconnectAll().catch((err) => {
       console.error(err);

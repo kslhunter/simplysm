@@ -92,7 +92,7 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
     });
 
     await new Promise<void>((resolve, reject) => {
-      conn.query({ sql: `SET SESSION TRANSACTION ISOLATION LEVEL ` + (isolationLevel ?? ISOLATION_LEVEL.REPEATABLE_READ).replace(/_/g, " "), timeout: this._timeout }, (err) => {
+      conn.query({ sql: `SET SESSION TRANSACTION ISOLATION LEVEL ` + (isolationLevel ?? this.config.defaultIsolationLevel ?? ISOLATION_LEVEL.REPEATABLE_READ).replace(/_/g, " "), timeout: this._timeout }, (err) => {
         if (err) {
           reject(new Error(err.message));
           return;

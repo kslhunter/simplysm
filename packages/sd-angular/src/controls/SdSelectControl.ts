@@ -220,7 +220,7 @@ export class SdSelectControl implements DoCheck {
   public guid = Uuid.new().toString();
 
   @Input()
-  public value: any | any[] | undefined;
+  private value: any | any[] | undefined;
 
   @Output()
   public readonly valueChange = new EventEmitter<any | any[]>();
@@ -438,8 +438,8 @@ export class SdSelectControl implements DoCheck {
 
   public onItemControlClick(itemControl: SdSelectItemControl, noClose?: boolean): void {
     if (this.selectMode === "multi") {
-      const value = [...this.value];
-      if ((this.value as any[]).includes(itemControl.value)) {
+      const value = [...(this.value ?? [])];
+      if (value.includes(itemControl.value)) {
         value.remove(itemControl.value);
       }
       else {

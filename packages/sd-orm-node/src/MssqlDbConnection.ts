@@ -146,7 +146,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
 
         this.isOnTransaction = true;
         resolve();
-      }, "", tedious.ISOLATION_LEVEL[isolationLevel ?? ISOLATION_LEVEL.READ_COMMITTED]);
+      }, "", tedious.ISOLATION_LEVEL[isolationLevel ?? this._config.defaultIsolationLevel ?? ISOLATION_LEVEL.READ_COMMITTED]);
     });
   }
 

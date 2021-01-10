@@ -359,6 +359,7 @@ export interface IDbConnectionConfig {
   username: string;
   password: string;
   database?: string;
+  defaultIsolationLevel?: ISOLATION_LEVEL;
 }
 
 export enum ISOLATION_LEVEL {

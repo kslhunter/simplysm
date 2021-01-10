@@ -79,6 +79,7 @@ export interface ISdClientPackageConfigAndroidPlatform {
   appName: string;
   plugins?: string[];
   icon?: string;
+  signDirPath?: string;
 }
 
 export interface ISdServerPackageConfig {
