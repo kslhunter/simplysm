@@ -38,7 +38,10 @@ module.exports = {
     }],
     "@typescript-eslint/return-await": "off", // 버그가 있어서 끔
     "@typescript-eslint/no-magic-numbers": "off",
-    "@typescript-eslint/no-extraneous-class": ["error", { allowStaticOnly: true, allowEmpty: true }],
+    "@typescript-eslint/no-extraneous-class": ["error", {
+      allowStaticOnly: true,
+      allowEmpty: true
+    }],
     "@typescript-eslint/brace-style": ["error", "stroustrup"],
     "@typescript-eslint/space-before-function-paren": ["error", {
       anonymous: "ignore",
@@ -100,10 +103,14 @@ module.exports = {
     "@typescript-eslint/no-loop-func": "off",
     "@typescript-eslint/no-unused-vars": ["warn", { args: "none" }],
     "@typescript-eslint/ban-ts-comment": "off",
-    "@typescript-eslint/quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
+    "@typescript-eslint/quotes": ["error", "double", {
+      avoidEscape: true,
+      allowTemplateLiterals: true
+    }],
     "@typescript-eslint/no-require-imports": "off",
     "@typescript-eslint/no-var-requires": "off",
-    "@typescript-eslint/no-use-before-define": "off"
-    // "@typescript-eslint/no-floating-promises": "off" // 퍼포먼스 이슈, 그래도 필요함..
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/no-floating-promises": "off", // 퍼포먼스 이슈, 그래도 필요함..
+    "@typescript-eslint/sort-type-union-intersection-members": "off"
   }
 };
