@@ -90,6 +90,7 @@ export class SdCliClientCompiler extends EventEmitter {
           if (androidPlatform) {
             const cordovaProjectPath = path.resolve(this._rootPath, ".cordova");
 
+            // TODO: 안드로이드 디버그 빌드 구현 (--debug 있을 때에 디버그버전으로 빌드, 사인 없이)
             if (androidPlatform.sign !== undefined) {
               await FsUtil.copyAsync(
                 path.resolve(process.cwd(), androidPlatform.sign.keystore),
