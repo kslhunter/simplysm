@@ -13,7 +13,7 @@ import * as path from "path";
 import * as WebpackDevMiddleware from "webpack-dev-middleware";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import { SdCliPathUtil } from "../utils/SdCliPathUtil";
-import { FsUtil, SdProcessManager } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, SdProcessManager } from "@simplysm/sd-core-node";
 import * as ts from "typescript";
 import * as fs from "fs";
 import { SdWebpackWriteFilePlugin } from "../utils/SdWebpackWriteFilePlugin";
@@ -28,6 +28,7 @@ import * as CopyWebpackPlugin from "copy-webpack-plugin";
 import { SdCliCordovaTool } from "./SdCliCordovaTool";
 
 export class SdCliClientCompiler extends EventEmitter {
+  private readonly _logger: Logger;
   private readonly _npmConfig: INpmConfig;
 
   public constructor(private readonly _rootPath: string,
@@ -37,6 +38,8 @@ export class SdCliClientCompiler extends EventEmitter {
 
     const npmConfigFilePath = SdCliPathUtil.getNpmConfigFilePath(this._rootPath);
     this._npmConfig = FsUtil.readJson(npmConfigFilePath);
+
+    this._logger = Logger.get(["simplysm", "sd-cli", this.constructor.name, this._npmConfig.name, this._platform.type]);
   }
 
   public on(event: "change", listener: () => void): this;
@@ -87,11 +90,24 @@ export class SdCliClientCompiler extends EventEmitter {
           if (androidPlatform) {
             const cordovaProjectPath = path.resolve(this._rootPath, ".cordova");
 
-            // TODO: SIGN => 사인방식을 어떻게 할지 결정 필요
-            if (androidPlatform.signDirPath !== undefined) {
+            if (androidPlatform.sign !== undefined) {
               await FsUtil.copyAsync(
-                path.resolve(process.cwd(), androidPlatform.signDirPath),
-                path.resolve(cordovaProjectPath)
+                path.resolve(process.cwd(), androidPlatform.sign.keystore),
+                path.resolve(cordovaProjectPath, path.basename(androidPlatform.sign.keystore))
+              );
+              await FsUtil.writeJsonAsync(
+                path.resolve(cordovaProjectPath, "build.json"),
+                {
+                  android: {
+                    release: {
+                      keystore: path.basename(androidPlatform.sign.keystore),
+                      storePassword: androidPlatform.sign.storePassword,
+                      alias: androidPlatform.sign.alias,
+                      password: androidPlatform.sign.password,
+                      keystoreType: androidPlatform.sign.keystoreType
+                    }
+                  }
+                }
               );
             }
 
@@ -106,7 +122,6 @@ export class SdCliClientCompiler extends EventEmitter {
             gradleFileContent = gradleFileContent.replace(/lintOptions {/g, "lintOptions {\r\n      checkReleaseBuilds false;");
             await FsUtil.writeFileAsync(gradleFilePath, gradleFileContent);
 
-
             // CONFIG
             const configFilePath = path.resolve(cordovaProjectPath, "config.xml");
             let configFileContent = await FsUtil.readFileAsync(configFilePath);
@@ -119,11 +134,13 @@ export class SdCliClientCompiler extends EventEmitter {
 
             // RUN
             const cordovaBinPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
-            await SdProcessManager.spawnAsync(`${cordovaBinPath} build android --release`, { cwd: cordovaProjectPath });
+            await SdProcessManager.spawnAsync(`${cordovaBinPath} build android --release`, { cwd: cordovaProjectPath }, (message) => {
+              this._logger.debug("CORDOVA: " + message);
+            });
 
             // COPY
-            const apkFileName = androidPlatform.signDirPath !== undefined ? "app-release.apk" : "app-release-unsigned.apk";
-            const distApkFileName = `${this._npmConfig.name.replace(/ /g, "_")}${androidPlatform.signDirPath !== undefined ? "" : "-unsigned"}-v${this._npmConfig.version}.apk`;
+            const apkFileName = androidPlatform.sign !== undefined ? "app-release.apk" : "app-release-unsigned.apk";
+            const distApkFileName = path.basename(`${this._npmConfig.name.replace(/ /g, "_")}${androidPlatform.sign !== undefined ? "" : "-unsigned"}-v${this._npmConfig.version}.apk`);
 
             await FsUtil.mkdirsAsync(distPath);
             await FsUtil.copyAsync(

@@ -52,9 +52,9 @@ export interface ISdLibraryPackageConfig {
 }
 
 export interface ISdClientPackageConfig {
-  env?: Record<string, string>;
   type: "client";
   platforms?: TSdClientPackageConfigPlatform[];
+  env?: Record<string, string>;
   server: string;
   configs?: Record<string, any>;
   publish?: TSdPublishConfig;
@@ -79,7 +79,13 @@ export interface ISdClientPackageConfigAndroidPlatform {
   appName: string;
   plugins?: string[];
   icon?: string;
-  signDirPath?: string;
+  sign?: {
+    keystore: string;
+    storePassword: string;
+    alias: string;
+    password: string;
+    keystoreType: string;
+  };
 }
 
 export interface ISdServerPackageConfig {
