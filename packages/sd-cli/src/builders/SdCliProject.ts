@@ -65,6 +65,7 @@ export class SdCliProject {
     const buildablePackages = pkgs.filter((item) => item.config.type !== "none");
 
     // 패키지 빌드 결과이벤트에 따른 출력
+    let hasError = false;
     let isFirstComplete = false;
     let isReadyDone = false;
     let watchCount = 0;
@@ -177,6 +178,7 @@ export class SdCliProject {
 
               const spanTick = startTick === 0 ? 0 : (new DateTime().tick - startTick);
               this._logger.info(`모든 빌드가 완료되었습니다.${spanTick ? ` (${spanTick.toLocaleString()}ms)` : ""}`);
+              hasError = errors.length > 0;
               startTick = 0;
               isFirstComplete = true;
             }
@@ -259,6 +261,11 @@ export class SdCliProject {
     isReadyDone = true;
 
     await Wait.true(() => isFirstComplete);
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!argv.watch && hasError) {
+      throw new Error("빌드 중 에러가 있습니다.");
+    }
   }
 
   public async publishAsync(argv: { build: boolean; packages: string[]; options: string[]; config?: string }): Promise<void> {
