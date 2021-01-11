@@ -4,6 +4,7 @@ import * as path from "path";
 import { ISdPackageBuildResult } from "../commons";
 import * as tsEslintParser from "@typescript-eslint/parser";
 import { ESLint } from "eslint";
+import { Wait } from "@simplysm/sd-core-common";
 
 export class SdCliLinter {
   private readonly _linter: ESLint;
@@ -35,7 +36,7 @@ export class SdCliLinter {
     });
   }
 
-  public async lintAsync(filePaths: string[], parentResults?: ISdPackageBuildResult[]): Promise<ISdPackageBuildResult[]> {
+  public async lintAsync(filePaths: string[], parentResults?: ISdPackageBuildResult[], errCount = 0): Promise<ISdPackageBuildResult[]> {
     try {
       // 라이브러리 변화를 인지하지 못하므로, clearCaches를 통해 program을 다시 만들도록 함
       tsEslintParser.clearCaches();
@@ -61,6 +62,10 @@ export class SdCliLinter {
       return results;
     }
     catch (err) {
+      if (errCount >= 4) {
+        throw err;
+      }
+
       const results: ISdPackageBuildResult[] = [];
 
       const existsFilePaths: string[] = [];
@@ -78,7 +83,8 @@ export class SdCliLinter {
         }
       }
 
-      return await this.lintAsync(existsFilePaths, results);
+      await Wait.time(1000);
+      return await this.lintAsync(existsFilePaths, results, errCount + 1);
     }
   }
 }

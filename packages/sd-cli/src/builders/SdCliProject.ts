@@ -91,7 +91,9 @@ export class SdCliProject {
             this._setNewServer(pkg.npmConfig.name, server);
           }
 
+          console.log(1);
           await Wait.true(() => isReadyDone);
+          console.log(4);
           setTimeout(() => {
             watchCount--;
             if (watchCount === 0) {
@@ -214,7 +216,7 @@ export class SdCliProject {
         await this._waitPackageCompleteAsync(pkg, notNoneTypePackageNames, checkCompletedPackageNames);
 
         const middlewares = await pkg.runCompileAsync(argv.watch);
-        if (middlewares) {
+        if (argv.watch && middlewares) {
           if (pkg.config.type !== "client") throw new NeverEntryError();
           const pkgConfig: ISdClientPackageConfig = pkg.config;
           this._addMiddlewares(pkgConfig.server, middlewares);
@@ -238,6 +240,7 @@ export class SdCliProject {
         }
 
         compileCompletedPackageNames.push(pkg.npmConfig.name);
+        console.log(pkg.npmConfig.name, "컴파일");
       }),
       buildablePackages.parallelAsync(async (pkg) => {
         await this._waitPackageCompleteAsync(pkg, notNoneTypePackageNames, checkCompletedPackageNames);
@@ -245,19 +248,25 @@ export class SdCliProject {
         await pkg.runCheckAsync();
 
         checkCompletedPackageNames.push(pkg.npmConfig.name);
+        console.log(pkg.npmConfig.name, "체크");
       }),
       buildablePackages.parallelAsync(async (pkg) => {
         await this._waitPackageCompleteAsync(pkg, notNoneTypePackageNames, checkCompletedPackageNames);
 
         await pkg.runLintAsync();
+
+        console.log(pkg.npmConfig.name, "린트");
       }),
       buildablePackages.parallelAsync(async (pkg) => {
         await this._waitPackageCompleteAsync(pkg, notNoneTypePackageNames, checkCompletedPackageNames);
 
         await pkg.runNgGenAsync();
+
+        console.log(pkg.npmConfig.name, "엔지");
       })
     ]);
 
+    console.log(2);
     isReadyDone = true;
 
     await Wait.true(() => isFirstComplete);
