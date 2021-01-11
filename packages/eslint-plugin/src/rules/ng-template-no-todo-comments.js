@@ -9,8 +9,8 @@ module.exports = {
   },
 
   create: (context) => {
-    const parserServices = context.parserServices;
-    return parserServices.defineTemplateBodyVisitor({
+    // const parserServices = context.parserServices;
+    return {
       Program(node) {
         if (node.value) {
           const comments = node.value.match(/<!--(((?!-->)[\s\S])*)-->/g);
@@ -40,6 +40,6 @@ module.exports = {
           }
         }
       }
-    });
+    };
   }
 };
