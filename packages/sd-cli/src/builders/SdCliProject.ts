@@ -87,7 +87,7 @@ export class SdCliProject {
             packageName: pkg.npmConfig.name
           })));
 
-          if (server) {
+          if (server && argv.watch) {
             this._setNewServer(pkg.npmConfig.name, server);
           }
 
