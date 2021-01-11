@@ -10,6 +10,8 @@ module.exports = {
     "@angular-eslint/template/no-call-expression": "off",
     "@angular-eslint/template/i18n": "off",
     "@angular-eslint/template/no-any": "off",
+    "@angular-eslint/template/click-events-have-key-events:": "off",
+    "@angular-eslint/contextual-decorator": "off",
     "@simplysm/ng-template-no-todo-comments": "warn"
   }
 };
