@@ -471,6 +471,8 @@ export class SdCliClientCompiler extends EventEmitter {
       ]
     };
   }
+  
+  // TODO: 클라이언트(코도바)프로젝트에 있는 configs가 전부 server에도 들어가야함
 
   private _createWebpackInputHost(inputFileSystem: webpack.InputFileSystem): virtualFs.Host<fs.Stats> {
     const host = createWebpackInputHost(inputFileSystem);
