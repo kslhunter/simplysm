@@ -5,7 +5,7 @@ import * as url from "url";
 export class SdServiceServerConfigUtil {
   public static async getConfigAsync(rootPath: string, requestUrl?: string): Promise<Record<string, any> | undefined> {
     let targetPath: string;
-    if (requestUrl !== undefined && requestUrl !== "") {
+    if (requestUrl !== undefined && requestUrl !== "" && !requestUrl.startsWith("file://")) {
       const urlObj = url.parse(requestUrl.replace(/__([^_]*)__\//g, ""), true, false);
       const clientPath = decodeURI(urlObj.pathname!.slice(1));
       targetPath = path.resolve(rootPath, "www", clientPath);

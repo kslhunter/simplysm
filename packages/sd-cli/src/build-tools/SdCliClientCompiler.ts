@@ -148,7 +148,7 @@ export class SdCliClientCompiler extends EventEmitter {
 
             // RUN
             const cordovaBinPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
-            await SdProcessManager.spawnAsync(`${cordovaBinPath} build android --release`, { cwd: cordovaProjectPath }, (message) => {
+            await SdProcessManager.spawnAsync(`${cordovaBinPath} build android --debug`, { cwd: cordovaProjectPath }, (message) => {
               this._logger.debug("CORDOVA: " + message);
             });
 
