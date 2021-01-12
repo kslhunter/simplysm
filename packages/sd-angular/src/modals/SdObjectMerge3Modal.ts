@@ -32,7 +32,7 @@ import { ObjectUtil, TFlatType } from "@simplysm/sd-core-common";
             <td
               [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.theirs[key], data.origin[key])">
-                <sd-icon fixedWidth icon="arrow-right" (click)="data.origin[key] = data.theirs[key]"></sd-icon>
+                <sd-icon fixedWidth icon="arrow-right" (click)="data.origin[key] = data.theirs[key]" style="pointer-events: auto"></sd-icon>
               </sd-anchor>
             </td>
             <td style="text-align: center"
@@ -42,7 +42,7 @@ import { ObjectUtil, TFlatType } from "@simplysm/sd-core-common";
             <td
               [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.yours[key], data.origin[key])">
-                <sd-icon fixedWidth icon="arrow-left" (click)="data.origin[key] = data.yours[key]"></sd-icon>
+                <sd-icon fixedWidth icon="arrow-left" (click)="data.origin[key] = data.yours[key]" style="pointer-events: auto"></sd-icon>
               </sd-anchor>
             </td>
             <td style="text-align: left"

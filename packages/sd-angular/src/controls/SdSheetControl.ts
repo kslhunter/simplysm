@@ -108,7 +108,8 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                            (click)="onAllSelectIconClick($event)"
                            [class._selected]="getIsAllSelected()"
                            [class._selectable]="selectMode === 'multi'"
-                           fixedWidth></sd-icon>
+                           fixedWidth
+                           style="pointer-events: auto"></sd-icon>
                   <sd-icon class="_icon _expand-icon"
                            *ngIf="getChildrenFn"
                            [icon]="getHasParentItem() ? 'caret-right' : undefined"
@@ -116,7 +117,8 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                            [class._expanded]="getIsAllExpanded()"
                            [class._expandable]="getHasParentItem()"
                            [rotate]="getIsAllExpanded() ? 90 : undefined"
-                           fixedWidth></sd-icon>
+                           fixedWidth
+                           style="pointer-events: auto"></sd-icon>
                 </div>
                 <div class="_border"></div>
               </div>
@@ -258,7 +260,8 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                              (click)="onItemSelectIconClick($event, item, index)"
                              [class._selected]="getIsSelectedItem(item)"
                              [class._selectable]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item))"
-                             fixedWidth></sd-icon>
+                             fixedWidth
+                             style="pointer-events: auto"></sd-icon>
 
                     <div class="_depth-indicator"
                          *ngIf="getChildrenFn && depth > 0"
@@ -272,7 +275,8 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                              [class._expanded]="getIsExpandedItem(item)"
                              [class._expandable]="getChildrenFn && getChildrenFn(index, item)?.length > 0"
                              [rotate]="getIsExpandedItem(item) ? 90 : undefined"
-                             fixedWidth></sd-icon>
+                             fixedWidth
+                             style="pointer-events: auto"></sd-icon>
                   </div>
                   <div class="_border"></div>
                 </div>

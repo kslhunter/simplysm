@@ -106,7 +106,8 @@ import { ISdSheetColumnOrderingVM, ISdSheetConfigVM } from "./SdSheetControl";
                              (click)="onAllSelectIconClick($event)"
                              [class._selected]="getIsAllSelected()"
                              [class._selectable]="selectMode === 'multi'"
-                             fixedWidth></sd-icon>
+                             fixedWidth
+                             style="pointer-events: auto"></sd-icon>
                     <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth
                              [style.margin-right.em]="maxDepth"></sd-icon>
                   </div>
@@ -234,7 +235,8 @@ import { ISdSheetColumnOrderingVM, ISdSheetConfigVM } from "./SdSheetControl";
                                (click)="onItemSelectIconClick($event, item, index)"
                                [class._selected]="getIsSelectedItem(item)"
                                [class._selectable]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item))"
-                               fixedWidth></sd-icon>
+                               fixedWidth
+                               style="pointer-events: auto"></sd-icon>
 
                       <div class="_depth-indicator"
                            *ngIf="getChildrenFn && depth > 0"
@@ -249,7 +251,8 @@ import { ISdSheetColumnOrderingVM, ISdSheetConfigVM } from "./SdSheetControl";
                                [class._expandable]="getChildrenFn(index, item)"
                                [rotate]="getIsExpandedItem(item) ? 90 : undefined"
                                fixedWidth
-                               [style.margin-right.em]="maxDepth! - depth"></sd-icon>
+                               [style.margin-right.em]="maxDepth! - depth"
+                               style="pointer-events: auto"></sd-icon>
                     </div>
                     <div class="_border"></div>
                   </div>
