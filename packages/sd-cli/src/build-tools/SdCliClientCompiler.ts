@@ -148,7 +148,7 @@ export class SdCliClientCompiler extends EventEmitter {
 
             // RUN
             const cordovaBinPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
-            await SdProcessManager.spawnAsync(`${cordovaBinPath} build android --debug`, { cwd: cordovaProjectPath }, (message) => {
+            await SdProcessManager.spawnAsync(`${cordovaBinPath} build android --release`, { cwd: cordovaProjectPath }, (message) => {
               this._logger.debug("CORDOVA: " + message);
             });
 
@@ -436,12 +436,14 @@ export class SdCliClientCompiler extends EventEmitter {
             }
           })
         ],
-        new SdWebpackWriteFilePlugin([
-          {
-            path: path.resolve(SdCliPathUtil.getDistPath(this._rootPath), ".configs.json"),
-            content: JSON.stringify(this._config.configs ?? {}, undefined, 2)
-          }
-        ]),
+        ...(this._platform.type === "android" && !watch) ? [] : [
+          new SdWebpackWriteFilePlugin([
+            {
+              path: path.resolve(SdCliPathUtil.getDistPath(this._rootPath), ".configs.json"),
+              content: JSON.stringify(this._config.configs ?? {}, undefined, 2)
+            }
+          ])
+        ],
         ...FsUtil.exists(path.resolve(srcPath, "favicon.ico")) ? [
           new CopyWebpackPlugin({
             patterns: [{
