@@ -454,15 +454,18 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
     event.preventDefault();
     event.stopPropagation();
 
-    if (this.hideCloseButton) {
-      return;
-    }
+    const focusedEl = document.activeElement as HTMLElement | undefined;
+    if (focusedEl?.findParent(this._el)) {
+      if (this.hideCloseButton) {
+        return;
+      }
 
-    if (this.openChange.observers.length > 0) {
-      this.openChange.emit(false);
-    }
-    else {
-      this.open = false;
+      if (this.openChange.observers.length > 0) {
+        this.openChange.emit(false);
+      }
+      else {
+        this.open = false;
+      }
     }
   }
 
