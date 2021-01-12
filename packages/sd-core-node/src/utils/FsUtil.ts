@@ -80,7 +80,7 @@ export class FsUtil {
 
   public static async removeAsync(targetPath: string): Promise<void> {
     try {
-      await fs.promises.rmdir(targetPath, { recursive: true });
+      await fs.promises.rmdir(targetPath, { recursive: true, retryDelay: 500, maxRetries: 6 });
     }
     catch (err) {
       throw new SdError(err, targetPath);
