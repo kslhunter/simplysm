@@ -51,6 +51,7 @@ export class SdCliClientCompiler extends EventEmitter {
   public async compileAsync(): Promise<void> {
     if (this._platform.type === "android") {
       await new SdCliCordovaTool().initializeAsync(this._rootPath, this._platform);
+      await FsUtil.removeAsync(path.resolve(this._rootPath, ".cordova", "www"));
     }
 
     const webpackConfig = await this._getWebpackConfigAsync(false);
@@ -130,6 +131,18 @@ export class SdCliClientCompiler extends EventEmitter {
             configFileContent = configFileContent.replace(/version="[^"]*"/g, `version="${this._npmConfig.version}"`);
             if (androidPlatform.icon !== undefined && !configFileContent.includes("<icon")) {
               configFileContent = configFileContent.replace("</widget>", "    <icon src=\"res/icon/icon.png\" />\r\n</widget>");
+            }
+            if (!configFileContent.includes("xmlns:android=\"http://schemas.android.com/apk/res/android\"")) {
+              configFileContent = configFileContent.replace(
+                "xmlns=\"http://www.w3.org/ns/widgets\"",
+                `xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android"`
+              );
+            }
+            if (!configFileContent.includes("application android:usesCleartextTraffic=\"true\" />")) {
+              configFileContent = configFileContent.replace("<platform name=\"android\">", `<platform name="android">
+        <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+            <application android:usesCleartextTraffic="true" />
+        </edit-config>`);
             }
             await FsUtil.writeFileAsync(configFilePath, configFileContent);
 
@@ -218,7 +231,9 @@ export class SdCliClientCompiler extends EventEmitter {
 
     // 각종 경로
     const srcPath = SdCliPathUtil.getSourcePath(this._rootPath);
-    const distPath = SdCliPathUtil.getDistPath(this._rootPath);
+    const distPath = this._platform.type !== "android" ?
+      SdCliPathUtil.getDistPath(this._rootPath) :
+      path.resolve(this._rootPath, ".cordova", "www");
 
     // TSCONFIG
     const tsconfigFilePath = SdCliPathUtil.getTsConfigBuildFilePath(this._rootPath, "browser");
@@ -231,7 +246,8 @@ export class SdCliClientCompiler extends EventEmitter {
     const polyfillsPath = path.resolve(__dirname, `../../lib/polyfills.js`);
 
     // publicPath
-    const publicPath = (this._platform.type !== "browser" ? `/__${this._platform.type}__` : "") + `/${packageKey}/`;
+    const publicPath = (!watch && this._platform.type === "android") ? "/android_asset/www/" :
+      (this._platform.type !== "browser" ? `/__${this._platform.type}__` : "") + `/${packageKey}/`;
 
     return {
       ...watch ? {
@@ -422,7 +438,7 @@ export class SdCliClientCompiler extends EventEmitter {
         ],
         new SdWebpackWriteFilePlugin([
           {
-            path: path.resolve(distPath, ".configs.json"),
+            path: path.resolve(SdCliPathUtil.getDistPath(this._rootPath), ".configs.json"),
             content: JSON.stringify(this._config.configs ?? {}, undefined, 2)
           }
         ]),

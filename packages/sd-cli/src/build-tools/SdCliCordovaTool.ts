@@ -86,7 +86,6 @@ export class SdCliCordovaTool {
     await FsUtil.mkdirsAsync(path.resolve(cordovaProjectPath, "www"));
     await FsUtil.writeFileAsync(path.resolve(cordovaProjectPath, "www/index.html"), `'${url}'로 이동중... <script>setTimeout(function () {window.location.href = "${url}"}, 3000);</script>`.trim());
 
-
     let configFileContent = await FsUtil.readFileAsync(path.resolve(cordovaProjectPath, "config.xml"));
     configFileContent = configFileContent.replace(/ {4}<allow-navigation href="[^"]*"\s?\/>\n/g, "");
     configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="${url}" />\n</widget>`);

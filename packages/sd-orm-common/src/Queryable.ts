@@ -407,11 +407,21 @@ export class Queryable<D extends DbContext, T> {
         for (const field of fields) {
           const splitSearchTextWhereArr = [];
           for (const text of splitSearchText) {
-            if (text.includes("*")) {
-              splitSearchTextWhereArr.push(this.db.qh.like(field as any, text.replace(/\*/g, "%")));
+            if (text.startsWith("<>")) {
+              if (text.includes("*")) {
+                splitSearchTextWhereArr.push(this.db.qh.notLike(field as any, text.substr(2).replace(/\*/g, "%")));
+              }
+              else {
+                splitSearchTextWhereArr.push(this.db.qh.notIncludes(field as any, text.substr(2)));
+              }
             }
             else {
-              splitSearchTextWhereArr.push(this.db.qh.includes(field as any, text));
+              if (text.includes("*")) {
+                splitSearchTextWhereArr.push(this.db.qh.like(field as any, text.replace(/\*/g, "%")));
+              }
+              else {
+                splitSearchTextWhereArr.push(this.db.qh.includes(field as any, text));
+              }
             }
           }
           fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));

@@ -18,7 +18,7 @@ import {
   Transform
 } from "@fortawesome/fontawesome-svg-core";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
-import { ISdIconProps, objectWithKey, sdIconClassList, sdIconNormalizeIconSpec, sdIconNames } from "../../commons";
+import { ISdIconProps, objectWithKey, sdIconClassList, sdIconNames, sdIconNormalizeIconSpec } from "../../commons";
 import { fal } from "@fortawesome/pro-light-svg-icons";
 import { far } from "@fortawesome/pro-regular-svg-icons";
 import { fas } from "@fortawesome/pro-solid-svg-icons";
@@ -34,6 +34,8 @@ library.add(fal, fas, far, fab, fad);
   template: ``,
   styles: [/* language=SCSS */ `
     :host {
+      pointer-events: none;
+
       &[sd-fixed-width=true] {
         /deep/ > svg {
           width: 1.25em;

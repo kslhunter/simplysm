@@ -103,8 +103,16 @@ export class QueryHelper {
     return [this.getQueryValue(source), " LIKE ", this.concat("%", target, "%").query];
   }
 
+  public notIncludes(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
+    return [this.getQueryValue(source), " NOT LIKE ", this.concat("%", target, "%").query];
+  }
+
   public like(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
     return [this.getQueryValue(source), " LIKE ", this.getQueryValue(target)];
+  }
+
+  public notLike(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
+    return [this.getQueryValue(source), " NOT LIKE ", this.getQueryValue(target)];
   }
 
   public startsWith(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
