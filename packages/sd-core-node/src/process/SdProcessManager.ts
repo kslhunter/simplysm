@@ -10,6 +10,8 @@ export class SdProcessManager {
     messageHandler?: ((message: string) => boolean | void | Promise<boolean> | Promise<void>) | false,
     errorMessageHandler?: ((errorMessage: string) => boolean | void | Promise<boolean> | Promise<void>) | false
   ): Promise<string> {
+    console.log(commandFullText);
+
     const commands = commandFullText.split(" ");
 
     return await new Promise<string>((resolve, reject) => {
@@ -109,7 +111,7 @@ export class SdProcessManager {
           resolve(message.length > 0 ? message.slice(0, -2) : message);
         }
         else {
-          reject(new Error((message.length > 0 ? message.slice(0, -2) : message) + os.EOL + os.EOL + `: exit with code ${code ?? ""}`));
+          reject(new Error((message.length > 0 ? message.slice(0, -2) : message) + os.EOL + os.EOL + commandFullText + os.EOL + os.EOL + `: exit with code ${code ?? ""}`));
         }
       });
     });
