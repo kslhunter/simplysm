@@ -10,8 +10,6 @@ export class SdProcessManager {
     messageHandler?: ((message: string) => boolean | void | Promise<boolean> | Promise<void>) | false,
     errorMessageHandler?: ((errorMessage: string) => boolean | void | Promise<boolean> | Promise<void>) | false
   ): Promise<string> {
-    console.log(commandFullText);
-
     const commands = commandFullText.split(" ");
 
     return await new Promise<string>((resolve, reject) => {
