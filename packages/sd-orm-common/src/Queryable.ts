@@ -399,15 +399,15 @@ export class Queryable<D extends DbContext, T> {
       .filter((item) => Boolean(item));
 
     // WHERE
-    result = result
-      .where((item) => {
-        const fieldOrArr = [];
+    if (searchText.startsWith("<>")) {
+      result = result
+        .where((item) => {
+          const fieldOrArr = [];
 
-        const fields = fwd(item);
-        for (const field of fields) {
-          const splitSearchTextWhereArr = [];
-          for (const text of splitSearchText) {
-            if (text.startsWith("<>")) {
+          const fields = fwd(item);
+          for (const field of fields) {
+            const splitSearchTextWhereArr = [];
+            for (const text of splitSearchText) {
               if (text.includes("*")) {
                 splitSearchTextWhereArr.push(this.db.qh.notLike(field as any, text.substr(2).replace(/\*/g, "%")));
               }
@@ -415,7 +415,21 @@ export class Queryable<D extends DbContext, T> {
                 splitSearchTextWhereArr.push(this.db.qh.notIncludes(field as any, text.substr(2)));
               }
             }
-            else {
+            fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));
+          }
+
+          return [this.db.qh.and(fieldOrArr)];
+        });
+    }
+    else {
+      result = result
+        .where((item) => {
+          const fieldOrArr = [];
+
+          const fields = fwd(item);
+          for (const field of fields) {
+            const splitSearchTextWhereArr = [];
+            for (const text of splitSearchText) {
               if (text.includes("*")) {
                 splitSearchTextWhereArr.push(this.db.qh.like(field as any, text.replace(/\*/g, "%")));
               }
@@ -423,13 +437,12 @@ export class Queryable<D extends DbContext, T> {
                 splitSearchTextWhereArr.push(this.db.qh.includes(field as any, text));
               }
             }
+            fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));
           }
-          fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));
-        }
 
-        return [this.db.qh.or(fieldOrArr)];
-      });
-
+          return [this.db.qh.or(fieldOrArr)];
+        });
+    }
     return result;
   }
 

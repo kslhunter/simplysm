@@ -817,7 +817,10 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
         .orderBy((item) => this._config!.columnObj![item.key!]?.displayOrder ?? 0);
     }
     else {
-      fixedColumnControls = fixedColumnControls.filter((item) => Boolean(item.fixed) === fixed);
+      fixedColumnControls = fixedColumnControls.filter((item) => (
+        Boolean(item.fixed) === fixed &&
+        !item.hidden
+      ));
     }
     return fixedColumnControls;
   }

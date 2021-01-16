@@ -109,7 +109,7 @@ export class SdSheetConfigModal extends SdModalBase<ISdSheetConfigModalInput, Re
           fixed: columnConfig?.fixed ?? columnControl.fixed ?? false,
           displayOrder: lastDisplayOrder,
           widthPixel: columnConfig?.widthPixel ?? columnControl.widthPixel,
-          hidden: columnConfig?.hidden === true,
+          hidden: columnConfig?.hidden ?? columnControl.hidden === true,
           resizable: columnControl.resizable === true
         });
       }

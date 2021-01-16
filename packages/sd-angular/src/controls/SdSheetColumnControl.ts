@@ -47,11 +47,11 @@ export class SdSheetColumnControl {
 
   @Input()
   @SdInputValidate(Boolean)
-  public useOrdering?: boolean;
+  public hidden?: boolean;
 
   @Input()
   @SdInputValidate(Boolean)
-  public disabled?: boolean;
+  public useOrdering?: boolean;
 
   @ContentChild("cell", { static: true })
   public cellTemplateRef?: TemplateRef<{ item: any; index: number; edit: boolean }>;
