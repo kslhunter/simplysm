@@ -318,6 +318,7 @@ export class Queryable<D extends DbContext, T> {
     let tableDef = this._tableDef;
     const asChainArr: string[] = [];
     for (const fkName of chain) {
+      console.log(chain, fkName);
       const prevAs = asChainArr.join(".");
       asChainArr.push(fkName);
       const as = asChainArr.join(".");
