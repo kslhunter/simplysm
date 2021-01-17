@@ -12,6 +12,7 @@ module.exports = {
     "@angular-eslint/template/no-any": "off",
     "@angular-eslint/template/click-events-have-key-events": "off",
     "@angular-eslint/template/accessibility-alt-text": "off",
+    "@angular-eslint/template/accessibility-label-for": "off",
     "@simplysm/ng-template-no-todo-comments": "warn"
   }
 };
