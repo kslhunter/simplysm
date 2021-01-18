@@ -48,8 +48,11 @@ export class SdGapControl {
   public widthPx?: number;
 
   @HostBinding("style.display")
-  public get display(): "block" | "inline-block" | undefined {
-    if (this.width !== undefined || this.widthPx !== undefined) {
+  public get display(): "block" | "inline-block" | "none" | undefined {
+    if (this.widthPx === 0 || this.heightPx === 0) {
+      return "none";
+    }
+    else if (this.width !== undefined || this.widthPx !== undefined) {
       return "inline-block";
     }
     else if (this.height !== undefined || this.heightPx !== undefined) {

@@ -314,11 +314,11 @@ export class Queryable<D extends DbContext, T> {
     }
 
     const chain = tableChainedName.split(".");
+
     let result: Queryable<D, any> = this;
     let tableDef = this._tableDef;
     const asChainArr: string[] = [];
     for (const fkName of chain) {
-      console.log(chain, fkName);
       const prevAs = asChainArr.join(".");
       asChainArr.push(fkName);
       const as = asChainArr.join(".");
@@ -327,7 +327,7 @@ export class Queryable<D extends DbContext, T> {
       const fkDef = tableDef.foreignKeys.single((item) => item.propertyKey === fkName);
       const fktDef = tableDef.foreignKeyTargets.single((item) => item.propertyKey === fkName);
       if (!fkDef && !fktDef) {
-        throw new Error(`'${tableDef.name}.${fkName}'에 '@ForeignKey()'나 '@ForeignKeyTarget()'이 지정되지 않았습니다.`);
+        throw new Error(`'${tableDef.name}.${as}'에 '@ForeignKey()'나 '@ForeignKeyTarget()'이 지정되지 않았습니다.`);
       }
 
       // FK
@@ -336,7 +336,7 @@ export class Queryable<D extends DbContext, T> {
         const fkTargetType = fkDef.targetTypeFwd();
         const fkTargetTableDef = DbDefinitionUtil.getTableDef(fkTargetType);
         if (fkDef.columnPropertyKeys.length !== fkTargetTableDef.columns.filter((item) => item.primaryKey !== undefined).length) {
-          throw new Error(`'${tableDef.name}.${fkName}'의 FK 설정과 '${fkTargetTableDef.name}'의 PK 설정의 길이가 다릅니다.`);
+          throw new Error(`'${tableDef.name}.${as}'의 FK 설정과 '${fkTargetTableDef.name}'의 PK 설정의 길이가 다릅니다.`);
         }
 
         // JOIN (SINGLE) 실행
@@ -894,7 +894,7 @@ export class Queryable<D extends DbContext, T> {
         " distinct대신 groupBy와 qh.count 로 수동으로 처리하세요.");
     }
 
-    const queryable = this.select(() => ({ cnt: new QueryUnit(Number, "COUNT(*)") })).lock();
+    const queryable = this.select(() => ({ cnt: new QueryUnit(Number, "COUNT(*)") }));/*.lock();*/
     delete queryable._def.orderBy;
     const item = await queryable.singleAsync();
 
@@ -902,7 +902,8 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public async existsAsync(): Promise<boolean> {
-    const cnt = await this.lock().countAsync();
+    // const cnt = await this.lock().countAsync();
+    const cnt = await this.countAsync();
     return cnt > 0;
   }
 

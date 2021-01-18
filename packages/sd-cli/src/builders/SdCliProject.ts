@@ -55,10 +55,12 @@ export class SdCliProject {
     const pkgs = await this._getPackagesAsync(config, argv.packages);
 
     this._logger.debug("프로젝트 및 패키지 버전 설정...");
-    const newVersion = await this._updateVersionAsync(argv.watch);
-    await pkgs.parallelAsync(async (pkg) => {
-      await pkg.updateVersionAsync(this._npmConfig.name, newVersion);
-    });
+    if (!argv.watch) {
+      const newVersion = await this._updateVersionAsync();
+      await pkgs.parallelAsync(async (pkg) => {
+        await pkg.updateVersionAsync(this._npmConfig.name, newVersion);
+      });
+    }
 
     this._logger.debug("패키지별 빌드 시작...");
 
@@ -319,7 +321,7 @@ export class SdCliProject {
 
     // 빌드시엔 빌드에서 버전업했고, 빌드가 아닌경우 여기서 버전업
     if (!argv.build) {
-      const newVersion = await this._updateVersionAsync(false);
+      const newVersion = await this._updateVersionAsync();
       await pkgs.parallelAsync(async (pkg) => {
         await pkg.updateVersionAsync(this._npmConfig.name, newVersion);
       });
@@ -377,9 +379,31 @@ export class SdCliProject {
     this._logger.info(`배포 프로세스가 완료되었습니다.(v${this._npmConfig.version})`);
   }
 
-  private async _updateVersionAsync(devMode: boolean): Promise<string> {
+  /*private async _updateVersionAsync(devMode: boolean): Promise<string> {
     // 프로젝트 및 패키지 버전 업
     const newVersion = semver.inc(this._npmConfig.version, devMode ? "prerelease" : "patch")!;
+    this._npmConfig.version = newVersion;
+
+    const updateDepVersion = (deps: Record<string, string> | undefined): void => {
+      if (!deps) return;
+      for (const dependencyName of Object.keys(deps)) {
+        if (dependencyName.startsWith("@" + this._npmConfig.name)) {
+          deps[dependencyName] = newVersion;
+        }
+      }
+    };
+    updateDepVersion(this._npmConfig.dependencies);
+    updateDepVersion(this._npmConfig.devDependencies);
+    updateDepVersion(this._npmConfig.peerDependencies);
+
+    await FsUtil.writeJsonAsync(this._npmConfigFilePath, this._npmConfig, { space: 2 });
+
+    return newVersion;
+  }*/
+
+  private async _updateVersionAsync(): Promise<string> {
+    // 프로젝트 및 패키지 버전 업
+    const newVersion = semver.inc(this._npmConfig.version, "patch")!;
     this._npmConfig.version = newVersion;
 
     const updateDepVersion = (deps: Record<string, string> | undefined): void => {
