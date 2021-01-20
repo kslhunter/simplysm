@@ -529,6 +529,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
             }
 
             > ._head { // 헤더 구역
+              display: block;
               position: sticky;
               top: 0;
               z-index: $z-index-head;
