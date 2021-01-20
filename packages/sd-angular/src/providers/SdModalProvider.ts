@@ -30,6 +30,8 @@ export class SdModalProvider {
                                                             useCloseByBackdrop?: boolean;
                                                             useCloseByEscapeKey?: boolean;
                                                             float?: boolean;
+                                                            minHeightPx?: number;
+                                                            minWidthPx?: number;
                                                           }): Promise<T["__tOutput__"] | undefined> {
     return await new Promise<T["__tOutput__"] | undefined>(async (resolve, reject) => {
       try {
@@ -68,6 +70,8 @@ export class SdModalProvider {
         modalEntryRef.instance.useCloseByBackdrop = options?.useCloseByBackdrop ?? true;
         modalEntryRef.instance.useCloseByEscapeKey = options?.useCloseByEscapeKey ?? true;
         modalEntryRef.instance.float = options?.float;
+        modalEntryRef.instance.minHeightPx = options?.minHeightPx;
+        modalEntryRef.instance.minWidthPx = options?.minWidthPx;
         modalEntryRef.instance.openChange.subscribe((value: boolean) => {
           modalEntryRef.instance.open = value;
           if (!modalEntryRef.instance.open) {

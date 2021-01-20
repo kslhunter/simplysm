@@ -813,7 +813,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
         .filter((item) => (
           Boolean(this._config!.columnObj![item.key!]?.fixed ?? item.fixed) === fixed &&
           (
-            !this._config!.columnObj![item.key!] ?
+            this._config!.columnObj![item.key!] ?
               !this._config!.columnObj![item.key!]!.hidden :
               !item.hidden
           )

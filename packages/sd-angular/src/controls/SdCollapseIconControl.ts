@@ -5,7 +5,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   selector: "sd-collapse-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-icon class="_icon" icon="chevron-down" fixedWidth></sd-icon>`,
+    <sd-icon class="_icon" icon="chevron-down" type="fal" fixedWidth></sd-icon>`,
   styles: [/* language=SCSS */ `
     :host {
       display: inline-block;

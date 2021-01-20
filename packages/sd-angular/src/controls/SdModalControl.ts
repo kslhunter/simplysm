@@ -24,8 +24,8 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
     <div class="_backdrop" (click)="onBackdropClick()"></div>
     <div class="_dialog" tabindex="0"
          (keydown.escape)="onDialogEscapeKeydown($event)"
-         [style.width.px]="widthPx"
-         [style.height.px]="heightPx">
+         [style.width.px]="(minWidthPx && (minWidthPx > (widthPx || 0))) ? minWidthPx : widthPx"
+         [style.height.px]="(minHeightPx && (minHeightPx > (heightPx || 0))) ? minHeightPx : heightPx">
       <sd-dock-container>
         <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)">
           <sd-anchor class="_close-button"
@@ -314,6 +314,14 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
   @SdInputValidate(Number)
   public widthPx?: number;
 
+  @Input("min-hHeight.px")
+  @SdInputValidate(Number)
+  public minHeightPx?: number;
+
+  @Input("min-width.px")
+  @SdInputValidate(Number)
+  public minWidthPx?: number;
+
   @Input()
   @SdInputValidate({
     type: String,
@@ -505,19 +513,19 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
           this._dialogEl.style.top = (startTop + (e.clientY - startY)) + "px";
           this._dialogEl.style.bottom = "auto";
         }
-        this._dialogEl.style.height = `${startHeight - (e.clientY - startY)}px`;
+        this._dialogEl.style.height = `${Math.max(startHeight - (e.clientY - startY), this.minHeightPx ?? 0)}px`;
       }
       if (direction === "bottom" || direction === "bottom-right" || direction === "bottom-left") {
-        this._dialogEl.style.height = `${startHeight + e.clientY - startY}px`;
+        this._dialogEl.style.height = `${Math.max(startHeight + e.clientY - startY, this.minHeightPx ?? 0)}px`;
       }
       if (direction === "right" || direction === "bottom-right" || direction === "top-right") {
-        this._dialogEl.style.width = `${startWidth + ((e.clientX - startX) * (this._dialogEl.style.position === "absolute" ? 1 : 2))}px`;
+        this._dialogEl.style.width = `${Math.max(startWidth + ((e.clientX - startX) * (this._dialogEl.style.position === "absolute" ? 1 : 2)), this.minWidthPx ?? 0)}px`;
       }
       if (direction === "left" || direction === "bottom-left" || direction === "top-left") {
         if (this._dialogEl.style.position === "absolute") {
           this._dialogEl.style.left = (startLeft + (e.clientX - startX)) + "px";
         }
-        this._dialogEl.style.width = `${startWidth - ((e.clientX - startX) * (this._dialogEl.style.position === "absolute" ? 1 : 2))}px`;
+        this._dialogEl.style.width = `${Math.max(startWidth - ((e.clientX - startX) * (this._dialogEl.style.position === "absolute" ? 1 : 2)), this.minWidthPx ?? 0)}px`;
       }
     };
 
