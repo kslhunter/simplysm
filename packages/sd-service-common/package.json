@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service-common",
-  "version": "4.0.66-0",
+  "version": "4.0.66",
   "description": "심플리즘 패키지 - 서비스 모듈 (browser/node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
