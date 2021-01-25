@@ -104,7 +104,10 @@ export class QueryHelper {
   }
 
   public notIncludes(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
-    return [this.getQueryValue(source), " NOT LIKE ", this.concat("%", target, "%").query];
+    return this.or([
+      this.isNull(source),
+      [this.getQueryValue(source), " NOT LIKE ", this.concat("%", target, "%").query]
+    ]);
   }
 
   public like(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
@@ -112,7 +115,10 @@ export class QueryHelper {
   }
 
   public notLike(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
-    return [this.getQueryValue(source), " NOT LIKE ", this.getQueryValue(target)];
+    return this.or([
+      this.isNull(source),
+      [this.getQueryValue(source), " NOT LIKE ", this.getQueryValue(target)]
+    ]);
   }
 
   public startsWith(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {

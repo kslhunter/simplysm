@@ -13,6 +13,7 @@ module.exports = {
     "@angular-eslint/template/click-events-have-key-events": "off",
     "@angular-eslint/template/accessibility-alt-text": "off",
     "@angular-eslint/template/accessibility-label-for": "off",
+    "@angular-eslint/template/conditional-complexity": "off",
     "@simplysm/ng-template-no-todo-comments": "warn"
   }
 };
