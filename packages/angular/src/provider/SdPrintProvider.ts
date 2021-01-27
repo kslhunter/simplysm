@@ -1,5 +1,7 @@
 import {ApplicationRef, ComponentFactoryResolver, Injectable, Injector, Type} from "@angular/core";
 
+// @ts-ignore
+
 export abstract class SdPrintTemplateBase<I> {
   public abstract sdOnOpen(param: I): Promise<void>;
 }
@@ -17,13 +19,18 @@ export class SdPrintProvider {
     await new Promise<void>(async resolve => {
       const compRef = this._cfr.resolveComponentFactory(printType).create(this._injector);
       const compEl = compRef.location.nativeElement;
+
       compEl.classList.add("_sd-print-template");
+      for (const prevEl of (document.body as Element).findAll("> ._sd-print-template")) {
+        document.body.removeChild(prevEl);
+      }
       document.body.appendChild(compEl);
 
 
       const styleEl = document.createElement("style");
       styleEl.innerHTML = `   
   @page { size: ${options ? options.size : "auto"}; margin: ${options ? options.margin : "0"}; }
+  body > ._sd-print-template { display: none !important; }
   @media print
   {
       html, body { -webkit-print-color-adjust: exact; }
@@ -42,9 +49,11 @@ export class SdPrintProvider {
       this._appRef.attachView(compRef.hostView);
       setTimeout(async () => {
         window.print();
-        compEl.remove();
-        styleEl.remove();
         resolve();
+        setTimeout(() => {
+          compEl.remove();
+          styleEl.remove();
+        }, 10000);
       });
     });
   }
