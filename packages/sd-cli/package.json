@@ -12,7 +12,7 @@
   "types": "./dist-types/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@angular-devkit/build-optimizer": "^0.1100.2",
+    "@angular-devkit/build-optimizer": "<0.1200.0",
     "@angular-devkit/core": "^11.0.2",
     "@angular/compiler-cli": "^11.0.2",
     "@angular/compiler": "^11.0.2",
