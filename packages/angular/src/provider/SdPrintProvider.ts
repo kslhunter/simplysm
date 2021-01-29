@@ -33,7 +33,7 @@ export class SdPrintProvider {
   body > ._sd-print-template { display: none !important; }
   @media print
   {
-      html, body { -webkit-print-color-adjust: exact; }
+      html, body { -webkit-print-color-adjust: exact; background: white !important; }
       body > * { display: none !important; }
       body > ._sd-print-template { display: block !important; }
   }`;
@@ -48,7 +48,12 @@ export class SdPrintProvider {
 
       this._appRef.attachView(compRef.hostView);
       setTimeout(async () => {
-        window.print();
+        if (window["cordova"]) {
+          window["cordova"].plugins.printer.print("<html>" + document.head.outerHTML + document.body.outerHTML + "</html>");
+        }
+        else {
+          window.print();
+        }
         resolve();
         setTimeout(() => {
           compEl.remove();
