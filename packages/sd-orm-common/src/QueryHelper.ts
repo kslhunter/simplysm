@@ -536,7 +536,7 @@ export class QueryHelper {
         case "TEXT":
           return this._dialect === "mysql" ? "TEXT" : "NTEXT";
         case "DECIMAL":
-          return "DECIMAL(" + currType.precision + ((currType.digits == null || currType.digits === 0) ? ", " + currType.digits : "") + ")";
+          return "DECIMAL(" + currType.precision + ((currType.digits == null || currType.digits === 0) ? "" : (", " + currType.digits)) + ")";
         case "STRING":
           if (this._dialect === "mysql" && currType.length === "MAX") {
             return "TEXT";

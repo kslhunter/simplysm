@@ -520,7 +520,7 @@ export class SdTextfieldControl implements DoCheck, AfterViewInit {
     ) {
       if (this.multiline && this.autoRows) {
         if (typeof this.value === "string") {
-          this.rows = this.value.split(/[\r\n]/).length;
+          this.rows = this.value.split(/[\r\n]/).length + 1;
         }
         else {
           this.rows = 1;
