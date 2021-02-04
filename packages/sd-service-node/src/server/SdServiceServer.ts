@@ -409,15 +409,6 @@ export class SdServiceServer extends EventEmitter {
         type: "response"
       };
     }
-    else if (req.command === "getConnectionInfo") {
-      return {
-        requestId: req.id,
-        type: "response",
-        body: {
-          clientIp: connReq.socket.remoteAddress
-        }
-      };
-    }
     else {
       // COMMAND 분할
       const cmdSplit = req.command.split(".");
