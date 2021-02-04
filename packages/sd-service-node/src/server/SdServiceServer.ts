@@ -198,11 +198,10 @@ export class SdServiceServer extends EventEmitter {
         throw new Error(`인증되지 않은 클라이언트에서 요청을 받았습니다: ${connReq.headers.origin ?? ""}`);
       }
 
-
       this._logger.debug(`요청을 받았습니다: ${origin.toString()} (${JsonConvert.stringify(req, { hideBuffer: true })})`);
 
       try {
-        const res = await this._onSocketRequestAsync(wsConn, req);
+        const res = await this._onSocketRequestAsync(wsConn, req, connReq);
         this._logger.debug(`결과를 반환합니다: ${origin.toString()} (${JsonConvert.stringify(res, { hideBuffer: true })})}`);
         await wsConn.sendAsync(res);
       }
@@ -316,7 +315,7 @@ export class SdServiceServer extends EventEmitter {
     runMiddleware(0);
   }
 
-  private async _onSocketRequestAsync(conn: SdServiceServerConnection, req: ISdServiceRequest): Promise<ISdServiceResponse> {
+  private async _onSocketRequestAsync(conn: SdServiceServerConnection, req: ISdServiceRequest, connReq: http.IncomingMessage): Promise<ISdServiceResponse> {
     for (const wsMiddleware of this.wsMiddlewares) {
       const res = wsMiddleware(req);
       if (res) return res;
@@ -408,6 +407,15 @@ export class SdServiceServer extends EventEmitter {
       return {
         requestId: req.id,
         type: "response"
+      };
+    }
+    else if (req.command === "getConnectionInfo") {
+      return {
+        requestId: req.id,
+        type: "response",
+        body: {
+          clientIp: connReq.socket.remoteAddress
+        }
       };
     }
     else {

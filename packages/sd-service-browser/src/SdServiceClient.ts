@@ -314,6 +314,10 @@ export class SdServiceClient extends EventEmitter {
       });
     });
   }
+
+  public async getConnectionInfoAsync(): Promise<{ clientIp: string }> {
+    return await this.sendAsync("getConnectionInfo", []);
+  }
 }
 
 

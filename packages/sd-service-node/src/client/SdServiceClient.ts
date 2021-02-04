@@ -315,6 +315,10 @@ export class SdServiceClient extends EventEmitter {
   public async execAsync(cmd: string): Promise<void> {
     await this.sendAsync("exec", [cmd]);
   }
+
+  public async getConnectionInfoAsync(): Promise<{ clientIp: string }> {
+    return await this.sendAsync("getConnectionInfo", []);
+  }
 }
 
 

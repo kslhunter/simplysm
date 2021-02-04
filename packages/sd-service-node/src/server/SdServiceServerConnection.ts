@@ -16,10 +16,10 @@ export class SdServiceServerConnection extends EventEmitter {
   private readonly _splitRequestMap = new Map<number, { timer: NodeJS.Timer; bufferStrings: string[] }>();
   private readonly _uploadRequestMap = new Map<number, { timer: NodeJS.Timer; fileHandle: fs.promises.FileHandle; filePath: string; completedLength: number }>();
 
-  public constructor(private readonly _conn: WebSocket,
+  public constructor(public readonly conn: WebSocket,
                      private readonly _rootPath: string) {
     super();
-    this._conn.on("message", async (msg: string) => {
+    this.conn.on("message", async (msg: string) => {
       try {
         await this._onMessageAsync(msg);
       }
@@ -28,7 +28,7 @@ export class SdServiceServerConnection extends EventEmitter {
       }
     });
 
-    this._conn.on("close", () => {
+    this.conn.on("close", () => {
       this._splitRequestMap.clear();
       this._uploadRequestMap.clear();
       this.emit("close");
@@ -147,12 +147,12 @@ export class SdServiceServerConnection extends EventEmitter {
   }
 
   public async sendAsync(res: TSdServiceRawResponse): Promise<void> {
-    if (this._conn.readyState !== WebSocket.OPEN) {
+    if (this.conn.readyState !== WebSocket.OPEN) {
       return;
     }
 
     await new Promise<void>((resolve, reject) => {
-      this._conn.send(JsonConvert.stringify(res), (err) => {
+      this.conn.send(JsonConvert.stringify(res), (err) => {
         if (err) {
           reject(err);
           return;
