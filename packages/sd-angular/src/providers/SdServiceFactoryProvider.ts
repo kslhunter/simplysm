@@ -104,7 +104,7 @@ export class SdNgServiceClient {
     });
   }
 
-  public async getConnectionInfoAsync(key: string): Promise<{ clientIp: string }> {
+  public async getConnectionInfoAsync(): Promise<{ clientIp: string }> {
     return await this.client.getConnectionInfoAsync();
   }
 
