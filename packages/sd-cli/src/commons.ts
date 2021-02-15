@@ -19,6 +19,9 @@ export interface ITsConfig {
     baseUrl?: string;
     paths?: Record<string, string[]>;
   };
+  angularCompilerOptions?: {
+    enableIvy?: boolean;
+  };
   files?: string[];
 }
 

@@ -118,6 +118,10 @@ export class SdCliPackage extends EventEmitter {
       buildTsconfig.compilerOptions.declaration = false;
       delete buildTsconfig.compilerOptions.declarationDir;
 
+      if (isClient) {
+        buildTsconfig.angularCompilerOptions = { enableIvy: false };
+      }
+
       const buildTsconfigFilePath = SdCliPathUtil.getTsConfigBuildFilePath(this.rootPath, isClient ? "browser" : "node");
       await FsUtil.writeJsonAsync(buildTsconfigFilePath, buildTsconfig, { space: 2 });
     }
