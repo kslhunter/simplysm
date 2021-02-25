@@ -37,6 +37,8 @@
     "@simplysm/sd-core-node": "4.0.75",
     "@simplysm/sd-service-node": "4.0.75",
     "@simplysm/sd-storage": "4.0.75",
+    "@simplysm/sd-orm-common": "4.0.75",
+    "@simplysm/sd-orm-node": "4.0.75",
     "connect": "^3.7.0",
     "webpack-dev-middleware": "^3.7.2",
     "webpack-hot-middleware": "^2.25.0",
@@ -52,6 +54,7 @@
     "jszip": "^3.5.0",
     "electron": "^11.1.0",
     "cordova": "^10.0.0",
+    "ts-node": "^9.0.0",
     "@typescript-eslint/parser": "4.13.0"
   },
   "devDependencies": {

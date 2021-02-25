@@ -1,6 +1,7 @@
 import {
   IAddColumnQueryDef,
   IAddForeignKeyQueryDef,
+  IAddPrimaryKeyQueryDef,
   IClearDatabaseIfExistsQueryDef,
   IConfigForeignKeyCheckQueryDef,
   IConfigIdentityInsertQueryDef,
@@ -9,10 +10,15 @@ import {
   ICreateTableQueryDef,
   IDeleteQueryDef,
   IDropIndexQueryDef,
+  IDropPrimaryKeyQueryDef,
   IDropTableQueryDef,
   IGetDatabaseInfoDef,
+  IGetTableColumnInfosDef,
+  IGetTableForeignKeysDef,
+  IGetTableIndexesDef,
   IGetTableInfoDef,
-  IGetTablesInfoDef,
+  IGetTableInfosDef,
+  IGetTablePrimaryKeysDef,
   IInsertQueryDef,
   IJoinQueryDef,
   IModifyColumnQueryDef,
@@ -27,7 +33,7 @@ import {
   TQueryBuilderValue,
   TQueryDef
 } from "./commons";
-import { NeverEntryError, Uuid } from "@simplysm/sd-core-common";
+import { NeverEntryError, NotImplementError, Uuid } from "@simplysm/sd-core-common";
 import { QueryHelper } from "./QueryHelper";
 
 export class QueryBuilder {
@@ -142,17 +148,17 @@ END`.trim();
     }
   }
 
-  public getTableInfos(def: IGetTablesInfoDef): string {
+  public getTableInfos(def?: IGetTableInfosDef): string {
     if (this._dialect === "mysql") {
+      if (def?.database === undefined) throw new NeverEntryError();
       return `SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='${def.database}'`.trim();
     }
     else if (this._dialect === "mssql-azure") {
-      if (def.schema === undefined) throw new NeverEntryError();
-      return `SELECT * FROM [INFORMATION_SCHEMA].[TABLES] WHERE TABLE_SCHEMA='${def.schema}'`.trim();
+      return `SELECT * FROM [INFORMATION_SCHEMA].[TABLES]${def?.schema !== undefined ? ` WHERE TABLE_SCHEMA='${def.schema}'` : ""}`.trim();
     }
     else {
-      if (def.schema === undefined) throw new NeverEntryError();
-      return `SELECT * FROM ${this.wrap(def.database)}.[INFORMATION_SCHEMA].[TABLES] WHERE TABLE_SCHEMA='${def.schema}'`.trim();
+      if (def?.database === undefined) throw new NeverEntryError();
+      return `SELECT * FROM ${this.wrap(def.database)}.[INFORMATION_SCHEMA].[TABLES]${def.schema !== undefined ? ` WHERE TABLE_SCHEMA='${def.schema}'` : ""}`.trim();
     }
   }
 
@@ -167,6 +173,96 @@ END`.trim();
     }
     else {
       return `SELECT * FROM ${this.wrap(def.table.database)}.[INFORMATION_SCHEMA].[TABLES] WHERE TABLE_SCHEMA='${def.table.schema}' AND TABLE_NAME='${def.table.name}'`.trim();
+    }
+  }
+
+  public getTableColumnInfos(def: IGetTableColumnInfosDef): string {
+    if (this._dialect === "mysql") {
+      throw new NotImplementError();
+    }
+    else {
+      const databaseDot = def.table.database !== undefined ? def.table.database + "." : "";
+      const schemaDot = def.table.schema !== undefined ? def.table.schema + "." : "";
+
+      return `
+SELECT
+  c2.COLUMN_NAME as name,
+  c2.DATA_TYPE as dataType,
+  c2.CHARACTER_MAXIMUM_LENGTH as length,
+  c2.NUMERIC_PRECISION as precision,
+  c2.NUMERIC_SCALE as digits,
+  c.is_nullable as nullable,
+  c.is_identity as autoIncrement
+FROM ${databaseDot}sys.columns c
+INNER JOIN  ${databaseDot}[INFORMATION_SCHEMA].[COLUMNS] c2 ON OBJECT_ID(c2.TABLE_CATALOG + '.' + c2.TABLE_SCHEMA + '.' + c2.TABLE_NAME) = c.object_id AND c2.ORDINAL_POSITION = c.column_id
+WHERE c.object_id = OBJECT_ID('${databaseDot}${schemaDot}${def.table.name}')
+`.trim();
+    }
+  }
+
+  public getTablePrimaryKeys(def: IGetTablePrimaryKeysDef): string {
+    if (this._dialect === "mysql") {
+      throw new NotImplementError();
+    }
+    else {
+      const databaseDot = def.table.database !== undefined ? def.table.database + "." : "";
+      const schemaDot = def.table.schema !== undefined ? def.table.schema + "." : "";
+
+      return `
+SELECT c.name as name
+FROM ${databaseDot}sys.indexes i
+INNER JOIN ${databaseDot}sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+INNER JOIN ${databaseDot}sys.columns c ON ic.object_id = c.object_id AND c.column_id = ic.column_id
+WHERE i.type = 1 AND i.object_id = OBJECT_ID('${databaseDot}${schemaDot}${def.table.name}') 
+ORDER BY ic.key_ordinal;
+`.trim();
+    }
+  }
+
+  public getTableForeignKeys(def: IGetTableForeignKeysDef): string {
+    if (this._dialect === "mysql") {
+      throw new NotImplementError();
+    }
+    else {
+      const databaseDot = def.table.database !== undefined ? def.table.database + "." : "";
+      const schemaDot = def.table.schema !== undefined ? def.table.schema + "." : "";
+
+      return `
+SELECT
+  f.name as name,
+  sc.name as sourceColumnName,
+  ts.name as targetSchemaName,
+  tt.name as targetTableName
+FROM SIMPLYSM_TS.sys.foreign_keys f
+INNER JOIN SIMPLYSM_TS.sys.foreign_key_columns fc ON f.object_id = fc.constraint_object_id
+INNER JOIN SIMPLYSM_TS.sys.columns sc ON sc.object_id = fc.parent_object_id AND sc.column_id = fc.parent_column_id
+INNER JOIN SIMPLYSM_TS.sys.tables tt ON tt.object_id = f.referenced_object_id
+INNER JOIN SIMPLYSM_TS.sys.schemas ts ON ts.schema_id = tt.schema_id
+WHERE f.parent_object_id = OBJECT_ID('${databaseDot}${schemaDot}${def.table.name}')
+ORDER BY f.object_id, fc.constraint_column_id
+`.trim();
+    }
+  }
+
+  public getTableIndexes(def: IGetTableIndexesDef): string {
+    if (this._dialect === "mysql") {
+      throw new NotImplementError();
+    }
+    else {
+      const databaseDot = def.table.database !== undefined ? def.table.database + "." : "";
+      const schemaDot = def.table.schema !== undefined ? def.table.schema + "." : "";
+
+      return `
+SELECT
+  i.name as name,
+  c.name as columnName,
+  ic.is_descending_key as isDesc
+FROM ${databaseDot}sys.indexes i
+INNER JOIN ${databaseDot}sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+INNER JOIN ${databaseDot}sys.columns c ON ic.object_id = c.object_id AND c.column_id = ic.column_id
+WHERE i.type = 2 AND i.object_id = OBJECT_ID('${databaseDot}${schemaDot}${def.table.name}') 
+ORDER BY i.index_id, ic.key_ordinal;
+`.trim();
     }
   }
 
@@ -270,6 +366,30 @@ END`.trim();
     }
   }
 
+  public dropPrimaryKey(def: IDropPrimaryKeyQueryDef): string {
+    if (this._dialect === "mysql") {
+      throw new NotImplementError();
+    }
+    else {
+      const databaseDot = def.table.database !== undefined ? def.table.database + "." : "";
+      const schemaDot = def.table.schema !== undefined ? def.table.schema + "." : "";
+
+      return `ALTER TABLE ${databaseDot}${schemaDot}${def.table.name} DROP CONSTRAINT PK_${def.table.name}`;
+    }
+  }
+
+  public addPrimaryKey(def: IAddPrimaryKeyQueryDef): string {
+    if (this._dialect === "mysql") {
+      throw new NotImplementError();
+    }
+    else {
+      const databaseDot = def.table.database !== undefined ? def.table.database + "." : "";
+      const schemaDot = def.table.schema !== undefined ? def.table.schema + "." : "";
+
+      return `ALTER TABLE ${databaseDot}${schemaDot}${def.table.name} ADD CONSTRAINT PK_${def.table.name} PRIMARY KEY (${def.columns.map((item) => this.wrap(item)).join(", ")})`;
+    }
+  }
+
   public addForeignKey(def: IAddForeignKeyQueryDef): string {
     const tableName = this.getTableName(def.table);
     const tableNameChain = this.getTableNameChain(def.table);
@@ -328,7 +448,6 @@ END`.trim();
     const tableName = this.getTableName(def.table);
     return `SET IDENTITY_INSERT ${tableName} ${def.state.toUpperCase()}`;
   }
-
 
   public configForeignKeyCheck(def: IConfigForeignKeyCheckQueryDef): string {
     return `SET foreign_key_checks=${def.useCheck ? 1 : 0};`;

@@ -1,6 +1,7 @@
 import "@simplysm/sd-core-common";
 export * from "./build-tools/SdCliClientCompiler";
 export * from "./build-tools/SdCliCordovaTool";
+export * from "./build-tools/SdCliGenDbMigration";
 export * from "./build-tools/SdCliIndexFileGenerateWatcher";
 export * from "./build-tools/SdCliLinter";
 export * from "./build-tools/SdCliLocalUpdater";

@@ -11,6 +11,7 @@ import { SdCliFileCrypto } from "../builders/SdCliFileCrypto";
 import { SdCliCheck } from "../builders/SdCliCheck";
 import { SdCliElectron } from "../builders/SdCliElectron";
 import { SdCliCordova } from "../builders/SdCliCordova";
+import { SdCliGenDbMigration } from "../build-tools/SdCliGenDbMigration";
 
 // TODO: 2020-11-15 22:04 3.x버전의 수정사항들을 적용함
 
@@ -69,7 +70,6 @@ const argv = yargs.version(false)
         }
       })
   )
-
   .command(
     "publish",
     "프로젝트의 각 패키지를 배포합니다.",
@@ -93,6 +93,22 @@ const argv = yargs.version(false)
           type: "array",
           describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
           default: []
+        }
+      })
+  )
+  .command(
+    "gen-db-migration",
+    "DB를 비교하여 Migration 파일을 생성합니다.",
+    (cmd) => cmd.version(false)
+      .options({
+        config: {
+          type: "string",
+          describe: "simplysm.json 파일 경로"
+        },
+        key: {
+          type: "string",
+          describe: "키",
+          demandOption: true
         }
       })
   )
@@ -213,6 +229,9 @@ else {
       options: argv.options
     });
     process.exit(0);
+  }
+  else if (argv._[0] === "gen-db-migration") {
+    await new SdCliGenDbMigration().runAsync(argv.config, argv.key);
   }
   else if (args[0] === "run-desktop-browser") {
     await new SdCliElectron().runAsync(argv.url!);

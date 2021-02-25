@@ -1,7 +1,7 @@
 import { QueryBuilder } from "./QueryBuilder";
 import { IDbContextExecutor } from "./IDbContextExecutor";
 import { QueryHelper } from "./QueryHelper";
-import { IQueryColumnDef, IQueryResultParseOption, ISOLATION_LEVEL, TQueryDef } from "./commons";
+import { IQueryColumnDef, IQueryResultParseOption, ISOLATION_LEVEL, ITableDef, TQueryDef } from "./commons";
 import { NeverEntryError, ObjectUtil, SdError, Type } from "@simplysm/sd-core-common";
 import { IDbMigration } from "./IDbMigration";
 import { Queryable } from "./Queryable";
@@ -147,6 +147,140 @@ export abstract class DbContext {
     DbContext.selectCache.clear();
   }
 
+  public async getIsDbExistsAsync(database: string): Promise<boolean> {
+    return (
+      await this.executeDefsAsync([
+        {
+          type: "getDatabaseInfo",
+          database
+        }
+      ])
+    )[0].length > 0;
+  }
+
+  public async getIsTableExistsAsync(database: string, schema: string, table: string): Promise<boolean> {
+    return (
+      await this.executeDefsAsync([
+        {
+          type: "getTableInfo",
+          table: {
+            database,
+            schema,
+            name: table
+          }
+        }
+      ])
+    )[0].length > 0;
+  }
+
+  public get tableDefs(): ITableDef[] {
+    return Object.keys(this)
+      .filter((key) => !key.startsWith("_"))
+      .map((key) => this[key])
+      .ofType<Queryable<any, any>>(Queryable)
+      .map((qr) => DbDefinitionUtil.getTableDef(qr.tableType!))
+      .filterExists();
+  }
+
+  public async getTableInfosAsync(database: string, schema?: string): Promise<{ schema: string; name: string }[]> {
+    return (
+      await this.executeDefsAsync([{
+        type: "getTableInfos",
+        database,
+        schema
+      }])
+    )[0].map((item: any) => ({
+      schema: item.TABLE_SCHEMA,
+      name: item.TABLE_NAME
+    }));
+  }
+
+  public async getTableColumnInfosAsync(database: string, schema: string, table: string): Promise<{
+    name: string;
+    dataType: string;
+    length?: number;
+    precision?: number;
+    digits?: number;
+    nullable: boolean;
+    autoIncrement: boolean;
+  }[]> {
+    return (
+      await this.executeDefsAsync([
+        {
+          type: "getTableColumnInfos",
+          table: { database, schema, name: table }
+        }
+      ])
+    )[0].map((item: any) => ({
+      name: item.name,
+      dataType: item.dataType,
+      length: item.length,
+      precision: item.precision,
+      digits: item.digits,
+      nullable: item.nullable,
+      autoIncrement: item.autoIncrement
+    }));
+  }
+
+  public async getTablePkColumnNamesAsync(database: string, schema: string, table: string): Promise<string[]> {
+    return (
+      await this.executeDefsAsync([
+        {
+          type: "getTablePrimaryKeys",
+          table: { database, schema, name: table }
+        }
+      ])
+    )[0].map((item) => item.name);
+  }
+
+  public async getTableFksAsync(database: string, schema: string, table: string): Promise<{
+    name: string;
+    sourceColumnNames: string[];
+    targetSchemaName: string;
+    targetTableName: string;
+  }[]> {
+    return (
+      await this.executeDefsAsync([
+        {
+          type: "getTableForeignKeys",
+          table: { database, schema, name: table }
+        }
+      ])
+    )[0]
+      .groupBy((item) => item.name)
+      .map((item) => ({
+        name: item.key,
+        sourceColumnNames: item.values.map((item1) => item1.sourceColumnName),
+        targetSchemaName: item.values[0].targetSchemaName,
+        targetTableName: item.values[0].targetTableName
+      }));
+  }
+
+  public async getTableIndexesAsync(database: string, schema: string, table: string): Promise<{
+    name: string;
+    columns: {
+      name: string;
+      orderBy: "ASC" | "DESC";
+    }[];
+  }[]> {
+    return (
+      await this.executeDefsAsync([
+        {
+          type: "getTableIndexes",
+          table: { database, schema, name: table }
+        }
+      ])
+    )[0]
+      .groupBy((item) => item.name)
+      .map((item) => ({
+        name: item.key,
+        columns: item.values.map((item1) => ({
+          name: item1.columnName,
+          orderBy: item1.isDesc === true ? "DESC" : "ASC"
+        }))
+      }));
+  }
+
   public async initializeAsync(dbs?: string[], force?: boolean): Promise<boolean> {
     if (force && this.status === "transact") {
       throw new Error("DB 강제 초기화는 트랜젝션 상에서는 동작하지 못합니다.\nconnect 대신에 connectWithoutTransaction 로 연결하여 시도하세요.");
@@ -154,20 +288,13 @@ export abstract class DbContext {
 
     // 강제 아닐때
     if (!force) {
-      const isDbExists = (
-        await this.executeDefsAsync([
-          { type: "getDatabaseInfo", database: this.schema.database }
-        ])
-      )[0].length > 0;
+      const isDbExists = await this.getIsDbExistsAsync(this.schema.database);
 
-      const isTableExists = (
-        await this.executeDefsAsync([
-          {
-            type: "getTableInfo",
-            table: { database: this.schema.database, schema: this.schema.schema, name: "_migration" }
-          }
-        ])
-      )[0].length > 0;
+      const isTableExists = await this.getIsTableExistsAsync(
+        this.schema.database,
+        this.schema.schema,
+        "_migration"
+      );
 
       // DB / TABLE 있을때
       if (isDbExists && isTableExists) {
@@ -235,142 +362,27 @@ export abstract class DbContext {
     }
 
     // TABLE 초기화: 생성/PK 설정
-    const tableDefs = Object.keys(this)
-      .filter((key) => !key.startsWith("_"))
-      .map((key) => this[key])
-      .ofType<Queryable<any, any>>(Queryable)
-      .map((qr) => DbDefinitionUtil.getTableDef(qr.tableType!))
+    const tableDefs = this.tableDefs
       .filter((item) => item.database === undefined || dbNames.includes(item.database))
       .filterExists();
 
     const createTableQueryDefs: TQueryDef[] = [];
     for (const tableDef of tableDefs) {
-      if (tableDef.columns.length < 1) {
-        throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
-      }
-
-      // 생성
-      createTableQueryDefs.push({
-        type: "createTable",
-        table: {
-          database: tableDef.database ?? this.schema.database,
-          schema: tableDef.schema ?? this.schema.schema,
-          name: tableDef.name
-        },
-        columns: tableDef.columns.map((col) => ObjectUtil.clearUndefined({
-          name: col.name,
-          dataType: this.qh.type(col.dataType ?? col.typeFwd()),
-          autoIncrement: col.autoIncrement,
-          nullable: col.nullable
-        })),
-        primaryKeys: tableDef.columns
-          .filter((item) => item.primaryKey !== undefined)
-          .orderBy((item) => item.primaryKey!)
-          .map((item) => ({
-            columnName: item.name,
-            orderBy: "ASC"
-          }))
-      });
+      createTableQueryDefs.push(this.getCreateTableQueryDefFromTableDef(tableDef));
     }
     queryDefsList.push(createTableQueryDefs);
 
     // TABLE 초기화: FK 설정
     const addFkQueryDefs: TQueryDef[] = [];
     for (const tableDef of tableDefs) {
-      if (tableDef.columns.length < 1) {
-        throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
-      }
-
-      for (const fkDef of tableDef.foreignKeys) {
-        try {
-          const targetTableDef = DbDefinitionUtil.getTableDef(fkDef.targetTypeFwd());
-          if (targetTableDef.columns.length < 1) {
-            throw new Error(`${targetTableDef.name}의 컬럼 설정이 잘못되었습니다.`);
-          }
-
-          const targetPkNames = targetTableDef.columns
-            .filter((item) => item.primaryKey !== undefined)
-            .orderBy((item) => item.primaryKey!)
-            .map((item) => item.name);
-
-          addFkQueryDefs.push({
-            type: "addForeignKey",
-            table: {
-              database: tableDef.database ?? this.schema.database,
-              schema: tableDef.schema ?? this.schema.schema,
-              name: tableDef.name
-            },
-            foreignKey: {
-              name: fkDef.name,
-              fkColumns: fkDef.columnPropertyKeys.map((propKey) => tableDef.columns.single((col) => col.propertyKey === propKey)!.name),
-              targetTable: {
-                database: targetTableDef.database ?? this.schema.database,
-                schema: targetTableDef.schema ?? this.schema.schema,
-                name: targetTableDef.name
-              },
-              targetPkColumns: targetPkNames
-            }
-          });
-        }
-        catch (err) {
-          throw new SdError(err, tableDef.name + " > " + fkDef.name + ": 오류");
-        }
-      }
+      addFkQueryDefs.push(...this.getCreateFksQueryDefsFromTableDef(tableDef));
     }
     queryDefsList.push(addFkQueryDefs);
-
-    // TABLE 초기화: FK의 INDEX 설정
-    const createFkIndexQueryDefs: TQueryDef[] = [];
-    for (const tableDef of tableDefs) {
-      if (tableDef.columns.length < 1) {
-        throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
-      }
-
-      for (const fkDef of tableDef.foreignKeys) {
-        createFkIndexQueryDefs.push({
-          type: "createIndex",
-          table: {
-            database: tableDef.database ?? this.schema.database,
-            schema: tableDef.schema ?? this.schema.schema,
-            name: tableDef.name
-          },
-          index: {
-            name: fkDef.name,
-            columns: fkDef.columnPropertyKeys.map((item) => ({
-              name: tableDef.columns.single((col) => col.propertyKey === item)!.name,
-              orderBy: "ASC"
-            }))
-          }
-        });
-      }
-    }
-    queryDefsList.push(createFkIndexQueryDefs);
-
 
     // TABLE 초기화: INDEX 설정
     const createIndexQueryDefs: TQueryDef[] = [];
     for (const tableDef of tableDefs) {
-      if (tableDef.columns.length < 1) {
-        throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
-      }
-
-      for (const indexDef of tableDef.indexes) {
-        createIndexQueryDefs.push({
-          type: "createIndex",
-          table: {
-            database: tableDef.database ?? this.schema.database,
-            schema: tableDef.schema ?? this.schema.schema,
-            name: tableDef.name
-          },
-          index: {
-            name: indexDef.name,
-            columns: indexDef.columns.orderBy((item) => item.order).map((item) => ({
-              name: tableDef.columns.single((col) => col.propertyKey === item.columnPropertyKey)!.name,
-              orderBy: item.orderBy
-            }))
-          }
-        });
-      }
+      createIndexQueryDefs.push(...this.getCreateIndexesQueryDefsFromTableDef(tableDef));
     }
     queryDefsList.push(createIndexQueryDefs);
 
@@ -392,5 +404,309 @@ export abstract class DbContext {
     }
 
     return true;
+  }
+
+  public getCreateTableQueryDefFromTableDef(tableDef: ITableDef): TQueryDef {
+    if (tableDef.columns.length < 1) {
+      throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
+    }
+
+    return {
+      type: "createTable",
+      table: {
+        database: tableDef.database ?? this.schema.database,
+        schema: tableDef.schema ?? this.schema.schema,
+        name: tableDef.name
+      },
+      columns: tableDef.columns.map((col) => ObjectUtil.clearUndefined({
+        name: col.name,
+        dataType: this.qh.type(col.dataType ?? col.typeFwd()),
+        autoIncrement: col.autoIncrement,
+        nullable: col.nullable
+      })),
+      primaryKeys: tableDef.columns
+        .filter((item) => item.primaryKey !== undefined)
+        .orderBy((item) => item.primaryKey!)
+        .map((item) => ({
+          columnName: item.name,
+          orderBy: "ASC"
+        }))
+    };
+  }
+
+  public getCreateFksQueryDefsFromTableDef(tableDef: ITableDef): TQueryDef[] {
+    if (tableDef.columns.length < 1) {
+      throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
+    }
+
+    const addFkQueryDefs: TQueryDef[] = [];
+    for (const fkDef of tableDef.foreignKeys) {
+      try {
+        const targetTableDef = DbDefinitionUtil.getTableDef(fkDef.targetTypeFwd());
+        if (targetTableDef.columns.length < 1) {
+          throw new Error(`${targetTableDef.name}의 컬럼 설정이 잘못되었습니다.`);
+        }
+
+        const targetPkNames = targetTableDef.columns
+          .filter((item) => item.primaryKey !== undefined)
+          .orderBy((item) => item.primaryKey!)
+          .map((item) => item.name);
+
+        addFkQueryDefs.push(...[
+          {
+            type: "addForeignKey",
+            table: {
+              database: tableDef.database ?? this.schema.database,
+              schema: tableDef.schema ?? this.schema.schema,
+              name: tableDef.name
+            },
+            foreignKey: {
+              name: fkDef.name,
+              fkColumns: fkDef.columnPropertyKeys.map((propKey) => tableDef.columns.single((col) => col.propertyKey === propKey)!.name),
+              targetTable: {
+                database: targetTableDef.database ?? this.schema.database,
+                schema: targetTableDef.schema ?? this.schema.schema,
+                name: targetTableDef.name
+              },
+              targetPkColumns: targetPkNames
+            }
+          } as TQueryDef,
+          {
+            type: "createIndex",
+            table: {
+              database: tableDef.database ?? this.schema.database,
+              schema: tableDef.schema ?? this.schema.schema,
+              name: tableDef.name
+            },
+            index: {
+              name: fkDef.name,
+              columns: fkDef.columnPropertyKeys.map((item) => ({
+                name: tableDef.columns.single((col) => col.propertyKey === item)!.name,
+                orderBy: "ASC"
+              }))
+            }
+          } as TQueryDef
+        ]);
+      }
+      catch (err) {
+        throw new SdError(err, tableDef.name + " > " + fkDef.name + ": 오류");
+      }
+    }
+
+    return addFkQueryDefs;
+  }
+
+  public getCreateIndexesQueryDefsFromTableDef(tableDef: ITableDef): TQueryDef[] {
+    if (tableDef.columns.length < 1) {
+      throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
+    }
+
+    const createIndexQueryDefs: TQueryDef[] = [];
+    for (const indexDef of tableDef.indexes) {
+      createIndexQueryDefs.push({
+        type: "createIndex",
+        table: {
+          database: tableDef.database ?? this.schema.database,
+          schema: tableDef.schema ?? this.schema.schema,
+          name: tableDef.name
+        },
+        index: {
+          name: indexDef.name,
+          columns: indexDef.columns.orderBy((item) => item.order).map((item) => ({
+            name: tableDef.columns.single((col) => col.propertyKey === item.columnPropertyKey)!.name,
+            orderBy: item.orderBy
+          }))
+        }
+      });
+    }
+    return createIndexQueryDefs;
+  }
+
+  public getAddColumnQueryDefFromTableDef(tableDef: ITableDef, columnName: string): TQueryDef {
+    if (tableDef.columns.length < 1) {
+      throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
+    }
+    const columnDef = tableDef.columns.single((col) => col.name === columnName);
+    if (!columnDef) {
+      throw new Error(`'${tableDef.name}.${columnName}' 설정이 잘못되었습니다.`);
+    }
+
+    return {
+      type: "addColumn",
+      table: {
+        database: tableDef.database ?? this.schema.database,
+        schema: tableDef.schema ?? this.schema.schema,
+        name: tableDef.name
+      },
+      column: {
+        name: columnDef.name,
+        dataType: this.qh.type(columnDef.dataType ?? columnDef.typeFwd()),
+        autoIncrement: columnDef.autoIncrement,
+        nullable: columnDef.nullable
+      }
+    };
+  }
+
+  public getModifyColumnQueryDefFromTableDef(tableDef: ITableDef, columnName: string): TQueryDef {
+    if (tableDef.columns.length < 1) {
+      throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
+    }
+    const columnDef = tableDef.columns.single((col) => col.name === columnName);
+    if (!columnDef) {
+      throw new Error(`'${tableDef.name}.${columnName}' 설정이 잘못되었습니다.`);
+    }
+
+    return {
+      type: "modifyColumn",
+      table: {
+        database: tableDef.database ?? this.schema.database,
+        schema: tableDef.schema ?? this.schema.schema,
+        name: tableDef.name
+      },
+      column: {
+        name: columnDef.name,
+        dataType: this.qh.type(columnDef.dataType ?? columnDef.typeFwd()),
+        autoIncrement: columnDef.autoIncrement,
+        nullable: columnDef.nullable
+      }
+    };
+  }
+
+  public getModifyPkQueryDefFromTableDef(tableDef: ITableDef, columnNames: string[]): TQueryDef[] {
+    if (tableDef.columns.length < 1) {
+      throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
+    }
+
+    return [
+      {
+        type: "dropPrimaryKey",
+        table: {
+          database: tableDef.database ?? this.schema.database,
+          schema: tableDef.schema ?? this.schema.schema,
+          name: tableDef.name
+        }
+      },
+      ...(columnNames.length > 0) ? [
+        {
+          type: "addPrimaryKey",
+          table: {
+            database: tableDef.database ?? this.schema.database,
+            schema: tableDef.schema ?? this.schema.schema,
+            name: tableDef.name
+          },
+          columns: columnNames
+        } as TQueryDef
+      ] : []
+    ];
+  }
+
+  public getAddFkQueryDefFromTableDef(tableDef: ITableDef, fkName: string): TQueryDef {
+    if (tableDef.columns.length < 1) {
+      throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
+    }
+    const fkDef = tableDef.foreignKeys.single((col) => col.name === fkName);
+    if (!fkDef) {
+      throw new Error(`'${tableDef.name} => FK: ${fkName}' 설정이 잘못되었습니다.`);
+    }
+
+    const targetTableDef = DbDefinitionUtil.getTableDef(fkDef.targetTypeFwd());
+    if (targetTableDef.columns.length < 1) {
+      throw new Error(`${targetTableDef.name}의 컬럼 설정이 잘못되었습니다.`);
+    }
+
+    const targetPkNames = targetTableDef.columns
+      .filter((item) => item.primaryKey !== undefined)
+      .orderBy((item) => item.primaryKey!)
+      .map((item) => item.name);
+
+    return {
+      type: "addForeignKey",
+      table: {
+        database: tableDef.database ?? this.schema.database,
+        schema: tableDef.schema ?? this.schema.schema,
+        name: tableDef.name
+      },
+      foreignKey: {
+        name: fkDef.name,
+        fkColumns: fkDef.columnPropertyKeys.map((propKey) => tableDef.columns.single((col) => col.propertyKey === propKey)!.name),
+        targetTable: {
+          database: targetTableDef.database ?? this.schema.database,
+          schema: targetTableDef.schema ?? this.schema.schema,
+          name: targetTableDef.name
+        },
+        targetPkColumns: targetPkNames
+      }
+    };
+  }
+
+  public getRemoveFkQueryDefFromTableDef(tableDef: ITableDef, fkName: string): TQueryDef {
+    if (tableDef.columns.length < 1) {
+      throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
+    }
+
+    return {
+      type: "removeForeignKey",
+      table: {
+        database: tableDef.database ?? this.schema.database,
+        schema: tableDef.schema ?? this.schema.schema,
+        name: tableDef.name
+      },
+      foreignKey: fkName
+    };
+  }
+
+  public getCreateIndexQueryDefFromTableDef(tableDef: ITableDef, indexName: string): TQueryDef {
+    if (tableDef.columns.length < 1) {
+      throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
+    }
+    let indexDef = tableDef.indexes.single((item) => item.name === indexName);
+    if (!indexDef) {
+      const fkDef = tableDef.foreignKeys.single((item) => item.name === indexName);
+      if (!fkDef) {
+        throw new Error(`'${tableDef.name} => IDX: ${indexName}' 설정이 잘못되었습니다.`);
+      }
+      indexDef = {
+        name: fkDef.name,
+        description: fkDef.description,
+        columns: fkDef.columnPropertyKeys.map((propKey, i) => ({
+          columnPropertyKey: propKey,
+          name: tableDef.columns.single((col) => col.propertyKey === propKey)!.name,
+          order: i + 1,
+          orderBy: "ASC"
+        }))
+      };
+    }
+
+    return {
+      type: "createIndex",
+      table: {
+        database: tableDef.database ?? this.schema.database,
+        schema: tableDef.schema ?? this.schema.schema,
+        name: tableDef.name
+      },
+      index: {
+        name: indexDef.name,
+        columns: indexDef.columns.orderBy((item) => item.order).map((item) => ({
+          name: tableDef.columns.single((col) => col.propertyKey === item.columnPropertyKey)!.name,
+          orderBy: item.orderBy
+        }))
+      }
+    };
+  }
+
+  public getDropIndexQueryDefFromTableDef(tableDef: ITableDef, indexName: string): TQueryDef {
+    if (tableDef.columns.length < 1) {
+      throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
+    }
+
+    return {
+      type: "dropIndex",
+      table: {
+        database: tableDef.database ?? this.schema.database,
+        schema: tableDef.schema ?? this.schema.schema,
+        name: tableDef.name
+      },
+      index: indexName
+    };
   }
 }

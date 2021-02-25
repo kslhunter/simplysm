@@ -34,7 +34,7 @@ export function Column<T extends object>(columnDef: {
       propertyKey,
       name: columnDef.name ?? propertyKey,
       dataType: columnDef.dataType,
-      length: columnDef.length,
+      // length: columnDef.length,
       nullable: columnDef.nullable,
       autoIncrement: columnDef.autoIncrement,
       primaryKey: columnDef.primaryKey,

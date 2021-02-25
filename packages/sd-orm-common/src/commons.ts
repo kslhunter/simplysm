@@ -18,14 +18,20 @@ export type TQueryDef = (
   (ICreateDatabaseIfNotExistsQueryDef & { type: "createDatabaseIfNotExists" }) |
   (IClearDatabaseIfExistsQueryDef & { type: "clearDatabaseIfExists" }) |
   (IGetDatabaseInfoDef & { type: "getDatabaseInfo" }) |
-  (IGetTablesInfoDef & { type: "getTableInfos" }) |
+  (IGetTableInfosDef & { type: "getTableInfos" }) |
   (IGetTableInfoDef & { type: "getTableInfo" }) |
+  (IGetTableColumnInfosDef & { type: "getTableColumnInfos" }) |
+  (IGetTablePrimaryKeysDef & { type: "getTablePrimaryKeys" }) |
+  (IGetTableForeignKeysDef & { type: "getTableForeignKeys" }) |
+  (IGetTableIndexesDef & { type: "getTableIndexes" }) |
   (ICreateTableQueryDef & { type: "createTable" }) |
   (IDropTableQueryDef & { type: "dropTable" }) |
   (IAddColumnQueryDef & { type: "addColumn" }) |
   (IRemoveColumnQueryDef & { type: "removeColumn" }) |
   (IModifyColumnQueryDef & { type: "modifyColumn" }) |
   (IRenameColumnQueryDef & { type: "renameColumn" }) |
+  (IDropPrimaryKeyQueryDef & { type: "dropPrimaryKey" }) |
+  (IAddPrimaryKeyQueryDef & { type: "addPrimaryKey" }) |
   (IAddForeignKeyQueryDef & { type: "addForeignKey" }) |
   (IRemoveForeignKeyQueryDef & { type: "removeForeignKey" }) |
   (ICreateIndexQueryDef & { type: "createIndex" }) |
@@ -87,12 +93,28 @@ export interface IGetDatabaseInfoDef {
   database: string;
 }
 
-export interface IGetTablesInfoDef {
-  database: string;
+export interface IGetTableInfosDef {
+  database?: string;
   schema?: string;
 }
 
 export interface IGetTableInfoDef {
+  table: IQueryTableNameDef;
+}
+
+export interface IGetTableColumnInfosDef {
+  table: IQueryTableNameDef;
+}
+
+export interface IGetTablePrimaryKeysDef {
+  table: IQueryTableNameDef;
+}
+
+export interface IGetTableForeignKeysDef {
+  table: IQueryTableNameDef;
+}
+
+export interface IGetTableIndexesDef {
   table: IQueryTableNameDef;
 }
 
@@ -123,6 +145,15 @@ export interface IRenameColumnQueryDef {
   table: IQueryTableNameDef;
   prevName: string;
   nextName: string;
+}
+
+export interface IDropPrimaryKeyQueryDef {
+  table: IQueryTableNameDef;
+}
+
+export interface IAddPrimaryKeyQueryDef {
+  table: IQueryTableNameDef;
+  columns: string[];
 }
 
 export interface IAddForeignKeyQueryDef {
@@ -257,7 +288,6 @@ export interface IColumnDef {
   propertyKey: string;
   name: string;
   dataType?: Type<TQueryValue> | TSdOrmDataType | string;
-  length?: number | "MAX";
   nullable?: boolean;
   autoIncrement?: boolean;
   primaryKey?: number;
