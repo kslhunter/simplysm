@@ -1,13 +1,27 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { IDbLibPackage, TXT_CHANGE_IGNORE_CONFIRM } from "../commons";
+import {
+  COLUMN_DATA_TYPES,
+  IColumnVM,
+  IDbLibPackage,
+  IForeignKeyTargetVM,
+  IForeignKeyVM,
+  IIndexVM,
+  IModelVM,
+  TXT_CHANGE_IGNORE_CONFIRM
+} from "../commons";
 import * as path from "path";
 import { FsUtil } from "@simplysm/sd-core-node";
-import { SdToastProvider } from "@simplysm/sd-angular";
+import { SdModalProvider, SdToastProvider } from "@simplysm/sd-angular";
 import * as ts from "typescript";
 import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-common";
+import { DbModelFkColumnSelectModal } from "../modals/DbModelFkColumnSelectModal";
+import { DbModelIndexSelectModal } from "../modals/DbModelIndexSelectModal";
 
 // TODO: 파일 변경 WATCH하여 필요시 새로고침 여부 CONFIRM (변경사항이 있는지도 체크)
+// TODO: 데이터타입/길이 같이 편집시, 비워줘야되는 부분 확인
+// TODO: Uuid 타입 추가
+// TODO: number/Uuid 외에는 AI 사용불가
 
 @Component({
   selector: "app-db-model",
@@ -111,7 +125,7 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
               <h5 class="sd-page-header">컬럼 목록</h5>
               <sd-form layout="inline">
                 <sd-form-item>
-                  <sd-button size="sm">
+                  <sd-button size="sm" (click)="onAddColumnButtonClick()">
                     <sd-icon icon="plus" fixedWidth></sd-icon>
                     추가
                   </sd-button>
@@ -128,7 +142,7 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
                   </ng-template>
                   <ng-template #cell let-item="item" let-edit="edit">
                     <sd-sheet-cell style="text-align: center">
-                      <sd-anchor>
+                      <sd-anchor (click)="onRemoveColumnButtonClick(item)">
                         <sd-icon icon="times" fixedWidth></sd-icon>
                       </sd-anchor>
                     </sd-sheet-cell>
@@ -153,7 +167,9 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
                 <sd-sheet-column header="타입" fixed resizable key="dataType" width.px="200"
                                  [title]="COLUMN_DATA_TYPE_TITLE">
                   <ng-template #cell let-item="item" let-edit="edit">
+                    <!--suppress JSConstantReassignment -->
                     <sd-textfield [(value)]="item.dataType" required inset size="sm"
+                                  (valueChange)="item.length = undefined; item.precision = undefined; item.digits = undefined"
                                   [validatorFn]="dataTypeValidatorFn"></sd-textfield>
                   </ng-template>
                 </sd-sheet-column>
@@ -166,7 +182,8 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
                 </sd-sheet-column>
                 <sd-sheet-column header="Precision" fixed resizable key="precision" width.px="30">
                   <ng-template #cell let-item="item" let-edit="edit">
-                    <sd-textfield type="number" [(value)]="item['precision']" inset size="sm"
+                    <!--suppress JSConstantReassignment -->
+                    <sd-textfield type="number" [(value)]="item.precision" inset size="sm"
                                   *ngIf="item.dataType === 'DECIMAL'" required></sd-textfield>
                   </ng-template>
                 </sd-sheet-column>
@@ -196,7 +213,7 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
               <h5 class="sd-page-header">외래키 목록</h5>
               <sd-form layout="inline">
                 <sd-form-item>
-                  <sd-button size="sm">
+                  <sd-button size="sm" (click)="onAddFkButtonClick()">
                     <sd-icon icon="plus" fixedWidth></sd-icon>
                     추가
                   </sd-button>
@@ -213,7 +230,7 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
                   </ng-template>
                   <ng-template #cell let-item="item" let-edit="edit">
                     <sd-sheet-cell style="text-align: center">
-                      <sd-anchor>
+                      <sd-anchor (click)="onRemoveFkButtonClick(item)">
                         <sd-icon icon="times" fixedWidth></sd-icon>
                       </sd-anchor>
                     </sd-sheet-cell>
@@ -229,22 +246,10 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
                     <sd-textfield [(value)]="item.description" required inset size="sm"></sd-textfield>
                   </ng-template>
                 </sd-sheet-column>
-                <sd-sheet-column header="컬럼선택" fixed resizable key="columnIds" width.px="300">
-                  <ng-template #cell let-item="item" let-edit="edit">
-                    <sd-sheet-cell>
-                      <sd-anchor>
-                        <sd-icon icon="tasks" fixedWidth></sd-icon>
-                        <ng-container *ngFor="let columnId of item.columnIds; let index = index; trackBy: trackByMeFn">
-                          {{ getModelColumnById(selectedModel, columnId)?.name || "ERROR" }}<span
-                          *ngIf="index !== item.columnIds.length - 1">,</span>
-                        </ng-container>
-                      </sd-anchor>
-                    </sd-sheet-cell>
-                  </ng-template>
-                </sd-sheet-column>
                 <sd-sheet-column header="타겟모델" fixed resizable key="targetModelId" width.px="200">
                   <ng-template #cell let-item="item" let-edit="edit">
-                    <sd-select [(value)]="item.targetModelId" required inset size="sm">
+                    <sd-select [(value)]="item.targetModelId" required inset size="sm"
+                               (valueChange)="item.columnIds = []">
                       <ng-template #header>
                         <div class="sd-border-bottom-brightness-default">
                           <sd-textfield inset placeholder="검색어"></sd-textfield>
@@ -260,13 +265,26 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
                     </sd-select>
                   </ng-template>
                 </sd-sheet-column>
+                <sd-sheet-column header="컬럼선택" fixed resizable key="columnIds" width.px="300">
+                  <ng-template #cell let-item="item" let-edit="edit">
+                    <sd-sheet-cell *ngIf="item.targetModelId">
+                      <sd-anchor (click)="onFkColumnSelectButtonClick(item)">
+                        <sd-icon icon="tasks" fixedWidth></sd-icon>
+                        <ng-container *ngFor="let columnId of item.columnIds; let index = index; trackBy: trackByMeFn">
+                          {{ getModelColumnById(selectedModel, columnId)?.name || "ERROR" }}<span
+                          *ngIf="index !== item.columnIds.length - 1">,</span>
+                        </ng-container>
+                      </sd-anchor>
+                    </sd-sheet-cell>
+                  </ng-template>
+                </sd-sheet-column>
               </sd-sheet>
 
               <br/>
               <h5 class="sd-page-header">외래키대상 목록</h5>
               <sd-form layout="inline">
                 <sd-form-item>
-                  <sd-button size="sm">
+                  <sd-button size="sm" (click)="onAddFktButtonClick()">
                     <sd-icon icon="plus" fixedWidth></sd-icon>
                     추가
                   </sd-button>
@@ -283,7 +301,7 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
                   </ng-template>
                   <ng-template #cell let-item="item" let-edit="edit">
                     <sd-sheet-cell style="text-align: center">
-                      <sd-anchor>
+                      <sd-anchor (click)="onRemoveFktButtonClick(item)">
                         <sd-icon icon="times" fixedWidth></sd-icon>
                       </sd-anchor>
                     </sd-sheet-cell>
@@ -301,7 +319,8 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
                 </sd-sheet-column>
                 <sd-sheet-column header="소스모델" fixed resizable key="sourceModelId" width.px="200">
                   <ng-template #cell let-item="item" let-edit="edit">
-                    <sd-select [(value)]="item.sourceModelId" required inset size="sm">
+                    <sd-select [(value)]="item.sourceModelId" required inset size="sm"
+                               (valueChange)="item.sourceModelForeignKeyId = undefined">
                       <ng-template #header>
                         <div class="sd-border-bottom-brightness-default">
                           <sd-textfield inset placeholder="검색어"></sd-textfield>
@@ -339,7 +358,7 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
               <h5 class="sd-page-header">인덱스 목록</h5>
               <sd-form layout="inline">
                 <sd-form-item>
-                  <sd-button size="sm">
+                  <sd-button size="sm" (click)="onAddIdxButtonClick()">
                     <sd-icon icon="plus" fixedWidth></sd-icon>
                     추가
                   </sd-button>
@@ -356,7 +375,7 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
                   </ng-template>
                   <ng-template #cell let-item="item" let-edit="edit">
                     <sd-sheet-cell style="text-align: center">
-                      <sd-anchor>
+                      <sd-anchor (click)="onRemoveIdxButtonClick(item)">
                         <sd-icon icon="times" fixedWidth></sd-icon>
                       </sd-anchor>
                     </sd-sheet-cell>
@@ -370,11 +389,11 @@ import { NumberUtil, ObjectUtil, SdError, StringUtil } from "@simplysm/sd-core-c
                 <sd-sheet-column header="컬럼선택" fixed resizable key="columns" width.px="300">
                   <ng-template #cell let-item="item" let-edit="edit">
                     <sd-sheet-cell>
-                      <sd-anchor>
+                      <sd-anchor (click)="onIdxColumnSelectButtonClick(item)">
                         <sd-icon icon="tasks" fixedWidth></sd-icon>
                         <ng-container
                           *ngFor="let column of item.columns; let index = index; trackBy: trackByColumnIdFn">
-                          {{ getModelColumnById(selectedModel, column.columnId).name }}
+                          {{ getModelColumnById(selectedModel, column.columnId)?.name || "ERROR" }}
                           {{ column.orderBy }}<span *ngIf="index !== item.columns.length - 1">,</span>
                         </ng-container>
                       </sd-anchor>
@@ -449,6 +468,7 @@ export class DbModelPage implements OnInit {
 
   public constructor(private readonly _activatedRoute: ActivatedRoute,
                      private readonly _toast: SdToastProvider,
+                     private readonly _modal: SdModalProvider,
                      private readonly _cdr: ChangeDetectorRef) {
   }
 
@@ -467,7 +487,7 @@ export class DbModelPage implements OnInit {
 
   @HostListener("sdDataRefresh")
   public async onRefreshButtonClick(): Promise<void> {
-    const diffs = this.data!.models.diffs(this.orgModels!, { keys: ["key"] });
+    const diffs = this.data!.models.diffs(this.orgModels!, { keys: ["id"] });
     if (diffs.length > 0 && !confirm(TXT_CHANGE_IGNORE_CONFIRM)) {
       return;
     }
@@ -1143,6 +1163,102 @@ export class DbModelPage implements OnInit {
   }
 
   // endregion
+
+  public onAddColumnButtonClick(): void {
+    const id = (this.selectedModel!.columns.max((item) => item.id) ?? 0) + 100;
+    this.selectedModel!.columns.push({
+      id,
+      primaryKey: undefined,
+      name: undefined,
+      description: undefined,
+      nullable: false,
+      autoIncrement: false,
+      dataType: undefined,
+      length: undefined,
+      precision: undefined,
+      digits: undefined
+    });
+  }
+
+  public onRemoveColumnButtonClick(item: IColumnVM): void {
+    this.selectedModel!.columns.remove(item);
+  }
+
+  public onAddFkButtonClick(): void {
+    const id = (this.selectedModel!.foreignKeys.max((item) => item.id) ?? 0) + 100;
+    this.selectedModel!.foreignKeys.push({
+      id,
+      name: undefined,
+      description: undefined,
+      columnIds: [],
+      targetModelId: undefined
+    });
+  }
+
+  public onRemoveFkButtonClick(item: IForeignKeyVM): void {
+    this.selectedModel!.foreignKeys.remove(item);
+  }
+
+  public onAddFktButtonClick(): void {
+    const id = (this.selectedModel!.foreignKeyTargets.max((item) => item.id) ?? 0) + 100;
+    this.selectedModel!.foreignKeyTargets.push({
+      id,
+      name: undefined,
+      description: undefined,
+      sourceModelId: undefined,
+      sourceModelForeignKeyId: undefined
+    });
+  }
+
+  public onRemoveFktButtonClick(item: IForeignKeyTargetVM): void {
+    this.selectedModel!.foreignKeyTargets.remove(item);
+  }
+
+
+  public onAddIdxButtonClick(): void {
+    const id = (this.selectedModel!.indexes.max((item) => item.id) ?? 0) + 100;
+    this.selectedModel!.indexes.push({
+      id,
+      name: undefined,
+      columns: []
+    });
+  }
+
+  public onRemoveIdxButtonClick(item: IIndexVM): void {
+    this.selectedModel!.indexes.remove(item);
+  }
+
+  public async onFkColumnSelectButtonClick(fk: IForeignKeyVM): Promise<void> {
+    const model = this.selectedModel!;
+    const targetModel = this.data!.models.single((item) => item.id === fk.targetModelId)!;
+    const fkColumnIds = fk.columnIds;
+
+    const result = await this._modal.showAsync(
+      DbModelFkColumnSelectModal,
+      `FK 컬럼 선택`,
+      { model, targetModel, fkColumnIds }
+    );
+    if (!result) return;
+
+    fk.columnIds = result;
+
+    this._cdr.markForCheck();
+  }
+
+  public async onIdxColumnSelectButtonClick(idx: IIndexVM): Promise<void> {
+    const model = this.selectedModel!;
+
+    const result = await this._modal.showAsync(
+      DbModelIndexSelectModal,
+      `인덱스 컬럼 선택`,
+      { model, idx }
+    );
+    if (!result) return;
+
+    idx.columns = result;
+
+    this._cdr.markForCheck();
+  }
 }
 
 interface IDataVM {
@@ -1150,80 +1266,3 @@ interface IDataVM {
   name: string;
   models: IModelVM[];
 }
-
-interface IModelVM {
-  id: number;
-  relativeDirPath: string | undefined;
-  className: string | undefined;
-  description: string | undefined;
-  database: string | undefined;
-  schema: string | undefined;
-  name: string | undefined;
-  columns: IColumnVM[];
-  foreignKeys: IForeignKeyVM[];
-  foreignKeyTargets: IForeignKeyTargetVM[];
-  indexes: IIndexVM[];
-}
-
-interface IColumnVM {
-  id: number;
-  primaryKey: number | undefined;
-  name: string | undefined;
-  description: string | undefined;
-  nullable: boolean;
-  autoIncrement: boolean;
-  dataType: TDataType | undefined;
-  length: string | undefined;
-  precision: number | undefined;
-  digits: number | undefined;
-}
-
-interface IForeignKeyVM {
-  id: number;
-  name: string | undefined;
-  description: string | undefined;
-  columnIds: (number | undefined)[];
-  targetModelId: number | undefined;
-}
-
-interface IForeignKeyTargetVM {
-  id: number;
-  name: string | undefined;
-  description: string | undefined;
-  sourceModelId: number | undefined;
-  sourceModelForeignKeyId: number | undefined;
-}
-
-interface IIndexVM {
-  id: number;
-  name: string | undefined;
-  columns: {
-    columnId: number | undefined;
-    order: number;
-    orderBy: "ASC" | "DESC";
-  }[];
-}
-
-type TDataType =
-  "number"
-  | "string"
-  | "boolean"
-  | "DateOnly"
-  | "DateTime"
-  | "Buffer"
-  | "TEXT"
-  | "DECIMAL"
-  | "STRING"
-  | "BINARY";
-const COLUMN_DATA_TYPES: TDataType[] = [
-  "number",
-  "string",
-  "boolean",
-  "DateOnly",
-  "DateTime",
-  "Buffer",
-  "TEXT",
-  "DECIMAL",
-  "STRING",
-  "BINARY"
-];
