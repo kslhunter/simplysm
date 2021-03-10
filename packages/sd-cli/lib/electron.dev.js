@@ -4,15 +4,18 @@ const {
   globalShortcut
 } = require("electron");
 
-const targetUrl = process.argv[2];
+process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
+
+const configJson = JSON.parse(process.argv[2]);
 
 app.on("ready", async () => {
   let win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: configJson.width || 1280,
+    height: configJson.height || 720,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: false,
+      enableRemoteModule: true
     }
   });
 
@@ -25,8 +28,9 @@ app.on("ready", async () => {
   win.removeMenu();
 
   globalShortcut.register("CommandOrControl+Shift+R", () => {
-    win.reload();
+    app.relaunch();
+    app.exit();
   });
 
-  await win.loadURL(targetUrl);
+  await win.loadURL(configJson.targetUrl);
 });

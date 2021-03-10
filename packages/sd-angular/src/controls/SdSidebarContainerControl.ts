@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, Input } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding, Injector, Input } from "@angular/core";
 import { NavigationStart, Router } from "@angular/router";
 
 @Component({
@@ -71,9 +71,13 @@ export class SdSidebarContainerControl {
     }
   }
 
+  private readonly _router?: Router;
+
   public constructor(private readonly _cdr: ChangeDetectorRef,
-                     private readonly _router: Router) {
-    this._router.events.subscribe((value) => {
+                     private readonly _injector: Injector) {
+    this._router = this._injector.get<Router | null>(Router, null) ?? undefined;
+
+    this._router?.events.subscribe((value) => {
       if (value instanceof NavigationStart) {
         this.toggle = false;
         this._cdr.markForCheck();

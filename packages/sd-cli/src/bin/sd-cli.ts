@@ -121,6 +121,16 @@ const argv = yargs.version(false)
         describe: "오픈할 HTML 파일 혹은 링크",
         demandOption: true
       })
+      .options({
+        width: {
+          type: "number",
+          describe: "너비"
+        },
+        height: {
+          type: "number",
+          describe: "높이"
+        }
+      })
   )
   .command(
     "run-cordova-device <cordovaProjectPath> <url>",
@@ -234,7 +244,7 @@ else {
     await new SdCliGenDbMigration().runAsync(argv.config, argv.key);
   }
   else if (args[0] === "run-desktop-browser") {
-    await new SdCliElectron().runAsync(argv.url!);
+    await new SdCliElectron().runAsync(argv.url!, { type: "windows", width: argv.width, height: argv.height });
   }
   else if (args[0] === "run-cordova-device") {
     await new SdCliCordova().runDeviceAsync(argv.cordovaProjectPath, argv.url!);

@@ -74,8 +74,11 @@ export class SdProjectConfigUtil {
       }
     }
     else if (config.type === "client") {
-      if (config.server === undefined || typeof config.server !== "string" || config.server === "") {
-        throw new Error("패키지 '" + packageName + "'의 'server'설정이 반드시 설정되어야 합니다.");
+      if (
+        (config.server === undefined || typeof config.server !== "string" || config.server === "") &&
+        (config.devServer === undefined)
+      ) {
+        throw new Error("패키지 '" + packageName + "'는 'server' 혹은 'devServer' 설정이 반드시 있어야 합니다.");
       }
       if (config.configs !== undefined) {
         if (!(typeof config.configs === "object")) {

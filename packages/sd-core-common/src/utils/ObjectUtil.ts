@@ -332,8 +332,30 @@ export class ObjectUtil {
         const invalidateKeys = Object.keys(validateResult.result);
         for (const invalidateKey of invalidateKeys) {
           const itemDisplayName: string = realDef[invalidateKey].displayName;
-
-          errorMessages.push(`- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}'`);
+          // noinspection PointlessBooleanExpressionJS
+          if (realDef[invalidateKey].displayValue !== false) {
+            const itemValue = validateResult.result[invalidateKey].value;
+            if (
+              typeof itemValue === "string" ||
+              typeof itemValue === "number" ||
+              typeof itemValue === "boolean" ||
+              typeof itemValue === "undefined"
+            ) {
+              errorMessages.push(`- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}': ` + itemValue);
+            }
+            else if (itemValue instanceof DateTime) {
+              errorMessages.push(`- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}': ` + itemValue.toFormatString("yyyy-MM-dd HH:mm:ss"));
+            }
+            else if (itemValue instanceof DateOnly) {
+              errorMessages.push(`- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}': ` + itemValue.toFormatString("yyyy-MM-dd"));
+            }
+            else {
+              errorMessages.push(`- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}'`);
+            }
+          }
+          else {
+            errorMessages.push(`- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}'`);
+          }
         }
       }
       throw new Error(`${displayName}중 잘못된 내용이 있습니다.` + os.EOL + errorMessages.join(os.EOL));
@@ -463,6 +485,7 @@ export interface IValidateDef<T> {
   type?: Type<WrappedType<T>> | Type<WrappedType<T>>[];
   notnull?: boolean;
   includes?: T[];
+  displayValue?: boolean;
   validator?: (value: UnwrappedType<NonNullable<T>>) => boolean | string;
 }
 

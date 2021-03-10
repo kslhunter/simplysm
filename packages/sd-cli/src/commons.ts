@@ -58,7 +58,10 @@ export interface ISdClientPackageConfig {
   type: "client";
   platforms?: TSdClientPackageConfigPlatform[];
   env?: Record<string, string>;
-  server: string;
+  server?: string;
+  devServer?: {
+    port: number;
+  };
   configs?: Record<string, any>;
   publish?: TSdPublishConfig;
 }
@@ -74,6 +77,8 @@ export interface ISdClientPackageConfigBrowserPlatform {
 
 export interface ISdClientPackageConfigWindowsPlatform {
   type: "windows";
+  width?: number;
+  height?: number;
 }
 
 export interface ISdClientPackageConfigAndroidPlatform {

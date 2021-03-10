@@ -26,6 +26,9 @@ import { Observable } from "rxjs";
 import { SdAngularUtil } from "../utils/SdAngularUtil";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
 import { SdCliCordovaTool } from "./SdCliCordovaTool";
+import { ObjectUtil } from "@simplysm/sd-core-common";
+
+// const nodeExternals = require("webpack-node-externals");
 
 export class SdCliClientCompiler extends EventEmitter {
   private readonly _logger: Logger;
@@ -253,6 +256,42 @@ export class SdCliClientCompiler extends EventEmitter {
     const publicPath = (!watch && this._platform.type === "android") ? "/android_asset/www/" :
       (this._platform.type !== "browser" ? `/__${this._platform.type}__` : "") + `/${packageKey}/`;
 
+    // DIST에 COPY할 NPM 설정 구성
+    const distNpmConfig = ObjectUtil.clone(this._npmConfig);
+
+    const loadedModuleNames: string[] = [];
+    const externalModuleNames: string[] = [];
+    const fn = (moduleName: string): void => {
+      if (loadedModuleNames.includes(moduleName)) return;
+      loadedModuleNames.push(moduleName);
+
+      const modulePath = path.resolve(process.cwd(), "node_modules", moduleName);
+      if (FsUtil.exists(path.resolve(modulePath, "binding.gyp"))) {
+        externalModuleNames.push(moduleName);
+      }
+
+      if (moduleName === "typescript") {
+        externalModuleNames.push(moduleName);
+      }
+
+      if (FsUtil.exists(SdCliPathUtil.getNpmConfigFilePath(modulePath))) {
+        const moduleNpmConfig = FsUtil.readJson(SdCliPathUtil.getNpmConfigFilePath(modulePath));
+        for (const depModuleName of Object.keys(moduleNpmConfig.dependencies ?? {})) {
+          fn(depModuleName);
+        }
+      }
+    };
+    for (const key of Object.keys(distNpmConfig.dependencies ?? {})) {
+      fn(key);
+    }
+
+    distNpmConfig.dependencies = {};
+    for (const externalModuleName of externalModuleNames) {
+      distNpmConfig.dependencies[externalModuleName] = "*";
+    }
+    delete distNpmConfig.devDependencies;
+    delete distNpmConfig.peerDependencies;
+
     return {
       ...watch ? {
         mode: "development",
@@ -270,7 +309,9 @@ export class SdCliClientCompiler extends EventEmitter {
         resolve: {
           extensions: [".ts", ".js", ".json"],
           alias: { "SD_APP_MODULE": path.resolve(srcPath, "AppModule") },
-          aliasFields: ["browser"]
+          ...this._platform.type === "browser" ? {
+            aliasFields: ["browser"]
+          } : {}
         }
       } : {
         mode: "production",
@@ -396,7 +437,13 @@ export class SdCliClientCompiler extends EventEmitter {
               name: `assets/[name].[ext]${watch ? "?[hash]" : ""}`,
               esModule: false
             }
-          }
+          },
+          ...this._platform.type === "windows" ? [
+            {
+              test: /\.js$/,
+              loader: "shebang-loader"
+            }
+          ] : []
         ]
       },
       plugins: [
@@ -445,7 +492,13 @@ export class SdCliClientCompiler extends EventEmitter {
             {
               path: path.resolve(SdCliPathUtil.getDistPath(this._rootPath), ".configs.json"),
               content: JSON.stringify(this._config.configs ?? {}, undefined, 2)
-            }
+            },
+            ...this._platform.type !== "windows" || watch ? [] : [
+              {
+                path: path.resolve(distPath, "package.json"),
+                content: JSON.stringify(distNpmConfig, undefined, 2)
+              }
+            ]
           ])
         ],
         ...FsUtil.exists(path.resolve(srcPath, "favicon.ico")) ? [
@@ -472,7 +525,39 @@ export class SdCliClientCompiler extends EventEmitter {
             ]
           })
         ] : []
-      ]
+      ],
+      /*...this._platform.type === "windows" ? {
+        externals: [
+          nodeExternals({
+            allowlist: [
+              /^webpack-hot-middleware\//
+            ]
+          })
+        ]
+      } : {}*/
+      ...this._platform.type === "windows" ? {
+        externals: [
+          (context, request, callback): void => {
+            if (externalModuleNames.includes(request)) {
+              const req = request.replace(/^.*?\/node_modules\//, "") as string;
+              if (req.startsWith("@")) {
+                callback(null, `commonjs ${req.split("/", 2).join("/")}`);
+                return;
+              }
+
+              callback(null, `commonjs ${req.split("/")[0]}`);
+              return;
+            }
+
+            if (request === "fsevents") {
+              callback(null, `commonjs ${request as string}`);
+              return;
+            }
+
+            callback();
+          }
+        ]
+      } : {}
     };
   }
 

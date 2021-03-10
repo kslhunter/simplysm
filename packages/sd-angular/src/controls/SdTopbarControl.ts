@@ -24,7 +24,7 @@ import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
-    
+
     :host {
       display: block;
       position: absolute;

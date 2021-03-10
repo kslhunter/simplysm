@@ -39,6 +39,10 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
               <sd-gap width="sm"></sd-gap>
               <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
             </sd-dock>
+            
+            <sd-dock *ngIf="headerTemplateRef">
+              <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
+            </sd-dock>
 
             <sd-pane>
               <ng-content></ng-content>

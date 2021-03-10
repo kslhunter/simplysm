@@ -4,10 +4,10 @@ import { TSdOrmDataType } from "./SdOrmDataType";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function Table<T>(def: {
+  description: string;
   database?: string;
   schema?: string;
   name?: string;
-  description?: string;
 }): (classType: Type<T>) => void {
   return (classType: Type<T>): void => {
     DbDefinitionUtil.mergeTableDef(classType, {
@@ -19,13 +19,12 @@ export function Table<T>(def: {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function Column<T extends object>(columnDef: {
+  description: string;
   name?: string;
   dataType?: TSdOrmDataType;
-  length?: number | "MAX";
   nullable?: boolean;
   autoIncrement?: boolean;
   primaryKey?: number;
-  description: string;
 }): (object: T, propertyKey: string) => void {
   return (object: T, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
@@ -34,7 +33,6 @@ export function Column<T extends object>(columnDef: {
       propertyKey,
       name: columnDef.name ?? propertyKey,
       dataType: columnDef.dataType,
-      // length: columnDef.length,
       nullable: columnDef.nullable,
       autoIncrement: columnDef.autoIncrement,
       primaryKey: columnDef.primaryKey,

@@ -1,6 +1,12 @@
 import * as path from "path";
 import { FsUtil, Logger, PathUtil, SdProcessManager, SdProcessWorkManager } from "@simplysm/sd-core-node";
-import { INpmConfig, ISdClientPackageConfig, ISdPackageBuildResult, ISdProjectConfig } from "../commons";
+import {
+  INpmConfig,
+  ISdClientPackageConfig,
+  ISdClientPackageConfigWindowsPlatform,
+  ISdPackageBuildResult,
+  ISdProjectConfig
+} from "../commons";
 import { SdCliPackage } from "./SdCliPackage";
 import { DateTime, NeverEntryError, ObjectUtil, SdError, Wait } from "@simplysm/sd-core-common";
 import * as os from "os";
@@ -21,6 +27,7 @@ export class SdCliProject {
 
   private readonly _serverMap = new Map<string, SdServiceServer>();
   private readonly _middlewareMap = new Map<string, NextHandleFunction[]>();
+  private _defaultServer?: SdServiceServer;
 
   public constructor() {
     this._npmConfigFilePath = SdCliPathUtil.getNpmConfigFilePath(process.cwd());
@@ -130,18 +137,26 @@ export class SdCliProject {
 
                 for (const buildablePackage of buildablePackages) {
                   if (buildablePackage.config.type === "client") {
-                    const serverPackageName = buildablePackage.config.server;
-                    const currServer = this._serverMap.get(serverPackageName);
-                    if (!currServer) {
-                      throw new SdError(buildablePackage.npmConfig.name + " 패키지의 서버 패키지인 " + serverPackageName + "가 빌드되지 않았습니다.");
-                    }
-                    const protocolStr = currServer.options.ssl ? "https://" : "http://";
-                    const hostStr = "localhost";
-                    const portStr = (currServer.options.port !== undefined ? `:${currServer.options.port}` : "");
-                    const url = protocolStr + hostStr + portStr;
-
                     const clientPackageName = buildablePackage.npmConfig.name;
 
+                    const serverPackageName = buildablePackage.config.server;
+                    let url: string;
+                    if (serverPackageName !== undefined) {
+                      const currServer = this._serverMap.get(serverPackageName);
+                      if (!currServer) {
+                        throw new SdError(buildablePackage.npmConfig.name + " 패키지의 서버 패키지인 " + serverPackageName + "가 빌드되지 않았습니다.");
+                      }
+                      const protocolStr = currServer.options.ssl ? "https://" : "http://";
+                      const hostStr = "localhost";
+                      const portStr = (currServer.options.port !== undefined ? `:${currServer.options.port}` : "");
+                      url = protocolStr + hostStr + portStr;
+                    }
+                    else {
+                      const protocolStr = "http://";
+                      const hostStr = "localhost";
+                      const portStr = (buildablePackage.config.devServer?.port !== undefined ? `:${buildablePackage.config.devServer.port}` : "");
+                      url = protocolStr + hostStr + portStr;
+                    }
 
                     if (
                       buildablePackage.config.platforms === undefined ||
@@ -155,9 +170,10 @@ export class SdCliProject {
                       buildablePackage.config.platforms?.some((platform) => platform.type === "windows") &&
                       !isFirstComplete
                     ) {
+                      const platformConfig = buildablePackage.config.platforms.single((platform) => platform.type === "windows")! as ISdClientPackageConfigWindowsPlatform;
                       const publicPath = "/__windows__/" + clientPackageName.split("/").last() + "/";
 
-                      new SdCliElectron().runAsync(url + publicPath).catch((err) => {
+                      new SdCliElectron().runAsync(url + publicPath, platformConfig).catch((err) => {
                         this._logger.error(err);
                       });
                     }
@@ -219,24 +235,40 @@ export class SdCliProject {
         if (argv.watch && middlewares) {
           if (pkg.config.type !== "client") throw new NeverEntryError();
           const pkgConfig: ISdClientPackageConfig = pkg.config;
-          this._addMiddlewares(pkgConfig.server, middlewares);
 
-          setTimeout(async () => {
-            // 서버 빌드 완료를 기다렸다가
-            await Wait.true(() => compileCompletedPackageNames.includes(pkgConfig.server));
+          if (pkgConfig.server !== undefined) {
+            this._addMiddlewares(pkgConfig.server, middlewares);
+            setTimeout(async () => {
+              // 서버 빌드 완료를 기다렸다가
+              await Wait.true(() => compileCompletedPackageNames.includes(pkgConfig.server!));
 
-            // 서버의 www의 클라이언트 폴더에 .configs.json 파일 쓰기
-            const serverPackage = pkgs.single((item) => item.npmConfig.name === pkgConfig.server)!;
-            await FsUtil.writeJsonAsync(
-              path.resolve(
-                SdCliPathUtil.getDistPath(serverPackage.rootPath),
-                "www",
-                pkg.npmConfig.name.split("/").last()!,
-                ".configs.json"
-              ),
-              pkgConfig.configs ?? {}
-            );
-          }, 0);
+              // 서버의 www의 클라이언트 폴더에 .configs.json 파일 쓰기
+              const serverPackage = pkgs.single((item) => item.npmConfig.name === pkgConfig.server)!;
+              await FsUtil.writeJsonAsync(
+                path.resolve(
+                  SdCliPathUtil.getDistPath(serverPackage.rootPath),
+                  "www",
+                  pkg.npmConfig.name.split("/").last()!,
+                  ".configs.json"
+                ),
+                pkgConfig.configs ?? {}
+              );
+            }, 0);
+          }
+          else {
+            if (!this._defaultServer) {
+              this._defaultServer = new SdServiceServer({
+                port: pkgConfig.devServer?.port,
+                rootPath: process.cwd(),
+                services: []
+              });
+
+              this._defaultServer.listenAsync().catch((err) => {
+                this._logger.error(err);
+              });
+            }
+            this._defaultServer.middlewares.push(...middlewares);
+          }
         }
 
         compileCompletedPackageNames.push(pkg.npmConfig.name);

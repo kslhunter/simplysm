@@ -21,10 +21,10 @@ export class SdCliCheck {
     }
 
     // rxjs 패키지의 버전 혼재 체크
-    if (!this._checkMultipleVersion(lockFileObj, "rxjs")) {
-      this._logger.error("'rxjs' 패키지의 버전이 혼재되어 있습니다.");
-      hasError = true;
-    }
+    // if (!this._checkMultipleVersion(lockFileObj, "rxjs")) {
+    //   this._logger.error("'rxjs' 패키지의 버전이 혼재되어 있습니다.");
+    //   hasError = true;
+    // }
 
     // zone.js 패키지의 버전 혼재 체크
     if (!this._checkMultipleVersion(lockFileObj, "zone.js")) {
