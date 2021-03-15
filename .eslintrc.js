@@ -8,8 +8,7 @@ module.exports = {
   ignorePatterns: [
     "**/node_modules/**",
     "**/dist*/**",
-    "**/.*/**",
-    "**/_*/**"
+    "**/.*/**"
   ],
   overrides: [
     {

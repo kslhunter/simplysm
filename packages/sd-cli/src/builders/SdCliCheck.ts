@@ -15,7 +15,7 @@ export class SdCliCheck {
     const lockFileObj = lockfile.parse(lockFileContent);
 
     // @simplysm/* 패키지의 버전 혼재 체크
-    if (!this._checkMultipleVersion(lockFileObj, "@simplysm/")) {
+    if (this._getInstallVersions(lockFileObj, "@simplysm/").length > 1) {
       this._logger.error("'@simplysm/*' 패키지의 버전이 혼재되어 있습니다.");
       hasError = true;
     }
@@ -27,7 +27,7 @@ export class SdCliCheck {
     // }
 
     // zone.js 패키지의 버전 혼재 체크
-    if (!this._checkMultipleVersion(lockFileObj, "zone.js")) {
+    if (this._getInstallVersions(lockFileObj, "zone.js").length > 1) {
       this._logger.error("'zone.js' 패키지의 버전이 혼재되어 있습니다.");
       hasError = true;
     }
@@ -38,10 +38,9 @@ export class SdCliCheck {
     }
   }
 
-  private _checkMultipleVersion(lockFileObj: any, packagePrefix: string): boolean {
-    const packageVersions = Object.keys(lockFileObj.object)
+  private _getInstallVersions(lockFileObj: any, packagePrefix: string): string[] {
+    return Object.keys(lockFileObj.object)
       .filter((key) => key.startsWith(packagePrefix))
       .map((key) => lockFileObj.object[key].version);
-    return packageVersions.distinct().length <= 1;
   }
 }

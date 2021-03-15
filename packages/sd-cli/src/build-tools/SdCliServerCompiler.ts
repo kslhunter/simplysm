@@ -136,7 +136,10 @@ export class SdCliServerCompiler extends EventEmitter {
 
     const entry = entryFiles.toObject(
       (item) => path.basename(item, path.extname(item)),
-      (item) => path.resolve(this._rootPath, item)
+      (item) => [
+        "source-map-support/register",
+        path.resolve(this._rootPath, item)
+      ]
     );
 
     const distPath = SdCliPathUtil.getDistPath(this._rootPath);
