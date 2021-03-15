@@ -19,7 +19,6 @@ import { DbModelFkColumnSelectModal } from "../modals/DbModelFkColumnSelectModal
 import { DbModelIndexSelectModal } from "../modals/DbModelIndexSelectModal";
 
 // TODO: 파일 변경 WATCH하여 필요시 새로고침 여부 CONFIRM (변경사항이 있는지도 체크)
-// TODO: 데이터타입/길이 같이 편집시, 비워줘야되는 부분 확인
 // TODO: Uuid 타입 추가
 // TODO: number/Uuid 외에는 AI 사용불가
 
@@ -32,7 +31,7 @@ import { DbModelIndexSelectModal } from "../modals/DbModelIndexSelectModal";
         <sd-topbar>
           <h4>모델관리 ({{data.name}})</h4>
 
-          <sd-topbar-menu>
+          <sd-topbar-menu (click)="onAddButtonClick()">
             <sd-icon icon="plus" fixedWidth></sd-icon>
             추가 <small>(CTRL+INSERT)</small>
           </sd-topbar-menu>
@@ -83,15 +82,9 @@ import { DbModelIndexSelectModal } from "../modals/DbModelIndexSelectModal";
                    class="sd-padding-sm-default sd-background-color-white sd-border-bottom-brightness-default">
             <sd-form layout="inline">
               <sd-form-item>
-                <sd-button theme="danger">
+                <sd-button theme="danger" (click)="onRemoveButtonClick()">
                   <sd-icon icon="trash" fixedWidth></sd-icon>
                   삭제
-                </sd-button>
-              </sd-form-item>
-              <sd-form-item>
-                <sd-button theme="info">
-                  <sd-icon icon="recycle" fixedWidth></sd-icon>
-                  백업
                 </sd-button>
               </sd-form-item>
             </sd-form>
@@ -1163,6 +1156,28 @@ export class DbModelPage implements OnInit {
   }
 
   // endregion
+
+  public onAddButtonClick(): void {
+    const id = (this.data!.models.max((item) => item.id) ?? 0) + 100;
+    this.data!.models.push({
+      id,
+      relativeDirPath: undefined,
+      className: undefined,
+      description: undefined,
+      database: undefined,
+      schema: undefined,
+      name: undefined,
+      columns: [],
+      foreignKeys: [],
+      foreignKeyTargets: [],
+      indexes: []
+    });
+  }
+
+  public onRemoveButtonClick(): void {
+    this.data!.models.remove(this.selectedModel!);
+    this.selectedModel = undefined;
+  }
 
   public onAddColumnButtonClick(): void {
     const id = (this.selectedModel!.columns.max((item) => item.id) ?? 0) + 100;

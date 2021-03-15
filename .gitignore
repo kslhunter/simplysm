@@ -7,9 +7,11 @@ node_modules
 dist*
 yarn-error.log
 _modules
+_routes.ts
 report.*.json
 profiling
 .cordova
 simplysm.ksl.json
 _tmp
 ~$*.*
+tsconfig-*.build.json

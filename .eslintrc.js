@@ -6,9 +6,10 @@ module.exports = {
     browser: true
   },
   ignorePatterns: [
-    "**/.idea/**",
     "**/node_modules/**",
-    "**/dist*/**"
+    "**/dist*/**",
+    "**/.*/**",
+    "**/_*/**"
   ],
   overrides: [
     {

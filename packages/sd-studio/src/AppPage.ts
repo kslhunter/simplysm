@@ -53,7 +53,8 @@ import {
 
                   <sd-sidebar-user-menu>
                     <sd-list class="sd-padding-sm-0">
-                      <sd-list-item *ngFor="let configFileName of project.configFileNames; trackBy: trackByMeFn">
+                      <sd-list-item *ngFor="let configFileName of project.configFileNames; trackBy: trackByMeFn"
+                                    (click)="onOpenConfigPageButtonClick(configFileName)">
                         <sd-gap width.px="6"></sd-gap>
                         {{ configFileName }}
                       </sd-list-item>
@@ -191,6 +192,10 @@ export class AppPage implements OnInit {
 
   public async onOpenDbModelPageButtonClick(dbLibPackage: IDbLibPackage): Promise<void> {
     await this._router.navigate(["/db-model", dbLibPackage]);
+  }
+
+  public async onOpenConfigPageButtonClick(configFileName: string): Promise<void> {
+    await this._router.navigate(["/config", { configFilePath: path.resolve(this.project!.rootPath, configFileName) }]);
   }
 
   private async _loadProject(rootPath: string): Promise<void> {

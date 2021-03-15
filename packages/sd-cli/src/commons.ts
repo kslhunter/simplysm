@@ -1,3 +1,10 @@
+export interface ISdPackageBuildResult {
+  type: "compile" | "check" | "lint" | "metadata";
+  filePath: string | undefined;
+  severity: "error" | "warning";
+  message: string;
+}
+
 export interface INpmConfig {
   name: string;
   version: string;
@@ -110,13 +117,6 @@ export interface ISdNonePackageConfig {
 
 export interface ISdTestPackageConfig {
   type: "test";
-}
-
-export interface ISdPackageBuildResult {
-  type: "compile" | "check" | "lint" | "metadata";
-  filePath: string | undefined;
-  severity: "error" | "warning";
-  message: string;
 }
 
 export interface ISdSFtpPublishConfig {
