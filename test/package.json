@@ -34,11 +34,11 @@
     "karma-ie-launcher": "^1.0.0",
     "karma-mocha": "^2.0.1",
     "karma-sourcemap-loader": "^0.3.8",
-    "karma-webpack": "^5.0.0",
+    "karma-webpack": "^4.0.2",
     "ts-loader": "^8.0.18",
     "istanbul-instrumenter-loader": "^3.0.1",
     "karma-coverage-istanbul-reporter": "^3.0.3",
     "file-loader": "^6.2.0",
-    "webpack": "^5.25.1"
+    "webpack": "^4.46.0"
   }
 }

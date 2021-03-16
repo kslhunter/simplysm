@@ -48,26 +48,35 @@ export class SdCliCheck {
       })
       .filter((item) => !item.depName.startsWith("@types/") && !item.name.startsWith("@types/"));
 
+    const errorMessages: string[] = [];
+
     const myPackageDefGroup = myPackageDefs.groupBy((item) => ({
       depName: item.depName,
       depVersionText: item.depVersionText
     }));
     for (const myPackageDefGroupItem of myPackageDefGroup) {
       if (
-        showAll ||
-        myPackageDefGroupItem.key.depName === "typescript" ||
-        myPackageDefGroupItem.key.depName.includes("eslint") ||
-        myPackageDefGroupItem.key.depName === "rxjs" ||
-        myPackageDefGroupItem.key.depName === "zone.js" ||
-        myPackageDefGroupItem.key.depName.includes("angular") ||
-        myPackageDefGroupItem.key.depName.includes("ngtools") ||
-        myPackageDefGroupItem.key.depName.includes("simplysm")
+        (
+          showAll ||
+          myPackageDefGroupItem.key.depName === "typescript" ||
+          myPackageDefGroupItem.key.depName.includes("eslint") ||
+          myPackageDefGroupItem.key.depName === "rxjs" ||
+          myPackageDefGroupItem.key.depName === "zone.js" ||
+          myPackageDefGroupItem.key.depName.includes("angular") ||
+          myPackageDefGroupItem.key.depName.includes("ngtools") ||
+          myPackageDefGroupItem.key.depName.includes("webpack")
+        ) &&
+        !myPackageDefGroupItem.key.depName.includes("simplysm")
       ) {
         const sameDepLockFilePackageDefs = [...lockFilePackageDefs, ...myPackageDefs].filter((item) => item.depName === myPackageDefGroupItem.key.depName);
         const diffDepDefs = sameDepLockFilePackageDefs
           .filter((item) => (
-            item.depVersionText !== myPackageDefGroupItem.key.depVersionText/* &&
-            !(item.depVersionText.startsWith("^") && item.depVersionText.split(".")[0] === myPackageDefGroupItem.key.depVersionText.split(".")[0])*/
+            item.depVersionText !== myPackageDefGroupItem.key.depVersionText &&
+            !(
+              item.depVersionText.startsWith("^") &&
+              !item.depVersionText.startsWith("^0") &&
+              item.depVersionText.split(".")[0] === myPackageDefGroupItem.key.depVersionText.split(".")[0]
+            )
           ))
           .map((item) => ({
             name: item.name,
@@ -82,20 +91,24 @@ export class SdCliCheck {
             item.name === "zone.js" ||
             item.name.includes("angular") ||
             item.name.includes("ngtools") ||
+            item.name.includes("webpack") ||
             item.name.includes("simplysm")
           ))
           .distinct();
 
         if (diffDepDefs.length > 0 || myPackageDefGroupItem.values.map((item) => item.depVersionText).distinct().length > 1) {
-          const message = `
+          errorMessages.push(`
 ------------------------------------------
 ${myPackageDefGroupItem.key.depName}@${myPackageDefGroupItem.key.depVersionText}
 ------------------------------------------
 ${myPackageDefGroupItem.values.map((item) => `${item.depVersionText}\t<= ${item.name}@${item.version}`).join("\r\n")}
-${diffDepDefs.map((item) => `${item.depVersionText}\t<= ${item.name}@${item.version}`).join("\r\n")}`;
-          this._logger.error(message);
+${diffDepDefs.map((item) => `${item.depVersionText}\t<= ${item.name}@${item.version}`).join("\r\n")}`.trim());
         }
       }
+    }
+
+    if (errorMessages.length > 0) {
+      this._logger.error("버전 중복 확인\r\n" + errorMessages.join("\r\n"));
     }
   }
 }

@@ -17,7 +17,7 @@ export class SdWebpackWriteFilePlugin {
             await new Promise<void>((resolve, reject) => {
               const content = fileInfo.content;
               if (content !== undefined) {
-                compiler.outputFileSystem.mkdir(path.dirname(fileInfo.path), (err) => {
+                compiler.outputFileSystem.mkdirp(path.dirname(fileInfo.path), (err) => {
                   if (err != null) {
                     err.message = err.message + " (file: " + fileInfo.path + ")";
                     reject(err);
