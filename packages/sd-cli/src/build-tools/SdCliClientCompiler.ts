@@ -67,7 +67,7 @@ export class SdCliClientCompiler extends EventEmitter {
           this.emit("change");
         });
 
-        compiler.run(async (err, stats) => {
+        compiler.run(async (err: Error | null, stats) => {
           if (err != null) {
             reject(err);
             return;
@@ -207,22 +207,22 @@ export class SdCliClientCompiler extends EventEmitter {
         });
 
         compiler.hooks.done.tap("SdCliClientCompiler", (stats) => {
-          const results = SdWebpackUtil.getWebpackResults(undefined, stats);
+          const results = SdWebpackUtil.getWebpackResults(null, stats);
           this.emit("complete", results);
           resolve([devMiddleware, hotMiddleware].filterExists());
         });
 
         devMiddleware = WebpackDevMiddleware(compiler, {
-          publicPath: webpackConfig.output!.publicPath as string
-          // logLevel: "silent",
-          /*watchOptions: {
+          publicPath: webpackConfig.output!.publicPath,
+          logLevel: "silent",
+          watchOptions: {
             aggregateTimeout: 1000,
             poll: 1000
-          }*/
+          }
         });
 
         hotMiddleware = WebpackHotMiddleware(compiler, {
-          path: `${webpackConfig.output!.publicPath as string}__webpack_hmr`,
+          path: `${webpackConfig.output!.publicPath!}__webpack_hmr`,
           log: false
         });
       }
@@ -336,7 +336,7 @@ export class SdCliClientCompiler extends EventEmitter {
             }
           },
           minimizer: [
-            new webpack.ids.HashedModuleIdsPlugin(),
+            new webpack.HashedModuleIdsPlugin(),
             new OptimizeCSSAssetsPlugin()
           ]
         },
@@ -537,20 +537,20 @@ export class SdCliClientCompiler extends EventEmitter {
       } : {}*/
       ...this._platform.type === "windows" ? {
         externals: [
-          (data, callback): void => {
-            if (data.request !== undefined && externalModuleNames.includes(data.request)) {
-              const req = data.request.replace(/^.*?\/node_modules\//, "");
+          (context, request, callback): void => {
+            if (externalModuleNames.includes(request)) {
+              const req = request.replace(/^.*?\/node_modules\//, "") as string;
               if (req.startsWith("@")) {
-                callback(undefined, `commonjs ${req.split("/", 2).join("/")}`);
+                callback(null, `commonjs ${req.split("/", 2).join("/")}`);
                 return;
               }
 
-              callback(undefined, `commonjs ${req.split("/")[0]}`);
+              callback(null, `commonjs ${req.split("/")[0]}`);
               return;
             }
 
-            if (data.request === "fsevents") {
-              callback(undefined, `commonjs ${data.request as string}`);
+            if (request === "fsevents") {
+              callback(null, `commonjs ${request as string}`);
               return;
             }
 

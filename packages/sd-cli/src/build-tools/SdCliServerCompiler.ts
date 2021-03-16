@@ -79,7 +79,7 @@ export class SdCliServerCompiler extends EventEmitter {
           reject(err);
         });
 
-        compiler.watch({}, (err, stats) => {
+        compiler.watch({}, (err: Error | null, stats) => {
           const results = SdWebpackUtil.getWebpackResults(err, stats);
 
           if (err == null) {
@@ -196,7 +196,7 @@ export class SdCliServerCompiler extends EventEmitter {
         optimization: {
           noEmitOnErrors: true,
           minimizer: [
-            new webpack.ids.HashedModuleIdsPlugin()
+            new webpack.HashedModuleIdsPlugin()
           ]
         }
       },
@@ -286,21 +286,21 @@ export class SdCliServerCompiler extends EventEmitter {
         ])
       ],
       externals: [
-        (data, callback): void => {
-          if (data.request !== undefined && nodeGypModuleNames.includes(data.request)) {
-            const req = data.request.replace(/^.*?\/node_modules\//, "");
+        (context, request, callback): void => {
+          if (nodeGypModuleNames.includes(request)) {
+            const req = request.replace(/^.*?\/node_modules\//, "") as string;
             if (req.startsWith("@")) {
-              callback(undefined, `commonjs ${req.split("/", 2).join("/")}`);
+              callback(null, `commonjs ${req.split("/", 2).join("/")}`);
               return;
             }
 
-            callback(undefined, `commonjs ${req.split("/")[0]}`);
+            callback(null, `commonjs ${req.split("/")[0]}`);
             return;
           }
 
-          if (data.request === "fsevents") {
-            const req = data.request.replace(/^.*?\/node_modules\//, "");
-            callback(undefined, `commonjs ${req.split("/")[0]}`);
+          if (request === "fsevents") {
+            const req = request.replace(/^.*?\/node_modules\//, "") as string;
+            callback(null, `commonjs ${req.split("/")[0]}`);
             return;
           }
 

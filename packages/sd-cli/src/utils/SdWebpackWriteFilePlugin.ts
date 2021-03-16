@@ -10,7 +10,7 @@ export class SdWebpackWriteFilePlugin {
       try {
         for (const fileInfo of this._files) {
           if (fileInfo.content === undefined) {
-            compiler.outputFileSystem.unlink?.(fileInfo.path, () => {
+            compiler.outputFileSystem.unlink(fileInfo.path, () => {
             });
           }
           else {
