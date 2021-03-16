@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-core-common",
-  "version": "4.0.76",
+  "version": "5.0.0",
   "description": "심플리즘 패키지 - 코어 모듈 (browser/node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -10,9 +10,9 @@
   "types": "./dist-types/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "core-js": "^3.6.5"
+    "core-js": "^3.9.1"
   },
   "devDependencies": {
-    "@simplysm-types/core-js-reflect": "4.0.76"
+    "@simplysm-types/core-js-reflect": "5.0.0"
   }
 }

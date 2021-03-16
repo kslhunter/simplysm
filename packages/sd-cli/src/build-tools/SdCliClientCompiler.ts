@@ -67,7 +67,7 @@ export class SdCliClientCompiler extends EventEmitter {
           this.emit("change");
         });
 
-        compiler.run(async (err: Error | null, stats) => {
+        compiler.run(async (err, stats) => {
           if (err != null) {
             reject(err);
             return;
@@ -207,22 +207,22 @@ export class SdCliClientCompiler extends EventEmitter {
         });
 
         compiler.hooks.done.tap("SdCliClientCompiler", (stats) => {
-          const results = SdWebpackUtil.getWebpackResults(null, stats);
+          const results = SdWebpackUtil.getWebpackResults(undefined, stats);
           this.emit("complete", results);
           resolve([devMiddleware, hotMiddleware].filterExists());
         });
 
         devMiddleware = WebpackDevMiddleware(compiler, {
-          publicPath: webpackConfig.output!.publicPath!,
-          logLevel: "silent",
-          watchOptions: {
+          publicPath: webpackConfig.output!.publicPath as string
+          // logLevel: "silent",
+          /*watchOptions: {
             aggregateTimeout: 1000,
             poll: 1000
-          }
+          }*/
         });
 
         hotMiddleware = WebpackHotMiddleware(compiler, {
-          path: `${webpackConfig.output!.publicPath!}__webpack_hmr`,
+          path: `${webpackConfig.output!.publicPath as string}__webpack_hmr`,
           log: false
         });
       }
@@ -336,7 +336,7 @@ export class SdCliClientCompiler extends EventEmitter {
             }
           },
           minimizer: [
-            new webpack.HashedModuleIdsPlugin(),
+            new webpack.ids.HashedModuleIdsPlugin(),
             new OptimizeCSSAssetsPlugin()
           ]
         },
@@ -376,7 +376,7 @@ export class SdCliClientCompiler extends EventEmitter {
             {
               test: /\.ts$/,
               exclude: /node_modules/,
-              loaders: [
+              use: [
                 {
                   loader: "ts-loader",
                   options: {
@@ -391,7 +391,7 @@ export class SdCliClientCompiler extends EventEmitter {
           ] : [
             {
               test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
-              loaders: [
+              use: [
                 {
                   loader: "@angular-devkit/build-optimizer/webpack-loader",
                   options: {
@@ -537,20 +537,20 @@ export class SdCliClientCompiler extends EventEmitter {
       } : {}*/
       ...this._platform.type === "windows" ? {
         externals: [
-          (context, request, callback): void => {
-            if (externalModuleNames.includes(request)) {
-              const req = request.replace(/^.*?\/node_modules\//, "") as string;
+          (data, callback): void => {
+            if (data.request !== undefined && externalModuleNames.includes(data.request)) {
+              const req = data.request.replace(/^.*?\/node_modules\//, "");
               if (req.startsWith("@")) {
-                callback(null, `commonjs ${req.split("/", 2).join("/")}`);
+                callback(undefined, `commonjs ${req.split("/", 2).join("/")}`);
                 return;
               }
 
-              callback(null, `commonjs ${req.split("/")[0]}`);
+              callback(undefined, `commonjs ${req.split("/")[0]}`);
               return;
             }
 
-            if (request === "fsevents") {
-              callback(null, `commonjs ${request as string}`);
+            if (data.request === "fsevents") {
+              callback(undefined, `commonjs ${data.request as string}`);
               return;
             }
 
@@ -563,7 +563,7 @@ export class SdCliClientCompiler extends EventEmitter {
 
   // TODO: 클라이언트(코도바)프로젝트에 있는 configs가 전부 server에도 들어가야함
 
-  private _createWebpackInputHost(inputFileSystem: webpack.InputFileSystem): virtualFs.Host<fs.Stats> {
+  private _createWebpackInputHost(inputFileSystem: any): virtualFs.Host<fs.Stats> {
     const host = createWebpackInputHost(inputFileSystem);
     host.read = (path1) => new Observable((obs) => {
       try {

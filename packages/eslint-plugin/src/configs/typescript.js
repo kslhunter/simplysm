@@ -110,7 +110,8 @@ module.exports = {
     "@typescript-eslint/no-require-imports": "off",
     "@typescript-eslint/no-var-requires": "off",
     "@typescript-eslint/no-use-before-define": "off",
-    "@typescript-eslint/no-floating-promises": "off", // 퍼포먼스 이슈, 그래도 필요함..
-    "@typescript-eslint/sort-type-union-intersection-members": "off"
+    // "@typescript-eslint/no-floating-promises": "off", // 퍼포먼스 이슈, 그래도 필요함..
+    "@typescript-eslint/sort-type-union-intersection-members": "off",
+    "@typescript-eslint/object-curly-spacing": ["error", "always"]
   }
 };

@@ -17,7 +17,6 @@ import { NeverEntryError } from "@simplysm/sd-core-common";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div [attr.tabindex]="disabled ? undefined : '0'"
-         class="_sd-dropdown-control"
          [attr.class]="'_sd-dropdown-control ' + contentClass">
       <ng-content></ng-content>
     </div>

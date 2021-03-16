@@ -39,7 +39,7 @@ export class SdFileDialogRootProvider {
           inputEl = undefined;
         }
 
-        resolve();
+        resolve(undefined);
       };
     });
   }

@@ -1,9 +1,8 @@
 import * as sass from "node-sass";
 import * as path from "path";
-import * as webpack from "webpack";
 import { Logger } from "@simplysm/sd-core-node";
 
-function loader(this: webpack.loader.LoaderContext, content: string, sourceMap: any): void {
+function loader(this: any, content: string, sourceMap: any): void {
   const logger = Logger.get(["simplysm", "sd-cli", "inline-sass-loader"]);
 
   if ("cacheable" in this) {

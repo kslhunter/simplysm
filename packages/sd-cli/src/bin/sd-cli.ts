@@ -256,7 +256,7 @@ else {
     await new SdCliFileCrypto().decryptAsync(argv.file!);
   }
   else if (args[0] === "check") {
-    await new SdCliCheck().checkAsync();
+    await new SdCliCheck().checkAsync(false);
   }
   else {
     throw new Error(`명령어가 잘못되었습니다.${os.EOL + os.EOL}\t${argv._[0]}${os.EOL}`);

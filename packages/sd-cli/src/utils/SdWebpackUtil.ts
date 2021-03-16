@@ -5,7 +5,7 @@ import { NeverEntryError } from "@simplysm/sd-core-common";
 import { FsUtil } from "@simplysm/sd-core-node";
 
 export class SdWebpackUtil {
-  public static getWebpackResults(err: Error | null, stats?: webpack.Stats): ISdPackageBuildResult[] {
+  public static getWebpackResults(err: Error | undefined, stats?: webpack.Stats): ISdPackageBuildResult[] {
     if (err != null) {
       return [{
         type: "compile",
@@ -22,18 +22,18 @@ export class SdWebpackUtil {
 
     if (stats.hasWarnings()) {
       results.push(
-        ...info.warnings.map((item) => ({
+        ...info.warnings!.map((item) => ({
           type: "compile" as const,
           filePath: undefined,
           severity: "warning" as const,
-          message: item.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item
+          message: item.message.startsWith("(undefined)") ? item.split("\n").slice(1).join(os.EOL) : item
         }))
       );
     }
 
     if (stats.hasErrors()) {
-      const errors = info.errors.map((item) => {
-        return item.replace(/.*\.ts.*.html\([0-9]*,[0-9]*\)/g, (item1) => {
+      const errors = info.errors!.map((item) => {
+        return item.message.replace(/.*\.ts.*.html\([0-9]*,[0-9]*\)/g, (item1) => {
           const match = (/(.*\.ts).*.html\(([0-9]*),([0-9]*)\)/).exec(item1);
           if (!match) throw new NeverEntryError();
 

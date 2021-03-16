@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/eslint-plugin",
-  "version": "4.0.76",
+  "version": "5.0.0",
   "description": "심플리즘 패키지 - ESLINT 플러그인",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -8,18 +8,18 @@
   "main": "./src/index.js",
   "sideEffects": false,
   "dependencies": {
-    "eslint": "7.18.0",
-    "eslint-module-utils": "2.6.0",
-    "@typescript-eslint/experimental-utils": "4.13.0",
-    "@typescript-eslint/eslint-plugin": "4.13.0",
-    "@typescript-eslint/parser": "4.13.0",
-    "eslint-import-resolver-typescript": "2.3.0",
-    "eslint-plugin-import": "2.22.1",
-    "@angular-eslint/eslint-plugin": "1.1.0",
-    "@angular-eslint/eslint-plugin-template": "1.1.0",
-    "@angular-eslint/template-parser": "1.1.0",
-    "@angular/compiler": "^11.0.2",
-    "eslint-plugin-jsdoc": "31.0.5",
-    "eslint-plugin-prefer-arrow": "1.2.2"
+    "eslint": "7.22.0",
+    "eslint-module-utils": "^2.6.0",
+    "@typescript-eslint/experimental-utils": "4.16.1",
+    "@typescript-eslint/eslint-plugin": "4.16.1",
+    "@typescript-eslint/parser": "4.16.1",
+    "eslint-import-resolver-typescript": "^2.4.0",
+    "eslint-plugin-import": "^2.22.1",
+    "@angular-eslint/eslint-plugin": "2.0.0",
+    "@angular-eslint/eslint-plugin-template": "2.0.0",
+    "@angular-eslint/template-parser": "2.0.0",
+    "@angular/compiler": "^11.2.5",
+    "eslint-plugin-jsdoc": "^32.2.0",
+    "eslint-plugin-prefer-arrow": "^1.2.3"
   }
 }
