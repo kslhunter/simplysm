@@ -12,6 +12,10 @@
     "test"
   ],
   "scripts": {
+    "watch with studio": "yarn _sd-cli_ watch --config simplysm.studio.json",
+    "watch only studio": "yarn _sd-cli_ watch --config simplysm.studio.json --packages @simplysm/sd-studio",
+    "run studio browser": "yarn _sd-cli_ run-desktop-browser http://localhost:60000/__windows__/sd-studio/",
+    "--": "",
     "watch": "yarn _sd-cli_ watch",
     "watch_debug": "yarn _sd-cli_ watch --debug",
     "build_debug": "yarn _sd-cli_ build --debug",
