@@ -1,0 +1,20 @@
+{
+  "packages": {
+    "@simplysm/sd-studio": {
+      "type": "client",
+      "targets": [
+        "node"
+      ],
+      "devServer": {
+        "port": 60000
+      },
+      "platforms": [
+        {
+          "type": "windows",
+          "width": 1280,
+          "height": 720
+        }
+      ]
+    }
+  }
+}
