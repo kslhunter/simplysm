@@ -24,26 +24,26 @@
     rxjs "6.6.3"
     source-map "0.7.3"
 
-"@angular-eslint/eslint-plugin-template@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@angular-eslint/eslint-plugin-template/-/eslint-plugin-template-2.0.0.tgz#cf206a96484407f952ec0269efd5be9af4fe1d70"
-  integrity sha512-pIPKipBRptg4z6KXIsnYWC4TH+xZM1KcUxiNbipa/bJ6R3ig+tX6CaYStSRxPkohE9877ztkbiY/fHoej7qiKg==
+"@angular-eslint/eslint-plugin-template@2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@angular-eslint/eslint-plugin-template/-/eslint-plugin-template-2.0.1.tgz#81c47e8c9c4b288702984282c64b76595bcde1bb"
+  integrity sha512-tKdfa6cf1nzUAiEMHOOkE7wv/YxwCNpFw/MEfK21ecMzy59Mv9zgAULobCQIEfmbGTsjSNiIqaRAc+klRI3q6A==
   dependencies:
     "@typescript-eslint/experimental-utils" "4.16.1"
     aria-query "^4.2.2"
     axobject-query "^2.2.0"
 
-"@angular-eslint/eslint-plugin@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@angular-eslint/eslint-plugin/-/eslint-plugin-2.0.0.tgz#5127b980420e168d9035ed820de17202b63e500e"
-  integrity sha512-lQRmNBxihsB+HVz7lSXoWv2oJJRowe0ZwjnuJEp46KQp0AfXq1VFUeT4pHAz88EQrWSyfLcwNNmVn4dnQGeT6A==
+"@angular-eslint/eslint-plugin@2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@angular-eslint/eslint-plugin/-/eslint-plugin-2.0.1.tgz#5f887e254fdcee938b1975db5b4c84946837f0d0"
+  integrity sha512-GWVT4nGO7CX42NA1dmhbd1myFv/dz32hm8fKwgbpeiO0nKbpKX0u9iPk0T47S/Hwk4uBifqO/kw4N1nvjbCfbg==
   dependencies:
     "@typescript-eslint/experimental-utils" "4.16.1"
 
-"@angular-eslint/template-parser@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@angular-eslint/template-parser/-/template-parser-2.0.0.tgz#c8589b5ffa18650cba833f9dd39236c25a0f1def"
-  integrity sha512-7TxmIl0oi8k2pQn/knpqczDTCisqyujK4TRaNn+kLilYNs08ZD2szUTOKmA8NSDkNSXQD2Dcd8XBmowfCqPpjw==
+"@angular-eslint/template-parser@2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@angular-eslint/template-parser/-/template-parser-2.0.1.tgz#f61991f756762ad46de669e4cb3d6373d5005966"
+  integrity sha512-VP6qj7ECwKj/KL8c0+CvGldIIbNZRCAScs+C1DmrlXjFsXuL0+D6nDzd0xnLF2eek3apMWJ6fwRznPHNnsDEeQ==
   dependencies:
     eslint-scope "^5.1.0"
 
