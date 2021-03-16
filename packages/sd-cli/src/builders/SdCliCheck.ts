@@ -66,8 +66,8 @@ export class SdCliCheck {
         const sameDepLockFilePackageDefs = [...lockFilePackageDefs, ...myPackageDefs].filter((item) => item.depName === myPackageDefGroupItem.key.depName);
         const diffDepDefs = sameDepLockFilePackageDefs
           .filter((item) => (
-            item.depVersionText !== myPackageDefGroupItem.key.depVersionText &&
-            !(item.depVersionText.startsWith("^") && item.depVersionText.split(".")[0] === myPackageDefGroupItem.key.depVersionText.split(".")[0])
+            item.depVersionText !== myPackageDefGroupItem.key.depVersionText/* &&
+            !(item.depVersionText.startsWith("^") && item.depVersionText.split(".")[0] === myPackageDefGroupItem.key.depVersionText.split(".")[0])*/
           ))
           .map((item) => ({
             name: item.name,
@@ -92,8 +92,7 @@ export class SdCliCheck {
 ${myPackageDefGroupItem.key.depName}@${myPackageDefGroupItem.key.depVersionText}
 ------------------------------------------
 ${myPackageDefGroupItem.values.map((item) => `${item.depVersionText}\t<= ${item.name}@${item.version}`).join("\r\n")}
-${diffDepDefs.map((item) => `${item.depVersionText}\t<= ${item.name}@${item.version}`).join("\r\n")}
-`.trim();
+${diffDepDefs.map((item) => `${item.depVersionText}\t<= ${item.name}@${item.version}`).join("\r\n")}`;
           this._logger.error(message);
         }
       }
