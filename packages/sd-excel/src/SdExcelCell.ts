@@ -227,7 +227,7 @@ export class SdExcelCell {
     }
   }
 
-  public async drawingAsync(buffer: Buffer, ext: string): Promise<void> {
+  public async drawingAsync(buffer: Buffer, ext: string, options?: { width?: number; height?: number; left?: number; top?: number }): Promise<void> {
     // Sheet Rel
     this.excelWorkSheet.relData = this.excelWorkSheet.relData ?? {};
     this.excelWorkSheet.relData.Relationships = this.excelWorkSheet.relData.Relationships ?? {};
@@ -307,16 +307,16 @@ export class SdExcelCell {
       "xdr:from": [
         {
           "xdr:col": [this.col.toString()],
-          "xdr:colOff": ["0"],
+          "xdr:colOff": [((options?.left ?? 0) * 9525).toString()],
           "xdr:row": [this.row.toString()],
-          "xdr:rowOff": ["0"]
+          "xdr:rowOff": [((options?.top ?? 0) * 9525).toString()]
         }
       ],
       "xdr:ext": [
         {
           $: {
-            "cx": img.width * 9525,
-            "cy": img.height * 9525
+            "cx": (options?.width ?? img.width) * 9525,
+            "cy": (options?.height ?? img.height) * 9525
           }
         }
       ],
@@ -344,14 +344,15 @@ export class SdExcelCell {
                     "r:embed": "rId" + newId
                   }
                 }
-              ]
+              ],
+              "a:stretch": [{}]
             }
           ],
           "xdr:spPr": [
             {
               "a:prstGeom": [
                 {
-                  $: {
+                  "$": {
                     "prst": "rect"
                   }
                 }
@@ -365,7 +366,7 @@ export class SdExcelCell {
 
     // Content_Types
     const contentType = this.excelWorkSheet.workbook.contentTypeData.Types;
-    if (contentType.Default.some((item: any) => item.$.Extension === ext) === undefined) {
+    if (!(contentType.Default.some((item: any) => item.$.Extension === ext) as boolean)) {
       contentType.Default.push({
         $: {
           Extension: ext,
@@ -374,7 +375,7 @@ export class SdExcelCell {
       });
     }
 
-    if (contentType.Override.some((item: any) => item.$.PartName === "/xl/drawings/drawing1.xml") === undefined) {
+    if (!(contentType.Override.some((item: any) => item.$.PartName === "/xl/drawings/drawing1.xml") as boolean)) {
       contentType.Override.push({
         $: {
           // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -386,7 +387,7 @@ export class SdExcelCell {
     }
 
     this.excelWorkSheet.sheetData.worksheet.drawing = this.excelWorkSheet.sheetData.worksheet.drawing ?? [];
-    if (this.excelWorkSheet.sheetData.worksheet.drawing.some((item: any) => item.$["r:id"] === "rId" + wsRelId) === undefined) {
+    if (!(this.excelWorkSheet.sheetData.worksheet.drawing.some((item: any) => item.$["r:id"] === "rId" + wsRelId) as boolean)) {
       this.excelWorkSheet.sheetData.worksheet.drawing.push({
         $: {
           "r:id": "rId" + wsRelId

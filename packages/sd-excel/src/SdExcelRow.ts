@@ -19,4 +19,14 @@ export class SdExcelRow {
     const rowCol = SdExcelUtil.getAddressRowCol(lastAddr);
     return rowCol.col + 1;
   }
+
+  public get height(): number | undefined {
+    return this.rowData?.$.ht ?? undefined;
+  }
+
+  public set height(value: number | undefined) {
+    this.rowData = this.rowData ?? {};
+    this.rowData.$ = this.rowData.$ ?? {};
+    this.rowData.$.ht = value;
+  }
 }
