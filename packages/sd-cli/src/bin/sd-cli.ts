@@ -183,7 +183,15 @@ const argv = yargs.version(false)
   )
   .command(
     "check",
-    "패키지 유효성을 체크합니다."
+    "패키지 유효성을 체크합니다.",
+    (cmd) => cmd.version(false)
+      .options({
+        all: {
+          type: "boolean",
+          describe: "모든 패키지 체크",
+          default: false
+        }
+      })
   )
   .parse();
 
@@ -256,7 +264,7 @@ else {
     await new SdCliFileCrypto().decryptAsync(argv.file!);
   }
   else if (args[0] === "check") {
-    await new SdCliCheck().checkAsync(false);
+    await new SdCliCheck().checkAsync(argv.all);
   }
   else {
     throw new Error(`명령어가 잘못되었습니다.${os.EOL + os.EOL}\t${argv._[0]}${os.EOL}`);

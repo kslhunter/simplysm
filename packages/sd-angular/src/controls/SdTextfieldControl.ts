@@ -72,6 +72,7 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
+    @import "../../scss/variables-scss-arr";
 
     :host {
       display: block;
@@ -253,6 +254,16 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
           outline-offset: -1px;
         }
       }
+      
+      @each $theme in $arr-theme-color {
+        &[sd-theme=#{$theme}] {
+          > input,
+          > textarea,
+          > div._readonly {
+            background: var(--theme-color-#{$theme}-lightest);
+          }
+        }
+      }
 
       > ._invalid-indicator {
         display: none;
@@ -370,6 +381,14 @@ export class SdTextfieldControl implements DoCheck, AfterViewInit {
   @Input("input.class")
   @SdInputValidate(String)
   public inputClass?: string;
+
+  @Input()
+  @SdInputValidate({
+    type: String,
+    includes: ["primary", "secondary", "info", "success", "warning", "danger"]
+  })
+  @HostBinding("attr.sd-theme")
+  public theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger";
 
   @HostBinding("attr.sd-invalid")
   public get isInvalid(): boolean {

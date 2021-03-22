@@ -189,14 +189,16 @@ import { DbModelIndexSelectModal } from "../modals/DbModelIndexSelectModal";
                 <sd-sheet-column header="?" fixed resizable key="nullable" width.px="25">
                   <ng-template #cell let-item="item" let-edit="edit">
                     <div style="text-align: center;">
-                      <sd-checkbox [(value)]="item.nullable" inset size="sm"></sd-checkbox>
+                      <sd-checkbox [(value)]="item.nullable" inset size="sm"
+                                   [disabled]="item.autoIncrement"></sd-checkbox>
                     </div>
                   </ng-template>
                 </sd-sheet-column>
                 <sd-sheet-column header="AI" fixed resizable key="autoIncrement" width.px="25">
                   <ng-template #cell let-item="item" let-edit="edit">
                     <div style="text-align: center;">
-                      <sd-checkbox [(value)]="item.autoIncrement" inset size="sm"></sd-checkbox>
+                      <sd-checkbox [(value)]="item.autoIncrement" inset size="sm"
+                                   (valueChange)="item.nullable = false"></sd-checkbox>
                     </div>
                   </ng-template>
                 </sd-sheet-column>
@@ -558,7 +560,7 @@ export class DbModelPage implements OnInit {
                 primaryKey: columnDecArgPropsObj.primaryKey,
                 name: columnDecArgPropsObj.name ?? childNode["name"].text,
                 description: columnDecArgPropsObj.description,
-                nullable: columnDecArgPropsObj.nullable ?? childNode["questionToken"] !== undefined ?? false,
+                nullable: columnDecArgPropsObj.nullable /*?? childNode["questionToken"] !== undefined*/ ?? false,
                 autoIncrement: columnDecArgPropsObj.autoIncrement ?? false,
                 dataType: (typeof dataType !== "string" ? dataType?.type : dataType) ?? this._getTypeString(childNode["type"]),
                 length: typeof dataType !== "string" ? dataType?.length : undefined,
@@ -810,7 +812,12 @@ export class DbModelPage implements OnInit {
         primaryKey: { displayName: "PK", type: Number },
         name: { displayName: "컬럼명", type: String, notnull: true },
         description: { displayName: "설명", type: String, notnull: true },
-        nullable: { displayName: "?", type: Boolean, notnull: true },
+        nullable: {
+          displayName: "?",
+          type: Boolean,
+          notnull: true,
+          validator: (value) => (item.autoIncrement ? !value : true)
+        },
         autoIncrement: { displayName: "AI", type: Boolean, notnull: true },
         dataType: {
           displayName: "타입",
@@ -930,7 +937,7 @@ export class DbModelPage implements OnInit {
       ObjectUtil.validateArrayWithThrow(`모델 '${modelKey}'의 IDX`, model.indexes, {
         name: { displayName: "IDX명", type: String, notnull: true },
         columns: {
-          displayName: "컬럼",
+          displayName: "컬럼선택",
           type: Array,
           notnull: true,
           validator: (value) => (
@@ -953,10 +960,20 @@ export class DbModelPage implements OnInit {
     }
 
     // 파일 쓰기
+    const modelsDirPath = path.resolve(this.data!.rootPath, "src", "models");
+
     const files: { relativeFilePath: string; contents: string }[] = [];
     for (const model of this.data!.models) {
       const importMap = new Map<string, string[]>();
       const addImport = (key: string, val: string): void => {
+        if (
+          key.startsWith(".") &&
+          path.resolve(modelsDirPath, model.relativeDirPath + "/" + model.className) ===
+          path.resolve(modelsDirPath, model.relativeDirPath!, key)
+        ) {
+          return;
+        }
+
         if (importMap.has(key)) {
           const arr = importMap.get(key)!;
           if (!arr.includes(val)) {
@@ -1092,12 +1109,12 @@ export class DbModelPage implements OnInit {
         oneColumnText += " })\r\n";
 
         // COLUMN
-        const dataTypeText = columnDef.dataType === "TEXT" || columnDef.dataType === "STRING" || (/^".*"$/).test(columnDef.dataType!) ? "string" :
+        const dataTypeText = columnDef.dataType === "TEXT" || columnDef.dataType === "STRING" ? "string" :
           columnDef.dataType === "DECIMAL" ? "number" :
             columnDef.dataType === "BINARY" ? "Buffer" :
               columnDef.dataType;
 
-        oneColumnText += `  public ${columnDef.name!}${columnDef.nullable ? "?" : "!"}: ${dataTypeText!};`;
+        oneColumnText += `  public ${columnDef.name!}${(columnDef.nullable || columnDef.autoIncrement) ? "?" : "!"}: ${dataTypeText!};`;
 
         columnTexts.push(oneColumnText);
       }
@@ -1121,7 +1138,7 @@ export class DbModelPage implements OnInit {
         const sourceModelFkName = sourceModel.foreignKeys.single((item) => item.id === fkt.sourceModelForeignKeyId)!.name!;
 
         let oneFktText = `  @ForeignKeyTarget(() => ${sourceModelName}, "${sourceModelFkName}", "${fkt.description!}")\r\n`;
-        oneFktText += `  public ${fkt.name!}?: ${sourceModelName};`;
+        oneFktText += `  public ${fkt.name!}?: ${sourceModelName}[];`;
 
         fktTexts.push(oneFktText);
       }
@@ -1136,7 +1153,8 @@ export class DbModelPage implements OnInit {
           (fkText ? "\r\n  //------------------------------------\r\n\r\n" + fkText + "\r\n" : "") +
           (fktText ? "\r\n  //------------------------------------\r\n\r\n" + fktText + "\r\n" : "")
         ) +
-        classTextEnd;
+        classTextEnd +
+        "\r\n";
 
       const relativeFilePath = StringUtil.isNullOrEmpty(model.relativeDirPath) ?
         model.className + ".ts" :
@@ -1145,7 +1163,6 @@ export class DbModelPage implements OnInit {
       files.push({ relativeFilePath, contents });
     }
 
-    const modelsDirPath = path.resolve(this.data!.rootPath, "src", "models");
     await FsUtil.removeAsync(modelsDirPath);
     for (const file of files) {
       await FsUtil.writeFileAsync(path.resolve(modelsDirPath, file.relativeFilePath), file.contents);
