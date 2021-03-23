@@ -22,7 +22,7 @@ export class SdCliPackage extends EventEmitter {
 
   public constructor(public readonly rootPath: string,
                      public readonly npmConfig: INpmConfig,
-                     public readonly config: TSdPackageConfig,
+                     public readonly config?: TSdPackageConfig,
                      private readonly _processWorkManager?: SdProcessWorkManager) {
     super();
   }
@@ -53,7 +53,7 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async genBuildTsConfigAsync(): Promise<void> {
-    if (this.config.type === "library") {
+    if (this.config?.type === "library") {
       if (!this.config.targets) return;
 
       const baseTsconfigFilePath = SdCliPathUtil.getTsConfigBaseFilePath(this.rootPath);
@@ -102,7 +102,7 @@ export class SdCliPackage extends EventEmitter {
         });
       }
     }
-    else if (this.config.type === "client" || this.config.type === "server") {
+    else if (this.config?.type === "client" || this.config?.type === "server") {
       const isClient = this.config.type === "client";
 
       const baseTsconfigFilePath = SdCliPathUtil.getTsConfigBaseFilePath(this.rootPath);
@@ -128,7 +128,7 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async runGenIndexAsync(): Promise<void> {
-    if (this.config.type !== "library") return;
+    if (this.config?.type !== "library") return;
     if (!this.config.targets) return;
 
     if (this.npmConfig.main === undefined) return;
@@ -138,14 +138,14 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async runCompileAsync(watch: boolean): Promise<NextHandleFunction[] | undefined> {
-    if (this.config.type === "library") {
+    if (this.config?.type === "library") {
       if (!this.config.targets) return undefined;
 
       await this.config.targets.parallelAsync(async (target) => {
         await this._runWorkerAsync("compile", target);
       });
     }
-    else if (this.config.type === "server") {
+    else if (this.config?.type === "server") {
       const serverCompiler = new SdCliServerCompiler(this.rootPath, this.config)
         .on("change", () => {
           this.emit("change", "compile", undefined);
@@ -160,7 +160,7 @@ export class SdCliPackage extends EventEmitter {
         await serverCompiler.compileAsync();
       }
     }
-    else if (this.config.type === "client") {
+    else if (this.config?.type === "client") {
       this.config.platforms = this.config.platforms ?? [{ type: "browser" }];
 
       const handleFns = [];
@@ -187,29 +187,29 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async runCheckAsync(): Promise<void> {
-    if (this.config.type === "library") {
+    if (this.config?.type === "library") {
       if (!this.config.targets) return;
 
       await this.config.targets.parallelAsync(async (target) => {
         await this._runWorkerAsync("check", target);
       });
     }
-    else if (this.config.type === "client") {
+    else if (this.config?.type === "client") {
       await this._runWorkerAsync("check", "browser");
     }
-    else if (this.config.type === "server") {
+    else if (this.config?.type === "server") {
       await this._runWorkerAsync("check", "node");
     }
-    if (this.config.type === "test") {
+    if (this.config?.type === "test") {
       await this._runWorkerAsync("check", undefined);
     }
   }
 
   public async runLintAsync(): Promise<void> {
-    if (this.config.type === "test") {
+    if (this.config?.type === "test") {
       await this._runWorkerAsync("lint", undefined);
     }
-    else if (this.config.type === "library") {
+    else if (this.config?.type === "library") {
       if (!this.config.targets || this.config.targets.length < 1) {
         await this._runWorkerAsync("lint", undefined);
       }
@@ -217,30 +217,30 @@ export class SdCliPackage extends EventEmitter {
         await this._runWorkerAsync("lint", this.config.targets[0]);
       }
     }
-    else if (this.config.type === "server") {
+    else if (this.config?.type === "server") {
       await this._runWorkerAsync("lint", "node");
     }
-    else if (this.config.type === "client") {
+    else if (this.config?.type === "client") {
       await this._runWorkerAsync("lint", "browser");
     }
   }
 
   public async runNgGenAsync(): Promise<void> {
-    if (this.config.type === "library") {
+    if (this.config?.type === "library") {
       if (!this.config.targets) return;
       if (!this.config.targets.includes("browser")) return;
       if (!this.fullDependencies.includes("@angular/core")) return;
 
       await this._runWorkerAsync("ng-gen", "browser");
     }
-    else if (this.config.type === "client") {
+    else if (this.config?.type === "client") {
       if (!this.fullDependencies.includes("@angular/core")) return;
       await this._runWorkerAsync("ng-gen", "browser");
     }
   }
 
   public async publishAsync(): Promise<void> {
-    if (this.config.type === "library") {
+    if (this.config?.type === "library") {
       if (this.config.publish === "npm") {
         await SdProcessManager.spawnAsync(
           "yarn publish --access public",
@@ -249,7 +249,7 @@ export class SdCliPackage extends EventEmitter {
         );
       }
     }
-    else if (this.config.type === "client" || this.config.type === "server") {
+    else if (this.config?.type === "client" || this.config?.type === "server") {
       if (this.config.publish?.type === "sftp") {
         const publishConfig = this.config.publish;
         const sftp = new SdSFtpStorage();

@@ -71,7 +71,7 @@ export class SdCliProject {
 
     this._logger.debug("패키지별 빌드 시작...");
 
-    const buildablePackages = pkgs.filter((item) => item.config.type !== "none");
+    const buildablePackages = pkgs.filter((item) => item.config && item.config.type !== "none");
 
     // 패키지 빌드 결과이벤트에 따른 출력
     let hasError = false;
@@ -136,7 +136,7 @@ export class SdCliProject {
                 const clientHrefs: string[] = [];
 
                 for (const buildablePackage of buildablePackages) {
-                  if (buildablePackage.config.type === "client") {
+                  if (buildablePackage.config?.type === "client") {
                     const clientPackageName = buildablePackage.npmConfig.name;
 
                     const serverPackageName = buildablePackage.config.server;
@@ -221,7 +221,7 @@ export class SdCliProject {
     });
 
     // pkg 목록을 dependency에 따라 병렬로 실행
-    const notNoneTypePackageNames = pkgs.filter((item) => item.config.type !== "none").map((item) => item.npmConfig.name);
+    const notNoneTypePackageNames = pkgs.filter((item) => item.config && item.config.type !== "none").map((item) => item.npmConfig.name);
 
     const compileCompletedPackageNames: string[] = [];
     const checkCompletedPackageNames: string[] = [];
@@ -232,7 +232,7 @@ export class SdCliProject {
         await this._waitPackageCompleteAsync(pkg, notNoneTypePackageNames, checkCompletedPackageNames);
 
         const middlewares = await pkg.runCompileAsync(argv.watch);
-        if (argv.watch && middlewares) {
+        if (argv.watch && middlewares && pkg.config) {
           if (pkg.config.type !== "client") throw new NeverEntryError();
           const pkgConfig: ISdClientPackageConfig = pkg.config;
 
@@ -484,9 +484,9 @@ export class SdCliProject {
         packageConfig.type = "none";
       }
 
-      if (typeof packageConfig !== "undefined") {
-        pkgs.push(new SdCliPackage(packagePath, packageNpmConfig, packageConfig, processWorkManager));
-      }
+      /*if (typeof packageConfig !== "undefined") {
+      }*/
+      pkgs.push(new SdCliPackage(packagePath, packageNpmConfig, packageConfig, processWorkManager));
     }
 
     return pkgs;
