@@ -3,7 +3,7 @@ import { SdExcelCell } from "./SdExcelCell";
 import { SdExcelColumn } from "./SdExcelColumn";
 import { SdExcelRow } from "./SdExcelRow";
 import { SdExcelUtil } from "./utils/SdExcelUtil";
-import { ObjectUtil } from "@simplysm/sd-core-common";
+import { NumberUtil, ObjectUtil } from "@simplysm/sd-core-common";
 
 export class SdExcelWorksheet {
   public relData: any;
@@ -49,6 +49,7 @@ export class SdExcelWorksheet {
   public insertEmptyRow(row: number): void {
     const rowDataList = this.sheetData.worksheet.sheetData[0].row as any[];
 
+    // row + 1
     const nextRowDataList = rowDataList.filter((item: any) => Number(item.$.r) >= row + 1);
     for (const nextRowData of nextRowDataList) {
       const rowIndex = Number(nextRowData.$.r);
@@ -62,6 +63,7 @@ export class SdExcelWorksheet {
       }
     }
 
+    // merge
     if (
       this.sheetData.worksheet.mergeCells?.[0]?.mergeCell !== undefined &&
       this.sheetData.worksheet.mergeCells[0].mergeCell.length > 0
@@ -78,10 +80,22 @@ export class SdExcelWorksheet {
       }
     }
 
+    // dimension
     if (this.sheetData.worksheet.dimension?.[0]?.$?.ref !== undefined) {
       const dimension = SdExcelUtil.getRangeAddressRowCol(this.sheetData.worksheet.dimension[0].$.ref);
       this.sheetData.worksheet.dimension[0].$.ref =
         SdExcelUtil.getRangeAddress(dimension.fromRow, dimension.fromCol, dimension.toRow + 1, dimension.toCol);
+    }
+
+    // drawing
+    const anchorArray = this.drawingData?.["xdr:wsDr"]["xdr:oneCellAnchor"];
+    if (anchorArray !== undefined && anchorArray.length > 0) {
+      for (const anchor of anchorArray) {
+        const anchorRow = NumberUtil.parseInt(anchor["xdr:from"][0]["xdr:row"][0]);
+        if (anchorRow !== undefined && anchorRow >= row) {
+          anchor["xdr:from"][0]["xdr:row"][0] = (anchorRow + 1).toString();
+        }
+      }
     }
 
     this._reloadRows();
@@ -107,6 +121,84 @@ export class SdExcelWorksheet {
     }
 
     rowDataList.insert(prevRowIndex + 1, currRowData);
+
+    this._reloadRows();
+  }
+
+  public removeRow(row: number): void {
+    const rowDataList = this.sheetData.worksheet.sheetData[0].row as any[];
+
+    // remove
+    rowDataList.remove((item: any) => Number(item.$.r) === row + 1);
+
+    // row - 1
+    const nextRowDataList = rowDataList.filter((item: any) => Number(item.$.r) > row + 1);
+    for (const nextRowData of nextRowDataList) {
+      const rowIndex = Number(nextRowData.$.r);
+      nextRowData.$.r = (rowIndex - 1).toString();
+
+      if (nextRowData.c !== undefined && nextRowData.c.length > 0) {
+        for (const colData of nextRowData.c) {
+          const colRowCol = SdExcelUtil.getAddressRowCol(colData.$.r);
+          colData.$.r = SdExcelUtil.getAddress(rowIndex - 2, colRowCol.col);
+        }
+      }
+    }
+
+    // merge
+    if (
+      this.sheetData.worksheet.mergeCells?.[0]?.mergeCell !== undefined &&
+      this.sheetData.worksheet.mergeCells[0].mergeCell.length > 0
+    ) {
+      const removeMergeDataList: any[] = [];
+      const mergeDataList: any[] = this.sheetData.worksheet.mergeCells[0].mergeCell;
+      for (const mergeData of mergeDataList) {
+        const currRowCol = SdExcelUtil.getRangeAddressRowCol(mergeData.$.ref);
+        const newFromRow = currRowCol.fromRow - (currRowCol.fromRow > row ? 1 : 0);
+        const newToRow = currRowCol.toRow - (currRowCol.toRow > row ? 1 : 0);
+        if (
+          currRowCol.fromCol === currRowCol.toCol &&
+          newFromRow === newToRow
+        ) {
+          removeMergeDataList.push(mergeData);
+        }
+        else {
+          mergeData.$.ref = SdExcelUtil.getRangeAddress(
+            currRowCol.fromRow - (currRowCol.fromRow > row ? 1 : 0),
+            currRowCol.fromCol,
+            currRowCol.toRow - (currRowCol.toRow > row ? 1 : 0),
+            currRowCol.toCol
+          );
+        }
+      }
+      mergeDataList.remove((item: any) => removeMergeDataList.includes(item));
+      if (mergeDataList.length === 0) {
+        delete this.sheetData.worksheet.mergeCells;
+      }
+    }
+
+    // dimension
+    if (this.sheetData.worksheet.dimension?.[0]?.$?.ref !== undefined) {
+      const dimension = SdExcelUtil.getRangeAddressRowCol(this.sheetData.worksheet.dimension[0].$.ref);
+      this.sheetData.worksheet.dimension[0].$.ref =
+        SdExcelUtil.getRangeAddress(dimension.fromRow, dimension.fromCol, dimension.toRow - 1, dimension.toCol);
+    }
+
+    // drawing
+    if (this.drawingData["xdr:wsDr"]["xdr:oneCellAnchor"] !== undefined && this.drawingData["xdr:wsDr"]["xdr:oneCellAnchor"].length > 0) {
+      const anchorList = this.drawingData["xdr:wsDr"]["xdr:oneCellAnchor"] as any[];
+      const removeAnchorRows: any[] = [];
+      for (const anchor of anchorList) {
+        const anchorRow = NumberUtil.parseInt(anchor["xdr:from"][0]["xdr:row"][0]);
+        if (anchorRow === row) {
+          removeAnchorRows.push(anchor);
+        }
+        else if (anchorRow !== undefined && anchorRow > row) {
+          anchor["xdr:from"][0]["xdr:row"][0] = (anchorRow - 1).toString();
+        }
+      }
+      anchorList.remove((item: any) => removeAnchorRows.includes(item));
+    }
 
     this._reloadRows();
   }
