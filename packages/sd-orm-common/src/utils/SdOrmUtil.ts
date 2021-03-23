@@ -1,5 +1,5 @@
 import { IQueryResultParseOption, TEntity, TEntityValue, TQueryValue } from "../commons";
-import { DateOnly, DateTime, ObjectUtil, Time, Type, Uuid } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, JsonConvert, Time, Type, Uuid } from "@simplysm/sd-core-common";
 import { QueryUnit } from "../QueryUnit";
 
 export class SdOrmUtil {
@@ -104,10 +104,13 @@ export class SdOrmUtil {
       const joinKeys = Object.keys(option.joins).orderByDesc((key) => key.length);
       for (const joinKey of joinKeys) {
         const grouped: { key: any; values: any | any[] }[] = [];
-        const groupedMultiObj: { key: any; values: any | any[] }[] = [];
+        const groupedMultiRecord: Record<string, any[] | undefined> = {};
+
+        const resultKeys = Object.keys(Object.assign({}, ...result));
+        const keyObjKeys = resultKeys.filter((key) => !key.startsWith(joinKey + "."));
+        const valueObjKeys = resultKeys.filter((key) => key.startsWith(joinKey + "."));
 
         for (const item of result) {
-          const keyObjKeys = Object.keys(item).filter((key) => !key.startsWith(joinKey + "."));
           const keyObj = {};
           for (const keyObjKey of keyObjKeys) {
             if (item[keyObjKey] !== undefined) {
@@ -115,7 +118,6 @@ export class SdOrmUtil {
             }
           }
 
-          const valueObjKeys = Object.keys(item).filter((key) => key.startsWith(joinKey + "."));
           const valueObj: any = {};
           for (const valueObjKey of valueObjKeys) {
             if (item[valueObjKey] !== undefined) {
@@ -127,14 +129,15 @@ export class SdOrmUtil {
             grouped.push({ key: keyObj, values: valueObj });
           }
           else {
-            const values = groupedMultiObj.single((item1) => ObjectUtil.equal(item1.key, keyObj, { ignoreArrayIndex: true }))?.values;
+            const keyObjJson = JsonConvert.stringify(keyObj);
+            const values = groupedMultiRecord[keyObjJson];
             if (values !== undefined) {
               values.push(valueObj);
             }
             else {
               const valueArr = [valueObj];
               grouped.push({ key: keyObj, values: valueArr });
-              groupedMultiObj.push({ key: keyObj, values: valueArr });
+              groupedMultiRecord[JsonConvert.stringify(keyObj)] = valueArr;
             }
           }
         }
