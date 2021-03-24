@@ -439,6 +439,10 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                     background: white;
                     padding-right: 1px;
 
+                    > ._cell-content {
+                      vertical-align: top;
+                    }
+
                     > ._border {
                       position: absolute;
                       height: 100%;
@@ -1207,17 +1211,15 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   public ngAfterContentChecked(): void {
     if (this.autoHeight) {
       this._zone.runOutsideAngular(() => {
-        setTimeout(() => {
-          const rowEls = this._el.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
-          for (const rowEl of rowEls) {
-            const cellEls = rowEl.findAll("> ._cell-group > ._cell");
+        const rowEls = this._el.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
+        for (const rowEl of rowEls) {
+          const cellEls = rowEl.findAll("> ._cell-group > ._cell");
 
-            const maxCellContentHeight = cellEls.max((cellEl1) => cellEl1.findFirst("> ._cell-content")!.offsetHeight)!;
-            for (const cellEl1 of cellEls) {
-              cellEl1.style.height = (maxCellContentHeight + 1) + "px";
-            }
+          const maxCellContentHeight = cellEls.max((cellEl1) => cellEl1.findFirst("> ._cell-content")!.offsetHeight)!;
+          for (const cellEl1 of cellEls) {
+            cellEl1.style.height = (maxCellContentHeight + 1) + "px";
           }
-        });
+        }
       });
     }
   }
