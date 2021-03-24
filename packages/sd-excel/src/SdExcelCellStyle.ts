@@ -1,5 +1,5 @@
 import { SdExcelCell } from "./SdExcelCell";
-import { ObjectUtil } from "@simplysm/sd-core-common";
+import { NumberUtil, ObjectUtil } from "@simplysm/sd-core-common";
 
 export class SdExcelCellStyle {
   public set alignH(value: "center" | "left" | "right") {
@@ -214,7 +214,7 @@ export class SdExcelCellStyle {
 
   private _createNewFill(): any {
     const styleData = this._getStyleData();
-    const fillId = (styleData?.$ !== undefined) ? Number(styleData.$.fillId) : undefined;
+    const fillId = NumberUtil.parseInt(styleData.$.fillId);
     if (fillId !== undefined) {
       return ObjectUtil.clone(this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fills[0].fill[fillId]);
     }
@@ -230,7 +230,7 @@ export class SdExcelCellStyle {
 
   private _createNewFont(): any {
     const styleData = this._getStyleData();
-    const fontId = (styleData?.$ !== undefined) ? Number(styleData.$.fontId) : undefined;
+    const fontId = NumberUtil.parseInt(styleData.$.fontId);
 
     if (fontId !== undefined) {
       return ObjectUtil.clone(this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fonts[0].font[fontId]);
@@ -242,7 +242,7 @@ export class SdExcelCellStyle {
 
   private _createNewBorder(): any {
     const styleData = this._getStyleData();
-    const borderId = (styleData?.$ !== undefined) ? Number(styleData.$.borderId) : undefined;
+    const borderId = NumberUtil.parseInt(styleData?.$?.borderId);
 
     if (borderId !== undefined) {
       return ObjectUtil.clone(this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.borders[0].border[borderId]);
@@ -254,7 +254,7 @@ export class SdExcelCellStyle {
 
   private _createNewNumFmt(): any {
     const styleData = this._getStyleData();
-    const numFmtId = (styleData?.$ !== undefined) ? Number(styleData.$.numFmtId) : undefined;
+    const numFmtId = NumberUtil.parseInt(styleData.$.numFmtId);
 
     let lastNumFmtId = (this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt as any[]).max((item: any) => Number(item.$.numFmtId));
     lastNumFmtId = Math.max(lastNumFmtId ?? 0, 175);

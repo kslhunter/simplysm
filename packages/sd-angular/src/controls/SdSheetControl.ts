@@ -280,7 +280,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                              [rotate]="getIsExpandedItem(item) ? 90 : undefined"
                              fixedWidth
                              style="pointer-events: auto"
-                             [style.margin-right.em]="maxDepth ? (maxDepth - depth) : 0"></sd-icon>
+                             [style.margin-right.em]="maxDepth ? (maxDepth - depth) : undefined"></sd-icon>
                   </div>
                   <div class="_border"></div>
                 </div>
@@ -804,9 +804,11 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   public get maxDepth(): number | undefined {
     if (!this.getChildrenFn) return undefined;
     if (!this.useFlatChildren) return undefined;
-    return this.displayItemDefs
+    const maxDepth = this.displayItemDefs
       .filter((item) => item.visible)
-      .max((item) => item.depth) ?? undefined;
+      .max((item) => item.depth);
+
+    return maxDepth === 0 ? undefined : maxDepth;
   }
 
   public hasHeaderGroup = false;
