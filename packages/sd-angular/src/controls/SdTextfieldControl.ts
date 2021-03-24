@@ -1,8 +1,6 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  DoCheck,
   ElementRef,
   EventEmitter,
   HostBinding,
@@ -11,7 +9,7 @@ import {
   ViewChild
 } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
-import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-textfield",
@@ -57,7 +55,7 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
                 [attr.placeholder]="placeholder"
                 [attr.title]="title || placeholder"
                 [required]="required"
-                [attr.rows]="rows"
+                [attr.rows]="controlRows"
                 [attr.class]="inputClass"
                 [attr.style]="'white-space: nowrap; ' + inputFullStyle"
                 (input)="onInput()"></textarea>
@@ -254,7 +252,7 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
           outline-offset: -1px;
         }
       }
-      
+
       @each $theme in $arr-theme-color {
         &[sd-theme=#{$theme}] {
           > input,
@@ -277,7 +275,7 @@ import { DateOnly, DateTime, ObjectUtil, Time } from "@simplysm/sd-core-common";
     }
   `]
 })
-export class SdTextfieldControl implements DoCheck, AfterViewInit {
+export class SdTextfieldControl {
   @Input()
   @SdInputValidate({
     type: String,
@@ -398,154 +396,136 @@ export class SdTextfieldControl implements DoCheck, AfterViewInit {
   @ViewChild("input", { static: false, read: ElementRef })
   public inputElRef?: ElementRef<HTMLTextAreaElement | HTMLInputElement>;
 
-  public controlType = "text";
-  public controlValue = "";
-  public controlStep: number | string = "any";
-  public inputFullStyle: string | undefined;
-  public errorMessage = "";
+  public get controlType(): string {
+    return this.type === "number" ? "text" :
+      this.type === "datetime" ? "datetime-local" :
+        this.type === "datetime-sec" ? "datetime-local" :
+          this.type === "time-sec" ? "time" :
+            this.type;
+  }
 
-  public ngAfterViewInit(): void {
-    this.errorMessage = this._validate();
+  public get controlValue(): string {
+    if (this.value == null) {
+      return "";
+    }
+
+    if (this.type === "number" && typeof this.value === "number") {
+      return this.value.toLocaleString(undefined, { maximumFractionDigits: 10 });
+    }
+    if (this.type === "datetime" && this.value instanceof DateTime) {
+      return this.value.toFormatString("yyyy-MM-ddTHH:mm");
+    }
+    if (this.type === "datetime-sec" && this.value instanceof DateTime) {
+      return this.value.toFormatString("yyyy-MM-ddTHH:mm:ss");
+    }
+    if (this.type === "year" && this.value instanceof DateOnly) {
+      return this.value.toFormatString("yyyy");
+    }
+    if (this.type === "month" && this.value instanceof DateOnly) {
+      return this.value.toFormatString("yyyy-MM");
+    }
+    if (this.type === "date" && this.value instanceof DateOnly) {
+      return this.value.toFormatString("yyyy-MM-dd");
+    }
+    if (this.type === "time" && this.value instanceof DateOnly) {
+      return this.value.toFormatString("HH:mm");
+    }
+    if (this.type === "time-sec" && this.value instanceof DateOnly) {
+      return this.value.toFormatString("HH:mm:ss");
+    }
+    if (typeof this.value === "string") {
+      return this.value;
+    }
+
+    throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
+  }
+
+  public get controlStep(): number | string {
+    if (this.step !== undefined) {
+      return this.step;
+    }
+    if (this.type === "datetime-sec" || this.type === "time-sec") {
+      return 1;
+    }
+    return "any";
+  }
+
+  public get inputFullStyle(): string | undefined {
+    if (this.multiline) {
+      const controlResize = this.resize === "vertical" ? "vertical" :
+        this.resize === "horizontal" ? "horizontal" :
+          this.resize ? undefined : "none";
+
+      if (controlResize !== undefined) {
+        return `resize: ${controlResize};` + this.inputStyle;
+      }
+    }
+
+    return this.inputStyle;
+  }
+
+  public get errorMessage(): string {
+    const errorMessages: string[] = [];
+
+    if (this.value == null) {
+      if (this.required) {
+        errorMessages.push("값을 입력하세요.");
+      }
+    }
+    else if (this.type === "number") {
+      if (typeof this.value !== "number") {
+        errorMessages.push("숫자를 입력하세요");
+      }
+      if (this.min !== undefined && this.min > this.value) {
+        errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
+      }
+      if (this.max !== undefined && this.max < this.value) {
+        errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
+      }
+    }
+    else if (["year", "month", "date"].includes(this.type)) {
+      if (!(this.value instanceof DateOnly)) {
+        errorMessages.push("날짜를 입력하세요");
+      }
+    }
+    else if (["datetime", "datetime-sec"].includes(this.type)) {
+      if (!(this.value instanceof DateTime)) {
+        errorMessages.push("날짜 및 시간을 입력하세요");
+      }
+    }
+    else if (["time", "time-sec"].includes(this.type)) {
+      if (!(this.value instanceof Time)) {
+        errorMessages.push("시간을 입력하세요");
+      }
+    }
+
+    if (this.validatorFn) {
+      const message = this.validatorFn(this.value);
+      if (message !== undefined) {
+        errorMessages.push(message);
+      }
+    }
+
+    const errorMessage = errorMessages.join("\r\n");
 
     const inputEl = this.inputElRef?.nativeElement;
     if (inputEl) {
-      inputEl.setCustomValidity(this.errorMessage);
+      inputEl.setCustomValidity(errorMessage);
     }
+
+    return errorMessage;
   }
 
-  private readonly _prevData: Record<string, any> = {};
+  public controlRows(): number | undefined {
+    if (this.multiline && this.autoRows) {
+      if (typeof this.value === "string") {
+        return this.value.split(/[\r\n]/).length + 1;
+      }
 
-  public ngDoCheck(): void {
-    const compare = (propName: keyof this): boolean => {
-      const isChanged = !ObjectUtil.equal(this._prevData[propName as string], this[propName]);
-      if (isChanged) this._prevData[propName as string] = ObjectUtil.clone(this[propName]);
-      return isChanged;
-    };
-
-    const isTypeChange = compare("type");
-    const isValueChange = compare("value");
-    const isStepChange = compare("step");
-    const isInputStyleChange = compare("inputStyle");
-    const isResizeChange = compare("resize");
-    const isMultilineChange = compare("multiline");
-    const isRequiredChange = compare("required");
-    const isValidatorFnChange = compare("validatorFn");
-    const isMaxChange = compare("max");
-    const isMinChange = compare("min");
-    const isAutoRowsChange = compare("autoRows");
-
-    // controlType
-    if (isTypeChange) {
-      this.controlType = this.type === "number" ? "text" :
-        this.type === "datetime" ? "datetime-local" :
-          this.type === "datetime-sec" ? "datetime-local" :
-            this.type === "time-sec" ? "time" :
-              this.type;
+      return 1;
     }
 
-    // controlValue
-    if (isValueChange || isTypeChange) {
-      if (this.value == null) {
-        this.controlValue = "";
-      }
-      else if (this.type === "number" && typeof this.value === "number") {
-        this.controlValue = this.value.toLocaleString(undefined, { maximumFractionDigits: 10 });
-      }
-      else if (this.type === "datetime" && this.value instanceof DateTime) {
-        this.controlValue = this.value.toFormatString("yyyy-MM-ddTHH:mm");
-      }
-      else if (this.type === "datetime-sec" && this.value instanceof DateTime) {
-        this.controlValue = this.value.toFormatString("yyyy-MM-ddTHH:mm:ss");
-      }
-      else if (this.type === "year" && this.value instanceof DateOnly) {
-        this.controlValue = this.value.toFormatString("yyyy");
-      }
-      else if (this.type === "month" && this.value instanceof DateOnly) {
-        this.controlValue = this.value.toFormatString("yyyy-MM");
-      }
-      else if (this.type === "date" && this.value instanceof DateOnly) {
-        this.controlValue = this.value.toFormatString("yyyy-MM-dd");
-      }
-      else if (this.type === "time" && this.value instanceof DateOnly) {
-        this.controlValue = this.value.toFormatString("HH:mm");
-      }
-      else if (this.type === "time-sec" && this.value instanceof DateOnly) {
-        this.controlValue = this.value.toFormatString("HH:mm:ss");
-      }
-      else if (typeof this.value === "string") {
-        this.controlValue = this.value;
-      }
-      else {
-        throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
-      }
-    }
-
-    // controlStep
-    if (isStepChange || isTypeChange) {
-      if (this.step !== undefined) {
-        this.controlStep = this.step;
-      }
-      else if (this.type === "datetime-sec") {
-        this.controlStep = 1;
-      }
-      else if (this.type === "time-sec") {
-        this.controlStep = 1;
-      }
-      else {
-        this.controlStep = "any";
-      }
-    }
-
-    // inputStyleSafeHtml
-    if (isInputStyleChange || isResizeChange || isMultilineChange) {
-      if (this.multiline) {
-        const controlResize = this.resize === "vertical" ? "vertical" :
-          this.resize === "horizontal" ? "horizontal" :
-            this.resize ? undefined : "none";
-
-        if (controlResize !== undefined) {
-          this.inputFullStyle = `resize: ${controlResize};` + this.inputStyle;
-        }
-        else {
-          this.inputFullStyle = this.inputStyle;
-        }
-      }
-      else {
-        this.inputFullStyle = this.inputStyle;
-      }
-    }
-
-    // errorMessages
-    if (
-      isValueChange ||
-      isTypeChange ||
-      isRequiredChange ||
-      isValidatorFnChange ||
-      isMaxChange ||
-      isMinChange
-    ) {
-      this.errorMessage = this._validate();
-      const inputEl = this.inputElRef?.nativeElement;
-      if (inputEl) {
-        inputEl.setCustomValidity(this.errorMessage);
-      }
-    }
-
-    // autoRows
-    if (
-      isValueChange ||
-      isMultilineChange ||
-      isAutoRowsChange
-    ) {
-      if (this.multiline && this.autoRows) {
-        if (typeof this.value === "string") {
-          this.rows = this.value.split(/[\r\n]/).length + 1;
-        }
-        else {
-          this.rows = 1;
-        }
-      }
-    }
+    return this.rows;
   }
 
   public onInput(): void {
@@ -592,59 +572,11 @@ export class SdTextfieldControl implements DoCheck, AfterViewInit {
       newValue = inputEl.value;
     }
 
-    this.errorMessage = this._validate();
-    inputEl.setCustomValidity(this.errorMessage);
-
     if (this.valueChange.observers.length > 0) {
       this.valueChange.emit(newValue);
     }
     else {
       this.value = newValue;
     }
-  }
-
-  private _validate(): string {
-    const errorMessages: string[] = [];
-
-    if (this.value == null) {
-      if (this.required) {
-        errorMessages.push("값을 입력하세요.");
-      }
-    }
-    else if (this.type === "number") {
-      if (typeof this.value !== "number") {
-        errorMessages.push("숫자를 입력하세요");
-      }
-      if (this.min !== undefined && this.min > this.value) {
-        errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
-      }
-      if (this.max !== undefined && this.max < this.value) {
-        errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
-      }
-    }
-    else if (["year", "month", "date"].includes(this.type)) {
-      if (!(this.value instanceof DateOnly)) {
-        errorMessages.push("날짜를 입력하세요");
-      }
-    }
-    else if (["datetime", "datetime-sec"].includes(this.type)) {
-      if (!(this.value instanceof DateTime)) {
-        errorMessages.push("날짜 및 시간을 입력하세요");
-      }
-    }
-    else if (["time", "time-sec"].includes(this.type)) {
-      if (!(this.value instanceof Time)) {
-        errorMessages.push("시간을 입력하세요");
-      }
-    }
-
-    if (this.validatorFn) {
-      const message = this.validatorFn(this.value);
-      if (message !== undefined) {
-        errorMessages.push(message);
-      }
-    }
-
-    return errorMessages.join("\r\n");
   }
 }
