@@ -806,7 +806,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     if (!this.useFlatChildren) return undefined;
     return this.displayItemDefs
       .filter((item) => item.visible)
-      .max((item) => item.depth) ?? 0;
+      .max((item) => item.depth) ?? undefined;
   }
 
   public hasHeaderGroup = false;
