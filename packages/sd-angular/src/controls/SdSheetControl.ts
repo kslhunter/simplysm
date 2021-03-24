@@ -68,7 +68,8 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
                   <sd-icon class="_icon _selected-icon" fixedWidth></sd-icon>
-                  <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth></sd-icon>
+                  <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth
+                           [style.margin-right.em]="maxDepth"></sd-icon>
                 </div>
                 <div class="_border"></div>
               </div>
@@ -118,7 +119,8 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                            [class._expandable]="getHasParentItem()"
                            [rotate]="getIsAllExpanded() ? 90 : undefined"
                            fixedWidth
-                           style="pointer-events: auto"></sd-icon>
+                           style="pointer-events: auto"
+                           [style.margin-right.em]="maxDepth"></sd-icon>
                 </div>
                 <div class="_border"></div>
               </div>
@@ -156,7 +158,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                     </ng-container>
                   </div>
                   <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"
-                       [ngClass]="{'_border-split': this.isGroupLastColumMap.get(columnControl.guid)}"></div>
+                       [ngClass]="{'_border-split': this.isGroupLastColumnMap.get(columnControl.guid)}"></div>
                 </td>
               </ng-container>
             </div>
@@ -196,7 +198,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                     </ng-container>
                   </div>
                   <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"
-                       [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
+                       [ngClass]="{'_border-split':  this.isGroupLastColumnMap.get(columnControl.guid)}"></div>
                 </td>
               </ng-container>
             </div>
@@ -210,7 +212,8 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
                   <sd-icon class="_icon _selected-icon" fixedWidth></sd-icon>
-                  <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth></sd-icon>
+                  <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth
+                           [style.margin-right.em]="maxDepth"></sd-icon>
                 </div>
                 <div class="_border"></div>
               </div>
@@ -222,7 +225,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                     <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"></ng-template>
                   </div>
                   <div class="_border"
-                       [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
+                       [ngClass]="{'_border-split':  this.isGroupLastColumnMap.get(columnControl.guid)}"></div>
                 </td>
               </ng-container>
             </div>
@@ -236,7 +239,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                     <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"></ng-template>
                   </div>
                   <div class="_border"
-                       [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
+                       [ngClass]="{'_border-split':  this.isGroupLastColumnMap.get(columnControl.guid)}"></div>
                 </td>
               </ng-container>
             </div>
@@ -276,7 +279,8 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                              [class._expandable]="getChildrenFn && getChildrenFn(index, item)?.length > 0"
                              [rotate]="getIsExpandedItem(item) ? 90 : undefined"
                              fixedWidth
-                             style="pointer-events: auto"></sd-icon>
+                             style="pointer-events: auto"
+                             [style.margin-right.em]="maxDepth ? (maxDepth - depth) : 0"></sd-icon>
                   </div>
                   <div class="_border"></div>
                 </div>
@@ -289,10 +293,10 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                     <div class="_cell-content"
                          (dblclick)="onCellDblClick($event)">
                       <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                   [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl), parent: parent}"></ng-template>
+                                   [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl), parent: parent, depth: depth}"></ng-template>
                     </div>
                     <div class="_border"
-                         [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
+                         [ngClass]="{'_border-split':  this.isGroupLastColumnMap.get(columnControl.guid)}"></div>
                   </td>
                 </ng-container>
               </div>
@@ -308,10 +312,10 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                     <div class="_cell-content"
                          (dblclick)="onCellDblClick($event)">
                       <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                   [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl), parent: parent}"></ng-template>
+                                   [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl), parent: parent, depth: depth}"></ng-template>
                     </div>
                     <div class="_border"
-                         [ngClass]="{'_border-split':  this.isGroupLastColumMap.get(columnControl.guid)}"></div>
+                         [ngClass]="{'_border-split':  this.isGroupLastColumnMap.get(columnControl.guid)}"></div>
                   </td>
                 </ng-container>
               </div>
@@ -320,12 +324,13 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
 
             <!-- CHILDREN FOR 문 -->
             <ng-container *ngIf="getIsExpandedItem(item) && getChildrenFn && getChildrenFn(index, item)?.length > 0">
-              <div class="sd-border-top-brightness-default"></div>
+              <div class="sd-border-top-brightness-darker"></div>
               <ng-container
                 *ngFor="let childItem of getChildrenFn ? getChildrenFn(index, item) : []; let childIndex = index; trackBy: trackByFn">
                 <ng-template [ngTemplateOutlet]="itemRowTemplate"
                              [ngTemplateOutletContext]="{item: childItem, index: childIndex, depth: depth + 1, parent: item}"></ng-template>
               </ng-container>
+              <sd-gap height="sm"></sd-gap>
               <div class="sd-border-bottom-brightness-default"></div>
             </ng-container>
           </ng-template>
@@ -775,6 +780,11 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   })
   public displayType: "sheet" | "card" = "sheet";
 
+
+  @Input()
+  @SdInputValidate(Boolean)
+  public useFlatChildren?: boolean;
+
   @Output()
   public readonly itemKeydown = new EventEmitter<ISdSheetItemKeydownEventParam<any>>();
 
@@ -791,6 +801,14 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     return this._editCell === index + "_" + columnControl.guid;
   }
 
+  public get maxDepth(): number | undefined {
+    if (!this.getChildrenFn) return undefined;
+    if (!this.useFlatChildren) return undefined;
+    return this.displayItemDefs
+      .filter((item) => item.visible)
+      .max((item) => item.depth) ?? 0;
+  }
+
   public hasHeaderGroup = false;
   public hasSummaryGroup = false;
 
@@ -800,7 +818,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   public nonFixedColumnControls: SdSheetColumnControl[] = [];
   public columnWidthPixelMap = new Map<string, number>();
 
-  public isGroupLastColumMap = new Map<string, boolean>();
+  public isGroupLastColumnMap = new Map<string, boolean>();
 
   public displayItems: any[] = [];
   public displayItemDefs: { index: number; depth: number; visible: boolean; selectable: boolean; item: any }[] = [];
@@ -1130,7 +1148,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       this.fixedHeaderGroups = this._getHeaderGroups(this.fixedColumnControls);
       this.nonFixedHeaderGroups = this._getHeaderGroups(this.nonFixedColumnControls);
 
-      this.isGroupLastColumMap = this.columnControls?.toArray()
+      this.isGroupLastColumnMap = this.columnControls?.toArray()
         .toMap((item) => item.guid, (item) => this._getIsGroupLastColumn(item)) ?? new Map<string, boolean>();
     }
 

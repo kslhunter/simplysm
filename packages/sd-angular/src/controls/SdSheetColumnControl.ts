@@ -54,7 +54,7 @@ export class SdSheetColumnControl {
   public useOrdering?: boolean;
 
   @ContentChild("cell", { static: true })
-  public cellTemplateRef?: TemplateRef<{ item: any; index: number; edit: boolean }>;
+  public cellTemplateRef?: TemplateRef<{ item: any; index: number; edit: boolean; parent: any; depth?: number }>;
 
   @ContentChild("header", { static: true })
   public headerTemplateRef?: TemplateRef<{}>;
