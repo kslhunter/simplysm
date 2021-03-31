@@ -214,7 +214,7 @@ export class SdExcelCellStyle {
 
   private _createNewFill(): any {
     const styleData = this._getStyleData();
-    const fillId = NumberUtil.parseInt(styleData.$.fillId);
+    const fillId = NumberUtil.parseInt(styleData?.$?.fillId);
     if (fillId !== undefined) {
       return ObjectUtil.clone(this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fills[0].fill[fillId]);
     }
@@ -230,7 +230,7 @@ export class SdExcelCellStyle {
 
   private _createNewFont(): any {
     const styleData = this._getStyleData();
-    const fontId = NumberUtil.parseInt(styleData.$.fontId);
+    const fontId = NumberUtil.parseInt(styleData?.$?.fontId);
 
     if (fontId !== undefined) {
       return ObjectUtil.clone(this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fonts[0].font[fontId]);
@@ -254,7 +254,7 @@ export class SdExcelCellStyle {
 
   private _createNewNumFmt(): any {
     const styleData = this._getStyleData();
-    const numFmtId = NumberUtil.parseInt(styleData.$.numFmtId);
+    const numFmtId = NumberUtil.parseInt(styleData?.$?.numFmtId);
 
     let lastNumFmtId = (this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt as any[]).max((item: any) => Number(item.$.numFmtId));
     lastNumFmtId = Math.max(lastNumFmtId ?? 0, 175);
@@ -355,7 +355,7 @@ export class SdExcelCellStyle {
 
   private _getNumFmtData(): any {
     const styleData = this._getStyleData();
-    if (styleData.$.numFmtId !== undefined) {
+    if (styleData?.$?.numFmtId !== undefined) {
       return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts?.[0]?.numFmt?.single((item: any) => item.$.numFmtId === styleData.$.numFmtId);
     }
 

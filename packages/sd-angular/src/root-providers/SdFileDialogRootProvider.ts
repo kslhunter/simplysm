@@ -6,7 +6,7 @@ export class SdFileDialogRootProvider {
   public async showAsync(multiple?: false, accept?: string): Promise<File | undefined>;
   public async showAsync(multiple: true, accept?: string): Promise<File[] | undefined>;
   public async showAsync(multiple?: boolean, accept?: string): Promise<File[] | File | undefined> {
-    return await new Promise<File[] | File | undefined>((resolve) => {
+    return await new Promise<File[] | File | undefined>(async (resolve) => {
       let inputEl: HTMLInputElement | undefined = document.createElement("input");
 
       inputEl.type = "file";
@@ -32,15 +32,17 @@ export class SdFileDialogRootProvider {
       inputEl.focus();
       inputEl.click();
 
-      inputEl.onfocus = async (): Promise<void> => {
-        await Wait.time(1000);
-        if (inputEl) {
-          document.body.removeChild(inputEl);
-          inputEl = undefined;
-        }
+      setTimeout(() => {
+        inputEl!.onfocus = async (): Promise<void> => {
+          await Wait.time(1000);
+          if (inputEl) {
+            document.body.removeChild(inputEl);
+            inputEl = undefined;
+          }
 
-        resolve(undefined);
-      };
+          resolve(undefined);
+        };
+      });
     });
   }
 }
