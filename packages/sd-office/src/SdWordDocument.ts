@@ -66,6 +66,7 @@ export class SdWordDocument {
         if (tItem === undefined) continue;
         let startIndex: number | undefined;
         const removeIndexes: number[] = [];
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let tItemCharIndex = 0; tItemCharIndex < tItem.length; tItemCharIndex++) {
           if (pStrIndex === fromStrIndex) {
             startIndex = pStrIndex;
