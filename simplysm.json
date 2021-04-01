@@ -65,7 +65,7 @@
       ],
       "publish": "npm"
     },
-    "@simplysm/sd-excel": {
+    "@simplysm/sd-office": {
       "type": "library",
       "targets": [
         "node",

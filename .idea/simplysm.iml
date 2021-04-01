@@ -36,6 +36,9 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-storage/dist-types" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-studio/dist" />
       <excludeFolder url="file://$MODULE_DIR$/_db" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-office/dist-browser" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-office/dist-node" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-office/dist-types" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

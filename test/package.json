@@ -16,7 +16,7 @@
     "@simplysm/sd-service-browser": "5.0.7",
     "@simplysm/sd-service-common": "5.0.7",
     "@simplysm/sd-service-node": "5.0.7",
-    "@simplysm/sd-excel": "5.0.7",
+    "@simplysm/sd-office": "5.0.7",
     "@simplysm/sd-cli": "5.0.7",
     "sinon": "^9.2.4",
     "chai": "^4.3.4",

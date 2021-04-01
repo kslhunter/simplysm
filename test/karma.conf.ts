@@ -13,7 +13,7 @@ module.exports = function (config: any): void {
       "../packages/sd-core-common/src/**/*.ts",
       "../packages/sd-core-browser/src/**/*.ts",
       "../packages/sd-orm-common/src/**/*.ts",
-      "../packages/sd-excel/src/**/*.ts",
+      "../packages/sd-office/src/**/*.ts",
       "src/common/**/*.ts",
       "src/browser/**/*.ts"
     ],

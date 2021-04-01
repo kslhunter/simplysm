@@ -1,7 +1,7 @@
 {
-  "name": "@simplysm/sd-excel",
+  "name": "@simplysm/sd-office",
   "version": "5.0.7",
-  "description": "심플리즘 패키지 - 엑셀 모듈 (browser/node)",
+  "description": "심플리즘 패키지 - 오피스 모듈 (browser/node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
   "license": "MIT",

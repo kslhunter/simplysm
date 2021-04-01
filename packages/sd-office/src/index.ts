@@ -5,5 +5,6 @@ export * from "./SdExcelColumn";
 export * from "./SdExcelRow";
 export * from "./SdExcelWorkbook";
 export * from "./SdExcelWorksheet";
+export * from "./SdWordDocument";
 export * from "./utils/SdExcelUtil";
 export * from "./utils/XmlConvert";

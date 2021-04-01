@@ -1,4 +1,4 @@
-import { SdExcelWorkbook } from "@simplysm/sd-excel";
+import { SdExcelWorkbook } from "@simplysm/sd-office";
 
 describe("(browser) excel.SdExcelWorkbook", () => {
   it("속도테스트", async () => {
