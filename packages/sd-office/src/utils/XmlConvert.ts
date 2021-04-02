@@ -4,10 +4,7 @@ import { stripPrefix } from "xml2js/lib/processors";
 export class XmlConvert {
   public static async parseAsync(str: string, options?: { stripPrefix?: boolean }): Promise<any> {
     return await new Promise<any>((resolve, reject) => {
-      xml2js.parseString(str, options?.stripPrefix ? {
-        tagNameProcessors: [stripPrefix],
-        explicitArray: false
-      } : {}, (err: Error | null, parsed) => {
+      xml2js.parseString(str, options?.stripPrefix ? { tagNameProcessors: [stripPrefix] } : {}, (err: Error | null, parsed) => {
         if (err != null) {
           reject(err);
           return;
