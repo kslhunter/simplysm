@@ -179,9 +179,9 @@ export class ObjectUtil {
     }
 
     if (
-      (source instanceof Time && target instanceof DateTime) ||
-      (source instanceof Time && target instanceof DateOnly) ||
-      (source instanceof Time && target instanceof Time)
+      (source instanceof Time && target instanceof DateTime)
+      || (source instanceof Time && target instanceof DateOnly)
+      || (source instanceof Time && target instanceof Time)
     ) {
       return source.tick === target.tick;
     }
@@ -260,8 +260,8 @@ export class ObjectUtil {
     }
 
     if (
-      currDef.type !== undefined &&
-      !currDef.type.some((type) => type === (value as any)?.constructor)
+      currDef.type !== undefined
+      && !currDef.type.some((type) => type === (value as any)?.constructor)
     ) {
       invalidateDef.type = currDef.type;
     }
@@ -336,10 +336,10 @@ export class ObjectUtil {
           if (realDef[invalidateKey].displayValue !== false) {
             const itemValue = validateResult.result[invalidateKey].value;
             if (
-              typeof itemValue === "string" ||
-              typeof itemValue === "number" ||
-              typeof itemValue === "boolean" ||
-              typeof itemValue === "undefined"
+              typeof itemValue === "string"
+              || typeof itemValue === "number"
+              || typeof itemValue === "boolean"
+              || typeof itemValue === "undefined"
             ) {
               errorMessages.push(`- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}': ` + itemValue);
             }
@@ -450,10 +450,10 @@ export class ObjectUtil {
     }
 
     if (
-      obj instanceof Date ||
-      obj instanceof DateTime ||
-      obj instanceof DateOnly ||
-      obj instanceof Time
+      obj instanceof Date
+      || obj instanceof DateTime
+      || obj instanceof DateOnly
+      || obj instanceof Time
     ) {
       return obj;
     }

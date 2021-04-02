@@ -71,10 +71,10 @@ export class DbModelFkColumnSelectModal extends SdModalBase<{ model: IModelVM; t
 
   public getUsableColumns(targetPkColumn: IColumnVM): IColumnVM[] {
     return this.model!.columns.filter((item) => (
-      item.dataType === targetPkColumn.dataType &&
-      item.length === targetPkColumn.length &&
-      item.precision === targetPkColumn.precision &&
-      item.digits === targetPkColumn.digits
+      item.dataType === targetPkColumn.dataType
+      && item.length === targetPkColumn.length
+      && item.precision === targetPkColumn.precision
+      && item.digits === targetPkColumn.digits
     ));
   }
 

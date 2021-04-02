@@ -29,7 +29,7 @@
     "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --require=ts-node/register --require=tsconfig-paths/register packages/sd-cli/src/bin/sd-cli.ts",
     "eslint-timing": "cross-env TIMING=1 eslint \"./**/+(*.ts|*.js)\"",
     "eslint-timing_sd-angular": "cross-env TIMING=1 eslint \"./packages/sd-angular/**/+(*.ts|*.js)\"",
-    "eslint-fix": "eslint --fix --rule \"arrow-parens: error\" \"./**/+(*.ts|*.js)\"",
+    "eslint-fix": "eslint --fix --rule \"operator-linebreak: [error,before]\" --ignore-pattern \"_back/**/*\" \"**/+(*.ts|*.js)\"",
     "-----": "",
     "postinstall": "yarn _sd-cli_ --debug check"
   },

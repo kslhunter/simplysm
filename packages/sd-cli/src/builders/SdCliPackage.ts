@@ -328,9 +328,9 @@ export class SdCliPackage extends EventEmitter {
   }
 
   private async _runWorkerAsync(type: "compile" | "check" | "lint" | "ng-gen", target: "node" | "browser" | undefined): Promise<void> {
-    const worker = this._processWorkManager ?
-      await this._processWorkManager.getNextWorkerAsync() :
-      await SdProcessWorker.createAsync(path.resolve(__dirname, `../workers/build-worker`), []);
+    const worker = this._processWorkManager
+      ? await this._processWorkManager.getNextWorkerAsync()
+      : await SdProcessWorker.createAsync(path.resolve(__dirname, `../workers/build-worker`), []);
 
     worker.on("error", (err) => {
       console.error(err, this.rootPath);

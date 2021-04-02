@@ -175,13 +175,13 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
   // 화면 목록에서 뿌려질것 (검색어에 의해 숨겨진것 제외)
   public getItemVisible(index: number, item: any): boolean {
     return (
-        this.getSearchTextFn(index, item).toLowerCase().includes(this.searchText?.toLowerCase() ?? "") &&
-        !this.getIsHiddenFn(index, item)
-      ) ||
-      this.value === this.trackByFn(index, item) ||
-      (
-        this.value instanceof Array &&
-        this.value.includes(this.trackByFn(index, item))
+        this.getSearchTextFn(index, item).toLowerCase().includes(this.searchText?.toLowerCase() ?? "")
+        && !this.getIsHiddenFn(index, item)
+      )
+      || this.value === this.trackByFn(index, item)
+      || (
+        this.value instanceof Array
+        && this.value.includes(this.trackByFn(index, item))
       );
   }
 

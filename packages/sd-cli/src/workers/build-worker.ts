@@ -46,9 +46,9 @@ try {
       const npmConfig: INpmConfig = FsUtil.readJson(SdCliPathUtil.getNpmConfigFilePath(rootPath));
       const isForAngular = (
         target === "browser" && (
-          (npmConfig.dependencies && Object.keys(npmConfig.dependencies).includes("@angular/core")) ||
-          (npmConfig.devDependencies && Object.keys(npmConfig.devDependencies).includes("@angular/core")) ||
-          (npmConfig.peerDependencies && Object.keys(npmConfig.peerDependencies).includes("@angular/core"))
+          (npmConfig.dependencies && Object.keys(npmConfig.dependencies).includes("@angular/core"))
+          || (npmConfig.devDependencies && Object.keys(npmConfig.devDependencies).includes("@angular/core"))
+          || (npmConfig.peerDependencies && Object.keys(npmConfig.peerDependencies).includes("@angular/core"))
         )
       ) ?? false;
 
@@ -68,8 +68,8 @@ try {
           // 현재 패키지의 소스코드고, .d.ts가 아닌 .ts파일
           const targetInfos = changeInfos
             .filter((item) => (
-              FsUtil.isChildPath(item.filePath, srcPath) &&
-              item.filePath.endsWith(".ts") && !item.filePath.endsWith(".d.ts")
+              FsUtil.isChildPath(item.filePath, srcPath)
+              && item.filePath.endsWith(".ts") && !item.filePath.endsWith(".d.ts")
             ));
 
           // 관련 파일이 없으면 그냥 RETURN
@@ -151,9 +151,9 @@ try {
       const npmConfig: INpmConfig = await FsUtil.readJsonAsync(SdCliPathUtil.getNpmConfigFilePath(rootPath));
       const isForAngular = (
         target === "browser" && (
-          (npmConfig.dependencies && Object.keys(npmConfig.dependencies).includes("@angular/core")) ||
-          (npmConfig.devDependencies && Object.keys(npmConfig.devDependencies).includes("@angular/core")) ||
-          (npmConfig.peerDependencies && Object.keys(npmConfig.peerDependencies).includes("@angular/core"))
+          (npmConfig.dependencies && Object.keys(npmConfig.dependencies).includes("@angular/core"))
+          || (npmConfig.devDependencies && Object.keys(npmConfig.devDependencies).includes("@angular/core"))
+          || (npmConfig.peerDependencies && Object.keys(npmConfig.peerDependencies).includes("@angular/core"))
         )
       ) ?? false;
 
@@ -174,8 +174,8 @@ try {
           // 현재 패키지의 소스코드고, .d.ts가 아닌 .ts파일
           const targetInfos = changeInfos
             .filter((item) => (
-              FsUtil.isChildPath(item.filePath, srcPath) &&
-              item.filePath.endsWith(".ts") && !item.filePath.endsWith(".d.ts")
+              FsUtil.isChildPath(item.filePath, srcPath)
+              && item.filePath.endsWith(".ts") && !item.filePath.endsWith(".d.ts")
             ));
 
           // 관련 파일이 없으면 그냥 RETURN
@@ -263,9 +263,9 @@ try {
             // 그리고 삭제되지 않은것
             const targetInfos = changeInfos
               .filter((item) => (
-                item.eventType !== "unlink" &&
-                FsUtil.isChildPath(item.filePath, srcPath) &&
-                (item.filePath.endsWith(".js") || item.filePath.endsWith(".ts"))
+                item.eventType !== "unlink"
+                && FsUtil.isChildPath(item.filePath, srcPath)
+                && (item.filePath.endsWith(".js") || item.filePath.endsWith(".ts"))
               ));
 
             // 관련 파일이 없으면 그냥 RETURN
@@ -286,10 +286,10 @@ try {
             // 소스파일 외의 파일들
             const targetInfos = changeInfos
               .filter((item) => (
-                !(/[\\/]src[\\/]/).test(item.filePath) &&
-                !(/[\\/]node_modules[\\/]/).test(item.filePath) &&
-                !(/[\\/]dist.*[\\/]/).test(item.filePath) &&
-                !(/[\\/]\..*[\\/]/).test(item.filePath)
+                !(/[\\/]src[\\/]/).test(item.filePath)
+                && !(/[\\/]node_modules[\\/]/).test(item.filePath)
+                && !(/[\\/]dist.*[\\/]/).test(item.filePath)
+                && !(/[\\/]\..*[\\/]/).test(item.filePath)
               ));
 
             // 변경된 파일에 대한 이전 결과들 삭제
@@ -327,8 +327,8 @@ try {
             // 소스라 할 수 있는 파일들
             const targetInfos = changeInfos
               .filter((item) => (
-                !(/[\\/]node_modules[\\/]/).test(item.filePath) &&
-                !(/[\\/]dist.*[\\/]/).test(item.filePath)
+                !(/[\\/]node_modules[\\/]/).test(item.filePath)
+                && !(/[\\/]dist.*[\\/]/).test(item.filePath)
               ));
 
             // 관련 파일이 없으면 그냥 RETURN
@@ -364,9 +364,9 @@ try {
 
       const npmConfig: INpmConfig = await FsUtil.readJsonAsync(SdCliPathUtil.getNpmConfigFilePath(rootPath));
       const isForAngular = (
-        (npmConfig.dependencies && Object.keys(npmConfig.dependencies).includes("@angular/core")) ||
-        (npmConfig.devDependencies && Object.keys(npmConfig.devDependencies).includes("@angular/core")) ||
-        (npmConfig.peerDependencies && Object.keys(npmConfig.peerDependencies).includes("@angular/core"))
+        (npmConfig.dependencies && Object.keys(npmConfig.dependencies).includes("@angular/core"))
+        || (npmConfig.devDependencies && Object.keys(npmConfig.devDependencies).includes("@angular/core"))
+        || (npmConfig.peerDependencies && Object.keys(npmConfig.peerDependencies).includes("@angular/core"))
       ) ?? false;
 
       const isLibrary = npmConfig.main !== undefined;
@@ -383,16 +383,16 @@ try {
           // 현재 패키지의 소스코드고, .d.ts가 아닌 .ts파일, 생성 모듈 폴더 제외
           const genMetadataTargetInfos = changeInfos
             .filter((item) => (
-              FsUtil.isChildPath(item.filePath, srcPath) &&
-              item.filePath.endsWith(".ts") && !item.filePath.endsWith(".d.ts")
+              FsUtil.isChildPath(item.filePath, srcPath)
+              && item.filePath.endsWith(".ts") && !item.filePath.endsWith(".d.ts")
             ));
 
           // NgModule를 만들기 위해 필요한 파일 목록
           // 의존성있는 다른 패키지의 파일도 등록해야 NgModule이 제대로 생성됨
           const genNgModuleTargetInfos = changeInfos
             .filter((item) => (
-              !FsUtil.isChildPath(item.filePath, modulesGenPath) &&
-              item.filePath.endsWith(".ts")
+              !FsUtil.isChildPath(item.filePath, modulesGenPath)
+              && item.filePath.endsWith(".ts")
             ));
 
           // 관련 파일이 없으면 그냥 RETURN

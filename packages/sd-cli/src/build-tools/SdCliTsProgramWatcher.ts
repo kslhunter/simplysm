@@ -283,9 +283,9 @@ export class SdCliTsProgramWatcher {
 
     for (const statement of sourceFile.statements) {
       if (
-        (ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement)) &&
-        statement.moduleSpecifier !== undefined &&
-        ts.isStringLiteral(statement.moduleSpecifier)
+        (ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement))
+        && statement.moduleSpecifier !== undefined
+        && ts.isStringLiteral(statement.moduleSpecifier)
       ) {
         // filePath
         const moduleName = statement.moduleSpecifier.text;

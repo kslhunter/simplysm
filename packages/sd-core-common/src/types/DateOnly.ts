@@ -75,9 +75,9 @@ export class DateOnly {
     const nextMonthWeekNumStartDate = DateOnly.getByMonthWeekFirstDate(date.setDay(1).addMonths(1), 1, offsetWeek, startWeek);
 
     // 이번달의 주차가 끝나는 날짜
-    const monthWeekNumEndDate = nextMonthWeekNumStartDate.day !== 1 ?
-      date.addMonths(1).addDays(-1) :
-      nextMonthWeekNumStartDate.addDays(-nextMonthWeekNumStartDate.week - 1 + startWeek);
+    const monthWeekNumEndDate = nextMonthWeekNumStartDate.day !== 1
+      ? date.addMonths(1).addDays(-1)
+      : nextMonthWeekNumStartDate.addDays(-nextMonthWeekNumStartDate.week - 1 + startWeek);
 
     if (date.tick < monthWeekNumStartDate.tick) {
       return DateOnly.getWeekOfMonth(date.setDay(1).addDays(-1), offsetWeek, startWeek);

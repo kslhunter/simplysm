@@ -836,19 +836,19 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     if (this.key !== undefined && this._config?.columnObj) {
       fixedColumnControls = fixedColumnControls
         .filter((item) => (
-          Boolean(this._config!.columnObj![item.key!]?.fixed ?? item.fixed) === fixed &&
-          (
-            this._config!.columnObj![item.key!] ?
-              !this._config!.columnObj![item.key!]!.hidden :
-              !item.hidden
+          Boolean(this._config!.columnObj![item.key!]?.fixed ?? item.fixed) === fixed
+          && (
+            this._config!.columnObj![item.key!]
+              ? !this._config!.columnObj![item.key!]!.hidden
+              : !item.hidden
           )
         ))
         .orderBy((item) => this._config!.columnObj![item.key!]?.displayOrder ?? 0);
     }
     else {
       fixedColumnControls = fixedColumnControls.filter((item) => (
-        Boolean(item.fixed) === fixed &&
-        !item.hidden
+        Boolean(item.fixed) === fixed
+        && !item.hidden
       ));
     }
     return fixedColumnControls;
@@ -869,11 +869,11 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
   private _getColumnWidthPixel(columnControl: SdSheetColumnControl): number {
     if (
-      this.key !== undefined &&
-      columnControl.key !== undefined &&
-      this._config &&
-      this._config.columnObj &&
-      this._config.columnObj[columnControl.key]?.widthPixel !== undefined
+      this.key !== undefined
+      && columnControl.key !== undefined
+      && this._config
+      && this._config.columnObj
+      && this._config.columnObj[columnControl.key]?.widthPixel !== undefined
     ) {
       return this._config.columnObj[columnControl.key]!.widthPixel!;
     }
@@ -979,9 +979,9 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
       this._el.addEventListener("focus", (event) => {
         if (
-          event.target &&
-          (event.target instanceof HTMLElement) &&
-          event.target.matches("._sheet > ._body > ._row > ._cell-group > ._cell")
+          event.target
+          && (event.target instanceof HTMLElement)
+          && event.target.matches("._sheet > ._body > ._row > ._cell-group > ._cell")
         ) {
           const cellEl = event.target;
           const rowEl = event.target.findParent("._row");
@@ -999,9 +999,9 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
         if (event.target && (event.target instanceof HTMLElement)) {
           const cellEl = (
-            event.target.matches("._sheet > ._body > ._row > ._cell-group > ._cell") ?
-              event.target :
-              event.target.findParent("._sheet > ._body > ._row > ._cell-group > ._cell")
+            event.target.matches("._sheet > ._body > ._row > ._cell-group > ._cell")
+              ? event.target
+              : event.target.findParent("._sheet > ._body > ._row > ._cell-group > ._cell")
           );
           if (cellEl) {
             const rowEl = cellEl.findParent("._sheet > ._body > ._row")!;
@@ -1017,9 +1017,9 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
         }
 
         if (
-          event.target &&
-          (event.target instanceof HTMLElement) &&
-          event.target.findParent("._row")
+          event.target
+          && (event.target instanceof HTMLElement)
+          && event.target.findParent("._row")
         ) {
           const rowEls = this._el.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
           const rowEl = event.target.findParent("._row")!;
@@ -1057,12 +1057,12 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
         const rowFocusIndicatorEl = paneEl.findFirst("> ._row-focus-indicator")!;
         rowFocusIndicatorEl.style.display = "none";
 
-        const relatedTargetCell = event.relatedTarget instanceof HTMLElement ?
-          event.relatedTarget.matches("._cell") ? event.relatedTarget : event.relatedTarget.findParent("._cell") :
-          undefined;
-        const targetCell = event.target instanceof HTMLElement ?
-          event.target.matches("._cell") ? event.target : event.target.findParent("._cell") :
-          undefined;
+        const relatedTargetCell = event.relatedTarget instanceof HTMLElement
+          ? event.relatedTarget.matches("._cell") ? event.relatedTarget : event.relatedTarget.findParent("._cell")
+          : undefined;
+        const targetCell = event.target instanceof HTMLElement
+          ? event.target.matches("._cell") ? event.target : event.target.findParent("._cell")
+          : undefined;
 
         if (relatedTargetCell !== targetCell) {
           if (this._editCell === (targetCell?.getAttribute("sd-row-index") ?? "") + "_" + (targetCell?.getAttribute("sd-column-guid") ?? "")) {
@@ -1131,8 +1131,8 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     }
 
     if (
-      (expandedItemsChanges || isSelectModeChange || isGetItemSelectableFnChange || isGetChildrenFnChange) ||
-      (isPageItemCountChange || itemsChanges || isPageChange) // displayItems
+      (expandedItemsChanges || isSelectModeChange || isGetItemSelectableFnChange || isGetChildrenFnChange)
+      || (isPageItemCountChange || itemsChanges || isPageChange) // displayItems
     ) {
       this.displayItemDefs = this._getDisplayItemDefs();
     }
@@ -1159,9 +1159,9 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     }
 
     if (itemsChanges) {
-      const prevCellEl = document.activeElement instanceof HTMLElement ?
-        (document.activeElement.matches("._cell") ? document.activeElement : document.activeElement.findParent("._cell")) :
-        undefined;
+      const prevCellEl = document.activeElement instanceof HTMLElement
+        ? (document.activeElement.matches("._cell") ? document.activeElement : document.activeElement.findParent("._cell"))
+        : undefined;
       const prevAddr = prevCellEl ? this._getCellAddress(prevCellEl) : undefined;
       if (prevAddr) {
         let lastAddedRecord: IterableChangeRecord<any> | undefined;
@@ -1474,8 +1474,8 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     }
 
     const cellEl = (
-      event.target.matches("._sheet > ._body > ._row > ._cell-group > ._cell") ? event.target :
-        event.target.findParent("._sheet > ._body > ._row > ._cell-group > ._cell")
+      event.target.matches("._sheet > ._body > ._row > ._cell-group > ._cell") ? event.target
+        : event.target.findParent("._sheet > ._body > ._row > ._cell-group > ._cell")
     );
 
     if (!cellEl) return;
@@ -1545,18 +1545,18 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
         cellEl.focus();
       }
       else if (
-        (event.ctrlKey && event.altKey && event.key === "ArrowDown") ||
-        (
-          !(event.target instanceof HTMLTextAreaElement) &&
-          !(event.target instanceof HTMLDivElement && event.target.findParent("sd-content-editor") !== undefined) &&
-          event.key === "Enter"
-        ) ||
-        (
+        (event.ctrlKey && event.altKey && event.key === "ArrowDown")
+        || (
+          !(event.target instanceof HTMLTextAreaElement)
+          && !(event.target instanceof HTMLDivElement && event.target.findParent("sd-content-editor") !== undefined)
+          && event.key === "Enter"
+        )
+        || (
           (
-            event.target instanceof HTMLTextAreaElement ||
-            (event.target instanceof HTMLDivElement && event.target.findParent("sd-content-editor") !== undefined)
-          ) &&
-          event.ctrlKey && event.key === "Enter"
+            event.target instanceof HTMLTextAreaElement
+            || (event.target instanceof HTMLDivElement && event.target.findParent("sd-content-editor") !== undefined)
+          )
+          && event.ctrlKey && event.key === "Enter"
         )
       ) {
         event.preventDefault();
@@ -1704,8 +1704,8 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     }
 
     const cellEl = (
-      event.target.matches("._sheet > ._body > ._row > ._cell-group > ._cell") ? event.target :
-        event.target.findParent("._sheet > ._body > ._row > ._cell-group > ._cell")
+      event.target.matches("._sheet > ._body > ._row > ._cell-group > ._cell") ? event.target
+        : event.target.findParent("._sheet > ._body > ._row > ._cell-group > ._cell")
     );
 
     if (!cellEl) return;

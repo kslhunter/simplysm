@@ -18,19 +18,19 @@ export class DateTimeFormatUtil {
     const millisecond = args.millisecond;
     const offsetHour = args.timezoneOffsetMinutes !== undefined ? Math.floor(args.timezoneOffsetMinutes / 60) : undefined;
     const offsetMinute = args.timezoneOffsetMinutes !== undefined ? args.timezoneOffsetMinutes % 60 : undefined;
-    const week = (year !== undefined && month !== undefined && day !== undefined) ?
-      new Date(year, month - 1, day).getDay() :
-      undefined;
+    const week = (year !== undefined && month !== undefined && day !== undefined)
+      ? new Date(year, month - 1, day).getDay()
+      : undefined;
 
-    const weekString =
-      week === 0 ? "일" :
-        week === 1 ? "월" :
-          week === 2 ? "화" :
-            week === 3 ? "수" :
-              week === 4 ? "목" :
-                week === 5 ? "금" :
-                  week === 6 ? "토" :
-                    undefined;
+    const weekString
+      = week === 0 ? "일"
+        : week === 1 ? "월"
+          : week === 2 ? "화"
+            : week === 3 ? "수"
+              : week === 4 ? "목"
+                : week === 5 ? "금"
+                  : week === 6 ? "토"
+                    : undefined;
 
     let result = format;
     if (year !== undefined) {

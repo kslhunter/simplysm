@@ -83,8 +83,8 @@ describe("(node) core.FsWatcher", () => {
     }
   });
 
-  it("aggregateTimeout 옵션을 통해, 통합시간을 설정할 수 있다. " +
-    "마지막 변경에서 부터 이 시간이 지나는 동안 변경사항이 없으면, 변경 이벤트가 발생한다.", async () => {
+  it("aggregateTimeout 옵션을 통해, 통합시간을 설정할 수 있다. "
+    + "마지막 변경에서 부터 이 시간이 지나는 동안 변경사항이 없으면, 변경 이벤트가 발생한다.", async () => {
     const testFile1Path = path.resolve(testDirPath, "test1.txt");
     const testFile2Path = path.resolve(testDirPath, "test2.txt");
 

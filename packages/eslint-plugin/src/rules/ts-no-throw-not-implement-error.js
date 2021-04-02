@@ -47,8 +47,8 @@ module.exports = {
 
     function checkThrowArgument(node) {
       if (
-        node.type === AST_NODE_TYPES.AwaitExpression ||
-        node.type === AST_NODE_TYPES.YieldExpression
+        node.type === AST_NODE_TYPES.AwaitExpression
+        || node.type === AST_NODE_TYPES.YieldExpression
       ) {
         return;
       }

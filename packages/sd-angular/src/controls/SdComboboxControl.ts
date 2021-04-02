@@ -332,12 +332,12 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
 
     const relatedTarget = event.relatedTarget as HTMLElement | null;
     if (
-      relatedTarget != null &&
-      (
-        relatedTarget === textfieldEl ||
-        relatedTarget === dropdownEl ||
-        relatedTarget.findParent(textfieldEl) ||
-        relatedTarget.findParent(dropdownEl)
+      relatedTarget != null
+      && (
+        relatedTarget === textfieldEl
+        || relatedTarget === dropdownEl
+        || relatedTarget.findParent(textfieldEl)
+        || relatedTarget.findParent(dropdownEl)
       )
     ) {
       return;

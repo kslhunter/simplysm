@@ -93,8 +93,8 @@ export class SdCliClientCompiler extends EventEmitter {
             await SdProcessManager.spawnAsync(`ngsw-config ${relativeDistPath} ${ngswConfigPath} ${baseHref}`);
           }
 
-          const androidPlatform: ISdClientPackageConfigAndroidPlatform | undefined =
-            this._config.platforms?.single((item) => item.type === "android") as any;
+          const androidPlatform: ISdClientPackageConfigAndroidPlatform | undefined
+            = this._config.platforms?.single((item) => item.type === "android") as any;
           if (androidPlatform) {
             const cordovaProjectPath = path.resolve(this._rootPath, ".cordova");
 
@@ -238,9 +238,9 @@ export class SdCliClientCompiler extends EventEmitter {
 
     // 각종 경로
     const srcPath = SdCliPathUtil.getSourcePath(this._rootPath);
-    const distPath = this._platform.type !== "android" ?
-      SdCliPathUtil.getDistPath(this._rootPath) :
-      path.resolve(this._rootPath, ".cordova", "www");
+    const distPath = this._platform.type !== "android"
+      ? SdCliPathUtil.getDistPath(this._rootPath)
+      : path.resolve(this._rootPath, ".cordova", "www");
 
     // TSCONFIG
     const tsconfigFilePath = SdCliPathUtil.getTsConfigBuildFilePath(this._rootPath, "browser");
@@ -253,8 +253,8 @@ export class SdCliClientCompiler extends EventEmitter {
     const polyfillsPath = path.resolve(__dirname, `../../lib/polyfills.js`);
 
     // publicPath
-    const publicPath = (!watch && this._platform.type === "android") ? "/android_asset/www/" :
-      (this._platform.type !== "browser" ? `/__${this._platform.type}__` : "") + `/${packageKey}/`;
+    const publicPath = (!watch && this._platform.type === "android") ? "/android_asset/www/"
+      : (this._platform.type !== "browser" ? `/__${this._platform.type}__` : "") + `/${packageKey}/`;
 
     // DIST에 COPY할 NPM 설정 구성
     const distNpmConfig = ObjectUtil.clone(this._npmConfig);

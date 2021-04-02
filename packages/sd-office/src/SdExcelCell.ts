@@ -41,8 +41,8 @@ export class SdExcelCell {
     else if (typeof value === "number") {
       delete this.cellData.$.t;
       if (
-        this.style.numberFormat === "DateOnly" ||
-        this.style.numberFormat === "DateTime"
+        this.style.numberFormat === "DateOnly"
+        || this.style.numberFormat === "DateTime"
       ) {
         this.style.numberFormat = "number";
       }

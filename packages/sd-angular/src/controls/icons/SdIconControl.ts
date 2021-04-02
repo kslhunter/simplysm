@@ -221,9 +221,9 @@ export class SdIconControl implements OnChanges {
       }
 
       this.renderedIconHTML = this._sanitizer.bypassSecurityTrustHtml(
-        this._faIcon ?
-          this._faIcon.html.join("\n") :
-          "<svg class=\"" + config.replacementClass + "\" viewBox=\"0 0 448 512\"></svg><!--icon not found-->"
+        this._faIcon
+          ? this._faIcon.html.join("\n")
+          : "<svg class=\"" + config.replacementClass + "\" viewBox=\"0 0 448 512\"></svg><!--icon not found-->"
       );
     }
   }

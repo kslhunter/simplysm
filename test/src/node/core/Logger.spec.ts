@@ -34,8 +34,8 @@ describe("(node) core.Logger", () => {
     logger.log("log", obj1, obj2);
     sinon.assert.callCount(spy, 1);
     expect(spy.lastCall.args).to.deep.equal([
-      LoggerStyle.fgGray + "2019-01-01 01:01:01.001 " +
-      LoggerStyle.clear + "  LOG",
+      LoggerStyle.fgGray + "2019-01-01 01:01:01.001 "
+      + LoggerStyle.clear + "  LOG",
       "log",
       obj1,
       obj2,
@@ -73,8 +73,8 @@ describe("(node) core.Logger", () => {
     logger.warn("warn");
     sinon.assert.callCount(spy, 1);
     expect(spy.lastCall.args).to.deep.equal([
-      LoggerStyle.fgGray + "2019-01-01 01:01:01.001 " +
-      LoggerStyle.bgYellow + " WARN",
+      LoggerStyle.fgGray + "2019-01-01 01:01:01.001 "
+      + LoggerStyle.bgYellow + " WARN",
       "warn",
       LoggerStyle.clear
     ]);

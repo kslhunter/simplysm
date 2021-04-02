@@ -267,19 +267,19 @@ export class SdDropdownControl implements OnInit, OnDestroy {
     const relatedTarget = event.relatedTarget as HTMLElement | undefined;
     if (
       relatedTarget != null && (
-        relatedTarget === this.controlEl ||
-        relatedTarget === this.dropdownEl ||
-        relatedTarget.findParent(this.controlEl) ||
-        relatedTarget.findParent(this.dropdownEl)
+        relatedTarget === this.controlEl
+        || relatedTarget === this.dropdownEl
+        || relatedTarget.findParent(this.controlEl)
+        || relatedTarget.findParent(this.dropdownEl)
       )
     ) {
       return;
     }
 
     if (
-      relatedTarget == null &&
-      this._mouseoverEl instanceof HTMLElement &&
-      (this._mouseoverEl.findParent(this.controlEl) || this._mouseoverEl.findParent(this.dropdownEl))
+      relatedTarget == null
+      && this._mouseoverEl instanceof HTMLElement
+      && (this._mouseoverEl.findParent(this.controlEl) || this._mouseoverEl.findParent(this.dropdownEl))
     ) {
       const firstFocusableEl = this.controlEl.isFocusable() ? this.controlEl : this.controlEl.findFocusableAll()[0];
       if (typeof firstFocusableEl !== "undefined") {

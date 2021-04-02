@@ -101,21 +101,21 @@ describe("(common) core.types.DateOnly", () => {
     const d = new DateOnly(2019, 2, 3);
     expect(
       d.toFormatString(
-        "yyyy " +
-        "yy " +
-        "MM " +
-        "M " +
-        "ddd " +
-        "dd " +
-        "d "
+        "yyyy "
+        + "yy "
+        + "MM "
+        + "M "
+        + "ddd "
+        + "dd "
+        + "d "
       ),
-      "2019 " +
-      "19 " +
-      "02 " +
-      "2 " +
-      "목 " +
-      "03 " +
-      "3 "
+      "2019 "
+      + "19 "
+      + "02 "
+      + "2 "
+      + "목 "
+      + "03 "
+      + "3 "
     );
   });
 

@@ -68,10 +68,10 @@ export class SdCliLocalUpdater {
           .map((targetPath) => {
             // 대상의 명칭 추출
             const regexpText = packageGlobPath.replace(/[\\/.*]/g, (item) => (
-              item === "/" ? "[\\\\\\/]" :
-                item === "." ? "\\." :
-                  item === "*" ? "(.*)" :
-                    item
+              item === "/" ? "[\\\\\\/]"
+                : item === "." ? "\\."
+                  : item === "*" ? "(.*)"
+                    : item
             ));
             const targetNameMatch = new RegExp(regexpText).exec(targetPath);
             if (!targetNameMatch || typeof targetNameMatch[1] === "undefined") return undefined;

@@ -1,8 +1,8 @@
 const ts = require("typescript");
 const path = require("path");
 
-const multipleComponentsPerFileError =
-  "@simplysm/eslint-plugin currently only supports 1 Component per file";
+const multipleComponentsPerFileError
+  = "@simplysm/eslint-plugin currently only supports 1 Component per file";
 
 
 const rangeMap = new Map();
@@ -31,9 +31,9 @@ module.exports = {
         if (classDeclaration.decorators) {
           for (const decorator of classDeclaration.decorators) {
             if (
-              ts.isCallExpression(decorator.expression) &&
-              ts.isIdentifier(decorator.expression.expression) &&
-              decorator.expression.expression.text === "Component"
+              ts.isCallExpression(decorator.expression)
+              && ts.isIdentifier(decorator.expression.expression)
+              && decorator.expression.expression.text === "Component"
             ) {
               componentDecoratorNodes.push(decorator);
             }
@@ -63,9 +63,9 @@ module.exports = {
        * Ignore malformed component metadata
        */
       if (
-        !ts.isDecorator(componentDecoratorNode) ||
-        !ts.isCallExpression(componentDecoratorNode.expression) ||
-        componentDecoratorNode.expression.arguments.length !== 1
+        !ts.isDecorator(componentDecoratorNode)
+        || !ts.isCallExpression(componentDecoratorNode.expression)
+        || componentDecoratorNode.expression.arguments.length !== 1
       ) {
         return [text];
       }
@@ -81,15 +81,15 @@ module.exports = {
        */
       const templateProperty = metadata.properties.find((id) => id && id.name && id.name.getText() === "template");
       if (
-        metadata.properties.find((id) => id && id.name && id.name.getText() === "templateUrl") ||
-        !templateProperty
+        metadata.properties.find((id) => id && id.name && id.name.getText() === "templateUrl")
+        || !templateProperty
       ) {
         return [text];
       }
 
       if (
-        !ts.isPropertyAssignment(templateProperty) ||
-        !ts.isStringLiteralLike(templateProperty.initializer)
+        !ts.isPropertyAssignment(templateProperty)
+        || !ts.isStringLiteralLike(templateProperty.initializer)
       ) {
         return [text];
       }
@@ -146,8 +146,8 @@ module.exports = {
      * in the multiDimensionalMessages will not exist
      */
     if (
-      !messagesFromInlineTemplateHTML ||
-      !messagesFromInlineTemplateHTML.length
+      !messagesFromInlineTemplateHTML
+      || !messagesFromInlineTemplateHTML.length
     ) {
       return messagesFromComponentSource;
     }

@@ -63,7 +63,7 @@ module.exports = {
     "no-await-in-loop": "off",
     "sort-imports": "off",
     // "no-extra-boolean-cast": "off",
-    "operator-linebreak": ["error", "after"],
+    "operator-linebreak": ["error", "before"],
     "no-underscore-dangle": "off",
     "dot-location": ["error", "property"],
     "class-methods-use-this": "off",

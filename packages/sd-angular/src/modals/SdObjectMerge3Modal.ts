@@ -83,9 +83,9 @@ export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends Sd
     this.orgData = ObjectUtil.clone(this.data);
 
     this.keys = (
-      param.displayNameRecord ?
-        Object.keys(param.displayNameRecord) :
-        Object.keys(param.theirs).concat(Object.keys(param.origin)).concat(Object.keys(param.yours))
+      param.displayNameRecord
+        ? Object.keys(param.displayNameRecord)
+        : Object.keys(param.theirs).concat(Object.keys(param.origin)).concat(Object.keys(param.yours))
     )
       .distinct()
       .filter((key) => !(param.origin[key] === undefined && param.theirs[key] === undefined && param.yours[key] === undefined));
@@ -104,15 +104,15 @@ export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends Sd
   }
 
   public getIsOrgAllNotEqual(key: string): boolean {
-    return !ObjectUtil.equal(this.orgData.theirs[key], this.orgData.origin[key]) &&
-      !ObjectUtil.equal(this.orgData.theirs[key], this.orgData.yours[key]) &&
-      !ObjectUtil.equal(this.orgData.origin[key], this.orgData.yours[key]);
+    return !ObjectUtil.equal(this.orgData.theirs[key], this.orgData.origin[key])
+      && !ObjectUtil.equal(this.orgData.theirs[key], this.orgData.yours[key])
+      && !ObjectUtil.equal(this.orgData.origin[key], this.orgData.yours[key]);
   }
 
   public getIsAllNotEqual(key: string): boolean {
-    return !ObjectUtil.equal(this.data.theirs[key], this.data.origin[key]) &&
-      !ObjectUtil.equal(this.data.theirs[key], this.data.yours[key]) &&
-      !ObjectUtil.equal(this.data.origin[key], this.data.yours[key]);
+    return !ObjectUtil.equal(this.data.theirs[key], this.data.origin[key])
+      && !ObjectUtil.equal(this.data.theirs[key], this.data.yours[key])
+      && !ObjectUtil.equal(this.data.origin[key], this.data.yours[key]);
   }
 
   public getIsNotEqual(item1: TFlatType, item2: TFlatType): boolean {

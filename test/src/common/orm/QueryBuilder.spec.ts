@@ -513,9 +513,9 @@ DROP TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE]`.trim());
       ]);
     });
 
-    it("ADD COLUMN" +
-      "(NOT NULL 에 기본값이 설정되어 있으면, 일단 NULL 로 컬럼을 생성하고, 모든 값을 기본값으로 덮어쓴다음, " +
-      "컬럼을 NOT NULL 로 설정하는 3개의 쿼리가 반환됨)", () => {
+    it("ADD COLUMN"
+      + "(NOT NULL 에 기본값이 설정되어 있으면, 일단 NULL 로 컬럼을 생성하고, 모든 값을 기본값으로 덮어쓴다음, "
+      + "컬럼을 NOT NULL 로 설정하는 3개의 쿼리가 반환됨)", () => {
       expect(
         new QueryBuilder("mssql").addColumn({
           table: {
@@ -568,9 +568,9 @@ ALTER TABLE [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] DROP COLUMN [remark]`.trim());
       ]);
     });
 
-    it("MODIFY COLUMN" +
-      "(NOT NULL 에 기본값이 설정되어 있으면, 일단 NULL 로 컬럼을 생성하고, 모든 값을 기본값으로 덮어쓴다음, " +
-      "컬럼을 NOT NULL 로 설정하는 3개의 쿼리가 반환됨)", () => {
+    it("MODIFY COLUMN"
+      + "(NOT NULL 에 기본값이 설정되어 있으면, 일단 NULL 로 컬럼을 생성하고, 모든 값을 기본값으로 덮어쓴다음, "
+      + "컬럼을 NOT NULL 로 설정하는 3개의 쿼리가 반환됨)", () => {
       expect(
         new QueryBuilder("mssql").modifyColumn({
           table: {

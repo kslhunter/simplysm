@@ -14,9 +14,9 @@ export function PropertyGetSetDecoratorBase<O extends object, K extends keyof O>
     Reflect.defineMetadata(symbol, target[propertyName], target, propertyName as string);
 
     const getter = function (this: O): O[K] {
-      const value = prevGetter !== undefined ?
-        prevGetter.bind(this)() :
-        Reflect.getMetadata(symbol, this, propertyName as string);
+      const value = prevGetter !== undefined
+        ? prevGetter.bind(this)()
+        : Reflect.getMetadata(symbol, this, propertyName as string);
 
       if (arg.get !== undefined) {
         arg.get(this, propertyName, value);
@@ -26,9 +26,9 @@ export function PropertyGetSetDecoratorBase<O extends object, K extends keyof O>
     };
 
     const setter = function (this: O, value: O[K]): void {
-      const prevValue = prevGetter !== undefined ?
-        prevGetter.bind(this)() :
-        Reflect.getMetadata(symbol, this, propertyName as string);
+      const prevValue = prevGetter !== undefined
+        ? prevGetter.bind(this)()
+        : Reflect.getMetadata(symbol, this, propertyName as string);
 
       let realValue = value;
       if (arg.beforeSet !== undefined) {

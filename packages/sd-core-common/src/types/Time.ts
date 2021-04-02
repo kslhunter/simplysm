@@ -12,18 +12,18 @@ export class Time {
     if (arg1 === undefined) {
       const now = new Date();
       this._tick = (
-        now.getMilliseconds() +                 // ms
-        (now.getSeconds() * 1000) +             // s
-        (now.getMinutes() * 60 * 1000) +        // m
-        (now.getHours() * 60 * 60 * 1000)       // h
+        now.getMilliseconds()                 // ms
+        + (now.getSeconds() * 1000)             // s
+        + (now.getMinutes() * 60 * 1000)        // m
+        + (now.getHours() * 60 * 60 * 1000)       // h
       ) % (24 * 60 * 60 * 1000);
     }
     else if (arg2 !== undefined) {
       this._tick = (
-        (arg4 ?? 0) +                // ms
-        ((arg3 ?? 0) * 1000) +       // s
-        (arg2 * 60 * 1000) +         // m
-        (arg1 * 60 * 60 * 1000)      // h
+        (arg4 ?? 0)                // ms
+        + ((arg3 ?? 0) * 1000)       // s
+        + (arg2 * 60 * 1000)         // m
+        + (arg1 * 60 * 60 * 1000)      // h
       ) % (24 * 60 * 60 * 1000);
     }
     else {

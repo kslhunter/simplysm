@@ -467,10 +467,10 @@ export class FsUtil {
         }
 
         try {
-          const eventType: "add" | "change" | "unlink" =
-            (event === "add" || event === "addDir") ? "add" :
-              event === "unlink" || event === "unlinkDir" ? "unlink" :
-                "change";
+          const eventType: "add" | "change" | "unlink"
+            = (event === "add" || event === "addDir") ? "add"
+              : event === "unlink" || event === "unlinkDir" ? "unlink"
+                : "change";
 
           changeInfosQueue.push({ type: eventType, filePath });
 

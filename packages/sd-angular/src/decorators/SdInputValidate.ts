@@ -4,10 +4,10 @@ import { PropertyValidate, TValidateDef } from "@simplysm/sd-core-common";
 export function SdInputValidate(def: TValidateDef<any>): (target: any, propertyName: string, inputDescriptor?: PropertyDescriptor) => void {
   const fn = (v: any): any => {
     const isForBoolean = (
-      def === Boolean ||
-      (def instanceof Array && def.includes(Boolean)) ||
-      def["type"] === Boolean ||
-      (def["type"] instanceof Array && def["type"].includes(Boolean))
+      def === Boolean
+      || (def instanceof Array && def.includes(Boolean))
+      || def["type"] === Boolean
+      || (def["type"] instanceof Array && def["type"].includes(Boolean))
     );
 
     if (isForBoolean && v === "") {
@@ -15,8 +15,8 @@ export function SdInputValidate(def: TValidateDef<any>): (target: any, propertyN
     }
 
     const isForNumber = (
-      def === Number ||
-      def["type"] === Number
+      def === Number
+      || def["type"] === Number
     );
 
     if (isForNumber && !Number.isNaN(Number(v))) {

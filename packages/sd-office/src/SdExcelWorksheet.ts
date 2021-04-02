@@ -65,8 +65,8 @@ export class SdExcelWorksheet {
 
     // merge
     if (
-      this.sheetData.worksheet.mergeCells?.[0]?.mergeCell !== undefined &&
-      this.sheetData.worksheet.mergeCells[0].mergeCell.length > 0
+      this.sheetData.worksheet.mergeCells?.[0]?.mergeCell !== undefined
+      && this.sheetData.worksheet.mergeCells[0].mergeCell.length > 0
     ) {
       const mergeDataList = this.sheetData.worksheet.mergeCells[0].mergeCell;
       for (const mergeData of mergeDataList) {
@@ -83,8 +83,8 @@ export class SdExcelWorksheet {
     // dimension
     if (this.sheetData.worksheet.dimension?.[0]?.$?.ref !== undefined) {
       const dimension = SdExcelUtil.getRangeAddressRowCol(this.sheetData.worksheet.dimension[0].$.ref);
-      this.sheetData.worksheet.dimension[0].$.ref =
-        SdExcelUtil.getRangeAddress(dimension.fromRow, dimension.fromCol, dimension.toRow + 1, dimension.toCol);
+      this.sheetData.worksheet.dimension[0].$.ref
+        = SdExcelUtil.getRangeAddress(dimension.fromRow, dimension.fromCol, dimension.toRow + 1, dimension.toCol);
     }
 
     // drawing
@@ -147,8 +147,8 @@ export class SdExcelWorksheet {
 
     // merge
     if (
-      this.sheetData.worksheet.mergeCells?.[0]?.mergeCell !== undefined &&
-      this.sheetData.worksheet.mergeCells[0].mergeCell.length > 0
+      this.sheetData.worksheet.mergeCells?.[0]?.mergeCell !== undefined
+      && this.sheetData.worksheet.mergeCells[0].mergeCell.length > 0
     ) {
       const removeMergeDataList: any[] = [];
       const mergeDataList: any[] = this.sheetData.worksheet.mergeCells[0].mergeCell;
@@ -157,8 +157,8 @@ export class SdExcelWorksheet {
         const newFromRow = currRowCol.fromRow - (currRowCol.fromRow > row ? 1 : 0);
         const newToRow = currRowCol.toRow - (currRowCol.toRow > row ? 1 : 0);
         if (
-          currRowCol.fromCol === currRowCol.toCol &&
-          newFromRow === newToRow
+          currRowCol.fromCol === currRowCol.toCol
+          && newFromRow === newToRow
         ) {
           removeMergeDataList.push(mergeData);
         }
@@ -180,8 +180,8 @@ export class SdExcelWorksheet {
     // dimension
     if (this.sheetData.worksheet.dimension?.[0]?.$?.ref !== undefined) {
       const dimension = SdExcelUtil.getRangeAddressRowCol(this.sheetData.worksheet.dimension[0].$.ref);
-      this.sheetData.worksheet.dimension[0].$.ref =
-        SdExcelUtil.getRangeAddress(dimension.fromRow, dimension.fromCol, dimension.toRow - 1, dimension.toCol);
+      this.sheetData.worksheet.dimension[0].$.ref
+        = SdExcelUtil.getRangeAddress(dimension.fromRow, dimension.fromCol, dimension.toRow - 1, dimension.toCol);
     }
 
     // drawing

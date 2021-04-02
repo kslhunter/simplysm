@@ -433,9 +433,9 @@ export class SdExcelWorkbook {
       for (const headerColumn of headerColumns) {
         headerColumnIndexMap.set(
           headerColumn[0],
-          headerColumnIndexMap.has(headerColumn[0]) ?
-            Math.max(headerColumnIndexMap.get(headerColumn[0])!, headerColumn[1]) :
-            headerColumn[1]
+          headerColumnIndexMap.has(headerColumn[0])
+            ? Math.max(headerColumnIndexMap.get(headerColumn[0])!, headerColumn[1])
+            : headerColumn[1]
         );
       }
 

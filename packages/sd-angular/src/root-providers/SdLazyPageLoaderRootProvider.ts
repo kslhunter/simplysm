@@ -26,9 +26,9 @@ export class SdLazyPageLoaderRootProvider {
     if (this._toLoad.has(code)) {
       const moduleLoader = this._toLoad.get(code)!;
       const moduleOrFactory = await moduleLoader();
-      const moduleFactory = moduleOrFactory instanceof NgModuleFactory ?
-        moduleOrFactory :
-        await this._compiler.compileModuleAsync(moduleOrFactory);
+      const moduleFactory = moduleOrFactory instanceof NgModuleFactory
+        ? moduleOrFactory
+        : await this._compiler.compileModuleAsync(moduleOrFactory);
       const moduleRef = moduleFactory.create(this._moduleRef.injector);
 
       const pageName = StringUtil.toPascalCase(code.split(".").last()!) + "LazyPage";

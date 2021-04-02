@@ -32,8 +32,8 @@ export class SdCollapseControl implements AfterContentInit {
   }
 
   public get contentTransition(): string | undefined {
-    return this.open === undefined ? undefined :
-      this.open ? "margin-top .1s ease-out" : "margin-top .1s ease-in";
+    return this.open === undefined ? undefined
+      : this.open ? "margin-top .1s ease-out" : "margin-top .1s ease-in";
   }
 
   public constructor(private readonly _elRef: ElementRef) {

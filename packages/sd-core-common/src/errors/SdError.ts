@@ -9,11 +9,11 @@ export class SdError extends Error {
   public constructor(arg1?: Error | string, arg2?: string) {
     if (typeof arg1 === "object" || typeof arg2 === "string") {
       super(
-        (arg2 ?? "") +
-        (
-          typeof arg1 === "object" ? ` => ${arg1.message}` :
-            typeof arg1 === "string" ? ` => ${arg1}` :
-              "처리되지 않은 예외가 발생하였습니다."
+        (arg2 ?? "")
+        + (
+          typeof arg1 === "object" ? ` => ${arg1.message}`
+            : typeof arg1 === "string" ? ` => ${arg1}`
+              : "처리되지 않은 예외가 발생하였습니다."
         )
       );
     }

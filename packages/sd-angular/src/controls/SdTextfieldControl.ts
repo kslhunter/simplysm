@@ -397,11 +397,11 @@ export class SdTextfieldControl {
   public inputElRef?: ElementRef<HTMLTextAreaElement | HTMLInputElement>;
 
   public get controlType(): string {
-    return this.type === "number" ? "text" :
-      this.type === "datetime" ? "datetime-local" :
-        this.type === "datetime-sec" ? "datetime-local" :
-          this.type === "time-sec" ? "time" :
-            this.type;
+    return this.type === "number" ? "text"
+      : this.type === "datetime" ? "datetime-local"
+        : this.type === "datetime-sec" ? "datetime-local"
+          : this.type === "time-sec" ? "time"
+            : this.type;
   }
 
   public get controlValue(): string {
@@ -452,9 +452,9 @@ export class SdTextfieldControl {
 
   public get inputFullStyle(): string | undefined {
     if (this.multiline) {
-      const controlResize = this.resize === "vertical" ? "vertical" :
-        this.resize === "horizontal" ? "horizontal" :
-          this.resize ? undefined : "none";
+      const controlResize = this.resize === "vertical" ? "vertical"
+        : this.resize === "horizontal" ? "horizontal"
+          : this.resize ? undefined : "none";
 
       if (controlResize !== undefined) {
         return `resize: ${controlResize};` + this.inputStyle;

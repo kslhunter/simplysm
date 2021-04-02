@@ -26,8 +26,8 @@ export class SdAngularUtil {
       let result = "`" + results[i].css.toString() + "`";
       const prev = matches[i];
 
-      const diffCount = Array.from(prev).filter((item) => item === "\n").length -
-        Array.from(result).filter((item) => item === "\n").length;
+      const diffCount = Array.from(prev).filter((item) => item === "\n").length
+        - Array.from(result).filter((item) => item === "\n").length;
 
       for (let j = 0; j < diffCount; j++) {
         result += os.EOL;

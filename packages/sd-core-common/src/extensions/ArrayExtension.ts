@@ -293,14 +293,14 @@ declare global {
         const pn = selector !== undefined ? selector(n) : n;
         const pp = selector !== undefined ? selector(p) : p;
 
-        const cpn = pn instanceof DateOnly ? pn.tick :
-          pn instanceof DateTime ? pn.tick :
-            pn instanceof Time ? pn.tick :
-              pn;
-        const cpp = pp instanceof DateOnly ? pn.tick :
-          pp instanceof DateTime ? pp.tick :
-            pp instanceof Time ? pp.tick :
-              pp;
+        const cpn = pn instanceof DateOnly ? pn.tick
+          : pn instanceof DateTime ? pn.tick
+            : pn instanceof Time ? pn.tick
+              : pn;
+        const cpp = pp instanceof DateOnly ? pn.tick
+          : pp instanceof DateTime ? pp.tick
+            : pp instanceof Time ? pp.tick
+              : pp;
 
         if (typeof cpn === "string" && typeof cpp === "string") {
           return cpp.localeCompare(cpn);
@@ -321,14 +321,14 @@ declare global {
         const pn = selector !== undefined ? selector(n) : n;
         const pp = selector !== undefined ? selector(p) : p;
 
-        const cpn = pn instanceof DateOnly ? pn.tick :
-          pn instanceof DateTime ? pn.tick :
-            pn instanceof Time ? pn.tick :
-              pn;
-        const cpp = pp instanceof DateOnly ? pn.tick :
-          pp instanceof DateTime ? pp.tick :
-            pp instanceof Time ? pp.tick :
-              pp;
+        const cpn = pn instanceof DateOnly ? pn.tick
+          : pn instanceof DateTime ? pn.tick
+            : pn instanceof Time ? pn.tick
+              : pn;
+        const cpp = pp instanceof DateOnly ? pn.tick
+          : pp instanceof DateTime ? pp.tick
+            : pp instanceof Time ? pp.tick
+              : pp;
 
         if (typeof cpn === "string" && typeof cpp === "string") {
           return cpn.localeCompare(cpp);

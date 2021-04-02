@@ -130,19 +130,19 @@ export class SdCliGenDbMigration {
               const dataType = dataTypeStr.split("(")[0].toLowerCase();
 
               const lengthStr = (dataType === "nvarchar" || dataType === "binary") ? (/\((.*)\)/).exec(dataTypeStr)?.[1]?.trim() : undefined;
-              const length = lengthStr !== undefined ? (lengthStr === "MAX" ? -1 : NumberUtil.parseInt(lengthStr)) :
-                dataType === "ntext" ? 1073741823 :
-                  undefined;
+              const length = lengthStr !== undefined ? (lengthStr === "MAX" ? -1 : NumberUtil.parseInt(lengthStr))
+                : dataType === "ntext" ? 1073741823
+                  : undefined;
 
               const precisionStr = (dataType !== "nvarchar" && dataType !== "binary") ? (/\((.*)[,)]/).exec(dataTypeStr)?.[1]?.trim() : undefined;
-              const precision = precisionStr !== undefined ? NumberUtil.parseInt(precisionStr) :
-                dataType === "bigint" ? 19 :
-                  undefined;
+              const precision = precisionStr !== undefined ? NumberUtil.parseInt(precisionStr)
+                : dataType === "bigint" ? 19
+                  : undefined;
 
               const digitsStr = (/,(.*)\)/).exec(dataTypeStr)?.[1]?.trim();
-              const digits = digitsStr !== undefined ? NumberUtil.parseInt(digitsStr) :
-                dataType === "bigint" ? 0 :
-                  undefined;
+              const digits = digitsStr !== undefined ? NumberUtil.parseInt(digitsStr)
+                : dataType === "bigint" ? 0
+                  : undefined;
 
               return {
                 name: item.name,

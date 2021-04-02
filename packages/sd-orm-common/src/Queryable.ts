@@ -889,9 +889,9 @@ export class Queryable<D extends DbContext, T> {
 
   public async countAsync(): Promise<number> {
     if (this._def.distinct) {
-      throw new Error("distinct 이후엔 'countAsync'를 사용할 수 없습니다." +
-        " 사용하려면 distinct와 countAsync 사이에 wrap을 먼저 사용하거나," +
-        " distinct대신 groupBy와 qh.count 로 수동으로 처리하세요.");
+      throw new Error("distinct 이후엔 'countAsync'를 사용할 수 없습니다."
+        + " 사용하려면 distinct와 countAsync 사이에 wrap을 먼저 사용하거나,"
+        + " distinct대신 groupBy와 qh.count 로 수동으로 처리하세요.");
     }
 
     const queryable = this.select(() => ({ cnt: new QueryUnit(Number, "COUNT(*)") }));/*.lock();*/
@@ -976,9 +976,9 @@ export class Queryable<D extends DbContext, T> {
             type: "select",
             select: {
               [this.db.qb.wrap("id")]:
-                aiColNames.length === 1 && !Object.keys(queryDef.record).includes(this.db.qb.wrap(aiColNames[0])) ?
-                  "LAST_INSERT_ID()" :
-                  "0"
+                aiColNames.length === 1 && !Object.keys(queryDef.record).includes(this.db.qb.wrap(aiColNames[0]))
+                  ? "LAST_INSERT_ID()"
+                  : "0"
             }
           };
 
@@ -1292,9 +1292,9 @@ export class Queryable<D extends DbContext, T> {
 
       const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
 
-      const insertRecord = insertObjOrFwd ?
-        (typeof insertObjOrFwd === "function" ? insertObjOrFwd() : insertObjOrFwd) :
-        (typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd);
+      const insertRecord = insertObjOrFwd
+        ? (typeof insertObjOrFwd === "function" ? insertObjOrFwd() : insertObjOrFwd)
+        : (typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd);
 
       const result = (
         await this.db.executeDefsAsync(
@@ -1308,9 +1308,9 @@ export class Queryable<D extends DbContext, T> {
               type: "select",
               select: {
                 [this.db.qb.wrap("id")]:
-                  aiColNames.length === 1 && !Object.keys(insertRecord).includes(aiColNames[0]) ?
-                    "LAST_INSERT_ID()" :
-                    "0"
+                  aiColNames.length === 1 && !Object.keys(insertRecord).includes(aiColNames[0])
+                    ? "LAST_INSERT_ID()"
+                    : "0"
               }
             }
           ],

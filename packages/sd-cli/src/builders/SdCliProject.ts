@@ -159,16 +159,16 @@ export class SdCliProject {
                     }
 
                     if (
-                      buildablePackage.config.platforms === undefined ||
-                      buildablePackage.config.platforms.some((platform) => platform.type === "browser")
+                      buildablePackage.config.platforms === undefined
+                      || buildablePackage.config.platforms.some((platform) => platform.type === "browser")
                     ) {
                       const publicPath = "/" + clientPackageName.split("/").last() + "/";
                       clientHrefs.push(url + publicPath);
                     }
 
                     if (
-                      buildablePackage.config.platforms?.some((platform) => platform.type === "windows") &&
-                      !isFirstComplete
+                      buildablePackage.config.platforms?.some((platform) => platform.type === "windows")
+                      && !isFirstComplete
                     ) {
                       const platformConfig = buildablePackage.config.platforms.single((platform) => platform.type === "windows")! as ISdClientPackageConfigWindowsPlatform;
                       const publicPath = "/__windows__/" + clientPackageName.split("/").last() + "/";
@@ -180,8 +180,8 @@ export class SdCliProject {
 
 
                     if (
-                      buildablePackage.config.platforms?.some((platform) => platform.type === "android") &&
-                      !isFirstComplete
+                      buildablePackage.config.platforms?.some((platform) => platform.type === "android")
+                      && !isFirstComplete
                     ) {
                       const publicPath = "/__android__/" + clientPackageName.split("/").last() + "/";
                       clientHrefs.push(url + publicPath);

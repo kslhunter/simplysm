@@ -438,9 +438,9 @@ export class DbModelPage implements OnInit {
 
     if (this.searchText !== undefined) {
       result = result.filter((item) => (
-        item.className?.toLowerCase().includes(this.searchText!.toLowerCase()) === true ||
-        item.relativeDirPath?.toLowerCase().includes(this.searchText!.toLowerCase()) === true ||
-        item.description?.toLowerCase().includes(this.searchText!.toLowerCase()) === true
+        item.className?.toLowerCase().includes(this.searchText!.toLowerCase()) === true
+        || item.relativeDirPath?.toLowerCase().includes(this.searchText!.toLowerCase()) === true
+        || item.description?.toLowerCase().includes(this.searchText!.toLowerCase()) === true
       ));
     }
 
@@ -603,9 +603,9 @@ export class DbModelPage implements OnInit {
       const fkDecArgs = decorators[0].expression["arguments"];
 
       const targetModelClassName = fkDecArgs[1].body.text;
-      const targetModelRelativeDirPath = targetModelClassName !== className ?
-        importRelativeDirPathMap.get(targetModelClassName) :
-        relativeDirPath;
+      const targetModelRelativeDirPath = targetModelClassName !== className
+        ? importRelativeDirPathMap.get(targetModelClassName)
+        : relativeDirPath;
 
       const columnNames = fkDecArgs[0].elements.map((item: any) => item.text);
       const targetModelKey = this._getModelKey({
@@ -627,9 +627,9 @@ export class DbModelPage implements OnInit {
       const fktDecArgs = decorators[0].expression["arguments"];
 
       const sourceModelClassName = fktDecArgs[0].body.text;
-      const sourceModelRelativeDirPath = sourceModelClassName !== className ?
-        importRelativeDirPathMap.get(sourceModelClassName) :
-        relativeDirPath;
+      const sourceModelRelativeDirPath = sourceModelClassName !== className
+        ? importRelativeDirPathMap.get(sourceModelClassName)
+        : relativeDirPath;
       const sourceModelKey = this._getModelKey({
         relativeDirPath: sourceModelRelativeDirPath,
         className: sourceModelClassName
@@ -752,9 +752,9 @@ export class DbModelPage implements OnInit {
   }
 
   private _getModelKey(model: { relativeDirPath: string | undefined; className: string | undefined }): string | undefined {
-    return StringUtil.isNullOrEmpty(model.className) ? undefined :
-      StringUtil.isNullOrEmpty(model.relativeDirPath) ? model.className :
-        `${model.relativeDirPath}/${model.className}`;
+    return StringUtil.isNullOrEmpty(model.className) ? undefined
+      : StringUtil.isNullOrEmpty(model.relativeDirPath) ? model.className
+        : `${model.relativeDirPath}/${model.className}`;
   }
 
   // endregion
@@ -864,9 +864,9 @@ export class DbModelPage implements OnInit {
           displayName: "컬럼",
           type: Array,
           notnull: true,
-          validator: (value) => value.length > 0 &&
-            value.every((val) => val !== undefined && model.columns.map((col) => col.id).includes(val)) &&
-            !value.groupBy((val) => val).some((g) => g.values.length > 1)
+          validator: (value) => value.length > 0
+            && value.every((val) => val !== undefined && model.columns.map((col) => col.id).includes(val))
+            && !value.groupBy((val) => val).some((g) => g.values.length > 1)
         },
         targetModelId: {
           displayName: "타겟모델",
@@ -895,10 +895,10 @@ export class DbModelPage implements OnInit {
           const targetModelPkColumn = targetModelPkColumns[i];
           const fkColumn = model.columns.single((item) => item.id === fk.columnIds[i])!;
           if (
-            targetModelPkColumn.dataType !== fkColumn.dataType ||
-            targetModelPkColumn.length !== fkColumn.length ||
-            targetModelPkColumn.precision !== fkColumn.precision ||
-            targetModelPkColumn.digits !== fkColumn.digits
+            targetModelPkColumn.dataType !== fkColumn.dataType
+            || targetModelPkColumn.length !== fkColumn.length
+            || targetModelPkColumn.precision !== fkColumn.precision
+            || targetModelPkColumn.digits !== fkColumn.digits
           ) {
             throw new Error(`모델 '${modelKey}'의 FK '${fk.name!}'의 컬럼이 타겟모델의 PK와 맞지 않습니다. (타입)`);
           }
@@ -943,9 +943,9 @@ export class DbModelPage implements OnInit {
           validator: (value) => (
             value.groupBy((item) => item.order)
               .filter((item) => item.values.length > 1)
-              .length === 0 &&
-            value.every((item) => item.columnId !== undefined && model.columns.map((item1) => item1.id).includes(item.columnId)) &&
-            value.every((item) => ["ASC", "DESC"].includes(item.orderBy))
+              .length === 0
+            && value.every((item) => item.columnId !== undefined && model.columns.map((item1) => item1.id).includes(item.columnId))
+            && value.every((item) => ["ASC", "DESC"].includes(item.orderBy))
           )
         }
       });
@@ -967,9 +967,9 @@ export class DbModelPage implements OnInit {
       const importMap = new Map<string, string[]>();
       const addImport = (key: string, val: string): void => {
         if (
-          key.startsWith(".") &&
-          path.resolve(modelsDirPath, model.relativeDirPath + "/" + model.className) ===
-          path.resolve(modelsDirPath, model.relativeDirPath!, key)
+          key.startsWith(".")
+          && path.resolve(modelsDirPath, model.relativeDirPath + "/" + model.className)
+          === path.resolve(modelsDirPath, model.relativeDirPath!, key)
         ) {
           return;
         }
@@ -1008,12 +1008,12 @@ export class DbModelPage implements OnInit {
         const fkTargetModel = this.data!.models.single((item) => item.id === fk.targetModelId);
         if (!fkTargetModel) continue;
 
-        const fkTargetModelPath = StringUtil.isNullOrEmpty(fkTargetModel.relativeDirPath) ?
-          fkTargetModel.className! :
-          path.join(fkTargetModel.relativeDirPath, fkTargetModel.className!);
+        const fkTargetModelPath = StringUtil.isNullOrEmpty(fkTargetModel.relativeDirPath)
+          ? fkTargetModel.className!
+          : path.join(fkTargetModel.relativeDirPath, fkTargetModel.className!);
 
-        let relativePath = StringUtil.isNullOrEmpty(model.relativeDirPath) ? fkTargetModelPath :
-          path.relative(model.relativeDirPath, fkTargetModelPath);
+        let relativePath = StringUtil.isNullOrEmpty(model.relativeDirPath) ? fkTargetModelPath
+          : path.relative(model.relativeDirPath, fkTargetModelPath);
         relativePath = (relativePath.startsWith(".") ? relativePath : "./" + relativePath).replace(/\\/g, "/");
 
         addImport(relativePath, fkTargetModel.className!);
@@ -1023,12 +1023,12 @@ export class DbModelPage implements OnInit {
         const fktSourceModel = this.data!.models.single((item) => item.id === fkt.sourceModelId);
         if (!fktSourceModel) continue;
 
-        const fktSourceModelPath = StringUtil.isNullOrEmpty(fktSourceModel.relativeDirPath) ?
-          fktSourceModel.className! :
-          path.join(fktSourceModel.relativeDirPath, fktSourceModel.className!);
+        const fktSourceModelPath = StringUtil.isNullOrEmpty(fktSourceModel.relativeDirPath)
+          ? fktSourceModel.className!
+          : path.join(fktSourceModel.relativeDirPath, fktSourceModel.className!);
 
-        let relativePath = StringUtil.isNullOrEmpty(model.relativeDirPath) ? fktSourceModelPath :
-          path.relative(model.relativeDirPath, fktSourceModelPath);
+        let relativePath = StringUtil.isNullOrEmpty(model.relativeDirPath) ? fktSourceModelPath
+          : path.relative(model.relativeDirPath, fktSourceModelPath);
         relativePath = (relativePath.startsWith(".") ? relativePath : "./" + relativePath).replace(/\\/g, "/");
 
         addImport(relativePath, fktSourceModel.className!);
@@ -1076,8 +1076,8 @@ export class DbModelPage implements OnInit {
         for (const idx of columnDef.indexes) {
           oneColumnText += "  @Index(";
           if (
-            (idx.name !== columnDef.name || !idx.onlyOne) ||
-            idx.orderBy === "DESC"
+            (idx.name !== columnDef.name || !idx.onlyOne)
+            || idx.orderBy === "DESC"
           ) {
             oneColumnText += "{ ";
             oneColumnText += (idx.name !== columnDef.name || !idx.onlyOne) ? `name: "${idx.name!}", ` : "";
@@ -1095,9 +1095,9 @@ export class DbModelPage implements OnInit {
 
         if (["TEXT", "DECIMAL", "STRING", "BINARY"].includes(columnDef.dataType!)) {
           oneColumnText += `, dataType: { type: "${columnDef.dataType!}"`;
-          oneColumnText += columnDef.length === undefined ? "" :
-            columnDef.length === "MAX" ? `, length: "MAX"` :
-              `, length: ${columnDef.length}`;
+          oneColumnText += columnDef.length === undefined ? ""
+            : columnDef.length === "MAX" ? `, length: "MAX"`
+              : `, length: ${columnDef.length}`;
           oneColumnText += columnDef.precision !== undefined ? `, precision: ${columnDef.precision}` : "";
           oneColumnText += columnDef.digits !== undefined ? `, digits: ${columnDef.digits}` : "";
           oneColumnText += ` }`;
@@ -1109,10 +1109,10 @@ export class DbModelPage implements OnInit {
         oneColumnText += " })\r\n";
 
         // COLUMN
-        const dataTypeText = columnDef.dataType === "TEXT" || columnDef.dataType === "STRING" ? "string" :
-          columnDef.dataType === "DECIMAL" ? "number" :
-            columnDef.dataType === "BINARY" ? "Buffer" :
-              columnDef.dataType;
+        const dataTypeText = columnDef.dataType === "TEXT" || columnDef.dataType === "STRING" ? "string"
+          : columnDef.dataType === "DECIMAL" ? "number"
+            : columnDef.dataType === "BINARY" ? "Buffer"
+              : columnDef.dataType;
 
         oneColumnText += `  public ${columnDef.name!}${(columnDef.nullable || columnDef.autoIncrement) ? "?" : "!"}: ${dataTypeText!};`;
 
@@ -1145,20 +1145,20 @@ export class DbModelPage implements OnInit {
       const fktText = fktTexts.join("\r\n\r\n");
 
       // 파일 쓰기
-      const contents = importText + "\r\n\r\n" +
-        tableDecText + "\r\n" +
-        classText + "\r\n" +
-        (
-          columnText + "\r\n" +
-          (fkText ? "\r\n  //------------------------------------\r\n\r\n" + fkText + "\r\n" : "") +
-          (fktText ? "\r\n  //------------------------------------\r\n\r\n" + fktText + "\r\n" : "")
-        ) +
-        classTextEnd +
-        "\r\n";
+      const contents = importText + "\r\n\r\n"
+        + tableDecText + "\r\n"
+        + classText + "\r\n"
+        + (
+          columnText + "\r\n"
+          + (fkText ? "\r\n  //------------------------------------\r\n\r\n" + fkText + "\r\n" : "")
+          + (fktText ? "\r\n  //------------------------------------\r\n\r\n" + fktText + "\r\n" : "")
+        )
+        + classTextEnd
+        + "\r\n";
 
-      const relativeFilePath = StringUtil.isNullOrEmpty(model.relativeDirPath) ?
-        model.className + ".ts" :
-        path.join(model.relativeDirPath, model.className + ".ts");
+      const relativeFilePath = StringUtil.isNullOrEmpty(model.relativeDirPath)
+        ? model.className + ".ts"
+        : path.join(model.relativeDirPath, model.className + ".ts");
 
       files.push({ relativeFilePath, contents });
     }

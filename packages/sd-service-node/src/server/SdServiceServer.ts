@@ -49,12 +49,12 @@ export class SdServiceServer extends EventEmitter {
         await this.closeAsync();
       }
 
-      this._httpServer = this.options.ssl ?
-        https.createServer({
+      this._httpServer = this.options.ssl
+        ? https.createServer({
           pfx: await FsUtil.readFileBufferAsync(this.options.ssl.pfx),
           passphrase: this.options.ssl.passphrase
-        }) :
-        http.createServer();
+        })
+        : http.createServer();
 
       this._wsServer = new WebSocket.Server({
         server: this._httpServer
@@ -191,9 +191,9 @@ export class SdServiceServer extends EventEmitter {
       }
 
       if (
-        (orgError && pwdError) ||
-        (availablePassword === undefined && orgError) ||
-        (availableOrigins === undefined && pwdError)
+        (orgError && pwdError)
+        || (availablePassword === undefined && orgError)
+        || (availableOrigins === undefined && pwdError)
       ) {
         throw new Error(`인증되지 않은 클라이언트에서 요청을 받았습니다: ${connReq.headers.origin ?? ""}`);
       }
@@ -323,9 +323,9 @@ export class SdServiceServer extends EventEmitter {
 
     if (req.command === "md5") {
       const rawFilePath = req.params[0] as string;
-      const filePath = rawFilePath.startsWith("/") ?
-        path.resolve(this.rootPath, rawFilePath.slice(1).replace(/\\/g, "/")) :
-        path.resolve(this.rootPath, rawFilePath.replace(/\\/g, "/"));
+      const filePath = rawFilePath.startsWith("/")
+        ? path.resolve(this.rootPath, rawFilePath.slice(1).replace(/\\/g, "/"))
+        : path.resolve(this.rootPath, rawFilePath.replace(/\\/g, "/"));
 
       const md5 = FsUtil.exists(filePath) ? await FsUtil.getMd5Async(filePath) : undefined;
 

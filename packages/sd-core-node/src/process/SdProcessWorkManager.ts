@@ -44,8 +44,8 @@ export class SdProcessWorkManager {
 
   public async getNextWorkerAsync(): Promise<SdProcessWorker> {
     if (
-      this._isPrepared ||
-      (this._max !== undefined && this._workerCount >= this._max)
+      this._isPrepared
+      || (this._max !== undefined && this._workerCount >= this._max)
     ) {
       await Wait.true(() => this._workerCount <= this.workers.length);
       const minProcessingCount = this.workers.min((item) => item.processingCount);

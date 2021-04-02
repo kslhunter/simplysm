@@ -385,8 +385,8 @@ export class SdSelectControl implements DoCheck {
   public onPopupKeydown(event: KeyboardEvent): void {
     if (
       !event.ctrlKey && !event.altKey && (
-        event.key === "ArrowDown" ||
-        event.key === "ArrowUp"
+        event.key === "ArrowDown"
+        || event.key === "ArrowUp"
       )
     ) {
       event.preventDefault();

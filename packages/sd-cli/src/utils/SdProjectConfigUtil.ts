@@ -53,16 +53,16 @@ export class SdProjectConfigUtil {
     else if (config.type === "library") {
       if (config.targets !== undefined) {
         if (
-          !(config.targets instanceof Array) ||
-          !config.targets.every((item: any) => ["node", "browser"].includes(item))
+          !(config.targets instanceof Array)
+          || !config.targets.every((item: any) => ["node", "browser"].includes(item))
         ) {
           throw new Error("패키지 '" + packageName + "'의 'targets'설정이 잘 못 되었습니다.");
         }
       }
       if (config.polyfills !== undefined) {
         if (
-          !(config.polyfills instanceof Array) ||
-          !config.polyfills.every((item: any) => typeof item === "string")
+          !(config.polyfills instanceof Array)
+          || !config.polyfills.every((item: any) => typeof item === "string")
         ) {
           throw new Error("패키지 '" + packageName + "'의 'polyfills'설정이 잘 못 되었습니다.");
         }
@@ -75,8 +75,8 @@ export class SdProjectConfigUtil {
     }
     else if (config.type === "client") {
       if (
-        (config.server === undefined || typeof config.server !== "string" || config.server === "") &&
-        (config.devServer === undefined)
+        (config.server === undefined || typeof config.server !== "string" || config.server === "")
+        && (config.devServer === undefined)
       ) {
         throw new Error("패키지 '" + packageName + "'는 'server' 혹은 'devServer' 설정이 반드시 있어야 합니다.");
       }
@@ -87,33 +87,33 @@ export class SdProjectConfigUtil {
       }
       if (config.env !== undefined) {
         if (
-          (typeof config.env !== "object") ||
-          (!Object.keys(config.env).every((item: string | number) => typeof item === "string")) ||
-          (!Object.values(config.env).every((item) => typeof item === "string"))
+          (typeof config.env !== "object")
+          || (!Object.keys(config.env).every((item: string | number) => typeof item === "string"))
+          || (!Object.values(config.env).every((item) => typeof item === "string"))
         ) {
           throw new Error("패키지 '" + packageName + "'의 'env'설정이 잘 못 되었습니다.");
         }
       }
       if (config.platform !== undefined) {
         if (
-          typeof config.platform !== "object" ||
-          !["browser", "windows", "android"].includes(config.platform.type)
+          typeof config.platform !== "object"
+          || !["browser", "windows", "android"].includes(config.platform.type)
         ) {
           throw new Error("패키지 '" + packageName + "'의 'platform'설정이 잘 못 되었습니다.");
         }
 
         if (config.platform.type === "android") {
           if (
-            (typeof config.platform.appId !== "string") ||
-            (typeof config.platform.appName !== "string") ||
-            (config.plugins !== undefined && ((!(config.plugins instanceof Array)) || !(config.plugins.every((item: any) => typeof item === "string")))) ||
-            (config.icon !== undefined && typeof config.icon !== "string") ||
-            (config.sign !== undefined && (
-              (typeof config.sign.keystore !== "string") ||
-              (typeof config.sign.storePassword !== "string") ||
-              (typeof config.sign.alias !== "string") ||
-              (typeof config.sign.password !== "string") ||
-              (typeof config.sign.keystoreType !== "string")
+            (typeof config.platform.appId !== "string")
+            || (typeof config.platform.appName !== "string")
+            || (config.plugins !== undefined && ((!(config.plugins instanceof Array)) || !(config.plugins.every((item: any) => typeof item === "string"))))
+            || (config.icon !== undefined && typeof config.icon !== "string")
+            || (config.sign !== undefined && (
+              (typeof config.sign.keystore !== "string")
+              || (typeof config.sign.storePassword !== "string")
+              || (typeof config.sign.alias !== "string")
+              || (typeof config.sign.password !== "string")
+              || (typeof config.sign.keystoreType !== "string")
             ))
           ) {
             throw new Error("패키지 '" + packageName + "'의 'platform'설정이 잘 못 되었습니다.");
@@ -129,9 +129,9 @@ export class SdProjectConfigUtil {
       }
       if (config.env !== undefined) {
         if (
-          (typeof config.env !== "object") ||
-          (!Object.keys(config.env).every((item: string | number) => typeof item === "string")) ||
-          (!Object.values(config.env).every((item) => typeof item === "string"))
+          (typeof config.env !== "object")
+          || (!Object.keys(config.env).every((item: string | number) => typeof item === "string"))
+          || (!Object.values(config.env).every((item) => typeof item === "string"))
         ) {
           throw new Error("패키지 '" + packageName + "'의 'env'설정이 잘 못 되었습니다.");
         }

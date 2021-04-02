@@ -6,9 +6,9 @@ export class SdCliPathUtil {
   }
 
   public static getTsConfigBuildFilePath(rootPath: string, target: "node" | "browser" | undefined): string {
-    return target !== undefined ?
-      path.resolve(rootPath, `tsconfig-${target}.build.json`) :
-      SdCliPathUtil.getTsConfigBaseFilePath(rootPath);
+    return target !== undefined
+      ? path.resolve(rootPath, `tsconfig-${target}.build.json`)
+      : SdCliPathUtil.getTsConfigBaseFilePath(rootPath);
   }
 
   public static getSourcePath(rootPath: string): string {

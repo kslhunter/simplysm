@@ -393,9 +393,9 @@ ORDER BY i.index_id, ic.key_ordinal;
   public addForeignKey(def: IAddForeignKeyQueryDef): string {
     const tableName = this.getTableName(def.table);
     const tableNameChain = this.getTableNameChain(def.table);
-    const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30 ?
-      tableNameChain.join("_").replace(/[a-z]/g, "") :
-      tableNameChain.join("_");
+    const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30
+      ? tableNameChain.join("_").replace(/[a-z]/g, "")
+      : tableNameChain.join("_");
 
     const fkName = this.wrap(`FK_${tableKey}_${def.foreignKey.name}`);
     const targetTableName = this.getTableName(def.foreignKey.targetTable);
@@ -411,9 +411,9 @@ ORDER BY i.index_id, ic.key_ordinal;
   public removeForeignKey(def: IRemoveForeignKeyQueryDef): string {
     const tableName = this.getTableName(def.table);
     const tableNameChain = this.getTableNameChain(def.table);
-    const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30 ?
-      tableNameChain.join("_").replace(/[a-z]/g, "") :
-      tableNameChain.join("_");
+    const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30
+      ? tableNameChain.join("_").replace(/[a-z]/g, "")
+      : tableNameChain.join("_");
 
     const fkName = this.wrap(`FK_${tableKey}_${def.foreignKey}`);
 
@@ -423,9 +423,9 @@ ORDER BY i.index_id, ic.key_ordinal;
   public createIndex(def: ICreateIndexQueryDef): string {
     const tableName = this.getTableName(def.table);
     const tableNameChain = this.getTableNameChain(def.table);
-    const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30 ?
-      tableNameChain.join("_").replace(/[a-z]/g, "") :
-      tableNameChain.join("_");
+    const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30
+      ? tableNameChain.join("_").replace(/[a-z]/g, "")
+      : tableNameChain.join("_");
 
     const idxName = this.wrap(`IDX_${tableKey}_${def.index.name}`);
 
@@ -435,9 +435,9 @@ ORDER BY i.index_id, ic.key_ordinal;
   public dropIndex(def: IDropIndexQueryDef): string {
     const tableName = this.getTableName(def.table);
     const tableNameChain = this.getTableNameChain(def.table);
-    const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30 ?
-      tableNameChain.join("_").replace(/[a-z]/g, "") :
-      tableNameChain.join("_");
+    const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30
+      ? tableNameChain.join("_").replace(/[a-z]/g, "")
+      : tableNameChain.join("_");
 
     const idxName = this.wrap(`IDX_${tableKey}_${def.index}`);
 
@@ -847,8 +847,8 @@ DEALLOCATE PREPARE stmt;`.trim();
   }
 
   public wrap(name: string): string {
-    return this._dialect === "mysql" ? "`" + name + "`" :
-      "[" + name + "]";
+    return this._dialect === "mysql" ? "`" + name + "`"
+      : "[" + name + "]";
   }
 
   public getTableName(def: IQueryTableNameDef): string {

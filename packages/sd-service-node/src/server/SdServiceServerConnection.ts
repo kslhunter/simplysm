@@ -82,9 +82,9 @@ export class SdServiceServerConnection extends EventEmitter {
     }
     // 업로드
     else if (rawReq.type === "upload") {
-      const filePath = rawReq.filePath.startsWith("/") ?
-        path.resolve(this._rootPath, rawReq.filePath.slice(1).replace(/\\/g, "/")) :
-        path.resolve(this._rootPath, rawReq.filePath.replace(/\\/g, "/"));
+      const filePath = rawReq.filePath.startsWith("/")
+        ? path.resolve(this._rootPath, rawReq.filePath.slice(1).replace(/\\/g, "/"))
+        : path.resolve(this._rootPath, rawReq.filePath.replace(/\\/g, "/"));
 
       if (!this._uploadRequestMap.has(rawReq.id)) {
         await FsUtil.mkdirsAsync(path.dirname(filePath));

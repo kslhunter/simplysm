@@ -2,8 +2,8 @@ import * as os from "os";
 
 export class FunctionUtil {
   public static parse(fn: (...args: any[]) => any): { params: string[]; returnContent: string } {
-    let matches: RegExpMatchArray | null =
-      (/function\s?\(([^)]*)\)[^{]*{((?!return)(.|\r|\n))*return\s?((.|\r|\n)*);?\s?}$/)
+    let matches: RegExpMatchArray | null
+      = (/function\s?\(([^)]*)\)[^{]*{((?!return)(.|\r|\n))*return\s?((.|\r|\n)*);?\s?}$/)
         .exec(fn.toString());
 
     if (matches == null) {

@@ -88,8 +88,8 @@ export class SdMetadataCollector {
   public async generateAsync(): Promise<void> {
     // 변경사항이 없으면 바로 반환
     if (!this._changedInfos.some((item) => (
-      !FsUtil.isChildPath(item.filePath, this._modulesGenPath) &&
-      item.filePath !== this._routesGenFilePath
+      !FsUtil.isChildPath(item.filePath, this._modulesGenPath)
+      && item.filePath !== this._routesGenFilePath
     ))) {
       return;
     }
@@ -505,10 +505,10 @@ ${texts.join(`,${os.EOL}`)}
     // 새로 생성한 파일이 아니면 삭제
     for (const cacheFilePath of Array.from(this._moduleGenCacheMap.keys())) {
       if (
-        !newNgModuleFilePathToContentMap.has(cacheFilePath) &&
-        !newNgRoutingModuleFilePathToContentMap.has(cacheFilePath) &&
-        cacheFilePath !== this._routesGenFilePath &&
-        cacheFilePath !== this._lazyComponentsGenFilePath
+        !newNgModuleFilePathToContentMap.has(cacheFilePath)
+        && !newNgRoutingModuleFilePathToContentMap.has(cacheFilePath)
+        && cacheFilePath !== this._routesGenFilePath
+        && cacheFilePath !== this._lazyComponentsGenFilePath
       ) {
         await FsUtil.removeAsync(cacheFilePath);
         this._moduleGenCacheMap.delete(cacheFilePath);
@@ -544,9 +544,9 @@ ${texts.join(`,${os.EOL}`)}
       return undefined;
     }
     else if (
-      typeof realInfo.metadata === "string" ||
-      typeof realInfo.metadata === "number" ||
-      typeof realInfo.metadata === "boolean"
+      typeof realInfo.metadata === "string"
+      || typeof realInfo.metadata === "number"
+      || typeof realInfo.metadata === "boolean"
     ) {
       return realInfo.metadata;
     }
@@ -555,8 +555,8 @@ ${texts.join(`,${os.EOL}`)}
         return new SdClassMetadata(this, realInfo.module, targetName, realInfo.metadata);
       }
       else if (
-        isMetadataImportedSymbolReferenceExpression(metadata) ||
-        isMetadataGlobalReferenceExpression(metadata)
+        isMetadataImportedSymbolReferenceExpression(metadata)
+        || isMetadataGlobalReferenceExpression(metadata)
       ) {
         return new SdClassMetadata(this, realInfo.module, metadata.name, realInfo.metadata);
       }
@@ -572,8 +572,8 @@ ${texts.join(`,${os.EOL}`)}
         return new SdFunctionMetadata(this, realInfo.module, targetName, realInfo.metadata);
       }
       else if (
-        isMetadataImportedSymbolReferenceExpression(metadata) ||
-        isMetadataGlobalReferenceExpression(metadata)
+        isMetadataImportedSymbolReferenceExpression(metadata)
+        || isMetadataGlobalReferenceExpression(metadata)
       ) {
         return new SdFunctionMetadata(this, realInfo.module, metadata.name, realInfo.metadata);
       }
@@ -600,8 +600,8 @@ ${texts.join(`,${os.EOL}`)}
 
     // 새로 생성된 모듈파일은 무시
     if (
-      FsUtil.isChildPath(filePath, this._modulesGenPath) ||
-      filePath === this._routesGenFilePath
+      FsUtil.isChildPath(filePath, this._modulesGenPath)
+      || filePath === this._routesGenFilePath
     ) return results;
 
     if (this._filePathToSdNgModuleInfoCacheMap.has(filePath)) {
@@ -702,8 +702,8 @@ ${texts.join(`,${os.EOL}`)}
         // Component등 Module에 들어가야하는 파일만
         const decorator = decorators.single((item) => {
           const exp = item.getExpression();
-          return exp.moduleName === "@angular/core" &&
-            [
+          return exp.moduleName === "@angular/core"
+            && [
               "Component",
               "Directive",
               "Pipe",
@@ -714,15 +714,15 @@ ${texts.join(`,${os.EOL}`)}
 
         // 미리 지정된 값으로 끝나지 않는것은 제외
         if (
-          !entrySdMetadata.name.endsWith("Page") &&
-          !entrySdMetadata.name.endsWith("Component") &&
-          !entrySdMetadata.name.endsWith("Modal") &&
-          !entrySdMetadata.name.endsWith("Control") &&
-          !entrySdMetadata.name.endsWith("PrintTemplate") &&
-          !entrySdMetadata.name.endsWith("Toast") &&
-          !entrySdMetadata.name.endsWith("Directive") &&
-          !entrySdMetadata.name.endsWith("Provider") &&
-          !entrySdMetadata.name.endsWith("Pipe")
+          !entrySdMetadata.name.endsWith("Page")
+          && !entrySdMetadata.name.endsWith("Component")
+          && !entrySdMetadata.name.endsWith("Modal")
+          && !entrySdMetadata.name.endsWith("Control")
+          && !entrySdMetadata.name.endsWith("PrintTemplate")
+          && !entrySdMetadata.name.endsWith("Toast")
+          && !entrySdMetadata.name.endsWith("Directive")
+          && !entrySdMetadata.name.endsWith("Provider")
+          && !entrySdMetadata.name.endsWith("Pipe")
         ) continue;
 
         // providedIn: "root" 인 Injectable은 제외
@@ -779,8 +779,8 @@ ${texts.join(`,${os.EOL}`)}
       // Component등 새로운 Module에 들어가야하는 파일만
       const decorator = decorators.single((item) => {
         const exp = item.getExpression();
-        return exp.moduleName === "@angular/core" &&
-          [
+        return exp.moduleName === "@angular/core"
+          && [
             "Component",
             "Directive",
             "Pipe",
@@ -791,15 +791,15 @@ ${texts.join(`,${os.EOL}`)}
 
       // 미리 지정된 값으로 끝나지 않는것은 제외
       if (
-        !entrySdMetadata.name.endsWith("Page") &&
-        !entrySdMetadata.name.endsWith("Component") &&
-        !entrySdMetadata.name.endsWith("Modal") &&
-        !entrySdMetadata.name.endsWith("Control") &&
-        !entrySdMetadata.name.endsWith("PrintTemplate") &&
-        !entrySdMetadata.name.endsWith("Toast") &&
-        !entrySdMetadata.name.endsWith("Directive") &&
-        !entrySdMetadata.name.endsWith("Provider") &&
-        !entrySdMetadata.name.endsWith("Pipe")
+        !entrySdMetadata.name.endsWith("Page")
+        && !entrySdMetadata.name.endsWith("Component")
+        && !entrySdMetadata.name.endsWith("Modal")
+        && !entrySdMetadata.name.endsWith("Control")
+        && !entrySdMetadata.name.endsWith("PrintTemplate")
+        && !entrySdMetadata.name.endsWith("Toast")
+        && !entrySdMetadata.name.endsWith("Directive")
+        && !entrySdMetadata.name.endsWith("Provider")
+        && !entrySdMetadata.name.endsWith("Pipe")
       ) continue;
 
       // providedIn: "root" 인 Injectable은 제외
@@ -869,9 +869,9 @@ ${texts.join(`,${os.EOL}`)}
         const importNode = sourceFileImport as ts.Node;
         if (!ts.isStringLiteral(importNode)) throw new NeverEntryError();
 
-        const moduleName = importNode.text.startsWith(".") ?
-          await this._getPackageNameAsync(path.resolve(path.dirname(filePath), importNode.text)) :
-          importNode.text;
+        const moduleName = importNode.text.startsWith(".")
+          ? await this._getPackageNameAsync(path.resolve(path.dirname(filePath), importNode.text))
+          : importNode.text;
         if (moduleName === "tslib") continue;
 
         if (!ts.isImportDeclaration(importNode.parent)) throw new NeverEntryError();
@@ -956,8 +956,8 @@ ${texts.join(`,${os.EOL}`)}
 
       // Page만 포함 (LazyPage 비포함)
       if (
-        !entrySdMetadata.name.endsWith("Page") ||
-        entrySdMetadata.name.endsWith("LazyPage")
+        !entrySdMetadata.name.endsWith("Page")
+        || entrySdMetadata.name.endsWith("LazyPage")
       ) continue;
 
       // SRC DIR에 있는 파일 무시
@@ -1000,9 +1000,9 @@ ${texts.join(`,${os.EOL}`)}
 
       // LazyPage/LazyComponent/LazyControl만 포함
       if (
-        !entrySdMetadata.name.endsWith("LazyPage") &&
-        !entrySdMetadata.name.endsWith("LazyComponent") &&
-        !entrySdMetadata.name.endsWith("LazyControl")
+        !entrySdMetadata.name.endsWith("LazyPage")
+        && !entrySdMetadata.name.endsWith("LazyComponent")
+        && !entrySdMetadata.name.endsWith("LazyControl")
       ) continue;
 
       const requirePath = this._getRequirePath(this._packageSourceLazyPagesPath, filePath).replace(/LazyPage$/, "");
@@ -1043,8 +1043,8 @@ ${texts.join(`,${os.EOL}`)}
     if (!decorators) throw new NeverEntryError();
     const firstArg = decorators
       .single((item) => (
-        (item.getExpression().moduleName === "@angular/core" && item.getExpression().name === "Component") ||
-        (item.getExpression().moduleName === "@angular/core" && item.getExpression().name === "Directive")
+        (item.getExpression().moduleName === "@angular/core" && item.getExpression().name === "Component")
+        || (item.getExpression().moduleName === "@angular/core" && item.getExpression().name === "Directive")
       ))
       ?.getArguments()
       ?.get(0);
@@ -1124,8 +1124,8 @@ ${texts.join(`,${os.EOL}`)}
       if (!(await FsUtil.isDirectoryAsync(path.resolve(pagesDirPath, childName)))) {
         // PAGE 외의 파일 무시
         if (
-          !childName.endsWith("Page.ts") ||
-          childName.endsWith("LazyPage.ts")
+          !childName.endsWith("Page.ts")
+          || childName.endsWith("LazyPage.ts")
         ) continue;
 
         const childFilePath = path.resolve(pagesDirPath, childName);
@@ -1141,9 +1141,9 @@ ${texts.join(`,${os.EOL}`)}
 
         children.push({
           path: pathName,
-          loadChildren: childNgRoutingModuleRequirePath +
-            "#" + childNgRoutingModuleClassName +
-            "?chunkName=" + childNgRoutingModuleClassName
+          loadChildren: childNgRoutingModuleRequirePath
+            + "#" + childNgRoutingModuleClassName
+            + "?chunkName=" + childNgRoutingModuleClassName
         });
       }
       // 디렉토리일때

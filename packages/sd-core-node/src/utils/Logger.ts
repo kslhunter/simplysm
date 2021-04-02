@@ -146,9 +146,9 @@ export class Logger {
 
       // eslint-disable-next-line no-console
       console.log(
-        LoggerStyle.fgGray + now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " " +
-        (this._group.length > 0 ? config.console.style + "[" + this._group.join(".") + "] " : "") +
-        config.console.styles[severity] + severity.toUpperCase().padStart(5, " "),
+        LoggerStyle.fgGray + now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " "
+        + (this._group.length > 0 ? config.console.style + "[" + this._group.join(".") + "] " : "")
+        + config.console.styles[severity] + severity.toUpperCase().padStart(5, " "),
         ...logs.map((log) => ((log instanceof Error && log.stack !== undefined) ? log.stack : log)),
         LoggerStyle.clear
       );

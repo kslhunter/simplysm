@@ -328,8 +328,8 @@ describe("(common) core.extensions.ArrayExtensions", () => {
   });
 
   describe("diffs", () => {
-    it("비교대상 Array 와의 차이점을 추려낸다. source/target 으로 추려내며," +
-      " source 만 있는것은 삭제, target 만 있는것은 추가된 데이터로 볼 수 있다.", () => {
+    it("비교대상 Array 와의 차이점을 추려낸다. source/target 으로 추려내며,"
+      + " source 만 있는것은 삭제, target 만 있는것은 추가된 데이터로 볼 수 있다.", () => {
       const arr1 = [
         { a: 1, b: "2" },
         // {a: 3, b: "5"},
@@ -371,11 +371,11 @@ describe("(common) core.extensions.ArrayExtensions", () => {
       ]);
     });
 
-    it("keys 옵션을 통해, 비교 키가될 Property 목록을 설정할 수 있다. " +
-      "비교 키가 설정되면, 키가 같은것이 source/target 양쪽에 동시에 있는경우, 값을 비교하고, " +
-      "변경사항이 있는경우, source/target 모두를 반환한다. " +
-      "이 경우, 수정된 데이터로 볼 수 있다. " +
-      "내부적으로 ObjectUtil.equal 은 사용하므로, ObjectUtil.equal 참고", () => {
+    it("keys 옵션을 통해, 비교 키가될 Property 목록을 설정할 수 있다. "
+      + "비교 키가 설정되면, 키가 같은것이 source/target 양쪽에 동시에 있는경우, 값을 비교하고, "
+      + "변경사항이 있는경우, source/target 모두를 반환한다. "
+      + "이 경우, 수정된 데이터로 볼 수 있다. "
+      + "내부적으로 ObjectUtil.equal 은 사용하므로, ObjectUtil.equal 참고", () => {
       const arr1 = [
         { a: 1, b: "2" },
         { a: 4, b: "1" },
@@ -396,8 +396,8 @@ describe("(common) core.extensions.ArrayExtensions", () => {
       ]);
     });
 
-    it("excludes 옵션을 통해, 변경사항 비교에서 특성 속성을 제외할 수 있다. " +
-      "제외된 속성의 값이 다르더라도, 다른 속성이 모두 같다면 변경사항이 전혀 없는것으로 간주된다.", () => {
+    it("excludes 옵션을 통해, 변경사항 비교에서 특성 속성을 제외할 수 있다. "
+      + "제외된 속성의 값이 다르더라도, 다른 속성이 모두 같다면 변경사항이 전혀 없는것으로 간주된다.", () => {
       const arr1 = [
         { a: 1, b: "2" },
         { a: 4, b: "1" },
@@ -419,11 +419,11 @@ describe("(common) core.extensions.ArrayExtensions", () => {
   });
 
   describe("merge", () => {
-    it("대상 Array 를 병합하여 반환한다. " +
-      "기존 Array 와 동일하지 않은 데이터가 대상 Array 에 있다면, 반환배열 맨 뒤에 새롭게 추가된다. " +
-      "또한, keys 를 통해 변경된 데이터가 있는지 체크하고 " +
-      "생성/수정/삭제의 구분은 diffs 를 활용하여 비교하므로, " +
-      "옵션은 diffs 의 설정을 따른며, diffs 를 하는데에만 사용된다.(diffs 참고)", () => {
+    it("대상 Array 를 병합하여 반환한다. "
+      + "기존 Array 와 동일하지 않은 데이터가 대상 Array 에 있다면, 반환배열 맨 뒤에 새롭게 추가된다. "
+      + "또한, keys 를 통해 변경된 데이터가 있는지 체크하고 "
+      + "생성/수정/삭제의 구분은 diffs 를 활용하여 비교하므로, "
+      + "옵션은 diffs 의 설정을 따른며, diffs 를 하는데에만 사용된다.(diffs 참고)", () => {
       const arr1 = [
         { a: 1, b: "2" },
         { a: 4, b: "1" },
@@ -538,8 +538,8 @@ describe("(common) core.extensions.ArrayExtensions", () => {
   });
 
   describe("insert", () => {
-    it("특정 index 에 값을 등록한다. 이미 있던 값들이 index 에서 부터 한깐씩 밀린다. " +
-      "기존 데이터 자체가 수정되며, 자기자신(this)이 반환된다", () => {
+    it("특정 index 에 값을 등록한다. 이미 있던 값들이 index 에서 부터 한깐씩 밀린다. "
+      + "기존 데이터 자체가 수정되며, 자기자신(this)이 반환된다", () => {
       const arr = [1, 2, 3, 4, 5];
 
       expect(arr.insert(1, 6))
@@ -549,8 +549,8 @@ describe("(common) core.extensions.ArrayExtensions", () => {
   });
 
   describe("remove", () => {
-    it("특정 값을 목록에서 삭제한다. 포인터를 사용하므로, 완전히 동일한 값만 삭제된다. " +
-      "기존 데이터 자체가 수정되며, 자기자신(this)이 반환된다.", () => {
+    it("특정 값을 목록에서 삭제한다. 포인터를 사용하므로, 완전히 동일한 값만 삭제된다. "
+      + "기존 데이터 자체가 수정되며, 자기자신(this)이 반환된다.", () => {
       const obj = { a: 2 };
       const arr = [{ a: 1 }, obj, { a: 3 }, { a: 4 }, obj];
       expect(arr.remove({ a: 2 })).to.deep.equal([{ a: 1 }, { a: 2 }, { a: 3 }, { a: 4 }, { a: 2 }]);

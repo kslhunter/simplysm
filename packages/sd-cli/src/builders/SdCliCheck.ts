@@ -57,25 +57,25 @@ export class SdCliCheck {
     for (const myPackageDefGroupItem of myPackageDefGroup) {
       if (
         (
-          showAll ||
-          myPackageDefGroupItem.key.depName === "typescript" ||
-          myPackageDefGroupItem.key.depName.includes("eslint") ||
-          myPackageDefGroupItem.key.depName === "rxjs" ||
-          myPackageDefGroupItem.key.depName === "zone.js" ||
-          myPackageDefGroupItem.key.depName.includes("angular") ||
-          myPackageDefGroupItem.key.depName.includes("ngtools") ||
-          myPackageDefGroupItem.key.depName.includes("webpack")
-        ) &&
-        !myPackageDefGroupItem.key.depName.includes("simplysm")
+          showAll
+          || myPackageDefGroupItem.key.depName === "typescript"
+          || myPackageDefGroupItem.key.depName.includes("eslint")
+          || myPackageDefGroupItem.key.depName === "rxjs"
+          || myPackageDefGroupItem.key.depName === "zone.js"
+          || myPackageDefGroupItem.key.depName.includes("angular")
+          || myPackageDefGroupItem.key.depName.includes("ngtools")
+          || myPackageDefGroupItem.key.depName.includes("webpack")
+        )
+        && !myPackageDefGroupItem.key.depName.includes("simplysm")
       ) {
         const sameDepLockFilePackageDefs = [...lockFilePackageDefs, ...myPackageDefs].filter((item) => item.depName === myPackageDefGroupItem.key.depName);
         const diffDepDefs = sameDepLockFilePackageDefs
           .filter((item) => (
-            item.depVersionText !== myPackageDefGroupItem.key.depVersionText &&
-            !(
-              item.depVersionText.startsWith("^") &&
-              !item.depVersionText.startsWith("^0") &&
-              item.depVersionText.split(".")[0] === myPackageDefGroupItem.key.depVersionText.split(".")[0]
+            item.depVersionText !== myPackageDefGroupItem.key.depVersionText
+            && !(
+              item.depVersionText.startsWith("^")
+              && !item.depVersionText.startsWith("^0")
+              && item.depVersionText.split(".")[0] === myPackageDefGroupItem.key.depVersionText.split(".")[0]
             )
           ))
           .map((item) => ({
@@ -84,15 +84,15 @@ export class SdCliCheck {
             depVersionText: item.depVersionText
           }))
           .filter((item) => (
-            showAll ||
-            item.name === "typescript" ||
-            item.name.includes("eslint") ||
-            item.name === "rxjs" ||
-            item.name === "zone.js" ||
-            item.name.includes("angular") ||
-            item.name.includes("ngtools") ||
-            item.name.includes("webpack") ||
-            item.name.includes("simplysm")
+            showAll
+            || item.name === "typescript"
+            || item.name.includes("eslint")
+            || item.name === "rxjs"
+            || item.name === "zone.js"
+            || item.name.includes("angular")
+            || item.name.includes("ngtools")
+            || item.name.includes("webpack")
+            || item.name.includes("simplysm")
           ))
           .distinct();
 

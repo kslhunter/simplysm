@@ -16,9 +16,9 @@ export class SdObjectMerge3Provider {
     afterModalCallback?: () => void | Promise<void>
   ): Promise<(T & O & Y) | undefined> {
     const keys: (keyof T & keyof O & keyof Y)[] = (
-      param.displayNameRecord ?
-        Object.keys(param.displayNameRecord) :
-        Object.keys(param.theirs).concat(Object.keys(param.origin)).concat(Object.keys(param.yours))
+      param.displayNameRecord
+        ? Object.keys(param.displayNameRecord)
+        : Object.keys(param.theirs).concat(Object.keys(param.origin)).concat(Object.keys(param.yours))
     )
       .distinct()
       .filter((key) => !(param.origin[key] === undefined && param.theirs[key] === undefined && param.yours[key] === undefined));

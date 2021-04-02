@@ -4,16 +4,16 @@ import { QueryUnit } from "../QueryUnit";
 
 export class SdOrmUtil {
   public static canConvertToQueryValue(value: any): value is TEntityValue<TQueryValue> {
-    return ["undefined", "boolean", "number", "string"].includes(typeof value) ||
-      value instanceof QueryUnit ||
-      value instanceof Number ||
-      value instanceof String ||
-      value instanceof Boolean ||
-      value instanceof DateOnly ||
-      value instanceof DateTime ||
-      value instanceof Time ||
-      value instanceof Uuid ||
-      value instanceof Buffer;
+    return ["undefined", "boolean", "number", "string"].includes(typeof value)
+      || value instanceof QueryUnit
+      || value instanceof Number
+      || value instanceof String
+      || value instanceof Boolean
+      || value instanceof DateOnly
+      || value instanceof DateTime
+      || value instanceof Time
+      || value instanceof Uuid
+      || value instanceof Buffer;
   }
 
   public static getQueryValueType<T extends TQueryValue>(value: TEntityValue<T>): Type<T> | undefined {
