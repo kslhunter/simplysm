@@ -1,5 +1,6 @@
 import * as JSZip from "jszip";
 import { XmlConvert } from "./utils/XmlConvert";
+import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
 
 export class SdWordDocument {
   private _zip!: JSZip;
@@ -29,6 +30,7 @@ export class SdWordDocument {
     wb._zip = zip;
 
     wb._docData = await XmlConvert.parseAsync(await zip.file("word/document.xml")!.async("text"));
+    console.log(wb._docData["w:document"]["w:body"][0]);
 
     return wb;
   }
@@ -49,11 +51,14 @@ export class SdWordDocument {
     return await this._zip.generateAsync({ type: "nodebuffer" });
   }
 
-  public replaceText(fromStr: string, toStr: string): void {
-    const pItems = this._docData["w:document"]["w:body"][0]["w:p"].filter((p: any) => (p["w:r"]?.map((r: any) => (typeof r["w:t"]?.[0] === "string" ? r["w:t"]?.[0] : "")).join("").includes(fromStr)));
-    // console.log("pItems: ", pItems);
+  public replaceText(fromStr: string, toStr: string | string[]): void {
+    const toStrList = typeof toStr === "string" ? [toStr] : toStr;
+    const pItems: any[] = this._docData["w:document"]["w:body"][0]["w:p"];
 
-    for (const pItem of pItems) {
+    const startPIndexes: number[] = [];
+    for (let pItemIndex = 0; pItemIndex < pItems.length; pItemIndex++) {
+      const pItem = pItems[pItemIndex];
+      if (pItem["w:r"]?.map((r: any) => (typeof r["w:t"]?.[0] === "string" ? r["w:t"]?.[0] : "")).join("").includes(fromStr) !== true) continue;
       if (pItem["w:r"] === undefined) continue;
 
       const pStr = pItem["w:r"].map((r: any) => (typeof r["w:t"]?.[0] === "string" ? r["w:t"]?.[0] : "")).join("");
@@ -61,7 +66,9 @@ export class SdWordDocument {
 
       let pStrIndex = 0;
       const removeRs = [];
-      for (const rItem of pItem["w:r"]) {
+      const tabSplitTexts = [];
+      for (let rItemIndex = 0; rItemIndex < pItem["w:r"].length; rItemIndex++) {
+        const rItem = pItem["w:r"][rItemIndex];
         const tItem: string | undefined = typeof rItem["w:t"]?.[0] === "string" ? rItem["w:t"]?.[0] : undefined;
         if (tItem === undefined) continue;
         let startIndex: number | undefined;
@@ -83,14 +90,105 @@ export class SdWordDocument {
           }
         }
         if (startIndex !== undefined) {
-          rItem["w:t"][0] = rItem["w:t"][0].substring(0, startIndex - 1) + toStr + rItem["w:t"][0].substring(startIndex);
+          startPIndexes.push(pItemIndex);
+          if (toStrList[0].split("\t").length === 1) {
+            rItem["w:t"][0] = rItem["w:t"][0].substring(0, startIndex - 1) + toStrList[0] + rItem["w:t"][0].substring(startIndex);
+          }
+          else {
+            rItem["w:t"][0] = rItem["w:t"][0].substring(0, startIndex - 1) + toStrList[0].split("\t")[0] + rItem["w:t"][0].substring(startIndex);
+            tabSplitTexts.push({
+              rItemIndex,
+              texts: toStrList[0].split("\t").slice(1)
+            });
+          }
         }
 
         if (rItem["w:t"][0] === "") {
           removeRs.push(rItem);
         }
       }
+
+      for (const tabSplitTextsItem of tabSplitTexts.orderByDesc((item) => item.rItemIndex)) {
+        for (const tabSplitText of tabSplitTextsItem.texts.reverse()) {
+          const newRItem = ObjectUtil.clone(pItem["w:r"][tabSplitTextsItem.rItemIndex]);
+          delete newRItem["w:t"];
+          newRItem["w:tab"] = [{}];
+          if (!StringUtil.isNullOrEmpty(tabSplitText)) {
+            newRItem["w:t"] = [tabSplitText];
+          }
+          pItem["w:r"].insert(tabSplitTextsItem.rItemIndex + 1, newRItem);
+        }
+      }
+
       pItem["w:r"].remove(...removeRs);
+    }
+
+    if (toStrList.length > 1 && startPIndexes.length > 0) {
+      for (const startPIndex of startPIndexes) {
+        for (const additionalToStr of toStrList.slice(1)) {
+          const newPItem = ObjectUtil.clone(pItems[startPIndex]);
+          newPItem["w:r"] = [newPItem["w:r"].last((r: any) => typeof r["w:t"]?.[0] === "string")];
+
+          const splitTexts = additionalToStr.split("\t");
+          newPItem["w:r"][0]["w:t"][0] = splitTexts[0];
+
+          let additionalIndex = 1;
+          if (splitTexts.slice(1).length > 0) {
+            for (const splitText of splitTexts.slice(1)) {
+              newPItem["w:r"][additionalIndex] = ObjectUtil.clone(newPItem["w:r"][0]);
+              delete newPItem["w:r"][additionalIndex]["w:t"];
+              newPItem["w:r"][additionalIndex]["w:tab"] = [{}];
+              if (!StringUtil.isNullOrEmpty(splitText)) {
+                newPItem["w:r"][additionalIndex]["w:t"] = [splitText];
+              }
+              additionalIndex++;
+            }
+          }
+
+          pItems.insert(startPIndex + 1, newPItem);
+        }
+      }
+    }
+  }
+
+  public fillTable(firstCellStr: string, data: string[][]): void {
+    for (const tblItem of this._docData["w:document"]["w:body"][0]["w:tbl"]) {
+      let firstTrIndex: number | undefined;
+      let firstTcIndex: number | undefined;
+      for (let trItemIndex = 0; trItemIndex < tblItem["w:tr"].length; trItemIndex++) {
+        const trItem = tblItem["w:tr"][trItemIndex];
+
+        for (let tcItemIndex = 0; tcItemIndex < trItem["w:tc"].length; tcItemIndex++) {
+          const tcItem = trItem["w:tc"][tcItemIndex];
+          if (tcItem["w:p"][0]["w:r"]?.map((r: any) => (typeof r["w:t"]?.[0] === "string" ? r["w:t"]?.[0] : "")).join("") === firstCellStr) {
+            firstTrIndex = trItemIndex;
+            firstTcIndex = tcItemIndex;
+          }
+        }
+      }
+
+      if (firstTrIndex === undefined || firstTcIndex === undefined) {
+        continue;
+      }
+
+      for (let dataRowIndex = 0; dataRowIndex < data.length; dataRowIndex++) {
+        for (let dataColIndex = 0; dataColIndex < data[dataRowIndex].length; dataColIndex++) {
+          let currTrItem = tblItem["w:tr"][firstTrIndex + dataRowIndex];
+          if (currTrItem === undefined) {
+            currTrItem = ObjectUtil.clone(tblItem["w:tr"][firstTrIndex]);
+            tblItem["w:tr"].push(currTrItem);
+          }
+
+          const currTcItem = currTrItem["w:tc"][firstTcIndex + dataColIndex];
+          if (currTcItem["w:p"][0]["w:r"] === undefined) {
+            currTcItem["w:p"][0]["w:r"] = [ObjectUtil.clone(currTrItem["w:tc"][firstTcIndex]["w:p"][0]["w:r"][0])];
+          }
+          else {
+            currTcItem["w:p"][0]["w:r"] = [ObjectUtil.clone(currTcItem["w:p"][0]["w:r"][0])];
+          }
+          currTcItem["w:p"][0]["w:r"][0]["w:t"][0] = data[dataRowIndex][dataColIndex];
+        }
+      }
     }
   }
 
