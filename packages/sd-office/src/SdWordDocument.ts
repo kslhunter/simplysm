@@ -172,11 +172,11 @@ export class SdWordDocument {
   }
 
   public fillTable(firstCellStr: string, data: string[][]): void {
-    const bodyChildEls = this._bodyEl.elements!;
+    /*const bodyChildEls = this._bodyEl.elements!;
     for (let bodyChildElIndex = 0; bodyChildElIndex < bodyChildEls.length; bodyChildElIndex++) {
       if (bodyChildEls[bodyChildElIndex].name !== "w:tbl") continue;
       const tblEl = bodyChildEls[bodyChildElIndex];
-      console.log(tblEl);
+      console.log(tblEl);*/
 
       /*
       const rowText = this._getRowText(rowEl) ?? "";
@@ -315,5 +315,5 @@ export class SdWordDocument {
         }
       }
     }*/
-  }
+  // }
 }
