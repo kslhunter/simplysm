@@ -29,7 +29,8 @@ import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
              [attr.class]="inputClass"
              [attr.style]="inputFullStyle"
              [attr.title]="title || placeholder"
-             (input)="onInput()"/>
+             (input)="onInput()"
+             [attr.inputmode]="type === 'number' ? 'numeric' : undefined"/>
       <div *ngIf="disabled || readonly"
            [attr.class]="(disabled ? '_disabled ' : readonly ? '_readonly ' : '') + (inputClass || '')"
            [attr.style]="inputFullStyle">
@@ -427,10 +428,10 @@ export class SdTextfieldControl {
     if (this.type === "date" && this.value instanceof DateOnly) {
       return this.value.toFormatString("yyyy-MM-dd");
     }
-    if (this.type === "time" && this.value instanceof DateOnly) {
+    if (this.type === "time" && (this.value instanceof DateTime || this.value instanceof Time)) {
       return this.value.toFormatString("HH:mm");
     }
-    if (this.type === "time-sec" && this.value instanceof DateOnly) {
+    if (this.type === "time-sec" && (this.value instanceof DateTime || this.value instanceof Time)) {
       return this.value.toFormatString("HH:mm:ss");
     }
     if (typeof this.value === "string") {
