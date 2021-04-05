@@ -3,10 +3,10 @@ import {
   DbContext,
   IDbContextExecutor,
   IQueryColumnDef,
-  IQueryResultParseOption, ISOLATION_LEVEL,
+  IQueryResultParseOption,
+  ISOLATION_LEVEL,
   TQueryDef
 } from "@simplysm/sd-orm-common";
-import { Wait } from "@simplysm/sd-core-common";
 import { SdServiceClient } from "@simplysm/sd-service-browser";
 import { SdServiceFactoryProvider } from "./SdServiceFactoryProvider";
 
@@ -18,12 +18,12 @@ export class SdOrmServiceProvider {
   public async connectAsync<T extends DbContext, R>(config: { serviceKey: string; dbContextType: Type<T>; configName: string },
                                                     callback: (conn: T) => Promise<R> | R): Promise<R> {
     const service = this._service.get(config.serviceKey);
-    try {
+    /*try {
       await Wait.true(() => service.connected, undefined, 5000);
     }
     catch (err) {
       throw new Error("ORM 서비스에 연결할 수 없습니다.");
-    }
+    }*/
 
     const db = new config.dbContextType(await SdServiceDbContextExecutor.createAsync(service.client, config.configName));
     return await db.connectAsync(async () => await callback(db));
@@ -32,12 +32,12 @@ export class SdOrmServiceProvider {
   public async connectWithoutTransactionAsync<T extends DbContext, R>(config: { serviceKey: string; dbContextType: Type<T>; configName: string },
                                                                       callback: (conn: T) => Promise<R> | R): Promise<R> {
     const service = this._service.get(config.serviceKey);
-    try {
+    /*try {
       await Wait.true(() => service.connected, undefined, 5000);
     }
     catch (err) {
       throw new Error("ORM 서비스에 연결할 수 없습니다.");
-    }
+    }*/
 
     const db = new config.dbContextType(await SdServiceDbContextExecutor.createAsync(service.client, config.configName));
     return await db.connectWithoutTransactionAsync(async () => await callback(db));

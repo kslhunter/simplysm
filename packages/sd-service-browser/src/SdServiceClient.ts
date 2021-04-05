@@ -56,11 +56,11 @@ export class SdServiceClient extends EventEmitter {
         this._eventEmitter.emit("message", message);
       };
 
-      this._ws.onclose = (): void => {
+      /*this._ws.onclose = (): void => {
         setTimeout(async () => {
           await this.connectAsync();
         }, 3000);
-      };
+      };*/
     });
   }
 
@@ -93,15 +93,22 @@ export class SdServiceClient extends EventEmitter {
   public async sendAsync(command: string,
                          params: any[],
                          splitOptions?: ISdServiceClientSplitOptions): Promise<any> {
-    return await new Promise<any>(async (resolve, reject) => {
-      if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
-        try {
-          await Wait.true(() => this._ws !== undefined && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
-        }
-        catch (err) {
-          throw new Error("웹 소켓이 연결되어있지 않습니다.");
-        }
+    if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
+      try {
+        await Wait.true(() => this._ws !== undefined && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
       }
+      catch (err) {
+        await this.connectAsync();
+        // throw new Error("웹 소켓이 연결되어있지 않습니다.");
+      }
+    }
+
+    return await new Promise<any>((resolve, reject) => {
+      this._ws!.onclose = () => {
+        delete (this._ws as any).onclose;
+        delete this._ws;
+        reject(new Error("웹 소켓이 연결되어있지 않습니다."));
+      };
 
       const requestId = this._lastRequestId++;
       const request: ISdServiceRequest = {
@@ -211,6 +218,16 @@ export class SdServiceClient extends EventEmitter {
   public async uploadAsync(file: File | Blob,
                            serverFilePath: string,
                            splitOptions?: ISdServiceClientSplitOptions): Promise<void> {
+    if (!this._ws || this._ws.readyState !== WebSocket.OPEN) {
+      try {
+        await Wait.true(() => this._ws !== undefined && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
+      }
+      catch (err) {
+        await this.connectAsync();
+        // throw new Error("웹 소켓이 연결되어있지 않습니다.");
+      }
+    }
+
     const fileMd5 = await Md5.getAsync(file);
     const serverFileMd5 = await this.sendAsync("md5", [serverFilePath]);
 
@@ -219,99 +236,114 @@ export class SdServiceClient extends EventEmitter {
     }
 
     await new Promise<void>(async (resolve, reject) => {
-      const requestId = this._lastRequestId++;
+      try {
+        const requestId = this._lastRequestId++;
 
-      let splitCompletedLength = 0;
+        let splitCompletedLength = 0;
 
-      const messageEventListener = (message: MessageEvent): void => {
-        const response: TSdServiceRawResponse = JsonConvert.parse(String(message.data));
+        const messageEventListener = (message: MessageEvent): void => {
+          const response: TSdServiceRawResponse = JsonConvert.parse(String(message.data));
 
-        if (response.type === "upload" && response.requestId === requestId) {
-          splitCompletedLength += response.length;
-          if (splitOptions?.progressCallback) {
+          if (response.type === "upload" && response.requestId === requestId) {
+            splitCompletedLength += response.length;
+            if (splitOptions?.progressCallback) {
+              splitOptions.progressCallback({
+                current: splitCompletedLength,
+                total: file.size
+              });
+            }
+          }
+          else if (response.type === "response") {
+            this._eventEmitter.off("message", messageEventListener);
+            resolve(response.body);
+          }
+          else if (response.type === "error" && response.requestId === requestId) {
+            this._eventEmitter.off("message", messageEventListener);
+            reject(new Error(response.stack));
+          }
+        };
+
+        this._eventEmitter.on("message", messageEventListener);
+
+        // 업로드 요청 보내기
+        await new Promise<void>((resolve1, reject1) => {
+          if (splitOptions && (file.size > splitOptions.splitLength! * 10)) {
             splitOptions.progressCallback({
-              current: splitCompletedLength,
+              current: 0,
               total: file.size
             });
+
+            let cursor = 0;
+
+            const fileReader = new FileReader();
+            const loadNext = (): void => {
+              const start = cursor;
+              const end = Math.min(cursor + splitOptions.splitLength!, file.size);
+              fileReader.readAsArrayBuffer(file.slice(start, end));
+            };
+            fileReader.onload = (): void => {
+              const arrBuff = fileReader.result as ArrayBuffer;
+
+              const realReq: ISdServiceUploadRawRequest = {
+                type: "upload",
+                password: this._password,
+                id: requestId,
+                url: `${location.protocol}//${location.host}${location.pathname}`,
+                filePath: serverFilePath,
+                buffer: Buffer.from(arrBuff),
+                length: file.size,
+                offset: cursor
+              };
+
+              this._ws!.onclose = () => {
+                delete (this._ws as any).onclose;
+                delete this._ws;
+                reject1(new Error("웹 소켓이 연결되어있지 않습니다."));
+              };
+              this._ws!.send(JsonConvert.stringify(realReq));
+              cursor += splitOptions.splitLength!;
+
+              if (cursor < file.size) {
+                loadNext();
+              }
+              else {
+                resolve1();
+              }
+            };
+            loadNext();
           }
-        }
-        else if (response.type === "response") {
-          this._eventEmitter.off("message", messageEventListener);
-          resolve(response.body);
-        }
-        else if (response.type === "error" && response.requestId === requestId) {
-          this._eventEmitter.off("message", messageEventListener);
-          reject(new Error(response.stack));
-        }
-      };
+          else {
+            const fileReader = new FileReader();
 
-      this._eventEmitter.on("message", messageEventListener);
+            fileReader.onload = (): void => {
+              const arrBuff = fileReader.result as ArrayBuffer;
 
-      // 업로드 요청 보내기
-      await new Promise<void>((resolve1, reject1) => {
-        if (splitOptions && (file.size > splitOptions.splitLength! * 10)) {
-          splitOptions.progressCallback({
-            current: 0,
-            total: file.size
-          });
+              const realReq: ISdServiceUploadRawRequest = {
+                type: "upload",
+                password: this._password,
+                id: requestId,
+                url: `${location.protocol}//${location.host}${location.pathname}`,
+                filePath: serverFilePath,
+                buffer: Buffer.from(arrBuff),
+                length: file.size,
+                offset: 0
+              };
+              this._ws!.onclose = () => {
+                delete (this._ws as any).onclose;
+                delete this._ws;
+                reject1(new Error("웹 소켓이 연결되어있지 않습니다."));
+              };
+              this._ws!.send(JsonConvert.stringify(realReq));
 
-          let cursor = 0;
-
-          const fileReader = new FileReader();
-          const loadNext = (): void => {
-            const start = cursor;
-            const end = Math.min(cursor + splitOptions.splitLength!, file.size);
-            fileReader.readAsArrayBuffer(file.slice(start, end));
-          };
-          fileReader.onload = (): void => {
-            const arrBuff = fileReader.result as ArrayBuffer;
-
-            const realReq: ISdServiceUploadRawRequest = {
-              type: "upload",
-              password: this._password,
-              id: requestId,
-              url: `${location.protocol}//${location.host}${location.pathname}`,
-              filePath: serverFilePath,
-              buffer: Buffer.from(arrBuff),
-              length: file.size,
-              offset: cursor
-            };
-
-            this._ws!.send(JsonConvert.stringify(realReq));
-            cursor += splitOptions.splitLength!;
-
-            if (cursor < file.size) {
-              loadNext();
-            }
-            else {
               resolve1();
-            }
-          };
-          loadNext();
-        }
-        else {
-          const fileReader = new FileReader();
-
-          fileReader.onload = (): void => {
-            const arrBuff = fileReader.result as ArrayBuffer;
-
-            const realReq: ISdServiceUploadRawRequest = {
-              type: "upload",
-              password: this._password,
-              id: requestId,
-              url: `${location.protocol}//${location.host}${location.pathname}`,
-              filePath: serverFilePath,
-              buffer: Buffer.from(arrBuff),
-              length: file.size,
-              offset: 0
             };
-            this._ws!.send(JsonConvert.stringify(realReq));
-
-            resolve1();
-          };
-          fileReader.readAsArrayBuffer(file);
-        }
-      });
+            fileReader.readAsArrayBuffer(file);
+          }
+        });
+      }
+      catch (err) {
+        reject(err);
+      }
     });
   }
 }
