@@ -468,6 +468,10 @@ export class SdSelectControl implements DoCheck {
 
       if (this.dropdownControl && !noClose) {
         this.dropdownControl.closePopup();
+
+        if (this.dropdownControl.controlEl) {
+          this.dropdownControl.controlEl.focus();
+        }
       }
     }
     this._cdr.markForCheck();

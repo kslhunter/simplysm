@@ -142,6 +142,12 @@ export class SdSelectItemControl implements AfterViewInit, AfterContentChecked, 
 
       this._selectControl.onItemControlClick(this, true);
     }
+    if (!event.ctrlKey && !event.altKey && event.key === "Enter") {
+      event.preventDefault();
+      event.stopPropagation();
+
+      this._selectControl.onItemControlClick(this);
+    }
   }
 
   public markForCheck(): void {
