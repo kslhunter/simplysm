@@ -11,6 +11,11 @@ describe("(node) excel.SdWordDocument", () => {
     doc.replaceText("{{MSDS번호}}", "000150128491295");
     doc.replaceText("{{제품명}}", "김석래");
     doc.replaceText("{{유해위험문구}}", "H350\t\t암을 일으킬 수 있음\nH412\t장기적인 영향에 의해 수생생물에게 유해함");
+    doc.replaceText("{{국내규정단일}}", ``);
+    doc.replaceText("{{국내규정혼합}}", `
+-이산화주석\tTWA : 2mg/m3 산화주석 및 무기화합물
+-황산 나트륨\t자료없음
+-비소\t\tTWA : 0.01mg/m3비소 및 그 무기화합물`.trim());
     doc.fillTable(
       ["{{성분표1}}", "{{성분표2}}", "{{성분표3}}", "{{성분표4}}"],
       [

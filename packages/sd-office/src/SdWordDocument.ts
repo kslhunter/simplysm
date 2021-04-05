@@ -187,7 +187,6 @@ export class SdWordDocument {
 
           for (let firstCellStrIndex = 0; firstCellStrIndex < firstCellStrList.length; firstCellStrIndex++) {
             if (tcEl.elements!.some((tcChildEl) => tcChildEl.name === "w:p" && this._getRowText(tcChildEl)?.includes(firstCellStrList[firstCellStrIndex]))) {
-
               let prevOrgTrEl: xml.Element | undefined;
               for (let dataRowIndex = 0; dataRowIndex < data.length; dataRowIndex++) {
                 let currTrEl = tblEl.elements![tblChildElIndex + dataRowIndex];
