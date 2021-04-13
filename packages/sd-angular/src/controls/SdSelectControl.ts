@@ -34,12 +34,13 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
       <sd-dropdown-popup #dropdownPopup (keydown)="onPopupKeydown($event)">
         <ng-container *ngIf="!items">
           <sd-dock-container>
-            <sd-dock class="sd-border-bottom-brightness-default sd-padding-sm-default" *ngIf="selectMode === 'multi'">
+            <sd-dock class="sd-border-bottom-brightness-default sd-padding-sm-default"
+                     *ngIf="selectMode === 'multi' && !hideSelectAll">
               <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
               <sd-gap width="sm"></sd-gap>
               <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
             </sd-dock>
-            
+
             <sd-dock *ngIf="headerTemplateRef">
               <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
             </sd-dock>
@@ -56,7 +57,8 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
               <ng-template [ngTemplateOutlet]="headerTemplateRef"></ng-template>
             </sd-dock>
 
-            <sd-dock class="sd-border-bottom-brightness-default sd-padding-sm-default" *ngIf="selectMode === 'multi'">
+            <sd-dock class="sd-border-bottom-brightness-default sd-padding-sm-default"
+                     *ngIf="selectMode === 'multi' && !hideSelectAll">
               <sd-anchor (click)="onSelectAllButtonClick(true)">전체선택</sd-anchor>
               <sd-gap width="sm"></sd-gap>
               <sd-anchor (click)="onSelectAllButtonClick(false)">전체해제</sd-anchor>
@@ -301,6 +303,10 @@ export class SdSelectControl implements DoCheck {
   @Input()
   @SdInputValidate({ type: String, includes: ["vertical", "horizontal"] })
   public multiSelectionDisplayDirection?: "vertical" | "horizontal";
+
+  @Input()
+  @SdInputValidate(Boolean)
+  public hideSelectAll?: boolean;
 
   @HostBinding("attr.sd-invalid")
   public get invalid(): boolean {
