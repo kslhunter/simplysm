@@ -163,6 +163,20 @@ export class SdServiceServer extends EventEmitter {
     this.emit("close");
   }
 
+  public async emitEventAsync(eventName: string, infoSelector: (item: any) => boolean, data: any): Promise<void> {
+    const eventListeners = this._eventListeners
+      .filter((item) => item.eventName === eventName)
+      .filter((item) => infoSelector(item.info));
+
+    for (const eventListener of eventListeners) {
+      await eventListener.conn.sendAsync({
+        type: "event",
+        eventListenerId: eventListener.id,
+        body: data
+      });
+    }
+  }
+
   private _onSocketConnection(conn: WebSocket, connReq: http.IncomingMessage): void {
     const origin: string | string[] = connReq.headers.origin ?? "unknown";
 

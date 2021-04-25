@@ -56,7 +56,7 @@ export class SdAddressSearchModal extends SdModalBase<undefined, IAddress> {
     if (!document.getElementById("daum_address")) {
       const scriptEl = document.createElement("script");
       scriptEl.async = true;
-      scriptEl.src = "http://dmaps.daum.net/map_js_init/postcode.v2.js?autoload=false";
+      scriptEl.src = location.protocol + "//dmaps.daum.net/map_js_init/postcode.v2.js?autoload=false";
       scriptEl.setAttribute("id", "daum_address");
 
       scriptEl.onload = (): void => {

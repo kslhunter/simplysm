@@ -13,10 +13,10 @@
   "sideEffects": false,
   "dependencies": {
     "@angular-devkit/build-optimizer": "^0.1102.4",
-    "@angular-devkit/core": "11.2.5",
+    "@angular-devkit/core": "11.2.10",
     "@angular/compiler-cli": "^11.2.5",
     "@angular/compiler": "^11.2.5",
-    "@ngtools/webpack": "11.2.5",
+    "@ngtools/webpack": "11.2.10",
     "angular-router-loader": "^0.8.5",
     "yargs": "^16.2.0",
     "source-map-support": "^0.5.19",
