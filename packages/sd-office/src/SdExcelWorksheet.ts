@@ -20,9 +20,11 @@ export class SdExcelWorksheet {
 
   private _reloadRows(): void {
     this.rowDataMap.clear();
+    let index = 0;
     for (const rowData of this.sheetData?.worksheet.sheetData[0].row ?? []) {
-      const rowIndex = rowData.$.r - 1;
+      const rowIndex = rowData.$ !== undefined ? rowData.$.r - 1 : index;
       this.rowDataMap.set(rowIndex, rowData);
+      index++;
     }
   }
 

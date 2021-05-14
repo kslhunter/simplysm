@@ -144,21 +144,21 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
     type: Function,
     notnull: true
   })
-  public trackByFn = (index: number, item: ISharedDataBase): (string | number) => item.__valueKey;
+  public trackByFn = (index: number, item: ISharedDataBase<string | number>): (string | number) => item.__valueKey;
 
   @Input()
   @SdInputValidate({
     type: Function,
     notnull: true
   })
-  public getIsHiddenFn = (index: number, item: ISharedDataBase): boolean => item.__isHidden;
+  public getIsHiddenFn = (index: number, item: ISharedDataBase<string | number>): boolean => item.__isHidden;
 
   @Input()
   @SdInputValidate({
     type: Function,
     notnull: true
   })
-  public getSearchTextFn = (index: number, item: ISharedDataBase): string => item.__searchText;
+  public getSearchTextFn = (index: number, item: ISharedDataBase<string | number>): string => item.__searchText;
 
   public searchText?: string;
   public items: any[] = [];

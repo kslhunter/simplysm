@@ -1356,6 +1356,28 @@ export class Queryable<D extends DbContext, T> {
     this.db.prepareDefs.push({ type: "upsert", ...queryDef });
   }
 
+  public configIdentityInsert(state: "on" | "off"): void {
+    if (typeof this.db === "undefined") {
+      throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
+    }
+
+    if (!this._tableDef) {
+      throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
+    }
+
+    this.db.prepareDefs.push(...[
+      {
+        type: "configIdentityInsert" as const,
+        table: {
+          database: this._tableDef.database ?? this.db.schema.database,
+          schema: this._tableDef.schema ?? this.db.schema.schema,
+          name: this._tableDef.name
+        },
+        state
+      }
+    ]);
+  }
+
   private _getParseOption(): IQueryResultParseOption {
     const result: IQueryResultParseOption = {
       columns: {},

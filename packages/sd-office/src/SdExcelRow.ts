@@ -15,7 +15,11 @@ export class SdExcelRow {
       return 0;
     }
 
-    const lastAddr = this.rowData.c.last().$.r;
+    const lastAddr = this.rowData.c.last().$?.r;
+    if (lastAddr === undefined) {
+      return this.rowData.c.length;
+    }
+
     const rowCol = SdExcelUtil.getAddressRowCol(lastAddr);
     return rowCol.col + 1;
   }

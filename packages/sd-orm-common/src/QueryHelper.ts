@@ -305,7 +305,7 @@ export class QueryHelper {
     ]);
   }
 
-  public concat(...args: TEntityValue<string | String | undefined>[]): QueryUnit<string> {
+  public concat(...args: TEntityValue<string | String | number | Number | undefined>[]): QueryUnit<string> {
     return new QueryUnit<string>(String, [
       "CONCAT(",
       ...args.mapMany((arg) => [arg !== undefined ? this.getQueryValue(arg) : "", ", "]).slice(0, -1),

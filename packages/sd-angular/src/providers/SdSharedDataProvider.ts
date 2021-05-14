@@ -6,9 +6,9 @@ import { SdRootProvider } from "../root-providers/SdRootProvider";
 
 @Injectable({ providedIn: null })
 export class SdSharedDataProvider {
-  private get _dataInfoMap(): Map<string, ISharedDataInfo<any>> {
+  private get _dataInfoMap(): Map<string, ISharedDataInfo<any, any>> {
     this._root.data.sharedData = this._root.data.sharedData ?? {};
-    this._root.data.sharedData.dataInfoMap = this._root.data.sharedData.dataInfoMap ?? new Map<string, ISharedDataInfo<any>>();
+    this._root.data.sharedData.dataInfoMap = this._root.data.sharedData.dataInfoMap ?? new Map<string, ISharedDataInfo<any, any>>();
     return this._root.data.sharedData.dataInfoMap;
   }
 
@@ -54,7 +54,7 @@ export class SdSharedDataProvider {
     this._isProcessingMap.clear();
   }
 
-  public register<T extends ISharedDataBase>(dataType: string, info: ISharedDataInfo<T>): void {
+  public register<V extends string | number, T extends ISharedDataBase<V>>(dataType: string, info: ISharedDataInfo<V, T>): void {
     if (this._dataInfoMap.has(dataType)) {
       throw new NeverEntryError();
     }
@@ -181,13 +181,13 @@ export class SdSharedDataProvider {
   }
 }
 
-interface ISharedDataInfo<T extends ISharedDataBase> {
-  getData: (changeKeys?: (string | number)[]) => T[] | Promise<T[]>;
-  getKey: (data: T) => string | number;
+interface ISharedDataInfo<V extends string | number, T extends ISharedDataBase<V>> {
+  getData: (changeKeys?: V[]) => T[] | Promise<T[]>;
+  getKey: (data: T) => V;
 }
 
-export interface ISharedDataBase {
-  __valueKey: string | number;
+export interface ISharedDataBase<V extends string | number> {
+  __valueKey: V;
   __searchText: string;
   __isHidden: boolean;
 }

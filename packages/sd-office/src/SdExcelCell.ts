@@ -85,7 +85,7 @@ export class SdExcelCell {
   }
 
   public get value(): any {
-    if (this.cellData.v == null && this.cellData.$.t !== "inlineStr") {
+    if (this.cellData.v == null && this.cellData.$?.t !== "inlineStr") {
       return undefined;
     }
 
@@ -185,7 +185,7 @@ export class SdExcelCell {
     currRow.c = currRow.c ?? [];
     const cellNodes = currRow.c as any[];
     const cellAddr = SdExcelUtil.getAddress(this.row, this.col);
-    let currCell = cellNodes.single((item: any) => item.$.r === cellAddr);
+    let currCell = cellNodes.single((item: any, index: number) => (item.$?.r !== undefined ? item.$.r === cellAddr : index === this.col));
     if (currCell === undefined) {
       currCell = { $: { r: cellAddr } };
 

@@ -236,7 +236,8 @@ export class SdExcelWorkbook {
     wb.sstData = await XmlConvert.parseAsync(await zip.file("xl/sharedStrings.xml")!.async("text"), { stripPrefix: true });
 
     // Styles
-    wb.stylesData = await XmlConvert.parseAsync(await zip.file("xl/styles.xml")!.async("text"), { stripPrefix: true });
+    const stylesFile = zip.file("xl/styles.xml");
+    wb.stylesData = stylesFile ? await XmlConvert.parseAsync(await stylesFile.async("text"), { stripPrefix: true }) : undefined;
 
     wb.medias = [];
     const mediaFiles = Object.keys(zip.files).map((key) => zip.files[key]).filter((item) => item.name.startsWith("xl/media"));
