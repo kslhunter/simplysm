@@ -30,5 +30,6 @@ export * from "./utils/SdCliPathUtil";
 export * from "./utils/SdCliResultCacheMap";
 export * from "./utils/SdProjectConfigUtil";
 export * from "./utils/SdTsDiagnosticUtil";
+export * from "./utils/SdWebpackSourceStringReplacePlugin";
 export * from "./utils/SdWebpackUtil";
 export * from "./utils/SdWebpackWriteFilePlugin";

@@ -109,6 +109,11 @@ export interface ISdServerPackageConfig {
   configs?: Record<string, any>;
   publish?: TSdPublishConfig;
   pm2?: { watchIgnoreDirectories?: string[] };
+  sourceStringReplaces?: {
+    filePath: string;
+    search: string;
+    replace: string;
+  }[];
 }
 
 export interface ISdNonePackageConfig {

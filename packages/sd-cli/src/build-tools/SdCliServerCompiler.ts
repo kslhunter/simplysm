@@ -10,6 +10,7 @@ import { EventEmitter } from "events";
 import { SdServiceServer } from "@simplysm/sd-service-node";
 import decache from "decache/decache";
 import { SdWebpackUtil } from "../utils/SdWebpackUtil";
+import { SdWebpackSourceStringReplacePlugin } from "../utils/SdWebpackSourceStringReplacePlugin";
 
 export class SdCliServerCompiler extends EventEmitter {
   private readonly _npmConfig: INpmConfig;
@@ -180,7 +181,6 @@ export class SdCliServerCompiler extends EventEmitter {
     const mainFilePath = this._mainFilePath;
 
     // WEBPACK Config
-
     return {
       ...watch ? {
         mode: "development",
@@ -251,6 +251,14 @@ export class SdCliServerCompiler extends EventEmitter {
         ]
       },
       plugins: [
+        // TODO: 서버외에도 sourceStringReplaces 기능을 넣어야함
+        ...this._config.sourceStringReplaces ? [
+          new SdWebpackSourceStringReplacePlugin(this._config.sourceStringReplaces.map((opt) => ({
+            filePath: path.resolve(opt.filePath),
+            search: new RegExp(opt.search, "g"),
+            replace: opt.replace
+          })))
+        ] : [],
         new SdWebpackWriteFilePlugin([
           {
             path: path.resolve(distPath, ".configs.json"),
