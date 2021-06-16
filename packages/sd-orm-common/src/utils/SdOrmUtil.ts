@@ -1,5 +1,5 @@
 import { IQueryResultParseOption, TEntity, TEntityValue, TQueryValue } from "../commons";
-import { DateOnly, DateTime, JsonConvert, Time, Type, Uuid } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, JsonConvert, ObjectUtil, Time, Type, Uuid } from "@simplysm/sd-core-common";
 import { QueryUnit } from "../QueryUnit";
 
 export class SdOrmUtil {
@@ -126,7 +126,9 @@ export class SdOrmUtil {
           }
 
           if (option.joins[joinKey].isSingle) {
-            grouped.push({ key: keyObj, values: valueObj });
+            if (!grouped.some((groupedItem) => ObjectUtil.equal(groupedItem.key, keyObj))) {
+              grouped.push({ key: keyObj, values: valueObj });
+            }
           }
           else {
             const keyObjJson = JsonConvert.stringify(keyObj);

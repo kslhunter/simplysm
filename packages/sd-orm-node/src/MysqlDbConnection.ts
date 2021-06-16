@@ -200,7 +200,7 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], ...records: Record<string, any>[]): Promise<void> {
+  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
     throw new NotImplementError();
   }
 

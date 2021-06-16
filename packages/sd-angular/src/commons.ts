@@ -2,6 +2,7 @@ import {
   FaSymbol,
   FlipProp,
   IconLookup,
+  IconName,
   IconPrefix,
   IconProp,
   PullProp,
@@ -16,6 +17,9 @@ import { far } from "@fortawesome/pro-regular-svg-icons";
 import { fal } from "@fortawesome/pro-light-svg-icons";
 import { fad } from "@fortawesome/pro-duotone-svg-icons";
 import { SdServiceEventBase } from "@simplysm/sd-service-common";
+
+export type TSdIconName = IconName;
+export type TSdIconPrefix = IconPrefix;
 
 export interface ISdIconProps {
   mask?: IconProp;

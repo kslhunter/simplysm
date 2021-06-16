@@ -6,6 +6,7 @@ import {
   NotImplementError,
   ObjectUtil,
   Type,
+  Uuid,
   Wait
 } from "@simplysm/sd-core-common";
 import {
@@ -250,8 +251,8 @@ export class Queryable<D extends DbContext, T> {
 
   public having(predicate: (entity: TEntity<T>) => TEntityValueOrQueryableOrArray<D, any>[]): Queryable<D, T> {
     const result = new Queryable(this.db, this);
-    result._def.having = result._def.having ?? [];
-    result._def.having.push(...this.db.qh.and(predicate(this._entity)));
+    const having = this.db.qh.and(predicate(this._entity));
+    result._def.having = result._def.having ? this.db.qh.and([result._def.having, having]) : having;
     return result;
   }
 
@@ -400,49 +401,50 @@ export class Queryable<D extends DbContext, T> {
       .filter((item) => Boolean(item));
 
     // WHERE
+    const whereFnName: "having" | "where"
+      = result._def.groupBy && result._def.groupBy.length > 0 ? "having" : "where";
+
     if (searchText.startsWith("<>")) {
-      result = result
-        .where((item) => {
-          const fieldOrArr = [];
+      result = result[whereFnName]((item) => {
+        const fieldOrArr = [];
 
-          const fields = fwd(item);
-          for (const field of fields) {
-            const splitSearchTextWhereArr = [];
-            for (const text of splitSearchText) {
-              if (text.includes("*")) {
-                splitSearchTextWhereArr.push(this.db.qh.notLike(field as any, text.substr(2).replace(/\*/g, "%")));
-              }
-              else {
-                splitSearchTextWhereArr.push(this.db.qh.notIncludes(field as any, text.substr(2)));
-              }
+        const fields = fwd(item);
+        for (const field of fields) {
+          const splitSearchTextWhereArr = [];
+          for (const text of splitSearchText) {
+            if (text.includes("*")) {
+              splitSearchTextWhereArr.push(this.db.qh.notLike(field as any, text.substr(2).replace(/\*/g, "%")));
             }
-            fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));
+            else {
+              splitSearchTextWhereArr.push(this.db.qh.notIncludes(field as any, text.substr(2)));
+            }
           }
+          fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));
+        }
 
-          return [this.db.qh.and(fieldOrArr)];
-        });
+        return [this.db.qh.and(fieldOrArr)];
+      });
     }
     else {
-      result = result
-        .where((item) => {
-          const fieldOrArr = [];
+      result = result[whereFnName]((item) => {
+        const fieldOrArr = [];
 
-          const fields = fwd(item);
-          for (const field of fields) {
-            const splitSearchTextWhereArr = [];
-            for (const text of splitSearchText) {
-              if (text.includes("*")) {
-                splitSearchTextWhereArr.push(this.db.qh.like(field as any, text.replace(/\*/g, "%")));
-              }
-              else {
-                splitSearchTextWhereArr.push(this.db.qh.includes(field as any, text));
-              }
+        const fields = fwd(item);
+        for (const field of fields) {
+          const splitSearchTextWhereArr = [];
+          for (const text of splitSearchText) {
+            if (text.includes("*")) {
+              splitSearchTextWhereArr.push(this.db.qh.like(field as any, text.replace(/\*/g, "%")));
             }
-            fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));
+            else {
+              splitSearchTextWhereArr.push(this.db.qh.includes(field as any, text));
+            }
           }
+          fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));
+        }
 
-          return [this.db.qh.or(fieldOrArr)];
-        });
+        return [this.db.qh.or(fieldOrArr)];
+      });
     }
     return result;
   }
@@ -907,7 +909,9 @@ export class Queryable<D extends DbContext, T> {
     return cnt > 0;
   }
 
-  public async bulkInsertAsync(...records: TInsertObject<T>[]): Promise<void> {
+  public async bulkInsertAsync(arg: TInsertObject<T> | (TInsertObject<T>[])): Promise<void> {
+    const records = arg instanceof Array ? arg : [arg];
+
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
@@ -929,7 +933,7 @@ export class Queryable<D extends DbContext, T> {
       database: this._tableDef.database ?? this.db.schema.database,
       schema: this._tableDef.schema ?? this.db.schema.schema,
       name: this._tableDef.name
-    }), columnDefs, ...records.map((item) => {
+    }), columnDefs, records.map((item) => {
       const result = {};
       for (const key of Object.keys(item)) {
         result[key] = this.db.qh.getBulkInsertQueryValue(item[key]);
@@ -938,15 +942,16 @@ export class Queryable<D extends DbContext, T> {
     }));
   }
 
-  public async insertAsync(...records: TInsertObject<T>[]): Promise<T[]> {
-    return await this._insertAsync(false, ...records);
+  public async insertAsync(args: TInsertObject<T> | (TInsertObject<T>[])): Promise<T[]> {
+    const records = args instanceof Array ? args : [args];
+    return await this._insertAsync(false, records);
   }
 
-  public async insertWithoutFkCheckAsync(...records: TInsertObject<T>[]): Promise<T[]> {
-    return await this._insertAsync(true, ...records);
+  public async insertWithoutFkCheckAsync(records: TInsertObject<T>[]): Promise<T[]> {
+    return await this._insertAsync(true, records);
   }
 
-  private async _insertAsync(ignoreFk: boolean, ...records: TInsertObject<T>[]): Promise<T[]> {
+  private async _insertAsync(ignoreFk: boolean, records: TInsertObject<T>[]): Promise<T[]> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
@@ -1014,7 +1019,7 @@ export class Queryable<D extends DbContext, T> {
         throw new NotImplementError("mssql 에 대한 IGNORE FK 가 아직 구현되어있지 않습니다.");
       }
 
-      const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
+      const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement && item.typeFwd() !== Uuid).map((item) => item.name);
       const hasAutoIncreaseColumnValue = Object.keys(records[0]).some((item) => aiColNames.includes(item));
 
       if (hasAutoIncreaseColumnValue) {
@@ -1060,15 +1065,16 @@ export class Queryable<D extends DbContext, T> {
     }
   }
 
-  public insertPrepare(...records: TInsertObject<T>[]): void {
-    this._insertPrepare(false, ...records);
+  public insertPrepare(args: TInsertObject<T> | (TInsertObject<T>[])): void {
+    const records = args instanceof Array ? args : [args];
+    this._insertPrepare(false, records);
   }
 
-  public insertWithoutFkCheckPrepare(...records: TInsertObject<T>[]): void {
-    this._insertPrepare(true, ...records);
+  public insertWithoutFkCheckPrepare(records: TInsertObject<T>[]): void {
+    this._insertPrepare(true, records);
   }
 
-  private _insertPrepare(ignoreFk: boolean, ...records: TInsertObject<T>[]): void {
+  private _insertPrepare(ignoreFk: boolean, records: TInsertObject<T>[]): void {
     if (records.length < 1) {
       return;
     }
@@ -1105,7 +1111,7 @@ export class Queryable<D extends DbContext, T> {
         throw new NotImplementError("mssql 에 대한 IGNORE FK 가 아직 구현되어있지 않습니다.");
       }
 
-      const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
+      const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement && item.typeFwd() !== Uuid).map((item) => item.name);
       const hasAutoIncreaseColumnValue = Object.keys(records[0]).some((item) => aiColNames.includes(item));
       if (hasAutoIncreaseColumnValue) {
         this.db.prepareDefs.push(...[

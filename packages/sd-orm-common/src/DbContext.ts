@@ -135,8 +135,8 @@ export abstract class DbContext {
     return await this._executor.executeAsync(queries);
   }
 
-  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], ...records: Record<string, any>[]): Promise<void> {
-    await this._executor.bulkInsertAsync(tableName, columnDefs, ...records);
+  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
+    await this._executor.bulkInsertAsync(tableName, columnDefs, records);
   }
 
   public async executePreparedAsync(): Promise<void> {

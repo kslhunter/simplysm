@@ -916,7 +916,7 @@ DEALLOCATE PREPARE stmt;`.trim();
     else {
       q += this.wrap(colDef.name) + " ";
       q += this.qh.type(colDef.dataType) + " ";
-      q += colDef.autoIncrement ? "IDENTITY(1,1) " : "";
+      q += colDef.autoIncrement ? this.qh.type(colDef.dataType) === "UNIQUEIDENTIFIER" ? "default NEWID() " : "IDENTITY(1,1) " : "";
       q += colDef.nullable ? "NULL" : "NOT NULL";
     }
     return q.trim();

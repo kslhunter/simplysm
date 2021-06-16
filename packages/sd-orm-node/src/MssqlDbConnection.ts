@@ -278,7 +278,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     return results;
   }
 
-  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], ...records: Record<string, any>[]): Promise<void> {
+  public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
     if (this._conn === undefined || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
     }
@@ -289,7 +289,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     await new Promise<void>((resolve, reject) => {
       const bulkLoad = this._conn?.newBulkLoad(tableName, (err: Error | null) => {
         if (err != null) {
-          reject(new Error(`[${err["code"] as string}] ${err.message}\n${JsonConvert.stringify(tediousColumnDefs)}\n-- query\n\n${JsonConvert.stringify(records)}\n--`));
+          reject(new Error(`[${err["code"] as string}] ${err.message}\n${JsonConvert.stringify(tediousColumnDefs)}\n-- query\n\n${JsonConvert.stringify(records).substr(0, 10000)}...\n--`));
           return;
         }
         resolve();

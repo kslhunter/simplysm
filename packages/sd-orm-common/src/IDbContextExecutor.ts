@@ -15,7 +15,7 @@ export interface IDbContextExecutor {
 
   executeAsync(queries: string[]): Promise<any[][]>;
 
-  bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], ...records: Record<string, any>[]): Promise<void>;
+  bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void>;
 
   closeAsync(): Promise<void>;
 }

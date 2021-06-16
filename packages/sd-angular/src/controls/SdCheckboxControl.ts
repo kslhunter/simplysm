@@ -7,8 +7,7 @@ import {
   Input,
   Output
 } from "@angular/core";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
-import { sdIconNames } from "../commons";
+import { sdIconNames, TSdIconName } from "../commons";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 
 @Component({
@@ -230,7 +229,7 @@ export class SdCheckboxControl {
     notnull: true,
     includes: sdIconNames
   })
-  public icon: IconName = "check";
+  public icon: TSdIconName = "check";
 
   @Input("label.style")
   @SdInputValidate(String)

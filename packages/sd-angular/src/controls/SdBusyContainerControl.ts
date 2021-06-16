@@ -10,7 +10,7 @@ import { SdBusyContainerRootProvider } from "../root-providers/SdBusyContainerRo
       <div class="_rect">
         <div class="_indicator"></div>
         <div class="_message" *ngIf="message">
-          {{ message }}
+          <pre>{{ message }}</pre>
         </div>
       </div>
       <div class="_progress" *ngIf="progressPercent !== undefined">

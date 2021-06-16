@@ -53,11 +53,13 @@ import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
       </ng-template>
 
       <ng-template #item let-item="item" let-index="index">
-        <sd-select-item [value]="item.id"
+        <sd-select-item [value]="item.__valueKey"
                         *ngIf="getItemSelectable(index, item)"
                         [hidden]="!getItemVisible(index, item)">
-          <ng-template [ngTemplateOutlet]="itemTemplateRef"
-                       [ngTemplateOutletContext]="{item: item, index: index}"></ng-template>
+          <div [style.text-decoration]="!getItemVisible(index, item) ? 'line-through' : undefined">
+            <ng-template [ngTemplateOutlet]="itemTemplateRef"
+                         [ngTemplateOutletContext]="{item: item, index: index}"></ng-template>
+          </div>
         </sd-select-item>
       </ng-template>
     </sd-select>

@@ -990,7 +990,7 @@ describe(`(node) orm.DbContext`, () => {
           if (db.dialect === "mysql") return;
 
           await db.connectAsync(async () => {
-            await db.test.bulkInsertAsync(...[
+            await db.test.bulkInsertAsync([
               { id: 10, name: "홍길동10" },
               { id: 11, name: "홍길동11" },
               { id: 12, name: "홍길동12" },

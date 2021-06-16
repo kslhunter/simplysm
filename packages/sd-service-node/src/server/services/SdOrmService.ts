@@ -103,13 +103,13 @@ export class SdOrmService extends SdServiceBase {
     return result.map((item, i) => SdOrmUtil.parseQueryResult(item, options ? options[i] : undefined));
   }
 
-  public async bulkInsertAsync(connId: number, tableName: string, columnDefs: IQueryColumnDef[], ...records: Record<string, any>[]): Promise<void> {
+  public async bulkInsertAsync(connId: number, tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
     const conn = SdOrmService._connections.get(connId);
     if (!conn) {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    await conn.bulkInsertAsync(tableName, columnDefs, ...records);
+    await conn.bulkInsertAsync(tableName, columnDefs, records);
   }
 
   private async _getOrmConfigAsync(configName: string): Promise<IDbConnectionConfig> {

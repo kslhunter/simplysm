@@ -6,7 +6,6 @@ import {
   icon,
   Icon,
   IconLookup,
-  IconName,
   IconParams,
   IconProp,
   library,
@@ -18,7 +17,14 @@ import {
   Transform
 } from "@fortawesome/fontawesome-svg-core";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
-import { ISdIconProps, objectWithKey, sdIconClassList, sdIconNames, sdIconNormalizeIconSpec } from "../../commons";
+import {
+  ISdIconProps,
+  objectWithKey,
+  sdIconClassList,
+  sdIconNames,
+  sdIconNormalizeIconSpec,
+  TSdIconName
+} from "../../commons";
 import { fal } from "@fortawesome/pro-light-svg-icons";
 import { far } from "@fortawesome/pro-regular-svg-icons";
 import { fas } from "@fortawesome/pro-solid-svg-icons";
@@ -50,7 +56,7 @@ export class SdIconControl implements OnChanges {
     type: String,
     includes: sdIconNames
   })
-  public icon?: IconName;
+  public icon?: TSdIconName;
 
   @Input()
   @SdInputValidate({
@@ -60,10 +66,21 @@ export class SdIconControl implements OnChanges {
   })
   public type: "fas" | "far" | "fab" | "fal" | "fad" = "fas";
 
-  @Input("fixedWidth")
+  @Input()
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-fixed-width")
   public fixedWidth?: boolean;
+
+  @Input("fw")
+  @SdInputValidate(Boolean)
+  public set fw(value: boolean | undefined) {
+    this.fixedWidth = value;
+  }
+
+  public get fw(): boolean | undefined {
+    return this.fixedWidth;
+  }
+
 
   @Input()
   @SdInputValidate({
@@ -77,7 +94,7 @@ export class SdIconControl implements OnChanges {
     type: String,
     includes: sdIconNames
   })
-  public mask?: IconName;
+  public mask?: TSdIconName;
 
   @Input()
   @SdInputValidate({

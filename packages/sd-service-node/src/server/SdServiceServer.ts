@@ -212,15 +212,15 @@ export class SdServiceServer extends EventEmitter {
         throw new Error(`인증되지 않은 클라이언트에서 요청을 받았습니다: ${connReq.headers.origin ?? ""}`);
       }
 
-      this._logger.debug(`요청을 받았습니다: ${origin.toString()} (${JsonConvert.stringify(req, { hideBuffer: true })})`);
+      this._logger.debug(`요청을 받았습니다: ${origin.toString()} (${JsonConvert.stringify(req, { hideBuffer: true }).substr(0, 10000)}...)`);
 
       try {
         const res = await this._onSocketRequestAsync(wsConn, req, connReq);
-        this._logger.debug(`결과를 반환합니다: ${origin.toString()} (${JsonConvert.stringify(res, { hideBuffer: true })})}`);
+        this._logger.debug(`결과를 반환합니다: ${origin.toString()} (${JsonConvert.stringify(res, { hideBuffer: true }).substr(0, 10000)}...)`);
         await wsConn.sendAsync(res);
       }
       catch (err) {
-        this._logger.error(`요청 처리중 에러가 발생했습니다: ${origin.toString()} (${JsonConvert.stringify(req, { hideBuffer: true })})`, err);
+        this._logger.error(`요청 처리중 에러가 발생했습니다: ${origin.toString()} (${JsonConvert.stringify(req, { hideBuffer: true }).substr(0, 10000)}...)`, err);
         const res: ISdServiceErrorResponse = {
           type: "error",
           requestId: req.id,

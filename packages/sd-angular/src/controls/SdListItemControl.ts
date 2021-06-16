@@ -12,8 +12,7 @@ import {
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { SdListControl } from "./SdListControl";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
-import { sdIconNames } from "../commons";
+import { sdIconNames, TSdIconName } from "../commons";
 
 @Component({
   selector: "sd-list-item",
@@ -131,7 +130,7 @@ export class SdListItemControl {
     type: String,
     includes: sdIconNames
   })
-  public selectedIcon?: IconName;
+  public selectedIcon?: TSdIconName;
 
   @HostBinding("attr.sd-has-children")
   public get hasChildren(): boolean {
