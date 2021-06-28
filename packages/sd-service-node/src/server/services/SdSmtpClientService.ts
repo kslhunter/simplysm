@@ -4,8 +4,8 @@ import { SdServiceServerConfigUtil } from "../SdServiceServerConfigUtil";
 import { ISmtpClientSendByDefaultOption, ISmtpClientSendOption } from "@simplysm/sd-service-common";
 
 export class SdSmtpClientService extends SdServiceBase {
-  public async sendAsync(options: ISmtpClientSendOption): Promise<void> {
-    await new Promise<number>((resolve, reject) => {
+  public async sendAsync(options: ISmtpClientSendOption): Promise<string> {
+    return await new Promise<string>((resolve, reject) => {
       const transport = nodemailer.createTransport({
         host: options.host,
         port: options.port,
@@ -33,7 +33,7 @@ export class SdSmtpClientService extends SdServiceBase {
     });
   }
 
-  public async sendByConfigAsync(configName: string, options: ISmtpClientSendByDefaultOption): Promise<void> {
+  public async sendByConfigAsync(configName: string, options: ISmtpClientSendByDefaultOption): Promise<string> {
     const config = (
       await SdServiceServerConfigUtil.getConfigAsync(this.server.rootPath, this.request.url)
     )?.["smtp"]?.[configName];
@@ -41,7 +41,7 @@ export class SdSmtpClientService extends SdServiceBase {
       throw new Error("서버에서 메일서버 설정을 찾을 수 없습니다.");
     }
 
-    await this.sendAsync({
+    return await this.sendAsync({
       user: config.user,
       pass: config.pass,
       host: config.host,

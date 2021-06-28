@@ -1748,11 +1748,20 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   }
 
   private _getHeaderGroups(columnControls: SdSheetColumnControl[]): { name?: string; widthPixel: number }[] {
-    return columnControls.groupBy((item) => item.group)
-      .map((item) => ({
-        name: item.key,
-        widthPixel: item.values.sum((item1) => this.columnWidthPixelMap.get(item1.guid)!)
-      }));
+    const result: { name?: string; widthPixel: number }[] = [];
+    for (const columnControl of columnControls) {
+      if (result.length === 0 || result.last()!.name !== columnControl.group) {
+        result.push({
+          name: columnControl.group,
+          widthPixel: this.columnWidthPixelMap.get(columnControl.guid)!
+        });
+      }
+      else {
+        result.last()!.widthPixel += this.columnWidthPixelMap.get(columnControl.guid)!;
+      }
+    }
+
+    return result;
   }
 
   private _getDisplayItemDefs(): { index: number; depth: number; visible: boolean; selectable: boolean; item: any }[] {

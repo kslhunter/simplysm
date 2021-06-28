@@ -928,7 +928,6 @@ export class Queryable<D extends DbContext, T> {
       nullable: col.nullable
     }));
 
-
     await this.db.bulkInsertAsync(this.db.qb.getTableName({
       database: this._tableDef.database ?? this.db.schema.database,
       schema: this._tableDef.schema ?? this.db.schema.schema,

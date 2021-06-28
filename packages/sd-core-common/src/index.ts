@@ -22,5 +22,6 @@ export * from "./utils/JsonConvert";
 export * from "./utils/MathUtil";
 export * from "./utils/NumberUtil";
 export * from "./utils/ObjectUtil";
+export * from "./utils/SdSyncEventEmitter";
 export * from "./utils/StringUtil";
 export * from "./utils/Wait";

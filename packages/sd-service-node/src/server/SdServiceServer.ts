@@ -1,9 +1,8 @@
-import { EventEmitter } from "events";
 import * as https from "https";
 import * as http from "http";
 import * as WebSocket from "ws";
 import { FsUtil, Logger, SdProcessManager } from "@simplysm/sd-core-node";
-import { JsonConvert, Type } from "@simplysm/sd-core-common";
+import { JsonConvert, SdEventEmitter, Type } from "@simplysm/sd-core-common";
 import { SdServiceServerConnection } from "./SdServiceServerConnection";
 import { SdServiceBase } from "./SdServiceBase";
 import { NextHandleFunction } from "connect";
@@ -18,7 +17,7 @@ import { SdOrmService } from "./services/SdOrmService";
 import { SdSmtpClientService } from "./services/SdSmtpClientService";
 import { SdServiceServerConfigUtil } from "./SdServiceServerConfigUtil";
 
-export class SdServiceServer extends EventEmitter {
+export class SdServiceServer extends SdEventEmitter {
   private _wsServer?: WebSocket.Server;
   private _httpServer?: http.Server | https.Server;
   private readonly _logger: Logger;
@@ -106,8 +105,8 @@ export class SdServiceServer extends EventEmitter {
         });
       });
 
-      this._httpServer.listen(this.options.port, () => {
-        this.emit("ready");
+      this._httpServer.listen(this.options.port, async () => {
+        await this.emit("ready");
         resolve();
         isResolved = true;
       });
@@ -159,8 +158,8 @@ export class SdServiceServer extends EventEmitter {
       });
     }
 
+    await this.emit("close");
     this._logger.log(`서버가 종료되었습니다.`);
-    this.emit("close");
   }
 
   public async emitEventAsync(eventName: string, infoSelector: (item: any) => boolean, data: any): Promise<void> {
