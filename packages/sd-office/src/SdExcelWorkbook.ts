@@ -17,6 +17,10 @@ export class SdExcelWorkbook {
     buffer: Buffer;
   }[];
 
+  public get worksheetNames(): string[] {
+    return this._worksheets.map((item) => item.name);
+  }
+
   public static create(): SdExcelWorkbook {
     const wb = new SdExcelWorkbook();
 

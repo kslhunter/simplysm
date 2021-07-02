@@ -216,6 +216,23 @@ OUTER APPLY (
   WHERE ([TBL2].[id] = 3)
 ) as [TBL2]`.trim());
     });
+
+    it("UNPIVOT", () => {
+      expect(
+        new QueryBuilder("mssql").select({
+          from: "[TEST_DB].[TEST_SCHEMA].[TEST_TABLE]",
+          as: "[TBL]",
+          unpivot: {
+            valueColumn: "[quantity]",
+            pivotColumn: "[yearMonthText]",
+            pivotKeys: ["202101", "202102"]
+          }
+        })
+      ).to.equal(`
+SELECT *
+FROM [TEST_DB].[TEST_SCHEMA].[TEST_TABLE] as [TBL]
+UNPIVOT ([quantity] FOR [yearMonthText] IN ([202101], [202102])) as [TBL]`.trim());
+    });
   });
 
   describe("INSERT", () => {

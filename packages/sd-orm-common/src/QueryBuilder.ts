@@ -537,7 +537,16 @@ ORDER BY i.index_id, ic.key_ordinal;
 
     if (def.pivot) {
       q += `PIVOT (SUM(${this.getQueryOfQueryValue(def.pivot.valueColumn)}) FOR ${this.getQueryOfQueryValue(def.pivot.pivotColumn)}`;
-      q += ` IN (${def.pivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${def.as !== undefined ? `as ${def.as}` : ""}`;
+      q += ` IN (${def.pivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${def.as !== undefined ? ` as ${def.as}` : ""}`;
+      q += "\n";
+    }
+
+
+    // UNPIVOT
+
+    if (def.unpivot) {
+      q += `UNPIVOT (${this.getQueryOfQueryValue(def.unpivot.valueColumn)} FOR ${this.getQueryOfQueryValue(def.unpivot.pivotColumn)}`;
+      q += ` IN (${def.unpivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${def.as !== undefined ? ` as ${def.as}` : ""}`;
       q += "\n";
     }
 

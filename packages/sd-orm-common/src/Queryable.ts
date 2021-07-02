@@ -46,6 +46,16 @@ export class Queryable<D extends DbContext, T> {
 
   private readonly _def: IQueryableDef;
 
+  public get tableName(): string {
+    if (!this._tableDef) throw new NeverEntryError();
+
+    return this.db.qb.getTableName({
+      database: this._tableDef.database ?? this.db.schema.database,
+      schema: this._tableDef.schema ?? this.db.schema.schema,
+      name: this._tableDef.name
+    });
+  }
+
   public constructor(db: D, cloneQueryable: Queryable<D, T>);
   public constructor(db: D, cloneQueryable: Queryable<D, any>, entity: TEntity<T>);
   public constructor(db: D, tableType: Type<T>, as?: string);
@@ -87,11 +97,7 @@ export class Queryable<D extends DbContext, T> {
 
       // Init FROM
       this._def = {
-        from: this.db.qb.getTableName({
-          database: this._tableDef.database ?? this.db.schema.database,
-          schema: this._tableDef.schema ?? this.db.schema.schema,
-          name: this._tableDef.name
-        })
+        from: this.tableName
       };
     }
     // tableDef 없이 생성 (wrapping)
@@ -238,6 +244,33 @@ export class Queryable<D extends DbContext, T> {
     result._def.pivot = {
       valueColumn: this.db.qh.getQueryValue(valueColumn),
       pivotColumn: this.db.qh.getQueryValue(pivotColumn),
+      pivotKeys
+    };
+    return result as any;
+  }
+
+  public unpivot<VC extends string, PC extends string>(valueColumn: VC,
+                                                       pivotColumn: PC,
+                                                       pivotKeys: string[]): Queryable<D, T & Record<PC, string> & Record<VC, TQueryValue>> {
+    const entity: any = { ...this._entity };
+
+    if (entity[pivotKeys[0]] instanceof QueryUnit) {
+      entity[valueColumn] = new QueryUnit<any>(entity[pivotKeys[0]].type, `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(valueColumn)}`);
+      entity[pivotColumn] = new QueryUnit<any>(String, `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(pivotColumn)}`);
+
+      for (const pivotKey of pivotKeys) {
+        delete entity[pivotKey];
+      }
+    }
+    else {
+      throw new NotImplementError();
+    }
+
+    const result = new Queryable(this.db, this, entity);
+
+    result._def.unpivot = {
+      valueColumn: this.db.qb.wrap(valueColumn),
+      pivotColumn: this.db.qb.wrap(pivotColumn),
       pivotKeys
     };
     return result as any;
@@ -572,6 +605,7 @@ export class Queryable<D extends DbContext, T> {
     result.orderBy = this._def.orderBy;
     result.limit = this._def.limit;
     result.pivot = this._def.pivot;
+    result.unpivot = this._def.unpivot;
     result.groupBy = this._def.groupBy;
     result.having = this._def.having;
     result.lock = this._def.lock;
@@ -928,11 +962,7 @@ export class Queryable<D extends DbContext, T> {
       nullable: col.nullable
     }));
 
-    await this.db.bulkInsertAsync(this.db.qb.getTableName({
-      database: this._tableDef.database ?? this.db.schema.database,
-      schema: this._tableDef.schema ?? this.db.schema.schema,
-      name: this._tableDef.name
-    }), columnDefs, records.map((item) => {
+    await this.db.bulkInsertAsync(this.tableName, columnDefs, records.map((item) => {
       const result = {};
       for (const key of Object.keys(item)) {
         result[key] = this.db.qh.getBulkInsertQueryValue(item[key]);

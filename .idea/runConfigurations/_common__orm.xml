@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="orm" type="mocha-javascript-test-runner">
+  <configuration default="false" name="(common) orm" type="mocha-javascript-test-runner">
     <node-interpreter>project</node-interpreter>
     <node-options />
     <mocha-package>$PROJECT_DIR$/node_modules/mocha</mocha-package>
@@ -12,7 +12,7 @@
     <ui>bdd</ui>
     <extra-mocha-options>--require=ts-node/register --require=tsconfig-paths/register --timeout=10000</extra-mocha-options>
     <test-kind>PATTERN</test-kind>
-    <test-pattern>test/src/node/orm/*.spec.ts</test-pattern>
+    <test-pattern>test/src/common/orm/*.spec.ts</test-pattern>
     <method v="2" />
   </configuration>
 </component>

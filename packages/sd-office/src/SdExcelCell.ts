@@ -179,7 +179,8 @@ export class SdExcelCell {
       const beforeRowIndex = beforeRow !== undefined ? rowNodes.indexOf(beforeRow) : -1;
 
       rowNodes.insert(beforeRowIndex + 1, currRow);
-      this.excelWorkSheet.rowDataMap.set(beforeRowIndex + 1, currRow);
+      // this.excelWorkSheet.rowDataMap.set(beforeRowIndex + 1, currRow);
+      this.excelWorkSheet.rowDataMap.set(row, currRow);
     }
 
     currRow.c = currRow.c ?? [];

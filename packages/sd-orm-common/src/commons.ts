@@ -217,6 +217,11 @@ export interface ISelectQueryDef {
     pivotColumn: TQueryBuilderValue;
     pivotKeys: string[];
   };
+  unpivot?: {
+    valueColumn: TQueryBuilderValue;
+    pivotColumn: TQueryBuilderValue;
+    pivotKeys: string[];
+  };
   lock?: boolean;
 
   select?: Record<string, TQueryBuilderValue>;
@@ -361,6 +366,11 @@ export interface IQueryableDef {
   orderBy?: [TQueryBuilderValue, "ASC" | "DESC"][];
   limit?: [number, number];
   pivot?: {
+    valueColumn: TQueryBuilderValue;
+    pivotColumn: TQueryBuilderValue;
+    pivotKeys: string[];
+  };
+  unpivot?: {
     valueColumn: TQueryBuilderValue;
     pivotColumn: TQueryBuilderValue;
     pivotKeys: string[];
