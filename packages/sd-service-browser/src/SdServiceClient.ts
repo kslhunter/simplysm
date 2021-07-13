@@ -40,6 +40,7 @@ export class SdServiceClient extends EventEmitter {
       this._ws = new WebSocket(`${protocol}://${host}:${port}`);
 
       this._ws.onopen = (): void => {
+        this._eventEmitter.emit("open");
         resolve();
       };
 

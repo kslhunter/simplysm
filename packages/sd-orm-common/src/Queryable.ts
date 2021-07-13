@@ -759,7 +759,7 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
-  public getUpsertDef(updateObjOrFwd: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>), insertObjOrFwd?: TInsertObject<T> | (() => TInsertObject<T>)): IUpsertQueryDef {
+  public getUpsertDef<U extends TUpdateObject<T>>(updateObj: U, insertObj?: TInsertObject<T>): IUpsertQueryDef {
     if (this._def.join !== undefined) {
       throw new Error("INSERT 와 JOIN 를 함께 사용할 수 없습니다.");
     }
@@ -800,14 +800,14 @@ export class Queryable<D extends DbContext, T> {
       throw new Error("UPSERT 시, WHERE 를 반드시 사용해야 합니다.");
     }
 
-    const updateRecordEntity = typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd;
+    // const updateRecordEntity = typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd;
     const updateRecord = {};
-    for (const key of Object.keys(updateRecordEntity)) {
-      updateRecord[this.db.qb.wrap(`${key}`)] = this.db.qh.getQueryValue(updateRecordEntity[key]);
+    for (const key of Object.keys(updateObj)) {
+      updateRecord[this.db.qb.wrap(`${key}`)] = this.db.qh.getQueryValue(updateObj[key]);
     }
 
 
-    const insertObj = typeof insertObjOrFwd === "function" ? insertObjOrFwd() : insertObjOrFwd;
+    // const insertObj = typeof insertObjOrFwd === "function" ? insertObjOrFwd(updateRecord as any) : insertObjOrFwd;
     let insertRecord = {};
     if (insertObj) {
       for (const key of Object.keys(insertObj)) {
@@ -1299,7 +1299,7 @@ export class Queryable<D extends DbContext, T> {
     this.db.prepareDefs.push({ type: "delete", ...queryDef });
   }
 
-  public async upsertAsync(updateObjOrFwd: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>), insertObjOrFwd?: TInsertObject<T> | (() => TInsertObject<T>)): Promise<T[]> {
+  public async upsertAsync<U extends TUpdateObject<T>>(updateObjOrFwd: U | ((entity: TEntity<T>) => U), insertObjOrFwd?: TInsertObject<T> | ((updateRecord: U) => TInsertObject<T>)): Promise<T[]> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
@@ -1308,7 +1308,14 @@ export class Queryable<D extends DbContext, T> {
     }
     DbContext.selectCache.clear();
 
-    const queryDef = this.getUpsertDef(updateObjOrFwd, insertObjOrFwd);
+    const updateRecord = (typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd);
+    const insertRecord = (
+      insertObjOrFwd
+        ? (typeof insertObjOrFwd === "function" ? insertObjOrFwd(updateRecord) : insertObjOrFwd)
+        : updateRecord
+    ) as TInsertObject<T>;
+
+    const queryDef = this.getUpsertDef(updateRecord, insertRecord);
     const parseOption = this._getParseOption();
 
     if (this.db.dialect === "mysql") {
@@ -1326,10 +1333,6 @@ export class Queryable<D extends DbContext, T> {
       const clone: Queryable<D, T> = new Queryable(this.db, this, newEntity);
 
       const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
-
-      const insertRecord = insertObjOrFwd
-        ? (typeof insertObjOrFwd === "function" ? insertObjOrFwd() : insertObjOrFwd)
-        : (typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd);
 
       const result = (
         await this.db.executeDefsAsync(
@@ -1379,7 +1382,7 @@ export class Queryable<D extends DbContext, T> {
     }
   }
 
-  public upsertPrepare(updateObjOrFwd: TUpdateObject<T> | ((entity: TEntity<T>) => TUpdateObject<T>), insertObj?: TInsertObject<T>): void {
+  public upsertPrepare<U extends TUpdateObject<T>>(updateObjOrFwd: U | ((entity: TEntity<T>) => U), insertObjOrFwd?: TInsertObject<T> | ((updateRecord: U) => TInsertObject<T>)): void {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
@@ -1387,7 +1390,14 @@ export class Queryable<D extends DbContext, T> {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
 
-    const queryDef = this.getUpsertDef(updateObjOrFwd, insertObj);
+    const updateRecord = (typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd);
+    const insertRecord = (
+      insertObjOrFwd
+        ? (typeof insertObjOrFwd === "function" ? insertObjOrFwd(updateRecord) : insertObjOrFwd)
+        : updateRecord
+    ) as TInsertObject<T>;
+
+    const queryDef = this.getUpsertDef(updateRecord, insertRecord);
     this.db.prepareDefs.push({ type: "upsert", ...queryDef });
   }
 

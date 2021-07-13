@@ -9,7 +9,7 @@ import {
   ViewChild
 } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
-import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-textfield",
@@ -280,11 +280,11 @@ export class SdTextfieldControl {
   @Input()
   @SdInputValidate({
     type: String,
-    includes: ["number", "text", "password", "date", "datetime", "datetime-sec", "time", "time-sec", "month", "year", "color", "email"],
+    includes: ["number", "text", "password", "date", "datetime", "datetime-sec", "time", "time-sec", "month", "year", "color", "email", "brn"],
     notnull: true
   })
   @HostBinding("attr.sd-type")
-  public type: "number" | "text" | "password" | "date" | "datetime" | "datetime-sec" | "time" | "time-sec" | "month" | "year" | "color" | "email" = "text";
+  public type: "number" | "text" | "password" | "date" | "datetime" | "datetime-sec" | "time" | "time-sec" | "month" | "year" | "color" | "email" | "brn" = "text";
 
   @Input()
   @SdInputValidate(String)
@@ -399,10 +399,11 @@ export class SdTextfieldControl {
 
   public get controlType(): string {
     return this.type === "number" ? "text"
-      : this.type === "datetime" ? "datetime-local"
-        : this.type === "datetime-sec" ? "datetime-local"
-          : this.type === "time-sec" ? "time"
-            : this.type;
+      : this.type === "brn" ? "text"
+        : this.type === "datetime" ? "datetime-local"
+          : this.type === "datetime-sec" ? "datetime-local"
+            : this.type === "time-sec" ? "time"
+              : this.type;
   }
 
   public get controlValue(): string {
@@ -412,6 +413,19 @@ export class SdTextfieldControl {
 
     if (this.type === "number" && typeof this.value === "number") {
       return this.value.toLocaleString(undefined, { maximumFractionDigits: 10 });
+    }
+    if (this.type === "brn" && typeof this.value === "string") {
+      const str = this.value.replace(/[^0-9]/g, "");
+      const first = str.substr(0, 3);
+      const second = str.substr(3, 2);
+      const third = str.substr(5, 5);
+      return first
+        + (
+          StringUtil.isNullOrEmpty(second) ? "" : "-" + second
+            + (
+              StringUtil.isNullOrEmpty(third) ? "" : "-" + third
+            )
+        );
     }
     if (this.type === "datetime" && this.value instanceof DateTime) {
       return this.value.toFormatString("yyyy-MM-ddTHH:mm");
@@ -484,6 +498,11 @@ export class SdTextfieldControl {
         errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
       }
     }
+    else if (this.type === "brn") {
+      if (typeof this.value !== "string" || !(/^[0-9]{10}$/).test(this.value)) {
+        errorMessages.push("BRN 형식이 잘못되었습니다.");
+      }
+    }
     else if (["year", "month", "date"].includes(this.type)) {
       if (!(this.value instanceof DateOnly)) {
         errorMessages.push("날짜를 입력하세요");
@@ -538,12 +557,24 @@ export class SdTextfieldControl {
     }
     else if (this.type === "number") {
       const inputValue = inputEl.value.replace(/,/g, "");
-      const currValue = inputValue.endsWith(".") || Number.isNaN(Number(inputValue)) ? inputValue : Number(inputValue);
+      const currValue = (
+        Number.isNaN(Number(inputValue))
+        || inputValue.endsWith(".")
+        || (
+          inputValue.includes(".")
+          && Number(inputValue) === 0
+        )
+      )
+        ? inputValue
+        : Number(inputValue);
       newValue = currValue;
 
       if (newValue === currValue) {
         inputEl.value = currValue.toString();
       }
+    }
+    else if (this.type === "brn") {
+      newValue = inputEl.value.replace(/[^0-9]/g, "");
     }
     else if (["year", "month", "date"].includes(this.type)) {
       try {

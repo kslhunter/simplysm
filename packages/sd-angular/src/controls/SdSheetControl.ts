@@ -1222,6 +1222,27 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
         }
       });
     }
+
+    const columnControlsChanges = this._columnControlsDiffer.diff(this.columnControls);
+
+    if (columnControlsChanges) {
+      this.columnWidthPixelMap = this.columnControls?.toArray()
+        .toMap((item) => item.guid, (item) => this._getColumnWidthPixel(item)) ?? new Map<string, number>();
+
+      this.hasHeaderGroup = (this.columnControls?.filter((item) => item.group !== undefined).length ?? 0) > 0;
+      this.hasSummaryGroup = (this.columnControls?.filter((item) => Boolean(item.summaryTemplateRef)).length ?? 0) > 0;
+
+      this.fixedColumnControls = this._getColumnControlsOfFixType(true);
+      this.nonFixedColumnControls = this._getColumnControlsOfFixType(false);
+
+      this.fixedHeaderGroups = this._getHeaderGroups(this.fixedColumnControls);
+      this.nonFixedHeaderGroups = this._getHeaderGroups(this.nonFixedColumnControls);
+
+      this.isGroupLastColumnMap = this.columnControls?.toArray()
+        .toMap((item) => item.guid, (item) => this._getIsGroupLastColumn(item)) ?? new Map<string, boolean>();
+
+      this._cdr.markForCheck();
+    }
   }
 
   public async onDisplayTypeChangeButtonClick(): Promise<void> {

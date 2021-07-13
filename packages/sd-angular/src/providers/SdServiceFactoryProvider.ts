@@ -73,6 +73,8 @@ export class SdServiceFactoryProvider {
 export class SdNgServiceClient {
   public client: SdServiceClient;
 
+  private readonly _connectedEventListeners: (() => Promise<void>)[] = [];
+
   public get connected(): boolean {
     return this.client.connected;
   }
@@ -86,6 +88,11 @@ export class SdNgServiceClient {
   public async connectAsync(): Promise<void> {
     this.client.on("error", async (err) => {
       await this._systemLog.writeAsync("error", err);
+    });
+    this.client.on("open", async () => {
+      for (const connectedEventListener of this._connectedEventListeners) {
+        await connectedEventListener();
+      }
     });
     await this.client.connectAsync();
   }
@@ -133,6 +140,13 @@ export class SdNgServiceClient {
 
   public async closeAsync(): Promise<void> {
     await this.client.closeAsync();
+  }
+
+  public async onConnected(callback: () => Promise<void>): Promise<void> {
+    this._connectedEventListeners.push(callback);
+    if (this.client.connected) {
+      await callback();
+    }
   }
 }
 

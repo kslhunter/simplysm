@@ -495,14 +495,14 @@ export interface IValidateResult<T> {
   message?: string;
 }
 
-type TValidateObjectDef<T> = { [K in keyof T]?: TValidateDef<T[K]> };
-type TValidateObjectResult<T> = { [K in keyof T]?: IValidateResult<T[K]> };
+type TValidateObjectDef<T> = { [K in keyof T]?: TValidateDef<any> };
+type TValidateObjectResult<T> = { [K in keyof T]?: IValidateResult<any> };
 
 export interface IValidateDefWithName<T> extends IValidateDef<T> {
   displayName: string;
 }
 
-type TValidateObjectDefWithName<T> = { [K in keyof T]?: IValidateDefWithName<T[K]> };
+type TValidateObjectDefWithName<T> = { [K in keyof T]?: IValidateDefWithName<any> };
 
 interface IValidateArrayResult<T> {
   index: number;

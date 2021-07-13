@@ -1093,7 +1093,7 @@ export class DbModelPage implements OnInit {
         oneColumnText += "  @Column({ ";
         oneColumnText += `description: "${columnDef.description!}"`;
 
-        if (["TEXT", "DECIMAL", "STRING", "BINARY"].includes(columnDef.dataType!)) {
+        if (["TEXT", "DECIMAL", "STRING", "FIXSTRING", "BINARY"].includes(columnDef.dataType!)) {
           oneColumnText += `, dataType: { type: "${columnDef.dataType!}"`;
           oneColumnText += columnDef.length === undefined ? ""
             : columnDef.length === "MAX" ? `, length: "MAX"`
@@ -1109,7 +1109,7 @@ export class DbModelPage implements OnInit {
         oneColumnText += " })\r\n";
 
         // COLUMN
-        const dataTypeText = columnDef.dataType === "TEXT" || columnDef.dataType === "STRING" ? "string"
+        const dataTypeText = columnDef.dataType === "TEXT" || columnDef.dataType === "STRING" || columnDef.dataType === "FIXSTRING" ? "string"
           : columnDef.dataType === "DECIMAL" ? "number"
             : columnDef.dataType === "BINARY" ? "Buffer"
               : columnDef.dataType;

@@ -1099,7 +1099,7 @@ describe("(common) orm.Queryable (QueryableDef => QueryDef)", () => {
       }).to.throw(/WHERE/);
     });
 
-    it("기본적으로 테이블 데이터를 수정하며, WHERE 문에 부합하는 데이터가 없으면 INSERT 한다.", () => {
+    /*it("기본적으로 테이블 데이터를 수정하며, WHERE 문에 부합하는 데이터가 없으면 INSERT 한다.", () => {
       expect(
         db.test
           .where((item) => [db.qh.equal(item.id, 1)])
@@ -1122,7 +1122,7 @@ describe("(common) orm.Queryable (QueryableDef => QueryDef)", () => {
         },
         output: ["*"]
       });
-    });
+    });*/
   });
 
   describe("DELETE", () => {

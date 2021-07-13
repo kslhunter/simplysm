@@ -355,6 +355,8 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
           return { type: tedious.TYPES.Decimal, precision: currType.precision, scale: currType.digits };
         case "STRING":
           return { type: tedious.TYPES.NVarChar, length: currType.length === "MAX" ? "max" : (currType.length ?? 255) };
+        case "FIXSTRING":
+          return { type: tedious.TYPES.NChar, length: currType.length };
         case "BINARY":
           return {
             type: tedious.TYPES.VarBinary,

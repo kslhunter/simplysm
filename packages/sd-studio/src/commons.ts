@@ -102,6 +102,7 @@ export type TDataType =
   | "TEXT"
   | "DECIMAL"
   | "STRING"
+  | "FIXSTRING"
   | "BINARY";
 export const COLUMN_DATA_TYPES: TDataType[] = [
   "number",
@@ -113,5 +114,6 @@ export const COLUMN_DATA_TYPES: TDataType[] = [
   "TEXT",
   "DECIMAL",
   "STRING",
+  "FIXSTRING",
   "BINARY"
 ];

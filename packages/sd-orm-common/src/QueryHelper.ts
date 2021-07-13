@@ -551,6 +551,8 @@ export class QueryHelper {
           else {
             return "NVARCHAR(" + (currType.length ?? "255") + ")";
           }
+        case "FIXSTRING":
+          return "NCHAR(" + currType.length + ")";
         case "BINARY":
           if (this._dialect === "mysql") {
             const len = (currType.length ?? "MAX");

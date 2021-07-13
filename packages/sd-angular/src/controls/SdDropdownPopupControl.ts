@@ -31,6 +31,7 @@ import { ISdResizeEvent } from "@simplysm/sd-core-browser";
         width: 100%;
         height: 100%;
         overflow: auto;
+        white-space: nowrap;
       }
 
       &:focus {

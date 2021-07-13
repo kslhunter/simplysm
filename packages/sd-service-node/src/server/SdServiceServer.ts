@@ -106,7 +106,12 @@ export class SdServiceServer extends SdEventEmitter {
       });
 
       this._httpServer.listen(this.options.port, async () => {
-        await this.emit("ready");
+        try {
+          await this.emit("ready");
+        }
+        catch (err) {
+          this._logger.error(`ready 이벤트를 실행하는동안 오류가 발생했습니다.`, err);
+        }
         resolve();
         isResolved = true;
       });

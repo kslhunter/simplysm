@@ -2,7 +2,7 @@ import { QueryBuilder } from "./QueryBuilder";
 import { IDbContextExecutor } from "./IDbContextExecutor";
 import { QueryHelper } from "./QueryHelper";
 import { IQueryColumnDef, IQueryResultParseOption, ISOLATION_LEVEL, ITableDef, TQueryDef } from "./commons";
-import { NeverEntryError, ObjectUtil, SdError, Type } from "@simplysm/sd-core-common";
+import { DateTime, NeverEntryError, ObjectUtil, SdError, Type } from "@simplysm/sd-core-common";
 import { IDbMigration } from "./IDbMigration";
 import { Queryable } from "./Queryable";
 import { SystemMigration } from "./SystemMigration";
@@ -14,6 +14,8 @@ export abstract class DbContext {
   public static readonly selectCache = new Map<string, { result: any[]; timeout: any } | undefined>();
 
   public status: "ready" | "connect" | "transact" = "ready";
+
+  public lastConnectionDateTime?: DateTime;
 
   public prepareDefs: TQueryDef[] = [];
 
@@ -34,6 +36,7 @@ export abstract class DbContext {
   public async connectWithoutTransactionAsync<R>(callback: () => Promise<R>): Promise<R> {
     await this._executor.connectAsync();
     this.status = "connect";
+    this.lastConnectionDateTime = new DateTime();
 
     let result: R;
     try {
@@ -42,17 +45,20 @@ export abstract class DbContext {
     catch (err) {
       await this._executor.closeAsync();
       this.status = "ready";
+      this.lastConnectionDateTime = undefined;
       throw err;
     }
 
     await this._executor.closeAsync();
     this.status = "ready";
+    this.lastConnectionDateTime = undefined;
     return result;
   }
 
   public async connectAsync<R>(fn: () => Promise<R>, isolationLevel?: ISOLATION_LEVEL): Promise<R> {
     await this._executor.connectAsync();
     this.status = "connect";
+    this.lastConnectionDateTime = new DateTime();
 
     await this._executor.beginTransactionAsync(isolationLevel);
     this.status = "transact";
@@ -63,11 +69,13 @@ export abstract class DbContext {
 
       await this._executor.commitTransactionAsync();
       this.status = "connect";
+      this.lastConnectionDateTime = new DateTime();
     }
     catch (err) {
       try {
         await this._executor.rollbackTransactionAsync();
         this.status = "connect";
+        this.lastConnectionDateTime = new DateTime();
       }
       catch (err1) {
         if (!(err1 instanceof Error)) throw new NeverEntryError();
@@ -75,17 +83,20 @@ export abstract class DbContext {
         if (!err1.message.includes("ROLLBACK") || !err1.message.includes("BEGIN")) {
           await this._executor.closeAsync();
           this.status = "ready";
+          this.lastConnectionDateTime = undefined;
           throw err1;
         }
       }
 
       await this._executor.closeAsync();
       this.status = "ready";
+      this.lastConnectionDateTime = undefined;
       throw err;
     }
 
     await this._executor.closeAsync();
     this.status = "ready";
+    this.lastConnectionDateTime = undefined;
     return result;
   }
 
@@ -103,11 +114,13 @@ export abstract class DbContext {
 
       await this._executor.commitTransactionAsync();
       this.status = "connect";
+      this.lastConnectionDateTime = new DateTime();
     }
     catch (err) {
       try {
         await this._executor.rollbackTransactionAsync();
         this.status = "connect";
+        this.lastConnectionDateTime = new DateTime();
       }
       catch (err1) {
         if (!(err1 instanceof Error)) throw new NeverEntryError();
@@ -115,12 +128,14 @@ export abstract class DbContext {
         if (!err1.message.includes("ROLLBACK") || !err1.message.includes("BEGIN")) {
           await this._executor.closeAsync();
           this.status = "ready";
+          this.lastConnectionDateTime = undefined;
           throw err1;
         }
       }
 
       await this._executor.closeAsync();
       this.status = "ready";
+      this.lastConnectionDateTime = undefined;
       throw err;
     }
 

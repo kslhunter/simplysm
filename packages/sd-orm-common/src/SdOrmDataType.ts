@@ -4,6 +4,7 @@ export type TSdOrmDataType =
   ISdOrmDataTypeOfText |
   ISdOrmDataTypeOfDecimal |
   ISdOrmDataTypeOfString |
+  ISdOrmDataTypeOfFixString |
   ISdOrmDataTypeOfBinary;
 
 export interface ISdOrmDataTypeOfText {
@@ -19,6 +20,11 @@ export interface ISdOrmDataTypeOfDecimal {
 export interface ISdOrmDataTypeOfString {
   type: "STRING";
   length?: number | "MAX";
+}
+
+export interface ISdOrmDataTypeOfFixString {
+  type: "FIXSTRING";
+  length: number;
 }
 
 export interface ISdOrmDataTypeOfBinary {

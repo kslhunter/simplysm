@@ -71,6 +71,12 @@ small {
   }
 }
 
+.sd-help {
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  cursor: help;
+}
+
 // DEFAUlT CONFIGS
 *[hidden] {
   display: none !important;
