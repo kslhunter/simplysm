@@ -24,6 +24,8 @@ import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
              [required]="required"
              [attr.min]="min"
              [attr.max]="max"
+             [attr.minlength]="minlength"
+             [attr.maxlength]="maxlength"
              [attr.step]="controlStep"
              [attr.pattern]="pattern"
              [attr.class]="inputClass"
@@ -321,6 +323,14 @@ export class SdTextfieldControl {
   @SdInputValidate(Number)
   public max?: number;
 
+  @Input()
+  @SdInputValidate(Number)
+  public minlength?: number;
+
+  @Input()
+  @SdInputValidate(Number)
+  public maxlength?: number;
+
   /**
    * 10, 1, 0.1, 0.01, 0.01 방식으로 입력
    */
@@ -516,6 +526,14 @@ export class SdTextfieldControl {
     else if (["time", "time-sec"].includes(this.type)) {
       if (!(this.value instanceof Time)) {
         errorMessages.push("시간을 입력하세요");
+      }
+    }
+    else if (this.type === "text") {
+      if (this.minlength !== undefined && this.minlength > (this.value as string).length) {
+        errorMessages.push(`문자의 길이가 ${this.minlength}보다 길거나 같아야 합니다.`);
+      }
+      if (this.maxlength !== undefined && this.maxlength > (this.value as string).length) {
+        errorMessages.push(`문자의 길이가 ${this.maxlength}보다 짧거나 같아야 합니다.`);
       }
     }
 
