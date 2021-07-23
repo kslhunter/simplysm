@@ -26,28 +26,31 @@ import { ObjectUtil, TFlatType } from "@simplysm/sd-core-common";
               {{ this.getDisplayTitle(key) }}
             </th>
             <td style="text-align: right"
-                [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">>
-              {{ getDisplayName(key, data.theirs[key]) }}
+                [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">
+              >
+              {{ getDisplayName(key, data.theirs[key], data.theirs) }}
             </td>
             <td
               [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.theirs[key], data.origin[key])">
-                <sd-icon fixedWidth icon="arrow-right" (click)="data.origin[key] = data.theirs[key]" style="pointer-events: auto"></sd-icon>
+                <sd-icon fixedWidth icon="arrow-right" (click)="data.origin[key] = data.theirs[key]"
+                         style="pointer-events: auto"></sd-icon>
               </sd-anchor>
             </td>
             <td style="text-align: center"
                 [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsAllNotEqual(key)">
-              {{ getDisplayName(key, data.origin[key]) }}
+              {{ getDisplayName(key, data.origin[key], data.origin) }}
             </td>
             <td
               [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.yours[key], data.origin[key])">
-                <sd-icon fixedWidth icon="arrow-left" (click)="data.origin[key] = data.yours[key]" style="pointer-events: auto"></sd-icon>
+                <sd-icon fixedWidth icon="arrow-left" (click)="data.origin[key] = data.yours[key]"
+                         style="pointer-events: auto"></sd-icon>
               </sd-anchor>
             </td>
             <td style="text-align: left"
                 [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
-              {{ getDisplayName(key, data.yours[key]) }}
+              {{ getDisplayName(key, data.yours[key], data.yours) }}
             </td>
           </tr>
           </tbody>
@@ -66,7 +69,7 @@ export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends Sd
   public orgData!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;
   public keys!: string[];
   public displayNameRecord?: Partial<Record<keyof T, string>>;
-  public valueTextConverter?: <K extends keyof T>(key: K, value: T[K]) => string | undefined;
+  public valueTextConverter?: <K extends keyof T>(key: K, value: T[K], item: T) => string | undefined;
 
   public trackByMeFn = (index: number, item: any): any => item;
 
@@ -98,9 +101,9 @@ export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends Sd
     return this.displayNameRecord[key] ?? key;
   }
 
-  public getDisplayName(key: string, val: any): TFlatType {
+  public getDisplayName(key: string, val: any, item: any): TFlatType {
     if (!this.valueTextConverter) return val;
-    return this.valueTextConverter(key, val);
+    return this.valueTextConverter(key, val, item);
   }
 
   public getIsOrgAllNotEqual(key: string): boolean {
@@ -129,5 +132,5 @@ export interface ISdObjectMerge3ModalInput<T extends Record<string, TFlatType>> 
   origin: T;
   yours: T;
   displayNameRecord?: Partial<Record<keyof T, string>>;
-  valueTextConverter?: <K extends keyof T>(key: K, value: T[K]) => string | undefined;
+  valueTextConverter?: <K extends keyof T>(key: K, value: T[K], item: T) => string | undefined;
 }

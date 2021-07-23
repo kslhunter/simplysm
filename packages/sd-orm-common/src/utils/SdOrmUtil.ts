@@ -66,7 +66,7 @@ export class SdOrmUtil {
 
   public static parseQueryResult<T>(orgResults: any[], option?: IQueryResultParseOption): T[] {
     // 타입 변환
-    let result: any[] = orgResults.map((item) => {
+    const data: any[] = orgResults.map((item) => {
       const obj: any = {};
       for (const key of Object.keys(item)) {
         if (item[key] == null) {
@@ -101,73 +101,106 @@ export class SdOrmUtil {
 
     // JOIN 에 따른 데이터 구조 설정
     if (option?.joins && Object.keys(option.joins).length > 0) {
-      const joinKeys = Object.keys(option.joins).orderByDesc((key) => key.length);
-      for (const joinKey of joinKeys) {
-        const grouped: { key: any; values: any | any[] }[] = [];
+      const grouping = (itemOrItems: any | any[], parentJoinKey: string, joinKeys: string[]): any | any[] => {
+        const items = itemOrItems instanceof Array ? itemOrItems : [itemOrItems];
+        const keys = Object.keys(Object.assign({}, ...items));
+
+        const grouped: { key: any; resultRecord: Record<string, (any | any[])> }[] = [];
         const groupedMultiRecord: Record<string, any[] | undefined> = {};
 
-        const resultKeys = Object.keys(Object.assign({}, ...result));
-        const keyObjKeys = resultKeys.filter((key) => !key.startsWith(joinKey + "."));
-        const valueObjKeys = resultKeys.filter((key) => key.startsWith(joinKey + "."));
+        const keyObjKeys = keys.filter((key) => !joinKeys.some((joinKey) => key.startsWith(joinKey + ".")));
+        for (const joinKey of joinKeys) {
+          const valueObjKeys = keys.filter((key) => key.startsWith(joinKey + "."));
 
-        for (const item of result) {
-          const keyObj = {};
-          for (const keyObjKey of keyObjKeys) {
-            if (item[keyObjKey] !== undefined) {
-              keyObj[keyObjKey] = item[keyObjKey];
+          for (const item of items) {
+            const keyObj = {};
+            for (const keyObjKey of keyObjKeys) {
+              if (item[keyObjKey] !== undefined) {
+                keyObj[keyObjKey] = item[keyObjKey];
+              }
             }
-          }
 
-          const valueObj: any = {};
-          for (const valueObjKey of valueObjKeys) {
-            if (item[valueObjKey] !== undefined) {
-              valueObj[valueObjKey.slice(joinKey.length + 1)] = item[valueObjKey];
+            const valueObj: any = {};
+            for (const valueObjKey of valueObjKeys) {
+              if (item[valueObjKey] !== undefined) {
+                valueObj[valueObjKey.slice(joinKey.length + 1)] = item[valueObjKey];
+              }
             }
-          }
 
-          if (option.joins[joinKey].isSingle) {
-            if (!grouped.some((groupedItem) => ObjectUtil.equal(groupedItem.key, keyObj))) {
-              grouped.push({ key: keyObj, values: valueObj });
-            }
-          }
-          else {
-            const keyObjJson = JsonConvert.stringify(keyObj);
-            const values = groupedMultiRecord[keyObjJson];
-            if (values !== undefined) {
-              values.push(valueObj);
+            if (option.joins![(parentJoinKey ? (parentJoinKey + ".") : "") + joinKey].isSingle) {
+              if (!grouped.some((groupedItem) => (
+                ObjectUtil.equal(groupedItem.key, keyObj)
+                && Object.keys(groupedItem.resultRecord).some((k) => k === joinKey)
+              ))) {
+                const sameKeyGroupedItem = grouped.single((groupedItem) => ObjectUtil.equal(groupedItem.key, keyObj));
+                if (sameKeyGroupedItem) {
+                  sameKeyGroupedItem.resultRecord[joinKey] = valueObj;
+                }
+                else {
+                  grouped.push({ key: keyObj, resultRecord: { [joinKey]: valueObj } });
+                }
+              }
             }
             else {
-              const valueArr = [valueObj];
-              grouped.push({ key: keyObj, values: valueArr });
-              groupedMultiRecord[JsonConvert.stringify(keyObj)] = valueArr;
+              const keyObjJson = JsonConvert.stringify(keyObj);
+              const values = groupedMultiRecord[joinKey + "_" + keyObjJson];
+              if (values !== undefined) {
+                values.push(valueObj);
+              }
+              else {
+                const valueArr = [valueObj];
+
+                const sameKeyGroupedItem = grouped.single((groupedItem) => ObjectUtil.equal(groupedItem.key, keyObj));
+                if (sameKeyGroupedItem) {
+                  sameKeyGroupedItem.resultRecord[joinKey] = valueArr;
+                }
+                else {
+                  grouped.push({ key: keyObj, resultRecord: { [joinKey]: valueArr } });
+                }
+                groupedMultiRecord[joinKey + "_" + JsonConvert.stringify(keyObj)] = valueArr;
+              }
             }
           }
         }
 
-        result = grouped.map((groupedItem) => {
-          if (groupedItem.values instanceof Array) {
-            return {
-              ...groupedItem.key,
-              [joinKey]: groupedItem.values
-                .filter((item1) => (
-                  Object.keys(item1)
-                    .filter((key) => !(item1[key] instanceof Array) || item1[key].length > 0)
-                    .length > 0
-                ))
-            };
+        const result = grouped.map((groupedItem) => {
+          const item = { ...groupedItem.key };
+          for (const joinKey of Object.keys(groupedItem.resultRecord)) {
+            if (groupedItem.resultRecord[joinKey] instanceof Array) {
+              item[joinKey] = groupedItem.resultRecord[joinKey]
+                .filter((item1: any) => Object.keys(item1).filter((key) => item1[key].length > 0).length > 0)
+                .distinct();
+            }
+            else {
+              item[joinKey] = groupedItem.resultRecord[joinKey];
+            }
           }
-          else {
-            return {
-              ...groupedItem.key,
-              ...Object.keys(groupedItem.values).length > 0 ? {
-                [joinKey]: groupedItem.values
-              } : {}
-            };
-          }
+
+          return item;
         });
+
+        for (const item of result) {
+          for (const joinKey of joinKeys) {
+            const childJoinKeys = Object.keys(option.joins!).filter((item1) => (
+              item1.startsWith(joinKey + ".")
+              && item1.split(".").length === joinKey.split(".").length + 1
+            ));
+            if (childJoinKeys.length > 0) {
+              item[joinKey] = grouping(item[joinKey], (parentJoinKey ? (parentJoinKey + ".") : "") + joinKey, childJoinKeys);
+            }
+          }
+        }
+
+        return itemOrItems instanceof Array ? result : result[0];
+      };
+
+
+      const rootJoinKeys = Object.keys(option.joins).filter((item) => !item.includes("."));
+      if (rootJoinKeys.length > 0) {
+        return grouping(data, "", rootJoinKeys) as T[];
       }
     }
 
-    return result;
+    return data;
   }
 }

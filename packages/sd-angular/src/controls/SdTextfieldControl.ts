@@ -587,9 +587,9 @@ export class SdTextfieldControl {
         : Number(inputValue);
       newValue = currValue;
 
-      if (newValue === currValue) {
-        inputEl.value = currValue.toString();
-      }
+      // if (newValue === currValue) {
+      inputEl.value = currValue.toString();
+      // }
     }
     else if (this.type === "brn") {
       newValue = inputEl.value.replace(/[^0-9]/g, "");

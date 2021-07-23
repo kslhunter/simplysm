@@ -59,6 +59,6 @@ export interface ISdObjectMerge3Param<T extends Record<string, any>, O extends R
   yours: Y;
   modalTitle?: string;
   displayNameRecord?: Partial<Record<keyof T & keyof O & keyof Y, string>>;
-  valueTextConverter?: <K extends keyof T & keyof O & keyof Y>(key: K, value: T[K] | O[K] | Y[K]) => string | undefined;
+  valueTextConverter?: <K extends keyof T & keyof O & keyof Y>(key: K, value: T[K] | O[K] | Y[K], item: T | O | Y) => string | undefined;
   equalOptionsObj?: Record<string, { keys?: string[]; excludes?: string[]; ignoreArrayIndex?: boolean }>;
 }
