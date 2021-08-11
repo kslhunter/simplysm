@@ -123,16 +123,42 @@ export class Queryable<D extends DbContext, T> {
     const db = qrs[0].db;
     const cqrs = qrs.map((item) => new Queryable(db, item).wrap().clearOrderBy());
 
+    const getNewEntity = (orgEntity: any): any => {
+      const resultEntity = {};
+      for (const orgEntityKey of Object.keys(orgEntity)) {
+        const orgEntityValue = orgEntity[orgEntityKey];
+        if (SdOrmUtil.canConvertToQueryValue(orgEntityValue)) {
+          resultEntity[orgEntityKey] = new QueryUnit(SdOrmUtil.getQueryValueType(orgEntityValue), `${cqrs[0].db.qb.wrap(`TBL${as !== undefined ? "." + as : ""}`)}.${cqrs[0].db.qb.wrap(orgEntityKey)}`);
+        }
+        else if (orgEntityValue instanceof Array) {
+          resultEntity[orgEntityKey] = [getNewEntity(orgEntityValue[0])];
+        }
+        else {
+          resultEntity[orgEntityKey] = getNewEntity(orgEntityValue);
+        }
+      }
+
+      return resultEntity;
+    };
+
+    const entity = getNewEntity(cqrs[0]._entity);
+
     // Init entity
-    const entity = {} as TEntity<NT>;
+    /*const entity = {} as TEntity<NT>;
     for (const entityKey of Object.keys(cqrs[0]._entity)) {
       const entityValue = cqrs[0]._entity[entityKey];
-      if (!SdOrmUtil.canConvertToQueryValue(entityValue)) {
+      if (SdOrmUtil.canConvertToQueryValue(entityValue)) {
+        entity[entityKey] = new QueryUnit(SdOrmUtil.getQueryValueType(entityValue), `${cqrs[0].db.qb.wrap(`TBL${as !== undefined ? "." + as : ""}`)}.${cqrs[0].db.qb.wrap(entityKey)}`);
+      }
+      else {
+
+      }
+      /!*if (!SdOrmUtil.canConvertToQueryValue(entityValue)) {
         throw new Error("단일계층 이상의 구조를 가진 'queryable' 은 UNION 할 수 없습니다. select 를 통해 단일계층으로 만드세요.");
       }
 
-      entity[entityKey] = new QueryUnit(SdOrmUtil.getQueryValueType(entityValue), `${cqrs[0].db.qb.wrap(`TBL${as !== undefined ? "." + as : ""}`)}.${cqrs[0].db.qb.wrap(entityKey)}`);
-    }
+      entity[entityKey] = new QueryUnit(SdOrmUtil.getQueryValueType(entityValue), `${cqrs[0].db.qb.wrap(`TBL${as !== undefined ? "." + as : ""}`)}.${cqrs[0].db.qb.wrap(entityKey)}`);*!/
+    }*/
 
     // Init defs.from
     const from = cqrs.map((item) => item.getSelectDef());

@@ -105,6 +105,11 @@ export class DateOnly {
     }
   }
 
+  public get isValidDate(): boolean {
+    // noinspection SuspiciousTypeOfGuard
+    return this.date instanceof Date && !isNaN(this.date as any);
+  }
+
   public get year(): number {
     return this.date.getFullYear();
   }

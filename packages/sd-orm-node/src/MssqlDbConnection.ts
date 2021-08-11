@@ -67,7 +67,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         encrypt: this.dialect === "mssql-azure",
         requestTimeout: this._timeout,
         trustServerCertificate: true,
-        validateBulkLoadParameters: false,
+        // validateBulkLoadParameters: false,
         connectTimeout: this._timeout * 5
       } as any
     });

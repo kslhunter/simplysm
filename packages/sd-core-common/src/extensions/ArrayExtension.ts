@@ -56,9 +56,13 @@ declare global {
 
     sum(selector?: (item: T, index: number) => number): number;
 
-    min(selector?: (item: T, index: number) => number): number | undefined;
+    min(): T | undefined;
 
-    max(selector?: (item: T, index: number) => number): number | undefined;
+    min<P extends number | string>(selector?: (item: T, index: number) => P): P | undefined;
+
+    max(): T | undefined;
+
+    max<P extends number | string>(selector?: (item: T, index: number) => P): P | undefined;
 
     shuffle(): T[];
 
@@ -120,9 +124,13 @@ declare global {
 
     sum(selector?: (item: T, index: number) => number): number;
 
-    min(selector?: (item: T, index: number) => number): number | undefined;
+    min(): T | undefined;
 
-    max(selector?: (item: T, index: number) => number): number | undefined;
+    min<P extends number | string>(selector?: (item: T, index: number) => P): P | undefined;
+
+    max(): T | undefined;
+
+    max<P extends number | string>(selector?: (item: T, index: number) => P): P | undefined;
   }
 }
 
@@ -455,12 +463,12 @@ declare global {
   }
 
   if (typeof prototype.min === "undefined") {
-    prototype.min = function <T>(this: T[], selector?: (item: T, index: number) => number): number | undefined {
-      let result: number | undefined;
+    prototype.min = function <T>(this: T[], selector?: (item: T, index: number) => string | number): string | number | undefined {
+      let result: string | number | undefined;
       for (let i = 0; i < this.length; i++) {
         const item = selector !== undefined ? selector(this[i], i) : this[i];
-        if (typeof item !== "number") {
-          throw new Error("sum 은 number 에 대해서만 사용할 수 있습니다.");
+        if (typeof item !== "number" && typeof item !== "string") {
+          throw new Error("min 은 number/string 에 대해서만 사용할 수 있습니다.");
         }
         if (result === undefined || result > item) {
           result = item;
@@ -472,12 +480,12 @@ declare global {
   }
 
   if (typeof prototype.max === "undefined") {
-    prototype.max = function <T>(this: T[], selector?: (item: T, index: number) => number): number | undefined {
-      let result: number | undefined;
+    prototype.max = function <T>(this: T[], selector?: (item: T, index: number) => string | number): string | number | undefined {
+      let result: string | number | undefined;
       for (let i = 0; i < this.length; i++) {
         const item = selector !== undefined ? selector(this[i], i) : this[i];
-        if (typeof item !== "number") {
-          throw new Error("sum 은 number 에 대해서만 사용할 수 있습니다.");
+        if (typeof item !== "number" && typeof item !== "string") {
+          throw new Error("max 은 number/string 에 대해서만 사용할 수 있습니다.");
         }
         if (result === undefined || result < item) {
           result = item;

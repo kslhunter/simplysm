@@ -217,9 +217,9 @@ export class QueryHelper {
     return new QueryUnit(type, arr);
   }
 
-  public val<T extends TQueryValue>(value: TEntityValue<T>): QueryUnit<T> {
-    const type: Type<any> | undefined = SdOrmUtil.getQueryValueType(value);
-    return new QueryUnit(type, this.getQueryValue(value));
+  public val<T extends TQueryValue>(value: TEntityValue<T>, type?: Type<T>): QueryUnit<T> {
+    const currType: Type<any> | undefined = type ?? SdOrmUtil.getQueryValueType(value);
+    return new QueryUnit(currType, this.getQueryValue(value));
   }
 
   public is(where: TQueryBuilderValue[]): QueryUnit<boolean> {

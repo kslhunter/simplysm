@@ -502,7 +502,7 @@ describe("(common) core.extensions.ArrayExtensions", () => {
     });
 
     it("빈 Array 가 입력될 경우, undefined 가 반환된다", () => {
-      expect([].min()).to.equal(undefined);
+      expect(([] as number[]).min()).to.equal(undefined);
     });
   });
 
@@ -525,7 +525,7 @@ describe("(common) core.extensions.ArrayExtensions", () => {
     });
 
     it("빈 Array 가 입력될 경우, undefined 가 반환된다", () => {
-      expect([].max()).to.equal(undefined);
+      expect(([] as number[]).max()).to.equal(undefined);
     });
   });
 
