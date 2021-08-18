@@ -569,59 +569,57 @@ export class SdTextfieldControl {
   public onInput(): void {
     const inputEl = this.inputElRef!.nativeElement;
 
-    let newValue;
     if (inputEl.value === "") {
-      newValue = undefined;
+      this._setValue(undefined);
     }
     else if (this.type === "number") {
-      const inputValue = inputEl.value.replace(/,/g, "");
-      const currValue = (
+      const inputValue = inputEl.value.replace(/[^0-9-.]/g, "");
+      if (
         Number.isNaN(Number(inputValue))
         || inputValue.endsWith(".")
         || (
           inputValue.includes(".")
           && Number(inputValue) === 0
         )
-      )
-        ? inputValue
-        : Number(inputValue);
-      newValue = currValue;
-
-      // if (newValue === currValue) {
-      inputEl.value = currValue.toString();
-      // }
+      ) {
+      }
+      else {
+        this._setValue(Number(inputValue));
+      }
     }
     else if (this.type === "brn") {
-      newValue = inputEl.value.replace(/[^0-9]/g, "");
+      this._setValue(inputEl.value.replace(/[^0-9]/g, ""));
     }
     else if (["year", "month", "date"].includes(this.type)) {
       try {
-        newValue = DateOnly.parse(inputEl.value);
+        this._setValue(DateOnly.parse(inputEl.value));
       }
       catch (err) {
-        newValue = inputEl.value;
+        // this._setValue(inputEl.value);
       }
     }
     else if (["datetime", "datetime-sec"].includes(this.type)) {
       try {
-        newValue = DateTime.parse(inputEl.value);
+        this._setValue(DateTime.parse(inputEl.value));
       }
       catch (err) {
-        newValue = inputEl.value;
+        // this._setValue(inputEl.value);
       }
     }
     else if (["time", "time-sec"].includes(this.type)) {
       try {
-        newValue = Time.parse(inputEl.value);
+        this._setValue(Time.parse(inputEl.value));
       }
       catch (err) {
-        newValue = inputEl.value;
+        // this._setValue(inputEl.value);
       }
     }
     else {
-      newValue = inputEl.value;
+      this._setValue(inputEl.value);
     }
+  }
 
+  private _setValue(newValue: any): void {
     if (this.valueChange.observers.length > 0) {
       this.valueChange.emit(newValue);
     }
