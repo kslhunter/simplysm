@@ -2,15 +2,19 @@ import {ExcelWorksheet} from "./ExcelWorksheet";
 import * as JSZip from "jszip";
 import {XmlConvert} from "./utils/XmlConvert";
 
+
 export class ExcelWorkbook {
   private readonly _worksheets: ExcelWorksheet[] = [];
   private _zip!: JSZip;
   private _relData: any;
-  private _wbData: any;
-  private _contentTypeData: any;
+  public wbData: any;
+  public contentTypeData: any;
   private _wbRelData: any;
   public sstData: any;
   public stylesData: any;
+  public drawingData: any;
+  public medias: { name: string; buffer: Buffer }[] = [];
+  public customFiles: { name: string; data: any }[] = [];
 
   public static create(): ExcelWorkbook {
     const wb = new ExcelWorkbook();
@@ -36,7 +40,7 @@ export class ExcelWorkbook {
     };
 
     // Workbook
-    wb._wbData = {
+    wb.wbData = {
       workbook: {
         $: {
           "xmlns": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
@@ -46,7 +50,7 @@ export class ExcelWorkbook {
     };
 
     // ContentType
-    wb._contentTypeData = {
+    wb.contentTypeData = {
       Types: {
         $: {
           xmlns: "http://schemas.openxmlformats.org/package/2006/content-types"
@@ -149,21 +153,28 @@ export class ExcelWorkbook {
       }
     };
 
+    // Drawing
+    wb.drawingData = undefined;
+
+    wb.medias = [];
+
+    wb.customFiles = [];
+
     return wb;
   }
 
-  public static async loadAsync(buffer: Buffer): Promise<ExcelWorkbook>;
-  public static async loadAsync(file: File): Promise<ExcelWorkbook>;
-  public static async loadAsync(blob: Blob): Promise<ExcelWorkbook>;
+  public static loadAsync(buffer: Buffer): Promise<ExcelWorkbook>;
+  public static loadAsync(file: File): Promise<ExcelWorkbook>;
+  public static loadAsync(blob: Blob): Promise<ExcelWorkbook>;
   public static async loadAsync(arg: Buffer | Blob | File): Promise<ExcelWorkbook> {
     let buffer: Buffer | Blob;
-    if (arg instanceof File) {
+    if (!!arg["lastModified"]) {
       buffer = await new Promise<Buffer>(resolve => {
         const fileReader = new FileReader();
         fileReader.onload = () => {
           resolve(Buffer.from(fileReader.result as ArrayBuffer));
         };
-        fileReader.readAsArrayBuffer(arg);
+        fileReader.readAsArrayBuffer(arg as any);
       });
     }
     else {
@@ -176,34 +187,78 @@ export class ExcelWorkbook {
     wb._zip = zip;
 
     // .rel
-    wb._relData = await XmlConvert.parseAsync(await zip.file("_rels/.rels").async("text"));
+    wb._relData = await XmlConvert.parseAsync(await zip.file("_rels/.rels")!.async("text"));
 
     // Workbook
-    wb._wbData = await XmlConvert.parseAsync(await zip.file("xl/workbook.xml").async("text"));
+    wb.wbData = await XmlConvert.parseAsync(await zip.file("xl/workbook.xml")!.async("text"));
 
     // ContentType
-    wb._contentTypeData = await XmlConvert.parseAsync(await zip.file("[Content_Types].xml").async("text"));
+    wb.contentTypeData = await XmlConvert.parseAsync(await zip.file("[Content_Types].xml")!.async("text"));
 
     // Workbook Rel
-    wb._wbRelData = await XmlConvert.parseAsync(await zip.file("xl/_rels/workbook.xml.rels").async("text"));
+    wb._wbRelData = await XmlConvert.parseAsync(await zip.file("xl/_rels/workbook.xml.rels")!.async("text"));
 
     // Worksheets
-    const worksheets = wb._wbData.workbook.sheets[0].sheet.map((item: any) => ({
-      id: item.$.sheetId,
-      name: item.$.name
+    const worksheets = wb.wbData.workbook.sheets[0].sheet.map((item: any) => ({
+      rid: item.$["r:id"],
+      name: item.$.name,
+      hidden: item.$.state === "hidden"
     }));
     for (const item of worksheets) {
-      const sheetData = await XmlConvert.parseAsync(await zip.file(`xl/worksheets/sheet${item.id}.xml`).async("text"));
-      wb._worksheets[item.id - 1] = new ExcelWorksheet(wb, item.name, sheetData);
+      const r = wb._wbRelData.Relationships.Relationship.single((item1: any) => item1.$.Id === item.rid);
+      const id = Number(r.$.Target.match(/\/sheet(.*)\./)[1]);
+
+      const sheetData = await XmlConvert.parseAsync(await zip.file(`xl/${r.$.Target}`)!.async("text"));
+      wb._worksheets[id] = new ExcelWorksheet(wb, item.name, item.hidden, sheetData);
+
+      // Drawing
+      if (zip.file(`xl/worksheets/_rels/sheet${id}.xml.rels`)) {
+        const wsRelData = await XmlConvert.parseAsync(await zip.file(`xl/worksheets/_rels/sheet${id}.xml.rels`)!.async("text"));
+        wb._worksheets[id].relData = wsRelData;
+
+        const drawingRelationship = wsRelData.Relationships.Relationship.single((item1: any) => /drawing[0-9]/.test(item1.$.Target));
+        if (drawingRelationship) {
+          // drawing rel
+          const drawingRelFile = zip.file(`xl/drawings/_rels/drawing1.xml.rels`);
+          if (drawingRelFile) {
+            wb._worksheets[id].drawingRelData = await XmlConvert.parseAsync(await drawingRelFile.async("text"));
+          }
+          else {
+            wb._worksheets[id].drawingRelData = {};
+          }
+
+          // drawing
+          wb._worksheets[id].drawingData = await XmlConvert.parseAsync(await zip.file(`xl/drawings/drawing1.xml`)!.async("text"));
+        }
+      }
     }
 
     // SharedStrings
-    wb.sstData = await XmlConvert.parseAsync(await zip.file("xl/sharedStrings.xml").async("text"));
+    wb.sstData = await XmlConvert.parseAsync(await zip.file("xl/sharedStrings.xml")!.async("text"));
 
     // Styles
-    wb.stylesData = await XmlConvert.parseAsync(await zip.file("xl/styles.xml").async("text"));
+    wb.stylesData = await XmlConvert.parseAsync(await zip.file("xl/styles.xml")!.async("text"));
+
+    const mediaFiles = Object.keys(zip.files).map(key => zip.files[key]).filter(item => item.name.startsWith("xl/media"));
+    for (const key of Object.keys(mediaFiles)) {
+      wb.medias.push({
+        name: mediaFiles[key].name,
+        buffer: await mediaFiles[key].async("nodebuffer")
+      });
+    }
 
     return wb;
+  }
+
+  public async getCustomFileDataAsync(fileName: string): Promise<any> {
+    if (!this.customFiles.some(item => item.name === fileName)) {
+      this.customFiles.push({
+        name: fileName,
+        data: await XmlConvert.parseAsync(await this._zip.file(fileName)!.async("text"))
+      });
+    }
+
+    return this.customFiles.single(item => item.name === fileName)!.data;
   }
 
   public getWorksheet(index: number): ExcelWorksheet;
@@ -217,7 +272,7 @@ export class ExcelWorkbook {
       return ws;
     }
     else {
-      const ws = this._worksheets[arg];
+      const ws = this._worksheets[arg + 1];
       if (!ws) {
         throw new Error(`시트[${arg}]가 존재하지 않습니다.`);
       }
@@ -227,12 +282,12 @@ export class ExcelWorkbook {
 
   public createWorksheet(name: string): ExcelWorksheet {
     // Workbook
-    this._wbData.workbook.sheets = this._wbData.workbook.sheets || [{}];
-    this._wbData.workbook.sheets[0].sheet = this._wbData.workbook.sheets[0].sheet || [];
-    const lastSheetId = this._wbData.workbook.sheets[0].sheet.max((item: any) => Number(item.$.sheetId)) || 0;
+    this.wbData.workbook.sheets = this.wbData.workbook.sheets || [{}];
+    this.wbData.workbook.sheets[0].sheet = this.wbData.workbook.sheets[0].sheet || [];
+    const lastSheetId = this.wbData.workbook.sheets[0].sheet.max((item: any) => Number(item.$.sheetId)) || 0;
     const newSheetId = lastSheetId + 1;
 
-    this._wbData.workbook.sheets[0].sheet.push({
+    this.wbData.workbook.sheets[0].sheet.push({
       $: {
         "name": name,
         "sheetId": newSheetId,
@@ -241,7 +296,7 @@ export class ExcelWorkbook {
     });
 
     // ContentType
-    this._contentTypeData.Types.Override.push({
+    this.contentTypeData.Types.Override.push({
       $: {
         PartName: `/xl/worksheets/sheet${newSheetId}.xml`,
         ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"
@@ -278,33 +333,13 @@ export class ExcelWorkbook {
         sheetData: [{}]
       }
     };
-    this._worksheets[newSheetId] = new ExcelWorksheet(this, name, sheetData);
+
+    this._worksheets[newSheetId] = new ExcelWorksheet(this, name, false, sheetData);
     return this._worksheets[newSheetId];
   }
 
   public async downloadAsync(filename: string): Promise<void> {
-    // .rel
-    this._zip.file("_rels/.rels", XmlConvert.stringify(this._relData));
-
-    // Workbook
-    this._zip.file("xl/workbook.xml", XmlConvert.stringify(this._wbData));
-
-    // ContentType
-    this._zip.file("[Content_Types].xml", XmlConvert.stringify(this._contentTypeData));
-
-    // Workbook Rel
-    this._zip.file("xl/_rels/workbook.xml.rels", XmlConvert.stringify(this._wbRelData));
-
-    // Worksheets
-    for (const wsId of Object.keys(this._worksheets)) {
-      this._zip.file(`xl/worksheets/sheet${wsId}.xml`, XmlConvert.stringify(this._worksheets[wsId].sheetData));
-    }
-
-    // SharedStrings
-    this._zip.file("xl/sharedStrings.xml", XmlConvert.stringify(this.sstData));
-
-    // Styles
-    this._zip.file("xl/styles.xml", XmlConvert.stringify(this.stylesData));
+    this._writeZipObject();
 
     const blob = await this._zip.generateAsync({type: "blob"});
     const link = document.createElement("a");
@@ -313,16 +348,78 @@ export class ExcelWorkbook {
     link.click();
   }
 
-  public get json(): { [sheetName: string]: any } {
-    const result: { [sheetName: string]: any } = {};
+  public async getBufferAsync(): Promise<Buffer> {
+    this._writeZipObject();
 
-    for (const sheet of this._worksheets) {
+    return await this._zip.generateAsync({type: "nodebuffer"});
+  }
+
+  private _writeZipObject(): void {
+    // .rel
+    this._zip.file("_rels/.rels", XmlConvert.stringify(this._relData));
+
+    // Workbook
+    this._zip.file("xl/workbook.xml", XmlConvert.stringify(this.wbData));
+
+    // ContentType
+    this._zip.file("[Content_Types].xml", XmlConvert.stringify(this.contentTypeData));
+
+    // Workbook Rel
+    this._zip.file("xl/_rels/workbook.xml.rels", XmlConvert.stringify(this._wbRelData));
+
+    // Worksheets
+    for (const wsId of Object.keys(this._worksheets)) {
+      this._zip.file(`xl/worksheets/sheet${wsId}.xml`, XmlConvert.stringify(this._worksheets[wsId].sheetData));
+
+      if (this._worksheets[wsId].relData) {
+        this._zip.file(`xl/worksheets/_rels/sheet${wsId}.xml.rels`, XmlConvert.stringify(this._worksheets[wsId].relData));
+
+        const drawingRel = this._worksheets[wsId].relData.Relationships.Relationship.single((item1: any) => item1.$.Target.includes("drawing1"));
+        if (drawingRel) {
+          this._zip.file(`xl/drawings/_rels/drawing1.xml.rels`, XmlConvert.stringify(this._worksheets[wsId].drawingRelData));
+          this._zip.file(`xl/drawings/drawing1.xml`, XmlConvert.stringify(this._worksheets[wsId].drawingData));
+        }
+      }
+    }
+
+    // SharedStrings
+    this._zip.file(
+      "xl/sharedStrings.xml",
+      XmlConvert.stringify(this.sstData)
+        .replace(/&#xD;/g, "\r")
+        .replace(/<t xml:space="preserve"\/>/g, "<t xml:space=\"preserve\"> </t>")
+    );
+
+    // Styles
+    this._zip.file("xl/styles.xml", XmlConvert.stringify(this.stylesData));
+
+    // Medias
+    for (const media of this.medias) {
+      this._zip.file(media.name, media.buffer);
+    }
+
+    // CustomFiles
+    for (const customFile of this.customFiles) {
+      this._zip.file(customFile.name, XmlConvert.stringify(customFile.data));
+    }
+  }
+
+  public get worksheets(): ExcelWorksheet[] {
+    return this._worksheets.filterExists();
+  }
+
+  public get json(): { [sheetName: string]: { [key: string]: any }[] } {
+    const result: { [sheetName: string]: { [key: string]: any }[] } = {};
+
+    for (const sheet of this._worksheets.filterExists()) {
       const sheetData = [];
       for (let r = 1; r < sheet.rowLength; r++) {
         const data = {};
         for (let c = 0; c < sheet.row(r).columnLength; c++) {
           const header = sheet.cell(0, c).value;
-          data[header] = sheet.cell(r, c).value;
+          if (header) {
+            data[header] = sheet.cell(r, c).value;
+          }
         }
         sheetData.push(data);
       }
@@ -332,7 +429,7 @@ export class ExcelWorkbook {
     return result;
   }
 
-  public set json(data: { [sheetName: string]: any }) {
+  public set json(data: { [sheetName: string]: { [key: string]: any }[] }) {
     for (const sheetName of Object.keys(data)) {
       let sheet = this._worksheets.single(item => item.name === sheetName);
       if (!sheet) {
@@ -349,12 +446,22 @@ export class ExcelWorkbook {
       }
 
       const rowItems: any[] = data[sheetName];
-      const headerColumnIndexMap = rowItems.mapMany(item => Object.keys(item)).distinct()
-        .toMap(item => item, (item, index) => index);
+      // const headerColumnIndexMap = rowItems.mapMany(item => Object.keys(item)).distinct()
+      //   .toMap(item => item, (item, index) => index);
+      const headerColumns = rowItems.mapMany(item => Object.keys(item).map((item1, i) => [item1, i] as [string, number]));
+      const headerColumnIndexMap = new Map<string, number>();
+      for (const headerColumn of headerColumns) {
+        headerColumnIndexMap.set(
+          headerColumn[0],
+          headerColumnIndexMap.has(headerColumn[0])
+            ? Math.max(headerColumnIndexMap.get(headerColumn[0])!, headerColumn[1])
+            : headerColumn[1]
+        );
+      }
 
-
-      for (let c = 0; c < headerColumnIndexMap.size; c++) {
-        sheet.cell(0, c).value = Array.from(headerColumnIndexMap.keys())[c];
+      for (const colName of Array.from(headerColumnIndexMap.keys())) {
+        const c = headerColumnIndexMap.get(colName)!;
+        sheet.cell(0, c).value = colName;
       }
 
       for (let r = 0; r < rowItems.length; r++) {

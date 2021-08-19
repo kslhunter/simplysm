@@ -1,11 +1,18 @@
+import {ExcelUtils} from "./utils/ExcelUtils";
 import {ExcelWorkbook} from "./ExcelWorkbook";
+import {DateOnly} from "@simplism/core";
 import {ExcelCell} from "./ExcelCell";
-import {ExcelColumn} from "./ExcelColumn";
 import {ExcelRow} from "./ExcelRow";
+import {ExcelColumn} from "./ExcelColumn";
 
 export class ExcelWorksheet {
+  public relData: any;
+  public drawingRelData: any;
+  public drawingData: any;
+
   public constructor(public readonly workbook: ExcelWorkbook,
                      public readonly name: string,
+                     public readonly hidden: boolean,
                      public readonly sheetData: any) {
   }
 
@@ -22,6 +29,100 @@ export class ExcelWorksheet {
   }
 
   public get rowLength(): number {
-    return this.sheetData.worksheet.sheetData[0].row.length;
+    let length = this.sheetData.worksheet.sheetData[0].row.max((item: any) => item && item.$ && item.$.r ? Number(item.$.r) : 0);
+    if (length === 0) {
+      length = this.sheetData.worksheet.sheetData[0].row.length;
+    }
+    return length;
+  }
+
+  public insertEmptyRow(row: number): void {
+    const rowDataList = this.sheetData.worksheet.sheetData[0].row as any[];
+
+    const nextRowDataList = rowDataList.filter((item: any) => Number(item.$.r) >= row + 1);
+    for (const nextRowData of nextRowDataList) {
+      const rowIndex = Number(nextRowData.$.r);
+      nextRowData.$.r = (rowIndex + 1).toString();
+
+      if (nextRowData.c && nextRowData.c.length > 0) {
+        for (const colData of nextRowData.c) {
+          const colRowCol = ExcelUtils.getAddressRowCol(colData.$.r);
+          colData.$.r = ExcelUtils.getAddress(rowIndex, colRowCol.col);
+        }
+      }
+    }
+
+    if (
+      this.sheetData.worksheet.mergeCells &&
+      this.sheetData.worksheet.mergeCells[0] &&
+      this.sheetData.worksheet.mergeCells[0].mergeCell &&
+      this.sheetData.worksheet.mergeCells[0].mergeCell.length > 0
+    ) {
+      const mergeDataList = this.sheetData.worksheet.mergeCells[0].mergeCell;
+      for (const mergeData of mergeDataList) {
+        const currRowCol = ExcelUtils.getRangeAddressRowCol(mergeData.$.ref);
+        mergeData.$.ref = ExcelUtils.getRangeAddress(
+          currRowCol.fromRow + (currRowCol.fromRow >= row ? 1 : 0),
+          currRowCol.fromCol,
+          currRowCol.toRow + (currRowCol.toRow >= row ? 1 : 0),
+          currRowCol.toCol
+        );
+      }
+    }
+
+    if (
+      this.sheetData.worksheet.dimension &&
+      this.sheetData.worksheet.dimension[0] &&
+      this.sheetData.worksheet.dimension[0].$.ref
+    ) {
+      const dimension = ExcelUtils.getRangeAddressRowCol(this.sheetData.worksheet.dimension[0].$.ref);
+      this.sheetData.worksheet.dimension[0].$.ref =
+        ExcelUtils.getRangeAddress(dimension.fromRow, dimension.fromCol, dimension.toRow + 1, dimension.toCol);
+    }
+  }
+
+  public insertCopyRow(row: number, copyRow: number): void {
+    this.insertEmptyRow(row);
+
+    const rowDataList = this.sheetData.worksheet.sheetData[0].row as any[];
+    const copyRowData = rowDataList.single((item: any) => Number(item.$.r) === (copyRow >= row ? copyRow + 1 : copyRow));
+
+    const prevRowData = rowDataList.orderBy(item => Number(item.$.r)).last(item => Number(item.$.r) < row + 1);
+    const prevRowIndex = prevRowData ? rowDataList.indexOf(prevRowData) : -1;
+
+    const currRowData = Object.clone(copyRowData);
+    currRowData.$.r = (row + 1).toString();
+
+    if (currRowData.c && currRowData.c.length > 0) {
+      for (const colData of currRowData.c) {
+        const colRowCol = ExcelUtils.getAddressRowCol(colData.$.r);
+        colData.$.r = ExcelUtils.getAddress(row, colRowCol.col);
+      }
+    }
+
+    rowDataList.insert(prevRowIndex + 1, currRowData);
+  }
+
+  public setData(data: any[][]): void {
+    for (let r = 0; r < data.length; r++) {
+      for (let c = 0; c < data[r].length; c++) {
+        if (data[r][c] instanceof DateOnly) {
+          console.log(data[r][c].date.getTime());
+        }
+        this.cell(r, c).value = data[r][c];
+      }
+    }
+  }
+
+  // TODO: 모든 Row/Column 을 도는 것은 위험함.
+  public getData(): any[][] {
+    const result: any[][] = [];
+    for (let r = 0; r < this.rowLength; r++) {
+      result[r] = [];
+      for (let c = 0; c < this.row(r).columnLength; c++) {
+        result[r][c] = this.cell(r, c).value;
+      }
+    }
+    return result;
   }
 }

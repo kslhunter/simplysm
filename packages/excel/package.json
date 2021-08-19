@@ -9,7 +9,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@simplism/core": "~10.3.88",
-    "jszip": "^3.1.5",
+    "jszip": "^3.2.2",
     "xml2js": "^0.4.19"
   }
 }
