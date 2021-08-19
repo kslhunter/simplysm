@@ -91,7 +91,7 @@ export class ExcelCellStyle {
     this._ec.cellData.$.s = newIndex;
   }
 
-  public get numberFormat(): "DateOnly" | "number" | "DateTime" {
+  public get numberFormat(): string {
     const styleData = this._getStyleData();
     if (!styleData || !styleData.$ || !styleData.$.numFmtId) {
       return "number";
@@ -113,12 +113,20 @@ export class ExcelCellStyle {
     }*/
   }
 
-  public set numberFormat(value: "DateOnly" | "number" | "DateTime") {
+  public set numberFormat(value: string) {
     const newStyle = this._createNewStyle();
     newStyle.$ = newStyle.$ || {};
     newStyle.$.applyFont = 1;
     if (value === "number") {
       delete newStyle.$.numFmtId;
+    }
+    else if (value === "convertNumber") {
+      const newNumFmt = this._createNewNumFmt();
+      newNumFmt.$ = newNumFmt.$ || {};
+      newNumFmt.$.numFmtId = 41;
+      newNumFmt.$.formatCode = "_-* #,##0_-;\\-* #,##0_-;_-* &quot;-&quot;_-;_-@_-";
+      newStyle.$.numFmtId = newNumFmt.$.numFmtId;
+      newStyle.$.formatCode = newNumFmt.$.formatCode;
     }
     else if (value === "DateOnly") {
       newStyle.$.numFmtId = 14;
@@ -220,6 +228,31 @@ export class ExcelCellStyle {
     else {
       return {};
     }
+  }
+
+  private _createNewNumFmt(): any {
+    const styleData = this._getStyleData();
+    const numFmtId = (styleData && styleData.$) ? Number(styleData.$.numFmtId) : undefined;
+
+    let lastNumFmtId = (this._ec.ews.workbook.stylesData.styleSheet.numFmts[0].numFmt as any[]).max((item: any) => Number(item.$.numFmtId));
+    lastNumFmtId = Math.max(lastNumFmtId || 0, 175);
+
+    let newItem: any;
+    if (numFmtId) {
+      const prevNumFormat = this._ec.ews.workbook.stylesData.styleSheet.numFmts[0].numFmt.single((item: any) => item.$.numFmtId === numFmtId);
+      if (prevNumFormat) {
+        newItem = Object.clone(prevNumFormat);
+      }
+      else {
+        newItem = {};
+      }
+    }
+    else {
+      newItem = {};
+    }
+    newItem.$ = newItem.$ || {};
+    newItem.$.numFmtId = lastNumFmtId + 1;
+    return newItem;
   }
 
   private _setBorderWidth(direction: "left" | "right" | "bottom" | "top", width: "thin" | "medium"): void {
