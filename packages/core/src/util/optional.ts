@@ -4,7 +4,7 @@ export function optional<R extends any>(fn: () => R): R | undefined {
     if (result instanceof Promise) {
       return result
         .catch((err: Error) => {
-          if (err instanceof TypeError && err.message.includes("Cannot read properties") && (err.message.includes("of undefined") || err.message.includes("of null"))) {
+          if (err instanceof TypeError && err.message.includes("Cannot read propert") && (err.message.includes("of undefined") || err.message.includes("of null"))) {
             return;
           }
           throw err;
@@ -15,7 +15,7 @@ export function optional<R extends any>(fn: () => R): R | undefined {
     }
   }
   catch (err) {
-    if (err instanceof TypeError && err.message.includes("Cannot read properties") && (err.message.includes("of undefined") || err.message.includes("of null"))) {
+    if (err instanceof TypeError && err.message.includes("Cannot read propert") && (err.message.includes("of undefined") || err.message.includes("of null"))) {
       return undefined;
     }
     throw err;
