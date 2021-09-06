@@ -139,6 +139,14 @@ export class SdExcelCellStyle {
     if (value === "number") {
       delete newStyle.$.numFmtId;
     }
+    else if (value === "convertNumber") {
+      const newNumFmt = this._createNewNumFmt();
+      newNumFmt.$ = newNumFmt.$ || {};
+      newNumFmt.$.numFmtId = 176;
+      newNumFmt.$.formatCode = "0_);[Red]\\(0\\)";
+      this._setNumFmtData(newNumFmt);
+      newStyle.$.numFmtId = newNumFmt.$.numFmtId;
+    }
     else if (value === "DateOnly") {
       newStyle.$.numFmtId = 14;
     }
