@@ -238,13 +238,13 @@ export class SdCliServerBuilder extends EventEmitter {
     return {
       mode: watch ? "development" : "production",
       devtool: false,
-      target: ["node", "es2019"],
+      target: ["node", "es2020"],
       profile: false,
       resolve: {
         extensions: [".ts", ".tsx", ".js"],
         symlinks: true,
         // modules: [this.projectRootPath, "node_modules"],
-        mainFields: ["es2019", "main", "module"]
+        mainFields: ["es2020", "main", "module"]
       },
       /*resolveLoader: {
         symlinks: true,

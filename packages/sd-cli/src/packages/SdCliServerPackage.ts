@@ -72,8 +72,8 @@ export class SdCliServerPackage extends SdCliPackageBase {
     buildTsconfig.compilerOptions = buildTsconfig.compilerOptions ?? {};
     delete buildTsconfig.compilerOptions.baseUrl;
     delete buildTsconfig.compilerOptions.paths;
-    buildTsconfig.compilerOptions.target = "es2019";
-    buildTsconfig.compilerOptions.lib = ["es2019"];
+    buildTsconfig.compilerOptions.target = "es2020";
+    buildTsconfig.compilerOptions.lib = ["es2020"];
     buildTsconfig.compilerOptions.outDir = "dist";
 
     buildTsconfig.compilerOptions.declaration = false;

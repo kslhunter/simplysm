@@ -57,9 +57,9 @@ export interface INpmConfig {
 
 export interface ITsconfig {
   compilerOptions?: {
-    module?: "commonjs" | "es2019";
-    target?: "es2015" | "es2019";
-    lib?: ("dom" | "es2015" | "es2019")[];
+    module?: "commonjs" | "es2020";
+    target?: "es2015" | "es2020";
+    lib?: ("dom" | "es2015" | "es2020")[];
     outDir?: string;
     declarationDir?: string;
     declaration?: boolean;

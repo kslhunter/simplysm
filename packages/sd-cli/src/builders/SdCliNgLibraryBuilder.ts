@@ -25,7 +25,7 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
 
   private readonly _moduleFilesGenerator = new SdCliNgModuleFilesGenerator(this.rootPath);
 
-  protected readonly _fileCache = new Map<string, (ITsBuildFileCache & { scssDependencies?: string[] })>();
+  protected override readonly _fileCache = new Map<string, (ITsBuildFileCache & { scssDependencies?: string[] })>();
 
   public constructor(public rootPath: string,
                      public tsconfigFilePath: string,
@@ -35,7 +35,7 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
     this.skipProcesses = skipProcesses;
   }
 
-  protected async _runProgramAsync(dirtyFilePaths: string[]): Promise<ISdPackageBuildResult[]> {
+  protected override async _runProgramAsync(dirtyFilePaths: string[]): Promise<ISdPackageBuildResult[]> {
     this._logger.debug("빌드", dirtyFilePaths);
 
     if (!this._ngCompiler) throw new NeverEntryError();
@@ -139,7 +139,7 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
     }
   }*/
 
-  public async reloadProgramAsync(watch: boolean): Promise<string[]> {
+  public override async reloadProgramAsync(watch: boolean): Promise<string[]> {
     this._logger.debug("프로그램 리로드");
 
     const parsedTsconfig = ts.parseJsonConfigFileContent(this._tsconfig, ts.sys, this.rootPath, this._tsconfig.angularCompilerOptions);
@@ -233,7 +233,7 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
     }
   }
 
-  protected _deleteFileCaches(filePaths: string[]): void {
+  protected override _deleteFileCaches(filePaths: string[]): void {
     super._deleteFileCaches(filePaths);
     this._moduleFilesGenerator.deleteFileCaches(filePaths);
   }
@@ -294,7 +294,7 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
     return result;
   }
 
-  protected async _createCacheCompilerHostAsync(parsedTsconfig: ts.ParsedCommandLine, moduleResolutionCache: ts.ModuleResolutionCache): Promise<ts.CompilerHost> {
+  protected override async _createCacheCompilerHostAsync(parsedTsconfig: ts.ParsedCommandLine, moduleResolutionCache: ts.ModuleResolutionCache): Promise<ts.CompilerHost> {
     const tsCacheCompilerHost = await super._createCacheCompilerHostAsync(parsedTsconfig, moduleResolutionCache);
 
     const ngccProcessor = new NgccProcessor(
