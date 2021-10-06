@@ -85,8 +85,8 @@ export class SdCliLibraryPackage extends SdCliPackageBase {
       delete buildTsconfig.compilerOptions.baseUrl;
       delete buildTsconfig.compilerOptions.paths;
 
-      buildTsconfig.compilerOptions.target = target === "node" ? "es2020" : "es2015";
-      buildTsconfig.compilerOptions.lib = target === "node" ? ["es2020"] : ["es2015", "dom"];
+      buildTsconfig.compilerOptions.target = target === "node" ? "es2019" : "es2015";
+      buildTsconfig.compilerOptions.lib = target === "node" ? ["es2019"] : ["es2015", "dom"];
       buildTsconfig.compilerOptions.outDir = `dist-${target}`;
       if (i === 0) {
         buildTsconfig.compilerOptions.declaration = true;
