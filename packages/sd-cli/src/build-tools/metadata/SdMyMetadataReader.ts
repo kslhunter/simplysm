@@ -192,7 +192,7 @@ export class SdMyMetadataReader {
       throw new NeverEntryError();
     }
 
-    const exportsPropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0], "exports");
+    const exportsPropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0] as ts.ObjectLiteralExpression, "exports");
     if (exportsPropInitializer) {
       if (ts.isArrayLiteralExpression(exportsPropInitializer)) {
         for (const el of exportsPropInitializer.elements) {
@@ -209,7 +209,7 @@ export class SdMyMetadataReader {
       }
     }
 
-    const providersPropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0], "providers");
+    const providersPropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0] as ts.ObjectLiteralExpression, "providers");
     if (providersPropInitializer) {
       result.providers.push(...this._getProviders(providersPropInitializer));
     }
@@ -249,7 +249,7 @@ export class SdMyMetadataReader {
         throw new NeverEntryError();
       }
 
-      const providersPropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0], "providedIn");
+      const providersPropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0] as ts.ObjectLiteralExpression, "providedIn");
       if (providersPropInitializer) {
         result.providedIn = this._getExpStringValue(providersPropInitializer);
       }
@@ -265,7 +265,7 @@ export class SdMyMetadataReader {
       throw new NeverEntryError();
     }
 
-    const selectorPropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0], "selector");
+    const selectorPropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0] as ts.ObjectLiteralExpression, "selector");
     if (selectorPropInitializer) {
       result.selector = this._getExpStringValue(selectorPropInitializer);
     }
@@ -280,7 +280,7 @@ export class SdMyMetadataReader {
       throw new NeverEntryError();
     }
 
-    const namePropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0], "name");
+    const namePropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0] as ts.ObjectLiteralExpression, "name");
     if (namePropInitializer) {
       result.name = this._getExpStringValue(namePropInitializer);
     }
@@ -295,12 +295,12 @@ export class SdMyMetadataReader {
       throw new NeverEntryError();
     }
 
-    const selectorPropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0], "selector");
+    const selectorPropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0] as ts.ObjectLiteralExpression, "selector");
     if (selectorPropInitializer) {
       result.selector = this._getExpStringValue(selectorPropInitializer);
     }
 
-    const templatePropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0], "template");
+    const templatePropInitializer = this._getObjectPropertyValueInitializer(decExp.arguments[0] as ts.ObjectLiteralExpression, "template");
     if (templatePropInitializer) {
       result.template = this._getExpStringValue(templatePropInitializer);
     }
