@@ -39,12 +39,12 @@ export class SdWebpackUtil {
     let result = "";
 
     if ("error" in err && "originalSassError" in err["error"]) {
-      const sassError = err["error"]["originalSassError"] as any;
+      const sassError = err["error"]["originalSassError"];
       result += sassError.file.replace(/^\.\//, "");
       // result += `(${sassError.line as number}${sassError.column !== undefined ? `, ${sassError.column as number}` : ""})`;
       result += ": ";
-      result += (err as Partial<webpack.WebpackError>).name + ": ";
-      result += (err as Partial<webpack.WebpackError>).message;
+      result += err.name + ": ";
+      result += err.message;
     }
     else {
       if (err.file !== undefined) {
