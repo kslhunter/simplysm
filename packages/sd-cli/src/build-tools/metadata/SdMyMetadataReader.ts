@@ -144,6 +144,7 @@ export class SdMyMetadataReader {
   private _getAliasedModuleImportInfo(identifier: ts.Identifier): IMyModuleImport {
     const moduleSymbol = this._typeChecker.getSymbolAtLocation(identifier);
     if (!moduleSymbol) throw new NeverEntryError();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
     if (moduleSymbol.valueDeclaration) {
       const moduleFilePath = PathUtil.posix(moduleSymbol.valueDeclaration.getSourceFile().fileName);
       return { name: identifier.text, moduleFilePath };
