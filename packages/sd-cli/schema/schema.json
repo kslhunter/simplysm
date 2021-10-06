@@ -1,0 +1,310 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "definitions": {
+    "schemaPublish": {
+      "type": "object",
+      "anyOf": [
+        {
+          "properties": {
+            "type": {
+              "enum": [
+                "ftp",
+                "sftp"
+              ]
+            },
+            "host": {
+              "type": "string"
+            },
+            "port": {
+              "type": "number"
+            },
+            "path": {
+              "type": "string"
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "host",
+            "path",
+            "username",
+            "password"
+          ]
+        },
+        {
+          "properties": {
+            "type": {
+              "enum": [
+                "local-directory"
+              ]
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "path"
+          ]
+        }
+      ]
+    },
+    "schemaConfigs": {
+      "type": "object",
+      "properties": {
+        "orm": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dialect": {
+                "enum": [
+                  "mssql",
+                  "mssql-azure"
+                ]
+              },
+              "host": {
+                "type": "string"
+              },
+              "port": {
+                "type": "number"
+              },
+              "username": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              },
+              "database": {
+                "type": "string"
+              },
+              "defaultIsolationLevel": {
+                "enum": [
+                  "READ_UNCOMMITTED",
+                  "READ_COMMITTED",
+                  "REPEATABLE_READ",
+                  "SERIALIZABLE"
+                ]
+              }
+            }
+          }
+        },
+        "smtp": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "user": {
+                "type": "string"
+              },
+              "pass": {
+                "type": "string"
+              },
+              "host": {
+                "type": "string"
+              },
+              "port": {
+                "type": "number"
+              },
+              "secure": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "name",
+              "email",
+              "user",
+              "pass",
+              "host"
+            ]
+          }
+        },
+        "crypto": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "key"
+          ]
+        }
+      },
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "schemaPackage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "overrides": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "production": {
+          "$ref": "#/definitions/schemaPackage"
+        },
+        "development": {
+          "$ref": "#/definitions/schemaPackage"
+        }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "type": {
+              "enum": [
+                "library"
+              ]
+            },
+            "targets": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "browser",
+                  "node",
+                  "angular"
+                ]
+              }
+            },
+            "autoIndex": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "polyfills": {
+                      "type": "array",
+                      "uniqueItems": true,
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "publish": {
+              "enum": [
+                "npm"
+              ]
+            }
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "enum": [
+                "client"
+              ]
+            },
+            "server": {
+              "type": "string"
+            },
+            "resolveFallback": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "configs": {
+              "$ref": "#/definitions/schemaConfigs"
+            },
+            "publish": {
+              "$ref": "#/definitions/schemaPublish"
+            }
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "enum": [
+                "server"
+              ]
+            },
+            "pm2": {
+              "type": "object"
+            },
+            "iis": {
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "serverExeFilePath": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "configs": {
+              "$ref": "#/definitions/schemaConfigs"
+            },
+            "publish": {
+              "$ref": "#/definitions/schemaPublish"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "extends": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    },
+    "packages": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/schemaPackage"
+      }
+    },
+    "overrides": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "localUpdates": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": [
+      "es2020"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@simplysm/sd-core-common": [
+        "../sd-core-common/src/index.ts"
+      ],
+      "@simplysm/sd-core-node": [
+        "../sd-core-node/src/index.ts"
+      ],
+      "@simplysm/sd-service-common": [
+        "../sd-service-common/src/index.ts"
+      ],
+      "@simplysm/sd-orm-common": [
+        "../sd-orm-common/src/index.ts"
+      ],
+      "@simplysm/sd-orm-node": [
+        "../sd-orm-node/src/index.ts"
+      ]
+    }
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es2017",
+    "lib": [
+      "es2018",
+      "dom"
+    ]
+  }
+}

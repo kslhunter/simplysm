@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/temp" />
+      <excludeFolder url="file://$MODULE_DIR$/.tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/_back" />
+      <excludeFolder url="file://$MODULE_DIR$/_logs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular/dist-angular" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular/dist-types" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/dist-node" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/dist-types" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-browser/dist-browser" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-browser/dist-types" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-common/dist-browser" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-common/dist-node" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-common/dist-types" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-node/dist-node" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-node/dist-types" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-common/dist-browser" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-common/dist-node" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-common/dist-types" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node/dist-node" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node/dist-types" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-browser/dist-browser" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-browser/dist-types" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-common/dist-browser" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-common/dist-node" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-common/dist-types" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-node/dist-node" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-node/dist-types" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-storage/dist-node" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-storage/dist-types" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-office/dist-browser" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-office/dist-node" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-office/dist-types" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-demo-server/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-demo-client/dist" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

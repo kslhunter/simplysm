@@ -1,0 +1,39 @@
+{
+  "name": "@simplysm/sd-angular",
+  "version": "6.0.19",
+  "description": "심플리즘 패키지 - Angular 모듈 (browser)",
+  "author": "김석래",
+  "repository": "github:kslhunter/simplysm",
+  "license": "MIT",
+  "main": "./dist-angular/index.js",
+  "types": "./dist-types/index.d.ts",
+  "sideEffects": false,
+  "dependencies": {
+    "@angular/common": "^12.2.2",
+    "@angular/core": "^12.2.2",
+    "@angular/platform-browser": "^12.2.2",
+    "@angular/platform-browser-dynamic": "^12.2.2",
+    "@angular/compiler": "^12.2.2",
+    "@angular/router": "^12.2.2",
+    "rxjs": "6.6.7",
+    "zone.js": "^0.11.4",
+    "element-qsa-scope": "^1.1.0",
+    "eventsource-polyfill": "^0.9.6",
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/free-brands-svg-icons": "^5.15.4",
+    "@fortawesome/pro-solid-svg-icons": "^5.15.4",
+    "@fortawesome/pro-regular-svg-icons": "^5.15.4",
+    "@fortawesome/pro-light-svg-icons": "^5.15.4",
+    "@fortawesome/pro-duotone-svg-icons": "^5.15.4",
+    "jsbarcode": "^3.11.4",
+    "marked": "^3.0.0",
+    "@simplysm/sd-core-common": "6.0.19",
+    "@simplysm/sd-core-browser": "6.0.19",
+    "@simplysm/sd-service-common": "6.0.19",
+    "@simplysm/sd-service-browser": "6.0.19",
+    "@simplysm/sd-orm-common": "6.0.19"
+  },
+  "devDependencies": {
+    "@types/marked": "^3.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es2015",
+    "lib": [
+      "es2015"
+    ],
+    "baseUrl": ".",
+    "paths": {}
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}

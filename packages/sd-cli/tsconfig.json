@@ -1,0 +1,29 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": [
+      "es2020"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@simplysm/sd-core-common": [
+        "../sd-core-common/src/index.ts"
+      ],
+      "@simplysm/sd-core-node": [
+        "../sd-core-node/src/index.ts"
+      ],
+      "@simplysm/sd-server-node": [
+        "../sd-server-node/src/index.ts"
+      ],
+      "@simplysm/sd-storage": [
+        "../sd-storage/src/index.ts"
+      ]
+    }
+  },
+  "files": [
+    "src/bin/sd-cli.ts",
+    "src/workers/lib-build-worker.ts",
+    "src/workers/client-ng-gen-worker.ts"
+  ]
+}

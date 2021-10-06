@@ -1,0 +1,24 @@
+{
+  "name": "@simplysm/sd-angular-demo-client",
+  "version": "6.0.39",
+  "description": "심플리즘 ANGULAR 데모 클라이언트",
+  "author": "김석래",
+  "repository": "github:kslhunter/simplysm6",
+  "license": "UNLICENSED",
+  "private": true,
+  "sideEffects": false,
+  "dependencies": {
+    "@simplysm/sd-core-common": "6.0.39",
+    "@simplysm/sd-core-browser": "6.0.39",
+    "@simplysm/sd-angular": "6.0.39",
+    "@angular/service-worker": "^12.2.2",
+    "@angular/core": "^12.2.2",
+    "@angular/common": "^12.2.2",
+    "@angular/platform-browser": "^12.2.2",
+    "@angular/router": "^12.2.2",
+    "rxjs": "6.6.7",
+    "zone.js": "^0.11.4",
+    "reflect-metadata": "^0.1.13",
+    "os-browserify": "^0.3.0"
+  }
+}
