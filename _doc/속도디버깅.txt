@@ -1,0 +1,28 @@
+getBindAndCheckDiagnostics
+var checkDiagnostics = includeBindAndCheckDiagnostics ? typeChecker.getDiagnostics(sourceFile, cancellationToken) : ts.emptyArray;
+243
+
+
+
+                      const prevUsage = process.cpuUsage();
+                      const usage = process.cpuUsage(prevUsage);
+                      if(usage.user + usage.system > 1000 * 1000) {
+                        console.log("!!!", node);
+                      }
+
+
+------------------------------------------------
+        function checkDeferredNodes(context) {
+            var links = getNodeLinks(context);
+            if (links.deferredNodes) {
+                links.deferredNodes.forEach((node) => {
+                  const prevUsage = process.cpuUsage();
+                  checkDeferredNode(node)
+                  const usage = process.cpuUsage(prevUsage);
+                  if(usage.user + usage.system > 1000 * 1000) {
+                    let { line, character } = context.getLineAndCharacterOfPosition(node.getStart());
+                    console.log("\n" + context.fileName.replace(/\//g, "\\") + `(${line+1}, ${character+1})`, "느림");
+                  }
+                });
+            }
+        }

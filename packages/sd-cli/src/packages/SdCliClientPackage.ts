@@ -16,6 +16,7 @@ export class SdCliClientPackage extends SdCliPackageBase {
 
   public constructor(public readonly rootPath: string,
                      public readonly config: ISdClientPackageConfig,
+                     public readonly skipProcesses: ("lint" | "genNgModule")[],
                      public readonly useCache: boolean,
                      public readonly _serverPath?: string) {
     super(rootPath);
@@ -25,7 +26,7 @@ export class SdCliClientPackage extends SdCliPackageBase {
     await this._genBuildTsconfigAsync();
 
     const buildTsconfigFilePath = path.resolve(this.rootPath, `sd-tsconfig.json`);
-    const builder = new SdCliNgClientBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.useCache);
+    const builder = new SdCliNgClientBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.skipProcesses, this.useCache);
 
     await builder
       .on("change", () => {
@@ -41,7 +42,7 @@ export class SdCliClientPackage extends SdCliPackageBase {
     await this._genBuildTsconfigAsync();
 
     const buildTsconfigFilePath = path.resolve(this.rootPath, `sd-tsconfig.json`);
-    const builder = new SdCliNgClientBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.useCache);
+    const builder = new SdCliNgClientBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.skipProcesses, this.useCache);
     return await builder
       .on("change", () => {
         this.emit("change", undefined);

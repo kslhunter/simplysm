@@ -91,6 +91,7 @@ export class SdCliLibraryPackage extends SdCliPackageBase {
       if (i === 0) {
         buildTsconfig.compilerOptions.declaration = true;
         buildTsconfig.compilerOptions.declarationDir = "dist-types";
+        buildTsconfig.compilerOptions.declarationMap = true;
       }
       else {
         buildTsconfig.compilerOptions.declaration = false;

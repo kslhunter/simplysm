@@ -6,6 +6,7 @@ import {
   NotImplementError,
   ObjectUtil,
   Type,
+  UnwrappedType,
   Uuid,
   Wait
 } from "@simplysm/sd-core-common";
@@ -28,6 +29,7 @@ import {
   TQueryBuilderValue,
   TQueryDef,
   TQueryValue,
+  TSelectEntity,
   TUpdateObject
 } from "./commons";
 import { DbDefinitionUtil } from "./utils/DbDefinitionUtil";
@@ -172,9 +174,11 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
-  public select<R>(fwd: (entity: TEntity<T>) => R): Queryable<D, TEntityUnwrap<R>> {
+  public select<A, B extends TEntityUnwrap<A>>(fwd: (entity: TEntity<T>) => A): Queryable<D, B>;
+  public select<R>(fwd: (entity: TEntity<T>) => TSelectEntity<R>): Queryable<D, R>;
+  public select(fwd: (entity: TEntity<T>) => any): Queryable<D, any> {
     const newEntity = fwd(this._entity);
-    return new Queryable(this.db, this as Queryable<D, any>, newEntity) as any;
+    return new Queryable(this.db, this as Queryable<D, any>, newEntity);
   }
 
   public where(predicate: (entity: TEntity<T>) => TEntityValueOrQueryableOrArray<D, any>[]): Queryable<D, T> {
@@ -277,9 +281,10 @@ export class Queryable<D extends DbContext, T> {
     return result as any;
   }
 
-  public unpivot<VC extends string, PC extends string>(valueColumn: VC,
-                                                       pivotColumn: PC,
-                                                       pivotKeys: string[]): Queryable<D, T & Record<PC, string> & Record<VC, TQueryValue>> {
+  public unpivot<VC extends string, PC extends string, RT extends TQueryValue>(valueColumn: VC,
+                                                                               pivotColumn: PC,
+                                                                               pivotKeys: string[],
+                                                                               resultType: Type<RT>): Queryable<D, T & Record<PC, string> & Record<VC, UnwrappedType<RT> | undefined>> {
     const entity: any = { ...this._entity };
 
     if (entity[pivotKeys[0]] instanceof QueryUnit) {
@@ -528,7 +533,7 @@ export class Queryable<D extends DbContext, T> {
               addFieldProc(entityValueItem);
             }
           }
-          else if (entityValue instanceof Object) {
+          else if (!(entityValue instanceof QueryUnit)) {
             addFieldProc(entityValue);
           }
         }

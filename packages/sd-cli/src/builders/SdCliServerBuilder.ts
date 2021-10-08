@@ -28,6 +28,7 @@ export class SdCliServerBuilder extends EventEmitter {
                      public tsconfigFilePath: string,
                      public projectRootPath: string,
                      public config: ISdServerPackageConfig,
+                     public skipProcesses: "lint"[],
                      public useCache: boolean) {
     super();
 
@@ -351,23 +352,25 @@ export class SdCliServerBuilder extends EventEmitter {
           SD_VERSION: this._getNpmConfig(this.rootPath)!.version,
           ...this.config.env
         }),
-        new ESLintWebpackPlugin({
-          context: this.rootPath,
-          eslintPath: path.resolve(this.projectRootPath, "node_modules", "eslint"),
-          extensions: ["js", "ts"],
-          exclude: ["node_modules"],
-          fix: false,
-          threads: true,
-          formatter: (results: LintResult[]) => {
-            const resultMessages: string[] = [];
-            for (const result of results) {
-              for (const msg of result.messages) {
-                resultMessages.push(`${result.filePath}(${msg.line}, ${msg.column}): ${msg.ruleId ?? ""}: ${msg.severity === 1 ? "warning" : msg.severity === 2 ? "error" : ""} ${msg.message}`);
+        ...!this.skipProcesses.includes("lint") ? [
+          new ESLintWebpackPlugin({
+            context: this.rootPath,
+            eslintPath: path.resolve(this.projectRootPath, "node_modules", "eslint"),
+            extensions: ["js", "ts"],
+            exclude: ["node_modules"],
+            fix: false,
+            threads: true,
+            formatter: (results: LintResult[]) => {
+              const resultMessages: string[] = [];
+              for (const result of results) {
+                for (const msg of result.messages) {
+                  resultMessages.push(`${result.filePath}(${msg.line}, ${msg.column}): ${msg.ruleId ?? ""}: ${msg.severity === 1 ? "warning" : msg.severity === 2 ? "error" : ""} ${msg.message}`);
+                }
               }
+              return resultMessages.join(os.EOL);
             }
-            return resultMessages.join(os.EOL);
-          }
-        })
+          })
+        ] : []
       ],
       node: false,
       externals: [

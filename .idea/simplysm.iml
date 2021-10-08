@@ -38,6 +38,7 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-demo-server/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-demo-client/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/_doc" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

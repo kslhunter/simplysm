@@ -305,11 +305,20 @@ declare global {
           : pp instanceof Time ? pp.tick
             : pp;
 
-      if (typeof cpn === "string" && typeof cpp === "string") {
+      if (cpn === cpp) {
+        return 0;
+      }
+      else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpp.localeCompare(cpn);
       }
       else if (typeof cpn === "number" && typeof cpp === "number") {
         return (cpn > cpp ? -1 : cpn < cpp ? 1 : 0);
+      }
+      else if (typeof cpp === "undefined") {
+        return -1;
+      }
+      else if (typeof cpn === "undefined") {
+        return 1;
       }
       else {
         throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
@@ -331,11 +340,20 @@ declare global {
           : pp instanceof Time ? pp.tick
             : pp;
 
-      if (typeof cpn === "string" && typeof cpp === "string") {
+      if (cpn === cpp) {
+        return 0;
+      }
+      else if (typeof cpn === "string" && typeof cpp === "string") {
         return cpn.localeCompare(cpp);
       }
       else if (typeof cpn === "number" && typeof cpp === "number") {
         return (cpn < cpp ? -1 : cpn > cpp ? 1 : 0);
+      }
+      else if (typeof cpp === "undefined") {
+        return 1;
+      }
+      else if (typeof cpn === "undefined") {
+        return -1;
       }
       else {
         throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");

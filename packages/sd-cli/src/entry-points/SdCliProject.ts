@@ -298,10 +298,10 @@ export class SdCliProject {
       }
       else if (pkgInfo.config?.type === "client") {
         const serverPkgInfo = allPackageInfos.single((item) => item.name === (pkgInfo.config as ISdClientPackageConfig).server);
-        pkgs.push(new SdCliClientPackage(pkgInfo.rootPath, pkgInfo.config, useCache, serverPkgInfo?.rootPath));
+        pkgs.push(new SdCliClientPackage(pkgInfo.rootPath, pkgInfo.config, skipProcesses as any, useCache, serverPkgInfo?.rootPath));
       }
       else if (pkgInfo.config?.type === "server") {
-        pkgs.push(new SdCliServerPackage(pkgInfo.rootPath, pkgInfo.config, useCache));
+        pkgs.push(new SdCliServerPackage(pkgInfo.rootPath, pkgInfo.config, skipProcesses as any, useCache));
       }
       else {
         pkgs.push(new SdCliUnknownPackage(pkgInfo.rootPath));

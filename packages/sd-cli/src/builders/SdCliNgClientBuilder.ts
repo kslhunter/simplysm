@@ -44,6 +44,7 @@ export class SdCliNgClientBuilder extends EventEmitter {
                      public tsconfigFilePath: string,
                      public projectRootPath: string,
                      public config: ISdClientPackageConfig,
+                     public skipProcesses: ("lint" | "genNgModule")[],
                      public useCache: boolean) {
     super();
 
@@ -69,13 +70,12 @@ export class SdCliNgClientBuilder extends EventEmitter {
     const buildResult: ISdPackageBuildResult[] = [];
 
     // GENERATOR
-    this._logger.debug("NgGen 수행");
-    const genResult = await this._runNgGenWorkerAsync(false);
-    // const ngGenerator = new SdCliNgLibraryBuilder(this.rootPath, this.tsconfigFilePath, ["emit", "check", "lint"], undefined);
-    // const genFilePaths = await ngGenerator.reloadProgramAsync(false);
-    // const genResult = await ngGenerator.generateAdditionalFilesAsync(genFilePaths, false);
-    buildResult.push(...genResult.result);
-    this._logger.debug("NgGen 수행 결과", genResult);
+    if (!this.skipProcesses.includes("genNgModule")) {
+      this._logger.debug("NgGen 수행");
+      const genResult = await this._runNgGenWorkerAsync(false);
+      buildResult.push(...genResult.result);
+      this._logger.debug("NgGen 수행 결과", genResult);
+    }
 
     // WEBPACK 빌드
     this._logger.debug("Webpack 빌드 수행");
@@ -121,8 +121,6 @@ export class SdCliNgClientBuilder extends EventEmitter {
 
     let ngGenResults: ISdPackageBuildResult[] = [];
 
-    // const ngGenerator = new SdCliNgLibraryBuilder(this.rootPath, this.tsconfigFilePath, ["emit", "check", "lint", "genIndex"], undefined);
-
     // WEBPACK 빌드
     let invalidFiles = new Set<string>();
     const webpackConfig = this._getWebpackConfig(true);
@@ -143,12 +141,12 @@ export class SdCliNgClientBuilder extends EventEmitter {
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
         if (invalidFiles.size === 0) {
-          this._logger.debug("첫 NgGen 수행");
-          const genResult = await this._runNgGenWorkerAsync(true);
-          // const genDirtyFilePaths = await ngGenerator.reloadProgramAsync(true);
-          // const genResult = await ngGenerator.generateAdditionalFilesAsync(genDirtyFilePaths, true);
-          ngGenResults.push(...genResult.result);
-          this._logger.debug("첫 NgGen 수행 결과", genResult);
+          if (!this.skipProcesses.includes("genNgModule")) {
+            this._logger.debug("첫 NgGen 수행");
+            const genResult = await this._runNgGenWorkerAsync(true);
+            ngGenResults.push(...genResult.result);
+            this._logger.debug("첫 NgGen 수행 결과", genResult);
+          }
 
           this._logger.debug("Webpack 빌드 수행");
           callback();
@@ -170,31 +168,33 @@ export class SdCliNgClientBuilder extends EventEmitter {
             return;
           }
 
-          this._logger.debug("변경파일에 대한, NgGen 수행", changedFilePaths);
+          if (!this.skipProcesses.includes("genNgModule")) {
+            this._logger.debug("변경파일에 대한, NgGen 수행", changedFilePaths);
 
-          const genResult = await this._runNgGenWorkerAsync(true, changedFilePaths);
-          ngGenResults.push(...genResult.result);
-          if (genResult.dirtyFilePaths.length === 0) {
+            const genResult = await this._runNgGenWorkerAsync(true, changedFilePaths);
+            ngGenResults.push(...genResult.result);
+            if (genResult.dirtyFilePaths.length === 0) {
+              this._logger.debug("변경파일에 대한, NgGen 결과", genResult);
+              this._logger.debug("Webpack 빌드 수행");
+              callback();
+              return;
+            }
+
             this._logger.debug("변경파일에 대한, NgGen 결과", genResult);
-            this._logger.debug("Webpack 빌드 수행");
-            callback();
-            return;
-          }
 
-          this._logger.debug("변경파일에 대한, NgGen 결과", genResult);
-
-          const modifiedFiles = [...compiler.modifiedFiles];
-          const removedFiles = [...compiler.removedFiles];
-          for (const genFilePath of genResult.dirtyFilePaths.distinct()) {
-            if (FsUtil.exists(genFilePath)) {
-              modifiedFiles.push(genFilePath);
+            const modifiedFiles = [...compiler.modifiedFiles];
+            const removedFiles = [...compiler.removedFiles];
+            for (const genFilePath of genResult.dirtyFilePaths.distinct()) {
+              if (FsUtil.exists(genFilePath)) {
+                modifiedFiles.push(genFilePath);
+              }
+              else {
+                removedFiles.push(genFilePath);
+              }
             }
-            else {
-              removedFiles.push(genFilePath);
-            }
+            compiler.modifiedFiles = new Set(modifiedFiles.distinct());
+            compiler.removedFiles = new Set(removedFiles.distinct());
           }
-          compiler.modifiedFiles = new Set(modifiedFiles.distinct());
-          compiler.removedFiles = new Set(removedFiles.distinct());
 
           this._logger.debug("Webpack 빌드 수행");
           callback();
@@ -583,23 +583,25 @@ export class SdCliNgClientBuilder extends EventEmitter {
           SD_VERSION: this.npmConfig.version,
           ...this.config.env
         }),
-        new ESLintWebpackPlugin({
-          context: this.rootPath,
-          eslintPath: path.resolve(this.projectRootPath, "node_modules", "eslint"),
-          extensions: ["js", "ts"],
-          exclude: ["node_modules"],
-          fix: false,
-          threads: true,
-          formatter: (results: LintResult[]) => {
-            const resultMessages: string[] = [];
-            for (const result of results) {
-              for (const msg of result.messages) {
-                resultMessages.push(`${result.filePath}(${msg.line}, ${msg.column}): ${msg.ruleId ?? ""}: ${msg.severity === 1 ? "warning" : msg.severity === 2 ? "error" : ""} ${msg.message}`);
+        ...!this.skipProcesses.includes("lint") ? [
+          new ESLintWebpackPlugin({
+            context: this.rootPath,
+            eslintPath: path.resolve(this.projectRootPath, "node_modules", "eslint"),
+            extensions: ["js", "ts"],
+            exclude: ["node_modules"],
+            fix: false,
+            threads: true,
+            formatter: (results: LintResult[]) => {
+              const resultMessages: string[] = [];
+              for (const result of results) {
+                for (const msg of result.messages) {
+                  resultMessages.push(`${result.filePath}(${msg.line}, ${msg.column}): ${msg.ruleId ?? ""}: ${msg.severity === 1 ? "warning" : msg.severity === 2 ? "error" : ""} ${msg.message}`);
+                }
               }
+              return resultMessages.join(os.EOL);
             }
-            return resultMessages.join(os.EOL);
-          }
-        }),
+          })
+        ] : [],
         ...watch ? [
           new webpack.HotModuleReplacementPlugin()
         ] : [],

@@ -13,7 +13,6 @@ import { NeverEntryError, StringUtil } from "@simplysm/sd-core-common";
 import { PathUtil } from "@simplysm/sd-core-node";
 import * as os from "os";
 import * as nodeSass from "node-sass";
-import { createHash } from "crypto";
 import { SdCliNgModuleFilesGenerator } from "../build-tools/SdCliNgModuleFilesGenerator";
 import { OptimizeFor } from "@angular/compiler-cli/src/ngtsc/typecheck/api";
 import { ModuleMetadata } from "@angular/compiler-cli/src/metadata/schema";
@@ -139,98 +138,46 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
     }
   }*/
 
-  public override async reloadProgramAsync(watch: boolean): Promise<string[]> {
-    this._logger.debug("프로그램 리로드");
+  public override getParsedTsconfig(): ts.ParsedCommandLine {
+    return ts.parseJsonConfigFileContent(this._tsconfig, ts.sys, this.rootPath, this._tsconfig.angularCompilerOptions);
+  }
 
-    const parsedTsconfig = ts.parseJsonConfigFileContent(this._tsconfig, ts.sys, this.rootPath, this._tsconfig.angularCompilerOptions);
-
-    this._moduleResolutionCache = ts.createModuleResolutionCache(this.rootPath, (s) => s, parsedTsconfig.options);
-    this._cacheCompilerHost = await this._createCacheCompilerHostAsync(parsedTsconfig, this._moduleResolutionCache);
-
+  public override configProgram(parsedTsconfig: ts.ParsedCommandLine): void {
     this._ngProgram = new NgtscProgram(
       parsedTsconfig.fileNames,
       parsedTsconfig.options,
-      this._cacheCompilerHost,
+      this._cacheCompilerHost!,
       this._ngProgram
     );
 
     this._ngCompiler = this._ngProgram.compiler;
     this._program = this._ngProgram.getTsProgram();
+  }
 
-    const baseGetSourceFiles = this._program.getSourceFiles;
-    this._program.getSourceFiles = function (...parameters) {
-      const sourceFiles: readonly (ts.SourceFile & { version?: string })[] = baseGetSourceFiles(...parameters);
-
-      for (const sourceFile of sourceFiles) {
-        if (sourceFile.version === undefined) {
-          sourceFile.version = createHash("sha256").update(sourceFile.text).digest("hex");
+  public override getSemanticDiagnosticsOfNextAffectedFiles(): string[] | undefined {
+    const builder = this._builder as ts.SemanticDiagnosticsBuilderProgram;
+    const affectedFilePaths: string[] = [];
+    const result = builder.getSemanticDiagnosticsOfNextAffectedFile(undefined, (sourceFile) => {
+      if (this._ngCompiler!.ignoreForDiagnostics.has(sourceFile) && sourceFile.fileName.endsWith(".ngtypecheck.ts")) {
+        const originalFilename = sourceFile.fileName.slice(0, -15) + ".ts";
+        const originalSourceFile = builder.getSourceFile(originalFilename);
+        if (originalSourceFile) {
+          affectedFilePaths.push(originalSourceFile.fileName);
         }
+        return true;
       }
+      return false;
+    });
 
-      return sourceFiles;
-    };
-
-    if (watch) {
-      if (this.skipProcesses.includes("emit")) {
-        this._builder = ts.createSemanticDiagnosticsBuilderProgram(
-          this._program,
-          this._cacheCompilerHost,
-          this._builder as ts.SemanticDiagnosticsBuilderProgram
-        );
-      }
-      else {
-        this._builder = ts.createEmitAndSemanticDiagnosticsBuilderProgram(
-          this._program,
-          this._cacheCompilerHost,
-          this._builder as ts.EmitAndSemanticDiagnosticsBuilderProgram
-        );
-      }
-      const builder = this._builder as ts.SemanticDiagnosticsBuilderProgram;
-
-      let seq = 0;
-      const affectedFilePathSet = new Set<string>();
-      while (true) {
-        const affectedFilePaths: string[] = [];
-        this._logger.debug(`프로그램 리로드 > 변경파일 목록구성: [SEQ: ${++seq}]`);
-        const result = builder.getSemanticDiagnosticsOfNextAffectedFile(undefined, (sourceFile) => {
-          if (this._ngCompiler!.ignoreForDiagnostics.has(sourceFile) && sourceFile.fileName.endsWith(".ngtypecheck.ts")) {
-            const originalFilename = sourceFile.fileName.slice(0, -15) + ".ts";
-            const originalSourceFile = builder.getSourceFile(originalFilename);
-            if (originalSourceFile) {
-              affectedFilePaths.push(originalSourceFile.fileName);
-            }
-            return true;
-          }
-          return false;
-        });
-
-        if (result && "fileName" in result.affected) {
-          affectedFilePaths.push(result.affected.fileName);
-        }
-
-        affectedFilePaths.distinctThis();
-
-        this._logger.debug(`프로그램 리로드 > 변경파일 목록구성: [SEQ: ${seq}, SIZE:${affectedFilePathSet.size}]\n` + affectedFilePaths.map((item) => "- " + item).join("\n"));
-
-        affectedFilePathSet.adds(...affectedFilePaths.distinct());
-
-        if (!result) break;
-      }
-
-      const result = Array.from(affectedFilePathSet.values());
-
-      this._logger.debug("프로그램 리로드", result);
-
-      return result;
+    if (result && "fileName" in result.affected) {
+      affectedFilePaths.push(result.affected.fileName);
+      return affectedFilePaths.distinct();
     }
-    else {
-      this._builder = ts.createAbstractBuilder(this._program, this._cacheCompilerHost);
-      const result = this._builder.getSourceFiles().map((item) => item.fileName).distinct();
-
-      this._logger.debug("프로그램 리로드", result);
-
-      return result;
+    if (!result) {
+      return undefined;
     }
+
+    return [];
   }
 
   protected override _deleteFileCaches(filePaths: string[]): void {
@@ -286,7 +233,9 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
     const generateResult = await this._moduleFilesGenerator.generateAsync();
     result.result.push(...generateResult.result);
     if (generateResult.changedFilePaths.length > 0) {
-      result.dirtyFilePaths = await this.reloadChangedProgramAsync(generateResult.changedFilePaths, watch);
+      const reloadChangedProgramResult = await this.reloadChangedProgramAsync(generateResult.changedFilePaths, watch);
+      result.dirtyFilePaths = reloadChangedProgramResult.dirtyFilePaths;
+      result.result.push(...reloadChangedProgramResult.result);
     }
 
     this._logger.debug("Angular Module, RoutingModule 생성 결과", result);

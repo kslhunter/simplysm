@@ -63,6 +63,7 @@ export interface ITsconfig {
     outDir?: string;
     declarationDir?: string;
     declaration?: boolean;
+    declarationMap?: boolean;
     baseUrl?: string;
     paths?: Record<string, string[]>;
   };
@@ -73,6 +74,7 @@ export interface ITsconfig {
     strictTemplates?: boolean;
     strictInputTypes?: boolean;
     strictOutputEventTypes?: boolean;
+    enableIvy?: boolean;
     compilationMode?: "partial" | "full";
     disableTypeScriptVersionCheck?: boolean;
   };

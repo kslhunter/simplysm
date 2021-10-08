@@ -35,22 +35,25 @@ try {
 
     if (!ngGenerator || !changedFilePaths) {
       ngGenerator = new SdCliNgLibraryBuilder(rootPath, tsconfigFilePath, ["emit", "check", "lint", "genIndex"], undefined);
-      const genDirtyFilePaths = await ngGenerator.reloadProgramAsync(watch);
-      const genResult = await ngGenerator.generateAdditionalFilesAsync(genDirtyFilePaths, watch);
+      const reloadProgramResult = await ngGenerator.reloadProgramAsync(watch);
+      const genResult = await ngGenerator.generateAdditionalFilesAsync(reloadProgramResult.dirtyFilePaths, watch);
       worker.send("complete", {
-        dirtyFilePaths: [...genDirtyFilePaths, ...genResult.dirtyFilePaths],
-        result: genResult.result
+        dirtyFilePaths: [...reloadProgramResult.dirtyFilePaths, ...genResult.dirtyFilePaths],
+        result: [...reloadProgramResult.result, ...genResult.result]
       });
     }
     else {
-      const genDirtyFilePaths = await ngGenerator.reloadChangedProgramAsync(changedFilePaths, watch);
-      if (genDirtyFilePaths.length === 0) {
+      const reloadProgramResult = await ngGenerator.reloadChangedProgramAsync(changedFilePaths, watch);
+      if (reloadProgramResult.dirtyFilePaths.length === 0) {
         worker.send("complete", { dirtyFilePaths: [], result: [] });
         return;
       }
 
-      const genResult = await ngGenerator.generateAdditionalFilesAsync(genDirtyFilePaths.distinct(), watch);
-      worker.send("complete", { dirtyFilePaths: genResult.dirtyFilePaths, result: genResult.result });
+      const genResult = await ngGenerator.generateAdditionalFilesAsync(reloadProgramResult.dirtyFilePaths.distinct(), watch);
+      worker.send("complete", {
+        dirtyFilePaths: genResult.dirtyFilePaths,
+        result: [...reloadProgramResult.result, ...genResult.result]
+      });
     }
   });
 }

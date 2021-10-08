@@ -64,16 +64,17 @@ export class SdCliTypescriptBuilder extends EventEmitter {
 
     // 프로그램 리로드
     const buildResult: ISdPackageBuildResult[] = [];
-    const buildDirtyFilePaths = await this.reloadProgramAsync(watch);
+    const reloadProgramResult = await this.reloadProgramAsync(watch);
+    buildResult.push(...reloadProgramResult.result);
 
     // 자동생성할 소스파일들 생성 및 리로드 (index.ts등)
-    const buildGenAdditionalResult = await this.generateAdditionalFilesAsync(buildDirtyFilePaths, watch);
+    const buildGenAdditionalResult = await this.generateAdditionalFilesAsync(reloadProgramResult.dirtyFilePaths, watch);
     buildResult.push(...buildGenAdditionalResult.result);
-    buildDirtyFilePaths.push(...buildGenAdditionalResult.dirtyFilePaths);
+    reloadProgramResult.dirtyFilePaths.push(...buildGenAdditionalResult.dirtyFilePaths);
 
     // 빌드시, 빌드 수행하고 종료
     if (!watch) {
-      const buildDoAllResults = await this.doAllAsync(buildDirtyFilePaths.distinct());
+      const buildDoAllResults = await this.doAllAsync(reloadProgramResult.dirtyFilePaths.distinct());
       buildResult.push(...buildDoAllResults);
       this.emit("complete", buildResult.distinct());
       return;
@@ -98,7 +99,8 @@ export class SdCliTypescriptBuilder extends EventEmitter {
           this.emit("change");
 
           // 변경파일에 대한 프로그램 리로드
-          const watchDirtyFilePaths = await this.reloadChangedProgramAsync(changedFilePaths, watch);
+          const reloadChangedProgramResult = await this.reloadChangedProgramAsync(changedFilePaths, watch);
+          const watchDirtyFilePaths = reloadChangedProgramResult.dirtyFilePaths;
           if (watchDirtyFilePaths.length === 0) {
             this.emit("complete", Array.from(resultMap.values()).mapMany());
             return;
@@ -119,7 +121,7 @@ export class SdCliTypescriptBuilder extends EventEmitter {
           }
 
           // 결과 MAP 구성
-          const result = [...watchGenAdditionalResult.result, ...watchDoAllResults].distinct();
+          const result = [...reloadChangedProgramResult.result, ...watchGenAdditionalResult.result, ...watchDoAllResults].distinct();
           for (const resultItem of result) {
             const posixFilePath = resultItem.filePath !== undefined ? PathUtil.posix(resultItem.filePath) : "undefined";
             const resultMapValue = resultMap.getOrCreate(posixFilePath, []);
@@ -146,7 +148,7 @@ export class SdCliTypescriptBuilder extends EventEmitter {
     // 변경감지용, 최초 빌드
 
     // 빌드 및 린트
-    const buildDoAllResults = await this.doAllAsync(buildDirtyFilePaths.distinct());
+    const buildDoAllResults = await this.doAllAsync(reloadProgramResult.dirtyFilePaths.distinct());
     buildResult.push(...buildDoAllResults);
 
     // 결과 MAP 구성
@@ -173,7 +175,9 @@ export class SdCliTypescriptBuilder extends EventEmitter {
       const generateResult = await this._indexFileGenerator.generateAsync();
       result.result.push(...generateResult.result);
       if (generateResult.changed) {
-        result.dirtyFilePaths = await this.reloadChangedProgramAsync([this._indexFileGenerator.indexFilePath], watch);
+        const reloadChangedProgramResult = await this.reloadChangedProgramAsync([this._indexFileGenerator.indexFilePath], watch);
+        result.dirtyFilePaths = reloadChangedProgramResult.dirtyFilePaths;
+        result.result.push(...reloadChangedProgramResult.result);
       }
     }
 
@@ -342,7 +346,7 @@ export class SdCliTypescriptBuilder extends EventEmitter {
     return result;
   }
 
-  public async reloadChangedProgramAsync(changedFilePaths: string[], watch: boolean): Promise<string[]> {
+  public async reloadChangedProgramAsync(changedFilePaths: string[], watch: boolean): Promise<{ dirtyFilePaths: string[]; result: ISdPackageBuildResult[] }> {
     this._logger.debug("변경 프로그램 리로드", changedFilePaths);
 
     // 캐시 삭제
@@ -351,37 +355,59 @@ export class SdCliTypescriptBuilder extends EventEmitter {
     this._deleteFileCaches(changedFilePaths);
 
     // 프로그램 리로드
-    const dirtyFilePaths = await this.reloadProgramAsync(watch);
+    const reloadProgramResult = await this.reloadProgramAsync(watch);
 
     // 변경사항 있을 경우, 변경감지중이면, 변경감지 경로 리로드
-    if (dirtyFilePaths.length > 0 && watch) {
+    if (reloadProgramResult.dirtyFilePaths.length > 0 && watch) {
       this._reloadWatchPaths();
     }
 
     /*dirtyFilePaths.push(...changedFilePaths.filter((key) => this._fileCache.has(key)));
     dirtyFilePaths.distinctThis();*/
 
-    this._logger.debug("변경 프로그램 리로드 결과", dirtyFilePaths);
-    return dirtyFilePaths;
+    this._logger.debug("변경 프로그램 리로드 결과", reloadProgramResult.dirtyFilePaths);
+    return reloadProgramResult;
   }
 
-  public async reloadProgramAsync(watch: boolean): Promise<string[]> {
-    this._logger.debug("프로그램 리로드");
+  public getParsedTsconfig(): ts.ParsedCommandLine {
+    return ts.parseJsonConfigFileContent(this._tsconfig, ts.sys, this.rootPath);
+  }
 
-    const parsedTsconfig = ts.parseJsonConfigFileContent(this._tsconfig, ts.sys, this.rootPath);
-
-    this._moduleResolutionCache = ts.createModuleResolutionCache(this.rootPath, (s) => s, parsedTsconfig.options);
-    this._cacheCompilerHost = await this._createCacheCompilerHostAsync(parsedTsconfig, this._moduleResolutionCache);
-
+  public configProgram(parsedTsconfig: ts.ParsedCommandLine): void {
     this._program = ts.createProgram(
       parsedTsconfig.fileNames,
       parsedTsconfig.options,
       this._cacheCompilerHost,
       this._program
     );
+  }
 
-    const baseGetSourceFiles = this._program.getSourceFiles;
-    this._program.getSourceFiles = function (...parameters) {
+  public getSemanticDiagnosticsOfNextAffectedFiles(): string[] | undefined {
+    const builder = this._builder as ts.SemanticDiagnosticsBuilderProgram;
+    const result = builder.getSemanticDiagnosticsOfNextAffectedFile();
+
+    if (result && "fileName" in result.affected) {
+      return [result.affected.fileName];
+    }
+    if (!result) {
+      return undefined;
+    }
+
+    return [];
+  }
+
+  public async reloadProgramAsync(watch: boolean): Promise<{ dirtyFilePaths: string[]; result: ISdPackageBuildResult[] }> {
+    this._logger.debug("프로그램 리로드");
+
+    const parsedTsconfig = this.getParsedTsconfig();
+
+    this._moduleResolutionCache = ts.createModuleResolutionCache(this.rootPath, (s) => s, parsedTsconfig.options);
+    this._cacheCompilerHost = await this._createCacheCompilerHostAsync(parsedTsconfig, this._moduleResolutionCache);
+
+    this.configProgram(parsedTsconfig);
+
+    const baseGetSourceFiles = this._program!.getSourceFiles;
+    this._program!.getSourceFiles = function (...parameters) {
       const files: readonly (ts.SourceFile & { version?: string })[] = baseGetSourceFiles(...parameters);
 
       for (const file of files) {
@@ -396,44 +422,63 @@ export class SdCliTypescriptBuilder extends EventEmitter {
     if (watch) {
       if (this.skipProcesses.includes("emit")) {
         this._builder = ts.createSemanticDiagnosticsBuilderProgram(
-          this._program,
+          this._program!,
           this._cacheCompilerHost,
           this._builder as ts.SemanticDiagnosticsBuilderProgram
         );
       }
       else {
         this._builder = ts.createEmitAndSemanticDiagnosticsBuilderProgram(
-          this._program,
+          this._program!,
           this._cacheCompilerHost,
           this._builder as ts.EmitAndSemanticDiagnosticsBuilderProgram
         );
       }
-      const builder = this._builder as ts.SemanticDiagnosticsBuilderProgram;
 
-      const affectedFilePaths: string[] = [];
+      const buildResults: ISdPackageBuildResult[] = [];
+      let seq = 0;
+      const affectedFilePathSet = new Set<string>();
       while (true) {
-        const result = builder.getSemanticDiagnosticsOfNextAffectedFile();
+        const prevUsage = process.cpuUsage();
+        this._logger.debug(`프로그램 리로드 > 변경파일 목록구성: [SEQ: ${++seq}]`);
 
-        if (!result) break;
+        const affectedFilePaths = this.getSemanticDiagnosticsOfNextAffectedFiles();
 
-        if ("fileName" in result.affected) {
-          affectedFilePaths.push(result.affected.fileName);
+        if (affectedFilePaths) {
+          if (affectedFilePaths.length > 0) {
+            const usage = process.cpuUsage(prevUsage);
+
+            if (usage.user + usage.system > 1000 * 1000) { // 1000ms
+              buildResults.push({
+                filePath: path.resolve(affectedFilePaths.last()!),
+                severity: "warning",
+                message: `${path.resolve(affectedFilePaths.last()!)}(0, 0): warning 소스코드 타입분석에 너무 많은 시간이 소요됩니다. (${Math.floor((usage.user + usage.system) / 1000).toLocaleString()}ms/cpu)`
+              });
+            }
+
+            affectedFilePathSet.adds(...affectedFilePaths.distinct());
+          }
+
+          this._logger.debug(`프로그램 리로드 > 변경파일 목록구성: [SEQ: ${seq}, SIZE:${affectedFilePathSet.size}]\n` + affectedFilePaths.map((item) => "- " + item).join("\n"));
+        }
+        else {
+          break;
         }
       }
 
-      const result = affectedFilePaths.distinct();
+      const dirtyFilePaths = Array.from(affectedFilePathSet.values());
 
-      this._logger.debug("프로그램 리로드 결과", result);
+      this._logger.debug("프로그램 리로드 결과", dirtyFilePaths);
 
-      return result;
+      return { dirtyFilePaths, result: buildResults };
     }
     else {
-      this._builder = ts.createAbstractBuilder(this._program, this._cacheCompilerHost);
-      const result = this._builder.getSourceFiles().map((item) => item.fileName).distinct();
+      this._builder = ts.createAbstractBuilder(this._program!, this._cacheCompilerHost);
+      const dirtyFilePaths = this._builder.getSourceFiles().map((item) => item.fileName).distinct();
 
-      this._logger.debug("프로그램 리로드 결과", result);
+      this._logger.debug("프로그램 리로드 결과", dirtyFilePaths);
 
-      return result;
+      return { dirtyFilePaths, result: [] };
     }
   }
 

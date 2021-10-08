@@ -16,6 +16,7 @@ export class SdCliServerPackage extends SdCliPackageBase {
 
   public constructor(public readonly rootPath: string,
                      public readonly config: ISdServerPackageConfig,
+                     public readonly skipProcesses: "lint"[],
                      public readonly useCache: boolean) {
     super(rootPath);
   }
@@ -24,7 +25,7 @@ export class SdCliServerPackage extends SdCliPackageBase {
     await this._genBuildTsconfigAsync();
 
     const buildTsconfigFilePath = path.resolve(this.rootPath, `sd-tsconfig.json`);
-    const builder = new SdCliServerBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.useCache);
+    const builder = new SdCliServerBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.skipProcesses, this.useCache);
 
     await builder
       .on("change", () => {
@@ -51,7 +52,7 @@ export class SdCliServerPackage extends SdCliPackageBase {
     await this._genBuildTsconfigAsync();
 
     const buildTsconfigFilePath = path.resolve(this.rootPath, `sd-tsconfig.json`);
-    const builder = new SdCliServerBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.useCache);
+    const builder = new SdCliServerBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.skipProcesses, this.useCache);
 
     await builder
       .on("change", () => {

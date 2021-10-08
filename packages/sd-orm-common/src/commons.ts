@@ -338,23 +338,27 @@ export type TEntityValueOrQueryableOrArray<D extends DbContext, T extends TQuery
   TEntityValueOrQueryable<D, T> | TEntityValueOrQueryableOrArray<D, T>[];
 
 export type TEntity<T> = {
-  [K in keyof T]-?: T[K] extends QueryUnit<any> ? T[K] :
-    T[K] extends TQueryValue ? QueryUnit<T[K]> :
-      TEntity<T[K]>;
+  [K in keyof T]-?: T[K] extends TQueryValue ? QueryUnit<T[K]>
+    : T[K] extends (infer A)[] ? TEntity<A>[]
+      : TEntity<T[K]>;
 };
 
-export type TEntityUnwrap<T> = T extends QueryUnit<any> ? T["T"]
-  : T extends TQueryValue ? T
-    : {
-      [K in keyof T]: T[K] extends QueryUnit<any> ? T[K]["T"] :
-        T[K] extends TQueryValue ? T[K] :
-          TEntityUnwrap<T[K]>;
-    };
+export type TSelectEntity<T> = {
+  [K in keyof T]: T[K] extends TQueryValue ? QueryUnit<T[K]>
+    : T[K] extends (infer A)[] ? TEntity<A>[]
+      : TEntity<T[K]>;
+};
 
-export type TIncludeEntity<T extends TEntity<any>> = {
-  [K in keyof T]-?: T[K] extends QueryUnit<any> ? unknown :
-    T[K] extends TQueryValue ? unknown :
-      TIncludeEntity<T[K]>;
+export type TEntityUnwrap<T> = {
+  [K in keyof T]: T[K] extends QueryUnit<any> ? T[K]["T"]
+    : T[K] extends (infer A)[] ? TEntityUnwrap<A>[]
+      : TEntityUnwrap<T[K]>;
+};
+
+export type TIncludeEntity<T> = {
+  [K in keyof T]-?: T[K] extends TQueryValue ? QueryUnit<T[K]>
+    : T[K] extends (infer A)[] ? TIncludeEntity<A>[]
+      : TIncludeEntity<T[K]>;
 };
 
 export interface IQueryableDef {
