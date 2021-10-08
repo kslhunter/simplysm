@@ -66,6 +66,7 @@ export interface ITsconfig {
     declarationMap?: boolean;
     baseUrl?: string;
     paths?: Record<string, string[]>;
+    generateTrace?: string;
   };
   angularCompilerOptions?: {
     enableI18nLegacyMessageIdFormat?: boolean;

@@ -63,10 +63,6 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
             type: "boolean",
             describe: `lint 작업을 수행하지 않음`
           },
-          localUpdate: {
-            type: "boolean",
-            describe: "LocalUpdate를 사용함"
-          },
           options: {
             type: "string",
             describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
@@ -171,8 +167,7 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
         packages: argv.packages,
         config: argv.config,
         options: argv.options,
-        skipProcesses: argv.noLint ? ["lint"] : undefined,
-        localUpdate: argv.localUpdate
+        skipProcesses: argv.noLint ? ["lint"] : undefined
       });
   }
   else if (args[0] === "local-update") {

@@ -44,8 +44,7 @@ export class SdCliNgClientBuilder extends EventEmitter {
                      public tsconfigFilePath: string,
                      public projectRootPath: string,
                      public config: ISdClientPackageConfig,
-                     public skipProcesses: ("lint" | "genNgModule")[],
-                     public useCache: boolean) {
+                     public skipProcesses: ("lint" | "genNgModule")[]) {
     super();
 
     const tsconfig: ITsconfig = FsUtil.readJson(this.tsconfigFilePath);
@@ -399,7 +398,15 @@ export class SdCliNgClientBuilder extends EventEmitter {
         ]
       },
       experiments: { syncWebAssembly: true, asyncWebAssembly: true },
-      cache: (watch && this.useCache) ? { type: "memory", maxGenerations: 1 } : false,
+      ...watch ? {
+        cache: { type: "memory", maxGenerations: 1 },
+        snapshot: {
+          immutablePaths: this._findAllInternalModuleCachePaths(),
+          managedPaths: this._findAllInternalModuleCachePaths()
+        }
+      } : {
+        cache: false
+      },
       optimization: {
         minimizer: watch ? [] : [
           new JavaScriptOptimizerPlugin({
@@ -613,24 +620,26 @@ export class SdCliNgClientBuilder extends EventEmitter {
             ]
           })
         ] : [],*/
-        new webpack.ProgressPlugin({
-          handler: (per: number, msg: string, ...args: string[]) => {
-            const phaseText = msg ? ` - phase: ${msg}` : "";
-            const argsText = args.length > 0 ? ` - args: [${args.join(", ")}]` : "";
-            this._logger.debug(`Webpack 빌드 수행중...(${Math.round(per * 100)}%)${phaseText}${argsText}`);
-          }
-        })
+        ...process.env.SD_CLI_LOGGER_SEVERITY === "DEBUG" ? [
+          new webpack.ProgressPlugin({
+            handler: (per: number, msg: string, ...args: string[]) => {
+              const phaseText = msg ? ` - phase: ${msg}` : "";
+              const argsText = args.length > 0 ? ` - args: [${args.join(", ")}]` : "";
+              this._logger.debug(`Webpack 빌드 수행중...(${Math.round(per * 100)}%)${phaseText}${argsText}`);
+            }
+          })
+        ] : []
       ],
       node: false,
       stats: "errors-warnings"
     };
   }
 
-  /*private _findAllInternalModuleCachePaths(): string[] {
+  private _findAllInternalModuleCachePaths(): string[] {
     return this._findAllNodeModules(this.rootPath, this.projectRootPath)
       .mapMany((item) => (
         FsUtil.readdir(item)
-          .filter((item1) => !item1.startsWith("@simplysm"))
+          .filter((item1) => item1 !== "@simplysm")
           .map((item1) => path.resolve(item, item1))
       ));
   }
@@ -653,7 +662,7 @@ export class SdCliNgClientBuilder extends EventEmitter {
     }
 
     return nodeModules;
-  }*/
+  }
 
   private async _runNgGenWorkerAsync(watch: boolean, changedFilePaths?: string[]): Promise<{ dirtyFilePaths: string[]; result: ISdPackageBuildResult[] }> {
     if (!this._ngGenWorker) {

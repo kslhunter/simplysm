@@ -34,7 +34,7 @@ export class SdCliProject {
     this.npmConfig = FsUtil.readJson(this.npmConfigFilePath);
   }
 
-  public async buildAsync(opt: { watch?: boolean; packages?: string[]; options?: string[]; config?: string; skipProcesses?: string[]; localUpdate?: boolean }): Promise<{ hasError: boolean }> {
+  public async buildAsync(opt: { watch?: boolean; packages?: string[]; options?: string[]; config?: string; skipProcesses?: string[] }): Promise<{ hasError: boolean }> {
     this._logger.debug("프로젝트 설정 가져오기...");
     const config = await SdProjectConfigUtil.loadConfigAsync(
       this._rootPath,
@@ -43,13 +43,13 @@ export class SdCliProject {
       opt.config
     );
 
-    if (opt.watch && opt.localUpdate && config.localUpdates) {
+    if (opt.watch && config.localUpdates) {
       this._logger.debug("로컬 라이브러리 업데이트 변경감지 시작...");
       await new SdCliLocalUpdater(this._rootPath).localUpdateAsync(true, opt);
     }
 
     this._logger.debug("프로젝트 패키지 목록 구성...");
-    const allPkgs = await this._getAllPackagesAsync(config, opt.packages, opt.skipProcesses ?? [], !opt.localUpdate);
+    const allPkgs = await this._getAllPackagesAsync(config, opt.packages, opt.skipProcesses ?? []);
     const pkgs = allPkgs.filter((item) => !(item instanceof SdCliUnknownPackage)) as TSdCliBuildablePackage[];
 
     this._logger.debug("프로젝트 및 패키지 버전 설정...");
@@ -178,7 +178,7 @@ export class SdCliProject {
     );
 
     this._logger.debug("프로젝트 패키지 목록 구성...");
-    const allPkgs = await this._getAllPackagesAsync(config, opt.packages, [], false);
+    const allPkgs = await this._getAllPackagesAsync(config, opt.packages, []);
     const pkgs = allPkgs.filter((item) => !(item instanceof SdCliUnknownPackage) && item.config.publish) as TSdCliBuildablePackage[];
 
     // 빌드가 필요하면 빌드함
@@ -246,7 +246,7 @@ export class SdCliProject {
     }
   }
 
-  private async _getAllPackagesAsync(config: ISdProjectConfig, packages: string[] | undefined, skipProcesses: string[], useCache: boolean): Promise<TSdCliPackage[]> {
+  private async _getAllPackagesAsync(config: ISdProjectConfig, packages: string[] | undefined, skipProcesses: string[]): Promise<TSdCliPackage[]> {
     // package.json에서 workspaces를 통해 패키지 경로 목록 가져오기
     const allPkgPaths = await this.npmConfig.workspaces?.mapManyAsync(async (item) => await FsUtil.globAsync(item));
     if (!allPkgPaths) {
@@ -298,10 +298,10 @@ export class SdCliProject {
       }
       else if (pkgInfo.config?.type === "client") {
         const serverPkgInfo = allPackageInfos.single((item) => item.name === (pkgInfo.config as ISdClientPackageConfig).server);
-        pkgs.push(new SdCliClientPackage(pkgInfo.rootPath, pkgInfo.config, skipProcesses as any, useCache, serverPkgInfo?.rootPath));
+        pkgs.push(new SdCliClientPackage(pkgInfo.rootPath, pkgInfo.config, skipProcesses as any, serverPkgInfo?.rootPath));
       }
       else if (pkgInfo.config?.type === "server") {
-        pkgs.push(new SdCliServerPackage(pkgInfo.rootPath, pkgInfo.config, skipProcesses as any, useCache));
+        pkgs.push(new SdCliServerPackage(pkgInfo.rootPath, pkgInfo.config, skipProcesses as any));
       }
       else {
         pkgs.push(new SdCliUnknownPackage(pkgInfo.rootPath));

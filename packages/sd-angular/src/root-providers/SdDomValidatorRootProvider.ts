@@ -25,7 +25,7 @@ export class SdDomValidatorRootProvider {
 
       const invalidLabelsText = invalidEls
         .map((item) => {
-          const formItem = item.findParent("form-item");
+          const formItem = item.findParent("sd-form-item");
           if (formItem) {
             return formItem.getAttribute("label");
           }

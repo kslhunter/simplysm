@@ -359,6 +359,42 @@ export class ObjectUtil {
     return result;
   }
 
+  public static validateObjectWithThrow<T>(displayName: string, obj: T, def: TValidateObjectDefWithName<T>): void {
+    const validateResult = ObjectUtil.validateObject(obj, def);
+    if (Object.keys(validateResult).length > 0) {
+      const errorMessages: string[] = [];
+      const invalidateKeys = Object.keys(validateResult);
+      for (const invalidateKey of invalidateKeys) {
+        const itemDisplayName: string = def[invalidateKey].displayName;
+        // noinspection PointlessBooleanExpressionJS
+        if (def[invalidateKey].displayValue !== false) {
+          const itemValue = validateResult[invalidateKey].value;
+          if (
+            typeof itemValue === "string"
+            || typeof itemValue === "number"
+            || typeof itemValue === "boolean"
+            || typeof itemValue === "undefined"
+          ) {
+            errorMessages.push(`- '${itemDisplayName}': ` + itemValue);
+          }
+          else if (itemValue instanceof DateTime) {
+            errorMessages.push(`- '${itemDisplayName}': ` + itemValue.toFormatString("yyyy-MM-dd HH:mm:ss"));
+          }
+          else if (itemValue instanceof DateOnly) {
+            errorMessages.push(`- '${itemDisplayName}': ` + itemValue.toFormatString("yyyy-MM-dd"));
+          }
+          else {
+            errorMessages.push(`- '${itemDisplayName}'`);
+          }
+        }
+        else {
+          errorMessages.push(`- '${itemDisplayName}'`);
+        }
+      }
+      throw new Error(`${displayName}중 잘못된 내용이 있습니다.` + os.EOL + errorMessages.join(os.EOL));
+    }
+  }
+
   public static validateArray<T>(arr: T[], def: ((item: T) => TValidateObjectDef<T>) | TValidateObjectDef<T>): IValidateArrayResult<T>[] {
     const result: IValidateArrayResult<T>[] = [];
     for (let i = 0; i < arr.length; i++) {

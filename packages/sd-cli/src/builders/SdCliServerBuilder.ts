@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import { INpmConfig, ISdPackageBuildResult, ISdServerPackageConfig, ITsconfig } from "../commons";
 import * as ts from "typescript";
-import { FsUtil, PathUtil } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
 import { ObjectUtil, StringUtil, Wait } from "@simplysm/sd-core-common";
 import * as webpack from "webpack";
 import * as path from "path";
@@ -24,17 +24,21 @@ export class SdCliServerBuilder extends EventEmitter {
   public npmConfigCache = new Map<string, INpmConfig>();
   private _server?: SdServiceServer;
 
+  protected readonly _logger: Logger;
+
   public constructor(public rootPath: string,
                      public tsconfigFilePath: string,
                      public projectRootPath: string,
                      public config: ISdServerPackageConfig,
-                     public skipProcesses: "lint"[],
-                     public useCache: boolean) {
+                     public skipProcesses: "lint"[]) {
     super();
 
     const tsconfig: ITsconfig = FsUtil.readJson(this.tsconfigFilePath);
     this.parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this.rootPath);
-    this.npmConfigCache.set(this.rootPath, FsUtil.readJson(path.resolve(this.rootPath, "package.json")));
+    const npmConfig = FsUtil.readJson(path.resolve(this.rootPath, "package.json"));
+    this.npmConfigCache.set(this.rootPath, npmConfig);
+
+    this._logger = Logger.get(["simplysm", "sd-cli", this.constructor.name, npmConfig.name]);
   }
 
   public on(event: "change", listener: () => void): this;
@@ -50,8 +54,8 @@ export class SdCliServerBuilder extends EventEmitter {
 
     const externalModuleNames = this._findExternalModuleNames(false);
 
-    // 빌드
-
+    // WEBPACK 빌드
+    this._logger.debug("Webpack 빌드 수행");
     const webpackConfig = this._getWebpackConfig(false, externalModuleNames);
     const compiler = webpack(webpackConfig);
     const buildResults = await new Promise<ISdPackageBuildResult[]>((resolve, reject) => {
@@ -67,6 +71,7 @@ export class SdCliServerBuilder extends EventEmitter {
         resolve(results);
       });
     });
+    this._logger.debug("Webpack 빌드 결과", buildResults);
 
     // .config.json 파일 쓰기
 
@@ -161,6 +166,8 @@ export class SdCliServerBuilder extends EventEmitter {
         this.emit("change");
         callback();
 
+        this._logger.debug("Webpack 빌드 수행");
+
         await this._stopServerAsync();
       });
 
@@ -199,6 +206,7 @@ export class SdCliServerBuilder extends EventEmitter {
         // 결과 리턴
 
         this.emit("complete", results, this._server);
+        this._logger.debug("Webpack 빌드 수행 결과", results);
         resolve();
       });
     });
@@ -304,7 +312,15 @@ export class SdCliServerBuilder extends EventEmitter {
           }
         ]
       },
-      cache: (watch && this.useCache) ? { type: "memory", maxGenerations: 1 } : false,
+      ...watch ? {
+        cache: { type: "memory", maxGenerations: 1 },
+        snapshot: {
+          immutablePaths: this._findAllInternalModuleCachePaths(),
+          managedPaths: this._findAllInternalModuleCachePaths()
+        }
+      } : {
+        cache: false
+      },
       optimization: {
         minimizer: watch ? [] : [
           new JavaScriptOptimizerPlugin({
@@ -370,6 +386,15 @@ export class SdCliServerBuilder extends EventEmitter {
               return resultMessages.join(os.EOL);
             }
           })
+        ] : [],
+        ...process.env.SD_CLI_LOGGER_SEVERITY === "DEBUG" ? [
+          new webpack.ProgressPlugin({
+            handler: (per: number, msg: string, ...args: string[]) => {
+              const phaseText = msg ? ` - phase: ${msg}` : "";
+              const argsText = args.length > 0 ? ` - args: [${args.join(", ")}]` : "";
+              this._logger.debug(`Webpack 빌드 수행중...(${Math.round(per * 100)}%)${phaseText}${argsText}`);
+            }
+          })
         ] : []
       ],
       node: false,
@@ -381,14 +406,14 @@ export class SdCliServerBuilder extends EventEmitter {
     };
   }
 
-  /*private _findAllInternalModuleCachePaths(): string[] {
+  private _findAllInternalModuleCachePaths(): string[] {
     return this._findAllNodeModules(this.rootPath, this.projectRootPath)
       .mapMany((item) => (
         FsUtil.readdir(item)
-          .filter((item1) => !item1.startsWith("@simplysm"))
+          .filter((item1) => item1 !== "@simplysm")
           .map((item1) => path.resolve(item, item1))
       ));
-  }*/
+  }
 
   private _findAllNodeModules(from: string, root: string): string[] {
     const nodeModules: string[] = [];

@@ -217,7 +217,7 @@ export class QueryHelper {
     return new QueryUnit(type, arr);
   }
 
-  public val<T extends TQueryValue>(value: TEntityValue<T>, type?: Type<T>): QueryUnit<T> {
+  public val<T extends TQueryValue>(value: TEntityValue<T>, type?: Type<WrappedType<NonNullable<T>>>): QueryUnit<T> {
     const currType: Type<any> | undefined = type ?? SdOrmUtil.getQueryValueType(value);
     return new QueryUnit(currType, this.getQueryValue(value));
   }

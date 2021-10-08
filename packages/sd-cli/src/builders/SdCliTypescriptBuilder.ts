@@ -440,7 +440,9 @@ export class SdCliTypescriptBuilder extends EventEmitter {
       const affectedFilePathSet = new Set<string>();
       while (true) {
         const prevUsage = process.cpuUsage();
-        this._logger.debug(`프로그램 리로드 > 변경파일 목록구성: [SEQ: ${++seq}]`);
+        if (process.env.SD_CLI_LOGGER_SEVERITY === "DEBUG") {
+          this._logger.debug(`프로그램 리로드 > 변경파일 목록구성: [SEQ: ${++seq}]`);
+        }
 
         const affectedFilePaths = this.getSemanticDiagnosticsOfNextAffectedFiles();
 
@@ -459,7 +461,9 @@ export class SdCliTypescriptBuilder extends EventEmitter {
             affectedFilePathSet.adds(...affectedFilePaths.distinct());
           }
 
-          this._logger.debug(`프로그램 리로드 > 변경파일 목록구성: [SEQ: ${seq}, SIZE:${affectedFilePathSet.size}]\n` + affectedFilePaths.map((item) => "- " + item).join("\n"));
+          if (process.env.SD_CLI_LOGGER_SEVERITY === "DEBUG") {
+            this._logger.debug(`프로그램 리로드 > 변경파일 목록구성: [SEQ: ${seq}, SIZE:${affectedFilePathSet.size}]\n` + affectedFilePaths.map((item) => "- " + item).join("\n"));
+          }
         }
         else {
           break;

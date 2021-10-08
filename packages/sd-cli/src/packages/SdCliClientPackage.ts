@@ -17,7 +17,6 @@ export class SdCliClientPackage extends SdCliPackageBase {
   public constructor(public readonly rootPath: string,
                      public readonly config: ISdClientPackageConfig,
                      public readonly skipProcesses: ("lint" | "genNgModule")[],
-                     public readonly useCache: boolean,
                      public readonly _serverPath?: string) {
     super(rootPath);
   }
@@ -26,7 +25,7 @@ export class SdCliClientPackage extends SdCliPackageBase {
     await this._genBuildTsconfigAsync();
 
     const buildTsconfigFilePath = path.resolve(this.rootPath, `sd-tsconfig.json`);
-    const builder = new SdCliNgClientBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.skipProcesses, this.useCache);
+    const builder = new SdCliNgClientBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.skipProcesses);
 
     await builder
       .on("change", () => {
@@ -42,7 +41,7 @@ export class SdCliClientPackage extends SdCliPackageBase {
     await this._genBuildTsconfigAsync();
 
     const buildTsconfigFilePath = path.resolve(this.rootPath, `sd-tsconfig.json`);
-    const builder = new SdCliNgClientBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.skipProcesses, this.useCache);
+    const builder = new SdCliNgClientBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.skipProcesses);
     return await builder
       .on("change", () => {
         this.emit("change", undefined);
@@ -73,14 +72,17 @@ export class SdCliClientPackage extends SdCliPackageBase {
     buildTsconfig.compilerOptions = buildTsconfig.compilerOptions ?? {};
     delete buildTsconfig.compilerOptions.baseUrl;
     delete buildTsconfig.compilerOptions.paths;
-    buildTsconfig.compilerOptions.module = "es2020";
-    buildTsconfig.compilerOptions.target = "es2015";
-    buildTsconfig.compilerOptions.lib = ["es2015", "dom"];
-    buildTsconfig.compilerOptions.outDir = `dist`;
-    buildTsconfig.compilerOptions.declaration = false;
     delete buildTsconfig.compilerOptions.declarationDir;
+    buildTsconfig.compilerOptions = {
+      ...buildTsconfig.compilerOptions,
+      module: "es2020",
+      target: "es2015",
+      lib: ["es2015", "dom"],
+      outDir: "dist",
+      declaration: false,
+      baseUrl: this.rootPath
+    };
 
-    buildTsconfig.compilerOptions.baseUrl = this.rootPath;
     buildTsconfig.angularCompilerOptions = {
       ...buildTsconfig.angularCompilerOptions ?? {},
       enableI18nLegacyMessageIdFormat: false,
