@@ -61,14 +61,6 @@ module.exports = {
     "@typescript-eslint/explicit-module-boundary-types": ["error", { allowArgumentsExplicitlyTypedAsAny: true }],
     "@typescript-eslint/no-extra-parens": "off",
     "@typescript-eslint/no-inferrable-types": ["error", { ignoreParameters: true }],
-    "@typescript-eslint/no-type-alias": ["error", {
-      allowConstructors: "always",
-      allowConditionalTypes: "always",
-      allowAliases: "always",
-      allowMappedTypes: "always",
-      allowLiterals: "always",
-      allowCallbacks: "always"
-    }],
     "@typescript-eslint/member-ordering": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/strict-boolean-expressions": ["error", { allowNullableBoolean: true }],
@@ -113,6 +105,9 @@ module.exports = {
     "@typescript-eslint/no-use-before-define": "off",
     // "@typescript-eslint/no-floating-promises": "off", // 퍼포먼스 이슈, 그래도 필요함..
     "@typescript-eslint/sort-type-union-intersection-members": "off",
-    "@typescript-eslint/object-curly-spacing": ["error", "always"]
+    "@typescript-eslint/object-curly-spacing": ["error", "always"],
+
+    // ---- 아래 내용 체크필요?
+    "@typescript-eslint/no-type-alias": "off"
   }
 };

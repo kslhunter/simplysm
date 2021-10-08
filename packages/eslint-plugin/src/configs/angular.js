@@ -28,6 +28,9 @@ module.exports = {
     "@angular-eslint/no-output-rename": "off",
     "@angular-eslint/contextual-decorator": "off",
     "@angular-eslint/sort-ngmodule-metadata-arrays": "off",
-    "@angular-eslint/no-empty-lifecycle-method": "warn"
+    "@angular-eslint/no-empty-lifecycle-method": "warn",
+
+    // ---아래 내용들 체크필요?
+    "@angular-eslint/use-injectable-provided-in": "off"
   }
 };

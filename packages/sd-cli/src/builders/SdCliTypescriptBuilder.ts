@@ -5,10 +5,10 @@ import { NeverEntryError } from "@simplysm/sd-core-common";
 import { EventEmitter } from "events";
 import * as path from "path";
 import { SdTsDiagnosticUtil } from "../utils/SdTsDiagnosticUtil";
-import { ESLint } from "eslint";
+import { ESLint, Linter } from "eslint";
 import { createHash } from "crypto";
 import { SdCliIndexFileGenerator } from "../build-tools/SdCliIndexFileGenerator";
-import { ParserOptions } from "@typescript-eslint/types";
+import ParserOptions = Linter.ParserOptions;
 
 export class SdCliTypescriptBuilder extends EventEmitter {
   protected readonly _logger: Logger;

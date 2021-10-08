@@ -11,7 +11,7 @@ export class CaseQueryHelper<T extends TQueryValue> {
                      private _type: Type<T> | undefined) {
   }
 
-  public case(predicate: TEntityValue<boolean | Boolean> | TQueryBuilderValue, then: TEntityValue<T>): CaseQueryHelper<T> {
+  public case(predicate: TEntityValue<boolean | Boolean> | TQueryBuilderValue, then: TEntityValue<T>): this {
     this._type = SdOrmUtil.getQueryValueType(then) ?? this._type;
 
     this._cases.push(...[" WHEN ", this._qh.getQueryValue(predicate), " THEN ", this._qh.getQueryValue(then)]);
