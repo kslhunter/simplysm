@@ -332,7 +332,7 @@ export interface IIndexDef {
 
 // region Queryable
 
-export type TEntityValue<T extends TQueryValue> = T | QueryUnit<T> | QueryUnit<WrappedType<T>>;
+export type TEntityValue<T extends TQueryValue> = T | QueryUnit<T>;
 export type TEntityValueOrQueryable<D extends DbContext, T extends TQueryValue> = TEntityValue<T> | Queryable<D, T>;
 export type TEntityValueOrQueryableOrArray<D extends DbContext, T extends TQueryValue> =
   TEntityValueOrQueryable<D, T> | TEntityValueOrQueryableOrArray<D, T>[];

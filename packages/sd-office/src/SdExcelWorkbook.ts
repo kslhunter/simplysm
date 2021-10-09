@@ -315,14 +315,22 @@ export class SdExcelWorkbook {
     return this._worksheets[newSheetId];
   }
 
-  public async getBlobAsync(): Promise<Blob> {
+  public async getBlobAsync(progressCb?: (prog: { percent: number; currentFile: string }) => void): Promise<Blob> {
     this._writeZipObject();
-    return await this._zip.generateAsync({ type: "blob" });
+    return await this._zip.generateAsync({ type: "blob" }, (metadata) => {
+      if (progressCb) {
+        progressCb(metadata);
+      }
+    });
   }
 
-  public async getBufferAsync(): Promise<Buffer> {
+  public async getBufferAsync(progressCb?: (prog: { percent: number; currentFile: string }) => void): Promise<Buffer> {
     this._writeZipObject();
-    return await this._zip.generateAsync({ type: "nodebuffer" });
+    return await this._zip.generateAsync({ type: "nodebuffer" }, (metadata) => {
+      if (progressCb) {
+        progressCb(metadata);
+      }
+    });
   }
 
   private _writeZipObject(): void {

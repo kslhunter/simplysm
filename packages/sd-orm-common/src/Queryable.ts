@@ -58,10 +58,10 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
-  public constructor(db: D, cloneQueryable: Queryable<D, T>);
-  public constructor(db: D, cloneQueryable: Queryable<D, any>, entity: TEntity<T>);
-  public constructor(db: D, tableType: Type<T>, as?: string);
-  public constructor(db: D, tableType: Type<T> | undefined, as: string | undefined, entity: TEntity<T>, defs: IQueryableDef);
+  // public constructor(db: D, cloneQueryable: Queryable<D, T>);
+  // public constructor(db: D, cloneQueryable: Queryable<D, any>, entity: TEntity<T>);
+  // public constructor(db: D, tableType: Type<T>, as?: string);
+  // public constructor(db: D, tableType: Type<T> | undefined, as: string | undefined, entity: TEntity<T>, defs: IQueryableDef);
   public constructor(public readonly db: D, arg1?: Queryable<D, T> | Type<T>, arg2?: string | TEntity<T>, arg3?: TEntity<T>, arg4?: IQueryableDef) {
     // Clone 일때
     if (arg1 instanceof Queryable) {
@@ -143,7 +143,7 @@ export class Queryable<D extends DbContext, T> {
       return resultEntity;
     };
 
-    const entity = getNewEntity(cqrs[0]._entity);
+    const entity: TEntity<NT> = getNewEntity(cqrs[0]._entity);
 
     // Init entity
     /*const entity = {} as TEntity<NT>;
@@ -178,7 +178,7 @@ export class Queryable<D extends DbContext, T> {
   public select<R>(fwd: (entity: TEntity<T>) => TSelectEntity<R>): Queryable<D, R>;
   public select(fwd: (entity: TEntity<T>) => any): Queryable<D, any> {
     const newEntity = fwd(this._entity);
-    return new Queryable(this.db, this as Queryable<D, any>, newEntity);
+    return new Queryable(this.db, this as any, newEntity);
   }
 
   public where(predicate: (entity: TEntity<T>) => TEntityValueOrQueryableOrArray<D, any>[]): Queryable<D, T> {
@@ -200,11 +200,7 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
-  // public orderBy(fwd: (entity: TEntity<T>) => TEntityValue<TQueryValue>, desc?: boolean): Queryable<D, T>;
-  // public orderBy(chain: string, desc?: boolean): Queryable<D, T>;
-  // public orderBy(defs: IQueryableOrderingDef<T>[]): Queryable<D, T>;
   public orderBy(arg1: ((entity: TEntity<T>) => TEntityValue<TQueryValue>) | string, desc?: boolean): Queryable<D, T> {
-    // public orderBy(arg1: ((entity: TEntity<T>) => TEntityValue<TQueryValue>) | string | IQueryableOrderingDef<T>[], desc?: boolean): Queryable<D, T> {
     let result = new Queryable(this.db, this);
 
     let selectedColumn;
@@ -220,7 +216,7 @@ export class Queryable<D extends DbContext, T> {
 
         if (!this._def.join?.some((item) => item.as === this.db.qb.wrap(`TBL.${as}`))) {
           if (this._getEntityChainValue(result._entity, as) === undefined) {
-            result = result.include(as);
+            result = result.includeByTableChainedName(as);
           }
         }
       }
@@ -271,7 +267,7 @@ export class Queryable<D extends DbContext, T> {
       }
     }
 
-    const result = new Queryable(this.db, this as Queryable<D, any>, entity);
+    const result = new Queryable(this.db, this as any, entity);
 
     result._def.pivot = {
       valueColumn: this.db.qh.getQueryValue(valueColumn),
@@ -299,7 +295,7 @@ export class Queryable<D extends DbContext, T> {
       throw new NotImplementError();
     }
 
-    const result = new Queryable(this.db, this as Queryable<D, any>, entity);
+    const result = new Queryable(this.db, this as any, entity);
 
     result._def.unpivot = {
       valueColumn: this.db.qb.wrap(valueColumn),
@@ -322,9 +318,7 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
-  public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (qr: Queryable<D, J>, en: TEntity<T>) => Queryable<D, R>): Queryable<D, T & { [K in A]: R[] }>;
-  public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (qr: Queryable<D, J>, en: TEntity<T>) => Queryable<D, R>, isSingle: true): Queryable<D, T & { [K in A]: Partial<R> }>;
-  public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (qr: Queryable<D, J>, en: TEntity<T>) => Queryable<D, R>, isSingle?: true): Queryable<D, any> {
+  public join<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (qr: Queryable<D, J>, en: TEntity<T>) => Queryable<D, R>): Queryable<D, T & { [K in A]: R[] }> {
     const realAs = this._as !== undefined ? this._as + "." + as : as;
 
     if (this._def.join?.some((item) => item.as === this.db.qb.wrap(`TBL.${realAs}`))) {
@@ -341,12 +335,12 @@ export class Queryable<D extends DbContext, T> {
     const joinQueryable = fwd(joinTableQueryable, this._entity);
     const joinEntity = this._getParentEntity(joinQueryable._entity, realAs, undefined);
 
-    const entity = { ...this._entity };
-    this._setEntityChainValue(entity, as, isSingle ? joinEntity : [joinEntity]);
+    const entity = { ...this._entity } as TEntity<T & { [K in A]: R[] }>;
+    this._setEntityChainValue(entity, as, [joinEntity]);
 
     const result = new Queryable(
       this.db,
-      this as Queryable<D, any>,
+      this as any,
       entity
     );
 
@@ -354,35 +348,71 @@ export class Queryable<D extends DbContext, T> {
     result._def.join.push({
       ...joinQueryable.getSelectDef(),
       isCustomSelect: joinQueryable._isCustomEntity,
-      isSingle: isSingle === true
+      isSingle: false
     });
 
-    return result as Queryable<D, any>;
+    return result;
   }
 
-  public include(chain: string): Queryable<D, T>;
-  public include(targetFwd: (entity: TIncludeEntity<T>) => (TIncludeEntity<any> | TIncludeEntity<any>[])): Queryable<D, T>;
-  public include(arg: string | ((entity: TIncludeEntity<T>) => (TIncludeEntity<any> | TIncludeEntity<any>[]))): Queryable<D, T> {
+  public joinSingle<A extends string, J, R>(joinTypeOrQrs: Type<J> | Queryable<D, J>[], as: A, fwd: (qr: Queryable<D, J>, en: TEntity<T>) => Queryable<D, R>): Queryable<D, T & { [K in A]: Partial<R> }> {
+    const realAs = this._as !== undefined ? this._as + "." + as : as;
+
+    if (this._def.join?.some((item) => item.as === this.db.qb.wrap(`TBL.${realAs}`))) {
+      return new Queryable(this.db, this) as any;
+    }
+
+    let joinTableQueryable: Queryable<D, J>;
+    if (joinTypeOrQrs instanceof Array) {
+      joinTableQueryable = Queryable.union(joinTypeOrQrs, realAs);
+    }
+    else {
+      joinTableQueryable = new Queryable(this.db, joinTypeOrQrs, realAs);
+    }
+    const joinQueryable = fwd(joinTableQueryable, this._entity);
+    const joinEntity = this._getParentEntity(joinQueryable._entity, realAs, undefined);
+
+    const entity = { ...this._entity } as TEntity<T & { [K in A]: Partial<R> }>;
+    this._setEntityChainValue(entity, as, joinEntity);
+
+    const result = new Queryable(
+      this.db,
+      this as any,
+      entity
+    );
+
+    result._def.join = result._def.join ?? [];
+    result._def.join.push({
+      ...joinQueryable.getSelectDef(),
+      isCustomSelect: joinQueryable._isCustomEntity,
+      isSingle: true
+    });
+
+    return result;
+  }
+
+  public includeByTableChainedName(tableChainedName: string): Queryable<D, T> {
+    return this._include(tableChainedName);
+  }
+
+  public include(arg: (entity: TIncludeEntity<T>) => (TIncludeEntity<any> | TIncludeEntity<any>[])): Queryable<D, T> {
+    const parsed = FunctionUtil.parse(arg);
+    const itemParamName = parsed.params[0];
+    const tableChainedName = parsed.returnContent
+      .replace(new RegExp(`${itemParamName}\\.`), "")
+      .replace(/\[0]/g, "")
+      .trim();
+
+    return this._include(tableChainedName);
+  }
+
+  private _include(tableChainedName: string): Queryable<D, T> {
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 include 를 사용할 수 없습니다.");
     }
 
-    let tableChainedName;
-    if (typeof arg === "function") {
-      const parsed = FunctionUtil.parse(arg);
-      const itemParamName = parsed.params[0];
-      tableChainedName = parsed.returnContent
-        .replace(new RegExp(`${itemParamName}\\.`), "")
-        .replace(/\[0]/g, "")
-        .trim();
-    }
-    else {
-      tableChainedName = arg;
-    }
-
     const chain = tableChainedName.split(".");
 
-    let result = this as Queryable<D, any>;
+    let result = this;
     let tableDef = this._tableDef;
     const asChainArr: string[] = [];
     for (const fkName of chain) {
@@ -406,8 +436,8 @@ export class Queryable<D extends DbContext, T> {
           throw new Error(`'${tableDef.name}.${as}'의 FK 설정과 '${fkTargetTableDef.name}'의 PK 설정의 길이가 다릅니다.`);
         }
 
-        // JOIN (SINGLE) 실행
-        result = result.join(
+        // apply 실행
+        result = result.joinSingle(
           fkTargetType,
           as,
           (q, en) => q.where((item) => {
@@ -418,9 +448,8 @@ export class Queryable<D extends DbContext, T> {
               whereQuery.push(this.db.qh.equal(item[fkTargetTableDef.columns[i].propertyKey], lastEn[fkDef.columnPropertyKeys[i]]));
             }
             return whereQuery;
-          }),
-          true
-        );
+          })
+        ) as any;
 
         tableDef = fkTargetTableDef;
       }
@@ -450,7 +479,7 @@ export class Queryable<D extends DbContext, T> {
             }
             return whereQuery;
           })
-        );
+        ) as any;
 
         tableDef = fktSourceTableDef;
       }
@@ -547,7 +576,7 @@ export class Queryable<D extends DbContext, T> {
 
   public wrap(): Queryable<D, T>;
   public wrap<R extends Partial<T>>(tableType: Type<R>): Queryable<D, R>;
-  public wrap<R extends Partial<T>>(tableType?: Type<R>): Queryable<D, T> | Queryable<D, R> {
+  public wrap(tableType?: any): any {
     let clone: Queryable<D, T>;
 
     if (tableType !== undefined) {
@@ -558,7 +587,7 @@ export class Queryable<D extends DbContext, T> {
           cloneEntity[key] = entityValue;
         }
       }
-      clone = new Queryable(this.db, this as Queryable<D, any>, cloneEntity);
+      clone = new Queryable(this.db, this as any, cloneEntity);
       clone._def.distinct = true;
     }
     else {
@@ -591,7 +620,7 @@ export class Queryable<D extends DbContext, T> {
       }
     }
 
-    return result as Queryable<D, T> | Queryable<D, R>;
+    return result;
   }
 
   public getSelectDef(): ISelectQueryDef & { select: Record<string, TQueryBuilderValue> } {
@@ -1241,7 +1270,7 @@ export class Queryable<D extends DbContext, T> {
         ...(typeof arg === "function" ? arg(this._entity) : arg)
       };
 
-      const clone: Queryable<D, T> = new Queryable(this.db, this as Queryable<D, any>, newEntity);
+      const clone = new Queryable(this.db, this as any, newEntity);
 
       return (
         await this.db.executeDefsAsync(
@@ -1301,7 +1330,7 @@ export class Queryable<D extends DbContext, T> {
         newEntity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(colDef.name)}`);
       }
 
-      const clone: Queryable<D, T> = new Queryable(this.db, this as Queryable<D, any>, newEntity);
+      const clone = new Queryable(this.db, this as any, newEntity);
 
       return (await this.db.executeDefsAsync(
         [
@@ -1363,7 +1392,7 @@ export class Queryable<D extends DbContext, T> {
         ...(typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd)
       };
 
-      const clone: Queryable<D, T> = new Queryable(this.db, this as Queryable<D, any>, newEntity);
+      const clone = new Queryable(this.db, this as any, newEntity);
 
       const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
 

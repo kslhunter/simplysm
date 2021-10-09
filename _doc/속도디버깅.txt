@@ -1,6 +1,6 @@
 getBindAndCheckDiagnostics
 var checkDiagnostics = includeBindAndCheckDiagnostics ? typeChecker.getDiagnostics(sourceFile, cancellationToken) : ts.emptyArray;
-243
+function getDiagnosticsWorker(sourceFile)
 
 
 
@@ -12,6 +12,37 @@ var checkDiagnostics = includeBindAndCheckDiagnostics ? typeChecker.getDiagnosti
 
 
 ------------------------------------------------
+        function checkSourceElement(node) {
+            if (node) {
+              const prevUsage = process.cpuUsage();
+                var saveCurrentNode = currentNode;
+                currentNode = node;
+                instantiationCount = 0;
+                checkSourceElementWorker(node);
+                currentNode = saveCurrentNode;
+              const usage = process.cpuUsage(prevUsage);
+              if(usage.user + usage.system > 100 * 1000 && node.kind !== 253) {
+                const fn = (node) => {
+                  let curr = node;
+                  while(true){
+                    curr = curr.parent;
+                    if(curr === undefined) return undefined;
+                    if(ts.isSourceFile(curr)) return curr;
+                  }
+                };
+                let parent = fn(node);
+                if(parent){
+                  let { line, character } = parent.getLineAndCharacterOfPosition(node.getStart());
+                  process.stdout.write(`\n${parent.fileName.replace(/\//g, "\\")}(${line+1}, ${character+1}): 느림 [${Math.round((usage.user + usage.system) / 1000)}ms/cpu, KIND: ${node.kind}]\n`);
+                }
+                else{
+                  process.stdout.write(`\n(${line+1}, ${character+1}): 느림 \n`);
+                }
+              }
+            }
+        }
+
+------------------------------------------------
         function checkDeferredNodes(context) {
             var links = getNodeLinks(context);
             if (links.deferredNodes) {
@@ -21,7 +52,7 @@ var checkDiagnostics = includeBindAndCheckDiagnostics ? typeChecker.getDiagnosti
                   const usage = process.cpuUsage(prevUsage);
                   if(usage.user + usage.system > 1000 * 1000) {
                     let { line, character } = context.getLineAndCharacterOfPosition(node.getStart());
-                    console.log("\n" + context.fileName.replace(/\//g, "\\") + `(${line+1}, ${character+1})`, "느림");
+                    process.stdout.write("\n" + context.fileName.replace(/\//g, "\\") + `(${line+1}, ${character+1}): 느림`);
                   }
                 });
             }
