@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular",
-  "version": "5.0.22",
+  "version": "5.0.23",
   "description": "심플리즘 패키지 - Angular 모듈 (browser)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm",
@@ -28,11 +28,11 @@
     "@fortawesome/pro-duotone-svg-icons": "^5.15.2",
     "jsbarcode": "^3.11.3",
     "marked": "^2.0.1",
-    "@simplysm/sd-core-common": "5.0.22",
-    "@simplysm/sd-core-browser": "5.0.22",
-    "@simplysm/sd-service-common": "5.0.22",
-    "@simplysm/sd-service-browser": "5.0.22",
-    "@simplysm/sd-orm-common": "5.0.22"
+    "@simplysm/sd-core-common": "5.0.23",
+    "@simplysm/sd-core-browser": "5.0.23",
+    "@simplysm/sd-service-common": "5.0.23",
+    "@simplysm/sd-service-browser": "5.0.23",
+    "@simplysm/sd-orm-common": "5.0.23"
   },
   "devDependencies": {
     "@types/marked": "^2.0.0"
