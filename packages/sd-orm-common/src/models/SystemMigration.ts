@@ -1,4 +1,4 @@
-import { Column, Table } from "./decorators";
+import { Column, Table } from "../decorators";
 
 @Table({ name: "_migration", description: "마이그레이션" })
 export class SystemMigration {

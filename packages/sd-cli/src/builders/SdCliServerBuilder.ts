@@ -265,7 +265,6 @@ export class SdCliServerBuilder extends EventEmitter {
       context: this.projectRootPath,
       entry: {
         main: [
-          // TODO: "source-map-support/register"??
           path.resolve(this.rootPath, "src/main.ts")
         ]
       },
@@ -387,15 +386,13 @@ export class SdCliServerBuilder extends EventEmitter {
             }
           })
         ] : [],
-        ...process.env.SD_CLI_LOGGER_SEVERITY === "DEBUG" ? [
-          new webpack.ProgressPlugin({
-            handler: (per: number, msg: string, ...args: string[]) => {
-              const phaseText = msg ? ` - phase: ${msg}` : "";
-              const argsText = args.length > 0 ? ` - args: [${args.join(", ")}]` : "";
-              this._logger.debug(`Webpack 빌드 수행중...(${Math.round(per * 100)}%)${phaseText}${argsText}`);
-            }
-          })
-        ] : []
+        new webpack.ProgressPlugin({
+          handler: (per: number, msg: string, ...args: string[]) => {
+            const phaseText = msg ? ` - phase: ${msg}` : "";
+            const argsText = args.length > 0 ? ` - args: [${args.join(", ")}]` : "";
+            this._logger.debug(`Webpack 빌드 수행중...(${Math.round(per * 100)}%)${phaseText}${argsText}`);
+          }
+        })
       ],
       node: false,
       externals: [

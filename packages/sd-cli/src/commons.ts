@@ -84,7 +84,6 @@ export interface ITsconfig {
 }
 
 export interface ISdPackageBuildResult {
-  // TODO: type 추가 (lint, check, genNg등 어디서 나온 오류인지 필요, type + filePath를 키로 봐야함)
   filePath: string | undefined;
   severity: "error" | "warning";
   message: string;

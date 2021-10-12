@@ -52,7 +52,7 @@ import { sdIconNames, TSdIconName } from "../commons";
           }
         }
 
-        >>> ._child > ._content > sd-list {
+        /deep/ ._child > ._content > sd-list {
           padding: var(--gap-sm) 0;
           background: var(--trans-brightness-dark);
         }

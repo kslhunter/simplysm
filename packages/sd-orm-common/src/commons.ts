@@ -14,6 +14,7 @@ export type TQueryDef = (
   (IInsertQueryDef & { type: "insert" }) |
   (IUpdateQueryDef & { type: "update" }) |
   (IDeleteQueryDef & { type: "delete" }) |
+  (IInsertIfNotExistsQueryDef & { type: "insertIfNotExists" }) |
   (IUpsertQueryDef & { type: "upsert" }) |
   (ICreateDatabaseIfNotExistsQueryDef & { type: "createDatabaseIfNotExists" }) |
   (IClearDatabaseIfExistsQueryDef & { type: "clearDatabaseIfExists" }) |
@@ -240,6 +241,14 @@ export interface IInsertQueryDef {
 export interface IUpdateQueryDef extends ISelectQueryDef {
   from: string;
   record: Record<string, string>;
+  output?: string[];
+}
+
+export interface IInsertIfNotExistsQueryDef {
+  from: string;
+  as: string;
+  insertRecord: Record<string, string>;
+  where: TQueryBuilderValue[];
   output?: string[];
 }
 

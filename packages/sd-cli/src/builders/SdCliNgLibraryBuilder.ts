@@ -78,7 +78,6 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
 
         this._builder.emit(sourceFile, undefined, undefined, undefined, transformers);
 
-        // TODO: sd-metadata를 ModuleMetadata로 만들게 아니고, 아예 IAotModuleDefMetadata형식으로 만들어지게 해야함
         if (this._program!.getCompilerOptions().declaration) {
           if (sourceFile.fileName.endsWith(".ts") && !sourceFile.fileName.endsWith(".d.ts")) {
             const metadata = this._getMetadata(sourceFile);

@@ -12,6 +12,7 @@ import {
 } from "@simplysm/sd-core-common";
 import {
   IDeleteQueryDef,
+  IInsertIfNotExistsQueryDef,
   IInsertQueryDef,
   IJoinQueryDef,
   IQueryableDef,
@@ -821,41 +822,96 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
-  public getUpsertDef<U extends TUpdateObject<T>>(updateObj: U, insertObj?: TInsertObject<T>): IUpsertQueryDef {
+  public getInsertIfNotExistsDef(insertObj: TInsertObject<T>): IInsertIfNotExistsQueryDef {
     if (this._def.join !== undefined) {
-      throw new Error("INSERT 와 JOIN 를 함께 사용할 수 없습니다.");
+      throw new Error("INSERT IF NOT EXISTS 와 JOIN 를 함께 사용할 수 없습니다.");
     }
 
     if (typeof this._def.from !== "string") {
-      throw new Error("INSERT 할 TABLE 을 정확히 지정해야 합니다.");
+      throw new Error("INSERT IF NOT EXISTS 할 TABLE 을 정확히 지정해야 합니다.");
     }
 
     if (this._isCustomEntity) {
-      throw new Error("INSERT 와 SELECT 를 함께 사용할 수 없습니다.");
+      throw new Error("INSERT IF NOT EXISTS 와 SELECT 를 함께 사용할 수 없습니다.");
     }
 
     if (this._def.distinct !== undefined) {
-      throw new Error("INSERT 와 DISTINCT 를 함께 사용할 수 없습니다.");
+      throw new Error("INSERT IF NOT EXISTS 와 DISTINCT 를 함께 사용할 수 없습니다.");
     }
 
     if (this._def.top !== undefined) {
-      throw new Error("INSERT 와 TOP 를 함께 사용할 수 없습니다.");
+      throw new Error("INSERT IF NOT EXISTS 와 TOP 를 함께 사용할 수 없습니다.");
     }
 
     if (this._def.orderBy !== undefined) {
-      throw new Error("INSERT 와 ORDER BY 를 함께 사용할 수 없습니다.");
+      throw new Error("INSERT IF NOT EXISTS 와 ORDER BY 를 함께 사용할 수 없습니다.");
     }
 
     if (this._def.limit !== undefined) {
-      throw new Error("INSERT 와 LIMIT 를 함께 사용할 수 없습니다.");
+      throw new Error("INSERT IF NOT EXISTS 와 LIMIT 를 함께 사용할 수 없습니다.");
     }
 
     if (this._def.groupBy !== undefined) {
-      throw new Error("INSERT 와 GROUP BY 를 함께 사용할 수 없습니다.");
+      throw new Error("INSERT IF NOT EXISTS 와 GROUP BY 를 함께 사용할 수 없습니다.");
     }
 
     if (this._def.having !== undefined) {
-      throw new Error("INSERT 와 HAVING 를 함께 사용할 수 없습니다.");
+      throw new Error("INSERT IF NOT EXISTS 와 HAVING 를 함께 사용할 수 없습니다.");
+    }
+
+    if (this._def.where === undefined || this._def.where.length < 1) {
+      throw new Error("INSERT IF NOT EXISTS 시, WHERE 를 반드시 사용해야 합니다.");
+    }
+
+    const insertRecord = {};
+    for (const key of Object.keys(insertObj)) {
+      insertRecord[this.db.qb.wrap(`${key}`)] = this.db.qh.getQueryValue(insertObj[key]);
+    }
+
+    return ObjectUtil.clearUndefined({
+      from: this._def.from,
+      as: this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`),
+      where: this._def.where,
+      insertRecord,
+      output: ["*"]
+    });
+  }
+
+  public getUpsertDef<U extends TUpdateObject<T>>(updateObj: U, insertObj?: TInsertObject<T>): IUpsertQueryDef {
+    if (this._def.join !== undefined) {
+      throw new Error("UPSERT 와 JOIN 를 함께 사용할 수 없습니다.");
+    }
+
+    if (typeof this._def.from !== "string") {
+      throw new Error("UPSERT 할 TABLE 을 정확히 지정해야 합니다.");
+    }
+
+    if (this._isCustomEntity) {
+      throw new Error("UPSERT 와 SELECT 를 함께 사용할 수 없습니다.");
+    }
+
+    if (this._def.distinct !== undefined) {
+      throw new Error("UPSERT 와 DISTINCT 를 함께 사용할 수 없습니다.");
+    }
+
+    if (this._def.top !== undefined) {
+      throw new Error("UPSERT 와 TOP 를 함께 사용할 수 없습니다.");
+    }
+
+    if (this._def.orderBy !== undefined) {
+      throw new Error("UPSERT 와 ORDER BY 를 함께 사용할 수 없습니다.");
+    }
+
+    if (this._def.limit !== undefined) {
+      throw new Error("UPSERT 와 LIMIT 를 함께 사용할 수 없습니다.");
+    }
+
+    if (this._def.groupBy !== undefined) {
+      throw new Error("UPSERT 와 GROUP BY 를 함께 사용할 수 없습니다.");
+    }
+
+    if (this._def.having !== undefined) {
+      throw new Error("UPSERT 와 HAVING 를 함께 사용할 수 없습니다.");
     }
 
     if (this._def.where === undefined || this._def.where.length < 1) {
@@ -1359,6 +1415,31 @@ export class Queryable<D extends DbContext, T> {
     }
     const queryDef = this.getDeleteDef();
     this.db.prepareDefs.push({ type: "delete", ...queryDef });
+  }
+
+  public async insertIfNotExistsAsync(insertRecord: TInsertObject<T>): Promise<T[]> {
+    if (typeof this.db === "undefined") {
+      throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
+    }
+    if (!this._tableDef) {
+      throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
+    }
+    DbContext.selectCache.clear();
+
+    const queryDef = this.getInsertIfNotExistsDef(insertRecord);
+    const parseOption = this._getParseOption();
+
+    if (this.db.dialect === "mysql") {
+      throw new NotImplementError();
+    }
+    else {
+      return (
+        await this.db.executeDefsAsync(
+          [{ type: "insertIfNotExists", ...queryDef }],
+          [{ columns: parseOption.columns }]
+        )
+      )[0].filterExists();
+    }
   }
 
   public async upsertAsync<U extends TUpdateObject<T>>(updateObjOrFwd: U | ((entity: TEntity<T>) => U), insertObjOrFwd?: TInsertObject<T> | ((updateRecord: U) => TInsertObject<T>)): Promise<T[]> {

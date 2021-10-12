@@ -241,6 +241,7 @@ export class SdCliTypescriptBuilder extends EventEmitter {
           const severity: "warning" | "error" = msg.severity === 1 ? "warning" : "error";
 
           return {
+            type: "lint",
             filePath: report.filePath,
             severity,
             message: `${report.filePath}(${msg.line}, ${msg.column}): ${msg.ruleId ?? ""}: ${severity} ${msg.message}`

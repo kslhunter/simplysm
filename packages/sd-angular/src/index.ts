@@ -162,6 +162,7 @@ export * from "./providers/SdServiceFactoryProvider";
 export * from "./providers/SdSharedDataProvider";
 export * from "./providers/SdSmtpServiceProvider";
 export * from "./providers/SdToastProvider";
+export * from "./root-providers/SdAppStructureProvider";
 export * from "./root-providers/SdBusyRootProvider";
 export * from "./root-providers/SdDomValidatorRootProvider";
 export * from "./root-providers/SdFileDialogRootProvider";

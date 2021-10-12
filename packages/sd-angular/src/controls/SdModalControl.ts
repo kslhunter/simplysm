@@ -88,7 +88,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
           outline: none;
         }
 
-        ::ng-deep > sd-dock-container {
+        /deep/ > sd-dock-container {
           > ._header {
             background: var(--theme-color-primary-default);
             color: var(--text-brightness-rev-default);

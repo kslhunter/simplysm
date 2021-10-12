@@ -118,7 +118,21 @@ export class SdCliNgClientBuilder extends EventEmitter {
   public async watchAsync(serverPath?: string): Promise<NextHandleFunction[]> {
     await FsUtil.removeAsync(this.parsedTsconfig.options.outDir!);
 
-    let ngGenResults: ISdPackageBuildResult[] = [];
+    const ngGenResultsMap = new Map<string, ISdPackageBuildResult[]>();
+    const addNgGenResults = (r: ISdPackageBuildResult[]): void => {
+      for (const item of r) {
+        const arr = ngGenResultsMap.getOrCreate(item.filePath ?? "undefined", []);
+        arr.push(item);
+      }
+    };
+    const removeNgGenResults = (filePaths: string[]): void => {
+      for (const filePath of filePaths) {
+        ngGenResultsMap.delete(filePath);
+      }
+    };
+    const getNgGenResults = (): ISdPackageBuildResult[] => {
+      return Array.from(ngGenResultsMap.values()).mapMany().distinct();
+    };
 
     // WEBPACK 빌드
     let invalidFiles = new Set<string>();
@@ -134,8 +148,6 @@ export class SdCliNgClientBuilder extends EventEmitter {
       compiler.hooks.watchRun.tapAsync(this.constructor.name, async (compiler1, callback) => {
         this.emit("change");
 
-        ngGenResults = [];
-
         // -- FIRST
 
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
@@ -143,7 +155,7 @@ export class SdCliNgClientBuilder extends EventEmitter {
           if (!this.skipProcesses.includes("genNgModule")) {
             this._logger.debug("첫 NgGen 수행");
             const genResult = await this._runNgGenWorkerAsync(true);
-            ngGenResults.push(...genResult.result);
+            addNgGenResults(genResult.result);
             this._logger.debug("첫 NgGen 수행 결과", genResult);
           }
 
@@ -166,18 +178,21 @@ export class SdCliNgClientBuilder extends EventEmitter {
             callback();
             return;
           }
+          removeNgGenResults(["undefined"]);
+          removeNgGenResults(changedFilePaths);
 
           if (!this.skipProcesses.includes("genNgModule")) {
             this._logger.debug("변경파일에 대한, NgGen 수행", changedFilePaths);
 
             const genResult = await this._runNgGenWorkerAsync(true, changedFilePaths);
-            ngGenResults.push(...genResult.result);
             if (genResult.dirtyFilePaths.length === 0) {
               this._logger.debug("변경파일에 대한, NgGen 결과", genResult);
               this._logger.debug("Webpack 빌드 수행");
               callback();
               return;
             }
+            removeNgGenResults(genResult.dirtyFilePaths);
+            addNgGenResults(genResult.result);
 
             this._logger.debug("변경파일에 대한, NgGen 결과", genResult);
 
@@ -207,7 +222,7 @@ export class SdCliNgClientBuilder extends EventEmitter {
 
       compiler.hooks.failed.tap(this.constructor.name, (err) => {
         const results = SdWebpackUtil.getWebpackResults(err);
-        const allResults = [...ngGenResults, ...results].distinct();
+        const allResults = [...getNgGenResults(), ...results].distinct();
         this.emit("complete", allResults);
         this._logger.debug("Webpack 빌드 수행 결과", allResults);
         reject(err);
@@ -225,7 +240,7 @@ export class SdCliNgClientBuilder extends EventEmitter {
 
 
         await Wait.true(() => devMiddleware !== undefined && hotMiddleware !== undefined);
-        const allResults = [...ngGenResults, ...results].distinct();
+        const allResults = [...getNgGenResults(), ...results].distinct();
         this.emit("complete", allResults);
         this._logger.debug("Webpack 빌드 수행 결과", allResults);
         resolve([devMiddleware!, hotMiddleware!]);
@@ -620,15 +635,13 @@ export class SdCliNgClientBuilder extends EventEmitter {
             ]
           })
         ] : [],*/
-        ...process.env.SD_CLI_LOGGER_SEVERITY === "DEBUG" ? [
-          new webpack.ProgressPlugin({
-            handler: (per: number, msg: string, ...args: string[]) => {
-              const phaseText = msg ? ` - phase: ${msg}` : "";
-              const argsText = args.length > 0 ? ` - args: [${args.join(", ")}]` : "";
-              this._logger.debug(`Webpack 빌드 수행중...(${Math.round(per * 100)}%)${phaseText}${argsText}`);
-            }
-          })
-        ] : []
+        new webpack.ProgressPlugin({
+          handler: (per: number, msg: string, ...args: string[]) => {
+            const phaseText = msg ? ` - phase: ${msg}` : "";
+            const argsText = args.length > 0 ? ` - args: [${args.join(", ")}]` : "";
+            this._logger.debug(`Webpack 빌드 수행중...(${Math.round(per * 100)}%)${phaseText}${argsText}`);
+          }
+        })
       ],
       node: false,
       stats: "errors-warnings"

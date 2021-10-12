@@ -5,7 +5,7 @@ import { IQueryColumnDef, IQueryResultParseOption, ISOLATION_LEVEL, ITableDef, T
 import { DateTime, NeverEntryError, ObjectUtil, SdError, Type } from "@simplysm/sd-core-common";
 import { IDbMigration } from "./IDbMigration";
 import { Queryable } from "./Queryable";
-import { SystemMigration } from "./SystemMigration";
+import { SystemMigration } from "./models/SystemMigration";
 import { DbDefinitionUtil } from "./utils/DbDefinitionUtil";
 
 // TODO: 모든 데이터를 CSV로 백업하는 기능 추가

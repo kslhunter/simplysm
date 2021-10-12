@@ -19,6 +19,7 @@ import {
   IGetTableInfoDef,
   IGetTableInfosDef,
   IGetTablePrimaryKeysDef,
+  IInsertIfNotExistsQueryDef,
   IInsertQueryDef,
   IJoinQueryDef,
   IModifyColumnQueryDef,
@@ -712,6 +713,40 @@ ORDER BY i.index_id, ic.key_ordinal;
       }
     }
     return q.trim() + ";";
+  }
+
+  public insertIfNotExists(def: IInsertIfNotExistsQueryDef): string {
+    if (this._dialect === "mysql") {
+      throw new NotImplementError();
+    }
+    else {
+      let q = "";
+
+      // LINE 1
+      q += `MERGE ${def.from} as ${def.as}`;
+      q += "\n";
+
+      // USING
+      q += "USING (SELECT 0 as _using) as _using";
+      q += "\n";
+
+      // WHERE
+      q += `ON ${def.where.map((item) => this.getQueryOfQueryValue(item)).join("")}`;
+      q += "\n";
+
+      // INSERT
+      q += "WHEN NOT MATCHED THEN\n";
+      q += `  INSERT (${Object.keys(def.insertRecord).join(", ")})\n`;
+      q += `  VALUES (${Object.values(def.insertRecord).map((val) => this.getQueryOfQueryValue(val)).join(", ")})`;
+      q += "\n";
+
+      if (def.output) {
+        q += `OUTPUT ${def.output.map((item) => "INSERTED." + item).join(", ")}`;
+        q += "\n";
+      }
+
+      return q.trim() + ";";
+    }
   }
 
   public upsert(def: IUpsertQueryDef): string {
