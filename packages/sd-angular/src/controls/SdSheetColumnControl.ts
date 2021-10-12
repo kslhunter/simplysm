@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, ContentChild, Input, TemplateRef } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ContentChild,
+  EventEmitter,
+  Input,
+  Output,
+  TemplateRef
+} from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { Uuid } from "@simplysm/sd-core-common";
 
@@ -61,4 +69,22 @@ export class SdSheetColumnControl {
 
   @ContentChild("summary", { static: true })
   public summaryTemplateRef?: TemplateRef<{}>;
+
+  // TYPE
+
+  @Input()
+  @SdInputValidate({
+    type: String,
+    includes: ["select"]
+  })
+  public type?: "select";
+
+  // SELECT
+
+  @Input()
+  @SdInputValidate(Array)
+  public selectedItems?: any[];
+
+  @Output()
+  public readonly selectedItemsChange = new EventEmitter<any[]>();
 }

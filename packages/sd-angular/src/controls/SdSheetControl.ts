@@ -28,7 +28,7 @@ import { ISdResizeEvent } from "@simplysm/sd-core-browser";
 import { SdModalProvider } from "../providers/SdModalProvider";
 import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
-import { ObjectUtil } from "@simplysm/sd-core-common";
+import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-sheet",
@@ -105,7 +105,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
                   <sd-icon class="_icon _selected-icon"
-                           [icon]="selectMode === 'multi' ? 'check' : undefined"
+                           [icon]="selectMode === 'multi' ? 'arrow-right' : undefined"
                            (click)="onAllSelectIconClick($event)"
                            [class._selected]="getIsAllSelected()"
                            [class._selectable]="selectMode === 'multi'"
@@ -146,15 +146,34 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                           <small
                             style="padding-right: 2px;">{{ getColumnOrderingOrderText(columnControl.key) }}</small>
                         </div>
-                        <span *ngIf="!columnControl.headerTemplateRef">{{ columnControl.header }}</span>
-                        <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
+                        <span
+                          *ngIf="!columnControl.headerTemplateRef && columnControl.header">{{ columnControl.header }}</span>
+                        <ng-container *ngIf="!columnControl.type">
+                          <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
+                        </ng-container>
+                        <ng-container *ngIf="columnControl.type === 'select' && columnControl.key">
+                          <div style="text-align: center;">
+                            <sd-checkbox [value]="getIsColumnAllItemChecked(columnControl)"
+                                         (valueChange)="setIsColumnAllItemChecked(columnControl, $event)"
+                                         inset size="sm"></sd-checkbox>
+                          </div>
+                        </ng-container>
                         &nbsp;
                       </sd-anchor>
                     </ng-container>
                     <ng-container *ngIf="!(columnControl.useOrdering && columnControl.key)">
-                        <pre class="_header-text-content"
-                             *ngIf="!columnControl.headerTemplateRef">{{ columnControl.header }}</pre>
-                      <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
+                      <pre class="_header-text-content"
+                           *ngIf="!columnControl.headerTemplateRef && columnControl.header">{{ columnControl.header }}</pre>
+                      <ng-container *ngIf="!columnControl.type">
+                        <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
+                      </ng-container>
+                      <ng-container *ngIf="columnControl.type === 'select' && columnControl.key">
+                        <div style="text-align: center;">
+                          <sd-checkbox [value]="getIsColumnAllItemChecked(columnControl)"
+                                       (valueChange)="setIsColumnAllItemChecked(columnControl, $event)"
+                                       inset size="sm"></sd-checkbox>
+                        </div>
+                      </ng-container>
                     </ng-container>
                   </div>
                   <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"
@@ -186,15 +205,34 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                           <small
                             style="padding-right: 2px;">{{ getColumnOrderingOrderText(columnControl.key) }}</small>
                         </div>
-                        <span *ngIf="!columnControl.headerTemplateRef">{{ columnControl.header }}</span>
-                        <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
+                        <span
+                          *ngIf="!columnControl.headerTemplateRef && columnControl.header">{{ columnControl.header }}</span>
+                        <ng-container *ngIf="!columnControl.type">
+                          <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
+                        </ng-container>
+                        <ng-container *ngIf="columnControl.type === 'select' && columnControl.key">
+                          <div style="text-align: center;">
+                            <sd-checkbox [value]="getIsColumnAllItemChecked(columnControl)"
+                                         (valueChange)="setIsColumnAllItemChecked(columnControl, $event)"
+                                         inset size="sm"></sd-checkbox>
+                          </div>
+                        </ng-container>
                         &nbsp;
                       </sd-anchor>
                     </ng-container>
                     <ng-container *ngIf="!(columnControl.useOrdering && columnControl.key)">
-                        <pre class="_header-text-content"
-                             *ngIf="!columnControl.headerTemplateRef">{{ columnControl.header }}</pre>
-                      <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
+                      <pre class="_header-text-content"
+                           *ngIf="!columnControl.headerTemplateRef && columnControl.header">{{ columnControl.header }}</pre>
+                      <ng-container *ngIf="!columnControl.type">
+                        <ng-template [ngTemplateOutlet]="columnControl.headerTemplateRef"></ng-template>
+                      </ng-container>
+                      <ng-container *ngIf="columnControl.type === 'select' && columnControl.key">
+                        <div style="text-align: center;">
+                          <sd-checkbox [value]="getIsColumnAllItemChecked(columnControl)"
+                                       (valueChange)="setIsColumnAllItemChecked(columnControl, $event)"
+                                       inset size="sm"></sd-checkbox>
+                        </div>
+                      </ng-container>
                     </ng-container>
                   </div>
                   <div class="_border" (mousedown)="onHeadCellBorderMousedown($event, columnControl)"
@@ -259,7 +297,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                 <div class="_cell _feature-cell">
                   <div class="_cell-content">
                     <sd-icon class="_icon _selected-icon"
-                             [icon]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item)) ? 'check' : undefined"
+                             [icon]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item)) ? 'arrow-right' : undefined"
                              (click)="onItemSelectIconClick($event, item, index)"
                              [class._selected]="getIsSelectedItem(item)"
                              [class._selectable]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item))"
@@ -290,11 +328,20 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                       [attr.sd-row-index]="index"
                       [attr.sd-column-guid]="columnControl.guid"
                       [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0">
-                    <div class="_cell-content"
-                         (dblclick)="onCellDblClick($event)">
-                      <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                   [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl), parent: parent, depth: depth}"></ng-template>
-                    </div>
+                    <ng-container *ngIf="!columnControl.type">
+                      <div class="_cell-content"
+                           (dblclick)="onCellDblClick($event)">
+                        <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
+                                     [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl), parent: parent, depth: depth}"></ng-template>
+                      </div>
+                    </ng-container>
+                    <ng-container *ngIf="columnControl.type === 'select' && columnControl.key">
+                      <div style="text-align: center;">
+                        <sd-checkbox [value]="getColumnChecked(columnControl, item)"
+                                     (valueChange)="setColumnChecked(columnControl, item, $event)"
+                                     inset size="sm"></sd-checkbox>
+                      </div>
+                    </ng-container>
                     <div class="_border"
                          [ngClass]="{'_border-split':  this.isGroupLastColumnMap.get(columnControl.guid)}"></div>
                   </td>
@@ -309,11 +356,20 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
                       [attr.sd-row-index]="index"
                       [attr.sd-column-guid]="columnControl.guid"
                       [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0">
-                    <div class="_cell-content"
-                         (dblclick)="onCellDblClick($event)">
-                      <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
-                                   [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl), parent: parent, depth: depth}"></ng-template>
-                    </div>
+                    <ng-container *ngIf="!columnControl.type">
+                      <div class="_cell-content"
+                           (dblclick)="onCellDblClick($event)">
+                        <ng-template [ngTemplateOutlet]="columnControl.cellTemplateRef"
+                                     [ngTemplateOutletContext]="{item: item, index: index, edit: getIsEditCell(index, columnControl), parent: parent, depth: depth}"></ng-template>
+                      </div>
+                    </ng-container>
+                    <ng-container *ngIf="columnControl.type === 'select' && columnControl.key">
+                      <div style="text-align: center;">
+                        <sd-checkbox [value]="getColumnChecked(columnControl, item)"
+                                     (valueChange)="setColumnChecked(columnControl, item, $event)"
+                                     inset size="sm"></sd-checkbox>
+                      </div>
+                    </ng-container>
                     <div class="_border"
                          [ngClass]="{'_border-split':  this.isGroupLastColumnMap.get(columnControl.guid)}"></div>
                   </td>
@@ -831,6 +887,61 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
   public isInitialized = false;
 
+  public columnControlValueMapRecord: Record<string, Map<any, boolean> | undefined> = {};
+
+  public getColumnChecked(columnControl: SdSheetColumnControl, item: any): boolean {
+    if (StringUtil.isNullOrEmpty(columnControl.key)) return false;
+    return this.columnControlValueMapRecord[columnControl.key]?.get(item) ?? false;
+  }
+
+  public setColumnChecked(columnControl: SdSheetColumnControl, item: any, value: boolean): void {
+    if (StringUtil.isNullOrEmpty(columnControl.key)) return;
+
+    if (!this.columnControlValueMapRecord[columnControl.key]) {
+      this.columnControlValueMapRecord[columnControl.key] = new Map<any, boolean>();
+    }
+    this.columnControlValueMapRecord[columnControl.key]!.set(item, value);
+
+    const result = Array.from(this.columnControlValueMapRecord[columnControl.key]!.entries())
+      .filter((entry) => entry[1]).map((entry) => entry[0]);
+    if (columnControl.selectedItemsChange.observers.length > 0) {
+      columnControl.selectedItemsChange.emit(result);
+    }
+    else {
+      columnControl.selectedItems = result;
+    }
+  }
+
+  public getIsColumnAllItemChecked(columnControl: SdSheetColumnControl): boolean {
+    if (
+      StringUtil.isNullOrEmpty(columnControl.key)
+      || !this.columnControlValueMapRecord[columnControl.key]
+    ) return false;
+    const values = Array.from(this.columnControlValueMapRecord[columnControl.key]!.values());
+    return values.length === this.items.length && values.every((item) => item);
+  }
+
+  public setIsColumnAllItemChecked(columnControl: SdSheetColumnControl, value: boolean): void {
+    if (StringUtil.isNullOrEmpty(columnControl.key)) return;
+
+    if (!this.columnControlValueMapRecord[columnControl.key]) {
+      this.columnControlValueMapRecord[columnControl.key] = new Map<any, boolean>();
+    }
+
+    for (const item of this.items) {
+      this.columnControlValueMapRecord[columnControl.key]?.set(item, value);
+    }
+
+    const result = Array.from(this.columnControlValueMapRecord[columnControl.key]!.entries())
+      .filter((entry) => entry[1]).map((entry) => entry[0]);
+    if (columnControl.selectedItemsChange.observers.length > 0) {
+      columnControl.selectedItemsChange.emit(result);
+    }
+    else {
+      columnControl.selectedItems = result;
+    }
+  }
+
   private _getColumnControlsOfFixType(fixed: boolean): SdSheetColumnControl[] {
     let fixedColumnControls = this.columnControls?.toArray() ?? [];
     if (this.key !== undefined && this._config?.columnObj) {
@@ -1205,6 +1316,29 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       else {
         this.selectedItems = newSelectedItems;
       }
+    }
+
+    // Column의 SELECTED ITEM 체크
+    if ((itemsChanges || columnControlsChanges) && this.columnControls) {
+      const newColumnControlValueMapRecord: Record<string, Map<any, boolean> | undefined> = {};
+      for (const key of Object.keys(this.columnControlValueMapRecord)) {
+        const map = this.columnControlValueMapRecord[key];
+        if (!map) continue;
+
+        for (const mapKey of Array.from(map.keys())) {
+          if (this.items.includes(mapKey)) {
+            const val = map.get(mapKey);
+            if (!val) continue;
+
+            if (!newColumnControlValueMapRecord[key]) {
+              newColumnControlValueMapRecord[key] = new Map<any, boolean>();
+            }
+            newColumnControlValueMapRecord[key]!.set(mapKey, val);
+          }
+        }
+      }
+
+      this.columnControlValueMapRecord = newColumnControlValueMapRecord;
     }
   }
 

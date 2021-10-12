@@ -215,7 +215,9 @@ export class Queryable<D extends DbContext, T> {
         const as = asChainArr.join(".");
 
         if (!this._def.join?.some((item) => item.as === this.db.qb.wrap(`TBL.${as}`))) {
-          result = result.include(as);
+          if (this._getEntityChainValue(result._entity, as) === undefined) {
+            result = result.include(as);
+          }
         }
       }
 

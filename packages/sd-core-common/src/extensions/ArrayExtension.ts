@@ -135,410 +135,359 @@ declare global {
 }
 
 ((prototype) => {
-  if (typeof prototype.single === "undefined") {
-    prototype.single = function <T>(this: T[], predicate?: (item: T, index: number) => boolean): T | undefined {
-      const arr = predicate !== undefined ? this.filter(predicate) : this;
-      if (arr.length > 1) {
-        throw new Error("복수의 결과물이 있습니다. (" + arr.length + "개)");
-      }
-      return arr[0];
-    };
-  }
+  prototype.single = function <T>(this: T[], predicate?: (item: T, index: number) => boolean): T | undefined {
+    const arr = predicate !== undefined ? this.filter(predicate) : this;
+    if (arr.length > 1) {
+      throw new Error("복수의 결과물이 있습니다. (" + arr.length + "개)");
+    }
+    return arr[0];
+  };
 
-  if (typeof prototype.last === "undefined") {
-    prototype.last = function <T>(this: T[], predicate?: (item: T, index: number) => boolean): T | undefined {
-      if (predicate !== undefined) {
-        for (let i = this.length - 1; i >= 0; i--) {
-          if (predicate(this[i], i)) {
-            return this[i];
-          }
+  prototype.last = function <T>(this: T[], predicate?: (item: T, index: number) => boolean): T | undefined {
+    if (predicate !== undefined) {
+      for (let i = this.length - 1; i >= 0; i--) {
+        if (predicate(this[i], i)) {
+          return this[i];
         }
+      }
 
-        return undefined;
+      return undefined;
+    }
+    else {
+      return this[this.length - 1];
+    }
+  };
+
+  prototype.filterExists = function <T>(this: T[]): NonNullable<T>[] {
+    return this.filter((item) => item !== undefined) as NonNullable<T>[];
+  };
+
+  prototype.ofType = function <T, N extends T>(this: T[], type: Type<WrappedType<N>>): N[] {
+    return this.filter((item) => item instanceof type || (item as any)?.constructor === type) as N[];
+  };
+
+  prototype.mapAsync = async function <T, R>(this: T[], selector: (item: T, index: number) => Promise<R>): Promise<R[]> {
+    return await Promise.all(this.map(selector));
+  };
+
+  prototype.mapMany = function <T, R>(this: T[], selector?: (item: T, index: number) => R[]): T | R[] {
+    const arr: any[] = selector ? this.map(selector) : this;
+    return arr.length > 0 ? arr.reduce((p: any, n: any) => (p ?? []).concat(n ?? [])) : arr;
+  };
+
+  prototype.mapManyAsync = async function <T, R>(this: T[], selector?: (item: T, index: number) => Promise<R[]>): Promise<T | R[]> {
+    const arr = selector !== undefined ? await this.mapAsync(selector) : this;
+    return arr.mapMany();
+  };
+
+  prototype.parallelAsync = async function <T, R>(this: T[], fn: (item: T, index: number) => Promise<R>): Promise<R[]> {
+    return await Promise.all(this.map(async (item, index) => await fn(item, index)));
+  };
+
+  prototype.groupBy = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector?: (item: T, index: number) => V): { key: K; values: (V | T)[] }[] {
+    const result: { key: K; values: (V | T)[] }[] = [];
+
+    for (let i = 0; i < this.length; i++) {
+      const keyObj = keySelector(this[i], i);
+      const valueObj = valueSelector !== undefined ? valueSelector(this[i], i) : this[i];
+
+      const existsRecord = result.single((item) => ObjectUtil.equal(item.key, keyObj));
+      if (existsRecord !== undefined) {
+        existsRecord.values.push(valueObj);
       }
       else {
-        return this[this.length - 1];
+        result.push({ key: keyObj, values: [valueObj] });
       }
-    };
-  }
+    }
 
-  if (typeof prototype.filterExists === "undefined") {
-    prototype.filterExists = function <T>(this: T[]): NonNullable<T>[] {
-      return this.filter((item) => item !== undefined) as NonNullable<T>[];
-    };
-  }
+    return result;
+  };
 
-  if (typeof prototype.ofType === "undefined") {
-    prototype.ofType = function <T, N extends T>(this: T[], type: Type<WrappedType<N>>): N[] {
-      return this.filter((item) => item instanceof type || (item as any)?.constructor === type) as N[];
-    };
-  }
+  prototype.toMap = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector?: (item: T, index: number) => V): Map<K, V | T> {
+    const result = new Map<K, V | T>();
 
-  if (typeof prototype.mapAsync === "undefined") {
-    prototype.mapAsync = async function <T, R>(this: T[], selector: (item: T, index: number) => Promise<R>): Promise<R[]> {
-      return await Promise.all(this.map(selector));
-    };
-  }
+    for (let i = 0; i < this.length; i++) {
+      const item = this[i];
 
-  if (typeof prototype.mapMany === "undefined") {
-    prototype.mapMany = function <T, R>(this: T[], selector?: (item: T, index: number) => R[]): T | R[] {
-      const arr: any[] = selector ? this.map(selector) : this;
-      return arr.length > 0 ? arr.reduce((p: any, n: any) => (p ?? []).concat(n ?? [])) : arr;
-    };
-  }
+      const keyObj = keySelector(item, i);
+      const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
 
-  if (typeof prototype.mapManyAsync === "undefined") {
-    prototype.mapManyAsync = async function <T, R>(this: T[], selector?: (item: T, index: number) => Promise<R[]>): Promise<T | R[]> {
-      const arr = selector !== undefined ? await this.mapAsync(selector) : this;
-      return arr.mapMany();
-    };
-  }
-
-  if (typeof prototype.parallelAsync === "undefined") {
-    prototype.parallelAsync = async function <T, R>(this: T[], fn: (item: T, index: number) => Promise<R>): Promise<R[]> {
-      return await Promise.all(this.map(async (item, index) => await fn(item, index)));
-    };
-  }
-
-  if (typeof prototype.groupBy === "undefined") {
-    prototype.groupBy = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector?: (item: T, index: number) => V): { key: K; values: (V | T)[] }[] {
-      const result: { key: K; values: (V | T)[] }[] = [];
-
-      for (let i = 0; i < this.length; i++) {
-        const keyObj = keySelector(this[i], i);
-        const valueObj = valueSelector !== undefined ? valueSelector(this[i], i) : this[i];
-
-        const existsRecord = result.single((item) => ObjectUtil.equal(item.key, keyObj));
-        if (existsRecord !== undefined) {
-          existsRecord.values.push(valueObj);
-        }
-        else {
-          result.push({ key: keyObj, values: [valueObj] });
-        }
+      if (result.has(keyObj)) {
+        throw new Error(`키가 중복되었습니다. (중복된키: ${JSON.stringify(keyObj)})`);
       }
+      result.set(keyObj, valueObj);
+    }
 
-      return result;
-    };
-  }
+    return result;
+  };
 
-  if (typeof prototype.toMap === "undefined") {
-    prototype.toMap = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector?: (item: T, index: number) => V): Map<K, V | T> {
-      const result = new Map<K, V | T>();
+  prototype.toMapAsync = async function <T, K, V>(this: T[], keySelector: (item: T, index: number) => Promise<K> | K, valueSelector?: (item: T, index: number) => Promise<V> | V): Promise<Map<K, V | T>> {
+    const result = new Map<K, V | T>();
 
-      for (let i = 0; i < this.length; i++) {
-        const item = this[i];
+    for (let i = 0; i < this.length; i++) {
+      const item = this[i];
 
-        const keyObj = keySelector(item, i);
-        const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
+      const keyObj = await keySelector(item, i);
+      const valueObj = valueSelector !== undefined ? await valueSelector(item, i) : item;
 
-        if (result.has(keyObj)) {
-          throw new Error(`키가 중복되었습니다. (중복된키: ${JSON.stringify(keyObj)})`);
-        }
-        result.set(keyObj, valueObj);
+      if (result.has(keyObj)) {
+        throw new Error(`키가 중복되었습니다. (중복된키: ${JSON.stringify(keyObj)})`);
       }
+      result.set(keyObj, valueObj);
+    }
 
-      return result;
-    };
-  }
+    return result;
+  };
 
-  if (typeof prototype.toMapAsync === "undefined") {
-    prototype.toMapAsync = async function <T, K, V>(this: T[], keySelector: (item: T, index: number) => Promise<K> | K, valueSelector?: (item: T, index: number) => Promise<V> | V): Promise<Map<K, V | T>> {
-      const result = new Map<K, V | T>();
+  prototype.toObject = function <T, V>(this: T[], keySelector: (item: T, index: number) => string, valueSelector?: (item: T, index: number) => V): Record<string, V | T | undefined> {
+    const result: Record<string, V | T | undefined> = {};
 
-      for (let i = 0; i < this.length; i++) {
-        const item = this[i];
+    for (let i = 0; i < this.length; i++) {
+      const item = this[i];
 
-        const keyObj = await keySelector(item, i);
-        const valueObj = valueSelector !== undefined ? await valueSelector(item, i) : item;
+      const key = keySelector(item, i);
+      const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
 
-        if (result.has(keyObj)) {
-          throw new Error(`키가 중복되었습니다. (중복된키: ${JSON.stringify(keyObj)})`);
-        }
-        result.set(keyObj, valueObj);
+      if (result[key] !== undefined) {
+        throw new Error(`키가 중복되었습니다. (중복된키: ${key})`);
       }
+      result[key] = valueObj;
+    }
 
-      return result;
-    };
-  }
+    return result;
+  };
 
-
-  if (typeof prototype.toObject === "undefined") {
-    prototype.toObject = function <T, V>(this: T[], keySelector: (item: T, index: number) => string, valueSelector?: (item: T, index: number) => V): Record<string, V | T | undefined> {
-      const result: Record<string, V | T | undefined> = {};
-
-      for (let i = 0; i < this.length; i++) {
-        const item = this[i];
-
-        const key = keySelector(item, i);
-        const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
-
-        if (result[key] !== undefined) {
-          throw new Error(`키가 중복되었습니다. (중복된키: ${key})`);
-        }
-        result[key] = valueObj;
+  prototype.distinct = function <T>(this: T[], matchAddress?: boolean): T[] {
+    const result: T[] = [];
+    for (const item of this) {
+      if (!result.some((item1) => (matchAddress === true ? item1 === item : ObjectUtil.equal(item1, item)))) {
+        result.push(item);
       }
+    }
 
-      return result;
-    };
-  }
+    return result;
+  };
 
-  if (typeof prototype.distinct === "undefined") {
-    prototype.distinct = function <T>(this: T[], matchAddress?: boolean): T[] {
-      const result: T[] = [];
-      for (const item of this) {
-        if (!result.some((item1) => (matchAddress === true ? item1 === item : ObjectUtil.equal(item1, item)))) {
-          result.push(item);
-        }
+  prototype.orderBy = function <T>(this: T[], selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
+    return this.concat().sort((p: any, n: any) => {
+      const pn = selector !== undefined ? selector(n) : n;
+      const pp = selector !== undefined ? selector(p) : p;
+
+      const cpn = pn instanceof DateOnly ? pn.tick
+        : pn instanceof DateTime ? pn.tick
+          : pn instanceof Time ? pn.tick
+            : pn;
+      const cpp = pp instanceof DateOnly ? pn.tick
+        : pp instanceof DateTime ? pp.tick
+          : pp instanceof Time ? pp.tick
+            : pp;
+
+      if (typeof cpn === "string" && typeof cpp === "string") {
+        return cpp.localeCompare(cpn);
       }
+      else if (typeof cpn === "number" && typeof cpp === "number") {
+        return (cpn > cpp ? -1 : cpn < cpp ? 1 : 0);
+      }
+      else {
+        throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
+      }
+    });
+  };
 
-      return result;
-    };
-  }
+  prototype.orderByDesc = function <T>(this: T[], selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
+    return this.concat().sort((p: any, n: any) => {
+      const pn = selector !== undefined ? selector(n) : n;
+      const pp = selector !== undefined ? selector(p) : p;
 
-  if (typeof prototype.orderBy === "undefined") {
-    prototype.orderBy = function <T>(this: T[], selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
-      return this.concat().sort((p: any, n: any) => {
-        const pn = selector !== undefined ? selector(n) : n;
-        const pp = selector !== undefined ? selector(p) : p;
+      const cpn = pn instanceof DateOnly ? pn.tick
+        : pn instanceof DateTime ? pn.tick
+          : pn instanceof Time ? pn.tick
+            : pn;
+      const cpp = pp instanceof DateOnly ? pn.tick
+        : pp instanceof DateTime ? pp.tick
+          : pp instanceof Time ? pp.tick
+            : pp;
 
-        const cpn = pn instanceof DateOnly ? pn.tick
-          : pn instanceof DateTime ? pn.tick
-            : pn instanceof Time ? pn.tick
-              : pn;
-        const cpp = pp instanceof DateOnly ? pn.tick
-          : pp instanceof DateTime ? pp.tick
-            : pp instanceof Time ? pp.tick
-              : pp;
+      if (typeof cpn === "string" && typeof cpp === "string") {
+        return cpn.localeCompare(cpp);
+      }
+      else if (typeof cpn === "number" && typeof cpp === "number") {
+        return (cpn < cpp ? -1 : cpn > cpp ? 1 : 0);
+      }
+      else {
+        throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
+      }
+    });
+  };
 
-        if (typeof cpn === "string" && typeof cpp === "string") {
-          return cpp.localeCompare(cpn);
-        }
-        else if (typeof cpn === "number" && typeof cpp === "number") {
-          return (cpn > cpp ? -1 : cpn < cpp ? 1 : 0);
-        }
-        else {
-          throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
-        }
-      });
-    };
-  }
+  prototype.diffs = function <T, P>(this: T[], target: P[], options?: { keys?: string[]; excludes?: string[] }): TArrayDiffsResult<T, P>[] {
+    const result: TArrayDiffsResult<T, P>[] = [];
 
-  if (typeof prototype.orderByDesc === "undefined") {
-    prototype.orderByDesc = function <T>(this: T[], selector?: (item: T) => string | number | DateTime | DateOnly | Time | undefined): T[] {
-      return this.concat().sort((p: any, n: any) => {
-        const pn = selector !== undefined ? selector(n) : n;
-        const pp = selector !== undefined ? selector(p) : p;
+    const uncheckedTarget = ([] as P[]).concat(target); // source 비교시, 수정으로 판단되거나 변경사항이 없는것으로 판단된 target 은 제외시킴
 
-        const cpn = pn instanceof DateOnly ? pn.tick
-          : pn instanceof DateTime ? pn.tick
-            : pn instanceof Time ? pn.tick
-              : pn;
-        const cpp = pp instanceof DateOnly ? pn.tick
-          : pp instanceof DateTime ? pp.tick
-            : pp instanceof Time ? pp.tick
-              : pp;
+    for (const sourceItem of this) {
+      //target 에 동일한 항목이 없을 때
+      const sameTarget = uncheckedTarget.single((targetItem) => (
+        ObjectUtil.equal(targetItem, sourceItem, options?.excludes !== undefined ? { excludes: options.excludes } : undefined)
+      ));
 
-        if (typeof cpn === "string" && typeof cpp === "string") {
-          return cpn.localeCompare(cpp);
-        }
-        else if (typeof cpn === "number" && typeof cpp === "number") {
-          return (cpn < cpp ? -1 : cpn > cpp ? 1 : 0);
-        }
-        else {
-          throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
-        }
-      });
-    };
-  }
-
-  if (typeof prototype.diffs === "undefined") {
-    prototype.diffs = function <T, P>(this: T[], target: P[], options?: { keys?: string[]; excludes?: string[] }): TArrayDiffsResult<T, P>[] {
-      const result: TArrayDiffsResult<T, P>[] = [];
-
-      const uncheckedTarget = ([] as P[]).concat(target); // source 비교시, 수정으로 판단되거나 변경사항이 없는것으로 판단된 target 은 제외시킴
-
-      for (const sourceItem of this) {
-        //target 에 동일한 항목이 없을 때
-        const sameTarget = uncheckedTarget.single((targetItem) => (
-          ObjectUtil.equal(targetItem, sourceItem, options?.excludes !== undefined ? { excludes: options.excludes } : undefined)
-        ));
-
-        if (sameTarget === undefined) {
-          //키 설정시
-          if (options?.keys !== undefined) {
-            //target 에 동일한 항목은 아니지만, key 가 같은게 있는 경우: source => target 수정된 항목
-            const sameKeyTargetItem = uncheckedTarget.single((targetItem) => ObjectUtil.equal(targetItem, sourceItem, { keys: options.keys }));
-            if (sameKeyTargetItem !== undefined) {
-              result.push({ source: sourceItem, target: sameKeyTargetItem });
-              uncheckedTarget.remove(sameKeyTargetItem);
-              continue;
-            }
+      if (sameTarget === undefined) {
+        //키 설정시
+        if (options?.keys !== undefined) {
+          //target 에 동일한 항목은 아니지만, key 가 같은게 있는 경우: source => target 수정된 항목
+          const sameKeyTargetItem = uncheckedTarget.single((targetItem) => ObjectUtil.equal(targetItem, sourceItem, { keys: options.keys }));
+          if (sameKeyTargetItem !== undefined) {
+            result.push({ source: sourceItem, target: sameKeyTargetItem });
+            uncheckedTarget.remove(sameKeyTargetItem);
+            continue;
           }
+        }
 
-          //기타: source 에서 삭제된 항목
-          result.push({ source: sourceItem, target: undefined });
-        }
-        else {
-          uncheckedTarget.remove(sameTarget);
-        }
+        //기타: source 에서 삭제된 항목
+        result.push({ source: sourceItem, target: undefined });
+      }
+      else {
+        uncheckedTarget.remove(sameTarget);
+      }
+    }
+
+    for (const uncheckedTargetItem of uncheckedTarget) {
+      //target 에 추가된 항목
+      result.push({ source: undefined, target: uncheckedTargetItem });
+    }
+
+    return result;
+  };
+
+  prototype.oneWayDiffs = function <T extends Record<string, any>, K extends keyof T>(this: T[], orgItems: T[] | Map<T[K], T>, key: K, options?: { includeSame?: boolean; excludes?: string[] }): TArrayDiffs2Result<T>[] {
+    const orgItemMap = orgItems instanceof Map ? orgItems : orgItems.toMap((orgItem) => orgItem[key]);
+    const includeSame = options?.includeSame ?? false;
+
+    const diffs: TArrayDiffs2Result<T>[] = [];
+    for (const item of this) {
+      if (item[key] === undefined) {
+        diffs.push({ type: "create", item });
+        continue;
       }
 
-      for (const uncheckedTargetItem of uncheckedTarget) {
-        //target 에 추가된 항목
-        result.push({ source: undefined, target: uncheckedTargetItem });
+      const orgItem = orgItemMap.get(item[key]);
+      if (!orgItem) {
+        diffs.push({ type: "create", item });
+        continue;
       }
 
-      return result;
-    };
-  }
-
-  if (typeof prototype.oneWayDiffs === "undefined") {
-    prototype.oneWayDiffs = function <T extends Record<string, any>, K extends keyof T>(this: T[], orgItems: T[] | Map<T[K], T>, key: K, options?: { includeSame?: boolean; excludes?: string[] }): TArrayDiffs2Result<T>[] {
-      const orgItemMap = orgItems instanceof Map ? orgItems : orgItems.toMap((orgItem) => orgItem[key]);
-      const includeSame = options?.includeSame ?? false;
-
-      const diffs: TArrayDiffs2Result<T>[] = [];
-      for (const item of this) {
-        if (item[key] === undefined) {
-          diffs.push({ type: "create", item });
-          continue;
+      if (ObjectUtil.equal(orgItem, item, { excludes: options?.excludes })) {
+        if (includeSame) {
+          diffs.push({ type: "same", item, orgItem });
         }
-
-        const orgItem = orgItemMap.get(item[key]);
-        if (!orgItem) {
-          diffs.push({ type: "create", item });
-          continue;
-        }
-
-        if (ObjectUtil.equal(orgItem, item, { excludes: options?.excludes })) {
-          if (includeSame) {
-            diffs.push({ type: "same", item, orgItem });
-          }
-          continue;
-        }
-
-        diffs.push({ type: "update", item, orgItem });
-      }
-      return diffs;
-    };
-  }
-
-  if (typeof prototype.merge === "undefined") {
-    prototype.merge = function <T, P>(this: T[], target: P[], options?: { keys?: string[]; excludes?: string[] }): (T | P | (T & P))[] {
-      const diffs = this.diffs(target, options);
-
-      const result: (T | P | (T & P))[] = ObjectUtil.clone(this);
-      for (const diff of diffs) {
-        // 변경시
-        if (diff.source !== undefined && diff.target !== undefined) {
-          const resultSourceItem = result.single((item) => ObjectUtil.equal(item, diff.source));
-          if (resultSourceItem === undefined) {
-            throw new NeverEntryError();
-          }
-          result[result.indexOf(resultSourceItem)] = ObjectUtil.merge(diff.source, diff.target);
-        }
-        // 추가시
-        else if (diff.target !== undefined) {
-          result.push(diff.target);
-        }
+        continue;
       }
 
-      return result;
-    };
-  }
+      diffs.push({ type: "update", item, orgItem });
+    }
+    return diffs;
+  };
 
-  if (typeof prototype.sum === "undefined") {
-    prototype.sum = function <T>(this: T[], selector?: (item: T, index: number) => number): number {
-      let result = 0;
-      for (let i = 0; i < this.length; i++) {
-        const item = selector !== undefined ? selector(this[i], i) : this[i];
-        if (typeof item !== "number") {
-          throw new Error("sum 은 number 에 대해서만 사용할 수 있습니다.");
+  prototype.merge = function <T, P>(this: T[], target: P[], options?: { keys?: string[]; excludes?: string[] }): (T | P | (T & P))[] {
+    const diffs = this.diffs(target, options);
+
+    const result: (T | P | (T & P))[] = ObjectUtil.clone(this);
+    for (const diff of diffs) {
+      // 변경시
+      if (diff.source !== undefined && diff.target !== undefined) {
+        const resultSourceItem = result.single((item) => ObjectUtil.equal(item, diff.source));
+        if (resultSourceItem === undefined) {
+          throw new NeverEntryError();
         }
-        result += item;
+        result[result.indexOf(resultSourceItem)] = ObjectUtil.merge(diff.source, diff.target);
       }
-
-      return result;
-    };
-  }
-
-  if (typeof prototype.min === "undefined") {
-    prototype.min = function <T>(this: T[], selector?: (item: T, index: number) => string | number): string | number | undefined {
-      let result: string | number | undefined;
-      for (let i = 0; i < this.length; i++) {
-        const item = selector !== undefined ? selector(this[i], i) : this[i];
-        if (typeof item !== "number" && typeof item !== "string") {
-          throw new Error("min 은 number/string 에 대해서만 사용할 수 있습니다.");
-        }
-        if (result === undefined || result > item) {
-          result = item;
-        }
+      // 추가시
+      else if (diff.target !== undefined) {
+        result.push(diff.target);
       }
+    }
 
-      return result;
-    };
-  }
+    return result;
+  };
 
-  if (typeof prototype.max === "undefined") {
-    prototype.max = function <T>(this: T[], selector?: (item: T, index: number) => string | number): string | number | undefined {
-      let result: string | number | undefined;
-      for (let i = 0; i < this.length; i++) {
-        const item = selector !== undefined ? selector(this[i], i) : this[i];
-        if (typeof item !== "number" && typeof item !== "string") {
-          throw new Error("max 은 number/string 에 대해서만 사용할 수 있습니다.");
-        }
-        if (result === undefined || result < item) {
-          result = item;
-        }
+  prototype.sum = function <T>(this: T[], selector?: (item: T, index: number) => number): number {
+    let result = 0;
+    for (let i = 0; i < this.length; i++) {
+      const item = selector !== undefined ? selector(this[i], i) : this[i];
+      if (typeof item !== "number") {
+        throw new Error("sum 은 number 에 대해서만 사용할 수 있습니다.");
       }
+      result += item;
+    }
 
-      return result;
-    };
-  }
+    return result;
+  };
 
-  if (typeof prototype.shuffle === "undefined") {
-    prototype.shuffle = function <T>(this: T[]): any[] {
-      if (this.length <= 1) {
-        return ObjectUtil.clone(this);
+  prototype.min = function <T>(this: T[], selector?: (item: T, index: number) => string | number): string | number | undefined {
+    let result: string | number | undefined;
+    for (let i = 0; i < this.length; i++) {
+      const item = selector !== undefined ? selector(this[i], i) : this[i];
+      if (typeof item !== "number" && typeof item !== "string") {
+        throw new Error("min 은 number/string 에 대해서만 사용할 수 있습니다.");
       }
-
-      let result = this;
-      while (true) {
-        result = result.orderBy(() => Math.random());
-        if (!ObjectUtil.equal(result, this)) {
-          break;
-        }
+      if (result === undefined || result > item) {
+        result = item;
       }
-      return result;
-    };
-  }
+    }
 
-  if (typeof prototype.insert === "undefined") {
-    prototype.insert = function <T>(this: T[], index: number, ...items: T[]): T[] {
-      this.splice(index, 0, ...items);
-      return this;
-    };
-  }
+    return result;
+  };
 
-  if (typeof prototype.remove === "undefined") {
-    prototype.remove = function <T>(this: T[], itemOrSelector: T | ((item: T, index: number) => boolean)): T[] {
-      const removeItems = typeof itemOrSelector === "function" ? this.filter(itemOrSelector.bind(this)) : [itemOrSelector];
-
-      for (const removeItem of removeItems) {
-        while (this.includes(removeItem)) {
-          this.splice(this.indexOf(removeItem), 1);
-        }
+  prototype.max = function <T>(this: T[], selector?: (item: T, index: number) => string | number): string | number | undefined {
+    let result: string | number | undefined;
+    for (let i = 0; i < this.length; i++) {
+      const item = selector !== undefined ? selector(this[i], i) : this[i];
+      if (typeof item !== "number" && typeof item !== "string") {
+        throw new Error("max 은 number/string 에 대해서만 사용할 수 있습니다.");
       }
+      if (result === undefined || result < item) {
+        result = item;
+      }
+    }
 
-      return this;
-    };
-  }
+    return result;
+  };
 
-  if (typeof prototype.clear === "undefined") {
-    prototype.clear = function <T>(this: T[]): T[] {
-      return this.remove(() => true);
-    };
-  }
+  prototype.shuffle = function <T>(this: T[]): any[] {
+    if (this.length <= 1) {
+      return ObjectUtil.clone(this);
+    }
+
+    let result = this;
+    while (true) {
+      result = result.orderBy(() => Math.random());
+      if (!ObjectUtil.equal(result, this)) {
+        break;
+      }
+    }
+    return result;
+  };
+
+  prototype.insert = function <T>(this: T[], index: number, ...items: T[]): T[] {
+    this.splice(index, 0, ...items);
+    return this;
+  };
+
+  prototype.remove = function <T>(this: T[], itemOrSelector: T | ((item: T, index: number) => boolean)): T[] {
+    const removeItems = typeof itemOrSelector === "function" ? this.filter(itemOrSelector.bind(this)) : [itemOrSelector];
+
+    for (const removeItem of removeItems) {
+      while (this.includes(removeItem)) {
+        this.splice(this.indexOf(removeItem), 1);
+      }
+    }
+
+    return this;
+  };
+
+  prototype.clear = function <T>(this: T[]): T[] {
+    return this.remove(() => true);
+  };
 })(Array.prototype);
 
 export type TArrayDiffsResult<T, P> =
