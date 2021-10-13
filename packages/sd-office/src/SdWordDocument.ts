@@ -5,6 +5,9 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
 export class SdWordDocument {
   private _zip!: JSZip;
   private _docData!: xml.Element;
+  private _docRelsData!: xml.Element;
+  private _docContentType!: xml.Element;
+  private _images!: ({ buffer: Buffer; ext: string } | undefined)[];
 
   public static loadAsync(buffer: Buffer): Promise<SdWordDocument>;
   public static loadAsync(file: File): Promise<SdWordDocument>;
@@ -30,7 +33,10 @@ export class SdWordDocument {
     wb._zip = zip;
 
     wb._docData = xml.xml2js(await zip.file("word/document.xml")!.async("text")) as xml.Element;
-    // wb._docData = await XmlConvert.parseAsync(await zip.file("word/document.xml")!.async("text"));
+    wb._docRelsData = xml.xml2js(await zip.file("word/_rels/document.xml.rels")!.async("text")) as xml.Element;
+    wb._docContentType = xml.xml2js(await zip.file("[Content_Types].xml")!.async("text")) as xml.Element;
+    const imageRecord = zip.folder("word/media")?.files;
+    wb._images = imageRecord ? Object.keys(imageRecord).map(() => undefined) : [];
 
     return wb;
   }
@@ -53,6 +59,13 @@ export class SdWordDocument {
 
   private _writeZipObject(): void {
     this._zip.file("word/document.xml", xml.js2xml(this._docData));
+    this._zip.file("word/_rels/document.xml.rels", xml.js2xml(this._docRelsData));
+    this._zip.file("[Content_Types].xml", xml.js2xml(this._docContentType));
+
+    for (let i = 0; i < this._images.length; i++) {
+      if (!this._images[i]) continue;
+      this._zip.file(`word/media/image${i + 1}.${this._images[i]!.ext}`, this._images[i]!.buffer);
+    }
   }
 
   private get _bodyEl(): xml.Element {
@@ -168,6 +181,112 @@ export class SdWordDocument {
 
     for (const insertRowElObj of insertRowElObjs.reverse()) {
       rootChildEls.insert(insertRowElObj.index, insertRowElObj.el);
+    }
+  }
+
+  public replaceImages(fromStr: string, toImages: { buffer: Buffer; ext: string }[]): void {
+    this._images.push(...toImages);
+
+    const lastId = this._docRelsData.elements![0].elements!.max((item: any) => Number(item.attributes.Id.replace(/rId/, ""))) ?? 0;
+    const relTexts = this._images
+      .map((item, i) => (item === undefined ? undefined : `<Relationship Id="rId${lastId + i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image${i + 1}.${item.ext}"/>`))
+      .filterExists()
+      .join("");
+    this._docRelsData.elements!.single((item) => item.name === "Relationships")!.elements!.push(...xml.xml2js(relTexts).elements);
+
+    const docContentTypeTexts = this._images.filterExists().map((item) => item.ext).distinct()
+      .map((item) => `<Default Extension="${item}" ContentType="image/${item}"/>`)
+      .join("");
+    this._docContentType.elements!.single((item) => item.name === "Types")!.elements!.push(...xml.xml2js(docContentTypeTexts).elements);
+
+    const rootChildEls = this._bodyEl.elements!;
+    for (const rootChildEl of rootChildEls) {
+      if (rootChildEl.name !== "w:p") continue;
+      const rowEl = rootChildEl;
+
+      const rowText = this._getRowText(rowEl) ?? "";
+      const fromStrIndex = rowText.indexOf(fromStr);
+      if (fromStrIndex < 0) continue;
+
+      rowEl.elements!.remove((item) => item.name === "w:r");
+
+      const xmlTexts: string[] = [];
+      for (let i = 0; i < this._images.length; i++) {
+        if (this._images[i] === undefined) continue;
+
+        xmlTexts.push(`
+<w:r>
+    <w:rPr>
+        <w:noProof/>
+    </w:rPr>
+    <w:drawing>
+        <wp:inline>
+            <wp:extent cx="685114" cy="685800"/>
+            <wp:docPr id="${100 + i + 1}" name="그림 ${10 + i}">
+                <a:extLst xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:ext uri="{FF2B5EF4-FFF2-40B4-BE49-F238E27FC236}">
+                        <a16:creationId xmlns:a16="http://schemas.microsoft.com/office/drawing/2014/main" id="{6085D45C-671E-4908-A28E-8237C2D983C1}"/>
+                    </a:ext>
+                </a:extLst>
+            </wp:docPr>
+            <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                    <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                        <pic:nvPicPr>
+                            <pic:cNvPr id="${100 + i + 1}" name="그림 ${10 + i}">
+                                <a:extLst>
+                                    <a:ext uri="{FF2B5EF4-FFF2-40B4-BE49-F238E27FC236}">
+                                        <a16:creationId xmlns:a16="http://schemas.microsoft.com/office/drawing/2014/main" id="{6085D45C-671E-4908-A28E-8237C2D983C1}"/>
+                                    </a:ext>
+                                </a:extLst>
+                            </pic:cNvPr>
+                            <pic:cNvPicPr>
+                                <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                            </pic:cNvPicPr>
+                        </pic:nvPicPr>
+                        <pic:blipFill>
+                            <a:blip r:embed="rId${lastId + i + 1}" cstate="print">
+                                <a:extLst>
+                                    <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                        <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                                    </a:ext>
+                                </a:extLst>
+                            </a:blip>
+                            <a:srcRect/>
+                            <a:stretch>
+                                <a:fillRect/>
+                            </a:stretch>
+                        </pic:blipFill>
+                        <pic:spPr bwMode="auto">
+                            <a:xfrm>
+                                <a:off x="0" y="0"/>
+                                <a:ext cx="685114" cy="685800"/>
+                            </a:xfrm>
+                            <a:prstGeom prst="rect">
+                                <a:avLst/>
+                            </a:prstGeom>
+                            <a:noFill/>
+                            <a:extLst>
+                                <a:ext uri="{909E8E84-426E-40DD-AFC4-6F175D3DCCD1}">
+                                    <a14:hiddenFill xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main">
+                                        <a:solidFill>
+                                            <a:srgbClr val="FFFFFF"/>
+                                        </a:solidFill>
+                                    </a14:hiddenFill>
+                                </a:ext>
+                            </a:extLst>
+                        </pic:spPr>
+                    </pic:pic>
+                </a:graphicData>
+            </a:graphic>
+        </wp:inline>
+    </w:drawing>
+</w:r>`);
+      }
+      rowEl.elements!.push(...xml.xml2js(xmlTexts.join("\n")).elements);
     }
   }
 
