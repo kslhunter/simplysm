@@ -25,6 +25,7 @@ export abstract class SdCliPackageBase extends EventEmitter {
       }
     };
     updateDepVersion(this.npmConfig.dependencies);
+    updateDepVersion(this.npmConfig.optionalDependencies);
     updateDepVersion(this.npmConfig.devDependencies);
     updateDepVersion(this.npmConfig.peerDependencies);
 

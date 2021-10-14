@@ -47,8 +47,9 @@ export class SdWebpackUtil {
       result += err.message;
     }
     else {
-      if (err.file !== undefined) {
-        result += err.file.replace(/^\.\//, "");
+      const filePath = err.file ?? err.module?.nameForCondition();
+      if (filePath != null) {
+        result += filePath.replace(/^\.\//, "");
         if (err.loc !== undefined) {
           if ("start" in err.loc) {
             result += `(${err.loc.start.line}${err.loc.start.column !== undefined ? `, ${err.loc.start.column}` : ""})`;

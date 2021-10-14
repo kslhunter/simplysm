@@ -145,6 +145,7 @@ export class SdCliServerBuilder extends EventEmitter {
     for (const externalModuleName of externalModuleNames) {
       distNpmConfig.dependencies[externalModuleName] = "*";
     }
+    delete distNpmConfig.optionalDependencies;
     delete distNpmConfig.devDependencies;
     delete distNpmConfig.peerDependencies;
 
@@ -395,10 +396,7 @@ export class SdCliServerBuilder extends EventEmitter {
         })
       ],
       node: false,
-      externals: [
-        ...externalModuleNames,
-        ...this.config.externalDependencies ? this.config.externalDependencies : []
-      ].distinct(),
+      externals: externalModuleNames,
       stats: "errors-warnings"
     };
   }
@@ -449,11 +447,14 @@ export class SdCliServerBuilder extends EventEmitter {
     const loadedModuleNames: string[] = [];
     const externalModuleNames: string[] = [];
 
-    const fn = (rootPath: string): void => {
-      const npmConfig = this._getNpmConfig(rootPath);
+    const fn = (currPath: string): void => {
+      const npmConfig = this._getNpmConfig(currPath);
       if (!npmConfig) return;
 
-      for (const moduleName of Object.keys(npmConfig.dependencies ?? {})) {
+      for (const moduleName of Object.keys({
+        ...npmConfig.dependencies,
+        ...npmConfig.optionalDependencies
+      })) {
         if (loadedModuleNames.includes(moduleName)) continue;
         loadedModuleNames.push(moduleName);
 
@@ -461,7 +462,7 @@ export class SdCliServerBuilder extends EventEmitter {
           externalModuleNames.push(moduleName);
         }
 
-        const modulePath = this._findModulePath(moduleName, rootPath);
+        const modulePath = this._findModulePath(moduleName, currPath);
         if (StringUtil.isNullOrEmpty(modulePath)) continue;
 
         if (all || FsUtil.exists(path.resolve(modulePath, "binding.gyp"))) {

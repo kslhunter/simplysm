@@ -315,6 +315,7 @@ export class SdCliProject {
     // 패키지의 의존성 패키지 중에 빌드해야할 패키지 목록에 이미 있는 의존성 패키지만 추리기
     const depNames = [
       ...Object.keys(pkg.npmConfig.dependencies ?? {}),
+      ...Object.keys(pkg.npmConfig.optionalDependencies ?? {}),
       ...Object.keys(pkg.npmConfig.devDependencies ?? {}),
       ...Object.keys(pkg.npmConfig.peerDependencies ?? {})
     ].distinct().filter((dep) => pkgNames.includes(dep));
@@ -367,6 +368,7 @@ export class SdCliProject {
       }
     };
     updateDepVersion(this.npmConfig.dependencies);
+    updateDepVersion(this.npmConfig.optionalDependencies);
     updateDepVersion(this.npmConfig.devDependencies);
     updateDepVersion(this.npmConfig.peerDependencies);
 
