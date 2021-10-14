@@ -4,6 +4,7 @@
     "moduleResolution": "node",
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
+    "noImplicitAny": false,
     "sourceMap": true,
     "removeComments": true,
     "noUnusedLocals": true,
