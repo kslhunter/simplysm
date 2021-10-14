@@ -415,7 +415,7 @@ export class ObjectUtil {
   public static validateArrayWithThrow<T>(displayName: string, arr: T[], def: ((item: T) => TValidateObjectDefWithName<T>) | TValidateObjectDefWithName<T>): void {
     const validateResults = ObjectUtil.validateArray(arr, def);
     if (validateResults.length > 0) {
-      const errorMessages = [];
+      const errorMessages: string[] = [];
       for (const validateResult of validateResults) {
         const realDef = typeof def === "function" ? def(validateResult.item) : def;
 
