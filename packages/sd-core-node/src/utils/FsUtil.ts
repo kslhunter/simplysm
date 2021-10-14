@@ -124,7 +124,7 @@ export class FsUtil {
       return;
     }
 
-    let lstat;
+    let lstat: fs.Stats;
     try {
       lstat = await fs.promises.lstat(sourcePath);
     }
@@ -174,7 +174,7 @@ export class FsUtil {
       return;
     }
 
-    let lstat;
+    let lstat: fs.Stats;
     try {
       lstat = fs.lstatSync(sourcePath);
     }

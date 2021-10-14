@@ -382,9 +382,9 @@ export class SdExcelWorkbook {
     const result: Record<string, Record<string, any>[]> = {};
 
     for (const sheet of this._worksheets.filterExists()) {
-      const sheetData = [];
+      const sheetData: Record<string, any>[] = [];
       for (let r = 1; r < sheet.rowLength; r++) {
-        const data = {};
+        const data: Record<string, any> = {};
         for (let c = 0; c < sheet.row(r).columnLength; c++) {
           const header = sheet.cell(0, c).value;
           if (header !== undefined) {

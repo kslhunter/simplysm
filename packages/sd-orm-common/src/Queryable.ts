@@ -502,11 +502,11 @@ export class Queryable<D extends DbContext, T> {
 
     if (searchText.startsWith("<>")) {
       result = result[whereFnName]((item) => {
-        const fieldOrArr = [];
+        const fieldOrArr: TQueryBuilderValue[] = [];
 
         const fields = fwd(item);
         for (const field of fields) {
-          const splitSearchTextWhereArr = [];
+          const splitSearchTextWhereArr: TQueryBuilderValue[] = [];
           for (const text of splitSearchText) {
             if (text.includes("*")) {
               splitSearchTextWhereArr.push(this.db.qh.notLike(field as any, text.substr(2).replace(/\*/g, "%")));
@@ -523,11 +523,11 @@ export class Queryable<D extends DbContext, T> {
     }
     else {
       result = result[whereFnName]((item) => {
-        const fieldOrArr = [];
+        const fieldOrArr: TQueryBuilderValue[] = [];
 
         const fields = fwd(item);
         for (const field of fields) {
-          const splitSearchTextWhereArr = [];
+          const splitSearchTextWhereArr: TQueryBuilderValue[] = [];
           for (const text of splitSearchText) {
             if (text.includes("*")) {
               splitSearchTextWhereArr.push(this.db.qh.like(field as any, text.replace(/\*/g, "%")));

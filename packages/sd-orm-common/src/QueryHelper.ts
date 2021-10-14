@@ -205,7 +205,7 @@ export class QueryHelper {
   // ----------------------------------------------------
   // region FIELD
   public query<T extends TQueryValue>(type: Type<WrappedType<T>>, texts: (string | QueryUnit<any>)[]): QueryUnit<T> {
-    const arr = [];
+    const arr: string[] = [];
     for (const text of texts) {
       if (text instanceof QueryUnit) {
         arr.push(this.getQueryValue(text));
