@@ -189,7 +189,7 @@ declare global {
 
   prototype.mapMany = function <T, R>(this: T[], selector?: (item: T, index: number) => R[]): T | R[] {
     const arr: any[] = selector ? this.map(selector) : this;
-    return arr.length > 0 ? arr.reduce((p: any, n: any) => (p ?? []).concat(n ?? [])) : arr;
+    return arr.length > 0 ? arr.reduce((p, n) => (p ?? []).concat(n ?? [])) : arr;
   };
 
   prototype.mapManyAsync = async function <T, R>(this: T[], selector?: (item: T, index: number) => Promise<R[]>): Promise<T | R[]> {
@@ -292,7 +292,7 @@ declare global {
   };
 
   prototype.orderBy = function <T>(this: T[], selector?: (item: T) => (string | number | DateTime | DateOnly | Time | undefined)): T[] {
-    return this.concat().sort((p: any, n: any) => {
+    return this.concat().sort((p, n) => {
       const pn = selector !== undefined ? selector(n) : n;
       const pp = selector !== undefined ? selector(p) : p;
 
@@ -300,7 +300,7 @@ declare global {
         : pn instanceof DateTime ? pn.tick
           : pn instanceof Time ? pn.tick
             : pn;
-      const cpp = pp instanceof DateOnly ? pn.tick
+      const cpp = pp instanceof DateOnly ? pp.tick
         : pp instanceof DateTime ? pp.tick
           : pp instanceof Time ? pp.tick
             : pp;
@@ -327,7 +327,7 @@ declare global {
   };
 
   prototype.orderByDesc = function <T>(this: T[], selector?: (item: T) => (string | number | DateTime | DateOnly | Time | undefined)): T[] {
-    return this.concat().sort((p: any, n: any) => {
+    return this.concat().sort((p, n) => {
       const pn = selector !== undefined ? selector(n) : n;
       const pp = selector !== undefined ? selector(p) : p;
 
@@ -335,7 +335,7 @@ declare global {
         : pn instanceof DateTime ? pn.tick
           : pn instanceof Time ? pn.tick
             : pn;
-      const cpp = pp instanceof DateOnly ? pn.tick
+      const cpp = pp instanceof DateOnly ? pp.tick
         : pp instanceof DateTime ? pp.tick
           : pp instanceof Time ? pp.tick
             : pp;

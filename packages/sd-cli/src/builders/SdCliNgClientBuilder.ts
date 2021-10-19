@@ -121,13 +121,13 @@ export class SdCliNgClientBuilder extends EventEmitter {
     const ngGenResultsMap = new Map<string, ISdPackageBuildResult[]>();
     const addNgGenResults = (r: ISdPackageBuildResult[]): void => {
       for (const item of r) {
-        const arr = ngGenResultsMap.getOrCreate(item.filePath ?? "undefined", []);
+        const arr = ngGenResultsMap.getOrCreate(item.filePath !== undefined ? PathUtil.posix(item.filePath) : "undefined", []);
         arr.push(item);
       }
     };
     const removeNgGenResults = (filePaths: string[]): void => {
       for (const filePath of filePaths) {
-        ngGenResultsMap.delete(filePath);
+        ngGenResultsMap.delete(PathUtil.posix(filePath));
       }
     };
     const getNgGenResults = (): ISdPackageBuildResult[] => {

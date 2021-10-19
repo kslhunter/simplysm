@@ -185,12 +185,12 @@ export class SdExcelWorkbook {
     wb._wbRelData = await XmlConvert.parseAsync(await zip.file("xl/_rels/workbook.xml.rels")!.async("text"), { stripPrefix: true });
 
     // Worksheets
-    const worksheets = wb._wbData.workbook?.sheets[0].sheet.map((item: any) => ({
+    const worksheets = wb._wbData.workbook?.sheets[0].sheet.map((item) => ({
       rid: item.$["r:id"],
       name: item.$.name
     }));
     for (const item of worksheets) {
-      const r = wb._wbRelData.Relationships.Relationship.single((item1: any) => item1.$.Id === item.rid);
+      const r = wb._wbRelData.Relationships.Relationship.single((item1) => item1.$.Id === item.rid);
       const id = Number(r.$.Target.match(/\/sheet(.*)\./)[1]);
 
       const sheetData = await XmlConvert.parseAsync(await zip.file(`xl/${r.$.Target as string}`)!.async("text"), { stripPrefix: true });
@@ -201,7 +201,7 @@ export class SdExcelWorkbook {
         const wsRelData = await XmlConvert.parseAsync(await zip.file(`xl/worksheets/_rels/sheet${id}.xml.rels`)!.async("text"), { stripPrefix: true });
         wb._worksheets[id].relData = wsRelData;
 
-        const drawingRelationship = wsRelData.Relationships.Relationship.single((item1: any) => (/drawing[0-9]/).test(item1.$.Target));
+        const drawingRelationship = wsRelData.Relationships.Relationship.single((item1) => (/drawing[0-9]/).test(item1.$.Target));
         if (drawingRelationship !== undefined) {
           // drawing rel
           const drawingRelFile = zip.file(`xl/drawings/_rels/drawing1.xml.rels`);
@@ -257,15 +257,17 @@ export class SdExcelWorkbook {
   }
 
   public createWorksheet(name: string): SdExcelWorksheet {
+    const replacedName = name.replace(/[:\\/?*[]']/g, "_");
+
     // Workbook
     this._wbData.workbook.sheets = this._wbData.workbook.sheets ?? [{}];
     this._wbData.workbook.sheets[0].sheet = this._wbData.workbook.sheets[0].sheet ?? [];
-    const lastSheetId: number = this._wbData.workbook.sheets[0].sheet.max((item: any) => Number(item.$.sheetId)) ?? 0;
+    const lastSheetId: number = this._wbData.workbook.sheets[0].sheet.max((item) => Number(item.$.sheetId)) ?? 0;
     const newSheetId = lastSheetId + 1;
 
     this._wbData.workbook.sheets[0].sheet.push({
       $: {
-        name,
+        "name": replacedName,
         "sheetId": newSheetId,
         "r:id": `rId${newSheetId}`
       }
@@ -281,7 +283,7 @@ export class SdExcelWorkbook {
 
     // Workbook Rel
     this._wbRelData.Relationships.Relationship = this._wbRelData.Relationships.Relationship ?? [];
-    const sheetRelationships = this._wbRelData.Relationships.Relationship.filter((item: any) => item.$.Type === "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet");
+    const sheetRelationships = this._wbRelData.Relationships.Relationship.filter((item) => item.$.Type === "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet");
     sheetRelationships.push({
       $: {
         Id: `rId${newSheetId}`,
@@ -290,7 +292,7 @@ export class SdExcelWorkbook {
       }
     });
 
-    const nonSheetRelationships = this._wbRelData.Relationships.Relationship.filter((item: any) => item.$.Type !== "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet");
+    const nonSheetRelationships = this._wbRelData.Relationships.Relationship.filter((item) => item.$.Type !== "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet");
     let cnt = newSheetId + 1;
     for (const nonSheetRelationship of nonSheetRelationships) {
       nonSheetRelationship.$.Id = "rId" + cnt;
@@ -311,7 +313,7 @@ export class SdExcelWorkbook {
       }
     };
 
-    this._worksheets[newSheetId] = new SdExcelWorksheet(this, name, sheetData);
+    this._worksheets[newSheetId] = new SdExcelWorksheet(this, replacedName, sheetData);
     return this._worksheets[newSheetId];
   }
 
@@ -353,7 +355,7 @@ export class SdExcelWorkbook {
       if (this._worksheets[wsId].relData !== undefined) {
         this._zip.file(`xl/worksheets/_rels/sheet${wsId}.xml.rels`, XmlConvert.stringify(this._worksheets[wsId].relData));
 
-        const drawingRel = this._worksheets[wsId].relData.Relationships.Relationship.single((item1: any) => item1.$.Target.includes("drawing1"));
+        const drawingRel = this._worksheets[wsId].relData.Relationships.Relationship.single((item1) => item1.$.Target.includes("drawing1"));
         if (drawingRel !== undefined) {
           this._zip.file(`xl/drawings/_rels/drawing1.xml.rels`, XmlConvert.stringify(this._worksheets[wsId].drawingRelData));
           this._zip.file(`xl/drawings/drawing1.xml`, XmlConvert.stringify(this._worksheets[wsId].drawingData));

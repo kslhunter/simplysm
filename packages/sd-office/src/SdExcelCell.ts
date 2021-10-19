@@ -113,7 +113,7 @@ export class SdExcelCell {
         return realV;
       }
       else {
-        const v = this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].r.map((item: any) => {
+        const v = this.excelWorkSheet.workbook.sstData.sst.si[sstIndex].r.map((item) => {
           const sub = item.t[0]._ ?? item.t[0];
           return sub?.$ !== undefined ? " " : sub?.toString();
         }).filterExists().join("");
@@ -186,7 +186,7 @@ export class SdExcelCell {
     currRow.c = currRow.c ?? [];
     const cellNodes = currRow.c as any[];
     const cellAddr = SdExcelUtil.getAddress(this.row, this.col);
-    let currCell = cellNodes.single((item: any, index: number) => (item.$?.r !== undefined ? item.$.r === cellAddr : index === this.col));
+    let currCell = cellNodes.single((item, index) => (item.$?.r !== undefined ? item.$.r === cellAddr : index === this.col));
     if (currCell === undefined) {
       currCell = { $: { r: cellAddr } };
 
@@ -211,7 +211,7 @@ export class SdExcelCell {
     this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell = this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell ?? [];
 
     const mergeCells = this.excelWorkSheet.sheetData.worksheet.mergeCells[0].mergeCell;
-    const prev = mergeCells.single((item: any) => {
+    const prev = mergeCells.single((item) => {
       const mergeCellRowCol = SdExcelUtil.getRangeAddressRowCol(item.$.ref);
       return mergeCellRowCol.fromRow === this.row && mergeCellRowCol.fromCol === this.col;
     });
@@ -242,7 +242,7 @@ export class SdExcelCell {
       wsRelId = Number(wsDrawingRel.$.Id.replace("rId", ""));
     }
     else {
-      const wsRelLastId = wsRels.max((item: any) => Number(item.$.Id.replace(/rId/, ""))) ?? 0;
+      const wsRelLastId = wsRels.max((item) => Number(item.$.Id.replace(/rId/, ""))) ?? 0;
       const wsRelNewId = wsRelLastId + 1;
       wsRels.push({
         $: {
@@ -274,7 +274,7 @@ export class SdExcelCell {
     this.excelWorkSheet.drawingRelData.Relationships.Relationship = this.excelWorkSheet.drawingRelData.Relationships.Relationship ?? [];
 
     const relationshipArray: any[] = this.excelWorkSheet.drawingRelData.Relationships.Relationship;
-    const maxId = relationshipArray.max((item: any) => Number(item.$["Id"].replace(/rId/, ""))) ?? 0;
+    const maxId = relationshipArray.max((item) => Number(item.$["Id"].replace(/rId/, ""))) ?? 0;
     const newId = maxId + 1;
     relationshipArray.push({
       $: {
@@ -358,7 +358,7 @@ export class SdExcelCell {
 
     // Content_Types
     const contentType = this.excelWorkSheet.workbook.contentTypeData.Types;
-    if (!(contentType.Default.some((item: any) => item.$.Extension === ext) as boolean)) {
+    if (!(contentType.Default.some((item) => item.$.Extension === ext) as boolean)) {
       contentType.Default.push({
         $: {
           Extension: ext,
@@ -367,7 +367,7 @@ export class SdExcelCell {
       });
     }
 
-    if (!(contentType.Override.some((item: any) => item.$.PartName === "/xl/drawings/drawing1.xml") as boolean)) {
+    if (!(contentType.Override.some((item) => item.$.PartName === "/xl/drawings/drawing1.xml") as boolean)) {
       contentType.Override.push({
         $: {
           // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -379,7 +379,7 @@ export class SdExcelCell {
     }
 
     this.excelWorkSheet.sheetData.worksheet.drawing = this.excelWorkSheet.sheetData.worksheet.drawing ?? [];
-    if (!(this.excelWorkSheet.sheetData.worksheet.drawing.some((item: any) => item.$["r:id"] === "rId" + wsRelId) as boolean)) {
+    if (!(this.excelWorkSheet.sheetData.worksheet.drawing.some((item) => item.$["r:id"] === "rId" + wsRelId) as boolean)) {
       this.excelWorkSheet.sheetData.worksheet.drawing.push({
         $: {
           "r:id": "rId" + wsRelId

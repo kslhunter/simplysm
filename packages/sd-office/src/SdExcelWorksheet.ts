@@ -5,6 +5,7 @@ import { SdExcelRow } from "./SdExcelRow";
 import { SdExcelUtil } from "./utils/SdExcelUtil";
 import { NumberUtil, ObjectUtil } from "@simplysm/sd-core-common";
 
+// TODO: 엑셀다운로드 에러 수정 필요
 export class SdExcelWorksheet {
   public relData: any;
   public drawingRelData: any;
@@ -52,7 +53,7 @@ export class SdExcelWorksheet {
     const rowDataList = this.sheetData.worksheet.sheetData[0].row as any[];
 
     // row + 1
-    const nextRowDataList = rowDataList.filter((item: any) => Number(item.$.r) >= row + 1);
+    const nextRowDataList = rowDataList.filter((item) => Number(item.$.r) >= row + 1);
     for (const nextRowData of nextRowDataList) {
       const rowIndex = Number(nextRowData.$.r);
       nextRowData.$.r = (rowIndex + 1).toString();
@@ -107,7 +108,7 @@ export class SdExcelWorksheet {
     this.insertEmptyRow(row);
 
     const rowDataList = this.sheetData.worksheet.sheetData[0].row as any[];
-    const copyRowData = rowDataList.single((item: any) => Number(item.$.r) === (copyRow >= row ? copyRow + 1 : copyRow));
+    const copyRowData = rowDataList.single((item) => Number(item.$.r) === (copyRow >= row ? copyRow + 1 : copyRow));
 
     const prevRowData = rowDataList.orderBy((item) => Number(item.$.r)).last((item) => Number(item.$.r) < row + 1);
     const prevRowIndex = prevRowData !== undefined ? rowDataList.indexOf(prevRowData) : -1;
@@ -131,10 +132,10 @@ export class SdExcelWorksheet {
     const rowDataList = this.sheetData.worksheet.sheetData[0].row as any[];
 
     // remove
-    rowDataList.remove((item: any) => Number(item.$.r) === row + 1);
+    rowDataList.remove((item) => Number(item.$.r) === row + 1);
 
     // row - 1
-    const nextRowDataList = rowDataList.filter((item: any) => Number(item.$.r) > row + 1);
+    const nextRowDataList = rowDataList.filter((item) => Number(item.$.r) > row + 1);
     for (const nextRowData of nextRowDataList) {
       const rowIndex = Number(nextRowData.$.r);
       nextRowData.$.r = (rowIndex - 1).toString();
@@ -173,7 +174,7 @@ export class SdExcelWorksheet {
           );
         }
       }
-      mergeDataList.remove((item: any) => removeMergeDataList.includes(item));
+      mergeDataList.remove((item) => removeMergeDataList.includes(item));
       if (mergeDataList.length === 0) {
         delete this.sheetData.worksheet.mergeCells;
       }
@@ -199,7 +200,7 @@ export class SdExcelWorksheet {
           anchor["xdr:from"][0]["xdr:row"][0] = (anchorRow - 1).toString();
         }
       }
-      anchorList.remove((item: any) => removeAnchorRows.includes(item));
+      anchorList.remove((item) => removeAnchorRows.includes(item));
     }
 
     this._reloadRows();

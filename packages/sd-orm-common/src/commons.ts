@@ -349,7 +349,7 @@ export type TEntityValueOrQueryableOrArray<D extends DbContext, T extends TQuery
 export type TEntity<T> = {
   [K in keyof T]-?: T[K] extends TQueryValue ? QueryUnit<T[K]>
     : T[K] extends (infer A)[] ? TEntity<A>[]
-      : TEntity<T[K]>;
+        : TEntity<T[K]>;
 };
 
 export type TSelectEntity<T> = {

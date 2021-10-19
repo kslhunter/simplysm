@@ -21,7 +21,7 @@ export class SdProcessWorker extends EventEmitter {
 
       const worker = SdProcessManager.fork(
         binPath,
-        args.map((item: any) => (typeof item === "string" ? item : JSON.stringify(item))),
+        args.map((item) => (typeof item === "string" ? item : JSON.stringify(item))),
         {
           execArgv: [
             ...process.execArgv,

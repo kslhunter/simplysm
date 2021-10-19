@@ -139,7 +139,7 @@ HTMLElement.prototype.findFocusableParent = function (): HTMLElement | undefined
 const orgAddEventListener = HTMLElement.prototype.addEventListener;
 HTMLElement.prototype.addEventListener = function (type: string, listener: ((event: any) => any) | EventListenerObject, options?: boolean | AddEventListenerOptions): void {
   if (type === "resize") {
-    if (this["__resizeEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options) === true) {
+    if (this["__resizeEventListeners__"]?.some((item) => item.listener === listener && item.options === options) === true) {
       return;
     }
 
@@ -179,7 +179,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
     }
   }
   else if (type === "mutation") {
-    if (this["__mutationEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options) === true) {
+    if (this["__mutationEventListeners__"]?.some((item) => item.listener === listener && item.options === options) === true) {
       return;
     }
 
@@ -211,7 +211,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
     });
   }
   else if (type === "mutation-child") {
-    if (this["__mutationChildEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options) === true) {
+    if (this["__mutationChildEventListeners__"]?.some((item) => item.listener === listener && item.options === options) === true) {
       return;
     }
 
@@ -243,7 +243,7 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
     });
   }
   else if (type === "mutation-character") {
-    if (this["__mutationCharacterEventListeners__"]?.some((item: any) => item.listener === listener && item.options === options) === true) {
+    if (this["__mutationCharacterEventListeners__"]?.some((item) => item.listener === listener && item.options === options) === true) {
       return;
     }
 
@@ -282,21 +282,21 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
 const orgRemoveEventListener = HTMLElement.prototype.removeEventListener;
 HTMLElement.prototype.removeEventListener = function (type: string, listener: ((event: any) => any) | EventListenerObject, options?: boolean | EventListenerOptions): void {
   if (type === "resize") {
-    const obj = this["__resizeEventListeners__"]?.single((item: any) => item.listener === listener && item.options === options);
+    const obj = this["__resizeEventListeners__"]?.single((item) => item.listener === listener && item.options === options);
     if (obj !== undefined) {
       obj.observer.disconnect();
       this["__resizeEventListeners__"].remove(obj);
     }
   }
   else if (type === "mutation") {
-    const obj = this["__mutationEventListeners__"]?.single((item: any) => item.listener === listener && item.options === options);
+    const obj = this["__mutationEventListeners__"]?.single((item) => item.listener === listener && item.options === options);
     if (obj !== undefined) {
       obj.observer.disconnect();
       this["__mutationEventListeners__"].remove(obj);
     }
   }
   else if (type === "mutation-child") {
-    const obj = this["__mutationChildEventListeners__"]?.single((item: any) => item.listener === listener && item.options === options);
+    const obj = this["__mutationChildEventListeners__"]?.single((item) => item.listener === listener && item.options === options);
     if (obj !== undefined) {
       obj.observer.disconnect();
       this["__mutationChildEventListeners__"].remove(obj);

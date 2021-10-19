@@ -168,7 +168,7 @@ export class SdOrmUtil {
           for (const joinKey of Object.keys(groupedItem.resultRecord)) {
             if (groupedItem.resultRecord[joinKey] instanceof Array) {
               item[joinKey] = groupedItem.resultRecord[joinKey]
-                .filter((item1: any) => Object.keys(item1).filter((key) => item1[key].length > 0).length > 0)
+                .filter((item1) => Object.keys(item1).filter((key) => item1[key].length > 0).length > 0)
                 .distinct();
             }
             else {

@@ -38,8 +38,8 @@ try {
       const reloadProgramResult = await ngGenerator.reloadProgramAsync(watch);
       const genResult = await ngGenerator.generateAdditionalFilesAsync(reloadProgramResult.dirtyFilePaths, watch);
       worker.send("complete", {
-        dirtyFilePaths: [...reloadProgramResult.dirtyFilePaths, ...genResult.dirtyFilePaths],
-        result: [...reloadProgramResult.result, ...genResult.result]
+        dirtyFilePaths: [...reloadProgramResult.dirtyFilePaths, ...genResult.dirtyFilePaths].distinct(),
+        result: [...reloadProgramResult.result, ...genResult.result].distinct()
       });
     }
     else {
@@ -51,8 +51,8 @@ try {
 
       const genResult = await ngGenerator.generateAdditionalFilesAsync(reloadProgramResult.dirtyFilePaths.distinct(), watch);
       worker.send("complete", {
-        dirtyFilePaths: genResult.dirtyFilePaths,
-        result: [...reloadProgramResult.result, ...genResult.result]
+        dirtyFilePaths: [...reloadProgramResult.dirtyFilePaths, ...genResult.dirtyFilePaths].distinct(),
+        result: [...reloadProgramResult.result, ...genResult.result].distinct()
       });
     }
   });

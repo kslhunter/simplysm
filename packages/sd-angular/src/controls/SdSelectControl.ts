@@ -66,24 +66,24 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 
             <sd-pane>
               <ng-template [ngTemplateOutlet]="beforeTemplateRef"></ng-template>
-              <ng-template #rowOfList let-items="items">
-                <ng-container *ngFor="let item of items; let i = index; trackBy: trackByItemFn">
+              <ng-template #rowOfList let-items="items" let-depth="depth">
+                <ng-container *ngFor="let item of items; let index = index; trackBy: trackByItemFn">
                   <div class="_sd-select-item">
                     <ng-template [ngTemplateOutlet]="itemTemplateRef"
-                                 [ngTemplateOutletContext]="{item: item}"></ng-template>
+                                 [ngTemplateOutletContext]="{item: item, index: index, depth: depth}"></ng-template>
 
                     <ng-container
-                      *ngIf="getChildrenFn && getChildrenFn(i, item) && getChildrenFn!(i, item).length > 0">
+                      *ngIf="getChildrenFn && getChildrenFn(index, item, depth) && getChildrenFn!(index, item, depth).length > 0">
                       <div class="_children">
                         <ng-template [ngTemplateOutlet]="rowOfList"
-                                     [ngTemplateOutletContext]="{items: getChildrenFn(i, item)}"></ng-template>
+                                     [ngTemplateOutletContext]="{items: getChildrenFn(index, item, depth), depth: depth + 1}"></ng-template>
                       </div>
                     </ng-container>
                   </div>
                 </ng-container>
               </ng-template>
               <ng-template [ngTemplateOutlet]="rowOfList"
-                           [ngTemplateOutletContext]="{items: items}"></ng-template>
+                           [ngTemplateOutletContext]="{items: items, depth: 0}"></ng-template>
             </sd-pane>
           </sd-dock-container>
         </ng-container>
@@ -269,7 +269,7 @@ export class SdSelectControl implements DoCheck {
 
   @Input()
   @SdInputValidate(Function)
-  public getChildrenFn?: (index: number, item: any) => any;
+  public getChildrenFn?: (index: number, item: any, depth: number) => any;
 
   @Output()
   public readonly open = new EventEmitter();
@@ -435,7 +435,7 @@ export class SdSelectControl implements DoCheck {
 
   public getIsSelectedItemControl(itemControl: SdSelectItemControl): boolean {
     if (this.selectMode === "multi") {
-      const itemKeyValues = this.keyProp !== undefined && this.value !== undefined ? this.value.map((item: any) => item[this.keyProp!]) : this.value;
+      const itemKeyValues = this.keyProp !== undefined && this.value !== undefined ? this.value.map((item) => item[this.keyProp!]) : this.value;
       const valKeyValue = this.keyProp !== undefined && itemControl.value !== undefined ? itemControl.value[this.keyProp] : itemControl.value;
       return itemKeyValues?.includes(valKeyValue) ?? false;
     }

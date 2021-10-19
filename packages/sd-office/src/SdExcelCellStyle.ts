@@ -256,12 +256,12 @@ export class SdExcelCellStyle {
     const styleData = this._getStyleData();
     const numFmtId = NumberUtil.parseInt(styleData?.$?.numFmtId);
 
-    let lastNumFmtId = (this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt as any[]).max((item: any) => Number(item.$.numFmtId));
+    let lastNumFmtId = (this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt as any[]).max((item) => Number(item.$.numFmtId));
     lastNumFmtId = Math.max(lastNumFmtId ?? 0, 175);
 
     let newItem: any;
     if (numFmtId !== undefined) {
-      const prevNumFormat = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt.single((item: any) => item.$.numFmtId === numFmtId);
+      const prevNumFormat = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt.single((item) => item.$.numFmtId === numFmtId);
       if (prevNumFormat !== undefined) {
         newItem = ObjectUtil.clone(prevNumFormat);
       }
@@ -317,25 +317,25 @@ export class SdExcelCellStyle {
   }
 
   private _setFillData(data: any): number {
-    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fills[0].fill.findIndex((item: any) => ObjectUtil.equal(item, data));
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fills[0].fill.findIndex((item) => ObjectUtil.equal(item, data));
     if (index >= 0) return index;
     return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fills[0].fill.push(data) - 1;
   }
 
   private _setFontData(data: any): number {
-    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fonts[0].font.findIndex((item: any) => ObjectUtil.equal(item, data));
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fonts[0].font.findIndex((item) => ObjectUtil.equal(item, data));
     if (index >= 0) return index;
     return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.fonts[0].font.push(data) - 1;
   }
 
   private _setNumFmtData(data: any): number {
-    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt.findIndex((item: any) => ObjectUtil.equal(item, data));
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt.findIndex((item) => ObjectUtil.equal(item, data));
     if (index >= 0) return index;
     return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts[0].numFmt.push(data) - 1;
   }
 
   private _setStyleData(data: any): number {
-    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf.findIndex((item: any) => ObjectUtil.equal(item, data));
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf.findIndex((item) => ObjectUtil.equal(item, data));
     if (index >= 0) return index;
     return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.cellXfs[0].xf.push(data) - 1;
   }
@@ -356,14 +356,14 @@ export class SdExcelCellStyle {
   private _getNumFmtData(): any {
     const styleData = this._getStyleData();
     if (styleData?.$?.numFmtId !== undefined) {
-      return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts?.[0]?.numFmt?.single((item: any) => item.$.numFmtId === styleData.$.numFmtId);
+      return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.numFmts?.[0]?.numFmt?.single((item) => item.$.numFmtId === styleData.$.numFmtId);
     }
 
     return undefined;
   }
 
   private _setBorderData(data: any): number {
-    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.borders[0].border.findIndex((item: any) => ObjectUtil.equal(item, data));
+    const index = this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.borders[0].border.findIndex((item) => ObjectUtil.equal(item, data));
     if (index >= 0) return index;
     return this._excelCell.excelWorkSheet.workbook.stylesData.styleSheet.borders[0].border.push(data) - 1;
   }

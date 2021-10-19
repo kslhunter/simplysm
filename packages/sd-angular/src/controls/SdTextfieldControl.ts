@@ -557,7 +557,7 @@ export class SdTextfieldControl {
   public get controlRows(): number | undefined {
     if (this.multiline && this.autoRows) {
       if (typeof this.value === "string") {
-        return this.value.split(/[\r\n]/).length + 1;
+        return this.value.split(/[\r\n]/).length;
       }
 
       return 1;

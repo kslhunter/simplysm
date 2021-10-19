@@ -126,7 +126,7 @@ export class SdSharedDataProvider {
 
             // 삭제된 항목 제거 (DB에 없는 항목)
             const deleteKeys = changeKeys.filter((changeKey) => !dbItems.some((dbItem) => info.getKey(dbItem) === changeKey));
-            currItems.remove((item: any) => deleteKeys.includes(info.getKey(item)));
+            currItems.remove((item) => deleteKeys.includes(info.getKey(item)));
             for (const deleteKey of deleteKeys) {
               currMapData.delete(deleteKey);
             }

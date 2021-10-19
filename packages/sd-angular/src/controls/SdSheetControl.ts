@@ -30,6 +30,7 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
 
+// TODO: 셀 크기 2번 수정하면 HEADERGROUP 컬럼의 크기가 안따라오는 현상 수정
 @Component({
   selector: "sd-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -1057,16 +1058,16 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     this._el = this._elRef.nativeElement;
 
     this._itemsDiffer = this._iterableDiffers.find(this.items)
-      .create((i: number, item: any) => this.trackByFn(i, item));
+      .create((i, item) => this.trackByFn(i, item));
 
     this._selectedItemsDiffer = this._iterableDiffers.find(this.selectedItems)
-      .create((i: number, item: any) => this.trackByFn(i, item));
+      .create((i, item) => this.trackByFn(i, item));
 
     this._expandedItemsDiffer = this._iterableDiffers.find(this.expandedItems)
-      .create((i: number, item: any) => this.trackByFn(i, item));
+      .create((i, item) => this.trackByFn(i, item));
 
     this._columnControlsDiffer = this._iterableDiffers.find(this.columnControls ?? [])
-      .create((i: number, item: SdSheetColumnControl) => this.trackByFnForColumnControl(i, item));
+      .create((i, item) => this.trackByFnForColumnControl(i, item));
 
     this._configColumnObjDiffer = this._keyValueDiffers.find(this._config?.columnObj ?? {})
       .create();
@@ -1309,7 +1310,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       }
 
       // SELECTED ITEM 체크
-      const newSelectedItems = [...this.selectedItems].remove((item: any) => !this._getUngroupedItems(this.items).includes(item));
+      const newSelectedItems = [...this.selectedItems].remove((item) => !this._getUngroupedItems(this.items).includes(item));
       if (this.selectedItemsChange.observers.length > 0) {
         this.selectedItemsChange.emit(newSelectedItems);
       }
@@ -1345,15 +1346,17 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   public ngAfterContentChecked(): void {
     if (this.autoHeight) {
       this._zone.runOutsideAngular(() => {
-        const rowEls = this._el.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
-        for (const rowEl of rowEls) {
-          const cellEls = rowEl.findAll("> ._cell-group > ._cell");
+        setTimeout(() => {
+          const rowEls = this._el.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
+          for (const rowEl of rowEls) {
+            const cellEls = rowEl.findAll("> ._cell-group > ._cell");
 
-          const maxCellContentHeight = cellEls.max((cellEl1) => cellEl1.findFirst("> ._cell-content")!.offsetHeight)!;
-          for (const cellEl1 of cellEls) {
-            cellEl1.style.height = (maxCellContentHeight + 1) + "px";
+            const maxCellContentHeight = cellEls.max((cellEl1) => cellEl1.findFirst("> ._cell-content")!.offsetHeight)!;
+            for (const cellEl1 of cellEls) {
+              cellEl1.style.height = (maxCellContentHeight + 1) + "px";
+            }
           }
-        }
+        });
       });
     }
 
@@ -1711,7 +1714,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
             event.target instanceof HTMLTextAreaElement
             || (event.target instanceof HTMLDivElement && event.target.findParent("sd-content-editor") !== undefined)
           )
-          && event.ctrlKey && event.key === "Enter"
+          && (event.ctrlKey || event.altKey) && event.key === "Enter"
         )
       ) {
         event.preventDefault();

@@ -33,7 +33,8 @@ import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
                [trackByFn]="trackByFn"
                [selectMode]="selectMode"
                [content.class]="selectClass"
-               [multiSelectionDisplayDirection]="multiSelectionDisplayDirection">
+               [multiSelectionDisplayDirection]="multiSelectionDisplayDirection"
+               [getChildrenFn]="parentKeyProp ? getChildrenFn : undefined">
       <ng-template #header>
         <sd-dock-container>
           <sd-dock class="sd-border-bottom-brightness-default" *ngIf="getSearchTextFn">
@@ -52,14 +53,14 @@ import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
         </sd-select-item>
       </ng-template>
 
-      <ng-template #item let-item="item" let-index="index">
+      <ng-template #item let-item="item" let-index="index" let-depth="depth">
         <sd-select-item [value]="item.__valueKey"
-                        *ngIf="getItemSelectable(index, item)"
+                        *ngIf="getItemSelectable(index, item, depth)"
                         [hidden]="!getItemVisible(index, item)">
-          <div [style.text-decoration]="!getItemVisible(index, item) ? 'line-through' : undefined">
+          <span [style.text-decoration]="!getItemVisible(index, item) ? 'line-through' : undefined">
             <ng-template [ngTemplateOutlet]="itemTemplateRef"
-                         [ngTemplateOutletContext]="{item: item, index: index}"></ng-template>
-          </div>
+                         [ngTemplateOutletContext]="{item: item, index: index, depth: depth}"></ng-template>
+          </span>
         </sd-select-item>
       </ng-template>
     </sd-select>
@@ -162,16 +163,19 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
   })
   public getSearchTextFn = (index: number, item: ISharedDataBase<string | number>): string => item.__searchText;
 
+  @Input()
+  @SdInputValidate(String)
+  public parentKeyProp?: string;
+
   public searchText?: string;
   public items: any[] = [];
-
-  public selectableItems: any[] = [];
 
   private readonly _itemsIterableDiffer: IterableDiffer<any>;
 
   // 선택될 수 있는것들 (검색어에 의해 숨겨진것도 포함)
-  public getItemSelectable(index: number, item: any): boolean {
-    return !this.filterFn || this.filterFn(index, item);
+  public getItemSelectable(index: number, item: any, depth: number): boolean {
+    return (!this.filterFn || this.filterFn(index, item))
+      && (this.parentKeyProp === undefined || depth !== 0 || item[this.parentKeyProp] === undefined);
   }
 
   // 화면 목록에서 뿌려질것 (검색어에 의해 숨겨진것 제외)
@@ -187,11 +191,15 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
       );
   }
 
+  public getChildrenFn = (index: number, item: ISharedDataBase<string | number>, depth: number): any[] => {
+    return this.getItemSelectable(index, item, depth) ? this.items.filter((item1) => item1[this.parentKeyProp!] === item.__valueKey) : [];
+  };
+
   public constructor(private readonly _sharedData: SdSharedDataProvider,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _iterableDiffers: IterableDiffers,
                      private readonly _modal: SdModalProvider) {
-    this._itemsIterableDiffer = this._iterableDiffers.find(this.items).create((i: number, item: any) => this.trackByFn(i, item));
+    this._itemsIterableDiffer = this._iterableDiffers.find(this.items).create((i, item) => this.trackByFn(i, item));
   }
 
   private readonly _prevData: Record<string, any> = {};
@@ -227,11 +235,6 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
     }
 
     if (itemChanges || (this.value instanceof Array && isValueChange)) {
-      this._cdr.markForCheck();
-    }
-
-    if (itemChanges || isValueChange || isFilterFnChange) {
-      this.selectableItems = this.items.filter((item, i) => this.getItemSelectable(i, item));
       this._cdr.markForCheck();
     }
   }

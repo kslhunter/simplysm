@@ -5,6 +5,7 @@
     "strict": true,
     "suppressImplicitAnyIndexErrors": true,
     "noImplicitAny": false,
+    "checkJs": false,
     "sourceMap": true,
     "removeComments": true,
     "noUnusedLocals": true,

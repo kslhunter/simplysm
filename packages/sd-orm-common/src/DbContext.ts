@@ -204,7 +204,7 @@ export abstract class DbContext {
         database,
         schema
       }])
-    )[0].map((item: any) => ({
+    )[0].map((item) => ({
       schema: item.TABLE_SCHEMA,
       name: item.TABLE_NAME
     }));
@@ -226,7 +226,7 @@ export abstract class DbContext {
           table: { database, schema, name: table }
         }
       ])
-    )[0].map((item: any) => ({
+    )[0].map((item) => ({
       name: item.name,
       dataType: item.dataType,
       length: item.length,

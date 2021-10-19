@@ -107,7 +107,7 @@ export class SdCliTypescriptBuilder extends EventEmitter {
           }
 
           // 변경파일에 대해 자동생성할 소스파일들 생성 및 리로드 (index.ts등)
-          const watchGenAdditionalResult = await this.generateAdditionalFilesAsync(watchDirtyFilePaths, watch);
+          const watchGenAdditionalResult = await this.generateAdditionalFilesAsync([...changedFilePaths, ...watchDirtyFilePaths], watch);
           watchDirtyFilePaths.push(...watchGenAdditionalResult.dirtyFilePaths);
           watchDirtyFilePaths.distinctThis();
 
@@ -231,6 +231,7 @@ export class SdCliTypescriptBuilder extends EventEmitter {
           && PathUtil.isChildPath(item, this.rootPath)
           && FsUtil.exists(item)
           && !FsUtil.isDirectory(item)
+          && Boolean(this._program?.getSourceFiles().some((item1) => PathUtil.posix(item1.fileName) === PathUtil.posix(item)))
           && !await linter.isPathIgnored(item)
         ));
 
