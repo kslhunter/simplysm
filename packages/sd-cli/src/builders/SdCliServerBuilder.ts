@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import { INpmConfig, ISdPackageBuildResult, ISdServerPackageConfig, ITsconfig } from "../commons";
 import * as ts from "typescript";
-import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
 import { ObjectUtil, StringUtil, Wait } from "@simplysm/sd-core-common";
 import * as webpack from "webpack";
 import * as path from "path";
@@ -52,7 +52,7 @@ export class SdCliServerBuilder extends EventEmitter {
 
     await FsUtil.removeAsync(this.parsedTsconfig.options.outDir!);
 
-    const externalModuleNames = this._findExternalModuleNames(false);
+    const externalModuleNames = this._findExternalModules(false).map((item) => item.name);
 
     // WEBPACK 빌드
     this._logger.debug("Webpack 빌드 수행");
@@ -157,7 +157,9 @@ export class SdCliServerBuilder extends EventEmitter {
   public async watchAsync(): Promise<void> {
     await FsUtil.removeAsync(this.parsedTsconfig.options.outDir!);
 
-    const externalModuleNames = this._findExternalModuleNames(true);
+    const externalModules = this._findExternalModules(true);
+    const externalModuleNames = externalModules.map((item) => item.name);
+    const externalModulePaths = externalModules.map((item) => item.path);
 
     // 빌드
     const webpackConfig = this._getWebpackConfig(true, externalModuleNames);
@@ -211,6 +213,69 @@ export class SdCliServerBuilder extends EventEmitter {
         resolve();
       });
     });
+
+    // external 변경에 따른 서버 재시작을 위한 WATCH 구성
+
+    const getWatchPathsAsync = async (): Promise<string[]> => {
+      const result: string[] = [];
+      for (const modulePath of externalModulePaths) {
+        const npmConfig = this._getNpmConfig(modulePath);
+        if (!npmConfig) continue;
+        const distPath = path.resolve(modulePath, path.dirname(npmConfig.es2020 ?? npmConfig.module ?? npmConfig.main ?? "dist"));
+        const watchPaths = (await FsUtil.globAsync(path.resolve(distPath, "**")))
+          .filter((item) => (
+            item.includes("@simplysm")
+            && FsUtil.exists(item)
+            && FsUtil.isDirectory(item)
+          ));
+
+        result.push(...watchPaths);
+      }
+
+      return result;
+    };
+
+    const watchPaths = await getWatchPathsAsync();
+    const watcher = new SdFsWatcher();
+    watcher
+      .onChange(async (changeInfos) => {
+        const dirtyFilePaths = changeInfos
+          .map((changeInfo) => changeInfo.filePath)
+          .filter((item) => path.basename(item).includes("."))
+          .distinct();
+
+        if (dirtyFilePaths.length === 0) return;
+
+        this.emit("change");
+        this._logger.debug("서버 재시작");
+
+        const watchPaths2 = await getWatchPathsAsync();
+        watcher.replaceWatchPaths(watchPaths2);
+
+        await this._stopServerAsync();
+
+        const results: ISdPackageBuildResult[] = [];
+
+        try {
+          await this._startServerAsync();
+        }
+        catch (error) {
+          if (error instanceof Error) {
+            results.push({
+              filePath: undefined,
+              severity: "error",
+              message: error.message
+            });
+          }
+          else {
+            throw error;
+          }
+        }
+
+        this.emit("complete", results, this._server);
+        this._logger.debug("서버 재시작 결과", results);
+      })
+      .watch(watchPaths);
   }
 
   private async _stopServerAsync(): Promise<void> {
@@ -251,10 +316,11 @@ export class SdCliServerBuilder extends EventEmitter {
       target: ["node", "es2020"],
       profile: false,
       resolve: {
+        roots: [this.rootPath],
         extensions: [".ts", ".tsx", ".js"],
         symlinks: true,
         // modules: [this.projectRootPath, "node_modules"],
-        mainFields: ["es2020", "main", "module"]
+        mainFields: ["es2020", "module", "main"]
       },
       /*resolveLoader: {
         symlinks: true,
@@ -443,9 +509,9 @@ export class SdCliServerBuilder extends EventEmitter {
     return undefined;
   }
 
-  private _findExternalModuleNames(all: boolean): string[] {
+  private _findExternalModules(all: boolean): { name: string; path: string }[] {
     const loadedModuleNames: string[] = [];
-    const externalModuleNames: string[] = [];
+    const externalModules: { name: string; path: string }[] = [];
 
     const fn = (currPath: string): void => {
       const npmConfig = this._getNpmConfig(currPath);
@@ -458,15 +524,13 @@ export class SdCliServerBuilder extends EventEmitter {
         if (loadedModuleNames.includes(moduleName)) continue;
         loadedModuleNames.push(moduleName);
 
-        if (this.config.externalDependencies?.includes(moduleName)) {
-          externalModuleNames.push(moduleName);
-        }
-
         const modulePath = this._findModulePath(moduleName, currPath);
         if (StringUtil.isNullOrEmpty(modulePath)) continue;
 
-        if (all || FsUtil.exists(path.resolve(modulePath, "binding.gyp"))) {
-          externalModuleNames.push(moduleName);
+        if (all
+          || this.config.externalDependencies?.includes(moduleName)
+          || FsUtil.exists(path.resolve(modulePath, "binding.gyp"))) {
+          externalModules.push({ path: modulePath, name: moduleName });
         }
 
         fn(modulePath);
@@ -475,7 +539,7 @@ export class SdCliServerBuilder extends EventEmitter {
 
     fn(this.rootPath);
 
-    return externalModuleNames.distinct();
+    return externalModules.distinct();
   }
 
   private _getNpmConfig(rootPath: string): INpmConfig | undefined {

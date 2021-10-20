@@ -186,8 +186,7 @@ export class SdCliProject {
       this._logger.debug("빌드 수행...");
       const buildResult = await this.buildAsync({
         watch: false,
-        packages: pkgs.map((item) => item.npmConfig.name)
-          .filter((item) => !opt.packages || opt.packages.includes(item)),
+        packages: opt.packages,
         options: opt.options,
         config: opt.config
       });

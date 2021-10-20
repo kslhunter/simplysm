@@ -31,10 +31,12 @@ export class SdFsWatcher {
               this._remainedFnCount--;
               if (this._remainedFnCount !== 0) return;
 
-              await this._listeners.parallelAsync(async (listener) => {
-                await listener(this._changedInfos.distinct());
-              });
+              const changedInfos = this._changedInfos.distinct();
               this._changedInfos = [];
+
+              await this._listeners.parallelAsync(async (listener) => {
+                await listener(changedInfos);
+              });
             });
           }, 300);
         }

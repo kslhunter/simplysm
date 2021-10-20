@@ -48,6 +48,9 @@ export interface INpmConfig {
   name: string;
   version: string;
   workspaces?: string[];
+  es2020?: string;
+  browser?: string;
+  module?: string;
   main?: string;
 
   dependencies?: Record<string, string>;

@@ -257,7 +257,7 @@ export class SdExcelWorkbook {
   }
 
   public createWorksheet(name: string): SdExcelWorksheet {
-    const replacedName = name.replace(/[:\\/?*[]']/g, "_");
+    const replacedName = name.replace(/[:\\/?*\[\]']/g, "_");
 
     // Workbook
     this._wbData.workbook.sheets = this._wbData.workbook.sheets ?? [{}];

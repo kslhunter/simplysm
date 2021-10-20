@@ -99,6 +99,7 @@ module.exports = {
     "brace-style": ["error", "stroustrup"],
     "accessor-pairs": "off",
     "arrow-body-style": "off",
-    "no-extra-parens": "off"
+    "no-extra-parens": "off",
+    "no-useless-escape": "off"
   }
 };

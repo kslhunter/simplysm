@@ -1,5 +1,5 @@
 import { IQueryResultParseOption, TEntity, TEntityValue, TQueryValue } from "../commons";
-import { DateOnly, DateTime, JsonConvert, ObjectUtil, Time, Type, Uuid } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, JsonConvert, Time, Type, Uuid } from "@simplysm/sd-core-common";
 import { QueryUnit } from "../QueryUnit";
 
 export class SdOrmUtil {
@@ -66,8 +66,8 @@ export class SdOrmUtil {
 
   public static parseQueryResult<T>(orgResults: any[], option?: IQueryResultParseOption): T[] {
     // 타입 변환
-    const data: any[] = orgResults.map((item) => {
-      const obj: any = {};
+    const data: Record<string, any>[] = orgResults.map((item) => {
+      const obj: Record<string, any> = {};
       for (const key of Object.keys(item)) {
         if (item[key] == null) {
           obj[key] = undefined;
@@ -100,107 +100,138 @@ export class SdOrmUtil {
     }).filterExists();
 
     // JOIN 에 따른 데이터 구조 설정
-    if (option?.joins && Object.keys(option.joins).length > 0) {
-      const grouping = (itemOrItems: any | any[], parentJoinKey: string, joinKeys: string[]): any | any[] => {
-        const items = itemOrItems instanceof Array ? itemOrItems : [itemOrItems];
-        const keys = Object.keys(Object.assign({}, ...items));
-
-        const grouped: { key: any; resultRecord: Record<string, (any | any[])> }[] = [];
-        const groupedMultiRecord: Record<string, any[] | undefined> = {};
-
-        const keyObjKeys = keys.filter((key) => !joinKeys.some((joinKey) => key.startsWith(joinKey + ".")));
-        for (const joinKey of joinKeys) {
-          const valueObjKeys = keys.filter((key) => key.startsWith(joinKey + "."));
-
-          for (const item of items) {
-            const keyObj = {};
-            for (const keyObjKey of keyObjKeys) {
-              if (item[keyObjKey] !== undefined) {
-                keyObj[keyObjKey] = item[keyObjKey];
-              }
-            }
-
-            const valueObj: any = {};
-            for (const valueObjKey of valueObjKeys) {
-              if (item[valueObjKey] !== undefined) {
-                valueObj[valueObjKey.slice(joinKey.length + 1)] = item[valueObjKey];
-              }
-            }
-
-            if (option.joins![(parentJoinKey ? (parentJoinKey + ".") : "") + joinKey].isSingle) {
-              if (!grouped.some((groupedItem) => (
-                ObjectUtil.equal(groupedItem.key, keyObj)
-                && Object.keys(groupedItem.resultRecord).some((k) => k === joinKey)
-              ))) {
-                const sameKeyGroupedItem = grouped.single((groupedItem) => ObjectUtil.equal(groupedItem.key, keyObj));
-                if (sameKeyGroupedItem) {
-                  sameKeyGroupedItem.resultRecord[joinKey] = valueObj;
-                }
-                else {
-                  grouped.push({ key: keyObj, resultRecord: { [joinKey]: valueObj } });
-                }
-              }
-            }
-            else {
-              const keyObjJson = JsonConvert.stringify(keyObj);
-              const values = groupedMultiRecord[joinKey + "_" + keyObjJson];
-              if (values !== undefined) {
-                values.push(valueObj);
-              }
-              else {
-                const valueArr = [valueObj];
-
-                const sameKeyGroupedItem = grouped.single((groupedItem) => ObjectUtil.equal(groupedItem.key, keyObj));
-                if (sameKeyGroupedItem) {
-                  sameKeyGroupedItem.resultRecord[joinKey] = valueArr;
-                }
-                else {
-                  grouped.push({ key: keyObj, resultRecord: { [joinKey]: valueArr } });
-                }
-                groupedMultiRecord[joinKey + "_" + JsonConvert.stringify(keyObj)] = valueArr;
-              }
-            }
+    const allJoinInfos = option?.joins ? Object.keys(option.joins).map((key) => ({
+      key,
+      isSingle: option.joins![key].isSingle
+    })) : [];
+    const rootJoinInfos = allJoinInfos.filter((item) => !item.key.includes("."));
+    if (rootJoinInfos.length > 0) {
+      const getObjKeyString = (sourceItem: Record<string, any>): string => {
+        const result: string[] = [];
+        for (const sourceItemKey of Object.keys(sourceItem).orderBy()) {
+          const sourceItemValue = sourceItem[sourceItemKey];
+          if (
+            ["undefined", "boolean", "number", "string"].includes(typeof sourceItemValue)
+            || sourceItemValue instanceof Number
+            || sourceItemValue instanceof String
+            || sourceItemValue instanceof Boolean
+            || sourceItemValue instanceof DateOnly
+            || sourceItemValue instanceof DateTime
+            || sourceItemValue instanceof Time
+            || sourceItemValue instanceof Uuid
+            || sourceItemValue instanceof Buffer
+          ) {
+            result.push(sourceItemKey + ":" + JsonConvert.stringify(sourceItemValue));
+          }
+          else {
+            result.push(sourceItemKey + ":" + getObjKeyString(sourceItemValue));
           }
         }
-
-        const result = grouped.map((groupedItem) => {
-          const item = { ...groupedItem.key };
-          for (const joinKey of Object.keys(groupedItem.resultRecord)) {
-            if (groupedItem.resultRecord[joinKey] instanceof Array) {
-              item[joinKey] = groupedItem.resultRecord[joinKey]
-                .filter((item1) => Object.keys(item1).filter((key) => item1[key].length > 0).length > 0)
-                .distinct();
-            }
-            else {
-              item[joinKey] = groupedItem.resultRecord[joinKey];
-            }
-          }
-
-          return item;
-        });
-
-        for (const item of result) {
-          for (const joinKey of joinKeys) {
-            const childJoinKeys = Object.keys(option.joins!).filter((item1) => (
-              item1.startsWith(joinKey + ".")
-              && item1.split(".").length === joinKey.split(".").length + 1
-            ));
-            if (childJoinKeys.length > 0) {
-              item[joinKey] = grouping(item[joinKey], (parentJoinKey ? (parentJoinKey + ".") : "") + joinKey, childJoinKeys);
-            }
-          }
-        }
-
-        return itemOrItems instanceof Array ? result : result[0];
+        return "(" + result.join("|") + ")";
       };
 
+      const getKeyObj = (sourceItem: Record<string, any>, joinKeys: string[]): Record<string, any> => {
+        const result: Record<string, any> = {};
+        for (const sourceItemKey of Object.keys(sourceItem)) {
+          if (joinKeys.some((joinKey) => sourceItemKey.startsWith(joinKey))) continue;
+          result[sourceItemKey] = sourceItem[sourceItemKey];
+        }
+        return result;
+      };
 
-      const rootJoinKeys = Object.keys(option.joins).filter((item) => !item.includes("."));
-      if (rootJoinKeys.length > 0) {
-        return grouping(data, "", rootJoinKeys) as T[];
-      }
+      const getObjOrUndefined = (sourceItem: Record<string, any> | undefined): Record<string, any> | undefined => {
+        return sourceItem === undefined || Object.keys(sourceItem).every((key) => sourceItem[key] === undefined) ? undefined : sourceItem;
+      };
+
+      const joinToObj = (source: Record<string, any>[], joinKeys: string[]): Record<string, any>[] => {
+        const result: Record<string, any>[] = [];
+        for (const sourceItem of source) {
+          const resultItem: Record<string, any> = {};
+          for (const sourceItemKey of Object.keys(sourceItem)) {
+            for (const joinKey of joinKeys) {
+              if (sourceItemKey.startsWith(joinKey + ".")) {
+                resultItem[joinKey] = resultItem[joinKey] ?? {};
+                resultItem[joinKey][sourceItemKey.slice(joinKey.length + 1)] = sourceItem[sourceItemKey];
+              }
+              else {
+                resultItem[sourceItemKey] = sourceItem[sourceItemKey];
+              }
+            }
+          }
+          result.push(resultItem);
+        }
+
+        return result;
+      };
+
+      const grouping = (source: Record<string, any>[], joinKeys: string[]): Record<string, any>[] => {
+        const result = new Map<string, Record<string, any>>();
+        for (const sourceItem of source) {
+          const groupedKeyObj = getKeyObj(sourceItem, joinKeys);
+          const groupedKey = getObjKeyString(groupedKeyObj);
+          if (result.has(groupedKey)) {
+            const groupedItem = result.get(groupedKey)!;
+            for (const joinKey of joinKeys) {
+              const sourceItemValue = getObjOrUndefined(sourceItem[joinKey]);
+              if (sourceItemValue) {
+                groupedItem[joinKey].push(sourceItemValue);
+              }
+            }
+          }
+          else {
+            const newGroupedItem: Record<string, any> = { ...groupedKeyObj };
+            for (const joinKey of joinKeys) {
+              const sourceItemValue = getObjOrUndefined(sourceItem[joinKey]);
+              newGroupedItem[joinKey] = sourceItemValue ? [sourceItemValue] : [];
+            }
+            result.set(groupedKey, newGroupedItem);
+          }
+        }
+
+        for (const resultItem of result.values()) {
+          for (const joinKey of joinKeys) {
+            resultItem[joinKey].distinctThis();
+          }
+        }
+
+        return Array.from(result.values());
+      };
+
+      const doing = (source: Record<string, any>[], joinInfos: { key: string; isSingle: boolean }[], parentKey?: string): Record<string, any>[] => {
+        const joinKeys = joinInfos.map((item) => item.key);
+        const result = grouping(joinToObj(source, joinKeys), joinKeys);
+        for (const resultItem of result) {
+          for (const joinInfo of joinInfos) {
+            const fullJoinKey = (parentKey !== undefined ? parentKey + "." : "") + joinInfo.key;
+            const childJoinInfos = allJoinInfos
+              .filter((item) => item.key.startsWith(fullJoinKey + ".") && !item.key.slice(fullJoinKey.length + 1).includes("."))
+              .map((item) => ({
+                key: item.key.slice(fullJoinKey.length + 1),
+                isSingle: item.isSingle
+              }));
+            if (childJoinInfos.length > 0) {
+              const childJoinValue = doing(resultItem[joinInfo.key], childJoinInfos);
+              if (joinInfo.isSingle) {
+                if (childJoinValue.length > 1) {
+                  throw new Error("중복");
+                }
+                else {
+                  resultItem[joinInfo.key] = childJoinValue[0];
+                }
+              }
+              else {
+                resultItem[joinInfo.key] = childJoinValue;
+              }
+            }
+          }
+        }
+
+        return result;
+      };
+
+      return doing(data, rootJoinInfos) as any[];
     }
 
-    return data;
+    return data as any[];
   }
 }
