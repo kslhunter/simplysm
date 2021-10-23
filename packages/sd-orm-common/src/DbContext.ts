@@ -332,9 +332,9 @@ export abstract class DbContext {
               for (const migration of migrations) {
                 await new migration().up(this);
 
-                await this.systemMigration.insertAsync({
+                await this.systemMigration.insertAsync([{
                   code: migration.name
-                });
+                }]);
               }
             });
           }
@@ -342,9 +342,9 @@ export abstract class DbContext {
             for (const migration of migrations) {
               await new migration().up(this);
 
-              await this.systemMigration.insertAsync({
+              await this.systemMigration.insertAsync([{
                 code: migration.name
-              });
+              }]);
             }
           }
         }
