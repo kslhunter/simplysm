@@ -290,7 +290,7 @@ export interface ITableNameDef {
 }
 
 export interface ITableDef extends ITableNameDef {
-  description?: string;
+  description: string;
   columns: IColumnDef[];
   foreignKeys: IForeignKeyDef[];
   foreignKeyTargets: IForeignKeyTargetDef[];

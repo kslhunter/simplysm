@@ -305,7 +305,7 @@ export abstract class DbContext {
     if (!force) {
       const isDbExists = await this.getIsDbExistsAsync(this.schema.database);
 
-      const isTableExists = await this.getIsTableExistsAsync(
+      const isTableExists = !isDbExists ? false : await this.getIsTableExistsAsync(
         this.schema.database,
         this.schema.schema,
         "_migration"

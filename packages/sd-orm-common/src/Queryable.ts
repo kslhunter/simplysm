@@ -59,6 +59,11 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
+  public get tableDescription(): string {
+    if (!this._tableDef) throw new NeverEntryError();
+    return this._tableDef.description;
+  }
+
   // public constructor(db: D, cloneQueryable: Queryable<D, T>);
   // public constructor(db: D, cloneQueryable: Queryable<D, any>, entity: TEntity<T>);
   // public constructor(db: D, tableType: Type<T>, as?: string);
@@ -765,7 +770,7 @@ export class Queryable<D extends DbContext, T> {
 
     return ObjectUtil.clearUndefined({
       from: this._def.from,
-      output: outputColumns as string[] | undefined,
+      output: (outputColumns as string[] | undefined)?.map((item) => this.db.qb.wrap(item)),
       record
     });
   }
@@ -813,7 +818,7 @@ export class Queryable<D extends DbContext, T> {
       top: this._def.top,
       from: this._def.from,
       record,
-      output: outputColumns as string[] | undefined,
+      output: (outputColumns as string[] | undefined)?.map((item) => this.db.qb.wrap(item)),
       as: this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`),
       join: joinDefs,
       where: this._def.where
@@ -871,7 +876,7 @@ export class Queryable<D extends DbContext, T> {
       as: this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`),
       where: this._def.where,
       insertRecord,
-      output: outputColumns as string[] | undefined
+      output: (outputColumns as string[] | undefined)?.map((item) => this.db.qb.wrap(item))
     });
   }
 
@@ -940,7 +945,7 @@ export class Queryable<D extends DbContext, T> {
       where: this._def.where,
       updateRecord,
       insertRecord,
-      output: outputColumns as string[] | undefined
+      output: (outputColumns as string[] | undefined)?.map((item) => this.db.qb.wrap(item))
     });
   }
 
@@ -985,7 +990,7 @@ export class Queryable<D extends DbContext, T> {
     return ObjectUtil.clearUndefined({
       top: this._def.top,
       from: this._def.from,
-      output: outputColumns as string[] | undefined,
+      output: (outputColumns as string[] | undefined)?.map((item) => this.db.qb.wrap(item)),
       as: this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`),
       join: joinDefs,
       where: this._def.where
@@ -1618,7 +1623,7 @@ export class Queryable<D extends DbContext, T> {
       for (const key of Object.keys(ObjectUtil.clearUndefined(entity))) {
         const fullKeyArr = parentKeys.concat([key]);
         const fullKey = fullKeyArr.join(".");
-        if ((columns as string[] | undefined)?.includes(fullKey)) continue;
+        if (columns && !(columns as string[]).includes(fullKey)) continue;
 
         try {
           if (typeof entity[key] !== "undefined" && SdOrmUtil.canConvertToQueryValue(entity[key])) {

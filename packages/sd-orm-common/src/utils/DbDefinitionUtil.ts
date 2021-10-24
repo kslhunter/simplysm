@@ -12,6 +12,7 @@ export class DbDefinitionUtil {
 
     return tableDef ?? {
       name: "",
+      description: "",
       columns: [],
       foreignKeys: [],
       foreignKeyTargets: [],

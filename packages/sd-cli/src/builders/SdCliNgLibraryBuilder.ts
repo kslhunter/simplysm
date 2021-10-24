@@ -194,8 +194,8 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
 
     // Angular Module 및 RoutingModule 생성
     const genModuleResult = await this._generateModuleFilesAsync(
-      [...dirtyFilePaths, ...genIndexResult.dirtyFilePaths].distinct()
-      , watch
+      [...dirtyFilePaths, ...genIndexResult.dirtyFilePaths].distinct(),
+      watch
     );
     result.result.push(...genModuleResult.result);
     result.dirtyFilePaths.push(...genModuleResult.dirtyFilePaths);

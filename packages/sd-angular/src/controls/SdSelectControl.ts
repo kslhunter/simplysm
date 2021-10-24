@@ -437,7 +437,6 @@ export class SdSelectControl implements DoCheck {
     if (this.selectMode === "multi") {
       const itemKeyValues = this.keyProp !== undefined && this.value !== undefined ? this.value.map((item) => item[this.keyProp!]) : this.value;
       const valKeyValue = this.keyProp !== undefined && itemControl.value !== undefined ? itemControl.value[this.keyProp] : itemControl.value;
-      console.log(itemKeyValues);
       return itemKeyValues?.includes(valKeyValue) ?? false;
     }
     else {
