@@ -15,7 +15,7 @@ export class SdOrmServiceProvider {
   public constructor(private readonly _service: SdServiceFactoryProvider) {
   }
 
-  public async connectAsync<T extends DbContext, R>(config: { serviceKey: string; dbContextType: Type<T>; configName: string },
+  public async connectAsync<T extends DbContext, R>(config: { serviceKey: string; dbContextType: Type<T>; configName: string; database: string; schema: string },
                                                     callback: (conn: T) => Promise<R> | R): Promise<R> {
     const service = this._service.get(config.serviceKey);
     /*try {
@@ -25,11 +25,17 @@ export class SdOrmServiceProvider {
       throw new Error("ORM 서비스에 연결할 수 없습니다.");
     }*/
 
-    const db = new config.dbContextType(await SdServiceDbContextExecutor.createAsync(service.client, config.configName));
+    const db = new config.dbContextType(
+      await SdServiceDbContextExecutor.createAsync(service.client, config.configName),
+      {
+        database: config.database,
+        schema: config.schema
+      }
+    );
     return await db.connectAsync(async () => await callback(db));
   }
 
-  public async connectWithoutTransactionAsync<T extends DbContext, R>(config: { serviceKey: string; dbContextType: Type<T>; configName: string },
+  public async connectWithoutTransactionAsync<T extends DbContext, R>(config: { serviceKey: string; dbContextType: Type<T>; configName: string; database: string; schema: string },
                                                                       callback: (conn: T) => Promise<R> | R): Promise<R> {
     const service = this._service.get(config.serviceKey);
     /*try {
@@ -39,7 +45,13 @@ export class SdOrmServiceProvider {
       throw new Error("ORM 서비스에 연결할 수 없습니다.");
     }*/
 
-    const db = new config.dbContextType(await SdServiceDbContextExecutor.createAsync(service.client, config.configName));
+    const db = new config.dbContextType(
+      await SdServiceDbContextExecutor.createAsync(service.client, config.configName),
+      {
+        database: config.database,
+        schema: config.schema
+      }
+    );
     return await db.connectWithoutTransactionAsync(async () => await callback(db));
   }
 }

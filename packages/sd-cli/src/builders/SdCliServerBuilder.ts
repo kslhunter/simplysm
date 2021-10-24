@@ -149,6 +149,8 @@ export class SdCliServerBuilder extends EventEmitter {
     delete distNpmConfig.devDependencies;
     delete distNpmConfig.peerDependencies;
 
+    distNpmConfig.scripts = { "start": "pm2 start pm2.json" };
+
     await FsUtil.writeFileAsync(path.resolve(this.parsedTsconfig.options.outDir!, "package.json"), JSON.stringify(distNpmConfig, undefined, 2));
 
     this.emit("complete", buildResults);

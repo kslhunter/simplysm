@@ -19,8 +19,6 @@ export abstract class DbContext {
 
   public prepareDefs: TQueryDef[] = [];
 
-  public abstract get schema(): { database: string; schema: string };
-
   public abstract get migrations(): Type<IDbMigration>[];
 
   public readonly qb = new QueryBuilder(this._executor.dialect);
@@ -30,7 +28,9 @@ export abstract class DbContext {
 
   public dialect = this._executor.dialect;
 
-  public constructor(private readonly _executor: IDbContextExecutor) {
+  // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
+  public constructor(private readonly _executor: IDbContextExecutor,
+                     public readonly schema: { database: string; schema: string }) {
   }
 
   public async connectWithoutTransactionAsync<R>(callback: () => Promise<R>): Promise<R> {

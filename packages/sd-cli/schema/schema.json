@@ -222,6 +222,12 @@
                 "client"
               ]
             },
+            "env": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
             "server": {
               "type": "string"
             },
@@ -263,6 +269,12 @@
                   }
                 }
               ]
+            },
+            "env": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             },
             "configs": {
               "$ref": "#/definitions/schemaConfigs"

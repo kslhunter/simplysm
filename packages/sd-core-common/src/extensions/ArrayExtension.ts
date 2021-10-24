@@ -10,6 +10,8 @@ declare global {
   interface Array<T> {
     single(predicate?: (item: T, index: number) => boolean): T | undefined;
 
+    first(predicate?: (item: T, index: number) => boolean): T | undefined;
+
     filterAsync(predicate: (item: T, index: number) => Promise<boolean>): Promise<T[]>;
 
     last(predicate?: (item: T, index: number) => boolean): T | undefined;
@@ -82,6 +84,8 @@ declare global {
   interface ReadonlyArray<T> {
     single(predicate?: (item: T, index: number) => boolean): T | undefined;
 
+    first(predicate?: (item: T, index: number) => boolean): T | undefined;
+
     filterAsync(predicate: (item: T, index: number) => Promise<boolean>): Promise<T[]>;
 
     last(predicate?: (item: T, index: number) => boolean): T | undefined;
@@ -149,6 +153,9 @@ declare global {
     return arr[0];
   };
 
+  prototype.first = function <T>(this: T[], predicate?: (item: T, index: number) => boolean): T | undefined {
+    return predicate !== undefined ? this.find(predicate) : this[0];
+  };
 
   prototype.filterAsync = async function <T>(this: T[], predicate: (item: T, index: number) => Promise<boolean>): Promise<T[]> {
     const arr: T[] = [];

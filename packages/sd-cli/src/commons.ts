@@ -52,6 +52,7 @@ export interface INpmConfig {
   browser?: string;
   module?: string;
   main?: string;
+  scripts?: Record<string, string>;
 
   dependencies?: Record<string, string>;
   optionalDependencies?: Record<string, string>;
