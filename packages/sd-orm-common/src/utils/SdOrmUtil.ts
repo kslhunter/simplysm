@@ -209,8 +209,9 @@ export class SdOrmUtil {
                 key: item.key.slice(fullJoinKey.length + 1),
                 isSingle: item.isSingle
               }));
+            const joinValue = resultItem[joinInfo.key];
             if (childJoinInfos.length > 0) {
-              const childJoinValue = doing(resultItem[joinInfo.key], childJoinInfos);
+              const childJoinValue = doing(joinValue, childJoinInfos);
               if (joinInfo.isSingle) {
                 if (childJoinValue.length > 1) {
                   throw new Error("중복");
@@ -221,6 +222,19 @@ export class SdOrmUtil {
               }
               else {
                 resultItem[joinInfo.key] = childJoinValue;
+              }
+            }
+            else {
+              if (joinInfo.isSingle) {
+                if (joinValue.length > 1) {
+                  throw new Error("중복");
+                }
+                else {
+                  resultItem[joinInfo.key] = joinValue[0];
+                }
+              }
+              else {
+                resultItem[joinInfo.key] = joinValue;
               }
             }
           }

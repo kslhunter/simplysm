@@ -4,7 +4,7 @@ import { FsUtil } from "@simplysm/sd-core-node";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 
 export class SdProjectConfigUtil {
-  public static async loadConfigAsync(rootPath: string, isDevMode?: boolean, options?: string[], configFilePath?: string): Promise<ISdProjectConfig> {
+  /*public static async loadConfigAsync(rootPath: string, isDevMode?: boolean, options?: string[], configFilePath?: string): Promise<ISdProjectConfig> {
     const config = await this._loadConfigFileContentAsync(path.resolve(rootPath, configFilePath ?? "simplysm.json"));
 
     if (config.packages !== undefined) {
@@ -62,6 +62,67 @@ export class SdProjectConfigUtil {
     delete mergedConfig!.extends;
 
     return mergedConfig!;
+  }*/
+
+  public static async loadConfigAsync(rootPath: string, isDevMode?: boolean, options?: string[], configFilePath?: string): Promise<ISdProjectConfig> {
+    const configFileFullPath = path.resolve(rootPath, configFilePath ?? "simplysm.json");
+    const configFileContent = await FsUtil.readJsonAsync(configFileFullPath) as ISdProjectConfigFileContent;
+    const orgConfig = this._loadConfig(configFileContent, isDevMode, options);
+
+    let resultConfig: ISdProjectConfig | undefined;
+    if (orgConfig.extends) {
+      for (const extConfigFilePath of orgConfig.extends) {
+        const extConfig = await this.loadConfigAsync(path.dirname(configFileFullPath), isDevMode, options, extConfigFilePath);
+        resultConfig = this._mergeObj(resultConfig, extConfig);
+      }
+    }
+    resultConfig = this._mergeObj(resultConfig, orgConfig);
+
+    delete resultConfig!["extends"];
+
+    return resultConfig!;
+  }
+
+  private static _loadConfig(configFileContent: ISdProjectConfigFileContent, isDevMode?: boolean, options?: string[]): (ISdProjectConfig & { extends?: string[] }) {
+    const config = configFileContent;
+
+    if (config.packages !== undefined) {
+      const mode = isDevMode ? "development" : "production";
+
+      for (const packageName of Object.keys(config.packages)) {
+        // override 처리
+        if (config.packages[packageName].overrides !== undefined) {
+          for (const overrideKey of config.packages[packageName].overrides!) {
+            const overrideObj = config.overrides![overrideKey];
+            config.packages[packageName] = this._mergeObj(config.packages[packageName], overrideObj);
+          }
+          delete config.packages[packageName].overrides;
+        }
+
+        // mode 처리
+        if (config.packages[packageName][mode] !== undefined) {
+          config.packages[packageName] = this._mergeObj(config.packages[packageName], config.packages[packageName][mode]);
+        }
+        delete config.packages[packageName].development;
+        delete config.packages[packageName].production;
+
+        // options 처리
+        if (options && options.length > 0) {
+          const pkgOpts = Object.keys(config.packages[packageName])
+            .filter((key) => key.startsWith("@") && options.some((opt) => opt === key.slice(1)));
+
+          for (const pkgOpt of pkgOpts) {
+            config.packages[packageName] = this._mergeObj(config.packages[packageName], config.packages[packageName][pkgOpt]);
+          }
+        }
+
+        for (const optKey of Object.keys(config.packages[packageName]).filter((item) => item.startsWith("@"))) {
+          delete config.packages[packageName][optKey];
+        }
+      }
+    }
+
+    return config as any;
   }
 
   private static _mergeObj<T>(org: T, target: Partial<T>): T {
