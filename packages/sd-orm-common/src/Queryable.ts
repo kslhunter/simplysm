@@ -1217,8 +1217,7 @@ export class Queryable<D extends DbContext, T> {
     }
   }
 
-  public insertPrepare(args: TInsertObject<T> | (TInsertObject<T>[])): void {
-    const records = args instanceof Array ? args : [args];
+  public insertPrepare(records: TInsertObject<T>[]): void {
     this._insertPrepare(false, records);
   }
 

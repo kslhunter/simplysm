@@ -380,7 +380,8 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
             </tr>
 
             <!-- CHILDREN FOR 문 -->
-            <ng-container *ngIf="getIsExpandedItem(item) && getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0">
+            <ng-container
+              *ngIf="getIsExpandedItem(item) && getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0">
               <div class="sd-border-top-brightness-darker"></div>
               <ng-container
                 *ngFor="let childItem of getChildrenFn ? getChildrenFn(index, item) : []; let childIndex = index; trackBy: trackByFn">
@@ -1187,14 +1188,18 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       }, true);
     });
 
+    await this._reloadConfig();
+    this.isInitialized = true;
+    this._cdr.markForCheck();
+  }
+
+  private async _reloadConfig(): Promise<void> {
     if (this.key !== undefined) {
       this._config = await this._systemConfig.getAsync(`sd-sheet.${this.key}`);
       if (this._config?.displayType !== undefined) {
         this.displayType = this._config.displayType;
       }
     }
-    this.isInitialized = true;
-    this._cdr.markForCheck();
   }
 
   private readonly _prevData: Record<string, any> = {};
@@ -1254,7 +1259,19 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       this.hasSummaryGroup = (this.columnControls?.filter((item) => Boolean(item.summaryTemplateRef)).length ?? 0) > 0;
     }
 
-    if (columnControlsChanges || isKeyChange || configColumnObjChanges || isWidthChange) {
+    if (isKeyChange) {
+      this._reloadConfig()
+        .then(() => {
+          this.columnWidthPixelMap = this.columnControls?.toArray()
+            .toMap((item) => item.guid, (item) => this._getColumnWidthPixel(item)) ?? new Map<string, number>();
+          this._cdr.markForCheck();
+        })
+        .catch((err) => {
+          throw err;
+        });
+    }
+
+    if (columnControlsChanges || configColumnObjChanges || isWidthChange) {
       this.columnWidthPixelMap = this.columnControls?.toArray()
         .toMap((item) => item.guid, (item) => this._getColumnWidthPixel(item)) ?? new Map<string, number>();
     }
