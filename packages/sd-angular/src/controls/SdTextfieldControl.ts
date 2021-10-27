@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DoCheck,
   ElementRef,
   EventEmitter,
   HostBinding,
   Input,
+  NgZone,
   Output,
   ViewChild
 } from "@angular/core";
@@ -278,7 +280,7 @@ import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
     }
   `]
 })
-export class SdTextfieldControl {
+export class SdTextfieldControl implements DoCheck {
   @Input()
   @SdInputValidate({
     type: String,
@@ -476,17 +478,18 @@ export class SdTextfieldControl {
   }
 
   public get inputFullStyle(): string | undefined {
+    let styleStr = "";
     if (this.multiline) {
       const controlResize = this.resize === "vertical" ? "vertical"
         : this.resize === "horizontal" ? "horizontal"
           : this.resize ? undefined : "none";
 
       if (controlResize !== undefined) {
-        return `resize: ${controlResize};` + this.inputStyle;
+        styleStr += `resize: ${controlResize};`;
       }
     }
 
-    return this.inputStyle;
+    return styleStr + (this.inputStyle ?? "");
   }
 
   public get errorMessage(): string {
@@ -564,6 +567,21 @@ export class SdTextfieldControl {
     }
 
     return this.rows;
+  }
+
+  public constructor(private readonly _zone: NgZone) {
+  }
+
+  public ngDoCheck(): void {
+    this._zone.runOutsideAngular(() => {
+      setTimeout(() => {
+        const inputEl = this.inputElRef?.nativeElement;
+        if (inputEl && this.autoRows && this.multiline && typeof this.value === "string") {
+          inputEl.style.height = "";
+          inputEl.style.height = (inputEl.scrollHeight + (inputEl.offsetHeight - inputEl.clientHeight)) + "px";
+        }
+      });
+    });
   }
 
   public onInput(): void {

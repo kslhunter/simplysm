@@ -26,6 +26,10 @@ import { SdToastProvider } from "../providers/SdToastProvider";
         display: table;
         width: 100%;
       }
+
+      &[sd-layout="none"] > form {
+        display: contents;
+      }
     }
   `]
 })
@@ -34,10 +38,10 @@ export class SdFormControl {
   @SdInputValidate({
     type: String,
     notnull: true,
-    includes: ["cascade", "inline", "table"]
+    includes: ["cascade", "inline", "table", "none"]
   })
   @HostBinding("attr.sd-layout")
-  public layout: "cascade" | "inline" | "table" = "cascade";
+  public layout: "cascade" | "inline" | "table" | "none" = "cascade";
 
   @Input("label.width")
   @SdInputValidate(String)

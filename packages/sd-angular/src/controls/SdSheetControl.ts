@@ -337,7 +337,7 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
                       </div>
                     </ng-container>
                     <ng-container *ngIf="columnControl.type === 'select' && columnControl.key">
-                      <div style="text-align: center;">
+                      <div class="_cell-content" style="text-align: center;">
                         <sd-checkbox [value]="getColumnChecked(columnControl, item)"
                                      (valueChange)="setColumnChecked(columnControl, item, $event)"
                                      inset size="sm"></sd-checkbox>
@@ -365,7 +365,7 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
                       </div>
                     </ng-container>
                     <ng-container *ngIf="columnControl.type === 'select' && columnControl.key">
-                      <div style="text-align: center;">
+                      <div class="_cell-content" style="text-align: center;">
                         <sd-checkbox [value]="getColumnChecked(columnControl, item)"
                                      (valueChange)="setColumnChecked(columnControl, item, $event)"
                                      inset size="sm"></sd-checkbox>

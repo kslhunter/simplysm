@@ -16,7 +16,8 @@ import { SdFormControl } from "./SdFormControl";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <label [attr.unvisible]="!label && !labelTemplateRef"
-           [style.width]="labelWidth">
+           [style.width]="labelWidth"
+           [hidden]="layout === 'none'">
       <ng-container *ngIf="!labelTemplateRef">{{ label }}</ng-container>
       <ng-container *ngIf="labelTemplateRef">
         <ng-template [ngTemplateOutlet]="labelTemplateRef"
@@ -52,7 +53,7 @@ import { SdFormControl } from "./SdFormControl";
 
       &[sd-layout="table"] {
         display: table-row;
-        
+
         > label {
           display: table-cell;
           vertical-align: top;
@@ -96,6 +97,10 @@ import { SdFormControl } from "./SdFormControl";
           margin-right: 0;
         }
       }
+
+      &[sd-layout="none"] {
+        display: contents;
+      }
     }
   `]
 })
@@ -108,15 +113,15 @@ export class SdFormItemControl {
   public labelTemplateRef?: TemplateRef<{ label?: string }>;
 
   @HostBinding("attr.sd-layout")
-  public get layout(): "cascade" | "inline" | "table" | undefined {
-    return this.parentControl?.layout;
+  public get layout(): "cascade" | "inline" | "table" | "none" | undefined {
+    return this._parentFormControl.layout;
   }
 
   public get labelWidth(): string | undefined {
-    return this.layout === "table" ? this.parentControl?.labelWidth : undefined;
+    return this.layout === "table" ? this._parentFormControl.labelWidth : undefined;
   }
 
   public constructor(@Inject(forwardRef(() => SdFormControl))
-                     public readonly parentControl?: SdFormControl) {
+                     private readonly _parentFormControl: SdFormControl) {
   }
 }

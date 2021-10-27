@@ -1,14 +1,12 @@
 import { DbContext } from "./DbContext";
 import {
   FunctionUtil,
-  JsonConvert,
   NeverEntryError,
   NotImplementError,
   ObjectUtil,
   Type,
   UnwrappedType,
-  Uuid,
-  Wait
+  Uuid
 } from "@simplysm/sd-core-common";
 import {
   IDeleteQueryDef,
@@ -1004,7 +1002,7 @@ export class Queryable<D extends DbContext, T> {
 
     const def = this.getSelectDef();
 
-    const cacheKey = JsonConvert.stringify(def)!;
+    /*const cacheKey = JsonConvert.stringify(def)!;
 
     if (DbContext.selectCache.has(cacheKey)) {
       try {
@@ -1023,14 +1021,14 @@ export class Queryable<D extends DbContext, T> {
         console.error(err);
       }
     }
-    DbContext.selectCache.set(cacheKey, undefined);
+    DbContext.selectCache.set(cacheKey, undefined);*/
 
     const results = await this.db.executeDefsAsync([{ type: "select", ...def }], [this._getParseOption(undefined)]);
 
-    const timeout = setTimeout(() => {
+    /*const timeout = setTimeout(() => {
       DbContext.selectCache.delete(cacheKey);
     }, 1000);
-    DbContext.selectCache.set(cacheKey, { result: results[0] ?? [], timeout });
+    DbContext.selectCache.set(cacheKey, { result: results[0] ?? [], timeout });*/
 
     return results[0];
   }
@@ -1070,7 +1068,7 @@ export class Queryable<D extends DbContext, T> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
-    DbContext.selectCache.clear();
+    // DbContext.selectCache.clear();
 
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
@@ -1111,7 +1109,7 @@ export class Queryable<D extends DbContext, T> {
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
-    DbContext.selectCache.clear();
+    // DbContext.selectCache.clear();
 
     const queryDefs = records.map((record) => this.getInsertDef(record, outputColumns));
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
@@ -1314,7 +1312,7 @@ export class Queryable<D extends DbContext, T> {
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
-    DbContext.selectCache.clear();
+    // DbContext.selectCache.clear();
 
     const record = await recordFwd(this._entity);
     const queryDef = this.getUpdateDef(record, outputColumns);
@@ -1383,7 +1381,7 @@ export class Queryable<D extends DbContext, T> {
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
-    DbContext.selectCache.clear();
+    // DbContext.selectCache.clear();
 
     const queryDef = this.getDeleteDef(outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
@@ -1435,7 +1433,7 @@ export class Queryable<D extends DbContext, T> {
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
-    DbContext.selectCache.clear();
+    // DbContext.selectCache.clear();
 
     const queryDefs = records.map((record) => this.getInsertIfNotExistsDef(record, outputColumns));
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
@@ -1490,19 +1488,25 @@ export class Queryable<D extends DbContext, T> {
     }
   }
 
+  public async upsertAsync(insertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>)): Promise<void>
+  public async upsertAsync<OK extends keyof T>(insertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>), outputColumns: OK[]): Promise<{ [K in OK]: T[K] }[]>
   public async upsertAsync<U extends TUpdateObject<T>>(updateFwd: (entity: TEntity<T>) => (U | Promise<U>), insertFwd: (updateRecord: U) => TInsertObject<T>): Promise<void>
   public async upsertAsync<U extends TUpdateObject<T>, OK extends keyof T>(updateFwd: (entity: TEntity<T>) => (U | Promise<U>), insertFwd: (updateRecord: U) => TInsertObject<T>, outputColumns: OK[]): Promise<{ [K in OK]: T[K] }[]>
-  public async upsertAsync<U extends TUpdateObject<T>, OK extends keyof T>(updateFwd: (entity: TEntity<T>) => (U | Promise<U>), insertFwd: (updateRecord: U) => TInsertObject<T>, outputColumns?: OK[]): Promise<{ [K in OK]: T[K] }[] | void> {
+  public async upsertAsync<U extends TUpdateObject<T>, OK extends keyof T>(arg1: ((entity: TEntity<T>) => (U | Promise<U>)) | ((entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>)), arg2?: ((updateRecord: U) => TInsertObject<T>) | OK[], arg3?: OK[]): Promise<{ [K in OK]: T[K] }[] | void> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
-    DbContext.selectCache.clear();
+    // DbContext.selectCache.clear();
 
-    const updateRecord = await updateFwd(this._entity);
-    const insertRecord = insertFwd(updateRecord);
+    const updateFwd = arg1;
+    const insertFwd = typeof arg2 === "function" ? arg2 : undefined;
+    const outputColumns = arg2 instanceof Array ? arg2 : arg3;
+
+    const updateRecord = await updateFwd(this._entity) as U;
+    const insertRecord = (insertFwd ? insertFwd(updateRecord) : ObjectUtil.clone(updateRecord)) as TInsertObject<T>;
 
     const queryDef = this.getUpsertDef(updateRecord, insertRecord, outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
