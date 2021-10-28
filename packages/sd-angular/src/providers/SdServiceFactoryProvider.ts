@@ -74,7 +74,7 @@ export class SdNgServiceClient {
   public client: SdServiceClient;
 
   private readonly _connectedEventListeners: (() => Promise<void>)[] = [];
-  private readonly _sendCommandEventListeners: ((command: string, params: any[]) => Promise<void> | void)[] = [];
+  private readonly _sendCommandEventListeners: ((command: string, params: any[]) => (Promise<void> | void))[] = [];
 
   public get connected(): boolean {
     return this.client.connected;
@@ -153,7 +153,7 @@ export class SdNgServiceClient {
     }
   }
 
-  public onSendCommand(callback: (command: string, params: any[]) => Promise<void> | void): void {
+  public onSendCommand(callback: (command: string, params: any[]) => (Promise<void> | void)): void {
     this._sendCommandEventListeners.push(callback);
   }
 }
