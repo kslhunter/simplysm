@@ -74,6 +74,7 @@ export class SdNgServiceClient {
   public client: SdServiceClient;
 
   private readonly _connectedEventListeners: (() => Promise<void>)[] = [];
+  private readonly _sendCommandEventListeners: ((command: string, params: any[]) => Promise<void> | void)[] = [];
 
   public get connected(): boolean {
     return this.client.connected;
@@ -118,6 +119,9 @@ export class SdNgServiceClient {
   public async sendCommandAsync(command: string, params: any[]): Promise<any> {
     let currToast: ISdProgressToast | undefined;
 
+    for (const sendCommandEventListener of this._sendCommandEventListeners) {
+      await sendCommandEventListener(command, params);
+    }
     return await this.client.sendAsync(command, params, {
       progressCallback: (progress) => {
         const totalTextLength = progress.total.toLocaleString().length;
@@ -147,6 +151,10 @@ export class SdNgServiceClient {
     if (this.client.connected) {
       await callback();
     }
+  }
+
+  public onSendCommand(callback: (command: string, params: any[]) => Promise<void> | void): void {
+    this._sendCommandEventListeners.push(callback);
   }
 }
 
