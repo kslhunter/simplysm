@@ -18,7 +18,7 @@ export class SdCliCordova {
 
   public async initializeAsync(): Promise<void> {
     if (FsUtil.exists(this._cordovaPath)) {
-      this._logger.log("미리 생성되어있는 '.cordova'를 그대로 사용합니다.");
+      this._logger.log("미리 생성되어있는 '.cordova'를 사용합니다.");
     }
     else {
       await SdProcessManager.spawnAsync(
