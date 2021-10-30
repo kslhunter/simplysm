@@ -1,5 +1,12 @@
 import { EventEmitter } from "events";
-import { INpmConfig, ISdClientPackageConfig, ISdPackageBuildResult, ITsconfig } from "../commons";
+import {
+  INpmConfig,
+  ISdClientCordovaPlatformConfig,
+  ISdClientPackageConfig,
+  ISdPackageBuildResult,
+  ITsconfig,
+  TSdClientPlatformConfig
+} from "../commons";
 import * as webpack from "webpack";
 import * as path from "path";
 import * as ts from "typescript";
@@ -28,6 +35,7 @@ import * as browserslist from "browserslist";
 import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import * as os from "os";
 import { LintResult } from "eslint-webpack-plugin/declarations/options";
+import { SdCliCordova } from "../build-tools/SdCliCordova";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ESLintWebpackPlugin = require("eslint-webpack-plugin");
@@ -40,10 +48,15 @@ export class SdCliNgClientBuilder extends EventEmitter {
 
   protected readonly _logger: Logger;
 
+  private get _platformConfig(): TSdClientPlatformConfig {
+    return this.config.platforms!.single((item) => item.type === this.platformType)!;
+  }
+
   public constructor(public rootPath: string,
                      public tsconfigFilePath: string,
                      public projectRootPath: string,
                      public config: ISdClientPackageConfig,
+                     public platformType: TSdClientPlatformConfig["type"],
                      public skipProcesses: ("lint" | "genNgModule")[]) {
     super();
 
@@ -68,6 +81,13 @@ export class SdCliNgClientBuilder extends EventEmitter {
 
     const buildResult: ISdPackageBuildResult[] = [];
 
+    // CORDOVA 초기화
+    const cordova = this.platformType !== "cordova" ? undefined
+      : new SdCliCordova(this.rootPath, this._platformConfig as ISdClientCordovaPlatformConfig);
+    if (cordova) {
+      await cordova.initializeAsync();
+    }
+
     // GENERATOR
     if (!this.skipProcesses.includes("genNgModule")) {
       this._logger.debug("NgGen 수행");
@@ -81,10 +101,14 @@ export class SdCliNgClientBuilder extends EventEmitter {
     const webpackConfig = this._getWebpackConfig(false);
     const compiler = webpack(webpackConfig);
     const webpackBuildResults = await new Promise<ISdPackageBuildResult[]>((resolve, reject) => {
-      compiler.run((err, stat) => {
+      compiler.run(async (err, stat) => {
         if (err != null) {
           reject(err);
           return;
+        }
+
+        if (cordova) {
+          await cordova.buildAsync(this.parsedTsconfig.options.outDir!);
         }
 
         const results = SdWebpackUtil.getWebpackResults(stat!);
@@ -133,6 +157,13 @@ export class SdCliNgClientBuilder extends EventEmitter {
     const getNgGenResults = (): ISdPackageBuildResult[] => {
       return Array.from(ngGenResultsMap.values()).mapMany().distinct();
     };
+
+    // CORDOVA 초기화
+    const cordova = this.platformType !== "cordova" ? undefined
+      : new SdCliCordova(this.rootPath, this._platformConfig as ISdClientCordovaPlatformConfig);
+    if (cordova) {
+      await cordova.initializeAsync();
+    }
 
     // WEBPACK 빌드
     let invalidFiles = new Set<string>();
@@ -265,6 +296,12 @@ export class SdCliNgClientBuilder extends EventEmitter {
 
     const packageKey = this.npmConfig.name.split("/").last()!;
 
+    const distPath = (this.platformType === "cordova" && !watch) ? path.resolve(this.rootPath, ".cordova", "www")
+      : this.parsedTsconfig.options.outDir;
+
+    const publicPath = (this.platformType === "cordova" && !watch) ? ""
+      : (this.platformType !== "browser" ? `/__${this.platformType}` : "") + `/${packageKey}/`;
+
     return {
       mode: watch ? "development" : "production",
       devtool: false,
@@ -286,7 +323,7 @@ export class SdCliNgClientBuilder extends EventEmitter {
       entry: {
         main: [
           ...watch ? [
-            `webpack-hot-middleware/client?path=/${packageKey}/__webpack_hmr&timeout=20000&reload=true&overlay=true`
+            `webpack-hot-middleware/client?path=${publicPath}__webpack_hmr&timeout=20000&reload=true&overlay=true`
           ] : [],
           path.resolve(this.rootPath, "src/main.ts")
         ],
@@ -299,8 +336,8 @@ export class SdCliNgClientBuilder extends EventEmitter {
       },
       output: {
         clean: true,
-        path: this.parsedTsconfig.options.outDir,
-        publicPath: `/${packageKey}/`,
+        path: distPath,
+        publicPath,
         // filename: watch ? "[name].js" : `[name].[chunkhash:20].js`,
         // chunkFilename: watch ? "[name].js" : "[name].[chunkhash:20].js",
         filename: "[name].js",
@@ -442,7 +479,12 @@ export class SdCliNgClientBuilder extends EventEmitter {
                 loader: "css",
                 minify: true,
                 sourcefile,
-                target: browserslist([
+                target: this.platformType === "cordova" ? [
+                  ...(this._platformConfig as ISdClientCordovaPlatformConfig).targets.mapMany((target) => [
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                    ...target === "android" ? ["android 90"] : []
+                  ])
+                ] : browserslist([
                   "last 1 Chrome versions",
                   "last 2 Edge major versions"
                 ]).map((item) => item.replace(/ /g, ""))
@@ -508,23 +550,37 @@ export class SdCliNgClientBuilder extends EventEmitter {
         ),
         new DedupeModuleResolvePlugin({ verbose: false }) as any,
         new CopyWebpackPlugin({
-          patterns: ["favicon.ico", "assets/", "manifest.webmanifest"].map((item) => ({
-            context: this.rootPath,
-            to: item,
-            from: `src/${item}`,
-            noErrorOnMissing: true,
-            force: true,
-            globOptions: {
-              dot: true,
-              followSymbolicLinks: false,
-              ignore: [
-                ".gitkeep",
-                "**/.DS_Store",
-                "**/Thumbs.db"
-              ].map((i) => PathUtil.posix(this.rootPath, i))
-            },
-            priority: 0
-          }))
+          patterns: [
+            ...["favicon.ico", "assets/", "manifest.webmanifest"].map((item) => ({
+              context: this.rootPath,
+              to: item,
+              from: `src/${item}`,
+              noErrorOnMissing: true,
+              force: true,
+              globOptions: {
+                dot: true,
+                followSymbolicLinks: false,
+                ignore: [
+                  ".gitkeep",
+                  "**/.DS_Store",
+                  "**/Thumbs.db"
+                ].map((i) => PathUtil.posix(this.rootPath, i))
+              },
+              priority: 0
+            })),
+            ...this.platformType === "cordova" ? [
+              ...(this._platformConfig as ISdClientCordovaPlatformConfig).targets.map((target) => ({
+                context: this.rootPath,
+                to: `cordova-${target}`,
+                from: `.cordova/platforms/${target}/platform_www`
+              })),
+              ...watch ? [{
+                context: this.rootPath,
+                to: `cordova-browser`,
+                from: `.cordova/platforms/browser/platform_www`
+              }] : []
+            ] : []
+          ]
         }),
         ...watch ? [] : [
           new LicenseWebpackPlugin({
@@ -575,7 +631,7 @@ export class SdCliNgClientBuilder extends EventEmitter {
         new IndexHtmlWebpackPlugin({
           indexPath: path.resolve(this.rootPath, "src/index.html"),
           outputPath: "index.html",
-          baseHref: `/${packageKey}/`,
+          baseHref: publicPath,
           entrypoints: [
             "runtime",
             "polyfills",

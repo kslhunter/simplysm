@@ -228,6 +228,85 @@
                 "type": "string"
               }
             },
+            "platforms": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "oneOf": [
+                  {
+                    "properties": {
+                      "type": {
+                        "enum": [
+                          "browser"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "type": {
+                        "enum": [
+                          "cordova"
+                        ]
+                      },
+                      "targets": {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "items": {
+                          "enum": [
+                            "android"
+                          ]
+                        }
+                      },
+                      "appId": {
+                        "type": "string"
+                      },
+                      "appName": {
+                        "type": "string"
+                      },
+                      "icon": {
+                        "type": "string"
+                      },
+                      "sign": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "keystore": {
+                            "type": "string"
+                          },
+                          "storePassword": {
+                            "type": "string"
+                          },
+                          "alias": {
+                            "type": "string"
+                          },
+                          "password": {
+                            "type": "string"
+                          },
+                          "keystoreType": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "keystore",
+                          "storePassword",
+                          "alias",
+                          "password",
+                          "keystoreType"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "targets",
+                      "appId",
+                      "appName"
+                    ]
+                  }
+                ]
+              }
+            },
             "server": {
               "type": "string"
             },

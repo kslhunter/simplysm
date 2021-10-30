@@ -7,6 +7,7 @@ import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { SdCliProject } from "../entry-points/SdCliProject";
 import { SdCliLocalUpdater } from "../entry-points/SdCliLocalUpdater";
 import { SdCliFileCrypto } from "../utils/SdCliFileCrypto";
+import { SdCliCordova } from "../build-tools/SdCliCordova";
 
 EventEmitter.defaultMaxListeners = 0;
 process.setMaxListeners(0);
@@ -43,6 +44,26 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
             describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
             array: true
           }
+        })
+    )
+    .command(
+      "run-device <cordovaPath> <target> <url>",
+      "변경감지중인 플랫폼을 디바이스에 앱 형태로 띄웁니다.",
+      (cmd) => cmd
+        .positional("cordovaPath", {
+          type: "string",
+          describe: "CORDOVA 프로젝트 경로",
+          demandOption: true
+        })
+        .positional("target", {
+          type: "string",
+          describe: "빌드타겟(android,...)",
+          demandOption: true
+        })
+        .positional("url", {
+          type: "string",
+          describe: "Webview로 오픈할 URL",
+          demandOption: true
         })
     )
     .command(
@@ -169,6 +190,9 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
         options: argv.options,
         skipProcesses: argv.noLint ? ["lint"] : undefined
       });
+  }
+  else if (args[0] === "run-device") {
+    await SdCliCordova.runWebviewOnDeviceAsync(argv.cordovaPath, argv.target, argv.url);
   }
   else if (args[0] === "local-update") {
     await new SdCliLocalUpdater(process.cwd()).localUpdateAsync(false, { config: argv.config });

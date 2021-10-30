@@ -56,7 +56,7 @@ import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
       <ng-template #item let-item="item" let-index="index" let-depth="depth">
         <sd-select-item [value]="item.__valueKey"
                         *ngIf="getItemSelectable(index, item, depth)"
-                        [hidden]="!getItemVisible(index, item)">
+                        [hidden]="!getItemVisible(index, item, depth)">
           <span [style.text-decoration]="getIsHiddenFn(index, item) ? 'line-through' : undefined">
             <ng-template [ngTemplateOutlet]="itemTemplateRef"
                          [ngTemplateOutletContext]="{item: item, index: index, depth: depth}"></ng-template>
@@ -179,9 +179,9 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
   }
 
   // 화면 목록에서 뿌려질것 (검색어에 의해 숨겨진것 제외)
-  public getItemVisible(index: number, item: any): boolean {
+  public getItemVisible(index: number, item: any, depth: number): boolean {
     return (
-        this.getSearchTextFn(index, item).toLowerCase().includes(this.searchText?.toLowerCase() ?? "")
+        this._isIncludeSearchText(index, item, depth)
         && !this.getIsHiddenFn(index, item)
       )
       || this.value === this.trackByFn(index, item)
@@ -189,6 +189,23 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
         this.value instanceof Array
         && this.value.includes(this.trackByFn(index, item))
       );
+  }
+
+  private _isIncludeSearchText(index: number, item: any, depth: number): boolean {
+    if (this.getSearchTextFn(index, item).toLowerCase().includes(this.searchText?.toLowerCase() ?? "")) {
+      return true;
+    }
+
+    if (this.parentKeyProp !== undefined) {
+      const children = this.getChildrenFn(index, item, item.depth);
+      for (let i = 0; i < children.length; i++) {
+        if (this._isIncludeSearchText(i, children[i], item.depth + 1)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   public getChildrenFn = (index: number, item: ISharedDataBase<string | number>, depth: number): any[] => {

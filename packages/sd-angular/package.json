@@ -6,6 +6,7 @@
   "repository": "github:kslhunter/simplysm6",
   "license": "MIT",
   "main": "./dist-angular/index.js",
+  "browser": "./dist-angular/index.js",
   "types": "./dist-types/index.d.ts",
   "sideEffects": false,
   "dependencies": {

@@ -48,7 +48,8 @@
     "browserslist": "^4.16.8",
     "@simplysm/sd-storage": "6.1.5",
     "webpack-hot-middleware": "^2.25.0",
-    "jsdom": "^17.0.0"
+    "jsdom": "^17.0.0",
+    "cordova": "^10.0.0"
   },
   "devDependencies": {
     "@types/yargs": "^17.0.2",

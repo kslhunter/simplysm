@@ -24,32 +24,44 @@ export class SdCliClientPackage extends SdCliPackageBase {
   public async buildAsync(): Promise<void> {
     await this._genBuildTsconfigAsync();
 
-    const buildTsconfigFilePath = path.resolve(this.rootPath, `sd-tsconfig.json`);
-    const builder = new SdCliNgClientBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.skipProcesses);
+    const targets = this.config.platforms?.map((item) => item.type) ?? ["browser"];
 
-    await builder
-      .on("change", () => {
-        this.emit("change", undefined);
-      })
-      .on("complete", (results) => {
-        this.emit("complete", undefined, results);
-      })
-      .buildAsync();
+    const buildTsconfigFilePath = path.resolve(this.rootPath, `sd-tsconfig.json`);
+
+    await targets.parallelAsync(async (target) => {
+      const builder = new SdCliNgClientBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, target, this.skipProcesses);
+
+      await builder
+        .on("change", () => {
+          this.emit("change", target);
+        })
+        .on("complete", (results) => {
+          this.emit("complete", target, results);
+        })
+        .buildAsync();
+    });
   }
 
   public async watchAsync(): Promise<NextHandleFunction[]> {
     await this._genBuildTsconfigAsync();
 
+    const targets = this.config.platforms?.map((item) => item.type) ?? ["browser"];
+
     const buildTsconfigFilePath = path.resolve(this.rootPath, `sd-tsconfig.json`);
-    const builder = new SdCliNgClientBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, this.skipProcesses);
-    return await builder
-      .on("change", () => {
-        this.emit("change", undefined);
-      })
-      .on("complete", (results) => {
-        this.emit("complete", undefined, results);
-      })
-      .watchAsync(this._serverPath);
+    const handlersArray = await targets.parallelAsync(async (target) => {
+      const builder = new SdCliNgClientBuilder(this.rootPath, buildTsconfigFilePath, process.cwd(), this.config, target, this.skipProcesses);
+
+      return await builder
+        .on("change", () => {
+          this.emit("change", target);
+        })
+        .on("complete", (results) => {
+          this.emit("complete", target, results);
+        })
+        .watchAsync(this._serverPath);
+    });
+
+    return handlersArray.mapMany();
   }
 
   public async publishAsync(): Promise<void> {

@@ -18,13 +18,13 @@ export interface ISdLibraryPackageConfig {
 
 export interface ISdClientPackageConfig {
   type: "client";
+  platforms?: TSdClientPlatformConfig[];
   env?: Record<string, string>;
   server?: string;
   resolveFallback?: Record<string, string>;
   configs?: Record<string, any>;
   publish?: TSdPublishConfig;
 }
-
 
 export interface ISdServerPackageConfig {
   type: "server";
@@ -120,4 +120,28 @@ export interface ISdFtpPublishConfig {
 export interface ISdLocalDirectoryPublishConfig {
   type: "local-directory";
   path: string;
+}
+
+export type TSdClientPlatformConfig =
+  ISdClientBrowserPlatformConfig |
+  ISdClientCordovaPlatformConfig;
+
+export interface ISdClientBrowserPlatformConfig {
+  type: "browser";
+}
+
+export interface ISdClientCordovaPlatformConfig {
+  type: "cordova";
+  targets: ("android")[];
+  appId: string;
+  appName: string;
+  plugins?: string[];
+  icon?: string;
+  sign?: {
+    keystore: string;
+    storePassword: string;
+    alias: string;
+    password: string;
+    keystoreType: string;
+  };
 }
