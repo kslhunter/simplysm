@@ -1,5 +1,14 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output } from "@angular/core";
-import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  Input,
+  NgZone,
+  Output,
+  ViewChild
+} from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 
 @Component({
@@ -9,29 +18,28 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
     <sd-dock-container>
       <sd-dock class="_toolbar" *ngIf="!disabled">
         <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
-          <sd-icon [icon]="'eye'"></sd-icon>
+          <sd-icon [icon]="'eye'" fw></sd-icon>
         </sd-anchor>
         <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
-          <sd-icon [icon]="'pen'"></sd-icon>
+          <sd-icon [icon]="'pen'" fw></sd-icon>
         </sd-anchor>
         <sd-anchor (click)="viewState = 'code'" [class._selected]="viewState === 'code'">
-          <sd-icon [icon]="'code'"></sd-icon>
+          <sd-icon [icon]="'code'" fw></sd-icon>
         </sd-anchor>
         <ng-container *ngIf="rowsButton && !inset && viewState === 'code'">
           |
           <sd-anchor (click)="rows = rows + 1">
-            <sd-icon [icon]="'plus'"></sd-icon>
+            <sd-icon [icon]="'plus'" fw></sd-icon>
           </sd-anchor>
           <sd-anchor (click)="rows = rows - 1" *ngIf="rows > 1">
-            <sd-icon [icon]="'minus'"></sd-icon>
+            <sd-icon [icon]="'minus'" fw></sd-icon>
           </sd-anchor>
         </ng-container>
       </sd-dock>
 
       <sd-pane>
-        <div *ngIf="viewState !== 'code' || disabled"
+        <div #editor *ngIf="viewState !== 'code' || disabled"
              [attr.contenteditable]="viewState === 'edit' && !disabled"
-             [innerHTML]="content"
              (input)="onContentInput($event)"></div>
         <textarea *ngIf="viewState === 'code' && !disabled"
                   [value]="value || ''"
@@ -46,25 +54,27 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
     :host {
       display: block;
-      border: 1px solid var(--trans-color-default);
+      border: 1px solid var(--trans-brightness-default);
 
       /deep/ > sd-dock-container {
         > ._toolbar {
-          user-select: none;
+          > div {
+            user-select: none;
 
-          > sd-anchor {
-            display: inline-block;
-            padding: var(--gap-sm) 0;
-            text-align: center;
-            width: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip));
+            > sd-anchor {
+              display: inline-block;
+              padding: var(--gap-sm) 0;
+              text-align: center;
+              width: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
 
-            &:hover {
-              background: rgba(0, 0, 0, .05);
-            }
+              &:hover {
+                background: rgba(0, 0, 0, .05);
+              }
 
-            &._selected {
-              background: var(--theme-primary-default);
-              color: var(--text-reverse-color-default);
+              &._selected {
+                background: var(--theme-color-primary-default);
+                color: var(--text-brightness-rev-default);
+              }
             }
           }
         }
@@ -76,25 +86,25 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
             &[contenteditable=true] {
               cursor: text;
-              background: var(--theme-info-lightest);
+              background: var(--theme-color-secondary-lightest);
             }
           }
 
           > textarea {
             @include form-control-base();
             height: 100%;
-            background: var(--theme-info-lightest);
+            background: var(--theme-color-info-lightest);
             border: none;
             transition: outline-color .1s linear;
             outline: 1px solid transparent;
             outline-offset: -1px;
 
             &::-webkit-input-placeholder {
-              color: var(--text-color-lighter);
+              color: var(--text-brightness-lighter);
             }
 
             &:focus {
-              outline-color: var(--theme-primary-default);
+              outline-color: var(--theme-color-primary-default);
             }
           }
         }
@@ -117,7 +127,7 @@ export class SdHtmlEditorControl {
   public set value(value: string | undefined) {
     if (this._value !== value) {
       this._value = value;
-      this.content = this._sanitizer.bypassSecurityTrustHtml(value ?? "");
+      this.reloadEditor();
     }
   }
 
@@ -128,7 +138,18 @@ export class SdHtmlEditorControl {
 
   @Input()
   @SdInputValidate({ type: String, includes: ["preview", "edit", "code"] })
-  public viewState: "preview" | "edit" | "code" = "edit";
+  public get viewState(): "preview" | "edit" | "code" {
+    return this._viewState;
+  }
+
+  public set viewState(value: "preview" | "edit" | "code") {
+    if (this._viewState !== value) {
+      this._viewState = value;
+      this.reloadEditor();
+    }
+  }
+
+  private _viewState: "preview" | "edit" | "code" = "edit";
 
   @Input()
   @SdInputValidate({ type: Boolean, notnull: true })
@@ -156,9 +177,10 @@ export class SdHtmlEditorControl {
   })
   public resize = "vertical";
 
-  public content: SafeHtml = "";
+  @ViewChild("editor")
+  public editorElRef?: ElementRef;
 
-  public constructor(private readonly _sanitizer: DomSanitizer) {
+  public constructor(private readonly _zone: NgZone) {
   }
 
   public onTextareaInput(event: Event): void {
@@ -181,5 +203,16 @@ export class SdHtmlEditorControl {
     else {
       this._value = newValue;
     }
+  }
+
+  public reloadEditor(): void {
+    setTimeout(() => {
+      this._zone.run(() => {
+        const editorEl = this.editorElRef?.nativeElement as HTMLDivElement | undefined;
+        if (editorEl !== undefined && editorEl.innerHTML !== (this._value ?? "")) {
+          editorEl.innerHTML = this._value ?? "";
+        }
+      });
+    });
   }
 }
