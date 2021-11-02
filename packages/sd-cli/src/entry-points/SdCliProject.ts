@@ -214,9 +214,13 @@ export class SdCliProject {
 
     this._logger.debug(`배포 시작...`);
 
-    await pkgs.parallelAsync(async (pkg) => {
+    await pkgs.filter((item) => item.config.publish === "npm").parallelAsync(async (pkg) => {
       await pkg.publishAsync();
     });
+
+    for (const pkg of pkgs.filter((item) => item.config.publish !== "npm")) {
+      await pkg.publishAsync();
+    }
 
     this._logger.info(`배포 프로세스가 완료되었습니다.(v${this.npmConfig.version})`);
   }
