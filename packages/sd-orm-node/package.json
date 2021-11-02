@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm-node",
-  "version": "6.1.5",
+  "version": "6.1.6",
   "description": "심플리즘 패키지 - ORM 모듈 (node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm6",
@@ -9,9 +9,9 @@
   "types": "./dist-types/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@simplysm/sd-core-common": "6.1.5",
-    "@simplysm/sd-core-node": "6.1.5",
-    "@simplysm/sd-orm-common": "6.1.5",
+    "@simplysm/sd-core-common": "6.1.6",
+    "@simplysm/sd-core-node": "6.1.6",
+    "@simplysm/sd-orm-common": "6.1.6",
     "tedious": "^13.1.0",
     "mysql": "^2.18.1"
   },
