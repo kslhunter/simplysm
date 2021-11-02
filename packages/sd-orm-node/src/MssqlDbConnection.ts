@@ -32,17 +32,13 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   private _connTimeout?: NodeJS.Timeout;
   private _requests: tedious.Request[] = [];
 
-  public dialect = this._isAzure ? "mssql-azure" as const : "mssql" as const;
+  public dialect = this._config.dialect ?? "mssql";
   public isConnected = false;
   public isOnTransaction = false;
 
   public constructor(private readonly _config: IDbConnectionConfig,
-                     private readonly _isAzure: boolean) {
+                     public database: string) {
     super();
-
-    if (this.dialect === "mssql-azure" && this._config.database === undefined) {
-      throw new Error("mssql-azure orm 설정에는 database가 반드시 설정되어야 합니다.");
-    }
   }
 
   public async connectAsync(): Promise<void> {
@@ -60,7 +56,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         }
       },
       options: {
-        database: this._config.database,
+        database: this.database,
         port: this._config.port,
         rowCollectionOnDone: true,
         useUTC: false,

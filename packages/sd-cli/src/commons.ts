@@ -97,7 +97,8 @@ export interface ISdPackageBuildResult {
 export type TSdPublishConfig =
   ISdSFtpPublishConfig |
   ISdLocalDirectoryPublishConfig |
-  ISdFtpPublishConfig;
+  ISdFtpPublishConfig |
+  ISdAzureAppServicePublishConfig;
 
 export interface ISdSFtpPublishConfig {
   type: "sftp";
@@ -115,6 +116,17 @@ export interface ISdFtpPublishConfig {
   path: string;
   username: string;
   password: string;
+  secure?: boolean;
+}
+
+export interface ISdAzureAppServicePublishConfig{
+  type: "azure-app-service";
+  username: string;
+  password: string;
+  subscriptionId: string;
+  resourceGroupName: string;
+  serviceName: string;
+  path: string;
 }
 
 export interface ISdLocalDirectoryPublishConfig {

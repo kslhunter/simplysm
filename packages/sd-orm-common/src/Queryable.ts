@@ -51,8 +51,8 @@ export class Queryable<D extends DbContext, T> {
     if (!this._tableDef) throw new NeverEntryError();
 
     return this.db.qb.getTableName({
-      database: this._tableDef.database ?? this.db.schema.database,
-      schema: this._tableDef.schema ?? this.db.schema.schema,
+      database: this._tableDef.database ?? this.db.database,
+      schema: this._tableDef.schema ?? this.db.schema,
       name: this._tableDef.name
     });
   }
@@ -1179,8 +1179,8 @@ export class Queryable<D extends DbContext, T> {
               type: "configIdentityInsert",
               ...{
                 table: {
-                  database: this._tableDef.database ?? this.db.schema.database,
-                  schema: this._tableDef.schema ?? this.db.schema.schema,
+                  database: this._tableDef.database ?? this.db.database,
+                  schema: this._tableDef.schema ?? this.db.schema,
                   name: this._tableDef.name
                 },
                 state: "on"
@@ -1194,8 +1194,8 @@ export class Queryable<D extends DbContext, T> {
               type: "configIdentityInsert",
               ...{
                 table: {
-                  database: this._tableDef.database ?? this.db.schema.database,
-                  schema: this._tableDef.schema ?? this.db.schema.schema,
+                  database: this._tableDef.database ?? this.db.database,
+                  schema: this._tableDef.schema ?? this.db.schema,
                   name: this._tableDef.name
                 },
                 state: "off"
@@ -1268,8 +1268,8 @@ export class Queryable<D extends DbContext, T> {
             type: "configIdentityInsert" as const,
             ...{
               table: {
-                database: this._tableDef.database ?? this.db.schema.database,
-                schema: this._tableDef.schema ?? this.db.schema.schema,
+                database: this._tableDef.database ?? this.db.database,
+                schema: this._tableDef.schema ?? this.db.schema,
                 name: this._tableDef.name
               },
               state: "on" as const
@@ -1283,8 +1283,8 @@ export class Queryable<D extends DbContext, T> {
             type: "configIdentityInsert" as const,
             ...{
               table: {
-                database: this._tableDef.database ?? this.db.schema.database,
-                schema: this._tableDef.schema ?? this.db.schema.schema,
+                database: this._tableDef.database ?? this.db.database,
+                schema: this._tableDef.schema ?? this.db.schema,
                 name: this._tableDef.name
               },
               state: "off" as const
@@ -1452,8 +1452,8 @@ export class Queryable<D extends DbContext, T> {
               type: "configIdentityInsert",
               ...{
                 table: {
-                  database: this._tableDef.database ?? this.db.schema.database,
-                  schema: this._tableDef.schema ?? this.db.schema.schema,
+                  database: this._tableDef.database ?? this.db.database,
+                  schema: this._tableDef.schema ?? this.db.schema,
                   name: this._tableDef.name
                 },
                 state: "on"
@@ -1467,8 +1467,8 @@ export class Queryable<D extends DbContext, T> {
               type: "configIdentityInsert",
               ...{
                 table: {
-                  database: this._tableDef.database ?? this.db.schema.database,
-                  schema: this._tableDef.schema ?? this.db.schema.schema,
+                  database: this._tableDef.database ?? this.db.database,
+                  schema: this._tableDef.schema ?? this.db.schema,
                   name: this._tableDef.name
                 },
                 state: "off"
@@ -1607,8 +1607,8 @@ export class Queryable<D extends DbContext, T> {
       {
         type: "configIdentityInsert" as const,
         table: {
-          database: this._tableDef.database ?? this.db.schema.database,
-          schema: this._tableDef.schema ?? this.db.schema.schema,
+          database: this._tableDef.database ?? this.db.database,
+          schema: this._tableDef.schema ?? this.db.schema,
           name: this._tableDef.name
         },
         state

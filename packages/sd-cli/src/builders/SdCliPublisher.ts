@@ -1,8 +1,12 @@
-import { TSdPublishConfig } from "../commons";
+import { ISdFtpPublishConfig, TSdPublishConfig } from "../commons";
 import * as path from "path";
-import { StringUtil } from "@simplysm/sd-core-common";
+import { NumberUtil, StringUtil } from "@simplysm/sd-core-common";
 import { FsUtil, PathUtil } from "@simplysm/sd-core-node";
 import { SdFtpStorage, SdSFtpStorage } from "@simplysm/sd-storage";
+import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
+import { WebSiteManagementClient } from "@azure/arm-appservice";
+import * as xml2js from "xml2js";
+import * as URL from "url";
 
 export class SdCliPublisher {
   public constructor(private readonly _config: TSdPublishConfig,
@@ -53,7 +57,6 @@ export class SdCliPublisher {
         await FsUtil.copyAsync(filePath, targetPath);
       });
     }
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     else if (this._config.type === "ftp") {
       const publishConfig = this._config;
       const ftp = new SdFtpStorage();
@@ -61,12 +64,59 @@ export class SdCliPublisher {
         host: publishConfig.host,
         port: publishConfig.port,
         username: publishConfig.username,
-        password: publishConfig.password
+        password: publishConfig.password,
+        secure: publishConfig.secure
       });
 
       try {
         // 결과 파일 업로드
         await ftp.uploadDirAsync(this._distPath, publishConfig.path);
+
+        await ftp.closeAsync();
+      }
+      catch (err) {
+        try {
+          await ftp.closeAsync();
+        }
+        catch {
+        }
+        throw err;
+      }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    else if (this._config.type === "azure-app-service") {
+      const creds = await msRestNodeAuth.loginWithUsernamePassword(this._config.username, this._config.password);
+      const client = new WebSiteManagementClient(creds, this._config.subscriptionId);
+      const webappFtpXmlStream = await client.webApps.listPublishingProfileXmlWithSecrets(this._config.resourceGroupName, this._config.serviceName, {
+        format: "Ftp"
+      });
+      const xmlObj = await xml2js.parseStringPromise(webappFtpXmlStream.readableStreamBody!.read());
+      const xmlFtpConfig = xmlObj.publishData.publishProfile.find((item: any) => item.$.publishMethod === "FTP")!.$;
+
+      const urlObj = URL.parse(xmlFtpConfig.publishUrl, false);
+
+      const ftpConfig: ISdFtpPublishConfig = {
+        type: "ftp",
+        host: urlObj.host!,
+        port: NumberUtil.parseInt(urlObj.port),
+        path: this._config.path.startsWith("/") ? this._config.path : path.join(urlObj.pathname ?? "", this._config.path),
+        username: xmlFtpConfig.userName,
+        password: xmlFtpConfig.userPWD,
+        secure: true
+      };
+
+      const ftp = new SdFtpStorage();
+      await ftp.connectAsync({
+        host: ftpConfig.host,
+        port: ftpConfig.port,
+        username: ftpConfig.username,
+        password: ftpConfig.password,
+        secure: ftpConfig.secure
+      });
+
+      try {
+        // 결과 파일 업로드
+        await ftp.uploadDirAsync(this._distPath, ftpConfig.path);
 
         await ftp.closeAsync();
       }

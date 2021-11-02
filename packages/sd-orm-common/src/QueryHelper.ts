@@ -15,7 +15,7 @@ import { CaseWhenQueryHelper } from "./CaseWhenQueryHelper";
 import { CaseQueryHelper } from "./CaseQueryHelper";
 
 export class QueryHelper {
-  public constructor(private readonly _dialect: "mysql" | "mssql" | "mssql-azure" = "mssql") {
+  public constructor(private readonly _dialect: "mysql" | "mssql" | "mssql-azure") {
   }
 
   // ----------------------------------------------------

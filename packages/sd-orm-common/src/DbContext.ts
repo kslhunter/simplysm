@@ -27,10 +27,11 @@ export abstract class DbContext {
   public readonly systemMigration = new Queryable(this, SystemMigration);
 
   public dialect = this._executor.dialect;
+  public database = this._executor.database;
+  public schema = this._executor.schema;
 
   // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
-  public constructor(private readonly _executor: IDbContextExecutor,
-                     public readonly schema: { database: string; schema: string }) {
+  public constructor(private readonly _executor: IDbContextExecutor) {
   }
 
   public async connectWithoutTransactionAsync<R>(callback: () => Promise<R>): Promise<R> {
@@ -303,11 +304,11 @@ export abstract class DbContext {
 
     // 강제 아닐때
     if (!force) {
-      const isDbExists = await this.getIsDbExistsAsync(this.schema.database);
+      const isDbExists = await this.getIsDbExistsAsync(this.database);
 
       const isTableExists = !isDbExists ? false : await this.getIsTableExistsAsync(
-        this.schema.database,
-        this.schema.schema,
+        this.database,
+        this.schema,
         "_migration"
       );
 
@@ -355,7 +356,7 @@ export abstract class DbContext {
 
     // 강제 혹은 첫 수행
 
-    const dbNames = dbs ?? [this.schema.database];
+    const dbNames = dbs ?? [this.database];
     if (dbNames.length < 1) {
       throw new Error("생성할 데이터베이스가 없습니다.");
     }
@@ -369,10 +370,10 @@ export abstract class DbContext {
           type: "clearDatabaseIfExists",
           database: dbName
         },
-        {
-          type: "createDatabaseIfNotExists",
+        ...this.dialect === "mssql-azure" ? [] : [{
+          type: "createDatabaseIfNotExists" as const,
           database: dbName
-        }
+        }]
       ]);
     }
 
@@ -406,7 +407,7 @@ export abstract class DbContext {
     for (const migration of this.migrations.orderBy((item) => item.name)) {
       migrationInsertQueryDefs.push({
         type: "insert",
-        from: this.qb.getTableName({ ...this.schema, name: "_migration" }),
+        from: this.qb.getTableName({ database: this.database, schema: this.schema, name: "_migration" }),
         record: {
           [this.qb.wrap("code")]: `N'${migration.name}'`
         }
@@ -429,8 +430,8 @@ export abstract class DbContext {
     return {
       type: "createTable",
       table: {
-        database: tableDef.database ?? this.schema.database,
-        schema: tableDef.schema ?? this.schema.schema,
+        database: tableDef.database ?? this.database,
+        schema: tableDef.schema ?? this.schema,
         name: tableDef.name
       },
       columns: tableDef.columns.map((col) => ObjectUtil.clearUndefined({
@@ -471,16 +472,16 @@ export abstract class DbContext {
           {
             type: "addForeignKey",
             table: {
-              database: tableDef.database ?? this.schema.database,
-              schema: tableDef.schema ?? this.schema.schema,
+              database: tableDef.database ?? this.database,
+              schema: tableDef.schema ?? this.schema,
               name: tableDef.name
             },
             foreignKey: {
               name: fkDef.name,
               fkColumns: fkDef.columnPropertyKeys.map((propKey) => tableDef.columns.single((col) => col.propertyKey === propKey)!.name),
               targetTable: {
-                database: targetTableDef.database ?? this.schema.database,
-                schema: targetTableDef.schema ?? this.schema.schema,
+                database: targetTableDef.database ?? this.database,
+                schema: targetTableDef.schema ?? this.schema,
                 name: targetTableDef.name
               },
               targetPkColumns: targetPkNames
@@ -489,8 +490,8 @@ export abstract class DbContext {
           {
             type: "createIndex",
             table: {
-              database: tableDef.database ?? this.schema.database,
-              schema: tableDef.schema ?? this.schema.schema,
+              database: tableDef.database ?? this.database,
+              schema: tableDef.schema ?? this.schema,
               name: tableDef.name
             },
             index: {
@@ -526,8 +527,8 @@ export abstract class DbContext {
       createIndexQueryDefs.push({
         type: "createIndex",
         table: {
-          database: tableDef.database ?? this.schema.database,
-          schema: tableDef.schema ?? this.schema.schema,
+          database: tableDef.database ?? this.database,
+          schema: tableDef.schema ?? this.schema,
           name: tableDef.name
         },
         index: {
@@ -554,8 +555,8 @@ export abstract class DbContext {
     return {
       type: "addColumn",
       table: {
-        database: tableDef.database ?? this.schema.database,
-        schema: tableDef.schema ?? this.schema.schema,
+        database: tableDef.database ?? this.database,
+        schema: tableDef.schema ?? this.schema,
         name: tableDef.name
       },
       column: {
@@ -579,8 +580,8 @@ export abstract class DbContext {
     return {
       type: "modifyColumn",
       table: {
-        database: tableDef.database ?? this.schema.database,
-        schema: tableDef.schema ?? this.schema.schema,
+        database: tableDef.database ?? this.database,
+        schema: tableDef.schema ?? this.schema,
         name: tableDef.name
       },
       column: {
@@ -601,8 +602,8 @@ export abstract class DbContext {
       {
         type: "dropPrimaryKey",
         table: {
-          database: tableDef.database ?? this.schema.database,
-          schema: tableDef.schema ?? this.schema.schema,
+          database: tableDef.database ?? this.database,
+          schema: tableDef.schema ?? this.schema,
           name: tableDef.name
         }
       },
@@ -610,8 +611,8 @@ export abstract class DbContext {
         {
           type: "addPrimaryKey",
           table: {
-            database: tableDef.database ?? this.schema.database,
-            schema: tableDef.schema ?? this.schema.schema,
+            database: tableDef.database ?? this.database,
+            schema: tableDef.schema ?? this.schema,
             name: tableDef.name
           },
           columns: columnNames
@@ -642,16 +643,16 @@ export abstract class DbContext {
     return {
       type: "addForeignKey",
       table: {
-        database: tableDef.database ?? this.schema.database,
-        schema: tableDef.schema ?? this.schema.schema,
+        database: tableDef.database ?? this.database,
+        schema: tableDef.schema ?? this.schema,
         name: tableDef.name
       },
       foreignKey: {
         name: fkDef.name,
         fkColumns: fkDef.columnPropertyKeys.map((propKey) => tableDef.columns.single((col) => col.propertyKey === propKey)!.name),
         targetTable: {
-          database: targetTableDef.database ?? this.schema.database,
-          schema: targetTableDef.schema ?? this.schema.schema,
+          database: targetTableDef.database ?? this.database,
+          schema: targetTableDef.schema ?? this.schema,
           name: targetTableDef.name
         },
         targetPkColumns: targetPkNames
@@ -667,8 +668,8 @@ export abstract class DbContext {
     return {
       type: "removeForeignKey",
       table: {
-        database: tableDef.database ?? this.schema.database,
-        schema: tableDef.schema ?? this.schema.schema,
+        database: tableDef.database ?? this.database,
+        schema: tableDef.schema ?? this.schema,
         name: tableDef.name
       },
       foreignKey: fkName
@@ -700,8 +701,8 @@ export abstract class DbContext {
     return {
       type: "createIndex",
       table: {
-        database: tableDef.database ?? this.schema.database,
-        schema: tableDef.schema ?? this.schema.schema,
+        database: tableDef.database ?? this.database,
+        schema: tableDef.schema ?? this.schema,
         name: tableDef.name
       },
       index: {
@@ -722,8 +723,8 @@ export abstract class DbContext {
     return {
       type: "dropIndex",
       table: {
-        database: tableDef.database ?? this.schema.database,
-        schema: tableDef.schema ?? this.schema.schema,
+        database: tableDef.database ?? this.database,
+        schema: tableDef.schema ?? this.schema,
         name: tableDef.name
       },
       index: indexName

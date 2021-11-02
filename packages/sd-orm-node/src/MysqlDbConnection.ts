@@ -18,7 +18,8 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
   public isConnected = false;
   public isOnTransaction = false;
 
-  public constructor(public readonly config: IDbConnectionConfig) {
+  public constructor(public readonly config: IDbConnectionConfig,
+                     public readonly database: string) {
     super();
   }
 
@@ -32,6 +33,7 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
       port: this.config.port,
       user: this.config.username,
       password: this.config.password,
+      database: this.database,
       multipleStatements: true
     });
 

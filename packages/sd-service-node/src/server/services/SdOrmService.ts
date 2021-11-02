@@ -3,7 +3,8 @@ import { DbConnectionFactory, IDbConnection } from "@simplysm/sd-orm-node";
 import {
   IDbConnectionConfig,
   IQueryColumnDef,
-  IQueryResultParseOption, ISOLATION_LEVEL,
+  IQueryResultParseOption,
+  ISOLATION_LEVEL,
   QueryBuilder,
   SdOrmUtil,
   TQueryDef
@@ -22,10 +23,10 @@ export class SdOrmService extends SdServiceBase {
     return config.dialect;
   }
 
-  public async connectAsync(configName: string): Promise<number> {
+  public async connectAsync(configName: string, database: string): Promise<number> {
     const config = await this._getOrmConfigAsync(configName);
 
-    const conn = DbConnectionFactory.create(config);
+    const conn = DbConnectionFactory.create(config, database);
 
     const lastConnId = Array.from(SdOrmService._connections.keys()).max() ?? 0;
     const connId = lastConnId + 1;

@@ -2,7 +2,8 @@ import {
   IDbConnectionConfig,
   IDbContextExecutor,
   IQueryColumnDef,
-  IQueryResultParseOption, ISOLATION_LEVEL,
+  IQueryResultParseOption,
+  ISOLATION_LEVEL,
   QueryBuilder,
   SdOrmUtil,
   TQueryDef
@@ -13,13 +14,19 @@ import { DbConnectionFactory } from "./DbConnectionFactory";
 export class NodeDbContextExecutor implements IDbContextExecutor {
   private _conn?: IDbConnection;
   public dialect: "mysql" | "mssql" | "mssql-azure";
+  public database: string;
+  public schema: string;
 
-  public constructor(private readonly _config: IDbConnectionConfig) {
+  public constructor(private readonly _config: IDbConnectionConfig,
+                     database: string,
+                     schema: string) {
     this.dialect = this._config.dialect ?? "mssql";
+    this.database = database;
+    this.schema = schema;
   }
 
   public async connectAsync(): Promise<void> {
-    this._conn = DbConnectionFactory.create(this._config);
+    this._conn = DbConnectionFactory.create(this._config, this.database);
     await this._conn.connectAsync();
   }
 
@@ -76,7 +83,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     }
 
     const result = await this._conn.executeAsync(
-      defs.map((def) => new QueryBuilder(this._config.dialect).query(def))
+      defs.map((def) => new QueryBuilder(this.dialect).query(def))
     );
     return result.map((item, i) => SdOrmUtil.parseQueryResult(item, options ? options[i] : undefined));
   }

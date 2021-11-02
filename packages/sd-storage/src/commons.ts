@@ -3,6 +3,7 @@ export interface ISdFtpConnectionConfig {
   port?: number;
   username?: string;
   password?: string;
+  secure?: boolean;
 }
 
 export interface ISdStorage {

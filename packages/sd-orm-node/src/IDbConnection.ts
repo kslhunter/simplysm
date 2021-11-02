@@ -3,6 +3,7 @@ import { IQueryColumnDef, ISOLATION_LEVEL } from "@simplysm/sd-orm-common";
 
 export interface IDbConnection extends EventEmitter {
   dialect: "mysql" | "mssql" | "mssql-azure";
+  database: string;
   isConnected: boolean;
   isOnTransaction: boolean;
 

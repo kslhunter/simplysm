@@ -26,11 +26,11 @@ export class SdOrmServiceProvider {
     }*/
 
     const db = new config.dbContextType(
-      await SdServiceDbContextExecutor.createAsync(service.client, config.configName),
-      {
+      await SdServiceDbContextExecutor.createAsync(service.client, {
+        configName: config.configName,
         database: config.database,
         schema: config.schema
-      }
+      })
     );
     return await db.connectAsync(async () => await callback(db));
   }
@@ -46,11 +46,11 @@ export class SdOrmServiceProvider {
     }*/
 
     const db = new config.dbContextType(
-      await SdServiceDbContextExecutor.createAsync(service.client, config.configName),
-      {
+      await SdServiceDbContextExecutor.createAsync(service.client, {
+        configName: config.configName,
         database: config.database,
         schema: config.schema
-      }
+      })
     );
     return await db.connectWithoutTransactionAsync(async () => await callback(db));
   }
@@ -58,21 +58,22 @@ export class SdOrmServiceProvider {
 
 export class SdServiceDbContextExecutor implements IDbContextExecutor {
   private _connId?: number;
-  public dialect: "mysql" | "mssql" | "mssql-azure";
 
   private constructor(private readonly _client: SdServiceClient,
                       private readonly _configName: string,
-                      dialect: string) {
-    this.dialect = dialect as "mysql" | "mssql" | "mssql-azure";
+                      public readonly dialect: "mysql" | "mssql" | "mssql-azure",
+                      public readonly database: string,
+                      public readonly schema: string) {
   }
 
-  public static async createAsync(client: SdServiceClient, configName: string): Promise<SdServiceDbContextExecutor> {
-    const dialect = (await client.sendAsync("SdOrmService.getDialectAsync", [configName])) ?? "mssql";
-    return new SdServiceDbContextExecutor(client, configName, dialect);
+  public static async createAsync(client: SdServiceClient,
+                                  opt: { configName: string; database: string; schema: string }): Promise<SdServiceDbContextExecutor> {
+    const dialect = (await client.sendAsync("SdOrmService.getDialectAsync", [opt.configName])) ?? "mssql";
+    return new SdServiceDbContextExecutor(client, opt.configName, dialect, opt.database, opt.schema);
   }
 
   public async connectAsync(): Promise<void> {
-    this._connId = await this._client.sendAsync("SdOrmService.connectAsync", [this._configName]);
+    this._connId = await this._client.sendAsync("SdOrmService.connectAsync", [this._configName, this.database]);
   }
 
   public async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {

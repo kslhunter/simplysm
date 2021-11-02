@@ -11,7 +11,8 @@ export class SdFtpStorage implements ISdStorage {
       host: connectionConfig.host,
       port: connectionConfig.port,
       user: connectionConfig.username,
-      password: connectionConfig.password
+      password: connectionConfig.password,
+      secure: connectionConfig.secure
     });
   }
 

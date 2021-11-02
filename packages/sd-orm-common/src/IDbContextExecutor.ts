@@ -2,6 +2,8 @@ import { IQueryColumnDef, IQueryResultParseOption, ISOLATION_LEVEL, TQueryDef } 
 
 export interface IDbContextExecutor {
   dialect: "mysql" | "mssql" | "mssql-azure";
+  database: string;
+  schema: string;
 
   connectAsync(): Promise<void>;
 
@@ -19,3 +21,4 @@ export interface IDbContextExecutor {
 
   closeAsync(): Promise<void>;
 }
+

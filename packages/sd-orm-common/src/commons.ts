@@ -413,7 +413,6 @@ export interface IDbConnectionConfig {
   port?: number;
   username: string;
   password: string;
-  database?: string;
   defaultIsolationLevel?: ISOLATION_LEVEL;
 }
 

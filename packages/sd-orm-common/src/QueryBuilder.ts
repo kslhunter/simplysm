@@ -40,7 +40,7 @@ import { QueryHelper } from "./QueryHelper";
 export class QueryBuilder {
   public qh: QueryHelper;
 
-  public constructor(private readonly _dialect: "mysql" | "mssql" | "mssql-azure" = "mssql") {
+  public constructor(private readonly _dialect: "mysql" | "mssql" | "mssql-azure") {
     this.qh = new QueryHelper(this._dialect);
   }
 
@@ -55,8 +55,11 @@ export class QueryBuilder {
 CREATE DATABASE IF NOT EXISTS ${this.wrap(def.database)};
 ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`.trim();
     }
-    else {
+    else if (this._dialect === "mssql") {
       return `IF NOT EXISTS(select * from sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)}`.trim();
+    }
+    else {
+      throw new Error(`데이터베이스 생성 미지원 (${this._dialect})`);
     }
   }
 
@@ -76,12 +79,14 @@ BEGIN
   FROM sys.sql_modules m
   INNER JOIN sys.objects o ON m.object_id=o.object_id
   WHERE type_desc like '%PROCEDURE%'
+  AND SCHEMA_NAME(schema_id) <> 'sys'
     
   -- 함수 초기화
   SELECT @sql = @sql + 'DROP FUNCTION ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(o.name) + N';' + CHAR(13) + CHAR(10)
   FROM sys.sql_modules m
   INNER JOIN sys.objects o ON m.object_id=o.object_id
   WHERE type_desc like '%function%'
+  AND SCHEMA_NAME(schema_id) <> 'sys'
     
   -- 뷰 초기화
   SELECT @sql = @sql + 'DROP VIEW ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(v.name) + N';' + CHAR(13) + CHAR(10)
@@ -118,12 +123,12 @@ BEGIN
   SELECT @sql = @sql + 'DROP FUNCTION ${this.wrap(def.database)}.' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(o.name) + N';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.sql_modules m
   INNER JOIN ${this.wrap(def.database)}.sys.objects o ON m.object_id=o.object_id
-  WHERE type_desc like '%function%'
+  WHERE type_desc like '%function%' AND SCHEMA_NAME(schema_id) <> 'sys'
     
   -- 뷰 초기화
   SELECT @sql = @sql + 'DROP VIEW ${this.wrap(def.database)}.' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(v.name) + N';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.views v
-  WHERE SCHEMA_NAME(schema_id) = 'dbo'
+  WHERE SCHEMA_NAME(schema_id) <> 'sys'
     
   -- 테이블 FK 끊기 초기화
   SELECT @sql = @sql + N'ALTER TABLE ${this.wrap(def.database)}.' + QUOTENAME(SCHEMA_NAME([tbl].schema_id)) + '.' + QUOTENAME([tbl].[name]) + N' DROP CONSTRAINT ' + QUOTENAME([obj].[name]) + N';' + CHAR(13) + CHAR(10)
@@ -955,7 +960,7 @@ DEALLOCATE PREPARE stmt;`.trim();
       q += this.wrap(colDef.name) + " ";
       q += this.qh.type(colDef.dataType) + " ";
       q += colDef.nullable ? "NULL " : "NOT NULL ";
-      q += colDef.autoIncrement ? "AUTO_INCREMENT" : "";
+      q += colDef.autoIncrement ? this.qh.type(colDef.dataType) === "CHAR(38)" ? "default (REPLACE(UUID(), '-', '')) " : "AUTO_INCREMENT" : "";
     }
     else {
       q += this.wrap(colDef.name) + " ";
