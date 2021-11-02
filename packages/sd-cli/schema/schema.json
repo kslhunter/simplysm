@@ -5,6 +5,7 @@
   "definitions": {
     "schemaPublish": {
       "type": "object",
+      "additionalProperties": false,
       "anyOf": [
         {
           "properties": {
@@ -28,6 +29,9 @@
             },
             "password": {
               "type": "string"
+            },
+            "secure": {
+              "type": "boolean"
             }
           },
           "required": [
@@ -51,6 +55,41 @@
           },
           "required": [
             "type",
+            "path"
+          ]
+        },
+        {
+          "properties": {
+            "type": {
+              "enum": [
+                "azure-app-service"
+              ]
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "subscriptionId": {
+              "type": "string"
+            },
+            "resourceGroupName": {
+              "type": "string"
+            },
+            "serviceName": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "username",
+            "password",
+            "subscriptionId",
+            "resourceGroupName",
+            "serviceName",
             "path"
           ]
         }
