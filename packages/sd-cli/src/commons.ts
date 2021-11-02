@@ -119,7 +119,7 @@ export interface ISdFtpPublishConfig {
   secure?: boolean;
 }
 
-export interface ISdAzureAppServicePublishConfig{
+export interface ISdAzureAppServicePublishConfig {
   type: "azure-app-service";
   username: string;
   password: string;
