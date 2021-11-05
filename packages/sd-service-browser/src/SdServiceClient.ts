@@ -141,7 +141,10 @@ export class SdServiceClient extends EventEmitter {
         }
         else if (response.type === "error" && response.requestId === requestId) {
           this._eventEmitter.off("message", messageEventListener);
-          reject(new Error(response.stack));
+          const err = new Error(response.message);
+          err.stack = response.stack;
+          reject(err);
+          // reject(new Error(response.stack));
         }
       };
 

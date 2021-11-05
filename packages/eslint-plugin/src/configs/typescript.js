@@ -76,6 +76,7 @@ module.exports = {
     "@typescript-eslint/no-this-alias": "off",
     "@typescript-eslint/no-unnecessary-condition": ["error", { allowConstantLoopConditions: true }],
     "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/naming-convention": [
       "error",
       {

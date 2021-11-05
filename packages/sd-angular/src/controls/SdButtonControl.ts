@@ -58,7 +58,8 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
         &:disabled {
           background: white;
           border-color: var(--theme-color-grey-lighter);
-          color: var(--text-brightness-lighter);
+          //color: var(--text-brightness-lighter);
+          color: var(--text-brightness-default);
           cursor: default;
         }
       }
