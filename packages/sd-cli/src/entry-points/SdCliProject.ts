@@ -288,9 +288,9 @@ export class SdCliProject {
     const processWorkManager = await SdProcessWorkManager.createAsync(
       path.resolve(__dirname, `../workers/lib-build-worker`),
       [],
-      this._logger/*,
-      Math.min(workerCount, Math.max(os.cpus().length - 2, 1)),
-      Math.max(os.cpus().length - 2, 1)*/
+      this._logger,
+      undefined,
+      Math.max(os.cpus().length / 2, 1)
     );
 
     // 패키지 목록 구성

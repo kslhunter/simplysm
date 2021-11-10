@@ -16,4 +16,8 @@ export class NumberUtil {
     if (Number.isNaN(result)) return undefined;
     return result;
   }
+
+  public static isNullOrEmpty(val: number | null | undefined): val is (0 | undefined | null) {
+    return val == null || val === 0;
+  }
 }

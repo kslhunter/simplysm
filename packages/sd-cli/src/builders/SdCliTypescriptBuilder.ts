@@ -441,7 +441,6 @@ export class SdCliTypescriptBuilder extends EventEmitter {
       let seq = 0;
       const affectedFilePathSet = new Set<string>();
       while (true) {
-        const prevUsage = process.cpuUsage();
         if (process.env.SD_CLI_LOGGER_SEVERITY === "DEBUG") {
           this._logger.debug(`프로그램 리로드 > 변경파일 목록구성: [SEQ: ${++seq}]`);
         }
@@ -450,16 +449,6 @@ export class SdCliTypescriptBuilder extends EventEmitter {
 
         if (affectedFilePaths) {
           if (affectedFilePaths.length > 0) {
-            const usage = process.cpuUsage(prevUsage);
-
-            if (usage.user + usage.system > 1000 * 1000) { // 1000ms
-              buildResults.push({
-                filePath: path.resolve(affectedFilePaths.last()!),
-                severity: "warning",
-                message: `${path.resolve(affectedFilePaths.last()!)}(0, 0): warning 소스코드 타입분석에 너무 많은 시간이 소요됩니다. (${Math.floor((usage.user + usage.system) / 1000).toLocaleString()}ms/cpu)`
-              });
-            }
-
             affectedFilePathSet.adds(...affectedFilePaths.distinct());
           }
 

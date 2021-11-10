@@ -154,12 +154,18 @@ export class SdMyMetadataReader {
       if (!declarations || declarations.length < 1) {
         throw new SdMetadataError(this._sourceFile.fileName, `'${identifier.text}'를 찾을 수 없습니다.`);
       }
+
+      if (declarations.length === 1) {
+        return { name: identifier.text, moduleFilePath: PathUtil.posix(declarations[0].getSourceFile().fileName) };
+      }
+
       const moduleFilePaths = declarations
-        .filter((item) => (
-          this._hasParentsOrMe(item, (item1) => Boolean(item1.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.ExportKeyword)))
-        ))
+        .filter((item) => this._hasParentsOrMe(item, (item1) => Boolean(item1.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.ExportKeyword))))
         .map((item) => PathUtil.posix(item.getSourceFile().fileName))
         .distinct();
+      if (moduleFilePaths.length === 0) {
+        throw new SdMetadataError(this._sourceFile.fileName, `'${identifier.text}'의 경로를 찾을 수 없습니다.`);
+      }
       if (moduleFilePaths.length !== 1) {
         throw new SdMetadataError(this._sourceFile.fileName, `'${identifier.text}'의 경로가 중복되었습니다.\n${moduleFilePaths.join("\n")}`);
       }

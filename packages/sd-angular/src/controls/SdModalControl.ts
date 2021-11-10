@@ -41,14 +41,16 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
         </sd-pane>
       </sd-dock-container>
 
-      <div class="_left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'left')"></div>
-      <div class="_right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'right')"></div>
-      <div class="_top-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top')"></div>
-      <div class="_top-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-right')"></div>
-      <div class="_top-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-left')"></div>
-      <div class="_bottom-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom')"></div>
-      <div class="_bottom-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-right')"></div>
-      <div class="_bottom-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-left')"></div>
+      <ng-container *ngIf="resizable">
+        <div class="_left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'left')"></div>
+        <div class="_right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'right')"></div>
+        <div class="_top-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top')"></div>
+        <div class="_top-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-right')"></div>
+        <div class="_top-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'top-left')"></div>
+        <div class="_bottom-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom')"></div>
+        <div class="_bottom-right-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-right')"></div>
+        <div class="_bottom-left-resize-bar" (mousedown)="onResizeBarMousedown($event, 'bottom-left')"></div>
+      </ng-container>
     </div>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
@@ -298,6 +300,10 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
   @HostBinding("attr.sd-open")
   public open?: boolean;
 
+  @Input()
+  @SdInputValidate(Boolean)
+  public resizable = true;
+
   @Output()
   public readonly openChange = new EventEmitter<boolean>();
 
@@ -351,24 +357,26 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
     this._zone.runOutsideAngular(() => {
       if (!this._dialogEl) throw new NeverEntryError();
 
-      this._dialogEl.addEventListener("resize", (event) => {
-        if (event.prevHeight !== event.newHeight) {
-          const style = getComputedStyle(this._el);
-          if (style.paddingTop !== "") {
-            if (!this._dialogEl) throw new NeverEntryError();
+      if (this.resizable) {
+        this._dialogEl.addEventListener("resize", (event) => {
+          if (event.prevHeight !== event.newHeight) {
+            const style = getComputedStyle(this._el);
+            if (style.paddingTop !== "") {
+              if (!this._dialogEl) throw new NeverEntryError();
 
-            const paddingTopMatch = (/(\d*)/).exec(style.paddingTop);
-            if (!paddingTopMatch || typeof paddingTopMatch[1] === "undefined") throw new NeverEntryError();
-            const paddingTopNum = Number.parseInt(paddingTopMatch[1], 10);
-            const paddingTop = Number.isNaN(paddingTopNum) ? 0 : paddingTopNum;
+              const paddingTopMatch = (/(\d*)/).exec(style.paddingTop);
+              if (!paddingTopMatch || typeof paddingTopMatch[1] === "undefined") throw new NeverEntryError();
+              const paddingTopNum = Number.parseInt(paddingTopMatch[1], 10);
+              const paddingTop = Number.isNaN(paddingTopNum) ? 0 : paddingTopNum;
 
-            if (this._dialogEl.offsetHeight > this._el.offsetHeight - paddingTop) {
-              this._dialogEl.style.maxHeight = `calc(100% - ${paddingTop * 2}px)`;
-              this._dialogEl.style.height = `calc(100% - ${paddingTop * 2}px)`;
+              if (this._dialogEl.offsetHeight > this._el.offsetHeight - paddingTop) {
+                this._dialogEl.style.maxHeight = `calc(100% - ${paddingTop * 2}px)`;
+                this._dialogEl.style.height = `calc(100% - ${paddingTop * 2}px)`;
+              }
             }
           }
-        }
-      });
+        });
+      }
 
       this._dialogEl.addEventListener("focus", () => {
         const maxZIndex = document.body.findAll("sd-modal").max((el) => Number(getComputedStyle(el).zIndex));

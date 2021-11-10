@@ -20,7 +20,9 @@
     "test-core": "yarn _sd-cli_ --debug watch --noLint --packages @simplysm/sd-core-common --packages @simplysm/sd-core-node",
     "----": "",
     "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --require=ts-node/register --require=tsconfig-paths/register packages/sd-cli/src/bin/sd-cli.ts",
-    "eslint-timing": "cross-env TIMING=1 eslint \"./**/+(*.ts|*.js)\""
+    "eslint-timing": "cross-env TIMING=1 eslint \"./**/+(*.ts|*.js)\"",
+    "-----": "",
+    "postinstall": "yarn _sd-cli_ prepare"
   },
   "devDependencies": {
     "@simplysm/eslint-plugin": "6.1.8",

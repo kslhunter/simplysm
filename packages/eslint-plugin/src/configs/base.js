@@ -62,7 +62,7 @@ module.exports = {
     "one-var": ["error", "never"],
     "no-await-in-loop": "off",
     "sort-imports": "off",
-    // "no-extra-boolean-cast": "off",
+    "no-extra-boolean-cast": "off",
     "operator-linebreak": ["error", "before"],
     "no-underscore-dangle": "off",
     "dot-location": ["error", "property"],

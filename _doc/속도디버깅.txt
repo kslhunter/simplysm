@@ -42,6 +42,31 @@ function getDiagnosticsWorker(sourceFile)
             }
         }
 
+-----------------------------------------------------
+
+        function checkSourceElement(node) {
+          if (node) {
+            const prevUsage = process.cpuUsage();
+
+            var saveCurrentNode = currentNode;
+            currentNode = node;
+            instantiationCount = 0;
+            checkSourceElementWorker(node);
+            currentNode = saveCurrentNode;
+
+            const usage = process.cpuUsage(prevUsage);
+            if(usage.user + usage.system > 100 * 1000 && node.kind !== 253) {
+              error(node, {
+                code: 9000,
+                category: ts.DiagnosticCategory.Warning,
+                key: "simplysm_check_source_element_performance_slow",
+                message: `${parent.fileName.replace(/\//g, "\\")}(${line+1}, ${character+1}): 느림 [${Math.round((usage.user + usage.system) / 1000)}ms/cpu, KIND: ${node.kind}]`
+              });
+            }
+          }
+        }
+
+
 ------------------------------------------------
         function checkDeferredNodes(context) {
             var links = getNodeLinks(context);

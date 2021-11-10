@@ -8,6 +8,7 @@ import { SdCliProject } from "../entry-points/SdCliProject";
 import { SdCliLocalUpdater } from "../entry-points/SdCliLocalUpdater";
 import { SdCliFileCrypto } from "../utils/SdCliFileCrypto";
 import { SdCliCordova } from "../build-tools/SdCliCordova";
+import { SdCliPrepare } from "../entry-points/SdCliPrepare";
 
 EventEmitter.defaultMaxListeners = 0;
 process.setMaxListeners(0);
@@ -150,6 +151,10 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
           describe: "암호화된 파일명"
         })
     )
+    .command(
+      "prepare",
+      "sd-cli 준비"
+    )
     .parse();
 
   if (argv.debug) {
@@ -212,6 +217,9 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
   }
   else if (args[0] === "dec-file") {
     await new SdCliFileCrypto().decryptAsync(argv.file!);
+  }
+  else if (args[0] === "prepare") {
+    await new SdCliPrepare().prepareAsync();
   }
   else {
     throw new Error(`명령어가 잘못되었습니다.${os.EOL + os.EOL}\t${argv._[0]}${os.EOL}`);
