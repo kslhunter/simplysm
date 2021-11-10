@@ -252,10 +252,8 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
       parsedTsconfig.fileNames.map((item) => ({ url: item }) as EntryPointNode)
     );
 
-    await Wait.time(100);
-    if (!FsUtil.exists(path.join(path.dirname(require.resolve("@angular/compiler-cli")), "ngcc/__ngcc_lock_file__"))) {
-      await ngccProcessor.process();
-    }
+    await Wait.true(() => !FsUtil.exists(path.resolve(require.resolve("@angular/compiler-cli/ngcc"), "../__ngcc_lock_file__")));
+    await ngccProcessor.process();
 
     const ngCompilerHost = ngccTransformCompilerHost(
       tsCacheCompilerHost,

@@ -116,8 +116,16 @@ export class SdCliProject {
     this._logger.log(`빌드를 시작합니다...`);
     changeCount++;
     const buildCompletedPackageNames: string[] = [];
+
+    let isOnBuildingNgPackage = false; // TODO: 일단 NGCC동시오류를 막기위해, 빌드자체를 동시에 못돌게함..
+
     await pkgs.parallelAsync(async (pkg) => {
-      await this._waitPackageCompleteAsync(pkg, pkgNames, buildCompletedPackageNames);
+      await this._waitPackageDepCompleteAsync(pkg, pkgNames, buildCompletedPackageNames);
+
+      if (pkg instanceof SdCliClientPackage || (pkg instanceof SdCliLibraryPackage && pkg.config.targets?.includes("angular"))) {
+        await Wait.true(() => !isOnBuildingNgPackage);
+        isOnBuildingNgPackage = true;
+      }
 
       if (opt.watch) {
         if (pkg instanceof SdCliClientPackage) {
@@ -136,6 +144,10 @@ export class SdCliProject {
         await pkg.buildAsync();
       }
       buildCompletedPackageNames.push(pkg.npmConfig.name);
+
+      if (pkg instanceof SdCliClientPackage || (pkg instanceof SdCliLibraryPackage && pkg.config.targets?.includes("angular"))) {
+        isOnBuildingNgPackage = false;
+      }
     });
     changeCount--;
     this._loggingResults(totalResultMap);
@@ -314,7 +326,7 @@ export class SdCliProject {
     return pkgs;
   }
 
-  private async _waitPackageCompleteAsync(pkg: TSdCliPackage, pkgNames: string[], completedPkgNames: string[]): Promise<void> {
+  private async _waitPackageDepCompleteAsync(pkg: TSdCliPackage, pkgNames: string[], completedPkgNames: string[]): Promise<void> {
     // 패키지의 의존성 패키지 중에 빌드해야할 패키지 목록에 이미 있는 의존성 패키지만 추리기
     const depNames = [
       ...Object.keys(pkg.npmConfig.dependencies ?? {}),
