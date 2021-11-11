@@ -6,19 +6,20 @@ export class SdCliPrepare {
   public async prepareAsync(): Promise<void> {
     // 타입체크 속도 지연 메시지 추가
     const r1 = await this._modifyTypescriptCodeForTypeCheckPerformanceWarning();
-    this._logger.log(`[모듈수정] 1. 타입체크 속도 지연 메시지 추가 (${r1 ? "O" : "X"})`);
+    this._logger.log(`[모듈수정] 타입체크 속도 지연 메시지 추가 (${r1 ? "O" : "X"})`);
 
+    //-- 결굴 프로세싱중에 자꾸 'processModule'이 불려서... 문제가 생김
     // ngcc 동시작업 관련: ng-packagr 무조건 Async
-    const r2 = await this._modifyNgccProcessorNgPackagrCodeForAsync();
-    this._logger.log(`[모듈수정] 2. ngcc: 비동기 처리 (${r2 ? "O" : "X"})`);
+    // const r2 = await this._modifyNgccProcessorNgPackagrCodeForAsync();
+    // this._logger.log(`[모듈수정] ngcc: 비동기 처리 (${r2 ? "O" : "X"})`);
 
     // ngcc 동시작업 관련: 대기시간 늘림
-    const r3 = await this._modifyNgccProcessorConfigurationCodeForLongWaitTime();
-    this._logger.log(`[모듈수정] 3. ngcc: 대기시간 늘림 (${r3 ? "O" : "X"})`);
+    // const r3 = await this._modifyNgccProcessorConfigurationCodeForLongWaitTime();
+    // this._logger.log(`[모듈수정] ngcc: 대기시간 늘림 (${r3 ? "O" : "X"})`);
 
     // ngcc 동시작업 관련: 디버깅 메시지 끄기
-    const r4 = await this._modifyNgccProcessorAsyncLockerCodeForRemoveWaitingMessage();
-    this._logger.log(`[모듈수정] 3. ngcc: 불필요 메시지 제거 (${r4 ? "O" : "X"})`);
+    // const r4 = await this._modifyNgccProcessorAsyncLockerCodeForRemoveWaitingMessage();
+    // this._logger.log(`[모듈수정] ngcc: 불필요 메시지 제거 (${r4 ? "O" : "X"})`);
   }
 
   private async _modifyTypescriptCodeForTypeCheckPerformanceWarning(): Promise<boolean> {
@@ -63,7 +64,7 @@ export class SdCliPrepare {
     return fileContent !== modifiedFileContent;
   }
 
-  private async _modifyNgccProcessorNgPackagrCodeForAsync(): Promise<boolean> {
+  /*private async _modifyNgccProcessorNgPackagrCodeForAsync(): Promise<boolean> {
     const filePath = require.resolve("ng-packagr/lib/ngc/ngcc-processor.js");
     const fileContent = await FsUtil.readFileAsync(filePath);
     const modifiedFileContent = fileContent.replace(`
@@ -71,7 +72,7 @@ export class SdCliPrepare {
             basePath: this._nodeModulesDirectory`, `
         ngcc_1.process({
             async: true,
-            basePath: this._nodeModulesDirectory`); // 10분
+            basePath: this._nodeModulesDirectory`);
     await FsUtil.writeFileAsync(filePath, modifiedFileContent);
     return fileContent !== modifiedFileContent;
   }
@@ -99,5 +100,5 @@ export class SdCliPrepare {
                                     ("(If you are sure no ngcc process is running then you should delete the lock-file at " + this.lockFile.path + ".)"));`, ``);
     await FsUtil.writeFileAsync(filePath, modifiedFileContent);
     return fileContent !== modifiedFileContent;
-  }
+  }*/
 }

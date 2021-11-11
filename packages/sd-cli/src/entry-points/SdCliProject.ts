@@ -117,15 +117,15 @@ export class SdCliProject {
     changeCount++;
     const buildCompletedPackageNames: string[] = [];
 
-    // let isOnBuildingNgPackage = false; // TODO: 일단 NGCC동시오류를 막기위해, 빌드자체를 동시에 못돌게함..
+    let isOnBuildingNgPackage = false; // NGCC 동시오류를 막기위해, 빌드자체를 동시에 못돌게함..
 
     await pkgs.parallelAsync(async (pkg) => {
       await this._waitPackageDepCompleteAsync(pkg, pkgNames, buildCompletedPackageNames);
 
-      // if (pkg instanceof SdCliClientPackage || (pkg instanceof SdCliLibraryPackage && pkg.config.targets?.includes("angular"))) {
-      //   await Wait.true(() => !isOnBuildingNgPackage);
-      //   isOnBuildingNgPackage = true;
-      // }
+      if (pkg instanceof SdCliClientPackage || (pkg instanceof SdCliLibraryPackage && pkg.config.targets?.includes("angular"))) {
+        await Wait.true(() => !isOnBuildingNgPackage);
+        isOnBuildingNgPackage = true;
+      }
 
       if (opt.watch) {
         if (pkg instanceof SdCliClientPackage) {
@@ -145,9 +145,9 @@ export class SdCliProject {
       }
       buildCompletedPackageNames.push(pkg.npmConfig.name);
 
-      // if (pkg instanceof SdCliClientPackage || (pkg instanceof SdCliLibraryPackage && pkg.config.targets?.includes("angular"))) {
-      //   isOnBuildingNgPackage = false;
-      // }
+      if (pkg instanceof SdCliClientPackage || (pkg instanceof SdCliLibraryPackage && pkg.config.targets?.includes("angular"))) {
+        isOnBuildingNgPackage = false;
+      }
     });
     changeCount--;
     this._loggingResults(totalResultMap);
