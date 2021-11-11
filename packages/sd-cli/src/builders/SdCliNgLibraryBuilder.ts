@@ -9,8 +9,8 @@ import { ngccTransformCompilerHost } from "ng-packagr/lib/ts/ngcc-transform-comp
 import { MetadataCollector, NgtscProgram } from "@angular/compiler-cli";
 import { ITsBuildFileCache, ITsGenResult, SdCliTypescriptBuilder } from "./SdCliTypescriptBuilder";
 import { NgCompiler } from "@angular/compiler-cli/src/ngtsc/core";
-import { NeverEntryError, StringUtil, Wait } from "@simplysm/sd-core-common";
-import { FsUtil, PathUtil } from "@simplysm/sd-core-node";
+import { NeverEntryError, StringUtil } from "@simplysm/sd-core-common";
+import { PathUtil } from "@simplysm/sd-core-node";
 import * as os from "os";
 import * as nodeSass from "node-sass";
 import { SdCliNgModuleFilesGenerator } from "../build-tools/SdCliNgModuleFilesGenerator";
@@ -252,7 +252,6 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
       parsedTsconfig.fileNames.map((item) => ({ url: item }) as EntryPointNode)
     );
 
-    await Wait.true(() => !FsUtil.exists(path.resolve(require.resolve("@angular/compiler-cli/ngcc"), "../__ngcc_lock_file__")));
     await ngccProcessor.process();
 
     const ngCompilerHost = ngccTransformCompilerHost(
