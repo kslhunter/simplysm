@@ -13,7 +13,8 @@
     "@simplysm/sd-core-common": "6.1.11",
     "jszip": "^3.7.1",
     "xml2js": "^0.4.23",
-    "xml-js": "^1.6.11"
+    "xml-js": "^1.6.11",
+    "xlsx": "^0.17.4"
   },
   "devDependencies": {
     "@types/xml2js": "^0.4.9"
