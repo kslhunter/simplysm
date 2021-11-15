@@ -124,10 +124,10 @@ export class SdExcelCell {
       return value?.toString();
     }
     else if (this.style.numberFormat === "number") {
-      return Number(value);
+      return Math.round(Number(value) * 10000000000) / 10000000000;
     }
     else if (this.style.numberFormat === "Currency") {
-      return Number(value);
+      return Math.round(Number(value) * 10000000000) / 10000000000;
     }
     else if (this.style.numberFormat === "DateOnly") {
       return SdExcelUtil.getDateOnly(Number(value));

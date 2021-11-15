@@ -406,6 +406,10 @@ export class SdTextfieldControl implements DoCheck {
     return Boolean(this.errorMessage);
   }
 
+  @Input()
+  @SdInputValidate(Boolean)
+  public useNumberComma = true;
+
   @ViewChild("input", { static: false, read: ElementRef })
   public inputElRef?: ElementRef<HTMLTextAreaElement | HTMLInputElement>;
 
@@ -424,7 +428,7 @@ export class SdTextfieldControl implements DoCheck {
     }
 
     if (this.type === "number" && typeof this.value === "number") {
-      return this.value.toLocaleString(undefined, { maximumFractionDigits: 10 });
+      return this.useNumberComma ? this.value.toLocaleString(undefined, { maximumFractionDigits: 10 }) : this.value.toString(10);
     }
     if (this.type === "brn" && typeof this.value === "string") {
       const str = this.value.replace(/[^0-9]/g, "");
