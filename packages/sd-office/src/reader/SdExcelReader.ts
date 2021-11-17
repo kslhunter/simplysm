@@ -8,6 +8,10 @@ export class SdExcelReader {
     this._wb = XLSX.read(data, { type: "array", codepage: 949 });
   }
 
+  public get sheetNames(): string[] {
+    return this._wb.SheetNames;
+  }
+
   public getWorkSheet(name: string): SdExcelReaderWorkSheet
   public getWorkSheet(index: number): SdExcelReaderWorkSheet
   public getWorkSheet(arg: string | number): SdExcelReaderWorkSheet {

@@ -705,9 +705,9 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
           background: var(--sd-background-color);
 
           /deep/ ._sd-sheet-card {
-            cursor: pointer;
+            //cursor: pointer;
             border-radius: 5px;
-            @include elevation(none);
+            //@include elevation(none);
 
             &._selected {
               background: var(--theme-color-primary-lighter);
@@ -832,7 +832,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   @SdInputValidate(Boolean)
   public useCardDisplayType?: boolean;
 
-  @ContentChild("card", { static: true })
+  @ContentChild("cardTemplate", { static: true })
   public cardTemplateRef?: TemplateRef<{ item: any; index: number }>;
 
   @Input()
