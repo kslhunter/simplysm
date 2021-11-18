@@ -93,7 +93,7 @@ export class FsUtil {
 
   public static async removeAsync(targetPath: string): Promise<void> {
     try {
-      await fs.promises.rmdir(targetPath, { recursive: true, retryDelay: 500, maxRetries: 6 });
+      await fs.promises.rm(targetPath, { recursive: true, force: true, retryDelay: 500, maxRetries: 6 });
     }
     catch (err) {
       if (err instanceof Error) {
@@ -107,7 +107,7 @@ export class FsUtil {
 
   public static remove(targetPath: string): void {
     try {
-      fs.rmdirSync(targetPath, { recursive: true });
+      fs.rmSync(targetPath, { recursive: true, force: true });
     }
     catch (err) {
       if (err instanceof Error) {
