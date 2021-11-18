@@ -6,7 +6,7 @@ import {
   SdBusyContainerControlModule,
   SdLocalStorageRootProvider,
   SdSystemLogRootProvider
-} from "@simplysm/sd-angular";
+} from "../../../../packages/sd-angular";
 import { ServiceWorkerModule } from "@angular/service-worker";
 import { RouterModule } from "@angular/router";
 import { routes } from "./_routes";

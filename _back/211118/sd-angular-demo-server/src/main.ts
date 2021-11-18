@@ -1,5 +1,5 @@
-import { SdServiceServer } from "@simplysm/sd-service-node";
-import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
+import { SdServiceServer } from "../../../../packages/sd-service-node";
+import { Logger, LoggerSeverity } from "../../../../packages/sd-core-node";
 import * as path from "path";
 
 if (process.env.NODE_ENV === "production") {

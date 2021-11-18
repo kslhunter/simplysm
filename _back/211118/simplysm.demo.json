@@ -1,5 +1,5 @@
 {
-  "$schema": "./node_modules/@simplysm/sd-cli/schema/schema.json",
+  "$schema": "../../node_modules/@simplysm/sd-cli/schema/schema.json",
   "extends": [
     "./simplysm.json"
   ],

@@ -9,6 +9,9 @@
   "browser": "./dist-angular/index.js",
   "types": "./dist-types/index.d.ts",
   "sideEffects": false,
+  "engines": {
+    "node": ">=16"
+  },
   "dependencies": {
     "@angular/common": "^12.2.2",
     "@angular/core": "^12.2.2",
@@ -27,7 +30,7 @@
     "@fortawesome/pro-light-svg-icons": "^5.15.4",
     "@fortawesome/pro-duotone-svg-icons": "^5.15.4",
     "jsbarcode": "^3.11.4",
-    "marked": "^3.0.0",
+    "marked": "^4.0.3",
     "@simplysm/sd-core-common": "6.1.12",
     "@simplysm/sd-core-browser": "6.1.12",
     "@simplysm/sd-service-common": "6.1.12",
@@ -35,6 +38,6 @@
     "@simplysm/sd-orm-common": "6.1.12"
   },
   "devDependencies": {
-    "@types/marked": "^3.0.0"
+    "@types/marked": "^4.0.1"
   }
 }

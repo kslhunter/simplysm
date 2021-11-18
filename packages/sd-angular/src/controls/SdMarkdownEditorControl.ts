@@ -412,13 +412,13 @@ export class SdMarkdownEditorControl implements OnChanges {
         if (this.previewRenderFn) {
           this.busyCount++;
           const value = await this.previewRenderFn(this.value!);
-          const html = marked(value);
+          const html = marked.marked(value);
           this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);
           this.busyCount--;
           this._cdr.markForCheck();
         }
         else {
-          const html = marked(this.value!);
+          const html = marked.marked(this.value!);
           this.innerHTML = this._sanitizer.bypassSecurityTrustHtml(html);
         }
       }

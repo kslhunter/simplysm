@@ -8,6 +8,9 @@
   "main": "./dist-node/index.js",
   "types": "./dist-types/index.d.ts",
   "sideEffects": false,
+  "engines": {
+    "node": ">=16"
+  },
   "dependencies": {
     "@simplysm/sd-core-common": "6.1.12",
     "@simplysm/sd-core-node": "6.1.12",

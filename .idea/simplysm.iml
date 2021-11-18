@@ -36,9 +36,9 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-office/dist-node" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-office/dist-types" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-demo-server/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-demo-client/dist" />
       <excludeFolder url="file://$MODULE_DIR$/_doc" />
+      <excludeFolder url="file://$MODULE_DIR$/_back/211118/sd-angular-demo-server/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/_back/211118/sd-angular-demo-client/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -11,6 +11,9 @@
   "main": "./dist-node/index.js",
   "types": "./dist-types/index.d.ts",
   "sideEffects": false,
+  "engines": {
+    "node": ">=16"
+  },
   "dependencies": {
     "yargs": "^17.1.1",
     "@simplysm/sd-core-common": "6.1.12",
@@ -30,10 +33,10 @@
     "node-sass": "^6.0.1",
     "css-minimizer-webpack-plugin": "^3.0.2",
     "esbuild": "^0.13.4",
-    "license-webpack-plugin": "^3.0.0",
+    "license-webpack-plugin": "^4.0.0",
     "mini-css-extract-plugin": "^2.2.0",
     "@ngtools/webpack": "^12.2.2",
-    "copy-webpack-plugin": "^9.0.1",
+    "copy-webpack-plugin": "^10.0.0",
     "webpack-dev-middleware": "^5.0.0",
     "ts-loader": "^9.2.5",
     "eslint-webpack-plugin": "^3.0.1",
@@ -48,7 +51,7 @@
     "browserslist": "^4.16.8",
     "@simplysm/sd-storage": "6.1.12",
     "webpack-hot-middleware": "^2.25.0",
-    "jsdom": "^17.0.0",
+    "jsdom": "^18.1.0",
     "cordova": "^10.0.0",
     "@azure/arm-appservice": "^9.0.0",
     "@azure/ms-rest-nodeauth": "^3.1.0",

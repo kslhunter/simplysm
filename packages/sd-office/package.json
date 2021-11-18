@@ -9,6 +9,9 @@
   "browser": "./dist-browser/index.js",
   "types": "./dist-types/index.d.ts",
   "sideEffects": false,
+  "engines": {
+    "node": ">=16"
+  },
   "dependencies": {
     "@simplysm/sd-core-common": "6.1.12",
     "jszip": "^3.7.1",
