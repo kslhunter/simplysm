@@ -2,7 +2,7 @@
 
 ## Requirements
 
-node@v16
+node@v14
 
 ## Installation
 

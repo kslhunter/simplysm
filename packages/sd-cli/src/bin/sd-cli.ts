@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+process.setMaxListeners(0);
+
 import * as os from "os";
 import * as yargs from "yargs";
 import { EventEmitter } from "events";
@@ -11,7 +13,6 @@ import { SdCliCordova } from "../build-tools/SdCliCordova";
 import { SdCliPrepare } from "../entry-points/SdCliPrepare";
 
 EventEmitter.defaultMaxListeners = 0;
-process.setMaxListeners(0);
 
 const logger = Logger.get(["simplysm", "sd-cli"]);
 

@@ -9,7 +9,7 @@
   "types": "./dist-types/index.d.ts",
   "sideEffects": false,
   "engines": {
-    "node": ">=16"
+    "node": "^14"
   },
   "dependencies": {
     "element-qsa-scope": "^1.1.0",

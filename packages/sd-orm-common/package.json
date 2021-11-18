@@ -10,7 +10,7 @@
   "types": "./dist-types/index.d.ts",
   "sideEffects": false,
   "engines": {
-    "node": ">=16"
+    "node": "^14"
   },
   "dependencies": {
     "@simplysm/sd-core-common": "6.2.1"
