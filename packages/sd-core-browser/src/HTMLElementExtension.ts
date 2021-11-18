@@ -1,3 +1,4 @@
+import ResizeObserver from "resize-observer-polyfill";
 import { ISdMutationEvent, ISdResizeEvent } from "./events";
 
 declare global {

@@ -13,8 +13,8 @@
       "@simplysm/sd-core-node": [
         "../sd-core-node/src/index.ts"
       ],
-      "@simplysm/sd-service-node": [
-        "../sd-service-node/src/index.ts"
+      "@simplysm/sd-server-node": [
+        "../sd-server-node/src/index.ts"
       ],
       "@simplysm/sd-storage": [
         "../sd-storage/src/index.ts"

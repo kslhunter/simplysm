@@ -1,14 +1,14 @@
 import * as ts from "typescript";
 import { NeverEntryError } from "@simplysm/sd-core-common";
 import { FsUtil, PathUtil } from "@simplysm/sd-core-node";
+import { isNamedClassDeclaration } from "@angular/compiler-cli/src/ngtsc/reflection";
 import { MetadataReader } from "@angular/compiler-cli/src/ngtsc/metadata";
-import { Reference } from "@angular/compiler-cli/private/migrations";
+import { Reference } from "@angular/compiler-cli/src/ngtsc/imports";
 import { NgtscProgram } from "@angular/compiler-cli";
 import * as path from "path";
 import { INpmConfig } from "../../commons";
 import { IMyModuleImport } from "./SdMyMetadataReader";
 import { SdMetadataError } from "./SdMetadataError";
-import { isNamedClassDeclaration } from "@angular/compiler-cli/src/ngtsc/reflection";
 
 export class SdIvyMetadataReader {
   private readonly _typeChecker: ts.TypeChecker;
@@ -20,7 +20,7 @@ export class SdIvyMetadataReader {
     const ngCompiler = this._ngProgram.compiler;
 
     this._typeChecker = program.getTypeChecker();
-    this._metaReader = ngCompiler["ensureAnalyzed"]().metadataReader;
+    this._metaReader = ngCompiler["ensureAnalyzed"]().metaReader;
   }
 
   public getMetadatas(): IIvyModuleDefMetadata {

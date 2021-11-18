@@ -17,7 +17,6 @@ import { SdCliClientPackage } from "../packages/SdCliClientPackage";
 import { SdCliUnknownPackage } from "../packages/SdCliUnknownPackage";
 import { SdCliLocalUpdater } from "./SdCliLocalUpdater";
 import * as semver from "semver";
-import { fileURLToPath } from "url";
 
 // TODO: Cordova
 // TODO: Electron
@@ -299,7 +298,7 @@ export class SdCliProject {
     });*/
 
     const processWorkManager = await SdProcessWorkManager.createAsync(
-      path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../workers/lib-build-worker`),
+      path.resolve(__dirname, `../workers/lib-build-worker`),
       [],
       this._logger,
       undefined,

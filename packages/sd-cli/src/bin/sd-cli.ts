@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import yargs from "yargs";
+
 import * as os from "os";
+import * as yargs from "yargs";
 import { EventEmitter } from "events";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { SdCliProject } from "../entry-points/SdCliProject";
@@ -8,7 +9,6 @@ import { SdCliLocalUpdater } from "../entry-points/SdCliLocalUpdater";
 import { SdCliFileCrypto } from "../utils/SdCliFileCrypto";
 import { SdCliCordova } from "../build-tools/SdCliCordova";
 import { SdCliPrepare } from "../entry-points/SdCliPrepare";
-import { hideBin } from "yargs/helpers";
 
 EventEmitter.defaultMaxListeners = 0;
 process.setMaxListeners(0);
@@ -16,7 +16,7 @@ process.setMaxListeners(0);
 const logger = Logger.get(["simplysm", "sd-cli"]);
 
 (async (): Promise<void> => {
-  const argv = await yargs(hideBin(process.argv)).version(false)
+  const argv = await yargs.version(false)
     .help("help", "도움말")
     .alias("help", "h")
     .options({

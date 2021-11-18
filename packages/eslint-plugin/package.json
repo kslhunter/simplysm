@@ -6,21 +6,20 @@
   "repository": "github:kslhunter/simplysm6",
   "license": "MIT",
   "main": "./src/index.js",
-  "type": "module",
   "sideEffects": false,
   "dependencies": {
     "eslint": "8.2.0",
-    "eslint-module-utils": "2.7.1",
+    "eslint-module-utils": "^2.7.1",
     "@typescript-eslint/experimental-utils": "5.4.0",
     "@typescript-eslint/eslint-plugin": "5.4.0",
     "@typescript-eslint/parser": "5.4.0",
-    "eslint-import-resolver-typescript": "2.5.0",
+    "eslint-import-resolver-typescript": "^2.5.0",
     "eslint-plugin-import": "^2.25.3",
     "@angular-eslint/eslint-plugin": "13.0.0-alpha.0",
     "@angular-eslint/eslint-plugin-template": "13.0.0-alpha.0",
     "@angular-eslint/template-parser": "13.0.0-alpha.0",
     "@angular/compiler": "^13.0.0",
-    "eslint-plugin-jsdoc": "37.0.3",
-    "eslint-plugin-prefer-arrow": "1.2.3"
+    "eslint-plugin-jsdoc": "^37.0.3",
+    "eslint-plugin-prefer-arrow": "^1.2.3"
   }
 }

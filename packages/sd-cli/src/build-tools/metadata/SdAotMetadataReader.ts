@@ -10,7 +10,7 @@ import {
   MetadataObject,
   MetadataSymbolicCallExpression,
   ModuleMetadata
-} from "@angular/compiler-cli";
+} from "@angular/compiler-cli/src/metadata/schema";
 import { NeverEntryError, StringUtil } from "@simplysm/sd-core-common";
 
 export class SdAotMetadataReader {

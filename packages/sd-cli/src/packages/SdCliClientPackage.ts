@@ -87,7 +87,7 @@ export class SdCliClientPackage extends SdCliPackageBase {
     delete buildTsconfig.compilerOptions.declarationDir;
     buildTsconfig.compilerOptions = {
       ...buildTsconfig.compilerOptions,
-      module: "ESNext",
+      module: "es2020",
       target: "es2015",
       lib: ["es2015", "dom"],
       outDir: "dist",

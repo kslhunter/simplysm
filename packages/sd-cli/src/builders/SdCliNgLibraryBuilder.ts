@@ -6,15 +6,16 @@ import { NgccProcessingCache } from "ng-packagr/lib/ng-package/ngcc-cache";
 import { NgccProcessor } from "ng-packagr/lib/ngc/ngcc-processor";
 import { EntryPointNode } from "ng-packagr/lib/ng-package/nodes";
 import { ngccTransformCompilerHost } from "ng-packagr/lib/ts/ngcc-transform-compiler-host";
-import { MetadataCollector, NgtscProgram, OptimizeFor } from "@angular/compiler-cli";
+import { MetadataCollector, NgtscProgram } from "@angular/compiler-cli";
 import { ITsBuildFileCache, ITsGenResult, SdCliTypescriptBuilder } from "./SdCliTypescriptBuilder";
+import { NgCompiler } from "@angular/compiler-cli/src/ngtsc/core";
 import { NeverEntryError, StringUtil } from "@simplysm/sd-core-common";
 import { PathUtil } from "@simplysm/sd-core-node";
 import * as os from "os";
 import * as nodeSass from "node-sass";
 import { SdCliNgModuleFilesGenerator } from "../build-tools/SdCliNgModuleFilesGenerator";
+import { OptimizeFor } from "@angular/compiler-cli/src/ngtsc/typecheck/api";
 import { ModuleMetadata } from "@angular/compiler-cli/src/metadata/schema";
-import { NgCompiler } from "@angular/compiler-cli/src/ngtsc/core";
 
 export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
   protected _ngProgram?: NgtscProgram;
