@@ -15,9 +15,7 @@ import * as os from "os";
 import { SdServiceServer } from "@simplysm/sd-service-node";
 import decache from "decache";
 import * as CopyWebpackPlugin from "copy-webpack-plugin";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const ESLintWebpackPlugin = require("eslint-webpack-plugin");
+import * as ESLintWebpackPlugin from "eslint-webpack-plugin";
 
 export class SdCliServerBuilder extends EventEmitter {
   public parsedTsconfig: ts.ParsedCommandLine;

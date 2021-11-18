@@ -7,6 +7,7 @@
   "license": "MIT",
   "main": "./dist-browser/index.js",
   "types": "./dist-types/index.d.ts",
+  "type": "module",
   "sideEffects": false,
   "dependencies": {
     "@simplysm/sd-core-browser": "6.2.0",

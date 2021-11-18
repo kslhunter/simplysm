@@ -36,9 +36,7 @@ import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import * as os from "os";
 import { LintResult } from "eslint-webpack-plugin/declarations/options";
 import { SdCliCordova } from "../build-tools/SdCliCordova";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const ESLintWebpackPlugin = require("eslint-webpack-plugin");
+import * as ESLintWebpackPlugin from "eslint-webpack-plugin";
 
 export class SdCliNgClientBuilder extends EventEmitter {
   public parsedTsconfig: ts.ParsedCommandLine;

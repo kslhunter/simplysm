@@ -9,6 +9,10 @@
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "watch": "npm run _sd-cli_ watch",
+    "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --experimental-json-modules --experimental-specifier-resolution=node --loader=./packages/sd-cli/esm.mjs packages/sd-cli/src/bin/sd-cli.ts"
+  },
   "devDependencies": {
     "@simplysm/eslint-plugin": "6.2.0",
     "@types/node": "^16.11.7",

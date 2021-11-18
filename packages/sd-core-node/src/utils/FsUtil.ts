@@ -1,5 +1,5 @@
 import * as path from "path";
-import * as glob from "glob";
+import glob from "glob";
 import * as os from "os";
 import * as fs from "fs";
 import { JsonConvert, SdError } from "@simplysm/sd-core-common";
