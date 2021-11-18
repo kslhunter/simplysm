@@ -171,14 +171,12 @@ export class SdCliNgClientBuilder extends EventEmitter {
     const compiler = webpack(webpackConfig);
     return await new Promise<NextHandleFunction[]>((resolve, reject) => {
       compiler.hooks.invalid.tap(this.constructor.name, (fileName) => {
-        console.log(3);
         if (fileName != null) {
           invalidFiles.add(fileName);
         }
       });
 
       compiler.hooks.watchRun.tapAsync(this.constructor.name, async (compiler1, callback) => {
-        console.log(4);
         this.emit("change");
 
         // -- FIRST
@@ -254,7 +252,6 @@ export class SdCliNgClientBuilder extends EventEmitter {
       let hotMiddleware: NextHandleFunction | undefined;
 
       compiler.hooks.failed.tap(this.constructor.name, (err) => {
-        console.log(1, err);
         const results = SdWebpackUtil.getWebpackResults(err);
         const allResults = [...getNgGenResults(), ...results].distinct();
         this.emit("complete", allResults);
@@ -263,7 +260,6 @@ export class SdCliNgClientBuilder extends EventEmitter {
       });
 
       compiler.hooks.done.tap("SdCliClientCompiler", async (stats) => {
-        console.log(2, stats.toString());
         const results = SdWebpackUtil.getWebpackResults(stats);
 
         // .config.json 파일 쓰기
@@ -284,13 +280,13 @@ export class SdCliNgClientBuilder extends EventEmitter {
       devMiddleware = WebpackDevMiddleware(compiler, {
         publicPath: webpackConfig.output!.publicPath as string,
         index: "index.html",
-        headers: { "Access-Control-Allow-Origin": "*" }/*,
-        stats: false*/
+        headers: { "Access-Control-Allow-Origin": "*" },
+        stats: false
       });
 
       hotMiddleware = WebpackHotMiddleware(compiler, {
-        path: `${webpackConfig.output!.publicPath as string}__webpack_hmr`/*,
-        log: false*/
+        path: `${webpackConfig.output!.publicPath as string}__webpack_hmr`,
+        log: false
       });
     });
   }
@@ -703,8 +699,8 @@ export class SdCliNgClientBuilder extends EventEmitter {
           }
         })
       ],
-      node: false/*,
-      stats: "errors-warnings"*/
+      node: false,
+      stats: "errors-warnings"
     };
   }
 

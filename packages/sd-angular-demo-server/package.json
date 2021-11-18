@@ -1,0 +1,15 @@
+{
+  "name": "@simplysm/sd-angular-demo-server",
+  "version": "6.1.12",
+  "description": "심플리즘 ANGULAR 데모 서버",
+  "author": "김석래",
+  "repository": "github:kslhunter/simplysm6",
+  "license": "UNLICENSED",
+  "private": true,
+  "sideEffects": false,
+  "dependencies": {
+    "@simplysm/sd-core-node": "6.1.12",
+    "@simplysm/sd-orm-node": "6.1.12",
+    "@simplysm/sd-service-node": "6.1.12"
+  }
+}
