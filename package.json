@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "watch": "yarn _sd-cli_ watch",
+    "watch:demo": "yarn _sd-cli_ watch --config simplysm.demo.json",
     "build": "yarn _sd-cli_ build",
     "publish(--build)": "yarn _sd-cli_ publish --build",
     "--": "",
