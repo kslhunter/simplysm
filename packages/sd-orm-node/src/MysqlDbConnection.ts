@@ -5,7 +5,6 @@ import { NotImplementError, SdError, StringUtil } from "@simplysm/sd-core-common
 import { IDbConnection } from "./IDbConnection";
 import { IDbConnectionConfig, IQueryColumnDef, ISOLATION_LEVEL } from "@simplysm/sd-orm-common";
 
-// TODO: MYSQL 지원 중단 (package.json도 정리해야함)
 export class MysqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", this.constructor.name]);
 
@@ -14,12 +13,10 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
   private _conn?: mysql.Connection;
   private _connTimeout?: NodeJS.Timeout;
 
-  public dialect = "mysql" as const;
   public isConnected = false;
   public isOnTransaction = false;
 
-  public constructor(public readonly config: IDbConnectionConfig,
-                     public readonly database: string) {
+  public constructor(public readonly config: IDbConnectionConfig) {
     super();
   }
 
@@ -33,12 +30,8 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
       port: this.config.port,
       user: this.config.username,
       password: this.config.password,
-      database: this.database,
+      database: this.config.username === "root" ? undefined : this.config.database,
       multipleStatements: true
-    });
-
-    conn.on("error", (error) => {
-      this._logger.error(error.code + ": " + error.message);
     });
 
     conn.on("end", () => {
@@ -48,16 +41,25 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
       delete this._conn;
     });
 
-    await new Promise<void>((resolve) => {
+    await new Promise<void>((resolve, reject) => {
+      conn.on("error", (error) => {
+        if (this.isConnected) {
+          this._logger.error("error: " + error.message);
+        }
+        else {
+          reject(new Error(error.message));
+        }
+      });
+
       conn.on("connect", () => {
         this._startTimeout();
         this.isConnected = true;
         this.isOnTransaction = false;
         resolve();
       });
+
       conn.connect();
     });
-
     this._conn = conn;
   }
 
@@ -95,7 +97,10 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
     });
 
     await new Promise<void>((resolve, reject) => {
-      conn.query({ sql: `SET SESSION TRANSACTION ISOLATION LEVEL ` + (isolationLevel ?? this.config.defaultIsolationLevel ?? ISOLATION_LEVEL.REPEATABLE_READ).replace(/_/g, " "), timeout: this._timeout }, (err) => {
+      conn.query({
+        sql: `SET SESSION TRANSACTION ISOLATION LEVEL ` + (isolationLevel ?? this.config.defaultIsolationLevel ?? ISOLATION_LEVEL.REPEATABLE_READ).replace(/_/g, " "),
+        timeout: this._timeout
+      }, (err) => {
         if (err) {
           reject(new Error(err.message));
           return;

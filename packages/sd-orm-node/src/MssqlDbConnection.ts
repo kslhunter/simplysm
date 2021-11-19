@@ -32,12 +32,10 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   private _connTimeout?: NodeJS.Timeout;
   private _requests: tedious.Request[] = [];
 
-  public dialect = this._config.dialect ?? "mssql";
   public isConnected = false;
   public isOnTransaction = false;
 
-  public constructor(private readonly _config: IDbConnectionConfig,
-                     public database: string) {
+  public constructor(public readonly config: IDbConnectionConfig) {
     super();
   }
 
@@ -47,20 +45,20 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     }
 
     const conn = new tedious.Connection({
-      server: this._config.host ?? "localhost",
+      server: this.config.host ?? "localhost",
       authentication: {
         type: "default",
         options: {
-          userName: this._config.username,
-          password: this._config.password
+          userName: this.config.username,
+          password: this.config.password
         }
       },
       options: {
-        database: this.database,
-        port: this._config.port,
+        database: this.config.database,
+        port: this.config.port,
         rowCollectionOnDone: true,
         useUTC: false,
-        encrypt: this.dialect === "mssql-azure",
+        encrypt: this.config.dialect === "mssql-azure",
         requestTimeout: this._timeout,
         trustServerCertificate: true,
         // validateBulkLoadParameters: false,
@@ -106,7 +104,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   }
 
   public async closeAsync(): Promise<void> {
-    await new Promise<void>(async (resolve, reject) => {
+    await new Promise<void>(async (resolve) => {
       this._stopTimeout();
 
       if (!this._conn || !this.isConnected) {
@@ -142,7 +140,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
 
         this.isOnTransaction = true;
         resolve();
-      }, "", tedious.ISOLATION_LEVEL[isolationLevel ?? this._config.defaultIsolationLevel ?? ISOLATION_LEVEL.READ_COMMITTED]);
+      }, "", tedious.ISOLATION_LEVEL[isolationLevel ?? this.config.defaultIsolationLevel ?? ISOLATION_LEVEL.READ_COMMITTED]);
     });
   }
 

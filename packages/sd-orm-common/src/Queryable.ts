@@ -51,8 +51,8 @@ export class Queryable<D extends DbContext, T> {
     if (!this._tableDef) throw new NeverEntryError();
 
     return this.db.qb.getTableName({
-      database: this._tableDef.database ?? this.db.database,
-      schema: this._tableDef.schema ?? this.db.schema,
+      database: this._tableDef.database ?? this.db.opt.database,
+      schema: this._tableDef.schema ?? this.db.opt.schema,
       name: this._tableDef.name
     });
   }
@@ -1114,7 +1114,7 @@ export class Queryable<D extends DbContext, T> {
     const queryDefs = records.map((record) => this.getInsertDef(record, outputColumns));
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
-    if (this.db.dialect === "mysql") {
+    if (this.db.opt.dialect === "mysql") {
       const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
       if (aiColNames.length > 1) {
         throw new Error("하나의 테이블에 AI 컬럼이 2개 이상일 수 없습니다.");
@@ -1179,8 +1179,8 @@ export class Queryable<D extends DbContext, T> {
               type: "configIdentityInsert",
               ...{
                 table: {
-                  database: this._tableDef.database ?? this.db.database,
-                  schema: this._tableDef.schema ?? this.db.schema,
+                  database: this._tableDef.database ?? this.db.opt.database,
+                  schema: this._tableDef.schema ?? this.db.opt.schema,
                   name: this._tableDef.name
                 },
                 state: "on"
@@ -1194,8 +1194,8 @@ export class Queryable<D extends DbContext, T> {
               type: "configIdentityInsert",
               ...{
                 table: {
-                  database: this._tableDef.database ?? this.db.database,
-                  schema: this._tableDef.schema ?? this.db.schema,
+                  database: this._tableDef.database ?? this.db.opt.database,
+                  schema: this._tableDef.schema ?? this.db.opt.schema,
                   name: this._tableDef.name
                 },
                 state: "off"
@@ -1238,7 +1238,7 @@ export class Queryable<D extends DbContext, T> {
 
     const queryDefs = records.map((record) => this.getInsertDef(record, undefined));
 
-    if (this.db.dialect === "mysql") {
+    if (this.db.opt.dialect === "mysql") {
       this.db.prepareDefs.push(...[
         ignoreFk ? {
           type: "configForeignKeyCheck" as const,
@@ -1268,8 +1268,8 @@ export class Queryable<D extends DbContext, T> {
             type: "configIdentityInsert" as const,
             ...{
               table: {
-                database: this._tableDef.database ?? this.db.database,
-                schema: this._tableDef.schema ?? this.db.schema,
+                database: this._tableDef.database ?? this.db.opt.database,
+                schema: this._tableDef.schema ?? this.db.opt.schema,
                 name: this._tableDef.name
               },
               state: "on" as const
@@ -1283,8 +1283,8 @@ export class Queryable<D extends DbContext, T> {
             type: "configIdentityInsert" as const,
             ...{
               table: {
-                database: this._tableDef.database ?? this.db.database,
-                schema: this._tableDef.schema ?? this.db.schema,
+                database: this._tableDef.database ?? this.db.opt.database,
+                schema: this._tableDef.schema ?? this.db.opt.schema,
                 name: this._tableDef.name
               },
               state: "off" as const
@@ -1318,7 +1318,7 @@ export class Queryable<D extends DbContext, T> {
     const queryDef = this.getUpdateDef(record, outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
-    if (this.db.dialect === "mysql") {
+    if (this.db.opt.dialect === "mysql") {
       let newEntity = {} as TEntity<T>;
 
       for (const colDef of this._tableDef.columns) {
@@ -1386,7 +1386,7 @@ export class Queryable<D extends DbContext, T> {
     const queryDef = this.getDeleteDef(outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
-    if (this.db.dialect === "mysql") {
+    if (this.db.opt.dialect === "mysql") {
       const newEntity = {} as TEntity<T>;
 
       for (const colDef of this._tableDef.columns) {
@@ -1438,7 +1438,7 @@ export class Queryable<D extends DbContext, T> {
     const queryDefs = records.map((record) => this.getInsertIfNotExistsDef(record, outputColumns));
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
-    if (this.db.dialect === "mysql") {
+    if (this.db.opt.dialect === "mysql") {
       throw new NotImplementError("mysql 미구현");
     }
     else {
@@ -1452,8 +1452,8 @@ export class Queryable<D extends DbContext, T> {
               type: "configIdentityInsert",
               ...{
                 table: {
-                  database: this._tableDef.database ?? this.db.database,
-                  schema: this._tableDef.schema ?? this.db.schema,
+                  database: this._tableDef.database ?? this.db.opt.database,
+                  schema: this._tableDef.schema ?? this.db.opt.schema,
                   name: this._tableDef.name
                 },
                 state: "on"
@@ -1467,8 +1467,8 @@ export class Queryable<D extends DbContext, T> {
               type: "configIdentityInsert",
               ...{
                 table: {
-                  database: this._tableDef.database ?? this.db.database,
-                  schema: this._tableDef.schema ?? this.db.schema,
+                  database: this._tableDef.database ?? this.db.opt.database,
+                  schema: this._tableDef.schema ?? this.db.opt.schema,
                   name: this._tableDef.name
                 },
                 state: "off"
@@ -1511,7 +1511,7 @@ export class Queryable<D extends DbContext, T> {
     const queryDef = this.getUpsertDef(updateRecord, insertRecord, outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
-    if (this.db.dialect === "mysql") {
+    if (this.db.opt.dialect === "mysql") {
       let newEntity = {} as TEntity<T>;
 
       for (const colDef of this._tableDef.columns) {
@@ -1607,8 +1607,8 @@ export class Queryable<D extends DbContext, T> {
       {
         type: "configIdentityInsert" as const,
         table: {
-          database: this._tableDef.database ?? this.db.database,
-          schema: this._tableDef.schema ?? this.db.schema,
+          database: this._tableDef.database ?? this.db.opt.database,
+          schema: this._tableDef.schema ?? this.db.opt.schema,
           name: this._tableDef.name
         },
         state

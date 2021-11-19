@@ -1,9 +1,8 @@
 import { EventEmitter } from "events";
-import { IQueryColumnDef, ISOLATION_LEVEL } from "@simplysm/sd-orm-common";
+import { IDbConnectionConfig, IQueryColumnDef, ISOLATION_LEVEL } from "@simplysm/sd-orm-common";
 
 export interface IDbConnection extends EventEmitter {
-  dialect: "mysql" | "mssql" | "mssql-azure";
-  database: string;
+  config: IDbConnectionConfig;
   isConnected: boolean;
   isOnTransaction: boolean;
 

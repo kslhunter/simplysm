@@ -4,11 +4,11 @@ import { IDbConnection } from "./IDbConnection";
 import { IDbConnectionConfig } from "@simplysm/sd-orm-common";
 
 export class DbConnectionFactory {
-  public static create(config: IDbConnectionConfig, database: string): IDbConnection {
+  public static create(config: IDbConnectionConfig): IDbConnection {
     return config.dialect === "mysql"
-      ? new MysqlDbConnection(config, database)
+      ? new MysqlDbConnection(config)
       : config.dialect === "mssql-azure"
-        ? new MssqlDbConnection(config, database)
-        : new MssqlDbConnection(config, database);
+        ? new MssqlDbConnection(config)
+        : new MssqlDbConnection(config);
   }
 }

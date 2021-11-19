@@ -13,20 +13,25 @@ import { DbConnectionFactory } from "./DbConnectionFactory";
 
 export class NodeDbContextExecutor implements IDbContextExecutor {
   private _conn?: IDbConnection;
-  public dialect: "mysql" | "mssql" | "mssql-azure";
-  public database: string;
-  public schema: string;
 
-  public constructor(private readonly _config: IDbConnectionConfig,
-                     database: string,
-                     schema: string) {
-    this.dialect = this._config.dialect ?? "mssql";
-    this.database = database;
-    this.schema = schema;
+  public constructor(private readonly _config: IDbConnectionConfig) {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async getInfoAsync(): Promise<{
+    dialect: "mssql" | "mysql" | "mssql-azure";
+    database?: string;
+    schema?: string;
+  }> {
+    return {
+      dialect: this._config.dialect,
+      database: this._config.database,
+      schema: this._config.schema
+    };
   }
 
   public async connectAsync(): Promise<void> {
-    this._conn = DbConnectionFactory.create(this._config, this.database);
+    this._conn = DbConnectionFactory.create(this._config);
     await this._conn.connectAsync();
   }
 
@@ -83,7 +88,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
     }
 
     const result = await this._conn.executeAsync(
-      defs.map((def) => new QueryBuilder(this.dialect).query(def))
+      defs.map((def) => new QueryBuilder(this._conn!.config.dialect).query(def))
     );
     return result.map((item, i) => SdOrmUtil.parseQueryResult(item, options ? options[i] : undefined));
   }

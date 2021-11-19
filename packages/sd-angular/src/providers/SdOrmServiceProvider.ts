@@ -15,7 +15,7 @@ export class SdOrmServiceProvider {
   public constructor(private readonly _service: SdServiceFactoryProvider) {
   }
 
-  public async connectAsync<T extends DbContext, R>(config: { serviceKey: string; dbContextType: Type<T>; configName: string; database: string; schema: string },
+  public async connectAsync<T extends DbContext, R>(config: ISdOrmServiceProviderConnConfig<T>,
                                                     callback: (conn: T) => Promise<R> | R): Promise<R> {
     const service = this._service.get(config.serviceKey);
     /*try {
@@ -25,17 +25,17 @@ export class SdOrmServiceProvider {
       throw new Error("ORM 서비스에 연결할 수 없습니다.");
     }*/
 
-    const db = new config.dbContextType(
-      await SdServiceDbContextExecutor.createAsync(service.client, {
-        configName: config.configName,
-        database: config.database,
-        schema: config.schema
-      })
-    );
+    const executor = new SdServiceDbContextExecutor(service.client, config.connOpt);
+    const info = await executor.getInfoAsync();
+    const db = new config.dbContextType(executor, {
+      dialect: info.dialect,
+      database: config.dbContextOpt?.database ?? info.database,
+      schema: config.dbContextOpt?.schema ?? info.schema
+    });
     return await db.connectAsync(async () => await callback(db));
   }
 
-  public async connectWithoutTransactionAsync<T extends DbContext, R>(config: { serviceKey: string; dbContextType: Type<T>; configName: string; database: string; schema: string },
+  public async connectWithoutTransactionAsync<T extends DbContext, R>(config: ISdOrmServiceProviderConnConfig<T>,
                                                                       callback: (conn: T) => Promise<R> | R): Promise<R> {
     const service = this._service.get(config.serviceKey);
     /*try {
@@ -45,35 +45,44 @@ export class SdOrmServiceProvider {
       throw new Error("ORM 서비스에 연결할 수 없습니다.");
     }*/
 
-    const db = new config.dbContextType(
-      await SdServiceDbContextExecutor.createAsync(service.client, {
-        configName: config.configName,
-        database: config.database,
-        schema: config.schema
-      })
-    );
+    const executor = new SdServiceDbContextExecutor(service.client, config.connOpt);
+    const info = await executor.getInfoAsync();
+    const db = new config.dbContextType(executor, {
+      dialect: info.dialect,
+      database: config.dbContextOpt?.database ?? info.database,
+      schema: config.dbContextOpt?.schema ?? info.schema
+    });
     return await db.connectWithoutTransactionAsync(async () => await callback(db));
   }
+}
+
+export interface ISdOrmServiceProviderConnConfig<T> {
+  serviceKey: string;
+  dbContextType: Type<T>;
+  connOpt: Record<string, any>;
+  dbContextOpt?: {
+    database: string;
+    schema: string;
+  };
 }
 
 export class SdServiceDbContextExecutor implements IDbContextExecutor {
   private _connId?: number;
 
-  private constructor(private readonly _client: SdServiceClient,
-                      private readonly _configName: string,
-                      public readonly dialect: "mysql" | "mssql" | "mssql-azure",
-                      public readonly database: string,
-                      public readonly schema: string) {
+  public constructor(private readonly _client: SdServiceClient,
+                     private readonly _opt: Record<string, any>) {
   }
 
-  public static async createAsync(client: SdServiceClient,
-                                  opt: { configName: string; database: string; schema: string }): Promise<SdServiceDbContextExecutor> {
-    const dialect = (await client.sendAsync("SdOrmService.getDialectAsync", [opt.configName])) ?? "mssql";
-    return new SdServiceDbContextExecutor(client, opt.configName, dialect, opt.database, opt.schema);
+  public async getInfoAsync(): Promise<{
+    dialect: "mssql" | "mysql" | "mssql-azure";
+    database?: string;
+    schema?: string;
+  }> {
+    return await this._client.sendAsync("SdOrmService.getInfoAsync", [this._opt]);
   }
 
   public async connectAsync(): Promise<void> {
-    this._connId = await this._client.sendAsync("SdOrmService.connectAsync", [this._configName, this.database]);
+    this._connId = await this._client.sendAsync("SdOrmService.connectAsync", [this._opt]);
   }
 
   public async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {

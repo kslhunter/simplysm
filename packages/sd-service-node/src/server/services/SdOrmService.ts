@@ -18,15 +18,32 @@ export class SdOrmService extends SdServiceBase {
   private static readonly _connections = new Map<number, IDbConnection>();
   private static readonly _wsConnectionCloseListenerMap = new Map<number, () => Promise<void>>();
 
-  public async getDialectAsync(configName: string): Promise<"mssql" | "mysql" | "mssql-azure" | undefined> {
-    const config = await this._getOrmConfigAsync(configName);
-    return config.dialect;
+  public static getDbConnConfigAsync = async (rootPath: string, url: string, opt: Record<string, any>): Promise<IDbConnectionConfig> => {
+    const config: IDbConnectionConfig | undefined = (await SdServiceServerConfigUtil.getConfigAsync(rootPath, url)).orm?.[opt.configName];
+    if (config === undefined) {
+      throw new Error("서버에서 ORM 설정을 찾을 수 없습니다.");
+    }
+
+    return { ...config, ...opt.config };
+  };
+
+  public async getInfoAsync(opt: Record<string, any>): Promise<{
+    dialect: "mssql" | "mysql" | "mssql-azure";
+    database?: string;
+    schema?: string;
+  }> {
+    const config = await SdOrmService.getDbConnConfigAsync(this.server.rootPath, this.request.url, opt);
+    return {
+      dialect: config.dialect,
+      database: config.database,
+      schema: config.schema
+    };
   }
 
-  public async connectAsync(configName: string, database: string): Promise<number> {
-    const config = await this._getOrmConfigAsync(configName);
+  public async connectAsync(opt: Record<string, any>): Promise<number> {
+    const config = await SdOrmService.getDbConnConfigAsync(this.server.rootPath, this.request.url, opt);
 
-    const conn = DbConnectionFactory.create(config, database);
+    const conn = DbConnectionFactory.create(config);
 
     const lastConnId = Array.from(SdOrmService._connections.keys()).max() ?? 0;
     const connId = lastConnId + 1;
@@ -100,7 +117,7 @@ export class SdOrmService extends SdServiceBase {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    const result = await conn.executeAsync(defs.map((def) => new QueryBuilder(conn.dialect).query(def)));
+    const result = await conn.executeAsync(defs.map((def) => new QueryBuilder(conn.config.dialect).query(def)));
     return result.map((item, i) => SdOrmUtil.parseQueryResult(item, options ? options[i] : undefined));
   }
 
@@ -111,16 +128,5 @@ export class SdOrmService extends SdServiceBase {
     }
 
     await conn.bulkInsertAsync(tableName, columnDefs, records);
-  }
-
-  private async _getOrmConfigAsync(configName: string): Promise<IDbConnectionConfig> {
-    const config: IDbConnectionConfig | undefined = (
-      await SdServiceServerConfigUtil.getConfigAsync(this.server.rootPath, this.request.url)
-    ).orm?.[configName];
-    if (config === undefined) {
-      throw new Error("서버에서 ORM 설정을 찾을 수 없습니다.");
-    }
-
-    return config;
   }
 }
