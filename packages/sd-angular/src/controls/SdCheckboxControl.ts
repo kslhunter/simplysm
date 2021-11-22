@@ -7,9 +7,8 @@ import {
   Input,
   Output
 } from "@angular/core";
+import { TSdIconName } from "../commons";
 import { SdInputValidate } from "../decorators/SdInputValidate";
-import { IconDefinition } from "@fortawesome/fontawesome-common-types";
-import { faCheck } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-checkbox",
@@ -17,7 +16,7 @@ import { faCheck } from "@fortawesome/pro-solid-svg-icons";
   template: `
     <div (click)="onClick()" tabindex="0" (keydown)="onKeydown($event)" [style]="labelStyle">
       <div class="_indicator_rect"></div>
-      <fa-icon class="_indicator" [icon]="icon" *ngIf="!radio"></fa-icon>
+      <sd-icon class="_indicator" [icon]="icon" *ngIf="!radio"></sd-icon>
       <div class="_indicator" *ngIf="radio">
         <div></div>
       </div>
@@ -225,7 +224,11 @@ export class SdCheckboxControl {
   public theme?: "primary" | "secondary" | "info" | "success" | "warning" | "danger";
 
   @Input()
-  public icon: IconDefinition = faCheck;
+  @SdInputValidate({
+    type: String,
+    notnull: true
+  })
+  public icon: TSdIconName = "check";
 
   @Input("label.style")
   @SdInputValidate(String)

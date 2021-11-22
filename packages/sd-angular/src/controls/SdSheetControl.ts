@@ -29,16 +29,6 @@ import { SdModalProvider } from "../providers/SdModalProvider";
 import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
-import {
-  faArrowRight,
-  faBars,
-  faCaretRight,
-  faCog,
-  faSort,
-  faSortDown,
-  faSortUp,
-  faTable
-} from "@fortawesome/pro-solid-svg-icons";
 
 // TODO: 셀 크기 2번 수정하면 HEADERGROUP 컬럼의 크기가 안따라오는 현상 수정
 @Component({
@@ -51,11 +41,11 @@ import {
           <sd-anchor class="_card-icon"
                      *ngIf="useCardDisplayType"
                      (click)="onDisplayTypeChangeButtonClick()">
-            <fa-icon [icon]="displayType === 'card' ? fasBars : fasTable" [fixedWidth]="true"></fa-icon>
+            <sd-icon [icon]="displayType === 'card' ? 'bars' : 'table'" fixedWidth></sd-icon>
           </sd-anchor>
           <sd-anchor class="_cog-icon" (click)="onConfigButtonClick()"
                      *ngIf="key">
-            <fa-icon [icon]="fasCog" [fixedWidth]="true"></fa-icon>
+            <sd-icon icon="cog" fixedWidth></sd-icon>
           </sd-anchor>
         </div>
 
@@ -78,9 +68,9 @@ import {
               <div class="_border"></div>
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
-                  <fa-icon class="_icon _selected-icon" [fixedWidth]="true"></fa-icon>
-                  <fa-icon class="_icon _expand-icon" *ngIf="getChildrenFn" [fixedWidth]="true"
-                           [style.margin-right.em]="maxDepth"></fa-icon>
+                  <sd-icon class="_icon _selected-icon" fixedWidth></sd-icon>
+                  <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth
+                           [style.margin-right.em]="maxDepth"></sd-icon>
                 </div>
                 <div class="_border"></div>
               </div>
@@ -115,23 +105,23 @@ import {
               <div class="_border" style="pointer-events: none"></div>
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
-                  <fa-icon class="_icon _selected-icon"
-                           [icon]="selectMode === 'multi' ? fasArrowRight : undefined"
+                  <sd-icon class="_icon _selected-icon"
+                           [icon]="selectMode === 'multi' ? 'arrow-right' : undefined"
                            (click)="onAllSelectIconClick($event)"
                            [class._selected]="getIsAllSelected()"
                            [class._selectable]="selectMode === 'multi'"
-                           [fixedWidth]="true"
-                           style="pointer-events: auto"></fa-icon>
-                  <fa-icon class="_icon _expand-icon"
+                           fixedWidth
+                           style="pointer-events: auto"></sd-icon>
+                  <sd-icon class="_icon _expand-icon"
                            *ngIf="getChildrenFn"
-                           [icon]="getHasParentItem() ? fasCaretRight : undefined"
+                           [icon]="getHasParentItem() ? 'caret-right' : undefined"
                            (click)="onAllExpandIconClick($event)"
                            [class._expanded]="getIsAllExpanded()"
                            [class._expandable]="getHasParentItem()"
-                           [rotate]="getIsAllExpanded() ? '90' : undefined"
-                           [fixedWidth]="true"
+                           [rotate]="getIsAllExpanded() ? 90 : undefined"
+                           fixedWidth
                            style="pointer-events: auto"
-                           [style.margin-right.em]="maxDepth"></fa-icon>
+                           [style.margin-right.em]="maxDepth"></sd-icon>
                 </div>
                 <div class="_border"></div>
               </div>
@@ -147,13 +137,13 @@ import {
                                  (click)="onColumnOrderingHeaderClick($event, columnControl)">
                         <div style="position: absolute; right: 0; display: inline-block;"
                              class="sd-background-color-grey-lightest">
-                          <fa-layers>
-                            <fa-icon [icon]="fasSort" class="sd-text-brightness-lightest"></fa-icon>
-                            <fa-icon [icon]="fasSortDown"
-                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></fa-icon>
-                            <fa-icon [icon]="fasSortUp"
-                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></fa-icon>
-                          </fa-layers>
+                          <sd-icon-layer>
+                            <sd-icon icon="sort" class="sd-text-brightness-lightest"></sd-icon>
+                            <sd-icon icon="sort-down"
+                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></sd-icon>
+                            <sd-icon icon="sort-up"
+                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></sd-icon>
+                          </sd-icon-layer>
                           <small
                             style="padding-right: 2px;">{{ getColumnOrderingOrderText(columnControl.key) }}</small>
                         </div>
@@ -206,13 +196,13 @@ import {
                                  (click)="onColumnOrderingHeaderClick($event, columnControl)">
                         <div style="position: absolute; right: 0; display: inline-block;"
                              class="sd-background-color-grey-lightest">
-                          <fa-layers>
-                            <fa-icon [icon]="fasSort" class="sd-text-brightness-lightest"></fa-icon>
-                            <fa-icon [icon]="fasSortDown"
-                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></fa-icon>
-                            <fa-icon [icon]="fasSortUp"
-                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></fa-icon>
-                          </fa-layers>
+                          <sd-icon-layer>
+                            <sd-icon icon="sort" class="sd-text-brightness-lightest"></sd-icon>
+                            <sd-icon icon="sort-down"
+                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></sd-icon>
+                            <sd-icon icon="sort-up"
+                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></sd-icon>
+                          </sd-icon-layer>
                           <small
                             style="padding-right: 2px;">{{ getColumnOrderingOrderText(columnControl.key) }}</small>
                         </div>
@@ -260,9 +250,9 @@ import {
               <div class="_border"></div>
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
-                  <fa-icon class="_icon _selected-icon" [fixedWidth]="true"></fa-icon>
-                  <fa-icon class="_icon _expand-icon" *ngIf="getChildrenFn" [fixedWidth]="true"
-                           [style.margin-right.em]="maxDepth"></fa-icon>
+                  <sd-icon class="_icon _selected-icon" fixedWidth></sd-icon>
+                  <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth
+                           [style.margin-right.em]="maxDepth"></sd-icon>
                 </div>
                 <div class="_border"></div>
               </div>
@@ -307,29 +297,29 @@ import {
                 <div class="_border"></div>
                 <div class="_cell _feature-cell">
                   <div class="_cell-content">
-                    <fa-icon class="_icon _selected-icon"
-                             [icon]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item)) ? fasArrowRight : undefined"
+                    <sd-icon class="_icon _selected-icon"
+                             [icon]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item)) ? 'arrow-right' : undefined"
                              (click)="onItemSelectIconClick($event, item, index)"
                              [class._selected]="getIsSelectedItem(item)"
                              [class._selectable]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item))"
-                             [fixedWidth]="true"
-                             style="pointer-events: auto"></fa-icon>
+                             fixedWidth
+                             style="pointer-events: auto"></sd-icon>
 
                     <div class="_depth-indicator"
                          *ngIf="getChildrenFn && depth > 0"
                          [style.margin-left.em]="depth - .5">
                     </div>
 
-                    <fa-icon class="_icon _expand-icon"
+                    <sd-icon class="_icon _expand-icon"
                              *ngIf="getChildrenFn"
-                             [icon]="getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0 ? fasCaretRight : undefined"
+                             [icon]="getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0 ? 'caret-right' : undefined"
                              (click)="onItemExpandIconClick($event, item)"
                              [class._expanded]="getIsExpandedItem(item)"
                              [class._expandable]="getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0"
-                             [rotate]="getIsExpandedItem(item) ? '90' : undefined"
-                             [fixedWidth]="true"
+                             [rotate]="getIsExpandedItem(item) ? 90 : undefined"
+                             fixedWidth
                              style="pointer-events: auto"
-                             [style.margin-right.em]="maxDepth ? (maxDepth - depth) : undefined"></fa-icon>
+                             [style.margin-right.em]="maxDepth ? (maxDepth - depth) : undefined"></sd-icon>
                   </div>
                   <div class="_border"></div>
                 </div>
@@ -735,16 +725,6 @@ import {
   `]
 })
 export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
-  public fasBars = faBars;
-  public fasTable = faTable;
-  public fasCog = faCog;
-  public fasArrowRight = faArrowRight;
-  public fasCaretRight = faCaretRight;
-  public fasSort = faSort;
-  public fasSortDown = faSortDown;
-  public fasSortUp = faSortUp;
-
-
   @Input()
   @SdInputValidate(String)
   public key?: string;

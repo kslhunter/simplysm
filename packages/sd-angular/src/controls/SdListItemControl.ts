@@ -12,7 +12,7 @@ import {
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { SdListControl } from "./SdListControl";
-import { IconDefinition } from "@fortawesome/fontawesome-common-types";
+import { sdIconNames, TSdIconName } from "../commons";
 
 @Component({
   selector: "sd-list-item",
@@ -21,7 +21,7 @@ import { IconDefinition } from "@fortawesome/fontawesome-common-types";
     <div [attr.class]="'_content ' + contentClass"
          [attr.style]="safeHtml(contentStyle)"
          (click)="onContentClick()">
-      <fa-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon" [fixedWidth]="true"></fa-icon>
+      <sd-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon" fixedWidth></sd-icon>
       <ng-content></ng-content>
 
       <sd-collapse-icon [open]="open" *ngIf="hasChildren && layout==='accordion'"
@@ -126,7 +126,11 @@ export class SdListItemControl {
   public selected?: boolean;
 
   @Input()
-  public selectedIcon?: IconDefinition;
+  @SdInputValidate({
+    type: String,
+    includes: sdIconNames
+  })
+  public selectedIcon?: TSdIconName;
 
   @HostBinding("attr.sd-has-children")
   public get hasChildren(): boolean {

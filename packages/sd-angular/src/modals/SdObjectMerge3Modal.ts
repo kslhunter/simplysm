@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { SdModalBase } from "../providers/SdModalProvider";
 import { ObjectUtil, TFlatType } from "@simplysm/sd-core-common";
-import { faArrowLeft, faArrowRight } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-object-merge3-modal",
@@ -34,9 +33,8 @@ import { faArrowLeft, faArrowRight } from "@fortawesome/pro-solid-svg-icons";
             <td
               [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.theirs[key], data.origin[key])">
-                <fa-icon [fixedWidth]="true" [icon]="fasArrowRight"
-                         (click)="$any(data.origin)[key] = $any(data.theirs)[key]"
-                         style="pointer-events: auto"></fa-icon>
+                <sd-icon fixedWidth icon="arrow-right" (click)="$any(data.origin)[key] = $any(data.theirs)[key]"
+                         style="pointer-events: auto"></sd-icon>
               </sd-anchor>
             </td>
             <td style="text-align: center"
@@ -46,9 +44,8 @@ import { faArrowLeft, faArrowRight } from "@fortawesome/pro-solid-svg-icons";
             <td
               [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.yours[key], data.origin[key])">
-                <fa-icon [fixedWidth]="true" [icon]="fasArrowLeft"
-                         (click)="$any(data.origin)[key] = $any(data.yours)[key]"
-                         style="pointer-events: auto"></fa-icon>
+                <sd-icon fixedWidth icon="arrow-left" (click)="$any(data.origin)[key] = $any(data.yours)[key]"
+                         style="pointer-events: auto"></sd-icon>
               </sd-anchor>
             </td>
             <td style="text-align: left"
@@ -68,9 +65,6 @@ import { faArrowLeft, faArrowRight } from "@fortawesome/pro-solid-svg-icons";
     </sd-dock-container>`
 })
 export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends SdModalBase<ISdObjectMerge3ModalInput<T>, T> {
-  public fasArrowRight = faArrowRight;
-  public fasArrowLeft = faArrowLeft;
-
   public data!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;
   public orgData!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;
   public keys!: string[];

@@ -12,7 +12,6 @@ import {
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import * as marked from "marked";
-import { faEye, faPen, faQuestion } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-markdown-editor",
@@ -20,13 +19,13 @@ import { faEye, faPen, faQuestion } from "@fortawesome/pro-solid-svg-icons";
   template: `
     <div class="_toolbar" *ngIf="!disabled">
       <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
-        <fa-icon [icon]="fasEye"></fa-icon>
+        <sd-icon [icon]="'eye'"></sd-icon>
       </sd-anchor>
       <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
-        <fa-icon [icon]="fasPen"></fa-icon>
+        <sd-icon [icon]="'pen'"></sd-icon>
       </sd-anchor>
       <sd-anchor (click)="viewState = 'help'" [class._selected]="viewState === 'help'">
-        <fa-icon [icon]="fasQuestion"></fa-icon>
+        <sd-icon [icon]="'question'"></sd-icon>
       </sd-anchor>
     </div>
 
@@ -303,10 +302,6 @@ import { faEye, faPen, faQuestion } from "@fortawesome/pro-solid-svg-icons";
   `]
 })
 export class SdMarkdownEditorControl implements OnChanges {
-  public fasEye = faEye;
-  public fasPen = faPen;
-  public fasQuestion = faQuestion;
-
   @Input()
   @SdInputValidate(String)
   public value?: string;

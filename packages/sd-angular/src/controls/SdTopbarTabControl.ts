@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Output } from "@angular/core";
-import { faTimes } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-topbar-tab",
@@ -7,7 +6,7 @@ import { faTimes } from "@fortawesome/pro-solid-svg-icons";
   template: `
     <ng-content></ng-content>
     <sd-anchor (click)="onCloseButtonClick($event)">
-      <fa-icon [icon]="fasTimes" [fixedWidth]="true"></fa-icon>
+      <sd-icon icon="times" fixedWidth></sd-icon>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -39,8 +38,6 @@ import { faTimes } from "@fortawesome/pro-solid-svg-icons";
   `]
 })
 export class SdTopbarTabControl {
-  public fasTimes = faTimes;
-
   @Output("click.close")
   public readonly clickClose = new EventEmitter<MouseEvent>();
 

@@ -18,7 +18,6 @@ import {
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { SdComboboxItemControl } from "./SdComboboxItemControl";
 import { NumberUtil } from "@simplysm/sd-core-common";
-import { faCaretDown } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-combobox",
@@ -31,7 +30,7 @@ import { faCaretDown } from "@fortawesome/pro-solid-svg-icons";
                   [disabled]="disabled">
     </sd-textfield>
     <div class="_icon" *ngIf="!disabled">
-      <fa-icon [fixedWidth]="true" [icon]="fasCaretDown"></fa-icon>
+      <sd-icon fixedWidth icon="caret-down"></sd-icon>
     </div>
     <div #dropdown class="_sd-combobox-dropdown" tabindex="0">
       <ng-content></ng-content>
@@ -78,8 +77,6 @@ import { faCaretDown } from "@fortawesome/pro-solid-svg-icons";
   `]
 })
 export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked {
-  public fasCaretDown = faCaretDown;
-
   @Input()
   public value?: any;
 
