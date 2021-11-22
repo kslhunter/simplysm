@@ -292,7 +292,16 @@ export class Queryable<D extends DbContext, T> {
     };
 
     if (this.db.opt.dialect === "mysql") {
-      result = result.groupBy((item) => Object.entries(item).filter(([k, v]) => !(pivotKeys as any[]).includes(k) && !([valueColumn, pivotColumn] as any[]).includes(v)).map(([k, v]) => v) as any);
+      result = result
+        .groupBy((item) => (
+          Object.entries(item)
+            .filter(([k, v]) => (
+              !(pivotKeys as any[]).includes(k)
+              && !ObjectUtil.equal(v, valueColumn)
+              && !ObjectUtil.equal(v, pivotColumn)
+            ))
+            .map(([k, v]) => v) as any
+        ));
     }
     return result as any;
   }
