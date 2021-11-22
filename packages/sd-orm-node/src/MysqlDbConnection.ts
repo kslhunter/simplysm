@@ -26,7 +26,7 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
     }
 
     const conn = mysql.createConnection({
-      host: this.config.host ?? "localhost",
+      host: this.config.host,
       port: this.config.port,
       user: this.config.username,
       password: this.config.password,

@@ -3,25 +3,25 @@ import { Type } from "@simplysm/sd-core-common";
 import { NodeDbContextExecutor } from "./NodeDbContextExecutor";
 
 export class SdOrm<T extends DbContext> {
-  public constructor(private readonly _dbContextType: Type<T>,
-                     private readonly _config: IDbConnectionConfig,
-                     private readonly _dbContextOpt?: Partial<IDbContextOption>) {
+  public constructor(public readonly dbContextType: Type<T>,
+                     public readonly config: IDbConnectionConfig,
+                     public readonly dbContextOpt?: Partial<IDbContextOption>) {
   }
 
   public async connectAsync<R>(callback: (conn: T) => Promise<R>, isolationLevel?: ISOLATION_LEVEL): Promise<R> {
-    const db = new this._dbContextType(new NodeDbContextExecutor(this._config), {
-      dialect: this._dbContextOpt?.dialect ?? this._config.dialect,
-      database: this._dbContextOpt?.database ?? this._config.database,
-      schema: this._dbContextOpt?.schema ?? this._config.schema
+    const db = new this.dbContextType(new NodeDbContextExecutor(this.config), {
+      dialect: this.dbContextOpt?.dialect ?? this.config.dialect,
+      database: this.dbContextOpt?.database ?? this.config.database,
+      schema: this.dbContextOpt?.schema ?? this.config.schema
     });
     return await db.connectAsync(async () => await callback(db), isolationLevel);
   }
 
   public async connectWithoutTransactionAsync<R>(callback: (conn: T) => Promise<R>): Promise<R> {
-    const db = new this._dbContextType(new NodeDbContextExecutor(this._config), {
-      dialect: this._dbContextOpt?.dialect ?? this._config.dialect,
-      database: this._dbContextOpt?.database ?? this._config.database,
-      schema: this._dbContextOpt?.schema ?? this._config.schema
+    const db = new this.dbContextType(new NodeDbContextExecutor(this.config), {
+      dialect: this.dbContextOpt?.dialect ?? this.config.dialect,
+      database: this.dbContextOpt?.database ?? this.config.database,
+      schema: this.dbContextOpt?.schema ?? this.config.schema
     });
     return await db.connectWithoutTransactionAsync(async () => await callback(db));
   }

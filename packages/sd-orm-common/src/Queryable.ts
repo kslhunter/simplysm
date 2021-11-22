@@ -262,22 +262,38 @@ export class Queryable<D extends DbContext, T> {
     const pivotColumn = pivotFwd(this._entity);
 
     const entity: any = { ...this._entity };
-    for (const pivotKey of pivotKeys) {
-      if (valueColumn instanceof QueryUnit) {
-        entity[pivotKey] = new QueryUnit<any>(valueColumn.type, `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(pivotKey)}`);
+    if (this.db.opt.dialect === "mysql") {
+      for (const pivotKey of pivotKeys) {
+        if (valueColumn instanceof QueryUnit) {
+          const asWrap = this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`);
+          entity[pivotKey] = new QueryUnit<any>(valueColumn.type, `SUM(IF(${asWrap}.${this.db.qh.getQueryValue(pivotColumn)} = '${pivotKey}', ${asWrap}.${this.db.qh.getQueryValue(valueColumn)}, 0))`);
+        }
+        else {
+          throw new NotImplementError();
+        }
       }
-      else {
-        throw new NotImplementError();
+    }
+    else {
+      for (const pivotKey of pivotKeys) {
+        if (valueColumn instanceof QueryUnit) {
+          entity[pivotKey] = new QueryUnit<any>(valueColumn.type, `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(pivotKey)}`);
+        }
+        else {
+          throw new NotImplementError();
+        }
       }
     }
 
-    const result = new Queryable(this.db, this as any, entity);
-
+    let result = new Queryable(this.db, this as any, entity);
     result._def.pivot = {
       valueColumn: this.db.qh.getQueryValue(valueColumn),
       pivotColumn: this.db.qh.getQueryValue(pivotColumn),
       pivotKeys
     };
+
+    if (this.db.opt.dialect === "mysql") {
+      result = result.groupBy((item) => Object.entries(item).filter(([k, v]) => !(pivotKeys as any[]).includes(k) && !([valueColumn, pivotColumn] as any[]).includes(v)).map(([k, v]) => v) as any);
+    }
     return result as any;
   }
 

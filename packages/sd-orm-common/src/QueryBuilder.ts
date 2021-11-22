@@ -541,12 +541,13 @@ ORDER BY i.index_id, ic.key_ordinal;
 
     // PIVOT
 
-    if (def.pivot) {
-      q += `PIVOT (SUM(${this.getQueryOfQueryValue(def.pivot.valueColumn)}) FOR ${this.getQueryOfQueryValue(def.pivot.pivotColumn)}`;
-      q += ` IN (${def.pivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${def.as !== undefined ? ` as ${def.as}` : ""}`;
-      q += "\n";
+    if (this._dialect !== "mysql") {
+      if (def.pivot) {
+        q += `PIVOT (SUM(${this.getQueryOfQueryValue(def.pivot.valueColumn)}) FOR ${this.getQueryOfQueryValue(def.pivot.pivotColumn)}`;
+        q += ` IN (${def.pivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${def.as !== undefined ? ` as ${def.as}` : ""}`;
+        q += "\n";
+      }
     }
-
 
     // UNPIVOT
 

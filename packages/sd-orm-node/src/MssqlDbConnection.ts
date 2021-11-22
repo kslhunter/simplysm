@@ -45,7 +45,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     }
 
     const conn = new tedious.Connection({
-      server: this.config.host ?? "localhost",
+      server: this.config.host,
       authentication: {
         type: "default",
         options: {

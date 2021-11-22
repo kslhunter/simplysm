@@ -16,7 +16,8 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
       /deep/ > table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
         border-right: 1px solid $border-color-dark;
         border-bottom: 1px solid $border-color-dark;
 
@@ -34,9 +35,11 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
         }
 
         > * > tr {
-          border-top: 1px solid $border-color-light;
+          > * {
+            border-top: 1px solid $border-color-light;
+          }
 
-          &:first-child {
+          &:first-child > * {
             border-top: 1px solid $border-color-dark;
           }
         }
@@ -63,7 +66,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
             border-left: none;
           }
 
-          > *:first-child > tr:first-child {
+          > *:first-child > tr:first-child > * {
             border-top: none;
           }
         }
@@ -73,7 +76,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
         border-bottom: none;
 
         /deep/ table {
-          > * > tr {
+          > * > tr > * {
             border-top: none;
           }
         }

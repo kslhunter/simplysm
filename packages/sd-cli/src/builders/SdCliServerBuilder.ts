@@ -355,12 +355,12 @@ export class SdCliServerBuilder extends EventEmitter {
         rules: [
           ...watch ? [
             {
-              test: /\.js$/,
+              test: /\.m?js$/,
               enforce: "pre",
               loader: require.resolve("source-map-loader"),
               options: {
                 filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                  return !resourcePath.includes("node_modules");
+                  return !resourcePath.includes("node_modules") || (/@simplysm[\\/]sd/).test(resourcePath);
                 }
               }
             }

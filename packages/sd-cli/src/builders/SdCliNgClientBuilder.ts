@@ -381,7 +381,7 @@ export class SdCliNgClientBuilder extends EventEmitter {
               loader: require.resolve("source-map-loader"),
               options: {
                 filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                  return !resourcePath.includes("node_modules");
+                  return !resourcePath.includes("node_modules") || (/@simplysm[\\/]sd/).test(resourcePath);
                 }
               }
             }
@@ -424,7 +424,7 @@ export class SdCliNgClientBuilder extends EventEmitter {
                     loader: "sass-loader",
                     options: {
                       implementation: nodeSass,
-                      sourceMap: true,
+                      sourceMap: watch,
                       sassOptions: {
                         fiber: false,
                         precision: 8,

@@ -278,7 +278,7 @@ export class QueryHelper {
 
   public cast<T extends TQueryValue>(src: TEntityValue<TQueryValue>, targetType: Type<T>): QueryUnit<T> {
     if (this._dialect === "mysql") {
-      return new QueryUnit(targetType, ["CONVERT(", this.getQueryValue(src), ", ", this.type(targetType), ")"]);
+      return new QueryUnit(targetType, ["CONVERT(", this.getQueryValue(src), ", ", this.mysqlConvertType(targetType), ")"]);
     }
     else {
       return new QueryUnit(targetType, ["CONVERT(", this.type(targetType), ", ", this.getQueryValue(src), ")"]);
@@ -592,6 +592,29 @@ export class QueryHelper {
         default:
           throw new TypeError(currType !== undefined ? currType.name : "undefined");
       }
+    }
+  }
+
+  public mysqlConvertType(type: Type<TQueryValue>): string {
+    switch (type) {
+      case String:
+        return "CHAR";
+      case Number:
+        return "DECIMAL";
+      case Boolean:
+        return "DECIMAL";
+      case DateTime:
+        return "DATETIME";
+      case DateOnly:
+        return "DATE";
+      case Time:
+        return "TIME";
+      case Uuid:
+        return "CHAR";
+      case Buffer:
+        return "BINARY";
+      default:
+        throw new TypeError(type.name);
     }
   }
 
