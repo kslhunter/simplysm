@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
-import { TSdIconName, TSdIconPrefix } from "../commons";
 import { ObjectUtil } from "@simplysm/sd-core-common";
+import { IconDefinition } from "@fortawesome/fontawesome-common-types";
 
 @Injectable({ providedIn: "root" })
 export class SdAppStructureProvider {
@@ -214,7 +214,7 @@ export interface ISdAppStructureItem {
   modules?: string[];
   perms?: ("use" | "edit")[];
   subPerms?: ISdAppStructureItemPermission[];
-  icon?: [TSdIconPrefix, TSdIconName];
+  icon?: IconDefinition;
   isNotMenu?: boolean;
   isNotPage?: boolean;
   children?: ISdAppStructureItem[];
@@ -236,7 +236,7 @@ export interface ISdMenu {
   title: string;
   codeChain: string[];
   hasPerms: boolean;
-  icon?: [TSdIconPrefix, TSdIconName];
+  icon?: IconDefinition;
   modules?: string[];
   children?: ISdMenu[];
 }

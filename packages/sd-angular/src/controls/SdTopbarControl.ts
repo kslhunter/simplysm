@@ -11,6 +11,7 @@ import {
 } from "@angular/core";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
+import { faBars } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-topbar",
@@ -18,7 +19,7 @@ import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
   template: `
     <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" style="font-size: 16px;"
                *ngIf="sidebarContainerControl || sidebarContainer">
-      <sd-icon icon="bars" fixedWidth></sd-icon>
+      <fa-icon [icon]="fasBars" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-gap width="default" *ngIf="!sidebarContainerControl && !sidebarContainer"></sd-gap>
     <ng-content></ng-content>`,
@@ -114,6 +115,8 @@ import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
   `]
 })
 export class SdTopbarControl implements DoCheck {
+  public fasBars = faBars;
+
   @HostBinding("attr.sd-size")
   public get size(): "sm" | "lg" | undefined {
     return this._topbarContainerControl.size;

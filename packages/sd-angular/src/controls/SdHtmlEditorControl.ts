@@ -10,6 +10,7 @@ import {
   ViewChild
 } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
+import { faCode, faEye, faMinus, faPen, faPlus } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-html-editor",
@@ -18,21 +19,21 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
     <sd-dock-container>
       <sd-dock class="_toolbar" *ngIf="!disabled">
         <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
-          <sd-icon [icon]="'eye'" fw></sd-icon>
+          <fa-icon [icon]="fasEye" fw></fa-icon>
         </sd-anchor>
         <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
-          <sd-icon [icon]="'pen'" fw></sd-icon>
+          <fa-icon [icon]="fasPen" fw></fa-icon>
         </sd-anchor>
         <sd-anchor (click)="viewState = 'code'" [class._selected]="viewState === 'code'">
-          <sd-icon [icon]="'code'" fw></sd-icon>
+          <fa-icon [icon]="fasCode" fw></fa-icon>
         </sd-anchor>
         <ng-container *ngIf="rowsButton && !inset && viewState === 'code'">
           |
           <sd-anchor (click)="rows = rows + 1">
-            <sd-icon [icon]="'plus'" fw></sd-icon>
+            <fa-icon [icon]="fasPlus" fw></fa-icon>
           </sd-anchor>
           <sd-anchor (click)="rows = rows - 1" *ngIf="rows > 1">
-            <sd-icon [icon]="'minus'" fw></sd-icon>
+            <fa-icon [icon]="fasMinus" fw></fa-icon>
           </sd-anchor>
         </ng-container>
       </sd-dock>
@@ -118,6 +119,12 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   `]
 })
 export class SdHtmlEditorControl {
+  public fasEye = faEye;
+  public fasPen = faPen;
+  public fasCode = faCode;
+  public fasPlus = faPlus;
+  public fasMinus = faMinus;
+
   @Input()
   @SdInputValidate(String)
   public get value(): string | undefined {

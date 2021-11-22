@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { SdModalBase } from "../providers/SdModalProvider";
 import { ISdSheetColumnConfigVM } from "../controls/SdSheetControl";
 import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
+import { faAngleDown, faAngleUp, faTimes } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -23,11 +24,11 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
               <div class="sd-padding-xs-sm">
                 <sd-anchor [disabled]="index === 0 || (!item.fixed && !!displayConfigs[index - 1].fixed)"
                            (click)="onDisplayOrderUpButtonClick(item)">
-                  <sd-icon icon="angle-up" fixedWidth></sd-icon>
+                  <fa-icon [icon]="fasAngleUp" [fixedWidth]="true"></fa-icon>
                 </sd-anchor>
                 <sd-anchor [disabled]="index === configs.length - 1 || (item.fixed && !displayConfigs[index + 1].fixed)"
                            (click)="onDisplayOrderDownButtonClick(item)">
-                  <sd-icon icon="angle-down" fixedWidth></sd-icon>
+                  <fa-icon [icon]="fasAngleDown" [fixedWidth]="true"></fa-icon>
                 </sd-anchor>
               </div>
             </ng-template>
@@ -58,7 +59,7 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
             <ng-template #cell let-item="item">
               <div style="text-align: center">
                 <sd-checkbox size="sm" [(value)]="item.hidden"
-                             icon="times" theme="danger"></sd-checkbox>
+                             [icon]="fasTimes" theme="danger"></sd-checkbox>
               </div>
             </ng-template>
           </sd-sheet-column>
@@ -78,6 +79,10 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
   `]
 })
 export class SdSheetConfigModal extends SdModalBase<ISdSheetConfigModalInput, Record<string, ISdSheetColumnConfigVM>> {
+  public fasAngleUp = faAngleUp;
+  public fasAngleDown = faAngleDown;
+  public fasTimes = faTimes;
+
   public param!: ISdSheetConfigModalInput;
 
   public configs: IColumnConfigVM[] = [];

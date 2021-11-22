@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
+import { faAngleDoubleLeft, faAngleDoubleRight, faAngleLeft, faAngleRight } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-anchor *ngIf="hasPrev" (click)="onGoFirstClick()">
-      <sd-icon icon="angle-double-left" fixedWidth></sd-icon>
+      <fa-icon [icon]="fasAngleDoubleLeft" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-anchor *ngIf="hasPrev" (click)="onPrevClick()">
-      <sd-icon icon="angle-left" fixedWidth></sd-icon>
+      <fa-icon [icon]="fasAngleLeft" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-anchor *ngFor="let displayPage of displayPages; trackBy: trackByPageFn"
                (click)="onPageClick(displayPage)"
@@ -17,10 +18,10 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       {{ displayPage + 1 }}
     </sd-anchor>
     <sd-anchor *ngIf="hasNext" (click)="onNextClick()">
-      <sd-icon icon="angle-right" fixedWidth></sd-icon>
+      <fa-icon [icon]="fasAngleRight" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-anchor *ngIf="hasNext" (click)="onGoLastClick()">
-      <sd-icon icon="angle-double-right" fixedWidth></sd-icon>
+      <fa-icon [icon]="fasAngleDoubleRight" [fixedWidth]="true"></fa-icon>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -42,6 +43,11 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   `]
 })
 export class SdPaginationControl {
+  public fasAngleDoubleLeft = faAngleDoubleLeft;
+  public fasAngleLeft = faAngleLeft;
+  public fasAngleRight = faAngleRight;
+  public fasAngleDoubleRight = faAngleDoubleRight;
+
   @Input()
   @SdInputValidate({
     type: Number,

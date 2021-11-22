@@ -16,6 +16,7 @@ import {
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { NeverEntryError } from "@simplysm/sd-core-common";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
+import { faTimes } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-modal",
@@ -31,7 +32,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
           <sd-anchor class="_close-button"
                      (click)="onCloseButtonClick()"
                      *ngIf="!hideCloseButton">
-            <sd-icon icon="times" fixedWidth></sd-icon>
+            <fa-icon [icon]="fasTimes" [fixedWidth]="true"></fa-icon>
           </sd-anchor>
           <h5 class="_title">{{ title }}</h5>
         </sd-dock>
@@ -275,6 +276,8 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
   `]
 })
 export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
+  public fasTimes = faTimes;
+
   @Input()
   @SdInputValidate(String)
   public key?: string;

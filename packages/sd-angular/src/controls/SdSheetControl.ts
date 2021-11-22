@@ -29,6 +29,16 @@ import { SdModalProvider } from "../providers/SdModalProvider";
 import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
+import {
+  faArrowRight,
+  faBars,
+  faCaretRight,
+  faCog,
+  faSort,
+  faSortDown,
+  faSortUp,
+  faTable
+} from "@fortawesome/pro-solid-svg-icons";
 
 // TODO: 셀 크기 2번 수정하면 HEADERGROUP 컬럼의 크기가 안따라오는 현상 수정
 @Component({
@@ -41,11 +51,11 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
           <sd-anchor class="_card-icon"
                      *ngIf="useCardDisplayType"
                      (click)="onDisplayTypeChangeButtonClick()">
-            <sd-icon [icon]="displayType === 'card' ? 'bars' : 'table'" fixedWidth></sd-icon>
+            <fa-icon [icon]="displayType === 'card' ? fasBars : fasTable" [fixedWidth]="true"></fa-icon>
           </sd-anchor>
           <sd-anchor class="_cog-icon" (click)="onConfigButtonClick()"
                      *ngIf="key">
-            <sd-icon icon="cog" fixedWidth></sd-icon>
+            <fa-icon [icon]="fasCog" [fixedWidth]="true"></fa-icon>
           </sd-anchor>
         </div>
 
@@ -68,9 +78,9 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
               <div class="_border"></div>
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
-                  <sd-icon class="_icon _selected-icon" fixedWidth></sd-icon>
-                  <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth
-                           [style.margin-right.em]="maxDepth"></sd-icon>
+                  <fa-icon class="_icon _selected-icon" [fixedWidth]="true"></fa-icon>
+                  <fa-icon class="_icon _expand-icon" *ngIf="getChildrenFn" [fixedWidth]="true"
+                           [style.margin-right.em]="maxDepth"></fa-icon>
                 </div>
                 <div class="_border"></div>
               </div>
@@ -105,23 +115,23 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
               <div class="_border" style="pointer-events: none"></div>
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
-                  <sd-icon class="_icon _selected-icon"
-                           [icon]="selectMode === 'multi' ? 'arrow-right' : undefined"
+                  <fa-icon class="_icon _selected-icon"
+                           [icon]="selectMode === 'multi' ? fasArrowRight : undefined"
                            (click)="onAllSelectIconClick($event)"
                            [class._selected]="getIsAllSelected()"
                            [class._selectable]="selectMode === 'multi'"
-                           fixedWidth
-                           style="pointer-events: auto"></sd-icon>
-                  <sd-icon class="_icon _expand-icon"
+                           [fixedWidth]="true"
+                           style="pointer-events: auto"></fa-icon>
+                  <fa-icon class="_icon _expand-icon"
                            *ngIf="getChildrenFn"
-                           [icon]="getHasParentItem() ? 'caret-right' : undefined"
+                           [icon]="getHasParentItem() ? fasCaretRight : undefined"
                            (click)="onAllExpandIconClick($event)"
                            [class._expanded]="getIsAllExpanded()"
                            [class._expandable]="getHasParentItem()"
-                           [rotate]="getIsAllExpanded() ? 90 : undefined"
-                           fixedWidth
+                           [rotate]="getIsAllExpanded() ? '90' : undefined"
+                           [fixedWidth]="true"
                            style="pointer-events: auto"
-                           [style.margin-right.em]="maxDepth"></sd-icon>
+                           [style.margin-right.em]="maxDepth"></fa-icon>
                 </div>
                 <div class="_border"></div>
               </div>
@@ -137,13 +147,13 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
                                  (click)="onColumnOrderingHeaderClick($event, columnControl)">
                         <div style="position: absolute; right: 0; display: inline-block;"
                              class="sd-background-color-grey-lightest">
-                          <sd-icon-layer>
-                            <sd-icon icon="sort" class="sd-text-brightness-lightest"></sd-icon>
-                            <sd-icon icon="sort-down"
-                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></sd-icon>
-                            <sd-icon icon="sort-up"
-                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></sd-icon>
-                          </sd-icon-layer>
+                          <fa-layers>
+                            <fa-icon [icon]="fasSort" class="sd-text-brightness-lightest"></fa-icon>
+                            <fa-icon [icon]="fasSortDown"
+                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></fa-icon>
+                            <fa-icon [icon]="fasSortUp"
+                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></fa-icon>
+                          </fa-layers>
                           <small
                             style="padding-right: 2px;">{{ getColumnOrderingOrderText(columnControl.key) }}</small>
                         </div>
@@ -196,13 +206,13 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
                                  (click)="onColumnOrderingHeaderClick($event, columnControl)">
                         <div style="position: absolute; right: 0; display: inline-block;"
                              class="sd-background-color-grey-lightest">
-                          <sd-icon-layer>
-                            <sd-icon icon="sort" class="sd-text-brightness-lightest"></sd-icon>
-                            <sd-icon icon="sort-down"
-                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></sd-icon>
-                            <sd-icon icon="sort-up"
-                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></sd-icon>
-                          </sd-icon-layer>
+                          <fa-layers>
+                            <fa-icon [icon]="fasSort" class="sd-text-brightness-lightest"></fa-icon>
+                            <fa-icon [icon]="fasSortDown"
+                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></fa-icon>
+                            <fa-icon [icon]="fasSortUp"
+                                     *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></fa-icon>
+                          </fa-layers>
                           <small
                             style="padding-right: 2px;">{{ getColumnOrderingOrderText(columnControl.key) }}</small>
                         </div>
@@ -250,9 +260,9 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
               <div class="_border"></div>
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
-                  <sd-icon class="_icon _selected-icon" fixedWidth></sd-icon>
-                  <sd-icon class="_icon _expand-icon" *ngIf="getChildrenFn" fixedWidth
-                           [style.margin-right.em]="maxDepth"></sd-icon>
+                  <fa-icon class="_icon _selected-icon" [fixedWidth]="true"></fa-icon>
+                  <fa-icon class="_icon _expand-icon" *ngIf="getChildrenFn" [fixedWidth]="true"
+                           [style.margin-right.em]="maxDepth"></fa-icon>
                 </div>
                 <div class="_border"></div>
               </div>
@@ -297,29 +307,29 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
                 <div class="_border"></div>
                 <div class="_cell _feature-cell">
                   <div class="_cell-content">
-                    <sd-icon class="_icon _selected-icon"
-                             [icon]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item)) ? 'arrow-right' : undefined"
+                    <fa-icon class="_icon _selected-icon"
+                             [icon]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item)) ? fasArrowRight : undefined"
                              (click)="onItemSelectIconClick($event, item, index)"
                              [class._selected]="getIsSelectedItem(item)"
                              [class._selectable]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item))"
-                             fixedWidth
-                             style="pointer-events: auto"></sd-icon>
+                             [fixedWidth]="true"
+                             style="pointer-events: auto"></fa-icon>
 
                     <div class="_depth-indicator"
                          *ngIf="getChildrenFn && depth > 0"
                          [style.margin-left.em]="depth - .5">
                     </div>
 
-                    <sd-icon class="_icon _expand-icon"
+                    <fa-icon class="_icon _expand-icon"
                              *ngIf="getChildrenFn"
-                             [icon]="getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0 ? 'caret-right' : undefined"
+                             [icon]="getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0 ? fasCaretRight : undefined"
                              (click)="onItemExpandIconClick($event, item)"
                              [class._expanded]="getIsExpandedItem(item)"
                              [class._expandable]="getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0"
-                             [rotate]="getIsExpandedItem(item) ? 90 : undefined"
-                             fixedWidth
+                             [rotate]="getIsExpandedItem(item) ? '90' : undefined"
+                             [fixedWidth]="true"
                              style="pointer-events: auto"
-                             [style.margin-right.em]="maxDepth ? (maxDepth - depth) : undefined"></sd-icon>
+                             [style.margin-right.em]="maxDepth ? (maxDepth - depth) : undefined"></fa-icon>
                   </div>
                   <div class="_border"></div>
                 </div>
@@ -725,6 +735,16 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
   `]
 })
 export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
+  public fasBars = faBars;
+  public fasTable = faTable;
+  public fasCog = faCog;
+  public fasArrowRight = faArrowRight;
+  public fasCaretRight = faCaretRight;
+  public fasSort = faSort;
+  public fasSortDown = faSortDown;
+  public fasSortUp = faSortUp;
+
+
   @Input()
   @SdInputValidate(String)
   public key?: string;

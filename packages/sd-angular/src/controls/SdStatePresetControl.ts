@@ -14,13 +14,14 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdToastProvider } from "../providers/SdToastProvider";
+import { faSave, faStar, faTimes } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-state-preset",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-anchor (click)="onAddButtonClick()">
-      <sd-icon icon="star" class="sd-text-color-warning-default" fixedWidth></sd-icon>
+      <fa-icon [icon]="fasStar" class="sd-text-color-warning-default" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-gap width="sm"></sd-gap>
     <ng-container *ngFor="let preset of presets; trackBy: trackByNameFn">
@@ -30,10 +31,10 @@ import { SdToastProvider } from "../providers/SdToastProvider";
           {{ preset.name }}
         </sd-anchor>
         <sd-anchor (click)="onSaveButtonClick(preset)">
-          <sd-icon icon="save" size="sm"></sd-icon>
+          <fa-icon [icon]="fasSave" size="sm"></fa-icon>
         </sd-anchor>
         <sd-anchor (click)="onRemoveButtonClick(preset)">
-          <sd-icon icon="times" size="sm"></sd-icon>
+          <fa-icon [icon]="fasTimes" size="sm"></fa-icon>
         </sd-anchor>
       </div>
       <sd-gap width="sm"></sd-gap>
@@ -88,6 +89,10 @@ import { SdToastProvider } from "../providers/SdToastProvider";
   `]
 })
 export class SdStatePresetControl implements OnInit, OnChanges {
+  public fasStar = faStar;
+  public fasSave = faSave;
+  public fasTimes = faTimes;
+
   @Input()
   @SdInputValidate(String)
   public key?: string;

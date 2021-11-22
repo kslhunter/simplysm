@@ -18,6 +18,7 @@ import { SdDropdownControl } from "./SdDropdownControl";
 import { SdSelectItemControl } from "./SdSelectItemControl";
 import { ObjectUtil, Uuid } from "@simplysm/sd-core-common";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
+import { faCaretDown } from "@fortawesome/pro-solid-svg-icons";
 
 @Component({
   selector: "sd-select",
@@ -28,7 +29,7 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
       <div [innerHTML]="contentSafeInnerHTML"></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">
-        <sd-icon fixedWidth icon="caret-down"></sd-icon>
+        <fa-icon [fixedWidth]="true" [icon]="fasCaretDown"></fa-icon>
       </div>
 
       <sd-dropdown-popup #dropdownPopup (keydown)="onPopupKeydown($event)">
@@ -223,6 +224,8 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
   `]
 })
 export class SdSelectControl implements DoCheck {
+  public fasCaretDown = faCaretDown;
+
   public guid = Uuid.new().toString();
 
   @Input()
