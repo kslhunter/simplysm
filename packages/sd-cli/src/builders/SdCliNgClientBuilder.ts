@@ -424,7 +424,7 @@ export class SdCliNgClientBuilder extends EventEmitter {
                     loader: "sass-loader",
                     options: {
                       implementation: nodeSass,
-                      sourceMap: watch,
+                      sourceMap: true,
                       sassOptions: {
                         fiber: false,
                         precision: 8,
