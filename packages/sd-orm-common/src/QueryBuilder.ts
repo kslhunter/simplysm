@@ -759,6 +759,7 @@ ORDER BY i.index_id, ic.key_ordinal;
     if (this._dialect === "mysql") {
       const procName = this.wrap("sd_" + Uuid.new().toString().replace(/-/g, "_"));
 
+      // TODO: ON DUPLICATE KEY UPDATE 관련 로직
       const q = `
 USE ${def.from.split(".")[0]};
 

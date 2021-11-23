@@ -26,14 +26,20 @@ export class QueryHelper {
     if (target === undefined) {
       return this.isNull(source);
     }
-    else if (source instanceof QueryUnit && target instanceof QueryUnit) {
-      return this.or([
-        this.and([this.isNull(source), this.isNull(target)]),
-        [this.getQueryValue(source), " = ", this.getQueryValue(target)]
-      ]);
+
+    if (this._dialect === "mysql") {
+      return [this.getQueryValue(source), " <=> ", this.getQueryValue(target)];
     }
     else {
-      return [this.getQueryValue(source), " = ", this.getQueryValue(target)];
+      if (source instanceof QueryUnit && target instanceof QueryUnit) {
+        return this.or([
+          this.and([this.isNull(source), this.isNull(target)]),
+          [this.getQueryValue(source), " = ", this.getQueryValue(target)]
+        ]);
+      }
+      else {
+        return [this.getQueryValue(source), " = ", this.getQueryValue(target)];
+      }
     }
   }
 
