@@ -58,7 +58,12 @@ ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`.
     else if (this._dialect === "mssql") {
       return `IF NOT EXISTS(select * from sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)}`.trim();
     }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    else if (this._dialect === "mssql-azure") {
+      return `IF NOT EXISTS(select * from sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)} (EDITION='Standard', SERVICE_OBJECTIVE='S0', MAXSIZE = 250 GB) WITH CATALOG_COLLATION = Korean_Wansung_CI_AS`.trim();
+    }
     else {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`데이터베이스 생성 미지원 (${this._dialect})`);
     }
   }
@@ -428,7 +433,7 @@ ORDER BY i.index_id, ic.key_ordinal;
 
   public createIndex(def: ICreateIndexQueryDef): string {
     const tableName = this.getTableName(def.table);
-    const tableNameChain = this.getTableNameChain(def.table);
+    const tableNameChain = this._dialect === "mysql" ? this.getTableNameChain(def.table) : this.getTableNameChain(def.table).slice(-2);
     const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30
       ? tableNameChain.join("_").replace(/[a-z]/g, "")
       : tableNameChain.join("_");
@@ -440,7 +445,7 @@ ORDER BY i.index_id, ic.key_ordinal;
 
   public dropIndex(def: IDropIndexQueryDef): string {
     const tableName = this.getTableName(def.table);
-    const tableNameChain = this.getTableNameChain(def.table);
+    const tableNameChain = this._dialect === "mysql" ? this.getTableNameChain(def.table) : this.getTableNameChain(def.table).slice(-2);
     const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30
       ? tableNameChain.join("_").replace(/[a-z]/g, "")
       : tableNameChain.join("_");
