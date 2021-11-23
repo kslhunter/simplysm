@@ -263,12 +263,12 @@ export class SdCliNgClientBuilder extends EventEmitter {
         const results = SdWebpackUtil.getWebpackResults(stats);
 
         // .config.json 파일 쓰기
+        console.log("watch???");
         const packageKey = this.npmConfig.name.split("/").last()!;
         const configDistPath = !StringUtil.isNullOrEmpty(serverPath)
           ? path.resolve(serverPath, "dist/www", packageKey, ".config.json")
           : path.resolve(this.parsedTsconfig.options.outDir!, ".config.json");
         await FsUtil.writeFileAsync(configDistPath, JSON.stringify(this.config.configs ?? {}, undefined, 2));
-
 
         await Wait.true(() => devMiddleware !== undefined && hotMiddleware !== undefined);
         const allResults = [...getNgGenResults(), ...results].distinct();
