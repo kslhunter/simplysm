@@ -461,7 +461,13 @@ ORDER BY i.index_id, ic.key_ordinal;
   }
 
   public configForeignKeyCheck(def: IConfigForeignKeyCheckQueryDef): string {
-    return `SET foreign_key_checks=${def.useCheck ? 1 : 0};`;
+    if (this._dialect === "mysql") {
+      return `SET foreign_key_checks=${def.useCheck ? 1 : 0};`;
+    }
+    else {
+      const tableName = this.getTableName(def.table);
+      return `ALTER TABLE ${tableName} ${def.useCheck ? "" : "NO"}CHECK CONSTRAINT ALL;`;
+    }
   }
 
   // endregion
@@ -635,7 +641,7 @@ ORDER BY i.index_id, ic.key_ordinal;
     q += `INSERT INTO ${def.from} (${Object.keys(def.record).join(", ")})`;
     q += "\n";
 
-    if (this._dialect !== "mysql") {
+    if (this._dialect === "mysql") {
       if (def.output) {
         q += `OUTPUT ${def.output.map((item) => "INSERTED." + item).join(", ")}`;
         q += "\n";

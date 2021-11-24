@@ -194,6 +194,7 @@ export interface IConfigIdentityInsertQueryDef {
 }
 
 export interface IConfigForeignKeyCheckQueryDef {
+  table: IQueryTableNameDef;
   useCheck: boolean;
 }
 

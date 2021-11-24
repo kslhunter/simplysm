@@ -745,7 +745,7 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
-  public getInsertDef(obj: TInsertObject<T>, outputColumns: (keyof T)[] | undefined): IInsertQueryDef {
+  public getInsertQueryDef(obj: TInsertObject<T>, outputColumns: (keyof T)[] | undefined): IInsertQueryDef {
     if (typeof this._def.from !== "string") {
       throw new Error("INSERT 할 TABLE 을 정확히 지정해야 합니다.");
     }
@@ -798,7 +798,7 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
-  public getUpdateDef(obj: TUpdateObject<T>, outputColumns: (keyof T)[] | undefined): IUpdateQueryDef {
+  public getUpdateQueryDef(obj: TUpdateObject<T>, outputColumns: (keyof T)[] | undefined): IUpdateQueryDef {
     if (typeof this._def.from !== "string") {
       throw new Error("UPDATE 할 TABLE 을 정확히 지정해야 합니다.");
     }
@@ -848,7 +848,7 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
-  public getInsertIfNotExistsDef(insertObj: TInsertObject<T>, outputColumns: (keyof T)[] | undefined): IInsertIfNotExistsQueryDef {
+  public getInsertIfNotExistsQueryDef(insertObj: TInsertObject<T>, outputColumns: (keyof T)[] | undefined): IInsertIfNotExistsQueryDef {
     if (this._def.join !== undefined) {
       throw new Error("INSERT IF NOT EXISTS 와 JOIN 를 함께 사용할 수 없습니다.");
     }
@@ -903,7 +903,7 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
-  public getUpsertDef<U extends TUpdateObject<T>>(updateObj: U, insertObj: TInsertObject<T> | undefined, outputColumns: (keyof T)[] | undefined): IUpsertQueryDef {
+  public getUpsertQueryDef<U extends TUpdateObject<T>>(updateObj: U, insertObj: TInsertObject<T> | undefined, outputColumns: (keyof T)[] | undefined): IUpsertQueryDef {
     if (this._def.join !== undefined) {
       throw new Error("UPSERT 와 JOIN 를 함께 사용할 수 없습니다.");
     }
@@ -972,7 +972,7 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
-  public getDeleteDef(outputColumns: (keyof T)[] | undefined): IDeleteQueryDef {
+  public getDeleteQueryDef(outputColumns: (keyof T)[] | undefined): IDeleteQueryDef {
     if (typeof this._def.from !== "string") {
       throw new Error("INSERT 할 TABLE 을 정확히 지정해야 합니다.");
     }
@@ -1128,116 +1128,20 @@ export class Queryable<D extends DbContext, T> {
   }
 
   private async _insertAsync<OK extends keyof T>(ignoreFk: boolean, records: TInsertObject<T>[], outputColumns: OK[] | undefined): Promise<{ [K in OK]: T[K] }[] | void> {
-    if (typeof this.db === "undefined") {
-      throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
-    }
-    if (!this._tableDef) {
-      throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
-    }
-    // DbContext.selectCache.clear();
+    if (records.length === 0 && outputColumns !== undefined) return [];
+    if (records.length === 0 && outputColumns === undefined) return undefined;
 
-    const queryDefs = records.map((record) => this.getInsertDef(record, outputColumns));
+    const { defs, dataIndexes } = this._getInsertDefs(ignoreFk, records, outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
-    if (this.db.opt.dialect === "mysql") {
-      const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
-      if (aiColNames.length > 1) {
-        throw new Error("하나의 테이블에 AI 컬럼이 2개 이상일 수 없습니다.");
-      }
-
-      const prepareDefs: TQueryDef[] = queryDefs
-        .mapMany((queryDef) => {
-          const insertDef: TQueryDef = {
-            type: "insert" as const,
-            ...queryDef
-          };
-
-          const selectDef: TQueryDef = {
-            type: "select",
-            select: {
-              [this.db.qb.wrap("id")]:
-                aiColNames.length === 1 && !Object.keys(queryDef.record).includes(this.db.qb.wrap(aiColNames[0]))
-                  ? "LAST_INSERT_ID()"
-                  : "0"
-            }
-          };
-
-          return [
-            insertDef,
-            selectDef
-          ].filterExists();
-        });
-
-      if (ignoreFk) {
-        prepareDefs.insert(0, {
-          type: "configForeignKeyCheck",
-          useCheck: false
-        });
-
-        prepareDefs.push({
-          type: "configForeignKeyCheck",
-          useCheck: true
-        });
-      }
-
-      const insertIds = (
-        await this.db.executeDefsAsync(prepareDefs)
-      ).filter((item, i) => prepareDefs[i].type === "select").map((item) => item[0].id);
-
-      return ObjectUtil.clone(records).map((item, i) => ({
-        ...item,
-        [aiColNames[0]]: insertIds[i] === 0 ? item[aiColNames[0]] : insertIds[i]
-      })) as any;
+    if (this.db.opt.dialect === "mysql" && outputColumns) {
+      throw new NotImplementError("mysql 'outputColumns' 미구현");
     }
-    else {
-      if (ignoreFk) {
-        throw new NotImplementError("mssql 에 대한 IGNORE FK 가 아직 구현되어있지 않습니다.");
-      }
 
-      const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement && item.typeFwd() !== Uuid).map((item) => item.name);
-      const hasAutoIncreaseColumnValue = Object.keys(records[0]).some((item) => aiColNames.includes(item));
-
-      if (hasAutoIncreaseColumnValue) {
-        return (
-          await this.db.executeDefsAsync([
-            {
-              type: "configIdentityInsert",
-              ...{
-                table: {
-                  database: this._tableDef.database ?? this.db.opt.database,
-                  schema: this._tableDef.schema ?? this.db.opt.schema,
-                  name: this._tableDef.name
-                },
-                state: "on"
-              }
-            },
-            ...queryDefs.map((queryDef) => ({
-              type: "insert" as const,
-              ...queryDef
-            })),
-            {
-              type: "configIdentityInsert",
-              ...{
-                table: {
-                  database: this._tableDef.database ?? this.db.opt.database,
-                  schema: this._tableDef.schema ?? this.db.opt.schema,
-                  name: this._tableDef.name
-                },
-                state: "off"
-              }
-            }
-          ], [undefined, ...queryDefs.map(() => parseOption), undefined])
-        ).slice(1, -1).map((item) => item[0]);
-      }
-
-      return (await this.db.executeDefsAsync(
-        queryDefs.map((queryDef) => ({
-          type: "insert" as const,
-          ...queryDef
-        })),
-        queryDefs.map(() => parseOption)
-      )).map((item) => item[0]);
-    }
+    return (await this.db.executeDefsAsync(
+      defs,
+      defs.map((def, i) => (dataIndexes.includes(i) ? parseOption : undefined))
+    )).map((item) => item[0]);
   }
 
   public insertPrepare(records: TInsertObject<T>[]): void {
@@ -1249,83 +1153,93 @@ export class Queryable<D extends DbContext, T> {
   }
 
   private _insertPrepare(ignoreFk: boolean, records: TInsertObject<T>[]): void {
-    if (records.length < 1) {
-      return;
-    }
+    if (records.length === 0) return;
 
+    const { defs } = this._getInsertDefs(ignoreFk, records, undefined);
+    this.db.prepareDefs.push(...defs);
+  }
+
+  private _getInsertDefs<OK extends keyof T>(ignoreFk: boolean, records: TInsertObject<T>[], outputColumns: OK[] | undefined): { defs: TQueryDef[]; dataIndexes: number[] } {
+    if (records.length < 1) {
+      throw new Error("데이터 누락");
+    }
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
-
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
     }
 
-    const queryDefs = records.map((record) => this.getInsertDef(record, undefined));
+    const queryDefs = records.map((record) => this.getInsertQueryDef(record, outputColumns));
 
-    if (this.db.opt.dialect === "mysql") {
-      this.db.prepareDefs.push(...[
-        ignoreFk ? {
-          type: "configForeignKeyCheck" as const,
-          useCheck: false
-        } : undefined,
-        ...queryDefs
-          .map((queryDef) => ({
-            type: "insert" as const,
-            ...queryDef
-          })),
-        ignoreFk ? {
-          type: "configForeignKeyCheck" as const,
-          useCheck: true
-        } : undefined
-      ].filterExists());
+    const dataIndexes: number[] = [];
+    const defs: TQueryDef[] = queryDefs.map((queryDef) => ({
+      type: "insert" as const,
+      ...queryDef
+    }));
+    for (let i = 0; i < queryDefs.length; i++) {
+      dataIndexes.push(i);
     }
-    else {
-      if (ignoreFk) {
-        throw new NotImplementError("mssql 에 대한 IGNORE FK 가 아직 구현되어있지 않습니다.");
+
+    if (ignoreFk) {
+      defs.insert(0, {
+        type: "configForeignKeyCheck",
+        table: {
+          database: this._tableDef.database ?? this.db.opt.database,
+          schema: this._tableDef.schema ?? this.db.opt.schema,
+          name: this._tableDef.name
+        },
+        useCheck: false
+      });
+      for (let i = 0; i < dataIndexes.length; i++) {
+        dataIndexes[i]++;
       }
 
+      defs.push({
+        type: "configForeignKeyCheck",
+        table: {
+          database: this._tableDef.database ?? this.db.opt.database,
+          schema: this._tableDef.schema ?? this.db.opt.schema,
+          name: this._tableDef.name
+        },
+        useCheck: true
+      });
+    }
+
+    if (this.db.opt.dialect !== "mysql") {
       const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement && item.typeFwd() !== Uuid).map((item) => item.name);
-      const hasAutoIncreaseColumnValue = Object.keys(records[0]).some((item) => aiColNames.includes(item));
+      const hasAutoIncreaseColumnValue = records.some((record) => Object.keys(record).some((item) => aiColNames.includes(item)));
       if (hasAutoIncreaseColumnValue) {
-        this.db.prepareDefs.push(...[
-          {
-            type: "configIdentityInsert" as const,
-            ...{
-              table: {
-                database: this._tableDef.database ?? this.db.opt.database,
-                schema: this._tableDef.schema ?? this.db.opt.schema,
-                name: this._tableDef.name
-              },
-              state: "on" as const
-            }
-          },
-          ...queryDefs.map((queryDef) => ({
-            type: "insert" as const,
-            ...queryDef
-          })),
-          {
-            type: "configIdentityInsert" as const,
-            ...{
-              table: {
-                database: this._tableDef.database ?? this.db.opt.database,
-                schema: this._tableDef.schema ?? this.db.opt.schema,
-                name: this._tableDef.name
-              },
-              state: "off" as const
-            }
+        defs.insert(0, {
+          type: "configIdentityInsert" as const,
+          ...{
+            table: {
+              database: this._tableDef.database ?? this.db.opt.database,
+              schema: this._tableDef.schema ?? this.db.opt.schema,
+              name: this._tableDef.name
+            },
+            state: "on" as const
           }
-        ]);
-      }
-      else {
-        this.db.prepareDefs.push(
-          ...queryDefs.map((queryDef) => ({
-            type: "insert" as const,
-            ...queryDef
-          }))
-        );
+        });
+        for (let i = 0; i < dataIndexes.length; i++) {
+          dataIndexes[i]++;
+        }
+
+        defs.push({
+          type: "configIdentityInsert" as const,
+          ...{
+            table: {
+              database: this._tableDef.database ?? this.db.opt.database,
+              schema: this._tableDef.schema ?? this.db.opt.schema,
+              name: this._tableDef.name
+            },
+            state: "off" as const
+          }
+        });
       }
     }
+
+    return { defs, dataIndexes };
   }
 
   public async updateAsync(recordFwd: (entity: TEntity<T>) => (TUpdateObject<T> | Promise<TUpdateObject<T>>)): Promise<void>
@@ -1340,7 +1254,7 @@ export class Queryable<D extends DbContext, T> {
     // DbContext.selectCache.clear();
 
     const record = await recordFwd(this._entity);
-    const queryDef = this.getUpdateDef(record, outputColumns);
+    const queryDef = this.getUpdateQueryDef(record, outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
     if (this.db.opt.dialect === "mysql") {
@@ -1389,7 +1303,7 @@ export class Queryable<D extends DbContext, T> {
     }
 
     const record = recordFwd(this._entity);
-    const queryDef = this.getUpdateDef(record, undefined);
+    const queryDef = this.getUpdateQueryDef(record, undefined);
 
     this.db.prepareDefs.push({
       type: "update" as const,
@@ -1408,7 +1322,7 @@ export class Queryable<D extends DbContext, T> {
     }
     // DbContext.selectCache.clear();
 
-    const queryDef = this.getDeleteDef(outputColumns);
+    const queryDef = this.getDeleteQueryDef(outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
     if (this.db.opt.dialect === "mysql") {
@@ -1445,7 +1359,7 @@ export class Queryable<D extends DbContext, T> {
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
-    const queryDef = this.getDeleteDef(undefined);
+    const queryDef = this.getDeleteQueryDef(undefined);
     this.db.prepareDefs.push({ type: "delete", ...queryDef });
   }
 
@@ -1460,7 +1374,7 @@ export class Queryable<D extends DbContext, T> {
     }
     // DbContext.selectCache.clear();
 
-    const queryDefs = records.map((record) => this.getInsertIfNotExistsDef(record, outputColumns));
+    const queryDefs = records.map((record) => this.getInsertIfNotExistsQueryDef(record, outputColumns));
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
     if (this.db.opt.dialect === "mysql") {
@@ -1533,7 +1447,7 @@ export class Queryable<D extends DbContext, T> {
     const updateRecord = await updateFwd(this._entity) as U;
     const insertRecord = (insertFwd ? insertFwd(updateRecord) : ObjectUtil.clone(updateRecord)) as TInsertObject<T>;
 
-    const queryDef = this.getUpsertDef(updateRecord, insertRecord, outputColumns);
+    const queryDef = this.getUpsertQueryDef(updateRecord, insertRecord, outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
     if (this.db.opt.dialect === "mysql") {
@@ -1615,7 +1529,7 @@ export class Queryable<D extends DbContext, T> {
         : updateRecord
     ) as TInsertObject<T>;
 
-    const queryDef = this.getUpsertDef(updateRecord, insertRecord, undefined);
+    const queryDef = this.getUpsertQueryDef(updateRecord, insertRecord, undefined);
     this.db.prepareDefs.push({ type: "upsert", ...queryDef });
   }
 
