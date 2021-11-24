@@ -314,7 +314,7 @@ export class QueryHelper {
   public concat(...args: TEntityValue<string | String | number | Number | undefined>[]): QueryUnit<string> {
     return new QueryUnit<string>(String, [
       "CONCAT(",
-      ...args.mapMany((arg) => [arg !== undefined ? this.ifNull(arg, "") : "", ", "]).slice(0, -1),
+      ...args.mapMany((arg) => [arg !== undefined ? this.ifNull(arg, "").query : "", ", "]).slice(0, -1),
       ")"
     ]);
   }
@@ -431,10 +431,10 @@ export class QueryHelper {
       return `0x${value.toString("hex")}`;
     }
     else if (value instanceof Uuid) {
-      return "'" + value.toString() + "'";
+      return "'" + value.toString().replace(/-/g, "") + "'";
     }
     else if (value instanceof Queryable) {
-      const selectDef = value.getSelectDef();
+      const selectDef = value.getSelectQueryDef();
       if (selectDef.top !== 1) {
         throw new Error("하나의 필드를 추출하기 위한 내부쿼리에서는 반드시 TOP 1 이 지정 되야 합니다.");
       }
@@ -490,7 +490,7 @@ export class QueryHelper {
       return value.toString();
     }
     else if (value instanceof Queryable) {
-      const selectDef = value.getSelectDef();
+      const selectDef = value.getSelectQueryDef();
       if (selectDef.top !== 1) {
         throw new Error("하나의 필드를 추출하기 위한 내부쿼리에서는 반드시 TOP 1 이 지정 되야 합니다.");
       }

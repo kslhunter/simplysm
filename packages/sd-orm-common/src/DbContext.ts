@@ -11,7 +11,7 @@ import { DbDefinitionUtil } from "./utils/DbDefinitionUtil";
 // TODO: 모든 데이터를 CSV로 백업하는 기능 추가
 
 export abstract class DbContext {
-  // public static readonly selectCache = new Map<string, { result: any[]; timeout: any } | undefined>();
+  public static readonly selectCache = new Map<string, { result: any[]; timeout: any } | undefined>();
 
   public status: "ready" | "connect" | "transact" = "ready";
 
@@ -157,7 +157,7 @@ export abstract class DbContext {
     await this.executeDefsAsync(this.prepareDefs);
 
     this.prepareDefs = [];
-    // DbContext.selectCache.clear();
+    DbContext.selectCache.clear();
   }
 
   public async getIsDbExistsAsync(database: string): Promise<boolean> {

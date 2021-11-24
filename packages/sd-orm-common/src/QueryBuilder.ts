@@ -641,7 +641,7 @@ ORDER BY i.index_id, ic.key_ordinal;
     q += `INSERT INTO ${def.from} (${Object.keys(def.record).join(", ")})`;
     q += "\n";
 
-    if (this._dialect === "mysql") {
+    if (this._dialect !== "mysql") {
       if (def.output) {
         q += `OUTPUT ${def.output.map((item) => "INSERTED." + item).join(", ")}`;
         q += "\n";
@@ -768,7 +768,7 @@ ORDER BY i.index_id, ic.key_ordinal;
 
   public upsert(def: IUpsertQueryDef): string {
     if (this._dialect === "mysql") {
-      const procName = this.wrap("sd_" + Uuid.new().toString().replace(/-/g, "_"));
+      const procName = this.wrap("SD" + Uuid.new().toString().replace(/-/g, ""));
 
       // TODO: ON DUPLICATE KEY UPDATE 관련 로직
       const q = `
@@ -966,6 +966,7 @@ DEALLOCATE PREPARE stmt;`.trim();
     }
   }
 
+  // TODO: autoIncrement에 UUID 못쓰게 하자
   private _getQueryOfColDef(colDef: IQueryColumnDef): string {
     let q = "";
 

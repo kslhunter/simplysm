@@ -1,12 +1,13 @@
 import { DbContext } from "./DbContext";
 import {
   FunctionUtil,
+  JsonConvert,
   NeverEntryError,
   NotImplementError,
   ObjectUtil,
   Type,
   UnwrappedType,
-  Uuid
+  Wait
 } from "@simplysm/sd-core-common";
 import {
   IDeleteQueryDef,
@@ -167,7 +168,7 @@ export class Queryable<D extends DbContext, T> {
     }*/
 
     // Init defs.from
-    const from = cqrs.map((item) => item.getSelectDef());
+    const from = cqrs.map((item) => item.getSelectQueryDef());
 
     return new Queryable(db, undefined, as, entity, { from });
   }
@@ -375,7 +376,7 @@ export class Queryable<D extends DbContext, T> {
 
     result._def.join = result._def.join ?? [];
     result._def.join.push({
-      ...joinQueryable.getSelectDef(),
+      ...joinQueryable.getSelectQueryDef(),
       isCustomSelect: joinQueryable._isCustomEntity,
       isSingle: false
     });
@@ -411,7 +412,7 @@ export class Queryable<D extends DbContext, T> {
 
     result._def.join = result._def.join ?? [];
     result._def.join.push({
-      ...joinQueryable.getSelectDef(),
+      ...joinQueryable.getSelectQueryDef(),
       isCustomSelect: joinQueryable._isCustomEntity,
       isSingle: true
     });
@@ -623,7 +624,7 @@ export class Queryable<D extends DbContext, T> {
       clone = new Queryable(this.db, this);
     }
 
-    const subFrom = clone.getSelectDef();
+    const subFrom = clone.getSelectQueryDef();
     if (subFrom.orderBy) {
       let seq = 0;
       for (const subOrderBy of subFrom.orderBy) {
@@ -652,7 +653,7 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
-  public getSelectDef(): ISelectQueryDef & { select: Record<string, TQueryBuilderValue> } {
+  public getSelectQueryDef(): ISelectQueryDef & { select: Record<string, TQueryBuilderValue> } {
     const result: ISelectQueryDef & { select: Record<string, TQueryBuilderValue> } = {} as any;
 
     // FROM 구성
@@ -1025,9 +1026,9 @@ export class Queryable<D extends DbContext, T> {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
 
-    const def = this.getSelectDef();
+    const def = this.getSelectQueryDef();
 
-    /*const cacheKey = JsonConvert.stringify(def)!;
+    const cacheKey = JsonConvert.stringify(def)!;
 
     if (DbContext.selectCache.has(cacheKey)) {
       try {
@@ -1046,14 +1047,14 @@ export class Queryable<D extends DbContext, T> {
         console.error(err);
       }
     }
-    DbContext.selectCache.set(cacheKey, undefined);*/
+    DbContext.selectCache.set(cacheKey, undefined);
 
     const results = await this.db.executeDefsAsync([{ type: "select", ...def }], [this._getParseOption(undefined)]);
 
-    /*const timeout = setTimeout(() => {
+    const timeout = setTimeout(() => {
       DbContext.selectCache.delete(cacheKey);
     }, 1000);
-    DbContext.selectCache.set(cacheKey, { result: results[0] ?? [], timeout });*/
+    DbContext.selectCache.set(cacheKey, { result: results[0] ?? [], timeout });
 
     return results[0];
   }
@@ -1093,7 +1094,7 @@ export class Queryable<D extends DbContext, T> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
-    // DbContext.selectCache.clear();
+    DbContext.selectCache.clear();
 
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
@@ -1134,14 +1135,10 @@ export class Queryable<D extends DbContext, T> {
     const { defs, dataIndexes } = this._getInsertDefs(ignoreFk, records, outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
-    if (this.db.opt.dialect === "mysql" && outputColumns) {
-      throw new NotImplementError("mysql 'outputColumns' 미구현");
-    }
-
     return (await this.db.executeDefsAsync(
       defs,
       defs.map((def, i) => (dataIndexes.includes(i) ? parseOption : undefined))
-    )).map((item) => item[0]);
+    )).filter((item, i) => dataIndexes.includes(i)).map((item) => item[0]);
   }
 
   public insertPrepare(records: TInsertObject<T>[]): void {
@@ -1169,16 +1166,50 @@ export class Queryable<D extends DbContext, T> {
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
     }
+    DbContext.selectCache.clear();
 
-    const queryDefs = records.map((record) => this.getInsertQueryDef(record, outputColumns));
+    const pkColNames = this._tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
+    const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
 
     const dataIndexes: number[] = [];
-    const defs: TQueryDef[] = queryDefs.map((queryDef) => ({
-      type: "insert" as const,
-      ...queryDef
-    }));
-    for (let i = 0; i < queryDefs.length; i++) {
-      dataIndexes.push(i);
+    const defs: TQueryDef[] = [];
+    for (let i = 0; i < records.length; i++) {
+      const record = records[i];
+      const queryDef = this.getInsertQueryDef(record, outputColumns);
+      defs.push({
+        type: "insert" as const,
+        ...queryDef
+      });
+
+      if (this.db.opt.dialect === "mysql" && outputColumns) {
+        const selectObj = outputColumns.toObject((colName) => this.db.qb.wrap(colName as string), (colName) => this.db.qb.wrap(colName as string));
+
+        if (
+          pkColNames.length === 1 && aiColNames.length === 1
+          && pkColNames[0] === aiColNames[0]
+          && !Object.keys(record).includes(aiColNames[0])
+        ) {
+          const pkColName = pkColNames[0];
+          defs.push({
+            type: "select" as const,
+            from: this._def.from,
+            select: selectObj,
+            where: [[this.db.qb.wrap(pkColName), " = ", "LAST_INSERT_ID()"]]
+          });
+        }
+        else {
+          defs.push({
+            type: "select" as const,
+            from: this._def.from,
+            select: selectObj,
+            where: pkColNames.map((pkColName) => [[this.db.qb.wrap(pkColName), " = ", this.db.qh.getQueryValue(record[pkColName])]])
+          });
+        }
+        dataIndexes.push((i * 2) + 1);
+      }
+      else {
+        dataIndexes.push(i);
+      }
     }
 
     if (ignoreFk) {
@@ -1207,9 +1238,8 @@ export class Queryable<D extends DbContext, T> {
     }
 
     if (this.db.opt.dialect !== "mysql") {
-      const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement && item.typeFwd() !== Uuid).map((item) => item.name);
-      const hasAutoIncreaseColumnValue = records.some((record) => Object.keys(record).some((item) => aiColNames.includes(item)));
-      if (hasAutoIncreaseColumnValue) {
+      const hasSomeAIColVal = records.some((record) => Object.keys(record).some((item) => aiColNames.includes(item)));
+      if (hasSomeAIColVal) {
         defs.insert(0, {
           type: "configIdentityInsert" as const,
           ...{
@@ -1245,125 +1275,191 @@ export class Queryable<D extends DbContext, T> {
   public async updateAsync(recordFwd: (entity: TEntity<T>) => (TUpdateObject<T> | Promise<TUpdateObject<T>>)): Promise<void>
   public async updateAsync<OK extends keyof T>(recordFwd: (entity: TEntity<T>) => (TUpdateObject<T> | Promise<TUpdateObject<T>>), outputColumns: OK[]): Promise<{ [K in OK]: T[K] }[]>
   public async updateAsync<OK extends keyof T>(recordFwd: (entity: TEntity<T>) => (TUpdateObject<T> | Promise<TUpdateObject<T>>), outputColumns?: OK[]): Promise<{ [K in OK]: T[K] }[] | void> {
-    if (typeof this.db === "undefined") {
-      throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
-    }
-    if (!this._tableDef) {
-      throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
-    }
-    // DbContext.selectCache.clear();
-
     const record = await recordFwd(this._entity);
-    const queryDef = this.getUpdateQueryDef(record, outputColumns);
+    const { defs, dataIndex } = this._getUpdateDefs(record, outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
-    if (this.db.opt.dialect === "mysql") {
-      let newEntity = {} as TEntity<T>;
-
-      for (const colDef of this._tableDef.columns) {
-        newEntity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(colDef.name)}`);
-      }
-
-      newEntity = {
-        ...newEntity,
-        ...record
-      };
-
-      const clone = new Queryable(this.db, this as any, newEntity);
-
-      return (
-        await this.db.executeDefsAsync(
-          [
-            {
-              type: "select",
-              ...clone.getSelectDef()
-            },
-            { type: "update", ...queryDef }
-          ],
-          [parseOption, undefined]
-        )
-      )[0];
-    }
-    else {
-      return (
-        await this.db.executeDefsAsync(
-          [{ type: "update", ...queryDef }],
-          [parseOption]
-        )
-      )[0];
-    }
+    return (await this.db.executeDefsAsync(
+      defs,
+      defs.map((def, i) => (dataIndex === i ? parseOption : undefined))
+    ))[dataIndex];
   }
 
   public updatePrepare(recordFwd: (entity: TEntity<T>) => TUpdateObject<T>): void {
+    const record = recordFwd(this._entity);
+    const { defs } = this._getUpdateDefs(record, undefined);
+    this.db.prepareDefs.push(...defs);
+  }
+
+  private _getUpdateDefs<OK extends keyof T>(record: TUpdateObject<T>, outputColumns: OK[] | undefined): { defs: TQueryDef[]; dataIndex: number } {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
+    DbContext.selectCache.clear();
 
-    const record = recordFwd(this._entity);
-    const queryDef = this.getUpdateQueryDef(record, undefined);
+    let dataIndex: number;
+    const defs: TQueryDef[] = [];
 
-    this.db.prepareDefs.push({
+    const queryDef = this.getUpdateQueryDef(record, outputColumns);
+    defs.push({
       type: "update" as const,
       ...queryDef
     });
+
+    if (this.db.opt.dialect === "mysql" && outputColumns) {
+      const selectObj = outputColumns.toObject((colName) => this.db.qb.wrap(colName as string), (colName) => this.db.qb.wrap(colName as string));
+      defs.push({
+        type: "select" as const,
+        ...this.getSelectQueryDef(),
+        select: selectObj
+      });
+      dataIndex = 1;
+    }
+    else {
+      dataIndex = 0;
+    }
+
+    return { defs, dataIndex };
   }
 
   public async deleteAsync(): Promise<void>
   public async deleteAsync<OK extends keyof T>(outputColumns: OK[]): Promise<{ [K in OK]: T[K] }[]>
   public async deleteAsync<OK extends keyof T>(outputColumns?: OK[]): Promise<{ [K in OK]: T[K] }[] | void> {
-    if (typeof this.db === "undefined") {
-      throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
-    }
-    if (!this._tableDef) {
-      throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
-    }
-    // DbContext.selectCache.clear();
-
-    const queryDef = this.getDeleteQueryDef(outputColumns);
+    const { defs, dataIndex } = this._getDeleteDefs(outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
 
-    if (this.db.opt.dialect === "mysql") {
-      const newEntity = {} as TEntity<T>;
-
-      for (const colDef of this._tableDef.columns) {
-        newEntity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(colDef.name)}`);
-      }
-
-      const clone = new Queryable(this.db, this as any, newEntity);
-
-      return (await this.db.executeDefsAsync(
-        [
-          { type: "select", ...clone.getSelectDef() },
-          { type: "delete", ...queryDef }
-        ],
-        [parseOption]
-      ))[0];
-    }
-    else {
-      return (await this.db.executeDefsAsync(
-        [
-          { type: "delete", ...queryDef }
-        ],
-        [parseOption]
-      ))[0];
-    }
+    return (await this.db.executeDefsAsync(
+      defs,
+      defs.map((def, i) => (dataIndex === i ? parseOption : undefined))
+    ))[dataIndex];
   }
 
   public deletePrepare(): void {
+    const { defs } = this._getDeleteDefs(undefined);
+    this.db.prepareDefs.push(...defs);
+  }
+
+  private _getDeleteDefs<OK extends keyof T>(outputColumns: OK[] | undefined): { defs: TQueryDef[]; dataIndex: number } {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
-    const queryDef = this.getDeleteQueryDef(undefined);
-    this.db.prepareDefs.push({ type: "delete", ...queryDef });
+    DbContext.selectCache.clear();
+
+    const defs: TQueryDef[] = [];
+
+    const queryDef = this.getDeleteQueryDef(outputColumns);
+    defs.push({
+      type: "delete" as const,
+      ...queryDef
+    });
+
+    if (this.db.opt.dialect === "mysql" && outputColumns) {
+      const selectObj = outputColumns.toObject((colName) => this.db.qb.wrap(colName as string), (colName) => this.db.qb.wrap(colName as string));
+      defs.insert(0, {
+        type: "select" as const,
+        ...this.getSelectQueryDef(),
+        select: selectObj
+      });
+    }
+
+    return { defs, dataIndex: 0 };
   }
 
-  public async insertIfNotExistsAsync(records: TInsertObject<T>[]): Promise<void>;
+  public async upsertAsync(insertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>)): Promise<void>
+  public async upsertAsync<OK extends keyof T>(insertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>), outputColumns: OK[]): Promise<{ [K in OK]: T[K] }[]>
+  public async upsertAsync<U extends TUpdateObject<T>>(updateFwd: (entity: TEntity<T>) => (U | Promise<U>), insertFwd: (updateRecord: U) => TInsertObject<T>): Promise<void>
+  public async upsertAsync<U extends TUpdateObject<T>, OK extends keyof T>(updateFwd: (entity: TEntity<T>) => (U | Promise<U>), insertFwd: (updateRecord: U) => TInsertObject<T>, outputColumns: OK[]): Promise<{ [K in OK]: T[K] }[]>
+  public async upsertAsync<U extends TUpdateObject<T>, OK extends keyof T>(arg1: ((entity: TEntity<T>) => (U | Promise<U>)) | ((entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>)), arg2?: ((updateRecord: U) => TInsertObject<T>) | OK[], arg3?: OK[]): Promise<{ [K in OK]: T[K] }[] | void> {
+    const updateFwd = arg1;
+    const insertFwd = typeof arg2 === "function" ? arg2 : undefined;
+    const outputColumns = arg2 instanceof Array ? arg2 : arg3;
+
+    const updateRecord = await updateFwd(this._entity) as U;
+    const insertRecord = (insertFwd ? insertFwd(updateRecord) : ObjectUtil.clone(updateRecord)) as TInsertObject<T>;
+
+    const { defs, dataIndex } = this._getUpsertDefs(updateRecord, insertRecord, outputColumns);
+    const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
+
+    const result = (await this.db.executeDefsAsync(
+      defs,
+      defs.map((def, i) => (dataIndex === i ? parseOption : undefined))
+    ));
+    return result[dataIndex];
+  }
+
+  public upsertPrepare<U extends TUpdateObject<T>>(updateObjOrFwd: U | ((entity: TEntity<T>) => U), insertObjOrFwd?: TInsertObject<T> | ((updateRecord: U) => TInsertObject<T>)): void {
+    const updateRecord = (typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd);
+    const insertRecord = (
+      insertObjOrFwd
+        ? (typeof insertObjOrFwd === "function" ? insertObjOrFwd(updateRecord) : insertObjOrFwd)
+        : updateRecord
+    ) as TInsertObject<T>;
+
+    const { defs } = this._getUpsertDefs(updateRecord, insertRecord, undefined);
+    this.db.prepareDefs.push(...defs);
+  }
+
+  private _getUpsertDefs<OK extends keyof T>(updateRecord: TUpdateObject<T>, insertRecord: TInsertObject<T>, outputColumns: OK[] | undefined): { defs: TQueryDef[]; dataIndex: number } {
+    if (typeof this.db === "undefined") {
+      throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
+    }
+    if (!this._tableDef) {
+      throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
+    }
+    DbContext.selectCache.clear();
+
+    const pkColNames = this._tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
+    const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
+
+    let dataIndex: number;
+    const defs: TQueryDef[] = [];
+
+    const queryDef = this.getUpsertQueryDef(updateRecord, insertRecord, undefined);
+    defs.push({
+      type: "upsert" as const,
+      ...queryDef
+    });
+
+    if (this.db.opt.dialect === "mysql" && outputColumns) {
+      const selectObj = outputColumns.toObject((colName) => this.db.qb.wrap(colName as string), (colName) => this.db.qb.wrap(colName as string));
+
+      if (
+        pkColNames.length === 1 && aiColNames.length === 1
+        && pkColNames[0] === aiColNames[0]
+        && !Object.keys(insertRecord).includes(aiColNames[0])
+      ) {
+        const pkColName = pkColNames[0];
+        defs.push({
+          type: "select" as const,
+          from: this._def.from,
+          select: selectObj,
+          where: [[this.db.qb.wrap(pkColName), " = ", "LAST_INSERT_ID()"]]
+        });
+      }
+      else {
+        defs.push({
+          type: "select" as const,
+          from: this._def.from,
+          select: selectObj,
+          where: pkColNames.map((pkColName) => [[this.db.qb.wrap(pkColName), " = ", this.db.qh.getQueryValue(insertRecord[pkColName])]])
+        });
+      }
+      dataIndex = 1;
+    }
+    else {
+      dataIndex = 0;
+    }
+
+    return { defs, dataIndex };
+  }
+
+  /*public async insertIfNotExistsAsync(records: TInsertObject<T>[]): Promise<void>;
   public async insertIfNotExistsAsync<OK extends keyof T>(records: TInsertObject<T>[], outputColumns: OK[]): Promise<{ [K in OK]: T[K] }[]>;
   public async insertIfNotExistsAsync<OK extends keyof T>(records: TInsertObject<T>[], outputColumns?: OK[]): Promise<{ [K in OK]: T[K] }[] | void> {
     if (typeof this.db === "undefined") {
@@ -1372,7 +1468,7 @@ export class Queryable<D extends DbContext, T> {
     if (!this._tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
-    // DbContext.selectCache.clear();
+    DbContext.selectCache.clear();
 
     const queryDefs = records.map((record) => this.getInsertIfNotExistsQueryDef(record, outputColumns));
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
@@ -1381,7 +1477,7 @@ export class Queryable<D extends DbContext, T> {
       throw new NotImplementError("mysql 미구현");
     }
     else {
-      const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement && item.typeFwd() !== Uuid).map((item) => item.name);
+      const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
       const hasAutoIncreaseColumnValue = Object.keys(records[0]).some((item) => aiColNames.includes(item));
 
       if (hasAutoIncreaseColumnValue) {
@@ -1425,113 +1521,7 @@ export class Queryable<D extends DbContext, T> {
         queryDefs.map(() => parseOption)
       )).map((item) => item[0]);
     }
-  }
-
-  public async upsertAsync(insertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>)): Promise<void>
-  public async upsertAsync<OK extends keyof T>(insertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>), outputColumns: OK[]): Promise<{ [K in OK]: T[K] }[]>
-  public async upsertAsync<U extends TUpdateObject<T>>(updateFwd: (entity: TEntity<T>) => (U | Promise<U>), insertFwd: (updateRecord: U) => TInsertObject<T>): Promise<void>
-  public async upsertAsync<U extends TUpdateObject<T>, OK extends keyof T>(updateFwd: (entity: TEntity<T>) => (U | Promise<U>), insertFwd: (updateRecord: U) => TInsertObject<T>, outputColumns: OK[]): Promise<{ [K in OK]: T[K] }[]>
-  public async upsertAsync<U extends TUpdateObject<T>, OK extends keyof T>(arg1: ((entity: TEntity<T>) => (U | Promise<U>)) | ((entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>)), arg2?: ((updateRecord: U) => TInsertObject<T>) | OK[], arg3?: OK[]): Promise<{ [K in OK]: T[K] }[] | void> {
-    if (typeof this.db === "undefined") {
-      throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
-    }
-    if (!this._tableDef) {
-      throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
-    }
-    // DbContext.selectCache.clear();
-
-    const updateFwd = arg1;
-    const insertFwd = typeof arg2 === "function" ? arg2 : undefined;
-    const outputColumns = arg2 instanceof Array ? arg2 : arg3;
-
-    const updateRecord = await updateFwd(this._entity) as U;
-    const insertRecord = (insertFwd ? insertFwd(updateRecord) : ObjectUtil.clone(updateRecord)) as TInsertObject<T>;
-
-    const queryDef = this.getUpsertQueryDef(updateRecord, insertRecord, outputColumns);
-    const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
-
-    if (this.db.opt.dialect === "mysql") {
-      let newEntity = {} as TEntity<T>;
-
-      for (const colDef of this._tableDef.columns) {
-        newEntity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(colDef.name)}`);
-      }
-
-      newEntity = {
-        ...newEntity,
-        ...updateRecord
-      };
-
-      const clone = new Queryable(this.db, this as any, newEntity);
-
-      const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
-
-      const result = (
-        await this.db.executeDefsAsync(
-          [
-            {
-              type: "select",
-              ...clone.getSelectDef()
-            },
-            { type: "upsert", ...queryDef },
-            {
-              type: "select",
-              select: {
-                [this.db.qb.wrap("id")]:
-                  aiColNames.length === 1 && !Object.keys(insertRecord).includes(aiColNames[0])
-                    ? "LAST_INSERT_ID()"
-                    : "0"
-              }
-            }
-          ],
-          [parseOption, undefined, undefined]
-        )
-      );
-
-      if (result[0].length > 0) {
-        return result[0];
-      }
-
-      if (result[2][0] !== undefined) {
-        return [
-          {
-            ...insertRecord,
-            [aiColNames[0]]: result[2][0].id === 0 ? insertRecord[aiColNames[0]] : result[2][0].id
-          } as any
-        ];
-      }
-      else {
-        return [insertRecord as any];
-      }
-    }
-    else {
-      return (
-        await this.db.executeDefsAsync(
-          [{ type: "upsert", ...queryDef }],
-          [parseOption]
-        )
-      )[0];
-    }
-  }
-
-  public upsertPrepare<U extends TUpdateObject<T>>(updateObjOrFwd: U | ((entity: TEntity<T>) => U), insertObjOrFwd?: TInsertObject<T> | ((updateRecord: U) => TInsertObject<T>)): void {
-    if (typeof this.db === "undefined") {
-      throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
-    }
-    if (!this._tableDef) {
-      throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
-    }
-
-    const updateRecord = (typeof updateObjOrFwd === "function" ? updateObjOrFwd(this._entity) : updateObjOrFwd);
-    const insertRecord = (
-      insertObjOrFwd
-        ? (typeof insertObjOrFwd === "function" ? insertObjOrFwd(updateRecord) : insertObjOrFwd)
-        : updateRecord
-    ) as TInsertObject<T>;
-
-    const queryDef = this.getUpsertQueryDef(updateRecord, insertRecord, undefined);
-    this.db.prepareDefs.push({ type: "upsert", ...queryDef });
-  }
+  }*/
 
   public configIdentityInsert(state: "on" | "off"): void {
     if (typeof this.db === "undefined") {
