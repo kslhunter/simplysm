@@ -29,7 +29,7 @@ import { SdModalBase, SdModalProvider } from "../providers/SdModalProvider";
                [inset]="inset"
                [inline]="inline"
                [size]="size"
-               [items]="items"
+               [items]="rootDisplayItems"
                [trackByFn]="trackByFn"
                [selectMode]="selectMode"
                [content.class]="selectClass"
@@ -169,13 +169,20 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
 
   public searchText?: string;
   public items: any[] = [];
+  public itemByParentKeyMap?: Map<string | number | undefined, any>;
+
+  public get rootDisplayItems(): any[] {
+    return this.items.filter((item, index) => (
+      (!this.filterFn || this.filterFn(index, item))
+      && (this.parentKeyProp === undefined || item[this.parentKeyProp] === undefined)
+    ));
+  }
 
   private readonly _itemsIterableDiffer: IterableDiffer<any>;
 
   // 선택될 수 있는것들 (검색어에 의해 숨겨진것도 포함)
   public getItemSelectable(index: number, item: any, depth: number): boolean {
-    return (!this.filterFn || this.filterFn(index, item))
-      && (this.parentKeyProp === undefined || depth !== 0 || item[this.parentKeyProp] === undefined);
+    return (this.parentKeyProp === undefined || depth !== 0 || item[this.parentKeyProp] === undefined);
   }
 
   // 화면 목록에서 뿌려질것 (검색어에 의해 숨겨진것 제외)
@@ -209,7 +216,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
   }
 
   public getChildrenFn = (index: number, item: ISharedDataBase<string | number>, depth: number): any[] => {
-    return this.getItemSelectable(index, item, depth) ? this.items.filter((item1) => item1[this.parentKeyProp!] === item.__valueKey) : [];
+    return this.itemByParentKeyMap?.get(item.__valueKey) ?? [];
   };
 
   public constructor(private readonly _sharedData: SdSharedDataProvider,
@@ -228,6 +235,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
     const items = await this._sharedData.getDataAsync(this.serviceKey, this.dataKey);
     if (!items) return;
     this.items = items;
+
     this._cdr.markForCheck();
 
     this._sharedData.on(this.dataKey, () => {
@@ -247,11 +255,26 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
     const isDataKeyChange = !ObjectUtil.equal(this._prevData.dataKey, this.dataKey);
     if (isDataKeyChange) this._prevData.dataKey = ObjectUtil.clone(this.dataKey);
 
+    const isParentKeyPropChange = !ObjectUtil.equal(this._prevData.parentKeyProp, this.parentKeyProp);
+    if (isParentKeyPropChange) this._prevData.parentKeyProp = ObjectUtil.clone(this.parentKeyProp);
+
     if (isDataKeyChange) {
       this._cdr.markForCheck();
     }
 
     if (itemChanges || (this.value instanceof Array && isValueChange)) {
+      this._cdr.markForCheck();
+    }
+
+    if (itemChanges || isParentKeyPropChange) {
+      if (this.parentKeyProp !== undefined) {
+        this.itemByParentKeyMap = this.items
+          .groupBy((item) => item[this.parentKeyProp!])
+          .toMap((item) => item.key, (item1) => item1.values);
+      }
+      else {
+        this.itemByParentKeyMap = undefined;
+      }
       this._cdr.markForCheck();
     }
   }
