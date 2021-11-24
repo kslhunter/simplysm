@@ -1820,14 +1820,16 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       this._cdr.markForCheck();
     });
 
-    setTimeout(() => {
-      const firstForcusableEl = cellEl.findFocusableAll()[0];
-      if (typeof firstForcusableEl !== "undefined") {
-        firstForcusableEl.focus();
-      }
-      else {
-        cellEl.focus();
-      }
+    this._zone.runOutsideAngular(() => {
+      setTimeout(() => {
+        const firstForcusableEl = cellEl.findFocusableAll()[0];
+        if (typeof firstForcusableEl !== "undefined") {
+          firstForcusableEl.focus();
+        }
+        else {
+          cellEl.focus();
+        }
+      });
     });
   }
 
