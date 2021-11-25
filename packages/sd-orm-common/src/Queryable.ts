@@ -1437,7 +1437,7 @@ export class Queryable<D extends DbContext, T> {
         const pkColName = pkColNames[0];
         defs.push({
           type: "select" as const,
-          from: this._def.from,
+          ...this.getSelectQueryDef(),
           select: selectObj,
           where: [[this.db.qb.wrap(pkColName), " = ", "LAST_INSERT_ID()"]]
         });
@@ -1445,9 +1445,8 @@ export class Queryable<D extends DbContext, T> {
       else {
         defs.push({
           type: "select" as const,
-          from: this._def.from,
-          select: selectObj,
-          where: pkColNames.map((pkColName) => [[this.db.qb.wrap(pkColName), " = ", this.db.qh.getQueryValue(insertRecord[pkColName])]])
+          ...this.getSelectQueryDef(),
+          select: selectObj
         });
       }
       dataIndex = 1;

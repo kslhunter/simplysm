@@ -294,6 +294,17 @@ export abstract class DbContext {
       }));
   }
 
+  public async truncateTable(table: string): Promise<void> {
+    await this.executeDefsAsync([{
+      type: "truncateTable",
+      table: {
+        database: this.opt.database,
+        schema: this.opt.schema,
+        name: table
+      }
+    }]);
+  }
+
   public async initializeAsync(dbs?: string[], force?: boolean): Promise<boolean> {
     if (force && this.status === "transact") {
       throw new Error("DB 강제 초기화는 트랜젝션 상에서는 동작하지 못합니다.\nconnect 대신에 connectWithoutTransaction 로 연결하여 시도하세요.");
@@ -345,9 +356,12 @@ export abstract class DbContext {
               }]);
             }
           }
-        }
 
-        return false;
+          return true;
+        }
+        else {
+          return false;
+        }
       }
     }
 

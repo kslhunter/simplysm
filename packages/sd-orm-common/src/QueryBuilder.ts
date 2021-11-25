@@ -29,6 +29,7 @@ import {
   IRemoveForeignKeyQueryDef,
   IRenameColumnQueryDef,
   ISelectQueryDef,
+  ITruncateTableQueryDef,
   IUpdateQueryDef,
   IUpsertQueryDef,
   TQueryBuilderValue,
@@ -895,6 +896,11 @@ DEALLOCATE PREPARE stmt;`.trim();
 
       return q.trim() + ";";
     }
+  }
+
+  public truncateTable(def: ITruncateTableQueryDef): string {
+    const tableName = this.getTableName(def.table);
+    return `TRUNCATE TABLE ${tableName}`;
   }
 
   // endregion

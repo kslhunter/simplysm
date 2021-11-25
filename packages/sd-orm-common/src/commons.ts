@@ -16,6 +16,7 @@ export type TQueryDef = (
   (IDeleteQueryDef & { type: "delete" }) |
   (IInsertIfNotExistsQueryDef & { type: "insertIfNotExists" }) |
   (IUpsertQueryDef & { type: "upsert" }) |
+  (ITruncateTableQueryDef & { type: "truncateTable" }) |
   (ICreateDatabaseIfNotExistsQueryDef & { type: "createDatabaseIfNotExists" }) |
   (IClearDatabaseIfExistsQueryDef & { type: "clearDatabaseIfExists" }) |
   (IGetDatabaseInfoDef & { type: "getDatabaseInfo" }) |
@@ -262,6 +263,10 @@ export interface IUpsertQueryDef {
   output?: string[];
 }
 
+export interface ITruncateTableQueryDef {
+  table: IQueryTableNameDef;
+}
+
 export interface IDeleteQueryDef extends ISelectQueryDef {
   from: string;
   output?: string[];
@@ -350,7 +355,7 @@ export type TEntityValueOrQueryableOrArray<D extends DbContext, T extends TQuery
 export type TEntity<T> = {
   [K in keyof T]-?: T[K] extends TQueryValue ? QueryUnit<T[K]>
     : T[K] extends (infer A)[] ? TEntity<A>[]
-        : TEntity<T[K]>;
+      : TEntity<T[K]>;
 };
 
 export type TSelectEntity<T> = {
