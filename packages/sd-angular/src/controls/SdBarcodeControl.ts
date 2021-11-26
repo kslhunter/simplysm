@@ -7,7 +7,7 @@ require("jsbarcode");
   selector: "sd-barcode",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <canvas></canvas>`
+    <svg></svg>`
 })
 export class SdBarcodeControl implements OnChanges {
   @Input()
@@ -39,11 +39,11 @@ export class SdBarcodeControl implements OnChanges {
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (Object.keys(changes).length > 0) {
-      const canvasEl = (this._elRef.nativeElement as HTMLElement).findFirst("canvas");
+      const svgEl = (this._elRef.nativeElement as HTMLElement).findFirst("svg");
 
-      if (canvasEl) {
+      if (svgEl) {
         window["JsBarcode"](
-          canvasEl,
+          svgEl,
           this.value,
           {
             margin: this.margin,
