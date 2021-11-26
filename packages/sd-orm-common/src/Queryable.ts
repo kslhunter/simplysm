@@ -58,6 +58,8 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
+  public hasMultiJoin = false;
+
   public get tableDescription(): string {
     if (!this._tableDef) throw new NeverEntryError();
     return this._tableDef.description;
@@ -184,6 +186,24 @@ export class Queryable<D extends DbContext, T> {
   public select(fwd: (entity: TEntity<T>) => any): Queryable<D, any> {
     const newEntity = fwd(this._entity);
     return new Queryable(this.db, this as any, newEntity);
+  }
+
+  public selectByType<A>(tableType: Type<A>): Queryable<D, A> {
+    const tableDef = DbDefinitionUtil.getTableDef(tableType);
+    if (typeof tableDef === "undefined") {
+      throw new Error(`'${tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
+    }
+
+    const newEntity = {} as TEntity<T>;
+    for (const colDef of tableDef.columns) {
+      newEntity[colDef.propertyKey] = this._entity[colDef.propertyKey];
+    }
+
+    return new Queryable(this.db, this as any, newEntity) as any;
+  }
+
+  public ofType<A>(): Queryable<D, A> {
+    return this as any;
   }
 
   public where(predicate: (entity: TEntity<T>) => TEntityValueOrQueryableOrArray<D, any>[]): Queryable<D, T> {
@@ -380,6 +400,7 @@ export class Queryable<D extends DbContext, T> {
       isCustomSelect: joinQueryable._isCustomEntity,
       isSingle: false
     });
+    this.hasMultiJoin = true;
 
     return result;
   }
@@ -416,6 +437,7 @@ export class Queryable<D extends DbContext, T> {
       isCustomSelect: joinQueryable._isCustomEntity,
       isSingle: true
     });
+    this.hasMultiJoin = this.hasMultiJoin || joinQueryable.hasMultiJoin;
 
     return result;
   }
