@@ -431,7 +431,12 @@ export class QueryHelper {
       return `0x${value.toString("hex")}`;
     }
     else if (value instanceof Uuid) {
-      return "'" + value.toString().replace(/-/g, "") + "'";
+      if (this._dialect === "mysql") {
+        return "'" + value.toString().replace(/-/g, "") + "'";
+      }
+      else {
+        return "'" + value.toString() + "'";
+      }
     }
     else if (value instanceof Queryable) {
       const selectDef = value.getSelectQueryDef();
@@ -547,12 +552,12 @@ export class QueryHelper {
       const currType = type as TSdOrmDataType;
       switch (currType.type) {
         case "TEXT":
-          return this._dialect === "mysql" ? "TEXT" : "NTEXT";
+          return this._dialect === "mysql" ? "LONGTEXT" : "NTEXT";
         case "DECIMAL":
           return "DECIMAL(" + currType.precision + ((currType.digits == null || currType.digits === 0) ? "" : (", " + currType.digits)) + ")";
         case "STRING":
           if (this._dialect === "mysql" && currType.length === "MAX") {
-            return "TEXT";
+            return "LONGTEXT";
           }
           else {
             return "NVARCHAR(" + (currType.length ?? "255") + ")";

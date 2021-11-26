@@ -1420,7 +1420,7 @@ export class Queryable<D extends DbContext, T> {
     let dataIndex: number;
     const defs: TQueryDef[] = [];
 
-    const queryDef = this.getUpsertQueryDef(updateRecord, insertRecord, undefined);
+    const queryDef = this.getUpsertQueryDef(updateRecord, insertRecord, outputColumns);
     defs.push({
       type: "upsert" as const,
       ...queryDef
