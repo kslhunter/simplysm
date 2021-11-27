@@ -14,8 +14,6 @@ import {
   IterableChangeRecord,
   IterableDiffer,
   IterableDiffers,
-  KeyValueDiffer,
-  KeyValueDiffers,
   NgZone,
   OnInit,
   Output,
@@ -1045,7 +1043,6 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   private readonly _selectedItemsDiffer: IterableDiffer<any>;
   private readonly _expandedItemsDiffer: IterableDiffer<any>;
   private readonly _columnControlsDiffer: IterableDiffer<SdSheetColumnControl>;
-  private readonly _configColumnObjDiffer: KeyValueDiffer<string, any>;
 
   private readonly _el: HTMLElement;
 
@@ -1053,7 +1050,6 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
                      private readonly _zone: NgZone,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _iterableDiffers: IterableDiffers,
-                     private readonly _keyValueDiffers: KeyValueDiffers,
                      private readonly _modal: SdModalProvider,
                      private readonly _systemConfig: SdSystemConfigRootProvider) {
     this._el = this._elRef.nativeElement;
@@ -1069,9 +1065,6 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
     this._columnControlsDiffer = this._iterableDiffers.find(this.columnControls ?? [])
       .create((i, item) => this.trackByFnForColumnControl(i, item));
-
-    this._configColumnObjDiffer = this._keyValueDiffers.find(this._config?.columnObj ?? {})
-      .create();
   }
 
   public async ngOnInit(): Promise<void> {
@@ -1209,7 +1202,9 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     const selectedItemsChanges = this._selectedItemsDiffer.diff(this.selectedItems);
     const expandedItemsChanges = this._expandedItemsDiffer.diff(this.expandedItems);
     const columnControlsChanges = this._columnControlsDiffer.diff(this.columnControls);
-    const configColumnObjChanges = this._configColumnObjDiffer.diff(this._config?.columnObj ?? {});
+
+    const isConfigColumnObjChange = !ObjectUtil.equal(this._prevData.configColumnObj, this._config?.columnObj);
+    if (isConfigColumnObjChange) this._prevData.configColumnObj = ObjectUtil.clone(this._config?.columnObj);
 
     const isPageItemCountChange = this._prevData.pageItemCount !== this.pageItemCount;
     if (isPageItemCountChange) this._prevData.pageItemCount = this.pageItemCount;
@@ -1232,7 +1227,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     const isWidthChange = this._prevData.width !== this.columnControls?.toArray().sum((item) => item.widthPixel);
     if (isWidthChange) this._prevData.width = this.columnControls?.toArray().sum((item) => item.widthPixel);
 
-    if (itemsChanges || selectedItemsChanges || expandedItemsChanges || columnControlsChanges || configColumnObjChanges) {
+    if (itemsChanges || selectedItemsChanges || expandedItemsChanges || columnControlsChanges || isConfigColumnObjChange) {
       this._cdr.markForCheck();
     }
 
@@ -1271,12 +1266,12 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
         });
     }
 
-    if (columnControlsChanges || configColumnObjChanges || isWidthChange) {
+    if (columnControlsChanges || isConfigColumnObjChange || isWidthChange) {
       this.columnWidthPixelMap = this.columnControls?.toArray()
         .toMap((item) => item.guid, (item) => this._getColumnWidthPixel(item)) ?? new Map<string, number>();
     }
 
-    if (columnControlsChanges || isKeyChange || configColumnObjChanges) {
+    if (columnControlsChanges || isKeyChange || isConfigColumnObjChange) {
       this.fixedColumnControls = this._getColumnControlsOfFixType(true);
       this.nonFixedColumnControls = this._getColumnControlsOfFixType(false);
 
