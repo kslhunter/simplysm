@@ -5,3 +5,4 @@ export * from "./MssqlDbConnection";
 export * from "./MysqlDbConnection";
 export * from "./NodeDbContextExecutor";
 export * from "./SdOrm";
+export * from "./SqliteDbConnection";

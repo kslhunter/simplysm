@@ -744,7 +744,7 @@ export abstract class DbContext {
 }
 
 export interface IDbContextOption {
-  dialect: "mysql" | "mssql" | "mssql-azure";
+  dialect: TDbDialect;
   database: string;
   schema: string;
 }

@@ -413,8 +413,10 @@ export type TUpdateObject<T> = TOnlyQueryValueProperty<{
 
 // endregion
 
+export type TDbDialect = "mysql" | "mssql" | "mssql-azure" | "sqlite";
+
 export interface IDbConnectionConfig {
-  dialect: "mysql" | "mssql" | "mssql-azure" | "sqlite";
+  dialect: TDbDialect;
   host: string;
   port?: number;
   username?: string;

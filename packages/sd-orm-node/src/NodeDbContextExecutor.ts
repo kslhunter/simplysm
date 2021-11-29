@@ -6,6 +6,7 @@ import {
   ISOLATION_LEVEL,
   QueryBuilder,
   SdOrmUtil,
+  TDbDialect,
   TQueryDef
 } from "@simplysm/sd-orm-common";
 import { IDbConnection } from "./IDbConnection";
@@ -19,7 +20,7 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   public async getInfoAsync(): Promise<{
-    dialect: "mssql" | "mysql" | "mssql-azure";
+    dialect: TDbDialect;
     database?: string;
     schema?: string;
   }> {

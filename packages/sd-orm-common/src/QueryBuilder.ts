@@ -31,7 +31,7 @@ import {
   ISelectQueryDef,
   ITruncateTableQueryDef,
   IUpdateQueryDef,
-  IUpsertQueryDef,
+  IUpsertQueryDef, TDbDialect,
   TQueryBuilderValue,
   TQueryDef
 } from "./commons";
@@ -41,7 +41,7 @@ import { QueryHelper } from "./QueryHelper";
 export class QueryBuilder {
   public qh: QueryHelper;
 
-  public constructor(private readonly _dialect: "mysql" | "mssql" | "mssql-azure") {
+  public constructor(private readonly _dialect: TDbDialect) {
     this.qh = new QueryHelper(this._dialect);
   }
 
