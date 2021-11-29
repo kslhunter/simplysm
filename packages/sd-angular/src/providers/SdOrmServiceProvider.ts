@@ -74,7 +74,7 @@ export class SdServiceDbContextExecutor implements IDbContextExecutor {
   }
 
   public async getInfoAsync(): Promise<{
-    dialect: TDbDialect;
+    dialect: "mssql" | "mysql" | "mssql-azure";
     database?: string;
     schema?: string;
   }> {

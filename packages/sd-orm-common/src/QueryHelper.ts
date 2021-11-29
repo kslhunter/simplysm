@@ -1,6 +1,6 @@
 import {
   ISelectQueryDef,
-  TDbDateSeparator, TDbDialect,
+  TDbDateSeparator,
   TEntityValue,
   TEntityValueOrQueryableOrArray,
   TQueryBuilderValue,
@@ -15,7 +15,7 @@ import { CaseWhenQueryHelper } from "./CaseWhenQueryHelper";
 import { CaseQueryHelper } from "./CaseQueryHelper";
 
 export class QueryHelper {
-  public constructor(private readonly _dialect: TDbDialect) {
+  public constructor(private readonly _dialect: "mysql" | "mssql" | "mssql-azure") {
   }
 
   // ----------------------------------------------------

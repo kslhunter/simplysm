@@ -28,7 +28,7 @@ export class SdOrmService extends SdServiceBase {
   };
 
   public async getInfoAsync(opt: Record<string, any>): Promise<{
-    dialect: TDbDialect;
+    dialect: "mssql" | "mysql" | "mssql-azure";
     database?: string;
     schema?: string;
   }> {
