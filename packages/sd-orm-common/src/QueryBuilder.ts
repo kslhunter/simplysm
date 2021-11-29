@@ -1150,9 +1150,6 @@ DEALLOCATE PREPARE stmt;`.trim();
         q += "  " + this.select(def).replace(/\n/g, "\n  ") + "\n";
         q += ") as " + def.as + " ON 1 = 1";
       }
-      else if (this._dialect === "sqlite") {
-        throw new Error("sqlite에선 지원되지 않는 기능입니다.");
-      }
       else {
         q += "OUTER APPLY (\n";
         q += "  " + this.select(def).replace(/\n/g, "\n  ") + "\n";
