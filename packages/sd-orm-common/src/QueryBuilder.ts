@@ -31,8 +31,7 @@ import {
   ISelectQueryDef,
   ITruncateTableQueryDef,
   IUpdateQueryDef,
-  IUpsertQueryDef,
-  TDbDialect,
+  IUpsertQueryDef, TDbDialect,
   TQueryBuilderValue,
   TQueryDef
 } from "./commons";
@@ -60,12 +59,9 @@ ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`.
     else if (this._dialect === "mssql") {
       return `IF NOT EXISTS(select * from sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)}`.trim();
     }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     else if (this._dialect === "mssql-azure") {
       return `IF NOT EXISTS(select * from sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)} (EDITION='Standard', SERVICE_OBJECTIVE='S0', MAXSIZE = 250 GB) WITH CATALOG_COLLATION = Korean_Wansung_CI_AS`.trim();
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    else if (this._dialect === "sqlite") {
-      return "";
     }
     else {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -76,14 +72,6 @@ ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`.
   public clearDatabaseIfExists(def: IClearDatabaseIfExistsQueryDef): string {
     if (this._dialect === "mysql") {
       return `DROP DATABASE IF EXISTS ${this.wrap(def.database)};`;
-    }
-    else if (this._dialect === "sqlite") {
-      return `
-PRAGMA writable_schema = 1;
-DELETE FROM sqlite_master;
-PRAGMA writable_schema = 0;
-VACUUM;
-PRAGMA integrity_check;`;
     }
     else if (this._dialect === "mssql-azure") {
       return `
@@ -301,9 +289,6 @@ ORDER BY i.index_id, ic.key_ordinal;
       if (this._dialect === "mysql") {
         query += `  PRIMARY KEY (${def.primaryKeys.map((item) => `${this.wrap(item.columnName) + (item.orderBy === "ASC" ? "" : ` ${item.orderBy}`)}`).join(", ")})\n`;
       }
-      else if (this._dialect === "sqlite") {
-        query += `  PRIMARY KEY (${def.primaryKeys.map((item) => `${this.wrap(item.columnName) + (item.orderBy === "ASC" ? "" : ` ${item.orderBy}`)}`).join(", ")})\n`;
-      }
       else {
         const pkName = this.wrap(`PK_${def.table.name}`);
         query += `  CONSTRAINT ${pkName} PRIMARY KEY (${def.primaryKeys.map((item) => (this.wrap(item.columnName) + (item.orderBy === "ASC" ? "" : ` ${item.orderBy}`))).join(", ")})\n`;
@@ -312,23 +297,6 @@ ORDER BY i.index_id, ic.key_ordinal;
     else {
       query += "\n";
     }
-
-    if (def.foreignKeys && def.foreignKeys.length > 0) {
-      if (this._dialect === "sqlite") {
-        for (const fk of def.foreignKeys) {
-          const targetTableName = this.getTableName(fk.targetTable);
-
-          query += `  FOREIGN KEY (${fk.fkColumns.map((columnName) => `${this.wrap(columnName)}`).join(", ")})\n`;
-          query += `    REFERENCES ${targetTableName} (${fk.targetPkColumns.map((columnName) => `${this.wrap(columnName)}`).join(", ")})\n`;
-          query += "    ON DELETE NO ACTION\n";
-          query += "    ON UPDATE NO ACTION";
-        }
-      }
-      else {
-        throw new Error(`'${this._dialect}'에선 'CREATE TABLE'시점의 'FK'등록이 허용되지 않습니다.`);
-      }
-    }
-
     query += ");";
     return query.trim();
   }
@@ -344,8 +312,8 @@ ORDER BY i.index_id, ic.key_ordinal;
     const queries: string[] = [];
     if (!def.column.nullable && def.column.defaultValue !== undefined) {
       queries.push(`ALTER TABLE ${tableName} ADD ${this._getQueryOfColDef({
-          ...def.column,
-          nullable: true
+        ...def.column,
+        nullable: true
       })}`);
       queries.push(`UPDATE ${tableName} SET ${this.wrap(def.column.name)} = ${this.getQueryOfQueryValue(def.column.defaultValue)}`);
       queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${this._getQueryOfColDef(def.column)}`);
@@ -369,8 +337,8 @@ ORDER BY i.index_id, ic.key_ordinal;
       const queries: string[] = [];
       if (!def.column.nullable && def.column.defaultValue !== undefined) {
         queries.push(`ALTER TABLE ${tableName} MODIFY COLUMN ${this._getQueryOfColDef({
-            ...def.column,
-            nullable: true
+          ...def.column,
+          nullable: true
         })}`);
         queries.push(
           `UPDATE ${tableName} SET ${this.wrap(def.column.name)} = ${this.getQueryOfQueryValue(def.column.defaultValue)} WHERE ${this.wrap(def.column.name)} IS NULL`
@@ -385,8 +353,8 @@ ORDER BY i.index_id, ic.key_ordinal;
       const queries: string[] = [];
       if (!def.column.nullable && def.column.defaultValue !== undefined) {
         queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${this._getQueryOfColDef({
-            ...def.column,
-            nullable: true
+          ...def.column,
+          nullable: true
         })}`);
         queries.push(`UPDATE ${tableName} SET ${this.wrap(def.column.name)} = ${this.getQueryOfQueryValue(def.column.defaultValue)} WHERE ${this.wrap(def.column.name)} IS NULL`);
       }
@@ -435,10 +403,6 @@ ORDER BY i.index_id, ic.key_ordinal;
   }
 
   public addForeignKey(def: IAddForeignKeyQueryDef): string {
-    if (this._dialect === "sqlite") {
-      throw new Error("'sqlite'에선 'ALTER TABLE'을 통한 'FK'등록이 허용되지 않습니다.");
-    }
-
     const tableName = this.getTableName(def.table);
     const tableNameChain = this.getTableNameChain(def.table);
     const tableKey = this._dialect === "mysql" && tableNameChain.join("_").length > 30
@@ -494,7 +458,7 @@ ORDER BY i.index_id, ic.key_ordinal;
 
   public configIdentityInsert(def: IConfigIdentityInsertQueryDef): string {
     const tableName = this.getTableName(def.table);
-    return this._dialect === "sqlite" ? "" : `SET IDENTITY_INSERT ${tableName} ${def.state.toUpperCase()}`;
+    return `SET IDENTITY_INSERT ${tableName} ${def.state.toUpperCase()}`;
   }
 
   public configForeignKeyCheck(def: IConfigForeignKeyCheckQueryDef): string {
@@ -708,7 +672,7 @@ ORDER BY i.index_id, ic.key_ordinal;
       }
     }
 
-    if (this._dialect === "mysql" || this._dialect === "sqlite") {
+    if (this._dialect === "mysql") {
       // FROM, AS
       q += ` ${def.from} as ${def.as}`;
       q += `\n`;
@@ -729,30 +693,18 @@ ORDER BY i.index_id, ic.key_ordinal;
     }
 
     // FIELD = VALUE
-    if (this._dialect === "sqlite") {
-      q += Object.keys(def.record).map((key) => `  ${key} = ${this.getQueryOfQueryValue(def.record[key])}`).join(",\n");
-      q += "\n";
-    }
-    else {
-      q += Object.keys(def.record).map((key) => `  ${def.as!}.${key} = ${this.getQueryOfQueryValue(def.record[key])}`).join(",\n");
-      q += "\n";
-    }
+    q += Object.keys(def.record).map((key) => `  ${def.as!}.${key} = ${this.getQueryOfQueryValue(def.record[key])}`).join(",\n");
+    q += "\n";
 
     // OUTPUT
-    if (def.output) {
-      if (this._dialect === "mysql") {
-      }
-      else if (this._dialect === "sqlite") {
-      }
-      else {
+    if (this._dialect !== "mysql") {
+      if (def.output) {
         q += `OUTPUT ${def.output.map((item) => "INSERTED." + item).join(", ")}`;
         q += "\n";
       }
     }
 
-    if (this._dialect === "mysql" || this._dialect === "sqlite") {
-    }
-    else {
+    if (this._dialect !== "mysql") {
       // FROM, AS
       q += `FROM ${def.from} as ${def.as}`;
       q += "\n";
@@ -778,30 +730,12 @@ ORDER BY i.index_id, ic.key_ordinal;
         q += "\n";
       }
     }
-
-
-    // OUTPUT(SQLITE)
-    if (def.output) {
-      if (this._dialect === "sqlite") {
-        q += `RETURNING ${def.output.map((item) => item).join(", ")}`;
-        q += "\n";
-      }
-    }
-
     return q.trim() + ";";
   }
 
   public insertIfNotExists(def: IInsertIfNotExistsQueryDef): string {
     if (this._dialect === "mysql") {
       throw new NotImplementError();
-    }
-    else if (this._dialect === "sqlite") {
-      return `
-INSERT INTO ${def.from} (${Object.keys(def.insertRecord).join(", ")})
-SELECT ${Object.values(def.insertRecord).map((val) => this.getQueryOfQueryValue(val)).join(", ")}
-WHERE NOT EXISTS(
-    ${this.select(def).replace(/\n/g, "\n  ")}
-);`.trim();
     }
     else {
       let q = "";
@@ -861,11 +795,6 @@ CALL ${procName};
 DROP PROCEDURE ${procName};`;
 
       return q.trim() + ";";
-    }
-    else if (this._dialect === "sqlite") {
-      return `
-${Object.keys(def.updateRecord).length > 0 ? this.update({ ...def, record: def.updateRecord }) : ``}
-${Object.keys(def.insertRecord).length > 0 ? this.insertIfNotExists(def) : ``}`.trim();
     }
     else {
       let q = "";
@@ -927,44 +856,6 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;`.trim();
     }
-    else if (this._dialect === "sqlite") {
-      let q = "";
-
-      // LINE 1
-      q += `DELETE`;
-      if (def.top !== undefined) {
-        q += ` TOP (${def.top})`;
-      }
-      q += "\n";
-
-      // OUTPUT
-
-      if (def.output) {
-        q += `RETURNING ${def.output.map((item) => item).join(", ")}`;
-        q += "\n";
-      }
-
-      // FROM, AS
-      q += `FROM ${def.from} as ${def.as}`;
-      q += "\n";
-
-
-      // JOIN
-      if (def.join && def.join.length > 0) {
-        for (const joinDef of def.join) {
-          q += this._getQueryOfJoinDef(joinDef);
-          q += "\n";
-        }
-      }
-
-      // WHERE
-      if (def.where) {
-        q += `WHERE ${def.where.map((item) => this.getQueryOfQueryValue(item)).join("")}`;
-        q += "\n";
-      }
-
-      return q.trim() + ";";
-    }
     else {
       let q = "";
 
@@ -1025,8 +916,7 @@ DEALLOCATE PREPARE stmt;`.trim();
 
   public wrap(name: string): string {
     return this._dialect === "mysql" ? "`" + name + "`"
-      : this._dialect === "sqlite" ? "\"" + name + "\""
-        : "[" + name + "]";
+      : "[" + name + "]";
   }
 
   public getTableName(def: IQueryTableNameDef): string {
@@ -1035,14 +925,6 @@ DEALLOCATE PREPARE stmt;`.trim();
 
   public getTableNameChain(def: IQueryTableNameDef): string[] {
     if (this._dialect === "mysql") {
-      if (def.database !== undefined) {
-        return [def.database, def.name];
-      }
-      else {
-        return [def.name];
-      }
-    }
-    else if (this._dialect === "sqlite") {
       if (def.database !== undefined) {
         return [def.database, def.name];
       }

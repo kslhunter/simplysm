@@ -22,8 +22,7 @@ export class SdOrmService extends SdServiceBase {
   public static getDbConnConfigAsync = async (rootPath: string, url: string, opt: Record<string, any>): Promise<IDbConnectionConfig> => {
     const config: IDbConnectionConfig | undefined = (await SdServiceServerConfigUtil.getConfigAsync(rootPath, url)).orm?.[opt.configName];
     if (config === undefined) {
-      return opt.config;
-      // throw new Error("서버에서 ORM 설정을 찾을 수 없습니다.");
+      throw new Error("서버에서 ORM 설정을 찾을 수 없습니다.");
     }
 
     return { ...config, ...opt.config };

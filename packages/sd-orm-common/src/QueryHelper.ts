@@ -398,9 +398,6 @@ export class QueryHelper {
       if (this._dialect === "mysql") {
         return `'${value.replace(/'/g, "''")}'`;
       }
-      else if (this._dialect === "sqlite") {
-        return `'${value.replace(/'/g, "''")}'`;
-      }
       else {
         return `N'${value.replace(/'/g, "''")}'`;
       }
@@ -561,9 +558,6 @@ export class QueryHelper {
         case "STRING":
           if (this._dialect === "mysql" && currType.length === "MAX") {
             return "LONGTEXT";
-          }
-          else if (this._dialect === "sqlite" && currType.length === "MAX") {
-            return "TEXT";
           }
           else {
             return "NVARCHAR(" + (currType.length ?? "255") + ")";
