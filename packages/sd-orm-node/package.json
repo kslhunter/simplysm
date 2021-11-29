@@ -16,10 +16,12 @@
     "@simplysm/sd-core-node": "6.3.6",
     "@simplysm/sd-orm-common": "6.3.6",
     "tedious": "^14.0.0",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "sqlite3": "^5.0.2"
   },
   "devDependencies": {
     "@types/tedious": "^4.0.5",
-    "@types/mysql": "^2.15.19"
+    "@types/mysql": "^2.15.19",
+    "@types/sqlite3": "^3.1.7"
   }
 }
