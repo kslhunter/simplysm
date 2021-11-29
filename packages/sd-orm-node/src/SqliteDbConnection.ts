@@ -26,16 +26,16 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
     }
 
     const conn = await new Promise<sqlite3.Database>((resolve, reject) => {
-      return new sqlite3.Database(this.config.host)
-        .on("open", () => {
-          this._startTimeout();
-          this.isConnected = true;
-          this.isOnTransaction = false;
-          resolve(conn);
-        })
-        .on("error", (err) => {
-          reject(err);
-        });
+      const db = new sqlite3.Database(this.config.host);
+      db.on("open", () => {
+        this._startTimeout();
+        this.isConnected = true;
+        this.isOnTransaction = false;
+        resolve(db);
+      });
+      db.on("error", (err) => {
+        reject(err);
+      });
     });
 
     conn.on("close", () => {
@@ -64,6 +64,7 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
     delete this._conn;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async beginTransactionAsync(isolationLevel?: ISOLATION_LEVEL): Promise<void> {
     if (!this._conn || !this.isConnected) {
       throw new Error(`'Connection'이 연결되어있지 않습니다.`);
@@ -73,6 +74,7 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
     this._conn.run("BEGIN;");
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async commitTransactionAsync(): Promise<void> {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
@@ -82,6 +84,7 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
     this._conn.run("COMMIT;");
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async rollbackTransactionAsync(): Promise<void> {
     if (!this._conn || !this.isConnected) {
       throw new Error("'Connection'이 연결되어있지 않습니다.");
@@ -111,14 +114,12 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
             this._startTimeout();
 
             if (err) {
-              reject(new SdError(err, "쿼리 수행중 오류발생" + ("\n-- query\n" + queryString + "\n--")));
+              reject(new SdError(err, "쿼리 수행중 오류발생\n-- query\n" + queryString + "\n--"));
               return;
             }
 
-            if (rows instanceof Array) {
-              resultItems.push(...rows);
-            }
-            resolve()
+            resultItems.push(...rows);
+            resolve();
           });
         });
       }

@@ -5,6 +5,7 @@ import {
   IQueryColumnDef,
   IQueryResultParseOption,
   ISOLATION_LEVEL,
+  TDbDialect,
   TQueryDef
 } from "@simplysm/sd-orm-common";
 import { SdServiceClient } from "@simplysm/sd-service-browser";

@@ -1,7 +1,7 @@
 import { QueryBuilder } from "./QueryBuilder";
 import { IDbContextExecutor } from "./IDbContextExecutor";
 import { QueryHelper } from "./QueryHelper";
-import { IQueryColumnDef, IQueryResultParseOption, ISOLATION_LEVEL, ITableDef, TQueryDef } from "./commons";
+import { IQueryColumnDef, IQueryResultParseOption, ISOLATION_LEVEL, ITableDef, TDbDialect, TQueryDef } from "./commons";
 import { DateTime, NeverEntryError, ObjectUtil, SdError, Type } from "@simplysm/sd-core-common";
 import { IDbMigration } from "./IDbMigration";
 import { Queryable } from "./Queryable";
