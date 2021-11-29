@@ -41,6 +41,10 @@ const logger = Logger.get(["simplysm", "sd-cli"]);
             type: "string",
             describe: "simplysm.json 파일 경로"
           },
+          noLint: {
+            type: "boolean",
+            describe: `lint 작업을 수행하지 않음`
+          },
           options: {
             type: "string",
             describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)",
