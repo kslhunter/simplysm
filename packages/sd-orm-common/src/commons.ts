@@ -77,10 +77,18 @@ export interface IQueryPrimaryKeyDef {
   orderBy: "ASC" | "DESC";
 }
 
+export interface IQueryForeignKeyDef {
+  name: string;
+  fkColumns: string[];
+  targetTable: IQueryTableNameDef;
+  targetPkColumns: string[];
+}
+
 export interface ICreateTableQueryDef {
   table: IQueryTableNameDef;
   columns: IQueryColumnDef[];
   primaryKeys: IQueryPrimaryKeyDef[];
+  foreignKeys?: IQueryForeignKeyDef[];
 }
 
 export interface ICreateDatabaseIfNotExistsQueryDef {
@@ -160,12 +168,7 @@ export interface IAddPrimaryKeyQueryDef {
 
 export interface IAddForeignKeyQueryDef {
   table: IQueryTableNameDef;
-  foreignKey: {
-    name: string;
-    fkColumns: string[];
-    targetTable: IQueryTableNameDef;
-    targetPkColumns: string[];
-  };
+  foreignKey: IQueryForeignKeyDef;
 }
 
 export interface IRemoveForeignKeyQueryDef {

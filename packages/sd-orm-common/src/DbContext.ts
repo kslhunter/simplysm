@@ -457,7 +457,29 @@ export abstract class DbContext {
         .map((item) => ({
           columnName: item.name,
           orderBy: "ASC"
-        }))
+        })),
+      ...this.opt.dialect === "sqlite" ? {
+        foreignKeys: tableDef.foreignKeys
+          .map((item) => {
+            const targetTableDef = DbDefinitionUtil.getTableDef(item.targetTypeFwd());
+
+            const targetPkNames = targetTableDef.columns
+              .filter((item1) => item1.primaryKey !== undefined)
+              .orderBy((item1) => item1.primaryKey!)
+              .map((item1) => item1.name);
+
+            return {
+              name: item.name,
+              fkColumns: item.columnPropertyKeys.map((propKey) => tableDef.columns.single((col) => col.propertyKey === propKey)!.name),
+              targetTable: {
+                database: targetTableDef.database ?? this.opt.database,
+                schema: targetTableDef.schema ?? this.opt.schema,
+                name: targetTableDef.name
+              },
+              targetPkColumns: targetPkNames
+            };
+          })
+      } : {}
     };
   }
 
@@ -480,7 +502,7 @@ export abstract class DbContext {
           .map((item) => item.name);
 
         addFkQueryDefs.push(...[
-          {
+          ...this.opt.dialect === "sqlite" ? [] : [{
             type: "addForeignKey",
             table: {
               database: tableDef.database ?? this.opt.database,
@@ -497,7 +519,7 @@ export abstract class DbContext {
               },
               targetPkColumns: targetPkNames
             }
-          } as TQueryDef,
+          } as TQueryDef],
           {
             type: "createIndex",
             table: {

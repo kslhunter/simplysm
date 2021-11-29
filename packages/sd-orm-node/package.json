@@ -17,7 +17,7 @@
     "@simplysm/sd-orm-common": "6.3.8",
     "tedious": "^14.0.0",
     "mysql": "^2.18.1",
-    "sqlite3": "^5.0.2"
+    "sqlite3": "github:mapbox/node-sqlite3"
   },
   "devDependencies": {
     "@types/tedious": "^4.0.5",
