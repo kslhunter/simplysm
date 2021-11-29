@@ -7,7 +7,6 @@ import {
   ISOLATION_LEVEL,
   QueryBuilder,
   SdOrmUtil,
-  TDbDialect,
   TQueryDef
 } from "@simplysm/sd-orm-common";
 import { SdServiceBase } from "../SdServiceBase";
