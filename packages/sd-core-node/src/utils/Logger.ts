@@ -186,6 +186,7 @@ export class Logger {
       const lastFileSeq = fileNames
         .filter((fileName) => fileName.endsWith(".log"))
         .map((fileName) => Number(path.basename(fileName, path.extname(fileName))))
+        .filter((item) => !Number.isNaN(item))
         .max();
 
       let logFileName = "1.log";
