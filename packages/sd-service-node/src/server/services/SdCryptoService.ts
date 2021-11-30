@@ -3,7 +3,7 @@ import { SdServiceBase } from "../SdServiceBase";
 import { SdServiceServerConfigUtil } from "../SdServiceServerConfigUtil";
 
 export class SdCryptoService extends SdServiceBase {
-  public async encryptAsync(str: string): Promise<string> {
+  public async encryptAsync(data: string | Buffer): Promise<string> {
     const config = (
       await SdServiceServerConfigUtil.getConfigAsync(this.server.rootPath, this.request.url)
     ).crypto;
@@ -12,7 +12,7 @@ export class SdCryptoService extends SdServiceBase {
     }
 
     return crypto.createHmac("sha256", config.key)
-      .update(str)
+      .update(data)
       .digest("hex");
   }
 }
