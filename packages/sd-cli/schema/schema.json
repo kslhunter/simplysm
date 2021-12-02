@@ -334,6 +334,13 @@
                           "password",
                           "keystoreType"
                         ]
+                      },
+                      "plugins": {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "items": {
+                          "type": "string"
+                        }
                       }
                     },
                     "required": [

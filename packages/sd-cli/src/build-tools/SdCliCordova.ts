@@ -46,6 +46,9 @@ export class SdCliCordova {
       );
     }
 
+    // platforms 폴더 혹시 없으면 생성
+    await FsUtil.mkdirsAsync(path.resolve(this._cordovaPath, "platforms"));
+
     // www 폴더 혹시 없으면 생성
     await FsUtil.mkdirsAsync(path.resolve(this._cordovaPath, "www"));
 
@@ -185,12 +188,18 @@ export class SdCliCordova {
     for (const target of this._config.targets) {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (target === "android") {
+        const targetOutPath = path.resolve(outPath, target);
         const apkFileName = this._config.sign !== undefined ? "app-release.apk" : "app-release-unsigned.apk";
         const distApkFileName = path.basename(`${this._config.appName}${this._config.sign !== undefined ? "" : "-unsigned"}-v${this._npmConfig.version}.apk`);
-        await FsUtil.mkdirsAsync(outPath);
+        const latestDistApkFileName = path.basename(`${this._config.appName}${this._config.sign !== undefined ? "" : "-unsigned"}-latest.apk`);
+        await FsUtil.mkdirsAsync(targetOutPath);
         await FsUtil.copyAsync(
           path.resolve(this._cordovaPath, "platforms/android/app/build/outputs/apk/release", apkFileName),
-          path.resolve(outPath, distApkFileName)
+          path.resolve(targetOutPath, distApkFileName)
+        );
+        await FsUtil.copyAsync(
+          path.resolve(this._cordovaPath, "platforms/android/app/build/outputs/apk/release", apkFileName),
+          path.resolve(targetOutPath, latestDistApkFileName)
         );
       }
       else {

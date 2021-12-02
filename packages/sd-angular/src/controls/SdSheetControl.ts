@@ -338,7 +338,8 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
                       <div class="_cell-content" style="text-align: center;">
                         <sd-checkbox [value]="getColumnChecked(columnControl, item)"
                                      (valueChange)="setColumnChecked(columnControl, item, $event)"
-                                     inset size="sm"></sd-checkbox>
+                                     inset size="sm"
+                                     [disabled]="columnControl.selectDisabledFn ? columnControl.selectDisabledFn(index, item) : false"></sd-checkbox>
                       </div>
                     </ng-container>
                     <div class="_border"
@@ -366,7 +367,8 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
                       <div class="_cell-content" style="text-align: center;">
                         <sd-checkbox [value]="getColumnChecked(columnControl, item)"
                                      (valueChange)="setColumnChecked(columnControl, item, $event)"
-                                     inset size="sm"></sd-checkbox>
+                                     inset size="sm"
+                                     [disabled]="columnControl.selectDisabledFn ? columnControl.selectDisabledFn(index, item) : false"></sd-checkbox>
                       </div>
                     </ng-container>
                     <div class="_border"

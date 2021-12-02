@@ -291,34 +291,40 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
       return { content, dependencies: [] };
     }
 
-    const results = matches.map((match) => nodeSass.renderSync({
-      file: filePath,
-      data: scssRegex.exec(match)?.[1],
-      precision: 8,
-      includePaths: [],
-      outputStyle: "expanded",
-      sourceMapEmbed: false,
-      sourceMap: false
-    }));
+    try {
+      const results = matches.map((match) => nodeSass.renderSync({
+        file: filePath,
+        data: scssRegex.exec(match)?.[1],
+        precision: 8,
+        includePaths: [],
+        outputStyle: "expanded",
+        sourceMapEmbed: false,
+        sourceMap: false
+      }));
 
-    const deps = results.mapMany((result) => result.stats.includedFiles).map((item) => path.resolve(item));
+      const deps = results.mapMany((result) => result.stats.includedFiles).map((item) => path.resolve(item));
 
-    let i = 0;
-    const newContent = content.replace(new RegExp(scssRegex, "gi"), () => {
-      let result = "`" + results[i].css.toString() + "`";
-      const prev = matches[i];
+      let i = 0;
+      const newContent = content.replace(new RegExp(scssRegex, "gi"), () => {
+        let result = "`" + results[i].css.toString() + "`";
+        const prev = matches[i];
 
-      const diffCount = Array.from(prev).filter((item) => item === "\n").length
-        - Array.from(result).filter((item) => item === "\n").length;
+        const diffCount = Array.from(prev).filter((item) => item === "\n").length
+          - Array.from(result).filter((item) => item === "\n").length;
 
-      for (let j = 0; j < diffCount; j++) {
-        result += os.EOL;
-      }
+        for (let j = 0; j < diffCount; j++) {
+          result += os.EOL;
+        }
 
-      i += 1;
-      return result;
-    });
+        i += 1;
+        return result;
+      });
 
-    return { content: newContent, dependencies: deps };
+      return { content: newContent, dependencies: deps };
+    }
+    catch (err) {
+      this._logger.error(err);
+      return { content, dependencies: [] };
+    }
   }
 }

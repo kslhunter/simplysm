@@ -1,22 +1,15 @@
 import { Injectable } from "@angular/core";
 import { EventManager } from "@angular/platform-browser";
 import { NeverEntryError } from "@simplysm/sd-core-common";
-import { SdModalProvider } from "../providers/SdModalProvider";
 
 @Injectable({ providedIn: null })
 export class SdDataRefreshEventPlugin {
   public manager!: EventManager;
 
-  public constructor(private readonly _modal: SdModalProvider) {
-  }
-
   public addEventListener(element: HTMLElement, eventName: string, handler: (event: Event) => void): () => void {
     const listener = (event: KeyboardEvent): void => {
-      if (element.offsetParent == null) return;
-
       if ((event.key === "l" || event.key === "L") && event.ctrlKey && event.altKey) {
         event.preventDefault();
-        if (this._modal.modalCount > 0) return;
 
         this.manager.getZone().run(() => {
           handler(event);
@@ -36,7 +29,6 @@ export class SdDataRefreshEventPlugin {
       const listener = (event: KeyboardEvent): void => {
         if ((event.key === "l" || event.key === "L") && event.ctrlKey && event.altKey) {
           event.preventDefault();
-          if (this._modal.modalCount > 0) return;
 
           this.manager.getZone().run(() => {
             handler(event);

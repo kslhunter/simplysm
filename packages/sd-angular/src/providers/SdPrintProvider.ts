@@ -23,7 +23,7 @@ export class SdPrintProvider {
   @page { size: ${options?.size ?? "auto"}; margin: ${options?.margin ?? "0"}; }
   @media print
   {
-      html, body { -webkit-print-color-adjust: exact; }
+      html, body { -webkit-print-color-adjust: exact; background: white; }
       body > * { display: none !important; }
       body > ._sd-print-template { display: block !important; }
   }`;

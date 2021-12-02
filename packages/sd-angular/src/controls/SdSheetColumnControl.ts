@@ -87,4 +87,8 @@ export class SdSheetColumnControl {
 
   @Output()
   public readonly selectedItemsChange = new EventEmitter<any[]>();
+
+  @Input()
+  @SdInputValidate(Function)
+  public selectDisabledFn?: (index: number, item: any) => boolean;
 }
