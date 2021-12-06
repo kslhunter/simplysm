@@ -333,16 +333,21 @@ export class Queryable<D extends DbContext, T> {
                                                                                resultType: Type<RT>): Queryable<D, T & Record<PC, string> & Record<VC, UnwrappedType<RT> | undefined>> {
     const entity: any = { ...this._entity };
 
-    if (entity[pivotKeys[0]] instanceof QueryUnit) {
-      entity[valueColumn] = new QueryUnit<any>(entity[pivotKeys[0]].type, `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(valueColumn)}`);
-      entity[pivotColumn] = new QueryUnit<any>(String, `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(pivotColumn)}`);
-
-      for (const pivotKey of pivotKeys) {
-        delete entity[pivotKey];
-      }
+    if (this.db.opt.dialect === "mysql") {
+      throw new NotImplementError();
     }
     else {
-      throw new NotImplementError();
+      if (entity[pivotKeys[0]] instanceof QueryUnit) {
+        entity[valueColumn] = new QueryUnit<any>(entity[pivotKeys[0]].type, `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(valueColumn)}`);
+        entity[pivotColumn] = new QueryUnit<any>(String, `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(pivotColumn)}`);
+
+        for (const pivotKey of pivotKeys) {
+          delete entity[pivotKey];
+        }
+      }
+      else {
+        throw new NotImplementError();
+      }
     }
 
     const result = new Queryable(this.db, this as any, entity);
