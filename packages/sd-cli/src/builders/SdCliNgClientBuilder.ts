@@ -478,13 +478,8 @@ export class SdCliNgClientBuilder extends EventEmitter {
                 loader: "css",
                 minify: true,
                 sourcefile,
-                target: this.platformType === "cordova" ? [
-                  ...(this._platformConfig as ISdClientCordovaPlatformConfig).targets.mapMany((target) => [
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                    ...target === "android" ? ["android 90"] : []
-                  ])
-                ] : browserslist([
-                  "last 1 Chrome versions",
+                target: browserslist([
+                  "last 2 Chrome versions",
                   "last 2 Edge major versions"
                 ]).map((item) => item.replace(/ /g, ""))
               });
