@@ -15,6 +15,7 @@
   "scripts": {
     "watch": "yarn _sd-cli_ watch",
     "build": "yarn _sd-cli_ build",
+    "publish": "yarn _sd-cli_ publish",
     "publish(--build)": "yarn _sd-cli_ publish --build",
     "--": "",
     "debug:watch": "yarn _sd-cli_ --debug watch",
