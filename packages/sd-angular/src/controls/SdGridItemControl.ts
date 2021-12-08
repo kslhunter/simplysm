@@ -9,6 +9,10 @@ import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular
     :host {
       display: inline-block;
       vertical-align: top;
+
+      @media screen and (max-width: 600px) {
+        width: 100% !important;
+      }
     }
   `]
 })
