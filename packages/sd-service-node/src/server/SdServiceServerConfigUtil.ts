@@ -13,7 +13,7 @@ export class SdServiceServerConfigUtil {
     }
 
     if (requestUrl !== undefined && requestUrl !== "" && !requestUrl.startsWith("file://")) {
-      const urlObj = url.parse(requestUrl.replace(/__([^_]*)__\//g, ""), true, false);
+      const urlObj = url.parse(requestUrl.replace(/__([^\/]*)\//g, ""), true, false);
       const clientPath = decodeURI(urlObj.pathname!.slice(1));
       const targetPath = path.resolve(rootPath, "www", clientPath);
 
@@ -35,7 +35,7 @@ export class SdServiceServerConfigUtil {
     }
 
     if (requestUrl !== undefined && requestUrl !== "" && !requestUrl.startsWith("file://")) {
-      const urlObj = url.parse(requestUrl.replace(/__([^_]*)__\//g, ""), true, false);
+      const urlObj = url.parse(requestUrl.replace(/__([^\/]*)\//g, ""), true, false);
       const clientPath = decodeURI(urlObj.pathname!.slice(1));
       const targetPath = path.resolve(rootPath, "www", clientPath);
 
