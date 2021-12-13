@@ -385,6 +385,13 @@ export class SdCliNgClientBuilder extends EventEmitter {
               }
             }
           ] as any : [],
+          /*
+          {
+            test: /\.m?js/,
+            resolve: {
+              fullySpecified: false
+            }
+          },*/
           {
             test: /\.scss$/i,
             rules: [

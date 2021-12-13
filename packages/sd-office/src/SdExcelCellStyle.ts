@@ -93,7 +93,7 @@ export class SdExcelCellStyle {
     this._excelCell.cellData.$.s = newIndex;
   }
 
-  public get numberFormat(): string {
+  public get numberFormat(): string | number {
     const styleData = this._getStyleData();
     if (styleData?.$?.numFmtId === undefined || styleData.$.numFmtId === "0") {
       return "number";
@@ -128,11 +128,11 @@ export class SdExcelCellStyle {
         return "DateOnly";
       }
 
-      return "number";
+      return NumberUtil.parseInt(styleData.$.numFmtId) ?? 0;
     }
   }
 
-  public set numberFormat(value: string) {
+  public set numberFormat(value: string | number) {
     const newStyle = this._createNewStyle();
     newStyle.$ = newStyle.$ ?? {};
     newStyle.$.applyFont = 1;
@@ -150,6 +150,9 @@ export class SdExcelCellStyle {
     }
     else if (value === "Currency") {
       newStyle.$.numFmtId = 42;
+    }
+    else if (typeof value === "number") {
+      newStyle.$.numFmtId = value;
     }
     else {
       const newNumFmt = this._createNewNumFmt();
