@@ -747,6 +747,9 @@ export const routes: Routes = [
       else {
         moduleImportTexts.push(`import { NgModule } from "@angular/core";`);
         moduleImportTexts.push(`import { RouterModule } from "@angular/router";`);
+        if (path.basename(distFilePath) !== "_routes.ts") {
+          moduleImportTexts.push(`import { SdCanDeactivateGuardProvider } from "@simplysm/sd-angular";`);
+        }
         moduleImportTexts.push(`import { ${routingModuleInfo.page.name} } from "${pageFilePath}";`);
 
         const thisPageModuleInfoEntry = Array.from(moduleInfoMap.entries())
@@ -798,6 +801,7 @@ export class ${routingModuleInfo.page.name}RoutingModule {
     content += `  path: "${routingModuleInfo.path}",\r\n`;
     if (path.basename(distFilePath) !== "_routes.ts") {
       content += `  component: ${routingModuleInfo.page.name},\r\n`;
+      content += `  canDeactivate: [SdCanDeactivateGuardProvider],\r\n`;
     }
     if (routingModuleInfo.children.length > 0) {
       content += `  children: [\r\n`;

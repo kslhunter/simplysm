@@ -27,7 +27,7 @@ export class SdCliProject {
   public readonly npmConfigFilePath: string;
 
   private readonly _fnQueue = new FunctionQueue();
-  private readonly _serverInfoMap = new Map<string, { middlewares: NextHandleFunction[]; clientNames: string[]; port?: number; ssl?: boolean }>();
+  private readonly _serverInfoMap = new Map<string, { middlewares: NextHandleFunction[]; clients: { name: string; platform: string }[]; port?: number; ssl?: boolean }>();
 
   public constructor(private readonly _rootPath: string) {
     this.npmConfigFilePath = path.resolve(this._rootPath, "package.json");
@@ -100,7 +100,7 @@ export class SdCliProject {
           if (server) {
             const serverInfo = this._serverInfoMap.getOrCreate(pkg.npmConfig.name, {
               middlewares: [],
-              clientNames: []
+              clients: []
             });
             server.middlewares = serverInfo.middlewares;
             serverInfo.port = server.options.port;
@@ -131,9 +131,13 @@ export class SdCliProject {
         if (pkg instanceof SdCliClientPackage) {
           const middlewares = await pkg.watchAsync();
           if (!StringUtil.isNullOrEmpty(pkg.config.server)) {
-            const serverInfo = this._serverInfoMap.getOrCreate(pkg.config.server, { middlewares: [], clientNames: [] });
+            const serverInfo = this._serverInfoMap.getOrCreate(pkg.config.server, { middlewares: [], clients: [] });
             serverInfo.middlewares.push(...middlewares);
-            serverInfo.clientNames = serverInfo.clientNames.concat([pkg.npmConfig.name.split("/").last()!]).distinct();
+            const platforms = pkg.config.platforms?.map((item) => item.type) ?? ["browser"];
+            serverInfo.clients = serverInfo.clients.concat(platforms.map((platform) => ({
+              name: pkg.npmConfig.name.split("/").last()!,
+              platform
+            }))).distinct();
           }
         }
         else {
@@ -251,10 +255,14 @@ export class SdCliProject {
   }
 
   private _loggingOpenClientHrefs(): void {
-    const clientHrefs = Array.from(this._serverInfoMap.values()).mapMany((serverInfo) => serverInfo.clientNames.map((clientName) => {
+    const clientHrefs = Array.from(this._serverInfoMap.values()).mapMany((serverInfo) => serverInfo.clients.map((client) => {
       const protocolStr = serverInfo.ssl ? "https://" : "http://";
       const portStr = serverInfo.port !== undefined ? `:${serverInfo.port}` : "";
-      return protocolStr + "localhost" + portStr + "/" + clientName + "/";
+      let result = protocolStr + "localhost" + portStr + "/";
+      if (client.platform !== "browser") {
+        result += `__${client.platform}/`;
+      }
+      return result + client.name + "/";
     }));
     if (clientHrefs.length > 0) {
       this._logger.log(`오픈된 클라이언트: ${clientHrefs.join(", ")}`);
