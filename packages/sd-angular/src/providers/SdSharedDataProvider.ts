@@ -106,7 +106,11 @@ export class SdSharedDataProvider {
       const info = this._dataInfoMap.get(dataType);
       if (!info) throw new Error(`'${dataType}'에 대한 'SdSharedData' 로직 정보가 없습니다.`);
 
-      const data = (await info.getData()).orderBy((item) => info.orderBy(item));
+      let data = await info.getData();
+      for (const orderBy of info.orderBy.reverse()) {
+        data = orderBy[1] === "desc" ? data.orderByDesc((item) => orderBy[0](item))
+          : data.orderBy((item) => orderBy[0](item));
+      }
       this._dataMap.set(dataType, data);
       this._dataMapMap.set(dataType, data.toMap((item) => info.getKey(item)));
 
@@ -167,9 +171,14 @@ export class SdSharedDataProvider {
             }
           }
 
-          const tempCurrItems = [...currItems];
+          let tempCurrItems = [...currItems];
           currItems.clear();
-          currItems.push(...tempCurrItems.orderBy((item) => info.orderBy(item)));
+
+          for (const orderBy of info.orderBy.reverse()) {
+            tempCurrItems = orderBy[1] === "desc" ? tempCurrItems.orderByDesc((item) => orderBy[0](item))
+              : tempCurrItems.orderBy((item) => orderBy[0](item));
+          }
+          currItems.push(...tempCurrItems);
 
           const listeners = this._dataChangeListenerMap.get(dataType);
           if (listeners && listeners.length > 0) {
@@ -188,7 +197,7 @@ export class SdSharedDataProvider {
 export interface ISharedDataInfo<V extends string | number, T extends ISharedDataBase<V>> {
   getData: (changeKeys?: V[]) => T[] | Promise<T[]>;
   getKey: (data: T) => V;
-  orderBy: (data: T) => any;
+  orderBy: [(data: T) => any, "asc" | "desc"][];
 }
 
 export interface ISharedDataBase<V extends string | number> {

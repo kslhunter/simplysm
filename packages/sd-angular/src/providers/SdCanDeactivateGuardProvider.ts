@@ -4,7 +4,7 @@ import { ActivatedRouteSnapshot, CanDeactivate, RouterStateSnapshot } from "@ang
 
 @Injectable({ providedIn: null })
 export class SdCanDeactivateGuardProvider implements CanDeactivate<any> {
-  public fn?: () => Observable<boolean> | boolean;
+  public fn?: () => boolean;
 
   public canDeactivate(component: any,
                        route: ActivatedRouteSnapshot,
