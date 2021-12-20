@@ -17,7 +17,8 @@ import { SdFormControl } from "./SdFormControl";
   template: `
     <label [attr.unvisible]="!label && !labelTemplateRef"
            [style.width]="labelWidth"
-           [hidden]="layout === 'none'">
+           [hidden]="layout === 'none'"
+           [style.text-align]="labelAlign">
       <ng-container *ngIf="!labelTemplateRef">{{ label }}</ng-container>
       <ng-container *ngIf="labelTemplateRef">
         <ng-template [ngTemplateOutlet]="labelTemplateRef"
@@ -53,16 +54,18 @@ import { SdFormControl } from "./SdFormControl";
 
       &[sd-layout="table"] {
         display: table-row;
+        vertical-align: top;
 
         > label {
           display: table-cell;
-          vertical-align: top;
+          vertical-align: middle;
           padding: var(--gap-sm) var(--gap-default);
           text-align: right;
         }
 
         > ._content {
           display: table-cell;
+          vertical-align: middle;
           padding-bottom: var(--gap-sm);
         }
 
@@ -101,6 +104,22 @@ import { SdFormControl } from "./SdFormControl";
       &[sd-layout="none"] {
         display: contents;
       }
+      
+      &[sd-label-align="left"]{
+        > label {
+          text-align: left;
+        }
+      }
+      &[sd-label-align="right"]{
+        > label {
+          text-align: right;
+        }
+      }
+      &[sd-label-align="center"]{
+        > label {
+          text-align: center;
+        }
+      }
     }
   `]
 })
@@ -111,6 +130,11 @@ export class SdFormItemControl {
 
   @ContentChild("label", { static: true })
   public labelTemplateRef?: TemplateRef<{ label?: string }>;
+
+  @HostBinding("attr.sd-label-align")
+  public get labelAlign(): "left" | "right" | "center" | undefined {
+    return this._parentFormControl.labelAlign;
+  }
 
   @HostBinding("attr.sd-layout")
   public get layout(): "cascade" | "inline" | "table" | "none" | undefined {

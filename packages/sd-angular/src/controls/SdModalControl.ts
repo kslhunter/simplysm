@@ -27,7 +27,8 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
          [style.width.px]="(minWidthPx && (minWidthPx > (widthPx || 0))) ? minWidthPx : widthPx"
          [style.height.px]="(minHeightPx && (minHeightPx > (heightPx || 0))) ? minHeightPx : heightPx">
       <sd-dock-container>
-        <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)">
+        <sd-dock class="_header" (mousedown)="onHeaderMouseDown($event)"
+                 *ngIf="!hideHeader">
           <sd-anchor class="_close-button"
                      (click)="onCloseButtonClick()"
                      *ngIf="!hideCloseButton">
@@ -285,6 +286,10 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
 
   @Input()
   @SdInputValidate(Boolean)
+  public hideHeader?: boolean;
+
+  @Input()
+  @SdInputValidate(Boolean)
   public hideCloseButton?: boolean;
 
   @Input()
@@ -340,7 +345,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
 
   private readonly _el: HTMLElement;
   private _dialogEl?: HTMLElement;
-  private _dialogHeaderEl!: HTMLElement;
+  private _dialogHeaderEl?: HTMLElement;
 
   public initialized = false;
 
@@ -385,7 +390,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
         }
       });
 
-      this._dialogHeaderEl.addEventListener("mousedown", (event) => {
+      this._dialogHeaderEl?.addEventListener("mousedown", (event) => {
         this.onHeaderMouseDown(event);
       });
     });

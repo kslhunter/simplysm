@@ -47,6 +47,13 @@ export class SdFormControl {
   @SdInputValidate(String)
   public labelWidth?: string;
 
+  @Input("label.align")
+  @SdInputValidate({
+    type: String,
+    includes: ["left", "right", "center"]
+  })
+  public labelAlign: "left" | "right" | "center" | undefined;
+
   @Output()
   public readonly submit = new EventEmitter<Event | undefined>();
 

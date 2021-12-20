@@ -1,0 +1,24 @@
+{
+  "name": "@simplysm/sd-angular-mobile",
+  "version": "6.3.22",
+  "description": "심플리즘 패키지 - Angular 모바일 모듈 (browser)",
+  "author": "김석래",
+  "repository": "github:kslhunter/simplysm6",
+  "license": "MIT",
+  "main": "./dist-angular/index.js",
+  "browser": "./dist-angular/index.js",
+  "types": "./dist-types/index.d.ts",
+  "sideEffects": false,
+  "engines": {
+    "node": "^14"
+  },
+  "dependencies": {
+    "@angular/common": "^12.2.2",
+    "@angular/core": "^12.2.2",
+    "rxjs": "6.6.7",
+    "zone.js": "~0.11.4",
+    "@simplysm/sd-core-common": "6.3.22",
+    "@simplysm/sd-core-browser": "6.3.22",
+    "@simplysm/sd-angular": "6.3.22"
+  }
+}

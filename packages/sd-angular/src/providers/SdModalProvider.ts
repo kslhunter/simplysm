@@ -26,6 +26,7 @@ export class SdModalProvider {
                                                           param: T["__tInput__"],
                                                           options?: {
                                                             key?: string;
+                                                            hideHeader?: boolean;
                                                             hideCloseButton?: boolean;
                                                             useCloseByBackdrop?: boolean;
                                                             useCloseByEscapeKey?: boolean;
@@ -49,6 +50,7 @@ export class SdModalProvider {
 
         const prevActiveElement = document.activeElement as HTMLElement | undefined;
         userModalRef.instance.isModal = true;
+        userModalRef.instance.title = title;
         userModalRef.instance.close = (value?: T["__tOutput__"]): void => {
           resolve(value);
 
@@ -66,6 +68,7 @@ export class SdModalProvider {
 
         modalEntryRef.instance.key = options?.key;
         modalEntryRef.instance.title = title;
+        modalEntryRef.instance.hideHeader = options?.hideHeader;
         modalEntryRef.instance.hideCloseButton = options?.hideCloseButton;
         modalEntryRef.instance.useCloseByBackdrop = options?.useCloseByBackdrop ?? true;
         modalEntryRef.instance.useCloseByEscapeKey = options?.useCloseByEscapeKey ?? true;
@@ -99,6 +102,7 @@ export abstract class SdModalBase<I, O> {
   public __tInput__!: I;
   public __tOutput__!: O;
   public isModal = false;
+  public title!: string;
 
   public abstract sdOnOpen(param: I): void | Promise<void>;
 

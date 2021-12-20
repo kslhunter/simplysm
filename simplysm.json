@@ -17,6 +17,18 @@
       },
       "publish": "npm"
     },
+    "@simplysm/sd-angular-mobile": {
+      "type": "library",
+      "targets": [
+        "angular"
+      ],
+      "autoIndex": {
+        "polyfills": [
+          "@simplysm/sd-core-browser"
+        ]
+      },
+      "publish": "npm"
+    },
     "@simplysm/sd-cli": {
       "type": "library",
       "targets": [

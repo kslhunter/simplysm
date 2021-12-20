@@ -61,14 +61,14 @@ small {
     font-size: var(--font-size-#{$h});
     line-height: var(--line-height);
     margin: 0;
-
-    &.sd-page-header {
-      margin-top: var(--gap-default);
-      margin-bottom: var(--gap-default);
-      padding-bottom: var(--gap-xxs);
-      border-bottom: 1px solid var(--sd-border-color);
-    }
   }
+}
+
+.sd-page-header {
+  margin-top: var(--gap-default);
+  margin-bottom: var(--gap-default);
+  padding-bottom: var(--gap-xxs);
+  border-bottom: 1px solid var(--sd-border-color);
 }
 
 .sd-help {
