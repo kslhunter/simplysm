@@ -9,7 +9,6 @@ import { SdDataRefreshEventPlugin } from "./plugins/SdDataRefreshEventPlugin";
 import { SdInsertEventPlugin } from "./plugins/SdInsertEventPlugin";
 import { SdCopyEventPlugin } from "./plugins/SdCopyEventPlugin";
 import { SdModalProviderModule } from "./_modules/providers/SdModalProviderModule";
-import { SdAndroidBackbuttonEventPlugin } from "./plugins/SdAndroidBackbuttonEventPlugin";
 import { SdPasteEventPlugin } from "./plugins/SdPasteEventPlugin";
 
 @NgModule({
@@ -36,7 +35,6 @@ export class SdAngularModule {
         { provide: EVENT_MANAGER_PLUGINS, useClass: SdCopyEventPlugin, multi: true },
         { provide: EVENT_MANAGER_PLUGINS, useClass: SdResizeEventPlugin, multi: true },
         { provide: EVENT_MANAGER_PLUGINS, useClass: SdMutationEventPlugin, multi: true },
-        { provide: EVENT_MANAGER_PLUGINS, useClass: SdAndroidBackbuttonEventPlugin, multi: true },
         { provide: EVENT_MANAGER_PLUGINS, useClass: SdPasteEventPlugin, multi: true },
         { provide: ErrorHandler, useClass: SdAngularGlobalErrorHandler }
       ]

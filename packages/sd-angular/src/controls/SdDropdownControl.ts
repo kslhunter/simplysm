@@ -243,7 +243,7 @@ export class SdDropdownControl implements OnInit, OnDestroy {
         event.preventDefault();
         event.stopPropagation();
 
-        this.openPopup();        
+        this.openPopup();
       }
     }
 

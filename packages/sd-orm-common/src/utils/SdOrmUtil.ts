@@ -214,7 +214,7 @@ export class SdOrmUtil {
               const childJoinValue = doing(joinValue, childJoinInfos);
               if (joinInfo.isSingle) {
                 if (childJoinValue.length > 1) {
-                  throw new Error("중복");
+                  throw new Error(`중복`);
                 }
                 else {
                   resultItem[joinInfo.key] = childJoinValue[0];
@@ -227,6 +227,7 @@ export class SdOrmUtil {
             else {
               if (joinInfo.isSingle) {
                 if (joinValue.length > 1) {
+                  console.log(joinInfo, joinValue);
                   throw new Error("중복");
                 }
                 else {

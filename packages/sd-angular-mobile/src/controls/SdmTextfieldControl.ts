@@ -38,7 +38,7 @@ import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
 
       > input {
         width: 100%;
-        padding: var(--gap-sm) 0;
+        padding: calc(var(--gap-sm) + 1px) 0 calc(var(--gap-sm) - 1px);
         border: none;
         border-bottom: 2px solid var(--sd-border-color);
         background: transparent;
@@ -47,7 +47,7 @@ import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
         font-family: var(--font-family);
         line-height: var(--line-height);
 
-        color: var(--text-color-default);
+        color: var(--text-brightness-default);
 
         &::-webkit-input-placeholder {
           color: var(--text-brightness-lighter);
@@ -64,13 +64,17 @@ import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
         }
 
         transition: border-color 0.3s;
+      }
 
+      &[sd-invalid=true] {
+        > input {
+          border-bottom-color: var(--theme-color-danger-default);
+        }
+      }
+
+      > input {
         &:focus {
           border-color: var(--theme-color-primary-default);
-        }
-
-        &:invalid {
-          border-bottom-color: var(--theme-color-danger-default);
         }
 
         &:disabled {
@@ -87,13 +91,14 @@ import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
 
       &[sd-size=sm] {
         > input {
-          padding: var(--gap-xs) var(--gap-sm);
+          padding: calc(var(--gap-xs) + 1px) 0 calc(var(--gap-xs) - 1px);
         }
       }
 
       &[sd-size=lg] {
         > input {
-          padding: var(--gap-default) var(--gap-lg);
+          font-size: var(--font-size-lg);
+          padding: calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
         }
       }
 
@@ -112,6 +117,19 @@ import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
 
           &:focus {
             outline: 1px solid var(--theme-color-primary-default);
+          }
+
+          padding: var(--gap-sm) 0;
+        }
+        
+        &[sd-size=sm] {
+          > input {
+            padding: var(--gap-xs) 0;
+          }
+        }
+        &[sd-size=lg] {
+          > input {
+            padding: var(--gap-default) 0;
           }
         }
       }

@@ -91,7 +91,7 @@ export class SdAppStructureHelper {
     return resultFlatMenus;
   }
 
-  public static getTitleByCode(menus: ISdAppStructureItem[], code: string): string {
+  public static getTitleByCode(menus: ISdAppStructureItem[], code: string, withoutParent?: boolean): string {
     const codes = code.split(".");
 
     const result: string[] = [];
@@ -106,8 +106,8 @@ export class SdAppStructureHelper {
     }
 
     const parent = result.slice(0, -1).join(" > ");
-    const current = result.last();
-    return (parent ? `[${parent}] ` : "") + current;
+    const current = result.last()!;
+    return withoutParent ? current : ((parent ? `[${parent}] ` : "") + current);
   }
 
   public static getPermissions(menus: ISdAppStructureItem[], codes: string[] = []): ISdPermission[] {

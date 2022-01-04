@@ -37,6 +37,11 @@ import { ISdResizeEvent } from "@simplysm/sd-core-browser";
       &:focus {
         outline: 1px solid var(--theme-color-primary-default);
       }
+
+      @media screen and (max-width: 520px) {
+        @include elevation(0);
+        border: 1px solid var(--sd-border-color);
+      }
     }
   `]
 })

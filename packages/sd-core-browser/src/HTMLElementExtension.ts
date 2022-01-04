@@ -14,6 +14,8 @@ declare global {
 
     findFirst(selector: string): HTMLElement | undefined;
 
+    getParents(): HTMLElement[];
+
     findParent(selector: string): HTMLElement | undefined;
 
     findParent(element: HTMLElement): HTMLElement | undefined;
@@ -80,6 +82,18 @@ HTMLElement.prototype.findParent = function (arg: string | Element): HTMLElement
   }
 
   return cursor ?? undefined;
+};
+
+HTMLElement.prototype.getParents = function (): HTMLElement[] {
+  const result: HTMLElement[] = [];
+
+  let cursor = this.parentElement;
+  while (cursor) {
+    result.push(cursor);
+    cursor = cursor.parentElement;
+  }
+
+  return result;
 };
 
 HTMLElement.prototype.prependChild = function <T extends HTMLElement>(newChild: T): T {

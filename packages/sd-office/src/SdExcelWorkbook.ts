@@ -380,6 +380,25 @@ export class SdExcelWorkbook {
     }
   }
 
+  public getJson(wsName: string): Record<string, any>[] {
+    const ws = this._worksheets.single((item) => item.name === wsName);
+    if (ws === undefined) throw new Error("시트 [" + wsName + "] 를 찾을 수 없습니다.");
+
+    const result: Record<string, any>[] = [];
+    for (let r = 1; r < ws.rowLength; r++) {
+      const data: Record<string, any> = {};
+      for (let c = 0; c < ws.row(r).columnLength; c++) {
+        const header = ws.cell(0, c).value;
+        if (header !== undefined) {
+          data[header] = ws.cell(r, c).value;
+        }
+      }
+      result.push(data);
+    }
+
+    return result;
+  }
+
   public get json(): Record<string, Record<string, any>[]> {
     const result: Record<string, Record<string, any>[]> = {};
 

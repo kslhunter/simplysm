@@ -22,6 +22,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       display: block;
       margin-bottom: var(--gap-sm);
       text-align: center;
+      width: 100%;
 
       > ._sd-toast-block {
         display: inline-block;
@@ -67,7 +68,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
           transform: none;
           transition: .1s ease-out;
           transition-property: transform, opacity;
-          opacity: .9;
+          opacity: 1;
         }
       }
 
@@ -77,6 +78,25 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
           transition: .1s ease-in;
           transition-property: transform, opacity;
           opacity: 0;
+        }
+      }
+
+      @media screen and (max-width: 520px) {        
+        > ._sd-toast-block {
+          @include elevation(0);
+          border-radius: calc(var(--line-height) / 2);
+
+          transform: translateY(100%);
+
+          > ._sd-toast-message {
+            padding: var(--gap-xs) var(--gap-default);
+          }
+        }
+
+        &[sd-open=false] {
+          > ._sd-toast-block {
+            transform: translateY(100%);
+          }
         }
       }
     }

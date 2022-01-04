@@ -147,7 +147,6 @@ export * from "./directives/SdRouterLinkDirective";
 export * from "./modals/SdAddressSearchModal";
 export * from "./modals/SdObjectMerge3Modal";
 export * from "./modals/SdSheetConfigModal";
-export * from "./plugins/SdAndroidBackbuttonEventPlugin";
 export * from "./plugins/SdAngularGlobalErrorHandler";
 export * from "./plugins/SdCopyEventPlugin";
 export * from "./plugins/SdDataRefreshEventPlugin";

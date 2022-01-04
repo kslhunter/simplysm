@@ -52,10 +52,6 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
       await this._ngCompiler.analyzeAsync();
 
       for (const sourceFile of this._builder.getSourceFiles()) {
-        /*for (const filePath of dirtyFilePaths) {
-          const sourceFile = this._builder.getSourceFile(filePath);
-          if (!sourceFile) continue;*/
-
         if (this._ngCompiler.ignoreForDiagnostics.has(sourceFile)) continue;
         if (sourceFile.isDeclarationFile) continue;
 
@@ -87,10 +83,6 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
           }
         }
       }
-
-      /*if (this._parsedTsconfig.options.declaration) {
-        this._writeMetadataBundles();
-      }*/
     }
 
     const result = diagnostics.map((item) => SdTsDiagnosticUtil.convertDiagnosticsToResult(item)).filterExists();
@@ -115,27 +107,6 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
   private _getMetadata(sourceFile: ts.SourceFile): ModuleMetadata | undefined {
     return new MetadataCollector().getMetadata(sourceFile, true);
   }
-
-  /*private _writeMetadataBundles(): void {
-    for (const rootFilePath of this._parsedTsconfig.fileNames) {
-      const metadata = new MetadataBundler(
-        rootFilePath.replace(/\.ts$/, ""),
-        rootFilePath.endsWith("/index.ts") ? this.npmConfig.name
-          : (this.npmConfig.name + "/" + PathUtil.posix(path.relative(path.resolve(this.rootPath, "src"), rootFilePath)).replace(/\.ts/, "")),
-        new CompilerHostAdapter(this._cacheCompilerHost!, null, this._parsedTsconfig.options),
-        undefined
-      ).getMetadataBundle().metadata;
-
-      const outFileName = path.resolve(
-        this._parsedTsconfig.options.declarationDir!,
-        path.relative(path.resolve(this.rootPath, "src"), rootFilePath)
-      ).replace(/\.ts$/, ".sd-metadata.json");
-
-      const fileCache = this._fileCache.get(PathUtil.posix(rootFilePath));
-      if (!fileCache?.sourceFile) throw new NeverEntryError();
-      this._cacheCompilerHost!.writeFile(outFileName, JSON.stringify(metadata), false, undefined, [fileCache.sourceFile]);
-    }
-  }*/
 
   public override getParsedTsconfig(): ts.ParsedCommandLine {
     return ts.parseJsonConfigFileContent(this._tsconfig, ts.sys, this.rootPath, this._tsconfig.angularCompilerOptions);
@@ -323,7 +294,7 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
       return { content: newContent, dependencies: deps };
     }
     catch (err) {
-      this._logger.error(err);
+      this._logger.error(filePath, err);
       return { content, dependencies: [] };
     }
   }

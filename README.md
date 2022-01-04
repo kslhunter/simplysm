@@ -6,4 +6,4 @@ node@v14
 
 ## Installation
 
-    yarn install --ignore-optional
+    yarn install

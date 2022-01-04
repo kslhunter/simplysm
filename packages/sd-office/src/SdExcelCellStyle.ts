@@ -95,41 +95,61 @@ export class SdExcelCellStyle {
 
   public get numberFormat(): string | number {
     const styleData = this._getStyleData();
-    if (styleData?.$?.numFmtId === undefined || styleData.$.numFmtId === "0") {
+    if (
+      styleData?.$?.numFmtId === undefined
+      || styleData.$.numFmtId === "0"
+      || styleData.$.numFmtId === "10" // percent
+    ) {
       return "number";
     }
-    else if (styleData.$.numFmtId === "14") {
+    else if (
+      styleData.$.numFmtId === "14"
+      || styleData.$.numFmtId === "55"
+    ) {
       return "DateOnly";
     }
     else if (styleData.$.numFmtId === "22") {
       return "DateTime";
     }
-    else if (styleData.$.numFmtId === "42") {
+    else if (
+      styleData.$.numFmtId === "41"
+      || styleData.$.numFmtId === "42"
+    ) {
       return "Currency";
     }
     else if (styleData.$.numFmtId === "49") {
       return "string";
     }
-    else {
+    else if (styleData.$.numFmtId > 50) {
       const numFmtData = this._getNumFmtData();
-      if (
-        (Boolean(numFmtData?.$?.formatCode?.includes("yy")) || Boolean(numFmtData?.$?.formatCode?.includes("YY")))
-        && (Boolean(numFmtData?.$?.formatCode?.includes("mm")) || Boolean(numFmtData?.$?.formatCode?.includes("MM")))
-        && (Boolean(numFmtData?.$?.formatCode?.includes("dd")) || Boolean(numFmtData?.$?.formatCode?.includes("DD")))
-        && (Boolean(numFmtData?.$?.formatCode?.includes("hh")) || Boolean(numFmtData?.$?.formatCode?.includes("HH")))
-      ) {
-        return "DateTime";
-      }
-      else if (
-        (Boolean(numFmtData?.$?.formatCode?.includes("yy")) || Boolean(numFmtData?.$?.formatCode?.includes("YY")))
-        && (Boolean(numFmtData?.$?.formatCode?.includes("mm")) || Boolean(numFmtData?.$?.formatCode?.includes("MM")))
-        && (Boolean(numFmtData?.$?.formatCode?.includes("dd")) || Boolean(numFmtData?.$?.formatCode?.includes("DD")))
-      ) {
-        return "DateOnly";
-      }
 
-      return NumberUtil.parseInt(styleData.$.numFmtId) ?? 0;
+      const fmtCode = numFmtData?.$?.formatCode as string | undefined;
+      if (fmtCode !== undefined) {
+        if (
+          fmtCode.includes("yy") || fmtCode.includes("YY")
+          || fmtCode.includes("mm") || fmtCode.includes("MM")
+          || fmtCode.includes("dd") || fmtCode.includes("DD")
+        ) {
+          return "DateTime";
+        }
+        else if (
+          fmtCode.includes("yy") || fmtCode.includes("YY")
+          || fmtCode.includes("mm") || fmtCode.includes("MM")
+          || fmtCode.includes("dd") || fmtCode.includes("DD")
+          || fmtCode.includes("hh") || fmtCode.includes("HH")
+        ) {
+          return "DateOnly";
+        }
+        else if (fmtCode.includes("#,##0")) {
+          return "Currency";
+        }
+        else if (fmtCode === "0_);[Red]\\(0\\)") {
+          return "number";
+        }
+      }
     }
+
+    return NumberUtil.parseInt(styleData.$.numFmtId) ?? 0;
   }
 
   public set numberFormat(value: string | number) {

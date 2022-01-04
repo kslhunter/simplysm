@@ -264,12 +264,29 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
         }
       }
 
-      @media screen and (max-width: 480px) {
+      @media screen and (max-width: 520px) {
         padding-top: 0;
 
         > ._dialog {
           width: 100%;
           height: 100%;
+
+          border: none;
+
+          > sd-dock-container > ._header {
+            background: transparent;
+            color: var(--text-brightness-lighter);
+
+            ._close-button,
+            ._clear-config-button {
+              color: var(--text-brightness-lighter);
+
+              &:hover {
+                background: transparent;
+                color: var(--text-brightness-lighter);
+              }
+            }
+          }
         }
       }
     }

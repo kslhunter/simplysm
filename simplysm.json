@@ -24,7 +24,8 @@
       ],
       "autoIndex": {
         "polyfills": [
-          "@simplysm/sd-core-browser"
+          "@simplysm/sd-core-browser",
+          "@simplysm/sd-angular"
         ]
       },
       "publish": "npm"

@@ -12,11 +12,6 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       cursor: pointer;
       color: var(--theme-color-primary-default);
 
-      /*&:focus {
-        outline-color: transparent;
-        background: var(--trans-brightness-light);
-      }*/
-
       &:hover {
         color: var(--theme-color-primary-dark);
         text-decoration: underline;
@@ -30,6 +25,19 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
         color: var(--theme-color-grey-light);
         cursor: default;
         pointer-events: none;
+      }
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+      :host {
+        &:hover {
+          color: var(--theme-color-primary-default);
+          text-decoration: none;
+        }
+
+        &:active {
+          color: var(--theme-color-primary-default);
+        }
       }
     }
   `]

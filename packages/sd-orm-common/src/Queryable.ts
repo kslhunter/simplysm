@@ -702,19 +702,19 @@ export class Queryable<D extends DbContext, T> {
           throw new Error("SELECT 에 입력할 수 없는 정보가 입력되었습니다. (qh.equal 등은 qh.is 로 wrapping 해 주어야 사용할 수 있습니다.)");
         }
         else {
-          for (const subKey of Object.keys(value[0])) {
+          for (const subKey of Object.keys(value[0]).orderBy()) {
             addSelectValue(`${key}.${subKey}`, value[0][subKey]);
           }
         }
       }
       else {
-        for (const subKey of Object.keys(value)) {
+        for (const subKey of Object.keys(value).orderBy()) {
           addSelectValue(`${key}.${subKey}`, value[subKey]);
         }
       }
     };
 
-    for (const entityKey of Object.keys(this._entity)) {
+    for (const entityKey of Object.keys(this._entity).orderBy()) {
       addSelectValue(entityKey, this._entity[entityKey]);
     }
 

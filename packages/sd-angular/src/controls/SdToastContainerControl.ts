@@ -6,7 +6,8 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
   template: ``,
   styles: [/* language=SCSS */ `
     :host {
-      display: block;
+      display: flex;
+      flex-direction: column;
       position: fixed;
       top: 0;
       left: 0;
@@ -15,6 +16,10 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
       pointer-events: none;
       padding: var(--gap-xxl);
       z-index: var(--z-index-toast);
+
+      @media screen and (max-width: 520px) {
+        flex-direction: column-reverse;
+      }
     }
   `]
 })
