@@ -11,7 +11,9 @@ import * as webpack from "webpack";
 import * as path from "path";
 import * as ts from "typescript";
 import { FsUtil, Logger, PathUtil, SdProcessWorker } from "@simplysm/sd-core-node";
-import { JavaScriptOptimizerPlugin } from "@angular-devkit/build-angular/src/webpack/plugins/javascript-optimizer-plugin";
+import {
+  JavaScriptOptimizerPlugin
+} from "@angular-devkit/build-angular/src/webpack/plugins/javascript-optimizer-plugin";
 import * as CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import * as esbuild from "esbuild";
 import {
@@ -36,6 +38,7 @@ import * as WebpackHotMiddleware from "webpack-hot-middleware";
 import * as os from "os";
 import { LintResult } from "eslint-webpack-plugin/declarations/options";
 import { SdCliCordova } from "../build-tools/SdCliCordova";
+import * as JSZip from "jszip";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ESLintWebpackPlugin = require("eslint-webpack-plugin");
@@ -109,6 +112,25 @@ export class SdCliNgClientBuilder extends EventEmitter {
 
         if (cordova) {
           await cordova.buildAsync(this.parsedTsconfig.options.outDir!);
+
+          const platformConfig = this._platformConfig as ISdClientCordovaPlatformConfig;
+
+          const zip = new JSZip();
+          const resultFiles = await FsUtil.globAsync(path.resolve(this.rootPath, ".cordova", "www", "**/*"), {
+            dot: true,
+            nodir: true
+          });
+          for (const resultFile of resultFiles) {
+            const contentBuffer = await FsUtil.readFileBufferAsync(resultFile);
+
+            const relativePath = path.relative(path.resolve(this.rootPath, ".cordova", "www"), resultFile);
+            zip.file("/" + relativePath, contentBuffer);
+          }
+
+          const zipFileName = path.basename(`${platformConfig.appName}-v${this.npmConfig.version}.zip`);
+          const resultBuffer = await zip.generateAsync({ type: "nodebuffer" });
+
+          await FsUtil.writeFileAsync(path.resolve(this.parsedTsconfig.options.outDir!, "updates/", zipFileName), resultBuffer);
         }
 
         const results = SdWebpackUtil.getWebpackResults(stat!);
@@ -268,6 +290,27 @@ export class SdCliNgClientBuilder extends EventEmitter {
           ? path.resolve(serverPath, "dist/www", packageKey, ".config.json")
           : path.resolve(this.parsedTsconfig.options.outDir!, ".config.json");
         await FsUtil.writeFileAsync(configDistPath, JSON.stringify(this.config.configs ?? {}, undefined, 2));
+
+        /*if (cordova) {
+          const platformConfig = this._platformConfig as ISdClientCordovaPlatformConfig;
+
+          const zip = new JSZip();
+          const resultFiles = await FsUtil.globAsync(path.resolve(this.rootPath, ".cordova", "www", "**!/!*"), {
+            dot: true,
+            nodir: true
+          });
+          for (const resultFile of resultFiles) {
+            const contentBuffer = await FsUtil.readFileBufferAsync(resultFile);
+
+            const relativePath = path.relative(path.resolve(this.rootPath, ".cordova", "www"), resultFile);
+            zip.file("/" + relativePath, contentBuffer);
+          }
+
+          const zipFileName = path.basename(`${platformConfig.appName}-v${this.npmConfig.version}.zip`);
+          const resultBuffer = await zip.generateAsync({ type: "nodebuffer" });
+
+          await FsUtil.writeFileAsync(path.resolve(this.parsedTsconfig.options.outDir!, "updates/", zipFileName), resultBuffer);
+        }*/
 
         await Wait.true(() => devMiddleware !== undefined && hotMiddleware !== undefined);
         const allResults = [...getNgGenResults(), ...results].distinct();

@@ -3685,6 +3685,11 @@ cordova-lib@^10.0.0:
     stringify-package "^1.0.1"
     write-file-atomic "^3.0.3"
 
+cordova-plugin-file@^6.0.2:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/cordova-plugin-file/-/cordova-plugin-file-6.0.2.tgz#f3911479f8357e9aacb5576674f8d95b31a1fb20"
+  integrity sha512-m7cughw327CjONN/qjzsTpSesLaeybksQh420/gRuSXJX5Zt9NfgsSbqqKDon6jnQ9Mm7h7imgyO2uJ34XMBtA==
+
 cordova-serve@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/cordova-serve/-/cordova-serve-4.0.0.tgz#7d0dc2a3c15f4ed17a467b97f0a37b9eb00b2964"

@@ -19,6 +19,10 @@
     "zone.js": "~0.11.4",
     "@simplysm/sd-core-common": "6.4.2",
     "@simplysm/sd-core-browser": "6.4.2",
-    "@simplysm/sd-angular": "6.4.2"
+    "@simplysm/sd-angular": "6.4.2",
+    "@simplysm/sd-service-browser": "6.4.2"
+  },
+  "devDependencies": {
+    "cordova-plugin-file": "^6.0.2"
   }
 }

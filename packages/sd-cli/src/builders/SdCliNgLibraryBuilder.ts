@@ -105,7 +105,7 @@ export class SdCliNgLibraryBuilder extends SdCliTypescriptBuilder {
   }
 
   private _getMetadata(sourceFile: ts.SourceFile): ModuleMetadata | undefined {
-    return new MetadataCollector().getMetadata(sourceFile, true);
+    return new MetadataCollector().getMetadata(sourceFile, false);
   }
 
   public override getParsedTsconfig(): ts.ParsedCommandLine {

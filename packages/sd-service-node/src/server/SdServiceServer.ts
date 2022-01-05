@@ -11,9 +11,6 @@ import * as url from "url";
 import * as path from "path";
 import * as mime from "mime";
 import { ISdServiceErrorResponse, ISdServiceRequest, ISdServiceResponse } from "@simplysm/sd-service-common";
-import { SdCryptoService } from "./services/SdCryptoService";
-import { SdOrmService } from "./services/SdOrmService";
-import { SdSmtpClientService } from "./services/SdSmtpClientService";
 import { SdServiceServerConfigUtil } from "./SdServiceServerConfigUtil";
 import { Duplex } from "stream";
 
@@ -439,11 +436,7 @@ export class SdServiceServer extends SdEventEmitter {
       const methodName = cmdSplit[1];
 
       // 서비스 가져오기
-      const serviceClass = this.options.services.concat([
-        SdCryptoService,
-        SdOrmService,
-        SdSmtpClientService
-      ]).single((item) => item.name === serviceName);
+      const serviceClass = this.options.services.single((item) => item.name === serviceName);
       if (!serviceClass) {
         throw new Error(`서비스[${serviceName}]를 찾을 수 없습니다.`);
       }

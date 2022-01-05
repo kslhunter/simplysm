@@ -171,15 +171,20 @@ export class SdCliCordova {
     const configFilePath = path.resolve(this._cordovaPath, "config.xml");
     let configFileContent = await FsUtil.readFileAsync(configFilePath);
 
-    // CONFIG: 외부접근 허용안함
-    configFileContent = configFileContent.replace(/<allow-navigation href="[^"]"\s?\/>/g, "");
+    // CONFIG: 외부접근 허용 비우기
+    configFileContent = configFileContent.replace(/ {4}<allow-navigation href="[^"]*" \/>\n/g, "");
+
+    /*// CONFIG: 내부파일접근 허용 등록
+    configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="file://data/user/!*" />\n</widget>`);*/
+    configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="*://*/*" />\n</widget>`);
 
     // CONFIG: 파일쓰기
     await FsUtil.writeFileAsync(configFilePath, configFileContent);
 
     // 실행
+    const buildType = "debug";
     for (const target of this._config.targets) {
-      await SdProcessManager.spawnAsync(`${this._binPath} build ${target} --release`, { cwd: this._cordovaPath }, (message) => {
+      await SdProcessManager.spawnAsync(`${this._binPath} build ${target} --${buildType}`, { cwd: this._cordovaPath }, (message) => {
         this._logger.debug(`CORDOVA: ${target}: ${message}`);
       });
     }
@@ -189,16 +194,16 @@ export class SdCliCordova {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (target === "android") {
         const targetOutPath = path.resolve(outPath, target);
-        const apkFileName = this._config.sign !== undefined ? "app-release.apk" : "app-release-unsigned.apk";
+        const apkFileName = this._config.sign !== undefined ? `app-${buildType}.apk` : `app-${buildType}-unsigned.apk`;
         const distApkFileName = path.basename(`${this._config.appName}${this._config.sign !== undefined ? "" : "-unsigned"}-v${this._npmConfig.version}.apk`);
         const latestDistApkFileName = path.basename(`${this._config.appName}${this._config.sign !== undefined ? "" : "-unsigned"}-latest.apk`);
         await FsUtil.mkdirsAsync(targetOutPath);
         await FsUtil.copyAsync(
-          path.resolve(this._cordovaPath, "platforms/android/app/build/outputs/apk/release", apkFileName),
+          path.resolve(this._cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
           path.resolve(targetOutPath, distApkFileName)
         );
         await FsUtil.copyAsync(
-          path.resolve(this._cordovaPath, "platforms/android/app/build/outputs/apk/release", apkFileName),
+          path.resolve(this._cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
           path.resolve(targetOutPath, latestDistApkFileName)
         );
       }
@@ -217,11 +222,14 @@ export class SdCliCordova {
     const configFilePath = path.resolve(cordovaPath, "config.xml");
     let configFileContent = await FsUtil.readFileAsync(configFilePath);
 
-    // CONFIG: 외부 접근 허용
-    if (!(/<allow-navigation href="[^"]"\s?\/>/).test(configFileContent)) {
-      configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="${url}" />\n</widget>`);
-      configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="${url}/*" />\n</widget>`);
-    }
+    // CONFIG: 외부접근 허용 비우기
+    configFileContent = configFileContent.replace(/ {4}<allow-navigation href="[^"]*" \/>\n/g, "");
+
+    // CONFIG: 외부 접근 허용 등록
+    configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="${url}" />\n</widget>`);
+    configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="${url}/*" />\n</widget>`);
+    configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="*://*/*" />\n</widget>`);
+    // configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="*://*/*" />\n</widget>`);
 
     // CONFIG: 파일쓰기
     await FsUtil.writeFileAsync(configFilePath, configFileContent);

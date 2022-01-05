@@ -44,3 +44,5 @@ export * from "./controls/SdmTopbarMenuControl";
 export * from "./controls/SdmTopbarNavControl";
 export * from "./plugins/SdAndroidBackbuttonEventPlugin";
 export * from "./SdAngularMobileModule";
+export * from "./SdMobileAutoUpdateManager";
+export * from "./SdMobileFsUtil";
