@@ -53,13 +53,6 @@ export class SdServiceClient extends EventEmitter {
           await this.connectAsync();
         }
         resolve();
-
-        /*if (this._ws?.readyState !== WebSocket.OPEN) {
-          reject(new Error(`웹소켓을 연결하는 중에 오류가 발생했습니다.`));
-        }
-        else {
-          this.emit("error", new Error(`웹소켓을 연결하는 중에 오류가 발생했습니다: ${String(errEvt["message"])}`));
-        }*/
       };
 
       this._ws.onmessage = (message): void => {

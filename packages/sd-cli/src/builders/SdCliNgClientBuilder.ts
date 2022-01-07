@@ -39,6 +39,7 @@ import * as os from "os";
 import { LintResult } from "eslint-webpack-plugin/declarations/options";
 import { SdCliCordova } from "../build-tools/SdCliCordova";
 import * as JSZip from "jszip";
+import * as NodePolyfillPlugin from "node-polyfill-webpack-plugin";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ESLintWebpackPlugin = require("eslint-webpack-plugin");
@@ -587,6 +588,7 @@ export class SdCliNgClientBuilder extends EventEmitter {
         }
       },
       plugins: [
+        new NodePolyfillPlugin(),
         new webpack.ContextReplacementPlugin(
           /@angular[\\/]core[\\/]/,
           path.join(this.rootPath, "$_lazy_route_resources"),
@@ -697,9 +699,6 @@ export class SdCliNgClientBuilder extends EventEmitter {
           WOFFSupportNeeded: false,
           crossOrigin: "none",
           lang: undefined
-        }),
-        new webpack.ProvidePlugin({
-          "Buffer": ["buffer", "Buffer"]
         }),
         new webpack.EnvironmentPlugin({
           SD_VERSION: this.npmConfig.version,
