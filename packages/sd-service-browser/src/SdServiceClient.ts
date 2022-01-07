@@ -44,24 +44,27 @@ export class SdServiceClient extends EventEmitter {
         resolve();
       };
 
-      this._ws.onerror = (errEvt): void => {
-        if (this._ws?.readyState !== WebSocket.OPEN) {
+      this._ws.onerror = async (errEvt) => {
+        this.emit("error", new Error(`웹소켓을 연결하는 중에 오류가 발생했습니다(재시도): ${String(errEvt["message"])}`));
+        try {
+          await Wait.true(() => this._ws !== undefined && this._ws.readyState === WebSocket.OPEN, undefined, 3000);
+        }
+        catch (err) {
+          await this.connectAsync();
+        }
+        resolve();
+
+        /*if (this._ws?.readyState !== WebSocket.OPEN) {
           reject(new Error(`웹소켓을 연결하는 중에 오류가 발생했습니다.`));
         }
         else {
           this.emit("error", new Error(`웹소켓을 연결하는 중에 오류가 발생했습니다: ${String(errEvt["message"])}`));
-        }
+        }*/
       };
 
       this._ws.onmessage = (message): void => {
         this._eventEmitter.emit("message", message);
       };
-
-      /*this._ws.onclose = (): void => {
-        setTimeout(async () => {
-          await this.connectAsync();
-        }, 3000);
-      };*/
     });
   }
 
@@ -100,7 +103,6 @@ export class SdServiceClient extends EventEmitter {
       }
       catch (err) {
         await this.connectAsync();
-        // throw new Error("웹 소켓이 연결되어있지 않습니다.");
       }
     }
 
