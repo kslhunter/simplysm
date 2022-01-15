@@ -25,7 +25,7 @@
     "@simplysm/sd-smtp-client": "2.2.130",
     "core-js": "^3.2.0",
     "jsbarcode": "^3.11.5",
-    "marked": "^0.7.0",
+    "marked": "^4.0.10",
     "rxjs": "6.4.0",
     "soap": "^0.30.0",
     "zone.js": "~0.9.1",
