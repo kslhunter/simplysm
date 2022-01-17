@@ -182,9 +182,10 @@ export class SdCliCordova {
     await FsUtil.writeFileAsync(configFilePath, configFileContent);
 
     // 실행
-    const buildType = "debug";
+    const buildType = "release";
+    const packageType = "bundle";
     for (const target of this._config.targets) {
-      await SdProcessManager.spawnAsync(`${this._binPath} build ${target} --${buildType}`, { cwd: this._cordovaPath }, (message) => {
+      await SdProcessManager.spawnAsync(`${this._binPath} build ${target} --${buildType} --packageType=${packageType}`, { cwd: this._cordovaPath }, (message) => {
         this._logger.debug(`CORDOVA: ${target}: ${message}`);
       });
     }
