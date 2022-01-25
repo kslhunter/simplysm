@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-storage",
-  "version": "6.4.5",
+  "version": "6.4.6",
   "description": "심플리즘 패키지 - 저장소 (node)",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm6",
@@ -12,8 +12,8 @@
     "node": "^14"
   },
   "dependencies": {
-    "@simplysm/sd-core-common": "6.4.5",
-    "@simplysm/sd-core-node": "6.4.5",
+    "@simplysm/sd-core-common": "6.4.6",
+    "@simplysm/sd-core-node": "6.4.6",
     "basic-ftp": "^4.6.6",
     "ssh2-sftp-client": "^7.0.3"
   },

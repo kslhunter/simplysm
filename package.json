@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "6.4.5",
+  "version": "6.4.6",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": "github:kslhunter/simplysm6",
@@ -27,7 +27,7 @@
     "postinstall": "yarn _sd-cli_ prepare"
   },
   "devDependencies": {
-    "@simplysm/eslint-plugin": "6.4.5",
+    "@simplysm/eslint-plugin": "6.4.6",
     "@types/node": "^16.7.1",
     "cross-env": "^7.0.3",
     "eslint": "7.32.0",
