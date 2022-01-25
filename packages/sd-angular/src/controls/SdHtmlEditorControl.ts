@@ -40,6 +40,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       <sd-pane>
         <div #editor *ngIf="viewState !== 'code' || disabled"
              [attr.contenteditable]="viewState === 'edit' && !disabled"
+             [style.min-height.px]="contentMinHeightPx"
              (input)="onContentInput($event)"></div>
         <textarea *ngIf="viewState === 'code' && !disabled"
                   [value]="value || ''"
@@ -83,6 +84,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
           > div {
             @include form-control-base();
             height: 100%;
+            overflow: auto;
 
             &[contenteditable=true] {
               cursor: text;
@@ -138,6 +140,7 @@ export class SdHtmlEditorControl {
 
   @Input()
   @SdInputValidate({ type: String, includes: ["preview", "edit", "code"] })
+  @HostBinding("attr.sd-view-state")
   public get viewState(): "preview" | "edit" | "code" {
     return this._viewState;
   }
@@ -168,6 +171,10 @@ export class SdHtmlEditorControl {
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-disabled")
   public disabled?: boolean;
+
+  @Input("content.min-height.px")
+  @SdInputValidate({ type: Number, notnull: true })
+  public contentMinHeightPx = 100;
 
   @Input()
   @SdInputValidate({

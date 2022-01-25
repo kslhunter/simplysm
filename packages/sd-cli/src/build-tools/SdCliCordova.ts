@@ -183,7 +183,8 @@ export class SdCliCordova {
 
     // 실행
     const buildType = "release";
-    const packageType = "bundle";
+    // const packageType = "bundle";
+    const packageType = "apk";
     for (const target of this._config.targets) {
       await SdProcessManager.spawnAsync(`${this._binPath} build ${target} --${buildType} --packageType=${packageType}`, { cwd: this._cordovaPath }, (message) => {
         this._logger.debug(`CORDOVA: ${target}: ${message}`);

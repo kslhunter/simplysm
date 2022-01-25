@@ -59,7 +59,7 @@ import { SdFormControl } from "./SdFormControl";
         > label {
           display: table-cell;
           vertical-align: middle;
-          padding: var(--gap-sm) var(--gap-default);
+          padding: var(--gap-sm) var(--gap-default) calc(var(--gap-sm) * 2) 0;
           text-align: right;
         }
 
@@ -71,7 +71,7 @@ import { SdFormControl } from "./SdFormControl";
 
         &:last-child {
           > label {
-            padding-bottom: 0;
+            padding-bottom: var(--gap-sm);
           }
 
           > ._content {

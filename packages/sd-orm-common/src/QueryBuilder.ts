@@ -57,7 +57,7 @@ CREATE DATABASE IF NOT EXISTS ${this.wrap(def.database)};
 ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`.trim();
     }
     else if (this._dialect === "mssql") {
-      return `IF NOT EXISTS(select * from sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)}`.trim();
+      return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = '${def.database}') CREATE DATABASE ${this.wrap(def.database)}`;
     }
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     else if (this._dialect === "mssql-azure") {
@@ -120,30 +120,35 @@ BEGIN
   SET @sql = N'';
     
   -- 프록시저 초기화
-  SELECT @sql = @sql + 'DROP PROCEDURE ${this.wrap(def.database)}.' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(o.name) +';' + CHAR(13) + CHAR(10)
+  SELECT @sql = @sql + 'DROP PROCEDURE ${this.wrap(def.database)}.' + QUOTENAME(sch.name) + '.' + QUOTENAME(o.name) +';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.sql_modules m
   INNER JOIN ${this.wrap(def.database)}.sys.objects o ON m.object_id=o.object_id
+  INNER JOIN [NEOE].sys.schemas sch ON sch.schema_id = [o].schema_id
   WHERE type_desc like '%PROCEDURE%'
     
   -- 함수 초기화
-  SELECT @sql = @sql + 'DROP FUNCTION ${this.wrap(def.database)}.' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(o.name) + N';' + CHAR(13) + CHAR(10)
+  SELECT @sql = @sql + 'DROP FUNCTION ${this.wrap(def.database)}.' + QUOTENAME(sch.name) + '.' + QUOTENAME(o.name) + N';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.sql_modules m
   INNER JOIN ${this.wrap(def.database)}.sys.objects o ON m.object_id=o.object_id
-  WHERE type_desc like '%function%' AND SCHEMA_NAME(schema_id) <> 'sys'
+  INNER JOIN [NEOE].sys.schemas sch ON sch.schema_id = [o].schema_id
+  WHERE type_desc like '%function%' AND sch.name <> 'sys'
     
   -- 뷰 초기화
-  SELECT @sql = @sql + 'DROP VIEW ${this.wrap(def.database)}.' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME(v.name) + N';' + CHAR(13) + CHAR(10)
+  SELECT @sql = @sql + 'DROP VIEW ${this.wrap(def.database)}.' + QUOTENAME(sch.name) + '.' + QUOTENAME(v.name) + N';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.views v
-  WHERE SCHEMA_NAME(schema_id) <> 'sys'
+  INNER JOIN [NEOE].sys.schemas sch ON sch.schema_id = [v].schema_id
+  WHERE sch.name <> 'sys'
     
   -- 테이블 FK 끊기 초기화
-  SELECT @sql = @sql + N'ALTER TABLE ${this.wrap(def.database)}.' + QUOTENAME(SCHEMA_NAME([tbl].schema_id)) + '.' + QUOTENAME([tbl].[name]) + N' DROP CONSTRAINT ' + QUOTENAME([obj].[name]) + N';' + CHAR(13) + CHAR(10)
+  SELECT @sql = @sql + N'ALTER TABLE ${this.wrap(def.database)}.' + QUOTENAME(sch.name) + '.' + QUOTENAME([tbl].[name]) + N' DROP CONSTRAINT ' + QUOTENAME([obj].[name]) + N';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.tables [tbl]
   INNER JOIN ${this.wrap(def.database)}.sys.objects AS [obj] ON [obj].[parent_object_id] = [tbl].[object_id] AND [obj].[type] = 'F'
+  INNER JOIN [NEOE].sys.schemas sch ON sch.schema_id = [tbl].schema_id
 
   -- 테이블 삭제
-  SELECT @sql = @sql + N'DROP TABLE ${this.wrap(def.database)}.' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUOTENAME([tbl].[name]) + N';' + CHAR(13) + CHAR(10)
+  SELECT @sql = @sql + N'DROP TABLE ${this.wrap(def.database)}.' + QUOTENAME(sch.name) + '.' + QUOTENAME([tbl].[name]) + N';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.tables [tbl]
+  INNER JOIN [NEOE].sys.schemas sch ON sch.schema_id = [tbl].schema_id
   WHERE [type]= 'U'
 
   EXEC(@sql);
