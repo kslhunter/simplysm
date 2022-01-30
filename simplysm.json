@@ -1,0 +1,22 @@
+{
+  "packages": {
+    "sd-angular": {
+      "type": "library"
+    },
+    "sd-cli": {
+      "type": "library"
+    },
+    "sd-core-common": {
+      "type": "library"
+    },
+    "sd-core-node": {
+      "type": "library"
+    },
+    "sd-core-storage": {
+      "type": "library"
+    },
+    "eslint-plugin": {
+      "type": "library"
+    }
+  }
+}

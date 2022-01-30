@@ -1,0 +1,41 @@
+{
+  "name": "@simplysm/sd-cli",
+  "version": "7.0.0",
+  "description": "심플리즘 패키지 - CLI",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm7.git",
+    "directory": "packages/sd-cli"
+  },
+  "license": "MIT",
+  "bin": {
+    "sd-cli": "./dist/bin/sd-cli.mjs"
+  },
+  "exports": {
+    "./ts-node-esm-paths": "./lib/ts-node-esm-paths.mjs"
+  },
+  "type": "module",
+  "engines": {
+    "node": "^16"
+  },
+  "dependencies": {
+    "ts-node": "^10.4.0",
+    "tsconfig-paths": "^3.12.0",
+    "yargs": "^17.3.1",
+    "chokidar": "^3.5.3",
+    "typescript": "~4.5.5",
+    "eslint": "^8.7.0",
+    "@angular/compiler-cli": "^13.2.0",
+    "sass": "^1.49.0",
+    "semver": "^7.3.5"
+  },
+  "devDependencies": {
+    "@types/yargs": "^17.0.8",
+    "@types/semver": "^7.3.9"
+  },
+  "peerDependencies": {
+    "@simplysm/sd-core-common": "7.0.0",
+    "@simplysm/sd-core-node": "7.0.0"
+  }
+}

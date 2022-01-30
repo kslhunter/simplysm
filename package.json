@@ -1,0 +1,39 @@
+{
+  "name": "simplysm",
+  "version": "7.0.0",
+  "description": "심플리즘 패키지",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm7.git"
+  },
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": "^16"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "watch": "npm run _sd-cli_ -- --debug watch",
+    "build": "npm run _sd-cli_ -- --debug build",
+    "publish": "npm run _sd-cli_ -- --debug publish",
+    "publish(--build)": "npx _sd-cli_ --debug publish --no-build",
+    "---": "",
+    "_sd-cli_": "cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --experimental-specifier-resolution=node --loader @simplysm/sd-cli/ts-node-esm-paths packages/sd-cli/src/bin/sd-cli.ts",
+    "eslint-timing": "cross-env TIMING=1 eslint \"./**/+(*.ts|*.js)\""
+  },
+  "devDependencies": {
+    "@simplysm/eslint-plugin": "7.0.0",
+    "@types/node": "^17.0.12",
+    "cross-env": "^7.0.3",
+    "typescript": "~4.5.5",
+    "eslint": "^8.7.0",
+    "mocha": "^9.2.0",
+    "chai": "^4.3.6",
+    "@types/mocha": "^9.1.0",
+    "@types/chai": "^4.3.0"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@simplysm/eslint-plugin",
+  "version": "7.0.0",
+  "description": "심플리즘 패키지 - ESLINT 플러그인",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm7.git",
+    "directory": "packages/eslint-plugin"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.cjs",
+  "sideEffects": false,
+  "engines": {
+    "node": "^16"
+  },
+  "dependencies": {
+    "eslint": "^8.7.0",
+    "@typescript-eslint/parser": "^5.10.1",
+    "@typescript-eslint/eslint-plugin": "^5.10.1"
+  },
+  "devDependencies": {
+  },
+  "peerDependencies": {
+  }
+}
