@@ -64,11 +64,11 @@ export class SdCliWorkspace {
     this._logger.debug("패키지 목록 구성...");
     const pkgs = await this._getPackagesAsync();
 
-    this._logger.debug("프로젝트 및 패키지 버전 설정...");
-    await this._upgradeVersionAsync(pkgs);
-
     // 빌드
     await this._buildPkgsAsync(pkgs);
+
+    this._logger.debug("프로젝트 및 패키지 버전 설정...");
+    await this._upgradeVersionAsync(pkgs);
   }
 
   private async _buildPkgsAsync(pkgs: SdCliPackage[]): Promise<void> {
@@ -113,14 +113,14 @@ export class SdCliWorkspace {
     this._logger.debug("패키지 목록 구성...");
     const pkgs = await this._getPackagesAsync();
 
-    this._logger.debug("프로젝트 및 패키지 버전 설정...");
-    await this._upgradeVersionAsync(pkgs);
-
     // 빌드
     if (!opt.noBuild) {
       this._logger.debug("빌드를 시작합니다...");
       await this._buildPkgsAsync(pkgs);
     }
+
+    this._logger.debug("프로젝트 및 패키지 버전 설정...");
+    await this._upgradeVersionAsync(pkgs);
 
     // GIT 사용중일경우, 새 버전 커밋 및 TAG 생성
     if (FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
