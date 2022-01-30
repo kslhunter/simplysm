@@ -11,7 +11,9 @@ export declare class SdCliPackage extends EventEmitter {
     constructor(_workspaceRootPath: string, _rootPath: string, _config: TSdCliPackageConfig);
     on(event: "change", listener: () => void): this;
     on(event: "complete", listener: (results: ISdCliPackageBuildResult[]) => void): this;
+    setNewVersionAsync(newVersion: string, pkgNames: string[]): Promise<void>;
     watchAsync(): Promise<void>;
     buildAsync(): Promise<ISdCliPackageBuildResult[]>;
+    publishAsync(): Promise<void>;
     private _genBuildTsconfigAsync;
 }

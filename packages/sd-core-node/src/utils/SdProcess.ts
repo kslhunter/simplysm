@@ -10,7 +10,7 @@ export class SdProcess {
         }
 
         if (stderr) {
-          reject(new Error(stderr.toString()));
+          reject(new Error(`$ ${cmd} => stderr: ${stderr.toString()}`));
           return;
         }
 

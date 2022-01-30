@@ -36,6 +36,7 @@ export interface ISdCliWorkspaceConfig {
 export declare type TSdCliPackageConfig = ISdCliLibPackageConfig | ISdCliNgLibPackageConfig;
 export interface ISdCliLibPackageConfig {
     type: "library";
+    publish?: "npm";
 }
 export interface ISdCliNgLibPackageConfig {
     type: "angular";

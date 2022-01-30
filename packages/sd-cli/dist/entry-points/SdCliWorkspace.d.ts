@@ -6,6 +6,12 @@ export declare class SdCliWorkspace {
     constructor(_rootPath: string);
     watchAsync(): Promise<void>;
     buildAsync(): Promise<void>;
+    private _buildPkgsAsync;
+    publishAsync(opt: {
+        noBuild: boolean;
+    }): Promise<void>;
+    private _upgradeVersionAsync;
+    private _waitSecMessageAsync;
     private _getPackagesAsync;
     private _loggingResults;
 }
