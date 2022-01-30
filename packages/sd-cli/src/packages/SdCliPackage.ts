@@ -92,7 +92,7 @@ export class SdCliPackage extends EventEmitter {
 
   public async publishAsync(): Promise<void> {
     if (this._config.type === "library" && this._config.publish === "npm") {
-      await SdProcess.execAsync("npm publish --access public", { cwd: this._rootPath });
+      await SdProcess.execAsync("npm publish --quiet --access public", { cwd: this._rootPath });
     }
   }
 

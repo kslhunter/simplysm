@@ -87,7 +87,12 @@ export class SdCliWorkspace {
     });
 
     this._loggingResults(totalResultMap);
-    this._logger.info("모든 빌드가 완료되었습니다.");
+    if (Array.from(totalResultMap.values()).mapMany().some((item) => item.severity === "error")) {
+      throw new Error("빌드중 오류가 발생하였습니다.");
+    }
+    else {
+      this._logger.info("모든 빌드가 완료되었습니다.");
+    }
   }
 
   public async publishAsync(opt: { noBuild: boolean }): Promise<void> {
@@ -113,6 +118,7 @@ export class SdCliWorkspace {
 
     // 빌드
     if (!opt.noBuild) {
+      this._logger.debug("빌드를 시작합니다...");
       await this._buildPkgsAsync(pkgs);
     }
 
