@@ -136,7 +136,7 @@ export class SdCliWorkspace {
       await pkg.publishAsync();
       this._logger.debug(`[${pkg.name}] 배포가 완료되었습니다.`);
     });
-    this._logger.info("모든 배포가 완료되었습니다.");
+    this._logger.info(`모든 배포가 완료되었습니다. (v${this._npmConfig.version})`);
   }
 
   private async _upgradeVersionAsync(pkgs: SdCliPackage[]): Promise<void> {
