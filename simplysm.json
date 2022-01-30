@@ -1,22 +1,32 @@
 {
   "packages": {
+    "eslint-plugin": {
+      "type": "library",
+      "publish": "npm"
+    },
     "sd-angular": {
-      "type": "library"
+      "type": "library",
+      "publish": "npm"
     },
     "sd-cli": {
-      "type": "library"
+      "type": "library",
+      "publish": "npm"
     },
     "sd-core-common": {
-      "type": "library"
+      "type": "library",
+      "publish": "npm"
     },
     "sd-core-node": {
-      "type": "library"
+      "type": "library",
+      "publish": "npm"
     },
-    "sd-core-storage": {
-      "type": "library"
+    "sd-service": {
+      "type": "library",
+      "publish": "npm"
     },
-    "eslint-plugin": {
-      "type": "library"
+    "sd-storage": {
+      "type": "library",
+      "publish": "npm"
     }
   }
 }
