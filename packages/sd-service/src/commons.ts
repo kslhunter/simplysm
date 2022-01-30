@@ -1,5 +1,3 @@
-import { Type } from "@simplysm/sd-core-common";
-
 export interface ISdServiceBase {
 }
 
