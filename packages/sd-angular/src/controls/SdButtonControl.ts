@@ -106,6 +106,10 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
         padding: var(--gap-default) var(--gap-xl);
         //border-radius: 2px;
       }
+
+      &[disabled=true] {
+        pointer-events: none;
+      }
     }
   `]
 })
@@ -133,6 +137,7 @@ export class SdButtonControl {
 
   @Input()
   @SdInputValidate(Boolean)
+  @HostBinding("attr.disabled")
   public disabled?: boolean;
 
   @Input("button.style")

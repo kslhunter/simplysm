@@ -242,6 +242,10 @@ export class QueryHelper {
     return new QueryUnit(type, ["DATEADD(", separator, ", ", this.getQueryValue(value), ", ", this.getQueryValue(from), ")"]) as any;
   }
 
+  public year<T extends DateTime | DateOnly>(value: TEntityValue<T>): QueryUnit<number> {
+    return new QueryUnit<number>(Number, ["YEAR(", this.getQueryValue(value), ")"]);
+  }
+
   public ifNull<S extends TQueryValue, T extends TQueryValue>(source: TEntityValue<S>, ...targets: TEntityValue<T>[]): QueryUnit<S extends undefined ? T : S> {
     let cursorQuery: TQueryBuilderValue = this.getQueryValue(source);
     let type: Type<any> | undefined = SdOrmUtil.getQueryValueType(source);
