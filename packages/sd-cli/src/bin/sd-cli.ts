@@ -2,6 +2,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { SdCliWorkspace } from "../entry-points/SdCliWorkspace";
+import { SdCliLocalUpdate } from "../entry-points/SdCliLocalUpdate";
 
 Error.stackTraceLimit = Infinity;
 
@@ -85,7 +86,11 @@ else {
 const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
 
 (async () => {
-  if (argv._[0] === "watch") {
+  if (argv._[0] === "local-update") {
+    await new SdCliLocalUpdate(process.cwd(), argv.config)
+      .runAsync();
+  }
+  else if (argv._[0] === "watch") {
     await new SdCliWorkspace(process.cwd(), argv.config)
       .watchAsync();
   }

@@ -36,6 +36,7 @@ export interface ISdCliPackageBuildResult {
 
 export interface ISdCliConfig {
   packages: Record<string, TSdCliPackageConfig | undefined>;
+  localUpdates?: Record<string, string>;
 }
 
 export type TSdCliPackageConfig = ISdCliLibPackageConfig | ISdCliNgLibPackageConfig;

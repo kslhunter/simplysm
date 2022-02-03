@@ -4,7 +4,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
 import path from "path";
 
 export class SdCliConfigUtil {
-  public static loadConfig(confFilePath: string, isDev?: boolean, opts?: string[]): ISdCliConfig {
+  public static loadConfig(confFilePath: string, isDev: boolean, opts?: string[]): ISdCliConfig {
     const confFileCont = FsUtil.readJson(confFilePath);
     let conf = this._getConfigFromFileContent(confFileCont, isDev, opts);
 
@@ -20,7 +20,7 @@ export class SdCliConfigUtil {
     return conf as ISdCliConfig;
   }
 
-  private static _getConfigFromFileContent(confFileCont: ISdCliConfigFileContent, isDev?: boolean, opts?: string[]): ISdCliConfigFileContent {
+  private static _getConfigFromFileContent(confFileCont: ISdCliConfigFileContent, isDev: boolean, opts?: string[]): ISdCliConfigFileContent {
     const conf = ObjectUtil.clone(confFileCont);
 
     if (conf.packages) {
@@ -31,7 +31,7 @@ export class SdCliConfigUtil {
     return conf;
   }
 
-  private static _getPkgConfigFromFileContent(confFileCont: ISdCliConfigFileContent, pkgConfFileCont: TSdCliPackageConfigFileContent, isDev?: boolean, opts?: string[]): TSdCliPackageConfig {
+  private static _getPkgConfigFromFileContent(confFileCont: ISdCliConfigFileContent, pkgConfFileCont: TSdCliPackageConfigFileContent, isDev: boolean, opts?: string[]): TSdCliPackageConfig {
     let pkgConf = ObjectUtil.clone(pkgConfFileCont);
 
     // override
