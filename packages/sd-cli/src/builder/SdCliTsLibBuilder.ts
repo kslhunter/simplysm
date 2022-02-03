@@ -4,7 +4,7 @@ import ts from "typescript";
 import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
 import * as path from "path";
 import { createHash } from "crypto";
-import { SdBuildResultUtil } from "../utils/SdBuildResultUtil";
+import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import { NgtscProgram } from "@angular/compiler-cli";
 import sass from "sass";
 import { SdCliPackageLinter } from "../build-tool/SdCliPackageLinter";
@@ -165,7 +165,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
       results.push(
         ...diagnostics
           .filter((item) => [ts.DiagnosticCategory.Error, ts.DiagnosticCategory.Warning].includes(item.category))
-          .map((item) => SdBuildResultUtil.convertDiagsToResult(item))
+          .map((item) => SdCliBuildResultUtil.convertDiagsToResult(item))
           .filterExists()
       );
 

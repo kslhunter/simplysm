@@ -16,14 +16,49 @@ const argv = yargs(hideBin(process.argv))
       default: false
     }
   })
-  .command("watch", "프로젝트의 각 패키지에 대한 변경감지 빌드를 수행합니다.")
-  .command("build", "프로젝트의 각 패키지에 대한 빌드를 수행합니다.")
+  .command(
+    "local-update",
+    "로컬 라이브러리 업데이트를 수행합니다.",
+    (cmd) => cmd.version(false)
+      .options({
+        config: {
+          type: "string",
+          describe: "simplysm.json 파일 경로"
+        }
+      })
+  )
+  .command(
+    "watch",
+    "프로젝트의 각 패키지에 대한 변경감지 빌드를 수행합니다.",
+    (cmd) => cmd.version(false)
+      .options({
+        config: {
+          type: "string",
+          describe: "simplysm.json 파일 경로"
+        }
+      })
+  )
+  .command(
+    "build",
+    "프로젝트의 각 패키지에 대한 빌드를 수행합니다.",
+    (cmd) => cmd.version(false)
+      .options({
+        config: {
+          type: "string",
+          describe: "simplysm.json 파일 경로"
+        }
+      })
+  )
   .command(
     "publish",
     "프로젝트의 각 패키지를 배포합니다.",
-    (cmd) => cmd
+    (cmd) => cmd.version(false)
       .options({
-        "noBuild":{
+        config: {
+          type: "string",
+          describe: "simplysm.json 파일 경로"
+        },
+        "noBuild": {
           type: "boolean",
           describe: "빌드를 하지않고 배포합니다.",
           default: false
@@ -51,15 +86,18 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
 
 (async () => {
   if (argv._[0] === "watch") {
-    await new SdCliWorkspace(process.cwd()).watchAsync();
+    await new SdCliWorkspace(process.cwd(), argv.config)
+      .watchAsync();
   }
   else if (argv._[0] === "build") {
-    await new SdCliWorkspace(process.cwd()).buildAsync();
+    await new SdCliWorkspace(process.cwd(), argv.config)
+      .buildAsync();
   }
   else if (argv._[0] === "publish") {
-    await new SdCliWorkspace(process.cwd()).publishAsync({
-      noBuild: argv.noBuild
-    });
+    await new SdCliWorkspace(process.cwd(), argv.config)
+      .publishAsync({
+        noBuild: argv.noBuild
+      });
   }
   else {
     throw new Error(`명령어가 잘못 되었습니다.\n\t${argv._[0]}\n`);

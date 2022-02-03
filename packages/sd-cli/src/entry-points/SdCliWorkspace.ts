@@ -1,23 +1,24 @@
 import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
 import path from "path";
-import { INpmConfig, ISdCliPackageBuildResult, ISdCliWorkspaceConfig } from "../commons";
+import { INpmConfig, ISdCliConfig, ISdCliPackageBuildResult } from "../commons";
 import { SdCliPackage } from "../packages/SdCliPackage";
 import { Wait } from "@simplysm/sd-core-common";
 import os from "os";
-import { SdBuildResultUtil } from "../utils/SdBuildResultUtil";
+import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import semver from "semver/preload";
 
 export class SdCliWorkspace {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
 
   private readonly _npmConfig: INpmConfig;
-  private readonly _config: ISdCliWorkspaceConfig;
+  private readonly _config: ISdCliConfig;
 
-  public constructor(private readonly _rootPath: string) {
+  public constructor(private readonly _rootPath: string,
+                     private readonly _configFilePath?: string) {
     const npmConfigFilePath = path.resolve(this._rootPath, "package.json");
     this._npmConfig = FsUtil.readJson(npmConfigFilePath);
 
-    this._config = FsUtil.readJson(path.resolve(this._rootPath, "simplysm.json"));
+    this._config = FsUtil.readJson(path.resolve(this._rootPath, this._configFilePath ?? "simplysm.json"));
   }
 
   public async watchAsync(): Promise<void> {
@@ -203,12 +204,12 @@ export class SdCliWorkspace {
 
     const warnings = totalResults
       .filter((item) => item.severity === "warning")
-      .map((item) => `${SdBuildResultUtil.getMessage(item)} (${item.pkgName})`)
+      .map((item) => `${SdCliBuildResultUtil.getMessage(item)} (${item.pkgName})`)
       .distinct();
 
     const errors = totalResults
       .filter((item) => item.severity === "error")
-      .map((item) => `${SdBuildResultUtil.getMessage(item)} (${item.pkgName})`)
+      .map((item) => `${SdCliBuildResultUtil.getMessage(item)} (${item.pkgName})`)
       .distinct();
 
     if (warnings.length > 0) {

@@ -3,7 +3,7 @@ import * as os from "os";
 import * as path from "path";
 import { ISdCliPackageBuildResult } from "../commons";
 
-export class SdBuildResultUtil {
+export class SdCliBuildResultUtil {
   public static convertDiagsToResult(diag: ts.Diagnostic): ISdCliPackageBuildResult | undefined {
     const severity = diag.category === ts.DiagnosticCategory.Error ? "error"
       : diag.category === ts.DiagnosticCategory.Warning ? "warning"

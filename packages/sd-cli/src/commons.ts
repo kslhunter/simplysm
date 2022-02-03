@@ -34,7 +34,7 @@ export interface ISdCliPackageBuildResult {
   message: string;
 }
 
-export interface ISdCliWorkspaceConfig {
+export interface ISdCliConfig {
   packages: Record<string, TSdCliPackageConfig | undefined>;
 }
 
@@ -47,4 +47,8 @@ export interface ISdCliLibPackageConfig {
 
 export interface ISdCliNgLibPackageConfig {
   type: "angular";
+}
+
+export interface ISdCliServerPackageConfig {
+  type: "server";
 }

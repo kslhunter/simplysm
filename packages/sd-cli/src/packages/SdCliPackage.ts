@@ -65,7 +65,7 @@ export class SdCliPackage extends EventEmitter {
     }
 
     const isAngular = isTs && this.allDependencies.includes("@angular/core");
-    const builder = isTs ? new SdCliTsLibBuilder(this._rootPath, isAngular) : new SdCliJsLibBuilder(this._rootPath);
+    const builder = !isTs ? new SdCliJsLibBuilder(this._rootPath) : new SdCliTsLibBuilder(this._rootPath, isAngular);
 
     await builder
       .on("change", () => {
