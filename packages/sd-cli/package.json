@@ -20,19 +20,20 @@
     "node": "^16"
   },
   "dependencies": {
+    "@angular/compiler-cli": "^13.2.0",
+    "chokidar": "^3.5.3",
+    "eslint": "^8.7.0",
+    "sass": "^1.49.0",
+    "semver": "^7.3.5",
+    "source-map-support": "^0.5.21",
     "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.12.0",
-    "yargs": "^17.3.1",
-    "chokidar": "^3.5.3",
     "typescript": "~4.5.5",
-    "eslint": "^8.7.0",
-    "@angular/compiler-cli": "^13.2.0",
-    "sass": "^1.49.0",
-    "semver": "^7.3.5"
+    "yargs": "^17.3.1"
   },
   "devDependencies": {
-    "@types/yargs": "^17.0.8",
-    "@types/semver": "^7.3.9"
+    "@types/semver": "^7.3.9",
+    "@types/yargs": "^17.0.8"
   },
   "peerDependencies": {
     "@simplysm/sd-core-common": "7.0.21",
