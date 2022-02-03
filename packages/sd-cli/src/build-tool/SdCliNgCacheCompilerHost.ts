@@ -28,7 +28,7 @@ export class SdCliNgCacheCompilerHost {
             url: new URL(context.containingFile + ".sd.scss"),
             importer: {
               findFileUrl: (url) => {
-                if (!url.startsWith("~")) return undefined;
+                if (!url.startsWith("~")) return null;
                 return new URL(url.substring(1), pathToFileURL("node_modules"));
               }
             }
