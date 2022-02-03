@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --experimental-modules
+#!/usr/bin/env node --experimental-specifier-resolution=node
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
