@@ -52,7 +52,7 @@ export class SdCliJsLibBuilder extends EventEmitter {
   }
 
   private async getRelatedPathsAsync(): Promise<string[]> {
-    const mySourceGlobPath = path.resolve(this._rootPath, "**", "+(*.js|*.cjs|*.mjs|*.ts)");
+    const mySourceGlobPath = path.resolve(this._rootPath, "**", "+(*.js|*.cjs|*.ts)");
     const mySourceFilePaths = await FsUtil.globAsync(mySourceGlobPath, {
       ignore: [
         "**/node_modules/**",

@@ -7,11 +7,11 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ["*.js", "*.cjs", "*.mjs"],
+      files: ["*.js", "*.cjs"],
       extends: ["./packages/eslint-plugin/src/configs/base.cjs"]
     },
     {
-      files: ["*.mjs"],
+      files: ["*.js"],
       parserOptions: {
         ecmaVersion: 2020,
         sourceType: "module"
