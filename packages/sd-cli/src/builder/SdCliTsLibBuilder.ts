@@ -111,7 +111,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
 
   private async getAllRelatedPathsAsync(): Promise<string[]> {
     const fileCachePaths = Array.from(this._fileCache.keys());
-    const mySourceGlobPath = path.resolve(this._rootPath, "**", "+(*.js|*.cjs|*.ts)");
+    const mySourceGlobPath = path.resolve(this._rootPath, "**", "+(*.js|*.cjs|*.mjs|*.ts)");
     const mySourceFilePaths = await FsUtil.globAsync(mySourceGlobPath, {
       ignore: [
         "**/node_modules/**",

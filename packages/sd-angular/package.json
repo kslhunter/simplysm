@@ -11,7 +11,8 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    "./modules/*": "./dist/modules/*.js"
+    ".": "./dist/index.mjs",
+    "./modules/*": "./dist/modules/*.mjs"
   },
   "typesVersions": {
     "*": {

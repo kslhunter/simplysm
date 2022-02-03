@@ -31,7 +31,7 @@ export class SdCliCacheCompilerHost {
                                    writeByteOrderMark: boolean,
                                    onError?: (message: string) => void,
                                    sourceFiles?: readonly ts.SourceFile[]) => {
-      // fileName = fileName.replace(/\.js(\.map)?$/, ".mjs$1");
+      fileName = fileName.replace(/\.js(\.map)?$/, ".mjs$1");
 
       const writeCache = outputFileCache.get(PathUtil.posix(fileName));
       if (writeCache !== data) {
