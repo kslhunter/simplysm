@@ -39,7 +39,7 @@ export interface ISdCliConfig {
   localUpdates?: Record<string, string>;
 }
 
-export type TSdCliPackageConfig = ISdCliLibPackageConfig | ISdCliNgLibPackageConfig;
+export type TSdCliPackageConfig = ISdCliLibPackageConfig | ISdCliNgLibPackageConfig | ISdCliServerPackageConfig;
 
 export interface ISdCliLibPackageConfig {
   type: "library";

@@ -5,13 +5,12 @@ import * as path from "path";
 export class SdCliLocalUpdate {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
 
-  public constructor(private readonly _rootPath: string,
-                     private readonly _configFilePath?: string) {
+  public constructor(private readonly _rootPath: string) {
   }
 
-  public async runAsync(): Promise<void> {
+  public async runAsync(opt: { confFileRelPath: string }): Promise<void> {
     this._logger.debug("프로젝트 설정 가져오기...");
-    const conf = SdCliConfigUtil.loadConfig(path.resolve(this._rootPath, this._configFilePath ?? "simplysm.json"), false);
+    const conf = await SdCliConfigUtil.loadConfigAsync(path.resolve(this._rootPath, opt.confFileRelPath), false);
     if (!conf.localUpdates) return;
 
     const updatePathInfos = await this._getUpdatePathInfosAsync(conf.localUpdates);
@@ -31,9 +30,9 @@ export class SdCliLocalUpdate {
     this._logger.info("로컬 라이브러리 업데이트 완료");
   }
 
-  public async watchAsync(): Promise<void> {
+  public async watchAsync(opt: { confFileRelPath: string }): Promise<void> {
     this._logger.debug("프로젝트 설정 가져오기...");
-    const conf = SdCliConfigUtil.loadConfig(path.resolve(this._rootPath, this._configFilePath ?? "simplysm.json"), false);
+    const conf = await SdCliConfigUtil.loadConfigAsync(path.resolve(this._rootPath, opt.confFileRelPath), false);
     if (!conf.localUpdates) return;
 
     const updatePathInfos = await this._getUpdatePathInfosAsync(conf.localUpdates);

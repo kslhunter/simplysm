@@ -9,8 +9,20 @@ import { SdCliJsLibBuilder } from "../builder/SdCliJsLibBuilder";
 export class SdCliPackage extends EventEmitter {
   private readonly _npmConfig: INpmConfig;
 
+  public get basename(): string {
+    return path.basename(this._workspaceRootPath);
+  }
+
   public get name(): string {
     return this._npmConfig.name;
+  }
+
+  public get main(): string | undefined {
+    return this._npmConfig.main;
+  }
+
+  public get type(): TSdCliPackageConfig["type"] {
+    return this._config.type;
   }
 
   public get allDependencies(): string[] {
@@ -23,11 +35,11 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public constructor(private readonly _workspaceRootPath: string,
-                     private readonly _rootPath: string,
+                     public readonly rootPath: string,
                      private readonly _config: TSdCliPackageConfig) {
     super();
 
-    const npmConfigFilePath = path.resolve(this._rootPath, "package.json");
+    const npmConfigFilePath = path.resolve(this.rootPath, "package.json");
     this._npmConfig = FsUtil.readJson(npmConfigFilePath);
   }
 
@@ -53,19 +65,19 @@ export class SdCliPackage extends EventEmitter {
     updateDepVersion(this._npmConfig.devDependencies);
     updateDepVersion(this._npmConfig.peerDependencies);
 
-    const npmConfigFilePath = path.resolve(this._rootPath, "package.json");
+    const npmConfigFilePath = path.resolve(this.rootPath, "package.json");
     await FsUtil.writeJsonAsync(npmConfigFilePath, this._npmConfig, { space: 2 });
   }
 
   public async watchAsync(): Promise<void> {
-    const isTs = FsUtil.exists(path.resolve(this._rootPath, "tsconfig.json"));
+    const isTs = FsUtil.exists(path.resolve(this.rootPath, "tsconfig.json"));
 
     if (isTs) {
       await this._genBuildTsconfigAsync();
     }
 
     const isAngular = isTs && this.allDependencies.includes("@angular/core");
-    const builder = !isTs ? new SdCliJsLibBuilder(this._rootPath) : new SdCliTsLibBuilder(this._rootPath, isAngular);
+    const builder = !isTs ? new SdCliJsLibBuilder(this.rootPath) : new SdCliTsLibBuilder(this.rootPath, isAngular);
 
     await builder
       .on("change", () => {
@@ -78,26 +90,26 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async buildAsync(): Promise<ISdCliPackageBuildResult[]> {
-    const isTs = FsUtil.exists(path.resolve(this._rootPath, "tsconfig.json"));
+    const isTs = FsUtil.exists(path.resolve(this.rootPath, "tsconfig.json"));
 
     if (isTs) {
       await this._genBuildTsconfigAsync();
     }
 
     const isAngular = isTs && this.allDependencies.includes("@angular/core");
-    const builder = isTs ? new SdCliTsLibBuilder(this._rootPath, isAngular) : new SdCliJsLibBuilder(this._rootPath);
+    const builder = isTs ? new SdCliTsLibBuilder(this.rootPath, isAngular) : new SdCliJsLibBuilder(this.rootPath);
 
     return await builder.buildAsync();
   }
 
   public async publishAsync(): Promise<void> {
     if (this._config.type === "library" && this._config.publish === "npm") {
-      await SdProcess.execAsync("npm publish --quiet --access public", { cwd: this._rootPath });
+      await SdProcess.execAsync("npm publish --quiet --access public", { cwd: this.rootPath });
     }
   }
 
   private async _genBuildTsconfigAsync(): Promise<void> {
-    const baseTsconfigFilePath = path.resolve(this._rootPath, "tsconfig.json");
+    const baseTsconfigFilePath = path.resolve(this.rootPath, "tsconfig.json");
     const baseTsconfig: ITsconfig = await FsUtil.readJsonAsync(baseTsconfigFilePath);
 
     const buildTsconfig: ITsconfig = ObjectUtil.clone(baseTsconfig);
@@ -105,7 +117,7 @@ export class SdCliPackage extends EventEmitter {
     delete buildTsconfig.compilerOptions.baseUrl;
     delete buildTsconfig.compilerOptions.paths;
 
-    const buildTsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
+    const buildTsconfigFilePath = path.resolve(this.rootPath, "tsconfig-build.json");
     await FsUtil.writeJsonAsync(buildTsconfigFilePath, buildTsconfig, { space: 2 });
   }
 }

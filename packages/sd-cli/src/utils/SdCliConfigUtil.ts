@@ -4,15 +4,15 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
 import path from "path";
 
 export class SdCliConfigUtil {
-  public static loadConfig(confFilePath: string, isDev: boolean, opts?: string[]): ISdCliConfig {
-    const confFileCont = FsUtil.readJson(confFilePath);
+  public static async loadConfigAsync(confFilePath: string, isDev: boolean, opts?: string[]): Promise<ISdCliConfig> {
+    const confFileCont = await FsUtil.readJsonAsync(confFilePath);
     let conf = this._getConfigFromFileContent(confFileCont, isDev, opts);
 
     // extends
     if (conf.extends) {
       for (const extConfFilePath of conf.extends) {
-        const extConf = this.loadConfig(path.resolve(path.dirname(confFilePath), extConfFilePath), isDev, opts);
-        conf = this._mergeObj(conf, extConf);
+        const extConf = await this.loadConfigAsync(path.resolve(path.dirname(confFilePath), extConfFilePath), isDev, opts);
+        conf = this._mergeObj(extConf, conf);
       }
     }
     delete conf["extends"];

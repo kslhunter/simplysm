@@ -8,6 +8,9 @@ import { Logger } from "@simplysm/sd-core-node";
 export class SdServiceServer {
   private readonly _logger = Logger.get(["simplysm", "sd-service", this.constructor.name]);
 
+  private _httpServer?: http.Server | https.Server;
+  public isOpen = false;
+
   public constructor(private readonly _options: ISdServiceServerOptions) {
   }
 
@@ -15,18 +18,32 @@ export class SdServiceServer {
     await new Promise<void>((resolve) => {
       this._logger.debug("서버 시작...");
 
-      const httpServer = this._options.ssl
+      this._httpServer = this._options.ssl
         ? https.createServer({
           pfx: this._options.ssl.pfxBuffer,
           passphrase: this._options.ssl.passphrase
         })
         : http.createServer();
 
-      const socketServer = new socketIo.Server(httpServer);
+      const socketServer = new socketIo.Server(this._httpServer);
       socketServer.on("connection", (socket) => this._onSocketConnection(socket));
-      httpServer.listen(this._options.port, () => {
+      this._httpServer.listen(this._options.port, () => {
         resolve();
         this._logger.debug("서버 시작됨");
+      });
+    });
+
+    this.isOpen = true;
+  }
+
+  public async closeAsync(): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      this._httpServer?.close((err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
       });
     });
   }

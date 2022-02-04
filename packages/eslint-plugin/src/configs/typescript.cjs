@@ -1,9 +1,9 @@
 module.exports = {
   parser: "@typescript-eslint/parser",
   plugins: ["@typescript-eslint"],
-  /*extends: [
-    "plugin:@typescript-eslint/all"
-  ],*/
+  // extends: [
+  //   "plugin:@typescript-eslint/all"
+  // ],
   rules: {
     "@typescript-eslint/explicit-member-accessibility": ["error"],
     "@typescript-eslint/require-await": ["error"],

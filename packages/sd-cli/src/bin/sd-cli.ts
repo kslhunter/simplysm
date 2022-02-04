@@ -41,6 +41,11 @@ const argv = yargs(hideBin(process.argv))
         config: {
           type: "string",
           describe: "simplysm.json 파일 경로"
+        },
+        options: {
+          type: "string",
+          array: true,
+          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)"
         }
       })
   )
@@ -52,6 +57,11 @@ const argv = yargs(hideBin(process.argv))
         config: {
           type: "string",
           describe: "simplysm.json 파일 경로"
+        },
+        options: {
+          type: "string",
+          array: true,
+          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)"
         }
       })
   )
@@ -60,14 +70,19 @@ const argv = yargs(hideBin(process.argv))
     "프로젝트의 각 패키지를 배포합니다.",
     (cmd) => cmd.version(false)
       .options({
+        noBuild: {
+          type: "boolean",
+          describe: "빌드를 하지않고 배포합니다.",
+          default: false
+        },
         config: {
           type: "string",
           describe: "simplysm.json 파일 경로"
         },
-        "noBuild": {
-          type: "boolean",
-          describe: "빌드를 하지않고 배포합니다.",
-          default: false
+        options: {
+          type: "string",
+          array: true,
+          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)"
         }
       })
   )
@@ -92,21 +107,31 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
 
 (async () => {
   if (argv._[0] === "local-update") {
-    await new SdCliLocalUpdate(process.cwd(), argv.config)
-      .runAsync();
+    await new SdCliLocalUpdate(process.cwd())
+      .runAsync({
+        confFileRelPath: argv.config ?? "simplysm.json"
+      });
   }
   else if (argv._[0] === "watch") {
-    await new SdCliWorkspace(process.cwd(), argv.config)
-      .watchAsync();
+    await new SdCliWorkspace(process.cwd())
+      .watchAsync({
+        confFileRelPath: argv.config ?? "simplysm.json",
+        optNames: argv.options ?? []
+      });
   }
   else if (argv._[0] === "build") {
-    await new SdCliWorkspace(process.cwd(), argv.config)
-      .buildAsync();
+    await new SdCliWorkspace(process.cwd())
+      .buildAsync({
+        confFileRelPath: argv.config ?? "simplysm.json",
+        optNames: argv.options ?? []
+      });
   }
   else if (argv._[0] === "publish") {
-    await new SdCliWorkspace(process.cwd(), argv.config)
+    await new SdCliWorkspace(process.cwd())
       .publishAsync({
-        noBuild: argv.noBuild
+        noBuild: argv.noBuild,
+        confFileRelPath: argv.config ?? "simplysm.json",
+        optNames: argv.options ?? []
       });
   }
   else {
