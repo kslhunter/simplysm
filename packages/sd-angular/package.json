@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular",
-  "version": "7.0.22",
+  "version": "7.0.23",
   "description": "심플리즘 패키지 - Angular 모듈 (browser)",
   "author": "김석래",
   "repository": {
@@ -31,7 +31,7 @@
   "dependencies": {},
   "devDependencies": {},
   "peerDependencies": {
-    "@simplysm/sd-core-common": "7.0.22",
+    "@simplysm/sd-core-common": "7.0.23",
     "@angular/common": "^13.2.0",
     "@angular/core": "^13.2.0"
   }
