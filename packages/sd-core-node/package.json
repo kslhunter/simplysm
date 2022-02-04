@@ -19,7 +19,8 @@
     "node": "^16"
   },
   "dependencies": {
-    "glob": "^7.2.0"
+    "glob": "^7.2.0",
+    "chokidar": "^3.5.3"
   },
   "devDependencies": {
     "@types/glob": "^7.2.0"

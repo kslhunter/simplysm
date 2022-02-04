@@ -26,7 +26,7 @@
     "postinstall": "npm run _sd-cli_ -- --debug prepare",
     "---": "",
     "_sd-cli_": "cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --experimental-specifier-resolution=node --experimental-import-meta-resolve --loader @simplysm/sd-cli/ts-node-esm-paths packages/sd-cli/src/bin/sd-cli.ts",
-    "eslint-timing": "cross-env TIMING=1 eslint \"./**/+(*.ts|*.js|*.cjs|*.mjs)\""
+    "eslint-timing": "cross-env TIMING=1 eslint \"./packages/**/+(*.ts|*.js|*.cjs|*.mjs)\""
   },
   "devDependencies": {
     "@simplysm/eslint-plugin": "7.0.24",

@@ -5,7 +5,6 @@ import { EventEmitter } from "events";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdCliTsLibBuilder } from "../builder/SdCliTsLibBuilder";
 import { SdCliJsLibBuilder } from "../builder/SdCliJsLibBuilder";
-import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
 import { SdCliServerBuilder } from "../builder/SdCliServerBuilder";
 
 export class SdCliPackage extends EventEmitter {
@@ -28,7 +27,12 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public get allDependencies(): string[] {
-    return SdCliNpmConfigUtil.getAllDependencies(this._npmConfig);
+    return [
+      ...Object.keys(this._npmConfig.dependencies ?? {}),
+      ...Object.keys(this._npmConfig.optionalDependencies ?? {}),
+      // ...Object.keys(this._npmConfig.devDependencies ?? {}),
+      ...Object.keys(this._npmConfig.peerDependencies ?? {})
+    ].distinct();
   }
 
   public constructor(private readonly _workspaceRootPath: string,
@@ -67,23 +71,7 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async watchAsync(): Promise<void> {
-    const isTs = FsUtil.exists(path.resolve(this.rootPath, "tsconfig.json"));
-
-    if (isTs) {
-      await this._genBuildTsconfigAsync();
-    }
-
-    let builder: SdCliJsLibBuilder | SdCliTsLibBuilder | SdCliServerBuilder;
-
-    if (this._config.type === "library") {
-      const isAngular = isTs && this.allDependencies.includes("@angular/core");
-      builder = !isTs ? new SdCliJsLibBuilder(this.rootPath) : new SdCliTsLibBuilder(this.rootPath, isAngular);
-    }
-    else {
-      builder = new SdCliServerBuilder(this.rootPath, this._config, this._workspaceRootPath);
-    }
-
-    await builder
+    await (await this._createBuilderAsync())
       .on("change", () => {
         this.emit("change");
       })
@@ -94,21 +82,28 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async buildAsync(): Promise<ISdCliPackageBuildResult[]> {
+    return await (await this._createBuilderAsync()).buildAsync();
+  }
+
+  public async publishAsync(): Promise<void> {
+    if (this._config.type === "library" && this._config.publish === "npm") {
+      await SdProcess.execAsync("npm publish --quiet --access public", { cwd: this.rootPath });
+    }
+  }
+
+  private async _createBuilderAsync(): Promise<SdCliJsLibBuilder | SdCliTsLibBuilder | SdCliServerBuilder> {
     const isTs = FsUtil.exists(path.resolve(this.rootPath, "tsconfig.json"));
 
     if (isTs) {
       await this._genBuildTsconfigAsync();
     }
 
-    const isAngular = isTs && this.allDependencies.includes("@angular/core");
-    const builder = isTs ? new SdCliTsLibBuilder(this.rootPath, isAngular) : new SdCliJsLibBuilder(this.rootPath);
-
-    return await builder.buildAsync();
-  }
-
-  public async publishAsync(): Promise<void> {
-    if (this._config.type === "library" && this._config.publish === "npm") {
-      await SdProcess.execAsync("npm publish --quiet --access public", { cwd: this.rootPath });
+    if (this._config.type === "library") {
+      const isAngular = isTs && this.allDependencies.includes("@angular/core");
+      return isTs ? new SdCliTsLibBuilder(this.rootPath, isAngular) : new SdCliJsLibBuilder(this.rootPath);
+    }
+    else {
+      return new SdCliServerBuilder(this.rootPath, this._config, this._workspaceRootPath);
     }
   }
 

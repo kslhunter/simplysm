@@ -8,17 +8,18 @@ import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import { ErrorInfo } from "ts-loader/dist/interfaces";
 import os from "os";
 import { ESLint } from "eslint";
-import webpackMerge from "webpack-merge";
+import * as webpackMerge from "webpack-merge";
 import TerserPlugin from "terser-webpack-plugin";
 import { StringUtil } from "@simplysm/sd-core-common";
-import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
+import { LicenseWebpackPlugin } from "license-webpack-plugin";
 import LintResult = ESLint.LintResult;
 
 export class SdCliServerBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
 
+  private readonly _tsconfigFilePath: string;
   private readonly _parsedTsconfig: ts.ParsedCommandLine;
   private readonly _npmConfigMap = new Map<string, INpmConfig>();
 
@@ -28,8 +29,8 @@ export class SdCliServerBuilder extends EventEmitter {
     super();
 
     // tsconfig
-    const tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
-    const tsconfig = FsUtil.readJson(tsconfigFilePath);
+    this._tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
+    const tsconfig = FsUtil.readJson(this._tsconfigFilePath);
     this._parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._rootPath);
   }
 
@@ -40,18 +41,42 @@ export class SdCliServerBuilder extends EventEmitter {
   }
 
   public async watchAsync(): Promise<void> {
+    // DIST 비우기
+    await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
+
+    // 빌드 준비
+    const webpackConfig = this._getWebpackWatchConfig();
+    const compiler = webpack(webpackConfig);
+    await new Promise<void>((resolve, reject) => {
+      compiler.hooks.watchRun.tapAsync(this.constructor.name, (args, callback) => {
+        this.emit("change");
+        callback();
+
+        this._logger.debug("Webpack 빌드 수행...");
+      });
+
+      compiler.watch({}, (err, stats) => {
+        if (err != null || stats == null) {
+          reject(err);
+          return;
+        }
+
+        const results = SdCliBuildResultUtil.convertFromWebpackStats(stats);
+        this.emit("complete", results);
+
+        this._logger.debug("Webpack 빌드 완료");
+        resolve();
+      });
+    });
   }
 
   public async buildAsync(): Promise<ISdCliPackageBuildResult[]> {
     // DIST 비우기
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
-    // 빌드 준비
-    const extModuleNames = this._findExternalModules(false).map((item) => item.name);
-
     // 빌드
     this._logger.debug("Webpack 빌드 수행...");
-    const webpackConfig = this._getWebpackBuildConfig(extModuleNames);
+    const webpackConfig = this._getWebpackBuildConfig();
     const compiler = webpack(webpackConfig);
     const buildResults = await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
       compiler.run((err, stats) => {
@@ -90,9 +115,13 @@ export class SdCliServerBuilder extends EventEmitter {
       output: {
         clean: true,
         path: this._parsedTsconfig.options.outDir,
-        filename: "[name].js",
-        chunkFilename: "[name].js",
-        assetModuleFilename: "resources/[name][ext][query]"
+        filename: "[name].mjs",
+        chunkFilename: "[name].mjs",
+        assetModuleFilename: "res/[name][ext][query]",
+        libraryTarget: "module"
+      },
+      experiments: {
+        outputModule: true
       },
       performance: { hints: false },
       node: false,
@@ -101,11 +130,17 @@ export class SdCliServerBuilder extends EventEmitter {
         strictExportPresence: true,
         rules: [
           {
+            test: /\.m?js/,
+            resolve: {
+              fullySpecified: false
+            }
+          },
+          {
             test: /\.ts$/,
             exclude: /node_modules/,
             loader: "ts-loader",
             options: {
-              compilerOptions: this._parsedTsconfig.options,
+              configFile: this._tsconfigFilePath,
               errorFormatter: (msg: ErrorInfo) => {
                 return SdCliBuildResultUtil.getMessage({
                   filePath: msg.file,
@@ -184,14 +219,12 @@ export class SdCliServerBuilder extends EventEmitter {
     };
   }
 
-  private _getWebpackWatchConfig(extModuleNames: string[]): webpack.Configuration {
+  private _getWebpackWatchConfig(): webpack.Configuration {
     const internalModuleCachePaths = FsUtil.findAllParentChildDirPaths("node_modules/!(@simplysm)", this._rootPath, this._workspaceRootPath);
 
-    return webpackMerge(this._webpackCommonConfig, {
+    const extModuleNames = this._findExternalModules(true).map((item) => item.name);
+    return webpackMerge.merge(this._webpackCommonConfig, {
       mode: "development",
-      output: {
-        libraryTarget: "umd"
-      },
       module: {
         rules: [
           {
@@ -220,24 +253,28 @@ export class SdCliServerBuilder extends EventEmitter {
     });
   }
 
-  private _getWebpackBuildConfig(extModuleNames: string[]): webpack.Configuration {
-    return webpackMerge(this._webpackCommonConfig, {
+  private _getWebpackBuildConfig(): webpack.Configuration {
+    const extModuleNames = this._findExternalModules(false).map((item) => item.name);
+    return webpackMerge.merge(this._webpackCommonConfig, {
       mode: "production",
-      output: {
-        libraryTarget: "module"
-      },
       cache: false,
       optimization: {
+        minimize: true,
         minimizer: [
           new TerserPlugin({
+            extractComments: false,
             terserOptions: {
+              compress: true,
               ecma: 2020,
               sourceMap: false,
               keep_classnames: true,
               keep_fnames: true,
               ie8: false,
               safari10: false,
-              module: true
+              module: true,
+              format: {
+                comments: false
+              }
             }
           })
         ],
@@ -245,31 +282,68 @@ export class SdCliServerBuilder extends EventEmitter {
         chunkIds: "deterministic",
         emitOnErrors: false
       },
+      plugins: [
+        new LicenseWebpackPlugin({
+          stats: { warnings: false, errors: false },
+          perChunkOutput: false,
+          outputFilename: "3rd_party_licenses.txt",
+          skipChildCompilers: true
+        }) as any
+      ],
       externals: extModuleNames
     });
   }
 
-  private _findExternalModules(all: boolean): { name: string; path: string }[] {
+  private _findExternalModules(all: boolean): { name: string; path?: string }[] {
     const loadedModuleNames: string[] = [];
-    const externalModules: { name: string; path: string }[] = [];
+    const externalModules: { name: string; path?: string }[] = [];
 
     const fn = (currPath: string): void => {
       const npmConfig = this._getNpmConfig(currPath);
       if (!npmConfig) return;
 
+      const moduleNames = [
+        ...Object.keys(npmConfig.dependencies ?? {}),
+        ...Object.keys(npmConfig.peerDependencies ?? {}).filter((item) => !npmConfig.peerDependenciesMeta?.[item].optional)
+      ];
+      const optModuleNames = [
+        ...Object.keys(npmConfig.optionalDependencies ?? {}),
+        ...Object.keys(npmConfig.peerDependencies ?? {}).filter((item) => npmConfig.peerDependenciesMeta?.[item].optional)
+      ].distinct();
 
-      for (const moduleName of SdCliNpmConfigUtil.getAllDependencies(npmConfig)) {
+      for (const moduleName of moduleNames) {
         if (loadedModuleNames.includes(moduleName)) continue;
         loadedModuleNames.push(moduleName);
 
         const modulePath = FsUtil.findAllParentChildDirPaths("node_modules/" + moduleName, currPath, this._workspaceRootPath).first();
-        if (StringUtil.isNullOrEmpty(modulePath)) continue;
+        if (StringUtil.isNullOrEmpty(modulePath)) {
+          console.log(2, currPath, moduleName);
+          continue;
+        }
 
         if (all || FsUtil.exists(path.resolve(modulePath, "binding.gyp"))) {
           externalModules.push({ path: modulePath, name: moduleName });
         }
 
         fn(modulePath);
+      }
+
+      for (const optModuleName of optModuleNames) {
+        if (loadedModuleNames.includes(optModuleName)) continue;
+        loadedModuleNames.push(optModuleName);
+
+        const optModulePath = FsUtil.findAllParentChildDirPaths("node_modules/" + optModuleName, currPath, this._workspaceRootPath).first();
+        if (StringUtil.isNullOrEmpty(optModulePath)) {
+          console.log(1, currPath, optModuleName);
+          externalModules.push({ path: optModulePath, name: optModuleName });
+          continue;
+        }
+
+        if (all || FsUtil.exists(path.resolve(optModulePath, "binding.gyp"))) {
+          externalModules.push({ path: optModulePath, name: optModuleName });
+        }
+
+        fn(optModulePath);
       }
     };
 

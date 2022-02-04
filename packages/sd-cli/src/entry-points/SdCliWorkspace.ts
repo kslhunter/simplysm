@@ -88,7 +88,7 @@ export class SdCliWorkspace {
     }
 
     serverInfo.server = (await import("file:///" + entryFilePath + "?update=" + Uuid.new().toString())).default as SdServiceServer | undefined;
-    if (!(serverInfo.server instanceof SdServiceServer)) {
+    if (!serverInfo.server) {
       this._logger.error(`${entryFilePath}(0, 0): 'SdServiceServer'를 'export'해야 합니다.`);
       return;
     }
