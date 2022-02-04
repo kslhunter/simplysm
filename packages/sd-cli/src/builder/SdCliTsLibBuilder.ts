@@ -165,7 +165,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
       results.push(
         ...diagnostics
           .filter((item) => [ts.DiagnosticCategory.Error, ts.DiagnosticCategory.Warning].includes(item.category))
-          .map((item) => SdCliBuildResultUtil.convertDiagsToResult(item))
+          .map((item) => SdCliBuildResultUtil.convertFromTsDiag(item))
           .filterExists()
       );
 

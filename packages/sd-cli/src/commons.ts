@@ -39,17 +39,14 @@ export interface ISdCliConfig {
   localUpdates?: Record<string, string>;
 }
 
-export type TSdCliPackageConfig = ISdCliLibPackageConfig | ISdCliNgLibPackageConfig | ISdCliServerPackageConfig;
+export type TSdCliPackageConfig = ISdCliLibPackageConfig | ISdCliServerPackageConfig;
 
 export interface ISdCliLibPackageConfig {
   type: "library";
   publish?: "npm";
 }
 
-export interface ISdCliNgLibPackageConfig {
-  type: "angular";
-}
-
 export interface ISdCliServerPackageConfig {
   type: "server";
+  env?: Record<string, string>;
 }

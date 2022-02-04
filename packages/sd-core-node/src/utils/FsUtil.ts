@@ -491,14 +491,17 @@ export class FsUtil {
     }
   }
 
-  public static findAllParentChildPaths(childName: string, fromPath: string, rootPath: string): string[] {
+  public static findAllParentChildDirPaths(childGlob: string, fromPath: string, rootPath: string): string[] {
     const resultPaths: string[] = [];
 
     let current = fromPath;
     while (current) {
-      const potential = path.resolve(current, childName);
-      if (FsUtil.exists(potential) && FsUtil.isDirectory(potential)) {
-        resultPaths.push(potential);
+      const potential = path.resolve(current, childGlob);
+      const globResults = FsUtil.glob(potential);
+      for (const globResult of globResults) {
+        if (FsUtil.exists(globResult) && FsUtil.isDirectory(globResult)) {
+          resultPaths.push(globResult);
+        }
       }
 
       if (current === rootPath) break;
