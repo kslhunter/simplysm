@@ -317,7 +317,6 @@ export class SdCliServerBuilder extends EventEmitter {
 
         const modulePath = FsUtil.findAllParentChildDirPaths("node_modules/" + moduleName, currPath, this._workspaceRootPath).first();
         if (StringUtil.isNullOrEmpty(modulePath)) {
-          console.log(2, currPath, moduleName);
           continue;
         }
 
@@ -334,7 +333,6 @@ export class SdCliServerBuilder extends EventEmitter {
 
         const optModulePath = FsUtil.findAllParentChildDirPaths("node_modules/" + optModuleName, currPath, this._workspaceRootPath).first();
         if (StringUtil.isNullOrEmpty(optModulePath)) {
-          console.log(1, currPath, optModuleName);
           externalModules.push({ path: optModulePath, name: optModuleName });
           continue;
         }
