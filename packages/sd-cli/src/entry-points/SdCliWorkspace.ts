@@ -2,13 +2,12 @@ import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
 import path from "path";
 import { INpmConfig, ISdCliConfig, ISdCliPackageBuildResult } from "../commons";
 import { SdCliPackage } from "../packages/SdCliPackage";
-import { Wait } from "@simplysm/sd-core-common";
+import { Uuid, Wait } from "@simplysm/sd-core-common";
 import os from "os";
 import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import semver from "semver/preload";
 import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
 import { SdServiceServer } from "@simplysm/sd-service/server";
-import decache from "decache";
 
 export class SdCliWorkspace {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -40,7 +39,15 @@ export class SdCliWorkspace {
           changeCount++;
           this._logger.debug(`[${pkg.name}] 빌드를 시작합니다...`);
         })
-        .on("complete", (results) => {
+        .on("complete", async (results) => {
+          if (pkg.type === "server") {
+            if (results.some((item) => item.severity === "error")) {
+              return;
+            }
+
+            await this._restartServerAsync(pkg);
+          }
+
           this._logger.debug(`[${pkg.name}] 빌드가 완료되었습니다.`);
           totalResultMap.set(pkg.name, results);
 
@@ -52,40 +59,6 @@ export class SdCliWorkspace {
             }
           }, 500);
         });
-
-
-      if (pkg.type === "server") {
-        pkg.on("complete", async (results) => {
-          if (results.some((item) => item.severity === "error")) {
-            return;
-          }
-
-          const entryFileRelPath = pkg.main;
-          if (entryFileRelPath === undefined) {
-            this._logger.error(`서버패키지(${pkg.name})의 'package.json'에서 'main'필드를 찾을 수 없습니다.`);
-            return;
-          }
-          const entryFilePath = path.resolve(pkg.rootPath, entryFileRelPath);
-
-          this._logger.log(`서버(${pkg.name}) 재시작...`);
-          const serverInfo = this._serverInfoMap.getOrCreate(pkg.name, {});
-          if (serverInfo.server) {
-            await serverInfo.server.closeAsync();
-            delete serverInfo.server;
-            decache(entryFilePath);
-          }
-
-          serverInfo.server = (await import(entryFilePath)) as SdServiceServer | undefined;
-          if (serverInfo.server === undefined) {
-            this._logger.error(`${entryFilePath}(0, 0): 'SdServiceServer'를 'export'해야 합니다.`);
-            return;
-          }
-
-          await Wait.until(() => serverInfo.server!.isOpen);
-
-          this._logger.log(`서버(${pkg.name}) 재시작 완료`);
-        });
-      }
     }
 
     this._logger.debug("빌드를 시작합니다...");
@@ -96,6 +69,32 @@ export class SdCliWorkspace {
       await pkg.watchAsync();
       buildCompletedPackageNames.push(pkg.name);
     });
+  }
+
+  private async _restartServerAsync(pkg: SdCliPackage): Promise<void> {
+    const entryFileRelPath = pkg.main;
+    if (entryFileRelPath === undefined) {
+      this._logger.error(`서버패키지(${pkg.name})의 'package.json'에서 'main'필드를 찾을 수 없습니다.`);
+      return;
+    }
+    const entryFilePath = path.resolve(pkg.rootPath, entryFileRelPath);
+
+    this._logger.log(`서버(${pkg.name}) 재시작...`);
+    const serverInfo = this._serverInfoMap.getOrCreate(pkg.name, {});
+    if (serverInfo.server) {
+      await serverInfo.server.closeAsync();
+      delete serverInfo.server;
+    }
+
+    serverInfo.server = (await import("file:///" + entryFilePath + "?update=" + Uuid.new().toString())).default as SdServiceServer | undefined;
+    if (!(serverInfo.server instanceof SdServiceServer)) {
+      this._logger.error(`${entryFilePath}(0, 0): 'SdServiceServer'를 'export'해야 합니다.`);
+      return;
+    }
+
+    await Wait.until(() => serverInfo.server!.isOpen);
+
+    this._logger.log(`서버(${pkg.name}) 재시작 완료`);
   }
 
   public async buildAsync(opt: { confFileRelPath: string; optNames: string[] }): Promise<void> {

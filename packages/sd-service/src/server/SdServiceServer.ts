@@ -9,6 +9,7 @@ export class SdServiceServer {
   private readonly _logger = Logger.get(["simplysm", "sd-service", this.constructor.name]);
 
   private _httpServer?: http.Server | https.Server;
+  private _socketServer?: socketIo.Server;
   public isOpen = false;
 
   public constructor(private readonly _options: ISdServiceServerOptions) {
@@ -25,8 +26,8 @@ export class SdServiceServer {
         })
         : http.createServer();
 
-      const socketServer = new socketIo.Server(this._httpServer);
-      socketServer.on("connection", (socket) => this._onSocketConnection(socket));
+      this._socketServer = new socketIo.Server(this._httpServer);
+      this._socketServer.on("connection", (socket) => this._onSocketConnection(socket));
       this._httpServer.listen(this._options.port, () => {
         resolve();
         this._logger.debug("서버 시작됨");
@@ -38,7 +39,12 @@ export class SdServiceServer {
 
   public async closeAsync(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
-      this._httpServer?.close((err) => {
+      if (!this._httpServer || !this._httpServer.listening) {
+        resolve();
+        return;
+      }
+
+      this._httpServer.close((err) => {
         if (err) {
           reject(err);
           return;
@@ -46,6 +52,8 @@ export class SdServiceServer {
         resolve();
       });
     });
+
+    this.isOpen = false;
   }
 
   private _onSocketConnection(socket: socketIo.Socket): void {

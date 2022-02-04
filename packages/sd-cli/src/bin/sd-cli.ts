@@ -1,4 +1,4 @@
-#!/usr/bin/env node --experimental-specifier-resolution=node
+#!/usr/bin/env node --experimental-specifier-resolution=node --experimental-import-meta-resolve
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -6,6 +6,8 @@ import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { SdCliWorkspace } from "../entry-points/SdCliWorkspace";
 import { SdCliLocalUpdate } from "../entry-points/SdCliLocalUpdate";
 import sourceMapSupport from "source-map-support";
+import { SdCliNpm } from "../entry-points/SdCliNpm";
+import { SdCliPrepare } from "../entry-points/SdCliPrepare";
 
 sourceMapSupport.install();
 
@@ -22,6 +24,16 @@ const argv = yargs(hideBin(process.argv))
       default: false
     }
   })
+  .command(
+    "prepare",
+    "sd-cli 준비",
+    (cmd) => cmd.version(false)
+  )
+  .command(
+    "update",
+    "패키지 업데이트 (npm update)",
+    (cmd) => cmd.version(false)
+  )
   .command(
     "local-update",
     "로컬 라이브러리 업데이트를 수행합니다.",
@@ -106,7 +118,15 @@ else {
 const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
 
 (async () => {
-  if (argv._[0] === "local-update") {
+  if (argv._[0] === "prepare") {
+    await new SdCliPrepare()
+      .prepareAsync();
+  }
+  else if (argv._[0] === "update") {
+    await new SdCliNpm(process.cwd())
+      .updateAsync();
+  }
+  else if (argv._[0] === "local-update") {
     await new SdCliLocalUpdate(process.cwd())
       .runAsync({
         confFileRelPath: argv.config ?? "simplysm.json"
