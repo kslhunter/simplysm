@@ -223,7 +223,7 @@ export class SdCliClientBuilder extends EventEmitter {
           lang: undefined
         }),
         new webpack.HotModuleReplacementPlugin()
-      ],
+      ] as any[],
       module: {
         strictExportPresence: true,
         parser: { javascript: { url: false, worker: false } },
@@ -414,7 +414,7 @@ export class SdCliClientBuilder extends EventEmitter {
         }
       },
       node: false
-    } as webpack.Configuration;
+    };
   }
 
   private _getNpmConfig(pkgPath: string): INpmConfig | undefined {
