@@ -7,6 +7,8 @@ import { SdCliTsLibBuilder } from "../builder/SdCliTsLibBuilder";
 import { SdCliJsLibBuilder } from "../builder/SdCliJsLibBuilder";
 import { SdCliServerBuilder } from "../builder/SdCliServerBuilder";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
+import { SdCliClientBuilder } from "../builder/SdCliClientBuilder";
+import { NextHandleFunction } from "connect";
 
 export class SdCliPackage extends EventEmitter {
   private readonly _npmConfig: INpmConfig;
@@ -23,10 +25,6 @@ export class SdCliPackage extends EventEmitter {
     return this._npmConfig.main;
   }
 
-  public get type(): TSdCliPackageConfig["type"] {
-    return this._config.type;
-  }
-
   public get allDependencies(): string[] {
     return [
       ...SdCliNpmConfigUtil.getDependencies(this._npmConfig).defaults,
@@ -36,7 +34,7 @@ export class SdCliPackage extends EventEmitter {
 
   public constructor(private readonly _workspaceRootPath: string,
                      public readonly rootPath: string,
-                     private readonly _config: TSdCliPackageConfig) {
+                     public readonly config: TSdCliPackageConfig) {
     super();
 
     const npmConfigFilePath = path.resolve(this.rootPath, "package.json");
@@ -69,8 +67,8 @@ export class SdCliPackage extends EventEmitter {
     await FsUtil.writeJsonAsync(npmConfigFilePath, this._npmConfig, { space: 2 });
   }
 
-  public async watchAsync(): Promise<void> {
-    await (await this._createBuilderAsync())
+  public async watchAsync(): Promise<NextHandleFunction[] | void> {
+    return await (await this._createBuilderAsync())
       .on("change", () => {
         this.emit("change");
       })
@@ -85,24 +83,27 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async publishAsync(): Promise<void> {
-    if (this._config.type === "library" && this._config.publish === "npm") {
+    if (this.config.type === "library" && this.config.publish === "npm") {
       await SdProcess.spawnAsync("npm publish --quiet --access public", { cwd: this.rootPath });
     }
   }
 
-  private async _createBuilderAsync(): Promise<SdCliJsLibBuilder | SdCliTsLibBuilder | SdCliServerBuilder> {
+  private async _createBuilderAsync(): Promise<SdCliJsLibBuilder | SdCliTsLibBuilder | SdCliServerBuilder | SdCliClientBuilder> {
     const isTs = FsUtil.exists(path.resolve(this.rootPath, "tsconfig.json"));
 
     if (isTs) {
       await this._genBuildTsconfigAsync();
     }
 
-    if (this._config.type === "library") {
+    if (this.config.type === "library") {
       // const isAngular = isTs && this.allDependencies.includes("@angular/core");
       return isTs ? new SdCliTsLibBuilder(this.rootPath) : new SdCliJsLibBuilder(this.rootPath);
     }
+    else if (this.config.type === "server") {
+      return new SdCliServerBuilder(this.rootPath, this.config, this._workspaceRootPath);
+    }
     else {
-      return new SdCliServerBuilder(this.rootPath, this._config, this._workspaceRootPath);
+      return new SdCliClientBuilder(this.rootPath, this.config, this._workspaceRootPath);
     }
   }
 

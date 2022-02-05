@@ -1,4 +1,7 @@
 module.exports = {
+  /*extends: [
+    "eslint:all"
+  ],*/
   rules: {
     "require-await": ["error"],
     "quotes": ["error"],

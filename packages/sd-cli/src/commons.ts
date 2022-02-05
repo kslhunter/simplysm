@@ -40,7 +40,7 @@ export interface ISdCliConfig {
   localUpdates?: Record<string, string>;
 }
 
-export type TSdCliPackageConfig = ISdCliLibPackageConfig | ISdCliServerPackageConfig;
+export type TSdCliPackageConfig = ISdCliLibPackageConfig | ISdCliServerPackageConfig | ISdCliClientPackageConfig;
 
 export interface ISdCliLibPackageConfig {
   type: "library";
@@ -53,4 +53,9 @@ export interface ISdCliServerPackageConfig {
   configs?: Record<string, any>;
   pm2?: Record<string, any> | boolean;
   iis?: { serverExeFilePath?: string } | boolean;
+}
+
+export interface ISdCliClientPackageConfig {
+  type: "client";
+  server: string;
 }

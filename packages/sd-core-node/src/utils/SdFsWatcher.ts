@@ -12,7 +12,7 @@ export class SdFsWatcher {
     return new SdFsWatcher(paths);
   }
 
-  public onChange(cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>): void {
+  public onChange(opt: { delay?: number }, cb: (changeInfos: ISdFsWatcherChangeInfo[]) => void | Promise<void>): void {
     const changeInfoMap = new Map<string, TSdFsWatcherEvent>();
     this._watcher
       .on("all", (event: TSdFsWatcherEvent, filePath: string) => {
@@ -38,7 +38,7 @@ export class SdFsWatcher {
           changeInfoMap.clear();
 
           cb(changeInfos);
-        }, 500);
+        }, opt.delay ?? 500);
       });
   }
 

@@ -43,13 +43,15 @@
     "webpack-dev-middleware": "^5.3.1",
     "webpack-hot-middleware": "^2.25.1",
     "css-loader": "^6.6.0",
-    "resource-url-loader": "^1.1.5",
-    "sass-loader": "^12.4.0"
+    "resolve-url-loader": "^5.0.0",
+    "sass-loader": "^12.4.0",
+    "connect": "^3.7.0"
   },
   "devDependencies": {
     "@types/semver": "^7.3.9",
     "@types/yargs": "^17.0.8",
-    "@types/webpack-hot-middleware": "^2.25.5"
+    "@types/webpack-hot-middleware": "^2.25.5",
+    "@types/connect": "^3.4.35"
   },
   "peerDependencies": {
     "@simplysm/sd-core-common": "7.0.37",

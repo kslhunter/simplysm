@@ -1,4 +1,5 @@
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
+import { fileURLToPath } from "url";
 
 export class SdCliPrepare {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -11,7 +12,7 @@ export class SdCliPrepare {
 
   private async _modifyTypescriptCodeForTypeCheckPerformanceWarning(): Promise<boolean> {
     const fileUrl = await import.meta.resolve!("typescript");
-    const filePath = fileUrl.replace(/^file:\/\/\//, "");
+    const filePath = fileURLToPath(fileUrl);
     const fileContent = await FsUtil.readFileAsync(filePath);
     const modifiedFileContent = fileContent.replace(`
         function checkSourceElement(node) {

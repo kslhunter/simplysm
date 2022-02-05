@@ -20,8 +20,5 @@
     "forceConsistentCasingInFileNames": true,
     "noPropertyAccessFromIndexSignature": true,
     "importHelpers": true
-  },
-  "ts-node": {
-    "transpileOnly": true
   }
 }

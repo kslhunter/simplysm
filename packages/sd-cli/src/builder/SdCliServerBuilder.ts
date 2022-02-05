@@ -50,9 +50,8 @@ export class SdCliServerBuilder extends EventEmitter {
     await new Promise<void>((resolve, reject) => {
       compiler.hooks.watchRun.tapAsync(this.constructor.name, (args, callback) => {
         this.emit("change");
-        callback();
-
         this._logger.debug("Webpack 빌드 수행...");
+        callback();
       });
 
       compiler.watch({}, async (err, stats) => {
@@ -65,11 +64,9 @@ export class SdCliServerBuilder extends EventEmitter {
         await this._writeDistConfigFileAsync();
 
         // 결과 반환
+        this._logger.debug("Webpack 빌드 완료");
         const results = SdCliBuildResultUtil.convertFromWebpackStats(stats);
         this.emit("complete", results);
-
-        // 마무리
-        this._logger.debug("Webpack 빌드 완료");
         resolve();
       });
     });
@@ -239,7 +236,9 @@ export class SdCliServerBuilder extends EventEmitter {
         outputModule: true
       },
       performance: { hints: false },
-      node: false,
+      node: {
+        __dirname: true
+      },
       stats: "errors-warnings",
       externals: extModuleNames,
       ...watch ? {

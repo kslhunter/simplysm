@@ -145,6 +145,7 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
         confFileRelPath: argv.config ?? "simplysm.json",
         optNames: argv.options ?? []
       });
+    process.exit(0);
   }
   else if (argv._[0] === "publish") {
     await new SdCliWorkspace(process.cwd())

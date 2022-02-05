@@ -1,4 +1,4 @@
-import { INpmConfig, ISdCliPackageBuildResult, ISdCliServerPackageConfig } from "../commons";
+import { INpmConfig, ISdCliClientPackageConfig, ISdCliPackageBuildResult } from "../commons";
 import { EventEmitter } from "events";
 import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
 import webpack from "webpack";
@@ -22,6 +22,8 @@ import { HmrLoader } from "@angular-devkit/build-angular/src/webpack/plugins/hmr
 import wdm from "webpack-dev-middleware";
 import whm from "webpack-hot-middleware";
 import { NextHandleFunction } from "connect";
+import { LicenseWebpackPlugin } from "license-webpack-plugin";
+import { Type } from "@angular-devkit/build-angular";
 
 export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -31,7 +33,7 @@ export class SdCliClientBuilder extends EventEmitter {
   private readonly _npmConfigMap = new Map<string, INpmConfig>();
 
   public constructor(private readonly _rootPath: string,
-                     private readonly _config: ISdCliServerPackageConfig,
+                     private readonly _config: ISdCliClientPackageConfig,
                      private readonly _workspaceRootPath: string) {
     super();
 
@@ -52,7 +54,7 @@ export class SdCliClientBuilder extends EventEmitter {
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
     // 빌드 준비
-    const webpackConfig = this._getWebpackCommonConfig(true);
+    const webpackConfig = this._getWebpackConfig(true);
     const compiler = webpack(webpackConfig);
     return await new Promise<NextHandleFunction[]>((resolve, reject) => {
       compiler.hooks.watchRun.tapAsync(this.constructor.name, (args, callback) => {
@@ -96,7 +98,7 @@ export class SdCliClientBuilder extends EventEmitter {
 
     // 빌드
     this._logger.debug("Webpack 빌드 수행...");
-    const webpackConfig = this._getWebpackCommonConfig(false);
+    const webpackConfig = this._getWebpackConfig(false);
     const compiler = webpack(webpackConfig);
     const buildResults = await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
       compiler.run((err, stats) => {
@@ -116,9 +118,7 @@ export class SdCliClientBuilder extends EventEmitter {
     return buildResults;
   }
 
-  private _getWebpackCommonConfig(watch: boolean): webpack.Configuration {
-    console.log(watch);
-
+  private _getWebpackConfig(watch: boolean): webpack.Configuration {
     const npmConfig = this._getNpmConfig(this._rootPath)!;
     const pkgVersion = npmConfig.version;
 
@@ -132,7 +132,100 @@ export class SdCliClientBuilder extends EventEmitter {
 
     const sassImplementation = new SassWorkerImplementation();
 
+    const mainFilePath = path.resolve(this._rootPath, "src/main.ts");
+    const polyfillsFilePath = path.resolve(this._rootPath, "src/polyfills.ts");
+    const stylesFilePath = path.resolve(this._rootPath, "src/styles.scss");
+
     return {
+      mode: watch ? "development" : "production",
+      devtool: false,
+      target: ["web", "es2015"],
+      profile: false,
+      resolve: {
+        roots: [this._rootPath],
+        extensions: [".ts", ".tsx", ".mjs", ".js"],
+        symlinks: true,
+        modules: [this._workspaceRootPath, "node_modules"],
+        mainFields: ["es2015", "browser", "module", "main"],
+        conditionNames: ["es2015", "..."]
+      },
+      resolveLoader: {
+        symlinks: true
+      },
+      context: this._workspaceRootPath,
+      entry: {
+        main: [
+          ...watch ? [
+            `webpack-hot-middleware/client?path=${publicPath}__webpack_hmr&timeout=20000&reload=true&overlay=true`,
+          ] : [],
+          mainFilePath
+        ],
+        ...FsUtil.exists(polyfillsFilePath) ? { polyfills: polyfillsFilePath } : {},
+        ...FsUtil.exists(stylesFilePath) ? { styles: stylesFilePath } : {}
+      },
+      output: {
+        uniqueName: pkgKey,
+        hashFunction: "xxhash64",
+        clean: true,
+        path: distPath,
+        publicPath,
+        filename: "[name].js",
+        chunkFilename: "[name].js",
+        libraryTarget: undefined,
+        crossOriginLoading: false,
+        trustedTypes: "angular#bundler",
+        scriptType: "module",
+      },
+      watch: false,
+      watchOptions: { poll: undefined, ignored: undefined },
+      performance: { hints: false },
+      ignoreWarnings: [
+        /Failed to parse source map from/,
+        /Add postcss as project dependency/,
+        /"@charset" must be the first rule in the file/,
+      ],
+      experiments: { backCompat: false, syncWebAssembly: true, asyncWebAssembly: true },
+      infrastructureLogging: { level: "error" },
+      stats: "errors-warnings",
+      cache: {
+        type: "filesystem",
+        profile: watch ? undefined : false,
+        cacheDirectory: path.resolve(cachePath, "angular-webpack"),
+        maxMemoryGenerations: 1,
+        name: createHash("sha1").update(pkgVersion).digest("hex")
+      },
+      node: false,
+      optimization: {
+        minimizer: [],
+        moduleIds: "deterministic",
+        chunkIds: watch ? "named" : "deterministic",
+        emitOnErrors: false,
+        runtimeChunk: "single",
+        splitChunks: {
+          maxAsyncRequests: Infinity,
+          cacheGroups: {
+            default: {
+              chunks: "async",
+              minChunks: 2,
+              priority: 10
+            },
+            common: {
+              name: "common",
+              chunks: "async",
+              minChunks: 2,
+              enforce: true,
+              priority: 5
+            },
+            vendors: false,
+            defaultVendors: watch ? {
+              name: "vendor",
+              chunks: (chunk) => chunk.name === "main",
+              enforce: true,
+              test: /[\\/]node_modules[\\/]/
+            } : false
+          }
+        }
+      },
       plugins: [
         new NamedChunksPlugin(),
         new DedupeModuleResolvePlugin(),
@@ -144,6 +237,14 @@ export class SdCliClientBuilder extends EventEmitter {
           }
         }),*/
         new CommonJsUsageWarnPlugin(),
+        ...watch ? [] : [
+          new LicenseWebpackPlugin({
+            stats: { warnings: false, errors: false, },
+            perChunkOutput: false,
+            outputFilename: "3rdpartylicenses.txt",
+            skipChildCompilers: true
+          })
+        ],
         new CopyWebpackPlugin({
           patterns: [
             ...["favicon.ico", "assets/", "manifest.webmanifest"].map((item) => ({
@@ -165,26 +266,30 @@ export class SdCliClientBuilder extends EventEmitter {
             }))
           ]
         }),
-        new webpack.SourceMapDevToolPlugin({
-          filename: "[file].map",
-          include: [/js$/, /css$/],
-          sourceRoot: "webpack:///",
-          moduleFilenameTemplate: "[resource-path]",
-          append: undefined,
-        }),
+        ...watch ? [
+          new webpack.SourceMapDevToolPlugin({
+            filename: "[file].map",
+            include: [/js$/, /css$/],
+            sourceRoot: "webpack:///",
+            moduleFilenameTemplate: "[resource-path]",
+            append: undefined,
+          })
+        ] : [],
         new AngularWebpackPlugin({
           tsconfig: this._tsconfigFilePath,
           compilerOptions: {
-            sourceMap: true,
+            sourceMap: watch,
             declaration: false,
             declarationMap: false,
             preserveSymlinks: false
           },
           jitMode: false,
-          emitNgModuleScope: true,
+          emitNgModuleScope: watch,
           inlineStyleFileExtension: "scss"
         }),
-        new AnyComponentStyleBudgetChecker([]),
+        new AnyComponentStyleBudgetChecker(watch ? [] : [
+          { type: Type.AnyComponentStyle, maximumWarning: "2kb", maximumError: "4kb" }
+        ]),
         {
           apply: (compiler: webpack.Compiler) => {
             compiler.hooks.shutdown.tap("sass-worker", () => {
@@ -215,14 +320,16 @@ export class SdCliClientBuilder extends EventEmitter {
           },
           postTransform: undefined,
           optimization: {
-            scripts: false,
-            styles: { minify: false, inlineCritical: false },
-            fonts: { inline: false }
+            scripts: !watch,
+            styles: { minify: !watch, inlineCritical: !watch },
+            fonts: { inline: !watch }
           },
           crossOrigin: "none",
           lang: undefined
         }),
-        new webpack.HotModuleReplacementPlugin()
+        ...watch ? [
+          new webpack.HotModuleReplacementPlugin()
+        ] : []
       ] as any[],
       module: {
         strictExportPresence: true,
@@ -248,22 +355,24 @@ export class SdCliClientBuilder extends EventEmitter {
                   cacheDirectory: path.resolve(cachePath, "babel-webpack"),
                   scriptTarget: ts.ScriptTarget.ES2017,
                   aot: true,
-                  optimize: false,
+                  optimize: !watch,
                   instrumentCode: undefined
                 }
               }
             ],
           },
-          {
-            test: /\.[cm]?jsx?$/,
-            enforce: "pre",
-            loader: "source-map-loader",
-            options: {
-              filterSourceMappingUrl: (_mapUri: string, resourcePath: string) => {
-                return !resourcePath.includes("node_modules") || (/@simplysm[\\/]sd/).test(resourcePath);
+          ...watch ? [
+            {
+              test: /\.[cm]?jsx?$/,
+              enforce: "pre" as const,
+              loader: "source-map-loader",
+              options: {
+                filterSourceMappingUrl: (_mapUri: string, resourcePath: string) => {
+                  return !resourcePath.includes("node_modules") || (/@simplysm[\\/]sd/).test(resourcePath);
+                }
               }
             }
-          },
+          ] : [],
           {
             test: /\.[cm]?tsx?$/,
             loader: "@ngtools/webpack",
@@ -285,22 +394,23 @@ export class SdCliClientBuilder extends EventEmitter {
                       },
                       {
                         loader: "css-loader",
-                        options: { url: false, sourceMap: true }
+                        options: { url: false, sourceMap: watch }
                       }
                     ],
-                    include: path.resolve(this._rootPath, "src/styles.scss"),
+                    include: [stylesFilePath],
                     resourceQuery: { not: [/\?ngResource/] }
                   },
                   {
-                    type: "asset/source"
+                    type: "asset/source",
+                    resourceQuery: /\?ngResource/
                   }
                 ]
               },
               {
                 use: [
                   {
-                    loader: "resource-url-loader",
-                    options: { sourceMap: true }
+                    loader: "resolve-url-loader",
+                    options: { sourceMap: watch }
                   },
                   {
                     loader: "sass-loader",
@@ -313,7 +423,7 @@ export class SdCliClientBuilder extends EventEmitter {
                         includePaths: [],
                         outputStyle: "expanded",
                         quietDeps: true,
-                        verbose: undefined
+                        verbose: watch ? undefined : false
                       }
                     }
                   }
@@ -321,99 +431,14 @@ export class SdCliClientBuilder extends EventEmitter {
               }
             ]
           },
-          {
-            loader: HmrLoader,
-            include: [path.resolve(this._rootPath, "src/main.ts")]
-          }
+          ...watch ? [
+            {
+              loader: HmrLoader,
+              include: [mainFilePath]
+            }
+          ] : []
         ]
       },
-      mode: "development",
-      devtool: false,
-      target: ["web", "es2015"],
-      profile: false,
-      resolve: {
-        roots: [this._rootPath],
-        extensions: [".ts", ".tsx", ".mjs", ".js"],
-        symlinks: true,
-        modules: [this._workspaceRootPath, "node_modules"],
-        mainFields: ["es2015", "browser", "module", "main"],
-        conditionNames: ["es2015", "..."]
-      },
-      resolveLoader: {
-        symlinks: true
-      },
-      context: this._workspaceRootPath,
-      entry: {
-        main: [
-          `webpack-hot-middleware/client?path=${publicPath}__webpack_hmr&timeout=20000&reload=true&overlay=true`,
-          path.resolve(this._rootPath, "src/main.ts")
-        ],
-        polyfills: [path.resolve(this._rootPath, "src/polyfills.ts")],
-        styles: [path.resolve(this._rootPath, "src/styles.scss")]
-      },
-      output: {
-        uniqueName: pkgKey,
-        hashFunction: "xxhash64",
-        clean: true,
-        path: distPath,
-        publicPath,
-        filename: "[name].js",
-        chunkFilename: "[name].js",
-        libraryTarget: undefined,
-        crossOriginLoading: false,
-        trustedTypes: "angular#bundler",
-        scriptType: "module",
-      },
-      watch: false,
-      watchOptions: { poll: undefined, ignored: undefined },
-      performance: { hints: false },
-      ignoreWarnings: [
-        /Failed to parse source map from/,
-        /Add postcss as project dependency/,
-        /"@charset" must be the first rule in the file/,
-      ],
-      experiments: { backCompat: false, syncWebAssembly: true, asyncWebAssembly: true },
-      infrastructureLogging: { level: "error" },
-      stats: "errors-warnings",
-      cache: {
-        type: "filesystem",
-        profile: undefined,
-        cacheDirectory: path.resolve(cachePath, "angular-webpack"),
-        maxMemoryGenerations: 1,
-        name: createHash("sha1").update(pkgVersion).digest("hex")
-      },
-      optimization: {
-        minimizer: [],
-        moduleIds: "deterministic",
-        chunkIds: "named",
-        emitOnErrors: false,
-        runtimeChunk: "single",
-        splitChunks: {
-          maxAsyncRequests: Infinity,
-          cacheGroups: {
-            default: {
-              chunks: "async",
-              minChunks: 2,
-              priority: 10
-            },
-            common: {
-              name: "common",
-              chunks: "async",
-              minChunks: 2,
-              enforce: true,
-              priority: 5
-            },
-            vendors: false,
-            defaultVendors: {
-              name: "vendor",
-              chunks: (chunk) => chunk.name === "main",
-              enforce: true,
-              test: /[\\/]node_modules[\\/]/
-            }
-          }
-        }
-      },
-      node: false
     };
   }
 

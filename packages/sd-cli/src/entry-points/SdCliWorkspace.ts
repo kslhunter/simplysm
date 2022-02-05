@@ -10,6 +10,7 @@ import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
 import { SdServiceServer } from "@simplysm/sd-service/server";
 import { SdCliNpm } from "./SdCliNpm";
 import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
+import { NextHandleFunction } from "connect";
 
 export class SdCliWorkspace {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -47,11 +48,7 @@ export class SdCliWorkspace {
           this._logger.debug(`[${pkg.name}] 빌드를 시작합니다...`);
         })
         .on("complete", async (results) => {
-          if (pkg.type === "server") {
-            if (results.some((item) => item.severity === "error")) {
-              return;
-            }
-
+          if (pkg.config.type === "server" && !results.some((item) => item.severity === "error")) {
             await this._restartServerAsync(pkg);
           }
 
@@ -62,6 +59,7 @@ export class SdCliWorkspace {
             changeCount--;
             if (changeCount === 0) {
               this._loggingResults(totalResultMap);
+              this._loggingOpenClientHrefs();
               this._logger.info("모든 빌드가 완료되었습니다.");
             }
           }, 500);
@@ -73,7 +71,16 @@ export class SdCliWorkspace {
     const buildCompletedPackageNames: string[] = [];
     await pkgs.parallelAsync(async (pkg) => {
       await Wait.until(() => !pkg.allDependencies.some((dep) => pkgNames.includes(dep) && !buildCompletedPackageNames.includes(dep)));
-      await pkg.watchAsync();
+      if (pkg.config.type === "client") {
+        const middlewares = (await pkg.watchAsync()) as NextHandleFunction[];
+
+        const serverInfo = this._serverInfoMap.getOrCreate(pkg.config.server, { middlewares: [], clientInfos: [] });
+        serverInfo.middlewares.push(...middlewares);
+        serverInfo.clientInfos.push({ pkgKey: pkg.name.split("/").last()! });
+      }
+      else {
+        await pkg.watchAsync();
+      }
       buildCompletedPackageNames.push(pkg.name);
     });
   }
@@ -87,21 +94,26 @@ export class SdCliWorkspace {
     const entryFilePath = path.resolve(pkg.rootPath, entryFileRelPath);
 
     this._logger.log(`서버(${pkg.name}) 재시작...`);
-    const serverInfo = this._serverInfoMap.getOrCreate(pkg.name, {});
-    if (serverInfo.server) {
-      await serverInfo.server.closeAsync();
-      delete serverInfo.server;
+    try {
+      const serverInfo = this._serverInfoMap.getOrCreate(pkg.name, { middlewares: [], clientInfos: [] });
+      if (serverInfo.server) {
+        await serverInfo.server.closeAsync();
+        delete serverInfo.server;
+      }
+
+      serverInfo.server = (await import("file:///" + entryFilePath + "?update=" + Uuid.new().toString())).default as SdServiceServer | undefined;
+      if (!serverInfo.server) {
+        this._logger.error(`${entryFilePath}(0, 0): 'SdServiceServer'를 'export'해야 합니다.`);
+        return;
+      }
+      serverInfo.server.devMiddlewares = serverInfo.middlewares;
+      await Wait.until(() => serverInfo.server!.isOpen);
+
+      this._logger.log(`서버(${pkg.name}) 재시작 완료`);
     }
-
-    serverInfo.server = (await import("file:///" + entryFilePath + "?update=" + Uuid.new().toString())).default as SdServiceServer | undefined;
-    if (!serverInfo.server) {
-      this._logger.error(`${entryFilePath}(0, 0): 'SdServiceServer'를 'export'해야 합니다.`);
-      return;
+    catch (err) {
+      this._logger.error(`서버(${pkg.name}) 재시작중 오류 발생`, err);
     }
-
-    await Wait.until(() => serverInfo.server!.isOpen);
-
-    this._logger.log(`서버(${pkg.name}) 재시작 완료`);
   }
 
   public async buildAsync(opt: { confFileRelPath: string; optNames: string[] }): Promise<void> {
@@ -278,8 +290,29 @@ export class SdCliWorkspace {
       this._logger.warn(`경고: ${warnings.length}건, 오류: ${errors.length}건`);
     }
   }
+
+  private _loggingOpenClientHrefs(): void {
+    const clientHrefs: string[] = [];
+
+    const serverInfos = Array.from(this._serverInfoMap.values());
+    for (const serverInfo of serverInfos) {
+      if (!serverInfo.server) continue;
+
+      const protocolStr = serverInfo.server.options.ssl ? "https" : "http";
+      const portStr = serverInfo.server.options.port.toString();
+
+      for (const clientInfo of serverInfo.clientInfos) {
+        clientHrefs.push(`${protocolStr}://localhost:${portStr}/${clientInfo.pkgKey}/`);
+      }
+    }
+    if (clientHrefs.length > 0) {
+      this._logger.log(`오픈된 클라이언트: ${clientHrefs.join(", ")}`);
+    }
+  }
 }
 
 interface IServerInfo {
   server?: SdServiceServer;
+  middlewares: NextHandleFunction[];
+  clientInfos: { pkgKey: string }[];
 }

@@ -25,6 +25,7 @@ module.exports = {
       allowConciseArrowFunctionExpressionsStartingWithVoid: true
     }],
     "@typescript-eslint/no-unused-expressions": ["error"],
-    "@typescript-eslint/no-unused-vars": ["error"]
+    "@typescript-eslint/no-unused-vars": ["error"],
+    "@typescript-eslint/strict-boolean-expressions": ["error", { allowNullableBoolean: true }]
   }
 };

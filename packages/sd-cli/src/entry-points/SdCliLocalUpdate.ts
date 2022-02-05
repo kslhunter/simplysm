@@ -40,19 +40,25 @@ export class SdCliLocalUpdate {
     const watchPaths = (await updatePathInfos.mapManyAsync(async (item) => await this._getWatchPathsAsync(item.source))).distinct();
 
     const watcher = SdFsWatcher.watch(watchPaths);
-    watcher.onChange(async (changeInfos) => {
+    watcher.onChange({ delay: 1000 }, async (changeInfos) => {
       const changeFilePaths = changeInfos.filter((item) => ["add", "change", "unlink"].includes(item.event)).map((item) => item.path);
       if (changeFilePaths.length === 0) return;
 
       this._logger.log("로컬 라이브러리 변경감지...");
       for (const changedFilePath of changeFilePaths) {
-        const currentUpdatePathInfos = updatePathInfos.filter((item) => PathUtil.isChildPath(changedFilePath, item.source));
-        const targetFilePaths = currentUpdatePathInfos.map((item) => path.resolve(item.target, path.relative(item.source, changedFilePath)));
-        if (FsUtil.exists(changedFilePath)) {
-          this._logger.debug(`변경파일감지(복사): ${changedFilePath}`);
-          for (const targetFilePath of targetFilePaths) {
-            await FsUtil.copyAsync(changedFilePath, targetFilePath);
-          }
+        if (!FsUtil.exists(changedFilePath)) continue;
+
+        for (const updatePathInfo of updatePathInfos) {
+          if (!PathUtil.isChildPath(changedFilePath, updatePathInfo.source)) continue;
+
+          const sourceRelPath = path.relative(updatePathInfo.source, changedFilePath);
+          if (sourceRelPath.includes("node_modules")) continue;
+          if (sourceRelPath.includes("package.json")) continue;
+
+          const targetFilePath = path.resolve(updatePathInfo.target, sourceRelPath);
+
+          this._logger.debug(`변경파일감지(복사): ${changedFilePath} => ${targetFilePath}`);
+          await FsUtil.copyAsync(changedFilePath, targetFilePath);
         }
       }
 

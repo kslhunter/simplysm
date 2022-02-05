@@ -17,7 +17,7 @@ export class SdCliNgCacheCompilerHost {
     };
 
     cacheCompilerHost["transformResource"] = async (data, context) => {
-      if (context.resourceFile || context.type !== "style") {
+      if (context.resourceFile != null || context.type !== "style") {
         return null;
       }
 

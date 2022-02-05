@@ -14,12 +14,10 @@
     ".": "./dist/index.mjs",
     "./modules/*": "./dist/modules/*.mjs"
   },
+  "types": "dist/index.d.ts",
   "typesVersions": {
     "*": {
-      "*": [
-        "dist/index.d.ts"
-      ],
-      "./modules/*": [
+      "modules/*": [
         "dist/modules/*.d.ts"
       ]
     }

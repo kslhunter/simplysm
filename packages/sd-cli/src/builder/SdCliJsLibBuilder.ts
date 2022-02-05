@@ -25,7 +25,7 @@ export class SdCliJsLibBuilder extends EventEmitter {
 
     const relatedPaths = await this.getRelatedPathsAsync();
     const watcher = SdFsWatcher.watch(relatedPaths);
-    watcher.onChange(async (changeInfos) => {
+    watcher.onChange({}, async (changeInfos) => {
       const changeFilePaths = changeInfos.filter((item) => ["add", "change", "unlink"].includes(item.event)).map((item) => item.path);
       if(changeFilePaths.length === 0) return;
 
