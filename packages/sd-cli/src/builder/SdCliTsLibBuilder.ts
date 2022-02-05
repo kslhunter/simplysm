@@ -1,4 +1,4 @@
-import { ISdCliPackageBuildResult } from "../commons";
+import { INpmConfig, ISdCliPackageBuildResult } from "../commons";
 import { EventEmitter } from "events";
 import ts from "typescript";
 import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
@@ -11,6 +11,7 @@ import { SdCliPackageLinter } from "../build-tool/SdCliPackageLinter";
 import { SdCliCacheCompilerHost } from "../build-tool/SdCliCacheCompilerHost";
 import { SdCliNgCacheCompilerHost } from "../build-tool/SdCliNgCacheCompilerHost";
 import { NgCompiler } from "@angular/compiler-cli/src/ngtsc/core";
+import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
 
 export class SdCliTsLibBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -26,10 +27,26 @@ export class SdCliTsLibBuilder extends EventEmitter {
   private _ngProgram?: NgtscProgram;
   private _builder?: ts.EmitAndSemanticDiagnosticsBuilderProgram;
 
-  public constructor(private readonly _rootPath,
-                     private readonly _isAngular: boolean) {
+  private readonly _tsconfigFilePath: string;
+  private readonly _parsedTsconfig: ts.ParsedCommandLine;
+  private readonly _npmConfig: INpmConfig;
+
+  private readonly _isAngular: boolean;
+
+  public constructor(private readonly _rootPath) {
     super();
     this._linter = new SdCliPackageLinter(this._rootPath);
+
+    // tsconfig
+    this._tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
+    const tsconfig = FsUtil.readJson(this._tsconfigFilePath);
+    this._parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._rootPath);
+
+    // package.json
+    this._npmConfig = FsUtil.readJson(path.resolve(this._rootPath, "package.json"));
+
+    // else
+    this._isAngular = SdCliNpmConfigUtil.getDependencies(this._npmConfig).defaults.includes("@angular/core");
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -41,14 +58,11 @@ export class SdCliTsLibBuilder extends EventEmitter {
   public async watchAsync(): Promise<void> {
     this.emit("change");
 
-    // TSCONFIG 읽기
-    const parsedTsconfig = await this._getParsedTsconfigAsync();
-
     // DIST 비우기
-    await FsUtil.removeAsync(parsedTsconfig.options.outDir!);
+    await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
     // 프로그램 리로드
-    const buildPack = this._createSdBuildPack(parsedTsconfig);
+    const buildPack = this._createSdBuildPack(this._parsedTsconfig);
 
     const relatedPaths = await this.getAllRelatedPathsAsync();
     const watcher = SdFsWatcher.watch(relatedPaths);
@@ -65,7 +79,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
       }
 
       // 빌드
-      const watchBuildPack = this._createSdBuildPack(parsedTsconfig);
+      const watchBuildPack = this._createSdBuildPack(this._parsedTsconfig);
 
       // 린트
       const watchBuildResults = await this._runBuilderAsync(watchBuildPack.builder, watchBuildPack.ngCompiler);
@@ -90,14 +104,11 @@ export class SdCliTsLibBuilder extends EventEmitter {
   }
 
   public async buildAsync(): Promise<ISdCliPackageBuildResult[]> {
-    // TSCONFIG 읽기
-    const parsedTsconfig = await this._getParsedTsconfigAsync();
-
     // DIST 비우기
-    await FsUtil.removeAsync(parsedTsconfig.options.outDir!);
+    await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
     // 프로그램 리로드
-    const buildPack = this._createSdBuildPack(parsedTsconfig);
+    const buildPack = this._createSdBuildPack(this._parsedTsconfig);
 
     // 빌드
     const buildResults = await this._runBuilderAsync(buildPack.builder, buildPack.ngCompiler);
@@ -311,12 +322,6 @@ export class SdCliTsLibBuilder extends EventEmitter {
     else {
       return compilerHost;
     }
-  }
-
-  private async _getParsedTsconfigAsync(): Promise<ts.ParsedCommandLine> {
-    const tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
-    const tsconfig = await FsUtil.readJsonAsync(tsconfigFilePath);
-    return ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._rootPath);
   }
 }
 

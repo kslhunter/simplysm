@@ -31,16 +31,25 @@
     "yargs": "^17.3.1",
     "webpack": "^5.68.0",
     "ts-loader": "^9.2.6",
-    "webpack-merge": "^5.8.0",
     "terser-webpack-plugin": "^5.3.1",
     "copy-webpack-plugin": "^10.2.4",
     "eslint-webpack-plugin": "^3.1.1",
     "source-map-loader": "^3.0.1",
-    "license-webpack-plugin": "^4.0.1"
+    "license-webpack-plugin": "^4.0.1",
+    "@angular-devkit/build-angular": "^13.2.2",
+    "browserslist": "^4.19.1",
+    "mini-css-extract-plugin": "^2.5.3",
+    "@ngtools/webpack": "^13.2.2",
+    "webpack-dev-middleware": "^5.3.1",
+    "webpack-hot-middleware": "^2.25.1",
+    "css-loader": "^6.6.0",
+    "resource-url-loader": "^1.1.5",
+    "sass-loader": "^12.4.0"
   },
   "devDependencies": {
     "@types/semver": "^7.3.9",
-    "@types/yargs": "^17.0.8"
+    "@types/yargs": "^17.0.8",
+    "@types/webpack-hot-middleware": "^2.25.5"
   },
   "peerDependencies": {
     "@simplysm/sd-core-common": "7.0.26",

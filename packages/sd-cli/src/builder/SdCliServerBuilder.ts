@@ -8,9 +8,8 @@ import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import { ErrorInfo } from "ts-loader/dist/interfaces";
 import os from "os";
 import { ESLint } from "eslint";
-import * as webpackMerge from "webpack-merge";
 import TerserPlugin from "terser-webpack-plugin";
-import { StringUtil } from "@simplysm/sd-core-common";
+import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import { LicenseWebpackPlugin } from "license-webpack-plugin";
@@ -45,7 +44,8 @@ export class SdCliServerBuilder extends EventEmitter {
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
     // 빌드 준비
-    const webpackConfig = this._getWebpackWatchConfig();
+    const extModuleNames = this._getExternalModuleNames();
+    const webpackConfig = this._getWebpackConfig(true, extModuleNames);
     const compiler = webpack(webpackConfig);
     await new Promise<void>((resolve, reject) => {
       compiler.hooks.watchRun.tapAsync(this.constructor.name, (args, callback) => {
@@ -55,15 +55,20 @@ export class SdCliServerBuilder extends EventEmitter {
         this._logger.debug("Webpack 빌드 수행...");
       });
 
-      compiler.watch({}, (err, stats) => {
+      compiler.watch({}, async (err, stats) => {
         if (err != null || stats == null) {
           reject(err);
           return;
         }
 
+        // .config.json 파일 쓰기
+        await this._writeDistConfigFileAsync();
+
+        // 결과 반환
         const results = SdCliBuildResultUtil.convertFromWebpackStats(stats);
         this.emit("complete", results);
 
+        // 마무리
         this._logger.debug("Webpack 빌드 완료");
         resolve();
       });
@@ -76,7 +81,8 @@ export class SdCliServerBuilder extends EventEmitter {
 
     // 빌드
     this._logger.debug("Webpack 빌드 수행...");
-    const webpackConfig = this._getWebpackBuildConfig();
+    const extModuleNames = this._getExternalModuleNames();
+    const webpackConfig = this._getWebpackConfig(false, extModuleNames);
     const compiler = webpack(webpackConfig);
     const buildResults = await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
       compiler.run((err, stats) => {
@@ -85,18 +91,127 @@ export class SdCliServerBuilder extends EventEmitter {
           return;
         }
 
-        // 결과 리턴
+        // 결과 반환
         const results = SdCliBuildResultUtil.convertFromWebpackStats(stats);
         resolve(results);
       });
     });
-    this._logger.debug("Webpack 빌드 완료");
 
+    // .config.json 파일 쓰기
+    await this._writeDistConfigFileAsync();
+
+    // pm2.json 파일 쓰기
+    await this._writeDistPm2ConfigFileAsync();
+
+    // iis 파일 쓰기
+    await this._writeDistIisConfigFileAsync();
+
+    // 배포용 package.json 파일 생성
+    await this._writeDistNpmConfigFileAsync(extModuleNames);
+
+    // 마무리
+    this._logger.debug("Webpack 빌드 완료");
     return buildResults;
   }
 
-  private get _webpackCommonConfig(): webpack.Configuration {
+  private async _writeDistConfigFileAsync(): Promise<void> {
+    const configDistPath = path.resolve(this._parsedTsconfig.options.outDir!, ".config.json");
+    await FsUtil.writeFileAsync(configDistPath, JSON.stringify(this._config.configs ?? {}, undefined, 2));
+  }
+
+  private async _writeDistPm2ConfigFileAsync(): Promise<void> {
+    if (this._config.pm2 === undefined || this._config.pm2 === false) return;
+
+    const npmConfig = this._getNpmConfig(this._rootPath)!;
+    const pm2DistPath = path.resolve(this._parsedTsconfig.options.outDir!, "pm2.json");
+    await FsUtil.writeFileAsync(
+      pm2DistPath,
+      JSON.stringify(
+        ObjectUtil.merge(
+          {
+            "name": npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
+            "script": path.basename(path.resolve(this._parsedTsconfig.options.outDir!, "main.mjs")),
+            "watch": true,
+            "watch_delay": 2000,
+            "ignore_watch": [
+              "node_modules",
+              "www"
+            ].distinct(),
+            "interpreter": "node@" + process.versions.node,
+            "env": {
+              NODE_ENV: "production",
+              SD_VERSION: npmConfig.version,
+              TZ: "Asia/Seoul",
+              ...this._config.env ? this._config.env : {}
+            }
+          },
+          (typeof this._config.pm2 !== "boolean") ? this._config.pm2 : {},
+          {
+            arrayProcess: "concat"
+          }),
+        undefined,
+        2
+      )
+    );
+  }
+
+  private async _writeDistIisConfigFileAsync(): Promise<void> {
+    if (this._config.iis === undefined || this._config.iis === false) return;
+
+    const iisDistPath = path.resolve(this._parsedTsconfig.options.outDir!, "web.config");
+    const serverExeFilePath = (this._config.iis !== true && "serverExeFilePath" in this._config.iis)
+      ? (this._config.iis.serverExeFilePath ?? "C:\\Program Files\\nodejs\\node.exe")
+      : "C:\\Program Files\\nodejs\\node.exe";
+    await FsUtil.writeFileAsync(iisDistPath, `
+<configuration>
+  <system.webServer>
+    <webSocket enabled="false" />
+    <handlers>
+      <add name="iisnode" path="main.js" verb="*" modules="iisnode" />
+    </handlers>
+    <iisnode nodeProcessCommandLine="${serverExeFilePath}"
+             watchedFiles="web.config;*.js"
+             loggingEnabled="true"
+             devErrorsEnabled="true" />
+    <rewrite>
+      <rules>
+        <rule name="main">
+          <action type="Rewrite" url="main.mjs" />
+        </rule>
+      </rules>
+    </rewrite>
+    <httpErrors errorMode="Detailed" />
+  </system.webServer>
+</configuration>`.trim());
+  }
+
+  private async _writeDistNpmConfigFileAsync(deps: string[]): Promise<void> {
+    const distNpmConfig = ObjectUtil.clone(this._getNpmConfig(this._rootPath))!;
+    distNpmConfig.dependencies = {};
+    for (const dep of deps) {
+      distNpmConfig.dependencies[dep] = "*";
+    }
+    delete distNpmConfig.optionalDependencies;
+    delete distNpmConfig.devDependencies;
+    delete distNpmConfig.peerDependencies;
+
+    if (this._config.pm2 !== undefined) {
+      distNpmConfig.scripts = { "start": "pm2 start pm2.json" };
+    }
+
+    await FsUtil.writeFileAsync(
+      path.resolve(this._parsedTsconfig.options.outDir!, "package.json"),
+      JSON.stringify(distNpmConfig, undefined, 2)
+    );
+  }
+
+  private _getWebpackConfig(watch: boolean, extModuleNames: string[]): webpack.Configuration {
+    const internalModuleCachePaths = watch
+      ? FsUtil.findAllParentChildDirPaths("node_modules/!(@simplysm)", this._rootPath, this._workspaceRootPath)
+      : undefined;
+
     return {
+      mode: watch ? "development" : "production",
       devtool: false,
       target: ["node", "es2020"],
       profile: false,
@@ -126,6 +241,42 @@ export class SdCliServerBuilder extends EventEmitter {
       performance: { hints: false },
       node: false,
       stats: "errors-warnings",
+      externals: extModuleNames,
+      ...watch ? {
+        cache: { type: "memory", maxGenerations: 1 },
+        snapshot: {
+          immutablePaths: internalModuleCachePaths,
+          managedPaths: internalModuleCachePaths
+        }
+      } : {
+        cache: false
+      },
+      optimization: {
+        ...watch ? {} : {
+          minimize: true,
+          minimizer: [
+            new TerserPlugin({
+              extractComments: false,
+              terserOptions: {
+                compress: true,
+                ecma: 2020,
+                sourceMap: false,
+                keep_classnames: true,
+                keep_fnames: true,
+                ie8: false,
+                safari10: false,
+                module: true,
+                format: {
+                  comments: false
+                }
+              }
+            })
+          ]
+        },
+        moduleIds: "deterministic",
+        chunkIds: watch ? "named" : "deterministic",
+        emitOnErrors: watch
+      },
       module: {
         strictExportPresence: true,
         rules: [
@@ -135,6 +286,18 @@ export class SdCliServerBuilder extends EventEmitter {
               fullySpecified: false
             }
           },
+          ...watch ? [
+            {
+              test: /\.m?js$/,
+              enforce: "pre" as const,
+              loader: "source-map-loader",
+              options: {
+                filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
+                  return !resourcePath.includes("node_modules") || (/@simplysm[\\/]sd/).test(resourcePath);
+                }
+              }
+            }
+          ] : [],
           {
             test: /\.ts$/,
             exclude: /node_modules/,
@@ -160,6 +323,14 @@ export class SdCliServerBuilder extends EventEmitter {
         ]
       },
       plugins: [
+        ...watch ? [] : [
+          new LicenseWebpackPlugin({
+            stats: { warnings: false, errors: false },
+            perChunkOutput: false,
+            outputFilename: "3rd_party_licenses.txt",
+            skipChildCompilers: true
+          }) as any
+        ],
         new CopyWebpackPlugin({
           patterns: ["assets/"].map((item) => ({
             context: this._rootPath,
@@ -185,6 +356,8 @@ export class SdCliServerBuilder extends EventEmitter {
         }),
         new ESLintWebpackPlugin({
           context: this._rootPath,
+          eslintPath: path.resolve(this._workspaceRootPath, "node_modules", "eslint"),
+          exclude: ["node_modules"],
           extensions: ["ts", "js", "mjs", "cjs"],
           fix: false,
           threads: false,
@@ -207,96 +380,21 @@ export class SdCliServerBuilder extends EventEmitter {
             }
             return resultMessages.join(os.EOL);
           }
-        }),
+        })/*,
         new webpack.ProgressPlugin({
           handler: (per: number, msg: string, ...args: string[]) => {
             const phaseText = msg ? ` - phase: ${msg}` : "";
             const argsText = args.length > 0 ? ` - args: [${args.join(", ")}]` : "";
             this._logger.debug(`Webpack 빌드 수행중...(${Math.round(per * 100)}%)${phaseText}${argsText}`);
           }
-        })
+        })*/
       ]
     };
   }
 
-  private _getWebpackWatchConfig(): webpack.Configuration {
-    const internalModuleCachePaths = FsUtil.findAllParentChildDirPaths("node_modules/!(@simplysm)", this._rootPath, this._workspaceRootPath);
-
-    const extModuleNames = this._findExternalModules(true).map((item) => item.name);
-    return webpackMerge.merge(this._webpackCommonConfig, {
-      mode: "development",
-      module: {
-        rules: [
-          {
-            test: /\.m?js$/,
-            enforce: "pre",
-            loader: "source-map-loader",
-            options: {
-              filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                return !resourcePath.includes("node_modules") || (/@simplysm[\\/]sd/).test(resourcePath);
-              }
-            }
-          }
-        ]
-      },
-      cache: { type: "memory", maxGenerations: 1 },
-      snapshot: {
-        immutablePaths: internalModuleCachePaths,
-        managedPaths: internalModuleCachePaths
-      },
-      optimization: {
-        moduleIds: "deterministic",
-        chunkIds: "named",
-        emitOnErrors: true
-      },
-      externals: extModuleNames
-    });
-  }
-
-  private _getWebpackBuildConfig(): webpack.Configuration {
-    const extModuleNames = this._findExternalModules(false).map((item) => item.name);
-    return webpackMerge.merge(this._webpackCommonConfig, {
-      mode: "production",
-      cache: false,
-      optimization: {
-        minimize: true,
-        minimizer: [
-          new TerserPlugin({
-            extractComments: false,
-            terserOptions: {
-              compress: true,
-              ecma: 2020,
-              sourceMap: false,
-              keep_classnames: true,
-              keep_fnames: true,
-              ie8: false,
-              safari10: false,
-              module: true,
-              format: {
-                comments: false
-              }
-            }
-          })
-        ],
-        moduleIds: "deterministic",
-        chunkIds: "deterministic",
-        emitOnErrors: false
-      },
-      plugins: [
-        new LicenseWebpackPlugin({
-          stats: { warnings: false, errors: false },
-          perChunkOutput: false,
-          outputFilename: "3rd_party_licenses.txt",
-          skipChildCompilers: true
-        }) as any
-      ],
-      externals: extModuleNames
-    });
-  }
-
-  private _findExternalModules(all: boolean): { name: string; path?: string }[] {
+  private _getExternalModuleNames(): string[] {
     const loadedModuleNames: string[] = [];
-    const externalModules: { name: string; path?: string }[] = [];
+    const resultSet = new Set<string>();
 
     const fn = (currPath: string): void => {
       const npmConfig = this._getNpmConfig(currPath);
@@ -320,8 +418,8 @@ export class SdCliServerBuilder extends EventEmitter {
           continue;
         }
 
-        if (all || FsUtil.exists(path.resolve(modulePath, "binding.gyp"))) {
-          externalModules.push({ path: modulePath, name: moduleName });
+        if (FsUtil.exists(path.resolve(modulePath, "binding.gyp"))) {
+          resultSet.add(moduleName);
         }
 
         fn(modulePath);
@@ -333,12 +431,12 @@ export class SdCliServerBuilder extends EventEmitter {
 
         const optModulePath = FsUtil.findAllParentChildDirPaths("node_modules/" + optModuleName, currPath, this._workspaceRootPath).first();
         if (StringUtil.isNullOrEmpty(optModulePath)) {
-          externalModules.push({ path: optModulePath, name: optModuleName });
+          resultSet.add(optModuleName);
           continue;
         }
 
-        if (all || FsUtil.exists(path.resolve(optModulePath, "binding.gyp"))) {
-          externalModules.push({ path: optModulePath, name: optModuleName });
+        if (FsUtil.exists(path.resolve(optModulePath, "binding.gyp"))) {
+          resultSet.add(optModuleName);
         }
 
         fn(optModulePath);
@@ -347,7 +445,7 @@ export class SdCliServerBuilder extends EventEmitter {
 
     fn(this._rootPath);
 
-    return externalModules.distinct();
+    return Array.from(resultSet.values());
   }
 
   private _getNpmConfig(pkgPath: string): INpmConfig | undefined {

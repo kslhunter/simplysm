@@ -9,6 +9,7 @@ import semver from "semver/preload";
 import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
 import { SdServiceServer } from "@simplysm/sd-service/server";
 import { SdCliNpm } from "./SdCliNpm";
+import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
 
 export class SdCliWorkspace {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -24,6 +25,11 @@ export class SdCliWorkspace {
   public async watchAsync(opt: { confFileRelPath: string; optNames: string[] }): Promise<void> {
     this._logger.debug("프로젝트 설정 가져오기...");
     const config = await SdCliConfigUtil.loadConfigAsync(path.resolve(this._rootPath, opt.confFileRelPath), true, opt.optNames);
+
+    if (config.localUpdates) {
+      this._logger.debug("로컬 라이브러리 업데이트 변경감지 시작...");
+      await new SdCliLocalUpdate(this._rootPath).watchAsync({ confFileRelPath: opt.confFileRelPath });
+    }
 
     this._logger.debug("패키지 목록 구성...");
     const pkgs = await this._getPackagesAsync(config);

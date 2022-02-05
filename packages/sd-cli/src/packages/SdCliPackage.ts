@@ -6,6 +6,7 @@ import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdCliTsLibBuilder } from "../builder/SdCliTsLibBuilder";
 import { SdCliJsLibBuilder } from "../builder/SdCliJsLibBuilder";
 import { SdCliServerBuilder } from "../builder/SdCliServerBuilder";
+import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
 
 export class SdCliPackage extends EventEmitter {
   private readonly _npmConfig: INpmConfig;
@@ -28,10 +29,8 @@ export class SdCliPackage extends EventEmitter {
 
   public get allDependencies(): string[] {
     return [
-      ...Object.keys(this._npmConfig.dependencies ?? {}),
-      ...Object.keys(this._npmConfig.optionalDependencies ?? {}),
-      // ...Object.keys(this._npmConfig.devDependencies ?? {}),
-      ...Object.keys(this._npmConfig.peerDependencies ?? {})
+      ...SdCliNpmConfigUtil.getDependencies(this._npmConfig).defaults,
+      ...SdCliNpmConfigUtil.getDependencies(this._npmConfig).optionals
     ].distinct();
   }
 
@@ -99,8 +98,8 @@ export class SdCliPackage extends EventEmitter {
     }
 
     if (this._config.type === "library") {
-      const isAngular = isTs && this.allDependencies.includes("@angular/core");
-      return isTs ? new SdCliTsLibBuilder(this.rootPath, isAngular) : new SdCliJsLibBuilder(this.rootPath);
+      // const isAngular = isTs && this.allDependencies.includes("@angular/core");
+      return isTs ? new SdCliTsLibBuilder(this.rootPath) : new SdCliJsLibBuilder(this.rootPath);
     }
     else {
       return new SdCliServerBuilder(this.rootPath, this._config, this._workspaceRootPath);

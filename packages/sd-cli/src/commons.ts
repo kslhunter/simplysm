@@ -50,4 +50,7 @@ export interface ISdCliLibPackageConfig {
 export interface ISdCliServerPackageConfig {
   type: "server";
   env?: Record<string, string>;
+  configs?: Record<string, any>;
+  pm2?: Record<string, any> | boolean;
+  iis?: { serverExeFilePath?: string } | boolean;
 }
