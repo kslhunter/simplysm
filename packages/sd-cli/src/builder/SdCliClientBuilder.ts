@@ -199,7 +199,7 @@ export class SdCliClientBuilder extends EventEmitter {
         minimizer: [],
         moduleIds: "deterministic",
         chunkIds: watch ? "named" : "deterministic",
-        emitOnErrors: false,
+        emitOnErrors: watch,
         runtimeChunk: "single",
         splitChunks: {
           maxAsyncRequests: Infinity,

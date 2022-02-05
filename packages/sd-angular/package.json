@@ -10,15 +10,15 @@
   },
   "license": "MIT",
   "type": "module",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.mjs",
-    "./modules/*": "./dist/modules/*.mjs"
+    "./*": "./dist/modules/*/index.mjs"
   },
-  "types": "dist/index.d.ts",
   "typesVersions": {
     "*": {
-      "modules/*": [
-        "dist/modules/*.d.ts"
+      "*": [
+        "dist/modules/*/index.d.ts"
       ]
     }
   },
