@@ -156,7 +156,7 @@ export class SdCliWorkspace {
       this._logger.debug("GIT 커밋여부 확인...");
       const gitStatusResult = await SdProcess.execAsync("git status");
       if (gitStatusResult.includes("Changes") || gitStatusResult.includes("Untracked")) {
-        throw new Error("커밋되지 않은 정보가 있습니다.");
+        throw new Error("커밋되지 않은 정보가 있습니다.\n" + gitStatusResult);
       }
     }
 
