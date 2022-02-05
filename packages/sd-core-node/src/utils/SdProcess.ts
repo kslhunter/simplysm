@@ -5,6 +5,7 @@ export class SdProcess {
     return await new Promise<string>((resolve, reject) => {
       child_process.exec(cmd, opts, (err, stdout, stderr) => {
         if (err) {
+          console.log(stdout, stderr);
           reject(err);
           return;
         }
