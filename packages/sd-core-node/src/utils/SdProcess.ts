@@ -20,7 +20,7 @@ export class SdProcess {
         messageBuffer = Buffer.concat([messageBuffer, data]);
       });
 
-      ps.on("close", (code) => {
+      ps.on("exit", (code) => {
         if (code !== 0) {
           reject(new Error(`'${cmd}' 명령이 오류와 함께 닫힘 (${code})\n${messageBuffer.toString()}`));
           return;
