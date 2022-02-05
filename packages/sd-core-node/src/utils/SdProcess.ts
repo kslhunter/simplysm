@@ -22,7 +22,7 @@ export class SdProcess {
 
       ps.on("close", (code) => {
         if (code !== 0) {
-          reject(new Error(messageBuffer.toString()));
+          reject(new Error(`'${cmd}' 명령이 오류와 함께 닫힘 (${code})\n${messageBuffer.toString()}`));
           return;
         }
 
