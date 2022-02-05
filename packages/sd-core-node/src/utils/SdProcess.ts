@@ -4,6 +4,10 @@ export class SdProcess {
   public static async spawnAsync(cmd: string, opts?: child_process.ExecOptions): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       const ps = child_process.spawn(cmd.split(" ")[0], cmd.split(" ").slice(1), opts);
+      ps.on("error", (err) => {
+        reject(err);
+      });
+
       let messageBuffer = Buffer.from([]);
       ps.stdout.on("data", (data) => {
         messageBuffer = Buffer.concat([messageBuffer, data]);
