@@ -154,7 +154,7 @@ export class SdCliWorkspace {
     // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
     if (FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
       this._logger.debug("GIT 커밋여부 확인...");
-      const gitStatusResult = await SdProcess.spawnAsync("git status");
+      const gitStatusResult = await SdProcess.execAsync("git status");
       if (gitStatusResult.includes("Changes") || gitStatusResult.includes("Untracked")) {
         throw new Error("커밋되지 않은 정보가 있습니다.\n" + gitStatusResult);
       }
@@ -178,9 +178,9 @@ export class SdCliWorkspace {
     // GIT 사용중일경우, 새 버전 커밋 및 TAG 생성
     if (FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
       this._logger.debug("새 버전 커밋 및 TAG 생성...");
-      await SdProcess.spawnAsync("git add .");
-      await SdProcess.spawnAsync(`git commit -m "v${this._npmConfig.version}"`);
-      await SdProcess.spawnAsync(`git tag -a "v${this._npmConfig.version}" -m "v${this._npmConfig.version}"`);
+      await SdProcess.execAsync("git add .");
+      await SdProcess.execAsync(`git commit -m "v${this._npmConfig.version}"`);
+      await SdProcess.execAsync(`git tag -a "v${this._npmConfig.version}" -m "v${this._npmConfig.version}"`);
     }
 
     this._logger.debug("배포 시작...");
