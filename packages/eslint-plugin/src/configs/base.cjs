@@ -1,7 +1,8 @@
 module.exports = {
-  /*extends: [
-    "eslint:all"
-  ],*/
+  env: {
+    node: true,
+    es2020: true
+  },
   rules: {
     "require-await": ["error"],
     "quotes": ["error"],
@@ -9,6 +10,8 @@ module.exports = {
     "no-shadow": ["error"],
     "no-duplicate-imports": ["error"],
     "no-unused-expressions": ["error"],
-    "no-unused-vars": ["error"]
+    "no-unused-vars": ["error"],
+    "no-undef": ["error"],
+    "comma-dangle": ["error"]
   }
 };

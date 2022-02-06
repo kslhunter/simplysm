@@ -238,7 +238,7 @@ export class SdCliWorkspace {
       if (i !== sec) {
         process.stdout.cursorTo(0);
       }
-      process.stdout.write(msg + " " + i);
+      process.stdout.write(`${msg} ${i}`);
       await Wait.time(1000);
     }
 
@@ -264,7 +264,7 @@ export class SdCliWorkspace {
         pkgName: item[0],
         ...item1
       })))
-      .orderBy((item) => item.pkgName + "_" + item.filePath);
+      .orderBy((item) => `${item.pkgName}_${item.filePath}`);
 
     const warnings = totalResults
       .filter((item) => item.severity === "warning")

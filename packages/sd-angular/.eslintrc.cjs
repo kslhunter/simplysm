@@ -4,8 +4,11 @@ module.exports = {
       files: ["*.ts"],
       parserOptions: {
         tsconfigRootDir: __dirname,
-        project: "tsconfig.json",
-      },
+        project: "tsconfig.json"
+      }
+    },
+    {
+      files: ["*.ts"],
       extends: ["../eslint-plugin/src/configs/angular.cjs"]
     },
     {

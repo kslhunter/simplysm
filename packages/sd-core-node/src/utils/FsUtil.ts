@@ -261,7 +261,7 @@ export class FsUtil {
     }
     catch (err) {
       if (err instanceof Error) {
-        throw new SdError(err, targetPath + (typeof data === "object" ? data.constructor?.name ?? "object" : typeof data));
+        throw new SdError(err, targetPath + (typeof data === "object" ? (data.constructor?.name ?? "object") as string : typeof data));
       }
       else {
         throw err;

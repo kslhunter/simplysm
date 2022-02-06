@@ -16,7 +16,7 @@ export class SdServiceClient {
     if (this._socket?.connected) return;
 
     this._logger.debug("서버 연결");
-    return await new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       this._socket = socketIo.io(`${this._options.ssl ? "wss" : "ws"}://${this._options.host}:${this._options.port}`);
 
       this._socket.on("connect", () => {

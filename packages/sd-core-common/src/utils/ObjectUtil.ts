@@ -362,36 +362,29 @@ export class ObjectUtil {
   public static validateObjectWithThrow<T>(displayName: string, obj: T, def: TValidateObjectDefWithName<T>): void {
     const validateResult = ObjectUtil.validateObject(obj, def);
     if (Object.keys(validateResult).length > 0) {
-      const errorMessages: string[] = [];
+      const errMessages: string[] = [];
       const invalidateKeys = Object.keys(validateResult);
       for (const invalidateKey of invalidateKeys) {
         const itemDisplayName: string = def[invalidateKey].displayName;
-        // noinspection PointlessBooleanExpressionJS
-        if (def[invalidateKey].displayValue !== false) {
+        let errMessage = `- '${itemDisplayName}'`;
+
+        if ((def[invalidateKey] as IValidateDefWithName<any>).displayValue) {
           const itemValue = validateResult[invalidateKey].value;
           if (
             typeof itemValue === "string"
             || typeof itemValue === "number"
             || typeof itemValue === "boolean"
             || typeof itemValue === "undefined"
+            || itemValue instanceof DateTime
+            || itemValue instanceof DateOnly
           ) {
-            errorMessages.push(`- '${itemDisplayName}': ` + itemValue);
-          }
-          else if (itemValue instanceof DateTime) {
-            errorMessages.push(`- '${itemDisplayName}': ` + itemValue.toFormatString("yyyy-MM-dd HH:mm:ss"));
-          }
-          else if (itemValue instanceof DateOnly) {
-            errorMessages.push(`- '${itemDisplayName}': ` + itemValue.toFormatString("yyyy-MM-dd"));
-          }
-          else {
-            errorMessages.push(`- '${itemDisplayName}'`);
+            errMessage += `: ${itemValue?.toString() ?? "undefined"}`;
           }
         }
-        else {
-          errorMessages.push(`- '${itemDisplayName}'`);
-        }
+
+        errMessages.push(errMessage);
       }
-      throw new Error(`${displayName}중 잘못된 내용이 있습니다.` + os.EOL + errorMessages.join(os.EOL));
+      throw new Error(`${displayName}중 잘못된 내용이 있습니다.` + os.EOL + errMessages.join(os.EOL));
     }
   }
 
@@ -415,40 +408,33 @@ export class ObjectUtil {
   public static validateArrayWithThrow<T>(displayName: string, arr: T[], def: ((item: T) => TValidateObjectDefWithName<T>) | TValidateObjectDefWithName<T>): void {
     const validateResults = ObjectUtil.validateArray(arr, def);
     if (validateResults.length > 0) {
-      const errorMessages: string[] = [];
+      const errMessages: string[] = [];
       for (const validateResult of validateResults) {
         const realDef = typeof def === "function" ? def(validateResult.item) : def;
 
         const invalidateKeys = Object.keys(validateResult.result);
         for (const invalidateKey of invalidateKeys) {
           const itemDisplayName: string = realDef[invalidateKey].displayName;
-          // noinspection PointlessBooleanExpressionJS
-          if (realDef[invalidateKey].displayValue !== false) {
+          let errMessage = `- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}'`;
+
+          if ((realDef[invalidateKey] as IValidateDefWithName<any>).displayValue) {
             const itemValue = validateResult.result[invalidateKey].value;
             if (
               typeof itemValue === "string"
               || typeof itemValue === "number"
               || typeof itemValue === "boolean"
               || typeof itemValue === "undefined"
+              || itemValue instanceof DateTime
+              || itemValue instanceof DateOnly
             ) {
-              errorMessages.push(`- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}': ` + itemValue);
-            }
-            else if (itemValue instanceof DateTime) {
-              errorMessages.push(`- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}': ` + itemValue.toFormatString("yyyy-MM-dd HH:mm:ss"));
-            }
-            else if (itemValue instanceof DateOnly) {
-              errorMessages.push(`- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}': ` + itemValue.toFormatString("yyyy-MM-dd"));
-            }
-            else {
-              errorMessages.push(`- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}'`);
+              errMessage += `: ${itemValue?.toString() ?? "undefined"}`;
             }
           }
-          else {
-            errorMessages.push(`- ${validateResult.index + 1}번째 항목의 '${itemDisplayName}'`);
-          }
+
+          errMessages.push(errMessage);
         }
       }
-      throw new Error(`${displayName}중 잘못된 내용이 있습니다.` + os.EOL + errorMessages.join(os.EOL));
+      throw new Error(`${displayName}중 잘못된 내용이 있습니다.` + os.EOL + errMessages.join(os.EOL));
     }
   }
 
@@ -585,14 +571,14 @@ export interface IValidateResult<T> {
   message?: string;
 }
 
-type TValidateObjectDef<T> = { [K in keyof T]?: TValidateDef<any> };
-type TValidateObjectResult<T> = { [K in keyof T]?: IValidateResult<any> };
+type TValidateObjectDef<T> = Partial<Record<keyof T, TValidateDef<any>>>;
+type TValidateObjectResult<T> = Partial<Record<keyof T, IValidateResult<any>>>;
 
 export interface IValidateDefWithName<T> extends IValidateDef<T> {
   displayName: string;
 }
 
-type TValidateObjectDefWithName<T> = { [K in keyof T]?: IValidateDefWithName<any> };
+type TValidateObjectDefWithName<T> = Partial<Record<keyof T, IValidateDefWithName<any>>>;
 
 interface IValidateArrayResult<T> {
   index: number;

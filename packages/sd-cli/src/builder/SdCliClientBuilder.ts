@@ -156,7 +156,7 @@ export class SdCliClientBuilder extends EventEmitter {
       entry: {
         main: [
           ...watch ? [
-            `webpack-hot-middleware/client?path=${publicPath}__webpack_hmr&timeout=20000&reload=true&overlay=true`,
+            `webpack-hot-middleware/client?path=${publicPath}__webpack_hmr&timeout=20000&reload=true&overlay=true`
           ] : [],
           mainFilePath
         ],
@@ -174,7 +174,7 @@ export class SdCliClientBuilder extends EventEmitter {
         libraryTarget: undefined,
         crossOriginLoading: false,
         trustedTypes: "angular#bundler",
-        scriptType: "module",
+        scriptType: "module"
       },
       watch: false,
       watchOptions: { poll: undefined, ignored: undefined },
@@ -182,7 +182,7 @@ export class SdCliClientBuilder extends EventEmitter {
       ignoreWarnings: [
         /Failed to parse source map from/,
         /Add postcss as project dependency/,
-        /"@charset" must be the first rule in the file/,
+        /"@charset" must be the first rule in the file/
       ],
       experiments: { backCompat: false, syncWebAssembly: true, asyncWebAssembly: true },
       infrastructureLogging: { level: "error" },
@@ -239,7 +239,7 @@ export class SdCliClientBuilder extends EventEmitter {
         new CommonJsUsageWarnPlugin(),
         ...watch ? [] : [
           new LicenseWebpackPlugin({
-            stats: { warnings: false, errors: false, },
+            stats: { warnings: false, errors: false },
             perChunkOutput: false,
             outputFilename: "3rdpartylicenses.txt",
             skipChildCompilers: true
@@ -272,7 +272,7 @@ export class SdCliClientBuilder extends EventEmitter {
             include: [/js$/, /css$/],
             sourceRoot: "webpack:///",
             moduleFilenameTemplate: "[resource-path]",
-            append: undefined,
+            append: undefined
           })
         ] : [],
         new AngularWebpackPlugin({
@@ -342,7 +342,7 @@ export class SdCliClientBuilder extends EventEmitter {
           },
           {
             test: /[/\\]rxjs[/\\]add[/\\].+\.js$/,
-            sideEffects: true,
+            sideEffects: true
           },
           {
             test: /\.[cm]?[tj]sx?$/,
@@ -359,7 +359,7 @@ export class SdCliClientBuilder extends EventEmitter {
                   instrumentCode: undefined
                 }
               }
-            ],
+            ]
           },
           ...watch ? [
             {
@@ -367,7 +367,7 @@ export class SdCliClientBuilder extends EventEmitter {
               enforce: "pre" as const,
               loader: "source-map-loader",
               options: {
-                filterSourceMappingUrl: (_mapUri: string, resourcePath: string) => {
+                filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
                   return !resourcePath.includes("node_modules") || (/@simplysm[\\/]sd/).test(resourcePath);
                 }
               }
@@ -376,7 +376,7 @@ export class SdCliClientBuilder extends EventEmitter {
           {
             test: /\.[cm]?tsx?$/,
             loader: "@ngtools/webpack",
-            exclude: [/[/\\](?:css-loader|mini-css-extract-plugin|webpack-dev-server|webpack)[/\\]/],
+            exclude: [/[/\\](?:css-loader|mini-css-extract-plugin|webpack-dev-server|webpack)[/\\]/]
           },
           {
             test: /\.css$/i,
@@ -438,7 +438,7 @@ export class SdCliClientBuilder extends EventEmitter {
             }
           ] : []
         ]
-      },
+      }
     };
   }
 

@@ -11,7 +11,7 @@ export class SdCliBuildResultUtil {
         : undefined;
     if (!severity) return undefined;
 
-    const code = "TS" + diag.code;
+    const code = `TS${diag.code}`;
     const message = ts.flattenDiagnosticMessageText(diag.messageText, os.EOL);
 
 

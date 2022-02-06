@@ -131,14 +131,21 @@ export class Logger {
         process.stdout.cursorTo(0);
       }
 
+      const loggerStyle: LoggerStyle = config.console.styles[severity];
+
+      let headMessage: string = LoggerStyle.fgGray;
+      headMessage += now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " ";
+      if (this._group.length > 0) {
+        headMessage += config.console.style + "[" + this._group.join(".") + "] ";
+      }
+      headMessage += loggerStyle;
+      headMessage += severity.toUpperCase().padStart(5, " ");
+
+      const logMessages = logs.map((log) => ((log instanceof Error && log.stack !== undefined) ? log.stack : log));
+      const tailMessage = LoggerStyle.clear;
+
       // eslint-disable-next-line no-console
-      console.log(
-        LoggerStyle.fgGray + now.toFormatString("yyyy-MM-dd HH:mm:ss.fff") + " "
-        + (this._group.length > 0 ? config.console.style + "[" + this._group.join(".") + "] " : "")
-        + config.console.styles[severity] + severity.toUpperCase().padStart(5, " "),
-        ...logs.map((log) => ((log instanceof Error && log.stack !== undefined) ? log.stack : log)),
-        LoggerStyle.clear
-      );
+      console.log(headMessage, ...logMessages, tailMessage);
     }
     else if (config.dot) {
       process.stdout.write(".");
@@ -150,19 +157,20 @@ export class Logger {
       text += severity.toUpperCase().padStart(5, " ") + os.EOL;
 
       for (const log of logs) {
-        let convertedLog = log;
+        let logString: string;
+
         // 색상빼기
-        if (typeof convertedLog === "string") {
-          convertedLog = convertedLog.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
+        if (typeof log === "string") {
+          logString = log.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "");
         }
-        else if (typeof convertedLog.toString === "function" && !(/^\[.*]$/).test(convertedLog.toString())) {
-          convertedLog = convertedLog.toString();
+        else if (typeof log.toString === "function" && !(/^\[.*]$/).test(log.toString())) {
+          logString = log.toString();
         }
         else {
-          convertedLog = JSON.stringify(convertedLog);
+          logString = JSON.stringify(log);
         }
 
-        text += convertedLog + os.EOL;
+        text += logString + os.EOL;
       }
 
 
@@ -178,12 +186,12 @@ export class Logger {
 
       let logFileName = "1.log";
       if (lastFileSeq !== undefined) {
-        const lstat = FsUtil.lstat(path.resolve(outPath, lastFileSeq + ".log"));
+        const lstat = FsUtil.lstat(path.resolve(outPath, `${lastFileSeq}.log`));
         if (lstat.size > (config.file.maxBytes ?? 500 * 1000)) {
-          logFileName = (lastFileSeq + 1).toString() + ".log";
+          logFileName = `${lastFileSeq + 1}.log`;
         }
         else {
-          logFileName = lastFileSeq + ".log";
+          logFileName = lastFileSeq.toString() + ".log";
         }
       }
       const logFilePath = path.resolve(outPath, logFileName);

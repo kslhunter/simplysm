@@ -6,13 +6,14 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
+    @import "../../../scss/mixins";
+
     :host {
       display: block;
       background: white;
-
-      > .card {
-        display: block;
-      }
+      border-radius: var(--gap-sm);
+      @include elevation(2);
+      overflow: hidden;
     }`]
 })
 export class SdCardControl {

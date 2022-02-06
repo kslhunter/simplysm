@@ -33,7 +33,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
 
   private readonly _isAngular: boolean;
 
-  public constructor(private readonly _rootPath) {
+  public constructor(private readonly _rootPath: string) {
     super();
     this._linter = new SdCliPackageLinter(this._rootPath);
 
@@ -194,7 +194,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
     }
     catch (err) {
       if (err instanceof sass.Exception) {
-        const matches = err.sassStack.match(/^(.*\.sd\.scss) ([0-9]*):([0-9]*)/)!;
+        const matches = (/^(.*\.sd\.scss) ([0-9]*):([0-9]*)/).exec(err.sassStack)!;
         const filePath = path.resolve(matches[1].replace(/\.sd\.scss/, "").replace(/^\.:/, item => item.toUpperCase()));
         const scssLine = matches[2];
         const scssChar = matches[3];
@@ -234,7 +234,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
     const affectedSourceFileSet: Set<ts.SourceFile> = new Set<ts.SourceFile>();
     while (true) {
       const result = this._builder.getSemanticDiagnosticsOfNextAffectedFile(undefined, (sourceFile) => {
-        if (ngCompiler && ngCompiler.ignoreForDiagnostics.has(sourceFile) && sourceFile.fileName.endsWith(".ngtypecheck.ts")) {
+        if (ngCompiler?.ignoreForDiagnostics.has(sourceFile) && sourceFile.fileName.endsWith(".ngtypecheck.ts")) {
           const orgFileName = sourceFile.fileName.slice(0, -15) + ".ts";
           const orgSourceFile = this._builder!.getSourceFile(orgFileName);
           if (orgSourceFile) {

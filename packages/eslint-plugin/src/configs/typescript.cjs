@@ -1,7 +1,18 @@
 module.exports = {
   parser: "@typescript-eslint/parser",
-  plugins: ["@typescript-eslint"],
+  plugins: [
+    "@typescript-eslint",
+    "@simplysm"
+  ],
+  // extends: [
+  //   "plugin:@typescript-eslint/all"
+  // ],
   rules: {
+    // 심플리즘
+    "@simplysm/ts-no-throw-not-implement-error": "warn",
+    "@simplysm/ts-no-self-entry-import": "error",
+
+    // 타입스크립트
     "@typescript-eslint/explicit-member-accessibility": ["error"],
     "@typescript-eslint/require-await": ["error"],
     "@typescript-eslint/await-thenable": ["error"],
@@ -26,6 +37,10 @@ module.exports = {
     }],
     "@typescript-eslint/no-unused-expressions": ["error"],
     "@typescript-eslint/no-unused-vars": ["error"],
-    "@typescript-eslint/strict-boolean-expressions": ["error", { allowNullableBoolean: true }]
+    "@typescript-eslint/strict-boolean-expressions": ["error", { allowNullableBoolean: true }],
+    "@typescript-eslint/explicit-module-boundary-types": ["error", { allowArgumentsExplicitlyTypedAsAny: true }],
+    "@typescript-eslint/return-await": ["error", "always"],
+    "@typescript-eslint/no-floating-promises": ["error"],
+    "@typescript-eslint/comma-dangle": ["error"]
   }
 };

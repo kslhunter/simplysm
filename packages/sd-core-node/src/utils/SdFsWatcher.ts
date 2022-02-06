@@ -29,7 +29,7 @@ export class SdFsWatcher {
           changeInfoMap.set(filePath, event);
         }
 
-        setTimeout(() => {
+        setTimeout(async () => {
           if (changeInfoMap.size === 0) return;
           const changeInfos = Array.from(changeInfoMap.entries()).map((en) => ({
             event: en[1],
@@ -37,7 +37,7 @@ export class SdFsWatcher {
           }));
           changeInfoMap.clear();
 
-          cb(changeInfos);
+          await cb(changeInfos);
         }, opt.delay ?? 500);
       });
   }

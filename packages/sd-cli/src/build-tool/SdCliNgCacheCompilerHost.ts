@@ -25,10 +25,10 @@ export class SdCliNgCacheCompilerHost {
       if (cache.styleContent === undefined) {
         cache.styleContent = (
           await sass.compileStringAsync(data, {
-            url: new URL(context.containingFile + ".sd.scss"),
+            url: new URL((context.containingFile as string) + ".sd.scss"),
             importer: {
               findFileUrl: (url) => {
-                if (!url.startsWith("~")) return null;
+                if (!url.startsWith("~")) return pathToFileURL(url);
                 return new URL(url.substring(1), pathToFileURL("node_modules"));
               }
             }

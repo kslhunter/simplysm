@@ -22,4 +22,4 @@ module.exports = {
       extends: ["./packages/eslint-plugin/src/configs/typescript.cjs"]
     }
   ]
-}
+};

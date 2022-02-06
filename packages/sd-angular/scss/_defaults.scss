@@ -1,0 +1,304 @@
+*,
+*:after,
+*:before {
+  box-sizing: border-box;
+  outline-color: var(--theme-color-primary-default);
+
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+*:focus {
+  outline: none;
+}
+
+// HTML, BODY
+html, body {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--sd-background-color);
+  color: var(--text-brightness-default);
+  font-family: var(--font-family);
+  font-size: var(--font-size-default);
+  line-height: var(--line-height);
+}
+
+// DEFAULT TAGS
+hr {
+  border: none;
+  height: 1px;
+  background-color: var(--sd-border-color-light);
+}
+
+p {
+  margin: 0;
+}
+
+pre, code {
+  font-size: var(--font-size-default);
+  line-height: var(--line-height);
+  margin: 0;
+}
+
+pre {
+  font-family: var(--font-family);
+}
+
+code {
+  font-family: var(--font-family-monospace);
+}
+
+small {
+  vertical-align: top;
+}
+
+sub{
+  display: inline-block;
+  overflow: visible;
+  height: 0;
+}
+
+@each $h in (h1, h2, h3, h4, h5, h6) {
+  #{$h} {
+    font-size: var(--font-size-#{$h});
+    line-height: var(--line-height);
+    margin: 0;
+  }
+}
+
+.sd-page-header {
+  margin-top: var(--gap-default);
+  margin-bottom: var(--gap-default);
+  padding-bottom: var(--gap-xxs);
+  border-bottom: 1px solid var(--sd-border-color);
+}
+
+.sd-help {
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  cursor: help;
+}
+
+// DEFAUlT CONFIGS
+*[hidden] {
+  display: none !important;
+}
+
+*[unvisible=true] {
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+// FONT SIZE
+@each $size in $arr-font-size {
+  .sd-font-size-#{$size} {
+    font-size: var(--font-size-#{$size}) !important;
+  }
+}
+
+// BACKGROUND
+@each $theme in $arr-theme-color {
+  @each $brightness in $arr-theme-brightness {
+    .sd-background-color-#{$theme}-#{$brightness} {
+      background: var(--theme-color-#{$theme}-#{$brightness}) !important;
+    }
+  }
+}
+
+@each $brightness in $arr-trans-brightness {
+  .sd-background-trans-#{$brightness} {
+    background: var(--trans-brightness-#{$brightness}) !important;
+  }
+}
+
+@each $brightness in $arr-trans-brightness-rev {
+  .sd-background-trans-rev-#{$brightness} {
+    background: var(--trans-brightness-rev-#{$brightness}) !important;
+  }
+}
+
+.sd-background-color-white {
+  background: white !important;
+}
+
+.sd-background-default {
+  background-color: var(--sd-background-color) !important;
+}
+
+// TEXT COLOR
+@each $brightness in $arr-text-brightness {
+  .sd-text-brightness-#{$brightness} {
+    color: var(--text-brightness-#{$brightness}) !important;
+  }
+}
+
+@each $brightness in $arr-text-brightness-rev {
+  .sd-text-brightness-rev-#{$brightness} {
+    color: var(--text-brightness-rev-#{$brightness}) !important;
+  }
+}
+
+@each $theme in $arr-theme-color {
+  @each $brightness in $arr-theme-brightness {
+    .sd-text-color-#{$theme}-#{$brightness} {
+      color: var(--theme-color-#{$theme}-#{$brightness}) !important;
+    }
+  }
+}
+
+// BORDER
+@each $theme in $arr-theme-color {
+  @each $brightness in $arr-theme-brightness {
+    .sd-border-color-#{$theme}-#{$brightness} {
+      border: 1px solid var(--theme-color-#{$theme}-#{$brightness}) !important;
+    }
+  }
+}
+
+@each $brightness in $arr-trans-brightness {
+  .sd-border-brightness-#{$brightness} {
+    border: 1px solid var(--trans-brightness-#{$brightness}) !important;
+  }
+}
+
+@each $brightness in $arr-trans-brightness-rev {
+  .sd-border-brightness-rev-#{$brightness} {
+    border: 1px solid var(--trans-brightness-rev-#{$brightness}) !important;
+  }
+}
+
+.sd-border-none {
+  border: none !important;
+}
+
+// BORDER WITH DIRECTION
+@each $dir in (top, right, bottom, left) {
+  @each $theme in $arr-theme-color {
+    @each $brightness in $arr-theme-brightness {
+      .sd-border-#{$dir}-color-#{$theme}-#{$brightness} {
+        border-#{$dir}: 1px solid var(--theme-color-#{$theme}-#{$brightness}) !important;
+      }
+    }
+  }
+
+  @each $brightness in $arr-trans-brightness {
+    .sd-border-#{$dir}-brightness-#{$brightness} {
+      border-#{$dir}: 1px solid var(--trans-brightness-#{$brightness}) !important;
+    }
+  }
+
+  @each $brightness in $arr-trans-brightness-rev {
+    .sd-border-#{$dir}-brightness-rev-#{$brightness} {
+      border-#{$dir}: 1px solid var(--trans-brightness-rev-#{$brightness}) !important;
+    }
+  }
+
+  .sd-border-#{$dir}-none {
+    border-#{$dir}: none !important;
+  }
+}
+
+// ELEVATION
+@each $val in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20) {
+  .sd-elevation-#{$val} {
+    @include elevation($val);
+  }
+}
+
+// GAP (PADDING, MARGIN)
+@each $gap in $arr-gap {
+  .sd-padding-#{$gap} {
+    padding: var(--gap-#{$gap}) !important;
+  }
+
+  .sd-margin-#{$gap} {
+    margin: var(--gap-#{$gap}) !important;
+  }
+}
+
+// GAP (PADDING, MARGIN) WITH [V & H]
+@each $gapV in $arr-gap {
+  @each $gapH in $arr-gap {
+    .sd-padding-#{$gapV}-#{$gapH} {
+      padding: var(--gap-#{$gapV}) var(--gap-#{$gapH}) !important;
+    }
+
+    .sd-margin-#{$gapV}-#{$gapH} {
+      margin: var(--gap-#{$gapV}) var(--gap-#{$gapH}) !important;
+    }
+  }
+}
+
+// GAP (PADDING, MARGIN) WITH [V | H]
+@each $gap in $arr-gap {
+  .sd-padding-v-#{$gap} {
+    padding-top: var(--gap-#{$gap}) !important;
+    padding-bottom: var(--gap-#{$gap}) !important;
+  }
+
+  .sd-padding-h-#{$gap} {
+    padding-left: var(--gap-#{$gap}) !important;
+    padding-right: var(--gap-#{$gap}) !important;
+  }
+
+  .sd-margin-v-#{$gap} {
+    padding-top: var(--gap-#{$gap}) !important;
+    padding-bottom: var(--gap-#{$gap}) !important;
+  }
+
+  .sd-margin-h-#{$gap} {
+    padding-left: var(--gap-#{$gap}) !important;
+    padding-right: var(--gap-#{$gap}) !important;
+  }
+}
+
+// GAP (PADDING, MARGIN) WITH [ALL DIRECTION]
+@each $gapT in $arr-gap {
+  @each $gapR in $arr-gap {
+    @each $gapB in $arr-gap {
+      @each $gapL in $arr-gap {
+        .sd-padding-#{$gapT}-#{$gapR}-#{$gapB}-#{$gapL} {
+          padding: var(--gap-#{$gapT}) var(--gap-#{$gapR}) var(--gap-#{$gapB}) var(--gap-#{$gapL}) !important;
+        }
+
+        .sd-margin-#{$gapT}-#{$gapR}-#{$gapB}-#{$gapL} {
+          margin: var(--gap-#{$gapT}) var(--gap-#{$gapR}) var(--gap-#{$gapB}) var(--gap-#{$gapL}) !important;
+        }
+      }
+    }
+  }
+}
+
+
+// GAP (PADDING, MARGIN) WITH DIRECTION
+@each $dir in (top, right, bottom, left) {
+  @each $gap in $arr-gap {
+    .sd-padding-#{$dir}-#{$gap} {
+      padding-#{$dir}: var(--gap-#{$gap}) !important;
+    }
+
+    .sd-margin-#{$dir}-#{$gap} {
+      margin-#{$dir}: var(--gap-#{$gap}) !important;
+    }
+  }
+}
+
+// BORDER_RADIUS
+.sd-border-radius-default {
+  border-radius: var(--gap-xs) !important;
+}
+
+.sd-border-radius-lg {
+  border-radius: var(--gap-sm) !important;
+}
+
+.sd-border-radius-xl {
+  border-radius: var(--gap-default) !important;
+}
