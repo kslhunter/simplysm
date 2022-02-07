@@ -2,7 +2,8 @@
 
 ## Requirements
 
-    node@16.x.x
+* node@16.x.x
+* font-awesome pro license
 
 ## Installation
 

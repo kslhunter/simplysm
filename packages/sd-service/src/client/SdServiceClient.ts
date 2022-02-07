@@ -1,13 +1,18 @@
 import { ISdServiceClientConnectionConfig } from "./commons";
 import * as socketIo from "socket.io-client";
 import { ISdServiceRequest, ISdServiceResponse } from "../commons";
-import { Uuid } from "@simplysm/sd-core-common";
+import { Type, Uuid, Wait } from "@simplysm/sd-core-common";
 import { Logger } from "@simplysm/sd-core-node";
+import { SdServiceEventBase } from "./SdServiceEventBase";
 
 export class SdServiceClient {
   private readonly _logger = Logger.get(["simplysm", "sd-service", this.constructor.name]);
 
   private _socket?: socketIo.Socket;
+
+  public get connected(): boolean {
+    return this._socket?.connected ?? false;
+  }
 
   public constructor(private readonly _options: ISdServiceClientConnectionConfig) {
   }
@@ -31,7 +36,17 @@ export class SdServiceClient {
     });
   }
 
+  public async closeAsync(): Promise<void> {
+    if (!this._socket?.connected) return;
+    this._socket.disconnect();
+    await Wait.until(() => !(this._socket?.connected));
+  }
+
   public async sendAsync(serviceName: string, methodName: string, params: any[]): Promise<any> {
+    return await this._sendCommandAsync(`${serviceName}.${methodName}`, params);
+  }
+
+  private async _sendCommandAsync(command: string, params: any[]): Promise<any> {
     return await new Promise<any>((resolve, reject) => {
       if (!this._socket?.connected) {
         reject(new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요."));
@@ -40,8 +55,7 @@ export class SdServiceClient {
 
       const req: ISdServiceRequest = {
         uuid: Uuid.new().toString(),
-        serviceName,
-        methodName,
+        command,
         params
       };
 
@@ -57,5 +71,31 @@ export class SdServiceClient {
       this._logger.debug("요청보내기", req);
       this._socket.emit("request", req);
     });
+  }
+
+  public async addEventListenerAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>,
+                                                                             info: T["info"],
+                                                                             cb: (data: T["data"]) => PromiseLike<void>): Promise<void> {
+    if (!this._socket?.connected) {
+      throw new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요.");
+    }
+
+    const key = Uuid.new().toString();
+    this._socket.on(`event:${key}`, async (data) => {
+      await cb(data);
+    });
+
+    await this._sendCommandAsync("addEventListener", [key, eventType.name, info]);
+  }
+
+  public async emitAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>,
+                                                                 infoSelector: (item: T["info"]) => boolean,
+                                                                 data: T["data"]): Promise<void> {
+    const listenerInfos: { key: string; info: T["info"] }[] = await this._sendCommandAsync("getEventListenerInfos", [eventType.name]);
+    const targetListenerKeys = listenerInfos
+      .filter((item) => infoSelector(item.info))
+      .map((item) => item.key);
+
+    await this._sendCommandAsync("emitEvent", [targetListenerKeys, data]);
   }
 }

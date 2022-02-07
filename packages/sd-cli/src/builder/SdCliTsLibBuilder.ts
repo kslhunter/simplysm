@@ -206,7 +206,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
           char: undefined,
           code: undefined,
           severity: "error",
-          message: `스타일(${scssLine}:${scssChar}): ${message}`
+          message: `스타일(${scssLine}:${scssChar}): ${message}\n${err.message}`
         }];
       }
 

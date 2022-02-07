@@ -16,6 +16,8 @@ export class SdServiceServer {
   private _socketServer?: socketIo.Server;
   public isOpen = false;
 
+  private readonly _eventListeners: IEventListener[] = [];
+
   public devMiddlewares?: NextHandleFunction[];
 
   public constructor(public readonly options: ISdServiceServerOptions) {
@@ -72,32 +74,93 @@ export class SdServiceServer {
   private _onSocketConnection(socket: socketIo.Socket): void {
     this._logger.debug("클라이언트 연결됨");
 
+    socket.on("disconnect", () => {
+      this._logger.debug("닫힌 소켓의 이벤트 리스너 비우기...");
+      const disconnectedListeners = this._eventListeners.filter((item) => item.socket.id === socket.id);
+      for (const disconnectedListener of disconnectedListeners) {
+        this._eventListeners.remove(disconnectedListener);
+      }
+    });
+
     socket.on("request", async (req: ISdServiceRequest) => {
       this._logger.debug("요청 받음", req);
 
       try {
-        // 서비스 가져오기
-        const serviceClass = this.options.services.single((item) => item.name === req.serviceName);
-        if (!serviceClass) {
-          throw new Error(`서비스[${req.serviceName}]를 찾을 수 없습니다.`);
+        const cmdSplit = req.command.split(".");
+        if (cmdSplit.length === 2) {
+          const serviceName = cmdSplit[0];
+          const methodName = cmdSplit[0];
+
+          // 서비스 가져오기
+          const serviceClass = this.options.services.single((item) => item.name === serviceName);
+          if (!serviceClass) {
+            throw new Error(`서비스[${serviceName}]를 찾을 수 없습니다.`);
+          }
+          const service = new serviceClass();
+
+          // 메소드 가져오기
+          const method = service[methodName];
+          if (method === undefined) {
+            throw new Error(`메소드[${serviceName}.${methodName}]를 찾을 수 없습니다.`);
+          }
+
+          // 실행
+          const result = await method.apply(service, req.params);
+
+          // 응답
+          const res = {
+            type: "response",
+            body: result
+          };
+          socket.emit(`response:${req.uuid}`, res);
         }
-        const service = new serviceClass();
+        else if (req.command === "addEventListener") {
+          const key = req.params[0] as string;
+          const eventName = req.params[1] as string;
+          const info = req.params[2];
 
-        // 메소드 가져오기
-        const method = service[req.methodName];
-        if (method === undefined) {
-          throw new Error(`메소드[${req.serviceName}.${req.methodName}]를 찾을 수 없습니다.`);
+          this._eventListeners.push({ key, eventName, info, socket });
+
+          const res = {
+            type: "response"
+          };
+          socket.emit(`response:${req.uuid}`, res);
         }
+        else if (req.command === "getEventListenerInfos") {
+          const eventName = req.params[0] as string;
 
-        // 실행
-        const result = await method.apply(service, req.params);
+          const res = {
+            type: "response",
+            body: this._eventListeners
+              .filter((item) => item.eventName === eventName)
+              .map((item) => ({ key: item.key, info: item.info }))
+          };
+          socket.emit(`response:${req.uuid}`, res);
+        }
+        else if (req.command === "emitEvent") {
+          const targetKeys = req.params[0] as string[];
+          const data = req.params[1];
 
-        // 응답
-        const res = {
-          type: "response",
-          body: result
-        };
-        socket.emit(`response:${req.uuid}`, res);
+          const listeners = this._eventListeners.filter((item) => targetKeys.includes(item.key));
+          for (const listener of listeners) {
+            if (listener.socket.connected) {
+              listener.socket.emit(`event:${listener.key}`, data);
+            }
+          }
+
+          const res = {
+            type: "response"
+          };
+          socket.emit(`response:${req.uuid}`, res);
+        }
+        else {
+          // 에러 응답
+          const res = {
+            type: "error",
+            body: "요청이 잘못되었습니다."
+          };
+          socket.emit(`response:${req.uuid}`, res);
+        }
       }
       catch (err) {
         // 에러 응답
@@ -196,4 +259,11 @@ export class SdServiceServer {
 <body>${code}: ${message}</body>
 </html>`);
   }
+}
+
+interface IEventListener {
+  key: string;
+  eventName: string;
+  info: any;
+  socket: socketIo.Socket;
 }

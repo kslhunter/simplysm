@@ -160,4 +160,5 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
   }
 })().catch((err) => {
   logger.error(err);
+  process.exit(1);
 });

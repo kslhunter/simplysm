@@ -3,8 +3,7 @@ export interface ISdServiceBase {
 
 export interface ISdServiceRequest {
   uuid: string;
-  serviceName: string;
-  methodName: string;
+  command: string;
   params: any[];
 }
 

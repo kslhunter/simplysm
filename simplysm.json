@@ -12,6 +12,10 @@
       "type": "library",
       "publish": "npm"
     },
+    "sd-core-browser": {
+      "type": "library",
+      "publish": "npm"
+    },
     "sd-core-common": {
       "type": "library",
       "publish": "npm"

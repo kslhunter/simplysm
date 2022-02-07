@@ -11,16 +11,16 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    "./client": "./dist/client.mjs",
-    "./server": "./dist/server.mjs"
+    "./client": "./dist/client/index.mjs",
+    "./server": "./dist/server/index.mjs"
   },
   "typesVersions": {
     "*": {
       "client": [
-        "./dist/client.d.ts"
+        "./dist/client/index.d.ts"
       ],
       "server": [
-        "./dist/server.d.ts"
+        "./dist/server/index.d.ts"
       ]
     }
   },

@@ -36,8 +36,11 @@ module.exports = {
       allowConciseArrowFunctionExpressionsStartingWithVoid: true
     }],
     "@typescript-eslint/no-unused-expressions": ["error"],
-    "@typescript-eslint/no-unused-vars": ["error"],
-    "@typescript-eslint/strict-boolean-expressions": ["error", { allowNullableBoolean: true }],
+    "@typescript-eslint/no-unused-vars": ["warn", { args: "none" }],
+    "@typescript-eslint/strict-boolean-expressions": ["error", {
+      allowNullableBoolean: true,
+      allowNullableObject: true
+    }],
     "@typescript-eslint/explicit-module-boundary-types": ["error", { allowArgumentsExplicitlyTypedAsAny: true }],
     "@typescript-eslint/return-await": ["error", "always"],
     "@typescript-eslint/no-floating-promises": ["error"],

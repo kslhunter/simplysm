@@ -12,7 +12,8 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.mjs",
-    "./*": "./dist/modules/*/index.mjs",
+    "./modules/*": "./dist/modules/*/index.mjs",
+    "./services/*": "./dist/modules/*/index.mjs",
     "./scss/*": "./scss/*"
   },
   "types": "./index.d.ts",
@@ -21,8 +22,11 @@
       "index.d.ts": [
         "dist/index.d.ts"
       ],
-      "*": [
+      "modules/*": [
         "dist/modules/*/index.d.ts"
+      ],
+      "services/*": [
+        "dist/services/*/index.d.ts"
       ]
     }
   },
@@ -30,11 +34,26 @@
   "engines": {
     "node": "^16"
   },
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/angular-fontawesome": "^0.10.1",
+    "@fortawesome/free-brands-svg-icons": "^5.15.4",
+    "@fortawesome/pro-solid-svg-icons": "^5.15.4",
+    "@fortawesome/pro-regular-svg-icons": "^5.15.4",
+    "@fortawesome/pro-light-svg-icons": "^5.15.4",
+    "@fortawesome/pro-duotone-svg-icons": "^5.15.4",
+    "marked": "^4.0.12"
+  },
+  "optionalDependencies": {},
+  "devDependencies": {
+    "@types/marked": "^4.0.2"
+  },
   "peerDependencies": {
     "@simplysm/sd-core-common": "7.0.38",
+    "@simplysm/sd-core-browser": "7.0.38",
+    "@simplysm/sd-service": "7.0.38",
     "@angular/common": "^13.2.0",
-    "@angular/core": "^13.2.0"
+    "@angular/core": "^13.2.0",
+    "@angular/router": "^13.2.0"
   }
 }

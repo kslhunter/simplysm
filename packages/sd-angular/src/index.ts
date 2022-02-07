@@ -1,2 +1,2 @@
-export * from "./plugins/SdAngularGlobalErrorHandler";
-export * from "./SdAngularModule";
+export * from "./commons";
+export * from "./decorators/SdInputValidate";
