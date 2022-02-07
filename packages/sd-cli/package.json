@@ -45,7 +45,8 @@
     "css-loader": "^6.6.0",
     "resolve-url-loader": "^5.0.0",
     "sass-loader": "^12.4.0",
-    "connect": "^3.7.0"
+    "connect": "^3.7.0",
+    "node-polyfill-webpack-plugin": "^1.1.4"
   },
   "devDependencies": {
     "@types/semver": "^7.3.9",

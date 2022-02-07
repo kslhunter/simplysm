@@ -24,6 +24,7 @@ import whm from "webpack-hot-middleware";
 import { NextHandleFunction } from "connect";
 import { LicenseWebpackPlugin } from "license-webpack-plugin";
 import { Type } from "@angular-devkit/build-angular";
+import NodePolyfillPlugin from "node-polyfill-webpack-plugin";
 
 export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -227,6 +228,7 @@ export class SdCliClientBuilder extends EventEmitter {
         }
       },
       plugins: [
+        new NodePolyfillPlugin(),
         new NamedChunksPlugin(),
         new DedupeModuleResolvePlugin(),
         /*new webpack.ProgressPlugin({
