@@ -32,6 +32,10 @@
       "type": "library",
       "publish": "npm"
     },
+    "sd-service-auto-update": {
+      "type": "library",
+      "publish": "npm"
+    },
     "sd-storage": {
       "type": "library",
       "publish": "npm"
