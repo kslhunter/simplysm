@@ -1,14 +1,14 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { SdAnchorModule } from "../anchor";
-import { SdBusyContainerModule } from "../busy-container";
+import { SdBusyModule } from "../busy";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
-import { SdMarkdownEditorComponent } from "./sd-markdown-editor.component";
+import { SdMarkdownEditorControl } from "./sd-markdown-editor.control";
 
 @NgModule({
-  imports: [CommonModule, SdAnchorModule, SdBusyContainerModule, FontAwesomeModule],
-  declarations: [SdMarkdownEditorComponent],
-  exports: [SdMarkdownEditorComponent],
+  imports: [CommonModule, SdAnchorModule, SdBusyModule, FontAwesomeModule],
+  declarations: [SdMarkdownEditorControl],
+  exports: [SdMarkdownEditorControl],
   providers: []
 })
 export class SdMarkdownEditorModule {

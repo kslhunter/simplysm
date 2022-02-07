@@ -1,12 +1,12 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdDockComponent } from "./sd-dock.component";
-import { SdDockContainerComponent } from "./sd-dock-container.component";
+import { SdDockControl } from "./sd-dock.control";
+import { SdDockContainerControl } from "./sd-dock-container.control";
 
 @NgModule({
   imports: [CommonModule],
-  declarations: [SdDockContainerComponent, SdDockComponent],
-  exports: [SdDockContainerComponent, SdDockComponent],
+  declarations: [SdDockContainerControl, SdDockControl],
+  exports: [SdDockContainerControl, SdDockControl],
   providers: []
 })
 export class SdDockModule {

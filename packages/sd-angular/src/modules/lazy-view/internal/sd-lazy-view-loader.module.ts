@@ -1,7 +1,7 @@
 import { Inject, InjectionToken, ModuleWithProviders, NgModule, Optional } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { LoadChildren, ROUTES } from "@angular/router";
-import { SdLazyViewLoaderService } from "./sd-lazy-view-loader.service";
+import { SdLazyViewLoaderProvider } from "./sd-lazy-view-loader.provider";
 
 export interface LazyComponent {
   code: string;
@@ -17,7 +17,7 @@ export const LAZY_PAGES_TOKEN = new InjectionToken<LazyComponent[]>("LAZY_PAGES_
   providers: []
 })
 export class SdLazyViewLoaderModule {
-  public constructor(lazyPageLoader: SdLazyViewLoaderService,
+  public constructor(lazyPageLoader: SdLazyViewLoaderProvider,
                      @Optional() @Inject(LAZY_PAGES_TOKEN) lazyPagesList?: LazyComponent[][]) {
     if (!window.navigator.userAgent.includes("Chrome")) {
       throw new Error("크롬외의 브라우저는 지원 하지 않습니다.");

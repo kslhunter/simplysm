@@ -1,4 +1,4 @@
 export * from "./sd-toast.module";
-export * from "./sd-toast.component";
-export * from "./sd-toast-container.component";
-export * from "./sd-toast.service";
+export * from "./sd-toast.control";
+export * from "./sd-toast-container.control";
+export * from "./sd-toast.provider";

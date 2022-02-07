@@ -1,11 +1,11 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdBarcodeComponent } from "./sd-barcode.component";
+import { SdBarcodeControl } from "./sd-barcode.control";
 
 @NgModule({
   imports: [CommonModule],
-  declarations: [SdBarcodeComponent],
-  exports: [SdBarcodeComponent],
+  declarations: [SdBarcodeControl],
+  exports: [SdBarcodeControl],
   providers: []
 })
 export class SdBarcodeModule {

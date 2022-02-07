@@ -2,7 +2,7 @@
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
+import { Logger, LoggerSeverity } from "@simplysm/sd-core/node";
 import { SdCliWorkspace } from "../entry-points/SdCliWorkspace";
 import { SdCliLocalUpdate } from "../entry-points/SdCliLocalUpdate";
 import sourceMapSupport from "source-map-support";

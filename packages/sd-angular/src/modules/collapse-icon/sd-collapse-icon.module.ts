@@ -1,12 +1,12 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
-import { SdCollapseIconComponent } from "./sd-collapse-icon.component";
+import { SdCollapseIconControl } from "./sd-collapse-icon.control";
 
 @NgModule({
   imports: [CommonModule, FontAwesomeModule],
-  declarations: [SdCollapseIconComponent],
-  exports: [SdCollapseIconComponent],
+  declarations: [SdCollapseIconControl],
+  exports: [SdCollapseIconControl],
   providers: []
 })
 export class SdCollapseIconModule {

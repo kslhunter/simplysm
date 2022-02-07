@@ -1,14 +1,14 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
-import { SdComboboxComponent } from "./sd-combobox.component";
-import { SdComboboxItemComponent } from "./sd-combobox-item.component";
+import { SdComboboxControl } from "./sd-combobox.control";
+import { SdComboboxItemControl } from "./sd-combobox-item.control";
 import { SdTextfieldModule } from "../textfield";
 
 @NgModule({
   imports: [CommonModule, FontAwesomeModule, SdTextfieldModule],
-  declarations: [SdComboboxComponent, SdComboboxItemComponent],
-  exports: [SdComboboxComponent, SdComboboxItemComponent],
+  declarations: [SdComboboxControl, SdComboboxItemControl],
+  exports: [SdComboboxControl, SdComboboxItemControl],
   providers: []
 })
 export class SdComboboxModule {

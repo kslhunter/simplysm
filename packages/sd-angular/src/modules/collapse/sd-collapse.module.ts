@@ -1,12 +1,12 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdCollapseComponent } from "./sd-collapse.component";
+import { SdCollapseControl } from "./sd-collapse.control";
 import { SdResizeModule } from "../resize";
 
 @NgModule({
   imports: [CommonModule, SdResizeModule],
-  declarations: [SdCollapseComponent],
-  exports: [SdCollapseComponent],
+  declarations: [SdCollapseControl],
+  exports: [SdCollapseControl],
   providers: []
 })
 export class SdCollapseModule {

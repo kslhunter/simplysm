@@ -3,13 +3,13 @@ import { NgModule } from "@angular/core";
 import { SdCollapseModule } from "../collapse";
 import { SdCollapseIconModule } from "../collapse-icon";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
-import { SdListComponent } from "./sd-list.component";
-import { SdListItemComponent } from "./sd-list-item.component";
+import { SdListControl } from "./sd-list.control";
+import { SdListItemControl } from "./sd-list-item.control";
 
 @NgModule({
   imports: [CommonModule, SdCollapseModule, SdCollapseIconModule, FontAwesomeModule],
-  declarations: [SdListComponent, SdListItemComponent],
-  exports: [SdListComponent, SdListItemComponent],
+  declarations: [SdListControl, SdListItemControl],
+  exports: [SdListControl, SdListItemControl],
   providers: []
 })
 export class SdListModule {

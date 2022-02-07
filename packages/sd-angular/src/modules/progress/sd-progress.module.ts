@@ -1,12 +1,12 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdProgressComponent } from "./sd-progress.component";
-import { SdProgressItemComponent } from "./sd-progress-item.component";
+import { SdProgressControl } from "./sd-progress.control";
+import { SdProgressItemControl } from "./sd-progress-item.control";
 
 @NgModule({
   imports: [CommonModule],
-  declarations: [SdProgressComponent, SdProgressItemComponent],
-  exports: [SdProgressComponent, SdProgressItemComponent],
+  declarations: [SdProgressControl, SdProgressItemControl],
+  exports: [SdProgressControl, SdProgressItemControl],
   providers: []
 })
 export class SdProgressModule {

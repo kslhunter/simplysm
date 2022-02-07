@@ -1,11 +1,11 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdContentEditorComponent } from "./sd-content-editor.component";
+import { SdContentEditorControl } from "./sd-content-editor.control";
 
 @NgModule({
   imports: [CommonModule],
-  declarations: [SdContentEditorComponent],
-  exports: [SdContentEditorComponent],
+  declarations: [SdContentEditorControl],
+  exports: [SdContentEditorControl],
   providers: []
 })
 export class SdContentEditorModule {

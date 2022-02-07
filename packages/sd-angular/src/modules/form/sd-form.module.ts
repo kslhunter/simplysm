@@ -1,13 +1,13 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdFormComponent } from "./sd-form.component";
-import { SdFormItemComponent } from "./sd-form-item.component";
+import { SdFormControl } from "./sd-form.control";
+import { SdFormItemControl } from "./sd-form-item.control";
 import { SdToastModule } from "../toast";
 
 @NgModule({
   imports: [CommonModule, SdToastModule],
-  declarations: [SdFormComponent, SdFormItemComponent],
-  exports: [SdFormComponent, SdFormItemComponent],
+  declarations: [SdFormControl, SdFormItemControl],
+  exports: [SdFormControl, SdFormItemControl],
   providers: []
 })
 export class SdFormModule {

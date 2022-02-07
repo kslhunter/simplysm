@@ -1,4 +1,4 @@
-import { FsUtil, Logger } from "@simplysm/sd-core-node";
+import { FsUtil, Logger } from "@simplysm/sd-core/node";
 import { fileURLToPath } from "url";
 
 export class SdCliPrepare {

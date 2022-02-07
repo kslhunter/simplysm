@@ -8,14 +8,20 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@simplysm/sd-core-common": [
-        "../sd-core-common/src/index.ts"
+      "@simplysm/sd-core/*": [
+        "../sd-core/src/*/index.ts"
       ],
-      "@simplysm/sd-core-browser": [
-        "../sd-core-browser/src/index.ts"
+      "@simplysm/sd-orm/*": [
+        "../sd-orm/src/*/index.ts"
       ],
-      "@simplysm/sd-service/client": [
-        "../sd-service/src/client/index.ts"
+      "@simplysm/sd-service/*": [
+        "../sd-service/src/*/index.ts"
+      ],
+      "@simplysm/sd-service-orm/*": [
+        "../sd-service-orm/src/*/index.ts"
+      ],
+      "@simplysm/sd-service-smtp/*": [
+        "../sd-service-smtp/src/*/index.ts"
       ]
     }
   }

@@ -1,2 +1,2 @@
 export * from "./sd-anchor.module";
-export * from "./sd-anchor.component";
+export * from "./sd-anchor.control";

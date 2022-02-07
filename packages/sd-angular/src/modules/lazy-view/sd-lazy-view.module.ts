@@ -1,13 +1,13 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdBusyContainerModule } from "../busy-container";
+import { SdBusyModule } from "../busy";
 import { SdToastModule } from "../toast";
-import { SdLazyViewComponent } from "./sd-lazy-view.component";
+import { SdLazyViewControl } from "./sd-lazy-view.control";
 
 @NgModule({
-  imports: [CommonModule, SdBusyContainerModule, SdToastModule],
-  declarations: [SdLazyViewComponent],
-  exports: [SdLazyViewComponent],
+  imports: [CommonModule, SdBusyModule, SdToastModule],
+  declarations: [SdLazyViewControl],
+  exports: [SdLazyViewControl],
   providers: []
 })
 export class SdLazyViewModule {

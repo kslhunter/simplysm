@@ -1,11 +1,11 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdNoteComponent } from "./sd-note.component";
+import { SdNoteControl } from "./sd-note.control";
 
 @NgModule({
   imports: [CommonModule],
-  declarations: [SdNoteComponent],
-  exports: [SdNoteComponent],
+  declarations: [SdNoteControl],
+  exports: [SdNoteControl],
   providers: []
 })
 export class SdNoteModule {

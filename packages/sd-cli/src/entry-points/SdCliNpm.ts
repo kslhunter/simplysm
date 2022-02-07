@@ -1,4 +1,4 @@
-import { Logger, SdProcess } from "@simplysm/sd-core-node";
+import { Logger, SdProcess } from "@simplysm/sd-core/node";
 import { SdCliPrepare } from "./SdCliPrepare";
 
 export class SdCliNpm {

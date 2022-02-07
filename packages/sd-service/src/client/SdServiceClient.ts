@@ -1,8 +1,8 @@
-import { ISdServiceClientConnectionConfig } from "./commons";
+import { ISdServiceClientConnectionConfig } from "./ISdServiceClientConnectionConfig";
 import * as socketIo from "socket.io-client";
-import { ISdServiceRequest, ISdServiceResponse } from "../commons";
-import { Type, Uuid, Wait } from "@simplysm/sd-core-common";
-import { Logger } from "@simplysm/sd-core-node";
+import { ISdServiceRequest, ISdServiceResponse } from "../common";
+import { Type, Uuid, Wait } from "@simplysm/sd-core/common";
+import { Logger } from "@simplysm/sd-core/node";
 import { SdServiceEventBase } from "./SdServiceEventBase";
 
 export class SdServiceClient {

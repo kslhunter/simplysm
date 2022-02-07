@@ -1,11 +1,11 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdPaneComponent } from "./sd-pane.component";
+import { SdPaneControl } from "./sd-pane.control";
 
 @NgModule({
   imports: [CommonModule],
-  declarations: [SdPaneComponent],
-  exports: [SdPaneComponent],
+  declarations: [SdPaneControl],
+  exports: [SdPaneControl],
   providers: []
 })
 export class SdPaneModule {

@@ -1,2 +1,2 @@
 export * from "./sd-textfield.module";
-export * from "./sd-textfield.component";
+export * from "./sd-textfield.control";

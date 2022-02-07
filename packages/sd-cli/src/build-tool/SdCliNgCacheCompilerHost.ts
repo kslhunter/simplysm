@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { PathUtil } from "@simplysm/sd-core-node";
+import { PathUtil } from "@simplysm/sd-core/node";
 import sass from "sass";
 import { pathToFileURL, URL } from "url";
 

@@ -55,8 +55,7 @@
     "@types/connect": "^3.4.35"
   },
   "peerDependencies": {
-    "@simplysm/sd-core-common": "7.0.41",
-    "@simplysm/sd-core-node": "7.0.41",
+    "@simplysm/sd-core": "7.0.41",
     "@simplysm/sd-service": "7.0.41"
   }
 }

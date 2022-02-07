@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "lib": [
+      "ES2020",
+      "dom"
+    ],
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@simplysm/sd-core/*": [
+        "../sd-core/src/*/index.ts"
+      ],
+      "@simplysm/sd-service/*": [
+        "../sd-service/src/*/index.ts"
+      ]
+    }
+  }
+}

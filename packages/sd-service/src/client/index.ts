@@ -1,4 +1,5 @@
-export * from "../commons";
-export * from "./commons";
+export * from "../common";
+export * from "./ISdServiceClientConnectionConfig";
 export * from "./SdServiceClient";
 export * from "./SdServiceEventBase";
+export * from "./services/SdCryptoServiceClient";

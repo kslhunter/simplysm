@@ -1,2 +1,2 @@
 export * from "./sd-collapse.module";
-export * from "./sd-collapse.component";
+export * from "./sd-collapse.control";

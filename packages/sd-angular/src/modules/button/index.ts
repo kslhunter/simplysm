@@ -1,2 +1,2 @@
 export * from "./sd-button.module";
-export * from "./sd-button.component";
+export * from "./sd-button.control";

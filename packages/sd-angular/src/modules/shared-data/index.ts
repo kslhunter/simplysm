@@ -1,3 +1,3 @@
 export * from "./sd-shared-data.module";
-export * from "./sd-shared-data.service";
-export * from "./sd-shared-data-select.component";
+export * from "./sd-shared-data.provider";
+export * from "./sd-shared-data-select.control";

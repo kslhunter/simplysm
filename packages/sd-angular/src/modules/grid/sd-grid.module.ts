@@ -1,12 +1,12 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdGridComponent } from "./sd-grid.component";
-import { SdGridItemComponent } from "./sd-grid-item.component";
+import { SdGridControl } from "./sd-grid.control";
+import { SdGridItemControl } from "./sd-grid-item.control";
 
 @NgModule({
   imports: [CommonModule],
-  declarations: [SdGridComponent, SdGridItemComponent],
-  exports: [SdGridComponent, SdGridItemComponent],
+  declarations: [SdGridControl, SdGridItemControl],
+  exports: [SdGridControl, SdGridItemControl],
   providers: []
 })
 export class SdGridModule {

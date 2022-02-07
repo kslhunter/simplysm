@@ -1,2 +1,2 @@
 export * from "./sd-pagination.module";
-export * from "./sd-pagination.component";
+export * from "./sd-pagination.control";

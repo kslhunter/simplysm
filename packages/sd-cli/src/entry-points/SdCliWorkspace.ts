@@ -1,8 +1,8 @@
-import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core/node";
 import path from "path";
 import { INpmConfig, ISdCliConfig, ISdCliPackageBuildResult } from "../commons";
 import { SdCliPackage } from "../packages/SdCliPackage";
-import { Uuid, Wait } from "@simplysm/sd-core-common";
+import { Uuid, Wait } from "@simplysm/sd-core/common";
 import os from "os";
 import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import semver from "semver/preload";
@@ -69,6 +69,7 @@ export class SdCliWorkspace {
     this._logger.debug("빌드를 시작합니다...");
     const pkgNames = pkgs.map((item) => item.name);
     const buildCompletedPackageNames: string[] = [];
+    console.log(pkgs.length);
     await pkgs.parallelAsync(async (pkg) => {
       await Wait.until(() => !pkg.allDependencies.some((dep) => pkgNames.includes(dep) && !buildCompletedPackageNames.includes(dep)));
       if (pkg.config.type === "client") {
@@ -251,6 +252,7 @@ export class SdCliWorkspace {
     if (!pkgRootPaths) {
       throw new Error("최상위 'package.json'에서 'workspaces'를 찾을 수 없습니다.");
     }
+
 
     return pkgRootPaths.map((pkgRootPath) => {
       const pkgConfig = conf.packages[path.basename(pkgRootPath)];

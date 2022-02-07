@@ -12,19 +12,23 @@
       "type": "library",
       "publish": "npm"
     },
-    "sd-core-browser": {
+    "sd-core": {
       "type": "library",
       "publish": "npm"
     },
-    "sd-core-common": {
-      "type": "library",
-      "publish": "npm"
-    },
-    "sd-core-node": {
+    "sd-orm": {
       "type": "library",
       "publish": "npm"
     },
     "sd-service": {
+      "type": "library",
+      "publish": "npm"
+    },
+    "sd-service-orm": {
+      "type": "library",
+      "publish": "npm"
+    },
+    "sd-service-smtp": {
       "type": "library",
       "publish": "npm"
     },

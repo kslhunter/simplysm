@@ -1,7 +1,7 @@
 import { ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
-import { Wait } from "@simplysm/sd-core-common";
-import { SdRootService } from "../../services/root";
-import { SdModalComponent } from "./sd-modal.component";
+import { Wait } from "@simplysm/sd-core/common";
+import { SdRootRootProvider } from "../../root-providers/root";
+import { SdModalControl } from "./sd-modal.control";
 
 @Injectable({ providedIn: null })
 export class SdModalService {
@@ -18,7 +18,7 @@ export class SdModalService {
 
   public constructor(private readonly _cfr: ComponentFactoryResolver,
                      private readonly _injector: Injector,
-                     private readonly _root: SdRootService) {
+                     private readonly _root: SdRootRootProvider) {
   }
 
   public async showAsync<T extends SdModalBase<any, any>>(modalType: Type<T>,
@@ -37,7 +37,7 @@ export class SdModalService {
     return await new Promise<T["__tOutput__"] | undefined>(async (resolve, reject) => {
       try {
         const userModalRef = this._cfr.resolveComponentFactory(modalType).create(this._injector);
-        const modalEntryRef = this._cfr.resolveComponentFactory(SdModalComponent).create(
+        const modalEntryRef = this._cfr.resolveComponentFactory(SdModalControl).create(
           this._injector,
           [[userModalRef.location.nativeElement]]
         );

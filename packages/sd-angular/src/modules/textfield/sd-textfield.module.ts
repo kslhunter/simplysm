@@ -1,11 +1,11 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdTextfieldComponent } from "./sd-textfield.component";
+import { SdTextfieldControl } from "./sd-textfield.control";
 
 @NgModule({
   imports: [CommonModule],
-  declarations: [SdTextfieldComponent],
-  exports: [SdTextfieldComponent],
+  declarations: [SdTextfieldControl],
+  exports: [SdTextfieldControl],
   providers: []
 })
 export class SdTextfieldModule {

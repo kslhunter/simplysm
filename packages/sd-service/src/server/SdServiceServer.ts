@@ -1,13 +1,14 @@
 import * as https from "https";
 import * as http from "http";
 import * as socketIo from "socket.io";
-import { ISdServiceServerOptions } from "./commons";
-import { ISdServiceRequest } from "../commons";
-import { FsUtil, Logger } from "@simplysm/sd-core-node";
+import { ISdServiceServerOptions } from "./ISdServiceServerOptions";
+import { ISdServiceRequest } from "../common";
+import { FsUtil, Logger } from "@simplysm/sd-core/node";
 import { NextHandleFunction } from "connect";
 import url from "url";
 import path from "path";
 import mime from "mime";
+import { SdServiceBase } from "./SdServiceBase";
 
 export class SdServiceServer {
   private readonly _logger = Logger.get(["simplysm", "sd-service", this.constructor.name]);
@@ -53,6 +54,10 @@ export class SdServiceServer {
   }
 
   public async closeAsync(): Promise<void> {
+    if (this._socketServer) {
+      this._socketServer.close();
+    }
+
     await new Promise<void>((resolve, reject) => {
       if (!this._httpServer || !this._httpServer.listening) {
         resolve();
@@ -96,7 +101,10 @@ export class SdServiceServer {
           if (!serviceClass) {
             throw new Error(`서비스[${serviceName}]를 찾을 수 없습니다.`);
           }
-          const service = new serviceClass();
+          const service: SdServiceBase = new serviceClass();
+          service.server = this;
+          service.request = req;
+          service.socket = socket;
 
           // 메소드 가져오기
           const method = service[methodName];

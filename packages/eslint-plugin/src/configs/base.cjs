@@ -4,6 +4,9 @@ module.exports = {
     es2020: true
   },
   rules: {
+    "no-console": ["warn"],
+    "no-warning-comments": ["warn"],
+
     "require-await": ["error"],
     "quotes": ["error"],
     "semi": ["error"],

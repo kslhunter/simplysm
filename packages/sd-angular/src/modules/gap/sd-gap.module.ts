@@ -1,11 +1,11 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdGapComponent } from "./sd-gap.component";
+import { SdGapControl } from "./sd-gap.control";
 
 @NgModule({
   imports: [CommonModule],
-  declarations: [SdGapComponent],
-  exports: [SdGapComponent],
+  declarations: [SdGapControl],
+  exports: [SdGapControl],
   providers: []
 })
 export class SdGapModule {

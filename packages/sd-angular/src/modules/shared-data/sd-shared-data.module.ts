@@ -5,15 +5,15 @@ import { SdDockModule } from "../dock";
 import { SdModalModule } from "../modal";
 import { SdPaneModule } from "../pane";
 import { SdSelectModule } from "../select";
-import { SdSharedDataService } from "./sd-shared-data.service";
+import { SdSharedDataProvider } from "./sd-shared-data.provider";
 import { SdTextfieldModule } from "../textfield";
-import { SdSharedDataSelectComponent } from "./sd-shared-data-select.component";
+import { SdSharedDataSelectControl } from "./sd-shared-data-select.control";
 
 @NgModule({
   imports: [CommonModule, SdAnchorModule, SdDockModule, SdModalModule, SdPaneModule, SdSelectModule, SdTextfieldModule],
-  declarations: [SdSharedDataSelectComponent],
-  exports: [SdSharedDataSelectComponent],
-  providers: [SdSharedDataService]
+  declarations: [SdSharedDataSelectControl],
+  exports: [SdSharedDataSelectControl],
+  providers: [SdSharedDataProvider]
 })
 export class SdSharedDataModule {
 }

@@ -1,11 +1,11 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdAnchorComponent } from "./sd-anchor.component";
+import { SdAnchorControl } from "./sd-anchor.control";
 
 @NgModule({
   imports: [CommonModule],
-  declarations: [SdAnchorComponent],
-  exports: [SdAnchorComponent],
+  declarations: [SdAnchorControl],
+  exports: [SdAnchorControl],
   providers: []
 })
 export class SdAnchorModule {

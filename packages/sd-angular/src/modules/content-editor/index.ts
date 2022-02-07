@@ -1,2 +1,2 @@
 export * from "./sd-content-editor.module";
-export * from "./sd-content-editor.component";
+export * from "./sd-content-editor.control";

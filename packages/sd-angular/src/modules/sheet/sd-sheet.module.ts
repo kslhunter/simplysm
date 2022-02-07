@@ -12,15 +12,15 @@ import { SdPaginationModule } from "../pagination";
 import { SdPaneModule } from "../pane";
 import { SdResizeModule } from "../resize";
 import { SdTextfieldModule } from "../textfield";
-import { SdSheetComponent } from "./sd-sheet.component";
-import { SdSheetColumnComponent } from "./sd-sheet-column.component";
-import { SdSheetCellComponent } from "./sd-sheet-cell.component";
-import { SdSheetConfigModalComponent } from "./sd-sheet-config-modal.component";
+import { SdSheetControl } from "./sd-sheet.control";
+import { SdSheetColumnControl } from "./sd-sheet-column.control";
+import { SdSheetCellControl } from "./sd-sheet-cell.control";
+import { SdSheetConfigModal } from "./sd-sheet-config.modal";
 
 @NgModule({
   imports: [CommonModule, SdAnchorModule, SdButtonModule, SdCardModule, SdCheckboxModule, SdDockModule, SdGapModule, FontAwesomeModule, SdModalModule, SdPaginationModule, SdPaneModule, SdResizeModule, SdTextfieldModule],
-  declarations: [SdSheetConfigModalComponent, SdSheetComponent, SdSheetColumnComponent, SdSheetCellComponent],
-  exports: [SdSheetConfigModalComponent, SdSheetComponent, SdSheetColumnComponent, SdSheetCellComponent],
+  declarations: [SdSheetConfigModal, SdSheetControl, SdSheetColumnControl, SdSheetCellControl],
+  exports: [SdSheetConfigModal, SdSheetControl, SdSheetColumnControl, SdSheetCellControl],
   providers: []
 })
 export class SdSheetModule {

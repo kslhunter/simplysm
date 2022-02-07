@@ -1,2 +1,2 @@
 export * from "./sd-lazy-view.module";
-export * from "./sd-lazy-view.component";
+export * from "./sd-lazy-view.control";

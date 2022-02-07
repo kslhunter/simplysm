@@ -1,26 +1,22 @@
 {
   "name": "@simplysm/sd-service",
   "version": "7.0.41",
-  "description": "심플리즘 패키지 - 서비스 모듈 (node)",
+  "description": "심플리즘 패키지 - 서비스 모듈",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm7.git",
-    "directory": "packages/sd-service-node"
+    "directory": "packages/sd-service"
   },
   "license": "MIT",
   "type": "module",
   "exports": {
-    "./client": "./dist/client/index.mjs",
-    "./server": "./dist/server/index.mjs"
+    "./*": "./dist/*/index.mjs"
   },
   "typesVersions": {
     "*": {
-      "client": [
-        "./dist/client/index.d.ts"
-      ],
-      "server": [
-        "./dist/server/index.d.ts"
+      "*": [
+        "./dist/*/index.d.ts"
       ]
     }
   },
@@ -41,7 +37,7 @@
     "@types/mime": "^2.0.3"
   },
   "peerDependencies": {
-    "@simplysm/sd-core-common": "7.0.41",
-    "@simplysm/sd-core-node": "7.0.41"
+    "@simplysm/sd-core": "7.0.41",
+    "@simplysm/sd-orm": "7.0.41"
   }
 }

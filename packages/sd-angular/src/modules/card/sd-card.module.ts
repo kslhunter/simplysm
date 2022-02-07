@@ -1,9 +1,9 @@
 import { NgModule } from "@angular/core";
-import { SdCardComponent } from "./sd-card.component";
+import { SdCardControl } from "./sd-card.control";
 
 @NgModule({
-  declarations: [SdCardComponent],
-  exports: [SdCardComponent]
+  declarations: [SdCardControl],
+  exports: [SdCardControl]
 })
 export class SdCardModule {
 }

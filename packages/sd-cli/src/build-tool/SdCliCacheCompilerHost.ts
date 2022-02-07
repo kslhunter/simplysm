@@ -1,5 +1,5 @@
 import ts from "typescript";
-import { PathUtil } from "@simplysm/sd-core-node";
+import { PathUtil } from "@simplysm/sd-core/node";
 
 export class SdCliCacheCompilerHost {
   public static create(parsedTsconfig: ts.ParsedCommandLine,

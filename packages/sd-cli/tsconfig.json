@@ -7,14 +7,11 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@simplysm/sd-core-node": [
-        "../sd-core-node/src/index.ts"
+      "@simplysm/sd-core/*": [
+        "../sd-core/src/*/index.ts"
       ],
-      "@simplysm/sd-core-common": [
-        "../sd-core-common/src/index.ts"
-      ],
-      "@simplysm/sd-service/server": [
-        "../sd-service/src/server/index.ts"
+      "@simplysm/sd-service/*": [
+        "../sd-service/src/*/index.ts"
       ]
     }
   }

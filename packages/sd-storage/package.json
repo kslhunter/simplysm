@@ -26,7 +26,6 @@
     "@types/ssh2-sftp-client": "^7.0.0"
   },
   "peerDependencies": {
-    "@simplysm/sd-core-common": "7.0.41",
-    "@simplysm/sd-core-node": "7.0.41"
+    "@simplysm/sd-core": "7.0.41"
   }
 }

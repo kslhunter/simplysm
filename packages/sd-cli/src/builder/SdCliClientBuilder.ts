@@ -1,6 +1,6 @@
 import { INpmConfig, ISdCliClientPackageConfig, ISdCliPackageBuildResult } from "../commons";
 import { EventEmitter } from "events";
-import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core/node";
 import webpack from "webpack";
 import path from "path";
 import ts from "typescript";
@@ -10,6 +10,7 @@ import {
   AnyComponentStyleBudgetChecker,
   CommonJsUsageWarnPlugin,
   DedupeModuleResolvePlugin,
+  JavaScriptOptimizerPlugin,
   SuppressExtractedTextChunksWebpackPlugin
 } from "@angular-devkit/build-angular/src/webpack/plugins";
 import CopyWebpackPlugin from "copy-webpack-plugin";
@@ -25,6 +26,13 @@ import { LicenseWebpackPlugin } from "license-webpack-plugin";
 import { Type } from "@angular-devkit/build-angular";
 import NodePolyfillPlugin from "node-polyfill-webpack-plugin";
 import { createHash } from "crypto";
+import ESLintWebpackPlugin from "eslint-webpack-plugin";
+import os from "os";
+import { ESLint } from "eslint";
+import { TransferSizePlugin } from "@angular-devkit/build-angular/src/webpack/plugins/transfer-size-plugin";
+import { CssOptimizerPlugin } from "@angular-devkit/build-angular/src/webpack/plugins/css-optimizer-plugin";
+import browserslist from "browserslist";
+import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -120,13 +128,18 @@ export class SdCliClientBuilder extends EventEmitter {
   }
 
   private _getWebpackConfig(watch: boolean): webpack.Configuration {
+    const internalModuleCachePaths = watch
+      ? FsUtil.findAllParentChildDirPaths("node_modules/!(@simplysm)", this._rootPath, this._workspaceRootPath)
+      : undefined;
+
     const npmConfig = this._getNpmConfig(this._rootPath)!;
     const pkgVersion = npmConfig.version;
+    const ngVersion = this._getNpmConfig(FsUtil.findAllParentChildDirPaths("node_modules/@angular/core", this._rootPath, this._workspaceRootPath)[0])!.version;
 
     const pkgKey = npmConfig.name.split("/").last()!;
     const publicPath = `/${pkgKey}/`;
 
-    const cacheBasePath = path.resolve(this._rootPath, ".angular");
+    const cacheBasePath = path.resolve(this._rootPath, ".cache");
     const cachePath = path.resolve(cacheBasePath, pkgVersion);
 
     const distPath = this._parsedTsconfig.options.outDir;
@@ -193,11 +206,46 @@ export class SdCliClientBuilder extends EventEmitter {
         profile: watch ? undefined : false,
         cacheDirectory: path.resolve(cachePath, "angular-webpack"),
         maxMemoryGenerations: 1,
-        name: createHash("sha1").update(pkgVersion).digest("hex")
+        name: createHash("sha1")
+          .update(pkgVersion)
+          .update(ngVersion)
+          .update(JSON.stringify(this._parsedTsconfig.options))
+          .update(this._workspaceRootPath)
+          .update(this._rootPath)
+          .update(JSON.stringify(this._config))
+          .update(watch.toString())
+          .digest("hex")
       },
+      ...watch ? {
+        snapshot: {
+          immutablePaths: internalModuleCachePaths,
+          managedPaths: internalModuleCachePaths
+        }
+      } : {},
       node: false,
       optimization: {
-        minimizer: [],
+        minimizer: watch ? [] : [
+          new JavaScriptOptimizerPlugin({
+            define: {
+              ngDevMode: false,
+              ngI18nClosureMode: false,
+              ngJitMode: false
+            },
+            sourcemap: false,
+            target: ts.ScriptTarget.ES2017,
+            keepIdentifierNames: true,
+            keepNames: true,
+            removeLicenses: true,
+            advanced: true
+          }),
+          new TransferSizePlugin(),
+          new CssOptimizerPlugin({
+            supportedBrowsers: browserslist([
+              "last 1 Chrome versions",
+              "last 2 Edge major versions"
+            ], { path: this._workspaceRootPath })
+          })
+        ] as any[],
         moduleIds: "deterministic",
         chunkIds: watch ? "named" : "deterministic",
         emitOnErrors: watch,
@@ -226,6 +274,114 @@ export class SdCliClientBuilder extends EventEmitter {
             } : false
           }
         }
+      },
+      module: {
+        strictExportPresence: true,
+        parser: { javascript: { url: false, worker: false } },
+        rules: [
+          {
+            test: /\.?(svg|html)$/,
+            resourceQuery: /\?ngResource/,
+            type: "asset/source"
+          },
+          {
+            test: /[/\\]rxjs[/\\]add[/\\].+\.js$/,
+            sideEffects: true
+          },
+          {
+            test: /\.[cm]?[tj]sx?$/,
+            resolve: { fullySpecified: false },
+            exclude: [/[/\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\]/],
+            use: [
+              {
+                loader: "@angular-devkit/build-angular/src/babel/webpack-loader",
+                options: {
+                  cacheDirectory: path.resolve(cachePath, "babel-webpack"),
+                  scriptTarget: ts.ScriptTarget.ES2017,
+                  aot: true,
+                  optimize: !watch,
+                  instrumentCode: undefined
+                }
+              }
+            ]
+          },
+          ...watch ? [
+            {
+              test: /\.[cm]?jsx?$/,
+              enforce: "pre" as const,
+              loader: "source-map-loader",
+              options: {
+                filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
+                  return !resourcePath.includes("node_modules") || (/@simplysm[\\/]/).test(resourcePath);
+                }
+              }
+            }
+          ] : [],
+          {
+            test: /\.[cm]?tsx?$/,
+            loader: "@ngtools/webpack",
+            exclude: [/[/\\](?:css-loader|mini-css-extract-plugin|webpack-dev-server|webpack)[/\\]/]
+          },
+          {
+            test: /\.css$/i,
+            type: "asset/source"
+          },
+          {
+            test: /\.scss$/i,
+            rules: [
+              {
+                oneOf: [
+                  {
+                    use: [
+                      {
+                        loader: MiniCssExtractPlugin.loader
+                      },
+                      {
+                        loader: "css-loader",
+                        options: { url: false, sourceMap: watch }
+                      }
+                    ],
+                    include: [stylesFilePath],
+                    resourceQuery: { not: [/\?ngResource/] }
+                  },
+                  {
+                    type: "asset/source",
+                    resourceQuery: /\?ngResource/
+                  }
+                ]
+              },
+              {
+                use: [
+                  {
+                    loader: "resolve-url-loader",
+                    options: { sourceMap: watch }
+                  },
+                  {
+                    loader: "sass-loader",
+                    options: {
+                      implementation: sassImplementation,
+                      sourceMap: true,
+                      sassOptions: {
+                        fiber: false,
+                        precision: 8,
+                        includePaths: [],
+                        outputStyle: "expanded",
+                        quietDeps: true,
+                        verbose: watch ? undefined : false
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          ...watch ? [
+            {
+              loader: HmrLoader,
+              include: [mainFilePath]
+            }
+          ] : []
+        ]
       },
       plugins: [
         new NodePolyfillPlugin(),
@@ -331,116 +487,39 @@ export class SdCliClientBuilder extends EventEmitter {
         }),
         ...watch ? [
           new webpack.HotModuleReplacementPlugin()
-        ] : []
-      ] as any[],
-      module: {
-        strictExportPresence: true,
-        parser: { javascript: { url: false, worker: false } },
-        rules: [
-          {
-            test: /\.?(svg|html)$/,
-            resourceQuery: /\?ngResource/,
-            type: "asset/source"
-          },
-          {
-            test: /[/\\]rxjs[/\\]add[/\\].+\.js$/,
-            sideEffects: true
-          },
-          {
-            test: /\.[cm]?[tj]sx?$/,
-            resolve: { fullySpecified: false },
-            exclude: [/[/\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\]/],
-            use: [
-              {
-                loader: "@angular-devkit/build-angular/src/babel/webpack-loader",
-                options: {
-                  cacheDirectory: path.resolve(cachePath, "babel-webpack"),
-                  scriptTarget: ts.ScriptTarget.ES2017,
-                  aot: true,
-                  optimize: !watch,
-                  instrumentCode: undefined
-                }
-              }
-            ]
-          },
-          ...watch ? [
-            {
-              test: /\.[cm]?jsx?$/,
-              enforce: "pre" as const,
-              loader: "source-map-loader",
-              options: {
-                filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                  return !resourcePath.includes("node_modules") || (/@simplysm[\\/]sd/).test(resourcePath);
-                }
+        ] : [],
+        new webpack.EnvironmentPlugin({
+          SD_VERSION: this._getNpmConfig(this._rootPath)!.version,
+          ...this._config.env
+        }),
+        new ESLintWebpackPlugin({
+          context: this._rootPath,
+          eslintPath: path.resolve(this._workspaceRootPath, "node_modules", "eslint"),
+          exclude: ["node_modules"],
+          extensions: ["ts", "js", "mjs", "cjs"],
+          fix: false,
+          threads: false,
+          formatter: (results: LintResult[]) => {
+            const resultMessages: string[] = [];
+            for (const result of results) {
+              for (const msg of result.messages) {
+                const severity = msg.severity === 1 ? "warning" : msg.severity === 2 ? "error" : undefined;
+                if (severity === undefined) continue;
+
+                resultMessages.push(SdCliBuildResultUtil.getMessage({
+                  filePath: result.filePath,
+                  line: msg.line,
+                  char: msg.column,
+                  code: msg.ruleId?.toString(),
+                  severity,
+                  message: msg.message
+                }));
               }
             }
-          ] : [],
-          {
-            test: /\.[cm]?tsx?$/,
-            loader: "@ngtools/webpack",
-            exclude: [/[/\\](?:css-loader|mini-css-extract-plugin|webpack-dev-server|webpack)[/\\]/]
-          },
-          {
-            test: /\.css$/i,
-            type: "asset/source"
-          },
-          {
-            test: /\.scss$/i,
-            rules: [
-              {
-                oneOf: [
-                  {
-                    use: [
-                      {
-                        loader: MiniCssExtractPlugin.loader
-                      },
-                      {
-                        loader: "css-loader",
-                        options: { url: false, sourceMap: watch }
-                      }
-                    ],
-                    include: [stylesFilePath],
-                    resourceQuery: { not: [/\?ngResource/] }
-                  },
-                  {
-                    type: "asset/source",
-                    resourceQuery: /\?ngResource/
-                  }
-                ]
-              },
-              {
-                use: [
-                  {
-                    loader: "resolve-url-loader",
-                    options: { sourceMap: watch }
-                  },
-                  {
-                    loader: "sass-loader",
-                    options: {
-                      implementation: sassImplementation,
-                      sourceMap: true,
-                      sassOptions: {
-                        fiber: false,
-                        precision: 8,
-                        includePaths: [],
-                        outputStyle: "expanded",
-                        quietDeps: true,
-                        verbose: watch ? undefined : false
-                      }
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          ...watch ? [
-            {
-              loader: HmrLoader,
-              include: [mainFilePath]
-            }
-          ] : []
-        ]
-      }
+            return resultMessages.join(os.EOL);
+          }
+        })
+      ] as any[]
     };
   }
 

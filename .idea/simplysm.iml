@@ -13,6 +13,8 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-service/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-browser/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -25,8 +25,8 @@
       "modules/*": [
         "dist/modules/*/index.d.ts"
       ],
-      "services/*": [
-        "dist/services/*/index.d.ts"
+      "root-providers/*": [
+        "dist/root-providers/*/index.d.ts"
       ]
     }
   },
@@ -49,9 +49,11 @@
     "@types/marked": "^4.0.2"
   },
   "peerDependencies": {
-    "@simplysm/sd-core-common": "7.0.41",
-    "@simplysm/sd-core-browser": "7.0.41",
+    "@simplysm/sd-core": "7.0.41",
+    "@simplysm/sd-orm": "7.0.41",
     "@simplysm/sd-service": "7.0.41",
+    "@simplysm/sd-service-orm": "7.0.41",
+    "@simplysm/sd-service-smtp": "7.0.41",
     "@angular/common": "^13.2.0",
     "@angular/core": "^13.2.0",
     "@angular/router": "^13.2.0"

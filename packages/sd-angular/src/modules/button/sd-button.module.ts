@@ -1,11 +1,11 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdButtonComponent } from "./sd-button.component";
+import { SdButtonControl } from "./sd-button.control";
 
 @NgModule({
   imports: [CommonModule],
-  declarations: [SdButtonComponent],
-  exports: [SdButtonComponent],
+  declarations: [SdButtonControl],
+  exports: [SdButtonControl],
   providers: []
 })
 export class SdButtonModule {

@@ -1,6 +1,6 @@
 import { INpmConfig, ISdCliPackageBuildResult, ISdCliServerPackageConfig } from "../commons";
 import { EventEmitter } from "events";
-import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core/node";
 import webpack from "webpack";
 import path from "path";
 import ts from "typescript";
@@ -9,11 +9,12 @@ import { ErrorInfo } from "ts-loader/dist/interfaces";
 import os from "os";
 import { ESLint } from "eslint";
 import TerserPlugin from "terser-webpack-plugin";
-import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
+import { ObjectUtil, StringUtil } from "@simplysm/sd-core/common";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import { LicenseWebpackPlugin } from "license-webpack-plugin";
 import LintResult = ESLint.LintResult;
+import { createHash } from "crypto";
 
 export class SdCliServerBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -207,6 +208,13 @@ export class SdCliServerBuilder extends EventEmitter {
       ? FsUtil.findAllParentChildDirPaths("node_modules/!(@simplysm)", this._rootPath, this._workspaceRootPath)
       : undefined;
 
+    const npmConfig = this._getNpmConfig(this._rootPath)!;
+    const pkgKey = npmConfig.name.split("/").last()!;
+    const pkgVersion = npmConfig.version;
+
+    const cacheBasePath = path.resolve(this._rootPath, ".cache");
+    const cachePath = path.resolve(cacheBasePath, pkgVersion);
+
     return {
       mode: watch ? "development" : "production",
       devtool: false,
@@ -216,7 +224,12 @@ export class SdCliServerBuilder extends EventEmitter {
         roots: [this._rootPath],
         extensions: [".ts", ".js", ".mjs", ".cjs"],
         symlinks: true,
-        mainFields: ["es2020", "default", "module", "main"]
+        modules: [this._workspaceRootPath, "node_modules"],
+        mainFields: ["es2020", "default", "module", "main"],
+        conditionNames: ["es2020", "..."]
+      },
+      resolveLoader: {
+        symlinks: true
       },
       context: this._workspaceRootPath,
       entry: {
@@ -225,6 +238,8 @@ export class SdCliServerBuilder extends EventEmitter {
         ]
       },
       output: {
+        uniqueName: pkgKey,
+        hashFunction: "xxhash64",
         clean: true,
         path: this._parsedTsconfig.options.outDir,
         filename: "[name].mjs",
@@ -232,46 +247,57 @@ export class SdCliServerBuilder extends EventEmitter {
         assetModuleFilename: "res/[name][ext][query]",
         libraryTarget: "module"
       },
+      watch: false,
+      watchOptions: { poll: undefined, ignored: undefined },
+      performance: { hints: false },
       experiments: {
         outputModule: true
       },
-      performance: { hints: false },
-      node: {
-        __dirname: true
-      },
+      infrastructureLogging: { level: "error" },
       stats: "errors-warnings",
       externals: extModuleNames,
+      cache: {
+        type: "filesystem",
+        profile: watch ? undefined : false,
+        cacheDirectory: path.resolve(cachePath, "server-webpack"),
+        maxMemoryGenerations: 1,
+        name: createHash("sha1")
+          .update(pkgVersion)
+          .update(JSON.stringify(this._parsedTsconfig.options))
+          .update(this._workspaceRootPath)
+          .update(this._rootPath)
+          .update(JSON.stringify(this._config))
+          .update(watch.toString())
+          .digest("hex")
+      },
       ...watch ? {
-        cache: { type: "memory", maxGenerations: 1 },
         snapshot: {
           immutablePaths: internalModuleCachePaths,
           managedPaths: internalModuleCachePaths
         }
-      } : {
-        cache: false
+      } : {},
+      node: {
+        __dirname: true
       },
       optimization: {
-        ...watch ? {} : {
-          minimize: true,
-          minimizer: [
-            new TerserPlugin({
-              extractComments: false,
-              terserOptions: {
-                compress: true,
-                ecma: 2020,
-                sourceMap: false,
-                keep_classnames: true,
-                keep_fnames: true,
-                ie8: false,
-                safari10: false,
-                module: true,
-                format: {
-                  comments: false
-                }
+        minimizer: watch ? [
+          new TerserPlugin({
+            extractComments: false,
+            terserOptions: {
+              compress: true,
+              ecma: 2020,
+              sourceMap: false,
+              keep_classnames: true,
+              keep_fnames: true,
+              ie8: false,
+              safari10: false,
+              module: true,
+              format: {
+                comments: false
               }
-            })
-          ]
-        },
+            }
+          })
+        ] : [],
         moduleIds: "deterministic",
         chunkIds: watch ? "named" : "deterministic",
         emitOnErrors: watch
@@ -280,7 +306,7 @@ export class SdCliServerBuilder extends EventEmitter {
         strictExportPresence: true,
         rules: [
           {
-            test: /\.m?js/,
+            test: /\.[cm]?[tj]sx?$/,
             resolve: {
               fullySpecified: false
             }
@@ -292,13 +318,13 @@ export class SdCliServerBuilder extends EventEmitter {
               loader: "source-map-loader",
               options: {
                 filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                  return !resourcePath.includes("node_modules") || (/@simplysm[\\/]sd/).test(resourcePath);
+                  return !resourcePath.includes("node_modules") || (/@simplysm[\\/]/).test(resourcePath);
                 }
               }
             }
           ] : [],
           {
-            test: /\.ts$/,
+            test: /\.[cm]?tsx?$/,
             exclude: /node_modules/,
             loader: "ts-loader",
             options: {

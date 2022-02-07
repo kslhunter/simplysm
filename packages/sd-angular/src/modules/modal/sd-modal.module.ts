@@ -4,13 +4,13 @@ import { SdAnchorModule } from "../anchor";
 import { SdDockModule } from "../dock";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import { SdPaneModule } from "../pane";
-import { SdModalComponent } from "./sd-modal.component";
+import { SdModalControl } from "./sd-modal.control";
 import { SdModalService } from "./sd-modal.service";
 
 @NgModule({
   imports: [CommonModule, SdAnchorModule, SdDockModule, FontAwesomeModule, SdPaneModule],
-  declarations: [SdModalComponent],
-  exports: [SdModalComponent],
+  declarations: [SdModalControl],
+  exports: [SdModalControl],
   providers: [SdModalService]
 })
 export class SdModalModule {
