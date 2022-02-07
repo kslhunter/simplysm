@@ -1,19 +1,15 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import fasAngleDoubleLeft from "@fortawesome/pro-solid-svg-icons/faAngleDoubleLeft";
-import fasAngleLeft from "@fortawesome/pro-solid-svg-icons/faAngleLeft";
-import fasAngleRight from "@fortawesome/pro-solid-svg-icons/faAngleRight";
-import fasAngleDoubleRight from "@fortawesome/pro-solid-svg-icons/faAngleDoubleRight";
 
 @Component({
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-anchor *ngIf="hasPrev" (click)="onGoFirstClick()">
-      <fa-icon [icon]="icons.fasAngleDoubleLeft" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fasAngleDoubleLeft | async" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-anchor *ngIf="hasPrev" (click)="onPrevClick()">
-      <fa-icon [icon]="icons.fasAngleLeft" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fasAngleLeft | async" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-anchor *ngFor="let displayPage of displayPages; trackBy: trackByPageFn"
                (click)="onPageClick(displayPage)"
@@ -21,10 +17,10 @@ import fasAngleDoubleRight from "@fortawesome/pro-solid-svg-icons/faAngleDoubleR
       {{ displayPage + 1 }}
     </sd-anchor>
     <sd-anchor *ngIf="hasNext" (click)="onNextClick()">
-      <fa-icon [icon]="icons.fasAngleRight" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fasAngleRight | async" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-anchor *ngIf="hasNext" (click)="onGoLastClick()">
-      <fa-icon [icon]="icons.fasAngleDoubleRight" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fasAngleDoubleRight | async" [fixedWidth]="true"></fa-icon>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -47,10 +43,10 @@ import fasAngleDoubleRight from "@fortawesome/pro-solid-svg-icons/faAngleDoubleR
 })
 export class SdPaginationComponent {
   public icons = {
-    fasAngleDoubleLeft,
-    fasAngleLeft,
-    fasAngleRight,
-    fasAngleDoubleRight
+    fasAngleDoubleLeft: import("@fortawesome/pro-solid-svg-icons/faAngleDoubleLeft"),
+    fasAngleLeft: import("@fortawesome/pro-solid-svg-icons/faAngleLeft"),
+    fasAngleRight: import("@fortawesome/pro-solid-svg-icons/faAngleRight"),
+    fasAngleDoubleRight: import("@fortawesome/pro-solid-svg-icons/faAngleDoubleRight")
   };
 
   @Input()

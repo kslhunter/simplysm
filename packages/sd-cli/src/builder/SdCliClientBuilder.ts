@@ -16,7 +16,6 @@ import CopyWebpackPlugin from "copy-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import { AngularWebpackPlugin } from "@ngtools/webpack";
 import { IndexHtmlWebpackPlugin } from "@angular-devkit/build-angular/src/webpack/plugins/index-html-webpack-plugin";
-import { createHash } from "crypto";
 import { SassWorkerImplementation } from "@angular-devkit/build-angular/src/sass/sass-service";
 import { HmrLoader } from "@angular-devkit/build-angular/src/webpack/plugins/hmr/hmr-loader";
 import wdm from "webpack-dev-middleware";
@@ -25,6 +24,7 @@ import { NextHandleFunction } from "connect";
 import { LicenseWebpackPlugin } from "license-webpack-plugin";
 import { Type } from "@angular-devkit/build-angular";
 import NodePolyfillPlugin from "node-polyfill-webpack-plugin";
+import { createHash } from "crypto";
 
 export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);

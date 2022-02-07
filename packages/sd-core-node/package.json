@@ -14,7 +14,6 @@
   "exports": {
     ".": "./dist/index.mjs"
   },
-  "sideEffects": false,
   "engines": {
     "node": "^16"
   },
