@@ -23,7 +23,9 @@
   "engines": {
     "node": "^16"
   },
-  "dependencies": {},
+  "dependencies": {
+    "chokidar": "^3.5.3"
+  },
   "devDependencies": {},
   "peerDependencies": {}
 }

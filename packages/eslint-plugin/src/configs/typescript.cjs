@@ -3,10 +3,14 @@ module.exports = {
   plugins: [
     "@typescript-eslint",
     "deprecation",
+    "import",
     "@simplysm"
   ],
   // extends: [
-  //   "plugin:@typescript-eslint/all"
+  //   "eslint:all",
+  //   "plugin:@typescript-eslint/all",
+  //   "plugin:import/recommended",
+  //   "plugin:import/typescript"
   // ],
   rules: {
     // 기본
@@ -15,7 +19,10 @@ module.exports = {
 
     // Deprecation
     "deprecation/deprecation": ["warn"],
-    
+
+    // import
+    "import/no-extraneous-dependencies": ["error"],
+
     // 심플리즘
     "@simplysm/ts-no-throw-not-implement-error": ["warn"],
     "@simplysm/ts-no-self-entry-import": ["error"],

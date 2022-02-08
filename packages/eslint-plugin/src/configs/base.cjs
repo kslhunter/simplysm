@@ -3,7 +3,13 @@ module.exports = {
     node: true,
     es2020: true
   },
+  plugins:[
+    "import",
+  ],
   rules: {
+    // import
+    "import/no-extraneous-dependencies": ["error"],
+
     "no-console": ["warn"],
     "no-warning-comments": ["warn"],
 

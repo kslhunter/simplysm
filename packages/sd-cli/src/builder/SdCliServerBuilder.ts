@@ -13,8 +13,9 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core/common";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import { LicenseWebpackPlugin } from "license-webpack-plugin";
-import LintResult = ESLint.LintResult;
 import { createHash } from "crypto";
+import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
+import LintResult = ESLint.LintResult;
 
 export class SdCliServerBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -425,16 +426,9 @@ export class SdCliServerBuilder extends EventEmitter {
       const npmConfig = this._getNpmConfig(currPath);
       if (!npmConfig) return;
 
-      const moduleNames = [
-        ...Object.keys(npmConfig.dependencies ?? {}),
-        ...Object.keys(npmConfig.peerDependencies ?? {}).filter((item) => !npmConfig.peerDependenciesMeta?.[item].optional)
-      ];
-      const optModuleNames = [
-        ...Object.keys(npmConfig.optionalDependencies ?? {}),
-        ...Object.keys(npmConfig.peerDependencies ?? {}).filter((item) => npmConfig.peerDependenciesMeta?.[item].optional)
-      ].distinct();
+      const deps = SdCliNpmConfigUtil.getDependencies(npmConfig);
 
-      for (const moduleName of moduleNames) {
+      for (const moduleName of deps.defaults) {
         if (loadedModuleNames.includes(moduleName)) continue;
         loadedModuleNames.push(moduleName);
 
@@ -450,7 +444,7 @@ export class SdCliServerBuilder extends EventEmitter {
         fn(modulePath);
       }
 
-      for (const optModuleName of optModuleNames) {
+      for (const optModuleName of deps.optionals) {
         if (loadedModuleNames.includes(optModuleName)) continue;
         loadedModuleNames.push(optModuleName);
 
