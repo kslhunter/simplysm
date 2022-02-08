@@ -18,6 +18,12 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-orm/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-auto-update/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-common/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-browser/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-client/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-common/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-common/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-server/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service-client",
-  "version": "7.0.50",
+  "version": "7.0.51",
   "description": "심플리즘 패키지 - 서비스 모듈 (client)",
   "author": "김석래",
   "repository": {
@@ -20,11 +20,10 @@
     "socket.io-client": "^4.4.1",
     "jszip": "^3.7.1"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "peerDependencies": {
-    "@simplysm/sd-core-common": "7.0.50",
-    "@simplysm/sd-service-common": "7.0.50",
-    "@simplysm/sd-orm-common": "7.0.50"
+    "@simplysm/sd-core-common": "7.0.51",
+    "@simplysm/sd-service-common": "7.0.51",
+    "@simplysm/sd-orm-common": "7.0.51"
   }
 }

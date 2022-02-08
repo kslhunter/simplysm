@@ -17,8 +17,8 @@
       "@simplysm/sd-service-common": [
         "../sd-service-common/src/index.ts"
       ],
-      "@simplysm/sd-service-browser": [
-        "../sd-service-browser/src/index.ts"
+      "@simplysm/sd-service-client": [
+        "../sd-service-client/src/index.ts"
       ]
     }
   }

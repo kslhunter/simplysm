@@ -1,14 +1,13 @@
 import * as https from "https";
 import * as http from "http";
 import * as socketIo from "socket.io";
-import { ISdServiceServerOptions } from "./ISdServiceServerOptions";
 import { NextHandleFunction } from "connect";
 import url from "url";
 import path from "path";
 import mime from "mime";
-import { SdServiceBase } from "./SdServiceBase";
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
 import { ISdServiceRequest } from "@simplysm/sd-service-common";
+import { ISdServiceServerOptions, SdServiceBase } from "./commons";
 
 export class SdServiceServer {
   private readonly _logger = Logger.get(["simplysm", "sd-service", this.constructor.name]);

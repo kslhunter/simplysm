@@ -1,7 +1,7 @@
 import * as nodemailer from "nodemailer";
-import { SdServiceBase } from "../SdServiceBase";
 import { SdServiceServerConfigUtil } from "../utils/SdServiceServerConfigUtil";
 import { ISmtpClientSendByDefaultOption, ISmtpClientSendOption } from "@simplysm/sd-service-common";
+import { SdServiceBase } from "../commons";
 
 export class SdSmtpClientService extends SdServiceBase {
   public async sendAsync(options: ISmtpClientSendOption): Promise<string> {

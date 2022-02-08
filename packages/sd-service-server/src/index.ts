@@ -4,3 +4,4 @@ export * from "./utils/SdServiceServerConfigUtil";
 export * from "./services/SdCryptoService";
 export * from "./services/SdSmtpClientService";
 export * from "./services/SdAutoUpdateService";
+export * from "./services/SdOrmService";

@@ -24,6 +24,7 @@ export interface ITsconfig {
     baseUrl?: string;
     paths?: Record<string, string[]>;
   };
+  files?: string[];
 }
 
 export interface ISdCliPackageBuildResult {
@@ -44,6 +45,7 @@ export type TSdCliPackageConfig = ISdCliLibPackageConfig | ISdCliServerPackageCo
 
 export interface ISdCliLibPackageConfig {
   type: "library";
+  polyfills?: string[];
   publish?: "npm";
 }
 

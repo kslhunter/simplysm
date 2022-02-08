@@ -1,7 +1,7 @@
 import * as path from "path";
-import { FsUtil } from "@simplysm/sd-core-node";
 import * as url from "url";
 import { ObjectUtil } from "@simplysm/sd-core-common";
+import { FsUtil } from "@simplysm/sd-core-node";
 
 export class SdServiceServerConfigUtil {
   public static async getConfigAsync(rootPath: string, requestUrl?: string): Promise<Record<string, any | undefined>> {

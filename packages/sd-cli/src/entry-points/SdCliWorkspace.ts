@@ -11,6 +11,7 @@ import { SdServiceServer } from "@simplysm/sd-service-server";
 import { SdCliNpm } from "./SdCliNpm";
 import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
 import { NextHandleFunction } from "connect";
+import { SdCliIndexFileGenerator } from "./SdCliIndexFileGenerator";
 
 export class SdCliWorkspace {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -34,6 +35,13 @@ export class SdCliWorkspace {
 
     this._logger.debug("패키지 목록 구성...");
     const pkgs = await this._getPackagesAsync(config);
+
+    this._logger.debug("패키지 인덱스 생성기 실행...");
+    await pkgs.parallelAsync(async (pkg) => {
+      if (pkg.config.type === "library") {
+        await new SdCliIndexFileGenerator(pkg.rootPath, pkg.config).watchAsync();
+      }
+    });
 
     this._logger.debug("패키지 이벤트 설정...");
     let changeCount = 0;
@@ -122,6 +130,13 @@ export class SdCliWorkspace {
 
     this._logger.debug("패키지 목록 구성...");
     const pkgs = await this._getPackagesAsync(config);
+
+    this._logger.debug("패키지 인덱스 생성기 실행...");
+    await pkgs.parallelAsync(async (pkg) => {
+      if (pkg.config.type === "library") {
+        await new SdCliIndexFileGenerator(pkg.rootPath, pkg.config).runAsync();
+      }
+    });
 
     this._logger.debug("프로젝트 및 패키지 버전 설정...");
     await this._upgradeVersionAsync(pkgs);
