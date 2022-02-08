@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm",
-  "version": "7.0.43",
+  "version": "7.0.45",
   "description": "심플리즘 패키지 - ORM 모듈",
   "author": "김석래",
   "repository": {
@@ -13,10 +13,9 @@
   "exports": {
     "./*": "./dist/*/index.mjs"
   },
-  "types": "index.d.ts",
   "typesVersions": {
     "*": {
-      "index.d.ts": [
+      "*": [
         "./dist/*/index.d.ts"
       ]
     }
@@ -34,6 +33,6 @@
     "@types/mysql": "^2.15.20"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "7.0.43"
+    "@simplysm/sd-core": "7.0.45"
   }
 }
