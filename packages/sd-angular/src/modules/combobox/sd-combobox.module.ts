@@ -3,7 +3,7 @@ import { NgModule } from "@angular/core";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import { SdComboboxControl } from "./sd-combobox.control";
 import { SdComboboxItemControl } from "./sd-combobox-item.control";
-import { SdTextfieldModule } from "../textfield";
+import { SdTextfieldModule } from "../textfield/sd-textfield.module";
 
 @NgModule({
   imports: [CommonModule, FontAwesomeModule, SdTextfieldModule],

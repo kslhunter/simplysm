@@ -1,5 +1,5 @@
 import { Injectable, Injector, Type, ViewContainerRef } from "@angular/core";
-import { SdRootRootProvider } from "../../root-providers/root";
+import { SdRootRootProvider } from "../../root-providers/sd-root.root-provider";
 
 @Injectable({ providedIn: null })
 export class SdPrintProvider {

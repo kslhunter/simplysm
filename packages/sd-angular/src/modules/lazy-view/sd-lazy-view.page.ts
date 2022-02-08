@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, Type } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import { SdToastProvider } from "../toast";
+import { SdToastProvider } from "../toast/sd-toast.provider";
 import { SdLazyViewLoaderProvider } from "./internal/sd-lazy-view-loader.provider";
 
 @Component({

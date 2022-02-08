@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { ObjectUtil, TFlatType } from "@simplysm/sd-core-common";
-import { SdModalBase } from "../modal";
+import { SdModalBase } from "../modal/sd-modal.provider";
 import fasArrowRight from "@fortawesome/pro-solid-svg-icons/faArrowRight";
 import fasArrowLeft from "@fortawesome/pro-solid-svg-icons/faArrowLeft";
 

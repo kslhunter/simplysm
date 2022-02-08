@@ -14,7 +14,7 @@ import {
   Type
 } from "@angular/core";
 import { ObjectUtil } from "@simplysm/sd-core-common";
-import { SdModalBase, SdModalProvider } from "../modal";
+import { SdModalBase, SdModalProvider } from "../modal/sd-modal.provider";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { ISharedDataBase, SdSharedDataProvider } from "./sd-shared-data.provider";
 

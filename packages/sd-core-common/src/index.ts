@@ -10,6 +10,7 @@ export * from "./errors/TimeoutError";
 export * from "./extensions/ArrayExtension";
 import "./extensions/MapExtension";
 import "./extensions/SetExtension";
+export * from "./index";
 export * from "./types/DateOnly";
 export * from "./types/DateTime";
 export * from "./types/DeepPartial";

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from "@angular/core";
-import { SdModalBase } from "../modal";
 import { ISdSheetColumnConfigVM } from "./sd-sheet.control";
 import { SdSheetColumnControl } from "./sd-sheet-column.control";
+import { SdModalBase } from "../modal/sd-modal.provider";
 
 @Component({
   selector: "sd-sheet-config-modal",

@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { ObjectUtil } from "@simplysm/sd-core-common";
-import { SdModalProvider } from "../modal";
-import { SdToastProvider } from "../toast";
+import { SdModalProvider } from "../modal/sd-modal.provider";
+import { SdToastProvider } from "../toast/sd-toast.provider";
 import { SdObjectMerge3Modal } from "./sd-object-merge3.modal";
 
 @Injectable({ providedIn: null })

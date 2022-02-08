@@ -1,8 +1,8 @@
 import { ComponentRef, Injectable, Injector, Type, ViewContainerRef } from "@angular/core";
 import { SdToastContainerControl } from "./sd-toast-container.control";
 import { SdToastControl } from "./sd-toast.control";
-import { SdRootRootProvider } from "../../root-providers/root";
-import { SdSystemLogRootProvider } from "../../root-providers/system-log";
+import { SdRootRootProvider } from "../../root-providers/sd-root.root-provider";
+import { SdSystemLogRootProvider } from "../../root-providers/sd-system-log.root-provider";
 
 // TODO: 마우스가 올라와 있으면 자동으로 안닫히게
 

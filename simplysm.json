@@ -6,6 +6,11 @@
     },
     "sd-angular": {
       "type": "library",
+      "autoIndex": {
+        "polyfills": [
+          "@simplysm/sd-core-browser"
+        ]
+      },
       "publish": "npm"
     },
     "sd-cli": {
@@ -14,38 +19,67 @@
     },
     "sd-core-browser": {
       "type": "library",
+      "autoIndex": {
+        "polyfills": [
+          "@simplysm/sd-core-common"
+        ]
+      },
       "publish": "npm"
     },
     "sd-core-common": {
       "type": "library",
+      "autoIndex": {
+        "polyfills": [
+          "reflect-metadata"
+        ]
+      },
       "publish": "npm"
     },
     "sd-core-node": {
       "type": "library",
+      "autoIndex": {
+        "polyfills": [
+          "@simplysm/sd-core-common"
+        ]
+      },
       "publish": "npm"
     },
     "sd-orm-common": {
       "type": "library",
+      "autoIndex": {
+        "polyfills": [
+          "@simplysm/sd-core-common"
+        ]
+      },
       "publish": "npm"
     },
     "sd-orm-node": {
       "type": "library",
+      "autoIndex": {
+        "polyfills": [
+          "@simplysm/sd-core-common"
+        ]
+      },
       "publish": "npm"
     },
     "sd-service-client": {
       "type": "library",
+      "autoIndex": {},
       "publish": "npm"
     },
     "sd-service-common": {
       "type": "library",
+      "autoIndex": {},
       "publish": "npm"
     },
     "sd-service-server": {
       "type": "library",
+      "autoIndex": {},
       "publish": "npm"
     },
     "sd-storage": {
       "type": "library",
+      "autoIndex": {},
       "publish": "npm"
     }
   }

@@ -12,8 +12,8 @@ import {
 } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { ObjectUtil } from "@simplysm/sd-core-common";
-import { SdSystemConfigRootProvider } from "../../root-providers/system-config";
-import { SdToastProvider } from "../toast";
+import { SdSystemConfigRootProvider } from "../../root-providers/sd-system-config.root-provider";
+import { SdToastProvider } from "../toast/sd-toast.provider";
 import fasStar from "@fortawesome/pro-solid-svg-icons/faStar";
 import fasSave from "@fortawesome/pro-solid-svg-icons/faSave";
 import fasTimes from "@fortawesome/pro-solid-svg-icons/faTimes";

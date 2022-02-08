@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef } from "@angular/core";
-import { SdModalBase } from "../modal";
+import { SdModalBase } from "../modal/sd-modal.provider";
 
 @Component({
   selector: "sd-address-search-modal",

@@ -6,6 +6,7 @@ export * from "./DbContext";
 export * from "./decorators";
 export * from "./IDbContextExecutor";
 export * from "./IDbMigration";
+export * from "./index";
 export * from "./models/SystemMigration";
 export * from "./Queryable";
 export * from "./QueryBuilder";

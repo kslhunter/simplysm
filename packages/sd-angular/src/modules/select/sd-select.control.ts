@@ -17,7 +17,7 @@ import { SdSelectItemControl } from "./sd-select-item.control";
 import { ObjectUtil, Uuid } from "@simplysm/sd-core-common";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import { SdDropdownControl } from "../dropdown";
+import { SdDropdownControl } from "../dropdown/sd-dropdown.control";
 import fasCaretDown from "@fortawesome/pro-solid-svg-icons/faCaretDown";
 
 @Component({

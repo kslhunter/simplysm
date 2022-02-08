@@ -17,7 +17,7 @@ import {
 } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { SdDockContainerControl } from "./sd-dock-container.control";
-import { SdSystemConfigRootProvider } from "../../root-providers/system-config";
+import { SdSystemConfigRootProvider } from "../../root-providers/sd-system-config.root-provider";
 
 @Component({
   selector: "sd-dock",

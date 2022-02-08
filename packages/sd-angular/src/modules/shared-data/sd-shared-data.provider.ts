@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
 import { NeverEntryError, ObjectUtil, Wait } from "@simplysm/sd-core-common";
-import { SdRootRootProvider } from "../../root-providers/root";
+import { SdRootRootProvider } from "../../root-providers/sd-root.root-provider";
 import { SdSharedDataChangeEvent } from "./events";
-import { SdServiceFactoryRootProvider } from "../../root-providers/service";
+import { SdServiceFactoryRootProvider } from "../../root-providers/sd-service-factory.root-provider";
 
 @Injectable({ providedIn: null })
 export class SdSharedDataProvider {

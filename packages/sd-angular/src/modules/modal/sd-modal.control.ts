@@ -15,7 +15,7 @@ import {
 } from "@angular/core";
 import { NeverEntryError } from "@simplysm/sd-core-common";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import { SdSystemConfigRootProvider } from "../../root-providers/system-config";
+import { SdSystemConfigRootProvider } from "../../root-providers/sd-system-config.root-provider";
 import fasTimes from "@fortawesome/pro-solid-svg-icons/faTimes";
 
 @Component({

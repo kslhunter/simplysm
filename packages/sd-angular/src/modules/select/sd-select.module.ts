@@ -1,12 +1,12 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { SdAnchorModule } from "../anchor";
-import { SdCheckboxModule } from "../checkbox";
-import { SdDockModule } from "../dock";
-import { SdDropdownModule } from "../dropdown";
-import { SdGapModule } from "../gap";
+import { SdAnchorModule } from "../anchor/sd-anchor.module";
+import { SdCheckboxModule } from "../checkbox/sd-checkbox.module";
+import { SdDockModule } from "../dock/sd-dock.module";
+import { SdDropdownModule } from "../dropdown/sd-dropdown.module";
+import { SdGapModule } from "../gap/sd-gap.module";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
-import { SdPaneModule } from "../pane";
+import { SdPaneModule } from "../pane/sd-pane.module";
 import { SdSelectControl } from "./sd-select.control";
 import { SdSelectItemControl } from "./sd-select-item.control";
 

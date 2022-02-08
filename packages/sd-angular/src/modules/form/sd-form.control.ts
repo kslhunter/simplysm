@@ -8,8 +8,8 @@ import {
   Output
 } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import { SdDomValidatorRootProvider } from "../../root-providers/dom-validator";
-import { SdToastProvider } from "../toast";
+import { SdDomValidatorRootProvider } from "../../root-providers/sd-dom-validator.root-provider";
+import { SdToastProvider } from "../toast/sd-toast.provider";
 
 @Component({
   selector: "sd-form",

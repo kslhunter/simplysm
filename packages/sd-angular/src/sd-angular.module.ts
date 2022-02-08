@@ -1,14 +1,14 @@
 import { ErrorHandler, ModuleWithProviders, NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { EVENT_MANAGER_PLUGINS } from "@angular/platform-browser";
-import { SdSaveEventPlugin } from "./internal-plugins/sd-save-event.plugin";
-import { SdDataRefreshEventPlugin } from "./internal-plugins/sd-data-refresh-event.plugin";
-import { SdInsertEventPlugin } from "./internal-plugins/sd-insert-event.plugin";
-import { SdCopyEventPlugin } from "./internal-plugins/sd-copy-event.plugin";
-import { SdResizeEventPlugin } from "./internal-plugins/sd-resize-event.plugin";
-import { SdMutationEventPlugin } from "./internal-plugins/sd-mutation-event.plugin";
-import { SdPasteEventPlugin } from "./internal-plugins/sd-paste-event-plugin";
-import { SdGlobalErrorHandlerPlugin } from "./internal-plugins/sd-global-error-handler.plugin";
+import { SdSaveEventPlugin } from "./plugins/sd-save-event.plugin";
+import { SdDataRefreshEventPlugin } from "./plugins/sd-data-refresh-event.plugin";
+import { SdInsertEventPlugin } from "./plugins/sd-insert-event.plugin";
+import { SdCopyEventPlugin } from "./plugins/sd-copy-event.plugin";
+import { SdResizeEventPlugin } from "./plugins/sd-resize-event.plugin";
+import { SdMutationEventPlugin } from "./plugins/sd-mutation-event.plugin";
+import { SdPasteEventPlugin } from "./plugins/sd-paste-event-plugin";
+import { SdGlobalErrorHandlerPlugin } from "./plugins/sd-global-error-handler.plugin";
 
 @NgModule({
   imports: [

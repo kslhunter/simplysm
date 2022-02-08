@@ -1,6 +1,6 @@
 import { Injectable, Injector, Type, ViewContainerRef } from "@angular/core";
 import { Wait } from "@simplysm/sd-core-common";
-import { SdRootRootProvider } from "../../root-providers/root";
+import { SdRootRootProvider } from "../../root-providers/sd-root.root-provider";
 import { SdModalControl } from "./sd-modal.control";
 
 @Injectable({ providedIn: null })

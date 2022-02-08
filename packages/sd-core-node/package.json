@@ -21,7 +21,8 @@
     "glob": "^7.2.0"
   },
   "devDependencies": {
-    "@simplysm/sd-core-common": "7.0.51"
   },
-  "peerDependencies": {}
+  "peerDependencies": {
+    "@simplysm/sd-core-common": "7.0.51"
+  }
 }
