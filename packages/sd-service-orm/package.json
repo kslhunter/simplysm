@@ -15,14 +15,8 @@
   },
   "typesVersions": {
     "*": {
-      "client": [
+      "*": [
         "./dist/client/index.d.ts"
-      ],
-      "common": [
-        "./dist/common/index.d.ts"
-      ],
-      "server": [
-        "./dist/server/index.d.ts"
       ]
     }
   },
