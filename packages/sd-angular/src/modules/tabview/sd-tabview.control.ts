@@ -41,7 +41,7 @@ export class SdTabviewControl {
   public trackByValueFn = (i: number, item: any): any => item.value ?? item;
 
   public onValueChange(value: any): void {
-    if (this.valueChange.observers.length > 0) {
+    if (this.valueChange.length > 0) {
       this.valueChange.emit(value);
     }
     else {

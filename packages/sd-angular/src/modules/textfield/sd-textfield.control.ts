@@ -643,7 +643,7 @@ export class SdTextfieldControl implements DoCheck {
   }
 
   private _setValue(newValue: any): void {
-    if (this.valueChange.observers.length > 0) {
+    if (this.valueChange.length > 0) {
       this.valueChange.emit(newValue);
     }
     else {

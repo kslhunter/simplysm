@@ -460,7 +460,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
       return;
     }
 
-    if (this.openChange.observers.length > 0) {
+    if (this.openChange.length > 0) {
       this.openChange.emit(false);
     }
     else {
@@ -473,7 +473,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
       return;
     }
 
-    if (this.openChange.observers.length > 0) {
+    if (this.openChange.length > 0) {
       this.openChange.emit(false);
     }
     else {
@@ -486,7 +486,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
       return;
     }
 
-    if (this.openChange.observers.length > 0) {
+    if (this.openChange.length > 0) {
       this.openChange.emit(false);
     }
     else {
@@ -505,7 +505,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
         return;
       }
 
-      if (this.openChange.observers.length > 0) {
+      if (this.openChange.length > 0) {
         this.openChange.emit(false);
       }
       else {

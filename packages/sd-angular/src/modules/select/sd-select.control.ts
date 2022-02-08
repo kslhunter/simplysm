@@ -460,7 +460,7 @@ export class SdSelectControl implements DoCheck {
       else {
         value.push(itemControl.value);
       }
-      if (this.valueChange.observers.length > 0) {
+      if (this.valueChange.length > 0) {
         this.valueChange.emit(value);
       }
       else {
@@ -469,7 +469,7 @@ export class SdSelectControl implements DoCheck {
     }
     else {
       if (this.value !== itemControl.value) {
-        if (this.valueChange.observers.length > 0) {
+        if (this.valueChange.length > 0) {
           this.valueChange.emit(itemControl.value);
         }
         else {
@@ -514,7 +514,7 @@ export class SdSelectControl implements DoCheck {
   public onSelectAllButtonClick(check: boolean): void {
     const value = check ? this.itemControls.map((item) => item.value) : [];
 
-    if (this.valueChange.observers.length > 0) {
+    if (this.valueChange.length > 0) {
       this.valueChange.emit(value);
     }
     else {

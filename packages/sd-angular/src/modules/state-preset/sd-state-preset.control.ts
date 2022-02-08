@@ -156,7 +156,7 @@ export class SdStatePresetControl implements OnInit, OnChanges {
 
   public onItemClick(preset: ISdStatePresetVM): void {
     if (!ObjectUtil.equal(this.state, preset.state)) {
-      if (this.stateChange.observers.length > 0) {
+      if (this.stateChange.length > 0) {
         this.stateChange.emit(ObjectUtil.clone(preset.state));
       }
       else {

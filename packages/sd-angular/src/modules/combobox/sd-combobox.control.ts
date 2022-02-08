@@ -147,7 +147,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
 
     if (this.userCustomText) {
       const newText = this.value != null ? this.value.toString() : this.value;
-      if (this.textChange.observers.length > 0) {
+      if (this.textChange.length > 0) {
         this.textChange.emit(newText);
       }
       else {
@@ -161,7 +161,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
   }
 
   public onTextChange(text: string): void {
-    if (this.textChange.observers.length > 0) {
+    if (this.textChange.length > 0) {
       this.textChange.emit(text);
     }
     else {
@@ -172,7 +172,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     if (this.value !== undefined) {
       if (this.userCustomText) {
         const newValue = NumberUtil.parseInt(text);
-        if (this.valueChange.observers.length > 0) {
+        if (this.valueChange.length > 0) {
           this.valueChange.emit(newValue);
         }
         else {
@@ -181,7 +181,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
       }
       else {
         const newValue = undefined;
-        if (this.valueChange.observers.length > 0) {
+        if (this.valueChange.length > 0) {
           this.valueChange.emit(newValue);
         }
         else {
@@ -192,7 +192,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
     else {
       if (this.userCustomText) {
         const newValue = NumberUtil.parseInt(text);
-        if (this.valueChange.observers.length > 0) {
+        if (this.valueChange.length > 0) {
           this.valueChange.emit(newValue);
         }
         else {
@@ -204,7 +204,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
 
   public setValueFromItemControl(value: any, itemControl: SdComboboxItemControl): void {
     if (this.value !== value) {
-      if (this.valueChange.observers.length > 0) {
+      if (this.valueChange.length > 0) {
         this.valueChange.emit(value);
       }
       else {
@@ -215,7 +215,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
 
     if (this.text !== itemControl.content) {
       const newText = itemControl.content;
-      if (this.textChange.observers.length > 0) {
+      if (this.textChange.length > 0) {
         this.textChange.emit(newText);
       }
       else {
@@ -287,7 +287,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
 
     if (this.value == null && this.text != null) {
       const newText = this.userCustomText ? this.text : undefined;
-      if (this.textChange.observers.length > 0) {
+      if (this.textChange.length > 0) {
         this.textChange.emit(newText);
       }
       else {
@@ -362,7 +362,7 @@ export class SdComboboxControl implements OnInit, OnDestroy, AfterContentChecked
         if (selectedItemControl) {
           const text = selectedItemControl.content;
           if (text !== this.text) {
-            if (this.textChange.observers.length > 0) {
+            if (this.textChange.length > 0) {
               this.textChange.emit(text);
             }
             else {

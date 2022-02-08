@@ -280,7 +280,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
   }
 
   public onValueChange(value: any | any[]): void {
-    if (this.valueChange.observers.length > 0) {
+    if (this.valueChange.length > 0) {
       this.valueChange.emit(value);
     }
     else {
@@ -299,7 +299,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
       if (result) {
         const newValue = this.selectMode === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
 
-        if (this.valueChange.observers.length > 0) {
+        if (this.valueChange.length > 0) {
           this.valueChange.emit(newValue);
         }
         else {

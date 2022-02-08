@@ -223,7 +223,7 @@ export class SdContentEditorControl implements OnChanges {
     }
 
     if (this.value !== value) {
-      if (this.valueChange.observers.length > 0) {
+      if (this.valueChange.length > 0) {
         this.valueChange.emit(value);
       }
       else {

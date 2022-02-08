@@ -241,7 +241,7 @@ export class SdCheckboxControl {
   public onClick(): void {
     if (this.disabled) return;
 
-    if (this.valueChange.observers.length > 0) {
+    if (this.valueChange.length > 0) {
       this.valueChange.emit(!this.value);
     }
     else {
@@ -253,7 +253,7 @@ export class SdCheckboxControl {
     if (this.disabled) return;
 
     if (event.key === " ") {
-      if (this.valueChange.observers.length > 0) {
+      if (this.valueChange.length > 0) {
         this.valueChange.emit(!this.value);
       }
       else {
