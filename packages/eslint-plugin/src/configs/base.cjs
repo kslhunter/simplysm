@@ -19,6 +19,6 @@ module.exports = {
     "no-unused-expressions": ["error"],
     "no-unused-vars": ["error"],
     "no-undef": ["error"],
-    "comma-dangle": ["error"]
+    // "comma-dangle": ["error"]
   }
 };

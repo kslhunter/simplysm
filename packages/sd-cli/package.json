@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "7.0.47",
+  "version": "7.0.48",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": {
@@ -55,7 +55,7 @@
     "@types/connect": "^3.4.35"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "7.0.47",
-    "@simplysm/sd-service": "7.0.47"
+    "@simplysm/sd-core": "7.0.48",
+    "@simplysm/sd-service": "7.0.48"
   }
 }

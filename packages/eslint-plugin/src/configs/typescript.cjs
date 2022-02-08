@@ -59,6 +59,6 @@ module.exports = {
     "@typescript-eslint/explicit-module-boundary-types": ["error", { allowArgumentsExplicitlyTypedAsAny: true }],
     "@typescript-eslint/return-await": ["error", "always"],
     "@typescript-eslint/no-floating-promises": ["error"],
-    "@typescript-eslint/comma-dangle": ["error"]
+    // "@typescript-eslint/comma-dangle": ["error"]
   }
 };
