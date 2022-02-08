@@ -3,9 +3,7 @@ module.exports = {
     node: true,
     es2020: true
   },
-  plugins:[
-    "import",
-  ],
+  plugins: ["import"],
   rules: {
     // import
     "import/no-extraneous-dependencies": ["error"],

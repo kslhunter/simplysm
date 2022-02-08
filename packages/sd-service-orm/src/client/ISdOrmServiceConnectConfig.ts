@@ -1,4 +1,4 @@
-import { Type } from "@angular/core";
+import { Type } from "@simplysm/sd-core/common";
 
 export interface ISdOrmServiceConnectConfig<T> {
   dbContextType: Type<T>;

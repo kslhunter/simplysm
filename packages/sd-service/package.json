@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service",
-  "version": "7.0.46",
+  "version": "7.0.47",
   "description": "심플리즘 패키지 - 서비스 모듈",
   "author": "김석래",
   "repository": {
@@ -37,7 +37,7 @@
     "@types/mime": "^2.0.3"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "7.0.46",
-    "@simplysm/sd-orm": "7.0.46"
+    "@simplysm/sd-core": "7.0.47",
+    "@simplysm/sd-orm": "7.0.47"
   }
 }
