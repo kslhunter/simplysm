@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular",
-  "version": "7.0.41",
+  "version": "7.0.42",
   "description": "심플리즘 패키지 - Angular 모듈 (browser)",
   "author": "김석래",
   "repository": {
@@ -37,11 +37,11 @@
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/angular-fontawesome": "^0.10.1",
-    "@fortawesome/free-brands-svg-icons": "^5.15.4",
-    "@fortawesome/pro-solid-svg-icons": "^5.15.4",
-    "@fortawesome/pro-regular-svg-icons": "^5.15.4",
-    "@fortawesome/pro-light-svg-icons": "^5.15.4",
-    "@fortawesome/pro-duotone-svg-icons": "^5.15.4",
+    "@fortawesome/free-brands-svg-icons": "^6.0.0",
+    "@fortawesome/pro-solid-svg-icons": "^6.0.0",
+    "@fortawesome/pro-regular-svg-icons": "^6.0.0",
+    "@fortawesome/pro-light-svg-icons": "^6.0.0",
+    "@fortawesome/pro-duotone-svg-icons": "^6.0.0",
     "marked": "^4.0.12"
   },
   "optionalDependencies": {},
@@ -49,8 +49,8 @@
     "@types/marked": "^4.0.2"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "7.0.41",
-    "@simplysm/sd-service": "7.0.41",
+    "@simplysm/sd-core": "7.0.42",
+    "@simplysm/sd-service": "7.0.42",
     "@angular/common": "^13.2.0",
     "@angular/core": "^13.2.0",
     "@angular/router": "^13.2.0"

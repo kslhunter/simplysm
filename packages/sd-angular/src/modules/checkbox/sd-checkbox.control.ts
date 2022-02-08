@@ -9,7 +9,7 @@ import {
 } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import fasCheck from "@fortawesome/pro-solid-svg-icons/faCheck";
+import { faCheck as fasCheck } from "@fortawesome/pro-solid-svg-icons/faCheck";
 import { sdThemes, TSdTheme } from "../../commons";
 
 @Component({
