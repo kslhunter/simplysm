@@ -256,7 +256,7 @@ export class SdCliServerBuilder extends EventEmitter {
       },
       infrastructureLogging: { level: "error" },
       stats: "errors-warnings",
-      externals: extModuleNames,
+      externals: extModuleNames.toObject((item) => item, (item) => "commonjs2 " + item),
       cache: {
         type: "filesystem",
         profile: watch ? undefined : false,

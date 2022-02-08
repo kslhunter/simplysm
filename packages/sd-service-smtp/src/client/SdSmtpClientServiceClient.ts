@@ -1,5 +1,5 @@
-import { SdServiceClient } from "@simplysm/sd-service/client";
 import { ISmtpClientSendByDefaultOption, ISmtpClientSendOption } from "../common";
+import { SdServiceClient } from "@simplysm/sd-service/client";
 
 export class SdSmtpClientServiceClient {
   public constructor(private readonly _client: SdServiceClient) {

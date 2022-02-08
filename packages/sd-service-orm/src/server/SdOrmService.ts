@@ -1,4 +1,3 @@
-import { Logger } from "@simplysm/sd-core/node";
 import { DbConnectionFactory, IDbConnection } from "@simplysm/sd-orm/node";
 import {
   IDbConnectionConfig,
@@ -11,6 +10,7 @@ import {
 } from "@simplysm/sd-orm/common";
 import { SdServiceBase, SdServiceServerConfigUtil } from "@simplysm/sd-service/server";
 import { TDbConnOptions } from "../common";
+import { Logger } from "@simplysm/sd-core/node";
 
 export class SdOrmService extends SdServiceBase {
   private readonly _logger = Logger.get(["simplysm", "sd-service-orm", this.constructor.name]);
