@@ -1,9 +1,9 @@
-import { ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
+import { Injectable, Injector, Type, ViewContainerRef } from "@angular/core";
 import { SdRootRootProvider } from "../../root-providers/root";
 
 @Injectable({ providedIn: null })
 export class SdPrintProvider {
-  public constructor(private readonly _cfr: ComponentFactoryResolver,
+  public constructor(private readonly _vcr: ViewContainerRef,
                      private readonly _injector: Injector,
                      private readonly _root: SdRootRootProvider) {
   }
@@ -13,7 +13,7 @@ export class SdPrintProvider {
                              options?: { margin?: string; size?: string }): Promise<void> {
     await new Promise<void>(async (resolve, reject) => {
       try {
-        const compRef = this._cfr.resolveComponentFactory(printType).create(this._injector);
+        const compRef = this._vcr.createComponent(printType, { injector: this._injector });
         const compEl = compRef.location.nativeElement;
         compEl.classList.add("_sd-print-template");
         document.body.appendChild(compEl);

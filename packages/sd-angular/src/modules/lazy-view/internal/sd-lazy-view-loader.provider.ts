@@ -1,4 +1,4 @@
-import { Injectable, NgModuleFactory, NgModuleRef, Type } from "@angular/core";
+import { Injectable, NgModuleRef, Type } from "@angular/core";
 import { LoadChildrenCallback } from "@angular/router";
 import { StringUtil } from "@simplysm/sd-core/common";
 import { LazyComponent } from "./sd-lazy-view-loader.module";
@@ -45,7 +45,7 @@ export class SdLazyViewLoaderProvider {
 }
 
 export interface ILazyComponent {
-  moduleFactory: NgModuleFactory<any>;
+  moduleFactory: any;
   moduleRef: NgModuleRef<any>;
   component: Type<any>;
 }

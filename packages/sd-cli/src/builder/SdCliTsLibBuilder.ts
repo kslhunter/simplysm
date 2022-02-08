@@ -78,15 +78,20 @@ export class SdCliTsLibBuilder extends EventEmitter {
         this._fileCache.delete(PathUtil.posix(changeFilePath));
       }
 
+      const watchBuildResults: ISdCliPackageBuildResult[] = [];
+
       // 빌드
       const watchBuildPack = this._createSdBuildPack(this._parsedTsconfig);
+      watchBuildResults.push(...await this._runBuilderAsync(watchBuildPack.builder, watchBuildPack.ngCompiler));
 
       // 린트
-      const watchBuildResults = await this._runBuilderAsync(watchBuildPack.builder, watchBuildPack.ngCompiler);
-      watchBuildResults.push(...await this._linter.lintAsync([
+      const lintFilePaths = [
         ...watchBuildPack.affectedSourceFiles.map((item) => item.fileName),
-        ...changeFilePaths
-      ], watchBuildPack.program));
+        ...changeInfos.filter((item) => ["add", "change"].includes(item.event)).map((item) => item.path)
+      ];
+      if (lintFilePaths.length > 0) {
+        watchBuildResults.push(...await this._linter.lintAsync(lintFilePaths, watchBuildPack.program));
+      }
 
       const watchRelatedPaths = await this.getAllRelatedPathsAsync();
       watcher.add(watchRelatedPaths);

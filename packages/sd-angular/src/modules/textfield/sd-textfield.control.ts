@@ -433,9 +433,9 @@ export class SdTextfieldControl implements DoCheck {
     }
     if (this.type === "brn" && typeof this.value === "string") {
       const str = this.value.replace(/[^0-9]/g, "");
-      const first = str.substr(0, 3);
-      const second = str.substr(3, 2);
-      const third = str.substr(5, 5);
+      const first = str.substring(0, 3);
+      const second = str.substring(3, 5);
+      const third = str.substring(5, 10);
       return first
         + (
           StringUtil.isNullOrEmpty(second) ? "" : "-" + second

@@ -69,7 +69,6 @@ export class SdCliWorkspace {
     this._logger.debug("빌드를 시작합니다...");
     const pkgNames = pkgs.map((item) => item.name);
     const buildCompletedPackageNames: string[] = [];
-    console.log(pkgs.length);
     await pkgs.parallelAsync(async (pkg) => {
       await Wait.until(() => !pkg.allDependencies.some((dep) => pkgNames.includes(dep) && !buildCompletedPackageNames.includes(dep)));
       if (pkg.config.type === "client") {

@@ -2,15 +2,23 @@ module.exports = {
   parser: "@typescript-eslint/parser",
   plugins: [
     "@typescript-eslint",
+    "deprecation",
     "@simplysm"
   ],
   // extends: [
   //   "plugin:@typescript-eslint/all"
   // ],
   rules: {
+    // 기본
+    "no-console": ["warn"],
+    "no-warning-comments": ["warn"],
+
+    // Deprecation
+    "deprecation/deprecation": ["warn"],
+    
     // 심플리즘
-    "@simplysm/ts-no-throw-not-implement-error": "warn",
-    "@simplysm/ts-no-self-entry-import": "error",
+    "@simplysm/ts-no-throw-not-implement-error": ["warn"],
+    "@simplysm/ts-no-self-entry-import": ["error"],
 
     // 타입스크립트
     "@typescript-eslint/explicit-member-accessibility": ["error"],

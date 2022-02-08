@@ -24,18 +24,18 @@ export class DateTimeFormatUtil {
 
     const weekString
       = week === 0 ? "일"
-        : week === 1 ? "월"
-          : week === 2 ? "화"
-            : week === 3 ? "수"
-              : week === 4 ? "목"
-                : week === 5 ? "금"
-                  : week === 6 ? "토"
-                    : undefined;
+      : week === 1 ? "월"
+        : week === 2 ? "화"
+          : week === 3 ? "수"
+            : week === 4 ? "목"
+              : week === 5 ? "금"
+                : week === 6 ? "토"
+                  : undefined;
 
     let result = format;
     if (year !== undefined) {
       result = result.replace(/yyyy/g, year.toString());
-      result = result.replace(/yy/g, year.toString().substr(2, 2));
+      result = result.replace(/yy/g, year.toString().substring(2, 4));
     }
 
     if (month !== undefined) {
@@ -74,8 +74,8 @@ export class DateTimeFormatUtil {
 
     if (millisecond !== undefined) {
       result = result.replace(/fff/g, millisecond.toString().padStart(3, "0"));
-      result = result.replace(/ff/g, millisecond.toString().padStart(3, "0").substr(0, 2));
-      result = result.replace(/f/g, millisecond.toString().padStart(3, "0").substr(0, 1));
+      result = result.replace(/ff/g, millisecond.toString().padStart(3, "0").substring(0, 2));
+      result = result.replace(/f/g, millisecond.toString().padStart(3, "0").substring(0, 1));
     }
 
     if (offsetHour !== undefined && offsetMinute !== undefined) {

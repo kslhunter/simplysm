@@ -23,7 +23,7 @@ import {
 import { SdSheetColumnControl } from "./sd-sheet-column.control";
 import { ObjectUtil, StringUtil } from "@simplysm/sd-core/common";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import { SdModalService } from "../modal";
+import { SdModalProvider } from "../modal";
 import { SdSystemConfigRootProvider } from "../../root-providers/system-config";
 import { ISdResizeEvent } from "@simplysm/sd-core/browser";
 import { SdSheetConfigModal } from "./sd-sheet-config.modal";
@@ -1071,7 +1071,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
                      private readonly _zone: NgZone,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _iterableDiffers: IterableDiffers,
-                     private readonly _modal: SdModalService,
+                     private readonly _modal: SdModalProvider,
                      private readonly _systemConfig: SdSystemConfigRootProvider) {
     this._el = this._elRef.nativeElement;
 

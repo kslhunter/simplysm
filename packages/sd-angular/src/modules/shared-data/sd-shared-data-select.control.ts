@@ -14,7 +14,7 @@ import {
   Type
 } from "@angular/core";
 import { ObjectUtil } from "@simplysm/sd-core/common";
-import { SdModalBase, SdModalService } from "../modal";
+import { SdModalBase, SdModalProvider } from "../modal";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { ISharedDataBase, SdSharedDataProvider } from "./sd-shared-data.provider";
 
@@ -222,7 +222,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
   public constructor(private readonly _sharedData: SdSharedDataProvider,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _iterableDiffers: IterableDiffers,
-                     private readonly _modal: SdModalService) {
+                     private readonly _modal: SdModalProvider) {
     this._itemsIterableDiffer = this._iterableDiffers.find(this.items).create((i, item) => this.trackByFn(i, item));
   }
 

@@ -44,12 +44,12 @@ export class DateTime {
     const match2 = (/^[0-9]{14}$/).exec(str);
     if (match2 != null) {
       return new DateTime(
-        Number(str.substr(0, 4)),
-        Number(str.substr(4, 2)),
-        Number(str.substr(6, 2)),
-        Number(str.substr(8, 2)),
-        Number(str.substr(10, 2)),
-        Number(str.substr(12, 2))
+        Number(str.substring(0, 4)),
+        Number(str.substring(4, 6)),
+        Number(str.substring(6, 8)),
+        Number(str.substring(8, 10)),
+        Number(str.substring(10, 12)),
+        Number(str.substring(12, 14))
       );
     }
 

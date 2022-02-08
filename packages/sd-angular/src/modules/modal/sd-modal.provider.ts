@@ -1,10 +1,10 @@
-import { ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
+import { Injectable, Injector, Type, ViewContainerRef } from "@angular/core";
 import { Wait } from "@simplysm/sd-core/common";
 import { SdRootRootProvider } from "../../root-providers/root";
 import { SdModalControl } from "./sd-modal.control";
 
 @Injectable({ providedIn: null })
-export class SdModalService {
+export class SdModalProvider {
   public get modalCount(): number {
     this._root.data["modal"] = this._root.data["modal"] ?? {};
     this._root.data["modal"].modalCount = this._root.data["modal"].modalCount ?? 0;
@@ -16,7 +16,7 @@ export class SdModalService {
     this._root.data["modal"].modalCount = value;
   }
 
-  public constructor(private readonly _cfr: ComponentFactoryResolver,
+  public constructor(private readonly _vcr: ViewContainerRef,
                      private readonly _injector: Injector,
                      private readonly _root: SdRootRootProvider) {
   }
@@ -36,11 +36,11 @@ export class SdModalService {
                                                           }): Promise<T["__tOutput__"] | undefined> {
     return await new Promise<T["__tOutput__"] | undefined>(async (resolve, reject) => {
       try {
-        const userModalRef = this._cfr.resolveComponentFactory(modalType).create(this._injector);
-        const modalEntryRef = this._cfr.resolveComponentFactory(SdModalControl).create(
-          this._injector,
-          [[userModalRef.location.nativeElement]]
-        );
+        const userModalRef = this._vcr.createComponent(modalType, { injector: this._injector });
+        const modalEntryRef = this._vcr.createComponent(SdModalControl, {
+          injector: this._injector,
+          projectableNodes: [[userModalRef.location.nativeElement]]
+        });
 
         const modalEntryEl = modalEntryRef.location.nativeElement as HTMLElement;
 

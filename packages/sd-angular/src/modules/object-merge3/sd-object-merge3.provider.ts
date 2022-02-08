@@ -1,12 +1,12 @@
 import { Injectable } from "@angular/core";
 import { ObjectUtil } from "@simplysm/sd-core/common";
-import { SdModalService } from "../modal";
+import { SdModalProvider } from "../modal";
 import { SdToastProvider } from "../toast";
 import { SdObjectMerge3Modal } from "./sd-object-merge3.modal";
 
 @Injectable({ providedIn: null })
 export class SdObjectMerge3Provider {
-  public constructor(private readonly _modal: SdModalService,
+  public constructor(private readonly _modal: SdModalProvider,
                      private readonly _toast: SdToastProvider) {
   }
 

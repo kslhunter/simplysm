@@ -565,10 +565,10 @@ export class Queryable<D extends DbContext, T> {
           const splitSearchTextWhereArr: TQueryBuilderValue[] = [];
           for (const text of splitSearchText) {
             if (text.includes("*")) {
-              splitSearchTextWhereArr.push(this.db.qh.notLike(field as any, text.substr(2).replace(/\*/g, "%")));
+              splitSearchTextWhereArr.push(this.db.qh.notLike(field as any, text.substring(2).replace(/\*/g, "%")));
             }
             else {
-              splitSearchTextWhereArr.push(this.db.qh.notIncludes(field as any, text.substr(2)));
+              splitSearchTextWhereArr.push(this.db.qh.notIncludes(field as any, text.substring(2)));
             }
           }
           fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));

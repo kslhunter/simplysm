@@ -5,13 +5,13 @@ import { SdDockModule } from "../dock";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import { SdPaneModule } from "../pane";
 import { SdModalControl } from "./sd-modal.control";
-import { SdModalService } from "./sd-modal.service";
+import { SdModalProvider } from "./sd-modal.provider";
 
 @NgModule({
   imports: [CommonModule, SdAnchorModule, SdDockModule, FontAwesomeModule, SdPaneModule],
   declarations: [SdModalControl],
   exports: [SdModalControl],
-  providers: [SdModalService]
+  providers: [SdModalProvider]
 })
 export class SdModalModule {
 }

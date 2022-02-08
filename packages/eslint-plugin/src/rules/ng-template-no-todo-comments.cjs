@@ -2,7 +2,7 @@ module.exports = {
   meta: {
     type: "suggestion",
     docs: {
-      description: "'TODO' 주석 경고"
+      description: "HTML의 'TODO' 주석 경고"
     },
 
     schema: []

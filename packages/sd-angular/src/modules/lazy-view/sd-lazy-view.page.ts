@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  NgModuleFactory,
-  OnInit,
-  Type
-} from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, Type } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { SdToastProvider } from "../toast";
 import { SdLazyViewLoaderProvider } from "./internal/sd-lazy-view-loader.provider";
@@ -27,7 +19,7 @@ import { SdLazyViewLoaderProvider } from "./internal/sd-lazy-view-loader.provide
     }
   `]
 })
-export class SdLazyViewControl implements OnInit {
+export class SdLazyViewPage implements OnInit {
   public busyCount = 0;
 
   @Input()
@@ -35,7 +27,7 @@ export class SdLazyViewControl implements OnInit {
   public code!: string;
 
   public componentType?: Type<any>;
-  public moduleFactory?: NgModuleFactory<any>;
+  public moduleFactory?: any;
 
   public constructor(private readonly _toast: SdToastProvider,
                      private readonly _cdr: ChangeDetectorRef,

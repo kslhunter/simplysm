@@ -277,7 +277,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     await new Promise<void>((resolve, reject) => {
       const bulkLoad = this._conn?.newBulkLoad(tableName, (err: Error | null) => {
         if (err != null) {
-          reject(new Error(`[${err["code"] as string}] ${err.message}\n${JsonConvert.stringify(tediousColumnDefs)}\n-- query\n\n${JsonConvert.stringify(records).substr(0, 10000)}...\n--`));
+          reject(new Error(`[${err["code"] as string}] ${err.message}\n${JsonConvert.stringify(tediousColumnDefs)}\n-- query\n\n${JsonConvert.stringify(records).substring(0, 10000)}...\n--`));
           return;
         }
         resolve();

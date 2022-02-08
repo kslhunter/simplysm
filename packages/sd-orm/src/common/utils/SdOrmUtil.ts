@@ -227,7 +227,6 @@ export class SdOrmUtil {
             else {
               if (joinInfo.isSingle) {
                 if (joinValue.length > 1) {
-                  console.log(joinInfo, joinValue);
                   throw new Error("중복");
                 }
                 else {
