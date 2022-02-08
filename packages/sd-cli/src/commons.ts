@@ -45,7 +45,9 @@ export type TSdCliPackageConfig = ISdCliLibPackageConfig | ISdCliServerPackageCo
 
 export interface ISdCliLibPackageConfig {
   type: "library";
-  polyfills?: string[];
+  autoIndex?: {
+    polyfills?: string[];
+  };
   publish?: "npm";
 }
 

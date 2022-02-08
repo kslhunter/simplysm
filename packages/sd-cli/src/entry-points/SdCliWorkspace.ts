@@ -38,8 +38,8 @@ export class SdCliWorkspace {
 
     this._logger.debug("패키지 인덱스 생성기 실행...");
     await pkgs.parallelAsync(async (pkg) => {
-      if (pkg.config.type === "library") {
-        await new SdCliIndexFileGenerator(pkg.rootPath, pkg.config).watchAsync();
+      if (pkg.config.type === "library" && pkg.config.autoIndex) {
+        await new SdCliIndexFileGenerator(pkg.rootPath, pkg.config.autoIndex).watchAsync();
       }
     });
 
@@ -133,8 +133,8 @@ export class SdCliWorkspace {
 
     this._logger.debug("패키지 인덱스 생성기 실행...");
     await pkgs.parallelAsync(async (pkg) => {
-      if (pkg.config.type === "library") {
-        await new SdCliIndexFileGenerator(pkg.rootPath, pkg.config).runAsync();
+      if (pkg.config.type === "library" && pkg.config.autoIndex) {
+        await new SdCliIndexFileGenerator(pkg.rootPath, pkg.config.autoIndex).runAsync();
       }
     });
 
