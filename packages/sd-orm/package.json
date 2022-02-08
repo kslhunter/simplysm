@@ -15,8 +15,11 @@
   },
   "typesVersions": {
     "*": {
-      "*": [
-        "./dist/*/index.d.ts"
+      "common": [
+        "./dist/common/index.d.ts"
+      ],
+      "node": [
+        "./dist/node/index.d.ts"
       ]
     }
   },
