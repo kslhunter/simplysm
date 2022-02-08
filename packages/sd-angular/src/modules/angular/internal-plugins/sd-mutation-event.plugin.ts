@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { EventManager } from "@angular/platform-browser";
-import { NeverEntryError } from "@simplysm/sd-core/common";
+import { NeverEntryError } from "@simplysm/sd-core-common";
 
 @Injectable({ providedIn: null })
 export class SdMutationEventPlugin {

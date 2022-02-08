@@ -21,11 +21,11 @@ import {
   TemplateRef
 } from "@angular/core";
 import { SdSheetColumnControl } from "./sd-sheet-column.control";
-import { ObjectUtil, StringUtil } from "@simplysm/sd-core/common";
+import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { SdModalProvider } from "../modal";
 import { SdSystemConfigRootProvider } from "../../root-providers/system-config";
-import { ISdResizeEvent } from "@simplysm/sd-core/browser";
+import { ISdResizeEvent } from "@simplysm/sd-core-browser";
 import { SdSheetConfigModal } from "./sd-sheet-config.modal";
 import fasBars from "@fortawesome/pro-solid-svg-icons/faBars";
 import fasTable from "@fortawesome/pro-solid-svg-icons/faTable";

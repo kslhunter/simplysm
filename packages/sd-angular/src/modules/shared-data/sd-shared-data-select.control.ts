@@ -13,7 +13,7 @@ import {
   TemplateRef,
   Type
 } from "@angular/core";
-import { ObjectUtil } from "@simplysm/sd-core/common";
+import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdModalBase, SdModalProvider } from "../modal";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { ISharedDataBase, SdSharedDataProvider } from "./sd-shared-data.provider";

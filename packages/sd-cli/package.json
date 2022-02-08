@@ -12,9 +12,6 @@
   "bin": {
     "sd-cli": "./dist/bin/sd-cli.mjs"
   },
-  "exports": {
-    "./ts-node-esm-paths": "./lib/ts-node-esm-paths.mjs"
-  },
   "type": "module",
   "engines": {
     "node": "^16"
@@ -55,7 +52,9 @@
     "@types/connect": "^3.4.35"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "7.0.50",
-    "@simplysm/sd-service": "7.0.50"
+    "@simplysm/sd-core-common": "7.0.50",
+    "@simplysm/sd-core-node": "7.0.50",
+    "@simplysm/sd-service-common": "7.0.50",
+    "@simplysm/sd-service-server": "7.0.50"
   }
 }

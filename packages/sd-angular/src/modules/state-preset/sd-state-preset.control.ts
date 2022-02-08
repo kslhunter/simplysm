@@ -11,7 +11,7 @@ import {
   SimpleChanges
 } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import { ObjectUtil } from "@simplysm/sd-core/common";
+import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdSystemConfigRootProvider } from "../../root-providers/system-config";
 import { SdToastProvider } from "../toast";
 import fasStar from "@fortawesome/pro-solid-svg-icons/faStar";

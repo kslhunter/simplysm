@@ -16,7 +16,7 @@ import {
   ViewChild
 } from "@angular/core";
 import { SdComboboxItemControl } from "./sd-combobox-item.control";
-import { NumberUtil } from "@simplysm/sd-core/common";
+import { NumberUtil } from "@simplysm/sd-core-common";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import fasCaretDown from "@fortawesome/pro-solid-svg-icons/faCaretDown";
 

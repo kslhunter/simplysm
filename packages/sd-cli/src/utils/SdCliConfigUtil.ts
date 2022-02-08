@@ -1,6 +1,6 @@
 import { ISdCliConfig, TSdCliPackageConfig } from "../commons";
-import { FsUtil } from "@simplysm/sd-core/node";
-import { ObjectUtil } from "@simplysm/sd-core/common";
+import { FsUtil } from "@simplysm/sd-core-node";
+import { ObjectUtil } from "@simplysm/sd-core-common";
 import path from "path";
 
 export class SdCliConfigUtil {

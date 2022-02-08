@@ -1,5 +1,5 @@
 import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
-import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core/node";
+import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
 import * as path from "path";
 
 export class SdCliLocalUpdate {

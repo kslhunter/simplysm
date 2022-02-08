@@ -8,7 +8,7 @@ import {
   TemplateRef
 } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import { Uuid } from "@simplysm/sd-core/common";
+import { Uuid } from "@simplysm/sd-core-common";
 
 @Component({
   selector: "sd-sheet-column",

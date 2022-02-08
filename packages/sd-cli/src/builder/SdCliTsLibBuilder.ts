@@ -1,7 +1,7 @@
 import { INpmConfig, ISdCliPackageBuildResult } from "../commons";
 import { EventEmitter } from "events";
 import ts from "typescript";
-import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core/node";
+import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
 import * as path from "path";
 import { createHash } from "crypto";
 import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";

@@ -10,10 +10,8 @@
   },
   "license": "MIT",
   "type": "module",
+  "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": "./dist/index.mjs"
-  },
   "sideEffects": false,
   "engines": {
     "node": "^16"
@@ -26,6 +24,5 @@
     "@types/ssh2-sftp-client": "^7.0.0"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "7.0.50"
   }
 }

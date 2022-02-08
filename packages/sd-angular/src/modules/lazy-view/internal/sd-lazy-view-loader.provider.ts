@@ -1,6 +1,6 @@
 import { Injectable, NgModuleRef, Type } from "@angular/core";
 import { LoadChildrenCallback } from "@angular/router";
-import { StringUtil } from "@simplysm/sd-core/common";
+import { StringUtil } from "@simplysm/sd-core-common";
 import { LazyComponent } from "./sd-lazy-view-loader.module";
 
 @Injectable({ providedIn: "root" })

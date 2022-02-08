@@ -25,11 +25,10 @@
     "update": "npm run _sd-cli_ -- --debug update",
     "postinstall": "npm run _sd-cli_ -- --debug prepare",
     "---": "",
-    "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --experimental-specifier-resolution=node --experimental-import-meta-resolve --loader @simplysm/sd-cli/ts-node-esm-paths packages/sd-cli/src/bin/sd-cli.ts",
+    "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --experimental-specifier-resolution=node --experimental-import-meta-resolve --loader ./packages/sd-cli/lib/ts-node-esm-paths packages/sd-cli/src/bin/sd-cli.ts",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.cjs|*.mjs)\""
   },
   "devDependencies": {
-    "@simplysm/eslint-plugin": "7.0.50",
     "@types/node": "^17.0.12",
     "cross-env": "^7.0.3",
     "typescript": "~4.5.5",

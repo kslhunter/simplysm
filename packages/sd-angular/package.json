@@ -10,26 +10,8 @@
   },
   "license": "MIT",
   "type": "module",
-  "exports": {
-    ".": "./dist/index.mjs",
-    "./modules/*": "./dist/modules/*/index.mjs",
-    "./services/*": "./dist/modules/*/index.mjs",
-    "./scss/*": "./scss/*"
-  },
-  "types": "./index.d.ts",
-  "typesVersions": {
-    "*": {
-      "index.d.ts": [
-        "./dist/index.d.ts"
-      ],
-      "modules/*": [
-        "./dist/modules/*/index.d.ts"
-      ],
-      "root-providers/*": [
-        "./dist/root-providers/*/index.d.ts"
-      ]
-    }
-  },
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
   "sideEffects": false,
   "engines": {
     "node": "^16"
@@ -49,8 +31,10 @@
     "@types/marked": "^4.0.2"
   },
   "peerDependencies": {
-    "@simplysm/sd-core": "7.0.50",
-    "@simplysm/sd-service": "7.0.50",
+    "@simplysm/sd-core-common": "7.0.50",
+    "@simplysm/sd-core-browser": "7.0.50",
+    "@simplysm/sd-service-common": "7.0.50",
+    "@simplysm/sd-service-client": "7.0.50",
     "@angular/common": "^13.2.0",
     "@angular/core": "^13.2.0",
     "@angular/router": "^13.2.0",

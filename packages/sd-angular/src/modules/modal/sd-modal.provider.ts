@@ -1,5 +1,5 @@
 import { Injectable, Injector, Type, ViewContainerRef } from "@angular/core";
-import { Wait } from "@simplysm/sd-core/common";
+import { Wait } from "@simplysm/sd-core-common";
 import { SdRootRootProvider } from "../../root-providers/root";
 import { SdModalControl } from "./sd-modal.control";
 

@@ -14,7 +14,7 @@ import {
   ViewChild
 } from "@angular/core";
 import { SdSelectItemControl } from "./sd-select-item.control";
-import { ObjectUtil, Uuid } from "@simplysm/sd-core/common";
+import { ObjectUtil, Uuid } from "@simplysm/sd-core-common";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { SdDropdownControl } from "../dropdown";

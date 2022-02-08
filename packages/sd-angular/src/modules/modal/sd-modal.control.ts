@@ -13,7 +13,7 @@ import {
   Output,
   SimpleChanges
 } from "@angular/core";
-import { NeverEntryError } from "@simplysm/sd-core/common";
+import { NeverEntryError } from "@simplysm/sd-core-common";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { SdSystemConfigRootProvider } from "../../root-providers/system-config";
 import fasTimes from "@fortawesome/pro-solid-svg-icons/faTimes";

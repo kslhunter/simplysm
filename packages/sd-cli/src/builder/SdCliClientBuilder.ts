@@ -1,6 +1,6 @@
 import { INpmConfig, ISdCliClientPackageConfig, ISdCliPackageBuildResult } from "../commons";
 import { EventEmitter } from "events";
-import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core/node";
+import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
 import webpack from "webpack";
 import path from "path";
 import ts from "typescript";

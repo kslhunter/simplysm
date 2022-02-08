@@ -1,4 +1,4 @@
-import { JsonConvert } from "@simplysm/sd-core/common";
+import { JsonConvert } from "@simplysm/sd-core-common";
 import { Injectable } from "@angular/core";
 
 @Injectable({ providedIn: "root" })

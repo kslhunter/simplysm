@@ -1,0 +1,30 @@
+{
+  "name": "@simplysm/sd-service-client",
+  "version": "7.0.50",
+  "description": "심플리즘 패키지 - 서비스 모듈 (client)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm7.git",
+    "directory": "packages/sd-service-client"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "engines": {
+    "node": "^16"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.4.1",
+    "jszip": "^3.7.1"
+  },
+  "devDependencies": {
+  },
+  "peerDependencies": {
+    "@simplysm/sd-core-common": "7.0.50",
+    "@simplysm/sd-service-common": "7.0.50",
+    "@simplysm/sd-orm-common": "7.0.50"
+  }
+}

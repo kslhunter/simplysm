@@ -1,4 +1,4 @@
-import "@simplysm/sd-core/browser";
+import "@simplysm/sd-core-browser";
 import { Injectable } from "@angular/core";
 
 @Injectable({ providedIn: "root" })

@@ -1,6 +1,6 @@
 import { INpmConfig, ISdCliPackageBuildResult, ISdCliServerPackageConfig } from "../commons";
 import { EventEmitter } from "events";
-import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core/node";
+import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
 import webpack from "webpack";
 import path from "path";
 import ts from "typescript";
@@ -9,7 +9,7 @@ import { ErrorInfo } from "ts-loader/dist/interfaces";
 import os from "os";
 import { ESLint } from "eslint";
 import TerserPlugin from "terser-webpack-plugin";
-import { ObjectUtil, StringUtil } from "@simplysm/sd-core/common";
+import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import { LicenseWebpackPlugin } from "license-webpack-plugin";

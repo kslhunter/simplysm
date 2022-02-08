@@ -1,5 +1,5 @@
 import { AfterContentInit, ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input } from "@angular/core";
-import { ISdResizeEvent } from "@simplysm/sd-core/browser";
+import { ISdResizeEvent } from "@simplysm/sd-core-browser";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 
 @Component({

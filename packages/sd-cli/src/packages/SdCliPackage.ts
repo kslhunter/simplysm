@@ -1,8 +1,8 @@
 import { INpmConfig, ISdCliPackageBuildResult, ITsconfig, TSdCliPackageConfig } from "../commons";
 import path from "path";
-import { FsUtil, SdProcess } from "@simplysm/sd-core/node";
+import { FsUtil, SdProcess } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
-import { ObjectUtil } from "@simplysm/sd-core/common";
+import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdCliTsLibBuilder } from "../builder/SdCliTsLibBuilder";
 import { SdCliJsLibBuilder } from "../builder/SdCliJsLibBuilder";
 import { SdCliServerBuilder } from "../builder/SdCliServerBuilder";

@@ -1,13 +1,13 @@
-import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core/node";
+import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
 import path from "path";
 import { INpmConfig, ISdCliConfig, ISdCliPackageBuildResult } from "../commons";
 import { SdCliPackage } from "../packages/SdCliPackage";
-import { Uuid, Wait } from "@simplysm/sd-core/common";
+import { Uuid, Wait } from "@simplysm/sd-core-common";
 import os from "os";
 import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import semver from "semver/preload";
 import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
-import { SdServiceServer } from "@simplysm/sd-service/server";
+import { SdServiceServer } from "@simplysm/sd-service-server";
 import { SdCliNpm } from "./SdCliNpm";
 import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
 import { NextHandleFunction } from "connect";

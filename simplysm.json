@@ -12,27 +12,35 @@
       "type": "library",
       "publish": "npm"
     },
-    "sd-core": {
+    "sd-core-browser": {
       "type": "library",
       "publish": "npm"
     },
-    "sd-orm": {
+    "sd-core-common": {
       "type": "library",
       "publish": "npm"
     },
-    "sd-service": {
+    "sd-core-node": {
       "type": "library",
       "publish": "npm"
     },
-    "sd-service-orm": {
+    "sd-orm-common": {
       "type": "library",
       "publish": "npm"
     },
-    "sd-service-smtp": {
+    "sd-orm-node": {
       "type": "library",
       "publish": "npm"
     },
-    "sd-service-auto-update": {
+    "sd-service-client": {
+      "type": "library",
+      "publish": "npm"
+    },
+    "sd-service-common": {
+      "type": "library",
+      "publish": "npm"
+    },
+    "sd-service-server": {
       "type": "library",
       "publish": "npm"
     },

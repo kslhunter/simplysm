@@ -1,0 +1,26 @@
+{
+  "name": "@simplysm/sd-core-node",
+  "version": "7.0.50",
+  "description": "심플리즘 패키지 - 코어 모듈 (node)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm7.git",
+    "directory": "packages/sd-core-node"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": "^16"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "glob": "^7.2.0"
+  },
+  "devDependencies": {
+    "@simplysm/sd-core-common": "7.0.50"
+  },
+  "peerDependencies": {}
+}

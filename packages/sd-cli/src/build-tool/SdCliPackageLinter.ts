@@ -1,6 +1,6 @@
 import { ISdCliPackageBuildResult } from "../commons";
 import ts from "typescript";
-import { FsUtil } from "@simplysm/sd-core/node";
+import { FsUtil } from "@simplysm/sd-core-node";
 import path from "path";
 import { ESLint } from "eslint";
 

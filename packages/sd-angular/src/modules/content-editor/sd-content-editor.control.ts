@@ -10,7 +10,7 @@ import {
   SimpleChanges,
   ViewChild
 } from "@angular/core";
-import { DateOnly, DateTime, Time } from "@simplysm/sd-core/common";
+import { DateOnly, DateTime, Time } from "@simplysm/sd-core-common";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 
 @Component({

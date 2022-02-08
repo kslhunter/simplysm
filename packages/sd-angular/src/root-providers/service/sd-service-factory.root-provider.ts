@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
-import { ObjectUtil } from "@simplysm/sd-core/common";
-import { ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-service/client";
+import { ObjectUtil } from "@simplysm/sd-core-common";
+import { ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-service-client";
 
 @Injectable({ providedIn: "root" })
 export class SdServiceFactoryRootProvider {

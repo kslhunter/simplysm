@@ -12,6 +12,11 @@ module.exports = {
   //   "plugin:import/recommended",
   //   "plugin:import/typescript"
   // ],
+  settings: {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    }
+  },
   rules: {
     // 기본
     "no-console": ["warn"],

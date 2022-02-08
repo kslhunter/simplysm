@@ -1,4 +1,4 @@
-import { PropertyValidate, TValidateDef } from "@simplysm/sd-core/common";
+import { PropertyValidate, TValidateDef } from "@simplysm/sd-core-common";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SdInputValidate(def: TValidateDef<any>): (target: any, propertyName: string, inputDescriptor?: PropertyDescriptor) => void {

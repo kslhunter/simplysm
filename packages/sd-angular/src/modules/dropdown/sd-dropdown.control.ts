@@ -9,7 +9,7 @@ import {
   OnInit,
   Output
 } from "@angular/core";
-import { NeverEntryError } from "@simplysm/sd-core/common";
+import { NeverEntryError } from "@simplysm/sd-core-common";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 
 @Component({
