@@ -13,9 +13,10 @@
   "exports": {
     "./*": "./dist/*/index.mjs"
   },
+  "types": "index.d.ts",
   "typesVersions": {
     "*": {
-      "*": [
+      "index.d.ts": [
         "./dist/*/index.d.ts"
       ]
     }
