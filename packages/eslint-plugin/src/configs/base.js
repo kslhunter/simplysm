@@ -49,7 +49,10 @@ module.exports = {
 
     //-- etc
     "linebreak-style": ["error", "windows"],
-    "indent": ["error", 2, { FunctionExpression: { parameters: "first" }, SwitchCase: 1 }],
+    "indent": ["error", 2, {
+      FunctionExpression: { parameters: "first" },
+      SwitchCase: 1
+    }],
     "sort-keys": "off",
     "no-magic-numbers": "off",
     "object-curly-spacing": ["error", "always"],
@@ -82,7 +85,10 @@ module.exports = {
     "no-continue": "off",
     "consistent-this": "off",
     "no-constant-condition": ["error", { checkLoops: false }],
-    "new-cap": ["error", { capIsNew: false, newIsCap: false }],
+    "new-cap": ["error", {
+      capIsNew: false,
+      newIsCap: false
+    }],
     "no-extend-native": "off",
     "no-control-regex": "off",
     "require-atomic-updates": "off",

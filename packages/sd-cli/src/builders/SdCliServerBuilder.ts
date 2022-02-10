@@ -5,7 +5,9 @@ import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
 import { ObjectUtil, StringUtil, Wait } from "@simplysm/sd-core-common";
 import * as webpack from "webpack";
 import * as path from "path";
-import { JavaScriptOptimizerPlugin } from "@angular-devkit/build-angular/src/webpack/plugins/javascript-optimizer-plugin";
+import {
+  JavaScriptOptimizerPlugin
+} from "@angular-devkit/build-angular/src/webpack/plugins/javascript-optimizer-plugin";
 import { DedupeModuleResolvePlugin } from "@angular-devkit/build-angular/src/webpack/plugins";
 import { LicenseWebpackPlugin } from "license-webpack-plugin";
 import { SdWebpackUtil } from "../utils/SdWebpackUtil";

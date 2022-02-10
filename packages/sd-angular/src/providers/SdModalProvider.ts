@@ -12,7 +12,7 @@ export class SdModalProvider {
   }
 
   public set modalCount(value: number) {
-    this._root.data.modal = this._root.data.toast ?? {};
+    this._root.data.modal = this._root.data.modal ?? {};
     this._root.data.modal.modalCount = value;
   }
 
