@@ -2,7 +2,6 @@ import { Type } from "@simplysm/sd-core-common";
 import { DbDefinitionUtil } from "./utils/DbDefinitionUtil";
 import { TSdOrmDataType } from "./SdOrmDataType";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function Table<T>(def: {
   description: string;
   database?: string;
@@ -17,7 +16,6 @@ export function Table<T>(def: {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function Column<T extends object>(columnDef: {
   description: string;
   name?: string;
@@ -44,7 +42,6 @@ export function Column<T extends object>(columnDef: {
 }
 
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ForeignKey<T>(
   columnNames: (keyof T)[],
   targetTypeFwd: () => Type<any>,
@@ -63,7 +60,6 @@ export function ForeignKey<T>(
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function ForeignKeyTarget<T extends object, P>(
   sourceTypeFwd: () => Type<P>,
   foreignKeyPropertyKey: keyof P,
@@ -82,7 +78,6 @@ export function ForeignKeyTarget<T extends object, P>(
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function Index<T extends object>(def?: {
   name?: string;
   order?: number;

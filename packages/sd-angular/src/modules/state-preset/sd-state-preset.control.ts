@@ -14,9 +14,9 @@ import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdSystemConfigRootProvider } from "../../root-providers/sd-system-config.root-provider";
 import { SdToastProvider } from "../toast/sd-toast.provider";
-import fasStar from "@fortawesome/pro-solid-svg-icons/faStar";
-import fasSave from "@fortawesome/pro-solid-svg-icons/faSave";
-import fasTimes from "@fortawesome/pro-solid-svg-icons/faTimes";
+import { faStar as fasStar } from "@fortawesome/pro-solid-svg-icons/faStar";
+import { faSave as fasSave } from "@fortawesome/pro-solid-svg-icons/faSave";
+import { faTimes as fasTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
 
 @Component({
   selector: "sd-state-preset",
@@ -156,7 +156,7 @@ export class SdStatePresetControl implements OnInit, OnChanges {
 
   public onItemClick(preset: ISdStatePresetVM): void {
     if (!ObjectUtil.equal(this.state, preset.state)) {
-      if (this.stateChange.length > 0) {
+      if (this.stateChange.observers.length > 0) {
         this.stateChange.emit(ObjectUtil.clone(preset.state));
       }
       else {

@@ -11,8 +11,7 @@ export class FunctionQueue {
     this._queue.push(fn);
     if (this._isQueueRunning) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    (async () => {
+    void (async () => {
       this._isQueueRunning = true;
       while (true) {
         const runningFn = this._queue.shift();

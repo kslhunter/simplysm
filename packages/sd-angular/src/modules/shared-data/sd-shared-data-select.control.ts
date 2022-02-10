@@ -16,7 +16,7 @@ import {
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { SdModalBase, SdModalProvider } from "../modal/sd-modal.provider";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import { ISharedDataBase, SdSharedDataProvider } from "./sd-shared-data.provider";
+import { ISharedDataBase, SdSharedDataRootProvider } from "../../root-providers/sd-shared-data.root-provider";
 
 @Component({
   selector: "sd-shared-data-select",
@@ -219,7 +219,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
     return this.itemByParentKeyMap?.get(item.__valueKey) ?? [];
   };
 
-  public constructor(private readonly _sharedData: SdSharedDataProvider,
+  public constructor(private readonly _sharedData: SdSharedDataRootProvider,
                      private readonly _cdr: ChangeDetectorRef,
                      private readonly _iterableDiffers: IterableDiffers,
                      private readonly _modal: SdModalProvider) {
@@ -280,7 +280,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
   }
 
   public onValueChange(value: any | any[]): void {
-    if (this.valueChange.length > 0) {
+    if (this.valueChange.observers.length > 0) {
       this.valueChange.emit(value);
     }
     else {
@@ -299,7 +299,7 @@ export class SdSharedDataSelectControl implements OnInit, DoCheck {
       if (result) {
         const newValue = this.selectMode === "multi" ? result.selectedItemKeys : result.selectedItemKeys[0];
 
-        if (this.valueChange.length > 0) {
+        if (this.valueChange.observers.length > 0) {
           this.valueChange.emit(newValue);
         }
         else {

@@ -1,6 +1,5 @@
 const symbol = "sd-type-validate";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function PropertyGetSetDecoratorBase<O extends object, K extends keyof O>(arg: {
   beforeSet?: (target: O, propertyName: K, oldValue: O[K], newValue: O[K]) => (O[K] | undefined);
   afterSet?: (target: O, propertyName: K, oldValue: O[K], newValue: O[K]) => void;

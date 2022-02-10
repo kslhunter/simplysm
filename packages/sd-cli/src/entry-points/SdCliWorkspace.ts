@@ -109,7 +109,7 @@ export class SdCliWorkspace {
 
     this._logger.log(`서버(${pkg.name}) 재시작...`);
     try {
-      const serverInfo = this._serverInfoMap.getOrCreate(pkg.name, { middlewares: [], clientInfos: [] });
+      const serverInfo = this._serverInfoMap.getOrCreate(path.basename(pkg.rootPath), { middlewares: [], clientInfos: [] });
       if (serverInfo.server) {
         await serverInfo.server.closeAsync();
         delete serverInfo.server;

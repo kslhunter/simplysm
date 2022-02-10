@@ -1,6 +1,5 @@
 import { PropertyGetSetDecoratorBase } from "./PropertyGetSetDecoratorBase";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function NotifyPropertyChange(): (target: any, propertyName: string, inputDescriptor?: PropertyDescriptor) => void {
   return PropertyGetSetDecoratorBase({
     afterSet: (target, propertyName, oldValue, newValue) => {

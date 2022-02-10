@@ -16,7 +16,7 @@ import {
 import { NeverEntryError } from "@simplysm/sd-core-common";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { SdSystemConfigRootProvider } from "../../root-providers/sd-system-config.root-provider";
-import fasTimes from "@fortawesome/pro-solid-svg-icons/faTimes";
+import { faTimes as fasTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
 
 @Component({
   selector: "sd-modal",
@@ -460,7 +460,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
       return;
     }
 
-    if (this.openChange.length > 0) {
+    if (this.openChange.observers.length > 0) {
       this.openChange.emit(false);
     }
     else {
@@ -473,7 +473,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
       return;
     }
 
-    if (this.openChange.length > 0) {
+    if (this.openChange.observers.length > 0) {
       this.openChange.emit(false);
     }
     else {
@@ -486,7 +486,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
       return;
     }
 
-    if (this.openChange.length > 0) {
+    if (this.openChange.observers.length > 0) {
       this.openChange.emit(false);
     }
     else {
@@ -505,7 +505,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
         return;
       }
 
-      if (this.openChange.length > 0) {
+      if (this.openChange.observers.length > 0) {
         this.openChange.emit(false);
       }
       else {

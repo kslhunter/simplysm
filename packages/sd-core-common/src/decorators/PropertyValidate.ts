@@ -1,7 +1,6 @@
 import { PropertyGetSetDecoratorBase } from "./PropertyGetSetDecoratorBase";
 import { ObjectUtil, TValidateDef } from "../utils/ObjectUtil";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function PropertyValidate(def: TValidateDef<any>, replacer?: (value: any) => any): (target: any, propertyName: string, inputDescriptor?: PropertyDescriptor) => void {
   return PropertyGetSetDecoratorBase({
     beforeSet: (target, propertyName, prevValue, nextValue) => {

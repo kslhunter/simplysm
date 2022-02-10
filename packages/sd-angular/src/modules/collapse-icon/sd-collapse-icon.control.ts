@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import falChevronDown from "@fortawesome/pro-light-svg-icons/faChevronDown";
+import { faChevronDown as falChevronDown } from "@fortawesome/pro-light-svg-icons/faChevronDown";
 
 @Component({
   selector: "sd-collapse-icon",

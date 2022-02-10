@@ -146,7 +146,7 @@ export class SdListItemControl {
   }
 
   public onContentClick(): void {
-    if (this.openChange.length > 0) {
+    if (this.openChange.observers.length > 0) {
       this.openChange.emit(!this.open);
     }
     else {

@@ -1,43 +1,17 @@
 import { Injectable } from "@angular/core";
 import { NeverEntryError, ObjectUtil, Wait } from "@simplysm/sd-core-common";
-import { SdRootRootProvider } from "../../root-providers/sd-root.root-provider";
-import { SdSharedDataChangeEvent } from "./events";
-import { SdServiceFactoryRootProvider } from "../../root-providers/sd-service-factory.root-provider";
+import { SdServiceFactoryRootProvider } from "./sd-service-factory.root-provider";
+import { SdServiceEventBase } from "@simplysm/sd-service-common";
 
-@Injectable({ providedIn: null })
-export class SdSharedDataProvider {
-  private get _dataInfoMap(): Map<string, ISharedDataInfo<any, any>> {
-    this._root.data["sharedData"] = this._root.data["sharedData"] ?? {};
-    this._root.data["sharedData"].dataInfoMap = this._root.data["sharedData"].dataInfoMap ?? new Map<string, ISharedDataInfo<any, any>>();
-    return this._root.data["sharedData"].dataInfoMap;
-  }
+@Injectable({ providedIn: "root" })
+export class SdSharedDataRootProvider {
+  private readonly _dataInfoMap = new Map<string, ISharedDataInfo<any, any>>();
+  private readonly _dataChangeListenerMap = new Map<string, (() => void)[]>();
+  private readonly _dataMap = new Map<string, any[]>();
+  private readonly _dataMapMap = new Map<string, Map<number | string, any>>();
+  private readonly _isProcessingMap = new Map<string, boolean>();
 
-  private get _dataChangeListenerMap(): Map<string, (() => void)[]> {
-    this._root.data["sharedData"] = this._root.data["sharedData"] ?? {};
-    this._root.data["sharedData"].dataChangeListenerMap = this._root.data["sharedData"].dataChangeListenerMap ?? new Map<string, (() => void)[]>();
-    return this._root.data["sharedData"].dataChangeListenerMap;
-  }
-
-  private get _dataMap(): Map<string, any[]> {
-    this._root.data["sharedData"] = this._root.data["sharedData"] ?? {};
-    this._root.data["sharedData"].dataMap = this._root.data["sharedData"].dataMap ?? new Map<string, any[]>();
-    return this._root.data["sharedData"].dataMap;
-  }
-
-  private get _dataMapMap(): Map<string, Map<number | string, any>> {
-    this._root.data["sharedData"] = this._root.data["sharedData"] ?? {};
-    this._root.data["sharedData"].dataMapMap = this._root.data["sharedData"].dataMapMap ?? new Map<string, Map<number | string, any>>();
-    return this._root.data["sharedData"].dataMapMap;
-  }
-
-  private get _isProcessingMap(): Map<string, boolean> {
-    this._root.data["sharedData"] = this._root.data["sharedData"] ?? {};
-    this._root.data["sharedData"].isProcessingMap = this._root.data["sharedData"].isProcessingMap ?? new Map<string, boolean>();
-    return this._root.data["sharedData"].isProcessingMap;
-  }
-
-  public constructor(private readonly _serviceFactory: SdServiceFactoryRootProvider,
-                     private readonly _root: SdRootRootProvider) {
+  public constructor(private readonly _serviceFactory: SdServiceFactoryRootProvider) {
   }
 
   public async clearAsync(): Promise<void> {
@@ -202,4 +176,7 @@ export interface ISharedDataBase<V extends string | number> {
   __valueKey: V;
   __searchText: string;
   __isHidden: boolean;
+}
+
+export class SdSharedDataChangeEvent extends SdServiceEventBase<string, (string | number)[] | undefined> {
 }

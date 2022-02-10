@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Output } from "@angular/core";
-import fasTimes from "@fortawesome/pro-solid-svg-icons/faTimes";
+import { faTimes as fasTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
 
 @Component({
   selector: "sd-topbar-tab",

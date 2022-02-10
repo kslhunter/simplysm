@@ -11,7 +11,7 @@ import {
 } from "@angular/core";
 import { SdTopbarContainerControl } from "./sd-topbar-container.control";
 import { SdSidebarContainerControl } from "../sidebar/sd-sidebar-container.control";
-import fasBars from "@fortawesome/pro-solid-svg-icons/faBars";
+import { faBars as fasBars } from "@fortawesome/pro-solid-svg-icons/faBars";
 
 @Component({
   selector: "sd-topbar",

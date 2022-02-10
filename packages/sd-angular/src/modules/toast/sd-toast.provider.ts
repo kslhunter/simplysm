@@ -1,4 +1,4 @@
-import { ComponentRef, Injectable, Injector, Type, ViewContainerRef } from "@angular/core";
+import { ComponentFactoryResolver, ComponentRef, Injectable, Injector, Type } from "@angular/core";
 import { SdToastContainerControl } from "./sd-toast-container.control";
 import { SdToastControl } from "./sd-toast.control";
 import { SdRootRootProvider } from "../../root-providers/sd-root.root-provider";
@@ -12,7 +12,7 @@ export class SdToastProvider {
     this._root.data["toast"] = this._root.data["toast"] ?? {};
 
     if (this._root.data["toast"].containerRef === undefined) {
-      const compRef = this._vcr.createComponent(SdToastContainerControl, { injector: this._injector });
+      const compRef = this._cfr.resolveComponentFactory(SdToastContainerControl).create(this._injector);
       const rootComp = this._root.appRef.components[0];
       const rootCompEl = rootComp.location.nativeElement as HTMLElement;
       rootCompEl.appendChild(compRef.location.nativeElement);
@@ -33,7 +33,8 @@ export class SdToastProvider {
     this._root.data["toast"].alertThemes = value;
   }
 
-  public constructor(private readonly _vcr: ViewContainerRef,
+  // eslint-disable-next-line deprecation/deprecation
+  public constructor(private readonly _cfr: ComponentFactoryResolver,
                      private readonly _injector: Injector,
                      private readonly _root: SdRootRootProvider,
                      private readonly _systemLog: SdSystemLogRootProvider) {
@@ -63,13 +64,13 @@ export class SdToastProvider {
   }
 
   public notify<T extends SdToastBase<any, any>>(toastType: Type<T>, param: T["tParam"], onclose: (result: T["tResult"] | undefined) => void | Promise<void>): void {
-    const compRef = this._vcr.createComponent(toastType, { injector: this.containerRef.injector });
+    const compRef = this._cfr.resolveComponentFactory(toastType).create(this.containerRef.injector);
     const containerEl = this.containerRef.location.nativeElement as HTMLElement;
 
-    const toastRef = this._vcr.createComponent(SdToastControl, {
-      injector: this.containerRef.injector,
-      projectableNodes: [[compRef.location.nativeElement]]
-    });
+    const toastRef = this._cfr.resolveComponentFactory(SdToastControl).create(
+      this.containerRef.injector,
+      [[compRef.location.nativeElement]]
+    );
     const toastEl = toastRef.location.nativeElement as HTMLElement;
     containerEl.appendChild(toastEl);
 
@@ -138,7 +139,7 @@ export class SdToastProvider {
     }
 
     const containerEl = this.containerRef.location.nativeElement as HTMLElement;
-    const toastRef = this._vcr.createComponent(SdToastControl, { injector: this.containerRef.injector });
+    const toastRef = this._cfr.resolveComponentFactory(SdToastControl).create(this.containerRef.injector);
     const toastEl = toastRef.location.nativeElement as HTMLElement;
     containerEl.appendChild(toastEl);
     this._root.appRef.attachView(toastRef.hostView);

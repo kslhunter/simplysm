@@ -64,7 +64,6 @@ ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`.
       return `IF NOT EXISTS(select * from sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)} (EDITION='Standard', SERVICE_OBJECTIVE='S0', MAXSIZE = 250 GB) WITH CATALOG_COLLATION = Korean_Wansung_CI_AS`.trim();
     }
     else {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       throw new Error(`데이터베이스 생성 미지원 (${this._dialect})`);
     }
   }

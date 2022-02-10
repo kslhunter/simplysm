@@ -10,11 +10,11 @@ import {
   ViewChild
 } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import fasEye from "@fortawesome/pro-solid-svg-icons/faEye";
-import fasPen from "@fortawesome/pro-solid-svg-icons/faPen";
-import fasCode from "@fortawesome/pro-solid-svg-icons/faCode";
-import fasPlus from "@fortawesome/pro-solid-svg-icons/faPlus";
-import fasMinus from "@fortawesome/pro-solid-svg-icons/faMinus";
+import { faEye as fasEye } from "@fortawesome/pro-solid-svg-icons/faEye";
+import { faPen as fasPen } from "@fortawesome/pro-solid-svg-icons/faPen";
+import { faCode as fasCode } from "@fortawesome/pro-solid-svg-icons/faCode";
+import { faPlus as fasPlus } from "@fortawesome/pro-solid-svg-icons/faPlus";
+import { faMinus as fasMinus } from "@fortawesome/pro-solid-svg-icons/faMinus";
 
 @Component({
   selector: "sd-html-editor",
@@ -206,7 +206,7 @@ export class SdHtmlEditorControl {
   public onTextareaInput(event: Event): void {
     const textareaEl = event.target as HTMLTextAreaElement;
     const newValue = textareaEl.value;
-    if (this.valueChange.length > 0) {
+    if (this.valueChange.observers.length > 0) {
       this.valueChange.emit(newValue);
     }
     else {
@@ -217,7 +217,7 @@ export class SdHtmlEditorControl {
   public onContentInput(event: Event): void {
     const editorEl = event.target as HTMLDivElement;
     const newValue = editorEl.innerHTML;
-    if (this.valueChange.length > 0) {
+    if (this.valueChange.observers.length > 0) {
       this.valueChange.emit(newValue);
     }
     else {

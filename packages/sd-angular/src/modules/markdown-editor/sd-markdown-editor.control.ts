@@ -12,9 +12,9 @@ import {
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import * as marked from "marked";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import fasEye from "@fortawesome/pro-solid-svg-icons/faEye";
-import fasPen from "@fortawesome/pro-solid-svg-icons/faPen";
-import fasQuestion from "@fortawesome/pro-solid-svg-icons/faQuestion";
+import { faEye as fasEye } from "@fortawesome/pro-solid-svg-icons/faEye";
+import { faPen as fasPen } from "@fortawesome/pro-solid-svg-icons/faPen";
+import { faQuestion as fasQuestion } from "@fortawesome/pro-solid-svg-icons/faQuestion";
 
 @Component({
   selector: "sd-markdown-editor",
@@ -370,7 +370,7 @@ export class SdMarkdownEditorControl implements OnChanges {
   public onTextareaInput(event: Event): void {
     const textareaEl = event.target as HTMLTextAreaElement;
     const newValue = textareaEl.value;
-    if (this.valueChange.length > 0) {
+    if (this.valueChange.observers.length > 0) {
       this.valueChange.emit(newValue);
     }
     else {

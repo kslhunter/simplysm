@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
-import fasAngleDoubleLeft from "@fortawesome/pro-solid-svg-icons/faAngleDoubleLeft";
-import fasAngleLeft from "@fortawesome/pro-solid-svg-icons/faAngleLeft";
-import fasAngleRight from "@fortawesome/pro-solid-svg-icons/faAngleRight";
-import fasAngleDoubleRight from "@fortawesome/pro-solid-svg-icons/faAngleDoubleRight";
+import { faAngleDoubleLeft as fasAngleDoubleLeft } from "@fortawesome/pro-solid-svg-icons/faAngleDoubleLeft";
+import { faAngleLeft as fasAngleLeft } from "@fortawesome/pro-solid-svg-icons/faAngleLeft";
+import { faAngleRight as fasAngleRight } from "@fortawesome/pro-solid-svg-icons/faAngleRight";
+import { faAngleDoubleRight as fasAngleDoubleRight } from "@fortawesome/pro-solid-svg-icons/faAngleDoubleRight";
 
 @Component({
   selector: "sd-pagination",
@@ -99,7 +99,7 @@ export class SdPaginationControl {
   }
 
   public onPageClick(page: number): void {
-    if (this.pageChange.length > 0) {
+    if (this.pageChange.observers.length > 0) {
       this.pageChange.emit(page);
     }
     else {
@@ -110,7 +110,7 @@ export class SdPaginationControl {
   public onNextClick(): void {
     const page = (this.displayPages.last() ?? 0) + 1;
 
-    if (this.pageChange.length > 0) {
+    if (this.pageChange.observers.length > 0) {
       this.pageChange.emit(page);
     }
     else {
@@ -121,7 +121,7 @@ export class SdPaginationControl {
   public onPrevClick(): void {
     const page = (this.displayPages[0] ?? 0) - 1;
 
-    if (this.pageChange.length > 0) {
+    if (this.pageChange.observers.length > 0) {
       this.pageChange.emit(page);
     }
     else {
@@ -132,7 +132,7 @@ export class SdPaginationControl {
   public onGoFirstClick(): void {
     const page = 0;
 
-    if (this.pageChange.length > 0) {
+    if (this.pageChange.observers.length > 0) {
       this.pageChange.emit(page);
     }
     else {
@@ -143,7 +143,7 @@ export class SdPaginationControl {
   public onGoLastClick(): void {
     const page = this.pageLength - 1;
 
-    if (this.pageChange.length > 0) {
+    if (this.pageChange.observers.length > 0) {
       this.pageChange.emit(page);
     }
     else {

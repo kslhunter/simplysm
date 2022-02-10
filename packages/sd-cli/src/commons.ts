@@ -63,4 +63,5 @@ export interface ISdCliClientPackageConfig {
   type: "client";
   server: string;
   env?: Record<string, string>;
+  configs?: Record<string, any>;
 }

@@ -32,6 +32,8 @@ import { ESLint } from "eslint";
 import { TransferSizePlugin } from "@angular-devkit/build-angular/src/webpack/plugins/transfer-size-plugin";
 import { CssOptimizerPlugin } from "@angular-devkit/build-angular/src/webpack/plugins/css-optimizer-plugin";
 import browserslist from "browserslist";
+import { augmentAppWithServiceWorker } from "@angular-devkit/build-angular/src/utils/service-worker";
+import { StringUtil } from "@simplysm/sd-core-common";
 import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
@@ -78,10 +80,19 @@ export class SdCliClientBuilder extends EventEmitter {
         return;
       });
 
-      compiler.hooks.done.tap(this.constructor.name, (stats) => {
+      compiler.hooks.done.tap(this.constructor.name, async (stats) => {
         // 결과 반환
         const results = SdCliBuildResultUtil.convertFromWebpackStats(stats);
         this.emit("complete", results);
+
+        // .config.json 파일 쓰기
+        const npmConfig = this._getNpmConfig(this._rootPath)!;
+        const packageKey = npmConfig.name.split("/").last()!;
+
+        const configDistPath = !StringUtil.isNullOrEmpty(this._config.server)
+          ? path.resolve(this._workspaceRootPath, "packages", this._config.server, "dist/www", packageKey, ".config.json")
+          : path.resolve(this._parsedTsconfig.options.outDir!, ".config.json");
+        await FsUtil.writeFileAsync(configDistPath, JSON.stringify(this._config.configs ?? {}, undefined, 2));
 
         // 마무리
         this._logger.debug("Webpack 빌드 완료");
@@ -121,6 +132,21 @@ export class SdCliClientBuilder extends EventEmitter {
         resolve(results);
       });
     });
+
+    // .config.json 파일 쓰기
+    const targetPath = path.resolve(this._parsedTsconfig.options.outDir!, ".config.json");
+    await FsUtil.writeFileAsync(targetPath, JSON.stringify(this._config.configs ?? {}, undefined, 2));
+
+    // service-worker 처리
+    if (FsUtil.exists(path.resolve(this._rootPath, "ngsw-config.json"))) {
+      const packageKey = this._getNpmConfig(this._rootPath)!.name.split("/").last()!;
+      await augmentAppWithServiceWorker(
+        PathUtil.posix(path.relative(this._workspaceRootPath, this._rootPath)) as any,
+        PathUtil.posix(path.relative(this._workspaceRootPath, this._parsedTsconfig.options.outDir!)) as any,
+        `/${packageKey}/`,
+        PathUtil.posix(path.relative(this._workspaceRootPath, path.resolve(this._rootPath, "ngsw-config.json")))
+      );
+    }
 
     // 마무리
     this._logger.debug("Webpack 빌드 완료");
@@ -165,7 +191,7 @@ export class SdCliClientBuilder extends EventEmitter {
       profile: false,
       resolve: {
         roots: [this._rootPath],
-        extensions: [".ts", ".tsx", ".mjs", ".js"],
+        extensions: [".ts", ".tsx", ".mjs", ".cjs", ".js"],
         symlinks: true,
         modules: [this._workspaceRootPath, "node_modules"],
         mainFields: ["es2015", "browser", "module", "main"],
@@ -391,7 +417,11 @@ export class SdCliClientBuilder extends EventEmitter {
               loader: HmrLoader,
               include: [mainFilePath]
             }
-          ] : []
+          ] : [],
+          {
+            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip|pfx|pkl)$/,
+            type: "asset/resource"
+          }
         ]
       },
       plugins: [

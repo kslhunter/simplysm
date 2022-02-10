@@ -9,7 +9,7 @@ import {
 } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import fasCheck from "@fortawesome/pro-solid-svg-icons/faCheck";
+import { faCheck as fasCheck } from "@fortawesome/pro-solid-svg-icons/faCheck";
 import { sdThemes, TSdTheme } from "../../commons";
 
 @Component({
@@ -241,7 +241,7 @@ export class SdCheckboxControl {
   public onClick(): void {
     if (this.disabled) return;
 
-    if (this.valueChange.length > 0) {
+    if (this.valueChange.observers.length > 0) {
       this.valueChange.emit(!this.value);
     }
     else {
@@ -253,7 +253,7 @@ export class SdCheckboxControl {
     if (this.disabled) return;
 
     if (event.key === " ") {
-      if (this.valueChange.length > 0) {
+      if (this.valueChange.observers.length > 0) {
         this.valueChange.emit(!this.value);
       }
       else {

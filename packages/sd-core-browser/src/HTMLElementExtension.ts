@@ -1,7 +1,6 @@
 import { ISdMutationEvent, ISdResizeEvent } from "./events";
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElement {
     getRelativeOffset(parentElement: HTMLElement): { top: number; left: number };
 

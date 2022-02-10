@@ -27,14 +27,14 @@ import { SdModalProvider } from "../modal/sd-modal.provider";
 import { SdSystemConfigRootProvider } from "../../root-providers/sd-system-config.root-provider";
 import { ISdResizeEvent } from "@simplysm/sd-core-browser";
 import { SdSheetConfigModal } from "./sd-sheet-config.modal";
-import fasBars from "@fortawesome/pro-solid-svg-icons/faBars";
-import fasTable from "@fortawesome/pro-solid-svg-icons/faTable";
-import fasCog from "@fortawesome/pro-solid-svg-icons/faCog";
-import fasSort from "@fortawesome/pro-solid-svg-icons/faSort";
-import fasSortDown from "@fortawesome/pro-solid-svg-icons/faSortDown";
-import fasSortUp from "@fortawesome/pro-solid-svg-icons/faSortUp";
-import fasArrowRight from "@fortawesome/pro-solid-svg-icons/faArrowRight";
-import fasCaretRight from "@fortawesome/pro-solid-svg-icons/faCaretRight";
+import { faBars as fasBars } from "@fortawesome/pro-solid-svg-icons/faBars";
+import { faTable as fasTable } from "@fortawesome/pro-solid-svg-icons/faTable";
+import { faCog as fasCog } from "@fortawesome/pro-solid-svg-icons/faCog";
+import { faSort as fasSort } from "@fortawesome/pro-solid-svg-icons/faSort";
+import { faSortDown as fasSortDown } from "@fortawesome/pro-solid-svg-icons/faSortDown";
+import { faSortUp as fasSortUp } from "@fortawesome/pro-solid-svg-icons/faSortUp";
+import { faArrowRight as fasArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
+import { faCaretRight as fasCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
 
 // TODO: 셀 크기 2번 수정하면 HEADERGROUP 컬럼의 크기가 안따라오는 현상 수정
 @Component({
@@ -925,7 +925,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
     const result = Array.from(this.columnControlValueMapRecord[columnControl.key]!.entries())
       .filter((entry) => entry[1]).map((entry) => entry[0]);
-    if (columnControl.selectedItemsChange.length > 0) {
+    if (columnControl.selectedItemsChange.observers.length > 0) {
       columnControl.selectedItemsChange.emit(result);
     }
     else {
@@ -955,7 +955,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
     const result = Array.from(this.columnControlValueMapRecord[columnControl.key]!.entries())
       .filter((entry) => entry[1]).map((entry) => entry[0]);
-    if (columnControl.selectedItemsChange.length > 0) {
+    if (columnControl.selectedItemsChange.observers.length > 0) {
       columnControl.selectedItemsChange.emit(result);
     }
     else {
@@ -1344,7 +1344,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
       // SELECTED ITEM 체크
       const newSelectedItems = [...this.selectedItems].remove((item) => !this._getUngroupedItems(this.items).includes(item));
-      if (this.selectedItemsChange.length > 0) {
+      if (this.selectedItemsChange.observers.length > 0) {
         this.selectedItemsChange.emit(newSelectedItems);
       }
       else {
@@ -1431,7 +1431,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
     if (!this.expandedItems.includes(item)) {
       const newExpandedItems = [...this.expandedItems, item];
-      if (this.expandedItemsChange.length > 0) {
+      if (this.expandedItemsChange.observers.length > 0) {
         this.expandedItemsChange.emit(newExpandedItems);
       }
       else {
@@ -1440,7 +1440,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     }
     else {
       const newExpandedItems = [...this.expandedItems].remove(item);
-      if (this.expandedItemsChange.length > 0) {
+      if (this.expandedItemsChange.observers.length > 0) {
         this.expandedItemsChange.emit(newExpandedItems);
       }
       else {
@@ -1470,7 +1470,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
     if (this.selectMode === "multi") {
       if (this.getIsAllSelected()) {
-        if (this.selectedItemsChange.length === 0) {
+        if (this.selectedItemsChange.observers.length === 0) {
           this.selectedItems = [];
         }
         else {
@@ -1483,7 +1483,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
             .filter((item) => item.selectable)
             .map((item) => item.item)
         ];
-        if (this.selectedItemsChange.length === 0) {
+        if (this.selectedItemsChange.observers.length === 0) {
           this.selectedItems = selectedItems;
         }
         else {
@@ -1520,7 +1520,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
     if (this.selectMode === "single") {
       if (this.selectedItems[0] === item) {
-        if (this.selectedItemsChange.length === 0) {
+        if (this.selectedItemsChange.observers.length === 0) {
           this.selectedItems = [];
         }
         else {
@@ -1530,7 +1530,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       else {
         const selectedItems = [item];
 
-        if (this.selectedItemsChange.length === 0) {
+        if (this.selectedItemsChange.observers.length === 0) {
           this.selectedItems = selectedItems;
         }
         else {
@@ -1542,7 +1542,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       if (this.selectedItems.includes(item)) {
         const selectedItems = [...this.selectedItems];
         selectedItems.remove(item);
-        if (this.selectedItemsChange.length === 0) {
+        if (this.selectedItemsChange.observers.length === 0) {
           this.selectedItems = selectedItems;
         }
         else {
@@ -1551,7 +1551,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       }
       else {
         const selectedItems = [...this.selectedItems, item];
-        if (this.selectedItemsChange.length === 0) {
+        if (this.selectedItemsChange.observers.length === 0) {
           this.selectedItems = selectedItems;
         }
         else {
@@ -1569,7 +1569,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     if (this.selectMode === "single") {
       if (this.selectedItems[0] !== item) {
         const selectedItems = [item];
-        if (this.selectedItemsChange.length === 0) {
+        if (this.selectedItemsChange.observers.length === 0) {
           this.selectedItems = selectedItems;
         }
         else {
@@ -1580,7 +1580,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     else {
       if (!this.selectedItems.includes(item)) {
         const selectedItems = [...this.selectedItems, item];
-        if (this.selectedItemsChange.length === 0) {
+        if (this.selectedItemsChange.observers.length === 0) {
           this.selectedItems = selectedItems;
         }
         else {
@@ -1597,7 +1597,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   }
 
   public onPageChange(page: number): void {
-    if (this.pageChange.length > 0) {
+    if (this.pageChange.observers.length > 0) {
       this.pageChange.emit(page);
     }
     else {
@@ -1883,7 +1883,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       }
     }
 
-    if (this.orderingChange.length > 0) {
+    if (this.orderingChange.observers.length > 0) {
       this.orderingChange.emit(ordering);
     }
     else {

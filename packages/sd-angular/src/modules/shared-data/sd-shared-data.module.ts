@@ -5,7 +5,6 @@ import { SdDockModule } from "../dock/sd-dock.module";
 import { SdModalModule } from "../modal/sd-modal.module";
 import { SdPaneModule } from "../pane/sd-pane.module";
 import { SdSelectModule } from "../select/sd-select.module";
-import { SdSharedDataProvider } from "./sd-shared-data.provider";
 import { SdTextfieldModule } from "../textfield/sd-textfield.module";
 import { SdSharedDataSelectControl } from "./sd-shared-data-select.control";
 
@@ -13,7 +12,7 @@ import { SdSharedDataSelectControl } from "./sd-shared-data-select.control";
   imports: [CommonModule, SdAnchorModule, SdDockModule, SdModalModule, SdPaneModule, SdSelectModule, SdTextfieldModule],
   declarations: [SdSharedDataSelectControl],
   exports: [SdSharedDataSelectControl],
-  providers: [SdSharedDataProvider]
+  providers: []
 })
 export class SdSharedDataModule {
 }

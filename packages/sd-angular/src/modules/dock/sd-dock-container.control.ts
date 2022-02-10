@@ -86,7 +86,7 @@ export class SdDockContainerControl implements AfterContentInit {
     if (!this.dockControls) return;
     this.dockControls.forEach((item) => {
       if (item.open) {
-        if (item.openChange.length > 0) {
+        if (item.openChange.observers.length > 0) {
           item.openChange.emit(false);
         }
         else {

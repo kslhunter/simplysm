@@ -1,4 +1,4 @@
-import { Injectable, Injector, Type, ViewContainerRef } from "@angular/core";
+import { ComponentFactoryResolver, Injectable, Injector, Type } from "@angular/core";
 import { Wait } from "@simplysm/sd-core-common";
 import { SdRootRootProvider } from "../../root-providers/sd-root.root-provider";
 import { SdModalControl } from "./sd-modal.control";
@@ -16,7 +16,8 @@ export class SdModalProvider {
     this._root.data["modal"].modalCount = value;
   }
 
-  public constructor(private readonly _vcr: ViewContainerRef,
+  // eslint-disable-next-line deprecation/deprecation
+  public constructor(private readonly _cfr: ComponentFactoryResolver,
                      private readonly _injector: Injector,
                      private readonly _root: SdRootRootProvider) {
   }
@@ -36,11 +37,11 @@ export class SdModalProvider {
                                                           }): Promise<T["__tOutput__"] | undefined> {
     return await new Promise<T["__tOutput__"] | undefined>(async (resolve, reject) => {
       try {
-        const userModalRef = this._vcr.createComponent(modalType, { injector: this._injector });
-        const modalEntryRef = this._vcr.createComponent(SdModalControl, {
-          injector: this._injector,
-          projectableNodes: [[userModalRef.location.nativeElement]]
-        });
+        const userModalRef = this._cfr.resolveComponentFactory(modalType).create(this._injector);
+        const modalEntryRef = this._cfr.resolveComponentFactory(SdModalControl).create(
+          this._injector,
+          [[userModalRef.location.nativeElement]]
+        );
 
         const modalEntryEl = modalEntryRef.location.nativeElement as HTMLElement;
 
@@ -79,6 +80,7 @@ export class SdModalProvider {
           modalEntryRef.instance.open = value;
           if (!modalEntryRef.instance.open) {
             userModalRef.instance.close();
+            this._root.appRef.tick();
           }
         });
 
@@ -88,6 +90,8 @@ export class SdModalProvider {
         this.modalCount++;
         modalEntryRef.instance.open = true;
         await userModalRef.instance.sdOnOpen(param);
+        this._root.appRef.tick();
+
         await Wait.until(() => modalEntryRef.instance.initialized);
         modalEntryEl.findFirst("> ._dialog")!.focus();
       }
