@@ -130,7 +130,7 @@ export class SdCliClientBuilder extends EventEmitter {
   private _getInternalModuleCachePaths(workspaceName: string): string[] {
     return [
       ...FsUtil.findAllParentChildDirPaths("node_modules/*/package.json", this._rootPath, this._workspaceRootPath),
-      ...FsUtil.findAllParentChildDirPaths(`node_modules/!(@simplysm|${workspaceName})/*/package.json`, this._rootPath, this._workspaceRootPath),
+      ...FsUtil.findAllParentChildDirPaths(`node_modules/!(@simplysm|@${workspaceName})/*/package.json`, this._rootPath, this._workspaceRootPath),
     ].map((p) => path.dirname(p));
   }
 
@@ -320,7 +320,7 @@ export class SdCliClientBuilder extends EventEmitter {
               loader: "source-map-loader",
               options: {
                 filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                  const workspaceRegex = new RegExp(`node_modules[\\\\/]${workspaceName}[\\\\/]`);
+                  const workspaceRegex = new RegExp(`node_modules[\\\\/]@${workspaceName}[\\\\/]`);
                   return !resourcePath.includes("node_modules")
                     || (/node_modules[\\/]@simplysm[\\/]/).test(resourcePath)
                     || workspaceRegex.test(resourcePath);

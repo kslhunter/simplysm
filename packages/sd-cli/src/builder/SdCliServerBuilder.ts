@@ -207,7 +207,7 @@ export class SdCliServerBuilder extends EventEmitter {
   private _getInternalModuleCachePaths(workspaceName: string): string[] {
     return [
       ...FsUtil.findAllParentChildDirPaths("node_modules/*/package.json", this._rootPath, this._workspaceRootPath),
-      ...FsUtil.findAllParentChildDirPaths(`node_modules/!(@simplysm|${workspaceName})/*/package.json`, this._rootPath, this._workspaceRootPath),
+      ...FsUtil.findAllParentChildDirPaths(`node_modules/!(@simplysm|@${workspaceName})/*/package.json`, this._rootPath, this._workspaceRootPath),
     ].map((p) => path.dirname(p));
   }
 
@@ -254,8 +254,9 @@ export class SdCliServerBuilder extends EventEmitter {
         filename: "[name].mjs",
         chunkFilename: "[name].mjs",
         assetModuleFilename: "res/[name][ext][query]",
-        libraryTarget: "module",
-        // libraryTarget: watch ? "umd" : "commonjs"
+        library: {
+          type: "module"
+        }
       },
       watch: false,
       watchOptions: { poll: undefined, ignored: undefined },
@@ -328,7 +329,7 @@ export class SdCliServerBuilder extends EventEmitter {
               loader: "source-map-loader",
               options: {
                 filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                  const workspaceRegex = new RegExp(`node_modules[\\\\/]${workspaceName}[\\\\/]`);
+                  const workspaceRegex = new RegExp(`node_modules[\\\\/]@${workspaceName}[\\\\/]`);
                   return !resourcePath.includes("node_modules")
                     || (/node_modules[\\/]@simplysm[\\/]/).test(resourcePath)
                     || workspaceRegex.test(resourcePath);

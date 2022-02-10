@@ -50,7 +50,8 @@
     "@types/semver": "^7.3.9",
     "@types/yargs": "^17.0.8",
     "@types/webpack-hot-middleware": "^2.25.5",
-    "@types/connect": "^3.4.35"
+    "@types/connect": "^3.4.35",
+    "@types/source-map-support": "^0.5.4"
   },
   "peerDependencies": {
     "@simplysm/sd-core-common": "7.0.53",
