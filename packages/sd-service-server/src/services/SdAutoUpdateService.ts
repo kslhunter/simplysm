@@ -4,7 +4,7 @@ import { SdServiceBase } from "../commons";
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
 
 export class SdAutoUpdateService extends SdServiceBase {
-  private readonly _logger = Logger.get(["simplysm-ts", "sd-service-auto-update", this.constructor.name]);
+  private readonly _logger = Logger.get(["simplysm-ts", "sd-service-server", this.constructor.name]);
 
   public async getLastVersionAsync(clientName: string, platform: string): Promise<string | undefined> {
     try {

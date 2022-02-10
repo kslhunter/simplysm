@@ -5,7 +5,7 @@ import * as os from "os";
 import * as chokidar from "chokidar";
 
 export class SdCliIndexFileGenerator {
-  private readonly _indexFilePath = PathUtil.posix(this.rootPath, "src/index.ts");
+  private readonly _indexFilePath = path.resolve(this.rootPath, "src/index.ts");
   private _contentCache: string | undefined;
 
   public constructor(public readonly rootPath: string,
@@ -13,12 +13,16 @@ export class SdCliIndexFileGenerator {
   }
 
   public async watchAsync(): Promise<void> {
-    const watcher = chokidar.watch([PathUtil.posix(this.rootPath, "src")], { persistent: true });
-    watcher.on("add", async () => {
-      await this.runAsync();
+    const watcher = chokidar.watch([path.resolve(this.rootPath, "src")], { persistent: true });
+    watcher.on("add", async (filePath) => {
+      if (filePath.endsWith(".ts")) {
+        await this.runAsync();
+      }
     });
-    watcher.on("unlink", async () => {
-      await this.runAsync();
+    watcher.on("unlink", async (filePath) => {
+      if (filePath.endsWith(".ts")) {
+        await this.runAsync();
+      }
     });
 
     await this.runAsync();

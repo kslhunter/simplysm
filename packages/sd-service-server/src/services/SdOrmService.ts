@@ -14,7 +14,7 @@ import { TDbConnOptions } from "@simplysm/sd-service-common";
 import { SdServiceServerConfigUtil } from "../utils/SdServiceServerConfigUtil";
 
 export class SdOrmService extends SdServiceBase {
-  private readonly _logger = Logger.get(["simplysm", "sd-service-orm", this.constructor.name]);
+  private readonly _logger = Logger.get(["simplysm", "sd-service-server", this.constructor.name]);
 
   private static readonly _connections = new Map<number, IDbConnection>();
   private static readonly _wsConnectionCloseListenerMap = new Map<number, () => Promise<void>>();

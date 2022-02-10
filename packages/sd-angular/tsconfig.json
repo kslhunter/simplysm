@@ -21,5 +21,8 @@
         "../sd-service-client/src/index.ts"
       ]
     }
-  }
+  },
+  "files": [
+    "./src/index.ts"
+  ]
 }

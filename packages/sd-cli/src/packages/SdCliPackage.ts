@@ -116,6 +116,8 @@ export class SdCliPackage extends EventEmitter {
     delete buildTsconfig.compilerOptions.baseUrl;
     delete buildTsconfig.compilerOptions.paths;
 
+    buildTsconfig.compilerOptions.declaration = Boolean(this._npmConfig.types);
+
     const buildTsconfigFilePath = path.resolve(this.rootPath, "tsconfig-build.json");
     await FsUtil.writeJsonAsync(buildTsconfigFilePath, buildTsconfig, { space: 2 });
   }

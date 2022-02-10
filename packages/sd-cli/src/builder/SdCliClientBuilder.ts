@@ -1,4 +1,4 @@
-import { INpmConfig, ISdCliClientPackageConfig, ISdCliPackageBuildResult } from "../commons";
+import { INpmConfig, ISdCliClientPackageConfig, ISdCliPackageBuildResult, ITsconfig } from "../commons";
 import { EventEmitter } from "events";
 import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
 import webpack from "webpack";
@@ -48,8 +48,8 @@ export class SdCliClientBuilder extends EventEmitter {
 
     // tsconfig
     this._tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
-    const tsconfig = FsUtil.readJson(this._tsconfigFilePath);
-    this._parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._rootPath);
+    const tsconfig = FsUtil.readJson(this._tsconfigFilePath) as ITsconfig;
+    this._parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._rootPath, tsconfig.angularCompilerOptions);
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -127,10 +127,18 @@ export class SdCliClientBuilder extends EventEmitter {
     return buildResults;
   }
 
+  private _getInternalModuleCachePaths(workspaceName: string): string[] {
+    return [
+      ...FsUtil.findAllParentChildDirPaths("node_modules/*/package.json", this._rootPath, this._workspaceRootPath),
+      ...FsUtil.findAllParentChildDirPaths(`node_modules/!(@simplysm|${workspaceName})/*/package.json`, this._rootPath, this._workspaceRootPath),
+    ].map((p) => path.dirname(p));
+  }
+
   private _getWebpackConfig(watch: boolean): webpack.Configuration {
-    const internalModuleCachePaths = watch
-      ? FsUtil.findAllParentChildDirPaths("node_modules/!(@simplysm)", this._rootPath, this._workspaceRootPath)
-      : undefined;
+    const workspaceNpmConfig = this._getNpmConfig(this._workspaceRootPath)!;
+    const workspaceName = workspaceNpmConfig.name;
+
+    const internalModuleCachePaths = watch ? this._getInternalModuleCachePaths(workspaceName) : undefined;
 
     const npmConfig = this._getNpmConfig(this._rootPath)!;
     const pkgVersion = npmConfig.version;
@@ -312,7 +320,10 @@ export class SdCliClientBuilder extends EventEmitter {
               loader: "source-map-loader",
               options: {
                 filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                  return !resourcePath.includes("node_modules") || (/@simplysm[\\/]/).test(resourcePath);
+                  const workspaceRegex = new RegExp(`node_modules[\\\\/]${workspaceName}[\\\\/]`);
+                  return !resourcePath.includes("node_modules")
+                    || (/node_modules[\\/]@simplysm[\\/]/).test(resourcePath)
+                    || workspaceRegex.test(resourcePath);
                 }
               }
             }

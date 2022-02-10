@@ -1,7 +1,6 @@
 import "@simplysm/sd-core-browser";
 export * from "./commons";
 export * from "./decorators/SdInputValidate";
-export * from "./index";
 export * from "./modules/address-search/sd-address-search.modal";
 export * from "./modules/address-search/sd-address-search.module";
 export * from "./modules/anchor/sd-anchor.control";

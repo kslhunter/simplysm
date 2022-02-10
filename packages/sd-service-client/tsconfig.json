@@ -17,5 +17,8 @@
         "../sd-orm-common/src/index.ts"
       ]
     }
-  }
+  },
+  "files": [
+    "./src/index.ts"
+  ]
 }

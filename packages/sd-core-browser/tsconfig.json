@@ -12,5 +12,8 @@
         "../sd-core-common/src/index.ts"
       ]
     }
-  }
+  },
+  "files": [
+    "./src/index.ts"
+  ]
 }

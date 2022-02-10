@@ -8,8 +8,9 @@ import mime from "mime";
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
 import { ISdServiceRequest } from "@simplysm/sd-service-common";
 import { ISdServiceServerOptions, SdServiceBase } from "./commons";
+import { EventEmitter } from "events";
 
-export class SdServiceServer {
+export class SdServiceServer extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-service", this.constructor.name]);
 
   private _httpServer?: http.Server | https.Server;
@@ -21,6 +22,7 @@ export class SdServiceServer {
   public devMiddlewares?: NextHandleFunction[];
 
   public constructor(public readonly options: ISdServiceServerOptions) {
+    super();
   }
 
   public async listenAsync(): Promise<void> {
@@ -45,11 +47,12 @@ export class SdServiceServer {
 
       this._httpServer.listen(this.options.port, () => {
         resolve();
-        this._logger.debug("서버 시작됨");
       });
     });
 
     this.isOpen = true;
+    this._logger.debug("서버 시작됨");
+    this.emit("ready");
   }
 
   public async closeAsync(): Promise<void> {
@@ -73,6 +76,8 @@ export class SdServiceServer {
     });
 
     this.isOpen = false;
+    this._logger.debug("서버 종료됨");
+    this.emit("close");
   }
 
   private _onSocketConnection(socket: socketIo.Socket): void {

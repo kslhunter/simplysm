@@ -1,4 +1,3 @@
-export * from "./index";
 export * from "./ISdServiceClientConnectionConfig";
 export * from "./SdServiceClient";
 export * from "./services/orm/ISdOrmServiceConnectConfig";

@@ -46,8 +46,8 @@ export class SdCliServerBuilder extends EventEmitter {
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
     // 빌드 준비
-    const extModuleNames = this._getExternalModuleNames();
-    const webpackConfig = this._getWebpackConfig(true, extModuleNames);
+    const extModules = this._getExternalModules();
+    const webpackConfig = this._getWebpackConfig(true, extModules.map((item) => item.name));
     const compiler = webpack(webpackConfig);
     await new Promise<void>((resolve, reject) => {
       compiler.hooks.watchRun.tapAsync(this.constructor.name, (args, callback) => {
@@ -80,8 +80,8 @@ export class SdCliServerBuilder extends EventEmitter {
 
     // 빌드
     this._logger.debug("Webpack 빌드 수행...");
-    const extModuleNames = this._getExternalModuleNames();
-    const webpackConfig = this._getWebpackConfig(false, extModuleNames);
+    const extModules = this._getExternalModules();
+    const webpackConfig = this._getWebpackConfig(false, extModules.map((item) => item.name));
     const compiler = webpack(webpackConfig);
     const buildResults = await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
       compiler.run((err, stats) => {
@@ -106,7 +106,7 @@ export class SdCliServerBuilder extends EventEmitter {
     await this._writeDistIisConfigFileAsync();
 
     // 배포용 package.json 파일 생성
-    await this._writeDistNpmConfigFileAsync(extModuleNames);
+    await this._writeDistNpmConfigFileAsync(extModules.filter((item) => item.exists).map((item) => item.name));
 
     // 마무리
     this._logger.debug("Webpack 빌드 완료");
@@ -204,10 +204,18 @@ export class SdCliServerBuilder extends EventEmitter {
     );
   }
 
+  private _getInternalModuleCachePaths(workspaceName: string): string[] {
+    return [
+      ...FsUtil.findAllParentChildDirPaths("node_modules/*/package.json", this._rootPath, this._workspaceRootPath),
+      ...FsUtil.findAllParentChildDirPaths(`node_modules/!(@simplysm|${workspaceName})/*/package.json`, this._rootPath, this._workspaceRootPath),
+    ].map((p) => path.dirname(p));
+  }
+
   private _getWebpackConfig(watch: boolean, extModuleNames: string[]): webpack.Configuration {
-    const internalModuleCachePaths = watch
-      ? FsUtil.findAllParentChildDirPaths("node_modules/!(@simplysm)", this._rootPath, this._workspaceRootPath)
-      : undefined;
+    const workspaceNpmConfig = this._getNpmConfig(this._workspaceRootPath)!;
+    const workspaceName = workspaceNpmConfig.name;
+
+    const internalModuleCachePaths = watch ? this._getInternalModuleCachePaths(workspaceName) : undefined;
 
     const npmConfig = this._getNpmConfig(this._rootPath)!;
     const pkgKey = npmConfig.name.split("/").last()!;
@@ -246,7 +254,8 @@ export class SdCliServerBuilder extends EventEmitter {
         filename: "[name].mjs",
         chunkFilename: "[name].mjs",
         assetModuleFilename: "res/[name][ext][query]",
-        libraryTarget: "module"
+        libraryTarget: "module",
+        // libraryTarget: watch ? "umd" : "commonjs"
       },
       watch: false,
       watchOptions: { poll: undefined, ignored: undefined },
@@ -281,7 +290,7 @@ export class SdCliServerBuilder extends EventEmitter {
         __dirname: true
       },
       optimization: {
-        minimizer: watch ? [
+        minimizer: watch ? [] : [
           new TerserPlugin({
             extractComments: false,
             terserOptions: {
@@ -298,7 +307,7 @@ export class SdCliServerBuilder extends EventEmitter {
               }
             }
           })
-        ] : [],
+        ],
         moduleIds: "deterministic",
         chunkIds: watch ? "named" : "deterministic",
         emitOnErrors: watch
@@ -314,12 +323,15 @@ export class SdCliServerBuilder extends EventEmitter {
           },
           ...watch ? [
             {
-              test: /\.m?js$/,
+              test: /\.[cm]?jsx?$/,
               enforce: "pre" as const,
               loader: "source-map-loader",
               options: {
                 filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                  return !resourcePath.includes("node_modules") || (/@simplysm[\\/]/).test(resourcePath);
+                  const workspaceRegex = new RegExp(`node_modules[\\\\/]${workspaceName}[\\\\/]`);
+                  return !resourcePath.includes("node_modules")
+                    || (/node_modules[\\/]@simplysm[\\/]/).test(resourcePath)
+                    || workspaceRegex.test(resourcePath);
                 }
               }
             }
@@ -418,9 +430,9 @@ export class SdCliServerBuilder extends EventEmitter {
     };
   }
 
-  private _getExternalModuleNames(): string[] {
+  private _getExternalModules(): { name: string; exists: boolean }[] {
     const loadedModuleNames: string[] = [];
-    const resultSet = new Set<string>();
+    const results: { name: string; exists: boolean }[] = [];
 
     const fn = (currPath: string): void => {
       const npmConfig = this._getNpmConfig(currPath);
@@ -438,7 +450,7 @@ export class SdCliServerBuilder extends EventEmitter {
         }
 
         if (FsUtil.exists(path.resolve(modulePath, "binding.gyp"))) {
-          resultSet.add(moduleName);
+          results.push({ name: moduleName, exists: true });
         }
 
         fn(modulePath);
@@ -450,12 +462,12 @@ export class SdCliServerBuilder extends EventEmitter {
 
         const optModulePath = FsUtil.findAllParentChildDirPaths("node_modules/" + optModuleName, currPath, this._workspaceRootPath).first();
         if (StringUtil.isNullOrEmpty(optModulePath)) {
-          resultSet.add(optModuleName);
+          results.push({ name: optModuleName, exists: false });
           continue;
         }
 
         if (FsUtil.exists(path.resolve(optModulePath, "binding.gyp"))) {
-          resultSet.add(optModuleName);
+          results.push({ name: optModuleName, exists: true });
         }
 
         fn(optModulePath);
@@ -464,7 +476,7 @@ export class SdCliServerBuilder extends EventEmitter {
 
     fn(this._rootPath);
 
-    return Array.from(resultSet.values());
+    return results;
   }
 
   private _getNpmConfig(pkgPath: string): INpmConfig | undefined {

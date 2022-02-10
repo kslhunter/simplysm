@@ -1,5 +1,4 @@
 export * from "./commons";
-export * from "./index";
 export * from "./SdServiceServer";
 export * from "./services/SdAutoUpdateService";
 export * from "./services/SdCryptoService";

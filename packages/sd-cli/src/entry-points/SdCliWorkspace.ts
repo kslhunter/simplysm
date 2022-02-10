@@ -93,10 +93,16 @@ export class SdCliWorkspace {
     });
   }
 
+  private _isServerRestarting = false;
+
   private async _restartServerAsync(pkg: SdCliPackage): Promise<void> {
+    await Wait.until(() => !this._isServerRestarting);
+
+    this._isServerRestarting = true;
     const entryFileRelPath = pkg.main;
     if (entryFileRelPath === undefined) {
       this._logger.error(`서버패키지(${pkg.name})의 'package.json'에서 'main'필드를 찾을 수 없습니다.`);
+      this._isServerRestarting = false;
       return;
     }
     const entryFilePath = path.resolve(pkg.rootPath, entryFileRelPath);
@@ -112,6 +118,7 @@ export class SdCliWorkspace {
       serverInfo.server = (await import("file:///" + entryFilePath + "?update=" + Uuid.new().toString())).default as SdServiceServer | undefined;
       if (!serverInfo.server) {
         this._logger.error(`${entryFilePath}(0, 0): 'SdServiceServer'를 'export'해야 합니다.`);
+        this._isServerRestarting = false;
         return;
       }
       serverInfo.server.devMiddlewares = serverInfo.middlewares;
@@ -122,6 +129,8 @@ export class SdCliWorkspace {
     catch (err) {
       this._logger.error(`서버(${pkg.name}) 재시작중 오류 발생`, err);
     }
+
+    this._isServerRestarting = false;
   }
 
   public async buildAsync(opt: { confFileRelPath: string; optNames: string[] }): Promise<void> {

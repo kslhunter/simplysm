@@ -58,7 +58,7 @@ import { SdInputValidate } from "../../decorators/SdInputValidate";
   `]
 })
 export class SdSidebarUserControl {
-  public backgroundImage = require("../../assets/user_bg.jpg");
+  public backgroundImage = require("../../../assets/user_bg.jpg");
 
   @Input()
   @SdInputValidate(String)

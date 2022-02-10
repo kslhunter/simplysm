@@ -2,10 +2,8 @@ export interface INpmConfig {
   name: string;
   version: string;
   workspaces?: string[];
-  es2020?: string;
-  browser?: string;
-  module?: string;
   main?: string;
+  types?: string;
   exports?: Record<string, {
     types?: string;
   }>;
@@ -23,8 +21,10 @@ export interface ITsconfig {
     outDir?: string;
     baseUrl?: string;
     paths?: Record<string, string[]>;
+    declaration?: boolean;
   };
   files?: string[];
+  angularCompilerOptions?: Record<string, any>;
 }
 
 export interface ISdCliPackageBuildResult {
