@@ -44,7 +44,7 @@
       },
       "publish": "npm"
     },
-    "@simplysm/sd-office": {
+    "sd-office": {
       "type": "library",
       "autoIndex": {
         "polyfills": [
