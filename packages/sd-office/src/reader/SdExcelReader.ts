@@ -12,8 +12,8 @@ export class SdExcelReader {
     return this._wb.SheetNames;
   }
 
-  public getWorkSheet(name: string): SdExcelReaderWorkSheet
-  public getWorkSheet(index: number): SdExcelReaderWorkSheet
+  public getWorkSheet(name: string): SdExcelReaderWorkSheet;
+  public getWorkSheet(index: number): SdExcelReaderWorkSheet;
   public getWorkSheet(arg: string | number): SdExcelReaderWorkSheet {
     if (typeof arg === "number") {
       if (!this._wb.SheetNames[arg]) {
