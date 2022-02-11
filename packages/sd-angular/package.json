@@ -17,6 +17,7 @@
     "node": "^16"
   },
   "dependencies": {
+    "jsbarcode": "^3.11.5",
     "marked": "^4.0.12"
   },
   "optionalDependencies": {},

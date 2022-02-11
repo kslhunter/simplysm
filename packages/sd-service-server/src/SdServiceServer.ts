@@ -98,7 +98,7 @@ export class SdServiceServer extends EventEmitter {
         const cmdSplit = req.command.split(".");
         if (cmdSplit.length === 2) {
           const serviceName = cmdSplit[0];
-          const methodName = cmdSplit[0];
+          const methodName = cmdSplit[1];
 
           // 서비스 가져오기
           const serviceClass = this.options.services.single((item) => item.name === serviceName);

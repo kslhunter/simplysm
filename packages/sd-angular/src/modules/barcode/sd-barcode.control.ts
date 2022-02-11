@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, SimpleChanges } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 
-require("jsbarcode");
+import JsBarcode from "jsbarcode";
 
 @Component({
   selector: "sd-barcode",
@@ -41,8 +41,8 @@ export class SdBarcodeControl implements OnChanges {
     if (Object.keys(changes).length > 0) {
       const svgEl = (this._elRef.nativeElement as HTMLElement).findFirst("svg");
 
-      if (svgEl) {
-        window["JsBarcode"](
+      if (svgEl && this.value !== undefined) {
+        JsBarcode(
           svgEl,
           this.value,
           {

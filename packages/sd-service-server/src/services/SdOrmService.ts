@@ -33,7 +33,7 @@ export class SdOrmService extends SdServiceBase {
     database?: string;
     schema?: string;
   }> {
-    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.socket.request.url, opt);
+    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.socket.request.headers.referer, opt);
     return {
       dialect: config.dialect,
       database: config.database,
@@ -42,7 +42,7 @@ export class SdOrmService extends SdServiceBase {
   }
 
   public async connectAsync(opt: Record<string, any>): Promise<number> {
-    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.socket.request.url, opt);
+    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.socket.request.headers.referer, opt);
 
     const dbConn = DbConnectionFactory.create(config);
 

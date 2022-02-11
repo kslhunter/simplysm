@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 
+// @ts-ignore
+import backgroundImage from "../../../assets/user_bg.jpg";
+
 @Component({
   selector: "sd-sidebar-user",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,7 +61,7 @@ import { SdInputValidate } from "../../decorators/SdInputValidate";
   `]
 })
 export class SdSidebarUserControl {
-  public backgroundImage = require("../../../assets/user_bg.jpg");
+  public backgroundImage = backgroundImage;
 
   @Input()
   @SdInputValidate(String)

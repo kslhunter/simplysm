@@ -287,9 +287,7 @@ export class SdCliServerBuilder extends EventEmitter {
           managedPaths: internalModuleCachePaths
         }
       } : {},
-      node: {
-        __dirname: true
-      },
+      node: false,
       optimization: {
         minimizer: watch ? [] : [
           new TerserPlugin({
@@ -315,6 +313,11 @@ export class SdCliServerBuilder extends EventEmitter {
       },
       module: {
         strictExportPresence: true,
+        parser: {
+          javascript: {
+            importMeta: false
+          }
+        },
         rules: [
           {
             test: /\.[cm]?[tj]sx?$/,
