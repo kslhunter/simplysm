@@ -1,6 +1,6 @@
 import { ISdServiceClientConnectionConfig } from "./ISdServiceClientConnectionConfig";
 import * as socketIo from "socket.io-client";
-import { Type, Uuid, Wait } from "@simplysm/sd-core-common";
+import { JsonConvert, Type, Uuid, Wait } from "@simplysm/sd-core-common";
 import { ISdServiceRequest, ISdServiceResponse, SdServiceEventBase } from "@simplysm/sd-service-common";
 
 export class SdServiceClient {
@@ -52,7 +52,9 @@ export class SdServiceClient {
         params
       };
 
-      this._socket.once(`response:${req.uuid}`, (res: ISdServiceResponse) => {
+      this._socket.once(`response:${req.uuid}`, (resJson: string) => {
+        const res = JsonConvert.parse(resJson) as ISdServiceResponse;
+
         if (res.type === "error") {
           reject(new Error(res.body));
           return;
@@ -61,7 +63,7 @@ export class SdServiceClient {
         resolve(res.body);
       });
 
-      this._socket.emit("request", req);
+      this._socket.emit("request", JsonConvert.stringify(req));
     });
   }
 
@@ -73,8 +75,8 @@ export class SdServiceClient {
     }
 
     const key = Uuid.new().toString();
-    this._socket.on(`event:${key}`, async (data) => {
-      await cb(data);
+    this._socket.on(`event:${key}`, async (dataJson: string) => {
+      await cb(JsonConvert.parse(dataJson));
     });
 
     await this._sendCommandAsync("addEventListener", [key, eventType.name, info]);

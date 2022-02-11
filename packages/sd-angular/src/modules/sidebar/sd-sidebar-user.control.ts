@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, HostBinding, Input, NgZone } from "@angular/core";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 
 // @ts-ignore
@@ -13,7 +13,7 @@ import backgroundImage from "../../../assets/user_bg.jpg";
       <div class="sd-padding-lg">
         <ng-content></ng-content>
       </div>
-      <div class="_menu-button" *ngIf="menuTitle" (click)="menuOpen = !menuOpen">
+      <div class="_menu-button" *ngIf="menuTitle" (click)="onMenuOpenButtonClick()">
         {{ menuTitle }}
         <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"></sd-collapse-icon>
       </div>
@@ -73,4 +73,11 @@ export class SdSidebarUserControl {
   @Input("content.style")
   @SdInputValidate(String)
   public contentStyle?: string;
+
+  public constructor(private readonly _zone: NgZone) {
+  }
+
+  public onMenuOpenButtonClick(): void {
+    this.menuOpen = !this.menuOpen;
+  }
 }

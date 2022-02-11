@@ -13,7 +13,6 @@ export class JsonConvert {
                           }): string {
     const replacer = (key: string | undefined, value: any): any => {
       const currValue = options?.replacer !== undefined ? options.replacer(key, value) : value;
-
       if (currValue instanceof Date) {
         return { __type__: "Date", data: currValue.toISOString() };
       }

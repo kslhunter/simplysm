@@ -80,7 +80,6 @@ export class SdModalProvider {
           modalEntryRef.instance.open = value;
           if (!modalEntryRef.instance.open) {
             userModalRef.instance.close();
-            this._root.appRef.tick();
           }
         });
 
@@ -90,7 +89,6 @@ export class SdModalProvider {
         this.modalCount++;
         modalEntryRef.instance.open = true;
         await userModalRef.instance.sdOnOpen(param);
-        this._root.appRef.tick();
 
         await Wait.until(() => modalEntryRef.instance.initialized);
         modalEntryEl.findFirst("> ._dialog")!.focus();

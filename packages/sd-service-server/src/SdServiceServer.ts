@@ -9,6 +9,7 @@ import { FsUtil, Logger } from "@simplysm/sd-core-node";
 import { ISdServiceRequest } from "@simplysm/sd-service-common";
 import { ISdServiceServerOptions, SdServiceBase } from "./commons";
 import { EventEmitter } from "events";
+import { JsonConvert } from "@simplysm/sd-core-common";
 
 export class SdServiceServer extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-service", this.constructor.name]);
@@ -91,7 +92,8 @@ export class SdServiceServer extends EventEmitter {
       }
     });
 
-    socket.on("request", async (req: ISdServiceRequest) => {
+    socket.on("request", async (reqJson: string) => {
+      const req = JsonConvert.parse(reqJson) as ISdServiceRequest;
       this._logger.debug("요청 받음", req);
 
       try {
@@ -124,7 +126,7 @@ export class SdServiceServer extends EventEmitter {
             type: "response",
             body: result
           };
-          socket.emit(`response:${req.uuid}`, res);
+          socket.emit(`response:${req.uuid}`, JsonConvert.stringify(res));
         }
         else if (req.command === "addEventListener") {
           const key = req.params[0] as string;
@@ -136,7 +138,7 @@ export class SdServiceServer extends EventEmitter {
           const res = {
             type: "response"
           };
-          socket.emit(`response:${req.uuid}`, res);
+          socket.emit(`response:${req.uuid}`, JsonConvert.stringify(res));
         }
         else if (req.command === "getEventListenerInfos") {
           const eventName = req.params[0] as string;
@@ -147,7 +149,7 @@ export class SdServiceServer extends EventEmitter {
               .filter((item) => item.eventName === eventName)
               .map((item) => ({ key: item.key, info: item.info }))
           };
-          socket.emit(`response:${req.uuid}`, res);
+          socket.emit(`response:${req.uuid}`, JsonConvert.stringify(res));
         }
         else if (req.command === "emitEvent") {
           const targetKeys = req.params[0] as string[];
@@ -156,14 +158,14 @@ export class SdServiceServer extends EventEmitter {
           const listeners = this._eventListeners.filter((item) => targetKeys.includes(item.key));
           for (const listener of listeners) {
             if (listener.socket.connected) {
-              listener.socket.emit(`event:${listener.key}`, data);
+              listener.socket.emit(`event:${listener.key}`, JsonConvert.stringify(data));
             }
           }
 
           const res = {
             type: "response"
           };
-          socket.emit(`response:${req.uuid}`, res);
+          socket.emit(`response:${req.uuid}`, JsonConvert.stringify(res));
         }
         else {
           // 에러 응답
@@ -171,7 +173,7 @@ export class SdServiceServer extends EventEmitter {
             type: "error",
             body: "요청이 잘못되었습니다."
           };
-          socket.emit(`response:${req.uuid}`, res);
+          socket.emit(`response:${req.uuid}`, JsonConvert.stringify(res));
         }
       }
       catch (err) {
@@ -180,7 +182,7 @@ export class SdServiceServer extends EventEmitter {
           type: "error",
           body: err.message
         };
-        socket.emit(`response:${req.uuid}`, res);
+        socket.emit(`response:${req.uuid}`, JsonConvert.stringify(res));
       }
     });
   }
