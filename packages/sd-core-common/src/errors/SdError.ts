@@ -1,4 +1,4 @@
-import * as os from "os";
+import os from "os";
 
 export class SdError extends Error {
   public innerError?: Error;

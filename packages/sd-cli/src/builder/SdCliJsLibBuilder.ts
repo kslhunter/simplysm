@@ -1,7 +1,7 @@
 import { ISdCliPackageBuildResult } from "../commons";
 import { EventEmitter } from "events";
 import { FsUtil, Logger, SdFsWatcher } from "@simplysm/sd-core-node";
-import * as path from "path";
+import path from "path";
 import { SdCliPackageLinter } from "../build-tool/SdCliPackageLinter";
 
 export class SdCliJsLibBuilder extends EventEmitter {

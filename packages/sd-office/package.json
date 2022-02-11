@@ -1,0 +1,31 @@
+{
+  "name": "@simplysm/sd-office",
+  "version": "7.0.54",
+  "description": "심플리즘 패키지 - 오피스 모듈 (node)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm7.git",
+    "directory": "packages/sd-office"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "engines": {
+    "node": "^16"
+  },
+  "dependencies": {
+    "jszip": "^3.7.1",
+    "xml2js": "^0.4.23",
+    "xml-js": "^1.6.11",
+    "xlsx": "^0.18.0"
+  },
+  "devDependencies": {
+    "@types/xml2js": "^0.4.9"
+  },
+  "peerDependencies": {
+    "@simplysm/sd-core-common": "7.0.54"
+  }
+}

@@ -1,4 +1,4 @@
-import * as crypto from "crypto";
+import crypto from "crypto";
 import { SdServiceServerConfigUtil } from "../utils/SdServiceServerConfigUtil";
 import { SdServiceBase } from "../commons";
 

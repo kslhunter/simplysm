@@ -1,4 +1,4 @@
-import * as ftp from "basic-ftp";
+import ftp from "basic-ftp";
 import { ISdStorage, ISdStorageConnectionConfig } from "../commons";
 import { Readable } from "stream";
 

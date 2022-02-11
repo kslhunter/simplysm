@@ -1,4 +1,4 @@
-import * as nodemailer from "nodemailer";
+import nodemailer from "nodemailer";
 import { SdServiceServerConfigUtil } from "../utils/SdServiceServerConfigUtil";
 import { ISmtpClientSendByDefaultOption, ISmtpClientSendOption } from "@simplysm/sd-service-common";
 import { SdServiceBase } from "../commons";

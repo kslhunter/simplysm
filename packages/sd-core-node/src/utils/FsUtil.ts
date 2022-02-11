@@ -1,8 +1,8 @@
-import * as path from "path";
+import path from "path";
 import glob from "glob";
-import * as os from "os";
-import * as fs from "fs";
-import * as crypto from "crypto";
+import os from "os";
+import fs from "fs";
+import crypto from "crypto";
 import { JsonConvert, SdError } from "@simplysm/sd-core-common";
 
 export class FsUtil {

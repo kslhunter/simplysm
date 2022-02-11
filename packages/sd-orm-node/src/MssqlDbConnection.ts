@@ -1,5 +1,5 @@
 import { Logger } from "@simplysm/sd-core-node";
-import * as tedious from "tedious";
+import tedious from "tedious";
 import { EventEmitter } from "events";
 import {
   DateOnly,

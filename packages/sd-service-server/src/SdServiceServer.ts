@@ -1,5 +1,5 @@
-import * as https from "https";
-import * as http from "http";
+import https from "https";
+import http from "http";
 import * as socketIo from "socket.io";
 import { NextHandleFunction } from "connect";
 import url from "url";

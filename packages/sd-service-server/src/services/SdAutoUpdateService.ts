@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as semver from "semver";
+import path from "path";
+import semver from "semver";
 import { SdServiceBase } from "../commons";
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
 

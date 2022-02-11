@@ -1,4 +1,4 @@
-import * as os from "os";
+import os from "os";
 
 export class FunctionUtil {
   public static parse(fn: (...args: any[]) => any): { params: string[]; returnContent: string } {

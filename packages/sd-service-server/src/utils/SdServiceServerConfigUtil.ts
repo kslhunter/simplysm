@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as url from "url";
+import path from "path";
+import url from "url";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 import { FsUtil } from "@simplysm/sd-core-node";
 

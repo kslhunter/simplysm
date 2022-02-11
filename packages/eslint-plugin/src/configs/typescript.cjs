@@ -36,7 +36,7 @@ module.exports = {
     "@typescript-eslint/explicit-member-accessibility": ["error"],
     "@typescript-eslint/require-await": ["error"],
     "@typescript-eslint/await-thenable": ["error"],
-    "@typescript-eslint/quotes": ["error"],
+    "@typescript-eslint/quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
     "@typescript-eslint/semi": ["error"],
     "@typescript-eslint/no-shadow": ["error"],
     "@typescript-eslint/member-delimiter-style": ["error"],

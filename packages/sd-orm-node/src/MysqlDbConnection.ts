@@ -1,5 +1,5 @@
 import { Logger } from "@simplysm/sd-core-node";
-import * as mysql from "mysql";
+import mysql from "mysql";
 import { EventEmitter } from "events";
 import { NotImplementError, SdError, StringUtil } from "@simplysm/sd-core-common";
 import { IDbConnection } from "./IDbConnection";

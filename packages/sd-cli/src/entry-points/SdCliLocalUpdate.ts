@@ -1,6 +1,6 @@
 import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
 import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
-import * as path from "path";
+import path from "path";
 
 export class SdCliLocalUpdate {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);

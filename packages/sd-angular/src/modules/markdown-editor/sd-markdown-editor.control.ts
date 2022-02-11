@@ -10,7 +10,7 @@ import {
   SimpleChanges
 } from "@angular/core";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
-import * as marked from "marked";
+import marked from "marked";
 import { SdInputValidate } from "../../decorators/SdInputValidate";
 import { faEye as fasEye } from "@fortawesome/pro-solid-svg-icons/faEye";
 import { faPen as fasPen } from "@fortawesome/pro-solid-svg-icons/faPen";

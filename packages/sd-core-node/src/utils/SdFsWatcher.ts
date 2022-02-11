@@ -1,4 +1,4 @@
-import * as chokidar from "chokidar";
+import chokidar from "chokidar";
 import { ObjectUtil } from "@simplysm/sd-core-common";
 
 export class SdFsWatcher {

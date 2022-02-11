@@ -3,7 +3,7 @@ import { DateTime } from "../types/DateTime";
 import { DateOnly } from "../types/DateOnly";
 import { Time } from "../types/Time";
 import { Uuid } from "../types/Uuid";
-import * as os from "os";
+import os from "os";
 import { WrappedType } from "../types/WrappedType";
 import { NeverEntryError } from "../errors/NeverEntryError";
 import { UnwrappedType } from "../types/UnwrappedType";

@@ -1,8 +1,8 @@
 import { ITsconfig } from "../commons";
-import * as path from "path";
+import path from "path";
 import { FsUtil, PathUtil } from "@simplysm/sd-core-node";
-import * as os from "os";
-import * as chokidar from "chokidar";
+import os from "os";
+import chokidar from "chokidar";
 
 export class SdCliIndexFileGenerator {
   private readonly _indexFilePath = path.resolve(this.rootPath, "src/index.ts");

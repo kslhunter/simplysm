@@ -12,7 +12,7 @@ module.exports = {
     "no-warning-comments": ["warn"],
 
     "require-await": ["error"],
-    "quotes": ["error"],
+    "quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
     "semi": ["error"],
     "no-shadow": ["error"],
     "no-duplicate-imports": ["error"],

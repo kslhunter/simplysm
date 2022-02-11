@@ -29,8 +29,5 @@
     "strictTemplates": true,
     "strictInputTypes": false,
     "strictOutputEventTypes": false
-  },
-  "files": [
-    "./src/index.ts"
-  ]
+  }
 }

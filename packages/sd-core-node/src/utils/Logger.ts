@@ -1,6 +1,6 @@
-import * as path from "path";
+import path from "path";
 import { FsUtil } from "./FsUtil";
-import * as os from "os";
+import os from "os";
 import { DateTime, DeepPartial, MathUtil, ObjectUtil } from "@simplysm/sd-core-common";
 
 export enum LoggerStyle {

@@ -1,4 +1,4 @@
-import * as path from "path";
+import path from "path";
 
 export class PathUtil {
   public static posix(...args: string[]): string {
