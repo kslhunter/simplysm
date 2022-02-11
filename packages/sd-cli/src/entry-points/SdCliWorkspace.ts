@@ -109,7 +109,10 @@ export class SdCliWorkspace {
 
     this._logger.log(`서버(${pkg.name}) 재시작...`);
     try {
-      const serverInfo = this._serverInfoMap.getOrCreate(path.basename(pkg.rootPath), { middlewares: [], clientInfos: [] });
+      const serverInfo = this._serverInfoMap.getOrCreate(path.basename(pkg.rootPath), {
+        middlewares: [],
+        clientInfos: []
+      });
       if (serverInfo.server) {
         await serverInfo.server.closeAsync();
         delete serverInfo.server;
@@ -202,11 +205,11 @@ export class SdCliWorkspace {
     this._logger.debug("프로젝트 및 패키지 버전 설정...");
     await this._upgradeVersionAsync(pkgs);
 
-    this._logger.debug("노드패키지 업데이트...");
-    await new SdCliNpm(this._rootPath).updateAsync();
-
     // 빌드
     if (!opt.noBuild) {
+      this._logger.debug("노드패키지 업데이트...");
+      await new SdCliNpm(this._rootPath).updateAsync();
+
       this._logger.debug("빌드를 시작합니다...");
       await this._buildPkgsAsync(pkgs);
     }
