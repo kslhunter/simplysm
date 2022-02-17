@@ -1,25 +1,31 @@
 import {
   Declaration,
   Expression,
+  File,
   isArrayExpression,
+  isAssignmentExpression,
+  isCallExpression,
   isClassDeclaration,
   isExportDeclaration,
   isExportDefaultDeclaration,
   isExportNamedDeclaration,
   isExportSpecifier,
+  isExpressionStatement,
   isFunctionDeclaration,
   isIdentifier,
   isImportDeclaration,
   isImportSpecifier,
+  isMemberExpression,
   isObjectExpression,
   isSpreadElement,
   isStringLiteral,
   isVariableDeclaration,
   PatternLike,
   SpreadElement,
-  Statement
+  Statement,
+  traverseFast
 } from "@babel/types";
-import babelParser from "@babel/parser";
+import babelParser, { ParseResult } from "@babel/parser";
 import { FsUtil } from "@simplysm/sd-core-node";
 import path from "path";
 import { TSdCliBbMetadata } from "./SdCliBbRootMetadata";
@@ -31,9 +37,11 @@ import {
   SdCliBbVariableMetadata
 } from "./TSdCliBbTypeMetadata";
 import { SdCliBbUtil } from "./SdCliBbUtil";
+import { NeverEntryError } from "@simplysm/sd-core-common";
 
 export class SdCliBbFileMetadata {
-  public readonly rawMetas: Statement[] = [];
+  public readonly ast: ParseResult<File>;
+  public readonly rawMetas: Statement[];
 
   public constructor(public readonly filePath: string) {
     let realFilePath: string | undefined;
@@ -48,7 +56,8 @@ export class SdCliBbFileMetadata {
     }
 
     const fileContent = FsUtil.readFile(realFilePath);
-    this.rawMetas = babelParser.parse(fileContent, { sourceType: "module" }).program.body;
+    this.ast = babelParser.parse(fileContent, { sourceType: "module" });
+    this.rawMetas = this.ast.program.body;
   }
 
   private _exportsCache?: { exportedName: string; target: TSdCliBbMetadata }[];
@@ -112,7 +121,7 @@ export class SdCliBbFileMetadata {
                     target: {
                       filePath: moduleFilePath,
                       name: specifier.local.name,
-                      __TDeclRef__: "__TDeclRef__"
+                      __TSdCliMetaRef__: "__TSdCliMetaRef__"
                     }
                   });
                 }
@@ -120,7 +129,7 @@ export class SdCliBbFileMetadata {
                   const moduleName = rawMeta.source.value;
                   result.push({
                     exportedName,
-                    target: { moduleName, name: specifier.local.name, __TDeclRef__: "__TDeclRef__" }
+                    target: { moduleName, name: specifier.local.name, __TSdCliMetaRef__: "__TSdCliMetaRef__" }
                   });
                 }
               }
@@ -151,7 +160,7 @@ export class SdCliBbFileMetadata {
             target: {
               filePath: moduleFilePath,
               name: "*",
-              __TDeclRef__: "__TDeclRef__"
+              __TSdCliMetaRef__: "__TSdCliMetaRef__"
             }
           });
         }
@@ -167,7 +176,7 @@ export class SdCliBbFileMetadata {
 
   private readonly _findMetaFromOutsideCache = new Map<string, TSdCliBbMetadata>();
 
-  public findMetaFromOutside(name: string): TSdCliBbMetadata {
+  public findMetaFromOutside(name: string): TSdCliBbMetadata | undefined {
     const cache = this._findMetaFromOutsideCache.get(name);
     if (cache !== undefined) return cache;
 
@@ -225,7 +234,7 @@ export class SdCliBbFileMetadata {
                     const result = {
                       filePath: moduleFilePath,
                       name: specifier.local.name,
-                      __TDeclRef__: "__TDeclRef__" as const
+                      __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
                     };
                     this._findMetaFromOutsideCache.set(name, result);
                     return result;
@@ -235,7 +244,7 @@ export class SdCliBbFileMetadata {
                     const result = {
                       moduleName,
                       name: specifier.local.name,
-                      __TDeclRef__: "__TDeclRef__" as const
+                      __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
                     };
                     this._findMetaFromOutsideCache.set(name, result);
                     return result;
@@ -261,7 +270,7 @@ export class SdCliBbFileMetadata {
       }
     }
 
-    throw SdCliBbUtil.error(`'${name}'에 대한 'export'를 찾을 수 없습니다.`, this.filePath);
+    return undefined;
   }
 
   private readonly _findMetaFromInsideCache = new Map<string, TSdCliBbMetadata>();
@@ -288,7 +297,7 @@ export class SdCliBbFileMetadata {
                   const result = {
                     filePath: moduleFilePath,
                     name: specifier.local.name,
-                    __TDeclRef__: "__TDeclRef__" as const
+                    __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
                   };
                   this._findMetaFromInsideCache.set(localName, result);
                   return result;
@@ -298,7 +307,7 @@ export class SdCliBbFileMetadata {
                   const result = {
                     moduleName,
                     name: specifier.local.name,
-                    __TDeclRef__: "__TDeclRef__" as const
+                    __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
                   };
                   this._findMetaFromInsideCache.set(localName, result);
                   return result;
@@ -330,7 +339,7 @@ export class SdCliBbFileMetadata {
                   const result = {
                     filePath: moduleFilePath,
                     name: specifier.imported.name,
-                    __TDeclRef__: "__TDeclRef__" as const
+                    __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
                   };
                   this._findMetaFromInsideCache.set(localName, result);
                   return result;
@@ -340,7 +349,7 @@ export class SdCliBbFileMetadata {
                   const result = {
                     moduleName,
                     name: specifier.imported.name,
-                    __TDeclRef__: "__TDeclRef__" as const
+                    __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
                   };
                   this._findMetaFromInsideCache.set(localName, result);
                   return result;
@@ -405,5 +414,130 @@ export class SdCliBbFileMetadata {
     }
 
     throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
+  }
+
+  private readonly _getNgDecoArgCache = new Map<string, SdCliBbObjectMetadata>();
+
+  public getNgDecoArg(className: string): SdCliBbObjectMetadata {
+    if (this._getNgDecoArgCache.has(className)) {
+      return this._getNgDecoArgCache.get(className)!;
+    }
+
+    for (const meta of this.rawMetas) {
+      // 'compilationMode: partial' 일때
+      if (
+        isExpressionStatement(meta) &&
+        isCallExpression(meta.expression) &&
+        (
+          (
+            isMemberExpression(meta.expression.callee) &&
+            isIdentifier(meta.expression.callee.property) &&
+            meta.expression.callee.property.name === "ɵɵngDeclareClassMetadata"
+          ) ||
+          (
+            isIdentifier(meta.expression.callee) &&
+            meta.expression.callee.name === "ngDeclareClassMetadata"
+          )
+        ) &&
+        isObjectExpression(meta.expression.arguments[0])
+      ) {
+        const objMeta = new SdCliBbObjectMetadata(this, meta.expression.arguments[0]);
+        const typePropVal = objMeta.getPropValue("type");
+        if (
+          typePropVal instanceof SdCliBbClassMetadata &&
+          typePropVal.name === className
+        ) {
+          const decos = objMeta.getPropValue("decorators");
+          if (
+            decos instanceof SdCliBbArrayMetadata &&
+            decos.value[0] instanceof SdCliBbObjectMetadata
+          ) {
+            const args = decos.value[0].getPropValue("args");
+            if (
+              args instanceof SdCliBbArrayMetadata &&
+              args.value[0] instanceof SdCliBbObjectMetadata
+            ) {
+              this._getNgDecoArgCache.set(className, args.value[0]);
+              return args.value[0];
+            }
+          }
+          else {
+            throw new NeverEntryError();
+          }
+        }
+      }
+    }
+
+    // 'compilationMode: full' 일때
+    let result: SdCliBbObjectMetadata | undefined;
+    traverseFast(this.ast, (node) => {
+      if (
+        isCallExpression(node) &&
+        (
+          (
+            isMemberExpression(node.callee) &&
+            isIdentifier(node.callee.property) &&
+            node.callee.property.name === "ɵsetClassMetadata"
+          ) ||
+          (
+            isIdentifier(node.callee) &&
+            node.callee.name === "setClassMetadata"
+          )
+        ) &&
+        isIdentifier(node.arguments[0]) &&
+        node.arguments[0].name === className &&
+        isArrayExpression(node.arguments[1])
+      ) {
+        const decos = new SdCliBbArrayMetadata(this, node.arguments[1]);
+        if (decos.value[0] instanceof SdCliBbObjectMetadata) {
+          const args = decos.value[0].getPropValue("args");
+          if (
+            args instanceof SdCliBbArrayMetadata &&
+            args.value[0] instanceof SdCliBbObjectMetadata
+          ) {
+            result = args.value[0];
+          }
+        }
+        else {
+          throw new NeverEntryError();
+        }
+      }
+    });
+
+    if (result === undefined) {
+      throw new NeverEntryError(this.filePath + "," + className);
+    }
+
+    this._getNgDecoArgCache.set(className, result);
+    return result;
+  }
+
+  public getNgDecoPropValue(className: string, decoName: string, propName: string): TSdCliBbMetadata | undefined {
+    for (const meta of this.rawMetas) {
+      if (
+        isExpressionStatement(meta) &&
+        isAssignmentExpression(meta.expression) &&
+        isMemberExpression(meta.expression.left) &&
+        isIdentifier(meta.expression.left.object) &&
+        meta.expression.left.object.name === className &&
+        isIdentifier(meta.expression.left.property)
+      ) {
+        if (meta.expression.left.property.name === decoName) {
+          if (
+            isCallExpression(meta.expression.right) &&
+            meta.expression.right.arguments.length > 0 &&
+            isObjectExpression(meta.expression.right.arguments[0])
+          ) {
+            const dirObjMeta = new SdCliBbObjectMetadata(this, meta.expression.right.arguments[0]);
+            return dirObjMeta.getPropValue(propName);
+          }
+          else {
+            throw new NeverEntryError();
+          }
+        }
+      }
+    }
+
+    throw new NeverEntryError();
   }
 }

@@ -143,13 +143,13 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
                                  (click)="onColumnOrderingHeaderClick($event, columnControl)">
                         <div style="position: absolute; right: 0; display: inline-block;"
                              class="sd-background-color-grey-lightest">
-                          <fa-icon-layer>
+                          <fa-layers>
                             <fa-icon icon="sort" class="sd-text-brightness-lightest"></fa-icon>
                             <fa-icon icon="sort-down"
                                      *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></fa-icon>
                             <fa-icon icon="sort-up"
                                      *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></fa-icon>
-                          </fa-icon-layer>
+                          </fa-layers>
                           <small
                             style="padding-right: 2px;">{{ getColumnOrderingOrderText(columnControl.key) }}</small>
                         </div>
@@ -202,13 +202,13 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
                                  (click)="onColumnOrderingHeaderClick($event, columnControl)">
                         <div style="position: absolute; right: 0; display: inline-block;"
                              class="sd-background-color-grey-lightest">
-                          <fa-icon-layer>
+                          <fa-layers>
                             <fa-icon icon="sort" class="sd-text-brightness-lightest"></fa-icon>
                             <fa-icon icon="sort-down"
                                      *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></fa-icon>
                             <fa-icon icon="sort-up"
                                      *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></fa-icon>
-                          </fa-icon-layer>
+                          </fa-layers>
                           <small
                             style="padding-right: 2px;">{{ getColumnOrderingOrderText(columnControl.key) }}</small>
                         </div>

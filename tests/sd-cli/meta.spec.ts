@@ -1,9 +1,9 @@
-import { NgModuleGenerator, SdCliIndexFileGenerator } from "@simplysm/sd-cli";
+import { NgModuleGenerator } from "@simplysm/sd-cli";
 import path from "path";
 
 describe("meta", () => {
   it("test", async () => {
-    const rootPath = path.resolve(process.cwd(), "packages", "sd-angular");
+    const rootPath = path.resolve(process.cwd(), "../simplysm-ts/packages/client-common");
     const ngModuleGen = new NgModuleGenerator(rootPath, [
       "controls",
       "directives",
@@ -16,7 +16,7 @@ describe("meta", () => {
     ]);
     await ngModuleGen.runAsync();
 
-    const indexGen = new SdCliIndexFileGenerator(rootPath, { polyfills: ["@simplysm/sd-core-browser"] });
-    await indexGen.runAsync();
+    // const indexGen = new SdCliIndexFileGenerator(rootPath, { polyfills: ["@simplysm/sd-core-browser"] });
+    // await indexGen.runAsync();
   });
 });

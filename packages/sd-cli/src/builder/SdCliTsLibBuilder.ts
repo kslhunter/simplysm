@@ -39,16 +39,16 @@ export class SdCliTsLibBuilder extends EventEmitter {
     super();
     this._linter = new SdCliPackageLinter(this._rootPath);
 
-    // tsconfig
-    this._tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
-    const tsconfig = FsUtil.readJson(this._tsconfigFilePath);
-    this._parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._rootPath);
-
     // package.json
     this._npmConfig = FsUtil.readJson(path.resolve(this._rootPath, "package.json"));
 
-    // else
+    // isAngular
     this._isAngular = SdCliNpmConfigUtil.getDependencies(this._npmConfig).defaults.includes("@angular/core");
+
+    // tsconfig
+    this._tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
+    const tsconfig = FsUtil.readJson(this._tsconfigFilePath);
+    this._parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._rootPath, this._isAngular ? tsconfig.angularCompilerOptions : undefined);
   }
 
   public override on(event: "change", listener: () => void): this;

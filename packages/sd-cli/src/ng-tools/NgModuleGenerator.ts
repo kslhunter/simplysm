@@ -1,5 +1,5 @@
 import { SdCliTsRootMetadata } from "./typescript/SdCliTsRootMetadata";
-import { SdCliBbRootMetadata } from "./babel/SdCliBbRootMetadata";
+import { SdCliBbRootMetadata, TSdCliBbMetadata } from "./babel/SdCliBbRootMetadata";
 import { SdCliBbClassMetadata, SdCliBbObjectMetadata } from "./babel/TSdCliBbTypeMetadata";
 import {
   SdCliBbNgComponentMetadata,
@@ -53,6 +53,11 @@ export class NgModuleGenerator {
     await this._genFileAsync(genNgModules);
   }
 
+  private _findBbMetasFromMeta(srcMeta: TSdCliBbMetadata): TSdCliBbMetadata[] {
+    const metaTmp = typeof srcMeta !== "string" && "__TSdCliMetaRef__" in srcMeta ? this._bbMeta.findMeta(srcMeta) : srcMeta;
+    return metaTmp instanceof Array ? metaTmp : [metaTmp];
+  }
+
   private _getBbNgModuleDefs(): IBbNgModuleDef[] {
     const entryRecord = this._bbMeta.getEntryFileMetaRecord();
     const result: IBbNgModuleDef[] = [];
@@ -60,8 +65,7 @@ export class NgModuleGenerator {
     for (const moduleName of Object.keys(entryRecord)) {
       const fileMeta = entryRecord[moduleName];
       for (const exp of fileMeta.exports) {
-        const metaTmp = typeof exp.target !== "string" && "__TDeclRef__" in exp.target ? this._bbMeta.findMeta(exp.target) : exp.target;
-        const metas = metaTmp instanceof Array ? metaTmp : [metaTmp];
+        const metas = this._findBbMetasFromMeta(exp.target);
         for (const meta of metas) {
           if (meta instanceof SdCliBbClassMetadata) {
             if (meta.ngDecl instanceof SdCliBbNgModuleMetadata) {
@@ -69,7 +73,7 @@ export class NgModuleGenerator {
 
               const resultItem: IBbNgModuleDef = {
                 moduleName,
-                name: exp.exportedName,
+                name: exp.exportedName === "*" ? meta.name : exp.exportedName,
                 providers: [],
                 exports: [],
                 selectors: [],
@@ -77,49 +81,37 @@ export class NgModuleGenerator {
               };
 
               for (const modProv of ngDecl.def.providers) {
-                if (modProv instanceof SdCliBbClassMetadata) {
-                  const ref = this._bbMeta.findExportRef({
-                    filePath: modProv.filePath,
-                    name: modProv.name
-                  });
-                  if (ref) {
-                    resultItem.providers.push(ref);
-                  }
-                }
-                else if (modProv instanceof SdCliBbObjectMetadata) {
-                  // 무시
-                }
-                else {
+                const modProvMetas = this._findBbMetasFromMeta(modProv);
+                if (modProvMetas.length === 0) {
                   throw new NeverEntryError();
+                }
+
+                for (const modProvMeta of modProvMetas) {
+                  if (modProvMeta instanceof SdCliBbClassMetadata) {
+                    const ref = this._bbMeta.findExportRef({
+                      filePath: modProvMeta.filePath,
+                      name: modProvMeta.name
+                    });
+                    if (ref) {
+                      resultItem.providers.push(ref);
+                    }
+                  }
+                  else if (modProvMeta instanceof SdCliBbObjectMetadata) {
+                    // 무시
+                  }
+                  else {
+                    throw new NeverEntryError();
+                  }
                 }
               }
 
               for (const modExp of ngDecl.def.exports) {
-                if (modExp instanceof SdCliBbClassMetadata) {
-                  const ref = this._bbMeta.findExportRef({
-                    filePath: modExp.filePath,
-                    name: modExp.name
-                  });
-                  if (ref) {
-                    resultItem.exports.push(ref);
-                  }
-
-                  if (modExp.ngDecl instanceof SdCliBbNgDirectiveMetadata) {
-                    resultItem.selectors.push(modExp.ngDecl.selector);
-                  }
-                  else if (modExp.ngDecl instanceof SdCliBbNgComponentMetadata) {
-                    resultItem.selectors.push(modExp.ngDecl.selector);
-                  }
-                  else if (modExp.ngDecl instanceof SdCliBbNgPipeMetadata) {
-                    resultItem.pipeNames.push(modExp.ngDecl.pipeName);
-                  }
+                const modExpMetas = this._findBbMetasFromMeta(modExp);
+                if (modExpMetas.length === 0) {
+                  throw new NeverEntryError();
                 }
-                else if (typeof modExp !== "string" && "__TDeclRef__" in modExp) {
-                  const modExpMeta = this._bbMeta.findMeta(modExp);
-                  if (modExpMeta instanceof Array) {
-                    throw new NeverEntryError();
-                  }
 
+                for (const modExpMeta of modExpMetas) {
                   if (modExpMeta instanceof SdCliBbClassMetadata) {
                     const ref = this._bbMeta.findExportRef({
                       filePath: modExpMeta.filePath,
@@ -139,9 +131,9 @@ export class NgModuleGenerator {
                       resultItem.pipeNames.push(modExpMeta.ngDecl.pipeName);
                     }
                   }
-                }
-                else {
-                  throw new NeverEntryError();
+                  else {
+                    throw new NeverEntryError();
+                  }
                 }
               }
 
@@ -214,17 +206,17 @@ export class NgModuleGenerator {
         if ("moduleName" in imp) {
           for (const mod of bbModules) {
             if (mod.exports.some((item) => item.moduleName === imp.moduleName && item.name === imp.name)) {
-              imports.push({ moduleName: mod.moduleName, name: mod.name, __TDeclRef__: "__TDeclRef__" });
+              imports.push({ moduleName: mod.moduleName, name: mod.name, __TSdCliMetaRef__: "__TSdCliMetaRef__" });
             }
             if (mod.providers.some((item) => item.moduleName === imp.moduleName && item.name === imp.name)) {
-              imports.push({ moduleName: mod.moduleName, name: mod.name, __TDeclRef__: "__TDeclRef__" });
+              imports.push({ moduleName: mod.moduleName, name: mod.name, __TSdCliMetaRef__: "__TSdCliMetaRef__" });
             }
           }
         }
         else {
           for (const mod of presetModules) {
             if (mod.source && mod.source.filePath === imp.filePath && mod.source.name === imp.name) {
-              imports.push({ filePath: mod.filePath, name: mod.name, __TDeclRef__: "__TDeclRef__" });
+              imports.push({ filePath: mod.filePath, name: mod.name, __TSdCliMetaRef__: "__TSdCliMetaRef__" });
             }
           }
         }
@@ -242,13 +234,13 @@ export class NgModuleGenerator {
                 selector.replace(/\[/g, "[\\(").replace(/]/g, "\\)]")
               ].join(", ")) != null
             ) {
-              imports.push({ moduleName: mod.moduleName, name: mod.name, __TDeclRef__: "__TDeclRef__" });
+              imports.push({ moduleName: mod.moduleName, name: mod.name, __TSdCliMetaRef__: "__TSdCliMetaRef__" });
             }
           }
 
           for (const pipeName of mod.pipeNames) {
             if (new RegExp("| *" + pipeName + "[^\\w]").test(el.template)) {
-              imports.push({ moduleName: mod.moduleName, name: mod.name, __TDeclRef__: "__TDeclRef__" });
+              imports.push({ moduleName: mod.moduleName, name: mod.name, __TSdCliMetaRef__: "__TSdCliMetaRef__" });
             }
           }
         }
@@ -262,13 +254,13 @@ export class NgModuleGenerator {
                 mod.selector.replace(/\[/g, "[\\(").replace(/]/g, "\\)]")
               ].join(", ")) != null
             ) {
-              imports.push({ filePath: mod.filePath, name: mod.name, __TDeclRef__: "__TDeclRef__" });
+              imports.push({ filePath: mod.filePath, name: mod.name, __TSdCliMetaRef__: "__TSdCliMetaRef__" });
             }
           }
 
           if (mod.pipeName !== undefined) {
             if (new RegExp("| *" + mod.pipeName + "[^\\w]").test(el.template)) {
-              imports.push({ filePath: mod.filePath, name: mod.name, __TDeclRef__: "__TDeclRef__" });
+              imports.push({ filePath: mod.filePath, name: mod.name, __TSdCliMetaRef__: "__TSdCliMetaRef__" });
             }
           }
         }

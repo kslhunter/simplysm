@@ -43,7 +43,7 @@ export class SdCliBbRootMetadata {
       const result: TSdCliBbMetadata[] = [];
       for (const exp of fileMeta.exports) {
         const meta = exp.target;
-        if (typeof meta !== "string" && "__TDeclRef__" in meta) {
+        if (typeof meta !== "string" && "__TSdCliMetaRef__" in meta) {
           const resultMeta = this.findMeta(meta);
           if (resultMeta instanceof Array) {
             result.push(...resultMeta);
@@ -60,7 +60,11 @@ export class SdCliBbRootMetadata {
     }
     else {
       const meta = fileMeta.findMetaFromOutside(ref.name);
-      if (typeof meta !== "string" && "__TDeclRef__" in meta) {
+      if (meta === undefined) {
+        throw new NeverEntryError();
+      }
+
+      if (typeof meta !== "string" && "__TSdCliMetaRef__" in meta) {
         return this.findMeta(meta);
       }
       return meta;
@@ -78,7 +82,7 @@ export class SdCliBbRootMetadata {
           exp.target.filePath === localRef.filePath
         ) {
           if (exp.target.name === "*") {
-            throw new NeverEntryError();
+            return { moduleName, name: localRef.name };
           }
           else if (exp.target.name === localRef.name) {
             return { moduleName, name: exp.exportedName };

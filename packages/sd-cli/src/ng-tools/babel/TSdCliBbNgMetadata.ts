@@ -1,14 +1,6 @@
-import {
-  isAssignmentExpression,
-  isCallExpression,
-  isExpressionStatement,
-  isIdentifier,
-  isMemberExpression,
-  isObjectExpression
-} from "@babel/types";
 import { NeverEntryError } from "@simplysm/sd-core-common";
 import { SdCliBbFileMetadata } from "./SdCliBbFileMetadata";
-import { SdCliBbArrayMetadata, SdCliBbObjectMetadata, SdCliBbVariableMetadata } from "./TSdCliBbTypeMetadata";
+import { SdCliBbArrayMetadata, SdCliBbVariableMetadata } from "./TSdCliBbTypeMetadata";
 import { TSdCliBbMetadata } from "./SdCliBbRootMetadata";
 
 export type TSdCliBbNgMetadata =
@@ -33,7 +25,21 @@ export class SdCliBbNgModuleMetadata {
       providers: []
     };
 
-    for (const meta of this._fileMeta.rawMetas) {
+    const argObjMeta = this._fileMeta.getNgDecoArg(this._className);
+
+    const expVal = argObjMeta.getPropValue("exports") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵmod", "exports");
+    if (expVal !== undefined) {
+      const expMetas = this._getExportAndProviderMetas(expVal);
+      result.exports.push(...expMetas);
+    }
+
+    const provVal = argObjMeta.getPropValue("providers") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵmod", "providers");
+    if (provVal !== undefined) {
+      const provMetas = this._getExportAndProviderMetas(provVal);
+      result.providers.push(...provMetas);
+    }
+
+    /*for (const meta of this._fileMeta.rawMetas) {
       if (
         isExpressionStatement(meta) &&
         isAssignmentExpression(meta.expression) &&
@@ -86,24 +92,23 @@ export class SdCliBbNgModuleMetadata {
           }
         }
       }
-    }
+    }*/
 
     this._defCache = result;
     return result;
   }
 
-
-  private _getProviderMetas(meta: TSdCliBbMetadata): TSdCliBbMetadata[] {
+  private _getExportAndProviderMetas(meta: TSdCliBbMetadata): TSdCliBbMetadata[] {
     const result: TSdCliBbMetadata[] = [];
 
     if (meta instanceof SdCliBbArrayMetadata) {
       for (const metaItem of meta.value.filterExists()) {
-        result.push(...this._getProviderMetas(metaItem));
+        result.push(...this._getExportAndProviderMetas(metaItem));
       }
     }
     else if (meta instanceof SdCliBbVariableMetadata) {
       if (meta.value !== undefined) {
-        result.push(...this._getProviderMetas(meta.value));
+        result.push(...this._getExportAndProviderMetas(meta.value));
       }
     }
     else {
@@ -130,10 +135,11 @@ export class SdCliBbNgDirectiveMetadata {
   public get selector(): string {
     if (this._selectorCache !== undefined) return this._selectorCache;
 
-    const val = SdCliNgMetadataUtil.getDecoPropValue(this._fileMeta, this._className, "ɵdir", "selector");
+    const argObjMeta = this._fileMeta.getNgDecoArg(this._className);
+    const val = argObjMeta.getPropValue("selector") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵdir", "selector");
     if (typeof val === "string") {
       this._selectorCache = val;
-      return val;
+      return this._selectorCache;
     }
     else {
       throw new NeverEntryError();
@@ -151,10 +157,11 @@ export class SdCliBbNgComponentMetadata {
   public get selector(): string {
     if (this._selectorCache !== undefined) return this._selectorCache;
 
-    const val = SdCliNgMetadataUtil.getDecoPropValue(this._fileMeta, this._className, "ɵcmp", "selector");
+    const argObjMeta = this._fileMeta.getNgDecoArg(this._className);
+    const val = argObjMeta.getPropValue("selector") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵcmp", "selector");
     if (typeof val === "string") {
       this._selectorCache = val;
-      return val;
+      return this._selectorCache;
     }
     else {
       throw new NeverEntryError();
@@ -172,7 +179,8 @@ export class SdCliBbNgPipeMetadata {
   public get pipeName(): string {
     if (this._pipeNameCache !== undefined) return this._pipeNameCache;
 
-    const val = SdCliNgMetadataUtil.getDecoPropValue(this._fileMeta, this._className, "ɵpipe", "name");
+    const argObjMeta = this._fileMeta.getNgDecoArg(this._className);
+    const val = argObjMeta.getPropValue("name") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵpipe", "name");
     if (typeof val === "string") {
       this._pipeNameCache = val;
       return val;
@@ -188,6 +196,7 @@ interface ISdCliBbNgModuleDef {
   providers: TSdCliBbMetadata[];
 }
 
+/*
 class SdCliNgMetadataUtil {
   public static getDecoPropValue(fileMeta: SdCliBbFileMetadata, className: string, decoName: string, propName: string): TSdCliBbMetadata | undefined {
     for (const meta of fileMeta.rawMetas) {
@@ -218,3 +227,4 @@ class SdCliNgMetadataUtil {
     throw new NeverEntryError();
   }
 }
+*/

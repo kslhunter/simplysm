@@ -47,7 +47,7 @@ export class SdCliTsFileMetadata {
                     result.push({
                       filePath: moduleFilePath,
                       name: el.name.text,
-                      __TDeclRef__: "__TDeclRef__" as const
+                      __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
                     });
                   }
                 }
@@ -59,7 +59,7 @@ export class SdCliTsFileMetadata {
                 result.push({
                   filePath: moduleFilePath,
                   name: "default",
-                  __TDeclRef__: "__TDeclRef__" as const
+                  __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
                 });
               }
             }
@@ -71,7 +71,7 @@ export class SdCliTsFileMetadata {
                     result.push({
                       moduleName,
                       name: el.propertyName?.text ?? el.name.text,
-                      __TDeclRef__: "__TDeclRef__" as const
+                      __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
                     });
                   }
                 }
@@ -81,7 +81,7 @@ export class SdCliTsFileMetadata {
                     result.push({
                       moduleName,
                       name: nsUse,
-                      __TDeclRef__: "__TDeclRef__" as const
+                      __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
                     });
                   }
                 }
@@ -92,7 +92,7 @@ export class SdCliTsFileMetadata {
                   result.push({
                     moduleName: moduleName,
                     name: nsUse,
-                    __TDeclRef__: "__TDeclRef__" as const
+                    __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
                   });
                 }
               }
@@ -126,7 +126,7 @@ export class SdCliTsFileMetadata {
               result.push({
                 filePath: moduleFilePath,
                 name: el.name.text,
-                __TDeclRef__: "__TDeclRef__" as const
+                __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
               });
             }
           }
