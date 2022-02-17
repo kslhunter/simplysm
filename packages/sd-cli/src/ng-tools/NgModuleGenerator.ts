@@ -15,7 +15,7 @@ import { JSDOM } from "jsdom";
 import { FsUtil, PathUtil } from "@simplysm/sd-core-node";
 import os from "os";
 
-// TODO: 메타데이터 캐싱
+// TODO: 에러 메시지 처리
 export class NgModuleGenerator {
   private readonly _bbMeta: SdCliBbRootMetadata;
   private readonly _tsMeta: SdCliTsRootMetadata;
@@ -25,9 +25,13 @@ export class NgModuleGenerator {
 
   private readonly _fileWriterCache = new Map<string, string>();
 
-  public constructor(packagePath: string, private _sourceDirPaths: string[]) {
+  public constructor(packagePath: string, private readonly _srcDirRelPaths: string[]) {
     this._bbMeta = new SdCliBbRootMetadata(packagePath);
     this._tsMeta = new SdCliTsRootMetadata(packagePath);
+  }
+
+  public async clearModulesAsync(): Promise<void> {
+    await FsUtil.removeAsync(this._modulesPath);
   }
 
   public removeCaches(changedFilePaths: string[]): void {
@@ -52,89 +56,94 @@ export class NgModuleGenerator {
 
     for (const moduleName of Object.keys(entryRecord)) {
       const fileMeta = entryRecord[moduleName];
-      for (const expKey of fileMeta.exportMap.keys()) {
-        let exp = fileMeta.exportMap.get(expKey)!;
-        const meta = typeof exp !== "string" && "__TDeclRef__" in exp ? this._bbMeta.findMeta(exp) : exp;
+      for (const exp of fileMeta.exports) {
+        const metaTmp = typeof exp.target !== "string" && "__TDeclRef__" in exp.target ? this._bbMeta.findMeta(exp.target) : exp.target;
+        const metas = metaTmp instanceof Array ? metaTmp : [metaTmp];
+        for (const meta of metas) {
+          if (meta instanceof SdCliBbClassMetadata) {
+            if (meta.ngDecl instanceof SdCliBbNgModuleMetadata) {
+              const ngDecl = meta.ngDecl;
 
-        if (meta instanceof SdCliBbClassMetadata) {
-          if (meta.ngDecl instanceof SdCliBbNgModuleMetadata) {
-            const ngDecl = meta.ngDecl;
+              const resultItem: IBbNgModuleDef = {
+                moduleName,
+                name: exp.exportedName,
+                providers: [],
+                exports: [],
+                selectors: [],
+                pipeNames: []
+              };
 
-            const resultItem: IBbNgModuleDef = {
-              moduleName,
-              name: expKey,
-              providers: [],
-              exports: [],
-              selectors: [],
-              pipeNames: []
-            };
-
-            for (const modProv of ngDecl.def.providers) {
-              if (modProv instanceof SdCliBbClassMetadata) {
-                const ref = this._bbMeta.findExportRef({
-                  filePath: modProv.filePath,
-                  name: modProv.name
-                });
-                if (ref) {
-                  resultItem.providers.push(ref);
-                }
-              }
-              else if (modProv instanceof SdCliBbObjectMetadata) {
-                // 무시
-              }
-              else {
-                throw new NeverEntryError();
-              }
-            }
-
-            for (const modExp of ngDecl.def.exports) {
-              if (modExp instanceof SdCliBbClassMetadata) {
-                const ref = this._bbMeta.findExportRef({
-                  filePath: modExp.filePath,
-                  name: modExp.name
-                });
-                if (ref) {
-                  resultItem.exports.push(ref);
-                }
-
-                if (modExp.ngDecl instanceof SdCliBbNgDirectiveMetadata) {
-                  resultItem.selectors.push(modExp.ngDecl.selector);
-                }
-                else if (modExp.ngDecl instanceof SdCliBbNgComponentMetadata) {
-                  resultItem.selectors.push(modExp.ngDecl.selector);
-                }
-                else if (modExp.ngDecl instanceof SdCliBbNgPipeMetadata) {
-                  resultItem.pipeNames.push(modExp.ngDecl.pipeName);
-                }
-              }
-              else if (typeof modExp !== "string" && "__TDeclRef__" in modExp) {
-                const modExpMeta = this._bbMeta.findMeta(modExp);
-                if (modExpMeta instanceof SdCliBbClassMetadata) {
+              for (const modProv of ngDecl.def.providers) {
+                if (modProv instanceof SdCliBbClassMetadata) {
                   const ref = this._bbMeta.findExportRef({
-                    filePath: modExpMeta.filePath,
-                    name: modExpMeta.name
+                    filePath: modProv.filePath,
+                    name: modProv.name
+                  });
+                  if (ref) {
+                    resultItem.providers.push(ref);
+                  }
+                }
+                else if (modProv instanceof SdCliBbObjectMetadata) {
+                  // 무시
+                }
+                else {
+                  throw new NeverEntryError();
+                }
+              }
+
+              for (const modExp of ngDecl.def.exports) {
+                if (modExp instanceof SdCliBbClassMetadata) {
+                  const ref = this._bbMeta.findExportRef({
+                    filePath: modExp.filePath,
+                    name: modExp.name
                   });
                   if (ref) {
                     resultItem.exports.push(ref);
                   }
 
-                  if (modExpMeta.ngDecl instanceof SdCliBbNgDirectiveMetadata) {
-                    resultItem.selectors.push(modExpMeta.ngDecl.selector);
+                  if (modExp.ngDecl instanceof SdCliBbNgDirectiveMetadata) {
+                    resultItem.selectors.push(modExp.ngDecl.selector);
                   }
-                  else if (modExpMeta.ngDecl instanceof SdCliBbNgComponentMetadata) {
-                    resultItem.selectors.push(modExpMeta.ngDecl.selector);
+                  else if (modExp.ngDecl instanceof SdCliBbNgComponentMetadata) {
+                    resultItem.selectors.push(modExp.ngDecl.selector);
                   }
-                  else if (modExpMeta.ngDecl instanceof SdCliBbNgPipeMetadata) {
-                    resultItem.pipeNames.push(modExpMeta.ngDecl.pipeName);
+                  else if (modExp.ngDecl instanceof SdCliBbNgPipeMetadata) {
+                    resultItem.pipeNames.push(modExp.ngDecl.pipeName);
                   }
                 }
-              }
-              else {
-                throw new NeverEntryError();
-              }
-            }
+                else if (typeof modExp !== "string" && "__TDeclRef__" in modExp) {
+                  const modExpMeta = this._bbMeta.findMeta(modExp);
+                  if (modExpMeta instanceof Array) {
+                    throw new NeverEntryError();
+                  }
 
-            result.push(resultItem);
+                  if (modExpMeta instanceof SdCliBbClassMetadata) {
+                    const ref = this._bbMeta.findExportRef({
+                      filePath: modExpMeta.filePath,
+                      name: modExpMeta.name
+                    });
+                    if (ref) {
+                      resultItem.exports.push(ref);
+                    }
+
+                    if (modExpMeta.ngDecl instanceof SdCliBbNgDirectiveMetadata) {
+                      resultItem.selectors.push(modExpMeta.ngDecl.selector);
+                    }
+                    else if (modExpMeta.ngDecl instanceof SdCliBbNgComponentMetadata) {
+                      resultItem.selectors.push(modExpMeta.ngDecl.selector);
+                    }
+                    else if (modExpMeta.ngDecl instanceof SdCliBbNgPipeMetadata) {
+                      resultItem.pipeNames.push(modExpMeta.ngDecl.pipeName);
+                    }
+                  }
+                }
+                else {
+                  throw new NeverEntryError();
+                }
+              }
+
+              result.push(resultItem);
+            }
           }
         }
       }
@@ -149,33 +158,31 @@ export class NgModuleGenerator {
     const result: { modules: ITsNgPresetModuleDef[]; sources: ITsNgPresetSourceDef[] } = { modules: [], sources: [] };
 
     for (const fileMeta of fileMetas) {
-      if (!this._sourceDirPaths.some((item) => fileMeta.filePath.startsWith(item))) {
+      if (!this._srcDirRelPaths.some((item) => fileMeta.filePath.startsWith(path.resolve(this._srcPath, item)))) {
         continue;
       }
 
-      for (const className of fileMeta.directExportClassMap.keys()) {
-        const classMeta = fileMeta.directExportClassMap.get(className)!;
-
-        if (classMeta.ngDecl) {
-          if (classMeta.ngDecl instanceof SdCliTsNgInjectableMetadata) {
-            if (classMeta.ngDecl.providedIn === "root") {
+      for (const cls of fileMeta.directExportClasses) {
+        if (cls.target.ngDecl) {
+          if (cls.target.ngDecl instanceof SdCliTsNgInjectableMetadata) {
+            if (cls.target.ngDecl.providedIn === "root") {
               continue;
             }
           }
 
-          const moduleClassName = className + "Module";
+          const moduleClassName = cls.exportedName + "Module";
           const moduleFilePath = path.resolve(this._modulesPath, path.relative(this._srcPath, path.dirname(fileMeta.filePath)), moduleClassName);
 
           result.sources.push({
             filePath: fileMeta.filePath,
-            name: className,
+            name: cls.exportedName,
             module: {
               filePath: moduleFilePath,
               name: moduleClassName
             },
             imports: fileMeta.imports,
-            template: "template" in classMeta.ngDecl ? classMeta.ngDecl.template : undefined,
-            isProvider: classMeta.ngDecl instanceof SdCliTsNgInjectableMetadata
+            template: "template" in cls.target.ngDecl ? cls.target.ngDecl.template : undefined,
+            isProvider: cls.target.ngDecl instanceof SdCliTsNgInjectableMetadata
           });
 
           result.modules.push({
@@ -183,10 +190,10 @@ export class NgModuleGenerator {
             name: moduleClassName,
             source: {
               filePath: fileMeta.filePath,
-              name: className
+              name: cls.exportedName
             },
-            selector: "selector" in classMeta.ngDecl ? classMeta.ngDecl.selector : undefined,
-            pipeName: "pipeName" in classMeta.ngDecl ? classMeta.ngDecl.pipeName : undefined
+            selector: "selector" in cls.target.ngDecl ? cls.target.ngDecl.selector : undefined,
+            pipeName: "pipeName" in cls.target.ngDecl ? cls.target.ngDecl.pipeName : undefined
           });
         }
       }
@@ -339,7 +346,7 @@ interface ITsNgPresetModuleDef {
 interface ITsNgPresetSourceDef {
   filePath: string;
   name: string;
-  module: { filePath: string; name: string; };
+  module: { filePath: string; name: string };
   imports: TSdCliMetaRef[];
   template?: string;
   isProvider: boolean;

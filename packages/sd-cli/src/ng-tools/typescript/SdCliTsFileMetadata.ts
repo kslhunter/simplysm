@@ -12,22 +12,22 @@ export class SdCliTsFileMetadata {
     this._sourceFile = ts.createSourceFile(filePath, fileContent, ts.ScriptTarget.ES2017);
   }
 
-  private _directExportClassMap?: Map<string, SdCliTsClassMetadata>;
+  private _directExportClassesCache?: { exportedName: string; target: SdCliTsClassMetadata }[];
 
-  public get directExportClassMap(): Map<string, SdCliTsClassMetadata> {
-    if (this._directExportClassMap) return this._directExportClassMap;
+  public get directExportClasses(): { exportedName: string; target: SdCliTsClassMetadata }[] {
+    if (this._directExportClassesCache) return this._directExportClassesCache;
 
-    const result = new Map<string, SdCliTsClassMetadata>();
+    const result: { exportedName: string; target: SdCliTsClassMetadata }[] = [];
     this._sourceFile.forEachChild((node) => {
       if (!node.modifiers || !node.modifiers.some((item) => item.kind === ts.SyntaxKind.ExportKeyword)) return;
       if (!ts.isClassDeclaration(node)) return;
       if (node.name === undefined) {
         throw new NeverEntryError();
       }
-      result.set(node.name.text, new SdCliTsClassMetadata(this, node));
+      result.push({ exportedName: node.name.text, target: new SdCliTsClassMetadata(this, node) });
     });
 
-    this._directExportClassMap = result;
+    this._directExportClassesCache = result;
     return result;
   }
 
@@ -190,7 +190,11 @@ export class SdCliTsClassMetadata {
                      private readonly _node: ts.ClassDeclaration) {
   }
 
+  private _ngDeclCache?: TSdCliTsNgMetadata;
+
   public get ngDecl(): TSdCliTsNgMetadata | undefined {
+    if (this._ngDeclCache !== undefined) return this._ngDeclCache;
+
     if (!this._node.decorators) return undefined;
 
     for (const deco of this._node.decorators) {
@@ -200,16 +204,20 @@ export class SdCliTsClassMetadata {
       }
 
       if (deco.expression.expression.text === "Injectable") {
-        return new SdCliTsNgInjectableMetadata(this._fileMeta, deco);
+        this._ngDeclCache = new SdCliTsNgInjectableMetadata(this._fileMeta, deco);
+        return this._ngDeclCache;
       }
       else if (deco.expression.expression.text === "Directive") {
-        return new SdCliTsNgDirectiveMetadata(this._fileMeta, deco);
+        this._ngDeclCache = new SdCliTsNgDirectiveMetadata(this._fileMeta, deco);
+        return this._ngDeclCache;
       }
       else if (deco.expression.expression.text === "Component") {
-        return new SdCliTsNgComponentMetadata(this._fileMeta, deco);
+        this._ngDeclCache = new SdCliTsNgComponentMetadata(this._fileMeta, deco);
+        return this._ngDeclCache;
       }
       else if (deco.expression.expression.text === "Pipe") {
-        return new SdCliTsNgPipeMetadata(this._fileMeta, deco);
+        this._ngDeclCache = new SdCliTsNgPipeMetadata(this._fileMeta, deco);
+        return this._ngDeclCache;
       }
     }
 
@@ -222,15 +230,26 @@ export class SdCliTsObjectMetadata {
                      private readonly _node: ts.ObjectLiteralExpression) {
   }
 
+  private readonly _getPropValueCache = new Map<string, TSdCliTsMetadata | undefined>();
+
   public getPropValue(propName: string): TSdCliTsMetadata | undefined {
+    if (this._getPropValueCache.has(propName)) {
+      return this._getPropValueCache.get(propName);
+    }
+
     const prop = this._node.properties.single((item) => (
       ts.isPropertyAssignment(item) &&
       ts.isIdentifier(item.name) &&
       item.name.text === propName
     )) as ts.PropertyAssignment | undefined;
-    if (!prop) return undefined;
+    if (!prop) {
+      this._getPropValueCache.set(propName, undefined);
+      return undefined;
+    }
 
-    return this._fileMeta.getMetaFromNode(prop.initializer);
+    const result = this._fileMeta.getMetaFromNode(prop.initializer);
+    this._getPropValueCache.set(propName, result);
+    return result;
   }
 }
 
@@ -245,13 +264,18 @@ export class SdCliTsNgInjectableMetadata {
                      private readonly _node: ts.Decorator) {
   }
 
+  private _providedInCache?: string;
+
   public get providedIn(): string | undefined {
+    if (this._providedInCache !== undefined) return this._providedInCache;
+
     if (!ts.isCallExpression(this._node.expression)) throw new NeverEntryError();
 
     if (this._node.expression.arguments.length > 0 && ts.isObjectLiteralExpression(this._node.expression.arguments[0])) {
       const decoArg = new SdCliTsObjectMetadata(this._fileMeta, this._node.expression.arguments[0]);
       const decoArgSelectorVal = decoArg.getPropValue("providedIn");
       if (typeof decoArgSelectorVal === "string") {
+        this._providedInCache = decoArgSelectorVal;
         return decoArgSelectorVal;
       }
     }
@@ -265,13 +289,18 @@ export class SdCliTsNgDirectiveMetadata {
                      private readonly _node: ts.Decorator) {
   }
 
+  private _selectorCache?: string;
+
   public get selector(): string {
+    if (this._selectorCache !== undefined) return this._selectorCache;
+
     if (!ts.isCallExpression(this._node.expression)) throw new NeverEntryError();
 
     if (this._node.expression.arguments.length > 0 && ts.isObjectLiteralExpression(this._node.expression.arguments[0])) {
       const decoArg = new SdCliTsObjectMetadata(this._fileMeta, this._node.expression.arguments[0]);
       const decoArgSelectorVal = decoArg.getPropValue("selector");
       if (typeof decoArgSelectorVal === "string") {
+        this._selectorCache = decoArgSelectorVal;
         return decoArgSelectorVal;
       }
     }
@@ -285,13 +314,18 @@ export class SdCliTsNgComponentMetadata {
                      private readonly _node: ts.Decorator) {
   }
 
+  private _selectorCache?: string;
+
   public get selector(): string {
+    if (this._selectorCache !== undefined) return this._selectorCache;
+
     if (!ts.isCallExpression(this._node.expression)) throw new NeverEntryError();
 
     if (this._node.expression.arguments.length > 0 && ts.isObjectLiteralExpression(this._node.expression.arguments[0])) {
       const decoArg = new SdCliTsObjectMetadata(this._fileMeta, this._node.expression.arguments[0]);
       const decoArgSelectorVal = decoArg.getPropValue("selector");
       if (typeof decoArgSelectorVal === "string") {
+        this._selectorCache = decoArgSelectorVal;
         return decoArgSelectorVal;
       }
     }
@@ -299,13 +333,18 @@ export class SdCliTsNgComponentMetadata {
     throw new NeverEntryError();
   }
 
+  private _templateCache?: string;
+
   public get template(): string {
+    if (this._templateCache !== undefined) return this._templateCache;
+
     if (!ts.isCallExpression(this._node.expression)) throw new NeverEntryError();
 
     if (this._node.expression.arguments.length > 0 && ts.isObjectLiteralExpression(this._node.expression.arguments[0])) {
       const decoArg = new SdCliTsObjectMetadata(this._fileMeta, this._node.expression.arguments[0]);
       const decoArgSelectorVal = decoArg.getPropValue("template");
       if (typeof decoArgSelectorVal === "string") {
+        this._templateCache = decoArgSelectorVal;
         return decoArgSelectorVal;
       }
     }
@@ -319,13 +358,18 @@ export class SdCliTsNgPipeMetadata {
                      private readonly _node: ts.Decorator) {
   }
 
+  private _pipeNameCache?: string;
+
   public get pipeName(): string {
+    if (this._pipeNameCache !== undefined) return this._pipeNameCache;
+
     if (!ts.isCallExpression(this._node.expression)) throw new NeverEntryError();
 
     if (this._node.expression.arguments.length > 0 && ts.isObjectLiteralExpression(this._node.expression.arguments[0])) {
       const decoArg = new SdCliTsObjectMetadata(this._fileMeta, this._node.expression.arguments[0]);
       const decoArgSelectorVal = decoArg.getPropValue("name");
       if (typeof decoArgSelectorVal === "string") {
+        this._pipeNameCache = decoArgSelectorVal;
         return decoArgSelectorVal;
       }
     }

@@ -23,7 +23,11 @@ export class SdCliBbNgModuleMetadata {
                      private readonly _className: string) {
   }
 
+  private _defCache?: ISdCliBbNgModuleDef;
+
   public get def(): ISdCliBbNgModuleDef {
+    if (this._defCache) return this._defCache;
+
     const result: ISdCliBbNgModuleDef = {
       exports: [],
       providers: []
@@ -84,6 +88,7 @@ export class SdCliBbNgModuleMetadata {
       }
     }
 
+    this._defCache = result;
     return result;
   }
 
@@ -120,9 +125,14 @@ export class SdCliBbNgDirectiveMetadata {
                      private readonly _className: string) {
   }
 
+  private _selectorCache?: string;
+
   public get selector(): string {
+    if (this._selectorCache !== undefined) return this._selectorCache;
+
     const val = SdCliNgMetadataUtil.getDecoPropValue(this._fileMeta, this._className, "ɵdir", "selector");
     if (typeof val === "string") {
+      this._selectorCache = val;
       return val;
     }
     else {
@@ -136,9 +146,14 @@ export class SdCliBbNgComponentMetadata {
                      private readonly _className: string) {
   }
 
+  private _selectorCache?: string;
+
   public get selector(): string {
+    if (this._selectorCache !== undefined) return this._selectorCache;
+
     const val = SdCliNgMetadataUtil.getDecoPropValue(this._fileMeta, this._className, "ɵcmp", "selector");
     if (typeof val === "string") {
+      this._selectorCache = val;
       return val;
     }
     else {
@@ -152,9 +167,14 @@ export class SdCliBbNgPipeMetadata {
                      private readonly _className: string) {
   }
 
+  private _pipeNameCache?: string;
+
   public get pipeName(): string {
+    if (this._pipeNameCache !== undefined) return this._pipeNameCache;
+
     const val = SdCliNgMetadataUtil.getDecoPropValue(this._fileMeta, this._className, "ɵpipe", "name");
     if (typeof val === "string") {
+      this._pipeNameCache = val;
       return val;
     }
     else {

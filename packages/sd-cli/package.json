@@ -45,6 +45,8 @@
     "connect": "^3.7.0",
     "node-polyfill-webpack-plugin": "^1.1.4",
     "chokidar": "^3.5.3",
+    "@babel/parser": "^7.17.0",
+    "@babel/types": "^7.17.0",
     "jsdom": "^19.0.0"
   },
   "devDependencies": {

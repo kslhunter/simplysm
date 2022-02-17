@@ -41,11 +41,11 @@ export class SdCliBbClassMetadata {
     return this._rawMeta.id.name;
   }
 
-  private _ngDecl: TSdCliBbNgMetadata | "none" | undefined;
+  private _ngDeclCache?: TSdCliBbNgMetadata | "none";
 
   public get ngDecl(): TSdCliBbNgMetadata | undefined {
-    if (this._ngDecl !== undefined) {
-      return this._ngDecl === "none" ? undefined : this._ngDecl;
+    if (this._ngDeclCache !== undefined) {
+      return this._ngDeclCache === "none" ? undefined : this._ngDeclCache;
     }
 
     for (const meta of this._fileMeta.rawMetas) {
@@ -58,29 +58,29 @@ export class SdCliBbClassMetadata {
         isIdentifier(meta.expression.left.property)
       ) {
         if (meta.expression.left.property.name === "ɵmod") {
-          this._ngDecl = new SdCliBbNgModuleMetadata(this._fileMeta, this._rawMeta.id.name);
-          return this._ngDecl;
+          this._ngDeclCache = new SdCliBbNgModuleMetadata(this._fileMeta, this._rawMeta.id.name);
+          return this._ngDeclCache;
         }
         else if (meta.expression.left.property.name === "ɵprov") {
-          this._ngDecl = new SdCliBbNgInjectableMetadata(this._fileMeta, this._rawMeta.id.name);
-          return this._ngDecl;
+          this._ngDeclCache = new SdCliBbNgInjectableMetadata(this._fileMeta, this._rawMeta.id.name);
+          return this._ngDeclCache;
         }
         else if (meta.expression.left.property.name === "ɵdir") {
-          this._ngDecl = new SdCliBbNgDirectiveMetadata(this._fileMeta, this._rawMeta.id.name);
-          return this._ngDecl;
+          this._ngDeclCache = new SdCliBbNgDirectiveMetadata(this._fileMeta, this._rawMeta.id.name);
+          return this._ngDeclCache;
         }
         else if (meta.expression.left.property.name === "ɵcmp") {
-          this._ngDecl = new SdCliBbNgComponentMetadata(this._fileMeta, this._rawMeta.id.name);
-          return this._ngDecl;
+          this._ngDeclCache = new SdCliBbNgComponentMetadata(this._fileMeta, this._rawMeta.id.name);
+          return this._ngDeclCache;
         }
         else if (meta.expression.left.property.name === "ɵpipe") {
-          this._ngDecl = new SdCliBbNgPipeMetadata(this._fileMeta, this._rawMeta.id.name);
-          return this._ngDecl;
+          this._ngDeclCache = new SdCliBbNgPipeMetadata(this._fileMeta, this._rawMeta.id.name);
+          return this._ngDeclCache;
         }
       }
     }
 
-    this._ngDecl = "none";
+    this._ngDeclCache = "none";
     return undefined;
   }
 }
@@ -99,8 +99,14 @@ export class SdCliBbVariableMetadata {
     return this._rawMeta.id.name;
   }
 
+  private _valueCache?: TSdCliBbMetadata;
+
   public get value(): TSdCliBbMetadata | undefined {
-    return this._rawMeta.init == null ? undefined : this._fileMeta.getMetaFromRaw(this._rawMeta.init);
+    if (this._valueCache === undefined) {
+      this._valueCache = this._rawMeta.init == null ? undefined : this._fileMeta.getMetaFromRaw(this._rawMeta.init);
+    }
+
+    return this._valueCache;
   }
 }
 
@@ -124,7 +130,13 @@ export class SdCliBbObjectMetadata {
                      private readonly _metadata: ObjectExpression) {
   }
 
+  private readonly _getPropValueCache = new Map<string, TSdCliBbMetadata | undefined>();
+
   public getPropValue(propName: string): TSdCliBbMetadata | undefined {
+    if (this._getPropValueCache.has(propName)) {
+      return this._getPropValueCache.get(propName);
+    }
+
     const prop = this._metadata.properties
       .single((item) => (
         isObjectProperty(item) &&
@@ -135,8 +147,14 @@ export class SdCliBbObjectMetadata {
       throw new NeverEntryError();
     }
 
-    if (!prop) return undefined;
-    return this._fileMeta.getMetaFromRaw(prop.value);
+    if (!prop) {
+      this._getPropValueCache.set(propName, undefined);
+      return undefined;
+    }
+
+    const result = this._fileMeta.getMetaFromRaw(prop.value);
+    this._getPropValueCache.set(propName, result);
+    return result;
   }
 }
 
@@ -145,11 +163,15 @@ export class SdCliBbArrayMetadata {
                      private readonly _metadata: ArrayExpression) {
   }
 
+  private _valueCache?: (TSdCliBbMetadata | undefined)[];
+
   public get value(): (TSdCliBbMetadata | undefined)[] {
-    let result: (TSdCliBbMetadata | undefined)[] = [];
-    for (const el of this._metadata.elements) {
-      result.push(el ? this._fileMeta.getMetaFromRaw(el) : undefined);
+    if (this._valueCache === undefined) {
+      this._valueCache = [];
+      for (const el of this._metadata.elements) {
+        this._valueCache.push(el ? this._fileMeta.getMetaFromRaw(el) : undefined);
+      }
     }
-    return result;
+    return this._valueCache;
   }
 }

@@ -6,11 +6,14 @@ describe("meta", () => {
   it("test", async () => {
     const rootPath = path.resolve(process.cwd(), "packages", "sd-angular");
     const ngModuleGen = new NgModuleGenerator(rootPath, [
-      path.resolve(rootPath, "src", "controls"),
-      path.resolve(rootPath, "src", "directives"),
-      path.resolve(rootPath, "src", "guards"),
-      path.resolve(rootPath, "src", "modals"),
-      path.resolve(rootPath, "src", "providers")
+      "controls",
+      "directives",
+      "guards",
+      "modals",
+      "providers",
+      "pages",
+      "print-templates",
+      "toasts"
     ]);
     await ngModuleGen.runAsync();
 

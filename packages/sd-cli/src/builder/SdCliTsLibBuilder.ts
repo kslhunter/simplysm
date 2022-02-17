@@ -12,6 +12,7 @@ import { SdCliCacheCompilerHost } from "../build-tool/SdCliCacheCompilerHost";
 import { SdCliNgCacheCompilerHost } from "../build-tool/SdCliNgCacheCompilerHost";
 import { NgCompiler } from "@angular/compiler-cli/src/ngtsc/core";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
+import { NgModuleGenerator } from "../ng-tools/NgModuleGenerator";
 
 export class SdCliTsLibBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -26,6 +27,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
   private _program?: ts.Program;
   private _ngProgram?: NgtscProgram;
   private _builder?: ts.EmitAndSemanticDiagnosticsBuilderProgram;
+  private _ngModuleGenerator?: NgModuleGenerator;
 
   private readonly _tsconfigFilePath: string;
   private readonly _parsedTsconfig: ts.ParsedCommandLine;
@@ -61,6 +63,26 @@ export class SdCliTsLibBuilder extends EventEmitter {
     // DIST 비우기
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
+    if (this._isAngular) {
+      // NgModule 생성기 초기화
+      this._ngModuleGenerator = new NgModuleGenerator(this._rootPath, [
+        "controls",
+        "directives",
+        "guards",
+        "modals",
+        "providers",
+        "pages",
+        "print-templates",
+        "toasts"
+      ]);
+
+      // NgModule 타겟 디렉토리 삭제
+      await this._ngModuleGenerator.clearModulesAsync();
+
+      // NgModule 생성
+      await this._ngModuleGenerator.runAsync();
+    }
+
     // 프로그램 리로드
     const buildPack = this._createSdBuildPack(this._parsedTsconfig);
 
@@ -76,6 +98,12 @@ export class SdCliTsLibBuilder extends EventEmitter {
       // 캐쉬 삭제
       for (const changeFilePath of changeFilePaths) {
         this._fileCache.delete(PathUtil.posix(changeFilePath));
+      }
+
+      if (this._isAngular) {
+        // NgModule 생성
+        this._ngModuleGenerator!.removeCaches(changeFilePaths);
+        await this._ngModuleGenerator!.runAsync();
       }
 
       const watchBuildResults: ISdCliPackageBuildResult[] = [];

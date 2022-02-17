@@ -13,8 +13,9 @@ export class SdCliBbRootMetadata {
 
   public constructor(packagePath: string) {
     const allDepPaths = this._getAllDepPaths(packagePath);
-    const ngDepPaths = this._getNgDepPaths(allDepPaths);
-    this._entryMap = this._getEntryMap(ngDepPaths);
+    this._entryMap = this._getEntryMap(allDepPaths);
+    // const ngDepPaths = this._getNgDepPaths(allDepPaths);
+    // this._entryMap = this._getEntryMap(ngDepPaths);
   }
 
   public removeCaches(filePaths: string[]): void {
@@ -32,33 +33,56 @@ export class SdCliBbRootMetadata {
     return result;
   }
 
-  public findMeta(ref: TSdCliMetaRef): TSdCliBbMetadata | string {
+  public findMeta(ref: TSdCliMetaRef): TSdCliBbMetadata | TSdCliBbMetadata[] {
     const filePath = "moduleName" in ref ? this._entryMap.get(ref.moduleName) : ref.filePath;
     if (filePath === undefined) {
       throw new NeverEntryError();
     }
     const fileMeta = this._fileMetaCache.getOrCreate(filePath, () => new SdCliBbFileMetadata(filePath));
-    const meta = fileMeta.findMetaFromOutside(ref.name);
-    if (typeof meta !== "string" && "__TDeclRef__" in meta) {
-      return this.findMeta(meta);
+    if (ref.name === "*") {
+      const result: TSdCliBbMetadata[] = [];
+      for (const exp of fileMeta.exports) {
+        const meta = exp.target;
+        if (typeof meta !== "string" && "__TDeclRef__" in meta) {
+          const resultMeta = this.findMeta(meta);
+          if (resultMeta instanceof Array) {
+            result.push(...resultMeta);
+          }
+          else {
+            result.push(resultMeta);
+          }
+        }
+        else {
+          result.push(meta);
+        }
+      }
+      return result;
     }
-    return meta;
+    else {
+      const meta = fileMeta.findMetaFromOutside(ref.name);
+      if (typeof meta !== "string" && "__TDeclRef__" in meta) {
+        return this.findMeta(meta);
+      }
+      return meta;
+    }
   }
 
-  public findExportRef(ref: { filePath: string; name: string }): { moduleName: string; name: string } | undefined {
+  public findExportRef(localRef: { filePath: string; name: string }): { moduleName: string; name: string } | undefined {
     const record = this.getEntryFileMetaRecord();
     for (const moduleName of Object.keys(record)) {
       const entryFileMeta = record[moduleName];
-      for (const expKey of entryFileMeta.exportMap.keys()) {
-        const expVal = entryFileMeta.exportMap.get(expKey)!;
+      for (const exp of entryFileMeta.exports) {
         if (
-          typeof expVal !== "string" &&
-          "filePath" in expVal &&
-          "name" in expVal &&
-          expVal.filePath === ref.filePath &&
-          expVal.name === ref.name
+          typeof exp.target !== "string" &&
+          "filePath" in exp.target &&
+          exp.target.filePath === localRef.filePath
         ) {
-          return { moduleName, name: expKey };
+          if (exp.target.name === "*") {
+            throw new NeverEntryError();
+          }
+          else if (exp.target.name === localRef.name) {
+            return { moduleName, name: exp.exportedName };
+          }
         }
       }
     }
@@ -95,25 +119,29 @@ export class SdCliBbRootMetadata {
     return results;
   }
 
-  private _getNgDepPaths(allDepPaths: string[]): string[] {
-    const results: string[] = [];
-
-    for (const depPath of allDepPaths) {
-      const npmConfig = FsUtil.readJson(path.resolve(depPath, "package.json")) as INpmConfig;
-      const defaultDeps = SdCliNpmConfigUtil.getDependencies(npmConfig).defaults;
-      if (npmConfig.name === "@angular/core" || defaultDeps.includes("@angular/core")) {
-        results.push(depPath);
-      }
-    }
-
-    return results;
-  }
+  // private _getNgDepPaths(allDepPaths: string[]): string[] {
+  //   const results: string[] = [];
+  //
+  //   for (const depPath of allDepPaths) {
+  //     const npmConfig = FsUtil.readJson(path.resolve(depPath, "package.json")) as INpmConfig;
+  //     const defaultDeps = SdCliNpmConfigUtil.getDependencies(npmConfig).defaults;
+  //     if (npmConfig.name === "@angular/core" || defaultDeps.includes("@angular/core")) {
+  //       results.push(depPath);
+  //     }
+  //   }
+  //
+  //   return results;
+  // }
 
   private _getEntryMap(ngDepPaths: string[]): Map<string, string> {
     const entryMap = new Map<string, string>();
     for (const ngDepPath of ngDepPaths) {
       const npmConfig = FsUtil.readJson(path.resolve(ngDepPath, "package.json")) as INpmConfig;
-      entryMap.set(npmConfig.name, path.resolve(ngDepPath, npmConfig["es2015"] ?? npmConfig["browser"] ?? npmConfig["module"] ?? npmConfig["main"]));
+
+      const entryFilePath = npmConfig["es2015"] ?? npmConfig["browser"] ?? npmConfig["module"] ?? npmConfig["main"] ?? npmConfig["default"];
+      if (entryFilePath !== undefined) {
+        entryMap.set(npmConfig.name, path.resolve(ngDepPath, entryFilePath));
+      }
 
       if (npmConfig.exports) {
         const exportKeys = Object.keys(npmConfig.exports);
@@ -127,17 +155,17 @@ export class SdCliBbRootMetadata {
             continue;
           }
 
-          const exportPath = path.resolve(
-            ngDepPath,
-            npmConfig.exports[exportKey]["es2015"] ??
+          const expEntryFilePath = npmConfig.exports[exportKey]["es2015"] ??
             npmConfig.exports[exportKey]["browser"] ??
             npmConfig.exports[exportKey]["module"] ??
             npmConfig.exports[exportKey]["main"] ??
-            npmConfig.exports[exportKey]["default"]
-          );
-          const exportResult = this._getGlobExportResult(PathUtil.posix(npmConfig.name, exportKey), exportPath);
-          for (const exportResultItem of exportResult) {
-            entryMap.set(exportResultItem.name, exportResultItem.target);
+            npmConfig.exports[exportKey]["default"];
+          if (expEntryFilePath !== undefined) {
+            const exportPath = path.resolve(ngDepPath, expEntryFilePath);
+            const exportResult = this._getGlobExportResult(PathUtil.posix(npmConfig.name, exportKey), exportPath);
+            for (const exportResultItem of exportResult) {
+              entryMap.set(exportResultItem.name, exportResultItem.target);
+            }
           }
         }
       }
