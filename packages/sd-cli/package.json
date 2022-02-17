@@ -44,14 +44,16 @@
     "sass-loader": "^12.4.0",
     "connect": "^3.7.0",
     "node-polyfill-webpack-plugin": "^1.1.4",
-    "chokidar": "^3.5.3"
+    "chokidar": "^3.5.3",
+    "jsdom": "^19.0.0"
   },
   "devDependencies": {
     "@types/semver": "^7.3.9",
     "@types/yargs": "^17.0.8",
     "@types/webpack-hot-middleware": "^2.25.5",
     "@types/connect": "^3.4.35",
-    "@types/source-map-support": "^0.5.4"
+    "@types/source-map-support": "^0.5.4",
+    "@types/jsdom": "^16.2.14"
   },
   "peerDependencies": {
     "@simplysm/sd-core-common": "7.0.61",

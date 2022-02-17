@@ -5,11 +5,11 @@ export class SdCliNpmConfigUtil {
     return {
       defaults: [
         ...Object.keys(npmConfig.dependencies ?? {}),
-        ...Object.keys(npmConfig.peerDependencies ?? {}).filter((item) => !npmConfig.peerDependenciesMeta?.[item].optional)
+        ...Object.keys(npmConfig.peerDependencies ?? {}).filter((item) => !npmConfig.peerDependenciesMeta?.[item]?.optional)
       ].distinct(),
       optionals: [
         ...Object.keys(npmConfig.optionalDependencies ?? {}),
-        ...Object.keys(npmConfig.peerDependencies ?? {}).filter((item) => npmConfig.peerDependenciesMeta?.[item].optional)
+        ...Object.keys(npmConfig.peerDependencies ?? {}).filter((item) => npmConfig.peerDependenciesMeta?.[item]?.optional)
       ].distinct()
     };
   }

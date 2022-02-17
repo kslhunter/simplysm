@@ -5,6 +5,7 @@ module.exports = {
   "timeout": 10000,
   "node-option": [
     "experimental-specifier-resolution=node",
-    "loader=./packages/sd-cli/lib/ts-node-esm-paths"
+    "experimental-import-meta-resolve",
+    "loader=./packages/sd-cli/lib/ts-node-esm-paths.mjs"
   ]
 }

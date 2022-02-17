@@ -20,5 +20,9 @@
         "../sd-service-server/src/index.ts"
       ]
     }
-  }
+  },
+  "files": [
+    "src/bin/sd-cli.ts",
+    "src/index.ts"
+  ]
 }

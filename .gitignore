@@ -7,3 +7,4 @@ dist
 .cache
 .cordova
 _logs
+_module

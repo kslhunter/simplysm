@@ -15,6 +15,7 @@
     },
     "sd-cli": {
       "type": "library",
+      "autoIndex": {},
       "publish": "npm"
     },
     "sd-core-browser": {

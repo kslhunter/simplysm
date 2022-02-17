@@ -13,8 +13,14 @@
       "@simplysm/sd-core-node": [
         "../packages/sd-core-node/src/index.ts"
       ],
-      "@simplysm/sd-service": [
-        "../packages/sd-service/src/index.ts"
+      "@simplysm/sd-service-server": [
+        "../packages/sd-service-server/src/index.ts"
+      ],
+      "@simplysm/sd-service-client": [
+        "../packages/sd-service-client/src/index.ts"
+      ],
+      "@simplysm/sd-cli": [
+        "../packages/sd-cli/src/index.ts"
       ]
     }
   }

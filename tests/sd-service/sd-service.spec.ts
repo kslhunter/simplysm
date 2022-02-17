@@ -1,5 +1,5 @@
-import { SdServiceServer } from "@simplysm/sd-service/server";
-import { SdServiceClient } from "@simplysm/sd-service/client";
+import { SdServiceServer } from "@simplysm/sd-service-server";
+import { SdServiceClient } from "@simplysm/sd-service-client";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 
 Logger.setConfig({
