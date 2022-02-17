@@ -3,7 +3,8 @@ import path from "path";
 
 describe("meta", () => {
   it("test", async () => {
-    const rootPath = path.resolve(process.cwd(), "../simplysm-ts/packages/client-common");
+    const rootPath = path.resolve(process.cwd(), "../simplysm-ts/packages/client-admin");
+    // const rootPath = path.resolve(process.cwd(), "./packages/sd-angular");
     const ngModuleGen = new NgModuleGenerator(rootPath, [
       "controls",
       "directives",
@@ -13,7 +14,7 @@ describe("meta", () => {
       "pages",
       "print-templates",
       "toasts"
-    ]);
+    ], "Page");
     await ngModuleGen.runAsync();
 
     // const indexGen = new SdCliIndexFileGenerator(rootPath, { polyfills: ["@simplysm/sd-core-browser"] });

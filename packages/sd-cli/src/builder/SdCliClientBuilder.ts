@@ -34,6 +34,7 @@ import { CssOptimizerPlugin } from "@angular-devkit/build-angular/src/webpack/pl
 import browserslist from "browserslist";
 import { augmentAppWithServiceWorker } from "@angular-devkit/build-angular/src/utils/service-worker";
 import { StringUtil } from "@simplysm/sd-core-common";
+import { NgModuleGenerator } from "../ng-tools/NgModuleGenerator";
 import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
@@ -42,6 +43,7 @@ export class SdCliClientBuilder extends EventEmitter {
   private readonly _tsconfigFilePath: string;
   private readonly _parsedTsconfig: ts.ParsedCommandLine;
   private readonly _npmConfigMap = new Map<string, INpmConfig>();
+  private readonly _ngModuleGenerator: NgModuleGenerator;
 
   public constructor(private readonly _rootPath: string,
                      private readonly _config: ISdCliClientPackageConfig,
@@ -52,6 +54,18 @@ export class SdCliClientBuilder extends EventEmitter {
     this._tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
     const tsconfig = FsUtil.readJson(this._tsconfigFilePath) as ITsconfig;
     this._parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._rootPath, tsconfig.angularCompilerOptions);
+
+    // NgModule 생성기 초기화
+    this._ngModuleGenerator = new NgModuleGenerator(this._rootPath, [
+      "controls",
+      "directives",
+      "guards",
+      "modals",
+      "providers",
+      "pages",
+      "print-templates",
+      "toasts"
+    ], "Page");
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -64,12 +78,29 @@ export class SdCliClientBuilder extends EventEmitter {
     // DIST 비우기
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
+    // NgModule 타겟 디렉토리 삭제
+    await this._ngModuleGenerator.clearModulesAsync();
+
+    // NgModule 생성
+    await this._ngModuleGenerator.runAsync();
+
     // 빌드 준비
     const webpackConfig = this._getWebpackConfig(true);
     const compiler = webpack(webpackConfig);
     return await new Promise<NextHandleFunction[]>((resolve, reject) => {
-      compiler.hooks.watchRun.tapAsync(this.constructor.name, (args, callback) => {
+      compiler.hooks.invalid.tap(this.constructor.name, (fileName) => {
+        if (fileName != null) {
+          // NgModule 캐시 삭제
+          this._ngModuleGenerator.removeCaches([path.resolve(fileName)]);
+        }
+      });
+
+      compiler.hooks.watchRun.tapAsync(this.constructor.name, async (args, callback) => {
         this.emit("change");
+
+        // NgModule 생성
+        await this._ngModuleGenerator.runAsync();
+
         callback();
 
         this._logger.debug("Webpack 빌드 수행...");

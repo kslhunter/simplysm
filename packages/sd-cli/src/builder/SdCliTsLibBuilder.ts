@@ -27,7 +27,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
   private _program?: ts.Program;
   private _ngProgram?: NgtscProgram;
   private _builder?: ts.EmitAndSemanticDiagnosticsBuilderProgram;
-  private _ngModuleGenerator?: NgModuleGenerator;
+  private readonly _ngModuleGenerator?: NgModuleGenerator;
 
   private readonly _tsconfigFilePath: string;
   private readonly _parsedTsconfig: ts.ParsedCommandLine;
@@ -49,6 +49,20 @@ export class SdCliTsLibBuilder extends EventEmitter {
     this._tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
     const tsconfig = FsUtil.readJson(this._tsconfigFilePath);
     this._parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._rootPath, this._isAngular ? tsconfig.angularCompilerOptions : undefined);
+
+    if (this._isAngular) {
+      // NgModule 생성기 초기화
+      this._ngModuleGenerator = new NgModuleGenerator(this._rootPath, [
+        "controls",
+        "directives",
+        "guards",
+        "modals",
+        "providers",
+        "pages",
+        "print-templates",
+        "toasts"
+      ], "Page");
+    }
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -63,25 +77,11 @@ export class SdCliTsLibBuilder extends EventEmitter {
     // DIST 비우기
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
-    if (this._isAngular) {
-      // NgModule 생성기 초기화
-      this._ngModuleGenerator = new NgModuleGenerator(this._rootPath, [
-        "controls",
-        "directives",
-        "guards",
-        "modals",
-        "providers",
-        "pages",
-        "print-templates",
-        "toasts"
-      ]);
+    // NgModule 타겟 디렉토리 삭제
+    await this._ngModuleGenerator?.clearModulesAsync();
 
-      // NgModule 타겟 디렉토리 삭제
-      await this._ngModuleGenerator.clearModulesAsync();
-
-      // NgModule 생성
-      await this._ngModuleGenerator.runAsync();
-    }
+    // NgModule 생성
+    await this._ngModuleGenerator?.runAsync();
 
     // 프로그램 리로드
     const buildPack = this._createSdBuildPack(this._parsedTsconfig);
@@ -100,11 +100,9 @@ export class SdCliTsLibBuilder extends EventEmitter {
         this._fileCache.delete(PathUtil.posix(changeFilePath));
       }
 
-      if (this._isAngular) {
-        // NgModule 생성
-        this._ngModuleGenerator!.removeCaches(changeFilePaths);
-        await this._ngModuleGenerator!.runAsync();
-      }
+      // NgModule 생성
+      this._ngModuleGenerator?.removeCaches(changeFilePaths);
+      await this._ngModuleGenerator?.runAsync();
 
       const watchBuildResults: ISdCliPackageBuildResult[] = [];
 
@@ -139,6 +137,12 @@ export class SdCliTsLibBuilder extends EventEmitter {
   public async buildAsync(): Promise<ISdCliPackageBuildResult[]> {
     // DIST 비우기
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
+
+    // NgModule 타겟 디렉토리 삭제
+    await this._ngModuleGenerator?.clearModulesAsync();
+
+    // NgModule 생성
+    await this._ngModuleGenerator?.runAsync();
 
     // 프로그램 리로드
     const buildPack = this._createSdBuildPack(this._parsedTsconfig);
