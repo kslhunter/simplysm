@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular",
-  "version": "7.0.61",
+  "version": "7.0.62",
   "description": "심플리즘 패키지 - Angular 모듈 (browser)",
   "author": "김석래",
   "repository": {
@@ -25,10 +25,10 @@
     "@types/marked": "^4.0.2"
   },
   "peerDependencies": {
-    "@simplysm/sd-core-common": "7.0.61",
-    "@simplysm/sd-core-browser": "7.0.61",
-    "@simplysm/sd-service-common": "7.0.61",
-    "@simplysm/sd-service-client": "7.0.61",
+    "@simplysm/sd-core-common": "7.0.62",
+    "@simplysm/sd-core-browser": "7.0.62",
+    "@simplysm/sd-service-common": "7.0.62",
+    "@simplysm/sd-service-client": "7.0.62",
     "@angular/common": "^13.2.0",
     "@angular/core": "^13.2.0",
     "@angular/router": "^13.2.0",
