@@ -22,7 +22,6 @@
     "publish": "npm run _sd-cli_ -- --debug publish",
     "publish(--noBuild)": "npm run _sd-cli_ -- --debug publish --noBuild",
     "--": "",
-    "reinstall": "clear_node_modules.bat && npm install",
     "update": "npm run _sd-cli_ -- --debug update",
     "postinstall": "npm run _sd-cli_ -- --debug prepare",
     "---": "",
