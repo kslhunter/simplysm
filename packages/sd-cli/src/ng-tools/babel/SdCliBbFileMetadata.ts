@@ -61,42 +61,79 @@ export class SdCliBbFileMetadata {
       if (!isExportDeclaration(rawMeta)) continue;
 
       if (isExportNamedDeclaration(rawMeta)) {
-        for (const specifier of rawMeta.specifiers) {
-          if (isExportSpecifier(specifier)) {
-            const exportedName = isIdentifier(specifier.exported) ? specifier.exported.name : undefined;
-            if (exportedName === undefined) {
-              throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
-            }
-
-            if (rawMeta.source) {
-              if (rawMeta.source.value.includes(".")) {
-                const moduleFilePath = path.resolve(path.dirname(this.filePath), rawMeta.source.value);
+        if (rawMeta.declaration) {
+          if (isVariableDeclaration(rawMeta.declaration)) {
+            for (const decl of rawMeta.declaration.declarations) {
+              if (isIdentifier(decl.id)) {
                 result.push({
-                  exportedName,
-                  target: {
-                    filePath: moduleFilePath,
-                    name: specifier.local.name,
-                    __TDeclRef__: "__TDeclRef__"
-                  }
+                  exportedName: decl.id.name,
+                  target: new SdCliBbVariableMetadata(this, decl)
                 });
               }
               else {
-                const moduleName = rawMeta.source.value;
-                result.push({
-                  exportedName,
-                  target: { moduleName, name: specifier.local.name, __TDeclRef__: "__TDeclRef__" }
-                });
+                throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
               }
             }
-            else {
+          }
+          else if (isClassDeclaration(rawMeta.declaration)) {
+            result.push({
+              exportedName: rawMeta.declaration.id.name,
+              target: new SdCliBbClassMetadata(this, rawMeta.declaration)
+            });
+          }
+          else if (isFunctionDeclaration(rawMeta.declaration)) {
+            if (rawMeta.declaration.id) {
               result.push({
-                exportedName,
-                target: this._findMetaFromInside(specifier.local.name)
+                exportedName: rawMeta.declaration.id.name,
+                target: new SdCliBbFunctionMetadata(this, rawMeta.declaration)
               });
+            }
+            else {
+              throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
             }
           }
           else {
             throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
+          }
+        }
+        else {
+          for (const specifier of rawMeta.specifiers) {
+            if (isExportSpecifier(specifier)) {
+              const exportedName = isIdentifier(specifier.exported) ? specifier.exported.name : undefined;
+              if (exportedName === undefined) {
+                throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
+              }
+
+              if (rawMeta.source) {
+                if (rawMeta.source.value.includes(".")) {
+                  const moduleFilePath = path.resolve(path.dirname(this.filePath), rawMeta.source.value);
+                  result.push({
+                    exportedName,
+                    target: {
+                      filePath: moduleFilePath,
+                      name: specifier.local.name,
+                      __TDeclRef__: "__TDeclRef__"
+                    }
+                  });
+                }
+                else {
+                  const moduleName = rawMeta.source.value;
+                  result.push({
+                    exportedName,
+                    target: { moduleName, name: specifier.local.name, __TDeclRef__: "__TDeclRef__" }
+                  });
+                }
+              }
+              else {
+                result.push({
+                  exportedName,
+                  target: this._findMetaFromInside(specifier.local.name)
+                });
+              }
+            }
+            else {
+              throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
+            }
           }
         }
       }

@@ -1,6 +1,5 @@
-import { NgModuleGenerator } from "@simplysm/sd-cli/src/ng-tools/NgModuleGenerator";
+import { NgModuleGenerator, SdCliIndexFileGenerator } from "@simplysm/sd-cli";
 import path from "path";
-import { SdCliIndexFileGenerator } from "@simplysm/sd-cli";
 
 describe("meta", () => {
   it("test", async () => {

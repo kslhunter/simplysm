@@ -12,6 +12,8 @@
   "bin": {
     "sd-cli": "./dist/bin/sd-cli.mjs"
   },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "engines": {
     "node": "^16"

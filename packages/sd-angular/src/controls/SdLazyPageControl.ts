@@ -4,7 +4,7 @@ import { SdToastProvider } from "../providers/SdToastProvider";
 import { SdLazyPageLoaderProvider } from "../root-providers/SdLazyPageLoaderProvider";
 
 @Component({
-  selector: "sd-lazy-view-page",
+  selector: "sd-lazy-page",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-busy-container [busy]="busyCount > 0" noFade type="bar">

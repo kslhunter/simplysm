@@ -20,12 +20,15 @@ export class NgModuleGenerator {
   private readonly _bbMeta: SdCliBbRootMetadata;
   private readonly _tsMeta: SdCliTsRootMetadata;
 
-  private readonly _srcPath = path.resolve(process.cwd(), "packages", "sd-angular", "src");
-  private readonly _modulesPath = path.resolve(process.cwd(), "packages", "sd-angular", "src", "_modules");
+  private readonly _srcPath: string;
+  private readonly _modulesPath: string;
 
   private readonly _fileWriterCache = new Map<string, string>();
 
   public constructor(packagePath: string, private readonly _srcDirRelPaths: string[]) {
+    this._srcPath = path.resolve(packagePath, "src");
+    this._modulesPath = path.resolve(packagePath, "src", "_modules");
+
     this._bbMeta = new SdCliBbRootMetadata(packagePath);
     this._tsMeta = new SdCliTsRootMetadata(packagePath);
   }

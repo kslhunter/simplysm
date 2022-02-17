@@ -139,7 +139,7 @@ export class SdCliBbRootMetadata {
       const npmConfig = FsUtil.readJson(path.resolve(ngDepPath, "package.json")) as INpmConfig;
 
       const entryFilePath = npmConfig["es2015"] ?? npmConfig["browser"] ?? npmConfig["module"] ?? npmConfig["main"] ?? npmConfig["default"];
-      if (entryFilePath !== undefined) {
+      if (typeof entryFilePath === "string") {
         entryMap.set(npmConfig.name, path.resolve(ngDepPath, entryFilePath));
       }
 
@@ -148,7 +148,7 @@ export class SdCliBbRootMetadata {
         for (const exportKey of exportKeys) {
           if (
             exportKey.includes("/locales") ||
-            exportKey.endsWith("/package.json") ||
+            exportKey.endsWith(".json") ||
             exportKey.endsWith("/testing") ||
             exportKey.endsWith("/upgrade")
           ) {
@@ -160,7 +160,7 @@ export class SdCliBbRootMetadata {
             npmConfig.exports[exportKey]["module"] ??
             npmConfig.exports[exportKey]["main"] ??
             npmConfig.exports[exportKey]["default"];
-          if (expEntryFilePath !== undefined) {
+          if (typeof expEntryFilePath === "string") {
             const exportPath = path.resolve(ngDepPath, expEntryFilePath);
             const exportResult = this._getGlobExportResult(PathUtil.posix(npmConfig.name, exportKey), exportPath);
             for (const exportResultItem of exportResult) {
