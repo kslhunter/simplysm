@@ -134,7 +134,7 @@ export class SdCliPackage extends EventEmitter {
 
     if (watch) {
       worker.on("message", (arg) => {
-        const evt: ISdCliBuildWorkerEvent = JsonConvert.parse(arg);
+        const evt: ISdCliBuildWorkerEvent = JsonConvert.parse(arg as string);
         if (evt.name === "change") {
           this.emit("change");
         }
