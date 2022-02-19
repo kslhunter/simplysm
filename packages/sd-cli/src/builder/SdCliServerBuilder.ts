@@ -227,15 +227,15 @@ export class SdCliServerBuilder extends EventEmitter {
     return {
       mode: watch ? "development" : "production",
       devtool: false,
-      target: ["node", "es2020"],
+      target: ["node", "es2015"],
       profile: false,
       resolve: {
         roots: [this._rootPath],
         extensions: [".ts", ".js", ".mjs", ".cjs"],
         symlinks: true,
         modules: [this._workspaceRootPath, "node_modules"],
-        mainFields: ["es2020", "default", "module", "main"],
-        conditionNames: ["es2020", "..."]
+        mainFields: ["es2015", "default", "module", "main"],
+        conditionNames: ["es2015", "..."]
       },
       resolveLoader: {
         symlinks: true
@@ -251,19 +251,14 @@ export class SdCliServerBuilder extends EventEmitter {
         hashFunction: "xxhash64",
         clean: true,
         path: this._parsedTsconfig.options.outDir,
-        filename: "[name].mjs",
-        chunkFilename: "[name].mjs",
+        filename: "[name].cjs",
+        chunkFilename: "[name].cjs",
         assetModuleFilename: "res/[name][ext][query]",
-        library: {
-          type: "module"
-        }
+        libraryTarget: "commonjs2"
       },
       watch: false,
       watchOptions: { poll: undefined, ignored: undefined },
       performance: { hints: false },
-      experiments: {
-        outputModule: true
-      },
       infrastructureLogging: { level: "error" },
       stats: "errors-warnings",
       externals: extModuleNames.toObject((item) => item, (item) => "commonjs2 " + item),
@@ -294,7 +289,7 @@ export class SdCliServerBuilder extends EventEmitter {
             extractComments: false,
             terserOptions: {
               compress: true,
-              ecma: 2020,
+              ecma: 2015,
               sourceMap: false,
               keep_classnames: true,
               keep_fnames: true,
@@ -323,6 +318,9 @@ export class SdCliServerBuilder extends EventEmitter {
             test: /\.[cm]?[tj]sx?$/,
             resolve: {
               fullySpecified: false
+            },
+            use: {
+              loader: "babel-loader"
             }
           },
           ...watch ? [

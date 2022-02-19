@@ -34,7 +34,7 @@ import { CssOptimizerPlugin } from "@angular-devkit/build-angular/src/webpack/pl
 import browserslist from "browserslist";
 import { augmentAppWithServiceWorker } from "@angular-devkit/build-angular/src/utils/service-worker";
 import { StringUtil } from "@simplysm/sd-core-common";
-import { NgModuleGenerator } from "../ng-tools/NgModuleGenerator";
+import { SdCliNgModuleGenerator } from "../ng-tools/SdCliNgModuleGenerator";
 import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
@@ -43,7 +43,7 @@ export class SdCliClientBuilder extends EventEmitter {
   private readonly _tsconfigFilePath: string;
   private readonly _parsedTsconfig: ts.ParsedCommandLine;
   private readonly _npmConfigMap = new Map<string, INpmConfig>();
-  private readonly _ngModuleGenerator: NgModuleGenerator;
+  private readonly _ngModuleGenerator: SdCliNgModuleGenerator;
 
   public constructor(private readonly _rootPath: string,
                      private readonly _config: ISdCliClientPackageConfig,
@@ -56,16 +56,22 @@ export class SdCliClientBuilder extends EventEmitter {
     this._parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._rootPath, tsconfig.angularCompilerOptions);
 
     // NgModule 생성기 초기화
-    this._ngModuleGenerator = new NgModuleGenerator(this._rootPath, [
+    this._ngModuleGenerator = new SdCliNgModuleGenerator(this._rootPath, [
       "controls",
       "directives",
       "guards",
       "modals",
       "providers",
+      "app",
       "pages",
       "print-templates",
-      "toasts"
-    ], "Page");
+      "toasts",
+      "AppPage"
+    ], {
+      glob: "**/*Page.ts",
+      fileEndsWith: "Page",
+      rootClassName: "AppPage"
+    });
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -77,9 +83,6 @@ export class SdCliClientBuilder extends EventEmitter {
   public async watchAsync(): Promise<NextHandleFunction[]> {
     // DIST 비우기
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
-
-    // NgModule 타겟 디렉토리 삭제
-    await this._ngModuleGenerator.clearModulesAsync();
 
     // NgModule 생성
     await this._ngModuleGenerator.runAsync();
@@ -114,7 +117,6 @@ export class SdCliClientBuilder extends EventEmitter {
       compiler.hooks.done.tap(this.constructor.name, async (stats) => {
         // 결과 반환
         const results = SdCliBuildResultUtil.convertFromWebpackStats(stats);
-        this.emit("complete", results);
 
         // .config.json 파일 쓰기
         const npmConfig = this._getNpmConfig(this._rootPath)!;
@@ -128,6 +130,8 @@ export class SdCliClientBuilder extends EventEmitter {
         // 마무리
         this._logger.debug("Webpack 빌드 완료");
         resolve([devMiddleware, hotMiddleware]);
+
+        this.emit("complete", results);
       });
 
       const devMiddleware = wdm(compiler, {
@@ -146,6 +150,9 @@ export class SdCliClientBuilder extends EventEmitter {
   public async buildAsync(): Promise<ISdCliPackageBuildResult[]> {
     // DIST 비우기
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
+
+    // NgModule 생성
+    await this._ngModuleGenerator.runAsync();
 
     // 빌드
     this._logger.debug("Webpack 빌드 수행...");

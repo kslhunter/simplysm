@@ -11,7 +11,6 @@ import { SdServiceServer } from "@simplysm/sd-service-server";
 import { SdCliNpm } from "./SdCliNpm";
 import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
 import { NextHandleFunction } from "connect";
-import { SdCliIndexFileGenerator } from "./SdCliIndexFileGenerator";
 
 export class SdCliWorkspace {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -35,13 +34,6 @@ export class SdCliWorkspace {
 
     this._logger.debug("패키지 목록 구성...");
     const pkgs = await this._getPackagesAsync(config);
-
-    this._logger.debug("패키지 인덱스 생성기 실행...");
-    await pkgs.parallelAsync(async (pkg) => {
-      if (pkg.config.type === "library" && pkg.config.autoIndex) {
-        await new SdCliIndexFileGenerator(pkg.rootPath, pkg.config.autoIndex).watchAsync();
-      }
-    });
 
     this._logger.debug("패키지 이벤트 설정...");
     let changeCount = 0;
@@ -74,7 +66,12 @@ export class SdCliWorkspace {
         });
     }
 
-    this._logger.debug("빌드를 시작합니다...");
+
+    if (changeCount === 0) {
+      this._logger.log("빌드를 시작합니다...");
+    }
+    changeCount++;
+
     const pkgNames = pkgs.map((item) => item.name);
     const buildCompletedPackageNames: string[] = [];
     await pkgs.parallelAsync(async (pkg) => {
@@ -91,6 +88,13 @@ export class SdCliWorkspace {
       }
       buildCompletedPackageNames.push(pkg.name);
     });
+
+    changeCount--;
+    if (changeCount === 0) {
+      this._loggingResults(totalResultMap);
+      this._loggingOpenClientHrefs();
+      this._logger.info("모든 빌드가 완료되었습니다.");
+    }
   }
 
   private _isServerRestarting = false;
@@ -118,7 +122,7 @@ export class SdCliWorkspace {
         delete serverInfo.server;
       }
 
-      serverInfo.server = (await import("file:///" + entryFilePath + "?update=" + Uuid.new().toString())).default as SdServiceServer | undefined;
+      serverInfo.server = (await import("file:///" + entryFilePath + "?update=" + Uuid.new().toString())).default.default as SdServiceServer | undefined;
       if (!serverInfo.server) {
         this._logger.error(`${entryFilePath}(0, 0): 'SdServiceServer'를 'export'해야 합니다.`);
         this._isServerRestarting = false;
@@ -142,13 +146,6 @@ export class SdCliWorkspace {
 
     this._logger.debug("패키지 목록 구성...");
     const pkgs = await this._getPackagesAsync(config);
-
-    this._logger.debug("패키지 인덱스 생성기 실행...");
-    await pkgs.parallelAsync(async (pkg) => {
-      if (pkg.config.type === "library" && pkg.config.autoIndex) {
-        await new SdCliIndexFileGenerator(pkg.rootPath, pkg.config.autoIndex).runAsync();
-      }
-    });
 
     this._logger.debug("프로젝트 및 패키지 버전 설정...");
     await this._upgradeVersionAsync(pkgs);

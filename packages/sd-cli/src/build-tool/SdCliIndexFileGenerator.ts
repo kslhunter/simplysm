@@ -2,7 +2,8 @@ import { ITsconfig } from "../commons";
 import path from "path";
 import { FsUtil, PathUtil } from "@simplysm/sd-core-node";
 import os from "os";
-import chokidar from "chokidar";
+
+// import chokidar from "chokidar";
 
 export class SdCliIndexFileGenerator {
   private readonly _indexFilePath = path.resolve(this.rootPath, "src/index.ts");
@@ -10,9 +11,10 @@ export class SdCliIndexFileGenerator {
 
   public constructor(public readonly rootPath: string,
                      public readonly config: ISdAutoIndexConfig) {
+    this._contentCache = FsUtil.exists(this._indexFilePath) ? FsUtil.readFile(this._indexFilePath) : undefined;
   }
 
-  public async watchAsync(): Promise<void> {
+  /*public async watchAsync(): Promise<void> {
     const watcher = chokidar.watch([path.resolve(this.rootPath, "src")], { persistent: true });
     watcher.on("add", async (filePath) => {
       if (filePath.endsWith(".ts")) {
@@ -26,7 +28,7 @@ export class SdCliIndexFileGenerator {
     });
 
     await this.runAsync();
-  }
+  }*/
 
   public async runAsync(): Promise<void> {
     const importTexts: string[] = [];
@@ -55,9 +57,9 @@ export class SdCliIndexFileGenerator {
     }
 
     const content = importTexts.join(os.EOL) + os.EOL;
-    const prevContent = this._contentCache ?? (FsUtil.exists(this._indexFilePath) ? FsUtil.readFile(this._indexFilePath) : undefined);
+    const prevContent = this._contentCache;
     this._contentCache = content;
-    if (content !== prevContent) {
+    if (content.trim() !== prevContent?.trim()) {
       await FsUtil.writeFileAsync(this._indexFilePath, content);
     }
   }

@@ -65,3 +65,24 @@ export interface ISdCliClientPackageConfig {
   env?: Record<string, string>;
   configs?: Record<string, any>;
 }
+
+export interface ISdCliBuildWorkerRequest {
+  workspaceRootPath: string;
+  rootPath: string;
+  config: TSdCliPackageConfig;
+  watch: boolean;
+}
+
+export type TSdCliBuildWorkerResponse = {
+  type: "response";
+  body?: any;
+} | {
+  type: "error";
+  body: Error;
+};
+
+export interface ISdCliBuildWorkerEvent {
+  type: "event";
+  name: string;
+  body?: any;
+}

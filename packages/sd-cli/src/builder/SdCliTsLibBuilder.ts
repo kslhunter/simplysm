@@ -1,4 +1,4 @@
-import { INpmConfig, ISdCliPackageBuildResult } from "../commons";
+import { INpmConfig, ISdCliLibPackageConfig, ISdCliPackageBuildResult } from "../commons";
 import { EventEmitter } from "events";
 import ts from "typescript";
 import { FsUtil, Logger, PathUtil, SdFsWatcher } from "@simplysm/sd-core-node";
@@ -12,7 +12,8 @@ import { SdCliCacheCompilerHost } from "../build-tool/SdCliCacheCompilerHost";
 import { SdCliNgCacheCompilerHost } from "../build-tool/SdCliNgCacheCompilerHost";
 import { NgCompiler } from "@angular/compiler-cli/src/ngtsc/core";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
-import { NgModuleGenerator } from "../ng-tools/NgModuleGenerator";
+import { SdCliNgModuleGenerator } from "../ng-tools/SdCliNgModuleGenerator";
+import { SdCliIndexFileGenerator } from "../build-tool/SdCliIndexFileGenerator";
 
 export class SdCliTsLibBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -24,10 +25,12 @@ export class SdCliTsLibBuilder extends EventEmitter {
   private readonly _fileCache = new Map<string, IFileCache>();
   private readonly _writeFileCache = new Map<string, string>();
 
+  private readonly _indexFileGenerator?: SdCliIndexFileGenerator;
+
   private _program?: ts.Program;
   private _ngProgram?: NgtscProgram;
   private _builder?: ts.EmitAndSemanticDiagnosticsBuilderProgram;
-  private readonly _ngModuleGenerator?: NgModuleGenerator;
+  private readonly _ngModuleGenerator?: SdCliNgModuleGenerator;
 
   private readonly _tsconfigFilePath: string;
   private readonly _parsedTsconfig: ts.ParsedCommandLine;
@@ -35,7 +38,8 @@ export class SdCliTsLibBuilder extends EventEmitter {
 
   private readonly _isAngular: boolean;
 
-  public constructor(private readonly _rootPath: string) {
+  public constructor(private readonly _rootPath: string,
+                     private readonly _config: ISdCliLibPackageConfig) {
     super();
     this._linter = new SdCliPackageLinter(this._rootPath);
 
@@ -52,16 +56,27 @@ export class SdCliTsLibBuilder extends EventEmitter {
 
     if (this._isAngular) {
       // NgModule 생성기 초기화
-      this._ngModuleGenerator = new NgModuleGenerator(this._rootPath, [
+      this._ngModuleGenerator = new SdCliNgModuleGenerator(this._rootPath, [
         "controls",
         "directives",
         "guards",
         "modals",
         "providers",
+        "app",
         "pages",
         "print-templates",
-        "toasts"
-      ], "Page");
+        "toasts",
+        "AppPage"
+      ], {
+        glob: "**/*Page.ts",
+        fileEndsWith: "Page",
+        rootClassName: "AppPage"
+      });
+    }
+
+    // index 생성기 초기화
+    if (this._config.autoIndex) {
+      this._indexFileGenerator = new SdCliIndexFileGenerator(this._rootPath, this._config.autoIndex);
     }
   }
 
@@ -77,11 +92,11 @@ export class SdCliTsLibBuilder extends EventEmitter {
     // DIST 비우기
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
-    // NgModule 타겟 디렉토리 삭제
-    await this._ngModuleGenerator?.clearModulesAsync();
-
     // NgModule 생성
     await this._ngModuleGenerator?.runAsync();
+
+    // Index 파일 생성
+    await this._indexFileGenerator?.runAsync();
 
     // 프로그램 리로드
     const buildPack = this._createSdBuildPack(this._parsedTsconfig);
@@ -103,6 +118,9 @@ export class SdCliTsLibBuilder extends EventEmitter {
       // NgModule 생성
       this._ngModuleGenerator?.removeCaches(changeFilePaths);
       await this._ngModuleGenerator?.runAsync();
+
+      // Index 파일 생성
+      await this._indexFileGenerator?.runAsync();
 
       const watchBuildResults: ISdCliPackageBuildResult[] = [];
 
@@ -138,11 +156,11 @@ export class SdCliTsLibBuilder extends EventEmitter {
     // DIST 비우기
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
-    // NgModule 타겟 디렉토리 삭제
-    await this._ngModuleGenerator?.clearModulesAsync();
-
     // NgModule 생성
     await this._ngModuleGenerator?.runAsync();
+
+    // NgModule 생성
+    await this._indexFileGenerator?.runAsync();
 
     // 프로그램 리로드
     const buildPack = this._createSdBuildPack(this._parsedTsconfig);

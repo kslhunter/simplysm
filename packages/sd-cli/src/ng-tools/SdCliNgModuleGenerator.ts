@@ -16,7 +16,8 @@ import { FsUtil, PathUtil } from "@simplysm/sd-core-node";
 import os from "os";
 
 // TODO: 에러 메시지 처리
-export class NgModuleGenerator {
+// TODO: forRoot에 있는 Provider 처리??
+export class SdCliNgModuleGenerator {
   private readonly _bbMeta: SdCliBbRootMetadata;
   private readonly _tsMeta: SdCliTsRootMetadata;
 
@@ -27,16 +28,22 @@ export class NgModuleGenerator {
 
   public constructor(packagePath: string,
                      private readonly _srcDirRelPaths: string[],
-                     private readonly _routeFileEndsWith: string | undefined) {
+                     private readonly _routeOpts: {
+                       glob: string;
+                       fileEndsWith: string;
+                       rootClassName: string;
+                     } | undefined) {
     this._srcPath = path.resolve(packagePath, "src");
     this._modulesPath = path.resolve(packagePath, "src", "_modules");
 
     this._bbMeta = new SdCliBbRootMetadata(packagePath);
     this._tsMeta = new SdCliTsRootMetadata(packagePath);
-  }
 
-  public async clearModulesAsync(): Promise<void> {
-    await FsUtil.removeAsync(this._modulesPath);
+    const glob = FsUtil.glob(path.resolve(this._modulesPath, "**", "*.ts"));
+    for (const currFilePath of glob) {
+      const content = FsUtil.readFile(currFilePath);
+      this._fileWriterCache.set(currFilePath, content);
+    }
   }
 
   public removeCaches(changedFilePaths: string[]): void {
@@ -54,8 +61,12 @@ export class NgModuleGenerator {
     const genNgRoutingModules = await this._getGenNgRoutingModuleDefsAsync();
     const genNgModules = this._getGenNgModuleDefs(bbNgModules, tsPreset.modules, tsPreset.sources);
 
-    await this._genNgRoutingModuleFileAsync(genNgRoutingModules);
-    await this._genNgModuleFileAsync(genNgModules);
+    const files = [
+      ...this._getGenNgRoutingModuleFiles(genNgRoutingModules),
+      ...this._getGenNgModuleFiles(genNgModules)
+    ];
+
+    await this._writeFilesAsync(files);
   }
 
   private _findBbMetasFromMeta(srcMeta: TSdCliBbMetadata): TSdCliBbMetadata[] {
@@ -283,25 +294,36 @@ export class NgModuleGenerator {
     return result;
   }
 
-  private async _getGenNgRoutingModuleDefsAsync(): Promise<ITsGenNgRoutingModuleDef[]> {
-    if (this._routeFileEndsWith === undefined) return [];
+  private async _getGenNgRoutingModuleDefsAsync(): Promise<TTsGenNgRoutingModuleDef[]> {
+    if (this._routeOpts === undefined) return [];
 
-    const result: ITsGenNgRoutingModuleDef[] = [];
+    const result: TTsGenNgRoutingModuleDef[] = [];
 
-    const filePaths = await FsUtil.globAsync(path.resolve(this._srcPath, "**", "*" + this._routeFileEndsWith + ".ts"));
+    const filePaths = await FsUtil.globAsync(path.resolve(this._srcPath, this._routeOpts.glob));
     for (const filePath of filePaths) {
       const sourceClassName = path.basename(filePath, path.extname(filePath));
-      const targetClassName = sourceClassName + "RoutingModule";
-      const targetFilePath = path.resolve(this._modulesPath, path.relative(this._srcPath, path.dirname(filePath)), targetClassName);
-      const childDirName = StringUtil.toKebabCase(sourceClassName.substring(0, sourceClassName.length - 4));
-      const childDirPath = path.resolve(path.dirname(filePath), childDirName);
+      if (sourceClassName === this._routeOpts.rootClassName) {
+        const childDirName = StringUtil.toKebabCase(sourceClassName.slice(0, -this._routeOpts.fileEndsWith.length));
+        const childDirPath = path.resolve(path.dirname(filePath), childDirName);
 
-      result.push({
-        filePath: targetFilePath,
-        name: targetClassName,
-        component: { filePath: filePath.replace(/\.ts$/, ""), name: sourceClassName },
-        children: FsUtil.exists(childDirPath) ? await this._getGenNgRoutingModuleDefChildrenAsync(childDirPath) : undefined
-      });
+        result.push({
+          filePath: path.resolve(this._srcPath, "_routes"),
+          children: await this._getGenNgRoutingModuleDefChildrenAsync(childDirPath)
+        });
+      }
+      else {
+        const routingModuleClassName = sourceClassName + "RoutingModule";
+        const routingModuleFilePath = path.resolve(this._modulesPath, path.relative(this._srcPath, path.dirname(filePath)), routingModuleClassName);
+        const childDirName = StringUtil.toKebabCase(sourceClassName.slice(0, -this._routeOpts.fileEndsWith.length));
+        const childDirPath = path.resolve(path.dirname(filePath), childDirName);
+
+        result.push({
+          filePath: routingModuleFilePath,
+          name: routingModuleClassName,
+          component: { filePath: filePath.replace(/\.ts$/, ""), name: sourceClassName },
+          children: FsUtil.exists(childDirPath) ? await this._getGenNgRoutingModuleDefChildrenAsync(childDirPath) : undefined
+        });
+      }
     }
 
     return result;
@@ -313,12 +335,17 @@ export class NgModuleGenerator {
     const childNames = await FsUtil.readdirAsync(rootPath);
     for (const childName of childNames) {
       if (!FsUtil.isDirectory(path.resolve(rootPath, childName))) { // 파일
+        const sourceFilePath = path.resolve(rootPath, childName);
+        const sourceClassName = path.basename(sourceFilePath, path.extname(childName));
+        const moduleClassName = sourceClassName + "Module";
+        const moduleFilePath = path.resolve(this._modulesPath, path.relative(this._srcPath, path.dirname(sourceFilePath)), moduleClassName);
+
         result.push({
           path: StringUtil.toKebabCase(childName.substring(0, childName.length - 7)),
-          target: { filePath: path.resolve(rootPath, childName), name: childName.substring(0, childName.length - 3) }
+          target: { filePath: moduleFilePath, name: moduleClassName }
         });
       }
-      else if (!FsUtil.exists(path.resolve(rootPath, StringUtil.toPascalCase(childName) + this._routeFileEndsWith + ".ts"))) { // 파일없는 디렉토리
+      else if (!FsUtil.exists(path.resolve(rootPath, StringUtil.toPascalCase(childName) + this._routeOpts!.fileEndsWith + ".ts"))) { // 파일없는 디렉토리
         result.push({
           path: childName,
           children: await this._getGenNgRoutingModuleDefChildrenAsync(path.resolve(rootPath, childName))
@@ -329,29 +356,30 @@ export class NgModuleGenerator {
     return result;
   }
 
-  private async _genNgRoutingModuleFileAsync(defs: ITsGenNgRoutingModuleDef[]): Promise<void> {
+  private _getGenNgRoutingModuleFiles(defs: TTsGenNgRoutingModuleDef[]): { filePath: string; content: string }[] {
+    const result: { filePath: string; content: string }[] = [];
+
     for (const def of defs) {
       const fn = (children: TTsGenNgRoutingModuleDefChild[]): string => {
-        let result = "[\n";
+        let fnResult = "[\n";
         for (const child of children) {
-          result += "  {\n";
-          result += `    path: "${child.path}",\n`;
+          fnResult += "  {\n";
+          fnResult += `    path: "${child.path}",\n`;
           if ("target" in child) {
-            result += `    loadChildren: async () => await import("${this._getImportModuleName(def.filePath, child.target.filePath)}").then((m) => m.${child.target.name})\n`;
+            fnResult += `    loadChildren: async () => await import("${this._getImportModuleName(def.filePath, child.target.filePath)}").then((m) => m.${child.target.name})\n`;
           }
           else {
-            result += `    children: ${fn(child.children).replace(/\n/g, "\n  ")}\n`;
+            fnResult += `    children: ${fn(child.children).replace(/\n/g, "\n  ")}\n`;
           }
-          result += "  },\n";
+          fnResult += "  },\n";
         }
-        result = result.slice(0, -2) + "\n";
-        result += "]";
+        fnResult = fnResult.slice(0, -2) + "\n";
+        fnResult += "]";
 
-        return result;
+        return fnResult;
       };
 
-
-      const content = `
+      const content = "component" in def ? `
 import { NgModule } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { SdCanDeactivateGuard } from "@simplysm/sd-angular";
@@ -371,16 +399,21 @@ import { ${def.component.name} } from "${this._getImportModuleName(def.filePath,
   exports: [RouterModule]
 })
 export class ${def.name} {
-}`.trim();
+}`.trim() : `
+import { Routes } from "@angular/router";
 
-      if (this._fileWriterCache.get(def.filePath) !== content) {
-        await FsUtil.writeFileAsync(def.filePath + ".ts", content);
-        this._fileWriterCache.set(def.filePath, content);
-      }
+export const routes: Routes = ${fn(def.children)};
+`.trim();
+
+      result.push({ filePath: def.filePath + ".ts", content });
     }
+
+    return result;
   }
 
-  private async _genNgModuleFileAsync(mods: ITsGenNgModuleDef[]): Promise<void> {
+  private _getGenNgModuleFiles(mods: ITsGenNgModuleDef[]): { filePath: string; content: string }[] {
+    const result: { filePath: string; content: string }[] = [];
+
     for (const mod of mods) {
       const importMap = [...mod.imports, ...mod.exports, ...mod.providers]
         .map((item) => ({
@@ -399,9 +432,13 @@ export class ${def.name} {
       }
 
       const moduleImportNames = mod.imports.map((item) => item.name);
-      if (this._routeFileEndsWith !== undefined && mod.filePath.endsWith(this._routeFileEndsWith)) {
+      if (
+        this._routeOpts !== undefined
+        && mod.filePath.endsWith(this._routeOpts.fileEndsWith + "Module")
+        && mod.name !== this._routeOpts.rootClassName + "Module"
+      ) {
         const routingModuleName = mod.name.replace(/Module$/, "RoutingModule");
-        importTexts.push(`import { ${routingModuleName} } from "./${routingModuleName}"`);
+        importTexts.push(`import { ${routingModuleName} } from "./${routingModuleName}";`);
         moduleImportNames.push(routingModuleName);
       }
 
@@ -417,9 +454,25 @@ ${importTexts.join(os.EOL)}
 export class ${mod.name} {
 }`.trim();
 
-      if (this._fileWriterCache.get(mod.filePath) !== content) {
-        await FsUtil.writeFileAsync(mod.filePath + ".ts", content);
-        this._fileWriterCache.set(mod.filePath, content);
+      result.push({ filePath: mod.filePath + ".ts", content });
+    }
+
+    return result;
+  }
+
+  private async _writeFilesAsync(files: { filePath: string; content: string }[]): Promise<void> {
+    for (const file of files) {
+      if (this._fileWriterCache.get(file.filePath) !== file.content) {
+        await FsUtil.writeFileAsync(file.filePath, file.content);
+        this._fileWriterCache.set(file.filePath, file.content);
+      }
+    }
+
+    const glob = await FsUtil.globAsync(path.resolve(this._modulesPath, "**", "*"));
+    for (const currFilePath of glob) {
+      if (!files.some((item) => item.filePath.startsWith(currFilePath))) {
+        await FsUtil.removeAsync(currFilePath);
+        this._fileWriterCache.delete(currFilePath);
       }
     }
   }
@@ -464,12 +517,15 @@ interface ITsGenNgModuleDef {
   providers: { filePath: string; name: string }[];
 }
 
-interface ITsGenNgRoutingModuleDef {
+type TTsGenNgRoutingModuleDef = {
   filePath: string;
   name: string;
   component: { filePath: string; name: string };
   children?: TTsGenNgRoutingModuleDefChild[];
-}
+} | {
+  filePath: string;
+  children: TTsGenNgRoutingModuleDefChild[];
+};
 
 type TTsGenNgRoutingModuleDefChild = {
   path: string;

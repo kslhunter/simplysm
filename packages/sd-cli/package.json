@@ -49,6 +49,7 @@
     "chokidar": "^3.5.3",
     "@babel/parser": "^7.17.0",
     "@babel/types": "^7.17.0",
+    "babel-loader": "^8.2.3",
     "jsdom": "^19.0.0"
   },
   "devDependencies": {
