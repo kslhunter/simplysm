@@ -23,7 +23,6 @@
   },
   "files": [
     "src/bin/sd-cli.ts",
-    "src/workers/sd-cli-build-worker.ts",
     "src/index.ts"
   ]
 }
