@@ -50,7 +50,9 @@ export class SdCliNgModuleGenerator {
     this._bbMeta.removeCaches(changedFilePaths);
     this._tsMeta.removeCaches(changedFilePaths);
     for (const changedFilePath of changedFilePaths) {
-      this._fileWriterCache.delete(changedFilePath);
+      if (this._fileWriterCache.has(changedFilePath) && !FsUtil.exists(changedFilePath)) {
+        this._fileWriterCache.delete(changedFilePath);
+      }
     }
   }
 

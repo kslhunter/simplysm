@@ -16,7 +16,7 @@ import { SdCliNgModuleGenerator } from "../ng-tools/SdCliNgModuleGenerator";
 import { SdCliIndexFileGenerator } from "../build-tool/SdCliIndexFileGenerator";
 
 export class SdCliTsLibBuilder extends EventEmitter {
-  private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
+  private readonly _logger: Logger;
 
   private _moduleResolutionCache?: ts.ModuleResolutionCache;
 
@@ -34,20 +34,24 @@ export class SdCliTsLibBuilder extends EventEmitter {
 
   private readonly _tsconfigFilePath: string;
   private readonly _parsedTsconfig: ts.ParsedCommandLine;
-  private readonly _npmConfig: INpmConfig;
+  private readonly _npmConfigMap = new Map<string, INpmConfig>();
 
   private readonly _isAngular: boolean;
 
   public constructor(private readonly _rootPath: string,
-                     private readonly _config: ISdCliLibPackageConfig) {
+                     private readonly _config: ISdCliLibPackageConfig,
+                     private readonly _workspaceRootPath: string) {
     super();
+    const npmConfig = this._getNpmConfig(this._rootPath)!;
+
+    // linter
     this._linter = new SdCliPackageLinter(this._rootPath);
 
-    // package.json
-    this._npmConfig = FsUtil.readJson(path.resolve(this._rootPath, "package.json"));
+    // logger
+    this._logger = Logger.get(["simplysm", "sd-cli", this.constructor.name, npmConfig.name]);
 
     // isAngular
-    this._isAngular = SdCliNpmConfigUtil.getDependencies(this._npmConfig).defaults.includes("@angular/core");
+    this._isAngular = SdCliNpmConfigUtil.getDependencies(npmConfig).defaults.includes("@angular/core");
 
     // tsconfig
     this._tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
@@ -89,18 +93,24 @@ export class SdCliTsLibBuilder extends EventEmitter {
   public async watchAsync(): Promise<void> {
     this.emit("change");
 
-    // DIST 비우기
+    this._logger.debug("dist 폴더 삭제...");
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
-    // NgModule 생성
-    await this._ngModuleGenerator?.runAsync();
+    if (this._ngModuleGenerator) {
+      this._logger.debug("NgModule 생성...");
+      await this._ngModuleGenerator.runAsync();
+    }
 
-    // Index 파일 생성
-    await this._indexFileGenerator?.runAsync();
+    if (this._indexFileGenerator) {
+      this._logger.debug("index.js 생성 및 index.js용 변경감지 시작...");
+      await this._indexFileGenerator.runAsync();
+      await this._indexFileGenerator.watchAsync();
+    }
 
-    // 프로그램 리로드
+    this._logger.debug("프로그램 로딩...");
     const buildPack = this._createSdBuildPack(this._parsedTsconfig);
 
+    this._logger.debug("변경감지 구성...");
     const relatedPaths = await this.getAllRelatedPathsAsync();
     const watcher = SdFsWatcher.watch(relatedPaths);
     watcher.onChange({}, async (changeInfos) => {
@@ -110,25 +120,26 @@ export class SdCliTsLibBuilder extends EventEmitter {
       this._logger.debug("파일 변경 감지", changeInfos);
       this.emit("change");
 
-      // 캐쉬 삭제
+      this._logger.debug("변경된 파일의 캐쉬 삭제...");
       for (const changeFilePath of changeFilePaths) {
         this._fileCache.delete(PathUtil.posix(changeFilePath));
       }
 
-      // NgModule 생성
-      this._ngModuleGenerator?.removeCaches(changeFilePaths);
-      await this._ngModuleGenerator?.runAsync();
-
-      // Index 파일 생성
-      await this._indexFileGenerator?.runAsync();
+      if (this._ngModuleGenerator) {
+        this._logger.debug("NgModule 생성...");
+        this._ngModuleGenerator.removeCaches(changeFilePaths);
+        await this._ngModuleGenerator.runAsync();
+      }
 
       const watchBuildResults: ISdCliPackageBuildResult[] = [];
 
-      // 빌드
+      this._logger.debug("프로그램 로딩...");
       const watchBuildPack = this._createSdBuildPack(this._parsedTsconfig);
+
+      this._logger.debug("빌드...");
       watchBuildResults.push(...await this._runBuilderAsync(watchBuildPack.builder, watchBuildPack.ngCompiler));
 
-      // 린트
+      this._logger.debug("린트...");
       const lintFilePaths = [
         ...watchBuildPack.affectedSourceFiles.map((item) => item.fileName),
         ...changeInfos.filter((item) => ["add", "change"].includes(item.event)).map((item) => item.path)
@@ -137,38 +148,43 @@ export class SdCliTsLibBuilder extends EventEmitter {
         watchBuildResults.push(...await this._linter.lintAsync(lintFilePaths, watchBuildPack.program));
       }
 
+      this._logger.debug("변경감지 대상목록 재구성...");
       const watchRelatedPaths = await this.getAllRelatedPathsAsync();
       watcher.add(watchRelatedPaths);
 
       this.emit("complete", watchBuildResults);
     });
 
-    // 빌드
+    this._logger.debug("빌드...");
     const buildResults = await this._runBuilderAsync(buildPack.builder, buildPack.ngCompiler);
 
-    // 린트
+    this._logger.debug("린트...");
     buildResults.push(...await this._linter.lintAsync(relatedPaths, buildPack.program));
 
     this.emit("complete", buildResults);
   }
 
   public async buildAsync(): Promise<ISdCliPackageBuildResult[]> {
-    // DIST 비우기
+    this._logger.debug("dist 폴더 삭제...");
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
-    // NgModule 생성
-    await this._ngModuleGenerator?.runAsync();
+    if (this._ngModuleGenerator) {
+      this._logger.debug("NgModule 생성...");
+      await this._ngModuleGenerator.runAsync();
+    }
 
-    // NgModule 생성
-    await this._indexFileGenerator?.runAsync();
+    if (this._indexFileGenerator) {
+      this._logger.debug("index.js 생성...");
+      await this._indexFileGenerator.runAsync();
+    }
 
-    // 프로그램 리로드
+    this._logger.debug("프로그램 로딩...");
     const buildPack = this._createSdBuildPack(this._parsedTsconfig);
 
-    // 빌드
+    this._logger.debug("빌드...");
     const buildResults = await this._runBuilderAsync(buildPack.builder, buildPack.ngCompiler);
 
-    // 린트
+    this._logger.debug("린트...");
     const relatedPaths = await this.getAllRelatedPathsAsync();
     buildResults.push(...await this._linter.lintAsync(relatedPaths, buildPack.program));
 
@@ -176,7 +192,16 @@ export class SdCliTsLibBuilder extends EventEmitter {
   }
 
   private async getAllRelatedPathsAsync(): Promise<string[]> {
-    const fileCachePaths = Array.from(this._fileCache.keys());
+    const workspaceNpmConfig = this._getNpmConfig(this._workspaceRootPath)!;
+    const workspaceName = workspaceNpmConfig.name;
+
+    const fileCachePaths = Array.from(this._fileCache.keys())
+      .filter((filePath) => {
+        const workspaceRegex = new RegExp(`node_modules[\\\\/]@${workspaceName}[\\\\/]`);
+        return !filePath.includes("node_modules")
+          || (/node_modules[\\/]@simplysm[\\/]/).test(filePath)
+          || workspaceRegex.test(filePath);
+      });
     const mySourceGlobPath = path.resolve(this._rootPath, "**", "+(*.js|*.cjs|*.mjs|*.ts)");
     const mySourceFilePaths = await FsUtil.globAsync(mySourceGlobPath, {
       ignore: [
@@ -289,6 +314,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
     const affectedSourceFileSet: Set<ts.SourceFile> = new Set<ts.SourceFile>();
     while (true) {
       const result = this._builder.getSemanticDiagnosticsOfNextAffectedFile(undefined, (sourceFile) => {
+        // this._logger.debug(sourceFile.fileName + " SYNTAX 로딩...");
         if (ngCompiler?.ignoreForDiagnostics.has(sourceFile) && sourceFile.fileName.endsWith(".ngtypecheck.ts")) {
           const orgFileName = sourceFile.fileName.slice(0, -15) + ".ts";
           const orgSourceFile = this._builder!.getSourceFile(orgFileName);
@@ -303,6 +329,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
       });
       if (!result) break;
 
+      // this._logger.debug((result.affected as ts.SourceFile).fileName + " SYNTAX 로딩");
       affectedSourceFileSet.add(result.affected as ts.SourceFile);
     }
 
@@ -377,6 +404,13 @@ export class SdCliTsLibBuilder extends EventEmitter {
     else {
       return compilerHost;
     }
+  }
+
+  private _getNpmConfig(pkgPath: string): INpmConfig | undefined {
+    if (!this._npmConfigMap.has(pkgPath)) {
+      this._npmConfigMap.set(pkgPath, FsUtil.readJson(path.resolve(pkgPath, "package.json")));
+    }
+    return this._npmConfigMap.get(pkgPath);
   }
 }
 

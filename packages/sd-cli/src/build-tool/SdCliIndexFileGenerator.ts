@@ -2,8 +2,7 @@ import { ITsconfig } from "../commons";
 import path from "path";
 import { FsUtil, PathUtil } from "@simplysm/sd-core-node";
 import os from "os";
-
-// import chokidar from "chokidar";
+import chokidar from "chokidar";
 
 export class SdCliIndexFileGenerator {
   private readonly _indexFilePath = path.resolve(this.rootPath, "src/index.ts");
@@ -14,7 +13,7 @@ export class SdCliIndexFileGenerator {
     this._contentCache = FsUtil.exists(this._indexFilePath) ? FsUtil.readFile(this._indexFilePath) : undefined;
   }
 
-  /*public async watchAsync(): Promise<void> {
+  public async watchAsync(): Promise<void> {
     const watcher = chokidar.watch([path.resolve(this.rootPath, "src")], { persistent: true });
     watcher.on("add", async (filePath) => {
       if (filePath.endsWith(".ts")) {
@@ -28,7 +27,7 @@ export class SdCliIndexFileGenerator {
     });
 
     await this.runAsync();
-  }*/
+  }
 
   public async runAsync(): Promise<void> {
     const importTexts: string[] = [];

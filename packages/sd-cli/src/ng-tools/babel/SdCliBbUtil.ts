@@ -9,7 +9,7 @@ export class SdCliBbUtil {
       char: meta?.loc?.start.column,
       code: undefined,
       severity: "error",
-      message: "예상치 못한 방식의 코드가 발견되었습니다."
+      message: message
     });
   }
 }

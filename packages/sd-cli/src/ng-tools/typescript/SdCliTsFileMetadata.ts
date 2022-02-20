@@ -3,13 +3,14 @@ import ts from "typescript";
 import { NeverEntryError } from "@simplysm/sd-core-common";
 import { TSdCliMetaRef } from "../commons";
 import path from "path";
+import { SdCliTsUtil } from "./SdCliTsUtil";
 
 export class SdCliTsFileMetadata {
-  private readonly _sourceFile: ts.SourceFile;
+  public readonly sourceFile: ts.SourceFile;
 
   public constructor(public readonly filePath: string) {
     const fileContent = FsUtil.readFile(filePath);
-    this._sourceFile = ts.createSourceFile(filePath, fileContent, ts.ScriptTarget.ES2017);
+    this.sourceFile = ts.createSourceFile(filePath, fileContent, ts.ScriptTarget.ES2017);
   }
 
   private _directExportClassesCache?: { exportedName: string; target: SdCliTsClassMetadata }[];
@@ -18,7 +19,7 @@ export class SdCliTsFileMetadata {
     if (this._directExportClassesCache) return this._directExportClassesCache;
 
     const result: { exportedName: string; target: SdCliTsClassMetadata }[] = [];
-    this._sourceFile.forEachChild((node) => {
+    this.sourceFile.forEachChild((node) => {
       if (!node.modifiers || !node.modifiers.some((item) => item.kind === ts.SyntaxKind.ExportKeyword)) return;
       if (!ts.isClassDeclaration(node)) return;
       if (node.name === undefined) {
@@ -34,7 +35,7 @@ export class SdCliTsFileMetadata {
   public get imports(): TSdCliMetaRef[] {
     const result: TSdCliMetaRef[] = [];
 
-    ts.forEachChild(this._sourceFile, (node) => {
+    ts.forEachChild(this.sourceFile, (node) => {
       if (ts.isImportDeclaration(node)) {
         if (ts.isStringLiteral(node.moduleSpecifier)) {
           if (node.importClause) {
@@ -52,7 +53,7 @@ export class SdCliTsFileMetadata {
                   }
                 }
                 else {
-                  throw new NeverEntryError();
+                  throw SdCliTsUtil.error("'import * as [name] from ...'을 'import [name] from ...'로 변경하세요.", this.sourceFile, node);
                 }
               }
               else {
@@ -164,7 +165,7 @@ export class SdCliTsFileMetadata {
       return result;
     };
 
-    return fn(this._sourceFile);
+    return fn(this.sourceFile);
   }
 
   public getMetaFromNode(node: ts.Node): TSdCliTsMetadata {

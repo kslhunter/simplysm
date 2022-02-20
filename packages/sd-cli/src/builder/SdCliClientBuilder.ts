@@ -38,7 +38,7 @@ import { SdCliNgModuleGenerator } from "../ng-tools/SdCliNgModuleGenerator";
 import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
-  private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
+  private readonly _logger: Logger;
 
   private readonly _tsconfigFilePath: string;
   private readonly _parsedTsconfig: ts.ParsedCommandLine;
@@ -49,6 +49,9 @@ export class SdCliClientBuilder extends EventEmitter {
                      private readonly _config: ISdCliClientPackageConfig,
                      private readonly _workspaceRootPath: string) {
     super();
+
+    const npmConfig = this._getNpmConfig(this._rootPath)!;
+    this._logger = Logger.get(["simplysm", "sd-cli", this.constructor.name, npmConfig.name]);
 
     // tsconfig
     this._tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
@@ -93,6 +96,7 @@ export class SdCliClientBuilder extends EventEmitter {
     return await new Promise<NextHandleFunction[]>((resolve, reject) => {
       compiler.hooks.invalid.tap(this.constructor.name, (fileName) => {
         if (fileName != null) {
+          this._logger.debug("파일변경 감지", fileName);
           // NgModule 캐시 삭제
           this._ngModuleGenerator.removeCaches([path.resolve(fileName)]);
         }
@@ -110,6 +114,14 @@ export class SdCliClientBuilder extends EventEmitter {
       });
 
       compiler.hooks.failed.tap(this.constructor.name, (err) => {
+        this.emit("complete", [{
+          filePath: undefined,
+          line: undefined,
+          char: undefined,
+          code: undefined,
+          severity: "error",
+          message: err.stack
+        }]);
         reject(err);
         return;
       });

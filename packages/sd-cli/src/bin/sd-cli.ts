@@ -5,11 +5,11 @@ import { hideBin } from "yargs/helpers";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { SdCliWorkspace } from "../entry-points/SdCliWorkspace";
 import { SdCliLocalUpdate } from "../entry-points/SdCliLocalUpdate";
-import sourceMapSupport from "source-map-support";
+// import sourceMapSupport from "source-map-support";
 import { SdCliNpm } from "../entry-points/SdCliNpm";
 import { SdCliPrepare } from "../entry-points/SdCliPrepare";
 
-sourceMapSupport.install();
+// sourceMapSupport.install();
 
 Error.stackTraceLimit = Infinity;
 

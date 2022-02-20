@@ -20,6 +20,7 @@ export * from "./ng-tools/commons";
 export * from "./ng-tools/SdCliNgModuleGenerator";
 export * from "./ng-tools/typescript/SdCliTsFileMetadata";
 export * from "./ng-tools/typescript/SdCliTsRootMetadata";
+export * from "./ng-tools/typescript/SdCliTsUtil";
 export * from "./packages/SdCliPackage";
 export * from "./SdCliBuildResultError";
 export * from "./utils/SdCliBuildResultUtil";

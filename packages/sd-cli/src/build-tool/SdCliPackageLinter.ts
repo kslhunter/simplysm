@@ -16,7 +16,24 @@ export class SdCliPackageLinter {
     const linter = new ESLint(
       program && filePaths.some((item) => item.endsWith(".ts")) ? {
         overrideConfig: {
-          parserOptions: { program }
+          overrides: [
+            {
+              files: ["*.ts"],
+              parserOptions: {
+                programs: [program],
+                tsconfigRootDir: null,
+                project: null
+              },
+              settings: {
+                "import/resolver": {
+                  "typescript": {
+                    programs: [program],
+                    project: null
+                  }
+                }
+              }
+            }
+          ]
         }
       } : {}
     );
@@ -30,8 +47,9 @@ export class SdCliPackageLinter {
       this._lintResultCache.delete(lintFilePath);
     }
 
+    console.log("lint", lintFilePaths.length);
     const lintResults = await linter.lintFiles(lintFilePaths);
-
+    console.log("lint", 2);
 
     const result = lintResults.map((lintResult) => ({
       filePath: lintResult.filePath,

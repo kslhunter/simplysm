@@ -14,6 +14,7 @@ import {
   isFunctionDeclaration,
   isIdentifier,
   isImportDeclaration,
+  isImportDefaultSpecifier,
   isImportSpecifier,
   isMemberExpression,
   isObjectExpression,
@@ -357,6 +358,30 @@ export class SdCliBbFileMetadata {
               }
               else {
                 throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
+              }
+            }
+          }
+          else if (isImportDefaultSpecifier(specifier)) {
+            if (specifier.local.name === localName) {
+              if (rawMeta.source.value.includes(".")) {
+                const moduleFilePath = path.resolve(path.dirname(this.filePath), rawMeta.source.value);
+                const result = {
+                  filePath: moduleFilePath,
+                  name: "default",
+                  __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
+                };
+                this._findMetaFromInsideCache.set(localName, result);
+                return result;
+              }
+              else {
+                const moduleName = rawMeta.source.value;
+                const result = {
+                  moduleName,
+                  name: "default",
+                  __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
+                };
+                this._findMetaFromInsideCache.set(localName, result);
+                return result;
               }
             }
           }
