@@ -12,9 +12,6 @@ import {
 } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { ObjectUtil } from "@simplysm/sd-core-common";
-import { faStar as fasStar } from "@fortawesome/pro-solid-svg-icons/faStar";
-import { faSave as fasSave } from "@fortawesome/pro-solid-svg-icons/faSave";
-import { faTimes as fasTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 import { SdToastProvider } from "../providers/SdToastProvider";
 
@@ -23,7 +20,7 @@ import { SdToastProvider } from "../providers/SdToastProvider";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <sd-anchor (click)="onAddButtonClick()">
-      <fa-icon [icon]="icons.fasStar" class="sd-text-color-warning-default" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fasStar | async" class="sd-text-color-warning-default" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-gap width="sm"></sd-gap>
     <ng-container *ngFor="let preset of presets; trackBy: trackByNameFn">
@@ -33,10 +30,10 @@ import { SdToastProvider } from "../providers/SdToastProvider";
           {{ preset.name }}
         </sd-anchor>
         <sd-anchor (click)="onSaveButtonClick(preset)">
-          <fa-icon [icon]="icons.fasSave" size="sm"></fa-icon>
+          <fa-icon [icon]="icons.fasSave | async" size="sm"></fa-icon>
         </sd-anchor>
         <sd-anchor (click)="onRemoveButtonClick(preset)">
-          <fa-icon [icon]="icons.fasTimes" size="sm"></fa-icon>
+          <fa-icon [icon]="icons.fasTimes | async" size="sm"></fa-icon>
         </sd-anchor>
       </div>
       <sd-gap width="sm"></sd-gap>
@@ -92,9 +89,9 @@ import { SdToastProvider } from "../providers/SdToastProvider";
 })
 export class SdStatePresetControl implements OnInit, OnChanges {
   public icons = {
-    fasStar,
-    fasSave,
-    fasTimes
+    fasStar: import("@fortawesome/pro-solid-svg-icons/faStar").then(m => m.faStar),
+    fasSave: import("@fortawesome/pro-solid-svg-icons/faSave").then(m => m.faSave),
+    fasTimes: import("@fortawesome/pro-solid-svg-icons/faTimes").then(m => m.faTimes)
   };
 
   @Input()

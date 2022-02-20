@@ -24,14 +24,6 @@ import { SdSheetColumnControl } from "./SdSheetColumnControl";
 import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { ISdResizeEvent } from "@simplysm/sd-core-browser";
-import { faBars as fasBars } from "@fortawesome/pro-solid-svg-icons/faBars";
-import { faTable as fasTable } from "@fortawesome/pro-solid-svg-icons/faTable";
-import { faCog as fasCog } from "@fortawesome/pro-solid-svg-icons/faCog";
-import { faSort as fasSort } from "@fortawesome/pro-solid-svg-icons/faSort";
-import { faSortDown as fasSortDown } from "@fortawesome/pro-solid-svg-icons/faSortDown";
-import { faSortUp as fasSortUp } from "@fortawesome/pro-solid-svg-icons/faSortUp";
-import { faArrowRight as fasArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
-import { faCaretRight as fasCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
 import { SdModalProvider } from "../providers/SdModalProvider";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
@@ -47,11 +39,12 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
           <sd-anchor class="_card-icon"
                      *ngIf="useCardDisplayType"
                      (click)="onDisplayTypeChangeButtonClick()">
-            <fa-icon [icon]="displayType === 'card' ? 'bars' : 'table'" [fixedWidth]=true></fa-icon>
+            <fa-icon [icon]="(displayType === 'card' ? icons.fasBars : icons.fasTable) | async"
+                     [fixedWidth]=true></fa-icon>
           </sd-anchor>
           <sd-anchor class="_cog-icon" (click)="onConfigButtonClick()"
                      *ngIf="key">
-            <fa-icon icon="cog" [fixedWidth]=true></fa-icon>
+            <fa-icon [icon]="icons.fasCog | async" [fixedWidth]=true></fa-icon>
           </sd-anchor>
         </div>
 
@@ -74,8 +67,9 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
               <div class="_border"></div>
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
-                  <fa-icon class="_icon _selected-icon" [fixedWidth]=true></fa-icon>
-                  <fa-icon class="_icon _expand-icon" *ngIf="getChildrenFn" [fixedWidth]=true
+                  <fa-icon class="_icon _selected-icon" style="color: transparent;" [fixedWidth]=true></fa-icon>
+                  <fa-icon class="_icon _expand-icon" style="color: transparent;"
+                           *ngIf="getChildrenFn" [fixedWidth]=true
                            [style.margin-right.em]="maxDepth"></fa-icon>
                 </div>
                 <div class="_border"></div>
@@ -112,20 +106,22 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
                   <fa-icon class="_icon _selected-icon"
-                           [icon]="selectMode === 'multi' ? 'arrow-right' : undefined"
+                           [icon]="icons.fasArrowRight | async"
                            (click)="onAllSelectIconClick($event)"
                            [class._selected]="getIsAllSelected()"
                            [class._selectable]="selectMode === 'multi'"
                            [fixedWidth]=true
+                           [style.color]="selectMode === 'multi' ? undefined : 'transparent'"
                            style="pointer-events: auto"></fa-icon>
                   <fa-icon class="_icon _expand-icon"
                            *ngIf="getChildrenFn"
-                           [icon]="getHasParentItem() ? 'caret-right' : undefined"
+                           [icon]="icons.fasCaretRight | async"
                            (click)="onAllExpandIconClick($event)"
                            [class._expanded]="getIsAllExpanded()"
                            [class._expandable]="getHasParentItem()"
                            [rotate]="getIsAllExpanded() ? 90 : undefined"
                            [fixedWidth]=true
+                           [style.color]="getHasParentItem() ? undefined : 'transparent'"
                            style="pointer-events: auto"
                            [style.margin-right.em]="maxDepth"></fa-icon>
                 </div>
@@ -144,10 +140,10 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
                         <div style="position: absolute; right: 0; display: inline-block;"
                              class="sd-background-color-grey-lightest">
                           <fa-layers>
-                            <fa-icon icon="sort" class="sd-text-brightness-lightest"></fa-icon>
-                            <fa-icon icon="sort-down"
+                            <fa-icon [icon]="icons.fasSort | async" class="sd-text-brightness-lightest"></fa-icon>
+                            <fa-icon [icon]="icons.fasSortDown | async"
                                      *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></fa-icon>
-                            <fa-icon icon="sort-up"
+                            <fa-icon [icon]="icons.fasSortUp | async"
                                      *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></fa-icon>
                           </fa-layers>
                           <small
@@ -203,10 +199,10 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
                         <div style="position: absolute; right: 0; display: inline-block;"
                              class="sd-background-color-grey-lightest">
                           <fa-layers>
-                            <fa-icon icon="sort" class="sd-text-brightness-lightest"></fa-icon>
-                            <fa-icon icon="sort-down"
+                            <fa-icon [icon]="icons.fasSort | async" class="sd-text-brightness-lightest"></fa-icon>
+                            <fa-icon [icon]="icons.fasSortDown | async"
                                      *ngIf="getIsColumnOrderingDesc(columnControl.key) === false"></fa-icon>
-                            <fa-icon icon="sort-up"
+                            <fa-icon [icon]="icons.fasSortUp | async"
                                      *ngIf="getIsColumnOrderingDesc(columnControl.key) === true"></fa-icon>
                           </fa-layers>
                           <small
@@ -256,8 +252,9 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
               <div class="_border"></div>
               <div class="_cell _feature-cell">
                 <div class="_cell-content">
-                  <fa-icon class="_icon _selected-icon" [fixedWidth]=true></fa-icon>
-                  <fa-icon class="_icon _expand-icon" *ngIf="getChildrenFn" [fixedWidth]=true
+                  <fa-icon class="_icon _selected-icon" style="color: transparent;" [fixedWidth]=true></fa-icon>
+                  <fa-icon class="_icon _expand-icon" style="color: transparent;" *ngIf="getChildrenFn"
+                           [fixedWidth]=true
                            [style.margin-right.em]="maxDepth"></fa-icon>
                 </div>
                 <div class="_border"></div>
@@ -304,11 +301,12 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
                 <div class="_cell _feature-cell">
                   <div class="_cell-content">
                     <fa-icon class="_icon _selected-icon"
-                             [icon]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item)) ? 'arrow-right' : undefined"
+                             [icon]="icons.fasArrowRight | async"
                              (click)="onItemSelectIconClick($event, item, index)"
                              [class._selected]="getIsSelectedItem(item)"
                              [class._selectable]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item))"
                              [fixedWidth]=true
+                             [style.color]="selectMode && (!getItemSelectableFn || getItemSelectableFn(index, item)) ? undefined : 'transparent'"
                              style="pointer-events: auto"></fa-icon>
 
                     <div class="_depth-indicator"
@@ -318,12 +316,13 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 
                     <fa-icon class="_icon _expand-icon"
                              *ngIf="getChildrenFn"
-                             [icon]="getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0 ? 'caret-right' : undefined"
+                             [icon]="icons.fasCaretRight | async"
                              (click)="onItemExpandIconClick($event, item)"
                              [class._expanded]="getIsExpandedItem(item)"
                              [class._expandable]="getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0"
                              [rotate]="getIsExpandedItem(item) ? 90 : undefined"
                              [fixedWidth]=true
+                             [style.color]="getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0 ? undefined : 'transprent'"
                              style="pointer-events: auto"
                              [style.margin-right.em]="maxDepth ? (maxDepth - depth) : undefined"></fa-icon>
                   </div>
@@ -734,14 +733,14 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 })
 export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   public icons = {
-    fasBars,
-    fasTable,
-    fasCog,
-    fasSort,
-    fasSortDown,
-    fasSortUp,
-    fasArrowRight,
-    fasCaretRight
+    fasBars: import("@fortawesome/pro-solid-svg-icons/faBars").then(m => m.faBars),
+    fasTable: import("@fortawesome/pro-solid-svg-icons/faTable").then(m => m.faTable),
+    fasCog: import("@fortawesome/pro-solid-svg-icons/faCog").then(m => m.faCog),
+    fasSort: import("@fortawesome/pro-solid-svg-icons/faSort").then(m => m.faSort),
+    fasSortDown: import("@fortawesome/pro-solid-svg-icons/faSortDown").then(m => m.faSortDown),
+    fasSortUp: import("@fortawesome/pro-solid-svg-icons/faSortUp").then(m => m.faSortUp),
+    fasArrowRight: import("@fortawesome/pro-solid-svg-icons/faArrowRight").then(m => m.faArrowRight),
+    fasCaretRight: import("@fortawesome/pro-solid-svg-icons/faCaretRight").then(m => m.faCaretRight)
   };
 
   @Input()

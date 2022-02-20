@@ -397,6 +397,34 @@ export class FsUtil {
     }
   }
 
+  public static stat(targetPath: string): fs.Stats {
+    try {
+      return fs.statSync(targetPath);
+    }
+    catch (err) {
+      if (err instanceof Error) {
+        throw new SdError(err, targetPath);
+      }
+      else {
+        throw err;
+      }
+    }
+  }
+
+  public static async statAsync(targetPath: string): Promise<fs.Stats> {
+    try {
+      return await fs.promises.stat(targetPath);
+    }
+    catch (err) {
+      if (err instanceof Error) {
+        throw new SdError(err, targetPath);
+      }
+      else {
+        throw err;
+      }
+    }
+  }
+
   public static appendFile(targetPath: string, data: any): void {
     try {
       fs.appendFileSync(targetPath, data, "utf8");
@@ -467,13 +495,13 @@ export class FsUtil {
     }
   }
 
-  public static async isDirectoryAsync(targetPath: string): Promise<boolean> {
+  /*public static async isDirectoryAsync(targetPath: string): Promise<boolean> {
     return (await FsUtil.lstatAsync(targetPath)).isDirectory();
   }
 
   public static isDirectory(targetPath: string): boolean {
-    return FsUtil.lstat(targetPath).isDirectory();
-  }
+    return FsUtil.stat(targetPath).isDirectory();
+  }*/
 
   public static async clearEmptyDirectoryAsync(dirPath: string): Promise<void> {
     if (!FsUtil.exists(dirPath)) return;
@@ -481,7 +509,7 @@ export class FsUtil {
     const childNames = await FsUtil.readdirAsync(dirPath);
     for (const childName of childNames) {
       const childPath = path.resolve(dirPath, childName);
-      if (await FsUtil.isDirectoryAsync(childPath)) {
+      if ((await FsUtil.lstatAsync(childPath)).isDirectory()) {
         await this.clearEmptyDirectoryAsync(childPath);
       }
     }
@@ -499,7 +527,7 @@ export class FsUtil {
       const potential = path.resolve(current, childGlob);
       const globResults = FsUtil.glob(potential);
       for (const globResult of globResults) {
-        if (FsUtil.exists(globResult) && FsUtil.isDirectory(globResult)) {
+        if (FsUtil.exists(globResult) && FsUtil.stat(globResult).isDirectory()) {
           resultPaths.push(globResult);
         }
       }

@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Output } from "@angular/core";
-import { faTimes as fasTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
 
 @Component({
   selector: "sd-topbar-tab",
@@ -7,7 +6,7 @@ import { faTimes as fasTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
   template: `
     <ng-content></ng-content>
     <sd-anchor (click)="onCloseButtonClick($event)">
-      <fa-icon [icon]="icons.fasTimes" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fasTimes | async" [fixedWidth]="true"></fa-icon>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `
     :host {
@@ -40,7 +39,7 @@ import { faTimes as fasTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
 })
 export class SdTopbarTabControl {
   public icons = {
-    fasTimes
+    fasTimes: import("@fortawesome/pro-solid-svg-icons/faTimes").then(m => m.faTimes)
   };
 
   @Output("click.close")

@@ -19,6 +19,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noPropertyAccessFromIndexSignature": true,
-    "importHelpers": true
+    "importHelpers": true,
+    "noUnusedLocals": true
   }
 }

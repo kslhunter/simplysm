@@ -69,7 +69,7 @@ export class SdServiceClient {
 
   public async addEventListenerAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>,
                                                                              info: T["info"],
-                                                                             cb: (data: T["data"]) => PromiseLike<void>): Promise<void> {
+                                                                             cb: (data: T["data"]) => PromiseLike<void>): Promise<string> {
     if (!this._socket?.connected) {
       throw new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요.");
     }
@@ -80,6 +80,8 @@ export class SdServiceClient {
     });
 
     await this._sendCommandAsync("addEventListener", [key, eventType.name, info]);
+
+    return key;
   }
 
   public async emitAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>,
@@ -91,5 +93,9 @@ export class SdServiceClient {
       .map((item) => item.key);
 
     await this._sendCommandAsync("emitEvent", [targetListenerKeys, data]);
+  }
+
+  public async removeEventListenerAsync(key: string): Promise<void> {
+    await this._sendCommandAsync("removeEventListener", [key]);
   }
 }

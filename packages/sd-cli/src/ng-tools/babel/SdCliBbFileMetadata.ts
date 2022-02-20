@@ -47,7 +47,7 @@ export class SdCliBbFileMetadata {
   public constructor(public readonly filePath: string) {
     let realFilePath: string | undefined;
     for (const ext of ["", ".mjs", ".cjs", ".js"]) {
-      if (FsUtil.exists(filePath + ext) && !FsUtil.isDirectory(filePath + ext)) {
+      if (FsUtil.exists(filePath + ext) && !FsUtil.stat(filePath + ext).isDirectory()) {
         realFilePath = filePath + ext;
         break;
       }

@@ -10,7 +10,6 @@ import {
   Input
 } from "@angular/core";
 import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
-import { faBars as fasBars } from "@fortawesome/pro-solid-svg-icons/faBars";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 
 @Component({
@@ -19,7 +18,7 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
   template: `
     <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" style="font-size: 16px;"
                *ngIf="sidebarContainerControl || sidebarContainer">
-      <fa-icon [icon]="icons.fasBars" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fasBars | async" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-gap width="default" *ngIf="!sidebarContainerControl && !sidebarContainer"></sd-gap>
     <ng-content></ng-content>`,
@@ -116,7 +115,7 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 })
 export class SdTopbarControl implements DoCheck {
   public icons = {
-    fasBars
+    fasBars: import("@fortawesome/pro-solid-svg-icons/faBars").then(m => m.faBars)
   };
 
   @HostBinding("attr.sd-size")

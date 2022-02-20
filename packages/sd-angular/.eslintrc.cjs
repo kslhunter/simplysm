@@ -1,7 +1,4 @@
 module.exports = {
-  ignorePatterns: [
-    "lib/sd-icon.commons.mjs",
-  ],
   overrides: [
     {
       files: ["*.ts"],

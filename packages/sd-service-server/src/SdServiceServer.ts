@@ -27,15 +27,20 @@ export class SdServiceServer extends EventEmitter {
   }
 
   public async listenAsync(): Promise<void> {
-    await new Promise<void>((resolve) => {
+    await new Promise<void>(async (resolve) => {
       this._logger.debug("서버 시작...");
 
-      this._httpServer = this.options.ssl
-        ? https.createServer({
-          pfx: this.options.ssl.pfxBuffer,
+
+      if (this.options.ssl) {
+        const pfx = typeof this.options.ssl.pfxBuffer === "function" ? await this.options.ssl.pfxBuffer() : this.options.ssl.pfxBuffer;
+        this._httpServer = https.createServer({
+          pfx,
           passphrase: this.options.ssl.passphrase
-        })
-        : http.createServer();
+        });
+      }
+      else {
+        this._httpServer = http.createServer();
+      }
 
       this._httpServer.on("request", async (req, res) => {
         await this._onWebRequestAsync(req, res);
@@ -140,6 +145,15 @@ export class SdServiceServer extends EventEmitter {
           };
           socket.emit(`response:${req.uuid}`, JsonConvert.stringify(res));
         }
+        else if (req.command === "removeEventListener") {
+          const key = req.params[0] as string;
+          this._eventListeners.remove((item) => item.key === key);
+
+          const res = {
+            type: "response"
+          };
+          socket.emit(`response:${req.uuid}`, JsonConvert.stringify(res));
+        }
         else if (req.command === "getEventListenerInfos") {
           const eventName = req.params[0] as string;
 
@@ -229,7 +243,7 @@ export class SdServiceServer extends EventEmitter {
       const urlObj = url.parse(req.url!, true, false);
       const urlPath = decodeURI(urlObj.pathname!.slice(1));
       let targetFilePath = path.resolve(this.options.rootPath, "www", urlPath);
-      targetFilePath = FsUtil.exists(targetFilePath) && FsUtil.isDirectory(targetFilePath) ? path.resolve(targetFilePath, "index.html") : targetFilePath;
+      targetFilePath = FsUtil.exists(targetFilePath) && FsUtil.stat(targetFilePath).isDirectory() ? path.resolve(targetFilePath, "index.html") : targetFilePath;
 
       if (!FsUtil.exists(targetFilePath)) {
         const errorMessage = "파일을 찾을 수 없습니다.";

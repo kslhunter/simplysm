@@ -336,7 +336,7 @@ export class SdCliNgModuleGenerator {
 
     const childNames = await FsUtil.readdirAsync(rootPath);
     for (const childName of childNames) {
-      if (!FsUtil.isDirectory(path.resolve(rootPath, childName))) { // 파일
+      if (!FsUtil.stat(path.resolve(rootPath, childName)).isDirectory()) { // 파일
         const sourceFilePath = path.resolve(rootPath, childName);
         const sourceClassName = path.basename(sourceFilePath, path.extname(childName));
         const moduleClassName = sourceClassName + "Module";

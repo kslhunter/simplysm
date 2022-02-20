@@ -47,9 +47,7 @@ export class SdCliPackageLinter {
       this._lintResultCache.delete(lintFilePath);
     }
 
-    console.log("lint", lintFilePaths.length);
     const lintResults = await linter.lintFiles(lintFilePaths);
-    console.log("lint", 2);
 
     const result = lintResults.map((lintResult) => ({
       filePath: lintResult.filePath,

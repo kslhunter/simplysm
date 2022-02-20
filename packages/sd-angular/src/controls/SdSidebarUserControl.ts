@@ -1,15 +1,12 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input, NgZone } from "@angular/core";
+import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
-
-// @ts-ignore
-import backgroundImage from "../../assets/user_bg.jpg";
 
 @Component({
   selector: "sd-sidebar-user",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="_content"
-         [style]="'background: ' + 'url(' + backgroundImage + '); ' + contentStyle">
+         [style]="'background: ' + 'url(' + (backgroundImage | async) + '); ' + contentStyle">
       <div class="sd-padding-lg">
         <ng-content></ng-content>
       </div>
@@ -61,7 +58,8 @@ import backgroundImage from "../../assets/user_bg.jpg";
   `]
 })
 export class SdSidebarUserControl {
-  public backgroundImage = backgroundImage;
+  // @ts-expect-error
+  public backgroundImage = import("../../assets/user_bg.jpg").then(m => m.default);
 
   @Input()
   @SdInputValidate(String)
@@ -73,9 +71,6 @@ export class SdSidebarUserControl {
   @Input("content.style")
   @SdInputValidate(String)
   public contentStyle?: string;
-
-  public constructor(private readonly _zone: NgZone) {
-  }
 
   public onMenuOpenButtonClick(): void {
     this.menuOpen = !this.menuOpen;

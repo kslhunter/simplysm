@@ -12,9 +12,6 @@ import {
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import * as marked1 from "marked";
 import { SdInputValidate } from "../decorators/SdInputValidate";
-import { faEye as fasEye } from "@fortawesome/pro-solid-svg-icons/faEye";
-import { faPen as fasPen } from "@fortawesome/pro-solid-svg-icons/faPen";
-import { faQuestion as fasQuestion } from "@fortawesome/pro-solid-svg-icons/faQuestion";
 
 @Component({
   selector: "sd-markdown-editor",
@@ -22,13 +19,13 @@ import { faQuestion as fasQuestion } from "@fortawesome/pro-solid-svg-icons/faQu
   template: `
     <div class="_toolbar" *ngIf="!disabled">
       <sd-anchor (click)="viewState = 'preview'" [class._selected]="viewState === 'preview'">
-        <fa-icon [icon]="icons.fasEye"></fa-icon>
+        <fa-icon [icon]="icons.fasEye | async"></fa-icon>
       </sd-anchor>
       <sd-anchor (click)="viewState = 'edit'" [class._selected]="viewState === 'edit'">
-        <fa-icon [icon]="icons.fasPen"></fa-icon>
+        <fa-icon [icon]="icons.fasPen | async"></fa-icon>
       </sd-anchor>
       <sd-anchor (click)="viewState = 'help'" [class._selected]="viewState === 'help'">
-        <fa-icon [icon]="icons.fasQuestion"></fa-icon>
+        <fa-icon [icon]="icons.fasQuestion | async"></fa-icon>
       </sd-anchor>
     </div>
 
@@ -306,9 +303,9 @@ import { faQuestion as fasQuestion } from "@fortawesome/pro-solid-svg-icons/faQu
 })
 export class SdMarkdownEditorControl implements OnChanges {
   public icons = {
-    fasEye,
-    fasPen,
-    fasQuestion
+    fasEye: import("@fortawesome/pro-solid-svg-icons/faEye").then(m => m.faEye),
+    fasPen: import("@fortawesome/pro-solid-svg-icons/faPen").then(m => m.faPen),
+    fasQuestion: import("@fortawesome/pro-solid-svg-icons/faQuestion").then(m => m.faQuestion)
   };
 
   @Input()

@@ -23,11 +23,11 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
               <div class="sd-padding-xs-sm">
                 <sd-anchor [disabled]="index === 0 || (!item.fixed && !!displayConfigs[index - 1].fixed)"
                            (click)="onDisplayOrderUpButtonClick(item)">
-                  <fa-icon icon="angle-up" [fixedWidth]=true></fa-icon>
+                  <fa-icon [icon]="icons.fasAngleUp | async" [fixedWidth]=true></fa-icon>
                 </sd-anchor>
                 <sd-anchor [disabled]="index === configs.length - 1 || (item.fixed && !displayConfigs[index + 1].fixed)"
                            (click)="onDisplayOrderDownButtonClick(item)">
-                  <fa-icon icon="angle-down" [fixedWidth]=true></fa-icon>
+                  <fa-icon [icon]="icons.fasAngleDown | async" [fixedWidth]=true></fa-icon>
                 </sd-anchor>
               </div>
             </ng-template>
@@ -78,6 +78,11 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
   `]
 })
 export class SdSheetConfigModal extends SdModalBase<ISdSheetConfigModalInput, Record<string, ISdSheetColumnConfigVM>> {
+  public icons = {
+    fasAngleUp: import("@fortawesome/pro-solid-svg-icons/faAngleUp").then(m => m.faAngleUp),
+    fasAngleDown: import("@fortawesome/pro-solid-svg-icons/faAngleDown").then(m => m.faAngleDown)
+  };
+
   public param!: ISdSheetConfigModalInput;
 
   public configs: IColumnConfigVM[] = [];

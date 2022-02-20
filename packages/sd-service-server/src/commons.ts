@@ -10,7 +10,7 @@ export interface ISdServiceServerOptions {
   port: number;
   middlewares?: NextHandleFunction[];
   ssl?: {
-    pfxBuffer: Buffer;
+    pfxBuffer: Buffer | (() => (Promise<Buffer> | Buffer));
     passphrase: string;
   };
 }

@@ -96,7 +96,7 @@ export class SdCliPackage extends EventEmitter {
     }
 
     if (this.config.type === "library") {
-      return isTs ? new SdCliTsLibBuilder(this.rootPath, this.config) : new SdCliJsLibBuilder(this.rootPath);
+      return isTs ? new SdCliTsLibBuilder(this.rootPath, this.config, this._workspaceRootPath) : new SdCliJsLibBuilder(this.rootPath);
     }
     else if (this.config.type === "server") {
       return new SdCliServerBuilder(this.rootPath, this.config, this._workspaceRootPath);

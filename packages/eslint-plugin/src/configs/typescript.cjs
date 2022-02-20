@@ -65,5 +65,6 @@ module.exports = {
     "@typescript-eslint/return-await": ["error", "always"],
     "@typescript-eslint/no-floating-promises": ["error"],
     // "@typescript-eslint/comma-dangle": ["error"]
+    "@typescript-eslint/prefer-ts-expect-error": ["error"]
   }
 };

@@ -120,8 +120,12 @@ export class SdCliBbNgModuleMetadata {
 }
 
 export class SdCliBbNgInjectableMetadata {
-  public constructor(private readonly _fileMeta: SdCliBbFileMetadata,
-                     private readonly _className: string) {
+
+  public constructor(
+    // @ts-expect-error
+    private readonly _fileMeta: SdCliBbFileMetadata,
+    // @ts-expect-error
+    private readonly _className: string) {
   }
 }
 
