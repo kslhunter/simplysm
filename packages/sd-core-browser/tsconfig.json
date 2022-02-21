@@ -3,7 +3,7 @@
   "compilerOptions": {
     "lib": [
       "ES2020",
-      "dom"
+      "DOM"
     ],
     "outDir": "./dist",
     "baseUrl": ".",

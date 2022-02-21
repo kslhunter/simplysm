@@ -14,11 +14,11 @@
       "@simplysm/sd-core-browser": [
         "../sd-core-browser/src/index.ts"
       ],
-      "@simplysm/sd-service-common": [
-        "../sd-service-common/src/index.ts"
-      ],
       "@simplysm/sd-service-client": [
         "../sd-service-client/src/index.ts"
+      ],
+      "@simplysm/sd-angular": [
+        "../sd-angular/src/index.ts"
       ]
     }
   },

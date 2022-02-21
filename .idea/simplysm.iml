@@ -25,6 +25,7 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-common/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-server/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-office/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-mobile/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -1,0 +1,40 @@
+{
+  "name": "@simplysm/sd-angular-mobile",
+  "version": "7.0.65",
+  "description": "심플리즘 패키지 - Angular 모바일 모듈 (browser)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm7.git",
+    "directory": "packages/sd-angular-mobile"
+  },
+  "license": "MIT",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "sideEffects": false,
+  "engines": {
+    "node": "^16"
+  },
+  "dependencies": {
+    "@angular/common": "^13.2.0",
+    "@angular/core": "^13.2.0",
+    "@angular/router": "^13.2.0",
+    "@angular/platform-browser": "^13.2.0",
+    "rxjs": "^6.6.7",
+    "jszip": "^3.7.1",
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/angular-fontawesome": "^0.10.1",
+    "@fortawesome/pro-light-svg-icons": "^6.0.0",
+    "@fortawesome/pro-duotone-svg-icons": "^6.0.0"
+  },
+  "devDependencies": {
+    "cordova-plugin-file": "^6.0.2"
+  },
+  "peerDependencies": {
+    "@simplysm/sd-core-common": "7.0.65",
+    "@simplysm/sd-core-browser": "7.0.65",
+    "@simplysm/sd-angular": "7.0.65",
+    "@simplysm/sd-service-client": "7.0.65"
+  }
+}
