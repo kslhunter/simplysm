@@ -51,7 +51,8 @@
     "@babel/types": "^7.17.0",
     "babel-loader": "^8.2.3",
     "jsdom": "^19.0.0",
-    "cordova": "^11.0.0"
+    "cordova": "^11.0.0",
+    "jszip": "^3.7.1"
   },
   "devDependencies": {
     "@types/semver": "^7.3.9",

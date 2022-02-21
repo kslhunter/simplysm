@@ -35,6 +35,7 @@ import browserslist from "browserslist";
 import { augmentAppWithServiceWorker } from "@angular-devkit/build-angular/src/utils/service-worker";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { SdCliNgModuleGenerator } from "../ng-tools/SdCliNgModuleGenerator";
+import { SdCliCordova } from "../build-tool/SdCliCordova";
 import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
@@ -44,6 +45,8 @@ export class SdCliClientBuilder extends EventEmitter {
   private readonly _parsedTsconfig: ts.ParsedCommandLine;
   private readonly _npmConfigMap = new Map<string, INpmConfig>();
   private readonly _ngModuleGenerator: SdCliNgModuleGenerator;
+
+  private readonly _cordova?: SdCliCordova;
 
   public constructor(private readonly _rootPath: string,
                      private readonly _config: ISdCliClientPackageConfig,
@@ -75,6 +78,11 @@ export class SdCliClientBuilder extends EventEmitter {
       fileEndsWith: "Page",
       rootClassName: "AppPage"
     });
+
+    // CORDOVA
+    if (this._config.cordova) {
+      this._cordova = new SdCliCordova(this._rootPath, this._config.cordova);
+    }
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -89,6 +97,12 @@ export class SdCliClientBuilder extends EventEmitter {
 
     // NgModule 생성
     await this._ngModuleGenerator.runAsync();
+
+    // CORDOVA
+    if (this._cordova) {
+      this._logger.debug("CORDOVA 구성...");
+      await this._cordova.initializeAsync();
+    }
 
     // 빌드 준비
     const webpackConfig = this._getWebpackConfig(true);
@@ -198,6 +212,15 @@ export class SdCliClientBuilder extends EventEmitter {
       );
     }
 
+    // CORDOVA
+    if (this._cordova) {
+      this._logger.debug("CORDOVA 구성...");
+      await this._cordova.initializeAsync();
+
+      this._logger.debug("CORDOVA 빌드...");
+      await this._cordova.buildAsync(this._parsedTsconfig.options.outDir!);
+    }
+
     // 마무리
     this._logger.debug("Webpack 빌드 완료");
     return buildResults;
@@ -226,7 +249,7 @@ export class SdCliClientBuilder extends EventEmitter {
     const cacheBasePath = path.resolve(this._rootPath, ".cache");
     const cachePath = path.resolve(cacheBasePath, pkgVersion);
 
-    const distPath = this._parsedTsconfig.options.outDir;
+    const distPath = (this._cordova && !watch) ? path.resolve(this._cordova.cordovaPath, "www") : this._parsedTsconfig.options.outDir;
 
     const sassImplementation = new SassWorkerImplementation();
 
@@ -512,7 +535,12 @@ export class SdCliClientBuilder extends EventEmitter {
                 ].map((i) => PathUtil.posix(this._rootPath, i))
               },
               priority: 0
-            }))
+            })),
+            ...this._cordova ? this._cordova.platforms.map((platform) => ({
+              context: this._cordova!.cordovaPath,
+              to: `cordova-${platform}`,
+              from: `platforms/${platform}/platform_www`
+            })) : []
           ]
         }),
         ...watch ? [

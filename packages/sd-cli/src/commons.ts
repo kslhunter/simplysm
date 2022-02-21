@@ -61,28 +61,31 @@ export interface ISdCliServerPackageConfig {
 
 export interface ISdCliClientPackageConfig {
   type: "client";
+  cordova?: ISdCliClientPackageCordovaConfig;
   server: string;
   env?: Record<string, string>;
   configs?: Record<string, any>;
 }
 
-export interface ISdCliBuildWorkerRequest {
-  workspaceRootPath: string;
-  rootPath: string;
-  config: TSdCliPackageConfig;
-  watch: boolean;
+export interface ISdCliClientPackageCordovaConfig {
+  platforms: TSdCliCordovaPlatform[];
+  appId: string;
+  appName: string;
+  plugins?: string[];
+  icon?: string;
+  buildOption?: {
+    debug?: boolean;
+    bundle?: boolean;
+    sign?: {
+      android?: {
+        keystore: string;
+        storePassword: string;
+        alias: string;
+        password: string;
+        keystoreType: string;
+      };
+    };
+  };
 }
 
-export type TSdCliBuildWorkerResponse = {
-  type: "response";
-  body?: any;
-} | {
-  type: "error";
-  body: Error;
-};
-
-export interface ISdCliBuildWorkerEvent {
-  type: "event";
-  name: string;
-  body?: any;
-}
+export type TSdCliCordovaPlatform = "browser" | "ios" | "android" | "windows";
