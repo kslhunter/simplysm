@@ -323,6 +323,7 @@ export class SdCliClientBuilder extends EventEmitter {
           .update(watch.toString())
           .digest("hex")
       },
+      // cache: { type: "memory", maxGenerations: 1 },
       ...watch ? {
         snapshot: {
           immutablePaths: internalModuleCachePaths,

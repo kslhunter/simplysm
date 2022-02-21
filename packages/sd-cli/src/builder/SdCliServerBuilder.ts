@@ -13,8 +13,8 @@ import { ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import { LicenseWebpackPlugin } from "license-webpack-plugin";
-import { createHash } from "crypto";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
+import { createHash } from "crypto";
 import LintResult = ESLint.LintResult;
 
 export class SdCliServerBuilder extends EventEmitter {
@@ -47,7 +47,7 @@ export class SdCliServerBuilder extends EventEmitter {
 
     // 빌드 준비
     const extModules = this._getExternalModules();
-    const webpackConfig = this._getWebpackConfig(true, extModules.map((item) => item.name));
+    const webpackConfig = this._getWebpackConfig(true, extModules);
     const compiler = webpack(webpackConfig);
     await new Promise<void>((resolve, reject) => {
       compiler.hooks.watchRun.tapAsync(this.constructor.name, (args, callback) => {
@@ -81,7 +81,7 @@ export class SdCliServerBuilder extends EventEmitter {
     // 빌드
     this._logger.debug("Webpack 빌드 수행...");
     const extModules = this._getExternalModules();
-    const webpackConfig = this._getWebpackConfig(false, extModules.map((item) => item.name));
+    const webpackConfig = this._getWebpackConfig(false, extModules);
     const compiler = webpack(webpackConfig);
     const buildResults = await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
       compiler.run((err, stats) => {
@@ -211,7 +211,7 @@ export class SdCliServerBuilder extends EventEmitter {
     ].map((p) => path.dirname(p));
   }
 
-  private _getWebpackConfig(watch: boolean, extModuleNames: string[]): webpack.Configuration {
+  private _getWebpackConfig(watch: boolean, extModules: { name: string; exists: boolean }[]): webpack.Configuration {
     const workspaceNpmConfig = this._getNpmConfig(this._workspaceRootPath)!;
     const workspaceName = workspaceNpmConfig.name;
 
@@ -227,15 +227,15 @@ export class SdCliServerBuilder extends EventEmitter {
     return {
       mode: watch ? "development" : "production",
       devtool: false,
-      target: ["node", "es2015"],
+      target: ["node", "es2020"],
       profile: false,
       resolve: {
         roots: [this._rootPath],
         extensions: [".ts", ".js", ".mjs", ".cjs"],
         symlinks: true,
         modules: [this._workspaceRootPath, "node_modules"],
-        mainFields: ["es2015", "default", "module", "main"],
-        conditionNames: ["es2015", "..."]
+        mainFields: ["es2020", "default", "module", "main"],
+        conditionNames: ["es2020", "..."]
       },
       resolveLoader: {
         symlinks: true
@@ -251,17 +251,23 @@ export class SdCliServerBuilder extends EventEmitter {
         hashFunction: "xxhash64",
         clean: true,
         path: this._parsedTsconfig.options.outDir,
-        filename: "[name].cjs",
-        chunkFilename: "[name].cjs",
+        filename: "[name].mjs",
+        chunkFilename: "[name].mjs",
         assetModuleFilename: "res/[name][ext][query]",
-        libraryTarget: "commonjs2"
+        library: {
+          type: "module"
+        },
+        module: true
+      },
+      experiments: {
+        outputModule: true
       },
       watch: false,
       watchOptions: { poll: undefined, ignored: undefined },
       performance: { hints: false },
       infrastructureLogging: { level: "error" },
       stats: "errors-warnings",
-      externals: extModuleNames.toObject((item) => item, (item) => "commonjs2 " + item),
+      externals: extModules.toObject((item) => item.name, (item) => "node-commonjs " + item.name),
       cache: {
         type: "filesystem",
         profile: watch ? undefined : false,
@@ -276,6 +282,7 @@ export class SdCliServerBuilder extends EventEmitter {
           .update(watch.toString())
           .digest("hex")
       },
+      // cache: { type: "memory", maxGenerations: 1 },
       ...watch ? {
         snapshot: {
           immutablePaths: internalModuleCachePaths,
@@ -289,7 +296,7 @@ export class SdCliServerBuilder extends EventEmitter {
             extractComments: false,
             terserOptions: {
               compress: true,
-              ecma: 2015,
+              ecma: 2020,
               sourceMap: false,
               keep_classnames: true,
               keep_fnames: true,
@@ -318,9 +325,6 @@ export class SdCliServerBuilder extends EventEmitter {
             test: /\.[cm]?[tj]sx?$/,
             resolve: {
               fullySpecified: false
-            },
-            use: {
-              loader: "babel-loader"
             }
           },
           ...watch ? [
@@ -455,6 +459,10 @@ export class SdCliServerBuilder extends EventEmitter {
           results.push({ name: moduleName, exists: true });
         }
 
+        if (this._config.externalNodeModules?.includes(moduleName)) {
+          results.push({ name: moduleName, exists: true });
+        }
+
         fn(modulePath);
       }
 
@@ -469,6 +477,10 @@ export class SdCliServerBuilder extends EventEmitter {
         }
 
         if (FsUtil.exists(path.resolve(optModulePath, "binding.gyp"))) {
+          results.push({ name: optModuleName, exists: true });
+        }
+
+        if (this._config.externalNodeModules?.includes(optModuleName)) {
           results.push({ name: optModuleName, exists: true });
         }
 

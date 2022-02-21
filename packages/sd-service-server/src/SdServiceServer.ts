@@ -30,7 +30,6 @@ export class SdServiceServer extends EventEmitter {
     await new Promise<void>(async (resolve) => {
       this._logger.debug("서버 시작...");
 
-
       if (this.options.ssl) {
         const pfx = typeof this.options.ssl.pfxBuffer === "function" ? await this.options.ssl.pfxBuffer() : this.options.ssl.pfxBuffer;
         this._httpServer = https.createServer({
@@ -295,3 +294,4 @@ interface IEventListener {
   info: any;
   socket: socketIo.Socket;
 }
+

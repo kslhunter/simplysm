@@ -57,6 +57,7 @@ export interface ISdCliServerPackageConfig {
   configs?: Record<string, any>;
   pm2?: Record<string, any> | boolean;
   iis?: { serverExeFilePath?: string } | boolean;
+  externalNodeModules?: string[];
 }
 
 export interface ISdCliClientPackageConfig {

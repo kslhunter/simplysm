@@ -58,6 +58,11 @@ const argv = yargs(hideBin(process.argv))
           type: "string",
           array: true,
           describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)"
+        },
+        packages: {
+          type: "string",
+          array: true,
+          describe: "수행할 패키지 설정"
         }
       })
   )
@@ -74,6 +79,11 @@ const argv = yargs(hideBin(process.argv))
           type: "string",
           array: true,
           describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)"
+        },
+        packages: {
+          type: "string",
+          array: true,
+          describe: "수행할 패키지 설정"
         }
       })
   )
@@ -95,6 +105,11 @@ const argv = yargs(hideBin(process.argv))
           type: "string",
           array: true,
           describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)"
+        },
+        packages: {
+          type: "string",
+          array: true,
+          describe: "수행할 패키지 설정"
         }
       })
   )
@@ -136,14 +151,16 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
     await new SdCliWorkspace(process.cwd())
       .watchAsync({
         confFileRelPath: argv.config ?? "simplysm.json",
-        optNames: argv.options ?? []
+        optNames: argv.options ?? [],
+        pkgs: argv.packages ?? []
       });
   }
   else if (argv._[0] === "build") {
     await new SdCliWorkspace(process.cwd())
       .buildAsync({
         confFileRelPath: argv.config ?? "simplysm.json",
-        optNames: argv.options ?? []
+        optNames: argv.options ?? [],
+        pkgs: argv.packages ?? []
       });
     process.exit(0);
   }
@@ -152,7 +169,8 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
       .publishAsync({
         noBuild: argv.noBuild,
         confFileRelPath: argv.config ?? "simplysm.json",
-        optNames: argv.options ?? []
+        optNames: argv.options ?? [],
+        pkgs: argv.packages ?? []
       });
   }
   else {

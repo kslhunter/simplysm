@@ -58,7 +58,7 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
             <ng-template #cell let-item="item">
               <div style="text-align: center">
                 <sd-checkbox size="sm" [(value)]="item.hidden"
-                             icon="times" theme="danger"></sd-checkbox>
+                             [icon]="icons.fasTimes | async" theme="danger"></sd-checkbox>
               </div>
             </ng-template>
           </sd-sheet-column>
@@ -80,7 +80,8 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
 export class SdSheetConfigModal extends SdModalBase<ISdSheetConfigModalInput, Record<string, ISdSheetColumnConfigVM>> {
   public icons = {
     fasAngleUp: import("@fortawesome/pro-solid-svg-icons/faAngleUp").then(m => m.faAngleUp),
-    fasAngleDown: import("@fortawesome/pro-solid-svg-icons/faAngleDown").then(m => m.faAngleDown)
+    fasAngleDown: import("@fortawesome/pro-solid-svg-icons/faAngleDown").then(m => m.faAngleDown),
+    fasTimes: import("@fortawesome/pro-solid-svg-icons/faTimes").then(m => m.faTimes)
   };
 
   public param!: ISdSheetConfigModalInput;

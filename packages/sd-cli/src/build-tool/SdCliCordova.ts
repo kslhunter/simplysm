@@ -29,7 +29,7 @@ export class SdCliCordova {
 
   public async initializeAsync(): Promise<void> {
     if (FsUtil.exists(this.cordovaPath)) {
-      this._logger.log("미리 생성되어있는 '.cordova'를 사용합니다.");
+      this._logger.log("이미 생성되어있는 '.cordova'를 사용합니다.");
     }
     else {
       await this._execAsync(`${this._binPath} telemetry on`, this._rootPath);
@@ -54,9 +54,13 @@ export class SdCliCordova {
 
     // 미설치 플러그인들 설치
     if (this._config.plugins) {
-      const pluginsFetch = await FsUtil.readJsonAsync(path.resolve(this.cordovaPath, "plugins/fetch.json"));
-      const alreadyPlugins = Object.values(pluginsFetch)
-        .map((item: any) => (item.source.id !== undefined ? item.source.id.replace(/@.*$/, "") : item.source.url));
+      const pluginsFetch = FsUtil.exists(path.resolve(this.cordovaPath, "plugins/fetch.json"))
+        ? await FsUtil.readJsonAsync(path.resolve(this.cordovaPath, "plugins/fetch.json"))
+        : undefined;
+      const alreadyPlugins = pluginsFetch != undefined
+        ? Object.values(pluginsFetch)
+          .map((item: any) => (item.source.id !== undefined ? item.source.id.replace(/@.*$/, "") : item.source.url))
+        : [];
 
       for (const plugin of this._config.plugins.distinct()) {
         if (!alreadyPlugins.includes(plugin)) {
@@ -194,13 +198,13 @@ export class SdCliCordova {
     await FsUtil.writeFileAsync(path.resolve(outPath, "updates/", zipFileName), resultBuffer);
   }
 
-  public async runWebviewOnDeviceAsync(platform: TSdCliCordovaPlatform, url: string): Promise<void> {
-    await FsUtil.removeAsync(path.resolve(this.cordovaPath, "www"));
-    await FsUtil.mkdirsAsync(path.resolve(this.cordovaPath, "www"));
-    await FsUtil.writeFileAsync(path.resolve(this.cordovaPath, "www/index.html"), `'${url}'로 이동중... <script>setTimeout(function () {window.location.href = "${url}"}, 3000);</script>`.trim());
+  public static async runWebviewOnDeviceAsync(cordovaPath: string, platform: TSdCliCordovaPlatform, url: string): Promise<void> {
+    await FsUtil.removeAsync(path.resolve(cordovaPath, "www"));
+    await FsUtil.mkdirsAsync(path.resolve(cordovaPath, "www"));
+    await FsUtil.writeFileAsync(path.resolve(cordovaPath, "www/index.html"), `'${url}'로 이동중... <script>setTimeout(function () {window.location.href = "${url}"}, 3000);</script>`.trim());
 
     // CONFIG
-    const configFilePath = path.resolve(this.cordovaPath, "config.xml");
+    const configFilePath = path.resolve(cordovaPath, "config.xml");
     let configFileContent = await FsUtil.readFileAsync(configFilePath);
 
     // CONFIG: 접근허용 일단 모두 지우기
@@ -214,6 +218,7 @@ export class SdCliCordova {
     // CONFIG: 파일쓰기
     await FsUtil.writeFileAsync(configFilePath, configFileContent);
 
-    await SdProcess.spawnAsync(`${this._binPath} run ${platform} --device`, { cwd: this.cordovaPath });
+    const binPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
+    await SdProcess.spawnAsync(`${binPath} run ${platform} --device`, { cwd: cordovaPath });
   }
 }

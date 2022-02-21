@@ -6,7 +6,8 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="_content"
-         [style]="'background: ' + 'url(' + (backgroundImage | async) + '); ' + contentStyle">
+         *ngIf="(backgroundImage | async) as bgImg"
+         [style]="'background: ' + 'url(' + bgImg + '); ' + contentStyle">
       <div class="sd-padding-lg">
         <ng-content></ng-content>
       </div>

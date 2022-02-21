@@ -1,4 +1,4 @@
-import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil, SdProcess } from "@simplysm/sd-core-node";
 import path from "path";
 import { INpmConfig, ISdCliConfig, ISdCliPackageBuildResult } from "../commons";
 import { SdCliPackage } from "../packages/SdCliPackage";
@@ -23,7 +23,7 @@ export class SdCliWorkspace {
     this._npmConfig = FsUtil.readJson(npmConfigFilePath);
   }
 
-  public async watchAsync(opt: { confFileRelPath: string; optNames: string[] }): Promise<void> {
+  public async watchAsync(opt: { confFileRelPath: string; optNames: string[]; pkgs: string[] }): Promise<void> {
     this._logger.debug("프로젝트 설정 가져오기...");
     const config = await SdCliConfigUtil.loadConfigAsync(path.resolve(this._rootPath, opt.confFileRelPath), true, opt.optNames);
 
@@ -33,7 +33,7 @@ export class SdCliWorkspace {
     }
 
     this._logger.debug("패키지 목록 구성...");
-    const pkgs = await this._getPackagesAsync(config);
+    const pkgs = await this._getPackagesAsync(config, opt.pkgs);
 
     this._logger.debug("패키지 이벤트 설정...");
     let changeCount = 0;
@@ -111,18 +111,22 @@ export class SdCliWorkspace {
     }
     const entryFilePath = path.resolve(pkg.rootPath, entryFileRelPath);
 
-    this._logger.log(`서버(${pkg.name}) 재시작...`);
     try {
       const serverInfo = this._serverInfoMap.getOrCreate(path.basename(pkg.rootPath), {
         middlewares: [],
         clientInfos: []
       });
       if (serverInfo.server) {
+        this._logger.log(`[${pkg.name}] 기존 서버 닫기...`);
         await serverInfo.server.closeAsync();
         delete serverInfo.server;
       }
 
-      serverInfo.server = (await import("file:///" + entryFilePath + "?update=" + Uuid.new().toString())).default.default as SdServiceServer | undefined;
+      this._logger.log(`[${pkg.name}] 서버 시작...`);
+
+      const serverMainPath = "file:///" + PathUtil.posix(entryFilePath) + "?update=" + Uuid.new().toString().replace(/-/g, "");
+      const serverModule = await import(serverMainPath);
+      serverInfo.server = serverModule.default as SdServiceServer | undefined;
       if (!serverInfo.server) {
         this._logger.error(`${entryFilePath}(0, 0): 'SdServiceServer'를 'export'해야 합니다.`);
         this._isServerRestarting = false;
@@ -131,7 +135,7 @@ export class SdCliWorkspace {
       serverInfo.server.devMiddlewares = serverInfo.middlewares;
       await Wait.until(() => serverInfo.server!.isOpen);
 
-      this._logger.log(`서버(${pkg.name}) 재시작 완료`);
+      this._logger.log(`[${pkg.name}] 서버 시작`);
     }
     catch (err) {
       this._logger.error(`서버(${pkg.name}) 재시작중 오류 발생`, err);
@@ -140,12 +144,12 @@ export class SdCliWorkspace {
     this._isServerRestarting = false;
   }
 
-  public async buildAsync(opt: { confFileRelPath: string; optNames: string[] }): Promise<void> {
+  public async buildAsync(opt: { confFileRelPath: string; optNames: string[]; pkgs: string[] }): Promise<void> {
     this._logger.debug("프로젝트 설정 가져오기...");
     const config = await SdCliConfigUtil.loadConfigAsync(path.resolve(this._rootPath, opt.confFileRelPath), false, opt.optNames);
 
     this._logger.debug("패키지 목록 구성...");
-    const pkgs = await this._getPackagesAsync(config);
+    const pkgs = await this._getPackagesAsync(config, opt.pkgs);
 
     this._logger.debug("프로젝트 및 패키지 버전 설정...");
     await this._upgradeVersionAsync(pkgs);
@@ -178,7 +182,7 @@ export class SdCliWorkspace {
     }
   }
 
-  public async publishAsync(opt: { noBuild: boolean; confFileRelPath: string; optNames: string[] }): Promise<void> {
+  public async publishAsync(opt: { noBuild: boolean; confFileRelPath: string; optNames: string[]; pkgs: string[] }): Promise<void> {
     this._logger.debug("프로젝트 설정 가져오기...");
     const config = await SdCliConfigUtil.loadConfigAsync(path.resolve(this._rootPath, opt.confFileRelPath), false, opt.optNames);
 
@@ -197,7 +201,7 @@ export class SdCliWorkspace {
     }
 
     this._logger.debug("패키지 목록 구성...");
-    const pkgs = await this._getPackagesAsync(config);
+    const pkgs = await this._getPackagesAsync(config, opt.pkgs);
 
     this._logger.debug("프로젝트 및 패키지 버전 설정...");
     await this._upgradeVersionAsync(pkgs);
@@ -270,16 +274,17 @@ export class SdCliWorkspace {
     process.stdout.clearLine(0);
   }
 
-  private async _getPackagesAsync(conf: ISdCliConfig): Promise<SdCliPackage[]> {
+  private async _getPackagesAsync(conf: ISdCliConfig, pkgs: string[]): Promise<SdCliPackage[]> {
     const pkgRootPaths = await this._npmConfig.workspaces?.mapManyAsync(async (item) => await FsUtil.globAsync(item));
     if (!pkgRootPaths) {
       throw new Error("최상위 'package.json'에서 'workspaces'를 찾을 수 없습니다.");
     }
 
-
     return pkgRootPaths.map((pkgRootPath) => {
+      if (pkgs.length > 0 && !pkgs.includes(path.basename(pkgRootPath))) return undefined;
       const pkgConfig = conf.packages[path.basename(pkgRootPath)];
-      return pkgConfig ? new SdCliPackage(this._rootPath, pkgRootPath, pkgConfig) : undefined;
+      if (!pkgConfig) return undefined;
+      return new SdCliPackage(this._rootPath, pkgRootPath, pkgConfig);
     }).filterExists();
   }
 
