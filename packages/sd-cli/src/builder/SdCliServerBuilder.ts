@@ -130,6 +130,7 @@ export class SdCliServerBuilder extends EventEmitter {
           {
             "name": npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
             "script": path.basename(path.resolve(this._parsedTsconfig.options.outDir!, "main.mjs")),
+            "node_args": "--experimental-specifier-resolution=node --experimental-import-meta-resolve",
             "watch": true,
             "watch_delay": 2000,
             "ignore_watch": [

@@ -58,6 +58,7 @@ export interface ISdCliServerPackageConfig {
   pm2?: Record<string, any> | boolean;
   iis?: { serverExeFilePath?: string } | boolean;
   externalNodeModules?: string[];
+  publish?: TSdCliPublishConfig;
 }
 
 export interface ISdCliClientPackageConfig {
@@ -66,6 +67,23 @@ export interface ISdCliClientPackageConfig {
   server: string;
   env?: Record<string, string>;
   configs?: Record<string, any>;
+  publish?: TSdCliPublishConfig;
+}
+
+export type TSdCliPublishConfig = ISdCliFtpPublishConfig | ISdCliLocalDirectoryPublishConfig;
+
+export interface ISdCliFtpPublishConfig {
+  type: "ftp" | "ftps" | "sftp";
+  host: string;
+  port?: number;
+  path: string;
+  user: string;
+  pass: string;
+}
+
+export interface ISdCliLocalDirectoryPublishConfig {
+  type: "local-directory";
+  path: string;
 }
 
 export interface ISdCliClientPackageCordovaConfig {

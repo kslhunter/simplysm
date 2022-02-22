@@ -3,7 +3,7 @@ import path from "path";
 
 describe("meta", () => {
   it("test", async () => {
-    const rootPath = path.resolve(process.cwd(), "../simplysm-ts/packages/client-admin");
+    const rootPath = path.resolve(process.cwd(), "../jemk-gojsp/packages/client-admin");
     // const rootPath = path.resolve(process.cwd(), "./packages/sd-angular");
     const ngModuleGen = new SdCliNgModuleGenerator(rootPath, [
       "controls",

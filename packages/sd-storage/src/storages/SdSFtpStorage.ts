@@ -9,8 +9,8 @@ export class SdSFtpStorage implements ISdStorage {
     await this._sftp.connect({
       host: connectionConfig.host,
       port: connectionConfig.port,
-      username: connectionConfig.username,
-      password: connectionConfig.password
+      username: connectionConfig.user,
+      password: connectionConfig.pass
     });
   }
 

@@ -187,7 +187,7 @@ export class SdCliNgModuleGenerator {
           const moduleFilePath = path.resolve(this._modulesPath, path.relative(this._srcPath, path.dirname(fileMeta.filePath)), moduleClassName);
 
           result.sources.push({
-            filePath: fileMeta.filePath,
+            filePath: fileMeta.filePath.replace(/\.[^.]*$/, ""),
             name: cls.exportedName,
             module: {
               filePath: moduleFilePath,
@@ -202,7 +202,7 @@ export class SdCliNgModuleGenerator {
             filePath: moduleFilePath,
             name: moduleClassName,
             source: {
-              filePath: fileMeta.filePath,
+              filePath: fileMeta.filePath.replace(/\.[^.]*$/, ""),
               name: cls.exportedName
             },
             selector: "selector" in cls.target.ngDecl ? cls.target.ngDecl.selector : undefined,
@@ -218,9 +218,9 @@ export class SdCliNgModuleGenerator {
   private _getGenNgModuleDefs(bbModules: IBbNgModuleDef[], presetModules: ITsNgPresetModuleDef[], presetSources: ITsNgPresetSourceDef[]): ITsGenNgModuleDef[] {
     const result: ITsGenNgModuleDef[] = [];
 
-    for (const el of presetSources) {
+    for (const presetSource of presetSources) {
       const imports: TSdCliMetaRef[] = [];
-      for (const imp of el.imports) {
+      for (const imp of presetSource.imports) {
         if ("moduleName" in imp) {
           for (const mod of bbModules) {
             if (mod.exports.some((item) => item.moduleName === imp.moduleName && item.name === imp.name)) {
@@ -240,8 +240,8 @@ export class SdCliNgModuleGenerator {
         }
       }
 
-      if (el.template !== undefined) {
-        const templateDOM = new JSDOM(el.template);
+      if (presetSource.template !== undefined) {
+        const templateDOM = new JSDOM(presetSource.template);
 
         for (const mod of bbModules) {
           for (const selector of mod.selectors) {
@@ -257,7 +257,7 @@ export class SdCliNgModuleGenerator {
           }
 
           for (const pipeName of mod.pipeNames) {
-            if (new RegExp("| *" + pipeName + "[^\\w]").test(el.template)) {
+            if (new RegExp("| *" + pipeName + "[^\\w]").test(presetSource.template)) {
               imports.push({ moduleName: mod.moduleName, name: mod.name, __TSdCliMetaRef__: "__TSdCliMetaRef__" });
             }
           }
@@ -277,7 +277,7 @@ export class SdCliNgModuleGenerator {
           }
 
           if (mod.pipeName !== undefined) {
-            if (new RegExp("| *" + mod.pipeName + "[^\\w]").test(el.template)) {
+            if (new RegExp("| *" + mod.pipeName + "[^\\w]").test(presetSource.template)) {
               imports.push({ filePath: mod.filePath, name: mod.name, __TSdCliMetaRef__: "__TSdCliMetaRef__" });
             }
           }
@@ -285,11 +285,11 @@ export class SdCliNgModuleGenerator {
       }
 
       result.push({
-        filePath: el.module.filePath,
-        name: el.module.name,
+        filePath: presetSource.module.filePath,
+        name: presetSource.module.name,
         imports: imports.distinct(),
-        exports: el.isProvider ? [] : [{ filePath: el.filePath, name: el.name }],
-        providers: el.isProvider ? [{ filePath: el.filePath, name: el.name }] : []
+        exports: presetSource.isProvider ? [] : [{ filePath: presetSource.filePath, name: presetSource.name }],
+        providers: presetSource.isProvider ? [{ filePath: presetSource.filePath, name: presetSource.name }] : []
       });
     }
 

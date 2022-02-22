@@ -13,8 +13,8 @@ export class SdFtpStorage implements ISdStorage {
     await this._ftp.access({
       host: connectionConfig.host,
       port: connectionConfig.port,
-      user: connectionConfig.username,
-      password: connectionConfig.password,
+      user: connectionConfig.user,
+      password: connectionConfig.pass,
       secure: this._secure
     });
   }

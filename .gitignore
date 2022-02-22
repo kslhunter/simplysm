@@ -8,3 +8,5 @@ dist
 .cordova
 _logs
 _modules
+_routes.ts
+simplysm-*.json

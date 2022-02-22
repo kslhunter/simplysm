@@ -50,6 +50,6 @@ export class SdCliPrepare {
             }
         }`);
     await FsUtil.writeFileAsync(filePath, modifiedFileContent);
-    return fileContent !== modifiedFileContent;
+    return modifiedFileContent.includes("const prevUsage = process.cpuUsage();");
   }
 }

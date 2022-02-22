@@ -1,14 +1,16 @@
 import { INpmConfig, ISdCliPackageBuildResult, ITsconfig, TSdCliPackageConfig } from "../commons";
 import path from "path";
-import { FsUtil, SdProcess } from "@simplysm/sd-core-node";
+import { FsUtil, PathUtil, SdProcess } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
-import { ObjectUtil } from "@simplysm/sd-core-common";
+import { NeverEntryError, ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
 import { SdCliTsLibBuilder } from "../builder/SdCliTsLibBuilder";
 import { SdCliJsLibBuilder } from "../builder/SdCliJsLibBuilder";
 import { SdCliServerBuilder } from "../builder/SdCliServerBuilder";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
 import { SdCliClientBuilder } from "../builder/SdCliClientBuilder";
 import { NextHandleFunction } from "connect";
+import { SdStorage } from "@simplysm/sd-storage";
+import ts from "typescript";
 
 export class SdCliPackage extends EventEmitter {
   private readonly _npmConfig: INpmConfig;
@@ -83,8 +85,57 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async publishAsync(): Promise<void> {
-    if (this.config.type === "library" && this.config.publish === "npm") {
-      await SdProcess.spawnAsync("npm publish --quiet --access public", { cwd: this.rootPath });
+    if (this.config.publish !== undefined) {
+      if (this.config.type === "library") {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (this.config.publish === "npm") {
+          await SdProcess.spawnAsync("npm publish --quiet --access public", { cwd: this.rootPath });
+        }
+        else {
+          throw new NeverEntryError();
+        }
+      }
+      else {
+        if (this.config.publish.type === "ftp" || this.config.publish.type === "ftps" || this.config.publish.type === "sftp") {
+          const tsconfigPath = path.resolve(this.rootPath, "tsconfig-build.json");
+          const tsconfig = FsUtil.readJson(tsconfigPath);
+          const parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this.rootPath, tsconfig.angularCompilerOptions);
+
+          const ftp = await SdStorage.connectAsync(this.config.publish.type, {
+            host: this.config.publish.host,
+            port: this.config.publish.port,
+            user: this.config.publish.user,
+            pass: this.config.publish.pass
+          });
+          await ftp.uploadDirAsync(parsedTsconfig.options.outDir!, this.config.publish.path);
+          await ftp.closeAsync();
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        else if (this.config.publish.type === "local-directory") {
+          const tsconfigPath = path.resolve(this.rootPath, "tsconfig-build.json");
+          const tsconfig = FsUtil.readJson(tsconfigPath);
+          const parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this.rootPath, tsconfig.angularCompilerOptions);
+
+          const targetRootPath = this.config.publish.path.replace(/%([^%]*)%/g, (item) => {
+            const envName = item.replace(/%/g, "");
+            if (!StringUtil.isNullOrEmpty(this._npmConfig.version) && envName === "SD_VERSION") {
+              return this._npmConfig.version;
+            }
+            return process.env[envName] ?? item;
+          });
+
+          const filePaths = await FsUtil.globAsync(path.resolve(this.rootPath, "**", "*"), {
+            dot: true,
+            nodir: true
+          });
+
+          await filePaths.parallelAsync(async (filePath) => {
+            const relativeFilePath = path.relative(parsedTsconfig.options.outDir!, filePath);
+            const targetPath = PathUtil.posix(targetRootPath, relativeFilePath);
+            await FsUtil.copyAsync(filePath, targetPath);
+          });
+        }
+      }
     }
   }
 

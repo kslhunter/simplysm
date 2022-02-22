@@ -65,6 +65,7 @@
     "@simplysm/sd-core-common": "7.0.66",
     "@simplysm/sd-core-node": "7.0.66",
     "@simplysm/sd-service-common": "7.0.66",
-    "@simplysm/sd-service-server": "7.0.66"
+    "@simplysm/sd-service-server": "7.0.66",
+    "@simplysm/sd-storage": "7.0.66"
   }
 }

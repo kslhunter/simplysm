@@ -1,8 +1,8 @@
 export interface ISdStorageConnectionConfig {
   host: string;
   port?: number;
-  username?: string;
-  password?: string;
+  user?: string;
+  pass?: string;
 }
 
 export interface ISdStorage {

@@ -18,6 +18,9 @@
       ],
       "@simplysm/sd-service-server": [
         "../sd-service-server/src/index.ts"
+      ],
+      "@simplysm/sd-storage": [
+        "../sd-storage/src/index.ts"
       ]
     }
   },

@@ -117,12 +117,12 @@ export class SdCliWorkspace {
         clientInfos: []
       });
       if (serverInfo.server) {
-        this._logger.log(`[${pkg.name}] 기존 서버 닫기...`);
+        this._logger.log(`[${pkg.name}] 기존 서버 중지...`);
         await serverInfo.server.closeAsync();
         delete serverInfo.server;
       }
 
-      this._logger.log(`[${pkg.name}] 서버 시작...`);
+      this._logger.log(`[${pkg.name}] 서버 시작중...`);
 
       const serverMainPath = "file:///" + PathUtil.posix(entryFilePath) + "?update=" + Uuid.new().toString().replace(/-/g, "");
       const serverModule = await import(serverMainPath);
@@ -135,7 +135,7 @@ export class SdCliWorkspace {
       serverInfo.server.devMiddlewares = serverInfo.middlewares;
       await Wait.until(() => serverInfo.server!.isOpen);
 
-      this._logger.log(`[${pkg.name}] 서버 시작`);
+      this._logger.log(`[${pkg.name}] 서버가 시작되었습니다.`);
     }
     catch (err) {
       this._logger.error(`서버(${pkg.name}) 재시작중 오류 발생`, err);
