@@ -7,17 +7,21 @@ import {
   SdCliBbNgModuleMetadata,
   SdCliBbNgPipeMetadata
 } from "./babel/TSdCliBbNgMetadata";
-import { NeverEntryError, StringUtil } from "@simplysm/sd-core-common";
+import { NeverEntryError, ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
 import { TSdCliMetaRef } from "./commons";
 import { SdCliTsNgInjectableMetadata } from "./typescript/SdCliTsFileMetadata";
 import path from "path";
 import { JSDOM } from "jsdom";
-import { FsUtil, PathUtil } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
 import os from "os";
+import { INpmConfig } from "../commons";
 
 // TODO: 에러 메시지 처리
 // TODO: forRoot에 있는 Provider 처리??
+// TODO: CircularDependency
 export class SdCliNgModuleGenerator {
+  private readonly _logger: Logger;
+
   private readonly _bbMeta: SdCliBbRootMetadata;
   private readonly _tsMeta: SdCliTsRootMetadata;
 
@@ -44,6 +48,9 @@ export class SdCliNgModuleGenerator {
       const content = FsUtil.readFile(currFilePath);
       this._fileWriterCache.set(currFilePath, content);
     }
+
+    const npmConfig: INpmConfig = FsUtil.readJson(path.resolve(packagePath, "package.json"));
+    this._logger = Logger.get(["simplysm", "sd-cli", this.constructor.name, npmConfig.name]);
   }
 
   public removeCaches(changedFilePaths: string[]): void {
@@ -57,18 +64,116 @@ export class SdCliNgModuleGenerator {
   }
 
   public async runAsync(): Promise<void> {
+    this._logger.debug("Babel NgModule 정의 가져오기...");
     const bbNgModules = this._getBbNgModuleDefs();
+    
+    this._logger.debug("NgModule Preset 구성...");
     const tsPreset = this._getTsGenNgModulePreset();
 
+    this._logger.debug("RoutingModule 정의 구성...");
     const genNgRoutingModules = await this._getGenNgRoutingModuleDefsAsync();
+
+    this._logger.debug("NgModule 정의 구성...");
     const genNgModules = this._getGenNgModuleDefs(bbNgModules, tsPreset.modules, tsPreset.sources);
 
+    this._logger.debug("NgModule 순환참조 병합...");
+    const mergedGenNgModules = this._mergeNgModuleCircularDependency(genNgModules);
+
+    this._logger.debug("생성할 파일 내용 구성...");
     const files = [
       ...this._getGenNgRoutingModuleFiles(genNgRoutingModules),
-      ...this._getGenNgModuleFiles(genNgModules)
+      ...this._getGenNgModuleFiles(mergedGenNgModules)
     ];
 
+    this._logger.debug("파일 쓰기...");
     await this._writeFilesAsync(files);
+  }
+
+  private _mergeNgModuleCircularDependency(mods: ITsGenNgModuleDef[]): ITsGenNgModuleDef[] {
+    // 중복 'check'목록 구성
+    const check = (mod: ITsGenNgModuleDef, ref: { filePath: string; name: string }, chain: ITsGenNgModuleDef[]): ITsGenNgModuleDef[][] => {
+      const result: ITsGenNgModuleDef[][] = [];
+      for (const imp of mod.imports) {
+        if ("filePath" in imp) {
+          if (imp.filePath === ref.filePath || imp.name === ref.name) {
+            result.push(chain.concat([mod]));
+          }
+          else {
+            const childMod = mods.single((item) => item.filePath === imp.filePath && item.name === imp.name);
+            if (childMod) {
+              if (chain.some((item) => item.filePath === childMod.filePath && item.name === childMod.name)) {
+                continue;
+              }
+
+              result.push(
+                ...check(childMod, ref, chain.concat([mod]))
+              );
+            }
+          }
+        }
+      }
+
+      return result;
+    };
+
+    const checkedList: ITsGenNgModuleDef[][] = [];
+    for (const mod of mods) {
+      const circularDepModules = check(mod, { filePath: mod.filePath, name: mod.name }, []);
+      if (circularDepModules.length > 0) {
+        checkedList.push(...circularDepModules);
+      }
+    }
+    const mergeModPacks = checkedList.map((item) => item.orderBy((item1) => item1.filePath)).distinct();
+
+    // 'merge'목록 구성
+    const currMergedList: ITsGenNgModuleDef[] = [];
+    for (const mergeModPack of mergeModPacks) {
+      let currMerged = mergeModPack[0];
+      for (const mergeMod of mergeModPack.slice(1)) {
+        currMerged = {
+          filePath: currMerged.filePath,
+          name: currMerged.name,
+          imports: currMerged.imports.concat(mergeMod.imports).distinct(),
+          exports: currMerged.exports.concat(mergeMod.exports).distinct(),
+          providers: currMerged.providers.concat(mergeMod.providers).distinct()
+        };
+      }
+      currMerged.imports.remove((imp) => (
+        "filePath" in imp &&
+        mergeModPack.some((mergeMod) => (
+          imp.filePath === mergeMod.filePath &&
+          imp.name === mergeMod.name
+        ))
+      ));
+
+      currMergedList.push(currMerged);
+    }
+
+    // 기존 'check'된 것들 모두 삭제
+    const result: ITsGenNgModuleDef[] = ObjectUtil.clone(mods);
+    for (const delMod of mergeModPacks.mapMany()) {
+      result.remove((item) => item.filePath === delMod.filePath && item.name === delMod.name);
+    }
+
+    // 'merge'된 것들 등록
+    result.push(...currMergedList);
+
+    // 모든 결과물에서 'import'에 'merge'된것들이 있으면 'merge'결과물 파일로 변경후, distinct
+    for (const resultItem of result) {
+      for (const imp of resultItem.imports) {
+        if (!("filePath" in imp)) continue;
+
+        for (const mergeModPack of mergeModPacks) {
+          if (mergeModPack.some((mergeModPackItem) => mergeModPackItem.filePath === imp.filePath && mergeModPackItem.name === imp.name)) {
+            imp.filePath = mergeModPack[0].filePath;
+            imp.name = mergeModPack[0].name;
+          }
+        }
+      }
+      resultItem.imports = resultItem.imports.distinct();
+    }
+
+    return result;
   }
 
   private _findBbMetasFromMeta(srcMeta: TSdCliBbMetadata): TSdCliBbMetadata[] {

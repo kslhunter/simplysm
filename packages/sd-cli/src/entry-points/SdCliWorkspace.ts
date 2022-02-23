@@ -72,22 +72,29 @@ export class SdCliWorkspace {
     }
     changeCount++;
 
-    const pkgNames = pkgs.map((item) => item.name);
-    const buildCompletedPackageNames: string[] = [];
-    await pkgs.parallelAsync(async (pkg) => {
-      await Wait.until(() => !pkg.allDependencies.some((dep) => pkgNames.includes(dep) && !buildCompletedPackageNames.includes(dep)));
-      if (pkg.config.type === "client") {
-        const middlewares = (await pkg.watchAsync()) as NextHandleFunction[];
+    try {
+      const pkgNames = pkgs.map((item) => item.name);
+      const buildCompletedPackageNames: string[] = [];
+      await pkgs.parallelAsync(async (pkg) => {
+        await Wait.until(() => !pkg.allDependencies.some((dep) => pkgNames.includes(dep) && !buildCompletedPackageNames.includes(dep)));
+        if (pkg.config.type === "client") {
+          const middlewares = (await pkg.watchAsync()) as NextHandleFunction[];
 
-        const serverInfo = this._serverInfoMap.getOrCreate(pkg.config.server, { middlewares: [], clientInfos: [] });
-        serverInfo.middlewares.push(...middlewares);
-        serverInfo.clientInfos.push({ pkgKey: pkg.name.split("/").last()! });
-      }
-      else {
-        await pkg.watchAsync();
-      }
-      buildCompletedPackageNames.push(pkg.name);
-    });
+          const serverInfo = this._serverInfoMap.getOrCreate(pkg.config.server, { middlewares: [], clientInfos: [] });
+          serverInfo.middlewares.push(...middlewares);
+          serverInfo.clientInfos.push({ pkgKey: pkg.name.split("/").last()! });
+        }
+        else {
+          await pkg.watchAsync();
+        }
+        buildCompletedPackageNames.push(pkg.name);
+      });
+    }
+    catch (err) {
+      this._loggingResults(totalResultMap);
+      this._loggingOpenClientHrefs();
+      throw err;
+    }
 
     changeCount--;
     if (changeCount === 0) {
@@ -163,22 +170,28 @@ export class SdCliWorkspace {
     const pkgNames = pkgs.map((item) => item.name);
     const buildCompletedPackageNames: string[] = [];
     const totalResultMap = new Map<string, ISdCliPackageBuildResult[]>();
-    await pkgs.parallelAsync(async (pkg) => {
-      await Wait.until(() => !pkg.allDependencies.some((dep) => pkgNames.includes(dep) && !buildCompletedPackageNames.includes(dep)));
+    try {
+      await pkgs.parallelAsync(async (pkg) => {
+        await Wait.until(() => !pkg.allDependencies.some((dep) => pkgNames.includes(dep) && !buildCompletedPackageNames.includes(dep)));
 
-      this._logger.debug(`[${pkg.name}] 빌드를 시작합니다...`);
-      totalResultMap.set(pkg.name, await pkg.buildAsync());
-      this._logger.debug(`[${pkg.name}] 빌드가 완료되었습니다.`);
+        this._logger.debug(`[${pkg.name}] 빌드를 시작합니다...`);
+        totalResultMap.set(pkg.name, await pkg.buildAsync());
+        this._logger.debug(`[${pkg.name}] 빌드가 완료되었습니다.`);
 
-      buildCompletedPackageNames.push(pkg.name);
-    });
+        buildCompletedPackageNames.push(pkg.name);
+      });
 
-    this._loggingResults(totalResultMap);
-    if (Array.from(totalResultMap.values()).mapMany().some((item) => item.severity === "error")) {
-      throw new Error("빌드중 오류가 발생하였습니다.");
+      this._loggingResults(totalResultMap);
+      if (Array.from(totalResultMap.values()).mapMany().some((item) => item.severity === "error")) {
+        throw new Error("빌드중 오류가 발생하였습니다.");
+      }
+      else {
+        this._logger.info("모든 빌드가 완료되었습니다.");
+      }
     }
-    else {
-      this._logger.info("모든 빌드가 완료되었습니다.");
+    catch (err) {
+      this._loggingResults(totalResultMap);
+      throw new err;
     }
   }
 

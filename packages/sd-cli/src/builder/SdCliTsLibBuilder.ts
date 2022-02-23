@@ -296,7 +296,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
         char: undefined,
         code: undefined,
         severity: "error",
-        message: err.message
+        message: err.stack
       }];
     }
   }

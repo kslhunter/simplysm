@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular-mobile",
-  "version": "7.0.66",
+  "version": "7.0.73",
   "description": "심플리즘 패키지 - Angular 모바일 모듈 (browser)",
   "author": "김석래",
   "repository": {
@@ -35,9 +35,9 @@
     "cordova-plugin-file": "^6.0.2"
   },
   "peerDependencies": {
-    "@simplysm/sd-core-common": "7.0.66",
-    "@simplysm/sd-core-browser": "7.0.66",
-    "@simplysm/sd-angular": "7.0.66",
-    "@simplysm/sd-service-client": "7.0.66"
+    "@simplysm/sd-core-common": "7.0.73",
+    "@simplysm/sd-core-browser": "7.0.73",
+    "@simplysm/sd-angular": "7.0.73",
+    "@simplysm/sd-service-client": "7.0.73"
   }
 }
