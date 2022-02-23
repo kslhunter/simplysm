@@ -59,6 +59,10 @@ export class SdCliBuildResultUtil {
 
 
   public static getMessage(result: ISdCliPackageBuildResult): string {
+    if (result.code === "ESLintError") {
+      return result.message;
+    }
+
     let str = "";
     if (result.filePath !== undefined) {
       str += `${result.filePath}(${result.line ?? 0}, ${result.char ?? 0}): `;

@@ -12,6 +12,9 @@ module.exports = {
             project: "tsconfig.json"
           }
         }
+      },
+      rules: {
+        "@simplysm/ts-no-throw-not-implement-error": "off"
       }
     },
     {

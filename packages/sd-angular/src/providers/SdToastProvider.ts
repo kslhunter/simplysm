@@ -4,8 +4,6 @@ import { SdRootRootProvider } from "../root-providers/SdRootRootProvider";
 import { SdSystemLogRootProvider } from "../root-providers/SdSystemLogRootProvider";
 import { SdToastControl } from "../controls/SdToastControl";
 
-// TODO: 마우스가 올라와 있으면 자동으로 안닫히게
-
 @Injectable({ providedIn: null })
 export class SdToastProvider {
   public get containerRef(): ComponentRef<SdToastContainerControl> {

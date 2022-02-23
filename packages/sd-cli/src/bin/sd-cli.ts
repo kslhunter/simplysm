@@ -5,11 +5,12 @@ import { hideBin } from "yargs/helpers";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { SdCliWorkspace } from "../entry-points/SdCliWorkspace";
 import { SdCliLocalUpdate } from "../entry-points/SdCliLocalUpdate";
-// import sourceMapSupport from "source-map-support";
 import { SdCliNpm } from "../entry-points/SdCliNpm";
 import { SdCliPrepare } from "../entry-points/SdCliPrepare";
+import { SdCliFileCrypto } from "../entry-points/SdCliFileCrypto";
 
-// sourceMapSupport.install();
+// TODO: ENC, DEC
+// TODO: Angular 아이콘들 SYNC로 변경
 
 Error.stackTraceLimit = Infinity;
 
@@ -113,6 +114,24 @@ const argv = yargs(hideBin(process.argv))
         }
       })
   )
+  .command(
+    "enc-file <file>",
+    "파일을 암호화 합니다.",
+    (cmd) => cmd.version(false)
+      .positional("file", {
+        type: "string",
+        describe: "암호화할 파일명"
+      })
+  )
+  .command(
+    "dec-file <file>",
+    "파일을 복호화 합니다.",
+    (cmd) => cmd.version(false)
+      .positional("file", {
+        type: "string",
+        describe: "암호화된 파일명"
+      })
+  )
   .parseSync();
 
 if (argv.debug) {
@@ -175,6 +194,12 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
     if (!argv.noBuild) {
       process.exit(0);
     }
+  }
+  else if (argv._[0] === "enc-file") {
+    await new SdCliFileCrypto().encryptAsync(argv.file!);
+  }
+  else if (argv._[0] === "dec-file") {
+    await new SdCliFileCrypto().decryptAsync(argv.file!);
   }
   else {
     throw new Error(`명령어가 잘못 되었습니다.\n\t${argv._[0]}\n`);

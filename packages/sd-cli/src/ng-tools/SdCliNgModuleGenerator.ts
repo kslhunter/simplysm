@@ -16,9 +16,6 @@ import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
 import os from "os";
 import { INpmConfig } from "../commons";
 
-// TODO: 에러 메시지 처리
-// TODO: forRoot에 있는 Provider 처리??
-// TODO: CircularDependency
 export class SdCliNgModuleGenerator {
   private readonly _logger: Logger;
 

@@ -7,7 +7,6 @@ import ts from "typescript";
 import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import { NamedChunksPlugin } from "@angular-devkit/build-angular/src/webpack/plugins/named-chunks-plugin";
 import {
-  AnyComponentStyleBudgetChecker,
   CommonJsUsageWarnPlugin,
   DedupeModuleResolvePlugin,
   JavaScriptOptimizerPlugin,
@@ -23,7 +22,6 @@ import wdm from "webpack-dev-middleware";
 import whm from "webpack-hot-middleware";
 import { NextHandleFunction } from "connect";
 import { LicenseWebpackPlugin } from "license-webpack-plugin";
-import { Type } from "@angular-devkit/build-angular";
 import NodePolyfillPlugin from "node-polyfill-webpack-plugin";
 import { createHash } from "crypto";
 import ESLintWebpackPlugin from "eslint-webpack-plugin";
@@ -565,9 +563,9 @@ export class SdCliClientBuilder extends EventEmitter {
           emitNgModuleScope: watch,
           inlineStyleFileExtension: "scss"
         }),
-        new AnyComponentStyleBudgetChecker(watch ? [] : [
-          { type: Type.AnyComponentStyle, maximumWarning: "2kb", maximumError: "4kb" }
-        ]),
+        // new AnyComponentStyleBudgetChecker(watch ? [] : [
+        //   { type: Type.AnyComponentStyle, maximumWarning: "2kb", maximumError: "4kb" }
+        // ]),
         {
           apply: (compiler: webpack.Compiler) => {
             compiler.hooks.shutdown.tap("sass-worker", () => {

@@ -5,7 +5,6 @@ import { SdExcelRow } from "./SdExcelRow";
 import { SdExcelUtil } from "./utils/SdExcelUtil";
 import { NumberUtil, ObjectUtil } from "@simplysm/sd-core-common";
 
-// TODO: 엑셀다운로드 에러 수정 필요
 export class SdExcelWorksheet {
   public relData: any;
   public drawingRelData: any;

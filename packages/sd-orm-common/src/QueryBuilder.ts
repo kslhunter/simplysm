@@ -775,7 +775,6 @@ ORDER BY i.index_id, ic.key_ordinal;
     if (this._dialect === "mysql") {
       const procName = this.wrap("SD" + Uuid.new().toString().replace(/-/g, ""));
 
-      // TODO: ON DUPLICATE KEY UPDATE 관련 로직
       const q = `
 USE ${def.from.split(".")[0]};
 
@@ -976,7 +975,6 @@ DEALLOCATE PREPARE stmt;`.trim();
     }
   }
 
-  // TODO: autoIncrement에 UUID 못쓰게 하자
   private _getQueryOfColDef(colDef: IQueryColumnDef): string {
     let q = "";
 

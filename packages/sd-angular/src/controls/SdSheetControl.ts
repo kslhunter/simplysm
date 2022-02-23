@@ -28,7 +28,6 @@ import { SdModalProvider } from "../providers/SdModalProvider";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
 import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 
-// TODO: 셀 크기 2번 수정하면 HEADERGROUP 컬럼의 크기가 안따라오는 현상 수정
 @Component({
   selector: "sd-sheet",
   changeDetection: ChangeDetectionStrategy.OnPush,

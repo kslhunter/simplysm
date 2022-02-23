@@ -8,6 +8,7 @@ export * from "./builder/SdCliJsLibBuilder";
 export * from "./builder/SdCliServerBuilder";
 export * from "./builder/SdCliTsLibBuilder";
 export * from "./commons";
+export * from "./entry-points/SdCliFileCrypto";
 export * from "./entry-points/SdCliLocalUpdate";
 export * from "./entry-points/SdCliNpm";
 export * from "./entry-points/SdCliPrepare";
