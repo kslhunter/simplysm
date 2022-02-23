@@ -7,7 +7,8 @@ import { SdInputValidate } from "@simplysm/sd-angular";
   template: `
     <div class="_content" [attr.style]="contentStyle" (click)="menuOpen = !menuOpen">
       <div class="_menu-button">
-        <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"></sd-collapse-icon>
+        <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"
+                          [icon]="icons.falChevronDown | async"></sd-collapse-icon>
       </div>
 
       <ng-content></ng-content>
@@ -54,6 +55,10 @@ import { SdInputValidate } from "@simplysm/sd-angular";
   `]
 })
 export class SdmSidebarUserControl {
+  public icons = {
+    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.faChevronDown)
+  };
+
   @Input()
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-menu-open")

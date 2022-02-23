@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 
 @Component({
   selector: "sd-collapse-icon",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <fa-icon class="_icon" [icon]="icons.falChevronDown | async" [fixedWidth]="true"></fa-icon>`,
+    <fa-icon class="_icon" [icon]="icon" [fixedWidth]="true"></fa-icon>`,
   styles: [/* language=SCSS */ `
     :host {
       display: inline-block;
@@ -27,14 +28,13 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   `]
 })
 export class SdCollapseIconControl {
-  public icons = {
-    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.faChevronDown)
-  };
-
   @Input()
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-open")
   public open?: boolean;
+
+  @Input()
+  public icon?: IconProp;
 
   @Input()
   @SdInputValidate({

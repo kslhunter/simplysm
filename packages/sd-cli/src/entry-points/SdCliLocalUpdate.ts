@@ -14,7 +14,7 @@ export class SdCliLocalUpdate {
     if (!conf.localUpdates) return;
 
     const updatePathInfos = await this._getUpdatePathInfosAsync(conf.localUpdates);
-    this._logger.debug("로컬 업데이트 구성", updatePathInfos);
+    this._logger.debug("로컬 업데이트 구성");
 
     this._logger.log("로컬 라이브러리 업데이트 시작...");
     for (const updatePathInfo of updatePathInfos) {
@@ -37,7 +37,7 @@ export class SdCliLocalUpdate {
     if (!conf.localUpdates) return;
 
     const updatePathInfos = await this._getUpdatePathInfosAsync(conf.localUpdates);
-    this._logger.debug("로컬 업데이트 구성", updatePathInfos);
+    this._logger.debug("로컬 업데이트 구성");
 
     const watchPaths = (await updatePathInfos.mapManyAsync(async (item) => await this._getWatchPathsAsync(item.source))).distinct();
 

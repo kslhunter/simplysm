@@ -13,7 +13,8 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       </div>
       <div class="_menu-button" *ngIf="menuTitle" (click)="onMenuOpenButtonClick()">
         {{ menuTitle }}
-        <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"></sd-collapse-icon>
+        <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"
+                          [icon]="icons.falChevronDown | async"></sd-collapse-icon>
       </div>
     </div>
     <sd-collapse [open]="menuOpen" *ngIf="menuTitle">
@@ -59,6 +60,10 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   `]
 })
 export class SdSidebarUserControl {
+  public icons = {
+    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.faChevronDown)
+  };
+
   // @ts-expect-error
   public backgroundImage = import("../../assets/user_bg.jpg").then(m => m.default);
 

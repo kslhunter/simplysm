@@ -25,6 +25,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
       <ng-content></ng-content>
 
       <sd-collapse-icon [open]="open" *ngIf="hasChildren && layout==='accordion'"
+                        [icon]="icons.falChevronDown | async"
                         style="float: right"></sd-collapse-icon>
     </div>
     <sd-collapse class="_child" [open]="layout === 'flat' || open">
@@ -83,6 +84,10 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
   `]
 })
 export class SdmListItemControl {
+  public icons = {
+    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.faChevronDown)
+  };
+
   @Input("content.style")
   @SdInputValidate(String)
   public contentStyle?: string;
