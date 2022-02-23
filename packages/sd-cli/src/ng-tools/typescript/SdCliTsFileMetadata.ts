@@ -3,7 +3,6 @@ import ts from "typescript";
 import { NeverEntryError } from "@simplysm/sd-core-common";
 import { TSdCliMetaRef } from "../commons";
 import path from "path";
-import { SdCliTsUtil } from "./SdCliTsUtil";
 
 export class SdCliTsFileMetadata {
   public readonly sourceFile: ts.SourceFile;
@@ -53,7 +52,7 @@ export class SdCliTsFileMetadata {
                   }
                 }
                 else {
-                  throw SdCliTsUtil.error("'import * as [name] from ...'을 'import [name] from ...'로 변경하세요.", this.sourceFile, node);
+                  // throw SdCliTsUtil.error("'import * as [name] from ...'을 'import [name] from ...'로 변경하세요.", this.sourceFile, node);
                 }
               }
               else {

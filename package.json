@@ -22,7 +22,7 @@
     "publish": "npm run _sd-cli_ -- --debug publish",
     "publish(--noBuild)": "npm run _sd-cli_ -- --debug publish --noBuild",
     "--": "",
-    "update": "npm run _sd-cli_ -- --debug update",
+    "update": "npm outdated && npm update && npm run postinstall",
     "postinstall": "npm run _sd-cli_ -- --debug prepare",
     "---": "",
     "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --experimental-specifier-resolution=node --experimental-import-meta-resolve --loader ./packages/sd-cli/lib/ts-node-esm-paths packages/sd-cli/src/bin/sd-cli.ts",
