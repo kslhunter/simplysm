@@ -9,7 +9,6 @@ import { SdCliNpm } from "../entry-points/SdCliNpm";
 import { SdCliPrepare } from "../entry-points/SdCliPrepare";
 import { SdCliFileCrypto } from "../entry-points/SdCliFileCrypto";
 
-// TODO: ENC, DEC
 // TODO: Angular 아이콘들 SYNC로 변경
 
 Error.stackTraceLimit = Infinity;
