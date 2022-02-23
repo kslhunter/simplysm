@@ -15,8 +15,5 @@
   "sideEffects": false,
   "engines": {
     "node": "^16"
-  },
-  "dependencies": {},
-  "devDependencies": {},
-  "peerDependencies": {}
+  }
 }

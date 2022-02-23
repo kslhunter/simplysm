@@ -15,9 +15,8 @@
   "engines": {
     "node": "^16"
   },
-  "dependencies": {},
-  "devDependencies": {},
-  "peerDependencies": {
+  "dependencies": {
     "@simplysm/sd-core-common": "7.0.74"
-  }
+  },
+  "devDependencies": {}
 }

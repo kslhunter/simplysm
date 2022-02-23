@@ -29,15 +29,13 @@
     "@fortawesome/pro-solid-svg-icons": "^6.0.0",
     "@fortawesome/pro-regular-svg-icons": "^6.0.0",
     "@fortawesome/pro-light-svg-icons": "^6.0.0",
-    "@fortawesome/pro-duotone-svg-icons": "^6.0.0"
-  },
-  "devDependencies": {
-    "cordova-plugin-file": "^6.0.2"
-  },
-  "peerDependencies": {
+    "@fortawesome/pro-duotone-svg-icons": "^6.0.0",
     "@simplysm/sd-core-common": "7.0.74",
     "@simplysm/sd-core-browser": "7.0.74",
     "@simplysm/sd-angular": "7.0.74",
     "@simplysm/sd-service-client": "7.0.74"
+  },
+  "devDependencies": {
+    "cordova-plugin-file": "^6.0.2"
   }
 }

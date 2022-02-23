@@ -18,15 +18,13 @@
   },
   "dependencies": {
     "tedious": "^14.2.0",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "@simplysm/sd-core-common": "7.0.74",
+    "@simplysm/sd-core-node": "7.0.74",
+    "@simplysm/sd-orm-common": "7.0.74"
   },
   "devDependencies": {
     "@types/tedious": "^4.0.6",
     "@types/mysql": "^2.15.20"
-  },
-  "peerDependencies": {
-    "@simplysm/sd-core-common": "7.0.74",
-    "@simplysm/sd-core-node": "7.0.74",
-    "@simplysm/sd-orm-common": "7.0.74"
   }
 }

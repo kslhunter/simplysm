@@ -18,10 +18,7 @@
   },
   "dependencies": {
     "socket.io-client": "^4.4.1",
-    "jszip": "^3.7.1"
-  },
-  "devDependencies": {},
-  "peerDependencies": {
+    "jszip": "^3.7.1",
     "@simplysm/sd-core-common": "7.0.74",
     "@simplysm/sd-service-common": "7.0.74",
     "@simplysm/sd-orm-common": "7.0.74"

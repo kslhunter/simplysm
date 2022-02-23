@@ -172,6 +172,9 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
         optNames: argv.options ?? [],
         pkgs: argv.packages ?? []
       });
+    if (!argv.noBuild) {
+      process.exit(0);
+    }
   }
   else {
     throw new Error(`명령어가 잘못 되었습니다.\n\t${argv._[0]}\n`);

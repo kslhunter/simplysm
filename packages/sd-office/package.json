@@ -20,12 +20,10 @@
     "jszip": "^3.7.1",
     "xml2js": "^0.4.23",
     "xml-js": "^1.6.11",
-    "xlsx": "^0.18.0"
+    "xlsx": "^0.18.0",
+    "@simplysm/sd-core-common": "7.0.74"
   },
   "devDependencies": {
     "@types/xml2js": "^0.4.9"
-  },
-  "peerDependencies": {
-    "@simplysm/sd-core-common": "7.0.74"
   }
 }

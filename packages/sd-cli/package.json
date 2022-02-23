@@ -51,7 +51,12 @@
     "@babel/types": "^7.17.0",
     "jsdom": "^19.0.0",
     "cordova": "^11.0.0",
-    "jszip": "^3.7.1"
+    "jszip": "^3.7.1",
+    "@simplysm/sd-core-common": "7.0.74",
+    "@simplysm/sd-core-node": "7.0.74",
+    "@simplysm/sd-service-common": "7.0.74",
+    "@simplysm/sd-service-server": "7.0.74",
+    "@simplysm/sd-storage": "7.0.74"
   },
   "devDependencies": {
     "@types/semver": "^7.3.9",
@@ -60,12 +65,5 @@
     "@types/connect": "^3.4.35",
     "@types/source-map-support": "^0.5.4",
     "@types/jsdom": "^16.2.14"
-  },
-  "peerDependencies": {
-    "@simplysm/sd-core-common": "7.0.74",
-    "@simplysm/sd-core-node": "7.0.74",
-    "@simplysm/sd-service-common": "7.0.74",
-    "@simplysm/sd-service-server": "7.0.74",
-    "@simplysm/sd-storage": "7.0.74"
   }
 }

@@ -22,6 +22,5 @@
   },
   "devDependencies": {
     "@types/ssh2-sftp-client": "^7.0.0"
-  },
-  "peerDependencies": {}
+  }
 }
