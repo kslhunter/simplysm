@@ -10,6 +10,6 @@ export class SdSmtpClientServiceClient {
   }
 
   public async sendByConfigAsync(configName: string, options: ISmtpClientSendByDefaultOption): Promise<void> {
-    await this._client.sendAsync("SdSmtpClientService", "endByConfigAsync", [configName, options]);
+    await this._client.sendAsync("SdSmtpClientService", "sendByConfigAsync", [configName, options]);
   }
 }

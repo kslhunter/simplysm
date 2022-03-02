@@ -20,15 +20,18 @@ export class SdCliPackageLinter {
             {
               files: ["*.ts"],
               parserOptions: {
-                programs: [program],
+                /*programs: [program],
                 tsconfigRootDir: null,
-                project: null
+                project: null*/
+                tsconfigRootDir: this._rootPath,
+                project: "tsconfig-build.json"
               },
               settings: {
                 "import/resolver": {
                   "typescript": {
-                    programs: [program],
-                    project: null
+                    /*programs: [program],
+                    project: null*/
+                    project: path.resolve(this._rootPath, "tsconfig-build.json")
                   }
                 }
               }

@@ -225,6 +225,8 @@ export class SdCliServerBuilder extends EventEmitter {
     const cacheBasePath = path.resolve(this._rootPath, ".cache");
     const cachePath = path.resolve(cacheBasePath, pkgVersion);
 
+
+    let prevProgressMessage = "";
     return {
       mode: watch ? "development" : "production",
       devtool: false,
@@ -425,14 +427,18 @@ export class SdCliServerBuilder extends EventEmitter {
             }
             return resultMessages.join(os.EOL);
           }
-        })/*,
+        }),
         new webpack.ProgressPlugin({
           handler: (per: number, msg: string, ...args: string[]) => {
             const phaseText = msg ? ` - phase: ${msg}` : "";
             const argsText = args.length > 0 ? ` - args: [${args.join(", ")}]` : "";
-            this._logger.debug(`Webpack 빌드 수행중...(${Math.round(per * 100)}%)${phaseText}${argsText}`);
+            const progressMessage = `Webpack 빌드 수행중...(${Math.round(per * 100)}%)${phaseText}${argsText}`;
+            if (progressMessage !== prevProgressMessage) {
+              prevProgressMessage = progressMessage;
+              this._logger.debug(progressMessage);
+            }
           }
-        })*/
+        })
       ]
     };
   }

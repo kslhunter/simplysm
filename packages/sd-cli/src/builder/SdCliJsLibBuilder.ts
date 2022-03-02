@@ -29,7 +29,7 @@ export class SdCliJsLibBuilder extends EventEmitter {
       const changeFilePaths = changeInfos.filter((item) => ["add", "change", "unlink"].includes(item.event)).map((item) => item.path);
       if (changeFilePaths.length === 0) return;
 
-      this._logger.debug("파일 변경 감지", changeInfos);
+      this._logger.debug("파일 변경 감지");
       this.emit("change");
       const watchBuildResults: ISdCliPackageBuildResult[] = [];
 

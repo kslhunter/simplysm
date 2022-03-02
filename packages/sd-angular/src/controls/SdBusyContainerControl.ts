@@ -199,7 +199,7 @@ import { SdBusyRootProvider } from "../root-providers/SdBusyRootProvider";
 export class SdBusyContainerControl {
   @Input()
   @SdInputValidate(Boolean)
-  @HostBinding("attr.sd-busy-container")
+  @HostBinding("attr.sd-busy")
   public busy?: boolean;
 
   @Input()

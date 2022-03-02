@@ -193,7 +193,7 @@ export class SdServiceServer extends EventEmitter {
         // 에러 응답
         const res = {
           type: "error",
-          body: err.message
+          body: err.stack
         };
         socket.emit(`response:${req.uuid}`, JsonConvert.stringify(res));
       }

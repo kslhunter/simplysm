@@ -255,6 +255,7 @@ export class SdCliClientBuilder extends EventEmitter {
     const polyfillsFilePath = path.resolve(this._rootPath, "src/polyfills.ts");
     const stylesFilePath = path.resolve(this._rootPath, "src/styles.scss");
 
+    let prevProgressMessage = "";
     return {
       mode: watch ? "development" : "production",
       devtool: false,
@@ -394,6 +395,27 @@ export class SdCliClientBuilder extends EventEmitter {
             test: /[/\\]rxjs[/\\]add[/\\].+\.js$/,
             sideEffects: true
           },
+          ...watch ? [
+            {
+              loader: HmrLoader,
+              include: [mainFilePath]
+            }
+          ] : [],
+          ...watch ? [
+            {
+              test: /\.[cm]?jsx?$/,
+              enforce: "pre" as const,
+              loader: "source-map-loader",
+              options: {
+                filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
+                  const workspaceRegex = new RegExp(`node_modules[\\\\/]@${workspaceName}[\\\\/]`);
+                  return !resourcePath.includes("node_modules")
+                    || (/node_modules[\\/]@simplysm[\\/]/).test(resourcePath)
+                    || workspaceRegex.test(resourcePath);
+                }
+              }
+            }
+          ] : [],
           {
             test: /\.[cm]?[tj]sx?$/,
             resolve: { fullySpecified: false },
@@ -411,21 +433,6 @@ export class SdCliClientBuilder extends EventEmitter {
               }
             ]
           },
-          ...watch ? [
-            {
-              test: /\.[cm]?jsx?$/,
-              enforce: "pre" as const,
-              loader: "source-map-loader",
-              options: {
-                filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                  const workspaceRegex = new RegExp(`node_modules[\\\\/]@${workspaceName}[\\\\/]`);
-                  return !resourcePath.includes("node_modules")
-                    || (/node_modules[\\/]@simplysm[\\/]/).test(resourcePath)
-                    || workspaceRegex.test(resourcePath);
-                }
-              }
-            }
-          ] : [],
           {
             test: /\.[cm]?tsx?$/,
             loader: "@ngtools/webpack",
@@ -484,12 +491,6 @@ export class SdCliClientBuilder extends EventEmitter {
               }
             ]
           },
-          ...watch ? [
-            {
-              loader: HmrLoader,
-              include: [mainFilePath]
-            }
-          ] : [],
           {
             test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip|pfx|pkl)$/,
             type: "asset/resource"
@@ -500,13 +501,17 @@ export class SdCliClientBuilder extends EventEmitter {
         new NodePolyfillPlugin(),
         new NamedChunksPlugin(),
         new DedupeModuleResolvePlugin(),
-        /*new webpack.ProgressPlugin({
+        new webpack.ProgressPlugin({
           handler: (per: number, msg: string, ...args: string[]) => {
             const phaseText = msg ? ` - phase: ${msg}` : "";
             const argsText = args.length > 0 ? ` - args: [${args.join(", ")}]` : "";
-            this._logger.debug(`Webpack 빌드 수행중...(${Math.round(per * 100)}%)${phaseText}${argsText}`);
+            const progressMessage = `Webpack 빌드 수행중...(${Math.round(per * 100)}%)${phaseText}${argsText}`;
+            if (progressMessage !== prevProgressMessage) {
+              prevProgressMessage = progressMessage;
+              this._logger.debug(progressMessage);
+            }
           }
-        }),*/
+        }),
         new CommonJsUsageWarnPlugin(),
         ...watch ? [] : [
           new LicenseWebpackPlugin({

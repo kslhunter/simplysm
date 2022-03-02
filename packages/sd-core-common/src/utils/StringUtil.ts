@@ -15,6 +15,49 @@ export class StringUtil {
     return hasLast ? table[type].t : table[type].f;
   }
 
+  public static replaceSpecialDefaultChar(str: string): string {
+    return str
+      .replace(/Ａ/g, "A")
+      .replace(/Ｂ/g, "B")
+      .replace(/Ｃ/g, "C")
+      .replace(/Ｄ/g, "D")
+      .replace(/Ｅ/g, "E")
+      .replace(/Ｆ/g, "F")
+      .replace(/Ｇ/g, "G")
+      .replace(/Ｈ/g, "H")
+      .replace(/Ｉ/g, "I")
+      .replace(/Ｊ/g, "J")
+      .replace(/Ｋ/g, "K")
+      .replace(/Ｌ/g, "L")
+      .replace(/Ｍ/g, "M")
+      .replace(/Ｎ/g, "N")
+      .replace(/Ｏ/g, "O")
+      .replace(/Ｐ/g, "P")
+      .replace(/Ｑ/g, "Q")
+      .replace(/Ｒ/g, "R")
+      .replace(/Ｓ/g, "S")
+      .replace(/Ｔ/g, "T")
+      .replace(/Ｕ/g, "U")
+      .replace(/Ｖ/g, "V")
+      .replace(/Ｗ/g, "W")
+      .replace(/Ｘ/g, "X")
+      .replace(/Ｙ/g, "Y")
+      .replace(/Ｚ/g, "Z")
+      .replace(/０/g, "0")
+      .replace(/１/g, "1")
+      .replace(/２/g, "2")
+      .replace(/３/g, "3")
+      .replace(/４/g, "4")
+      .replace(/５/g, "5")
+      .replace(/６/g, "6")
+      .replace(/７/g, "7")
+      .replace(/８/g, "8")
+      .replace(/９/g, "9")
+      .replace(/　/g, " ")
+      .replace(/）/g, ")")
+      .replace(/（/g, "(");
+  }
+
   public static toPascalCase(str: string): string {
     return str
       .replace(/[-_][a-z]/g, (m) => m[1].toUpperCase())
