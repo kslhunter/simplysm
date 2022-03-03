@@ -13,3 +13,10 @@ export class SdServiceEventBase<I, O> {
   public info!: I;
   public data!: O;
 }
+
+export interface ISdServiceSplitRequest {
+  uuid: string;
+  fullSize: number;
+  index: number;
+  body: string;
+}

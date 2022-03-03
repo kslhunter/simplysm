@@ -87,9 +87,13 @@ export class NodeDbContextExecutor implements IDbContextExecutor {
       throw new Error("DB에 연결되어있지 않습니다.");
     }
 
-    const result = await this._conn.executeAsync(
-      defs.map((def) => new QueryBuilder(this._conn!.config.dialect).query(def))
-    );
-    return result.map((item, i) => SdOrmUtil.parseQueryResult(item, options ? options[i] : undefined));
+    // 가져올데이터가 없는것으로 옵션 설정을 했을때, 하나의 쿼리로 한번의 요청보냄
+    if (options && options.every((item) => item == null)) {
+      return await this._conn.executeAsync([defs.map((def) => new QueryBuilder(this._conn!.config.dialect).query(def)).join("\n")]);
+    }
+    else {
+      const result = await this._conn.executeAsync(defs.map((def) => new QueryBuilder(this._conn!.config.dialect).query(def)));
+      return result.map((item, i) => SdOrmUtil.parseQueryResult(item, options ? options[i] : undefined));
+    }
   }
 }

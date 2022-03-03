@@ -1234,7 +1234,7 @@ export class Queryable<D extends DbContext, T> {
         }
         dataIndexes.push((i * 2) + 1);
       }
-      else {
+      else if (outputColumns) {
         dataIndexes.push(i);
       }
     }

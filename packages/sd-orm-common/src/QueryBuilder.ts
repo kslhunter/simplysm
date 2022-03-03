@@ -57,11 +57,11 @@ CREATE DATABASE IF NOT EXISTS ${this.wrap(def.database)};
 ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`.trim();
     }
     else if (this._dialect === "mssql") {
-      return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = '${def.database}') CREATE DATABASE ${this.wrap(def.database)}`;
+      return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = '${def.database}') CREATE DATABASE ${this.wrap(def.database)} COLLATE Korean_Wansung_CS_AS`;
     }
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     else if (this._dialect === "mssql-azure") {
-      return `IF NOT EXISTS(select * from sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)} (EDITION='Standard', SERVICE_OBJECTIVE='S0', MAXSIZE = 250 GB) WITH CATALOG_COLLATION = Korean_Wansung_CI_AS`.trim();
+      return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)} (EDITION='Standard', SERVICE_OBJECTIVE='S0', MAXSIZE = 250 GB) WITH CATALOG_COLLATION = Korean_Wansung_CS_AS`.trim();
     }
     else {
       throw new Error(`데이터베이스 생성 미지원 (${this._dialect})`);

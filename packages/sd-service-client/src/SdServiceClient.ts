@@ -1,7 +1,12 @@
 import { ISdServiceClientConnectionConfig } from "./ISdServiceClientConnectionConfig";
 import * as socketIo from "socket.io-client";
 import { JsonConvert, Type, Uuid, Wait } from "@simplysm/sd-core-common";
-import { ISdServiceRequest, ISdServiceResponse, SdServiceEventBase } from "@simplysm/sd-service-common";
+import {
+  ISdServiceRequest,
+  ISdServiceResponse,
+  ISdServiceSplitRequest,
+  SdServiceEventBase
+} from "@simplysm/sd-service-common";
 
 export class SdServiceClient {
   private _socket?: socketIo.Socket;
@@ -63,7 +68,28 @@ export class SdServiceClient {
         resolve(res.body);
       });
 
-      this._socket.emit("request", JsonConvert.stringify(req));
+      const reqText = JsonConvert.stringify(req);
+      if (reqText.length > 1000 * 1000) {
+        const splitSize = 1000 * 100;
+
+        let index = 0;
+        let currSize = 0;
+        while (currSize !== reqText.length) {
+          const splitBody = reqText.substring(currSize, currSize + splitSize - 1);
+          const splitReq: ISdServiceSplitRequest = {
+            uuid: req.uuid,
+            fullSize: reqText.length,
+            index,
+            body: splitBody
+          };
+          this._socket.emit("request-split", JsonConvert.stringify(splitReq));
+          currSize += splitBody.length;
+          index++;
+        }
+      }
+      else {
+        this._socket.emit("request", reqText);
+      }
     });
   }
 
