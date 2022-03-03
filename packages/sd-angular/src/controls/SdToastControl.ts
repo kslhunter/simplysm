@@ -32,10 +32,10 @@ import { sdThemes, TSdTheme } from "../commons";
         transform: translateY(-100%);
         border-radius: var(--border-radius-lg);
         opacity: 0;
-        @include elevation(6);
+        @include elevation(12);
 
         > ._sd-toast-message {
-          padding: var(--gap-sm) var(--gap-default);
+          padding: var(--gap-default) var(--gap-lg);
         }
 
         > ._sd-toast-progress {

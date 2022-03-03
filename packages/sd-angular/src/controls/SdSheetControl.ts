@@ -438,6 +438,7 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 
       > sd-dock-container {
         border: 1px solid $border-color-dark;
+        border-radius: var(--border-radius-default);
 
         > sd-dock { // 상단 DOCK (설정 아이콘 및 페이징)
           border-bottom: 1px solid $border-color-dark;

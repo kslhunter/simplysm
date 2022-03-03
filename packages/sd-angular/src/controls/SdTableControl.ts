@@ -75,7 +75,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       &[sd-cell-border=vertical] {
         border-bottom: none;
 
-        ::ng-deep table {
+        ::ng-deep > table {
           > * > tr > * {
             border-top: none;
           }
@@ -85,7 +85,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       &[sd-cell-border=horizontal] {
         border-right: none;
 
-        ::ng-deep table {
+        ::ng-deep > table {
           > * > tr > * {
             border-left: none;
           }

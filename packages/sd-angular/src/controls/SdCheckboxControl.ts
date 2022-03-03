@@ -51,6 +51,7 @@ import { sdThemes, TSdTheme } from "../commons";
           vertical-align: top;
           background: var(--theme-color-secondary-lightest);
           margin-top: calc(var(--gap-sm) / 2);
+          border-radius: var(--border-radius-sm);
         }
 
         > ._indicator {
