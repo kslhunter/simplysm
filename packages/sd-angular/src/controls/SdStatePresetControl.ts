@@ -60,7 +60,7 @@ import { SdToastProvider } from "../providers/SdToastProvider";
         padding: var(--gap-sm) var(--gap-default);
 
         background: var(--theme-color-grey-lightest);
-        border-radius: 4px;
+        border-radius: var(--border-radius-lg);
 
         &:hover {
           background: var(--theme-color-grey-lighter);

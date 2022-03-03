@@ -459,7 +459,7 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 
         > sd-pane[sd-display-type='sheet'] { // 하단 PANE (시트)
           z-index: 0;
-          background: var(--sd-background-color);
+          background: var(--background-color);
 
           > ._sheet { // 시트
             display: inline-block;
@@ -708,11 +708,11 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
         }
 
         > sd-pane[sd-display-type='card'] {
-          background: var(--sd-background-color);
+          background: var(--background-color);
 
           ::ng-deep ._sd-sheet-card {
             //cursor: pointer;
-            border-radius: 5px;
+            border-radius: var(--border-radius-xl);
             //@include elevation(none);
 
             &._selected {

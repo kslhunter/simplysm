@@ -17,7 +17,7 @@ import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
       white-space: nowrap;
       background: white;
       background: var(--theme-color-grey-lighter);
-      border-radius: 2px;
+      border-radius: var(--border-radius-default);
       overflow: hidden;
 
       > ._sd-progress-content {

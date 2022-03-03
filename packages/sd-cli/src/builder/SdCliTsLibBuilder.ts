@@ -117,12 +117,21 @@ export class SdCliTsLibBuilder extends EventEmitter {
       const changeFilePaths = changeInfos.filter((item) => ["add", "change", "unlink"].includes(item.event)).map((item) => item.path);
       if (changeFilePaths.length === 0) return;
 
-      this._logger.debug("파일 변경 감지", changeInfos);
+      this._logger.debug("파일 변경 감지", changeFilePaths);
       this.emit("change");
 
       this._logger.debug("변경된 파일의 캐쉬 삭제...");
       for (const changeFilePath of changeFilePaths) {
-        this._fileCache.delete(PathUtil.posix(changeFilePath));
+        const fileCache = this._fileCache.get(PathUtil.posix(changeFilePath));
+        if (fileCache) {
+          if (fileCache.importerSet) {
+            for (const importer of fileCache.importerSet.values()) {
+              this._fileCache.delete(importer);
+            }
+          }
+
+          this._fileCache.delete(PathUtil.posix(changeFilePath));
+        }
       }
 
       if (this._ngModuleGenerator) {
@@ -160,6 +169,10 @@ export class SdCliTsLibBuilder extends EventEmitter {
 
     this._logger.debug("린트...");
     buildResults.push(...await this._linter.lintAsync(relatedPaths, buildPack.program));
+
+    this._logger.debug("변경감지 대상목록 재구성...");
+    const watchRelatedPaths = await this.getAllRelatedPathsAsync();
+    watcher.add(watchRelatedPaths);
 
     this.emit("complete", buildResults);
   }
@@ -202,7 +215,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
           || (/node_modules[\\/]@simplysm[\\/]/).test(filePath)
           || workspaceRegex.test(filePath);
       });
-    const mySourceGlobPath = path.resolve(this._rootPath, "**", "+(*.js|*.cjs|*.mjs|*.ts)");
+    const mySourceGlobPath = path.resolve(this._rootPath, "**", "+(*.js|*.cjs|*.mjs|*.ts|*.scss)");
     const mySourceFilePaths = await FsUtil.globAsync(mySourceGlobPath, {
       ignore: [
         "**/node_modules/**",
@@ -419,6 +432,7 @@ interface IFileCache {
   sourceFile?: ts.SourceFile;
   content?: string;
   styleContent?: string;
+  importerSet?: Set<string>;
 }
 
 interface ISdBuildPack {

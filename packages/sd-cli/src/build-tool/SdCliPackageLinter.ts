@@ -44,6 +44,7 @@ export class SdCliPackageLinter {
     const lintFilePaths = await filePaths
       .filterAsync(async (filePath) => (
         !filePath.endsWith(".d.ts") &&
+        /\.[cm]?[tj]sx?$/.test(filePath) &&
         !(await linter.isPathIgnored(filePath))
       ));
     for (const lintFilePath of lintFilePaths) {

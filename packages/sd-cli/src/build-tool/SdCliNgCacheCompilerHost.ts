@@ -1,7 +1,7 @@
 import ts from "typescript";
 import { PathUtil } from "@simplysm/sd-core-node";
 import sass from "sass";
-import { pathToFileURL, URL } from "url";
+import { fileURLToPath, pathToFileURL, URL } from "url";
 
 export class SdCliNgCacheCompilerHost {
   public static wrap(compilerHost: ts.CompilerHost,
@@ -23,17 +23,24 @@ export class SdCliNgCacheCompilerHost {
 
       const cache = sourceFileCache.getOrCreate(PathUtil.posix(context.containingFile), {});
       if (cache.styleContent === undefined) {
-        cache.styleContent = (
-          await sass.compileStringAsync(data, {
-            url: new URL((context.containingFile as string) + ".sd.scss"),
-            importer: {
-              findFileUrl: (url) => {
-                if (!url.startsWith("~")) return pathToFileURL(url);
-                return new URL(url.substring(1), pathToFileURL("node_modules"));
-              }
+        const scssResult = await sass.compileStringAsync(data, {
+          url: new URL((context.containingFile as string) + ".sd.scss"),
+          importer: {
+            findFileUrl: (url) => {
+              if (!url.startsWith("~")) return pathToFileURL(url);
+              return new URL(url.substring(1), pathToFileURL("node_modules"));
             }
-          })
-        ).css.toString();
+          }
+        });
+
+        cache.styleContent = scssResult.css.toString();
+
+        const deps = scssResult.loadedUrls.slice(1).map((item) => PathUtil.posix(fileURLToPath(item.href)));
+        for (const dep of deps) {
+          const depCache = sourceFileCache.getOrCreate(dep, {});
+          depCache.importerSet = depCache.importerSet ?? new Set<string>();
+          depCache.importerSet.add(PathUtil.posix(context.containingFile));
+        }
       }
       return { content: cache.styleContent };
     };
@@ -47,4 +54,5 @@ interface IFileCache {
   sourceFile?: ts.SourceFile;
   content?: string;
   styleContent?: string;
+  importerSet?: Set<string>;
 }

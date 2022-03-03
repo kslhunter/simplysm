@@ -49,8 +49,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
     <div *ngIf="viewState === 'help'" class="_help sd-padding-default">
       <div class="sd-margin-bottom-default">
         <h4 class="sd-margin-bottom-xs">강조</h4>
-        <div class="sd-padding-default sd-background-grey-lightest"
-             style="border-radius: 2px;">
+        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
           <div style="font-weight: bold">**굵게**</div>
           <div style="font-style: italic;">*기울임*</div>
           <div style="text-decoration: line-through;">~~취소선~~</div>
@@ -59,8 +58,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
       <div class="sd-margin-bottom-default">
         <h4 class="sd-margin-bottom-xs">헤더</h4>
-        <div class="sd-padding-default sd-background-grey-lightest"
-             style="border-radius: 2px;">
+        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
           <h1># 헤더 1</h1>
           <h2>## 헤더 2</h2>
           <h3>### 헤더 3</h3>
@@ -70,8 +68,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
       <div class="sd-margin-bottom-default">
         <h4 class="sd-margin-bottom-xs">목록</h4>
-        <div class="sd-padding-default sd-background-grey-lightest"
-             style="border-radius: 2px;">
+        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
           <div>* 일반목록 항목</div>
           <div>* 일반목록 항목</div>
           <br/>
@@ -82,16 +79,14 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
       <div class="sd-margin-bottom-default">
         <h4 class="sd-margin-bottom-xs">링크</h4>
-        <div class="sd-padding-default sd-background-grey-lightest"
-             style="border-radius: 2px;">
+        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
           [보여줄텍스트](http://www.example.com)
         </div>
       </div>
 
       <div class="sd-margin-bottom-default">
         <h4 class="sd-margin-bottom-xs">참조</h4>
-        <div class="sd-padding-default sd-background-grey-lightest"
-             style="border-radius: 2px;">
+        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
           > 참조입니다.<br/>
           > 여러줄을 적을 수 있습니다.
         </div>
@@ -99,16 +94,14 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
       <div class="sd-margin-bottom-default">
         <h4 class="sd-margin-bottom-xs">이미지</h4>
-        <div class="sd-padding-default sd-background-grey-lightest"
-             style="border-radius: 2px;">
+        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
           ![이미지타이틀](http://www.example.com/image.jpg)
         </div>
       </div>
 
       <div class="sd-margin-bottom-default">
         <h4 class="sd-margin-bottom-xs">표</h4>
-        <div class="sd-padding-default sd-background-grey-lightest"
-             style="border-radius: 2px;">
+        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
           | 컬럼 1 | 컬럼 2 | 컬럼 3 |<br/>
           | - | - | - |<br/>
           | 홍 | 길동 | 남성 |<br/>
@@ -118,8 +111,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
       <div class="sd-margin-bottom-default">
         <h4 class="sd-margin-bottom-xs">코드</h4>
-        <div class="sd-padding-default sd-background-grey-lightest"
-             style="border-radius: 2px;">
+        <div class="sd-padding-default sd-background-grey-lightest sd-border-radius-default">
           \`var example = "hello!";\`<br/>
           <br/>
           여러줄일 경우, 아래와 같이...<br/>
@@ -141,7 +133,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
       > ._toolbar {
         display: block;
-        border: 1px solid var(--sd-border-color);
+        border: 1px solid var(--border-color);
         border-bottom: none;
         text-align: right;
 
@@ -187,7 +179,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
         position: relative;
         width: 100%;
         height: 100%;
-        border: 1px solid var(--sd-border-color);
+        border: 1px solid var(--border-color);
 
         > textarea {
           @include form-control-base();
@@ -239,7 +231,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
         overflow: auto;
         background: white;
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) + 2px);
-        border: 1px solid var(--sd-border-color);
+        border: 1px solid var(--border-color);
 
         ::ng-deep {
           ol, ul {
@@ -249,13 +241,13 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
           code {
             background: rgba(0, 0, 0, .05);
-            border-radius: 2px;
+            border-radius: var(--border-radius-default);
           }
 
           pre {
             background: rgba(0, 0, 0, .05);
             padding: var(--gap-sm) var(--gap-default);
-            border-radius: 2px;
+            border-radius: var(--border-radius-default);
             white-space: pre-wrap;
 
             > code {
@@ -272,7 +264,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
       > ._help {
         padding: var(--gap-sm);
-        border: 1px solid var(--sd-border-color);
+        border: 1px solid var(--border-color);
         height: 100%;
         overflow: auto;
         background: white;

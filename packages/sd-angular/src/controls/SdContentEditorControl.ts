@@ -38,8 +38,8 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
         white-space: pre-wrap;
 
         background: var(--theme-color-secondary-lightest);
-        border: 1px solid var(--sd-border-color);
-        border-radius: 2px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-default);
 
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 

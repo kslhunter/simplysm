@@ -71,7 +71,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
         > div {
           > ._resize-bar {
             position: absolute;
-            background: var(--sd-border-color);
+            background: var(--border-color);
           }
         }
 

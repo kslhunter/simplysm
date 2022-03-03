@@ -23,7 +23,7 @@ import { ISdResizeEvent } from "@simplysm/sd-core-browser";
       min-width: 120px;
       @include elevation(6);
       overflow: hidden;
-      border-radius: 2px;
+      border-radius: var(--border-radius-default);
       //padding-top: 2px;
       //padding-bottom: 2px;
 
@@ -40,7 +40,7 @@ import { ISdResizeEvent } from "@simplysm/sd-core-browser";
 
       @media screen and (max-width: 520px) {
         @include elevation(0);
-        border: 1px solid var(--sd-border-color);
+        border: 1px solid var(--border-color);
       }
     }
   `]

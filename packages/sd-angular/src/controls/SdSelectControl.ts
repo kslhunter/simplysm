@@ -106,13 +106,13 @@ import { SdDropdownControl } from "./SdDropdownControl";
         padding-right: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px) !important;
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
-        border: 1px solid var(--sd-border-color);
+        border: 1px solid var(--border-color);
         transition: outline-color .1s linear;
         outline: 1px solid transparent;
         outline-offset: -1px;
         cursor: pointer;
 
-        border-radius: 2px;
+        border-radius: var(--border-radius-default);
 
         > div:first-child {
           overflow: visible;

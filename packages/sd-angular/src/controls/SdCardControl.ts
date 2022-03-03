@@ -11,7 +11,7 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
     :host {
       display: block;
       background: white;
-      border-radius: var(--gap-xs);
+      border-radius: var(--border-radius-default);
       @include elevation(2);
       overflow: hidden;
     }
@@ -19,3 +19,4 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 })
 export class SdCardControl {
 }
+

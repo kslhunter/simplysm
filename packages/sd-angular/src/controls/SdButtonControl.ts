@@ -23,8 +23,8 @@ import { sdThemes, TSdTheme } from "../commons";
         padding: var(--gap-sm) var(--gap-lg);
 
         background: white;
-        border-color: var(--sd-border-color);
-        border-radius: 2px;
+        border-color: var(--border-color);
+        border-radius: var(--border-radius-default);
 
         font-weight: bold;
         text-align: center;

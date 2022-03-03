@@ -116,20 +116,28 @@
   --gap-xl: 12px;
   --gap-xxl: 18px;
 
+  // BORDER STYLE
+  --border-color-light: var(--theme-color-grey-lighter);
+  --border-color: var(--theme-color-grey-light);
+  --border-color-dark: var(--theme-color-grey-default);
+  --border-color-darker: var(--theme-color-grey-dark);
+
+  // BORDER RADIUS STYLE
+  --border-radius-sm: var(--gap-xs);
+  --border-radius-default: var(--gap-sm);
+  --border-radius-lg: var(--gap-default);
+  --border-radius-xl: var(--gap-lg);
+
   // DEFAULT STYLES
-  --sd-background-color: var(--theme-color-grey-lightest);
-  --sd-border-color-light: var(--theme-color-grey-lighter);
-  --sd-border-color: var(--theme-color-grey-light);
-  --sd-border-color-dark: var(--theme-color-grey-default);
-  --sd-border-color-darker: var(--theme-color-grey-dark);
-  --sd-sheet-padding-v: var(--gap-xs);
-  --sd-sheet-padding-h: var(--gap-sm);
+  --background-color: var(--theme-color-grey-lightest);
 
   // CONTROL STYLES
   --sd-sidebar-width: 180px;
   --sd-topbar-height-sm: 32px;
   --sd-topbar-height: 36px;
   --sd-topbar-height-lg: 42px;
+  --sd-sheet-padding-v: var(--gap-xs);
+  --sd-sheet-padding-h: var(--gap-sm);
 
   // Z-INDEX
   --z-index-toast: 9999;

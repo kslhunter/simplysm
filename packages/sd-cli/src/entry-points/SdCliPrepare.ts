@@ -38,7 +38,7 @@ export class SdCliPrepare {
                 if (node.hasChildPerformanceWarning) {
                     node.parent.hasChildPerformanceWarning = true;
                 }
-                else if (usage.user + usage.system > 2000 * 1000 && node.kind !== 253) {
+                else if (usage.user + usage.system > 1000 * 1000 && node.kind !== 253) {
                     error(node, {
                         code: 9000,
                         category: ts.DiagnosticCategory.Warning,

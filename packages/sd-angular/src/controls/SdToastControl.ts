@@ -30,7 +30,7 @@ import { sdThemes, TSdTheme } from "../commons";
         text-align: left;
         color: white;
         transform: translateY(-100%);
-        border-radius: 4px;
+        border-radius: var(--border-radius-lg);
         opacity: 0;
         @include elevation(6);
 
@@ -41,7 +41,7 @@ import { sdThemes, TSdTheme } from "../commons";
         > ._sd-toast-progress {
           background: var(--theme-color-grey-default);
           height: 4px;
-          border-radius: 4px;
+          border-radius: var(--border-radius-lg);
 
           > ._sd-toast-progress-bar {
             height: 4px;

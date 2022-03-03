@@ -20,7 +20,7 @@ html, body {
 }
 
 body {
-  background: var(--sd-background-color);
+  background: var(--background-color);
   color: var(--text-brightness-default);
   font-family: var(--font-family);
   font-size: var(--font-size-default);
@@ -31,7 +31,7 @@ body {
 hr {
   border: none;
   height: 1px;
-  background-color: var(--sd-border-color-light);
+  background-color: var(--border-color-light);
 }
 
 p {
@@ -74,7 +74,7 @@ sub{
   margin-top: var(--gap-default);
   margin-bottom: var(--gap-default);
   padding-bottom: var(--gap-xxs);
-  border-bottom: 1px solid var(--sd-border-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .sd-help {
@@ -129,7 +129,7 @@ sub{
 }
 
 .sd-background-default {
-  background-color: var(--sd-background-color) !important;
+  background-color: var(--background-color) !important;
 }
 
 // TEXT COLOR
@@ -292,13 +292,13 @@ sub{
 
 // BORDER_RADIUS
 .sd-border-radius-default {
-  border-radius: var(--gap-xs) !important;
+  border-radius: var(--border-radius-default) !important;
 }
 
 .sd-border-radius-lg {
-  border-radius: var(--gap-sm) !important;
+  border-radius: var(--border-radius-lg) !important;
 }
 
 .sd-border-radius-xl {
-  border-radius: var(--gap-default) !important;
+  border-radius: var(--border-radius-xl) !important;
 }
