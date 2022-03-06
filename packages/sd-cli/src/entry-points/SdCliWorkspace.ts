@@ -191,7 +191,7 @@ export class SdCliWorkspace {
     }
     catch (err) {
       this._loggingResults(totalResultMap);
-      throw new err;
+      throw err;
     }
   }
 

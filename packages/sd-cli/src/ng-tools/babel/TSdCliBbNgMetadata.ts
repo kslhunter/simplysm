@@ -27,13 +27,13 @@ export class SdCliBbNgModuleMetadata {
 
     const argObjMeta = this._fileMeta.getNgDecoArg(this._className);
 
-    const expVal = argObjMeta.getPropValue("exports") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵmod", "exports");
+    const expVal = argObjMeta?.getPropValue("exports") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵmod", "exports");
     if (expVal !== undefined) {
       const expMetas = this._getExportAndProviderMetas(expVal);
       result.exports.push(...expMetas);
     }
 
-    const provVal = argObjMeta.getPropValue("providers") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵmod", "providers");
+    const provVal = argObjMeta?.getPropValue("providers") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵmod", "providers");
     if (provVal !== undefined) {
       const provMetas = this._getExportAndProviderMetas(provVal);
       result.providers.push(...provMetas);
@@ -140,7 +140,7 @@ export class SdCliBbNgDirectiveMetadata {
     if (this._selectorCache !== undefined) return this._selectorCache;
 
     const argObjMeta = this._fileMeta.getNgDecoArg(this._className);
-    const val = argObjMeta.getPropValue("selector") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵdir", "selector");
+    const val = argObjMeta?.getPropValue("selector") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵdir", "selector");
     if (typeof val === "string") {
       this._selectorCache = val;
       return this._selectorCache;
@@ -162,7 +162,7 @@ export class SdCliBbNgComponentMetadata {
     if (this._selectorCache !== undefined) return this._selectorCache;
 
     const argObjMeta = this._fileMeta.getNgDecoArg(this._className);
-    const val = argObjMeta.getPropValue("selector") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵcmp", "selector");
+    const val = argObjMeta?.getPropValue("selector") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵcmp", "selector");
     if (typeof val === "string") {
       this._selectorCache = val;
       return this._selectorCache;
@@ -184,7 +184,7 @@ export class SdCliBbNgPipeMetadata {
     if (this._pipeNameCache !== undefined) return this._pipeNameCache;
 
     const argObjMeta = this._fileMeta.getNgDecoArg(this._className);
-    const val = argObjMeta.getPropValue("name") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵpipe", "name");
+    const val = argObjMeta?.getPropValue("name") ?? this._fileMeta.getNgDecoPropValue(this._className, "ɵpipe", "name");
     if (typeof val === "string") {
       this._pipeNameCache = val;
       return val;

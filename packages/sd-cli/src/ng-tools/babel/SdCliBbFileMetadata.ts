@@ -441,9 +441,9 @@ export class SdCliBbFileMetadata {
     throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
   }
 
-  private readonly _getNgDecoArgCache = new Map<string, SdCliBbObjectMetadata>();
+  private readonly _getNgDecoArgCache = new Map<string, SdCliBbObjectMetadata | undefined>();
 
-  public getNgDecoArg(className: string): SdCliBbObjectMetadata {
+  public getNgDecoArg(className: string): SdCliBbObjectMetadata | undefined {
     if (this._getNgDecoArgCache.has(className)) {
       return this._getNgDecoArgCache.get(className)!;
     }
@@ -529,9 +529,9 @@ export class SdCliBbFileMetadata {
       }
     });
 
-    if (result === undefined) {
-      throw new NeverEntryError(this.filePath + "," + className);
-    }
+    // if (result === undefined) {
+    //   throw new NeverEntryError(this.filePath + "," + className);
+    // }
 
     this._getNgDecoArgCache.set(className, result);
     return result;
