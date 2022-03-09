@@ -84,7 +84,7 @@ import { sdThemes, TSdTheme } from "../commons";
 
       @media screen and (max-width: 520px) {
         > ._sd-toast-block {
-          @include elevation(0);
+          //@include elevation(0);
           border-radius: calc(var(--line-height) / 2);
 
           transform: translateY(100%);

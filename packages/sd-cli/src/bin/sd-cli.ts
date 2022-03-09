@@ -8,6 +8,7 @@ import { SdCliLocalUpdate } from "../entry-points/SdCliLocalUpdate";
 import { SdCliNpm } from "../entry-points/SdCliNpm";
 import { SdCliPrepare } from "../entry-points/SdCliPrepare";
 import { SdCliFileCrypto } from "../entry-points/SdCliFileCrypto";
+import { SdCliCordova } from "../build-tool/SdCliCordova";
 
 Error.stackTraceLimit = Infinity;
 
@@ -62,6 +63,26 @@ const argv = yargs(hideBin(process.argv))
           array: true,
           describe: "수행할 패키지 설정"
         }
+      })
+  )
+  .command(
+    "run-device <cordovaPath> <platform> <url>",
+    "변경감지중인 플랫폼을 디바이스에 앱 형태로 띄웁니다.",
+    (cmd) => cmd
+      .positional("cordovaPath", {
+        type: "string",
+        describe: "CORDOVA 프로젝트 경로",
+        demandOption: true
+      })
+      .positional("platform", {
+        type: "string",
+        describe: "빌드 플랫폼(android,...)",
+        demandOption: true
+      })
+      .positional("url", {
+        type: "string",
+        describe: "Webview로 오픈할 URL",
+        demandOption: true
       })
   )
   .command(
@@ -170,6 +191,13 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
         optNames: argv.options ?? [],
         pkgs: argv.packages ?? []
       });
+  }
+  else if (argv._[0] === "run-device") {
+    await SdCliCordova.runWebviewOnDeviceAsync(
+      argv.cordovaPath,
+      argv.platform as "browser" | "ios" | "android" | "windows",
+      argv.url
+    );
   }
   else if (argv._[0] === "build") {
     await new SdCliWorkspace(process.cwd())

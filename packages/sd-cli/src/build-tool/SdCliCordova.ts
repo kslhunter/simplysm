@@ -95,20 +95,30 @@ export class SdCliCordova {
     }
 
     // CONFIG: ANDROID usesCleartextTraffic 설정
-    // if (this._config.targets.includes("android")) {
-    //   if (!configFileContent.includes("xmlns:android=\"http://schemas.android.com/apk/res/android\"")) {
-    //     configFileContent = configFileContent.replace(
-    //       "xmlns=\"http://www.w3.org/ns/widgets\"",
-    //       `xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android"`
-    //     );
-    //   }
-    //   if (!configFileContent.includes("application android:usesCleartextTraffic=\"true\" />")) {
-    //     configFileContent = configFileContent.replace("<platform name=\"android\">", `<platform name="android">
-    //     <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
-    //         <application android:usesCleartextTraffic="true" />
-    //     </edit-config>`);
-    //   }
-    // }
+    if (this._config.platforms.includes("android")) {
+      if (!configFileContent.includes("xmlns:android=\"http://schemas.android.com/apk/res/android\"")) {
+        configFileContent = configFileContent.replace(
+          "xmlns=\"http://www.w3.org/ns/widgets\"",
+          `xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android"`
+        );
+      }
+      if (!configFileContent.includes("application android:usesCleartextTraffic=\"true\" />")) {
+        if (configFileContent.includes("<platform name=\"android\">")) {
+          configFileContent = configFileContent.replace("<platform name=\"android\">", `<platform name="android">
+      <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+          <application android:usesCleartextTraffic="true" />
+      </edit-config>`);
+        }
+        else {
+          configFileContent = configFileContent.replace("<content src=\"index.html\" />", `<content src="index.html" />
+    <platform name="android">
+      <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+          <application android:usesCleartextTraffic="true" />
+      </edit-config>
+    </platform>`);
+        }
+      }
+    }
 
     // CONFIG: 파일쓰기
     await FsUtil.writeFileAsync(configFilePath, configFileContent);
