@@ -125,6 +125,8 @@ export class SdCliCordova {
   }
 
   public async buildAsync(outPath: string): Promise<void> {
+    const packageType = this._config.buildOption?.bundle ? "bundle" : "apk";
+
     // ANDROID 서명 처리
     if (this._config.buildOption?.sign?.android) {
       await FsUtil.copyAsync(
@@ -140,7 +142,8 @@ export class SdCliCordova {
               storePassword: this._config.buildOption.sign.android.storePassword,
               alias: this._config.buildOption.sign.android.alias,
               password: this._config.buildOption.sign.android.password,
-              keystoreType: this._config.buildOption.sign.android.keystoreType
+              keystoreType: this._config.buildOption.sign.android.keystoreType,
+              packageType
             }
           }
         }
@@ -163,7 +166,6 @@ export class SdCliCordova {
 
     // 실행
     const buildType = this._config.buildOption?.debug ? "debug" : "release";
-    const packageType = this._config.buildOption?.bundle ? "bundle" : "apk";
     for (const platform of this.platforms) {
       await this._execAsync(`${this._binPath} build ${platform} --${buildType} --packageType=${packageType}`, this.cordovaPath);
     }
