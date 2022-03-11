@@ -37,6 +37,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
   private readonly _npmConfigMap = new Map<string, INpmConfig>();
 
   private readonly _isAngular: boolean;
+  private readonly _hasAngularRoute: boolean;
 
   public constructor(private readonly _rootPath: string,
                      private readonly _config: ISdCliLibPackageConfig,
@@ -52,6 +53,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
 
     // isAngular
     this._isAngular = SdCliNpmConfigUtil.getDependencies(npmConfig).defaults.includes("@angular/core");
+    this._hasAngularRoute = SdCliNpmConfigUtil.getDependencies(npmConfig).defaults.includes("@angular/router");
 
     // tsconfig
     this._tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
@@ -71,11 +73,11 @@ export class SdCliTsLibBuilder extends EventEmitter {
         "print-templates",
         "toasts",
         "AppPage"
-      ], {
+      ], this._hasAngularRoute ? {
         glob: "**/*Page.ts",
         fileEndsWith: "Page",
         rootClassName: "AppPage"
-      });
+      } : undefined);
     }
 
     // index 생성기 초기화

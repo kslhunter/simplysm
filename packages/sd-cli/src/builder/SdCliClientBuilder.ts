@@ -34,6 +34,7 @@ import { augmentAppWithServiceWorker } from "@angular-devkit/build-angular/src/u
 import { StringUtil } from "@simplysm/sd-core-common";
 import { SdCliNgModuleGenerator } from "../ng-tools/SdCliNgModuleGenerator";
 import { SdCliCordova } from "../build-tool/SdCliCordova";
+import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
 import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
@@ -45,6 +46,8 @@ export class SdCliClientBuilder extends EventEmitter {
   private readonly _ngModuleGenerator: SdCliNgModuleGenerator;
 
   private readonly _cordova?: SdCliCordova;
+
+  private readonly _hasAngularRoute: boolean;
 
   public constructor(private readonly _rootPath: string,
                      private readonly _config: ISdCliClientPackageConfig,
@@ -59,6 +62,9 @@ export class SdCliClientBuilder extends EventEmitter {
     const tsconfig = FsUtil.readJson(this._tsconfigFilePath) as ITsconfig;
     this._parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._rootPath, tsconfig.angularCompilerOptions);
 
+    // isAngular
+    this._hasAngularRoute = SdCliNpmConfigUtil.getDependencies(npmConfig).defaults.includes("@angular/router");
+
     // NgModule 생성기 초기화
     this._ngModuleGenerator = new SdCliNgModuleGenerator(this._rootPath, [
       "controls",
@@ -71,11 +77,11 @@ export class SdCliClientBuilder extends EventEmitter {
       "print-templates",
       "toasts",
       "AppPage"
-    ], {
+    ], this._hasAngularRoute ? {
       glob: "**/*Page.ts",
       fileEndsWith: "Page",
       rootClassName: "AppPage"
-    });
+    } : undefined);
 
     // CORDOVA
     if (this._config.cordova) {

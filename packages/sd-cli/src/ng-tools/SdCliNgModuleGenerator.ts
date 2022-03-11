@@ -63,7 +63,7 @@ export class SdCliNgModuleGenerator {
   public async runAsync(): Promise<void> {
     this._logger.debug("Babel NgModule 정의 가져오기...");
     const bbNgModules = this._getBbNgModuleDefs();
-    
+
     this._logger.debug("NgModule Preset 구성...");
     const tsPreset = this._getTsGenNgModulePreset();
 
