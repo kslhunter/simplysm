@@ -27,7 +27,7 @@ export class SdMobileFsUtil {
   private static async _getFileEntryByPathAsync(filePath: string, createDir: boolean, createFile: boolean): Promise<FileEntry> {
     const split = filePath.replace(/^[\\\/]/g, "").split(/[\\\/]/);
     const currDirEntity = await this._getDirEntryByPathArrAsync(split.slice(0, -1), createDir);
-    return await this._getFileEntryAsync(currDirEntity, split.last()!, createFile);
+    return await this._getFileEntryAsync(currDirEntity, split[split.length - 1]!, createFile);
   }
 
   private static async _getDirEntryByPathArrAsync(pathArr: string[], create: boolean): Promise<DirectoryEntry> {

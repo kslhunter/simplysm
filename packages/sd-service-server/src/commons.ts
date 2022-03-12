@@ -7,7 +7,7 @@ import { ISdServiceRequest } from "@simplysm/sd-service-common";
 export interface ISdServiceServerOptions {
   rootPath: string;
   services: Type<SdServiceBase>[];
-  port: number;
+  port: number | string;
   middlewares?: NextHandleFunction[];
   ssl?: {
     pfxBuffer: Buffer | (() => (Promise<Buffer> | Buffer));

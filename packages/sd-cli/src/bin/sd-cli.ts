@@ -195,7 +195,7 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
   else if (argv._[0] === "run-device") {
     await SdCliCordova.runWebviewOnDeviceAsync(
       argv.cordovaPath,
-      argv.platform as "browser" | "ios" | "android" | "windows",
+      argv.platform as "browser" | "ios" | "android" | "electron",
       argv.url
     );
   }

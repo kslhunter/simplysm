@@ -1,22 +1,22 @@
 {
-  "name": "@simplysm/sd-orm-common",
+  "name": "@simplysm/sd-cordova",
   "version": "7.0.76",
-  "description": "심플리즘 패키지 - ORM 모듈 (common)",
+  "description": "심플리즘 패키지 - CORDOVA 모듈 (browser)",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm7.git",
-    "directory": "packages/sd-orm-common"
+    "directory": "packages/sd-cordova"
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
   "sideEffects": false,
   "engines": {
     "node": "^16"
   },
-  "dependencies": {
-    "@simplysm/sd-core-common": "7.0.76"
+  "devDependencies": {
+    "cordova-plugin-file": "^6.0.2"
   }
 }

@@ -1,6 +1,7 @@
 export interface INpmConfig {
   name: string;
   version: string;
+  type?: "module";
   workspaces?: string[];
   main?: string;
   types?: string;
@@ -56,7 +57,6 @@ export interface ISdCliServerPackageConfig {
   env?: Record<string, string>;
   configs?: Record<string, any>;
   pm2?: Record<string, any> | boolean;
-  iis?: { serverExeFilePath?: string } | boolean;
   externalNodeModules?: string[];
   publish?: TSdCliPublishConfig;
 }
@@ -107,4 +107,4 @@ export interface ISdCliClientPackageCordovaConfig {
   };
 }
 
-export type TSdCliCordovaPlatform = "browser" | "ios" | "android" | "windows";
+export type TSdCliCordovaPlatform = "browser" | "ios" | "android" | "electron";

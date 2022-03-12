@@ -5,7 +5,7 @@ export class SdAutoUpdateManager {
   public constructor(private readonly _serviceClient: SdServiceClient,
                      private readonly _clientName: string,
                      private readonly _platform: string,
-                     private readonly _currentVersion: string,
+                     private readonly _currentVersion: string | undefined,
                      private readonly _logger: (message: string, subMessages: string[]) => void,
                      private readonly _fs: {
                        writeFileAsync: (filePath: string, blob: Blob) => Promise<void>;
@@ -28,7 +28,7 @@ export class SdAutoUpdateManager {
     if (lastVersion !== undefined && (lastInstalledVersion === undefined || lastVersion !== lastInstalledVersion)) {
       this._logger("최신버전 파일 다운로드중...", []);
       // 서버에서 "[lastVersion]"파일을 버퍼로 저장
-      const buffer = await this._getVersionZipButton(lastVersion);
+      const buffer = await this._getVersionZipBuffer(lastVersion);
 
       // "buffer"에 있는것을 "/root/[lastVersion]"에 압축풀기
       const zip = await new JSZip().loadAsync(buffer);
@@ -58,12 +58,12 @@ export class SdAutoUpdateManager {
     }
   }
 
-  private async _getVersionZipButton(version: string): Promise<Buffer> {
-    return await this._serviceClient.sendAsync("MobileAutoUpdateService", "getVersionZipBufferAsync", [this._clientName, this._platform, version]);
+  private async _getVersionZipBuffer(version: string): Promise<Buffer> {
+    return await this._serviceClient.sendAsync("AutoUpdateService", "getVersionZipBufferAsync", [this._clientName, this._platform, version]);
   }
 
   private async _getLastVersion(): Promise<string | undefined> {
-    return await this._serviceClient.sendAsync("MobileAutoUpdateService", "getLastVersionAsync", [this._clientName, this._platform]);
+    return await this._serviceClient.sendAsync("AutoUpdateService", "getLastVersionAsync", [this._clientName, this._platform]);
   }
 
   private async _getLastInstalledVersion(): Promise<string | undefined> {

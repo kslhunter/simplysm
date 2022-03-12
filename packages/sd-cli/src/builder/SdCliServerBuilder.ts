@@ -102,9 +102,6 @@ export class SdCliServerBuilder extends EventEmitter {
     // pm2.json 파일 쓰기
     await this._writeDistPm2ConfigFileAsync();
 
-    // iis 파일 쓰기
-    await this._writeDistIisConfigFileAsync();
-
     // 배포용 package.json 파일 생성
     await this._writeDistNpmConfigFileAsync(extModules.filter((item) => item.exists).map((item) => item.name));
 
@@ -153,36 +150,6 @@ export class SdCliServerBuilder extends EventEmitter {
         2
       )
     );
-  }
-
-  private async _writeDistIisConfigFileAsync(): Promise<void> {
-    if (this._config.iis === undefined || this._config.iis === false) return;
-
-    const iisDistPath = path.resolve(this._parsedTsconfig.options.outDir!, "web.config");
-    const serverExeFilePath = (this._config.iis !== true && "serverExeFilePath" in this._config.iis)
-      ? (this._config.iis.serverExeFilePath ?? "C:\\Program Files\\nodejs\\node.exe")
-      : "C:\\Program Files\\nodejs\\node.exe";
-    await FsUtil.writeFileAsync(iisDistPath, `
-<configuration>
-  <system.webServer>
-    <webSocket enabled="false" />
-    <handlers>
-      <add name="iisnode" path="main.js" verb="*" modules="iisnode" />
-    </handlers>
-    <iisnode nodeProcessCommandLine="${serverExeFilePath}"
-             watchedFiles="web.config;*.js"
-             loggingEnabled="true"
-             devErrorsEnabled="true" />
-    <rewrite>
-      <rules>
-        <rule name="main">
-          <action type="Rewrite" url="main.mjs" />
-        </rule>
-      </rules>
-    </rewrite>
-    <httpErrors errorMode="Detailed" />
-  </system.webServer>
-</configuration>`.trim());
   }
 
   private async _writeDistNpmConfigFileAsync(deps: string[]): Promise<void> {

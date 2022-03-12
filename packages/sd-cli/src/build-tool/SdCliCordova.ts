@@ -231,6 +231,6 @@ export class SdCliCordova {
     await FsUtil.writeFileAsync(configFilePath, configFileContent);
 
     const binPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
-    await SdProcess.spawnAsync(`${binPath} run ${platform} --device`, { cwd: cordovaPath });
+    await SdProcess.spawnAsync(`${binPath} run ${platform} --device`, { cwd: cordovaPath }, true);
   }
 }

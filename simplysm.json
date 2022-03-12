@@ -22,6 +22,11 @@
       },
       "publish": "npm"
     },
+    "sd-cordova": {
+      "type": "library",
+      "autoIndex": {},
+      "publish": "npm"
+    },
     "sd-cli": {
       "type": "library",
       "autoIndex": {},
