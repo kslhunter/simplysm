@@ -59,7 +59,7 @@ export class SdAutoUpdateManager {
   }
 
   private async _getVersionZipBuffer(version: string): Promise<Buffer> {
-    return await this._serviceClient.sendAsync("AutoUpdateService", "getVersionZipBufferAsync", [this._clientName, this._platform, version]);
+    return await this._serviceClient.sendAsync("AutoUpdateService", "getVersionArchiveBufferAsync", [this._clientName, this._platform, version]);
   }
 
   private async _getLastVersion(): Promise<string | undefined> {

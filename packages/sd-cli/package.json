@@ -56,8 +56,7 @@
     "@simplysm/sd-core-node": "7.0.79",
     "@simplysm/sd-service-common": "7.0.79",
     "@simplysm/sd-service-server": "7.0.79",
-    "@simplysm/sd-storage": "7.0.79",
-    "asar": "^3.1.0"
+    "@simplysm/sd-storage": "7.0.79"
   },
   "devDependencies": {
     "@types/semver": "^7.3.9",

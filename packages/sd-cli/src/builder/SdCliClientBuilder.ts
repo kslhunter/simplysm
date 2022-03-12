@@ -248,7 +248,7 @@ export class SdCliClientBuilder extends EventEmitter {
     const ngVersion = this._getNpmConfig(FsUtil.findAllParentChildDirPaths("node_modules/@angular/core", this._rootPath, this._workspaceRootPath)[0])!.version;
 
     const pkgKey = npmConfig.name.split("/").last()!;
-    const publicPath = (this._cordova && !watch) ? `/` : `/${pkgKey}/`;
+    const publicPath = (this._cordova && !watch) ? `` : `/${pkgKey}/`;
 
     const cacheBasePath = path.resolve(this._rootPath, ".cache");
     const cachePath = path.resolve(cacheBasePath, pkgVersion);

@@ -3,7 +3,6 @@ import * as path from "path";
 import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
 import { NotImplementError } from "@simplysm/sd-core-common";
 import JSZip from "jszip";
-import asar from "asar";
 
 export class SdCliCordova {
   protected readonly _logger: Logger;
@@ -186,11 +185,11 @@ export class SdCliCordova {
         const latestDistFileName = `${this._config.appName} Setup latest.exe`;
         await FsUtil.mkdirsAsync(targetOutPath);
         await FsUtil.copyAsync(
-          path.resolve(this.cordovaPath, "platforms/electron/build/", buildType, outFileName),
+          path.resolve(this.cordovaPath, "platforms/electron/build/", outFileName),
           path.resolve(targetOutPath, distFileName)
         );
         await FsUtil.copyAsync(
-          path.resolve(this.cordovaPath, "platforms/electron/build/", buildType, outFileName),
+          path.resolve(this.cordovaPath, "platforms/electron/build/", outFileName),
           path.resolve(targetOutPath, latestDistFileName)
         );
       }
@@ -216,11 +215,6 @@ export class SdCliCordova {
       const resultBuffer = await zip.generateAsync({ type: "nodebuffer" });
 
       await FsUtil.writeFileAsync(path.resolve(outPath, "updates/", zipFileName), resultBuffer);
-    }
-
-    if (this.platforms.includes("electron")) {
-      const distFileName = path.basename(`${this._config.appName}-v${this._npmConfig.version}.asar`);
-      await asar.createPackage(path.resolve(this.cordovaPath, "www"), path.resolve(outPath, "updates/", distFileName));
     }
   }
 
