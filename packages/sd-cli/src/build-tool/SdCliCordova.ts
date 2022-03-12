@@ -3,6 +3,7 @@ import * as path from "path";
 import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
 import { NotImplementError } from "@simplysm/sd-core-common";
 import JSZip from "jszip";
+import asar from "asar";
 
 export class SdCliCordova {
   protected readonly _logger: Logger;
@@ -187,27 +188,49 @@ export class SdCliCordova {
           path.resolve(targetOutPath, latestDistApkFileName)
         );
       }
+      else if (platform === "electron") {
+        const targetOutPath = path.resolve(outPath, platform);
+        const outFileName = `${this._config.appName} Setup ${this._npmConfig.version}.exe`;
+        const distFileName = outFileName;
+        const latestDistFileName = `${this._config.appName} Setup latest.exe`;
+        await FsUtil.mkdirsAsync(targetOutPath);
+        await FsUtil.copyAsync(
+          path.resolve(this.cordovaPath, "platforms/electron/build/", buildType, outFileName),
+          path.resolve(targetOutPath, distFileName)
+        );
+        await FsUtil.copyAsync(
+          path.resolve(this.cordovaPath, "platforms/electron/build/", buildType, outFileName),
+          path.resolve(targetOutPath, latestDistFileName)
+        );
+      }
       else {
         throw new NotImplementError();
       }
     }
 
-    // 자동업데이트를 위한 zip 파일 쓰기
-    const zip = new JSZip();
-    const resultFiles = await FsUtil.globAsync(path.resolve(this.cordovaPath, "www", "**/*"), {
-      dot: true,
-      nodir: true
-    });
-    for (const resultFile of resultFiles) {
-      const contentBuffer = await FsUtil.readFileBufferAsync(resultFile);
-      const relativePath = path.relative(path.resolve(this.cordovaPath, "www"), resultFile);
-      zip.file("/" + relativePath, contentBuffer);
+    if (this.platforms.includes("android")) {
+      // 자동업데이트를 위한 zip 파일 쓰기
+      const zip = new JSZip();
+      const resultFiles = await FsUtil.globAsync(path.resolve(this.cordovaPath, "www", "**/*"), {
+        dot: true,
+        nodir: true
+      });
+      for (const resultFile of resultFiles) {
+        const contentBuffer = await FsUtil.readFileBufferAsync(resultFile);
+        const relativePath = path.relative(path.resolve(this.cordovaPath, "www"), resultFile);
+        zip.file("/" + relativePath, contentBuffer);
+      }
+
+      const zipFileName = path.basename(`${this._config.appName}-v${this._npmConfig.version}.zip`);
+      const resultBuffer = await zip.generateAsync({ type: "nodebuffer" });
+
+      await FsUtil.writeFileAsync(path.resolve(outPath, "updates/", zipFileName), resultBuffer);
     }
 
-    const zipFileName = path.basename(`${this._config.appName}-v${this._npmConfig.version}.zip`);
-    const resultBuffer = await zip.generateAsync({ type: "nodebuffer" });
-
-    await FsUtil.writeFileAsync(path.resolve(outPath, "updates/", zipFileName), resultBuffer);
+    if (this.platforms.includes("electron")) {
+      const distFileName = path.basename(`${this._config.appName}-v${this._npmConfig.version}.asar`);
+      await asar.createPackage(path.resolve(this.cordovaPath, "www"), path.resolve(outPath, "updates/", distFileName));
+    }
   }
 
   public static async runWebviewOnDeviceAsync(cordovaPath: string, platform: TSdCliCordovaPlatform, url: string): Promise<void> {
