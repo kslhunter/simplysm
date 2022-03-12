@@ -75,14 +75,6 @@ export class SdCliCordova {
       await FsUtil.copyAsync(path.resolve(this._rootPath, this._config.icon), path.resolve(this.cordovaPath, "res", "icon", "icon.png"));
     }
 
-    // ANDROID GRADLE 오류 강제 수정
-    // if (this._config.targets.includes("android")) {
-    //   const gradleFilePath = path.resolve(this._cordovaPath, "platforms/android/app/build.gradle");
-    //   let gradleFileContent = await FsUtil.readFileAsync(gradleFilePath);
-    //   gradleFileContent = gradleFileContent.replace(/lintOptions {/g, "lintOptions {\r\n      checkReleaseBuilds false;");
-    //   await FsUtil.writeFileAsync(gradleFilePath, gradleFileContent);
-    // }
-
     // CONFIG
     const configFilePath = path.resolve(this.cordovaPath, "config.xml");
     let configFileContent = await FsUtil.readFileAsync(configFilePath);
@@ -159,7 +151,6 @@ export class SdCliCordova {
     configFileContent = configFileContent.replace(/ {4}<allow-navigation href="[^"]*" \/>\n/g, "");
 
     // CONFIG: 접근허용 등록
-    // configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="file://data/user/*" />\n</widget>`);
     configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="*://*/*" />\n</widget>`);
 
     // CONFIG: 파일쓰기
@@ -246,8 +237,6 @@ export class SdCliCordova {
     configFileContent = configFileContent.replace(/ {4}<allow-navigation href="[^"]*" \/>\n/g, "");
 
     // CONFIG: 접근허용 등록
-    // configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="${url}" />\n</widget>`);
-    // configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="${url}/*" />\n</widget>`);
     configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="*://*/*" />\n</widget>`);
 
     // CONFIG: 파일쓰기
