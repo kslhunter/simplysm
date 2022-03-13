@@ -7,6 +7,10 @@
     ],
     "outDir": "./dist",
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@simplysm/sd-service-client": [
+        "../sd-service-client/src/index.ts"
+      ]
+    }
   }
 }

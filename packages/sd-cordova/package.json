@@ -16,6 +16,10 @@
   "engines": {
     "node": "^16"
   },
+  "dependencies": {
+    "@simplysm/sd-service-client": "7.0.79",
+    "jszip": "^3.7.1"
+  },
   "devDependencies": {
     "cordova-plugin-file": "^6.0.2"
   }
