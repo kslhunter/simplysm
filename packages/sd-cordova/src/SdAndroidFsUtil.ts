@@ -1,6 +1,6 @@
 /// <reference types="cordova-plugin-file" />
 
-export class SdMobileFsUtil {
+export class SdAndroidFsUtil {
   public static async readdirAsync(dirPath: string, option?: { noDir?: boolean; noFile?: boolean; create?: boolean }): Promise<string[]> {
     const currDirEntity = await this._getDirEntryByPathAsync(dirPath, option?.create ?? false);
     const childrenEntries = await this._getChildEntriesAsync(currDirEntity);
