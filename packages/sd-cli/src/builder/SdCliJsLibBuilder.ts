@@ -25,15 +25,15 @@ export class SdCliJsLibBuilder extends EventEmitter {
 
     const relatedPaths = await this.getRelatedPathsAsync();
     const watcher = SdFsWatcher.watch(relatedPaths);
-    watcher.onChange({}, async (changeInfos) => {
-      const changeFilePaths = changeInfos.filter((item) => ["add", "change", "unlink"].includes(item.event)).map((item) => item.path);
+    watcher.onChange({}, async (changedInfos) => {
+      const changeFilePaths = changedInfos.filter((item) => ["add", "change", "unlink"].includes(item.event)).map((item) => item.path);
       if (changeFilePaths.length === 0) return;
 
       this._logger.debug("파일 변경 감지");
       this.emit("change");
       const watchBuildResults: ISdCliPackageBuildResult[] = [];
 
-      const lintFilePaths = changeInfos.filter((item) => ["add", "change"].includes(item.event)).map((item) => item.path);
+      const lintFilePaths = changedInfos.filter((item) => ["add", "change"].includes(item.event)).map((item) => item.path);
       if (lintFilePaths.length > 0) {
         watchBuildResults.push(...await this._linter.lintAsync(lintFilePaths));
       }

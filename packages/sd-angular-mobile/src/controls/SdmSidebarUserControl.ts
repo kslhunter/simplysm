@@ -25,7 +25,7 @@ import { SdInputValidate } from "@simplysm/sd-angular";
 
       border-top-right-radius: var(--gap-lg);
       border-bottom-right-radius: var(--gap-lg);
-      border-bottom: 1px solid var(--sd-border-color);
+      border-bottom: 1px solid var(--border-color);
 
       /*border-bottom: 2px solid var(--theme-color-primary-darker);
       background: var(--theme-color-primary-default);
@@ -38,7 +38,7 @@ import { SdInputValidate } from "@simplysm/sd-angular";
         position: relative;
         border-top-right-radius: var(--gap-lg);
         border-bottom-right-radius: var(--gap-lg);
-        border-bottom: 1px solid var(--sd-border-color);
+        border-bottom: 1px solid var(--border-color);
 
         /*border-bottom: 2px solid var(--theme-color-primary-darker);
         background: var(--theme-color-primary-dark);*/

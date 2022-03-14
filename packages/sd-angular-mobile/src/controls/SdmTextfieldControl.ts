@@ -40,7 +40,7 @@ import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
         width: 100%;
         padding: calc(var(--gap-sm) + 1px) 0 calc(var(--gap-sm) - 1px);
         border: none;
-        border-bottom: 2px solid var(--sd-border-color);
+        border-bottom: 2px solid var(--border-color);
         background: transparent;
 
         font-size: var(--font-size-default);

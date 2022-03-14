@@ -115,8 +115,8 @@ export class SdCliTsLibBuilder extends EventEmitter {
     this._logger.debug("변경감지 구성...");
     const relatedPaths = await this.getAllRelatedPathsAsync();
     const watcher = SdFsWatcher.watch(relatedPaths);
-    watcher.onChange({}, async (changeInfos) => {
-      const changeFilePaths = changeInfos.filter((item) => ["add", "change", "unlink"].includes(item.event)).map((item) => item.path);
+    watcher.onChange({}, async (changedInfos) => {
+      const changeFilePaths = changedInfos.filter((item) => ["add", "change", "unlink"].includes(item.event)).map((item) => item.path);
       if (changeFilePaths.length === 0) return;
 
       this._logger.debug("파일 변경 감지", changeFilePaths);
@@ -153,7 +153,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
       this._logger.debug("린트...");
       const lintFilePaths = [
         ...watchBuildPack.affectedSourceFiles.map((item) => item.fileName),
-        ...changeInfos.filter((item) => ["add", "change"].includes(item.event)).map((item) => item.path)
+        ...changedInfos.filter((item) => ["add", "change"].includes(item.event)).map((item) => item.path)
       ];
       if (lintFilePaths.length > 0) {
         watchBuildResults.push(...await this._linter.lintAsync(lintFilePaths, watchBuildPack.program));

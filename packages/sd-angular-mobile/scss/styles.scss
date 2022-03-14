@@ -1,8 +1,8 @@
 @import "./mixins";
 
 :root {
-  --sd-background-color: white;
-  --sd-border-color: var(--theme-color-grey-lighter);
+  --background-color: white;
+  --border-color: var(--theme-color-grey-lighter);
 
   --font-size-lg: 18px;
   --font-size-default: 16px;
@@ -43,5 +43,5 @@
 .sdm-card-header {
   margin-bottom: var(--gap-sm);
   padding-bottom: var(--gap-sm);
-  border-bottom: 1px solid var(--sd-border-color);
+  border-bottom: 1px solid var(--border-color);
 }

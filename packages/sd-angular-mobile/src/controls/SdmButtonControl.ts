@@ -22,7 +22,7 @@ import { SdInputValidate } from "@simplysm/sd-angular";
         background: white;
 
         padding: var(--gap-sm) var(--gap-default);
-        border: 1px solid var(--sd-border-color);
+        border: 1px solid var(--border-color);
         border-radius: var(--gap-xs);
 
         font-size: var(--font-size-default);

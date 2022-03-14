@@ -42,8 +42,8 @@ export class SdCliLocalUpdate {
     const watchPaths = (await updatePathInfos.mapManyAsync(async (item) => await this._getWatchPathsAsync(item.source))).distinct();
 
     const watcher = SdFsWatcher.watch(watchPaths);
-    watcher.onChange({ delay: 1000 }, async (changeInfos) => {
-      const changeFilePaths = changeInfos.filter((item) => ["add", "change", "unlink"].includes(item.event)).map((item) => item.path);
+    watcher.onChange({ delay: 1000 }, async (changedInfos) => {
+      const changeFilePaths = changedInfos.filter((item) => ["add", "change", "unlink"].includes(item.event)).map((item) => item.path);
       if (changeFilePaths.length === 0) return;
 
       this._logger.log("로컬 라이브러리 변경감지...");

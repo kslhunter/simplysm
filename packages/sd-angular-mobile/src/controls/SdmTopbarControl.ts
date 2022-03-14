@@ -41,7 +41,7 @@ import { SdInputValidate } from "@simplysm/sd-angular";
 
       color: var(--text-brightness-light);
 
-      background: var(--sd-background-color);
+      background: var(--background-color);
 
       > ._nav {
         display: inline-block;
