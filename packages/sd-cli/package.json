@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cli",
-  "version": "7.0.99",
+  "version": "7.0.100",
   "description": "심플리즘 패키지 - CLI",
   "author": "김석래",
   "repository": {
@@ -52,11 +52,11 @@
     "jsdom": "^19.0.0",
     "cordova": "^11.0.0",
     "jszip": "^3.7.1",
-    "@simplysm/sd-core-common": "7.0.99",
-    "@simplysm/sd-core-node": "7.0.99",
-    "@simplysm/sd-service-common": "7.0.99",
-    "@simplysm/sd-service-server": "7.0.99",
-    "@simplysm/sd-storage": "7.0.99",
+    "@simplysm/sd-core-common": "7.0.100",
+    "@simplysm/sd-core-node": "7.0.100",
+    "@simplysm/sd-service-common": "7.0.100",
+    "@simplysm/sd-service-server": "7.0.100",
+    "@simplysm/sd-storage": "7.0.100",
     "electron": "^17.1.2",
     "electron-builder": "^22.14.13",
     "xml2js": "^0.4.23"
