@@ -217,8 +217,8 @@ export class SdCliClientBuilder extends EventEmitter {
       const packageKey = this._getNpmConfig(this._rootPath)!.name.split("/").last()!;
       await augmentAppWithServiceWorker(
         PathUtil.posix(path.relative(this._workspaceRootPath, this._rootPath)) as any,
-        PathUtil.posix(path.relative(this._workspaceRootPath, path.resolve(this._parsedTsconfig.options.outDir!, "web"))) as any,
-        `/${packageKey}/web/`,
+        PathUtil.posix(path.relative(this._workspaceRootPath, path.resolve(this._parsedTsconfig.options.outDir!))) as any,
+        `/${packageKey}/`,
         PathUtil.posix(path.relative(this._workspaceRootPath, path.resolve(this._rootPath, "ngsw-config.json")))
       );
     }
@@ -303,16 +303,15 @@ export class SdCliClientBuilder extends EventEmitter {
     const ngVersion = this._getNpmConfig(FsUtil.findAllParentChildDirPaths("node_modules/@angular/core", this._rootPath, this._workspaceRootPath)[0])!.version;
 
     const pkgKey = npmConfig.name.split("/").last()!;
-    const publicPath = (builderType === "web" || watch) ? `/${pkgKey}/${builderType}/` : ``;
+    const publicPath = builderType === "web" ? `/${pkgKey}/` : watch ? `/${pkgKey}/${builderType}/` : ``;
 
     const cacheBasePath = path.resolve(this._rootPath, ".cache");
     const cachePath = path.resolve(cacheBasePath, pkgVersion);
 
-    const distPath = (builderType === "cordova" && !watch)
-      ? path.resolve(this._cordova!.cordovaPath, "www")
-      : (builderType === "electron" && !watch)
-        ? path.resolve(this._rootPath, ".electron/src")
-        : `${this._parsedTsconfig.options.outDir}/${builderType}`;
+    const distPath = (builderType === "cordova" && !watch) ? path.resolve(this._cordova!.cordovaPath, "www")
+      : (builderType === "electron" && !watch) ? path.resolve(this._rootPath, ".electron/src")
+        : builderType === "web" ? this._parsedTsconfig.options.outDir
+          : `${this._parsedTsconfig.options.outDir}/${builderType}`;
 
     const sassImplementation = new SassWorkerImplementation();
 
