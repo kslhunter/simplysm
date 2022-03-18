@@ -7,7 +7,6 @@ import ts from "typescript";
 import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import { NamedChunksPlugin } from "@angular-devkit/build-angular/src/webpack/plugins/named-chunks-plugin";
 import {
-  CommonJsUsageWarnPlugin,
   DedupeModuleResolvePlugin,
   JavaScriptOptimizerPlugin,
   SuppressExtractedTextChunksWebpackPlugin
@@ -577,9 +576,6 @@ export class SdCliClientBuilder extends EventEmitter {
               this._logger.debug(progressMessage);
             }
           }
-        }),
-        new CommonJsUsageWarnPlugin({
-          allowedDependencies: ["@fortawesome"]
         }),
         ...watch ? [] : [
           new LicenseWebpackPlugin({
