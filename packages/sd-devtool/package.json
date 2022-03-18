@@ -1,27 +1,27 @@
 {
-  "name": "@simplysm/sd-angular-mobile",
-  "version": "7.0.84",
-  "description": "심플리즘 패키지 - Angular 모바일 모듈 (browser)",
+  "name": "@simplysm/sd-devtool",
+  "version": "7.0.98",
+  "description": "심플리즘 개발도구",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm7.git",
-    "directory": "packages/sd-angular-mobile"
+    "directory": "packages/sd-devtool"
   },
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.ts",
-  "main": "./dist/index.mjs",
   "sideEffects": false,
   "engines": {
     "node": "^16"
   },
   "dependencies": {
+    "@simplysm/sd-core-common": "7.0.84",
+    "@simplysm/sd-core-browser": "7.0.84",
+    "@simplysm/sd-angular": "7.0.84",
     "@angular/common": "^13.2.0",
     "@angular/core": "^13.2.0",
-    "@angular/router": "^13.2.0",
     "@angular/platform-browser": "^13.2.0",
-    "rxjs": "^6.6.7",
+    "@angular/platform-browser-dynamic": "^13.2.0",
     "@fortawesome/fontawesome-svg-core": "^6.1.0",
     "@fortawesome/angular-fontawesome": "^0.10.1",
     "@fortawesome/free-brands-svg-icons": "^6.1.0",
@@ -29,8 +29,8 @@
     "@fortawesome/pro-regular-svg-icons": "^6.1.0",
     "@fortawesome/pro-light-svg-icons": "^6.1.0",
     "@fortawesome/pro-duotone-svg-icons": "^6.1.0",
-    "@simplysm/sd-core-common": "7.0.84",
-    "@simplysm/sd-core-browser": "7.0.84",
-    "@simplysm/sd-angular": "7.0.84"
+    "zone.js": "~0.11.4",
+    "rxjs": "^6.6.7",
+    "electron": "^17.1.2"
   }
 }

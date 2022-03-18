@@ -31,10 +31,11 @@ import { TransferSizePlugin } from "@angular-devkit/build-angular/src/webpack/pl
 import { CssOptimizerPlugin } from "@angular-devkit/build-angular/src/webpack/plugins/css-optimizer-plugin";
 import browserslist from "browserslist";
 import { augmentAppWithServiceWorker } from "@angular-devkit/build-angular/src/utils/service-worker";
-import { StringUtil } from "@simplysm/sd-core-common";
 import { SdCliNgModuleGenerator } from "../ng-tools/SdCliNgModuleGenerator";
 import { SdCliCordova } from "../build-tool/SdCliCordova";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
+import electronBuilder from "electron-builder";
+import { NeverEntryError } from "@simplysm/sd-core-common";
 import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
@@ -84,8 +85,8 @@ export class SdCliClientBuilder extends EventEmitter {
     } : undefined);
 
     // CORDOVA
-    if (this._config.cordova) {
-      this._cordova = new SdCliCordova(this._rootPath, this._config.cordova);
+    if (this._config.builders?.cordova) {
+      this._cordova = new SdCliCordova(this._rootPath, this._config.builders.cordova);
     }
   }
 
@@ -97,6 +98,7 @@ export class SdCliClientBuilder extends EventEmitter {
 
   public async watchAsync(): Promise<NextHandleFunction[]> {
     // DIST 비우기
+    await FsUtil.removeAsync(path.resolve(this._rootPath, ".electron"));
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
     // NgModule 생성
@@ -109,10 +111,11 @@ export class SdCliClientBuilder extends EventEmitter {
     }
 
     // 빌드 준비
-    const webpackConfig = this._getWebpackConfig(true);
-    const compiler = webpack(webpackConfig);
+    const webpackConfigs = (Object.keys(this._config.builders ?? { web: {} }) as ("web" | "cordova" | "electron")[])
+      .map((builderType) => this._getWebpackConfig(true, builderType));
+    const multiCompiler = webpack(webpackConfigs);
     return await new Promise<NextHandleFunction[]>((resolve, reject) => {
-      compiler.hooks.invalid.tap(this.constructor.name, (fileName) => {
+      multiCompiler.hooks.invalid.tap(this.constructor.name, (fileName) => {
         if (fileName != null) {
           this._logger.debug("파일변경 감지", fileName);
           // NgModule 캐시 삭제
@@ -120,7 +123,7 @@ export class SdCliClientBuilder extends EventEmitter {
         }
       });
 
-      compiler.hooks.watchRun.tapAsync(this.constructor.name, async (args, callback) => {
+      multiCompiler.hooks.watchRun.tapAsync(this.constructor.name, async (args, callback) => {
         this.emit("change");
 
         // NgModule 생성
@@ -131,54 +134,58 @@ export class SdCliClientBuilder extends EventEmitter {
         this._logger.debug("Webpack 빌드 수행...");
       });
 
-      compiler.hooks.failed.tap(this.constructor.name, (err) => {
-        this.emit("complete", [{
-          filePath: undefined,
-          line: undefined,
-          char: undefined,
-          code: undefined,
-          severity: "error",
-          message: err.stack
-        }]);
-        reject(err);
-        return;
-      });
+      for (const compiler of multiCompiler.compilers) {
+        compiler.hooks.failed.tap(this.constructor.name, (err) => {
+          this.emit("complete", [{
+            filePath: undefined,
+            line: undefined,
+            char: undefined,
+            code: undefined,
+            severity: "error",
+            message: err.stack
+          }]);
+          reject(err);
+          return;
+        });
+      }
 
-      compiler.hooks.done.tap(this.constructor.name, async (stats) => {
+      multiCompiler.hooks.done.tap(this.constructor.name, async (multiStats) => {
         // 결과 반환
-        const results = SdCliBuildResultUtil.convertFromWebpackStats(stats);
+        const results = multiStats.stats.mapMany((stats) => SdCliBuildResultUtil.convertFromWebpackStats(stats));
 
         // .config.json 파일 쓰기
         const npmConfig = this._getNpmConfig(this._rootPath)!;
         const packageKey = npmConfig.name.split("/").last()!;
 
-        const configDistPath = !StringUtil.isNullOrEmpty(this._config.server)
+        const configDistPath = typeof this._config.server === "string"
           ? path.resolve(this._workspaceRootPath, "packages", this._config.server, "dist/www", packageKey, ".config.json")
           : path.resolve(this._parsedTsconfig.options.outDir!, ".config.json");
         await FsUtil.writeFileAsync(configDistPath, JSON.stringify(this._config.configs ?? {}, undefined, 2));
 
         // 마무리
         this._logger.debug("Webpack 빌드 완료");
-        resolve([devMiddleware, hotMiddleware]);
+        resolve(middlewares);
 
         this.emit("complete", results);
       });
 
-      const devMiddleware = wdm(compiler, {
-        publicPath: webpackConfig.output!.publicPath as string,
-        index: "index.html",
-        stats: false
-      });
-
-      const hotMiddleware = whm(compiler, {
-        path: `${webpackConfig.output!.publicPath as string}__webpack_hmr`,
-        log: false
-      });
+      const middlewares = multiCompiler.compilers.mapMany((compiler) => [
+        wdm(compiler, {
+          publicPath: compiler.options.output.publicPath,
+          index: "index.html",
+          stats: false
+        }),
+        whm(compiler, {
+          path: `${compiler.options.output.publicPath}__webpack_hmr`,
+          log: false
+        })
+      ]);
     });
   }
 
   public async buildAsync(): Promise<ISdCliPackageBuildResult[]> {
     // DIST 비우기
+    await FsUtil.removeAsync(path.resolve(this._rootPath, ".electron"));
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
     // NgModule 생성
@@ -186,17 +193,18 @@ export class SdCliClientBuilder extends EventEmitter {
 
     // 빌드
     this._logger.debug("Webpack 빌드 수행...");
-    const webpackConfig = this._getWebpackConfig(false);
-    const compiler = webpack(webpackConfig);
+    const builderTypes = (Object.keys(this._config.builders ?? { web: {} }) as ("web" | "cordova" | "electron")[]);
+    const webpackConfigs = builderTypes.map((builderType) => this._getWebpackConfig(false, builderType));
+    const multipleCompiler = webpack(webpackConfigs);
     const buildResults = await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
-      compiler.run((err, stats) => {
-        if (err != null || stats == null) {
+      multipleCompiler.run((err, multiStats) => {
+        if (err != null || multiStats == null) {
           reject(err);
           return;
         }
 
         // 결과 반환
-        const results = SdCliBuildResultUtil.convertFromWebpackStats(stats);
+        const results = multiStats.stats.mapMany((stats) => SdCliBuildResultUtil.convertFromWebpackStats(stats));
         resolve(results);
       });
     });
@@ -206,12 +214,12 @@ export class SdCliClientBuilder extends EventEmitter {
     await FsUtil.writeFileAsync(targetPath, JSON.stringify(this._config.configs ?? {}, undefined, 2));
 
     // service-worker 처리
-    if (FsUtil.exists(path.resolve(this._rootPath, "ngsw-config.json"))) {
+    if (builderTypes.includes("web") && FsUtil.exists(path.resolve(this._rootPath, "ngsw-config.json"))) {
       const packageKey = this._getNpmConfig(this._rootPath)!.name.split("/").last()!;
       await augmentAppWithServiceWorker(
         PathUtil.posix(path.relative(this._workspaceRootPath, this._rootPath)) as any,
-        PathUtil.posix(path.relative(this._workspaceRootPath, this._parsedTsconfig.options.outDir!)) as any,
-        `/${packageKey}/`,
+        PathUtil.posix(path.relative(this._workspaceRootPath, path.resolve(this._parsedTsconfig.options.outDir!, "web"))) as any,
+        `/${packageKey}/web/`,
         PathUtil.posix(path.relative(this._workspaceRootPath, path.resolve(this._rootPath, "ngsw-config.json")))
       );
     }
@@ -222,7 +230,55 @@ export class SdCliClientBuilder extends EventEmitter {
       await this._cordova.initializeAsync();
 
       this._logger.debug("CORDOVA 빌드...");
-      await this._cordova.buildAsync(this._parsedTsconfig.options.outDir!);
+      await this._cordova.buildAsync(path.resolve(this._parsedTsconfig.options.outDir!, "cordova"));
+    }
+
+    // ELECTRON
+    if (this._config.builders?.electron) {
+      const npmConfig = this._getNpmConfig(this._rootPath)!;
+
+      if (npmConfig.dependencies?.["electron"] == null) {
+        throw new NeverEntryError();
+      }
+
+      await FsUtil.writeJsonAsync(path.resolve(this._rootPath, `.electron/src/package.json`), {
+        name: npmConfig.name,
+        version: npmConfig.version,
+        description: npmConfig.description,
+        main: "electron.js",
+        author: npmConfig.author,
+        license: npmConfig.license,
+        devDependencies: {
+          "electron": npmConfig.dependencies!["electron"].replace("^", "")
+        }
+      });
+
+      await FsUtil.writeFileAsync(path.resolve(this._rootPath, `.electron/src/.env`), `NODE_ENV=production`);
+
+      await FsUtil.copyAsync(path.resolve(this._rootPath, `src/electron.prod.js`), path.resolve(this._rootPath, ".electron/src/electron.js"));
+
+      await electronBuilder.build({
+        targets: electronBuilder.Platform.WINDOWS.createTarget(),
+        config: {
+          appId: this._config.builders.electron.appId,
+          productName: npmConfig.description,
+          asar: true,
+          nsis: {},
+          directories: {
+            app: path.resolve(this._rootPath, ".electron/src"),
+            output: path.resolve(this._rootPath, ".electron/dist")
+          }
+        }
+      });
+
+      await FsUtil.copyAsync(
+        path.resolve(this._rootPath, `.electron/dist/${npmConfig.description} Setup ${npmConfig.version}.exe`),
+        path.resolve(this._parsedTsconfig.options.outDir!, `electron/${npmConfig.description}-v${npmConfig.version}.exe`)
+      );
+      await FsUtil.copyAsync(
+        path.resolve(this._rootPath, `.electron/dist/${npmConfig.description} Setup ${npmConfig.version}.exe`),
+        path.resolve(this._parsedTsconfig.options.outDir!, `electron/${npmConfig.description}-latest.exe`)
+      );
     }
 
     // 마무리
@@ -237,7 +293,7 @@ export class SdCliClientBuilder extends EventEmitter {
     ].map((p) => path.dirname(p));
   }
 
-  private _getWebpackConfig(watch: boolean): webpack.Configuration {
+  private _getWebpackConfig(watch: boolean, builderType: "web" | "cordova" | "electron"): webpack.Configuration {
     const workspaceNpmConfig = this._getNpmConfig(this._workspaceRootPath)!;
     const workspaceName = workspaceNpmConfig.name;
 
@@ -248,12 +304,16 @@ export class SdCliClientBuilder extends EventEmitter {
     const ngVersion = this._getNpmConfig(FsUtil.findAllParentChildDirPaths("node_modules/@angular/core", this._rootPath, this._workspaceRootPath)[0])!.version;
 
     const pkgKey = npmConfig.name.split("/").last()!;
-    const publicPath = (this._cordova && !watch) ? `` : `/${pkgKey}/`;
+    const publicPath = (builderType === "web" || watch) ? `/${pkgKey}/${builderType}/` : ``;
 
     const cacheBasePath = path.resolve(this._rootPath, ".cache");
     const cachePath = path.resolve(cacheBasePath, pkgVersion);
 
-    const distPath = (this._cordova && !watch) ? path.resolve(this._cordova.cordovaPath, "www") : this._parsedTsconfig.options.outDir;
+    const distPath = (builderType === "cordova" && !watch)
+      ? path.resolve(this._cordova!.cordovaPath, "www")
+      : (builderType === "electron" && !watch)
+        ? path.resolve(this._rootPath, ".electron/src")
+        : `${this._parsedTsconfig.options.outDir}/${builderType}`;
 
     const sassImplementation = new SassWorkerImplementation();
 
@@ -265,7 +325,7 @@ export class SdCliClientBuilder extends EventEmitter {
     return {
       mode: watch ? "development" : "production",
       devtool: false,
-      target: ["web", "es2015"],
+      target: builderType === "electron" ? ["electron-renderer", "es2015"] : ["web", "es2015"],
       profile: false,
       resolve: {
         roots: [this._rootPath],
@@ -273,7 +333,7 @@ export class SdCliClientBuilder extends EventEmitter {
         symlinks: true,
         modules: [this._workspaceRootPath, "node_modules"],
         mainFields: ["es2015", "browser", "module", "main"],
-        conditionNames: ["es2015", "..."]
+        conditionNames: ["es2015", "..."],
       },
       resolveLoader: {
         symlinks: true
@@ -529,7 +589,7 @@ export class SdCliClientBuilder extends EventEmitter {
         ],
         new CopyWebpackPlugin({
           patterns: [
-            ...["favicon.ico", "assets/", "manifest.webmanifest"].map((item) => ({
+            ...["favicon.ico", "assets/", "manifest.json"].map((item) => ({
               context: this._rootPath,
               to: item,
               from: `src/${item}`,
@@ -546,11 +606,31 @@ export class SdCliClientBuilder extends EventEmitter {
               },
               priority: 0
             })),
-            ...this._cordova ? this._cordova.platforms.map((platform) => ({
-              context: this._cordova!.cordovaPath,
-              to: `cordova-${platform}`,
-              from: `platforms/${platform}/platform_www`
-            })) : []
+            ...builderType === "cordova" && watch ? this._cordova!.platforms.mapMany((platform) => [
+              {
+                context: this._cordova!.cordovaPath,
+                to: `cordova-${platform}/plugins`,
+                from: `platforms/${platform}/www/plugins`,
+                noErrorOnMissing: true
+              },
+              {
+                context: this._cordova!.cordovaPath,
+                to: `cordova-${platform}/cordova.js`,
+                from: `platforms/${platform}/www/cordova.js`
+              },
+              {
+                context: this._cordova!.cordovaPath,
+                to: `cordova-${platform}/cordova_plugins.js`,
+                from: `platforms/${platform}/www/cordova_plugins.js`,
+                noErrorOnMissing: true
+              },
+              {
+                context: this._cordova!.cordovaPath,
+                to: `cordova-${platform}/config.xml`,
+                from: `platforms/${platform}/www/config.xml`,
+                noErrorOnMissing: true
+              }
+            ]) : []
           ]
         }),
         ...watch ? [

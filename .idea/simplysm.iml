@@ -27,6 +27,10 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-office/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-mobile/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-cordova/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-devtool/.cordova" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-devtool/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-devtool/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-devtool/.electron" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

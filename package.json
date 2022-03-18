@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "7.0.81",
+  "version": "7.0.98",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -21,16 +21,21 @@
     "build": "npm run _sd-cli_ -- build",
     "publish": "npm run _sd-cli_ -- publish",
     "publish(--noBuild)": "npm run _sd-cli_ -- publish --noBuild",
+    "----- device": "",
+    "run-electron:devtool": "npm run _sd-cli_ -- run-electron sd-devtool http://192.168.0.27:60280",
     "----- debug": "",
     "watch(--debug)": "npm run _sd-cli_ -- --debug watch",
     "build(--debug)": "npm run _sd-cli_ -- --debug build",
     "publish(--debug)": "npm run _sd-cli_ -- --debug publish",
     "publish(--debug)(--noBuild)": "npm run _sd-cli_ -- --debug publish --noBuild",
+    "----- pkg(--debug)": "",
+    "watch:devtool(--debug)": "npm run _sd-cli_ -- --debug watch --packages sd-devtool",
+    "build:devtool(--debug)": "npm run _sd-cli_ -- --debug build --packages sd-devtool",
     "----- utils": "",
     "update": "npm run _sd-cli_ -- update",
     "postinstall": "npm run _sd-cli_ -- prepare",
     "---": "",
-    "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --experimental-specifier-resolution=node --experimental-import-meta-resolve --loader ./packages/sd-cli/lib/ts-node-esm-paths packages/sd-cli/src/bin/sd-cli.ts",
+    "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --max-old-space-size=8192 --experimental-specifier-resolution=node --experimental-import-meta-resolve --loader ./packages/sd-cli/lib/ts-node-esm-paths packages/sd-cli/src/bin/sd-cli.ts",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.cjs|*.mjs)\""
   },
   "devDependencies": {

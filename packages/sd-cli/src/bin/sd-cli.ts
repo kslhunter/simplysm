@@ -9,6 +9,7 @@ import { SdCliNpm } from "../entry-points/SdCliNpm";
 import { SdCliPrepare } from "../entry-points/SdCliPrepare";
 import { SdCliFileCrypto } from "../entry-points/SdCliFileCrypto";
 import { SdCliCordova } from "../build-tool/SdCliCordova";
+import { SdCliElectron } from "../build-tool/SdCliElectron";
 
 Error.stackTraceLimit = Infinity;
 
@@ -66,8 +67,18 @@ const argv = yargs(hideBin(process.argv))
       })
   )
   .command(
-    "run-device <cordovaPath> <platform> <url>",
-    "변경감지중인 플랫폼을 디바이스에 앱 형태로 띄웁니다.",
+    "run-electron <package>",
+    "변경감지중인 플랫폼을 ELECTRON 앱 형태로 띄웁니다.",
+    (cmd) => cmd
+      .positional("package", {
+        type: "string",
+        describe: "설정된 패키지명",
+        demandOption: true
+      })
+  )
+  .command(
+    "run-cordova <cordovaPath> <platform> <url>",
+    "변경감지중인 플랫폼을 코도바 디바이스에 앱 형태로 띄웁니다.",
     (cmd) => cmd
       .positional("cordovaPath", {
         type: "string",
@@ -192,10 +203,13 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
         pkgs: argv.packages ?? []
       });
   }
-  else if (argv._[0] === "run-device") {
+  else if (argv._[0] === "run-electron") {
+    await SdCliElectron.runWebviewOnDeviceAsync(process.cwd(), argv.package);
+  }
+  else if (argv._[0] === "run-cordova") {
     await SdCliCordova.runWebviewOnDeviceAsync(
       argv.cordovaPath,
-      argv.platform as "browser" | "ios" | "android" | "electron",
+      argv.platform as "browser" | "android",
       argv.url
     );
   }

@@ -1,6 +1,9 @@
 export interface INpmConfig {
   name: string;
   version: string;
+  description?: string;
+  author?: string;
+  license?: string;
   type?: "module";
   workspaces?: string[];
   main?: string;
@@ -63,8 +66,12 @@ export interface ISdCliServerPackageConfig {
 
 export interface ISdCliClientPackageConfig {
   type: "client";
-  cordova?: ISdCliClientPackageCordovaConfig;
-  server: string;
+  builders?: {
+    web?: ISdCliClientBuilderWebConfig;
+    cordova?: ISdCliClientBuilderCordovaConfig;
+    electron?: ISdCliClientBuilderElectronConfig;
+  };
+  server: string | { port: number };
   env?: Record<string, string>;
   configs?: Record<string, any>;
   publish?: TSdCliPublishConfig;
@@ -86,17 +93,21 @@ export interface ISdCliLocalDirectoryPublishConfig {
   path: string;
 }
 
-export interface ISdCliClientPackageCordovaConfig {
-  platforms: TSdCliCordovaPlatform[];
+export interface ISdCliClientBuilderWebConfig {
+}
+
+export interface ISdCliClientBuilderCordovaConfig {
+  type: "cordova";
   appId: string;
   appName: string;
   plugins?: string[];
   icon?: string;
-  buildOption?: {
-    debug?: boolean;
-    bundle?: boolean;
-    sign?: {
-      android?: {
+  debug?: boolean;
+  targets?: {
+    browser?: {};
+    android?: {
+      bundle?: boolean;
+      sign?: {
         keystore: string;
         storePassword: string;
         alias: string;
@@ -107,4 +118,11 @@ export interface ISdCliClientPackageCordovaConfig {
   };
 }
 
-export type TSdCliCordovaPlatform = "browser" | "ios" | "android" | "electron";
+export interface ISdCliClientBuilderElectronConfig {
+  appId: string;
+}
+
+export type TSdCliClientBuilderConfig =
+  ISdCliClientBuilderWebConfig
+  | ISdCliClientBuilderCordovaConfig
+  | ISdCliClientBuilderElectronConfig;

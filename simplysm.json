@@ -105,6 +105,17 @@
       "type": "library",
       "autoIndex": {},
       "publish": "npm"
+    },
+    "sd-devtool": {
+      "type": "client",
+      "server": {
+        "port": 60280
+      },
+      "builders": {
+        "electron": {
+          "appId": "kr.co.simplysm.simplysm.sd_devtool"
+        }
+      }
     }
   }
 }

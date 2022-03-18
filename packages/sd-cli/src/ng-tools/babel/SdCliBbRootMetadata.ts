@@ -144,7 +144,10 @@ export class SdCliBbRootMetadata {
 
       const entryFilePath = npmConfig["es2015"] ?? npmConfig["browser"] ?? npmConfig["module"] ?? npmConfig["main"] ?? npmConfig["default"];
       if (typeof entryFilePath === "string") {
-        entryMap.set(npmConfig.name, path.resolve(ngDepPath, entryFilePath));
+        const realPath = this._getRealFilePath(path.resolve(ngDepPath, entryFilePath));
+        if (realPath != null) {
+          entryMap.set(npmConfig.name, realPath);
+        }
       }
 
       if (npmConfig.exports) {
@@ -168,7 +171,10 @@ export class SdCliBbRootMetadata {
             const exportPath = path.resolve(ngDepPath, expEntryFilePath);
             const exportResult = this._getGlobExportResult(PathUtil.posix(npmConfig.name, exportKey), exportPath);
             for (const exportResultItem of exportResult) {
-              entryMap.set(exportResultItem.name, exportResultItem.target);
+              const realPath = this._getRealFilePath(exportResultItem.target);
+              if (realPath != null) {
+                entryMap.set(exportResultItem.name, realPath);
+              }
             }
           }
         }
@@ -176,6 +182,28 @@ export class SdCliBbRootMetadata {
     }
 
     return entryMap;
+  }
+
+  private _getRealFilePath(itemPath: string): string | undefined {
+    if (!FsUtil.exists(itemPath)) {
+      for (const ext of [".mjs", ".cjs", ".js"]) {
+        if (FsUtil.exists(itemPath + ext)) {
+          return itemPath + ext;
+        }
+      }
+    }
+    else if (FsUtil.stat(itemPath).isFile()) {
+      return itemPath;
+    }
+    else {
+      for (const fileName of ["index.mjs", "index.cjs", "index.js"]) {
+        if (FsUtil.exists(path.resolve(itemPath, fileName))) {
+          return path.resolve(itemPath, fileName);
+        }
+      }
+    }
+
+    return undefined;
   }
 
   private _getGlobExportResult(globName: string, globTarget: string): { name: string; target: string }[] {

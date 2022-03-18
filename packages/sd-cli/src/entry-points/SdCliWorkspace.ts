@@ -80,9 +80,25 @@ export class SdCliWorkspace {
         if (pkg.config.type === "client") {
           const middlewares = (await pkg.watchAsync()) as NextHandleFunction[];
 
-          const serverInfo = this._serverInfoMap.getOrCreate(pkg.config.server, { middlewares: [], clientInfos: [] });
-          serverInfo.middlewares.push(...middlewares);
-          serverInfo.clientInfos.push({ pkgKey: pkg.name.split("/").last()! });
+          if (typeof pkg.config.server === "string") {
+            const serverInfo = this._serverInfoMap.getOrCreate(pkg.config.server, { middlewares: [], clientInfos: [] });
+            serverInfo.middlewares.push(...middlewares);
+            serverInfo.clientInfos.push({ pkgKey: pkg.name.split("/").last()! });
+          }
+          else { // DEV SERVER
+            const serverInfo = this._serverInfoMap.getOrCreate("_", { middlewares: [], clientInfos: [] });
+            if (serverInfo.server === undefined) {
+              const server = new SdServiceServer({
+                rootPath: process.cwd(),
+                services: [],
+                port: pkg.config.server.port
+              });
+              await server.listenAsync();
+              serverInfo.server = server;
+              serverInfo.server.devMiddlewares = middlewares;
+              serverInfo.clientInfos.push({ pkgKey: pkg.name.split("/").last()! });
+            }
+          }
         }
         else {
           await pkg.watchAsync();

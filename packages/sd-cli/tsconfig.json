@@ -19,6 +19,9 @@
       "@simplysm/sd-service-server": [
         "../sd-service-server/src/index.ts"
       ],
+      "@simplysm/sd-orm-common": [
+        "../sd-orm-common/src/index.ts"
+      ],
       "@simplysm/sd-storage": [
         "../sd-storage/src/index.ts"
       ]

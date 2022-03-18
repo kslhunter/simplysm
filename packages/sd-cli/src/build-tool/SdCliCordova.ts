@@ -1,8 +1,8 @@
-import { INpmConfig, ISdCliClientPackageCordovaConfig, TSdCliCordovaPlatform } from "../commons";
+import { INpmConfig, ISdCliClientBuilderCordovaConfig } from "../commons";
 import * as path from "path";
 import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
-import { NotImplementError } from "@simplysm/sd-core-common";
 import JSZip from "jszip";
+import xml2js from "xml2js";
 
 export class SdCliCordova {
   protected readonly _logger: Logger;
@@ -12,11 +12,14 @@ export class SdCliCordova {
   public readonly cordovaPath = path.resolve(this._rootPath, ".cordova");
   private readonly _binPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
 
-  public get platforms(): TSdCliCordovaPlatform[] {
-    return this._config.platforms;
+  public get platforms(): ("browser" | "android")[] {
+    return [
+      ...this._config.targets?.browser ? ["browser" as const] : [],
+      ...this._config.targets?.android ? ["android" as const] : []
+    ];
   }
 
-  public constructor(private readonly _rootPath: string, private readonly _config: ISdCliClientPackageCordovaConfig) {
+  public constructor(private readonly _rootPath: string, private readonly _config: ISdCliClientBuilderCordovaConfig) {
     this._npmConfig = FsUtil.readJson(path.resolve(this._rootPath, "package.json"));
     this._logger = Logger.get(["simplysm", "sd-cli", this.constructor.name, this._npmConfig.name]);
   }
@@ -52,156 +55,156 @@ export class SdCliCordova {
       }
     }
 
-    // 미설치 플러그인들 설치
-    if (this._config.plugins) {
-      const pluginsFetch = FsUtil.exists(path.resolve(this.cordovaPath, "plugins/fetch.json"))
-        ? await FsUtil.readJsonAsync(path.resolve(this.cordovaPath, "plugins/fetch.json"))
-        : undefined;
-      const alreadyPlugins = pluginsFetch != undefined
-        ? Object.values(pluginsFetch)
-          .map((item: any) => (item.source.id !== undefined ? item.source.id.replace(/@.*$/, "") : item.source.url))
-        : [];
-
-      for (const plugin of this._config.plugins.distinct()) {
-        if (!alreadyPlugins.includes(plugin)) {
-          await this._execAsync(`${this._binPath} plugin add ${plugin}`, this.cordovaPath);
-        }
+    // 설치 미빌드 플랫폼 삭제
+    for (const alreadyPlatform of alreadyPlatforms) {
+      if (this._config[alreadyPlatform] == null) {
+        await this._execAsync(`${this._binPath} platform remove ${alreadyPlatform}`, this.cordovaPath);
       }
     }
+
+    // 미설치 플러그인들 설치
+    const pluginsFetch = FsUtil.exists(path.resolve(this.cordovaPath, "plugins/fetch.json"))
+      ? await FsUtil.readJsonAsync(path.resolve(this.cordovaPath, "plugins/fetch.json"))
+      : undefined;
+    const alreadyPlugins = pluginsFetch != undefined
+      ? Object.values(pluginsFetch)
+        .map((item: any) => (item.source.id !== undefined ? item.source.id.replace(/@.*$/, "") : item.source.url))
+      : [];
+
+    for (const plugin of this._config.plugins?.distinct() ?? []) {
+      if (!alreadyPlugins.includes(plugin)) {
+        await this._execAsync(`${this._binPath} plugin add ${plugin}`, this.cordovaPath);
+      }
+    }
+
+    // 설치된 미사용 플러그인 삭제
+    for (const alreadyPlugin of alreadyPlugins) {
+      if (!(this._config.plugins?.distinct() ?? []).includes(alreadyPlugin)) {
+        await this._execAsync(`${this._binPath} plugin remove ${alreadyPlugin}`, this.cordovaPath);
+      }
+    }
+
+    // ANDROID SIGN 파일 복사
+    if (this._config.targets?.android?.sign) {
+      await FsUtil.copyAsync(
+        path.resolve(this._rootPath, this._config.targets.android.sign.keystore),
+        path.resolve(this.cordovaPath, "android.keystore")
+      );
+    }
+    else {
+      await FsUtil.removeAsync(path.resolve(this.cordovaPath, "android.keystore"));
+    }
+
+    // 빌드 옵션 파일 생성
+    await FsUtil.writeJsonAsync(
+      path.resolve(this.cordovaPath, "build.json"),
+      {
+        ...this._config.targets?.android ? {
+          android: {
+            release: {
+              packageType: this._config.targets.android.bundle ? "bundle" : "apk",
+              ...this._config.targets.android.sign ? {
+                keystore: path.resolve(this.cordovaPath, "android.keystore"),
+                storePassword: this._config.targets.android.sign.storePassword,
+                alias: this._config.targets.android.sign.alias,
+                password: this._config.targets.android.sign.password,
+                keystoreType: this._config.targets.android.sign.keystoreType
+              } : {}
+            }
+          }
+        } : {}
+      }
+    );
 
     // ICON 파일 복사
     if (this._config.icon !== undefined) {
-      await FsUtil.copyAsync(path.resolve(this._rootPath, this._config.icon), path.resolve(this.cordovaPath, "res", "icon", "icon.png"));
+      await FsUtil.copyAsync(path.resolve(this._rootPath, this._config.icon), path.resolve(this.cordovaPath, "res", "icon.png"));
+    }
+    else {
+      await FsUtil.removeAsync(path.resolve(this.cordovaPath, "res", "icon.png"));
     }
 
-    // CONFIG
+    // CONFIG: 초기값 백업
     const configFilePath = path.resolve(this.cordovaPath, "config.xml");
-    let configFileContent = await FsUtil.readFileAsync(configFilePath);
+    const configBackFilePath = path.resolve(this.cordovaPath, "config.xml.bak");
+    if (!FsUtil.exists(configBackFilePath)) {
+      await FsUtil.copyAsync(configFilePath, configBackFilePath);
+    }
+
+    // CONFIG: 초기값 읽기
+    const configFileContent = await FsUtil.readFileAsync(configBackFilePath);
+    const configXml = await xml2js.parseStringPromise(configFileContent);
+
 
     // CONFIG: 버전 설정
-    configFileContent = configFileContent.replace(/version="[^"]*"/g, `version="${this._npmConfig.version}"`);
+    configXml.widget.$.version = this._npmConfig.version;
 
     // CONFIG: ICON 설정
-    if (this._config.icon !== undefined && !configFileContent.includes("<icon")) {
-      configFileContent = configFileContent.replace("</widget>", "    <icon src=\"res/icon/icon.png\" />\r\n</widget>");
+    if (this._config.icon !== undefined) {
+      configXml["widget"]["icon"] = [{ "$": { "src": "res/icon.png" } }];
     }
+
+    // CONFIG: 접근허용 세팅
+    configXml["widget"]["allow-navigation"] = [{ "$": { "href": "*://*/*" } }];
 
     // CONFIG: ANDROID usesCleartextTraffic 설정
-    if (this._config.platforms.includes("android")) {
-      if (!configFileContent.includes("xmlns:android=\"http://schemas.android.com/apk/res/android\"")) {
-        configFileContent = configFileContent.replace(
-          "xmlns=\"http://www.w3.org/ns/widgets\"",
-          `xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android"`
-        );
-      }
-      if (!configFileContent.includes("application android:usesCleartextTraffic=\"true\" />")) {
-        if (configFileContent.includes("<platform name=\"android\">")) {
-          configFileContent = configFileContent.replace("<platform name=\"android\">", `<platform name="android">
-      <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
-          <application android:usesCleartextTraffic="true" />
-      </edit-config>`);
-        }
-        else {
-          configFileContent = configFileContent.replace("<content src=\"index.html\" />", `<content src="index.html" />
-    <platform name="android">
-      <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
-          <application android:usesCleartextTraffic="true" />
-      </edit-config>
-    </platform>`);
-        }
-      }
+    if (this._config.targets?.android) {
+      configXml.widget.$["xmlns:android"] = "http://schemas.android.com/apk/res/android";
+
+      configXml["widget"]["platform"] = configXml["widget"]["platform"] ?? [];
+      configXml["widget"]["platform"].push({
+        "$": {
+          "name": "android"
+        },
+        "edit-config": [{
+          "$": {
+            "file": "app/src/main/AndroidManifest.xml",
+            "mode": "merge",
+            "target": "/manifest/application"
+          },
+          "application": [{
+            "android:usesCleartextTraffic": "true"
+          }]
+        }]
+      });
     }
 
-    // CONFIG: 파일쓰기
-    await FsUtil.writeFileAsync(configFilePath, configFileContent);
+    // CONFIG: 파일 새로 쓰기
+    const configResultContent = new xml2js.Builder().buildObject(configXml);
+    await FsUtil.writeFileAsync(configFilePath, configResultContent);
+
+    // 각 플랫폼 www 준비
+    await this._execAsync(`${this._binPath} prepare`, this.cordovaPath);
   }
 
   public async buildAsync(outPath: string): Promise<void> {
-    const packageType = this._config.buildOption?.bundle ? "bundle" : "apk";
-
-    // ANDROID 서명 처리
-    if (this._config.buildOption?.sign?.android) {
-      await FsUtil.copyAsync(
-        path.resolve(this._rootPath, this._config.buildOption.sign.android.keystore),
-        path.resolve(this.cordovaPath, path.basename(this._config.buildOption.sign.android.keystore))
-      );
-      await FsUtil.writeJsonAsync(
-        path.resolve(this.cordovaPath, "build.json"),
-        {
-          android: {
-            release: {
-              keystore: path.basename(this._config.buildOption.sign.android.keystore),
-              storePassword: this._config.buildOption.sign.android.storePassword,
-              alias: this._config.buildOption.sign.android.alias,
-              password: this._config.buildOption.sign.android.password,
-              keystoreType: this._config.buildOption.sign.android.keystoreType,
-              packageType
-            }
-          }
-        }
-      );
-    }
-
-    // CONFIG
-    const configFilePath = path.resolve(this.cordovaPath, "config.xml");
-    let configFileContent = await FsUtil.readFileAsync(configFilePath);
-
-    // CONFIG: 접근허용 일단 모두 지우기
-    configFileContent = configFileContent.replace(/ {4}<allow-navigation href="[^"]*" \/>\n/g, "");
-
-    // CONFIG: 접근허용 등록
-    configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="*://*/*" />\n</widget>`);
-
-    // CONFIG: 파일쓰기
-    await FsUtil.writeFileAsync(configFilePath, configFileContent);
-
     // 실행
-    const buildType = this._config.buildOption?.debug ? "debug" : "release";
+    const buildType = this._config.debug ? "debug" : "release";
     for (const platform of this.platforms) {
-      await this._execAsync(`${this._binPath} build ${platform} --${buildType} --packageType=${packageType}`, this.cordovaPath);
+      await this._execAsync(`${this._binPath} build ${platform} --${buildType}`, this.cordovaPath);
     }
 
-    // 결과물 복사
-    for (const platform of this.platforms) {
-      if (platform === "android") {
-        const targetOutPath = path.resolve(outPath, platform);
-        const apkFileName = this._config.buildOption?.sign?.android ? `app-${buildType}.apk` : `app-${buildType}-unsigned.apk`;
-        const distApkFileName = path.basename(`${this._config.appName}${this._config.buildOption?.sign?.android ? "" : "-unsigned"}-v${this._npmConfig.version}.apk`);
-        const latestDistApkFileName = path.basename(`${this._config.appName}${this._config.buildOption?.sign?.android ? "" : "-unsigned"}-latest.apk`);
-        await FsUtil.mkdirsAsync(targetOutPath);
-        await FsUtil.copyAsync(
-          path.resolve(this.cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
-          path.resolve(targetOutPath, distApkFileName)
-        );
-        await FsUtil.copyAsync(
-          path.resolve(this.cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
-          path.resolve(targetOutPath, latestDistApkFileName)
-        );
-      }
-      else if (platform === "electron") {
-        const targetOutPath = path.resolve(outPath, platform);
-        const outFileName = `${this._config.appName} Setup ${this._npmConfig.version}.exe`;
-        const distFileName = outFileName;
-        const latestDistFileName = `${this._config.appName} Setup latest.exe`;
-        await FsUtil.mkdirsAsync(targetOutPath);
-        await FsUtil.copyAsync(
-          path.resolve(this.cordovaPath, "platforms/electron/build/", outFileName),
-          path.resolve(targetOutPath, distFileName)
-        );
-        await FsUtil.copyAsync(
-          path.resolve(this.cordovaPath, "platforms/electron/build/", outFileName),
-          path.resolve(targetOutPath, latestDistFileName)
-        );
-      }
-      else {
-        throw new NotImplementError();
-      }
+    // 결과물 복사: ANDROID
+    if (this._config.targets?.android) {
+      const targetOutPath = path.resolve(outPath, "android");
+      const apkFileName = this._config.targets.android.sign ? `app-${buildType}.apk` : `app-${buildType}-unsigned.apk`;
+      const distApkFileName = path.basename(`${this._config.appName}${this._config.targets.android.sign ? "" : "-unsigned"}-v${this._npmConfig.version}.apk`);
+      const latestDistApkFileName = path.basename(`${this._config.appName}${this._config.targets.android.sign ? "" : "-unsigned"}-latest.apk`);
+      await FsUtil.mkdirsAsync(targetOutPath);
+      await FsUtil.copyAsync(
+        path.resolve(this.cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
+        path.resolve(targetOutPath, distApkFileName)
+      );
+      await FsUtil.copyAsync(
+        path.resolve(this.cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
+        path.resolve(targetOutPath, latestDistApkFileName)
+      );
     }
 
-    if (this.platforms.includes("android")) {
+    if (this._config.targets?.android) {
       // 자동업데이트를 위한 zip 파일 쓰기
       const zip = new JSZip();
-      const resultFiles = await FsUtil.globAsync(path.resolve(this.cordovaPath, "www", "**/*"), {
+      const resultFiles = await FsUtil.globAsync(path.resolve(this.cordovaPath, "platforms", "android", "app", "src", "main", "assets", "www", "**/*"), {
         dot: true,
         nodir: true
       });
@@ -218,23 +221,10 @@ export class SdCliCordova {
     }
   }
 
-  public static async runWebviewOnDeviceAsync(cordovaPath: string, platform: TSdCliCordovaPlatform, url: string): Promise<void> {
+  public static async runWebviewOnDeviceAsync(cordovaPath: string, platform: "browser" | "android", url: string): Promise<void> {
     await FsUtil.removeAsync(path.resolve(cordovaPath, "www"));
     await FsUtil.mkdirsAsync(path.resolve(cordovaPath, "www"));
     await FsUtil.writeFileAsync(path.resolve(cordovaPath, "www/index.html"), `'${url}'로 이동중... <script>setTimeout(function () {window.location.href = "${url}"}, 3000);</script>`.trim());
-
-    // CONFIG
-    const configFilePath = path.resolve(cordovaPath, "config.xml");
-    let configFileContent = await FsUtil.readFileAsync(configFilePath);
-
-    // CONFIG: 접근허용 일단 모두 지우기
-    configFileContent = configFileContent.replace(/ {4}<allow-navigation href="[^"]*" \/>\n/g, "");
-
-    // CONFIG: 접근허용 등록
-    configFileContent = configFileContent.replace("</widget>", `    <allow-navigation href="*://*/*" />\n</widget>`);
-
-    // CONFIG: 파일쓰기
-    await FsUtil.writeFileAsync(configFilePath, configFileContent);
 
     const binPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
     await SdProcess.spawnAsync(`${binPath} run ${platform} --device`, { cwd: cordovaPath }, true);
