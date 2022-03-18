@@ -249,7 +249,7 @@ export class SdCliClientBuilder extends EventEmitter {
         author: npmConfig.author,
         license: npmConfig.license,
         devDependencies: {
-          "electron": npmConfig.dependencies!["electron"].replace("^", "")
+          "electron": npmConfig.dependencies["electron"].replace("^", "")
         }
       });
 
@@ -578,7 +578,9 @@ export class SdCliClientBuilder extends EventEmitter {
             }
           }
         }),
-        new CommonJsUsageWarnPlugin(),
+        new CommonJsUsageWarnPlugin({
+          allowedDependencies: ["@fortawesome"]
+        }),
         ...watch ? [] : [
           new LicenseWebpackPlugin({
             stats: { warnings: false, errors: false },
