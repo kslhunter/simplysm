@@ -33,8 +33,8 @@ import { augmentAppWithServiceWorker } from "@angular-devkit/build-angular/src/u
 import { SdCliNgModuleGenerator } from "../ng-tools/SdCliNgModuleGenerator";
 import { SdCliCordova } from "../build-tool/SdCliCordova";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
-import electronBuilder from "electron-builder";
 import { NeverEntryError } from "@simplysm/sd-core-common";
+import electronBuilder from "electron-builder";
 import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
@@ -84,8 +84,8 @@ export class SdCliClientBuilder extends EventEmitter {
     } : undefined);
 
     // CORDOVA
-    if (this._config.builders?.cordova) {
-      this._cordova = new SdCliCordova(this._rootPath, this._config.builders.cordova);
+    if (this._config.builder?.cordova) {
+      this._cordova = new SdCliCordova(this._rootPath, this._config.builder.cordova);
     }
   }
 
@@ -110,7 +110,7 @@ export class SdCliClientBuilder extends EventEmitter {
     }
 
     // 빌드 준비
-    const webpackConfigs = (Object.keys(this._config.builders ?? { web: {} }) as ("web" | "cordova" | "electron")[])
+    const webpackConfigs = (Object.keys(this._config.builder ?? { web: {} }) as ("web" | "cordova" | "electron")[])
       .map((builderType) => this._getWebpackConfig(true, builderType));
     const multiCompiler = webpack(webpackConfigs);
     return await new Promise<NextHandleFunction[]>((resolve, reject) => {
@@ -192,7 +192,7 @@ export class SdCliClientBuilder extends EventEmitter {
 
     // 빌드
     this._logger.debug("Webpack 빌드 수행...");
-    const builderTypes = (Object.keys(this._config.builders ?? { web: {} }) as ("web" | "cordova" | "electron")[]);
+    const builderTypes = (Object.keys(this._config.builder ?? { web: {} }) as ("web" | "cordova" | "electron")[]);
     const webpackConfigs = builderTypes.map((builderType) => this._getWebpackConfig(false, builderType));
     const multipleCompiler = webpack(webpackConfigs);
     const buildResults = await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
@@ -233,7 +233,7 @@ export class SdCliClientBuilder extends EventEmitter {
     }
 
     // ELECTRON
-    if (this._config.builders?.electron) {
+    if (this._config.builder?.electron) {
       const npmConfig = this._getNpmConfig(this._rootPath)!;
 
       if (npmConfig.dependencies?.["electron"] == null) {
@@ -249,19 +249,21 @@ export class SdCliClientBuilder extends EventEmitter {
         license: npmConfig.license,
         devDependencies: {
           "electron": npmConfig.dependencies["electron"].replace("^", "")
+        },
+        dependencies: {
+          "dotenv": npmConfig.dependencies["dotenv"].replace("^", "")
         }
       });
 
       await FsUtil.writeFileAsync(path.resolve(this._rootPath, `.electron/src/.env`), `NODE_ENV=production`);
 
-      await FsUtil.copyAsync(path.resolve(this._rootPath, `src/electron.prod.js`), path.resolve(this._rootPath, ".electron/src/electron.js"));
+      await FsUtil.copyAsync(path.resolve(this._rootPath, `src/electron.js`), path.resolve(this._rootPath, ".electron/src/electron.js"));
 
       await electronBuilder.build({
         targets: electronBuilder.Platform.WINDOWS.createTarget(),
         config: {
-          appId: this._config.builders.electron.appId,
+          appId: this._config.builder.electron.appId,
           productName: npmConfig.description,
-          asar: true,
           nsis: {},
           directories: {
             app: path.resolve(this._rootPath, ".electron/src"),
@@ -299,14 +301,16 @@ export class SdCliClientBuilder extends EventEmitter {
     const internalModuleCachePaths = watch ? this._getInternalModuleCachePaths(workspaceName) : undefined;
 
     const npmConfig = this._getNpmConfig(this._rootPath)!;
-    const pkgVersion = npmConfig.version;
-    const ngVersion = this._getNpmConfig(FsUtil.findAllParentChildDirPaths("node_modules/@angular/core", this._rootPath, this._workspaceRootPath)[0])!.version;
+    // const pkgVersion = npmConfig.version;
+    // const ngVersion = this._getNpmConfig(FsUtil.findAllParentChildDirPaths("node_modules/@angular/core", this._rootPath, this._workspaceRootPath)[0])!.version;
+
+    const workspacePkgLockContent = FsUtil.readFile(path.resolve(this._workspaceRootPath, "package-lock.json"));
 
     const pkgKey = npmConfig.name.split("/").last()!;
     const publicPath = builderType === "web" ? `/${pkgKey}/` : watch ? `/${pkgKey}/${builderType}/` : ``;
 
     const cacheBasePath = path.resolve(this._rootPath, ".cache");
-    const cachePath = path.resolve(cacheBasePath, pkgVersion);
+    // const cachePath = path.resolve(cacheBasePath, pkgVersion);
 
     const distPath = (builderType === "cordova" && !watch) ? path.resolve(this._cordova!.cordovaPath, "www")
       : (builderType === "electron" && !watch) ? path.resolve(this._rootPath, ".electron/src")
@@ -374,14 +378,15 @@ export class SdCliClientBuilder extends EventEmitter {
       cache: {
         type: "filesystem",
         profile: watch ? undefined : false,
-        cacheDirectory: path.resolve(cachePath, "angular-webpack"),
+        cacheDirectory: path.resolve(cacheBasePath, "angular-webpack"),
         maxMemoryGenerations: 1,
         name: createHash("sha1")
-          .update(pkgVersion)
-          .update(ngVersion)
+          .update(workspacePkgLockContent)
+          // .update(pkgVersion)
+          // .update(ngVersion)
           .update(JSON.stringify(this._parsedTsconfig.options))
-          .update(this._workspaceRootPath)
-          .update(this._rootPath)
+          // .update(this._workspaceRootPath)
+          // .update(this._rootPath)
           .update(JSON.stringify(this._config))
           .update(watch.toString())
           .digest("hex")
@@ -488,7 +493,7 @@ export class SdCliClientBuilder extends EventEmitter {
               {
                 loader: "@angular-devkit/build-angular/src/babel/webpack-loader",
                 options: {
-                  cacheDirectory: path.resolve(cachePath, "babel-webpack"),
+                  cacheDirectory: path.resolve(cacheBasePath, "babel-webpack"),
                   scriptTarget: ts.ScriptTarget.ES2017,
                   aot: true,
                   optimize: !watch,
@@ -607,18 +612,18 @@ export class SdCliClientBuilder extends EventEmitter {
               {
                 context: this._cordova!.cordovaPath,
                 to: `cordova-${platform}/plugins`,
-                from: `platforms/${platform}/www/plugins`,
+                from: `platforms/${platform}/platform_www/plugins`,
                 noErrorOnMissing: true
               },
               {
                 context: this._cordova!.cordovaPath,
                 to: `cordova-${platform}/cordova.js`,
-                from: `platforms/${platform}/www/cordova.js`
+                from: `platforms/${platform}/platform_www/cordova.js`
               },
               {
                 context: this._cordova!.cordovaPath,
                 to: `cordova-${platform}/cordova_plugins.js`,
-                from: `platforms/${platform}/www/cordova_plugins.js`,
+                from: `platforms/${platform}/platform_www/cordova_plugins.js`,
                 noErrorOnMissing: true
               },
               {
@@ -680,7 +685,7 @@ export class SdCliClientBuilder extends EventEmitter {
           cache: {
             enabled: true,
             basePath: cacheBasePath,
-            path: cachePath
+            path: path.resolve(cacheBasePath, "index-webpack")
           },
           postTransform: undefined,
           optimization: {

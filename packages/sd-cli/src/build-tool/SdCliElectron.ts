@@ -3,8 +3,8 @@ import { INpmConfig } from "../commons";
 import path from "path";
 
 export class SdCliElectron {
-  public static async runWebviewOnDeviceAsync(rootPath: string, pkgName: string): Promise<void> {
-    const electronPath = path.resolve(rootPath, `packages/${pkgName}/.electron`);
+  public static async runWebviewOnDeviceAsync(rootPath: string, pkgName: string, url: string): Promise<void> {
+    const electronPath = path.resolve(rootPath, `packages/${pkgName}/.electron/src`);
 
     const npmConfig = (await FsUtil.readJsonAsync(path.resolve(rootPath, `packages/${pkgName}/package.json`))) as INpmConfig;
     await FsUtil.writeJsonAsync(path.resolve(electronPath, `package.json`), {
@@ -13,13 +13,18 @@ export class SdCliElectron {
       description: npmConfig.description,
       main: "electron.js",
       author: npmConfig.author,
-      license: npmConfig.license
+      license: npmConfig.license,
+      dependencies: {
+        "dotenv": npmConfig.dependencies!["dotenv"].replace("^", "")
+      }
     });
 
-    await FsUtil.copyAsync(path.resolve(rootPath, `packages/${pkgName}/src/electron.dev.js`), path.resolve(electronPath, "electron.js"));
+    await FsUtil.writeFileAsync(path.resolve(rootPath, `${electronPath}/.env`), `
+NODE_ENV=development
+SD_ELECTRON_DEV_URL=${url.replace(/\/$/, "")}/${pkgName}/electron/`.trim());
 
-    await SdProcess.spawnAsync(`electron "${electronPath}"`, {
-      cwd: rootPath
-    }, true);
+    await FsUtil.copyAsync(path.resolve(rootPath, `packages/${pkgName}/src/electron.js`), path.resolve(electronPath, "electron.js"));
+
+    await SdProcess.spawnAsync(`electron "${electronPath}"`, { cwd: rootPath }, true);
   }
 }

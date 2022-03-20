@@ -111,7 +111,7 @@
       "server": {
         "port": 60280
       },
-      "builders": {
+      "builder": {
         "electron": {
           "appId": "kr.co.simplysm.simplysm.sd_devtool"
         }

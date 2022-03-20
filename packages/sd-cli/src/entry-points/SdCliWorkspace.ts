@@ -83,7 +83,11 @@ export class SdCliWorkspace {
           if (typeof pkg.config.server === "string") {
             const serverInfo = this._serverInfoMap.getOrCreate(pkg.config.server, { middlewares: [], clientInfos: [] });
             serverInfo.middlewares.push(...middlewares);
-            serverInfo.clientInfos.push({ pkgKey: pkg.name.split("/").last()! });
+            serverInfo.clientInfos.push({
+              pkgKey: pkg.name.split("/").last()!,
+              platforms: pkg.config.builder ? Object.keys(pkg.config.builder) : ["web"],
+              cordovaTargets: pkg.config.builder?.cordova?.target ? Object.keys(pkg.config.builder.cordova.target) : ["browser"]
+            });
           }
           else { // DEV SERVER
             const serverInfo = this._serverInfoMap.getOrCreate("_", { middlewares: [], clientInfos: [] });
@@ -96,7 +100,11 @@ export class SdCliWorkspace {
               await server.listenAsync();
               serverInfo.server = server;
               serverInfo.server.devMiddlewares = middlewares;
-              serverInfo.clientInfos.push({ pkgKey: pkg.name.split("/").last()! });
+              serverInfo.clientInfos.push({
+                pkgKey: pkg.name.split("/").last()!,
+                platforms: pkg.config.builder ? Object.keys(pkg.config.builder) : ["web"],
+                cordovaTargets: pkg.config.builder?.cordova?.target ? Object.keys(pkg.config.builder.cordova.target) : ["browser"]
+              });
             }
           }
         }
@@ -361,11 +369,28 @@ export class SdCliWorkspace {
       const portStr = serverInfo.server.options.port.toString();
 
       for (const clientInfo of serverInfo.clientInfos) {
-        clientHrefs.push(`${protocolStr}://localhost:${portStr}/${clientInfo.pkgKey}/`);
+        for (const platform of clientInfo.platforms) {
+          if (platform === "web") {
+            clientHrefs.push(`${protocolStr}://localhost:${portStr}/${clientInfo.pkgKey}/`);
+          }
+          else if (platform === "electron") {
+            clientHrefs.push(`sd-cli run-electron ${clientInfo.pkgKey} http://localhost:${portStr}`);
+          }
+          else if (platform === "cordova") {
+            for (const target of clientInfo.cordovaTargets) {
+              if (target === "browser") {
+                clientHrefs.push(`${protocolStr}://localhost:${portStr}/${clientInfo.pkgKey}/${platform}/`);
+              }
+              else {
+                clientHrefs.push(`sd-cli run-cordova ${clientInfo.pkgKey} http://[IP]:${portStr}`);
+              }
+            }
+          }
+        }
       }
     }
     if (clientHrefs.length > 0) {
-      this._logger.log(`오픈된 클라이언트: ${clientHrefs.join(", ")}`);
+      this._logger.log(`오픈된 클라이언트:\n${clientHrefs.join("\n")}`);
     }
   }
 }
@@ -373,5 +398,5 @@ export class SdCliWorkspace {
 interface IServerInfo {
   server?: SdServiceServer;
   middlewares: NextHandleFunction[];
-  clientInfos: { pkgKey: string }[];
+  clientInfos: { pkgKey: string; platforms: string[]; cordovaTargets: string[] }[];
 }

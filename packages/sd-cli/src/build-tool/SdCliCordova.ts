@@ -14,8 +14,8 @@ export class SdCliCordova {
 
   public get platforms(): ("browser" | "android")[] {
     return [
-      ...this._config.targets?.browser ? ["browser" as const] : [],
-      ...this._config.targets?.android ? ["android" as const] : []
+      ...this._config.target?.browser ? ["browser" as const] : [],
+      ...this._config.target?.android ? ["android" as const] : []
     ];
   }
 
@@ -57,7 +57,7 @@ export class SdCliCordova {
 
     // 설치 미빌드 플랫폼 삭제
     for (const alreadyPlatform of alreadyPlatforms) {
-      if (this._config[alreadyPlatform] == null) {
+      if (this._config.target?.[alreadyPlatform] == null) {
         await this._execAsync(`${this._binPath} platform remove ${alreadyPlatform}`, this.cordovaPath);
       }
     }
@@ -85,9 +85,9 @@ export class SdCliCordova {
     }
 
     // ANDROID SIGN 파일 복사
-    if (this._config.targets?.android?.sign) {
+    if (this._config.target?.android?.sign) {
       await FsUtil.copyAsync(
-        path.resolve(this._rootPath, this._config.targets.android.sign.keystore),
+        path.resolve(this._rootPath, this._config.target.android.sign.keystore),
         path.resolve(this.cordovaPath, "android.keystore")
       );
     }
@@ -99,16 +99,16 @@ export class SdCliCordova {
     await FsUtil.writeJsonAsync(
       path.resolve(this.cordovaPath, "build.json"),
       {
-        ...this._config.targets?.android ? {
+        ...this._config.target?.android ? {
           android: {
             release: {
-              packageType: this._config.targets.android.bundle ? "bundle" : "apk",
-              ...this._config.targets.android.sign ? {
+              packageType: this._config.target.android.bundle ? "bundle" : "apk",
+              ...this._config.target.android.sign ? {
                 keystore: path.resolve(this.cordovaPath, "android.keystore"),
-                storePassword: this._config.targets.android.sign.storePassword,
-                alias: this._config.targets.android.sign.alias,
-                password: this._config.targets.android.sign.password,
-                keystoreType: this._config.targets.android.sign.keystoreType
+                storePassword: this._config.target.android.sign.storePassword,
+                alias: this._config.target.android.sign.alias,
+                password: this._config.target.android.sign.password,
+                keystoreType: this._config.target.android.sign.keystoreType
               } : {}
             }
           }
@@ -148,7 +148,7 @@ export class SdCliCordova {
     configXml["widget"]["allow-navigation"] = [{ "$": { "href": "*://*/*" } }];
 
     // CONFIG: ANDROID usesCleartextTraffic 설정
-    if (this._config.targets?.android) {
+    if (this._config.target?.android) {
       configXml.widget.$["xmlns:android"] = "http://schemas.android.com/apk/res/android";
 
       configXml["widget"]["platform"] = configXml["widget"]["platform"] ?? [];
@@ -185,11 +185,11 @@ export class SdCliCordova {
     }
 
     // 결과물 복사: ANDROID
-    if (this._config.targets?.android) {
+    if (this._config.target?.android) {
       const targetOutPath = path.resolve(outPath, "android");
-      const apkFileName = this._config.targets.android.sign ? `app-${buildType}.apk` : `app-${buildType}-unsigned.apk`;
-      const distApkFileName = path.basename(`${this._config.appName}${this._config.targets.android.sign ? "" : "-unsigned"}-v${this._npmConfig.version}.apk`);
-      const latestDistApkFileName = path.basename(`${this._config.appName}${this._config.targets.android.sign ? "" : "-unsigned"}-latest.apk`);
+      const apkFileName = this._config.target.android.sign ? `app-${buildType}.apk` : `app-${buildType}-unsigned.apk`;
+      const distApkFileName = path.basename(`${this._config.appName}${this._config.target.android.sign ? "" : "-unsigned"}-v${this._npmConfig.version}.apk`);
+      const latestDistApkFileName = path.basename(`${this._config.appName}${this._config.target.android.sign ? "" : "-unsigned"}-latest.apk`);
       await FsUtil.mkdirsAsync(targetOutPath);
       await FsUtil.copyAsync(
         path.resolve(this.cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
@@ -201,7 +201,7 @@ export class SdCliCordova {
       );
     }
 
-    if (this._config.targets?.android) {
+    if (this._config.target?.android) {
       // 자동업데이트를 위한 zip 파일 쓰기
       const zip = new JSZip();
       const resultFiles = await FsUtil.globAsync(path.resolve(this.cordovaPath, "platforms", "android", "app", "src", "main", "assets", "www", "**/*"), {
@@ -221,10 +221,12 @@ export class SdCliCordova {
     }
   }
 
-  public static async runWebviewOnDeviceAsync(cordovaPath: string, platform: "browser" | "android", url: string): Promise<void> {
+  public static async runWebviewOnDeviceAsync(rootPath: string, platform: "browser" | "android", pkgName: string, url: string): Promise<void> {
+    const cordovaPath = path.resolve(rootPath, `packages/${pkgName}/.cordova/`);
+
     await FsUtil.removeAsync(path.resolve(cordovaPath, "www"));
     await FsUtil.mkdirsAsync(path.resolve(cordovaPath, "www"));
-    await FsUtil.writeFileAsync(path.resolve(cordovaPath, "www/index.html"), `'${url}'로 이동중... <script>setTimeout(function () {window.location.href = "${url}"}, 3000);</script>`.trim());
+    await FsUtil.writeFileAsync(path.resolve(cordovaPath, "www/index.html"), `'${url}'로 이동중... <script>setTimeout(function () {window.location.href = "${url.replace(/\/$/, "")}/${pkgName}/cordova/"}, 3000);</script>`.trim());
 
     const binPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
     await SdProcess.spawnAsync(`${binPath} run ${platform} --device`, { cwd: cordovaPath }, true);

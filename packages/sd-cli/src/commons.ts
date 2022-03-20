@@ -66,7 +66,7 @@ export interface ISdCliServerPackageConfig {
 
 export interface ISdCliClientPackageConfig {
   type: "client";
-  builders?: {
+  builder?: {
     web?: ISdCliClientBuilderWebConfig;
     cordova?: ISdCliClientBuilderCordovaConfig;
     electron?: ISdCliClientBuilderElectronConfig;
@@ -97,13 +97,12 @@ export interface ISdCliClientBuilderWebConfig {
 }
 
 export interface ISdCliClientBuilderCordovaConfig {
-  type: "cordova";
   appId: string;
   appName: string;
   plugins?: string[];
   icon?: string;
   debug?: boolean;
-  targets?: {
+  target?: {
     browser?: {};
     android?: {
       bundle?: boolean;
@@ -121,8 +120,3 @@ export interface ISdCliClientBuilderCordovaConfig {
 export interface ISdCliClientBuilderElectronConfig {
   appId: string;
 }
-
-export type TSdCliClientBuilderConfig =
-  ISdCliClientBuilderWebConfig
-  | ISdCliClientBuilderCordovaConfig
-  | ISdCliClientBuilderElectronConfig;

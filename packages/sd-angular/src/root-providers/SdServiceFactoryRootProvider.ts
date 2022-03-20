@@ -6,7 +6,7 @@ import { ISdServiceClientConnectionConfig, SdServiceClient } from "@simplysm/sd-
 export class SdServiceFactoryRootProvider {
   private readonly _clientMap = new Map<string, SdServiceClient>();
 
-  public async connectAsync(key: string, options: Partial<ISdServiceClientConnectionConfig> = {}): Promise<void> {
+  public async connectAsync(clientName: string, key: string, options: Partial<ISdServiceClientConnectionConfig> = {}): Promise<void> {
     if (this._clientMap.has(key)) {
       if (!this._clientMap.get(key)!.connected) {
         throw new Error("이미 연결이 끊긴 클라이언트와 같은 키로 연결을 시도하였습니다.");
@@ -16,7 +16,7 @@ export class SdServiceFactoryRootProvider {
       }
     }
 
-    const client = new SdServiceClient(ObjectUtil.merge({
+    const client = new SdServiceClient(clientName, ObjectUtil.merge({
       port: location.port,
       host: location.hostname,
       ssl: location.protocol.startsWith("https")

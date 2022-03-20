@@ -15,7 +15,8 @@ export class SdServiceClient {
     return this._socket?.connected ?? false;
   }
 
-  public constructor(private readonly _options: ISdServiceClientConnectionConfig) {
+  public constructor(private readonly _name: string,
+                     private readonly _options: ISdServiceClientConnectionConfig) {
   }
 
   public async connectAsync(): Promise<void> {
@@ -52,6 +53,7 @@ export class SdServiceClient {
       }
 
       const req: ISdServiceRequest = {
+        clientName: this._name,
         uuid: Uuid.new().toString(),
         command,
         params

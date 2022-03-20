@@ -19,8 +19,8 @@ export class SdOrmService extends SdServiceBase {
   private static readonly _connections = new Map<number, IDbConnection>();
   private static readonly _wsConnectionCloseListenerMap = new Map<number, () => Promise<void>>();
 
-  public static getDbConnConfigAsync = async (rootPath: string, requestUrl: string | undefined, opt: TDbConnOptions): Promise<IDbConnectionConfig> => {
-    const config: IDbConnectionConfig | undefined = opt.configName !== undefined ? (await SdServiceServerConfigUtil.getConfigAsync(rootPath, requestUrl))["orm"]?.[opt.configName] : undefined;
+  public static getDbConnConfigAsync = async (rootPath: string, clientName: string | undefined, opt: TDbConnOptions): Promise<IDbConnectionConfig> => {
+    const config: IDbConnectionConfig | undefined = opt.configName !== undefined ? (await SdServiceServerConfigUtil.getConfigAsync(rootPath, clientName))["orm"]?.[opt.configName] : undefined;
     if (config === undefined) {
       throw new Error("서버에서 ORM 설정을 찾을 수 없습니다.");
     }
@@ -33,7 +33,7 @@ export class SdOrmService extends SdServiceBase {
     database?: string;
     schema?: string;
   }> {
-    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.socket.request.headers.referer, opt);
+    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.request.clientName, opt);
     return {
       dialect: config.dialect,
       database: config.database,
@@ -42,7 +42,7 @@ export class SdOrmService extends SdServiceBase {
   }
 
   public async connectAsync(opt: Record<string, any>): Promise<number> {
-    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.socket.request.headers.referer, opt);
+    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.request.clientName, opt);
 
     const dbConn = DbConnectionFactory.create(config);
 

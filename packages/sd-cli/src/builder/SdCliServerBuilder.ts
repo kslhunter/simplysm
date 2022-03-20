@@ -187,11 +187,12 @@ export class SdCliServerBuilder extends EventEmitter {
 
     const npmConfig = this._getNpmConfig(this._rootPath)!;
     const pkgKey = npmConfig.name.split("/").last()!;
-    const pkgVersion = npmConfig.version;
+    // const pkgVersion = npmConfig.version;
+
+    const workspacePkgLockContent = FsUtil.readFile(path.resolve(this._workspaceRootPath, "package-lock.json"));
 
     const cacheBasePath = path.resolve(this._rootPath, ".cache");
-    const cachePath = path.resolve(cacheBasePath, pkgVersion);
-
+    // const cachePath = path.resolve(cacheBasePath, pkgVersion);
 
     let prevProgressMessage = "";
     return {
@@ -241,13 +242,11 @@ export class SdCliServerBuilder extends EventEmitter {
       cache: {
         type: "filesystem",
         profile: watch ? undefined : false,
-        cacheDirectory: path.resolve(cachePath, "server-webpack"),
+        cacheDirectory: path.resolve(cacheBasePath, "server-webpack"),
         maxMemoryGenerations: 1,
         name: createHash("sha1")
-          .update(pkgVersion)
+          .update(workspacePkgLockContent)
           .update(JSON.stringify(this._parsedTsconfig.options))
-          .update(this._workspaceRootPath)
-          .update(this._rootPath)
           .update(JSON.stringify(this._config))
           .update(watch.toString())
           .digest("hex")

@@ -1,4 +1,5 @@
 export interface ISdServiceRequest {
+  clientName: string;
   uuid: string;
   command: string;
   params: any[];

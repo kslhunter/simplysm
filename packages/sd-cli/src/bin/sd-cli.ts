@@ -67,27 +67,32 @@ const argv = yargs(hideBin(process.argv))
       })
   )
   .command(
-    "run-electron <package>",
+    "run-electron <package> <url>",
     "변경감지중인 플랫폼을 ELECTRON 앱 형태로 띄웁니다.",
     (cmd) => cmd
       .positional("package", {
         type: "string",
-        describe: "설정된 패키지명",
+        describe: "패키지명",
+        demandOption: true
+      })
+      .positional("url", {
+        type: "string",
+        describe: "Webview로 오픈할 URL",
         demandOption: true
       })
   )
   .command(
-    "run-cordova <cordovaPath> <platform> <url>",
+    "run-cordova <platform> <package> <url>",
     "변경감지중인 플랫폼을 코도바 디바이스에 앱 형태로 띄웁니다.",
     (cmd) => cmd
-      .positional("cordovaPath", {
-        type: "string",
-        describe: "CORDOVA 프로젝트 경로",
-        demandOption: true
-      })
       .positional("platform", {
         type: "string",
         describe: "빌드 플랫폼(android,...)",
+        demandOption: true
+      })
+      .positional("package", {
+        type: "string",
+        describe: "패키지명",
         demandOption: true
       })
       .positional("url", {
@@ -204,12 +209,17 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
       });
   }
   else if (argv._[0] === "run-electron") {
-    await SdCliElectron.runWebviewOnDeviceAsync(process.cwd(), argv.package);
+    await SdCliElectron.runWebviewOnDeviceAsync(
+      process.cwd(),
+      argv.package,
+      argv.url
+    );
   }
   else if (argv._[0] === "run-cordova") {
     await SdCliCordova.runWebviewOnDeviceAsync(
-      argv.cordovaPath,
+      process.cwd(),
       argv.platform as "browser" | "android",
+      argv.package,
       argv.url
     );
   }

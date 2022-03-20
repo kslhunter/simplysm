@@ -35,7 +35,7 @@ export class SdSmtpClientService extends SdServiceBase {
 
   public async sendByConfigAsync(configName: string, options: ISmtpClientSendByDefaultOption): Promise<string> {
     const config = (
-      await SdServiceServerConfigUtil.getConfigAsync(this.server.options.rootPath, this.socket.request.headers.referer)
+      await SdServiceServerConfigUtil.getConfigAsync(this.server.options.rootPath, this.request.clientName)
     )["smtp"]?.[configName];
     if (config === undefined) {
       throw new Error("서버에서 메일서버 설정을 찾을 수 없습니다.");
