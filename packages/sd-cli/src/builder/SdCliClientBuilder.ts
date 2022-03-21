@@ -33,7 +33,6 @@ import { augmentAppWithServiceWorker } from "@angular-devkit/build-angular/src/u
 import { SdCliNgModuleGenerator } from "../ng-tools/SdCliNgModuleGenerator";
 import { SdCliCordova } from "../build-tool/SdCliCordova";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
-import { NeverEntryError } from "@simplysm/sd-core-common";
 import electronBuilder from "electron-builder";
 import LintResult = ESLint.LintResult;
 
@@ -236,11 +235,20 @@ export class SdCliClientBuilder extends EventEmitter {
     if (this._config.builder?.electron) {
       const npmConfig = this._getNpmConfig(this._rootPath)!;
 
-      if (npmConfig.dependencies?.["electron"] == null) {
-        throw new NeverEntryError();
+      const electronVersion = npmConfig.dependencies?.["electron"];
+      if (electronVersion === undefined) {
+        throw new Error("ELECTRON 패키지의 'dependencies'에는 'electron'이 반드시 포함되어야 합니다.");
       }
 
-      await FsUtil.writeJsonAsync(path.resolve(this._rootPath, `.electron/src/package.json`), {
+      const dotenvVersion = npmConfig.dependencies?.["dotenv"];
+      if (dotenvVersion === undefined) {
+        throw new Error("ELECTRON 패키지의 'dependencies'에는 'dotenv'가 반드시 포함되어야 합니다.");
+      }
+
+      const electronSrcPath = path.resolve(this._rootPath, `.electron/src`);
+      const electronDistPath = path.resolve(this._rootPath, `.electron/dist`);
+
+      await FsUtil.writeJsonAsync(path.resolve(electronSrcPath, `package.json`), {
         name: npmConfig.name,
         version: npmConfig.version,
         description: npmConfig.description,
@@ -248,16 +256,21 @@ export class SdCliClientBuilder extends EventEmitter {
         author: npmConfig.author,
         license: npmConfig.license,
         devDependencies: {
-          "electron": npmConfig.dependencies["electron"].replace("^", "")
+          "electron": electronVersion.replace("^", "")
         },
         dependencies: {
-          "dotenv": npmConfig.dependencies["dotenv"].replace("^", "")
+          "dotenv": dotenvVersion
         }
       });
 
-      await FsUtil.writeFileAsync(path.resolve(this._rootPath, `.electron/src/.env`), `NODE_ENV=production`);
+      await FsUtil.writeFileAsync(path.resolve(electronSrcPath, `.env`), [
+        "NODE_ENV=production",
+        (this._config.builder.electron.icon !== undefined) ? `SD_ELECTRON_ICON=${this._config.builder.electron.icon}` : undefined
+      ].filterExists().join("\n"));
 
-      await FsUtil.copyAsync(path.resolve(this._rootPath, `src/electron.js`), path.resolve(this._rootPath, ".electron/src/electron.js"));
+      let electronJsFileContent = await FsUtil.readFileAsync(path.resolve(this._rootPath, `src/electron.js`));
+      electronJsFileContent = "require(\"dotenv\").config({ path: `${__dirname}\\\\.env` });\n" + electronJsFileContent;
+      await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), electronJsFileContent);
 
       await electronBuilder.build({
         targets: electronBuilder.Platform.WINDOWS.createTarget(),
@@ -266,8 +279,8 @@ export class SdCliClientBuilder extends EventEmitter {
           productName: npmConfig.description,
           nsis: {},
           directories: {
-            app: path.resolve(this._rootPath, ".electron/src"),
-            output: path.resolve(this._rootPath, ".electron/dist")
+            app: electronSrcPath,
+            output: electronDistPath
           }
         }
       });

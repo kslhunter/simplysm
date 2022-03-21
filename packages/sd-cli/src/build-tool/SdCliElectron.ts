@@ -1,30 +1,72 @@
-import { FsUtil, SdProcess } from "@simplysm/sd-core-node";
-import { INpmConfig } from "../commons";
+import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
+import { INpmConfig, ISdCliClientPackageConfig } from "../commons";
 import path from "path";
+import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
 
 export class SdCliElectron {
-  public static async runWebviewOnDeviceAsync(rootPath: string, pkgName: string, url: string): Promise<void> {
-    const electronPath = path.resolve(rootPath, `packages/${pkgName}/.electron/src`);
+  private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
 
-    const npmConfig = (await FsUtil.readJsonAsync(path.resolve(rootPath, `packages/${pkgName}/package.json`))) as INpmConfig;
-    await FsUtil.writeJsonAsync(path.resolve(electronPath, `package.json`), {
+  public constructor(private readonly _rootPath: string) {
+  }
+
+  public async runWebviewOnDeviceAsync(pkgName: string, url: string, opt: { confFileRelPath: string; optNames: string[] }): Promise<void> {
+    this._logger.debug("프로젝트 설정 가져오기...");
+    const config = await SdCliConfigUtil.loadConfigAsync(path.resolve(this._rootPath, opt.confFileRelPath), true, opt.optNames);
+    const pkgConfig = config.packages[pkgName] as ISdCliClientPackageConfig | undefined;
+    if (!pkgConfig) throw new Error("패키지 설정을 찾을 수 없습니다.");
+
+    const electronConfig = pkgConfig.builder?.electron;
+    if (!electronConfig) throw new Error("ELECTRON 설정을 찾을 수 없습니다.");
+
+    const pkgRootPath = path.resolve(this._rootPath, `packages/${pkgName}`);
+    const electronSrcPath = path.resolve(pkgRootPath, `.electron/src`);
+
+    await FsUtil.removeAsync(electronSrcPath);
+
+    const npmConfig = (await FsUtil.readJsonAsync(path.resolve(pkgRootPath, `package.json`))) as INpmConfig;
+    const electronVersion = npmConfig.dependencies?.["electron"];
+    if (electronVersion === undefined) {
+      throw new Error("ELECTRON 패키지의 'dependencies'에는 'electron'이 반드시 포함되어야 합니다.");
+    }
+
+    const dotenvVersion = npmConfig.dependencies?.["dotenv"];
+    if (dotenvVersion === undefined) {
+      throw new Error("ELECTRON 패키지의 'dependencies'에는 'dotenv'가 반드시 포함되어야 합니다.");
+    }
+
+    await FsUtil.writeJsonAsync(path.resolve(electronSrcPath, `package.json`), {
       name: npmConfig.name,
       version: npmConfig.version,
       description: npmConfig.description,
       main: "electron.js",
       author: npmConfig.author,
       license: npmConfig.license,
+      devDependencies: {
+        "electron": electronVersion.replace("^", "")
+      },
       dependencies: {
-        "dotenv": npmConfig.dependencies!["dotenv"].replace("^", "")
+        "dotenv": dotenvVersion
       }
     });
 
-    await FsUtil.writeFileAsync(path.resolve(rootPath, `${electronPath}/.env`), `
-NODE_ENV=development
-SD_ELECTRON_DEV_URL=${url.replace(/\/$/, "")}/${pkgName}/electron/`.trim());
+    if (FsUtil.exists(path.resolve(pkgRootPath, "src/favicon.ico"))) {
+      await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/favicon.ico"), path.resolve(electronSrcPath, "favicon.ico"));
+    }
+    if (FsUtil.exists(path.resolve(pkgRootPath, "src/asssets"))) {
+      await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/assets"), path.resolve(electronSrcPath, "assets"));
+    }
 
-    await FsUtil.copyAsync(path.resolve(rootPath, `packages/${pkgName}/src/electron.js`), path.resolve(electronPath, "electron.js"));
+    await FsUtil.writeFileAsync(path.resolve(electronSrcPath, `.env`), [
+      "NODE_ENV=development",
+      `SD_ELECTRON_DEV_URL=${url.replace(/\/$/, "")}/${pkgName}/electron/`,
+      (electronConfig.icon !== undefined) ? `SD_ELECTRON_ICON=${electronConfig.icon}` : undefined
+    ].filterExists().join("\n"));
 
-    await SdProcess.spawnAsync(`electron "${electronPath}"`, { cwd: rootPath }, true);
+
+    let electronJsFileContent = await FsUtil.readFileAsync(path.resolve(pkgRootPath, `src/electron.js`));
+    electronJsFileContent = "require(\"dotenv\").config({ path: `${__dirname}\\\\.env` });\n" + electronJsFileContent;
+    await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), electronJsFileContent);
+
+    await SdProcess.spawnAsync(`electron "${electronSrcPath}"`, { cwd: this._rootPath }, true);
   }
 }

@@ -80,6 +80,17 @@ const argv = yargs(hideBin(process.argv))
         describe: "Webview로 오픈할 URL",
         demandOption: true
       })
+      .options({
+        config: {
+          type: "string",
+          describe: "simplysm.json 파일 경로"
+        },
+        options: {
+          type: "string",
+          array: true,
+          describe: "옵션 설정 (설정파일에서 @로 시작하는 부분)"
+        }
+      })
   )
   .command(
     "run-cordova <platform> <package> <url>",
@@ -209,11 +220,15 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
       });
   }
   else if (argv._[0] === "run-electron") {
-    await SdCliElectron.runWebviewOnDeviceAsync(
-      process.cwd(),
-      argv.package,
-      argv.url
-    );
+    await new SdCliElectron(process.cwd())
+      .runWebviewOnDeviceAsync(
+        argv.package,
+        argv.url,
+        {
+          confFileRelPath: argv.config ?? "simplysm.json",
+          optNames: argv.options ?? []
+        }
+      );
   }
   else if (argv._[0] === "run-cordova") {
     await SdCliCordova.runWebviewOnDeviceAsync(
