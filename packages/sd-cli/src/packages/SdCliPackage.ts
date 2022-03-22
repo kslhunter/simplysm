@@ -86,8 +86,6 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async publishAsync(): Promise<void> {
-    console.log(this._npmConfig.name, this.config.publish);
-
     if (this.config.publish !== undefined) {
       if (this.config.type === "library") {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

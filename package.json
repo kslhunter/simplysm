@@ -29,7 +29,7 @@
     "build:devtool(--debug)": "npm run _sd-cli_ -- --debug build --packages sd-devtool",
     "----- ksl": "",
     "ksl:publish": "npm run _sd-cli_ -- publish --config simplysm-ksl.json",
-    "ksl:publish(--debug)(--noBuild)": "npm run _sd-cli_ -- --debug publish --noBuild -- config simplysm-ksl.json",
+    "ksl:publish(--debug)(--noBuild)": "npm run _sd-cli_ -- --debug publish --noBuild --config simplysm-ksl.json",
     "ksl:enc_conf": "npm run _sd-cli_ -- enc-file simplysm-ksl.json",
     "ksl:dec_conf": "npm run _sd-cli_ -- dec-file simplysm-ksl.json.enc",
     "----- ksl:pkg(--debug)": "",
