@@ -52,7 +52,7 @@ export class SdCliGithubApi {
         tag_name: `v${ver}`,
         target_commitish: currentBranch,
         name: `v${ver}`,
-        // body: `v${ver}`,
+        body: `v${ver}`,
         draft: true,
         prerelease: false
       }));
