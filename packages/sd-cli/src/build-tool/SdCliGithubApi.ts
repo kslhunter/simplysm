@@ -22,7 +22,7 @@ export class SdCliGithubApi {
           headers: {
             "Authorization": `token ${this._apiKey}`,
             "Accept": "application/vnd.github.v3+json",
-            "User-Agent": "@simplysm/sd-cli/" + this.constructor.name
+            "User-Agent": "@simplysm/sd-cli:publish"
           }
         },
         (res) => {
@@ -52,7 +52,7 @@ export class SdCliGithubApi {
         tag_name: `v${ver}`,
         target_commitish: currentBranch,
         name: `v${ver}`,
-        body: `v${ver}`,
+        // body: `v${ver}`,
         draft: true,
         prerelease: false
       }));

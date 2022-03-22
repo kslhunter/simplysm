@@ -118,7 +118,7 @@
       },
       "publish": {
         "type": "github",
-        "apiKey": "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",
+        "apiKey": "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",
         "files": [
           {
             "from": "electron/심플리즘 개발도구-latest.exe",
