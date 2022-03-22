@@ -32,7 +32,7 @@ export class SdCliGithubApi {
           });
 
           res.on("end", () => {
-            if (res.statusCode !== 200) {
+            if (res.statusCode !== 201) {
               const errObj = JSON.parse(dataBuffer.toString());
               throw new Error(errObj.message + "(" + errObj.documentation_url + ")");
             }
