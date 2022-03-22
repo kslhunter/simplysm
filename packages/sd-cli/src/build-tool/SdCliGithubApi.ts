@@ -22,7 +22,7 @@ export class SdCliGithubApi {
 
     await new Promise<void>((resolve, reject) => {
       const req = https.request(
-        `https://uploads.github.com/repos/${this._repoOwner}/${this._repoName}/releases/${releaseId}/assets?name=${fileName}`,
+        `https://uploads.github.com/repos/${this._repoOwner}/${this._repoName}/releases/${releaseId}/assets?name=${fileName}&label=${fileName}`,
         {
           method: "POST",
           headers: {
