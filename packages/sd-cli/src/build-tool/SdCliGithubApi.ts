@@ -15,11 +15,8 @@ export class SdCliGithubApi {
     const currentBranch = (await SdProcess.spawnAsync("git branch --show-current")).trim();
 
     await new Promise<void>((resolve, reject) => {
-      console.log(`https://api.github.com/repos/${this._repoOwner}/${this._repoName.slice(1)}/releases`);
-      console.log(this._apiKey);
-
       const req = https.request(
-        `https://api.github.com/repos/${this._repoOwner}/${this._repoName}/releases`,
+        `https://api.github.com/repos/${this._repoOwner}/${this._repoName.slice(1)}/releases`,
         {
           method: "POST",
           headers: {
