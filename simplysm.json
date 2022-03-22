@@ -115,16 +115,6 @@
         "electron": {
           "appId": "kr.co.simplysm.simplysm.sd_devtool"
         }
-      },
-      "publish": {
-        "type": "github",
-        "apiKey": "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",
-        "files": [
-          {
-            "from": "electron/심플리즘 개발도구-latest.exe",
-            "to": "심플리즘 개발도구.exe"
-          }
-        ]
       }
     }
   }
