@@ -148,7 +148,7 @@ import { ChangeDetectionStrategy, Component, HostBinding, HostListener, Input } 
 
             ._cube4 {
               transform: rotateZ(270deg);
-              
+
               &:before {
                 animation-delay: 0.9s;
               }

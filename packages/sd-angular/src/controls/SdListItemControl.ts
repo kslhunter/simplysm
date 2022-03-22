@@ -39,7 +39,8 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
         cursor: pointer;
 
         > ._selected-icon {
-          color: var(--text-brightness-lighter);
+          //color: var(--text-brightness-lighter);
+          color: transparent;
         }
       }
 
@@ -82,14 +83,29 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
           background: var(--theme-color-primary-default);
           color: var(--text-brightness-rev-default);
 
-          > ._selected-icon {
-            color: var(--theme-color-primary-default);
-          }
-
           &:hover,
           &:active {
             background: var(--theme-color-primary-default);
             color: var(--text-brightness-rev-default);
+          }
+        }
+      }
+
+      &[sd-has-selected-icon=true][sd-selected=true] {
+        > ._content {
+          background: transparent;
+          color: var(--text-brightness-default);
+          
+          > ._selected-icon {
+            color: var(--theme-color-primary-default);
+          }
+          
+          &:hover {
+            background: var(--trans-brightness-light);
+          }
+
+          &:active {
+            background: var(--trans-brightness-dark);
           }
         }
       }
@@ -133,6 +149,11 @@ export class SdListItemControl {
 
   @Input()
   public selectedIcon?: IconProp;
+
+  @HostBinding("attr.sd-has-selected-icon")
+  public get hasSelectedIcon(): boolean {
+    return Boolean(this.selectedIcon);
+  }
 
   @HostBinding("attr.sd-has-children")
   public get hasChildren(): boolean {

@@ -2,6 +2,7 @@ import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
 import { INpmConfig, ISdCliClientPackageConfig } from "../commons";
 import path from "path";
 import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
+import ts from "typescript";
 
 export class SdCliElectron {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -26,12 +27,12 @@ export class SdCliElectron {
     const npmConfig = (await FsUtil.readJsonAsync(path.resolve(pkgRootPath, `package.json`))) as INpmConfig;
     const electronVersion = npmConfig.dependencies?.["electron"];
     if (electronVersion === undefined) {
-      throw new Error("ELECTRON 패키지의 'dependencies'에는 'electron'이 반드시 포함되어야 합니다.");
+      throw new Error("ELECTRON 빌드 패키지의 'dependencies'에는 'electron'이 반드시 포함되어야 합니다.");
     }
 
     const dotenvVersion = npmConfig.dependencies?.["dotenv"];
     if (dotenvVersion === undefined) {
-      throw new Error("ELECTRON 패키지의 'dependencies'에는 'dotenv'가 반드시 포함되어야 합니다.");
+      throw new Error("ELECTRON 빌드 패키지의 'dependencies'에는 'dotenv'가 반드시 포함되어야 합니다.");
     }
 
     await FsUtil.writeJsonAsync(path.resolve(electronSrcPath, `package.json`), {
@@ -52,21 +53,24 @@ export class SdCliElectron {
     if (FsUtil.exists(path.resolve(pkgRootPath, "src/favicon.ico"))) {
       await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/favicon.ico"), path.resolve(electronSrcPath, "favicon.ico"));
     }
-    if (FsUtil.exists(path.resolve(pkgRootPath, "src/asssets"))) {
+    if (FsUtil.exists(path.resolve(pkgRootPath, "src/assets"))) {
       await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/assets"), path.resolve(electronSrcPath, "assets"));
     }
 
     await FsUtil.writeFileAsync(path.resolve(electronSrcPath, `.env`), [
       "NODE_ENV=development",
+      `SD_TITLE=${npmConfig.description}`,
+      `SD_VERSION=${npmConfig.version}`,
       `SD_ELECTRON_DEV_URL=${url.replace(/\/$/, "")}/${pkgName}/electron/`,
-      (electronConfig.icon !== undefined) ? `SD_ELECTRON_ICON=${electronConfig.icon}` : undefined
+      (electronConfig.icon !== undefined) ? `SD_ELECTRON_ICON=${electronConfig.icon}` : `SD_ELECTRON_ICON=favicon.ico`,
+      ...(pkgConfig.env !== undefined) ? Object.keys(pkgConfig.env).map((key) => `${key}=${pkgConfig.env![key]}`) : []
     ].filterExists().join("\n"));
 
+    let electronTsFileContent = await FsUtil.readFileAsync(path.resolve(pkgRootPath, `src/electron.ts`));
+    electronTsFileContent = "require(\"dotenv\").config({ path: `${__dirname}\\\\.env` });\n" + electronTsFileContent;
+    const result = ts.transpileModule(electronTsFileContent, { compilerOptions: { module: ts.ModuleKind.CommonJS } });
+    await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), result.outputText);
 
-    let electronJsFileContent = await FsUtil.readFileAsync(path.resolve(pkgRootPath, `src/electron.js`));
-    electronJsFileContent = "require(\"dotenv\").config({ path: `${__dirname}\\\\.env` });\n" + electronJsFileContent;
-    await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), electronJsFileContent);
-
-    await SdProcess.spawnAsync(`electron "${electronSrcPath}"`, { cwd: this._rootPath }, true);
+    await SdProcess.spawnAsync(`${path.resolve(this._rootPath, "node_modules/.bin/electron.cmd")} ${electronSrcPath}`, { cwd: electronSrcPath }, true);
   }
 }

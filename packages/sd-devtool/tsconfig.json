@@ -14,8 +14,14 @@
       "@simplysm/sd-core-browser": [
         "../sd-core-browser/src/index.ts"
       ],
+      "@simplysm/sd-core-node": [
+        "../sd-core-node/src/index.ts"
+      ],
       "@simplysm/sd-angular": [
         "../sd-angular/src/index.ts"
+      ],
+      "@simplysm/sd-angular-mobile": [
+        "../sd-angular-mobile/src/index.ts"
       ]
     }
   },

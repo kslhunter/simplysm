@@ -17,7 +17,9 @@
   "dependencies": {
     "@simplysm/sd-core-common": "7.0.100",
     "@simplysm/sd-core-browser": "7.0.100",
+    "@simplysm/sd-core-node": "7.0.100",
     "@simplysm/sd-angular": "7.0.100",
+    "@simplysm/sd-angular-mobile": "7.0.100",
     "@angular/common": "^13.2.0",
     "@angular/core": "^13.2.0",
     "@angular/platform-browser": "^13.2.0",

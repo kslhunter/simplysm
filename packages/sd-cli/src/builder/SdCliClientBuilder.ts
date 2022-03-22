@@ -237,12 +237,12 @@ export class SdCliClientBuilder extends EventEmitter {
 
       const electronVersion = npmConfig.dependencies?.["electron"];
       if (electronVersion === undefined) {
-        throw new Error("ELECTRON 패키지의 'dependencies'에는 'electron'이 반드시 포함되어야 합니다.");
+        throw new Error("ELECTRON 빌드 패키지의 'dependencies'에는 'electron'이 반드시 포함되어야 합니다.");
       }
 
       const dotenvVersion = npmConfig.dependencies?.["dotenv"];
       if (dotenvVersion === undefined) {
-        throw new Error("ELECTRON 패키지의 'dependencies'에는 'dotenv'가 반드시 포함되어야 합니다.");
+        throw new Error("ELECTRON 빌드 패키지의 'dependencies'에는 'dotenv'가 반드시 포함되어야 합니다.");
       }
 
       const electronSrcPath = path.resolve(this._rootPath, `.electron/src`);
@@ -265,12 +265,15 @@ export class SdCliClientBuilder extends EventEmitter {
 
       await FsUtil.writeFileAsync(path.resolve(electronSrcPath, `.env`), [
         "NODE_ENV=production",
-        (this._config.builder.electron.icon !== undefined) ? `SD_ELECTRON_ICON=${this._config.builder.electron.icon}` : undefined
+        `SD_VERSION=${npmConfig.version}`,
+        (this._config.builder.electron.icon !== undefined) ? `SD_ELECTRON_ICON=${this._config.builder.electron.icon}` : `SD_ELECTRON_ICON=favicon.ico`,
+        ...(this._config.env !== undefined) ? Object.keys(this._config.env).map((key) => `${key}=${this._config.env![key]}`) : []
       ].filterExists().join("\n"));
 
-      let electronJsFileContent = await FsUtil.readFileAsync(path.resolve(this._rootPath, `src/electron.js`));
-      electronJsFileContent = "require(\"dotenv\").config({ path: `${__dirname}\\\\.env` });\n" + electronJsFileContent;
-      await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), electronJsFileContent);
+      let electronTsFileContent = await FsUtil.readFileAsync(path.resolve(this._rootPath, `src/electron.ts`));
+      electronTsFileContent = "require(\"dotenv\").config({ path: `${__dirname}\\\\.env` });\n" + electronTsFileContent;
+      const result = ts.transpileModule(electronTsFileContent, { compilerOptions: { module: ts.ModuleKind.CommonJS } });
+      await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), result.outputText);
 
       await electronBuilder.build({
         targets: electronBuilder.Platform.WINDOWS.createTarget(),
@@ -580,7 +583,9 @@ export class SdCliClientBuilder extends EventEmitter {
         ]
       },
       plugins: [
-        new NodePolyfillPlugin(),
+        new NodePolyfillPlugin({
+          excludeAliases: builderType === "electron" ? ["process"] : []
+        }),
         new NamedChunksPlugin(),
         new DedupeModuleResolvePlugin(),
         new webpack.ProgressPlugin({
