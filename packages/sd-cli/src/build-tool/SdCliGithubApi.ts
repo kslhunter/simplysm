@@ -50,10 +50,10 @@ export class SdCliGithubApi {
 
       req.write(JSON.stringify({
         tag_name: `v${ver}`,
-        // target_commitish: currentBranch,
+        target_commitish: currentBranch,
         name: `v${ver}`,
-        body: `v${ver}`,
-        draft: false,
+        // body: `v${ver}`,
+        draft: true,
         prerelease: false
       }));
 

@@ -237,7 +237,6 @@ export class SdCliWorkspace {
     //   }
     // }
 
-
     this._logger.debug("패키지 목록 구성...");
     const pkgs = await this._getPackagesAsync(config, opt.pkgs);
 
