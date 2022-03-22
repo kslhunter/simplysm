@@ -26,12 +26,18 @@ export class SdCliGithubApi {
           }
         },
         (res) => {
+          let dataBuffer = Buffer.from([]);
           res.on("data", data => {
+            dataBuffer = Buffer.concat([dataBuffer, data]);
+          });
+
+          res.on("end", () => {
             if (res.statusCode !== 201) {
-              throw new Error(data.toString());
+              const errObj = JSON.parse(dataBuffer.toString());
+              throw new Error(errObj.message + "(" + errObj.documentation_url + ")");
             }
-            else{
-              console.log(data.toString());
+            else {
+              console.log(JSON.parse(dataBuffer.toString()));
               resolve();
             }
           });
