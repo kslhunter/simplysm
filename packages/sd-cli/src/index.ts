@@ -1,6 +1,7 @@
 export * from "./build-tool/SdCliCacheCompilerHost";
 export * from "./build-tool/SdCliCordova";
 export * from "./build-tool/SdCliElectron";
+export * from "./build-tool/SdCliGithubApi";
 export * from "./build-tool/SdCliIndexFileGenerator";
 export * from "./build-tool/SdCliNgCacheCompilerHost";
 export * from "./build-tool/SdCliPackageLinter";

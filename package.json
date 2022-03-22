@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "7.0.144",
+  "version": "7.0.145",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -33,6 +33,8 @@
     "build:devtool(--debug)": "npm run _sd-cli_ -- --debug build --packages sd-devtool",
     "----- ksl": "",
     "ksl:publish": "npm run _sd-cli_ -- publish --config simplysm-ksl.json",
+    "ksl:enc_conf": "npm run _sd-cli_ -- enc-file simplysm-ksl.json",
+    "ksl:dec_conf": "npm run _sd-cli_ -- dec-file simplysm-ksl.json.enc",
     "----- ksl:pkg(--debug)": "",
     "ksl:publish:devtool(--debug)(--noBuild)": "npm run _sd-cli_ -- --debug publish --noBuild --packages sd-devtool --config simplysm-ksl.json",
     "----- utils": "",
