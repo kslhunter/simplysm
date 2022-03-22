@@ -1,7 +1,6 @@
 import https from "https";
 import { SdProcess } from "@simplysm/sd-core-node";
 import mime from "mime";
-import { atob } from "buffer";
 
 export class SdCliGithubApi {
   public constructor(private readonly _apiKey: string,
