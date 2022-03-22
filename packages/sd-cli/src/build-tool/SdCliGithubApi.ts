@@ -1,5 +1,6 @@
 import https from "https";
 import { FsUtil, SdProcess } from "@simplysm/sd-core-node";
+import mime from "mime";
 
 export class SdCliGithubApi {
   public constructor(private readonly _apiKey: string,
@@ -16,7 +17,10 @@ export class SdCliGithubApi {
   }
 
   private async _uploadFileAsync(fromPath: string, toUrl: string): Promise<void> {
-    await new Promise<void>(async (resolve, reject) => {
+    const fileBuffer = await FsUtil.readFileBufferAsync(fromPath);
+    const contentLength = fileBuffer.length;
+
+    await new Promise<void>((resolve, reject) => {
       const req = https.request(
         toUrl,
         {
@@ -24,7 +28,9 @@ export class SdCliGithubApi {
           headers: {
             "Authorization": `token ${this._apiKey}`,
             "Accept": "application/vnd.github.v3+json",
-            "User-Agent": "@simplysm/sd-cli:publish"
+            "User-Agent": "@simplysm/sd-cli:publish",
+            "Content-Length": contentLength,
+            "Content-Type": mime.getType(toUrl)!
           }
         },
         (res) => {
@@ -44,8 +50,6 @@ export class SdCliGithubApi {
           });
         }
       );
-
-      const fileBuffer = await FsUtil.readFileBufferAsync(fromPath);
 
       req.on("error", (error) => {
         reject(error);

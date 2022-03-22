@@ -59,7 +59,8 @@
     "@simplysm/sd-storage": "7.0.109",
     "electron": "^17.1.2",
     "electron-builder": "^22.14.13",
-    "xml2js": "^0.4.23"
+    "xml2js": "^0.4.23",
+    "mime": "^3.0.0"
   },
   "devDependencies": {
     "@types/semver": "^7.3.9",
@@ -68,6 +69,7 @@
     "@types/connect": "^3.4.35",
     "@types/source-map-support": "^0.5.4",
     "@types/jsdom": "^16.2.14",
-    "@types/xml2js": "^0.4.9"
+    "@types/xml2js": "^0.4.9",
+    "@types/mime": "^2.0.3"
   }
 }
