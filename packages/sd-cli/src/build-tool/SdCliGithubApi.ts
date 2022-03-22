@@ -15,13 +15,16 @@ export class SdCliGithubApi {
     const currentBranch = (await SdProcess.spawnAsync("git branch --show-current")).trim();
 
     await new Promise<void>((resolve, reject) => {
+      console.log(`https://api.github.com/repos/${this._repoOwner}/${this._repoName}/releases`);
+      console.log(this._apiKey);
+
       const req = https.request(
         `https://api.github.com/repos/${this._repoOwner}/${this._repoName}/releases`,
         {
           method: "POST",
           headers: {
             access_token: this._apiKey,
-            "user-agent": "node.js"
+            "user-agent": "@simplysm/sd-cli:publish"
           }
         },
         (res) => {
