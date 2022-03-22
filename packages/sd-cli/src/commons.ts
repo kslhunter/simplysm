@@ -4,6 +4,11 @@ export interface INpmConfig {
   description?: string;
   author?: string;
   license?: string;
+  repository: string | {
+    type: string;
+    url: string;
+    directory?: string;
+  };
   type?: "module";
   workspaces?: string[];
   main?: string;
