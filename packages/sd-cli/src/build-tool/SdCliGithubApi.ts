@@ -20,7 +20,8 @@ export class SdCliGithubApi {
         {
           method: "POST",
           headers: {
-            access_token: this._apiKey
+            access_token: this._apiKey,
+            "user-agent": "node.js"
           }
         },
         (res) => {
