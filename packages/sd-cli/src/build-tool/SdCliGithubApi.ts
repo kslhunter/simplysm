@@ -103,7 +103,7 @@ export class SdCliGithubApi {
         target_commitish: currentBranch,
         name: `v${ver}`,
         body: `v${ver}`,
-        draft: true,
+        draft: false,
         prerelease: false
       }));
 
