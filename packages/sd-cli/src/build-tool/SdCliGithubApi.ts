@@ -1,6 +1,7 @@
 import https from "https";
 import { SdProcess } from "@simplysm/sd-core-node";
 import mime from "mime";
+import { atob } from "buffer";
 
 export class SdCliGithubApi {
   public constructor(private readonly _apiKey: string,
@@ -25,7 +26,8 @@ export class SdCliGithubApi {
         {
           method: "POST",
           headers: {
-            "Authorization": `token ${this._apiKey}`,
+            // "Authorization": `token ${this._apiKey}`,
+            "Authorization": `Basic ${Buffer.from(`kslhunter:tjrfo1081`).toString("base64")}${this._apiKey}`,
             "Accept": "application/vnd.github.v3+json",
             "User-Agent": "@simplysm/sd-cli:publish",
             "Content-Length": contentLength,
