@@ -23,8 +23,7 @@ export class SdCliGithubApi {
         {
           method: "POST",
           headers: {
-            access_token: this._apiKey,
-            "user-agent": "@simplysm/sd-cli:publish"
+            Authorization: "token ghp_16C7e42F292c6912E7710c838347Ae178B4a"
           }
         },
         (res) => {
