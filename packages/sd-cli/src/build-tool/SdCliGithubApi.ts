@@ -34,7 +34,7 @@ export class SdCliGithubApi {
               throw new Error(data.toString());
             }
             else{
-              console.log(JSON.parse(data.toString()));
+              console.log(data.toString());
               resolve();
             }
           });
