@@ -9,7 +9,6 @@ export class SdCliGithubApi {
   }
 
   public async uploadAsync(version: string, files: { name: string; buffer: Buffer }[]): Promise<void> {
-    console.log(version);
     const releaseId = await this._createReleaseTagAsync(version);
 
     for (const file of files) {
