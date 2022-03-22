@@ -1,5 +1,5 @@
 import https from "https";
-import { FsUtil, SdProcess } from "@simplysm/sd-core-node";
+import { SdProcess } from "@simplysm/sd-core-node";
 import mime from "mime";
 
 export class SdCliGithubApi {
@@ -8,21 +8,20 @@ export class SdCliGithubApi {
                      private readonly _repoName: string) {
   }
 
-  public async uploadAsync(version: string, files: { from: string; to: string }[]): Promise<void> {
-    const uploadUrl = await this._createReleaseTagAsync(version);
+  public async uploadAsync(version: string, files: { name: string; buffer: Buffer }[]): Promise<void> {
+    const releaseId = await this._createReleaseTagAsync(version);
 
     for (const file of files) {
-      await this._uploadFileAsync(file.from, `${uploadUrl}?name=${file.to}`);
+      await this._uploadFileAsync(releaseId, file.name, file.buffer);
     }
   }
 
-  private async _uploadFileAsync(fromPath: string, toUrl: string): Promise<void> {
-    const fileBuffer = await FsUtil.readFileBufferAsync(fromPath);
-    const contentLength = fileBuffer.length;
+  private async _uploadFileAsync(releaseId: number, fileName: string, buffer: Buffer): Promise<void> {
+    const contentLength = buffer.length;
 
     await new Promise<void>((resolve, reject) => {
       const req = https.request(
-        toUrl,
+        `https://uploads.github.com/repos/${this._repoOwner}/${this._repoName}/releases/${releaseId}/assets?name=${fileName}`,
         {
           method: "POST",
           headers: {
@@ -30,7 +29,7 @@ export class SdCliGithubApi {
             "Accept": "application/vnd.github.v3+json",
             "User-Agent": "@simplysm/sd-cli:publish",
             "Content-Length": contentLength,
-            "Content-Type": mime.getType(toUrl)!
+            "Content-Type": mime.getType(fileName)!
           }
         },
         (res) => {
@@ -40,7 +39,7 @@ export class SdCliGithubApi {
           });
 
           res.on("end", () => {
-            if (res.statusCode !== 200) {
+            if (res.statusCode !== 201) {
               const errObj = JSON.parse(dataBuffer.toString());
               throw new Error(errObj.message + "(" + errObj.documentation_url + ")");
             }
@@ -54,15 +53,15 @@ export class SdCliGithubApi {
       req.on("error", (error) => {
         reject(error);
       });
-      req.write(fileBuffer);
+      req.write(buffer);
       req.end();
     });
   }
 
-  private async _createReleaseTagAsync(ver: string): Promise<string> {
+  private async _createReleaseTagAsync(ver: string): Promise<number> {
     const currentBranch = (await SdProcess.spawnAsync("git branch --show-current")).trim();
 
-    return await new Promise<string>((resolve, reject) => {
+    return await new Promise<number>((resolve, reject) => {
       const req = https.request(
         `https://api.github.com/repos/${this._repoOwner}/${this._repoName}/releases`,
         {
@@ -87,7 +86,7 @@ export class SdCliGithubApi {
             else {
               // console.log(JSON.parse(dataBuffer.toString()));
               const resData = JSON.parse(dataBuffer.toString());
-              resolve(resData.upload_url.replace(/\{.*}$/g, ""));
+              resolve(resData.id);
             }
           });
         }
