@@ -100,7 +100,7 @@ export class SdCliPackage extends EventEmitter {
         if (this.config.publish.type === "github") {
           const repoUrl = typeof this._npmConfig.repository === "string" ? this._npmConfig.repository : this._npmConfig.repository.url;
           const repoOwner = repoUrl.split("/").slice(-2)[0];
-          const repoName = repoUrl.split("/").slice(-2)[1].replace(/\.*/, "");
+          const repoName = repoUrl.split("/").slice(-2)[1].replace(/\.*/g, "");
 
           const github = new SdCliGithubApi(
             this.config.publish.apiKey,
