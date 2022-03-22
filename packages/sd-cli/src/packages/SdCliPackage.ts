@@ -11,6 +11,7 @@ import { SdCliClientBuilder } from "../builder/SdCliClientBuilder";
 import { NextHandleFunction } from "connect";
 import { SdStorage } from "@simplysm/sd-storage";
 import ts from "typescript";
+import { SdCliGithubApi } from "../build-tool/SdCliGithubApi";
 
 export class SdCliPackage extends EventEmitter {
   private readonly _npmConfig: INpmConfig;
@@ -96,7 +97,21 @@ export class SdCliPackage extends EventEmitter {
         }
       }
       else {
-        if (this.config.publish.type === "ftp" || this.config.publish.type === "ftps" || this.config.publish.type === "sftp") {
+        if (this.config.publish.type === "github") {
+          const repoUrl = typeof this._npmConfig.repository === "string" ? this._npmConfig.repository : this._npmConfig.repository.url;
+          const repoOwner = repoUrl.split("/").slice(-2)[0];
+          const repoName = repoUrl.split("/").slice(-2)[1].replace(/\.*/, "");
+
+          const github = new SdCliGithubApi(
+            this.config.publish.apiKey,
+            repoOwner,
+            repoName
+          );
+          for (const publishFile of this.config.publish.files) {
+            await github.uploadAsync(path.resolve(this.rootPath, "dist", publishFile.from), publishFile.to);
+          }
+        }
+        else if (this.config.publish.type === "ftp" || this.config.publish.type === "ftps" || this.config.publish.type === "sftp") {
           const tsconfigPath = path.resolve(this.rootPath, "tsconfig-build.json");
           const tsconfig = FsUtil.readJson(tsconfigPath);
           const parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this.rootPath, tsconfig.angularCompilerOptions);

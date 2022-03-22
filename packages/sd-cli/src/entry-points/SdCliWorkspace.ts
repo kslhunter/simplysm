@@ -229,13 +229,13 @@ export class SdCliWorkspace {
     }
 
     // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
-    if (FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
-      this._logger.debug("GIT 커밋여부 확인...");
-      const gitStatusResult = await SdProcess.spawnAsync("git status");
-      if (gitStatusResult.includes("Changes") || gitStatusResult.includes("Untracked")) {
-        throw new Error("커밋되지 않은 정보가 있습니다.\n" + gitStatusResult);
-      }
-    }
+    // if (FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
+    //   this._logger.debug("GIT 커밋여부 확인...");
+    //   const gitStatusResult = await SdProcess.spawnAsync("git status");
+    //   if (gitStatusResult.includes("Changes") || gitStatusResult.includes("Untracked")) {
+    //     throw new Error("커밋되지 않은 정보가 있습니다.\n" + gitStatusResult);
+    //   }
+    // }
 
     this._logger.debug("패키지 목록 구성...");
     const pkgs = await this._getPackagesAsync(config, opt.pkgs);

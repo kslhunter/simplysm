@@ -77,7 +77,7 @@ export interface ISdCliClientPackageConfig {
   publish?: TSdCliPublishConfig;
 }
 
-export type TSdCliPublishConfig = ISdCliFtpPublishConfig | ISdCliLocalDirectoryPublishConfig;
+export type TSdCliPublishConfig = ISdCliFtpPublishConfig | ISdCliLocalDirectoryPublishConfig | ISdCliGithubPublishConfig;
 
 export interface ISdCliFtpPublishConfig {
   type: "ftp" | "ftps" | "sftp";
@@ -91,6 +91,12 @@ export interface ISdCliFtpPublishConfig {
 export interface ISdCliLocalDirectoryPublishConfig {
   type: "local-directory";
   path: string;
+}
+
+export interface ISdCliGithubPublishConfig {
+  type: "github";
+  apiKey: string;
+  files: { from: string; to: string }[];
 }
 
 export interface ISdCliClientBuilderWebConfig {
