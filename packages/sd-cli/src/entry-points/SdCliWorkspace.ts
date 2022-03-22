@@ -258,6 +258,9 @@ export class SdCliWorkspace {
       await SdProcess.spawnAsync("git add .");
       await SdProcess.spawnAsync(`git commit -m "v${this._npmConfig.version}"`);
       await SdProcess.spawnAsync(`git tag -a "v${this._npmConfig.version}" -m "v${this._npmConfig.version}"`);
+
+      this._logger.debug("새 버전 푸쉬...");
+      await SdProcess.spawnAsync("git push --tags");
     }
 
     this._logger.debug("배포 시작...");

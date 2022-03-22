@@ -9,8 +9,6 @@ export class SdCliGithubApi {
   }
 
   public async uploadAsync(version: string, files: { name: string; buffer: Buffer }[]): Promise<void> {
-    await this._pushAllAsync();
-
     const releaseId = await this._createReleaseTagAsync(version);
 
     for (const file of files) {
@@ -109,9 +107,5 @@ export class SdCliGithubApi {
 
       req.end();
     });
-  }
-
-  private async _pushAllAsync(): Promise<void> {
-    await SdProcess.spawnAsync("git push --tags", undefined, true);
   }
 }
