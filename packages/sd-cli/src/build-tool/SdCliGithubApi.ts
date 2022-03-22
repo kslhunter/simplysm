@@ -15,7 +15,7 @@ export class SdCliGithubApi {
     const currentBranch = (await SdProcess.spawnAsync("git branch --show-current")).trim();
 
     await new Promise<void>((resolve, reject) => {
-      console.log(`https://api.github.com/repos/${this._repoOwner}/${this._repoName}/releases`);
+      console.log(`https://api.github.com/repos/${this._repoOwner}/${this._repoName.slice(1)}/releases`);
       console.log(this._apiKey);
 
       const req = https.request(
@@ -30,8 +30,13 @@ export class SdCliGithubApi {
         },
         (res) => {
           res.on("data", data => {
-            console.log(data.toString());
-            resolve();
+            if (res.statusCode !== 201) {
+              throw new Error(data.toString());
+            }
+            else{
+              console.log(JSON.parse(data.toString()));
+              resolve();
+            }
           });
         }
       );
