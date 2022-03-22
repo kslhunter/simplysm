@@ -31,6 +31,8 @@
     "----- pkg(--debug)": "",
     "watch:devtool(--debug)": "npm run _sd-cli_ -- --debug watch --packages sd-devtool",
     "build:devtool(--debug)": "npm run _sd-cli_ -- --debug build --packages sd-devtool",
+    "----- ksl": "",
+    "ksl:publish": "npm run _sd-cli_ -- publish --config simplysm-ksl.json",
     "----- ksl:pkg(--debug)": "",
     "ksl:publish:devtool(--debug)(--noBuild)": "npm run _sd-cli_ -- --debug publish --noBuild --packages sd-devtool --config simplysm-ksl.json",
     "----- utils": "",
