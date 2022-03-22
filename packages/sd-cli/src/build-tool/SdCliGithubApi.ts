@@ -16,7 +16,7 @@ export class SdCliGithubApi {
 
     await new Promise<void>((resolve, reject) => {
       const req = https.request(
-        `https://api.github.com/repos/${this._repoOwner}/${this._repoName.slice(1)}/releases`,
+        `https://api.github.com/repos/${this._repoOwner}/${this._repoName}/releases`,
         {
           method: "POST",
           headers: {
@@ -32,7 +32,7 @@ export class SdCliGithubApi {
           });
 
           res.on("end", () => {
-            if (res.statusCode !== 201) {
+            if (res.statusCode !== 200) {
               const errObj = JSON.parse(dataBuffer.toString());
               throw new Error(errObj.message + "(" + errObj.documentation_url + ")");
             }
@@ -50,7 +50,7 @@ export class SdCliGithubApi {
 
       req.write(JSON.stringify({
         tag_name: `v${ver}`,
-        target_commitish: currentBranch,
+        // target_commitish: currentBranch,
         name: `v${ver}`,
         body: `v${ver}`,
         draft: false,
