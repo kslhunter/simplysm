@@ -13,10 +13,10 @@ const createWindow = async (): Promise<BrowserWindow> => {
   const displayHeight = display.workArea.height;
 
   const win = new BrowserWindow({
-    width: 1000,
-    height: 800,
-    x: displayWidth - 1000,
-    y: displayHeight - 800,
+    width: isDev ? 1000 : 400,
+    height: 600,
+    x: displayWidth - (isDev ? 1000 : 400),
+    y: displayHeight - 600,
     webPreferences: {
       devTools: isDev,
       nodeIntegration: true,
