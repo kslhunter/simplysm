@@ -23,8 +23,9 @@ export class SdCliGithubApi {
         {
           method: "POST",
           headers: {
-            Authorization: `token ${this._apiKey}`,
-            Accept: "application/vnd.github.v3+json"
+            "Authorization": `token ${this._apiKey}`,
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "@simplysm/sd-cli/" + this.constructor.name
           }
         },
         (res) => {
