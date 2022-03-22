@@ -23,7 +23,8 @@ export class SdCliGithubApi {
         {
           method: "POST",
           headers: {
-            Authorization: "token ghp_16C7e42F292c6912E7710c838347Ae178B4a"
+            Authorization: `token ${this._apiKey}`,
+            Accept: "application/vnd.github.v3+json"
           }
         },
         (res) => {
@@ -39,12 +40,12 @@ export class SdCliGithubApi {
       });
 
       req.write(JSON.stringify({
-        target_commitish: currentBranch,
-        draft: false,
-        prerelease: false,
         tag_name: `v${ver}`,
+        target_commitish: currentBranch,
         name: `v${ver}`,
         body: `v${ver}`,
+        draft: false,
+        prerelease: false
       }));
 
       req.end();
