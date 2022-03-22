@@ -1,4 +1,5 @@
 import https from "https";
+import { SdProcess } from "@simplysm/sd-core-node";
 
 export class SdCliGithubApi {
   public constructor(private readonly _apiKey: string,
@@ -6,10 +7,13 @@ export class SdCliGithubApi {
                      private readonly _repoName: string) {
   }
 
-  public async uploadAsync(from: string, to: string): Promise<void> {
+  public async uploadAsync(version: string, from: string, to: string): Promise<void> {
+    await this._createReleaseTagAsync(version);
   }
 
-  private async _createReleaseTag(ver: string): Promise<void> {
+  private async _createReleaseTagAsync(ver: string): Promise<void> {
+    const currentBranch = (await SdProcess.spawnAsync("git branch --show-current")).trim();
+
     await new Promise<void>((resolve, reject) => {
       const req = https.request(
         `https://api.github.com/repos/${this._repoOwner}/${this._repoName}/releases`,
@@ -35,9 +39,9 @@ export class SdCliGithubApi {
         target_commitish: currentBranch,
         draft: false,
         prerelease: false,
-        tag_name: `v${currentTag}`,
-        name: `v${currentTag}`,
-        body: `v${currentTag}`,
+        tag_name: `v${ver}`,
+        name: `v${ver}`,
+        body: `v${ver}`,
       }));
 
       req.end();
