@@ -107,9 +107,11 @@ export class SdCliPackage extends EventEmitter {
             repoOwner,
             repoName
           );
-          for (const publishFile of this.config.publish.files) {
-            await github.uploadAsync(this._npmConfig.version, path.resolve(this.rootPath, "dist", publishFile.from), publishFile.to);
-          }
+
+          await github.uploadAsync(this._npmConfig.version, this.config.publish.files.map((item) => ({
+            from: path.resolve(this.rootPath, "dist", item.from),
+            to: item.to
+          })));
         }
         else if (this.config.publish.type === "ftp" || this.config.publish.type === "ftps" || this.config.publish.type === "sftp") {
           const tsconfigPath = path.resolve(this.rootPath, "tsconfig-build.json");

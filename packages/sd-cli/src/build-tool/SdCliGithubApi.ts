@@ -1,5 +1,5 @@
 import https from "https";
-import { SdProcess } from "@simplysm/sd-core-node";
+import { FsUtil, SdProcess } from "@simplysm/sd-core-node";
 
 export class SdCliGithubApi {
   public constructor(private readonly _apiKey: string,
@@ -7,14 +7,58 @@ export class SdCliGithubApi {
                      private readonly _repoName: string) {
   }
 
-  public async uploadAsync(version: string, from: string, to: string): Promise<void> {
-    await this._createReleaseTagAsync(version);
+  public async uploadAsync(version: string, files: { from: string; to: string }[]): Promise<void> {
+    const uploadUrl = await this._createReleaseTagAsync(version);
+
+    for (const file of files) {
+      await this._uploadFileAsync(file.from, `${uploadUrl}?name=${file.to}`);
+    }
   }
 
-  private async _createReleaseTagAsync(ver: string): Promise<void> {
+  private async _uploadFileAsync(fromPath: string, toUrl: string): Promise<void> {
+    await new Promise<void>(async (resolve, reject) => {
+      const req = https.request(
+        toUrl,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `token ${this._apiKey}`,
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "@simplysm/sd-cli:publish"
+          }
+        },
+        (res) => {
+          let dataBuffer = Buffer.from([]);
+          res.on("data", data => {
+            dataBuffer = Buffer.concat([dataBuffer, data]);
+          });
+
+          res.on("end", () => {
+            if (res.statusCode !== 200) {
+              const errObj = JSON.parse(dataBuffer.toString());
+              throw new Error(errObj.message + "(" + errObj.documentation_url + ")");
+            }
+            else {
+              resolve();
+            }
+          });
+        }
+      );
+
+      const fileBuffer = await FsUtil.readFileBufferAsync(fromPath);
+
+      req.on("error", (error) => {
+        reject(error);
+      });
+      req.write(fileBuffer);
+      req.end();
+    });
+  }
+
+  private async _createReleaseTagAsync(ver: string): Promise<string> {
     const currentBranch = (await SdProcess.spawnAsync("git branch --show-current")).trim();
 
-    await new Promise<void>((resolve, reject) => {
+    return await new Promise<string>((resolve, reject) => {
       const req = https.request(
         `https://api.github.com/repos/${this._repoOwner}/${this._repoName}/releases`,
         {
@@ -37,8 +81,9 @@ export class SdCliGithubApi {
               throw new Error(errObj.message + "(" + errObj.documentation_url + ")");
             }
             else {
-              console.log(JSON.parse(dataBuffer.toString()));
-              resolve();
+              // console.log(JSON.parse(dataBuffer.toString()));
+              const resData = JSON.parse(dataBuffer.toString());
+              resolve(resData.upload_url.replace(/\{.*}$/g, ""));
             }
           });
         }
