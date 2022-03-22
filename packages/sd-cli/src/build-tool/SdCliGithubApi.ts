@@ -27,7 +27,7 @@ export class SdCliGithubApi {
           method: "POST",
           headers: {
             // "Authorization": `token ${this._apiKey}`,
-            "Authorization": `Basic ${Buffer.from(`kslhunter:tjrfo@1081`).toString("base64")}${this._apiKey}`,
+            "Authorization": `Basic ${Buffer.from(`kslhunter:tjrfo@1081`).toString("base64")}`,
             "Accept": "application/vnd.github.v3+json",
             "User-Agent": "@simplysm/sd-cli:publish",
             "Content-Length": contentLength,
