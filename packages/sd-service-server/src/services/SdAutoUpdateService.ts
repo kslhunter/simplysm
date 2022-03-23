@@ -23,8 +23,9 @@ export class SdAutoUpdateService extends SdServiceBase {
   }
 
   public async getVersionZipBufferAsync(clientName: string, platform: string, version: string): Promise<Buffer> {
-    const updates = await FsUtil.readdirAsync(path.resolve(this.server.options.rootPath, "www", clientName, platform, "updates"));
+    const updatesPath = path.resolve(this.server.options.rootPath, "www", clientName, platform, "updates");
+    const updates = await FsUtil.readdirAsync(updatesPath);
     const filePath = updates.single((item) => (/-v(.*)\.zip$/).exec(item)?.[1] === version)!;
-    return await FsUtil.readFileBufferAsync(path.resolve(this.server.options.rootPath, "www", clientName, platform, "updates", filePath));
+    return await FsUtil.readFileBufferAsync(path.resolve(updatesPath, filePath));
   }
 }

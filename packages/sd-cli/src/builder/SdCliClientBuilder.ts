@@ -406,11 +406,7 @@ export class SdCliClientBuilder extends EventEmitter {
         maxMemoryGenerations: 1,
         name: createHash("sha1")
           .update(workspacePkgLockContent)
-          // .update(pkgVersion)
-          // .update(ngVersion)
           .update(JSON.stringify(this._parsedTsconfig.options))
-          // .update(this._workspaceRootPath)
-          // .update(this._rootPath)
           .update(JSON.stringify(this._config))
           .update(watch.toString())
           .digest("hex")

@@ -91,9 +91,11 @@ export class AppPage implements OnInit {
   public async ngOnInit(): Promise<void> {
     this.busyCount++;
     await this._toast.try(async () => {
-      const autoUpdateService = new SdAutoUpdateServiceClient(this._serviceFactory.get("MAIN"));
-      const lastVersion = await autoUpdateService.getLastVersionAsync("sd-devtool", "electron");
-      this.hasUpdate = process.env["SD_VERSION"] !== lastVersion;
+      if (process.env["NODE_ENV"] === "production") {
+        const autoUpdateService = new SdAutoUpdateServiceClient(this._serviceFactory.get("MAIN"));
+        const lastVersion = await autoUpdateService.getLastVersionAsync("sd-devtool", "electron");
+        this.hasUpdate = process.env["SD_VERSION"] !== lastVersion;
+      }
 
       await this._nvmRefreshAsync();
     });
@@ -103,6 +105,8 @@ export class AppPage implements OnInit {
   }
 
   public async onUpdateButtonClick(): Promise<void> {
+    if (process.env["NODE_ENV"] !== "production") return;
+
     this.busyCount++;
     await this._toast.try(async () => {
       const service = this._serviceFactory.get("MAIN");
