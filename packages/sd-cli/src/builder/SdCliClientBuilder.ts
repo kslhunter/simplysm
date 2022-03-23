@@ -297,11 +297,12 @@ export class SdCliClientBuilder extends EventEmitter {
 
       await FsUtil.copyAsync(
         path.resolve(this._rootPath, `.electron/dist/${npmConfig.description} Setup ${npmConfig.version}.exe`),
-        path.resolve(this._parsedTsconfig.options.outDir!, `electron/${npmConfig.description}-v${npmConfig.version}.exe`)
+        path.resolve(this._parsedTsconfig.options.outDir!, `electron/${npmConfig.description}-latest.exe`)
       );
+
       await FsUtil.copyAsync(
         path.resolve(this._rootPath, `.electron/dist/${npmConfig.description} Setup ${npmConfig.version}.exe`),
-        path.resolve(this._parsedTsconfig.options.outDir!, `electron/${npmConfig.description}-latest.exe`)
+        path.resolve(this._parsedTsconfig.options.outDir!, `electron/updates/${npmConfig.description}-v${npmConfig.version}.exe`)
       );
     }
 

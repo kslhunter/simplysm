@@ -188,13 +188,13 @@ export class SdCliCordova {
     if (this._config.target?.android) {
       const targetOutPath = path.resolve(outPath, "android");
       const apkFileName = this._config.target.android.sign ? `app-${buildType}.apk` : `app-${buildType}-unsigned.apk`;
-      const distApkFileName = path.basename(`${this._config.appName}${this._config.target.android.sign ? "" : "-unsigned"}-v${this._npmConfig.version}.apk`);
+      // const distApkFileName = path.basename(`${this._config.appName}${this._config.target.android.sign ? "" : "-unsigned"}-v${this._npmConfig.version}.apk`);
       const latestDistApkFileName = path.basename(`${this._config.appName}${this._config.target.android.sign ? "" : "-unsigned"}-latest.apk`);
       await FsUtil.mkdirsAsync(targetOutPath);
-      await FsUtil.copyAsync(
-        path.resolve(this.cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
-        path.resolve(targetOutPath, distApkFileName)
-      );
+      // await FsUtil.copyAsync(
+      //   path.resolve(this.cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
+      //   path.resolve(targetOutPath, distApkFileName)
+      // );
       await FsUtil.copyAsync(
         path.resolve(this.cordovaPath, "platforms/android/app/build/outputs/apk", buildType, apkFileName),
         path.resolve(targetOutPath, latestDistApkFileName)
