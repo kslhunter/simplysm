@@ -3,7 +3,7 @@ import * as path from "path";
 
 const isDev = process.env["NODE_ENV"] !== "production";
 const iconPath = path.resolve(__dirname, process.env["SD_ELECTRON_ICON"] ?? "favicon.ico");
-const loadURL = path.resolve(__dirname, process.env["SD_ELECTRON_DEV_URL"] ?? "index.html");
+const loadURL = process.env["SD_ELECTRON_DEV_URL"] ?? path.resolve(__dirname, "index.html");
 
 let isQuiting = false;
 let isHiding = false;
@@ -24,7 +24,7 @@ const createWindow = async (): Promise<BrowserWindow> => {
       contextIsolation: false
     },
     icon: iconPath,
-    show: isDev,
+    show: false, //isDev,
     frame: false
   });
 
@@ -75,7 +75,7 @@ const createTray = (win: BrowserWindow): void => {
 };
 
 const hideWindow = (win: BrowserWindow): void => {
-  if (isDev) return;
+  //if (isDev) return;
 
   win.hide();
 

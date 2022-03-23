@@ -95,7 +95,7 @@ export class AppPage implements OnInit {
   public async onNvmVersionClick(nvmVersion: string): Promise<void> {
     this.nvmBusyCount++;
     await this._toast.try(async () => {
-      await SdProcess.spawnAsync(`powershell start -verb runas 'nvm' 'use ${nvmVersion}'`);
+      await SdProcess.spawnAsync(`powershell start-process -windowstyle hidden -verb runas 'nvm' 'use ${nvmVersion}'`);
       await Wait.time(300);
       await this._nvmRefreshAsync();
     });
