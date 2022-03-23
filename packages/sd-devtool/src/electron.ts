@@ -92,6 +92,10 @@ const registerStartup = (): void => {
 };
 
 (async () => {
+  if (!app.requestSingleInstanceLock()) {
+    app.quit();
+  }
+
   await app.whenReady();
 
   const win = await createWindow();
