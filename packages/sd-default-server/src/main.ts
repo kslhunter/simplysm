@@ -37,7 +37,6 @@ else {
   });
 }
 
-
 const server = new SdServiceServer({
   rootPath: __dirname,
   services: [
