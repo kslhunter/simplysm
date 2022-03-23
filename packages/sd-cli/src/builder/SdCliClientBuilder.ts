@@ -284,7 +284,9 @@ export class SdCliClientBuilder extends EventEmitter {
           win: {
             target: "nsis"
           },
-          // nsis: {},
+          nsis: {
+            oneClick: false
+          },
           directories: {
             app: electronSrcPath,
             output: electronDistPath
