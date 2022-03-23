@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-devtool",
-  "version": "7.0.161",
+  "version": "7.0.162",
   "description": "심플리즘 개발도구",
   "author": "김석래",
   "repository": {
@@ -15,11 +15,11 @@
     "node": "^16"
   },
   "dependencies": {
-    "@simplysm/sd-core-common": "7.0.161",
-    "@simplysm/sd-core-browser": "7.0.161",
-    "@simplysm/sd-core-node": "7.0.161",
-    "@simplysm/sd-angular": "7.0.161",
-    "@simplysm/sd-angular-mobile": "7.0.161",
+    "@simplysm/sd-core-common": "7.0.162",
+    "@simplysm/sd-core-browser": "7.0.162",
+    "@simplysm/sd-core-node": "7.0.162",
+    "@simplysm/sd-angular": "7.0.162",
+    "@simplysm/sd-angular-mobile": "7.0.162",
     "@angular/common": "^13.2.0",
     "@angular/core": "^13.2.0",
     "@angular/platform-browser": "^13.2.0",
