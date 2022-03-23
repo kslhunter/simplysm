@@ -108,14 +108,15 @@
     },
     "sd-devtool": {
       "type": "client",
-      "server": {
-        "port": 60280
-      },
+      "server": "sd-default-server",
       "builder": {
         "electron": {
           "appId": "kr.co.simplysm.simplysm.sd_devtool"
         }
       }
+    },
+    "sd-default-server": {
+      "type": "server"
     }
   }
 }
