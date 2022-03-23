@@ -116,7 +116,12 @@
       }
     },
     "sd-default-server": {
-      "type": "server"
+      "type": "server",
+      "pm2": {
+        "ignore_watch": [
+          "_logs"
+        ]
+      }
     }
   }
 }
