@@ -85,12 +85,21 @@ const hideWindow = (win: BrowserWindow): void => {
   }, 300);
 };
 
+const registerStartup = (): void => {
+  app.setLoginItemSettings({
+    openAtLogin: true
+  });
+};
 
 (async () => {
   await app.whenReady();
 
   const win = await createWindow();
   createTray(win);
+
+  if (!isDev) {
+    registerStartup();
+  }
 })().catch(err => {
   // eslint-disable-next-line no-console
   console.error(err);

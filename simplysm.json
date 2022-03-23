@@ -111,7 +111,8 @@
       "server": "sd-default-server",
       "builder": {
         "electron": {
-          "appId": "kr.co.simplysm.simplysm.sd_devtool"
+          "appId": "kr.co.simplysm.simplysm.sd_devtool",
+          "installerIcon": "assets/icons/icon-512x512.png"
         }
       }
     },

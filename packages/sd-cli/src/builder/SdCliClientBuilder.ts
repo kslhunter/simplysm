@@ -285,7 +285,10 @@ export class SdCliClientBuilder extends EventEmitter {
           directories: {
             app: electronSrcPath,
             output: electronDistPath
-          }
+          },
+          ...this._config.builder.electron.installerIcon !== undefined ? {
+            icon: path.resolve(this._rootPath, "src", this._config.builder.electron.installerIcon)
+          } : {}
         }
       });
 

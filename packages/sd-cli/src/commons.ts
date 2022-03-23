@@ -131,4 +131,5 @@ export interface ISdCliClientBuilderCordovaConfig {
 export interface ISdCliClientBuilderElectronConfig {
   appId: string;
   icon?: string;
+  installerIcon?: string;
 }
