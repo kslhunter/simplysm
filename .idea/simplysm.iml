@@ -31,6 +31,8 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-devtool/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-devtool/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-devtool/.electron" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-default-server/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-default-server/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
