@@ -1,7 +1,7 @@
 import cp from "child_process";
 
 export class SdProcess {
-  public static async spawnAsync(cmd: string, opts?: cp.ExecOptions, showMessage?: boolean): Promise<string> {
+  public static async spawnAsync(cmd: string, opts?: cp.SpawnOptionsWithoutStdio, showMessage?: boolean): Promise<string> {
     return await new Promise<string>((resolve, reject) => {
       const ps = cp.spawn(cmd.split(" ")[0], cmd.split(" ").slice(1), {
         shell: true,

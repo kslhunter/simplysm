@@ -1,7 +1,7 @@
 import path from "path";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { fileURLToPath } from "url";
-import { SdServiceServer } from "@simplysm/sd-service-server";
+import { SdAutoUpdateService, SdServiceServer } from "@simplysm/sd-service-server";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -40,7 +40,9 @@ else {
 
 const server = new SdServiceServer({
   rootPath: __dirname,
-  services: [],
+  services: [
+    SdAutoUpdateService
+  ],
   port: 50080
 });
 

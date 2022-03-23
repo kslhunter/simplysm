@@ -15,6 +15,7 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
       padding: 0 var(--gap-default);
       text-align: center;
       color: var(--text-brightness-lighter);
+      cursor: pointer;
 
       @include mobile-active-effect(true);
     }

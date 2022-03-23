@@ -1,7 +1,7 @@
 import { app, BrowserWindow, Menu, screen, Tray } from "electron";
 import * as path from "path";
 
-const isDev = process.env["NODE_ENV"] !== "production";
+const isDev = true; //process.env["NODE_ENV"] !== "production";
 const iconPath = path.resolve(__dirname, process.env["SD_ELECTRON_ICON"] ?? "favicon.ico");
 const loadURL = process.env["SD_ELECTRON_DEV_URL"] ?? path.resolve(__dirname, "index.html");
 

@@ -3,4 +3,5 @@
 export const appIcons = {
   check: import("@fortawesome/pro-duotone-svg-icons/faCheck").then(m => m.faCheck),
   refresh: import("@fortawesome/pro-duotone-svg-icons/faRefresh").then(m => m.faRefresh),
+  update: import("@fortawesome/pro-duotone-svg-icons/faDesktopArrowDown").then(m => m.faDesktopArrowDown),
 };

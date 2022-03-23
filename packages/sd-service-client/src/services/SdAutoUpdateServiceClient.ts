@@ -5,10 +5,10 @@ export class SdAutoUpdateServiceClient {
   }
 
   public async getLastVersionAsync(clientName: string, platform: string): Promise<string | undefined> {
-    return await this._client.sendAsync("AutoUpdateService", "getLastVersionAsync", [clientName, platform]);
+    return await this._client.sendAsync("SdAutoUpdateService", "getLastVersionAsync", [clientName, platform]);
   }
 
   public async getVersionArchiveBufferAsync(clientName: string, platform: string, version: string): Promise<Buffer> {
-    return await this._client.sendAsync("AutoUpdateService", "getVersionArchiveBufferAsync", [clientName, platform, version]);
+    return await this._client.sendAsync("SdAutoUpdateService", "getVersionArchiveBufferAsync", [clientName, platform, version]);
   }
 }

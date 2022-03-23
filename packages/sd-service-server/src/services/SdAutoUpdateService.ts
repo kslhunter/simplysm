@@ -11,7 +11,7 @@ export class SdAutoUpdateService extends SdServiceBase {
       const updates = await FsUtil.readdirAsync(path.resolve(this.server.options.rootPath, "www", clientName, platform, "updates"));
       const versions = updates.map((item) => ({
         fileName: item,
-        version: (/-v(.*)\.zip$/).exec(item)?.[1]
+        version: (/-v([^.]*)\./).exec(item)?.[1]
       })).filter((item) => item.version !== undefined);
 
       return semver.maxSatisfying(versions.map((item) => item.version!), "*") ?? undefined;

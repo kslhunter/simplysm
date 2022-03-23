@@ -22,6 +22,12 @@
       ],
       "@simplysm/sd-angular-mobile": [
         "../sd-angular-mobile/src/index.ts"
+      ],
+      "@simplysm/sd-service-common": [
+        "../sd-service-common/src/index.ts"
+      ],
+      "@simplysm/sd-service-client": [
+        "../sd-service-client/src/index.ts"
       ]
     }
   },

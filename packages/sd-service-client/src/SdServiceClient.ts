@@ -16,14 +16,14 @@ export class SdServiceClient {
   }
 
   public constructor(private readonly _name: string,
-                     private readonly _options: ISdServiceClientConnectionConfig) {
+                     public readonly options: ISdServiceClientConnectionConfig) {
   }
 
   public async connectAsync(): Promise<void> {
     if (this._socket?.connected) return;
 
     await new Promise<void>((resolve, reject) => {
-      this._socket = socketIo.io(`${this._options.ssl ? "wss" : "ws"}://${this._options.host}:${this._options.port}`);
+      this._socket = socketIo.io(`${this.options.ssl ? "wss" : "ws"}://${this.options.host}:${this.options.port}`);
 
       this._socket.on("connect", () => {
         resolve();

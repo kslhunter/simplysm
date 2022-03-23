@@ -1,24 +1,32 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from "@angular/core";
-import { SdToastProvider } from "@simplysm/sd-angular";
+import { SdServiceFactoryRootProvider, SdToastProvider } from "@simplysm/sd-angular";
 
-import { SdProcess } from "@simplysm/sd-core-node";
+import { FsUtil, SdProcess } from "@simplysm/sd-core-node";
 import { appIcons } from "./app-icons";
 import { Wait } from "@simplysm/sd-core-common";
+import { SdAutoUpdateServiceClient } from "@simplysm/sd-service-client";
+import http from "http";
+import https from "https";
+import path from "path";
 
 @Component({
   selector: "app-root",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sdm-topbar-container>
-      <sdm-topbar>
-        <div class="sd-padding-sm-0" style="height: 90%;">
-          <img *ngIf="(logo | async) as src" [src]="src" style="height: 100%; filter: grayscale(100%); opacity: .3;"/>
-        </div>
-      </sdm-topbar>
+    <sdm-busy-container [busy]="busyCount > 0">
+      <sdm-topbar-container>
+        <sdm-topbar>
+          <div class="sd-padding-sm-0" style="height: 90%;">
+            <img *ngIf="(logo | async) as src" [src]="src" style="height: 100%; filter: grayscale(100%); opacity: .3;"/>
+          </div>
 
-      <sd-pane class="sd-padding-default">
-        <sdm-card>
-          <sdm-busy-container [busy]="nvmBusyCount > 0" class="sd-padding-lg">
+          <sdm-topbar-menu class="_topbar-menu-item" *ngIf="hasUpdate" (click)="onUpdateButtonClick()">
+            <fa-icon [icon]="icons.update | async" [fixedWidth]="true"></fa-icon>
+          </sdm-topbar-menu>
+        </sdm-topbar>
+
+        <sd-pane class="sd-padding-default">
+          <sdm-card class="sd-padding-lg">
             <h4>
               NVM 설정
               <sd-anchor (click)="onNvmRefreshButtonClick()">
@@ -37,17 +45,22 @@ import { Wait } from "@simplysm/sd-core-common";
                 </sd-list-item>
               </ng-container>
             </sdm-list>
-          </sdm-busy-container>
-        </sdm-card>
-      </sd-pane>
-    </sdm-topbar-container>`,
+          </sdm-card>
+        </sd-pane>
+      </sdm-topbar-container>
+    </sdm-busy-container>`,
   styles: [/* language=SCSS */ `
     :host {
-      ._header {
-        padding: var(--gap-xs) var(--gap-default);
-        background-color: var(--theme-color-grey-lighter);
-        font-size: small;
-        font-weight: bold;
+      ._topbar-menu-item {
+        color: var(--theme-color-warning-light);
+
+        &:hover {
+          color: var(--theme-color-warning-default);
+        }
+
+        &:active {
+          color: var(--theme-color-warning-dark);
+        }
       }
     }
   `]
@@ -58,7 +71,7 @@ export class AppPage implements OnInit {
   // @ts-expect-error
   public logo = import("../res/logo-landscape.png").then(m => m.default);
 
-  public nvmBusyCount = 0;
+  public busyCount = 0;
 
   public nvm: {
     versions: string[];
@@ -67,40 +80,86 @@ export class AppPage implements OnInit {
     versions: []
   };
 
+  public hasUpdate = false;
+
   public constructor(private readonly _toast: SdToastProvider,
-                     private readonly _cdr: ChangeDetectorRef) {
+                     private readonly _cdr: ChangeDetectorRef,
+                     private readonly _serviceFactory: SdServiceFactoryRootProvider) {
     document.documentElement.style.setProperty("--background-color", "var(--color-blue-grey-50)");
   }
 
   public async ngOnInit(): Promise<void> {
-    this.nvmBusyCount++;
+    this.busyCount++;
     await this._toast.try(async () => {
+      const autoUpdateService = new SdAutoUpdateServiceClient(this._serviceFactory.get("MAIN"));
+      const lastVersion = await autoUpdateService.getLastVersionAsync("sd-devtool", "electron");
+      this.hasUpdate = process.env["SD_VERSION"] !== lastVersion;
+
       await this._nvmRefreshAsync();
     });
 
-    this.nvmBusyCount--;
+    this.busyCount--;
+    this._cdr.markForCheck();
+  }
+
+  public async onUpdateButtonClick(): Promise<void> {
+    this.busyCount++;
+    await this._toast.try(async () => {
+      const service = this._serviceFactory.get("MAIN");
+      const downloadUrl = `${Boolean(service.options.ssl) ? "https" : "http"}://${service.options.host}:${service.options.port}/sd-devtool/electron/심플리즘 개발도구-latest.exe`;
+
+      const distPath = path.resolve(process.cwd(), "updates/심플리즘 개발도구-latest.exe");
+
+      await FsUtil.mkdirsAsync("updates");
+      const writeStream = FsUtil.createWriteStream(distPath);
+      await new Promise<void>((resolve, reject) => {
+        const req = (Boolean(service.options.ssl) ? https : http).get(downloadUrl, (res) => {
+          res.pipe(writeStream);
+          writeStream.on("finish", () => {
+            writeStream.close((err) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+              resolve();
+            });
+          });
+        });
+
+        req.on("error", async (err) => {
+          await FsUtil.removeAsync(distPath);
+          reject(err);
+        });
+      });
+
+      await SdProcess.spawnAsync(`"${distPath}"`, {
+        detached: true
+      });
+    });
+
+    this.busyCount--;
     this._cdr.markForCheck();
   }
 
   public async onNvmRefreshButtonClick(): Promise<void> {
-    this.nvmBusyCount++;
+    this.busyCount++;
     await this._toast.try(async () => {
       await this._nvmRefreshAsync();
     });
 
-    this.nvmBusyCount--;
+    this.busyCount--;
     this._cdr.markForCheck();
   }
 
   public async onNvmVersionClick(nvmVersion: string): Promise<void> {
-    this.nvmBusyCount++;
+    this.busyCount++;
     await this._toast.try(async () => {
       await SdProcess.spawnAsync(`powershell start-process -windowstyle hidden -verb runas 'nvm' 'use ${nvmVersion}'`);
       await Wait.time(300);
       await this._nvmRefreshAsync();
     });
 
-    this.nvmBusyCount--;
+    this.busyCount--;
     this._cdr.markForCheck();
   }
 

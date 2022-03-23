@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-default-server",
-  "version": "7.0.192",
+  "version": "7.0.194",
   "description": "심플리즘 패키지 - 기본 서버",
   "author": "김석래",
   "repository": {
@@ -16,9 +16,9 @@
     "node": "^16"
   },
   "dependencies": {
-    "@simplysm/sd-core-common": "7.0.192",
-    "@simplysm/sd-core-node": "7.0.192",
-    "@simplysm/sd-service-common": "7.0.192",
-    "@simplysm/sd-service-server": "7.0.192"
+    "@simplysm/sd-core-common": "7.0.194",
+    "@simplysm/sd-core-node": "7.0.194",
+    "@simplysm/sd-service-common": "7.0.194",
+    "@simplysm/sd-service-server": "7.0.194"
   }
 }
