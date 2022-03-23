@@ -94,7 +94,6 @@ export class AppPage implements OnInit {
       const autoUpdateService = new SdAutoUpdateServiceClient(this._serviceFactory.get("MAIN"));
       const lastVersion = await autoUpdateService.getLastVersionAsync("sd-devtool", "electron");
       this.hasUpdate = process.env["SD_VERSION"] !== lastVersion;
-      console.log(process.env["SD_VERSION"], lastVersion);
 
       await this._nvmRefreshAsync();
     });
