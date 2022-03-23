@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "7.0.162",
+  "version": "7.0.171",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -23,7 +23,7 @@
     "run-electron:devtool": "npm run _sd-cli_ -- --debug run-electron sd-devtool http://localhost:60280",
     "----- pkg": "",
     "watch:devtool": "npm run _sd-cli_ -- --debug watch --packages sd-default-server --packages sd-devtool",
-    "build:devtool": "npm run _sd-cli_ -- --debug build --packages sd-default-server --packages sd-devtool",
+    "build:devtool": "npm run _sd-cli_ -- --debug build --packages sd-devtool",
     "----- ksl": "",
     "ksl:publish": "npm run _sd-cli_ -- --debug publish --config simplysm-ksl.json",
     "ksl:publish(--noBuild)": "npm run _sd-cli_ -- --debug publish --noBuild --config simplysm-ksl.json",

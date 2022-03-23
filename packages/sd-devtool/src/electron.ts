@@ -1,8 +1,9 @@
-import { app, BrowserWindow, Menu, screen, Tray } from "electron";
+import { app, BrowserWindow, dialog, Menu, screen, Tray } from "electron";
+import * as path from "path";
 
 const isDev = process.env["NODE_ENV"] !== "production";
-const iconPath = process.env["SD_ELECTRON_ICON"] ?? "favicon.ico";
-const loadURL = process.env["SD_ELECTRON_DEV_URL"] ?? "index.html";
+const iconPath = path.resolve(__dirname, process.env["SD_ELECTRON_ICON"] ?? "favicon.ico");
+const loadURL = path.resolve(__dirname, process.env["SD_ELECTRON_DEV_URL"] ?? "index.html");
 
 let isQuiting = false;
 let isHiding = false;
@@ -11,6 +12,14 @@ const createWindow = async (): Promise<BrowserWindow> => {
   const display = screen.getPrimaryDisplay();
   const displayWidth = display.workArea.width;
   const displayHeight = display.workArea.height;
+
+  dialog.showMessageBoxSync({
+    message: JSON.stringify({
+      __dirname: __dirname,
+      cwd: process.cwd()
+    }, undefined, 2),
+    textWidth: 300
+  });
 
   const win = new BrowserWindow({
     width: isDev ? 1000 : 400,

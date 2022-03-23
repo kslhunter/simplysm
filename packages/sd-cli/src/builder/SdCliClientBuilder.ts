@@ -280,6 +280,7 @@ export class SdCliClientBuilder extends EventEmitter {
         config: {
           appId: this._config.builder.electron.appId,
           productName: npmConfig.description,
+          asar: false,
           nsis: {},
           directories: {
             app: electronSrcPath,

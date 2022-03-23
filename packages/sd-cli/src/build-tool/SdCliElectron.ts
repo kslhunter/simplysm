@@ -71,6 +71,6 @@ export class SdCliElectron {
     const result = ts.transpileModule(electronTsFileContent, { compilerOptions: { module: ts.ModuleKind.CommonJS } });
     await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), result.outputText);
 
-    await SdProcess.spawnAsync(`${path.resolve(this._rootPath, "node_modules/.bin/electron.cmd")} ${electronSrcPath}`, { cwd: electronSrcPath }, true);
+    await SdProcess.spawnAsync(`electron ${electronSrcPath}`, { cwd: this._rootPath }, true);
   }
 }
