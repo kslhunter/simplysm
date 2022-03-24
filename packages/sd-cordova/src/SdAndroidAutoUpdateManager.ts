@@ -25,7 +25,7 @@ export class SdAndroidAutoUpdateManager {
     if (lastVersion !== undefined && (lastInstalledVersion === undefined || lastVersion !== lastInstalledVersion)) {
       this._logger("최신버전 파일 다운로드중...", []);
       // 서버에서 "[lastVersion]"파일을 버퍼로 저장
-      const buffer = await autoUpdateServiceClient.getVersionArchiveBufferAsync(this._clientName, "android", lastVersion);
+      const buffer = await this._serviceClient.downloadAsync(`/${this._clientName}/android/updates/${lastVersion}.zip`);
 
       // "buffer"에 있는것을 "/root/[lastVersion]"에 압축풀기
       const zip = await new JSZip().loadAsync(buffer);

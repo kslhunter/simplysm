@@ -214,10 +214,10 @@ export class SdCliCordova {
         zip.file("/" + relativePath, contentBuffer);
       }
 
-      const zipFileName = path.basename(`${this._config.appName}-v${this._npmConfig.version}.zip`);
+      const zipFileName = path.basename(`${this._npmConfig.version}.zip`);
       const resultBuffer = await zip.generateAsync({ type: "nodebuffer" });
 
-      await FsUtil.writeFileAsync(path.resolve(outPath, "updates/", zipFileName), resultBuffer);
+      await FsUtil.writeFileAsync(path.resolve(outPath, "android/updates/", zipFileName), resultBuffer);
     }
   }
 

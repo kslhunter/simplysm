@@ -5,8 +5,6 @@ import { FsUtil, SdProcess } from "@simplysm/sd-core-node";
 import { appIcons } from "./app-icons";
 import { Wait } from "@simplysm/sd-core-common";
 import { SdAutoUpdateServiceClient } from "@simplysm/sd-service-client";
-import http from "http";
-import https from "https";
 import path from "path";
 
 @Component({
@@ -109,36 +107,15 @@ export class AppPage implements OnInit {
 
     this.busyCount++;
     await this._toast.try(async () => {
-      const service = this._serviceFactory.get("MAIN");
-      const downloadUrl = `${Boolean(service.options.ssl) ? "https" : "http"}://${service.options.host}:${service.options.port}/sd-devtool/electron/심플리즘 개발도구-latest.exe`;
+      const serviceClient = this._serviceFactory.get("MAIN");
 
-      const distPath = path.resolve(process.cwd(), "updates/심플리즘 개발도구-latest.exe");
+      const distPath = path.resolve(process.cwd(), "latest-installer.exe");
+      await FsUtil.removeAsync(distPath);
 
-      await FsUtil.mkdirsAsync("updates");
-      const writeStream = FsUtil.createWriteStream(distPath);
-      await new Promise<void>((resolve, reject) => {
-        const req = (Boolean(service.options.ssl) ? https : http).get(downloadUrl, (res) => {
-          res.pipe(writeStream);
-          writeStream.on("finish", () => {
-            writeStream.close((err) => {
-              if (err) {
-                reject(err);
-                return;
-              }
-              resolve();
-            });
-          });
-        });
+      const buffer = await serviceClient.downloadAsync(`/sd-devtool/electron/심플리즘 개발도구-latest.exe`);
+      await FsUtil.writeFileAsync(distPath, buffer);
 
-        req.on("error", async (err) => {
-          await FsUtil.removeAsync(distPath);
-          reject(err);
-        });
-      });
-
-      await SdProcess.spawnAsync(`"${distPath}"`, {
-        detached: true
-      });
+      await SdProcess.spawnAsync(`"${distPath}"`, { detached: true });
     });
 
     this.busyCount--;

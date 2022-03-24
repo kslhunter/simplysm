@@ -11,21 +11,14 @@ export class SdAutoUpdateService extends SdServiceBase {
       const updates = await FsUtil.readdirAsync(path.resolve(this.server.options.rootPath, "www", clientName, platform, "updates"));
       const versions = updates.map((item) => ({
         fileName: item,
-        version: (/-v(.*)\..*/).exec(item)?.[1]
-      })).filter((item) => item.version !== undefined);
+        version: path.basename(item, path.extname(item))
+      })).filter((item) => (/^[0-9.]$/).test(item.version));
 
-      return semver.maxSatisfying(versions.map((item) => item.version!), "*") ?? undefined;
+      return semver.maxSatisfying(versions.map((item) => item.version), "*") ?? undefined;
     }
     catch (err) {
       this._logger.error(err);
       return undefined;
     }
-  }
-
-  public async getVersionZipBufferAsync(clientName: string, platform: string, version: string): Promise<Buffer> {
-    const updatesPath = path.resolve(this.server.options.rootPath, "www", clientName, platform, "updates");
-    const updates = await FsUtil.readdirAsync(updatesPath);
-    const filePath = updates.single((item) => (/-v(.*)\.zip$/).exec(item)?.[1] === version)!;
-    return await FsUtil.readFileBufferAsync(path.resolve(updatesPath, filePath));
   }
 }

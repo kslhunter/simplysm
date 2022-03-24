@@ -3,7 +3,7 @@ import { BrowserModule } from "@angular/platform-browser";
 import { SdAngularModule, SdServiceFactoryRootProvider } from "@simplysm/sd-angular";
 import { AppPageModule } from "./_modules/AppPageModule";
 import { AppPage } from "./AppPage";
-import { NumberUtil } from "@simplysm/sd-core-common";
+import { JsonConvert, NumberUtil } from "@simplysm/sd-core-common";
 
 @NgModule({
   imports: [
@@ -23,7 +23,7 @@ export class AppModule implements DoBootstrap {
       process.env["NODE_ENV"] === "production" ? {
         host: process.env["SERVER_HOST"],
         port: NumberUtil.parseInt(process.env["SERVER_PORT"]),
-        ssl: Boolean(process.env["SERVER_SSL"] ?? false)
+        ssl: JsonConvert.parse(process.env["SERVER_SSL"] ?? "false")
       } : undefined
     );
 

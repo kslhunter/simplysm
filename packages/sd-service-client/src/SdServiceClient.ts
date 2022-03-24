@@ -126,4 +126,23 @@ export class SdServiceClient {
   public async removeEventListenerAsync(key: string): Promise<void> {
     await this._sendCommandAsync("removeEventListener", [key]);
   }
+
+  public async downloadAsync(relPath: string): Promise<Buffer> {
+    return await new Promise<Buffer>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", `${Boolean(this.options.ssl) ? "https" : "http"}://${this.options.host}:${this.options.port}${(relPath.startsWith("/") ? "" : "/")}${relPath}`, true);
+      xhr.responseType = "arraybuffer";
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          resolve(xhr.response);
+        }
+      };
+      xhr.onerror = () => {
+        reject(new Error(xhr.status.toString()));
+      };
+
+      xhr.send();
+    });
+  }
 }
