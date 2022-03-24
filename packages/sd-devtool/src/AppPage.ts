@@ -18,7 +18,7 @@ import path from "path";
             <img *ngIf="(logo | async) as src" [src]="src" style="height: 100%; filter: grayscale(100%); opacity: .3;"/>
           </div>
 
-          <sdm-topbar-menu class="_topbar-menu-item" *ngIf="hasUpdate" (click)="onUpdateButtonClick()">
+          <sdm-topbar-menu class="_topbar-menu-item" *ngIf="latestVersion !== version" (click)="onUpdateButtonClick()">
             <fa-icon [icon]="icons.update | async" [fixedWidth]="true"></fa-icon>
           </sdm-topbar-menu>
         </sdm-topbar>
@@ -78,7 +78,8 @@ export class AppPage implements OnInit {
     versions: []
   };
 
-  public hasUpdate = false;
+  public version = process.env["SD_VERSION"];
+  public latestVersion?: string;
 
   public constructor(private readonly _toast: SdToastProvider,
                      private readonly _cdr: ChangeDetectorRef,
@@ -91,8 +92,7 @@ export class AppPage implements OnInit {
     await this._toast.try(async () => {
       if (process.env["NODE_ENV"] === "production") {
         const autoUpdateService = new SdAutoUpdateServiceClient(this._serviceFactory.get("MAIN"));
-        const lastVersion = await autoUpdateService.getLastVersionAsync("sd-devtool", "electron");
-        this.hasUpdate = process.env["SD_VERSION"] !== lastVersion;
+        this.latestVersion = await autoUpdateService.getLastVersionAsync("sd-devtool", "electron");
       }
 
       await this._nvmRefreshAsync();
@@ -108,11 +108,10 @@ export class AppPage implements OnInit {
     this.busyCount++;
     await this._toast.try(async () => {
       const serviceClient = this._serviceFactory.get("MAIN");
+      const buffer = await serviceClient.downloadAsync(`/sd-devtool/electron/${this.latestVersion}.exe`);
 
-      const distPath = path.resolve(process.cwd(), "latest-installer.exe");
-      await FsUtil.removeAsync(distPath);
-
-      const buffer = await serviceClient.downloadAsync(`/sd-devtool/electron/심플리즘 개발도구-latest.exe`);
+      const distPath = path.resolve(process.cwd(), `updates/${this.latestVersion}.exe`);
+      await FsUtil.mkdirsAsync(path.dirname(distPath));
       await FsUtil.writeFileAsync(distPath, buffer);
 
       await SdProcess.spawnAsync(`"${distPath}"`, { detached: true });
