@@ -18,7 +18,7 @@ import path from "path";
             <img *ngIf="(logo | async) as src" [src]="src" style="height: 100%; filter: grayscale(100%); opacity: .3;"/>
           </div>
 
-          <sdm-topbar-menu class="_topbar-menu-item" *ngIf="latestVersion !== version" (click)="onUpdateButtonClick()">
+          <sdm-topbar-menu class="_topbar-menu-item" *ngIf="latestVersion && latestVersion !== version" (click)="onUpdateButtonClick()">
             <fa-icon [icon]="icons.update | async" [fixedWidth]="true"></fa-icon>
           </sdm-topbar-menu>
         </sdm-topbar>
@@ -90,10 +90,8 @@ export class AppPage implements OnInit {
   public async ngOnInit(): Promise<void> {
     this.busyCount++;
     await this._toast.try(async () => {
-      if (process.env["NODE_ENV"] === "production") {
-        const autoUpdateService = new SdAutoUpdateServiceClient(this._serviceFactory.get("MAIN"));
-        this.latestVersion = await autoUpdateService.getLastVersionAsync("sd-devtool", "electron");
-      }
+      const autoUpdateService = new SdAutoUpdateServiceClient(this._serviceFactory.get("MAIN"));
+      this.latestVersion = await autoUpdateService.getLastVersionAsync("sd-devtool", "electron");
 
       await this._nvmRefreshAsync();
     });
@@ -103,12 +101,10 @@ export class AppPage implements OnInit {
   }
 
   public async onUpdateButtonClick(): Promise<void> {
-    if (process.env["NODE_ENV"] !== "production") return;
-
     this.busyCount++;
     await this._toast.try(async () => {
       const serviceClient = this._serviceFactory.get("MAIN");
-      const buffer = await serviceClient.downloadAsync(`/sd-devtool/electron/${this.latestVersion}.exe`);
+      const buffer = await serviceClient.downloadAsync(`/sd-devtool/electron/updates/${this.latestVersion}.exe`);
 
       const distPath = path.resolve(process.cwd(), `updates/${this.latestVersion}.exe`);
       await FsUtil.mkdirsAsync(path.dirname(distPath));

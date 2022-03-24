@@ -135,11 +135,14 @@ export class SdServiceClient {
 
       xhr.onload = () => {
         if (xhr.status === 200) {
-          resolve(xhr.response);
+          resolve(Buffer.from(xhr.response));
+        }
+        else {
+          reject(new Error(xhr.status.toString()));
         }
       };
-      xhr.onerror = () => {
-        reject(new Error(xhr.status.toString()));
+      xhr.onerror = (err) => {
+        reject(err);
       };
 
       xhr.send();

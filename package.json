@@ -22,7 +22,7 @@
     "----- device": "",
     "run-electron:devtool": "npm run _sd-cli_ -- --debug run-electron sd-devtool http://localhost:50080",
     "----- pkg": "",
-    "watch:devtool": "npm run _sd-cli_ -- --debug watch --packages sd-default-server --packages sd-devtool",
+    "watch:devtool": "npm run _sd-cli_ -- --debug watch --packages sd-service-server --packages sd-default-server --packages sd-devtool",
     "build:devtool": "npm run _sd-cli_ -- --debug build --packages sd-devtool",
     "----- ksl": "",
     "ksl:publish": "npm run _sd-cli_ -- --debug publish --config simplysm-ksl.json",

@@ -45,6 +45,7 @@ const server = new SdServiceServer({
   port: 50080
 });
 
+
 const logger = Logger.get(["simplysm", "sd-default-server"]);
 
 server.listenAsync().catch((err) => {
