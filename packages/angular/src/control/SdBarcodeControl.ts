@@ -9,7 +9,7 @@ require("jsbarcode");
   selector: "sd-barcode",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <canvas></canvas>`
+    <svg></svg>`
 })
 export class SdBarcodeControl implements ISdNotifyPropertyChange {
   @Input()
@@ -47,7 +47,7 @@ export class SdBarcodeControl implements ISdNotifyPropertyChange {
 
   public sdOnPropertyChange(propertyName: string, oldValue: any, newValue: any): void {
     if (newValue) {
-      const canvasEl = this._elRef.nativeElement.findAll("canvas")[0];
+      const canvasEl = this._elRef.nativeElement.findAll("svg")[0];
 
       if (canvasEl) {
         window["JsBarcode"](

@@ -27,6 +27,7 @@ import {DateOnly, DateTime, Time} from "@simplism/core";
            (focus)="onFocus($event)"
            (blur)="onBlur($event)"
            [disabled]="disabled"
+           [maxLength]="maxLength || 99"
            [step]="step"
            [style.text-align]="type === 'number' ? 'right' : undefined"
            *ngIf="!multiline"/>
@@ -56,6 +57,10 @@ export class SdTextfieldControl implements ISdNotifyPropertyChange {
   @Input()
   @SdTypeValidate(String)
   public placeholder?: string;
+
+  @Input()
+  @SdTypeValidate(Number)
+  public maxLength?: number;
 
   @Input()
   @SdTypeValidate(Boolean)

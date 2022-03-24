@@ -110,6 +110,9 @@ export class ExcelCellStyle {
     else if (styleData.$.numFmtId === "49") {
       return "string";
     }
+    else if (styleData.$.numFmtId === "41") {
+      return "number";
+    }
     else {
       const numFmtData = this._getNumFmtData();
       if (
