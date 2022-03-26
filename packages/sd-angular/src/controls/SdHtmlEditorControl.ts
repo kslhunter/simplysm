@@ -56,6 +56,8 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
     :host {
       display: block;
       border: 1px solid var(--trans-brightness-default);
+      border-radius: var(--border-radius-default);
+      overflow: hidden;
 
       ::ng-deep > sd-dock-container {
         > ._toolbar {

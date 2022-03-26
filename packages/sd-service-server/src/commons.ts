@@ -17,6 +17,6 @@ export interface ISdServiceServerOptions {
 
 export class SdServiceBase {
   public server!: SdServiceServer;
-  public socket!: Socket;
-  public request!: ISdServiceRequest;
+  public socket?: Socket; // API로 접근한 경우 undefined
+  public request?: ISdServiceRequest; // API로 접근한 경우 undefined
 }

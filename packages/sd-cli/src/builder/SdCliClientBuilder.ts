@@ -102,7 +102,7 @@ export class SdCliClientBuilder extends EventEmitter {
     // NgModule 생성
     await this._ngModuleGenerator.runAsync();
 
-    // CORDOVA
+    // CORDOVA 초기화
     if (this._cordova) {
       this._logger.debug("CORDOVA 구성...");
       await this._cordova.initializeAsync();
@@ -189,6 +189,12 @@ export class SdCliClientBuilder extends EventEmitter {
     // NgModule 생성
     await this._ngModuleGenerator.runAsync();
 
+    // CORDOVA 초기화
+    if (this._cordova) {
+      this._logger.debug("CORDOVA 구성...");
+      await this._cordova.initializeAsync();
+    }
+
     // 빌드
     this._logger.debug("Webpack 빌드 수행...");
     const builderTypes = (Object.keys(this._config.builder ?? { web: {} }) as ("web" | "cordova" | "electron")[]);
@@ -222,11 +228,8 @@ export class SdCliClientBuilder extends EventEmitter {
       );
     }
 
-    // CORDOVA
+    // CORDOVA 빌드
     if (this._cordova) {
-      this._logger.debug("CORDOVA 구성...");
-      await this._cordova.initializeAsync();
-
       this._logger.debug("CORDOVA 빌드...");
       await this._cordova.buildAsync(path.resolve(this._parsedTsconfig.options.outDir!, "cordova"));
     }

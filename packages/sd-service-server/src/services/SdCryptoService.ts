@@ -5,7 +5,7 @@ import { SdServiceBase } from "../commons";
 export class SdCryptoService extends SdServiceBase {
   public async encryptAsync(data: string | Buffer): Promise<string> {
     const config = (
-      await SdServiceServerConfigUtil.getConfigAsync(this.server.options.rootPath, this.request.clientName)
+      await SdServiceServerConfigUtil.getConfigAsync(this.server.options.rootPath, this.request?.clientName)
     )["crypto"];
     if (config === undefined) {
       throw new Error("암호화 설정을 찾을 수 없습니다.");

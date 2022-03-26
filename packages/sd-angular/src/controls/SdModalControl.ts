@@ -87,14 +87,17 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
         overflow: hidden;
         @include elevation(16);
 
+        border-radius: var(--border-radius-default);
+
         &:focus {
           outline: none;
         }
 
         ::ng-deep > sd-dock-container {
           > ._header {
-            background: var(--theme-color-primary-default);
-            color: var(--text-brightness-rev-default);
+            //background: var(--theme-color-primary-default);
+            background: var(--theme-color-grey-lightest);
+            //color: var(--text-brightness-rev-default);
             user-select: none;
             //border-bottom: 1px solid var(--theme-color-primary-darker);
 
@@ -112,11 +115,11 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
               text-align: center;
               //padding: var(--gap-sm) var(--gap-default);
               padding: var(--gap-default) var(--gap-lg);
-              color: var(--text-brightness-rev-dark);
+              //color: var(--text-brightness-rev-dark);
 
               &:hover {
                 background: rgba(0, 0, 0, .2);
-                color: var(--text-brightness-rev-default);
+                //color: var(--text-brightness-rev-default);
               }
 
               &:active {

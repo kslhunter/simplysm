@@ -316,11 +316,18 @@ export class QueryHelper {
   }
 
   public concat(...args: TEntityValue<string | String | number | Number | undefined>[]): QueryUnit<string> {
-    return new QueryUnit<string>(String, [
-      // "CONCAT(",
-      ...args.mapMany((arg) => [arg !== undefined ? this.ifNull(arg, "").query : "", " + "]).slice(0, -1),
-      // ")"
-    ]);
+    if (this._dialect === "mysql") {
+      return new QueryUnit<string>(String, [
+        "CONCAT(",
+        ...args.mapMany((arg) => [arg !== undefined ? this.ifNull(arg, "").query : "", ", "]).slice(0, -1),
+        ")"
+      ]);
+    }
+    else {
+      return new QueryUnit<string>(String, [
+        ...args.mapMany((arg) => [arg !== undefined ? this.ifNull(arg, "").query : "", " + "]).slice(0, -1)
+      ]);
+    }
   }
 
   // endregion

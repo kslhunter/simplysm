@@ -8,7 +8,6 @@ import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import semver from "semver/preload";
 import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
 import { SdServiceServer } from "@simplysm/sd-service-server";
-import { SdCliNpm } from "./SdCliNpm";
 import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
 import { NextHandleFunction } from "connect";
 
@@ -245,8 +244,8 @@ export class SdCliWorkspace {
 
     // 빌드
     if (!opt.noBuild) {
-      this._logger.debug("노드패키지 업데이트...");
-      await new SdCliNpm(this._rootPath).updateAsync();
+      // this._logger.debug("노드패키지 업데이트...");
+      // await new SdCliNpm(this._rootPath).updateAsync();
 
       this._logger.debug("빌드를 시작합니다...");
       await this._buildPkgsAsync(pkgs);

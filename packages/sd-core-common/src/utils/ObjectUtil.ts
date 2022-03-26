@@ -74,13 +74,17 @@ export class ObjectUtil {
     return source;
   }
 
-  public static merge<T, P>(source: T, target: P, opt?: { arrayProcess?: "replace" | "concat"; useDelTargetUndefined?: boolean }): (T & P) {
+  public static merge<T, P>(source: T, target: P, opt?: { arrayProcess?: "replace" | "concat"; useDelTargetNull?: boolean }): (T & P) {
     if (source === undefined) {
       return ObjectUtil.clone(target) as any;
     }
 
     if (target === undefined) {
-      return opt?.useDelTargetUndefined ? undefined : ObjectUtil.clone(source) as any;
+      return ObjectUtil.clone(source) as any;
+    }
+
+    if (target === null) {
+      return opt?.useDelTargetNull ? undefined : ObjectUtil.clone(source) as any;
     }
 
     if (typeof target !== "object") {
@@ -121,7 +125,7 @@ export class ObjectUtil {
 
     if (opt?.arrayProcess === "concat" && source instanceof Array && target instanceof Array) {
       let result = source.concat(target).distinct();
-      if (opt.useDelTargetUndefined) {
+      if (opt.useDelTargetNull) {
         result = result.filterExists();
       }
       return result as any;
@@ -130,7 +134,7 @@ export class ObjectUtil {
     const result = ObjectUtil.clone(source);
     for (const key of Object.keys(target)) {
       result[key] = ObjectUtil.merge(source[key], target[key], opt);
-      if (opt?.useDelTargetUndefined && result[key] === undefined) {
+      if (opt?.useDelTargetNull && result[key] === undefined) {
         delete result[key];
       }
     }

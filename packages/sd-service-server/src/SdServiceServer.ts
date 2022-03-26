@@ -126,6 +126,28 @@ export class SdServiceServer extends EventEmitter {
     });
   }
 
+  private async _runServiceMethodAsync(def: { socket?: socketIo.Socket; request?: ISdServiceRequest; serviceName: string; methodName: string; params: any[] }): Promise<any> {
+    // 서비스 가져오기
+    const serviceClass = this.options.services.single((item) => item.name === def.serviceName);
+    if (!serviceClass) {
+      throw new Error(`서비스[${def.serviceName}]를 찾을 수 없습니다.`);
+    }
+    const service: SdServiceBase = new serviceClass();
+    service.server = this;
+    service.request = def.request;
+    service.socket = def.socket;
+
+    // 메소드 가져오기
+    const method = service[def.methodName];
+    if (method === undefined) {
+      throw new Error(`메소드[${def.serviceName}.${def.methodName}]를 찾을 수 없습니다.`);
+    }
+
+    // 실행
+    // eslint-disable-next-line @typescript-eslint/return-await
+    return await method.apply(service, def.params);
+  }
+
   private async _onSocketRequestAsync(socket: socketIo.Socket, req: ISdServiceRequest): Promise<ISdServiceResponse> {
     try {
       const cmdSplit = req.command.split(".");
@@ -133,24 +155,13 @@ export class SdServiceServer extends EventEmitter {
         const serviceName = cmdSplit[0];
         const methodName = cmdSplit[1];
 
-        // 서비스 가져오기
-        const serviceClass = this.options.services.single((item) => item.name === serviceName);
-        if (!serviceClass) {
-          throw new Error(`서비스[${serviceName}]를 찾을 수 없습니다.`);
-        }
-        const service: SdServiceBase = new serviceClass();
-        service.server = this;
-        service.request = req;
-        service.socket = socket;
-
-        // 메소드 가져오기
-        const method = service[methodName];
-        if (method === undefined) {
-          throw new Error(`메소드[${serviceName}.${methodName}]를 찾을 수 없습니다.`);
-        }
-
-        // 실행
-        const result = await method.apply(service, req.params);
+        const result = await this._runServiceMethodAsync({
+          socket,
+          request: req,
+          serviceName,
+          methodName,
+          params: req.params
+        });
 
         // 응답
         return {
@@ -254,39 +265,100 @@ export class SdServiceServer extends EventEmitter {
         }
       }
 
-      if (req.method !== "GET") {
+      const urlObj = url.parse(req.url!, true, false);
+      const urlPathChain = decodeURI(urlObj.pathname!.slice(1)).split("/");
+
+      if (urlPathChain[0] === "api") {
+        if (req.headers.origin?.startsWith("http://localhost") && req.method === "OPTIONS") {
+          res.writeHead(204, {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Content-Length, Accept",
+            "Access-Control-Allow-Methods": "POST, GET, PUT, DELETE,PATCH",
+            "Access-Control-Allow-Credentials": "true"
+          });
+          res.end();
+          return;
+        }
+
+        const serviceName = urlPathChain[1];
+        const methodName = urlPathChain[2];
+
+        let params: any[] | undefined;
+        if (req.method === "GET") {
+          if (typeof urlObj.query["json"] !== "string") throw new Error();
+          params = JsonConvert.parse(urlObj.query["json"]);
+        }
+        else if (req.method === "POST") {
+          const body = await new Promise<Buffer>((resolve) => {
+            let tmp = Buffer.from([]);
+            req.on("data", chunk => {
+              tmp = Buffer.concat([tmp, chunk]);
+            });
+            req.on("end", () => {
+              resolve(tmp);
+            });
+          });
+          params = JsonConvert.parse(body.toString());
+        }
+
+        if (params) {
+          const result = await this._runServiceMethodAsync({
+            serviceName,
+            methodName,
+            params
+          });
+
+          const resultJson = JsonConvert.stringify(result);
+
+          res.writeHead(200, {
+            ...req.headers.origin?.startsWith("http://localhost") ? {
+              "Access-Control-Allow-Origin": "*",
+              "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Content-Length, Accept",
+              "Access-Control-Allow-Methods": "POST, GET, PUT, DELETE,PATCH",
+              "Access-Control-Allow-Credentials": "true"
+            } : {},
+            "Content-Length": resultJson.length,
+            "Content-Type": "application/json"
+          });
+          res.end(resultJson);
+
+          return;
+        }
+      }
+
+      if (req.method === "GET") {
+        let targetFilePath = path.resolve(this.options.rootPath, "www", ...urlPathChain);
+        targetFilePath = FsUtil.exists(targetFilePath) && FsUtil.stat(targetFilePath).isDirectory() ? path.resolve(targetFilePath, "index.html") : targetFilePath;
+
+        if (!FsUtil.exists(targetFilePath)) {
+          const errorMessage = "파일을 찾을 수 없습니다.";
+          this._responseErrorHtml(res, 404, errorMessage);
+          this._logger.warn(`[404] ${errorMessage} (${targetFilePath})`);
+          return;
+        }
+
+        if (path.basename(targetFilePath).startsWith(".")) {
+          const errorMessage = "파일을 사용할 권한이 없습니다.";
+          this._responseErrorHtml(res, 403, errorMessage);
+          this._logger.warn(`[403] ${errorMessage} (${targetFilePath})`)
+          ;
+          return;
+        }
+
+        const fileStream = FsUtil.createReadStream(targetFilePath);
+        const targetFileSize = (await FsUtil.lstatAsync(targetFilePath)).size;
+
+        res.setHeader("Content-Length", targetFileSize);
+        res.setHeader("Content-Type", mime.getType(targetFilePath)!);
+        res.writeHead(200);
+        fileStream.pipe(res);
+      }
+      else {
         const errorMessage = "요청이 잘못되었습니다.";
         this._responseErrorHtml(res, 405, errorMessage);
         this._logger.warn(`[405] ${errorMessage} (${req.method!.toUpperCase()})`);
         return;
       }
-
-      const urlObj = url.parse(req.url!, true, false);
-      const urlPath = decodeURI(urlObj.pathname!.slice(1));
-      let targetFilePath = path.resolve(this.options.rootPath, "www", urlPath);
-      targetFilePath = FsUtil.exists(targetFilePath) && FsUtil.stat(targetFilePath).isDirectory() ? path.resolve(targetFilePath, "index.html") : targetFilePath;
-
-      if (!FsUtil.exists(targetFilePath)) {
-        const errorMessage = "파일을 찾을 수 없습니다.";
-        this._responseErrorHtml(res, 404, errorMessage);
-        this._logger.warn(`[404] ${errorMessage} (${targetFilePath})`);
-        return;
-      }
-
-      if (path.basename(targetFilePath).startsWith(".")) {
-        const errorMessage = "파일을 사용할 권한이 없습니다.";
-        this._responseErrorHtml(res, 403, errorMessage);
-        this._logger.warn(`[403] ${errorMessage} (${targetFilePath})`);
-        return;
-      }
-
-      const fileStream = FsUtil.createReadStream(targetFilePath);
-      const targetFileSize = (await FsUtil.lstatAsync(targetFilePath)).size;
-
-      res.setHeader("Content-Length", targetFileSize);
-      res.setHeader("Content-Type", mime.getType(targetFilePath)!);
-      res.writeHead(200);
-      fileStream.pipe(res);
     }
     catch (err) {
       const errorMessage = "요청 처리중 오류가 발생하였습니다.";

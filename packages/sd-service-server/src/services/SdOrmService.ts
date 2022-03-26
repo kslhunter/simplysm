@@ -33,7 +33,7 @@ export class SdOrmService extends SdServiceBase {
     database?: string;
     schema?: string;
   }> {
-    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.request.clientName, opt);
+    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.request?.clientName, opt);
     return {
       dialect: config.dialect,
       database: config.database,
@@ -42,7 +42,7 @@ export class SdOrmService extends SdServiceBase {
   }
 
   public async connectAsync(opt: Record<string, any>): Promise<number> {
-    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.request.clientName, opt);
+    const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.request?.clientName, opt);
 
     const dbConn = DbConnectionFactory.create(config);
 
@@ -57,12 +57,12 @@ export class SdOrmService extends SdServiceBase {
       this._logger.warn("소켓연결이 끊어져, DB 연결이 중지되었습니다.");
     };
     SdOrmService._wsConnectionCloseListenerMap.set(connId, closeEventListener);
-    this.socket.on("close", closeEventListener);
+    this.socket?.on("close", closeEventListener);
 
     dbConn.on("close", () => {
       SdOrmService._connections.delete(connId);
       SdOrmService._wsConnectionCloseListenerMap.delete(connId);
-      this.socket.off("close", closeEventListener);
+      this.socket?.off("close", closeEventListener);
     });
 
     return connId;

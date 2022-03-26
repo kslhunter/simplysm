@@ -20,7 +20,7 @@ import { sdThemes, TSdTheme } from "../commons";
       background: var(--theme-color-grey-darker);
       color: var(--text-brightness-rev-default);
       padding: 0 var(--gap-sm);
-      border-radius: var(--border-radius-default);
+      border-radius: var(--border-radius-sm);
       text-indent: 0;
 
       @each $color in $arr-theme-color {

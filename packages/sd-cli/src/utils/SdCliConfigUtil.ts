@@ -74,10 +74,10 @@ export class SdCliConfigUtil {
     return pkgConf;
   }
 
-  private static _mergeObj<A, B>(org: A, target: B): A & B {
-    return ObjectUtil.merge(org, target, {
+  private static _mergeObj<A, B>(orig: A, target: B): A & B {
+    return ObjectUtil.merge(orig, target, {
       arrayProcess: "replace",
-      useDelTargetUndefined: true
+      useDelTargetNull: true
     });
   }
 }
