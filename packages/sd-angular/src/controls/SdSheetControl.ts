@@ -34,18 +34,16 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
   template: `
     <sd-dock-container [hidden]="!isInitialized">
       <sd-dock *ngIf="(key || pageLength > 0) && !hideConfigBar">
-        <div class="_icon-container">
-          <sd-anchor class="_card-icon"
-                     *ngIf="useCardDisplayType"
-                     (click)="onDisplayTypeChangeButtonClick()">
-            <fa-icon [icon]="(displayType === 'card' ? icons.fasBars : icons.fasTable) | async"
-                     [fixedWidth]=true></fa-icon>
-          </sd-anchor>
-          <sd-anchor class="_cog-icon" (click)="onConfigButtonClick()"
-                     *ngIf="key">
-            <fa-icon [icon]="icons.fasCog | async" [fixedWidth]=true></fa-icon>
-          </sd-anchor>
-        </div>
+        <sd-anchor (click)="onConfigButtonClick()"
+                   *ngIf="key">
+          <fa-icon [icon]="icons.fasCog | async" [fixedWidth]=true></fa-icon>
+        </sd-anchor>
+
+        <sd-anchor *ngIf="useCardDisplayType"
+                   (click)="onDisplayTypeChangeButtonClick()">
+          <fa-icon [icon]="(displayType === 'card' ? icons.fasBars : icons.fasTable) | async"
+                   [fixedWidth]=true></fa-icon>
+        </sd-anchor>
 
         <sd-pagination [page]="page"
                        [pageLength]="pageLength"
@@ -444,16 +442,16 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
           border-bottom: 1px solid $border-color-dark;
 
           ::ng-deep > div {
-            > ._icon-container {
-              float: right;
+            > sd-anchor {
+              padding: var(--gap-sm) var(--gap-default);
 
-              > sd-anchor {
-                padding: var(--gap-sm) var(--gap-default);
-
-                &:hover {
-                  background: var(--theme-color-grey-lightest);
-                }
+              &:hover {
+                background: var(--theme-color-grey-lightest);
               }
+            }
+
+            > sd-pagination {
+              display: inline-block;
             }
           }
         }

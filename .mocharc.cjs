@@ -6,6 +6,6 @@ module.exports = {
   "node-option": [
     "experimental-specifier-resolution=node",
     "experimental-import-meta-resolve",
-    "loader=./packages/sd-cli/lib/ts-node-esm-paths.mjs"
+    "loader=./lib/ts-node-esm-paths.mjs"
   ]
 }

@@ -47,7 +47,7 @@ import { sdThemes, TSdTheme } from "../commons";
           display: inline-block;
           width: $checkbox-size;
           height: $checkbox-size;
-          border: 1px solid var(--trans-brightness-default);
+          border: 1px solid var(--trans-brightness-light);
           vertical-align: top;
           background: var(--theme-color-secondary-lightest);
           margin-top: calc(var(--gap-sm) / 2);

@@ -88,7 +88,8 @@ import { sdThemes, TSdTheme } from "../commons";
       > div._disabled {
         @include form-control-base();
 
-        border: 1px solid var(--border-color);
+        //border: 1px solid var(--border-color);
+        border: 1px solid var(--trans-brightness-light);
         border-radius: var(--border-radius-default);
 
         &::-webkit-input-placeholder {

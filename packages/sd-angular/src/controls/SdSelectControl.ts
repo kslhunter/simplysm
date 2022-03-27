@@ -106,7 +106,8 @@ import { SdDropdownControl } from "./SdDropdownControl";
         padding-right: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px) !important;
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
-        border: 1px solid var(--border-color);
+        //border: 1px solid var(--border-color);
+        border: 1px solid var(--trans-brightness-light);
         transition: outline-color .1s linear;
         outline: 1px solid transparent;
         outline-offset: -1px;

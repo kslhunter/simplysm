@@ -12,7 +12,7 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
       display: block;
       background: white;
       border-radius: var(--border-radius-default);
-      @include elevation(8);
+      //@include elevation(8);
       overflow: hidden;
     }
   `]

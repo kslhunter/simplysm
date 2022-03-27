@@ -350,6 +350,10 @@ export class SdCliClientBuilder extends EventEmitter {
     const polyfillsFilePath = path.resolve(this._rootPath, "src/polyfills.ts");
     const stylesFilePath = path.resolve(this._rootPath, "src/styles.scss");
 
+    const hotMiddlewareScripts = watch ? [
+      `webpack-hot-middleware/client?path=${publicPath}__webpack_hmr&timeout=20000&reload=true`
+    ] : [];
+
     let prevProgressMessage = "";
     return {
       mode: watch ? "development" : "production",
@@ -369,14 +373,9 @@ export class SdCliClientBuilder extends EventEmitter {
       },
       context: this._workspaceRootPath,
       entry: {
-        main: [
-          ...watch ? [
-            `webpack-hot-middleware/client?path=${publicPath}__webpack_hmr&timeout=20000&reload=true&overlay=true`
-          ] : [],
-          mainFilePath
-        ],
-        ...FsUtil.exists(polyfillsFilePath) ? { polyfills: polyfillsFilePath } : {},
-        ...FsUtil.exists(stylesFilePath) ? { styles: stylesFilePath } : {}
+        main: [...hotMiddlewareScripts, mainFilePath],
+        ...FsUtil.exists(polyfillsFilePath) ? { polyfills: [...hotMiddlewareScripts, polyfillsFilePath] } : {},
+        ...FsUtil.exists(stylesFilePath) ? { styles: [...hotMiddlewareScripts, stylesFilePath] } : {}
       },
       output: {
         uniqueName: pkgKey,
@@ -392,7 +391,10 @@ export class SdCliClientBuilder extends EventEmitter {
         scriptType: "module"
       },
       watch: false,
-      watchOptions: { poll: undefined, ignored: undefined },
+      watchOptions: {
+        poll: undefined,
+        ignored: undefined
+      },
       performance: { hints: false },
       ignoreWarnings: [
         /Failed to parse source map from/,

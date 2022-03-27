@@ -28,7 +28,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
       <div class="_resize-bar" *ngIf="resizable" (mousedown)="onResizeBarMousedown($event)"></div>
     </div>`,
   styles: [/* language=SCSS */ `
-    $resize-bar-width: 4px;
+    $resize-bar-width: 2px;
 
     :host {
       display: block;
