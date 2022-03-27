@@ -171,7 +171,8 @@ export class SdCliClientBuilder extends EventEmitter {
         wdm(compiler, {
           publicPath: compiler.options.output.publicPath,
           index: "index.html",
-          stats: false
+          stats: false,
+          writeToDisk: true
         }),
         whm(compiler, {
           path: `${compiler.options.output.publicPath}__webpack_hmr`,
@@ -701,7 +702,7 @@ export class SdCliClientBuilder extends EventEmitter {
           outputPath: "index.html",
           baseHref: publicPath,
           entrypoints: [
-            ["runtime", true],
+            ["runtime", !watch],
             ["polyfills", true],
             ["styles", false],
             ["vendor", true],

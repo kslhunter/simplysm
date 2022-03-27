@@ -340,8 +340,7 @@ export class SdServiceServer extends EventEmitter {
         if (path.basename(targetFilePath).startsWith(".")) {
           const errorMessage = "파일을 사용할 권한이 없습니다.";
           this._responseErrorHtml(res, 403, errorMessage);
-          this._logger.warn(`[403] ${errorMessage} (${targetFilePath})`)
-          ;
+          this._logger.warn(`[403] ${errorMessage} (${targetFilePath})`);
           return;
         }
 
