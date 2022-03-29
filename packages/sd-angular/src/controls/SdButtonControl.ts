@@ -20,6 +20,7 @@ import { sdThemes, TSdTheme } from "../commons";
     :host {
       > button {
         @include form-control-base();
+        user-select: none;
         padding: var(--gap-sm) var(--gap-lg);
 
         background: white;

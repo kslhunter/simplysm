@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
+import { SdInputValidate } from "../decorators/SdInputValidate";
 
 @Component({
   selector: "sd-card",
@@ -12,11 +13,18 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
       display: block;
       background: white;
       border-radius: var(--border-radius-default);
-      //@include elevation(8);
       overflow: hidden;
+
+      &[sd-elevation=true] {
+        @include elevation(8);
+      }
     }
   `]
 })
 export class SdCardControl {
+  @Input()
+  @SdInputValidate(Boolean)
+  @HostBinding("attr.sd-elevation")
+  public elevation?: boolean;
 }
 

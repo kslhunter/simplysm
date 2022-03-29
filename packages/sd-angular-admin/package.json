@@ -1,0 +1,31 @@
+{
+  "name": "@simplysm/sd-angular-admin",
+  "version": "7.0.210",
+  "description": "심플리즘 패키지 - Angular 어드민 템플릿 모듈 (browser)",
+  "author": "김석래",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kslhunter/simplysm7.git",
+    "directory": "packages/sd-angular-admin"
+  },
+  "license": "MIT",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "sideEffects": false,
+  "engines": {
+    "node": "^16"
+  },
+  "dependencies": {
+    "@angular/common": "^13.2.0",
+    "@angular/core": "^13.2.0",
+    "@angular/platform-browser": "^13.2.0",
+    "rxjs": "^6.6.7",
+    "@fortawesome/angular-fontawesome": "^0.10.2",
+    "@fortawesome/fontawesome-svg-core": "^6.1.0",
+    "@fortawesome/pro-duotone-svg-icons": "^6.1.0",
+    "@simplysm/sd-core-common": "7.0.210",
+    "@simplysm/sd-core-browser": "7.0.210",
+    "@simplysm/sd-angular": "7.0.210"
+  }
+}
