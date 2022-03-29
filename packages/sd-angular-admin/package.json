@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular-admin",
-  "version": "7.0.210",
+  "version": "7.0.211",
   "description": "심플리즘 패키지 - Angular 어드민 템플릿 모듈 (browser)",
   "author": "김석래",
   "repository": {
@@ -24,8 +24,8 @@
     "@fortawesome/angular-fontawesome": "^0.10.2",
     "@fortawesome/fontawesome-svg-core": "^6.1.0",
     "@fortawesome/pro-duotone-svg-icons": "^6.1.0",
-    "@simplysm/sd-core-common": "7.0.210",
-    "@simplysm/sd-core-browser": "7.0.210",
-    "@simplysm/sd-angular": "7.0.210"
+    "@simplysm/sd-core-common": "7.0.211",
+    "@simplysm/sd-core-browser": "7.0.211",
+    "@simplysm/sd-angular": "7.0.211"
   }
 }
