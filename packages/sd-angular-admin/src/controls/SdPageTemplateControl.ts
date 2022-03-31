@@ -135,7 +135,7 @@ export class SdPageTemplateControl {
   @ContentChild("topbarMenu", { static: true })
   public topbarMenuTemplateRef?: TemplateRef<void>;
 
-  @ContentChild("filter", { static: true })
+  @ContentChild("filterItem", { static: true })
   public filterItemTemplateRef?: TemplateRef<void>;
 
   @ContentChild("sheetButton", { static: true })
