@@ -23,17 +23,17 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
   selector: "sd-dock",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div>
+    <div class="_content">
       <ng-content></ng-content>
-      <div class="_resize-bar" *ngIf="resizable" (mousedown)="onResizeBarMousedown($event)"></div>
-    </div>`,
+    </div>
+    <div class="_resize-bar" *ngIf="resizable" (mousedown)="onResizeBarMousedown($event)"></div>`,
   styles: [/* language=SCSS */ `
     $resize-bar-width: 2px;
 
     :host {
       display: block;
       position: absolute;
-      overflow: auto;
+      overflow: visible;
 
       &[sd-float=true] {
         display: block;
@@ -63,82 +63,80 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
         }
       }
 
-      > div {
+      > ._content {
         height: 100%;
       }
 
       &[sd-resizable=true] {
-        > div {
-          > ._resize-bar {
-            position: absolute;
-            background: var(--border-color);
-          }
+        > ._resize-bar {
+          position: absolute;
+          background: var(--border-color);
         }
 
         &[sd-position=top] {
-          > div {
+          > ._content {
             padding-bottom: $resize-bar-width;
+          }
 
-            > ._resize-bar {
-              bottom: 0;
-              left: 0;
-              width: 100%;
-              height: $resize-bar-width;
-              cursor: ns-resize;
-            }
+          > ._resize-bar {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: $resize-bar-width;
+            cursor: ns-resize;
           }
         }
 
         &[sd-position=bottom] {
-          > div {
+          > ._content {
             padding-top: $resize-bar-width;
+          }
 
-            > ._resize-bar {
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: $resize-bar-width;
-              cursor: ns-resize;
-            }
+          > ._resize-bar {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: $resize-bar-width;
+            cursor: ns-resize;
           }
         }
 
         &[sd-position=left] {
-          > div {
+          > ._content {
             padding-right: $resize-bar-width;
+          }
 
-            > ._resize-bar {
-              top: 0;
-              right: 0;
-              height: 100%;
-              width: $resize-bar-width;
-              cursor: ew-resize;
-            }
+          > ._resize-bar {
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: $resize-bar-width;
+            cursor: ew-resize;
           }
         }
 
         &[sd-position=right] {
-          > div {
+          > ._content {
             padding-left: $resize-bar-width;
+          }
 
-            > ._resize-bar {
-              top: 0;
-              left: 0;
-              height: 100%;
-              width: $resize-bar-width;
-              cursor: ew-resize;
-            }
+          > ._resize-bar {
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: $resize-bar-width;
+            cursor: ew-resize;
           }
         }
       }
 
       &[sd-hide-resize-border=true] {
-        > div {
+        > ._content {
           padding: 0 !important;
+        }
 
-          > ._resize-bar {
-            background: transparent;
-          }
+        > ._resize-bar {
+          background: transparent;
         }
       }
     }

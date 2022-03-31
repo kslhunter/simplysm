@@ -17,14 +17,23 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   selector: "sd-dock-container",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-content></ng-content>
+    <div class="_content">
+      <ng-content></ng-content>
+    </div>
     <div class="_backdrop" (click)="onBackdropClick()"></div>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
 
     :host {
-      overflow: hidden;
-      @include container-base();
+      display: block;
+      height: 100%;
+      width: 100%;
+
+      > ._content {
+        overflow: visible;
+        height: 100%;
+        @include container-base();
+      }
 
       > ._backdrop {
         display: none;
@@ -51,7 +60,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
             //transition: .1s ease-in-out;
           }
 
-          ::ng-deep > sd-dock {
+          ::ng-deep > ._content > sd-dock {
             z-index: 11;
             transform: none;
           }
@@ -160,7 +169,7 @@ export class SdDockContainerControl implements AfterContentInit {
 
       if (!this.float) {
         Object.assign(
-          (this._elRef.nativeElement as HTMLElement).style,
+          (this._elRef.nativeElement as HTMLElement).findFirst("> ._content")!.style,
           {
             paddingTop: top + "px",
             paddingBottom: bottom + "px",

@@ -434,14 +434,14 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
       $border-color-light: var(--theme-color-blue-grey-lightest);
       $border-color-dark: var(--theme-color-grey-light);
 
-      > sd-dock-container {
+      ::ng-deep > sd-dock-container > ._content {
         border: 1px solid $border-color-dark;
         border-radius: var(--border-radius-default);
 
         > sd-dock { // 상단 DOCK (설정 아이콘 및 페이징)
           border-bottom: 1px solid $border-color-dark;
 
-          ::ng-deep > div {
+          > ._content {
             > sd-anchor {
               padding: var(--gap-sm) var(--gap-default);
 
@@ -1087,10 +1087,10 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
   public async ngOnInit(): Promise<void> {
     this._zone.runOutsideAngular(() => {
-      const headEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._head")!;
-      const bodyEl = this._el.findFirst("> sd-dock-container > sd-pane > ._sheet > ._body")!;
+      const headEl = this._el.findFirst("> sd-dock-container > ._content > sd-pane > ._sheet > ._head")!;
+      const bodyEl = this._el.findFirst("> sd-dock-container > ._content > sd-pane > ._sheet > ._body")!;
 
-      const paneEl = this._el.findFirst("> sd-dock-container > sd-pane")!;
+      const paneEl = this._el.findFirst("> sd-dock-container > ._content > sd-pane")!;
 
       bodyEl.addEventListener("resize", (event) => {
         if (event.prevWidth !== event.newWidth) {
@@ -1145,7 +1145,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
           && (event.target instanceof HTMLElement)
           && event.target.findParent("._row")
         ) {
-          const rowEls = this._el.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
+          const rowEls = this._el.findAll("> sd-dock-container > ._content > sd-pane > ._sheet > ._body > ._row");
           const rowEl = event.target.findParent("._row")!;
           const rowIndex = rowEls.indexOf(rowEl);
           if (rowIndex < 0) return;
@@ -1377,7 +1377,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     if (this.autoHeight) {
       this._zone.runOutsideAngular(() => {
         setTimeout(() => {
-          const rowEls = this._el.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
+          const rowEls = this._el.findAll("> sd-dock-container > ._content > sd-pane > ._sheet > ._body > ._row");
           for (const rowEl of rowEls) {
             const cellEls = rowEl.findAll("> ._cell-group > ._cell");
 
@@ -1904,7 +1904,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   }
 
   private _getCellAddress(cellEl: HTMLElement): { r: number; c: number } | undefined {
-    const rowEls = this._el.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
+    const rowEls = this._el.findAll("> sd-dock-container > ._content > sd-pane > ._sheet > ._body > ._row");
     const rowEl = cellEl.findParent("._sheet > ._body > ._row");
     if (!rowEl) return undefined;
 
@@ -1921,7 +1921,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   private _getCellEl(r: number, c: number | string | "last"): HTMLElement | undefined {
     if (c <= 0) return undefined;
 
-    const rowEls = this._el.findAll("> sd-dock-container > sd-pane > ._sheet > ._body > ._row");
+    const rowEls = this._el.findAll("> sd-dock-container > ._content > sd-pane > ._sheet > ._body > ._row");
     const rowEl = rowEls[r];
     if (typeof rowEl === "undefined") return undefined;
 

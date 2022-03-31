@@ -2,9 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   ContentChild,
-  forwardRef,
   HostBinding,
-  Inject,
+  Injector,
   Input,
   TemplateRef
 } from "@angular/core";
@@ -147,7 +146,10 @@ export class SdFormItemControl {
     return this.layout === "table" ? this._parentFormControl.labelWidth : undefined;
   }
 
-  public constructor(@Inject(forwardRef(() => SdFormControl))
-                     private readonly _parentFormControl: SdFormControl) {
+  private readonly _parentFormControl: SdFormControl;
+
+  public constructor(private readonly _inj: Injector) {
+    console.log(this._inj);
+    this._parentFormControl = this._inj.get(SdFormControl);
   }
 }

@@ -13,15 +13,6 @@
       },
       "publish": "npm"
     },
-    "sd-angular-admin": {
-      "type": "library",
-      "autoIndex": {
-        "polyfills": [
-          "@simplysm/sd-core-browser"
-        ]
-      },
-      "publish": "npm"
-    },
     "sd-angular-mobile": {
       "type": "library",
       "autoIndex": {

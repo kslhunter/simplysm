@@ -14,17 +14,26 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       background: white;
       border-radius: var(--border-radius-default);
       overflow: hidden;
+      @include elevation(4);
 
-      &[sd-elevation=true] {
+      &[sd-elevation=none] {
+        @include elevation(0);
+      }
+
+      &[sd-elevation=lg] {
         @include elevation(8);
+      }
+
+      &[sd-elevation=xl] {
+        @include elevation(16);
       }
     }
   `]
 })
 export class SdCardControl {
   @Input()
-  @SdInputValidate(Boolean)
+  @SdInputValidate({ type: String, includes: ["none", "lg", "xl"] })
   @HostBinding("attr.sd-elevation")
-  public elevation?: boolean;
+  public elevation?: "none" | "lg" | "xl";
 }
 
