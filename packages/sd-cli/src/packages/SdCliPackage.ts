@@ -8,7 +8,6 @@ import { SdCliJsLibBuilder } from "../builder/SdCliJsLibBuilder";
 import { SdCliServerBuilder } from "../builder/SdCliServerBuilder";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
 import { SdCliClientBuilder } from "../builder/SdCliClientBuilder";
-import { NextHandleFunction } from "connect";
 import { SdStorage } from "@simplysm/sd-storage";
 import ts from "typescript";
 import { SdCliGithubApi } from "../build-tool/SdCliGithubApi";
@@ -70,8 +69,8 @@ export class SdCliPackage extends EventEmitter {
     await FsUtil.writeJsonAsync(npmConfigFilePath, this._npmConfig, { space: 2 });
   }
 
-  public async watchAsync(): Promise<NextHandleFunction[] | void> {
-    return await (await this._createBuilderAsync())
+  public async watchAsync(): Promise<void> {
+    await (await this._createBuilderAsync())
       .on("change", () => {
         this.emit("change");
       })

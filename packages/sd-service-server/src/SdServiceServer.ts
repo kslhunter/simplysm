@@ -89,6 +89,7 @@ export class SdServiceServer extends EventEmitter {
   }
 
   public broadcastReload(): void {
+    this._logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
     this._socketServer!.emit(`reload`);
   }
 

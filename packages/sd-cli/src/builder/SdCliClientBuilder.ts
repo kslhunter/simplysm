@@ -16,10 +16,6 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import { AngularWebpackPlugin } from "@ngtools/webpack";
 import { IndexHtmlWebpackPlugin } from "@angular-devkit/build-angular/src/webpack/plugins/index-html-webpack-plugin";
 import { SassWorkerImplementation } from "@angular-devkit/build-angular/src/sass/sass-service";
-import { HmrLoader } from "@angular-devkit/build-angular/src/webpack/plugins/hmr/hmr-loader";
-import wdm from "webpack-dev-middleware";
-import whm from "webpack-hot-middleware";
-import { NextHandleFunction } from "connect";
 import { LicenseWebpackPlugin } from "license-webpack-plugin";
 import NodePolyfillPlugin from "node-polyfill-webpack-plugin";
 import { createHash } from "crypto";
@@ -94,7 +90,7 @@ export class SdCliClientBuilder extends EventEmitter {
     return super.on(event, listener);
   }
 
-  public async watchAsync(): Promise<NextHandleFunction[]> {
+  public async watchAsync(): Promise<void> {
     // DIST 비우기
     await FsUtil.removeAsync(path.resolve(this._rootPath, ".electron"));
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
@@ -112,7 +108,7 @@ export class SdCliClientBuilder extends EventEmitter {
     const webpackConfigs = (Object.keys(this._config.builder ?? { web: {} }) as ("web" | "cordova" | "electron")[])
       .map((builderType) => this._getWebpackConfig(true, builderType));
     const multiCompiler = webpack(webpackConfigs);
-    return await new Promise<NextHandleFunction[]>((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       multiCompiler.hooks.invalid.tap(this.constructor.name, (fileName) => {
         if (fileName != null) {
           this._logger.debug("파일변경 감지", fileName);
@@ -132,22 +128,20 @@ export class SdCliClientBuilder extends EventEmitter {
         this._logger.debug("Webpack 빌드 수행...");
       });
 
-      for (const compiler of multiCompiler.compilers) {
-        compiler.hooks.failed.tap(this.constructor.name, (err) => {
+      multiCompiler.watch({}, async (err, multiStats) => {
+        if (err != null || multiStats == null) {
           this.emit("complete", [{
             filePath: undefined,
             line: undefined,
             char: undefined,
             code: undefined,
             severity: "error",
-            message: err.stack
+            message: err?.stack ?? "알 수 없는 오류 (multiStats=null)"
           }]);
           reject(err);
           return;
-        });
-      }
+        }
 
-      multiCompiler.hooks.done.tap(this.constructor.name, async (multiStats) => {
         // 결과 반환
         const results = multiStats.stats.mapMany((stats) => SdCliBuildResultUtil.convertFromWebpackStats(stats));
 
@@ -162,22 +156,10 @@ export class SdCliClientBuilder extends EventEmitter {
 
         // 마무리
         this._logger.debug("Webpack 빌드 완료");
-        resolve(middlewares);
+        resolve();
 
         this.emit("complete", results);
       });
-
-      const middlewares = multiCompiler.compilers.mapMany((compiler) => [
-        wdm(compiler, {
-          publicPath: compiler.options.output.publicPath,
-          index: "index.html",
-          stats: false
-        }),
-        whm(compiler, {
-          path: `${compiler.options.output.publicPath}__webpack_hmr`,
-          log: false
-        })
-      ]);
     });
   }
 
@@ -328,8 +310,6 @@ export class SdCliClientBuilder extends EventEmitter {
     const internalModuleCachePaths = watch ? this._getInternalModuleCachePaths(workspaceName) : undefined;
 
     const npmConfig = this._getNpmConfig(this._rootPath)!;
-    // const pkgVersion = npmConfig.version;
-    // const ngVersion = this._getNpmConfig(FsUtil.findAllParentChildDirPaths("node_modules/@angular/core", this._rootPath, this._workspaceRootPath)[0])!.version;
 
     const workspacePkgLockContent = FsUtil.readFile(path.resolve(this._workspaceRootPath, "package-lock.json"));
 
@@ -337,7 +317,6 @@ export class SdCliClientBuilder extends EventEmitter {
     const publicPath = builderType === "web" ? `/${pkgKey}/` : watch ? `/${pkgKey}/${builderType}/` : ``;
 
     const cacheBasePath = path.resolve(this._rootPath, ".cache");
-    // const cachePath = path.resolve(cacheBasePath, pkgVersion);
 
     const distPath = (builderType === "cordova" && !watch) ? path.resolve(this._cordova!.cordovaPath, "www")
       : (builderType === "electron" && !watch) ? path.resolve(this._rootPath, ".electron/src")
@@ -349,10 +328,6 @@ export class SdCliClientBuilder extends EventEmitter {
     const mainFilePath = path.resolve(this._rootPath, "src/main.ts");
     const polyfillsFilePath = path.resolve(this._rootPath, "src/polyfills.ts");
     const stylesFilePath = path.resolve(this._rootPath, "src/styles.scss");
-
-    const hotMiddlewareScripts = watch ? [
-      `webpack-hot-middleware/client?path=${publicPath}__webpack_hmr&timeout=20000&reload=true`
-    ] : [];
 
     let prevProgressMessage = "";
     return {
@@ -373,9 +348,9 @@ export class SdCliClientBuilder extends EventEmitter {
       },
       context: this._workspaceRootPath,
       entry: {
-        main: [...hotMiddlewareScripts, mainFilePath],
-        ...FsUtil.exists(polyfillsFilePath) ? { polyfills: [...hotMiddlewareScripts, polyfillsFilePath] } : {},
-        ...FsUtil.exists(stylesFilePath) ? { styles: [...hotMiddlewareScripts, stylesFilePath] } : {}
+        main: [mainFilePath],
+        ...FsUtil.exists(polyfillsFilePath) ? { polyfills: [polyfillsFilePath] } : {},
+        ...FsUtil.exists(stylesFilePath) ? { styles: [stylesFilePath] } : {}
       },
       output: {
         uniqueName: pkgKey,
@@ -416,7 +391,6 @@ export class SdCliClientBuilder extends EventEmitter {
           .update(watch.toString())
           .digest("hex")
       },
-      // cache: { type: "memory", maxGenerations: 1 },
       ...watch ? {
         snapshot: {
           immutablePaths: internalModuleCachePaths,
@@ -480,12 +454,6 @@ export class SdCliClientBuilder extends EventEmitter {
         strictExportPresence: true,
         parser: { javascript: { url: false, worker: false } },
         rules: [
-          ...watch ? [
-            {
-              loader: HmrLoader,
-              include: [mainFilePath]
-            }
-          ] : [],
           {
             test: /\.?(svg|html)$/,
             resourceQuery: /\?ngResource/,
@@ -530,7 +498,7 @@ export class SdCliClientBuilder extends EventEmitter {
           {
             test: /\.[cm]?tsx?$/,
             loader: "@ngtools/webpack",
-            exclude: [/[/\\](?:css-loader|mini-css-extract-plugin|webpack-dev-server|webpack)[/\\]/]
+            exclude: [/[/\\](?:css-loader|mini-css-extract-plugin|webpack)[/\\]/]
           },
           {
             test: /\.css$/i,
@@ -683,9 +651,6 @@ export class SdCliClientBuilder extends EventEmitter {
           emitNgModuleScope: watch,
           inlineStyleFileExtension: "scss"
         }),
-        // new AnyComponentStyleBudgetChecker(watch ? [] : [
-        //   { type: Type.AnyComponentStyle, maximumWarning: "2kb", maximumError: "4kb" }
-        // ]),
         {
           apply: (compiler: webpack.Compiler) => {
             compiler.hooks.shutdown.tap("sass-worker", () => {
@@ -695,7 +660,6 @@ export class SdCliClientBuilder extends EventEmitter {
         },
         new MiniCssExtractPlugin({ filename: "[name].css" }),
         new SuppressExtractedTextChunksWebpackPlugin(),
-        // NgBuildAnalyticsPlugin,
         new IndexHtmlWebpackPlugin({
           indexPath: path.resolve(this._rootPath, "src/index.html"),
           outputPath: "index.html",
@@ -723,9 +687,6 @@ export class SdCliClientBuilder extends EventEmitter {
           crossOrigin: "none",
           lang: undefined
         }),
-        ...watch ? [
-          new webpack.HotModuleReplacementPlugin()
-        ] : [],
         new webpack.EnvironmentPlugin({
           SD_VERSION: this._getNpmConfig(this._rootPath)!.version,
           ...this._config.env

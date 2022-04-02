@@ -9,6 +9,8 @@ import semver from "semver/preload";
 import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
 import { SdServiceServer } from "@simplysm/sd-service-server";
 import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
+import url from "url";
+import mime from "mime";
 import { NextHandleFunction } from "connect";
 
 export class SdCliWorkspace {
@@ -51,6 +53,17 @@ export class SdCliWorkspace {
             await this._restartServerAsync(pkg);
           }
 
+          if (pkg.config.type === "client") {
+            if (typeof pkg.config.server === "string") {
+              const serverInfo = this._serverInfoMap.get(pkg.config.server);
+              serverInfo?.server?.broadcastReload();
+            }
+            else {
+              const serverInfo = this._serverInfoMap.get("PORT:" + pkg.config.server.port);
+              serverInfo?.server?.broadcastReload();
+            }
+          }
+
           this._logger.debug(`[${pkg.name}] 빌드가 완료되었습니다.`);
           totalResultMap.set(pkg.name, results);
 
@@ -77,11 +90,37 @@ export class SdCliWorkspace {
       await pkgs.parallelAsync(async (pkg) => {
         await Wait.until(() => !pkg.allDependencies.some((dep) => pkgNames.includes(dep) && !buildCompletedPackageNames.includes(dep)));
         if (pkg.config.type === "client") {
-          const middlewares = (await pkg.watchAsync()) as NextHandleFunction[];
+          await pkg.watchAsync();
+
+          const pkgMiddleware: NextHandleFunction = (req, res, next) => {
+            if (req.method === "GET") {
+              const urlObj = url.parse(req.url!, true, false);
+              const urlPathChain = decodeURI(urlObj.pathname!.slice(1)).split("/");
+              if (urlPathChain[0] === pkg.name.split("/").last()!) {
+                let targetFilePath = path.resolve(pkg.rootPath, "dist", ...urlPathChain.slice(1));
+                targetFilePath = FsUtil.exists(targetFilePath) && FsUtil.stat(targetFilePath).isDirectory() ? path.resolve(targetFilePath, "index.html") : targetFilePath;
+
+                if (FsUtil.exists(targetFilePath) && !path.basename(targetFilePath).startsWith(".")) {
+                  const fileStream = FsUtil.createReadStream(targetFilePath);
+                  const targetFileSize = FsUtil.lstat(targetFilePath).size;
+
+                  fileStream.on("open", () => {
+                    res.setHeader("Content-Length", targetFileSize);
+                    res.setHeader("Content-Type", mime.getType(targetFilePath)!);
+                    res.writeHead(200);
+                  });
+                  fileStream.pipe(res);
+                  return;
+                }
+              }
+            }
+
+            next();
+          };
 
           if (typeof pkg.config.server === "string") {
             const serverInfo = this._serverInfoMap.getOrCreate(pkg.config.server, { middlewares: [], clientInfos: [] });
-            serverInfo.middlewares.push(...middlewares);
+            serverInfo.middlewares.push(pkgMiddleware);
             serverInfo.clientInfos.push({
               pkgKey: pkg.name.split("/").last()!,
               platforms: pkg.config.builder ? Object.keys(pkg.config.builder) : ["web"],
@@ -89,7 +128,10 @@ export class SdCliWorkspace {
             });
           }
           else { // DEV SERVER
-            const serverInfo = this._serverInfoMap.getOrCreate("_", { middlewares: [], clientInfos: [] });
+            const serverInfo = this._serverInfoMap.getOrCreate("PORT:" + pkg.config.server.port, {
+              middlewares: [],
+              clientInfos: []
+            });
             if (serverInfo.server === undefined) {
               const server = new SdServiceServer({
                 rootPath: process.cwd(),
@@ -98,7 +140,7 @@ export class SdCliWorkspace {
               });
               await server.listenAsync();
               serverInfo.server = server;
-              serverInfo.server.devMiddlewares = middlewares;
+              serverInfo.server.devMiddlewares = [pkgMiddleware];
               serverInfo.clientInfos.push({
                 pkgKey: pkg.name.split("/").last()!,
                 platforms: pkg.config.builder ? Object.keys(pkg.config.builder) : ["web"],

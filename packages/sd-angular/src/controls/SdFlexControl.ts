@@ -61,4 +61,12 @@ export class SdFlexControl {
   })
   @HostBinding("style.align-items")
   public alignItems?: "center" | "start" | "end" | "stretch";
+
+  @Input()
+  @SdInputValidate({
+    type: String,
+    includes: ["row", "column"]
+  })
+  @HostBinding("style.flex-direction")
+  public direction?: "row" | "column";
 }

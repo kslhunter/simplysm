@@ -58,6 +58,14 @@ export class SdCliServerBuilder extends EventEmitter {
 
       compiler.watch({}, async (err, stats) => {
         if (err != null || stats == null) {
+          this.emit("complete", [{
+            filePath: undefined,
+            line: undefined,
+            char: undefined,
+            code: undefined,
+            severity: "error",
+            message: err?.stack ?? "알 수 없는 오류 (stats=null)"
+          }]);
           reject(err);
           return;
         }

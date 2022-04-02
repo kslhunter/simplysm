@@ -36,6 +36,8 @@ export class SdServiceClient {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
       if (location?.reload) {
         this._socket.on(`reload`, () => {
+          // eslint-disable-next-line no-console
+          console.log("클라이언트 RELOAD 명령 수신");
           location.reload();
         });
       }
