@@ -59,7 +59,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       border-radius: var(--border-radius-default);
       overflow: hidden;
 
-      ::ng-deep > sd-dock-container {
+      ::ng-deep > sd-dock-container > ._content {
         > ._toolbar {
           > div {
             user-select: none;

@@ -26,6 +26,12 @@ import { SdToastProvider } from "../providers/SdToastProvider";
         display: table;
         width: 100%;
       }
+      
+      &[sd-layout="inline"] > form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--gap-sm);
+      }
 
       &[sd-layout="none"] > form {
         display: contents;

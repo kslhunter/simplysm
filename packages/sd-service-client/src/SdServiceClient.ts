@@ -32,6 +32,13 @@ export class SdServiceClient {
       this._socket.on("connect_error", (err) => {
         reject(err);
       });
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
+      if (location?.reload) {
+        this._socket.on(`reload`, () => {
+          location.reload();
+        });
+      }
     });
   }
 

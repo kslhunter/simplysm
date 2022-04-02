@@ -31,7 +31,7 @@ body {
 hr {
   border: none;
   height: 1px;
-  background-color: var(--border-color-light);
+  background-color: var(--border-color-lighter);
 }
 
 p {
@@ -56,7 +56,7 @@ small {
   vertical-align: top;
 }
 
-sub{
+sub {
   display: inline-block;
   overflow: visible;
   height: 0;

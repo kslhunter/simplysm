@@ -93,10 +93,10 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
           outline: none;
         }
 
-        ::ng-deep > sd-dock-container {
+        ::ng-deep > sd-dock-container > ._content {
           > ._header {
             //background: var(--theme-color-primary-default);
-            background: var(--theme-color-grey-lightest);
+            //background: var(--theme-color-grey-lightest);
             //color: var(--text-brightness-rev-default);
             user-select: none;
             //border-bottom: 1px solid var(--theme-color-primary-darker);
@@ -276,7 +276,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
 
           border: none;
 
-          > sd-dock-container > ._header {
+          > sd-dock-container > ._content > ._header {
             background: transparent;
             color: var(--text-brightness-lighter);
 

@@ -171,8 +171,7 @@ export class SdCliClientBuilder extends EventEmitter {
         wdm(compiler, {
           publicPath: compiler.options.output.publicPath,
           index: "index.html",
-          stats: false,
-          writeToDisk: true
+          stats: false
         }),
         whm(compiler, {
           path: `${compiler.options.output.publicPath}__webpack_hmr`,
@@ -481,6 +480,12 @@ export class SdCliClientBuilder extends EventEmitter {
         strictExportPresence: true,
         parser: { javascript: { url: false, worker: false } },
         rules: [
+          ...watch ? [
+            {
+              loader: HmrLoader,
+              include: [mainFilePath]
+            }
+          ] : [],
           {
             test: /\.?(svg|html)$/,
             resourceQuery: /\?ngResource/,
@@ -490,12 +495,6 @@ export class SdCliClientBuilder extends EventEmitter {
             test: /[/\\]rxjs[/\\]add[/\\].+\.js$/,
             sideEffects: true
           },
-          ...watch ? [
-            {
-              loader: HmrLoader,
-              include: [mainFilePath]
-            }
-          ] : [],
           ...watch ? [
             {
               test: /\.[cm]?jsx?$/,

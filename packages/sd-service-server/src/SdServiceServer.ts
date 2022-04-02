@@ -88,6 +88,10 @@ export class SdServiceServer extends EventEmitter {
     this.emit("close");
   }
 
+  public broadcastReload(): void {
+    this._socketServer!.emit(`reload`);
+  }
+
   private _onSocketConnection(socket: socketIo.Socket): void {
     this._logger.debug("클라이언트 연결됨");
 

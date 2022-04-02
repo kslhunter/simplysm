@@ -2,8 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   ContentChild,
+  forwardRef,
   HostBinding,
-  Injector,
+  Inject,
   Input,
   TemplateRef
 } from "@angular/core";
@@ -29,26 +30,27 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
     </div>`,
   styles: [/* language=SCSS */ `
     :host {
+      
       > label {
         font-weight: bold;
       }
 
       &[sd-layout="cascade"] {
         display: block;
-        margin-bottom: var(--gap-default);
-
+        //margin-bottom: var(--gap-default);
+        
         > label {
           display: block;
           margin-bottom: var(--gap-sm);
         }
 
-        > ._content {
+        /*> ._content {
           display: block;
         }
 
         &:last-child {
           margin-bottom: 0;
-        }
+        }*/
       }
 
       &[sd-layout="table"] {
@@ -80,24 +82,28 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       }
 
       &[sd-layout="inline"] {
-        display: inline-block;
-        vertical-align: top;
-        margin: var(--gap-xs) var(--gap-default) var(--gap-xs) 0;
+        //display: inline-block;
+        //vertical-align: top;
+        //margin: var(--gap-xs) var(--gap-default) var(--gap-xs) 0;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
 
         > label {
-          display: inline-block;
-          vertical-align: middle;
-          margin-right: var(--gap-sm);
+          display: block;
+          white-space: nowrap;
+          padding-left: var(--gap-sm);
+          padding-right: var(--gap-sm);
         }
 
-        > ._content {
+        /*> ._content {
           display: inline-block;
           vertical-align: middle;
         }
 
         &:last-child {
           margin-right: 0;
-        }
+        }*/
       }
 
       &[sd-layout="none"] {
@@ -146,10 +152,7 @@ export class SdFormItemControl {
     return this.layout === "table" ? this._parentFormControl.labelWidth : undefined;
   }
 
-  private readonly _parentFormControl: SdFormControl;
-
-  public constructor(private readonly _inj: Injector) {
-    console.log(this._inj);
-    this._parentFormControl = this._inj.get(SdFormControl);
+  public constructor(@Inject(forwardRef(() => SdFormControl))
+                     private readonly _parentFormControl: SdFormControl) {
   }
 }
