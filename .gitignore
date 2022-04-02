@@ -10,5 +10,6 @@ dist
 _logs
 _modules
 _routes.ts
-simplysm-*.json
 ~$*
+
+simplysm-ksl.json
