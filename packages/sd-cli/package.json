@@ -53,7 +53,7 @@
     "@simplysm/sd-service-common": "7.0.214",
     "@simplysm/sd-service-server": "7.0.214",
     "@simplysm/sd-storage": "7.0.214",
-    "electron": "^17.1.2",
+    "electron": "^18.0.1",
     "electron-builder": "^22.14.13",
     "xml2js": "^0.4.23",
     "mime": "^3.0.0"

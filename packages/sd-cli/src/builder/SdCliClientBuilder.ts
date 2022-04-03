@@ -342,7 +342,7 @@ export class SdCliClientBuilder extends EventEmitter {
       profile: false,
       resolve: {
         roots: [this._rootPath],
-        extensions: [".ts", ".tsx", ".mjs", ".cjs", ".js"],
+        extensions: [".ts", ".tsx", ".mjs", ".cjs", ".js", ".jsx"],
         symlinks: true,
         modules: [this._workspaceRootPath, "node_modules"],
         mainFields: ["es2015", "browser", "module", "main"],
@@ -468,21 +468,6 @@ export class SdCliClientBuilder extends EventEmitter {
             test: /[/\\]rxjs[/\\]add[/\\].+\.js$/,
             sideEffects: true
           },
-          ...watch ? [
-            {
-              test: /\.[cm]?jsx?$/,
-              enforce: "pre" as const,
-              loader: "source-map-loader",
-              options: {
-                filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                  const workspaceRegex = new RegExp(`node_modules[\\\\/]@${workspaceName}[\\\\/]`);
-                  return !resourcePath.includes("node_modules")
-                    || (/node_modules[\\/]@simplysm[\\/]/).test(resourcePath)
-                    || workspaceRegex.test(resourcePath);
-                }
-              }
-            }
-          ] : [],
           {
             test: /\.[cm]?[tj]sx?$/,
             resolve: { fullySpecified: false },
@@ -500,6 +485,21 @@ export class SdCliClientBuilder extends EventEmitter {
               }
             ]
           },
+          ...watch ? [
+            {
+              test: /\.[cm]?jsx?$/,
+              enforce: "pre" as const,
+              loader: "source-map-loader",
+              options: {
+                filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
+                  const workspaceRegex = new RegExp(`node_modules[\\\\/]@${workspaceName}[\\\\/]`);
+                  return !resourcePath.includes("node_modules")
+                    || (/node_modules[\\/]@simplysm[\\/]/).test(resourcePath)
+                    || workspaceRegex.test(resourcePath);
+                }
+              }
+            }
+          ] : [],
           {
             test: /\.[cm]?tsx?$/,
             loader: "@ngtools/webpack",
