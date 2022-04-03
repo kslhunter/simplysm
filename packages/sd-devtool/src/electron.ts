@@ -8,6 +8,8 @@ const loadURL = process.env["SD_ELECTRON_DEV_URL"] ?? path.resolve(__dirname, "i
 let isQuiting = false;
 let isHiding = false;
 
+import * as remote from "@electron/remote/main";
+
 const createWindow = async (): Promise<BrowserWindow> => {
   const display = screen.getPrimaryDisplay();
   const displayWidth = display.workArea.width;
@@ -44,6 +46,9 @@ const createWindow = async (): Promise<BrowserWindow> => {
   win.on("blur", () => {
     hideWindow(win);
   });
+
+  remote.initialize();
+  remote.enable(win.webContents);
 
   return win;
 };

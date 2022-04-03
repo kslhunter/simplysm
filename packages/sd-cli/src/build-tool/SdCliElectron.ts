@@ -34,6 +34,8 @@ export class SdCliElectron {
     if (dotenvVersion === undefined) {
       throw new Error("ELECTRON 빌드 패키지의 'dependencies'에는 'dotenv'가 반드시 포함되어야 합니다.");
     }
+    
+    const remoteVersion = npmConfig.dependencies?.["@electron/remote"];
 
     await FsUtil.writeJsonAsync(path.resolve(electronSrcPath, `package.json`), {
       name: npmConfig.name,
@@ -46,7 +48,10 @@ export class SdCliElectron {
         "electron": electronVersion.replace("^", "")
       },
       dependencies: {
-        "dotenv": dotenvVersion
+        "dotenv": dotenvVersion,
+        ...remoteVersion !== undefined ? {
+          "@electron/remote": remoteVersion
+        } : {}
       }
     });
 

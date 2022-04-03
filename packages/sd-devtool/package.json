@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-devtool",
-  "version": "7.0.214",
+  "version": "7.0.216",
   "description": "심플리즘 개발도구",
   "author": "김석래",
   "repository": {
@@ -36,6 +36,7 @@
     "zone.js": "~0.11.4",
     "rxjs": "^6.6.7",
     "electron": "^17.1.2",
+    "@electron/remote": "^2.0.8",
     "dotenv": "^16.0.0"
   }
 }

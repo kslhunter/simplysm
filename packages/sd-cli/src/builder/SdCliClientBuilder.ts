@@ -230,6 +230,8 @@ export class SdCliClientBuilder extends EventEmitter {
         throw new Error("ELECTRON 빌드 패키지의 'dependencies'에는 'dotenv'가 반드시 포함되어야 합니다.");
       }
 
+      const remoteVersion = npmConfig.dependencies?.["@electron/remote"];
+
       const electronSrcPath = path.resolve(this._rootPath, `.electron/src`);
       const electronDistPath = path.resolve(this._rootPath, `.electron/dist`);
 
@@ -244,7 +246,10 @@ export class SdCliClientBuilder extends EventEmitter {
           "electron": electronVersion.replace("^", "")
         },
         dependencies: {
-          "dotenv": dotenvVersion
+          "dotenv": dotenvVersion,
+          ...remoteVersion !== undefined ? {
+            "@electron/remote": remoteVersion
+          } : {}
         }
       });
 

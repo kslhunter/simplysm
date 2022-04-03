@@ -6,6 +6,7 @@ import { appIcons } from "./app-icons";
 import { Wait } from "@simplysm/sd-core-common";
 import { SdAutoUpdateServiceClient } from "@simplysm/sd-service-client";
 import path from "path";
+import * as remote from "@electron/remote";
 
 @Component({
   selector: "app-root",
@@ -18,7 +19,8 @@ import path from "path";
             <img *ngIf="(logo | async) as src" [src]="src" style="height: 100%; filter: grayscale(100%); opacity: .3;"/>
           </div>
 
-          <sdm-topbar-menu class="_topbar-menu-item" *ngIf="latestVersion && latestVersion !== version" (click)="onUpdateButtonClick()">
+          <sdm-topbar-menu class="_topbar-menu-item" *ngIf="latestVersion && latestVersion !== version"
+                           (click)="onUpdateButtonClick()">
             <fa-icon [icon]="icons.update | async" [fixedWidth]="true"></fa-icon>
           </sdm-topbar-menu>
         </sdm-topbar>
@@ -106,7 +108,7 @@ export class AppPage implements OnInit {
       const serviceClient = this._serviceFactory.get("MAIN");
       const buffer = await serviceClient.downloadAsync(`/sd-devtool/electron/updates/${this.latestVersion}.exe`);
 
-      const distPath = path.resolve(process.cwd(), `updates/${this.latestVersion}.exe`);
+      const distPath = path.resolve(remote.app.getPath("temp"), `@simplysm/sd-devtool/updates/${this.latestVersion}.exe`);
       await FsUtil.mkdirsAsync(path.dirname(distPath));
       await FsUtil.writeFileAsync(distPath, buffer);
 
