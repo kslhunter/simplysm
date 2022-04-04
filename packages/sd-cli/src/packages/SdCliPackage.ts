@@ -91,7 +91,6 @@ export class SdCliPackage extends EventEmitter {
       });
 
       worker.stdout!.pipe(process.stdout);
-
       worker.stderr!.pipe(process.stderr);
 
       worker.on("message", (json: string) => {
@@ -127,6 +126,7 @@ export class SdCliPackage extends EventEmitter {
         JsonConvert.stringify(this.config),
         this._workspaceRootPath
       ], {
+        stdio: ["pipe", "pipe", "pipe"],
         env: process.env
       });
 
@@ -134,13 +134,8 @@ export class SdCliPackage extends EventEmitter {
         reject(err);
       });
 
-      worker.stdout!.on("data", (chunk) => {
-        process.stdout.write(chunk);
-      });
-
-      worker.stderr!.on("data", (chunk) => {
-        process.stderr.write(chunk);
-      });
+      worker.stdout!.pipe(process.stdout);
+      worker.stderr!.pipe(process.stderr);
 
       let result: ISdCliPackageBuildResult[] = [];
 
