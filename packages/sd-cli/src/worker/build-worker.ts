@@ -45,7 +45,7 @@ const builder = createBuilder();
 if (type === "build") {
   builder.buildAsync()
     .then((result) => {
-      process.send!(JsonConvert.stringify(JsonConvert.stringify(result)));
+      process.send!(JsonConvert.stringify(result));
       process.exit(0);
     })
     .catch((err) => {
