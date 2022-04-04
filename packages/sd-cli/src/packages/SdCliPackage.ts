@@ -2,15 +2,13 @@ import { INpmConfig, ISdCliPackageBuildResult, ITsconfig, TSdCliPackageConfig } 
 import path from "path";
 import { FsUtil, PathUtil, SdProcess } from "@simplysm/sd-core-node";
 import { EventEmitter } from "events";
-import { NeverEntryError, ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
-import { SdCliTsLibBuilder } from "../builder/SdCliTsLibBuilder";
-import { SdCliJsLibBuilder } from "../builder/SdCliJsLibBuilder";
-import { SdCliServerBuilder } from "../builder/SdCliServerBuilder";
+import { JsonConvert, NeverEntryError, ObjectUtil, StringUtil } from "@simplysm/sd-core-common";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
-import { SdCliClientBuilder } from "../builder/SdCliClientBuilder";
 import { SdStorage } from "@simplysm/sd-storage";
 import ts from "typescript";
 import { SdCliGithubApi } from "../build-tool/SdCliGithubApi";
+import cp from "child_process";
+import { fileURLToPath } from "url";
 
 export class SdCliPackage extends EventEmitter {
   private readonly _npmConfig: INpmConfig;
@@ -70,18 +68,95 @@ export class SdCliPackage extends EventEmitter {
   }
 
   public async watchAsync(): Promise<void> {
-    await (await this._createBuilderAsync())
-      .on("change", () => {
-        this.emit("change");
-      })
-      .on("complete", (results) => {
-        this.emit("complete", results);
-      })
-      .watchAsync();
+    const isTs = FsUtil.exists(path.resolve(this.rootPath, "tsconfig.json"));
+
+    if (isTs) {
+      await this._genBuildTsconfigAsync();
+    }
+
+    const workerPath = fileURLToPath(await import.meta.resolve!("../worker/build-worker"));
+    await new Promise<void>((resolve, reject) => {
+      const worker = cp.fork(workerPath, [
+        "watch",
+        this.rootPath,
+        JsonConvert.stringify(this.config),
+        this._workspaceRootPath
+      ], {
+        stdio: ["pipe", "pipe", "pipe", "ipc"],
+        env: process.env
+      });
+
+      worker.on("error", (err) => {
+        reject(err);
+      });
+
+      worker.stdout!.pipe(process.stdout);
+
+      worker.stderr!.pipe(process.stderr);
+
+      worker.on("message", (json: string) => {
+        const msg = JsonConvert.parse(json);
+        if (msg.event === "ready") {
+          resolve();
+        }
+        else if (msg.event === "change") {
+          this.emit("change");
+        }
+        else if (msg.event === "complete") {
+          this.emit("complete", msg.body);
+        }
+        else {
+          throw new NeverEntryError();
+        }
+      });
+    });
   }
 
   public async buildAsync(): Promise<ISdCliPackageBuildResult[]> {
-    return await (await this._createBuilderAsync()).buildAsync();
+    const isTs = FsUtil.exists(path.resolve(this.rootPath, "tsconfig.json"));
+
+    if (isTs) {
+      await this._genBuildTsconfigAsync();
+    }
+
+    const workerPath = fileURLToPath(await import.meta.resolve!("../worker/build-worker"));
+    return await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
+      const worker = cp.fork(workerPath, [
+        "build",
+        this.rootPath,
+        JsonConvert.stringify(this.config),
+        this._workspaceRootPath
+      ], {
+        env: process.env
+      });
+
+      worker.on("error", (err) => {
+        reject(err);
+      });
+
+      worker.stdout!.on("data", (chunk) => {
+        process.stdout.write(chunk);
+      });
+
+      worker.stderr!.on("data", (chunk) => {
+        process.stderr.write(chunk);
+      });
+
+      let result: ISdCliPackageBuildResult[] = [];
+
+      worker.on("message", (json: string) => {
+        result = JsonConvert.parse(json);
+      });
+
+      worker.on("exit", (code) => {
+        if (code !== 0) {
+          reject(new Error(`오류와 함께 닫힘 (${code})`));
+          return;
+        }
+
+        resolve(result);
+      });
+    });
   }
 
   public async publishAsync(): Promise<void> {
@@ -152,24 +227,6 @@ export class SdCliPackage extends EventEmitter {
           });
         }
       }
-    }
-  }
-
-  private async _createBuilderAsync(): Promise<SdCliJsLibBuilder | SdCliTsLibBuilder | SdCliServerBuilder | SdCliClientBuilder> {
-    const isTs = FsUtil.exists(path.resolve(this.rootPath, "tsconfig.json"));
-
-    if (isTs) {
-      await this._genBuildTsconfigAsync();
-    }
-
-    if (this.config.type === "library") {
-      return isTs ? new SdCliTsLibBuilder(this.rootPath, this.config, this._workspaceRootPath) : new SdCliJsLibBuilder(this.rootPath);
-    }
-    else if (this.config.type === "server") {
-      return new SdCliServerBuilder(this.rootPath, this.config, this._workspaceRootPath);
-    }
-    else {
-      return new SdCliClientBuilder(this.rootPath, this.config, this._workspaceRootPath);
     }
   }
 
