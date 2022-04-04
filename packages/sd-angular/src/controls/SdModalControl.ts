@@ -626,8 +626,8 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
       if (this._dialogEl.offsetTop < 0) {
         this._dialogEl.style.top = "0";
       }
-      if (this._dialogEl.offsetLeft < 1 && (this._dialogEl.offsetLeft < ((-1 * Math.floor(el.offsetWidth / 2))) + 200)) {
-        this._dialogEl.style.left = (-1 * Math.floor(el.offsetWidth / 2)) + "px";
+      if (this._dialogEl.offsetLeft < -this._dialogEl.offsetWidth + 100) {
+        this._dialogEl.style.left = (-this._dialogEl.offsetWidth + 100) + "px";
       }
     };
 
