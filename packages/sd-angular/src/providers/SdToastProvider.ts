@@ -163,16 +163,7 @@ export class SdToastProvider {
         progress: (percent: number) => {
           toastRef.instance.progress = percent;
           if (percent >= 100) {
-            window.setTimeout(
-              () => {
-                toastEl.addEventListener("transitionend", () => {
-                  toastRef.destroy();
-                });
-                toastRef.instance.open = false;
-                this._root.appRef.tick();
-              },
-              1000
-            );
+            this._closeAfterTime(toastRef, 1000);
           }
         },
         message: (msg: string) => {
@@ -181,19 +172,29 @@ export class SdToastProvider {
       } as any;
     }
     else {
-      window.setTimeout(
-        () => {
+      this._closeAfterTime(toastRef, 5000);
+      return undefined as any;
+    }
+  }
+
+  private _closeAfterTime(toastRef: ComponentRef<SdToastControl>, ms: number): void {
+    const toastEl = toastRef.location.nativeElement as HTMLElement;
+
+    window.setTimeout(
+      () => {
+        if (toastEl.matches(":hover")) {
+          this._closeAfterTime(toastRef, ms);
+        }
+        else {
           toastEl.addEventListener("transitionend", () => {
             toastRef.destroy();
           });
           toastRef.instance.open = false;
           this._root.appRef.tick();
-        },
-        5000
-      );
-
-      return undefined as any;
-    }
+        }
+      },
+      ms
+    );
   }
 }
 

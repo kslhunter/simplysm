@@ -24,6 +24,7 @@ import { sdThemes, TSdTheme } from "../commons";
       margin-bottom: var(--gap-sm);
       text-align: center;
       width: 100%;
+      pointer-events: auto;
 
       > ._sd-toast-block {
         display: inline-block;
