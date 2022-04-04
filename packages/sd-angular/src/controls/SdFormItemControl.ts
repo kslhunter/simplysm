@@ -41,7 +41,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
         
         > label {
           display: block;
-          margin-bottom: var(--gap-sm);
+          margin-bottom: var(--gap-xs);
         }
 
         /*> ._content {

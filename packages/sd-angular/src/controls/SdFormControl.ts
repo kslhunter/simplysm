@@ -22,6 +22,12 @@ import { SdToastProvider } from "../providers/SdToastProvider";
     @import "../../scss/variables-scss-arr";
 
     :host {
+      &[sd-layout="cascade"] > form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap-sm);
+      }
+      
       &[sd-layout="table"] > form {
         display: table;
         width: 100%;

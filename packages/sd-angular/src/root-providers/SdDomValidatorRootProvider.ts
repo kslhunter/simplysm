@@ -4,7 +4,8 @@ import { Injectable } from "@angular/core";
 @Injectable({ providedIn: "root" })
 export class SdDomValidatorRootProvider {
   public validate(element: HTMLElement): void {
-    const invalidEls = element.findAll("*:invalid, *[sd-invalid=true]").ofType(HTMLElement);
+    const invalidEls = element.findAll("*:invalid, *[sd-invalid=true]").ofType(HTMLElement)
+      .filter((item) => item.tagName.toLowerCase() !== "form");
 
     if (invalidEls.length > 0) {
       const focusableElement = invalidEls[0].isFocusable() ? invalidEls[0] : invalidEls[0].findFocusableAll()[0];
