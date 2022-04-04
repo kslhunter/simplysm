@@ -126,7 +126,7 @@ export class SdCliPackage extends EventEmitter {
         JsonConvert.stringify(this.config),
         this._workspaceRootPath
       ], {
-        stdio: ["pipe", "pipe", "pipe"],
+        stdio: ["pipe", "pipe", "pipe", "ipc"],
         env: process.env
       });
 
