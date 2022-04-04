@@ -246,6 +246,10 @@ export class QueryHelper {
     return new QueryUnit<number>(Number, ["YEAR(", this.getQueryValue(value), ")"]);
   }
 
+  public month<T extends DateTime | DateOnly>(value: TEntityValue<T>): QueryUnit<number> {
+    return new QueryUnit<number>(Number, ["MONTH(", this.getQueryValue(value), ")"]);
+  }
+
   public ifNull<S extends TQueryValue, T extends TQueryValue>(source: TEntityValue<S>, ...targets: TEntityValue<T>[]): QueryUnit<S extends undefined ? T : S> {
     let cursorQuery: TQueryBuilderValue = this.getQueryValue(source);
     let type: Type<any> | undefined = SdOrmUtil.getQueryValueType(source);
@@ -313,6 +317,10 @@ export class QueryHelper {
       this.getQueryValue(to),
       ")"
     ]);
+  }
+
+  public abs(src: TEntityValue<number | Number | undefined>): QueryUnit<number> {
+    return new QueryUnit<number>(Number, ["ABS(", this.getQueryValue(src), ")"]);
   }
 
   public concat(...args: TEntityValue<string | String | number | Number | undefined>[]): QueryUnit<string> {
