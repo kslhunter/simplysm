@@ -38,6 +38,7 @@ export class SdCliWorkspace {
 
     this._logger.debug("패키지 이벤트 설정...");
     let changeCount = 0;
+    let changePkgs: SdCliPackage[] = [];
     const totalResultMap = new Map<string, ISdCliPackageBuildResult[]>();
     for (const pkg of pkgs) {
       pkg
@@ -48,28 +49,35 @@ export class SdCliWorkspace {
           changeCount++;
           this._logger.debug(`[${pkg.name}] 빌드를 시작합니다...`);
         })
-        .on("complete", async (results) => {
-          if (pkg.config.type === "server" && !results.some((item) => item.severity === "error")) {
-            await this._restartServerAsync(pkg);
-          }
-
-          if (pkg.config.type === "client") {
-            if (typeof pkg.config.server === "string") {
-              const serverInfo = this._serverInfoMap.get(pkg.config.server);
-              serverInfo?.server?.broadcastReload();
-            }
-            else {
-              const serverInfo = this._serverInfoMap.get("PORT:" + pkg.config.server.port);
-              serverInfo?.server?.broadcastReload();
-            }
-          }
+        .on("complete", (results) => {
+          changePkgs.push(pkg);
 
           this._logger.debug(`[${pkg.name}] 빌드가 완료되었습니다.`);
           totalResultMap.set(pkg.name, results);
 
-          setTimeout(() => {
+          setTimeout(async () => {
             changeCount--;
             if (changeCount === 0) {
+              const currChangePkgs = [...changePkgs];
+              changePkgs = [];
+
+              for (const changePkg of currChangePkgs) {
+                if (changePkg.config.type === "server" && !results.some((item) => item.severity === "error")) {
+                  await this._restartServerAsync(changePkg);
+                }
+
+                if (changePkg.config.type === "client") {
+                  if (typeof changePkg.config.server === "string") {
+                    const serverInfo = this._serverInfoMap.get(changePkg.config.server);
+                    serverInfo?.server?.broadcastReload();
+                  }
+                  else {
+                    const serverInfo = this._serverInfoMap.get("PORT:" + changePkg.config.server.port);
+                    serverInfo?.server?.broadcastReload();
+                  }
+                }
+              }
+
               this._loggingResults(totalResultMap);
               this._loggingOpenClientHrefs();
               this._logger.info("모든 빌드가 완료되었습니다.");
