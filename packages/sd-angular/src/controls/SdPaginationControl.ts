@@ -5,10 +5,10 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   selector: "sd-pagination",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-anchor *ngIf="hasPrev" (click)="onGoFirstClick()">
+    <sd-anchor [disabled]="!hasPrev" (click)="onGoFirstClick()">
       <fa-icon [icon]="icons.fasAngleDoubleLeft | async" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
-    <sd-anchor *ngIf="hasPrev" (click)="onPrevClick()">
+    <sd-anchor [disabled]="!hasPrev" (click)="onPrevClick()">
       <fa-icon [icon]="icons.fasAngleLeft | async" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-anchor *ngFor="let displayPage of displayPages; trackBy: trackByPageFn"
@@ -16,10 +16,10 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
                [attr.sd-selected]="displayPage === page">
       {{ displayPage + 1 }}
     </sd-anchor>
-    <sd-anchor *ngIf="hasNext" (click)="onNextClick()">
+    <sd-anchor [disabled]="!hasNext" (click)="onNextClick()">
       <fa-icon [icon]="icons.fasAngleRight | async" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
-    <sd-anchor *ngIf="hasNext" (click)="onGoLastClick()">
+    <sd-anchor [disabled]="!hasNext" (click)="onGoLastClick()">
       <fa-icon [icon]="icons.fasAngleDoubleRight | async" [fixedWidth]="true"></fa-icon>
     </sd-anchor>`,
   styles: [/* language=SCSS */ `

@@ -22,6 +22,9 @@
       "@simplysm/sd-orm-common": [
         "../sd-orm-common/src/index.ts"
       ],
+      "@simplysm/sd-orm-node": [
+        "../sd-orm-node/src/index.ts"
+      ],
       "@simplysm/sd-storage": [
         "../sd-storage/src/index.ts"
       ]

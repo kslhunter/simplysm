@@ -249,13 +249,13 @@ sub {
   }
 
   .sd-margin-v-#{$gap} {
-    padding-top: var(--gap-#{$gap}) !important;
-    padding-bottom: var(--gap-#{$gap}) !important;
+    margin-top: var(--gap-#{$gap}) !important;
+    margin-bottom: var(--gap-#{$gap}) !important;
   }
 
   .sd-margin-h-#{$gap} {
-    padding-left: var(--gap-#{$gap}) !important;
-    padding-right: var(--gap-#{$gap}) !important;
+    margin-left: var(--gap-#{$gap}) !important;
+    margin-right: var(--gap-#{$gap}) !important;
   }
 }
 
