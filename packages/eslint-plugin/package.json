@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/eslint-plugin",
-  "version": "7.0.221",
+  "version": "7.0.222",
   "description": "심플리즘 패키지 - ESLINT 플러그인",
   "author": "김석래",
   "repository": {
