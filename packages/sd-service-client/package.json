@@ -17,9 +17,9 @@
     "node": "^16"
   },
   "dependencies": {
-    "jszip": "^3.7.1",
     "@simplysm/sd-core-common": "7.0.224",
+    "@simplysm/sd-orm-common": "7.0.224",
     "@simplysm/sd-service-common": "7.0.224",
-    "@simplysm/sd-orm-common": "7.0.224"
+    "jszip": "^3.7.1"
   }
 }

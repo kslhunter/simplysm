@@ -17,14 +17,14 @@
     "node": "^16"
   },
   "dependencies": {
-    "tedious": "^14.2.0",
-    "mysql": "^2.18.1",
     "@simplysm/sd-core-common": "7.0.224",
     "@simplysm/sd-core-node": "7.0.224",
-    "@simplysm/sd-orm-common": "7.0.224"
+    "@simplysm/sd-orm-common": "7.0.224",
+    "mysql": "^2.18.1",
+    "tedious": "^14.2.0"
   },
   "devDependencies": {
-    "@types/tedious": "^4.0.6",
-    "@types/mysql": "^2.15.20"
+    "@types/mysql": "^2.15.20",
+    "@types/tedious": "^4.0.6"
   }
 }

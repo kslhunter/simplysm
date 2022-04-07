@@ -82,7 +82,10 @@ export interface ISdCliClientPackageConfig {
   publish?: TSdCliPublishConfig;
 }
 
-export type TSdCliPublishConfig = ISdCliFtpPublishConfig | ISdCliLocalDirectoryPublishConfig | ISdCliGithubPublishConfig;
+export type TSdCliPublishConfig =
+  ISdCliFtpPublishConfig
+  | ISdCliLocalDirectoryPublishConfig
+  | ISdCliGithubPublishConfig;
 
 export interface ISdCliFtpPublishConfig {
   type: "ftp" | "ftps" | "sftp";

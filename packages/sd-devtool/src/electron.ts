@@ -1,5 +1,6 @@
 import { app, BrowserWindow, Menu, screen, Tray } from "electron";
 import * as path from "path";
+import * as remote from "@electron/remote/main";
 
 const isDev = process.env["NODE_ENV"] !== "production";
 const iconPath = path.resolve(__dirname, process.env["SD_ELECTRON_ICON"] ?? "favicon.ico");
@@ -7,8 +8,6 @@ const loadURL = process.env["SD_ELECTRON_DEV_URL"] ?? path.resolve(__dirname, "i
 
 let isQuiting = false;
 let isHiding = false;
-
-import * as remote from "@electron/remote/main";
 
 const createWindow = async (): Promise<BrowserWindow> => {
   const display = screen.getPrimaryDisplay();

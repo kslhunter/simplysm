@@ -17,8 +17,8 @@
   },
   "sideEffect": false,
   "dependencies": {
+    "@simplysm/sd-core-common": "7.0.224",
     "chokidar": "^3.5.3",
-    "glob": "^7.2.0",
-    "@simplysm/sd-core-common": "7.0.224"
+    "glob": "^7.2.0"
   }
 }

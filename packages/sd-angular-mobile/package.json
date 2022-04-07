@@ -19,18 +19,19 @@
   "dependencies": {
     "@angular/common": "^13.2.0",
     "@angular/core": "^13.2.0",
-    "@angular/router": "^13.2.0",
     "@angular/platform-browser": "^13.2.0",
-    "rxjs": "^6.6.7",
-    "@fortawesome/fontawesome-svg-core": "^6.1.0",
+    "@angular/router": "^13.2.0",
     "@fortawesome/angular-fontawesome": "^0.10.2",
+    "@fortawesome/fontawesome-svg-core": "^6.1.0",
     "@fortawesome/free-brands-svg-icons": "^6.1.0",
-    "@fortawesome/pro-solid-svg-icons": "^6.1.0",
-    "@fortawesome/pro-regular-svg-icons": "^6.1.0",
-    "@fortawesome/pro-light-svg-icons": "^6.1.0",
     "@fortawesome/pro-duotone-svg-icons": "^6.1.0",
-    "@simplysm/sd-core-common": "7.0.224",
+    "@fortawesome/pro-light-svg-icons": "^6.1.0",
+    "@fortawesome/pro-regular-svg-icons": "^6.1.0",
+    "@fortawesome/pro-solid-svg-icons": "^6.1.0",
+    "@simplysm/sd-angular": "7.0.224",
     "@simplysm/sd-core-browser": "7.0.224",
-    "@simplysm/sd-angular": "7.0.224"
+    "@simplysm/sd-core-common": "7.0.224",
+    "rxjs": "^6.6.7",
+    "zone.js": "~0.11.4"
   }
 }

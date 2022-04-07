@@ -316,7 +316,7 @@ export class SdCliClientBuilder extends EventEmitter {
 
     const npmConfig = this._getNpmConfig(this._rootPath)!;
 
-    const workspacePkgLockContent = FsUtil.readFile(path.resolve(this._workspaceRootPath, "package-lock.json"));
+    const workspacePkgLockContent = FsUtil.readFile(path.resolve(this._workspaceRootPath, "yarn.lock"));
 
     const pkgKey = npmConfig.name.split("/").last()!;
     const publicPath = builderType === "web" ? `/${pkgKey}/` : watch ? `/${pkgKey}/${builderType}/` : ``;

@@ -17,11 +17,11 @@
     "node": "^16"
   },
   "dependencies": {
+    "@simplysm/sd-core-common": "7.0.224",
     "jszip": "^3.7.1",
-    "xml2js": "^0.4.23",
-    "xml-js": "^1.6.11",
     "xlsx": "^0.18.0",
-    "@simplysm/sd-core-common": "7.0.224"
+    "xml-js": "^1.6.11",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@types/xml2js": "^0.4.9"

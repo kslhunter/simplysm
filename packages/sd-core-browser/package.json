@@ -17,6 +17,5 @@
   },
   "dependencies": {
     "@simplysm/sd-core-common": "7.0.224"
-  },
-  "devDependencies": {}
+  }
 }

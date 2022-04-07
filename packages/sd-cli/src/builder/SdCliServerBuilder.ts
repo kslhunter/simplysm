@@ -197,7 +197,7 @@ export class SdCliServerBuilder extends EventEmitter {
     const pkgKey = npmConfig.name.split("/").last()!;
     // const pkgVersion = npmConfig.version;
 
-    const workspacePkgLockContent = FsUtil.readFile(path.resolve(this._workspaceRootPath, "package-lock.json"));
+    const workspacePkgLockContent = FsUtil.readFile(path.resolve(this._workspaceRootPath, "yarn.lock"));
 
     const cacheBasePath = path.resolve(this._rootPath, ".cache");
     // const cachePath = path.resolve(cacheBasePath, pkgVersion);

@@ -34,7 +34,9 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-default-server/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-default-server/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-admin/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/.yarn" />
     </content>
+    <content url="file://$MODULE_DIR$/.yarn" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

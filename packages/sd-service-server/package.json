@@ -17,17 +17,17 @@
     "node": "^16"
   },
   "dependencies": {
+    "@simplysm/sd-core-common": "7.0.224",
+    "@simplysm/sd-core-node": "7.0.224",
+    "@simplysm/sd-orm-common": "7.0.224",
+    "@simplysm/sd-orm-node": "7.0.224",
+    "@simplysm/sd-service-common": "7.0.224",
     "bufferutil": "^4.0.1",
-    "utf-8-validate": "^5.0.2",
     "connect": "^3.7.0",
     "mime": "^3.0.0",
     "nodemailer": "^6.7.2",
     "semver": "^7.3.5",
-    "@simplysm/sd-core-common": "7.0.224",
-    "@simplysm/sd-core-node": "7.0.224",
-    "@simplysm/sd-service-common": "7.0.224",
-    "@simplysm/sd-orm-common": "7.0.224",
-    "@simplysm/sd-orm-node": "7.0.224",
+    "utf-8-validate": "^5.0.2",
     "ws": "^8.5.0"
   },
   "devDependencies": {
