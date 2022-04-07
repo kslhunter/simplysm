@@ -15,9 +15,7 @@
 
     yarn config set --home "npmRegistries['//npm.fontawesome.com'].npmAuthToken" "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 
-
 ### 패키지 node_modules 설치
 
     yarn install
 
-    
