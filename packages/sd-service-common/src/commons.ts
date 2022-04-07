@@ -1,6 +1,7 @@
 export type TSdServiceS2CMessage =
   ISdServiceClientReloadCommand
   | ISdServiceClientGetIdCommand
+  | ISdServiceClientConnectedAlarm
   | ISdServiceResponse
   | ISdServiceEmittedEvent;
 
@@ -19,6 +20,10 @@ interface ISdServiceClientGetIdCommand {
 interface ISdServiceClientGetIdResponse {
   name: "client-get-id-response";
   body: string;
+}
+
+interface ISdServiceClientConnectedAlarm {
+  name: "connected";
 }
 
 export interface ISdServiceResponse {

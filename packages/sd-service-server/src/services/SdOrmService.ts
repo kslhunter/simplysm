@@ -17,7 +17,7 @@ export class SdOrmService extends SdServiceBase {
   private readonly _logger = Logger.get(["simplysm", "sd-service-server", this.constructor.name]);
 
   private static readonly _connections = new Map<number, IDbConnection>();
-  private static readonly _wsConnectionCloseListenerMap = new Map<number, () => Promise<void>>();
+  private static readonly _wsConnectionCloseListenerMap = new Map<number, (code: number) => Promise<void>>();
 
   public static getDbConnConfigAsync = async (rootPath: string, clientName: string | undefined, opt: TDbConnOptions): Promise<IDbConnectionConfig> => {
     const config: IDbConnectionConfig | undefined = opt.configName !== undefined ? (await SdServiceServerConfigUtil.getConfigAsync(rootPath, clientName))["orm"]?.[opt.configName] : undefined;
@@ -52,20 +52,23 @@ export class SdOrmService extends SdServiceBase {
 
     await dbConn.connectAsync();
 
-    const closeEventListener = async (): Promise<void> => {
-      await dbConn.closeAsync();
-      this._logger.warn("소켓연결이 끊어져, DB 연결이 중지되었습니다.");
+    const closeEventListener = async (code: number): Promise<void> => {
+      // 클라이언트 창이 닫히거나 RELOAD 될때
+      if (code === 1001) {
+        await dbConn.closeAsync();
+        this._logger.warn("소켓연결이 끊어져, DB 연결이 중지되었습니다.");
+      }
     };
     SdOrmService._wsConnectionCloseListenerMap.set(connId, closeEventListener);
     if (this.socketId !== undefined) {
-      (await this.server.getWsClientAsync(this.socketId))?.on("close", closeEventListener);
+      this.server.getWsClient(this.socketId)?.on("close", closeEventListener);
     }
 
-    dbConn.on("close", async () => {
+    dbConn.on("close", () => {
       SdOrmService._connections.delete(connId);
       SdOrmService._wsConnectionCloseListenerMap.delete(connId);
       if (this.socketId !== undefined) {
-        (await this.server.getWsClientAsync(this.socketId))?.off("close", closeEventListener);
+        this.server.getWsClient(this.socketId)?.off("close", closeEventListener);
       }
     });
 

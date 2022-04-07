@@ -7,7 +7,7 @@ import mime from "mime";
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
 import { ISdServiceServerOptions, SdServiceBase } from "./commons";
 import { EventEmitter } from "events";
-import { JsonConvert, Wait } from "@simplysm/sd-core-common";
+import { JsonConvert } from "@simplysm/sd-core-common";
 import { WebSocket, WebSocketServer } from "ws";
 import {
   ISdServiceRequest,
@@ -34,11 +34,9 @@ export class SdServiceServer extends EventEmitter {
     super();
   }
 
-  public async getWsClientAsync(socketId: string): Promise<WebSocket | undefined> {
+  public getWsClient(socketId: string): WebSocket | undefined {
     if (!this._wsServer) return undefined;
-    const openClients = Array.from(this._wsServer.clients).filter((item) => item.readyState === WebSocket.OPEN);
-    await Wait.until(() => openClients.some((item) => item["id"] === socketId), undefined, 5000);
-    return openClients.single((item) => item["id"] === socketId);
+    return Array.from(this._wsServer.clients).single((item) => item.readyState === WebSocket.OPEN && item["id"] === socketId);
   }
 
   public async listenAsync(): Promise<void> {
@@ -141,6 +139,9 @@ export class SdServiceServer extends EventEmitter {
     wsClient.on("message", async (msgJson: string) => {
       await this._onWsClientMessageAsync(wsClientId, msgJson);
     });
+
+    const cmd: TSdServiceS2CMessage = { name: "connected" };
+    wsClient.send(JsonConvert.stringify(cmd));
   }
 
   private _onWsClientClosed(wsClientId: string, code: number): void {
@@ -170,7 +171,7 @@ export class SdServiceServer extends EventEmitter {
 
     const res = await this._processSocketRequestAsync(socketId, req);
 
-    (await this.getWsClientAsync(socketId))?.send(JsonConvert.stringify(res));
+    this.getWsClient(socketId)?.send(JsonConvert.stringify(res));
   }
 
   private async _onSocketRequestSplitAsync(socketId: string, splitReq: ISdServiceSplitRequest): Promise<void> {
@@ -273,7 +274,7 @@ export class SdServiceServer extends EventEmitter {
 
         const listeners = this._eventListeners.filter((item) => targetKeys.includes(item.key));
         for (const listener of listeners) {
-          const currSocket = await this.getWsClientAsync(listener.socketId);
+          const currSocket = this.getWsClient(listener.socketId);
           if (currSocket?.readyState === WebSocket.OPEN) {
             const evtMsg: TSdServiceS2CMessage = {
               name: "event",

@@ -9,9 +9,10 @@ export class SdServiceClient {
   private readonly _ws: SdWebSocket;
 
   public isManualClose = false;
+  public isConnected = false;
 
   public get connected(): boolean {
-    return this._ws.connected;
+    return this._ws.connected && this.isConnected;
   }
 
   public constructor(private readonly _name: string,
@@ -20,42 +21,51 @@ export class SdServiceClient {
   }
 
   public async connectAsync(): Promise<void> {
-    if (this._ws.connected) return;
+    if (this.isConnected) return;
 
-    this._ws.on("message", async (msgJson) => {
-      const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
-      if (location?.reload && msg.name === "client-reload") {
-        // eslint-disable-next-line no-console
-        console.log("클라이언트 RELOAD 명령 수신");
-        location.reload();
-      }
-      else if (msg.name === "client-get-id") {
-        const resMsg: TSdServiceC2SMessage = { name: "client-get-id-response", body: this.id };
-        await this._ws.sendAsync(JsonConvert.stringify(resMsg));
-      }
-    });
+    await new Promise<void>(async (resolve) => {
+      this._ws.on("message", async (msgJson) => {
+        const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
+        if (location?.reload && msg.name === "client-reload") {
+          // eslint-disable-next-line no-console
+          console.log("클라이언트 RELOAD 명령 수신");
+          location.reload();
+        }
+        else if (msg.name === "client-get-id") {
+          const resMsg: TSdServiceC2SMessage = { name: "client-get-id-response", body: this.id };
+          await this._ws.sendAsync(JsonConvert.stringify(resMsg));
+        }
+        else if (msg.name === "connected") {
+          this.isConnected = true;
+          resolve();
+        }
+      });
 
-    const reconnectFn = async (): Promise<void> => {
-      if (this.isManualClose) return;
-      try {
-        await this.connectAsync();
+      const reconnectFn = async (): Promise<void> => {
+        if (this.isConnected) return;
+        if (this.isManualClose) return;
+        try {
+          await this.connectAsync();
+          // eslint-disable-next-line no-console
+          console.log("WebSocket 재연결");
+        }
+        catch (err) {
+          await Wait.time(500);
+          await reconnectFn();
+        }
+      };
+
+      this._ws.on("close", async () => {
+        this.isConnected = false;
+
         // eslint-disable-next-line no-console
-        console.log("WebSocket 재연결");
-      }
-      catch (err) {
-        await Wait.time(500);
+        console.warn("WebSocket 연결 끊김");
         await reconnectFn();
-      }
-    };
+      });
 
-    this._ws.on("close", async () => {
-      // eslint-disable-next-line no-console
-      console.warn("WebSocket 연결 끊김");
-      await reconnectFn();
+      await this._ws.connectAsync();
     });
-
-    await this._ws.connectAsync();
   }
 
   public async closeAsync(): Promise<void> {
@@ -124,7 +134,7 @@ export class SdServiceClient {
   public async addEventListenerAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>,
                                                                              info: T["info"],
                                                                              cb: (data: T["data"]) => PromiseLike<void>): Promise<string> {
-    if (!this._ws.connected) {
+    if (!this.connected) {
       throw new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요.");
     }
 
