@@ -17,7 +17,6 @@
     "node": "^16"
   },
   "dependencies": {
-    "socket.io-client": "^4.4.1",
     "jszip": "^3.7.1",
     "@simplysm/sd-core-common": "7.0.221",
     "@simplysm/sd-service-common": "7.0.221",

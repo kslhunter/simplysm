@@ -58,7 +58,7 @@ export class SdCliWorkspace {
           setTimeout(async () => {
             changeCount--;
             if (changeCount === 0) {
-              const currChangePkgs = [...changePkgs];
+              const currChangePkgs = [...changePkgs].distinct(true);
               changePkgs = [];
 
               for (const changePkg of currChangePkgs) {

@@ -57,12 +57,16 @@ export class SdOrmService extends SdServiceBase {
       this._logger.warn("소켓연결이 끊어져, DB 연결이 중지되었습니다.");
     };
     SdOrmService._wsConnectionCloseListenerMap.set(connId, closeEventListener);
-    this.socket?.on("close", closeEventListener);
+    if (this.socketId !== undefined) {
+      this.server.getWsClient(this.socketId)?.on("close", closeEventListener);
+    }
 
     dbConn.on("close", () => {
       SdOrmService._connections.delete(connId);
       SdOrmService._wsConnectionCloseListenerMap.delete(connId);
-      this.socket?.off("close", closeEventListener);
+      if (this.socketId !== undefined) {
+        this.server.getWsClient(this.socketId)?.off("close", closeEventListener);
+      }
     });
 
     return connId;

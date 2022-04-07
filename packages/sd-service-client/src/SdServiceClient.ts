@@ -1,53 +1,67 @@
 import { ISdServiceClientConnectionConfig } from "./ISdServiceClientConnectionConfig";
-import * as socketIo from "socket.io-client";
 import { JsonConvert, Type, Uuid, Wait } from "@simplysm/sd-core-common";
-import {
-  ISdServiceRequest,
-  ISdServiceResponse,
-  ISdServiceSplitRequest,
-  SdServiceEventBase
-} from "@simplysm/sd-service-common";
+import { SdServiceEventBase, TSdServiceC2SMessage, TSdServiceS2CMessage } from "@simplysm/sd-service-common";
+import { SdWebSocket } from "./SdWebSocket";
 
 export class SdServiceClient {
-  private _socket?: socketIo.Socket;
+  public readonly id = Uuid.new().toString();
+
+  private readonly _ws: SdWebSocket;
+
+  public isManualClose = false;
 
   public get connected(): boolean {
-    return this._socket?.connected ?? false;
+    return this._ws.connected;
   }
 
   public constructor(private readonly _name: string,
                      public readonly options: ISdServiceClientConnectionConfig) {
+    this._ws = new SdWebSocket(`${this.options.ssl ? "wss" : "ws"}://${this.options.host}:${this.options.port}`);
   }
 
   public async connectAsync(): Promise<void> {
-    if (this._socket?.connected) return;
+    if (this._ws.connected) return;
 
-    await new Promise<void>((resolve, reject) => {
-      this._socket = socketIo.io(`${this.options.ssl ? "wss" : "ws"}://${this.options.host}:${this.options.port}`);
-
-      this._socket.on("connect", () => {
-        resolve();
-      });
-
-      this._socket.on("connect_error", (err) => {
-        reject(err);
-      });
-
+    this._ws.on("message", async (msgJson) => {
+      const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,@typescript-eslint/strict-boolean-expressions
-      if (location?.reload) {
-        this._socket.on(`reload`, () => {
-          // eslint-disable-next-line no-console
-          console.log("클라이언트 RELOAD 명령 수신");
-          location.reload();
-        });
+      if (location?.reload && msg.name === "client-reload") {
+        // eslint-disable-next-line no-console
+        console.log("클라이언트 RELOAD 명령 수신");
+        location.reload();
+      }
+      else if (msg.name === "client-get-id") {
+        const resMsg: TSdServiceC2SMessage = { name: "client-get-id-response", body: this.id };
+        await this._ws.sendAsync(JsonConvert.stringify(resMsg));
       }
     });
+
+
+    const reconnectFn = async (): Promise<void> => {
+      if (this.isManualClose) return;
+      try {
+        await this.connectAsync();
+        // eslint-disable-next-line no-console
+        console.log("WebSocket 재연결");
+      }
+      catch (err) {
+        await Wait.time(500);
+        await reconnectFn();
+      }
+    };
+
+    this._ws.on("close", async () => {
+      // eslint-disable-next-line no-console
+      console.warn("WebSocket 연결 끊김");
+      await reconnectFn();
+    });
+
+    await this._ws.connectAsync();
   }
 
   public async closeAsync(): Promise<void> {
-    if (!this._socket?.connected) return;
-    this._socket.disconnect();
-    await Wait.until(() => !(this._socket?.connected));
+    this.isManualClose = true;
+    await this._ws.closeAsync();
   }
 
   public async sendAsync(serviceName: string, methodName: string, params: any[]): Promise<any> {
@@ -55,29 +69,32 @@ export class SdServiceClient {
   }
 
   private async _sendCommandAsync(command: string, params: any[]): Promise<any> {
-    return await new Promise<any>((resolve, reject) => {
-      if (!this._socket?.connected) {
-        reject(new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요."));
-        return;
-      }
+    const uuid = Uuid.new().toString();
 
-      const req: ISdServiceRequest = {
-        clientName: this._name,
-        uuid: Uuid.new().toString(),
-        command,
-        params
-      };
+    return await new Promise<any>(async (resolve, reject) => {
+      const msgFn = (msgJson: string): void => {
+        const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
+        if (msg.name !== "response") return;
+        if (msg.reqUuid !== uuid) return;
 
-      this._socket.once(`response:${req.uuid}`, (resJson: string) => {
-        const res = JsonConvert.parse(resJson) as ISdServiceResponse;
+        this._ws.off("message", msgFn);
 
-        if (res.type === "error") {
-          reject(new Error(res.body));
+        if (msg.state === "error") {
+          reject(new Error(msg.body));
           return;
         }
 
-        resolve(res.body);
-      });
+        resolve(msg.body);
+      };
+      this._ws.on(`message`, msgFn);
+
+      const req: TSdServiceC2SMessage = {
+        name: "request",
+        clientName: this._name,
+        uuid,
+        command,
+        params
+      };
 
       const reqText = JsonConvert.stringify(req);
       if (reqText.length > 1000 * 1000) {
@@ -87,19 +104,20 @@ export class SdServiceClient {
         let currSize = 0;
         while (currSize !== reqText.length) {
           const splitBody = reqText.substring(currSize, currSize + splitSize - 1);
-          const splitReq: ISdServiceSplitRequest = {
+          const splitReq: TSdServiceC2SMessage = {
+            name: "request-split",
             uuid: req.uuid,
             fullSize: reqText.length,
             index,
             body: splitBody
           };
-          this._socket.emit("request-split", JsonConvert.stringify(splitReq));
+          await this._ws.sendAsync(JsonConvert.stringify(splitReq));
           currSize += splitBody.length;
           index++;
         }
       }
       else {
-        this._socket.emit("request", reqText);
+        await this._ws.sendAsync(reqText);
       }
     });
   }
@@ -107,13 +125,17 @@ export class SdServiceClient {
   public async addEventListenerAsync<T extends SdServiceEventBase<any, any>>(eventType: Type<T>,
                                                                              info: T["info"],
                                                                              cb: (data: T["data"]) => PromiseLike<void>): Promise<string> {
-    if (!this._socket?.connected) {
+    if (!this._ws.connected) {
       throw new Error("서버와 연결되어있지 않습니다. 인터넷 연결을 확인하세요.");
     }
 
     const key = Uuid.new().toString();
-    this._socket.on(`event:${key}`, async (dataJson: string) => {
-      await cb(JsonConvert.parse(dataJson));
+    this._ws.on(`message`, async (msgJson: string) => {
+      const msg = JsonConvert.parse(msgJson) as TSdServiceS2CMessage;
+      if (msg.name !== "event") return;
+      if (msg.key !== key) return;
+
+      await cb(JsonConvert.parse(msg.body));
     });
 
     await this._sendCommandAsync("addEventListener", [key, eventType.name, info]);

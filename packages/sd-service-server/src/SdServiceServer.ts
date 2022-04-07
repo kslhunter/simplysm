@@ -1,21 +1,27 @@
 import https from "https";
 import http from "http";
-import * as socketIo from "socket.io";
 import { NextHandleFunction } from "connect";
 import url from "url";
 import path from "path";
 import mime from "mime";
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
-import { ISdServiceRequest, ISdServiceResponse, ISdServiceSplitRequest } from "@simplysm/sd-service-common";
 import { ISdServiceServerOptions, SdServiceBase } from "./commons";
 import { EventEmitter } from "events";
 import { JsonConvert } from "@simplysm/sd-core-common";
+import { WebSocket, WebSocketServer } from "ws";
+import {
+  ISdServiceRequest,
+  ISdServiceResponse,
+  ISdServiceSplitRequest,
+  TSdServiceC2SMessage,
+  TSdServiceS2CMessage
+} from "@simplysm/sd-service-common";
 
 export class SdServiceServer extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-service", this.constructor.name]);
 
   private _httpServer?: http.Server | https.Server;
-  private _socketServer?: socketIo.Server;
+  private _wsServer?: WebSocketServer;
   public isOpen = false;
 
   private readonly _splitReqCache = new Map<string, { completedSize: number; data: string[] }>();
@@ -26,6 +32,11 @@ export class SdServiceServer extends EventEmitter {
 
   public constructor(public readonly options: ISdServiceServerOptions) {
     super();
+  }
+
+  public getWsClient(socketId: string): WebSocket | undefined {
+    if (!this._wsServer) return undefined;
+    return Array.from(this._wsServer.clients).single((item) => item["id"] === socketId);
   }
 
   public async listenAsync(): Promise<void> {
@@ -47,9 +58,9 @@ export class SdServiceServer extends EventEmitter {
         await this._onWebRequestAsync(req, res);
       });
 
-      this._socketServer = new socketIo.Server(this._httpServer);
-      this._socketServer.on("connection", (socket) => {
-        this._onSocketConnection(socket);
+      this._wsServer = new WebSocketServer({ server: this._httpServer });
+      this._wsServer.on("connection", async (wsClient) => {
+        await this._onWsClientConnectionAsync(wsClient);
       });
 
       this._httpServer.listen(this.options.port, () => {
@@ -63,8 +74,11 @@ export class SdServiceServer extends EventEmitter {
   }
 
   public async closeAsync(): Promise<void> {
-    if (this._socketServer) {
-      this._socketServer.close();
+    if (this._wsServer) {
+      this._wsServer.clients.forEach((client) => {
+        client.close();
+      });
+      this._wsServer.close();
     }
 
     await new Promise<void>((resolve, reject) => {
@@ -90,48 +104,86 @@ export class SdServiceServer extends EventEmitter {
 
   public broadcastReload(): void {
     this._logger.debug("서버내 모든 클라이언트 RELOAD 명령 전송");
-    this._socketServer!.emit(`reload`);
+    this._wsServer?.clients.forEach((client) => {
+      const cmd: TSdServiceS2CMessage = { name: "client-reload" };
+      client.send(JsonConvert.stringify(cmd));
+    });
   }
 
-  private _onSocketConnection(socket: socketIo.Socket): void {
-    this._logger.debug("클라이언트 연결됨");
+  private async _getWsClientIdAsync(wsClient: WebSocket): Promise<string> {
+    return await new Promise<string>((resolve) => {
+      const msgFn = (msgJson: string): void => {
+        const msg = JsonConvert.parse(msgJson) as TSdServiceC2SMessage;
+        if (msg.name === "client-get-id-response") {
+          wsClient.off("message", msgFn);
+          resolve(msg.body);
+        }
+      };
+      wsClient.on("message", msgFn);
 
-    socket.on("disconnect", () => {
+      const cmd: TSdServiceS2CMessage = { name: "client-get-id" };
+      wsClient.send(JsonConvert.stringify(cmd));
+    });
+  }
+
+  private async _onWsClientConnectionAsync(wsClient: WebSocket): Promise<void> {
+    const wsClientId = await this._getWsClientIdAsync(wsClient);
+    wsClient["id"] = wsClientId;
+
+    this._logger.debug("클라이언트 연결됨: " + wsClientId);
+
+    wsClient.on("close", (code) => {
+      this._onWsClientClosed(wsClientId, code);
+    });
+
+    wsClient.on("message", async (msgJson: string) => {
+      await this._onWsClientMessageAsync(wsClientId, msgJson);
+    });
+  }
+
+  private _onWsClientClosed(wsClientId: string, code: number): void {
+    this._logger.debug("클라이언트 연결 끊김: " + wsClientId + ": " + code);
+    // 클라이언트 창이 닫히거나 RELOAD 될때
+    if (code === 1001) {
       this._logger.debug("닫힌 소켓의 이벤트 리스너 비우기...");
-      const disconnectedListeners = this._eventListeners.filter((item) => item.socket.id === socket.id);
+      const disconnectedListeners = this._eventListeners.filter((item) => item.socketId === wsClientId);
       for (const disconnectedListener of disconnectedListeners) {
         this._eventListeners.remove(disconnectedListener);
       }
-    });
-
-    socket.on("request", async (reqJson: string) => {
-      const req = JsonConvert.parse(reqJson) as ISdServiceRequest;
-      this._logger.debug("요청 받음", req);
-
-      const res = await this._onSocketRequestAsync(socket, req);
-
-      socket.emit(`response:${req.uuid}`, JsonConvert.stringify(res));
-    });
-
-    socket.on("request-split", async (splitReqJson: string) => {
-      const splitReq = JsonConvert.parse(splitReqJson) as ISdServiceSplitRequest;
-      this._logger.debug("분할요청 받음", splitReq.uuid + "(" + splitReq.index + ")");
-
-      const cacheInfo = this._splitReqCache.getOrCreate(splitReq.uuid, { completedSize: 0, data: [] });
-      cacheInfo.data[splitReq.index] = splitReq.body;
-      cacheInfo.completedSize += splitReq.body.length;
-      if (cacheInfo.completedSize === splitReq.fullSize) {
-        const req = JsonConvert.parse(cacheInfo.data.join("")) as ISdServiceRequest;
-        this._logger.debug("요청 받음", req);
-
-        const res = await this._onSocketRequestAsync(socket, req);
-
-        socket.emit(`response:${req.uuid}`, JsonConvert.stringify(res));
-      }
-    });
+    }
   }
 
-  private async _runServiceMethodAsync(def: { socket?: socketIo.Socket; request?: ISdServiceRequest; serviceName: string; methodName: string; params: any[] }): Promise<any> {
+  private async _onWsClientMessageAsync(socketId: string, msgJson: string): Promise<void> {
+    const msg = JsonConvert.parse(msgJson) as TSdServiceC2SMessage;
+    if (msg.name === "request") {
+      await this._onSocketRequestAsync(socketId, msg);
+    }
+    else if (msg.name === "request-split") {
+      await this._onSocketRequestSplitAsync(socketId, msg);
+    }
+  }
+
+  private async _onSocketRequestAsync(socketId: string, req: ISdServiceRequest): Promise<void> {
+    this._logger.debug("요청 받음", req);
+
+    const res = await this._processSocketRequestAsync(socketId, req);
+
+    this.getWsClient(socketId)?.send(JsonConvert.stringify(res));
+  }
+
+  private async _onSocketRequestSplitAsync(socketId: string, splitReq: ISdServiceSplitRequest): Promise<void> {
+    this._logger.debug("분할요청 받음", splitReq.uuid + "(" + splitReq.index + ")");
+
+    const cacheInfo = this._splitReqCache.getOrCreate(splitReq.uuid, { completedSize: 0, data: [] });
+    cacheInfo.data[splitReq.index] = splitReq.body;
+    cacheInfo.completedSize += splitReq.body.length;
+    if (cacheInfo.completedSize === splitReq.fullSize) {
+      const req = JsonConvert.parse(cacheInfo.data.join("")) as ISdServiceRequest;
+      await this._onSocketRequestAsync(socketId, req);
+    }
+  }
+
+  private async _runServiceMethodAsync(def: { socketId?: string; request?: ISdServiceRequest; serviceName: string; methodName: string; params: any[] }): Promise<any> {
     // 서비스 가져오기
     const serviceClass = this.options.services.single((item) => item.name === def.serviceName);
     if (!serviceClass) {
@@ -140,7 +192,7 @@ export class SdServiceServer extends EventEmitter {
     const service: SdServiceBase = new serviceClass();
     service.server = this;
     service.request = def.request;
-    service.socket = def.socket;
+    service.socketId = def.socketId;
 
     // 메소드 가져오기
     const method = service[def.methodName];
@@ -153,7 +205,7 @@ export class SdServiceServer extends EventEmitter {
     return await method.apply(service, def.params);
   }
 
-  private async _onSocketRequestAsync(socket: socketIo.Socket, req: ISdServiceRequest): Promise<ISdServiceResponse> {
+  private async _processSocketRequestAsync(socketId: string, req: ISdServiceRequest): Promise<ISdServiceResponse> {
     try {
       const cmdSplit = req.command.split(".");
       if (cmdSplit.length === 2) {
@@ -161,7 +213,7 @@ export class SdServiceServer extends EventEmitter {
         const methodName = cmdSplit[1];
 
         const result = await this._runServiceMethodAsync({
-          socket,
+          socketId,
           request: req,
           serviceName,
           methodName,
@@ -170,7 +222,9 @@ export class SdServiceServer extends EventEmitter {
 
         // 응답
         return {
-          type: "response",
+          name: "response",
+          reqUuid: req.uuid,
+          state: "success",
           body: result
         };
       }
@@ -179,10 +233,12 @@ export class SdServiceServer extends EventEmitter {
         const eventName = req.params[1] as string;
         const info = req.params[2];
 
-        this._eventListeners.push({ key, eventName, info, socket });
+        this._eventListeners.push({ key, eventName, info, socketId });
 
         return {
-          type: "response",
+          name: "response",
+          reqUuid: req.uuid,
+          state: "success",
           body: undefined
         };
       }
@@ -191,7 +247,9 @@ export class SdServiceServer extends EventEmitter {
         this._eventListeners.remove((item) => item.key === key);
 
         return {
-          type: "response",
+          name: "response",
+          reqUuid: req.uuid,
+          state: "success",
           body: undefined
         };
       }
@@ -199,7 +257,9 @@ export class SdServiceServer extends EventEmitter {
         const eventName = req.params[0] as string;
 
         return {
-          type: "response",
+          name: "response",
+          reqUuid: req.uuid,
+          state: "success",
           body: this._eventListeners
             .filter((item) => item.eventName === eventName)
             .map((item) => ({ key: item.key, info: item.info }))
@@ -211,20 +271,30 @@ export class SdServiceServer extends EventEmitter {
 
         const listeners = this._eventListeners.filter((item) => targetKeys.includes(item.key));
         for (const listener of listeners) {
-          if (listener.socket.connected) {
-            listener.socket.emit(`event:${listener.key}`, JsonConvert.stringify(data));
+          const currSocket = this.getWsClient(listener.socketId);
+          if (currSocket?.readyState === WebSocket.OPEN) {
+            const evtMsg: TSdServiceS2CMessage = {
+              name: "event",
+              key: listener.key,
+              body: data
+            };
+            currSocket.send(JsonConvert.stringify(evtMsg));
           }
         }
 
         return {
-          type: "response",
+          name: "response",
+          reqUuid: req.uuid,
+          state: "success",
           body: undefined
         };
       }
       else {
         // 에러 응답
         return {
-          type: "error",
+          name: "response",
+          reqUuid: req.uuid,
+          state: "error",
           body: "요청이 잘못되었습니다."
         };
       }
@@ -232,7 +302,9 @@ export class SdServiceServer extends EventEmitter {
     catch (err) {
       // 에러 응답
       return {
-        type: "error",
+        name: "response",
+        reqUuid: req.uuid,
+        state: "error",
         body: err.stack
       };
     }
@@ -390,6 +462,6 @@ interface IEventListener {
   key: string;
   eventName: string;
   info: any;
-  socket: socketIo.Socket;
+  socketId: string;
 }
 
