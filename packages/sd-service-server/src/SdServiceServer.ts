@@ -7,7 +7,7 @@ import mime from "mime";
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
 import { ISdServiceServerOptions, SdServiceBase } from "./commons";
 import { EventEmitter } from "events";
-import { JsonConvert } from "@simplysm/sd-core-common";
+import { JsonConvert, Wait } from "@simplysm/sd-core-common";
 import { WebSocket, WebSocketServer } from "ws";
 import {
   ISdServiceRequest,
@@ -34,9 +34,11 @@ export class SdServiceServer extends EventEmitter {
     super();
   }
 
-  public getWsClient(socketId: string): WebSocket | undefined {
+  public async getWsClientAsync(socketId: string): Promise<WebSocket | undefined> {
     if (!this._wsServer) return undefined;
-    return Array.from(this._wsServer.clients).single((item) => item["id"] === socketId);
+    const openClients = Array.from(this._wsServer.clients).filter((item) => item.readyState === WebSocket.OPEN);
+    await Wait.until(() => openClients.some((item) => item["id"] === socketId), undefined, 5000);
+    return openClients.single((item) => item["id"] === socketId);
   }
 
   public async listenAsync(): Promise<void> {
@@ -168,7 +170,7 @@ export class SdServiceServer extends EventEmitter {
 
     const res = await this._processSocketRequestAsync(socketId, req);
 
-    this.getWsClient(socketId)?.send(JsonConvert.stringify(res));
+    (await this.getWsClientAsync(socketId))?.send(JsonConvert.stringify(res));
   }
 
   private async _onSocketRequestSplitAsync(socketId: string, splitReq: ISdServiceSplitRequest): Promise<void> {
@@ -271,7 +273,7 @@ export class SdServiceServer extends EventEmitter {
 
         const listeners = this._eventListeners.filter((item) => targetKeys.includes(item.key));
         for (const listener of listeners) {
-          const currSocket = this.getWsClient(listener.socketId);
+          const currSocket = await this.getWsClientAsync(listener.socketId);
           if (currSocket?.readyState === WebSocket.OPEN) {
             const evtMsg: TSdServiceS2CMessage = {
               name: "event",

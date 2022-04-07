@@ -36,7 +36,6 @@ export class SdServiceClient {
       }
     });
 
-
     const reconnectFn = async (): Promise<void> => {
       if (this.isManualClose) return;
       try {
