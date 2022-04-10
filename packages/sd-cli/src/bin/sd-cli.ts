@@ -31,7 +31,7 @@ const argv = yargs(hideBin(process.argv))
   )
   .command(
     "update",
-    "패키지 업데이트 (npm update)",
+    "패키지 업데이트 (yarn update)",
     (cmd) => cmd.version(false)
   )
   .command(
