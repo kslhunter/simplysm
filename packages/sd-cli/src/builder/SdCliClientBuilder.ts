@@ -252,7 +252,7 @@ export class SdCliClientBuilder extends EventEmitter {
           } : {}
         }
       }, { space: 2 });
-      await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "yarn.lock"), "");
+      await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "package-lock.json"), "");
 
       await FsUtil.writeFileAsync(path.resolve(electronSrcPath, `.env`), [
         "NODE_ENV=production",
@@ -317,7 +317,7 @@ export class SdCliClientBuilder extends EventEmitter {
 
     const npmConfig = this._getNpmConfig(this._rootPath)!;
 
-    const workspacePkgLockContent = FsUtil.readFile(path.resolve(this._workspaceRootPath, "yarn.lock"));
+    const workspacePkgLockContent = FsUtil.readFile(path.resolve(this._workspaceRootPath, "package-lock.json"));
 
     const pkgKey = npmConfig.name.split("/").last()!;
     const publicPath = builderType === "web" ? `/${pkgKey}/` : watch ? `/${pkgKey}/${builderType}/` : ``;

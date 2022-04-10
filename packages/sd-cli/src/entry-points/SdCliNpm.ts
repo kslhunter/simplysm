@@ -8,12 +8,21 @@ export class SdCliNpm {
   }
 
   public async updateAsync(): Promise<void> {
-    this._logger.debug("업데이트 시작...");
-    await SdProcess.spawnAsync("yarn up", { cwd: this._rootPath });
+    try {
+      this._logger.debug("업데이트할 패키지 확인...");
+      await SdProcess.spawnAsync("npm outdated", { cwd: this._rootPath });
+    }
+    catch (err) {
+      this._logger.debug("업데이트 시작...");
+      await SdProcess.spawnAsync("npm update", { cwd: this._rootPath });
 
-    this._logger.debug("sd-cli 준비...");
-    await new SdCliPrepare().prepareAsync();
+      this._logger.debug("sd-cli 준비...");
+      await new SdCliPrepare().prepareAsync();
 
-    this._logger.info("노드 패키지 업데이트 완료");
+      this._logger.info("노드 패키지 업데이트 완료");
+      return;
+    }
+
+    this._logger.warn("업데이트할 패키지가 없습니다.");
   }
 }

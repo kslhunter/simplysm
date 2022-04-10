@@ -159,7 +159,7 @@ export class SdCliPackage extends EventEmitter {
       if (this.config.type === "library") {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (this.config.publish === "npm") {
-          await SdProcess.spawnAsync("yarn npm publish --access public", { cwd: this.rootPath });
+          await SdProcess.spawnAsync("npm publish --access public", { cwd: this.rootPath });
         }
         else {
           throw new NeverEntryError();
