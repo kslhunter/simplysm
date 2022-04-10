@@ -251,7 +251,8 @@ export class SdCliClientBuilder extends EventEmitter {
             "@electron/remote": remoteVersion
           } : {}
         }
-      });
+      }, { space: 2 });
+      await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "yarn.lock"), "");
 
       await FsUtil.writeFileAsync(path.resolve(electronSrcPath, `.env`), [
         "NODE_ENV=production",
