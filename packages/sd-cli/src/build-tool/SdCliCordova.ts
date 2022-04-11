@@ -163,7 +163,9 @@ export class SdCliCordova {
             "target": "/manifest/application"
           },
           "application": [{
-            "android:usesCleartextTraffic": "true"
+            "$": {
+              "android:usesCleartextTraffic": "true"
+            }
           }]
         }]
       });
