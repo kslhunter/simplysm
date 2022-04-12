@@ -281,7 +281,6 @@ export class SdServiceServer extends EventEmitter {
               key: listener.key,
               body: data
             };
-            console.log(evtMsg);
             currSocket.send(JsonConvert.stringify(evtMsg));
           }
         }
