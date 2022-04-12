@@ -144,7 +144,7 @@ export class SdServiceClient {
       if (msg.name !== "event") return;
       if (msg.key !== key) return;
 
-      await cb(JsonConvert.parse(msg.body));
+      await cb(msg.body);
     });
 
     await this._sendCommandAsync("addEventListener", [key, eventType.name, info]);
