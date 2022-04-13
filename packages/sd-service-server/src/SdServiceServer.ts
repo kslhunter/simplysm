@@ -349,7 +349,7 @@ export class SdServiceServer extends EventEmitter {
       const urlPathChain = decodeURI(urlObj.pathname!.slice(1)).split("/");
 
       if (urlPathChain[0] === "api") {
-        if (req.headers.origin?.startsWith("http://localhost") && req.method === "OPTIONS") {
+        if (req.headers.origin?.includes("://localhost") && req.method === "OPTIONS") {
           res.writeHead(204, {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Content-Length, Accept",
@@ -391,7 +391,7 @@ export class SdServiceServer extends EventEmitter {
           const resultJson = JsonConvert.stringify(result);
 
           res.writeHead(200, {
-            ...req.headers.origin?.startsWith("http://localhost") ? {
+            ...req.headers.origin?.includes("://localhost") ? {
               "Access-Control-Allow-Origin": "*",
               "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Content-Length, Accept",
               "Access-Control-Allow-Methods": "POST, GET, PUT, DELETE,PATCH",

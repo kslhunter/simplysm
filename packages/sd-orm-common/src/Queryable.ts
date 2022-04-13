@@ -41,7 +41,7 @@ export class Queryable<D extends DbContext, T> {
 
   public readonly tableType?: Type<T>; // wrapping 사용시, undefined 일 수 있음
   private readonly _as?: string;
-  private readonly _tableDef?: ITableDef; // wrapping 사용시, undefined 일 수 있음
+  public readonly tableDef?: ITableDef; // wrapping 사용시, undefined 일 수 있음
   // noinspection TypeScriptFieldCanBeMadeReadonly
   private readonly _entity: TEntity<T>;
   private readonly _isCustomEntity: boolean = false;
@@ -49,20 +49,20 @@ export class Queryable<D extends DbContext, T> {
   private readonly _def: IQueryableDef;
 
   public get tableName(): string {
-    if (!this._tableDef) throw new NeverEntryError();
+    if (!this.tableDef) throw new NeverEntryError();
 
     return this.db.qb.getTableName({
-      database: this._tableDef.database ?? this.db.opt.database,
-      schema: this._tableDef.schema ?? this.db.opt.schema,
-      name: this._tableDef.name
+      database: this.tableDef.database ?? this.db.opt.database,
+      schema: this.tableDef.schema ?? this.db.opt.schema,
+      name: this.tableDef.name
     });
   }
 
   public hasMultiJoin = false;
 
   public get tableDescription(): string {
-    if (!this._tableDef) throw new NeverEntryError();
-    return this._tableDef.description;
+    if (!this.tableDef) throw new NeverEntryError();
+    return this.tableDef.description;
   }
 
   // public constructor(db: D, cloneQueryable: Queryable<D, T>);
@@ -74,7 +74,7 @@ export class Queryable<D extends DbContext, T> {
     if (arg1 instanceof Queryable) {
       this.tableType = arg1.tableType;
       this._as = arg1._as;
-      this._tableDef = arg1._tableDef ? ObjectUtil.clone(arg1._tableDef) : undefined;
+      this.tableDef = arg1.tableDef ? ObjectUtil.clone(arg1.tableDef) : undefined;
       this._entity = ObjectUtil.clone(arg1._entity);
       this._def = ObjectUtil.clone(arg1._def);
 
@@ -95,12 +95,12 @@ export class Queryable<D extends DbContext, T> {
       if (typeof tableDef === "undefined") {
         throw new Error(`'${this.tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
       }
-      this._tableDef = tableDef;
+      this.tableDef = tableDef;
 
       // Init Entity
       this._entity = {} as TEntity<T>;
 
-      for (const colDef of this._tableDef.columns) {
+      for (const colDef of this.tableDef.columns) {
         this._entity[colDef.propertyKey] = new QueryUnit(colDef.typeFwd(), `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(colDef.name)}`);
       }
 
@@ -123,7 +123,7 @@ export class Queryable<D extends DbContext, T> {
         if (typeof tableDef === "undefined") {
           throw new Error(`'${this.tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
         }
-        this._tableDef = tableDef;
+        this.tableDef = tableDef;
       }
     }
   }
@@ -463,14 +463,14 @@ export class Queryable<D extends DbContext, T> {
   }
 
   private _include(tableChainedName: string): Queryable<D, T> {
-    if (!this._tableDef) {
+    if (!this.tableDef) {
       throw new Error("'Wrapping'된 이후에는 include 를 사용할 수 없습니다.");
     }
 
     const chain = tableChainedName.split(".");
 
     let result = this;
-    let tableDef = this._tableDef;
+    let tableDef = this.tableDef;
     const asChainArr: string[] = [];
     for (const fkName of chain) {
       const prevAs = asChainArr.join(".");
@@ -1123,11 +1123,11 @@ export class Queryable<D extends DbContext, T> {
     }
     DbContext.selectCache.clear();
 
-    if (!this._tableDef) {
+    if (!this.tableDef) {
       throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
     }
 
-    const columnDefs = this._tableDef.columns.map((col) => ({
+    const columnDefs = this.tableDef.columns.map((col) => ({
       name: col.name,
       dataType: this.db.qh.type(col.dataType ?? col.typeFwd()),
       autoIncrement: col.autoIncrement,
@@ -1190,13 +1190,13 @@ export class Queryable<D extends DbContext, T> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
-    if (!this._tableDef) {
+    if (!this.tableDef) {
       throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
     }
     DbContext.selectCache.clear();
 
-    const pkColNames = this._tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
-    const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
+    const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
+    const aiColNames = this.tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
 
     const dataIndexes: number[] = [];
     const defs: TQueryDef[] = [];
@@ -1243,9 +1243,9 @@ export class Queryable<D extends DbContext, T> {
       defs.insert(0, {
         type: "configForeignKeyCheck",
         table: {
-          database: this._tableDef.database ?? this.db.opt.database,
-          schema: this._tableDef.schema ?? this.db.opt.schema,
-          name: this._tableDef.name
+          database: this.tableDef.database ?? this.db.opt.database,
+          schema: this.tableDef.schema ?? this.db.opt.schema,
+          name: this.tableDef.name
         },
         useCheck: false
       });
@@ -1256,9 +1256,9 @@ export class Queryable<D extends DbContext, T> {
       defs.push({
         type: "configForeignKeyCheck",
         table: {
-          database: this._tableDef.database ?? this.db.opt.database,
-          schema: this._tableDef.schema ?? this.db.opt.schema,
-          name: this._tableDef.name
+          database: this.tableDef.database ?? this.db.opt.database,
+          schema: this.tableDef.schema ?? this.db.opt.schema,
+          name: this.tableDef.name
         },
         useCheck: true
       });
@@ -1271,9 +1271,9 @@ export class Queryable<D extends DbContext, T> {
           type: "configIdentityInsert" as const,
           ...{
             table: {
-              database: this._tableDef.database ?? this.db.opt.database,
-              schema: this._tableDef.schema ?? this.db.opt.schema,
-              name: this._tableDef.name
+              database: this.tableDef.database ?? this.db.opt.database,
+              schema: this.tableDef.schema ?? this.db.opt.schema,
+              name: this.tableDef.name
             },
             state: "on" as const
           }
@@ -1286,9 +1286,9 @@ export class Queryable<D extends DbContext, T> {
           type: "configIdentityInsert" as const,
           ...{
             table: {
-              database: this._tableDef.database ?? this.db.opt.database,
-              schema: this._tableDef.schema ?? this.db.opt.schema,
-              name: this._tableDef.name
+              database: this.tableDef.database ?? this.db.opt.database,
+              schema: this.tableDef.schema ?? this.db.opt.schema,
+              name: this.tableDef.name
             },
             state: "off" as const
           }
@@ -1322,7 +1322,7 @@ export class Queryable<D extends DbContext, T> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
-    if (!this._tableDef) {
+    if (!this.tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
     DbContext.selectCache.clear();
@@ -1373,7 +1373,7 @@ export class Queryable<D extends DbContext, T> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
-    if (!this._tableDef) {
+    if (!this.tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
     DbContext.selectCache.clear();
@@ -1436,13 +1436,13 @@ export class Queryable<D extends DbContext, T> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
-    if (!this._tableDef) {
+    if (!this.tableDef) {
       throw new Error("'Wrapping'된 이후에는 편집 쿼리를 실행할 수 없습니다.");
     }
     DbContext.selectCache.clear();
 
-    const pkColNames = this._tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
-    const aiColNames = this._tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
+    const pkColNames = this.tableDef.columns.filter((item) => item.primaryKey !== undefined).map((item) => item.name);
+    const aiColNames = this.tableDef.columns.filter((item) => item.autoIncrement).map((item) => item.name);
 
     let dataIndex: number;
     const defs: TQueryDef[] = [];
@@ -1554,7 +1554,7 @@ export class Queryable<D extends DbContext, T> {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
     }
 
-    if (!this._tableDef) {
+    if (!this.tableDef) {
       throw new Error("'Wrapping'된 이후에는 테이블의 정보를 가져올 수 없습니다.");
     }
 
@@ -1562,9 +1562,9 @@ export class Queryable<D extends DbContext, T> {
       {
         type: "configIdentityInsert" as const,
         table: {
-          database: this._tableDef.database ?? this.db.opt.database,
-          schema: this._tableDef.schema ?? this.db.opt.schema,
-          name: this._tableDef.name
+          database: this.tableDef.database ?? this.db.opt.database,
+          schema: this.tableDef.schema ?? this.db.opt.schema,
+          name: this.tableDef.name
         },
         state
       }

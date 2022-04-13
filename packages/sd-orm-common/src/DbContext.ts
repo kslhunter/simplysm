@@ -24,6 +24,13 @@ export abstract class DbContext {
 
   public readonly systemMigration = new Queryable(this, SystemMigration);
 
+  public getTableDefinitions(): ITableDef[] {
+    return Object.values(this)
+      .ofType(Queryable)
+      .map(qr => qr.tableDef)
+      .filterExists();
+  }
+
   // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
   public constructor(private readonly _executor: IDbContextExecutor,
                      public readonly opt: IDbContextOption) {

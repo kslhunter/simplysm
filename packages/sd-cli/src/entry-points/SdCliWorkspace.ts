@@ -435,7 +435,7 @@ export class SdCliWorkspace {
                 clientHrefs.push(`${protocolStr}://localhost:${portStr}/${clientInfo.pkgKey}/${platform}/`);
               }
               else {
-                clientHrefs.push(`sd-cli run-cordova ${clientInfo.pkgKey} http://[IP]:${portStr}`);
+                clientHrefs.push(`sd-cli run-cordova ${target} ${clientInfo.pkgKey} http://[IP]:${portStr}`);
               }
             }
           }

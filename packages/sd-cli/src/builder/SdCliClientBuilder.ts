@@ -31,6 +31,8 @@ import { SdCliCordova } from "../build-tool/SdCliCordova";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
 import electronBuilder from "electron-builder";
 import LintResult = ESLint.LintResult;
+import { fileURLToPath } from "url";
+import { Entrypoint } from "@angular-devkit/build-angular/src/utils/index-file/augment-index-html";
 
 export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger: Logger;
@@ -213,7 +215,7 @@ export class SdCliClientBuilder extends EventEmitter {
     // CORDOVA 빌드
     if (this._cordova) {
       this._logger.debug("CORDOVA 빌드...");
-      await this._cordova.buildAsync(path.resolve(this._parsedTsconfig.options.outDir!, "cordova"));
+      await this._cordova.buildAsync(this._parsedTsconfig.options.outDir!);
     }
 
     // ELECTRON
@@ -356,7 +358,8 @@ export class SdCliClientBuilder extends EventEmitter {
       entry: {
         main: [mainFilePath],
         ...FsUtil.exists(polyfillsFilePath) ? { polyfills: [polyfillsFilePath] } : {},
-        ...FsUtil.exists(stylesFilePath) ? { styles: [stylesFilePath] } : {}
+        ...FsUtil.exists(stylesFilePath) ? { styles: [stylesFilePath] } : {},
+        ...builderType === "cordova" ? { "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../lib/cordova-entry.js`) } : {}
       },
       output: {
         uniqueName: pkgKey,
@@ -385,19 +388,19 @@ export class SdCliClientBuilder extends EventEmitter {
       experiments: { backCompat: false, syncWebAssembly: true, asyncWebAssembly: true },
       infrastructureLogging: { level: "error" },
       stats: "errors-warnings",
-      cache: {
-        type: "filesystem",
-        profile: watch ? undefined : false,
-        cacheDirectory: path.resolve(cacheBasePath, "angular-webpack"),
-        maxMemoryGenerations: 1,
-        name: createHash("sha1")
-          .update(workspacePkgLockContent)
-          .update(JSON.stringify(this._parsedTsconfig.options))
-          .update(JSON.stringify(this._config))
-          .update(watch.toString())
-          .digest("hex")
-      },
       ...watch ? {
+        cache: {
+          type: "filesystem",
+          profile: undefined,
+          cacheDirectory: path.resolve(cacheBasePath, "angular-webpack"),
+          maxMemoryGenerations: 1,
+          name: createHash("sha1")
+            .update(workspacePkgLockContent)
+            .update(JSON.stringify(this._parsedTsconfig.options))
+            .update(JSON.stringify(this._config))
+            .update(watch.toString())
+            .digest("hex")
+        },
         snapshot: {
           immutablePaths: internalModuleCachePaths,
           managedPaths: internalModuleCachePaths
@@ -477,7 +480,9 @@ export class SdCliClientBuilder extends EventEmitter {
               {
                 loader: "@angular-devkit/build-angular/src/babel/webpack-loader",
                 options: {
-                  cacheDirectory: path.resolve(cacheBasePath, "babel-webpack"),
+                  ...watch ? {
+                    cacheDirectory: path.resolve(cacheBasePath, "babel-webpack"),
+                  } : {},
                   scriptTarget: ts.ScriptTarget.ES2017,
                   aot: true,
                   optimize: !watch,
@@ -675,15 +680,20 @@ export class SdCliClientBuilder extends EventEmitter {
             ["polyfills", true],
             ["styles", false],
             ["vendor", true],
-            ["main", true]
+            ["main", true],
+            ...builderType === "cordova" ? [
+              ["cordova-entry", false] as Entrypoint
+            ] : []
           ],
           deployUrl: undefined,
           sri: false,
-          cache: {
-            enabled: true,
-            basePath: cacheBasePath,
-            path: path.resolve(cacheBasePath, "index-webpack")
-          },
+          ...watch ? {
+            cache: {
+              enabled: true,
+              basePath: cacheBasePath,
+              path: path.resolve(cacheBasePath, "index-webpack")
+            }
+          } : {},
           postTransform: undefined,
           optimization: {
             scripts: !watch,
