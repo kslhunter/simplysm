@@ -167,13 +167,17 @@ export class SdCliClientBuilder extends EventEmitter {
 
   public async buildAsync(): Promise<ISdCliPackageBuildResult[]> {
     // DIST 비우기
+    this._logger.debug("removeAsync:1");
     await FsUtil.removeAsync(path.resolve(this._rootPath, ".electron"));
+    this._logger.debug("removeAsync:2");
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
     // NgModule 생성
+    this._logger.debug("ngModule");
     await this._ngModuleGenerator.runAsync();
 
     // CORDOVA 초기화
+    this._logger.debug("Cordova");
     if (this._cordova) {
       this._logger.debug("CORDOVA 구성...");
       await this._cordova.initializeAsync();

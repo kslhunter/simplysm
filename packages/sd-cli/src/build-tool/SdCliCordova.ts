@@ -62,25 +62,40 @@ export class SdCliCordova {
       }
     }
 
-    // 미설치 플러그인들 설치
+    // 설치된 미사용 플러그인 삭제
     const pluginsFetch = FsUtil.exists(path.resolve(this.cordovaPath, "plugins/fetch.json"))
       ? await FsUtil.readJsonAsync(path.resolve(this.cordovaPath, "plugins/fetch.json"))
       : undefined;
-    const alreadyPlugins = pluginsFetch != undefined
+    const alreadyPluginIds = pluginsFetch != undefined
       ? Object.values(pluginsFetch)
-        .map((item: any) => (item.source.id !== undefined ? item.source.id.replace(/@.*$/, "") : item.source.url))
+        .map((item: any) => (item.source.id !== undefined ? item.source.id : item.source.url))
       : [];
+    const usePlugins = ["cordova-plugin-ionic-webview", ...this._config.plugins ?? []].distinct();
 
-    for (const plugin of this._config.plugins?.distinct() ?? []) {
-      if (!alreadyPlugins.includes(plugin)) {
-        await this._execAsync(`${this._binPath} plugin add ${plugin}`, this.cordovaPath);
+    for (const alreadyPluginId of alreadyPluginIds) {
+      let hasPlugin = false;
+      for (const usePlugin of usePlugins) {
+        if (
+          (usePlugin.includes("@") && alreadyPluginId === usePlugin) ||
+          (!usePlugin.includes("@") && alreadyPluginId.replace(/@.*$/, "") === usePlugin)
+        ) {
+          hasPlugin = true;
+          break;
+        }
+      }
+
+      if (!hasPlugin) {
+        await this._execAsync(`${this._binPath} plugin remove ${alreadyPluginId.replace(/@.*$/, "")}`, this.cordovaPath);
       }
     }
 
-    // 설치된 미사용 플러그인 삭제
-    for (const alreadyPlugin of alreadyPlugins) {
-      if (!(this._config.plugins?.distinct() ?? []).includes(alreadyPlugin)) {
-        await this._execAsync(`${this._binPath} plugin remove ${alreadyPlugin}`, this.cordovaPath);
+    // 미설치 플러그인들 설치
+    for (const usePlugin of usePlugins) {
+      if (
+        (usePlugin.includes("@") && !alreadyPluginIds.includes(usePlugin)) ||
+        (!usePlugin.includes("@") && !alreadyPluginIds.map((alreadyPluginId) => alreadyPluginId.replace(/@.*$/, "")).includes(usePlugin))
+      ) {
+        await this._execAsync(`${this._binPath} plugin add ${usePlugin}`, this.cordovaPath);
       }
     }
 
@@ -93,6 +108,8 @@ export class SdCliCordova {
     }
     else {
       await FsUtil.removeAsync(path.resolve(this.cordovaPath, "android.keystore"));
+      // SIGN을 안쓸경우 아래 파일이 생성되어 있으면 오류남
+      await FsUtil.removeAsync(path.resolve(this.cordovaPath, "platforms/android/release-signing.properties"));
     }
 
     // 빌드 옵션 파일 생성
@@ -145,7 +162,10 @@ export class SdCliCordova {
     }
 
     // CONFIG: 접근허용 세팅
-    configXml["widget"]["allow-navigation"] = [{ "$": { "href": "*://*/*" } }];
+    configXml["widget"]["access"] = [{ "$": { "origin": "*" } }];
+    configXml["widget"]["allow-navigation"] = [{ "$": { "href": "*" } }];
+    configXml["widget"]["allow-intent"] = [{ "$": { "href": "*" } }];
+    configXml["widget"]["preference"] = [{ "$": { "name": "MixedContentMode", "value": "0" } }];
 
     // CONFIG: ANDROID usesCleartextTraffic 설정
     if (this._config.target?.android) {
@@ -212,7 +232,7 @@ export class SdCliCordova {
       });
       for (const resultFile of resultFiles) {
         const contentBuffer = await FsUtil.readFileBufferAsync(resultFile);
-        const relativePath = path.relative(path.resolve(this.cordovaPath, "www"), resultFile);
+        const relativePath = path.relative(path.resolve(this.cordovaPath, "platforms", "android", "app", "src", "main", "assets", "www"), resultFile);
         zip.file("/" + relativePath, contentBuffer);
       }
 
@@ -223,14 +243,17 @@ export class SdCliCordova {
     }
   }
 
-  public static async runWebviewOnDeviceAsync(rootPath: string, platform: "browser" | "android", pkgName: string, url: string): Promise<void> {
+  public static async runWebviewOnDeviceAsync(rootPath: string, platform: "browser" | "android", pkgName: string, url?: string): Promise<void> {
     const cordovaPath = path.resolve(rootPath, `packages/${pkgName}/.cordova/`);
 
-    await FsUtil.removeAsync(path.resolve(cordovaPath, "www"));
-    await FsUtil.mkdirsAsync(path.resolve(cordovaPath, "www"));
-    await FsUtil.writeFileAsync(path.resolve(cordovaPath, "www/index.html"), `'${url}'로 이동중... <script>setTimeout(function () {window.location.href = "${url.replace(/\/$/, "")}/${pkgName}/cordova/"}, 3000);</script>`.trim());
+    if (url !== undefined) {
+      await FsUtil.removeAsync(path.resolve(cordovaPath, "www"));
+      await FsUtil.mkdirsAsync(path.resolve(cordovaPath, "www"));
+      await FsUtil.writeFileAsync(path.resolve(cordovaPath, "www/index.html"), `'${url}'로 이동중... <script>setTimeout(function () {window.location.href = "${url.replace(/\/$/, "")}/${pkgName}/cordova/"}, 3000);</script>`.trim());
+    }
 
     const binPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
+    // await SdProcess.spawnAsync(`${binPath} build ${platform}`, { cwd: cordovaPath }, true);
     await SdProcess.spawnAsync(`${binPath} run ${platform} --device`, { cwd: cordovaPath }, true);
   }
 }

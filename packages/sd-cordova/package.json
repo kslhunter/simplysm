@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "cordova-plugin-file": "^6.0.2",
-    "@types/semver": "^7.3.9"
+    "@types/semver": "^7.3.9",
+    "@types/cordova": "^0.0.34"
   }
 }

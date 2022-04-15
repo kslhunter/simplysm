@@ -19,7 +19,7 @@ export class ObjectUtil {
 
   private static _clone(source: any, options?: { excludes?: any[]; useRefTypes?: any[] }, prevClones?: { source: any; clone: any }[]): any {
     if (source == null) {
-      return undefined;
+      return source;
     }
     if (source instanceof Array) {
       return source.map((item) => ObjectUtil._clone(item, options));
@@ -114,7 +114,7 @@ export class ObjectUtil {
       const result = ObjectUtil.clone(source);
       for (const key of target.keys()) {
         if (result.has(key)) {
-          result.set(key, ObjectUtil.merge(result.get(key)!, target.get(key)!));
+          result.set(key, ObjectUtil.merge(result.get(key)!, target.get(key)!, opt));
         }
         else {
           result.set(key, target.get(key)!);
@@ -126,7 +126,7 @@ export class ObjectUtil {
     if (opt?.arrayProcess === "concat" && source instanceof Array && target instanceof Array) {
       let result = source.concat(target).distinct();
       if (opt.useDelTargetNull) {
-        result = result.filterExists();
+        result = result.filter((item) => item !== null);
       }
       return result as any;
     }
@@ -134,7 +134,7 @@ export class ObjectUtil {
     const result = ObjectUtil.clone(source);
     for (const key of Object.keys(target)) {
       result[key] = ObjectUtil.merge(source[key], target[key], opt);
-      if (opt?.useDelTargetNull && result[key] === undefined) {
+      if (result[key] === undefined) {
         delete result[key];
       }
     }

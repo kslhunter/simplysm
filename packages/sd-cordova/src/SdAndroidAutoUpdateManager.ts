@@ -49,7 +49,9 @@ export class SdAndroidAutoUpdateManager {
     // 현재 버전이 최종설치버전이 아니면, 최종설치버전으로 이동
     if (this._currentVersion !== lastInstalledVersion) {
       this._logger(`새 버전으로 이동 중...(${lastInstalledVersion})`, []);
-      return await SdAndroidFsUtil.getFullUrlAsync(lastInstalledVersion + "/index.html");
+      const fullUrl = await SdAndroidFsUtil.getUrlAsync(lastInstalledVersion + "/index.html");
+      alert(fullUrl);
+      return fullUrl;
       // return lastInstalledVersion + "/index.html";
     }
     // "/root"에 버전디렉토리가 없으면 그냥 시작
@@ -61,6 +63,6 @@ export class SdAndroidAutoUpdateManager {
 
   private async _getLastInstalledVersion(): Promise<string | undefined> {
     const installedVersions = await SdAndroidFsUtil.readdirAsync("", { noFile: true });
-    return installedVersions.orderByDesc().first();
+    return semver.maxSatisfying(installedVersions.filter((ver) => semver.valid(ver)), "*") ?? undefined;
   }
 }

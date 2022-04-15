@@ -7,7 +7,6 @@ import path from "path";
 import { JsonConvert } from "@simplysm/sd-core-common";
 import { TSdCliPackageConfig } from "../commons";
 
-
 if (process.env["SD_CLI_LOGGER_SEVERITY"] === "DEBUG") {
   Logger.setConfig({
     console: {

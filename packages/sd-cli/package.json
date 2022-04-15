@@ -32,7 +32,7 @@
     "chokidar": "^3.5.3",
     "connect": "^3.7.0",
     "copy-webpack-plugin": "^10.2.4",
-    "cordova": "^11.0.0",
+    "cordova": "^10.0.0",
     "css-loader": "^6.6.0",
     "electron": "^18.0.1",
     "electron-builder": "^22.14.13",

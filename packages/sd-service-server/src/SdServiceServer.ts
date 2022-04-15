@@ -3,7 +3,6 @@ import http from "http";
 import { NextHandleFunction } from "connect";
 import url from "url";
 import path from "path";
-import mime from "mime";
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
 import { ISdServiceServerOptions, SdServiceBase } from "./commons";
 import { EventEmitter } from "events";
@@ -16,6 +15,7 @@ import {
   TSdServiceC2SMessage,
   TSdServiceS2CMessage
 } from "@simplysm/sd-service-common";
+import mime from "mime";
 
 export class SdServiceServer extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-service", this.constructor.name]);
@@ -78,7 +78,17 @@ export class SdServiceServer extends EventEmitter {
       this._wsServer.clients.forEach((client) => {
         client.close();
       });
-      this._wsServer.close();
+
+      await new Promise<void>((resolve, reject) => {
+        this._wsServer!.close((err) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          resolve();
+        });
+      });
     }
 
     await new Promise<void>((resolve, reject) => {
@@ -391,12 +401,6 @@ export class SdServiceServer extends EventEmitter {
           const resultJson = JsonConvert.stringify(result);
 
           res.writeHead(200, {
-            ...req.headers.origin?.includes("://localhost") ? {
-              "Access-Control-Allow-Origin": "*",
-              "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Content-Length, Accept",
-              "Access-Control-Allow-Methods": "POST, GET, PUT, DELETE,PATCH",
-              "Access-Control-Allow-Credentials": "true"
-            } : {},
             "Content-Length": resultJson.length,
             "Content-Type": "application/json"
           });
@@ -427,6 +431,7 @@ export class SdServiceServer extends EventEmitter {
         const fileStream = FsUtil.createReadStream(targetFilePath);
         const targetFileSize = (await FsUtil.lstatAsync(targetFilePath)).size;
 
+        res.setHeader("Access-Control-Allow-Origin", "*");
         res.setHeader("Content-Length", targetFileSize);
         res.setHeader("Content-Type", mime.getType(targetFilePath)!);
         res.writeHead(200);
