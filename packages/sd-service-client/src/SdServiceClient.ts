@@ -11,13 +11,18 @@ export class SdServiceClient {
   public isManualClose = false;
   public isConnected = false;
 
+  public websocketUrl: string;
+  public serverUrl: string;
+
   public get connected(): boolean {
     return this._ws.connected && this.isConnected;
   }
 
   public constructor(private readonly _name: string,
                      public readonly options: ISdServiceClientConnectionConfig) {
-    this._ws = new SdWebSocket(`${this.options.ssl ? "wss" : "ws"}://${this.options.host}:${this.options.port}`);
+    this.websocketUrl = `${this.options.ssl ? "wss" : "ws"}://${this.options.host}:${this.options.port}`;
+    this.serverUrl = `${this.options.ssl ? "https" : "http"}://${this.options.host}:${this.options.port}`;
+    this._ws = new SdWebSocket(this.websocketUrl);
   }
 
   public async connectAsync(): Promise<void> {
@@ -170,7 +175,7 @@ export class SdServiceClient {
   public async downloadAsync(relPath: string): Promise<Buffer> {
     return await new Promise<Buffer>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open("GET", `${Boolean(this.options.ssl) ? "https" : "http"}://${this.options.host}:${this.options.port}${(relPath.startsWith("/") ? "" : "/")}${relPath}`, true);
+      xhr.open("GET", `${this.serverUrl}${(relPath.startsWith("/") ? "" : "/")}${relPath}`, true);
       xhr.responseType = "arraybuffer";
 
       xhr.onload = () => {

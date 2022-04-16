@@ -1,5 +1,4 @@
 import { SdAutoUpdateServiceClient, SdServiceClient } from "@simplysm/sd-service-client";
-import { SdAndroidFsUtil } from "./SdAndroidFsUtil";
 import semver from "semver/preload";
 
 export class SdAndroidAutoUpdateManager {
@@ -9,39 +8,31 @@ export class SdAndroidAutoUpdateManager {
                      private readonly _logger: (message: string, subMessages: string[]) => void) {
   }
 
-  public async runAsync(): Promise<void> {
+  public async runAsync(): Promise<boolean> {
     const autoUpdateServiceClient = new SdAutoUpdateServiceClient(this._serviceClient);
 
-    this._logger("업데이트 여부 확인 중...", []);
-    // 업데이트 확인
+    // 최신버전 확인
+    this._logger("최신버전 확인 중...", []);
     const lastVersion = await autoUpdateServiceClient.getLastVersionAsync(this._clientName, "android");
-    this._logger(`최종버전: ${lastVersion}`, []);
 
     // 업데이트 할게 있으면 업데이트
     if (lastVersion !== undefined && semver.gt(lastVersion, this._currentVersion)) {
       this._logger("최신버전 파일 다운로드중...", []);
-
-      const apkUrl = await SdAndroidFsUtil.getNativeUrlAsync(`updates/${lastVersion}.apk`);
-      const buffer = await this._serviceClient.downloadAsync(`/${this._clientName}/android/updates/${lastVersion}.apk`);
-      await SdAndroidFsUtil.writeFileAsync(apkUrl, new Blob([buffer], { type: "blob" }));
-
-      await new Promise<void>((resolve, reject) => {
-        cordova.plugins["webintent"].startActivity({
-            action: cordova.plugins["webintent"].ACTION_VIEW,
-            url: apkUrl,
-            type: "application/vnd.android.package-archive"
-          },
-          () => {
-            resolve();
-          },
-          () => {
-            reject(new Error("파일 실행 실패: " + apkUrl));
+      await window["ApkUpdater"].download(
+        `${this._serviceClient.serverUrl}/${this._clientName}/android/updates/${lastVersion}.apk`,
+        {
+          onDownloadProgress: (prog) => {
+            this._logger(`최신버전 파일 다운로드중...(${prog.progress}%)`, []);
           }
-        );
-      });
+        }
+      );
+      this._logger("최신버전 업데이트", []);
+
+      return true;
     }
     else {
       this._logger("앱 로딩 중...", []);
+      return false;
     }
   }
 }
