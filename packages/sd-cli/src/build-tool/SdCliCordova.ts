@@ -70,7 +70,7 @@ export class SdCliCordova {
       ? Object.values(pluginsFetch)
         .map((item: any) => (item.source.id !== undefined ? item.source.id : item.source.url))
       : [];
-    const usePlugins = ["cordova-plugin-ionic-webview", ...this._config.plugins ?? []].distinct();
+    const usePlugins = ["cordova-plugin-ionic-webview", "cordova-plugin-whitelist", ...this._config.plugins ?? []].distinct();
 
     for (const alreadyPluginId of alreadyPluginIds) {
       let hasPlugin = false;
@@ -166,6 +166,7 @@ export class SdCliCordova {
     configXml["widget"]["allow-navigation"] = [{ "$": { "href": "*" } }];
     configXml["widget"]["allow-intent"] = [{ "$": { "href": "*" } }];
     configXml["widget"]["preference"] = [{ "$": { "name": "MixedContentMode", "value": "0" } }];
+    configXml["widget"]["preference"] = [{ "$": { "name": "AndroidPersistentFileLocation", "value": "Compatibility" } }];
 
     // CONFIG: ANDROID usesCleartextTraffic 설정
     if (this._config.target?.android) {

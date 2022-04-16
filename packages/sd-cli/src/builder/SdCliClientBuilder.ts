@@ -686,7 +686,7 @@ export class SdCliClientBuilder extends EventEmitter {
             ["vendor", true],
             ["main", true],
             ...builderType === "cordova" ? [
-              ["cordova-entry", false] as Entrypoint
+              ["cordova-entry", true] as Entrypoint
             ] : []
           ],
           deployUrl: undefined,
