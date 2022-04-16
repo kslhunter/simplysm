@@ -20,6 +20,11 @@ export class SdAndroidFsUtil {
     return fileEntry.toInternalURL();
   }
 
+  public static async getNativeUrlAsync(filePath: string): Promise<string> {
+    const fileEntry = await this._getFileEntryByPathAsync(filePath, false, false);
+    return fileEntry.nativeURL;
+  }
+
   private static async _getDirEntryByPathAsync(dirPath: string, create: boolean): Promise<DirectoryEntry> {
     const split = dirPath.replace(/^[\\\/]/g, "").split(/[\\\/]/).filter((item) => Boolean(item));
     return await this._getDirEntryByPathArrAsync(split, create);
