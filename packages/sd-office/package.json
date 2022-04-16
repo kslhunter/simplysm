@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-office",
-  "version": "7.0.242",
+  "version": "7.0.243",
   "description": "심플리즘 패키지 - 오피스 모듈 (node)",
   "author": "김석래",
   "repository": {
@@ -17,7 +17,7 @@
     "node": "^16"
   },
   "dependencies": {
-    "@simplysm/sd-core-common": "7.0.242",
+    "@simplysm/sd-core-common": "7.0.243",
     "jszip": "^3.7.1",
     "xlsx": "^0.18.0",
     "xml-js": "^1.6.11",
