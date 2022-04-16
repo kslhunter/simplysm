@@ -26,6 +26,7 @@ export class SdAndroidAutoUpdateManager {
           }
         }
       );
+      await window["ApkUpdater"].install();
       this._logger("최신버전 업데이트", []);
 
       return true;
