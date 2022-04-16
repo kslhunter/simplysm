@@ -47,21 +47,6 @@ export class SdCliCordova {
     // www 폴더 혹시 없으면 생성
     await FsUtil.mkdirsAsync(path.resolve(this.cordovaPath, "www"));
 
-    // 미설치 빌드 플랫폼 신규 생성
-    const alreadyPlatforms = await FsUtil.readdirAsync(path.resolve(this.cordovaPath, "platforms"));
-    for (const platform of this.platforms) {
-      if (!alreadyPlatforms.includes(platform)) {
-        await this._execAsync(`${this._binPath} platform add ${platform}`, this.cordovaPath);
-      }
-    }
-
-    // 설치 미빌드 플랫폼 삭제
-    for (const alreadyPlatform of alreadyPlatforms) {
-      if (this._config.target?.[alreadyPlatform] == null) {
-        await this._execAsync(`${this._binPath} platform remove ${alreadyPlatform}`, this.cordovaPath);
-      }
-    }
-
     // 설치된 미사용 플러그인 삭제
     const pluginsFetch = FsUtil.exists(path.resolve(this.cordovaPath, "plugins/fetch.json"))
       ? await FsUtil.readJsonAsync(path.resolve(this.cordovaPath, "plugins/fetch.json"))
@@ -70,7 +55,7 @@ export class SdCliCordova {
       ? Object.values(pluginsFetch)
         .map((item: any) => (item.source.id !== undefined ? item.source.id : item.source.url))
       : [];
-    const usePlugins = ["cordova-plugin-ionic-webview", "cordova-plugin-whitelist", ...this._config.plugins ?? []].distinct();
+    const usePlugins = ["cordova-plugin-ionic-webview", ...this._config.plugins ?? []].distinct();
 
     for (const alreadyPluginId of alreadyPluginIds) {
       let hasPlugin = false;
@@ -96,6 +81,21 @@ export class SdCliCordova {
         (!usePlugin.includes("@") && !alreadyPluginIds.map((alreadyPluginId) => alreadyPluginId.replace(/@.*$/, "")).includes(usePlugin))
       ) {
         await this._execAsync(`${this._binPath} plugin add ${usePlugin}`, this.cordovaPath);
+      }
+    }
+
+    // 미설치 빌드 플랫폼 신규 생성
+    const alreadyPlatforms = await FsUtil.readdirAsync(path.resolve(this.cordovaPath, "platforms"));
+    for (const platform of this.platforms) {
+      if (!alreadyPlatforms.includes(platform)) {
+        await this._execAsync(`${this._binPath} platform add ${platform}`, this.cordovaPath);
+      }
+    }
+
+    // 설치 미빌드 플랫폼 삭제
+    for (const alreadyPlatform of alreadyPlatforms) {
+      if (this._config.target?.[alreadyPlatform] == null) {
+        await this._execAsync(`${this._binPath} platform remove ${alreadyPlatform}`, this.cordovaPath);
       }
     }
 
