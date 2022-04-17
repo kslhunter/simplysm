@@ -259,13 +259,10 @@ export class SdCliServerBuilder extends EventEmitter {
           .update(watch.toString())
           .digest("hex")
       },
-      // cache: { type: "memory", maxGenerations: 1 },
-      ...watch ? {
-        snapshot: {
-          immutablePaths: internalModuleCachePaths,
-          managedPaths: internalModuleCachePaths
-        }
-      } : {},
+      snapshot: {
+        immutablePaths: internalModuleCachePaths,
+        managedPaths: internalModuleCachePaths
+      },
       node: false,
       optimization: {
         minimizer: watch ? [] : [

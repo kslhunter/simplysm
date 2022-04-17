@@ -30,9 +30,9 @@ import { SdCliNgModuleGenerator } from "../ng-tools/SdCliNgModuleGenerator";
 import { SdCliCordova } from "../build-tool/SdCliCordova";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
 import electronBuilder from "electron-builder";
-import LintResult = ESLint.LintResult;
 import { fileURLToPath } from "url";
 import { Entrypoint } from "@angular-devkit/build-angular/src/utils/index-file/augment-index-html";
+import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
   private readonly _logger: Logger;
@@ -392,24 +392,22 @@ export class SdCliClientBuilder extends EventEmitter {
       experiments: { backCompat: false, syncWebAssembly: true, asyncWebAssembly: true },
       infrastructureLogging: { level: "error" },
       stats: "errors-warnings",
-      ...watch ? {
-        cache: {
-          type: "filesystem",
-          profile: undefined,
-          cacheDirectory: path.resolve(cacheBasePath, "angular-webpack"),
-          maxMemoryGenerations: 1,
-          name: createHash("sha1")
-            .update(workspacePkgLockContent)
-            .update(JSON.stringify(this._parsedTsconfig.options))
-            .update(JSON.stringify(this._config))
-            .update(watch.toString())
-            .digest("hex")
-        },
-        snapshot: {
-          immutablePaths: internalModuleCachePaths,
-          managedPaths: internalModuleCachePaths
-        }
-      } : {},
+      cache: {
+        type: "filesystem",
+        profile: undefined,
+        cacheDirectory: path.resolve(cacheBasePath, "angular-webpack"),
+        maxMemoryGenerations: 1,
+        name: createHash("sha1")
+          .update(workspacePkgLockContent)
+          .update(JSON.stringify(this._parsedTsconfig.options))
+          .update(JSON.stringify(this._config))
+          .update(watch.toString())
+          .digest("hex")
+      },
+      snapshot: {
+        immutablePaths: internalModuleCachePaths,
+        managedPaths: internalModuleCachePaths
+      },
       node: false,
       optimization: {
         minimizer: watch ? [] : [
@@ -484,9 +482,7 @@ export class SdCliClientBuilder extends EventEmitter {
               {
                 loader: "@angular-devkit/build-angular/src/babel/webpack-loader",
                 options: {
-                  ...watch ? {
-                    cacheDirectory: path.resolve(cacheBasePath, "babel-webpack"),
-                  } : {},
+                  cacheDirectory: path.resolve(cacheBasePath, "babel-webpack"),
                   scriptTarget: ts.ScriptTarget.ES2017,
                   aot: true,
                   optimize: !watch,
@@ -691,13 +687,11 @@ export class SdCliClientBuilder extends EventEmitter {
           ],
           deployUrl: undefined,
           sri: false,
-          ...watch ? {
-            cache: {
-              enabled: true,
-              basePath: cacheBasePath,
-              path: path.resolve(cacheBasePath, "index-webpack")
-            }
-          } : {},
+          cache: {
+            enabled: true,
+            basePath: cacheBasePath,
+            path: path.resolve(cacheBasePath, "index-webpack")
+          },
           postTransform: undefined,
           optimization: {
             scripts: !watch,
