@@ -9,8 +9,7 @@
     "directory": "packages/sd-default-server"
   },
   "license": "MIT",
-  "type": "module",
-  "main": "dist/main.mjs",
+  "main": "dist/main.js",
   "sideEffects": false,
   "engines": {
     "node": "^16"

@@ -134,8 +134,9 @@ export class SdCliServerBuilder extends EventEmitter {
         ObjectUtil.merge(
           {
             "name": npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
-            "script": path.basename(path.resolve(this._parsedTsconfig.options.outDir!, "main.mjs")),
-            "node_args": "--experimental-specifier-resolution=node --experimental-import-meta-resolve",
+            "script": path.basename(path.resolve(this._parsedTsconfig.options.outDir!, "main.js")),
+            // "script": path.basename(path.resolve(this._parsedTsconfig.options.outDir!, "main.mjs")),
+            // "node_args": "--experimental-specifier-resolution=node --experimental-import-meta-resolve",
             "watch": true,
             "watch_delay": 2000,
             "ignore_watch": [
@@ -152,7 +153,8 @@ export class SdCliServerBuilder extends EventEmitter {
           },
           (typeof this._config.pm2 !== "boolean") ? this._config.pm2 : {},
           {
-            arrayProcess: "concat"
+            arrayProcess: "concat",
+            useDelTargetNull: true
           }),
         undefined,
         2
@@ -207,6 +209,7 @@ export class SdCliServerBuilder extends EventEmitter {
       mode: watch ? "development" : "production",
       devtool: false,
       target: ["node", "es2020"],
+      // target: ["node", "es2020"],
       profile: false,
       resolve: {
         roots: [this._rootPath],
@@ -230,23 +233,27 @@ export class SdCliServerBuilder extends EventEmitter {
         hashFunction: "xxhash64",
         clean: true,
         path: this._parsedTsconfig.options.outDir,
-        filename: "[name].mjs",
-        chunkFilename: "[name].mjs",
+        filename: "[name].js",
+        chunkFilename: "[name].js",
+        // filename: "[name].mjs",
+        // chunkFilename: "[name].mjs",
         assetModuleFilename: "res/[name][ext][query]",
-        library: {
-          type: "module"
-        },
-        module: true
+        libraryTarget: "commonjs2"
+        // library: {
+        //   type: "module"
+        // },
+        // module: true
       },
-      experiments: {
+      /*experiments: {
         outputModule: true
-      },
+      },*/
       watch: false,
       watchOptions: { poll: undefined, ignored: undefined },
       performance: { hints: false },
       infrastructureLogging: { level: "error" },
       stats: "errors-warnings",
-      externals: extModules.toObject((item) => item.name, (item) => "node-commonjs " + item.name),
+      externals: extModules.toObject((item) => item.name, (item) => "commonjs2 " + item.name),
+      // externals: extModules.toObject((item) => item.name, (item) => "node-commonjs " + item.name),
       cache: {
         type: "filesystem",
         profile: watch ? undefined : false,
@@ -276,7 +283,7 @@ export class SdCliServerBuilder extends EventEmitter {
               keep_fnames: true,
               ie8: false,
               safari10: false,
-              module: true,
+              // module: true,
               format: {
                 comments: false
               }
