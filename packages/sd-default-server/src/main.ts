@@ -1,9 +1,6 @@
 import path from "path";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
-import { fileURLToPath } from "url";
 import { SdAutoUpdateService, SdServiceServer } from "@simplysm/sd-service-server";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 Error.stackTraceLimit = Infinity;
 
@@ -53,4 +50,4 @@ server.listenAsync().catch((err) => {
   process.exit(1);
 });
 
-export default server;
+export = server;
