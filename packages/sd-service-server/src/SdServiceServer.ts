@@ -1,6 +1,5 @@
 import https from "https";
 import http from "http";
-import { NextHandleFunction } from "connect";
 import url from "url";
 import path from "path";
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
@@ -28,7 +27,17 @@ export class SdServiceServer extends EventEmitter {
 
   private readonly _eventListeners: IEventListener[] = [];
 
-  public devMiddlewares?: NextHandleFunction[];
+  // public devMiddlewares?: NextHandleFunction[];
+
+  /***
+   * 경로 프록시 (브라우저에 입력된 경로를 기본 파일경로가 아닌 다른 파일경로로 바꾸어 리턴함)
+   *
+   * * from: 서버내 'www' 이후의 상대경로 (절대경로 입력 불가)
+   * * to: 서버내 파일의  절대경로
+   * * 'from'에 'api'로 시작하는 경로 사용 불가
+   *
+   */
+  public pathProxy: { from: string; to: string }[] = [];
 
   public constructor(public readonly options: ISdServiceServerOptions) {
     super();
@@ -198,7 +207,7 @@ export class SdServiceServer extends EventEmitter {
 
   private async _runServiceMethodAsync(def: { socketId?: string; request?: ISdServiceRequest; serviceName: string; methodName: string; params: any[] }): Promise<any> {
     // 서비스 가져오기
-    const serviceClass = this.options.services.single((item) => item.name === def.serviceName);
+    const serviceClass = this.options.services.last((item) => item.name === def.serviceName);
     if (!serviceClass) {
       throw new Error(`서비스[${def.serviceName}]를 찾을 수 없습니다.`);
     }
@@ -325,21 +334,6 @@ export class SdServiceServer extends EventEmitter {
 
   private async _onWebRequestAsync(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     try {
-      if (this.devMiddlewares) {
-        for (const devMdw of this.devMiddlewares) {
-          await new Promise<void>((resolve, reject) => {
-            devMdw(req, res, (err) => {
-              if (err != null) {
-                reject(err);
-                return;
-              }
-
-              resolve();
-            });
-          });
-        }
-      }
-
       if (this.options.middlewares) {
         for (const optMdw of this.options.middlewares) {
           await new Promise<void>((resolve, reject) => {
@@ -356,16 +350,12 @@ export class SdServiceServer extends EventEmitter {
       }
 
       const urlObj = url.parse(req.url!, true, false);
-      const urlPathChain = decodeURI(urlObj.pathname!.slice(1)).split("/");
+      const urlPath = decodeURI(urlObj.pathname!.slice(1));
+      const urlPathChain = urlPath.split("/");
 
       if (urlPathChain[0] === "api") {
         if (req.headers.origin?.includes("://localhost") && req.method === "OPTIONS") {
-          res.writeHead(204, {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Content-Length, Accept",
-            "Access-Control-Allow-Methods": "POST, GET, PUT, DELETE,PATCH",
-            "Access-Control-Allow-Credentials": "true"
-          });
+          res.writeHead(204, { "Access-Control-Allow-Origin": "*" });
           res.end();
           return;
         }
@@ -411,7 +401,14 @@ export class SdServiceServer extends EventEmitter {
       }
 
       if (req.method === "GET") {
-        let targetFilePath = path.resolve(this.options.rootPath, "www", ...urlPathChain);
+        let targetFilePath: string;
+        const currPathProxy = this.pathProxy.single((item) => urlPath.startsWith(item.from));
+        if (currPathProxy) {
+          targetFilePath = path.resolve(currPathProxy.to + urlPath.substring(currPathProxy.from.length));
+        }
+        else {
+          targetFilePath = path.resolve(this.options.rootPath, "www", urlPath);
+        }
         targetFilePath = FsUtil.exists(targetFilePath) && FsUtil.stat(targetFilePath).isDirectory() ? path.resolve(targetFilePath, "index.html") : targetFilePath;
 
         if (!FsUtil.exists(targetFilePath)) {

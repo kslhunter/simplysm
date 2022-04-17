@@ -33,6 +33,7 @@
   "files": [
     "src/bin/sd-cli.ts",
     "src/index.ts",
-    "src/worker/build-worker.ts"
+    "src/worker/build-worker.ts",
+    "src/worker/server-worker.ts"
   ]
 }

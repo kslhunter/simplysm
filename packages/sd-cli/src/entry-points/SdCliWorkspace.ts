@@ -1,17 +1,15 @@
-import { FsUtil, Logger, PathUtil, SdProcess } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
 import path from "path";
 import { INpmConfig, ISdCliConfig, ISdCliPackageBuildResult } from "../commons";
 import { SdCliPackage } from "../packages/SdCliPackage";
-import { Uuid, Wait } from "@simplysm/sd-core-common";
+import { JsonConvert, Wait } from "@simplysm/sd-core-common";
 import os from "os";
 import { SdCliBuildResultUtil } from "../utils/SdCliBuildResultUtil";
 import semver from "semver/preload";
 import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
-import { SdServiceServer } from "@simplysm/sd-service-server";
 import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
-import url from "url";
-import mime from "mime";
-import { NextHandleFunction } from "connect";
+import { fileURLToPath } from "url";
+import cp from "child_process";
 
 export class SdCliWorkspace {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -69,11 +67,15 @@ export class SdCliWorkspace {
                 if (changePkg.config.type === "client") {
                   if (typeof changePkg.config.server === "string") {
                     const serverInfo = this._serverInfoMap.get(changePkg.config.server);
-                    serverInfo?.server?.broadcastReload();
+                    if (serverInfo) {
+                      await this._sendServerWorkerBroadcastReloadAsync(serverInfo);
+                    }
                   }
                   else {
                     const serverInfo = this._serverInfoMap.get("PORT:" + changePkg.config.server.port);
-                    serverInfo?.server?.broadcastReload();
+                    if (serverInfo) {
+                      await this._sendServerWorkerBroadcastReloadAsync(serverInfo);
+                    }
                   }
                 }
               }
@@ -100,7 +102,7 @@ export class SdCliWorkspace {
         if (pkg.config.type === "client") {
           await pkg.watchAsync();
 
-          const pkgMiddleware: NextHandleFunction = (req, res, next) => {
+          /*const pkgMiddleware: NextHandleFunction = (req, res, next) => {
             if (req.method === "GET") {
               const urlObj = url.parse(req.url!, true, false);
               const urlPathChain = decodeURI(urlObj.pathname!.slice(1)).split("/");
@@ -124,11 +126,17 @@ export class SdCliWorkspace {
             }
 
             next();
-          };
+          };*/
 
           if (typeof pkg.config.server === "string") {
-            const serverInfo = this._serverInfoMap.getOrCreate(pkg.config.server, { middlewares: [], clientInfos: [] });
-            serverInfo.middlewares.push(pkgMiddleware);
+            const serverInfo = this._serverInfoMap.getOrCreate(pkg.config.server, { pathProxy: [], clientInfos: [] });
+
+            serverInfo.pathProxy.push({
+              from: pkg.name.split("/").last()!,
+              to: path.resolve(pkg.rootPath, "dist")
+            });
+            await this._reloadServerWorkerPathProxyAsync(serverInfo);
+
             serverInfo.clientInfos.push({
               pkgKey: pkg.name.split("/").last()!,
               platforms: pkg.config.builder ? Object.keys(pkg.config.builder) : ["web"],
@@ -137,11 +145,27 @@ export class SdCliWorkspace {
           }
           else { // DEV SERVER
             const serverInfo = this._serverInfoMap.getOrCreate("PORT:" + pkg.config.server.port, {
-              middlewares: [],
+              pathProxy: [],
               clientInfos: []
             });
-            if (serverInfo.server === undefined) {
-              const server = new SdServiceServer({
+            if (serverInfo.worker === undefined) {
+              const serverWorkerInfo = await this._runServerWorkerAsync(pkg.config.server);
+              serverInfo.worker = serverWorkerInfo.worker;
+              serverInfo.url = serverWorkerInfo.url;
+
+              serverInfo.pathProxy.push({
+                from: pkg.name.split("/").last()!,
+                to: path.resolve(pkg.rootPath, "dist")
+              });
+              await this._reloadServerWorkerPathProxyAsync(serverInfo);
+
+              serverInfo.clientInfos.push({
+                pkgKey: pkg.name.split("/").last()!,
+                platforms: pkg.config.builder ? Object.keys(pkg.config.builder) : ["web"],
+                cordovaTargets: pkg.config.builder?.cordova?.target ? Object.keys(pkg.config.builder.cordova.target) : ["browser"]
+              });
+
+              /*const server = new SdServiceServer({
                 rootPath: process.cwd(),
                 services: [],
                 port: pkg.config.server.port
@@ -153,7 +177,7 @@ export class SdCliWorkspace {
                 pkgKey: pkg.name.split("/").last()!,
                 platforms: pkg.config.builder ? Object.keys(pkg.config.builder) : ["web"],
                 cordovaTargets: pkg.config.builder?.cordova?.target ? Object.keys(pkg.config.builder.cordova.target) : ["browser"]
-              });
+              });*/
             }
           }
         }
@@ -177,6 +201,57 @@ export class SdCliWorkspace {
     }
   }
 
+  private async _runServerWorkerAsync(filePathOrOpt: string | { port: number }): Promise<{ worker: cp.ChildProcess; url: string }> {
+    const workerPath = fileURLToPath(await import.meta.resolve!("../worker/server-worker"));
+    return await new Promise<{ worker: cp.ChildProcess; url: string }>((resolve, reject) => {
+      const worker = cp.fork(workerPath, [
+        JsonConvert.stringify(filePathOrOpt)
+      ], {
+        stdio: ["pipe", "pipe", "pipe", "ipc"],
+        env: process.env
+      });
+
+      worker.on("error", (err) => {
+        reject(err);
+      });
+
+      worker.stdout!.pipe(process.stdout);
+      worker.stderr!.pipe(process.stderr);
+
+      worker.on("message", (url: string) => {
+        resolve({ worker, url });
+      });
+    });
+  }
+
+  private async _reloadServerWorkerPathProxyAsync(serverInfo: IServerInfo): Promise<void> {
+    if (!serverInfo.worker) return;
+
+    await new Promise<void>((resolve, reject) => {
+      serverInfo.worker!.send(JsonConvert.stringify(serverInfo.pathProxy), (err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      });
+    });
+  }
+
+  private async _sendServerWorkerBroadcastReloadAsync(serverInfo: IServerInfo): Promise<void> {
+    if (!serverInfo.worker) return;
+
+    await new Promise<void>((resolve, reject) => {
+      serverInfo.worker!.send("broadcastReload", (err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      });
+    });
+  }
+
   private _isServerRestarting = false;
 
   private async _restartServerAsync(pkg: SdCliPackage): Promise<void> {
@@ -193,18 +268,24 @@ export class SdCliWorkspace {
 
     try {
       const serverInfo = this._serverInfoMap.getOrCreate(path.basename(pkg.rootPath), {
-        middlewares: [],
+        pathProxy: [],
         clientInfos: []
       });
-      if (serverInfo.server) {
+      if (serverInfo.worker) {
         this._logger.log(`[${pkg.name}] 기존 서버 중지...`);
-        await serverInfo.server.closeAsync();
-        delete serverInfo.server;
+        cp.exec(`taskkill /pid ${serverInfo.worker.pid} /F /T`);
+        delete serverInfo.worker;
+        delete serverInfo.url;
       }
 
       this._logger.log(`[${pkg.name}] 서버 시작중...`);
 
-      const serverMainPath = "file:///" + PathUtil.posix(entryFilePath) + "?update=" + Uuid.new().toString().replace(/-/g, "");
+      const serverWorkerInfo = await this._runServerWorkerAsync(entryFilePath);
+      serverInfo.worker = serverWorkerInfo.worker;
+      serverInfo.url = serverWorkerInfo.url;
+      await this._reloadServerWorkerPathProxyAsync(serverInfo);
+
+      /*const serverMainPath = "file:///" + PathUtil.posix(entryFilePath) + "?update=" + Uuid.new().toString().replace(/-/g, "");
       const serverModule = await import(serverMainPath);
       serverInfo.server = serverModule.default as SdServiceServer | undefined;
       if (!serverInfo.server) {
@@ -213,7 +294,7 @@ export class SdCliWorkspace {
         return;
       }
       serverInfo.server.devMiddlewares = serverInfo.middlewares;
-      await Wait.until(() => serverInfo.server!.isOpen);
+      await Wait.until(() => serverInfo.server!.isOpen);*/
 
       this._logger.log(`[${pkg.name}] 서버가 시작되었습니다.`);
     }
@@ -416,26 +497,26 @@ export class SdCliWorkspace {
 
     const serverInfos = Array.from(this._serverInfoMap.values());
     for (const serverInfo of serverInfos) {
-      if (!serverInfo.server) continue;
+      if (!serverInfo.worker) continue;
 
-      const protocolStr = serverInfo.server.options.ssl ? "https" : "http";
-      const portStr = serverInfo.server.options.port.toString();
+      /*const protocolStr = serverInfo.server.options.ssl ? "https" : "http";
+      const portStr = serverInfo.server.options.port.toString();*/
 
       for (const clientInfo of serverInfo.clientInfos) {
         for (const platform of clientInfo.platforms) {
           if (platform === "web") {
-            clientHrefs.push(`${protocolStr}://localhost:${portStr}/${clientInfo.pkgKey}/`);
+            clientHrefs.push(`${serverInfo.url}/${clientInfo.pkgKey}/`);
           }
           else if (platform === "electron") {
-            clientHrefs.push(`sd-cli run-electron ${clientInfo.pkgKey} http://localhost:${portStr}`);
+            clientHrefs.push(`sd-cli run-electron ${clientInfo.pkgKey} ${serverInfo.url}`);
           }
           else if (platform === "cordova") {
             for (const target of clientInfo.cordovaTargets) {
               if (target === "browser") {
-                clientHrefs.push(`${protocolStr}://localhost:${portStr}/${clientInfo.pkgKey}/${platform}/`);
+                clientHrefs.push(`${serverInfo.url}/${clientInfo.pkgKey}/${platform}/`);
               }
               else {
-                clientHrefs.push(`sd-cli run-cordova ${target} ${clientInfo.pkgKey} http://[IP]:${portStr}`);
+                clientHrefs.push(`sd-cli run-cordova ${target} ${clientInfo.pkgKey} ${serverInfo.url}`);
               }
             }
           }
@@ -449,7 +530,8 @@ export class SdCliWorkspace {
 }
 
 interface IServerInfo {
-  server?: SdServiceServer;
-  middlewares: NextHandleFunction[];
+  worker?: cp.ChildProcess;
+  url?: string;
+  pathProxy: { from: string; to: string }[];
   clientInfos: { pkgKey: string; platforms: string[]; cordovaTargets: string[] }[];
 }
