@@ -65,6 +65,7 @@ export interface ISdCliServerPackageConfig {
   env?: Record<string, string>;
   configs?: Record<string, any>;
   pm2?: Record<string, any> | boolean;
+  iis?: boolean | { serverExeFilePath?: string };
   externalNodeModules?: string[];
   publish?: TSdCliPublishConfig;
 }
