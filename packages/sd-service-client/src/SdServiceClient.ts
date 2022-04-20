@@ -65,7 +65,7 @@ export class SdServiceClient {
         this.isConnected = false;
 
         // eslint-disable-next-line no-console
-        console.warn("WebSocket 연결 끊김");
+        console.warn("WebSocket 연결 끊김 (재연결 시도)");
         await reconnectFn();
       });
 

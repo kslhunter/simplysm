@@ -5,7 +5,7 @@ import path from "path";
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
 import { ISdServiceServerOptions, SdServiceBase } from "./commons";
 import { EventEmitter } from "events";
-import { JsonConvert } from "@simplysm/sd-core-common";
+import { JsonConvert, Wait } from "@simplysm/sd-core-common";
 import { WebSocket, WebSocketServer } from "ws";
 import {
   ISdServiceRequest,
@@ -190,7 +190,14 @@ export class SdServiceServer extends EventEmitter {
 
     const res = await this._processSocketRequestAsync(socketId, req);
 
-    this.getWsClient(socketId)?.send(JsonConvert.stringify(res));
+    const wsClient = this.getWsClient(socketId);
+    try {
+      await Wait.until(() => wsClient !== undefined, 500, 10000);
+      wsClient!.send(JsonConvert.stringify(res));
+    }
+    catch (err) {
+      this._logger.error("소켓요청을 처리하는 중에 클라이언트 소켓이 끊김", err);
+    }
   }
 
   private async _onSocketRequestSplitAsync(socketId: string, splitReq: ISdServiceSplitRequest): Promise<void> {

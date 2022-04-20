@@ -48,7 +48,7 @@ export class SdCliBuildResultUtil {
 
   private static _convertFromWebpackError(severity: "warning" | "error", err: webpack.WebpackError): ISdCliPackageBuildResult {
     return {
-      filePath: err.file,
+      filePath: (err.file as string | undefined) ?? (err.module as webpack.Module | undefined)?.["request"],
       line: err.file ? err.loc["start"]?.line : undefined,
       char: err.file ? err.loc["start"]?.column : undefined,
       code: err.name,
