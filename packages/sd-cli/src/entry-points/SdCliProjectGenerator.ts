@@ -1,4 +1,4 @@
-import { FsUtil, Logger } from "@simplysm/sd-core-node";
+import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
 import path from "path";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { fc_project_editor_config } from "./file/project/fc_project_editor_config";
@@ -32,45 +32,55 @@ export class SdCliProjectGenerator {
   public constructor(private readonly _rootPath: string) {
   }
 
-  public async initAsync(opt: { name?: string; description: string; author: string }): Promise<void> {
-    if ((await FsUtil.readdirAsync(this._rootPath)).filter((item) => !["package.json", "node_modules", "package-lock.json"].includes(path.basename(item))).length > 0) {
+  public async initAsync(opt: { name?: string; description: string; author: string; gitUrl: string }): Promise<void> {
+    if ((await FsUtil.readdirAsync(this._rootPath)).filter((item) => ![".idea", "package.json", "node_modules", "package-lock.json"].includes(path.basename(item))).length > 0) {
       throw new Error("빈 디렉토리가 아닙니다. (package-lock.json, package.json, node_modules 외의 파일/폴더가 존재하는 경우, 초기화할 수 없습니다.)");
     }
 
     const projName = opt.name ?? path.basename(this._rootPath);
 
-    this._logger.debug("'.editorconfig' 파일 생성");
+    this._logger.log("'.editorconfig' 파일 생성");
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".editorconfig"), fc_project_editor_config());
 
-    this._logger.debug(`[${projName}] '.eslintrc.cjs' 파일 생성`);
+    this._logger.log(`[${projName}] '.eslintrc.cjs' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".eslintrc.cjs"), fc_project_eslintrc());
 
-    this._logger.debug(`[${projName}]'.gitattributes' 파일 생성`);
+    this._logger.log(`[${projName}]'.gitattributes' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".gitattributes"), fc_project_gitattributes());
 
-    this._logger.debug(`[${projName}] '.gitignore' 파일 생성`);
+    this._logger.log(`[${projName}] '.gitignore' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".gitignore"), fc_project_gitignore());
 
-    this._logger.debug(`[${projName}] 'package.json' 파일 생성`);
+    this._logger.log(`[${projName}] 'package.json' 파일 생성`);
+    let cliVersion: string | undefined;
+    if (FsUtil.exists(path.resolve(this._rootPath, "package.json"))) {
+      const npmConfig = await FsUtil.readJsonAsync(path.resolve(this._rootPath, "package.json")) as INpmConfig;
+      cliVersion = npmConfig.dependencies?.["@simplysm/sd-cli"];
+    }
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, "package.json"), fc_project_npmconfig({
       name: projName,
       description: opt.description,
-      author: opt.author
+      author: opt.author,
+      gitUrl: opt.gitUrl,
+      cliVersion
     }));
 
-    this._logger.debug(`[${projName}] 'README.md' 파일 생성`);
+    this._logger.log(`[${projName}] 'README.md' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, "README.md"), fc_project_readme({
       description: opt.description
     }));
 
-    this._logger.debug(`[${projName}] 'simplysm.json' 파일 생성`);
+    this._logger.log(`[${projName}] 'simplysm.json' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, "simplysm.json"), fc_project_simplysm());
 
-    this._logger.debug(`[${projName}] 'tsconfig.json' 파일 생성`);
+    this._logger.log(`[${projName}] 'tsconfig.json' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, "tsconfig.json"), fc_project_tsconfig());
 
-    this._logger.debug(`[${projName}] 'packages' 디렉토리 생성`);
+    this._logger.log(`[${projName}] 'packages' 디렉토리 생성`);
     await FsUtil.mkdirsAsync(path.resolve(this._rootPath, "packages"));
+
+    this._logger.log(`[${projName}] npm install`);
+    await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
   }
 
   public async addTsLibAsync(opt: { name: string; description: string; useDom: boolean }): Promise<void> {
@@ -83,7 +93,7 @@ export class SdCliProjectGenerator {
       dependencies: {}
     });
 
-    this._logger.debug(`[${opt.name}] 'simplysm.json' 파일에 등록`);
+    this._logger.log(`[${opt.name}] 'simplysm.json' 파일에 등록`);
 
     await this._addPackageToSimplysmJson({
       name: opt.name,
@@ -95,6 +105,8 @@ export class SdCliProjectGenerator {
   public async addDbLibAsync(opt: { name: string }): Promise<void> {
     const pkgName = "db-" + opt.name;
     const pkgPath = path.resolve(this._rootPath, "packages", pkgName);
+    const projNpmConfig = await this._getProjNpmConfigAsync();
+    const projName = projNpmConfig.name;
 
     await this._addPackageBaseTemplate({
       name: pkgName,
@@ -110,27 +122,30 @@ export class SdCliProjectGenerator {
       }
     });
 
-    this._logger.debug(`[${pkgName}] 'src/${StringUtil.toPascalCase(opt.name)}DbContext.ts' 파일 생성`);
+    this._logger.log(`[${pkgName}] 'src/${StringUtil.toPascalCase(opt.name)}DbContext.ts' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, `src/${StringUtil.toPascalCase(opt.name)}DbContext.ts`), fc_package_DbContext({
       name: opt.name
     }));
 
-    this._logger.debug(`[${pkgName}] 'src/models' 디렉토리 생성`);
+    this._logger.log(`[${pkgName}] 'src/models' 디렉토리 생성`);
     await FsUtil.mkdirsAsync(path.resolve(pkgPath, "src/models"));
 
-    this._logger.debug(`[${pkgName}] 'simplysm.json' 파일에 등록`);
+    this._logger.log(`[${pkgName}] 'simplysm.json' 파일에 등록`);
     await this._addPackageToSimplysmJson({
       name: pkgName,
       type: "library",
       useAutoIndex: true
     });
+
+    this._logger.log(`[${projName}] npm install`);
+    await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
   }
 
   public async addDbLibModelAsync(opt: { dbPkgName: string; category: string; name: string; description: string }): Promise<void> {
     const pkgName = "db-" + opt.dbPkgName;
     const pkgPath = path.resolve(this._rootPath, "packages", pkgName);
 
-    this._logger.debug(`[${pkgName}] 'src/models/${opt.category}/${opt.name}.ts' 파일 생성`);
+    this._logger.log(`[${pkgName}] 'src/models/${opt.category}/${opt.name}.ts' 파일 생성`);
 
     await FsUtil.writeFileAsync(
       path.resolve(pkgPath, `src/models/${opt.category}/${opt.name}.ts`), fc_package_DbModel({
@@ -138,24 +153,24 @@ export class SdCliProjectGenerator {
         description: opt.description
       }));
 
-    this._logger.debug(`[${pkgName}] DbContext 파일에 등록`);
+    this._logger.log(`[${pkgName}] DbContext 파일에 등록`);
     let dbContextContent = await FsUtil.readFileAsync(path.resolve(pkgPath, `src/${StringUtil.toPascalCase(opt.dbPkgName)}DbContext.ts`));
 
     if (!dbContextContent.includes(`Queryable`)) {
-      this._logger.debug(`[${pkgName}] DbContext 파일에 등록: import: Queryable`);
+      this._logger.log(`[${pkgName}] DbContext 파일에 등록: import: Queryable`);
       dbContextContent = dbContextContent.replace(/ } from "@simplysm\/sd-orm-common";/, `, Queryable } from "@simplysm/sd-orm-common";`);
     }
 
-    this._logger.debug(`[${pkgName}] DbContext 파일에 등록: import: MODEL`);
+    this._logger.log(`[${pkgName}] DbContext 파일에 등록: import: MODEL`);
     dbContextContent = `import { ${opt.name} } from "./models/${opt.category}/${opt.name}";\n` + dbContextContent;
 
     if (!dbContextContent.includes(`//-- ${opt.category}\n`)) {
-      this._logger.debug(`[${opt.name}] DbContext 파일에 등록: CATEGORY`);
+      this._logger.log(`[${opt.name}] DbContext 파일에 등록: CATEGORY`);
 
       dbContextContent = dbContextContent.replace(/\n}/, `\n\n  //-- ${opt.category}\n}`);
     }
 
-    this._logger.debug(`[${pkgName}] DbContext 파일에 등록: MODEL`);
+    this._logger.log(`[${pkgName}] DbContext 파일에 등록: MODEL`);
 
     dbContextContent = dbContextContent.replace(new RegExp(`//-- ${opt.category}\n`), `
   //-- ${opt.category}
@@ -168,6 +183,8 @@ export class SdCliProjectGenerator {
   public async addServerAsync(opt: { name?: string; description?: string }): Promise<void> {
     const pkgName = "server" + (opt.name === undefined ? "" : `-${opt.name}`);
     const pkgPath = path.resolve(this._rootPath, "packages", pkgName);
+    const projNpmConfig = await this._getProjNpmConfigAsync();
+    const projName = projNpmConfig.name;
 
     await this._addPackageBaseTemplate({
       name: pkgName,
@@ -184,18 +201,21 @@ export class SdCliProjectGenerator {
       }
     });
 
-    this._logger.debug(`[${pkgName}] 'src/main.ts' 파일 등록`);
+    this._logger.log(`[${pkgName}] 'src/main.ts' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, `src/main.ts`), fc_package_server_main({
       projPath: this._rootPath,
       pkgName: pkgName
     }));
 
-    this._logger.debug(`[${pkgName}] 'simplysm.json' 파일에 등록`);
+    this._logger.log(`[${pkgName}] 'simplysm.json' 파일에 등록`);
     await this._addPackageToSimplysmJson({
       name: pkgName,
       type: "server",
       useAutoIndex: false
     });
+
+    this._logger.log(`[${projName}] npm install`);
+    await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
   }
 
   public async addClientAsync(opt: { name: string; description: string; serverName: string }): Promise<void> {
@@ -203,6 +223,7 @@ export class SdCliProjectGenerator {
     const pkgPath = path.resolve(this._rootPath, "packages", pkgName);
 
     const projNpmConfig = await this._getProjNpmConfigAsync();
+    const projName = projNpmConfig.name;
 
     await this._addPackageBaseTemplate({
       name: pkgName,
@@ -230,37 +251,37 @@ export class SdCliProjectGenerator {
       }
     });
 
-    this._logger.debug(`[${pkgName}] 'src/app-icons.ts' 파일 등록`);
+    this._logger.log(`[${pkgName}] 'src/app-icons.ts' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "src/app-icons.ts"), fc_package_appicons());
 
-    this._logger.debug(`[${pkgName}] 'src/AppModule.ts' 파일 등록`);
+    this._logger.log(`[${pkgName}] 'src/AppModule.ts' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "src/AppModule.ts"), fc_package_AppModule());
 
-    this._logger.debug(`[${pkgName}] 'src/AppPage.ts' 파일 등록`);
+    this._logger.log(`[${pkgName}] 'src/AppPage.ts' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "src/AppPage.ts"), fc_package_AppPage());
 
-    this._logger.debug(`[${pkgName}] 'src/index.html' 파일 등록`);
+    this._logger.log(`[${pkgName}] 'src/index.html' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "src/index.html"), fc_package_index({
       description: opt.description
     }));
 
-    this._logger.debug(`[${pkgName}] 'src/main.ts' 파일 등록`);
+    this._logger.log(`[${pkgName}] 'src/main.ts' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "src/main.ts"), fc_package_client_main());
 
-    this._logger.debug(`[${pkgName}] 'src/manifest.json' 파일 등록`);
+    this._logger.log(`[${pkgName}] 'src/manifest.json' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "src/manifest.json"), fc_package_manifest({
       description: projNpmConfig.description,
       author: projNpmConfig.author,
       version: projNpmConfig.version
     }));
 
-    this._logger.debug(`[${pkgName}] 'src/polyfills.ts' 파일 등록`);
+    this._logger.log(`[${pkgName}] 'src/polyfills.ts' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "src/polyfills.ts"), fc_package_polyfills());
 
-    this._logger.debug(`[${pkgName}] 'src/styles.scss' 파일 등록`);
+    this._logger.log(`[${pkgName}] 'src/styles.scss' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "src/styles.scss"), fc_package_styles());
 
-    this._logger.debug(`[${pkgName}] 'src/assets' 파일 복사`);
+    this._logger.log(`[${pkgName}] 'src/assets' 파일 복사`);
     await FsUtil.copyAsync(
       path.resolve(path.dirname(fileURLToPath(import.meta.url)), "file/assets"),
       path.resolve(pkgPath, "src")
@@ -272,17 +293,20 @@ export class SdCliProjectGenerator {
       useAutoIndex: false,
       serverName: opt.serverName
     });
+
+    this._logger.log(`[${projName}] npm install`);
+    await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
   }
 
   private async _addPackageBaseTemplate(opt: { name: string; description: string; useDom: boolean; isModule: boolean; isForAngular: boolean; main?: string; types?: string; dependencies: Record<string, string> }): Promise<void> {
     const pkgPath = path.resolve(this._rootPath, "packages", opt.name);
 
-    this._logger.debug(`[${opt.name}] '.eslintrc.cjs' 파일 생성`);
+    this._logger.log(`[${opt.name}] '.eslintrc.cjs' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, ".eslintrc.cjs"), fc_package_eslintrc({
       isForAngular: opt.isForAngular
     }));
 
-    this._logger.debug(`[${opt.name}] 'package.json' 파일 생성`);
+    this._logger.log(`[${opt.name}] 'package.json' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "package.json"), fc_package_npmconfig({
       projPath: this._rootPath,
       name: opt.name,
@@ -293,13 +317,13 @@ export class SdCliProjectGenerator {
       dependencies: opt.dependencies
     }));
 
-    this._logger.debug(`[${opt.name}] 'tsconfig.json' 파일 생성`);
+    this._logger.log(`[${opt.name}] 'tsconfig.json' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "tsconfig.json"), fc_package_tsconfig({
       isModule: opt.isModule,
       useDom: opt.useDom
     }));
 
-    this._logger.debug(`[${opt.name}] 'src' 디렉토리 생성`);
+    this._logger.log(`[${opt.name}] 'src' 디렉토리 생성`);
     await FsUtil.mkdirsAsync(path.resolve(pkgPath, "src"));
   }
 

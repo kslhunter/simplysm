@@ -1,8 +1,12 @@
-export const fc_project_npmconfig = (opt: { name: string; description: string; author: string }): string => JSON.stringify({
+export const fc_project_npmconfig = (opt: { name: string; description: string; author: string; gitUrl: string; cliVersion?: string }): string => JSON.stringify({
   name: opt.name,
   version: "1.0.0",
   description: opt.description,
   author: opt.author,
+  repository: {
+    type: "git",
+    url: opt.gitUrl
+  },
   type: "module",
   license: "UNLICENSED",
   private: true,
@@ -21,7 +25,7 @@ export const fc_project_npmconfig = (opt: { name: string; description: string; a
   },
   devDependencies: {
     "@simplysm/eslint-plugin": "~7.0.0",
-    "@simplysm/sd-cli": "~7.0.0",
+    "@simplysm/sd-cli": opt.cliVersion ?? "~7.0.0",
     "@types/node": "^17.0.12",
     "cross-env": "^7.0.3",
     "eslint": "^8.7.0",
