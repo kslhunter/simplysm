@@ -147,17 +147,24 @@ export class SdCliTsLibBuilder extends EventEmitter {
       this._logger.debug("프로그램 로딩...");
       const watchBuildPack = this._createSdBuildPack(this._parsedTsconfig);
 
-      this._logger.debug("빌드...");
-      watchBuildResults.push(...await this._runBuilderAsync(watchBuildPack.builder, watchBuildPack.ngCompiler));
+      const promises: Promise<ISdCliPackageBuildResult[]>[] = [];
 
-      this._logger.debug("린트...");
+      // 빌드
+      promises.push(this._runBuilderAsync(watchBuildPack.builder, watchBuildPack.ngCompiler));
+      // watchBuildResults.push(...await this._runBuilderAsync(watchBuildPack.builder, watchBuildPack.ngCompiler));
+
+      // 린트
       const lintFilePaths = [
         ...watchBuildPack.affectedSourceFiles.map((item) => item.fileName),
         ...changedInfos.filter((item) => ["add", "change"].includes(item.event)).map((item) => item.path)
       ];
       if (lintFilePaths.length > 0) {
-        watchBuildResults.push(...await this._linter.lintAsync(lintFilePaths, watchBuildPack.program));
+        promises.push(this._linter.lintAsync(lintFilePaths, watchBuildPack.program));
+        // watchBuildResults.push(...await this._linter.lintAsync(lintFilePaths, watchBuildPack.program));
       }
+
+      this._logger.debug("빌드...");
+      watchBuildResults.push(...(await Promise.all(promises)).mapMany());
 
       this._logger.debug("변경감지 대상목록 재구성...");
       const watchRelatedPaths = await this.getAllRelatedPathsAsync();
@@ -167,10 +174,10 @@ export class SdCliTsLibBuilder extends EventEmitter {
     });
 
     this._logger.debug("빌드...");
-    const buildResults = await this._runBuilderAsync(buildPack.builder, buildPack.ngCompiler);
-
-    this._logger.debug("린트...");
-    buildResults.push(...await this._linter.lintAsync(relatedPaths, buildPack.program));
+    const buildResults = (await Promise.all([
+      this._runBuilderAsync(buildPack.builder, buildPack.ngCompiler),
+      this._linter.lintAsync(relatedPaths, buildPack.program)
+    ].filterExists())).mapMany();
 
     this._logger.debug("변경감지 대상목록 재구성...");
     const watchRelatedPaths = await this.getAllRelatedPathsAsync();
@@ -197,13 +204,11 @@ export class SdCliTsLibBuilder extends EventEmitter {
     const buildPack = this._createSdBuildPack(this._parsedTsconfig);
 
     this._logger.debug("빌드...");
-    const buildResults = await this._runBuilderAsync(buildPack.builder, buildPack.ngCompiler);
-
-    this._logger.debug("린트...");
     const relatedPaths = await this.getAllRelatedPathsAsync();
-    buildResults.push(...await this._linter.lintAsync(relatedPaths, buildPack.program));
-
-    return buildResults;
+    return (await Promise.all([
+      this._runBuilderAsync(buildPack.builder, buildPack.ngCompiler),
+      this._linter.lintAsync(relatedPaths, buildPack.program)
+    ].filterExists())).mapMany();
   }
 
   private async getAllRelatedPathsAsync(): Promise<string[]> {

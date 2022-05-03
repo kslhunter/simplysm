@@ -1,4 +1,4 @@
-import { Type } from "@simplysm/sd-core-common";
+import { TClassDecoratorReturn, TPropertyDecoratorReturn, Type } from "@simplysm/sd-core-common";
 import { DbDefinitionUtil } from "./utils/DbDefinitionUtil";
 import { TSdOrmDataType } from "./SdOrmDataType";
 
@@ -7,7 +7,7 @@ export function Table<T>(def: {
   database?: string;
   schema?: string;
   name?: string;
-}): (classType: Type<T>) => void {
+}): TClassDecoratorReturn<T> {
   return (classType: Type<T>): void => {
     DbDefinitionUtil.mergeTableDef(classType, {
       name: classType.name,
@@ -23,7 +23,7 @@ export function Column<T extends object>(columnDef: {
   nullable?: boolean;
   autoIncrement?: boolean;
   primaryKey?: number;
-}): (object: T, propertyKey: string) => void {
+}): TPropertyDecoratorReturn<T> {
   return (object: T, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
 
@@ -46,7 +46,7 @@ export function ForeignKey<T>(
   columnNames: (keyof T)[],
   targetTypeFwd: () => Type<any>,
   description: string
-): (object: Partial<T>, propertyKey: string) => void {
+): TPropertyDecoratorReturn<Partial<T>> {
   return (object: Partial<T>, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
 
@@ -64,7 +64,7 @@ export function ForeignKeyTarget<T extends object, P>(
   sourceTypeFwd: () => Type<P>,
   foreignKeyPropertyKey: keyof P,
   description: string
-): (object: T, propertyKey: string) => void {
+): TPropertyDecoratorReturn<T> {
   return (object: T, propertyKey: string): void => {
     const classType = object.constructor as Type<T>;
 
@@ -82,8 +82,8 @@ export function Index<T extends object>(def?: {
   name?: string;
   order?: number;
   orderBy?: "ASC" | "DESC";
-}): (object: T, propertyKey: string) => void {
-  return (object: T, propertyKey: string): void => {
+}): TPropertyDecoratorReturn<T> {
+  return (object, propertyKey) => {
     const classType = object.constructor as Type<T>;
 
     DbDefinitionUtil.addIndexDef(classType, {

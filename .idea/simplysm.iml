@@ -11,7 +11,6 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-storage/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-service/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/.back" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-core/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-smtp/dist" />
@@ -36,6 +35,24 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-admin/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.yarn" />
       <excludeFolder url="file://$MODULE_DIR$/_logs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/doc" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-cordova/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-browser/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-common/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-node/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-office/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-common/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-client/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-common/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-service-server/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-storage/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-devtool/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/_back" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/node/cli/.dist" />
     </content>
     <content url="file://$MODULE_DIR$/.yarn" />
     <orderEntry type="inheritedJdk" />

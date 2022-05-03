@@ -333,7 +333,7 @@ export class QueryHelper {
     }
     else {
       return new QueryUnit<string>(String, [
-        ...args.mapMany((arg) => [arg !== undefined ? this.ifNull(arg, "").query : "", " + "]).slice(0, -1)
+        ...args.mapMany((arg) => [arg instanceof QueryUnit ? this.ifNull(arg, "").query : arg !== undefined ? this.getQueryValue(arg) : "", " + "]).slice(0, -1)
       ]);
     }
   }

@@ -4,7 +4,7 @@ export interface INpmConfig {
   description?: string;
   author?: string;
   license?: string;
-  repository: string | {
+  repository?: {
     type: string;
     url: string;
     directory?: string;
@@ -27,6 +27,8 @@ export interface INpmConfig {
 
 export interface ITsconfig {
   compilerOptions?: {
+    module?: string;
+    lib?: string[];
     outDir?: string;
     baseUrl?: string;
     paths?: Record<string, string[]>;
@@ -109,9 +111,11 @@ export interface ISdCliGithubPublishConfig {
 }
 
 export interface ISdCliClientBuilderWebConfig {
+  env?: Record<string, string>;
 }
 
 export interface ISdCliClientBuilderCordovaConfig {
+  env?: Record<string, string>;
   appId: string;
   appName: string;
   plugins?: string[];
@@ -136,4 +140,5 @@ export interface ISdCliClientBuilderElectronConfig {
   appId: string;
   icon?: string;
   installerIcon?: string;
+  env?: Record<string, string>;
 }

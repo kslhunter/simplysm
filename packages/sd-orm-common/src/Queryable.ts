@@ -1065,7 +1065,7 @@ export class Queryable<D extends DbContext, T> {
         clearTimeout(cacheValue.timeout);
         cacheValue.timeout = setTimeout(() => {
           DbContext.selectCache.delete(cacheKey);
-        }, 1000);
+        }, DbContext.SELECT_CACHE_TIMEOUT);
 
         return cacheValue.result;
       }
@@ -1080,7 +1080,7 @@ export class Queryable<D extends DbContext, T> {
 
     const timeout = setTimeout(() => {
       DbContext.selectCache.delete(cacheKey);
-    }, 1000);
+    }, DbContext.SELECT_CACHE_TIMEOUT);
     DbContext.selectCache.set(cacheKey, { result: results[0] ?? [], timeout });
 
     return results[0];
@@ -1480,6 +1480,36 @@ export class Queryable<D extends DbContext, T> {
     }
     else {
       dataIndex = 0;
+    }
+
+    if (this.db.opt.dialect !== "mysql") {
+      const hasSomeAIColVal = Object.keys(insertRecord).some((item) => aiColNames.includes(item));
+      if (hasSomeAIColVal) {
+        defs.insert(0, {
+          type: "configIdentityInsert" as const,
+          ...{
+            table: {
+              database: this.tableDef.database ?? this.db.opt.database,
+              schema: this.tableDef.schema ?? this.db.opt.schema,
+              name: this.tableDef.name
+            },
+            state: "on" as const
+          }
+        });
+        dataIndex++;
+
+        defs.push({
+          type: "configIdentityInsert" as const,
+          ...{
+            table: {
+              database: this.tableDef.database ?? this.db.opt.database,
+              schema: this.tableDef.schema ?? this.db.opt.schema,
+              name: this.tableDef.name
+            },
+            state: "off" as const
+          }
+        });
+      }
     }
 
     return { defs, dataIndex };

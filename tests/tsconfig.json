@@ -21,6 +21,12 @@
       ],
       "@simplysm/sd-cli": [
         "../packages/sd-cli/src/index.ts"
+      ],
+      "@simplysm/sd-orm-common": [
+        "../packages/sd-orm-common/src/index.ts"
+      ],
+      "@simplysm/sd-orm-node": [
+        "../packages/sd-orm-node/src/index.ts"
       ]
     }
   }

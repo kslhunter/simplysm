@@ -68,7 +68,8 @@ export class SdCliElectron {
       `SD_VERSION=${npmConfig.version}`,
       `SD_ELECTRON_DEV_URL=${url.replace(/\/$/, "")}/${pkgName}/electron/`,
       (electronConfig.icon !== undefined) ? `SD_ELECTRON_ICON=${electronConfig.icon}` : `SD_ELECTRON_ICON=favicon.ico`,
-      ...(pkgConfig.env !== undefined) ? Object.keys(pkgConfig.env).map((key) => `${key}=${pkgConfig.env![key]}`) : []
+      ...(pkgConfig.env !== undefined) ? Object.keys(pkgConfig.env).map((key) => `${key}=${pkgConfig.env![key]}`) : [],
+      ...(electronConfig.env !== undefined) ? Object.keys(electronConfig.env).map((key) => `${key}=${electronConfig.env![key]}`) : [],
     ].filterExists().join("\n"));
 
     let electronTsFileContent = await FsUtil.readFileAsync(path.resolve(pkgRootPath, `src/electron.ts`));

@@ -1,9 +1,9 @@
 import { Logger } from "@simplysm/sd-core-node";
 import mysql from "mysql";
 import { EventEmitter } from "events";
-import { NotImplementError, SdError, StringUtil } from "@simplysm/sd-core-common";
+import { SdError, StringUtil } from "@simplysm/sd-core-common";
 import { IDbConnection } from "./IDbConnection";
-import { IDbConnectionConfig, IQueryColumnDef, ISOLATION_LEVEL } from "@simplysm/sd-orm-common";
+import { IDbConnectionConfig, IQueryColumnDef, ISOLATION_LEVEL, QueryHelper } from "@simplysm/sd-orm-common";
 
 export class MysqlDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", this.constructor.name]);
@@ -209,7 +209,19 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
-    throw new NotImplementError();
+    const qh = new QueryHelper("mysql");
+
+    const colNames = columnDefs.map((def) => def.name);
+
+    let q = "";
+    q += `INSERT INTO ${tableName} (${colNames.map((item) => "`" + item + "`").join(", ")}) VALUES`;
+    q += "\n";
+    for (const record of records) {
+      q += `(${colNames.map((colName) => qh.getQueryValue(record[colName])).join(", ")}),\n`;
+    }
+    q = q.slice(0, -2) + ";";
+
+    await this.executeAsync([q]);
   }
 
   private _stopTimeout(): void {

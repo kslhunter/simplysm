@@ -1,10 +1,29 @@
 import os from "os";
 
+/**
+ * 오류의 Tree 구조 구성이 가능한 오류 클래스
+ */
 export class SdError extends Error {
+  /**
+   * 내부오류
+   */
   public innerError?: Error;
 
+  /**
+   * @param innerError 내부오류
+   * @param message 현재 오류의 메시지
+   */
   public constructor(innerError?: Error, message?: string);
+
+  /**
+   * @param message 현재 오류의 메시지
+   */
   public constructor(message?: string);
+
+  /**
+   * @param innerErrorMessage 내부오류의 메시지
+   * @param message 현재 오류의 메시지
+   */
   public constructor(innerErrorMessage?: string, message?: string);
   public constructor(arg1?: Error | string, arg2?: string) {
     if (typeof arg1 === "object" || typeof arg2 === "string") {
@@ -40,6 +59,7 @@ export class SdError extends Error {
       }
     }
 
+    // noinspection SuspiciousTypeOfGuard
     if (typeof arg1 === "object" && typeof arg1.stack === "string") {
       this.innerError = arg1;
       this.stack += `${os.EOL}---- inner error stack ----${os.EOL}${arg1.stack}`;

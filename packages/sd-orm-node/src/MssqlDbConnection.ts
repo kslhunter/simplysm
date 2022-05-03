@@ -6,7 +6,6 @@ import {
   DateTime,
   JsonConvert,
   NeverEntryError,
-  SdError,
   StringUtil,
   Time,
   Type,
@@ -294,21 +293,8 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
         bulkLoad.addColumn(tediousColumnDef.name, tediousColumnDef.type, tediousColumnDef.options);
       }
 
-      for (const record of records) {
-        try {
-          bulkLoad.addRow(record);
-        }
-        catch (err) {
-          if (err instanceof Error) {
-            throw new SdError(err, JSON.stringify(record));
-          }
-          else {
-            throw err;
-          }
-        }
-      }
-
-      this._conn?.execBulkLoad(bulkLoad);
+      // @ts-expect-error
+      this._conn?.execBulkLoad(bulkLoad, records);
     });
   }
 

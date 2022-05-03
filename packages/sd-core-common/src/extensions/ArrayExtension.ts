@@ -8,6 +8,10 @@ import { Time } from "../types/Time";
 
 declare global {
   interface Array<T> {
+    /**
+     * 필터에 맞는 하나의 값 찾기 (여러값이 있을 경우 오류 발생)
+     * @param predicate 필터
+     */
     single(predicate?: (item: T, index: number) => boolean): T | undefined;
 
     first(predicate?: (item: T, index: number) => boolean): T | undefined;

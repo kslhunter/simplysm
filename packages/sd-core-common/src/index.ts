@@ -1,4 +1,5 @@
 import "reflect-metadata";
+export * from "./decorators/decorator-return-types";
 export * from "./decorators/NotifyPropertyChange";
 export * from "./decorators/PropertyGetSetDecoratorBase";
 export * from "./decorators/PropertyValidate";

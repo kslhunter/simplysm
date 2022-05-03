@@ -1,6 +1,6 @@
-import { PropertyValidate, TValidateDef } from "@simplysm/sd-core-common";
+import { PropertyValidate, TPropertyDecoratorReturn, TValidateDef } from "@simplysm/sd-core-common";
 
-export function SdInputValidate(def: TValidateDef<any>): (target: any, propertyName: string, inputDescriptor?: PropertyDescriptor) => void {
+export function SdInputValidate(def: TValidateDef<any>): TPropertyDecoratorReturn<any> {
   const fn = (v: any): any => {
     const isForBoolean = (
       def === Boolean

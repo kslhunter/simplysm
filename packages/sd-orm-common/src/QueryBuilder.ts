@@ -122,32 +122,32 @@ BEGIN
   SELECT @sql = @sql + 'DROP PROCEDURE ${this.wrap(def.database)}.' + QUOTENAME(sch.name) + '.' + QUOTENAME(o.name) +';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.sql_modules m
   INNER JOIN ${this.wrap(def.database)}.sys.objects o ON m.object_id=o.object_id
-  INNER JOIN [NEOE].sys.schemas sch ON sch.schema_id = [o].schema_id
+  INNER JOIN ${this.wrap(def.database)}.sys.schemas sch ON sch.schema_id = [o].schema_id
   WHERE type_desc like '%PROCEDURE%'
     
   -- 함수 초기화
   SELECT @sql = @sql + 'DROP FUNCTION ${this.wrap(def.database)}.' + QUOTENAME(sch.name) + '.' + QUOTENAME(o.name) + N';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.sql_modules m
   INNER JOIN ${this.wrap(def.database)}.sys.objects o ON m.object_id=o.object_id
-  INNER JOIN [NEOE].sys.schemas sch ON sch.schema_id = [o].schema_id
+  INNER JOIN ${this.wrap(def.database)}.sys.schemas sch ON sch.schema_id = [o].schema_id
   WHERE type_desc like '%function%' AND sch.name <> 'sys'
     
   -- 뷰 초기화
   SELECT @sql = @sql + 'DROP VIEW ${this.wrap(def.database)}.' + QUOTENAME(sch.name) + '.' + QUOTENAME(v.name) + N';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.views v
-  INNER JOIN [NEOE].sys.schemas sch ON sch.schema_id = [v].schema_id
+  INNER JOIN ${this.wrap(def.database)}.sys.schemas sch ON sch.schema_id = [v].schema_id
   WHERE sch.name <> 'sys'
     
   -- 테이블 FK 끊기 초기화
   SELECT @sql = @sql + N'ALTER TABLE ${this.wrap(def.database)}.' + QUOTENAME(sch.name) + '.' + QUOTENAME([tbl].[name]) + N' DROP CONSTRAINT ' + QUOTENAME([obj].[name]) + N';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.tables [tbl]
   INNER JOIN ${this.wrap(def.database)}.sys.objects AS [obj] ON [obj].[parent_object_id] = [tbl].[object_id] AND [obj].[type] = 'F'
-  INNER JOIN [NEOE].sys.schemas sch ON sch.schema_id = [tbl].schema_id
+  INNER JOIN ${this.wrap(def.database)}.sys.schemas sch ON sch.schema_id = [tbl].schema_id
 
   -- 테이블 삭제
   SELECT @sql = @sql + N'DROP TABLE ${this.wrap(def.database)}.' + QUOTENAME(sch.name) + '.' + QUOTENAME([tbl].[name]) + N';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.tables [tbl]
-  INNER JOIN [NEOE].sys.schemas sch ON sch.schema_id = [tbl].schema_id
+  INNER JOIN ${this.wrap(def.database)}.sys.schemas sch ON sch.schema_id = [tbl].schema_id
   WHERE [type]= 'U'
 
   EXEC(@sql);

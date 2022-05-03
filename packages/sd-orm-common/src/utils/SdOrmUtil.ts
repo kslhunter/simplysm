@@ -133,7 +133,7 @@ export class SdOrmUtil {
       const getKeyObj = (sourceItem: Record<string, any>, joinKeys: string[]): Record<string, any> => {
         const result: Record<string, any> = {};
         for (const sourceItemKey of Object.keys(sourceItem)) {
-          if (joinKeys.some((joinKey) => sourceItemKey.startsWith(joinKey))) continue;
+          if (joinKeys.some((joinKey) => sourceItemKey === joinKey || sourceItemKey.startsWith(joinKey + "."))) continue;
           result[sourceItemKey] = sourceItem[sourceItemKey];
         }
         return result;

@@ -1,7 +1,14 @@
 import { PropertyGetSetDecoratorBase } from "./PropertyGetSetDecoratorBase";
 import { ObjectUtil, TValidateDef } from "../utils/ObjectUtil";
+import { TPropertyDecoratorReturn } from "./decorator-return-types";
 
-export function PropertyValidate(def: TValidateDef<any>, replacer?: (value: any) => any): (target: any, propertyName: string, inputDescriptor?: PropertyDescriptor) => void {
+/**
+ * 속성값이 설정될 때, 기대되는 값인지 확인 하는 Decorator
+ *
+ * @param def Validation 설정
+ * @param replacer 체크하기전에 값을 변경하는 함수
+ */
+export function PropertyValidate(def: TValidateDef<any>, replacer?: TPropertyValidateReplacer): TPropertyDecoratorReturn<any> {
   return PropertyGetSetDecoratorBase({
     beforeSet: (target, propertyName, prevValue, nextValue) => {
       const replacedNextValue = replacer !== undefined ? replacer(nextValue) : nextValue;
@@ -19,3 +26,11 @@ export function PropertyValidate(def: TValidateDef<any>, replacer?: (value: any)
     }
   });
 }
+
+/**
+ * 체크하기전에 값을 변경하는 함수
+ *
+ * @param value 입력값
+ * @returns 출력값
+ */
+export type TPropertyValidateReplacer = (value: any) => any;

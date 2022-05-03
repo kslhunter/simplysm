@@ -9,6 +9,7 @@ import { SystemMigration } from "./models/SystemMigration";
 import { DbDefinitionUtil } from "./utils/DbDefinitionUtil";
 
 export abstract class DbContext {
+  public static readonly SELECT_CACHE_TIMEOUT = 1000;
   public static readonly selectCache = new Map<string, { result: any[]; timeout: any } | undefined>();
 
   public status: "ready" | "connect" | "transact" = "ready";
@@ -378,7 +379,6 @@ export abstract class DbContext {
     }
 
     const queryDefsList: TQueryDef[][] = [];
-
 
     // DB 초기화
     for (const dbName of dbNames) {

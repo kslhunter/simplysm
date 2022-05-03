@@ -10,6 +10,7 @@ import { SdCliPrepare } from "../entry-points/SdCliPrepare";
 import { SdCliFileCrypto } from "../entry-points/SdCliFileCrypto";
 import { SdCliCordova } from "../build-tool/SdCliCordova";
 import { SdCliElectron } from "../build-tool/SdCliElectron";
+import { SdCliProjectGenerator } from "../entry-points/SdCliProjectGenerator";
 
 Error.stackTraceLimit = Infinity;
 
@@ -177,6 +178,49 @@ const argv = yargs(hideBin(process.argv))
         describe: "암호화된 파일명"
       })
   )
+  .command(
+    "init",
+    "프로젝트를 초기화 합니다.",
+    (cmd) => cmd.version(false)
+      .options({
+        name: {
+          type: "string",
+          describe: "프로젝트 영문명"
+        },
+        description: {
+          type: "string",
+          describe: "프로젝트 설명(=명칭)",
+          demandOption: true
+        },
+        author: {
+          type: "string",
+          describe: "작성자",
+          demandOption: true
+        }
+      })
+  )
+  .command(
+    "add ts-lib",
+    "타입스트립트 라이브러리 패키지를 추가합니다.",
+    (cmd) => cmd.version(false)
+      .options({
+        name: {
+          type: "string",
+          describe: "패키지명",
+          demandOption: true
+        },
+        description: {
+          type: "string",
+          describe: "패키지설명",
+          demandOption: true
+        },
+        useDom: {
+          type: "boolean",
+          describe: "DOM객체(window, document 등) 사용 여부",
+          default: false
+        }
+      })
+  )
   .parseSync();
 
 if (argv.debug) {
@@ -264,6 +308,20 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
   }
   else if (argv._[0] === "dec-file") {
     await new SdCliFileCrypto().decryptAsync(argv.file!);
+  }
+  else if (argv._[0] === "init") {
+    await new SdCliProjectGenerator(process.cwd()).initAsync({
+      name: argv.name,
+      description: argv.description,
+      author: argv.author
+    });
+  }
+  else if (argv._[0] === "add ts-lib") {
+    await new SdCliProjectGenerator(process.cwd()).addTsLibAsync({
+      name: argv.name,
+      description: argv.description,
+      useDom: argv.useDom
+    });
   }
   else {
     throw new Error(`명령어가 잘못 되었습니다.\n\t${argv._[0]}\n`);

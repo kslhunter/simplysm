@@ -32,7 +32,8 @@ export class SdCliWorkspace {
     }
 
     this._logger.debug("패키지 목록 구성...");
-    const pkgs = await this._getPackagesAsync(config, opt.pkgs);
+    const allPkgs = await this._getPackagesAsync(config);
+    const pkgs = allPkgs.filter((pkg) => opt.pkgs.length === 0 || opt.pkgs.includes(path.basename(pkg.rootPath)));
 
     this._logger.debug("패키지 이벤트 설정...");
     let changeCount = 0;
@@ -102,32 +103,6 @@ export class SdCliWorkspace {
         if (pkg.config.type === "client") {
           await pkg.watchAsync();
 
-          /*const pkgMiddleware: NextHandleFunction = (req, res, next) => {
-            if (req.method === "GET") {
-              const urlObj = url.parse(req.url!, true, false);
-              const urlPathChain = decodeURI(urlObj.pathname!.slice(1)).split("/");
-              if (urlPathChain[0] === pkg.name.split("/").last()!) {
-                let targetFilePath = path.resolve(pkg.rootPath, "dist", ...urlPathChain.slice(1));
-                targetFilePath = FsUtil.exists(targetFilePath) && FsUtil.stat(targetFilePath).isDirectory() ? path.resolve(targetFilePath, "index.html") : targetFilePath;
-
-                if (FsUtil.exists(targetFilePath) && !path.basename(targetFilePath).startsWith(".")) {
-                  const fileStream = FsUtil.createReadStream(targetFilePath);
-                  const targetFileSize = FsUtil.lstat(targetFilePath).size;
-
-                  fileStream.on("open", () => {
-                    res.setHeader("Content-Length", targetFileSize);
-                    res.setHeader("Content-Type", mime.getType(targetFilePath)!);
-                    res.writeHead(200);
-                  });
-                  fileStream.pipe(res);
-                  return;
-                }
-              }
-            }
-
-            next();
-          };*/
-
           if (typeof pkg.config.server === "string") {
             const serverInfo = this._serverInfoMap.getOrCreate(pkg.config.server, { pathProxy: [], clientInfos: [] });
 
@@ -164,20 +139,6 @@ export class SdCliWorkspace {
                 platforms: pkg.config.builder ? Object.keys(pkg.config.builder) : ["web"],
                 cordovaTargets: pkg.config.builder?.cordova?.target ? Object.keys(pkg.config.builder.cordova.target) : ["browser"]
               });
-
-              /*const server = new SdServiceServer({
-                rootPath: process.cwd(),
-                services: [],
-                port: pkg.config.server.port
-              });
-              await server.listenAsync();
-              serverInfo.server = server;
-              serverInfo.server.devMiddlewares = [pkgMiddleware];
-              serverInfo.clientInfos.push({
-                pkgKey: pkg.name.split("/").last()!,
-                platforms: pkg.config.builder ? Object.keys(pkg.config.builder) : ["web"],
-                cordovaTargets: pkg.config.builder?.cordova?.target ? Object.keys(pkg.config.builder.cordova.target) : ["browser"]
-              });*/
             }
           }
         }
@@ -199,6 +160,76 @@ export class SdCliWorkspace {
       this._loggingOpenClientHrefs();
       this._logger.info("모든 빌드가 완료되었습니다.");
     }
+  }
+
+  public async buildAsync(opt: { confFileRelPath: string; optNames: string[]; pkgs: string[] }): Promise<void> {
+    this._logger.debug("프로젝트 설정 가져오기...");
+    const config = await SdCliConfigUtil.loadConfigAsync(path.resolve(this._rootPath, opt.confFileRelPath), false, opt.optNames);
+
+    this._logger.debug("패키지 목록 구성...");
+    const allPkgs = await this._getPackagesAsync(config);
+    const pkgs = allPkgs.filter((pkg) => opt.pkgs.length === 0 || opt.pkgs.includes(path.basename(pkg.rootPath)));
+
+    this._logger.debug("프로젝트 및 패키지 버전 설정...");
+    await this._upgradeVersionAsync(allPkgs);
+
+    // 빌드
+    await this._buildPkgsAsync(pkgs);
+  }
+
+  public async publishAsync(opt: { noBuild: boolean; confFileRelPath: string; optNames: string[]; pkgs: string[] }): Promise<void> {
+    this._logger.debug("프로젝트 설정 가져오기...");
+    const config = await SdCliConfigUtil.loadConfigAsync(path.resolve(this._rootPath, opt.confFileRelPath), false, opt.optNames);
+
+    if (opt.noBuild) {
+      this._logger.warn("빌드하지 않고, 배포하는것은 상당히 위험합니다.");
+      await this._waitSecMessageAsync("프로세스를 중지하려면, 'CTRL+C'를 누르세요.", 5);
+    }
+
+    // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
+    if (FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
+      this._logger.debug("GIT 커밋여부 확인...");
+      const gitStatusResult = await SdProcess.spawnAsync("git status");
+      if (gitStatusResult.includes("Changes") || gitStatusResult.includes("Untracked")) {
+        throw new Error("커밋되지 않은 정보가 있습니다.\n" + gitStatusResult);
+      }
+    }
+
+    this._logger.debug("패키지 목록 구성...");
+    const allPkgs = await this._getPackagesAsync(config);
+    const pkgs = allPkgs.filter((pkg) => opt.pkgs.length === 0 || opt.pkgs.includes(path.basename(pkg.rootPath)));
+
+    this._logger.debug("프로젝트 및 패키지 버전 설정...");
+    await this._upgradeVersionAsync(allPkgs);
+
+    // 빌드
+    if (!opt.noBuild) {
+      // this._logger.debug("노드패키지 업데이트...");
+      // await new SdCliNpm(this._rootPath).updateAsync();
+
+      this._logger.debug("빌드를 시작합니다...");
+      await this._buildPkgsAsync(pkgs);
+    }
+
+    // GIT 사용중일경우, 새 버전 커밋 및 TAG 생성
+    if (FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
+      this._logger.debug("새 버전 커밋 및 TAG 생성...");
+      await SdProcess.spawnAsync("git add .");
+      await SdProcess.spawnAsync(`git commit -m "v${this._npmConfig.version}"`);
+      await SdProcess.spawnAsync(`git tag -a "v${this._npmConfig.version}" -m "v${this._npmConfig.version}"`);
+
+      this._logger.debug("새 버전 푸쉬...");
+      await SdProcess.spawnAsync("git push");
+      await SdProcess.spawnAsync("git push --tags");
+    }
+
+    this._logger.debug("배포 시작...");
+    await pkgs.parallelAsync(async (pkg) => {
+      this._logger.debug(`[${pkg.name}] 배포를 시작합니다...`);
+      await pkg.publishAsync();
+      this._logger.debug(`[${pkg.name}] 배포가 완료되었습니다.`);
+    });
+    this._logger.info(`모든 배포가 완료되었습니다. (v${this._npmConfig.version})`);
   }
 
   private async _runServerWorkerAsync(filePathOrOpt: string | { port: number }): Promise<{ worker: cp.ChildProcess; url: string }> {
@@ -285,17 +316,6 @@ export class SdCliWorkspace {
       serverInfo.url = serverWorkerInfo.url;
       await this._reloadServerWorkerPathProxyAsync(serverInfo);
 
-      /*const serverMainPath = "file:///" + PathUtil.posix(entryFilePath) + "?update=" + Uuid.new().toString().replace(/-/g, "");
-      const serverModule = await import(serverMainPath);
-      serverInfo.server = serverModule.default as SdServiceServer | undefined;
-      if (!serverInfo.server) {
-        this._logger.error(`${entryFilePath}(0, 0): 'SdServiceServer'를 'export'해야 합니다.`);
-        this._isServerRestarting = false;
-        return;
-      }
-      serverInfo.server.devMiddlewares = serverInfo.middlewares;
-      await Wait.until(() => serverInfo.server!.isOpen);*/
-
       this._logger.log(`[${pkg.name}] 서버가 시작되었습니다.`);
     }
     catch (err) {
@@ -303,20 +323,6 @@ export class SdCliWorkspace {
     }
 
     this._isServerRestarting = false;
-  }
-
-  public async buildAsync(opt: { confFileRelPath: string; optNames: string[]; pkgs: string[] }): Promise<void> {
-    this._logger.debug("프로젝트 설정 가져오기...");
-    const config = await SdCliConfigUtil.loadConfigAsync(path.resolve(this._rootPath, opt.confFileRelPath), false, opt.optNames);
-
-    this._logger.debug("패키지 목록 구성...");
-    const pkgs = await this._getPackagesAsync(config, opt.pkgs);
-
-    this._logger.debug("프로젝트 및 패키지 버전 설정...");
-    await this._upgradeVersionAsync(pkgs);
-
-    // 빌드
-    await this._buildPkgsAsync(pkgs);
   }
 
   private async _buildPkgsAsync(pkgs: SdCliPackage[]): Promise<void> {
@@ -347,60 +353,6 @@ export class SdCliWorkspace {
       this._loggingResults(totalResultMap);
       throw err;
     }
-  }
-
-  public async publishAsync(opt: { noBuild: boolean; confFileRelPath: string; optNames: string[]; pkgs: string[] }): Promise<void> {
-    this._logger.debug("프로젝트 설정 가져오기...");
-    const config = await SdCliConfigUtil.loadConfigAsync(path.resolve(this._rootPath, opt.confFileRelPath), false, opt.optNames);
-
-    if (opt.noBuild) {
-      this._logger.warn("빌드하지 않고, 배포하는것은 상당히 위험합니다.");
-      await this._waitSecMessageAsync("프로세스를 중지하려면, 'CTRL+C'를 누르세요.", 5);
-    }
-
-    // GIT 사용중일 경우, 커밋되지 않은 수정사항이 있는지 확인
-    if (FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
-      this._logger.debug("GIT 커밋여부 확인...");
-      const gitStatusResult = await SdProcess.spawnAsync("git status");
-      if (gitStatusResult.includes("Changes") || gitStatusResult.includes("Untracked")) {
-        throw new Error("커밋되지 않은 정보가 있습니다.\n" + gitStatusResult);
-      }
-    }
-
-    this._logger.debug("패키지 목록 구성...");
-    const pkgs = await this._getPackagesAsync(config, opt.pkgs);
-
-    this._logger.debug("프로젝트 및 패키지 버전 설정...");
-    await this._upgradeVersionAsync(pkgs);
-
-    // 빌드
-    if (!opt.noBuild) {
-      // this._logger.debug("노드패키지 업데이트...");
-      // await new SdCliNpm(this._rootPath).updateAsync();
-
-      this._logger.debug("빌드를 시작합니다...");
-      await this._buildPkgsAsync(pkgs);
-    }
-
-    // GIT 사용중일경우, 새 버전 커밋 및 TAG 생성
-    if (FsUtil.exists(path.resolve(process.cwd(), ".git"))) {
-      this._logger.debug("새 버전 커밋 및 TAG 생성...");
-      await SdProcess.spawnAsync("git add .");
-      await SdProcess.spawnAsync(`git commit -m "v${this._npmConfig.version}"`);
-      await SdProcess.spawnAsync(`git tag -a "v${this._npmConfig.version}" -m "v${this._npmConfig.version}"`);
-
-      this._logger.debug("새 버전 푸쉬...");
-      await SdProcess.spawnAsync("git push");
-      await SdProcess.spawnAsync("git push --tags");
-    }
-
-    this._logger.debug("배포 시작...");
-    await pkgs.parallelAsync(async (pkg) => {
-      this._logger.debug(`[${pkg.name}] 배포를 시작합니다...`);
-      await pkg.publishAsync();
-      this._logger.debug(`[${pkg.name}] 배포가 완료되었습니다.`);
-    });
-    this._logger.info(`모든 배포가 완료되었습니다. (v${this._npmConfig.version})`);
   }
 
   private async _upgradeVersionAsync(pkgs: SdCliPackage[]): Promise<void> {
@@ -445,14 +397,14 @@ export class SdCliWorkspace {
     process.stdout.clearLine(0);
   }
 
-  private async _getPackagesAsync(conf: ISdCliConfig, pkgs: string[]): Promise<SdCliPackage[]> {
+  private async _getPackagesAsync(conf: ISdCliConfig): Promise<SdCliPackage[]> {
     const pkgRootPaths = await this._npmConfig.workspaces?.mapManyAsync(async (item) => await FsUtil.globAsync(item));
     if (!pkgRootPaths) {
       throw new Error("최상위 'package.json'에서 'workspaces'를 찾을 수 없습니다.");
     }
 
     return pkgRootPaths.map((pkgRootPath) => {
-      if (pkgs.length > 0 && !pkgs.includes(path.basename(pkgRootPath))) return undefined;
+      // if (pkgs.length > 0 && !pkgs.includes(path.basename(pkgRootPath))) return undefined;
       const pkgConfig = conf.packages[path.basename(pkgRootPath)];
       if (!pkgConfig) return undefined;
       return new SdCliPackage(this._rootPath, pkgRootPath, pkgConfig);

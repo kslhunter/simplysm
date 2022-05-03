@@ -3,12 +3,10 @@
 node_modules
 tsconfig-build.json
 dist
-.cache
-.cordova
-.electron
 _logs
 _modules
 _routes.ts
 ~$*
+.*
 
 simplysm-ksl.json

@@ -111,11 +111,15 @@ export class SdCliClientBuilder extends EventEmitter {
       .map((builderType) => this._getWebpackConfig(true, builderType));
     const multiCompiler = webpack(webpackConfigs);
     await new Promise<void>((resolve, reject) => {
+      const invalidFiles: string[] = [];
       multiCompiler.hooks.invalid.tap(this.constructor.name, (fileName) => {
         if (fileName != null) {
           this._logger.debug("파일변경 감지", fileName);
+
           // NgModule 캐시 삭제
           this._ngModuleGenerator.removeCaches([path.resolve(fileName)]);
+
+          invalidFiles.push(fileName);
         }
       });
 
@@ -144,9 +148,6 @@ export class SdCliClientBuilder extends EventEmitter {
           return;
         }
 
-        // 결과 반환
-        const results = multiStats.stats.mapMany((stats) => SdCliBuildResultUtil.convertFromWebpackStats(stats));
-
         // .config.json 파일 쓰기
         const npmConfig = this._getNpmConfig(this._rootPath)!;
         const packageKey = npmConfig.name.split("/").last()!;
@@ -156,11 +157,14 @@ export class SdCliClientBuilder extends EventEmitter {
           : path.resolve(this._parsedTsconfig.options.outDir!, ".config.json");
         await FsUtil.writeFileAsync(configDistPath, JSON.stringify(this._config.configs ?? {}, undefined, 2));
 
-        // 마무리
+        // 완료 로그
         this._logger.debug("Webpack 빌드 완료");
-        resolve();
 
+        // 결과 반환
+        const results = multiStats.stats.mapMany((stats) => SdCliBuildResultUtil.convertFromWebpackStats(stats));
         this.emit("complete", results);
+
+        resolve();
       });
     });
   }
@@ -264,7 +268,8 @@ export class SdCliClientBuilder extends EventEmitter {
         "NODE_ENV=production",
         `SD_VERSION=${npmConfig.version}`,
         (this._config.builder.electron.icon !== undefined) ? `SD_ELECTRON_ICON=${this._config.builder.electron.icon}` : `SD_ELECTRON_ICON=favicon.ico`,
-        ...(this._config.env !== undefined) ? Object.keys(this._config.env).map((key) => `${key}=${this._config.env![key]}`) : []
+        ...(this._config.env !== undefined) ? Object.keys(this._config.env).map((key) => `${key}=${this._config.env![key]}`) : [],
+        ...(this._config.builder.electron.env !== undefined) ? Object.keys(this._config.builder.electron.env).map((key) => `${key}=${this._config.builder!.electron!.env![key]}`) : []
       ].filterExists().join("\n"));
 
       let electronTsFileContent = await FsUtil.readFileAsync(path.resolve(this._rootPath, `src/electron.ts`));
@@ -703,7 +708,8 @@ export class SdCliClientBuilder extends EventEmitter {
         }),
         new webpack.EnvironmentPlugin({
           SD_VERSION: this._getNpmConfig(this._rootPath)!.version,
-          ...this._config.env
+          ...this._config.env,
+          ...this._config.builder?.[builderType]?.env
         }),
         new ESLintWebpackPlugin({
           context: this._rootPath,

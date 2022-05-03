@@ -74,41 +74,27 @@ export class SdCliPackage extends EventEmitter {
       await this._genBuildTsconfigAsync();
     }
 
-    const workerPath = fileURLToPath(await import.meta.resolve!("../worker/build-worker"));
-    await new Promise<void>((resolve, reject) => {
-      const worker = cp.fork(workerPath, [
-        "watch",
-        this.rootPath,
-        JsonConvert.stringify(this.config),
-        this._workspaceRootPath
-      ], {
-        stdio: ["pipe", "pipe", "pipe", "ipc"],
-        env: process.env
-      });
-
-      worker.on("error", (err) => {
-        reject(err);
-      });
-
-      worker.stdout!.pipe(process.stdout);
-      worker.stderr!.pipe(process.stderr);
-
-      worker.on("message", (json: string) => {
-        const msg = JsonConvert.parse(json);
+    await this._runBuildWorkerAsync(
+      "watch",
+      (message) => {
+        const msg = JsonConvert.parse(message);
         if (msg.event === "ready") {
-          resolve();
+          return true;
         }
         else if (msg.event === "change") {
           this.emit("change");
+          return undefined;
         }
         else if (msg.event === "complete") {
           this.emit("complete", msg.body);
+          return undefined;
         }
         else {
-          throw new NeverEntryError();
+          return new NeverEntryError();
         }
-      });
-    });
+      },
+      (err) => err
+    );
   }
 
   public async buildAsync(): Promise<ISdCliPackageBuildResult[]> {
@@ -118,40 +104,18 @@ export class SdCliPackage extends EventEmitter {
       await this._genBuildTsconfigAsync();
     }
 
-    const workerPath = fileURLToPath(await import.meta.resolve!("../worker/build-worker"));
-    return await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
-      const worker = cp.fork(workerPath, [
-        "build",
-        this.rootPath,
-        JsonConvert.stringify(this.config),
-        this._workspaceRootPath
-      ], {
-        stdio: ["pipe", "pipe", "pipe", "ipc"],
-        env: process.env
-      });
+    let result: ISdCliPackageBuildResult[] = [];
 
-      worker.on("error", (err) => {
-        reject(err);
-      });
+    await this._runBuildWorkerAsync(
+      "build",
+      (message) => {
+        result = JsonConvert.parse(message);
+        return undefined;
+      },
+      err => err
+    );
 
-      worker.stdout!.pipe(process.stdout);
-      worker.stderr!.pipe(process.stderr);
-
-      let result: ISdCliPackageBuildResult[] = [];
-
-      worker.on("message", (json: string) => {
-        result = JsonConvert.parse(json);
-      });
-
-      worker.on("exit", (code) => {
-        if (code !== 0) {
-          reject(new Error(`오류와 함께 닫힘 (${code})`));
-          return;
-        }
-
-        resolve(result);
-      });
-    });
+    return result;
   }
 
   public async publishAsync(): Promise<void> {
@@ -167,7 +131,11 @@ export class SdCliPackage extends EventEmitter {
       }
       else {
         if (this.config.publish.type === "github") {
-          const repoUrl = typeof this._npmConfig.repository === "string" ? this._npmConfig.repository : this._npmConfig.repository.url;
+          if (!this._npmConfig.repository) {
+            throw new Error("패키지의 package.json에 repository가 설정되지 않아 github로 배포할 수 없습니다.");
+          }
+
+          const repoUrl = this._npmConfig.repository.url;
           const repoOwner = repoUrl.split("/").slice(-2)[0];
           const repoName = repoUrl.split("/").slice(-2)[1].replace(/\..*/g, "");
 
@@ -238,5 +206,54 @@ export class SdCliPackage extends EventEmitter {
 
     const buildTsconfigFilePath = path.resolve(this.rootPath, "tsconfig-build.json");
     await FsUtil.writeJsonAsync(buildTsconfigFilePath, buildTsconfig, { space: 2 });
+  }
+
+  private async _runBuildWorkerAsync(cmd: string, success: (message: string) => undefined | true | Error, error: (err: Error) => undefined | true | Error): Promise<void> {
+    return await new Promise<void>(async (resolve, reject) => {
+      const worker = cp.fork(
+        fileURLToPath(await import.meta.resolve!("../worker/build-worker")),
+        [
+          cmd,
+          this.rootPath,
+          JsonConvert.stringify(this.config),
+          this._workspaceRootPath
+        ],
+        {
+          stdio: ["pipe", "pipe", "pipe", "ipc"],
+          env: process.env
+        });
+
+      worker.on("error", (err) => {
+        const r = error(err);
+        if (r === true) {
+          resolve();
+        }
+        else if (r != null) {
+          reject(r);
+        }
+      });
+
+      worker.stdout!.pipe(process.stdout);
+      worker.stderr!.pipe(process.stderr);
+
+      worker.on("message", (json: string) => {
+        const r = success(json);
+        if (r === true) {
+          resolve();
+        }
+        else if (r != null) {
+          reject(r);
+        }
+      });
+
+      worker.on("exit", (code) => {
+        if (code !== 0) {
+          reject(new Error(`오류와 함께 닫힘 (${code})`));
+          return;
+        }
+
+        resolve();
+      });
+    });
   }
 }
