@@ -16,7 +16,7 @@ npm install sd-cli@~7.0.0
 
 :: 프로젝트 초기화
 :: sd-cli init --help 참고
-sd-cli init --name sample --description 샘플프로젝트 --author 홍길동 --gitUrl https://github.com/my/sample.git
+sd-cli init sample 샘플프로젝트 홍길동 https://github.com/my/sample.git
 
 ::::::::::::::::::::::::::::::::::::::::
 :: 아래 중 필요한 패키지 추가

@@ -1,0 +1,27 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "lib": [
+      "ES2020"
+    ],
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@simplysm/sd-core-common": [
+        "../packages/sd-core-common/src/index.ts"
+      ],
+      "@simplysm/sd-core-node": [
+        "../packages/sd-core-node/src/index.ts"
+      ],
+      "@simplysm/sd-service-server": [
+        "../packages/sd-service-server/src/index.ts"
+      ],
+      "@simplysm/sd-service-client": [
+        "../packages/sd-service-client/src/index.ts"
+      ],
+      "@simplysm/sd-cli": [
+        "../packages/sd-cli/src/index.ts"
+      ]
+    }
+  }
+}
