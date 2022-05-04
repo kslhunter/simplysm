@@ -1,7 +1,6 @@
 import { ITsconfig } from "../commons";
 import path from "path";
 import { FsUtil, PathUtil } from "@simplysm/sd-core-node";
-import os from "os";
 import chokidar from "chokidar";
 
 export class SdCliIndexFileGenerator {
@@ -55,7 +54,7 @@ export class SdCliIndexFileGenerator {
       }
     }
 
-    const content = importTexts.join(os.EOL) + os.EOL;
+    const content = importTexts.join("\n") + "\n";
     const prevContent = this._contentCache;
     this._contentCache = content;
     if (content.trim() !== prevContent?.trim()) {

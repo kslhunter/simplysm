@@ -21,6 +21,7 @@ module.exports = {
     // 기본
     "no-console": ["warn"],
     "no-warning-comments": ["warn"],
+    "linebreak-style": ["error", "unix"],
 
     // Deprecation
     "deprecation/deprecation": ["warn"],

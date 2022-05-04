@@ -13,7 +13,6 @@ import { SdCliTsNgInjectableMetadata } from "./typescript/SdCliTsFileMetadata";
 import path from "path";
 import { JSDOM } from "jsdom";
 import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
-import os from "os";
 import { INpmConfig } from "../commons";
 
 export class SdCliNgModuleGenerator {
@@ -547,7 +546,7 @@ export const routes: Routes = ${fn(def.children)};
       }
 
       const content = `
-${importTexts.join(os.EOL)}
+${importTexts.join("\n")}
 
 @NgModule({
   imports: [${moduleImportNames.orderBy().join(", ")}],
