@@ -14,7 +14,7 @@ import { SdCliProjectGenerator } from "../entry-points/SdCliProjectGenerator";
 
 Error.stackTraceLimit = Infinity;
 
-const argv = yargs(hideBin(process.argv))
+const argv = (yargs(hideBin(process.argv)) as any)
   .help("help", "도움말")
   .alias("help", "h")
   .options({
@@ -229,6 +229,11 @@ const argv = yargs(hideBin(process.argv))
               type: "boolean",
               describe: "DOM객체(window, document 등) 사용 여부",
               default: false
+            },
+            isForAngular: {
+              type: "boolean",
+              describe: "Angular 라이브러리 여부 (useDom 옵션을 덮어씁니다)",
+              default: false
             }
           })
           .example([
@@ -319,7 +324,7 @@ const argv = yargs(hideBin(process.argv))
   )
   .parseSync();
 
-if (argv.debug) {
+if (Boolean(argv.debug)) {
   process.env["SD_CLI_LOGGER_SEVERITY"] = "DEBUG";
 
   Logger.setConfig({
@@ -395,7 +400,7 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
         optNames: argv.options ?? [],
         pkgs: argv.packages ?? []
       });
-    if (!argv.noBuild) {
+    if (!Boolean(argv.noBuild)) {
       process.exit(0);
     }
   }
@@ -418,7 +423,8 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
       await new SdCliProjectGenerator(process.cwd()).addTsLibAsync({
         name: argv.name!,
         description: argv.description!,
-        useDom: argv.useDom
+        useDom: argv.useDom,
+        isForAngular: argv.isForAngular
       });
     }
     else if (argv._[1] === "db-lib") {

@@ -37,7 +37,6 @@
       <excludeFolder url="file://$MODULE_DIR$/_logs" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/doc" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular/docs" />
-      <excludeFolder url="file://$MODULE_DIR$/packages/sd-cli/docs" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-cordova/docs" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-browser/docs" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-core-common/docs" />

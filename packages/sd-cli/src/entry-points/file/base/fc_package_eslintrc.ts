@@ -14,16 +14,16 @@ module.exports = {
             project: require("path").resolve(__dirname, "tsconfig.json")
           }
         }
-      },${opt.isForAngular ? `
-      {
-        files: ["*.ts"],
-        extends: ["plugin:@simplysm/angular"]
-      },
-      {
-        files: ["*.html"],
-        extends: ["plugin:@simplysm/angular-template"]
-      }` : ""}
-    }
+      }
+    }${opt.isForAngular ? `,
+    {
+      files: ["*.ts"],
+      extends: ["plugin:@simplysm/angular"]
+    },
+    {
+      files: ["*.html"],
+      extends: ["plugin:@simplysm/angular-template"]
+    }` : ""}
   ]
 };
 

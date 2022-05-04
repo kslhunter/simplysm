@@ -13,7 +13,6 @@ export * from "./commons";
 export * from "./entry-points/file/base/fc_package_eslintrc";
 export * from "./entry-points/file/base/fc_package_npmconfig";
 export * from "./entry-points/file/base/fc_package_tsconfig";
-export * from "./entry-points/file/client/fc_package_appicons";
 export * from "./entry-points/file/client/fc_package_AppModule";
 export * from "./entry-points/file/client/fc_package_AppPage";
 export * from "./entry-points/file/client/fc_package_client_main";

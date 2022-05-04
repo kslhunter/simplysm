@@ -15,7 +15,6 @@ import { fc_package_tsconfig } from "./file/base/fc_package_tsconfig";
 import { fc_package_DbContext } from "./file/db/fc_package_DbContext";
 import { fc_package_DbModel } from "./file/db/fc_package_DbModel";
 import { fc_package_server_main } from "./file/server/fc_package_server_main";
-import { fc_package_appicons } from "./file/client/fc_package_appicons";
 import { fc_package_AppModule } from "./file/client/fc_package_AppModule";
 import { fc_package_AppPage } from "./file/client/fc_package_AppPage";
 import { fileURLToPath } from "url";
@@ -83,14 +82,20 @@ export class SdCliProjectGenerator {
     await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
   }
 
-  public async addTsLibAsync(opt: { name: string; description: string; useDom: boolean }): Promise<void> {
+  public async addTsLibAsync(opt: { name: string; description: string; useDom: boolean; isForAngular: boolean }): Promise<void> {
+    const projNpmConfig = await this._getProjNpmConfigAsync();
+    const projName = projNpmConfig.name;
+
     await this._addPackageBaseTemplate({
-      ...opt,
+      name: opt.name,
+      description: opt.description,
+      useDom: opt.isForAngular || opt.useDom,
+      isForAngular: opt.isForAngular,
       isModule: true,
-      isForAngular: false,
       types: "dist/index.d.ts",
       main: "dist/index.mjs",
-      dependencies: {}
+      dependencies: {},
+      tsconfigOptions: {}
     });
 
     this._logger.log(`[${opt.name}] 'simplysm.json' 파일에 등록`);
@@ -100,6 +105,9 @@ export class SdCliProjectGenerator {
       type: "library",
       useAutoIndex: true
     });
+
+    this._logger.log(`[${projName}] npm install`);
+    await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
   }
 
   public async addDbLibAsync(opt: { name: string }): Promise<void> {
@@ -119,7 +127,8 @@ export class SdCliProjectGenerator {
       dependencies: {
         "@simplysm/sd-core-common": "~7.0.0",
         "@simplysm/sd-orm-common": "~7.0.0"
-      }
+      },
+      tsconfigOptions: {}
     });
 
     this._logger.log(`[${pkgName}] 'src/${StringUtil.toPascalCase(opt.name)}DbContext.ts' 파일 생성`);
@@ -198,7 +207,8 @@ export class SdCliProjectGenerator {
         "@simplysm/sd-core-node": "~7.0.0",
         "@simplysm/sd-service-common": "~7.0.0",
         "@simplysm/sd-service-server": "~7.0.0"
-      }
+      },
+      tsconfigOptions: {}
     });
 
     this._logger.log(`[${pkgName}] 'src/main.ts' 파일 등록`);
@@ -232,27 +242,20 @@ export class SdCliProjectGenerator {
       isModule: true,
       isForAngular: true,
       dependencies: {
-        "@angular/common": "^13.2.0",
-        "@angular/core": "^13.2.0",
         "@angular/platform-browser": "^13.2.0",
-        "@angular/platform-browser-dynamic": "^13.2.0",
-        "@fortawesome/angular-fontawesome": "^0.10.2",
-        "@fortawesome/fontawesome-svg-core": "^6.1.0",
-        "@fortawesome/free-brands-svg-icons": "^6.1.0",
-        "@fortawesome/pro-duotone-svg-icons": "^6.1.0",
-        "@fortawesome/pro-light-svg-icons": "^6.1.0",
-        "@fortawesome/pro-regular-svg-icons": "^6.1.0",
-        "@fortawesome/pro-solid-svg-icons": "^6.1.0",
-        "@simplysm/sd-angular": "~7.0.0",
-        "@simplysm/sd-core-browser": "~7.0.0",
-        "@simplysm/sd-core-common": "~7.0.0",
-        "rxjs": "^6.6.7",
-        "zone.js": "~0.11.4"
+        "@angular/platform-browser-dynamic": "^13.2.0"
+      },
+      tsconfigOptions: {
+        angularCompilerOptions: {
+          "enableI18nLegacyMessageIdFormat": false,
+          "strictInjectionParameters": true,
+          "strictInputAccessModifiers": true,
+          "strictTemplates": true,
+          "strictInputTypes": false,
+          "strictOutputEventTypes": false
+        }
       }
     });
-
-    this._logger.log(`[${pkgName}] 'src/app-icons.ts' 파일 등록`);
-    await FsUtil.writeFileAsync(path.resolve(pkgPath, "src/app-icons.ts"), fc_package_appicons());
 
     this._logger.log(`[${pkgName}] 'src/AppModule.ts' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "src/AppModule.ts"), fc_package_AppModule());
@@ -298,7 +301,7 @@ export class SdCliProjectGenerator {
     await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
   }
 
-  private async _addPackageBaseTemplate(opt: { name: string; description: string; useDom: boolean; isModule: boolean; isForAngular: boolean; main?: string; types?: string; dependencies: Record<string, string> }): Promise<void> {
+  private async _addPackageBaseTemplate(opt: { name: string; description: string; useDom: boolean; isModule: boolean; isForAngular: boolean; main?: string; types?: string; dependencies: Record<string, string>; tsconfigOptions: Record<string, any> }): Promise<void> {
     const pkgPath = path.resolve(this._rootPath, "packages", opt.name);
 
     this._logger.log(`[${opt.name}] '.eslintrc.cjs' 파일 생성`);
@@ -314,13 +317,23 @@ export class SdCliProjectGenerator {
       isModule: opt.isModule,
       main: opt.main,
       types: opt.types,
-      dependencies: opt.dependencies
+      dependencies: {
+        ...opt.dependencies,
+        ...opt.isForAngular ? {
+          "@angular/common": "^13.2.0",
+          "@angular/core": "^13.2.0",
+          "@simplysm/sd-angular": "~7.0.0",
+          "rxjs": "^6.6.7",
+          "zone.js": "~0.11.4"
+        } : {}
+      }
     }));
 
     this._logger.log(`[${opt.name}] 'tsconfig.json' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "tsconfig.json"), fc_package_tsconfig({
       isModule: opt.isModule,
-      useDom: opt.useDom
+      useDom: opt.useDom,
+      options: opt.tsconfigOptions
     }));
 
     this._logger.log(`[${opt.name}] 'src' 디렉토리 생성`);
