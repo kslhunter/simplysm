@@ -9,7 +9,7 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ["*.js", "*.cjs", "*.mjs"],
+      files: ["*.js", "*.cjs", "*.mjs", "*.ts"],
       extends: ["plugin:@simplysm/base"]
     },
     {
