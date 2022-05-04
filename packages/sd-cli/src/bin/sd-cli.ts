@@ -255,7 +255,7 @@ const argv = (yargs(hideBin(process.argv)) as any)
           ])
       )
       .command(
-        "db-model <dbName> <category> <name> <description>",
+        "db-model <dbName> <category></category> <name> <description>",
         "DB 패키지에 모델를 추가합니다.",
         (cmd1) => cmd1.version(false).hide("help").hide("debug")
           .positional("dbName", {
@@ -319,6 +319,35 @@ const argv = (yargs(hideBin(process.argv)) as any)
           })
           .example([
             ["$0 add client admin 관리자 server"]
+          ])
+      )
+      .command(
+        "page <pkgName> <name> [category]",
+        "패키지에 페이지를 추가합니다.",
+        (cmd1) => cmd1.version(false).hide("help").hide("debug")
+          .positional("pkgName", {
+            type: "string",
+            describe: "패키지명",
+            demandOption: true
+          })
+          .positional("name", {
+            type: "string",
+            describe: "페이지명",
+            demandOption: true
+          })
+          .positional("category", {
+            type: "string",
+            describe: "추가할 페이지의 분류명"
+          })
+          .options({
+            isRouteParent: {
+              type: "boolean",
+              describe: "router-outlet 포함 여부",
+              default: false
+            }
+          })
+          .example([
+            ["$0 add page admin Employee home/base"]
           ])
       )
   )
@@ -438,6 +467,14 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
         category: argv.category,
         name: argv.name!,
         description: argv.description!
+      });
+    }
+    else if (argv._[1] === "page") {
+      await new SdCliProjectGenerator(process.cwd()).addPageAsync({
+        pkgName: argv.pkgName,
+        category: argv.category,
+        name: argv.name!,
+        isRouteParent: argv.isRouteParent
       });
     }
     else if (argv._[1] === "server") {

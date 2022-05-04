@@ -2,9 +2,9 @@
 
 ## Requirements
 
-* node@16.x
+* node v16.x.x
 
-## Usage
+## 프로젝트 생성 방법
 
 ### 1. 폴더생성
 
@@ -45,6 +45,10 @@ sd-cli add server
 :: sd-cli add client --help 참고
 sd-cli add client admin 관리자 server
 ```
+
+추가 작업
+* [클라이언트 패키지에 Router 기능 추가](docs/client-router.md)
+* [클라이언트 패키지에 ServiceWorker 기능 추가](docs/client-sw.md)
 
 #### 일반 라이브러리 패키지 추가
 

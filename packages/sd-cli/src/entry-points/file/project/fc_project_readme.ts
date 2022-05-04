@@ -3,9 +3,10 @@ export const fc_project_readme = (opt: { description: string }): string => /* la
 
 ## Requirements
 
-* node@16.x.x
+* node v16.x.x
 
 ## Installation
 
     npm install
+    
 `.trim();

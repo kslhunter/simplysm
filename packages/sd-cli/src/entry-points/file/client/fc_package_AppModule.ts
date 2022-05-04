@@ -26,7 +26,7 @@ export class AppModule implements DoBootstrap {
   public constructor(private readonly _toast: SdToastProvider) {
   }
 
-  public async ngDoBootstrap(appRef: ApplicationRef): Promise<void> {
+  public ngDoBootstrap(appRef: ApplicationRef): void {
     this._toast.alertThemes = ["danger"];
 
     appRef.bootstrap(AppPage);

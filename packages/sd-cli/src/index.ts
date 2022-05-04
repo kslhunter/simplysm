@@ -18,6 +18,7 @@ export * from "./entry-points/file/client/fc_package_AppPage";
 export * from "./entry-points/file/client/fc_package_client_main";
 export * from "./entry-points/file/client/fc_package_index";
 export * from "./entry-points/file/client/fc_package_manifest";
+export * from "./entry-points/file/client/fc_package_Page";
 export * from "./entry-points/file/client/fc_package_polyfills";
 export * from "./entry-points/file/client/fc_package_styles";
 export * from "./entry-points/file/db/fc_package_DbContext";

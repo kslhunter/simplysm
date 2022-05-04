@@ -24,6 +24,8 @@ import { fc_package_manifest } from "./file/client/fc_package_manifest";
 import { INpmConfig } from "../commons";
 import { fc_package_polyfills } from "./file/client/fc_package_polyfills";
 import { fc_package_styles } from "./file/client/fc_package_styles";
+import { ISdAutoIndexConfig } from "../build-tool/SdCliIndexFileGenerator";
+import { fc_package_Page } from "./file/client/fc_package_Page";
 
 export class SdCliProjectGenerator {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -103,7 +105,14 @@ export class SdCliProjectGenerator {
     await this._addPackageToSimplysmJson({
       name: opt.name,
       type: "library",
-      useAutoIndex: true
+      autoIndex: {
+        ...opt.isForAngular ? {
+          polyfills: [
+            "@simplysm/sd-core-common",
+            "@simplysm/sd-core-browser"
+          ]
+        } : {}
+      },
     });
 
     this._logger.log(`[${projName}] npm install`);
@@ -143,7 +152,7 @@ export class SdCliProjectGenerator {
     await this._addPackageToSimplysmJson({
       name: pkgName,
       type: "library",
-      useAutoIndex: true
+      autoIndex: {}
     });
 
     this._logger.log(`[${projName}] npm install`);
@@ -157,10 +166,12 @@ export class SdCliProjectGenerator {
     this._logger.log(`[${pkgName}] 'src/models/${opt.category}/${opt.name}.ts' 파일 생성`);
 
     await FsUtil.writeFileAsync(
-      path.resolve(pkgPath, `src/models/${opt.category}/${opt.name}.ts`), fc_package_DbModel({
+      path.resolve(pkgPath, `src/models/${opt.category}/${opt.name}.ts`),
+      fc_package_DbModel({
         name: opt.name,
         description: opt.description
-      }));
+      })
+    );
 
     this._logger.log(`[${pkgName}] DbContext 파일에 등록`);
     let dbContextContent = await FsUtil.readFileAsync(path.resolve(pkgPath, `src/${StringUtil.toPascalCase(opt.dbPkgName)}DbContext.ts`));
@@ -220,8 +231,7 @@ export class SdCliProjectGenerator {
     this._logger.log(`[${pkgName}] 'simplysm.json' 파일에 등록`);
     await this._addPackageToSimplysmJson({
       name: pkgName,
-      type: "server",
-      useAutoIndex: false
+      type: "server"
     });
 
     this._logger.log(`[${projName}] npm install`);
@@ -286,19 +296,36 @@ export class SdCliProjectGenerator {
 
     this._logger.log(`[${pkgName}] 'src/assets' 파일 복사`);
     await FsUtil.copyAsync(
-      path.resolve(path.dirname(fileURLToPath(import.meta.url)), "file/assets"),
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../assets/client-files"),
       path.resolve(pkgPath, "src")
     );
 
     await this._addPackageToSimplysmJson({
       name: pkgName,
       type: "client",
-      useAutoIndex: false,
       serverName: opt.serverName
     });
 
     this._logger.log(`[${projName}] npm install`);
     await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
+  }
+
+  public async addPageAsync(opt: { pkgName: string; category?: string; name: string; isRouteParent: boolean }): Promise<void> {
+    const pkgPath = path.resolve(this._rootPath, "packages", opt.pkgName);
+
+    this._logger.log(`[${opt.pkgName}] 'src/app/${Boolean(opt.category) ? opt.category + "/" : ""}${opt.name}Page.ts' 파일 생성`);
+    await FsUtil.writeFileAsync(
+      path.resolve(pkgPath, `src/app/${Boolean(opt.category) ? opt.category + "/" : ""}${opt.name}Page.ts`),
+      fc_package_Page({
+        name: opt.name,
+        isRouteParent: opt.isRouteParent
+      })
+    );
+
+    if (opt.isRouteParent) {
+      this._logger.log(`[${opt.name}] 'src/app/${Boolean(opt.category) ? opt.category + "/" : ""}${StringUtil.toKebabCase(opt.name)}' 디렉토리 생성`);
+      await FsUtil.mkdirsAsync(path.resolve(pkgPath, `src/app/${Boolean(opt.category) ? opt.category + "/" : ""}${StringUtil.toKebabCase(opt.name)}`));
+    }
   }
 
   private async _addPackageBaseTemplate(opt: { name: string; description: string; useDom: boolean; isModule: boolean; isForAngular: boolean; main?: string; types?: string; dependencies: Record<string, string>; tsconfigOptions: Record<string, any> }): Promise<void> {
@@ -323,6 +350,8 @@ export class SdCliProjectGenerator {
           "@angular/common": "^13.2.0",
           "@angular/core": "^13.2.0",
           "@simplysm/sd-angular": "~7.0.0",
+          "@simplysm/sd-core-common": "~7.0.0",
+          "@simplysm/sd-core-browser": "~7.0.0",
           "rxjs": "^6.6.7",
           "zone.js": "~0.11.4"
         } : {}
@@ -340,12 +369,12 @@ export class SdCliProjectGenerator {
     await FsUtil.mkdirsAsync(path.resolve(pkgPath, "src"));
   }
 
-  private async _addPackageToSimplysmJson(opt: { name: string; type: string; useAutoIndex: boolean; serverName?: string }): Promise<void> {
+  private async _addPackageToSimplysmJson(opt: { name: string; type: string; autoIndex?: ISdAutoIndexConfig; serverName?: string }): Promise<void> {
     const config = await FsUtil.readJsonAsync(path.resolve(this._rootPath, "simplysm.json"));
     config.packages = config.packages ?? {};
     config.packages[opt.name] = {
       type: opt.type,
-      ...opt.useAutoIndex ? { autoIndex: {} } : {},
+      ...opt.autoIndex ? { autoIndex: opt.autoIndex } : {},
       ...opt.serverName !== undefined ? { server: opt.serverName } : {}
     };
     await FsUtil.writeJsonAsync(path.resolve(this._rootPath, "simplysm.json"), config, { space: 2 });
