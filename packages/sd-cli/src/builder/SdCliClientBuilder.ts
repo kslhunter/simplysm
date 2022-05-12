@@ -536,7 +536,7 @@ export class SdCliClientBuilder extends EventEmitter {
                   scriptTarget: ts.ScriptTarget.ES2017,
                   aot: true,
                   optimize: !watch,
-                  c: undefined
+                  instrumentCode: undefined
                 }
               }
             ]
