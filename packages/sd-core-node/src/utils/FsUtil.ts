@@ -35,7 +35,7 @@ export class FsUtil {
   public static async globAsync(pattern: string, options: glob.IOptions): Promise<string[]>;
   public static async globAsync(pattern: string, options?: glob.IOptions): Promise<string[]> {
     return await new Promise<string[]>((resolve, reject) => {
-      glob(pattern, options ?? {}, (err: (Error | null), matches) => {
+      glob(pattern.replace(/\\/g, "/"), options ?? {}, (err: (Error | null), matches) => {
         if (err) {
           reject(err);
           return;
@@ -46,7 +46,7 @@ export class FsUtil {
   }
 
   public static glob(pattern: string, options?: glob.IOptions): string[] {
-    return glob.sync(pattern, options);
+    return glob.sync(pattern.replace(/\\/g, "/"), options);
   }
 
   public static async readdirAsync(targetPath: string): Promise<string[]> {
