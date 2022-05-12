@@ -24,6 +24,8 @@ export class SdCliServerBuilder extends EventEmitter {
   private readonly _parsedTsconfig: ts.ParsedCommandLine;
   private readonly _npmConfigMap = new Map<string, INpmConfig>();
 
+  private readonly _cacheBasePath = path.resolve(this._rootPath, ".cache");
+
   public constructor(private readonly _rootPath: string,
                      private readonly _config: ISdCliServerPackageConfig,
                      private readonly _workspaceRootPath: string) {
@@ -41,9 +43,37 @@ export class SdCliServerBuilder extends EventEmitter {
     return super.on(event, listener);
   }
 
+  private async _checkCacheAsync(watch: boolean): Promise<void> {
+    const workspacePkgLockContent = await FsUtil.readFileAsync(path.resolve(this._workspaceRootPath, "package-lock.json"));
+
+    // const cachePath = path.resolve(cacheBasePath, pkgVersion);
+
+    const versionHash = createHash("sha1")
+      .update(workspacePkgLockContent)
+      .update(JSON.stringify(this._parsedTsconfig.options))
+      .update(JSON.stringify(this._config))
+      .update(watch.toString())
+      .digest("hex");
+    if (
+      !FsUtil.exists(path.resolve(this._cacheBasePath, "version")) // 버전파일이 없거나
+      || (
+        FsUtil.exists(path.resolve(this._cacheBasePath, "version")) &&
+        await FsUtil.readFileAsync(path.resolve(this._cacheBasePath, "version")) !== versionHash
+      ) // 버전이 현재 버전과 다르면
+    ) {
+      // 캐시 삭제
+      await FsUtil.removeAsync(path.resolve(this._cacheBasePath));
+    }
+    // 버전쓰기
+    await FsUtil.writeFileAsync(path.resolve(this._cacheBasePath, "version"), versionHash);
+  }
+
   public async watchAsync(): Promise<void> {
     // DIST 비우기
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
+
+    // 캐시체크
+    await this._checkCacheAsync(true);
 
     // 빌드 준비
     const extModules = this._getExternalModules();
@@ -233,11 +263,6 @@ export class SdCliServerBuilder extends EventEmitter {
     const pkgKey = npmConfig.name.split("/").last()!;
     // const pkgVersion = npmConfig.version;
 
-    const workspacePkgLockContent = FsUtil.readFile(path.resolve(this._workspaceRootPath, "package-lock.json"));
-
-    const cacheBasePath = path.resolve(this._rootPath, ".cache");
-    // const cachePath = path.resolve(cacheBasePath, pkgVersion);
-
     let prevProgressMessage = "";
     return {
       mode: watch ? "development" : "production",
@@ -291,14 +316,9 @@ export class SdCliServerBuilder extends EventEmitter {
       cache: {
         type: "filesystem",
         profile: watch ? undefined : false,
-        cacheDirectory: path.resolve(cacheBasePath, "server-webpack"),
+        cacheDirectory: this._cacheBasePath,
         maxMemoryGenerations: 1,
-        name: createHash("sha1")
-          .update(workspacePkgLockContent)
-          .update(JSON.stringify(this._parsedTsconfig.options))
-          .update(JSON.stringify(this._config))
-          .update(watch.toString())
-          .digest("hex")
+        name: "webpack"
       },
       snapshot: {
         immutablePaths: internalModuleCachePaths,
@@ -474,7 +494,7 @@ export class SdCliServerBuilder extends EventEmitter {
           continue;
         }
 
-        if (FsUtil.exists(path.resolve(modulePath, "binding.gyp"))) {
+        if (FsUtil.glob(path.resolve(modulePath, "**/binding.gyp")).length > 0) {
           results.push({ name: moduleName, exists: true });
         }
 
@@ -495,7 +515,7 @@ export class SdCliServerBuilder extends EventEmitter {
           continue;
         }
 
-        if (FsUtil.exists(path.resolve(optModulePath, "binding.gyp"))) {
+        if (FsUtil.glob(path.resolve(optModulePath, "**/binding.gyp")).length > 0) {
           results.push({ name: optModuleName, exists: true });
         }
 

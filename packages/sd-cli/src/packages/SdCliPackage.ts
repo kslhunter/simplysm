@@ -178,7 +178,7 @@ export class SdCliPackage extends EventEmitter {
             return process.env[envName] ?? item;
           });
 
-          const filePaths = await FsUtil.globAsync(path.resolve(this.rootPath, "**", "*"), {
+          const filePaths = await FsUtil.globAsync(path.resolve(parsedTsconfig.options.outDir!, "**", "*"), {
             dot: true,
             nodir: true
           });

@@ -45,6 +45,10 @@ export class SdFsWatcher {
   public add(paths: string[]): void {
     this._watcher.add(paths);
   }
+
+  public async closeAsync(): Promise<void> {
+    await this._watcher.close();
+  }
 }
 
 export type TSdFsWatcherEvent = "change" | "unlink" | "add" | "unlinkDir" | "addDir";

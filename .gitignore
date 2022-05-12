@@ -7,6 +7,6 @@ _logs
 _modules
 _routes.ts
 ~$*
-.*
+.*/
 
 simplysm-ksl.json

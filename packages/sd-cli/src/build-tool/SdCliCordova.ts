@@ -8,7 +8,7 @@ export class SdCliCordova {
 
   private readonly _npmConfig: INpmConfig;
 
-  public readonly cordovaPath = path.resolve(this._rootPath, ".cordova");
+  public readonly cordovaPath = path.resolve(this._rootPath, ".cache", "cordova");
   private readonly _binPath = path.resolve(process.cwd(), "node_modules/.bin/cordova.cmd");
 
   public get platforms(): ("browser" | "android")[] {
@@ -34,7 +34,7 @@ export class SdCliCordova {
       this._logger.log("이미 생성되어있는 '.cordova'를 사용합니다.");
     }
     else {
-      await this._execAsync(`${this._binPath} telemetry on`, this._rootPath);
+      await this._execAsync(`${this._binPath} telemetry on`, this.cordovaPath);
 
       // 프로젝트 생성
       await this._execAsync(`${this._binPath} create "${this.cordovaPath}" "${this._config.appId}" "${this._config.appName}"`, process.cwd());

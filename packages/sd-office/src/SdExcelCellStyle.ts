@@ -95,32 +95,31 @@ export class SdExcelCellStyle {
 
   public get numberFormat(): string | number {
     const styleData = this._getStyleData();
+    const numFmtId = NumberUtil.parseInt(styleData?.$?.numFmtId);
     if (
-      styleData?.$?.numFmtId === undefined
-      || styleData.$.numFmtId === "0"
-      || styleData.$.numFmtId === "10" // percent
+      numFmtId == null
+      || (numFmtId >= 0 && numFmtId <= 8) // number
+      || (numFmtId >= 9 && numFmtId <= 10) // percent
+      || (numFmtId >= 37 && numFmtId <= 42)
     ) {
       return "number";
     }
-    else if (
-      styleData.$.numFmtId === "14"
-      || styleData.$.numFmtId === "55"
-    ) {
+    else if (numFmtId >= 14 && numFmtId <= 17) {
       return "DateOnly";
     }
-    else if (styleData.$.numFmtId === "22") {
+    else if (
+      (numFmtId >= 18 && numFmtId <= 21)
+      || (numFmtId >= 45 && numFmtId <= 47)
+    ) {
+      return "Time";
+    }
+    else if (numFmtId === 22) {
       return "DateTime";
     }
-    else if (
-      styleData.$.numFmtId === "41"
-      || styleData.$.numFmtId === "42"
-    ) {
-      return "Currency";
-    }
-    else if (styleData.$.numFmtId === "49") {
+    else if (numFmtId === 49) {
       return "string";
     }
-    else if (styleData.$.numFmtId > 50) {
+    else if (numFmtId > 50) {
       const numFmtData = this._getNumFmtData();
 
       const fmtCode = numFmtData?.$?.formatCode as string | undefined;
@@ -140,10 +139,10 @@ export class SdExcelCellStyle {
         ) {
           return "DateOnly";
         }
-        else if (fmtCode.includes("#,##0")) {
-          return "Currency";
-        }
-        else if (fmtCode === "0_);[Red]\\(0\\)") {
+        else if (
+          fmtCode.includes("#,##0")
+          || fmtCode === "0_);[Red]\\(0\\)"
+        ) {
           return "number";
         }
       }

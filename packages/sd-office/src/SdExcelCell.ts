@@ -136,7 +136,7 @@ export class SdExcelCell {
       return SdExcelUtil.getDateTime(Number(value));
     }
     else {
-      throw new Error("지원되지 않는 타입입니다: " + this.cellData.$.r + ": " + this.cellData.$.t + ", " + this.style.numberFormat);
+      throw new Error(`지원되지 않는 타입입니다: ${this.excelWorkSheet.name}[${this.cellData.$.r}] - ${this.cellData.$.t}, ${this.style.numberFormat}`);
     }
   }
 

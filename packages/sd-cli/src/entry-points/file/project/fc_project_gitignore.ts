@@ -11,6 +11,6 @@ _logs
 _modules
 _routes.ts
 ~$*.xlsx
-.*
+.*/
 
 `.trim();

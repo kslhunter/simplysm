@@ -46,6 +46,8 @@ export class SdCliClientBuilder extends EventEmitter {
 
   private readonly _hasAngularRoute: boolean;
 
+  private readonly _cacheBasePath = path.resolve(this._rootPath, ".cache");
+
   public constructor(private readonly _rootPath: string,
                      private readonly _config: ISdCliClientPackageConfig,
                      private readonly _workspaceRootPath: string) {
@@ -92,10 +94,38 @@ export class SdCliClientBuilder extends EventEmitter {
     return super.on(event, listener);
   }
 
+  private async _checkCacheAsync(watch: boolean): Promise<void> {
+    const workspacePkgLockContent = await FsUtil.readFileAsync(path.resolve(this._workspaceRootPath, "package-lock.json"));
+
+    // const cachePath = path.resolve(cacheBasePath, pkgVersion);
+
+    const versionHash = createHash("sha1")
+      .update(workspacePkgLockContent)
+      .update(JSON.stringify(this._parsedTsconfig.options))
+      .update(JSON.stringify(this._config))
+      .update(watch.toString())
+      .digest("hex");
+    if (
+      !FsUtil.exists(path.resolve(this._cacheBasePath, "version")) // 버전파일이 없거나
+      || (
+        FsUtil.exists(path.resolve(this._cacheBasePath, "version")) &&
+        await FsUtil.readFileAsync(path.resolve(this._cacheBasePath, "version")) !== versionHash
+      ) // 버전이 현재 버전과 다르면
+    ) {
+      // 캐시 삭제
+      await FsUtil.removeAsync(path.resolve(this._cacheBasePath));
+    }
+    // 버전쓰기
+    await FsUtil.writeFileAsync(path.resolve(this._cacheBasePath, "version"), versionHash);
+  }
+
   public async watchAsync(): Promise<void> {
     // DIST 비우기
     await FsUtil.removeAsync(path.resolve(this._rootPath, ".electron"));
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
+
+    // 캐시체크
+    await this._checkCacheAsync(true);
 
     // NgModule 생성
     await this._ngModuleGenerator.runAsync();
@@ -176,6 +206,9 @@ export class SdCliClientBuilder extends EventEmitter {
     this._logger.debug("removeAsync:2");
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
+    // 캐시체크
+    await this._checkCacheAsync(false);
+
     // NgModule 생성
     this._logger.debug("ngModule");
     await this._ngModuleGenerator.runAsync();
@@ -215,7 +248,7 @@ export class SdCliClientBuilder extends EventEmitter {
       await augmentAppWithServiceWorker(
         PathUtil.posix(path.relative(this._workspaceRootPath, this._rootPath)) as any,
         PathUtil.posix(path.relative(this._workspaceRootPath, path.resolve(this._parsedTsconfig.options.outDir!))) as any,
-        `/${packageKey}/`,
+        `/${packageKey}/` as any,
         PathUtil.posix(path.relative(this._workspaceRootPath, path.resolve(this._rootPath, "ngsw-config.json")))
       );
     }
@@ -333,8 +366,6 @@ export class SdCliClientBuilder extends EventEmitter {
     const pkgKey = npmConfig.name.split("/").last()!;
     const publicPath = builderType === "web" ? `/${pkgKey}/` : watch ? `/${pkgKey}/${builderType}/` : ``;
 
-    const cacheBasePath = path.resolve(this._rootPath, ".cache");
-
     const distPath = (builderType === "cordova" && !watch) ? path.resolve(this._cordova!.cordovaPath, "www")
       : (builderType === "electron" && !watch) ? path.resolve(this._rootPath, ".electron/src")
         : builderType === "web" ? this._parsedTsconfig.options.outDir
@@ -345,6 +376,25 @@ export class SdCliClientBuilder extends EventEmitter {
     const mainFilePath = path.resolve(this._rootPath, "src/main.ts");
     const polyfillsFilePath = path.resolve(this._rootPath, "src/polyfills.ts");
     const stylesFilePath = path.resolve(this._rootPath, "src/styles.scss");
+
+    const versionHash = createHash("sha1")
+      .update(workspacePkgLockContent)
+      .update(JSON.stringify(this._parsedTsconfig.options))
+      .update(JSON.stringify(this._config))
+      .update(watch.toString())
+      .digest("hex");
+    if (
+      !FsUtil.exists(path.resolve(this._cacheBasePath, "version")) // 버전파일이 없거나
+      || (
+        FsUtil.exists(path.resolve(this._cacheBasePath, "version")) &&
+        FsUtil.readFile(path.resolve(this._cacheBasePath, "version")) !== versionHash
+      ) // 버전이 현재 버전과 다르면
+    ) {
+      // 캐시 삭제
+      FsUtil.remove(path.resolve(this._cacheBasePath));
+    }
+    // 버전쓰기
+    FsUtil.writeFile(path.resolve(this._cacheBasePath, "version"), versionHash);
 
     let prevProgressMessage = "";
     return {
@@ -400,14 +450,9 @@ export class SdCliClientBuilder extends EventEmitter {
       cache: {
         type: "filesystem",
         profile: undefined,
-        cacheDirectory: path.resolve(cacheBasePath, "angular-webpack"),
+        cacheDirectory: this._cacheBasePath,
         maxMemoryGenerations: 1,
-        name: createHash("sha1")
-          .update(workspacePkgLockContent)
-          .update(JSON.stringify(this._parsedTsconfig.options))
-          .update(JSON.stringify(this._config))
-          .update(watch.toString())
-          .digest("hex")
+        name: "webpack"
       },
       snapshot: {
         immutablePaths: internalModuleCachePaths,
@@ -487,11 +532,11 @@ export class SdCliClientBuilder extends EventEmitter {
               {
                 loader: "@angular-devkit/build-angular/src/babel/webpack-loader",
                 options: {
-                  cacheDirectory: path.resolve(cacheBasePath, "babel-webpack"),
+                  cacheDirectory: path.resolve(this._cacheBasePath, "webpack-babel"),
                   scriptTarget: ts.ScriptTarget.ES2017,
                   aot: true,
                   optimize: !watch,
-                  instrumentCode: undefined
+                  c: undefined
                 }
               }
             ]
@@ -694,8 +739,8 @@ export class SdCliClientBuilder extends EventEmitter {
           sri: false,
           cache: {
             enabled: true,
-            basePath: cacheBasePath,
-            path: path.resolve(cacheBasePath, "index-webpack")
+            basePath: this._cacheBasePath,
+            path: path.resolve(this._cacheBasePath, "webpack-html")
           },
           postTransform: undefined,
           optimization: {
