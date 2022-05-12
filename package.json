@@ -48,11 +48,11 @@
     "chai": "^4.3.6",
     "cross-env": "^7.0.3",
     "eslint": "^8.7.0",
-    "mocha": "^9.2.0",
+    "mocha": "^10.0.0",
     "ts-node": "^10.4.0",
-    "tsconfig-paths": "^3.12.0",
+    "tsconfig-paths": "^4.0.0",
     "typescript": "~4.5.5",
-    "sinon": "^13.0.2",
+    "sinon": "^14.0.0",
     "deep-equal-in-any-order": "^1.1.17"
   }
 }
