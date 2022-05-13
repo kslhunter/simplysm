@@ -247,6 +247,7 @@ export class SdCliClientBuilder extends EventEmitter {
       const packageKey = this._getNpmConfig(this._rootPath)!.name.split("/").last()!;
       await augmentAppWithServiceWorker(
         PathUtil.posix(path.relative(this._workspaceRootPath, this._rootPath)) as any,
+        PathUtil.posix(this._workspaceRootPath),
         PathUtil.posix(path.relative(this._workspaceRootPath, path.resolve(this._parsedTsconfig.options.outDir!))) as any,
         `/${packageKey}/` as any,
         PathUtil.posix(path.relative(this._workspaceRootPath, path.resolve(this._rootPath, "ngsw-config.json")))
