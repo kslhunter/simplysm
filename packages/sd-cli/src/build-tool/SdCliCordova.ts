@@ -34,7 +34,7 @@ export class SdCliCordova {
       this._logger.log("이미 생성되어있는 '.cordova'를 사용합니다.");
     }
     else {
-      await this._execAsync(`${this._binPath} telemetry on`, this.cordovaPath);
+      await this._execAsync(`${this._binPath} telemetry on`, this._rootPath);
 
       // 프로젝트 생성
       await this._execAsync(`${this._binPath} create "${this.cordovaPath}" "${this._config.appId}" "${this._config.appName}"`, process.cwd());
