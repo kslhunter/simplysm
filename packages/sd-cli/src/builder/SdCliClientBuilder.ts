@@ -121,7 +121,7 @@ export class SdCliClientBuilder extends EventEmitter {
 
   public async watchAsync(): Promise<void> {
     // DIST 비우기
-    await FsUtil.removeAsync(path.resolve(this._rootPath, ".electron"));
+    await FsUtil.removeAsync(path.resolve(this._rootPath, ".cache", "electron"));
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 
     // 캐시체크
@@ -202,7 +202,7 @@ export class SdCliClientBuilder extends EventEmitter {
   public async buildAsync(): Promise<ISdCliPackageBuildResult[]> {
     // DIST 비우기
     this._logger.debug("removeAsync:1");
-    await FsUtil.removeAsync(path.resolve(this._rootPath, ".electron"));
+    await FsUtil.removeAsync(path.resolve(this._rootPath, ".cache", "electron"));
     this._logger.debug("removeAsync:2");
     await FsUtil.removeAsync(this._parsedTsconfig.options.outDir!);
 

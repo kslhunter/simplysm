@@ -180,13 +180,9 @@ const argv = (yargs(hideBin(process.argv)) as any)
       })
   )
   .command(
-    "init [name] <description> <author> <gitUrl>",
+    "init <description> <author> <gitUrl> [name]",
     "프로젝트를 초기화 합니다.",
     (cmd) => cmd.version(false).hide("help").hide("debug")
-      .positional("name", {
-        type: "string",
-        describe: "프로젝트 영문명 (기본값: 최종폴더명)"
-      })
       .positional("description", {
         type: "string",
         describe: "프로젝트 설명(=명칭)",
@@ -201,6 +197,10 @@ const argv = (yargs(hideBin(process.argv)) as any)
         type: "string",
         describe: "소스코드 관리를 위한 GIT 레파지토리 URL",
         demandOption: true
+      })
+      .positional("name", {
+        type: "string",
+        describe: "프로젝트 영문명 (기본값: 최종폴더명)"
       })
       .example([
         ["$0 init sample 샘플프로젝트 홍길동 https://github.com/my/sample.git"]
@@ -255,7 +255,7 @@ const argv = (yargs(hideBin(process.argv)) as any)
           ])
       )
       .command(
-        "db-model <dbName> <category></category> <name> <description>",
+        "db-model <dbName> <category> <name> <description>",
         "DB 패키지에 모델를 추가합니다.",
         (cmd1) => cmd1.version(false).hide("help").hide("debug")
           .positional("dbName", {

@@ -23,21 +23,21 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
         display: inline-flex;
       }
 
-      &[sd-vertical-align=middle] {
+      /*&[sd-vertical-align=center] {
         align-items: center;
       }
 
-      &[sd-vertical-align=top] {
+      &[sd-vertical-align=start] {
         align-items: start;
       }
 
-      &[sd-vertical-align=bottom] {
+      &[sd-vertical-align=end] {
         align-items: end;
       }
 
-      &[sd-vertical-align=fill] {
+      &[sd-vertical-align=stretch] {
         align-items: stretch;
-      }
+      }*/
     }`]
 })
 export class SdFlexControl {
@@ -61,6 +61,14 @@ export class SdFlexControl {
   })
   @HostBinding("style.align-items")
   public alignItems?: "center" | "start" | "end" | "stretch";
+
+  @Input()
+  @SdInputValidate({
+    type: String,
+    includes: ["center", "flex-start", "flex-end", "stretch"]
+  })
+  @HostBinding("style.justify-content")
+  public justifyContent?: "center" | "flex-start" | "flex-end" | "stretch";
 
   @Input()
   @SdInputValidate({

@@ -23,7 +23,7 @@ npm install @simplysm/sd-cli@~7.0.0
 
 ``` bat
 :: sd-cli init --help 참고
-sd-cli init sample 샘플프로젝트 홍길동 https://github.com/my/sample.git
+sd-cli init 샘플프로젝트 홍길동 https://github.com/my/sample.git
 ```
 
 필요시 아래 작업 수행
