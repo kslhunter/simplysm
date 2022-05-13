@@ -105,28 +105,6 @@
       "type": "library",
       "autoIndex": {},
       "publish": "npm"
-    },
-    "sd-devtool": {
-      "type": "client",
-      "server": "sd-default-server",
-      "builder": {
-        "electron": {
-          "appId": "kr.co.simplysm.simplysm.sd_devtool",
-          "installerIcon": "assets/icons/icon-512x512.png"
-        }
-      },
-      "env": {
-        "SERVER_HOST": "simplysm.co.kr",
-        "SERVER_PORT": 50080
-      }
-    },
-    "sd-default-server": {
-      "type": "server",
-      "pm2": {
-        "ignore_watch": [
-          "_logs"
-        ]
-      }
     }
   }
 }

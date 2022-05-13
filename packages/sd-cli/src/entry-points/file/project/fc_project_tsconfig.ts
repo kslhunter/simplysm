@@ -9,7 +9,6 @@ export const fc_project_tsconfig = (): string => JSON.stringify({
     strict: true,
     moduleResolution: "node",
     esModuleInterop: true,
-    noImplicitOverride: true,
     noImplicitReturns: true,
     noImplicitAny: false,
     useUnknownInCatchVariables: false,
