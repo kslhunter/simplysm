@@ -50,7 +50,7 @@ export class SdCliClientBuilder extends EventEmitter {
 
   public constructor(private readonly _rootPath: string,
                      private readonly _config: ISdCliClientPackageConfig,
-                     private readonly _workspaceRootPath: string) {
+                     private readonly _projRootPath: string) {
     super();
 
     const npmConfig = this._getNpmConfig(this._rootPath)!;
@@ -95,12 +95,12 @@ export class SdCliClientBuilder extends EventEmitter {
   }
 
   private async _checkCacheAsync(watch: boolean): Promise<void> {
-    const workspacePkgLockContent = await FsUtil.readFileAsync(path.resolve(this._workspaceRootPath, "package-lock.json"));
+    const projPkgLockContent = await FsUtil.readFileAsync(path.resolve(this._projRootPath, "package-lock.json"));
 
     // const cachePath = path.resolve(cacheBasePath, pkgVersion);
 
     const versionHash = createHash("sha1")
-      .update(workspacePkgLockContent)
+      .update(projPkgLockContent)
       .update(JSON.stringify(this._parsedTsconfig.options))
       .update(JSON.stringify(this._config))
       .update(watch.toString())
@@ -183,7 +183,7 @@ export class SdCliClientBuilder extends EventEmitter {
         const packageKey = npmConfig.name.split("/").last()!;
 
         const configDistPath = typeof this._config.server === "string"
-          ? path.resolve(this._workspaceRootPath, "packages", this._config.server, "dist/www", packageKey, ".config.json")
+          ? path.resolve(this._projRootPath, "packages", this._config.server, "dist/www", packageKey, ".config.json")
           : path.resolve(this._parsedTsconfig.options.outDir!, ".config.json");
         await FsUtil.writeFileAsync(configDistPath, JSON.stringify(this._config.configs ?? {}, undefined, 2));
 
@@ -246,11 +246,11 @@ export class SdCliClientBuilder extends EventEmitter {
     if (builderTypes.includes("web") && FsUtil.exists(path.resolve(this._rootPath, "ngsw-config.json"))) {
       const packageKey = this._getNpmConfig(this._rootPath)!.name.split("/").last()!;
       await augmentAppWithServiceWorker(
-        PathUtil.posix(path.relative(this._workspaceRootPath, this._rootPath)) as any,
-        PathUtil.posix(this._workspaceRootPath),
-        PathUtil.posix(path.relative(this._workspaceRootPath, path.resolve(this._parsedTsconfig.options.outDir!))) as any,
+        PathUtil.posix(path.relative(this._projRootPath, this._rootPath)) as any,
+        PathUtil.posix(this._projRootPath),
+        PathUtil.posix(path.relative(this._projRootPath, path.resolve(this._parsedTsconfig.options.outDir!))) as any,
         `/${packageKey}/` as any,
-        PathUtil.posix(path.relative(this._workspaceRootPath, path.resolve(this._rootPath, "ngsw-config.json")))
+        PathUtil.posix(path.relative(this._projRootPath, path.resolve(this._rootPath, "ngsw-config.json")))
       );
     }
 
@@ -276,8 +276,8 @@ export class SdCliClientBuilder extends EventEmitter {
 
       const remoteVersion = npmConfig.dependencies?.["@electron/remote"];
 
-      const electronSrcPath = path.resolve(this._rootPath, `.electron/src`);
-      const electronDistPath = path.resolve(this._rootPath, `.electron/dist`);
+      const electronSrcPath = path.resolve(this._rootPath, `.cache/electron/src`);
+      const electronDistPath = path.resolve(this._rootPath, `.cache/electron/dist`);
 
       await FsUtil.writeJsonAsync(path.resolve(electronSrcPath, `package.json`), {
         name: npmConfig.name,
@@ -332,12 +332,12 @@ export class SdCliClientBuilder extends EventEmitter {
       });
 
       await FsUtil.copyAsync(
-        path.resolve(this._rootPath, `.electron/dist/${npmConfig.description} Setup ${npmConfig.version}.exe`),
+        path.resolve(this._rootPath, `.cache/electron/dist/${npmConfig.description} Setup ${npmConfig.version}.exe`),
         path.resolve(this._parsedTsconfig.options.outDir!, `electron/${npmConfig.description}-latest.exe`)
       );
 
       await FsUtil.copyAsync(
-        path.resolve(this._rootPath, `.electron/dist/${npmConfig.description} Setup ${npmConfig.version}.exe`),
+        path.resolve(this._rootPath, `.cache/electron/dist/${npmConfig.description} Setup ${npmConfig.version}.exe`),
         path.resolve(this._parsedTsconfig.options.outDir!, `electron/updates/${npmConfig.version}.exe`)
       );
     }
@@ -347,28 +347,28 @@ export class SdCliClientBuilder extends EventEmitter {
     return buildResults;
   }
 
-  private _getInternalModuleCachePaths(workspaceName: string): string[] {
+  private _getInternalModuleCachePaths(projName: string): string[] {
     return [
-      ...FsUtil.findAllParentChildDirPaths("node_modules/*/package.json", this._rootPath, this._workspaceRootPath),
-      ...FsUtil.findAllParentChildDirPaths(`node_modules/!(@simplysm|@${workspaceName})/*/package.json`, this._rootPath, this._workspaceRootPath),
+      ...FsUtil.findAllParentChildDirPaths("node_modules/*/package.json", this._rootPath, this._projRootPath),
+      ...FsUtil.findAllParentChildDirPaths(`node_modules/!(@simplysm|@${projName})/*/package.json`, this._rootPath, this._projRootPath),
     ].map((p) => path.dirname(p));
   }
 
   private _getWebpackConfig(watch: boolean, builderType: "web" | "cordova" | "electron"): webpack.Configuration {
-    const workspaceNpmConfig = this._getNpmConfig(this._workspaceRootPath)!;
-    const workspaceName = workspaceNpmConfig.name;
+    const projNpmConfig = this._getNpmConfig(this._projRootPath)!;
+    const projName = projNpmConfig.name;
 
-    const internalModuleCachePaths = watch ? this._getInternalModuleCachePaths(workspaceName) : undefined;
+    const internalModuleCachePaths = watch ? this._getInternalModuleCachePaths(projName) : undefined;
 
     const npmConfig = this._getNpmConfig(this._rootPath)!;
 
-    const workspacePkgLockContent = FsUtil.readFile(path.resolve(this._workspaceRootPath, "package-lock.json"));
+    const projPkgLockContent = FsUtil.readFile(path.resolve(this._projRootPath, "package-lock.json"));
 
     const pkgKey = npmConfig.name.split("/").last()!;
     const publicPath = builderType === "web" ? `/${pkgKey}/` : watch ? `/${pkgKey}/${builderType}/` : ``;
 
     const distPath = (builderType === "cordova" && !watch) ? path.resolve(this._cordova!.cordovaPath, "www")
-      : (builderType === "electron" && !watch) ? path.resolve(this._rootPath, ".electron/src")
+      : (builderType === "electron" && !watch) ? path.resolve(this._rootPath, ".cache/electron/src")
         : builderType === "web" ? this._parsedTsconfig.options.outDir
           : `${this._parsedTsconfig.options.outDir}/${builderType}`;
 
@@ -379,7 +379,7 @@ export class SdCliClientBuilder extends EventEmitter {
     const stylesFilePath = path.resolve(this._rootPath, "src/styles.scss");
 
     const versionHash = createHash("sha1")
-      .update(workspacePkgLockContent)
+      .update(projPkgLockContent)
       .update(JSON.stringify(this._parsedTsconfig.options))
       .update(JSON.stringify(this._config))
       .update(watch.toString())
@@ -407,14 +407,14 @@ export class SdCliClientBuilder extends EventEmitter {
         roots: [this._rootPath],
         extensions: [".ts", ".tsx", ".mjs", ".cjs", ".js", ".jsx"],
         symlinks: true,
-        modules: [this._workspaceRootPath, "node_modules"],
+        modules: [this._projRootPath, "node_modules"],
         mainFields: ["es2015", "browser", "module", "main"],
         conditionNames: ["es2015", "..."],
       },
       resolveLoader: {
         symlinks: true
       },
-      context: this._workspaceRootPath,
+      context: this._projRootPath,
       entry: {
         main: [mainFilePath],
         ...FsUtil.exists(polyfillsFilePath) ? { polyfills: [polyfillsFilePath] } : {},
@@ -480,7 +480,7 @@ export class SdCliClientBuilder extends EventEmitter {
             supportedBrowsers: browserslist([
               "last 1 Chrome versions",
               "last 2 Edge major versions"
-            ], { path: this._workspaceRootPath })
+            ], { path: this._projRootPath })
           })
         ] as any[],
         moduleIds: "deterministic",
@@ -549,10 +549,10 @@ export class SdCliClientBuilder extends EventEmitter {
               loader: "source-map-loader",
               options: {
                 filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                  const workspaceRegex = new RegExp(`node_modules[\\\\/]@${workspaceName}[\\\\/]`);
+                  const projRegex = new RegExp(`node_modules[\\\\/]@${projName}[\\\\/]`);
                   return !resourcePath.includes("node_modules")
                     || (/node_modules[\\/]@simplysm[\\/]/).test(resourcePath)
-                    || workspaceRegex.test(resourcePath);
+                    || projRegex.test(resourcePath);
                 }
               }
             }
@@ -759,7 +759,7 @@ export class SdCliClientBuilder extends EventEmitter {
         }),
         new ESLintWebpackPlugin({
           context: this._rootPath,
-          eslintPath: path.resolve(this._workspaceRootPath, "node_modules", "eslint"),
+          eslintPath: path.resolve(this._projRootPath, "node_modules", "eslint"),
           exclude: ["node_modules"],
           extensions: ["ts", "js", "mjs", "cjs"],
           fix: false,

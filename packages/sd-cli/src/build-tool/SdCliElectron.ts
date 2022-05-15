@@ -20,7 +20,7 @@ export class SdCliElectron {
     if (!electronConfig) throw new Error("ELECTRON 설정을 찾을 수 없습니다.");
 
     const pkgRootPath = path.resolve(this._rootPath, `packages/${pkgName}`);
-    const electronSrcPath = path.resolve(pkgRootPath, `.electron/src`);
+    const electronSrcPath = path.resolve(pkgRootPath, `.cache/electron/src`);
 
     await FsUtil.removeAsync(electronSrcPath);
 

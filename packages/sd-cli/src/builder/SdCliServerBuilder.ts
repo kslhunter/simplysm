@@ -28,7 +28,7 @@ export class SdCliServerBuilder extends EventEmitter {
 
   public constructor(private readonly _rootPath: string,
                      private readonly _config: ISdCliServerPackageConfig,
-                     private readonly _workspaceRootPath: string) {
+                     private readonly _projRootPath: string) {
     super();
 
     // tsconfig
@@ -44,12 +44,12 @@ export class SdCliServerBuilder extends EventEmitter {
   }
 
   private async _checkCacheAsync(watch: boolean): Promise<void> {
-    const workspacePkgLockContent = await FsUtil.readFileAsync(path.resolve(this._workspaceRootPath, "package-lock.json"));
+    const projPkgLockContent = await FsUtil.readFileAsync(path.resolve(this._projRootPath, "package-lock.json"));
 
     // const cachePath = path.resolve(cacheBasePath, pkgVersion);
 
     const versionHash = createHash("sha1")
-      .update(workspacePkgLockContent)
+      .update(projPkgLockContent)
       .update(JSON.stringify(this._parsedTsconfig.options))
       .update(JSON.stringify(this._config))
       .update(watch.toString())
@@ -246,18 +246,18 @@ export class SdCliServerBuilder extends EventEmitter {
     );
   }
 
-  private _getInternalModuleCachePaths(workspaceName: string): string[] {
+  private _getInternalModuleCachePaths(projName: string): string[] {
     return [
-      ...FsUtil.findAllParentChildDirPaths("node_modules/*/package.json", this._rootPath, this._workspaceRootPath),
-      ...FsUtil.findAllParentChildDirPaths(`node_modules/!(@simplysm|@${workspaceName})/*/package.json`, this._rootPath, this._workspaceRootPath),
+      ...FsUtil.findAllParentChildDirPaths("node_modules/*/package.json", this._rootPath, this._projRootPath),
+      ...FsUtil.findAllParentChildDirPaths(`node_modules/!(@simplysm|@${projName})/*/package.json`, this._rootPath, this._projRootPath),
     ].map((p) => path.dirname(p));
   }
 
   private _getWebpackConfig(watch: boolean, extModules: { name: string; exists: boolean }[]): webpack.Configuration {
-    const workspaceNpmConfig = this._getNpmConfig(this._workspaceRootPath)!;
-    const workspaceName = workspaceNpmConfig.name;
+    const projNpmConfig = this._getNpmConfig(this._projRootPath)!;
+    const projName = projNpmConfig.name;
 
-    const internalModuleCachePaths = watch ? this._getInternalModuleCachePaths(workspaceName) : undefined;
+    const internalModuleCachePaths = watch ? this._getInternalModuleCachePaths(projName) : undefined;
 
     const npmConfig = this._getNpmConfig(this._rootPath)!;
     const pkgKey = npmConfig.name.split("/").last()!;
@@ -274,14 +274,14 @@ export class SdCliServerBuilder extends EventEmitter {
         roots: [this._rootPath],
         extensions: [".ts", ".js", ".mjs", ".cjs"],
         symlinks: true,
-        modules: [this._workspaceRootPath, "node_modules"],
+        modules: [this._projRootPath, "node_modules"],
         mainFields: ["es2020", "default", "module", "main"],
         conditionNames: ["es2020", "..."]
       },
       resolveLoader: {
         symlinks: true
       },
-      context: this._workspaceRootPath,
+      context: this._projRootPath,
       entry: {
         main: [
           path.resolve(this._rootPath, "src/main.ts")
@@ -369,10 +369,10 @@ export class SdCliServerBuilder extends EventEmitter {
               loader: "source-map-loader",
               options: {
                 filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
-                  const workspaceRegex = new RegExp(`node_modules[\\\\/]@${workspaceName}[\\\\/]`);
+                  const projRegex = new RegExp(`node_modules[\\\\/]@${projName}[\\\\/]`);
                   return !resourcePath.includes("node_modules")
                     || (/node_modules[\\/]@simplysm[\\/]/).test(resourcePath)
-                    || workspaceRegex.test(resourcePath);
+                    || projRegex.test(resourcePath);
                 }
               }
             }
@@ -435,7 +435,7 @@ export class SdCliServerBuilder extends EventEmitter {
         }),
         new ESLintWebpackPlugin({
           context: this._rootPath,
-          eslintPath: path.resolve(this._workspaceRootPath, "node_modules", "eslint"),
+          eslintPath: path.resolve(this._projRootPath, "node_modules", "eslint"),
           exclude: ["node_modules"],
           extensions: ["ts", "js", "mjs", "cjs"],
           fix: false,
@@ -489,7 +489,7 @@ export class SdCliServerBuilder extends EventEmitter {
         if (loadedModuleNames.includes(moduleName)) continue;
         loadedModuleNames.push(moduleName);
 
-        const modulePath = FsUtil.findAllParentChildDirPaths("node_modules/" + moduleName, currPath, this._workspaceRootPath).first();
+        const modulePath = FsUtil.findAllParentChildDirPaths("node_modules/" + moduleName, currPath, this._projRootPath).first();
         if (StringUtil.isNullOrEmpty(modulePath)) {
           continue;
         }
@@ -509,7 +509,7 @@ export class SdCliServerBuilder extends EventEmitter {
         if (loadedModuleNames.includes(optModuleName)) continue;
         loadedModuleNames.push(optModuleName);
 
-        const optModulePath = FsUtil.findAllParentChildDirPaths("node_modules/" + optModuleName, currPath, this._workspaceRootPath).first();
+        const optModulePath = FsUtil.findAllParentChildDirPaths("node_modules/" + optModuleName, currPath, this._projRootPath).first();
         if (StringUtil.isNullOrEmpty(optModulePath)) {
           results.push({ name: optModuleName, exists: false });
           continue;

@@ -3,7 +3,7 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
-import { SdCliWorkspace } from "../entry-points/SdCliWorkspace";
+import { SdCliProject } from "../entry-points/SdCliProject";
 import { SdCliLocalUpdate } from "../entry-points/SdCliLocalUpdate";
 import { SdCliNpm } from "../entry-points/SdCliNpm";
 import { SdCliPrepare } from "../entry-points/SdCliPrepare";
@@ -386,7 +386,7 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
       });
   }
   else if (argv._[0] === "watch") {
-    await new SdCliWorkspace(process.cwd())
+    await new SdCliProject(process.cwd())
       .watchAsync({
         confFileRelPath: argv.config ?? "simplysm.json",
         optNames: argv.options ?? [],
@@ -413,7 +413,7 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
     );
   }
   else if (argv._[0] === "build") {
-    await new SdCliWorkspace(process.cwd())
+    await new SdCliProject(process.cwd())
       .buildAsync({
         confFileRelPath: argv.config ?? "simplysm.json",
         optNames: argv.options ?? [],
@@ -422,7 +422,7 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
     process.exit(0);
   }
   else if (argv._[0] === "publish") {
-    await new SdCliWorkspace(process.cwd())
+    await new SdCliProject(process.cwd())
       .publishAsync({
         noBuild: argv.noBuild,
         confFileRelPath: argv.config ?? "simplysm.json",

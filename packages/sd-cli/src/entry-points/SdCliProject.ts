@@ -11,7 +11,7 @@ import { SdCliLocalUpdate } from "./SdCliLocalUpdate";
 import { fileURLToPath } from "url";
 import cp from "child_process";
 
-export class SdCliWorkspace {
+export class SdCliProject {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
 
   private readonly _npmConfig: INpmConfig;
@@ -225,6 +225,8 @@ export class SdCliWorkspace {
 
     this._logger.debug("배포 시작...");
     await pkgs.parallelAsync(async (pkg) => {
+      if (pkg.config.publish == null) return;
+
       this._logger.debug(`[${pkg.name}] 배포를 시작합니다...`);
       await pkg.publishAsync();
       this._logger.debug(`[${pkg.name}] 배포가 완료되었습니다.`);

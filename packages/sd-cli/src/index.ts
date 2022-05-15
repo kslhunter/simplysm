@@ -37,7 +37,7 @@ export * from "./entry-points/SdCliLocalUpdate";
 export * from "./entry-points/SdCliNpm";
 export * from "./entry-points/SdCliPrepare";
 export * from "./entry-points/SdCliProjectGenerator";
-export * from "./entry-points/SdCliWorkspace";
+export * from "./entry-points/SdCliProject";
 export * from "./ng-tools/babel/SdCliBbFileMetadata";
 export * from "./ng-tools/babel/SdCliBbRootMetadata";
 export * from "./ng-tools/babel/SdCliBbUtil";

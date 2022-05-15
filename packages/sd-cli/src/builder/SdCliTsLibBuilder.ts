@@ -41,7 +41,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
 
   public constructor(private readonly _rootPath: string,
                      private readonly _config: ISdCliLibPackageConfig,
-                     private readonly _workspaceRootPath: string) {
+                     private readonly _projRootPath: string) {
     super();
     const npmConfig = this._getNpmConfig(this._rootPath)!;
 
@@ -212,15 +212,15 @@ export class SdCliTsLibBuilder extends EventEmitter {
   }
 
   private async getAllRelatedPathsAsync(): Promise<string[]> {
-    const workspaceNpmConfig = this._getNpmConfig(this._workspaceRootPath)!;
-    const workspaceName = workspaceNpmConfig.name;
+    const projNpmConfig = this._getNpmConfig(this._projRootPath)!;
+    const projName = projNpmConfig.name;
 
     const fileCachePaths = Array.from(this._fileCache.keys())
       .filter((filePath) => {
-        const workspaceRegex = new RegExp(`node_modules[\\\\/]@${workspaceName}[\\\\/]`);
+        const projRegex = new RegExp(`node_modules[\\\\/]@${projName}[\\\\/]`);
         return !filePath.includes("node_modules")
           || (/node_modules[\\/]@simplysm[\\/]/).test(filePath)
-          || workspaceRegex.test(filePath);
+          || projRegex.test(filePath);
       });
     const mySourceGlobPath = path.resolve(this._rootPath, "**", "+(*.js|*.cjs|*.mjs|*.ts|*.scss)");
     const mySourceFilePaths = await FsUtil.globAsync(mySourceGlobPath, {

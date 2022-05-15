@@ -14,7 +14,7 @@ export class SdCliPackage extends EventEmitter {
   private readonly _npmConfig: INpmConfig;
 
   public get basename(): string {
-    return path.basename(this._workspaceRootPath);
+    return path.basename(this._projRootPath);
   }
 
   public get name(): string {
@@ -32,7 +32,7 @@ export class SdCliPackage extends EventEmitter {
     ].distinct();
   }
 
-  public constructor(private readonly _workspaceRootPath: string,
+  public constructor(private readonly _projRootPath: string,
                      public readonly rootPath: string,
                      public readonly config: TSdCliPackageConfig) {
     super();
@@ -216,7 +216,7 @@ export class SdCliPackage extends EventEmitter {
           cmd,
           this.rootPath,
           JsonConvert.stringify(this.config),
-          this._workspaceRootPath
+          this._projRootPath
         ],
         {
           stdio: ["pipe", "pipe", "pipe", "ipc"],

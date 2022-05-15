@@ -23,19 +23,19 @@ else {
 const type = process.argv[2] as ("build" | "watch");
 const rootPath = process.argv[3];
 const config = JsonConvert.parse(process.argv[4]) as TSdCliPackageConfig;
-const workspaceRootPath = process.argv[5];
+const projRootPath = process.argv[5];
 
 function createBuilder(): SdCliJsLibBuilder | SdCliTsLibBuilder | SdCliServerBuilder | SdCliClientBuilder {
   const isTs = FsUtil.exists(path.resolve(rootPath, "tsconfig.json"));
 
   if (config.type === "library") {
-    return isTs ? new SdCliTsLibBuilder(rootPath, config, workspaceRootPath) : new SdCliJsLibBuilder(rootPath);
+    return isTs ? new SdCliTsLibBuilder(rootPath, config, projRootPath) : new SdCliJsLibBuilder(rootPath);
   }
   else if (config.type === "server") {
-    return new SdCliServerBuilder(rootPath, config, workspaceRootPath);
+    return new SdCliServerBuilder(rootPath, config, projRootPath);
   }
   else {
-    return new SdCliClientBuilder(rootPath, config, workspaceRootPath);
+    return new SdCliClientBuilder(rootPath, config, projRootPath);
   }
 }
 
