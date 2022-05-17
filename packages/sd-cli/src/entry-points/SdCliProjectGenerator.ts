@@ -275,7 +275,7 @@ export class SdCliProjectGenerator {
 
     this._logger.log(`[${pkgName}] 'src/index.html' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "src/index.html"), fc_package_index({
-      description: opt.description
+      description: projNpmConfig.description + " - " + opt.description
     }));
 
     this._logger.log(`[${pkgName}] 'src/main.ts' 파일 등록`);
@@ -283,7 +283,7 @@ export class SdCliProjectGenerator {
 
     this._logger.log(`[${pkgName}] 'src/manifest.json' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, "src/manifest.json"), fc_package_manifest({
-      description: projNpmConfig.description,
+      description: projNpmConfig.description + " - " + opt.description,
       author: projNpmConfig.author,
       version: projNpmConfig.version
     }));
