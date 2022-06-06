@@ -3,17 +3,22 @@ import {
   DbContext,
   ForeignKey,
   ForeignKeyTarget,
-  IDbConnectionConfig,
   IDbMigration,
   Queryable,
   QueryUnit,
-  Table
+  Table,
+  TDbConnectionConfig
 } from "@simplysm/sd-orm-common";
 import chai, { expect } from "chai";
 import { SdOrm } from "@simplysm/sd-orm-node";
 import * as sinon from "sinon";
 import { Type } from "@simplysm/sd-core-common";
 import deepEqualInAnyOrder from "deep-equal-in-any-order";
+import path from "path";
+import { fileURLToPath } from "url";
+import { FsUtil } from "@simplysm/sd-core-node";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 chai.use(deepEqualInAnyOrder);
 
@@ -70,18 +75,24 @@ class SearchTestTable {
 }
 
 describe(`(node) orm.DbContext`, () => {
-  const test = (config: IDbConnectionConfig): void => {
+  const test = (config: TDbConnectionConfig): void => {
     const orm = new SdOrm(TestDbContext, config, {
       dialect: config.dialect,
-      database: "TestDb",
-      schema: "dbo"
+      ...config.dialect === "sqlite" ? {} : {
+        database: "TestDb",
+        schema: "dbo"
+      }
     });
 
     describe(`(node) orm.DbContext [${config.dialect}]`, () => {
       describe("SELECT", () => {
         beforeEach(async () => {
+          if (config.dialect === "sqlite") {
+            await FsUtil.removeAsync(path.resolve(__dirname, "DbContextTestDir", "db.sqlite3"));
+          }
+
           await orm.connectWithoutTransactionAsync(async (db) => {
-            await db.initializeAsync(undefined, true);
+            await db.initializeAsync(undefined, config.dialect !== "sqlite");
 
             await db.test.insertAsync([
               { id: 1, name: "홍길동1" },
@@ -569,8 +580,12 @@ describe(`(node) orm.DbContext`, () => {
 
       describe("INSERT", () => {
         beforeEach(async () => {
+          if (config.dialect === "sqlite") {
+            await FsUtil.removeAsync(path.resolve(__dirname, "DbContextTestDir", "db.sqlite3"));
+          }
+
           await orm.connectWithoutTransactionAsync(async (db) => {
-            await db.initializeAsync(undefined, true);
+            await db.initializeAsync(undefined, config.dialect !== "sqlite");
           });
         });
 
@@ -621,8 +636,13 @@ describe(`(node) orm.DbContext`, () => {
 
       describe("UPDATE", () => {
         beforeEach(async () => {
+          if (config.dialect === "sqlite") {
+            await FsUtil.removeAsync(path.resolve(__dirname, "DbContextTestDir", "db.sqlite3"));
+          }
+
           await orm.connectWithoutTransactionAsync(async (db) => {
-            await db.initializeAsync(undefined, true);
+            await db.initializeAsync(undefined, config.dialect !== "sqlite");
+
             await db.test.insertAsync([
               { id: 1, name: "홍길동1" },
               { id: 2, name: "홍길동2" },
@@ -655,6 +675,8 @@ describe(`(node) orm.DbContext`, () => {
         });
 
         it("TOP", async () => {
+          if (config.dialect === "sqlite") return;
+
           await orm.connectAsync(async (db) => {
             await db.test
               .top(1)
@@ -673,6 +695,8 @@ describe(`(node) orm.DbContext`, () => {
         });
 
         it("JOIN 하여, WHERE 로 조건을 지정하거나, update 할 데이터를 지정할 수 있다.", async () => {
+          if (config.dialect === "sqlite") return;
+
           await orm.connectAsync(async (db) => {
             await db.test
               .join(TestTable, "test", (qr, en) => qr)
@@ -695,6 +719,8 @@ describe(`(node) orm.DbContext`, () => {
         });
 
         it("미리 지정된 FK 에 대해 JOIN 하여, WHERE 로 조건을 지정하거나, update 할 데이터를 지정할 수 있다.", async () => {
+          if (config.dialect === "sqlite") return;
+
           await orm.connectAsync(async (db) => {
             await db.test
               .include((item) => item.children)
@@ -716,8 +742,13 @@ describe(`(node) orm.DbContext`, () => {
 
       describe("UPSERT", () => {
         beforeEach(async () => {
+          if (config.dialect === "sqlite") {
+            await FsUtil.removeAsync(path.resolve(__dirname, "DbContextTestDir", "db.sqlite3"));
+          }
+
           await orm.connectWithoutTransactionAsync(async (db) => {
-            await db.initializeAsync(undefined, true);
+            await db.initializeAsync(undefined, config.dialect !== "sqlite");
+
             await db.test.insertAsync([
               { id: 1, name: "홍길동1" },
               { id: 2, name: "홍길동2" },
@@ -727,6 +758,8 @@ describe(`(node) orm.DbContext`, () => {
         });
 
         it("INSERT", async () => {
+          if (config.dialect === "sqlite") return;
+
           await orm.connectAsync(async (db) => {
             await db.test
               .where((item) => [
@@ -743,6 +776,8 @@ describe(`(node) orm.DbContext`, () => {
         });
 
         it("INSERT (with PK)", async () => {
+          if (config.dialect === "sqlite") return;
+
           await orm.connectAsync(async (db) => {
             await db.test
               .where((item) => [
@@ -767,6 +802,8 @@ describe(`(node) orm.DbContext`, () => {
         });
 
         it("UPDATE", async () => {
+          if (config.dialect === "sqlite") return;
+
           await orm.connectAsync(async (db) => {
             await db.test
               .where((item) => [
@@ -789,8 +826,13 @@ describe(`(node) orm.DbContext`, () => {
 
       describe("DELETE", () => {
         beforeEach(async () => {
+          if (config.dialect === "sqlite") {
+            await FsUtil.removeAsync(path.resolve(__dirname, "DbContextTestDir", "db.sqlite3"));
+          }
+
           await orm.connectWithoutTransactionAsync(async (db) => {
-            await db.initializeAsync(undefined, true);
+            await db.initializeAsync(undefined, config.dialect !== "sqlite");
+
             await db.test.insertAsync([
               { id: 1, name: "홍길동1" },
               { id: 2, name: "홍길동2" },
@@ -821,6 +863,8 @@ describe(`(node) orm.DbContext`, () => {
         });
 
         it("TOP", async () => {
+          if (config.dialect === "sqlite") return;
+
           await orm.connectAsync(async (db) => {
             await db.test
               .top(1)
@@ -836,6 +880,8 @@ describe(`(node) orm.DbContext`, () => {
         });
 
         it("JOIN + WHERE", async () => {
+          if (config.dialect === "sqlite") return;
+
           await orm.connectAsync(async (db) => {
             await db.test
               .join(TestTable, "test", (qr, en) => qr)
@@ -853,8 +899,9 @@ describe(`(node) orm.DbContext`, () => {
         });
 
         it("INCLUDE + WHERE", async () => {
-          await orm.connectAsync(async (db) => {
+          if (config.dialect === "sqlite") return;
 
+          await orm.connectAsync(async (db) => {
             await db.child
               .include((item) => item.parent)
               .where((item) => [db.qh.equal(item.parent.name, "홍길동2")])
@@ -871,8 +918,12 @@ describe(`(node) orm.DbContext`, () => {
 
       describe("BULK INSERT", () => {
         beforeEach(async () => {
+          if (config.dialect === "sqlite") {
+            await FsUtil.removeAsync(path.resolve(__dirname, "DbContextTestDir", "db.sqlite3"));
+          }
+
           await orm.connectWithoutTransactionAsync(async (db) => {
-            await db.initializeAsync(undefined, true);
+            await db.initializeAsync(undefined, config.dialect !== "sqlite");
           });
         });
 
@@ -913,5 +964,10 @@ describe(`(node) orm.DbContext`, () => {
     port: 3306,
     username: "root",
     password: "1234"
+  });
+
+  test({
+    dialect: "sqlite",
+    filePath: path.resolve(__dirname, "DbContextTestDir", "db.sqlite3")
   });
 });

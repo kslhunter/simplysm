@@ -190,6 +190,18 @@ export interface ISdAppStructureItem {
   children?: ISdAppStructureItem[];
 }
 
+export interface ISdAppStructureItemPartial {
+  title?: string;
+  code: string;
+  modules?: string[];
+  perms?: ("use" | "edit")[];
+  subPerms?: ISdAppStructureItemPermission[];
+  icon?: IconProp;
+  isNotMenu?: boolean;
+  isNotPage?: boolean;
+  children?: ISdAppStructureItemPartial[];
+}
+
 export interface ISdAppStructureItemPermission {
   title: string;
   code: string;

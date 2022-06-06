@@ -1,8 +1,15 @@
 import { QueryBuilder } from "./QueryBuilder";
 import { IDbContextExecutor } from "./IDbContextExecutor";
 import { QueryHelper } from "./QueryHelper";
-import { IQueryColumnDef, IQueryResultParseOption, ISOLATION_LEVEL, ITableDef, TQueryDef } from "./commons";
-import { DateTime, NeverEntryError, ObjectUtil, SdError, Type } from "@simplysm/sd-core-common";
+import {
+  IQueryColumnDef,
+  IQueryResultParseOption,
+  IQueryTableNameDef,
+  ISOLATION_LEVEL,
+  ITableDef,
+  TQueryDef
+} from "./commons";
+import { DateTime, NeverEntryError, NotImplementError, ObjectUtil, SdError, Type } from "@simplysm/sd-core-common";
 import { IDbMigration } from "./IDbMigration";
 import { Queryable } from "./Queryable";
 import { SystemMigration } from "./models/SystemMigration";
@@ -34,7 +41,7 @@ export abstract class DbContext {
 
   // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
   public constructor(private readonly _executor: IDbContextExecutor,
-                     public readonly opt: IDbContextOption) {
+                     public readonly opt: TDbContextOption) {
   }
 
   public async connectWithoutTransactionAsync<R>(callback: () => Promise<R>): Promise<R> {
@@ -166,27 +173,30 @@ export abstract class DbContext {
     DbContext.selectCache.clear();
   }
 
-  public async getIsDbExistsAsync(database: string): Promise<boolean> {
-    return (
-      await this.executeDefsAsync([
-        {
-          type: "getDatabaseInfo",
-          database
-        }
-      ])
-    )[0].length > 0;
+  public async getIsDbExistsAsync(database?: string): Promise<boolean> {
+    if (this.opt.dialect !== "sqlite") {
+      if (database === undefined) throw new NeverEntryError();
+
+      return (
+        await this.executeDefsAsync([
+          {
+            type: "getDatabaseInfo",
+            database
+          }
+        ])
+      )[0].length > 0;
+    }
+    else {
+      throw new NotImplementError("sqlite");
+    }
   }
 
-  public async getIsTableExistsAsync(database: string, schema: string, table: string): Promise<boolean> {
+  public async getIsTableExistsAsync(tableNameDef: IQueryTableNameDef): Promise<boolean> {
     return (
       await this.executeDefsAsync([
         {
           type: "getTableInfo",
-          table: {
-            database,
-            schema,
-            name: table
-          }
+          table: tableNameDef
         }
       ])
     )[0].length > 0;
@@ -304,8 +314,10 @@ export abstract class DbContext {
     await this.executeDefsAsync([{
       type: "truncateTable",
       table: {
-        database: this.opt.database,
-        schema: this.opt.schema,
+        ...this.opt.dialect === "sqlite" ? {} : {
+          database: this.opt.database,
+          schema: this.opt.schema,
+        },
         name: table
       }
     }]);
@@ -316,15 +328,21 @@ export abstract class DbContext {
       throw new Error("DB 강제 초기화는 트랜젝션 상에서는 동작하지 못합니다.\nconnect 대신에 connectWithoutTransaction 로 연결하여 시도하세요.");
     }
 
+    if (force && this.opt.dialect === "sqlite") {
+      throw new Error("sqlite 강제초기화 불가, 강제로 초기화 하려면, 데이터베이스 파일을 삭제하고 초기화를 수행하세요.");
+    }
+
     // 강제 아닐때
     if (!force) {
-      const isDbExists = await this.getIsDbExistsAsync(this.opt.database);
+      const isDbExists = this.opt.dialect === "sqlite" ? true : await this.getIsDbExistsAsync(this.opt.database);
 
-      const isTableExists = !isDbExists ? false : await this.getIsTableExistsAsync(
-        this.opt.database,
-        this.opt.schema,
-        "_migration"
-      );
+      const isTableExists = !isDbExists ? false : await this.getIsTableExistsAsync({
+        ...this.opt.dialect === "sqlite" ? {} : {
+          database: this.opt.database,
+          schema: this.opt.schema,
+        },
+        name: "_migration"
+      });
 
       // DB / TABLE 있을때
       if (isDbExists && isTableExists) {
@@ -373,31 +391,37 @@ export abstract class DbContext {
 
     // 강제 혹은 첫 수행
 
-    const dbNames = dbs ?? [this.opt.database];
-    if (dbNames.length < 1) {
-      throw new Error("생성할 데이터베이스가 없습니다.");
-    }
-
     const queryDefsList: TQueryDef[][] = [];
+    let tableDefs: ITableDef[];
 
-    // DB 초기화
-    for (const dbName of dbNames) {
-      queryDefsList.push([
-        {
-          type: "clearDatabaseIfExists",
-          database: dbName
-        },
-        ...this.opt.dialect === "mssql-azure" ? [] : [{
-          type: "createDatabaseIfNotExists" as const,
-          database: dbName
-        }]
-      ]);
+    if (this.opt.dialect !== "sqlite") {
+      const dbNames = dbs ?? [this.opt.database];
+      if (dbNames.length < 1) {
+        throw new Error("생성할 데이터베이스가 없습니다.");
+      }
+
+      // DB 초기화
+      for (const dbName of dbNames) {
+        queryDefsList.push([
+          {
+            type: "clearDatabaseIfExists",
+            database: dbName
+          },
+          {
+            type: "createDatabaseIfNotExists" as const,
+            database: dbName
+          }
+        ]);
+      }
+
+      // TABLE 초기화: 생성/PK 설정
+      tableDefs = this.tableDefs
+        .filter((item) => item.database === undefined || dbNames.includes(item.database))
+        .filterExists();
     }
-
-    // TABLE 초기화: 생성/PK 설정
-    const tableDefs = this.tableDefs
-      .filter((item) => item.database === undefined || dbNames.includes(item.database))
-      .filterExists();
+    else {
+      tableDefs = this.tableDefs.filterExists();
+    }
 
     const createTableQueryDefs: TQueryDef[] = [];
     for (const tableDef of tableDefs) {
@@ -424,7 +448,13 @@ export abstract class DbContext {
     for (const migration of this.migrations.orderBy((item) => item.name)) {
       migrationInsertQueryDefs.push({
         type: "insert",
-        from: this.qb.getTableName({ database: this.opt.database, schema: this.opt.schema, name: "_migration" }),
+        from: this.qb.getTableName({
+          ...this.opt.dialect === "sqlite" ? {} : {
+            database: this.opt.database,
+            schema: this.opt.schema
+          },
+          name: "_migration"
+        }),
         record: {
           [this.qb.wrap("code")]: `N'${migration.name}'`
         }
@@ -446,11 +476,7 @@ export abstract class DbContext {
 
     return {
       type: "createTable",
-      table: {
-        database: tableDef.database ?? this.opt.database,
-        schema: tableDef.schema ?? this.opt.schema,
-        name: tableDef.name
-      },
+      table: this.getTableNameDef(tableDef),
       columns: tableDef.columns.map((col) => ObjectUtil.clearUndefined({
         name: col.name,
         dataType: this.qh.type(col.dataType ?? col.typeFwd()),
@@ -488,29 +514,17 @@ export abstract class DbContext {
         addFkQueryDefs.push(...[
           {
             type: "addForeignKey",
-            table: {
-              database: tableDef.database ?? this.opt.database,
-              schema: tableDef.schema ?? this.opt.schema,
-              name: tableDef.name
-            },
+            table: this.getTableNameDef(tableDef),
             foreignKey: {
               name: fkDef.name,
               fkColumns: fkDef.columnPropertyKeys.map((propKey) => tableDef.columns.single((col) => col.propertyKey === propKey)!.name),
-              targetTable: {
-                database: targetTableDef.database ?? this.opt.database,
-                schema: targetTableDef.schema ?? this.opt.schema,
-                name: targetTableDef.name
-              },
+              targetTable: this.getTableNameDef(targetTableDef),
               targetPkColumns: targetPkNames
             }
           } as TQueryDef,
           {
             type: "createIndex",
-            table: {
-              database: tableDef.database ?? this.opt.database,
-              schema: tableDef.schema ?? this.opt.schema,
-              name: tableDef.name
-            },
+            table: this.getTableNameDef(tableDef),
             index: {
               name: fkDef.name,
               columns: fkDef.columnPropertyKeys.map((item) => ({
@@ -543,11 +557,7 @@ export abstract class DbContext {
     for (const indexDef of tableDef.indexes) {
       createIndexQueryDefs.push({
         type: "createIndex",
-        table: {
-          database: tableDef.database ?? this.opt.database,
-          schema: tableDef.schema ?? this.opt.schema,
-          name: tableDef.name
-        },
+        table: this.getTableNameDef(tableDef),
         index: {
           name: indexDef.name,
           columns: indexDef.columns.orderBy((item) => item.order).map((item) => ({
@@ -571,11 +581,7 @@ export abstract class DbContext {
 
     return {
       type: "addColumn",
-      table: {
-        database: tableDef.database ?? this.opt.database,
-        schema: tableDef.schema ?? this.opt.schema,
-        name: tableDef.name
-      },
+      table: this.getTableNameDef(tableDef),
       column: {
         name: columnDef.name,
         dataType: this.qh.type(columnDef.dataType ?? columnDef.typeFwd()),
@@ -596,11 +602,7 @@ export abstract class DbContext {
 
     return {
       type: "modifyColumn",
-      table: {
-        database: tableDef.database ?? this.opt.database,
-        schema: tableDef.schema ?? this.opt.schema,
-        name: tableDef.name
-      },
+      table: this.getTableNameDef(tableDef),
       column: {
         name: columnDef.name,
         dataType: this.qh.type(columnDef.dataType ?? columnDef.typeFwd()),
@@ -618,20 +620,12 @@ export abstract class DbContext {
     return [
       {
         type: "dropPrimaryKey",
-        table: {
-          database: tableDef.database ?? this.opt.database,
-          schema: tableDef.schema ?? this.opt.schema,
-          name: tableDef.name
-        }
+        table: this.getTableNameDef(tableDef)
       },
       ...(columnNames.length > 0) ? [
         {
           type: "addPrimaryKey",
-          table: {
-            database: tableDef.database ?? this.opt.database,
-            schema: tableDef.schema ?? this.opt.schema,
-            name: tableDef.name
-          },
+          table: this.getTableNameDef(tableDef),
           columns: columnNames
         } as TQueryDef
       ] : []
@@ -659,19 +653,11 @@ export abstract class DbContext {
 
     return {
       type: "addForeignKey",
-      table: {
-        database: tableDef.database ?? this.opt.database,
-        schema: tableDef.schema ?? this.opt.schema,
-        name: tableDef.name
-      },
+      table: this.getTableNameDef(tableDef),
       foreignKey: {
         name: fkDef.name,
         fkColumns: fkDef.columnPropertyKeys.map((propKey) => tableDef.columns.single((col) => col.propertyKey === propKey)!.name),
-        targetTable: {
-          database: targetTableDef.database ?? this.opt.database,
-          schema: targetTableDef.schema ?? this.opt.schema,
-          name: targetTableDef.name
-        },
+        targetTable: this.getTableNameDef(targetTableDef),
         targetPkColumns: targetPkNames
       }
     };
@@ -684,11 +670,7 @@ export abstract class DbContext {
 
     return {
       type: "removeForeignKey",
-      table: {
-        database: tableDef.database ?? this.opt.database,
-        schema: tableDef.schema ?? this.opt.schema,
-        name: tableDef.name
-      },
+      table: this.getTableNameDef(tableDef),
       foreignKey: fkName
     };
   }
@@ -717,11 +699,7 @@ export abstract class DbContext {
 
     return {
       type: "createIndex",
-      table: {
-        database: tableDef.database ?? this.opt.database,
-        schema: tableDef.schema ?? this.opt.schema,
-        name: tableDef.name
-      },
+      table: this.getTableNameDef(tableDef),
       index: {
         name: indexDef.name,
         columns: indexDef.columns.orderBy((item) => item.order).map((item) => ({
@@ -739,18 +717,31 @@ export abstract class DbContext {
 
     return {
       type: "dropIndex",
-      table: {
-        database: tableDef.database ?? this.opt.database,
-        schema: tableDef.schema ?? this.opt.schema,
-        name: tableDef.name
-      },
+      table: this.getTableNameDef(tableDef),
       index: indexName
+    };
+  }
+
+
+  public getTableNameDef(tableDef: ITableDef): IQueryTableNameDef {
+    return {
+      ...this.opt.dialect === "sqlite" ? {} : {
+        database: tableDef.database ?? this.opt.database,
+        schema: tableDef.schema ?? this.opt.schema
+      },
+      name: tableDef.name
     };
   }
 }
 
-export interface IDbContextOption {
+export type TDbContextOption = IDefaultDbContextOption | ISqliteDbContextOption;
+
+export interface IDefaultDbContextOption {
   dialect: "mysql" | "mssql" | "mssql-azure";
   database: string;
   schema: string;
+}
+
+export interface ISqliteDbContextOption {
+  dialect: "sqlite";
 }

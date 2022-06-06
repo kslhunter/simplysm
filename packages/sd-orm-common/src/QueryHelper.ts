@@ -13,9 +13,10 @@ import { SdOrmUtil } from "./utils/SdOrmUtil";
 import { TSdOrmDataType } from "./SdOrmDataType";
 import { CaseWhenQueryHelper } from "./CaseWhenQueryHelper";
 import { CaseQueryHelper } from "./CaseQueryHelper";
+import { TDbContextOption } from "./DbContext";
 
 export class QueryHelper {
-  public constructor(private readonly _dialect: "mysql" | "mssql" | "mssql-azure") {
+  public constructor(private readonly _dialect: TDbContextOption["dialect"]) {
   }
 
   // ----------------------------------------------------
@@ -135,11 +136,11 @@ export class QueryHelper {
   }
 
   public startsWith(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
-    return [this.getQueryValue(source), " LIKE ", this.getQueryValue(target), " + ", "'%'"];
+    return [this.getQueryValue(source), " LIKE ", this.getQueryValue(target), this._dialect === "sqlite" ? " || " : " + ", "'%'"];
   }
 
   public endsWith(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
-    return [this.getQueryValue(source), " LIKE ", "'%'", " + ", this.getQueryValue(target)];
+    return [this.getQueryValue(source), " LIKE ", "'%'", this._dialect === "sqlite" ? " || " : " + ", this.getQueryValue(target)];
   }
 
   public in<P extends TQueryValue>(src: TEntityValue<P>, target: (TEntityValue<P | undefined>)[]): TQueryBuilderValue[] {
@@ -255,11 +256,11 @@ export class QueryHelper {
     let type: Type<any> | undefined = SdOrmUtil.getQueryValueType(source);
 
     for (const target of targets) {
-      if (this._dialect === "mysql") {
-        cursorQuery = ["IFNULL(", cursorQuery, ", ", this.getQueryValue(target), ")"];
+      if (this._dialect === "mssql" || this._dialect === "mssql-azure") {
+        cursorQuery = ["ISNULL(", cursorQuery, ", ", this.getQueryValue(target), ")"];
       }
       else {
-        cursorQuery = ["ISNULL(", cursorQuery, ", ", this.getQueryValue(target), ")"];
+        cursorQuery = ["IFNULL(", cursorQuery, ", ", this.getQueryValue(target), ")"];
       }
       type = type ?? SdOrmUtil.getQueryValueType(target);
     }
@@ -333,7 +334,7 @@ export class QueryHelper {
     }
     else {
       return new QueryUnit<string>(String, [
-        ...args.mapMany((arg) => [arg instanceof QueryUnit ? this.ifNull(arg, "").query : arg !== undefined ? this.getQueryValue(arg) : "", " + "]).slice(0, -1)
+        ...args.mapMany((arg) => [arg instanceof QueryUnit ? this.ifNull(arg, "").query : arg !== undefined ? this.getQueryValue(arg) : "", this._dialect === "sqlite" ? " || " : " + "]).slice(0, -1)
       ]);
     }
   }
@@ -414,7 +415,7 @@ export class QueryHelper {
       }
     }
     else if (typeof value === "string") {
-      if (this._dialect === "mysql") {
+      if (this._dialect === "mysql" || this._dialect === "sqlite") {
         return `'${value.replace(/'/g, "''")}'`;
       }
       else {
@@ -606,7 +607,7 @@ export class QueryHelper {
         case String:
           return "NVARCHAR(255)";
         case Number:
-          return "BIGINT";
+          return "INTEGER";
         case Boolean:
           return this._dialect === "mysql" ? "BOOLEAN" : "BIT";
         case DateTime:

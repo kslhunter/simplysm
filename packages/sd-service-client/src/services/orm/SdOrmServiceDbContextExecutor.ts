@@ -3,6 +3,7 @@ import {
   IQueryColumnDef,
   IQueryResultParseOption,
   ISOLATION_LEVEL,
+  TDbConnectionConfig,
   TQueryDef
 } from "@simplysm/sd-orm-common";
 import { TDbConnOptions } from "@simplysm/sd-service-common";
@@ -16,7 +17,7 @@ export class SdServiceDbContextExecutor implements IDbContextExecutor {
   }
 
   public async getInfoAsync(): Promise<{
-    dialect: "mssql" | "mysql" | "mssql-azure";
+    dialect: TDbConnectionConfig["dialect"];
     database?: string;
     schema?: string;
   }> {

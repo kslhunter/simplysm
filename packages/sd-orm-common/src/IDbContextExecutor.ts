@@ -1,8 +1,9 @@
 import { IQueryColumnDef, IQueryResultParseOption, ISOLATION_LEVEL, TQueryDef } from "./commons";
+import { TDbContextOption } from "./DbContext";
 
 export interface IDbContextExecutor {
   getInfoAsync(): Promise<{
-    dialect: "mssql" | "mysql" | "mssql-azure";
+    dialect: TDbContextOption["dialect"];
     database?: string;
     schema?: string;
   }>;

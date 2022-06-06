@@ -16,6 +16,7 @@ import {
   IJoinQueryDef,
   IQueryableDef,
   IQueryResultParseOption,
+  IQueryTableNameDef,
   ISelectQueryDef,
   ITableDef,
   IUpdateQueryDef,
@@ -51,11 +52,8 @@ export class Queryable<D extends DbContext, T> {
   public get tableName(): string {
     if (!this.tableDef) throw new NeverEntryError();
 
-    return this.db.qb.getTableName({
-      database: this.tableDef.database ?? this.db.opt.database,
-      schema: this.tableDef.schema ?? this.db.opt.schema,
-      name: this.tableDef.name
-    });
+
+    return this.db.qb.getTableName(this.tableNameDef);
   }
 
   public hasMultiJoin = false;
@@ -63,6 +61,18 @@ export class Queryable<D extends DbContext, T> {
   public get tableDescription(): string {
     if (!this.tableDef) throw new NeverEntryError();
     return this.tableDef.description;
+  }
+
+  public get tableNameDef(): IQueryTableNameDef {
+    if (!this.tableDef) throw new NeverEntryError();
+
+    return {
+      ...this.db.opt.dialect === "sqlite" ? {} : {
+        database: this.tableDef.database ?? this.db.opt.database,
+        schema: this.tableDef.schema ?? this.db.opt.schema
+      },
+      name: this.tableDef.name
+    };
   }
 
   // public constructor(db: D, cloneQueryable: Queryable<D, T>);
@@ -1242,11 +1252,7 @@ export class Queryable<D extends DbContext, T> {
     if (ignoreFk) {
       defs.insert(0, {
         type: "configForeignKeyCheck",
-        table: {
-          database: this.tableDef.database ?? this.db.opt.database,
-          schema: this.tableDef.schema ?? this.db.opt.schema,
-          name: this.tableDef.name
-        },
+        table: this.tableNameDef,
         useCheck: false
       });
       for (let i = 0; i < dataIndexes.length; i++) {
@@ -1255,26 +1261,18 @@ export class Queryable<D extends DbContext, T> {
 
       defs.push({
         type: "configForeignKeyCheck",
-        table: {
-          database: this.tableDef.database ?? this.db.opt.database,
-          schema: this.tableDef.schema ?? this.db.opt.schema,
-          name: this.tableDef.name
-        },
+        table: this.tableNameDef,
         useCheck: true
       });
     }
 
-    if (this.db.opt.dialect !== "mysql") {
+    if (this.db.opt.dialect === "mssql" || this.db.opt.dialect === "mssql-azure") {
       const hasSomeAIColVal = records.some((record) => Object.keys(record).some((item) => aiColNames.includes(item)));
       if (hasSomeAIColVal) {
         defs.insert(0, {
           type: "configIdentityInsert" as const,
           ...{
-            table: {
-              database: this.tableDef.database ?? this.db.opt.database,
-              schema: this.tableDef.schema ?? this.db.opt.schema,
-              name: this.tableDef.name
-            },
+            table: this.tableNameDef,
             state: "on" as const
           }
         });
@@ -1285,11 +1283,7 @@ export class Queryable<D extends DbContext, T> {
         defs.push({
           type: "configIdentityInsert" as const,
           ...{
-            table: {
-              database: this.tableDef.database ?? this.db.opt.database,
-              schema: this.tableDef.schema ?? this.db.opt.schema,
-              name: this.tableDef.name
-            },
+            table: this.tableNameDef,
             state: "off" as const
           }
         });
@@ -1488,11 +1482,7 @@ export class Queryable<D extends DbContext, T> {
         defs.insert(0, {
           type: "configIdentityInsert" as const,
           ...{
-            table: {
-              database: this.tableDef.database ?? this.db.opt.database,
-              schema: this.tableDef.schema ?? this.db.opt.schema,
-              name: this.tableDef.name
-            },
+            table: this.tableNameDef,
             state: "on" as const
           }
         });
@@ -1501,11 +1491,7 @@ export class Queryable<D extends DbContext, T> {
         defs.push({
           type: "configIdentityInsert" as const,
           ...{
-            table: {
-              database: this.tableDef.database ?? this.db.opt.database,
-              schema: this.tableDef.schema ?? this.db.opt.schema,
-              name: this.tableDef.name
-            },
+            table: this.tableNameDef,
             state: "off" as const
           }
         });
@@ -1591,11 +1577,7 @@ export class Queryable<D extends DbContext, T> {
     this.db.prepareDefs.push(...[
       {
         type: "configIdentityInsert" as const,
-        table: {
-          database: this.tableDef.database ?? this.db.opt.database,
-          schema: this.tableDef.schema ?? this.db.opt.schema,
-          name: this.tableDef.name
-        },
+        table: this.tableNameDef,
         state
       }
     ]);

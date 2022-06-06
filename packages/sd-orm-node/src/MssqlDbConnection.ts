@@ -14,7 +14,7 @@ import {
 } from "@simplysm/sd-core-common";
 import { IDbConnection } from "./IDbConnection";
 import {
-  IDbConnectionConfig,
+  IDefaultDbConnectionConfig,
   IQueryColumnDef,
   ISOLATION_LEVEL,
   TQueryValue,
@@ -34,7 +34,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
   public isConnected = false;
   public isOnTransaction = false;
 
-  public constructor(public readonly config: IDbConnectionConfig) {
+  public constructor(public readonly config: IDefaultDbConnectionConfig) {
     super();
   }
 

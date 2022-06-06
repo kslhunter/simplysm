@@ -14,6 +14,7 @@ module.exports = {
         }
       },
       rules: {
+        "import/no-extraneous-dependencies": "off",
         "@simplysm/ts-no-throw-not-implement-error": "off"
       }
     }

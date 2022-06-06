@@ -413,7 +413,9 @@ export type TUpdateObject<T> = TOnlyQueryValueProperty<{
 
 // endregion
 
-export interface IDbConnectionConfig {
+export type TDbConnectionConfig = IDefaultDbConnectionConfig | ISqliteDbConnectionConfig;
+
+export interface IDefaultDbConnectionConfig {
   dialect: "mysql" | "mssql" | "mssql-azure";
   host: string;
   port?: number;
@@ -422,6 +424,11 @@ export interface IDbConnectionConfig {
   database?: string;
   schema?: string;
   defaultIsolationLevel?: ISOLATION_LEVEL;
+}
+
+export interface ISqliteDbConnectionConfig {
+  dialect: "sqlite";
+  filePath: string;
 }
 
 export enum ISOLATION_LEVEL {

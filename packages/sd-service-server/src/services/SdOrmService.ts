@@ -1,11 +1,12 @@
 import { DbConnectionFactory, IDbConnection } from "@simplysm/sd-orm-node";
 import {
-  IDbConnectionConfig,
   IQueryColumnDef,
   IQueryResultParseOption,
   ISOLATION_LEVEL,
   QueryBuilder,
   SdOrmUtil,
+  TDbConnectionConfig,
+  TDbContextOption,
   TQueryDef
 } from "@simplysm/sd-orm-common";
 import { Logger } from "@simplysm/sd-core-node";
@@ -19,8 +20,8 @@ export class SdOrmService extends SdServiceBase {
   private static readonly _connections = new Map<number, IDbConnection>();
   private static readonly _wsConnectionCloseListenerMap = new Map<number, (code: number) => Promise<void>>();
 
-  public static getDbConnConfigAsync = async (rootPath: string, clientName: string | undefined, opt: TDbConnOptions): Promise<IDbConnectionConfig> => {
-    const config: IDbConnectionConfig | undefined = opt.configName !== undefined ? (await SdServiceServerConfigUtil.getConfigAsync(rootPath, clientName))["orm"]?.[opt.configName] : undefined;
+  public static getDbConnConfigAsync = async (rootPath: string, clientName: string | undefined, opt: TDbConnOptions): Promise<TDbConnectionConfig> => {
+    const config: TDbConnectionConfig | undefined = opt.configName !== undefined ? (await SdServiceServerConfigUtil.getConfigAsync(rootPath, clientName))["orm"]?.[opt.configName] : undefined;
     if (config === undefined) {
       throw new Error("서버에서 ORM 설정을 찾을 수 없습니다.");
     }
@@ -29,15 +30,17 @@ export class SdOrmService extends SdServiceBase {
   };
 
   public async getInfoAsync(opt: Record<string, any>): Promise<{
-    dialect: "mssql" | "mysql" | "mssql-azure";
+    dialect: TDbContextOption["dialect"];
     database?: string;
     schema?: string;
   }> {
     const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.request?.clientName, opt);
     return {
       dialect: config.dialect,
-      database: config.database,
-      schema: config.schema
+      ...config.dialect === "sqlite" ? {} : {
+        database: config.database,
+        schema: config.schema
+      }
     };
   }
 

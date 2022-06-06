@@ -1,11 +1,12 @@
 import {
-  IDbConnectionConfig,
   IDbContextExecutor,
   IQueryColumnDef,
   IQueryResultParseOption,
   ISOLATION_LEVEL,
   QueryBuilder,
   SdOrmUtil,
+  TDbConnectionConfig,
+  TDbContextOption,
   TQueryDef
 } from "@simplysm/sd-orm-common";
 import { IDbConnection } from "./IDbConnection";
@@ -14,19 +15,21 @@ import { DbConnectionFactory } from "./DbConnectionFactory";
 export class NodeDbContextExecutor implements IDbContextExecutor {
   private _conn?: IDbConnection;
 
-  public constructor(private readonly _config: IDbConnectionConfig) {
+  public constructor(private readonly _config: TDbConnectionConfig) {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   public async getInfoAsync(): Promise<{
-    dialect: "mssql" | "mysql" | "mssql-azure";
+    dialect: TDbContextOption["dialect"];
     database?: string;
     schema?: string;
   }> {
     return {
       dialect: this._config.dialect,
-      database: this._config.database,
-      schema: this._config.schema
+      ...this._config.dialect === "sqlite" ? {} : {
+        database: this._config.database,
+        schema: this._config.schema
+      }
     };
   }
 
