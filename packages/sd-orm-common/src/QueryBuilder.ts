@@ -692,7 +692,7 @@ pragma writable_schema=0;`.trim();
     q += `INSERT INTO ${def.from} (${Object.keys(def.record).join(", ")})`;
     q += "\n";
 
-    if (this._dialect !== "mysql") {
+    if (this._dialect === "mssql" || this._dialect === "mssql-azure") {
       if (def.output) {
         q += `OUTPUT ${def.output.map((item) => "INSERTED." + item).join(", ")}`;
         q += "\n";
@@ -701,6 +701,13 @@ pragma writable_schema=0;`.trim();
 
     q += `VALUES (${Object.values(def.record).map((val) => this.getQueryOfQueryValue(val)).join(", ")})`;
     q += "\n";
+
+    if (this._dialect === "sqlite") {
+      if (def.output) {
+        q += `RETURNING ${def.output.join(", ")}`;
+        q += "\n";
+      }
+    }
 
     return q.trim() + ";";
   }
@@ -756,9 +763,13 @@ pragma writable_schema=0;`.trim();
     q += "\n";
 
     // OUTPUT
-    if (this._dialect === "mssql" || this._dialect === "mssql-azure") {
-      if (def.output) {
+    if (def.output) {
+      if (this._dialect === "mssql" || this._dialect === "mssql-azure") {
         q += `OUTPUT ${def.output.map((item) => "INSERTED." + item).join(", ")}`;
+        q += "\n";
+      }
+      else if (this._dialect === "sqlite") {
+        q += `RETURNING ${def.output.join(", ")}`;
         q += "\n";
       }
     }
@@ -818,8 +829,14 @@ pragma writable_schema=0;`.trim();
       q += "\n";
 
       if (def.output) {
-        q += `OUTPUT ${def.output.map((item) => "INSERTED." + item).join(", ")}`;
-        q += "\n";
+        if (this._dialect === "sqlite") {
+          q += `RETURNING ${def.output.join(", ")}`;
+          q += "\n";
+        }
+        else {
+          q += `OUTPUT ${def.output.map((item) => "INSERTED." + item).join(", ")}`;
+          q += "\n";
+        }
       }
 
       return q.trim() + ";";
