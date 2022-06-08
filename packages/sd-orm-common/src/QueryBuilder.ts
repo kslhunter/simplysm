@@ -763,13 +763,9 @@ pragma writable_schema=0;`.trim();
     q += "\n";
 
     // OUTPUT
-    if (def.output) {
-      if (this._dialect === "mssql" || this._dialect === "mssql-azure") {
+    if (this._dialect === "mssql" || this._dialect === "mssql-azure") {
+      if (def.output) {
         q += `OUTPUT ${def.output.map((item) => "INSERTED." + item).join(", ")}`;
-        q += "\n";
-      }
-      else if (this._dialect === "sqlite") {
-        q += `RETURNING ${def.output.join(", ")}`;
         q += "\n";
       }
     }
@@ -797,6 +793,13 @@ pragma writable_schema=0;`.trim();
     if (this._dialect !== "mssql" && this._dialect !== "mssql-azure") {
       if (def.top !== undefined) {
         q += `LIMIT ${def.top}`;
+        q += "\n";
+      }
+    }
+
+    if (this._dialect === "sqlite") {
+      if (def.output) {
+        q += `RETURNING ${def.output.join(", ")}`;
         q += "\n";
       }
     }

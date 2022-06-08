@@ -607,7 +607,7 @@ export class QueryHelper {
         case String:
           return "NVARCHAR(255)";
         case Number:
-          return "INTEGER";
+          return this._dialect === "sqlite" ? "INTEGER" : "BIGINT";
         case Boolean:
           return this._dialect === "mysql" ? "BOOLEAN" : "BIT";
         case DateTime:

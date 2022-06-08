@@ -600,6 +600,16 @@ describe(`(node) orm.DbContext`, () => {
           });
         });
 
+        it("테이블에 새로 입력한 데이터의 특정 컬럼값을 가져올 수 있다.", async () => {
+          await orm.connectAsync(async (db) => {
+            const result = await db.test.insertAsync([{
+              name: "홍길동"
+            }], ["id"]);
+
+            expect(result).deep.equal([{ id: 1 }]);
+          });
+        });
+
         it("AUTO INCREMENT 컬럼에도 값을 강제로 넣을 수 있다.", async () => {
           await orm.connectAsync(async (db) => {
             await db.test.insertAsync([{
@@ -671,6 +681,20 @@ describe(`(node) orm.DbContext`, () => {
               { id: 2, name: "홍길동2" },
               { id: 3, name: "홍길동3" }
             ]);
+          });
+        });
+
+        it("테이블에 수정 데이터의 특정 컬럼값을 가져올 수 있다.", async () => {
+          await orm.connectAsync(async (db) => {
+            const result = await db.test
+              .where((item) => [
+                db.qh.equal(item.id, 1)
+              ])
+              .updateAsync(() => ({
+                name: "홍길동01"
+              }), ["id"]);
+
+            expect(result).deep.equal([{ id: 1 }]);
           });
         });
 
