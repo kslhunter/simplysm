@@ -425,6 +425,9 @@ export class SdCliBbFileMetadata {
     else if (isClassDeclaration(rawMeta)) {
       return new SdCliBbClassMetadata(this, rawMeta);
     }
+    else if (isFunctionDeclaration(rawMeta)) {
+      return new SdCliBbFunctionMetadata(this, rawMeta);
+    }
     else if (isArrayExpression(rawMeta)) {
       return new SdCliBbArrayMetadata(this, rawMeta);
     }

@@ -137,8 +137,9 @@ export interface ISdCliClientBuilderCordovaConfig {
 }
 
 export interface ISdCliClientBuilderElectronConfig {
+  env?: Record<string, string>;
+  externalNodeModules?: string[];
   appId: string;
   icon?: string;
   installerIcon?: string;
-  env?: Record<string, string>;
 }

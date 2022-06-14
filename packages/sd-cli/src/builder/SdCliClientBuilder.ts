@@ -32,6 +32,7 @@ import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
 import electronBuilder from "electron-builder";
 import { fileURLToPath } from "url";
 import { Entrypoint } from "@angular-devkit/build-angular/src/utils/index-file/augment-index-html";
+import { StringUtil } from "@simplysm/sd-core-common";
 import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
@@ -137,11 +138,12 @@ export class SdCliClientBuilder extends EventEmitter {
     }
 
     // 빌드 준비
+    const extModules = this._config.builder?.electron ? this._getExternalModules() : [];
     const webpackConfigs = (Object.keys(this._config.builder ?? { web: {} }) as ("web" | "cordova" | "electron")[])
-      .map((builderType) => this._getWebpackConfig(true, builderType));
+      .map((builderType) => this._getWebpackConfig(true, builderType, extModules));
     const multiCompiler = webpack(webpackConfigs);
     await new Promise<void>((resolve, reject) => {
-      const invalidFiles: string[] = [];
+      // const invalidFiles: string[] = [];
       multiCompiler.hooks.invalid.tap(this.constructor.name, (fileName) => {
         if (fileName != null) {
           this._logger.debug("파일변경 감지", fileName);
@@ -149,7 +151,7 @@ export class SdCliClientBuilder extends EventEmitter {
           // NgModule 캐시 삭제
           this._ngModuleGenerator.removeCaches([path.resolve(fileName)]);
 
-          invalidFiles.push(fileName);
+          // invalidFiles.push(fileName);
         }
       });
 
@@ -222,8 +224,9 @@ export class SdCliClientBuilder extends EventEmitter {
 
     // 빌드
     this._logger.debug("Webpack 빌드 수행...");
+    const extModules = this._config.builder?.electron ? this._getExternalModules() : [];
     const builderTypes = (Object.keys(this._config.builder ?? { web: {} }) as ("web" | "cordova" | "electron")[]);
-    const webpackConfigs = builderTypes.map((builderType) => this._getWebpackConfig(false, builderType));
+    const webpackConfigs = builderTypes.map((builderType) => this._getWebpackConfig(false, builderType, extModules));
     const multipleCompiler = webpack(webpackConfigs);
     const buildResults = await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
       multipleCompiler.run((err, multiStats) => {
@@ -293,7 +296,9 @@ export class SdCliClientBuilder extends EventEmitter {
           "dotenv": dotenvVersion,
           ...remoteVersion !== undefined ? {
             "@electron/remote": remoteVersion
-          } : {}
+          } : {},
+          ...extModules.filter((item) => item.exists).map((item) => item.name)
+            .toObject((item) => item, () => "*")
         }
       }, { space: 2 });
       await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "package-lock.json"), "");
@@ -354,7 +359,7 @@ export class SdCliClientBuilder extends EventEmitter {
     ].map((p) => path.dirname(p));
   }
 
-  private _getWebpackConfig(watch: boolean, builderType: "web" | "cordova" | "electron"): webpack.Configuration {
+  private _getWebpackConfig(watch: boolean, builderType: "web" | "cordova" | "electron", extModules: { name: string; exists: boolean }[]): webpack.Configuration {
     const projNpmConfig = this._getNpmConfig(this._projRootPath)!;
     const projName = projNpmConfig.name;
 
@@ -448,6 +453,7 @@ export class SdCliClientBuilder extends EventEmitter {
       experiments: { backCompat: false, syncWebAssembly: true, asyncWebAssembly: true },
       infrastructureLogging: { level: "error" },
       stats: "errors-warnings",
+      externals: extModules.toObject((item) => item.name, (item) => "commonjs2 " + item.name),
       cache: {
         type: "filesystem",
         profile: undefined,
@@ -786,6 +792,63 @@ export class SdCliClientBuilder extends EventEmitter {
         })
       ] as any[]
     };
+  }
+
+  private _getExternalModules(): { name: string; exists: boolean }[] {
+    const loadedModuleNames: string[] = [];
+    const results: { name: string; exists: boolean }[] = [];
+
+    const fn = (currPath: string): void => {
+      const npmConfig = this._getNpmConfig(currPath);
+      if (!npmConfig) return;
+
+      const deps = SdCliNpmConfigUtil.getDependencies(npmConfig);
+
+      for (const moduleName of deps.defaults) {
+        if (loadedModuleNames.includes(moduleName)) continue;
+        loadedModuleNames.push(moduleName);
+
+        const modulePath = FsUtil.findAllParentChildDirPaths("node_modules/" + moduleName, currPath, this._projRootPath).first();
+        if (StringUtil.isNullOrEmpty(modulePath)) {
+          continue;
+        }
+
+        if (FsUtil.glob(path.resolve(modulePath, "**/binding.gyp")).length > 0) {
+          results.push({ name: moduleName, exists: true });
+        }
+
+        if (this._config.builder?.electron?.externalNodeModules?.includes(moduleName)) {
+          results.push({ name: moduleName, exists: true });
+        }
+
+        fn(modulePath);
+      }
+
+      for (const optModuleName of deps.optionals) {
+        if (loadedModuleNames.includes(optModuleName)) continue;
+        loadedModuleNames.push(optModuleName);
+
+        const optModulePath = FsUtil.findAllParentChildDirPaths("node_modules/" + optModuleName, currPath, this._projRootPath).first();
+        if (StringUtil.isNullOrEmpty(optModulePath)) {
+          results.push({ name: optModuleName, exists: false });
+          continue;
+        }
+
+        if (FsUtil.glob(path.resolve(optModulePath, "**/binding.gyp")).length > 0) {
+          results.push({ name: optModuleName, exists: true });
+        }
+
+        if (this._config.builder?.electron?.externalNodeModules?.includes(optModuleName)) {
+          results.push({ name: optModuleName, exists: true });
+        }
+
+        fn(optModulePath);
+      }
+    };
+
+    fn(this._rootPath);
+
+    return results;
   }
 
   private _getNpmConfig(pkgPath: string): INpmConfig | undefined {
