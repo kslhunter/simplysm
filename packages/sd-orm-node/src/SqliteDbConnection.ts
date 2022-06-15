@@ -154,7 +154,8 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
 
     const results: any[][] = [];
     for (const query of queries.filter((item) => !StringUtil.isNullOrEmpty(item))) {
-      const queryStrings = query.split(/;\r?\n/g);
+      // const queryStrings = query.split(/;\r?\n/g);
+      const queryStrings = [query];
 
       const resultItems: any[] = [];
       for (const queryString of queryStrings) {
