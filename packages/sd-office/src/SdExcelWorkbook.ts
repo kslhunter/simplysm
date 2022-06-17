@@ -317,7 +317,7 @@ export class SdExcelWorkbook {
     return this._worksheets[newSheetId];
   }
 
-  public async getBlobAsync(progressCb?: (prog: { percent: number; currentFile: string }) => void): Promise<Blob> {
+  public async getBlobAsync(progressCb?: (prog: { percent: number; currentFile: string | null }) => void): Promise<Blob> {
     this._writeZipObject();
     return await this._zip.generateAsync({ type: "blob" }, (metadata) => {
       if (progressCb) {
@@ -326,7 +326,7 @@ export class SdExcelWorkbook {
     });
   }
 
-  public async getBufferAsync(progressCb?: (prog: { percent: number; currentFile: string }) => void): Promise<Buffer> {
+  public async getBufferAsync(progressCb?: (prog: { percent: number; currentFile: string | null }) => void): Promise<Buffer> {
     this._writeZipObject();
     return await this._zip.generateAsync({ type: "nodebuffer" }, (metadata) => {
       if (progressCb) {

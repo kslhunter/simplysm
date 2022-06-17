@@ -81,6 +81,7 @@ sd-cli add db-lib main
 추가 작업
 * [각 패키지에 orm 설정](docs/conf-orm.md)
 * [DB 라이브러리 패키지에 모델 추가](#DB-라이브러리-패키지에-모델-추가)
+* [테스트 환경 구성](docs/add-tests.md)
 
 ### 패키지별 세부기능 추가
 
