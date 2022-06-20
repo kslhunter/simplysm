@@ -605,7 +605,9 @@ pragma writable_schema=0;`.trim();
 
     if (this._dialect !== "mysql") {
       if (def.pivot) {
-        q += `PIVOT (SUM(${this.getQueryOfQueryValue(def.pivot.valueColumn)}) FOR ${this.getQueryOfQueryValue(def.pivot.pivotColumn)}`;
+        let valueCol = this.getQueryOfQueryValue(def.pivot.valueColumn);
+        valueCol = valueCol.startsWith("(") && valueCol.endsWith(")") ? valueCol.slice(1, -1) : valueCol;
+        q += `PIVOT (${valueCol} FOR ${this.getQueryOfQueryValue(def.pivot.pivotColumn)}`;
         q += ` IN (${def.pivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${def.as !== undefined ? ` as ${def.as}` : ""}`;
         q += "\n";
       }
@@ -614,7 +616,9 @@ pragma writable_schema=0;`.trim();
     // UNPIVOT
 
     if (def.unpivot) {
-      q += `UNPIVOT (${this.getQueryOfQueryValue(def.unpivot.valueColumn)} FOR ${this.getQueryOfQueryValue(def.unpivot.pivotColumn)}`;
+      let valueCol = this.getQueryOfQueryValue(def.unpivot.valueColumn);
+      valueCol = valueCol.startsWith("(") && valueCol.endsWith(")") ? valueCol.slice(1, -1) : valueCol;
+      q += `UNPIVOT (${valueCol} FOR ${this.getQueryOfQueryValue(def.unpivot.pivotColumn)}`;
       q += ` IN (${def.unpivot.pivotKeys.map((key) => this.wrap(key)).join(", ")}))${def.as !== undefined ? ` as ${def.as}` : ""}`;
       q += "\n";
     }
