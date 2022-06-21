@@ -105,6 +105,33 @@
       "type": "library",
       "autoIndex": {},
       "publish": "npm"
+    },
+    "sd-orm-node-sqlite": {
+      "type": "library",
+      "autoIndex": {
+        "polyfills": [
+          "@simplysm/sd-core-common"
+        ]
+      },
+      "publish": "npm"
+    },
+    "sd-orm-node-mysql": {
+      "type": "library",
+      "autoIndex": {
+        "polyfills": [
+          "@simplysm/sd-core-common"
+        ]
+      },
+      "publish": "npm"
+    },
+    "sd-orm-node-mssql": {
+      "type": "library",
+      "autoIndex": {
+        "polyfills": [
+          "@simplysm/sd-core-common"
+        ]
+      },
+      "publish": "npm"
     }
   }
 }

@@ -78,11 +78,6 @@ sd-cli add ts-lib client-common "클라이언트 공통" --isForAngular
 sd-cli add db-lib main
 ```
 
-* 해당 패키지의 package.json에 다음과같이 사용 DB에 맞는 패키지를 추가해야 합니다.
-  * mysql: mysql@^2.18.1
-  * mssql: tedious@^13.2.0
-  * sqlite: sqlite3@^5.0.8
-
 추가 작업
 * [각 패키지에 orm 설정](docs/conf-orm.md)
 * [DB 라이브러리 패키지에 모델 추가](#DB-라이브러리-패키지에-모델-추가)

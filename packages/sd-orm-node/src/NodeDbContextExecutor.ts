@@ -1,4 +1,5 @@
 import {
+  IDbConnection,
   IDbContextExecutor,
   IQueryColumnDef,
   IQueryResultParseOption,
@@ -9,7 +10,6 @@ import {
   TDbContextOption,
   TQueryDef
 } from "@simplysm/sd-orm-common";
-import { IDbConnection } from "./IDbConnection";
 import { DbConnectionFactory } from "./DbConnectionFactory";
 
 export class NodeDbContextExecutor implements IDbContextExecutor {

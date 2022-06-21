@@ -14,3 +14,4 @@ export * from "./QueryUnit";
 export * from "./SdOrmDataType";
 export * from "./utils/DbDefinitionUtil";
 export * from "./utils/SdOrmUtil";
+export * from "./IDbConnection";

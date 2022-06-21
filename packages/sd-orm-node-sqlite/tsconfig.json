@@ -15,15 +15,6 @@
       ],
       "@simplysm/sd-orm-common": [
         "../sd-orm-common/src/index.ts"
-      ],
-      "@simplysm/sd-orm-node-sqlite": [
-        "../sd-orm-node-sqlite/src/index.ts"
-      ],
-      "@simplysm/sd-orm-node-mysql": [
-        "../sd-orm-node-mysql/src/index.ts"
-      ],
-      "@simplysm/sd-orm-node-mssql": [
-        "../sd-orm-node-mssql/src/index.ts"
       ]
     }
   }

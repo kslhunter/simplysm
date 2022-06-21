@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { TDbConnectionConfig, IQueryColumnDef, ISOLATION_LEVEL } from "@simplysm/sd-orm-common";
+import { IQueryColumnDef, ISOLATION_LEVEL, TDbConnectionConfig } from "./commons";
 
 export interface IDbConnection extends EventEmitter {
   config: TDbConnectionConfig;

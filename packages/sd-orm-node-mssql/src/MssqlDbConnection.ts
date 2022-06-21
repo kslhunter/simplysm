@@ -12,8 +12,8 @@ import {
   Uuid,
   Wait
 } from "@simplysm/sd-core-common";
-import { IDbConnection } from "./IDbConnection";
 import {
+  IDbConnection,
   IDefaultDbConnectionConfig,
   IQueryColumnDef,
   ISOLATION_LEVEL,

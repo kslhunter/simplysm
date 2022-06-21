@@ -22,24 +22,19 @@
     "@simplysm/sd-orm-common": "7.0.275"
   },
   "peerDependencies": {
-    "mysql": "^2.18.1",
-    "tedious": "^13.2.0",
-    "sqlite3": "^5.0.8"
+    "@simplysm/sd-orm-node-sqlite": "7.0.275",
+    "@simplysm/sd-orm-node-mysql": "7.0.275",
+    "@simplysm/sd-orm-node-mssql": "7.0.275"
   },
   "peerDependenciesMeta": {
-    "mysql": {
+    "@simplysm/sd-orm-node-sqlite": {
       "optional": true
     },
-    "tedious": {
+    "@simplysm/sd-orm-node-mysql": {
       "optional": true
     },
-    "sqlite3": {
+    "@simplysm/sd-orm-node-mssql": {
       "optional": true
     }
-  },
-  "devDependencies": {
-    "@types/mysql": "^2.15.20",
-    "@types/tedious": "^4.0.6",
-    "@types/sqlite3": "^3.1.8"
   }
 }
