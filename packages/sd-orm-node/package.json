@@ -19,7 +19,9 @@
   "dependencies": {
     "@simplysm/sd-core-common": "7.0.272",
     "@simplysm/sd-core-node": "7.0.272",
-    "@simplysm/sd-orm-common": "7.0.272",
+    "@simplysm/sd-orm-common": "7.0.272"
+  },
+  "optionalDependencies": {
     "mysql": "^2.18.1",
     "tedious": "^14.4.0",
     "sqlite3": "^5.0.8"
