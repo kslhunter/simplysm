@@ -4,7 +4,6 @@ import { SdError, StringUtil } from "@simplysm/sd-core-common";
 import { IQueryColumnDef, ISOLATION_LEVEL, ISqliteDbConnectionConfig, QueryHelper } from "@simplysm/sd-orm-common";
 import { Logger } from "@simplysm/sd-core-node";
 import sqlite3 from "sqlite3";
-import mysql from "mysql";
 
 export class SqliteDbConnection extends EventEmitter implements IDbConnection {
   private readonly _logger = Logger.get(["simplysm", "sd-orm-node", this.constructor.name]);
@@ -132,7 +131,7 @@ export class SqliteDbConnection extends EventEmitter implements IDbConnection {
     const conn = this._conn;
 
     await new Promise<void>((resolve, reject) => {
-      conn.run("ROLLBACK;", (err: mysql.MysqlError | null) => {
+      conn.run("ROLLBACK;", (err: Error | null) => {
         if (err != null) {
           reject(new Error(err.message));
           return;
