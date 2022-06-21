@@ -1,5 +1,6 @@
-import { DbConnectionFactory, IDbConnection } from "@simplysm/sd-orm-node";
+import { DbConnectionFactory } from "@simplysm/sd-orm-node";
 import {
+  IDbConnection,
   IQueryColumnDef,
   IQueryResultParseOption,
   ISOLATION_LEVEL,
