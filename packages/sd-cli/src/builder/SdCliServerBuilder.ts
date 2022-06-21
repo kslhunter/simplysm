@@ -119,7 +119,6 @@ export class SdCliServerBuilder extends EventEmitter {
     // 빌드
     this._logger.debug("Webpack 빌드 수행...");
     const extModules = this._getExternalModules();
-    console.log(extModules);
     const webpackConfig = this._getWebpackConfig(false, extModules);
     const compiler = webpack(webpackConfig);
     const buildResults = await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
