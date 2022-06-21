@@ -23,7 +23,7 @@
   },
   "peerDependencies": {
     "mysql": "^2.18.1",
-    "tedious": "^14.4.0",
+    "tedious": "^13.2.0",
     "sqlite3": "^5.0.8"
   },
   "peerDependenciesMeta": {

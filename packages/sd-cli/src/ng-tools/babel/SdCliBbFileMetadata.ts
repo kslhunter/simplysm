@@ -15,6 +15,7 @@ import {
   isIdentifier,
   isImportDeclaration,
   isImportDefaultSpecifier,
+  isImportNamespaceSpecifier,
   isImportSpecifier,
   isMemberExpression,
   isObjectExpression,
@@ -271,12 +272,13 @@ export class SdCliBbFileMetadata {
       }
     }
 
-    return undefined;
+    throw SdCliBbUtil.error(`'${name}'에 대한 선언을 찾을 수 없습니다.`, this.filePath);
+    // return undefined;
   }
 
   private readonly _findMetaFromInsideCache = new Map<string, TSdCliBbMetadata>();
 
-  private _findMetaFromInside(localName: string): TSdCliBbMetadata {
+  private _findMetaFromInside(localName: string, excludeExport?: boolean): TSdCliBbMetadata {
     const cache = this._findMetaFromInsideCache.get(localName);
     if (cache !== undefined) return cache;
 
@@ -284,7 +286,7 @@ export class SdCliBbFileMetadata {
       if (isClassDeclaration(rawMeta) && rawMeta.id.name === localName) {
         return new SdCliBbClassMetadata(this, rawMeta);
       }
-      else if (isExportNamedDeclaration(rawMeta)) {
+      else if (!excludeExport && isExportNamedDeclaration(rawMeta)) {
         for (const specifier of rawMeta.specifiers) {
           if (isExportSpecifier(specifier)) {
             const exportedName = isIdentifier(specifier.exported) ? specifier.exported.name : undefined;
@@ -314,18 +316,35 @@ export class SdCliBbFileMetadata {
                   return result;
                 }
               }
+              else {
+                const localImportName = isIdentifier(specifier.local) ? specifier.local.name : undefined;
+
+                if (localImportName === undefined) {
+                  throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
+                }
+                else if (exportedName !== localImportName) {
+                  const result = this._findMetaFromInside(localImportName);
+                  this._findMetaFromInsideCache.set(localImportName, result);
+                  return result;
+                }
+                else {
+                  const result = this._findMetaFromInside(localImportName, true);
+                  this._findMetaFromInsideCache.set(localImportName, result);
+                  return result;
+                }
+              }
             }
           }
         }
       }
-      /*else if (isExportDefaultDeclaration(rawMeta) && localName === "default") {
-        const result = this.getMetaFromRaw(rawMeta.declaration);
-        if (Array.isArray(result)) {
-          throw new NeverEntryError();
-        }
-        this._findMetaFromInsideCache.set(localName, result);
-        return result;
-      }*/
+        // else if (!excludeExport && isExportDefaultDeclaration(rawMeta) && localName === "default") {
+        //   const result = this.getMetaFromRaw(rawMeta.declaration);
+        //   if (Array.isArray(result)) {
+        //     throw new NeverEntryError();
+        //   }
+        //   this._findMetaFromInsideCache.set(localName, result);
+        //   return result;
+      // }
       else if (isImportDeclaration(rawMeta)) {
         for (const specifier of rawMeta.specifiers) {
           if (isImportSpecifier(specifier)) {
@@ -382,6 +401,23 @@ export class SdCliBbFileMetadata {
                 };
                 this._findMetaFromInsideCache.set(localName, result);
                 return result;
+              }
+            }
+          }
+          else if (isImportNamespaceSpecifier(specifier)) {
+            if (specifier.local.name === localName) {
+              if (rawMeta.source.value.includes(".")) {
+                const moduleFilePath = path.resolve(path.dirname(this.filePath), rawMeta.source.value);
+                const result = {
+                  filePath: moduleFilePath,
+                  name: "*",
+                  __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
+                };
+                this._findMetaFromInsideCache.set(localName, result);
+                return result;
+              }
+              else {
+                throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
               }
             }
           }
