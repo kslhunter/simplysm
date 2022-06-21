@@ -272,8 +272,8 @@ export class SdCliBbFileMetadata {
       }
     }
 
-    throw SdCliBbUtil.error(`'${name}'에 대한 선언을 찾을 수 없습니다.`, this.filePath);
-    // return undefined;
+    // throw SdCliBbUtil.error(`'${name}'에 대한 선언을 찾을 수 없습니다.`, this.filePath);
+    return undefined;
   }
 
   private readonly _findMetaFromInsideCache = new Map<string, TSdCliBbMetadata>();
