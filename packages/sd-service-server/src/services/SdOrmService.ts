@@ -48,7 +48,7 @@ export class SdOrmService extends SdServiceBase {
   public async connectAsync(opt: Record<string, any>): Promise<number> {
     const config = await SdOrmService.getDbConnConfigAsync(this.server.options.rootPath, this.request?.clientName, opt);
 
-    const dbConn = DbConnectionFactory.create(config);
+    const dbConn = await DbConnectionFactory.createAsync(config);
 
     const lastConnId = Array.from(SdOrmService._connections.keys()).max() ?? 0;
     const connId = lastConnId + 1;
