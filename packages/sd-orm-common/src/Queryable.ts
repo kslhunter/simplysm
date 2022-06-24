@@ -575,10 +575,10 @@ export class Queryable<D extends DbContext, T> {
           const splitSearchTextWhereArr: TQueryBuilderValue[] = [];
           for (const text of splitSearchText) {
             if (text.includes("*")) {
-              splitSearchTextWhereArr.push(this.db.qh.notLike(field as any, text.substring(2).replace(/\*/g, "%")));
+              splitSearchTextWhereArr.push(this.db.qh.notLike(this.db.qh.toLowerCase(field), text.substring(2).replace(/\*/g, "%").toLowerCase()));
             }
             else {
-              splitSearchTextWhereArr.push(this.db.qh.notIncludes(field as any, text.substring(2)));
+              splitSearchTextWhereArr.push(this.db.qh.notIncludes(this.db.qh.toLowerCase(field), text.substring(2).toLowerCase()));
             }
           }
           fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));
@@ -596,10 +596,10 @@ export class Queryable<D extends DbContext, T> {
           const splitSearchTextWhereArr: TQueryBuilderValue[] = [];
           for (const text of splitSearchText) {
             if (text.includes("*")) {
-              splitSearchTextWhereArr.push(this.db.qh.like(field as any, text.replace(/\*/g, "%")));
+              splitSearchTextWhereArr.push(this.db.qh.like(this.db.qh.toLowerCase(field), text.replace(/\*/g, "%").toLowerCase()));
             }
             else {
-              splitSearchTextWhereArr.push(this.db.qh.includes(field as any, text));
+              splitSearchTextWhereArr.push(this.db.qh.includes(this.db.qh.toLowerCase(field), text.toLowerCase()));
             }
           }
           fieldOrArr.push(this.db.qh.and(splitSearchTextWhereArr));

@@ -320,6 +320,14 @@ export class QueryHelper {
     ]);
   }
 
+  public toUpperCase(src: TEntityValue<string | String | undefined>): QueryUnit<string> {
+    return new QueryUnit<string>(String, ["UPPER(", this.getQueryValue(src), ")"]);
+  }
+
+  public toLowerCase(src: TEntityValue<string | String | undefined>): QueryUnit<string> {
+    return new QueryUnit<string>(String, ["LOWER(", this.getQueryValue(src), ")"]);
+  }
+
   public abs(src: TEntityValue<number | Number | undefined>): QueryUnit<number> {
     return new QueryUnit<number>(Number, ["ABS(", this.getQueryValue(src), ")"]);
   }
