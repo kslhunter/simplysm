@@ -11,14 +11,14 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
       <sd-pane class="sd-padding-default">
         <sd-sheet [items]="displayConfigs"
                   [trackByFn]="trackByKeyFn">
-          <sd-sheet-column header="고정" width.px="40">
+          <sd-sheet-column header="Fix" width.px="40">
             <ng-template #cell let-item="item">
               <div style="text-align: center">
                 <sd-checkbox size="sm" [(value)]="item.fixed"></sd-checkbox>
               </div>
             </ng-template>
           </sd-sheet-column>
-          <sd-sheet-column header="순서" width.px="40">
+          <sd-sheet-column header="Order" width.px="40">
             <ng-template #cell let-item="item" let-index="index">
               <div class="sd-padding-xs-sm">
                 <sd-anchor [disabled]="index === 0 || (!item.fixed && !!displayConfigs[index - 1].fixed)"
@@ -32,7 +32,7 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
               </div>
             </ng-template>
           </sd-sheet-column>
-          <sd-sheet-column header="그룹" resizable width.px="100">
+          <sd-sheet-column header="Group" resizable width.px="100">
             <ng-template #cell let-item="item">
               <!--<sd-textfield size="sm" inset [(value)]="item.header"></sd-textfield>-->
               <div class="sd-padding-xs-sm">
@@ -40,7 +40,7 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
               </div>
             </ng-template>
           </sd-sheet-column>
-          <sd-sheet-column header="헤더" resizable width.px="100">
+          <sd-sheet-column header="Header" resizable width.px="100">
             <ng-template #cell let-item="item">
               <!--<sd-textfield size="sm" inset [(value)]="item.header"></sd-textfield>-->
               <div class="sd-padding-xs-sm">
@@ -48,13 +48,13 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
               </div>
             </ng-template>
           </sd-sheet-column>
-          <sd-sheet-column header="너비(px)" resizable width.px="60">
+          <sd-sheet-column header="Width(px)" resizable width.px="60">
             <ng-template #cell let-item="item">
               <sd-textfield size="sm" inset [(value)]="item.widthPixel" type="number"
                             *ngIf="!!item.resizable"></sd-textfield>
             </ng-template>
           </sd-sheet-column>
-          <sd-sheet-column header="숨김" width.px="40">
+          <sd-sheet-column header="Hidden" width.px="40">
             <ng-template #cell let-item="item">
               <div style="text-align: center">
                 <sd-checkbox size="sm" [(value)]="item.hidden"
@@ -67,11 +67,11 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
 
       <sd-dock position="bottom" class="sd-padding-sm-default sd-padding-top-0" style="text-align: right">
         <div style="float: left">
-          <sd-button inline theme="warning" (click)="onInitButtonClick()">초기화</sd-button>
+          <sd-button inline theme="warning" (click)="onInitButtonClick()">Reset</sd-button>
         </div>
-        <sd-button inline theme="success" (click)="onOkButtonClick()">확인</sd-button>
+        <sd-button inline theme="success" (click)="onOkButtonClick()">OK</sd-button>
         <sd-gap width="sm"></sd-gap>
-        <sd-button inline (click)="onCancelButtonClick()">취소</sd-button>
+        <sd-button inline (click)="onCancelButtonClick()">Cancel</sd-button>
       </sd-dock>
     </sd-dock-container>`,
   styles: [/* language=SCSS */ `
