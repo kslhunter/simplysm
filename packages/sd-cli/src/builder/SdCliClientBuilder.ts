@@ -453,7 +453,8 @@ export class SdCliClientBuilder extends EventEmitter {
       experiments: { backCompat: false, syncWebAssembly: true, asyncWebAssembly: true },
       infrastructureLogging: { level: "error" },
       stats: "errors-warnings",
-      externals: extModules.toObject((item) => item.name, (item) => item.exists ? "commonjs2 " + item.name : `var {name: '${item.name}'}`),
+      // externals: extModules.toObject((item) => item.name, (item) => item.exists ? "commonjs2 " + item.name : `var {name: '${item.name}'}`),
+      externals: extModules.toObject((item) => item.name, (item) => "commonjs2 " + item.name),
       cache: {
         type: "filesystem",
         profile: undefined,
