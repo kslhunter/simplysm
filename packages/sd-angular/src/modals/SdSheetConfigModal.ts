@@ -67,11 +67,11 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
 
       <sd-dock position="bottom" class="sd-padding-sm-default sd-padding-top-0" style="text-align: right">
         <div style="float: left">
-          <sd-button inline theme="warning" (click)="onInitButtonClick()">Reset</sd-button>
+          <sd-button inline theme="warning" (click)="onInitButtonClick()" button.style="min-width: 100px;">Reset</sd-button>
         </div>
-        <sd-button inline theme="success" (click)="onOkButtonClick()">OK</sd-button>
+        <sd-button inline theme="success" (click)="onOkButtonClick()" button.style="min-width: 100px;">OK</sd-button>
         <sd-gap width="sm"></sd-gap>
-        <sd-button inline (click)="onCancelButtonClick()">Cancel</sd-button>
+        <sd-button inline (click)="onCancelButtonClick()" button.style="min-width: 100px;">Cancel</sd-button>
       </sd-dock>
     </sd-dock-container>`,
   styles: [/* language=SCSS */ `
