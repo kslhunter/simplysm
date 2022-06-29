@@ -15,6 +15,7 @@
   "engines": {
     "node": "^16"
   },
+  "sideEffect": false,
   "dependencies": {
     "@simplysm/sd-core-common": "7.0.284",
     "chokidar": "^3.5.3",
