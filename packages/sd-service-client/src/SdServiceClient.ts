@@ -48,6 +48,8 @@ export class SdServiceClient {
       });
 
       const reconnectFn = async (): Promise<void> => {
+        await Wait.time(2000);
+
         if (this.isConnected) return;
         if (this.isManualClose) return;
         try {
@@ -56,7 +58,6 @@ export class SdServiceClient {
           console.log("WebSocket 재연결");
         }
         catch (err) {
-          await Wait.time(500);
           await reconnectFn();
         }
       };
