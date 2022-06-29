@@ -15,6 +15,9 @@
   "engines": {
     "node": "^16"
   },
+  "files": [
+    "**/*"
+  ],
   "dependencies": {
     "reflect-metadata": "^0.1.13"
   }

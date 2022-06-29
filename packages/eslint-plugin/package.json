@@ -15,6 +15,9 @@
   "engines": {
     "node": "^16"
   },
+  "files": [
+    "**/*"
+  ],
   "dependencies": {
     "@angular-eslint/eslint-plugin": "^13.0.1",
     "@angular-eslint/eslint-plugin-template": "^13.0.1",

@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-core-node",
-  "version": "7.0.286",
+  "version": "7.0.290",
   "description": "심플리즘 패키지 - 코어 모듈 (node)",
   "author": "김석래",
   "repository": {
@@ -15,6 +15,9 @@
   "engines": {
     "node": "^16"
   },
+  "files": [
+    "**/*"
+  ],
   "sideEffect": false,
   "dependencies": {
     "@simplysm/sd-core-common": "7.0.286",

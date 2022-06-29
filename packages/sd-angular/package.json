@@ -16,6 +16,9 @@
   "engines": {
     "node": "^16"
   },
+  "files": [
+    "**/*"
+  ],
   "dependencies": {
     "@angular/animations": "^13.2.0",
     "@angular/common": "^13.2.0",

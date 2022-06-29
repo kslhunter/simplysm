@@ -16,6 +16,9 @@
   "engines": {
     "node": "^16"
   },
+  "files": [
+    "**/*"
+  ],
   "dependencies": {
     "@angular/common": "^13.2.0",
     "@angular/core": "^13.2.0",

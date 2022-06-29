@@ -16,6 +16,9 @@
   "engines": {
     "node": "^16"
   },
+  "files": [
+    "**/*"
+  ],
   "dependencies": {
     "basic-ftp": "^4.6.6",
     "ssh2-sftp-client": "^8.0.0"

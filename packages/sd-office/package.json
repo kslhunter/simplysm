@@ -16,6 +16,9 @@
   "engines": {
     "node": "^16"
   },
+  "files": [
+    "**/*"
+  ],
   "dependencies": {
     "@simplysm/sd-core-common": "7.0.286",
     "jszip": "^3.7.1",

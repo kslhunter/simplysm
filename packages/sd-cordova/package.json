@@ -16,6 +16,9 @@
   "engines": {
     "node": "^16"
   },
+  "files": [
+    "**/*"
+  ],
   "dependencies": {
     "@simplysm/sd-service-client": "7.0.286",
     "semver": "^7.3.5"

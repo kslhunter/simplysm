@@ -16,6 +16,9 @@
   "engines": {
     "node": "^16"
   },
+  "files": [
+    "**/*"
+  ],
   "dependencies": {
     "@angular-devkit/build-angular": "^13.2.2",
     "@angular/compiler": "^13.2.0",
