@@ -50,14 +50,17 @@ export class SdServiceClient {
       const reconnectFn = async (): Promise<void> => {
         await Wait.time(2000);
 
-        if (this.isConnected) return;
-        if (this.isManualClose) return;
+        if (this.isConnected || this.isManualClose) {
+          console.log("WebSocket 연결됨");
+          return;
+        }
         try {
           await this.connectAsync();
           // eslint-disable-next-line no-console
-          console.log("WebSocket 재연결");
+          console.log("WebSocket 재연결 성공");
         }
         catch (err) {
+          console.warn("WebSocket 재연결 실패, 재시도");
           await reconnectFn();
         }
       };
