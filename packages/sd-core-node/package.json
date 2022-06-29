@@ -9,13 +9,12 @@
     "directory": "packages/sd-core-node"
   },
   "license": "MIT",
-  "type": "module",
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "type": "module",
   "engines": {
     "node": "^16"
   },
-  "sideEffect": false,
   "dependencies": {
     "@simplysm/sd-core-common": "7.0.283",
     "chokidar": "^3.5.3",
