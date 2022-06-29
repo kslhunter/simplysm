@@ -55,7 +55,7 @@ export class SdServiceClient {
           return;
         }
         try {
-          await this.connectAsync();
+          await this._ws.connectAsync();
           // eslint-disable-next-line no-console
           console.log("WebSocket 재연결 성공");
         }
