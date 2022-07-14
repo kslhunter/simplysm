@@ -27,6 +27,9 @@
       ],
       "@simplysm/sd-orm-node": [
         "../packages/sd-orm-node/src/index.ts"
+      ],
+      "@simplysm/sd-excel": [
+        "../packages/sd-excel/src/index.ts"
       ]
     }
   }
