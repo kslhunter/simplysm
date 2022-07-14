@@ -50,13 +50,19 @@ declare global {
 
     toObject<V>(keySelector: (item: T, index: number) => string, valueSelector: (item: T, index: number) => V): Record<string, V>;
 
+    toTree<K extends keyof T, P extends keyof T>(keyProp: K, parentKey: P): ITreeArray<T>[];
+
     distinct(matchAddress?: boolean): T[];
 
-    distinctThis(matchAddress?: boolean): void;
+    distinctThis(matchAddress?: boolean): T[];
 
     orderBy(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
+    orderByThis(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
+
     orderByDesc(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
+
+    orderByDescThis(selector?: (item: T) => string | number | DateOnly | DateTime | Time | undefined): T[];
 
     diffs<P>(target: P[], options?: { keys?: string[]; excludes?: string[] }): TArrayDiffsResult<T, P>[];
 
@@ -123,6 +129,8 @@ declare global {
     toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
 
     toObject<V>(keySelector: (item: T, index: number) => string, valueSelector: (item: T, index: number) => V): Record<string, V>;
+
+    toTree<K extends keyof T, P extends keyof T>(keyProp: K, parentKey: P): ITreeArray<T>[];
 
     distinct(matchAddress?: boolean): T[];
 
@@ -286,6 +294,21 @@ declare global {
     return result;
   };
 
+
+  prototype.toTree = function <T, K extends keyof T, P extends keyof T>(this: T[], key: K, parentKey: P): ITreeArray<T>[] {
+    const fn = (items: T[]): ITreeArray<T>[] => {
+      return items.map((item) => ({
+        ...ObjectUtil.clone(item),
+        // @ts-expect-error
+        children: fn(this.filter((item1) => item1[parentKey] === item[key]))
+      }));
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const rootItems = this.filter((item1) => item1[parentKey] == null);
+    return fn(rootItems);
+  };
+
   prototype.distinct = function <T>(this: T[], matchAddress?: boolean): T[] {
     const result: T[] = [];
     for (const item of this) {
@@ -297,9 +320,11 @@ declare global {
     return result;
   };
 
-  prototype.distinctThis = function <T>(this: T[], matchAddress?: boolean): void {
+  prototype.distinctThis = function <T>(this: T[], matchAddress?: boolean): T[] {
     const distinctArray = this.distinct(matchAddress);
     this.clear().push(...distinctArray);
+
+    return this;
   };
 
   prototype.orderBy = function <T>(this: T[], selector?: (item: T) => (string | number | DateTime | DateOnly | Time | undefined)): T[] {
@@ -337,8 +362,78 @@ declare global {
     });
   };
 
+  prototype.orderByThis = function <T>(this: T[], selector?: (item: T) => (string | number | DateTime | DateOnly | Time | undefined)): T[] {
+    return this.sort((p, n) => {
+      const pn = selector !== undefined ? selector(n) : n;
+      const pp = selector !== undefined ? selector(p) : p;
+
+      const cpn = pn instanceof DateOnly ? pn.tick
+        : pn instanceof DateTime ? pn.tick
+          : pn instanceof Time ? pn.tick
+            : pn;
+      const cpp = pp instanceof DateOnly ? pp.tick
+        : pp instanceof DateTime ? pp.tick
+          : pp instanceof Time ? pp.tick
+            : pp;
+
+      if (cpn === cpp) {
+        return 0;
+      }
+      else if (typeof cpn === "string" && typeof cpp === "string") {
+        return cpp.localeCompare(cpn);
+      }
+      else if (typeof cpn === "number" && typeof cpp === "number") {
+        return (cpn > cpp ? -1 : cpn < cpp ? 1 : 0);
+      }
+      else if (typeof cpp === "undefined") {
+        return -1;
+      }
+      else if (typeof cpn === "undefined") {
+        return 1;
+      }
+      else {
+        throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
+      }
+    });
+  };
+
   prototype.orderByDesc = function <T>(this: T[], selector?: (item: T) => (string | number | DateTime | DateOnly | Time | undefined)): T[] {
     return this.concat().sort((p, n) => {
+      const pn = selector !== undefined ? selector(n) : n;
+      const pp = selector !== undefined ? selector(p) : p;
+
+      const cpn = pn instanceof DateOnly ? pn.tick
+        : pn instanceof DateTime ? pn.tick
+          : pn instanceof Time ? pn.tick
+            : pn;
+      const cpp = pp instanceof DateOnly ? pp.tick
+        : pp instanceof DateTime ? pp.tick
+          : pp instanceof Time ? pp.tick
+            : pp;
+
+      if (cpn === cpp) {
+        return 0;
+      }
+      else if (typeof cpn === "string" && typeof cpp === "string") {
+        return cpn.localeCompare(cpp);
+      }
+      else if (typeof cpn === "number" && typeof cpp === "number") {
+        return (cpn < cpp ? -1 : cpn > cpp ? 1 : 0);
+      }
+      else if (typeof cpp === "undefined") {
+        return 1;
+      }
+      else if (typeof cpn === "undefined") {
+        return -1;
+      }
+      else {
+        throw new Error("orderBy 는 string 이나 number 에 대해서만 사용할 수 있습니다.");
+      }
+    });
+  };
+
+  prototype.orderByDescThis = function <T>(this: T[], selector?: (item: T) => (string | number | DateTime | DateOnly | Time | undefined)): T[] {
+    return this.sort((p, n) => {
       const pn = selector !== undefined ? selector(n) : n;
       const pp = selector !== undefined ? selector(p) : p;
 
@@ -551,3 +646,5 @@ export type TArrayDiffs2Result<T> =
   { type: "create"; item: T } |
   { type: "update"; item: T; orgItem: T } |
   { type: "same"; item: T; orgItem: T };
+
+export type ITreeArray<T> = T & { children: ITreeArray<T>[] };

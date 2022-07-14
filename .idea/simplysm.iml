@@ -55,6 +55,8 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node-mssql/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node-mysql/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node-sqlite/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-office" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel/dist" />
     </content>
     <content url="file://$MODULE_DIR$/.yarn" />
     <orderEntry type="inheritedJdk" />
