@@ -286,6 +286,12 @@ export class Queryable<D extends DbContext, T> {
     return result;
   }
 
+  public sample(rowCount: number): Queryable<D, T> {
+    const result = new Queryable(this.db, this);
+    result._def.sample = rowCount;
+    return result;
+  }
+
   public pivot<V extends TQueryValue, P extends string>(valueFwd: ((entity: TEntity<T>) => TEntityValue<V>),
                                                         pivotFwd: ((entity: TEntity<T>) => TEntityValue<P>),
                                                         pivotKeys: P[]): Queryable<D, T & Record<P, V>> {
@@ -738,6 +744,7 @@ export class Queryable<D extends DbContext, T> {
     result.groupBy = this._def.groupBy;
     result.having = this._def.having;
     result.lock = this._def.lock;
+    result.sample = this._def.sample;
 
     if (this._def.join) {
       const joins = ObjectUtil.clone(this._def.join);

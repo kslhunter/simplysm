@@ -227,6 +227,8 @@ export interface ISelectQueryDef {
   };
   lock?: boolean;
 
+  sample?: number;
+
   select?: Record<string, TQueryBuilderValue>;
 }
 
@@ -397,6 +399,7 @@ export interface IQueryableDef {
     pivotKeys: string[];
   };
   lock?: boolean;
+  sample?: number;
 }
 
 export type TQueryValuePropertyNames<T> = { [K in keyof T]: undefined extends T[K] ? never : T[K] extends TQueryValue ? K : never }[keyof T];

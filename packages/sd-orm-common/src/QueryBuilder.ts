@@ -688,6 +688,18 @@ pragma writable_schema=0;`.trim();
       }
     }
 
+    // SAMPLE
+
+    if (def.sample !== undefined) {
+      if (this._dialect === "mssql") {
+        q += `TABLESAMPLE (${def.sample} ROWS)`;
+        q += "\n";
+      }
+      else {
+        throw new Error("'select > sample'의 경우 mssql만 구현되어 있습니다.");
+      }
+    }
+
     return q.trim();
   }
 
