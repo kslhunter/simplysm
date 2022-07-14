@@ -26,33 +26,6 @@ export class SdExcelWorkbook {
 
     wb._zip = new JSZip();
 
-    // .rel
-    wb._relData = {
-      Relationships: {
-        $: {
-          xmlns: "http://schemas.openxmlformats.org/package/2006/relationships"
-        },
-        Relationship: [
-          {
-            $: {
-              Id: "rId1",
-              Type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
-              Target: "xl/workbook.xml"
-            }
-          }
-        ]
-      }
-    };
-
-    // Workbook
-    wb._wbData = {
-      workbook: {
-        $: {
-          "xmlns": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
-          "xmlns:r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-        }
-      }
-    };
 
     // ContentType
     wb.contentTypeData = {
@@ -94,6 +67,34 @@ export class SdExcelWorkbook {
             }
           }
         ]
+      }
+    };
+
+    // .rel
+    wb._relData = {
+      Relationships: {
+        $: {
+          xmlns: "http://schemas.openxmlformats.org/package/2006/relationships"
+        },
+        Relationship: [
+          {
+            $: {
+              Id: "rId1",
+              Type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
+              Target: "xl/workbook.xml"
+            }
+          }
+        ]
+      }
+    };
+
+    // Workbook
+    wb._wbData = {
+      workbook: {
+        $: {
+          "xmlns": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+          "xmlns:r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+        }
       }
     };
 

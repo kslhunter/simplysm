@@ -23,9 +23,19 @@ export class SdExcelReaderDataTable {
     return this._range.e.r - this._range.s.r;
   }
 
-  public val(r: number, colName: string): boolean | number | string | Date | undefined {
+  public val(r: number, colName: string): any {
     const c = this._headerColMap.get(colName);
     if (c === undefined) return undefined;
     return this._sws.val(r, c);
+  }
+
+  public map<R>(cb: (r: number) => R): R[] {
+    const result: R[] = [];
+
+    for (let r = this._range.s.r + 1; r <= this._range.e.r; r++) {
+      result.push(cb(r));
+    }
+
+    return result;
   }
 }

@@ -18,7 +18,10 @@ export class SdExcelReaderWorkSheet {
     const cell = this._ws[addr];
 
     if (!Boolean(cell)) return undefined;
-    if (cell.t === "b") {
+    if (cell.v === undefined || cell.v === "") {
+      return undefined;
+    }
+    else if (cell.t === "b") {
       return cell.v as boolean;
     }
     else if (cell.t === "e") {
@@ -32,6 +35,9 @@ export class SdExcelReaderWorkSheet {
     }
     else if (cell.t === "s") {
       return cell.v as string;
+    }
+    else if (cell.t === undefined) {
+      return Math.round(cell.v * 10000000000) / 10000000000;
     }
 
     return undefined;

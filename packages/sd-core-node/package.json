@@ -12,13 +12,13 @@
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "type": "module",
+  "sideEffects": false,
   "engines": {
     "node": "^16"
   },
   "files": [
     "**/*"
   ],
-  "sideEffect": false,
   "dependencies": {
     "@simplysm/sd-core-common": "7.0.301",
     "chokidar": "^3.5.3",

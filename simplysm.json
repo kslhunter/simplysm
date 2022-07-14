@@ -59,6 +59,15 @@
       },
       "publish": "npm"
     },
+    "sd-excel": {
+      "type": "library",
+      "autoIndex": {
+        "polyfills": [
+          "@simplysm/sd-core-common"
+        ]
+      },
+      "publish": "npm"
+    },
     "sd-office": {
       "type": "library",
       "autoIndex": {
