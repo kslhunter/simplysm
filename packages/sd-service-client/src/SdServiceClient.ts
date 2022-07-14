@@ -51,6 +51,7 @@ export class SdServiceClient {
         await Wait.time(2000);
 
         if (this.isConnected || this.isManualClose) {
+          // eslint-disable-next-line no-console
           console.log("WebSocket 연결됨");
           return;
         }
@@ -60,6 +61,7 @@ export class SdServiceClient {
           console.log("WebSocket 재연결 성공");
         }
         catch (err) {
+          // eslint-disable-next-line no-console
           console.warn("WebSocket 재연결 실패, 재시도");
           await reconnectFn();
         }
