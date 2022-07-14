@@ -6,6 +6,7 @@ module.exports = {
   "node-option": [
     "experimental-specifier-resolution=node",
     "experimental-import-meta-resolve",
-    "loader=./lib/ts-node-esm-paths.mjs"
+    "loader=./lib/ts-node-esm-paths.mjs",
+    "max-old-space-size=8192"
   ]
 }
