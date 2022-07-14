@@ -168,6 +168,7 @@ export class SdCliServerBuilder extends EventEmitter {
           {
             "name": npmConfig.name.replace(/@/g, "").replace(/\//g, "-"),
             "script": path.basename(path.resolve(this._parsedTsconfig.options.outDir!, "main.js")),
+            "node_args": "--max-old-space-size=8192",
             // "script": path.basename(path.resolve(this._parsedTsconfig.options.outDir!, "main.mjs")),
             // "node_args": "--experimental-specifier-resolution=node --experimental-import-meta-resolve",
             "watch": true,
