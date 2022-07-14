@@ -6,6 +6,7 @@ import {
   ISdExcelXmlWorksheetData
 } from "../commons";
 import { SdExcelUtil } from "../utils/SdExcelUtil";
+import { NumberUtil } from "@simplysm/sd-core-common";
 
 export class SdExcelXmlWorksheet implements ISdExcelXml {
   public readonly data: ISdExcelXmlWorksheetData;
@@ -13,10 +14,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   private readonly _rowDataMap = new Map<string, ISdExcelRowData>();
   private readonly _cellDataMap = new Map<string, ISdExcelCellData>();
 
-  public get range(): ISdExcelAddressRangePoint {
-    const ref = this.data.worksheet.dimension[0].$.ref;
-    return SdExcelUtil.parseRangeAddr(ref);
-  }
+  public range: ISdExcelAddressRangePoint;
 
   public constructor(data?: ISdExcelXmlWorksheetData) {
     if (data === undefined) {
@@ -44,6 +42,9 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
         this._cellDataMap.set(cell.$.r, cell);
       }
     }
+
+    const ref = this.data.worksheet.dimension[0].$.ref;
+    this.range = SdExcelUtil.parseRangeAddr(ref);
   }
 
   public getCellData(point: { r: number; c: number }): ISdExcelCellData | undefined {
@@ -60,7 +61,6 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
 
       rowData = { "$": { "r": rowAddr }, c: [] };
       rowsData.push(rowData);
-      rowsData.orderByThis((item) => item.$.r);
       this._rowDataMap.set(rowAddr, rowData);
     }
 
@@ -72,11 +72,13 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
 
       cellData = { "$": { "r": SdExcelUtil.stringifyAddr({ r: point.r, c: point.c }) }, "v": [""] };
       cellsData.push(cellData);
-      cellsData.orderByThis((item) => item.$.r);
       this._cellDataMap.set(cellAddr, cellData);
 
-      // TODO: RANGE 안에 없을때만 아래 수행
-      this._refreshDimension();
+      // RANGE 새로고침
+      this.range = {
+        s: { r: Math.min(point.r, this.range.s.r), c: Math.min(point.c, this.range.s.c) },
+        e: { r: Math.max(point.r, this.range.e.r), c: Math.max(point.c, this.range.e.c) }
+      };
     }
 
     return cellData;
@@ -117,24 +119,28 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   private _refreshDimension(): void {
     // TODO: 마지막 컬럼이 MERGE인 경우 MERGE크기에 따라 모두 활성화 해야함
 
-    if (this._cellDataMap.size === 0) {
-      this.data.worksheet.dimension[0].$.ref = "A1";
-      return;
-    }
-
-    let range = {
-      s: { r: Number.MAX_VALUE, c: Number.MAX_VALUE },
-      e: { r: 0, c: 0 }
-    };
     for (const addr of this._cellDataMap.keys()) {
       const point = SdExcelUtil.parseAddr(addr);
 
-      range = {
-        s: { r: Math.min(point.r, range.s.r), c: Math.min(point.c, range.s.c) },
-        e: { r: Math.max(point.r, range.e.r), c: Math.max(point.c, range.e.c) }
+      this.range = {
+        s: { r: Math.min(point.r, this.range.s.r), c: Math.min(point.c, this.range.s.c) },
+        e: { r: Math.max(point.r, this.range.e.r), c: Math.max(point.c, this.range.e.c) }
       };
     }
+  }
 
-    this.data.worksheet.dimension[0].$.ref = SdExcelUtil.stringifyRangeAddr(range);
+  public prepareSave(): void {
+    // ROW 정렬
+    const rowsData = this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row ?? [];
+    rowsData.orderByThis((item) => NumberUtil.parseInt(item.$.r));
+
+    // CELL 정렬
+    for (const rowData of rowsData) {
+      const cellsData = rowData.c;
+      cellsData.orderByThis((item) => SdExcelUtil.parseAddr(item.$.r).c);
+    }
+
+    // Dimension 값 적용
+    this.data.worksheet.dimension[0].$.ref = SdExcelUtil.stringifyRangeAddr(this.range);
   }
 }

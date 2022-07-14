@@ -94,6 +94,16 @@ export class SdExcelWorkbook {
   }
 
   public async getBufferAsync(): Promise<Buffer> {
+    for (const ws of this._wsMap.values()) {
+      await ws.prepareSaveAsync();
+    }
     return await this._zipCache.getZip().generateAsync({ type: "nodebuffer" });
+  }
+
+  public async getBlobAsync(): Promise<Blob> {
+    for (const ws of this._wsMap.values()) {
+      await ws.prepareSaveAsync();
+    }
+    return await this._zipCache.getZip().generateAsync({ type: "blob" });
   }
 }

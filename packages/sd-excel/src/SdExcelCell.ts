@@ -32,11 +32,11 @@ export class SdExcelCell {
       const ssData = await this._getOrCreateSsDataAsync();
       const ssId = ssData.getIdByString(val);
       if (ssId !== undefined) {
-        data.v[0] = ssId.toString();
+        data.v = [ssId.toString()];
       }
       else {
         const newSsId = ssData.add(val);
-        data.v[0] = newSsId.toString();
+        data.v = [newSsId.toString()];
       }
     }
     else if (typeof val === "boolean") {
@@ -44,7 +44,7 @@ export class SdExcelCell {
       const data = wsData.getOrCreateCellData({ r: this._r, c: this._c });
 
       data.$.t = "b";
-      data.v[0] = val ? "1" : "0";
+      data.v = [val ? "1" : "0"];
     }
     else if (typeof val === "number") {
       const wsData = await this._getWsDataAsync();
@@ -95,7 +95,7 @@ export class SdExcelCell {
   public async getValAsync(): Promise<TSdExcelValueType> {
     const wsData = await this._getWsDataAsync();
     const data = wsData.getCellData({ r: this._r, c: this._c });
-    if (data === undefined || StringUtil.isNullOrEmpty(data.v[0])) {
+    if (data === undefined || data.v === undefined || StringUtil.isNullOrEmpty(data.v[0])) {
       return undefined;
     }
     else if (data.$.t === "s") {

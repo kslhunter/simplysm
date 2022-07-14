@@ -19,7 +19,10 @@ export class SdExcelXmlSharedString implements ISdExcelXml {
       this.data = data;
     }
 
-    this._stringMap = this.data.sst.si?.toMap((item) => item.t[0], (item, i) => i) ?? new Map<string, number>();
+    this._stringMap = this.data.sst.si?.toMap(
+      (item) => typeof item.t[0] === "string" ? item.t[0] : item.t[0]._,
+      (item, i) => i
+    ) ?? new Map<string, number>();
   }
 
   public getIdByString(str: string): number | undefined {
@@ -27,12 +30,14 @@ export class SdExcelXmlSharedString implements ISdExcelXml {
   }
 
   public getStringById(id: number): string | undefined {
-    return this.data.sst.si?.[id].t[0];
+    const val = this.data.sst.si?.[id].t[0];
+    return typeof val === "string" ? val : val?._;
   }
 
   public add(str: string): number {
     this.data.sst.si = this.data.sst.si ?? [];
     this.data.sst.si.push({ t: [str] });
+    this._stringMap.set(str, this.data.sst.si.length - 1);
     return this.data.sst.si.length - 1;
   }
 }

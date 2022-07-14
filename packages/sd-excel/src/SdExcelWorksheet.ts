@@ -1,6 +1,6 @@
 import { SdExcelXmlWorksheet } from "./files/SdExcelXmlWorksheet";
 import { SdExcelZipCache } from "./utils/SdExcelZipCache";
-import { ISdExcelAddressRangePoint } from "./commons";
+import { ISdExcelAddressRangePoint, TSdExcelValueType } from "./commons";
 import { SdExcelRow } from "./SdExcelRow";
 import { SdExcelCell } from "./SdExcelCell";
 
@@ -36,6 +36,46 @@ export class SdExcelWorksheet {
     }
 
     return result;
+  }
+
+  public async getDataTableAsync(): Promise<Record<string, any>[]> {
+    const result: Record<string, TSdExcelValueType>[] = [];
+
+    const headerMap = new Map<string, number>();
+
+    const xml = await this._getDataAsync();
+    const range = xml.range;
+    for (let c = range.s.c; c <= range.e.c; c++) {
+      const val = await this.cell(range.s.r, c).getValAsync();
+      if (typeof val === "string") {
+        headerMap.set(val, c);
+      }
+    }
+
+    for (let r = range.s.r + 1; r <= range.e.r; r++) {
+      const record: Record<string, TSdExcelValueType> = {} as any;
+      for (const header of headerMap.keys()) {
+        const c = headerMap.get(header)!;
+        record[header] = await this.cell(r, c).getValAsync();
+      }
+      result.push(record);
+    }
+
+    return result;
+  }
+
+  public async setDataMatrixAsync(matrix: TSdExcelValueType[][]): Promise<void> {
+    for (let r = 0; r < matrix.length; r++) {
+      for (let c = 0; c < matrix[r].length; c++) {
+        const val = matrix[r][c];
+        await this.cell(r, c).setValAsync(val);
+      }
+    }
+  }
+
+  public async prepareSaveAsync(): Promise<void> {
+    const xml = await this._getDataAsync();
+    xml.prepareSave();
   }
 
   private async _getDataAsync(): Promise<SdExcelXmlWorksheet> {

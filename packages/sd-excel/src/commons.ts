@@ -82,14 +82,14 @@ export interface ISdExcelCellData {
     "s"?: string; // styleId
     "t"?: string;  // type: s(sharedString)
   };
-  "v": [string];
+  "v"?: [string];
 }
 
 export interface ISdExcelXmlSharedStringData {
   "sst": {
     "$": { "xmlns": string };
     "si"?: {
-      "t": [string];
+      "t": [string | { "_": string }];
     }[];
   };
 }
