@@ -1,5 +1,6 @@
 import {
-  AfterContentChecked, AfterViewInit,
+  AfterContentChecked,
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -26,7 +27,8 @@ import {JsonConvert} from "@simplysm/sd-core";
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <sd-dropdown #dropdown [disabled]="disabled" (open)="open.emit()">
+    <sd-dropdown #dropdown [disabled]="disabled" (open)="open.emit()"
+                 [tabindex]="tabindex">
       <div class="_sd-select-content"></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">
@@ -126,9 +128,11 @@ import {JsonConvert} from "@simplysm/sd-core";
 
       &[sd-size=sm] > sd-dropdown > div {
         padding-left: var(--gap-xs);
+
         > ._icon {
           padding: var(--gap-xs) 0;
         }
+
         height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip) + 2px);
       }
     }
@@ -172,6 +176,10 @@ export class SdSelectControl implements DoCheck, AfterContentChecked, OnInit, Af
   @HostBinding("attr.sd-disabled")
   @SdTypeValidate(Boolean)
   public disabled?: boolean;
+  
+  @Input()
+  @SdTypeValidate(Number)
+  public tabindex?: number;
 
   @Input()
   @SdTypeValidate(String)
