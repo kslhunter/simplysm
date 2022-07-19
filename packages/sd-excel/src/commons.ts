@@ -88,11 +88,23 @@ export interface ISdExcelCellData {
 export interface ISdExcelXmlSharedStringData {
   "sst": {
     "$": { "xmlns": string };
-    "si"?: {
-      "t": [string | { "_": string }];
-    }[];
+    "si"?: TSdExcelXmlSharedStringDataSi[];
   };
 }
+
+export type TSdExcelXmlSharedStringDataSi =
+  {
+    "t": TSdExcelXmlSharedStringData;
+  }
+  |
+  {
+    "r": {
+      "t": TSdExcelXmlSharedStringData;
+    }[];
+  };
+
+export type TSdExcelXmlSharedStringData = [string | { "_": string }];
+
 
 export interface ISdExcelXmlStyleData {
   "styleSheet": {
