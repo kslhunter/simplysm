@@ -28,7 +28,7 @@ import {JsonConvert} from "@simplysm/sd-core";
   encapsulation: ViewEncapsulation.None,
   template: `
     <sd-dropdown #dropdown [disabled]="disabled" (open)="open.emit()"
-                 [tabindex]="tabindex">
+                 [tabindex]="tabindex || 0">
       <div class="_sd-select-content"></div>
       <div class="_invalid-indicator"></div>
       <div class="_icon">

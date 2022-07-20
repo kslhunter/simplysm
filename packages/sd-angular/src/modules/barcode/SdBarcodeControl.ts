@@ -1,18 +1,16 @@
-import {ChangeDetectionStrategy, Component, ElementRef, Input, ViewEncapsulation} from "@angular/core";
+import {ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild, ViewEncapsulation} from "@angular/core";
 import {ISdNotifyPropertyChange, SdNotifyPropertyChange} from "../../commons/SdNotifyPropertyChange";
 import {SdTypeValidate} from "../../commons/SdTypeValidate";
 import * as QRCode from "qrcode";
-
-// tslint:disable-next-line:no-var-requires no-require-imports
-require("jsbarcode");
+import * as JsBarcode from "jsbarcode";
 
 @Component({
   selector: "sd-barcode",
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <canvas [style.display]="type !== 'qrcode' ? 'none' : undefined"></canvas>
-    <svg [style.display]="type === 'qrcode' ? 'none' : undefined"></svg>`
+    <canvas #canvas [style.display]="type !== 'qrcode' ? 'none' : undefined"></canvas>
+    <svg #svg [style.display]="type === 'qrcode' ? 'none' : undefined"></svg>`
 })
 export class SdBarcodeControl implements ISdNotifyPropertyChange {
   @Input()
@@ -45,31 +43,39 @@ export class SdBarcodeControl implements ISdNotifyPropertyChange {
   @SdNotifyPropertyChange()
   public fontSize?: number;
 
-  public constructor(private readonly _elRef: ElementRef) {
-  }
+  @ViewChild("canvas", {static: true, read: ElementRef})
+  public canvasElRef?: ElementRef<HTMLElement>;
+
+  @ViewChild("svg", {static: true, read: ElementRef})
+  public svgElRef?: ElementRef<HTMLElement>;
 
   public async sdOnPropertyChange(propertyName: string, oldValue: any, newValue: any): Promise<void> {
     if (newValue) {
-      if (this.type === "qrcode") {
-        const canvasEl = (this._elRef.nativeElement as HTMLElement).findAll("canvas")[0];
-        await QRCode.toCanvas(canvasEl, this.value || "", {
-          scale: this.lineWidth
-        });
-      }
-      else {
-        const svgEl = this._elRef.nativeElement.findAll("svg")[0];
-        window["JsBarcode"](
-          svgEl,
-          this.value,
-          {
-            margin: this.margin,
-            format: this.type,
-            width: this.lineWidth,
-            height: this.height,
-            fontOptions: "bold",
-            fontSize: this.fontSize ? this.fontSize : (this.lineWidth * 12)
-          }
-        );
+      if (
+        Boolean(this.canvasElRef) && Boolean(this.svgElRef) &&
+        this.value !== undefined
+      ) {
+        if (this.type === "qrcode") {
+          await QRCode.toCanvas(this.canvasElRef!.nativeElement, this.value || "", {
+            scale: this.lineWidth
+          });
+        }
+        else {
+          console.log(this.value, this.type);
+
+          JsBarcode(
+            this.svgElRef!.nativeElement,
+            this.value,
+            {
+              margin: this.margin,
+              format: this.type,
+              width: this.lineWidth,
+              height: this.height,
+              fontOptions: "bold",
+              fontSize: this.fontSize ? this.fontSize : (this.lineWidth * 12)
+            }
+          );
+        }
       }
     }
   }
