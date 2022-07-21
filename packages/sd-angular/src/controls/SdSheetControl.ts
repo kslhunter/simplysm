@@ -572,9 +572,11 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
 
                       > ._expand-icon {
                         color: var(--theme-color-primary-default);
+                        visibility: hidden;
 
                         &._expandable {
                           cursor: pointer;
+                          visibility: visible;
                         }
 
                         &._expanded {
