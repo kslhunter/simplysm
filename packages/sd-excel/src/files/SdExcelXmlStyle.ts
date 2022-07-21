@@ -1,4 +1,4 @@
-import { ISdExcelXml, ISdExcelXmlStyleData, ISdExcelXmlStyleDataXf, TSdExcelNumberFormat } from "../commons";
+import { ISdExcelXml, ISdExcelXmlStyleData, ISdExcelXmlStyleDataXf } from "../commons";
 import { NumberUtil, ObjectUtil } from "@simplysm/sd-core-common";
 
 export class SdExcelXmlStyle implements ISdExcelXml {
@@ -35,22 +35,27 @@ export class SdExcelXmlStyle implements ISdExcelXml {
     }
   }
 
-  public add(style: { valueType: TSdExcelNumberFormat }): string {
-    const newItem = { "$": { "numFmtId": this._convertValueTypeToNumFmtId(style.valueType) } };
+  public add(style: { numFmtId: string }): string {
+    const newItem = { "$": { "numFmtId": style.numFmtId } };
     return this._getSameOrCreateXf(newItem);
   }
 
-  public addWithClone(id: string, style: { valueType: TSdExcelNumberFormat }): string {
+  public addWithClone(id: string, style: { numFmtId: string }): string {
     const prevItem = this.data.styleSheet.cellXfs[0].xf[NumberUtil.parseInt(id)!];
-    const numFmtId = this._convertValueTypeToNumFmtId(style.valueType);
     const cloneItem = ObjectUtil.clone(prevItem);
-    cloneItem.$.numFmtId = numFmtId;
+    cloneItem.$.numFmtId = style.numFmtId;
 
     return this._getSameOrCreateXf(cloneItem);
   }
 
-  public get(id: string): { valueType: TSdExcelNumberFormat } {
-    return { valueType: this._getValueTypeNameById(id) };
+  public get(id: string): { numFmtId: string | undefined } {
+    return {
+      numFmtId: this.data.styleSheet.cellXfs[0].xf[NumberUtil.parseInt(id)!]?.$.numFmtId
+    };
+    // SdExcelUtil.convertNumFmtIdToName(numFmtId)
+  }
+
+  public cleanup(): void {
   }
 
   private _getSameOrCreateXf(xfItem: ISdExcelXmlStyleDataXf): string {
@@ -63,63 +68,6 @@ export class SdExcelXmlStyle implements ISdExcelXml {
       this.data.styleSheet.cellXfs[0].xf.push(xfItem);
       this.data.styleSheet.cellXfs[0].$.count = this.data.styleSheet.cellXfs[0].xf.length.toString();
       return (this.data.styleSheet.cellXfs[0].xf.length - 1).toString();
-    }
-  }
-
-  private _getValueTypeNameById(id: string): TSdExcelNumberFormat {
-    const numFmtId = NumberUtil.parseInt(this.data.styleSheet.cellXfs[0].xf[NumberUtil.parseInt(id)!]?.$.numFmtId)!;
-    if (
-      numFmtId <= 13 ||
-      (numFmtId >= 37 && numFmtId <= 40) ||
-      numFmtId === 48
-    ) {
-      return "number";
-    }
-    else if (
-      (numFmtId >= 14 && numFmtId <= 17) ||
-      (numFmtId >= 27 && numFmtId <= 31) ||
-      (numFmtId >= 34 && numFmtId <= 36) ||
-      (numFmtId >= 50 && numFmtId <= 58)
-    ) {
-      return "DateOnly";
-    }
-    else if (numFmtId === 22) {
-      return "DateTime";
-    }
-    else if (
-      (numFmtId >= 18 && numFmtId <= 21) ||
-      (numFmtId >= 32 && numFmtId <= 33) ||
-      (numFmtId >= 45 && numFmtId <= 47)
-    ) {
-      return "Time";
-    }
-    else if (numFmtId === 49) {
-      return "string";
-    }
-    else {
-      throw new Error("[numFmtId: " + numFmtId + "]에 대한 형식을 알 수 없습니다.");
-    }
-  }
-
-  private _convertValueTypeToNumFmtId(valueType: TSdExcelNumberFormat): string {
-    if (valueType === "number") {
-      return "0";
-    }
-    else if (valueType === "DateOnly") {
-      return "14";
-    }
-    else if (valueType === "DateTime") {
-      return "22";
-    }
-    else if (valueType === "Time") {
-      return "18";
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    else if (valueType === "string") {
-      return "49";
-    }
-    else {
-      throw new Error("'" + valueType + "'에 대한 'numFmtId'를 알 수 없습니다.");
     }
   }
 }

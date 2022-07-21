@@ -66,6 +66,12 @@ export interface ISdExcelXmlWorksheetData {
     "sheetData": [{
       "row"?: ISdExcelRowData[];
     }];
+    "mergeCells"?: [{
+      "$": { count: string };
+      "mergeCell": {
+        "$": { "ref": string };
+      }[];
+    }];
   };
 }
 
@@ -155,6 +161,7 @@ export type TSdExcelNumberFormat = "number" | "string" | "DateOnly" | "DateTime"
 
 export interface ISdExcelXml {
   readonly data: any;
+  cleanup(): void;
 }
 
 export interface ISdExcelAddressPoint {

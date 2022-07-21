@@ -47,58 +47,51 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     this.range = SdExcelUtil.parseRangeAddr(ref);
   }
 
-  public getCellData(point: { r: number; c: number }): ISdExcelCellData | undefined {
-    const cellAddr = SdExcelUtil.stringifyAddr({ r: point.r, c: point.c });
-    return this._cellDataMap.get(cellAddr);
+  public setCellType(addr: string, type: "s" | "b" | undefined): void {
+    const cellData = this._getOrCreateCellData(addr);
+    if (type) {
+      cellData.$.t = type;
+    }
+    else {
+      delete cellData.$.t;
+    }
   }
 
-  public getOrCreateCellData(point: { r: number; c: number }): ISdExcelCellData {
-    // ROW 없으면 만들기
-    const rowAddr = (point.r + 1).toString();
-    let rowData = this._rowDataMap.get(rowAddr);
-    if (rowData === undefined) {
-      const rowsData = this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row ?? [];
-
-      rowData = { "$": { "r": rowAddr }, c: [] };
-      rowsData.push(rowData);
-      this._rowDataMap.set(rowAddr, rowData);
-    }
-
-    // CELL 없으면 만들기
-    const cellAddr = SdExcelUtil.stringifyAddr({ r: point.r, c: point.c });
-    let cellData = this._cellDataMap.get(cellAddr);
-    if (cellData === undefined) {
-      const cellsData = rowData.c;
-
-      cellData = { "$": { "r": SdExcelUtil.stringifyAddr({ r: point.r, c: point.c }) }, "v": [""] };
-      cellsData.push(cellData);
-      this._cellDataMap.set(cellAddr, cellData);
-
-      // RANGE 새로고침
-      this.range = {
-        s: { r: Math.min(point.r, this.range.s.r), c: Math.min(point.c, this.range.s.c) },
-        e: { r: Math.max(point.r, this.range.e.r), c: Math.max(point.c, this.range.e.c) }
-      };
-    }
-
-    return cellData;
+  public getCellType(addr: string): string | undefined {
+    return this._getCellData(addr)?.$.t;
   }
 
-  public deleteCellData(point: { r: number; c: number }): void {
+  public setCellVal(addr: string, val: string): void {
+    const cellData = this._getOrCreateCellData(addr);
+    cellData.v = [val];
+  }
+
+  public getCellVal(addr: string): string | undefined {
+    return this._getCellData(addr)?.v?.[0];
+  }
+
+  public getCellStyleId(addr: string): string | undefined {
+    return this._getCellData(addr)?.$.s;
+  }
+
+  public setCellStyleId(addr: string, styleId: string): void {
+    this._getOrCreateCellData(addr).$.s = styleId;
+  }
+
+  public deleteCell(addr: string): void {
     // ROW 없으면 무효
-    const rowAddr = (point.r + 1).toString();
+    const rowAddr = (/\d*$/).exec(addr)![0];
     const rowData = this._rowDataMap.get(rowAddr);
     if (rowData === undefined) return;
 
     // CELL 없으면 무효
-    const cellAddr = SdExcelUtil.stringifyAddr({ r: point.r, c: point.c });
-    const cellData = this._cellDataMap.get(cellAddr);
+    const cellData = this._cellDataMap.get(addr);
     if (cellData === undefined) return;
 
     // CELL 삭제
     const cellsData = rowData.c;
     cellsData.remove(cellData);
-    this._cellDataMap.delete(cellAddr);
+    this._cellDataMap.delete(addr);
 
     // 마지막 CELL이면 ROW도 삭제
     const rowsData = this.data.worksheet.sheetData[0].row!;
@@ -116,16 +109,114 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     this._refreshDimension();
   }
 
-  private _refreshDimension(): void {
-    // TODO: 마지막 컬럼이 MERGE인 경우 MERGE크기에 따라 모두 활성화 해야함
+  public setMergeCells(startAddr: string, endAddr: string): void {
+    const mergeCells = this.data.worksheet.mergeCells = this.data.worksheet.mergeCells ?? [{
+      "$": { count: "0" },
+      "mergeCell": []
+    }];
 
-    for (const addr of this._cellDataMap.keys()) {
+    mergeCells[0].mergeCell.push({ "$": { "ref": `${startAddr}:${endAddr}` } });
+    mergeCells[0].$.count = mergeCells[0].mergeCell.length.toString();
+
+    // RANGE 새로고침
+    const startPoint = SdExcelUtil.parseAddr(startAddr);
+    const endPoint = SdExcelUtil.parseAddr(endAddr);
+
+    this.range = {
+      s: {
+        r: Math.min(startPoint.r, endPoint.r, this.range.s.r),
+        c: Math.min(startPoint.c, endPoint.c, this.range.s.c)
+      },
+      e: {
+        r: Math.max(startPoint.r, endPoint.r, this.range.e.r),
+        c: Math.max(startPoint.c, endPoint.c, this.range.e.c)
+      }
+    };
+  }
+
+  public cleanup(): void {
+    const wsData = { worksheet: {} } as ISdExcelXmlWorksheetData;
+    // mergeCells를 sheetData 바로 뒤로
+    const keys = Object.keys(this.data.worksheet);
+    for (let i = 0; i < keys.length; i++) {
+      // MergeCells
+      if (this.data.worksheet.mergeCells) {
+        if (keys[i] === "mergeCells") {
+          continue;
+        }
+      }
+
+      wsData.worksheet[keys[i]] = this.data.worksheet[keys[i]];
+
+      // MergeCells
+      if (this.data.worksheet.mergeCells) {
+        if (keys[i] === "sheetData") {
+          wsData.worksheet.mergeCells = this.data.worksheet.mergeCells;
+        }
+      }
+    }
+
+    this.data.worksheet = wsData.worksheet;
+  }
+
+  private _getCellData(addr: string): ISdExcelCellData | undefined {
+    return this._cellDataMap.get(addr);
+  }
+
+  private _getOrCreateCellData(addr: string): ISdExcelCellData {
+    // ROW 없으면 만들기
+    const rowAddr = (/\d*$/).exec(addr)![0];
+    let rowData = this._rowDataMap.get(rowAddr);
+    if (rowData === undefined) {
+      const rowsData = this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row ?? [];
+
+      rowData = { "$": { "r": rowAddr }, c: [] };
+      rowsData.push(rowData);
+      this._rowDataMap.set(rowAddr, rowData);
+    }
+
+    // CELL 없으면 만들기
+    let cellData = this._cellDataMap.get(addr);
+    if (cellData === undefined) {
+      const cellsData = rowData.c;
+
+      cellData = { "$": { "r": addr }, "v": [""] };
+      cellsData.push(cellData);
+      this._cellDataMap.set(addr, cellData);
+
       const point = SdExcelUtil.parseAddr(addr);
 
+      // RANGE 새로고침
       this.range = {
         s: { r: Math.min(point.r, this.range.s.r), c: Math.min(point.c, this.range.s.c) },
         e: { r: Math.max(point.r, this.range.e.r), c: Math.max(point.c, this.range.e.c) }
       };
+    }
+
+    return cellData;
+  }
+
+  private _refreshDimension(): void {
+    if (this._cellDataMap.size === 0) {
+      this.range = {
+        s: { r: 0, c: 0 },
+        e: { r: 0, c: 0 }
+      };
+    }
+    else {
+      this.range = {
+        s: { r: Number.MAX_VALUE, c: Number.MAX_VALUE },
+        e: { r: 0, c: 0 }
+      };
+
+      for (const addr of this._cellDataMap.keys()) {
+        const point = SdExcelUtil.parseAddr(addr);
+
+        this.range = {
+          s: { r: Math.min(point.r, this.range.s.r), c: Math.min(point.c, this.range.s.c) },
+          e: { r: Math.max(point.r, this.range.e.r), c: Math.max(point.c, this.range.e.c) }
+        };
+      }
     }
   }
 

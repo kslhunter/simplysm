@@ -50,4 +50,7 @@ export class SdExcelXmlContentType implements ISdExcelXml {
 
     return this;
   }
+
+  public cleanup(): void {
+  }
 }

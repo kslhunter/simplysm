@@ -116,7 +116,7 @@ export class SdCliBbFileMetadata {
               }
 
               if (rawMeta.source) {
-                if (rawMeta.source.value.includes(".")) {
+                if (rawMeta.source.value.startsWith(".")) {
                   const moduleFilePath = path.resolve(path.dirname(this.filePath), rawMeta.source.value);
                   result.push({
                     exportedName,
@@ -155,7 +155,7 @@ export class SdCliBbFileMetadata {
         });
       }
       else {
-        if (rawMeta.source.value.includes(".")) {
+        if (rawMeta.source.value.startsWith(".")) {
           const moduleFilePath = path.resolve(path.dirname(this.filePath), rawMeta.source.value);
           result.push({
             exportedName: "*",
@@ -231,7 +231,7 @@ export class SdCliBbFileMetadata {
               }
               else if (exportedName === name) {
                 if (rawMeta.source) {
-                  if (rawMeta.source.value.includes(".")) {
+                  if (rawMeta.source.value.startsWith(".")) {
                     const moduleFilePath = path.resolve(path.dirname(this.filePath), rawMeta.source.value);
                     const result = {
                       filePath: moduleFilePath,
@@ -295,7 +295,7 @@ export class SdCliBbFileMetadata {
             }
             else if (exportedName === localName) {
               if (rawMeta.source) {
-                if (rawMeta.source.value.includes(".")) {
+                if (rawMeta.source.value.startsWith(".")) {
                   const moduleFilePath = path.resolve(path.dirname(this.filePath), rawMeta.source.value);
                   const result = {
                     filePath: moduleFilePath,
@@ -354,7 +354,7 @@ export class SdCliBbFileMetadata {
             }
             else if (impLocalName === localName) {
               if (isIdentifier(specifier.imported)) {
-                if (rawMeta.source.value.includes(".")) {
+                if (rawMeta.source.value.startsWith(".")) {
                   const moduleFilePath = path.resolve(path.dirname(this.filePath), rawMeta.source.value);
                   const result = {
                     filePath: moduleFilePath,
@@ -382,7 +382,7 @@ export class SdCliBbFileMetadata {
           }
           else if (isImportDefaultSpecifier(specifier)) {
             if (specifier.local.name === localName) {
-              if (rawMeta.source.value.includes(".")) {
+              if (rawMeta.source.value.startsWith(".")) {
                 const moduleFilePath = path.resolve(path.dirname(this.filePath), rawMeta.source.value);
                 const result = {
                   filePath: moduleFilePath,
@@ -406,7 +406,7 @@ export class SdCliBbFileMetadata {
           }
           else if (isImportNamespaceSpecifier(specifier)) {
             if (specifier.local.name === localName) {
-              if (rawMeta.source.value.includes(".")) {
+              if (rawMeta.source.value.startsWith(".")) {
                 const moduleFilePath = path.resolve(path.dirname(this.filePath), rawMeta.source.value);
                 const result = {
                   filePath: moduleFilePath,
@@ -417,7 +417,15 @@ export class SdCliBbFileMetadata {
                 return result;
               }
               else {
-                throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
+                const moduleName = rawMeta.source.value;
+                const result = {
+                  moduleName,
+                  name: "*",
+                  __TSdCliMetaRef__: "__TSdCliMetaRef__" as const
+                };
+                this._findMetaFromInsideCache.set(localName, result);
+                return result;
+                // throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
               }
             }
           }

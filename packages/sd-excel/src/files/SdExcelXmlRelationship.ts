@@ -61,4 +61,7 @@ export class SdExcelXmlRelationship implements ISdExcelXml {
 
     return this;
   }
+
+  public cleanup(): void {
+  }
 }

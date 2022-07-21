@@ -8,12 +8,12 @@ import { TSdCliBbTypeMetadata } from "./TSdCliBbTypeMetadata";
 import { TSdCliMetaRef } from "../commons";
 
 export class SdCliBbRootMetadata {
-  private readonly _entryMap: Map<string, string>;
+  private readonly _depMap: Map<string, { rootPath: string; entryFilePath?: string }>;
   private readonly _fileMetaCache = new Map<string, SdCliBbFileMetadata>();
 
   public constructor(packagePath: string) {
     const allDepPaths = this._getAllDepPaths(packagePath);
-    this._entryMap = this._getEntryMap(allDepPaths);
+    this._depMap = this._getDepMap(allDepPaths);
     // const ngDepPaths = this._getNgDepPaths(allDepPaths);
     // this._entryMap = this._getEntryMap(ngDepPaths);
   }
@@ -26,19 +26,35 @@ export class SdCliBbRootMetadata {
 
   public getEntryFileMetaRecord(): Record<string, SdCliBbFileMetadata> {
     const result: Record<string, SdCliBbFileMetadata> = {};
-    for (const moduleName of this._entryMap.keys()) {
-      const entryFilePath = this._entryMap.get(moduleName)!;
-      result[moduleName] = this._fileMetaCache.getOrCreate(entryFilePath, () => new SdCliBbFileMetadata(entryFilePath))!;
+    for (const moduleName of this._depMap.keys()) {
+      const entryFilePath = this._depMap.get(moduleName)?.entryFilePath;
+      if (entryFilePath !== undefined) {
+        result[moduleName] = this._fileMetaCache.getOrCreate(entryFilePath, () => new SdCliBbFileMetadata(entryFilePath))!;
+      }
     }
     return result;
   }
 
   public findMeta(ref: TSdCliMetaRef): TSdCliBbMetadata | TSdCliBbMetadata[] {
-    const filePath = "moduleName" in ref ? this._entryMap.get(ref.moduleName) : ref.filePath;
+    let filePath: string | undefined;
+    if ("moduleName" in ref) {
+      filePath = this._depMap.get(ref.moduleName)?.entryFilePath;
+      if (filePath === undefined) {
+        const fileRootPath = this._depMap.get(ref.moduleName.split("/")[0])?.rootPath;
+        if (fileRootPath !== undefined) {
+          filePath = path.resolve(fileRootPath, ref.moduleName.split("/").slice(1).join("/"));
+        }
+      }
+    }
+    else {
+      filePath = ref.filePath;
+    }
+
     if (filePath === undefined) {
       throw new NeverEntryError();
     }
-    const fileMeta = this._fileMetaCache.getOrCreate(filePath, () => new SdCliBbFileMetadata(filePath));
+
+    const fileMeta = this._fileMetaCache.getOrCreate(filePath, () => new SdCliBbFileMetadata(filePath!));
     if (ref.name === "*") {
       const result: TSdCliBbMetadata[] = [];
       for (const exp of fileMeta.exports) {
@@ -137,16 +153,36 @@ export class SdCliBbRootMetadata {
   //   return results;
   // }
 
-  private _getEntryMap(ngDepPaths: string[]): Map<string, string> {
-    const entryMap = new Map<string, string>();
+  private _getDepMap(ngDepPaths: string[]): Map<string, { rootPath: string; entryFilePath?: string }> {
+    const entryMap = new Map<string, { rootPath: string; entryFilePath?: string }>();
     for (const ngDepPath of ngDepPaths) {
       const npmConfig = FsUtil.readJson(path.resolve(ngDepPath, "package.json")) as INpmConfig;
 
       const entryFilePath = npmConfig["es2015"] ?? npmConfig["browser"] ?? npmConfig["module"] ?? npmConfig["main"] ?? npmConfig["default"];
-      if (typeof entryFilePath === "string") {
+      if (entryFilePath === undefined) {
+        entryMap.set(npmConfig.name, {
+          rootPath: ngDepPath,
+          entryFilePath: undefined
+        });
+      }
+      else if (typeof entryFilePath === "string") {
         const realPath = this._getRealFilePath(path.resolve(ngDepPath, entryFilePath));
-        if (realPath != null) {
-          entryMap.set(npmConfig.name, realPath);
+        entryMap.set(npmConfig.name, {
+          rootPath: ngDepPath,
+          entryFilePath: realPath
+        });
+      }
+      else {
+        for (const key of Object.keys(entryMap)) {
+          const exportPath = path.resolve(ngDepPath, key);
+          const exportResult = this._getGlobExportResult(PathUtil.posix(npmConfig.name, key), exportPath);
+          for (const exportResultItem of exportResult) {
+            const exportRealPath = this._getRealFilePath(exportResultItem.target);
+            entryMap.set(exportResultItem.name, {
+              rootPath: ngDepPath,
+              entryFilePath: exportRealPath
+            });
+          }
         }
       }
 
@@ -171,10 +207,11 @@ export class SdCliBbRootMetadata {
             const exportPath = path.resolve(ngDepPath, expEntryFilePath);
             const exportResult = this._getGlobExportResult(PathUtil.posix(npmConfig.name, exportKey), exportPath);
             for (const exportResultItem of exportResult) {
-              const realPath = this._getRealFilePath(exportResultItem.target);
-              if (realPath != null) {
-                entryMap.set(exportResultItem.name, realPath);
-              }
+              const exportRealPath = this._getRealFilePath(exportResultItem.target);
+              entryMap.set(exportResultItem.name, {
+                rootPath: ngDepPath,
+                entryFilePath: exportRealPath
+              });
             }
           }
         }

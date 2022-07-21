@@ -38,7 +38,7 @@ export class SdCliTsFileMetadata {
       if (ts.isImportDeclaration(node)) {
         if (ts.isStringLiteral(node.moduleSpecifier)) {
           if (node.importClause) {
-            if (node.moduleSpecifier.text.includes(".")) {
+            if (node.moduleSpecifier.text.startsWith(".")) {
               const moduleFilePath = path.resolve(path.dirname(this.filePath), node.moduleSpecifier.text);
 
               if (node.importClause.namedBindings) {
@@ -116,7 +116,7 @@ export class SdCliTsFileMetadata {
           node.moduleSpecifier &&
           ts.isStringLiteral(node.moduleSpecifier)
         ) {
-          if (node.moduleSpecifier.text.includes(".")) {
+          if (node.moduleSpecifier.text.startsWith(".")) {
             const moduleFilePath = path.resolve(path.dirname(this.filePath), node.moduleSpecifier.text);
             for (const el of node.exportClause.elements) {
               if (el.propertyName && el.name.text !== el.propertyName.text) {

@@ -6,4 +6,7 @@ export class SdExcelXmlUnknown implements ISdExcelXml{
   public constructor(data: Record<string, any>) {
     this.data = data;
   }
+
+  public cleanup(): void {
+  }
 }

@@ -80,10 +80,17 @@ export class SdExcelWorkbook {
     return ws;
   }
 
-  public async getWorksheetAsync(name: string): Promise<SdExcelWorksheet> {
+  public async getWorksheetAsync(nameOrIndex: string | number): Promise<SdExcelWorksheet> {
     const wbData = await this._zipCache.getAsync("xl/workbook.xml") as SdExcelXmlWorkbook;
-    const wsId = wbData.getWsRelIdByName(name);
-    if (wsId === undefined) throw new Error(`시트명이 '${name}'인 시트를 찾을 수 없습니다.`);
+    const wsId = typeof nameOrIndex === "string" ? wbData.getWsRelIdByName(nameOrIndex) : wbData.getWsRelIdByIndex(nameOrIndex);
+    if (wsId === undefined) {
+      if (typeof nameOrIndex === "string") {
+        throw new Error(`시트명이 '${nameOrIndex}'인 시트를 찾을 수 없습니다.`);
+      }
+      else {
+        throw new Error(`'${nameOrIndex}'번째 시트를 찾을 수 없습니다.`);
+      }
+    }
     if (this._wsMap.has(wsId)) {
       return this._wsMap.get(wsId)!;
     }

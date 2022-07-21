@@ -46,6 +46,9 @@ export class SdExcelXmlSharedString implements ISdExcelXml {
     return this.data.sst.si.length - 1;
   }
 
+  public cleanup(): void {
+  }
+
   private _getStringFromSiTag(si: TSdExcelXmlSharedStringDataSi): string {
     if ("t" in si) {
       return this._getStringFromTTag(si.t);

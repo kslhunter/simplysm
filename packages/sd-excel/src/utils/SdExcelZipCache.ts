@@ -72,6 +72,7 @@ export class SdExcelZipCache {
         this._zip.file(filePath, content);
       }
       else {
+        content.cleanup();
         this._zip.file(filePath, XmlConvert.stringify(content.data));
       }
     }

@@ -46,8 +46,15 @@ export class SdExcelXmlWorkbook implements ISdExcelXml {
     return this;
   }
 
+  public cleanup(): void {
+  }
+
   public getWsRelIdByName(name: string): number | undefined {
     return NumberUtil.parseInt(this.data.workbook.sheets?.[0].sheet.single((item) => item.$.name === name)?.$["r:id"]);
+  }
+
+  public getWsRelIdByIndex(index: number): number | undefined {
+    return NumberUtil.parseInt(this.data.workbook.sheets?.[0].sheet[index]?.$["r:id"]);
   }
 
   public getWorksheetNameById(id: number): string | undefined {
