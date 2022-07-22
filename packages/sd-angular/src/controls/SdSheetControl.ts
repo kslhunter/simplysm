@@ -129,7 +129,8 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
                     [attr.sd-key]="columnControl.key"
                     [style.width.px]="columnWidthPixelMap.get(columnControl.guid)"
                     [attr.title]="columnControl.tooltip || columnControl.header"
-                    [class._resizable]="columnControl.resizable">
+                    [class._resizable]="columnControl.resizable"
+                    *ngIf="!columnControl.collapse">
                   <div class="_cell-content">
                     <ng-container *ngIf="columnControl.useOrdering && columnControl.key">
                       <sd-anchor class="_header-text-content sd-text-brightness-default"
@@ -188,7 +189,8 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
                     [attr.sd-key]="columnControl.key"
                     [style.width.px]="columnWidthPixelMap.get(columnControl.guid)"
                     [attr.title]="columnControl.tooltip || columnControl.header"
-                    [class._resizable]="columnControl.resizable">
+                    [class._resizable]="columnControl.resizable"
+                    *ngIf="!columnControl.collapse">
                   <div class="_cell-content">
                     <ng-container *ngIf="columnControl.useOrdering && columnControl.key">
                       <sd-anchor class="_header-text-content sd-text-brightness-default"
@@ -259,7 +261,8 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
               <ng-container *ngFor="let columnControl of fixedColumnControls; trackBy: trackByFnForColumnControl">
                 <td class="_cell"
                     [attr.sd-key]="columnControl.key"
-                    [style.width.px]="columnWidthPixelMap.get(columnControl.guid)">
+                    [style.width.px]="columnWidthPixelMap.get(columnControl.guid)"
+                    *ngIf="!columnControl.collapse">
                   <div class="_cell-content">
                     <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"></ng-template>
                   </div>
@@ -273,7 +276,8 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
               <ng-container *ngFor="let columnControl of nonFixedColumnControls; trackBy: trackByFnForColumnControl">
                 <td class="_cell"
                     [attr.sd-key]="columnControl.key"
-                    [style.width.px]="columnWidthPixelMap.get(columnControl.guid)">
+                    [style.width.px]="columnWidthPixelMap.get(columnControl.guid)"
+                    *ngIf="!columnControl.collapse">
                   <div class="_cell-content">
                     <ng-template [ngTemplateOutlet]="columnControl.summaryTemplateRef"></ng-template>
                   </div>
@@ -330,7 +334,8 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
                       [attr.sd-key]="columnControl.key"
                       [attr.sd-row-index]="index"
                       [attr.sd-column-guid]="columnControl.guid"
-                      [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0">
+                      [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0"
+                      *ngIf="!columnControl.collapse">
                     <ng-container *ngIf="!columnControl.type">
                       <div class="_cell-content"
                            (dblclick)="onCellDblClick($event)">
@@ -359,7 +364,8 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
                       [attr.sd-key]="columnControl.key"
                       [attr.sd-row-index]="index"
                       [attr.sd-column-guid]="columnControl.guid"
-                      [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0">
+                      [style.width.px]="columnWidthPixelMap.get(columnControl.guid)" tabindex="0"
+                      *ngIf="!columnControl.collapse">
                     <ng-container *ngIf="!columnControl.type">
                       <div class="_cell-content"
                            (dblclick)="onCellDblClick($event)">
@@ -1942,7 +1948,10 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   private _getHeaderGroups(columnControls: SdSheetColumnControl[]): { name?: string; widthPixel: number }[] {
     const result: { name?: string; widthPixel: number }[] = [];
     for (const columnControl of columnControls) {
-      if (result.length === 0 || result.last()!.name !== columnControl.group) {
+      if (columnControl.collapse) {
+        continue;
+      }
+      else if (result.length === 0 || result.last()!.name !== columnControl.group) {
         result.push({
           name: columnControl.group,
           widthPixel: this.columnWidthPixelMap.get(columnControl.guid)!

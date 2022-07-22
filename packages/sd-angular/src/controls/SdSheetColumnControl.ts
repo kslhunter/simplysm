@@ -53,9 +53,19 @@ export class SdSheetColumnControl {
   @SdInputValidate(Boolean)
   public resizable?: boolean;
 
+  /**
+   * 숨김 (시트설정 가능)
+   */
   @Input()
   @SdInputValidate(Boolean)
   public hidden?: boolean;
+
+  /**
+   * 숨김 (탭식 컬럼 보이기 처리 위함)
+   */
+  @Input()
+  @SdInputValidate(Boolean)
+  public collapse?: boolean;
 
   @Input()
   @SdInputValidate(Boolean)
