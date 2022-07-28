@@ -730,7 +730,7 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
       }
 
       &[sd-inset=true] {
-        > sd-dock-container {
+        ::ng-deep > sd-dock-container > ._content {
           border: none !important;
         }
       }
@@ -749,10 +749,16 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     fasCaretRight: import("@fortawesome/pro-solid-svg-icons/faCaretRight").then(m => m.faCaretRight)
   };
 
+  /**
+   * 시트설정 저장 키
+   */
   @Input()
   @SdInputValidate(String)
   public key?: string;
 
+  /**
+   * ROW 항목들
+   */
   @Input()
   @SdInputValidate({
     type: Array,
@@ -760,6 +766,11 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   })
   public items: any[] = [];
 
+  /**
+   * 데이터 키를 가져오기 위한 함수 (ROW별로 반드시 하나)
+   * @param index 'items'내의 index
+   * @param item items[index] 데이터
+   */
   @Input()
   @SdInputValidate({
     type: Function,
@@ -767,6 +778,9 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   })
   public trackByFn = (index: number, item: any): any => item;
 
+  /**
+   * ROW 높이를 내용물에 맞춰 자동조정할지 여부
+   */
   @Input()
   @SdInputValidate({
     type: Boolean,
@@ -774,10 +788,16 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   })
   public autoHeight = false;
 
+  /**
+   * [pagination] 현재 표시 페이지
+   */
   @Input()
   @SdInputValidate({ type: Number, notnull: true })
   public page = 0;
 
+  /**
+   * [pagination] 총 페이지 크기
+   */
   @Input()
   @SdInputValidate({ type: Number, notnull: true })
   public get pageLength(): number {
@@ -795,17 +815,29 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
   private _pageLength = 0;
 
+  /**
+   * 한 페이지에 표시할 항목수 (설정된 경우, 'pageLength'가 무시되고, 자동계산됨)
+   */
   @Input()
   @SdInputValidate(Number)
   public pageItemCount?: number;
 
+  /**
+   * 현재 표시페이지 변화 이벤트
+   */
   @Output()
   public readonly pageChange = new EventEmitter<number>();
 
+  /**
+   * 설정 및 페이징 바 표시여부
+   */
   @Input()
   @SdInputValidate(Boolean)
   public hideConfigBar?: boolean;
 
+  /**
+   * 선택모드 (single = 단일선택, multi = 다중선택)
+   */
   @Input()
   @SdInputValidate({
     type: String,
@@ -813,6 +845,9 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   })
   public selectMode?: "single" | "multi";
 
+  /**
+   * 자동선택모드 (undefined = 사용안함, click = 셀 클릭시 해당 ROW 선택, focus = 셀 포커싱시 해당 ROW 선택)
+   */
   @Input()
   @SdInputValidate({
     type: String,
@@ -820,45 +855,81 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   })
   public autoSelect?: "click" | "focus";
 
+  /**
+   * 선택된 항목 목록
+   */
   @Input()
   @SdInputValidate({ type: Array, notnull: true })
   public selectedItems: any[] = [];
 
+  /**
+   * 선택된 항목 변경 이벤트
+   */
   @Output()
   public readonly selectedItemsChange = new EventEmitter<any[]>();
 
+  /**
+   * 확장된 항목 목록
+   */
   @Input()
   public expandedItems: any[] = [];
 
+  /**
+   * 확장된 항목 변경 이벤트
+   */
   @Output()
   public readonly expandedItemsChange = new EventEmitter<any[]>();
 
+  /**
+   * 정렬규칙
+   */
   @Input()
   public ordering: ISdSheetColumnOrderingVM[] = [];
 
+  /**
+   * 정렬규칙 변경 이벤트
+   */
   @Output()
   public readonly orderingChange = new EventEmitter<ISdSheetColumnOrderingVM[]>();
 
+  /**
+   * [디자인] BORDER를 없애는등 다른 박스안에 완전히 붙임
+   */
   @Input()
   @SdInputValidate({ type: Boolean, notnull: true })
   @HostBinding("attr.sd-inset")
   public inset = false;
 
+  /**
+   * 항목별로 선택가능여부를 설정하는 함수
+   */
   @Input()
   @SdInputValidate(Function)
   public getItemSelectableFn?: (index: number, item: any) => any;
 
+  /**
+   * 항목별로 하위항목을 설정하는 함수
+   */
   @Input()
   @SdInputValidate(Function)
   public getChildrenFn?: (index: number, item: any) => (any[] | undefined);
 
+  /**
+   * "카드형식으로 보기"를 사용할지 여부, 이 경우 반드시 'cardTemplate' 템플릿이 설정되어야함
+   */
   @Input()
   @SdInputValidate(Boolean)
   public useCardDisplayType?: boolean;
 
+  /**
+   * 카드템플릿
+   */
   @ContentChild("cardTemplate", { static: true })
   public cardTemplateRef?: TemplateRef<{ item: any; index: number }>;
 
+  /**
+   * 현재 표시타입 (sheet = 기본값, card = 카드형태)
+   */
   @Input()
   @SdInputValidate({
     type: String,
@@ -867,10 +938,16 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   public displayType: "sheet" | "card" = "sheet";
 
 
+  /**
+   * 부모항목의 하위항목들에 대해 좌측 패딩을 줄 것인지 여부
+   */
   @Input()
   @SdInputValidate(Boolean)
   public useFlatChildren?: boolean;
 
+  /**
+   * 항목 포커싱중에 키 다운 이벤트
+   */
   @Output()
   public readonly itemKeydown = new EventEmitter<ISdSheetItemKeydownEventParam<any>>();
 
@@ -1229,6 +1306,9 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     const expandedItemsChanges = this._expandedItemsDiffer.diff(this.expandedItems);
     const columnControlsChanges = this._columnControlsDiffer.diff(this.columnControls);
 
+    const isColumnControlCollapsesChange = !ObjectUtil.equal(this._prevData["columnControlCollapses"], this.columnControls?.map((item) => item.collapse));
+    if (isColumnControlCollapsesChange) this._prevData["columnControlCollapses"] = this.columnControls?.map((item) => item.collapse);
+
     const isConfigColumnObjChange = !ObjectUtil.equal(this._prevData["configColumnObj"], this._config?.columnObj);
     if (isConfigColumnObjChange) this._prevData["configColumnObj"] = ObjectUtil.clone(this._config?.columnObj);
 
@@ -1253,7 +1333,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     const isWidthChange = this._prevData["width"] !== this.columnControls?.toArray().sum((item) => item.widthPixel);
     if (isWidthChange) this._prevData["width"] = this.columnControls?.toArray().sum((item) => item.widthPixel);
 
-    if (itemsChanges || selectedItemsChanges || expandedItemsChanges || columnControlsChanges || isConfigColumnObjChange) {
+    if (itemsChanges || selectedItemsChanges || expandedItemsChanges || columnControlsChanges || isColumnControlCollapsesChange || isConfigColumnObjChange) {
       this._cdr.markForCheck();
     }
 
