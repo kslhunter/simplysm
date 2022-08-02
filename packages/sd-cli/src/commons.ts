@@ -74,6 +74,7 @@ export interface ISdCliServerPackageConfig {
 
 export interface ISdCliClientPackageConfig {
   type: "client";
+  moduleFederation?: boolean;
   builder?: {
     web?: ISdCliClientBuilderWebConfig;
     cordova?: ISdCliClientBuilderCordovaConfig;

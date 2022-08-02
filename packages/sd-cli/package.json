@@ -23,6 +23,7 @@
     "@angular-devkit/build-angular": "^13.2.2",
     "@angular/compiler": "^13.2.0",
     "@angular/compiler-cli": "^13.2.0",
+    "@angular-architects/module-federation": "~14.2.0",
     "@babel/parser": "^7.17.0",
     "@babel/types": "^7.17.0",
     "@ngtools/webpack": "^13.2.2",

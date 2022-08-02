@@ -33,6 +33,7 @@ import electronBuilder from "electron-builder";
 import { fileURLToPath } from "url";
 import { Entrypoint } from "@angular-devkit/build-angular/src/utils/index-file/augment-index-html";
 import { StringUtil } from "@simplysm/sd-core-common";
+import { shareAll } from "@angular-architects/module-federation/webpack";
 import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
@@ -790,7 +791,12 @@ export class SdCliClientBuilder extends EventEmitter {
             }
             return resultMessages.join(os.EOL);
           }
-        })
+        }),
+        ...this._config.moduleFederation ? [
+          new webpack.container.ModuleFederationPlugin({
+            shared: shareAll({ singleton: true, strictVersion: true, requiredVersion: "auto" } as any)
+          })
+        ] : []
       ] as any[]
     };
   }
