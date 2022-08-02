@@ -225,7 +225,8 @@ export class SdCliProjectGenerator {
     this._logger.log(`[${pkgName}] 'src/main.ts' 파일 등록`);
     await FsUtil.writeFileAsync(path.resolve(pkgPath, `src/main.ts`), fc_package_server_main({
       projPath: this._rootPath,
-      pkgName: pkgName
+      pkgName: pkgName,
+      port: Math.floor(Math.random() * 10000) + 50000
     }));
 
     this._logger.log(`[${pkgName}] 'simplysm.json' 파일에 등록`);

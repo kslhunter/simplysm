@@ -23,7 +23,7 @@ npm install @simplysm/sd-cli@~7.0.0
 
 ``` bat
 :: sd-cli init --help 참고
-sd-cli init 샘플프로젝트 홍길동 https://github.com/my/sample.git
+sd-cli init "샘플프로젝트" "홍길동" https://github.com/my/sample.git
 ```
 
 필요시 아래 작업 수행
@@ -60,8 +60,8 @@ sd-cli add ts-lib common 공통모듈
 #### 브라우저용 라이브러리 패키지 추가
 
 ``` bat
-:: sd-cli add client-lib --help 참고
-sd-cli add ts-lib common-browser "브라우저 공통" --useDom
+:: sd-cli add ts-lib --help 참고
+sd-cli add ts-lib browser-common "브라우저 공통" --useDom
 ```
 
 #### Angular용 라이브러리 패키지 추가

@@ -2,7 +2,7 @@ import path from "path";
 import { INpmConfig } from "../../../commons";
 import { FsUtil } from "@simplysm/sd-core-node";
 
-export const fc_package_server_main = (opt: { projPath: string; pkgName: string }): string => {
+export const fc_package_server_main = (opt: { projPath: string; pkgName: string; port: number }): string => {
   const projNpmConfig = FsUtil.readJson(path.resolve(opt.projPath, "package.json")) as INpmConfig;
 
   return /* language=ts */ `
@@ -46,7 +46,7 @@ else {
 const server = new SdServiceServer({
   rootPath: __dirname,
   services: [],
-  port: 50180
+  port: ${opt.port}
 });
 
 const logger = Logger.get(["${projNpmConfig.name}", "${opt.pkgName}"]);
