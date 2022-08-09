@@ -58,10 +58,21 @@ export interface ISdExcelXmlWorkbookData {
 export interface ISdExcelXmlWorksheetData {
   "worksheet": {
     "$": { "xmlns": string };
-    "dimension": [{
+    "dimension"?: [{
       "$": {
         "ref": string;
       };
+    }];
+    "cols"?: [{
+      "col": {
+        "$": {
+          "min": string;
+          "max": string;
+          "width"?: string;
+          "bestFit"?: string;
+          "customWidth"?: string;
+        };
+      }[];
     }];
     "sheetData": [{
       "row"?: ISdExcelRowData[];
@@ -161,6 +172,7 @@ export type TSdExcelNumberFormat = "number" | "string" | "DateOnly" | "DateTime"
 
 export interface ISdExcelXml {
   readonly data: any;
+
   cleanup(): void;
 }
 

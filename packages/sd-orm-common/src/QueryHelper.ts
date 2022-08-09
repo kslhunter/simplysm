@@ -139,8 +139,16 @@ export class QueryHelper {
     return [this.getQueryValue(source), " LIKE ", this.getQueryValue(target), this._dialect === "sqlite" ? " || " : " + ", "'%'"];
   }
 
+  public notStartsWith(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
+    return [this.getQueryValue(source), " NOT LIKE ", this.getQueryValue(target), this._dialect === "sqlite" ? " || " : " + ", "'%'"];
+  }
+
   public endsWith(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
     return [this.getQueryValue(source), " LIKE ", "'%'", this._dialect === "sqlite" ? " || " : " + ", this.getQueryValue(target)];
+  }
+
+  public notEndsWith(source: TEntityValue<string | undefined>, target: TEntityValue<string | undefined>): TQueryBuilderValue[] {
+    return [this.getQueryValue(source), " NOT LIKE ", "'%'", this._dialect === "sqlite" ? " || " : " + ", this.getQueryValue(target)];
   }
 
   public in<P extends TQueryValue>(src: TEntityValue<P>, target: (TEntityValue<P | undefined>)[]): TQueryBuilderValue[] {

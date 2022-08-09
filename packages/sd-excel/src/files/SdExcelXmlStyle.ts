@@ -52,7 +52,10 @@ export class SdExcelXmlStyle implements ISdExcelXml {
     return {
       numFmtId: this.data.styleSheet.cellXfs[0].xf[NumberUtil.parseInt(id)!]?.$.numFmtId
     };
-    // SdExcelUtil.convertNumFmtIdToName(numFmtId)
+  }
+
+  public getNumFmtCode(numFmtId: string): string | undefined {
+    return this.data.styleSheet.numFmts?.[0].numFmt.single((item) => item.$.numFmtId === numFmtId)?.$.formatCode;
   }
 
   public cleanup(): void {

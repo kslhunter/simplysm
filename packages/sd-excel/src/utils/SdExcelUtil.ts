@@ -74,12 +74,38 @@ export class SdExcelUtil {
     return date;
   }
 
-
-  public static convertNumFmtIdToName(numFmtId: number | undefined): TSdExcelNumberFormat {
-    if (numFmtId === undefined) {
-      throw new Error("[numFmtId: " + numFmtId + "]에 대한 형식을 알 수 없습니다.");
+  public static convertNumFmtCodeToName(numFmtCode: string): TSdExcelNumberFormat {
+    if (
+      (/yy/i).test(numFmtCode)
+      || (/dd/i).test(numFmtCode)
+    ) {
+      return "DateTime";
     }
     else if (
+      (
+        (/yy/i).test(numFmtCode)
+        || (/dd/i).test(numFmtCode)
+      ) &&
+      (
+        (/hh/i).test(numFmtCode)
+        || (/ss/i).test(numFmtCode)
+      )
+    ) {
+      return "DateOnly";
+    }
+    if (numFmtCode.includes("0_")) {
+      return "number";
+    }
+    else if (numFmtCode.includes("0_")) {
+      return "number";
+    }
+    else {
+      throw new Error("[numFmtCode: " + numFmtCode + "]에 대한 형식을 알 수 없습니다.");
+    }
+  }
+
+  public static convertNumFmtIdToName(numFmtId: number): TSdExcelNumberFormat {
+    if (
       numFmtId <= 13 ||
       (numFmtId >= 37 && numFmtId <= 40) ||
       numFmtId === 48

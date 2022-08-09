@@ -77,6 +77,9 @@ export class SdCliProjectGenerator {
     this._logger.log(`[${projName}] 'tsconfig.json' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, "tsconfig.json"), fc_project_tsconfig());
 
+    this._logger.log(`[${projName}] '.npmrc' 파일 생성`);
+    await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".npmrc"), "legacy-peer-deps=true");
+
     this._logger.log(`[${projName}] 'packages' 디렉토리 생성`);
     await FsUtil.mkdirsAsync(path.resolve(this._rootPath, "packages"));
 

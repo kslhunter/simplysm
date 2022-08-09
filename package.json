@@ -21,8 +21,6 @@
     "build": "npm run _sd-cli_ -- --debug build",
     "publish": "npm run _sd-cli_ -- --debug publish",
     "publish(--noBuild)": "npm run _sd-cli_ -- --debug publish --noBuild",
-    "----- device": "",
-    "run-electron:devtool": "npm run _sd-cli_ -- --debug run-electron sd-devtool http://localhost:50080",
     "----- pkg(--debug)": "",
     "watch:sd-core-common(--debug)": "npm run _sd-cli_ -- --debug watch --packages sd-core-common",
     "----- utils": "",

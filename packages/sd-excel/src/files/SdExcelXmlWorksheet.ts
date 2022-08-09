@@ -6,7 +6,7 @@ import {
   ISdExcelXmlWorksheetData
 } from "../commons";
 import { SdExcelUtil } from "../utils/SdExcelUtil";
-import { NumberUtil } from "@simplysm/sd-core-common";
+import { NotImplementError, NumberUtil } from "@simplysm/sd-core-common";
 
 export class SdExcelXmlWorksheet implements ISdExcelXml {
   public readonly data: ISdExcelXmlWorksheetData;
@@ -14,7 +14,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
   private readonly _rowDataMap = new Map<string, ISdExcelRowData>();
   private readonly _cellDataMap = new Map<string, ISdExcelCellData>();
 
-  public range: ISdExcelAddressRangePoint;
+  public range!: ISdExcelAddressRangePoint;
 
   public constructor(data?: ISdExcelXmlWorksheetData) {
     if (data === undefined) {
@@ -43,8 +43,13 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
       }
     }
 
-    const ref = this.data.worksheet.dimension[0].$.ref;
-    this.range = SdExcelUtil.parseRangeAddr(ref);
+    if (this.data.worksheet.dimension !== undefined) {
+      const ref = this.data.worksheet.dimension[0].$.ref;
+      this.range = SdExcelUtil.parseRangeAddr(ref);
+    }
+    else {
+      this._refreshDimension();
+    }
   }
 
   public setCellType(addr: string, type: "s" | "b" | undefined): void {
@@ -134,29 +139,71 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     };
   }
 
+  public setColWidth(colIndex: string, width: string): void {
+    const colIndexNumber = NumberUtil.parseInt(colIndex)!;
+    const col = this.data.worksheet.cols?.[0].col.single((item) => NumberUtil.parseInt(item.$.min)! <= colIndexNumber && NumberUtil.parseInt(item.$.max)! >= colIndexNumber);
+    if (col) {
+      throw new NotImplementError();
+    }
+    else {
+      this.data.worksheet.cols = this.data.worksheet.cols ?? [{ col: [] }];
+      this.data.worksheet.cols[0].col.push({
+        "$": {
+          "min": colIndex,
+          "max": colIndex,
+          "bestFit": "1",
+          "customWidth": "1",
+          "width": width
+        }
+      });
+    }
+  }
+
   public cleanup(): void {
+    //-- 순서 정렬
     const wsData = { worksheet: {} } as ISdExcelXmlWorksheetData;
-    // mergeCells를 sheetData 바로 뒤로
     const keys = Object.keys(this.data.worksheet);
     for (let i = 0; i < keys.length; i++) {
-      // MergeCells
-      if (this.data.worksheet.mergeCells) {
-        if (keys[i] === "mergeCells") {
-          continue;
+      if (keys[i] === "mergeCells") continue;
+      if (keys[i] === "cols") continue;
+
+      if (keys[i] === "sheetData") {
+        // cols
+        if (this.data.worksheet.cols) {
+          wsData.worksheet.cols = this.data.worksheet.cols;
         }
-      }
 
-      wsData.worksheet[keys[i]] = this.data.worksheet[keys[i]];
+        // sheetData
+        wsData.worksheet[keys[i]] = this.data.worksheet[keys[i]];
 
-      // MergeCells
-      if (this.data.worksheet.mergeCells) {
-        if (keys[i] === "sheetData") {
+        // mergeCells
+        if (this.data.worksheet.mergeCells) {
           wsData.worksheet.mergeCells = this.data.worksheet.mergeCells;
         }
       }
+      else {
+        wsData.worksheet[keys[i]] = this.data.worksheet[keys[i]];
+      }
+    }
+    this.data.worksheet = wsData.worksheet;
+
+    // ROW 정렬
+    const rowsData = this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row ?? [];
+    rowsData.orderByThis((item) => NumberUtil.parseInt(item.$.r));
+
+    // CELL 정렬
+    for (const rowData of rowsData) {
+      const cellsData = rowData.c;
+      cellsData.orderByThis((item) => SdExcelUtil.parseAddr(item.$.r).c);
     }
 
-    this.data.worksheet = wsData.worksheet;
+    // Dimension 값 적용
+    if (this.data.worksheet.dimension) {
+      this.data.worksheet.dimension[0].$.ref = SdExcelUtil.stringifyRangeAddr(this.range);
+    }
+    else {
+      this.data.worksheet.dimension = [{ "$": { "ref": SdExcelUtil.stringifyRangeAddr(this.range) } }];
+    }
   }
 
   private _getCellData(addr: string): ISdExcelCellData | undefined {
@@ -218,20 +265,5 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
         };
       }
     }
-  }
-
-  public prepareSave(): void {
-    // ROW 정렬
-    const rowsData = this.data.worksheet.sheetData[0].row = this.data.worksheet.sheetData[0].row ?? [];
-    rowsData.orderByThis((item) => NumberUtil.parseInt(item.$.r));
-
-    // CELL 정렬
-    for (const rowData of rowsData) {
-      const cellsData = rowData.c;
-      cellsData.orderByThis((item) => SdExcelUtil.parseAddr(item.$.r).c);
-    }
-
-    // Dimension 값 적용
-    this.data.worksheet.dimension[0].$.ref = SdExcelUtil.stringifyRangeAddr(this.range);
   }
 }

@@ -94,8 +94,14 @@ export class SdExcelCell {
       const ssData = await this._getOrCreateSsDataAsync();
       return ssData.getStringById(NumberUtil.parseInt(cellVal)!);
     }
+    else if (cellType === "str") {
+      return cellVal;
+    }
     else if (cellType === "b") {
       return cellVal === "1";
+    }
+    else if (cellType === "e") {
+      throw new Error(`[${this._addr}] 타입분석 실패\n- 셀 내용에서, 에러가 감지되었습니다.(${cellVal})`);
     }
     else if (cellType === undefined) {
       const cellStyleId = wsData.getCellStyleId(this._addr);
@@ -104,7 +110,17 @@ export class SdExcelCell {
       }
 
       const styleData = (await this._getStyleDataAsync())!;
-      const numFmt = SdExcelUtil.convertNumFmtIdToName(NumberUtil.parseInt(styleData.get(cellStyleId).numFmtId));
+      const numFmtId = styleData.get(cellStyleId).numFmtId;
+      if (numFmtId === undefined) {
+        throw new Error(`[${this._addr}] 타입분석 실패\n- [numFmtId: ${numFmtId}]에 대한 형식을 알 수 없습니다.`);
+      }
+
+      const numFmtCode = styleData.getNumFmtCode(numFmtId);
+
+      const numFmt = numFmtCode !== undefined
+        ? SdExcelUtil.convertNumFmtCodeToName(numFmtCode)
+        : SdExcelUtil.convertNumFmtIdToName(NumberUtil.parseInt(numFmtId)!);
+
       if (numFmt === "number") {
         return NumberUtil.parseFloat(cellVal);
       }

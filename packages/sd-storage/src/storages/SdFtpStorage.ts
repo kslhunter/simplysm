@@ -1,6 +1,6 @@
 import ftp from "basic-ftp";
 import { ISdStorage, ISdStorageConnectionConfig } from "../commons";
-import { Readable } from "stream";
+import { PassThrough, Readable } from "stream";
 
 export class SdFtpStorage implements ISdStorage {
   private _ftp?: ftp.Client;
@@ -31,6 +31,35 @@ export class SdFtpStorage implements ISdStorage {
       throw new Error("FTP 서버에 연결되어있지 않습니다.");
     }
     await this._ftp.rename(fromPath, toPath);
+  }
+
+  public async readdirAsync(dirPath: string): Promise<{ name: string; isFile: boolean }[]> {
+    if (this._ftp === undefined) {
+      throw new Error("FTP 서버에 연결되어있지 않습니다.");
+    }
+    const fileInfos = await this._ftp.list(dirPath);
+    return fileInfos.map((item) => ({ name: item.name, isFile: item.isFile }));
+  }
+
+  public async readFileAsync(filePath: string): Promise<Buffer> {
+    if (this._ftp === undefined) {
+      throw new Error("FTP 서버에 연결되어있지 않습니다.");
+    }
+
+    let result = Buffer.from([]);
+    const writable = new PassThrough();
+    writable.on("data", (chunk) => {
+      result = Buffer.concat([result, chunk]);
+    });
+    await this._ftp.downloadTo(writable, filePath);
+    return result;
+  }
+
+  public async removeAsync(filePath: string): Promise<void> {
+    if (this._ftp === undefined) {
+      throw new Error("FTP 서버에 연결되어있지 않습니다.");
+    }
+    await this._ftp.remove(filePath);
   }
 
   public async putAsync(localPathOrBuffer: string | Buffer, storageFilePath: string): Promise<void> {

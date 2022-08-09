@@ -33,7 +33,7 @@ import electronBuilder from "electron-builder";
 import { fileURLToPath } from "url";
 import { Entrypoint } from "@angular-devkit/build-angular/src/utils/index-file/augment-index-html";
 import { StringUtil } from "@simplysm/sd-core-common";
-import { shareAll } from "@angular-architects/module-federation/webpack";
+import mf from "@angular-architects/module-federation/webpack";
 import LintResult = ESLint.LintResult;
 
 export class SdCliClientBuilder extends EventEmitter {
@@ -403,6 +403,16 @@ export class SdCliClientBuilder extends EventEmitter {
     // 버전쓰기
     FsUtil.writeFile(path.resolve(this._cacheBasePath, "version"), versionHash);
 
+    // ModuleFederation 관련
+    const sharedMappings = new mf.SharedMappings();
+    sharedMappings.register(this._tsconfigFilePath, []);
+
+    const deps = SdCliNpmConfigUtil.getDependencies(npmConfig);
+    const shared = deps.defaults
+      .concat(deps.optionals)
+      .distinct()
+      .toObject((item) => item, () => ({ singleton: true, strictVersion: true, requiredVersion: "auto" }));
+
     let prevProgressMessage = "";
     return {
       mode: watch ? "development" : "production",
@@ -414,8 +424,12 @@ export class SdCliClientBuilder extends EventEmitter {
         extensions: [".ts", ".tsx", ".mjs", ".cjs", ".js", ".jsx"],
         symlinks: true,
         modules: [this._projRootPath, "node_modules"],
-        mainFields: ["es2015", "browser", "module", "main"],
-        conditionNames: ["es2015", "..."],
+        mainFields: ["es2020", "es2015", "browser", "module", "main"],
+        conditionNames: ["es2020", "es2015", "..."],
+
+        ...this._config.moduleFederation ? {
+          alias: sharedMappings.getAliases()
+        } : {}
       },
       resolveLoader: {
         symlinks: true
@@ -438,7 +452,11 @@ export class SdCliClientBuilder extends EventEmitter {
         libraryTarget: undefined,
         crossOriginLoading: false,
         trustedTypes: "angular#bundler",
-        scriptType: "module"
+        scriptType: "module",
+
+        ...this._config.moduleFederation ? {
+          publicPath: "auto"
+        } : {}
       },
       watch: false,
       watchOptions: {
@@ -451,7 +469,12 @@ export class SdCliClientBuilder extends EventEmitter {
         /Add postcss as project dependency/,
         /"@charset" must be the first rule in the file/
       ],
-      experiments: { backCompat: false, syncWebAssembly: true, asyncWebAssembly: true },
+      experiments: {
+        backCompat: false,
+        syncWebAssembly: true,
+        asyncWebAssembly: true,
+        ...this._config.moduleFederation ? { outputModule: true } : {}
+      },
       infrastructureLogging: { level: "error" },
       stats: "errors-warnings",
       // externals: extModules.toObject((item) => item.name, (item) => item.exists ? "commonjs2 " + item.name : `var {name: '${item.name}'}`),
@@ -518,7 +541,11 @@ export class SdCliClientBuilder extends EventEmitter {
               test: /[\\/]node_modules[\\/]/
             } : false
           }
-        }
+        },
+
+        ...this._config.moduleFederation ? {
+          runtimeChunk: false
+        } : {}
       },
       module: {
         strictExportPresence: true,
@@ -792,10 +819,42 @@ export class SdCliClientBuilder extends EventEmitter {
             return resultMessages.join(os.EOL);
           }
         }),
-        ...this._config.moduleFederation ? [
+        ...this._config.moduleFederation === "remote" ? [
           new webpack.container.ModuleFederationPlugin({
-            shared: shareAll({ singleton: true, strictVersion: true, requiredVersion: "auto" } as any)
-          })
+            library: { type: "module" },
+            name: npmConfig.name.replace(/[^0-9A-z]/g, "_"),
+            filename: "remoteEntry.js",
+            exposes: {
+              "./AppMfeModule": path.resolve(this._rootPath, "src/AppMfeModule")
+            },
+            shared: mf.share({
+              /*"@angular/core": { singleton: true, strictVersion: true, requiredVersion: "auto" },
+              "@angular/common": { singleton: true, strictVersion: true, requiredVersion: "auto" },
+              "@angular/common/http": { singleton: true, strictVersion: true, requiredVersion: "auto" },
+              "@angular/router": { singleton: true, strictVersion: true, requiredVersion: "auto" },
+              "@simplysm/sd-angular": { singleton: true, strictVersion: true, requiredVersion: "auto" },*/
+
+              ...shared,
+              ...sharedMappings.getDescriptors()
+            } as any, path.resolve(this._rootPath, "package.json"))
+          }),
+          sharedMappings.getPlugin()
+        ] : this._config.moduleFederation === "host" ? [
+          new webpack.container.ModuleFederationPlugin({
+            library: { type: "module" },
+            remotes: {},
+            shared: mf.share({
+              /*"@angular/core": { singleton: true, strictVersion: true, requiredVersion: "auto" },
+              "@angular/common": { singleton: true, strictVersion: true, requiredVersion: "auto" },
+              "@angular/common/http": { singleton: true, strictVersion: true, requiredVersion: "auto" },
+              "@angular/router": { singleton: true, strictVersion: true, requiredVersion: "auto" },
+              "@simplysm/sd-angular": { singleton: true, strictVersion: true, requiredVersion: "auto" },*/
+
+              ...shared,
+              ...sharedMappings.getDescriptors()
+            } as any, path.resolve(this._rootPath, "package.json"))
+          }),
+          sharedMappings.getPlugin()
         ] : []
       ] as any[]
     };

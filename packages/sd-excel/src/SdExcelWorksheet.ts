@@ -3,6 +3,8 @@ import { SdExcelZipCache } from "./utils/SdExcelZipCache";
 import { ISdExcelAddressRangePoint, TSdExcelValueType } from "./commons";
 import { SdExcelRow } from "./SdExcelRow";
 import { SdExcelCell } from "./SdExcelCell";
+import { SdExcelXmlWorkbook } from "./files/SdExcelXmlWorkbook";
+import { SdExcelCol } from "./SdExcelCol";
 
 export class SdExcelWorksheet {
   private readonly _rowMap = new Map<number, SdExcelRow>();
@@ -11,12 +13,21 @@ export class SdExcelWorksheet {
                      private readonly _relId: number) {
   }
 
+  public async getNameAsync(): Promise<string> {
+    const wbXmlData = await this._getWbDataAsync();
+    return wbXmlData.getWorksheetNameById(this._relId)!;
+  }
+
   public row(r: number): SdExcelRow {
     return this._rowMap.getOrCreate(r, new SdExcelRow(this._zipCache, this._relId, r));
   }
 
   public cell(r: number, c: number): SdExcelCell {
     return this.row(r).cell(c);
+  }
+
+  public col(c: number): SdExcelCol {
+    return new SdExcelCol(this._zipCache, this._relId, c);
   }
 
   public async getRangeAsync(): Promise<ISdExcelAddressRangePoint> {
@@ -38,7 +49,7 @@ export class SdExcelWorksheet {
     return result;
   }
 
-  public async getDataTableAsync(): Promise<Record<string, any>[]> {
+  public async getDataTableAsync(headerRowIndex?: number): Promise<Record<string, any>[]> {
     const result: Record<string, TSdExcelValueType>[] = [];
 
     const headerMap = new Map<string, number>();
@@ -46,13 +57,13 @@ export class SdExcelWorksheet {
     const xml = await this._getDataAsync();
     const range = xml.range;
     for (let c = range.s.c; c <= range.e.c; c++) {
-      const val = await this.cell(range.s.r, c).getValAsync();
+      const val = await this.cell(headerRowIndex ?? range.s.r, c).getValAsync();
       if (typeof val === "string") {
         headerMap.set(val, c);
       }
     }
 
-    for (let r = range.s.r + 1; r <= range.e.r; r++) {
+    for (let r = (headerRowIndex ?? range.s.r) + 1; r <= range.e.r; r++) {
       const record: Record<string, TSdExcelValueType> = {} as any;
       for (const header of headerMap.keys()) {
         const c = headerMap.get(header)!;
@@ -73,12 +84,11 @@ export class SdExcelWorksheet {
     }
   }
 
-  public async prepareSaveAsync(): Promise<void> {
-    const xml = await this._getDataAsync();
-    xml.prepareSave();
-  }
-
   private async _getDataAsync(): Promise<SdExcelXmlWorksheet> {
     return await this._zipCache.getAsync(`xl/worksheets/sheet${this._relId}.xml`) as SdExcelXmlWorksheet;
+  }
+
+  private async _getWbDataAsync(): Promise<SdExcelXmlWorkbook> {
+    return await this._zipCache.getAsync("xl/workbook.xml") as SdExcelXmlWorkbook;
   }
 }

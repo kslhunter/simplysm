@@ -167,7 +167,11 @@ export class SdCliBbFileMetadata {
           });
         }
         else {
-          throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
+          const moduleName = rawMeta.source.value;
+          result.push({
+            exportedName: "*",
+            target: { moduleName, name: "*", __TSdCliMetaRef__: "__TSdCliMetaRef__" }
+          });
         }
       }
     }
