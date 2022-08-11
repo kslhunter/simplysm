@@ -35,7 +35,6 @@ export * from "./entry-points/file/project/fc_project_yarnrc";
 export * from "./entry-points/file/server/fc_package_server_main";
 export * from "./entry-points/SdCliFileCrypto";
 export * from "./entry-points/SdCliLocalUpdate";
-export * from "./entry-points/SdCliNpm";
 export * from "./entry-points/SdCliPrepare";
 export * from "./entry-points/SdCliProject";
 export * from "./entry-points/SdCliProjectGenerator";

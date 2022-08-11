@@ -7,6 +7,6 @@ export const fc_project_readme = (opt: { description: string }): string => /* la
 
 ## Installation
 
-    npm install
+    yarn install
     
 `.trim();
