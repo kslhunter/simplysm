@@ -1,0 +1,176 @@
+:root {
+  // THEME
+  --theme-color-grey-lightest: var(--color-grey-100);
+  --theme-color-grey-lighter: var(--color-grey-300);
+  --theme-color-grey-light: var(--color-grey-400);
+  --theme-color-grey-default: var(--color-grey-500);
+  --theme-color-grey-dark: var(--color-grey-600);
+  --theme-color-grey-darker: var(--color-grey-700);
+  --theme-color-grey-darkest: var(--color-grey-800);
+
+  --theme-color-blue-grey-lightest: var(--color-blue-grey-100);
+  --theme-color-blue-grey-lighter: var(--color-blue-grey-300);
+  --theme-color-blue-grey-light: var(--color-blue-grey-400);
+  --theme-color-blue-grey-default: var(--color-blue-grey-500);
+  --theme-color-blue-grey-dark: var(--color-blue-grey-600);
+  --theme-color-blue-grey-darker: var(--color-blue-grey-800);
+  --theme-color-blue-grey-darkest: var(--color-blue-grey-900);
+
+  --theme-color-primary-lightest: var(--color-indigo-50);
+  --theme-color-primary-lighter: var(--color-indigo-100);
+  --theme-color-primary-light: var(--color-indigo-200);
+  --theme-color-primary-default: var(--color-indigo-500);
+  --theme-color-primary-dark: var(--color-indigo-600);
+  --theme-color-primary-darker: var(--color-indigo-700);
+  --theme-color-primary-darkest: var(--color-indigo-800);
+
+  --theme-color-secondary-lightest: var(--color-blue-50);
+  --theme-color-secondary-lighter: var(--color-blue-100);
+  --theme-color-secondary-light: var(--color-blue-200);
+  --theme-color-secondary-default: var(--color-blue-500);
+  --theme-color-secondary-dark: var(--color-blue-600);
+  --theme-color-secondary-darker: var(--color-blue-700);
+  --theme-color-secondary-darkest: var(--color-blue-800);
+
+  --theme-color-info-lightest: var(--color-teal-50);
+  --theme-color-info-lighter: var(--color-teal-100);
+  --theme-color-info-light: var(--color-teal-200);
+  --theme-color-info-default: var(--color-teal-500);
+  --theme-color-info-dark: var(--color-teal-600);
+  --theme-color-info-darker: var(--color-teal-700);
+  --theme-color-info-darkest: var(--color-teal-800);
+
+  --theme-color-success-lightest: var(--color-green-50);
+  --theme-color-success-lighter: var(--color-green-100);
+  --theme-color-success-light: var(--color-green-300);
+  --theme-color-success-default: var(--color-green-500);
+  --theme-color-success-dark: var(--color-green-600);
+  --theme-color-success-darker: var(--color-green-700);
+  --theme-color-success-darkest: var(--color-green-800);
+
+  --theme-color-warning-lightest: var(--color-orange-50);
+  --theme-color-warning-lighter: var(--color-orange-100);
+  --theme-color-warning-light: var(--color-orange-200);
+  --theme-color-warning-default: var(--color-orange-600);
+  --theme-color-warning-dark: var(--color-orange-700);
+  --theme-color-warning-darker: var(--color-orange-800);
+  --theme-color-warning-darkest: var(--color-orange-900);
+
+  --theme-color-danger-lightest: var(--color-red-50);
+  --theme-color-danger-lighter: var(--color-red-100);
+  --theme-color-danger-light: var(--color-red-200);
+  --theme-color-danger-default: var(--color-red-500);
+  --theme-color-danger-dark: var(--color-red-700);
+  --theme-color-danger-darker: var(--color-red-800);
+  --theme-color-danger-darkest: var(--color-red-900);
+
+
+  // TRANSPARENT RGBA COLOR
+  --trans-brightness-darkest: rgba(0, 0, 0, .5);
+  --trans-brightness-darker: rgba(0, 0, 0, .4);
+  --trans-brightness-dark: rgba(0, 0, 0, .3);
+  --trans-brightness-default: rgba(0, 0, 0, .2);
+  --trans-brightness-light: rgba(0, 0, 0, .1);
+  --trans-brightness-lighter: rgba(0, 0, 0, .03);
+
+  --trans-brightness-rev-default: rgba(255, 255, 255, .1);
+  --trans-brightness-rev-light: rgba(255, 255, 255, .2);
+  --trans-brightness-rev-lighter: rgba(255, 255, 255, .3);
+  --trans-brightness-rev-lightest: rgba(255, 255, 255, .4);
+
+
+  // TEXT COLOR
+  --text-brightness-dark: black;
+  --text-brightness-default: rgba(0, 0, 0, .87);
+  --text-brightness-light: rgba(0, 0, 0, .60);
+  --text-brightness-lighter: rgba(0, 0, 0, .38);
+  --text-brightness-lightest: rgba(0, 0, 0, .2);
+
+  --text-brightness-rev-default: white;
+  --text-brightness-rev-dark: rgba(255, 255, 255, .7);
+  --text-brightness-rev-darker: rgba(255, 255, 255, .5);
+
+  // FONT STYLE
+  --font-size-lg: 14px;
+  --font-size-default: 12px;
+  --font-size-sm: 11px;
+  --font-size-h1: 24px;
+  --font-size-h2: 18px;
+  --font-size-h3: 16px;
+  --font-size-h4: 14px;
+  --font-size-h5: 12px;
+  --font-size-h6: 11px;
+
+  --line-height: 1.5em;
+  --line-height-strip-unit: 1.5;
+  --font-family: '맑은 고딕', 'Malgun Gothic', 'AppleGothicNeoSD', 'Apple SD 산돌고딕 Neo', 'Microsoft NeoGothic', 'Droid Sans', sans-serif;
+  --font-family-monospace: 'D2Coding', monospace;
+
+  // GAP STYLE
+  --gap-0: 0;
+  --gap-xxs: 1px;
+  --gap-xs: 2px;
+  --gap-sm: 4px;
+  --gap-default: 6px;
+  --gap-lg: 8px;
+  --gap-xl: 12px;
+  --gap-xxl: 18px;
+
+  // BORDER STYLE
+  --border-color-light: var(--theme-color-grey-lighter);
+  --border-color: var(--theme-color-grey-light);
+  --border-color-dark: var(--theme-color-grey-default);
+  --border-color-darker: var(--theme-color-grey-dark);
+
+  // BORDER RADIUS STYLE
+  --border-radius-sm: var(--gap-xs);
+  --border-radius-default: var(--gap-sm);
+  --border-radius-lg: var(--gap-default);
+  --border-radius-xl: var(--gap-lg);
+
+  // DEFAULT STYLES
+  --background-color: var(--theme-color-grey-lightest);
+
+  // CONTROL STYLES
+  --sd-sidebar-width: 180px;
+  --sd-topbar-height-sm: 32px;
+  --sd-topbar-height: 36px;
+  --sd-topbar-height-lg: 42px;
+  --sd-sheet-padding-v: var(--gap-xs);
+  --sd-sheet-padding-h: var(--gap-sm);
+
+  // Z-INDEX
+  --z-index-toast: 9999;
+  --z-index-busy: 9998;
+  --z-index-dropdown: 5000;
+  --z-index-modal: 4000;
+  --z-index-sidebar: 3000;
+  --z-index-topbar: 2000;
+}
+
+@media screen and (max-width: 520px) {
+  :root {
+    --font-size-lg: 16px;
+    --font-size-default: 14px;
+    --font-size-sm: 12px;
+    --font-size-h1: 32px;
+    --font-size-h2: 24px;
+    --font-size-h3: 18px;
+    --font-size-h4: 16px;
+    --font-size-h5: 14px;
+    --font-size-h6: 12px;
+
+    --gap-xxs: 2px;
+    --gap-xs: 4px;
+    --gap-sm: 6px;
+    --gap-default: 8px;
+    --gap-lg: 14px;
+    --gap-xl: 18px;
+    --gap-xxl: 24px;
+
+    --sd-sidebar-width: 240px;
+    --sd-topbar-height-sm: 36px;
+    --sd-topbar-height: 42px;
+    --sd-topbar-height-lg: 48px;
+  }
+}
