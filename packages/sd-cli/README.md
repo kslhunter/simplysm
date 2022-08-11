@@ -16,14 +16,16 @@ cd sample
 ### 2. sd-cli 설치
 
 ``` bat
-npm install @simplysm/sd-cli@~7.1.0
+yarn set version 3.2.2
+yarn config set nodeLinker node-modules
+yarn add @simplysm/sd-cli@~7.1.0
 ```
 
 ### 3. 프로젝트 초기화
 
 ``` bat
 :: sd-cli init --help 참고
-sd-cli init "샘플프로젝트" "홍길동" https://github.com/my/sample.git
+yarn run sd-cli init "샘플프로젝트" "홍길동" https://github.com/my/sample.git
 ```
 
 필요시 아래 작업 수행
