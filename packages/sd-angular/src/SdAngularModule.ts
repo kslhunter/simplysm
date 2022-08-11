@@ -2,7 +2,7 @@ import { ErrorHandler, ModuleWithProviders, NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { SdGlobalErrorHandlerPlugin } from "./plugins/SdGlobalErrorHandlerPlugin";
 import { FaConfig } from "@fortawesome/angular-fontawesome";
-import { faQuestionCircle as fasQuestionCircle } from "@fortawesome/pro-light-svg-icons/faQuestionCircle";
+import { faQuestionCircle as fasQuestionCircle } from "@fortawesome/free-solid-svg-icons/faQuestionCircle";
 
 @NgModule({
   imports: [
