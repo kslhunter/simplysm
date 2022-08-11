@@ -6,6 +6,7 @@ import {
   isAssignmentExpression,
   isCallExpression,
   isClassDeclaration,
+  isConditionalExpression,
   isExportDeclaration,
   isExportDefaultDeclaration,
   isExportNamedDeclaration,
@@ -34,6 +35,7 @@ import { TSdCliBbMetadata } from "./SdCliBbRootMetadata";
 import {
   SdCliBbArrayMetadata,
   SdCliBbClassMetadata,
+  SdCliBbConditionMetadata,
   SdCliBbFunctionMetadata,
   SdCliBbObjectMetadata,
   SdCliBbVariableMetadata
@@ -58,7 +60,12 @@ export class SdCliBbFileMetadata {
     }
 
     const fileContent = FsUtil.readFile(realFilePath);
-    this.ast = babelParser.parse(fileContent, { sourceType: "module" });
+    try {
+      this.ast = babelParser.parse(fileContent, { sourceType: "module" });
+    }
+    catch (err) {
+      throw SdCliBbUtil.error(err.message, this.filePath, err.loc);
+    }
     this.rawMetas = this.ast.program.body;
   }
 
@@ -487,6 +494,9 @@ export class SdCliBbFileMetadata {
     }
     else if (isSpreadElement(rawMeta)) {
       return this.getMetaFromRaw(rawMeta.argument);
+    }
+    else if (isConditionalExpression(rawMeta)) {
+      return new SdCliBbConditionMetadata(this, rawMeta);
     }
 
     throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);

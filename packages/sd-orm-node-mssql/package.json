@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm-node-mssql",
-  "version": "7.0.305",
+  "version": "7.1.0",
   "description": "심플리즘 패키지 - MSSQL ORM 모듈 (node)",
   "author": "김석래",
   "repository": {
@@ -20,12 +20,12 @@
     "**/*"
   ],
   "dependencies": {
-    "@simplysm/sd-core-common": "7.0.305",
-    "@simplysm/sd-core-node": "7.0.305",
-    "@simplysm/sd-orm-common": "7.0.305",
-    "tedious": "^13.2.0"
+    "@simplysm/sd-core-common": "7.1.0",
+    "@simplysm/sd-core-node": "7.1.0",
+    "@simplysm/sd-orm-common": "7.1.0",
+    "tedious": "^15.0.1"
   },
   "devDependencies": {
-    "@types/tedious": "^4.0.6"
+    "@types/tedious": "^4.0.8"
   }
 }

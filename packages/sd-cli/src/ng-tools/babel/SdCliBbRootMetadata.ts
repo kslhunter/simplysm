@@ -158,7 +158,7 @@ export class SdCliBbRootMetadata {
     for (const ngDepPath of ngDepPaths) {
       const npmConfig = FsUtil.readJson(path.resolve(ngDepPath, "package.json")) as INpmConfig;
 
-      const entryFilePath = npmConfig["es2015"] ?? npmConfig["browser"] ?? npmConfig["module"] ?? npmConfig["main"] ?? npmConfig["default"];
+      const entryFilePath = npmConfig["es2020"] ?? npmConfig["es2015"] ?? npmConfig["browser"] ?? npmConfig["module"] ?? npmConfig["main"] ?? npmConfig["default"];
       if (entryFilePath === undefined) {
         entryMap.set(npmConfig.name, {
           rootPath: ngDepPath,
@@ -167,6 +167,10 @@ export class SdCliBbRootMetadata {
       }
       else if (typeof entryFilePath === "string") {
         const realPath = this._getRealFilePath(path.resolve(ngDepPath, entryFilePath));
+        if (realPath?.endsWith(".json")) {
+          continue;
+        }
+
         entryMap.set(npmConfig.name, {
           rootPath: ngDepPath,
           entryFilePath: realPath
@@ -178,6 +182,10 @@ export class SdCliBbRootMetadata {
           const exportResult = this._getGlobExportResult(PathUtil.posix(npmConfig.name, key), exportPath);
           for (const exportResultItem of exportResult) {
             const exportRealPath = this._getRealFilePath(exportResultItem.target);
+            if (exportResultItem.target.endsWith(".json")) {
+              continue;
+            }
+
             entryMap.set(exportResultItem.name, {
               rootPath: ngDepPath,
               entryFilePath: exportRealPath
@@ -190,23 +198,31 @@ export class SdCliBbRootMetadata {
         const exportKeys = Object.keys(npmConfig.exports);
         for (const exportKey of exportKeys) {
           if (
-            exportKey.includes("/locales") ||
-            exportKey.endsWith(".json") ||
-            exportKey.endsWith("/testing") ||
-            exportKey.endsWith("/upgrade")
+            exportKey.startsWith("./locales") ||
+            exportKey.startsWith("./testing") ||
+            exportKey.startsWith("./upgrade")
           ) {
             continue;
           }
 
-          const expEntryFilePath = npmConfig.exports[exportKey]["es2015"] ??
+          const expEntryFilePath = npmConfig.exports[exportKey]["es2020"] ??
+            npmConfig.exports[exportKey]["es2015"] ??
             npmConfig.exports[exportKey]["browser"] ??
             npmConfig.exports[exportKey]["module"] ??
             npmConfig.exports[exportKey]["main"] ??
             npmConfig.exports[exportKey]["default"];
           if (typeof expEntryFilePath === "string") {
+            if (expEntryFilePath.endsWith(".json")) {
+              continue;
+            }
+
             const exportPath = path.resolve(ngDepPath, expEntryFilePath);
             const exportResult = this._getGlobExportResult(PathUtil.posix(npmConfig.name, exportKey), exportPath);
             for (const exportResultItem of exportResult) {
+              if (exportResultItem.target.endsWith(".json")) {
+                continue;
+              }
+
               const exportRealPath = this._getRealFilePath(exportResultItem.target);
               entryMap.set(exportResultItem.name, {
                 rootPath: ngDepPath,

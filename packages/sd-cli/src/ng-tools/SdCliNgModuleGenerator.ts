@@ -1,6 +1,11 @@
 import { SdCliTsRootMetadata } from "./typescript/SdCliTsRootMetadata";
 import { SdCliBbRootMetadata, TSdCliBbMetadata } from "./babel/SdCliBbRootMetadata";
-import { SdCliBbClassMetadata, SdCliBbObjectMetadata } from "./babel/TSdCliBbTypeMetadata";
+import {
+  SdCliBbArrayMetadata,
+  SdCliBbClassMetadata,
+  SdCliBbConditionMetadata,
+  SdCliBbObjectMetadata
+} from "./babel/TSdCliBbTypeMetadata";
 import {
   SdCliBbNgComponentMetadata,
   SdCliBbNgDirectiveMetadata,
@@ -177,6 +182,48 @@ export class SdCliNgModuleGenerator {
     return metaTmp instanceof Array ? metaTmp : [metaTmp];
   }
 
+  private _getBbNgModuleProvClass(modProvMeta: TSdCliBbMetadata): { moduleName: string; name: string }[] {
+    const result: { moduleName: string; name: string }[] = [];
+
+    if (modProvMeta instanceof SdCliBbObjectMetadata) {
+      // 무시
+    }
+    else if (modProvMeta instanceof SdCliBbClassMetadata) {
+      const ref = this._bbMeta.findExportRef({
+        filePath: modProvMeta.filePath,
+        name: modProvMeta.name
+      });
+      if (ref) {
+        result.push(ref);
+      }
+    }
+    else if (modProvMeta instanceof SdCliBbConditionMetadata) {
+      if (modProvMeta.consequent !== undefined) {
+        result.push(
+          ...this._getBbNgModuleProvClass(modProvMeta.consequent)
+        );
+      }
+
+      if (modProvMeta.alternate !== undefined) {
+        result.push(
+          ...this._getBbNgModuleProvClass(modProvMeta.alternate)
+        );
+      }
+    }
+    else if (modProvMeta instanceof SdCliBbArrayMetadata) {
+      for (const modProvMetaValue of modProvMeta.value) {
+        if (modProvMetaValue !== undefined) {
+          result.push(...this._getBbNgModuleProvClass(modProvMetaValue));
+        }
+      }
+    }
+    else {
+      throw new NeverEntryError();
+    }
+
+    return result;
+  }
+
   private _getBbNgModuleDefs(): IBbNgModuleDef[] {
     const entryRecord = this._bbMeta.getEntryFileMetaRecord();
     const result: IBbNgModuleDef[] = [];
@@ -206,21 +253,7 @@ export class SdCliNgModuleGenerator {
                 }
 
                 for (const modProvMeta of modProvMetas) {
-                  if (modProvMeta instanceof SdCliBbClassMetadata) {
-                    const ref = this._bbMeta.findExportRef({
-                      filePath: modProvMeta.filePath,
-                      name: modProvMeta.name
-                    });
-                    if (ref) {
-                      resultItem.providers.push(ref);
-                    }
-                  }
-                  else if (modProvMeta instanceof SdCliBbObjectMetadata) {
-                    // 무시
-                  }
-                  else {
-                    throw new NeverEntryError();
-                  }
+                  resultItem.providers.push(...this._getBbNgModuleProvClass(modProvMeta));
                 }
               }
 
@@ -469,7 +502,7 @@ export class SdCliNgModuleGenerator {
           fnResult += "  {\n";
           fnResult += `    path: "${child.path}",\n`;
           if ("target" in child) {
-            fnResult += `    loadChildren: async () => await import("${this._getImportModuleName(def.filePath, child.target.filePath)}").then((m) => m.${child.target.name})\n`;
+            fnResult += `    loadChildren: async () => await import("${this._getFileImportModuleName(def.filePath, child.target.filePath)}").then((m) => m.${child.target.name})\n`;
           }
           else {
             fnResult += `    children: ${fn(child.children).replace(/\n/g, "\n  ")}\n`;
@@ -486,7 +519,7 @@ export class SdCliNgModuleGenerator {
 import { NgModule } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { SdCanDeactivateGuard } from "@simplysm/sd-angular";
-import { ${def.component.name} } from "${this._getImportModuleName(def.filePath, def.component.filePath)}";
+import { ${def.component.name} } from "${this._getFileImportModuleName(def.filePath, def.component.filePath)}";
 
 @NgModule({
   imports: [
@@ -520,7 +553,7 @@ export const routes: Routes = ${fn(def.children)};
     for (const mod of mods) {
       const importMap = [...mod.imports, ...mod.exports, ...mod.providers]
         .map((item) => ({
-          moduleName: "moduleName" in item ? item.moduleName : this._getImportModuleName(mod.filePath, item.filePath),
+          moduleName: "moduleName" in item ? item.moduleName : this._getFileImportModuleName(mod.filePath, item.filePath),
           name: item.name
         }))
         .groupBy((item) => item.moduleName)
@@ -580,7 +613,7 @@ export class ${mod.name} {
     }
   }
 
-  private _getImportModuleName(mainFilePath: string, importFilePath: string): string {
+  private _getFileImportModuleName(mainFilePath: string, importFilePath: string): string {
     const filePath = PathUtil.posix(path.relative(path.dirname(mainFilePath), importFilePath).replace(/\.ts$/, ""));
     return filePath.startsWith(".") ? filePath : "./" + filePath;
   }

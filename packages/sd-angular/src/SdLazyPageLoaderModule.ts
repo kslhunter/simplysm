@@ -1,11 +1,11 @@
-import { Inject, InjectionToken, ModuleWithProviders, NgModule, Optional } from "@angular/core";
+import { Inject, InjectionToken, ModuleWithProviders, NgModule, Optional, Type } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { LoadChildren, ROUTES } from "@angular/router";
+import { ROUTES } from "@angular/router";
 import { SdLazyPageLoaderProvider } from "./root-providers/SdLazyPageLoaderProvider";
 
 export interface LazyComponent {
   code: string;
-  loadChildren: LoadChildren;
+  loadChildren: () => Promise<Type<any>>;
 }
 
 export const LAZY_PAGES_TOKEN = new InjectionToken<LazyComponent[]>("LAZY_PAGES_TOKEN");

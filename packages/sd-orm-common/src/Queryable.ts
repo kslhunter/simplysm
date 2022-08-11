@@ -75,10 +75,10 @@ export class Queryable<D extends DbContext, T> {
     };
   }
 
-  // public constructor(db: D, cloneQueryable: Queryable<D, T>);
-  // public constructor(db: D, cloneQueryable: Queryable<D, any>, entity: TEntity<T>);
-  // public constructor(db: D, tableType: Type<T>, as?: string);
-  // public constructor(db: D, tableType: Type<T> | undefined, as: string | undefined, entity: TEntity<T>, defs: IQueryableDef);
+  public constructor(db: D, cloneQueryable: Queryable<D, T>);
+  public constructor(db: D, cloneQueryable: Queryable<D, any>, entity: TEntity<T>);
+  public constructor(db: D, tableType: Type<T>, as?: string);
+  public constructor(db: D, tableType: Type<T> | undefined, as: string | undefined, entity: TEntity<T>, defs: IQueryableDef);
   public constructor(public readonly db: D, arg1?: Queryable<D, T> | Type<T>, arg2?: string | TEntity<T>, arg3?: TEntity<T>, arg4?: IQueryableDef) {
     // Clone 일때
     if (arg1 instanceof Queryable) {

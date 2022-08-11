@@ -9,7 +9,7 @@ import { SdLazyPageLoaderProvider } from "../root-providers/SdLazyPageLoaderProv
   template: `
     <sd-busy-container [busy]="busyCount > 0" noFade type="bar">
       <ng-container *ngIf="componentType">
-        <ng-container *ngComponentOutlet="componentType; ngModuleFactory: moduleFactory">
+        <ng-container *ngComponentOutlet="componentType; ngModule: moduleType">
         </ng-container>
       </ng-container>
     </sd-busy-container>`,
@@ -27,7 +27,7 @@ export class SdLazyPageControl implements OnInit {
   public code!: string;
 
   public componentType?: Type<any>;
-  public moduleFactory?: any;
+  public moduleType?: Type<any>;
 
   public constructor(private readonly _toast: SdToastProvider,
                      private readonly _cdr: ChangeDetectorRef,
@@ -41,7 +41,7 @@ export class SdLazyPageControl implements OnInit {
       const page = await this._lazyPage.loadAsync(["home"].concat(this.code).join("."));
 
       this.componentType = page.component;
-      this.moduleFactory = page.moduleFactory;
+      this.moduleType = page.moduleType;
     });
     this.busyCount--;
     this._cdr.markForCheck();

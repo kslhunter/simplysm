@@ -23,7 +23,7 @@ export class SdTabControl {
   public readonly valueChange = new EventEmitter<any>();
 
   public setValue(value: any): void {
-    if (this.valueChange.observers.length > 0) {
+    if (this.valueChange.observed) {
       this.valueChange.emit(value);
     }
     else {

@@ -2,6 +2,16 @@ export const fc_project_gitignore = (): string => /* language=gitignore */ `
 
 .idea/**/workspace.xml
 .idea/shelf
+
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+!.yarn/cache
+#.pnp.*
+
 node_modules
 tsconfig-build.json
 dist
@@ -10,7 +20,7 @@ dist
 _logs
 _modules
 _routes.ts
-~$*.xlsx
+~$*
 .*/
 
 `.trim();

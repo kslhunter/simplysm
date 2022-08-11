@@ -71,6 +71,7 @@ export class SdCliBuildResultUtil {
       str += `${result.code}: `;
     }
     str += `${result.severity} ${result.message}`;
+
     return str;
   }
 }

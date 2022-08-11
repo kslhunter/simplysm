@@ -1,6 +1,7 @@
 import {
   ArrayExpression,
   ClassDeclaration,
+  ConditionalExpression,
   FunctionDeclaration,
   isAssignmentExpression,
   isExpressionStatement,
@@ -26,7 +27,8 @@ export type TSdCliBbTypeMetadata = SdCliBbClassMetadata |
   SdCliBbVariableMetadata |
   SdCliBbFunctionMetadata |
   SdCliBbObjectMetadata |
-  SdCliBbArrayMetadata;
+  SdCliBbArrayMetadata |
+  SdCliBbConditionMetadata;
 
 export class SdCliBbClassMetadata {
   public constructor(private readonly _fileMeta: SdCliBbFileMetadata,
@@ -173,5 +175,38 @@ export class SdCliBbArrayMetadata {
       }
     }
     return this._valueCache;
+  }
+}
+
+export class SdCliBbConditionMetadata {
+  public constructor(private readonly _fileMeta: SdCliBbFileMetadata,
+                     private readonly _metadata: ConditionalExpression) {
+  }
+
+  private _testCache?: TSdCliBbMetadata | undefined;
+
+  public get test(): TSdCliBbMetadata | undefined {
+    if (this._testCache === undefined) {
+      this._testCache = this._fileMeta.getMetaFromRaw(this._metadata.test);
+    }
+    return this._testCache;
+  }
+
+  private _consequentCache?: TSdCliBbMetadata | undefined;
+
+  public get consequent(): TSdCliBbMetadata | undefined {
+    if (this._consequentCache === undefined) {
+      this._consequentCache = this._fileMeta.getMetaFromRaw(this._metadata.consequent);
+    }
+    return this._consequentCache;
+  }
+
+  private _alternateCache?: TSdCliBbMetadata | undefined;
+
+  public get alternate(): TSdCliBbMetadata | undefined {
+    if (this._alternateCache === undefined) {
+      this._alternateCache = this._fileMeta.getMetaFromRaw(this._metadata.alternate);
+    }
+    return this._alternateCache;
   }
 }

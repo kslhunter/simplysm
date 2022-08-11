@@ -51,12 +51,12 @@
       <excludeFolder url="file://$MODULE_DIR$/docs" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-devtool/docs" />
       <excludeFolder url="file://$MODULE_DIR$/_back" />
-      <excludeFolder url="file://$MODULE_DIR$/tests/node/cli/.dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node-mssql/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node-mysql/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-orm-node-sqlite/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-office" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/test/src/node/cli/.dist" />
     </content>
     <content url="file://$MODULE_DIR$/.yarn" />
     <orderEntry type="inheritedJdk" />

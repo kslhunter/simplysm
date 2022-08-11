@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "7.0.305",
+  "version": "7.1.0",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -10,40 +10,34 @@
   "type": "module",
   "license": "MIT",
   "private": true,
+  "packageManager": "yarn@3.2.2",
   "engines": {
     "node": "^16"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "test"
   ],
   "scripts": {
-    "watch": "npm run _sd-cli_ -- --debug watch",
-    "build": "npm run _sd-cli_ -- --debug build",
-    "publish": "npm run _sd-cli_ -- --debug publish",
-    "publish(--noBuild)": "npm run _sd-cli_ -- --debug publish --noBuild",
+    "watch": "yarn _sd-cli_ --debug watch",
+    "build": "yarn _sd-cli_ --debug build",
+    "publish": "yarn _sd-cli_ --debug publish",
+    "publish(--noBuild)": "yarn _sd-cli_ --debug publish --noBuild",
     "----- pkg(--debug)": "",
-    "watch:sd-core-common(--debug)": "npm run _sd-cli_ -- --debug watch --packages sd-core-common",
+    "watch:sd-core-common(--debug)": "yarn _sd-cli_ --debug watch --packages sd-core-common",
+    "watch:sd-orm-common(--debug)": "yarn _sd-cli_ --debug watch --packages sd-orm-common",
+    "watch:sd-angular(--debug)": "yarn _sd-cli_ --debug watch --packages sd-angular",
     "----- utils": "",
-    "update": "npm run _sd-cli_ -- --debug update",
-    "postinstall": "npm run _sd-cli_ -- --debug prepare",
+    "update": "yarn _sd-cli_ --debug update",
+    "postinstall": "yarn _sd-cli_ --debug prepare",
     "---": "",
     "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --no-warnings --max-old-space-size=8192 --experimental-specifier-resolution=node --experimental-import-meta-resolve --loader ./lib/ts-node-esm-paths packages/sd-cli/src/bin/sd-cli.ts",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.cjs|*.mjs)\""
   },
   "devDependencies": {
-    "@types/chai": "^4.3.0",
-    "@types/mocha": "^9.1.0",
-    "@types/sinon": "^10.0.11",
-    "@types/node": "^17.0.12",
-    "@types/deep-equal-in-any-order": "^1.0.1",
-    "chai": "^4.3.6",
+    "@types/node": "^16.11.47",
     "cross-env": "^7.0.3",
-    "eslint": "^8.7.0",
-    "mocha": "^10.0.0",
-    "ts-node": "^10.4.0",
-    "tsconfig-paths": "^4.0.0",
-    "typescript": "~4.5.5",
-    "sinon": "^14.0.0",
-    "deep-equal-in-any-order": "^1.1.17"
+    "eslint": "^8.21.0",
+    "typescript": "~4.7.4"
   }
 }

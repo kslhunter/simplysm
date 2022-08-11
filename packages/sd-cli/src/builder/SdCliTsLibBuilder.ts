@@ -52,7 +52,7 @@ export class SdCliTsLibBuilder extends EventEmitter {
     this._logger = Logger.get(["simplysm", "sd-cli", this.constructor.name, npmConfig.name]);
 
     // isAngular
-    this._isAngular = SdCliNpmConfigUtil.getDependencies(npmConfig).defaults.includes("@angular/core");
+    this._isAngular = !!this._config.angular;
     this._hasAngularRoute = SdCliNpmConfigUtil.getDependencies(npmConfig).defaults.includes("@angular/router");
 
     // tsconfig

@@ -70,7 +70,7 @@ export class SdCheckboxGroupControl implements DoCheck {
       newValue.push(item);
     }
 
-    if (this.valueChange.observers.length > 0) {
+    if (this.valueChange.observed) {
       this.valueChange.emit(newValue);
     }
     else {

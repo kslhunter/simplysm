@@ -26,6 +26,7 @@ import { fc_package_polyfills } from "./file/client/fc_package_polyfills";
 import { fc_package_styles } from "./file/client/fc_package_styles";
 import { ISdAutoIndexConfig } from "../build-tool/SdCliIndexFileGenerator";
 import { fc_package_Page } from "./file/client/fc_package_Page";
+import { fc_project_yarnrc } from "./file/project/fc_project_yarnrc";
 
 export class SdCliProjectGenerator {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -34,8 +35,8 @@ export class SdCliProjectGenerator {
   }
 
   public async initAsync(opt: { name?: string; description: string; author: string; gitUrl: string }): Promise<void> {
-    if ((await FsUtil.readdirAsync(this._rootPath)).filter((item) => ![".idea", "package.json", "node_modules", "package-lock.json"].includes(path.basename(item))).length > 0) {
-      throw new Error("빈 디렉토리가 아닙니다. (package-lock.json, package.json, node_modules 외의 파일/폴더가 존재하는 경우, 초기화할 수 없습니다.)");
+    if ((await FsUtil.readdirAsync(this._rootPath)).filter((item) => ![".idea", "yarn.lock", "package.json", ".yarn"].includes(path.basename(item))).length > 0) {
+      throw new Error("빈 디렉토리가 아닙니다. (.idea, yarn.lock, package.json, .yarn 외의 파일/폴더가 존재하는 경우, 초기화할 수 없습니다.)");
     }
 
     const projName = opt.name ?? path.basename(this._rootPath);
@@ -51,6 +52,9 @@ export class SdCliProjectGenerator {
 
     this._logger.log(`[${projName}] '.gitignore' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".gitignore"), fc_project_gitignore());
+
+    this._logger.log(`[${projName}] '.yarnrc.yml' 파일 생성`);
+    await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".gitignore"), fc_project_yarnrc());
 
     this._logger.log(`[${projName}] 'package.json' 파일 생성`);
     let cliVersion: string | undefined;
@@ -77,14 +81,14 @@ export class SdCliProjectGenerator {
     this._logger.log(`[${projName}] 'tsconfig.json' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, "tsconfig.json"), fc_project_tsconfig());
 
-    this._logger.log(`[${projName}] '.npmrc' 파일 생성`);
-    await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".npmrc"), "legacy-peer-deps=true");
+    this._logger.log(`[${projName}] 'yarn.lock' 파일 생성`);
+    await FsUtil.writeFileAsync(path.resolve(this._rootPath, "yarn.lock"), "");
 
     this._logger.log(`[${projName}] 'packages' 디렉토리 생성`);
     await FsUtil.mkdirsAsync(path.resolve(this._rootPath, "packages"));
 
-    this._logger.log(`[${projName}] npm install`);
-    await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
+    this._logger.log(`[${projName}] yarn install`);
+    await SdProcess.spawnAsync("yarn install", { cwd: this._rootPath }, true);
   }
 
   public async addTsLibAsync(opt: { name: string; description: string; useDom: boolean; isForAngular: boolean }): Promise<void> {
@@ -108,6 +112,7 @@ export class SdCliProjectGenerator {
     await this._addPackageToSimplysmJson({
       name: opt.name,
       type: "library",
+      ...opt.isForAngular ? { angular: true } : {},
       autoIndex: {
         ...opt.isForAngular ? {
           polyfills: [
@@ -137,8 +142,8 @@ export class SdCliProjectGenerator {
       types: "dist/index.d.ts",
       main: "dist/index.cjs",
       dependencies: {
-        "@simplysm/sd-core-common": "~7.0.0",
-        "@simplysm/sd-orm-common": "~7.0.0"
+        "@simplysm/sd-core-common": "~7.1.0",
+        "@simplysm/sd-orm-common": "~7.1.0"
       },
       tsconfigOptions: {}
     });
@@ -158,8 +163,8 @@ export class SdCliProjectGenerator {
       autoIndex: {}
     });
 
-    this._logger.log(`[${projName}] npm install`);
-    await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
+    this._logger.log(`[${projName}] yarn install`);
+    await SdProcess.spawnAsync("yarn install", { cwd: this._rootPath }, true);
   }
 
   public async addDbLibModelAsync(opt: { dbPkgName: string; category: string; name: string; description: string }): Promise<void> {
@@ -217,10 +222,10 @@ export class SdCliProjectGenerator {
       isForAngular: false,
       main: "dist/main.js",
       dependencies: {
-        "@simplysm/sd-core-common": "~7.0.0",
-        "@simplysm/sd-core-node": "~7.0.0",
-        "@simplysm/sd-service-common": "~7.0.0",
-        "@simplysm/sd-service-server": "~7.0.0"
+        "@simplysm/sd-core-common": "~7.1.0",
+        "@simplysm/sd-core-node": "~7.1.0",
+        "@simplysm/sd-service-common": "~7.1.0",
+        "@simplysm/sd-service-server": "~7.1.0"
       },
       tsconfigOptions: {}
     });
@@ -238,8 +243,8 @@ export class SdCliProjectGenerator {
       type: "server"
     });
 
-    this._logger.log(`[${projName}] npm install`);
-    await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
+    this._logger.log(`[${projName}] yarn install`);
+    await SdProcess.spawnAsync("yarn install", { cwd: this._rootPath }, true);
   }
 
   public async addClientAsync(opt: { name: string; description: string; serverName: string }): Promise<void> {
@@ -256,8 +261,8 @@ export class SdCliProjectGenerator {
       isModule: true,
       isForAngular: true,
       dependencies: {
-        "@angular/platform-browser": "^13.2.0",
-        "@angular/platform-browser-dynamic": "^13.2.0"
+        "@angular/platform-browser": "^14.1.1",
+        "@angular/platform-browser-dynamic": "^14.1.1"
       },
       tsconfigOptions: {
         angularCompilerOptions: {
@@ -310,8 +315,8 @@ export class SdCliProjectGenerator {
       serverName: opt.serverName
     });
 
-    this._logger.log(`[${projName}] npm install`);
-    await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
+    this._logger.log(`[${projName}] yarn install`);
+    await SdProcess.spawnAsync("yarn install", { cwd: this._rootPath }, true);
   }
 
   public async addPageAsync(opt: { pkgName: string; category?: string; name: string; isRouteParent: boolean }): Promise<void> {
@@ -351,12 +356,12 @@ export class SdCliProjectGenerator {
       dependencies: {
         ...opt.dependencies,
         ...opt.isForAngular ? {
-          "@angular/common": "^13.2.0",
-          "@angular/core": "^13.2.0",
-          "@simplysm/sd-angular": "~7.0.0",
-          "@simplysm/sd-core-common": "~7.0.0",
-          "@simplysm/sd-core-browser": "~7.0.0",
-          "rxjs": "^6.6.7",
+          "@angular/common": "^14.1.1",
+          "@angular/core": "^14.1.1",
+          "@simplysm/sd-angular": "~7.1.0",
+          "@simplysm/sd-core-common": "~7.1.0",
+          "@simplysm/sd-core-browser": "~7.1.0",
+          "rxjs": "^7.5.6",
           "zone.js": "~0.11.4"
         } : {}
       }
@@ -373,12 +378,13 @@ export class SdCliProjectGenerator {
     await FsUtil.mkdirsAsync(path.resolve(pkgPath, "src"));
   }
 
-  private async _addPackageToSimplysmJson(opt: { name: string; type: string; autoIndex?: ISdAutoIndexConfig; serverName?: string }): Promise<void> {
+  private async _addPackageToSimplysmJson(opt: { name: string; type: string; angular?: boolean; autoIndex?: ISdAutoIndexConfig; serverName?: string }): Promise<void> {
     const config = await FsUtil.readJsonAsync(path.resolve(this._rootPath, "simplysm.json"));
     config.packages = config.packages ?? {};
     config.packages[opt.name] = {
       type: opt.type,
       ...opt.autoIndex ? { autoIndex: opt.autoIndex } : {},
+      ...opt.angular ? { angular: true } : {},
       ...opt.serverName !== undefined ? { server: opt.serverName } : {}
     };
     await FsUtil.writeJsonAsync(path.resolve(this._rootPath, "simplysm.json"), config, { space: 2 });

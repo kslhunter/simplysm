@@ -1,4 +1,4 @@
-process.env.TS_NODE_PROJECT = "tests/tsconfig.json";
+process.env.TS_NODE_PROJECT = "tsconfig.json";
 process.env.TS_NODE_TRANSPILE_ONLY = "true";
 
 module.exports = {

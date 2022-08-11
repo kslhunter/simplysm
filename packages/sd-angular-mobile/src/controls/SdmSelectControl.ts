@@ -166,7 +166,7 @@ export class SdmSelectControl {
 
   public onChange(event: Event): void {
     const el = event.target as HTMLSelectElement;
-    if (this.valueChange.observers.length > 0) {
+    if (this.valueChange.observed) {
       this.valueChange.emit(StringUtil.isNullOrEmpty(el.value) ? undefined : el.value);
     }
     else {

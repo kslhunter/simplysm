@@ -34,7 +34,7 @@ export abstract class DbContext {
 
   public getTableDefinitions(): ITableDef[] {
     return Object.values(this)
-      .ofType(Queryable)
+      .ofType<Queryable<any, any>>(Queryable)
       .map(qr => qr.tableDef)
       .filterExists();
   }

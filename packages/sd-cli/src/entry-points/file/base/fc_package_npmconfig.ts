@@ -33,6 +33,7 @@ export const fc_package_npmconfig = (opt: {
     } : {},
     private: true,
     sideEffects: false,
+    packageManager: "yarn@3.2.2",
     engines: {
       node: "^16"
     },

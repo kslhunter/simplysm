@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/eslint-plugin",
-  "version": "7.0.305",
+  "version": "7.1.0",
   "description": "심플리즘 패키지 - ESLINT 플러그인",
   "author": "김석래",
   "repository": {
@@ -19,17 +19,17 @@
     "**/*"
   ],
   "dependencies": {
-    "@angular-eslint/eslint-plugin": "^13.0.1",
-    "@angular-eslint/eslint-plugin-template": "^13.0.1",
-    "@angular-eslint/template-parser": "^13.0.1",
-    "@typescript-eslint/eslint-plugin": "^5.10.1",
-    "@typescript-eslint/experimental-utils": "^5.10.2",
-    "@typescript-eslint/parser": "^5.10.1",
-    "eslint": "^8.7.0",
-    "eslint-import-resolver-typescript": "^2.5.0",
+    "@angular-eslint/eslint-plugin": "^14.0.2",
+    "@angular-eslint/eslint-plugin-template": "^14.0.2",
+    "@angular-eslint/template-parser": "^14.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.33.0",
+    "@typescript-eslint/experimental-utils": "^5.33.0",
+    "@typescript-eslint/parser": "^5.33.0",
+    "eslint": "^8.21.0",
+    "eslint-import-resolver-typescript": "^3.4.0",
     "eslint-module-utils": "^2.7.3",
     "eslint-plugin-deprecation": "^1.3.2",
-    "eslint-plugin-import": "^2.25.4",
-    "typescript": "~4.5.5"
+    "eslint-plugin-import": "^2.26.0",
+    "typescript": "~4.7.4"
   }
 }

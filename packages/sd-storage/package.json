@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-storage",
-  "version": "7.0.305",
+  "version": "7.1.0",
   "description": "심플리즘 패키지 - 저장소 모듈 (node)",
   "author": "김석래",
   "repository": {
@@ -20,10 +20,10 @@
     "**/*"
   ],
   "dependencies": {
-    "basic-ftp": "^4.6.6",
-    "ssh2-sftp-client": "^8.0.0"
+    "basic-ftp": "^5.0.1",
+    "ssh2-sftp-client": "^9.0.3"
   },
   "devDependencies": {
-    "@types/ssh2-sftp-client": "^7.0.1"
+    "@types/ssh2-sftp-client": "^7.1.0"
   }
 }

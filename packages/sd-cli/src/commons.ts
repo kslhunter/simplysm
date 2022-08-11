@@ -56,6 +56,7 @@ export type TSdCliPackageConfig = ISdCliLibPackageConfig | ISdCliServerPackageCo
 
 export interface ISdCliLibPackageConfig {
   type: "library";
+  angular?: boolean;
   autoIndex?: {
     polyfills?: string[];
   };

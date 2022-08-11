@@ -1,11 +1,10 @@
-import { Injectable, NgModuleRef, Type } from "@angular/core";
-import { LoadChildrenCallback } from "@angular/router";
+import { createNgModule, Injectable, NgModuleRef, Type } from "@angular/core";
 import { StringUtil } from "@simplysm/sd-core-common";
 import { LazyComponent } from "../SdLazyPageLoaderModule";
 
 @Injectable({ providedIn: "root" })
 export class SdLazyPageLoaderProvider {
-  private readonly _toLoad = new Map<string, LoadChildrenCallback>();
+  private readonly _toLoad = new Map<string, () => Promise<Type<any>>>();
   private readonly _loading = new Map<string, ILazyComponent>();
 
   public constructor(private readonly _moduleRef: NgModuleRef<any>) {
@@ -24,12 +23,12 @@ export class SdLazyPageLoaderProvider {
 
     if (this._toLoad.has(code)) {
       const moduleLoader = this._toLoad.get(code)!;
-      const moduleFactory = await moduleLoader();
-      const moduleRef = moduleFactory.create(this._moduleRef.injector);
+      const moduleType = await moduleLoader();
+      const moduleRef = createNgModule(moduleType, this._moduleRef.injector);
 
       const pageName = StringUtil.toPascalCase(code.split(".").last()!) + "LazyPage";
       const component = moduleRef.instance[pageName];
-      const result: ILazyComponent = { moduleFactory, moduleRef, component };
+      const result: ILazyComponent = { moduleType, moduleRef, component };
       this._loading.set(code, result);
       return result;
     }
@@ -45,7 +44,7 @@ export class SdLazyPageLoaderProvider {
 }
 
 export interface ILazyComponent {
-  moduleFactory: any;
+  moduleType: Type<any>;
   moduleRef: NgModuleRef<any>;
   component: Type<any>;
 }

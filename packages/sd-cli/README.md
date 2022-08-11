@@ -16,7 +16,7 @@ cd sample
 ### 2. sd-cli 설치
 
 ``` bat
-npm install @simplysm/sd-cli@~7.0.0
+npm install @simplysm/sd-cli@~7.1.0
 ```
 
 ### 3. 프로젝트 초기화
