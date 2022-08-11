@@ -123,8 +123,8 @@ export class SdCliProjectGenerator {
       },
     });
 
-    this._logger.log(`[${projName}] npm install`);
-    await SdProcess.spawnAsync("npm install", { cwd: this._rootPath }, true);
+    this._logger.log(`[${projName}] yarn install`);
+    await SdProcess.spawnAsync("yarn install", { cwd: this._rootPath }, true);
   }
 
   public async addDbLibAsync(opt: { name: string }): Promise<void> {

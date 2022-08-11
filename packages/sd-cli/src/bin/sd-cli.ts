@@ -5,7 +5,6 @@ import { hideBin } from "yargs/helpers";
 import { Logger, LoggerSeverity } from "@simplysm/sd-core-node";
 import { SdCliProject } from "../entry-points/SdCliProject";
 import { SdCliLocalUpdate } from "../entry-points/SdCliLocalUpdate";
-import { SdCliNpm } from "../entry-points/SdCliNpm";
 import { SdCliPrepare } from "../entry-points/SdCliPrepare";
 import { SdCliFileCrypto } from "../entry-points/SdCliFileCrypto";
 import { SdCliCordova } from "../build-tool/SdCliCordova";
@@ -27,11 +26,6 @@ const argv = (yargs(hideBin(process.argv)) as any)
   .command(
     "prepare",
     "sd-cli 준비",
-    (cmd) => cmd.version(false).hide("help").hide("debug")
-  )
-  .command(
-    "update",
-    "패키지 업데이트 (npm update)",
     (cmd) => cmd.version(false).hide("help").hide("debug")
   )
   .command(
@@ -374,10 +368,6 @@ const logger = Logger.get(["simplysm", "sd-cli", "bin", "sd-cli"]);
   if (argv._[0] === "prepare") {
     await new SdCliPrepare()
       .prepareAsync();
-  }
-  else if (argv._[0] === "update") {
-    await new SdCliNpm(process.cwd())
-      .updateAsync();
   }
   else if (argv._[0] === "local-update") {
     await new SdCliLocalUpdate(process.cwd())
