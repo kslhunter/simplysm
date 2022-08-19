@@ -1,0 +1,49 @@
+$arr-theme-color: ("grey", "blue-grey", "primary", "secondary", "info", "success", "warning", "danger");
+$arr-theme-brightness: (lightest, lighter, light, default, dark, darker, darkest);
+
+$arr-trans-brightness: (darkest, darker, dark, default, light, lighter);
+$arr-trans-brightness-rev: (default, light, lighter, lightest);
+
+$arr-text-brightness: (dark, default, light, lighter, lightest);
+$arr-text-brightness-rev: (default, dark, darker);
+
+$arr-font-size: (lg, default, sm, h1, h2, h3, h4, h5, h6);
+
+$arr-gap: (0, xxs, xs, sm, default, lg, xl, xxl);
+
+$arr-direction: (top, right, bottom, left);
+
+@mixin elevation($value) {
+  @if $value == none or $value == 0 {
+    box-shadow: none;
+  } @else {
+    box-shadow: 0 0 2px rgba(0, 0, 0, .2), 0 #{$value * 0.5}px #{$value + 1}px rgba(0, 0, 0, .3);
+  }
+}
+
+@mixin form-control-base() {
+  display: block;
+  width: 100%;
+  padding: var(--gap-sm) var(--gap-default);
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--border-radius-default);
+
+  font-size: var(--font-size-default);
+  font-family: var(--font-family);
+  line-height: var(--line-height);
+
+  color: var(--text-color-default);
+}
+
+
+@mixin invalid-indicator() {
+  display: block;
+  position: absolute;
+  background: var(--theme-color-danger-default);
+
+  top: var(--gap-xs);
+  left: var(--gap-xs);
+  border-radius: 100%;
+  width: var(--gap-sm);
+  height: var(--gap-sm);
+}
