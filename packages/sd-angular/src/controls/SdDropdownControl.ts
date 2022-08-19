@@ -16,15 +16,14 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   selector: "sd-dropdown",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div [attr.tabindex]="disabled ? undefined : '0'"
-         class="_sd-dropdown-control"
-         [ngClass]="contentClass">
+    <div class="_content"
+         [attr.tabindex]="disabled ? undefined : '0'">
       <ng-content></ng-content>
     </div>
     <ng-content select="sd-dropdown-popup"></ng-content>`,
   styles: [/* language=SCSS */ `
     :host {
-      > div {
+      > ._content {
         position: relative;
       }
     }
@@ -35,6 +34,11 @@ export class SdDropdownControl implements OnInit, OnDestroy {
   @HostBinding("attr.sd-disabled")
   @SdInputValidate(Boolean)
   public disabled?: boolean;
+
+  /** @deprecated */
+  @Input()
+  @SdInputValidate(Boolean)
+  public useAllBorderRadius?: boolean;
 
   @Output()
   public readonly open = new EventEmitter();

@@ -9,26 +9,23 @@ import {
   Output,
   QueryList
 } from "@angular/core";
-import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { SdListControl } from "./SdListControl";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
 
 @Component({
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div [attr.class]="'_content ' + contentClass"
-         [attr.style]="safeHtml(contentStyle)"
-         (click)="onContentClick()">
-      <fa-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon"
+    <div class="_content" (click)="onContentClick()">
+      <fa-icon class="_select-icon" *ngIf="selectIcon && !hasChildren" [icon]="selectIcon"
                [fixedWidth]="true"></fa-icon>
       <ng-content></ng-content>
 
-      <sd-collapse-icon [open]="open" *ngIf="hasChildren && layout==='accordion'"
-                        [icon]="icons.get('chevronDown')"
-                        style="float: right"></sd-collapse-icon>
+      <fa-icon *ngIf="hasChildren && layout==='accordion'"
+               [icon]="icons.falChevronDown | async"
+               style="float: right;"
+               [sdAnimate]="[open, {transform: 'rotate(90deg)'}, {transform:'none'}]"></fa-icon>
     </div>
     <sd-collapse class="_child" [open]="layout === 'flat' || open">
       <ng-content select="sd-list"></ng-content>
@@ -39,8 +36,7 @@ import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
         padding: var(--gap-sm) var(--gap-default);
         cursor: pointer;
 
-        > ._selected-icon {
-          //color: var(--text-brightness-lighter);
+        > ._select-icon {
           color: transparent;
         }
       }
@@ -56,7 +52,7 @@ import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
           }
         }
 
-        ::ng-deep ._child > ._content > sd-list {
+        > ::ng-deep ._child > ._content > sd-list {
           padding: var(--gap-sm) 0;
           background: var(--trans-brightness-dark);
         }
@@ -92,12 +88,12 @@ import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
         }
       }
 
-      &[sd-has-selected-icon=true][sd-selected=true] {
+      &[sd-has-select-icon=true][sd-selected=true] {
         > ._content {
           background: transparent;
           color: var(--text-brightness-default);
 
-          > ._selected-icon {
+          > ._select-icon {
             color: var(--theme-color-primary-default);
           }
 
@@ -114,11 +110,11 @@ import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
   `]
 })
 export class SdListItemControl {
-  @Input("content.style")
-  @SdInputValidate(String)
-  public contentStyle?: string;
+  public icons = {
+    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.definition)
+  };
 
-  @Input("content.class")
+  @Input()
   @SdInputValidate(String)
   public contentClass?: string;
 
@@ -145,11 +141,11 @@ export class SdListItemControl {
   public selected?: boolean;
 
   @Input()
-  public selectedIcon?: IconProp;
+  public selectIcon?: IconProp;
 
-  @HostBinding("attr.sd-has-selected-icon")
-  public get hasSelectedIcon(): boolean {
-    return Boolean(this.selectedIcon);
+  @HostBinding("attr.sd-has-select-icon")
+  public get hasSelectIcon(): boolean {
+    return Boolean(this.selectIcon);
   }
 
   @HostBinding("attr.sd-has-children")
@@ -159,15 +155,6 @@ export class SdListItemControl {
 
   @ContentChildren(forwardRef(() => SdListControl))
   public listControls?: QueryList<SdListControl>;
-
-
-  public constructor(private readonly _sanitization: DomSanitizer,
-                     public readonly icons: SdIconsRootProvider) {
-  }
-
-  public safeHtml(value?: string): SafeHtml | undefined {
-    return value !== undefined ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
-  }
 
   public onContentClick(): void {
     if (this.openChange.observed) {

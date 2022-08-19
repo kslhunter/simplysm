@@ -9,7 +9,7 @@ import { ISdResizeEvent } from "@simplysm/sd-core-browser";
       <ng-content></ng-content>
     </div>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
+    @import "../../scss/scss_settings";
 
     :host {
       position: fixed;
@@ -24,8 +24,6 @@ import { ISdResizeEvent } from "@simplysm/sd-core-browser";
       @include elevation(6);
       overflow: hidden;
       border-radius: var(--border-radius-default);
-      //padding-top: 2px;
-      //padding-bottom: 2px;
 
       > div {
         width: 100%;

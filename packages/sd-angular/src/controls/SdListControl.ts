@@ -8,7 +8,6 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
   styles: [/* language=SCSS */ `
     :host {
       display: block;
-      user-select: none;
     }
   `]
 })

@@ -6,27 +6,23 @@ import { sdThemes, TSdTheme } from "../commons";
   selector: "sd-button",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <button tabindex="0"
-            [attr.type]="type"
-            [disabled]="disabled"
-            [attr.class]="buttonClass"
-            [attr.style]="buttonStyle">
+    <button [attr.type]="type">
       <ng-content></ng-content>
     </button>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
-    @import "../../scss/variables-scss-arr";
+    @import "../../scss/scss_settings";
 
     :host {
+      display: block;
+      position: relative;
+
       > button {
         @include form-control-base();
         user-select: none;
         padding: var(--gap-sm) var(--gap-lg);
 
-        background: white;
         border-color: var(--border-color);
-        border-radius: var(--border-radius-default);
-
+        background: white;
         font-weight: bold;
         text-align: center;
         cursor: pointer;
@@ -38,31 +34,31 @@ import { sdThemes, TSdTheme } from "../commons";
         &:active {
           background: var(--theme-color-grey-lighter);
         }
+      }
 
-        &:disabled {
-          background: white;
-          border-color: var(--theme-color-grey-lighter);
-          color: var(--text-brightness-lighter);
-          cursor: default;
+      &[sd-inline=true] {
+        display: inline-block;
+      }
+
+      &[sd-inset=true] {
+        > button {
+          border-radius: 0;
+          border: none;
+          color: var(--theme-color-primary-default);
+
+          &:hover {
+            color: var(--theme-color-primary-darker);
+          }
         }
       }
 
-      &[sd-inset] > button {
-        border-radius: 0;
-        border: none;
-        color: var(--theme-color-primary-default);
+      &[sd-size=sm] > button {
+        font-weight: normal;
+        padding: var(--gap-xs) var(--gap-default);
+      }
 
-        &:hover {
-          color: var(--theme-color-primary-darker);
-        }
-
-        &:disabled {
-          background: white;
-          border-color: var(--theme-color-grey-lighter);
-          //color: var(--text-brightness-lighter);
-          color: var(--text-brightness-default);
-          cursor: default;
-        }
+      &[sd-size=lg] > button {
+        padding: var(--gap-default) var(--gap-xl);
       }
 
       @each $theme in $arr-theme-color {
@@ -82,34 +78,18 @@ import { sdThemes, TSdTheme } from "../commons";
             border-color: var(--theme-color-#{$theme}-darker);
             color: var(--text-brightness-rev-default);
           }
-
-          &:disabled {
-            background: var(--theme-color-grey-lighter);
-            border-color: var(--theme-color-grey-lighter);
-            color: var(--text-brightness-lighter);
-            cursor: default;
-          }
         }
       }
 
-      &[sd-inline=true] > button {
-        display: inline-block;
-        width: auto;
-        vertical-align: top;
-      }
-
-      &[sd-size=sm] > button {
-        font-weight: normal;
-        padding: var(--gap-xs) var(--gap-default);
-      }
-
-      &[sd-size=lg] > button {
-        padding: var(--gap-default) var(--gap-xl);
-        //border-radius: 2px;
-      }
-
-      &[disabled=true] {
+      &[sd-disabled=true] {
         pointer-events: none;
+
+        > button {
+          background: var(--theme-color-grey-lighter);
+          border-color: var(--theme-color-grey-lighter);
+          color: var(--text-brightness-lighter);
+          cursor: default;
+        }
       }
     }
   `]
@@ -124,11 +104,6 @@ export class SdButtonControl {
   public theme?: TSdTheme;
 
   @Input()
-  @SdInputValidate(Boolean)
-  @HostBinding("attr.sd-inline")
-  public inline?: boolean;
-
-  @Input()
   @SdInputValidate({
     type: String,
     includes: ["sm", "lg"]
@@ -138,24 +113,21 @@ export class SdButtonControl {
 
   @Input()
   @SdInputValidate(Boolean)
-  @HostBinding("attr.disabled")
+  @HostBinding("attr.sd-disabled")
   public disabled?: boolean;
-
-  @Input("button.style")
-  @SdInputValidate(String)
-  public buttonStyle?: string;
-
-  @Input("button.class")
-  @SdInputValidate(String)
-  public buttonClass?: string;
 
   @Input()
   @SdInputValidate({
     type: String,
-    includes: ["button", "submit"],
+    includes: ["button", "submit", "reset"],
     notnull: true
   })
-  public type: "button" | "submit" = "button";
+  public type: "button" | "submit" | "reset" = "button";
+
+  @Input()
+  @SdInputValidate(Boolean)
+  @HostBinding("attr.sd-inline")
+  public inline?: boolean;
 
   @Input()
   @SdInputValidate(Boolean)

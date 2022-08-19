@@ -1,3 +1,18 @@
+$arr-theme-color: ("grey", "blue-grey", "primary", "secondary", "info", "success", "warning", "danger");
+$arr-theme-brightness: (lightest, lighter, light, default, dark, darker, darkest);
+
+$arr-trans-brightness: (darkest, darker, dark, default, light, lighter);
+$arr-trans-brightness-rev: (default, light, lighter, lightest);
+
+$arr-text-brightness: (dark, default, light, lighter, lightest);
+$arr-text-brightness-rev: (default, dark, darker);
+
+$arr-font-size: (lg, default, sm, h1, h2, h3, h4, h5, h6);
+
+$arr-gap: (0, xxs, xs, sm, default, lg, xl, xxl);
+
+$arr-direction: (top, right, bottom, left);
+
 @mixin elevation($value) {
   @if $value == none or $value == 0 {
     box-shadow: none;
@@ -10,7 +25,8 @@
   display: block;
   width: 100%;
   padding: var(--gap-sm) var(--gap-default);
-  border: 1px solid transparent;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--border-radius-default);
 
   font-size: var(--font-size-default);
   font-family: var(--font-family);
@@ -19,12 +35,6 @@
   color: var(--text-color-default);
 }
 
-@mixin container-base() {
-  display: block;
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
 
 @mixin invalid-indicator() {
   display: block;

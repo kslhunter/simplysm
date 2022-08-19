@@ -1,20 +1,19 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Output } from "@angular/core";
-import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
 
 @Component({
   selector: "sd-topbar-tab",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-content></ng-content>
-    <sd-anchor (click)="onCloseButtonClick($event)">
-      <fa-icon [icon]="icons.get('xmark')" [fixedWidth]="true"></fa-icon>
-    </sd-anchor>`,
+    <a (click)="onCloseButtonClick($event)">
+      <fa-icon [icon]="icons.fasXmark | async" [fixedWidth]="true"></fa-icon>
+    </a>`,
   styles: [/* language=SCSS */ `
     :host {
       display: inline-block;
       padding: 0 var(--gap-lg);
       cursor: pointer;
-      line-height: calc(var(--sd-topbar-height-sm) - var(--gap-sm) - 2px);
+      line-height: calc(var(--sd-topbar-heigh) - var(--gap-sm) - 2px);
       vertical-align: bottom;
       border-top: 2px solid var(--theme-color-primary-darkest);
       border-left: 1px solid var(--theme-color-primary-darkest);
@@ -39,11 +38,12 @@ import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
   `]
 })
 export class SdTopbarTabControl {
+  public icons = {
+    fasXmark: import("@fortawesome/pro-solid-svg-icons/faXmark").then(m => m.definition)
+  };
+
   @Output("click.close")
   public readonly clickClose = new EventEmitter<MouseEvent>();
-
-  public constructor(public readonly icons: SdIconsRootProvider) {
-  }
 
   public onCloseButtonClick(event: MouseEvent): void {
     event.preventDefault();

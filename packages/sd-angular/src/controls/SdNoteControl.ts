@@ -8,7 +8,7 @@ import { sdThemes, TSdTheme } from "../commons";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/variables-scss-arr";
+    @import "../../scss/scss_settings";
 
     :host {
       display: block;

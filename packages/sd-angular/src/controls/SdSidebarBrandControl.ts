@@ -9,8 +9,6 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
     :host {
       display: block;
       height: var(--sd-topbar-height);
-      //border-bottom: 1px solid var(--theme-color-blue-grey-darker);
-      //background: var(--theme-color-blue-grey-darker);
     }
   `]
 })

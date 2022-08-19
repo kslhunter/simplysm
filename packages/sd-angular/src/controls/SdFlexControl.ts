@@ -7,7 +7,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/variables-scss-arr";
+    @import "../../scss/scss_settings";
 
     :host {
       display: flex;
@@ -18,26 +18,6 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
           gap: var(--gap-#{$gap});
         }
       }
-
-      &[sd-inline=true] {
-        display: inline-flex;
-      }
-
-      /*&[sd-vertical-align=center] {
-        align-items: center;
-      }
-
-      &[sd-vertical-align=start] {
-        align-items: start;
-      }
-
-      &[sd-vertical-align=end] {
-        align-items: end;
-      }
-
-      &[sd-vertical-align=stretch] {
-        align-items: stretch;
-      }*/
     }`]
 })
 export class SdFlexControl {
@@ -48,27 +28,6 @@ export class SdFlexControl {
   })
   @HostBinding("attr.sd-gap")
   public gap?: "xxs" | "xs" | "sm" | "default" | "lg" | "xl" | "xxl";
-
-  @Input()
-  @SdInputValidate(Boolean)
-  @HostBinding("attr.sd-inline")
-  public inline?: boolean;
-
-  @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["center", "start", "end", "stretch"]
-  })
-  @HostBinding("style.align-items")
-  public alignItems?: "center" | "start" | "end" | "stretch";
-
-  @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["center", "flex-start", "flex-end", "stretch"]
-  })
-  @HostBinding("style.justify-content")
-  public justifyContent?: "center" | "flex-start" | "flex-end" | "stretch";
 
   @Input()
   @SdInputValidate({

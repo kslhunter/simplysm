@@ -10,18 +10,16 @@ export class SdDomValidatorRootProvider {
     if (invalidEls.length > 0) {
       const focusableElement = invalidEls[0].isFocusable() ? invalidEls[0] : invalidEls[0].findFocusableAll()[0];
       if (typeof focusableElement !== "undefined") {
-        // "confirm"창울 띄우는 경우에 포커싱이 안되는 현상 때문에 "setTimeout"이 필요함.
-        setTimeout(() => {
-          focusableElement.focus();
-        });
+        // TODO: "confirm"창울 띄우는 경우에 포커싱이 안되는 현상 때문에 "setTimeout"이 필요함. (현재 repaint로 바꿔봄, 테스트 필요)
+        focusableElement.repaint();
+        focusableElement.focus();
       }
       else {
         const firstCell = invalidEls[0].findParent("._cell");
         if (firstCell) {
-          // "confirm"창울 띄우는 경우에 포커싱이 안되는 현상 때문에 "setTimeout"이 필요함.
-          setTimeout(() => {
-            firstCell.focus();
-          });
+          // TODO: "confirm"창울 띄우는 경우에 포커싱이 안되는 현상 때문에 "setTimeout"이 필요함. (현재 repaint로 바꿔봄, 테스트 필요)
+          firstCell.repaint();
+          firstCell.focus();
         }
       }
 

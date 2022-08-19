@@ -29,32 +29,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular-architects/module-federation-runtime@npm:14.3.10":
-  version: 14.3.10
-  resolution: "@angular-architects/module-federation-runtime@npm:14.3.10"
-  dependencies:
-    tslib: ^2.0.0
-  peerDependencies:
-    "@angular/common": ">=14.0.0"
-    "@angular/core": ">=14.0.0"
-  checksum: 9c8a1c004141f7037b225b0378dceb0a1da71462512964b626ac8b039647346cfe5e7aafc97467a8ef6f2ad572d52f83e7e4f6637b67831cea0b2a568542e0a7
-  languageName: node
-  linkType: hard
-
-"@angular-architects/module-federation@npm:^14.3.10":
-  version: 14.3.10
-  resolution: "@angular-architects/module-federation@npm:14.3.10"
-  dependencies:
-    "@angular-architects/module-federation-runtime": 14.3.10
-    callsite: ^1.0.0
-    node-fetch: ^2.6.7
-    rxjs: ~6.6.3
-    semver: ^7.3.5
-    word-wrap: ^1.2.3
-  checksum: fd4e8ef0db46795b528986d02ac21446d615d66d11f52230356283de0b26af4d2ebb3e7b6e880a43aa8421d366cafe10630ebae41bfa97ea8228d7bb14708bb6
-  languageName: node
-  linkType: hard
-
 "@angular-devkit/architect@npm:0.1401.3":
   version: 0.1401.3
   resolution: "@angular-devkit/architect@npm:0.1401.3"
@@ -285,18 +259,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/common@npm:^14.0.0":
-  version: 14.1.1
-  resolution: "@angular/common@npm:14.1.1"
-  dependencies:
-    tslib: ^2.3.0
-  peerDependencies:
-    "@angular/core": 14.1.1
-    rxjs: ^6.5.3 || ^7.4.0
-  checksum: e4915c0a20bff8896a003ea00708fa0b6d32e53af5eebbb79e8057c6651a8ba3ca39ec5f69d44019d0c63e1023af848cec89ad2691eecbefe2e872c524dc15dd
-  languageName: node
-  linkType: hard
-
 "@angular/common@npm:^14.1.3":
   version: 14.1.3
   resolution: "@angular/common@npm:14.1.3"
@@ -345,18 +307,6 @@ __metadata:
     "@angular/core":
       optional: true
   checksum: b3749c0cbe4e366e8fb3439cd275d35a9a4c836466df6a7d4cc0455a67347872150f7229c563e2dbe24d0429091371ca512d7b49ebc288c0afd89af066c766c6
-  languageName: node
-  linkType: hard
-
-"@angular/core@npm:^14.0.0":
-  version: 14.1.1
-  resolution: "@angular/core@npm:14.1.1"
-  dependencies:
-    tslib: ^2.3.0
-  peerDependencies:
-    rxjs: ^6.5.3 || ^7.4.0
-    zone.js: ~0.11.4
-  checksum: c16881faead6ac112bd283a812d7e662625bfb5502d724e5c14b24d0e08a2d646720fc09a5d0db02db67a9b674ed246b5164163e9158085ce0b8fecc92ec14a7
   languageName: node
   linkType: hard
 
@@ -2406,6 +2356,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fortawesome/pro-duotone-svg-icons@npm:^6.1.2":
+  version: 6.1.2
+  resolution: "@fortawesome/pro-duotone-svg-icons@npm:6.1.2::__archiveUrl=https%3A%2F%2Fnpm.fontawesome.com%2F%40fortawesome%2Fpro-duotone-svg-icons%2F-%2F6.1.2%2Fpro-duotone-svg-icons-6.1.2.tgz"
+  dependencies:
+    "@fortawesome/fontawesome-common-types": 6.1.2
+  checksum: 1272c8025b6ce9d6f368676a95d1e347836338021543ef4a5f0f9044467357a400f783f0b05522c5bc227ca73ea20979f9c69fe05ad602a71732c8c1f9daea1d
+  languageName: node
+  linkType: hard
+
+"@fortawesome/pro-light-svg-icons@npm:^6.1.2":
+  version: 6.1.2
+  resolution: "@fortawesome/pro-light-svg-icons@npm:6.1.2::__archiveUrl=https%3A%2F%2Fnpm.fontawesome.com%2F%40fortawesome%2Fpro-light-svg-icons%2F-%2F6.1.2%2Fpro-light-svg-icons-6.1.2.tgz"
+  dependencies:
+    "@fortawesome/fontawesome-common-types": 6.1.2
+  checksum: b128b0fe5b1706859dfa0f669fa1af1ee8e9ae3957547e00aeab8e95e41c5d057cf31dedc7e583b43bc3cf2eab2a96ba30e18884f3a10836ca638b037fdc6c4e
+  languageName: node
+  linkType: hard
+
+"@fortawesome/pro-solid-svg-icons@npm:^6.1.2":
+  version: 6.1.2
+  resolution: "@fortawesome/pro-solid-svg-icons@npm:6.1.2::__archiveUrl=https%3A%2F%2Fnpm.fontawesome.com%2F%40fortawesome%2Fpro-solid-svg-icons%2F-%2F6.1.2%2Fpro-solid-svg-icons-6.1.2.tgz"
+  dependencies:
+    "@fortawesome/fontawesome-common-types": 6.1.2
+  checksum: 877046b549f32a5117d6aebefde93edaf8fe6e7d13d337671f47516b3961304cd6ade7d296db11e0cfc7451fe98f9cacd6920e9d2d60adf9d425c2b281356078
+  languageName: node
+  linkType: hard
+
 "@gar/promisify@npm:^1.0.1, @gar/promisify@npm:^1.1.3":
   version: 1.1.3
   resolution: "@gar/promisify@npm:1.1.3"
@@ -2798,13 +2775,13 @@ __metadata:
     "@angular/router": ^14.1.3
     "@fortawesome/angular-fontawesome": ^0.11.1
     "@fortawesome/fontawesome-svg-core": ^6.1.2
-    "@simplysm/sd-core-browser": 7.1.10
-    "@simplysm/sd-core-common": 7.1.10
-    "@simplysm/sd-service-client": 7.1.10
-    "@simplysm/sd-service-common": 7.1.10
-    "@types/marked": ^4.0.5
-    jsbarcode: ^3.11.5
-    marked: ^4.0.18
+    "@fortawesome/pro-duotone-svg-icons": ^6.1.2
+    "@fortawesome/pro-light-svg-icons": ^6.1.2
+    "@fortawesome/pro-solid-svg-icons": ^6.1.2
+    "@simplysm/sd-core-browser": 7.1.11
+    "@simplysm/sd-core-common": 7.1.11
+    "@simplysm/sd-service-client": 7.1.11
+    "@simplysm/sd-service-common": 7.1.11
     rxjs: ^7.5.6
     zone.js: ~0.11.8
   languageName: unknown
@@ -2814,7 +2791,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-cli@workspace:packages/sd-cli"
   dependencies:
-    "@angular-architects/module-federation": ^14.3.10
     "@angular-devkit/build-angular": ^14.1.3
     "@angular/common": ^14.1.3
     "@angular/compiler": ^14.1.3
@@ -2824,11 +2800,11 @@ __metadata:
     "@babel/types": ^7.18.10
     "@compodoc/compodoc": ^1.1.19
     "@ngtools/webpack": ^14.1.3
-    "@simplysm/sd-core-common": 7.1.10
-    "@simplysm/sd-core-node": 7.1.10
-    "@simplysm/sd-service-common": 7.1.10
-    "@simplysm/sd-service-server": 7.1.10
-    "@simplysm/sd-storage": 7.1.10
+    "@simplysm/sd-core-common": 7.1.11
+    "@simplysm/sd-core-node": 7.1.11
+    "@simplysm/sd-service-common": 7.1.11
+    "@simplysm/sd-service-server": 7.1.11
+    "@simplysm/sd-storage": 7.1.11
     "@types/connect": ^3.4.35
     "@types/jsdom": ^20.0.0
     "@types/mime": ^3.0.1
@@ -2877,21 +2853,21 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-cordova@workspace:packages/sd-cordova"
   dependencies:
-    "@simplysm/sd-service-client": 7.1.10
+    "@simplysm/sd-service-client": 7.1.11
     "@types/semver": ^7.3.12
     semver: ^7.3.7
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-browser@7.1.10, @simplysm/sd-core-browser@workspace:packages/sd-core-browser":
+"@simplysm/sd-core-browser@7.1.11, @simplysm/sd-core-browser@workspace:packages/sd-core-browser":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-browser@workspace:packages/sd-core-browser"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.10
+    "@simplysm/sd-core-common": 7.1.11
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-common@7.1.10, @simplysm/sd-core-common@workspace:packages/sd-core-common":
+"@simplysm/sd-core-common@7.1.11, @simplysm/sd-core-common@workspace:packages/sd-core-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-common@workspace:packages/sd-core-common"
   dependencies:
@@ -2899,11 +2875,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-node@7.1.10, @simplysm/sd-core-node@workspace:packages/sd-core-node":
+"@simplysm/sd-core-node@7.1.11, @simplysm/sd-core-node@workspace:packages/sd-core-node":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-node@workspace:packages/sd-core-node"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.10
+    "@simplysm/sd-core-common": 7.1.11
     chokidar: ^3.5.3
     glob: ^8.0.3
   languageName: unknown
@@ -2913,7 +2889,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-excel@workspace:packages/sd-excel"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.10
+    "@simplysm/sd-core-common": 7.1.11
     "@types/xml2js": ^0.4.11
     jszip: ^3.10.1
     xlsx: ^0.18.5
@@ -2921,11 +2897,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-orm-common@7.1.10, @simplysm/sd-orm-common@workspace:packages/sd-orm-common":
+"@simplysm/sd-orm-common@7.1.11, @simplysm/sd-orm-common@workspace:packages/sd-orm-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-common@workspace:packages/sd-orm-common"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.10
+    "@simplysm/sd-core-common": 7.1.11
   languageName: unknown
   linkType: soft
 
@@ -2933,9 +2909,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node-mssql@workspace:packages/sd-orm-node-mssql"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.10
-    "@simplysm/sd-core-node": 7.1.10
-    "@simplysm/sd-orm-common": 7.1.10
+    "@simplysm/sd-core-common": 7.1.11
+    "@simplysm/sd-core-node": 7.1.11
+    "@simplysm/sd-orm-common": 7.1.11
     "@types/tedious": ^4.0.8
     tedious: ^15.0.1
   languageName: unknown
@@ -2945,9 +2921,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node-mysql@workspace:packages/sd-orm-node-mysql"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.10
-    "@simplysm/sd-core-node": 7.1.10
-    "@simplysm/sd-orm-common": 7.1.10
+    "@simplysm/sd-core-common": 7.1.11
+    "@simplysm/sd-core-node": 7.1.11
+    "@simplysm/sd-orm-common": 7.1.11
     "@types/mysql": ^2.15.21
     mysql: ^2.18.1
   languageName: unknown
@@ -2957,25 +2933,25 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node-sqlite@workspace:packages/sd-orm-node-sqlite"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.10
-    "@simplysm/sd-core-node": 7.1.10
-    "@simplysm/sd-orm-common": 7.1.10
+    "@simplysm/sd-core-common": 7.1.11
+    "@simplysm/sd-core-node": 7.1.11
+    "@simplysm/sd-orm-common": 7.1.11
     "@types/sqlite3": ^3.1.8
     sqlite3: ^5.0.11
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-orm-node@7.1.10, @simplysm/sd-orm-node@workspace:packages/sd-orm-node":
+"@simplysm/sd-orm-node@7.1.11, @simplysm/sd-orm-node@workspace:packages/sd-orm-node":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node@workspace:packages/sd-orm-node"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.10
-    "@simplysm/sd-core-node": 7.1.10
-    "@simplysm/sd-orm-common": 7.1.10
+    "@simplysm/sd-core-common": 7.1.11
+    "@simplysm/sd-core-node": 7.1.11
+    "@simplysm/sd-orm-common": 7.1.11
   peerDependencies:
-    "@simplysm/sd-orm-node-mssql": 7.1.10
-    "@simplysm/sd-orm-node-mysql": 7.1.10
-    "@simplysm/sd-orm-node-sqlite": 7.1.10
+    "@simplysm/sd-orm-node-mssql": 7.1.11
+    "@simplysm/sd-orm-node-mysql": 7.1.11
+    "@simplysm/sd-orm-node-sqlite": 7.1.11
   peerDependenciesMeta:
     "@simplysm/sd-orm-node-mssql":
       optional: true
@@ -2986,32 +2962,32 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-client@7.1.10, @simplysm/sd-service-client@workspace:packages/sd-service-client":
+"@simplysm/sd-service-client@7.1.11, @simplysm/sd-service-client@workspace:packages/sd-service-client":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-client@workspace:packages/sd-service-client"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.10
-    "@simplysm/sd-orm-common": 7.1.10
-    "@simplysm/sd-service-common": 7.1.10
+    "@simplysm/sd-core-common": 7.1.11
+    "@simplysm/sd-orm-common": 7.1.11
+    "@simplysm/sd-service-common": 7.1.11
     jszip: ^3.10.1
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-common@7.1.10, @simplysm/sd-service-common@workspace:packages/sd-service-common":
+"@simplysm/sd-service-common@7.1.11, @simplysm/sd-service-common@workspace:packages/sd-service-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-common@workspace:packages/sd-service-common"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-server@7.1.10, @simplysm/sd-service-server@workspace:packages/sd-service-server":
+"@simplysm/sd-service-server@7.1.11, @simplysm/sd-service-server@workspace:packages/sd-service-server":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-server@workspace:packages/sd-service-server"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.10
-    "@simplysm/sd-core-node": 7.1.10
-    "@simplysm/sd-orm-common": 7.1.10
-    "@simplysm/sd-orm-node": 7.1.10
-    "@simplysm/sd-service-common": 7.1.10
+    "@simplysm/sd-core-common": 7.1.11
+    "@simplysm/sd-core-node": 7.1.11
+    "@simplysm/sd-orm-common": 7.1.11
+    "@simplysm/sd-orm-node": 7.1.11
+    "@simplysm/sd-service-common": 7.1.11
     "@types/connect": ^3.4.35
     "@types/mime": ^3.0.1
     "@types/nodemailer": ^6.4.5
@@ -3025,7 +3001,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-storage@7.1.10, @simplysm/sd-storage@workspace:packages/sd-storage":
+"@simplysm/sd-storage@7.1.11, @simplysm/sd-storage@workspace:packages/sd-storage":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-storage@workspace:packages/sd-storage"
   dependencies:
@@ -3369,13 +3345,6 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: e009a2bfb50e90ca9b7c6e8f648f8464067271fd99116f881073fa6fa76dc8d0133181dd65e6614d5fb1220d671d67b0124aef7d97dc02d7e342ab143a47779d
-  languageName: node
-  linkType: hard
-
-"@types/marked@npm:^4.0.5":
-  version: 4.0.5
-  resolution: "@types/marked@npm:4.0.5"
-  checksum: 19fa294997695b82a5620da305dfab4fcfce996b34884c604198145820c4502efc46bd1d275bd9a7fcf1930ab865e584572746bd957031be1860c9546af40340
   languageName: node
   linkType: hard
 
@@ -10540,67 +10509,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsbarcode@npm:^3.11.5":
-  version: 3.11.5
-  resolution: "jsbarcode@npm:3.11.5"
-  bin:
-    Barcode.js: bin/barcodes/Barcode.js
-    CODE128: bin/barcodes/CODE128
-    CODE128.js: bin/barcodes/CODE128/CODE128.js
-    CODE128A.js: bin/barcodes/CODE128/CODE128A.js
-    CODE128B.js: bin/barcodes/CODE128/CODE128B.js
-    CODE128C.js: bin/barcodes/CODE128/CODE128C.js
-    CODE128_AUTO.js: bin/barcodes/CODE128/CODE128_AUTO.js
-    CODE39: bin/barcodes/CODE39
-    EAN.js: bin/barcodes/EAN_UPC/EAN.js
-    EAN13.js: bin/barcodes/EAN_UPC/EAN13.js
-    EAN2.js: bin/barcodes/EAN_UPC/EAN2.js
-    EAN5.js: bin/barcodes/EAN_UPC/EAN5.js
-    EAN8.js: bin/barcodes/EAN_UPC/EAN8.js
-    EAN_UPC: bin/barcodes/EAN_UPC
-    ErrorHandler.js: bin/exceptions/ErrorHandler.js
-    GenericBarcode: bin/barcodes/GenericBarcode
-    ITF: bin/barcodes/ITF
-    ITF.js: bin/barcodes/ITF/ITF.js
-    ITF14.js: bin/barcodes/ITF/ITF14.js
-    JsBarcode.js: bin/JsBarcode.js
-    MSI: bin/barcodes/MSI
-    MSI.js: bin/barcodes/MSI/MSI.js
-    MSI10.js: bin/barcodes/MSI/MSI10.js
-    MSI1010.js: bin/barcodes/MSI/MSI1010.js
-    MSI11.js: bin/barcodes/MSI/MSI11.js
-    MSI1110.js: bin/barcodes/MSI/MSI1110.js
-    UPC.js: bin/barcodes/EAN_UPC/UPC.js
-    UPCE.js: bin/barcodes/EAN_UPC/UPCE.js
-    auto.js: bin/barcodes/CODE128/auto.js
-    barcodes: bin/barcodes
-    canvas.js: bin/renderers/canvas.js
-    checksums.js: bin/barcodes/MSI/checksums.js
-    codabar: bin/barcodes/codabar
-    constants.js: bin/barcodes/ITF/constants.js
-    defaults.js: bin/options/defaults.js
-    encoder.js: bin/barcodes/EAN_UPC/encoder.js
-    exceptions: bin/exceptions
-    exceptions.js: bin/exceptions/exceptions.js
-    fixOptions.js: bin/help/fixOptions.js
-    getOptionsFromElement.js: bin/help/getOptionsFromElement.js
-    getRenderProperties.js: bin/help/getRenderProperties.js
-    help: bin/help
-    index.js: bin/renderers/index.js
-    index.tmp.js: bin/barcodes/index.tmp.js
-    linearizeEncodings.js: bin/help/linearizeEncodings.js
-    merge.js: bin/help/merge.js
-    object.js: bin/renderers/object.js
-    options: bin/options
-    optionsFromStrings.js: bin/help/optionsFromStrings.js
-    pharmacode: bin/barcodes/pharmacode
-    renderers: bin/renderers
-    shared.js: bin/renderers/shared.js
-    svg.js: bin/renderers/svg.js
-  checksum: 592277122b8b3f1fc7af587126e923ba2abb8cc43be50c124325f7e88bb64fd64fccdc1541035a60097da6628732a56cda0b6aea8c316eea8ae87f10e63b2622
-  languageName: node
-  linkType: hard
-
 "jsbi@npm:^4.3.0":
   version: 4.3.0
   resolution: "jsbi@npm:4.3.0"
@@ -14293,7 +14201,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:6.6.7, rxjs@npm:^6.4.0, rxjs@npm:~6.6.3":
+"rxjs@npm:6.6.7, rxjs@npm:^6.4.0":
   version: 6.6.7
   resolution: "rxjs@npm:6.6.7"
   dependencies:
@@ -14302,7 +14210,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.4.0, rxjs@npm:^7.5.5, rxjs@npm:^7.5.6":
+"rxjs@npm:^7.5.5, rxjs@npm:^7.5.6":
   version: 7.5.6
   resolution: "rxjs@npm:7.5.6"
   dependencies:
@@ -15830,7 +15738,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.4.0, tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0":
+"tslib@npm:2.4.0, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0":
   version: 2.4.0
   resolution: "tslib@npm:2.4.0"
   checksum: 8c4aa6a3c5a754bf76aefc38026134180c053b7bd2f81338cb5e5ebf96fefa0f417bff221592bf801077f5bf990562f6264fecbc42cd3309b33872cb6fc3b113
@@ -17011,15 +16919,6 @@ __metadata:
   version: 0.1.0
   resolution: "yocto-queue@npm:0.1.0"
   checksum: f77b3d8d00310def622123df93d4ee654fc6a0096182af8bd60679ddcdfb3474c56c6c7190817c84a2785648cdee9d721c0154eb45698c62176c322fb46fc700
-  languageName: node
-  linkType: hard
-
-"zone.js@npm:~0.11.4":
-  version: 0.11.7
-  resolution: "zone.js@npm:0.11.7"
-  dependencies:
-    tslib: ^2.3.0
-  checksum: 5479df220306637a7faddd4c2a63906a06753d699f559fdad500d4b8b797389cf17c703322d8087f60bc957b8beca8d90b2c33ed1da56abf86a240c22d52da85
   languageName: node
   linkType: hard
 

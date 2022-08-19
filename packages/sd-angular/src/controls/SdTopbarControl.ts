@@ -11,20 +11,19 @@ import {
 } from "@angular/core";
 import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
-import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
 
 @Component({
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" style="font-size: 16px;"
-               *ngIf="sidebarContainerControl || sidebarContainer">
-      <fa-icon [icon]="icons.get('bars')" [fixedWidth]="true"></fa-icon>
-    </sd-anchor>
-    <sd-gap width="default" *ngIf="!sidebarContainerControl && !sidebarContainer"></sd-gap>
+    <a class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()"
+       *ngIf="sidebarContainerControl || sidebarContainer">
+      <fa-icon [icon]="icons.fasBars | async" [fixedWidth]="true"></fa-icon>
+    </a>
+    <sd-gap direction="width" size="default" *ngIf="!sidebarContainerControl && !sidebarContainer"></sd-gap>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
+    @import "../../scss/scss_settings";
 
     :host {
       display: block;
@@ -77,6 +76,7 @@ import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
         margin-right: var(--gap-default);
         color: var(--text-brightness-rev-dark);
         cursor: pointer;
+        font-size: 16px;
 
         &:hover {
           background: rgba(0, 0, 0, .2);
@@ -115,6 +115,10 @@ import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
   `]
 })
 export class SdTopbarControl implements DoCheck {
+  public icons = {
+    fasBars: import("@fortawesome/pro-solid-svg-icons/faBars").then(m => m.definition)
+  };
+
   @HostBinding("attr.sd-size")
   public get size(): "sm" | "lg" | undefined {
     return this._topbarContainerControl.size;
@@ -128,9 +132,8 @@ export class SdTopbarControl implements DoCheck {
   public constructor(@Inject(forwardRef(() => SdTopbarContainerControl))
                      private readonly _topbarContainerControl: SdTopbarContainerControl,
                      private readonly _injector: Injector,
-                     private readonly _elRef: ElementRef,
-                     public readonly icons: SdIconsRootProvider) {
-    this.sidebarContainerControl = this._injector.get<SdSidebarContainerControl | null>(SdSidebarContainerControl, null) ?? undefined;
+                     private readonly _elRef: ElementRef) {
+    this.sidebarContainerControl = this._injector.get(SdSidebarContainerControl, null) ?? undefined;
   }
 
   public onSidebarToggleButtonClick(): void {

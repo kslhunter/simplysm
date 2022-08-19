@@ -1,29 +1,25 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DoCheck,
   ElementRef,
   EventEmitter,
   HostBinding,
   Input,
-  NgZone,
   Output,
   ViewChild
 } from "@angular/core";
-import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
 import { SdInputValidate } from "../decorators/SdInputValidate";
+import { DateOnly, DateTime, NumberUtil, StringUtil, Time } from "@simplysm/sd-core-common";
 import { sdThemes, TSdTheme } from "../commons";
 
 @Component({
   selector: "sd-textfield",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-container *ngIf="!multiline">
+    <ng-container *ngIf="(!disabled && !readonly)">
       <input #input
-             *ngIf="(!disabled && !readonly)"
              [type]="controlType"
              [value]="controlValue"
-             [attr.placeholder]="placeholder"
              [required]="required"
              [attr.min]="min"
              [attr.max]="max"
@@ -31,85 +27,50 @@ import { sdThemes, TSdTheme } from "../commons";
              [attr.maxlength]="maxlength"
              [attr.step]="controlStep"
              [attr.pattern]="pattern"
-             [attr.class]="inputClass"
-             [attr.style]="inputFullStyle"
              [attr.title]="title || placeholder"
-             (input)="onInput()"
-             [attr.inputmode]="type === 'number' ? 'numeric' : undefined"/>
-      <div *ngIf="disabled || readonly"
-           [attr.class]="(disabled ? '_disabled ' : readonly ? '_readonly ' : '') + (inputClass || '')"
-           [attr.style]="inputFullStyle">
-        <ng-content></ng-content>
-        <div *ngIf="controlType === 'password' && readonly && !disabled" class="sd-text-brightness-light">
-          ****
-        </div>
-        <ng-container *ngIf="controlType !== 'password'">
-          <ng-container *ngIf="controlValue">
-            <pre>{{ controlValue }}</pre>
-          </ng-container>
-          <ng-container *ngIf="!controlValue">
-            <span class="sd-text-brightness-lighter">{{ placeholder }}</span>
-          </ng-container>
-        </ng-container>
-      </div>
+             [attr.placeholder]="placeholder"
+             (input)="onInput($event)"/>
     </ng-container>
+    <ng-container *ngIf="disabled || readonly">
+      <div class="_viewer">
+        <ng-container *ngIf="type === 'password'">
+          <span class="sd-text-brightness-light">****</span>
+        </ng-container>
 
-    <ng-container *ngIf="multiline">
-      <textarea #input
-                *ngIf="(!disabled && !readonly)"
-                [value]="controlValue"
-                [attr.placeholder]="placeholder"
-                [attr.title]="title || placeholder"
-                [required]="required"
-                [attr.rows]="controlRows"
-                [attr.class]="inputClass"
-                [attr.style]="'white-space: nowrap; ' + inputFullStyle"
-                (input)="onInput()"></textarea>
-      <div *ngIf="disabled || readonly"
-           [attr.class]="(disabled ? '_disabled ' : readonly ? '_readonly ' : '') + (inputClass || '')"
-           [attr.style]="inputFullStyle">
-        <ng-content></ng-content>
-        <pre>{{ controlValue }}</pre>
+        <ng-container *ngIf="type !== 'password' && controlValue">
+          <pre>{{ controlValue }}</pre>
+        </ng-container>
+
+        <ng-container *ngIf="type !== 'password' && !controlValue">
+          <span class="sd-text-brightness-lighter">{{ placeholder }}</span>
+        </ng-container>
       </div>
     </ng-container>
 
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
-    @import "../../scss/variables-scss-arr";
+    @import "../../scss/scss_settings";
 
     :host {
       display: block;
       position: relative;
 
       > input,
-      > textarea,
-      > div._readonly,
-      > div._disabled {
+      > div._viewer {
         @include form-control-base();
+        background: var(--theme-color-secondary-lightest);
+        height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
-        //border: 1px solid var(--border-color);
-        border: 1px solid var(--trans-brightness-light);
-        border-radius: var(--border-radius-default);
-
-        &::-webkit-input-placeholder {
-          color: var(--text-brightness-lighter);
+        &:focus {
+          outline: 1px solid var(--theme-color-primary-default);
+          outline-offset: -1px;
         }
       }
 
-      > input,
-      > textarea,
-      > div._readonly {
-        background: var(--theme-color-secondary-lightest);
-      }
-
-      > div._disabled {
-        background: var(--theme-color-grey-lightest);
-        color: var(--text-brightness-light);
-      }
-
       > input {
-        height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
+        &::-webkit-input-placeholder {
+          color: var(--text-brightness-lighter);
+        }
 
         &::-webkit-outer-spin-button,
         &::-webkit-inner-spin-button {
@@ -119,153 +80,77 @@ import { sdThemes, TSdTheme } from "../commons";
 
         &::-webkit-calendar-picker-indicator {
           margin: auto;
-          //background: transparent;
-          //color: var(--theme-color-secondary-default);
           cursor: pointer;
-        }
-      }
-
-      > div._readonly,
-      > div._disabled {
-        min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-      }
-
-      > input,
-      > textarea,
-      > div._readonly,
-      > div._disabled {
-        &:focus {
-          outline: none;
-          border-color: var(--theme-color-primary-default);
         }
       }
 
       &[sd-type=number] {
         > input,
-        > div._readonly,
-        > div._disabled {
+        > div._viewer {
           text-align: right;
-        }
-      }
-
-      &[sd-inline=true] {
-        display: inline-block;
-        vertical-align: top;
-
-        > input,
-        > textarea,
-        > div._readonly,
-        > div._disabled {
-          display: inline-block;
-          width: auto;
-          vertical-align: top;
         }
       }
 
       &[sd-size=sm] {
         > input,
-        > textarea,
-        > div._readonly,
-        > div._disabled {
+        > div._viewer {
           padding: var(--gap-xs) var(--gap-sm);
-
-          &[type=color] {
-            padding-top: 1px;
-            padding-bottom: 1px;
-          }
-        }
-
-        > input {
           height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-        }
-
-        > div._readonly,
-        > div._disabled {
-          min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         }
       }
 
       &[sd-size=lg] {
         > input,
-        > textarea,
-        > div._readonly,
-        > div._disabled {
+        > div._viewer {
           padding: var(--gap-default) var(--gap-lg);
-
-          &[type=color] {
-            padding-top: 1px;
-            padding-bottom: 1px;
-          }
-        }
-
-        > input {
           height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         }
+      }
 
-        > div._readonly,
-        > div._disabled {
-          min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-        }
+      &[sd-inline=true] {
+        display: inline-block;
       }
 
       &[sd-inset=true] {
         > input,
-        > textarea,
-        > div._readonly,
-        > div._disabled {
+        > div._viewer {
           border: none;
           border-radius: 0;
-        }
-
-        > div._disabled {
-          background: white !important;
-          color: var(--text-brightness-default);
-        }
-
-        > input {
           height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
         }
 
-        > div._readonly,
-        > div._disabled {
-          min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-        }
-
         &[sd-size=sm] {
-          > input {
+          > input,
+          > div._viewer {
             height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-          }
-
-          > div._readonly,
-          > div._disabled {
-            min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
           }
         }
 
         &[sd-size=lg] {
-          > input {
+          > input,
+          > div._viewer {
             height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
           }
-
-          > div._readonly,
-          > div._disabled {
-            min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-          }
-        }
-
-        > input:focus,
-        > textarea:focus {
-          outline: 1px solid var(--theme-color-primary-default);
-          outline-offset: -1px;
         }
       }
 
       @each $theme in $arr-theme-color {
         &[sd-theme=#{$theme}] {
           > input,
-          > textarea,
-          > div._readonly {
+          > div._viewer {
             background: var(--theme-color-#{$theme}-lightest);
+          }
+        }
+      }
+
+      &[sd-disabled=true] {
+        > div._viewer {
+          background: var(--theme-color-grey-lightest);
+          color: var(--text-brightness-light);
+
+          &[sd-inset=true] {
+            background: white;
+            color: var(--text-brightness-default);
           }
         }
       }
@@ -275,30 +160,21 @@ import { sdThemes, TSdTheme } from "../commons";
       }
 
       > input:invalid + ._invalid-indicator,
-      > textarea:invalid + ._invalid-indicator,
       &[sd-invalid=true] > ._invalid-indicator {
         @include invalid-indicator();
       }
     }
   `]
 })
-export class SdTextfieldControl implements DoCheck {
+export class SdTextfieldControl {
   @Input()
   @SdInputValidate({
     type: String,
-    includes: ["number", "text", "password", "date", "datetime", "datetime-sec", "time", "time-sec", "month", "year", "color", "email", "brn"],
+    includes: ["number", "number-only", "text", "password", "date", "datetime", "datetime-sec", "time", "time-sec", "month", "year", "color", "email", "brn"],
     notnull: true
   })
   @HostBinding("attr.sd-type")
-  public type: "number" | "text" | "password" | "date" | "datetime" | "datetime-sec" | "time" | "time-sec" | "month" | "year" | "color" | "email" | "brn" = "text";
-
-  @Input()
-  @SdInputValidate(String)
-  public placeholder?: string;
-
-  @Input()
-  @SdInputValidate(String)
-  public title?: string;
+  public type: "number" | "number-only" | "text" | "password" | "date" | "datetime" | "datetime-sec" | "time" | "time-sec" | "month" | "year" | "color" | "email" | "brn" = "text";
 
   @Input()
   @SdInputValidate([Number, String, DateOnly, DateTime, Time])
@@ -308,12 +184,12 @@ export class SdTextfieldControl implements DoCheck {
   public readonly valueChange = new EventEmitter<number | string | DateOnly | DateTime | Time | undefined>();
 
   @Input()
-  @SdInputValidate(Boolean)
-  public disabled?: boolean;
+  @SdInputValidate(String)
+  public placeholder?: string;
 
   @Input()
-  @SdInputValidate(Boolean)
-  public readonly?: boolean;
+  @SdInputValidate(String)
+  public title?: string;
 
   @Input()
   @SdInputValidate(Boolean)
@@ -335,9 +211,7 @@ export class SdTextfieldControl implements DoCheck {
   @SdInputValidate(Number)
   public maxlength?: number;
 
-  /**
-   * 10, 1, 0.1, 0.01, 0.01 방식으로 입력
-   */
+  /** 10, 1, 0.1, 0.01, 0.01 방식으로 입력 */
   @Input()
   @SdInputValidate(Number)
   public step?: number;
@@ -345,6 +219,10 @@ export class SdTextfieldControl implements DoCheck {
   @Input()
   @SdInputValidate(String)
   public pattern?: string;
+
+  @Input()
+  @SdInputValidate(Function)
+  public validatorFn?: (value: number | string | DateOnly | DateTime | Time | undefined) => string | undefined;
 
   @Input()
   @SdInputValidate(Boolean)
@@ -357,71 +235,41 @@ export class SdTextfieldControl implements DoCheck {
   public inset?: boolean;
 
   @Input()
-  @SdInputValidate({
-    type: String,
-    includes: ["sm", "lg"]
-  })
+  @SdInputValidate({ type: String, includes: ["sm", "lg"] })
   @HostBinding("attr.sd-size")
   public size?: "sm" | "lg";
 
   @Input()
-  @SdInputValidate(Boolean)
-  public multiline?: boolean;
-
-  @Input()
-  @SdInputValidate(Number)
-  public rows?: number;
-
-  @Input()
-  @SdInputValidate({ type: Boolean, notnull: true })
-  public autoRows = false;
-
-  @Input()
-  @SdInputValidate({
-    type: [String, Boolean],
-    includes: ["vertical", "horizontal", true, false]
-  })
-  public resize?: "vertical" | "horizontal" | boolean;
-
-  @Input()
-  @SdInputValidate(Function)
-  public validatorFn?: (value: number | string | DateOnly | DateTime | Time | undefined) => string | undefined;
-
-  @Input("input.style")
-  @SdInputValidate(String)
-  public inputStyle?: string;
-
-  @Input("input.class")
-  @SdInputValidate(String)
-  public inputClass?: string;
-
-  @Input()
-  @SdInputValidate({
-    type: String,
-    includes: sdThemes
-  })
+  @SdInputValidate({ type: String, includes: sdThemes })
   @HostBinding("attr.sd-theme")
   public theme?: TSdTheme;
+
+  @Input()
+  @SdInputValidate(Boolean)
+  @HostBinding("attr.sd-disabled")
+  public disabled?: boolean;
+
+  @Input()
+  @SdInputValidate(Boolean)
+  @HostBinding("attr.sd-readonly")
+  public readonly?: boolean;
 
   @HostBinding("attr.sd-invalid")
   public get isInvalid(): boolean {
     return Boolean(this.errorMessage);
   }
 
-  @Input()
-  @SdInputValidate(Boolean)
-  public useNumberComma = true;
-
   @ViewChild("input", { static: false, read: ElementRef })
-  public inputElRef?: ElementRef<HTMLTextAreaElement | HTMLInputElement>;
+  public inputElRef?: ElementRef<HTMLInputElement>;
 
   public get controlType(): string {
     return this.type === "number" ? "text"
-      : this.type === "brn" ? "text"
-        : this.type === "datetime" ? "datetime-local"
-          : this.type === "datetime-sec" ? "datetime-local"
-            : this.type === "time-sec" ? "time"
-              : this.type;
+      : this.type === "number-only" ? "number"
+        : this.type === "brn" ? "text"
+          : this.type === "datetime" ? "datetime-local"
+            : this.type === "datetime-sec" ? "datetime-local"
+              : this.type === "time-sec" ? "time"
+                : this.type;
   }
 
   public get controlValue(): string {
@@ -430,47 +278,55 @@ export class SdTextfieldControl implements DoCheck {
     }
 
     if (this.type === "number" && typeof this.value === "number") {
-      return this.useNumberComma ? this.value.toLocaleString(undefined, { maximumFractionDigits: 10 }) : this.value.toString(10);
+      return this.value.toLocaleString(undefined, { maximumFractionDigits: 10 });
     }
+
+    if (this.type === "number-only" && typeof this.value === "number") {
+      return this.value.toString(10);
+    }
+
     if (this.type === "brn" && typeof this.value === "string") {
       const str = this.value.replace(/[^0-9]/g, "");
-      const first = str.substring(0, 3);
-      const second = str.substring(3, 5);
-      const third = str.substring(5, 10);
-      return first
-        + (
-          StringUtil.isNullOrEmpty(second) ? "" : "-" + second
-            + (
-              StringUtil.isNullOrEmpty(third) ? "" : "-" + third
-            )
-        );
+      const strArr = [str.substring(0, 3), str.substring(3, 5), str.substring(5, 10)];
+      return strArr.map((item) => StringUtil.isNullOrEmpty(item) ? "" : item).join("-");
     }
+
     if (this.type === "datetime" && this.value instanceof DateTime) {
       return this.value.toFormatString("yyyy-MM-ddTHH:mm");
     }
+
     if (this.type === "datetime-sec" && this.value instanceof DateTime) {
       return this.value.toFormatString("yyyy-MM-ddTHH:mm:ss");
     }
+
     if (this.type === "year" && this.value instanceof DateOnly) {
       return this.value.toFormatString("yyyy");
     }
+
     if (this.type === "month" && this.value instanceof DateOnly) {
       return this.value.toFormatString("yyyy-MM");
     }
+
     if (this.type === "date" && this.value instanceof DateOnly) {
       return this.value.toFormatString("yyyy-MM-dd");
     }
+
     if (this.type === "time" && (this.value instanceof DateTime || this.value instanceof Time)) {
       return this.value.toFormatString("HH:mm");
     }
+
     if (this.type === "time-sec" && (this.value instanceof DateTime || this.value instanceof Time)) {
       return this.value.toFormatString("HH:mm:ss");
     }
-    if (typeof this.value === "string") {
+
+    if (
+      ["text", "password", "color", "email"].includes(this.type)
+      && typeof this.value === "string"
+    ) {
       return this.value;
     }
 
-    throw new Error(`'sd-textfield'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
+    throw new Error(`'sd-textfield[type=${this.type}]'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
   }
 
   public get controlStep(): number | string {
@@ -481,21 +337,6 @@ export class SdTextfieldControl implements DoCheck {
       return 1;
     }
     return "any";
-  }
-
-  public get inputFullStyle(): string | undefined {
-    let styleStr = "";
-    if (this.multiline) {
-      const controlResize = this.resize === "vertical" ? "vertical"
-        : this.resize === "horizontal" ? "horizontal"
-          : this.resize ? undefined : "none";
-
-      if (controlResize !== undefined) {
-        styleStr += `resize: ${controlResize};`;
-      }
-    }
-
-    return styleStr + (this.inputStyle ?? "");
   }
 
   public get errorMessage(): string {
@@ -563,52 +404,24 @@ export class SdTextfieldControl implements DoCheck {
     return errorMessage;
   }
 
-  public get controlRows(): number | undefined {
-    if (this.multiline && this.autoRows) {
-      if (typeof this.value === "string") {
-        return this.value.split(/[\r\n]/).length;
-      }
-
-      return 1;
-    }
-
-    return this.rows;
-  }
-
-  public constructor(private readonly _zone: NgZone) {
-  }
-
-  public ngDoCheck(): void {
-    this._zone.runOutsideAngular(() => {
-      setTimeout(() => {
-        const inputEl = this.inputElRef?.nativeElement;
-        if (inputEl && this.autoRows && this.multiline && typeof this.value === "string") {
-          inputEl.style.height = "";
-          inputEl.style.height = (inputEl.scrollHeight + (inputEl.offsetHeight - inputEl.clientHeight)) + "px";
-        }
-      });
-    });
-  }
-
-  public onInput(): void {
-    const inputEl = this.inputElRef!.nativeElement;
+  public onInput(event: Event): void {
+    const inputEl = event.target as HTMLInputElement;
 
     if (inputEl.value === "") {
       this._setValue(undefined);
     }
-    else if (this.type === "number") {
+    else if (this.type === "number" || this.type === "number-only") {
       const inputValue = inputEl.value.replace(/[^0-9-.]/g, "");
+      const numVal = NumberUtil.parseFloat(inputValue);
       if (
-        Number.isNaN(Number(inputValue))
+        numVal === undefined
         || inputValue.endsWith(".")
-        || (
-          inputValue.includes(".")
-          && Number(inputValue) === 0
-        )
+        || (inputValue.includes(".") && inputValue.endsWith("0"))
       ) {
+        // "2.", "3.0", "f31" 이런것 입력시, 무시
       }
       else {
-        this._setValue(Number(inputValue));
+        this._setValue(numVal);
       }
     }
     else if (this.type === "brn") {
@@ -619,7 +432,6 @@ export class SdTextfieldControl implements DoCheck {
         this._setValue(DateOnly.parse(inputEl.value));
       }
       catch (err) {
-        // this._setValue(inputEl.value);
       }
     }
     else if (["datetime", "datetime-sec"].includes(this.type)) {
@@ -627,7 +439,6 @@ export class SdTextfieldControl implements DoCheck {
         this._setValue(DateTime.parse(inputEl.value));
       }
       catch (err) {
-        // this._setValue(inputEl.value);
       }
     }
     else if (["time", "time-sec"].includes(this.type)) {
@@ -635,10 +446,9 @@ export class SdTextfieldControl implements DoCheck {
         this._setValue(Time.parse(inputEl.value));
       }
       catch (err) {
-        // this._setValue(inputEl.value);
       }
     }
-    else {
+    else if (["text", "password", "color", "email"].includes(this.type)) {
       this._setValue(inputEl.value);
     }
   }

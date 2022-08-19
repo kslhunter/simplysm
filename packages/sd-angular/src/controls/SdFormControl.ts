@@ -8,8 +8,8 @@ import {
   Output
 } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
-import { SdDomValidatorRootProvider } from "../root-providers/SdDomValidatorRootProvider";
 import { SdToastRootProvider } from "../root-providers/SdToastRootProvider";
+import { SdDomValidatorRootProvider } from "../root-providers/SdDomValidatorRootProvider";
 
 @Component({
   selector: "sd-form",
@@ -19,9 +19,11 @@ import { SdToastRootProvider } from "../root-providers/SdToastRootProvider";
       <ng-content></ng-content>
     </form>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/variables-scss-arr";
+    @import "../../scss/scss_settings";
 
     :host {
+      display: block;
+
       &[sd-layout="cascade"] > form {
         display: flex;
         flex-direction: column;
@@ -55,11 +57,11 @@ export class SdFormControl {
   @HostBinding("attr.sd-layout")
   public layout: "cascade" | "inline" | "table" | "none" = "cascade";
 
-  @Input("label.width")
+  @Input()
   @SdInputValidate(String)
   public labelWidth?: string;
 
-  @Input("label.align")
+  @Input()
   @SdInputValidate({
     type: String,
     includes: ["left", "right", "center"]
@@ -70,13 +72,14 @@ export class SdFormControl {
   public readonly submit = new EventEmitter<Event | undefined>();
 
   public constructor(private readonly _domValidator: SdDomValidatorRootProvider,
-                     private readonly _elRef: ElementRef,
+                     private readonly _elRef: ElementRef<HTMLElement>,
                      private readonly _toast: SdToastRootProvider) {
   }
 
-  public onSubmit(event?: Event): void {
-    event?.preventDefault();
-    event?.stopPropagation();
+  public onSubmit(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
     try {
       this._domValidator.validate(this._elRef.nativeElement);
     }

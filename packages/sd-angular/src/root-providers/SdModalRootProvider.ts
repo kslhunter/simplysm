@@ -40,6 +40,7 @@ export class SdModalRootProvider {
           resolve(value);
 
           entryRef.location.nativeElement.addEventListener("transitionend", () => {
+            // contentRef.destroy();
             entryRef.destroy();
           });
           entryRef.setInput("open", false);

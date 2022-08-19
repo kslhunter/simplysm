@@ -16,7 +16,6 @@ import {
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { NumberUtil } from "@simplysm/sd-core-common";
 import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRootProvider";
-import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
 
 @Component({
   selector: "sd-modal",
@@ -32,7 +31,7 @@ import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
           <a class="_close-button"
              (click)="onCloseButtonClick()"
              *ngIf="!hideCloseButton">
-            <fa-icon [icon]="icon.get('xmark')" [fixedWidth]="true"></fa-icon>
+            <fa-icon [icon]="icons.fasXmark | async" [fixedWidth]="true"></fa-icon>
           </a>
           <h5 class="_title">{{ title }}</h5>
         </sd-dock>
@@ -54,7 +53,7 @@ import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
       </ng-container>
     </div>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
+    @import "../../scss/scss_settings";
 
     :host {
       display: block;
@@ -217,37 +216,14 @@ import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
           transition: transform .1s ease-out;
         }
       }
-
-      // MOBILE
-      @media screen and (max-width: 520px) {
-        padding-top: 0;
-
-        > ._dialog {
-          width: 100%;
-          height: 100%;
-
-          border: none;
-
-          > sd-dock-container > ._content > ._header {
-            background: transparent;
-            color: var(--text-brightness-lighter);
-
-            ._close-button,
-            ._clear-config-button {
-              color: var(--text-brightness-lighter);
-
-              &:hover {
-                background: transparent;
-                color: var(--text-brightness-lighter);
-              }
-            }
-          }
-        }
-      }
     }
   `]
 })
 export class SdModalControl implements OnChanges, AfterViewInit {
+  public icons = {
+    fasXmark: import("@fortawesome/pro-solid-svg-icons/faXmark").then(m => m.definition)
+  };
+
   @Input()
   @SdInputValidate(String)
   public key?: string;
@@ -282,7 +258,6 @@ export class SdModalControl implements OnChanges, AfterViewInit {
   public resizable?: boolean = true;
 
   @Input()
-  @SdInputValidate(String)
   public dialogStyle?: Record<string, any>;
 
   @Input()
@@ -301,8 +276,7 @@ export class SdModalControl implements OnChanges, AfterViewInit {
 
   public constructor(private readonly _zone: NgZone,
                      private readonly _elRef: ElementRef<HTMLElement>,
-                     private readonly _systemConfig: SdSystemConfigRootProvider,
-                     public readonly icon: SdIconsRootProvider) {
+                     private readonly _systemConfig: SdSystemConfigRootProvider) {
   }
 
   public async ngAfterViewInit(): Promise<void> {

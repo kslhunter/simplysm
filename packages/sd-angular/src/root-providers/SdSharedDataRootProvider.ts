@@ -21,8 +21,9 @@ export class SdSharedDataRootProvider {
       }
     }
 
-    this._dataInfoMap.clear();
-    this._dataChangeListenerMap.clear();
+    // this._dataInfoMap.clear();
+    // this._dataChangeListenerMap.clear();
+
     this._dataMap.clear();
     this._dataMapMap.clear();
     this._isProcessingMap.clear();

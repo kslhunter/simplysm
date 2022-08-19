@@ -1,21 +1,20 @@
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
-import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
 
 @Component({
   selector: "sd-sidebar-user",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="_content"
-         *ngIf="(backgroundImage | async) as bgImg"
-         [style]="'background: ' + 'url(' + bgImg + '); ' + contentStyle">
+         [style.background]="'url(' + bgImg + ')'">
       <div class="sd-padding-lg">
         <ng-content></ng-content>
       </div>
       <div class="_menu-button" *ngIf="menuTitle" (click)="onMenuOpenButtonClick()">
         {{ menuTitle }}
-        <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"
-                          [icon]="icons.get('chevronDown')"></sd-collapse-icon>
+        <fa-icon [icon]="icons.falChevronDown | async"
+                 style="float: right;"
+                 [sdAnimate]="[menuOpen, {transform: 'rotate(180deg)'}, {transform:'none'}]"></fa-icon>
       </div>
     </div>
     <sd-collapse [open]="menuOpen" *ngIf="menuTitle">
@@ -26,11 +25,10 @@ import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
       > ._content {
         background-size: cover;
         text-shadow: 0 0 1px var(--text-brightness-default);
-        text-align: center;
+        background: var(--trans-brightness-rev-default);
 
         > ._menu-button {
           display: block;
-          text-align: left;
           padding: var(--gap-sm) var(--gap-default);
           background: var(--trans-brightness-default);
           cursor: pointer;
@@ -61,7 +59,12 @@ import { SdIconsRootProvider } from "../root-providers/SdIconsRootProvider";
   `]
 })
 export class SdSidebarUserControl {
-  public backgroundImage = require("../../res/user_bg.jpg");
+  // @ts-expect-error
+  public bgImg = import("../../res/user_bg.jpg").then(m => m.default);
+
+  public icons = {
+    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.definition)
+  };
 
   @Input()
   @SdInputValidate(String)
@@ -69,13 +72,6 @@ export class SdSidebarUserControl {
 
   @HostBinding("attr.sd-menu-open")
   public menuOpen?: boolean;
-
-  @Input("content.style")
-  @SdInputValidate(String)
-  public contentStyle?: string;
-
-  public constructor(public icons: SdIconsRootProvider) {
-  }
 
   public onMenuOpenButtonClick(): void {
     this.menuOpen = !this.menuOpen;
