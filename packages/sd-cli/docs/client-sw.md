@@ -8,7 +8,7 @@ package.json
 {
   ...,
   "dependencies": {
-    "@angular/service-worker": "^13.2.0",
+    "@angular/service-worker": "^14.1.1",
     ...
   }
 }

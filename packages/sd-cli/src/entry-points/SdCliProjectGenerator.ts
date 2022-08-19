@@ -35,8 +35,8 @@ export class SdCliProjectGenerator {
   }
 
   public async initAsync(opt: { name?: string; description: string; author: string; gitUrl: string }): Promise<void> {
-    if ((await FsUtil.readdirAsync(this._rootPath)).filter((item) => ![".idea", "yarn.lock", "package.json", ".yarn"].includes(path.basename(item))).length > 0) {
-      throw new Error("빈 디렉토리가 아닙니다. (.idea, yarn.lock, package.json, .yarn 외의 파일/폴더가 존재하는 경우, 초기화할 수 없습니다.)");
+    if ((await FsUtil.readdirAsync(this._rootPath)).filter((item) => ![".idea", "yarn.lock", "package.json", ".yarn", ".yarnrc.yml", "node_modules"].includes(path.basename(item))).length > 0) {
+      throw new Error("빈 디렉토리가 아닙니다. (.idea, yarn.lock, package.json, .yarn, .yarnrc.yml, node_modules 외의 파일/폴더가 존재하는 경우, 초기화할 수 없습니다.)");
     }
 
     const projName = opt.name ?? path.basename(this._rootPath);
@@ -54,7 +54,7 @@ export class SdCliProjectGenerator {
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".gitignore"), fc_project_gitignore());
 
     this._logger.log(`[${projName}] '.yarnrc.yml' 파일 생성`);
-    await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".gitignore"), fc_project_yarnrc());
+    await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".yarnrc.yml"), fc_project_yarnrc());
 
     this._logger.log(`[${projName}] 'package.json' 파일 생성`);
     let cliVersion: string | undefined;
@@ -86,6 +86,9 @@ export class SdCliProjectGenerator {
 
     this._logger.log(`[${projName}] 'packages' 디렉토리 생성`);
     await FsUtil.mkdirsAsync(path.resolve(this._rootPath, "packages"));
+
+    this._logger.log(`[${projName}] yarn plugin import interactive-tools`);
+    await SdProcess.spawnAsync("yarn plugin import interactive-tools", { cwd: this._rootPath }, true);
 
     this._logger.log(`[${projName}] yarn install`);
     await SdProcess.spawnAsync("yarn install", { cwd: this._rootPath }, true);
@@ -262,7 +265,8 @@ export class SdCliProjectGenerator {
       isForAngular: true,
       dependencies: {
         "@angular/platform-browser": "^14.1.1",
-        "@angular/platform-browser-dynamic": "^14.1.1"
+        "@angular/platform-browser-dynamic": "^14.1.1",
+        "@angular/compiler": "^14.1.1"
       },
       tsconfigOptions: {
         angularCompilerOptions: {

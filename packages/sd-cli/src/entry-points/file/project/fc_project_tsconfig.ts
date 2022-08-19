@@ -13,7 +13,7 @@ export const fc_project_tsconfig = (): string => JSON.stringify({
     noImplicitAny: false,
     useUnknownInCatchVariables: false,
     noFallthroughCasesInSwitch: true,
-    inlineSourceMap: true,
+    sourceMap: true,
     skipDefaultLibCheck: true,
     skipLibCheck: true,
     forceConsistentCasingInFileNames: true,

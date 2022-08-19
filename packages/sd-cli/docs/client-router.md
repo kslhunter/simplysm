@@ -8,7 +8,7 @@ package.json
 {
   ...,
   "dependencies": {
-    "@angular/router": "^13.2.0",
+    "@angular/router": "^14.1.1",
     ...
   }
 }

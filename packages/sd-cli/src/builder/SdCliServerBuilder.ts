@@ -15,6 +15,7 @@ import CopyWebpackPlugin from "copy-webpack-plugin";
 import { LicenseWebpackPlugin } from "license-webpack-plugin";
 import { SdCliNpmConfigUtil } from "../utils/SdCliNpmConfigUtil";
 import { createHash } from "crypto";
+import { fileURLToPath } from "url";
 import LintResult = ESLint.LintResult;
 
 export class SdCliServerBuilder extends EventEmitter {
@@ -44,7 +45,7 @@ export class SdCliServerBuilder extends EventEmitter {
   }
 
   private async _checkCacheAsync(watch: boolean): Promise<void> {
-    const projPkgLockContent = await FsUtil.readFileAsync(path.resolve(this._projRootPath, "package-lock.json"));
+    const projPkgLockContent = await FsUtil.readFileAsync(path.resolve(this._projRootPath, "yarn.lock"));
 
     // const cachePath = path.resolve(cacheBasePath, pkgVersion);
 
@@ -77,7 +78,7 @@ export class SdCliServerBuilder extends EventEmitter {
 
     // 빌드 준비
     const extModules = this._getExternalModules();
-    const webpackConfig = this._getWebpackConfig(true, extModules);
+    const webpackConfig = await this._getWebpackConfigAsync(true, extModules);
     const compiler = webpack(webpackConfig);
     await new Promise<void>((resolve, reject) => {
       compiler.hooks.watchRun.tapAsync(this.constructor.name, (args, callback) => {
@@ -119,7 +120,7 @@ export class SdCliServerBuilder extends EventEmitter {
     // 빌드
     this._logger.debug("Webpack 빌드 수행...");
     const extModules = this._getExternalModules();
-    const webpackConfig = this._getWebpackConfig(false, extModules);
+    const webpackConfig = await this._getWebpackConfigAsync(false, extModules);
     const compiler = webpack(webpackConfig);
     const buildResults = await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
       compiler.run((err, stats) => {
@@ -254,7 +255,7 @@ export class SdCliServerBuilder extends EventEmitter {
     ].map((p) => path.dirname(p));
   }
 
-  private _getWebpackConfig(watch: boolean, extModules: { name: string; exists: boolean }[]): webpack.Configuration {
+  private async _getWebpackConfigAsync(watch: boolean, extModules: { name: string; exists: boolean }[]): Promise<webpack.Configuration> {
     const projNpmConfig = this._getNpmConfig(this._projRootPath)!;
     const projName = projNpmConfig.name;
 
@@ -367,7 +368,7 @@ export class SdCliServerBuilder extends EventEmitter {
             {
               test: /\.[cm]?jsx?$/,
               enforce: "pre" as const,
-              loader: "source-map-loader",
+              loader: fileURLToPath(await import.meta.resolve!("source-map-loader")),
               options: {
                 filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
                   const projRegex = new RegExp(`node_modules[\\\\/]@${projName}[\\\\/]`);
@@ -381,7 +382,7 @@ export class SdCliServerBuilder extends EventEmitter {
           {
             test: /\.[cm]?tsx?$/,
             exclude: /node_modules/,
-            loader: "ts-loader",
+            loader: fileURLToPath(await import.meta.resolve!("ts-loader")),
             options: {
               configFile: this._tsconfigFilePath,
               errorFormatter: (msg: ErrorInfo) => {

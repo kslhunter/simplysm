@@ -97,7 +97,7 @@ export class SdCliClientBuilder extends EventEmitter {
   }
 
   private async _checkCacheAsync(watch: boolean): Promise<void> {
-    const projPkgLockContent = await FsUtil.readFileAsync(path.resolve(this._projRootPath, "package-lock.json"));
+    const projPkgLockContent = await FsUtil.readFileAsync(path.resolve(this._projRootPath, "yarn.lock"));
 
     // const cachePath = path.resolve(cacheBasePath, pkgVersion);
 
@@ -140,8 +140,8 @@ export class SdCliClientBuilder extends EventEmitter {
 
     // 빌드 준비
     const extModules = this._config.builder?.electron ? this._getExternalModules() : [];
-    const webpackConfigs = (Object.keys(this._config.builder ?? { web: {} }) as ("web" | "cordova" | "electron")[])
-      .map((builderType) => this._getWebpackConfig(true, builderType, extModules));
+    const webpackConfigs = await (Object.keys(this._config.builder ?? { web: {} }) as ("web" | "cordova" | "electron")[])
+      .mapAsync(async (builderType) => await this._getWebpackConfigAsync(true, builderType, extModules));
     const multiCompiler = webpack(webpackConfigs);
     await new Promise<void>((resolve, reject) => {
       // const invalidFiles: string[] = [];
@@ -227,7 +227,7 @@ export class SdCliClientBuilder extends EventEmitter {
     this._logger.debug("Webpack 빌드 수행...");
     const extModules = this._config.builder?.electron ? this._getExternalModules() : [];
     const builderTypes = (Object.keys(this._config.builder ?? { web: {} }) as ("web" | "cordova" | "electron")[]);
-    const webpackConfigs = builderTypes.map((builderType) => this._getWebpackConfig(false, builderType, extModules));
+    const webpackConfigs = await builderTypes.mapAsync(async (builderType) => await this._getWebpackConfigAsync(false, builderType, extModules));
     const multipleCompiler = webpack(webpackConfigs);
     const buildResults = await new Promise<ISdCliPackageBuildResult[]>((resolve, reject) => {
       multipleCompiler.run((err, multiStats) => {
@@ -302,7 +302,7 @@ export class SdCliClientBuilder extends EventEmitter {
             .toObject((item) => item, () => "*")
         }
       }, { space: 2 });
-      await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "package-lock.json"), "");
+      await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "yarn.lock"), "");
 
       await FsUtil.writeFileAsync(path.resolve(electronSrcPath, `.env`), [
         "NODE_ENV=production",
@@ -360,7 +360,7 @@ export class SdCliClientBuilder extends EventEmitter {
     ].map((p) => path.dirname(p));
   }
 
-  private _getWebpackConfig(watch: boolean, builderType: "web" | "cordova" | "electron", extModules: { name: string; exists: boolean }[]): webpack.Configuration {
+  private async _getWebpackConfigAsync(watch: boolean, builderType: "web" | "cordova" | "electron", extModules: { name: string; exists: boolean }[]): Promise<webpack.Configuration> {
     const projNpmConfig = this._getNpmConfig(this._projRootPath)!;
     const projName = projNpmConfig.name;
 
@@ -368,7 +368,7 @@ export class SdCliClientBuilder extends EventEmitter {
 
     const npmConfig = this._getNpmConfig(this._rootPath)!;
 
-    const projPkgLockContent = FsUtil.readFile(path.resolve(this._projRootPath, "package-lock.json"));
+    const projPkgLockContent = FsUtil.readFile(path.resolve(this._projRootPath, "yarn.lock"));
 
     const pkgKey = npmConfig.name.split("/").last()!;
     const publicPath = builderType === "web" ? `/${pkgKey}/` : watch ? `/${pkgKey}/${builderType}/` : ``;
@@ -566,7 +566,7 @@ export class SdCliClientBuilder extends EventEmitter {
             exclude: [/[/\\](?:core-js|@babel|tslib|web-animations-js|web-streams-polyfill)[/\\]/],
             use: [
               {
-                loader: "@angular-devkit/build-angular/src/babel/webpack-loader",
+                loader: fileURLToPath(await import.meta.resolve!("@angular-devkit/build-angular/src/babel/webpack-loader")),
                 options: {
                   cacheDirectory: path.resolve(this._cacheBasePath, "webpack-babel"),
                   scriptTarget: ts.ScriptTarget.ES2017,
@@ -581,7 +581,7 @@ export class SdCliClientBuilder extends EventEmitter {
             {
               test: /\.[cm]?jsx?$/,
               enforce: "pre" as const,
-              loader: "source-map-loader",
+              loader: fileURLToPath(await import.meta.resolve!("source-map-loader")),
               options: {
                 filterSourceMappingUrl: (mapUri: string, resourcePath: string) => {
                   const projRegex = new RegExp(`node_modules[\\\\/]@${projName}[\\\\/]`);
@@ -594,7 +594,7 @@ export class SdCliClientBuilder extends EventEmitter {
           ] : [],
           {
             test: /\.[cm]?tsx?$/,
-            loader: "@ngtools/webpack",
+            loader: fileURLToPath(await import.meta.resolve!("@ngtools/webpack")),
             exclude: [/[/\\](?:css-loader|mini-css-extract-plugin|webpack)[/\\]/]
           },
           {
@@ -612,7 +612,7 @@ export class SdCliClientBuilder extends EventEmitter {
                         loader: MiniCssExtractPlugin.loader
                       },
                       {
-                        loader: "css-loader",
+                        loader: fileURLToPath(await import.meta.resolve!("css-loader")),
                         options: { url: false, sourceMap: watch }
                       }
                     ],
@@ -628,11 +628,11 @@ export class SdCliClientBuilder extends EventEmitter {
               {
                 use: [
                   {
-                    loader: "resolve-url-loader",
+                    loader: fileURLToPath(await import.meta.resolve!("resolve-url-loader")),
                     options: { sourceMap: watch }
                   },
                   {
-                    loader: "sass-loader",
+                    loader: fileURLToPath(await import.meta.resolve!("sass-loader")),
                     options: {
                       implementation: sassImplementation,
                       sourceMap: true,

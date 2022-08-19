@@ -502,7 +502,7 @@ export class SdCliNgModuleGenerator {
           fnResult += "  {\n";
           fnResult += `    path: "${child.path}",\n`;
           if ("target" in child) {
-            fnResult += `    loadChildren: async () => await import("${this._getFileImportModuleName(def.filePath, child.target.filePath)}").then((m) => m.${child.target.name})\n`;
+            fnResult += `    loadChildren: () => import("${this._getFileImportModuleName(def.filePath, child.target.filePath)}").then((m) => m.${child.target.name})\n`;
           }
           else {
             fnResult += `    children: ${fn(child.children).replace(/\n/g, "\n  ")}\n`;
