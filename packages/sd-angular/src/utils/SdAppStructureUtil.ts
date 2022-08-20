@@ -184,7 +184,7 @@ export interface ISdAppStructureItem {
   modules?: string[];
   perms?: ("use" | "edit")[];
   subPerms?: ISdAppStructureItemPermission[];
-  icon?: Promise<IconProp>;
+  icon?: IconProp;
   isNotMenu?: boolean;
   isNotPage?: boolean;
   children?: ISdAppStructureItem[];
@@ -196,7 +196,7 @@ export interface ISdAppStructureItemPartial {
   modules?: string[];
   perms?: ("use" | "edit")[];
   subPerms?: ISdAppStructureItemPermission[];
-  icon?: Promise<IconProp>;
+  icon?: IconProp;
   isNotMenu?: boolean;
   isNotPage?: boolean;
   children?: ISdAppStructureItemPartial[];
@@ -218,7 +218,7 @@ export interface ISdMenu {
   title: string;
   codeChain: string[];
   hasPerms: boolean;
-  icon?: Promise<IconProp>;
+  icon?: IconProp;
   modules?: string[];
   children?: ISdMenu[];
 }

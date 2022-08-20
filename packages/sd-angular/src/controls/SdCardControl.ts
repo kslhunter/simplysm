@@ -7,21 +7,17 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/scss_settings";
+    @import "../../scss/mixins";
 
     :host {
       display: block;
       background: white;
-      border-radius: var(--border-radius-xl);
+      border-radius: var(--border-radius-default);
       overflow: hidden;
       @include elevation(4);
 
       &[sd-elevation=none] {
         @include elevation(0);
-      }
-      
-      &[sd-elevation=sm] {
-        @include elevation(2);
       }
 
       &[sd-elevation=lg] {
@@ -36,8 +32,8 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 })
 export class SdCardControl {
   @Input()
-  @SdInputValidate({ type: String, includes: ["none", "sm", "lg", "xl"] })
+  @SdInputValidate({ type: String, includes: ["none", "lg", "xl"] })
   @HostBinding("attr.sd-elevation")
-  public elevation?: "none" | "sm" | "lg" | "xl";
+  public elevation?: "none" | "lg" | "xl";
 }
 

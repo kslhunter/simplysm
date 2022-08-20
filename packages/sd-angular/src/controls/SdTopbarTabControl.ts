@@ -5,15 +5,15 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Output } from "@angul
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-content></ng-content>
-    <a (click)="onCloseButtonClick($event)">
-      <fa-icon [icon]="icons.fasXmark | async" [fixedWidth]="true"></fa-icon>
-    </a>`,
+    <sd-anchor (click)="onCloseButtonClick($event)">
+      <fa-icon [icon]="icons.fasTimes | async" [fixedWidth]="true"></fa-icon>
+    </sd-anchor>`,
   styles: [/* language=SCSS */ `
     :host {
       display: inline-block;
       padding: 0 var(--gap-lg);
       cursor: pointer;
-      line-height: calc(var(--sd-topbar-heigh) - var(--gap-sm) - 2px);
+      line-height: calc(var(--sd-topbar-height-sm) - var(--gap-sm) - 2px);
       vertical-align: bottom;
       border-top: 2px solid var(--theme-color-primary-darkest);
       border-left: 1px solid var(--theme-color-primary-darkest);
@@ -39,7 +39,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Output } from "@angul
 })
 export class SdTopbarTabControl {
   public icons = {
-    fasXmark: import("@fortawesome/pro-solid-svg-icons/faXmark").then(m => m.definition)
+    fasTimes: import("@fortawesome/pro-solid-svg-icons/faTimes").then(m => m.faTimes)
   };
 
   @Output("click.close")

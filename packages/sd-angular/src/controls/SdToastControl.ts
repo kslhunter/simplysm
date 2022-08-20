@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { sdThemes, TSdTheme } from "../commons";
 
@@ -6,71 +6,100 @@ import { sdThemes, TSdTheme } from "../commons";
   selector: "sd-toast",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="_message">
-      <ng-container *ngIf="message">
-        {{ message }}
-      </ng-container>
-      <ng-container *ngIf="!message">
+    <div class="_sd-toast-block">
+      <div class="_sd-toast-message">
         <ng-content></ng-content>
-      </ng-container>
-    </div>
-    <div class="_progress" *ngIf="progress !== undefined">
-      <div class="_progress-bar" [style.width.%]="progress">
       </div>
-    </div>
-  `,
+      <div class="_sd-toast-progress" *ngIf="useProgress">
+        <div class="_sd-toast-progress-bar" [style.width.%]="progress">
+        </div>
+      </div>
+    </div>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/scss_settings";
+    @import "../../scss/mixins";
+    @import "../../scss/variables-scss-arr";
 
     :host {
-      display: inline-block;
-      margin: var(--gap-xs) auto;
+      display: block;
+      margin-bottom: var(--gap-sm);
+      text-align: center;
+      width: 100%;
       pointer-events: auto;
 
-      color: white;
-      border-radius: var(--border-radius-lg);
-      @include elevation(12);
-
-      // MESSAGE
-      > ._message {
-        padding: var(--gap-default) var(--gap-lg);
-      }
-
-      // PROGRESS
-      > ._progress {
-        background: var(--theme-color-grey-default);
-        height: var(--gap-sm);
+      > ._sd-toast-block {
+        display: inline-block;
+        text-align: left;
+        color: white;
+        transform: translateY(-100%);
         border-radius: var(--border-radius-lg);
+        opacity: 0;
+        @include elevation(12);
 
-        > ._progress-bar {
-          height: var(--gap-sm);
-          transition: width 1s ease-out;
+        > ._sd-toast-message {
+          padding: var(--gap-default) var(--gap-lg);
+        }
+
+        > ._sd-toast-progress {
+          background: var(--theme-color-grey-default);
+          height: 4px;
+          border-radius: var(--border-radius-lg);
+
+          > ._sd-toast-progress-bar {
+            height: 4px;
+            transition: width 1s ease-out;
+          }
         }
       }
 
-      // THEME
       @each $color in $arr-theme-color {
         &[sd-theme=#{$color}] {
-          background: var(--theme-color-#{$color}-default);
+          > ._sd-toast-block {
+            background: var(--theme-color-#{$color}-default);
 
-          > ._progress {
-            > ._progress-bar {
-              background: var(--theme-color-#{$color}-default);
+            > ._sd-toast-progress {
+              > ._sd-toast-progress-bar {
+                background: var(--theme-color-#{$color}-default);
+              }
             }
           }
         }
       }
 
-      // OPEN-ANIMATION
-      transform: translateY(-100%);
-      transition: .1s ease-in;
-      transition-property: transform, opacity;
-      opacity: 0;
-
       &[sd-open=true] {
-        transform: none;
-        transition: .1s ease-out;
-        opacity: 1;
+        > ._sd-toast-block {
+          transform: none;
+          transition: .1s ease-out;
+          transition-property: transform, opacity;
+          opacity: 1;
+        }
+      }
+
+      &[sd-open=false] {
+        > ._sd-toast-block {
+          transform: translateY(-100%);
+          transition: .1s ease-in;
+          transition-property: transform, opacity;
+          opacity: 0;
+        }
+      }
+
+      @media screen and (max-width: 520px) {
+        > ._sd-toast-block {
+          //@include elevation(0);
+          border-radius: calc(var(--line-height) / 2);
+
+          transform: translateY(100%);
+
+          > ._sd-toast-message {
+            padding: var(--gap-xs) var(--gap-default);
+          }
+        }
+
+        &[sd-open=false] {
+          > ._sd-toast-block {
+            transform: translateY(100%);
+          }
+        }
       }
     }
   `]
@@ -82,15 +111,21 @@ export class SdToastControl {
   public open?: boolean;
 
   @Input()
-  @SdInputValidate(String)
-  public message?: string;
-
-  @Input()
-  @SdInputValidate({ type: String, includes: sdThemes })
-  @HostBinding("attr.sd-theme")
-  public theme?: TSdTheme;
+  @SdInputValidate(Boolean)
+  public useProgress?: boolean;
 
   @Input()
   @SdInputValidate(Number)
   public progress?: number;
+
+  public close = new EventEmitter<any>();
+
+  @Input()
+  @SdInputValidate({
+    type: String,
+    notnull: true,
+    includes: sdThemes
+  })
+  @HostBinding("attr.sd-theme")
+  public theme?: TSdTheme = "info";
 }

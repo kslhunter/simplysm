@@ -30,18 +30,27 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
     </div>`,
   styles: [/* language=SCSS */ `
     :host {
-
+      
       > label {
         font-weight: bold;
       }
 
       &[sd-layout="cascade"] {
         display: block;
-
+        //margin-bottom: var(--gap-default);
+        
         > label {
           display: block;
           margin-bottom: var(--gap-xs);
         }
+
+        /*> ._content {
+          display: block;
+        }
+
+        &:last-child {
+          margin-bottom: 0;
+        }*/
       }
 
       &[sd-layout="table"] {
@@ -73,6 +82,9 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       }
 
       &[sd-layout="inline"] {
+        //display: inline-block;
+        //vertical-align: top;
+        //margin: var(--gap-xs) var(--gap-default) var(--gap-xs) 0;
         display: flex;
         flex-wrap: nowrap;
         align-items: center;
@@ -83,6 +95,15 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
           padding-left: var(--gap-sm);
           padding-right: var(--gap-sm);
         }
+
+        /*> ._content {
+          display: inline-block;
+          vertical-align: middle;
+        }
+
+        &:last-child {
+          margin-right: 0;
+        }*/
       }
 
       &[sd-layout="none"] {

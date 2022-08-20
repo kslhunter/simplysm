@@ -7,6 +7,8 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
+    @import "../../scss/mixins";
+
     :host {
       display: block;
       position: absolute;
@@ -19,9 +21,22 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
       color: var(--text-brightness-rev-default);
       transition: transform .1s ease-out;
 
-      &[sd-toggle=true] {
+      &[sd-desktop-toggle=true] {
         transform: translateX(-100%);
         transition: transform .1s ease-in;
+      }
+    }
+
+    @media screen and (max-width: 520px) {
+      :host {
+        transform: translateX(-100%);
+        transition: transform .3s ease-in;
+
+        &[sd-toggle=true] {
+          transform: none;
+          transition: transform .3s ease-out;
+          @include elevation(16);
+        }
       }
     }
   `]
@@ -29,10 +44,15 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 export class SdSidebarControl {
   @HostBinding("attr.sd-toggle")
   public get toggle(): boolean | undefined {
-    return this._parentContainerControl.toggle;
+    return this.parentControl?.toggle;
+  }
+
+  @HostBinding("attr.sd-desktop-toggle")
+  public get desktopToggle(): boolean | undefined {
+    return this.parentControl?.desktopToggle;
   }
 
   public constructor(@Inject(forwardRef(() => SdSidebarContainerControl))
-                     private readonly _parentContainerControl: SdSidebarContainerControl) {
+                     public readonly parentControl?: SdSidebarContainerControl) {
   }
 }

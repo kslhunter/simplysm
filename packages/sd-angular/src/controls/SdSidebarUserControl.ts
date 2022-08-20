@@ -6,15 +6,15 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="_content"
-         [style.background]="'url(' + bgImg + ')'">
+         *ngIf="(backgroundImage | async) as bgImg"
+         [style]="'background: ' + 'url(' + bgImg + '); ' + contentStyle">
       <div class="sd-padding-lg">
         <ng-content></ng-content>
       </div>
       <div class="_menu-button" *ngIf="menuTitle" (click)="onMenuOpenButtonClick()">
         {{ menuTitle }}
-        <fa-icon [icon]="icons.falChevronDown | async"
-                 style="float: right;"
-                 [sdAnimate]="[menuOpen, {transform: 'rotate(180deg)'}, {transform:'none'}]"></fa-icon>
+        <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"
+                          [icon]="icons.falChevronDown | async"></sd-collapse-icon>
       </div>
     </div>
     <sd-collapse [open]="menuOpen" *ngIf="menuTitle">
@@ -25,10 +25,11 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       > ._content {
         background-size: cover;
         text-shadow: 0 0 1px var(--text-brightness-default);
-        background: var(--trans-brightness-rev-default);
+        text-align: center;
 
         > ._menu-button {
           display: block;
+          text-align: left;
           padding: var(--gap-sm) var(--gap-default);
           background: var(--trans-brightness-default);
           cursor: pointer;
@@ -59,12 +60,12 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   `]
 })
 export class SdSidebarUserControl {
-  // @ts-expect-error
-  public bgImg = import("../../res/user_bg.jpg").then(m => m.default);
-
   public icons = {
-    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.definition)
+    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.faChevronDown)
   };
+
+  // @ts-expect-error
+  public backgroundImage = import("../../res/user_bg.jpg").then(m => m.default);
 
   @Input()
   @SdInputValidate(String)
@@ -72,6 +73,10 @@ export class SdSidebarUserControl {
 
   @HostBinding("attr.sd-menu-open")
   public menuOpen?: boolean;
+
+  @Input("content.style")
+  @SdInputValidate(String)
+  public contentStyle?: string;
 
   public onMenuOpenButtonClick(): void {
     this.menuOpen = !this.menuOpen;

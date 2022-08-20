@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostBinding, HostListener, Input } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
-import { SdBusyContainerRootProvider } from "../root-providers/SdBusyContainerRootProvider";
+import { SdBusyRootProvider } from "../root-providers/SdBusyRootProvider";
 
 @Component({
   selector: "sd-busy-container",
@@ -13,8 +13,8 @@ import { SdBusyContainerRootProvider } from "../root-providers/SdBusyContainerRo
           <pre>{{ message }}</pre>
         </div>
       </div>
-      <div class="_progress" *ngIf="progress !== undefined">
-        <div class="_progress-bar" [style.transform]="'scaleX(' + (progress / 100) + ')'"></div>
+      <div class="_progress" *ngIf="progressPercent !== undefined">
+        <div class="_progress-bar" [style.transform]="'scaleX(' + (progressPercent / 100) + ')'"></div>
       </div>
     </div>
     <ng-content></ng-content>`,
@@ -60,7 +60,8 @@ import { SdBusyContainerRootProvider } from "../root-providers/SdBusyContainerRo
             content: "";
             height: 2px;
             width: 100%;
-            transition: transform .1s ease-in;
+            transition: .1s ease-in;
+            transition-property: transform;
             transform-origin: left;
             transform: scaleX(0);
             background-color: var(--theme-color-primary-default);
@@ -86,7 +87,8 @@ import { SdBusyContainerRootProvider } from "../root-providers/SdBusyContainerRo
       &[sd-type=spinner] {
         > ._screen > ._rect {
           transform: translateY(-100%);
-          transition: transform .1s ease-in;
+          transition: .1s ease-in;
+          transition-property: transform;
 
           > ._indicator {
             top: 0;
@@ -223,11 +225,11 @@ export class SdBusyContainerControl {
 
   @Input()
   @SdInputValidate(Number)
-  public progress?: number;
+  public progressPercent?: number;
 
-  public constructor(private readonly _config: SdBusyContainerRootProvider) {
-    this.type = this._config.type ?? "spinner";
-    this.noFade = this._config.noFade ?? false;
+  public constructor(private readonly _busy: SdBusyRootProvider) {
+    this.type = this._busy.type ?? "spinner";
+    this.noFade = this._busy.noFade ?? false;
   }
 
   @HostListener("keydown", ["$event"])

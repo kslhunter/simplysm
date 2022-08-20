@@ -9,6 +9,7 @@ import {
   Output,
   QueryList
 } from "@angular/core";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { SdListControl } from "./SdListControl";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -17,15 +18,16 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
   selector: "sd-list-item",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="_content" (click)="onContentClick()">
-      <fa-icon class="_select-icon" *ngIf="selectIcon && !hasChildren" [icon]="selectIcon"
+    <div [attr.class]="'_content ' + contentClass"
+         [attr.style]="safeHtml(contentStyle)"
+         (click)="onContentClick()">
+      <fa-icon class="_selected-icon" *ngIf="selectedIcon && !hasChildren" [icon]="selectedIcon"
                [fixedWidth]="true"></fa-icon>
       <ng-content></ng-content>
 
-      <fa-icon *ngIf="hasChildren && layout==='accordion'"
-               [icon]="icons.falChevronDown | async"
-               style="float: right;"
-               [sdAnimate]="[open, {transform: 'rotate(90deg)'}, {transform:'none'}]"></fa-icon>
+      <sd-collapse-icon [open]="open" *ngIf="hasChildren && layout==='accordion'"
+                        [icon]="icons.falChevronDown | async"
+                        style="float: right"></sd-collapse-icon>
     </div>
     <sd-collapse class="_child" [open]="layout === 'flat' || open">
       <ng-content select="sd-list"></ng-content>
@@ -36,7 +38,8 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
         padding: var(--gap-sm) var(--gap-default);
         cursor: pointer;
 
-        > ._select-icon {
+        > ._selected-icon {
+          //color: var(--text-brightness-lighter);
           color: transparent;
         }
       }
@@ -52,7 +55,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
           }
         }
 
-        > ::ng-deep ._child > ._content > sd-list {
+        ::ng-deep ._child > ._content > sd-list {
           padding: var(--gap-sm) 0;
           background: var(--trans-brightness-dark);
         }
@@ -88,15 +91,15 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
         }
       }
 
-      &[sd-has-select-icon=true][sd-selected=true] {
+      &[sd-has-selected-icon=true][sd-selected=true] {
         > ._content {
           background: transparent;
           color: var(--text-brightness-default);
-
-          > ._select-icon {
+          
+          > ._selected-icon {
             color: var(--theme-color-primary-default);
           }
-
+          
           &:hover {
             background: var(--trans-brightness-light);
           }
@@ -111,10 +114,14 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 })
 export class SdListItemControl {
   public icons = {
-    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.definition)
+    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.faChevronDown)
   };
 
-  @Input()
+  @Input("content.style")
+  @SdInputValidate(String)
+  public contentStyle?: string;
+
+  @Input("content.class")
   @SdInputValidate(String)
   public contentClass?: string;
 
@@ -141,11 +148,11 @@ export class SdListItemControl {
   public selected?: boolean;
 
   @Input()
-  public selectIcon?: IconProp;
+  public selectedIcon?: IconProp;
 
-  @HostBinding("attr.sd-has-select-icon")
-  public get hasSelectIcon(): boolean {
-    return Boolean(this.selectIcon);
+  @HostBinding("attr.sd-has-selected-icon")
+  public get hasSelectedIcon(): boolean {
+    return Boolean(this.selectedIcon);
   }
 
   @HostBinding("attr.sd-has-children")
@@ -156,8 +163,16 @@ export class SdListItemControl {
   @ContentChildren(forwardRef(() => SdListControl))
   public listControls?: QueryList<SdListControl>;
 
+
+  public constructor(private readonly _sanitization: DomSanitizer) {
+  }
+
+  public safeHtml(value?: string): SafeHtml | undefined {
+    return value !== undefined ? this._sanitization.bypassSecurityTrustStyle(value) : undefined;
+  }
+
   public onContentClick(): void {
-    if (this.openChange.observed) {
+    if (this.openChange.observers.length > 0) {
       this.openChange.emit(!this.open);
     }
     else {

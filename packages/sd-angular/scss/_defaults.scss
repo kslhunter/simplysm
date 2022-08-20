@@ -52,33 +52,16 @@ code {
   font-family: var(--font-family-monospace);
 }
 
-a {
-  cursor: pointer;
-  color: var(--theme-color-primary-default);
-
-  &:hover {
-    color: var(--theme-color-primary-dark);
-    text-decoration: underline;
-  }
-
-  &:active {
-    color: var(--theme-color-primary-darker);
-  }
-
-  &.disabled {
-    color: var(--theme-color-grey-light);
-    cursor: default;
-    pointer-events: none;
-  }
+small {
+  vertical-align: top;
 }
 
-.sd-help {
-  text-decoration-line: underline;
-  text-decoration-style: dotted;
-  cursor: help;
+sub {
+  display: inline-block;
+  overflow: visible;
+  height: 0;
 }
 
-// FONT SIZE
 @each $h in (h1, h2, h3, h4, h5, h6) {
   #{$h} {
     font-size: var(--font-size-#{$h});
@@ -87,12 +70,33 @@ a {
   }
 }
 
-h5.sd-page-header {
-  margin-bottom: var(--gap-lg);
+.sd-page-header {
+  margin-top: var(--gap-default);
+  margin-bottom: var(--gap-default);
   padding-bottom: var(--gap-xxs);
   border-bottom: 1px solid var(--border-color);
 }
 
+.sd-help {
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  cursor: help;
+}
+
+// DEFAUlT CONFIGS
+*[hidden] {
+  display: none !important;
+}
+
+*[unvisible=true] {
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+// FONT SIZE
 @each $size in $arr-font-size {
   .sd-font-size-#{$size} {
     font-size: var(--font-size-#{$size}) !important;

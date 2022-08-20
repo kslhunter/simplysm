@@ -7,11 +7,11 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
   template: `
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
+    @import "../../scss/mixins";
+
     :host {
-      display: block;
-      position: relative;
-      width: 100%;
-      height: 100%;
+      @include container-base();
+      //padding-top: var(--sd-topbar-height);
 
       &[sd-size="sm"] {
         padding-top: var(--sd-topbar-height-sm);

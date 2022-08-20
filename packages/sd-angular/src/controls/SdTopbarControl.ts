@@ -16,14 +16,14 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
   selector: "sd-topbar",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()"
-       *ngIf="sidebarContainerControl || sidebarContainer">
+    <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" style="font-size: 16px;"
+               *ngIf="sidebarContainerControl || sidebarContainer">
       <fa-icon [icon]="icons.fasBars | async" [fixedWidth]="true"></fa-icon>
-    </a>
-    <sd-gap direction="width" size="default" *ngIf="!sidebarContainerControl && !sidebarContainer"></sd-gap>
+    </sd-anchor>
+    <sd-gap width="default" *ngIf="!sidebarContainerControl && !sidebarContainer"></sd-gap>
     <ng-content></ng-content>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/scss_settings";
+    @import "../../scss/mixins";
 
     :host {
       display: block;
@@ -76,7 +76,6 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
         margin-right: var(--gap-default);
         color: var(--text-brightness-rev-dark);
         cursor: pointer;
-        font-size: 16px;
 
         &:hover {
           background: rgba(0, 0, 0, .2);
@@ -116,7 +115,7 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 })
 export class SdTopbarControl implements DoCheck {
   public icons = {
-    fasBars: import("@fortawesome/pro-solid-svg-icons/faBars").then(m => m.definition)
+    fasBars: import("@fortawesome/pro-solid-svg-icons/faBars").then(m => m.faBars)
   };
 
   @HostBinding("attr.sd-size")
@@ -133,7 +132,7 @@ export class SdTopbarControl implements DoCheck {
                      private readonly _topbarContainerControl: SdTopbarContainerControl,
                      private readonly _injector: Injector,
                      private readonly _elRef: ElementRef) {
-    this.sidebarContainerControl = this._injector.get(SdSidebarContainerControl, null) ?? undefined;
+    this.sidebarContainerControl = this._injector.get<SdSidebarContainerControl | null>(SdSidebarContainerControl, null) ?? undefined;
   }
 
   public onSidebarToggleButtonClick(): void {

@@ -33,7 +33,12 @@
     "@simplysm/sd-core-common": "7.1.14",
     "@simplysm/sd-service-client": "7.1.14",
     "@simplysm/sd-service-common": "7.1.14",
+    "jsbarcode": "^3.11.5",
+    "marked": "^4.0.18",
     "rxjs": "^7.5.6",
     "zone.js": "~0.11.8"
+  },
+  "devDependencies": {
+    "@types/marked": "^4.0.5"
   }
 }
