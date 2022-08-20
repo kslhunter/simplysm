@@ -1,115 +1,57 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DoCheck,
   ElementRef,
   EventEmitter,
   HostBinding,
   Input,
-  NgZone,
   Output,
   ViewChild
 } from "@angular/core";
+import { SdInputValidate } from "@simplysm/sd-angular";
 import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
-import { SdInputValidate } from "../decorators/SdInputValidate";
-import { sdThemes, TSdTheme } from "../commons";
 
 @Component({
-  selector: "sd-textfield",
+  selector: "sdm-textfield",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ng-container *ngIf="!multiline">
-      <input #input
-             *ngIf="(!disabled && !readonly)"
-             [type]="controlType"
-             [value]="controlValue"
-             [attr.placeholder]="placeholder"
-             [required]="required"
-             [attr.min]="min"
-             [attr.max]="max"
-             [attr.minlength]="minlength"
-             [attr.maxlength]="maxlength"
-             [attr.step]="controlStep"
-             [attr.pattern]="pattern"
-             [attr.class]="inputClass"
-             [attr.style]="inputFullStyle"
-             [attr.title]="title || placeholder"
-             (input)="onInput()"
-             [attr.inputmode]="type === 'number' ? 'numeric' : undefined"/>
-      <div *ngIf="disabled || readonly"
-           [attr.class]="(disabled ? '_disabled ' : readonly ? '_readonly ' : '') + (inputClass || '')"
-           [attr.style]="inputFullStyle">
-        <ng-content></ng-content>
-        <div *ngIf="controlType === 'password' && readonly && !disabled" class="sd-text-brightness-light">
-          ****
-        </div>
-        <ng-container *ngIf="controlType !== 'password'">
-          <ng-container *ngIf="controlValue">
-            <pre>{{ controlValue }}</pre>
-          </ng-container>
-          <ng-container *ngIf="!controlValue">
-            <span class="sd-text-brightness-lighter">{{ placeholder }}</span>
-          </ng-container>
-        </ng-container>
-      </div>
-    </ng-container>
-
-    <ng-container *ngIf="multiline">
-      <textarea #input
-                *ngIf="(!disabled && !readonly)"
-                [value]="controlValue"
-                [attr.placeholder]="placeholder"
-                [attr.title]="title || placeholder"
-                [required]="required"
-                [attr.rows]="controlRows"
-                [attr.class]="inputClass"
-                [attr.style]="'white-space: nowrap; ' + inputFullStyle"
-                (input)="onInput()"></textarea>
-      <div *ngIf="disabled || readonly"
-           [attr.class]="(disabled ? '_disabled ' : readonly ? '_readonly ' : '') + (inputClass || '')"
-           [attr.style]="inputFullStyle">
-        <ng-content></ng-content>
-        <pre>{{ controlValue }}</pre>
-      </div>
-    </ng-container>
-
-    <div class="_invalid-indicator"></div>`,
+    <input #input
+           [type]="controlType"
+           [value]="controlValue"
+           [required]="required"
+           [disabled]="disabled"
+           [attr.placeholder]="placeholder"
+           [attr.min]="min"
+           [attr.max]="max"
+           [attr.minlength]="minlength"
+           [attr.maxlength]="maxlength"
+           [attr.step]="controlStep"
+           [attr.pattern]="pattern"
+           [attr.class]="inputClass"
+           [attr.style]="inputStyle"
+           [attr.title]="title || placeholder"
+           (input)="onInput()"
+           [attr.inputmode]="controlInputMode"/>`,
   styles: [/* language=SCSS */ `
-    @import "../../scss/mixins";
-    @import "../../scss/variables-scss-arr";
-
     :host {
       display: block;
-      position: relative;
 
-      > input,
-      > textarea,
-      > div._readonly,
-      > div._disabled {
-        @include form-control-base();
+      > input {
+        width: 100%;
+        padding: calc(var(--gap-sm) + 1px) 0 calc(var(--gap-sm) - 1px);
+        border: none;
+        border-bottom: 2px solid var(--border-color);
+        background: transparent;
 
-        //border: 1px solid var(--border-color);
-        border: 1px solid var(--trans-brightness-light);
-        border-radius: var(--border-radius-default);
+        font-size: var(--font-size-default);
+        font-family: var(--font-family);
+        line-height: var(--line-height);
+
+        color: var(--text-brightness-default);
 
         &::-webkit-input-placeholder {
           color: var(--text-brightness-lighter);
         }
-      }
-
-      > input,
-      > textarea,
-      > div._readonly {
-        background: var(--theme-color-secondary-lightest);
-      }
-
-      > div._disabled {
-        background: var(--theme-color-grey-lightest);
-        color: var(--text-brightness-light);
-      }
-
-      > input {
-        height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
 
         &::-webkit-outer-spin-button,
         &::-webkit-inner-spin-button {
@@ -119,170 +61,81 @@ import { sdThemes, TSdTheme } from "../commons";
 
         &::-webkit-calendar-picker-indicator {
           margin: auto;
-          //background: transparent;
-          //color: var(--theme-color-secondary-default);
-          cursor: pointer;
+        }
+
+        transition: border-color 0.3s;
+      }
+
+      &[sd-invalid=true] {
+        > input {
+          border-bottom-color: var(--theme-color-danger-default);
         }
       }
 
-      > div._readonly,
-      > div._disabled {
-        min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-      }
-
-      > input,
-      > textarea,
-      > div._readonly,
-      > div._disabled {
+      > input {
         &:focus {
-          outline: none;
           border-color: var(--theme-color-primary-default);
+        }
+
+        &:disabled {
+          border-bottom-color: transparent;
+          color: var(--text-brightness-light);
         }
       }
 
       &[sd-type=number] {
-        > input,
-        > div._readonly,
-        > div._disabled {
+        > input {
           text-align: right;
+        }
+      }
+
+      &[sd-size=sm] {
+        > input {
+          padding: calc(var(--gap-xs) + 1px) 0 calc(var(--gap-xs) - 1px);
+        }
+      }
+
+      &[sd-size=lg] {
+        > input {
+          font-size: var(--font-size-lg);
+          padding: calc(var(--gap-default) + 1px) 0 calc(var(--gap-default) - 1px);
         }
       }
 
       &[sd-inline=true] {
         display: inline-block;
-        vertical-align: top;
 
-        > input,
-        > textarea,
-        > div._readonly,
-        > div._disabled {
+        > input {
           display: inline-block;
           width: auto;
-          vertical-align: top;
-        }
-      }
-
-      &[sd-size=sm] {
-        > input,
-        > textarea,
-        > div._readonly,
-        > div._disabled {
-          padding: var(--gap-xs) var(--gap-sm);
-
-          &[type=color] {
-            padding-top: 1px;
-            padding-bottom: 1px;
-          }
-        }
-
-        > input {
-          height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-        }
-
-        > div._readonly,
-        > div._disabled {
-          min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-        }
-      }
-
-      &[sd-size=lg] {
-        > input,
-        > textarea,
-        > div._readonly,
-        > div._disabled {
-          padding: var(--gap-default) var(--gap-lg);
-
-          &[type=color] {
-            padding-top: 1px;
-            padding-bottom: 1px;
-          }
-        }
-
-        > input {
-          height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
-        }
-
-        > div._readonly,
-        > div._disabled {
-          min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         }
       }
 
       &[sd-inset=true] {
-        > input,
-        > textarea,
-        > div._readonly,
-        > div._disabled {
-          border: none;
-          border-radius: 0;
-        }
-
-        > div._disabled {
-          background: white !important;
-          color: var(--text-brightness-default);
-        }
-
         > input {
-          height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-        }
+          border: none;
 
-        > div._readonly,
-        > div._disabled {
-          min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-        }
+          &:focus {
+            outline: 1px solid var(--theme-color-primary-default);
+          }
 
+          padding: var(--gap-sm) 0;
+        }
+        
         &[sd-size=sm] {
           > input {
-            height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-          }
-
-          > div._readonly,
-          > div._disabled {
-            min-height: calc(var(--gap-xs) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
+            padding: var(--gap-xs) 0;
           }
         }
-
         &[sd-size=lg] {
           > input {
-            height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-          }
-
-          > div._readonly,
-          > div._disabled {
-            min-height: calc(var(--gap-default) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
-          }
-        }
-
-        > input:focus,
-        > textarea:focus {
-          outline: 1px solid var(--theme-color-primary-default);
-          outline-offset: -1px;
-        }
-      }
-
-      @each $theme in $arr-theme-color {
-        &[sd-theme=#{$theme}] {
-          > input,
-          > textarea,
-          > div._readonly {
-            background: var(--theme-color-#{$theme}-lightest);
+            padding: var(--gap-default) 0;
           }
         }
       }
-
-      > ._invalid-indicator {
-        display: none;
-      }
-
-      > input:invalid + ._invalid-indicator,
-      > textarea:invalid + ._invalid-indicator,
-      &[sd-invalid=true] > ._invalid-indicator {
-        @include invalid-indicator();
-      }
-    }
-  `]
+    }`]
 })
-export class SdTextfieldControl implements DoCheck {
+export class SdmTextfieldControl {
   @Input()
   @SdInputValidate({
     type: String,
@@ -310,10 +163,6 @@ export class SdTextfieldControl implements DoCheck {
   @Input()
   @SdInputValidate(Boolean)
   public disabled?: boolean;
-
-  @Input()
-  @SdInputValidate(Boolean)
-  public readonly?: boolean;
 
   @Input()
   @SdInputValidate(Boolean)
@@ -365,25 +214,6 @@ export class SdTextfieldControl implements DoCheck {
   public size?: "sm" | "lg";
 
   @Input()
-  @SdInputValidate(Boolean)
-  public multiline?: boolean;
-
-  @Input()
-  @SdInputValidate(Number)
-  public rows?: number;
-
-  @Input()
-  @SdInputValidate({ type: Boolean, notnull: true })
-  public autoRows = false;
-
-  @Input()
-  @SdInputValidate({
-    type: [String, Boolean],
-    includes: ["vertical", "horizontal", true, false]
-  })
-  public resize?: "vertical" | "horizontal" | boolean;
-
-  @Input()
   @SdInputValidate(Function)
   public validatorFn?: (value: number | string | DateOnly | DateTime | Time | undefined) => string | undefined;
 
@@ -394,14 +224,6 @@ export class SdTextfieldControl implements DoCheck {
   @Input("input.class")
   @SdInputValidate(String)
   public inputClass?: string;
-
-  @Input()
-  @SdInputValidate({
-    type: String,
-    includes: sdThemes
-  })
-  @HostBinding("attr.sd-theme")
-  public theme?: TSdTheme;
 
   @HostBinding("attr.sd-invalid")
   public get isInvalid(): boolean {
@@ -422,6 +244,10 @@ export class SdTextfieldControl implements DoCheck {
           : this.type === "datetime-sec" ? "datetime-local"
             : this.type === "time-sec" ? "time"
               : this.type;
+  }
+
+  public get controlInputMode(): string | undefined {
+    return this.type === "number" ? "numeric" : undefined;
   }
 
   public get controlValue(): string {
@@ -481,21 +307,6 @@ export class SdTextfieldControl implements DoCheck {
       return 1;
     }
     return "any";
-  }
-
-  public get inputFullStyle(): string | undefined {
-    let styleStr = "";
-    if (this.multiline) {
-      const controlResize = this.resize === "vertical" ? "vertical"
-        : this.resize === "horizontal" ? "horizontal"
-          : this.resize ? undefined : "none";
-
-      if (controlResize !== undefined) {
-        styleStr += `resize: ${controlResize};`;
-      }
-    }
-
-    return styleStr + (this.inputStyle ?? "");
   }
 
   public get errorMessage(): string {
@@ -563,33 +374,6 @@ export class SdTextfieldControl implements DoCheck {
     return errorMessage;
   }
 
-  public get controlRows(): number | undefined {
-    if (this.multiline && this.autoRows) {
-      if (typeof this.value === "string") {
-        return this.value.split(/[\r\n]/).length;
-      }
-
-      return 1;
-    }
-
-    return this.rows;
-  }
-
-  public constructor(private readonly _zone: NgZone) {
-  }
-
-  public ngDoCheck(): void {
-    this._zone.runOutsideAngular(() => {
-      setTimeout(() => {
-        const inputEl = this.inputElRef?.nativeElement;
-        if (inputEl && this.autoRows && this.multiline && typeof this.value === "string") {
-          inputEl.style.height = "";
-          inputEl.style.height = (inputEl.scrollHeight + (inputEl.offsetHeight - inputEl.clientHeight)) + "px";
-        }
-      });
-    });
-  }
-
   public onInput(): void {
     const inputEl = this.inputElRef!.nativeElement;
 
@@ -619,7 +403,6 @@ export class SdTextfieldControl implements DoCheck {
         this._setValue(DateOnly.parse(inputEl.value));
       }
       catch (err) {
-        // this._setValue(inputEl.value);
       }
     }
     else if (["datetime", "datetime-sec"].includes(this.type)) {
@@ -627,7 +410,6 @@ export class SdTextfieldControl implements DoCheck {
         this._setValue(DateTime.parse(inputEl.value));
       }
       catch (err) {
-        // this._setValue(inputEl.value);
       }
     }
     else if (["time", "time-sec"].includes(this.type)) {
@@ -635,7 +417,6 @@ export class SdTextfieldControl implements DoCheck {
         this._setValue(Time.parse(inputEl.value));
       }
       catch (err) {
-        // this._setValue(inputEl.value);
       }
     }
     else {
@@ -644,7 +425,7 @@ export class SdTextfieldControl implements DoCheck {
   }
 
   private _setValue(newValue: any): void {
-    if (this.valueChange.observed) {
+    if (this.valueChange.observers.length > 0) {
       this.valueChange.emit(newValue);
     }
     else {
