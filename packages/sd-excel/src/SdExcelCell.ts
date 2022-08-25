@@ -5,7 +5,7 @@ import { SdExcelXmlSharedString } from "./files/SdExcelXmlSharedString";
 import { SdExcelZipCache } from "./utils/SdExcelZipCache";
 import { SdExcelXmlContentType } from "./files/SdExcelXmlContentType";
 import { SdExcelXmlRelationship } from "./files/SdExcelXmlRelationship";
-import { SdExcelXmlStyle } from "./files/SdExcelXmlStyle";
+import { ISdExcelStyle, SdExcelXmlStyle } from "./files/SdExcelXmlStyle";
 import { SdExcelUtil } from "./utils/SdExcelUtil";
 
 export class SdExcelCell {
@@ -17,6 +17,22 @@ export class SdExcelCell {
                      private readonly _c: number) {
     this._addr = SdExcelUtil.stringifyAddr({ r: this._r, c: this._c });
   }
+
+  public style = {
+    setBackgroundAsync: async (color: string): Promise<void> => {
+      if (!(/^[0-9A-F]{8}/).test(color.toUpperCase())) {
+        throw new Error("색상 형식이 잘못되었습니다. (형식: FFFFFFFF: alpha+rgb)");
+      }
+
+      await this._setStyleAsync({ background: color });
+    },
+    setVerticalAlignAsync: async (align: "center" | "top" | "bottom"): Promise<void> => {
+      await this._setStyleAsync({ verticalAlign: align });
+    },
+    setHorizontalAlignAsync: async (align: "center" | "left" | "right"): Promise<void> => {
+      await this._setStyleAsync({ horizontalAlign: align });
+    }
+  };
 
   public async setValAsync(val: TSdExcelValueType): Promise<void> {
     if (val === undefined) {
@@ -52,30 +68,14 @@ export class SdExcelCell {
       wsData.setCellType(this._addr, undefined);
       wsData.setCellVal(this._addr, SdExcelUtil.convertDateToNumber(val.date).toString());
 
-      const styleData = await this._getOrCreateStyleDataAsync();
-      let styleId = wsData.getCellStyleId(this._addr);
-      if (styleId === undefined) {
-        styleId = styleData.add({ numFmtId: SdExcelUtil.convertNumFmtNameToId("DateOnly").toString() });
-      }
-      else {
-        styleId = styleData.addWithClone(styleId, { numFmtId: SdExcelUtil.convertNumFmtNameToId("DateOnly").toString() });
-      }
-      wsData.setCellStyleId(this._addr, styleId);
+      await this._setStyleAsync({ numFmtId: SdExcelUtil.convertNumFmtNameToId("DateOnly").toString() });
     }
     else if (val instanceof DateTime) {
       const wsData = await this._getWsDataAsync();
       wsData.setCellType(this._addr, undefined);
       wsData.setCellVal(this._addr, SdExcelUtil.convertDateToNumber(val.date).toString());
 
-      const styleData = await this._getOrCreateStyleDataAsync();
-      let styleId = wsData.getCellStyleId(this._addr);
-      if (styleId === undefined) {
-        styleId = styleData.add({ numFmtId: SdExcelUtil.convertNumFmtNameToId("DateTime").toString() });
-      }
-      else {
-        styleId = styleData.addWithClone(styleId, { numFmtId: SdExcelUtil.convertNumFmtNameToId("DateTime").toString() });
-      }
-      wsData.setCellStyleId(this._addr, styleId);
+      await this._setStyleAsync({ numFmtId: SdExcelUtil.convertNumFmtNameToId("DateTime").toString() });
     }
     // TODO: TIME차례
     else {
@@ -236,5 +236,18 @@ export class SdExcelCell {
     }
 
     return styleData;
+  }
+
+  private async _setStyleAsync(style: ISdExcelStyle): Promise<void> {
+    const wsData = await this._getWsDataAsync();
+    const styleData = await this._getOrCreateStyleDataAsync();
+    let styleId = wsData.getCellStyleId(this._addr);
+    if (styleId === undefined) {
+      styleId = styleData.add(style);
+    }
+    else {
+      styleId = styleData.addWithClone(styleId, style);
+    }
+    wsData.setCellStyleId(this._addr, styleId);
   }
 }

@@ -141,7 +141,7 @@ export interface ISdExcelXmlStyleData {
     }];
     "fills": [{
       "$": { count: string };
-      "fill": {}[];
+      "fill": ISdExcelXmlStyleDataFill[];
     }];
     "borders": [{
       "$": { count: string };
@@ -156,7 +156,7 @@ export interface ISdExcelXmlStyleData {
 
 export interface ISdExcelXmlStyleDataXf {
   "$": {
-    numFmtId: string;
+    numFmtId?: string;
     fontId?: string;
     fillId?: string;
     borderId?: string;
@@ -164,7 +164,16 @@ export interface ISdExcelXmlStyleDataXf {
     applyNumberFormat?: string;
     applyFont?: string;
     applyAlignment?: string;
+    applyFill?: string;
   };
+  alignment?: [{ "$": { horizontal?: "center" | "left" | "right"; vertical?: "center" | "top" | "bottom" } }];
+}
+
+export interface ISdExcelXmlStyleDataFill {
+  "patternFill": [{
+    "$": { "patternType": "none" | "solid" | "gray125" };
+    "fgColor"?: [{ "$": { "rgb": string } }];
+  }];
 }
 
 export type TSdExcelValueType = number | string | DateOnly | DateTime | Time | boolean | undefined;

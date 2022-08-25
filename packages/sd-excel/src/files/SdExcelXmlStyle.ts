@@ -1,4 +1,4 @@
-import { ISdExcelXml, ISdExcelXmlStyleData, ISdExcelXmlStyleDataXf } from "../commons";
+import { ISdExcelXml, ISdExcelXmlStyleData, ISdExcelXmlStyleDataFill, ISdExcelXmlStyleDataXf } from "../commons";
 import { NumberUtil, ObjectUtil } from "@simplysm/sd-core-common";
 
 export class SdExcelXmlStyle implements ISdExcelXml {
@@ -17,7 +17,10 @@ export class SdExcelXmlStyle implements ISdExcelXml {
           }],
           "fills": [{
             "$": { count: "1" },
-            "fill": [{}]
+            "fill": [
+              { patternFill: [{ $: { patternType: "none" } }] },
+              { patternFill: [{ $: { patternType: "gray125" } }] }
+            ]
           }],
           "borders": [{
             "$": { count: "1" },
@@ -35,23 +38,131 @@ export class SdExcelXmlStyle implements ISdExcelXml {
     }
   }
 
-  public add(style: { numFmtId: string }): string {
-    const newItem = { "$": { "numFmtId": style.numFmtId } };
-    return this._getSameOrCreateXf(newItem);
+  public add(style: ISdExcelStyle): string {
+    const newXf: ISdExcelXmlStyleDataXf = { "$": {} };
+
+    if (style.numFmtId !== undefined) {
+      newXf.$.numFmtId = style.numFmtId;
+    }
+
+    if (style.background !== undefined) {
+      const newFill: ISdExcelXmlStyleDataFill = {
+        "patternFill": [
+          {
+            "$": { "patternType": "solid" },
+            "fgColor": [{ "$": { "rgb": style.background.toUpperCase() } }]
+          }
+        ]
+      };
+
+      newXf.$.applyFill = "1";
+      newXf.$.fillId = this._getSameOrCreateFill(newFill);
+    }
+
+    if (style.verticalAlign !== undefined) {
+      newXf.$.applyAlignment = "1";
+      if (!newXf.alignment) {
+        newXf.alignment = [{ "$": { vertical: style.verticalAlign } }];
+      }
+      else {
+        newXf.alignment[0].$.vertical = style.verticalAlign;
+      }
+    }
+
+    if (style.horizontalAlign !== undefined) {
+      newXf.$.applyAlignment = "1";
+      if (!newXf.alignment) {
+        newXf.alignment = [{ "$": { horizontal: style.horizontalAlign } }];
+      }
+      else {
+        newXf.alignment[0].$.horizontal = style.horizontalAlign;
+      }
+    }
+
+    return this._getSameOrCreateXf(newXf);
   }
 
-  public addWithClone(id: string, style: { numFmtId: string }): string {
-    const prevItem = this.data.styleSheet.cellXfs[0].xf[NumberUtil.parseInt(id)!];
-    const cloneItem = ObjectUtil.clone(prevItem);
-    cloneItem.$.numFmtId = style.numFmtId;
+  public addWithClone(id: string, style: ISdExcelStyle): string {
+    const prevXf = this.data.styleSheet.cellXfs[0].xf[NumberUtil.parseInt(id)!];
+    const cloneXf = ObjectUtil.clone(prevXf);
 
-    return this._getSameOrCreateXf(cloneItem);
+    if (style.numFmtId !== undefined) {
+      cloneXf.$.numFmtId = style.numFmtId;
+    }
+
+    if (style.background !== undefined) {
+      const prevFill = cloneXf.$.fillId !== undefined
+        ? this.data.styleSheet.fills[0].fill[NumberUtil.parseInt(cloneXf.$.fillId)!]
+        : undefined;
+
+      if (prevFill) {
+        const cloneFill = ObjectUtil.clone(prevFill);
+        if (!cloneFill.patternFill[0].fgColor) {
+          cloneFill.patternFill[0].fgColor = [{ $: { rgb: style.background } }];
+        }
+        else {
+          cloneFill.patternFill[0].fgColor[0].$.rgb = style.background;
+        }
+
+        cloneXf.$.applyFill = "1";
+        cloneXf.$.fillId = this._getSameOrCreateFill(cloneFill);
+        return this._getSameOrCreateXf(cloneXf);
+      }
+      else {
+        const newFill: ISdExcelXmlStyleDataFill = {
+          "patternFill": [
+            {
+              "$": { "patternType": "solid" },
+              "fgColor": [{ "$": { "rgb": style.background.toUpperCase() } }]
+            }
+          ]
+        };
+        cloneXf.$.applyFill = "1";
+        cloneXf.$.fillId = this._getSameOrCreateFill(newFill);
+        return this._getSameOrCreateXf(cloneXf);
+      }
+    }
+
+    if (style.verticalAlign !== undefined) {
+      cloneXf.$.applyAlignment = "1";
+      if (!cloneXf.alignment) {
+        cloneXf.alignment = [{ "$": { vertical: style.verticalAlign } }];
+      }
+      else {
+        cloneXf.alignment[0].$.vertical = style.verticalAlign;
+      }
+    }
+
+    if (style.horizontalAlign !== undefined) {
+      cloneXf.$.applyAlignment = "1";
+      if (!cloneXf.alignment) {
+        cloneXf.alignment = [{ "$": { horizontal: style.horizontalAlign } }];
+      }
+      else {
+        cloneXf.alignment[0].$.horizontal = style.horizontalAlign;
+      }
+    }
+
+    return this._getSameOrCreateXf(cloneXf);
   }
 
-  public get(id: string): { numFmtId: string | undefined } {
-    return {
-      numFmtId: this.data.styleSheet.cellXfs[0].xf[NumberUtil.parseInt(id)!]?.$.numFmtId
-    };
+  public get(id: string): ISdExcelStyle {
+    const xf = this.data.styleSheet.cellXfs[0].xf[NumberUtil.parseInt(id)!] as ISdExcelXmlStyleDataXf | undefined;
+
+    const result: ISdExcelStyle = {};
+
+    if (xf !== undefined) {
+      result.numFmtId = xf.$.numFmtId;
+
+      if (xf.$.fillId !== undefined) {
+        result.background = this.data.styleSheet.fills[0].fill[NumberUtil.parseInt(xf.$.fillId)!].patternFill[0].fgColor?.[0].$.rgb;
+      }
+
+      result.verticalAlign = xf.alignment?.[0].$.vertical;
+      result.horizontalAlign = xf.alignment?.[0].$.horizontal;
+    }
+
+    return result;
   }
 
   public getNumFmtCode(numFmtId: string): string | undefined {
@@ -62,10 +173,10 @@ export class SdExcelXmlStyle implements ISdExcelXml {
   }
 
   private _getSameOrCreateXf(xfItem: ISdExcelXmlStyleDataXf): string {
-    const prevSameItem = this.data.styleSheet.cellXfs[0].xf.single((item) => ObjectUtil.equal(item, xfItem));
+    const prevSameXf = this.data.styleSheet.cellXfs[0].xf.single((item) => ObjectUtil.equal(item, xfItem));
 
-    if (prevSameItem) {
-      return this.data.styleSheet.cellXfs[0].xf.indexOf(prevSameItem).toString();
+    if (prevSameXf) {
+      return this.data.styleSheet.cellXfs[0].xf.indexOf(prevSameXf).toString();
     }
     else {
       this.data.styleSheet.cellXfs[0].xf.push(xfItem);
@@ -73,4 +184,25 @@ export class SdExcelXmlStyle implements ISdExcelXml {
       return (this.data.styleSheet.cellXfs[0].xf.length - 1).toString();
     }
   }
+
+
+  private _getSameOrCreateFill(fillItem: ISdExcelXmlStyleDataFill): string {
+    const prevSameFill = this.data.styleSheet.fills[0].fill.single((item) => ObjectUtil.equal(item, fillItem));
+
+    if (prevSameFill) {
+      return this.data.styleSheet.fills[0].fill.indexOf(prevSameFill).toString();
+    }
+    else {
+      this.data.styleSheet.fills[0].fill.push(fillItem);
+      this.data.styleSheet.fills[0].$.count = this.data.styleSheet.fills[0].fill.length.toString();
+      return (this.data.styleSheet.fills[0].fill.length - 1).toString();
+    }
+  }
+}
+
+export interface ISdExcelStyle {
+  numFmtId?: string;
+  background?: string;
+  verticalAlign?: "center" | "top" | "bottom";
+  horizontalAlign?: "center" | "left" | "right";
 }
