@@ -33,6 +33,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       
       > label {
         font-weight: bold;
+        white-space: nowrap;
       }
 
       &[sd-layout="cascade"] {
@@ -59,9 +60,10 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
         > label {
           display: table-cell;
-          vertical-align: middle;
+          vertical-align: top;
           padding: var(--gap-sm) var(--gap-default) calc(var(--gap-sm) * 2) 0;
           text-align: right;
+          width: 0;
         }
 
         > ._content {
