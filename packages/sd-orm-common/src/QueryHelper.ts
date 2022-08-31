@@ -251,6 +251,10 @@ export class QueryHelper {
     return new QueryUnit(type, ["DATEADD(", separator, ", ", this.getQueryValue(value), ", ", this.getQueryValue(from), ")"]) as any;
   }
 
+  public dateToString<T extends DateTime | DateOnly | Time>(value: TEntityValue<T | 0>, code: number): QueryUnit<string> {
+    return new QueryUnit(String, ["CONVERT(NVARCHAR(25), ", this.getQueryValue(value), ", ", this.getQueryValue(code), ")"]) as any;
+  }
+
   public year<T extends DateTime | DateOnly>(value: TEntityValue<T>): QueryUnit<number> {
     return new QueryUnit<number>(Number, ["YEAR(", this.getQueryValue(value), ")"]);
   }
