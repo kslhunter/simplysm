@@ -1,6 +1,6 @@
 import { SdExcelXmlWorksheet } from "./files/SdExcelXmlWorksheet";
 import { DateOnly, DateTime, NumberUtil, StringUtil } from "@simplysm/sd-core-common";
-import { TSdExcelValueType } from "./commons";
+import { TSdExcelNumberFormat, TSdExcelValueType } from "./commons";
 import { SdExcelXmlSharedString } from "./files/SdExcelXmlSharedString";
 import { SdExcelZipCache } from "./utils/SdExcelZipCache";
 import { SdExcelXmlContentType } from "./files/SdExcelXmlContentType";
@@ -31,6 +31,14 @@ export class SdExcelCell {
     },
     setHorizontalAlignAsync: async (align: "center" | "left" | "right"): Promise<void> => {
       await this._setStyleAsync({ horizontalAlign: align });
+    },
+    setFormatPresetAsync: async (format: TSdExcelNumberFormat | "ThousandsSeparator"): Promise<void> => {
+      if (format === "ThousandsSeparator") {
+        await this._setStyleAsync({ numFmtId: "41" });
+      }
+      else {
+        await this._setStyleAsync({ numFmtId: SdExcelUtil.convertNumFmtNameToId(format).toString() });
+      }
     }
   };
 

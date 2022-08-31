@@ -178,6 +178,7 @@ export interface ISdExcelXmlStyleDataFill {
 
 export type TSdExcelValueType = number | string | DateOnly | DateTime | Time | boolean | undefined;
 export type TSdExcelNumberFormat = "number" | "string" | "DateOnly" | "DateTime" | "Time";
+export const sdExcelNumberFormats: TSdExcelNumberFormat[] = ["number", "string", "DateOnly", "DateTime", "Time"];
 
 export interface ISdExcelXml {
   readonly data: any;
