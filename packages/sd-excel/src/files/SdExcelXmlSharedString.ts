@@ -8,7 +8,7 @@ import {
 export class SdExcelXmlSharedString implements ISdExcelXml {
   public readonly data: ISdExcelXmlSharedStringData;
 
-  private readonly _stringMap: Map<string, number>;
+  private readonly _stringIndexesMap: Map<string, number[]>;
 
   public constructor(data?: ISdExcelXmlSharedStringData) {
     if (data === undefined) {
@@ -24,14 +24,14 @@ export class SdExcelXmlSharedString implements ISdExcelXml {
       this.data = data;
     }
 
-    this._stringMap = this.data.sst.si?.filter((item) => !this._getHasInnerStyleOnSiTag(item)).toMap(
+    this._stringIndexesMap = this.data.sst.si?.filter((item) => !this._getHasInnerStyleOnSiTag(item)).toArrayMap(
       (item) => this._getStringFromSiTag(item),
       (item, i) => i
-    ) ?? new Map<string, number>();
+    ) ?? new Map<string, number[]>();
   }
 
   public getIdByString(str: string): number | undefined {
-    return this._stringMap.get(str);
+    return this._stringIndexesMap.get(str)?.[0];
   }
 
   public getStringById(id: number): string | undefined {
@@ -42,7 +42,8 @@ export class SdExcelXmlSharedString implements ISdExcelXml {
   public add(str: string): number {
     this.data.sst.si = this.data.sst.si ?? [];
     this.data.sst.si.push({ t: [str] });
-    this._stringMap.set(str, this.data.sst.si.length - 1);
+    const arr = this._stringIndexesMap.getOrCreate(str, []);
+    arr.push(this.data.sst.si.length - 1);
     return this.data.sst.si.length - 1;
   }
 

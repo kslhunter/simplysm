@@ -392,14 +392,14 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
             <!-- CHILDREN FOR 문 -->
             <ng-container
               *ngIf="getIsExpandedItem(item) && getChildrenFn && getChildrenFn(index, item) && getChildrenFn(index, item)!.length > 0">
-              <div class="sd-border-top-brightness-darker"></div>
+              <!--<div class="sd-border-top-brightness-darker"></div>-->
               <ng-container
                 *ngFor="let childItem of getChildrenFn ? getChildrenFn(index, item) : []; let childIndex = index; trackBy: trackByFn">
                 <ng-template [ngTemplateOutlet]="itemRowTemplate"
                              [ngTemplateOutletContext]="{item: childItem, index: childIndex, depth: depth + 1, parent: item}"></ng-template>
               </ng-container>
-              <sd-gap height="sm"></sd-gap>
-              <div class="sd-border-bottom-brightness-default"></div>
+              <!--<sd-gap height="sm"></sd-gap>
+              <div class="sd-border-bottom-brightness-default"></div>-->
             </ng-container>
           </ng-template>
 
@@ -1007,7 +1007,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
     const result = Array.from(this.columnControlValueMapRecord[columnControl.key]!.entries())
       .filter((entry) => entry[1]).map((entry) => entry[0]);
-    if (columnControl.selectedItemsChange.observers.length > 0) {
+    if (columnControl.selectedItemsChange.observed) {
       columnControl.selectedItemsChange.emit(result);
     }
     else {
@@ -1037,7 +1037,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
     const result = Array.from(this.columnControlValueMapRecord[columnControl.key]!.entries())
       .filter((entry) => entry[1]).map((entry) => entry[0]);
-    if (columnControl.selectedItemsChange.observers.length > 0) {
+    if (columnControl.selectedItemsChange.observed) {
       columnControl.selectedItemsChange.emit(result);
     }
     else {
@@ -1429,7 +1429,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
       // SELECTED ITEM 체크
       const newSelectedItems = [...this.selectedItems].remove((item) => !this._getUngroupedItems(this.items).includes(item));
-      if (this.selectedItemsChange.observers.length > 0) {
+      if (this.selectedItemsChange.observed) {
         this.selectedItemsChange.emit(newSelectedItems);
       }
       else {
@@ -1516,7 +1516,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
     if (!this.expandedItems.includes(item)) {
       const newExpandedItems = [...this.expandedItems, item];
-      if (this.expandedItemsChange.observers.length > 0) {
+      if (this.expandedItemsChange.observed) {
         this.expandedItemsChange.emit(newExpandedItems);
       }
       else {
@@ -1525,7 +1525,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     }
     else {
       const newExpandedItems = [...this.expandedItems].remove(item);
-      if (this.expandedItemsChange.observers.length > 0) {
+      if (this.expandedItemsChange.observed) {
         this.expandedItemsChange.emit(newExpandedItems);
       }
       else {
@@ -1555,11 +1555,11 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
     if (this.selectMode === "multi") {
       if (this.getIsAllSelected()) {
-        if (this.selectedItemsChange.observers.length === 0) {
-          this.selectedItems = [];
+        if (this.selectedItemsChange.observed) {
+          this.selectedItemsChange.emit([]);
         }
         else {
-          this.selectedItemsChange.emit([]);
+          this.selectedItems = [];
         }
       }
       else {
@@ -1568,11 +1568,11 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
             .filter((item) => item.selectable)
             .map((item) => item.item)
         ];
-        if (this.selectedItemsChange.observers.length === 0) {
-          this.selectedItems = selectedItems;
+        if (this.selectedItemsChange.observed) {
+          this.selectedItemsChange.emit(selectedItems);
         }
         else {
-          this.selectedItemsChange.emit(selectedItems);
+          this.selectedItems = selectedItems;
         }
       }
     }
@@ -1605,21 +1605,21 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
 
     if (this.selectMode === "single") {
       if (this.selectedItems[0] === item) {
-        if (this.selectedItemsChange.observers.length === 0) {
-          this.selectedItems = [];
+        if (this.selectedItemsChange.observed) {
+          this.selectedItemsChange.emit([]);
         }
         else {
-          this.selectedItemsChange.emit([]);
+          this.selectedItems = [];
         }
       }
       else {
         const selectedItems = [item];
 
-        if (this.selectedItemsChange.observers.length === 0) {
-          this.selectedItems = selectedItems;
+        if (this.selectedItemsChange.observed) {
+          this.selectedItemsChange.emit(selectedItems);
         }
         else {
-          this.selectedItemsChange.emit(selectedItems);
+          this.selectedItems = selectedItems;
         }
       }
     }
@@ -1627,20 +1627,20 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       if (this.selectedItems.includes(item)) {
         const selectedItems = [...this.selectedItems];
         selectedItems.remove(item);
-        if (this.selectedItemsChange.observers.length === 0) {
-          this.selectedItems = selectedItems;
+        if (this.selectedItemsChange.observed) {
+          this.selectedItemsChange.emit(selectedItems);
         }
         else {
-          this.selectedItemsChange.emit(selectedItems);
+          this.selectedItems = selectedItems;
         }
       }
       else {
         const selectedItems = [...this.selectedItems, item];
-        if (this.selectedItemsChange.observers.length === 0) {
-          this.selectedItems = selectedItems;
+        if (this.selectedItemsChange.observed) {
+          this.selectedItemsChange.emit(selectedItems);
         }
         else {
-          this.selectedItemsChange.emit(selectedItems);
+          this.selectedItems = selectedItems;
         }
       }
     }
@@ -1654,22 +1654,22 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     if (this.selectMode === "single") {
       if (this.selectedItems[0] !== item) {
         const selectedItems = [item];
-        if (this.selectedItemsChange.observers.length === 0) {
-          this.selectedItems = selectedItems;
+        if (this.selectedItemsChange.observed) {
+          this.selectedItemsChange.emit(selectedItems);
         }
         else {
-          this.selectedItemsChange.emit(selectedItems);
+          this.selectedItems = selectedItems;
         }
       }
     }
     else {
       if (!this.selectedItems.includes(item)) {
         const selectedItems = [...this.selectedItems, item];
-        if (this.selectedItemsChange.observers.length === 0) {
-          this.selectedItems = selectedItems;
+        if (this.selectedItemsChange.observed) {
+          this.selectedItemsChange.emit(selectedItems);
         }
         else {
-          this.selectedItemsChange.emit(selectedItems);
+          this.selectedItems = selectedItems;
         }
       }
     }
@@ -1682,7 +1682,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   }
 
   public onPageChange(page: number): void {
-    if (this.pageChange.observers.length > 0) {
+    if (this.pageChange.observed) {
       this.pageChange.emit(page);
     }
     else {
@@ -1968,7 +1968,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       }
     }
 
-    if (this.orderingChange.observers.length > 0) {
+    if (this.orderingChange.observed) {
       this.orderingChange.emit(ordering);
     }
     else {

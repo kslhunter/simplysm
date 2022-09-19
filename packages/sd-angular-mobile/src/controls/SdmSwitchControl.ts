@@ -146,7 +146,7 @@ export class SdmSwitchControl {
   public onClick(): void {
     if (this.disabled) return;
 
-    if (this.valueChange.observers.length > 0) {
+    if (this.valueChange.observed) {
       this.valueChange.emit(!this.value);
     }
     else {
@@ -159,7 +159,7 @@ export class SdmSwitchControl {
     if (this.disabled) return;
 
     if (event.key === " ") {
-      if (this.valueChange.observers.length > 0) {
+      if (this.valueChange.observed) {
         this.valueChange.emit(!this.value);
       }
       else {

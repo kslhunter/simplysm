@@ -130,7 +130,7 @@ export class SdmListItemControl {
   public listControls?: QueryList<SdmListControl>;
 
   public onContentClick(): void {
-    if (this.openChange.observers.length > 0) {
+    if (this.openChange.observed) {
       this.openChange.emit(!this.open);
     }
     else {

@@ -1,4 +1,4 @@
-import { INpmConfig, ISdCliPackageBuildResult, ISdCliServerPackageConfig } from "../commons";
+import { INpmConfig, ISdCliPackageBuildResult, ISdCliServerPackageConfig, ITsconfig } from "../commons";
 import { EventEmitter } from "events";
 import { FsUtil, Logger, PathUtil } from "@simplysm/sd-core-node";
 import webpack from "webpack";
@@ -22,6 +22,7 @@ export class SdCliServerBuilder extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
 
   private readonly _tsconfigFilePath: string;
+  private readonly _tsconfig: ITsconfig;
   private readonly _parsedTsconfig: ts.ParsedCommandLine;
   private readonly _npmConfigMap = new Map<string, INpmConfig>();
 
@@ -34,8 +35,8 @@ export class SdCliServerBuilder extends EventEmitter {
 
     // tsconfig
     this._tsconfigFilePath = path.resolve(this._rootPath, "tsconfig-build.json");
-    const tsconfig = FsUtil.readJson(this._tsconfigFilePath);
-    this._parsedTsconfig = ts.parseJsonConfigFileContent(tsconfig, ts.sys, this._rootPath);
+    this._tsconfig = FsUtil.readJson(this._tsconfigFilePath);
+    this._parsedTsconfig = ts.parseJsonConfigFileContent(this._tsconfig, ts.sys, this._rootPath);
   }
 
   public override on(event: "change", listener: () => void): this;
@@ -265,6 +266,16 @@ export class SdCliServerBuilder extends EventEmitter {
     const pkgKey = npmConfig.name.split("/").last()!;
     // const pkgVersion = npmConfig.version;
 
+    const entries: Record<string, [string]> = {
+      main: [path.resolve(this._rootPath, "src/main.ts")]
+    };
+    if (this._tsconfig.files) {
+      for (const entryFileRelPath of this._tsconfig.files) {
+        const entryFileBaseName = entryFileRelPath.slice(4, -path.extname(entryFileRelPath).length);
+        entries[entryFileBaseName] = [path.resolve(this._rootPath, entryFileRelPath)];
+      }
+    }
+
     let prevProgressMessage = "";
     return {
       mode: watch ? "development" : "production",
@@ -283,11 +294,7 @@ export class SdCliServerBuilder extends EventEmitter {
         symlinks: true
       },
       context: this._projRootPath,
-      entry: {
-        main: [
-          path.resolve(this._rootPath, "src/main.ts")
-        ]
-      },
+      entry: entries,
       output: {
         uniqueName: pkgKey,
         hashFunction: "xxhash64",

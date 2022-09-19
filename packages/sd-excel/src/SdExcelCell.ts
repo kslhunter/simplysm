@@ -85,7 +85,7 @@ export class SdExcelCell {
 
       await this._setStyleAsync({ numFmtId: SdExcelUtil.convertNumFmtNameToId("DateTime").toString() });
     }
-    // TODO: TIME차례
+    // TODO: TIME차례 (18번)
     else {
       throw new Error(`[${this._addr}] 지원되지 않는 타입입니다: ${val}`);
     }

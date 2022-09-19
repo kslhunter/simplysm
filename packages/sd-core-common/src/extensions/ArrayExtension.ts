@@ -46,6 +46,10 @@ declare global {
 
     toMapAsync<K, V>(keySelector: (item: T, index: number) => Promise<K> | K, valueSelector: (item: T, index: number) => Promise<V> | V): Promise<Map<K, V>>;
 
+    toArrayMap<K, V>(keySelector: (item: T, index: number) => K): Map<K, T[]>;
+
+    toArrayMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V[]>;
+
     toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
 
     toObject<V>(keySelector: (item: T, index: number) => string, valueSelector: (item: T, index: number) => V): Record<string, V>;
@@ -125,6 +129,8 @@ declare global {
     toMapAsync<K>(keySelector: (item: T, index: number) => Promise<K>): Promise<Map<K, T>>;
 
     toMapAsync<K, V>(keySelector: (item: T, index: number) => Promise<K> | K, valueSelector: (item: T, index: number) => Promise<V> | V): Promise<Map<K, V>>;
+
+    toArrayMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V[]>;
 
     toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
 
@@ -270,6 +276,23 @@ declare global {
         throw new Error(`키가 중복되었습니다. (중복된키: ${JSON.stringify(keyObj)})`);
       }
       result.set(keyObj, valueObj);
+    }
+
+    return result;
+  };
+
+
+  prototype.toArrayMap = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector?: (item: T, index: number) => V): Map<K, (V | T)[]> {
+    const result = new Map<K, (V | T)[]>();
+
+    for (let i = 0; i < this.length; i++) {
+      const item = this[i];
+
+      const keyObj = keySelector(item, i);
+      const valueObj = valueSelector !== undefined ? valueSelector(item, i) : item;
+
+      const arr = result.getOrCreate(keyObj, []);
+      arr.push(valueObj);
     }
 
     return result;
