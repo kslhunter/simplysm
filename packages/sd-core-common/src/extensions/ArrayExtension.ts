@@ -46,7 +46,7 @@ declare global {
 
     toMapAsync<K, V>(keySelector: (item: T, index: number) => Promise<K> | K, valueSelector: (item: T, index: number) => Promise<V> | V): Promise<Map<K, V>>;
 
-    toArrayMap<K, V>(keySelector: (item: T, index: number) => K): Map<K, T[]>;
+    toArrayMap<K>(keySelector: (item: T, index: number) => K): Map<K, T[]>;
 
     toArrayMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V[]>;
 
