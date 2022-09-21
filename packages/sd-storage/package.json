@@ -20,8 +20,8 @@
     "**/*"
   ],
   "dependencies": {
-    "basic-ftp": "^5.0.1",
-    "ssh2-sftp-client": "^9.0.3"
+    "basic-ftp": "^5.0.2",
+    "ssh2-sftp-client": "^9.0.4"
   },
   "devDependencies": {
     "@types/ssh2-sftp-client": "^7.1.0"

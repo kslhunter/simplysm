@@ -23,7 +23,7 @@
     "@simplysm/sd-core-common": "7.1.17",
     "@simplysm/sd-core-node": "7.1.17",
     "@simplysm/sd-orm-common": "7.1.17",
-    "sqlite3": "^5.0.11"
+    "sqlite3": "^5.1.1"
   },
   "devDependencies": {
     "@types/sqlite3": "^3.1.8"

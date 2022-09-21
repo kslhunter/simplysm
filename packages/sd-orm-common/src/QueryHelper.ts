@@ -303,7 +303,7 @@ export class QueryHelper {
     return new QueryUnit<number>(Number, ["LEN(", this.getQueryValue(arg), ")"]);
   }
 
-  public cast<T extends TQueryValue>(src: TEntityValue<TQueryValue>, targetType: Type<T>): QueryUnit<T> {
+  public cast<T extends TQueryValue>(src: TEntityValue<TQueryValue>, targetType: Type<WrappedType<T>>): QueryUnit<T> {
     if (this._dialect === "mysql") {
       return new QueryUnit(targetType, ["CONVERT(", this.getQueryValue(src), ", ", this.mysqlConvertType(targetType), ")"]);
     }

@@ -115,10 +115,10 @@ import { SdSheetConfigModal } from "../modals/SdSheetConfigModal";
                            [icon]="icons.fasCaretRight | async"
                            (click)="onAllExpandIconClick($event)"
                            [class._expanded]="getIsAllExpanded()"
-                           [class._expandable]="getHasParentItem()"
+                           [class._expandable]="getHasSomeChildren()"
                            [rotate]="getIsAllExpanded() ? 90 : undefined"
                            [fixedWidth]=true
-                           [style.color]="getHasParentItem() ? undefined : 'transparent'"
+                           [style.color]="getHasSomeChildren() ? undefined : 'transparent'"
                            style="pointer-events: auto"
                            [style.margin-right.em]="maxDepth"></fa-icon>
                 </div>
@@ -1102,7 +1102,7 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
     return this.expandedItems.includes(item);
   }
 
-  public getHasParentItem(): boolean {
+  public getHasSomeChildren(): boolean {
     return this.displayItems.some((item, i) => {
       const children = this.getChildrenFn?.(i, item);
       return children ? children.length > 0 : false;
@@ -1110,12 +1110,26 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
   }
 
   public getIsAllExpanded(): boolean {
+    const fn = (items: any[]): any[] => {
+      const currChildren = items.mapMany((item, i) => this.getChildrenFn?.(i, item) ?? []);
+      if (currChildren.length > 0) {
+        return [...currChildren, ...fn(currChildren)];
+      }
+      else {
+        return currChildren;
+      }
+    };
+    const allItems = [...this.displayItems, ...fn(this.displayItems)];
+
     return ObjectUtil.equal(
-      this.displayItems.filter((item, i) => {
+      allItems.filter((item, i) => {
         const children = this.getChildrenFn?.(i, item);
         return children ? children.length > 0 : false;
       }),
-      this.expandedItems,
+      this.expandedItems.filter((item, i) => {
+        const children = this.getChildrenFn?.(i, item);
+        return children ? children.length > 0 : false;
+      }),
       {
         ignoreArrayIndex: true
       }
@@ -1542,7 +1556,18 @@ export class SdSheetControl implements DoCheck, OnInit, AfterContentChecked {
       this.expandedItems = [];
     }
     else {
-      this.expandedItems = this.displayItems.filter((item, i) => {
+      const fn = (items: any[]): any[] => {
+        const currChildren = items.mapMany((item, i) => this.getChildrenFn?.(i, item) ?? []);
+        if (currChildren.length > 0) {
+          return [...currChildren, ...fn(currChildren)];
+        }
+        else {
+          return currChildren;
+        }
+      };
+      const allItems = [...this.displayItems, ...fn(this.displayItems)];
+
+      this.expandedItems = allItems.filter((item, i) => {
         const children = this.getChildrenFn?.(i, item);
         return children ? children.length > 0 : false;
       });

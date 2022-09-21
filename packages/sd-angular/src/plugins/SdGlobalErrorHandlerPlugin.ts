@@ -27,9 +27,9 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
     try {
       const appRef = this._ngModuleRef.injector.get<ApplicationRef>(ApplicationRef);
       appRef["_views"][0]["rootNodes"][0].appendChild(divEl);
-      /*divEl.onclick = () => {
+      divEl.onclick = () => {
         location.reload();
-      };*/
+      };
 
       this._systemLog.writeAsync("error", err.stack).catch(() => {
       });
