@@ -128,7 +128,7 @@ export interface ISdExcelXmlStyleData {
     "$": { "xmlns": string };
     "numFmts"?: [{
       "$": { count: string };
-      "numFmt": {
+      "numFmt"?: {
         "$": {
           numFmtId: string;
           formatCode: string;
