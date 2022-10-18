@@ -30,6 +30,9 @@
       ],
       "@simplysm/sd-excel": [
         "../packages/sd-excel/src/index.ts"
+      ],
+      "@simplysm/sd-word": [
+        "../packages/sd-word/src/index.ts"
       ]
     }
   }

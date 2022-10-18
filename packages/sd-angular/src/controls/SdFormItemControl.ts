@@ -18,7 +18,9 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
     <label [attr.unvisible]="!label && !labelTemplateRef"
            [style.width]="labelWidth"
            [hidden]="layout === 'none'"
-           [style.text-align]="labelAlign">
+           [style.text-align]="labelAlign"
+           [title]="labelTooltip"
+           [class.sd-help]="labelTooltip">
       <ng-container *ngIf="!labelTemplateRef">{{ label }}</ng-container>
       <ng-container *ngIf="labelTemplateRef">
         <ng-template [ngTemplateOutlet]="labelTemplateRef"
@@ -30,7 +32,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
     </div>`,
   styles: [/* language=SCSS */ `
     :host {
-      
+
       > label {
         font-weight: bold;
         white-space: nowrap;
@@ -39,7 +41,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       &[sd-layout="cascade"] {
         display: block;
         //margin-bottom: var(--gap-default);
-        
+
         > label {
           display: block;
           margin-bottom: var(--gap-xs);
@@ -136,6 +138,10 @@ export class SdFormItemControl {
   @Input()
   @SdInputValidate(String)
   public label?: string;
+
+  @Input()
+  @SdInputValidate(String)
+  public labelTooltip?: string;
 
   @ContentChild("label", { static: true })
   public labelTemplateRef?: TemplateRef<{ label?: string }>;

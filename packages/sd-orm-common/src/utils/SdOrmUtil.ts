@@ -140,7 +140,24 @@ export class SdOrmUtil {
       };
 
       const getObjOrUndefined = (sourceItem: Record<string, any> | undefined): Record<string, any> | undefined => {
-        return sourceItem === undefined || Object.keys(sourceItem).every((key) => sourceItem[key] === undefined) ? undefined : sourceItem;
+        return sourceItem === undefined || Object.keys(sourceItem).every((key) => (
+          sourceItem[key] === undefined/* ||
+          (sourceItem[key] instanceof Array && sourceItem[key].length === 0) ||
+          (
+            !(
+              ["boolean", "number", "string"].includes(typeof sourceItem[key])
+              || sourceItem[key] instanceof Number
+              || sourceItem[key] instanceof String
+              || sourceItem[key] instanceof Boolean
+              || sourceItem[key] instanceof DateOnly
+              || sourceItem[key] instanceof DateTime
+              || sourceItem[key] instanceof Time
+              || sourceItem[key] instanceof Uuid
+              || sourceItem[key] instanceof Buffer
+            ) &&
+            getObjOrUndefined(sourceItem[key]) === undefined
+          )*/
+        )) ? undefined : sourceItem;
       };
 
       const joinToObj = (source: Record<string, any>[], joinKeys: string[]): Record<string, any>[] => {

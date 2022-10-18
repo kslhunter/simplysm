@@ -90,7 +90,7 @@ export interface ISdExcelRowData {
   "$": {
     "r": string; // address (1~)
   };
-  "c": ISdExcelCellData[];
+  "c"?: ISdExcelCellData[];
 }
 
 export interface ISdExcelCellData {

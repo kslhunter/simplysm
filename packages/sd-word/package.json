@@ -1,12 +1,12 @@
 {
-  "name": "@simplysm/sd-excel",
+  "name": "@simplysm/sd-word",
   "version": "7.1.18",
-  "description": "심플리즘 패키지 - 엑셀 모듈",
+  "description": "심플리즘 패키지 - MS워드 모듈",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm7.git",
-    "directory": "packages/sd-excel"
+    "directory": "packages/sd-word"
   },
   "license": "MIT",
   "type": "module",
@@ -22,7 +22,6 @@
   "dependencies": {
     "@simplysm/sd-core-common": "7.1.18",
     "jszip": "^3.10.1",
-    "xlsx": "^0.18.5",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {

@@ -935,6 +935,7 @@ DROP PROCEDURE ${procName};`;
     if (def.as === undefined) throw new NeverEntryError();
 
     if (this._dialect === "mysql") {
+      // TODO: 일반적인 경우엔 그냥 DELETE 쿼리 사용
       return `
 USE ${def.from.split(".")[0]};
       

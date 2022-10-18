@@ -7,7 +7,7 @@ import {
   TQueryValue
 } from "./commons";
 import { QueryUnit } from "./QueryUnit";
-import { DateOnly, DateTime, Time, Type, Uuid, WrappedType } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, NeverEntryError, Time, Type, Uuid, WrappedType } from "@simplysm/sd-core-common";
 import { Queryable } from "./Queryable";
 import { SdOrmUtil } from "./utils/SdOrmUtil";
 import { TSdOrmDataType } from "./SdOrmDataType";
@@ -251,8 +251,22 @@ export class QueryHelper {
     return new QueryUnit(type, ["DATEADD(", separator, ", ", this.getQueryValue(value), ", ", this.getQueryValue(from), ")"]) as any;
   }
 
-  public dateToString<T extends DateTime | DateOnly | Time>(value: TEntityValue<T | 0>, code: number): QueryUnit<string> {
-    return new QueryUnit(String, ["CONVERT(NVARCHAR(25), ", this.getQueryValue(value), ", ", this.getQueryValue(code), ")"]) as any;
+  public dateToString<T extends DateTime | DateOnly | Time>(value: TEntityValue<T | 0>, code: 112 | 120): QueryUnit<string> {
+    if (this._dialect === "mysql") {
+      if (code === 112) {
+        return new QueryUnit(String, ["DATE_FORMAT(", this.getQueryValue(value), ", '%Y%m%d')"]) as any;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      else if (code === 120) {
+        return new QueryUnit(String, ["DATE_FORMAT(", this.getQueryValue(value), ", '%Y-%m-%d %H:%i:%s')"]) as any;
+      }
+      else {
+        throw new NeverEntryError();
+      }
+    }
+    else {
+      return new QueryUnit(String, ["CONVERT(NVARCHAR(25), ", this.getQueryValue(value), ", ", this.getQueryValue(code), ")"]) as any;
+    }
   }
 
   public year<T extends DateTime | DateOnly>(value: TEntityValue<T>): QueryUnit<number> {
@@ -288,6 +302,13 @@ export class QueryHelper {
 
   public caseWhen<T extends TQueryValue>(arg: TEntityValue<TQueryValue>): CaseWhenQueryHelper<T> {
     return new CaseWhenQueryHelper(this, arg);
+  }
+
+  public greater<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T>, target: TEntityValue<T>): QueryUnit<T> {
+    const type = SdOrmUtil.getQueryValueType(source);
+    if (!type) throw new TypeError();
+
+    return this.case(this.greaterThen(source, target), source).else(target);
   }
 
   public dataLength<T extends TQueryValue>(arg: TEntityValue<T>): QueryUnit<number> {
@@ -384,8 +405,16 @@ export class QueryHelper {
     return new QueryUnit<number | undefined>(Number, ["AVG(", this.getQueryValue(arg), ")"]);
   }
 
-  public round<T extends number | Number>(arg: TEntityValue<T | undefined>, len: number): QueryUnit<number | undefined> {
-    return new QueryUnit<number | undefined>(Number, ["ROUND(", this.getQueryValue(arg), ", ", len, ")"]);
+  public round<T extends number | Number>(arg: TEntityValue<T>, len: number): QueryUnit<number> {
+    return new QueryUnit<number>(Number, ["ROUND(", this.getQueryValue(arg), ", ", len, ")"]);
+  }
+
+  public ceil<T extends number | Number>(arg: TEntityValue<T>): QueryUnit<number> {
+    return new QueryUnit<number>(Number, ["CEILING(", this.getQueryValue(arg), ")"]);
+  }
+
+  public floor<T extends number | Number>(arg: TEntityValue<T>): QueryUnit<number> {
+    return new QueryUnit<number>(Number, ["FLOOR(", this.getQueryValue(arg), ")"]);
   }
 
   public max<T extends undefined | number | Number | string | String | DateOnly | DateTime | Time>(unit: TEntityValue<T>): QueryUnit<T> {

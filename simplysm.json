@@ -70,6 +70,15 @@
       },
       "publish": "npm"
     },
+    "sd-word": {
+      "type": "library",
+      "autoIndex": {
+        "polyfills": [
+          "@simplysm/sd-core-common"
+        ]
+      },
+      "publish": "npm"
+    },
     "sd-orm-common": {
       "type": "library",
       "autoIndex": {

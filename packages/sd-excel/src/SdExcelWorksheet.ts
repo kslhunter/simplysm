@@ -49,7 +49,7 @@ export class SdExcelWorksheet {
     return result;
   }
 
-  public async getDataTableAsync(headerRowIndex?: number): Promise<Record<string, any>[]> {
+  public async getDataTableAsync(opt?: { headerRowIndex?: number; checkEndColIndex?: number }): Promise<Record<string, any>[]> {
     const result: Record<string, TSdExcelValueType>[] = [];
 
     const headerMap = new Map<string, number>();
@@ -57,18 +57,23 @@ export class SdExcelWorksheet {
     const xml = await this._getDataAsync();
     const range = xml.range;
     for (let c = range.s.c; c <= range.e.c; c++) {
-      const val = await this.cell(headerRowIndex ?? range.s.r, c).getValAsync();
+      const val = await this.cell(opt?.headerRowIndex ?? range.s.r, c).getValAsync();
       if (typeof val === "string") {
         headerMap.set(val, c);
       }
     }
 
-    for (let r = (headerRowIndex ?? range.s.r) + 1; r <= range.e.r; r++) {
+    for (let r = (opt?.headerRowIndex ?? range.s.r) + 1; r <= range.e.r; r++) {
+      if (opt?.checkEndColIndex !== undefined && await this.cell(r, opt.checkEndColIndex).getValAsync() === undefined) {
+        break;
+      }
+
       const record: Record<string, TSdExcelValueType> = {} as any;
       for (const header of headerMap.keys()) {
         const c = headerMap.get(header)!;
         record[header] = await this.cell(r, c).getValAsync();
       }
+
       result.push(record);
     }
 

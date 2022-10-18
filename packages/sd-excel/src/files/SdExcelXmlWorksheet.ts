@@ -38,6 +38,8 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
 
     for (const row of this.data.worksheet.sheetData[0].row ?? []) {
       this._rowDataMap.set(row.$.r, row);
+
+      if (row.c === undefined) continue;
       for (const cell of row.c) {
         this._cellDataMap.set(cell.$.r, cell);
       }
@@ -94,7 +96,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     if (cellData === undefined) return;
 
     // CELL 삭제
-    const cellsData = rowData.c;
+    const cellsData = rowData.c!;
     cellsData.remove(cellData);
     this._cellDataMap.delete(addr);
 
@@ -201,6 +203,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     // CELL 정렬
     for (const rowData of rowsData) {
       const cellsData = rowData.c;
+      if (!cellsData) continue;
       cellsData.orderByThis((item) => SdExcelUtil.parseAddr(item.$.r).c);
     }
 
@@ -232,6 +235,7 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
     // CELL 없으면 만들기
     let cellData = this._cellDataMap.get(addr);
     if (cellData === undefined) {
+      rowData.c = rowData.c ?? [];
       const cellsData = rowData.c;
 
       cellData = { "$": { "r": addr }, "v": [""] };

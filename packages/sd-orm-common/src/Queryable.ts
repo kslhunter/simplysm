@@ -293,6 +293,8 @@ export class Queryable<D extends DbContext, T> {
   }
 
   public pivot<V extends TQueryValue, P extends string>(valueFwd: ((entity: TEntity<T>) => TEntityValue<V>),
+                                                        valueDupFwd: ((value: TEntityValue<V>) => TEntityValue<V>),
+                                                        emptyValue: V,
                                                         pivotFwd: ((entity: TEntity<T>) => TEntityValue<P>),
                                                         pivotKeys: P[]): Queryable<D, T & Record<P, V>> {
     const valueColumn = valueFwd(this._entity);
@@ -302,8 +304,8 @@ export class Queryable<D extends DbContext, T> {
     if (this.db.opt.dialect === "mysql") {
       for (const pivotKey of pivotKeys) {
         if (valueColumn instanceof QueryUnit) {
-          const asWrap = this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`);
-          entity[pivotKey] = new QueryUnit<any>(valueColumn.type, `SUM(IF(${asWrap}.${this.db.qh.getQueryValue(pivotColumn)} = '${pivotKey}', ${asWrap}.${this.db.qh.getQueryValue(valueColumn)}, 0))`);
+          // const asWrap = this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`);
+          entity[pivotKey] = valueDupFwd(new QueryUnit<V>(valueColumn.type, [`IF(`, this.db.qh.getQueryValue(pivotColumn), ` = '${pivotKey}', `, this.db.qh.getQueryValue(valueColumn), ", ", this.db.qh.getQueryValue(emptyValue), `)`]));
         }
         else {
           throw new NotImplementError();
@@ -313,7 +315,7 @@ export class Queryable<D extends DbContext, T> {
     else {
       for (const pivotKey of pivotKeys) {
         if (valueColumn instanceof QueryUnit) {
-          entity[pivotKey] = new QueryUnit<any>(valueColumn.type, `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(pivotKey)}`);
+          entity[pivotKey] = new QueryUnit<V>(valueColumn.type, `${this.db.qb.wrap(`TBL${this._as !== undefined ? `.${this._as}` : ""}`)}.${this.db.qb.wrap(pivotKey)}`);
         }
         else {
           throw new NotImplementError();
@@ -322,14 +324,9 @@ export class Queryable<D extends DbContext, T> {
     }
 
     let result = new Queryable(this.db, this as any, entity);
-    result._def.pivot = {
-      valueColumn: this.db.qh.getQueryValue(valueColumn),
-      pivotColumn: this.db.qh.getQueryValue(pivotColumn),
-      pivotKeys
-    };
 
     if (this.db.opt.dialect === "mysql") {
-      result = result
+      /*result = result
         .groupBy((item) => (
           Object.entries(item)
             .filter(([k, v]) => (
@@ -338,8 +335,16 @@ export class Queryable<D extends DbContext, T> {
               && !ObjectUtil.equal(v, pivotColumn)
             ))
             .map(([k, v]) => v) as any
-        ));
+        ));*/
     }
+    else {
+      result._def.pivot = {
+        valueColumn: this.db.qh.getQueryValue(valueDupFwd(valueColumn)),
+        pivotColumn: this.db.qh.getQueryValue(pivotColumn),
+        pivotKeys
+      };
+    }
+
     return result as any;
   }
 
@@ -518,7 +523,10 @@ export class Queryable<D extends DbContext, T> {
 
             const whereQuery: TQueryBuilderValue[] = [];
             for (let i = 0; i < fkDef.columnPropertyKeys.length; i++) {
-              whereQuery.push(this.db.qh.equal(item[fkTargetTableDef.columns[i].propertyKey], lastEn[fkDef.columnPropertyKeys[i]]));
+              whereQuery.push(...[
+                this.db.qh.isNotNull(lastEn[fkDef.columnPropertyKeys[i]]),
+                this.db.qh.equal(item[fkTargetTableDef.columns[i].propertyKey], lastEn[fkDef.columnPropertyKeys[i]])
+              ]);
             }
             return whereQuery;
           })
@@ -548,7 +556,10 @@ export class Queryable<D extends DbContext, T> {
 
             const whereQuery: TQueryBuilderValue[] = [];
             for (let i = 0; i < fktSourceFkDef.columnPropertyKeys.length; i++) {
-              whereQuery.push(this.db.qh.equal(item[fktSourceFkDef.columnPropertyKeys[i]], lastEn[tableDef.columns[i].propertyKey]));
+              whereQuery.push(...[
+                this.db.qh.isNotNull(lastEn[tableDef.columns[i].propertyKey]),
+                this.db.qh.equal(item[fktSourceFkDef.columnPropertyKeys[i]], lastEn[tableDef.columns[i].propertyKey])
+              ]);
             }
             return whereQuery;
           })

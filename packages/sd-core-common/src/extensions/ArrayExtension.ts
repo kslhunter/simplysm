@@ -50,6 +50,8 @@ declare global {
 
     toArrayMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V[]>;
 
+    toMapValues<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V>;
+
     toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
 
     toObject<V>(keySelector: (item: T, index: number) => string, valueSelector: (item: T, index: number) => V): Record<string, V>;
@@ -131,6 +133,8 @@ declare global {
     toMapAsync<K, V>(keySelector: (item: T, index: number) => Promise<K> | K, valueSelector: (item: T, index: number) => Promise<V> | V): Promise<Map<K, V>>;
 
     toArrayMap<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (item: T, index: number) => V): Map<K, V[]>;
+
+    toMapValues<K, V>(keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V>;
 
     toObject(keySelector: (item: T, index: number) => string): Record<string, T>;
 
@@ -293,6 +297,28 @@ declare global {
 
       const arr = result.getOrCreate(keyObj, []);
       arr.push(valueObj);
+    }
+
+    return result;
+  };
+
+
+  prototype.toMapValues = function <T, K, V>(this: T[], keySelector: (item: T, index: number) => K, valueSelector: (items: T[]) => V): Map<K, V | T> {
+    const itemsMap = new Map<K, T[]>();
+
+    for (let i = 0; i < this.length; i++) {
+      const item = this[i];
+
+      const keyObj = keySelector(item, i);
+
+      const arr = itemsMap.getOrCreate(keyObj, []);
+      arr.push(item);
+    }
+
+    const result = new Map<K, V | T>();
+
+    for (const key of itemsMap.keys()) {
+      result.set(key, valueSelector(itemsMap.get(key)!));
     }
 
     return result;

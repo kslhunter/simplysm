@@ -37,6 +37,6 @@ export class SdGlobalErrorHandlerPlugin implements ErrorHandler {
     catch (err1) {
     }
 
-    throw err;
+    // throw err;
   }
 }

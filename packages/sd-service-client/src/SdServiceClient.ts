@@ -4,7 +4,7 @@ import { SdServiceEventBase, TSdServiceC2SMessage, TSdServiceS2CMessage } from "
 import { SdWebSocket } from "./SdWebSocket";
 
 export class SdServiceClient {
-  public readonly id = Uuid.new().toString();
+  private readonly _id = Uuid.new().toString();
 
   private readonly _ws: SdWebSocket;
 
@@ -38,7 +38,7 @@ export class SdServiceClient {
           location.reload();
         }
         else if (msg.name === "client-get-id") {
-          const resMsg: TSdServiceC2SMessage = { name: "client-get-id-response", body: this.id };
+          const resMsg: TSdServiceC2SMessage = { name: "client-get-id-response", body: this._id };
           await this._ws.sendAsync(JsonConvert.stringify(resMsg));
         }
         else if (msg.name === "connected") {
