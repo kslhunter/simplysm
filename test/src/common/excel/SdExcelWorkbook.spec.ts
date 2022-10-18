@@ -74,7 +74,7 @@ describe("(node) excel.SdExcelWorkbook", () => {
     await wsTestAsync(ws);
 
     const buffer = await wb.getBufferAsync();
-    await FsUtil.writeFileAsync(path.resolve(__dirname, "SdExcelWorkbookTestDir/.새파일.xlsx"), buffer);
+    await FsUtil.writeFileAsync(path.resolve(__dirname, ".output/새파일.xlsx"), buffer);
   });
 
   it("미리만든 파일", async () => {
@@ -85,7 +85,7 @@ describe("(node) excel.SdExcelWorkbook", () => {
     await wsTestAsync(ws);
 
     const buffer2 = await wb.getBufferAsync();
-    await FsUtil.writeFileAsync(path.resolve(__dirname, "SdExcelWorkbookTestDir/.새파일2.xlsx"), buffer2);
+    await FsUtil.writeFileAsync(path.resolve(__dirname, ".output/새파일2.xlsx"), buffer2);
   });
 
   /*it("대량 데이터 읽기", async () => {

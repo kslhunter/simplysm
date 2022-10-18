@@ -10,7 +10,7 @@ describe("(node) excel.SdWordDocument", () => {
   it("새파일", async () => {
     const doc = SdWordDocument.create();
     const buffer = await doc.getBufferAsync();
-    await FsUtil.writeFileAsync(path.resolve(__dirname, "SdWordDocumentTestDir/.새파일.docx"), buffer);
+    await FsUtil.writeFileAsync(path.resolve(__dirname, ".output/새파일.docx"), buffer);
   });
 
   it("미리만든파일", async () => {
@@ -50,6 +50,6 @@ describe("(node) excel.SdWordDocument", () => {
     expect(await doc.paragraph(0).block(0).getValAsync()).equals("BBB");
 
     const buffer2 = await doc.getBufferAsync();
-    await FsUtil.writeFileAsync(path.resolve(__dirname, "SdWordDocumentTestDir/.새파일2.docx"), buffer2);
+    await FsUtil.writeFileAsync(path.resolve(__dirname, ".output/새파일2.docx"), buffer2);
   });
 });
