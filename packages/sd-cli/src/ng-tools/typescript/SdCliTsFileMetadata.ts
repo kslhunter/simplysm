@@ -19,7 +19,7 @@ export class SdCliTsFileMetadata {
 
     const result: { exportedName: string; target: SdCliTsClassMetadata }[] = [];
     this.sourceFile.forEachChild((node) => {
-      if (!node.modifiers || !node.modifiers.some((item) => item.kind === ts.SyntaxKind.ExportKeyword)) return;
+      if (!ts.canHaveModifiers(node) || !ts.getModifiers(node)?.some((item) => item.kind === ts.SyntaxKind.ExportKeyword)) return;
       if (!ts.isClassDeclaration(node)) return;
       if (node.name === undefined) {
         throw new NeverEntryError();
@@ -195,9 +195,9 @@ export class SdCliTsClassMetadata {
   public get ngDecl(): TSdCliTsNgMetadata | undefined {
     if (this._ngDeclCache !== undefined) return this._ngDeclCache;
 
-    if (!this._node.decorators) return undefined;
+    if (!ts.canHaveDecorators(this._node)) return undefined;
 
-    for (const deco of this._node.decorators) {
+    for (const deco of ts.getDecorators(this._node) ?? []) {
       if (!ts.isCallExpression(deco.expression)) continue;
       if (!ts.isIdentifier(deco.expression.expression)) {
         throw new NeverEntryError();

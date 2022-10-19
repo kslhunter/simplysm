@@ -21,7 +21,7 @@ describe("(node) sd-cli.SdCliProjectGenerator", () => {
   });
 
   it("TS 일반 라이브러리 생성", async () => {
-    await generator.addTsLibAsync({ name: "common", description: "공통모듈", useDom: false });
+    await generator.addTsLibAsync({ name: "common", description: "공통모듈", useDom: false, isForAngular: false });
   });
 
   it("DB 라이브러리 생성", async () => {
@@ -49,8 +49,7 @@ describe("(node) sd-cli.SdCliProjectGenerator", () => {
     await generator.addClientAsync({
       name: "admin",
       description: "관리자",
-      useRouter: true,
-      useServiceWorker: true
+      serverName: "server"
     });
   });
 });

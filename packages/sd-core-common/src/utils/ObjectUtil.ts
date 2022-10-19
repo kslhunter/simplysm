@@ -75,7 +75,7 @@ export class ObjectUtil {
   }
 
   public static merge<T, P>(source: T, target: P, opt?: { arrayProcess?: "replace" | "concat"; useDelTargetNull?: boolean }): (T & P) {
-    if (source === undefined) {
+    if (source == null) {
       return ObjectUtil.clone(target) as any;
     }
 
@@ -504,7 +504,7 @@ export class ObjectUtil {
   }
 
   public static clearUndefined<T>(obj: T): T {
-    if (obj === undefined) {
+    if (obj == null) {
       return obj;
     }
 
@@ -517,7 +517,7 @@ export class ObjectUtil {
     return obj;
   }
 
-  public static clear<T>(obj: T): {} {
+  public static clear<T extends {}>(obj: T): {} {
     for (const key of Object.keys(obj)) {
       delete obj[key];
     }

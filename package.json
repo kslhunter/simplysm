@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "7.1.20",
+  "version": "7.1.21",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -19,17 +19,17 @@
     "test"
   ],
   "scripts": {
-    "watch": "npm run _sd-cli_ --debug watch",
-    "build": "npm run _sd-cli_ --debug build",
-    "publish": "npm run _sd-cli_ --debug publish",
-    "publish(--noBuild)": "npm run _sd-cli_ --debug publish --noBuild",
+    "watch": "npm run _sd-cli_ -- --debug watch",
+    "build": "npm run _sd-cli_ -- --debug build",
+    "publish": "npm run _sd-cli_ -- --debug publish",
+    "publish(--noBuild)": "npm run _sd-cli_ -- --debug publish --noBuild",
     "----- pkg(--debug)": "",
-    "watch:sd-core-common(--debug)": "npm run _sd-cli_ --debug watch --packages sd-core-common",
-    "watch:sd-orm-common(--debug)": "npm run _sd-cli_ --debug watch --packages sd-orm-common",
-    "watch:sd-angular(--debug)": "npm run _sd-cli_ --debug watch --packages sd-angular",
+    "watch:sd-core-common(--debug)": "npm run _sd-cli_ -- --debug watch --packages sd-core-common",
+    "watch:sd-orm-common(--debug)": "npm run _sd-cli_ -- --debug watch --packages sd-orm-common",
+    "watch:sd-angular(--debug)": "npm run _sd-cli_ -- --debug watch --packages sd-angular",
     "----- utils": "",
-    "update": "npm run _sd-cli_ --debug update",
-    "postinstall": "npm run _sd-cli_ --debug prepare",
+    "update": "npm run _sd-cli_ -- --debug update",
+    "postinstall": "npm run _sd-cli_ -- --debug prepare",
     "---": "",
     "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --no-warnings --max-old-space-size=8192 --experimental-specifier-resolution=node --experimental-import-meta-resolve --loader ./lib/ts-node-esm-paths packages/sd-cli/src/bin/sd-cli.ts",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.cjs|*.mjs)\""
