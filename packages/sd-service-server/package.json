@@ -25,12 +25,12 @@
     "@simplysm/sd-orm-common": "7.1.20",
     "@simplysm/sd-orm-node": "7.1.20",
     "@simplysm/sd-service-common": "7.1.20",
-    "bufferutil": "^4.0.6",
+    "bufferutil": "^4.0.7",
     "connect": "^3.7.0",
     "mime": "^3.0.0",
     "nodemailer": "^6.8.0",
     "semver": "^7.3.8",
-    "utf-8-validate": "^5.0.9",
+    "utf-8-validate": "^5.0.10",
     "ws": "^8.9.0"
   },
   "devDependencies": {

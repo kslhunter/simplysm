@@ -26,7 +26,7 @@
 ``` bat
 :: 주의사항: 대상이되는 라이브러리는 반드시 빌드되어 있거나, 변경감지 중이여야 합니다.
 :: sd-cli local-update --help 참고
-npx sd-cli local-update
+sd-cli local-update
 ```
 
 또한, `sd-cli watch` 를 수행할 경우에는, 로컬 라이브러리 파일이 변경되면 자동으로 해당 파일을 다시 덮어씁니다.
@@ -39,11 +39,11 @@ npx sd-cli local-update
 {
   ...,
   "scripts": {
-    "watch": "npx sd-cli local-update && npx sd-cli watch",
-    "build": "npx sd-cli local-update && npx sd-cli build",
-    "publish": "npx sd-cli local-update && npx sd-cli publish",
+    "watch": "sd-cli local-update && sd-cli watch",
+    "build": "sd-cli local-update && sd-cli build",
+    "publish": "sd-cli local-update && sd-cli publish",
     "----- utils": "",
-    "postinstall": "npx sd-cli local-update && npx sd-cli prepare"
+    "postinstall": "sd-cli local-update && sd-cli prepare"
   },
   ...
 }

@@ -2,7 +2,6 @@ import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
 import { INpmConfig, ISdCliClientPackageConfig } from "../commons";
 import path from "path";
 import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
-import ts from "typescript";
 
 export class SdCliElectron {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -35,7 +34,7 @@ export class SdCliElectron {
       throw new Error("ELECTRON 빌드 패키지의 'dependencies'에는 'dotenv'가 반드시 포함되어야 합니다.");
     }
 
-    const remoteVersion = npmConfig.dependencies?.["@electron/remote"];
+    // const remoteVersion = npmConfig.dependencies?.["@electron/remote"];
 
     await FsUtil.writeJsonAsync(path.resolve(electronSrcPath, `package.json`), {
       name: npmConfig.name,
@@ -43,7 +42,7 @@ export class SdCliElectron {
       description: npmConfig.description,
       main: "electron.js",
       author: npmConfig.author,
-      license: npmConfig.license,
+      license: npmConfig.license/*,
       devDependencies: {
         "electron": electronVersion.replace("^", "")
       },
@@ -52,7 +51,7 @@ export class SdCliElectron {
         ...remoteVersion !== undefined ? {
           "@electron/remote": remoteVersion
         } : {}
-      }
+      }*/
     });
 
     if (FsUtil.exists(path.resolve(pkgRootPath, "src/favicon.ico"))) {
@@ -72,10 +71,10 @@ export class SdCliElectron {
       ...(electronConfig.env !== undefined) ? Object.keys(electronConfig.env).map((key) => `${key}=${electronConfig.env![key]}`) : [],
     ].filterExists().join("\n"));
 
-    let electronTsFileContent = await FsUtil.readFileAsync(path.resolve(pkgRootPath, `src/electron.ts`));
+    /*let electronTsFileContent = await FsUtil.readFileAsync(path.resolve(pkgRootPath, `src/electron.ts`));
     electronTsFileContent = "require(\"dotenv\").config({ path: `${__dirname}\\\\.env` });\n" + electronTsFileContent;
     const result = ts.transpileModule(electronTsFileContent, { compilerOptions: { module: ts.ModuleKind.CommonJS } });
-    await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), result.outputText);
+    await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), result.outputText);*/
 
     await SdProcess.spawnAsync("electron-rebuild", { cwd: pkgRootPath }, true);
 

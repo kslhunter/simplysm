@@ -19,17 +19,17 @@
     "test"
   ],
   "scripts": {
-    "watch": "yarn _sd-cli_ --debug watch",
-    "build": "yarn _sd-cli_ --debug build",
-    "publish": "yarn _sd-cli_ --debug publish",
-    "publish(--noBuild)": "yarn _sd-cli_ --debug publish --noBuild",
+    "watch": "npm run _sd-cli_ --debug watch",
+    "build": "npm run _sd-cli_ --debug build",
+    "publish": "npm run _sd-cli_ --debug publish",
+    "publish(--noBuild)": "npm run _sd-cli_ --debug publish --noBuild",
     "----- pkg(--debug)": "",
-    "watch:sd-core-common(--debug)": "yarn _sd-cli_ --debug watch --packages sd-core-common",
-    "watch:sd-orm-common(--debug)": "yarn _sd-cli_ --debug watch --packages sd-orm-common",
-    "watch:sd-angular(--debug)": "yarn _sd-cli_ --debug watch --packages sd-angular",
+    "watch:sd-core-common(--debug)": "npm run _sd-cli_ --debug watch --packages sd-core-common",
+    "watch:sd-orm-common(--debug)": "npm run _sd-cli_ --debug watch --packages sd-orm-common",
+    "watch:sd-angular(--debug)": "npm run _sd-cli_ --debug watch --packages sd-angular",
     "----- utils": "",
-    "update": "yarn _sd-cli_ --debug update",
-    "postinstall": "yarn _sd-cli_ --debug prepare",
+    "update": "npm run _sd-cli_ --debug update",
+    "postinstall": "npm run _sd-cli_ --debug prepare",
     "---": "",
     "_sd-cli_": "cross-env TS_NODE_TRANSPILE_ONLY=true cross-env TS_NODE_PROJECT=packages/sd-cli/tsconfig.json node --no-warnings --max-old-space-size=8192 --experimental-specifier-resolution=node --experimental-import-meta-resolve --loader ./lib/ts-node-esm-paths packages/sd-cli/src/bin/sd-cli.ts",
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.cjs|*.mjs)\""
@@ -38,6 +38,6 @@
     "@types/node": "^16.11.66",
     "cross-env": "^7.0.3",
     "eslint": "~8.25.0",
-    "typescript": "~4.7.4"
+    "typescript": "~4.8.4"
   }
 }

@@ -277,7 +277,7 @@ export class SdCliClientBuilder extends EventEmitter {
         throw new Error("ELECTRON 빌드 패키지의 'dependencies'에는 'dotenv'가 반드시 포함되어야 합니다.");
       }
 
-      const remoteVersion = npmConfig.dependencies?.["@electron/remote"];
+      // const remoteVersion = npmConfig.dependencies?.["@electron/remote"];
 
       const electronSrcPath = path.resolve(this._rootPath, `.cache/electron/src`);
       const electronDistPath = path.resolve(this._rootPath, `.cache/electron/dist`);
@@ -288,7 +288,7 @@ export class SdCliClientBuilder extends EventEmitter {
         description: npmConfig.description,
         main: "electron.js",
         author: npmConfig.author,
-        license: npmConfig.license,
+        license: npmConfig.license/*,
         devDependencies: {
           "electron": electronVersion.replace("^", "")
         },
@@ -299,7 +299,7 @@ export class SdCliClientBuilder extends EventEmitter {
           } : {},
           ...extModules.filter((item) => item.exists).map((item) => item.name)
             .toObject((item) => item, () => "*")
-        }
+        }*/
       }, { space: 2 });
       await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "yarn.lock"), "");
 
@@ -311,10 +311,10 @@ export class SdCliClientBuilder extends EventEmitter {
         ...(this._config.builder.electron.env !== undefined) ? Object.keys(this._config.builder.electron.env).map((key) => `${key}=${this._config.builder!.electron!.env![key]}`) : []
       ].filterExists().join("\n"));
 
-      let electronTsFileContent = await FsUtil.readFileAsync(path.resolve(this._rootPath, `src/electron.ts`));
+      /*let electronTsFileContent = await FsUtil.readFileAsync(path.resolve(this._rootPath, `src/electron.ts`));
       electronTsFileContent = "require(\"dotenv\").config({ path: `${__dirname}\\\\.env` });\n" + electronTsFileContent;
       const result = ts.transpileModule(electronTsFileContent, { compilerOptions: { module: ts.ModuleKind.CommonJS } });
-      await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), result.outputText);
+      await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), result.outputText);*/
 
       await electronBuilder.build({
         targets: electronBuilder.Platform.WINDOWS.createTarget(),
@@ -406,7 +406,7 @@ export class SdCliClientBuilder extends EventEmitter {
     return {
       mode: watch ? "development" : "production",
       devtool: false,
-      target: builderType === "electron" ? ["electron-renderer", "es2015"] : ["web", "es2015"],
+      target: builderType === "electron" ? ["electron-renderer", "electron-main", "es2015"] : ["web", "es2015"],
       profile: false,
       resolve: {
         roots: [this._rootPath],
@@ -424,7 +424,8 @@ export class SdCliClientBuilder extends EventEmitter {
         main: [mainFilePath],
         ...FsUtil.exists(polyfillsFilePath) ? { polyfills: [polyfillsFilePath] } : {},
         ...FsUtil.exists(stylesFilePath) ? { styles: [stylesFilePath] } : {},
-        ...builderType === "cordova" ? { "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../lib/cordova-entry.js`) } : {}
+        ...builderType === "cordova" ? { "cordova-entry": path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../lib/cordova-entry.js`) } : {},
+        ...builderType === "electron" ? { "electron": path.resolve(this._rootPath, "src/electron.ts") } : {}
       },
       output: {
         uniqueName: pkgKey,
@@ -458,7 +459,12 @@ export class SdCliClientBuilder extends EventEmitter {
       infrastructureLogging: { level: "error" },
       stats: "errors-warnings",
       // externals: extModules.toObject((item) => item.name, (item) => item.exists ? "commonjs2 " + item.name : `var {name: '${item.name}'}`),
-      externals: extModules.toObject((item) => item.name, (item) => "commonjs2 " + item.name),
+      externals: {
+        ...extModules.toObject((item) => item.name, (item) => "commonjs2 " + item.name),
+        ...builderType === "electron" ? {
+          "electron": "commonjs2 electron"
+        } : {}
+      },
       cache: {
         type: "filesystem",
         profile: undefined,
