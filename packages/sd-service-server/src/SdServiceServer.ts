@@ -5,7 +5,7 @@ import path from "path";
 import { FsUtil, Logger } from "@simplysm/sd-core-node";
 import { ISdServiceServerOptions, SdServiceBase } from "./commons";
 import { EventEmitter } from "events";
-import { JsonConvert, Wait } from "@simplysm/sd-core-common";
+import { DateTime, JsonConvert, Wait } from "@simplysm/sd-core-common";
 import { WebSocket, WebSocketServer } from "ws";
 import {
   ISdServiceRequest,
@@ -45,7 +45,11 @@ export class SdServiceServer extends EventEmitter {
 
   public getWsClient(socketId: string): WebSocket | undefined {
     if (!this._wsServer) return undefined;
-    return Array.from(this._wsServer.clients).single((item) => item.readyState === WebSocket.OPEN && item["id"] === socketId);
+    const wsClients = Array.from(this._wsServer.clients).filter((item) => item.readyState === WebSocket.OPEN && item["id"] === socketId);
+    if (wsClients.length > 1) {
+      this._logger.debug("클라이언트 중복: " + socketId + ": " + wsClients.length + "\n" + wsClients.map((item) => "  - " + item["connectedAtDateTime"].toFormatString("yyyy:MM:dd HH:mm:ss.fff")).join("\n"));
+    }
+    return wsClients.last();
   }
 
   public async listenAsync(): Promise<void> {
@@ -148,8 +152,9 @@ export class SdServiceServer extends EventEmitter {
   private async _onWsClientConnectionAsync(wsClient: WebSocket): Promise<void> {
     const wsClientId = await this._getWsClientIdAsync(wsClient);
     wsClient["id"] = wsClientId;
+    wsClient["connectedAtDateTime"] = new DateTime();
 
-    this._logger.debug("클라이언트 연결됨: " + wsClientId);
+    this._logger.debug("클라이언트 연결됨: " + wsClientId + ": " + this._wsServer?.clients.size);
 
     wsClient.on("close", (code) => {
       this._onWsClientClosed(wsClientId, code);
@@ -164,7 +169,7 @@ export class SdServiceServer extends EventEmitter {
   }
 
   private _onWsClientClosed(wsClientId: string, code: number): void {
-    this._logger.debug("클라이언트 연결 끊김: " + wsClientId + ": " + code);
+    this._logger.debug("클라이언트 연결 끊김: " + wsClientId + ": " + this._wsServer?.clients.size + ": " + code);
     // 클라이언트 창이 닫히거나 RELOAD 될때
     if (code === 1001) {
       this._logger.debug("닫힌 소켓의 이벤트 리스너 비우기...");
