@@ -40,11 +40,12 @@ export abstract class DbContext {
   }
 
   // noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
-  public constructor(private readonly _executor: IDbContextExecutor,
+  public constructor(private readonly _executor: IDbContextExecutor | undefined,
                      public readonly opt: TDbContextOption) {
   }
 
   public async connectWithoutTransactionAsync<R>(callback: () => Promise<R>): Promise<R> {
+    if (!this._executor) throw new Error("DB 실행기를 알 수 없습니다.");
     await this._executor.connectAsync();
     this.status = "connect";
     this.lastConnectionDateTime = new DateTime();
@@ -67,6 +68,7 @@ export abstract class DbContext {
   }
 
   public async connectAsync<R>(fn: () => Promise<R>, isolationLevel?: ISOLATION_LEVEL): Promise<R> {
+    if (!this._executor) throw new Error("DB 실행기를 알 수 없습니다.");
     await this._executor.connectAsync();
     this.status = "connect";
     this.lastConnectionDateTime = new DateTime();
@@ -112,6 +114,8 @@ export abstract class DbContext {
   }
 
   public async transAsync<R>(fn: () => Promise<R>, isolationLevel?: ISOLATION_LEVEL): Promise<R> {
+    if (!this._executor) throw new Error("DB 실행기를 알 수 없습니다.");
+
     if (this.status === "transact") {
       throw new Error("이미 TRANSACTION 상태 입니다.");
     }
@@ -154,14 +158,17 @@ export abstract class DbContext {
   }
 
   public async executeDefsAsync(defs: TQueryDef[], options?: (IQueryResultParseOption | undefined)[]): Promise<any[][]> {
+    if (!this._executor) throw new Error("DB 실행기를 알 수 없습니다.");
     return await this._executor.executeDefsAsync(defs, options);
   }
 
   public async executeQueriesAsync(queries: string[]): Promise<any[][]> {
+    if (!this._executor) throw new Error("DB 실행기를 알 수 없습니다.");
     return await this._executor.executeAsync(queries);
   }
 
   public async bulkInsertAsync(tableName: string, columnDefs: IQueryColumnDef[], records: Record<string, any>[]): Promise<void> {
+    if (!this._executor) throw new Error("DB 실행기를 알 수 없습니다.");
     await this._executor.bulkInsertAsync(tableName, columnDefs, records);
   }
 
@@ -395,7 +402,7 @@ export abstract class DbContext {
     let tableDefs: ITableDef[];
 
     if (this.opt.dialect !== "sqlite") {
-      const dbNames = dbs ?? [this.opt.database];
+      const dbNames = dbs ?? (this.opt.database !== undefined ? [this.opt.database] : []);
       if (dbNames.length < 1) {
         throw new Error("생성할 데이터베이스가 없습니다.");
       }
@@ -423,25 +430,7 @@ export abstract class DbContext {
       tableDefs = this.tableDefs.filterExists();
     }
 
-    const createTableQueryDefs: TQueryDef[] = [];
-    for (const tableDef of tableDefs) {
-      createTableQueryDefs.push(this.getCreateTableQueryDefFromTableDef(tableDef));
-    }
-    queryDefsList.push(createTableQueryDefs);
-
-    // TABLE 초기화: FK 설정
-    const addFkQueryDefs: TQueryDef[] = [];
-    for (const tableDef of tableDefs) {
-      addFkQueryDefs.push(...this.getCreateFksQueryDefsFromTableDef(tableDef));
-    }
-    queryDefsList.push(addFkQueryDefs);
-
-    // TABLE 초기화: INDEX 설정
-    const createIndexQueryDefs: TQueryDef[] = [];
-    for (const tableDef of tableDefs) {
-      createIndexQueryDefs.push(...this.getCreateIndexesQueryDefsFromTableDef(tableDef));
-    }
-    queryDefsList.push(createIndexQueryDefs);
+    queryDefsList.push(...this.getCreateTablesFullQueryDefsFromTableDef(tableDefs));
 
     // Migration 데이터 저장 등록
     const migrationInsertQueryDefs: TQueryDef[] = [];
@@ -467,6 +456,32 @@ export abstract class DbContext {
     }
 
     return true;
+  }
+
+  public getCreateTablesFullQueryDefsFromTableDef(tableDefs: ITableDef[]): TQueryDef[][] {
+    const result: TQueryDef[][] = [];
+
+    const createTableQueryDefs: TQueryDef[] = [];
+    for (const tableDef of tableDefs) {
+      createTableQueryDefs.push(this.getCreateTableQueryDefFromTableDef(tableDef));
+    }
+    result.push(createTableQueryDefs);
+
+    // TABLE 초기화: FK 설정
+    const addFkQueryDefs: TQueryDef[] = [];
+    for (const tableDef of tableDefs) {
+      addFkQueryDefs.push(...this.getCreateFksQueryDefsFromTableDef(tableDef));
+    }
+    result.push(addFkQueryDefs);
+
+    // TABLE 초기화: INDEX 설정
+    const createIndexQueryDefs: TQueryDef[] = [];
+    for (const tableDef of tableDefs) {
+      createIndexQueryDefs.push(...this.getCreateIndexesQueryDefsFromTableDef(tableDef));
+    }
+    result.push(createIndexQueryDefs);
+
+    return result;
   }
 
   public getCreateTableQueryDefFromTableDef(tableDef: ITableDef): TQueryDef {
@@ -738,8 +753,8 @@ export type TDbContextOption = IDefaultDbContextOption | ISqliteDbContextOption;
 
 export interface IDefaultDbContextOption {
   dialect: "mysql" | "mssql" | "mssql-azure";
-  database: string;
-  schema: string;
+  database?: string;
+  schema?: string;
 }
 
 export interface ISqliteDbContextOption {
