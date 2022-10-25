@@ -153,8 +153,8 @@ export class SdServiceServer extends EventEmitter {
     const wsClientId = await this._getWsClientIdAsync(wsClient);
 
     this._wsServer?.clients.forEach((client) => {
-      if(client["id"] === wsClientId){
-        this._logger.debug("클라이언트 기존연결 끊기: " + wsClientId + ": " + this._wsServer?.clients.size);
+      if (client["id"] === wsClientId) {
+        this._logger.debug("클라이언트 기존연결 끊기: " + wsClientId + ": " + client["connectedAtDateTime"].toFormatString("yyyy:MM:dd HH:mm:ss.fff"));
         client.close();
       }
     });
