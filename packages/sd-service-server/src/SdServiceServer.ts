@@ -151,6 +151,14 @@ export class SdServiceServer extends EventEmitter {
 
   private async _onWsClientConnectionAsync(wsClient: WebSocket): Promise<void> {
     const wsClientId = await this._getWsClientIdAsync(wsClient);
+
+    this._wsServer?.clients.forEach((client) => {
+      if(client["id"] === wsClientId){
+        this._logger.debug("클라이언트 기존연결 끊기: " + wsClientId + ": " + this._wsServer?.clients.size);
+        client.close();
+      }
+    });
+
     wsClient["id"] = wsClientId;
     wsClient["connectedAtDateTime"] = new DateTime();
 
