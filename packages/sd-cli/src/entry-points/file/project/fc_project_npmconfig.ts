@@ -23,7 +23,7 @@ export const fc_project_npmconfig = (opt: { name: string; description: string; a
     "build": "sd-cli build",
     "publish": "sd-cli publish",
     "----- utils": "",
-    "postinstall": "sd-cli prepare"
+    "postinstall": "npx sd-cli prepare"
   },
   devDependencies: {
     "@simplysm/eslint-plugin": "~7.1.0",

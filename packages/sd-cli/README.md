@@ -19,13 +19,14 @@ cd sample
 yarn set version 3.2.2
 yarn config set nodeLinker node-modules
 yarn add @simplysm/sd-cli@~7.1.0
+yarn upgrade-interactive
 ```
 
 ### 3. 프로젝트 초기화
 
 ``` bat
-:: sd-cli init --help 참고
-sd-cli init "샘플프로젝트" "홍길동" https://github.com/my/sample.git
+:: npx sd-cli init --help 참고
+npx sd-cli init "샘플프로젝트" "홍길동" https://github.com/my/sample.git
 ```
 
 필요시 아래 작업 수행
@@ -38,15 +39,15 @@ sd-cli init "샘플프로젝트" "홍길동" https://github.com/my/sample.git
 #### 서버 패키지 추가
 
 ``` bat
-:: sd-cli add server --help 참고
-sd-cli add server
+:: npx sd-cli add server --help 참고
+npx sd-cli add server
 ```
 
 #### 클라이언트 패키지 추가
 
 ``` bat
-:: sd-cli add client --help 참고
-sd-cli add client admin 관리자 server
+:: npx sd-cli add client --help 참고
+npx sd-cli add client admin 관리자 server
 ```
 
 추가 작업
@@ -57,29 +58,29 @@ sd-cli add client admin 관리자 server
 #### 일반 라이브러리 패키지 추가
 
 ``` bat
-:: sd-cli add ts-lib --help 참고
-sd-cli add ts-lib common 공통모듈
+:: npx sd-cli add ts-lib --help 참고
+npx sd-cli add ts-lib common 공통모듈
 ```
 
 #### 브라우저용 라이브러리 패키지 추가
 
 ``` bat
-:: sd-cli add ts-lib --help 참고
-sd-cli add ts-lib browser-common "브라우저 공통" --useDom
+:: npx sd-cli add ts-lib --help 참고
+npx sd-cli add ts-lib browser-common "브라우저 공통" --useDom
 ```
 
 #### Angular용 라이브러리 패키지 추가
 
 ``` bat
-:: sd-cli add ts-lib --help 참고
-sd-cli add ts-lib client-common "클라이언트 공통" --isForAngular
+:: npx sd-cli add ts-lib --help 참고
+npx sd-cli add ts-lib client-common "클라이언트 공통" --isForAngular
 ```
 
 #### DB 라이브러리 패키지 추가
 
 ``` bat
-:: sd-cli add db-lib --help 참고
-sd-cli add db-lib main
+:: npx sd-cli add db-lib --help 참고
+npx sd-cli add db-lib main
 ```
 
 추가 작업
@@ -93,8 +94,8 @@ sd-cli add db-lib main
 #### DB 라이브러리 패키지에 모델 추가
 
 ``` bat
-:: sd-cli add db-model --help 참고
-sd-cli add db-model main base Employee 직원
+:: npx sd-cli add db-model --help 참고
+npx sd-cli add db-model main base Employee 직원
 ```
 
 주의사항

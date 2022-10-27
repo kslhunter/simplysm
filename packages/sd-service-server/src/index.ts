@@ -1,3 +1,4 @@
+export * from "./ApiServiceError";
 export * from "./commons";
 export * from "./SdServiceServer";
 export * from "./services/SdAutoUpdateService";

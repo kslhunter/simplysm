@@ -26,7 +26,6 @@ import { fc_package_polyfills } from "./file/client/fc_package_polyfills";
 import { fc_package_styles } from "./file/client/fc_package_styles";
 import { ISdAutoIndexConfig } from "../build-tool/SdCliIndexFileGenerator";
 import { fc_package_Page } from "./file/client/fc_package_Page";
-import { fc_project_yarnrc } from "./file/project/fc_project_yarnrc";
 
 export class SdCliProjectGenerator {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -52,9 +51,6 @@ export class SdCliProjectGenerator {
 
     this._logger.log(`[${projName}] '.gitignore' 파일 생성`);
     await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".gitignore"), fc_project_gitignore());
-
-    this._logger.log(`[${projName}] '.yarnrc.yml' 파일 생성`);
-    await FsUtil.writeFileAsync(path.resolve(this._rootPath, ".yarnrc.yml"), fc_project_yarnrc());
 
     this._logger.log(`[${projName}] 'package.json' 파일 생성`);
     let cliVersion: string | undefined;
@@ -140,10 +136,10 @@ export class SdCliProjectGenerator {
       name: pkgName,
       description: "DB " + opt.name.toUpperCase(),
       useDom: false,
-      isModule: false,
+      isModule: true,
       isForAngular: false,
       types: "dist/index.d.ts",
-      main: "dist/index.cjs",
+      main: "dist/index.mjs",
       dependencies: {
         "@simplysm/sd-core-common": "~7.1.0",
         "@simplysm/sd-orm-common": "~7.1.0"

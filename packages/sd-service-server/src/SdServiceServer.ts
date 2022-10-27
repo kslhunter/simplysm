@@ -15,6 +15,7 @@ import {
   TSdServiceS2CMessage
 } from "@simplysm/sd-service-common";
 import mime from "mime";
+import { ApiServiceError } from "./ApiServiceError";
 
 export class SdServiceServer extends EventEmitter {
   private readonly _logger = Logger.get(["simplysm", "sd-service", this.constructor.name]);
@@ -151,6 +152,14 @@ export class SdServiceServer extends EventEmitter {
 
   private async _onWsClientConnectionAsync(wsClient: WebSocket): Promise<void> {
     const wsClientId = await this._getWsClientIdAsync(wsClient);
+
+    this._wsServer?.clients.forEach((client) => {
+      if (client["id"] === wsClientId) {
+        this._logger.debug("클라이언트 기존연결 끊기: " + wsClientId + ": " + client["connectedAtDateTime"].toFormatString("yyyy:MM:dd HH:mm:ss.fff"));
+        client.close();
+      }
+    });
+
     wsClient["id"] = wsClientId;
     wsClient["connectedAtDateTime"] = new DateTime();
 
@@ -217,7 +226,7 @@ export class SdServiceServer extends EventEmitter {
     }
   }
 
-  private async _runServiceMethodAsync(def: { socketId?: string; request?: ISdServiceRequest; serviceName: string; methodName: string; params: any[] }): Promise<any> {
+  private async _runServiceMethodAsync(def: { socketId?: string; request?: ISdServiceRequest; serviceName: string; methodName: string; params: any[]; apiHeaders?: http.IncomingHttpHeaders }): Promise<any> {
     // 서비스 가져오기
     const serviceClass = this.options.services.last((item) => item.name === def.serviceName);
     if (!serviceClass) {
@@ -227,6 +236,7 @@ export class SdServiceServer extends EventEmitter {
     service.server = this;
     service.request = def.request;
     service.socketId = def.socketId;
+    service.apiHeaders = def.apiHeaders;
 
     // 메소드 가져오기
     const method = service[def.methodName];
@@ -377,8 +387,14 @@ export class SdServiceServer extends EventEmitter {
 
         let params: any[] | undefined;
         if (req.method === "GET") {
+
           if (typeof urlObj.query["json"] !== "string") throw new Error();
-          params = JsonConvert.parse(urlObj.query["json"]);
+          if (req.headers["content-type"]?.toLowerCase().includes("json")) {
+            params = JsonConvert.parse(urlObj.query["json"]);
+          }
+          else {
+            params = [urlObj.query];
+          }
         }
         else if (req.method === "POST") {
           const body = await new Promise<Buffer>((resolve) => {
@@ -390,23 +406,30 @@ export class SdServiceServer extends EventEmitter {
               resolve(tmp);
             });
           });
-          params = JsonConvert.parse(body.toString());
+
+          if (req.headers["content-type"]?.toLowerCase().includes("json")) {
+            params = JsonConvert.parse(body.toString());
+          }
+          else {
+            params = [body.toString()];
+          }
         }
 
         if (params) {
-          const result = await this._runServiceMethodAsync({
+          const serviceResult = await this._runServiceMethodAsync({
             serviceName,
             methodName,
-            params
+            params,
+            apiHeaders: req.headers
           });
 
-          const resultJson = JsonConvert.stringify(result);
+          const result = req.headers["content-type"]?.toLowerCase().includes("json") ? JsonConvert.stringify(serviceResult) : serviceResult;
 
           res.writeHead(200, {
-            "Content-Length": resultJson.length,
-            "Content-Type": "application/json"
+            "Content-Length": Buffer.from(result).length,
+            "Content-Type": req.headers["content-type"]?.toLowerCase()
           });
-          res.end(resultJson);
+          res.end(result);
 
           return;
         }
@@ -454,9 +477,16 @@ export class SdServiceServer extends EventEmitter {
       }
     }
     catch (err) {
-      const errorMessage = "요청 처리중 오류가 발생하였습니다.";
-      this._responseErrorHtml(res, 405, errorMessage);
-      this._logger.error(`[405] ${errorMessage}`, err);
+      if (err instanceof ApiServiceError) {
+        res.writeHead(err.statusCode);
+        res.end(err.message);
+        this._logger.error(`[${err.statusCode}]\n${err.message}`, err);
+      }
+      else {
+        const errorMessage = "요청 처리중 오류가 발생하였습니다.";
+        this._responseErrorHtml(res, 405, errorMessage);
+        this._logger.error(`[405] ${errorMessage}`, err);
+      }
     }
   }
 

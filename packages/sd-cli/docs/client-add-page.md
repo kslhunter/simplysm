@@ -4,5 +4,5 @@
 
 ``` bat
 :: sd-cli add page --help 참고
-sd-cli add page client Employee home/base
+npx sd-cli add page client Employee home/base
 ```

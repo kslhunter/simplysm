@@ -106,6 +106,11 @@ import { sdThemes, TSdTheme } from "../commons";
       > div._disabled {
         background: var(--theme-color-grey-lightest);
         color: var(--text-brightness-light);
+        overflow: auto;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
       }
 
       > input {

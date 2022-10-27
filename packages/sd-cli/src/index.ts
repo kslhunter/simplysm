@@ -31,7 +31,6 @@ export * from "./entry-points/file/project/fc_project_npmconfig";
 export * from "./entry-points/file/project/fc_project_readme";
 export * from "./entry-points/file/project/fc_project_simplysm";
 export * from "./entry-points/file/project/fc_project_tsconfig";
-export * from "./entry-points/file/project/fc_project_yarnrc";
 export * from "./entry-points/file/server/fc_package_server_main";
 export * from "./entry-points/SdCliFileCrypto";
 export * from "./entry-points/SdCliLocalUpdate";

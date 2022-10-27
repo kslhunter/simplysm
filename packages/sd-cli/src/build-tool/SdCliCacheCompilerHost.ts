@@ -33,9 +33,11 @@ export class SdCliCacheCompilerHost {
                                    sourceFiles?: readonly ts.SourceFile[]) => {
       if (parsedTsconfig.options.module === ts.ModuleKind.CommonJS) {
         fileName = fileName.replace(/\.js(\.map)?$/, ".cjs$1");
+        data = data.replace(/\.js\.map$/, ".cjs.map");
       }
       else {
         fileName = fileName.replace(/\.js(\.map)?$/, ".mjs$1");
+        data = data.replace(/\.js\.map$/, ".mjs.map");
       }
 
 
