@@ -16,8 +16,10 @@ cd sample
 ### 2. sd-cli 설치
 
 ``` bat
-yarn set version 3.2.2
+yarn set version berry
 yarn config set nodeLinker node-modules
+yarn plugin import interactive-tools
+
 yarn add @simplysm/sd-cli@~7.1.0
 yarn upgrade-interactive
 ```

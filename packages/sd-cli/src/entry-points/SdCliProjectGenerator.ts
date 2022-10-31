@@ -83,9 +83,6 @@ export class SdCliProjectGenerator {
     this._logger.log(`[${projName}] 'packages' 디렉토리 생성`);
     await FsUtil.mkdirsAsync(path.resolve(this._rootPath, "packages"));
 
-    this._logger.log(`[${projName}] yarn plugin import interactive-tools`);
-    await SdProcess.spawnAsync("yarn plugin import interactive-tools", { cwd: this._rootPath }, true);
-
     this._logger.log(`[${projName}] yarn install`);
     await SdProcess.spawnAsync("yarn install", { cwd: this._rootPath }, true);
   }

@@ -7,8 +7,7 @@
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-!.yarn/cache
-#.pnp.*
+#!.yarn/cache
 
 node_modules
 tsconfig-build.json
@@ -19,4 +18,7 @@ _logs
 _modules
 _routes.ts
 ~$*
+
 .*/
+!.yarn/
+!.idea/

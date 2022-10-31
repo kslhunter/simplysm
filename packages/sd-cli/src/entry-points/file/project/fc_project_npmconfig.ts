@@ -30,7 +30,7 @@ export const fc_project_npmconfig = (opt: { name: string; description: string; a
     "@simplysm/sd-cli": opt.cliVersion ?? "~7.1.0",
     "@types/node": "^16.11.47",
     "cross-env": "^7.0.3",
-    "eslint": "~8.22.0",
+    "eslint": "^8.22.0",
     "typescript": "~4.8.4"
   }
 }, undefined, 2);
