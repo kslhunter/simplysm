@@ -2,7 +2,7 @@
 
 ## Requirements
 
-* node v18.x.x
+* node v16.x.x
 
 ## 프로젝트 생성 방법
 
