@@ -14,7 +14,7 @@
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "engines": {
-    "node": "^16"
+    "node": "^18"
   },
   "files": [
     "**/*"
@@ -23,7 +23,7 @@
     "@simplysm/sd-core-common": "7.1.23",
     "@simplysm/sd-core-node": "7.1.23",
     "@simplysm/sd-orm-common": "7.1.23",
-    "tedious": "^15.1.0"
+    "tedious": "^15.1.1"
   },
   "devDependencies": {
     "@types/tedious": "^4.0.9"

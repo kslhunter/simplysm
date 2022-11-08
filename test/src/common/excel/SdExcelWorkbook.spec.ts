@@ -8,7 +8,7 @@ import { DateOnly, DateTime } from "@simplysm/sd-core-common";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe("(node) excel.SdExcelWorkbook", () => {
-  const wsTestAsync = async (ws: SdExcelWorksheet) => {
+  const wsTestAsync = async (ws: SdExcelWorksheet): Promise<void> => {
     //-- Range
     expect((await ws.getRangeAsync()).e).deep.equals({ r: 0, c: 0 });
 
@@ -86,6 +86,16 @@ describe("(node) excel.SdExcelWorkbook", () => {
 
     const buffer2 = await wb.getBufferAsync();
     await FsUtil.writeFileAsync(path.resolve(__dirname, ".output/새파일2.xlsx"), buffer2);
+  });
+
+  it("KE24", async () => {
+    const buffer = await FsUtil.readFileBufferAsync(path.resolve(__dirname, "SdExcelWorkbookTestDir/KE24.xlsx"));
+    const wb = await SdExcelWorkbook.loadAsync(buffer);
+    const ws = await wb.getWorksheetAsync("Sheet1");
+
+    console.log(1);
+    await ws.getDataTableAsync();
+    console.log(2);
   });
 
   /*it("대량 데이터 읽기", async () => {

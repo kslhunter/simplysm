@@ -14,7 +14,7 @@
   "main": "./dist/index.mjs",
   "sideEffects": false,
   "engines": {
-    "node": "^16"
+    "node": "^18"
   },
   "files": [
     "**/*"
@@ -24,6 +24,6 @@
     "semver": "^7.3.8"
   },
   "devDependencies": {
-    "@types/semver": "^7.3.12"
+    "@types/semver": "^7.3.13"
   }
 }

@@ -14,16 +14,16 @@
   "main": "./dist/index.mjs",
   "sideEffects": false,
   "engines": {
-    "node": "^16"
+    "node": "^18"
   },
   "files": [
     "**/*"
   ],
   "dependencies": {
-    "@angular/common": "^14.2.7",
-    "@angular/core": "^14.2.7",
-    "@angular/platform-browser": "^14.2.7",
-    "@angular/router": "^14.2.7",
+    "@angular/common": "^14.2.9",
+    "@angular/core": "^14.2.9",
+    "@angular/platform-browser": "^14.2.9",
+    "@angular/router": "^14.2.9",
     "@fortawesome/angular-fontawesome": "^0.11.1",
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
     "@fortawesome/pro-duotone-svg-icons": "^6.2.0",
@@ -32,6 +32,6 @@
     "@simplysm/sd-core-browser": "7.1.23",
     "@simplysm/sd-core-common": "7.1.23",
     "rxjs": "^7.5.7",
-    "zone.js": "^0.11.8"
+    "zone.js": "~0.11.8"
   }
 }
