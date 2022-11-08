@@ -12,7 +12,7 @@ export const fc_project_npmconfig = (opt: { name: string; description: string; a
   private: true,
   packageManager: "yarn@3.2.2",
   engines: {
-    node: "^18"
+    node: "^16"
   },
   workspaces: [
     "packages/*",
@@ -28,7 +28,7 @@ export const fc_project_npmconfig = (opt: { name: string; description: string; a
   devDependencies: {
     "@simplysm/eslint-plugin": "~7.1.0",
     "@simplysm/sd-cli": opt.cliVersion ?? "~7.1.0",
-    "@types/node": "^18.11.9",
+    "@types/node": "^16.18.3",
     "cross-env": "^7.0.3",
     "eslint": "^8.22.0",
     "typescript": "~4.8.4"

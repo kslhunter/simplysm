@@ -14,7 +14,7 @@
   "type": "module",
   "sideEffects": false,
   "engines": {
-    "node": "^18"
+    "node": "^16"
   },
   "files": [
     "**/*"
