@@ -359,7 +359,7 @@ export class SdCliProjectGenerator {
           "@simplysm/sd-core-common": "~7.1.0",
           "@simplysm/sd-core-browser": "~7.1.0",
           "rxjs": "^7.5.6",
-          "zone.js": "^0.11.8"
+          "zone.js": "~0.11.8"
         } : {}
       }
     }));

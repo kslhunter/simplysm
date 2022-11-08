@@ -34,7 +34,7 @@ export const fc_package_npmconfig = (opt: {
     private: true,
     sideEffects: false,
     engines: {
-      node: "^16"
+      node: "^18"
     },
     ...opt.types !== undefined ? { types: opt.types } : {},
     ...opt.main !== undefined ? { main: opt.main } : {},

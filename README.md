@@ -2,7 +2,7 @@
 
 ## Requirements
 
-* node v16.x.x
+* node v18.x.x
 * font-awesome pro license
 
 ## Installation for dev
