@@ -28,7 +28,7 @@ import {
   Statement,
   traverseFast
 } from "@babel/types";
-import babelParser, { ParseResult } from "@babel/parser";
+import babelParser, { ParseError } from "@babel/parser";
 import { FsUtil } from "@simplysm/sd-core-node";
 import path from "path";
 import { TSdCliBbMetadata } from "./SdCliBbRootMetadata";
@@ -44,7 +44,7 @@ import { SdCliBbUtil } from "./SdCliBbUtil";
 import { NeverEntryError } from "@simplysm/sd-core-common";
 
 export class SdCliBbFileMetadata {
-  public readonly ast: ParseResult<File>;
+  public readonly ast: File & { errors: ParseError[] };
   public readonly rawMetas: Statement[];
 
   public constructor(public readonly filePath: string) {

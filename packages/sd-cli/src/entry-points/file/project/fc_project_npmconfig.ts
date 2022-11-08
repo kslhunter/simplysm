@@ -28,7 +28,7 @@ export const fc_project_npmconfig = (opt: { name: string; description: string; a
   devDependencies: {
     "@simplysm/eslint-plugin": "~7.1.0",
     "@simplysm/sd-cli": opt.cliVersion ?? "~7.1.0",
-    "@types/node": "^16.18.0",
+    "@types/node": "^18.11.9",
     "cross-env": "^7.0.3",
     "eslint": "^8.22.0",
     "typescript": "~4.8.4"
