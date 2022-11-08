@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm-node-mysql",
-  "version": "7.1.24",
+  "version": "7.1.25",
   "description": "심플리즘 패키지 - MYSQL ORM 모듈 (node)",
   "author": "김석래",
   "repository": {
@@ -20,9 +20,9 @@
     "**/*"
   ],
   "dependencies": {
-    "@simplysm/sd-core-common": "7.1.24",
-    "@simplysm/sd-core-node": "7.1.24",
-    "@simplysm/sd-orm-common": "7.1.24",
+    "@simplysm/sd-core-common": "7.1.25",
+    "@simplysm/sd-core-node": "7.1.25",
+    "@simplysm/sd-orm-common": "7.1.25",
     "mysql": "^2.18.1"
   },
   "devDependencies": {

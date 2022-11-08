@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-word",
-  "version": "7.1.24",
+  "version": "7.1.25",
   "description": "심플리즘 패키지 - MS워드 모듈",
   "author": "김석래",
   "repository": {
@@ -20,7 +20,7 @@
     "**/*"
   ],
   "dependencies": {
-    "@simplysm/sd-core-common": "7.1.24",
+    "@simplysm/sd-core-common": "7.1.25",
     "jszip": "^3.10.1",
     "xml2js": "^0.4.23"
   },
