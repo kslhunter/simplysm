@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-service-server",
-  "version": "7.1.25",
+  "version": "7.1.26",
   "description": "심플리즘 패키지 - 서비스 모듈 (서버)",
   "author": "김석래",
   "repository": {
@@ -20,11 +20,11 @@
     "**/*"
   ],
   "dependencies": {
-    "@simplysm/sd-core-common": "7.1.25",
-    "@simplysm/sd-core-node": "7.1.25",
-    "@simplysm/sd-orm-common": "7.1.25",
-    "@simplysm/sd-orm-node": "7.1.25",
-    "@simplysm/sd-service-common": "7.1.25",
+    "@simplysm/sd-core-common": "7.1.26",
+    "@simplysm/sd-core-node": "7.1.26",
+    "@simplysm/sd-orm-common": "7.1.26",
+    "@simplysm/sd-orm-node": "7.1.26",
+    "@simplysm/sd-service-common": "7.1.26",
     "bufferutil": "^4.0.7",
     "connect": "^3.7.0",
     "mime": "^3.0.0",
