@@ -158,6 +158,7 @@ export class SdServiceServer extends EventEmitter {
         this._logger.debug("클라이언트 기존연결 끊기: " + wsClientId + ": " + client["connectedAtDateTime"].toFormatString("yyyy:MM:dd HH:mm:ss.fff"));
         client.close();
       }
+
     });
 
     wsClient["id"] = wsClientId;
