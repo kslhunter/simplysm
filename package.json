@@ -1,6 +1,6 @@
 {
   "name": "simplysm",
-  "version": "7.0.309",
+  "version": "7.0.310",
   "description": "심플리즘 패키지",
   "author": "김석래",
   "repository": {
@@ -34,7 +34,7 @@
     "@types/chai": "^4.3.4",
     "@types/deep-equal-in-any-order": "^1.0.1",
     "@types/mocha": "^9.1.0",
-    "@types/node": "^17.0.12",
+    "@types/node": "^16.18.3",
     "@types/sinon": "^10.0.11",
     "chai": "^4.3.7",
     "cross-env": "^7.0.3",
