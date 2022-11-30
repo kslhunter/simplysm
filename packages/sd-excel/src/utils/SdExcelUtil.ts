@@ -93,10 +93,13 @@ export class SdExcelUtil {
     ) {
       return "DateOnly";
     }
-    if (numFmtCode.includes("0_")) {
+    else if (numFmtCode.includes("0_")) {
       return "number";
     }
     else if (numFmtCode.includes("0_")) {
+      return "number";
+    }
+    else if (numFmtCode.includes("##0")) {
       return "number";
     }
     else {

@@ -584,15 +584,15 @@ export class SdTextfieldControl implements DoCheck {
   }
 
   public ngDoCheck(): void {
-    this._zone.runOutsideAngular(() => {
-      setTimeout(() => {
-        const inputEl = this.inputElRef?.nativeElement;
-        if (inputEl && this.autoRows && this.multiline && typeof this.value === "string") {
+    const inputEl = this.inputElRef?.nativeElement;
+    if (inputEl && this.autoRows && this.multiline && typeof this.value === "string") {
+      this._zone.runOutsideAngular(() => {
+        setTimeout(() => {
           inputEl.style.height = "";
           inputEl.style.height = (inputEl.scrollHeight + (inputEl.offsetHeight - inputEl.clientHeight)) + "px";
-        }
+        });
       });
-    });
+    }
   }
 
   public onInput(): void {

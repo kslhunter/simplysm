@@ -15,7 +15,7 @@ export class SdExcelReaderWorkSheet {
 
   public val(r: number, c: number): string | number | boolean | Date | undefined {
     const addr = this._addr(r, c);
-    const cell = this._ws[addr];
+    const cell = this._ws[addr] as XLSX.CellObject;
 
     if (!Boolean(cell)) return undefined;
     if (cell.v === undefined || cell.v === "") {

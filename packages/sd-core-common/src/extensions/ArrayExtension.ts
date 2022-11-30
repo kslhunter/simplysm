@@ -531,7 +531,7 @@ declare global {
         //키 설정시
         if (options?.keys !== undefined) {
           //target 에 동일한 항목은 아니지만, key 가 같은게 있는 경우: source => target 수정된 항목
-          const sameKeyTargetItem = uncheckedTarget.single((targetItem) => ObjectUtil.equal(targetItem, sourceItem, { keys: options.keys }));
+          const sameKeyTargetItem = uncheckedTarget.single((targetItem) => ObjectUtil.equal(targetItem, sourceItem, { includes: options.keys }));
           if (sameKeyTargetItem !== undefined) {
             result.push({ source: sourceItem, target: sameKeyTargetItem });
             uncheckedTarget.remove(sameKeyTargetItem);

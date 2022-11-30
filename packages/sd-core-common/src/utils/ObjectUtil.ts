@@ -11,8 +11,8 @@ import { UnwrappedType } from "../types/UnwrappedType";
 export class ObjectUtil {
   public static clone<T>(source: T): T;
   public static clone<T>(source: T, options: { useRefTypes?: Type<any>[] }): T;
-  public static clone<T, X extends keyof T>(source: T, options: { excludes: X[]; useRefTypes?: Type<any>[] }): Omit<T, X>;
-  public static clone<T, X extends keyof T>(source: T[], options: { excludes: X[]; useRefTypes?: Type<any>[] }): Omit<T, X>[];
+  public static clone<T>(source: T, options: { excludes: string[]; useRefTypes?: Type<any>[] }): T;
+  public static clone<T>(source: T[], options: { excludes: string[]; useRefTypes?: Type<any>[] }): T[];
   public static clone(source: any, options?: { excludes?: any[]; useRefTypes?: any[] }): any {
     return ObjectUtil._clone(source, options);
   }
@@ -208,7 +208,7 @@ export class ObjectUtil {
     return result;
   }
 
-  public static equal(source: any, target: any, options?: { keys?: string[]; excludes?: string[]; ignoreArrayIndex?: boolean }): boolean {
+  public static equal(source: any, target: any, options?: { includes?: string[]; excludes?: string[]; ignoreArrayIndex?: boolean }): boolean {
     if (source === target) {
       return true;
     }
@@ -250,9 +250,9 @@ export class ObjectUtil {
 
     if (source instanceof Map && target instanceof Map) {
       const sourceKeys = Array.from(source.keys())
-        .filter((key) => (options?.keys === undefined || options.keys.includes(key)) && (!options?.excludes?.includes(key)) && source[key] !== undefined);
+        .filter((key) => (options?.includes === undefined || options.includes.includes(key)) && (!options?.excludes?.includes(key)) && source[key] !== undefined);
       const targetKeys = Array.from(target.keys())
-        .filter((key) => (options?.keys === undefined || options.keys.includes(key)) && (!options?.excludes?.includes(key)) && target[key] !== undefined);
+        .filter((key) => (options?.includes === undefined || options.includes.includes(key)) && (!options?.excludes?.includes(key)) && target[key] !== undefined);
 
       if (sourceKeys.length !== targetKeys.length) {
         return false;
@@ -269,9 +269,9 @@ export class ObjectUtil {
 
     if (typeof source === "object" && typeof target === "object") {
       const sourceKeys = Object.keys(source)
-        .filter((key) => (options?.keys === undefined || options.keys.includes(key)) && (!options?.excludes?.includes(key)) && source[key] !== undefined);
+        .filter((key) => (options?.includes === undefined || options.includes.includes(key)) && (!options?.excludes?.includes(key)) && source[key] !== undefined);
       const targetKeys = Object.keys(target)
-        .filter((key) => (options?.keys === undefined || options.keys.includes(key)) && (!options?.excludes?.includes(key)) && target[key] !== undefined);
+        .filter((key) => (options?.includes === undefined || options.includes.includes(key)) && (!options?.excludes?.includes(key)) && target[key] !== undefined);
 
       if (sourceKeys.length !== targetKeys.length) {
         return false;

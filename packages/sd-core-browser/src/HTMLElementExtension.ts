@@ -155,46 +155,66 @@ HTMLElement.prototype.findFocusableParent = function (): HTMLElement | undefined
   return undefined;
 };
 
+interface IResizeRecord {
+  prevWidth: number;
+  prevHeight: number;
+  listenerInfos: { listener: ((event: any) => any) | EventListenerObject; options?: boolean | AddEventListenerOptions }[];
+}
+
+const resizeObserver = new ResizeObserver((entries) => {
+  for (const entry of entries) {
+    const rect = entry.contentRect;
+
+    const resizeRecord = entry.target["__sd-resize__"] as IResizeRecord | undefined;
+    if (!resizeRecord) continue;
+
+    const event = new CustomEvent("resize") as any;
+    event.prevWidth = resizeRecord.prevWidth;
+    event.prevHeight = resizeRecord.prevHeight;
+    event.newWidth = rect.width;
+    event.newHeight = rect.height;
+    event.relatedTarget = this;
+
+    resizeRecord.prevWidth = rect.width;
+    resizeRecord.prevHeight = rect.height;
+
+    if (event.newWidth !== event.prevWidth || event.newHeight !== event.prevHeight) {
+      for (const listenerInfo of resizeRecord.listenerInfos) {
+        if ("handleEvent" in listenerInfo.listener) {
+          listenerInfo.listener.handleEvent(event);
+        }
+        else {
+          listenerInfo.listener(event);
+        }
+      }
+    }
+  }
+});
+
 const orgAddEventListener = HTMLElement.prototype.addEventListener;
 HTMLElement.prototype.addEventListener = function (type: string, listener: ((event: any) => any) | EventListenerObject, options?: boolean | AddEventListenerOptions): void {
   if (type === "resize") {
-    if (this["__resizeEventListeners__"]?.some((item) => item.listener === listener && item.options === options) === true) {
-      return;
-    }
-
-    let prevWidth = this.offsetWidth;
-    let prevHeight = this.offsetHeight;
-
-    const observer = new ResizeObserver(() => {
-      const event = new CustomEvent("resize") as any;
-      event.prevWidth = prevWidth;
-      event.newWidth = this.offsetWidth;
-      event.prevHeight = prevHeight;
-      event.newHeight = this.offsetHeight;
-      event.relatedTarget = this;
-
-      prevWidth = this.offsetWidth;
-      prevHeight = this.offsetHeight;
-
-      if (event.newWidth !== event.prevWidth || event.newHeight !== event.prevHeight) {
-        if (listener["handleEvent"] !== undefined) {
-          (listener as EventListenerObject).handleEvent(event);
-        }
-        else {
-          (listener as EventListener)(event);
-        }
-      }
-    });
-
-    this["__resizeEventListeners__"] = this["__resizeEventListeners__"] ?? [];
-    this["__resizeEventListeners__"].push({ listener, options, observer });
-
-
     if (options === true) {
       throw new Error("resize 이벤트는 children 의 이벤트를 가져올 수 없습니다.");
     }
+
+    let resizeRecord = this["__sd-resize__"] as IResizeRecord | undefined;
+
+    if (!resizeRecord) {
+      resizeRecord = this["__sd-resize__"] = this["__sd-resize__"] ?? {
+        prevWidth: 0,
+        prevHeight: 0,
+        listenerInfos: []
+      };
+
+      resizeRecord!.listenerInfos.push({ listener, options });
+      resizeObserver.observe(this);
+    }
     else {
-      observer.observe(this);
+      if (resizeRecord.listenerInfos.some((item) => item.listener === listener && item.options === options)) {
+        return;
+      }
+      resizeRecord.listenerInfos.push({ listener, options });
     }
   }
   else if (type === "mutation") {
@@ -301,10 +321,17 @@ HTMLElement.prototype.addEventListener = function (type: string, listener: ((eve
 const orgRemoveEventListener = HTMLElement.prototype.removeEventListener;
 HTMLElement.prototype.removeEventListener = function (type: string, listener: ((event: any) => any) | EventListenerObject, options?: boolean | EventListenerOptions): void {
   if (type === "resize") {
-    const obj = this["__resizeEventListeners__"]?.single((item) => item.listener === listener && item.options === options);
-    if (obj !== undefined) {
-      obj.observer.disconnect();
-      this["__resizeEventListeners__"].remove(obj);
+    const resizeRecord = this["__sd-resize__"] as IResizeRecord | undefined;
+    if (!resizeRecord) return;
+
+    const listenerInfo = resizeRecord.listenerInfos.single((item) => item.listener === listener && item.options === options);
+    if (listenerInfo) {
+      resizeRecord.listenerInfos.remove(listenerInfo);
+    }
+
+    if (resizeRecord.listenerInfos.length === 0) {
+      resizeObserver.unobserve(this);
+      delete this["__sd-resize__"];
     }
   }
   else if (type === "mutation") {

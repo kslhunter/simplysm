@@ -18,7 +18,7 @@ import { SdInputValidate } from "@simplysm/sd-angular";
     </div>`,
   styles: [/* language=SCSS */ `
     @import "../../../sd-angular/scss/_variables-scss-arr.scss";
-    
+
     :host {
       display: block;
       padding: var(--gap-sm) 0;
@@ -76,18 +76,18 @@ import { SdInputValidate } from "@simplysm/sd-angular";
       @each $theme in $arr-theme-color {
         &[sd-theme=#{$theme}] {
           &[sd-on=true] {
-            > div{
+            > div {
               background: var(--theme-color-#{$theme}-default);
             }
           }
         }
       }
-      
+
 
       &[sd-disabled=true] {
         > div {
           opacity: .5;
-          
+
           > div {
             background: var(--theme-color-grey-default);
           }

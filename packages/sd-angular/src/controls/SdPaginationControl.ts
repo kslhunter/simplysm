@@ -28,7 +28,8 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
       > sd-anchor {
         display: inline-block;
-        padding: var(--gap-sm) var(--gap-default);
+        padding: var(--gap-xs) var(--gap-sm);
+        margin: var(--gap-xs);
 
         &[sd-selected=true] {
           text-decoration: underline;

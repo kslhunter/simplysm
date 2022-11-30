@@ -58,6 +58,8 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel/dist" />
       <excludeFolder url="file://$MODULE_DIR$/test/src/node/cli/.dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel2/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-demo/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-demo/dist" />
     </content>
     <content url="file://$MODULE_DIR$/.yarn" />
     <orderEntry type="inheritedJdk" />
