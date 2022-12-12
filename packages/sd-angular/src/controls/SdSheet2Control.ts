@@ -33,7 +33,7 @@ import { SdModalProvider } from "../providers/SdModalProvider";
             <sd-anchor *ngIf="key" (click)="onConfigButtonClick()">
               <fa-icon [icon]="icons.fasCog | async" [fixedWidth]="true"></fa-icon>
             </sd-anchor>
-            <sd-pagination *ngIf="displayPageLength > 0"
+            <sd-pagination *ngIf="displayPageLength > 1"
                            [page]="page"
                            [pageLength]="displayPageLength"
                            (pageChange)="onPageChange($event)"></sd-pagination>
@@ -79,31 +79,35 @@ import { SdModalProvider } from "../providers/SdModalProvider";
                       [style.width]="headerCell.isLastDepth ? headerCell.width : undefined"
                       [style.minWidth]="headerCell.isLastDepth ? headerCell.width : undefined"
                       [style.maxWidth]="headerCell.isLastDepth ? headerCell.width : undefined"
-                      [class._padding]="!headerCell.useTemplate"
                       [class._ordering]="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key"
                       (click)="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key ? onOrderingHeaderClick($event, headerCell.control.key) : undefined"
                       [attr.title]="headerCell.isLastDepth ? (headerCell.control.tooltip ?? headerCell.text) : undefined"
                       [class.sd-help]="headerCell.isLastDepth && headerCell.control.tooltip">
-                    <ng-container *ngIf="!headerCell.useTemplate">
-                      <pre>{{ headerCell.text }}</pre>
-                    </ng-container>
-                    <ng-container *ngIf="headerCell.useTemplate">
-                      <ng-template [ngTemplateOutlet]="headerCell.control.headerTemplateRef"></ng-template>
-                    </ng-container>
-
-                    <ng-container
-                      *ngIf="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key">
-                      <div class="_sort-icon">
-                        <fa-layers>
-                          <fa-icon [icon]="icons.fasSort | async" class="sd-text-brightness-lightest"></fa-icon>
-                          <fa-icon [icon]="icons.fasSortDown | async"
-                                   *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === false"></fa-icon>
-                          <fa-icon [icon]="icons.fasSortUp | async"
-                                   *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === true"></fa-icon>
-                        </fa-layers>
-                        <sub *ngIf="getColumnOrderingIndexText(headerCell.control.key) as text">{{ text }}</sub>
+                    <sd-flex direction="row" alignItems="end">
+                      <div class="_contents"
+                           [class._padding]="!headerCell.useTemplate">
+                        <ng-container *ngIf="!headerCell.useTemplate">
+                          <pre>{{ headerCell.text }}</pre>
+                        </ng-container>
+                        <ng-container *ngIf="headerCell.useTemplate">
+                          <ng-template [ngTemplateOutlet]="headerCell.control.headerTemplateRef"></ng-template>
+                        </ng-container>
                       </div>
-                    </ng-container>
+
+                      <ng-container
+                        *ngIf="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key">
+                        <div class="_sort-icon">
+                          <fa-layers>
+                            <fa-icon [icon]="icons.fasSort | async" class="sd-text-brightness-lightest"></fa-icon>
+                            <fa-icon [icon]="icons.fasSortDown | async"
+                                     *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === false"></fa-icon>
+                            <fa-icon [icon]="icons.fasSortUp | async"
+                                     *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === true"></fa-icon>
+                          </fa-layers>
+                          <sub *ngIf="getColumnOrderingIndexText(headerCell.control.key) as text">{{ text }}</sub>
+                        </div>
+                      </ng-container>
+                    </sd-flex>
 
                     <div class="_resizer"
                          *ngIf="headerCell.control.resizable && headerCell.isLastDepth"
@@ -168,7 +172,8 @@ import { SdModalProvider } from "../providers/SdModalProvider";
                       [style.width]="columnDef.width"
                       [style.minWidth]="columnDef.width"
                       [style.maxWidth]="columnDef.width"
-                      (click)="onItemCellClick(itemDef.item)">
+                      (click)="onItemCellClick(itemDef.item)"
+                      (dblclick)="onCellDoubleClick($event)">
                     <ng-template [ngTemplateOutlet]="columnDef.control.cellTemplateRef"
                                  [ngTemplateOutletContext]="{item: itemDef.item, index: r, depth: itemDef.depth, edit: getIsCellEditMode(r, c) }"></ng-template>
                   </td>
@@ -235,10 +240,16 @@ import { SdModalProvider } from "../providers/SdModalProvider";
             > table {
               border-spacing: 0;
               table-layout: fixed;
-              border-right: 1px solid $border-color-dark;
-              border-bottom: 1px solid $border-color-dark;
               margin-right: 2px;
               margin-bottom: 2px;
+
+              > * > tr > *:last-child {
+                border-right: 1px solid $border-color-dark;
+              }
+
+              > * > tr:last-child > * {
+                border-bottom: 1px solid $border-color-dark;
+              }
 
               > * > tr > * {
                 border-right: 1px solid $border-color;
@@ -265,10 +276,6 @@ import { SdModalProvider } from "../providers/SdModalProvider";
                   &:has(+:not(._fixed)) {
                     border-right: 1px solid $border-color-dark;
                   }
-                }
-
-                &._padding {
-                  padding: var(--sd-sheet-padding-v) var(--sd-sheet-padding-h);
                 }
               }
 
@@ -302,13 +309,20 @@ import { SdModalProvider } from "../providers/SdModalProvider";
                     }
                   }
 
-                  > ._sort-icon {
-                    position: absolute;
-                    bottom: 0;
-                    right: 0;
-                    display: inline-block;
-                    padding: var(--gap-xs);
-                    background-color: var(--theme-color-grey-lightest);
+                  > sd-flex {
+                    > ._contents {
+                      flex-grow: 1;
+
+                      &._padding {
+                        padding: var(--sd-sheet-padding-v) var(--sd-sheet-padding-h);
+                      }
+                    }
+
+                    > ._sort-icon {
+                      display: inline-block;
+                      padding: var(--gap-xs) var(--gap-xs) var(--gap-xs) 0;
+                      background-color: var(--theme-color-grey-lightest);
+                    }
                   }
 
                   > ._resizer {
@@ -569,7 +583,7 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
    * 항목 키 다운 이벤트
    */
   @Output()
-  public readonly itemKeydown = new EventEmitter<{ item: T; event: KeyboardEvent }>();
+  public readonly itemKeydown = new EventEmitter<ISdSheet2ItemKeydownEventParam<T>>();
 
   /**
    * Children 설정하는 함수
@@ -700,9 +714,19 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
         for (let c = 0; c < colLength; c++) {
           if (!tempHeaderDefTable[r][c]) continue;
 
-          if (c > 0 && ObjectUtil.equal(tempHeaderDefTable[r][c], tempHeaderDefTable[r][c - 1], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })) {
-            continue;
+          if (c > 0) {
+            let isIgnore = true;
+            for (let rr = 0; rr <= r; rr++) {
+              if (!ObjectUtil.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][c - 1], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })) {
+                isIgnore = false;
+                break;
+              }
+            }
+            if (isIgnore) continue;
           }
+          /*if (c > 0 && ObjectUtil.equal(tempHeaderDefTable[r][c], tempHeaderDefTable[r][c - 1], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })) {
+            continue;
+          }*/
 
           headerDefTable[r][c] = {
             control: tempHeaderDefTable[r][c]!.control,
@@ -737,7 +761,15 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
 
             let colspan = 1;
             for (let cc = c + 1; cc < colLength; cc++) {
-              if (!ObjectUtil.equal(tempHeaderDefTable[r][c], tempHeaderDefTable[r][cc], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })) break;
+              let isDiff = false;
+              for (let rr = 0; rr <= r; rr++) {
+                if (!ObjectUtil.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][cc], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })){
+                  isDiff = true;
+                  break;
+                }
+              }
+              if (isDiff) break;
+
               colspan++;
             }
             if (colspan > 1) {
@@ -832,8 +864,35 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
       displayItemDefs = fn(displayItemDefs);
     }
 
-    if (!ObjectUtil.equal(this.displayItemDefs, displayItemDefs)) {
+
+    if (!(
+      this.displayItemDefs.length === displayItemDefs.length
+      && this.displayItemDefs.every((def, i) => (
+        def.item === displayItemDefs[i].item &&
+        def.parentDef === displayItemDefs[i].parentDef &&
+        def.hasChildren === displayItemDefs[i].hasChildren &&
+        def.depth === displayItemDefs[i].depth
+      ))
+    )) {
       this.displayItemDefs = displayItemDefs;
+      this._cdr.markForCheck();
+
+      const prevFocusEl = document.activeElement;
+      if (prevFocusEl instanceof HTMLElement && prevFocusEl.findParent(this._elRef.nativeElement)) {
+        const prevFocusTdEl = prevFocusEl.tagName === "TD" ? prevFocusEl : prevFocusEl.findParent("td");
+        if (prevFocusTdEl) {
+          const addr = {
+            r: NumberUtil.parseInt(prevFocusTdEl.getAttribute("r")),
+            c: NumberUtil.parseInt(prevFocusTdEl.getAttribute("c"))
+          };
+          requestAnimationFrame(() => {
+            if (document.activeElement !== prevFocusEl) {
+              const newFocusTdEl = this._elRef.nativeElement.findFirst(`._sheet-container > table > tbody > tr[r='${addr.r}'] > td[r='${addr.r}'][c='${addr.c}']`);
+              newFocusTdEl?.focus();
+            }
+          });
+        }
+      }
     }
 
     // drawing selected items
@@ -877,24 +936,54 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
 
     if (this.selectMode) {
       const selectableItems = this.displayItemDefs.filter((item) => this.getIsItemSelectable(item.item)).map((item) => item.item);
-      this.hasSelectableItem = selectableItems.length > 0;
-      this.isAllItemsSelected = selectableItems.length <= this.selectedItems.length && selectableItems.every((item) => this.selectedItems.includes(item));
+      const hasSelectableItem = selectableItems.length > 0;
+      const isAllItemsSelected = selectableItems.length <= this.selectedItems.length && selectableItems.every((item) => this.selectedItems.includes(item));
+
+      if (this.hasSelectableItem !== hasSelectableItem) {
+        this.hasSelectableItem = hasSelectableItem;
+        this._cdr.markForCheck();
+      }
+      if (this.isAllItemsSelected !== isAllItemsSelected) {
+        this.isAllItemsSelected = isAllItemsSelected;
+        this._cdr.markForCheck();
+      }
     }
     else {
-      this.hasSelectableItem = false;
-      this.isAllItemsSelected = false;
+      if (this.hasSelectableItem) {
+        this.hasSelectableItem = false;
+        this._cdr.markForCheck();
+      }
+      if (this.isAllItemsSelected) {
+        this.isAllItemsSelected = false;
+        this._cdr.markForCheck();
+      }
     }
 
-    // set epand props
+    // set expand props
 
     if (this.getChildrenFn) {
       const expandableItemDefs = this.displayItemDefs.filter((item) => item.hasChildren);
-      this.hasExpandableItem = expandableItemDefs.length > 0;
-      this.isAllItemsExpanded = expandableItemDefs.length <= this.expandedItems.length && expandableItemDefs.every((itemDef) => this.expandedItems.includes(itemDef.item));
+      let hasExpandableItem = expandableItemDefs.length > 0;
+      let isAllItemsExpanded = expandableItemDefs.length <= this.expandedItems.length && expandableItemDefs.every((itemDef) => this.expandedItems.includes(itemDef.item));
+
+      if (this.hasExpandableItem !== hasExpandableItem) {
+        this.hasExpandableItem = hasExpandableItem;
+        this._cdr.markForCheck();
+      }
+      if (this.isAllItemsExpanded !== isAllItemsExpanded) {
+        this.isAllItemsExpanded = isAllItemsExpanded;
+        this._cdr.markForCheck();
+      }
     }
     else {
-      this.hasExpandableItem = false;
-      this.isAllItemsExpanded = false;
+      if (this.hasExpandableItem) {
+        this.hasExpandableItem = false;
+        this._cdr.markForCheck();
+      }
+      if (this.isAllItemsExpanded) {
+        this.isAllItemsExpanded = false;
+        this._cdr.markForCheck();
+      }
     }
   }
 
@@ -1072,6 +1161,20 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
     if (!this.getIsItemSelectable(item)) return;
 
     this._selectItem(item);
+  }
+
+  public onCellDoubleClick(event: MouseEvent): void {
+    if (!(event.target instanceof HTMLElement)) return;
+    const tdEl = event.target.tagName === "TD" ? event.target : event.target.findParent("td")!;
+
+    this._editModeCellAddr = {
+      r: NumberUtil.parseInt(tdEl.getAttribute("r"))!,
+      c: NumberUtil.parseInt(tdEl.getAttribute("c"))!
+    };
+    requestAnimationFrame(() => {
+      const focusableEl = tdEl.findFocusableFirst();
+      if (focusableEl) focusableEl.focus();
+    });
   }
 
   public onAllItemsSelectIconClick(): void {
@@ -1505,4 +1608,9 @@ interface IItemDef<T> {
 export interface ISdSheet2ColumnOrderingVM {
   key: string;
   desc: boolean;
+}
+
+export interface ISdSheet2ItemKeydownEventParam<T> {
+  item: T;
+  event: KeyboardEvent;
 }

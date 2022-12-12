@@ -16,7 +16,8 @@ import { sdThemes, TSdTheme } from "../commons";
   selector: "sd-textfield2",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="_contents">
+    <div class="_contents"
+         [style]="inputStyle">
       <div *ngIf="controlType === 'password'" class="sd-text-brightness-light">
         ****
       </div>
@@ -42,7 +43,8 @@ import { sdThemes, TSdTheme } from "../commons";
            [attr.pattern]="pattern"
            [attr.title]="title ?? placeholder"
            (input)="onInput($event)"
-           [attr.inputmode]="type === 'number' ? 'numeric' : undefined"/>
+           [attr.inputmode]="type === 'number' ? 'numeric' : undefined"
+           [style]="inputStyle"/>
 
     <div class="_invalid-indicator"></div>`,
   styles: [/* language=SCSS */ `
@@ -55,7 +57,7 @@ import { sdThemes, TSdTheme } from "../commons";
 
       > input,
       > ._contents {
-        @include form-control-base();
+        @include form-control-base2();
 
         border: 1px solid var(--trans-brightness-light);
         border-radius: var(--border-radius-default);
@@ -63,6 +65,7 @@ import { sdThemes, TSdTheme } from "../commons";
         height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit) + 2px);
         overflow: auto;
+        width: 100%;
 
         &::-webkit-scrollbar {
           display: none;
@@ -155,6 +158,7 @@ import { sdThemes, TSdTheme } from "../commons";
       &[sd-inset=true] {
         > input,
         > ._contents {
+          width: 100%;
           border: none;
           border-radius: 0;
           height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
@@ -305,6 +309,9 @@ export class SdTextfield2Control implements DoCheck {
   })
   @HostBinding("attr.sd-theme")
   public theme?: TSdTheme;
+
+  @Input()
+  public inputStyle?: any;
 
   @HostBinding("attr.sd-invalid")
   public get isInvalid(): boolean {

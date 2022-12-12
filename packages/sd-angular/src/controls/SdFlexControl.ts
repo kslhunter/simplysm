@@ -11,7 +11,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 
     :host {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
 
       @each $gap in $arr-gap {
         &[sd-gap='#{$gap}'] {
@@ -22,22 +22,6 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       &[sd-inline=true] {
         display: inline-flex;
       }
-
-      /*&[sd-vertical-align=center] {
-        align-items: center;
-      }
-
-      &[sd-vertical-align=start] {
-        align-items: start;
-      }
-
-      &[sd-vertical-align=end] {
-        align-items: end;
-      }
-
-      &[sd-vertical-align=stretch] {
-        align-items: stretch;
-      }*/
     }`]
 })
 export class SdFlexControl {

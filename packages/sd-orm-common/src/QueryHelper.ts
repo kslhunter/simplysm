@@ -242,7 +242,12 @@ export class QueryHelper {
   }
 
   public dateDiff<T extends DateTime | DateOnly | Time>(separator: TDbDateSeparator, from: TEntityValue<T | 0>, to: TEntityValue<T | 0>): QueryUnit<number> {
-    return new QueryUnit<number>(Number, ["DATEDIFF(", separator, ", ", this.getQueryValue(from), ", ", this.getQueryValue(to), ")"]);
+    if (this._dialect === "mysql") {
+      return new QueryUnit<number>(Number, ["TIMESTAMPDIFF(", separator, ", ", this.getQueryValue(from), ", ", this.getQueryValue(to), ")"]);
+    }
+    else {
+      return new QueryUnit<number>(Number, ["DATEDIFF(", separator, ", ", this.getQueryValue(from), ", ", this.getQueryValue(to), ")"]);
+    }
   }
 
   public dateAdd<T extends DateTime | DateOnly | Time>(separator: TDbDateSeparator, from: TEntityValue<T | 0>, value: TEntityValue<number>): QueryUnit<T> {

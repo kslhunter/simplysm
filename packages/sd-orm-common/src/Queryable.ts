@@ -1410,17 +1410,33 @@ export class Queryable<D extends DbContext, T> {
     return { defs, dataIndex: 0 };
   }
 
-  public async upsertAsync(insertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>)): Promise<void>;
-  public async upsertAsync<OK extends keyof T>(insertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>), outputColumns: OK[]): Promise<{ [K in OK]: T[K] }[]>;
-  public async upsertAsync<U extends TUpdateObject<T>>(updateFwd: (entity: TEntity<T>) => (U | Promise<U>), insertFwd: (updateRecord: U) => TInsertObject<T>): Promise<void>;
-  public async upsertAsync<U extends TUpdateObject<T>, OK extends keyof T>(updateFwd: (entity: TEntity<T>) => (U | Promise<U>), insertFwd: (updateRecord: U) => TInsertObject<T>, outputColumns: OK[]): Promise<{ [K in OK]: T[K] }[]>;
-  public async upsertAsync<U extends TUpdateObject<T>, OK extends keyof T>(arg1: ((entity: TEntity<T>) => (U | Promise<U>)) | ((entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>)), arg2?: ((updateRecord: U) => TInsertObject<T>) | OK[], arg3?: OK[]): Promise<{ [K in OK]: T[K] }[] | void> {
+  public async upsertAsync(
+    insertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>)
+  ): Promise<void>;
+  public async upsertAsync<OK extends keyof T>(
+    insertFwd: (entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>),
+    outputColumns: OK[]
+  ): Promise<{ [K in OK]: T[K] }[]>;
+  public async upsertAsync<U extends TUpdateObject<T>>(
+    updateFwd: (entity: TEntity<T>) => (U | Promise<U>),
+    insertFwd: (updateRecord: U) => (TInsertObject<T> | Promise<TInsertObject<T>>)
+  ): Promise<void>;
+  public async upsertAsync<U extends TUpdateObject<T>, OK extends keyof T>(
+    updateFwd: (entity: TEntity<T>) => (U | Promise<U>),
+    insertFwd: (updateRecord: U) => (TInsertObject<T> | Promise<TInsertObject<T>>),
+    outputColumns: OK[]
+  ): Promise<{ [K in OK]: T[K] }[]>;
+  public async upsertAsync<U extends TUpdateObject<T>, OK extends keyof T>(
+    arg1: ((entity: TEntity<T>) => (U | Promise<U>)) | ((entity: TEntity<T>) => (TInsertObject<T> | Promise<TInsertObject<T>>)),
+    arg2?: ((updateRecord: U) => (TInsertObject<T> | Promise<TInsertObject<T>>)) | OK[],
+    arg3?: OK[]
+  ): Promise<{ [K in OK]: T[K] }[] | void> {
     const updateFwd = arg1;
     const insertFwd = typeof arg2 === "function" ? arg2 : undefined;
     const outputColumns = arg2 instanceof Array ? arg2 : arg3;
 
     const updateRecord = await updateFwd(this._entity) as U;
-    const insertRecord = (insertFwd ? insertFwd(updateRecord) : ObjectUtil.clone(updateRecord)) as TInsertObject<T>;
+    const insertRecord = (insertFwd ? await insertFwd(updateRecord) : ObjectUtil.clone(updateRecord)) as TInsertObject<T>;
 
     const { defs, dataIndex } = this._getUpsertDefs(updateRecord, insertRecord, outputColumns);
     const parseOption = outputColumns ? this._getParseOption(outputColumns) : undefined;
