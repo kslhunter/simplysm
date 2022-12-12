@@ -248,7 +248,7 @@ export class SdCliCordova {
   }
 
   public static async runWebviewOnDeviceAsync(rootPath: string, platform: "browser" | "android", pkgName: string, url?: string): Promise<void> {
-    const cordovaPath = path.resolve(rootPath, `packages/${pkgName}/.cordova/`);
+    const cordovaPath = path.resolve(rootPath, `packages/${pkgName}/.cache/cordova/`);
 
     if (url !== undefined) {
       await FsUtil.removeAsync(path.resolve(cordovaPath, "www"));
