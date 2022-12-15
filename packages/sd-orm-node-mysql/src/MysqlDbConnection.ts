@@ -187,7 +187,9 @@ export class MysqlDbConnection extends EventEmitter implements IDbConnection {
               }
 
               if (queryResults instanceof Array) {
-                resultItems.push(...queryResults);
+                for (const queryResult of queryResults.filter((item) => !("affectedRows" in item && "fieldCount" in item))) {
+                  resultItems.push(queryResult);
+                }
               }
             })
             .on("error", (err) => {

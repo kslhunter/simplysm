@@ -6,12 +6,6 @@ module.exports = {
     "import",
     "@simplysm"
   ],
-  // extends: [
-  //   "eslint:all",
-  //   "plugin:@typescript-eslint/all",
-  //   "plugin:import/recommended",
-  //   "plugin:import/typescript"
-  // ],
   settings: {
     "import/parsers": {
       "@typescript-eslint/parser": [".ts", ".tsx"]
@@ -21,7 +15,6 @@ module.exports = {
     // 기본
     "no-console": ["warn"],
     "no-warning-comments": ["warn"],
-    "linebreak-style": ["error", "unix"],
 
     // Deprecation
     "deprecation/deprecation": ["warn"],

@@ -23,7 +23,7 @@ import { sdThemes, TSdTheme } from "../commons";
       </div>
       <ng-container *ngIf="controlType !== 'password'">
         <ng-container *ngIf="controlValue">
-          <pre>{{ controlValue }}</pre>
+          <pre>{{ controlValueText }}</pre>
         </ng-container>
         <ng-container *ngIf="!controlValue">
           <span class="sd-text-brightness-lighter">{{ placeholder }}</span>
@@ -92,10 +92,8 @@ import { sdThemes, TSdTheme } from "../commons";
         }
       }
 
-      > input {
-        position: absolute;
-        top: 0;
-        left: 0;
+      > ._contents {
+        display: none;
       }
 
       &[sd-type=number] {
@@ -108,8 +106,7 @@ import { sdThemes, TSdTheme } from "../commons";
       @each $theme in $arr-theme-color {
         &[sd-theme=#{$theme}] {
           > input,
-          > textarea,
-          > div._readonly {
+          > ._contents {
             background: var(--theme-color-#{$theme}-lightest);
           }
         }
@@ -156,6 +153,16 @@ import { sdThemes, TSdTheme } from "../commons";
       }
 
       &[sd-inset=true] {
+        > ._contents {
+          display: block;
+        }
+
+        > input {
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+
         > input,
         > ._contents {
           width: 100%;
@@ -190,6 +197,7 @@ import { sdThemes, TSdTheme } from "../commons";
 
       &[sd-disabled=true] {
         > ._contents {
+          display: block;
           background: var(--theme-color-grey-lightest);
           color: var(--text-brightness-light);
         }
@@ -326,6 +334,7 @@ export class SdTextfield2Control implements DoCheck {
   public controlValue = "";
   public controlStep: number | string = "any";
   public errorMessage = "";
+  public controlValueText = "";
 
   public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
   }
@@ -344,9 +353,11 @@ export class SdTextfield2Control implements DoCheck {
 
     if (this.value == null) {
       this.controlValue = "";
+      this.controlValueText = this.controlValue;
     }
     else if (this.type === "number" && typeof this.value === "number") {
       this.controlValue = this.useNumberComma ? this.value.toLocaleString(undefined, { maximumFractionDigits: 10 }) : this.value.toString(10);
+      this.controlValueText = this.controlValue;
     }
     else if (this.type === "brn" && typeof this.value === "string") {
       const str = this.value.replace(/[^0-9]/g, "");
@@ -360,30 +371,39 @@ export class SdTextfield2Control implements DoCheck {
               StringUtil.isNullOrEmpty(third) ? "" : "-" + third
             )
         );
+      this.controlValueText = this.controlValue;
     }
     else if (this.type === "datetime" && this.value instanceof DateTime) {
       this.controlValue = this.value.toFormatString("yyyy-MM-ddTHH:mm");
+      this.controlValueText = this.value.toFormatString("yyyy-MM-dd tt hh:mm");
     }
     else if (this.type === "datetime-sec" && this.value instanceof DateTime) {
       this.controlValue = this.value.toFormatString("yyyy-MM-ddTHH:mm:ss");
+      this.controlValueText = this.value.toFormatString("yyyy-MM-dd tt hh:mm:ss");
     }
     else if (this.type === "year" && this.value instanceof DateOnly) {
       this.controlValue = this.value.toFormatString("yyyy");
+      this.controlValueText = this.controlValue;
     }
     else if (this.type === "month" && this.value instanceof DateOnly) {
       this.controlValue = this.value.toFormatString("yyyy-MM");
+      this.controlValueText = this.controlValue;
     }
     else if (this.type === "date" && this.value instanceof DateOnly) {
       this.controlValue = this.value.toFormatString("yyyy-MM-dd");
+      this.controlValueText = this.controlValue;
     }
     else if (this.type === "time" && (this.value instanceof DateTime || this.value instanceof Time)) {
       this.controlValue = this.value.toFormatString("HH:mm");
+      this.controlValueText = this.value.toFormatString("tt hh:mm");
     }
     else if (this.type === "time-sec" && (this.value instanceof DateTime || this.value instanceof Time)) {
       this.controlValue = this.value.toFormatString("HH:mm:ss");
+      this.controlValueText = this.value.toFormatString("tt hh:mm:ss");
     }
     else if (typeof this.value === "string") {
       this.controlValue = this.value;
+      this.controlValueText = this.controlValue;
     }
     else {
       throw new Error(`'sd-textfield2'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
