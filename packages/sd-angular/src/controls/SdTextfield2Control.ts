@@ -17,7 +17,8 @@ import { sdThemes, TSdTheme } from "../commons";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="_contents"
-         [style]="inputStyle">
+         [style]="inputStyle"
+         [attr.title]="title ?? placeholder">
       <div *ngIf="controlType === 'password'" class="sd-text-brightness-light">
         ****
       </div>
@@ -146,7 +147,6 @@ import { sdThemes, TSdTheme } from "../commons";
 
         > input,
         > ._contents {
-          display: inline-block;
           width: auto;
           vertical-align: top;
         }

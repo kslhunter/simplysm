@@ -679,11 +679,13 @@ export class Queryable<D extends DbContext, T> {
     }
 
     const subFrom = clone.getSelectQueryDef();
-    if (subFrom.orderBy) {
-      let seq = 0;
-      for (const subOrderBy of subFrom.orderBy) {
-        seq++;
-        subFrom.select["__order_" + seq] = subOrderBy[0];
+    if (this.db.opt.dialect === "mssql" || this.db.opt.dialect === "mssql-azure") {
+      if (subFrom.orderBy) {
+        let seq = 0;
+        for (const subOrderBy of subFrom.orderBy) {
+          seq++;
+          subFrom.select["__order_" + seq] = subOrderBy[0];
+        }
       }
     }
 
@@ -691,20 +693,23 @@ export class Queryable<D extends DbContext, T> {
 
     const result = new Queryable<D, any>(this.db, tableType, this._as, currEntity, { from: subFrom });
 
-    if (subFrom.orderBy && subFrom.orderBy.length > 0) {
-      result._def.orderBy = [];
-      let seq = 0;
-      for (const subOrderBy of subFrom.orderBy) {
-        seq++;
-        result._def.orderBy.push(["__order_" + seq, subOrderBy[1]]);
-      }
+    if (this.db.opt.dialect === "mssql" || this.db.opt.dialect === "mssql-azure") {
+      if (subFrom.orderBy && subFrom.orderBy.length > 0) {
+        result._def.orderBy = [];
+        let seq = 0;
+        for (const subOrderBy of subFrom.orderBy) {
+          seq++;
+          result._def.orderBy.push(["__order_" + seq, subOrderBy[1]]);
+        }
 
-      if (!subFrom.limit) {
-        delete subFrom.orderBy;
+        if (!subFrom.limit) {
+          delete subFrom.orderBy;
+        }
       }
     }
 
     return result;
+
   }
 
   public getSelectQueryDef(): ISelectQueryDef & { select: Record<string, TQueryBuilderValue> } {
