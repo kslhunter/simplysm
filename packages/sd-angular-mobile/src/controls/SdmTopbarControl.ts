@@ -11,6 +11,7 @@ import {
 import { SdmTopbarContainerControl } from "./SdmTopbarContainerControl";
 import { SdmSidebarContainerControl } from "./SdmSidebarContainerControl";
 import { SdInputValidate } from "@simplysm/sd-angular";
+import { faBars } from "@fortawesome/pro-duotone-svg-icons/faBars";
 
 @Component({
   selector: "sdm-topbar",
@@ -21,7 +22,7 @@ import { SdInputValidate } from "@simplysm/sd-angular";
     </div>
     <div class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()"
          *ngIf="sidebarContainerControl && !hideSidebarToggleButton">
-      <fa-icon [icon]="icons.fadBars | async" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fadBars" [fixedWidth]="true"></fa-icon>
     </div>
     <div class="_content">
       <ng-content></ng-content>
@@ -84,7 +85,7 @@ import { SdInputValidate } from "@simplysm/sd-angular";
 })
 export class SdmTopbarControl implements DoCheck {
   public icons = {
-    fadBars: import("@fortawesome/pro-duotone-svg-icons/faBars").then(m => m.faBars)
+    fadBars: faBars
   };
 
   public readonly sidebarContainerControl?: SdmSidebarContainerControl;

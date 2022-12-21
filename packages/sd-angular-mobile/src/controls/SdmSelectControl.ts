@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output } from "@angular/core";
 import { SdInputValidate } from "@simplysm/sd-angular";
 import { StringUtil } from "@simplysm/sd-core-common";
+import { faAngleDown } from "@fortawesome/pro-light-svg-icons/faAngleDown";
 
 @Component({
   selector: "sdm-select",
@@ -16,7 +17,7 @@ import { StringUtil } from "@simplysm/sd-core-common";
       <ng-content></ng-content>
     </select>
     <div class="_icon">
-      <fa-icon [icon]="icons.falAngleDown | async" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.falAngleDown" [fixedWidth]="true"></fa-icon>
     </div>`,
   styles: [/* language=SCSS */ `
     @import "../../scss/mixins";
@@ -115,7 +116,7 @@ import { StringUtil } from "@simplysm/sd-core-common";
 })
 export class SdmSelectControl {
   public icons = {
-    falAngleDown: import("@fortawesome/pro-light-svg-icons/faAngleDown").then(m => m.faAngleDown)
+    falAngleDown: faAngleDown
   };
 
   @Input()

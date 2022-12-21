@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
 import { SdInputValidate } from "@simplysm/sd-angular";
+import { faChevronDown } from "@fortawesome/pro-light-svg-icons/faChevronDown";
 
 @Component({
   selector: "sdm-sidebar-user",
@@ -8,7 +9,7 @@ import { SdInputValidate } from "@simplysm/sd-angular";
     <div class="_content" [attr.style]="contentStyle" (click)="menuOpen = !menuOpen">
       <div class="_menu-button">
         <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"
-                          [icon]="icons.falChevronDown | async"></sd-collapse-icon>
+                          [icon]="icons.falChevronDown"></sd-collapse-icon>
       </div>
 
       <ng-content></ng-content>
@@ -56,7 +57,7 @@ import { SdInputValidate } from "@simplysm/sd-angular";
 })
 export class SdmSidebarUserControl {
   public icons = {
-    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.faChevronDown)
+    falChevronDown: faChevronDown
   };
 
   @Input()
