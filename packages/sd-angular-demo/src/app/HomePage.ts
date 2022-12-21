@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { faUserCircle } from "@fortawesome/pro-duotone-svg-icons/faUserCircle";
 
 @Component({
   selector: "app-home",
@@ -17,7 +18,7 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
             <sd-sidebar-user menuTitle="계정 정보" content.style="text-align: left">
               <div class="sd-padding-top-sm">
                 <div style="float:left" class="sd-padding-right-default">
-                  <fa-icon [icon]="icons.userCircle | async" size="3x"></fa-icon>
+                  <fa-icon [icon]="icons.userCircle" size="3x"></fa-icon>
                 </div>
 
                 홍길동<br/>
@@ -53,6 +54,6 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 })
 export class HomePage {
   public icons = {
-    userCircle: import("@fortawesome/pro-duotone-svg-icons/faUserCircle").then(m => m.definition),
+    userCircle: faUserCircle,
   };
 }
