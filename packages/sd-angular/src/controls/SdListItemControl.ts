@@ -13,6 +13,7 @@ import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { SdListControl } from "./SdListControl";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { faChevronDown } from "@fortawesome/pro-light-svg-icons/faChevronDown";
 
 @Component({
   selector: "sd-list-item",
@@ -26,7 +27,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
       <ng-content></ng-content>
 
       <sd-collapse-icon [open]="open" *ngIf="hasChildren && layout==='accordion'"
-                        [icon]="icons.falChevronDown | async"
+                        [icon]="icons.falChevronDown"
                         style="float: right"></sd-collapse-icon>
     </div>
     <sd-collapse class="_child" [open]="layout === 'flat' || open">
@@ -114,7 +115,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 })
 export class SdListItemControl {
   public icons = {
-    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.faChevronDown)
+    falChevronDown: faChevronDown
   };
 
   @Input("content.style")

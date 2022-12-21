@@ -47,7 +47,7 @@ export class SdSheet2ColumnControl<T> {
   public collapse?: boolean;
 
   @ContentChild("cell", { static: true })
-  public cellTemplateRef?: TemplateRef<{ item: any; index: number; depth: number; edit: boolean }>;
+  public cellTemplateRef?: TemplateRef<{ item: T; index: number; depth: number; edit: boolean }>;
 
   @ContentChild("header", { static: true })
   public headerTemplateRef?: TemplateRef<undefined>;

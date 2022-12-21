@@ -21,6 +21,12 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
 import { NumberUtil, ObjectUtil } from "@simplysm/sd-core-common";
 import { SdSheet2ConfigModal } from "../modals/SdSheet2ConfigModal";
 import { SdModalProvider } from "../providers/SdModalProvider";
+import { faCog } from "@fortawesome/pro-solid-svg-icons/faCog";
+import { faArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
+import { faSort } from "@fortawesome/pro-solid-svg-icons/faSort";
+import { faSortDown } from "@fortawesome/pro-solid-svg-icons/faSortDown";
+import { faSortUp } from "@fortawesome/pro-solid-svg-icons/faSortUp";
+import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
 
 @Component({
   selector: "sd-sheet2",
@@ -31,7 +37,7 @@ import { SdModalProvider } from "../providers/SdModalProvider";
         <sd-dock *ngIf="(key || displayPageLength > 0) && !hideConfigBar">
           <sd-flex direction="row" gap="sm">
             <sd-anchor *ngIf="key" (click)="onConfigButtonClick()">
-              <fa-icon [icon]="icons.fasCog | async" [fixedWidth]="true"></fa-icon>
+              <fa-icon [icon]="icons.cog" [fixedWidth]="true"></fa-icon>
             </sd-anchor>
             <sd-pagination *ngIf="displayPageLength > 1"
                            [page]="page"
@@ -51,7 +57,7 @@ import { SdModalProvider } from "../providers/SdModalProvider";
                     [attr.c]="getChildrenFn ? -2 : -1"
                     (sdResizeOutside)="onFixedCellResizeOutside(-1)">
                   <ng-container *ngIf="selectMode === 'multi' && hasSelectableItem">
-                    <fa-icon [icon]="icons.fasArrowRight | async" [fixedWidth]="true"
+                    <fa-icon [icon]="icons.selectArrow" [fixedWidth]="true"
                              [class.sd-text-color-primary-default]="isAllItemsSelected"
                              (click)="onAllItemsSelectIconClick()"></fa-icon>
                   </ng-container>
@@ -62,7 +68,7 @@ import { SdModalProvider } from "../providers/SdModalProvider";
                     [attr.c]="-1"
                     (sdResizeOutside)="onFixedCellResizeOutside(-1)">
                   <ng-container *ngIf="hasExpandableItem">
-                    <fa-icon [icon]="icons.fasCaretRight | async" [fixedWidth]="true"
+                    <fa-icon [icon]="icons.expand" [fixedWidth]="true"
                              [class.sd-text-color-primary-default]="isAllItemsExpanded"
                              [rotate]="isAllItemsExpanded ? 90 : undefined"
                              (click)="onAllItemsExpandIconClick()"></fa-icon>
@@ -98,10 +104,10 @@ import { SdModalProvider } from "../providers/SdModalProvider";
                         *ngIf="headerCell.isLastDepth && headerCell.control.useOrdering && headerCell.control.key">
                         <div class="_sort-icon">
                           <fa-layers>
-                            <fa-icon [icon]="icons.fasSort | async" class="sd-text-brightness-lightest"></fa-icon>
-                            <fa-icon [icon]="icons.fasSortDown | async"
+                            <fa-icon [icon]="icons.sortBase" class="sd-text-brightness-lightest"></fa-icon>
+                            <fa-icon [icon]="icons.sortDown"
                                      *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === false"></fa-icon>
-                            <fa-icon [icon]="icons.fasSortUp | async"
+                            <fa-icon [icon]="icons.sortUp"
                                      *ngIf="getIsColumnOrderingDesc(headerCell.control.key) === true"></fa-icon>
                           </fa-layers>
                           <sub *ngIf="getColumnOrderingIndexText(headerCell.control.key) as text">{{ text }}</sub>
@@ -144,7 +150,7 @@ import { SdModalProvider } from "../providers/SdModalProvider";
                     [attr.r]="r"
                     [attr.c]="getChildrenFn ? -2 : -1">
                   <ng-container *ngIf="selectMode && getIsItemSelectable(itemDef.item)">
-                    <fa-icon [icon]="icons.fasArrowRight | async" [fixedWidth]="true"
+                    <fa-icon [icon]="icons.selectArrow" [fixedWidth]="true"
                              [class.sd-text-color-primary-default]="selectedItems.includes(itemDef.item)"
                              (click)="onItemSelectIconClick(itemDef.item)"></fa-icon>
                   </ng-container>
@@ -157,7 +163,7 @@ import { SdModalProvider } from "../providers/SdModalProvider";
                     <div class="_depth-indicator" [style.margin-left.em]="itemDef.depth - .5"></div>
                   </ng-container>
                   <ng-container *ngIf="itemDef.hasChildren">
-                    <fa-icon [icon]="icons.fasCaretRight | async" [fixedWidth]="true"
+                    <fa-icon [icon]="icons.expand" [fixedWidth]="true"
                              [rotate]="expandedItems.includes(itemDef.item) ? 90 : undefined"
                              [class.sd-text-color-primary-default]="expandedItems.includes(itemDef.item)"
                              (click)="onItemExpandIconClick(itemDef.item)"></fa-icon>
@@ -436,12 +442,12 @@ import { SdModalProvider } from "../providers/SdModalProvider";
 })
 export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck {
   public icons = {
-    fasCog: import("@fortawesome/pro-solid-svg-icons/faCog").then(m => m.faCog),
-    fasArrowRight: import("@fortawesome/pro-solid-svg-icons/faArrowRight").then(m => m.faArrowRight),
-    fasSort: import("@fortawesome/pro-solid-svg-icons/faSort").then(m => m.faSort),
-    fasSortDown: import("@fortawesome/pro-solid-svg-icons/faSortDown").then(m => m.faSortDown),
-    fasSortUp: import("@fortawesome/pro-solid-svg-icons/faSortUp").then(m => m.faSortUp),
-    fasCaretRight: import("@fortawesome/pro-solid-svg-icons/faCaretRight").then(m => m.faCaretRight)
+    cog: faCog,
+    selectArrow: faArrowRight,
+    sortBase: faSort,
+    sortDown: faSortDown,
+    sortUp: faSortUp,
+    expand: faCaretRight
   };
 
   @ContentChildren(forwardRef(() => SdSheet2ColumnControl))
@@ -614,6 +620,7 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
   private _editModeCellAddr?: { r: number; c: number };
 
   private _resizedWidths: Record<string, string | undefined> = {};
+  private _isOnResizing = false;
 
   public constructor(private readonly _systemConfig: SdSystemConfigRootProvider,
                      private readonly _zone: NgZone,
@@ -763,7 +770,7 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
             for (let cc = c + 1; cc < colLength; cc++) {
               let isDiff = false;
               for (let rr = 0; rr <= r; rr++) {
-                if (!ObjectUtil.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][cc], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })){
+                if (!ObjectUtil.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][cc], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })) {
                   isDiff = true;
                   break;
                 }
@@ -911,13 +918,15 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
       if (tempCurrSelectedItems.length > 0) {
         const selectedTrRects = this.selectedItems.map((item) => {
           const r = this.displayItemDefs.findIndex((item1) => item1.item === item);
-          const trEl = sheetContainerEl.findFirst(`> table > tbody > tr[r="${r}"]`)!;
+          const trEl = sheetContainerEl.findFirst(`> table > tbody > tr[r="${r}"]`);
+          if (trEl === undefined) return undefined;
+
           return {
             top: trEl.offsetTop,
             width: trEl.offsetWidth,
             height: trEl.offsetHeight
           };
-        });
+        }).filterExists();
 
         let html = "";
         for (const selectedTrRect of selectedTrRects) {
@@ -1069,6 +1078,8 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
   }
 
   public onResizerMousedown(event: MouseEvent, columnControl: SdSheet2ColumnControl<T>): void {
+    this._isOnResizing = true;
+
     const thEl = (event.target as HTMLElement).findParent("th")!;
     const resizeIndicatorEl = this._elRef.nativeElement.findFirst("._sheet-container > ._resize-indicator")!;
 
@@ -1106,6 +1117,10 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
       this._zone.run(() => {
         this._cdr.markForCheck();
       });
+
+      setTimeout(() => {
+        this._isOnResizing = false;
+      }, 300);
     };
 
     this._zone.runOutsideAngular(() => {
@@ -1225,6 +1240,7 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
    * @param columnKey
    */
   public onOrderingHeaderClick(event: MouseEvent, columnKey: string): void {
+    if (this._isOnResizing) return;
     if (event.target instanceof HTMLElement && event.target.classList.contains("_resizer")) return;
     if (event.shiftKey || event.ctrlKey) {
       this._toggleOrdering(columnKey, true);
@@ -1389,9 +1405,9 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
 
     const item = this.displayItemDefs[NumberUtil.parseInt(tdEl.getAttribute("r"))!].item;
     if (this.autoSelect === "focus" && this.getIsItemSelectable(item)) {
-      this._selectItem(item);
 
       this._zone.run(() => {
+        this._selectItem(item);
         this._cdr.markForCheck();
       });
     }

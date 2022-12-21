@@ -8,7 +8,7 @@ import {
   Input,
   Output
 } from "@angular/core";
-import { DateOnly, DateTime, StringUtil, Time } from "@simplysm/sd-core-common";
+import { DateOnly, DateTime, ObjectUtil, StringUtil, Time } from "@simplysm/sd-core-common";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 import { sdThemes, TSdTheme } from "../commons";
 
@@ -340,27 +340,48 @@ export class SdTextfield2Control implements DoCheck {
   }
 
   public ngDoCheck(): void {
-    // control type
+    this._onDoCheckControlType();
+    this._onDoCheckControlStep();
+    this._onDoCheckControlValue();
+    this._onDoCheckErrorMessage();
+  }
 
-    this.controlType = this.type === "number" ? "text"
-      : this.type === "brn" ? "text"
-        : this.type === "datetime" ? "datetime-local"
-          : this.type === "datetime-sec" ? "datetime-local"
-            : this.type === "time-sec" ? "time"
-              : this.type;
+  private _onDoCheckControlType(): void {
+    const record = {
+      type: this.type
+    };
+    if (ObjectUtil.equal(this._prevData["recordForControlType"], record)) return;
+    this._prevData["recordForControlType"] = record;
 
-    // control value
+    this.controlType = record.type === "number" ? "text"
+      : record.type === "brn" ? "text"
+        : record.type === "datetime" ? "datetime-local"
+          : record.type === "datetime-sec" ? "datetime-local"
+            : record.type === "time-sec" ? "time"
+              : record.type;
+  }
 
-    if (this.value == null) {
+  private readonly _prevData: Record<string, any> = {};
+
+  private _onDoCheckControlValue(): void {
+    const record = {
+      type: this.type,
+      value: this.value,
+      useNumberComma: this.useNumberComma
+    };
+    if (ObjectUtil.equal(this._prevData["recordForControlValue"], record)) return;
+    this._prevData["recordForControlValue"] = record;
+
+    if (record.value == null) {
       this.controlValue = "";
       this.controlValueText = this.controlValue;
     }
-    else if (this.type === "number" && typeof this.value === "number") {
-      this.controlValue = this.useNumberComma ? this.value.toLocaleString(undefined, { maximumFractionDigits: 10 }) : this.value.toString(10);
+    else if (record.type === "number" && typeof record.value === "number") {
+      this.controlValue = record.useNumberComma ? record.value.toLocaleString(undefined, { maximumFractionDigits: 10 }) : record.value.toString(10);
       this.controlValueText = this.controlValue;
     }
-    else if (this.type === "brn" && typeof this.value === "string") {
-      const str = this.value.replace(/[^0-9]/g, "");
+    else if (record.type === "brn" && typeof record.value === "string") {
+      const str = record.value.replace(/[^0-9]/g, "");
       const first = str.substring(0, 3);
       const second = str.substring(3, 5);
       const third = str.substring(5, 10);
@@ -373,102 +394,124 @@ export class SdTextfield2Control implements DoCheck {
         );
       this.controlValueText = this.controlValue;
     }
-    else if (this.type === "datetime" && this.value instanceof DateTime) {
-      this.controlValue = this.value.toFormatString("yyyy-MM-ddTHH:mm");
-      this.controlValueText = this.value.toFormatString("yyyy-MM-dd tt hh:mm");
+    else if (record.type === "datetime" && record.value instanceof DateTime) {
+      this.controlValue = record.value.toFormatString("yyyy-MM-ddTHH:mm");
+      this.controlValueText = record.value.toFormatString("yyyy-MM-dd tt hh:mm");
     }
-    else if (this.type === "datetime-sec" && this.value instanceof DateTime) {
-      this.controlValue = this.value.toFormatString("yyyy-MM-ddTHH:mm:ss");
-      this.controlValueText = this.value.toFormatString("yyyy-MM-dd tt hh:mm:ss");
+    else if (record.type === "datetime-sec" && record.value instanceof DateTime) {
+      this.controlValue = record.value.toFormatString("yyyy-MM-ddTHH:mm:ss");
+      this.controlValueText = record.value.toFormatString("yyyy-MM-dd tt hh:mm:ss");
     }
-    else if (this.type === "year" && this.value instanceof DateOnly) {
-      this.controlValue = this.value.toFormatString("yyyy");
+    else if (record.type === "year" && record.value instanceof DateOnly) {
+      this.controlValue = record.value.toFormatString("yyyy");
       this.controlValueText = this.controlValue;
     }
-    else if (this.type === "month" && this.value instanceof DateOnly) {
-      this.controlValue = this.value.toFormatString("yyyy-MM");
+    else if (record.type === "month" && record.value instanceof DateOnly) {
+      this.controlValue = record.value.toFormatString("yyyy-MM");
       this.controlValueText = this.controlValue;
     }
-    else if (this.type === "date" && this.value instanceof DateOnly) {
-      this.controlValue = this.value.toFormatString("yyyy-MM-dd");
+    else if (record.type === "date" && record.value instanceof DateOnly) {
+      this.controlValue = record.value.toFormatString("yyyy-MM-dd");
       this.controlValueText = this.controlValue;
     }
-    else if (this.type === "time" && (this.value instanceof DateTime || this.value instanceof Time)) {
-      this.controlValue = this.value.toFormatString("HH:mm");
-      this.controlValueText = this.value.toFormatString("tt hh:mm");
+    else if (record.type === "time" && (record.value instanceof DateTime || record.value instanceof Time)) {
+      this.controlValue = record.value.toFormatString("HH:mm");
+      this.controlValueText = record.value.toFormatString("tt hh:mm");
     }
-    else if (this.type === "time-sec" && (this.value instanceof DateTime || this.value instanceof Time)) {
-      this.controlValue = this.value.toFormatString("HH:mm:ss");
-      this.controlValueText = this.value.toFormatString("tt hh:mm:ss");
+    else if (record.type === "time-sec" && (record.value instanceof DateTime || record.value instanceof Time)) {
+      this.controlValue = record.value.toFormatString("HH:mm:ss");
+      this.controlValueText = record.value.toFormatString("tt hh:mm:ss");
     }
-    else if (typeof this.value === "string") {
-      this.controlValue = this.value;
+    else if (typeof record.value === "string") {
+      this.controlValue = record.value;
       this.controlValueText = this.controlValue;
     }
     else {
-      throw new Error(`'sd-textfield2'에 대한 'value'가 잘못되었습니다. (입력값: ${this.value.toString()})`);
+      throw new Error(`'sd-textfield2'에 대한 'value'가 잘못되었습니다. (입력값: ${record.value.toString()})`);
     }
+  }
 
-    if (this.step !== undefined) {
-      this.controlStep = this.step;
+  private _onDoCheckControlStep(): void {
+    const record = {
+      type: this.type,
+      step: this.step
+    };
+    if (ObjectUtil.equal(this._prevData["recordForControlStep"], record)) return;
+    this._prevData["recordForControlStep"] = record;
+
+    if (record.step !== undefined) {
+      this.controlStep = record.step;
     }
-    else if (this.type === "datetime-sec" || this.type === "time-sec") {
+    else if (record.type === "datetime-sec" || record.type === "time-sec") {
       this.controlStep = 1;
     }
     else {
       this.controlStep = "any";
     }
+  }
 
-    // error message
+  private _onDoCheckErrorMessage(): void {
+    const record = {
+      type: this.type,
+      value: this.value,
+      required: this.required,
+      min: this.min,
+      max: this.max,
+      minlength: this.minlength,
+      maxlength: this.maxlength,
+      validatorFn: this.validatorFn
+    };
+    if (ObjectUtil.equal(this._prevData["recordForErrorMessage"], record)) return;
+    this._prevData["recordForErrorMessage"] = record;
 
     const errorMessages: string[] = [];
-    if (this.value == null) {
-      if (this.required) {
+    if (record.value == null) {
+      if (record.required) {
         errorMessages.push("값을 입력하세요.");
       }
     }
-    else if (this.type === "number") {
-      if (typeof this.value !== "number") {
+    else if (record.type === "number") {
+      if (typeof record.value !== "number") {
         errorMessages.push("숫자를 입력하세요");
       }
-      if (this.min !== undefined && this.min > this.value) {
-        errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
+      if (record.min !== undefined && record.min > record.value) {
+        errorMessages.push(`${record.min}보다 크거나 같아야 합니다.`);
       }
-      if (this.max !== undefined && this.max < this.value) {
-        errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
+      if (record.max !== undefined && record.max < record.value) {
+        errorMessages.push(`${record.max}보다 작거나 같아야 합니다.`);
       }
     }
-    else if (this.type === "brn") {
-      if (typeof this.value !== "string" || !(/^[0-9]{10}$/).test(this.value)) {
+    else if (record.type === "brn") {
+      if (typeof record.value !== "string" || !(/^[0-9]{10}$/).test(record.value)) {
         errorMessages.push("BRN 형식이 잘못되었습니다.");
       }
     }
-    else if (["year", "month", "date"].includes(this.type)) {
-      if (!(this.value instanceof DateOnly)) {
+    else if (["year", "month", "date"].includes(record.type)) {
+      if (!(record.value instanceof DateOnly)) {
         errorMessages.push("날짜를 입력하세요");
       }
     }
-    else if (["datetime", "datetime-sec"].includes(this.type)) {
-      if (!(this.value instanceof DateTime)) {
+    else if (["datetime", "datetime-sec"].includes(record.type)) {
+      if (!(record.value instanceof DateTime)) {
         errorMessages.push("날짜 및 시간을 입력하세요");
       }
     }
-    else if (["time", "time-sec"].includes(this.type)) {
-      if (!(this.value instanceof Time)) {
+    else if (["time", "time-sec"].includes(record.type)) {
+      if (!(record.value instanceof Time)) {
         errorMessages.push("시간을 입력하세요");
       }
     }
-    else if (this.type === "text") {
-      if (this.minlength !== undefined && this.minlength > (this.value as string).length) {
+    else if (record.type === "text") {
+      if (record.minlength !== undefined && record.minlength > (record.value as string).length) {
         errorMessages.push(`문자의 길이가 ${this.minlength}보다 길거나 같아야 합니다.`);
       }
-      if (this.maxlength !== undefined && this.maxlength > (this.value as string).length) {
-        errorMessages.push(`문자의 길이가 ${this.maxlength}보다 짧거나 같아야 합니다.`);
+      if (record.maxlength !== undefined && record.maxlength > (record.value as string).length) {
+        errorMessages.push(`문자의 길이가 ${record.maxlength}보다 짧거나 같아야 합니다.`);
       }
     }
 
-    if (this.validatorFn) {
-      const message = this.validatorFn(this.value);
+    if (record.validatorFn) {
+      const message = record.validatorFn(this.value);
       if (message !== undefined) {
         errorMessages.push(message);
       }

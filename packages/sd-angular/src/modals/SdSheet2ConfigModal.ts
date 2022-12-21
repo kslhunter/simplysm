@@ -2,6 +2,9 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { SdModalBase } from "../providers/SdModalProvider";
 import { ISdSheet2Config } from "../controls/SdSheet2Control";
 import { SdSheet2ColumnControl } from "../controls/SdSheet2ColumnControl";
+import { faAngleUp } from "@fortawesome/pro-solid-svg-icons/faAngleUp";
+import { faAngleDown } from "@fortawesome/pro-solid-svg-icons/faAngleDown";
+import { faXmark } from "@fortawesome/pro-solid-svg-icons/faXmark";
 
 @Component({
   selector: "sd-sheet2-config-modal",
@@ -23,11 +26,11 @@ import { SdSheet2ColumnControl } from "../controls/SdSheet2ColumnControl";
               <div class="sd-padding-xs-sm" style="text-align: center">
                 <sd-anchor [disabled]="index === 0 || (!item.fixed && !!items[index - 1].fixed)"
                            (click)="onDisplayOrderUpButtonClick(item)">
-                  <fa-icon [icon]="icons.fasAngleUp | async" [fixedWidth]=true></fa-icon>
+                  <fa-icon [icon]="icons.fasAngleUp" [fixedWidth]=true></fa-icon>
                 </sd-anchor>
                 <sd-anchor [disabled]="index === items.length - 1 || (item.fixed && !items[index + 1].fixed)"
                            (click)="onDisplayOrderDownButtonClick(item)">
-                  <fa-icon [icon]="icons.fasAngleDown | async" [fixedWidth]=true></fa-icon>
+                  <fa-icon [icon]="icons.fasAngleDown" [fixedWidth]=true></fa-icon>
                 </sd-anchor>
               </div>
             </ng-template>
@@ -47,7 +50,7 @@ import { SdSheet2ColumnControl } from "../controls/SdSheet2ColumnControl";
           <sd-sheet2-column header="Hidden">
             <ng-template #cell let-item="item">
               <div style="text-align: center">
-                <sd-checkbox size="sm" inset [(value)]="item.hidden" [icon]="icons.fasXmark | async"
+                <sd-checkbox size="sm" inset [(value)]="item.hidden" [icon]="icons.fasXmark"
                              theme="danger"></sd-checkbox>
               </div>
             </ng-template>
@@ -57,11 +60,12 @@ import { SdSheet2ColumnControl } from "../controls/SdSheet2ColumnControl";
 
       <sd-dock position="bottom" class="sd-padding-sm-default sd-padding-top-0">
         <div style="float: left">
-          <sd-button inline theme="warning" (click)="onInitButtonClick()" button.style="min-width: 60px;">Reset</sd-button>
+          <sd-button inline theme="warning" (click)="onInitButtonClick()" button.style="min-width: 60px;">Reset
+          </sd-button>
         </div>
         <sd-flex gap="sm" justifyContent="flex-end">
           <sd-button inline theme="success" (click)="onOkButtonClick()" button.style="min-width: 60px;">OK</sd-button>
-          <sd-button inline (click)="onCancelButtonClick()" button.style="min-width: 60px;">Cancel</sd-button>          
+          <sd-button inline (click)="onCancelButtonClick()" button.style="min-width: 60px;">Cancel</sd-button>
         </sd-flex>
       </sd-dock>
     </sd-dock-container>`,
@@ -70,9 +74,9 @@ import { SdSheet2ColumnControl } from "../controls/SdSheet2ColumnControl";
 })
 export class SdSheet2ConfigModal<T> extends SdModalBase<ISdSheet2ConfigModalInput<T>, ISdSheet2Config> {
   public icons = {
-    fasAngleUp: import("@fortawesome/pro-solid-svg-icons/faAngleUp").then(m => m.definition),
-    fasAngleDown: import("@fortawesome/pro-solid-svg-icons/faAngleDown").then(m => m.definition),
-    fasXmark: import("@fortawesome/pro-solid-svg-icons/faXmark").then(m => m.definition)
+    fasAngleUp: faAngleUp,
+    fasAngleDown: faAngleDown,
+    fasXmark: faXmark
   };
 
   public param!: ISdSheet2ConfigModalInput<T>;

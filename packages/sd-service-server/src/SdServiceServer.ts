@@ -208,6 +208,7 @@ export class SdServiceServer extends EventEmitter {
     const wsClient = this.getWsClient(socketId);
     try {
       await Wait.until(() => wsClient !== undefined, 500, 10000);
+      this._logger.debug(`응답 전송 (size: ${Buffer.from(JsonConvert.stringify(res)).length})`);
       wsClient!.send(JsonConvert.stringify(res));
     }
     catch (err) {

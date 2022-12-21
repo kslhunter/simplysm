@@ -60,7 +60,7 @@ export class SdExcelXmlSharedString implements ISdExcelXml {
   }
 
   private _getStringFromTTag(t: TSdExcelXmlSharedStringData): string {
-    return typeof t[0] === "string" ? t[0] : (t[0]._ === "" ? " " : t[0]._);
+    return typeof t[0] === "string" ? t[0] : ("xml:space" in t[0].$ ? " " : "");
   }
 
   private _getHasInnerStyleOnSiTag(si: TSdExcelXmlSharedStringDataSi): boolean {

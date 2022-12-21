@@ -6,7 +6,7 @@ import {
   ISdExcelXmlWorksheetData
 } from "../commons";
 import { SdExcelUtil } from "../utils/SdExcelUtil";
-import { NotImplementError, NumberUtil } from "@simplysm/sd-core-common";
+import { NumberUtil } from "@simplysm/sd-core-common";
 
 export class SdExcelXmlWorksheet implements ISdExcelXml {
   public readonly data: ISdExcelXmlWorksheetData;
@@ -151,7 +151,48 @@ export class SdExcelXmlWorksheet implements ISdExcelXml {
         col.$.width = width;
       }
       else {
-        throw new NotImplementError();
+        const minNumber = NumberUtil.parseInt(col.$.min)!;
+        const maxNumber = NumberUtil.parseInt(col.$.max)!;
+
+        let insertIndex = this.data.worksheet.cols![0].col.indexOf(col);
+
+        if (minNumber < colIndexNumber) {
+          this.data.worksheet.cols![0].col.insert(insertIndex, {
+            "$": {
+              "min": col.$.min,
+              "max": (colIndexNumber - 1).toString(),
+              "bestFit": "1",
+              "customWidth": "1",
+              "width": width
+            }
+          });
+          insertIndex++;
+        }
+
+        this.data.worksheet.cols![0].col.insert(insertIndex, {
+          "$": {
+            "min": colIndex,
+            "max": colIndex,
+            "bestFit": "1",
+            "customWidth": "1",
+            "width": width
+          }
+        });
+        insertIndex++;
+
+        if (maxNumber > colIndexNumber) {
+          this.data.worksheet.cols![0].col.insert(insertIndex, {
+            "$": {
+              "min": (colIndexNumber + 1).toString(),
+              "max": col.$.max,
+              "bestFit": "1",
+              "customWidth": "1",
+              "width": width
+            }
+          });
+        }
+
+        this.data.worksheet.cols![0].col.remove(col);
       }
     }
     else {

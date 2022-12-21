@@ -1,16 +1,17 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DoCheck,
   ElementRef,
   forwardRef,
   HostBinding,
   Inject,
   Injector,
-  Input
+  Input,
+  NgZone
 } from "@angular/core";
 import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
+import { faBars } from "@fortawesome/pro-solid-svg-icons/faBars";
 
 @Component({
   selector: "sd-topbar",
@@ -18,7 +19,7 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
   template: `
     <sd-anchor class="_sidebar-toggle-button" (click)="onSidebarToggleButtonClick()" style="font-size: 16px;"
                *ngIf="sidebarContainerControl || sidebarContainer">
-      <fa-icon [icon]="icons.fasBars | async" [fixedWidth]="true"></fa-icon>
+      <fa-icon [icon]="icons.fasBars" [fixedWidth]="true"></fa-icon>
     </sd-anchor>
     <sd-gap width="default" *ngIf="!sidebarContainerControl && !sidebarContainer"></sd-gap>
     <ng-content></ng-content>`,
@@ -113,9 +114,9 @@ import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
     }
   `]
 })
-export class SdTopbarControl implements DoCheck {
+export class SdTopbarControl {
   public icons = {
-    fasBars: import("@fortawesome/pro-solid-svg-icons/faBars").then(m => m.faBars)
+    fasBars: faBars
   };
 
   @HostBinding("attr.sd-size")
@@ -131,16 +132,19 @@ export class SdTopbarControl implements DoCheck {
   public constructor(@Inject(forwardRef(() => SdTopbarContainerControl))
                      private readonly _topbarContainerControl: SdTopbarContainerControl,
                      private readonly _injector: Injector,
-                     private readonly _elRef: ElementRef) {
+                     private readonly _elRef: ElementRef,
+                     private readonly _zone: NgZone) {
     this.sidebarContainerControl = this._injector.get<SdSidebarContainerControl | null>(SdSidebarContainerControl, null) ?? undefined;
+
+    this._zone.runOutsideAngular(() => {
+      this._elRef.nativeElement.addEventListener("resize", () => {
+        this._topbarContainerControl.paddingTopPx = this._elRef.nativeElement.offsetHeight;
+      });
+    });
   }
 
   public onSidebarToggleButtonClick(): void {
     const sidebarContainerControl = this.sidebarContainer ?? this.sidebarContainerControl;
     sidebarContainerControl!.toggle = !sidebarContainerControl!.toggle;
-  }
-
-  public ngDoCheck(): void {
-    this._topbarContainerControl.paddingTopPx = this._elRef.nativeElement.offsetHeight;
   }
 }

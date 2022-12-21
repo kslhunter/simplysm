@@ -2,6 +2,9 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { SdModalBase } from "../providers/SdModalProvider";
 import { ISdSheetColumnConfigVM } from "../controls/SdSheetControl";
 import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
+import { faAngleUp } from "@fortawesome/pro-solid-svg-icons/faAngleUp";
+import { faAngleDown } from "@fortawesome/pro-solid-svg-icons/faAngleDown";
+import { faTimes } from "@fortawesome/pro-solid-svg-icons/faTimes";
 
 @Component({
   selector: "sd-sheet-config-modal",
@@ -23,11 +26,11 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
               <div class="sd-padding-xs-sm">
                 <sd-anchor [disabled]="index === 0 || (!item.fixed && !!displayConfigs[index - 1].fixed)"
                            (click)="onDisplayOrderUpButtonClick(item)">
-                  <fa-icon [icon]="icons.fasAngleUp | async" [fixedWidth]=true></fa-icon>
+                  <fa-icon [icon]="icons.fasAngleUp" [fixedWidth]=true></fa-icon>
                 </sd-anchor>
                 <sd-anchor [disabled]="index === configs.length - 1 || (item.fixed && !displayConfigs[index + 1].fixed)"
                            (click)="onDisplayOrderDownButtonClick(item)">
-                  <fa-icon [icon]="icons.fasAngleDown | async" [fixedWidth]=true></fa-icon>
+                  <fa-icon [icon]="icons.fasAngleDown" [fixedWidth]=true></fa-icon>
                 </sd-anchor>
               </div>
             </ng-template>
@@ -58,7 +61,7 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
             <ng-template #cell let-item="item">
               <div style="text-align: center">
                 <sd-checkbox size="sm" [(value)]="item.hidden"
-                             [icon]="icons.fasTimes | async" theme="danger"></sd-checkbox>
+                             [icon]="icons.fasTimes" theme="danger"></sd-checkbox>
               </div>
             </ng-template>
           </sd-sheet-column>
@@ -67,7 +70,8 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
 
       <sd-dock position="bottom" class="sd-padding-sm-default sd-padding-top-0" style="text-align: right">
         <div style="float: left">
-          <sd-button inline theme="warning" (click)="onInitButtonClick()" button.style="min-width: 100px;">Reset</sd-button>
+          <sd-button inline theme="warning" (click)="onInitButtonClick()" button.style="min-width: 100px;">Reset
+          </sd-button>
         </div>
         <sd-button inline theme="success" (click)="onOkButtonClick()" button.style="min-width: 100px;">OK</sd-button>
         <sd-gap width="sm"></sd-gap>
@@ -79,9 +83,9 @@ import { SdSheetColumnControl } from "../controls/SdSheetColumnControl";
 })
 export class SdSheetConfigModal extends SdModalBase<ISdSheetConfigModalInput, Record<string, ISdSheetColumnConfigVM>> {
   public icons = {
-    fasAngleUp: import("@fortawesome/pro-solid-svg-icons/faAngleUp").then(m => m.faAngleUp),
-    fasAngleDown: import("@fortawesome/pro-solid-svg-icons/faAngleDown").then(m => m.faAngleDown),
-    fasTimes: import("@fortawesome/pro-solid-svg-icons/faTimes").then(m => m.faTimes)
+    fasAngleUp: faAngleUp,
+    fasAngleDown: faAngleDown,
+    fasTimes: faTimes
   };
 
   public param!: ISdSheetConfigModalInput;

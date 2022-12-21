@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { ObjectUtil, TFlatType } from "@simplysm/sd-core-common";
 import { SdModalBase } from "../providers/SdModalProvider";
+import { faArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
+import { faArrowLeft } from "@fortawesome/pro-solid-svg-icons/faArrowLeft";
 
 @Component({
   selector: "sd-object-merge3-modal",
@@ -33,7 +35,7 @@ import { SdModalBase } from "../providers/SdModalProvider";
             <td
               [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.theirs[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.theirs[key], data.origin[key])">
-                <fa-icon [fixedWidth]="true" [icon]="icons.fasArrowRight | async"
+                <fa-icon [fixedWidth]="true" [icon]="icons.fasArrowRight"
                          (click)="$any(data.origin)[key] = $any(data.theirs)[key]"
                          style="pointer-events: auto"></fa-icon>
               </sd-anchor>
@@ -45,7 +47,7 @@ import { SdModalBase } from "../providers/SdModalProvider";
             <td
               [class.sd-background-color-success-lightest]="getIsOrgAllNotEqual(key) && !getIsNotEqual(data.yours[key], data.origin[key])">
               <sd-anchor [disabled]="!getIsNotEqual(data.yours[key], data.origin[key])">
-                <fa-icon [fixedWidth]="true" [icon]="icons.fasArrowLeft | async"
+                <fa-icon [fixedWidth]="true" [icon]="icons.fasArrowLeft"
                          (click)="$any(data.origin)[key] = $any(data.yours)[key]"
                          style="pointer-events: auto"></fa-icon>
               </sd-anchor>
@@ -68,8 +70,8 @@ import { SdModalBase } from "../providers/SdModalProvider";
 })
 export class SdObjectMerge3Modal<T extends Record<string, TFlatType>> extends SdModalBase<ISdObjectMerge3ModalInput<T>, T> {
   public icons = {
-    fasArrowRight: import("@fortawesome/pro-solid-svg-icons/faArrowRight").then(m => m.faArrowRight),
-    fasArrowLeft: import("@fortawesome/pro-solid-svg-icons/faArrowLeft").then(m => m.faArrowLeft)
+    fasArrowRight: faArrowRight,
+    fasArrowLeft: faArrowLeft
   };
 
   public data!: Omit<ISdObjectMerge3ModalInput<T>, "displayNameRecord">;

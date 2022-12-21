@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
+import { faChevronDown } from "@fortawesome/pro-light-svg-icons/faChevronDown";
 
 @Component({
   selector: "sd-sidebar-user",
@@ -14,7 +15,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       <div class="_menu-button" *ngIf="menuTitle" (click)="onMenuOpenButtonClick()">
         {{ menuTitle }}
         <sd-collapse-icon [open]="menuOpen" style="float: right;" openRotate="180"
-                          [icon]="icons.falChevronDown | async"></sd-collapse-icon>
+                          [icon]="icons.falChevronDown"></sd-collapse-icon>
       </div>
     </div>
     <sd-collapse [open]="menuOpen" *ngIf="menuTitle">
@@ -61,7 +62,7 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
 })
 export class SdSidebarUserControl {
   public icons = {
-    falChevronDown: import("@fortawesome/pro-light-svg-icons/faChevronDown").then(m => m.faChevronDown)
+    falChevronDown: faChevronDown
   };
 
   // @ts-expect-error
