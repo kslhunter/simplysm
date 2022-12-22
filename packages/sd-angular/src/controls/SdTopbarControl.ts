@@ -12,6 +12,7 @@ import {
 import { SdTopbarContainerControl } from "./SdTopbarContainerControl";
 import { SdSidebarContainerControl } from "./SdSidebarContainerControl";
 import { faBars } from "@fortawesome/pro-solid-svg-icons/faBars";
+import { ISdResizeEvent } from "@simplysm/sd-core-browser";
 
 @Component({
   selector: "sd-topbar",
@@ -137,8 +138,8 @@ export class SdTopbarControl {
     this.sidebarContainerControl = this._injector.get<SdSidebarContainerControl | null>(SdSidebarContainerControl, null) ?? undefined;
 
     this._zone.runOutsideAngular(() => {
-      this._elRef.nativeElement.addEventListener("resize", () => {
-        this._topbarContainerControl.paddingTopPx = this._elRef.nativeElement.offsetHeight;
+      this._elRef.nativeElement.addEventListener("resize", (event: ISdResizeEvent) => {
+        this._topbarContainerControl.elRef.nativeElement.style.paddingTop = event.newHeight + "px";
       });
     });
   }

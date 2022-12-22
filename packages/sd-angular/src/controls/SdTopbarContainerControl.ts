@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, Input } from "@angular/core";
 import { SdInputValidate } from "../decorators/SdInputValidate";
 
 @Component({
@@ -32,6 +32,6 @@ export class SdTopbarContainerControl {
   @HostBinding("attr.sd-size")
   public size?: "sm" | "lg";
 
-  @HostBinding("style.padding-top.px")
-  public paddingTopPx = 0;
+  public constructor(public readonly elRef: ElementRef) {
+  }
 }
