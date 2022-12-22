@@ -88,7 +88,11 @@ export class SdDockContainerControl implements AfterContentInit {
   }
 
   public ngAfterContentInit(): void {
-    this.redraw();
+    this._zone.runOutsideAngular(() => {
+      requestAnimationFrame(() => {
+        this.redraw();
+      });
+    });
   }
 
   public onBackdropClick(): void {
@@ -106,78 +110,76 @@ export class SdDockContainerControl implements AfterContentInit {
   }
 
   public redraw(): void {
-    this._zone.runOutsideAngular(() => {
-      if (!this.dockControls) return;
+    if (!this.dockControls) return;
 
-      let top = 0;
-      let left = 0;
-      let bottom = 0;
-      let right = 0;
-      for (const dockControl of this.dockControls.toArray()) {
-        const dockEl = dockControl.elRef.nativeElement;
-        const position = dockControl.position;
+    let top = 0;
+    let left = 0;
+    let bottom = 0;
+    let right = 0;
+    for (const dockControl of this.dockControls.toArray()) {
+      const dockEl = dockControl.elRef.nativeElement;
+      const position = dockControl.position;
 
-        if (position === "top") {
-          Object.assign(
-            dockEl.style,
-            {
-              top: top + "px",
-              bottom: "",
-              left: left + "px",
-              right: right + "px"
-            }
-          );
-          top += dockEl.offsetHeight;
-        }
-        else if (position === "bottom") {
-          Object.assign(
-            dockEl.style,
-            {
-              top: "",
-              bottom: bottom + "px",
-              left: left + "px",
-              right: right + "px"
-            }
-          );
-          bottom += dockEl.offsetHeight;
-        }
-        else if (position === "left") {
-          Object.assign(
-            dockEl.style,
-            {
-              top: top + "px",
-              bottom: bottom + "px",
-              left: left + "px",
-              right: ""
-            }
-          );
-          left += dockEl.offsetWidth;
-        }
-        else { // right
-          Object.assign(
-            dockEl.style,
-            {
-              top: top + "px",
-              bottom: bottom + "px",
-              left: "",
-              right: right + "px"
-            }
-          );
-          right += dockEl.offsetWidth;
-        }
-      }
-
-      if (!this.float) {
+      if (position === "top") {
         Object.assign(
-          (this._elRef.nativeElement as HTMLElement).findFirst("> ._content")!.style,
+          dockEl.style,
           {
-            paddingTop: top + "px",
-            paddingBottom: bottom + "px",
-            paddingRight: right + "px",
-            paddingLeft: left + "px"
+            top: top + "px",
+            bottom: "",
+            left: left + "px",
+            right: right + "px"
           }
         );
+        top += dockEl.offsetHeight;
       }
-    });
+      else if (position === "bottom") {
+        Object.assign(
+          dockEl.style,
+          {
+            top: "",
+            bottom: bottom + "px",
+            left: left + "px",
+            right: right + "px"
+          }
+        );
+        bottom += dockEl.offsetHeight;
+      }
+      else if (position === "left") {
+        Object.assign(
+          dockEl.style,
+          {
+            top: top + "px",
+            bottom: bottom + "px",
+            left: left + "px",
+            right: ""
+          }
+        );
+        left += dockEl.offsetWidth;
+      }
+      else { // right
+        Object.assign(
+          dockEl.style,
+          {
+            top: top + "px",
+            bottom: bottom + "px",
+            left: "",
+            right: right + "px"
+          }
+        );
+        right += dockEl.offsetWidth;
+      }
+    }
+
+    if (!this.float) {
+      Object.assign(
+        (this._elRef.nativeElement as HTMLElement).findFirst("> ._content")!.style,
+        {
+          paddingTop: top + "px",
+          paddingBottom: bottom + "px",
+          paddingRight: right + "px",
+          paddingLeft: left + "px"
+        }
+      );
+    }
   }
 }

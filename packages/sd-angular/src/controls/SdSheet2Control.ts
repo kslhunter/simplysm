@@ -643,357 +643,380 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
     this._cdr.markForCheck();
   }
 
+  private _ngAfterContentCheckedAnimationFrame?: number;
+
   /**
    * 내용물 (ContentChildren) 변경 체크 처리 ng Lifecycle
    */
   public ngAfterContentChecked(): void {
-    if (!this.columnControls) return;
-
-    //-- displayColumnDefs
-
-    const tempColumnDefs = this.columnControls
-      .map((columnControl) => {
-        const config = columnControl.key === undefined ? undefined : this._config?.columnRecord[columnControl.key];
-        return {
-          control: columnControl,
-          key: columnControl.key,
-          fixed: config?.fixed ?? columnControl.fixed,
-          width: this._resizedWidths[columnControl.guid] ?? config?.width ?? columnControl.width,
-          displayOrder: config?.displayOrder,
-          hidden: config?.hidden ?? columnControl.hidden
-        };
-      });
-    if (!ObjectUtil.equal(this._prevData["tempColumnDefs"], tempColumnDefs, { excludes: ["control"] })) {
-      this._prevData["tempColumnDefs"] = ObjectUtil.clone(tempColumnDefs, { excludes: ["control"] });
-
-      this.displayColumnDefs = tempColumnDefs
-        .filter((item) => !item.hidden && !item.control.collapse)
-        .orderBy((item) => item.displayOrder)
-        .orderBy((item) => (item.fixed ? -1 : 0))
-        .map((item) => ({
-          control: item.control,
-          fixed: item.fixed,
-          width: item.width
-        }));
-      this._cdr.markForCheck();
+    if (this._ngAfterContentCheckedAnimationFrame !== undefined) {
+      cancelAnimationFrame(this._ngAfterContentCheckedAnimationFrame);
     }
+    this._ngAfterContentCheckedAnimationFrame = requestAnimationFrame(() => {
+      this._zone.run(() => {
+        if (!this.columnControls) return;
 
-    //-- displayHeaderDefTable
+        //-- displayColumnDefs
 
-    const tempHeaderDefTable: ({ control: SdSheet2ColumnControl<T>; width: string | undefined; fixed: boolean; text: string | undefined; useTemplate: string | undefined } | undefined)[][] = [];
-    for (let c = 0; c < this.displayColumnDefs.length; c++) {
-      const columnDef = this.displayColumnDefs[c];
+        const tempColumnDefs = this.columnControls
+          .map((columnControl) => {
+            const config = columnControl.key === undefined ? undefined : this._config?.columnRecord[columnControl.key];
+            return {
+              control: columnControl,
+              key: columnControl.key,
+              fixed: config?.fixed ?? columnControl.fixed,
+              width: this._resizedWidths[columnControl.guid] ?? config?.width ?? columnControl.width,
+              displayOrder: config?.displayOrder,
+              hidden: config?.hidden ?? columnControl.hidden
+            };
+          });
+        if (!ObjectUtil.equal(this._prevData["tempColumnDefs"], tempColumnDefs, { excludes: ["control"] })) {
+          this._prevData["tempColumnDefs"] = ObjectUtil.clone(tempColumnDefs, { excludes: ["control"] });
 
-      const headers = columnDef.control.header === undefined ? []
-        : typeof columnDef.control.header === "string" ? [columnDef.control.header]
-          : columnDef.control.header;
+          this.displayColumnDefs = tempColumnDefs
+            .filter((item) => !item.hidden && !item.control.collapse)
+            .orderBy((item) => item.displayOrder)
+            .orderBy((item) => (item.fixed ? -1 : 0))
+            .map((item) => ({
+              control: item.control,
+              fixed: item.fixed,
+              width: item.width
+            }));
+          this._cdr.markForCheck();
+        }
 
-      for (let r = 0; r < headers.length; r++) {
-        tempHeaderDefTable[r] = tempHeaderDefTable[r] ?? [];
-        tempHeaderDefTable[r][c] = {
-          control: columnDef.control,
-          width: columnDef.width,
-          fixed: columnDef.fixed ?? false,
-          text: headers[r],
-          useTemplate: undefined
-        };
-      }
-      if (columnDef.control.headerTemplateRef) {
-        tempHeaderDefTable[headers.length] = tempHeaderDefTable[headers.length] ?? [];
-        tempHeaderDefTable[headers.length][c] = {
-          control: columnDef.control,
-          width: columnDef.width,
-          fixed: columnDef.fixed ?? false,
-          text: undefined,
-          useTemplate: columnDef.control.guid
-        };
-      }
-    }
+        //-- displayHeaderDefTable
 
-    if (!ObjectUtil.equal(this._prevData["tempHeaderDefTable"], tempHeaderDefTable, { excludes: ["control"] })) {
-      this._prevData["tempHeaderDefTable"] = ObjectUtil.clone(tempHeaderDefTable, { excludes: ["control"] });
+        const tempHeaderDefTable: ({ control: SdSheet2ColumnControl<T>; width: string | undefined; fixed: boolean; text: string | undefined; useTemplate: string | undefined } | undefined)[][] = [];
+        for (let c = 0; c < this.displayColumnDefs.length; c++) {
+          const columnDef = this.displayColumnDefs[c];
 
-      const headerDefTable: (IHeaderDef<T> | undefined)[][] = [];
-      for (let r = 0; r < tempHeaderDefTable.length; r++) {
-        headerDefTable[r] = [];
+          const headers = columnDef.control.header === undefined ? []
+            : typeof columnDef.control.header === "string" ? [columnDef.control.header]
+              : columnDef.control.header;
 
-        const colLength = tempHeaderDefTable[r].length;
-        for (let c = 0; c < colLength; c++) {
-          if (!tempHeaderDefTable[r][c]) continue;
-
-          if (c > 0) {
-            let isIgnore = true;
-            for (let rr = 0; rr <= r; rr++) {
-              if (!ObjectUtil.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][c - 1], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })) {
-                isIgnore = false;
-                break;
-              }
-            }
-            if (isIgnore) continue;
+          for (let r = 0; r < headers.length; r++) {
+            tempHeaderDefTable[r] = tempHeaderDefTable[r] ?? [];
+            tempHeaderDefTable[r][c] = {
+              control: columnDef.control,
+              width: columnDef.width,
+              fixed: columnDef.fixed ?? false,
+              text: headers[r],
+              useTemplate: undefined
+            };
           }
-          /*if (c > 0 && ObjectUtil.equal(tempHeaderDefTable[r][c], tempHeaderDefTable[r][c - 1], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })) {
-            continue;
-          }*/
-
-          headerDefTable[r][c] = {
-            control: tempHeaderDefTable[r][c]!.control,
-            width: tempHeaderDefTable[r][c]!.width,
-            fixed: tempHeaderDefTable[r][c]!.fixed,
-            colspan: undefined,
-            rowspan: undefined,
-            text: tempHeaderDefTable[r][c]!.text,
-            useTemplate: Boolean(tempHeaderDefTable[r][c]!.useTemplate),
-            isLastDepth: false
-          };
-
-          // rowspan
-
-          let rowspan = 1;
-          for (let rr = r + 1; rr < tempHeaderDefTable.length; rr++) {
-            if (tempHeaderDefTable[rr][c] !== undefined) break;
-            rowspan++;
-          }
-          if (rowspan > 1) {
-            headerDefTable[r][c]!.rowspan = rowspan;
-          }
-
-          // last-depth
-
-          if (r + rowspan === tempHeaderDefTable.length) {
-            headerDefTable[r][c]!.isLastDepth = true;
-          }
-          else {
-
-            // colspan
-
-            let colspan = 1;
-            for (let cc = c + 1; cc < colLength; cc++) {
-              let isDiff = false;
-              for (let rr = 0; rr <= r; rr++) {
-                if (!ObjectUtil.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][cc], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })) {
-                  isDiff = true;
-                  break;
-                }
-              }
-              if (isDiff) break;
-
-              colspan++;
-            }
-            if (colspan > 1) {
-              headerDefTable[r][c]!.colspan = colspan;
-            }
+          if (columnDef.control.headerTemplateRef) {
+            tempHeaderDefTable[headers.length] = tempHeaderDefTable[headers.length] ?? [];
+            tempHeaderDefTable[headers.length][c] = {
+              control: columnDef.control,
+              width: columnDef.width,
+              fixed: columnDef.fixed ?? false,
+              text: undefined,
+              useTemplate: columnDef.control.guid
+            };
           }
         }
-      }
 
-      this.displayHeaderDefTable = headerDefTable;
-      this._cdr.markForCheck();
-    }
+        if (!ObjectUtil.equal(this._prevData["tempHeaderDefTable"], tempHeaderDefTable, { excludes: ["control"] })) {
+          this._prevData["tempHeaderDefTable"] = ObjectUtil.clone(tempHeaderDefTable, { excludes: ["control"] });
 
-    this.hasSummaryTemplate = this.columnControls.some((item) => item.summaryTemplateRef !== undefined);
+          const headerDefTable: (IHeaderDef<T> | undefined)[][] = [];
+          for (let r = 0; r < tempHeaderDefTable.length; r++) {
+            headerDefTable[r] = [];
+
+            const colLength = tempHeaderDefTable[r].length;
+            for (let c = 0; c < colLength; c++) {
+              if (!tempHeaderDefTable[r][c]) continue;
+
+              if (c > 0) {
+                let isIgnore = true;
+                for (let rr = 0; rr <= r; rr++) {
+                  if (!ObjectUtil.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][c - 1], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })) {
+                    isIgnore = false;
+                    break;
+                  }
+                }
+                if (isIgnore) continue;
+              }
+              /*if (c > 0 && ObjectUtil.equal(tempHeaderDefTable[r][c], tempHeaderDefTable[r][c - 1], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })) {
+                continue;
+              }*/
+
+              headerDefTable[r][c] = {
+                control: tempHeaderDefTable[r][c]!.control,
+                width: tempHeaderDefTable[r][c]!.width,
+                fixed: tempHeaderDefTable[r][c]!.fixed,
+                colspan: undefined,
+                rowspan: undefined,
+                text: tempHeaderDefTable[r][c]!.text,
+                useTemplate: Boolean(tempHeaderDefTable[r][c]!.useTemplate),
+                isLastDepth: false
+              };
+
+              // rowspan
+
+              let rowspan = 1;
+              for (let rr = r + 1; rr < tempHeaderDefTable.length; rr++) {
+                if (tempHeaderDefTable[rr][c] !== undefined) break;
+                rowspan++;
+              }
+              if (rowspan > 1) {
+                headerDefTable[r][c]!.rowspan = rowspan;
+              }
+
+              // last-depth
+
+              if (r + rowspan === tempHeaderDefTable.length) {
+                headerDefTable[r][c]!.isLastDepth = true;
+              }
+              else {
+
+                // colspan
+
+                let colspan = 1;
+                for (let cc = c + 1; cc < colLength; cc++) {
+                  let isDiff = false;
+                  for (let rr = 0; rr <= r; rr++) {
+                    if (!ObjectUtil.equal(tempHeaderDefTable[rr][c], tempHeaderDefTable[rr][cc], { includes: ["text", "fixed", "useTemplate", "isLastDepth"] })) {
+                      isDiff = true;
+                      break;
+                    }
+                  }
+                  if (isDiff) break;
+
+                  colspan++;
+                }
+                if (colspan > 1) {
+                  headerDefTable[r][c]!.colspan = colspan;
+                }
+              }
+            }
+          }
+
+          this.displayHeaderDefTable = headerDefTable;
+          this._cdr.markForCheck();
+        }
+
+        const hasSummaryTemplate = this.columnControls.some((item) => item.summaryTemplateRef !== undefined);
+
+        if (this.hasSummaryTemplate !== hasSummaryTemplate) {
+          this.hasSummaryTemplate = hasSummaryTemplate;
+          this._cdr.markForCheck();
+        }
+      });
+    });
   }
+
+  private _ngDoCheckAnimationFrame?: number;
 
   /**
    * 변수 변경 체크 ng Lifecycle
    */
   public ngDoCheck(): void {
-    if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
-      const tempPagination = { pageItemCount: this.pageItemCount, itemLength: this.items.length };
-      if (!ObjectUtil.equal(this._prevData["tempPagination"], tempPagination)) {
-        this._prevData["tempPagination"] = tempPagination;
-
-        this.displayPageLength = Math.ceil(tempPagination.itemLength / tempPagination.pageItemCount);
-        this._cdr.markForCheck();
-      }
+    if (this._ngDoCheckAnimationFrame !== undefined) {
+      cancelAnimationFrame(this._ngDoCheckAnimationFrame);
     }
-    else if (this.displayPageLength !== this.pageLength) {
-      this.displayPageLength = this.pageLength;
-      this._cdr.markForCheck();
-    }
+    this._ngDoCheckAnimationFrame = requestAnimationFrame(() => {
+      this._zone.run(() => {
+        if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
+          const tempPagination = { pageItemCount: this.pageItemCount, itemLength: this.items.length };
+          if (!ObjectUtil.equal(this._prevData["tempPagination"], tempPagination)) {
+            this._prevData["tempPagination"] = tempPagination;
 
-    // set display item defs
-
-    let displayItems = this.items;
-    if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
-      for (const orderingItem of this.ordering.reverse()) {
-        if (orderingItem.desc) {
-          displayItems = displayItems.orderByDesc((item) => item[orderingItem.key]);
+            this.displayPageLength = Math.ceil(tempPagination.itemLength / tempPagination.pageItemCount);
+            this._cdr.markForCheck();
+          }
         }
-        else {
-          displayItems = displayItems.orderBy((item) => item[orderingItem.key]);
+        else if (this.displayPageLength !== this.pageLength) {
+          this.displayPageLength = this.pageLength;
+          this._cdr.markForCheck();
         }
-      }
-      displayItems = displayItems.slice(this.page * this.pageItemCount, (this.page + 1) * this.pageItemCount);
-    }
 
-    let displayItemDefs: IItemDef<T>[] = displayItems.map((item) => ({
-      item,
-      parentDef: undefined,
-      hasChildren: false,
-      depth: 0
-    }));
+        // set display item defs
 
-    if (this.getChildrenFn) {
-      let fn = (arr: IItemDef<T>[]): IItemDef<T>[] => {
-        let fnResult: IItemDef<T>[] = [];
-        for (let i = 0; i < arr.length; i++) {
-          fnResult.push(arr[i]);
+        let displayItems = this.items;
+        if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
+          for (const orderingItem of this.ordering.reverse()) {
+            if (orderingItem.desc) {
+              displayItems = displayItems.orderByDesc((item) => item[orderingItem.key]);
+            }
+            else {
+              displayItems = displayItems.orderBy((item) => item[orderingItem.key]);
+            }
+          }
+          displayItems = displayItems.slice(this.page * this.pageItemCount, (this.page + 1) * this.pageItemCount);
+        }
 
-          const children = this.getChildrenFn!(i, arr[i].item) ?? [];
-          if (children.length > 0) {
-            arr[i].hasChildren = true;
+        let displayItemDefs: IItemDef<T>[] = displayItems.map((item) => ({
+          item,
+          parentDef: undefined,
+          hasChildren: false,
+          depth: 0
+        }));
+
+        if (this.getChildrenFn) {
+          let fn = (arr: IItemDef<T>[]): IItemDef<T>[] => {
+            let fnResult: IItemDef<T>[] = [];
+            for (let i = 0; i < arr.length; i++) {
+              fnResult.push(arr[i]);
+
+              const children = this.getChildrenFn!(i, arr[i].item) ?? [];
+              if (children.length > 0) {
+                arr[i].hasChildren = true;
 
 
-            let displayChildren = children;
-            if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
-              for (const orderingItem of this.ordering.reverse()) {
-                if (orderingItem.desc) {
-                  displayChildren = displayChildren.orderByDesc((item) => item[orderingItem.key]);
+                let displayChildren = children;
+                if (this.pageItemCount !== undefined && this.pageItemCount !== 0 && this.items.length > 0) {
+                  for (const orderingItem of this.ordering.reverse()) {
+                    if (orderingItem.desc) {
+                      displayChildren = displayChildren.orderByDesc((item) => item[orderingItem.key]);
+                    }
+                    else {
+                      displayChildren = displayChildren.orderBy((item) => item[orderingItem.key]);
+                    }
+                  }
                 }
-                else {
-                  displayChildren = displayChildren.orderBy((item) => item[orderingItem.key]);
-                }
+
+                fnResult.push(...fn(displayChildren.map((item) => ({
+                  item,
+                  parentDef: arr[i],
+                  hasChildren: false,
+                  depth: arr[i].depth + 1
+                }))));
               }
             }
 
-            fnResult.push(...fn(displayChildren.map((item) => ({
-              item,
-              parentDef: arr[i],
-              hasChildren: false,
-              depth: arr[i].depth + 1
-            }))));
+            return fnResult;
+          };
+
+          displayItemDefs = fn(displayItemDefs);
+        }
+
+
+        if (!(
+          this.displayItemDefs.length === displayItemDefs.length
+          && this.displayItemDefs.every((def, i) => (
+            def.item === displayItemDefs[i].item &&
+            def.parentDef === displayItemDefs[i].parentDef &&
+            def.hasChildren === displayItemDefs[i].hasChildren &&
+            def.depth === displayItemDefs[i].depth
+          ))
+        )) {
+          this.displayItemDefs = displayItemDefs;
+          this._cdr.markForCheck();
+
+          const prevFocusEl = document.activeElement;
+          if (prevFocusEl instanceof HTMLElement && prevFocusEl.findParent(this._elRef.nativeElement)) {
+            const prevFocusTdEl = prevFocusEl.tagName === "TD" ? prevFocusEl : prevFocusEl.findParent("td");
+            if (prevFocusTdEl) {
+              const addr = {
+                r: NumberUtil.parseInt(prevFocusTdEl.getAttribute("r")),
+                c: NumberUtil.parseInt(prevFocusTdEl.getAttribute("c"))
+              };
+              requestAnimationFrame(() => {
+                if (document.activeElement !== prevFocusEl) {
+                  const newFocusTdEl = this._elRef.nativeElement.findFirst(`._sheet-container > table > tbody > tr[r='${addr.r}'] > td[r='${addr.r}'][c='${addr.c}']`);
+                  newFocusTdEl?.focus();
+                }
+              });
+            }
           }
         }
 
-        return fnResult;
-      };
+        // drawing selected items
 
-      displayItemDefs = fn(displayItemDefs);
-    }
+        const tempCurrSelectedItems = this.selectedItems.filter((item) => this.displayItemDefs.some((def) => def.item === item));
+        if (!(
+          this._prevData["tempCurrSelectedItems"] !== undefined &&
+          this._prevData["tempCurrSelectedItems"].length === tempCurrSelectedItems.length &&
+          tempCurrSelectedItems.every((item) => this._prevData["tempCurrSelectedItems"].includes(item))
+        )) {
+          this._prevData["tempCurrSelectedItems"] = tempCurrSelectedItems;
 
+          const sheetContainerEl = this._elRef.nativeElement.findFirst("._sheet-container")!;
+          const selectRowIndicatorContainerEl = sheetContainerEl.findFirst("> ._select-row-indicator-container")!;
 
-    if (!(
-      this.displayItemDefs.length === displayItemDefs.length
-      && this.displayItemDefs.every((def, i) => (
-        def.item === displayItemDefs[i].item &&
-        def.parentDef === displayItemDefs[i].parentDef &&
-        def.hasChildren === displayItemDefs[i].hasChildren &&
-        def.depth === displayItemDefs[i].depth
-      ))
-    )) {
-      this.displayItemDefs = displayItemDefs;
-      this._cdr.markForCheck();
+          if (tempCurrSelectedItems.length > 0) {
+            const selectedTrRects = this.selectedItems.map((item) => {
+              const r = this.displayItemDefs.findIndex((item1) => item1.item === item);
+              const trEl = sheetContainerEl.findFirst(`> table > tbody > tr[r="${r}"]`);
+              if (trEl === undefined) return undefined;
 
-      const prevFocusEl = document.activeElement;
-      if (prevFocusEl instanceof HTMLElement && prevFocusEl.findParent(this._elRef.nativeElement)) {
-        const prevFocusTdEl = prevFocusEl.tagName === "TD" ? prevFocusEl : prevFocusEl.findParent("td");
-        if (prevFocusTdEl) {
-          const addr = {
-            r: NumberUtil.parseInt(prevFocusTdEl.getAttribute("r")),
-            c: NumberUtil.parseInt(prevFocusTdEl.getAttribute("c"))
-          };
-          requestAnimationFrame(() => {
-            if (document.activeElement !== prevFocusEl) {
-              const newFocusTdEl = this._elRef.nativeElement.findFirst(`._sheet-container > table > tbody > tr[r='${addr.r}'] > td[r='${addr.r}'][c='${addr.c}']`);
-              newFocusTdEl?.focus();
+              return {
+                top: trEl.offsetTop,
+                width: trEl.offsetWidth,
+                height: trEl.offsetHeight
+              };
+            }).filterExists();
+
+            let html = "";
+            for (const selectedTrRect of selectedTrRects) {
+              html += `<div class='_select-row-indicator' style="top: ${selectedTrRect.top}px; height: ${selectedTrRect.height - 1}px; width: ${selectedTrRect.width - 1}px;"></div>`;
             }
-          });
+            selectRowIndicatorContainerEl.innerHTML = html;
+            selectRowIndicatorContainerEl.style.display = "block";
+          }
+          else {
+            selectRowIndicatorContainerEl.innerHTML = "";
+            selectRowIndicatorContainerEl.style.display = "none";
+          }
         }
-      }
-    }
 
-    // drawing selected items
+        // set select props
 
-    const tempCurrSelectedItems = this.selectedItems.filter((item) => this.displayItemDefs.some((def) => def.item === item));
-    if (!(
-      this._prevData["tempCurrSelectedItems"] !== undefined &&
-      this._prevData["tempCurrSelectedItems"].length === tempCurrSelectedItems.length &&
-      tempCurrSelectedItems.every((item) => this._prevData["tempCurrSelectedItems"].includes(item))
-    )) {
-      this._prevData["tempCurrSelectedItems"] = tempCurrSelectedItems;
+        if (this.selectMode) {
+          const selectableItems = this.displayItemDefs.filter((item) => this.getIsItemSelectable(item.item)).map((item) => item.item);
+          const hasSelectableItem = selectableItems.length > 0;
+          const isAllItemsSelected = selectableItems.length <= this.selectedItems.length && selectableItems.every((item) => this.selectedItems.includes(item));
 
-      const sheetContainerEl = this._elRef.nativeElement.findFirst("._sheet-container")!;
-      const selectRowIndicatorContainerEl = sheetContainerEl.findFirst("> ._select-row-indicator-container")!;
-
-      if (tempCurrSelectedItems.length > 0) {
-        const selectedTrRects = this.selectedItems.map((item) => {
-          const r = this.displayItemDefs.findIndex((item1) => item1.item === item);
-          const trEl = sheetContainerEl.findFirst(`> table > tbody > tr[r="${r}"]`);
-          if (trEl === undefined) return undefined;
-
-          return {
-            top: trEl.offsetTop,
-            width: trEl.offsetWidth,
-            height: trEl.offsetHeight
-          };
-        }).filterExists();
-
-        let html = "";
-        for (const selectedTrRect of selectedTrRects) {
-          html += `<div class='_select-row-indicator' style="top: ${selectedTrRect.top}px; height: ${selectedTrRect.height - 1}px; width: ${selectedTrRect.width - 1}px;"></div>`;
+          if (this.hasSelectableItem !== hasSelectableItem) {
+            this.hasSelectableItem = hasSelectableItem;
+            this._cdr.markForCheck();
+          }
+          if (this.isAllItemsSelected !== isAllItemsSelected) {
+            this.isAllItemsSelected = isAllItemsSelected;
+            this._cdr.markForCheck();
+          }
         }
-        selectRowIndicatorContainerEl.innerHTML = html;
-        selectRowIndicatorContainerEl.style.display = "block";
-      }
-      else {
-        selectRowIndicatorContainerEl.innerHTML = "";
-        selectRowIndicatorContainerEl.style.display = "none";
-      }
-    }
+        else {
+          if (this.hasSelectableItem) {
+            this.hasSelectableItem = false;
+            this._cdr.markForCheck();
+          }
+          if (this.isAllItemsSelected) {
+            this.isAllItemsSelected = false;
+            this._cdr.markForCheck();
+          }
+        }
 
-    // set select props
+        // set expand props
 
-    if (this.selectMode) {
-      const selectableItems = this.displayItemDefs.filter((item) => this.getIsItemSelectable(item.item)).map((item) => item.item);
-      const hasSelectableItem = selectableItems.length > 0;
-      const isAllItemsSelected = selectableItems.length <= this.selectedItems.length && selectableItems.every((item) => this.selectedItems.includes(item));
+        if (this.getChildrenFn) {
+          const expandableItemDefs = this.displayItemDefs.filter((item) => item.hasChildren);
+          let hasExpandableItem = expandableItemDefs.length > 0;
+          let isAllItemsExpanded = expandableItemDefs.length <= this.expandedItems.length && expandableItemDefs.every((itemDef) => this.expandedItems.includes(itemDef.item));
 
-      if (this.hasSelectableItem !== hasSelectableItem) {
-        this.hasSelectableItem = hasSelectableItem;
-        this._cdr.markForCheck();
-      }
-      if (this.isAllItemsSelected !== isAllItemsSelected) {
-        this.isAllItemsSelected = isAllItemsSelected;
-        this._cdr.markForCheck();
-      }
-    }
-    else {
-      if (this.hasSelectableItem) {
-        this.hasSelectableItem = false;
-        this._cdr.markForCheck();
-      }
-      if (this.isAllItemsSelected) {
-        this.isAllItemsSelected = false;
-        this._cdr.markForCheck();
-      }
-    }
-
-    // set expand props
-
-    if (this.getChildrenFn) {
-      const expandableItemDefs = this.displayItemDefs.filter((item) => item.hasChildren);
-      let hasExpandableItem = expandableItemDefs.length > 0;
-      let isAllItemsExpanded = expandableItemDefs.length <= this.expandedItems.length && expandableItemDefs.every((itemDef) => this.expandedItems.includes(itemDef.item));
-
-      if (this.hasExpandableItem !== hasExpandableItem) {
-        this.hasExpandableItem = hasExpandableItem;
-        this._cdr.markForCheck();
-      }
-      if (this.isAllItemsExpanded !== isAllItemsExpanded) {
-        this.isAllItemsExpanded = isAllItemsExpanded;
-        this._cdr.markForCheck();
-      }
-    }
-    else {
-      if (this.hasExpandableItem) {
-        this.hasExpandableItem = false;
-        this._cdr.markForCheck();
-      }
-      if (this.isAllItemsExpanded) {
-        this.isAllItemsExpanded = false;
-        this._cdr.markForCheck();
-      }
-    }
+          if (this.hasExpandableItem !== hasExpandableItem) {
+            this.hasExpandableItem = hasExpandableItem;
+            this._cdr.markForCheck();
+          }
+          if (this.isAllItemsExpanded !== isAllItemsExpanded) {
+            this.isAllItemsExpanded = isAllItemsExpanded;
+            this._cdr.markForCheck();
+          }
+        }
+        else {
+          if (this.hasExpandableItem) {
+            this.hasExpandableItem = false;
+            this._cdr.markForCheck();
+          }
+          if (this.isAllItemsExpanded) {
+            this.isAllItemsExpanded = false;
+            this._cdr.markForCheck();
+          }
+        }
+      });
+    });
   }
 
   public getIsCellEditMode(r: number, c: number): boolean {

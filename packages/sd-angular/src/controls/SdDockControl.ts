@@ -221,7 +221,11 @@ export class SdDockControl implements OnDestroy, OnInit, OnChanges {
   }
 
   public ngOnDestroy(): void {
-    this._parentControl.redraw();
+    this._zone.runOutsideAngular(() => {
+      requestAnimationFrame(() => {
+        this._parentControl.redraw();
+      });
+    });
   }
 
   public onResizeBarMousedown(event: MouseEvent): void {
