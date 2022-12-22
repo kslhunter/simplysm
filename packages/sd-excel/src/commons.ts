@@ -120,7 +120,7 @@ export type TSdExcelXmlSharedStringDataSi =
     }[];
   };
 
-export type TSdExcelXmlSharedStringData = [string | { "$": { "space"?: "preserve" } }];
+export type TSdExcelXmlSharedStringData = [string | { "$": { "space"?: "preserve" }; "_"?: string }];
 
 
 export interface ISdExcelXmlStyleData {
