@@ -18,6 +18,7 @@ module.exports = {
     "no-duplicate-imports": ["error"],
     "no-unused-expressions": ["error"],
     "no-unused-vars": ["error"],
-    "no-undef": ["error"]
+    "no-undef": ["error"],
+    "linebreak-style": ["error", "unix"]
   }
 };

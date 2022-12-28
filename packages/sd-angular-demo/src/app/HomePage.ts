@@ -26,7 +26,7 @@ import { faUserCircle } from "@fortawesome/pro-duotone-svg-icons/faUserCircle";
               </div>
 
               <sd-sidebar-user-menu>
-                <sd-list class="sd-padding-sm-0">
+                <sd-list inset class="sd-padding-sm-0">
                   <sd-list-item>
                     <sd-gap [width.px]="6"></sd-gap>
                     로그아웃
@@ -37,7 +37,7 @@ import { faUserCircle } from "@fortawesome/pro-duotone-svg-icons/faUserCircle";
           </sd-dock>
 
           <sd-pane class="sd-padding-sm-0">
-            <sd-list>
+            <sd-list inset>
               <sd-list-item [sdRouterLink]="['/home/sheet2']">
                 시트2
               </sd-list-item>

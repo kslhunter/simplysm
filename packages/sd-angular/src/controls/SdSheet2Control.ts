@@ -897,7 +897,9 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
           this.displayItemDefs.length === displayItemDefs.length
           && this.displayItemDefs.every((def, i) => (
             def.item === displayItemDefs[i].item &&
-            def.parentDef === displayItemDefs[i].parentDef &&
+            def.parentDef?.depth === displayItemDefs[i].parentDef?.depth &&
+            def.parentDef?.hasChildren === displayItemDefs[i].parentDef?.hasChildren &&
+            def.parentDef?.item === displayItemDefs[i].parentDef?.item &&
             def.hasChildren === displayItemDefs[i].hasChildren &&
             def.depth === displayItemDefs[i].depth
           ))

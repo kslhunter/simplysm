@@ -65,6 +65,22 @@ import { sdThemes, TSdTheme } from "../commons";
         }
       }
 
+      &[sd-link] > button {
+        border: none;
+        color: var(--theme-color-primary-default);
+
+        &:hover {
+          color: var(--theme-color-primary-darker);
+        }
+
+        &:disabled {
+          background: white;
+          border-color: var(--theme-color-grey-lighter);
+          color: var(--text-brightness-default);
+          cursor: default;
+        }
+      }
+
       @each $theme in $arr-theme-color {
         &[sd-theme=#{$theme}] > button {
           background: var(--theme-color-#{$theme}-default);
@@ -127,6 +143,11 @@ export class SdButtonControl {
   @SdInputValidate(Boolean)
   @HostBinding("attr.sd-inline")
   public inline?: boolean;
+
+  @Input()
+  @SdInputValidate(Boolean)
+  @HostBinding("attr.sd-link")
+  public link?: boolean;
 
   @Input()
   @SdInputValidate({

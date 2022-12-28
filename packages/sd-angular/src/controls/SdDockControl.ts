@@ -70,7 +70,7 @@ import { SdSystemConfigRootProvider } from "../root-providers/SdSystemConfigRoot
       &[sd-resizable=true] {
         > ._resize-bar {
           position: absolute;
-          background: var(--border-color);
+          background: var(--border-color-light);
         }
 
         &[sd-position=top] {

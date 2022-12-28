@@ -6,6 +6,7 @@ import {
   EventEmitter,
   HostBinding,
   Input,
+  NgZone,
   Output
 } from "@angular/core";
 import {
@@ -226,6 +227,27 @@ import { sdThemes, TSdTheme } from "../commons";
       &[sd-invalid=true] > ._invalid-indicator {
         @include invalid-indicator();
       }
+
+      &[sd-design=bottom-line] {
+
+        > input,
+        > ._contents {
+          border: none;
+          border-bottom: 2px solid var(--border-color);
+          background: transparent;
+          border-radius: 0;
+          transition: border-color 0.3s;
+
+          &:focus {
+            border-color: var(--theme-color-primary-default);
+          }
+
+          &:disabled {
+            border-bottom-color: transparent;
+            color: var(--text-brightness-light);
+          }
+        }
+      }
     }
   `]
 })
@@ -337,6 +359,14 @@ export class SdTextfield2Control implements INotifyPropertyChange, DoCheck {
   public theme?: TSdTheme;
 
   @Input()
+  @SdInputValidate({
+    type: String,
+    includes: ["bottom-line"]
+  })
+  @HostBinding("attr.sd-design")
+  public design?: "bottom-line";
+
+  @Input()
   public inputStyle?: any;
 
   @HostBinding("attr.sd-invalid")
@@ -355,7 +385,8 @@ export class SdTextfield2Control implements INotifyPropertyChange, DoCheck {
   public errorMessage = "";
   public controlValueText = "";
 
-  public constructor(private readonly _elRef: ElementRef<HTMLElement>) {
+  public constructor(private readonly _elRef: ElementRef<HTMLElement>,
+                     private readonly _zone: NgZone) {
   }
 
   public onPropertyChange<K extends keyof this>(propertyName: K, oldValue: this[K], newValue: this[K]): void {
@@ -475,7 +506,8 @@ export class SdTextfield2Control implements INotifyPropertyChange, DoCheck {
       !changedProps.includes("max") &&
       !changedProps.includes("minlength") &&
       !changedProps.includes("maxlength") &&
-      !changedProps.includes("validatorFn")
+      !changedProps.includes("validatorFn") &&
+      !this.validatorFn
     ) return;
 
     const errorMessages: string[] = [];
@@ -535,11 +567,15 @@ export class SdTextfield2Control implements INotifyPropertyChange, DoCheck {
 
     if (this.errorMessage !== fullErrorMessage) {
       this.errorMessage = fullErrorMessage;
-    }
 
-    const inputEl = this._elRef.nativeElement.findFirst("input");
-    if (inputEl instanceof HTMLInputElement) {
-      inputEl.setCustomValidity(fullErrorMessage);
+      this._zone.runOutsideAngular(() => {
+        requestAnimationFrame(() => {
+          const inputEl = this._elRef.nativeElement.findFirst("input");
+          if (inputEl instanceof HTMLInputElement) {
+            inputEl.setCustomValidity(fullErrorMessage);
+          }
+        });
+      });
     }
   }
 
