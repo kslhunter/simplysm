@@ -19,8 +19,9 @@ export class SdWebSocket extends EventEmitter {
   }
 
   public async connectAsync(): Promise<void> {
-    if (this.connected) return;
+    if (this._ws?.readyState === WebSocket.OPEN) return;
 
+    await this.closeAsync();
     await new Promise<void>((resolve, reject) => {
       this._ws = new WebSocket(this._url);
 
@@ -43,10 +44,14 @@ export class SdWebSocket extends EventEmitter {
   }
 
   public async closeAsync(): Promise<void> {
-    if (!this.connected) return;
+    if (
+      this._ws === undefined ||
+      this._ws.readyState === WebSocket.CLOSING ||
+      this._ws.readyState === WebSocket.CLOSED
+    ) return;
 
-    this._ws!.close();
-    await Wait.until(() => !this.connected);
+    this._ws.close();
+    await Wait.until(() => this._ws!.readyState === WebSocket.CLOSED);
     delete this._ws;
   }
 

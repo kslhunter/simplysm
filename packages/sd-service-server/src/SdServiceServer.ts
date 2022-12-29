@@ -28,6 +28,8 @@ export class SdServiceServer extends EventEmitter {
 
   private readonly _eventListeners: IEventListener[] = [];
 
+  private _pingInterval?: NodeJS.Timeout;
+
   // public devMiddlewares?: NextHandleFunction[];
 
   /***
@@ -74,8 +76,19 @@ export class SdServiceServer extends EventEmitter {
 
       this._wsServer = new WebSocketServer({ server: this._httpServer });
       this._wsServer.on("connection", async (wsClient) => {
+        wsClient["isAlive"] = true;
         await this._onWsClientConnectionAsync(wsClient);
       });
+
+      clearInterval(this._pingInterval);
+      this._pingInterval = setInterval(() => {
+        this._wsServer!.clients.forEach((client) => {
+          if (client["isAlive"] === false) return client.terminate();
+
+          client["isAlive"] = false;
+          client.ping();
+        });
+      }, 10000);
 
       this._httpServer.listen(this.options.port, () => {
         resolve();
@@ -88,9 +101,11 @@ export class SdServiceServer extends EventEmitter {
   }
 
   public async closeAsync(): Promise<void> {
+    clearInterval(this._pingInterval);
+
     if (this._wsServer) {
       this._wsServer.clients.forEach((client) => {
-        client.close();
+        client.terminate();
       });
 
       await new Promise<void>((resolve, reject) => {
@@ -156,9 +171,8 @@ export class SdServiceServer extends EventEmitter {
     this._wsServer?.clients.forEach((client) => {
       if (client["id"] === wsClientId) {
         this._logger.debug("클라이언트 기존연결 끊기: " + wsClientId + ": " + client["connectedAtDateTime"].toFormatString("yyyy:MM:dd HH:mm:ss.fff"));
-        client.close();
+        client.terminate();
       }
-
     });
 
     wsClient["id"] = wsClientId;
