@@ -55,7 +55,7 @@ import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
                     *ngIf="r === 0"
                     [attr.rowspan]="!hasSummaryTemplate && headerRow.length < 1 ? undefined : displayHeaderDefTable.length + (hasSummaryTemplate ? 1 : 0)"
                     [attr.c]="getChildrenFn ? -2 : -1"
-                    (sdResizeOutside)="onFixedCellResizeOutside(-1)">
+                    (sdResizeOutside)="onFixedCellResizeOutside(getChildrenFn ? -2 : -1)">
                   <ng-container *ngIf="selectMode === 'multi' && hasSelectableItem">
                     <fa-icon [icon]="icons.selectArrow" [fixedWidth]="true"
                              [class.sd-text-color-primary-default]="isAllItemsSelected"
