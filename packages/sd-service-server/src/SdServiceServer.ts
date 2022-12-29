@@ -77,16 +77,19 @@ export class SdServiceServer extends EventEmitter {
       this._wsServer = new WebSocketServer({ server: this._httpServer });
       this._wsServer.on("connection", async (wsClient) => {
         wsClient["isAlive"] = true;
+        wsClient.on("pong", () => {
+          wsClient["isAlive"] = true;
+        });
         await this._onWsClientConnectionAsync(wsClient);
       });
 
       clearInterval(this._pingInterval);
       this._pingInterval = setInterval(() => {
-        this._wsServer!.clients.forEach((client) => {
-          if (client["isAlive"] === false) return client.terminate();
+        this._wsServer!.clients.forEach((wsClient) => {
+          if (wsClient["isAlive"] === false) return wsClient.terminate();
 
-          client["isAlive"] = false;
-          client.ping();
+          wsClient["isAlive"] = false;
+          wsClient.ping();
         });
       }, 10000);
 
