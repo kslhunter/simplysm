@@ -18,7 +18,8 @@ import { sdThemes, TSdTheme } from "../commons";
     :host {
       display: inline-block;
       background: var(--theme-color-grey-darker);
-      color: var(--text-brightness-rev-default);
+      //color: var(--text-brightness-rev-default);
+      color: white;
       padding: 0 var(--gap-sm);
       border-radius: var(--border-radius-sm);
       text-indent: 0;

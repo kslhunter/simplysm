@@ -25,8 +25,8 @@ import { faChevronDown } from "@fortawesome/pro-light-svg-icons/faChevronDown";
       overflow: hidden;
 
       border-top-right-radius: var(--gap-lg);
-      border-bottom-right-radius: var(--gap-lg);
-      border-bottom: 1px solid var(--border-color);
+      //border-bottom-right-radius: var(--gap-xs);
+      //border-bottom: 1px solid var(--border-color);
 
       /*border-bottom: 2px solid var(--theme-color-primary-darker);
       background: var(--theme-color-primary-default);
@@ -38,8 +38,8 @@ import { faChevronDown } from "@fortawesome/pro-light-svg-icons/faChevronDown";
 
         position: relative;
         border-top-right-radius: var(--gap-lg);
-        border-bottom-right-radius: var(--gap-lg);
-        border-bottom: 1px solid var(--border-color);
+        //border-bottom-right-radius: var(--gap-xs);
+        //border-bottom: 1px solid var(--border-color);
 
         /*border-bottom: 2px solid var(--theme-color-primary-darker);
         background: var(--theme-color-primary-dark);*/

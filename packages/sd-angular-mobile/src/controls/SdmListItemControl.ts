@@ -42,7 +42,7 @@ import { faChevronDown } from "@fortawesome/pro-light-svg-icons";
         padding: var(--gap-sm) var(--gap-default);
 
         > ._selected-icon {
-          color: var(--text-brightness-lighter);
+          color: transparent;
         }
       }
 
@@ -75,6 +75,17 @@ import { faChevronDown } from "@fortawesome/pro-light-svg-icons";
         > ._content {
           background: var(--theme-color-primary-default);
           color: var(--text-brightness-rev-default);
+
+          > ._selected-icon {
+            color: var(--theme-color-primary-default);
+          }
+        }
+      }
+
+      &[sd-has-selected-icon=true][sd-selected=true] {
+        > ._content {
+          background: transparent;
+          color: var(--text-brightness-default);
 
           > ._selected-icon {
             color: var(--theme-color-primary-default);
@@ -125,6 +136,11 @@ export class SdmListItemControl {
   @HostBinding("attr.sd-has-children")
   public get hasChildren(): boolean {
     return this.listControls !== undefined && this.listControls.length > 0;
+  }
+
+  @HostBinding("attr.sd-has-selected-icon")
+  public get hasSelectedIcon(): boolean {
+    return Boolean(this.selectedIcon);
   }
 
   @ContentChildren(forwardRef(() => SdmListControl))

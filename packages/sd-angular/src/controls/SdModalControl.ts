@@ -499,26 +499,6 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
     }
   }
 
-  @HostListener("document:backbutton", ["$event"])
-  public onAndroidBackButtonTouch(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const focusedEl = document.activeElement as HTMLElement | undefined;
-    if (focusedEl?.findParent(this._el)) {
-      if (this.hideCloseButton) {
-        return;
-      }
-
-      if (this.openChange.observed) {
-        this.openChange.emit(false);
-      }
-      else {
-        this.open = false;
-      }
-    }
-  }
-
   @HostListener("window:resize", ["$event"])
   public onWindowResize(event: Event): void {
     if (!this._dialogEl) throw new NeverEntryError();
@@ -543,6 +523,8 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
     const startWidth = this._dialogEl.clientWidth;
     const startTop = this._dialogEl.offsetTop;
     const startLeft = this._dialogEl.offsetLeft;
+
+    let isDoDrag = false;
 
     const doDrag = (e: MouseEvent): void => {
       if (!this._dialogEl) throw new NeverEntryError();
@@ -569,6 +551,8 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
         }
         this._dialogEl.style.width = `${Math.max(startWidth - ((e.clientX - startX) * (this._dialogEl.style.position === "absolute" ? 1 : 2)), this.minWidthPx ?? 0)}px`;
       }
+
+      isDoDrag = true;
     };
 
     const stopDrag = async (e: MouseEvent): Promise<void> => {
@@ -589,7 +573,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
         width: this._dialogEl.style.width,
         height: this._dialogEl.style.height
       };
-      if (this.key !== undefined) {
+      if (this.key !== undefined && isDoDrag) {
         await this._systemConfig.setAsync(`sd-modal.${this.key}`, this._config);
       }
     };
@@ -604,6 +588,8 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
     const startY = event.clientY;
     const startTop = this._dialogEl.offsetTop;
     const startLeft = this._dialogEl.offsetLeft;
+
+    let isDoDrag = false;
 
     const doDrag = (e: MouseEvent): void => {
       if (!this._dialogEl) throw new NeverEntryError();
@@ -630,6 +616,8 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
       if (this._dialogEl.offsetLeft < -this._dialogEl.offsetWidth + 100) {
         this._dialogEl.style.left = (-this._dialogEl.offsetWidth + 100) + "px";
       }
+
+      isDoDrag = true;
     };
 
     const stopDrag = async (e: MouseEvent): Promise<void> => {
@@ -650,7 +638,7 @@ export class SdModalControl implements OnInit, AfterViewInit, OnChanges {
         width: this._dialogEl.style.width,
         height: this._dialogEl.style.height
       };
-      if (this.key !== undefined) {
+      if (this.key !== undefined && isDoDrag) {
         await this._systemConfig.setAsync(`sd-modal.${this.key}`, this._config);
       }
     };

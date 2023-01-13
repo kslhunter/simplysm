@@ -145,7 +145,7 @@ export class SdCliBbFileMetadata {
               else {
                 result.push({
                   exportedName,
-                  target: this._findMetaFromInside(specifier.local.name)
+                  target: this.findMetaFromInside(specifier.local.name)
                 });
               }
             }
@@ -264,7 +264,7 @@ export class SdCliBbFileMetadata {
                   }
                 }
                 else {
-                  const result = this._findMetaFromInside(specifier.local.name);
+                  const result = this.findMetaFromInside(specifier.local.name);
                   this._findMetaFromOutsideCache.set(name, result);
                   return result;
                 }
@@ -289,7 +289,7 @@ export class SdCliBbFileMetadata {
 
   private readonly _findMetaFromInsideCache = new Map<string, TSdCliBbMetadata>();
 
-  private _findMetaFromInside(localName: string, excludeExport?: boolean): TSdCliBbMetadata {
+  public findMetaFromInside(localName: string, excludeExport?: boolean): TSdCliBbMetadata {
     const cache = this._findMetaFromInsideCache.get(localName);
     if (cache !== undefined) return cache;
 
@@ -334,12 +334,12 @@ export class SdCliBbFileMetadata {
                   throw SdCliBbUtil.error("예상치 못한 방식의 코드가 발견되었습니다.", this.filePath, rawMeta);
                 }
                 else if (exportedName !== localImportName) {
-                  const result = this._findMetaFromInside(localImportName);
+                  const result = this.findMetaFromInside(localImportName);
                   this._findMetaFromInsideCache.set(localImportName, result);
                   return result;
                 }
                 else {
-                  const result = this._findMetaFromInside(localImportName, true);
+                  const result = this.findMetaFromInside(localImportName, true);
                   this._findMetaFromInsideCache.set(localImportName, result);
                   return result;
                 }
@@ -475,7 +475,7 @@ export class SdCliBbFileMetadata {
 
   public getMetaFromRaw(rawMeta: Declaration | Expression | PatternLike | SpreadElement): TSdCliBbMetadata {
     if (isIdentifier(rawMeta)) {
-      return this._findMetaFromInside(rawMeta.name);
+      return this.findMetaFromInside(rawMeta.name);
     }
     else if (isClassDeclaration(rawMeta)) {
       return new SdCliBbClassMetadata(this, rawMeta);

@@ -44,8 +44,8 @@ import { sdThemes, TSdTheme } from "../commons";
            [value]="controlValue"
            [attr.placeholder]="placeholder"
            [required]="required"
-           [attr.min]="min"
-           [attr.max]="max"
+           [attr.min]="controlMin"
+           [attr.max]="controlMax"
            [attr.minlength]="minlength"
            [attr.maxlength]="maxlength"
            [attr.step]="controlStep"
@@ -296,14 +296,14 @@ export class SdTextfield2Control implements INotifyPropertyChange, DoCheck {
   public required?: boolean;
 
   @Input()
-  @SdInputValidate(Number)
+  @SdInputValidate([Number, DateOnly])
   @NotifyPropertyChange()
-  public min?: number;
+  public min?: number | DateOnly;
 
   @Input()
-  @SdInputValidate(Number)
+  @SdInputValidate([Number, DateOnly])
   @NotifyPropertyChange()
-  public max?: number;
+  public max?: number | DateOnly;
 
   @Input()
   @SdInputValidate(Number)
@@ -382,6 +382,8 @@ export class SdTextfield2Control implements INotifyPropertyChange, DoCheck {
   public controlType = "text";
   public controlValue = "";
   public controlStep: number | string = "any";
+  public controlMin?: number | string;
+  public controlMax?: number | string;
   public errorMessage = "";
   public controlValueText = "";
 
@@ -400,6 +402,7 @@ export class SdTextfield2Control implements INotifyPropertyChange, DoCheck {
     this._reloadControlType(changedProps);
     this._reloadControlValue(changedProps);
     this._reloadControlStep(changedProps);
+    this._reloadControlMinMax(changedProps);
     this._reloadErrorMessage(changedProps);
   }
 
@@ -497,6 +500,27 @@ export class SdTextfield2Control implements INotifyPropertyChange, DoCheck {
     }
   }
 
+  private _reloadControlMinMax(changedProps: (keyof this)[]): void {
+    if (
+      !changedProps.includes("min") &&
+      !changedProps.includes("max")
+    ) return;
+
+    if (this.min instanceof DateOnly) {
+      this.controlMin = this.min.toFormatString("yyyy-MM-dd");
+    }
+    else {
+      this.controlMin = this.min;
+    }
+
+    if (this.max instanceof DateOnly) {
+      this.controlMax = this.max.toFormatString("yyyy-MM-dd");
+    }
+    else {
+      this.controlMax = this.max;
+    }
+  }
+
   private _reloadErrorMessage(changedProps: (keyof this)[]): void {
     if (
       !changedProps.includes("type") &&
@@ -520,11 +544,13 @@ export class SdTextfield2Control implements INotifyPropertyChange, DoCheck {
       if (typeof this.value !== "number") {
         errorMessages.push("숫자를 입력하세요");
       }
-      if (this.min !== undefined && this.min > this.value) {
-        errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
-      }
-      if (this.max !== undefined && this.max < this.value) {
-        errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
+      else {
+        if (this.min !== undefined && this.min > this.value) {
+          errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
+        }
+        if (this.max !== undefined && this.max < this.value) {
+          errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
+        }
       }
     }
     else if (this.type === "brn") {
@@ -535,6 +561,14 @@ export class SdTextfield2Control implements INotifyPropertyChange, DoCheck {
     else if (["year", "month", "date"].includes(this.type)) {
       if (!(this.value instanceof DateOnly)) {
         errorMessages.push("날짜를 입력하세요");
+      }
+      else {
+        if (this.min instanceof DateOnly && this.min.tick > this.value.tick) {
+          errorMessages.push(`${this.min}보다 크거나 같아야 합니다.`);
+        }
+        if (this.max instanceof DateOnly && this.max.tick < this.value.tick) {
+          errorMessages.push(`${this.max}보다 작거나 같아야 합니다.`);
+        }
       }
     }
     else if (["datetime", "datetime-sec"].includes(this.type)) {

@@ -94,6 +94,23 @@ export class SdCliBbNgModuleMetadata {
       }
     }*/
 
+    /*if (this._className.includes("Http") && this._className.includes("Client")) {
+      console.log(this._className, result.providers.map((item) => item instanceof SdCliBbClassMetadata ? item.name : item instanceof SdCliBbObjectMetadata ? (item.getPropValue("provide") as SdCliBbClassMetadata).name : undefined));
+      console.log([
+        this._fileMeta.findMetaFromInside("JsonpClientBackend"),
+        this._fileMeta.findMetaFromInside("JsonpCallbackContext"),
+        this._fileMeta.findMetaFromInside("HTTP_INTERCEPTORS"),
+        this._fileMeta.findMetaFromInside("HttpClient"),
+        this._fileMeta.findMetaFromInside("HttpHandler"),
+        this._fileMeta.findMetaFromInside("HttpXhrBackend"),
+        this._fileMeta.findMetaFromInside("HttpBackend"),
+        this._fileMeta.findMetaFromInside("HttpXsrfInterceptor"),
+        this._fileMeta.findMetaFromInside("HttpXsrfTokenExtractor"),
+        this._fileMeta.findMetaFromInside("XSRF_COOKIE_NAME"),
+        this._fileMeta.findMetaFromInside("XSRF_HEADER_NAME")
+      ]);
+    }*/
+
     this._defCache = result;
     return result;
   }
