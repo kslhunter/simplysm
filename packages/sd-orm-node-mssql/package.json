@@ -23,7 +23,7 @@
     "@simplysm/sd-core-common": "7.1.27",
     "@simplysm/sd-core-node": "7.1.27",
     "@simplysm/sd-orm-common": "7.1.27",
-    "tedious": "^15.1.1"
+    "tedious": "^15.1.2"
   },
   "devDependencies": {
     "@types/tedious": "^4.0.9"
