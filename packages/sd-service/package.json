@@ -19,7 +19,7 @@
     "mime": "^2.4.4",
     "utf-8-validate": "^5.0.2",
     "ws": "^7.1.1",
-    "jszip": "^3.2.2"
+    "jszip": "^3.8.0"
   },
   "devDependencies": {
     "@types/node": "^12.7.1",
