@@ -10,7 +10,7 @@
   "sideEffects": false,
   "dependencies": {
     "@simplysm/sd-core": "2.2.130",
-    "jszip": "^3.2.2"
+    "jszip": "^3.8.0"
   },
   "devDependencies": {
     "@types/node": "^12.7.1",
