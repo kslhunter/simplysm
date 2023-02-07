@@ -8,7 +8,7 @@ import qrcode from "qrcode";
   selector: "sd-barcode",
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <svg></svg>`
+    <canvas [hidden]="!value" [style.margin-bottom]="type === 'qrcode' ? undefined : '-5px'"></canvas>`
 })
 export class SdBarcodeControl implements OnChanges {
   @Input()
@@ -27,47 +27,34 @@ export class SdBarcodeControl implements OnChanges {
   @SdInputValidate(Number)
   public height = 58;
 
-  @Input()
-  @SdInputValidate(Number)
-  public margin = 10;
-
-  @Input()
-  @SdInputValidate(Number)
-  public fontSize?: number;
-
   public constructor(private readonly _elRef: ElementRef) {
   }
 
   public async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    const el = this._elRef.nativeElement as HTMLElement;
-    el.innerHTML = "";
-
     if (Object.keys(changes).length > 0) {
       if (this.value !== undefined) {
+        const canvasEl = (this._elRef.nativeElement as HTMLElement).findFirst("> canvas") as HTMLCanvasElement;
+
         if (this.type === "qrcode") {
-          el.innerHTML = await qrcode.toString(this.value || "", {
-            type: "svg",
+          await qrcode.toCanvas(canvasEl, this.value || "", {
             scale: this.lineWidth
           });
         }
         else {
-          const svgEl = document.createElement("svg");
-
           jsbarcode(
-            svgEl,
+            canvasEl,
             this.value,
             {
-              margin: this.margin,
+              margin: 0,
               format: this.type,
               width: this.lineWidth,
               height: this.height,
-              fontOptions: "bold",
-              fontSize: this.fontSize !== undefined ? this.fontSize : (this.lineWidth * 12)
+              displayValue: false
             }
           );
-
-          el.innerHTML = svgEl.outerHTML;
         }
+
+        console.log(canvasEl);
       }
     }
   }

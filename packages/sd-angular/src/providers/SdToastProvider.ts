@@ -38,6 +38,8 @@ export class SdToastProvider {
                      private readonly _systemLog: SdSystemLogRootProvider) {
   }
 
+  public async try<R>(fn: () => Promise<R>, messageFn?: (err: Error) => string): Promise<R>;
+  public try<R>(fn: () => R, messageFn?: (err: Error) => string): R;
   public async try<R>(fn: () => Promise<R> | R, messageFn?: (err: Error) => string): Promise<R | undefined> {
     try {
       return await fn();

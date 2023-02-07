@@ -314,6 +314,10 @@ export class SdSelectControl implements DoCheck {
   @SdInputValidate(Boolean)
   public hideSelectAll?: boolean;
 
+  @Input()
+  @SdInputValidate(String)
+  public placeholder?: string;
+
   @HostBinding("attr.sd-invalid")
   public get invalid(): boolean {
     return this.required === true && this.value === undefined;
@@ -371,7 +375,12 @@ export class SdSelectControl implements DoCheck {
       .map((item) => `<div style="display: inline-block">${item}</div>`)
       .join(this.multiSelectionDisplayDirection === "vertical" ? "<div class='sd-padding-sm-0'></div>" : ", ");
 
-    return this._domSanitizer.bypassSecurityTrustHtml(innerHTML);
+    if (innerHTML === "" && this.placeholder !== undefined) {
+      return this._domSanitizer.bypassSecurityTrustHtml(`<span class='sd-text-color-grey-default'>${this.placeholder}</span>`);
+    }
+    else {
+      return this._domSanitizer.bypassSecurityTrustHtml(innerHTML);
+    }
   }
 
   @HostListener("keydown", ["$event"])
