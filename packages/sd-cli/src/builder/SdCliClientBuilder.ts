@@ -633,7 +633,7 @@ export class SdCliClientBuilder extends EventEmitter {
             ]
           },
           {
-            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|xlsx?|pptx?|docx?|zip|pfx|pkl)$/,
+            test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico|otf|csv|xlsx?|pptx?|docx?|zip|pfx|pkl)$/,
             type: "asset/resource"
           }
         ]

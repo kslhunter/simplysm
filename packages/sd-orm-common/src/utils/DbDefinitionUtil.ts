@@ -1,5 +1,13 @@
 import { ObjectUtil, Type } from "@simplysm/sd-core-common";
-import { IColumnDef, IForeignKeyDef, IForeignKeyTargetDef, IIndexDef, ITableDef } from "../commons";
+import {
+  IColumnDef,
+  IForeignKeyDef,
+  IForeignKeyTargetDef,
+  IIndexDef,
+  IReferenceKeyDef,
+  IReferenceKeyTargetDef,
+  ITableDef
+} from "../commons";
 
 export class DbDefinitionUtil {
   private static readonly _tableDefMetadataKey = "sd-orm-table-def";
@@ -16,7 +24,9 @@ export class DbDefinitionUtil {
       columns: [],
       foreignKeys: [],
       foreignKeyTargets: [],
-      indexes: []
+      indexes: [],
+      referenceKeys: [],
+      referenceKeyTargets: []
     } as ITableDef;
   }
 
@@ -60,4 +70,17 @@ export class DbDefinitionUtil {
     }
     DbDefinitionUtil.setTableDef(tableType, tableDef);
   }
+
+  public static addReferenceKeyDef(tableType: Type<any>, def: IReferenceKeyDef): void {
+    const tableDef = DbDefinitionUtil.getTableDef(tableType, false);
+    tableDef.referenceKeys = tableDef.referenceKeys.merge([def], { keys: ["propertyKey"] });
+    DbDefinitionUtil.setTableDef(tableType, tableDef);
+  }
+
+  public static addReferenceKeyTargetDef(tableType: Type<any>, def: IReferenceKeyTargetDef): void {
+    const tableDef = DbDefinitionUtil.getTableDef(tableType, false);
+    tableDef.referenceKeyTargets = tableDef.referenceKeyTargets.merge([def], { keys: ["propertyKey"] });
+    DbDefinitionUtil.setTableDef(tableType, tableDef);
+  }
+
 }

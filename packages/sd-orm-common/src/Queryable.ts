@@ -499,8 +499,8 @@ export class Queryable<D extends DbContext, T> {
       const as = asChainArr.join(".");
 
       // FK 정의 가져오기
-      const fkDef = tableDef.foreignKeys.single((item) => item.propertyKey === fkName);
-      const fktDef = tableDef.foreignKeyTargets.single((item) => item.propertyKey === fkName);
+      const fkDef = tableDef.foreignKeys.single((item) => item.propertyKey === fkName) ?? tableDef.referenceKeys.single((item) => item.propertyKey === fkName);
+      const fktDef = tableDef.foreignKeyTargets.single((item) => item.propertyKey === fkName) ?? tableDef.referenceKeyTargets.single((item) => item.propertyKey === fkName);
       if (!fkDef && !fktDef) {
         throw new Error(`'${tableDef.name}.${as}'에 '@ForeignKey()'나 '@ForeignKeyTarget()'이 지정되지 않았습니다.`);
       }
@@ -538,13 +538,13 @@ export class Queryable<D extends DbContext, T> {
       else if (fktDef) {
         const fktSourceType = fktDef.sourceTypeFwd();
         const fktSourceTableDef = DbDefinitionUtil.getTableDef(fktSourceType);
-        const fktSourceFkDef = fktSourceTableDef.foreignKeys.single((item) => item.propertyKey === fktDef.foreignKeyPropertyKey);
+        const fktSourceFkDef = fktSourceTableDef.foreignKeys.single((item) => item.propertyKey === fktDef.sourceKeyPropertyKey);
         if (!fktSourceFkDef) {
-          throw new Error(`'${fktSourceTableDef.name}.${fktDef.foreignKeyPropertyKey}'에 '@ForeignKey()'가 지정되지 않았습니다.`);
+          throw new Error(`'${fktSourceTableDef.name}.${fktDef.sourceKeyPropertyKey}'에 '@ForeignKey()'가 지정되지 않았습니다.`);
         }
 
         if (fktSourceFkDef.columnPropertyKeys.length !== tableDef.columns.filter((item) => item.primaryKey !== undefined).length) {
-          throw new Error(`'${fktSourceTableDef.name}.${fktDef.foreignKeyPropertyKey}'의 FK 설정과 '${tableDef.name}'의 PK 설정의 길이가 다릅니다.`);
+          throw new Error(`'${fktSourceTableDef.name}.${fktDef.sourceKeyPropertyKey}'의 FK 설정과 '${tableDef.name}'의 PK 설정의 길이가 다릅니다.`);
         }
 
         // JOIN 실행

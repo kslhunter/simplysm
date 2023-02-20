@@ -41,7 +41,7 @@ package.json
       "resources": {
         "files": [
           "/assets/**",
-          "/*.(eot|svg|cur|jpg|jpeg|png|webp|gif|otf|ttf|woff|woff2|ani|xlsx|pptx|docx|zip|xls|ppt|doc)"
+          "/*.(eot|svg|cur|jpg|jpeg|png|webp|gif|otf|ttf|woff|woff2|ani|csv|xlsx|pptx|docx|zip|xls|ppt|doc)"
         ]
       }
     }

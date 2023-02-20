@@ -303,6 +303,8 @@ export interface ITableDef extends ITableNameDef {
   foreignKeys: IForeignKeyDef[];
   foreignKeyTargets: IForeignKeyTargetDef[];
   indexes: IIndexDef[];
+  referenceKeys: IReferenceKeyDef[];
+  referenceKeyTargets: IReferenceKeyTargetDef[];
 }
 
 export interface IColumnDef {
@@ -330,7 +332,7 @@ export interface IForeignKeyTargetDef {
   description?: string;
   propertyKey: string;
   name: string;
-  foreignKeyPropertyKey: string;
+  sourceKeyPropertyKey: string;
 
   sourceTypeFwd: () => Type<any>;
 }
@@ -343,6 +345,24 @@ export interface IIndexDef {
     order: number;
     orderBy: "ASC" | "DESC";
   }[];
+}
+
+export interface IReferenceKeyDef {
+  description?: string;
+  propertyKey: string;
+  name: string;
+  columnPropertyKeys: string[];
+
+  targetTypeFwd: () => Type<any>;
+}
+
+export interface IReferenceKeyTargetDef {
+  description?: string;
+  propertyKey: string;
+  name: string;
+  sourceKeyPropertyKey: string;
+
+  sourceTypeFwd: () => Type<any>;
 }
 
 // endregion

@@ -24,7 +24,7 @@ import { sdThemes, TSdTheme } from "../commons";
       margin-bottom: var(--gap-sm);
       text-align: center;
       width: 100%;
-      pointer-events: auto;
+      pointer-events: none;
 
       > ._sd-toast-block {
         display: inline-block;
@@ -34,6 +34,7 @@ import { sdThemes, TSdTheme } from "../commons";
         border-radius: var(--border-radius-lg);
         opacity: 0;
         @include elevation(12);
+        pointer-events: auto;
 
         > ._sd-toast-message {
           padding: var(--gap-default) var(--gap-lg);

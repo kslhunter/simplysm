@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
+import { ChangeDetectionStrategy, Component, HostBinding, Input } from "@angular/core";
+import { SdInputValidate } from "../decorators/SdInputValidate";
 
 @Component({
   selector: "sd-topbar-menu",
@@ -16,8 +17,17 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
         background: var(--trans-brightness-default);
         color: var(--text-brightness-rev-default);
       }
+
+      &[disabled=true] {
+        pointer-events: none;
+        opacity: .5;
+      }
     }
   `]
 })
 export class SdTopbarMenuControl {
+  @Input()
+  @SdInputValidate(Boolean)
+  @HostBinding("attr.disabled")
+  public disabled?: boolean;
 }

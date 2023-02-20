@@ -85,23 +85,23 @@ export class QueryHelper {
     ]);
   }
 
-  public lessThen<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryBuilderValue[] {
+  public lessThen<T extends string | String | number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryBuilderValue[] {
     return [this.getQueryValue(source), " < ", this.getQueryValue(target)];
   }
 
-  public lessThenOrEqual<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryBuilderValue[] {
+  public lessThenOrEqual<T extends string | String | number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryBuilderValue[] {
     return [this.getQueryValue(source), " <= ", this.getQueryValue(target)];
   }
 
-  public greaterThen<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryBuilderValue[] {
+  public greaterThen<T extends string | String | number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryBuilderValue[] {
     return [this.getQueryValue(source), " > ", this.getQueryValue(target)];
   }
 
-  public greaterThenOrEqual<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryBuilderValue[] {
+  public greaterThenOrEqual<T extends string | String | number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, target: TEntityValue<T | undefined>): TQueryBuilderValue[] {
     return [this.getQueryValue(source), " >= ", this.getQueryValue(target)];
   }
 
-  public between<T extends number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, from: TEntityValue<T | undefined>, to: TEntityValue<T | undefined>): TQueryBuilderValue[] {
+  public between<T extends string | String | number | Number | DateOnly | DateTime | Time>(source: TEntityValue<T | undefined>, from: TEntityValue<T | undefined>, to: TEntityValue<T | undefined>): TQueryBuilderValue[] {
     if (from != null || to != null) {
       return this.and([
         from != null ? this.greaterThenOrEqual(source, from) : undefined,

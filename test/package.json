@@ -16,7 +16,7 @@
     "@types/node": "^16.18.12",
     "@types/sinon": "^10.0.13",
     "chai": "^4.3.7",
-    "deep-equal-in-any-order": "^2.0.2",
+    "deep-equal-in-any-order": "^2.0.3",
     "mocha": "^10.2.0",
     "sinon": "^15.0.1",
     "ts-node": "^10.9.1",

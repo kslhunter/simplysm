@@ -41,7 +41,6 @@ export function Column<T extends object>(columnDef: {
   };
 }
 
-
 export function ForeignKey<T>(
   columnNames: (keyof T)[],
   targetTypeFwd: () => Type<any>,
@@ -73,7 +72,7 @@ export function ForeignKeyTarget<T extends object, P>(
       name: propertyKey,
       sourceTypeFwd,
       description,
-      foreignKeyPropertyKey: foreignKeyPropertyKey as string
+      sourceKeyPropertyKey: foreignKeyPropertyKey as string
     });
   };
 }
@@ -95,6 +94,42 @@ export function Index<T extends object>(def?: {
           orderBy: def?.orderBy ?? "ASC"
         }
       ]
+    });
+  };
+}
+
+export function ReferenceKey<T>(
+  columnNames: (keyof T)[],
+  targetTypeFwd: () => Type<any>,
+  description: string
+): TPropertyDecoratorReturn<Partial<T>> {
+  return (object: Partial<T>, propertyKey: string): void => {
+    const classType = object.constructor as Type<T>;
+
+    DbDefinitionUtil.addReferenceKeyDef(classType, {
+      propertyKey,
+      name: propertyKey,
+      columnPropertyKeys: columnNames as string[],
+      description,
+      targetTypeFwd
+    });
+  };
+}
+
+export function ReferenceKeyTarget<T extends object, P>(
+  sourceTypeFwd: () => Type<P>,
+  referenceKeyPropertyKey: keyof P,
+  description: string
+): TPropertyDecoratorReturn<T> {
+  return (object: T, propertyKey: string): void => {
+    const classType = object.constructor as Type<T>;
+
+    DbDefinitionUtil.addReferenceKeyTargetDef(classType, {
+      propertyKey,
+      name: propertyKey,
+      sourceTypeFwd,
+      description,
+      sourceKeyPropertyKey: referenceKeyPropertyKey as string
     });
   };
 }
