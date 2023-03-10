@@ -354,7 +354,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
     else if (typeof type === "string") {
       const split = type.split(/[(,)]/);
       const typeStr = split[0];
-      const length = typeof split[1] !== "undefined" ? Number.parseInt(split[1], 10) : undefined;
+      const length = split[1] === "MAX" ? "max" : typeof split[1] !== "undefined" ? Number.parseInt(split[1], 10) : undefined;
       const digits = typeof split[2] !== "undefined" ? Number.parseInt(split[2], 10) : undefined;
 
       const typeKey = Object.keys(tedious.TYPES).single((item) => item.toLocaleLowerCase() === typeStr.toLowerCase());
@@ -364,7 +364,7 @@ export class MssqlDbConnection extends EventEmitter implements IDbConnection {
       const dataType = tedious.TYPES[typeKey];
 
       if (dataType === tedious.TYPES.Decimal) {
-        return { type: dataType, precision: length, scale: digits };
+        return { type: dataType, precision: length as number, scale: digits };
       }
       else {
         return { type: dataType, length };

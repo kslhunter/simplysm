@@ -53,8 +53,6 @@ export class SdBarcodeControl implements OnChanges {
             }
           );
         }
-
-        console.log(canvasEl);
       }
     }
   }

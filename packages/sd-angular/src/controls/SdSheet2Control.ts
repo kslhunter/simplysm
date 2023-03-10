@@ -356,6 +356,7 @@ import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
 
               > tbody > tr > td {
                 background: white;
+                vertical-align: top;
 
                 &._fixed {
                   z-index: $z-index-fixed;

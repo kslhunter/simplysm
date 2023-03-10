@@ -383,7 +383,8 @@ export class Queryable<D extends DbContext, T> {
 
   public groupBy(fwd: (entity: TEntity<T>) => TEntityValue<TQueryValue>[]): Queryable<D, T> {
     const result = new Queryable(this.db, this);
-    result._def.groupBy = fwd(this._entity).map((item) => this.db.qh.getQueryValue(item));
+    result._def.groupBy = fwd(this._entity).map((item) => this.db.qh.getQueryValue(item))
+      .filter((item) => item !== "NULL");
     return result;
   }
 

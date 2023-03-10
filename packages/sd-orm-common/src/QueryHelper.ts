@@ -551,7 +551,7 @@ export class QueryHelper {
       return value;
     }
     else if (typeof value === "boolean") {
-      return value ? "1" : "0";
+      return value ? 1 : 0;
     }
     else if (value instanceof DateTime) {
       return value.date;
