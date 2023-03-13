@@ -524,10 +524,20 @@ export class Queryable<D extends DbContext, T> {
 
             const whereQuery: TQueryBuilderValue[] = [];
             for (let i = 0; i < fkDef.columnPropertyKeys.length; i++) {
-              whereQuery.push(...[
-                this.db.qh.isNotNull(lastEn[fkDef.columnPropertyKeys[i]]),
-                this.db.qh.equal(item[fkTargetTableDef.columns[i].propertyKey], lastEn[fkDef.columnPropertyKeys[i]])
-              ]);
+              const columnPropertyKey = fkDef.columnPropertyKeys[i];
+
+              if (columnPropertyKey.startsWith("=")) {
+                const columnPropertyValue = columnPropertyKey.slice(1);
+                whereQuery.push(
+                  [this.db.qh.getQueryValue(item[fkTargetTableDef.columns[i].propertyKey]), " = ", columnPropertyValue]
+                );
+              }
+              else {
+                whereQuery.push(...[
+                  this.db.qh.isNotNull(lastEn[columnPropertyKey]),
+                  this.db.qh.equal(item[fkTargetTableDef.columns[i].propertyKey], lastEn[columnPropertyKey])
+                ]);
+              }
             }
             return whereQuery;
           })
@@ -557,10 +567,20 @@ export class Queryable<D extends DbContext, T> {
 
             const whereQuery: TQueryBuilderValue[] = [];
             for (let i = 0; i < fktSourceFkDef.columnPropertyKeys.length; i++) {
-              whereQuery.push(...[
-                this.db.qh.isNotNull(lastEn[tableDef.columns[i].propertyKey]),
-                this.db.qh.equal(item[fktSourceFkDef.columnPropertyKeys[i]], lastEn[tableDef.columns[i].propertyKey])
-              ]);
+              const columnPropertyKey = fktSourceFkDef.columnPropertyKeys[i];
+
+              if (columnPropertyKey.startsWith("=")) {
+                const columnPropertyValue = columnPropertyKey.slice(1);
+                whereQuery.push(
+                  [this.db.qh.getQueryValue(lastEn[tableDef.columns[i].propertyKey]), " = ", columnPropertyValue]
+                );
+              }
+              else {
+                whereQuery.push(...[
+                  this.db.qh.isNotNull(lastEn[tableDef.columns[i].propertyKey]),
+                  this.db.qh.equal(item[columnPropertyKey], lastEn[tableDef.columns[i].propertyKey])
+                ]);
+              }
             }
             return whereQuery;
           })
