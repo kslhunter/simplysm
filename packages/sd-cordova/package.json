@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-cordova",
-  "version": "7.1.34",
+  "version": "7.1.35",
   "description": "심플리즘 패키지 - CORDOVA 모듈 (browser)",
   "author": "김석래",
   "repository": {
@@ -20,7 +20,7 @@
     "**/*"
   ],
   "dependencies": {
-    "@simplysm/sd-service-client": "7.1.34",
+    "@simplysm/sd-service-client": "7.1.35",
     "semver": "^7.3.8"
   },
   "devDependencies": {

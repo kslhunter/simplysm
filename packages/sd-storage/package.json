@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-storage",
-  "version": "7.1.34",
+  "version": "7.1.35",
   "description": "심플리즘 패키지 - 저장소 모듈 (node)",
   "author": "김석래",
   "repository": {
