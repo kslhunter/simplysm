@@ -49,7 +49,7 @@ export class SdExcelWorksheet {
     return result;
   }
 
-  public async getDataTableAsync(opt?: { headerRowIndex?: number; checkEndColIndex?: number }): Promise<Record<string, any>[]> {
+  public async getDataTableAsync(opt?: { headerRowIndex?: number; checkEndColIndex?: number; usableHeaderNameFn?: (headerName: string) => boolean }): Promise<Record<string, any>[]> {
     const result: Record<string, TSdExcelValueType>[] = [];
 
     const headerMap = new Map<string, number>();
@@ -57,9 +57,11 @@ export class SdExcelWorksheet {
     const xml = await this._getDataAsync();
     const range = xml.range;
     for (let c = range.s.c; c <= range.e.c; c++) {
-      const val = await this.cell(opt?.headerRowIndex ?? range.s.r, c).getValAsync();
-      if (typeof val === "string") {
-        headerMap.set(val, c);
+      const headerName = await this.cell(opt?.headerRowIndex ?? range.s.r, c).getValAsync();
+      if (typeof headerName === "string") {
+        if (!opt?.usableHeaderNameFn || opt.usableHeaderNameFn(headerName)) {
+          headerMap.set(headerName, c);
+        }
       }
     }
 
