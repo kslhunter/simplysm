@@ -59,7 +59,7 @@ ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`.
     }
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     else if (this._dialect === "mssql-azure") {
-      return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)} (EDITION='Standard', SERVICE_OBJECTIVE='S0', MAXSIZE = 250 GB) WITH CATALOG_COLLATION = Korean_Wansung_CS_AS`.trim();
+      return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)} (EDITION='Basic', SERVICE_OBJECTIVE='Basic', MAXSIZE = 2 GB) WITH CATALOG_COLLATION = Korean_Wansung_CS_AS`.trim();
     }
     else {
       return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = '${def.database}') CREATE DATABASE ${this.wrap(def.database)} COLLATE Korean_Wansung_CS_AS`;
