@@ -1,12 +1,15 @@
 import { TClassDecoratorReturn, TPropertyDecoratorReturn, Type } from "@simplysm/sd-core-common";
 import { DbDefinitionUtil } from "./utils/DbDefinitionUtil";
 import { TSdOrmDataType } from "./SdOrmDataType";
+import { DbContext } from "./DbContext";
+import { Queryable } from "./Queryable";
 
 export function Table<T>(def: {
   description: string;
   database?: string;
   schema?: string;
   name?: string;
+  view?: (db: any) => Queryable<DbContext, any>;
 }): TClassDecoratorReturn<T> {
   return (classType: Type<T>): void => {
     DbDefinitionUtil.mergeTableDef(classType, {

@@ -343,7 +343,7 @@ export abstract class DbContext {
     if (!force) {
       const isDbExists = this.opt.dialect === "sqlite" ? true : await this.getIsDbExistsAsync(this.opt.database);
 
-      const isTableExists = !isDbExists ? false : await this.getIsTableExistsAsync({
+      const isMigrationTableExists = !isDbExists ? false : await this.getIsTableExistsAsync({
         ...this.opt.dialect === "sqlite" ? {} : {
           database: this.opt.database,
           schema: this.opt.schema,
@@ -351,8 +351,8 @@ export abstract class DbContext {
         name: "_migration"
       });
 
-      // DB / TABLE 있을때
-      if (isDbExists && isTableExists) {
+      // DB / Migration TABLE 있을때
+      if (isDbExists && isMigrationTableExists) {
         const dbMigrationCodes = (
           await this.systemMigration
             .select((item) => ({
@@ -398,7 +398,6 @@ export abstract class DbContext {
 
     // 강제 혹은 첫 수행
 
-    const queryDefsList: TQueryDef[][] = [];
     let tableDefs: ITableDef[];
 
     if (this.opt.dialect !== "sqlite") {
@@ -409,17 +408,19 @@ export abstract class DbContext {
 
       // DB 초기화
       for (const dbName of dbNames) {
-        queryDefsList.push([
-          {
-            type: "clearDatabaseIfExists",
-            database: dbName
-          },
-          {
-            type: "createDatabaseIfNotExists" as const,
-            database: dbName
-          }
-        ]);
+        await this.executeDefsAsync([{
+          type: "createDatabaseIfNotExists",
+          database: dbName
+        }]);
+
+        await this.executeQueriesAsync([`USE ${dbName};`]);
+
+        await this.executeDefsAsync([{
+          type: "clearDatabaseIfExists",
+          database: dbName
+        }]);
       }
+      await this.executeQueriesAsync([`USE ${this.opt.database};`]);
 
       // TABLE 초기화: 생성/PK 설정
       tableDefs = this.tableDefs
@@ -430,6 +431,7 @@ export abstract class DbContext {
       tableDefs = this.tableDefs.filterExists();
     }
 
+    const queryDefsList: TQueryDef[][] = [];
     queryDefsList.push(...this.getCreateTablesFullQueryDefsFromTableDef(tableDefs));
 
     // Migration 데이터 저장 등록
@@ -489,23 +491,32 @@ export abstract class DbContext {
       throw new Error(`'${tableDef.name}'의 컬럼 설정이 잘못되었습니다.`);
     }
 
-    return {
-      type: "createTable",
-      table: this.getTableNameDef(tableDef),
-      columns: tableDef.columns.map((col) => ObjectUtil.clearUndefined({
-        name: col.name,
-        dataType: this.qh.type(col.dataType ?? col.typeFwd()),
-        autoIncrement: col.autoIncrement,
-        nullable: col.nullable
-      })),
-      primaryKeys: tableDef.columns
-        .filter((item) => item.primaryKey !== undefined)
-        .orderBy((item) => item.primaryKey!)
-        .map((item) => ({
-          columnName: item.name,
-          orderBy: "ASC"
-        }))
-    };
+    if (!tableDef.view) {
+      return {
+        type: "createTable",
+        table: this.getTableNameDef(tableDef),
+        columns: tableDef.columns.map((col) => ObjectUtil.clearUndefined({
+          name: col.name,
+          dataType: this.qh.type(col.dataType ?? col.typeFwd()),
+          autoIncrement: col.autoIncrement,
+          nullable: col.nullable
+        })),
+        primaryKeys: tableDef.columns
+          .filter((item) => item.primaryKey !== undefined)
+          .orderBy((item) => item.primaryKey!)
+          .map((item) => ({
+            columnName: item.name,
+            orderBy: "ASC"
+          }))
+      };
+    }
+    else {
+      return {
+        type: "createView",
+        table: this.getTableNameDef(tableDef),
+        queryDef: tableDef.view(this).getSelectQueryDef()
+      };
+    }
   }
 
   public getCreateFksQueryDefsFromTableDef(tableDef: ITableDef): TQueryDef[] {

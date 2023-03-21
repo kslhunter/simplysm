@@ -11,6 +11,7 @@ export type TQueryBuilderValue = string | ISelectQueryDef | TQueryBuilderValue[]
 
 export type TQueryDef = (
   (ISelectQueryDef & { type: "select" }) |
+  (IInsertIntoQueryDef & { type: "insertInto" }) |
   (IInsertQueryDef & { type: "insert" }) |
   (IUpdateQueryDef & { type: "update" }) |
   (IDeleteQueryDef & { type: "delete" }) |
@@ -27,6 +28,7 @@ export type TQueryDef = (
   (IGetTableForeignKeysDef & { type: "getTableForeignKeys" }) |
   (IGetTableIndexesDef & { type: "getTableIndexes" }) |
   (ICreateTableQueryDef & { type: "createTable" }) |
+  (ICreateViewQueryDef & { type: "createView" }) |
   (IDropTableQueryDef & { type: "dropTable" }) |
   (IAddColumnQueryDef & { type: "addColumn" }) |
   (IRemoveColumnQueryDef & { type: "removeColumn" }) |
@@ -81,6 +83,11 @@ export interface ICreateTableQueryDef {
   table: IQueryTableNameDef;
   columns: IQueryColumnDef[];
   primaryKeys: IQueryPrimaryKeyDef[];
+}
+
+export interface ICreateViewQueryDef {
+  table: IQueryTableNameDef;
+  queryDef: ISelectQueryDef;
 }
 
 export interface ICreateDatabaseIfNotExistsQueryDef {
@@ -236,6 +243,12 @@ export interface IJoinQueryDef extends ISelectQueryDef {
   isCustomSelect: boolean;
 }
 
+export interface IInsertIntoQueryDef extends ISelectQueryDef {
+  select: Record<string, TQueryBuilderValue>;
+
+  target: string;
+}
+
 export interface IInsertQueryDef {
   from: string;
   record: Record<string, string>;
@@ -305,6 +318,7 @@ export interface ITableDef extends ITableNameDef {
   indexes: IIndexDef[];
   referenceKeys: IReferenceKeyDef[];
   referenceKeyTargets: IReferenceKeyTargetDef[];
+  view?: (db: any) => Queryable<DbContext, any>;
 }
 
 export interface IColumnDef {

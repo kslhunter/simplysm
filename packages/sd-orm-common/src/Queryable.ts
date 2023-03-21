@@ -1102,6 +1102,33 @@ export class Queryable<D extends DbContext, T> {
     });
   }
 
+  public async insertIntoAsync(tableType: Type<T>): Promise<void> {
+    if (typeof this.db === "undefined") {
+      throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");
+    }
+
+    const def = this.getSelectQueryDef();
+
+    const targetTableDef = DbDefinitionUtil.getTableDef(tableType);
+    if (typeof targetTableDef === "undefined") {
+      throw new Error(`'${tableType.name}'에 '@Table()'이 지정되지 않았습니다.`);
+    }
+
+    const targetTableName = this.db.qb.getTableName({
+      ...this.db.opt.dialect === "sqlite" ? {} : {
+        database: targetTableDef.database ?? this.db.opt.database,
+        schema: targetTableDef.schema ?? this.db.opt.schema
+      },
+      name: targetTableDef.name
+    });
+
+    await this.db.executeDefsAsync([{
+      type: "insertInto",
+      ...def,
+      target: targetTableName
+    }], [this._getParseOption(undefined)]);
+  }
+
   public async resultAsync(): Promise<T[]> {
     if (typeof this.db === "undefined") {
       throw new Error("'DbContext'가 설정되지 않은 쿼리는 실행할 수 없습니다.");

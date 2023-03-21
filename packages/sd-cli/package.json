@@ -20,7 +20,7 @@
     "**/*"
   ],
   "dependencies": {
-    "@angular-devkit/build-angular": "^14.2.10",
+    "@angular-devkit/build-angular": "^14.2.11",
     "@angular/common": "^14.3.0",
     "@angular/compiler": "^14.3.0",
     "@angular/compiler-cli": "^14.3.0",
@@ -28,7 +28,7 @@
     "@babel/parser": "^7.21.3",
     "@babel/types": "^7.21.3",
     "@compodoc/compodoc": "^1.1.19",
-    "@ngtools/webpack": "^14.2.10",
+    "@ngtools/webpack": "^14.2.11",
     "@simplysm/sd-core-common": "7.1.37",
     "@simplysm/sd-core-node": "7.1.37",
     "@simplysm/sd-service-common": "7.1.37",
@@ -49,18 +49,18 @@
     "jszip": "^3.10.1",
     "license-webpack-plugin": "^4.0.2",
     "mime": "^3.0.0",
-    "mini-css-extract-plugin": "^2.7.3",
+    "mini-css-extract-plugin": "^2.7.5",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "resolve-url-loader": "^5.0.0",
     "rxjs": "^7.8.0",
     "sass": "^1.59.3",
-    "sass-loader": "^13.2.0",
+    "sass-loader": "^13.2.1",
     "semver": "^7.3.8",
     "source-map-loader": "^4.0.1",
     "source-map-support": "^0.5.21",
     "terser-webpack-plugin": "^5.3.7",
     "ts-loader": "^9.4.2",
-    "typedoc": "^0.23.27",
+    "typedoc": "^0.23.28",
     "typescript": "~4.8.4",
     "webpack": "^5.76.2",
     "xml2js": "^0.4.23",
@@ -74,6 +74,6 @@
     "@types/semver": "^7.3.13",
     "@types/source-map-support": "^0.5.6",
     "@types/xml2js": "^0.4.11",
-    "@types/yargs": "^17.0.22"
+    "@types/yargs": "^17.0.23"
   }
 }

@@ -8,6 +8,7 @@ import {
   ICreateDatabaseIfNotExistsQueryDef,
   ICreateIndexQueryDef,
   ICreateTableQueryDef,
+  ICreateViewQueryDef,
   IDeleteQueryDef,
   IDropIndexQueryDef,
   IDropPrimaryKeyQueryDef,
@@ -20,6 +21,7 @@ import {
   IGetTableInfosDef,
   IGetTablePrimaryKeysDef,
   IInsertIfNotExistsQueryDef,
+  IInsertIntoQueryDef,
   IInsertQueryDef,
   IJoinQueryDef,
   IModifyColumnQueryDef,
@@ -59,7 +61,7 @@ ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`.
     }
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     else if (this._dialect === "mssql-azure") {
-      return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)} (EDITION='Basic', SERVICE_OBJECTIVE='Basic', MAXSIZE = 2 GB) WITH CATALOG_COLLATION = Korean_Wansung_CS_AS`.trim();
+      return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name='${def.database}') CREATE DATABASE ${this.wrap(def.database)} COLLATE Korean_Wansung_CS_AS (EDITION='Basic', SERVICE_OBJECTIVE='Basic', MAXSIZE = 2 GB)`.trim();
     }
     else {
       return `IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = '${def.database}') CREATE DATABASE ${this.wrap(def.database)} COLLATE Korean_Wansung_CS_AS`;
@@ -131,7 +133,7 @@ BEGIN
   WHERE type_desc like '%function%' AND sch.name <> 'sys'
     
   -- 뷰 초기화
-  SELECT @sql = @sql + 'DROP VIEW ${this.wrap(def.database)}.' + QUOTENAME(sch.name) + '.' + QUOTENAME(v.name) + N';' + CHAR(13) + CHAR(10)
+  SELECT @sql = @sql + 'DROP VIEW ' + QUOTENAME(sch.name) + '.' + QUOTENAME(v.name) + N';' + CHAR(13) + CHAR(10)
   FROM ${this.wrap(def.database)}.sys.views v
   INNER JOIN ${this.wrap(def.database)}.sys.schemas sch ON sch.schema_id = [v].schema_id
   WHERE sch.name <> 'sys'
@@ -318,6 +320,11 @@ ORDER BY i.index_id, ic.key_ordinal;
     return query.trim();
   }
 
+  public createView(def: ICreateViewQueryDef): string {
+    const tableName = this.getTableNameWithoutDatabase(def.table);
+    return `CREATE VIEW ${tableName} AS\n${this.query({ type: "select", ...def.queryDef })}`.trim();
+  }
+
   public dropTable(def: IDropTableQueryDef): string {
     const tableName = this.getTableName(def.table);
     return `DROP TABLE ${tableName}`;
@@ -330,9 +337,9 @@ ORDER BY i.index_id, ic.key_ordinal;
     if (!def.column.nullable && def.column.defaultValue !== undefined) {
       queries.push(`ALTER TABLE ${tableName}
         ADD ${this._getQueryOfColDef({
-          ...def.column,
-          nullable: true
-        })}`);
+        ...def.column,
+        nullable: true
+      })}`);
       queries.push(`UPDATE ${tableName}
                     SET ${this.wrap(def.column.name)} = ${this.getQueryOfQueryValue(def.column.defaultValue)}`);
       queries.push(`ALTER TABLE ${tableName} ALTER COLUMN ${this._getQueryOfColDef(def.column)}`);
@@ -703,6 +710,16 @@ pragma writable_schema=0;`.trim();
     return q.trim();
   }
 
+  public insertInto(def: IInsertIntoQueryDef): string {
+    let q = "";
+    q += `INSERT INTO ${def.target} (${Object.keys(def.select).join(", ")})`;
+    q += "\n";
+
+    q += this.select(def);
+
+    return q.trim() + ";";
+  }
+
   public insert(def: IInsertQueryDef): string {
     let q = "";
     q += `INSERT INTO ${def.from} (${Object.keys(def.record).join(", ")})`;
@@ -1035,6 +1052,10 @@ DEALLOCATE PREPARE stmt;`.trim();
 
   public getTableName(def: IQueryTableNameDef): string {
     return this.getTableNameChain(def).map((item) => this.wrap(item)).join(".");
+  }
+
+  public getTableNameWithoutDatabase(def: IQueryTableNameDef): string {
+    return this.getTableNameChain(def).slice(1).map((item) => this.wrap(item)).join(".");
   }
 
   public getTableNameChain(def: IQueryTableNameDef): string[] {

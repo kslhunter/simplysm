@@ -82,5 +82,4 @@ export class DbDefinitionUtil {
     tableDef.referenceKeyTargets = tableDef.referenceKeyTargets.merge([def], { keys: ["propertyKey"] });
     DbDefinitionUtil.setTableDef(tableType, tableDef);
   }
-
 }

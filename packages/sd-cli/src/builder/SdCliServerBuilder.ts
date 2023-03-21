@@ -162,7 +162,7 @@ export class SdCliServerBuilder extends EventEmitter {
     if (this._config.pm2 === undefined || this._config.pm2 === false) return;
 
     const npmConfig = this._getNpmConfig(this._rootPath)!;
-    const pm2DistPath = path.resolve(this._parsedTsconfig.options.outDir!, "pm2.json");
+    const pm2DistPath = path.resolve(this._parsedTsconfig.options.outDir!, typeof this._config.pm2 !== "boolean" ? this._config.pm2.fileName ?? "pm2.json" : "pm2.json");
     await FsUtil.writeFileAsync(
       pm2DistPath,
       JSON.stringify(
@@ -179,7 +179,9 @@ export class SdCliServerBuilder extends EventEmitter {
               "node_modules",
               "www"
             ].distinct(),
-            "interpreter": "node@" + process.versions.node,
+            ...typeof this._config.pm2 !== "boolean" && this._config.pm2.noInterpreter ? {} : {
+              "interpreter": "node@" + process.versions.node,
+            },
             "env": {
               NODE_ENV: "production",
               SD_VERSION: npmConfig.version,
@@ -187,7 +189,7 @@ export class SdCliServerBuilder extends EventEmitter {
               ...this._config.env ? this._config.env : {}
             }
           },
-          (typeof this._config.pm2 !== "boolean") ? this._config.pm2 : {},
+          (typeof this._config.pm2 !== "boolean") ? this._config.pm2.config : {},
           {
             arrayProcess: "concat",
             useDelTargetNull: true
@@ -239,7 +241,7 @@ export class SdCliServerBuilder extends EventEmitter {
     delete distNpmConfig.devDependencies;
     delete distNpmConfig.peerDependencies;
 
-    if (this._config.pm2 !== undefined) {
+    if (this._config.pm2 !== undefined && (typeof this._config.pm2 === "boolean" || !this._config.pm2.noStartScript)) {
       distNpmConfig.scripts = { "start": "pm2 start pm2.json" };
     }
 

@@ -4,6 +4,8 @@ import { SdServiceEventBase, TSdServiceC2SMessage, TSdServiceS2CMessage } from "
 import { SdWebSocket } from "./SdWebSocket";
 
 export class SdServiceClient {
+  public static isOnShowAlert = false;
+
   private readonly _id = Uuid.new().toString();
 
   private readonly _ws: SdWebSocket;
@@ -13,6 +15,8 @@ export class SdServiceClient {
 
   public websocketUrl: string;
   public serverUrl: string;
+
+  public reconnectCount = 0;
 
   public get connected(): boolean {
     return this._ws.connected && this.isConnected;
@@ -48,7 +52,15 @@ export class SdServiceClient {
       });
 
       const reconnectFn = async (): Promise<void> => {
-        await Wait.time(2000);
+        await Wait.until(() => !SdServiceClient.isOnShowAlert);
+
+        if (this.reconnectCount > 100) {
+          throw new Error("연결이 너무 오래 끊겨있습니다. 연결상태 확인 후, 화면을 새로고침하세요.");
+        }
+        else {
+          this.reconnectCount++;
+          await Wait.time(2000);
+        }
 
         if (this.isConnected || this.isManualClose) {
           // eslint-disable-next-line no-console
