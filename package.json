@@ -35,7 +35,7 @@
     "eslint-timing": "cross-env TIMING=1 eslint \"**/+(*.ts|*.js|*.cjs|*.mjs)\""
   },
   "devDependencies": {
-    "@types/node": "^16.18.18",
+    "@types/node": "^16.18.19",
     "cross-env": "^7.0.3",
     "eslint": "^8.36.0",
     "typescript": "~4.8.4"

@@ -5,6 +5,7 @@ import { SdExcelXmlWorkbook } from "./files/SdExcelXmlWorkbook";
 import { SdExcelXmlContentType } from "./files/SdExcelXmlContentType";
 import { SdExcelXmlWorksheet } from "./files/SdExcelXmlWorksheet";
 import { SdExcelZipCache } from "./utils/SdExcelZipCache";
+import { ISdExcelXml } from "./commons";
 
 export class SdExcelWorkbook {
   public async getWorksheetNamesAsync(): Promise<string[]> {
@@ -98,6 +99,10 @@ export class SdExcelWorkbook {
     const ws = new SdExcelWorksheet(this._zipCache, wsId);
     this._wsMap.set(wsId, ws);
     return ws;
+  }
+
+  public async getCustomFileDataAsync(path: string): Promise<ISdExcelXml | Buffer | undefined> {
+    return await this._zipCache.getAsync(path);
   }
 
   public async getBufferAsync(): Promise<Buffer> {

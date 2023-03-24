@@ -549,7 +549,8 @@ export class Queryable<D extends DbContext, T> {
       else if (fktDef) {
         const fktSourceType = fktDef.sourceTypeFwd();
         const fktSourceTableDef = DbDefinitionUtil.getTableDef(fktSourceType);
-        const fktSourceFkDef = fktSourceTableDef.foreignKeys.single((item) => item.propertyKey === fktDef.sourceKeyPropertyKey);
+        const fktSourceFkDef = fktSourceTableDef.foreignKeys.single((item) => item.propertyKey === fktDef.sourceKeyPropertyKey)
+          ?? fktSourceTableDef.referenceKeys.single((item) => item.propertyKey === fktDef.sourceKeyPropertyKey);
         if (!fktSourceFkDef) {
           throw new Error(`'${fktSourceTableDef.name}.${fktDef.sourceKeyPropertyKey}'에 '@ForeignKey()'가 지정되지 않았습니다.`);
         }
