@@ -385,6 +385,10 @@ export class QueryHelper {
     }
   }
 
+  public rowIndex(orderBy: [TEntityValue<TQueryValue>, "asc" | "desc"][]): QueryUnit<number> {
+    return new QueryUnit<number>(Number, ["ROW_NUMBER() OVER(ORDER BY ", orderBy.map((item) => this.getQueryValue(item[0]) + " " + item[1].toUpperCase()).join(" "), ")"]);
+  }
+
   // endregion
 
 

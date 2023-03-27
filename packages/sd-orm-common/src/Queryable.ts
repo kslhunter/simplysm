@@ -1127,7 +1127,7 @@ export class Queryable<D extends DbContext, T> {
       type: "insertInto",
       ...def,
       target: targetTableName
-    }], [this._getParseOption(undefined)]);
+    }]);
   }
 
   public async resultAsync(): Promise<T[]> {
