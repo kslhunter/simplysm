@@ -2,6 +2,7 @@ import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
 import { INpmConfig, ISdCliClientPackageConfig } from "../commons";
 import path from "path";
 import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
+import ts from "typescript";
 
 export class SdCliElectron {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -54,14 +55,14 @@ export class SdCliElectron {
       }*/
     });
 
-    await FsUtil.copyAsync(path.resolve(pkgRootPath, "dist", "electron"), path.resolve(electronSrcPath));
+    // await FsUtil.copyAsync(path.resolve(pkgRootPath, "dist", "electron"), path.resolve(electronSrcPath));
 
-    // if (FsUtil.exists(path.resolve(pkgRootPath, "src/favicon.ico"))) {
-    //   await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/favicon.ico"), path.resolve(electronSrcPath, "favicon.ico"));
-    // }
-    // if (FsUtil.exists(path.resolve(pkgRootPath, "src/assets"))) {
-    //   await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/assets"), path.resolve(electronSrcPath, "assets"));
-    // }
+    if (FsUtil.exists(path.resolve(pkgRootPath, "src/favicon.ico"))) {
+      await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/favicon.ico"), path.resolve(electronSrcPath, "favicon.ico"));
+    }
+    if (FsUtil.exists(path.resolve(pkgRootPath, "src/assets"))) {
+      await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/assets"), path.resolve(electronSrcPath, "assets"));
+    }
 
     await FsUtil.writeFileAsync(path.resolve(electronSrcPath, `.env`), [
       "NODE_ENV=development",
@@ -73,10 +74,9 @@ export class SdCliElectron {
       ...(electronConfig.env !== undefined) ? Object.keys(electronConfig.env).map((key) => `${key}=${electronConfig.env![key]}`) : [],
     ].filterExists().join("\n"));
 
-    /*let electronTsFileContent = await FsUtil.readFileAsync(path.resolve(pkgRootPath, `src/electron.ts`));
-    electronTsFileContent = "require(\"dotenv\").config({ path: `${__dirname}\\\\.env` });\n" + electronTsFileContent;
+    const electronTsFileContent = await FsUtil.readFileAsync(path.resolve(pkgRootPath, `src/electron.ts`));
     const result = ts.transpileModule(electronTsFileContent, { compilerOptions: { module: ts.ModuleKind.CommonJS } });
-    await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), result.outputText);*/
+    await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), result.outputText);
 
     await SdProcess.spawnAsync("electron-rebuild", { cwd: pkgRootPath }, true);
 
