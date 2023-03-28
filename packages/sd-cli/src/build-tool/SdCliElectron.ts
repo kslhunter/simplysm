@@ -54,12 +54,14 @@ export class SdCliElectron {
       }*/
     });
 
-    if (FsUtil.exists(path.resolve(pkgRootPath, "src/favicon.ico"))) {
-      await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/favicon.ico"), path.resolve(electronSrcPath, "favicon.ico"));
-    }
-    if (FsUtil.exists(path.resolve(pkgRootPath, "src/assets"))) {
-      await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/assets"), path.resolve(electronSrcPath, "assets"));
-    }
+    await FsUtil.copyAsync(path.resolve(pkgRootPath, "dist", "electron"), path.resolve(electronSrcPath));
+
+    // if (FsUtil.exists(path.resolve(pkgRootPath, "src/favicon.ico"))) {
+    //   await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/favicon.ico"), path.resolve(electronSrcPath, "favicon.ico"));
+    // }
+    // if (FsUtil.exists(path.resolve(pkgRootPath, "src/assets"))) {
+    //   await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/assets"), path.resolve(electronSrcPath, "assets"));
+    // }
 
     await FsUtil.writeFileAsync(path.resolve(electronSrcPath, `.env`), [
       "NODE_ENV=development",
