@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-orm-common",
-  "version": "7.1.40",
+  "version": "7.1.41",
   "description": "심플리즘 패키지 - ORM 모듈 (common)",
   "author": "김석래",
   "repository": {
@@ -20,6 +20,6 @@
     "**/*"
   ],
   "dependencies": {
-    "@simplysm/sd-core-common": "7.1.40"
+    "@simplysm/sd-core-common": "7.1.41"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular-mobile",
-  "version": "7.1.40",
+  "version": "7.1.41",
   "description": "심플리즘 패키지 - Angular 모바일 모듈 (browser)",
   "author": "김석래",
   "repository": {
@@ -28,9 +28,9 @@
     "@fortawesome/fontawesome-svg-core": "^6.3.0",
     "@fortawesome/pro-duotone-svg-icons": "^6.3.0",
     "@fortawesome/pro-light-svg-icons": "^6.3.0",
-    "@simplysm/sd-angular": "7.1.40",
-    "@simplysm/sd-core-browser": "7.1.40",
-    "@simplysm/sd-core-common": "7.1.40",
+    "@simplysm/sd-angular": "7.1.41",
+    "@simplysm/sd-core-browser": "7.1.41",
+    "@simplysm/sd-core-common": "7.1.41",
     "rxjs": "^7.8.0",
     "zone.js": "~0.11.8"
   }
