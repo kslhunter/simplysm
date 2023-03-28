@@ -2,7 +2,6 @@ import { FsUtil, Logger, SdProcess } from "@simplysm/sd-core-node";
 import { INpmConfig, ISdCliClientPackageConfig } from "../commons";
 import path from "path";
 import { SdCliConfigUtil } from "../utils/SdCliConfigUtil";
-import ts from "typescript";
 
 export class SdCliElectron {
   private readonly _logger = Logger.get(["simplysm", "sd-cli", this.constructor.name]);
@@ -20,9 +19,9 @@ export class SdCliElectron {
     if (!electronConfig) throw new Error("ELECTRON 설정을 찾을 수 없습니다.");
 
     const pkgRootPath = path.resolve(this._rootPath, `packages/${pkgName}`);
-    const electronSrcPath = path.resolve(pkgRootPath, `.cache/electron/src`);
+    const electronSrcPath = path.resolve(pkgRootPath, `dist/electron`);
 
-    await FsUtil.removeAsync(electronSrcPath);
+    // await FsUtil.removeAsync(electronSrcPath);
 
     const npmConfig = (await FsUtil.readJsonAsync(path.resolve(pkgRootPath, `package.json`))) as INpmConfig;
     const electronVersion = npmConfig.dependencies?.["electron"];
@@ -57,12 +56,12 @@ export class SdCliElectron {
 
     // await FsUtil.copyAsync(path.resolve(pkgRootPath, "dist", "electron"), path.resolve(electronSrcPath));
 
-    if (FsUtil.exists(path.resolve(pkgRootPath, "src/favicon.ico"))) {
-      await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/favicon.ico"), path.resolve(electronSrcPath, "favicon.ico"));
-    }
-    if (FsUtil.exists(path.resolve(pkgRootPath, "src/assets"))) {
-      await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/assets"), path.resolve(electronSrcPath, "assets"));
-    }
+    // if (FsUtil.exists(path.resolve(pkgRootPath, "src/favicon.ico"))) {
+    //   await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/favicon.ico"), path.resolve(electronSrcPath, "favicon.ico"));
+    // }
+    // if (FsUtil.exists(path.resolve(pkgRootPath, "src/assets"))) {
+    //   await FsUtil.copyAsync(path.resolve(pkgRootPath, "src/assets"), path.resolve(electronSrcPath, "assets"));
+    // }
 
     await FsUtil.writeFileAsync(path.resolve(electronSrcPath, `.env`), [
       "NODE_ENV=development",
@@ -74,12 +73,12 @@ export class SdCliElectron {
       ...(electronConfig.env !== undefined) ? Object.keys(electronConfig.env).map((key) => `${key}=${electronConfig.env![key]}`) : [],
     ].filterExists().join("\n"));
 
-    const electronTsFileContent = await FsUtil.readFileAsync(path.resolve(pkgRootPath, `src/electron.ts`));
-    const result = ts.transpileModule(electronTsFileContent, { compilerOptions: { module: ts.ModuleKind.CommonJS } });
-    await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), result.outputText);
+    // const electronTsFileContent = await FsUtil.readFileAsync(path.resolve(pkgRootPath, `src/electron.ts`));
+    // const result = ts.transpileModule(electronTsFileContent, { compilerOptions: { module: ts.ModuleKind.CommonJS } });
+    // await FsUtil.writeFileAsync(path.resolve(electronSrcPath, "electron.js"), result.outputText);
 
     await SdProcess.spawnAsync("electron-rebuild", { cwd: pkgRootPath }, true);
 
-    await SdProcess.spawnAsync(`electron ${electronSrcPath}`, { cwd: this._rootPath }, true);
+    await SdProcess.spawnAsync(`electron .`, { cwd: electronSrcPath }, true);
   }
 }
