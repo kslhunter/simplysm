@@ -129,7 +129,7 @@
   --border-radius-xl: var(--gap-lg);
 
   // DEFAULT STYLES
-  --background-color: var(--theme-color-grey-lightest);
+  --background-color: var(--theme-color-grey-lighter);
 
   // CONTROL STYLES
   --sd-sidebar-width: 180px;
@@ -138,6 +138,7 @@
   --sd-topbar-height-lg: 42px;
   --sd-sheet-padding-v: var(--gap-xs);
   --sd-sheet-padding-h: var(--gap-sm);
+  --sd-sheet-background-color: var(--theme-color-grey-lightest);
 
   // Z-INDEX
   --z-index-toast: 9999;

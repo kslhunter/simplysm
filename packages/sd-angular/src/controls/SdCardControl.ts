@@ -14,18 +14,18 @@ import { SdInputValidate } from "../decorators/SdInputValidate";
       background: white;
       border-radius: var(--border-radius-default);
       overflow: hidden;
-      @include elevation(4);
+      border-top: 3px solid var(--theme-color-primary-default);
 
       &[sd-elevation=none] {
-        @include elevation(0);
+        border-top-width: 0;
       }
 
       &[sd-elevation=lg] {
-        @include elevation(8);
+        border-top-width: 6px;
       }
 
       &[sd-elevation=xl] {
-        @include elevation(16);
+        border-top-width: 12px;
       }
     }
   `]

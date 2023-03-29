@@ -180,6 +180,20 @@ import { sdThemes, TSdTheme } from "../commons";
           min-height: calc(var(--gap-sm) * 2 + var(--font-size-default) * var(--line-height-strip-unit));
         }
 
+        &[sd-type=date] {
+          > input,
+          > ._contents {
+            width: 95px;
+          }
+        }
+        
+        &[sd-type=datetime] {
+          > input,
+          > ._contents {
+            width: 170px;
+          }
+        }
+
         &[sd-size=sm] {
           > input,
           > ._contents {

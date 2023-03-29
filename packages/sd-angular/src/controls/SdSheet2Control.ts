@@ -142,7 +142,7 @@ import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
             </ng-container>
             </thead>
             <tbody>
-            <ng-container *ngFor="let itemDef of displayItemDefs; let r = index; trackBy: trackByFn">
+            <ng-container *ngFor="let itemDef of displayItemDefs; let r = index; trackBy: trackByFnForDisplayItemDef">
               <tr [attr.r]="r"
                   (keydown)="this.itemKeydown.emit({ item: itemDef.item, event: $event })"
                   [hidden]="getIsHiddenItemDef(itemDef)">
@@ -240,7 +240,7 @@ import { faCaretRight } from "@fortawesome/pro-solid-svg-icons/faCaretRight";
           }
 
           > sd-pane._sheet-container {
-            background: var(--background-color);
+            background: var(--sd-sheet-background-color);
             border-radius: var(--border-radius-default);
 
             > table {
@@ -613,6 +613,7 @@ export class SdSheet2Control<T> implements OnInit, AfterContentChecked, DoCheck 
   public trackByFnForColumnDef = (index: number, item: IColumnDef<T>): string => item.control.guid;
   public trackByFnForHeaderCell = (index: number, item: IHeaderDef<T> | undefined): string | number => item?.control.guid ?? index;
   public trackByIndexFn = (index: number, item: any): any => index;
+  public trackByFnForDisplayItemDef = (index: number, item: IItemDef<T>): any => this.trackByFn(index, item.item);
 
   private _config?: ISdSheet2Config;
 

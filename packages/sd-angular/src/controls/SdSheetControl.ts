@@ -472,7 +472,7 @@ import { faArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
 
         > sd-pane[sd-display-type='sheet'] { // 하단 PANE (시트)
           z-index: 0;
-          background: var(--background-color);
+          background: var(--sd-sheet-background-color);
 
           > ._sheet { // 시트
             display: inline-block;
@@ -723,7 +723,7 @@ import { faArrowRight } from "@fortawesome/pro-solid-svg-icons/faArrowRight";
         }
 
         > sd-pane[sd-display-type='card'] {
-          background: var(--background-color);
+          background: var(--sd-sheet-background-color);
 
           ::ng-deep ._sd-sheet-card {
             //cursor: pointer;

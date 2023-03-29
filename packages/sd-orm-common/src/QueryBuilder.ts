@@ -70,7 +70,10 @@ ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`.
 
   public clearDatabaseIfExists(def: IClearDatabaseIfExistsQueryDef): string {
     if (this._dialect === "mysql") {
-      return `DROP DATABASE IF EXISTS ${this.wrap(def.database)};`;
+      return `
+DROP DATABASE IF EXISTS ${this.wrap(def.database)};
+CREATE DATABASE IF NOT EXISTS ${this.wrap(def.database)};
+ALTER DATABASE ${this.wrap(def.database)} CHARACTER SET utf8 COLLATE utf8_bin;`;
     }
     else if (this._dialect === "mssql-azure") {
       return `

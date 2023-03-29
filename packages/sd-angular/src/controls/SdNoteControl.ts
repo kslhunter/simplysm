@@ -19,7 +19,7 @@ import { sdThemes, TSdTheme } from "../commons";
       @each $color in $arr-theme-color {
         &[sd-theme=#{$color}] {
           background: var(--theme-color-#{$color}-lightest);
-          border-color: var(--theme-color-#{$color}-lighter);
+          border-color: var(--theme-color-#{$color}-light);
         }
       }
 
