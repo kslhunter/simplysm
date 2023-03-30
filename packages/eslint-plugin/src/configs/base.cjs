@@ -6,7 +6,7 @@ module.exports = {
   plugins: ["import"],
   rules: {
     // import
-    "import/no-extraneous-dependencies": ["error"],
+    // "import/no-extraneous-dependencies": ["error"], // 느림
 
     "no-console": ["warn"],
     "no-warning-comments": ["warn"],

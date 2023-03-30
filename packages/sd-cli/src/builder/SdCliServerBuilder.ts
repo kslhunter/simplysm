@@ -451,6 +451,7 @@ export class SdCliServerBuilder extends EventEmitter {
           extensions: ["ts", "js", "mjs", "cjs"],
           fix: false,
           threads: false,
+          lintDirtyModulesOnly: watch,
           formatter: (results: LintResult[]) => {
             const resultMessages: string[] = [];
             for (const result of results) {

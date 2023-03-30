@@ -774,6 +774,7 @@ export class SdCliClientBuilder extends EventEmitter {
           ...this._config.env,
           ...this._config.builder?.[builderType]?.env
         }),
+
         new ESLintWebpackPlugin({
           context: this._rootPath,
           eslintPath: path.resolve(this._projRootPath, "node_modules", "eslint"),

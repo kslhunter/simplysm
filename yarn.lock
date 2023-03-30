@@ -2700,9 +2700,9 @@ __metadata:
     "@fortawesome/fontawesome-svg-core": ^6.4.0
     "@fortawesome/pro-duotone-svg-icons": ^6.4.0
     "@fortawesome/pro-light-svg-icons": ^6.4.0
-    "@simplysm/sd-angular": 7.1.43
-    "@simplysm/sd-core-browser": 7.1.43
-    "@simplysm/sd-core-common": 7.1.43
+    "@simplysm/sd-angular": 7.1.44
+    "@simplysm/sd-core-browser": 7.1.44
+    "@simplysm/sd-core-common": 7.1.44
     rxjs: ^7.8.0
     zone.js: ~0.11.8
   languageName: unknown
@@ -2720,15 +2720,34 @@ __metadata:
     "@fortawesome/fontawesome-svg-core": ^6.4.0
     "@fortawesome/pro-duotone-svg-icons": ^6.4.0
     "@fortawesome/pro-light-svg-icons": ^6.4.0
-    "@simplysm/sd-angular": 7.1.43
-    "@simplysm/sd-core-browser": 7.1.43
-    "@simplysm/sd-core-common": 7.1.43
+    "@simplysm/sd-angular": 7.1.44
+    "@simplysm/sd-core-browser": 7.1.44
+    "@simplysm/sd-core-common": 7.1.44
     rxjs: ^7.8.0
     zone.js: ~0.11.8
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-angular@7.1.43, @simplysm/sd-angular@workspace:packages/sd-angular":
+"@simplysm/sd-angular-templates@workspace:packages/sd-angular-templates":
+  version: 0.0.0-use.local
+  resolution: "@simplysm/sd-angular-templates@workspace:packages/sd-angular-templates"
+  dependencies:
+    "@angular/common": ^14.3.0
+    "@angular/core": ^14.3.0
+    "@angular/platform-browser": ^14.3.0
+    "@angular/router": ^14.3.0
+    "@fortawesome/angular-fontawesome": ^0.11.1
+    "@fortawesome/fontawesome-svg-core": ^6.4.0
+    "@fortawesome/pro-duotone-svg-icons": ^6.4.0
+    "@simplysm/sd-angular": 7.1.44
+    "@simplysm/sd-core-browser": 7.1.44
+    "@simplysm/sd-core-common": 7.1.44
+    rxjs: ^7.8.0
+    zone.js: ~0.11.8
+  languageName: unknown
+  linkType: soft
+
+"@simplysm/sd-angular@7.1.44, @simplysm/sd-angular@workspace:packages/sd-angular":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-angular@workspace:packages/sd-angular"
   dependencies:
@@ -2741,10 +2760,10 @@ __metadata:
     "@fortawesome/pro-duotone-svg-icons": ^6.4.0
     "@fortawesome/pro-light-svg-icons": ^6.4.0
     "@fortawesome/pro-solid-svg-icons": ^6.4.0
-    "@simplysm/sd-core-browser": 7.1.43
-    "@simplysm/sd-core-common": 7.1.43
-    "@simplysm/sd-service-client": 7.1.43
-    "@simplysm/sd-service-common": 7.1.43
+    "@simplysm/sd-core-browser": 7.1.44
+    "@simplysm/sd-core-common": 7.1.44
+    "@simplysm/sd-service-client": 7.1.44
+    "@simplysm/sd-service-common": 7.1.44
     "@types/marked": ^4.0.8
     "@types/qrcode": ^1.5.0
     jsbarcode: ^3.11.5
@@ -2768,11 +2787,11 @@ __metadata:
     "@babel/types": ^7.21.3
     "@compodoc/compodoc": ^1.1.19
     "@ngtools/webpack": ^14.2.11
-    "@simplysm/sd-core-common": 7.1.43
-    "@simplysm/sd-core-node": 7.1.43
-    "@simplysm/sd-service-common": 7.1.43
-    "@simplysm/sd-service-server": 7.1.43
-    "@simplysm/sd-storage": 7.1.43
+    "@simplysm/sd-core-common": 7.1.44
+    "@simplysm/sd-core-node": 7.1.44
+    "@simplysm/sd-service-common": 7.1.44
+    "@simplysm/sd-service-server": 7.1.44
+    "@simplysm/sd-storage": 7.1.44
     "@types/connect": ^3.4.35
     "@types/jsdom": ^21.1.1
     "@types/mime": ^3.0.1
@@ -2821,21 +2840,21 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-cordova@workspace:packages/sd-cordova"
   dependencies:
-    "@simplysm/sd-service-client": 7.1.43
+    "@simplysm/sd-service-client": 7.1.44
     "@types/semver": ^7.3.13
     semver: ^7.3.8
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-browser@7.1.43, @simplysm/sd-core-browser@workspace:packages/sd-core-browser":
+"@simplysm/sd-core-browser@7.1.44, @simplysm/sd-core-browser@workspace:packages/sd-core-browser":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-browser@workspace:packages/sd-core-browser"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.43
+    "@simplysm/sd-core-common": 7.1.44
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-common@7.1.43, @simplysm/sd-core-common@workspace:packages/sd-core-common":
+"@simplysm/sd-core-common@7.1.44, @simplysm/sd-core-common@workspace:packages/sd-core-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-common@workspace:packages/sd-core-common"
   dependencies:
@@ -2843,11 +2862,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-core-node@7.1.43, @simplysm/sd-core-node@workspace:packages/sd-core-node":
+"@simplysm/sd-core-node@7.1.44, @simplysm/sd-core-node@workspace:packages/sd-core-node":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-core-node@workspace:packages/sd-core-node"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.43
+    "@simplysm/sd-core-common": 7.1.44
     chokidar: ^3.5.3
     glob: ^8.1.0
   languageName: unknown
@@ -2857,7 +2876,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-excel@workspace:packages/sd-excel"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.43
+    "@simplysm/sd-core-common": 7.1.44
     "@types/xml2js": ^0.4.11
     jszip: ^3.10.1
     xlsx: ^0.18.5
@@ -2865,11 +2884,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-orm-common@7.1.43, @simplysm/sd-orm-common@workspace:packages/sd-orm-common":
+"@simplysm/sd-orm-common@7.1.44, @simplysm/sd-orm-common@workspace:packages/sd-orm-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-common@workspace:packages/sd-orm-common"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.43
+    "@simplysm/sd-core-common": 7.1.44
   languageName: unknown
   linkType: soft
 
@@ -2877,9 +2896,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node-mssql@workspace:packages/sd-orm-node-mssql"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.43
-    "@simplysm/sd-core-node": 7.1.43
-    "@simplysm/sd-orm-common": 7.1.43
+    "@simplysm/sd-core-common": 7.1.44
+    "@simplysm/sd-core-node": 7.1.44
+    "@simplysm/sd-orm-common": 7.1.44
     "@types/tedious": ^4.0.9
     tedious: ^15.1.3
   languageName: unknown
@@ -2889,9 +2908,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node-mysql@workspace:packages/sd-orm-node-mysql"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.43
-    "@simplysm/sd-core-node": 7.1.43
-    "@simplysm/sd-orm-common": 7.1.43
+    "@simplysm/sd-core-common": 7.1.44
+    "@simplysm/sd-core-node": 7.1.44
+    "@simplysm/sd-orm-common": 7.1.44
     "@types/mysql": ^2.15.21
     mysql: ^2.18.1
   languageName: unknown
@@ -2901,25 +2920,25 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node-sqlite@workspace:packages/sd-orm-node-sqlite"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.43
-    "@simplysm/sd-core-node": 7.1.43
-    "@simplysm/sd-orm-common": 7.1.43
+    "@simplysm/sd-core-common": 7.1.44
+    "@simplysm/sd-core-node": 7.1.44
+    "@simplysm/sd-orm-common": 7.1.44
     "@types/sqlite3": ^3.1.8
     sqlite3: ^5.1.6
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-orm-node@7.1.43, @simplysm/sd-orm-node@workspace:packages/sd-orm-node":
+"@simplysm/sd-orm-node@7.1.44, @simplysm/sd-orm-node@workspace:packages/sd-orm-node":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-orm-node@workspace:packages/sd-orm-node"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.43
-    "@simplysm/sd-core-node": 7.1.43
-    "@simplysm/sd-orm-common": 7.1.43
+    "@simplysm/sd-core-common": 7.1.44
+    "@simplysm/sd-core-node": 7.1.44
+    "@simplysm/sd-orm-common": 7.1.44
   peerDependencies:
-    "@simplysm/sd-orm-node-mssql": 7.1.43
-    "@simplysm/sd-orm-node-mysql": 7.1.43
-    "@simplysm/sd-orm-node-sqlite": 7.1.43
+    "@simplysm/sd-orm-node-mssql": 7.1.44
+    "@simplysm/sd-orm-node-mysql": 7.1.44
+    "@simplysm/sd-orm-node-sqlite": 7.1.44
   peerDependenciesMeta:
     "@simplysm/sd-orm-node-mssql":
       optional: true
@@ -2930,32 +2949,32 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-client@7.1.43, @simplysm/sd-service-client@workspace:packages/sd-service-client":
+"@simplysm/sd-service-client@7.1.44, @simplysm/sd-service-client@workspace:packages/sd-service-client":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-client@workspace:packages/sd-service-client"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.43
-    "@simplysm/sd-orm-common": 7.1.43
-    "@simplysm/sd-service-common": 7.1.43
+    "@simplysm/sd-core-common": 7.1.44
+    "@simplysm/sd-orm-common": 7.1.44
+    "@simplysm/sd-service-common": 7.1.44
     jszip: ^3.10.1
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-common@7.1.43, @simplysm/sd-service-common@workspace:packages/sd-service-common":
+"@simplysm/sd-service-common@7.1.44, @simplysm/sd-service-common@workspace:packages/sd-service-common":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-common@workspace:packages/sd-service-common"
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-service-server@7.1.43, @simplysm/sd-service-server@workspace:packages/sd-service-server":
+"@simplysm/sd-service-server@7.1.44, @simplysm/sd-service-server@workspace:packages/sd-service-server":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-service-server@workspace:packages/sd-service-server"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.43
-    "@simplysm/sd-core-node": 7.1.43
-    "@simplysm/sd-orm-common": 7.1.43
-    "@simplysm/sd-orm-node": 7.1.43
-    "@simplysm/sd-service-common": 7.1.43
+    "@simplysm/sd-core-common": 7.1.44
+    "@simplysm/sd-core-node": 7.1.44
+    "@simplysm/sd-orm-common": 7.1.44
+    "@simplysm/sd-orm-node": 7.1.44
+    "@simplysm/sd-service-common": 7.1.44
     "@types/connect": ^3.4.35
     "@types/mime": ^3.0.1
     "@types/nodemailer": ^6.4.7
@@ -2969,7 +2988,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simplysm/sd-storage@7.1.43, @simplysm/sd-storage@workspace:packages/sd-storage":
+"@simplysm/sd-storage@7.1.44, @simplysm/sd-storage@workspace:packages/sd-storage":
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-storage@workspace:packages/sd-storage"
   dependencies:
@@ -2983,7 +3002,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simplysm/sd-word@workspace:packages/sd-word"
   dependencies:
-    "@simplysm/sd-core-common": 7.1.43
+    "@simplysm/sd-core-common": 7.1.44
     "@types/xml2js": ^0.4.11
     jszip: ^3.10.1
     xml2js: ^0.4.23

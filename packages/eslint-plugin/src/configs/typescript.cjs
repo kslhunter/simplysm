@@ -18,10 +18,10 @@ module.exports = {
     "linebreak-style": ["error", "unix"],
 
     // Deprecation
-    "deprecation/deprecation": ["warn"],
+    // "deprecation/deprecation": ["warn"], // 느림
 
     // import
-    "import/no-extraneous-dependencies": ["error"],
+    // "import/no-extraneous-dependencies": ["error"], // 느림
 
     // 심플리즘
     "@simplysm/ts-no-throw-not-implement-error": ["warn"],

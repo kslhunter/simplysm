@@ -1,12 +1,12 @@
 {
-  "name": "@simplysm/sd-angular",
+  "name": "@simplysm/sd-angular-templates",
   "version": "7.1.44",
-  "description": "심플리즘 패키지 - Angular 모듈 (browser)",
+  "description": "심플리즘 패키지 - Angular 템플릿 (browser)",
   "author": "김석래",
   "repository": {
     "type": "git",
     "url": "https://github.com/kslhunter/simplysm7.git",
-    "directory": "packages/sd-angular"
+    "directory": "packages/sd-angular-templates"
   },
   "license": "MIT",
   "type": "module",
@@ -27,20 +27,10 @@
     "@fortawesome/angular-fontawesome": "^0.11.1",
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
     "@fortawesome/pro-duotone-svg-icons": "^6.4.0",
-    "@fortawesome/pro-light-svg-icons": "^6.4.0",
-    "@fortawesome/pro-solid-svg-icons": "^6.4.0",
+    "@simplysm/sd-angular": "7.1.44",
     "@simplysm/sd-core-browser": "7.1.44",
     "@simplysm/sd-core-common": "7.1.44",
-    "@simplysm/sd-service-client": "7.1.44",
-    "@simplysm/sd-service-common": "7.1.44",
-    "jsbarcode": "^3.11.5",
-    "marked": "^4.3.0",
-    "qrcode": "^1.5.1",
     "rxjs": "^7.8.0",
     "zone.js": "~0.11.8"
-  },
-  "devDependencies": {
-    "@types/marked": "^4.0.8",
-    "@types/qrcode": "^1.5.0"
   }
 }
