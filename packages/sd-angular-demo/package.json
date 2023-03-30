@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular-demo",
-  "version": "7.2.1",
+  "version": "7.2.2",
   "description": "심플리즘 패키지 - Angular 데모 클라이언트",
   "author": "김석래",
   "repository": {
@@ -28,9 +28,9 @@
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
     "@fortawesome/pro-duotone-svg-icons": "^6.4.0",
     "@fortawesome/pro-light-svg-icons": "^6.4.0",
-    "@simplysm/sd-angular": "7.2.1",
-    "@simplysm/sd-core-browser": "7.2.1",
-    "@simplysm/sd-core-common": "7.2.1",
+    "@simplysm/sd-angular": "7.2.2",
+    "@simplysm/sd-core-browser": "7.2.2",
+    "@simplysm/sd-core-common": "7.2.2",
     "rxjs": "^7.8.0",
     "zone.js": "~0.11.8"
   }

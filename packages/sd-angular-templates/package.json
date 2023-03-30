@@ -1,6 +1,6 @@
 {
   "name": "@simplysm/sd-angular-templates",
-  "version": "7.1.44",
+  "version": "7.2.2",
   "description": "심플리즘 패키지 - Angular 템플릿 (browser)",
   "author": "김석래",
   "repository": {
@@ -27,9 +27,9 @@
     "@fortawesome/angular-fontawesome": "^0.11.1",
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
     "@fortawesome/pro-duotone-svg-icons": "^6.4.0",
-    "@simplysm/sd-angular": "7.1.44",
-    "@simplysm/sd-core-browser": "7.1.44",
-    "@simplysm/sd-core-common": "7.1.44",
+    "@simplysm/sd-angular": "7.2.2",
+    "@simplysm/sd-core-browser": "7.2.2",
+    "@simplysm/sd-core-common": "7.2.2",
     "rxjs": "^7.8.0",
     "zone.js": "~0.11.8"
   }
