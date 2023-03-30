@@ -60,6 +60,7 @@
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-excel2/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-demo/.cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-demo/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/sd-angular-templates/dist" />
     </content>
     <content url="file://$MODULE_DIR$/.yarn" />
     <orderEntry type="inheritedJdk" />
