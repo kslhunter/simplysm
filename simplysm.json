@@ -24,7 +24,7 @@
       },
       "publish": "npm"
     },
-    "sd-angular-template": {
+    "sd-angular-templates": {
       "type": "library",
       "angular": true,
       "autoIndex": {
